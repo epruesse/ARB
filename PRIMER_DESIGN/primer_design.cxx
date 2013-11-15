@@ -100,7 +100,7 @@ static void create_primer_design_result_window(AW_window *aww) {
         pdrw->auto_space(10, 10);
 
         pdrw->at("help");
-        pdrw->callback(AW_POPUP_HELP, (AW_CL)"primerdesignresult.hlp");
+        pdrw->callback(makeHelpCallback("primerdesignresult.hlp"));
         pdrw->create_button("HELP", "HELP", "H");
 
         pdrw->at("result");
@@ -135,7 +135,7 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
     char     *sequence = 0;
     long int  length   = 0;
 
-    if ((get_estimated_memory(root)/1024.0) > GB_get_physical_memory()) {
+    if ((get_estimated_memory(root)/1024.0) > GB_get_usable_memory()) {
         if (aw_question(NULL, "ARB may crash due to memory problems.", "Continue, Abort") == 1) {
             return;
         }
@@ -186,7 +186,7 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
         }
 
         catch (string& s) {
-            error = GBS_global_string("%s", s.c_str());
+            error = GBS_static_string(s.c_str());
         }
         catch (...) {
             error = "Unknown error (maybe out of memory ? )";
@@ -488,7 +488,7 @@ AW_window *create_primer_design_window(AW_root *root, AW_CL cl_gb_main) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"primer_new.hlp");
+    aws->callback(makeHelpCallback("primer_new.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("init1");

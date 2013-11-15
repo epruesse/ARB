@@ -16,6 +16,7 @@
 #include <smartptr.h>
 #include <unistd.h>
 #include <time.h>
+#include <arb_algo.h>
 
 // AISC_MKPT_PROMOTE:#ifndef ARB_CORE_H
 // AISC_MKPT_PROMOTE:#include <arb_core.h>
@@ -36,9 +37,14 @@ static void to_arbout(const char *msg) {
 // -------------------------
 //      ARB_arbout_status
 
-const int  HEIGHT = 12; // 12 can be devided by 2, 3, 4 (so subtitles tend to be at start of line)
-const int  WIDTH  = 70;
-const char CHAR   = '.';
+const int  WIDTH = 70;
+const char CHAR  = '.';
+
+const int MIN_SECONDS_PER_ROW = 10;   // otherwise decrease number of rows
+const int MAX_SECONDS_PER_ROW = 3*60; // otherwise increase number of rows
+
+const int DEFAULT_HEIGHT = 12; // 12 can be devided by 2, 3, 4, 6 (so subtitles tend to be at start of line)
+const int MAXHEIGHT      = 3*DEFAULT_HEIGHT;
 
 class BasicStatus : virtual Noncopyable {
     int         openCount;
@@ -46,21 +52,29 @@ class BasicStatus : virtual Noncopyable {
     int         printed;
     const char *cursor;
 
+    bool mayRedicideHeight;
+    int  height;
+
     time_t start;
 
-public:
-    BasicStatus() : openCount(0) { time(&start); }
-    ~BasicStatus() { if (openCount) close(); }
-
-    void open(const char *title) {
-        arb_assert(++openCount <= 1);
-        
-        fprintf(arbout, "Progress: %s\n", title);
+    void reset() {
         printed  = 0;
         cursor   = NULL;
         subtitle = NULL;
 
         time(&start);
+        mayRedicideHeight = true;
+        height = DEFAULT_HEIGHT;
+    }
+
+public:
+    BasicStatus() : openCount(0) { reset(); }
+    ~BasicStatus() { if (openCount) close(); }
+
+    void open(const char *title) {
+        arb_assert(++openCount <= 1);
+        fprintf(arbout, "Progress: %s\n", title);
+        reset();
     }
     void close() {
         freenull(subtitle);
@@ -78,12 +92,15 @@ public:
             cursor = subtitle;
         }
     }
+
+    static double estimate_overall_seconds(double seconds_passed, double gauge) {
+        return seconds_passed / gauge;
+    }
+
     void set_gauge(double gauge) {
         arb_assert(openCount == 1);
 
-        int wanted = int(gauge*WIDTH*HEIGHT);
-        int nextLF = next_LF();
-
+        int wanted = int(gauge*WIDTH*height);
         if (printed<wanted) {
             while (printed<wanted) {
                 if (cursor && cursor[0]) {
@@ -93,23 +110,46 @@ public:
                     cursor = 0;
                     fputc(CHAR, arbout);
                 }
+                int nextLF = next_LF();
                 printed++;
                 if (printed == nextLF) {
+                    mayRedicideHeight = false;
+
                     time_t now;
                     time(&now);
 
-                    fprintf(arbout, " [%5.1f%%]", printed*100.0/(WIDTH*HEIGHT));
-                    bool   done    = (printed == (WIDTH*HEIGHT));
+                    fprintf(arbout, " [%5.1f%%]", printed*100.0/(WIDTH*height));
+                    bool   done    = (printed == (WIDTH*height));
                     double seconds = difftime(now, start);
 
                     const char *whatshown = done ? "used" : "left";
                     fprintf(arbout, " %s: ", whatshown);
 
-                    long show_sec = done ? seconds : long(seconds*(1.0-gauge)/gauge+0.5);
+                    long show_sec = done ? seconds : long((estimate_overall_seconds(seconds, gauge)-seconds)+0.5);
                     fputs(GBS_readable_timediff(show_sec), arbout);
                     fputc('\n', arbout);
 
                     nextLF = next_LF();
+                }
+                else if (mayRedicideHeight) {
+                    if ((2*printed) > nextLF) {
+                        mayRedicideHeight = false; // stop redeciding
+                    }
+                    else {
+                        time_t now;
+                        time(&now);
+
+                        double seconds         = difftime(now, start)+0.5;
+                        double overall_seconds = estimate_overall_seconds(seconds, gauge);
+
+                        int max_wanted_height = int(overall_seconds/MIN_SECONDS_PER_ROW+0.5);
+                        int min_wanted_height = int(overall_seconds/MAX_SECONDS_PER_ROW+0.5);
+
+                        arb_assert(min_wanted_height <= max_wanted_height);
+
+                        height = force_in_range(min_wanted_height, DEFAULT_HEIGHT, max_wanted_height);
+                        height = force_in_range(1, height, MAXHEIGHT);
+                    }
                 }
             }
             fflush(arbout);

@@ -249,7 +249,7 @@ static void nt_intro_start_merge(AW_window *aw_intro) {
     const char *dir        = aw_root->awar("tmp/nt/arbdb/directory")->read_char_pntr();
     char       *merge_args = GBS_global_string_copy("'%s' '%s'", dir, dir);
 
-    nt_restart(aw_root, merge_args, false); //  call arb_ntree as merge-tool on exit
+    nt_restart(aw_root, merge_args); //  call arb_ntree as merge-tool on exit
 }
 
 static void nt_intro_start_import(AW_window *aw_intro) {
@@ -276,7 +276,7 @@ static AW_window *nt_create_intro_window(AW_root *awr) {
     aws->create_button("EXIT", "Exit", "x");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"arb_intro.hlp");
+    aws->callback(makeHelpCallback("arb_intro.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     AW_create_fileselection(aws, "tmp/nt/arbdb");
@@ -704,7 +704,7 @@ static void exit_from_merge(const char *restart_args) {
         exit(EXIT_SUCCESS); // exit w/o killing clients (as nt_exit() does)
     }
     else {
-        nt_restart(AW_root::SINGLETON, restart_args ? restart_args : "", false);
+        nt_restart(AW_root::SINGLETON, restart_args ? restart_args : "");
         nt_assert(0);
     }
 }
@@ -715,10 +715,10 @@ static void merge_startup_abort_cb(AW_window *, AW_CL) {
 }
 
 static AW_window *merge_startup_error_window(AW_root *aw_root, AW_CL cl_error) {
-    AW_window_message *aw_msg = new AW_window_message;
-    GB_ERROR           error  = GB_ERROR(cl_error);
+    AW_window_simple *aw_msg = new AW_window_simple;
+    GB_ERROR          error  = GB_ERROR(cl_error);
 
-    aw_msg->init(aw_root, "ARB merge error", false);
+    aw_msg->init(aw_root, "arb_merge_error", "ARB merge error");
     aw_msg->recalc_size_atShow(AW_RESIZE_DEFAULT); // force size recalc (ignores user size)
 
     aw_msg->at(10, 10);

@@ -15,6 +15,7 @@
 #include "awt_input_mask_internal.hxx"
 
 #include <arbdbt.h>
+#include <ad_cb.h>
 #include <arb_file.h>
 #include <awt_www.hxx>
 #include <aw_edit.hxx>
@@ -79,15 +80,13 @@ static bool in_item_changed_callback  = false;
 static bool in_field_changed_callback = false;
 static bool in_awar_changed_callback  = false;
 
-static void item_changed_cb(GBDATA * /* gb_item */, int *cl_awt_linked_to_item, GB_CB_TYPE type) {
+static void item_changed_cb(GBDATA*, awt_linked_to_item *item_link, GB_CB_TYPE type) {
     if (!in_item_changed_callback) { // avoid deadlock
         LocallyModify<bool> flag(in_item_changed_callback, true);
-        awt_linked_to_item *item_link = (awt_linked_to_item*)cl_awt_linked_to_item;
-
         if (type&GB_CB_DELETE) { // handled child was deleted
             item_link->relink();
         }
-        else if ((type&(GB_CB_CHANGED|GB_CB_SON_CREATED)) == (GB_CB_CHANGED|GB_CB_SON_CREATED)) {
+        else if ((type&GB_CB_CHANGED_OR_SON_CREATED) == GB_CB_CHANGED_OR_SON_CREATED) {
             // child was created (not only changed)
             item_link->relink();
         }
@@ -97,11 +96,9 @@ static void item_changed_cb(GBDATA * /* gb_item */, int *cl_awt_linked_to_item, 
     }
 }
 
-static void field_changed_cb(GBDATA * /* gb_item */, int *cl_awt_input_handler, GB_CB_TYPE type) {
+static void field_changed_cb(GBDATA*, awt_input_handler *handler, GB_CB_TYPE type) {
     if (!in_field_changed_callback) { // avoid deadlock
         LocallyModify<bool> flag(in_field_changed_callback, true);
-        awt_input_handler *handler = (awt_input_handler*)cl_awt_input_handler;
-
         if (type&GB_CB_DELETE) { // field was deleted from db -> relink this item
             handler->relink();
         }
@@ -269,12 +266,12 @@ GB_ERROR awt_script::set_value(const string& /* new_value */)
 GB_ERROR awt_linked_to_item::add_db_callbacks()
 {
     GB_ERROR error = 0;
-    if (gb_item) error = GB_add_callback(gb_item, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), item_changed_cb, (int*)this);
+    if (gb_item) error = GB_add_callback(gb_item, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(item_changed_cb, this));
     return error;
 }
 
 void awt_linked_to_item::remove_db_callbacks() {
-    GB_remove_callback(gb_item, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), item_changed_cb, (int*)this);
+    GB_remove_callback(gb_item, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(item_changed_cb, this));
 }
 
 awt_script_viewport::awt_script_viewport(awt_input_mask_global& global_, const awt_script *script_, const string& label_, long field_width_)
@@ -334,12 +331,12 @@ void awt_script_viewport::awar_changed() {
 
 GB_ERROR awt_input_handler::add_db_callbacks() {
     GB_ERROR error = awt_linked_to_item::add_db_callbacks();
-    if (item() && gbd) error = GB_add_callback(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), field_changed_cb, (int*)this);
+    if (item() && gbd) error = GB_add_callback(gbd, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(field_changed_cb, this));
     return error;
 }
 void awt_input_handler::remove_db_callbacks() {
     awt_linked_to_item::remove_db_callbacks();
-    if (item() && gbd) GB_remove_callback(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), field_changed_cb, (int*)this);
+    if (item() && gbd) GB_remove_callback(gbd, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(field_changed_cb, this));
 }
 
 awt_input_handler::awt_input_handler(awt_input_mask_global& global_, const string& child_path_, GB_TYPES type_, const string& label_)
@@ -1578,7 +1575,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             aws->at_newline();
 
             aws->callback((AW_CB0)AW_POPDOWN);                          aws->create_button(ID.fromKey("CLOSE"), "CLOSE", "C");
-            aws->callback(AW_POPUP_HELP, (AW_CL)"input_mask.hlp");      aws->create_button(ID.fromKey("HELP"), "HELP", "H");
+            aws->callback(makeHelpCallback("input_mask.hlp"));      aws->create_button(ID.fromKey("HELP"), "HELP", "H");
 
             if (edit_reload) {
                 aws->callback(AWT_edit_input_mask, (AW_CL)&mask->mask_global().get_maskname(), (AW_CL)mask->mask_global().is_local_mask());   aws->create_button(0, "EDIT", "E");
@@ -2065,7 +2062,6 @@ void awt_input_mask::link_to(GBDATA *gb_item) {
 
 awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_, bool local, bool hidden_) {
     title = strdup(title_);
-    // cppcheck-suppress copyCtorNoAllocation (fails to detect strdup as allocation)
     internal_maskname    = (char*)malloc(strlen(maskname_)+2);
     internal_maskname[0] = local ? '0' : '1';
     strcpy(internal_maskname+1, maskname_);
@@ -2322,7 +2318,7 @@ static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL) { /
         aws->button_length(10);
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", 0);
-        aws->callback(AW_POPUP_HELP, (AW_CL)"input_mask_new.hlp");
+        aws->callback(makeHelpCallback("input_mask_new.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at_newline();

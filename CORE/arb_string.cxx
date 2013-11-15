@@ -16,6 +16,8 @@
 #include <cstring>
 #include <cstdlib>
 
+#include <ctime>
+#include <sys/time.h>
 
 char *GB_strduplen(const char *p, unsigned len) {
     // fast replacement for strdup, if len is known
@@ -67,6 +69,28 @@ char *GB_strndup(const char *start, int len) {
     return GB_strpartdup(start, start+len-1);
 }
 
+const char *GB_date_string() {
+    timeval  date;
+    tm      *p;
+
+    gettimeofday(&date, 0);
+
+#if defined(DARWIN)
+    struct timespec local;
+    TIMEVAL_TO_TIMESPEC(&date, &local); // not avail in time.h of Linux gcc 2.95.3
+    p = localtime(&local.tv_sec);
+#else
+    p = localtime(&date.tv_sec);
+#endif // DARWIN
+
+    char *readable = asctime(p); // points to a static buffer
+    char *cr       = strchr(readable, '\n');
+    arb_assert(cr);
+    cr[0]          = 0;         // cut of \n
+
+    return readable;
+}
+
 
 // --------------------------------------------------------------------------------
 
@@ -101,9 +125,9 @@ void TEST_arbtest_strf() {
 void TEST_arbtest_readable() {
     using namespace arb_test;
 
-    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy('x')), "'x'");
-    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(static_cast<unsigned char>('x'))), "'x'");
-    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(static_cast<signed char>('x'))), "'x'");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy('x')), "'x' (=0x78)");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(static_cast<unsigned char>('x'))), "'x' (=0x78)");
+    TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(static_cast<signed char>('x'))), "'x' (=0x78)");
 
     TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(true)), "true");
     TEST_EXPECT_HEAPCOPY_EQUAL(val2readable(make_copy(false)), "false");

@@ -12,8 +12,10 @@ TITLE		Save properties
 
 OCCURRENCE	In 'Properties' menus
 
-DESCRIPTION	Saves the userdefined setup (colours, fonts, ...) to files
-		'~/.arb_prop/*' located in the users home directory.
+DESCRIPTION	Saves the userdefined setup (colours, fonts, ...) to property files.
+                These files are located in the directory pointed to by the
+                environmentvariable $ARB_PROP (which defaults to '~/.arb_prop' in your
+                home directory). See also LINK{arb_envar.hlp}.
 
 NOTES		To reset ARB to it's defaults simply remove one/all *.arb
 		files from the directory '~/.arb_prop'

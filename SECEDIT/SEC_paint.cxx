@@ -1218,9 +1218,9 @@ void SEC_region::align_helix_strands(SEC_root *root, SEC_region *other_region) {
 
                         delete [] reg[r]->abspos_array;
                         reg[r]->abspos_array      = new_absarr[r];
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
                         reg[r]->abspos_array_size = newp[r];
-#endif                          // DEBUG
+#endif // ASSERTION_USED
                         reg[r]->set_base_count(newp[r]);
                     }
                     else {

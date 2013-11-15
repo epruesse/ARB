@@ -44,12 +44,13 @@ PARAMETERS
         -m (or --model) model
             model : substitution model name.
             - Nucleotide-based models : HKY85 (default) | JC69 | K80 | F81 | F84 | TN93 | GTR | custom (*)
-            (*) : for the custom option, a string of six digits identifies the model. For instance, 000000
+
+             (*) : for the custom option, a string of six digits identifies the model. For instance, 000000
              corresponds to F81 (or JC69 provided the distribution of nucleotide frequencies is uniform).
              012345 corresponds to GTR. This option can be used for encoding any model that is a nested within GTR.
 
             - Amino-acid based models : LG (default) | WAG | JTT | MtREV | Dayhoff | DCMut | RtREV | CpREV | VT
-             Blosum62 | MtMam | MtArt | HIVw |  HIVb | custom
+              Blosum62 | MtMam | MtArt | HIVw | HIVb | custom
 
 
         --aa_rate_file filename
@@ -57,21 +58,21 @@ PARAMETERS
             It is compulsory to use this option when analysing amino acid sequences with the `custom' model.
 
 
-        -f e, m, or fA,fC,fG,fT
-            e : the character frequencies are determined as follows : 
-            - Nucleotide sequences: (Empirical) the equilibrium base frequencies are estimated by counting
-             the occurence of the different bases in the alignment.
-            - Amino-acid sequences: (Empirical) the equilibrium amino-acid frequencies are estimated by counting
-             the occurence of the different amino-acids in the alignment.
+        -f e, m,  or  fA,fC,fG,fT
 
-            m : the character frequencies are determined as follows : 
-            - Nucleotide sequences: (ML) the equilibrium base frequencies are estimated using maximum likelihood 
-            - Amino-acid sequences: (Model) the equilibrium amino-acid frequencies are estimated using
-             the frequencies defined by the substitution model.
+            - e : the character frequencies are determined as follows :
+                - Nucleotide sequences: (Empirical) the equilibrium base frequencies are estimated by counting
+                  the occurence of the different bases in the alignment.
+                - Amino-acid sequences: (Empirical) the equilibrium amino-acid frequencies are estimated by counting
+                  the occurence of the different amino-acids in the alignment.
+            - m : the character frequencies are determined as follows : 
+                - Nucleotide sequences: (ML) the equilibrium base frequencies are estimated using maximum likelihood 
+                - Amino-acid sequences: (Model) the equilibrium amino-acid frequencies are estimated using
+                  the frequencies defined by the substitution model.
+            - "fA,fC,fG,fT" : only valid for nucleotide-based models.
 
-            "fA,fC,fG,fT" : only valid for nucleotide-based models. fA, fC, fG and fT are floating numbers that 
-             correspond to the frequencies of A, C, G and T respectively (WARNING: do not use any blank space between
-             your values of nucleotide frequencies, only commas!)
+                  fA, fC, fG and fT are floating numbers that correspond to the frequencies of A, C, G and T
+                  respectively (WARNING: do not use any blank space between your values of nucleotide frequencies, only commas!)
 
 
         -t (or --ts/tv) ts/tv_ratio

@@ -41,6 +41,7 @@
 #include <arb_version.h>
 #include <arb_file.h>
 #include <arbdbt.h>
+#include <ad_cb.h>
 #include <macros.hxx>
 
 #include <cctype>
@@ -265,7 +266,7 @@ void TEST_win_2_world() {
     TEST_EXPECT_WIN_UNFOLDED(x23, y23);
 
     for (int FACTOR = 1; FACTOR <= 100; FACTOR += 7) {
-        TEST_ANNOTATE_ASSERT(GBS_global_string("FACTOR=%i", FACTOR));
+        TEST_ANNOTATE(GBS_global_string("FACTOR=%i", FACTOR));
         int H1 = FACTOR* 10;
         int H2 = FACTOR* 40;
         int V1 = FACTOR* 20;
@@ -453,7 +454,7 @@ static ARB_ERROR change_char_table_length(ED4_base *base, AW_CL new_length) {
     return NULL;
 }
 
-void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int * /* cl */, GB_CB_TYPE IF_ASSERTION_USED(gbtype)) // callback from database
+void ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE IF_ASSERTION_USED(gbtype)) // callback from database
 {
     e4_assert(gbtype==GB_CB_CHANGED);
     int new_length = GB_read_int(gb_alignment_len);
@@ -505,7 +506,7 @@ ED4_returncode ED4_root::init_alignment() {
     int alignment_length = GB_read_int(gb_alignment_len);
     MAXSEQUENCECHARACTERLENGTH = alignment_length;
 
-    GB_add_callback(gb_alignment_len, (GB_CB_TYPE)GB_CB_CHANGED, (GB_CB)ED4_alignment_length_changed, 0);
+    GB_add_callback(gb_alignment_len, GB_CB_CHANGED, makeDatabaseCallback(ED4_alignment_length_changed));
 
     aw_root->awar_string(AWAR_EDITOR_ALIGNMENT, alignment_name);
 
@@ -1228,16 +1229,16 @@ static void ED4_menu_perform_block_operation(AW_window */*aww*/, AW_CL type, AW_
     ED4_perform_block_operation(ED4_blockoperation_type(type));
 }
 
-static void modes_cb(AW_window*, AW_CL cd1, AW_CL) {
-    ED4_ROOT->species_mode = ED4_species_mode(cd1);
+static void modes_cb(AW_window*, ED4_species_mode smode) {
+    ED4_ROOT->species_mode = smode;
     for (ED4_window *win = ED4_ROOT->first_window; win; win = win->next) {
-        win->aww->select_mode(cd1);
+        win->aww->select_mode(smode);
     }
 }
 
 void ED4_no_dangerous_modes() {
     if (ED4_ROOT->species_mode == ED4_SM_KILL) {
-        modes_cb(NULL, (AW_CL)ED4_SM_MOVE, 0);
+        modes_cb(NULL, ED4_SM_MOVE);
     }
 }
 
@@ -1582,11 +1583,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->sep______________();
 
-    static AW_cb *refresh_all_cb = 0;
-    if (!refresh_all_cb) refresh_all_cb = new AW_cb(awmm, makeWindowCallback(ED4_request_relayout));
-
-    if (alignment_type == GB_AT_AA) awmm->insert_menu_topic("props_pfold",     "Protein Match Settings ", "P", "pfold_props.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_pfold_create_props_window, (AW_CL)refresh_all_cb);
-    else                            awmm->insert_menu_topic("props_helix_sym", "Helix Settings ",         "H", "helixsym.hlp",    AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window,     (AW_CL)refresh_all_cb);
+    if (alignment_type == GB_AT_AA) awmm->insert_menu_topic("props_pfold",     "Protein Match Settings ", "P", "pfold_props.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_pfold_create_props_window, (AW_CL)ED4_request_relayout);
+    else                            awmm->insert_menu_topic("props_helix_sym", "Helix Settings ",         "H", "helixsym.hlp",    AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window,     (AW_CL)ED4_request_relayout);
 
     awmm->insert_menu_topic("props_key_map", "Key Mappings ",              "K", "nekey_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_key_map_window, 0);
     awmm->insert_menu_topic("props_nds",     "Select visible info (NDS) ", "D", "ed4_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0);
@@ -1621,7 +1619,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     }
     awmm->close_sub_menu();
 
-    awmm->insert_help_topic("ARB_EDIT4 help",     "E", "e4.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"e4.hlp", 0);
+    awmm->insert_help_topic("ARB_EDIT4 help",     "E", "e4.hlp", AWM_ALL, (AW_CB)AW_help_popup, (AW_CL)"e4.hlp", 0);
 
     // ----------------------------------------------------------------------------------------------------
 
@@ -1867,9 +1865,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     // Buttons at left window border
 
-    awmm->create_mode("edit/arrow.xpm", "normal.hlp", AWM_ALL, (AW_CB)modes_cb, (AW_CL)ED4_SM_MOVE, (AW_CL)0);
-    awmm->create_mode("edit/kill.xpm",  "kill.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)ED4_SM_KILL, (AW_CL)0);
-    awmm->create_mode("edit/mark.xpm",  "mark.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)ED4_SM_MARK, (AW_CL)0);
+    awmm->create_mode("edit/arrow.xpm", "normal.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_MOVE));
+    awmm->create_mode("edit/kill.xpm",  "kill.hlp",   AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_KILL));
+    awmm->create_mode("edit/mark.xpm",  "mark.hlp",   AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_MARK));
 
     FastAligner_create_variables(awmm->get_root(), props_db);
 
@@ -1912,7 +1910,7 @@ ED4_index ED4_root::pixel2pos(AW_pos click_x) {
 static char *detectProperties() {
     char *propname = NULL;
 
-    // check if edit4_?na.arb / edit4_ali_???.arb exist in .arb_props
+    // check if edit4_?na.arb / edit4_ali_???.arb exist in $ARB_PROP
     for (int mode = 0; !propname && mode <= 1; ++mode) { 
         const char *fullprop = GB_path_in_arbprop(ED4_propertyName(mode));
         if (GB_is_regularfile(fullprop)) {

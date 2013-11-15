@@ -6,7 +6,7 @@ $(MAIN): $(OBJS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 clean:
 	rm -f $(OBJS) *.a
 
@@ -47,9 +47,11 @@ CT_ctree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arbtools.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/attributes.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/cxxforward.h
+CT_ctree.o: $(ARBHOME)/INCLUDE/downcast.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/gccver.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/smartptr.h
+CT_ctree.o: $(ARBHOME)/INCLUDE/static_assert.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 CT_dtree.o: CT_ctree.hxx
@@ -71,9 +73,11 @@ CT_dtree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arbtools.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/attributes.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/cxxforward.h
+CT_dtree.o: $(ARBHOME)/INCLUDE/downcast.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/gccver.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/smartptr.h
+CT_dtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 CT_hash.o: CT_ctree.hxx
@@ -97,9 +101,11 @@ CT_hash.o: $(ARBHOME)/INCLUDE/arbdbt.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arbtools.h
 CT_hash.o: $(ARBHOME)/INCLUDE/attributes.h
 CT_hash.o: $(ARBHOME)/INCLUDE/cxxforward.h
+CT_hash.o: $(ARBHOME)/INCLUDE/downcast.h
 CT_hash.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_hash.o: $(ARBHOME)/INCLUDE/gccver.h
 CT_hash.o: $(ARBHOME)/INCLUDE/smartptr.h
+CT_hash.o: $(ARBHOME)/INCLUDE/static_assert.h
 CT_hash.o: $(ARBHOME)/INCLUDE/test_global.h
 
 CT_ntree.o: CT_def.hxx
@@ -119,9 +125,11 @@ CT_ntree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arbtools.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/attributes.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/cxxforward.h
+CT_ntree.o: $(ARBHOME)/INCLUDE/downcast.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/gccver.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/smartptr.h
+CT_ntree.o: $(ARBHOME)/INCLUDE/static_assert.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 CT_part.o: CT_def.hxx
@@ -140,9 +148,11 @@ CT_part.o: $(ARBHOME)/INCLUDE/arbdbt.h
 CT_part.o: $(ARBHOME)/INCLUDE/arbtools.h
 CT_part.o: $(ARBHOME)/INCLUDE/attributes.h
 CT_part.o: $(ARBHOME)/INCLUDE/cxxforward.h
+CT_part.o: $(ARBHOME)/INCLUDE/downcast.h
 CT_part.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_part.o: $(ARBHOME)/INCLUDE/gccver.h
 CT_part.o: $(ARBHOME)/INCLUDE/smartptr.h
+CT_part.o: $(ARBHOME)/INCLUDE/static_assert.h
 CT_part.o: $(ARBHOME)/INCLUDE/test_global.h
 CT_part.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -166,7 +176,9 @@ CT_rbtree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arbtools.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/attributes.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/cxxforward.h
+CT_rbtree.o: $(ARBHOME)/INCLUDE/downcast.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/gccver.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/smartptr.h
+CT_rbtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/test_global.h

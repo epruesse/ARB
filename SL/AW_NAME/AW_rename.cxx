@@ -210,14 +210,16 @@ public:
                 const char *ipport = GBS_read_arb_tcp(server_id);
                 if (!ipport) err = GB_await_error();
                 else {
-                    link     = aisc_open(ipport, com, AISC_MAGIC_NUMBER);
+                    link     = aisc_open(ipport, com, AISC_MAGIC_NUMBER, &err);
                     linktime = time(0);
 
-                    if (init_local_com_names()) {
-                        err = GBS_global_string("Can't connect %s %s", server_id, ipport);
-                    }
-                    else {
-                        err = expectServerUsesField(add_field);
+                    if (!err) {
+                        if (init_local_com_names()) {
+                            err = GBS_global_string("Can't connect %s %s", server_id, ipport);
+                        }
+                        else {
+                            err = expectServerUsesField(add_field);
+                        }
                     }
                 }
             }
@@ -534,6 +536,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr) {
     }
 
     if (isWarningPtr) *isWarningPtr = isWarning;
+    gen_progress.done(); // needed if err
 
     return err;
 }
@@ -556,7 +559,7 @@ AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"rename.hlp");
+    aws->callback(makeHelpCallback("sp_rename.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 

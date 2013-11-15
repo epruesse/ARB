@@ -16,19 +16,19 @@ OCCURRENCE	ARB_NT <button in the left column>
 DESCRIPTION	The 'LENGTH MODE' allows you to increase or reduce the length of
 		terminal and internal branches.
 
-		Click on the tenth button in the left column of the
-			'ARB_NT' window to activate the 'LENGTH MODE'.
+                Click on the twelfth button in the left column of
+                the 'ARB_NT' window to activate the 'LENGTH MODE'.
 
-		Change branch length:
+                Change branch length:
 
-			The new branch length is defined by the internal node
-			closest to the displayed root (open square) and the
-			current position of the cursor!!!
+                       Click and drag a branch to change its length.
 
-			Move the cursor to any position along the
-			branch, keep the left mouse button pressed, move the
-			cursor to the desired position, release the button.
+                       If you use the right mouse button, discrete values
+                       will be used for the length.
 
+                Set branch length to zero:
+
+                       Point to a branch with the mouse and hit the key '0' (zero).
 
 NOTES		Short descriptions of the 'MODE' and the functions assigned
 		to the mouse buttons are given in the fourth line of the
@@ -45,10 +45,6 @@ NOTES		Short descriptions of the 'MODE' and the functions assigned
 		pressed, moving the cursor to the desired position and
                 subsequently releasing the mouse button. The label of the bar
 		can be moved independently.
-
-		The previous branch length can be restored using the 'RESET
-		MODE' ('RESET' button on the 'ARB_NT' window).
-
 
 EXAMPLE		None
 

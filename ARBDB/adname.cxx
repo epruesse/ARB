@@ -16,6 +16,8 @@
 #include <arb_progress.h>
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
+#include <arb_file.h>
+#include <arb_diff.h>
 
 #include <cctype>
 
@@ -283,3 +285,51 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
     return error;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+// #define TEST_AUTO_UPDATE // uncomment to auto-update test result db
+
+void TEST_SLOW_rename_session() {
+    const char *inputname    = "TEST_opti_ascii_in.arb";
+    const char *outputname   = "TEST_opti_ascii_renamed.arb";
+    const char *expectedname = "TEST_opti_ascii_renamed_expected.arb";
+
+    {
+        GB_shell  shell;
+        GBDATA   *gb_main;
+        TEST_EXPECT_RESULT__NOERROREXPORTED(gb_main = GB_open(inputname, "rw"));
+
+        for (int session = 1; session <= 2; ++session) {
+            TEST_ANNOTATE(GBS_global_string("session=%i", session));
+
+            TEST_EXPECT_NO_ERROR(GBT_begin_rename_session(gb_main, 0));
+            if (session == 2) { // session 1 tests renaming nothing
+                // only in config 'some':
+                TEST_EXPECT_NO_ERROR(GBT_rename_species("FrnPhilo", "olihPnrF", true));
+                TEST_EXPECT_NO_ERROR(GBT_rename_species("DsfDesul", "luseDfsD", true));
+                // also in config 'other':
+                TEST_EXPECT_NO_ERROR(GBT_rename_species("CalSacch", "hccaSlaC", true));
+                TEST_EXPECT_NO_ERROR(GBT_rename_species("LacReute", "etueRcaL", true));
+            }
+            TEST_EXPECT_NO_ERROR(GBT_commit_rename_session());
+        }
+
+        TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, outputname, "a"));
+        GB_close(gb_main);
+    }
+
+#if defined(TEST_AUTO_UPDATE)
+    TEST_COPY_FILE(outputname, expectedname);
+#endif
+    TEST_EXPECT_TEXTFILE_DIFFLINES(outputname, expectedname, 0);
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(outputname));
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

@@ -74,7 +74,7 @@ class hash : virtual Noncopyable {
     int          size;
     hash_entry **entries;
 
-    int index(const char *key) const;
+    int Index(const char *key) const;
 
     const hash_entry *find_entry(const char *key, int idx) const;
     hash_entry *find_entry(const char *key, int idx) {
@@ -85,7 +85,7 @@ public:
     hash(int size_);
     ~hash();
 
-    var_ref ref(const char *key)  { return var_ref(find_entry(key, index(key))); }
+    var_ref ref(const char *key)  { return var_ref(find_entry(key, Index(key))); }
     const var_ref ref(const char *key) const { return const_cast<hash*>(this)->ref(key); }
 
     const char *read(const char *key) const { return ref(key).read(); }

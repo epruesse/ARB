@@ -33,7 +33,7 @@
 
 const AW_bitset AW_SCREEN        = 1;
 const AW_bitset AW_CLICK         = 2;
-const AW_bitset AW_CLICK_DRAG    = 4;
+const AW_bitset AW_CLICK_DROP    = 4;
 const AW_bitset AW_SIZE          = 8;
 const AW_bitset AW_SIZE_UNSCALED = 16;  // for text and text-size dependant parts
 const AW_bitset AW_PRINTER       = 32;  // print/xfig-export
@@ -97,36 +97,6 @@ enum AW_cursor_type {
     AW_cursor_insert,
     AW_cursor_overwrite
 };
-
-
-// @@@ FIXME: elements of the following classes should go private!
-
-class AW_clicked_element {
-public:
-    AW_CL client_data1;
-    AW_CL client_data2;
-    bool  exists;                                   // true if a drawn element was clicked, else false
-};
-
-class AW_clicked_line : public AW_clicked_element {
-public:
-    AW_pos x0, y0, x1, y1;  // @@@ make this a Rectangle
-    AW_pos distance;        // min. distance to line
-    AW_pos nearest_rel_pos; // 0 = at x0/y0, 1 = at x1/y1
-};
-
-class AW_clicked_text : public AW_clicked_element {
-public:
-    AW::Rectangle textArea;     // world coordinates of text
-    AW_pos        alignment;
-    AW_pos        rotation;
-    AW_pos        distance;     // y-Distance to text, <0 -> above, >0 -> below
-    AW_pos        dist2center;  // Distance to center of text
-    int           cursor;       // which letter was selected, from 0 to strlen-1
-    bool          exactHit;     // true -> real click on text (not only near text)
-};
-
-bool AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2);
 
 // --------------------------------------------------
 // general note on world- vs. pixel-positions:(WORLD_vs_PIXEL)
@@ -579,7 +549,6 @@ public:
         clear_part(AW::Rectangle(AW::Position(x, y), AW::Vector(width, height)), filteri);
     }
 
-    virtual void    clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri);
     virtual void    move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);
     virtual void    fast();                                         // e.g. zoom linewidth off
     virtual void    slow();
@@ -655,9 +624,9 @@ class AW_size_tracker {
         high = std::max(high, val);
     }
 public:
-    AW_size_tracker() { clear(); }
+    AW_size_tracker() { restart(); }
 
-    void clear() { drawn = false; size.clear(); }
+    void restart() { drawn = false; size.clear(); }
     void track(const AW::Position& pos) {
         if (drawn) {
             extend(size.l, pos.xpos(), size.r);
@@ -696,7 +665,7 @@ class AW_device_size : public AW_simple_device {
 public:
     AW_device_size(AW_common *common_) : AW_simple_device(common_) {}
 
-    void clear();
+    void restart_tracking();
 
     AW_DEVICE_TYPE type();
 
@@ -713,36 +682,6 @@ public:
 
     AW_borders get_unscaleable_overlap() const;
 };
-
-class AW_device_click : public AW_simple_device {
-    AW_pos          mouse_x, mouse_y;
-    AW_pos          max_distance_line;
-    AW_pos          max_distance_text;
-
-    bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
-    bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
-    bool invisible_impl(const AW::Position& pos, AW_bitset filteri) { return generic_invisible(pos, filteri); }
-
-    void specific_reset() {}
-    
-public:
-    AW_clicked_line opt_line;
-    AW_clicked_text opt_text;
-
-    AW_device_click(AW_common *common_)
-        : AW_simple_device(common_)
-    {
-        init(0, 0, -1, -1, 0, AW_ALL_DEVICES);
-    }
-
-    AW_DEVICE_TYPE type();
-
-    void init(AW_pos mousex, AW_pos mousey, AW_pos max_distance_liniei, AW_pos max_distance_texti, AW_pos radi, AW_bitset filteri);
-
-    void get_clicked_line(class AW_clicked_line *ptr) const;
-    void get_clicked_text(class AW_clicked_text *ptr) const;
-};
-
 
 #else
 #error aw_device.hxx included twice

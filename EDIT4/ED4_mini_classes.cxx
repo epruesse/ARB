@@ -361,7 +361,7 @@ void ED4_bases_table::change_table_length(int new_length, int default_entry)
     }
 }
 
-#if defined(ASSERTION_USED)
+#if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
 
 int ED4_bases_table::empty() const
 {
@@ -1211,8 +1211,12 @@ void TEST_char_table() {
         // add seq multiple times
         for (int a = 0; a<add_count; ++a) {
             tab.add(seq, seqlen);
-            added_seqs[a]      = strdup(seq);
-            seq[rand()%seqlen] = alphabeth[rand()%alphabeth_size]; // modify 1 character in seq
+            added_seqs[a] = strdup(seq);
+
+            // modify 1 character in seq:
+            int sidx  = rand()%seqlen;
+            int aidx  = rand()%alphabeth_size;
+            seq[sidx] = alphabeth[aidx];
         }
 
         // build consensi (just check regression)

@@ -220,7 +220,7 @@ AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL cl_gb_main) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL) "seq_quality.hlp");
+    aws->callback(makeHelpCallback("seq_quality.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("base");

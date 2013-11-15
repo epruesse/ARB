@@ -75,7 +75,7 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
     }
 
     if (helpfile[0]=='/' && !rel_path) {
-        result = GBS_global_string("%s", helpfile);
+        result = GBS_static_string(helpfile);
     }
     else {
         if (!rel_path) rel_path = helpfile;
@@ -94,10 +94,10 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
                 aw_assert(devel_size <= 0 || gen_size <= 0); // only one of them shall exist
 
                 if (gen_size>0) {
-                    result = GBS_global_string("%s", gen_source); // edit generated doc
+                    result = GBS_static_string(gen_source); // edit generated doc
                 }
                 else {
-                    result = GBS_global_string("%s", devel_source); // use normal help source (may be non-existing)
+                    result = GBS_static_string(devel_source); // use normal help source (may be non-existing)
                 }
 
                 free(gen_source);
@@ -471,11 +471,10 @@ static void aw_help_search(AW_window *aww) {
     free(searchtext);
 }
 
-void AW_POPUP_HELP(AW_window *aw, AW_CL /* char */ helpcd) {
+void AW_help_popup(AW_window *aw, const char *help_file) {
     static AW_window_simple *aws = 0;
 
-    AW_root *awr       = aw->get_root();
-    char    *help_file = (char*)helpcd;
+    AW_root *awr = aw->get_root();
 
     if (!aws) {
         awr->awar_string(AWAR_HELPTEXT,   "", AW_ROOT_DEFAULT);

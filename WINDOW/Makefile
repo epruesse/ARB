@@ -16,10 +16,7 @@ $(LIB_SHARED): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	$(CPPLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
-
-.c.o:
-	$(ACCLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a *.so
@@ -59,6 +56,7 @@ AW_advice.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_advice.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_advice.o: $(ARBHOME)/INCLUDE/cb.h
+AW_advice.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_advice.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_advice.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_advice.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -86,6 +84,7 @@ AW_at.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_at.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_at.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_at.o: $(ARBHOME)/INCLUDE/cb.h
+AW_at.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_at.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_at.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_at.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -104,6 +103,8 @@ AW_awar.o: aw_root.hxx
 AW_awar.o: aw_scalar.hxx
 AW_awar.o: aw_select.hxx
 AW_awar.o: aw_window.hxx
+AW_awar.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AW_awar.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AW_awar.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_awar.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_awar.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -117,6 +118,7 @@ AW_awar.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_awar.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_awar.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_awar.o: $(ARBHOME)/INCLUDE/cb.h
+AW_awar.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_awar.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_awar.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_awar.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -145,6 +147,8 @@ AW_button.o: aw_window.hxx
 AW_button.o: aw_window_Xm.hxx
 AW_button.o: aw_xargs.hxx
 AW_button.o: aw_Xm.hxx
+AW_button.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AW_button.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AW_button.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_algo.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -158,6 +162,7 @@ AW_button.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_button.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_button.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_button.o: $(ARBHOME)/INCLUDE/cb.h
+AW_button.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_button.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_button.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_button.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -185,6 +190,7 @@ AW_cb_struct.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/cb.h
+AW_cb_struct.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -211,6 +217,7 @@ AW_clipable.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_clipable.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_clipable.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_clipable.o: $(ARBHOME)/INCLUDE/cb.h
+AW_clipable.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_clipable.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_clipable.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_clipable.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -238,6 +245,7 @@ AW_device.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_device.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_device.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_device.o: $(ARBHOME)/INCLUDE/cb.h
+AW_device.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_device.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_device.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_device.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -251,6 +259,7 @@ AW_device.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_device_click.o: aw_base.hxx
 AW_device_click.o: aw_common.hxx
 AW_device_click.o: aw_device.hxx
+AW_device_click.o: aw_device_click.hxx
 AW_device_click.o: aw_position.hxx
 AW_device_click.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_device_click.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -299,8 +308,10 @@ AW_edit.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_edit.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_edit.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_edit.o: $(ARBHOME)/INCLUDE/cb.h
+AW_edit.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_edit.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_edit.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_edit.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_edit.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_edit.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_edit.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -333,8 +344,10 @@ AW_file.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_file.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_file.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_file.o: $(ARBHOME)/INCLUDE/cb.h
+AW_file.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_file.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_file.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_file.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_file.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_file.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_file.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -368,6 +381,8 @@ AW_global_awars.o: aw_global_awars.hxx
 AW_global_awars.o: aw_keysym.hxx
 AW_global_awars.o: aw_root.hxx
 AW_global_awars.o: aw_window.hxx
+AW_global_awars.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AW_global_awars.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -379,6 +394,7 @@ AW_global_awars.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/cb.h
+AW_global_awars.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -410,6 +426,7 @@ AW_help.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_help.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_help.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_help.o: $(ARBHOME)/INCLUDE/cb.h
+AW_help.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_help.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_help.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_help.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -448,8 +465,10 @@ AW_modal.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_modal.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_modal.o: $(ARBHOME)/INCLUDE/cb.h
+AW_modal.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_modal.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_modal.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_modal.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_modal.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_modal.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_modal.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -461,7 +480,9 @@ AW_position.o: aw_base.hxx
 AW_position.o: aw_position.hxx
 AW_position.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_position.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_position.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_position.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_position.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_position.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_preset.o: aw_advice.hxx
@@ -490,8 +511,10 @@ AW_preset.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_preset.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_preset.o: $(ARBHOME)/INCLUDE/cb.h
+AW_preset.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_preset.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_preset.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_preset.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_preset.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_preset.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_preset.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -513,6 +536,7 @@ AW_print.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_print.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_print.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_print.o: $(ARBHOME)/INCLUDE/cb.h
+AW_print.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_print.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_print.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_print.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -547,6 +571,7 @@ AW_question.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_question.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_question.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_question.o: $(ARBHOME)/INCLUDE/cb.h
+AW_question.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_question.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_question.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_question.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -583,8 +608,10 @@ AW_root.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_root.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_root.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_root.o: $(ARBHOME)/INCLUDE/cb.h
+AW_root.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_root.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_root.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_root.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_root.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_root.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_root.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -618,6 +645,7 @@ AW_root_debug.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/cb.h
+AW_root_debug.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -638,6 +666,7 @@ aw_scalar.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/arbtools.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/attributes.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/cb.h
+aw_scalar.o: $(ARBHOME)/INCLUDE/cb_base.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/cbtypes.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/cxxforward.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -657,6 +686,8 @@ AW_select.o: aw_scalar.hxx
 AW_select.o: aw_select.hxx
 AW_select.o: aw_window.hxx
 AW_select.o: aw_window_Xm.hxx
+AW_select.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AW_select.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AW_select.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_select.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_select.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -672,6 +703,7 @@ AW_select.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_select.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_select.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_select.o: $(ARBHOME)/INCLUDE/cb.h
+AW_select.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_select.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_select.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_select.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -705,8 +737,10 @@ AW_status.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_status.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_status.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_status.o: $(ARBHOME)/INCLUDE/cb.h
+AW_status.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_status.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_status.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_status.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_status.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_status.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_status.o: $(ARBHOME)/INCLUDE/SigHandler.h
@@ -721,6 +755,7 @@ AW_window.o: aw_base.hxx
 AW_window.o: aw_common.hxx
 AW_window.o: aw_common_xm.hxx
 AW_window.o: aw_device.hxx
+AW_window.o: aw_device_click.hxx
 AW_window.o: aw_keysym.hxx
 AW_window.o: aw_msg.hxx
 AW_window.o: aw_nawar.hxx
@@ -750,6 +785,7 @@ AW_window.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_window.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_window.o: $(ARBHOME)/INCLUDE/cb.h
+AW_window.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_window.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_window.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_window.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -780,6 +816,7 @@ AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/cb.h
+AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -831,6 +868,7 @@ AW_xfont.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/cb.h
+AW_xfont.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -858,9 +896,11 @@ AW_xkey.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_xkey.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_xkey.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_Xm.o: aw_base.hxx

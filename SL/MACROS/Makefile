@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -54,8 +54,10 @@ dbserver.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/cb.h
+dbserver.o: $(ARBHOME)/INCLUDE/cb_base.h
 dbserver.o: $(ARBHOME)/INCLUDE/cbtypes.h
 dbserver.o: $(ARBHOME)/INCLUDE/cxxforward.h
+dbserver.o: $(ARBHOME)/INCLUDE/downcast.h
 dbserver.o: $(ARBHOME)/INCLUDE/dupstr.h
 dbserver.o: $(ARBHOME)/INCLUDE/gccver.h
 dbserver.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -65,6 +67,8 @@ dbserver.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 macro_gui.o: macros.hxx
 macro_gui.o: trackers.hxx
+macro_gui.o: $(ARBHOME)/INCLUDE/ad_cb.h
+macro_gui.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 macro_gui.o: $(ARBHOME)/INCLUDE/ad_prot.h
 macro_gui.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -87,8 +91,10 @@ macro_gui.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/cb.h
+macro_gui.o: $(ARBHOME)/INCLUDE/cb_base.h
 macro_gui.o: $(ARBHOME)/INCLUDE/cbtypes.h
 macro_gui.o: $(ARBHOME)/INCLUDE/cxxforward.h
+macro_gui.o: $(ARBHOME)/INCLUDE/downcast.h
 macro_gui.o: $(ARBHOME)/INCLUDE/dupstr.h
 macro_gui.o: $(ARBHOME)/INCLUDE/gccver.h
 macro_gui.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -102,6 +108,7 @@ recmac.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_assert.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_core.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_defs.h
+recmac.o: $(ARBHOME)/INCLUDE/arb_diff.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_error.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_file.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -116,8 +123,10 @@ recmac.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 recmac.o: $(ARBHOME)/INCLUDE/cb.h
+recmac.o: $(ARBHOME)/INCLUDE/cb_base.h
 recmac.o: $(ARBHOME)/INCLUDE/cbtypes.h
 recmac.o: $(ARBHOME)/INCLUDE/cxxforward.h
+recmac.o: $(ARBHOME)/INCLUDE/downcast.h
 recmac.o: $(ARBHOME)/INCLUDE/dupstr.h
 recmac.o: $(ARBHOME)/INCLUDE/FileContent.h
 recmac.o: $(ARBHOME)/INCLUDE/gccver.h
@@ -131,6 +140,8 @@ trackers.o: dbserver.hxx
 trackers.o: macros.hxx
 trackers.o: recmac.hxx
 trackers.o: trackers.hxx
+trackers.o: $(ARBHOME)/INCLUDE/ad_cb.h
+trackers.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 trackers.o: $(ARBHOME)/INCLUDE/ad_prot.h
 trackers.o: $(ARBHOME)/INCLUDE/ad_remote.h
 trackers.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -151,8 +162,10 @@ trackers.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 trackers.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 trackers.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 trackers.o: $(ARBHOME)/INCLUDE/cb.h
+trackers.o: $(ARBHOME)/INCLUDE/cb_base.h
 trackers.o: $(ARBHOME)/INCLUDE/cbtypes.h
 trackers.o: $(ARBHOME)/INCLUDE/cxxforward.h
+trackers.o: $(ARBHOME)/INCLUDE/downcast.h
 trackers.o: $(ARBHOME)/INCLUDE/dupstr.h
 trackers.o: $(ARBHOME)/INCLUDE/gccver.h
 trackers.o: $(ARBHOME)/INCLUDE/smartptr.h

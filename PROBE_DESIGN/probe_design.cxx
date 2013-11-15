@@ -12,6 +12,7 @@
 #include "probe_match_parser.hxx"
 
 #include <PT_com.h>
+#include <PT_server.h> // needed for DOMAIN_MIN_LENGTH
 #include <client.h>
 #include <servercntrl.h>
 #include <probe_design.hxx>
@@ -32,7 +33,9 @@
 #include <aw_question.hxx>
 #include <adGene.h>
 #include <arb_strbuf.h>
+#include <arb_strarray.h>
 #include <arb_file.h>
+#include <aw_edit.hxx>
 
 // general awars
 
@@ -59,7 +62,9 @@
 #define AWAR_PD_DESIGN_MAXBOND    "probe_design/MAXBOND"    // max hairpinbonds ?
 #define AWAR_PD_DESIGN_MINTARGETS "probe_design/MINTARGETS" // 'min. group hits (%)'
 
-#define AWAR_PD_DESIGN_PROBELENGTH  "probe_design/PROBELENGTH" // length of probe
+#define AWAR_PD_DESIGN_MIN_LENGTH "probe_design/PROBELENGTH"      // min. length of probe
+#define AWAR_PD_DESIGN_MAX_LENGTH "probe_design/PROBEMAXLENGTH"   // max. length of probe (or empty)
+
 #define AWAR_PD_DESIGN_MIN_TEMP     "probe_design/MINTEMP"     // temperature (min)
 #define AWAR_PD_DESIGN_MAX_TEMP     "probe_design/MAXTEMP"     // temperature (max)
 #define AWAR_PD_DESIGN_MIN_GC       "probe_design/MINGC"       // GC content (min)
@@ -192,7 +197,7 @@ static void popup_probe_design_result_window(AW_window *aww, AW_CL cl_gb_main) {
         PD.win->auto_space(10, 10);
 
         PD.win->at("help");
-        PD.win->callback(AW_POPUP_HELP, (AW_CL)"probedesignresult.hlp");
+        PD.win->callback(makeHelpCallback("probedesignresult.hlp"));
         PD.win->create_button("HELP", "HELP", "H");
 
         PD.win->at("result");
@@ -414,6 +419,21 @@ static int ecolipos2int(const char *awar_val) {
     return i>0 ? i : -1;
 }
 
+static char *readableUnknownNames(const ConstStrArray& unames) {
+    GBS_strstruct readable(100);
+
+    int ulast = unames.size()-1;
+    int umax  = ulast <= 10 ? ulast : 10;
+    for (int u = 0; u <= umax; ++u) {
+        if (u) readable.cat(u == ulast ? " and " : ", ");
+        readable.cat(unames[u]);
+    }
+
+    if (umax<ulast) readable.nprintf(30, " (and %i other)", ulast-umax);
+
+    return readable.release();
+}
+
 static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     AW_root     *root    = aww->get_root();
     T_PT_PDC     pdc;
@@ -429,7 +449,7 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     {
         const char *servername = PD_probe_pt_look_for_server(root, error);
         if (servername) {
-            PD.link = aisc_open(servername, PD.com, AISC_MAGIC_NUMBER);
+            PD.link = aisc_open(servername, PD.com, AISC_MAGIC_NUMBER, &error);
             if (!PD.link) error = "can't contact PT server";
             PD.locs.clear();
         }
@@ -463,7 +483,8 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
 
     if (aisc_create(PD.link, PT_LOCS, PD.locs,
                     LOCS_PROBE_DESIGN_CONFIG, PT_PDC, pdc,
-                    PDC_PROBELENGTH,  root->awar(AWAR_PD_DESIGN_PROBELENGTH)->read_int(),
+                    PDC_MIN_PROBELEN, root->awar(AWAR_PD_DESIGN_MIN_LENGTH)->read_int(),
+                    PDC_MAX_PROBELEN, root->awar(AWAR_PD_DESIGN_MAX_LENGTH)->read_int(),
                     PDC_MINTEMP,      (double)root->awar(AWAR_PD_DESIGN_MIN_TEMP)->read_float(),
                     PDC_MAXTEMP,      (double)root->awar(AWAR_PD_DESIGN_MAX_TEMP)->read_float(),
                     PDC_MINGC,        (double)root->awar(AWAR_PD_DESIGN_MIN_GC)->read_float()/100.0,
@@ -499,52 +520,61 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
         return;
     }
 
-    char *unames = unknown_names.data;
-    bool  abort  = false;
+    bool abort = false;
 
     if (unknown_names.size>1) {
+        ConstStrArray unames_array;
+        GBT_split_string(unames_array, unknown_names.data, "#", true);
+
+        char *readable_unames = readableUnknownNames(unames_array);
+
         if (design_gene_probes) { // updating sequences of missing genes is not possible with gene PT server
-            aw_message(GBS_global_string("Your PT server is not up to date or wrongly chosen.\n"
-                                         "The following genes are new to it: %s\n"
-                                         "You'll have to re-build the PT server.", unames));
+            aw_message(GBS_global_string("Your PT server is not up to date or wrongly chosen!\n"
+                                         "It knows nothing about the following genes:\n"
+                                         "\n"
+                                         "  %s\n"
+                                         "\n"
+                                         "You have to rebuild the PT server.",
+                                         readable_unames));
             abort = true;
         }
         else if (aw_question("ptserver_add_unknown",
-                             GBS_global_string("Your PT server is not up to date or wrongly chosen\n"
-                                               "  The following names are new to it:\n"
+                             GBS_global_string("Your PT server is not up to date or wrongly chosen!\n"
+                                               "It knows nothing about the following species:\n"
+                                               "\n"
                                                "  %s\n"
-                                               "  This version allows you to quickly add the unknown sequences\n"
-                                               "  to the pt_server\n",
-                                               unames),
-                             "Add and Continue,Abort"))
+                                               "\n"
+                                               "You may now temporarily add these sequences for probe design.\n",
+                                               readable_unames),
+                             "Add and continue,Abort"))
         {
             abort = true;
         }
         else {
             GB_transaction dummy(gb_main);
 
-            char *h;
             char *ali_name = GBT_get_default_alignment(gb_main);
 
-            for (; unames && !abort; unames = h) {
-                h = strchr(unames, '#');
-                if (h) *(h++) = 0;
-                GBDATA *gb_species = GBT_find_species(gb_main, unames);
+            for (size_t u = 0; !abort && u<unames_array.size(); ++u) {
+                const char *uname      = unames_array[u];
+                GBDATA     *gb_species = GBT_find_species(gb_main, uname);
                 if (!gb_species) {
-                    aw_message(GBS_global_string("Species '%s' not found", unames));
+                    aw_message(GBS_global_string("Species '%s' not found", uname));
                     abort = true;
                 }
                 else {
                     GBDATA *data = GBT_read_sequence(gb_species, ali_name);
                     if (!data) {
-                        aw_message(GB_export_errorf("Species '%s' has no sequence belonging to alignment '%s'", unames, ali_name));
+                        aw_message(GB_export_errorf("Species '%s' has no sequence belonging to alignment '%s'", uname, ali_name));
                         abort = true;
                     }
                     else {
                         T_PT_SEQUENCE pts;
-                        bytestring    bs_seq;
+
+                        bytestring bs_seq;
                         bs_seq.data = (char*)GB_read_char_pntr(data);
                         bs_seq.size = GB_read_string_count(data)+1;
+
                         aisc_create(PD.link, PT_PDC, pdc,
                                     PDC_SEQUENCE, PT_SEQUENCE, pts,
                                     SEQUENCE_SEQUENCE, &bs_seq,
@@ -552,7 +582,9 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
                     }
                 }
             }
+            free(ali_name);
         }
+        free(readable_unames);
         free(unknown_names.data);
     }
 
@@ -589,10 +621,10 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
         popup_probe_design_result_window(aww, cl_gb_main);
         PD.resultList->clear();
 
-        if (tprobe.exists()) {
+        {
             char *match_info = 0;
-            aisc_get(PD.link, PT_TPROBE, tprobe,
-                     TPROBE_INFO_HEADER,   &match_info,
+            aisc_get(PD.link, PT_PDC, pdc,
+                     PDC_INFO_HEADER, &match_info,
                      NULL);
 
             char *s = strtok(match_info, "\n");
@@ -602,65 +634,16 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
             }
             free(match_info);
         }
-        else {
-            PD.resultList->insert("There are no results", "");
-        }
-
-        // #define TEST_PD
-#if defined(TEST_PD)
-        int     my_TPROBE_KEY;
-        char   *my_TPROBE_KEYSTRING;
-        int     my_TPROBE_CNT;
-        int     my_TPROBE_PARENT;
-        int     my_TPROBE_LAST;
-        char   *my_TPROBE_IDENT;
-        char   *my_TPROBE_SEQUENCE;
-        double  my_TPROBE_QUALITY;
-        int     my_TPROBE_GROUPSIZE;
-        int     my_TPROBE_HAIRPIN;
-        int     my_TPROBE_WHAIRPIN;
-        double  my_TPROBE_TEMPERATURE;
-        int     my_TPROBE_MISHIT;
-        int     my_TPROBE_APOS;
-        int     my_TPROBE_ECOLI_POS;
-
-#endif // TEST_PD
 
         while (tprobe.exists()) {
             T_PT_TPROBE  tprobe_next;
             char        *match_info = 0;
 
             if (aisc_get(PD.link, PT_TPROBE, tprobe,
-                         TPROBE_NEXT,      tprobe_next.as_result_param(),
-                         TPROBE_INFO,      &match_info,
-
-#if defined(TEST_PD)
-                         TPROBE_KEY,       &my_TPROBE_KEY,
-                         TPROBE_KEYSTRING, &my_TPROBE_KEYSTRING,
-                         TPROBE_CNT,       &my_TPROBE_CNT,
-                         TPROBE_PARENT,    &my_TPROBE_PARENT,
-                         TPROBE_LAST,      &my_TPROBE_LAST,
-                         TPROBE_IDENT,     &my_TPROBE_IDENT,
-                         TPROBE_SEQUENCE,  &my_TPROBE_SEQUENCE,  // encoded probe sequence (2=A 3=C 4=G 5=U)
-                         TPROBE_QUALITY,   &my_TPROBE_QUALITY,   // quality of probe ?
-#endif // TEST_PD
-                         
+                         TPROBE_NEXT, tprobe_next.as_result_param(),
+                         TPROBE_INFO, &match_info,
                          NULL)) break;
 
-
-#if defined(TEST_PD)
-            if (aisc_get(PD.link, PT_TPROBE, tprobe,
-                         TPROBE_GROUPSIZE,   &my_TPROBE_GROUPSIZE,   // groesse der Gruppe,  die von Sonde getroffen wird?
-                         TPROBE_HAIRPIN,     &my_TPROBE_HAIRPIN,
-                         TPROBE_WHAIRPIN,    &my_TPROBE_WHAIRPIN,
-                         // TPROBE_PERC,     &my_TPROBE_PERC,
-                         TPROBE_TEMPERATURE, &my_TPROBE_TEMPERATURE,
-                         TPROBE_MISHIT,      &my_TPROBE_MISHIT,      // Treffer ausserhalb von Gruppe ?
-                         TPROBE_APOS,        &my_TPROBE_APOS,        // Alignment-Position
-                         TPROBE_ECOLI_POS,   &my_TPROBE_ECOLI_POS,
-                         NULL)) break;
-#endif // TEST_PD
-            
             tprobe.assign(tprobe_next);
 
             char *probe, *space;
@@ -676,7 +659,7 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
             free(probe);
             free(match_info);
         }
-        PD.resultList->insert_default("default", "");
+        PD.resultList->insert_default("", "");
         PD.resultList->update();
     }
 
@@ -719,8 +702,8 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                     progress->subtitle("Connecting PT-server");
                 }
 
-                PD.link = aisc_open(servername, PD.com, AISC_MAGIC_NUMBER);
-                if (!PD.link) error = "Cannot contact PT-server";
+                PD.link = aisc_open(servername, PD.com, AISC_MAGIC_NUMBER, &error);
+                if (!error && !PD.link) error = "Cannot contact PT-server";
                 PD.locs.clear();
             }
         }
@@ -777,7 +760,7 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
             }
             else {
                 if (locs_error) {
-                    if (*locs_error) error = GBS_global_string("%s", locs_error);
+                    if (*locs_error) error = GBS_static_string(locs_error);
                     free(locs_error);
                 }
                 else {
@@ -1001,7 +984,7 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                 free(gene_str);
             }
 
-            if (error) error = GBS_global_string("%s", error); // make static copy (error may be freed by delete parser)
+            if (error) error = GBS_static_string(error); // make static copy (error may be freed by delete parser)
             delete parser;
             free(result);
 
@@ -1121,6 +1104,19 @@ static void selected_match_changed_cb(AW_root *root) {
     free(selected_match);
 }
 
+static void probelength_changed_cb(AW_root *root, AW_CL min_changed) {
+    AW_awar *awar_minl = root->awar(AWAR_PD_DESIGN_MIN_LENGTH);
+    AW_awar *awar_maxl = root->awar(AWAR_PD_DESIGN_MAX_LENGTH);
+
+    int minl = awar_minl->read_int();
+    int maxl = awar_maxl->read_int();
+
+    if (minl>maxl) {
+        if (min_changed) awar_maxl->write_int(minl);
+        else             awar_minl->write_int(maxl);
+    }
+}
+
 void create_probe_design_variables(AW_root *root, AW_default props, AW_default db)
 {
     char buffer[256]; memset(buffer, 0, 256);
@@ -1153,11 +1149,14 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_int  (AWAR_PD_DESIGN_MAXBOND,    4,    props)->set_minmax(0, 20);
     root->awar_float(AWAR_PD_DESIGN_MINTARGETS, 50.0, props)->set_minmax(0, 100);
 
-    root->awar_int  (AWAR_PD_DESIGN_PROBELENGTH,  18,     props)->set_minmax(10, 100);
-    root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     30.0,   props)->set_minmax(0,  1000);
-    root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  props)->set_minmax(0,  1000);
-    root->awar_float(AWAR_PD_DESIGN_MIN_GC,       50.0,   props)->set_minmax(0,  100);
-    root->awar_float(AWAR_PD_DESIGN_MAX_GC,       100.0,  props)->set_minmax(0,  100);
+    AW_awar *awar_min_len = root->awar_int(AWAR_PD_DESIGN_MIN_LENGTH, 18, props);
+    awar_min_len->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(probelength_changed_cb, 1);
+    root->awar_int(AWAR_PD_DESIGN_MAX_LENGTH, awar_min_len->read_int(), props)->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(probelength_changed_cb, 0);
+
+    root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     30.0,   props)->set_minmax(0, 1000);
+    root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  props)->set_minmax(0, 1000);
+    root->awar_float(AWAR_PD_DESIGN_MIN_GC,       50.0,   props)->set_minmax(0, 100);
+    root->awar_float(AWAR_PD_DESIGN_MAX_GC,       100.0,  props)->set_minmax(0, 100);
 
     root->awar_string(AWAR_PD_DESIGN_MIN_ECOLIPOS, "", props);
     root->awar_string(AWAR_PD_DESIGN_MAX_ECOLIPOS, "", props);
@@ -1212,7 +1211,7 @@ static AW_window *create_probe_expert_window(AW_root *root, AW_CL for_design) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)(for_design ? "pd_spec_param.hlp" : "pm_spec_param.hlp")); // uses_hlp_res("pm_spec_param.hlp", "pd_spec_param.hlp"); see ../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
+    aws->callback(makeWindowCallback(AW_help_popup, for_design ? "pd_spec_param.hlp" : "pm_spec_param.hlp")); // uses_hlp_res("pm_spec_param.hlp", "pd_spec_param.hlp"); see ../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
     aws->at("help");
     aws->create_button("HELP", "HELP", "C");
 
@@ -1247,7 +1246,8 @@ static AWT_config_mapping_def probe_design_mapping_def[] = {
     { AWAR_PD_DESIGN_MISHIT,       "mishit" },
     { AWAR_PD_DESIGN_MAXBOND,      "maxbond" },
     { AWAR_PD_DESIGN_MINTARGETS,   "mintarget" },
-    { AWAR_PD_DESIGN_PROBELENGTH,  "probelen" },
+    { AWAR_PD_DESIGN_MIN_LENGTH,   "probelen" },
+    { AWAR_PD_DESIGN_MAX_LENGTH,   "probemaxlen" },
     { AWAR_PD_DESIGN_MIN_TEMP,     "mintemp" },
     { AWAR_PD_DESIGN_MAX_TEMP,     "maxtemp" },
     { AWAR_PD_DESIGN_MIN_GC,       "mingc" },
@@ -1296,7 +1296,7 @@ AW_window *create_probe_design_window(AW_root *root, AW_CL cl_gb_main) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"probedesign.hlp");
+    aws->callback(makeHelpCallback("probedesign.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->callback(probe_design_event, cl_gb_main);
@@ -1316,18 +1316,19 @@ AW_window *create_probe_design_window(AW_root *root, AW_CL cl_gb_main) {
     aws->label("PT-Server:");
     awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
 
-    aws->at("lenout"); aws->create_input_field(AWAR_PD_DESIGN_CLIPRESULT, 6);
-    aws->at("mishit"); aws->create_input_field(AWAR_PD_DESIGN_MISHIT,       6);
+    aws->at("lenout");   aws->create_input_field(AWAR_PD_DESIGN_CLIPRESULT, 6);
+    aws->at("mishit");   aws->create_input_field(AWAR_PD_DESIGN_MISHIT,     6);
     aws->sens_mask(AWM_EXP);
     aws->at("maxbonds"); aws->create_input_field(AWAR_PD_DESIGN_MAXBOND,    6);
     aws->sens_mask(AWM_ALL);
-    aws->at("minhits"); aws->create_input_field(AWAR_PD_DESIGN_MINTARGETS, 6);
+    aws->at("minhits");  aws->create_input_field(AWAR_PD_DESIGN_MINTARGETS, 6);
 
-    aws->at("minlen"); aws->create_input_field(AWAR_PD_DESIGN_PROBELENGTH,  5);
-    aws->at("mint"); aws->create_input_field(AWAR_PD_DESIGN_MIN_TEMP,       5);
-    aws->at("maxt"); aws->create_input_field(AWAR_PD_DESIGN_MAX_TEMP,       5);
-    aws->at("mingc"); aws->create_input_field(AWAR_PD_DESIGN_MIN_GC,        5);
-    aws->at("maxgc"); aws->create_input_field(AWAR_PD_DESIGN_MAX_GC,        5);
+    aws->at("minlen"); aws->create_input_field(AWAR_PD_DESIGN_MIN_LENGTH,   5);
+    aws->at("maxlen"); aws->create_input_field(AWAR_PD_DESIGN_MAX_LENGTH,   5);
+    aws->at("mint");   aws->create_input_field(AWAR_PD_DESIGN_MIN_TEMP,     5);
+    aws->at("maxt");   aws->create_input_field(AWAR_PD_DESIGN_MAX_TEMP,     5);
+    aws->at("mingc");  aws->create_input_field(AWAR_PD_DESIGN_MIN_GC,       5);
+    aws->at("maxgc");  aws->create_input_field(AWAR_PD_DESIGN_MAX_GC,       5);
     aws->at("minpos"); aws->create_input_field(AWAR_PD_DESIGN_MIN_ECOLIPOS, 5);
     aws->at("maxpos"); aws->create_input_field(AWAR_PD_DESIGN_MAX_ECOLIPOS, 5);
 
@@ -1524,7 +1525,7 @@ static AW_window *create_IUPAC_resolve_window(AW_root *root, AW_CL cl_gb_main) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"pd_match_iupac.hlp");
+    aws->callback(makeHelpCallback("pd_match_iupac.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "C");
 
@@ -1574,7 +1575,7 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"probematch.hlp");
+        aws->callback(makeHelpCallback("probematch.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -1776,8 +1777,7 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
 
         progress.subtitle("Exporting the database");
         {
-            const char *mode = "bfm"; // save PT-server database with Fastload file
-
+            const char *mode = GB_supports_mapfile() ? "mbf" : "bf"; // save PT-server database with Fastload file (if supported)
             if (create_gene_server) {
                 char *temp_server_name = GBS_string_eval(file, "*.arb=*_temp.arb", 0);
                 error = GB_save_as(gb_main, temp_server_name, mode);
@@ -1820,6 +1820,10 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
     if (error) aw_message(error);
 }
 
+static void pd_view_pt_log(AW_window *) {
+    AW_edit(GBS_ptserver_logname());
+}
+
 AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
     GBDATA           *gb_main = (GBDATA*)cl_gb_main;
     AW_window_simple *aws     = new AW_window_simple;
@@ -1835,7 +1839,7 @@ AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
     aws->load_xfig("pd_admin.fig");
 
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"probeadmin.hlp");
+    aws->callback(makeHelpCallback("probeadmin.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -1867,6 +1871,10 @@ AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
     aws->at("edit");
     aws->callback(awt_edit_arbtcpdat_cb, (AW_CL)gb_main);
     aws->create_button("CREATE_TEMPLATE", "Configure");
+
+    aws->at("log");
+    aws->callback(pd_view_pt_log);
+    aws->create_button("EDIT_LOG", "View logfile");
 
     aws->at("export");
     aws->callback(pd_export_pt_server, (AW_CL)gb_main);
@@ -2067,7 +2075,7 @@ static void create_probe_group_groups_window(AW_window *aww, AW_CL) {
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"");
+        aws->callback(makeHelpCallback(""));
         aws->create_button("HELP", "HELP");
 
         create_probe_group_result_sel_box(aw_root, aws, gb_main);

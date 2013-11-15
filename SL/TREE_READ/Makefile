@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .c .cxx .depend
 
@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -40,8 +40,11 @@ TreeRead.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeRead.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_core.h
+TreeRead.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_error.h
+TreeRead.o: $(ARBHOME)/INCLUDE/arb_file.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_msg.h
+TreeRead.o: $(ARBHOME)/INCLUDE/arb_msg_fwd.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_string.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -50,9 +53,11 @@ TreeRead.o: $(ARBHOME)/INCLUDE/arbdbt.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeRead.o: $(ARBHOME)/INCLUDE/attributes.h
 TreeRead.o: $(ARBHOME)/INCLUDE/cxxforward.h
+TreeRead.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeRead.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeRead.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeRead.o: $(ARBHOME)/INCLUDE/smartptr.h
+TreeRead.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeRead.o: $(ARBHOME)/INCLUDE/test_global.h
 TreeRead.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -70,7 +75,9 @@ TreeTools.o: $(ARBHOME)/INCLUDE/arbdbt.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeTools.o: $(ARBHOME)/INCLUDE/attributes.h
 TreeTools.o: $(ARBHOME)/INCLUDE/cxxforward.h
+TreeTools.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeTools.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeTools.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeTools.o: $(ARBHOME)/INCLUDE/smartptr.h
+TreeTools.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeTools.o: $(ARBHOME)/INCLUDE/test_global.h

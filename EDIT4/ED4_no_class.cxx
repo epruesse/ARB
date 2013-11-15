@@ -1382,7 +1382,7 @@ AW_window *ED4_create_level_1_options_window(AW_root *root) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"e4_options.hlp");
+    aws->callback(makeHelpCallback("e4_options.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -1475,7 +1475,7 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"e4_consensus.hlp");
+        aws->callback(makeHelpCallback("e4_consensus.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -1580,7 +1580,7 @@ AW_window *ED4_save_configuration_as_open_window(AW_root *awr) {
     aws->create_button("CLOSE", "CLOSE");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"configuration.hlp");
+    aws->callback(makeHelpCallback("configuration.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->at("save");

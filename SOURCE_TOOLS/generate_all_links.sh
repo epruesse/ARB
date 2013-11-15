@@ -151,23 +151,28 @@ symlink_file ../TEMPLATES/arb_backtrace.h INCLUDE/arb_backtrace.h &&
 symlink_file ../TEMPLATES/arb_debug.h INCLUDE/arb_debug.h &&
 symlink_file ../TEMPLATES/arb_defs.h INCLUDE/arb_defs.h &&
 symlink_file ../TEMPLATES/arb_early_check.h INCLUDE/arb_early_check.h &&
-symlink_file ../TEMPLATES/arb_global_defs.h INCLUDE/arb_global_defs.h &&
 symlink_file ../TEMPLATES/arb_error.h INCLUDE/arb_error.h &&
+symlink_file ../TEMPLATES/arb_global_defs.h INCLUDE/arb_global_defs.h &&
 symlink_file ../TEMPLATES/arb_simple_assert.h INCLUDE/arb_simple_assert.h &&
-symlink_file ../TEMPLATES/arb_str.h INCLUDE/arb_str.h &&
 symlink_file ../TEMPLATES/arb_sleep.h INCLUDE/arb_sleep.h &&
+symlink_file ../TEMPLATES/arb_stdstr.h INCLUDE/arb_stdstr.h &&
+symlink_file ../TEMPLATES/arb_str.h INCLUDE/arb_str.h &&
 symlink_file ../TEMPLATES/arb_unit_test.h INCLUDE/arb_unit_test.h &&
+symlink_file ../TEMPLATES/arb_unordered_map.h INCLUDE/arb_unordered_map.h &&
 symlink_file ../TEMPLATES/arb_version.h INCLUDE/arb_version.h &&
 symlink_file ../TEMPLATES/arbtools.h INCLUDE/arbtools.h &&
 symlink_file ../TEMPLATES/attributes.h INCLUDE/attributes.h &&
 symlink_file ../TEMPLATES/bytestring.h INCLUDE/bytestring.h &&
+symlink_file ../TEMPLATES/cache.h INCLUDE/cache.h &&
 symlink_file ../TEMPLATES/ChecksumCollector.h INCLUDE/ChecksumCollector.h &&
-symlink_file ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
 symlink_file ../TEMPLATES/command_output.h INCLUDE/command_output.h &&
+symlink_file ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
 symlink_file ../TEMPLATES/cxxforward.h INCLUDE/cxxforward.h &&
 symlink_file ../TEMPLATES/downcast.h INCLUDE/downcast.h &&
 symlink_file ../TEMPLATES/dupstr.h INCLUDE/dupstr.h &&
 symlink_file ../TEMPLATES/gccver.h INCLUDE/gccver.h &&
+symlink_file ../TEMPLATES/malloc.h INCLUDE/malloc.h &&
+symlink_file ../TEMPLATES/mode_text.h INCLUDE/mode_text.h &&
 symlink_file ../TEMPLATES/output.h INCLUDE/output.h &&
 symlink_file ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
 symlink_file ../TEMPLATES/SigHandler.h INCLUDE/SigHandler.h &&
@@ -198,13 +203,15 @@ symlink_file ../AISC_COM/C/client_types.h INCLUDE/client_types.h &&
 symlink_file ../AISC_COM/C/client_privat.h INCLUDE/client_privat.h &&
 symlink_file ../AISC_COM/C/server.h INCLUDE/server.h &&
 symlink_file ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h &&
-symlink_file ../ARBDB/adGene.h INCLUDE/adGene.h &&
+symlink_file ../ARBDB/ad_cb.h INCLUDE/ad_cb.h &&
+symlink_file ../ARBDB/ad_cb_prot.h INCLUDE/ad_cb_prot.h &&
 symlink_file ../ARBDB/ad_config.h INCLUDE/ad_config.h &&
+symlink_file ../ARBDB/ad_p_prot.h INCLUDE/ad_p_prot.h &&
 symlink_file ../ARBDB/ad_prot.h INCLUDE/ad_prot.h &&
 symlink_file ../ARBDB/ad_remote.h INCLUDE/ad_remote.h &&
-symlink_file ../ARBDB/adperl.h INCLUDE/adperl.h &&
-symlink_file ../ARBDB/ad_p_prot.h INCLUDE/ad_p_prot.h &&
 symlink_file ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h &&
+symlink_file ../ARBDB/adGene.h INCLUDE/adGene.h &&
+symlink_file ../ARBDB/adperl.h INCLUDE/adperl.h &&
 symlink_file ../ARBDB/arbdb.h INCLUDE/arbdb.h &&
 symlink_file ../ARBDB/arbdb_base.h INCLUDE/arbdb_base.h &&
 symlink_file ../ARBDB/arbdbt.h INCLUDE/arbdbt.h &&
@@ -232,17 +239,20 @@ symlink_file ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx &&
 symlink_file ../CORE/arb_assert.h INCLUDE/arb_assert.h &&
 symlink_file ../CORE/arb_core.h INCLUDE/arb_core.h &&
 symlink_file ../CORE/arb_cs.h INCLUDE/arb_cs.h &&
+symlink_file ../CORE/arb_diff.h INCLUDE/arb_diff.h &&
 symlink_file ../CORE/arb_file.h INCLUDE/arb_file.h &&
+symlink_file ../CORE/arb_handlers.h INCLUDE/arb_handlers.h &&
+symlink_file ../CORE/arb_match.h INCLUDE/arb_match.h &&
+symlink_file ../CORE/arb_misc.h INCLUDE/arb_misc.h &&
 symlink_file ../CORE/arb_msg.h INCLUDE/arb_msg.h &&
 symlink_file ../CORE/arb_msg_fwd.h INCLUDE/arb_msg_fwd.h &&
-symlink_file ../CORE/arb_misc.h INCLUDE/arb_misc.h &&
+symlink_file ../CORE/arb_pathlen.h INCLUDE/arb_pathlen.h &&
+symlink_file ../CORE/arb_progress.h INCLUDE/arb_progress.h &&
 symlink_file ../CORE/arb_signal.h INCLUDE/arb_signal.h &&
 symlink_file ../CORE/arb_sort.h INCLUDE/arb_sort.h &&
+symlink_file ../CORE/arb_strarray.h INCLUDE/arb_strarray.h &&
 symlink_file ../CORE/arb_strbuf.h INCLUDE/arb_strbuf.h &&
 symlink_file ../CORE/arb_string.h INCLUDE/arb_string.h &&
-symlink_file ../CORE/arb_strarray.h INCLUDE/arb_strarray.h &&
-symlink_file ../CORE/arb_handlers.h INCLUDE/arb_handlers.h &&
-symlink_file ../CORE/arb_progress.h INCLUDE/arb_progress.h &&
 symlink_file ../CORE/FileBuffer.h INCLUDE/FileBuffer.h &&
 symlink_file ../CORE/FileContent.h INCLUDE/FileContent.h &&
 symlink_file ../CORE/pos_range.h INCLUDE/pos_range.h &&
@@ -268,7 +278,9 @@ symlink_file ../SL/ARB_TREE/ARB_Tree.hxx INCLUDE/ARB_Tree.hxx &&
 symlink_file ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx &&
 symlink_file ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&
 symlink_file ../SL/CB/cb.h INCLUDE/cb.h &&
+symlink_file ../SL/CB/cb_base.h INCLUDE/cb_base.h &&
 symlink_file ../SL/CB/cbtypes.h INCLUDE/cbtypes.h &&
+symlink_file ../SL/CB/cb_base.h INCLUDE/cb_base.h &&
 symlink_file ../SL/CB/rootAsWin.h INCLUDE/rootAsWin.h &&
 symlink_file ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
 symlink_file ../SL/DB_QUERY/db_query.h INCLUDE/db_query.h &&
@@ -318,6 +330,7 @@ symlink_file ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&
 symlink_file ../WINDOW/aw_base.hxx INCLUDE/aw_base.hxx &&
 symlink_file ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
 symlink_file ../WINDOW/aw_device.hxx INCLUDE/aw_device.hxx &&
+symlink_file ../WINDOW/aw_device_click.hxx INCLUDE/aw_device_click.hxx &&
 symlink_file ../WINDOW/aw_edit.hxx INCLUDE/aw_edit.hxx &&
 symlink_file ../WINDOW/aw_file.hxx INCLUDE/aw_file.hxx &&
 symlink_file ../WINDOW/aw_font_group.hxx INCLUDE/aw_font_group.hxx &&
@@ -340,8 +353,6 @@ symlink_file ../../GL/glpng/glpng.h INCLUDE/GL/glpng.h &&
 symlink_file ../../GL/glAW/aw_window_ogl.hxx INCLUDE/GL/aw_window_ogl.hxx &&
 
 # help files (make sure the file is present in user distribution!)
-
 symlink_maybe_no_target ../help/input_mask_format.hlp     lib/inputMasks/format.readme &&
-symlink_dir ../../GDEHELP lib/help/GDEHELP &&
 
 echo "generate_all_links.sh done."

@@ -9,20 +9,43 @@
 // =============================================================== //
 
 
-#include "probe.h"
+#include "pt_split.h"
 #include <PT_server_prototypes.h>
+
 #include <struct_man.h>
 #include "probe_tree.h"
+#include "PT_prefixIter.h"
+
 #include <arb_str.h>
 #include <arb_defs.h>
 #include <arb_sort.h>
-#include "pt_prototypes.h"
+
+#include <arb_strbuf.h>
+#include <arb_strarray.h>
+
 #include <climits>
+#include <algorithm>
+#include <map>
+#include <arb_progress.h>
+
+#if defined(DEBUG)
+// # define DUMP_DESIGNED_PROBES
+// # define DUMP_OLIGO_MATCHING
+#endif
+
+#define MIN_DESIGN_PROBE_LENGTH DOMAIN_MIN_LENGTH
+int Complement::calc_complement(int base) {
+    switch (base) {
+        case PT_A: return PT_T;
+        case PT_C: return PT_G;
+        case PT_G: return PT_C;
+        case PT_T: return PT_A;
+        default:   return base;
+    }
+}
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_tprobes *tprobe)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(tprobe)); }
-inline void aisc_link(dll_public *dll, PT_probeparts *parts) { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(parts)); }
-inline void aisc_link(dll_public *dll, PT_probematch *match) { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(match)); }
 
 extern "C" {
     int pt_init_bond_matrix(PT_local *THIS)
@@ -48,66 +71,262 @@ extern "C" {
     }
 }
 
-static struct ptnd_loop_com {
-    PT_pdc        *pdc;
-    PT_local      *locs;
-    PT_probeparts *parts;
-    int            mishits;
-    double         sum_bonds; // sum of bond of longest non mismatch string
-    double         dt;     // sum of mismatches
-} ptnd;
+struct dt_bondssum {
+    double dt;        // sum of mismatches
+    double sum_bonds; // sum of bonds of longest non mismatch string
 
+    dt_bondssum(double dt_, double sum_bonds_) : dt(dt_), sum_bonds(sum_bonds_) {}
+};
 
-static int ptnd_compare_quality(const void *PT_tprobes_ptr1, const void *PT_tprobes_ptr2, void *) {
-    const PT_tprobes *tprobe1 = (const PT_tprobes*)PT_tprobes_ptr1;
-    const PT_tprobes *tprobe2 = (const PT_tprobes*)PT_tprobes_ptr2;
+class Oligo {
+    const char *data;
+    int         length;
 
-    // sort best quality first
-    if (tprobe1->quality < tprobe2->quality) return 1;
-    if (tprobe1->quality > tprobe2->quality) return -1;
-    return 0;
-}
+public:
+    Oligo() : data(NULL), length(0) {} // empty oligo
+    Oligo(const char *data_, int length_) : data(data_), length(length_) {}
+    Oligo(const Oligo& other) : data(other.data), length(other.length) {}
+    DECLARE_ASSIGNMENT_OPERATOR(Oligo);
 
-static int ptnd_compare_sequence(const void *PT_tprobes_ptr1, const void *PT_tprobes_ptr2, void*) {
-    const PT_tprobes *tprobe1 = (const PT_tprobes*)PT_tprobes_ptr1;
-    const PT_tprobes *tprobe2 = (const PT_tprobes*)PT_tprobes_ptr2;
+    char at(int offset) const {
+        pt_assert(offset >= 0 && offset<length);
+        return data[offset];
+    }
+    int size() const { return length; }
 
-    return strcmp(tprobe1->sequence, tprobe2->sequence);
-}
+    Oligo suffix(int skip) const {
+        return skip <= length ? Oligo(data+skip, length-skip) : Oligo();
+    }
 
-static void ptnd_sort_probes_by(PT_pdc *pdc, int mode)  // mode 0 quality, mode 1 sequence
-{
-    PT_tprobes **my_list;
-    int          list_len;
-    PT_tprobes  *tprobe;
-    int          i;
+#if defined(DUMP_OLIGO_MATCHING)
+    void dump(FILE *out) const {
+        char *readable = readable_probe(data, length, 'T');
+        fputs(readable, out);
+        free(readable);
+    }
+#endif
+};
 
-    if (!pdc->tprobes) return;
-    list_len = pdc->tprobes->get_count();
-    if (list_len <= 1) return;
-    my_list = (PT_tprobes **)calloc(sizeof(void *), list_len);
-    for (i=0, tprobe = pdc->tprobes;
-         tprobe;
-         i++, tprobe=tprobe->next)
+class MatchingOligo {
+    Oligo oligo;
+    int   matched;       // how many positions matched
+    int   lastSplit;
+
+    bool   domain_found;
+    double maxDomainBondSum;
+
+    dt_bondssum linkage;
+
+    MatchingOligo(const MatchingOligo& other, double strength) // expand by 1 (with a split)
+        : oligo(other.oligo),
+          matched(other.matched+1),
+          domain_found(other.domain_found),
+          maxDomainBondSum(other.maxDomainBondSum),
+          linkage(other.linkage)
     {
-        my_list[i] = tprobe;
-    }
-    switch (mode) {
-        case 0:
-            GB_sort((void **)my_list, 0, list_len, ptnd_compare_quality, 0);
-            break;
-        case 1:
-            GB_sort((void **)my_list, 0, list_len, ptnd_compare_sequence, 0);
-            break;
+        pt_assert(other.dangling());
+        pt_assert(strength<0.0);
+
+        lastSplit          = matched-1;
+        linkage.dt        -= strength;
+        linkage.sum_bonds  = 0.0;
+
+        pt_assert(domainLength() == 0);
     }
 
-    for (i=0; i<list_len; i++) {
-        aisc_unlink(reinterpret_cast<dllheader_ext*>(my_list[i]));
-        aisc_link(&pdc->ptprobes, my_list[i]);
+    MatchingOligo(const MatchingOligo& other, double strength, double max_bond) // expand by 1 (binding)
+        : oligo(other.oligo),
+          matched(other.matched+1),
+          domain_found(other.domain_found),
+          maxDomainBondSum(other.maxDomainBondSum),
+          linkage(other.linkage)
+    {
+        pt_assert(other.dangling());
+        pt_assert(strength >= 0.0);
+
+        lastSplit          = other.lastSplit;
+        linkage.dt        += strength;
+        linkage.sum_bonds += max_bond-strength;
+
+        pt_assert(linkage.sum_bonds >= 0.0);
+
+        if (domainLength() >= DOMAIN_MIN_LENGTH) {
+            domain_found     = true;
+            maxDomainBondSum = std::max(maxDomainBondSum, linkage.sum_bonds);
+        }
     }
-    free(my_list);
+
+    void accept_rest_dangling() {
+        pt_assert(dangling());
+        lastSplit = matched+1;
+        matched   = oligo.size();
+        pt_assert(!dangling());
+    }
+
+    void optimal_bind_rest(const Splits& splits, const double *max_bond) { // @@@ slow -> optimize
+        pt_assert(dangling());
+        while (dangling()) {
+            char   pc       = dangling_char();
+            double strength = splits.check(pc, pc);
+            double bondmax  = max_bond[safeCharIndex(pc)];
+
+            pt_assert(strength >= 0.0);
+
+            matched++;
+            linkage.dt        += strength;
+            linkage.sum_bonds += bondmax-strength;
+        }
+        if (domainLength() >= DOMAIN_MIN_LENGTH) {
+            domain_found     = true;
+            maxDomainBondSum = std::max(maxDomainBondSum, linkage.sum_bonds);
+        }
+        pt_assert(!dangling());
+    }
+
+public:
+    explicit MatchingOligo(const Oligo& oligo_)
+        : oligo(oligo_),
+          matched(0),
+          lastSplit(-1),
+          domain_found(false),
+          maxDomainBondSum(-1),
+          linkage(0.0, 0.0)
+    {}
+
+    int dangling() const {
+        int dangle_count = oligo.size()-matched;
+        pt_assert(dangle_count >= 0);
+        return dangle_count;
+    }
+
+    char dangling_char() const {
+        pt_assert(dangling()>0);
+        return oligo.at(matched);
+    }
+
+    MatchingOligo bind_against(char c, const Splits& splits, const double *max_bond) const {
+        pt_assert(c != PT_QU);
+
+        char   pc       = dangling_char();
+        double strength = splits.check(pc, c);
+
+        return strength<0.0
+            ? MatchingOligo(*this, strength)
+            : MatchingOligo(*this, strength, max_bond[safeCharIndex(pc)]);
+    }
+
+    MatchingOligo dont_bind_rest() const {
+        MatchingOligo accepted(*this);
+        accepted.accept_rest_dangling();
+        return accepted;
+    }
+
+    int domainLength() const { return matched-(lastSplit+1); }
+
+    bool domainSeen() const { return domain_found; }
+    bool domainPossible() const {
+        pt_assert(!domainSeen()); // you are testing w/o need
+        return (domainLength()+dangling()) >= DOMAIN_MIN_LENGTH;
+    }
+
+    bool completely_bound() const { return !dangling(); }
+
+    int calc_centigrade_pos(const PT_tprobes *tprobe, const PT_pdc *const pdc) const {
+        pt_assert(completely_bound());
+        pt_assert(domainSeen());
+
+        double ndt = (linkage.dt * pdc->dt + (tprobe->sum_bonds - maxDomainBondSum)*pdc->dte) / tprobe->seq_len;
+        int    pos = (int)ndt;
+
+        pt_assert(pos >= 0);
+        return pos;
+    }
+
+    bool centigrade_pos_out_of_reach(const PT_tprobes *tprobe, const PT_pdc *const pdc, const Splits& splits, const double *max_bond) const {
+        MatchingOligo optimum(*this);
+        optimum.optimal_bind_rest(splits, max_bond);
+
+        if (!optimum.domainSeen()) return true; // no domain -> no centigrade position
+
+        int centpos = optimum.calc_centigrade_pos(tprobe, pdc);
+        return centpos >= PERC_SIZE;
+    }
+
+    const Oligo& get_oligo() const { return oligo; }
+
+#if defined(DUMP_OLIGO_MATCHING)
+    void dump(FILE *out) const {
+        fputs("oligo='", out);
+        oligo.dump(out);
+
+        const char *domainState                = "impossible";
+        if (domainSeen()) domainState          = "seen";
+        else if (domainPossible()) domainState = "possible";
+
+        fprintf(out, "' matched=%2i lastSplit=%2i domainLength()=%2i dangling()=%2i domainState=%s maxDomainBondSum=%f dt=%f sum_bonds=%f\n",
+                matched, lastSplit, domainLength(), dangling(), domainState, maxDomainBondSum, linkage.dt, linkage.sum_bonds);
+    }
+#endif
+};
+
+static int ptnd_compare_quality(const void *vtp1, const void *vtp2, void *) {
+    const PT_tprobes *tp1 = (const PT_tprobes*)vtp1;
+    const PT_tprobes *tp2 = (const PT_tprobes*)vtp2;
+
+    int cmp = double_cmp(tp2->quality, tp1->quality);         // high quality first
+    if (!cmp) {
+        cmp           = tp1->apos - tp2->apos;                // low abs.pos first
+        if (!cmp) cmp = strcmp(tp1->sequence, tp2->sequence); // alphabetically by probe
+    }
+    return cmp;
 }
-static void ptnd_probe_delete_all_but(PT_pdc *pdc, int count)
+
+static int ptnd_compare_sequence(const void *vtp1, const void *vtp2, void*) {
+    const PT_tprobes *tp1 = (const PT_tprobes*)vtp1;
+    const PT_tprobes *tp2 = (const PT_tprobes*)vtp2;
+
+    return strcmp(tp1->sequence, tp2->sequence);
+}
+
+enum ProbeSortMode {
+    PSM_QUALITY,
+    PSM_SEQUENCE,
+};
+
+static void sort_tprobes_by(PT_pdc *pdc, ProbeSortMode mode) {
+    if (pdc->tprobes) {
+        int list_len = pdc->tprobes->get_count();
+        if (list_len > 1) {
+            PT_tprobes **my_list = (PT_tprobes **)calloc(sizeof(void *), list_len);
+            {
+                PT_tprobes *tprobe;
+                int         i;
+
+                for (i = 0, tprobe = pdc->tprobes; tprobe; i++, tprobe = tprobe->next) {
+                    my_list[i] = tprobe;
+                }
+            }
+
+            switch (mode) {
+                case PSM_QUALITY:
+                    GB_sort((void **)my_list, 0, list_len, ptnd_compare_quality, 0);
+                    break;
+
+                case PSM_SEQUENCE:
+                    GB_sort((void **)my_list, 0, list_len, ptnd_compare_sequence, 0);
+                    break;
+            }
+
+            for (int i=0; i<list_len; i++) {
+                aisc_unlink(reinterpret_cast<dllheader_ext*>(my_list[i]));
+                aisc_link(&pdc->ptprobes, my_list[i]);
+            }
+
+            free(my_list);
+        }
+    }
+}
+static void clip_tprobes(PT_pdc *pdc, int count)
 {
     PT_tprobes *tprobe;
     int         i;
@@ -144,95 +363,35 @@ static double pt_get_temperature(const char *probe)
     return t;
 }
 
-static void ptnd_calc_quality(PT_pdc *pdc) {
-    PT_tprobes *tprobe;
-    int         i;
-
-    for (tprobe = pdc->tprobes;
-         tprobe;
-         tprobe = tprobe->next)
-    {
-        for (i=0; i< PERC_SIZE-1; i++) {
-            if (tprobe->perc[i] > tprobe->mishit) break;
+static void tprobes_sumup_perc_and_calc_quality(PT_pdc *pdc) {
+    for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
+        int sum = 0;
+        int i;
+        for (i=0; i<PERC_SIZE; ++i) {
+            sum             += tprobe->perc[i];
+            tprobe->perc[i]  = sum;
         }
+
+        // pt_assert(tprobe->perc[0] == tprobe->mishits); // OutgroupMatcher and count_mishits_for_matched do not agree!
+        // @@@ found one case where it differs by 1 (6176 in perc, 6177 in mishits). Can this be caused somehow by N or IUPAC in seq?
+
+        int limit = 2*tprobe->mishits;
+        for (i=0; i<(PERC_SIZE-1); ++i) {
+            if (tprobe->perc[i]>limit) break;
+        }
+
         tprobe->quality = ((double)tprobe->groupsize * i) + 1000.0/(1000.0 + tprobe->perc[i]);
     }
 }
 
-static double ptnd_check_max_bond(PT_local *locs, char base) {
+static double ptnd_check_max_bond(const PT_local *locs, char base) {
     //! check the bond val for a probe
 
-    int complement = PT_complement(base);
+    int complement = get_complement(base);
     return locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
 }
 
-double ptnd_check_split(PT_local *locs, char *probe, int pos, char ref) {
-    int    base       = probe[pos];
-    int    complement = PT_complement(base);
-    double max_bind   = locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
-    double new_bind   = locs->bond[(complement-(int)PT_A)*4 + ref-(int)PT_A].val;
-
-    // if (new_bind < locs->pdc->split)
-    if (new_bind < locs->split)
-        return new_bind-max_bind; // negative values indicate split
-    // this mismatch splits the probe in several domains
-    return (max_bind - new_bind);
-}
-
-
-// ----------------------------------
-//      primary search for probes
-
-struct ptnd_chain_count_mishits {
-    int operator()(const DataLoc& probeLoc) {
-        // count all mishits for a probe
-
-        char *probe = psg.probe;
-        psg.abs_pos.announce(probeLoc.apos);
-
-        const probe_input_data& pid = psg.data[probeLoc.name];
-
-        if (pid.outside_group()) {
-            if (probe) {
-                int rpos = probeLoc.rpos + psg.height;
-                while (*probe && pid.get_data()[rpos]) {
-                    if (pid.get_data()[rpos] != *(probe)) return 0;
-                    probe++;
-                    rpos++;
-                }
-            }
-            ptnd.mishits++;
-        }
-        return 0;
-    }
-};
-
-static int ptnd_count_mishits2(POS_TREE *pt) {
-    //! go down the tree to chains and leafs; count the species that are in the non member group
-    if (pt == NULL)
-        return 0;
-    
-    if (PT_read_type(pt) == PT_NT_LEAF) {
-        DataLoc loc(pt);
-        psg.abs_pos.announce(loc.apos);
-        return psg.data[loc.name].outside_group();
-    }
-    
-    if (PT_read_type(pt) == PT_NT_CHAIN) {
-        psg.probe = 0;
-        ptnd.mishits = 0;
-        PT_forwhole_chain(pt, ptnd_chain_count_mishits());
-        return ptnd.mishits;
-    }
-    
-    int mishits = 0;
-    for (int base = PT_QU; base< PT_B_MAX; base++) {
-        mishits += ptnd_count_mishits2(PT_read_son(pt, (PT_BASES)base));
-    }
-    return mishits;
-}
-
-inline char hitgroup_idx2char(int idx) {
+static char hitgroup_idx2char(int idx) {
     const int firstSmall = ALPHA_SIZE/2;
     int c;
     if (idx >= firstSmall) {
@@ -245,24 +404,130 @@ inline char hitgroup_idx2char(int idx) {
     return c;
 }
 
-char *get_design_info(PT_tprobes  *tprobe) {
-    char   *buffer = (char *)GB_give_buffer(2000);
-    char   *probe  = (char *)GB_give_buffer2(tprobe->seq_len + 10);
-    PT_pdc *pdc    = (PT_pdc *)tprobe->mh.parent->parent;
-    char   *p;
-    int     i;
-    int     sum;
+inline int get_max_probelen(const PT_pdc *pdc) {
+    return pdc->max_probelen == -1 ? pdc->min_probelen : pdc->max_probelen;
+}
 
-    p = buffer;
+inline int shown_apos(const PT_tprobes *tprobe) { return info2bio(tprobe->apos); }
+inline int shown_ecoli(const PT_tprobes *tprobe) { return PT_abs_2_ecoli_rel(tprobe->apos+1); }
+inline int shown_qual(const PT_tprobes *tprobe) { return int(tprobe->quality+0.5); }
+
+class PD_formatter {
+    int width[PERC_SIZE]; // of centigrade list columns
+    int maxprobelen;
+
+    int apos_width;
+    int ecol_width;
+    int qual_width;
+    int grps_width;
+
+    static inline void track_max(int& tracked, int val) { tracked = std::max(tracked, val); }
+
+    void collect(const int *perc) { for (int i = 0; i<PERC_SIZE; ++i) width[i] = std::max(width[i], perc[i]); }
+    void collect(const PT_tprobes *tprobe) {
+        collect(tprobe->perc);
+        track_max(apos_width, shown_apos(tprobe));
+        track_max(ecol_width, shown_ecoli(tprobe));
+        track_max(qual_width, shown_qual(tprobe));
+        track_max(grps_width, shown_qual(tprobe));
+        track_max(maxprobelen, tprobe->seq_len);
+    }
+
+    void clear() {
+        for (int i = 0; i<PERC_SIZE; ++i) width[i] = 0;
+
+        apos_width = 0;
+        ecol_width = 0;
+        qual_width = 0;
+        grps_width = 0;
+
+        maxprobelen = 0;
+    }
+
+    static inline int width4num(int num) {
+        pt_assert(num >= 0);
+
+        int digits = 0;
+        while (num) {
+            ++digits;
+            num /= 10;
+        }
+        return digits ? digits : 1;
+    }
+
+public:
+    PD_formatter() { clear(); }
+    PD_formatter(const PT_pdc *pdc) {
+        clear();
+
+        // collect max values for output columns:
+        for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) collect(tprobe);
+
+        // convert max.values to needed print-width:
+        for (int i = 0; i<PERC_SIZE; ++i) width[i] = width4num(width[i]);
+
+        apos_width = std::max(width4num(apos_width), 2);
+        ecol_width = std::max(width4num(ecol_width), 4);
+        qual_width = std::max(width4num(qual_width), 4);
+        grps_width = std::max(width4num(grps_width), 4);
+    }
+
+    int sprint_centigrade_list(char *buffer, const int *perc) const {
+        // format centigrade-decrement-list
+        int printed = 0;
+        for (int i = 0; i<PERC_SIZE; ++i) {
+            buffer[printed++]  = ' ';
+            printed += perc[i]
+                ? sprintf(buffer+printed, "%*i", width[i], perc[i])
+                : sprintf(buffer+printed, "%*s", width[i], "-");
+        }
+        return printed;
+    }
+
+    int get_max_designed_len() const { return maxprobelen; }
+
+    int get_apos_width() const { return apos_width; }
+    int get_ecol_width() const { return ecol_width; }
+    int get_qual_width() const { return qual_width; }
+    int get_grps_width() const { return grps_width; }
+};
+
+typedef std::map<const PT_pdc*const, PD_formatter> PD_Formatter4design;
+static PD_Formatter4design format4design;
+
+inline const PD_formatter& get_formatter(const PT_pdc *pdc) {
+    PD_Formatter4design::iterator found = format4design.find(pdc);
+    if (found == format4design.end()) {
+        format4design[pdc] = PD_formatter(pdc);
+        found              = format4design.find(pdc);
+    }
+    pt_assert(found != format4design.end());
+
+    return found->second;
+}
+inline void erase_formatter(const PT_pdc *pdc) { format4design.erase(pdc); }
+
+char *get_design_info(const PT_tprobes *tprobe) {
+    pt_assert(tprobe);
+
+    const int            BUFFERSIZE = 2000;
+    char                *buffer     = (char *)GB_give_buffer(BUFFERSIZE);
+    PT_pdc              *pdc        = (PT_pdc *)tprobe->mh.parent->parent;
+    char                *p          = buffer;
+    const PD_formatter&  formatter  = get_formatter(pdc);
 
     // target
-    strcpy(probe, tprobe->sequence);
-    PT_base_2_string(probe); // convert probe to real ASCII
-    sprintf(p, "%-*s", pdc->probelen+1, probe);
-    p += strlen(p);
+    {
+        int   len   = tprobe->seq_len;
+        char *probe = (char *)GB_give_buffer2(len+1);
+        strcpy(probe, tprobe->sequence);
+
+        probe_2_readable(probe, len); // convert probe to real ASCII
+        p += sprintf(p, "%-*s", formatter.get_max_designed_len()+1, probe);
+    }
 
     {
-        int apos = info2bio(tprobe->apos);
+        int apos = shown_apos(tprobe);
         int c;
         int cs   = 0;
 
@@ -274,9 +539,9 @@ char *get_design_info(PT_tprobes  *tprobe) {
                 break;
             }
             int dist = abs(apos - pdc->pos_groups[c]);
-            if (dist < pdc->probelen) {
+            if (dist < pdc->min_probelen) {
                 apos = apos - pdc->pos_groups[c];
-                if (apos > 0) {
+                if (apos >= 0) {
                     cs = '+';
                     break;
                 }
@@ -296,48 +561,39 @@ char *get_design_info(PT_tprobes  *tprobe) {
         }
 
         // le apos ecol
-        p += sprintf(p, "%2i %c%c%6i %4li ", tprobe->seq_len, c, cs,
-                     apos,
-                     PT_abs_2_rel(tprobe->apos+1)); // ecoli-bases inclusive apos ("bases before apos+1")
+        p += sprintf(p, "%2i ", tprobe->seq_len);
+        p += sprintf(p, "%c%c%*i ", c, cs, formatter.get_apos_width(), apos);
+        p += sprintf(p, "%*i ", formatter.get_ecol_width(), shown_ecoli(tprobe)); // ecoli-bases inclusive apos ("bases before apos+1")
     }
-    // grps
-    p += sprintf(p, "%4i ", tprobe->groupsize);
 
-    // G+C
-    p += sprintf(p, "%-4.1f ", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0);
-
-    // 4GC+2AT
-    p += sprintf(p, "%-7.1f ", pt_get_temperature(tprobe->sequence));
+    p += sprintf(p, "%*i ", formatter.get_qual_width(), shown_qual(tprobe));
+    p += sprintf(p, "%*i ", formatter.get_grps_width(), tprobe->groupsize);
+    p += sprintf(p, "%5.1f", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0); // G+C
+    p += sprintf(p, "%5.1f ", pt_get_temperature(tprobe->sequence));                               // temperature
 
     // probe string
-    probe  = reverse_probe(tprobe->sequence);
-    complement_probe(probe);
-    PT_base_2_string(probe); // convert probe to real ASCII
-    p     += sprintf(p, "%-*s |", pdc->probelen, probe);
-    free(probe);
-
-    // non-group hits by temp. decrease
-    for (sum=i=0; i<PERC_SIZE; i++) {
-        sum += tprobe->perc[i];
-        p   += sprintf(p, "%3i,", sum);
+    {
+        char *probe = create_reversed_probe(tprobe->sequence, tprobe->seq_len);
+        complement_probe(probe, tprobe->seq_len);
+        probe_2_readable(probe, tprobe->seq_len); // convert probe to real ASCII
+        p += sprintf(p, "%*s |", formatter.get_max_designed_len(), probe);
+        free(probe);
     }
 
+    // non-group hits by temp. decrease
+    p += formatter.sprint_centigrade_list(p, tprobe->perc);
+    if (!tprobe->next) erase_formatter(pdc); // erase formatter when done with last probe
+
+    pt_assert((p-buffer)<BUFFERSIZE);
     return buffer;
 }
 
-#if defined(WARN_TODO)
-#warning fix usage of strlen in get_design_info and add assertion vs buffer overflow
-#endif
+char *get_design_hinfo(const PT_pdc *pdc) {
+    const int  BUFFERSIZE = 2000;
+    char      *buffer     = (char *)GB_give_buffer(BUFFERSIZE);
+    char      *s          = buffer;
 
-char *get_design_hinfo(PT_tprobes  *tprobe) {
-    char   *buffer = (char *)GB_give_buffer(2000);
-    char   *s      = buffer;
-    PT_pdc *pdc;
-
-    if (!tprobe) {
-        return (char*)"Sorry, there are no probes for your selection !!!";
-    }
-    pdc = (PT_pdc *)tprobe->mh.parent->parent;
+    const PD_formatter& formatter = get_formatter(pdc);
 
     {
         char *ecolipos = NULL;
@@ -354,121 +610,207 @@ char *get_design_hinfo(PT_tprobes  *tprobe) {
                 ecolipos = GBS_global_string_copy(">= %i", pdc->min_ecolipos);
             }
             else {
-                ecolipos = GBS_global_string_copy("%4i -%4i", pdc->min_ecolipos, pdc->max_ecolipos);
+                ecolipos = GBS_global_string_copy("%4i -%5i", pdc->min_ecolipos, pdc->max_ecolipos);
             }
         }
 
-        sprintf(buffer,
-                "Probe design Parameters:\n"
-                "Length of probe    %4i\n"
-                "Temperature        [%4.1f -%4.1f]\n"
-                "GC-Content         [%4.1f -%4.1f]\n"
-                "E.Coli Position    [%s]\n"
-                "Max Non Group Hits  %4i\n"
-                "Min Group Hits      %4.0f%%\n",
-                pdc->probelen,
-                pdc->mintemp, pdc->maxtemp,
-                pdc->min_gc*100.0, pdc->max_gc*100.0,
-                ecolipos,
-                pdc->mishit, pdc->mintarget*100.0);
+        char *mishit_annotation = NULL;
+        if (pdc->min_rj_mishits<INT_MAX) {
+            mishit_annotation = GBS_global_string_copy(" (lowest rejected nongroup hits: %i)", pdc->min_rj_mishits);
+        }
+
+        char *coverage_annotation = NULL;
+        if (pdc->max_rj_coverage>0.0) {
+            coverage_annotation = GBS_global_string_copy(" (max. rejected coverage: %.0f%%)", pdc->max_rj_coverage*100.0);
+        }
+
+        char *probelen_info;
+        if (get_max_probelen(pdc) == pdc->min_probelen) {
+            probelen_info = GBS_global_string_copy("%i", pdc->min_probelen);
+        }
+        else {
+            probelen_info = GBS_global_string_copy("%i-%i", pdc->min_probelen, get_max_probelen(pdc));
+        }
+
+        s += sprintf(s,
+                     "Probe design parameters:\n"
+                     "Length of probe    %s\n"
+                     "Temperature        [%4.1f -%5.1f]\n"
+                     "GC-content         [%4.1f -%5.1f]\n"
+                     "E.Coli position    [%s]\n"
+                     "Max. nongroup hits %i%s\n"
+                     "Min. group hits    %.0f%%%s\n",
+                     probelen_info,
+                     pdc->mintemp, pdc->maxtemp,
+                     pdc->min_gc*100.0, pdc->max_gc*100.0,
+                     ecolipos,
+                     pdc->max_mishits,        mishit_annotation   ? mishit_annotation   : "",
+                     pdc->min_coverage*100.0, coverage_annotation ? coverage_annotation : "");
+
+        free(probelen_info);
+        free(coverage_annotation);
+        free(mishit_annotation);
 
         free(ecolipos);
     }
 
-    s += strlen(s);
+    if (pdc->tprobes) {
+        int maxprobelen = formatter.get_max_designed_len();
 
-    sprintf(s, "%-*s", pdc->probelen+1, "Target");
-    s += strlen(s);
+        s += sprintf(s, "%-*s", maxprobelen+1, "Target");
+        s += sprintf(s, "le ");
+        s += sprintf(s, "%*s ", formatter.get_apos_width()+2, "apos");
+        s += sprintf(s, "%*s ", formatter.get_ecol_width(), "ecol");
+        s += sprintf(s, "%*s ", formatter.get_qual_width(), "qual");
+        s += sprintf(s, "%*s ", formatter.get_grps_width(), "grps");
+        s += sprintf(s, "  G+C temp ");
+        s += sprintf(s, "%*s | ", maxprobelen, maxprobelen<14 ? "Probe" : "Probe sequence");
+        s += sprintf(s, "Decrease T by n*.3C -> probe matches n non group species");
+    }
+    else {
+        s += sprintf(s, "No probes found!");
+        erase_formatter(pdc);
+    }
 
-    sprintf(s, "%2s %8s %4s ", "le", "apos", "ecol");
-    s += strlen(s);
-
-    sprintf(s, "%4s ", "grps"); // groupsize
-    s += strlen(s);
-
-    sprintf(s, "%-4s %-7s %-*s | ", " G+C", "4GC+2AT", pdc->probelen, "Probe sequence");
-    s += strlen(s);
-
-    sprintf(s, "Decrease T by n*.3C -> probe matches n non group species");
+    pt_assert((s-buffer)<BUFFERSIZE);
 
     return buffer;
 }
 
-static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
+struct ptnd_chain_count_mishits {
+    int         mishits;
+    const char *probe;
+    int         height;
+
+    ptnd_chain_count_mishits() : mishits(0), probe(NULL), height(0) {}
+    ptnd_chain_count_mishits(const char *probe_, int height_) : mishits(0), probe(probe_), height(height_) {}
+
+    int operator()(const AbsLoc& probeLoc) {
+        // count all mishits for a probe
+
+        psg.abs_pos.announce(probeLoc.get_abs_pos());
+
+        if (probeLoc.get_pid().outside_group()) {
+            if (probe) {
+                pt_assert(probe[0]); // if this case occurs, avoid entering this branch
+
+                DataLoc         dataLoc(probeLoc);
+                ReadableDataLoc readableLoc(dataLoc);
+                for (int i = 0; probe[i] && readableLoc[height+i]; ++i) {
+                    if (probe[i] != readableLoc[height+i]) return 0;
+                }
+            }
+            mishits++;
+        }
+        return 0;
+    }
+};
+
+static int count_mishits_for_all(POS_TREE2 *pt) {
+    //! go down the tree to chains and leafs; count the species that are in the non member group
+    if (pt == NULL)
+        return 0;
+
+    if (pt->is_leaf()) {
+        DataLoc loc(pt);
+        psg.abs_pos.announce(loc.get_abs_pos());
+        return loc.get_pid().outside_group();
+    }
+
+    if (pt->is_chain()) {
+        ptnd_chain_count_mishits counter;
+        PT_forwhole_chain(pt, counter); // @@@ expand
+        return counter.mishits;
+    }
+
+    int mishits = 0;
+    for (int base = PT_QU; base< PT_BASES; base++) {
+        mishits += count_mishits_for_all(PT_read_son(pt, (PT_base)base));
+    }
+    return mishits;
+}
+
+static int count_mishits_for_matched(char *probe, POS_TREE2 *pt, int height) {
     //! search down the tree to find matching species for the given probe
     if (!pt) return 0;
-    if (PT_read_type(pt) == PT_NT_NODE && *probe) {
+    if (pt->is_node() && *probe) {
         int mishits = 0;
-        for (int i=PT_A; i<PT_B_MAX; i++) {
+        for (int i=PT_A; i<PT_BASES; i++) {
             if (i != *probe) continue;
-            POS_TREE *pthelp = PT_read_son(pt, (PT_BASES)i);
-            if (pthelp) mishits += ptnd_count_mishits(probe+1, pthelp, height+1);
+            POS_TREE2 *pthelp = PT_read_son(pt, (PT_base)i);
+            if (pthelp) mishits += count_mishits_for_matched(probe+1, pthelp, height+1);
         }
         return mishits;
     }
     if (*probe) {
-        if (PT_read_type(pt) == PT_NT_LEAF) {
-            const DataLoc loc(pt);
-            int           pos = loc.rpos+height;
+        if (pt->is_leaf()) {
+            const ReadableDataLoc loc(pt);
 
-            if (pos + (int)(strlen(probe)) >= psg.data[loc.name].get_size())              // after end
+            int pos = loc.get_rel_pos()+height;
+
+            if (pos + (int)(strlen(probe)) >= loc.get_pid().get_size()) // after end // @@@ wrong check ? better return from loop below when ref is PT_QU
                 return 0;
 
-            while (*probe) {
-                if (psg.data[loc.name].get_data()[pos++] != *(probe++))
+            for (int i = 0; probe[i] && loc[height+i]; ++i) {
+                if (probe[i] != loc[height+i]) {
                     return 0;
+                }
             }
         }
         else {                // chain
-            psg.probe = probe;
-            psg.height = height;
-            ptnd.mishits = 0;
-            PT_forwhole_chain(pt, ptnd_chain_count_mishits());
-            return ptnd.mishits;
+            ptnd_chain_count_mishits counter(probe, height);
+            PT_forwhole_chain(pt, counter); // @@@ expand
+            return counter.mishits;
         }
     }
-    return ptnd_count_mishits2(pt);
+    return count_mishits_for_all(pt);
 }
 
-static void ptnd_first_check(PT_pdc *pdc) {
+static void remove_tprobes_with_too_many_mishits(PT_pdc *pdc) {
     //! Check for direct mishits
+    // tracks minimum rejected mishits in 'pdc->min_rj_mishits'
+    int min_rej_mishit_amount = INT_MAX;
 
-    PT_tprobes *tprobe, *tprobe_next;
-    for (tprobe = pdc->tprobes;
-         tprobe;
-         tprobe = tprobe_next) {
-        tprobe_next = tprobe->next;
+    for (PT_tprobes *tprobe = pdc->tprobes; tprobe; ) {
+        PT_tprobes *tprobe_next = tprobe->next;
+
         psg.abs_pos.clear();
-        tprobe->mishit = ptnd_count_mishits(tprobe->sequence, psg.pt, 0);
-        tprobe->apos = psg.abs_pos.get_most_used();
-        if (tprobe->mishit > pdc->mishit) {
+        tprobe->mishits = count_mishits_for_matched(tprobe->sequence, psg.TREE_ROOT2(), 0);
+        tprobe->apos    = psg.abs_pos.get_most_used();
+        if (tprobe->mishits > pdc->max_mishits) {
+            min_rej_mishit_amount = std::min(min_rej_mishit_amount, tprobe->mishits);
             destroy_PT_tprobes(tprobe);
         }
+        tprobe = tprobe_next;
     }
     psg.abs_pos.clear();
+
+    pdc->min_rj_mishits = std::min(pdc->min_rj_mishits, min_rej_mishit_amount);
 }
 
-static void ptnd_check_position(PT_pdc *pdc) {
+static void remove_tprobes_outside_ecoli_range(PT_pdc *pdc) {
     //! Check the probes position.
-    PT_tprobes *tprobe, *tprobe_next;
     // if (pdc->min_ecolipos == pdc->max_ecolipos) return; // @@@ wtf was this for?  
 
-    for (tprobe = pdc->tprobes; tprobe; tprobe = tprobe_next) {
-        tprobe_next = tprobe->next;
-        long relpos = PT_abs_2_rel(tprobe->apos+1);
+    for (PT_tprobes *tprobe = pdc->tprobes; tprobe; ) {
+        PT_tprobes *tprobe_next = tprobe->next;
+        long relpos = PT_abs_2_ecoli_rel(tprobe->apos+1);
         if (relpos < pdc->min_ecolipos || (relpos > pdc->max_ecolipos && pdc->max_ecolipos != -1)) {
             destroy_PT_tprobes(tprobe);
         }
+        tprobe = tprobe_next;
     }
 }
 
-static void ptnd_check_bonds(PT_local *locs) {
+static size_t tprobes_calculate_bonds(PT_local *locs) {
     /*! check the average bond size.
+     *  returns number of tprobes
      *
      * @TODO  checks probe hairpin bonds
      */
 
-    PT_pdc *pdc = locs->pdc;
+    PT_pdc *pdc   = locs->pdc;
+    size_t  count = 0;
     for (PT_tprobes *tprobe = pdc->tprobes; tprobe; ) {
         PT_tprobes *tprobe_next = tprobe->next;
         tprobe->seq_len = strlen(tprobe->sequence);
@@ -478,580 +820,787 @@ static void ptnd_check_bonds(PT_local *locs) {
         }
         tprobe->sum_bonds = sbond;
 
+        ++count;
         tprobe = tprobe_next;
-    }
-}
-
-static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc) {
-    //! split the probes into probeparts
-    while (pdc->parts) destroy_PT_probeparts(pdc->parts);
-    for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
-        int probelen = strlen(tprobe->sequence)-DOMAIN_MIN_LENGTH;
-        for (int pos = 0; pos < probelen; pos ++) {
-            PT_probeparts *parts = create_PT_probeparts();
-
-            parts->sequence = strdup(tprobe->sequence+pos);
-            parts->source   = tprobe;
-            parts->start    = pos;
-
-            aisc_link(&pdc->pparts, parts);
-        }
-    }
-}
-
-static void ptnd_duplicate_probepart_rek(PT_local *locs, char *insequence, int deep, double dt, double sum_bonds, PT_probeparts *parts) {
-    PT_probeparts *newparts;
-    int            base;
-    int            i;
-    double         max_bind;
-    double         split;
-    double         ndt, nsum_bonds;
-    char          *sequence;
-    PT_pdc        *pdc = locs->pdc;
-
-    sequence = strdup(insequence);
-    if (deep >= PT_PART_DEEP) { // now do it
-        newparts = create_PT_probeparts();
-        newparts->sequence = sequence;
-        newparts->source = parts->source;
-        newparts->dt = dt;
-        newparts->start = parts->start;
-        newparts->sum_bonds = sum_bonds;
-        aisc_link(&pdc->pdparts, newparts);
-        return;
-    }
-    base = sequence[deep];
-    max_bind = ptnd_check_max_bond(locs, base);
-    for (i = PT_A; i <= PT_T; i++) {
-        sequence[deep] = i;
-        if ((split = ptnd_check_split(locs, insequence, deep, i)) < 0.0) continue;
-        // this mismatch splits the probe in several domains
-        ndt = split + dt;
-        nsum_bonds = sum_bonds+max_bind-split;
-        ptnd_duplicate_probepart_rek(locs, sequence, deep+1, ndt, nsum_bonds, parts);
-    }
-    free(sequence);
-}
-
-static void ptnd_duplicate_probepart(PT_local *locs) {
-    PT_probeparts *parts;
-    PT_pdc        *pdc = locs->pdc;
-    for (parts = pdc->parts; parts; parts = parts->next)
-        ptnd_duplicate_probepart_rek(locs, parts->sequence, 0, parts->dt, 0.0, parts);
-
-    while ((parts = pdc->parts))
-        destroy_PT_probeparts(parts);   // delete the source
-
-    while ((parts = pdc->dparts))
-    {
-        aisc_unlink((dllheader_ext*)parts);
-        aisc_link(&pdc->pparts, parts);
-    }
-}
-
-static int ptnd_compare_parts(const void *PT_probeparts_ptr1, const void *PT_probeparts_ptr2, void*) {
-    const PT_probeparts *tprobe1 = (const PT_probeparts*)PT_probeparts_ptr1;
-    const PT_probeparts *tprobe2 = (const PT_probeparts*)PT_probeparts_ptr2;
-
-    return strcmp(tprobe1->sequence, tprobe2->sequence);
-}
-
-static void ptnd_sort_parts(PT_pdc *pdc) {
-    //! sort the parts and check for duplicated parts
-
-    PT_probeparts **my_list;
-    int             list_len;
-    PT_probeparts  *tprobe;
-    int             i;
-
-    if (!pdc->parts) return;
-    list_len = pdc->parts->get_count();
-    if (list_len <= 1) return;
-    my_list = (PT_probeparts **)calloc(sizeof(void *), list_len);
-    for (i=0,           tprobe = pdc->parts;
-                tprobe;
-                i++, tprobe=tprobe->next) {
-        my_list[i] = tprobe;
-    }
-    GB_sort((void **)my_list, 0, list_len, ptnd_compare_parts, 0);
-
-    for (i=0; i<list_len; i++) {
-        aisc_unlink((dllheader_ext*)my_list[i]);
-        aisc_link(&pdc->pparts, my_list[i]);
-    }
-    free(my_list);
-}
-static void ptnd_remove_duplicated_probepart(PT_pdc *pdc)
-{
-    PT_probeparts       *parts, *parts_next;
-    for (parts = pdc->parts;
-                parts;
-                parts = parts_next) {
-        parts_next = parts->next;
-        if (parts_next) {
-            if ((parts->source == parts_next->source) && !strcmp(parts->sequence, parts_next->sequence)) {      // equal sequence
-                if (parts->dt < parts_next->dt) {       // delete higher dt
-                    destroy_PT_probeparts(parts_next);
-                    parts_next = parts;
-                }
-                else {
-                    destroy_PT_probeparts(parts);
-                }
-            }
-        }
-    }
-}
-
-static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts, const DataLoc& matchLoc, double dt, double sum_bonds) {
-    //! test the probe parts, search the longest non mismatch string
-
-    PT_tprobes *tprobe = parts->source;
-    int         start  = parts->start;
-    if (start) {               // look backwards
-        char *probe = parts->source->sequence;
-        int   pos   = matchLoc.rpos-1;
-        start--;                        // test the base left of start
-
-        bool split = false;
-        while (start>=0) {
-            if (pos<0) break;   // out of sight
-
-            double h = ptnd_check_split(ptnd.locs, probe, start, psg.data[matchLoc.name].get_data()[pos]);
-            if (h>0.0 && !split) return; // there is a longer part matching this
-
-            dt -= h;
-
-            start--;
-            pos--;
-            split = true;
-        }
-    }
-    double ndt = (dt * pdc->dt + (tprobe->sum_bonds - sum_bonds)*pdc->dte) / tprobe->seq_len;
-    int    pos = (int)ndt;
-
-    pt_assert(pos >= 0);
-
-    if (pos >= PERC_SIZE) return; // out of observation
-    tprobe->perc[pos] ++;
-}
-static int ptnd_check_inc_mode(PT_pdc *pdc, PT_probeparts *parts, double dt, double sum_bonds)
-{
-    PT_tprobes *tprobe = parts->source;
-    double      ndt    = (dt * pdc->dt + (tprobe->sum_bonds - sum_bonds)*pdc->dte) / tprobe->seq_len;
-    int         pos    = (int)ndt;
-
-    pt_assert(pos >= 0);
-
-    if (pos >= PERC_SIZE) return 1; // out of observation
-    return 0;
-}
-
-struct ptnd_chain_check_part {
-    int split;
-
-    ptnd_chain_check_part(int s) : split(s) {}
-
-    int operator() (const DataLoc& partLoc) {
-        if (psg.data[partLoc.name].outside_group()) {
-            char   *probe = psg.probe;
-            double  sbond = ptnd.sum_bonds;
-            double  dt    = ptnd.dt;
-
-            if (probe) {
-                int    pos    = partLoc.rpos+psg.height;
-                double h      = 1.0;
-                int    height = psg.height;
-                int    base;
-
-                while (probe[height] && (base = psg.data[partLoc.name].get_data()[pos])) {
-                    if (!split && (h = ptnd_check_split(ptnd.locs, probe, height, base) < 0.0)) {
-                        dt -= h;
-                        split = 1;
-                    }
-                    else {
-                        dt += h;
-                        sbond += ptnd_check_max_bond(ptnd.locs, probe[height]) - h;
-                    }
-                    height++; pos++;
-                }
-            }
-            ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, partLoc, dt, sbond);
-        }
-        return 0;
-    }
-};
-
-static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds) {
-    /*! go down the tree to chains and leafs;
-     * check all (for what?)
-     */
-
-    if (pt) {
-        if (PT_read_type(pt) == PT_NT_LEAF) {
-            // @@@ dupped code is in ptnd_chain_check_part::operator()
-            DataLoc loc(pt);
-            if (psg.data[loc.name].outside_group()) {
-                ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, loc, dt, sum_bonds);
-            }
-        }
-        else if (PT_read_type(pt) == PT_NT_CHAIN) {
-            psg.probe = 0;
-            ptnd.dt = dt;
-            ptnd.sum_bonds = sum_bonds;
-            PT_forwhole_chain(pt, ptnd_chain_check_part(0));
-        }
-        else {
-            for (int base = PT_QU; base< PT_B_MAX; base++) {
-                ptnd_check_part_all(PT_read_son(pt, (PT_BASES)base), dt, sum_bonds);
-            }
-        }
-    }
-}
-static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, double sum_bonds, int split) {
-    //! search down the tree to find matching species for the given probe
-
-    if (!pt) return;
-    if (dt/ptnd.parts->source->seq_len > PERC_SIZE) return;     // out of scope
-    if (PT_read_type(pt) == PT_NT_NODE && probe[height]) {
-        if (split && ptnd_check_inc_mode(ptnd.pdc, ptnd.parts, dt, sum_bonds)) return;
-        for (int i=PT_A; i<PT_B_MAX; i++) {
-            POS_TREE *pthelp = PT_read_son(pt, (PT_BASES)i);
-            if (pthelp) {
-                int    nsplit     = split;
-                double nsum_bonds = sum_bonds;
-                double ndt;
-
-                if (height < PT_PART_DEEP) {
-                    if (i != probe[height]) continue;
-                    ndt = dt;
-                }
-                else {
-                    if (split) {
-                        double h = ptnd_check_split(ptnd.locs, probe, height, i);
-                        if (h>0.0) ndt = dt+h; else ndt = dt-h;
-                    }
-                    else {
-                        double h = ptnd_check_split(ptnd.locs, probe, height, i);
-                        if (h<0.0) {
-                            ndt = dt - h;
-                            nsplit = 1;
-                        }
-                        else {
-                            ndt = dt + h;
-                            nsum_bonds += ptnd_check_max_bond(ptnd.locs, probe[height]) - h;
-                        }
-                    }
-                }
-                if (nsplit && height <= DOMAIN_MIN_LENGTH) continue;
-                ptnd_check_part(probe, pthelp, height+1, ndt, nsum_bonds, nsplit);
-            }
-        }
-        return;
-    }
-    if (probe[height]) {
-        if (PT_read_type(pt) == PT_NT_LEAF) {
-            // @@@ dupped code is in ptnd_chain_check_part::operator()
-            const DataLoc loc(pt);
-            if (psg.data[loc.name].outside_group()) {
-                int pos = loc.rpos + height;
-                if (pos + (int)(strlen(probe+height)) >= psg.data[loc.name].get_size())               // after end
-                    return;
-
-                int ref;
-                while (probe[height] && (ref = psg.data[loc.name].get_data()[pos])) {
-                    if (split) {
-                        double h = ptnd_check_split(ptnd.locs, probe, height, ref);
-                        if (h<0.0) dt -= h; else dt += h;
-                    }
-                    else {
-                        double h = ptnd_check_split(ptnd.locs, probe, height, ref);
-                        if (h<0.0) {
-                            dt -= h;
-                            split = 1;
-                        }
-                        else {
-                            dt += h;
-                            sum_bonds += ptnd_check_max_bond(ptnd.locs, probe[height]) - h;
-                        }
-                    }
-                    height++; pos++;
-                }
-                ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, loc, dt, sum_bonds);
-            }
-            return;
-        }
-        else {                // chain
-            psg.probe = probe;
-            psg.height = height;
-            ptnd.dt = dt;
-            ptnd.sum_bonds = sum_bonds;
-            PT_forwhole_chain(pt, ptnd_chain_check_part(split));
-            return;
-        }
-    }
-    ptnd_check_part_all(pt, dt, sum_bonds);
-}
-static void ptnd_check_probepart(PT_pdc *pdc)
-{
-    PT_probeparts       *parts;
-    ptnd.pdc = pdc;
-    for (parts = pdc->parts;
-                parts;
-                parts = parts->next) {
-        ptnd.parts = parts;
-        ptnd_check_part(parts->sequence, psg.pt, 0, parts->dt, parts->sum_bonds, 0);
-    }
-}
-inline int ptnd_check_tprobe(PT_pdc *pdc, const char *probe, int len)
-{
-    int occ[PT_B_MAX] = { 0, 0, 0, 0, 0, 0 };
-
-    int count = 0;
-    while (count<len) {
-        occ[safeCharIndex(probe[count++])]++;
-    }
-    int gc = occ[PT_G]+occ[PT_C];
-    int at = occ[PT_A]+occ[PT_T];
-
-    int all = gc+at;
-
-    if (all < len) return 1; // there were some unwanted characters ('N' or '.')
-    if (all < pdc->probelen) return 1;
-
-    if (gc < pdc->min_gc*len) return 1;
-    if (gc > pdc->max_gc*len) return 1;
-
-    double temp = at*2 + gc*4;
-    if (temp< pdc->mintemp) return 1;
-    if (temp>pdc->maxtemp) return 1;
-
-    return 0;
-}
-
-static long ptnd_build_probes_collect(const char *probe, long count, void*) {
-    if (count >= ptnd.locs->group_count*ptnd.pdc->mintarget) {
-        PT_tprobes *tprobe = create_PT_tprobes();
-        tprobe->sequence = strdup(probe);
-        tprobe->temp = pt_get_temperature(probe);
-        tprobe->groupsize = (int)count;
-        aisc_link(&ptnd.pdc->ptprobes, tprobe);
     }
     return count;
 }
 
-inline void PT_incr_hash(GB_HASH *hash, const char *sequence, int len) {
-    char c        = sequence[len];
-    const_cast<char*>(sequence)[len] = 0;
+class CentigradePos { // track minimum centigrade position for each species
+    typedef std::map<int, int> Pos4Name;
 
-    pt_assert(strlen(sequence) == (size_t)len);
+    Pos4Name cpos; // key = outgroup-species-id; value = min. centigrade position for (partial) probe
 
-    GBS_incr_hash(hash, sequence);
+public:
 
-    const_cast<char*>(sequence)[len] = c;
-}
+    static bool is_valid_pos(int pos) { return pos >= 0 && pos<PERC_SIZE; }
 
-static void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, const char *sequence, int seq_len, int probe_len, char *prefix, int prefix_len) {
-    int pos;
-    if (*prefix) { // partition search, else very large hash tables (>60 mbytes)
-        for (pos = seq_len-probe_len; pos >= 0; pos--, sequence++) {
-            if ((*prefix != *sequence || strncmp(sequence, prefix, prefix_len))) continue;
-            if (!ptnd_check_tprobe(pdc, sequence, probe_len)) {
-                PT_incr_hash(hash, sequence, probe_len);
+    void set_pos_for(int name, int pos) {
+        pt_assert(is_valid_pos(pos)); // otherwise it should not be put into CentigradePos
+        Pos4Name::iterator found = cpos.find(name);
+        if (found == cpos.end()) {
+            cpos[name] = pos;
+        }
+        else if (pos<found->second) {
+            found->second = pos;
+        }
+    }
+
+    void summarize_centigrade_hits(int *centigrade_hits) const {
+        for (int i = 0; i<PERC_SIZE; ++i) centigrade_hits[i] = 0;
+        for (Pos4Name::const_iterator p = cpos.begin(); p != cpos.end(); ++p) {
+            int pos  = p->second;
+            pt_assert(is_valid_pos(pos)); // otherwise it should not be put into CentigradePos
+            centigrade_hits[pos]++;
+        }
+    }
+
+    bool empty() const { return cpos.empty(); }
+};
+
+class OutgroupMatcher : virtual Noncopyable {
+    const PT_pdc *const pdc;
+
+    Splits splits;
+    double max_bonds[PT_BASES];                // @@@ move functionality into Splits
+
+    PT_tprobes    *currTprobe;
+    CentigradePos  result;
+
+    bool only_bind_behind_dot; // true for suffix-matching
+
+    void uncond_announce_match(int centPos, const AbsLoc& loc) {
+        pt_assert(loc.get_pid().outside_group());
+#if defined(DUMP_OLIGO_MATCHING)
+        fprintf(stderr, "announce_match centPos=%2i loc", centPos);
+        loc.dump(stderr);
+        fflush_all();
+#endif
+        result.set_pos_for(loc.get_name(), centPos);
+    }
+
+    bool location_follows_dot(const ReadableDataLoc& loc) const { return loc[-1] == PT_QU; }
+    bool location_follows_dot(const DataLoc& loc) const { return location_follows_dot(ReadableDataLoc(loc)); } // very expensive @@@ optimize using relpos
+    bool location_follows_dot(const AbsLoc& loc) const { return location_follows_dot(ReadableDataLoc(DataLoc(loc))); } // very very expensive
+
+    template<typename LOC>
+    bool acceptable_location(const LOC& loc) const {
+        return loc.get_pid().outside_group() &&
+            (only_bind_behind_dot ? location_follows_dot(loc) : true);
+    }
+
+    template<typename LOC>
+    void announce_match_if_acceptable(int centPos, const LOC& loc) {
+        if (acceptable_location(loc)) {
+            uncond_announce_match(centPos, loc);
+        }
+    }
+    void announce_match_if_acceptable(int centPos, POS_TREE2 *pt) {
+        switch (pt->get_type()) {
+            case PT2_NODE:
+                for (int i = PT_QU; i<PT_BASES; ++i) {
+                    POS_TREE2 *ptson = PT_read_son(pt, (PT_base)i);
+                    if (ptson) {
+                        announce_match_if_acceptable(centPos, ptson);
+                    }
+                }
+                break;
+
+            case PT2_LEAF:
+                announce_match_if_acceptable(centPos, DataLoc(pt));
+                break;
+
+            case PT2_CHAIN: {
+                ChainIteratorStage2 iter(pt);
+                while (iter) {
+                    announce_match_if_acceptable(centPos, iter.at());
+                    ++iter;
+                }
+                break;
             }
         }
     }
-    else {
-        for (pos = seq_len-probe_len; pos >= 0; pos--, sequence++) {
-            if (!ptnd_check_tprobe(pdc, sequence, probe_len)) {
-                PT_incr_hash(hash, sequence, probe_len);
+
+    template <typename PT_OR_LOC>
+    void announce_possible_match(const MatchingOligo& oligo, PT_OR_LOC pt_or_loc) {
+        pt_assert(oligo.domainSeen());
+        pt_assert(!oligo.dangling());
+
+        int centPos = oligo.calc_centigrade_pos(currTprobe, pdc);
+        if (centPos<PERC_SIZE) {
+            announce_match_if_acceptable(centPos, pt_or_loc);
+        }
+    }
+
+    bool might_reach_centigrade_pos(const MatchingOligo& oligo) const {
+        return !oligo.centigrade_pos_out_of_reach(currTprobe, pdc, splits, max_bonds);
+    }
+
+    void bind_rest(const MatchingOligo& oligo, const ReadableDataLoc& loc, const int height) {
+        // unconditionally bind rest of oligo versus sequence
+
+        pt_assert(oligo.domainSeen());                // entry-invariant for bind_rest()
+        pt_assert(oligo.dangling());                  // otherwise ReadableDataLoc is constructed w/o need (very expensive!)
+        pt_assert(might_reach_centigrade_pos(oligo)); // otherwise ReadableDataLoc is constructed w/o need (very expensive!)
+        pt_assert(loc.get_pid().outside_group());     // otherwise we are not interested in the result
+
+        if (loc[height]) {
+            MatchingOligo more = oligo.bind_against(loc[height], splits, max_bonds);
+            pt_assert(more.domainSeen()); // implied by oligo.domainSeen()
+            if (more.dangling()) {
+                if (might_reach_centigrade_pos(more)) {
+                    bind_rest(more, loc, height+1);
+                }
+            }
+            else {
+                announce_possible_match(more, loc);
+            }
+        }
+        else {
+            MatchingOligo all = oligo.dont_bind_rest();
+            announce_possible_match(all, loc);
+        }
+    }
+    void bind_rest_if_outside_group(const MatchingOligo& oligo, const DataLoc& loc, const int height) {
+        if (loc.get_pid().outside_group() && might_reach_centigrade_pos(oligo)) {
+            bind_rest(oligo, ReadableDataLoc(loc), height);
+        }
+    }
+    void bind_rest_if_outside_group(const MatchingOligo& oligo, const AbsLoc&  loc, const int height) {
+        if (loc.get_pid().outside_group() && might_reach_centigrade_pos(oligo)) {
+            bind_rest(oligo, ReadableDataLoc(DataLoc(loc)), height);
+        }
+    }
+
+    void bind_rest(const MatchingOligo& oligo, POS_TREE2 *pt, const int height) {
+        // unconditionally bind rest of oligo versus complete index-subtree
+        pt_assert(oligo.domainSeen()); // entry-invariant for bind_rest()
+
+        if (oligo.dangling()) {
+            if (might_reach_centigrade_pos(oligo)) {
+                switch (pt->get_type()) {
+                    case PT2_NODE: {
+                        POS_TREE2 *ptdotson = PT_read_son(pt, PT_QU);
+                        if (ptdotson) {
+                            MatchingOligo all = oligo.dont_bind_rest();
+                            announce_possible_match(all, ptdotson);
+                        }
+
+                        for (int i = PT_A; i<PT_BASES; ++i) {
+                            POS_TREE2 *ptson = PT_read_son(pt, (PT_base)i);
+                            if (ptson) {
+                                bind_rest(oligo.bind_against(i, splits, max_bonds), ptson, height+1);
+                            }
+                        }
+                        break;
+                    }
+                    case PT2_LEAF:
+                        bind_rest_if_outside_group(oligo, DataLoc(pt), height);
+                        break;
+
+                    case PT2_CHAIN:
+                        ChainIteratorStage2 iter(pt);
+                        while (iter) {
+                            bind_rest_if_outside_group(oligo, iter.at(), height);
+                            ++iter;
+                        }
+                        break;
+                }
+            }
+        }
+        else {
+            announce_possible_match(oligo, pt);
+        }
+    }
+
+    void bind_till_domain(const MatchingOligo& oligo, const ReadableDataLoc& loc, const int height) {
+        pt_assert(!oligo.domainSeen() && oligo.domainPossible()); // entry-invariant for bind_till_domain()
+        pt_assert(oligo.dangling());                              // otherwise ReadableDataLoc is constructed w/o need (very expensive!)
+        pt_assert(might_reach_centigrade_pos(oligo));             // otherwise ReadableDataLoc is constructed w/o need (very expensive!)
+        pt_assert(loc.get_pid().outside_group());                 // otherwise we are not interested in the result
+
+        if (is_std_base(loc[height])) { // do not try to bind domain versus dot or N
+            MatchingOligo more = oligo.bind_against(loc[height], splits, max_bonds);
+            if (more.dangling()) {
+                if (might_reach_centigrade_pos(more)) {
+                    if      (more.domainSeen())     bind_rest       (more, loc, height+1);
+                    else if (more.domainPossible()) bind_till_domain(more, loc, height+1);
+                }
+            }
+            else if (more.domainSeen()) {
+                announce_possible_match(more, loc);
             }
         }
     }
-}
+    void bind_till_domain_if_outside_group(const MatchingOligo& oligo, const DataLoc& loc, const int height) {
+        if (loc.get_pid().outside_group() && might_reach_centigrade_pos(oligo)) {
+            bind_till_domain(oligo, ReadableDataLoc(loc), height);
+        }
+    }
+    void bind_till_domain_if_outside_group(const MatchingOligo& oligo, const AbsLoc&  loc, const int height) {
+        if (loc.get_pid().outside_group() && might_reach_centigrade_pos(oligo)) {
+            bind_till_domain(oligo, ReadableDataLoc(DataLoc(loc)), height);
+        }
+    }
 
-static long ptnd_collect_hash(const char *key, long val, void *gb_hash) {
-    pt_assert(val);
-    GBS_incr_hash((GB_HASH*)gb_hash, key);
-    return val;
-}
+    void bind_till_domain(const MatchingOligo& oligo, POS_TREE2 *pt, const int height) {
+        pt_assert(!oligo.domainSeen() && oligo.domainPossible()); // entry-invariant for bind_till_domain()
+        pt_assert(oligo.dangling());
 
-#if defined(DEBUG)
-#if defined(DEVEL_RALF)
-static long avoid_hash_warning(const char *, long,  void*) { return 0; }
-#endif // DEVEL_RALF
+        if (might_reach_centigrade_pos(oligo)) {
+            switch (pt->get_type()) {
+                case PT2_NODE:
+                    for (int i = PT_A; i<PT_BASES; ++i) {
+                        POS_TREE2 *ptson = PT_read_son(pt, (PT_base)i);
+                        if (ptson) {
+                            MatchingOligo sonOligo = oligo.bind_against(i, splits, max_bonds);
+
+                            if      (sonOligo.domainSeen())     bind_rest       (sonOligo, ptson, height+1);
+                            else if (sonOligo.domainPossible()) bind_till_domain(sonOligo, ptson, height+1);
+                        }
+                    }
+                    break;
+
+                case PT2_LEAF:
+                    bind_till_domain_if_outside_group(oligo, DataLoc(pt), height);
+                    break;
+
+                case PT2_CHAIN:
+                    ChainIteratorStage2 iter(pt);
+                    while (iter) {
+                        bind_till_domain_if_outside_group(oligo, iter.at(), height);
+                        ++iter;
+                    }
+                    break;
+            }
+        }
+    }
+
+    void reset() { result = CentigradePos(); }
+
+public:
+    OutgroupMatcher(PT_local *locs_, PT_pdc *pdc_)
+        : pdc(pdc_),
+          splits(locs_),
+          currTprobe(NULL),
+          only_bind_behind_dot(false)
+    {
+        for (int i = PT_QU; i<PT_BASES; ++i) {
+            max_bonds[i] = ptnd_check_max_bond(locs_, i);
+        }
+    }
+
+    void calculate_outgroup_matches(PT_tprobes& tprobe) {
+        LocallyModify<PT_tprobes*> assign_tprobe(currTprobe, &tprobe);
+        pt_assert(result.empty());
+
+        MatchingOligo  fullProbe(Oligo(tprobe.sequence, tprobe.seq_len));
+        POS_TREE2     *ptroot = psg.TREE_ROOT2();
+
+        pt_assert(!fullProbe.domainSeen());
+        pt_assert(fullProbe.domainPossible()); // probe length too short (probes shorter than DOMAIN_MIN_LENGTH always report 0 outgroup hits -> wrong result)
+
+        arb_progress progress(tprobe.seq_len);
+
+        only_bind_behind_dot = false;
+        bind_till_domain(fullProbe, ptroot, 0);
+        ++progress;
+
+        // match all suffixes of probe
+        // - detect possible partial matches at start of alignment (and behind dots inside the sequence)
+        only_bind_behind_dot = true;
+        for (int off = 1; off<tprobe.seq_len; ++off) {
+            MatchingOligo probeSuffix(fullProbe.get_oligo().suffix(off));
+            if (!probeSuffix.domainPossible()) break; // abort - no smaller suffix may create a domain
+            bind_till_domain(probeSuffix, ptroot, 0);
+            ++progress;
+        }
+
+        result.summarize_centigrade_hits(tprobe.perc);
+        progress.done();
+
+        reset();
+    }
+};
+
+class ProbeOccurrance {
+    const char *seq;
+
+public:
+    ProbeOccurrance(const char *seq_) : seq(seq_) {}
+
+    const char *sequence() const { return seq; }
+
+    void forward() { ++seq; }
+
+    bool less(const ProbeOccurrance& other, size_t len) const {
+        const char *mine = sequence();
+        const char *his  = other.sequence();
+
+        int cmp = 0;
+        for (size_t i = 0; i<len && !cmp; ++i) {
+            cmp = mine[i]-his[i];
+        }
+        return cmp<0;
+    }
+};
+
+class ProbeIterator {
+    ProbeOccurrance cursor;
+
+    size_t probelen;
+    size_t rest;   // size of seqpart behind cursor
+    size_t gc, at; // count G+C and A+T
+
+    bool has_only_std_bases() const { return (gc+at) == probelen; }
+
+    bool at_end() const { return !rest; }
+
+    PT_base base_at(size_t offset) const {
+        pt_assert(offset < probelen);
+        return PT_base(cursor.sequence()[offset]);
+    }
+
+    void forget(PT_base b) {
+        switch (b) {
+            case PT_A: case PT_T: pt_assert(at>0); --at; break;
+            case PT_C: case PT_G: pt_assert(gc>0); --gc; break;
+            default : break;
+        }
+    }
+    void count(PT_base b) {
+        switch (b) {
+            case PT_A: case PT_T: ++at; break;
+            case PT_C: case PT_G: ++gc; break;
+            default : break;
+        }
+    }
+
+    void init_counts() {
+        at = gc = 0;
+        for (size_t i = 0; i<probelen; ++i) {
+            count(base_at(i));
+        }
+    }
+
+public:
+    ProbeIterator(const char *seq, size_t seqlen, size_t probelen_)
+        : cursor(seq),
+          probelen(probelen_),
+          rest(seqlen-probelen)
+    {
+        pt_assert(seqlen >= probelen);
+        init_counts();
+    }
+
+    bool next() {
+        if (at_end()) return false;
+        forget(base_at(0));
+        cursor.forward();
+        --rest;
+        count(base_at(probelen-1));
+        return true;
+    }
+
+    int get_temperature() const { return 2*at + 4*gc; }
+
+    bool gc_in_wanted_range(PT_pdc *pdc) const {
+        return pdc->min_gc*probelen <= gc && gc <= pdc->max_gc*probelen;
+    }
+    bool temperature_in_wanted_range(PT_pdc *pdc) const {
+        int temp             = get_temperature();
+        return pdc->mintemp <= temp && temp <= pdc->maxtemp;
+    }
+
+    bool feasible(PT_pdc *pdc) const {
+        return has_only_std_bases() &&
+            gc_in_wanted_range(pdc) &&
+            temperature_in_wanted_range(pdc);
+    }
+
+    const ProbeOccurrance& occurance() const { return cursor; }
+
+    void dump(FILE *out) const {
+        char *probe = readable_probe(cursor.sequence(), probelen, 'T');
+        fprintf(out, "probe='%s' probelen=%lu at=%lu gc=%lu\n", probe, probelen, at, gc);
+        free(probe);
+    }
+};
+
+class PO_Less {
+    size_t probelen;
+public:
+    PO_Less(size_t probelen_) : probelen(probelen_) {}
+    bool operator()(const ProbeOccurrance& a, const ProbeOccurrance& b) const { return a.less(b, probelen); }
+};
+
+struct SCP_Less {
+    bool operator()(const SmartCharPtr& p1, const SmartCharPtr& p2) { return &*p1 < &*p2; } // simply compare addresses
+};
+
+class ProbeCandidates {
+    typedef std::set<ProbeOccurrance, PO_Less>      Candidates;
+    typedef std::map<ProbeOccurrance, int, PO_Less> CandidateHits;
+    typedef std::set<SmartCharPtr, SCP_Less>        SeqData;
+
+    size_t        probelen;
+    CandidateHits candidateHits;
+    SeqData       data; // locks SmartPtrs to input data (ProbeOccurrances point inside their data)
+
+public:
+    ProbeCandidates(size_t probelen_)
+        : probelen(probelen_),
+          candidateHits(probelen)
+    {}
+
+    void generate_for_sequence(PT_pdc *pdc, const SmartCharPtr& seq, size_t bp) {
+        arb_progress base_progress(2*bp);
+        if (bp >= probelen) {
+            // collect all probe candidates for current sequence
+            Candidates candidates(probelen);
+            {
+                data.insert(seq);
+                ProbeIterator probe(&*seq, bp, probelen);
+                do {
+                    if (probe.feasible(pdc)) {
+                        candidates.insert(probe.occurance());
+                        ++base_progress;
+                    }
+                } while (probe.next());
+            }
+
+            // increment overall hitcount for each found candidate
+            for (Candidates::iterator c = candidates.begin(); c != candidates.end(); ++c) {
+                candidateHits[*c]++;
+                ++base_progress;
+            }
+        }
+        base_progress.done();
+    }
+
+    void create_tprobes(PT_pdc *pdc, int ingroup_size) {
+        // tracks maximum rejected target-group coverage
+        int min_ingroup_hits     = (ingroup_size * pdc->min_coverage + .5);
+        int max_rej_ingroup_hits = 0;
+
+        for (CandidateHits::iterator c = candidateHits.begin(); c != candidateHits.end(); ++c) {
+            int ingroup_hits = c->second;
+            if (ingroup_hits >= min_ingroup_hits) {
+                const ProbeOccurrance& candi = c->first;
+
+                PT_tprobes *tprobe = create_PT_tprobes();
+
+                tprobe->sequence  = GB_strndup(candi.sequence(), probelen);
+                tprobe->temp      = pt_get_temperature(tprobe->sequence);
+                tprobe->groupsize = ingroup_hits;
+
+                aisc_link(&pdc->ptprobes, tprobe);
+            }
+            else {
+                max_rej_ingroup_hits = std::max(max_rej_ingroup_hits, ingroup_hits);
+            }
+        }
+
+        double max_rejected_coverage = max_rej_ingroup_hits/double(ingroup_size);
+        pdc->max_rj_coverage         = std::max(pdc->max_rj_coverage, max_rejected_coverage);
+    }
+};
+
+class DesignTargets : virtual Noncopyable {
+    PT_pdc *pdc;
+
+    int targets;       // overall target sequence count
+    int known_targets; // known target sequences
+    int added_targets; // added (=unknown) target sequences
+
+    long datasize;     // overall bp of target sequences
+
+    int min_probe_length; // min. designed probe length
+
+    int *known2id;
+
+    ARB_ERROR error;
+
+    void announce_seq_bp(long bp) {
+        pt_assert(!error);
+        if (bp<long(min_probe_length)) {
+            error = GBS_global_string("Sequence contains only %lu bp. Impossible design request for", bp);
+        }
+        else {
+            datasize                  += bp;
+            if (datasize<bp) datasize  = ULONG_MAX;
+        }
+    }
+
+    void scan_added_targets() {
+        added_targets = 0;
+        for (PT_sequence *seq = pdc->sequences; seq && !error; seq = seq->next) {
+            announce_seq_bp(seq->seq.size);
+            ++added_targets;
+        }
+        if (error) error = GBS_global_string("%s one of the added sequences", error.deliver());
+    }
+    void scan_known_targets(int expected_known_targets) {
+        known2id      = new int[expected_known_targets];
+        known_targets = 0;
+
+        for (int id = 0; id < psg.data_count && !error; ++id) {
+            const probe_input_data& pid = psg.data[id];
+            if (pid.inside_group()) {
+                announce_seq_bp(pid.get_size());
+                known2id[known_targets++] = id;
+                pt_assert(known_targets <= expected_known_targets);
+                if (error) error = GBS_global_string("%s species '%s'", error.deliver(), pid.get_shortname());
+            }
+        }
+    }
+
+public:
+    DesignTargets(PT_pdc *pdc_, int expected_known_targets)
+        : pdc(pdc_),
+          targets(0),
+          known_targets(0),
+          datasize(0),
+          min_probe_length(pdc->min_probelen),
+          known2id(NULL)
+    {
+        scan_added_targets(); // calc added_targets
+        if (!error) {
+            scan_known_targets(expected_known_targets);
+            targets = known_targets+added_targets;
+        }
+    }
+    ~DesignTargets() {
+        delete [] known2id;
+    }
+    ARB_ERROR& get_error() { return error; } // needs to be checked after construction!
+
+    long get_datasize() const { return datasize; }
+    int get_count() const { return targets; }
+    int get_known_count() const { return known_targets; }
+    int get_added_count() const { return added_targets; }
+
+    void generate(ProbeCandidates& candidates) {
+        arb_progress progress(get_count());
+        for (int k = 0; k<known_targets; ++k) {
+            const probe_input_data& pid = psg.data[known2id[k]];
+            candidates.generate_for_sequence(pdc, pid.get_dataPtr(), pid.get_size());
+            ++progress;
+        }
+        for (PT_sequence *seq = pdc->sequences; seq; seq = seq->next) {
+            candidates.generate_for_sequence(pdc, GB_strndup(seq->seq.data, seq->seq.size), seq->seq.size);
+            ++progress;
+        }
+    }
+};
+
+#if defined(DUMP_DESIGNED_PROBES)
+static void dump_tprobe(PT_tprobes *tprobe, int idx) {
+    char *readable = readable_probe(tprobe->sequence, tprobe->seq_len, 'T');
+    fprintf(stderr, "tprobe='%s' idx=%i len=%i\n", readable, idx, tprobe->seq_len);
+    free(readable);
+}
+static void DUMP_TPROBES(const char *where, PT_pdc *pdc) {
+    int idx = 0;
+    fprintf(stderr, "dumping tprobes %s:\n", where);
+    for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
+        dump_tprobe(tprobe, idx++);
+    }
+}
+#else
+#define DUMP_TPROBES(a,b)
 #endif
 
-static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
-    // search for possible probes
-
-    int           *group_idx    = new int[group_count];
-    unsigned long  datasize     = 0;                    // of marked species/genes
-    unsigned long  maxseqlength = 0;                    // of marked species/genes
-
-    // get group indices and count datasize of marked species
-    {
-        int used_idx = 0;
-        for (int name = 0; name < psg.data_count; name++) {
-            const probe_input_data& pid = psg.data[name];
-
-            if (pid.inside_group()) {
-                group_idx[used_idx++] = name;                  // store marked group indices
-
-                unsigned long size  = pid.get_size();
-                datasize           += size;
-
-                if (size<1 || size<(unsigned long)pdc->probelen) {
-                    fprintf(stderr, "Warning: impossible design request for '%s' (contains only %lu bp)\n", pid.get_name(), size);
-                }
-
-                if (datasize<size) datasize           = ULONG_MAX;  // avoid overflow!
-                if (size > maxseqlength) maxseqlength = size;
-            }
-        }
-        pt_assert(used_idx == group_count);
-    }
-
-    int           partsize = 0;                     // no partitions
-    unsigned long estimated_no_of_tprobes;
-    {
-        const unsigned long max_allowed_hash_size = 1000000; // approx.
-        const unsigned long max_allowed_tprobes   = (unsigned long)(max_allowed_hash_size*0.66); // results in 66% fill rate for hash (which is much!)
-
-        // tests found about 5-8% tprobes (in relation to datasize) -> we use 10% here
-        estimated_no_of_tprobes = (unsigned long)((datasize-pdc->probelen+1)*0.10+0.5);
-
-        while (estimated_no_of_tprobes > max_allowed_tprobes) {
-            partsize++;
-            estimated_no_of_tprobes /= 4; // 4 different bases
-        }
-
-#if defined(DEBUG)
-        printf("marked=%i datasize=%lu partsize=%i estimated_no_of_tprobes=%lu\n",
-               group_count, datasize, partsize, estimated_no_of_tprobes);
-#endif // DEBUG
-    }
-
-#if defined(DEBUG)
-    GBS_clear_hash_statistic_summary("outer");
-#endif // DEBUG
-
-    const int hash_multiply = 2; // resulting hash fill ratio is 1/(2*hash_multiply)
-
-    char partstring[256];
-    PT_init_base_string_counter(partstring, PT_A, partsize);
-
-    while (!PT_base_string_counter_eof(partstring)) {
-#if defined(DEBUG)
-        fputs("partition='", stdout);
-        for (int i = 0; i<partsize; ++i) {
-            putchar("ACGT"[partstring[i]-PT_A]);
-        }
-        fputs("'\n", stdout);
-#endif // DEBUG
-
-        GB_HASH *hash_outer = GBS_create_hash(estimated_no_of_tprobes, GB_MIND_CASE); // count in how many groups/sequences the tprobe occurs (key = tprobe, value = counter)
-
-#if defined(DEBUG)
-        GBS_clear_hash_statistic_summary("inner");
-#endif // DEBUG
-
-        for (int g = 0; g<group_count; ++g) {
-            int  name             = group_idx[g];
-            long possible_tprobes = psg.data[name].get_size()-pdc->probelen+1;
-
-            if (possible_tprobes<1) possible_tprobes = 1; // avoid wrong hash-size if no/not enough data
-
-            GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
-            ptnd_add_sequence_to_hash(pdc, hash_one, psg.data[name].get_data(), psg.data[name].get_size(), pdc->probelen, partstring, partsize);
-            GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash_outer); // merge hash_one into hash
-#if defined(DEBUG)
-            GBS_calc_hash_statistic(hash_one, "inner", 0);
-#endif // DEBUG
-            GBS_free_hash(hash_one);
-        }
-        PT_sequence *seq;
-        for (seq = pdc->sequences; seq; seq = seq->next) {
-            long     possible_tprobes = seq->seq.size-pdc->probelen+1;
-            GB_HASH *hash_one         = GBS_create_hash(possible_tprobes*hash_multiply, GB_MIND_CASE); // count tprobe occurrences for one group/sequence
-            ptnd_add_sequence_to_hash(pdc, hash_one, seq->seq.data, seq->seq.size, pdc->probelen, partstring, partsize);
-            GBS_hash_do_loop(hash_one, ptnd_collect_hash, hash_outer); // merge hash_one into hash
-#if defined(DEBUG)
-            GBS_calc_hash_statistic(hash_one, "inner", 0);
-#endif // DEBUG
-            GBS_free_hash(hash_one);
-        }
-
-#if defined(DEBUG)
-        GBS_print_hash_statistic_summary("inner");
-#endif // DEBUG
-
-        GBS_hash_do_loop(hash_outer, ptnd_build_probes_collect, NULL);
-
-#if defined(DEBUG)
-        GBS_calc_hash_statistic(hash_outer, "outer", 1);
-#if defined(DEVEL_RALF)
-        GBS_hash_do_loop(hash_outer, avoid_hash_warning, NULL); // hash is known to be overfilled - avoid assertion
-#endif // DEVEL_RALF
-#endif // DEBUG
-
-        GBS_free_hash(hash_outer);
-        PT_inc_base_string_count(partstring, PT_A, PT_B_MAX, partsize);
-    }
-    delete [] group_idx;
-#if defined(DEBUG)
-    GBS_print_hash_statistic_summary("outer");
-#endif // DEBUG
-}
-
 int PT_start_design(PT_pdc *pdc, int /* dummy */) {
-
-    //  IDP probe design
-
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
 
-    ptnd.locs = locs;
-    ptnd.pdc  = pdc;
+    erase_formatter(pdc);
+    while (pdc->tprobes) destroy_PT_tprobes(pdc->tprobes);
 
-    const char *error;
+    for (PT_sequence *seq = pdc->sequences; seq; seq = seq->next) {              // Convert all external sequence to internal format
+        seq->seq.size = probe_compress_sequence(seq->seq.data, seq->seq.size-1); // no longer convert final zero-byte (PT_QU gets auto-appended)
+    }
+
+    ARB_ERROR error;
+    int       unknown_species_count = 0;
     {
         char *unknown_names = ptpd_read_names(locs, pdc->names.data, pdc->checksums.data, error); // read the names
-        if (unknown_names) free(unknown_names); // unused here (handled by PT_unknown_names)
+        if (unknown_names) {
+            ConstStrArray names;
+            GBT_splitNdestroy_string(names, unknown_names, "#", true);
+            pt_assert(!unknown_names);
+            unknown_species_count = names.size();
+        }
     }
 
-    if (error) {
-        pt_export_error(locs, error);
-        return 0;
+    if (!error) {
+        DesignTargets targets(pdc, locs->group_count); // here locs->group_count is amount of known marked species/genes
+        error = targets.get_error();
+
+        if (!error) {
+            locs->group_count = targets.get_count();
+            if (locs->group_count <= 0) {
+                error = GBS_global_string("No %s marked - no probes designed", gene_flag ? "genes" : "species");
+            }
+            else if (targets.get_added_count() != unknown_species_count) {
+                if (gene_flag) { // cannot add genes
+                    pt_assert(targets.get_added_count() == 0); // cannot, but did add?!
+                    error = GBS_global_string("Cannot design probes for %i unknown marked genes", unknown_species_count);
+                }
+                else {
+                    int added = targets.get_added_count();
+                    error     = GBS_global_string("Got %i unknown marked species, but %i custom sequence%s added (has to match)",
+                                                  unknown_species_count,
+                                                  added,
+                                                  added == 1 ? " was" : "s were");
+                }
+            }
+            else if (pdc->min_probelen < MIN_DESIGN_PROBE_LENGTH) {
+                error = GBS_global_string("Specified min. probe length %i is below the min. allowed probe length of %i", pdc->min_probelen, MIN_DESIGN_PROBE_LENGTH);
+            }
+            else if (get_max_probelen(pdc) < pdc->min_probelen) {
+                error = GBS_global_string("Max. probe length %i is below the specified min. probe length of %i", get_max_probelen(pdc), pdc->min_probelen);
+            }
+            else {
+                // search for possible probes
+                if (!error) {
+                    int min_probelen = pdc->min_probelen;
+                    int max_probelen = get_max_probelen(pdc);
+
+                    arb_progress progress("Searching probe candidates", max_probelen-min_probelen+1);
+                    for (int len = min_probelen; len <= max_probelen; ++len) {
+                        ProbeCandidates candidates(len);
+
+                        targets.generate(candidates);
+                        pt_assert(!targets.get_error());
+
+                        candidates.create_tprobes(pdc, targets.get_count());
+                        ++progress;
+                    }
+                }
+
+                while (pdc->sequences) destroy_PT_sequence(pdc->sequences);
+
+                if (!error) {
+                    sort_tprobes_by(pdc, PSM_SEQUENCE);
+                    remove_tprobes_with_too_many_mishits(pdc);
+                    remove_tprobes_outside_ecoli_range(pdc);
+                    size_t tprobes = tprobes_calculate_bonds(locs);
+                    DUMP_TPROBES("after tprobes_calculate_bonds", pdc);
+
+                    if (tprobes) {
+                        arb_progress    progress(GBS_global_string("Calculating probe quality for %zu probe candidates", tprobes), tprobes);
+                        OutgroupMatcher om(locs, pdc);
+                        for (PT_tprobes *tprobe = pdc->tprobes; tprobe; tprobe = tprobe->next) {
+                            om.calculate_outgroup_matches(*tprobe);
+                            ++progress;
+                        }
+                    }
+                    else {
+                        fputs("No probe candidates found\n", stdout);
+                    }
+
+                    tprobes_sumup_perc_and_calc_quality(pdc);
+                    sort_tprobes_by(pdc, PSM_QUALITY);
+                    clip_tprobes(pdc, pdc->clipresult);
+                }
+            }
+        }
     }
 
-    PT_sequence *seq;
-    for (seq = pdc->sequences; seq; seq = seq->next) {  // Convert all external sequence to internal format
-        seq->seq.size = probe_compress_sequence(seq->seq.data, seq->seq.size);
-        locs->group_count++;
-    }
-
-    if (locs->group_count <= 0) {
-        pt_export_error(locs, GBS_global_string("No %s marked - no probes designed",
-                                                gene_flag ? "genes" : "species"));
-        return 0;
-    }
-
-    while (pdc->tprobes) destroy_PT_tprobes(pdc->tprobes);
-    ptnd_build_tprobes(pdc, locs->group_count);
-    while (pdc->sequences) destroy_PT_sequence(pdc->sequences);
-    ptnd_sort_probes_by(pdc, 1);
-    ptnd_first_check(pdc);
-    ptnd_check_position(pdc);
-    ptnd_check_bonds(locs);
-    ptnd_cp_tprobe_2_probepart(pdc);
-    ptnd_duplicate_probepart(locs);
-    ptnd_sort_parts(pdc);
-    ptnd_remove_duplicated_probepart(pdc);
-    ptnd_check_probepart(pdc);
-    while (pdc->parts) destroy_PT_probeparts(pdc->parts);
-    ptnd_calc_quality(pdc);
-    ptnd_sort_probes_by(pdc, 0);
-    ptnd_probe_delete_all_but(pdc, pdc->clipresult);
-
+    pt_export_error_if(locs, error);
     return 0;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static const char *concat_iteration(PrefixIterator& prefix) {
+    static GBS_strstruct out(50);
+
+    out.erase();
+
+    while (!prefix.done()) {
+        if (out.filled()) out.put(',');
+
+        char *readable = probe_2_readable(prefix.copy(), prefix.length());
+        out.cat(readable);
+        free(readable);
+
+        ++prefix;
+    }
+
+    return out.get_data();
+}
+
+void TEST_PrefixIterator() {
+    // straight-forward permutation
+    PrefixIterator p0(PT_A, PT_T, 0); TEST_EXPECT_EQUAL(p0.steps(), 1);
+    PrefixIterator p1(PT_A, PT_T, 1); TEST_EXPECT_EQUAL(p1.steps(), 4);
+    PrefixIterator p2(PT_A, PT_T, 2); TEST_EXPECT_EQUAL(p2.steps(), 16);
+    PrefixIterator p3(PT_A, PT_T, 3); TEST_EXPECT_EQUAL(p3.steps(), 64);
+
+    TEST_EXPECT_EQUAL(p1.done(), false);
+    TEST_EXPECT_EQUAL(p0.done(), false);
+
+    TEST_EXPECT_EQUAL(concat_iteration(p0), "");
+    TEST_EXPECT_EQUAL(concat_iteration(p1), "A,C,G,U");
+    TEST_EXPECT_EQUAL(concat_iteration(p2), "AA,AC,AG,AU,CA,CC,CG,CU,GA,GC,GG,GU,UA,UC,UG,UU");
+
+    // permutation truncated at PT_QU
+    PrefixIterator q0(PT_QU, PT_T, 0); TEST_EXPECT_EQUAL(q0.steps(), 1);
+    PrefixIterator q1(PT_QU, PT_T, 1); TEST_EXPECT_EQUAL(q1.steps(), 6);
+    PrefixIterator q2(PT_QU, PT_T, 2); TEST_EXPECT_EQUAL(q2.steps(), 31);
+    PrefixIterator q3(PT_QU, PT_T, 3); TEST_EXPECT_EQUAL(q3.steps(), 156);
+    PrefixIterator q4(PT_QU, PT_T, 4); TEST_EXPECT_EQUAL(q4.steps(), 781);
+
+    TEST_EXPECT_EQUAL(concat_iteration(q0), "");
+    TEST_EXPECT_EQUAL(concat_iteration(q1), ".,N,A,C,G,U");
+    TEST_EXPECT_EQUAL(concat_iteration(q2),
+                      ".,"
+                      "N.,NN,NA,NC,NG,NU,"
+                      "A.,AN,AA,AC,AG,AU,"
+                      "C.,CN,CA,CC,CG,CU,"
+                      "G.,GN,GA,GC,GG,GU,"
+                      "U.,UN,UA,UC,UG,UU");
+    TEST_EXPECT_EQUAL(concat_iteration(q3),
+                      ".,"
+                      "N.,"
+                      "NN.,NNN,NNA,NNC,NNG,NNU,"
+                      "NA.,NAN,NAA,NAC,NAG,NAU,"
+                      "NC.,NCN,NCA,NCC,NCG,NCU,"
+                      "NG.,NGN,NGA,NGC,NGG,NGU,"
+                      "NU.,NUN,NUA,NUC,NUG,NUU,"
+                      "A.,"
+                      "AN.,ANN,ANA,ANC,ANG,ANU,"
+                      "AA.,AAN,AAA,AAC,AAG,AAU,"
+                      "AC.,ACN,ACA,ACC,ACG,ACU,"
+                      "AG.,AGN,AGA,AGC,AGG,AGU,"
+                      "AU.,AUN,AUA,AUC,AUG,AUU,"
+                      "C.,"
+                      "CN.,CNN,CNA,CNC,CNG,CNU,"
+                      "CA.,CAN,CAA,CAC,CAG,CAU,"
+                      "CC.,CCN,CCA,CCC,CCG,CCU,"
+                      "CG.,CGN,CGA,CGC,CGG,CGU,"
+                      "CU.,CUN,CUA,CUC,CUG,CUU,"
+                      "G.,"
+                      "GN.,GNN,GNA,GNC,GNG,GNU,"
+                      "GA.,GAN,GAA,GAC,GAG,GAU,"
+                      "GC.,GCN,GCA,GCC,GCG,GCU,"
+                      "GG.,GGN,GGA,GGC,GGG,GGU,"
+                      "GU.,GUN,GUA,GUC,GUG,GUU,"
+                      "U.,"
+                      "UN.,UNN,UNA,UNC,UNG,UNU,"
+                      "UA.,UAN,UAA,UAC,UAG,UAU,"
+                      "UC.,UCN,UCA,UCC,UCG,UCU,"
+                      "UG.,UGN,UGA,UGC,UGG,UGU,"
+                      "UU.,UUN,UUA,UUC,UUG,UUU");
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

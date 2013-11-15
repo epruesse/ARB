@@ -29,6 +29,7 @@ char *GBS_vglobal_string_copy(const char *templat, va_list parg) __ATTR__VFORMAT
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) __ATTR__FORMAT(3);
 char *GBS_global_string_copy(const char *templat, ...) __ATTR__FORMAT(1);
 const char *GBS_global_string(const char *templat, ...) __ATTR__FORMAT(1);
+const char *GBS_static_string(const char *str);
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr);
 GB_ERROR GB_export_error(const char *error);
 GB_ERROR GB_export_errorf(const char *templat, ...) __ATTR__FORMAT(1) __ATTR__DEPRECATED_TODO("use GB_export_error(GBS_global_string(...))");

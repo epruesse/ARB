@@ -118,13 +118,11 @@ AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, char
 
 AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, AWT_species_set *l, AWT_species_set *r) {
     memset((char *)this, 0, sizeof(*this));
-    this->node = node;
-    long j = ssr->nspecies/8+1; // @@@ unused
     bitstring = (unsigned char *)GB_calloc(sizeof(char), size_t(ssr->nspecies/8)+5);
     long *lbits = (long *)l->bitstring;
     long *rbits = (long *)r->bitstring;
     long *dest = (long *)bitstring;
-    for (j = ssr->nspecies/8/sizeof(long) - 1 + 1; j>=0; j--) {
+    for (long j = ssr->nspecies/8/sizeof(long) - 1 + 1; j>=0; j--) {
         dest[j] = lbits[j] | rbits[j];
     }
     unfound_species_count = l->unfound_species_count + r->unfound_species_count;

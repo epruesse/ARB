@@ -16,8 +16,9 @@
 #define AW_RENAME_SKIP_GUI
 #include <AW_rename.hxx>
 #include <aw_question.hxx>
-#include <arb_str.h>
+#include <arb_stdstr.h>
 #include <arb_file.h>
+#include <arb_diff.h>
 
 using namespace std;
 
@@ -48,7 +49,7 @@ GB_ERROR GI_importGenomeFile(ImportSession& session, const char *file_name, cons
 
         importer->import();
     }
-    catch (const string &err) { error = GBS_global_string("%s", err.c_str()); }
+    catch (const string &err) { error = GBS_static_string(err.c_str()); }
     catch (const char *err) { error = err; }
     catch (...) { error = "Unknown exception during import (program error)"; }
     return error;

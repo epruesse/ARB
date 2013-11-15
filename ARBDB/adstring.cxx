@@ -12,6 +12,7 @@
 #include <arb_strbuf.h>
 #include <arb_sort.h>
 #include <arb_defs.h>
+#include <arb_str.h>
 
 #include "gb_key.h"
 
@@ -74,7 +75,7 @@ GB_ERROR GB_check_key(const char *key) { // goes to header: __ATTR__USERESULT
         if ((c>='a') && (c<='z')) continue;
         if ((c>='A') && (c<='Z')) continue;
         if ((c>='0') && (c<='9')) continue;
-        if ((c=='_')) continue;
+        if (c=='_') continue;
         return GBS_global_string("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
     }
 
@@ -95,7 +96,7 @@ GB_ERROR GB_check_link_name(const char *key) { // goes to header: __ATTR__USERES
         if ((c>='a') && (c<='z')) continue;
         if ((c>='A') && (c<='Z')) continue;
         if ((c>='0') && (c<='9')) continue;
-        if ((c=='_')) continue;
+        if (c=='_') continue;
         return GB_export_errorf("Invalid character '%c' in '%s'; allowed: a-z A-Z 0-9 '_' ", c, key);
     }
 
@@ -983,6 +984,20 @@ char *GBS_log_dated_action_to(const char *comment, const char *action) {
     return GBS_strclose(new_comment);
 }
 
+const char *GBS_funptr2readable(void *funptr, bool stripARBHOME) {
+    // only returns module and offset for static functions :-(
+    char       **funNames     = backtrace_symbols(&funptr, 1);
+    const char  *readable_fun = funNames[0];
+
+    if (stripARBHOME) {
+        const char *ARBHOME = GB_getenvARBHOME();
+        if (ARB_strBeginsWith(readable_fun, ARBHOME)) {
+            readable_fun += strlen(ARBHOME)+1; // +1 hides slash behind ARBHOME
+        }
+    }
+    return readable_fun;
+}
+
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
@@ -992,7 +1007,7 @@ char *GBS_log_dated_action_to(const char *comment, const char *action) {
 // #define TEST_TEST_MACROS
 
 #ifdef ENABLE_CRASH_TESTS
-static void provokesegv() { *(int *)0 = 0; }
+static void provokesegv() { *(volatile int *)0 = 0; }
 # if defined(TEST_TEST_MACROS)
 static void dont_provokesegv() {}
 # endif
@@ -1031,6 +1046,18 @@ void TEST_signal_tests() {
     TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
     TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
     TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
+#endif
+
+    // following section is disabled since it would spam wanted warnings
+    // (enable it when changing any of these TEST_..-macros used here)
+#if 0
+    TEST_ASSERT_SEGFAULT__WANTED(dont_provokesegv);
+    TEST_ASSERT_SEGFAULT__UNWANTED(provokesegv);
+    TEST_ASSERT_SEGFAULT__UNWANTED(failassertion);
+
+    TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
 #endif
 }
 

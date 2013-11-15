@@ -65,11 +65,11 @@ const long WARN_SLOW_ABOVE_MS = 1 * SECONDS;        // when too warn about slow 
 
 // these are temporary test-timings to avoid test timeouts on jenkins build server
 
-const long MAX_EXEC_MS_NORMAL = 15 * MINUTES;       // kill with segfault after time passed
-const long MAX_EXEC_MS_SLOW   = 15 * MINUTES;       // same for slow tests
-const long MAX_EXEC_MS_ENV    = 15 * MINUTES;       // same for environment setup/cleanup
-const long MAX_EXEC_MS_VGSYS  = 15 * MINUTES;       // same for valgrinded system calls (especially pt_server)
-const long WARN_SLOW_ABOVE_MS = 15 * MINUTES;       // when too warn about slow test
+const long MAX_EXEC_MS_NORMAL = 30 * MINUTES;       // kill with segfault after time passed
+const long MAX_EXEC_MS_SLOW   = 30 * MINUTES;       // same for slow tests
+const long MAX_EXEC_MS_ENV    = 30 * MINUTES;       // same for environment setup/cleanup
+const long MAX_EXEC_MS_VGSYS  = 30 * MINUTES;       // same for valgrinded system calls (especially pt_server)
+const long WARN_SLOW_ABOVE_MS = 30 * MINUTES;       // when too warn about slow test
 
 #endif
 

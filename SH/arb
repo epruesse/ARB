@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/bash -u
+
+# set -x
 
 # error message function
 err () {
@@ -32,7 +34,7 @@ get_arbhome() {
 # Add to the path variable named by $1 the component $2.  $3 must be
 # "append" or "prepend" to indicate where the component is added.
 addpath () {
-    eval value=\"\$$1\"
+    eval value=\"\$\{$1:-\}\"
     case "$value" in
 	*:$2:*|*:$2|$2:*|$2)
 	    result="$value"
@@ -64,6 +66,16 @@ prepend () {
     addpath "$1" "$2" prepend
 }
 
+if [ -z ${HOME:-} ]; then
+    HOME=~
+fi
+export HOME
+
+if [ -z ${DISPLAY:-} ]; then
+    DISPLAY=:0
+fi
+export DISPLAY
+
 # get absolute path to directory where this script resides
 # (avoid use of readlink as it is missing on OSX)
 ARBHOME_OF_SCRIPT="$(get_arbhome)"
@@ -72,7 +84,7 @@ ARB_SCRIPT="$ARB_SH/arb"
 
 export ARB_SH ARB_SCRIPT ARBHOME_OF_SCRIPT
 
-if [ -n "$ARBHOME" -a "$ARBHOME" != "$ARBHOME_OF_SCRIPT" ]; then
+if [ -n "${ARBHOME:-}" -a "${ARBHOME:-}" != "$ARBHOME_OF_SCRIPT" ]; then
     echo "Ignoring set ARBHOME '$ARBHOME' (overridden by explicit call of '$0')"
 fi
 
@@ -106,11 +118,15 @@ fi
 
 ARB_PID="$$"; export ARB_PID
 
-ARB_PROPERTIES=${HOME}/.arb_prop
-if [ ! -d ${ARB_PROPERTIES} ] ; then
-  echo "Directory ${ARB_PROPERTIES} not found - creating ..."
-  mkdir ${ARB_PROPERTIES}
+if [ -z ${ARB_PROP:-} ]; then
+    ARB_PROP=${HOME}/.arb_prop
 fi
+echo "Using properties from $ARB_PROP"
+if [ ! -d ${ARB_PROP} ] ; then
+  echo "Directory ${ARB_PROP} not found - creating ..."
+  mkdir ${ARB_PROP}
+fi
+export ARB_PROP
 
 ARB_LOCAL_PTS=${HOME}/.arb_pts
 if [ ! -d ${ARB_LOCAL_PTS} ] ; then
@@ -118,28 +134,23 @@ if [ ! -d ${ARB_LOCAL_PTS} ] ; then
   mkdir ${ARB_LOCAL_PTS}
 fi
 
-if [ "X$ARBMACROHOME" = "X" ] ; then
-  ARBMACROHOME="${ARB_PROPERTIES}/macros";
-  export ARBMACROHOME
+if [ -z ${ARBMACROHOME:-} ] ; then
+  ARBMACROHOME="${ARB_PROP}/macros";
 fi
 if [ ! -d ${ARBMACROHOME} ] ; then
   echo "Directory $ARBMACROHOME not found - creating ..."
   mkdir ${ARBMACROHOME}
 fi
+export ARBMACROHOME
 
-if [ "X$ARBMACRO" = "X" ] ; then
+if [ -z ${ARBMACRO:-} ] ; then
   ARBMACRO="$ARBHOME/lib/macros"
-  export ARBMACRO
 fi
 if [ ! -d ${ARBMACRO} ] ; then
   echo "Directory $ARBMACRO not found - creating ..."
   mkdir ${ARBMACRO}
 fi
-
-if [ "X$GDE_HELP_DIR" = "X" ] ; then
-  GDE_HELP_DIR="$ARBHOME/GDEHELP"
-  export GDE_HELP_DIR
-fi
+export ARBMACRO
 
 # set default command-tool used by ARB
 ARB_XTERM=${ARB_XTERM:-xterm -sl 1000 -sb -geometry 120x50}
@@ -151,8 +162,10 @@ export ARB_XCMD
 ARB_LIBRARY_PATH="${LD_LIBRARY_PATH}"
 export ARB_LIBRARY_PATH
 
-case "$1" in
+case "${1:-}" in
   help|-h|--help)
+    arb_ntree --help
+    echo ""
     echo ""
     echo "arb - script to start arb"
     echo "Usage:"
@@ -162,26 +175,25 @@ case "$1" in
     echo "       arb help             # show help"
     echo "       arb trace [ntargs]   # trace arb (to detect errors)"
     echo ""
-    echo "ntargs are any argument allowed to arb_ntree (see below)"
+    echo "ntargs are any argument allowed to arb_ntree (see above)"
     echo ""
     echo ""
-    arb_ntree --help
   ;;
   shell)
     echo "Opening an ARB shell"
     if [ -n "$SHELL" ]; then
-        exec $SHELL
+        $SHELL
     else
-        exec sh
+        bash -i
     fi
+    echo "ARB shell terminates"
   ;;
   trace)
     shift
-    exec $ARBHOME/SH/arb_trace "$@"
+    arb_launcher $ARBHOME/SH/arb_trace "$@"
   ;;
   *)
     echo "Please wait while the program ARB is starting ....."
-    # (arb_ntree $args;arb_clean >/dev/null 2>&1;echo ARB done) &
-    exec arb_ntree "$@" 
+    arb_launcher arb_ntree "$@"
 esac
 

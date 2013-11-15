@@ -150,7 +150,8 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_H
 void GBT_delete_tree(GBT_TREE*& tree);
 GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name);
 GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree);
-GB_ERROR GBT_write_tree_rem(GBDATA *gb_main, const char *tree_name, const char *remark);
+GB_ERROR GBT_write_tree_remark(GBDATA *gb_main, const char *tree_name, const char *remark);
+GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree, const char *remark);
 GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long structure_size, int *tree_size);
 GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, long structure_size);
 size_t GBT_count_leafs(const GBT_TREE *tree);

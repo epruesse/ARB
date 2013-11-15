@@ -23,144 +23,144 @@ DLIBS=$(LIBS) $(XLIBS) -lXaw
 all: $(BINARIES)
 
 $(BIN)/clique:       clique.o  disc.o  phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/consense:     consense.o  phylip.o  cons.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/contml:       contml.o  cont.o  phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/contrast:     contrast.o  cont.o  phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/dnacomp:      dnacomp.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/dnadist:      dnadist.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/dnainvar:     dnainvar.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/dnaml:        dnaml.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/dnamlk:       dnamlk.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/dnamove:      dnamove.o seq.o moves.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/dnapenny:     dnapenny.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/dnapars:      dnapars.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/dolmove:      dolmove.o disc.o moves.o dollo.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/dollop:       dollop.o disc.o dollo.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/dolpenny:     dolpenny.o disc.o dollo.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/drawgram:     drawgram.o draw.o draw2.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(DLIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(DLIBS)
 
 $(BIN)/drawtree:     drawtree.o draw.o draw2.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(DLIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(DLIBS)
 
 $(BIN)/factor:       factor.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/fitch:        fitch.o dist.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/gendist:      gendist.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/kitsch:       kitsch.o dist.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/mix:          mix.o disc.o wagner.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/move:         move.o disc.o moves.o wagner.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/neighbor:     neighbor.o dist.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/pars:	     pars.o  discrete.o  phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/penny:        penny.o disc.o wagner.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/proml:        proml.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/promlk:       promlk.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/protdist:     protdist.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/protpars:     protpars.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/restdist:     restdist.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/restml:       restml.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/retree:       retree.o moves.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/seqboot:      seqboot.o seq.o phylip.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 $(BIN)/treedist:     treedist.o phylip.o cons.o
-	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 
 
 #$(BIN)/clique: clique.o disc.o phylip.o
-#	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+#	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 #$(BIN)/dnaml: dnaml.o seq.o phylip.o
-#	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+#	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 #../../bin/dnaml:        dnaml.o dnaml2.o
-#	$(ACC) $(cflags) -o $@ dnaml.o dnaml2.o $(LIBS)
+#	$(A_CC) $(cflags) -o $@ dnaml.o dnaml2.o $(LIBS)
 
 #../../bin/dnamlk:       dnamlk.o dnamlk2.o
-#	$(ACC) $(cflags) -o $@ dnamlk.o dnamlk2.o $(LIBS)
+#	$(A_CC) $(cflags) -o $@ dnamlk.o dnamlk2.o $(LIBS)
 
 #../../bin/drawgram:     drawgram.o drawgraphics.o
-#	$(ACC) $(cflags) -o $@ drawgram.o drawgraphics.o $(LIBS)
+#	$(A_CC) $(cflags) -o $@ drawgram.o drawgraphics.o $(LIBS)
 
 #../../bin/drawtree:     drawtree.o drawgraphics.o
-#	$(ACC) $(cflags) -o $@ drawtree.o drawgraphics.o $(LIBS)
+#	$(A_CC) $(cflags) -o $@ drawtree.o drawgraphics.o $(LIBS)
 
 #../../bin/mix:     mix.o mix2.o
-#	$(ACC) $(cflags) -o $@ mix.o mix2.o $(LIBS)
+#	$(A_CC) $(cflags) -o $@ mix.o mix2.o $(LIBS)
 
 #../../bin/restml:     restml.o restml2.o
-#	$(ACC) $(cflags) -o $@ restml.o restml2.o $(LIBS)
+#	$(A_CC) $(cflags) -o $@ restml.o restml2.o $(LIBS)
 
 #../../bin/protml:     protml.o p2clib.o
-#	$(ACC) $(cflags) -o $@ protml.o p2clib.o $(LIBS)
+#	$(A_CC) $(cflags) -o $@ protml.o p2clib.o $(LIBS)
 
 #$(BIN)/%: %.c
-#	$(ACC) $(cflags) -o $@ $^ $(LIBS)
+#	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 .c.o :
-	$(ACC) -c $(cflags) $< $(POST_COMPILE)
+	$(A_CC) -c $(cflags) $< $(POST_COMPILE)
 
 DEPENDS = $(notdir $(PROGS:%=%.depend))
 depends: $(DEPENDS)

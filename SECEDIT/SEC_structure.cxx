@@ -91,9 +91,9 @@ SEC_region::SEC_region(int start, int end)
     , sequence_end(end)
     , baseCount(-1)
     , abspos_array(NULL)
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     , abspos_array_size(0)
-#endif // DEBUG
+#endif // ASSERTION_USED
 {
     sec_assert((start == -1 && end == -1) || start != end);
 }

@@ -138,11 +138,10 @@ int AW_helix::show_helix(void *devicei, int gc1, const char *sequence, AW_pos x,
     return device->text_overlay(gc1, sequence, 0, AW::Position(x, y), 0.0,  filter, (AW_CL)this, 1.0, 1.0, BI_show_helix_on_device);
 }
 
-static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cl_cb_struct) {
+static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cb) {
     static bool recursion = false;
 
     if (!recursion) {
-        AW_cb   *awcbs     = reinterpret_cast<AW_cb*>(cl_cb_struct);
         AW_root *aw_root   = aww->get_root();
         AW_awar *awar_pair = aw_root->awar(helix_pair_awar(changed));
         char    *pairdef   = awar_pair->read_string();
@@ -193,13 +192,13 @@ static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cl_cb_st
             }
             awar_pair->write_string(pairdef); // write back uppercase version
         }
-        awcbs->run_callbacks();
+        ((void (*)())cb)();
 
         free(pairdef);
     }
 }
 
-AW_window *create_helix_props_window(AW_root *awr, AW_cb *awcbs) {
+AW_window *create_helix_props_window(AW_root *awr, void (*cb)(AW_window*)) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
@@ -210,7 +209,7 @@ AW_window *create_helix_props_window(AW_root *awr, AW_cb *awcbs) {
 
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"helixsym.hlp");
+        aws->callback(makeHelpCallback("helixsym.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at_newline();
@@ -219,7 +218,7 @@ AW_window *create_helix_props_window(AW_root *awr, AW_cb *awcbs) {
         aws->label_length(max_awar_len);
 
         aws->label("Show helix?");
-        aws->callback(awcbs);
+        aws->callback(makeWindowCallback(cb));
         aws->create_toggle(HELIX_AWAR_ENABLE);
 
         aws->at_newline();
@@ -232,7 +231,7 @@ AW_window *create_helix_props_window(AW_root *awr, AW_cb *awcbs) {
 
             if (i != HELIX_DEFAULT && i != HELIX_NO_MATCH) {
                 aws->label(helix_awars[j].awar);
-                aws->callback(helix_pairs_changed_cb, j, (AW_CL)awcbs);
+                aws->callback(helix_pairs_changed_cb, j, (AW_CL)cb);
                 aws->create_input_field(helix_pair_awar(j), 20);
 
                 if (j == 0) ex = aws->get_at_xposition();
@@ -243,7 +242,7 @@ AW_window *create_helix_props_window(AW_root *awr, AW_cb *awcbs) {
                 aws->at_x(ex);
             }
 
-            aws->callback(awcbs);
+            aws->callback(makeWindowCallback(cb));
             aws->create_input_field(helix_symbol_awar(j), 3);
             aws->at_newline();
         }

@@ -99,13 +99,11 @@ inline DERIVED *safe_pointer_downcast(BASE *expr) {
     STATIC_ASSERT_ANNOTATED(dereference<BASE   >::possible == false, "got BASE** (expected BASE*)");
     STATIC_ASSERT_ANNOTATED(dereference<DERIVED>::possible == false, "got DERIVED** (expected DERIVED*)");
 
-    using namespace ARB_type_traits;
+    typedef typename ARB_type_traits::remove_cv<BASE   >::type NCV_BASE;
+    typedef typename ARB_type_traits::remove_cv<DERIVED>::type NCV_DERIVED;
 
-    typedef typename remove_cv<BASE   >::type NCV_BASE;
-    typedef typename remove_cv<DERIVED>::type NCV_DERIVED;
-
-    STATIC_ASSERT_ANNOTATED((is_base_of<BASE,DERIVED>::value ||
-                             is_same<NCV_BASE, NCV_DERIVED>::value),
+    STATIC_ASSERT_ANNOTATED((ARB_type_traits::is_base_of<BASE,DERIVED>::value ||
+                             ARB_type_traits::is_same<NCV_BASE, NCV_DERIVED>::value),
                              "downcast only allowed from base type to derived type");
 
     return expr
@@ -134,7 +132,7 @@ inline DERIVED_PTR safe_downcast(BASE_PTR expr) {
 
 
 // helper macro to overwrite accessor functions in derived classes
-#define DEFINE_DOWNCAST_ACCESSORS(CLASS, NAME, VALUE)                       \
+#define DEFINE_DOWNCAST_ACCESSORS(CLASS, NAME, VALUE)                   \
     CLASS *NAME() { return DOWNCAST(CLASS*, VALUE); }                   \
     const CLASS *NAME() const { return DOWNCAST(const CLASS*, VALUE); }
 

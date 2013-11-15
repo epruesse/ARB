@@ -267,11 +267,12 @@ GB_ERROR ArbTcpDat::update() {
         }
     }
     
-    if (error) freenull(filename);
-
+    if (error) {
+        freenull(filename);
 #if defined(DUMP_ATD_ACCESS)
-    printf("error=%s\n", error);
+        printf("error=%s\n", error);
 #endif // DUMP_ATD_ACCESS
+    }
 
     return error;
 }

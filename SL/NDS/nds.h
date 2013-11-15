@@ -26,12 +26,15 @@ struct GBT_TREE;
 enum NDS_Type {
     NDS_OUTPUT_LEAFTEXT        = 0,   // compress info (no tabbing, separate single fields by comma, completely skip empty fields)
     NDS_OUTPUT_SPACE_PADDED    = 1,   // format info (using spaces)
-    NDS_OUTPUT_TAB_SEPARATED   = 2,   // format info (using 1 tab per column - for easy import into star-calc, excel, etc. )
+    NDS_OUTPUT_TAB_SEPARATED   = 2,   // format info (using 1 tab per column - for easy import into star-calc, excel, etc. ).
+                                      // (also used by AWT_graphic_tree::show_nds_list for non-tree-display of species in ARB_NTREE)
     NDS_OUTPUT_COMMA_SEPARATED = 3,   // like NDS_OUTPUT_TAB_SEPARATED, but using commas
 };
 
-const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type format, GBT_TREE *species, const char *tree_name);
 void        make_node_text_init(GBDATA *gb_main);
+const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type format, GBT_TREE *species, const char *tree_name);
+
+char *NDS_mask_nonprintable_chars(char *inStr);
 
 AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main);
 void       create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main);

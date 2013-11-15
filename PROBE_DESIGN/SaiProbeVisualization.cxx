@@ -43,7 +43,7 @@ static const char *getAwarName(int awarNo) {
     return buf;
 }
 
-AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr, AW_CL cd2) {
+AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr) {
     AW_gc_manager gc_manager =
         AW_manage_GC(aww,
                      scr->get_gc_base_name(),
@@ -51,7 +51,7 @@ AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                      SAI_GC_HIGHLIGHT,
                      SAI_GC_MAX,
                      AW_GCM_DATA_AREA,
-                     makeWindowCallback(AWT_resize_cb, scr, cd2),
+                     makeWindowCallback(AWT_resize_cb, scr),
                      false,
                      "#005500",
                      "Selected Probe$#FF0000",
@@ -77,12 +77,11 @@ SAI_graphic::SAI_graphic(AW_root *aw_rooti, GBDATA *gb_maini) {
     this->gb_main = gb_maini;
 }
 
-void SAI_graphic::command(AW_device * /* device */, AWT_COMMAND_MODE /* cmd */, int button, AW_key_mod /* key_modifier */, AW_key_code /* key_code */, char /* key_char */,
-                          AW_event_type type, AW_pos /* x */, AW_pos /* y */, AW_clicked_line *cl, AW_clicked_text *ct)
-{
-    if (type == AW_Mouse_Press && (cl->exists || ct->exists) && button != AW_BUTTON_MIDDLE) {
-        if (ct->exists) {
-            int         clicked_idx  = (int)ct->client_data1;
+void SAI_graphic::handle_command(AW_device *, AWT_graphic_event& event) {
+    if (event.type() == AW_Mouse_Press && event.button() != AW_BUTTON_MIDDLE) {
+        const AW_clicked_element *clicked = event.best_click();
+        if (clicked->is_text()) {
+            int         clicked_idx  = (int)clicked->cd1();
             const char *species_name = g_pbdata->probeSpecies[clicked_idx];
 
             aw_root->awar(AWAR_SPECIES_NAME)->write_string(species_name);
@@ -703,7 +702,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
 
     scr->recalc_size();
 
-    awm->insert_help_topic("How to Visualize SAI`s ?", "H", "saiProbeHelp.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"saiProbeHelp.hlp", 0);
+    awm->insert_help_topic("How to Visualize SAI`s ?", "H", "saiProbeHelp.hlp", AWM_ALL, (AW_CB)AW_help_popup, (AW_CL)"saiProbeHelp.hlp", 0);
 
     awm->create_menu("File", "F", AWM_ALL);
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);

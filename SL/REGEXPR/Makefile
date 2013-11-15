@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .c .cxx .depend
 
@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -36,21 +36,13 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 RegExpr.o: RegExpr.hxx
-RegExpr.o: $(ARBHOME)/INCLUDE/ad_prot.h
-RegExpr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arb_core.h
-RegExpr.o: $(ARBHOME)/INCLUDE/arb_error.h
-RegExpr.o: $(ARBHOME)/INCLUDE/arb_msg.h
-RegExpr.o: $(ARBHOME)/INCLUDE/arb_string.h
-RegExpr.o: $(ARBHOME)/INCLUDE/arbdb.h
-RegExpr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-RegExpr.o: $(ARBHOME)/INCLUDE/arbdbt.h
+RegExpr.o: $(ARBHOME)/INCLUDE/arb_match.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arbtools.h
 RegExpr.o: $(ARBHOME)/INCLUDE/attributes.h
 RegExpr.o: $(ARBHOME)/INCLUDE/cxxforward.h
 RegExpr.o: $(ARBHOME)/INCLUDE/dupstr.h
 RegExpr.o: $(ARBHOME)/INCLUDE/gccver.h
-RegExpr.o: $(ARBHOME)/INCLUDE/smartptr.h
 RegExpr.o: $(ARBHOME)/INCLUDE/test_global.h
 RegExpr.o: $(ARBHOME)/INCLUDE/test_unit.h

@@ -9,33 +9,29 @@ UP	mode.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		ANGLE MODE
+TITLE		SPREAD MODE
 
-OCCURRENCE	ARB_NT < button in the left column>
+OCCURRENCE	ARB_NT <button in the left column>
+		F10 on the keyboard
 
-DESCRIPTION	The 'ANGLE MODE' allows you to increase or decrease the angles of
+DESCRIPTION	The 'SPREAD MODE' allows you to increase or decrease the angles of
 		adjacent terminal branches or all angles within subtrees.
 
-		Click on the eighth button in the left column of the 'ARB_NT'
-		window to activate the 'ANGLE MODE'.
+		Click on the tenth button in the left column of the 'ARB_NT'
+		window to activate the 'SPREAD MODE'.
 
-		Change the angle of terminal branches:
+		To spread all angles of a subtree, click and drag a branch
+                towards the tips of the tree.
 
-			Move the cursor to nay position along the edge
-			connecting the two terminal branches and the rest of
-			the tree. Click on the left or right mouse button
-			repeatedly to gradually increase or decrease the angle.
+                To reduce the angles, drag towards the tree center.
 
-		Change all angles of a subtree:
+                To reset the spreading of a subtree to the default value,
+                press the key '0' (zero) while pointing to that subtree.
 
-			Move the cursor to any position along the edge defining
-			the subtree and proceed as described above.
+                To reset the spreading of the whole tree, point somewhere outside
+                the tree while pressing zero.
 
-			The subtree-defining branch is that located closest to
-			the indicated root (open square) of the whole tree
-			which is directly or indirectly connected to all branches of the
-			subtree.
-
+                See also LINK{mode_rotate.hlp}.
 
 NOTES		Short descriptions of the 'MODE' and the functions assigned
 		to the mouse buttons are given in the fourth line of the
@@ -52,9 +48,6 @@ NOTES		Short descriptions of the 'MODE' and the functions assigned
 		pressed, moving the cursor to the desired position and
 		subsequently releasing the mouse button. The label of the bar
 		can be moved independently.
-
-		The previous angle(s) can be restored using the 'RESET MODE'
-		('RESET' button on the 'ARB_NT' window).
 
 EXAMPLES	None
 

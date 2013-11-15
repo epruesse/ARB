@@ -197,7 +197,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def) {
 
     aw_root->awar_int(AWAR_NODE_INFO_ONLY_MARKED, 0,    aw_def);
 
-    aw_root->awar_string(AWAR_TREE_CONSENSE_TREE, "tree_consense", aw_def)->set_srt(GBT_TREE_AWAR_SRT);
+    aw_root->awar_string(AWAR_TREE_CONSENSE_TREE, "tree_consensus", aw_def)->set_srt(GBT_TREE_AWAR_SRT);
     aw_root->awar_string(AWAR_TREE_CONSENSE_SELECTED, "", aw_def);
     
     update_filter_cb(aw_root);
@@ -267,7 +267,7 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"tr_export.hlp");
+    aws->callback(makeHelpCallback("tr_export.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("user");
@@ -371,38 +371,36 @@ static void tree_load_cb(AW_window *aww) {
     {
         char *pcTreeFormat = aw_root->awar(AWAR_TREE_IMPORT "/filter")->read_string();
         char *fname        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
-        char *scaleWarning = 0;
+        char *warnings     = 0;
         char *tree_comment = 0;
 
         GBT_TREE *tree;
         if (strcmp(pcTreeFormat, "xml") == 0) {
             char *tempFname = readXmlTree(fname);
-            tree = TREE_load(tempFname, sizeof(GBT_TREE), &tree_comment, 1, &scaleWarning);
+            tree = TREE_load(tempFname, sizeof(GBT_TREE), &tree_comment, true, &warnings);
             GB_unlink_or_warn(tempFname, NULL);
             free(tempFname);
         }
         else {
-            tree = TREE_load(fname, sizeof(GBT_TREE), &tree_comment, 1, &scaleWarning);
+            tree = TREE_load(fname, sizeof(GBT_TREE), &tree_comment, true, &warnings);
         }
 
         if (!tree) error = GB_await_error();
         else {
-            if (scaleWarning) GBT_message(GLOBAL.gb_main, scaleWarning);
+            if (warnings) GBT_message(GLOBAL.gb_main, warnings);
 
-            GB_transaction ta(GLOBAL.gb_main);
-            error = GBT_write_tree(GLOBAL.gb_main, 0, tree_name, tree);
-
-            if (!error && tree_comment) {
-                error = GBT_write_tree_rem(GLOBAL.gb_main, tree_name, tree_comment);
+            {
+                GB_transaction ta(GLOBAL.gb_main);
+                error = GBT_write_tree_with_remark(GLOBAL.gb_main, tree_name, tree, tree_comment);
+                error = ta.close(error);
             }
 
-            if (error) error = ta.close(error);
-            else aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
+            if (!error) aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
 
             GBT_delete_tree(tree);
         }
 
-        free(scaleWarning);
+        free(warnings);
         free(tree_comment);
         free(fname);
         free(pcTreeFormat);
@@ -503,7 +501,7 @@ static AW_window *create_tree_diff_window(AW_root *root) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"tree_diff.hlp");
+    aws->callback(makeHelpCallback("tree_diff.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -532,7 +530,7 @@ static AW_window *create_tree_cmp_window(AW_root *root) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"tree_cmp.hlp");
+    aws->callback(makeHelpCallback("tree_cmp.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
@@ -618,7 +616,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"treeadm.hlp");
+        aws->callback(makeHelpCallback("treeadm.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -725,11 +723,11 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
                     ++progress;
                 }
 
-                progress.subtitle("consense construction");
+                progress.subtitle("consensus tree construction");
                 size_t species_count;
                 GBT_TREE *cons_tree = tree_builder.get(species_count);
                 nt_assert(cons_tree);
-                error               = GBT_write_tree(gb_main, 0, cons_tree_name, cons_tree);
+                error = GBT_write_tree(gb_main, 0, cons_tree_name, cons_tree);
                 ++progress;
 
                 if (error) progress.done();
@@ -750,14 +748,14 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(aw_root, "CONSENSE_TREE", "Consense Tree");
+        aws->init(aw_root, "CONSENSE_TREE", "Consensus Tree");
         aws->load_xfig("ad_cons_tree.fig");
         
         aws->callback(AW_POPDOWN);
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"consense_tree.hlp");
+        aws->callback(makeHelpCallback("consense_tree.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -770,7 +768,7 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
 
         aws->at("build");
         aws->callback(create_consense_tree_cb, AW_CL(selected_trees));
-        aws->create_autosize_button("BUILD", "Build consense tree", "B");
+        aws->create_autosize_button("BUILD", "Build consensus tree", "B");
     }
     return aws;
 }

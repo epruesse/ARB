@@ -52,8 +52,7 @@ public:
 };
 
 
-class AWT_species_set : virtual Noncopyable {
-public:
+struct AWT_species_set : virtual Noncopyable {
     unsigned char *bitstring;
     int            unfound_species_count;
     double         best_cost;

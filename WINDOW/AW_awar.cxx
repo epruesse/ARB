@@ -16,6 +16,7 @@
 #include "aw_select.hxx"
 #include <arb_str.h>
 #include <arb_file.h>
+#include <ad_cb.h>
 #include <list>
 #include <sys/stat.h>
 
@@ -47,8 +48,7 @@ struct AW_widget_refresh_cb : virtual Noncopyable {
 };
 
 
-static void aw_cp_awar_2_widget_cb(AW_root *root, AW_CL cl_widget_refresh_cb) {
-    AW_widget_refresh_cb *widgetlist = (AW_widget_refresh_cb*)cl_widget_refresh_cb;
+static void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_refresh_cb *widgetlist) {
     if (widgetlist->widget == root->changer_of_variable) {
         root->changer_of_variable = 0;
         root->value_changed = false;
@@ -99,12 +99,12 @@ AW_widget_refresh_cb::AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_aw
     aw          = awi;
     next        = previous;
 
-    awar->add_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
+    awar->add_callback(makeRootCallback(aw_cp_awar_2_widget_cb, this));
 }
 
 AW_widget_refresh_cb::~AW_widget_refresh_cb() {
     if (next) delete next;
-    awar->remove_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
+    awar->remove_callback(makeRootCallback(aw_cp_awar_2_widget_cb, this));
 }
 
 AW_var_target::AW_var_target(void* pntr, AW_var_target *nexti) {
@@ -197,31 +197,14 @@ void AW_awar::touch() {
     }
 }
 
-
-
 void AW_awar::untie_all_widgets() {
     delete refresh_list; refresh_list = NULL;
-}
-
-
-
-
-AW_awar *AW_awar::add_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
-    return add_callback(makeRootCallback(value_changed_cb, cd1, cd2));
-}
-
-AW_awar *AW_awar::add_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
-    return add_callback((AW_RCB)f, cd1, 0);
-}
-
-AW_awar *AW_awar::add_callback(void (*f)(AW_root*)) {
-    return add_callback((AW_RCB)f, 0, 0);
 }
 
 AW_awar *AW_awar::add_callback(const RootCallback& rcb) {
     AW_root_cblist::add(callback_list, rcb);
     return this;
-} 
+}
 
 AW_awar *AW_awar::add_target_var(char **ppchr) {
     assert_var_type(AW_STRING);
@@ -255,15 +238,12 @@ AW_VARIABLE_TYPE AW_awar::get_type() const {
 
 
 // extern "C"
-static void AW_var_gbdata_callback(GBDATA *, int *cl, GB_CB_TYPE) {
-    AW_awar *awar = (AW_awar *)cl;
+static void AW_var_gbdata_callback(GBDATA*, AW_awar *awar) {
     awar->update();
 }
 
 
-static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
-    AW_awar *awar = (AW_awar *)cl;
-
+static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, AW_awar *awar) {
     if (awar->gb_origin == gbd) {
         // make awar zombie
         awar->gb_var    = NULL;
@@ -456,15 +436,15 @@ void AW_awar::assert_var_type(AW_VARIABLE_TYPE wanted_type) {
 }
 
 // extern "C"
-static void AW_var_gbdata_callback_delete(GBDATA *gbd, int *cl, GB_CB_TYPE) {
-    AW_var_gbdata_callback_delete_intern(gbd, cl);
+static void AW_var_gbdata_callback_delete(GBDATA *gbd, AW_awar *awar) {
+    AW_var_gbdata_callback_delete_intern(gbd, awar);
 }
 
 AW_awar *AW_awar::map(AW_default gbd) {
     if (gb_var) {                                   // remove old mapping
-        GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
+        GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, makeDatabaseCallback(AW_var_gbdata_callback, this));
         if (gb_var != gb_origin) {                  // keep callback if pointing to origin!
-            GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
+            GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, makeDatabaseCallback(AW_var_gbdata_callback_delete, this));
         }
         gb_var = NULL;
     }
@@ -476,9 +456,9 @@ AW_awar *AW_awar::map(AW_default gbd) {
     if (gbd) {
         GB_transaction ta(gbd);
 
-        GB_ERROR error = GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
+        GB_ERROR error = GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, makeDatabaseCallback(AW_var_gbdata_callback, this));
         if (!error && gbd != gb_origin) {           // do not add delete callback if mapping to origin
-            error = GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
+            error = GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, makeDatabaseCallback(AW_var_gbdata_callback_delete, this));
         }
         if (error) aw_message(error);
 
@@ -499,17 +479,6 @@ AW_awar *AW_awar::map(AW_awar *dest) {
 }
 AW_awar *AW_awar::map(const char *awarn) {
     return map(root->awar(awarn));
-}
-
-AW_awar *AW_awar::remove_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
-    return remove_callback(makeRootCallback(value_changed_cb, cd1, cd2));
-}
-
-AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) {
-    return remove_callback((AW_RCB) f, cd1, 0);
-}
-AW_awar *AW_awar::remove_callback(void (*f)(AW_root*)) {
-    return remove_callback((AW_RCB) f, 0, 0);
 }
 
 AW_awar *AW_awar::remove_callback(const RootCallback& rcb) {

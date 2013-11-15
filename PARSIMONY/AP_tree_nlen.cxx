@@ -486,7 +486,7 @@ void AP_tree_nlen::set_root() {
     AP_tree::set_root();
 }
 
-void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
+void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
     ap_assert(father);
     ap_assert(newBrother->father);
 
@@ -545,7 +545,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
                     e4 = newBrother->edgeTo(oldBrother)->unlink();
 
-                    AP_tree::moveTo(newBrother, rel_pos);
+                    AP_tree::moveNextTo(newBrother, rel_pos);
 
                     sortOldestFirst(&e1, &e2, &e3);
                     e1->relink(oldBrother, grandFather); // use oldest edge at remove position
@@ -557,7 +557,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
                     e4 = newBrother->edgeTo(oldBrother)->unlink();
 
-                    AP_tree::moveTo(newBrother, rel_pos);
+                    AP_tree::moveNextTo(newBrother, rel_pos);
 
                     sortOldestFirst(&e1, &e2, &e3);
                     e1->relink(oldBrother, uncle);
@@ -566,7 +566,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
             }
             else { // son of root -> grandson of root
                 oldBrother->unlinkAllEdges(&e1, &e2, &e3);
-                AP_tree::moveTo(newBrother, rel_pos);
+                AP_tree::moveNextTo(newBrother, rel_pos);
                 thisFather->linkAllEdges(e1, e2, e3);
             }
         }
@@ -575,14 +575,14 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                 thisFather->unlinkAllEdges(&e1, &e2, &e3);
                 e4 = grandFather->edgeTo(newBrother)->unlink();
 
-                AP_tree::moveTo(newBrother, rel_pos);
+                AP_tree::moveNextTo(newBrother, rel_pos);
 
                 sortOldestFirst(&e1, &e2, &e3);
                 e1->relink(oldBrother, grandFather);
                 thisFather->linkAllEdges(e2, e3, e4);
             }
             else { // no edges change if we move grandson of root -> son of root
-                AP_tree::moveTo(newBrother, rel_pos);
+                AP_tree::moveNextTo(newBrother, rel_pos);
             }
         }
         else {
@@ -595,7 +595,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                 oldBrother->unlinkAllEdges(&e1, &e2, &e3);
                 e4 = newBrother->edgeTo(newBrothersFather)->unlink();
 
-                AP_tree::moveTo(newBrother, rel_pos);
+                AP_tree::moveNextTo(newBrother, rel_pos);
 
                 sortOldestFirst(&e1, &e2, &e3);
                 e1->relink(oldBrother->get_leftson(), oldBrother->get_rightson()); // new root-edge
@@ -606,7 +606,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
                     e4 = newBrother->edgeTo(newBrothersFather)->unlink();
 
-                    AP_tree::moveTo(newBrother, rel_pos);
+                    AP_tree::moveNextTo(newBrother, rel_pos);
 
                     sortOldestFirst(&e1, &e2, &e3);
                     e1->relink(oldBrother, newBrothersFather);  // new root-edge
@@ -618,7 +618,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
                     e4 = newBrother->edgeTo(newBrothersFather)->unlink();
 
-                    AP_tree::moveTo(newBrother, rel_pos);
+                    AP_tree::moveNextTo(newBrother, rel_pos);
 
                     sortOldestFirst(&e1, &e2, &e3);
                     e1->relink(oldBrother, uncle);
@@ -632,7 +632,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
                     e4 = newBrother->edgeTo(newBrothersBrother)->unlink();
 
-                    AP_tree::moveTo(newBrother, rel_pos);
+                    AP_tree::moveNextTo(newBrother, rel_pos);
 
                     sortOldestFirst(&e1, &e2, &e3);
                     e1->relink(oldBrother, grandFather);
@@ -642,7 +642,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
                     e4 = newBrother->edgeTo(newBrothersFather)->unlink();
 
-                    AP_tree::moveTo(newBrother, rel_pos);
+                    AP_tree::moveNextTo(newBrother, rel_pos);
 
                     sortOldestFirst(&e1, &e2, &e3);
                     e1->relink(oldBrother, grandFather);
@@ -652,7 +652,7 @@ void AP_tree_nlen::moveTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
         }
     }
     else { // edgesChange==0
-        AP_tree::moveTo(newBrother, rel_pos);
+        AP_tree::moveNextTo(newBrother, rel_pos);
     }
 
     ASSERT_VALID_TREE(this);
@@ -941,15 +941,20 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
     this->set_root();
     rootNode()->costs();
 
-    int             visited_subtrees = 0;
-    int     better_subtrees = 0;
+    int visited_subtrees = 0;
+    int better_subtrees  = 0;
     for (i = 0; i < 8; i++) {
         pars_ref[i] = i;
         pars[i] = -1;
 
         if (!pars_refpntr[i])   continue;
         if (pars_refpntr[i]->is_leaf) continue;
-        if (!pars_refpntr[i]->kernighan == AP_NONE) continue;
+
+        // KL recursion was broken (see changeset [11010] for how)
+        // - IMO it should only descent into AP_NONE branches (see setters of 'kernighan'-flag)
+        // - quick test shows calculation is much faster and results seem to be better.
+        if (pars_refpntr[i]->kernighan != AP_NONE) continue;
+
         if (pars_refpntr[i]->gr.hidden) continue;
         if (pars_refpntr[i]->get_father()->gr.hidden) continue;
 
@@ -1209,7 +1214,7 @@ const char* AP_tree_nlen::sortByName()
 
     if (strcmp(n1, n2)<0) return n1;
 
-    AP_tree::swap_sons();
+    AP_tree::swap_featured_sons();
 
     return n2;
 }

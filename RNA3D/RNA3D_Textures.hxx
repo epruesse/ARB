@@ -20,8 +20,7 @@ enum {
     SHAPE_MAX
 };
 
-class Texture2D {
-public:
+struct Texture2D {
     GLuint texture[SHAPE_MAX];
 
     Texture2D();

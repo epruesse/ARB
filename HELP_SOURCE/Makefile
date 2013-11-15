@@ -1,9 +1,12 @@
 
 .SUFFIXES: .o .c .cxx .source .hlp .xml .dtd .html .depend .ps.gz .pdf.gz
+.PHONY: prepare all dirs generated xml dump ps pdf nonhlp_formats
+.PHONY: delzerohtml interdepends google_logo html help clean tools depends depend.init
 
 # --------------------------------------------------------------------------------
 
-TEST_ONE=0# default is 0 (if 1 only one .hlp file is processed. see below @ TEST_ONE)
+TEST_ONE:=0# default is 0; if 1 -> only one .hlp file is processed. see below .@TEST_ONE
+ONLY_DO_UNITTEST:=0# default is 0; if 1 -> only unittest.hlp is processed (to make unit-test auto-update work) #@@@ set to 0 before checkin
 
 # --------------------------------------------------------------------------------
 # directories of source/destination files:
@@ -24,21 +27,25 @@ BINARIES = $(TOOL_OBJECTS:%.o=$(ARBHOME)/bin/%)
 QUIETLY = ./quietly.pl
 
 # using xsltproc and XMLLINT:
-XSLTPROC = xsltproc
+XSLTPROC = ./arb_xslt.sh
 VALIDATE = $(QUIETLY) XMLLINT
 
 # --------------------------------------------------------------------------------
 
 $(MAIN) : all
 
-all: date generated dirs tools nonhlp_formats delzerohtml
+prepare: date generated dirs tools nonhlp_formats delzerohtml
+
+all: prepare
 		@echo --------------------------------------------------- [old hlp 2 xml]
 		time $(MAKE) xml
+		@echo --------------------------------------------------- [interdependencies]
+		time $(MAKE) interdepends
 		@echo --------------------------------------------------- [xml 2 hlp]
-		time $(MAKE) help
+		time $(MAKE) "USE_GENERATED_DEPENDS=1" help
 		$(MAKE) $(HLP_DEST)/FORM.hlp
 		@echo --------------------------------------------------- [xml 2 html]
-		time $(MAKE) html
+		time $(MAKE) "USE_GENERATED_DEPENDS=1" html
 
 $(HLP_DEST)/FORM.hlp: $(HLP_SOURCE)/FORM.hlp
 		cp -p $< $@
@@ -71,7 +78,9 @@ generated:
 
 HELP_INDEX_XML = $(XML_LOCATION)/$(HELP_INDEX_NAME).xml
 
-#OLD_HELP= oldhelp/importift.hlp
+ifeq ($(ONLY_DO_UNITTEST),1)
+OLD_HELP_ALL= $(HLP_SOURCE)/unittest.hlp
+else
 OLD_HELP_ALL= \
 		$(HLP_SOURCE)/arb.hlp \
 		$(wildcard \
@@ -79,6 +88,7 @@ OLD_HELP_ALL= \
 				$(HLP_SOURCE)/*.hlp \
 				$(HLP_SOURCE)/prompt/*.hlp \
 		)
+endif
 
 ifeq ($(TEST_ONE),1)
 #OLD_HELP=$(HLP_SOURCE)/arb.hlp $(HLP_SOURCE)/version.hlp $(HLP_SOURCE)/translate_dna_2_pro.hlp $(HLP_SOURCE)/species_join.hlp
@@ -97,8 +107,8 @@ DTD=arb_help.dtd
 
 $(XML) : $(XML_DEPEND) Makefile $(QUIETLY)
 
-$(HELP_INDEX_XML): $(OLD_HELP_ALL) $(XML) ./generate_index.pl Makefile 
-	./generate_index.pl $(HELP_INDEX_NAME).xml $(XML_LOCATION) > $(HELP_INDEX_XML)
+$(HELP_INDEX_XML): $(OLD_HELP_ALL) $(XML) ./generate_index.pl Makefile
+	./generate_index.pl $(HELP_INDEX_NAME).xml $(XML_LOCATION) > $@
 
 xml : $(XML) $(HELP_INDEX_XML)
 
@@ -110,7 +120,7 @@ $(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp $(DTD)
 				( echo $<:1: exists twice -- only one existence allowed; \
 				  echo $(HLP_GENERATED)/$(<F):1: other occurrence \
 				  && false )
-		@$(HELP2XML) $< $@
+		@$(HELP2XML) $< $@ || (rm -f $@ && echo "Error: generation of $@ failed" && false)
 		@$(VALIDATE) $@
 
 $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp $(DTD)
@@ -118,7 +128,7 @@ $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp $(DTD)
 				( echo $<:1: exists twice -- only one existence allowed; \
 				  echo $(HLP_SOURCE)/$(<F):1: other occurrence \
 				  && false )
-		@$(HELP2XML) $< $@
+		@$(HELP2XML) $< $@ || (rm -f $@ && echo "Error: generation of $@ failed" && false)
 		@$(VALIDATE) $@
 
 $(HTML_LOCATION)/help_index.html : $(HELP_INDEX_XML)
@@ -169,10 +179,27 @@ date.xsl : date
 
 STYLE_HTML=to_html.xsl
 STYLE_HELP=to_help.xsl
+STYLE_DEPENDS=to_depends.xsl
+
+XSLTPROC_ARGS=--nonet --nomkdir --stringparam xml_location "$(XML_LOCATION)"
 
 # --------------------------------------------------------------------------------
 
-XSLTPROC_ARGS=--nonet --nomkdir --stringparam xml_location "$(XML_LOCATION)"
+INTERDEPENDS=.depends
+INTERDEPENDS_SOURCE=$(XML)
+XML2DEPENDS=./xml_2_depends.sh
+
+$(INTERDEPENDS): $(INTERDEPENDS_SOURCE) $(XML2DEPENDS) Makefile $(STYLE_DEPENDS)
+	@( ( echo "$(INTERDEPENDS_SOURCE)" | $(XML2DEPENDS) $(XSLTPROC) $(STYLE_DEPENDS) $(XSLTPROC_ARGS) >$@ ) 2>interdep.err && rm interdep.err ) || \
+		(cat interdep.err; false)
+
+interdepends: $(INTERDEPENDS)
+
+ifeq ($(USE_GENERATED_DEPENDS),1)
+include $(INTERDEPENDS)
+endif
+
+# --------------------------------------------------------------------------------
 
 $(HELP) : $(STYLE_HELP) $(DTD) Makefile
 
@@ -207,7 +234,7 @@ help : $(HELP)
 clean:
 	-rm -f $(TOOL_OBJECTS) $(BINARIES)
 	-rm -f $(XML_DEPEND) dummy date.xsl
-	-rm -rf $(XML_LOCATION) $(HLP_DEST) $(HTML_LOCATION)
+	-rm -rf $(XML_LOCATION) $(HLP_DEST) $(HTML_LOCATION) $(INTERDEPENDS)
 	$(MAKE) -C $(HLP_GENERATED) clean
 
 # --------------------------------------------------------------------------------
@@ -222,11 +249,10 @@ $(XML_DEPEND) : arb_help2xml.cxx
 	touch $(XML_DEPEND)
 
 %.o: %.cxx
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 $(HELP2XML): arb_help2xml.o $(LIBS)
-# @@@ when backtracing code is in libCORE, link vs ARBDB is no longer needed! 
-	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS) $(LIBPATH) $(ARBDB_LIB) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS) $(LIBPATH) $(CORE_LIB) $(EXECLIBS)
 
 
 DEPENDS = $(TOOL_OBJECTS:.o=.depend)
@@ -248,11 +274,14 @@ depend.init:
 
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_defs.h
+arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_diff.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/gccver.h
+arb_help2xml.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/xml.hxx

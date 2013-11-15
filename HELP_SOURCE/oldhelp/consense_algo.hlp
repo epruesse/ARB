@@ -1,0 +1,175 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB     consense_tree.hlp
+SUB     bootstrap.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Algorithm used for consensus tree
+
+OCCURRENCE      ARB_DIST/NJ bootstrap
+                ARB_NT/Tree/Build consensus tree
+
+DESCRIPTION     ARB has its own library for calculating consensus trees, which is used
+                when
+                - calculating bootstrap trees with NJ (ARB_DIST) and
+                - when directly calculating consensus trees using
+                  ARB_NT/Tree/Build consensus tree
+
+                The algorithm works as follows:
+
+                - all trees are read and all occurring branches are stored in a branch-pool
+                - the consensus tree is constructed iteratively by
+                  - picking the "best" branch and adding it to the tree.
+                  - deleting all now impossible branches from the branch pool.
+
+                The best branch (at each time of the iteration) is determined by the following
+                criteria (listed in order of significance):
+
+                - inner branches are picked before leaf branches
+                - branches occurring more often (i.e. branches with higher bootstrap values) are picked first
+                - branches nearer to the center of the tree are preferred over more distant branches
+                - longer branches are preferred over shorter branches
+
+                If all of the above criteria are really equal for two branches, the pick-order
+                depends on their appearance in the source trees (to make results reproducible).
+
+                The distance of each branch to center of the tree is defined by the difference
+                between the number of species on each side of the branch. Branches with an equal
+                number of species on each side are "at the center" of the tree.
+
+                If not all trees contain the same set of species, the missing species for each tree
+                are considered to reside somewhere towards (or beyond) the center of the tree.
+
+NOTES           None
+
+EXAMPLES        Example for 2 trees:
+
+
+                          A      C                  A      D
+                           \    /                    \    /
+                            +--+                      +--+
+                           /    \                    /    \
+                          B      +--E               B      +--F
+                                 |                         |
+                                 D                         E
+
+
+                The trees contain the following branches:
+
+                           A---BCDE                  A---BDEF
+                           B---ACDE                  B---ADEF
+                           C---ABDE                  D---ABEF
+                           D---ABCE                  E---ABDF
+                           E---ABCD                  F---ABDE
+                           AB---CDE                  AB---DEF
+                           ABC---DE                  ABD---EF
+
+                Consensus tree is build upon the following branch pool:
+
+                           A      --- BCDE[F]
+                           B      --- ACDE[F]
+                           C      --- ABDE[F]
+                           D      --- ABCE[F]
+                           E      --- ABCD[F]
+                           A      --- B[C]DEF
+                           B      --- A[C]DEF
+                           D      --- A[C]BEF
+                           E      --- A[C]BDF
+                           F      --- A[C]BDE
+                           AB     --- CDE[F]
+                           ABC[F] --- DE
+                           AB     --- [C]DEF
+                           AB[C]D --- EF
+
+                (missing species were added on more likely side of branch and are shown in brackets)
+
+                Bootstrap values are calculated for branches:
+
+                           AB --- CDEF          100%            #1
+                           EF --- ABCD           50%            #2
+                           DE --- ABCF           50%            #3
+                           A --- BCDEF          100%            #4
+                           B --- ACDEF          100%            #5
+                           D --- ABCEF          100%            #6
+                           E --- ABCDF          100%            #7
+                           C --- ABDEF           50%            #8
+                           F --- ACBDE           50%            #9
+
+                Branches were listed in the order they will be picked: first picking the
+                inner branches (#1 .. #3) in order of their bootstrap values, then the
+                leaf branches (other criteria not shown in this example).
+
+                That results in the following tree building steps:
+
+                              AB---CDEF                    (add branch #1)
+
+
+                                     CD
+                                    /
+                                   /
+                              AB--+                        (add branch #2)
+                                   \50%
+                                    \
+                                     EF
+
+
+                              Now it's impossible to insert branch #3 => branch is dropped!
+
+
+                              A        CD
+                               \      /
+                                \    /
+                                 +--+                      (add branch #4)
+                                /    \50%
+                               /      \
+                              B        EF
+
+
+                              Branch #5 already present in tree, just set correct length + bootstrap.
+
+                                       C
+                                       |
+                              A        +--D
+                               \      /
+                                \    /
+                                 +--+                      (add branch #6)
+                                /    \50%
+                               /      \
+                              B        EF
+
+
+                                       C
+                                       |
+                              A        +--D
+                               \      /
+                                \    /
+                                 +--+                       (add branch #7)
+                                /    \50%
+                               /      \
+                              B        +--E
+                                       |
+                                       F
+
+                              Branches #8 and #9 already present in tree, just set correct lengths + bootstraps:
+
+                                       C
+                                    50%|
+                              A        +--D
+                               \      /
+                                \    /
+                                 +--+
+                                /    \50%
+                               /      \
+                              B        +--E
+                                    50%|
+                                       F
+
+
+WARNINGS        None
+
+BUGS            No bugs known

@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend .setup
 
 first: $(MAIN)
@@ -6,7 +6,6 @@ first: $(MAIN)
 include Makefile.setup.include
 
 LOCAL_DEFINES=-DSIMPLE_ARB_ASSERT
-LOCAL_CFLAGS=$(cflags) $(LOCAL_DEFINES)
 LOCAL_MAKEDEPENDFLAGS=$(MAKEDEPENDFLAGS) $(LOCAL_DEFINES)
 
 TESTER_OBJECTS = \
@@ -21,6 +20,7 @@ ARBROOT=..
 
 TEST_ENVIRONMENT_LIBS = \
 	$(ARBROOT)/PROBE_COM/client.a \
+	$(ARBROOT)/PROBE_COM/common.a \
 	$(ARBROOT)/SERVERCNTRL/SERVERCNTRL.a \
 
 
@@ -33,7 +33,7 @@ test_environment: $(ALL_OBJECTS) $(TEST_ENVIRONMENT_LIBS)
 	$(LINK_EXECUTABLE) test_environment $(ALL_OBJECTS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS) $(EXECLIBS)
 
 .cxx.o:
-	$(CPP) $(LOCAL_CFLAGS) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) $(LOCAL_DEFINES) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(ALL_OBJECTS) *.a test_environment skipslow.stamp
@@ -66,6 +66,7 @@ TestEnvironment.o: $(ARBHOME)/INCLUDE/aisc_global.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_core.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_defs.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_diff.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_error.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_file.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -93,6 +94,7 @@ UnitTester.o: $(ARBHOME)/INCLUDE/arb_assert.h
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_core.h
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_msg.h
+UnitTester.o: $(ARBHOME)/INCLUDE/arb_pathlen.h
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_simple_assert.h
 UnitTester.o: $(ARBHOME)/INCLUDE/arbtools.h
 UnitTester.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -100,6 +102,7 @@ UnitTester.o: $(ARBHOME)/INCLUDE/cxxforward.h
 UnitTester.o: $(ARBHOME)/INCLUDE/dupstr.h
 UnitTester.o: $(ARBHOME)/INCLUDE/gccver.h
 UnitTester.o: $(ARBHOME)/INCLUDE/SigHandler.h
+UnitTester.o: $(ARBHOME)/INCLUDE/static_assert.h
 UnitTester.o: $(ARBHOME)/INCLUDE/SuppressOutput.h
 UnitTester.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
 UnitTester.o: $(ARBHOME)/INCLUDE/valgrind.h

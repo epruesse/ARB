@@ -128,7 +128,7 @@ public:
 };
 
 template <class T>
-class auto_delete_array_ptr {
+class auto_delete_array_ptr : virtual Noncopyable {
     T *const thePointer;
 public:
     auto_delete_array_ptr(T *p) : thePointer(p) {
@@ -224,6 +224,7 @@ public:
     ~SmartPtr() { Unbind(); }
 
     SmartPtr(const SmartPtr<T, C>& other) {
+        // cppcheck-suppress copyCtorPointerCopying (that's exactly what a SmartPtr is made for)
         object = other.object;
         if (object) object->new_reference();
     }
@@ -286,6 +287,10 @@ public:
         tpl_assert(object);
         tpl_assert(other.object);
         return object==other.object;
+    }
+
+    unsigned references() const {
+        return isSet() ? object->counter : 0;
     }
 };
 

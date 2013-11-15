@@ -28,6 +28,8 @@
 #include <adGene.h>
 #include <db_query.h>
 #include <rootAsWin.h>
+#include <mode_text.h>
+#include <ad_cb.h>
 
 #include <map>
 
@@ -174,7 +176,7 @@ static void reinit_NDS_4_window(GEN_map_window *win) {
     win->get_graphic()->get_gen_root()->reinit_NDS();
 }
 
-static void GEN_NDS_changed(GBDATA *gb_viewkey, int *, GB_CB_TYPE) {
+static void GEN_NDS_changed(GBDATA *gb_viewkey) {
     GBDATA *gb_main = GB_get_root(gb_viewkey);
     GEN_make_node_text_init(gb_main);
     GEN_map_manager::with_all_mapped_windows(reinit_NDS_4_window);
@@ -193,8 +195,7 @@ struct gene_container_changed_cb_data {
     {}
 };
 
-static void GEN_gene_container_changed_cb(GBDATA * /* gb_gene_data */, int *cl_cb_data, GB_CB_TYPE /* gb_type */) {
-    gene_container_changed_cb_data *cb_data = (gene_container_changed_cb_data*)cl_cb_data;
+static void GEN_gene_container_changed_cb(GBDATA*, gene_container_changed_cb_data *cb_data) {
     cb_data->graphic->reinit_gen_root(cb_data->canvas, true);
     cb_data->canvas->refresh();
 }
@@ -221,12 +222,12 @@ static void GEN_gene_container_cb_installer(bool install, AWT_canvas *gmw, GEN_g
         // @@@ FIXME: get data of local genome!
 
         if (curr_cb_data->gb_gene_data) {
-            GB_add_callback(curr_cb_data->gb_gene_data, (GB_CB_TYPE)(GB_CB_DELETE|GB_CB_CHANGED), GEN_gene_container_changed_cb, (int*)curr_cb_data);
+            GB_add_callback(curr_cb_data->gb_gene_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(GEN_gene_container_changed_cb, curr_cb_data));
         }
     }
     else {
         if (curr_cb_data->gb_gene_data) { // if callback is installed
-            GB_remove_callback(curr_cb_data->gb_gene_data, (GB_CB_TYPE)(GB_CB_DELETE|GB_CB_CHANGED), GEN_gene_container_changed_cb, (int*)curr_cb_data);
+            GB_remove_callback(curr_cb_data->gb_gene_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(GEN_gene_container_changed_cb, curr_cb_data));
             curr_cb_data->gb_gene_data = 0;
         }
     }
@@ -460,7 +461,7 @@ static void GEN_create_genemap_global_awars(AW_root *aw_root, AW_default def, GB
 
     aw_root->awar_int(AWAR_GENMAP_AUTO_JUMP, 1);
 
-    GEN_create_nds_vars(aw_root, def, gb_main, GEN_NDS_changed);
+    GEN_create_nds_vars(aw_root, def, gb_main, makeDatabaseCallback(GEN_NDS_changed));
 }
 
 static void GEN_add_global_awar_callbacks(AW_root *awr) {
@@ -486,27 +487,15 @@ static void GEN_add_global_awar_callbacks(AW_root *awr) {
 
 // --------------------------------------------------------------------------------
 
-static void GEN_mode_event(AW_window *aws, AW_CL cl_win, AW_CL cl_mode) {
-    GEN_map_window   *win  = (GEN_map_window*)cl_win;
-    AWT_COMMAND_MODE  mode = (AWT_COMMAND_MODE)cl_mode;
-    const char       *text = 0;
+static void GEN_mode_event(AW_window *aws, GEN_map_window *win, AWT_COMMAND_MODE mode) {
+    const char *text = 0;
     switch (mode) {
-        case AWT_MODE_SELECT: {
-            text="SELECT MODE  LEFT: click to select";
-            break;
-        }
-        case AWT_MODE_ZOOM: {
-            text="ZOOM MODE    LEFT: drag to zoom   RIGHT: zoom out";
-            break;
-        }
-        case AWT_MODE_EDIT: {
-            text="INFO MODE    LEFT: click for info";
-            break;
-        }
-        default: {
-            gen_assert(0);
-            break;
-        }
+        case AWT_MODE_SELECT: text = MODE_TEXT_1BUTTON("SELECT", "click to select a gene"); break;
+        case AWT_MODE_EDIT:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");         break;
+
+        case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
+
+        default: text = no_mode_text_defined(); break;
     }
 
     gen_assert(strlen(text) < AWAR_FOOTER_MAX_LEN); // text too long!
@@ -540,7 +529,7 @@ static AW_window *GEN_create_options_window(AW_root *awr) {
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"gene_options.hlp");
+        aws->at("help"); aws->callback(makeHelpCallback("gene_options.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("button");
@@ -567,7 +556,7 @@ static AW_window *GEN_create_layout_window(AW_root *awr) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"gen_layout.hlp");
+        aws->callback(makeHelpCallback("gen_layout.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -1052,8 +1041,7 @@ public:
 GEN_unique_param::ExistingParams GEN_unique_param::existing_params;
 
 
-class GEN_command_mode_param : public GEN_unique_param {
-public:
+struct GEN_command_mode_param : public GEN_unique_param {
     static GEN_command_mode_param *get(GBDATA *gb_main_, AW_CL command_mode_) { return (GEN_command_mode_param*)GEN_unique_param::get(gb_main_, command_mode_); }
     AW_CL get_command_mode() { return get_unique(); }
 };
@@ -1084,8 +1072,7 @@ static void GEN_mark_command(AW_window *aww, AW_CL cl_pmode, AW_CL cl_mode_param
     }
 }
 
-class GEN_extract_mode_param : public GEN_unique_param {
-public:
+struct GEN_extract_mode_param : public GEN_unique_param {
     static GEN_extract_mode_param *get(GBDATA *gb_main_, GEN_PERFORM_MODE perform_mode) { return (GEN_extract_mode_param*)GEN_unique_param::get(gb_main_, perform_mode); }
     GEN_PERFORM_MODE get_perform_mode() { return (GEN_PERFORM_MODE)get_unique(); }
 };
@@ -1372,8 +1359,7 @@ static AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
 // ---------------------------
 //      user mask section
 
-class GEN_item_type_species_selector : public awt_item_type_selector {
-public:
+struct GEN_item_type_species_selector : public awt_item_type_selector {
     GEN_item_type_species_selector() : awt_item_type_selector(AWT_IT_GENE) {}
     virtual ~GEN_item_type_species_selector() OVERRIDE {}
 
@@ -1650,9 +1636,9 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     // ----------------------
     //      mode buttons
 
-    create_mode("select.xpm", "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_SELECT);
-    create_mode("pzoom.xpm",  "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_ZOOM);
-    create_mode("info.xpm",   "gen_mode.hlp", AWM_ALL, GEN_mode_event, (AW_CL)this, (AW_CL)AWT_MODE_EDIT);
+    create_mode("select.xpm", "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_SELECT));
+    create_mode("pzoom.xpm",  "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_ZOOM));
+    create_mode("info.xpm",   "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_EDIT));
 
     // -------------------
     //      info area
@@ -1756,7 +1742,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     at(help_x, first_line_y);
     help_text("help.hlp");
-    callback(AW_POPUP_HELP, (AW_CL)"gene_map.hlp");
+    callback(makeHelpCallback("gene_map.hlp"));
     create_button("HELP", "HELP", "H");
 
     at(help_x, second_line_y);

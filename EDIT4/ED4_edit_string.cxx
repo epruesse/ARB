@@ -450,7 +450,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
 
                 int n = nrepeat;
 
-                if (keymod == 0) {
+                if (keymod == AW_KEYMODE_NONE) {
                     while (n--) {
                         do {
                             seq_pos += direction;
@@ -1046,7 +1046,7 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
                 AW_advice("You have keymapped the space-key!\n"
                           "The new functionality assigned to space-key is not available when\n"
                           "key-mapping is enabled.\n",
-                          AW_ADVICE_TOGGLE|AW_ADVICE_HELP, "Obsolete default keymapping", "nekey_map.hlp");
+                          AW_ADVICE_TOGGLE_AND_HELP, "Obsolete default keymapping", "nekey_map.hlp");
             }
         }
     }

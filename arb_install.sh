@@ -243,8 +243,8 @@ esac
 
 separator
 echo 'Who is responsible for the PT_SERVER index files ?'
-echo '  Answer  y: if you trust your users (less administration)'
-echo '          n: if YOU want to administrate all PT_SERVER files'
+echo '  Answer  y: if you trust your users (less administration; recommended)'
+echo '          n: if PT_SERVER files shall only be changable by administrator'
 echo '  or simply press return to keep the settings of an old installation.'
 echo 'Should everybody be allowed to build/update PT_SERVER files (y/n/dont_change)[dont_change]?'
 read var

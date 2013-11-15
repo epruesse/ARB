@@ -30,10 +30,9 @@ static const char *entities =
 "  <!ENTITY semi \"&#59;\">\n"
 ;
 
-static string encodeEntities(const string& str, bool quotedText) {
+static string encodeEntities(const string& str, bool /*quotedText*/) {
     // if quotedText is true the string is encoded for usage in quotes
     // currently it makes no difference, but this might change
-    quotedText = quotedText; // don't warn
 
     string neu;
     neu.reserve(str.length()*4);

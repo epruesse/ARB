@@ -1,4 +1,4 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .c .cxx .depend
 
@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -51,9 +51,11 @@ TreeWrite.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/attributes.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeWrite.o: $(ARBHOME)/INCLUDE/cxxforward.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/nds.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/smartptr.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/test_global.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/xml.hxx

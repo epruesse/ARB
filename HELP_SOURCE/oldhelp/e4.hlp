@@ -259,7 +259,9 @@ WARNINGS        The key mappings may conflict with some window managers
 
                 you have to QUIT and restart the editor.
 
-BUGS            - sometimes the editor crashes after aligning
+BUGS
+
+                - sometimes the editor crashes after aligning
                 - some update problems (please report system and circumstances)
                   (workaround: resize the editor window)
 

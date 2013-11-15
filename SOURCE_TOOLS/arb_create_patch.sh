@@ -34,6 +34,7 @@ else
                     fi
                     ln --force $FAKEPATCH $RECENT_PATCH
                     touch $FAKEPATCH
+                    rm -f $INTERDIFF_PATCH $IGNORE_WHITE_PATCH $WHITE_PATCH
                     echo "No patch generated (no diff)"
                 else
                     DIFF=1

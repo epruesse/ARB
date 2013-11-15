@@ -20,6 +20,7 @@
 #include <aw_select.hxx>
 #include <arbdbt.h>
 #include <items.h>
+#include <arb_msg_fwd.h>
 
 
 #define nds_assert(cond) arb_assert(cond)
@@ -107,6 +108,7 @@ struct NodeTextBuilder {
         }
     }
 
+    __ATTR__FORMAT(2) void appendf(const char *format, ...) { FORWARD_FORMATTED(append, format); }
 };
 static NodeTextBuilder *awt_nds_ms = 0;
 
@@ -141,7 +143,7 @@ static void map_viewkey(AW_root *aw_root, AW_default awdef, int i, GBDATA *gb_vi
     AW_awar *Awar;
     Awar = viewkeyAwar(aw_root, awdef, i, "key_text", true); Awar->map(gb_key_text);
     Awar = viewkeyAwar(aw_root, awdef, i, "pars",     true); Awar->map(gb_pars);
-    Awar = viewkeyAwar(aw_root, awdef, i, "len1",     false); Awar->map(gb_len1);
+    Awar = viewkeyAwar(aw_root, awdef, i, "len1",     false); Awar->map(gb_len1); Awar->set_minmax(0, 1000000);
     Awar = viewkeyAwar(aw_root, awdef, i, "group",    false); Awar->map(gb_group);
     Awar = viewkeyAwar(aw_root, awdef, i, "leaf",     false); Awar->map(gb_leaf);
 }
@@ -296,7 +298,7 @@ void AWT_create_select_srtaci_window(AW_window *aww, AW_CL awar_acisrt, AW_CL /*
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"acisrt.hlp");
+        aws->callback(makeHelpCallback("acisrt.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -445,7 +447,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main) {
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"props_nds.hlp");
+        aws->callback(makeHelpCallback("props_nds.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("page");
@@ -593,167 +595,269 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
 
     if (!gbd) {
         if (!species) return "<internal error: no tree-node, no db-entry>";
-        if (!species->name) return "<internal error: node w/o name>";
-        sprintf(awt_nds_ms->buf, "<%s>", species->name); // zombie
-        return awt_nds_ms->buf;
+        if (!species->name) return "<internal error: species w/o name>";
+        awt_nds_ms->appendf("<%s>", species->name); // zombie
     }
+    else {
+        bool field_was_printed = false;
+        bool is_leaf           = species ? species->is_leaf : true;
 
-    bool field_was_printed = false;
-    bool is_leaf           = species ? species->is_leaf : true;
+        for (int i = 0; i < awt_nds_ms->count; i++) {
+            if (is_leaf) { if (!awt_nds_ms->at_leaf[i]) continue; }
+            else         { if (!awt_nds_ms->at_group[i]) continue; }
 
-    for (int i = 0; i < awt_nds_ms->count; i++) {
-        if (is_leaf) { if (!awt_nds_ms->at_leaf[i]) continue; }
-        else         { if (!awt_nds_ms->at_group[i]) continue; }
+            char *str        = 0;     // the generated string
+            bool  apply_aci  = false; // whether aci shall be applied
+            bool  align_left = true;  // otherwise align right
 
-        char *str        = 0;   // the generated string
-        bool  apply_aci  = false; // whether aci shall be applied
-        bool  align_left = true; // otherwise align right
+            {
+                const char *field_output = "";
+                const char *field_name   = awt_nds_ms->dkeys[i];
 
-        {
-            const char *field_output = "";
-            const char *field_name   = awt_nds_ms->dkeys[i];
-
-            if (field_name[0] == 0) { // empty field_name -> only do ACI/SRT
-                apply_aci = true;
-            }
-            else { // non-empty field_name
-                GBDATA *gbe;
-                if (awt_nds_ms->rek[i]) {       // hierarchical key
-                    gbe = GB_search(gbd, awt_nds_ms->dkeys[i], GB_FIND);
-                }
-                else {              // flat entry
-                    gbe = GB_entry(gbd, awt_nds_ms->dkeys[i]);
-                }
-                // silently ignore missing fields (and leave apply_aci false!)
-                if (gbe) {
+                if (field_name[0] == 0) { // empty field_name -> only do ACI/SRT
                     apply_aci = true;
-                    switch (GB_read_type(gbe)) {
-                        case GB_INT: field_output  = GBS_global_string("%li", GB_read_int(gbe)); align_left = false; break;
-                        case GB_BYTE: field_output = GBS_global_string("%i", GB_read_byte(gbe)); align_left = false; break;
+                }
+                else { // non-empty field_name
+                    GBDATA *gbe;
+                    if (awt_nds_ms->rek[i]) {       // hierarchical key
+                        gbe = GB_search(gbd, awt_nds_ms->dkeys[i], GB_FIND);
+                    }
+                    else {              // flat entry
+                        gbe = GB_entry(gbd, awt_nds_ms->dkeys[i]);
+                    }
+                    // silently ignore missing fields (and leave apply_aci false!)
+                    if (gbe) {
+                        apply_aci = true;
+                        switch (GB_read_type(gbe)) {
+                            case GB_INT: field_output  = GBS_global_string("%li", GB_read_int(gbe)); align_left = false; break;
+                            case GB_BYTE: field_output = GBS_global_string("%i", GB_read_byte(gbe)); align_left = false; break;
 
-                        case GB_FLOAT: {
-                            const char *format = "%5.4f";
-                            if (mode == NDS_OUTPUT_TAB_SEPARATED) { // '.' -> ','
-                                char *dotted  = GBS_global_string_copy(format, GB_read_float(gbe));
-                                char *dot     = strchr(dotted, '.');
-                                if (dot) *dot = ',';
-                                field_output  = GBS_global_string("%s", dotted);
-                                free(dotted);
+                            case GB_FLOAT: {
+                                const char *format = "%5.4f";
+                                if (mode == NDS_OUTPUT_TAB_SEPARATED) { // '.' -> ','
+                                    char *dotted  = GBS_global_string_copy(format, GB_read_float(gbe));
+                                    char *dot     = strchr(dotted, '.');
+                                    if (dot) *dot = ',';
+                                    field_output  = GBS_static_string(dotted);
+                                    free(dotted);
+                                }
+                                else {
+                                    field_output = GBS_global_string(format, GB_read_float(gbe));
+                                }
+                                align_left = false;
+                                break;
                             }
-                            else {
-                                field_output = GBS_global_string(format, GB_read_float(gbe));
-                            }
-                            align_left = false;
-                            break;
-                        }
-                        case GB_STRING:
-                            field_output = GB_read_char_pntr(gbe);
-                            break;
+                            case GB_STRING:
+                                field_output = GB_read_char_pntr(gbe);
+                                break;
 
-                        default: {
-                            char *as_string = GB_read_as_string(gbe);
-                            field_output    = GBS_global_string("%s", as_string);
-                            free(as_string);
+                            default: {
+                                char *as_string = GB_read_as_string(gbe);
+                                field_output    = GBS_static_string(as_string);
+                                free(as_string);
+                            }
                         }
                     }
                 }
+                str = strdup(field_output);
             }
-            str = strdup(field_output);
-        }
 
-        // apply ACI/SRT program
+            // apply ACI/SRT program
 
-        GB_ERROR error = 0;
-        if (apply_aci) {
-            const char *aci_srt = awt_nds_ms->parsing[i];
-            if (aci_srt) {
-                char *aci_result = GB_command_interpreter(gb_main, str, aci_srt, gbd, tree_name);
-                if (!aci_result) {
-                    aci_result = GBS_global_string_copy("<error: %s>", GB_await_error());
+            GB_ERROR error = 0;
+            if (apply_aci) {
+                const char *aci_srt = awt_nds_ms->parsing[i];
+                if (aci_srt) {
+                    char *aci_result = GB_command_interpreter(gb_main, str, aci_srt, gbd, tree_name);
+                    if (!aci_result) aci_result = GBS_global_string_copy("<error: %s>", GB_await_error());
+                    freeset(str, aci_result);
                 }
-                freeset(str, aci_result);
             }
-        }
 
-        // quote string, if it contains separator
-        {
-            char *quoted = NULL;
-            switch (mode) {
-                case NDS_OUTPUT_COMMA_SEPARATED:
-                    quoted = quoted_if_containing_separator(str, ',');
-                    break;
+            NDS_mask_nonprintable_chars(str);
+
+            // quote string, if it contains separator
+            {
+                char *quoted = NULL;
+                switch (mode) {
+                    case NDS_OUTPUT_COMMA_SEPARATED:
+                        quoted = quoted_if_containing_separator(str, ',');
+                        break;
                         
-                case NDS_OUTPUT_TAB_SEPARATED:
-                    quoted = quoted_if_containing_separator(str, '\t');
-                    break;
+                    case NDS_OUTPUT_TAB_SEPARATED:
+                        quoted = quoted_if_containing_separator(str, '\t');
+                        break;
 
-                case NDS_OUTPUT_LEAFTEXT:
-                case NDS_OUTPUT_SPACE_PADDED:
-                    break;
-            }
-                
-            if (quoted) freeset(str, quoted);
-        }
-        
+                    case NDS_OUTPUT_LEAFTEXT:
+                    case NDS_OUTPUT_SPACE_PADDED:
+                        break;
+                }
 
-        bool skip_display = (mode == NDS_OUTPUT_LEAFTEXT && str[0] == 0);
-        if (!skip_display) {
-            switch (mode) {
-                case NDS_OUTPUT_LEAFTEXT:
-                    if (!field_was_printed) break; // no comma no space if nothing printed yet
-                    awt_nds_ms->append(','); // separate single fields by comma in compressed mode
-                    // fall-through
-                case NDS_OUTPUT_SPACE_PADDED:
-                    awt_nds_ms->append(' '); // print at least one space if not using tabs
-                    break;
-
-                case NDS_OUTPUT_COMMA_SEPARATED:
-                    if (i != 0) awt_nds_ms->append(','); // CSV output for star-calc/excel/...
-                    break;
-
-                case NDS_OUTPUT_TAB_SEPARATED:
-                    if (i != 0) awt_nds_ms->append('\t'); // tabbed output for star-calc/excel/...
-                    break;
+                if (quoted) freeset(str, quoted);
             }
 
-            field_was_printed = true;
 
-            int str_len = strlen(str);
-            switch (mode) {
-                case NDS_OUTPUT_TAB_SEPARATED:
-                case NDS_OUTPUT_COMMA_SEPARATED:
-                    awt_nds_ms->append(str, str_len);
-                    break;
+            bool skip_display = (mode == NDS_OUTPUT_LEAFTEXT && str[0] == 0);
+            if (!skip_display) {
+                switch (mode) {
+                    case NDS_OUTPUT_LEAFTEXT:
+                        if (!field_was_printed) break; // no comma no space if nothing printed yet
+                        awt_nds_ms->append(','); // separate single fields by comma in compressed mode
+                        // fall-through
+                    case NDS_OUTPUT_SPACE_PADDED:
+                        awt_nds_ms->append(' '); // print at least one space if not using tabs
+                        break;
 
-                case NDS_OUTPUT_LEAFTEXT:
-                case NDS_OUTPUT_SPACE_PADDED: {
-                    int nds_len = awt_nds_ms->lengths[i];
-                    if (str_len>nds_len) { // string is too long -> shorten
-                        str[nds_len] = 0;
-                        str_len      = nds_len;
-                    }
+                    case NDS_OUTPUT_COMMA_SEPARATED:
+                        if (i != 0) awt_nds_ms->append(','); // CSV output for star-calc/excel/...
+                        break;
 
-                    if (mode == NDS_OUTPUT_SPACE_PADDED) { // may need alignment
-                        const char *spaced = GBS_global_string((align_left ? "%-*s" : "%*s"), nds_len, str);
-                        awt_nds_ms->append(spaced, nds_len);
-                    }
-                    else {
-                        nds_assert(mode == NDS_OUTPUT_LEAFTEXT);
+                    case NDS_OUTPUT_TAB_SEPARATED:
+                        if (i != 0) awt_nds_ms->append('\t'); // tabbed output for star-calc/excel/...
+                        break;
+                }
+
+                field_was_printed = true;
+
+                int str_len = strlen(str);
+                switch (mode) {
+                    case NDS_OUTPUT_TAB_SEPARATED:
+                    case NDS_OUTPUT_COMMA_SEPARATED:
                         awt_nds_ms->append(str, str_len);
+                        break;
+
+                    case NDS_OUTPUT_LEAFTEXT:
+                    case NDS_OUTPUT_SPACE_PADDED: {
+                        int nds_len = awt_nds_ms->lengths[i];
+                        if (str_len>nds_len) { // string is too long -> shorten
+                            str[nds_len] = 0;
+                            str_len      = nds_len;
+                        }
+
+                        if (mode == NDS_OUTPUT_SPACE_PADDED) { // may need alignment
+                            const char *spaced = GBS_global_string((align_left ? "%-*s" : "%*s"), nds_len, str);
+                            awt_nds_ms->append(spaced, nds_len);
+                        }
+                        else {
+                            nds_assert(mode == NDS_OUTPUT_LEAFTEXT);
+                            awt_nds_ms->append(str, str_len);
+                        }
                     }
                 }
             }
-        }
 
-        // show first XXX errors
-        if (error && awt_nds_ms->show_errors>0) {
-            awt_nds_ms->show_errors--;
-            aw_message(error);
-        }
+            // show first XXX errors
+            if (error && awt_nds_ms->show_errors>0) {
+                awt_nds_ms->show_errors--;
+                aw_message(error);
+            }
 
-        free(str);
+            free(str);
+        }
     }
 
     return awt_nds_ms->get_buffer();
 }
 
+static const char *createReplaceTable() {
+    static char replaceTable[256];
+
+    for (int i = 0; i<32; ++i)   replaceTable[i] = '?';
+    for (int i = 32; i<256; ++i) replaceTable[i] = i;
+
+    const char LFREP = '#';
+
+    replaceTable['\n'] = LFREP;
+    replaceTable['\r'] = LFREP;
+    replaceTable['\t'] = ' ';
+
+    return replaceTable;
+}
+
+char *NDS_mask_nonprintable_chars(char * const str) {
+    // mask nonprintable characters in result of NDS.
+    //
+    // modifies and returns 'str'
+    //
+    // background: gtk renders LFs as such (i.e. renders multiple lines),
+    //             motif printed a small box (i.e. rendered all text in one line)
+
+    static const char *replaceTable = createReplaceTable();
+    for (int i = 0; str[i]; ++i) {
+        str[i] = replaceTable[safeCharIndex(str[i])];
+    }
+    return str;
+}
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+#define TEST_EXPECT_MASK_NONPRINTABLE(i,o) do { \
+        char *masked = strdup(i);               \
+        NDS_mask_nonprintable_chars(masked);    \
+        TEST_EXPECT_EQUAL(masked,o);            \
+        free(masked);                           \
+    } while (0)
+
+void TEST_mask_nds() {
+    TEST_EXPECT_MASK_NONPRINTABLE("plain text",     "plain text");
+    TEST_EXPECT_MASK_NONPRINTABLE("with\nLF",       "with#LF");
+    TEST_EXPECT_MASK_NONPRINTABLE("with\rLF",       "with#LF");
+    TEST_EXPECT_MASK_NONPRINTABLE("with\r\nLF",     "with##LF");
+    TEST_EXPECT_MASK_NONPRINTABLE("tab\tseparated", "tab separated");
+    TEST_EXPECT_MASK_NONPRINTABLE("\t\n\t\n",       " # #");
+}
+
+#define TEST_EXPECT_NDS_EQUALS(specName,format,expected_NDS) do {                           \
+        GBDATA *gb_species  = GBT_find_species(gb_main, specName);                          \
+        TEST_REJECT_NULL(gb_species);                                                       \
+                                                                                            \
+        const char *nds = make_node_text_nds(gb_main, gb_species, format, NULL, NULL);      \
+        TEST_EXPECT_EQUAL(nds, expected_NDS);                                               \
+    } while(0)
+
+#define TEST_EXPECT_NDS_EQUALS__BROKEN(specName,format,expected_NDS) do {                   \
+        GBDATA *gb_species  = GBT_find_species(gb_main, specName);                          \
+        TEST_REJECT_NULL(gb_species);                                                       \
+                                                                                            \
+        const char *nds = make_node_text_nds(gb_main, gb_species, format, NULL, NULL);      \
+        TEST_EXPECT_EQUAL__BROKEN(nds, expected_NDS);                                       \
+    } while(0)
+
+void TEST_nds() {
+    GB_shell    shell;
+    const char *testDB  = "display/nds.arb"; // NDS definitions are in ../../UNIT_TESTER/run/display/nds.arb@arb_presets
+    GBDATA     *gb_main = GB_open(testDB, "r");
+
+    TEST_REJECT_NULL(gb_main);
+
+    {
+        GB_transaction ta(gb_main);
+        make_node_text_init(gb_main);
+
+        TEST_EXPECT_NDS_EQUALS("MycChlor", NDS_OUTPUT_LEAFTEXT,        "'MycChlor', Mycobacterium #phenolicus, acc=X79094");
+        TEST_EXPECT_NDS_EQUALS("MycChlor", NDS_OUTPUT_SPACE_PADDED,    " 'MycChlor'   Mycobacterium #phenolicus      acc=X79094          ");
+        TEST_EXPECT_NDS_EQUALS("MycChlor", NDS_OUTPUT_TAB_SEPARATED,   "'MycChlor'\tMycobacterium #phenolicus\tacc=X79094");
+        TEST_EXPECT_NDS_EQUALS("MycChlor", NDS_OUTPUT_COMMA_SEPARATED, "'MycChlor',Mycobacterium #phenolicus,acc=X79094");
+
+        TEST_EXPECT_NDS_EQUALS("ActUtahe", NDS_OUTPUT_LEAFTEXT,        "'ActUtahe', Act;ino planes uta,hen.sis#, acc=X80823");
+        TEST_EXPECT_NDS_EQUALS("ActUtahe", NDS_OUTPUT_SPACE_PADDED,    " 'ActUtahe'   Act;ino planes uta,hen.sis#    acc=X80823          ");
+        TEST_EXPECT_NDS_EQUALS("ActUtahe", NDS_OUTPUT_TAB_SEPARATED,   "'ActUtahe'\tAct;ino planes uta,hen.sis#\tacc=X80823");
+        TEST_EXPECT_NDS_EQUALS("ActUtahe", NDS_OUTPUT_COMMA_SEPARATED, "'ActUtahe',\"Act;ino planes uta,hen.sis#\",acc=X80823");     // quote 2nd value (cause it contains a comma)
+
+        TEST_EXPECT_NDS_EQUALS("StpGrise", NDS_OUTPUT_LEAFTEXT,        "'StpGrise', Strepto s griseus, acc=M76388 X55435 X6");       // acc truncated!
+        TEST_EXPECT_NDS_EQUALS("StpGrise", NDS_OUTPUT_SPACE_PADDED,    " 'StpGrise'   Strepto s griseus              acc=M76388 X55435 X6");
+        TEST_EXPECT_NDS_EQUALS("StpGrise", NDS_OUTPUT_TAB_SEPARATED,   "'StpGrise'\tStrepto s griseus\tacc=M76388 X55435 X61478");   // acc not truncated here
+        TEST_EXPECT_NDS_EQUALS("StpGrise", NDS_OUTPUT_COMMA_SEPARATED, "'StpGrise',Strepto s griseus,acc=M76388 X55435 X61478");
+    }
+
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

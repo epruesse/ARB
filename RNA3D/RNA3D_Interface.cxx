@@ -378,7 +378,7 @@ static AW_window *CreateDisplayBases_window(AW_root *aw_root) {
     aws->init(aw_root, "DISPLAY_BASES", "RNA3D : Display BASES");
     aws->load_xfig("RNA3D_DisplayBases.fig");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"rna3d_dispBases.hlp");
+    aws->callback(makeHelpCallback("rna3d_dispBases.hlp"));
     aws->at("help");
     aws->button_length(0);
     aws->create_button("HELP", "#help.xpm");
@@ -427,7 +427,7 @@ static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
     aws->init(aw_root, "DISPLAY_HELICES", "RNA3D : Display HELICES");
     aws->load_xfig("RNA3D_DisplayHelices.fig");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"rna3d_dispHelices.hlp");
+    aws->callback(makeHelpCallback("rna3d_dispHelices.hlp"));
     aws->at("help");
     aws->button_length(0);
     aws->create_button("HELP", "#help.xpm");
@@ -454,12 +454,10 @@ static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
         aws->at("helixSize");
         aws->create_input_field(AWAR_3D_HELIX_SIZE, 5);
         {
-            const char  *helixRange = 0;
-            Structure3D *s;
-#if defined(WARN_TODO)
-#warning s is not initialized here
-#endif
-            int          rnaType    = s->FindTypeOfRNA();
+            const char *helixRange = 0;
+
+            arb_assert(RNA3D->cStructure);
+            int rnaType = RNA3D->cStructure->FindTypeOfRNA();
 
             switch (rnaType) {
                 case LSU_23S: helixRange = "[1-101]"; break;
@@ -486,7 +484,7 @@ static AW_window *CreateDisplayOptions_window(AW_root *aw_root) {
     aws->init(aw_root, "GENERAL_DISPLAY", "RNA3D : General Display ");
     aws->load_xfig("RNA3D_DisplayOptions.fig");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"rna3d_dispMolecule.hlp");
+    aws->callback(makeHelpCallback("rna3d_dispMolecule.hlp"));
     aws->at("help");
     aws->button_length(0);
     aws->create_button("HELP", "#help.xpm");
@@ -526,7 +524,7 @@ static AW_window *CreateMapSequenceData_window(AW_root *aw_root) {
     aws->init(aw_root, "MAP_SPECIES", "RNA3D : Map Sequence Data ");
     aws->load_xfig("RNA3D_SeqMapping.fig");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"rna3d_mapSeqData.hlp");
+    aws->callback(makeHelpCallback("rna3d_mapSeqData.hlp"));
     aws->at("help");
     aws->button_length(0);
     aws->create_button("HELP", "#help.xpm");
@@ -584,7 +582,7 @@ static AW_window *CreateChangeMolecule_window(AW_root *aw_root) {
     aws->init(aw_root, "CHANGE_MOLECULE", "RNA3D : Change 3D Molecule");
     aws->load_xfig("RNA3D_ChangeMolecule.fig");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"rna3d_changeMolecule.hlp");
+    aws->callback(makeHelpCallback("rna3d_changeMolecule.hlp"));
     aws->at("help");
     aws->button_length(0);
     aws->create_button("HELP", "#help.xpm");
@@ -624,7 +622,7 @@ static AW_window *CreateHelp_window(AW_root *aw_root) {
 
     aws->button_length(0);
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"rna3d_general.hlp");
+    aws->callback(makeHelpCallback("rna3d_general.hlp"));
     aws->at("help");
     aws->create_button("HELP", "#help.xpm");
 
@@ -681,10 +679,11 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
 
     awm->create_menu("File", "F", AWM_ALL);
     {
-        Structure3D *s;
-        int rnaType = s->FindTypeOfRNA();
-        if (rnaType == LSU_23S)
+        arb_assert(RNA3D->cStructure);
+        int rnaType = RNA3D->cStructure->FindTypeOfRNA();
+        if (rnaType == LSU_23S) {
             awm->insert_menu_topic("changeMolecule", "Change Molecule", "M", "rna3d_changeMolecule.hlp", AWM_ALL, AW_POPUP, (AW_CL)CreateChangeMolecule_window, 0);
+        }
     }
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
 

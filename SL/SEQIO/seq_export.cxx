@@ -14,6 +14,7 @@
 #include <arbdbt.h>
 #include <arb_strarray.h>
 #include <arb_file.h>
+#include <arb_diff.h>
 #include <xml.hxx>
 #include <arb_progress.h>
 #include <unistd.h>

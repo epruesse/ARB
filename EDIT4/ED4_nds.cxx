@@ -15,6 +15,7 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <nds.h>
 
 #define NDS_COUNT 10
 
@@ -26,11 +27,10 @@ char *ED4_get_NDS_text(ED4_species_manager *species_man) {
     e4_assert(gbd);
 
     e4_assert(NDS_command);
-    char *result = GB_command_interpreter(GLOBAL_gb_main, "", NDS_command, gbd, 0);
-    if (!result) {
-        result = strdup("<error>");
-    }
-    return result;
+    char *result        = GB_command_interpreter(GLOBAL_gb_main, "", NDS_command, gbd, 0);
+    if (!result) result = GBS_global_string_copy("<error: %s>", GB_await_error());
+
+    return NDS_mask_nonprintable_chars(result);
 }
 
 void ED4_get_NDS_sizes(int *width, int *brackets) {
@@ -49,9 +49,7 @@ static void NDS_changed(AW_root *root, AW_CL refresh) {
     NDS_width = root->awar(buf)->read_int();
 
     if (refresh) {
-        ED4_calc_terminal_extentions();
-        ED4_ROOT->main_manager->route_down_hierarchy(update_terminal_extension).expect_no_error();
-        ED4_ROOT->main_manager->request_resize();
+        ED4_request_relayout();
     }
 }
 
@@ -126,7 +124,7 @@ AW_window *ED4_create_nds_window(AW_root *root)
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"ed4_nds.hlp");
+    aws->callback(makeHelpCallback("ed4_nds.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 

@@ -17,15 +17,21 @@ DESCRIPTION     Enter the name of the input mask you'd like to create.
 
                 Choose the correct item type for your mask.
 
-                Choose the scope of your mask. 'Local' means the mask will
-                only be visible to you (it's saved in ~/.arb_prop/inputMasks).
-                'Global' means the mask will be visible to all users (you
-                need write permission in $ARBHOME/lib/inputMasks to create such a mask).
+                Choose the scope of your mask.
+
+                       'Local' means the mask will only be visible
+                       to you (it gets saved in $ARB_PROP/inputMasks which defaults
+                       to ~/.arb_prop/inputMasks). See also LINK{arb_envar.hlp}.
+
+                       'Global' means the mask will be visible to all users (you
+                       need write permission in $ARBHOME/lib/inputMasks to create such a mask).
 
 NOTES		To delete masks delete the corresponding file in the inputMasks subdirectory.
 
                 New created masks will not appear in the 'User masks' menu, before you
                 restart ARB.
+
+                To provide an input mask to all users, copy it into $ARBHOME/lib/inputMasks
 
 EXAMPLES	None
 

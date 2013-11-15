@@ -58,15 +58,21 @@ DESCRIPTION     Arb is aware of several environment variables:
                             directory name where global ARB-macros may be provides by system administrator
                             (default: $ARBHOME/lib/macros )
 
+                    ARB_PROP
+
+                            directory name where your local ARB-properties will be saved to/loaded from
+                            (default: $HOME/.arb_prop ).
+                            Allows to use different ARB configurations in the same user account.
+
                     ARBMACROHOME
 
                             directory name where your local ARB-macros will be saved to/loaded from
-                            (default: $HOME/.arb_prop/macros )
+                            (default: $ARB_PROP/macros )
 
                     ARBCONFIG
 
                             directory name where your local ARB-configs will be saved to/loaded from
-                            (default: $HOME/.arb_prop/cfgSave )
+                            (default: $ARB_PROP/cfgSave )
 
                     ARB_GS
 

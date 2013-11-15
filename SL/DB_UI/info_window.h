@@ -24,8 +24,8 @@
 #ifndef ARBDBT_H
 #include <arbdbt.h>
 #endif
-#ifndef _GLIBCXX_MAP
-#include <map>
+#ifndef ARB_UNORDERED_MAP_H
+#include <arb_unordered_map.h>
 #endif
 
 // --------------------
@@ -53,7 +53,7 @@ class InfoWindow : virtual Noncopyable {
                 free(mapped_item);
             }
             else {
-                title = GBS_global_string_copy("Press GET to attach selected %s", itemname());
+                title = GBS_global_string_copy("Press 'Update' to attach selected %s", itemname());
             }
 
             arb_assert(title);
@@ -133,7 +133,7 @@ public:
 };
 
 class InfoWindowRegistry {
-    typedef std::map<AW_window*, InfoWindow::Ptr> WinMap;
+    typedef arb_unordered_map<AW_window*, InfoWindow::Ptr> WinMap;
     WinMap win;
 
     InfoWindowRegistry(){} // InfoWindowRegistry is a singleton and always exists

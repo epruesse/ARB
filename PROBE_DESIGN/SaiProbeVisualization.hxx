@@ -85,20 +85,18 @@ public:
     }
 };
 
-class SAI_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
-public:
+struct SAI_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
     GBDATA     *gb_main;
     AW_root    *aw_root;
 
     SAI_graphic(AW_root *aw_root, GBDATA *gb_main);
     ~SAI_graphic() OVERRIDE;
 
-    AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr, AW_CL) OVERRIDE;
+    AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr) OVERRIDE;
 
     void show(AW_device *device) OVERRIDE;
     void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
-    void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
-                 AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
+    void handle_command(AW_device *device, AWT_graphic_event& event) OVERRIDE;
     void paint(AW_device *device);
 
 };

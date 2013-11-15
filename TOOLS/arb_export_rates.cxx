@@ -209,7 +209,7 @@ int ARB_main(int argc, char *argv[]) {
 
                     seq_len = ali_len;
 
-                    freedup(weight[safeCharIndex('1')], " 1");
+                    freedup(weight['1'], " 1");
                 }
 
                 for (i=0; i<seq_len; i++) {
@@ -226,7 +226,7 @@ int ARB_main(int argc, char *argv[]) {
 
                 for (; i<ali_len; i++) {
                     if (i>filter_len || filter[i] != '0') {
-                        fputs(weight[safeCharIndex('1')], stdout);
+                        fputs(weight['1'], stdout);
                         if (++cnt>30) {
                             fputc('\n', stdout);
                             cnt = 0;

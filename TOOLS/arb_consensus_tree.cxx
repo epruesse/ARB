@@ -14,6 +14,7 @@
 #include <TreeRead.h>
 #include <TreeWrite.h>
 #include <arb_str.h>
+#include <arb_diff.h>
 
 using namespace std;
 
@@ -32,13 +33,17 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
         ConsensusTreeBuilder tree_builder;
 
         for (size_t i = 0; !error && i<input_trees.size(); ++i) {
-            char *warning = NULL;
+            char *warnings = NULL;
 
-            GBT_TREE *tree = TREE_load(input_trees[i], sizeof(*tree), NULL, 1, &warning);
+            GBT_TREE *tree = TREE_load(input_trees[i], sizeof(*tree), NULL, true, &warnings);
             if (!tree) {
-                error = GBS_global_string("Failed to load tree '%s'", input_trees[i]);
+                error = GBS_global_string("Failed to load tree '%s' (Reason: %s)", input_trees[i], GB_await_error());
             }
             else {
+                if (warnings) {
+                    GB_warningf("while loading tree '%s':\n%s", input_trees[i], warnings);
+                    free(warnings);
+                }
                 tree_builder.add(tree, weight);
             }
         }
@@ -62,7 +67,7 @@ static char *create_tree_name(const char *savename) {
         const char *ldot = strrchr(savename, '.');
 
         tree_name = ldot ? GB_strpartdup(savename, ldot-1) : strdup(savename);
-        if (tree_name[0] == 0) freedup(tree_name, "tree_consense");
+        if (tree_name[0] == 0) freedup(tree_name, "tree_consensus");
     }
 
     // make sure tree name starts with 'tree_'
@@ -148,7 +153,7 @@ int ARB_main(int argc, char *argv[]) {
             GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, species_count, 1.0);
 
             if (!cons_tree) {
-                error = GBS_global_string("Failed to build consense tree (Reason: %s)", error);
+                error = GBS_global_string("Failed to build consensus tree (Reason: %s)", error);
             }
             else {
                 size_t leafs   = GBT_count_leafs(cons_tree);
@@ -161,7 +166,7 @@ int ARB_main(int argc, char *argv[]) {
                     error = save_tree_as_newick(cons_tree, savename);
                 }
                 else {
-                    printf("sucessfully created consense tree\n"
+                    printf("sucessfully created consensus tree\n"
                            "(no savename specified -> tree not saved)\n");
                 }
                 GBT_delete_tree(cons_tree);
@@ -404,11 +409,143 @@ void TEST_arb_consensus_tree() {
         free(saveas);
     }
 }
+#endif // REPEATED_TESTS
+
+// #define TREEIO_AUTO_UPDATE // uncomment to auto-update expected test-results
+// #define TREEIO_AUTO_UPDATE_IF_EXPORT_DIFFERS // uncomment to auto-update expected test-results
+// #define TREEIO_AUTO_UPDATE_IF_REEXPORT_DIFFERS // uncomment to auto-update expected test-results
+
+static const char *findFirstNameContaining(GBT_TREE *tree, const char *part) {
+    const char *found = NULL;
+    if (tree->name && strstr(tree->name, part)) {
+        found = tree->name;
+    }
+    else if (!tree->is_leaf) {
+        found             = findFirstNameContaining(tree->leftson, part);
+        if (!found) found = findFirstNameContaining(tree->rightson, part);
+    }
+    return found;
+}
+
+void TEST_SLOW_treeIO_stable() {
+    const char *dbname   = "trees/bootstrap_groups.arb";
+    const char *treename = "tree_bootstrap_and_groups";
+    const char *savename = "bg";
+
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open(dbname, "rw");
+
+    TEST_REJECT_NULL(gb_main);
+
+    char *outfile  = GBS_global_string_copy("trees/%s.tree", savename);
+
+    for (int save_branchlengths = 0; save_branchlengths <= 1; ++save_branchlengths) {
+        for (int save_bootstraps = 0; save_bootstraps <= 1; ++save_bootstraps) {
+            for (int save_groupnames = 0; save_groupnames <= 1; ++save_groupnames) {
+                bool quoting_occurs = save_bootstraps && save_groupnames;
+                for (int pretty = 0; pretty <= 1; ++pretty) {
+
+                    for (int quoting = TREE_DISALLOW_QUOTES; quoting <= (quoting_occurs ? TREE_DOUBLE_QUOTES : TREE_DISALLOW_QUOTES); ++quoting) {
+                        TREE_node_quoting quoteMode = TREE_node_quoting(quoting);
+
+                        char *paramID = GBS_global_string_copy("%s_%s%s%s_%i",
+                                                               pretty ? "p" : "s",
+                                                               save_bootstraps ? "Bs" : "",
+                                                               save_groupnames ? "Grp" : "",
+                                                               save_branchlengths ? "Len" : "",
+                                                               quoteMode);
+
+                        TEST_ANNOTATE(GBS_global_string("for paramID='%s'", paramID));
+
+                        GB_ERROR export_error = TREE_write_Newick(gb_main, treename, NULL, save_branchlengths, save_bootstraps, save_groupnames, pretty, quoteMode, outfile);
+                        TEST_EXPECT_NULL(export_error);
+
+                        char *expectedfile = GBS_global_string_copy("trees/%s_exp_%s.tree", savename, paramID);
+
+#if defined(TREEIO_AUTO_UPDATE)
+                        system(GBS_global_string("cp %s %s", outfile, expectedfile));
+#else // !defined(TREEIO_AUTO_UPDATE)
+                        bool exported_as_expected = arb_test::textfiles_have_difflines_ignoreDates(expectedfile, outfile, 0);
+#if defined(TREEIO_AUTO_UPDATE_IF_EXPORT_DIFFERS)
+                        if (!exported_as_expected) {
+                            system(GBS_global_string("cp %s %s", outfile, expectedfile));
+                        }
+#else // !defined(TREEIO_AUTO_UPDATE_IF_EXPORT_DIFFERS)
+                        TEST_EXPECT(exported_as_expected);
 #endif
+
+                        // reimport exported tree
+                        const char *reloaded_treename = "tree_reloaded";
+                        {
+                            char     *comment    = NULL;
+                            GBT_TREE *tree       = TREE_load(expectedfile, sizeof(*tree), &comment, true, NULL);
+                            GB_ERROR  load_error = tree ? NULL : GB_await_error();
+
+                            TEST_EXPECTATION(all().of(that(tree).does_differ_from_NULL(),
+                                                      that(load_error).is_equal_to_NULL()));
+                            // store tree in DB
+                            {
+                                GB_transaction ta(gb_main);
+                                GB_ERROR       store_error = GBT_write_tree_with_remark(gb_main, reloaded_treename, tree, comment);
+                                TEST_EXPECT_NULL(store_error);
+                            }
+                            free(comment);
+
+                            if (save_groupnames) {
+                                const char *quotedGroup     = findFirstNameContaining(tree, "quoted");
+                                const char *underscoreGroup = findFirstNameContaining(tree, "bs100");
+                                TEST_EXPECT_EQUAL(quotedGroup, "quoted");
+                                TEST_EXPECT_EQUAL(underscoreGroup, "__bs100");
+                            }
+                            const char *capsLeaf = findFirstNameContaining(tree, "Caps");
+                            TEST_EXPECT_EQUAL(capsLeaf, "_MhuCaps");
+
+                            GBT_delete_tree(tree);
+                        }
+
+                        // export again
+                        GB_ERROR reexport_error = TREE_write_Newick(gb_main, reloaded_treename, NULL, save_branchlengths, save_bootstraps, save_groupnames, pretty, quoteMode, outfile);
+                        TEST_EXPECT_NULL(reexport_error);
+
+                        // eliminate comments added by loading/saving
+                        char *outfile2 = GBS_global_string_copy("trees/%s2.tree", savename);
+                        {
+                            char *cmd = GBS_global_string_copy("cat %s"
+                                                               " | grep -v 'Loaded from trees/.*_exp_'"
+                                                               " | grep -v 'tree_reloaded saved to'"
+                                                               " > %s", outfile, outfile2);
+                            TEST_EXPECT_NO_ERROR(GBK_system(cmd));
+                            free(cmd);
+                        }
+
+                        bool reexported_as_expected = arb_test::textfiles_have_difflines(expectedfile, outfile2, 0);
+
+#if defined(TREEIO_AUTO_UPDATE_IF_REEXPORT_DIFFERS)
+                        if (!reexported_as_expected) {
+                            system(GBS_global_string("cp %s %s", outfile2, expectedfile));
+                        }
+#else // !defined(TREEIO_AUTO_UPDATE_IF_REEXPORT_DIFFERS)
+                        TEST_EXPECT(reexported_as_expected);
+#endif
+
+                        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outfile2));
+                        free(outfile2);
+#endif
+                        free(expectedfile);
+                        free(paramID);
+                    }
+                }
+            }
+        }
+    }
+    TEST_ANNOTATE(NULL);
+
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outfile));
+    free(outfile);
+
+    GB_close(gb_main);
+}
 
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
-
-
-

@@ -1,18 +1,18 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
 
 CPP_OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
 
-cma_CPP:= $(CPP)
+cma_cxxflags:=$(cxxflags)
 cma_cflags:= $(cflags)
 
 SUPPRESS_WARNINGS=1# set to 0 to show warnings
 
 ifeq ($(SUPPRESS_WARNINGS),1)
-cma_CPP:= $(subst -Weffc++,,$(cma_CPP))
-cma_CPP:= $(subst -Wctor-dtor-privacy,,$(cma_CPP))
-cma_CPP:= $(subst -Wlogical-op,,$(cma_CPP))
+cma_cxxflags:= $(subst -Weffc++,,$(cma_cxxflags))
+cma_cxxflags:= $(subst -Wctor-dtor-privacy,,$(cma_cxxflags))
+cma_cxxflags:= $(subst -Wlogical-op,,$(cma_cxxflags))
 cma_cflags:= $(subst -Wshadow,,$(cma_cflags))
 cma_cflags+= -Wno-unused-local-typedefs# this is included in -Wall
 endif
@@ -35,7 +35,7 @@ ifeq ($(SUPPRESS_WARNINGS),1)
 endif
 
 .cxx.o: warn
-	$(cma_CPP) $(cma_cflags) -c $<  $(CPPINCLUDES)  $(POST_COMPILE)
+	$(A_CXX) $(cma_cflags) $(cma_cxxflags) -c $<  $(CXX_INCLUDES)  $(POST_COMPILE)
 
 
 $(CPP_OBJECTS) : Makefile
@@ -76,9 +76,11 @@ AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arbtools.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/attributes.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/downcast.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/dupstr.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/gccver.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/smartptr.h
+AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/static_assert.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/test_global.h
 
 Analyser.o: AlignedSequenceLoader.h
@@ -98,9 +100,11 @@ Analyser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 Analyser.o: $(ARBHOME)/INCLUDE/arbtools.h
 Analyser.o: $(ARBHOME)/INCLUDE/attributes.h
 Analyser.o: $(ARBHOME)/INCLUDE/cxxforward.h
+Analyser.o: $(ARBHOME)/INCLUDE/downcast.h
 Analyser.o: $(ARBHOME)/INCLUDE/dupstr.h
 Analyser.o: $(ARBHOME)/INCLUDE/gccver.h
 Analyser.o: $(ARBHOME)/INCLUDE/smartptr.h
+Analyser.o: $(ARBHOME)/INCLUDE/static_assert.h
 Analyser.o: $(ARBHOME)/INCLUDE/test_global.h
 
 Cma.o: Cma.h

@@ -29,7 +29,6 @@ public:
 
     void clear(AW_bitset filteri);
     void clear_part(const AW::Rectangle& rect, AW_bitset filteri);
-    void clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
     void flush();
     void move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);

@@ -17,8 +17,6 @@
 #include "gb_compress.h"
 #include "gb_localdata.h"
 
-#include <static_assert.h>
-
 #if defined(DEBUG)
 // #define TEST_HUFFMAN_CODE
 #endif // DEBUG
@@ -632,11 +630,12 @@ static GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, size_t size, size_t *ms
         }
         bits = bitcompress[COMPRESS_LIST_SIZE-1].bits;
         bitc = bitcompress[COMPRESS_LIST_SIZE-1].bitcnt;
+        // cppcheck-suppress unreadVariable (bitptr is assigned but never used)
         GB_WRITE_BITS(dest, bitptr, bitc, bits, h_i);
     }
     *msize = dest - buffer + 1;
 #if defined(TEST_HUFFMAN_CODE)
-    printf("huffman compression %li -> %li (%5.2f %%)\n", size, *msize, (double)((double)(*msize)/size*100));
+    printf("huffman compression %zu -> %zu (%5.2f %%)\n", size, *msize, (double)((double)(*msize)/size*100));
 #endif // TEST_HUFFMAN_CODE
     if (*msize >size*2) printf("ssize %d, size %d\n", (int)size, (int)*msize);
     return buffer;

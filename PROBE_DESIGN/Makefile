@@ -1,10 +1,10 @@
-# INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend
 CPP_OBJECTS = probe_design.o SaiProbeVisualization.o probe_match_parser.o
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
-	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $(@:.o=.cxx)  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -42,6 +42,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_file.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_progress.h
+probe_design.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_string.h
 probe_design.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -56,6 +57,8 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -70,6 +73,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/bytestring.h
 probe_design.o: $(ARBHOME)/INCLUDE/cb.h
+probe_design.o: $(ARBHOME)/INCLUDE/cb_base.h
 probe_design.o: $(ARBHOME)/INCLUDE/cbtypes.h
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
 probe_design.o: $(ARBHOME)/INCLUDE/client_types.h
@@ -81,6 +85,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/items.h
 probe_design.o: $(ARBHOME)/INCLUDE/iupac.h
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
+probe_design.o: $(ARBHOME)/INCLUDE/PT_server.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 probe_design.o: $(ARBHOME)/INCLUDE/smartptr.h
 probe_design.o: $(ARBHOME)/INCLUDE/static_assert.h
@@ -104,9 +109,11 @@ probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbtools.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/attributes.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/cxxforward.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/downcast.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/dupstr.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/gccver.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/smartptr.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/static_assert.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SaiProbeVisualization.o: probe_match_parser.hxx
@@ -128,6 +135,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -138,8 +146,10 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cb.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cb_base.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cbtypes.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cxxforward.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/downcast.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/dupstr.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/gccver.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/items.h

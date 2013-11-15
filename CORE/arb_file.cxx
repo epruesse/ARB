@@ -24,7 +24,6 @@
 // AISC_MKPT_PROMOTE:#include "arb_core.h"
 // AISC_MKPT_PROMOTE:#endif
 
-
 long GB_size_of_file(const char *path) {
     struct stat stt;
     if (!path || stat(path, &stt)) return -1;
@@ -129,6 +128,21 @@ bool GB_is_privatefile(const char *path, bool read_private) {
         }
     }
     return isprivate;
+}
+
+inline bool mode_is_user_writeable(long mode) { return mode>0 && (mode & S_IWUSR); }
+
+bool GB_is_writeablefile(const char *filename) { // for user
+    bool writable = false;
+    if (GB_is_regularfile(filename)) {
+        writable = mode_is_user_writeable(GB_mode_of_file(filename));
+        if (writable && GB_is_link(filename)) {
+            char *target = GB_follow_unix_link(filename);
+            writable     = GB_is_writeablefile(target);
+            free(target);
+        }
+    }
+    return writable;
 }
 
 static bool GB_is_readable(const char *file_or_dir) {

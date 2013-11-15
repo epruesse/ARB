@@ -24,9 +24,9 @@ enum DI_gc {
     DI_G_LAST                   // must be last
 };
 
-class AW_device;
-class AW_event;
-class DI_MATRIX;
+class  AW_device;
+struct AW_event;
+class  DI_MATRIX;
 
 class DI_dmatrix {
     int screen_width;             // dimensions of main screen

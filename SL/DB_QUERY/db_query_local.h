@@ -50,37 +50,39 @@ namespace QUERY {
 
     };
 
-    struct DbQuery {
+    class DbQuery {
+        AwarName awar_tree_name;
+
+    public:
         AW_window         *aws;
-        GBDATA            *gb_main;                       // the main database (in merge tool: source db in left query; dest db in right query)
-        GBDATA            *gb_ref;                        // second reference database (only used by merge tool; dest db in left query; source db in right query)
-        bool               expect_hit_in_ref_list;        // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for target-DB-query)
-        AWAR               species_name;
-        const char        *tree_name;
-        AWAR               awar_keys[QUERY_SEARCHES];
-        AWAR               awar_setkey;
-        AWAR               awar_setprotection;
-        AWAR               awar_setvalue;
-        AWAR               awar_parskey;
-        AWAR               awar_parsvalue;
-        AWAR               awar_parspredefined;
-        AWAR               awar_queries[QUERY_SEARCHES];
-        AWAR               awar_not[QUERY_SEARCHES];      // not flags for queries
-        AWAR               awar_operator[QUERY_SEARCHES]; // not flags for queries
-        AWAR               awar_ere;
-        AWAR               awar_where;
-        AWAR               awar_by;
-        AWAR               awar_use_tag;
-        AWAR               awar_double_pars;
-        AWAR               awar_deftag;
-        AWAR               awar_tag;
-        AWAR               awar_count;
-        AWAR               awar_sort;
-        unsigned long      sort_mask;                     // contains several cascading sort criteria (QUERY_SORT_CRITERIA_BITS each)
+        GBDATA            *gb_main;                           // the main database (in merge tool: source db in left query; dest db in right query)
+        GBDATA            *gb_ref;                            // second reference database (only used by merge tool; dest db in left query; source db in right query)
+        bool               expect_hit_in_ref_list;            // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for target-DB-query)
+        AwarName           species_name;
+        AwarName           awar_keys[QUERY_SEARCHES];
+        AwarName           awar_setkey;
+        AwarName           awar_setprotection;
+        AwarName           awar_setvalue;
+        AwarName           awar_parskey;
+        AwarName           awar_parsvalue;
+        AwarName           awar_parspredefined;
+        AwarName           awar_queries[QUERY_SEARCHES];
+        AwarName           awar_not[QUERY_SEARCHES];          // not flags for queries
+        AwarName           awar_operator[QUERY_SEARCHES];     // not flags for queries
+        AwarName           awar_ere;
+        AwarName           awar_where;
+        AwarName           awar_by;
+        AwarName           awar_use_tag;
+        AwarName           awar_double_pars;
+        AwarName           awar_deftag;
+        AwarName           awar_tag;
+        AwarName           awar_count;
+        AwarName           awar_sort;
+        unsigned long      sort_mask;                         // contains several cascading sort criteria (QUERY_SORT_CRITERIA_BITS each)
         AW_selection_list *hitlist;
         ItemSelector&      selector;
-        int                select_bit;                    // one of 1 2 4 8 .. 128 (one for each query box)
-        GB_HASH           *hit_description;               // key = char* (hit item name), value = char* (description of hit - allocated!)
+        int                select_bit;                        // one of 1 2 4 8 .. 128 (one for each query box)
+        GB_HASH           *hit_description;                   // key = char* (hit item name), value = char* (description of hit - allocated!)
 
         DbQuery(ItemSelector& selector_)
             : selector(selector_)
@@ -91,9 +93,16 @@ namespace QUERY {
         bool is_queried(GBDATA *gb_item) const {
             return select_bit & GB_read_usr_private(gb_item);
         }
+
+        const char *get_tree_name() const;
+        void set_tree_awar_name(const char *tree_awar_name) { // @@@ intermediate - should be set by ctor
+            awar_tree_name = tree_awar_name;
+        }
     };
 
 };
 #else
 #error db_query_local.h included twice
 #endif // DB_QUERY_LOCAL_H
+
+

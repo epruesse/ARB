@@ -16,18 +16,18 @@
 #include <test_unit.h>
 #endif
 
-#define DO_HEXDUMP(off,hex,ascii,width,gap,space)   \
-    str.reset_pos();                            \
-    MemDump(off, hex, ascii, width, gap,space)      \
+#define DO_HEXDUMP(off,hex,ascii,width,gap,space)       \
+    str.erase();                                        \
+    MemDump(off, hex, ascii, width, gap,space)          \
         .dump_to(str, buf, len)
 
-#define TEST_HEXDUMP_EQUAL(width,gap,off,hex,ascii,space,expected) do {       \
-        DO_HEXDUMP(off,hex,ascii,width,gap,space);                            \
+#define TEST_HEXDUMP_EQUAL(width,gap,off,hex,ascii,space,expected) do { \
+        DO_HEXDUMP(off,hex,ascii,width,gap,space);                      \
         TEST_EXPECT_EQUAL(str.get_data(), expected);                    \
     } while(0)
 
-#define TEST_HEXDUMP_EQUAL__BROKEN(width,gap,off,hex,ascii,space,expected) do {       \
-        DO_HEXDUMP(off,hex,ascii,width,gap,space);                                    \
+#define TEST_HEXDUMP_EQUAL__BROKEN(width,gap,off,hex,ascii,space,expected) do { \
+        DO_HEXDUMP(off,hex,ascii,width,gap,space);                              \
         TEST_EXPECT_EQUAL__BROKEN(str.get_data(), expected);                    \
     } while(0)
 

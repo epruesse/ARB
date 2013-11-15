@@ -118,15 +118,15 @@ public:
     void tie_widget(AW_CL cd1, Widget widget, AW_widget_type type, AW_window *aww);
     void untie_all_widgets();
 
-    AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);
-    AW_awar *add_callback(Awar_CB1 f, AW_CL cd1);
-    AW_awar *add_callback(Awar_CB0 f);
     AW_awar *add_callback(const RootCallback& cb);
+    AW_awar *add_callback(Awar_CB0 f) { return add_callback(makeRootCallback(f)); }
+    AW_awar *add_callback(Awar_CB1 f, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass RootCallback") { return add_callback(makeRootCallback(f, cd1)); }
+    AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass RootCallback") { return add_callback(makeRootCallback(f, cd1, cd2)); }
 
-    AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);   // remove a callback
-    AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1);
-    AW_awar *remove_callback(Awar_CB0 f);
     AW_awar *remove_callback(const RootCallback& cb);
+    AW_awar *remove_callback(Awar_CB0 f) { return remove_callback(makeRootCallback(f)); }
+    AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass RootCallback") { return remove_callback(makeRootCallback(f, cd1)); }
+    AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass RootCallback") { return remove_callback(makeRootCallback(f, cd1, cd2)); }
 
     AW_awar *add_target_var(char **ppchr);
     AW_awar *add_target_var(long *pint);

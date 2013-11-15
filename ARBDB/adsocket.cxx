@@ -23,11 +23,16 @@
 #include <sys/time.h>
 #include <sys/un.h>
 
+#if defined(DARWIN)
+# include <sys/sysctl.h>
+#endif // DARWIN
+
 #include <arb_cs.h>
 #include <arb_str.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
 #include <arb_sleep.h>
+#include <arb_pathlen.h>
 
 #include "gb_comm.h"
 #include "gb_data.h"
@@ -36,9 +41,8 @@
 
 #include <SigHandler.h>
 
-#if defined(DARWIN)
-# include <sys/sysctl.h>
-#endif // DARWIN
+#include <algorithm>
+#include <arb_misc.h>
 
 static int gbcm_pipe_violation_flag = 0;
 void gbcms_sigpipe(int) {
@@ -749,6 +753,12 @@ static GB_CSTR getenv_autodirectory(const char *envvar, const char *defaultDirec
     return dir;
 }
 
+GB_CSTR GB_getenvARB_PROP() {
+    static const char *ap = 0;
+    if (!ap) ap = getenv_autodirectory("ARB_PROP", GB_path_in_HOME(".arb_prop"));  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_PROP
+    return ap;
+}
+
 GB_CSTR GB_getenvARBMACROHOME() {
     static const char *amh = 0;
     if (!amh) amh = getenv_autodirectory("ARBMACROHOME", GB_path_in_arbprop("macros"));  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACROHOME
@@ -829,16 +839,18 @@ GB_CSTR GB_getenv(const char *env) {
     if (strncmp(env, "ARB", 3) == 0) {
         // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp
 
+        if (strcmp(env, "ARBHOME")      == 0) return GB_getenvARBHOME();
+        if (strcmp(env, "ARB_PROP")     == 0) return GB_getenvARB_PROP();
         if (strcmp(env, "ARBCONFIG")    == 0) return GB_getenvARBCONFIG();
         if (strcmp(env, "ARBMACROHOME") == 0) return GB_getenvARBMACROHOME();
         if (strcmp(env, "ARBMACRO")     == 0) return GB_getenvARBMACRO();
-        if (strcmp(env, "ARBHOME")      == 0) return GB_getenvARBHOME();
+
         if (strcmp(env, "ARB_GS")       == 0) return GB_getenvARB_GS();
         if (strcmp(env, "ARB_PDFVIEW")  == 0) return GB_getenvARB_PDFVIEW();
         if (strcmp(env, "ARB_DOC")      == 0) return GB_getenvDOCPATH();
         if (strcmp(env, "ARB_TEXTEDIT") == 0) return GB_getenvARB_TEXTEDIT();
-        if (strcmp(env, "ARB_XTERM") == 0)    return GB_getenvARB_XTERM();
-        if (strcmp(env, "ARB_XCMD") == 0)     return GB_getenvARB_XCMD();
+        if (strcmp(env, "ARB_XTERM")    == 0) return GB_getenvARB_XTERM();
+        if (strcmp(env, "ARB_XCMD")     == 0) return GB_getenvARB_XCMD();
     }
     else {
         if (strcmp(env, "HOME") == 0) return GB_getenvHOME();
@@ -865,76 +877,149 @@ bool GB_host_is_local(const char *hostname) {
         ARB_stricmp(hostname, arb_gethostname()) == 0;
 }
 
-#define MIN(a, b) (((a)<(b)) ? (a) : (b))
-
 GB_ULONG GB_get_physical_memory() {
     // Returns the physical available memory size in k available for one process
-    GB_ULONG memsize; // real existing memory in k
-
+    static GB_ULONG physical_memsize = 0;
+    if (!physical_memsize) {
+        GB_ULONG memsize; // real existing memory in k
 #if defined(LINUX)
-    {
-        long pagesize = sysconf(_SC_PAGESIZE);
-        long pages    = sysconf(_SC_PHYS_PAGES);
+        {
+            long pagesize = sysconf(_SC_PAGESIZE);
+            long pages    = sysconf(_SC_PHYS_PAGES);
 
-        memsize = (pagesize/1024) * pages;
-    }
+            memsize = (pagesize/1024) * pages;
+        }
 #elif defined(DARWIN)
 #warning memsize detection needs to be tested for Darwin
-    {
-        int      mib[2];
-        uint64_t bytes;
-        size_t   len;
+        {
+            int      mib[2];
+            uint64_t bytes;
+            size_t   len;
 
-        mib[0] = CTL_HW;
-        mib[1] = HW_MEMSIZE; // uint64_t: physical ram size
-        len = sizeof(bytes);
-        sysctl(mib, 2, &bytes, &len, NULL, 0);
+            mib[0] = CTL_HW;
+            mib[1] = HW_MEMSIZE; // uint64_t: physical ram size
+            len = sizeof(bytes);
+            sysctl(mib, 2, &bytes, &len, NULL, 0);
 
-        memsize = bytes/1024;
-    }
+            memsize = bytes/1024;
+        }
 #else
-    memsize = 1024*1024; // assume 1 Gb
-    printf("\n"
-           "Warning: ARB is not prepared to detect the memory size on your system!\n"
-           "         (it assumes you have %ul Mb,  but does not use more)\n\n", memsize/1024);
+        memsize = 1024*1024; // assume 1 Gb
+        printf("\n"
+               "Warning: ARB is not prepared to detect the memory size on your system!\n"
+               "         (it assumes you have %ul Mb,  but does not use more)\n\n", memsize/1024);
 #endif
 
-    GB_ULONG net_memsize = memsize - 10240;         // reduce by 10Mb
+        GB_ULONG net_memsize = memsize - 10240;         // reduce by 10Mb
 
-    // detect max allocateable memory by ... allocating
-    GB_ULONG max_malloc_try = net_memsize*1024;
-    GB_ULONG max_malloc     = 0;
-    {
-        GB_ULONG step_size  = 4096;
-        void *head = 0;
+        // detect max allocateable memory by ... allocating
+        GB_ULONG max_malloc_try = net_memsize*1024;
+        GB_ULONG max_malloc     = 0;
+        {
+            GB_ULONG step_size  = 4096;
+            void *head = 0;
 
-        do {
-            void **tmp;
-            while ((tmp=(void**)malloc(step_size))) {
-                *tmp        = head;
-                head        = tmp;
-                max_malloc += step_size;
-                if (max_malloc >= max_malloc_try) break;
-                step_size *= 2;
-            }
-        } while ((step_size=step_size/2) > sizeof(void*));
+            do {
+                void **tmp;
+                while ((tmp=(void**)malloc(step_size))) {
+                    *tmp        = head;
+                    head        = tmp;
+                    max_malloc += step_size;
+                    if (max_malloc >= max_malloc_try) break;
+                    step_size *= 2;
+                }
+            } while ((step_size=step_size/2) > sizeof(void*));
 
-        while (head) freeset(head, *(void**)head);
-        max_malloc /= 1024;
-    }
+            while (head) freeset(head, *(void**)head);
+            max_malloc /= 1024;
+        }
 
-    GB_ULONG usedmemsize = (MIN(net_memsize, max_malloc)*95)/100; // arb uses max. 95 % of available memory (was 70% in the past)
+        physical_memsize = std::min(net_memsize, max_malloc);
 
 #if defined(DEBUG) && 0
-    printf("- memsize(real)        = %20lu k\n", memsize);
-    printf("- memsize(net)         = %20lu k\n", net_memsize);
-    printf("- memsize(max_malloc)  = %20lu k\n", max_malloc);
-    printf("- memsize(used by ARB) = %20lu k\n", usedmemsize);
+        printf("- memsize(real)        = %20lu k\n", memsize);
+        printf("- memsize(net)         = %20lu k\n", net_memsize);
+        printf("- memsize(max_malloc)  = %20lu k\n", max_malloc);
 #endif // DEBUG
 
-    arb_assert(usedmemsize != 0);
+        GB_informationf("Visible memory: %s", GBS_readable_size(physical_memsize*1024, "b"));
+    }
 
-    return usedmemsize;
+    arb_assert(physical_memsize>0);
+    return physical_memsize;
+}
+
+static GB_ULONG parse_env_mem_definition(const char *env_override, GB_ERROR& error) {
+    const char *end;
+    GB_ULONG    num = strtoul(env_override, const_cast<char**>(&end), 10);
+
+    error = NULL;
+
+    bool valid = num>0 || env_override[0] == '0';
+    if (valid) {
+        const char *formatSpec = end;
+        double      factor     = 1;
+
+        switch (tolower(formatSpec[0])) {
+            case 0:
+                num = GB_ULONG(num/1024.0+0.5); // byte->kb
+                break; // no format given
+
+            case 'g': factor *= 1024;
+            case 'm': factor *= 1024;
+            case 'k': break;
+
+            case '%':
+                factor = num/100.0;
+                num    = GB_get_physical_memory();
+                break;
+
+            default: valid = false; break;
+        }
+
+        if (valid) return GB_ULONG(num*factor+0.5);
+    }
+
+    error = "expected digits (optionally followed by k, M, G or %)";
+    return 0;
+}
+
+GB_ULONG GB_get_usable_memory() {
+    // memory allowed to be used by a single ARB process (in kbyte)
+
+    static GB_ULONG useable_memory = 0;
+    if (!useable_memory) {
+        bool        allow_fallback = true;
+        const char *env_override   = GB_getenv("ARB_MEMORY");
+        const char *via_whom;
+        if (env_override) {
+            via_whom = "via envar ARB_MEMORY";
+        }
+        else {
+          FALLBACK:
+            env_override   = "90%"; // ARB processes do not use more than 90% of physical memory
+            via_whom       = "by internal default";
+            allow_fallback = false;
+        }
+
+        gb_assert(env_override);
+
+        GB_ERROR env_error;
+        GB_ULONG env_memory = parse_env_mem_definition(env_override, env_error);
+        if (env_error) {
+            GB_warningf("Ignoring invalid setting '%s' %s (%s)", env_override, via_whom, env_error);
+            if (allow_fallback) goto FALLBACK;
+            GBK_terminate("failed to detect usable memory");
+        }
+
+        GB_informationf("Restricting used memory (%s '%s') to %s", via_whom, env_override, GBS_readable_size(env_memory*1024, "b"));
+        if (!allow_fallback) {
+            GB_informationf("Note: Setting envar ARB_MEMORY will override that restriction (percentage or absolute memsize)");
+        }
+        useable_memory = env_memory;
+        gb_assert(useable_memory>0 && useable_memory<GB_get_physical_memory());
+    }
+    return useable_memory;
 }
 
 // ---------------------------
@@ -992,7 +1077,7 @@ GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
 // @@@ whole section (+ corresponding tests) should move to adfile.cxx
 
 static int  path_toggle = 0;
-static char path_buf[2][PATH_MAX];
+static char path_buf[2][ARB_PATH_MAX];
 
 static char *use_other_path_buf() {
     path_toggle = 1-path_toggle;
@@ -1007,7 +1092,7 @@ GB_CSTR GB_append_suffix(const char *name, const char *suffix) {
     if (suffix) {
         while (suffix[0] == '.') suffix++;
         if (suffix[0]) {
-            result = GBS_global_string_to_buffer(use_other_path_buf(), PATH_MAX, "%s.%s", name, suffix);
+            result = GBS_global_string_to_buffer(use_other_path_buf(), ARB_PATH_MAX, "%s.%s", name, suffix);
         }
     }
     return result;
@@ -1024,8 +1109,11 @@ GB_CSTR GB_canonical_path(const char *anypath) {
     if (!anypath) {
         GB_export_error("NULL path (internal error)");
     }
-    else if (strlen(anypath) >= PATH_MAX) {
-        GB_export_errorf("Path too long (> %i chars)", PATH_MAX-1);
+    else if (!anypath[0]) {
+        result = "/";
+    }
+    else if (strlen(anypath) >= ARB_PATH_MAX) {
+        GB_export_errorf("Path too long (> %i chars)", ARB_PATH_MAX-1);
     }
     else {
         if (anypath[0] == '~' && (!anypath[1] || anypath[1] == '/')) {
@@ -1044,11 +1132,17 @@ GB_CSTR GB_canonical_path(const char *anypath) {
                 char *dir, *fullname;
                 GB_split_full_path(anypath, &dir, &fullname, NULL, NULL);
 
-                gb_assert(dir);                       // maybe you'd like to use GB_unfold_path()
-                gb_assert(strcmp(dir, anypath) != 0); // avoid deadlock
+                const char *canonical_dir = NULL;
+                if (!dir) {
+                    gb_assert(anypath[0] == '/' && !strchr(anypath+1, '/'));
+                    canonical_dir = "/";
+                }
+                else {
+                    gb_assert(strcmp(dir, anypath) != 0); // avoid deadlock
 
-                const char *canonical_dir = GB_canonical_path(dir);
-                gb_assert(canonical_dir);
+                    canonical_dir = GB_canonical_path(dir);
+                    gb_assert(canonical_dir);
+                }
 
                 // manually resolve '.' and '..' in non-existing parent directories
                 if (strcmp(fullname, "..") == 0) {
@@ -1083,16 +1177,24 @@ GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right) {
 
     GB_CSTR result = NULL;
 
-    if (anypath_left) {
-        if (anypath_right) {
-            result = GBS_global_string_to_buffer(use_other_path_buf(), sizeof(path_buf[0]), "%s/%s", anypath_left, anypath_right);
+    if (anypath_right) {
+        if (anypath_right[0] == '/') {
+            result = GB_concat_path(anypath_left, anypath_right+1);
+        }
+        else if (anypath_left) {
+            if (anypath_left[strlen(anypath_left)-1] == '/') {
+                result = GBS_global_string_to_buffer(use_other_path_buf(), sizeof(path_buf[0]), "%s%s", anypath_left, anypath_right);
+            }
+            else {
+                result = GBS_global_string_to_buffer(use_other_path_buf(), sizeof(path_buf[0]), "%s/%s", anypath_left, anypath_right);
+            }
         }
         else {
-            result = anypath_left;
+            result = anypath_right;
         }
     }
     else {
-        result = anypath_right;
+        result = anypath_left;
     }
 
     return result;
@@ -1154,8 +1256,11 @@ GB_CSTR GB_path_in_ARBHOME(const char *relative_path) {
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path) {
     return GB_path_in_ARBHOME("lib", relative_path);
 }
+GB_CSTR GB_path_in_HOME(const char *relative_path) {
+    return GB_unfold_path("HOME", relative_path);
+}
 GB_CSTR GB_path_in_arbprop(const char *relative_path) {
-    return GB_unfold_path("HOME", GB_concat_path(".arb_prop", relative_path));
+    return GB_unfold_path("ARB_PROP", relative_path);
 }
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right) {
     return GB_path_in_ARBLIB(GB_concat_path(relative_path_left, anypath_right));
@@ -1383,6 +1488,8 @@ void TEST_paths() {
     TEST_EXPECT_EQUAL(GB_concat_path(NULL, "b"), "b");
     TEST_EXPECT_EQUAL(GB_concat_path("a", "b"), "a/b");
 
+    TEST_EXPECT_EQUAL(GB_concat_path("/", "test.fig"), "/test.fig");
+
     {
         char        *arbhome    = strdup(GB_getenvARBHOME());
         const char*  nosuchfile = "nosuchfile";
@@ -1400,6 +1507,10 @@ void TEST_paths() {
         TEST_EXPECT_IS_CANONICAL(somefile_in_arbhome);
         TEST_EXPECT_IS_CANONICAL(nosuchpath_in_arbhome);
         TEST_EXPECT_IS_CANONICAL(file_in_nosuchpath);
+
+        TEST_EXPECT_IS_CANONICAL("/tmp"); // existing (most likely)
+        TEST_EXPECT_IS_CANONICAL("/tmp/arbtest.fig");
+        TEST_EXPECT_IS_CANONICAL("/arbtest.fig"); // not existing (most likely)
 
         TEST_EXPECT_CANONICAL_TO("./PARSIMONY/./../ARBDB/./arbdb.h",     "ARBDB/arbdb.h"); // test parent-path
         TEST_EXPECT_CANONICAL_TO("INCLUDE/arbdb.h",                   "ARBDB/arbdb.h"); // test symbolic link to file
@@ -1444,6 +1555,7 @@ void TEST_paths() {
     }
 
     TEST_EXPECT_EQUAL(GB_path_in_ARBLIB("help"), GB_path_in_ARBHOME("lib", "help"));
+
 }
 
 // ----------------------------------------
