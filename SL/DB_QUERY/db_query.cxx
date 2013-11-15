@@ -2549,7 +2549,10 @@ static void query_rel_menu_entry(AW_window *aws, const char *id, const char *que
 }
 
 const char *DbQuery::get_tree_name() const {
-    return aws->get_root()->awar(awar_tree_name)->read_char_pntr();
+    if (!awar_tree_name) 
+        return NULL;
+    else
+        return aws->get_root()->awar(awar_tree_name)->read_char_pntr();
 }
 
 DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *query_id) {
