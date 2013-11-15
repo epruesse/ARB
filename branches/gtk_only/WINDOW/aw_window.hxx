@@ -279,8 +279,7 @@ public:
 
     // ******************* Get the devices **********************
     AW_device *get_device(AW_area area);
-    AW_device_click *get_click_device(AW_area area, int mousex, int mousey, AW_pos max_distance_linei,
-                                      AW_pos max_distance_texti, AW_pos radi);
+    AW_device_click *get_click_device(AW_area area, int mousex, int mousey, int max_distance);
     AW_device_size *get_size_device(AW_area area);
     AW_device_print *get_print_device(AW_area area);
 

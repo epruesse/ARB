@@ -56,8 +56,8 @@
 
 #define AWAR_ERROR_MESSAGES "tmp/message/displayed" // error-messages: display awar
 
-#define AWAR_FOOTER     "tmp/LeftFooter" // mode line (showing help for selected mode)
-#define AWAR_FOOTER_MAX_LEN 100 // max allowed textlen for mode line
+#define AWAR_FOOTER         "tmp/LeftFooter" // mode line (showing help for selected mode)
+#define AWAR_FOOTER_MAX_LEN 100          // max allowed textlen for mode line
 
 #define AWAR_AWM_MASK "tmp/awm_mask"
 

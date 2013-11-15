@@ -96,7 +96,7 @@ public:
     void insert(AP_tree_nlen *new_brother);
     void remove() OVERRIDE;
     void swap_assymetric(AP_TREE_SIDE mode) OVERRIDE;
-    void moveNextTo(AP_tree_nlen *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveTo to test if possible
+    void moveNextTo(AP_tree_nlen *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveNextTo to test if possible
     void set_root() OVERRIDE;
 
     // overload virtual methods from AP_tree:

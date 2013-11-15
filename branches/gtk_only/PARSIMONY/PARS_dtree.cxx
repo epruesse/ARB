@@ -272,112 +272,24 @@ void AWT_graphic_parsimony::show(AW_device *device) {
     AWT_graphic_tree::show(device);
 }
 
+void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event& event) {
+    ClickedTarget clicked(this, event.best_click());
 
-void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
-                                    AW_event_type type, AW_pos x, AW_pos y,
-                                    AW_clicked_line *cl, AW_clicked_text *ct)
-{
-    static int bl_drag_flag;
+    switch (event.cmd()) {
+        // @@@ something is designed completely wrong here!
+        // why do all commands close TA and reopen when done?
 
-    AP_tree *at;
-
-    bool compute_tree = false;
-    bool recalc_branch_lengths = false;
-    bool beautify_tree = false;
-
-    switch (cmd) {
-        case AWT_MODE_MOVE:                             // two point commands !!!!!
-            if (button==AW_BUTTON_MIDDLE) {
-                break;
-            }
-            switch (type) {
-                case AW_Mouse_Press:
-                    if (!(cl && cl->exists)) {
-                        break;
-                    }
-
-                    // @@@ check security level
-                    at = (AP_tree *)cl->client_data1;
-                    if (at && at->father) {
-                        bl_drag_flag = 1;
-                        this->rot_at = at;
-                        this->rot_cl = *cl;
-                        this->old_rot_cl = *cl;
-                    }
-                    break;
-
-                case AW_Mouse_Drag:
-                    if (bl_drag_flag && this->rot_at && this->rot_at->father) {
-                        this->rot_show_line(device);
-                        if (cl->exists) {
-                            this->rot_cl = *cl;
-                        }
-                        else {
-                            rot_cl = old_rot_cl;
-                        }
-                        this->rot_show_line(device);
-                    }
-                    break;
-                case AW_Mouse_Release:
-                    if (bl_drag_flag && this->rot_at && this->rot_at->father) {
-                        this->rot_show_line(device);
-                        AP_tree *dest = 0;
-                        if (cl->exists) dest = (AP_tree *)cl->client_data1;
-                        AP_tree *source = rot_at;
-                        if (!(source && dest)) {
-                            aw_message("Please Drag Line to a valid branch");
-                            break;
-                        }
-                        if (source == dest) {
-                            aw_message("Please drag mouse from source to destination");
-                            break;
-                        }
-                        const char *error = 0;
-
-                        switch (button) {
-                            case AW_BUTTON_LEFT:
-                                error = source->cantMoveNextTo(dest);
-                                if (!error) {
-                                    source->moveNextTo(dest, cl->nearest_rel_pos);
-                                    recalc_branch_lengths = true;
-                                }
-                                break;
-                            case AW_BUTTON_RIGHT:
-                                error = source->move_group_info(dest);
-                                break;
-                        }
-
-                        if (error) aw_message(error);
-                        this->exports.refresh = 1;
-                        this->exports.save    = 1;
-                        this->exports.resize  = 1;
-                        ASSERT_VALID_TREE(get_root_node());
-                        compute_tree = true;
-                    }
-                    break;
-                default:
-                    break;
-            }
-            break;
-
-#ifdef NNI_MODES
         case AWT_MODE_NNI:
-            if (type==AW_Mouse_Press) {
+            if (event.type()==AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
-                switch (button) {
+                switch (event.button()) {
                     case AW_BUTTON_LEFT: {
-                        if (cl->exists) {
-                            arb_progress progress("NNI optimize subtree");
-
-                            at                = (AP_tree *)cl->client_data1;
-                            AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, at);
+                        if (clicked.node()) {
+                            arb_progress  progress("NNI optimize subtree");
+                            AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, clicked.node());
                             atn->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
-
-                            exports.refresh = 1;
-                            exports.save    = 1;
-
+                            exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
-                            recalc_branch_lengths = true;
                         }
                         break;
                     }
@@ -389,99 +301,76 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                         atn->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
                         printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
 
-                        exports.refresh = 1;
-                        exports.save    = 1;
-
+                        exports.save = 1;
                         ASSERT_VALID_TREE(get_root_node());
-                        recalc_branch_lengths = true;
                         break;
                     }
+
+                    default: break;
                 }
                 GB_begin_transaction(gb_main);
             }
             break;
         case AWT_MODE_KERNINGHAN:
-            if (type==AW_Mouse_Press) {
+            if (event.type()==AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
-                switch (button) {
+                switch (event.button()) {
                     case AW_BUTTON_LEFT:
-                        if (cl->exists) {
-                            arb_progress progress("Kernighan-Lin optimize subtree");
-                            at = (AP_tree *)cl->client_data1;
-                            parsimony.kernighan_optimize_tree(at);
-                            this->exports.refresh = 1;
+                        if (clicked.node()) {
+                            arb_progress  progress("Kernighan-Lin optimize subtree");
+                            parsimony.kernighan_optimize_tree(clicked.node());
                             this->exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
-                            recalc_branch_lengths = true;
                         }
                         break;
                     case AW_BUTTON_RIGHT: {
                         arb_progress progress("Kernighan-Lin optimize tree");
                         parsimony.kernighan_optimize_tree(get_root_node());
-                        this->exports.refresh = 1;
                         this->exports.save = 1;
                         ASSERT_VALID_TREE(get_root_node());
-                        recalc_branch_lengths = true;
                         break;
                     }
+                    default: break;
                 }
                 GB_begin_transaction(gb_main);
             }
             break;
         case AWT_MODE_OPTIMIZE:
-            if (type==AW_Mouse_Press) {
+            if (event.type()==AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
-                switch (button) {
+                switch (event.button()) {
                     case AW_BUTTON_LEFT:
-                        if (cl->exists) {
-                            arb_progress progress("Optimizing subtree");
-
-                            at = (AP_tree *)cl->client_data1;
-                            
-                            if (at) parsimony.optimize_tree(at, progress);
-                            this->exports.refresh = 1;
-                            this->exports.save    = 1;
+                        if (clicked.node()) {
+                            arb_progress  progress("Optimizing subtree");
+                            parsimony.optimize_tree(clicked.node(), progress);
+                            this->exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
-                            recalc_branch_lengths = true;
                         }
                         break;
                     case AW_BUTTON_RIGHT: {
                         arb_progress progress("Optimizing tree");
                         
                         parsimony.optimize_tree(get_root_node(), progress);
-                        this->exports.refresh = 1;
-                        this->exports.save    = 1;
+                        this->exports.save = 1;
                         ASSERT_VALID_TREE(get_root_node());
-                        recalc_branch_lengths = true;
                         break;
                     }
+                    default: break;
                 }
                 GB_begin_transaction(gb_main);
             }
             break;
-#endif // NNI_MODES
 
         default:
-            AWT_graphic_tree::command(device, cmd, button, key_modifier, key_code, key_char, type, x, y, cl, ct);
+            AWT_graphic_tree::handle_command(device, event);
             break;
     }
 
-    if (recalc_branch_lengths) {
+    if (exports.save == 1) {
         arb_progress progress("Recalculating branch lengths");
         rootEdge()->calc_branchlengths();
-
-        beautify_tree = true; // beautify after recalc_branch_lengths
-    }
-
-    if (beautify_tree) {
-        this->resort_tree(0);
-        this->exports.save = 1;
-
-        compute_tree = true; // compute_tree after beautify_tree
-    }
-
-    if (compute_tree) {
-        get_root_node()->compute_tree(gb_main);
-        exports.refresh = 1;
+        resort_tree(0); // beautify after recalc_branch_lengths
     }
 }
+
+

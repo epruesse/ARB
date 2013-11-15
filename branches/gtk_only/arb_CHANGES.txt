@@ -56,6 +56,8 @@ Major changes for next release:
  - tree display
    - Show brackets on open groups (dendrogram tree only)
    - rewrote IRS (folded) display
+   - fixed tree key-bindings (mark, fold, ...)
+   - improved several tree-commands (move, rotate, spread, length, width)
  - added a branch analysis tool
    - groups several functions previously availiable via menuitems (e.g. mark long branches, etc.)
    - added leaf-distance analysis

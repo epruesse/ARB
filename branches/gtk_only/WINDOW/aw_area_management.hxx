@@ -29,6 +29,12 @@ enum AW_key_mod {
     AW_KEYMODE_ALT     = GDK_MOD1_MASK,
 };
 
+// define some inline functions to avoid comparing apples and oranges:
+inline bool operator==(AW_key_mod, char);
+inline bool operator!=(AW_key_mod, char);
+inline bool operator==(char, AW_key_mod);
+inline bool operator!=(char, AW_key_mod);
+
 enum AW_event_type {
     AW_No_Event         = GDK_NOTHING,
     AW_Keyboard_Press   = GDK_KEY_PRESS,

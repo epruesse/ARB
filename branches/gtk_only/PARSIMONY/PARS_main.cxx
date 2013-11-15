@@ -1222,20 +1222,18 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
 
     awm->insert_help_topic("ARB_PARSIMONY help", "N", "arb_pars.hlp", AWM_ALL, (AW_CB)AW_help_popup, (AW_CL)"arb_pars.hlp", 0);
 
-    awm->create_mode("select.xpm", "mode_select.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SELECT));
-    awm->create_mode("mark.xpm",   "mode_mark.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MARK));
-    awm->create_mode("group.xpm",  "mode_group.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_GROUP));
-    awm->create_mode("pzoom.xpm",  "mode_pzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ZOOM));
-    awm->create_mode("lzoom.xpm",  "mode_lzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LZOOM));
-    awm->create_mode("swap.xpm",   "mode_swap.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
-    awm->create_mode("move.xpm",   "mode_move.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
-#ifdef NNI_MODES
+    awm->create_mode("select.xpm",   "mode_select.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SELECT));
+    awm->create_mode("mark.xpm",     "mode_mark.hlp",     AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MARK));
+    awm->create_mode("group.xpm",    "mode_group.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_GROUP));
+    awm->create_mode("pzoom.xpm",    "mode_pzoom.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ZOOM));
+    awm->create_mode("lzoom.xpm",    "mode_lzoom.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LZOOM));
+    awm->create_mode("swap.xpm",     "mode_swap.hlp",     AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
+    awm->create_mode("move.xpm",     "mode_move.hlp",     AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
     awm->create_mode("nearestn.xpm", "mode_nni.hlp",      AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_NNI));
     awm->create_mode("kernlin.xpm",  "mode_kernlin.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_KERNINGHAN));
     awm->create_mode("optimize.xpm", "mode_optimize.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_OPTIMIZE));
-#endif // NNI_MODES
-    awm->create_mode("setroot.xpm", "mode_set_root.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
-    awm->create_mode("reset.xpm",   "mode_reset.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_RESET));
+    awm->create_mode("setroot.xpm",  "mode_set_root.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
+    awm->create_mode("reset.xpm",    "mode_reset.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_RESET));
 
     awm->at(5, 2);
     awm->auto_space(0, -2);
