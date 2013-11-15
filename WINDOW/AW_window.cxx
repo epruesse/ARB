@@ -839,15 +839,13 @@ void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize
 }
 
 
-AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mousey,
-                                             AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos radi) {
+AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mousey, int max_distance) {
     AW_area_management *aram         = prvt->areas[area];
     AW_device_click    *click_device = NULL;
 
     if (aram) {
         click_device = aram->get_click_device();
-        click_device->init(mousex, mousey, max_distance_linei,
-                           max_distance_texti, radi, AW_ALL_DEVICES);
+        click_device->init_click(mousex, mousey, max_distance, AW_ALL_DEVICES);
     }
     return click_device;
 }

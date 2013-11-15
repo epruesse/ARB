@@ -50,6 +50,12 @@ enum AW_key_code {
     AW_KEY_ASCII
 };
 
+// define some inline functions to avoid comparing apples and oranges:
+inline bool operator==(AW_key_code, char);
+inline bool operator!=(AW_key_code, char);
+inline bool operator==(char, AW_key_code);
+inline bool operator!=(char, AW_key_code);
+
 #else
 #error aw_keysym.hxx included twice
 #endif // AW_KEYSYM_HXX
