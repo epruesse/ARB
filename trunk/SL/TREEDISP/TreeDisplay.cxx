@@ -726,7 +726,6 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
             // handle reset-key promised by
             // - KEYINFO_ABORT_AND_RESET (AWT_MODE_ROT, AWT_MODE_LENGTH, AWT_MODE_LINE, AWT_MODE_SPREAD)
             // - KEYINFO_RESET (AWT_MODE_LZOOM)
-            // (replacement for AWT_MODE_RESET)
 
             if (event.cmd() == AWT_MODE_LZOOM) {
                 tree_root_display  = tree_root_display->get_root_node();
@@ -1579,9 +1578,6 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                     default: td_assert(0); break;
                 }
             }
-            break;
-
-        case AWT_MODE_RESET: // @@@ remove this mode (globally!)
             break;
 
     act_like_group :

@@ -1234,7 +1234,6 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     awm->create_mode("kernlin.xpm",  "mode_kernlin.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_KERNINGHAN));
     awm->create_mode("optimize.xpm", "mode_optimize.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_OPTIMIZE));
     awm->create_mode("setroot.xpm",  "mode_set_root.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
-    awm->create_mode("reset.xpm",    "mode_reset.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_RESET));
 
     awm->at(5, 2);
     awm->auto_space(0, -2);

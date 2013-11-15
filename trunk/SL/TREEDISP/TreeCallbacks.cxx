@@ -50,8 +50,6 @@ void nt_mode_event(AW_window*, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
         case AWT_MODE_MOVE:   text = MODE_TEXT_2BUTTONS_KEYS("MOVE",         "drag branch/ruler", "move groupinfo only",  KEYINFO_ABORT);           break;
         case AWT_MODE_LZOOM:  text = MODE_TEXT_2BUTTONS_KEYS("LOGICAL ZOOM", "show only subtree", "go up one step",       KEYINFO_RESET);           break;
 
-        case AWT_MODE_RESET: text = MODE_TEXT_3BUTTONS("RESET", "reset rotation", "reset angles", "reset linewidth"); break; // @@@ elim
-
         default: text = no_mode_text_defined(); break;
     }
 

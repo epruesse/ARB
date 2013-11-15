@@ -18,7 +18,6 @@ SUB	mode_swap.hlp
 SUB	mode_length.hlp
 SUB	mode_move.hlp
 SUB	mode_set_root.hlp
-SUB	mode_reset.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
