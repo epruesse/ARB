@@ -602,25 +602,33 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
     return error;
 }
 
-struct Dragged : public AWT_command_data {
+class Dragged : public AWT_command_data {
     /*! Is dragged and can be dropped.
      * Knows how to indicate dragging.
      */
+    AWT_graphic_exports& exports;
+
+protected:
+    AWT_graphic_exports& get_exports() { return exports; }
+
+public:
     enum DragAction { DRAGGING, DROPPED };
 
-    Dragged() {}
+    Dragged(AWT_graphic_exports& exports_)
+        : exports(exports_)
+    {}
 
     static bool valid_drag_device(AW_device *device) { return device->type() == AW_DEVICE_SCREEN; }
 
     virtual void draw_drag_indicator(AW_device *device, int drag_gc) const = 0;
-    virtual void perform(DragAction action, const AW_clicked_element *target, const Position& mousepos, AWT_graphic_exports& exports) = 0;
-    virtual void abort(AWT_graphic_exports& exports) = 0;
+    virtual void perform(DragAction action, const AW_clicked_element *target, const Position& mousepos) = 0;
+    virtual void abort() = 0;
 
-    void do_drag(const AW_clicked_element *drag_target, const Position& mousepos, AWT_graphic_exports& exports)  {
-        perform(DRAGGING, drag_target, mousepos, exports);
+    void do_drag(const AW_clicked_element *drag_target, const Position& mousepos) {
+        perform(DRAGGING, drag_target, mousepos);
     }
-    void do_drop(const AW_clicked_element *drop_target, const Position& mousepos, AWT_graphic_exports& exports) {
-        perform(DROPPED, drop_target, mousepos, exports);
+    void do_drop(const AW_clicked_element *drop_target, const Position& mousepos) {
+        perform(DROPPED, drop_target, mousepos);
     }
 
     void hide_drag_indicator(AW_device *device, int drag_gc) const {
@@ -628,7 +636,7 @@ struct Dragged : public AWT_command_data {
         // hide by XOR-drawing only works in motif
         draw_drag_indicator(device, drag_gc);
 #else
-#warning test behavior in gtk // @@@ write some notes here
+        exports.refresh = 1;
 #endif
     }
 };
@@ -654,7 +662,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
             Dragged *dragging = dynamic_cast<Dragged*>(cmddata);
             if (dragging) {
                 dragging->hide_drag_indicator(device, drag_gc);
-                dragging->abort(exports); // abort what ever we did
+                dragging->abort(); // abort what ever we did
                 store_command_data(NULL);
             }
         }
@@ -942,25 +950,25 @@ public:
 class DragNDrop : public Dragged {
     LineOrText Drag, Drop;
 
-    virtual void perform_drop(AWT_graphic_exports& exports) = 0;
+    virtual void perform_drop() = 0;
 
     void drag(const AW_clicked_element *drag_target)  {
         Drop = drag_target ? *drag_target : Drag;
     }
-    void drop(const AW_clicked_element *drop_target, AWT_graphic_exports& exports) {
+    void drop(const AW_clicked_element *drop_target) {
         drag(drop_target);
-        perform_drop(exports);
+        perform_drop();
     }
 
-    void perform(DragAction action, const AW_clicked_element *target, const Position&, AWT_graphic_exports& exports) OVERRIDE {
+    void perform(DragAction action, const AW_clicked_element *target, const Position&) OVERRIDE {
         switch (action) {
             case DRAGGING: drag(target); break;
-            case DROPPED:  drop(target, exports); break;
+            case DROPPED:  drop(target); break;
         }
     }
 
-    void abort(AWT_graphic_exports& exports) OVERRIDE {
-        perform(DROPPED, Drag.element(), Position(), exports); // drop dragged element onto itself to abort
+    void abort() OVERRIDE {
+        perform(DROPPED, Drag.element(), Position()); // drop dragged element onto itself to abort
     }
 
 protected:
@@ -968,7 +976,10 @@ protected:
     const AW_clicked_element *dest_element() const { return Drop.element(); }
 
 public:
-    DragNDrop(const AW_clicked_element *dragFrom) : Drag(*dragFrom), Drop(Drag) { }
+    DragNDrop(const AW_clicked_element *dragFrom, AWT_graphic_exports& exports_)
+        : Dragged(exports_),
+          Drag(*dragFrom), Drop(Drag)
+    {}
 
     void draw_drag_indicator(AW_device *device, int drag_gc) const {
         td_assert(valid_drag_device(device));
@@ -981,7 +992,7 @@ public:
 class BranchMover : public DragNDrop {
     AW_MouseButton button;
 
-    void perform_drop(AWT_graphic_exports& exports) {
+    void perform_drop() OVERRIDE {
         ClickedTarget source(source_element());
         ClickedTarget dest(dest_element());
 
@@ -1005,7 +1016,7 @@ class BranchMover : public DragNDrop {
                 aw_message(error);
             }
             else {
-                exports.save = 1;
+                get_exports().save = 1;
             }
         }
         else {
@@ -1018,7 +1029,10 @@ class BranchMover : public DragNDrop {
     }
 
 public:
-    BranchMover(const AW_clicked_element *dragFrom, AW_MouseButton button_) : DragNDrop(dragFrom), button(button_) {}
+    BranchMover(const AW_clicked_element *dragFrom, AW_MouseButton button_, AWT_graphic_exports& exports_)
+        : DragNDrop(dragFrom, exports_),
+          button(button_)
+    {}
 };
 
 
@@ -1028,20 +1042,20 @@ class Scaler : public Dragged {
     double unscale;
 
     virtual void draw_scale_indicator(const AW::Position& drag_pos, AW_device *device, int drag_gc) const = 0;
-    virtual void do_scale(const Position& drag_pos, AWT_graphic_exports& exports) = 0;
+    virtual void do_scale(const Position& drag_pos) = 0;
 
-    void perform(DragAction action, const AW_clicked_element *, const Position& mousepos, AWT_graphic_exports& exports) OVERRIDE {
+    void perform(DragAction action, const AW_clicked_element *, const Position& mousepos) OVERRIDE {
         switch (action) {
             case DRAGGING:
                 last_drag_pos = mousepos;
                 // fall-through (aka instantly apply drop-action while dragging)
             case DROPPED:
-                do_scale(mousepos, exports);
+                do_scale(mousepos);
                 break;
         }
     }
-    void abort(AWT_graphic_exports& exports) OVERRIDE {
-        perform(DROPPED, NULL, mouse_start, exports); // drop exactly where dragging started
+    void abort() OVERRIDE {
+        perform(DROPPED, NULL, mouse_start); // drop exactly where dragging started
     }
 
 
@@ -1050,8 +1064,9 @@ protected:
     Vector scaling(const Position& current) const { return Vector(mouse_start, current)*unscale; } // returns world-coordinates
 
 public:
-    Scaler(const Position& start, double unscale_)
-        : mouse_start(start),
+    Scaler(const Position& start, double unscale_, AWT_graphic_exports& exports_)
+        : Dragged(exports_),
+          mouse_start(start),
           last_drag_pos(start),
           unscale(unscale_)
     {
@@ -1151,13 +1166,13 @@ class RulerScaler : public Scaler { // derived from Noncopyable
     }
 
     void draw_scale_indicator(const AW::Position& , AW_device *, int ) const {}
-    void do_scale(const Position& drag_pos, AWT_graphic_exports& exports) {
+    void do_scale(const Position& drag_pos) {
         GB_transaction ta(gbdata());
-        if (write_pos(awar_start+scaling(drag_pos))) exports.refresh = 1;
+        if (write_pos(awar_start+scaling(drag_pos))) get_exports().refresh = 1;
     }
 public:
-    RulerScaler(const Position& start, double unscale_, const DB_scalable& xs, const DB_scalable& ys)
-        : Scaler(start, unscale_),
+    RulerScaler(const Position& start, double unscale_, const DB_scalable& xs, const DB_scalable& ys, AWT_graphic_exports& exports_)
+        : Scaler(start, unscale_, exports_),
           x(xs),
           y(ys)
     {
@@ -1248,7 +1263,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
         device->line(drag_gc, branch);
     }
 
-    void do_scale(const Position& drag_pos, AWT_graphic_exports& exports) {
+    void do_scale(const Position& drag_pos) {
         double oldval = get_val();
 
         if (start_val == 0.0) { // can't scale
@@ -1294,14 +1309,14 @@ class BranchScaler : public Scaler { // derived from Noncopyable
         }
 
         if (oldval != get_val()) {
-            exports.save = 1;
+            get_exports().save = 1;
         }
     }
 
 public:
 
-    BranchScaler(ScaleMode mode_, AP_tree *node_, const LineVector& branch_, const Position& attach_, const Position& start, double unscale_, bool discrete_, bool allow_neg_values_)
-        : Scaler(start, unscale_),
+    BranchScaler(ScaleMode mode_, AP_tree *node_, const LineVector& branch_, const Position& attach_, const Position& start, double unscale_, bool discrete_, bool allow_neg_values_, AWT_graphic_exports& exports_)
+        : Scaler(start, unscale_, exports_),
           mode(mode_),
           node(node_),
           start_val(get_val()),
@@ -1321,15 +1336,15 @@ class BranchLinewidthScaler : public Scaler {
     bool     wholeSubtree;
 
 public:
-    BranchLinewidthScaler(AP_tree *node_, const Position& start, bool wholeSubtree_)
-        : Scaler(start, 0.1), // 0.1 = > change linewidth dragpixel/10
+    BranchLinewidthScaler(AP_tree *node_, const Position& start, bool wholeSubtree_, AWT_graphic_exports& exports_)
+        : Scaler(start, 0.1, exports_), // 0.1 = > change linewidth dragpixel/10
           node(node_),
           start_width(node->get_linewidth()),
           wholeSubtree(wholeSubtree_)
     {}
 
     void draw_scale_indicator(const AW::Position& , AW_device *, int ) const OVERRIDE {}
-    void do_scale(const Position& drag_pos, AWT_graphic_exports& exports) OVERRIDE {
+    void do_scale(const Position& drag_pos) OVERRIDE {
         Vector moved = scaling(drag_pos);
         double ymove = -moved.y();
         int    old   = node->get_linewidth();
@@ -1344,7 +1359,7 @@ public:
             else {
                 node->set_linewidth(width);
             }
-            exports.save = 1;
+            get_exports().save = 1;
         }
     }
 };
@@ -1357,7 +1372,7 @@ class BranchRotator : public Dragged {
     Position    hinge;
     Position    mousepos_world;
 
-    void perform(DragAction, const AW_clicked_element *, const Position& mousepos, AWT_graphic_exports& exports) OVERRIDE {
+    void perform(DragAction, const AW_clicked_element *, const Position& mousepos) OVERRIDE {
         mousepos_world = device->rtransform(mousepos);
 
         double prev_angle = node->get_angle();
@@ -1368,18 +1383,19 @@ class BranchRotator : public Dragged {
 
         node->set_angle(orig_angle + diff.radian());
 
-        if (node->get_angle() != prev_angle) exports.save = 1;
+        if (node->get_angle() != prev_angle) get_exports().save = 1;
     }
 
-    void abort(AWT_graphic_exports& exports) OVERRIDE {
+    void abort() OVERRIDE {
         node->set_angle(orig_angle);
-        exports.save    = 1;
-        exports.refresh = 1;
+        get_exports().save    = 1;
+        get_exports().refresh = 1;
     }
 
 public:
-    BranchRotator(AW_device *device_, AP_tree *node_, const LineVector& clicked_branch_, const Position& mousepos)
-        : device(device_),
+    BranchRotator(AW_device *device_, AP_tree *node_, const LineVector& clicked_branch_, const Position& mousepos, AWT_graphic_exports& exports_)
+        : Dragged(exports_),
+          device(device_),
           node(node_),
           clicked_branch(clicked_branch_),
           orig_angle(node->get_angle()),
@@ -1432,18 +1448,18 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                 dragging->hide_drag_indicator(device, drag_gc);
                 if (event.type() == AW_Mouse_Press) {
                     // mouse pressed while dragging (e.g. press other button)
-                    dragging->abort(exports); // abort what ever we did
+                    dragging->abort(); // abort what ever we did
                     store_command_data(NULL);
                 }
                 else {
                     switch (event.type()) {
                         case AW_Mouse_Drag:
-                            dragging->do_drag(clicked.element(), mousepos, exports);
+                            dragging->do_drag(clicked.element(), mousepos);
                             dragging->draw_drag_indicator(device, drag_gc);
                             break;
 
                         case AW_Mouse_Release:
-                            dragging->do_drop(clicked.element(), mousepos, exports);
+                            dragging->do_drop(clicked.element(), mousepos);
                             store_command_data(NULL);
                             break;
                         default:
@@ -1484,7 +1500,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             xdata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_x" : "ruler_x"), 0.0);
             ydata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_y" : "ruler_y"), 0.0);
         }
-        store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata));
+        store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
         return;
     }
 
@@ -1494,7 +1510,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
 
         case AWT_MODE_MOVE:
             if (event.type() == AW_Mouse_Press && clicked.node() && clicked.node()->father) {
-                BranchMover *mover = new BranchMover(clicked.element(), event.button());
+                BranchMover *mover = new BranchMover(clicked.element(), event.button(), exports);
                 store_command_data(mover);
                 mover->draw_drag_indicator(device, drag_gc);
             }
@@ -1507,7 +1523,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
 
                 const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
                 td_assert(cl);
-                BranchScaler *scaler = new BranchScaler(SCALE_LENGTH, clicked.node(), cl->get_line(), clicked.element()->get_attach_point(), mousepos, device->get_unscale(), discrete_lengths, allow_neg_branches);
+                BranchScaler *scaler = new BranchScaler(SCALE_LENGTH, clicked.node(), cl->get_line(), clicked.element()->get_attach_point(), mousepos, device->get_unscale(), discrete_lengths, allow_neg_branches, exports);
                 store_command_data(scaler);
                 scaler->draw_drag_indicator(device, drag_gc);
             }
@@ -1517,7 +1533,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
                 const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
                 td_assert(cl);
-                BranchRotator *rotator = new BranchRotator(device, clicked.node(), cl->get_line(), mousepos);
+                BranchRotator *rotator = new BranchRotator(device, clicked.node(), cl->get_line(), mousepos, exports);
                 store_command_data(rotator);
                 rotator->draw_drag_indicator(device, drag_gc);
             }
@@ -1525,7 +1541,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
 
         case AWT_MODE_LINE:
             if (event.type()==AW_Mouse_Press && clicked.node()) {
-                BranchLinewidthScaler *widthScaler = new BranchLinewidthScaler(clicked.node(), mousepos, event.button() == AW_BUTTON_RIGHT);
+                BranchLinewidthScaler *widthScaler = new BranchLinewidthScaler(clicked.node(), mousepos, event.button() == AW_BUTTON_RIGHT, exports);
                 store_command_data(widthScaler);
                 widthScaler->draw_drag_indicator(device, drag_gc);
             }
@@ -1535,7 +1551,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
                 const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
                 td_assert(cl);
-                BranchScaler *spreader = new BranchScaler(SCALE_SPREAD, clicked.node(), cl->get_line(), clicked.element()->get_attach_point(), mousepos, device->get_unscale(), false, false);
+                BranchScaler *spreader = new BranchScaler(SCALE_SPREAD, clicked.node(), cl->get_line(), clicked.element()->get_attach_point(), mousepos, device->get_unscale(), false, false, exports);
                 store_command_data(spreader);
                 spreader->draw_drag_indicator(device, drag_gc);
             }
