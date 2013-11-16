@@ -39,14 +39,6 @@ DESCRIPTION	The 'MARK MODE' allows you to mark and unmark individual species, or
 NOTES		The marked species are indicated by filled squares at the
 		terminal nodes.
 
-		Short descriptions of the 'MODE' and the functions assigned
-		to the mouse buttons are given in the fourth line of the
-		'ARB_NT' window.
-
-		The middle mouse button (placed anywhere within the tree
-		display area) can be used to move the whole tree.
-
-
 EXAMPLES	None
 
 WARNINGS	None
