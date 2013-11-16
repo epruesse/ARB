@@ -29,21 +29,7 @@ DESCRIPTION	The 'ROTATE MODE' allows you to rotate branches or subtrees
 
                 See also LINK{mode_angle.hlp}.
 
-NOTES		Short descriptions of the 'MODE' and the functions assigned
-		to the mouse buttons are given in the fourth line of the
-		'ARB_NT' window.
-
-		The displayed tree topology is exported to the drawing
-		tool xfig.
-
-		The middle mouse button (placed anywhere within the tree
-		display area) can be used to move the whole tree.
-
-		The scale bar and its label can be moved by positioning the
-		cursor anywhere on the bar, keeping the left mouse button
-		pressed, moving the cursor to the desired position and
-                subsequently releasing the mouse button. The label of the bar
-		can be moved independently.
+NOTES		None
 
 EXAMPLES	None
 
