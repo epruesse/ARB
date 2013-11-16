@@ -1221,7 +1221,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     }
     awm->button_length(5);
 
-    awm->insert_help_topic("ARB_PARSIMONY help", "N", "arb_pars.hlp", AWM_ALL, (AW_CB)AW_help_popup, (AW_CL)"arb_pars.hlp", 0);
+    awm->insert_help_topic("ARB_PARSIMONY help", "N", "arb_pars.hlp", AWM_ALL, makeHelpCallback("arb_pars.hlp"));
 
     awm->create_mode("mode_select.xpm",   "mode_select.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SELECT));
     awm->create_mode("mode_mark.xpm",     "mode_mark.hlp",     AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MARK));
