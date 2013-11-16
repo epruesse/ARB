@@ -26,7 +26,7 @@ AW_window *create_kernighan_window(AW_root *aw_root) {
 
 
     aws->at("help");
-    aws->callback((AW_CB1)AW_help_popup, (AW_CL)"kernlin.hlp");
+    aws->callback(makeHelpCallback("kernlin.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->button_length(6);

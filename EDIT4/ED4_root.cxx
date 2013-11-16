@@ -1619,7 +1619,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     }
     awmm->close_sub_menu();
 
-    awmm->insert_help_topic("ARB_EDIT4 help",     "E", "e4.hlp", AWM_ALL, (AW_CB)AW_help_popup, (AW_CL)"e4.hlp", 0);
+    awmm->insert_help_topic("ARB_EDIT4 help",     "E", "e4.hlp", AWM_ALL, makeHelpCallback("e4.hlp"));
 
     // ----------------------------------------------------------------------------------------------------
 

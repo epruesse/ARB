@@ -1211,7 +1211,7 @@ static AW_window *create_probe_expert_window(AW_root *root, AW_CL for_design) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(makeWindowCallback(AW_help_popup, for_design ? "pd_spec_param.hlp" : "pm_spec_param.hlp")); // uses_hlp_res("pm_spec_param.hlp", "pd_spec_param.hlp"); see ../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
+    aws->callback(makeHelpCallback(for_design ? "pd_spec_param.hlp" : "pm_spec_param.hlp")); // uses_hlp_res("pm_spec_param.hlp", "pd_spec_param.hlp"); see ../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
     aws->at("help");
     aws->create_button("HELP", "HELP", "C");
 
