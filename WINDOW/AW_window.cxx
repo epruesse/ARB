@@ -1138,13 +1138,13 @@ void AW_window::calculate_scrollbars(){
     get_scrollarea_size(&scrollArea);
 
     char buffer[200];
-    sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);   
+    sprintf(buffer, "tmp/window/%s/horizontal_page_increment", window_defaults_name);   
     const int hpage_increment = scrollArea.r * get_root()->awar(buffer)->read_int() / 100;
-    sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
+    sprintf(buffer, "tmp/window/%s/scroll_width_horizontal", window_defaults_name);
     const int hstep_increment = get_root()->awar(buffer)->read_int();
-    sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);   
+    sprintf(buffer, "tmp/window/%s/vertical_page_increment", window_defaults_name);   
     const int vpage_increment = scrollArea.b * get_root()->awar(buffer)->read_int() / 100;
-    sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
+    sprintf(buffer, "tmp/window/%s/scroll_width_vertical", window_defaults_name);
     const int vstep_increment = get_root()->awar(buffer)->read_int();
 
     aw_drawing_area_set_increments(prvt->drawing_area, hstep_increment, hpage_increment,
@@ -1167,31 +1167,31 @@ void AW_window::create_window_variables() {
 
     RootCallback scrollbar_recalc_cb = makeRootCallback(_aw_window_recalc_scrollbar_cb, this);
 
-    sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
+    sprintf(buffer, "tmp/window/%s/horizontal_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50);
     get_root()->awar(buffer)->add_callback(scrollbar_recalc_cb);
 
-    sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
+    sprintf(buffer, "tmp/window/%s/vertical_page_increment", window_defaults_name);
     get_root()->awar_int(buffer, 50);
     get_root()->awar(buffer)->add_callback(scrollbar_recalc_cb);
 
-    sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
+    sprintf(buffer, "tmp/window/%s/scroll_width_horizontal", window_defaults_name);
     get_root()->awar_int(buffer, 9);
     get_root()->awar(buffer)->add_callback(scrollbar_recalc_cb);
 
-    sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
+    sprintf(buffer, "tmp/window/%s/scroll_width_vertical", window_defaults_name);
     get_root()->awar_int(buffer, 20);
     get_root()->awar(buffer)->add_callback(scrollbar_recalc_cb);
 
     GtkAdjustment *adj;
     adj = aw_drawing_area_get_vertical_adjustment(prvt->drawing_area);
-    sprintf(buffer, "window/%s/scroll_position_vertical", window_defaults_name);
+    sprintf(buffer, "tmp/window/%s/scroll_position_vertical", window_defaults_name);
     get_root()->awar_int(buffer, 0)
         ->add_target_var(&this->slider_pos_vertical)
         ->bind_value(G_OBJECT(adj), "value", new _awar_float_to_int_mapper());
 
     adj = aw_drawing_area_get_horizontal_adjustment(prvt->drawing_area);
-    sprintf(buffer, "window/%s/scroll_position_horizontal", window_defaults_name);    
+    sprintf(buffer, "tmp/window/%s/scroll_position_horizontal", window_defaults_name);    
     get_root()->awar_int(buffer, 0)
         ->add_target_var(&this->slider_pos_horizontal)
         ->bind_value(G_OBJECT(adj), "value", new _awar_float_to_int_mapper());
@@ -1212,12 +1212,12 @@ void AW_window::set_horizontal_scrollbar_position(int position) {
 }
 
 void AW_window::set_vertical_change_callback(const WindowCallback& wcb) {
-    const char *awar_name = GBS_global_string("window/%s/scroll_position_vertical", window_defaults_name);
+    const char *awar_name = GBS_global_string("tmp/window/%s/scroll_position_vertical", window_defaults_name);
     get_root()->awar(awar_name)->changed.connect(wcb, this);
 }
 
 void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
-    const char *awar_name = GBS_global_string("window/%s/scroll_position_horizontal", window_defaults_name);
+    const char *awar_name = GBS_global_string("tmp/window/%s/scroll_position_horizontal", window_defaults_name);
     get_root()->awar(awar_name)->changed.connect(wcb, this);
 }
 
