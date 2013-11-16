@@ -641,6 +641,17 @@ public:
     }
 };
 
+bool AWT_graphic_tree::warn_inappropriate_mode(AWT_COMMAND_MODE mode) {
+    if (mode == AWT_MODE_ROT || mode == AWT_MODE_SPREAD) {
+        if (tree_sort != AP_TREE_RADIAL) {
+            aw_message("Please select the radial tree display mode to use this command");
+            return true;
+        }
+    }
+    return false;
+}
+
+
 void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
     //! handles AW_Event_Type = AW_Keyboard_Press.
 
@@ -736,7 +747,8 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                 td_assert(gb_tree);
 
                 switch (event.cmd()) {
-                    case AWT_MODE_ROT: break; // ruler has no rotation
+                    case AWT_MODE_ROT:    break; // ruler has no rotation
+                    case AWT_MODE_SPREAD: break; // ruler has no spread
                     case AWT_MODE_LENGTH: {
                         GB_transaction ta(gb_tree);
                         GBDATA *gb_ruler_size = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
@@ -751,11 +763,11 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                         exports.structure_change = 1;
                         break;
                     }
-                    case AWT_MODE_SPREAD: break; // ruler has no spread
                     default: break;
                 }
             }
             else if (pointed.node()) {
+                if (warn_inappropriate_mode(event.cmd())) return;
                 switch (event.cmd()) {
                     case AWT_MODE_ROT:
                         pointed.node()->reset_rotation();
@@ -1502,6 +1514,8 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
         return;
     }
+
+    if (event.type() == AW_Mouse_Press && warn_inappropriate_mode(event.cmd())) return;
 
     switch (event.cmd()) {
         // -----------------------------
@@ -2731,7 +2745,6 @@ void AWT_graphic_tree::show(AW_device *device) {
 void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
     aw_message("INFO MESSAGE");
 }
-
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
     AWT_graphic_tree *apdt    = new AWT_graphic_tree(root, gb_main, map_viewer_cb);
