@@ -137,7 +137,6 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AW_bitset line_filter, vert_line_filter, mark_filter, group_bracket_filter;
     AW_bitset leaf_text_filter, group_text_filter, remark_text_filter, other_text_filter;
     AW_bitset ruler_filter, root_filter;
-    int       treemode;
     bool      nds_show_all;
 
     AD_map_viewer_cb  map_viewer_cb;
@@ -182,6 +181,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
         AW_click_cd branch(disp_device, old->get_cd1(), (AW_CL)"branch");
         return disp_device->line(gc, root, leaf, line_filter);
     }
+
+    bool warn_inappropriate_mode(AWT_COMMAND_MODE mode);
 
 protected:
     void store_command_data(AWT_command_data *new_cmd_data) {
