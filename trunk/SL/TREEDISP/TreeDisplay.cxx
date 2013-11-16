@@ -1739,19 +1739,20 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type, AWT_canvas *ntw) {
 }
 
 AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
-    : AWT_graphic()
+    : AWT_graphic(),
+      line_filter          (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE),
+      vert_line_filter     (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER),
+      mark_filter          (AW_SCREEN|AW_PRINTER_EXT),
+      group_bracket_filter (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
+      bs_circle_filter     (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
+      leaf_text_filter     (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
+      group_text_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
+      remark_text_filter   (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
+      other_text_filter    (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
+      ruler_filter         (AW_SCREEN|AW_CLICK|AW_PRINTER), // appropriate size-filter added manually in code
+      root_filter          (AW_SCREEN|AW_PRINTER_EXT)
+      
 {
-    line_filter          = AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_SIZE|AW_PRINTER;
-    vert_line_filter     = AW_SCREEN|AW_PRINTER;
-    group_bracket_filter = AW_SCREEN|AW_PRINTER|AW_CLICK|AW_CLICK_DROP|AW_SIZE_UNSCALED;
-    leaf_text_filter     = AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED;
-    group_text_filter    = AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED;
-    remark_text_filter   = AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED;
-    other_text_filter    = AW_SCREEN|AW_CLICK|AW_PRINTER|AW_SIZE_UNSCALED;
-    mark_filter          = AW_SCREEN|AW_PRINTER_EXT;
-    ruler_filter         = AW_SCREEN|AW_CLICK|AW_PRINTER; // appropriate size-filter added manually in code
-    root_filter          = AW_SCREEN|AW_CLICK|AW_PRINTER_EXT;
-
     set_tree_type(AP_TREE_NORMAL, NULL);
     tree_root_display = 0;
     tree_proto        = 0;
@@ -2159,14 +2160,14 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                 remarkPos.movey(-scaled_font.ascent*0.1);
                 bool bootstrap_shown = AWT_show_branch_remark(disp_device, son->remark_branch, son->is_leaf, remarkPos, 1, remark_text_filter);
                 if (show_circle && bootstrap_shown) {
-                    show_bootstrap_circle(disp_device, son->remark_branch, circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, remark_text_filter);
+                    show_bootstrap_circle(disp_device, son->remark_branch, circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, bs_circle_filter);
                 }
             }
 
             set_line_attributes_for(son);
             unsigned int gc = son->gr.gc;
-            draw_branch_line(gc, s, n);
-            disp_device->line(gc, attach, s, vert_line_filter);
+            draw_branch_line(gc, s, n, line_filter);
+            draw_branch_line(gc, attach, s, vert_line_filter);
         }
         limits.y_branch = attach.ypos();
     }
@@ -2192,7 +2193,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
 
     AW_click_cd cd(disp_device, (AW_CL)at);
     set_line_attributes_for(at);
-    draw_branch_line(at->gr.gc, Position(x_root, y_root), Position(x_center, y_center));
+    draw_branch_line(at->gr.gc, Position(x_root, y_root), Position(x_center, y_center), line_filter);
 
     // draw mark box
     if (at->gb_node && GB_read_flag(at->gb_node)) {
@@ -2304,14 +2305,14 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
             z = at->leftlen * .5;
             Position center(x_center + z * cos(w), y_center + z * sin(w));
-            show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, center, false, 0, remark_text_filter);
+            show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, center, false, 0, bs_circle_filter);
         }
         if (at->rightson->remark_branch) {
             AW_click_cd cdr(disp_device, (AW_CL)at->rightson);
             w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
             z = at->rightlen * .5;
             Position center(x_center + z * cos(w), y_center + z * sin(w));
-            show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, center, false, 0, remark_text_filter);
+            show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, center, false, 0, bs_circle_filter);
         }
     }
 }
@@ -2603,7 +2604,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
             AW_pos x               = part_x_pos[p];
             if (align_right[p]) x += max_part_width[p] - col.print_width;
 
-            disp_device->text(gc, col.text, x, y, 0.0, other_text_filter, col.len);
+            disp_device->text(gc, col.text, x, y, 0.0, leaf_text_filter, col.len);
         }
     }
 
