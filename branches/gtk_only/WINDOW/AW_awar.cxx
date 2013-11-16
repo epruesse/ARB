@@ -943,6 +943,28 @@ static void _aw_awar_notify_gparam(AW_root*, awar_gparam_binding* binding) {
 }
 
 // --------------------------------------------------------------------------------
+// debug helper
+
+// dump CB for AW_awar_dump_changes
+static void _dump_changes(AW_root*, AW_awar* awar) {
+    char* val = awar->read_as_string();
+    printf("AWAR %s changed: %s\n", awar->get_name(), val);
+    free(val);
+}
+
+/**
+ * Print all changes to awar @param name to console
+ */
+void AW_awar_dump_changes(const char* name) {
+    AW_awar* awar = AW_root::SINGLETON->awar(name);
+    awar->add_callback(makeRootCallback(_dump_changes, awar));
+    char* val = awar->read_as_string();
+    printf("AWAR %s initial value: %s\n", awar->get_name(), val);
+    free(val);
+}
+
+
+// --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>
