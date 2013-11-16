@@ -26,7 +26,8 @@ enum AWT_COMMAND_MODE {
     AWT_MODE_GROUP,
     AWT_MODE_ZOOM,
     AWT_MODE_LZOOM,
-    AWT_MODE_EDIT, // species info
+    AWT_MODE_INFO,
+    AWT_MODE_EDIT,
     AWT_MODE_WWW,
     AWT_MODE_LINE,
     AWT_MODE_ROT,
