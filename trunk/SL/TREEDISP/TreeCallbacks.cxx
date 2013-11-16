@@ -31,7 +31,7 @@ void nt_mode_event(AW_window*, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
         case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
 
         case AWT_MODE_SELECT: text = MODE_TEXT_1BUTTON("SELECT", "select species or open/close group");                  break;
-        case AWT_MODE_EDIT:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");                                      break;
+        case AWT_MODE_INFO:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");                                      break;
         case AWT_MODE_WWW:    text = MODE_TEXT_1BUTTON("WEB",    "Launch node dependent URL (see <Properties/WWW...>)"); break;
 
         case AWT_MODE_SWAP:       text = MODE_TEXT_2BUTTONS("SWAP",         "swap child branches",        "flip whole subtree");          break;

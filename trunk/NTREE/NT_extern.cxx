@@ -1521,7 +1521,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->create_mode("group.xpm",    "mode_group.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_GROUP));
     awm->create_mode("pzoom.xpm",    "mode_pzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ZOOM));
     awm->create_mode("lzoom.xpm",    "mode_lzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LZOOM));
-    awm->create_mode("modify.xpm",   "mode_info.hlp",   AWM_ALL, makeWindowCallback(NT_modify_cb,  ntw, AWT_MODE_EDIT));
+    awm->create_mode("modify.xpm",   "mode_info.hlp",   AWM_ALL, makeWindowCallback(NT_modify_cb,  ntw, AWT_MODE_INFO));
     awm->create_mode("www_mode.xpm", "mode_www.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_WWW));
 
     awm->create_mode("line.xpm",    "mode_width.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LINE));

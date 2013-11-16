@@ -1682,7 +1682,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         // now handle all modes which only act on tips (aka species) and
         // shall perform identically in tree- and list-modes
 
-        case AWT_MODE_EDIT:
+        case AWT_MODE_INFO:
         case AWT_MODE_WWW: {
             if (clicked.node() && clicked.node()->gb_node) {
                 if (command_on_GBDATA(clicked.node()->gb_node, event, map_viewer_cb)) {
