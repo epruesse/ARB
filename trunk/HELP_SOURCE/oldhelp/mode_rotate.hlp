@@ -27,7 +27,7 @@ DESCRIPTION	The 'ROTATE MODE' allows you to rotate branches or subtrees
                 To reset the rotation of all branches of a subtree,
                 press the key '0' (zero) while pointing to that subtree.
 
-                See also LINK{mode_angle.hlp}.
+                See also LINK{mode_spread.hlp}.
 
 NOTES		None
 

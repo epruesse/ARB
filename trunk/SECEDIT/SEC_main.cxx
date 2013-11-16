@@ -192,14 +192,14 @@ static void sec_mode_event(AW_window *aws, SEC_root *sec_root, AWT_COMMAND_MODE 
     switch (mode) {
         case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
 
-        case AWT_MODE_EDIT: text = MODE_TEXT_1BUTTON("CONSTRAINT", "modify constraint");       break;
-        case AWT_MODE_LINE: text = MODE_TEXT_1BUTTON("SET CURSOR", "set cursor in ARB_EDIT4"); break;
+        case AWT_MODE_EDIT:   text = MODE_TEXT_1BUTTON("CONSTRAINT", "modify constraint");       break;
+        case AWT_MODE_CURSOR: text = MODE_TEXT_1BUTTON("SET CURSOR", "set cursor in ARB_EDIT4"); break;
 
-        case AWT_MODE_MOVE:    text = MODE_TEXT_2BUTTONS("HELIX",      "build helix",                             "remove helix");                  break;
+        case AWT_MODE_FOLD:    text = MODE_TEXT_2BUTTONS("FOLD",       "fold helix",                              "unfold helix");                  break;
         case AWT_MODE_SETROOT: text = MODE_TEXT_2BUTTONS("SET ROOT",   "set logical center of structure",         "reset angles on sub-structure"); break;
-        case AWT_MODE_ROT:     text = MODE_TEXT_2BUTTONS("ROTATE",     "rotate helix/loop",                       "same w/o substructure");         break;
+        case AWT_MODE_ROTATE:  text = MODE_TEXT_2BUTTONS("ROTATE",     "rotate helix/loop",                       "same w/o substructure");         break;
         case AWT_MODE_STRETCH: text = MODE_TEXT_2BUTTONS("STRETCH",    "click and drag to stretch helices/loops", "reset");                         break;
-        case AWT_MODE_PROINFO: text = MODE_TEXT_2BUTTONS("PROBE INFO", "display PROBE information",               "undisplay");                     break;
+        case AWT_MODE_PINFO:   text = MODE_TEXT_2BUTTONS("PROBE INFO", "display PROBE information",               "undisplay");                     break;
 
         default: text = no_mode_text_defined(); break;
     }
@@ -729,14 +729,14 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->sep______________();
     awm->insert_menu_topic("sec_save_props",    "How to save properties",   "p", "savedef.hlp", AWM_ALL, (AW_CB) AW_help_popup, (AW_CL)"sec_props.hlp", 0);
 
-    awm->create_mode("pzoom.xpm",       "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_ZOOM));
-    awm->create_mode("sec_modify.xpm",  "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_MOVE));
-    awm->create_mode("setroot.xpm",     "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_SETROOT));
-    awm->create_mode("rot.xpm",         "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_ROT));
-    awm->create_mode("stretch.xpm",     "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_STRETCH));
-    awm->create_mode("info.xpm",        "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_EDIT));
-    awm->create_mode("sec_setcurs.xpm", "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_LINE));
-    awm->create_mode("probeInfo.xpm",   "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_PROINFO));
+    awm->create_mode("mode_zoom.xpm",    "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_ZOOM));
+    awm->create_mode("mode_fold.xpm",    "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_FOLD));
+    awm->create_mode("mode_setroot.xpm", "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_SETROOT));
+    awm->create_mode("mode_rotate.xpm",  "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_ROTATE));
+    awm->create_mode("mode_stretch.xpm", "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_STRETCH));
+    awm->create_mode("mode_edit.xpm",    "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_EDIT));
+    awm->create_mode("mode_cursor.xpm",  "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_CURSOR));
+    awm->create_mode("mode_pinfo.xpm",   "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_PINFO));
 
     awm->set_info_area_height(250);
     awm->at(5, 2);

@@ -1636,9 +1636,9 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     // ----------------------
     //      mode buttons
 
-    create_mode("select.xpm", "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_SELECT));
-    create_mode("pzoom.xpm",  "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_ZOOM));
-    create_mode("info.xpm",   "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_INFO));
+    create_mode("mode_select.xpm", "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_SELECT));
+    create_mode("mode_zoom.xpm",   "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_ZOOM));
+    create_mode("mode_info.xpm",   "gen_mode.hlp", AWM_ALL, makeWindowCallback(GEN_mode_event, this, AWT_MODE_INFO));
 
     // -------------------
     //      info area
