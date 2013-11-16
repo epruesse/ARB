@@ -642,7 +642,7 @@ public:
 };
 
 bool AWT_graphic_tree::warn_inappropriate_mode(AWT_COMMAND_MODE mode) {
-    if (mode == AWT_MODE_ROT || mode == AWT_MODE_SPREAD) {
+    if (mode == AWT_MODE_ROTATE || mode == AWT_MODE_SPREAD) {
         if (tree_sort != AP_TREE_RADIAL) {
             aw_message("Please select the radial tree display mode to use this command");
             return true;
@@ -735,7 +735,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
 
         if (!handled && event.key_char() == '0') {
             // handle reset-key promised by
-            // - KEYINFO_ABORT_AND_RESET (AWT_MODE_ROT, AWT_MODE_LENGTH, AWT_MODE_LINE, AWT_MODE_SPREAD)
+            // - KEYINFO_ABORT_AND_RESET (AWT_MODE_ROTATE, AWT_MODE_LENGTH, AWT_MODE_LINE, AWT_MODE_SPREAD)
             // - KEYINFO_RESET (AWT_MODE_LZOOM)
 
             if (event.cmd() == AWT_MODE_LZOOM) {
@@ -747,7 +747,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                 td_assert(gb_tree);
 
                 switch (event.cmd()) {
-                    case AWT_MODE_ROT:    break; // ruler has no rotation
+                    case AWT_MODE_ROTATE: break; // ruler has no rotation
                     case AWT_MODE_SPREAD: break; // ruler has no spread
                     case AWT_MODE_LENGTH: {
                         GB_transaction ta(gb_tree);
@@ -769,7 +769,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
             else if (pointed.node()) {
                 if (warn_inappropriate_mode(event.cmd())) return;
                 switch (event.cmd()) {
-                    case AWT_MODE_ROT:
+                    case AWT_MODE_ROTATE:
                         pointed.node()->reset_rotation();
                         exports.save = 1;
                         break;
@@ -1542,7 +1542,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             }
             break;
 
-        case AWT_MODE_ROT:
+        case AWT_MODE_ROTATE:
             if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
                 const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
                 td_assert(cl);
