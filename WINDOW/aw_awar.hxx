@@ -118,11 +118,13 @@ public:
     virtual float    get_max() const = 0;
     virtual AW_awar *set_srt(const char *srt) = 0;
 
+    AW_awar *set_min(float min) { return set_minmax(min, get_max()); }
+
     // ARBDB mapping
     virtual AW_awar *map(const char *awarn) = 0;
-    virtual AW_awar *map(AW_default dest) = 0; // map to new address
-    virtual AW_awar *map(AW_awar *dest) = 0; // map to new address
-    virtual AW_awar *unmap() = 0;           // map to original address
+    virtual AW_awar *map(AW_default dest)   = 0; // map to new address
+    virtual AW_awar *map(AW_awar *dest)     = 0; // map to new address
+    virtual AW_awar *unmap()                = 0; // map to original address
 
     // read access
     virtual bool        has_default_value() = 0;
