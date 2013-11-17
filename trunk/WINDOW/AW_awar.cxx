@@ -502,7 +502,7 @@ float AW_awar::get_min() const {
     if (variable_type == AW_STRING) GBK_terminatef("get_min does not apply to string AWAR '%s'", awar_name);
     bool isSet = (pp.f.min != pp.f.max); // as used in AW_awar::update
     if (!isSet) {
-        STATIC_ASSERT(float(INT_MIN)>=-FLT_MAX);
+        aw_assert(float(INT_MIN)>=-FLT_MAX);
         if (variable_type == AW_INT) return float(INT_MIN);
         aw_assert(variable_type == AW_FLOAT);
         return -FLT_MAX;
@@ -513,7 +513,7 @@ float AW_awar::get_max() const {
     if (variable_type == AW_STRING) GBK_terminatef("get_max does not apply to string AWAR '%s'", awar_name);
     bool isSet = (pp.f.min != pp.f.max); // as used in AW_awar::update
     if (!isSet) {
-        STATIC_ASSERT(float(INT_MAX)<=FLT_MAX);
+        aw_assert(float(INT_MAX)<=FLT_MAX);
         if (variable_type == AW_INT) return float(INT_MAX);
         aw_assert(variable_type == AW_FLOAT);
         return FLT_MAX;
