@@ -1372,7 +1372,7 @@ void TEST_SLOW_match_probe() {
 
     // ----------------------------------------------
     //      document buffer overflow in ptserver
-#if 0
+#ifdef NDEBUG
     {
         const char *arguments[] = {
             "prgnamefake",
@@ -1383,7 +1383,12 @@ void TEST_SLOW_match_probe() {
             "matchmaxresults=5",
         };
 
-        CCP expectd0 = "kawumm";
+        CCP expectd0 = "    name---- fullname mis N_mis wmis pos ecoli rev          'ACGGACUCCGGGAAACCGGGGCUAAUACC'\1"
+            "BcSSSS00\1" "  BcSSSS00            0     0  0.0  84    72 0   UAGCGGCGG-=============================-GGAUGGUGA\1"
+            "AclPleur\1" "  AclPleur            4     0  4.6  84    72 0   GAGUGGCGG-=======a========u=UA=========-GCGUAAUCA\1"
+            "PtVVVulg\1" "  PtVVVulg            4     0  5.1  84    72 0   GAGCGGCGG-=======a=U======G=U==========-GCAUGACCA\1"
+            "DlcTolu2\1" "  DlcTolu2            4    21 21.6 177   163 0   GGCUGGAUC-==CUC==uNNN..................-\1"
+            "PsAAAA00\1" "  PsAAAA00            5     0  5.3  84    72 0   CAGCGGCGG-======gu=C======G==C=========-GCAUACGCA\1";
 
         arguments[2] = "matchmismatches=5"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
     }
