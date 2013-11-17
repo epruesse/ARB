@@ -1369,6 +1369,25 @@ void TEST_SLOW_match_probe() {
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
         arguments[2] = "matchmismatches=2"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
     }
+
+    // ----------------------------------------------
+    //      document buffer overflow in ptserver
+#if 0
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=ACGGACUCCGGGAAACCGGGGCUAAUACC", // length=29
+            NULL, // matchmismatches
+            "matchacceptN=5",
+            "matchlimitN=7",
+            "matchmaxresults=5",
+        };
+
+        CCP expectd0 = "kawumm";
+
+        arguments[2] = "matchmismatches=5"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
+    }
+#endif
 }
 
 static char *extract_locations(const char *probe_design_result) {
