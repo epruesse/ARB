@@ -1380,17 +1380,46 @@ void TEST_SLOW_match_probe() {
             NULL, // matchmismatches
             "matchacceptN=5",
             "matchlimitN=7",
-            "matchmaxresults=5",
+            "matchmaxresults=10",
         };
 
         CCP expectd0 = "    name---- fullname mis N_mis wmis pos ecoli rev          'ACGGACUCCGGGAAACCGGGGCUAAUACC'\1"
             "BcSSSS00\1" "  BcSSSS00            0     0  0.0  84    72 0   UAGCGGCGG-=============================-GGAUGGUGA\1"
+            "Bl0LLL00\1" "  Bl0LLL00            0     0  0.0  84    72 0   CAGCGGCGG-=============================-GGAUGCUGA\1"
+            "DlcTolu2\1" "  DlcTolu2            2    27 23.5 183   169 0   AUCACCUCC-UuNNN........................-\1" // @@@ wrong mismatch-value (should at least count as 20 mismatches (27(N_mis)-7(matchlimitN)))
             "AclPleur\1" "  AclPleur            4     0  4.6  84    72 0   GAGUGGCGG-=======a========u=UA=========-GCGUAAUCA\1"
             "PtVVVulg\1" "  PtVVVulg            4     0  5.1  84    72 0   GAGCGGCGG-=======a=U======G=U==========-GCAUGACCA\1"
-            "DlcTolu2\1" "  DlcTolu2            4    21 21.6 177   163 0   GGCUGGAUC-==CUC==uNNN..................-\1"
-            "PsAAAA00\1" "  PsAAAA00            5     0  5.3  84    72 0   CAGCGGCGG-======gu=C======G==C=========-GCAUACGCA\1";
+            "DlcTolu2\1" "  DlcTolu2            4    21 21.6 177   163 0   GGCUGGAUC-==CUC==uNNN..................-\1" // @@@ also wrong mismatch-value
+            "CltBotul\1" "  CltBotul            4    23 22.1 145   132 0   AAGUCGUAA-Ca==Uu.......................-\1" // @@@ also wrong mismatch-value
+            "DsssDesu\1" "  DsssDesu            5     0  5.3  84    72 0   GAGUGGCGC-========u=C====Gu==A=========-GGAUACAGA\1"
+            "PsAAAA00\1" "  PsAAAA00            5     0  5.3  84    72 0   CAGCGGCGG-======gu=C======G==C=========-GCAUACGCA\1"
+            "LgtLytic\1" "  LgtLytic            5    23 24.1 178   164 0   GCUGGAUCA-C=UCCuN......................-\1"; // @@@ also wrong mismatch-value
 
         arguments[2] = "matchmismatches=5"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=ACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGGUGA", // length=37
+            NULL, // matchmismatches
+            "matchacceptN=5",
+            "matchlimitN=7",
+            "matchmaxresults=10",
+        };
+
+        CCP expectd0 = "    name---- fullname mis N_mis wmis pos ecoli rev          'ACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGGUGA'\1"
+            "LgtLytic\1" "  LgtLytic          -85    34 31.9 180   166 0   UGGAUCACC-U=CUN.................................-\1" // @@@ also wrong mismatch-value, reproduces negative mismatch-value as reported in #410
+            "DlcTolu2\1" "  DlcTolu2          -85    34 31.9 181   167 0   GGAUCACCU-C=UUNNN...............................-\1"
+            "BcSSSS00\1" "  BcSSSS00            0     0  0.0  84    72 0   UAGCGGCGG-======================================-UGAUUGGGG\1"
+            "Bl0LLL00\1" "  Bl0LLL00            1     0  1.5  84    72 0   CAGCGGCGG-==================================C===-UGAUUGGGG\1"
+            "CltBotul\1" "  CltBotul            3    31 28.1 144   131 0   GAAGUCGUA-==A=gu=...............................-\1"
+            "LgtLytic\1" "  LgtLytic            3    31 29.9 177   163 0   GGCUGGAUC-==CUC==N..............................-\1"
+            "CltBotul\1" "  CltBotul            3    33 30.9 146   132 0   AGUCGUAAC-=G=UU.................................-\1"
+            "DlcTolu2\1" "  DlcTolu2            4    33 32.4 180   166 0   UGGAUCACC-U=CUUNNN..............................-\1"
+            "DlcTolu2\1" "  DlcTolu2            5    31 31.6 178   164 0   GCUGGAUCA-C=UCCu=NNN............................-\1"
+            "LgtLytic\1" "  LgtLytic            5    33 33.0 179   165 0   CUGGAUCAC-CuCCUN................................-\1";
+
+        arguments[2] = "matchmismatches=18"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
     }
 #endif
 }
