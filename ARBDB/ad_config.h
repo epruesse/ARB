@@ -32,7 +32,8 @@ struct GBT_config {
 };
 
 GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ERROR *error);
-GB_ERROR GBT_save_configuration_data(GBT_config *data, GBDATA *gb_main, const char *name);
+void        GBT_free_configuration_data(GBT_config *data);
+GB_ERROR    GBT_save_configuration_data(GBT_config *data, GBDATA *gb_main, const char *name);
 
 enum GBT_CONFIG_ITEM_TYPE {
     CI_UNKNOWN       = 1,
