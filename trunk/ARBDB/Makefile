@@ -353,6 +353,7 @@ adcomm.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcomm.o: $(ARBHOME)/INCLUDE/gccver.h
 adcomm.o: $(ARBHOME)/INCLUDE/SigHandler.h
 adcomm.o: $(ARBHOME)/INCLUDE/smartptr.h
+adcomm.o: $(ARBHOME)/INCLUDE/static_assert.h
 adcomm.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adcompr.o: ad_prot.h
