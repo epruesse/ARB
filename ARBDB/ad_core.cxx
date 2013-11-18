@@ -387,9 +387,8 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
 
 void gb_pre_delete_entry(GBDATA *gbd) {
     // Reduce an entry to its absolute minimum and remove it from database
-    GB_MAIN_TYPE *Main      = GB_MAIN_NO_FATHER(gbd);
-    GB_TYPES      type      = gbd->type();
-    long          gbm_index = GB_GBM_INDEX(gbd);
+    GB_MAIN_TYPE *Main = GB_MAIN_NO_FATHER(gbd);
+    GB_TYPES      type = gbd->type();
 
     gb_callback *cb_next;
     for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb_next) {
@@ -401,7 +400,8 @@ void gb_pre_delete_entry(GBDATA *gbd) {
         if (cb->spec.get_type() & GB_CB_DELETE) {
             gb_add_delete_callback_list(gbd, gbd->ext->old, cb->spec);
         }
-        gbm_free_mem(cb, sizeof(gb_callback), gbm_index);
+        cb->next = NULL; // was stored above and will be deleted in next iteration
+        delete cb;
     }
 
     {
