@@ -655,18 +655,19 @@ void gb_create_key_array(GB_MAIN_TYPE *Main, int index) {
     if (index >= Main->sizeofkeys) {
         Main->sizeofkeys = index*3/2+1;
         if (Main->keys) {
-            int i;
             Main->keys = (gb_Key *)realloc(Main->keys, sizeof(gb_Key) * (size_t)Main->sizeofkeys);
             memset((char *)&(Main->keys[Main->keycnt]), 0, sizeof(gb_Key) * (size_t) (Main->sizeofkeys - Main->keycnt));
-            for (i = Main->keycnt; i < Main->sizeofkeys; i++) {
-                Main->keys[i].compression_mask = -1;
-            }
         }
         else {
             Main->sizeofkeys = 1000;
+            if (index>=Main->sizeofkeys) Main->sizeofkeys = index+1;
             Main->keys = (gb_Key *)GB_calloc(sizeof(gb_Key), (size_t)Main->sizeofkeys);
         }
+        for (int i = Main->keycnt; i < Main->sizeofkeys; i++) {
+            Main->keys[i].compression_mask = -1;
+        }
     }
+    gb_assert(index<Main->sizeofkeys);
 }
 
 long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
