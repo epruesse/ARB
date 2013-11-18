@@ -1121,7 +1121,7 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 
     expectation_group expected;
     if (GBK_running_on_valgrind()) {
-        GBK_raises_SIGSEGV(cb); // just call
+        // GBK_raises_SIGSEGV(cb); // just call
         expected.add(that(expectation_untestable_under_valgrind).is_equal_to(true));
     }
     else {
