@@ -26,6 +26,7 @@
 #include <SigHandler.h>
 #include <arb_signal.h>
 #include <arb_file.h>
+#include <static_assert.h>
 
 static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin);
 
@@ -241,8 +242,16 @@ void GBCMS_shutdown(GBDATA *gbd) {
 #warning rewrite gbcm_write_bin (error handling - do not export)
 #endif
 
+template<typename T>
+inline void write_into_comm_buffer(long& buffer, T& t) {
+    STATIC_ASSERT(sizeof(t) <= sizeof(long));
+
+    buffer         = 0; // initialize (avoid to write uninitialized byte to avoid valgrind errors)
+    *(T*)(&buffer) = t;
+}
+
 static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode, long deep, int send_headera) {
-     /* send a database item to client/server
+    /* send a database item to client/server
       *
       * mode    =1 server
       *         =0 client
@@ -257,13 +266,13 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
     buffer[i++] = (long)gbd;
     buffer[i++] = gbd->index;
 
-    *(gb_flag_types *)(&buffer[i++]) = gbd->flags;
+    write_into_comm_buffer(buffer[i++], gbd->flags);
 
     if (gbd->is_container()) {
         GBCONTAINER *gbc = gbd->as_container();
         int          end = gbc->d.nheader;
 
-        *(gb_flag_types3 *)(&buffer[i++]) = gbc->flags3;
+        write_into_comm_buffer(buffer[i++], gbc->flags3);
 
         buffer[i++] = send_headera ? end : -1;
         buffer[i++] = deep ? gbc->d.size : -1;

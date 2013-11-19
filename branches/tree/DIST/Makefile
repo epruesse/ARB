@@ -187,6 +187,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_main.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -365,6 +366,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_position.hxx

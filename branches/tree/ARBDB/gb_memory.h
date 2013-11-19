@@ -97,7 +97,7 @@ typedef long GB_REL_PIFES;
 //      ARBDB memory functions
 
 enum ARB_MEMORY_INDEX {
-    GBM_CB_INDEX     = -1,
+    GBM_CB_INDEX     = -1, // Note: historical name. originally was used to allocate database-callback-memory (which is now done with new and delete)
     GBM_HASH_INDEX   = -2,
     GBM_HEADER_INDEX = -3,
     GBM_UNDO         = -4,

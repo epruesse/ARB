@@ -318,7 +318,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                 }
                 break;
 
-            case AWT_MODE_ROT: { // rotate branches/loops
+            case AWT_MODE_ROTATE: { // rotate branches/loops
                 if (event == AW_Mouse_Release) {
                     exports.save = 1;
                 }
@@ -396,7 +396,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                 }
                 break;
 
-            case AWT_MODE_MOVE: { // fold/unfold helix
+            case AWT_MODE_FOLD: { // fold/unfold helix
                 if (event == AW_Mouse_Press) {
                     if (button == AW_BUTTON_LEFT) { // fold helix
                         if (loop) {
@@ -434,8 +434,8 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                 }
                 break;
             }
-            case AWT_MODE_SET_CURSOR:
-            case AWT_MODE_PROINFO:
+            case AWT_MODE_CURSOR:
+            case AWT_MODE_PINFO:
                 elem = 0; // handle element-independent
                 break;
             default: sec_assert(0); break;
@@ -447,7 +447,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
 
     if (!elem) {
         switch (cmd) {
-            case AWT_MODE_SET_CURSOR: // set cursor in ARB_EDIT4
+            case AWT_MODE_CURSOR: // set cursor in ARB_EDIT4
                 if (event == AW_Mouse_Press) {
                     if (abspos >= 0 && size_t(abspos) < sec_root->max_index()) {
                         // sequence position in AWAR_SET_CURSOR_POSITION is starting with 0!
@@ -456,7 +456,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                 }
                 break;
 
-            case AWT_MODE_PROINFO: // display search pattern
+            case AWT_MODE_PINFO: // display search pattern
                 if (event == AW_Mouse_Press) {
                     if (button == AW_BUTTON_LEFT) {
                         if (abspos >= 0 && size_t(abspos) < sec_root->max_index()) {
@@ -481,39 +481,28 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
     return error;
 }
 
-void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd,
-                          int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
-                          AW_event_type event, AW_pos screen_x, AW_pos screen_y,
-                          AW_clicked_line *cl, AW_clicked_text *ct)
-{
-    if (cmd != AWT_MODE_EDIT && cmd != AWT_MODE_STRETCH) sec_root->set_show_constraints(SEC_NO_TYPE);
+void SEC_graphic::handle_command(AW_device *device, AWT_graphic_event& event) {
+    if (event.cmd() != AWT_MODE_EDIT && event.cmd() != AWT_MODE_STRETCH) sec_root->set_show_constraints(SEC_NO_TYPE);
 
     GB_ERROR error = 0;
-    if (event == AW_Keyboard_Press || event == AW_Keyboard_Release) {
-        error = handleKey(event, key_modifier, key_code, key_char);
+    if (event.type() == AW_Keyboard_Press || event.type() == AW_Keyboard_Release) {
+        error = handleKey(event.type(), event.key_modifier(), event.key_code(), event.key_char());
     }
     else {
-        if (button != AW_BUTTON_MIDDLE && cmd != AWT_MODE_ZOOM) { // don't handle scroll + zoom
-            AW_CL    cd1, cd2;
+        if (event.button() != AW_BUTTON_MIDDLE && event.cmd() != AWT_MODE_ZOOM) { // don't handle scroll + zoom
+            const AW_clicked_element *clicked = event.best_click();
+            if (clicked) {
+                SEC_base *elem   = reinterpret_cast<SEC_base*>(clicked->cd1());
+                int       abspos = clicked->cd2();
 
-            if (AW_getBestClick(cl, ct, &cd1, &cd2)) {
-                SEC_base *elem   = reinterpret_cast<SEC_base*>(cd1);
-                int       abspos = cd2;
-
-#if defined(DEBUG) && 0
-                if (cl->exists) device->line(SEC_GC_CURSOR, cl->x0, cl->y0, cl->x1, cl->y1, -1, 0, -1);
-                if (ct->exists) device->box(SEC_GC_CURSOR, false, ct->textArea, -1, 0, -1);
-#endif // DEBUG
-
-                Position world = device->rtransform(Position(screen_x, screen_y)); // current click position
-                error = handleMouse(device, event, button, cmd, world, elem, abspos);
+                Position world = device->rtransform(event.position());
+                error = handleMouse(device, event.type(), event.button(), event.cmd(), world, elem, abspos);
             }
         }
     }
 
     if (error) aw_message(error);
 }
-
 
 SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini)
     : update_requested(SEC_UPDATE_RELOAD),
@@ -527,10 +516,6 @@ SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini)
       last_saved(0)
 {
     exports.set_standard_default_padding();
-
-    rot_ct.exists     = false;
-    rot_cl.exists     = false;
-    old_rot_cl.exists = false;
 }
 
 SEC_graphic::~SEC_graphic() {
@@ -813,4 +798,5 @@ void SEC_graphic::show(AW_device *device) {
 void SEC_graphic::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
     aw_message("INFO MESSAGE");
 }
+
 

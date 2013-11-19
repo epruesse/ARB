@@ -14,8 +14,8 @@ TITLE		LINE MODE
 OCCURRENCE	ARB_NT <'WIDTH'> button in the left column
 		F8 on the keyboard
 
-DESCRIPTION	The 'LINE MODE' allows you to gradually change the line width
-		of the edges of the displayed tree individually.
+DESCRIPTION	The 'LINE MODE' allows you to change the line width
+		of the edges of the displayed tree.
 
 		Click on the 'WIDTH' button of the 'ARB_NT' window or press the
 			'F8' key on the keyboard to activate the 'LINE MODE'. In
@@ -24,20 +24,25 @@ DESCRIPTION	The 'LINE MODE' allows you to gradually change the line width
 
 		Change line width:
 
-			Move the cursor to the desired edge of the displayed
-			tree and gradually increase or decrease the line width
-			by repeatedly clicking on the left or right mouse
-			button.
+			Move the cursor to the desired edge/subtree of the displayed
+			tree and increase or decrease the line width by clicking and
+                        dragging the mouse.
 
+                        Drag the mouse upwards to increase the line width and downwards
+                        to reduce it.
 
-NOTES		Short descriptions of the 'MODE' and the functions assigned
-		to the mouse buttons are given in the fourth line of the
-		'ARB_NT' window.
+                        Use the right mouse button to change the line widths of all branches
+                        of the targetted subtree.
 
-		The selected line widths are exported to the drawing tool xfig.
+                Reset line widths:
 
-		The middle mouse button (placed anywhere within the tree
-		display area) can be used to move the whole tree.
+                      Press the key '0' (zero) while the mouse is over a branch to
+                      reset the line width of that subtree to the default value.
+
+                      If no branch is pointed to, the line widths of the whole tree
+                      will be reset.
+
+NOTES		The selected line widths will be exported to the drawing tool xfig.
 
 EXAMPLES	None
 

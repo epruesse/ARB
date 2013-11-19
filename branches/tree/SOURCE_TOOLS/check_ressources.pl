@@ -68,8 +68,8 @@ sub scanFiles(\@$$$$) {
             $known{$full} = 1;
             if (defined $unknown{$full}) { delete $unknown{$full}; }
           }
-          elsif (/^Makefile$/) {
-            ;                   # ignore
+          elsif (/^Makefile$/o or /\.pl$/o) {
+            ; # ignore
           }
           elsif (not defined $known{$full}) {
             $unknown{$full} = 1;
@@ -270,7 +270,12 @@ sub scanParams($\@$\$) {
         elsif ($token eq ')') { $$calltype_r = 2; } # accepted ("othercall(call())")
         elsif ($token eq ',') { $$calltype_r = 2; } # accepted ("othercall(call(),...)")
         else {
-          die "unknown token behind call: '$token' (possible call; ignored due to this error)\n";
+          if ($prefix =~ /__ATTR_/o) {
+            $$calltype_r = 3; # function def
+          }
+          else {
+            die "unknown token behind call: '$token' (possible call; ignored due to this error; prefix='$prefix')\n";
+          }
         }
       }
     }
@@ -303,29 +308,15 @@ sub acceptAll($) {
   my ($res_param) = @_;
   return ($res_param);
 }
-
 sub isPixmapRef($) {
   my ($res_param) = @_;
   if ($res_param =~ /^#/) { return ($'); }
   return ();
 }
-
 sub isIconRes($) {
   my ($res_param) = @_;
   my $base = 'icons/'.$res_param;
   return ($base.'.xpm');
-}
-
-my $last_help_ref = '';
-
-sub isHelpPopup($) {
-  my ($res_param) = @_;
-  if ($last_help_ref eq 'AW_POPUP_HELP') {
-    $last_help_ref = $res_param;
-    return isHelpRef($res_param);
-  }
-  $last_help_ref = $res_param;
-  return ();
 }
 sub isHelpRef($) {
   my ($res_param) = @_;
@@ -333,42 +324,31 @@ sub isHelpRef($) {
   return ();
 }
 
-# sub acceptExistingIconRes($) {
-#   my ($res_param) = @_;
-#   my $base = 'icons/'.$res_param;
-#   my @res = ();
-#   my $pm = $base.'.xpm'; if (defined $pixmap{$pm}) { push @res, $pm; }
-#   $pm = $base.'.bitmap'; if (defined $pixmap{$pm}) { push @res, $pm; }
-#   return @res;
-# }
-
 my @defs =
   (
    # regexp for function,                  param numbers,         expectInIndex, isRessource,
-   [ qr/\b(AW_POPUP_HELP)\b/,              [ 2 ],                 \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(callback)\b/,                   [ -1, -2 ],            \%helpfile,    \&isHelpPopup,   ],
+   [ qr/\b(AW_help_popup)\b/,              [ 2 ],                 \%helpfile,    \&isHelpRef,     ],
    [ qr/\b(create_button)\b/,              [ 2 ],                 \%pixmap,      \&isPixmapRef,   ],
    [ qr/\b(create_mode)\b/,                [ 1 ],                 \%pixmap,      \&acceptAll,     ],
    [ qr/\b(create_mode)\b/,                [ 2 ],                 \%helpfile,    \&isHelpRef,     ],
    [ qr/\b(create_toggle)\b/,              [ -2, -3 ],            \%pixmap,      \&isPixmapRef,   ],
    [ qr/\b(help_text)\b/,                  [ 1 ],                 \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(makeHelpCallback)\b/,           [ 1 ],                 \%helpfile,    \&isHelpRef,     ],
    [ qr/\b(AWT_create_root)\b/,            [ 2 ],                 \%pixmap,      \&isIconRes,     ],
    [ qr/\b(insert_help_topic)\b/,          [ 3 ],                 \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(insert_help_topic)\b/,          [ 5, 6 ],              \%helpfile,    \&isHelpPopup,   ],
    [ qr/\b(insert_menu_topic)\b/,          [ 2 ],                 \%pixmap,      \&isPixmapRef,   ],
    [ qr/\b(insert_menu_topic)\b/,          [ 4 ],                 \%helpfile,    \&isHelpRef,     ],
    [ qr/\b(insert_mark_topic)\b/,          [ 7 ],                 \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(insert_menu_topic)\b/,          [ 6, 7 ],              \%helpfile,    \&isHelpPopup,   ],
-   [ qr/\b(GEN_insert_extract_submenu)\b/, [ 5 ],                 \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(GEN_insert_mark_submenu)\b/,    [ 5 ],                 \%helpfile,    \&isHelpRef,     ],
-   [ qr/\b(AWT_advice)\b/,                 [ -4 ],                \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(GEN_insert_extract_submenu)\b/, [ 6 ],                 \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(GEN_insert_mark_submenu)\b/,    [ 6 ],                 \%helpfile,    \&isHelpRef,     ],
+   [ qr/\b(AW_advice)\b/,                  [ -4 ],                \%helpfile,    \&isHelpRef,     ],
    [ qr/\b(add_help)\b/,                   [ 1 ],                 \%helpfile,    \&isHelpRef,     ],
    [ qr/\b(insert_toggle)\b/,              [ 1 ],                 \%pixmap,      \&isPixmapRef,   ],
    [ qr/\b(load_xfig)\b/,                  [ 1 ],                 \%picture,     \&acceptAll,     ],
 
    # pseudos (used in comment to mark a ressource as used)
    [ qr/\b(uses_hlp_res)\b/,               [ 1, -2, -3, -4, -5 ], \%helpfile, \&isHelpRef,     ],
-   [ qr/\b(uses_pic_res)\b/,               [ 1, -2, -3, -4, -5 ], \%picture,  \&acceptAll,     ],
+   # [ qr/\b(uses_pic_res)\b/,               [ 1, -2, -3, -4, -5 ], \%picture,  \&acceptAll,     ],
    [ qr/\b(uses_pix_res)\b/,               [ 1, -2, -3, -4, -5 ], \%pixmap,   \&acceptAll,     ],
   );
 
@@ -380,6 +360,8 @@ my $defs                = scalar(@defs);
 my $errors              = 0;
 my $LOC                 = 0;
 my $showSpecialWarnings = 0;
+
+my @ruleMatched = ();
 
 sub scanCodeFile($) {
   my ($file) = @_;
@@ -435,6 +417,7 @@ sub scanCodeFile($) {
                         my $full_ressource = $rel2full{$unquoted};
                         if (not defined $full_ressource) { die "expected ressource '$unquoted' to be defined"; }
                         $used{$full_ressource} = 1;
+                        $ruleMatched[$d] = 1;
                         $used = 1;
                         last UNQUOTED;
                       }
@@ -455,7 +438,7 @@ sub scanCodeFile($) {
               }
               else {
                 if ($pnum>0) {
-                  print "$file:$lineNr: Warning: Param #$pnum is missing, can't check\n";
+                  print "$file:$lineNr: Warning: Param #$pnum is missing, can't check (maybe param should be optional)\n";
                 }
               }
             }
@@ -476,6 +459,16 @@ sub scanCodeFile($) {
   }
   close(FILE);
   $LOC += $flines;
+}
+
+sub autouse($) {
+  my ($res) = @_;
+  if (not defined $known{$res}) {
+    print "Warning: Invalid autouse($res) -- unknown ressource\n";
+  }
+  else {
+    $used{$res} = 1;
+  }
 }
 
 sub scanCodeFile_forUnuseds($\$\%) {
@@ -582,8 +575,20 @@ sub scanCode() {
     %unknown = ();
   }
 
+  for (my $d=0; $d<scalar(@defs); ++$d) { $ruleMatched[$d] = 0; }
   @sources = sort @sources;
   foreach (@sources) { scanCodeFile($_); }
+
+  {
+    my $intro = 0;
+    for (my $d=0; $d<scalar(@defs); ++$d) {
+      if ($ruleMatched[$d] == 0) {
+        if ($intro==0) { print "Some code-rules never applied:"; $intro = 1; }
+        print " $d";
+      }
+    }
+    if ($intro==1) { print "\n"; }
+  }
 
   $newHelpRef = 1;
   while ($newHelpRef>0) {
@@ -592,6 +597,8 @@ sub scanCode() {
   }
 
   print "Scanned $LOC LOC.\n";
+
+  autouse($ARBHOME.'/HELP_SOURCE/oldhelp/unittest.hlp');
 
   my %unused = ();
   foreach (sort keys %known) {

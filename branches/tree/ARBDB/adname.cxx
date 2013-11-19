@@ -252,6 +252,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                     if (!error && need_save) {
                         error = GBT_save_configuration_data(config, NameSession.gb_main, config_names[count]);
                     }
+                    GBT_free_configuration_data(config);
                 }
                 progress.inc_and_check_user_abort(error);
             }

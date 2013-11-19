@@ -24,7 +24,6 @@
 #define AWAR_TARGET_STRING        "nt/target_string"
 #define AWAR_PRIMER_TARGET_STRING "nt/primer_target_string"
 #define AWAR_GENE_CONTENT         "nt/gene_content"
-#define AWAR_MIN_MISMATCHES       "nt/min_mismatches"
 #define AWAR_MAX_MISMATCHES       "nt/max_mismatches"
 #define AWAR_ITARGET_STRING       "nt/itarget_string"
 #define AWAR_EXPERT               "nt/expert"
@@ -56,8 +55,8 @@
 
 #define AWAR_ERROR_MESSAGES "tmp/message/displayed" // error-messages: display awar
 
-#define AWAR_FOOTER     "tmp/LeftFooter" // mode line (showing help for selected mode)
-#define AWAR_FOOTER_MAX_LEN 100 // max allowed textlen for mode line
+#define AWAR_FOOTER         "tmp/LeftFooter" // mode line (showing help for selected mode)
+#define AWAR_FOOTER_MAX_LEN 100          // max allowed textlen for mode line
 
 #define AWAR_AWM_MASK "tmp/awm_mask"
 

@@ -1169,8 +1169,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_int   (AWAR_PD_MATCH_WRITE2TMP,  0,       props);
     root->awar_int   (AWAR_PD_MATCH_COMPLEMENT, 0,       props);
 
-    root->awar_int   (AWAR_MIN_MISMATCHES,      0,       db);
-    root->awar_int   (AWAR_MAX_MISMATCHES,      0,       db);
+    root->awar_int   (AWAR_MAX_MISMATCHES,      0,       db)->set_min(0);
     root->awar_string(AWAR_TARGET_STRING,       0,       db);
 
     root->awar_string(AWAR_PD_MATCH_NHITS,      "[none]",props);
@@ -1211,7 +1210,7 @@ static AW_window *create_probe_expert_window(AW_root *root, AW_CL for_design) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(makeWindowCallback(AW_help_popup, for_design ? "pd_spec_param.hlp" : "pm_spec_param.hlp")); // uses_hlp_res("pm_spec_param.hlp", "pd_spec_param.hlp"); see ../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
+    aws->callback(makeHelpCallback(for_design ? "pd_spec_param.hlp" : "pm_spec_param.hlp")); // uses_hlp_res("pm_spec_param.hlp", "pd_spec_param.hlp"); see ../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
     aws->at("help");
     aws->create_button("HELP", "HELP", "C");
 
@@ -1613,18 +1612,15 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
         aws->create_toggle(AWAR_PD_MATCH_SORTBY);
 
         aws->at("mismatches");
-        aws->create_option_menu(AWAR_MAX_MISMATCHES);
-        aws->insert_default_option("Search up to zero mismatches", "", 0);
-        for (int mm = 1; mm <= 20; ++mm) {
-            aws->insert_option(GBS_global_string("Search up to %i mismatches", mm), "", mm);
-        }
-        aws->update_option_menu();
+        aws->create_input_field(AWAR_MAX_MISMATCHES);
 
         aws->at("tmp");
         aws->create_toggle(AWAR_PD_MATCH_WRITE2TMP);
 
         aws->at("nhits");
         aws->create_button(0, AWAR_PD_MATCH_NHITS);
+
+        aws->button_length(9);
 
         ProbeMatchEventParam *event_param = new ProbeMatchEventParam(gb_main, selection_id);
         aws->callback(probe_match_event, (AW_CL)event_param);

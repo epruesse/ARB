@@ -26,8 +26,6 @@
 #define AWAR_BEST_PARSIMONY   "tmp/pars/best_parsimony"
 #define AWAR_STACKPOINTER     "tmp/pars/stackpointer"
 
-#define NNI_MODES // uncomment to hide NNI/K.L. mode buttons
-
 #define AWAR_PARS_TYPE      "pars/pars_type"
 
 enum PARS_pars_type {

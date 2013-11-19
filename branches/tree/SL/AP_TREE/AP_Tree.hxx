@@ -154,31 +154,29 @@ namespace tree_defaults {
     const float SPREAD    = 1.0;
     const float ANGLE     = 0.0;
     const char  LINEWIDTH = 0;
+    const float LENGTH    = DEFAULT_BRANCH_LENGTH;
 };
 
 struct AP_tree_members {
-public:
-    // elements from struct a_tree_node
-
-    // struct arb_flags
+public: // @@@ make members private
     unsigned int grouped : 1;   // indicates a folded group
     unsigned int hidden : 1;    // not shown because a father is a folded group
     unsigned int has_marked_children : 1; // at least one child is marked
     unsigned int callback_exists : 1;
     unsigned int gc : 6;        // color
 
-    char left_linewidth;
+    char left_linewidth; // @@@ it's stupid to store linewidth IN FATHER (also wastes space)
     char right_linewidth;
-    // struct arb_data
-    int  leaf_sum;  // number of leaf children of this node
-    int  view_sum;  // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
 
-    float   tree_depth; // max length of path; for drawing triangles */
-    float   min_tree_depth; // min length of path; for drawing triangle
-    float   spread;
+    int leaf_sum;   // number of leaf children of this node
+    int view_sum;   // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
 
-    float   left_angle;
-    float   right_angle;
+    float tree_depth;     // max length of path; for drawing triangles
+    float min_tree_depth; // min length of path; for drawing triangle
+    float spread;
+
+    float left_angle;     // @@@ it's stupid to store angles IN FATHER (also wastes space)
+    float right_angle;
 
     void reset_child_spread() {
         spread = tree_defaults::SPREAD;
@@ -293,7 +291,7 @@ public:
 
     void swap_sons();
     void swap_featured_sons();
-    void rotate_subtree();
+    void rotate_subtree(); // flip whole subtree ( = recursive swap_sons())
 
     GB_ERROR cantMoveNextTo(AP_tree *new_brother);  // use this to detect impossible moves
     virtual void moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
@@ -301,7 +299,7 @@ public:
     virtual void set_root();
 
     void remove_bootstrap();                        // remove bootstrap values from subtree
-    void reset_branchlengths();                     // reset branchlengths of subtree to 0.1
+    void reset_branchlengths();                     // reset branchlengths of subtree to tree_defaults::LENGTH
     void scale_branchlengths(double factor);
     void bootstrap2branchlen();                     // copy bootstraps to branchlengths
     void branchlen2bootstrap();                     // copy branchlengths to bootstraps
@@ -318,9 +316,19 @@ public:
     int get_linewidth() const { return is_root_node() ? 0 : linewidth_ref(); }
     void set_linewidth(int width) { if (father) linewidth_ref() = force_legal_width(width); }
     void reset_linewidth() { set_linewidth(tree_defaults::LINEWIDTH); }
+    void set_linewidth_recursive(int width);
 
     float get_angle() const { return is_root_node() ? 0.0 : angle_ref(); }
-    void set_angle(float angle) { if (father) angle_ref() = angle; }
+    void set_angle(float angle) {
+        if (father) {
+            angle_ref() = angle;
+            if (father->is_root_node()) {
+                // always set angle of other son at root-node
+                // @@@ works wrong if locigal-zoom is active
+                get_brother()->angle_ref() = angle;
+            }
+        }
+    }
     void reset_angle() { set_angle(tree_defaults::ANGLE); }
 
     void buildLeafList(AP_tree **&list, long &num); // returns a list of leafs

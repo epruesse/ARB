@@ -1213,7 +1213,7 @@ void AP_tree::remove_bootstrap() {
 }
 void AP_tree::reset_branchlengths() {
     if (!is_leaf) {
-        leftlen = rightlen = 0.1;
+        leftlen = rightlen = tree_defaults::LENGTH;
 
         get_leftson()->reset_branchlengths();
         get_rightson()->reset_branchlengths();
@@ -1232,7 +1232,7 @@ void AP_tree::scale_branchlengths(double factor) {
 
 void AP_tree::bootstrap2branchlen() { // copy bootstraps to branchlengths
     if (is_leaf) {
-        set_branchlength(0.1);
+        set_branchlength(tree_defaults::LENGTH);
     }
     else {
         if (remark_branch && father) {
@@ -1839,6 +1839,15 @@ void AP_tree::reset_child_linewidths() {
         get_rightson()->reset_child_linewidths();
     }
 }
+
+void AP_tree::set_linewidth_recursive(int width) {
+    set_linewidth(width);
+    if (!is_leaf) {
+        get_leftson()->set_linewidth_recursive(width);
+        get_rightson()->set_linewidth_recursive(width);
+    }
+}
+
 void AP_tree::reset_child_layout() {
     if (!is_leaf) {
         gr.reset_child_spread();

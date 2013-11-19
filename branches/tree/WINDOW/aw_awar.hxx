@@ -134,6 +134,9 @@ public:
     void    update();       // awar has changed
 
     AW_awar *set_minmax(float min, float max);
+    float    get_min() const;
+    float    get_max() const;
+    AW_awar *set_min(float min) { return set_minmax(min, get_max()); }
     AW_awar *set_srt(const char *srt);
 
     AW_awar *map(const char *awarn);

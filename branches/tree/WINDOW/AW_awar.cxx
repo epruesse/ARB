@@ -19,6 +19,8 @@
 #include <ad_cb.h>
 #include <list>
 #include <sys/stat.h>
+#include <climits>
+#include <cfloat>
 
 #if defined(DEBUG)
 // uncomment next line to dump all awar-changes to stderr
@@ -494,6 +496,29 @@ AW_awar *AW_awar::set_minmax(float min, float max) {
     pp.f.max = max;
     update(); // corrects wrong default value
     return this;
+}
+
+float AW_awar::get_min() const {
+    if (variable_type == AW_STRING) GBK_terminatef("get_min does not apply to string AWAR '%s'", awar_name);
+    bool isSet = (pp.f.min != pp.f.max); // as used in AW_awar::update
+    if (!isSet) {
+        aw_assert(float(INT_MIN)>=-FLT_MAX);
+        if (variable_type == AW_INT) return float(INT_MIN);
+        aw_assert(variable_type == AW_FLOAT);
+        return -FLT_MAX;
+    }
+    return pp.f.min;
+}
+float AW_awar::get_max() const {
+    if (variable_type == AW_STRING) GBK_terminatef("get_max does not apply to string AWAR '%s'", awar_name);
+    bool isSet = (pp.f.min != pp.f.max); // as used in AW_awar::update
+    if (!isSet) {
+        aw_assert(float(INT_MAX)<=FLT_MAX);
+        if (variable_type == AW_INT) return float(INT_MAX);
+        aw_assert(variable_type == AW_FLOAT);
+        return FLT_MAX;
+    }
+    return pp.f.max;
 }
 
 AW_awar *AW_awar::set_srt(const char *srt) {

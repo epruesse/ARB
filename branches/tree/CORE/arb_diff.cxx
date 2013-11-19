@@ -412,7 +412,7 @@ void TEST_diff_files() {
     TEST_EXPECT(ARB_textfiles_have_difflines(file_date_swapped, file_date_changed, 6, 0));
     TEST_EXPECT(ARB_textfiles_have_difflines(file_date_swapped, file_date_changed, 0, 1));
 
-    const char *binary  = "TEST_gpt.arb";             // a binary arb DB
+    const char *binary  = "TEST_gpt.arb.expected";    // a binary arb DB
     const char *binary2 = "TEST_gpt.arb.pt.expected"; // a ptserver index
     const char *text    = file;
 

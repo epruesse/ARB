@@ -54,8 +54,8 @@ static void export_tree_label(const char *label, FILE *out, TREE_node_quoting qm
 
         if (whole_label_quoted(fixed_label, label_length)) {
             // if whole label is quoted -> remove quotes
-            fixed_label[label_length-1] = 0;
-            memmove(fixed_label, fixed_label+1, label_length);
+            memmove(fixed_label, fixed_label+1, label_length-2);
+            fixed_label[label_length-2] = 0;
         }
     }
 

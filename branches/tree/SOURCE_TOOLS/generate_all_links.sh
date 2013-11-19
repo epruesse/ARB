@@ -330,6 +330,7 @@ symlink_file ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&
 symlink_file ../WINDOW/aw_base.hxx INCLUDE/aw_base.hxx &&
 symlink_file ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
 symlink_file ../WINDOW/aw_device.hxx INCLUDE/aw_device.hxx &&
+symlink_file ../WINDOW/aw_device_click.hxx INCLUDE/aw_device_click.hxx &&
 symlink_file ../WINDOW/aw_edit.hxx INCLUDE/aw_edit.hxx &&
 symlink_file ../WINDOW/aw_file.hxx INCLUDE/aw_file.hxx &&
 symlink_file ../WINDOW/aw_font_group.hxx INCLUDE/aw_font_group.hxx &&

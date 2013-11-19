@@ -75,11 +75,11 @@ public:
     ~TreeReader();
 
     GBT_TREE *load(int structuresize) {
-        GBT_LEN   rootNodeLen = TREE_DEFLEN_MARKER; // ignored dummy
+        GBT_LEN   rootNodeLen = DEFAULT_BRANCH_LENGTH_MARKER; // ignored dummy
         GBT_TREE *tree        = load_named_node(structuresize, rootNodeLen);
 
         if (!error) {
-            if (rootNodeLen != TREE_DEFLEN_MARKER && rootNodeLen != 0.0) {
+            if (rootNodeLen != DEFAULT_BRANCH_LENGTH_MARKER && rootNodeLen != 0.0) {
                 add_warning("Length specified for root-node has been ignored");
             }
 
@@ -410,7 +410,7 @@ void TreeReader::drop_tree_char(char expected) {
 bool TreeReader::eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN& nodeLen) {
     // reads optional branch-length and -name
     //
-    // if 'nodeLen' contains TREE_DEFLEN_MARKER, it gets overwritten with any found length-specification
+    // if 'nodeLen' contains DEFAULT_BRANCH_LENGTH_MARKER, it gets overwritten with any found length-specification
     // otherwise found length is added to 'nodeLen'
     //
     // sets the branch-name of 'node', if a name is found (e.g. sth like "(...)'name':0.5")
@@ -522,7 +522,7 @@ GBT_TREE *TreeReader::load_named_node(int structuresize, GBT_LEN& nodeLen) {
 GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
     // loads a subtree (i.e. expects parenthesis around one or several nodes)
     //
-    // 'nodeLen' normally is set to TREE_DEFLEN_MARKER
+    // 'nodeLen' normally is set to DEFAULT_BRANCH_LENGTH_MARKER
     //           or to length of single node (if parenthesis contain only one node)
     //
     // length and/or name behind '(...)' are not parsed (has to be done by caller).
@@ -534,7 +534,7 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
 
     drop_tree_char('(');
 
-    GBT_LEN   leftLen = TREE_DEFLEN_MARKER;
+    GBT_LEN   leftLen = DEFAULT_BRANCH_LENGTH_MARKER;
     GBT_TREE *left    = load_named_node(structuresize, leftLen);
 
     if (left) {
@@ -546,7 +546,7 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
                 break;
 
             case ',': {
-                GBT_LEN   rightLen = TREE_DEFLEN_MARKER;
+                GBT_LEN   rightLen = DEFAULT_BRANCH_LENGTH_MARKER;
                 GBT_TREE *right    = NULL;
 
                 while (last_character == ',' && !error) {
@@ -554,7 +554,7 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
                         GBT_TREE *pair = createLinkedTreeNode(left, leftLen, right, rightLen, structuresize);
 
                         left  = pair; leftLen = 0;
-                        right = 0; rightLen = TREE_DEFLEN_MARKER;
+                        right = 0; rightLen = DEFAULT_BRANCH_LENGTH_MARKER;
                     }
 
                     drop_tree_char(',');
@@ -566,7 +566,7 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
                 if (!error) {
                     if (last_character == ')') {
                         node    = createLinkedTreeNode(left, leftLen, right, rightLen, structuresize);
-                        nodeLen = TREE_DEFLEN_MARKER;
+                        nodeLen = DEFAULT_BRANCH_LENGTH_MARKER;
 
                         left  = NULL;
                         right = NULL;
@@ -851,7 +851,7 @@ void TEST_load_tree() {
                     break;
                 case 1:
                     TEST_EXPECT_EQUAL(tree->leftlen, 0);
-                    TEST_EXPECT_EQUAL(tree->rightlen, TREE_DEFLEN);
+                    TEST_EXPECT_EQUAL(tree->rightlen, DEFAULT_BRANCH_LENGTH);
                     TEST_EXPECT_EQUAL(tree->rightson->rightlen, 0.57);
                     break;
                 case 2:
@@ -920,8 +920,8 @@ void TEST_load_tree() {
 
                     // expect_no_lengths:
                     TEST_EXPECT_EQUAL(tree->leftlen,           0); // multifurcation
-                    TEST_EXPECT_EQUAL(tree->leftson->leftlen,  TREE_DEFLEN);
-                    TEST_EXPECT_EQUAL(tree->leftson->rightlen, TREE_DEFLEN);
+                    TEST_EXPECT_EQUAL(tree->leftson->leftlen,  DEFAULT_BRANCH_LENGTH);
+                    TEST_EXPECT_EQUAL(tree->leftson->rightlen, DEFAULT_BRANCH_LENGTH);
                     TEST_EXPECT_EQUAL(tree->rightlen,          0.2);
                     break;
 

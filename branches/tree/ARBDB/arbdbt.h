@@ -13,6 +13,8 @@
 
 #define GB_GROUP_NAME_MAX 256
 
+#define DEFAULT_BRANCH_LENGTH 0.1
+
 #define GBT_TREE_ELEMENTS(type)                 \
     bool     is_leaf;                           \
     type    *father, *leftson, *rightson;       \
