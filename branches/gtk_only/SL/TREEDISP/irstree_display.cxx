@@ -214,7 +214,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
                 AWT_show_branch_remark(disp_device, node->leftson->remark_branch, node->leftson->is_leaf, left_x, left_y, 1, remark_text_filter);
             }
             set_line_attributes_for(node->get_leftson()); 
-            draw_branch_line(node->get_leftson()->gr.gc, Position(x_offset, left_y), Position(left_x,  left_y));
+            draw_branch_line(node->get_leftson()->gr.gc, Position(x_offset, left_y), Position(left_x, left_y), line_filter);
         }
     }
     else {
@@ -229,7 +229,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             AWT_show_branch_remark(disp_device, node->rightson->remark_branch, node->rightson->is_leaf, right_x, right_y, 1, remark_text_filter);
         }
         set_line_attributes_for(node->get_rightson()); 
-        draw_branch_line(node->get_rightson()->gr.gc, Position(x_offset, right_y), Position(right_x,  right_y));
+        draw_branch_line(node->get_rightson()->gr.gc, Position(x_offset, right_y), Position(right_x,  right_y), line_filter);
     }
 
     AW_click_cd cd(disp_device, (AW_CL)node);

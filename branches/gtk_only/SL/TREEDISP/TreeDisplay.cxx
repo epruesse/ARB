@@ -641,6 +641,17 @@ public:
     }
 };
 
+bool AWT_graphic_tree::warn_inappropriate_mode(AWT_COMMAND_MODE mode) {
+    if (mode == AWT_MODE_ROTATE || mode == AWT_MODE_SPREAD) {
+        if (tree_sort != AP_TREE_RADIAL) {
+            aw_message("Please select the radial tree display mode to use this command");
+            return true;
+        }
+    }
+    return false;
+}
+
+
 void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
     //! handles AW_Event_Type = AW_Keyboard_Press.
 
@@ -724,9 +735,8 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
 
         if (!handled && event.key_char() == '0') {
             // handle reset-key promised by
-            // - KEYINFO_ABORT_AND_RESET (AWT_MODE_ROT, AWT_MODE_LENGTH, AWT_MODE_LINE, AWT_MODE_SPREAD)
+            // - KEYINFO_ABORT_AND_RESET (AWT_MODE_ROTATE, AWT_MODE_LENGTH, AWT_MODE_LINE, AWT_MODE_SPREAD)
             // - KEYINFO_RESET (AWT_MODE_LZOOM)
-            // (replacement for AWT_MODE_RESET)
 
             if (event.cmd() == AWT_MODE_LZOOM) {
                 tree_root_display  = tree_root_display->get_root_node();
@@ -737,7 +747,8 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                 td_assert(gb_tree);
 
                 switch (event.cmd()) {
-                    case AWT_MODE_ROT: break; // ruler has no rotation
+                    case AWT_MODE_ROTATE: break; // ruler has no rotation
+                    case AWT_MODE_SPREAD: break; // ruler has no spread
                     case AWT_MODE_LENGTH: {
                         GB_transaction ta(gb_tree);
                         GBDATA *gb_ruler_size = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
@@ -752,13 +763,13 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                         exports.structure_change = 1;
                         break;
                     }
-                    case AWT_MODE_SPREAD: break; // ruler has no spread
                     default: break;
                 }
             }
             else if (pointed.node()) {
+                if (warn_inappropriate_mode(event.cmd())) return;
                 switch (event.cmd()) {
-                    case AWT_MODE_ROT:
+                    case AWT_MODE_ROTATE:
                         pointed.node()->reset_rotation();
                         exports.save = 1;
                         break;
@@ -1504,6 +1515,8 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         return;
     }
 
+    if (event.type() == AW_Mouse_Press && warn_inappropriate_mode(event.cmd())) return;
+
     switch (event.cmd()) {
         // -----------------------------
         //      two point commands:
@@ -1529,7 +1542,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             }
             break;
 
-        case AWT_MODE_ROT:
+        case AWT_MODE_ROTATE:
             if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
                 const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
                 td_assert(cl);
@@ -1579,9 +1592,6 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                     default: td_assert(0); break;
                 }
             }
-            break;
-
-        case AWT_MODE_RESET: // @@@ remove this mode (globally!)
             break;
 
     act_like_group :
@@ -1672,7 +1682,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         // now handle all modes which only act on tips (aka species) and
         // shall perform identically in tree- and list-modes
 
-        case AWT_MODE_EDIT:
+        case AWT_MODE_INFO:
         case AWT_MODE_WWW: {
             if (clicked.node() && clicked.node()->gb_node) {
                 if (command_on_GBDATA(clicked.node()->gb_node, event, map_viewer_cb)) {
@@ -1729,19 +1739,20 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type, AWT_canvas *ntw) {
 }
 
 AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
-    : AWT_graphic()
+    : AWT_graphic(),
+      line_filter          (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE),
+      vert_line_filter     (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER),
+      mark_filter          (AW_SCREEN|AW_PRINTER_EXT),
+      group_bracket_filter (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
+      bs_circle_filter     (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
+      leaf_text_filter     (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
+      group_text_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
+      remark_text_filter   (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
+      other_text_filter    (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
+      ruler_filter         (AW_SCREEN|AW_CLICK|AW_PRINTER), // appropriate size-filter added manually in code
+      root_filter          (AW_SCREEN|AW_PRINTER_EXT)
+      
 {
-    line_filter          = AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_SIZE|AW_PRINTER;
-    vert_line_filter     = AW_SCREEN|AW_PRINTER;
-    group_bracket_filter = AW_SCREEN|AW_PRINTER|AW_CLICK|AW_CLICK_DROP|AW_SIZE_UNSCALED;
-    leaf_text_filter     = AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED;
-    group_text_filter    = AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED;
-    remark_text_filter   = AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED;
-    other_text_filter    = AW_SCREEN|AW_CLICK|AW_PRINTER|AW_SIZE_UNSCALED;
-    mark_filter          = AW_SCREEN|AW_PRINTER_EXT;
-    ruler_filter         = AW_SCREEN|AW_CLICK|AW_PRINTER; // appropriate size-filter added manually in code
-    root_filter          = AW_SCREEN|AW_CLICK|AW_PRINTER_EXT;
-
     set_tree_type(AP_TREE_NORMAL, NULL);
     tree_root_display = 0;
     tree_proto        = 0;
@@ -2149,14 +2160,14 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                 remarkPos.movey(-scaled_font.ascent*0.1);
                 bool bootstrap_shown = AWT_show_branch_remark(disp_device, son->remark_branch, son->is_leaf, remarkPos, 1, remark_text_filter);
                 if (show_circle && bootstrap_shown) {
-                    show_bootstrap_circle(disp_device, son->remark_branch, circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, remark_text_filter);
+                    show_bootstrap_circle(disp_device, son->remark_branch, circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, bs_circle_filter);
                 }
             }
 
             set_line_attributes_for(son);
             unsigned int gc = son->gr.gc;
-            draw_branch_line(gc, s, n);
-            disp_device->line(gc, attach, s, vert_line_filter);
+            draw_branch_line(gc, s, n, line_filter);
+            draw_branch_line(gc, attach, s, vert_line_filter);
         }
         limits.y_branch = attach.ypos();
     }
@@ -2182,7 +2193,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
 
     AW_click_cd cd(disp_device, (AW_CL)at);
     set_line_attributes_for(at);
-    draw_branch_line(at->gr.gc, Position(x_root, y_root), Position(x_center, y_center));
+    draw_branch_line(at->gr.gc, Position(x_root, y_root), Position(x_center, y_center), line_filter);
 
     // draw mark box
     if (at->gb_node && GB_read_flag(at->gb_node)) {
@@ -2294,14 +2305,14 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
             z = at->leftlen * .5;
             Position center(x_center + z * cos(w), y_center + z * sin(w));
-            show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, center, false, 0, remark_text_filter);
+            show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, center, false, 0, bs_circle_filter);
         }
         if (at->rightson->remark_branch) {
             AW_click_cd cdr(disp_device, (AW_CL)at->rightson);
             w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
             z = at->rightlen * .5;
             Position center(x_center + z * cos(w), y_center + z * sin(w));
-            show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, center, false, 0, remark_text_filter);
+            show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, center, false, 0, bs_circle_filter);
         }
     }
 }
@@ -2593,7 +2604,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
             AW_pos x               = part_x_pos[p];
             if (align_right[p]) x += max_part_width[p] - col.print_width;
 
-            disp_device->text(gc, col.text, x, y, 0.0, other_text_filter, col.len);
+            disp_device->text(gc, col.text, x, y, 0.0, leaf_text_filter, col.len);
         }
     }
 
@@ -2736,7 +2747,6 @@ void AWT_graphic_tree::show(AW_device *device) {
 void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
     aw_message("INFO MESSAGE");
 }
-
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
     AWT_graphic_tree *apdt    = new AWT_graphic_tree(root, gb_main, map_viewer_cb);

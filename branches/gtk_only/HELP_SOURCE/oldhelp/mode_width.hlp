@@ -42,14 +42,7 @@ DESCRIPTION	The 'LINE MODE' allows you to change the line width
                       If no branch is pointed to, the line widths of the whole tree
                       will be reset.
 
-NOTES		Short descriptions of the 'MODE' and the functions assigned
-		to the mouse buttons are given in the fourth line of the
-		'ARB_NT' window.
-
-		The selected line widths are exported to the drawing tool xfig.
-
-		The middle mouse button (placed anywhere within the tree
-		display area) can be used to move the whole tree.
+NOTES		The selected line widths will be exported to the drawing tool xfig.
 
 EXAMPLES	None
 

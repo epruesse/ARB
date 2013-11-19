@@ -105,7 +105,7 @@
 #define ED4_AWAR_USER2_SEARCH_EXACT          "search/user2/exact"
 
 #define ED4_AWAR_PROBE_SEARCH_PATTERN        AWAR_TARGET_STRING // s.a.: PROBE_DESIGN/probe_design.cxx
-#define ED4_AWAR_PROBE_SEARCH_MIN_MISMATCHES AWAR_MIN_MISMATCHES
+#define ED4_AWAR_PROBE_SEARCH_MIN_MISMATCHES "search/probe/min_mismatches"
 #define ED4_AWAR_PROBE_SEARCH_MAX_MISMATCHES AWAR_MAX_MISMATCHES
 #define ED4_AWAR_PROBE_SEARCH_CASE           "search/probe/case"
 #define ED4_AWAR_PROBE_SEARCH_TU             "search/probe/tu"

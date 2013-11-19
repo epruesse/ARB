@@ -54,20 +54,47 @@ public:
     char *get_info() const;
 };
 
-struct gb_callback {
-    gb_callback *next;
-    TypedDatabaseCallback   spec;
-    short        priority;
-    short        running; // @@@ only used in no-transaction mode
+struct gb_callback : virtual Noncopyable {
+    // @@@ make members private
+    gb_callback           *next;
+    TypedDatabaseCallback  spec;
+
+    short priority;
+    short running; // only used in no-transaction mode
+
+    gb_callback(const TypedDatabaseCallback& spec_, short priority_)
+        : next(NULL),
+          spec(spec_),
+          priority(priority_),
+          running(0)
+    {}
+
+    ~gb_callback() {
+        gb_assert(!next); // unlink before deleting
+    }
 };
 
 struct gb_transaction_save;
 
-struct gb_callback_list {
-    gb_callback_list    *next;
-    TypedDatabaseCallback           spec;
-    gb_transaction_save *old;
-    GBDATA              *gbd;
+struct gb_callback_list : virtual Noncopyable {
+    // @@@ make members private
+    gb_callback_list      *next;
+    TypedDatabaseCallback  spec;
+    gb_transaction_save   *old;
+    GBDATA                *gbd;
+
+    gb_callback_list(GBDATA *gbd_, gb_transaction_save *old_, const TypedDatabaseCallback& spec_)
+        : next(NULL),
+          spec(spec_),
+          old(old_),
+          gbd(gbd_)
+    {
+        gb_add_ref_gb_transaction_save(old);
+    }
+    ~gb_callback_list() {
+        gb_assert(!next); // unlink before deleting
+        gb_del_ref_gb_transaction_save(old);
+    }
 };
 
 #else
