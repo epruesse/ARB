@@ -127,6 +127,8 @@ public:
     }
 };
 
+const AW_clicked_element *AW_getBestClick(const AW_clicked_line *cl, const AW_clicked_text *ct);
+
 class AWT_graphic_event : virtual Noncopyable {
     AWT_COMMAND_MODE M_cmd;  // currently active mode
 
