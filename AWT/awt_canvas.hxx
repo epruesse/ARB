@@ -144,8 +144,6 @@ public:
     }
 };
 
-const AW_clicked_element *AW_getBestClick(const AW_clicked_line *cl, const AW_clicked_text *ct);
-
 class AWT_graphic_event : virtual Noncopyable {
     AWT_COMMAND_MODE M_cmd;  // currently active mode
 
@@ -183,7 +181,7 @@ public:
     AW_event_type type() const { return M_type; }
 
     const AW::Position& position() const { return mousepos; } // screen-coordinates
-    const AW_clicked_element *best_click() const { return AW_getBestClick(M_cl, M_ct); }
+    const AW_clicked_element *best_click();
 };
 
 class AWT_graphic {
