@@ -1369,6 +1369,45 @@ void TEST_SLOW_match_probe() {
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
         arguments[2] = "matchmismatches=2"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
     }
+
+    // -------------------------------------------------------------
+    //      tests related to http://bugs.arb-home.de/ticket/410
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=ACGGACUCCGGGAAACCGGGGCUAAUACC", // length=29
+            NULL, // matchmismatches
+            "matchacceptN=5",
+            "matchlimitN=7",
+            "matchmaxresults=10",
+        };
+
+        CCP expectd0 = "    name---- fullname mis N_mis wmis pos ecoli rev          'ACGGACUCCGGGAAACCGGGGCUAAUACC'\1"
+            "BcSSSS00\1" "  BcSSSS00            0     0  0.0  84    72 0   UAGCGGCGG-=============================-GGAUGGUGA\1"
+            "Bl0LLL00\1" "  Bl0LLL00            0     0  0.0  84    72 0   CAGCGGCGG-=============================-GGAUGCUGA\1"
+            "AclPleur\1" "  AclPleur            4     0  4.6  84    72 0   GAGUGGCGG-=======a========u=UA=========-GCGUAAUCA\1"
+            "PtVVVulg\1" "  PtVVVulg            4     0  5.1  84    72 0   GAGCGGCGG-=======a=U======G=U==========-GCAUGACCA\1"
+            "DsssDesu\1" "  DsssDesu            5     0  5.3  84    72 0   GAGUGGCGC-========u=C====Gu==A=========-GGAUACAGA\1"
+            "PsAAAA00\1" "  PsAAAA00            5     0  5.3  84    72 0   CAGCGGCGG-======gu=C======G==C=========-GCAUACGCA\1";
+
+        arguments[2] = "matchmismatches=5"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=ACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGGUGA", // length=38
+            NULL, // matchmismatches
+            "matchacceptN=5",
+            "matchlimitN=7",
+            "matchmaxresults=10",
+        };
+
+        CCP expectd0 = "    name---- fullname mis N_mis wmis pos ecoli rev          'ACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGGUGA'\1"
+            "BcSSSS00\1" "  BcSSSS00            0     0  0.0  84    72 0   UAGCGGCGG-======================================-UGAUUGGGG\1"
+            "Bl0LLL00\1" "  Bl0LLL00            1     0  1.5  84    72 0   CAGCGGCGG-==================================C===-UGAUUGGGG\1";
+
+        arguments[2] = "matchmismatches=18"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
+    }
 }
 
 static char *extract_locations(const char *probe_design_result) {

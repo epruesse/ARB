@@ -285,6 +285,7 @@ int ARB_main(int argc, char *argv[]) {
         else          error = run_server(*params);
     }
 
+    free_arb_params(params);
     if (error) {
         fprintf(stderr, "Error in arb_db_server: %s\n", error);
         return EXIT_FAILURE;

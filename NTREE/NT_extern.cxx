@@ -1151,7 +1151,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->insert_sub_menu("VersionInfo/Bugreport/MailingList", "V");
             {
-                awm->insert_menu_topic("version_info", "Version info (" ARB_VERSION ")", "V", "version.hlp", AWM_ALL, (AW_CB)AW_help_popup, AW_CL("version.hlp"), 0);
+                awm->insert_menu_topic("version_info", "Version info (" ARB_VERSION ")", "V", "version.hlp", AWM_ALL, makeHelpCallback("version.hlp"));
                 awm->insert_menu_topic("bug_report",   "Report bug",                     "b", NULL,          AWM_ALL, AWT_openURL_cb,       AW_CL("http://bugs.arb-home.de/wiki/BugReport"));
                 awm->insert_menu_topic("mailing_list", "Mailing list",                   "M", NULL,          AWM_ALL, AWT_openURL_cb,       AW_CL("http://bugs.arb-home.de/wiki/ArbMailingList"));
             }
@@ -1260,7 +1260,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->insert_sub_menu("Align Sequences",  "S");
             {
-                awm->insert_menu_topic("arb_align",   "Align sequence into an existing alignment",         "A", "align.hlp",       AWM_EXP, (AW_CB) AW_help_popup, (AW_CL)"align.hlp",                  0);
+                awm->insert_menu_topic("arb_align",   "Align sequence into an existing alignment",         "A", "align.hlp",       AWM_EXP, makeHelpCallback("align.hlp"));
                 awm->insert_menu_topic("realign_dna", "Realign nucleic acid according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, AW_POPUP,              (AW_CL)NT_create_realign_dna_window, 0);
                 GDE_load_menu(awm, AWM_ALL, "Align");
             }
@@ -1437,7 +1437,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         }
         awm->sep______________();
 
-        awm->insert_menu_topic("transversion",       "Transversion analysis",   "y", "trans_anal.hlp", AWM_EXP, (AW_CB)AW_help_popup,       (AW_CL)"trans_anal.hlp", 0);
+        awm->insert_menu_topic("transversion",       "Transversion analysis",   "y", "trans_anal.hlp", AWM_EXP, makeHelpCallback("trans_anal.hlp"));
 
         awm->sep______________();
 
@@ -1507,24 +1507,23 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         }
     }
 
-    awm->insert_help_topic("ARB_NT help",     "N", "arb_ntree.hlp", AWM_ALL, (AW_CB)AW_help_popup, (AW_CL)"arb_ntree.hlp", 0);
+    awm->insert_help_topic("ARB_NT help",     "N", "arb_ntree.hlp", AWM_ALL, makeHelpCallback("arb_ntree.hlp"));
 
-    awm->create_mode("select.xpm",   "mode_select.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SELECT));
-    awm->create_mode("mark.xpm",     "mode_mark.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MARK));
-    awm->create_mode("group.xpm",    "mode_group.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_GROUP));
-    awm->create_mode("pzoom.xpm",    "mode_pzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ZOOM));
-    awm->create_mode("lzoom.xpm",    "mode_lzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LZOOM));
-    awm->create_mode("modify.xpm",   "mode_info.hlp",   AWM_ALL, makeWindowCallback(NT_modify_cb,  ntw, AWT_MODE_EDIT));
-    awm->create_mode("www_mode.xpm", "mode_www.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_WWW));
+    awm->create_mode("mode_select.xpm", "mode_select.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SELECT));
+    awm->create_mode("mode_mark.xpm",   "mode_mark.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MARK));
+    awm->create_mode("mode_group.xpm",  "mode_group.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_GROUP));
+    awm->create_mode("mode_zoom.xpm",   "mode_pzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ZOOM));
+    awm->create_mode("mode_lzoom.xpm",  "mode_lzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LZOOM));
+    awm->create_mode("mode_info.xpm",   "mode_info.hlp",   AWM_ALL, makeWindowCallback(NT_modify_cb,  ntw, AWT_MODE_INFO));
+    awm->create_mode("mode_www.xpm",    "mode_www.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_WWW));
 
-    awm->create_mode("line.xpm",    "mode_width.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LINE));
-    awm->create_mode("rot.xpm",     "mode_rotate.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ROT));
-    awm->create_mode("spread.xpm",  "mode_angle.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SPREAD));
-    awm->create_mode("swap.xpm",    "mode_swap.hlp",     AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
-    awm->create_mode("length.xpm",  "mode_length.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LENGTH));
-    awm->create_mode("move.xpm",    "mode_move.hlp",     AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
-    awm->create_mode("setroot.xpm", "mode_set_root.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
-    awm->create_mode("reset.xpm",   "mode_reset.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_RESET));
+    awm->create_mode("mode_line.xpm",    "mode_width.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LINE));
+    awm->create_mode("mode_rotate.xpm",  "mode_rotate.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ROTATE));
+    awm->create_mode("mode_spread.xpm",  "mode_spread.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SPREAD));
+    awm->create_mode("mode_swap.xpm",    "mode_swap.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
+    awm->create_mode("mode_length.xpm",  "mode_length.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LENGTH));
+    awm->create_mode("mode_move.xpm",    "mode_move.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
+    awm->create_mode("mode_setroot.xpm", "mode_setroot.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
 
     awm->set_info_area_height(250);
     awm->at(5, 2);

@@ -664,11 +664,13 @@ static GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
     for (cbl = Main->cbld; cbl;  cbl = cbl_next) {
         g_b_old_callback_list = cbl;
         cbl->spec(cbl->gbd, GB_CB_DELETE);
-        cbl_next              = cbl->next;
+
+        cbl_next  = cbl->next;
+        cbl->next = NULL;
+
         // cppcheck-suppress redundantAssignment (g_b_old_callback_list is tested by callback, e.g. via GB_inside_callback)
         g_b_old_callback_list = NULL;
-        gb_del_ref_gb_transaction_save(cbl->old);
-        gbm_free_mem(cbl, sizeof(gb_callback_list), GBM_CB_INDEX);
+        delete cbl;
     }
 
     Main->cbld_last = NULL;
@@ -678,11 +680,13 @@ static GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
     for (cbl = Main->cbl; cbl;  cbl = cbl_next) {
         g_b_old_callback_list = cbl;
         cbl->spec(cbl->gbd);
-        cbl_next = cbl->next;
+
+        cbl_next  = cbl->next;
+        cbl->next = NULL;
+
         // cppcheck-suppress redundantAssignment (g_b_old_callback_list is tested by callback, e.g. via GB_inside_callback)
         g_b_old_callback_list = NULL;
-        gb_del_ref_gb_transaction_save(cbl->old);
-        gbm_free_mem(cbl, sizeof(gb_callback_list), GBM_CB_INDEX);
+        delete cbl;
     }
 
     g_b_old_main   = NULL;
@@ -2297,7 +2301,7 @@ DatabaseCallback TypedDatabaseCallback::MARKED_DELETED = makeDatabaseCallback(du
 
 void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) {
     GB_MAIN_TYPE     *Main = GB_MAIN(gbd);
-    gb_callback_list *cbl  = (gb_callback_list *)gbm_get_mem(sizeof(gb_callback_list), GBM_CB_INDEX);
+    gb_callback_list *cbl  = new gb_callback_list(gbd, old, cb);
 
     if (Main->cbl) {
         Main->cbl_last->next = cbl;
@@ -2305,19 +2309,12 @@ void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, const T
     else {
         Main->cbl = cbl;
     }
-
     Main->cbl_last = cbl;
-
-    cbl->spec = cb;
-    cbl->gbd  = gbd;
-
-    gb_add_ref_gb_transaction_save(old);
-    cbl->old = old;
 }
 
 void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) {
     GB_MAIN_TYPE     *Main = GB_MAIN(gbd);
-    gb_callback_list *cbl  = (gb_callback_list *)gbm_get_mem(sizeof(gb_callback_list), GBM_CB_INDEX);
+    gb_callback_list *cbl  = new gb_callback_list(gbd, old, cb.with_type_changed_to(GB_CB_DELETE));
 
     if (Main->cbld) {
         Main->cbld_last->next = cbl;
@@ -2326,12 +2323,6 @@ void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const Ty
         Main->cbld = cbl;
     }
     Main->cbld_last = cbl;
-
-    cbl->spec = cb.with_type_changed_to(GB_CB_DELETE);
-    cbl->gbd  = gbd;
-
-    if (old) gb_add_ref_gb_transaction_save(old);
-    cbl->old = old;
 }
 
 GB_MAIN_TYPE *gb_get_main_during_cb() {
@@ -2507,8 +2498,8 @@ static GB_ERROR add_priority_callback(GBDATA *gbd, const TypedDatabaseCallback& 
 
     GB_test_transaction(gbd); // may return error
     gbd->create_extended();
-    gb_callback *cb = (gb_callback *)gbm_get_mem(sizeof(gb_callback), GB_GBM_INDEX(gbd));
 
+    gb_callback *cb = new gb_callback(cbs, priority);
     if (gbd->ext->callback) {
         gb_callback *prev = 0;
         gb_callback *curr = gbd->ext->callback;
@@ -2534,12 +2525,8 @@ static GB_ERROR add_priority_callback(GBDATA *gbd, const TypedDatabaseCallback& 
         cb->next = curr;
     }
     else {
-        cb->next           = 0;
         gbd->ext->callback = cb;
     }
-
-    cb->spec     = cbs;
-    cb->priority = priority;
 
 // #if defined(DEVEL_RALF)
 #if defined(DEBUG)
@@ -2581,12 +2568,14 @@ inline void gb_remove_callbacks_that(GBDATA *gbd, PRED shallRemove) {
             bool this_running = cb->running;
 
             if (shallRemove(*cb)) {
-                *cb_ptr = cb->next;
-                if (prev_running || cb->running) {
+                if (prev_running || this_running) {
                     cb->spec.mark_for_removal();
+                    cb_ptr = &cb->next;
                 }
                 else {
-                    gbm_free_mem(cb, sizeof(gb_callback), GB_GBM_INDEX(gbd));
+                    *cb_ptr  = cb->next;
+                    cb->next = NULL;
+                    delete cb;
                 }
             }
             else {

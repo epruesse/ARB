@@ -45,11 +45,7 @@ DESCRIPTION	A group is a subtree with a name assigned to its root node.
 			button.
 
 
-NOTES		To store the groupings, assign any information ('SAI': name,
-		fullname, ...) to them using the 'SPECIES INFORMATION' tool.
-
-		The middle mouse button (placed anywhere within the tree
-		display area) can be used to move the whole tree.
+NOTES		None
 
 EXAMPLES	None
 

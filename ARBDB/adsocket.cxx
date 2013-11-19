@@ -95,50 +95,49 @@ long gbcm_read(int socket, char *ptr, long size) {
 }
 
 GBCM_ServerResult gbcm_write_flush(int socket) {
-    char *ptr;
-    long    leftsize, writesize;
-    ptr = gb_local->write_buffer;
-    leftsize = gb_local->write_ptr - ptr;
+    char *ptr      = gb_local->write_buffer;
+    long  leftsize = gb_local->write_ptr - ptr;
+
     gb_local->write_free = gb_local->write_bufsize;
-    if (!leftsize) return GBCM_SERVER_OK;
 
-    gb_local->write_ptr = ptr;
-    gbcm_pipe_violation_flag = 0;
+    if (leftsize) {
+        gb_local->write_ptr = ptr;
+        gbcm_pipe_violation_flag = 0;
 
-    writesize = write(socket, ptr, (size_t)leftsize);
+        long writesize = write(socket, ptr, (size_t)leftsize);
 
-    if (gbcm_pipe_violation_flag || writesize<0) {
-        if (gb_local->iamclient) {
-            fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
-            exit(-1);
-        }
-        fprintf(stderr, "writesize: %li ppid %i\n", writesize, getppid());
-        return GBCM_SERVER_FAULT;
-    }
-    ptr += writesize;
-    leftsize = leftsize - writesize;
-
-    while (leftsize) {
-        GB_sleep(10, MS);
-
-        writesize = write(socket, ptr, (size_t)leftsize);
         if (gbcm_pipe_violation_flag || writesize<0) {
-            if ((int)getppid() <= 1) {
+            if (gb_local->iamclient) {
                 fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
                 exit(-1);
             }
-            fprintf(stderr, "write error\n");
+            fprintf(stderr, "writesize: %li ppid %i\n", writesize, getppid());
             return GBCM_SERVER_FAULT;
         }
         ptr += writesize;
-        leftsize -= writesize;
+        leftsize = leftsize - writesize;
+
+        while (leftsize) {
+            GB_sleep(10, MS);
+
+            writesize = write(socket, ptr, (size_t)leftsize);
+            if (gbcm_pipe_violation_flag || writesize<0) {
+                if ((int)getppid() <= 1) {
+                    fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
+                    exit(-1);
+                }
+                fprintf(stderr, "write error\n");
+                return GBCM_SERVER_FAULT;
+            }
+            ptr += writesize;
+            leftsize -= writesize;
+        }
     }
     return GBCM_SERVER_OK;
 }
 
 GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size) {
-
-    while  (size >= gb_local->write_free) {
+    while (size >= gb_local->write_free) {
         memcpy(gb_local->write_ptr, ptr, (int)gb_local->write_free);
         gb_local->write_ptr += gb_local->write_free;
         size -= gb_local->write_free;
