@@ -1426,6 +1426,23 @@ public:
     }
 };
 
+AWT_graphic_event::ClickPreference preferredForCommand(AWT_COMMAND_MODE mode) {
+    // return preferred click target for tree-display
+    // (Note: not made this function a member of AWT_graphic_event,
+    //  since modes are still reused in other ARB applications,
+    //  e.g. AWT_MODE_ROTATE in SECEDIT)
+
+    switch (mode) {
+        case AWT_MODE_ROTATE:
+        case AWT_MODE_LENGTH:
+        case AWT_MODE_SPREAD:
+            return AWT_graphic_event::PREFER_LINE;
+
+        default:
+            return AWT_graphic_event::PREFER_NEARER;
+    }
+}
+
 void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& event) {
     td_assert(event.button()!=AW_BUTTON_MIDDLE); // shall be handled by caller
 
@@ -1438,7 +1455,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
     if (event.button() == AW_BUTTON_NONE) return;
     td_assert(event.button() == AW_BUTTON_LEFT || event.button() == AW_BUTTON_RIGHT); // nothing else should come here
 
-    ClickedTarget clicked(this, event.best_click());
+    ClickedTarget clicked(this, event.best_click(preferredForCommand(event.cmd())));
     if (clicked.species()) {
         if (command_on_GBDATA(clicked.species(), event, map_viewer_cb)) {
             exports.refresh = 1;

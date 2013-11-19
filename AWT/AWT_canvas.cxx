@@ -761,7 +761,7 @@ void AWT_nonDB_graphic::update(GBDATA *) {
 #endif // DEBUG
 }
 
-const AW_clicked_element *AWT_graphic_event::best_click() {
+const AW_clicked_element *AWT_graphic_event::best_click(ClickPreference prefer) {
     // returns the element with lower distance (to mouse-click- or key-"click"-position).
     // or NULL (if no element was found inside catch-distance)
 
@@ -769,11 +769,18 @@ const AW_clicked_element *AWT_graphic_event::best_click() {
 
     if (M_cl->exists) {
         if (M_ct->exists) {
-            if (M_cl->distance < M_ct->distance) {
-                bestClick = M_cl;
-            }
-            else {
-                bestClick = M_ct;
+            switch (prefer) {
+                case PREFER_NEARER:
+                    if (M_cl->distance < M_ct->distance) {
+                        bestClick = M_cl;
+                    }
+                    else {
+                        bestClick = M_ct;
+                    }
+                    break;
+
+                case PREFER_LINE: bestClick = M_cl; break;
+                case PREFER_TEXT: bestClick = M_ct; break;
             }
         }
         else {
