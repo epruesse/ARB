@@ -156,4 +156,3 @@ public:
     int  get_string_size(int gc, const  char *string, long textlen) const OVERRIDE;
 };
 
-const AW_clicked_element *AW_getBestClick(const AW_clicked_line *cl, const AW_clicked_text *ct);
