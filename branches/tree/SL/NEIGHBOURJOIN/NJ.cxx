@@ -11,6 +11,7 @@
 #include "NJ.hxx"
 #include <neighbourjoin.hxx>
 #include <arbdbt.h>
+#include <arb_diff.h>
 
 #define CHECK_NAN(x) if ((!(x>=0.0)) && (!(x<0.0))) *(int *)0 = 0;
 
@@ -20,7 +21,7 @@ PH_NEIGHBOUR_DIST::PH_NEIGHBOUR_DIST()
 }
 
 
-AP_FLOAT PH_NEIGHBOURJOINING::get_max_di(AP_FLOAT **m)  // O(n*2)
+AP_FLOAT PH_NEIGHBOURJOINING::get_max_di(const AP_FLOAT *const *m)  // O(n*2)
 {
     long i, j;
     AP_FLOAT max = 0.0;
@@ -105,8 +106,7 @@ void PH_NEIGHBOURJOINING::remove_taxa_from_swap_tab(long i) // O(n/2)
     swap_size --;
 }
 
-PH_NEIGHBOURJOINING::PH_NEIGHBOURJOINING(AP_FLOAT **m, long isize)
-{
+PH_NEIGHBOURJOINING::PH_NEIGHBOURJOINING(const AP_FLOAT *const *m, long isize) {
     long i, j;
 
     size = isize;
@@ -145,17 +145,19 @@ PH_NEIGHBOURJOINING::~PH_NEIGHBOURJOINING()
     delete [] swap_tab;
 }
 
-void PH_NEIGHBOURJOINING::get_min_ij(long& mini, long& minj)    // O(n*n/speedup)
-{
-    AP_FLOAT maxri = get_max_net_divergence();  // O(n/2)
+AP_FLOAT PH_NEIGHBOURJOINING::get_min_ij(long& mini, long& minj) { // O(n*n/speedup)
+    // returns minval (only used by test inspection)
+
+    AP_FLOAT maxri = get_max_net_divergence(); // O(n/2)
     PH_NEIGHBOUR_DIST *dl;
-    long stat = 0;
+    long stat  = 0;
     AP_FLOAT x;
     AP_FLOAT minval;
     minval = 100000.0;
-    AP_FLOAT N_1 = 1.0/(swap_size-2.0);
+    AP_FLOAT N_1   = 1.0/(swap_size-2.0);
     maxri = maxri*2.0*N_1;
     long pos;
+
     get_last_ij(mini, minj);
 
     for (pos=0; pos<dist_list_size; pos++) {
@@ -172,6 +174,7 @@ void PH_NEIGHBOURJOINING::get_min_ij(long& mini, long& minj)    // O(n*n/speedup
             stat++;
         }
     }
+    return minval;
 }
 
 void PH_NEIGHBOURJOINING::join_nodes(long i, long j, AP_FLOAT &leftl, AP_FLOAT& rightl)
@@ -220,14 +223,12 @@ AP_FLOAT PH_NEIGHBOURJOINING::get_dist(long i, long j)
     return dist_matrix[j][i].val;
 }
 
-GBT_TREE *neighbourjoining(char **names, AP_FLOAT **m, long size, size_t structure_size)
-{
+GBT_TREE *neighbourjoining(const char *const *names, const AP_FLOAT *const *m, long size, size_t structure_size) { // @@@ pass ConstStrArray and AP_smatrix
     // structure_size >= sizeof(GBT_TREE);
     // lower triangular matrix
     // size: size of matrix
 
-
-    PH_NEIGHBOURJOINING *nj = new PH_NEIGHBOURJOINING(m, size);
+    PH_NEIGHBOURJOINING *nj = new PH_NEIGHBOURJOINING(m, size); // @@@ automize
     long i;
     long a, b;
     GBT_TREE **nodes;
@@ -268,3 +269,115 @@ GBT_TREE *neighbourjoining(char **names, AP_FLOAT **m, long size, size_t structu
     free(nodes);
     return father;
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#include <AP_matrix.hxx>
+#endif
+
+static const AP_FLOAT EPSILON = 0.0001;
+
+static arb_test::match_expectation min_ij_equals(PH_NEIGHBOURJOINING& nj, long expected_i, long expected_j, AP_FLOAT expected_minval) {
+    using namespace   arb_test;
+    expectation_group expected;
+
+    long     i, j;
+    AP_FLOAT minval = nj.get_min_ij(i, j);
+
+    expected.add(that(i).is_equal_to(expected_i));
+    expected.add(that(j).is_equal_to(expected_j));
+    expected.add(that(minval).fulfills(epsilon_similar(EPSILON), expected_minval));
+
+    return all().ofgroup(expected);
+}
+
+#define TEST_EXPECT_MIN_IJ(nj,i,j,minval) TEST_EXPECTATION(min_ij_equals(nj,i,j,minval))
+
+void TEST_neighbourjoining() {
+    const size_t SIZE = 4;
+
+#define TEST_FORWARD_ORDER // @@@ changing the order of nodes here changes the resulting trees
+                           // i do not understand, if that means there is sth wrong or not.. 
+
+#if defined(TEST_FORWARD_ORDER)
+    const char *names[SIZE] = { "A", "B", "C", "D"};
+    enum { A, B, C, D };
+#else // !defined(TEST_FORWARD_ORDER)
+    const char *names[SIZE] = { "D", "C", "B", "A"};
+    enum { D, C, B, A };
+#endif
+
+    for (int test = 1; test <= 2; ++test) {
+        AP_smatrix sym_matrix(SIZE);
+
+        // Note: values used here are distances
+        for (size_t i = 0; i < SIZE; ++i) sym_matrix.set(i, i, 0.0);
+
+        sym_matrix.set(A, B, 0.0765); sym_matrix.set(A, C, 0.1619); sym_matrix.set(A, D, 0.2266);
+        sym_matrix.set(B, C, 0.1278); sym_matrix.set(B, D, 0.2061);
+
+        switch (test) {
+            case 1: sym_matrix.set(C, D, 0.1646); break;
+            case 2: sym_matrix.set(C, D, 0.30); break;
+            default: arb_assert(0); break;
+        }
+
+        // check net_divergence values:
+        {
+            PH_NEIGHBOURJOINING nj(sym_matrix.m, SIZE);
+
+            TEST_EXPECT_SIMILAR(nj.get_net_divergence(A), 0.4650, EPSILON);
+            TEST_EXPECT_SIMILAR(nj.get_net_divergence(B), 0.4104, EPSILON);
+            switch (test) {
+                case 1:
+                    TEST_EXPECT_SIMILAR(nj.get_net_divergence(C), 0.4543, EPSILON);
+                    TEST_EXPECT_SIMILAR(nj.get_net_divergence(D), 0.5973, EPSILON);
+
+#define EXPECTED_MIN_IJ -0.361200
+#if defined(TEST_FORWARD_ORDER)
+                    TEST_EXPECT_MIN_IJ(nj, A, B, EXPECTED_MIN_IJ);
+#else // !defined(TEST_FORWARD_ORDER)
+                    TEST_EXPECT_MIN_IJ(nj, D, C, EXPECTED_MIN_IJ);
+#endif
+#undef EXPECTED_MIN_IJ
+                    break;
+                case 2:
+                    TEST_EXPECT_SIMILAR(nj.get_net_divergence(C), 0.5897, EPSILON);
+                    TEST_EXPECT_SIMILAR(nj.get_net_divergence(D), 0.7327, EPSILON);
+
+#define EXPECTED_MIN_IJ -0.372250
+#if defined(TEST_FORWARD_ORDER)
+                    TEST_EXPECT_MIN_IJ(nj, B, C, EXPECTED_MIN_IJ);
+#else // !defined(TEST_FORWARD_ORDER)
+                    TEST_EXPECT_MIN_IJ(nj, D, A, EXPECTED_MIN_IJ);
+#endif
+#undef EXPECTED_MIN_IJ
+                    break;
+                default: arb_assert(0); break;
+            }
+
+        }
+
+        GBT_TREE *tree = neighbourjoining(names, sym_matrix.m, SIZE, sizeof(*tree)); // @@@ leaks
+
+        switch (test) {
+#if defined(TEST_FORWARD_ORDER)
+            case 1: TEST_EXPECT_NEWICK_EQUAL(tree, "(((A,B),C),D);"); break;
+            case 2: TEST_EXPECT_NEWICK_EQUAL(tree, "((A,(B,C)),D);"); break;
+#else // !defined(TEST_FORWARD_ORDER)
+            case 1: TEST_EXPECT_NEWICK_EQUAL(tree, "(((D,C),A),B);"); break;
+            case 2: TEST_EXPECT_NEWICK_EQUAL(tree, "(((D,A),B),C);"); break;
+#endif
+            default: arb_assert(0); break;
+        }
+
+        GBT_delete_tree(tree);
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

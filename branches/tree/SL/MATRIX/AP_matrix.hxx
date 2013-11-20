@@ -23,6 +23,7 @@ class AW_window;
 class AP_smatrix : virtual Noncopyable {
     // Symmetrical Matrix (upper triangular matrix)
 public:
+    // @@@ make members private!
     AP_FLOAT **m;       // m[i][j]  i <= j !!!!
     long       size;
 

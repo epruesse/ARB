@@ -52,7 +52,7 @@ class PH_NEIGHBOURJOINING : virtual Noncopyable {
     long *swap_tab;
     long  swap_size;
 
-    AP_FLOAT get_max_di(AP_FLOAT **m);
+    AP_FLOAT get_max_di(const AP_FLOAT *const *m);
     void     remove_taxa_from_dist_list(long i);
     void     add_taxa_to_dist_list(long j);
     AP_FLOAT get_max_net_divergence();
@@ -60,13 +60,18 @@ class PH_NEIGHBOURJOINING : virtual Noncopyable {
 
 public:
 
-    PH_NEIGHBOURJOINING(AP_FLOAT **m, long size);
+    PH_NEIGHBOURJOINING(const AP_FLOAT *const *m, long isize);
     ~PH_NEIGHBOURJOINING();
 
     void     join_nodes(long i, long j, AP_FLOAT &leftl, AP_FLOAT& rightlen);
-    void     get_min_ij(long& i, long& j);
+    AP_FLOAT get_min_ij(long& i, long& j);
     void     get_last_ij(long& i, long& j);
     AP_FLOAT get_dist(long i, long j);
+
+#if defined(UNIT_TESTS)
+    // test inspection
+    AP_FLOAT get_net_divergence(long i) { return net_divergence[i]; }
+#endif
 };
 
 #else
