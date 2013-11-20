@@ -372,14 +372,18 @@ my $VC_UNKNOWN = 3; # in SVN, but unknown whether dir or file
 my $svn_entries_read = 0;
 my %all_svn_entries = ();
 
+sub isSVNcheckout($) {
+  my ($dir) = @_;
+  if (-f $dir.'/.svn/entries') { return 1; }
+  if (-f $dir.'/.svn/wc.db') { return 1; }
+  return 0;
+}
+
 sub getSVNEntries($\%) {
   my ($dir,$SVN_r) = @_;
 
   if ($svn_entries_read==0) { # first call
-    my $svnentries = $dir.'/.svn/entries';
-    if (not -f $svnentries) {
-      return 0;
-    }
+    if (isSVNcheckout($dir)==0) { return 0; }
 
     my $cmd = "svn status -v $dir";
     open(SVNSTATUS, "$cmd|") || die "failed to execute '$cmd' (Reason: $!)";
