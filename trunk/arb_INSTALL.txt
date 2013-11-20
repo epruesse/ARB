@@ -125,6 +125,7 @@ Additional software that is needed to compile open gl parts:
 - mesa-devel
 - mesaglw (opensuse)
 - mesaglw-devel (opensuse)
+- libGLw-devel (SuSE 13.x)
 - libpng
 - libglew
 - glew-devel (opensuse)
