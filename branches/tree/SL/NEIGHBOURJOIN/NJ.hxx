@@ -17,16 +17,22 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#ifndef AP_MATRIX_HXX
+#include <AP_matrix.hxx>
+#endif
 
 #define ph_assert(cond) arb_assert(cond)
 
 typedef double AP_FLOAT;
 
 struct PH_NEIGHBOUR_DIST {
-    PH_NEIGHBOUR_DIST();
-    long    i, j;
+    long     i, j;
     AP_FLOAT val;
+
     PH_NEIGHBOUR_DIST *next, *previous;
+
+    PH_NEIGHBOUR_DIST();
+
     void remove() {
         ph_assert(previous); // already removed
         if (next) { next->previous = previous; }
@@ -52,7 +58,6 @@ class PH_NEIGHBOURJOINING : virtual Noncopyable {
     long *swap_tab;
     long  swap_size;
 
-    AP_FLOAT get_max_di(const AP_FLOAT *const *m);
     void     remove_taxa_from_dist_list(long i);
     void     add_taxa_to_dist_list(long j);
     AP_FLOAT get_max_net_divergence();
@@ -60,7 +65,7 @@ class PH_NEIGHBOURJOINING : virtual Noncopyable {
 
 public:
 
-    PH_NEIGHBOURJOINING(const AP_FLOAT *const *m, long isize);
+    PH_NEIGHBOURJOINING(const AP_smatrix& smatrix);
     ~PH_NEIGHBOURJOINING();
 
     void     join_nodes(long i, long j, AP_FLOAT &leftl, AP_FLOAT& rightlen);

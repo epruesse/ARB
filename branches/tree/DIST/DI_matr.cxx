@@ -1195,7 +1195,8 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         for (long i=0; i<matr->nentries; i++) {
             names[i] = matr->entries[i]->name;
         }
-        tree = neighbourjoining(names, matr->matrix->m, matr->nentries, sizeof(GBT_TREE));
+        di_assert(matr->nentries == matr->matrix->size); // i love redundant data
+        tree    = neighbourjoining(names, *matr->matrix, sizeof(GBT_TREE));
 
         if (bootstrap_flag) {
             ctree->insert_tree_weighted(tree, 1);

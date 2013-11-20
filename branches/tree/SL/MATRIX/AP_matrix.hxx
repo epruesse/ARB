@@ -27,11 +27,13 @@ public:
     AP_FLOAT **m;       // m[i][j]  i <= j !!!!
     long       size;
 
-    AP_smatrix(long si);
+    explicit AP_smatrix(long si);
     ~AP_smatrix();
 
     void     set(long i, long j, AP_FLOAT val) { if (i>j) m[i][j] = val; else m[j][i] = val; };
     AP_FLOAT get(long i, long j) { if (i>j) return m[i][j]; else return m[j][i]; };
+
+    AP_FLOAT get_max_dist() const;
 };
 
 class AP_matrix : virtual Noncopyable {

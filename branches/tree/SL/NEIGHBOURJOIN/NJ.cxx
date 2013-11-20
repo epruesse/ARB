@@ -21,20 +21,17 @@ PH_NEIGHBOUR_DIST::PH_NEIGHBOUR_DIST()
 }
 
 
-AP_FLOAT PH_NEIGHBOURJOINING::get_max_di(const AP_FLOAT *const *m)  // O(n*2)
-{
-    long i, j;
+AP_FLOAT AP_smatrix::get_max_dist() const { // O(n*2)
     AP_FLOAT max = 0.0;
-    for (i=0; i<size; i++) {
-        for (j=0; j<i; j++) {
+    for (long i=0; i<size; i++) {
+        for (long j=0; j<i; j++) {
             if (m[i][j] > max) max = m[i][j];
         }
     }
     return max;
 }
 
-void PH_NEIGHBOURJOINING::remove_taxa_from_dist_list(long i)    // O(n/2)
-{
+void PH_NEIGHBOURJOINING::remove_taxa_from_dist_list(long i) { // O(n/2)
     long a, j;
     PH_NEIGHBOUR_DIST *nd;
     for (a=0; a<swap_size; a++) {
@@ -106,24 +103,25 @@ void PH_NEIGHBOURJOINING::remove_taxa_from_swap_tab(long i) // O(n/2)
     swap_size --;
 }
 
-PH_NEIGHBOURJOINING::PH_NEIGHBOURJOINING(const AP_FLOAT *const *m, long isize) {
-    size      = isize;
-    swap_size = size;       // init swap tab
-    swap_tab  = new long[size];
+PH_NEIGHBOURJOINING::PH_NEIGHBOURJOINING(const AP_smatrix& smatrix) {
+    size = smatrix.size;
 
+    // init swap tab
+    swap_size = size;
+    swap_tab  = new long[size];
     for (long i=0; i<swap_size; i++) swap_tab[i] = i;
 
     net_divergence = (AP_FLOAT *)calloc(sizeof(AP_FLOAT), (size_t)size);
 
     dist_list_size = size;                                  // hope to be the best
     dist_list      = new PH_NEIGHBOUR_DIST[dist_list_size]; // the roots, no elems
-    dist_list_corr = (dist_list_size-2.0)/get_max_di(m);
+    dist_list_corr = (dist_list_size-2.0)/smatrix.get_max_dist();
 
     dist_matrix = new PH_NEIGHBOUR_DIST*[size];
     for (long i=0; i<size; i++) {
         dist_matrix[i] = new PH_NEIGHBOUR_DIST[i];
         for (long j=0; j<i; j++) {
-            dist_matrix[i][j].val = m[i][j];
+            dist_matrix[i][j].val = smatrix.m[i][j];
             dist_matrix[i][j].i = i;
             dist_matrix[i][j].j = j;
         }
@@ -221,26 +219,46 @@ AP_FLOAT PH_NEIGHBOURJOINING::get_dist(long i, long j)
     return dist_matrix[j][i].val;
 }
 
-GBT_TREE *neighbourjoining(const char *const *names, const AP_FLOAT *const *m, long size, size_t structure_size) { // @@@ pass ConstStrArray and AP_smatrix
+GBT_TREE *neighbourjoining(const char *const *names, const AP_smatrix& smatrix, size_t structure_size) { // @@@ pass ConstStrArray
     // structure_size >= sizeof(GBT_TREE);
     // lower triangular matrix
     // size: size of matrix
 
-    PH_NEIGHBOURJOINING *nj = new PH_NEIGHBOURJOINING(m, size); // @@@ automize
-    long i;
-    long a, b;
-    GBT_TREE **nodes;
-    AP_FLOAT ll, rl;
-    nodes = (GBT_TREE **)calloc(sizeof(GBT_TREE *), (size_t)size);
-    for (i=0; i<size; i++) {
+    PH_NEIGHBOURJOINING   nj(smatrix);
+    GBT_TREE            **nodes = (GBT_TREE **)calloc(sizeof(GBT_TREE *), (size_t)smatrix.size);
+
+    for (long i=0; i<smatrix.size; i++) {
         nodes[i] = (GBT_TREE *)calloc(structure_size, 1);
         nodes[i]->name = strdup(names[i]);
         nodes[i]->is_leaf = true;
     }
 
-    for (i=0; i<size-2; i++) {
-        nj->get_min_ij(a, b);
-        nj->join_nodes(a, b, ll, rl);
+    for (long i=0; i<smatrix.size-2; i++) {
+        long a, b;
+        nj.get_min_ij(a, b);
+
+        AP_FLOAT ll, rl;
+        nj.join_nodes(a, b, ll, rl);
+
+        GBT_TREE *father = (GBT_TREE *)calloc(structure_size, 1);
+        father->leftson  = nodes[a];
+        father->rightson = nodes[b];
+        father->leftlen  = ll;
+        father->rightlen = rl;
+        nodes[a]->father = father;
+        nodes[b]->father = father;
+        nodes[a]         = father;
+    }
+
+    {
+        long a, b;
+        nj.get_last_ij(a, b);
+
+        AP_FLOAT dist = nj.get_dist(a, b);
+
+        AP_FLOAT ll = dist*0.5;
+        AP_FLOAT rl = dist*0.5;
+
         GBT_TREE *father = (GBT_TREE *)calloc(structure_size, 1);
         father->leftson = nodes[a];
         father->rightson = nodes[b];
@@ -248,24 +266,10 @@ GBT_TREE *neighbourjoining(const char *const *names, const AP_FLOAT *const *m, l
         father->rightlen = rl;
         nodes[a]->father = father;
         nodes[b]->father = father;
-        nodes[a] = father;
+
+        free(nodes);
+        return father;
     }
-    nj->get_last_ij(a, b);
-    AP_FLOAT dist = nj->get_dist(a, b);
-    ll = dist*0.5;
-    rl = dist*0.5;
-
-    GBT_TREE *father = (GBT_TREE *)calloc(structure_size, 1);
-    father->leftson = nodes[a];
-    father->rightson = nodes[b];
-    father->leftlen = ll;
-    father->rightlen = rl;
-    nodes[a]->father = father;
-    nodes[b]->father = father;
-
-    delete nj;
-    free(nodes);
-    return father;
 }
 
 // --------------------------------------------------------------------------------
@@ -273,7 +277,6 @@ GBT_TREE *neighbourjoining(const char *const *names, const AP_FLOAT *const *m, l
 #ifdef UNIT_TESTS
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
-#include <AP_matrix.hxx>
 #endif
 
 static const AP_FLOAT EPSILON = 0.0001;
@@ -325,7 +328,7 @@ void TEST_neighbourjoining() {
 
         // check net_divergence values:
         {
-            PH_NEIGHBOURJOINING nj(sym_matrix.m, SIZE);
+            PH_NEIGHBOURJOINING nj(sym_matrix);
 
             TEST_EXPECT_SIMILAR(nj.get_net_divergence(A), 0.4650, EPSILON);
             TEST_EXPECT_SIMILAR(nj.get_net_divergence(B), 0.4104, EPSILON);
@@ -359,7 +362,7 @@ void TEST_neighbourjoining() {
 
         }
 
-        GBT_TREE *tree = neighbourjoining(names, sym_matrix.m, SIZE, sizeof(*tree)); // @@@ leaks
+        GBT_TREE *tree = neighbourjoining(names, sym_matrix, sizeof(*tree));
 
         switch (test) {
 #if defined(TEST_FORWARD_ORDER)
