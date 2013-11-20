@@ -13,7 +13,7 @@ $(MAIN): proto
 	$(MAKE) $(BINARY)
 
 $(BINARY): $(OBJECTS)
-	$(LINK_EXECUTABLE) $@ $(OBJECTS) 
+	$(LINK_EXECUTABLE) $@ $(OBJECTS) $(EXECLIBS)
 
 .c.o:
 	$(A_CXX) -x c++ $(cflags) $(cxxflags) $(LOCAL_DEFINES) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
