@@ -107,38 +107,36 @@ void PH_NEIGHBOURJOINING::remove_taxa_from_swap_tab(long i) // O(n/2)
 }
 
 PH_NEIGHBOURJOINING::PH_NEIGHBOURJOINING(const AP_FLOAT *const *m, long isize) {
-    long i, j;
-
-    size = isize;
+    size      = isize;
     swap_size = size;       // init swap tab
-    swap_tab = new long[size];
-    for (i=0; i<swap_size; i++) swap_tab[i] = i;
+    swap_tab  = new long[size];
+
+    for (long i=0; i<swap_size; i++) swap_tab[i] = i;
 
     net_divergence = (AP_FLOAT *)calloc(sizeof(AP_FLOAT), (size_t)size);
 
-
-    dist_list_size = size;      // hope te be the best
-    dist_list = new PH_NEIGHBOUR_DIST[dist_list_size]; // the roots, no elems
+    dist_list_size = size;                                  // hope to be the best
+    dist_list      = new PH_NEIGHBOUR_DIST[dist_list_size]; // the roots, no elems
     dist_list_corr = (dist_list_size-2.0)/get_max_di(m);
 
     dist_matrix = new PH_NEIGHBOUR_DIST*[size];
-    for (i=0; i<size; i++) {
+    for (long i=0; i<size; i++) {
         dist_matrix[i] = new PH_NEIGHBOUR_DIST[i];
-        for (j=0; j<i; j++) {
+        for (long j=0; j<i; j++) {
             dist_matrix[i][j].val = m[i][j];
             dist_matrix[i][j].i = i;
             dist_matrix[i][j].j = j;
         }
     }
-    for (i=0; i<size; i++) {
-        swap_size = i;      // to calculate the correct net divergence
-        add_taxa_to_dist_list(i);   // add to dist list and add n.d.
+    for (long i=0; i<size; i++) {
+        swap_size = i;              // to calculate the correct net divergence..
+        add_taxa_to_dist_list(i);   // ..add to dist list and add n.d.
     }
     swap_size = size;
 }
 
-PH_NEIGHBOURJOINING::~PH_NEIGHBOURJOINING()
-{
+PH_NEIGHBOURJOINING::~PH_NEIGHBOURJOINING() {
+    for (long i=0; i<size; i++) delete [] dist_matrix[i];
     delete [] dist_matrix;
     delete [] dist_list;
     free(net_divergence);
