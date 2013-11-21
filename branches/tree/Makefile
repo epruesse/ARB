@@ -2062,7 +2062,8 @@ endif
 		runtest; \
 	    echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"; \
 	    $(TEST_POST_CLEAN) \
-	) >$(TEST_LOG_DIR)/$(@F).log 2>&1; echo "- $(@F)")
+	) >$(TEST_LOG_DIR)/$(@F).log 2>&1; \
+	UNIT_TESTER/log_result.pl $(TEST_LOG_DIR)/$(@F).log )
 
 
 test_base: $(UNIT_TESTER_LIB:.a=.dummy) $(subst .test,.dummy,$(TEST_SANDBOXES))
