@@ -130,13 +130,14 @@ class DI_MATRIX : virtual Noncopyable {
     long     seq_len;
     char     cancel_columns[256];
     AW_root *aw_root;                               // only link
-    long     entries_mem_size;
+    size_t   entries_mem_size;
     AliView *aliview;
 
 public:
+    // @@@ make members private:
     bool             is_AA;
     DI_ENTRY       **entries;
-    long             nentries;
+    size_t           nentries;
     AP_smatrix      *matrix;
     DI_MATRIX_TYPE   matrix_type;
 
@@ -164,7 +165,7 @@ public:
     GB_ERROR calculate_pro(DI_TRANSFORMATION transformation, bool *aborted_flag);
     void analyse();
 
-    int   search_group(GBT_TREE *node, GB_HASH *hash, long *groupcnt, char *groupname, DI_ENTRY **groups);   // @@ OLIVER
+    int   search_group(GBT_TREE *node, GB_HASH *hash, size_t& groupcnt, char *groupname, DI_ENTRY **groups);
     char *compress(GBT_TREE *tree);
 };
 

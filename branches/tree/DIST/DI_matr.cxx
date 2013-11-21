@@ -210,7 +210,7 @@ DI_MATRIX::DI_MATRIX(const AliView& aliview_, AW_root *awr) {
 }
 
 char *DI_MATRIX::unload() {
-    for (long i=0; i<nentries; i++) {
+    for (size_t i=0; i<nentries; i++) {
         delete entries[i];
     }
     freenull(entries);
@@ -273,18 +273,18 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
     GBDATA     *gb_main = get_gb_main();
     const char *use     = get_aliname();
 
-    GB_push_transaction(gb_main);
+    GB_transaction ta(gb_main);
 
     seq_len          = GBT_get_alignment_len(gb_main, use);
     is_AA            = GBT_is_alignment_protein(gb_main, use);
     gb_species_data  = GBT_get_species_data(gb_main);
     entries_mem_size = 1000;
 
-    entries = (DI_ENTRY **)calloc(sizeof(DI_ENTRY*), (size_t)entries_mem_size);
+    entries = (DI_ENTRY **)calloc(sizeof(DI_ENTRY*), entries_mem_size);
 
     nentries = 0;
 
-    int no_of_species = -1;
+    size_t no_of_species = -1U;
     switch (what) {
         case DI_LOAD_ALL:
             no_of_species = GBT_get_species_count(gb_main);
@@ -298,10 +298,15 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
             break;
     }
 
+    di_assert(no_of_species != -1U);
+    if (no_of_species<2) {
+        return GBS_global_string("Not enough input species (%zu)", no_of_species);
+    }
+
     TreeOrderedSpecies *species_to_load[no_of_species];
 
     {
-        int i = 0;
+        size_t i = 0;
         switch (what) {
             case DI_LOAD_ALL: {
                 for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data); gb_species; gb_species = GBT_next_species(gb_species), ++i) {
@@ -329,7 +334,7 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
         order.applyTo(species_to_load, no_of_species);
         if (show_warnings) {
             int species_not_in_sort_tree = 0;
-            for (int i = 0; i<no_of_species; ++i) {
+            for (size_t i = 0; i<no_of_species; ++i) {
                 if (!species_to_load[i]->order_index) {
                     species_not_in_sort_tree++;
                 }
@@ -347,11 +352,11 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
 
     if (no_of_species>entries_mem_size) {
         entries_mem_size = no_of_species;
-        realloc_unleaked(entries, (size_t)(sizeof(DI_ENTRY*)*entries_mem_size));
+        realloc_unleaked(entries, sizeof(DI_ENTRY*)*entries_mem_size);
         if (!entries) return "out of memory";
     }
 
-    for (int i = 0; i<no_of_species; ++i) {
+    for (size_t i = 0; i<no_of_species; ++i) {
         DI_ENTRY *phentry = new DI_ENTRY(species_to_load[i]->gbd, this);
         if (phentry->sequence) {    // a species found
             arb_assert(nentries<entries_mem_size);
@@ -364,7 +369,6 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
         species_to_load[i] = NULL;
     }
 
-    GB_pop_transaction(gb_main);
     return NULL;
 }
 
@@ -439,8 +443,8 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI
     this->clear(nrates);
     this->clear(pairs);
 
-    for (long row = 0; row<nentries && !error; row++) {
-        for (long col=0; col<row; col++) {
+    for (size_t row = 0; row<nentries && !error; row++) {
+        for (size_t col=0; col<row; col++) {
             const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
             const unsigned char *seq2 = entries[col]->sequence_parsimony->get_usequence();
             for (long pos = 0; pos < s_len; pos++) {
@@ -455,7 +459,7 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI
             progress.inc_and_check_user_abort(error);
         }
     }
-    for (long row = 0; row<nentries; row++) {
+    for (size_t row = 0; row<nentries; row++) {
         const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
         for (long pos = 0; pos < s_len; pos++) {
             if (filter[pos]>=0) {
@@ -496,7 +500,8 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path) {
                 fprintf(out, "\nRatematrix non helical parts:\n");
                 rate_write(temp2, out);
 
-                long row, col, pos, s_len;
+                long pos;
+                long s_len;
 
                 s_len = aliview->get_length();
                 fprintf(out, "\nDistance matrix (Helixdist Helixlen Nonhelixdist Nonhelixlen):");
@@ -508,10 +513,10 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path) {
                 for (pos = 0; pos<MAXDISTDEBUG; pos++) distdebug[pos] = 0.0;
 
                 arb_progress dist_progress("distance", (nentries*(nentries+1))/2);
-                for (row = 0; row<nentries && !error; row++) {
+                for (size_t row = 0; row<nentries && !error; row++) {
                     fprintf (out, "\n%s  ", entries[row]->name);
 
-                    for (col=0; col<row && !error; col++) {
+                    for (size_t col=0; col<row && !error; col++) {
                         const unsigned char *seq1, *seq2;
 
                         seq1 = entries[row]->sequence_parsimony->get_usequence();
@@ -570,13 +575,13 @@ char *DI_MATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *c
 {
     long hits2[AP_MAX];
     long sum   = 0;
-    int  i, row;
+    int  i;
     int  pos;
     int  b;
     long s_len = aliview->get_length();
 
     memset((char *) &hits2[0], 0, sizeof(hits2));
-    for (row = 0; row < nentries; row++) {
+    for (size_t row = 0; row < nentries; row++) {
         const char *seq1 = entries[row]->sequence_parsimony->get_sequence();
         for (pos = 0; pos < s_len; pos++) {
             b = *(seq1++);
@@ -627,8 +632,6 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
 
     long   s_len = aliview->get_length();
     long   hits[AP_MAX][AP_MAX];
-    int    row;
-    int    col;
     size_t i;
 
     if (nentries<=1) {
@@ -658,8 +661,8 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
 
     arb_progress progress("Calculating distance matrix", (nentries*(nentries+1))/2);
     GB_ERROR     error = NULL;
-    for (row = 0; row<nentries && !error; row++) {
-        for (col=0; col<=row && !error; col++) {
+    for (size_t row = 0; row<nentries && !error; row++) {
+        for (size_t col=0; col<=row && !error; col++) {
             columns = 0;
             
             const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
@@ -1164,7 +1167,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
                     all_names = new StrArray;
                     all_names->reserve(matr->nentries+2);
 
-                    for (long i=0; i<matr->nentries; i++) {
+                    for (size_t i=0; i<matr->nentries; i++) {
                         all_names->put(strdup(matr->entries[i]->name));
                     }
                     ctree = new ConsensusTree(*all_names);
@@ -1191,12 +1194,13 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         }
 
         DI_MATRIX  *matr  = GLOBAL_MATRIX.get();
-        char     **names = (char **)calloc(sizeof(char *), (size_t)matr->nentries+2);
-        for (long i=0; i<matr->nentries; i++) {
+        char      **names = (char **)calloc(sizeof(char *), (size_t)matr->nentries+2);
+
+        for (size_t i=0; i<matr->nentries; i++) {
             names[i] = matr->entries[i]->name;
         }
-        di_assert(matr->nentries == matr->matrix->size()); // i love redundant data :/
-        tree    = neighbourjoining(names, *matr->matrix, sizeof(GBT_TREE));
+        di_assert(matr->nentries == matr->matrix->size());
+        tree = neighbourjoining(names, *matr->matrix, sizeof(GBT_TREE));
 
         if (bootstrap_flag) {
             ctree->insert_tree_weighted(tree, 1);

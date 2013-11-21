@@ -262,7 +262,7 @@ static void input_cb(AW_window *aww, DI_dmatrix *dmatrix) {
                 ClickAction action = static_cast<ClickAction>(clicked->cd1());
 
                 if (action == CLICK_SELECT_SPECIES) {
-                    long       idx    = long(clicked->cd2());
+                    size_t     idx    = size_t(clicked->cd2());
                     DI_MATRIX *matrix = dmatrix->get_matrix();
                     if (idx >= matrix->nentries) {
                         aw_message(GBS_global_string("Illegal idx %li [allowed: 0-%li]", idx, matrix->nentries));

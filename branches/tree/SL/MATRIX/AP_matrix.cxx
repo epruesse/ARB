@@ -21,11 +21,10 @@
 // --------------------
 //      AP_smatrix
 
-AP_smatrix::AP_smatrix(long si)
+AP_smatrix::AP_smatrix(size_t si)
 {
     m = (AP_FLOAT **)calloc(sizeof(AP_FLOAT *), (size_t)si);
-    long i;
-    for (i=0; i<si; i++) {
+    for (size_t i=0; i<si; i++) {
         m[i] = (AP_FLOAT *)calloc(sizeof(AP_FLOAT), (size_t)(i+1));
     }
 
@@ -33,14 +32,14 @@ AP_smatrix::AP_smatrix(long si)
 }
 
 AP_smatrix::~AP_smatrix() {
-    for (long i=0; i<Size; i++) free(m[i]);
+    for (size_t i=0; i<Size; i++) free(m[i]);
     free(m);
 }
 
 AP_FLOAT AP_smatrix::get_max_value() const { // O(n*2)
     AP_FLOAT max = -FLT_MAX;
-    for (long i=0; i<Size; i++) {
-        for (long j=0; j<i; j++) {
+    for (size_t i=0; i<Size; i++) {
+        for (size_t j=0; j<i; j++) {
             if (m[i][j] > max) max = m[i][j];
         }
     }

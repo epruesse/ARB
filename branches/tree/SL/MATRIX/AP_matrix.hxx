@@ -28,22 +28,22 @@ class AW_window;
 class AP_smatrix : virtual Noncopyable {
     // Symmetrical Matrix (upper triangular matrix)
 
-    long       Size;
+    size_t     Size;
     AP_FLOAT **m;       // m[i][j]  i <= j !!!!
 
 public:
 
-    explicit AP_smatrix(long si);
+    explicit AP_smatrix(size_t si);
     ~AP_smatrix();
 
-    void     set(long i, long j, AP_FLOAT val) { if (i>j) m[i][j] = val; else m[j][i] = val; };
+    void     set(size_t i, size_t j, AP_FLOAT val) { if (i>j) m[i][j] = val; else m[j][i] = val; };
 
-    AP_FLOAT fast_get(long i, long j) const { ap_assert(i>j); return m[i][j]; };
-    AP_FLOAT get(long i, long j) const { if (i>j) return m[i][j]; else return m[j][i]; };
+    AP_FLOAT fast_get(size_t i, size_t j) const { ap_assert(i>=j); return m[i][j]; };
+    AP_FLOAT get(size_t i, size_t j) const { if (i>j) return m[i][j]; else return m[j][i]; };
 
     AP_FLOAT get_max_value() const;
 
-    long size() const { return Size; }
+    size_t size() const { return Size; }
 };
 
 class AP_matrix : virtual Noncopyable {

@@ -217,13 +217,13 @@ GBT_TREE *neighbourjoining(const char *const *names, const AP_smatrix& smatrix, 
     PH_NEIGHBOURJOINING   nj(smatrix);
     GBT_TREE            **nodes = (GBT_TREE **)calloc(sizeof(GBT_TREE *), smatrix.size());
 
-    for (long i=0; i<smatrix.size(); i++) {
+    for (size_t i=0; i<smatrix.size(); i++) {
         nodes[i] = (GBT_TREE *)calloc(structure_size, 1);
         nodes[i]->name = strdup(names[i]);
         nodes[i]->is_leaf = true;
     }
 
-    for (long i=0; i<smatrix.size()-2; i++) {
+    for (size_t i=0; i<smatrix.size()-2; i++) {
         long a, b;
         nj.get_min_ij(a, b);
 
