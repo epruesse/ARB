@@ -14,6 +14,7 @@
 #include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
+#include <cfloat>
 
 #define ap_assert(cond) arb_assert(cond)
 
@@ -28,12 +29,22 @@ AP_smatrix::AP_smatrix(long si)
         m[i] = (AP_FLOAT *)calloc(sizeof(AP_FLOAT), (size_t)(i+1));
     }
 
-    size = si;
+    Size = si;
 }
 
 AP_smatrix::~AP_smatrix() {
-    for (long i=0; i<size; i++) free(m[i]);
+    for (long i=0; i<Size; i++) free(m[i]);
     free(m);
+}
+
+AP_FLOAT AP_smatrix::get_max_value() const { // O(n*2)
+    AP_FLOAT max = -FLT_MAX;
+    for (long i=0; i<Size; i++) {
+        for (long j=0; j<i; j++) {
+            if (m[i][j] > max) max = m[i][j];
+        }
+    }
+    return max;
 }
 
 // ------------------

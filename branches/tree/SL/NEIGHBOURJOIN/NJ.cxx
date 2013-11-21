@@ -21,16 +21,6 @@ PH_NEIGHBOUR_DIST::PH_NEIGHBOUR_DIST()
 }
 
 
-AP_FLOAT AP_smatrix::get_max_dist() const { // O(n*2)
-    AP_FLOAT max = 0.0;
-    for (long i=0; i<size; i++) {
-        for (long j=0; j<i; j++) {
-            if (m[i][j] > max) max = m[i][j];
-        }
-    }
-    return max;
-}
-
 void PH_NEIGHBOURJOINING::remove_taxa_from_dist_list(long i) { // O(n/2)
     long a, j;
     PH_NEIGHBOUR_DIST *nd;
@@ -104,7 +94,7 @@ void PH_NEIGHBOURJOINING::remove_taxa_from_swap_tab(long i) // O(n/2)
 }
 
 PH_NEIGHBOURJOINING::PH_NEIGHBOURJOINING(const AP_smatrix& smatrix) {
-    size = smatrix.size;
+    size = smatrix.size();
 
     // init swap tab
     swap_size = size;
@@ -115,13 +105,13 @@ PH_NEIGHBOURJOINING::PH_NEIGHBOURJOINING(const AP_smatrix& smatrix) {
 
     dist_list_size = size;                                  // hope to be the best
     dist_list      = new PH_NEIGHBOUR_DIST[dist_list_size]; // the roots, no elems
-    dist_list_corr = (dist_list_size-2.0)/smatrix.get_max_dist();
+    dist_list_corr = (dist_list_size-2.0)/smatrix.get_max_value();
 
     dist_matrix = new PH_NEIGHBOUR_DIST*[size];
     for (long i=0; i<size; i++) {
         dist_matrix[i] = new PH_NEIGHBOUR_DIST[i];
         for (long j=0; j<i; j++) {
-            dist_matrix[i][j].val = smatrix.m[i][j];
+            dist_matrix[i][j].val = smatrix.fast_get(i, j);
             dist_matrix[i][j].i = i;
             dist_matrix[i][j].j = j;
         }
@@ -225,15 +215,15 @@ GBT_TREE *neighbourjoining(const char *const *names, const AP_smatrix& smatrix, 
     // size: size of matrix
 
     PH_NEIGHBOURJOINING   nj(smatrix);
-    GBT_TREE            **nodes = (GBT_TREE **)calloc(sizeof(GBT_TREE *), (size_t)smatrix.size);
+    GBT_TREE            **nodes = (GBT_TREE **)calloc(sizeof(GBT_TREE *), smatrix.size());
 
-    for (long i=0; i<smatrix.size; i++) {
+    for (long i=0; i<smatrix.size(); i++) {
         nodes[i] = (GBT_TREE *)calloc(structure_size, 1);
         nodes[i]->name = strdup(names[i]);
         nodes[i]->is_leaf = true;
     }
 
-    for (long i=0; i<smatrix.size-2; i++) {
+    for (long i=0; i<smatrix.size()-2; i++) {
         long a, b;
         nj.get_min_ij(a, b);
 

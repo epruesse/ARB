@@ -14,6 +14,11 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+
+#define ap_assert(cond) arb_assert(cond)
 
 typedef double AP_FLOAT;
 
@@ -22,18 +27,23 @@ class AW_window;
 
 class AP_smatrix : virtual Noncopyable {
     // Symmetrical Matrix (upper triangular matrix)
-public:
-    // @@@ make members private!
+
+    long       Size;
     AP_FLOAT **m;       // m[i][j]  i <= j !!!!
-    long       size;
+
+public:
 
     explicit AP_smatrix(long si);
     ~AP_smatrix();
 
     void     set(long i, long j, AP_FLOAT val) { if (i>j) m[i][j] = val; else m[j][i] = val; };
-    AP_FLOAT get(long i, long j) { if (i>j) return m[i][j]; else return m[j][i]; };
 
-    AP_FLOAT get_max_dist() const;
+    AP_FLOAT fast_get(long i, long j) const { ap_assert(i>j); return m[i][j]; };
+    AP_FLOAT get(long i, long j) const { if (i>j) return m[i][j]; else return m[j][i]; };
+
+    AP_FLOAT get_max_value() const;
+
+    long size() const { return Size; }
 };
 
 class AP_matrix : virtual Noncopyable {
