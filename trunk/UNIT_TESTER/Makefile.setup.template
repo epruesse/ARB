@@ -29,6 +29,11 @@ RESTRICT_MODULE='.'
 #RESTRICT_MODULE='ED4_mini_classes\.cxx'
 #RESTRICT_MODULE='(ED4_mini_classes|ED4_cursor)\.cxx'
 
+# ---------- restrict tests by name to test-functions matching regexpr 'RESTRICT_FUN': 
+RESTRICT_FUN='.'
+#RESTRICT_FUN='arb_export_tree'
+#RESTRICT_FUN='tree'
+
 # ---------- restrict what coverage is displayed
 # to activate COVERAGE edit ../config.makefile@COVERAGE
 
@@ -70,6 +75,7 @@ RESTRICT_LIB=# run all tests
 #RESTRICT_LIB=SEQIO:CONVERTALN
 #RESTRICT_LIB=client:arb_probe:AWTC
 #RESTRICT_LIB=libARBDB:libWINDOW:SEQIO
+
 #RESTRICT_LIB=arb_probe:arb_test:AWTC:PTCLEAN:PROBE:MULTI_PROBE
 
 # ---------- slow tests 
