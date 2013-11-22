@@ -737,37 +737,37 @@ GB_CSTR GB_getenvARBMACRO() {
     return am;
 }
 
-static GB_CSTR getenv_autodirectory(const char *envvar, const char *defaultDirectory) {
-    static const char *dir = 0;
+static char *getenv_autodirectory(const char *envvar, const char *defaultDirectory) {
+    // if environment variable 'envvar' contains an existing directory -> use that
+    // otherwise fallback to 'defaultDirectory' (create if not existing)
+    // return heap-copy of full directory name
+    char *dir = getenv_existing_directory(envvar);
     if (!dir) {
-        dir = getenv_existing_directory(envvar);
-        if (!dir) {
-            dir = GBS_eval_env(defaultDirectory);
-            if (!GB_is_directory(dir)) {
-                GB_ERROR error = GB_create_directory(dir);
-                if (error) GB_warning(error);
-            }
+        dir = GBS_eval_env(defaultDirectory);
+        if (!GB_is_directory(dir)) {
+            GB_ERROR error = GB_create_directory(dir);
+            if (error) GB_warning(error);
         }
     }
     return dir;
 }
 
 GB_CSTR GB_getenvARB_PROP() {
-    static const char *ap = 0;
-    if (!ap) ap = getenv_autodirectory("ARB_PROP", GB_path_in_HOME(".arb_prop")); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_PROP
-    return ap;
+    static SmartCharPtr ArbProps;
+    if (ArbProps.isNull()) ArbProps = getenv_autodirectory("ARB_PROP", GB_path_in_HOME(".arb_prop")); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_PROP
+    return &*ArbProps;
 }
 
 GB_CSTR GB_getenvARBMACROHOME() {
-    static const char *amh = 0;
-    if (!amh) amh = getenv_autodirectory("ARBMACROHOME", GB_path_in_arbprop("macros"));  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACROHOME
-    return amh;
+    static SmartCharPtr ArbMacroHome;
+    if (ArbMacroHome.isNull()) ArbMacroHome = getenv_autodirectory("ARBMACROHOME", GB_path_in_arbprop("macros"));  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACROHOME
+    return &*ArbMacroHome;
 }
 
 static GB_CSTR GB_getenvARBCONFIG() {
-    static const char *ac = 0;
-    if (!ac) ac = getenv_autodirectory("ARBCONFIG", GB_path_in_arbprop("cfgSave")); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBCONFIG
-    return ac;
+    static SmartCharPtr ArbConfig;
+    if (ArbConfig.isNull()) ArbConfig = getenv_autodirectory("ARBCONFIG", GB_path_in_arbprop("cfgSave")); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBCONFIG
+    return &*ArbConfig;
 }
 
 GB_CSTR GB_getenvARB_GS() {
@@ -1604,8 +1604,8 @@ void TEST_some_paths() {
         TEST_EXPECT_CONTAINS(GB_getenvARB_PROP(), "/UNIT_TESTER/run/fakehome/.arb_prop");
         TEST_EXPECT_CONTAINS(GB_getenvARBMACRO(), "/lib/macros");
 
-        TEST_EXPECT_CONTAINS__BROKEN(GB_getenvARBCONFIG(),    "/UNIT_TESTER/run/fakehome/.arb_prop/cfgSave");
-        TEST_EXPECT_CONTAINS__BROKEN(GB_getenvARBMACROHOME(), "/UNIT_TESTER/run/fakehome/.arb_prop/macros");  // works in [11068]
+        TEST_EXPECT_CONTAINS(GB_getenvARBCONFIG(),    "/UNIT_TESTER/run/fakehome/.arb_prop/cfgSave");
+        TEST_EXPECT_CONTAINS(GB_getenvARBMACROHOME(), "/UNIT_TESTER/run/fakehome/.arb_prop/macros");  // works in [11068]
     }
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }
