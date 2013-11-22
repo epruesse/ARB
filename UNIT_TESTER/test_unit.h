@@ -1192,7 +1192,8 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #define TEST_EXPECT_IN_RANGE(val,lower,higher) TEST_EXPECTATION(all().of(that(val).is_more_or_equal(lower),     \
                                                                          that(val).is_less_or_equal(higher)))
 
-#define TEST_EXPECT_CONTAINS(str, part) TEST_EXPECTATION(that(str).does_contain(part))
+#define TEST_EXPECT_CONTAINS(str,part)         TEST_EXPECTATION(that(str).does_contain(part))
+#define TEST_EXPECT_CONTAINS__BROKEN(str,part) TEST_EXPECTATION__BROKEN(that(str).does_contain(part))
 
 #define TEST_EXPECT_NULL(n)         TEST_EXPECT_EQUAL(n, (typeof(n))NULL)
 #define TEST_EXPECT_NULL__BROKEN(n) TEST_EXPECT_EQUAL__BROKEN(n, (typeof(n))NULL)
