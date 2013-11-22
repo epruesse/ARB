@@ -1598,14 +1598,14 @@ void TEST_GB_remove_on_exit() {
 void TEST_some_paths() {
     gb_getenv_hook old = GB_install_getenv_hook(arb_test::fakeenv);
     {
-        TEST_EXPECT_EQUAL__BROKEN(GB_getenvHOME(), "/fakehome"); // GB_getenvHOME() ignores the hook
-        // @@@ this is a general problem - unit tested code cannot use GB_getenvHOME() w/o problems 
+        TEST_EXPECT_CONTAINS__BROKEN(GB_getenvHOME(), "/UNIT_TESTER/run/fakehome"); // GB_getenvHOME() ignores the hook
+        // @@@ this is a general problem - unit tested code cannot use GB_getenvHOME() w/o problems
 
-        TEST_EXPECT_EQUAL(GB_getenvARB_PROP(), "/fakehome/.arb_prop");
+        TEST_EXPECT_CONTAINS(GB_getenvARB_PROP(), "/UNIT_TESTER/run/fakehome/.arb_prop");
         TEST_EXPECT_CONTAINS(GB_getenvARBMACRO(), "/lib/macros");
 
-        TEST_EXPECT_EQUAL__BROKEN(GB_getenvARBCONFIG(),    "/fakehome/.arb_prop/cfgSave");
-        TEST_EXPECT_EQUAL__BROKEN(GB_getenvARBMACROHOME(), "/fakehome/.arb_prop/macros");  // works in [11068]
+        TEST_EXPECT_CONTAINS__BROKEN(GB_getenvARBCONFIG(),    "/UNIT_TESTER/run/fakehome/.arb_prop/cfgSave");
+        TEST_EXPECT_CONTAINS__BROKEN(GB_getenvARBMACROHOME(), "/UNIT_TESTER/run/fakehome/.arb_prop/macros");  // works in [11068]
     }
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }

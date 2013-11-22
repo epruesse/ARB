@@ -80,7 +80,7 @@ namespace arb_test {
 
     inline const char *fakeenv(const char *var) {
         // override some environment variables for unittests
-        if (strcmp(var, "HOME") == 0) return "/fakehome/";
+        if (strcmp(var, "HOME") == 0) return "./fakehome"; // normally should be $ARBHOME/UNIT_TESTER/run/fakehome
         return NULL;
     }
 
