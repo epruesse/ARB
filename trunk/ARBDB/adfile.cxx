@@ -327,9 +327,11 @@ void TEST_GBS_read_dir() {
 }
 
 void TEST_find_file() {
+    gb_getenv_hook old = GB_install_getenv_hook(arb_test::fakeenv);
+
     TEST_EXPECT_EQUAL(GB_existing_file("min_ascii.arb", false), "min_ascii.arb");
     TEST_EXPECT_NULL(GB_existing_file("nosuchfile", false));
-    
+
     char *tcporg = GB_lib_file(false, "", "arb_tcp_org.dat");
     TEST_EXPECT_EQUAL(tcporg, GB_path_in_ARBHOME("lib/arb_tcp_org.dat"));
     TEST_EXPECT_NULL(GB_lib_file(true, "bla", "blub"));
@@ -339,6 +341,8 @@ void TEST_find_file() {
     TEST_EXPECT_EQUAL(status, GB_path_in_ARBHOME("lib/arb_default/status.arb"));
     TEST_EXPECT_NULL(GB_property_file(true, "undhepp"));
     free(status);
+
+    TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }
 
 #endif // UNIT_TESTS
