@@ -80,6 +80,9 @@ AW_window *NT_build_resort_window(AW_root *awr);
 void NT_create_trackAliChanges_Awars(AW_root *root, AW_default properties);
 AW_window *NT_create_trackAliChanges_window(AW_root *root);
 
+/* NT_userland_fixes.cxx */
+void NT_repair_userland_problems(void);
+
 /* NT_validManual.cxx */
 void NT_createValidNamesAwars(AW_root *aw_root, AW_default aw_def);
 AW_window *NT_searchManuallyNames(AW_root *aw_root);

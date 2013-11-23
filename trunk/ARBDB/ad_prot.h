@@ -226,6 +226,7 @@ GB_CSTR GB_getenvARBHOME(void);
 GB_CSTR GB_getenvARBMACRO(void);
 GB_CSTR GB_getenvARB_PROP(void);
 GB_CSTR GB_getenvARBMACROHOME(void);
+GB_CSTR GB_getenvARBCONFIG(void);
 GB_CSTR GB_getenvARB_GS(void);
 GB_CSTR GB_getenvARB_PDFVIEW(void);
 GB_CSTR GB_getenvARB_TEXTEDIT(void);

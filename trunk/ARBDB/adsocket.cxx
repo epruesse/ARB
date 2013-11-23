@@ -764,7 +764,7 @@ GB_CSTR GB_getenvARBMACROHOME() {
     return &*ArbMacroHome;
 }
 
-static GB_CSTR GB_getenvARBCONFIG() {
+GB_CSTR GB_getenvARBCONFIG() {
     static SmartCharPtr ArbConfig;
     if (ArbConfig.isNull()) ArbConfig = getenv_autodirectory("ARBCONFIG", GB_path_in_arbprop("cfgSave")); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBCONFIG
     return &*ArbConfig;
