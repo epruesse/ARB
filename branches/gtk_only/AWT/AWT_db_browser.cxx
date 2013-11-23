@@ -31,6 +31,8 @@
 #include <map>
 #include <algorithm>
 #include <arb_misc.h>
+#include <arb_diff.h>
+#include <arb_file.h>
 #include <ad_cb.h>
 
 // do includes above (otherwise depends depend on DEBUG)
@@ -1169,6 +1171,38 @@ void AWT_create_debug_menu(AW_window *awmm) {
     }
     awmm->sep______________();
 
+}
+
+void AWT_check_action_ids(AW_root *aw_root, const char *suffix) {
+    // check actions ids (see #428)
+    // suffix is appended to filenames (needed if one application may have different states)
+    GB_ERROR error = NULL;
+    {
+        SmartPtr<ConstStrArray> action_ids = aw_root->get_action_ids();
+
+        const char *checksdir = GB_path_in_ARBLIB("macros/.checks");
+        char       *save      = GBS_global_string_copy("%s/%s%s_action.ids", checksdir, aw_root->program_name, suffix);
+
+        FILE *out       = fopen(save, "wt");
+        if (!out) error = GB_IO_error("writing", save);
+        else {
+            for (size_t i = 0; i<action_ids->size(); ++i) {
+                fprintf(out, "%s\n", (*action_ids)[i]);
+            }
+            fclose(out);
+        }
+
+        if (!error) {
+            char *expected         = GBS_global_string_copy("%s.expected", save);
+            bool  asExpected       = ARB_textfiles_have_difflines(expected, save, 0, 0);
+            if (!asExpected) error = GBS_global_string("action ids differ from expected (see console)");
+            free(expected);
+        }
+
+        if (!error) GB_unlink(save);
+        free(save);
+    }
+    if (error) fprintf(stderr, "AWT_check_action_ids: Error: %s\n", error);
 }
 
 #endif // DEBUG

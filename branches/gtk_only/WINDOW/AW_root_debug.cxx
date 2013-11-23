@@ -15,6 +15,7 @@
 #include "aw_msg.hxx"
 
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 #include <vector>
 #include <iterator>
@@ -181,6 +182,29 @@ struct action_address_compare {
     }
 };
 
+class StringVectorArray : public ConstStrArray {
+    CallbackArray array;
+public:
+    StringVectorArray(const CallbackArray& a)
+        : array(a)
+    {
+        reserve(a.size());
+        for (CallbackArray::iterator id = array.begin(); id != array.end(); ++id) {
+            put(id->c_str());
+        }
+    }
+};
+
+ConstStrArray *AW_root::pimpl::get_action_ids() {
+    if (!dontCallHash) build_dontCallHash();
+    CallbackArray callbacks;
+    for (action_hash_t::const_iterator cbi = action_hash.begin(); cbi != action_hash.end(); ++cbi) {
+        callbacks.push_back(cbi->first);
+    }
+    sort(callbacks.begin(), callbacks.end());
+    return new StringVectorArray(callbacks);
+}
+
 size_t AW_root::pimpl::callallcallbacks(int mode) {
     // mode == -2 -> mark all as called
     // mode == -1 -> forget called
@@ -309,9 +333,17 @@ size_t AW_root::pimpl::callallcallbacks(int mode) {
 
     return callCount;
 }
+
+// pimpl forwarders:
+
+ConstStrArray *AW_root::get_action_ids() {
+    return prvt->get_action_ids();
+}
+
 size_t AW_root::callallcallbacks(int mode) {
     return prvt->callallcallbacks(mode);
 }
+
 // --------------------------------------------------------------------------------
 #endif // DEBUG
 

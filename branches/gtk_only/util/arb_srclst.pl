@@ -201,6 +201,7 @@ my @used_when_matchesFull = (
                              qr/^\.\/lib\/import\/.*\.ift2?$/o,
                              qr/^\.\/lib\/inputMasks\/.*\.mask$/o,
                              qr/^\.\/lib\/macros\/.*\.amc$/o,
+                             qr/^\.\/lib\/macros\/.checks\/.*\.expected$/o,
                              qr/^\.\/lib\/nas\/names\.dat\.template$/o,
                              qr/^\.\/lib\/pictures\/.*\.(fig|vfont)$/o,
                              qr/^\.\/lib\/pixmaps\/.*\.(xpm|svg|png)$/o,
