@@ -72,6 +72,7 @@ void AWT_announce_db_to_browser(GBDATA *gb_main, const char *description);
 void AWT_browser_forget_db(GBDATA *gb_main);
 
 void AWT_create_debug_menu(AW_window *awmm);
+void AWT_check_action_ids(AW_root *aw_root, const char *suffix);
 #endif // DEBUG
 
 class UserActionTracker;

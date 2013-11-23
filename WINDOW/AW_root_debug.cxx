@@ -16,6 +16,7 @@
 #include "aw_msg.hxx"
 
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 #include <vector>
 #include <iterator>
@@ -185,6 +186,26 @@ static int sortedByCallbackLocation(const char *k0, long v0, const char *k1, lon
     if (!cmp) cmp = strcmp(k0, k1);
 
     return cmp;
+}
+
+class StringVectorArray : public ConstStrArray {
+    CallbackArray array;
+public:
+    StringVectorArray(const CallbackArray& a)
+        : array(a)
+    {
+        reserve(a.size());
+        for (CallbackArray::iterator id = array.begin(); id != array.end(); ++id) {
+            put(id->c_str());
+        }
+    }
+};
+
+ConstStrArray *AW_root::get_action_ids() {
+    if (!dontCallHash) build_dontCallHash();
+    CallbackArray callbacks;
+    GBS_hash_do_sorted_loop(prvt->action_hash, collect_callbacks, GBS_HCF_sortedByKey, &callbacks);
+    return new StringVectorArray(callbacks);
 }
 
 size_t AW_root::callallcallbacks(int mode) {
