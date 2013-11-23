@@ -1553,6 +1553,25 @@ NT_tree_cmp.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/test_global.h
 
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/ad_prot.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/arb_assert.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/arb_core.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/arb_file.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/arb_msg.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/arb_strarray.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/arb_string.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/arbtools.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/attributes.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/cxxforward.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/dupstr.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/gccver.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_userland_fixes.o: $(ARBHOME)/INCLUDE/test_global.h
+
 NT_validManual.o: NT_local.h
 NT_validManual.o: NT_local_proto.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/ad_prot.h
