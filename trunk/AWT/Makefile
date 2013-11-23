@@ -202,7 +202,9 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_core.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_diff.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_file.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_misc.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_str.h

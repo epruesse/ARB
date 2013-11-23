@@ -1746,6 +1746,10 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     GB_pop_transaction(GLOBAL.gb_main);
 
+#if defined(DEBUG)
+    AWT_check_action_ids(awr, is_genome_db ? "_genome" : "");
+#endif
+
     return awm;
 }
 
