@@ -18,16 +18,12 @@
 #include "arb_string.h"
 #include "arb_msg.h"
 #include "arb_file.h"
+#include <arb_str.h>
+#include <arb_assert.h>
+#include <arbtools.h>
 
 #include <list>
 #include <string>
-
-
-#ifdef UNIT_TESTS
-#include <test_unit.h>
-#include <arb_str.h>
-
-// ARB_textfiles_have_difflines + ARB_files_are_equal are helper functions used by unit tests.
 
 #define MAX_REGS 13
 
@@ -223,7 +219,6 @@ public:
     }
 };
 
-
 bool ARB_textfiles_have_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode) {
     // special_mode: 0 = none, 1 = accept date and time changes as equal
     //
@@ -245,7 +240,8 @@ bool ARB_textfiles_have_difflines(const char *file1, const char *file2, int expe
             DiffLines     diff_lines;
             difflineMode  mode(special_mode);
 
-            TEST_EXPECT_NO_ERROR(mode.get_error());
+            // TEST_EXPECT_NO_ERROR(mode.get_error());
+            error = mode.get_error();
 
             while (!error && !feof(diffout)) {
                 char *line = fgets(buffer, BUFSIZE, diffout);
@@ -306,6 +302,9 @@ bool ARB_textfiles_have_difflines(const char *file1, const char *file2, int expe
     if (error) printf("ARB_textfiles_have_difflines(%s, %s) fails: %s\n", file1, file2, error);
     return !error;
 }
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
 
 size_t ARB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, size_t common, size_t blockStartAddress) {
     size_t equal_bytes;
