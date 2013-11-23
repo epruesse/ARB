@@ -108,7 +108,7 @@ $(SYMLIST) : $(FULLLIB) Makefile makedirs show_test_header $(MAKESYMLIST)
 	$(MAKESYMLIST) $(FULLLIB) $(SYMLIST)
 
 $(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) Makefile.test
-	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $< $@ $(WARN_LEVEL)
+	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $(RESTRICT_FUN) $< $@ $(WARN_LEVEL)
 
 $(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
 	$(A_CXX) $(cflags) $(cxxflags) -c $< -o $@ -I. $(POST_COMPILE) 

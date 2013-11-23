@@ -156,7 +156,10 @@ __ATTR__USERESULT static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_ro
     GB_ERROR error = configure_macro_recording(aw_root, "ARB_NT", GLOBAL.gb_main); // @@@ problematic if called from startup-importer
     if (!error) {
         nt_create_main_window(aw_root);
-        if (GB_is_server(GLOBAL.gb_main)) error = nt_check_database_consistency();
+        if (GB_is_server(GLOBAL.gb_main)) {
+            error = nt_check_database_consistency();
+            if (!error) NT_repair_userland_problems();
+        }
     }
 
     if (!error && autorun_macro) awt_execute_macro(aw_root, autorun_macro); // @@@ triggering execution here is ok, but its a bad place to pass 'autorun_macro'. Should be handled more generally
