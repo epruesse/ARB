@@ -255,7 +255,9 @@ static void input_cb(AW_window *aww, DI_dmatrix *dmatrix) {
             click_device->get_clicked_text(&clicked_text);
             click_device->get_clicked_line(&clicked_line);
 
-            const AW_clicked_element *clicked = AW_getBestClick(&clicked_line, &clicked_text);
+            AWT_graphic_event         gevent(AWT_MODE_NONE, event, false, &clicked_line, &clicked_text);
+            const AW_clicked_element *clicked = gevent.best_click();
+
             if (clicked) {
                 ClickAction action = static_cast<ClickAction>(clicked->cd1());
 
