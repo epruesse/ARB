@@ -29,6 +29,7 @@ struct AW_root::pimpl : virtual Noncopyable {
 
 #if defined(DEBUG)
     size_t callallcallbacks(int mode);
+    class ConstStrArray *get_action_ids();
 #endif
 };
 

@@ -1870,6 +1870,10 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     FastAligner_create_variables(awmm->get_root(), props_db);
 
+#if defined(DEBUG)
+    AWT_check_action_ids(awmm->get_root(), "");
+#endif
+
     return (ED4_R_OK);
 }
 
