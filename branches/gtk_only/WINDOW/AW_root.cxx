@@ -172,22 +172,6 @@ AW_action* AW_root::action_register(const char* action_id, const AW_action& _act
     return prvt->action_hash[std::string(act->get_id())] = act;
 }
 
-/** Register action */
-AW_action* AW_root::action_register(const char* action_id, 
-                           const char* label, const char *icon,
-                           const char* tooltip, const char* help_entry,
-                           AW_active mask) {
-    AW_action act;
-    act.set_label(label);
-    act.set_icon(icon);
-    act.set_tooltip(tooltip);
-    act.set_help(help_entry);
-    act.set_active_mask(mask);
-    
-    return action_register(action_id, act);
-}
-
-
 /**
  * This function used to set "focus follows mouse" for motif.
  * GTK does not have this type of focus.

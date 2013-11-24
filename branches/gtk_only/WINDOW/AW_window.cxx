@@ -1531,11 +1531,3 @@ AW_action* AW_window::action_register(const char* action_id) {
     return act;
 }
 
-/** Calls AW_root::action_register with the ID of this window prefixed to action_id */
-AW_action* AW_window::action_register(const char* action_id,
-                             const char* labeli, const char* icon,
-                             const char* tooltip, const char* help_entry, 
-                             AW_active mask) {
-    return get_root()->action_register(local_id(action_id), labeli, icon, tooltip, help_entry, mask);
-}
-
