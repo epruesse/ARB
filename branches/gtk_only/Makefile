@@ -1880,7 +1880,7 @@ reset_committed_build:
 
 # --------------------------------------------------------------------------------
 
-arbapplications: nt pa e4 wetc pt na nal di ph ds wetc cma
+arbapplications: link_awt nt pa e4 wetc pt na nal di ph ds wetc cma
 
 arb_external: convert tools gde readseq tg pst xmlin
 
