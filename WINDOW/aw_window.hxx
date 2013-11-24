@@ -184,7 +184,9 @@ public:
 
     AW_xfig  *xfig_data;
 
-    void create_window_variables();
+    const char    *window_local_awarname(const char *localname, bool tmp = false);
+    class AW_awar *window_local_awar(const char *localname, bool tmp = false);
+    void           create_window_variables();
 
     void recalc_pos_atShow(AW_PosRecalc pr);
 
