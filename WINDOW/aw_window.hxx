@@ -538,8 +538,6 @@ public:
     AW_action* action(const char* action_id);
     AW_action* action_try(const char* action_id);
     AW_action* action_register(const char* action_id);
-    AW_action* action_register(const char* action_id, const char* label, const char* icon,
-                      const char* tooltip, const char* help_entry, AW_active mask);
 };
 
 
