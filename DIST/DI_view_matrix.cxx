@@ -464,18 +464,11 @@ void DI_dmatrix::display(bool clear) {
 #undef BUFLEN
 }
 
-void DI_dmatrix::set_scrollbar_steps(long width_h, long width_v, long page_h, long page_v)
-{
-    char buffer[200];
-
-    sprintf(buffer, "window/%s/scroll_width_horizontal", awm->window_defaults_name);
-    awm->get_root()->awar(buffer)->write_int(width_h);
-    sprintf(buffer, "window/%s/scroll_width_vertical", awm->window_defaults_name);
-    awm->get_root()->awar(buffer)->write_int(width_v);
-    sprintf(buffer, "window/%s/horizontal_page_increment", awm->window_defaults_name);
-    awm->get_root()->awar(buffer)->write_int(page_h);
-    sprintf(buffer, "window/%s/vertical_page_increment", awm->window_defaults_name);
-    awm->get_root()->awar(buffer)->write_int(page_v);
+void DI_dmatrix::set_scrollbar_steps(long width_h, long width_v, long page_h, long page_v) {
+    awm->window_local_awar("scroll_width_horizontal")->write_int(width_h);
+    awm->window_local_awar("scroll_width_vertical")->write_int(width_v);
+    awm->window_local_awar("horizontal_page_increment")->write_int(page_h);
+    awm->window_local_awar("vertical_page_increment")->write_int(page_v);
 }
 
 #if defined(WARN_TODO)

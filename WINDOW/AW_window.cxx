@@ -771,35 +771,29 @@ static void vertical_scrollbar_redefinition_cb(AW_root*, AW_window *aw) {
     aw->update_scrollbar_settings_from_awars(AW_VERTICAL);
 }
 
-void AW_window::create_window_variables() {
-    char buffer[200];
+const char *AW_window::window_local_awarname(const char *localname, bool tmp) {
+    CONSTEXPR int MAXNAMELEN = 200;
+    static char   buffer[MAXNAMELEN];
+    return GBS_global_string_to_buffer(buffer, MAXNAMELEN,
+                                       tmp ? "tmp/window/%s/%s" : "window/%s/%s",
+                                       window_defaults_name, localname);
+    // (see also aw_size_awar_name)
+}
 
+AW_awar *AW_window::window_local_awar(const char *localname, bool tmp) {
+    return get_root()->awar(window_local_awarname(localname, tmp));
+}
+
+void AW_window::create_window_variables() {
     RootCallback hor_src = makeRootCallback(horizontal_scrollbar_redefinition_cb, this);
     RootCallback ver_src = makeRootCallback(vertical_scrollbar_redefinition_cb, this);
 
-    sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
-    get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback(hor_src);
-
-    sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
-    get_root()->awar_int(buffer, 50);
-    get_root()->awar(buffer)->add_callback(ver_src);
-
-    sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
-    get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(hor_src);
-
-    sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
-    get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(ver_src);
-
-    sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
-    get_root()->awar_int(buffer, 9);
-    get_root()->awar(buffer)->add_callback(hor_src);
-
-    sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
-    get_root()->awar_int(buffer, 20);
-    get_root()->awar(buffer)->add_callback(ver_src);
+    get_root()->awar_int(window_local_awarname("horizontal_page_increment"), 50)->add_callback(hor_src);
+    get_root()->awar_int(window_local_awarname("vertical_page_increment"),   50)->add_callback(ver_src);
+    get_root()->awar_int(window_local_awarname("scroll_delay_horizontal"),   20)->add_callback(hor_src);
+    get_root()->awar_int(window_local_awarname("scroll_delay_vertical"),     20)->add_callback(ver_src);
+    get_root()->awar_int(window_local_awarname("scroll_width_horizontal"),    9)->add_callback(hor_src);
+    get_root()->awar_int(window_local_awarname("scroll_width_vertical"),     20)->add_callback(ver_src);
 }
 
 void AW_window::set_vertical_scrollbar_position(int position){
@@ -999,6 +993,7 @@ static const char *aw_size_awar_name(AW_window *aww, const char *sub_entry) {
     aw_assert(size < BUFSIZE);
 #endif // DEBUG
     return aw_size_awar_name_buffer;
+    // (see also AW_window::window_local_awarname)
 }
 #undef BUFSIZE
 
@@ -1477,28 +1472,15 @@ void AW_window::update_scrollbar_settings_from_awars(AW_orientation orientation)
     AW_screen_area scrolled;
     get_scrollarea_size(&scrolled);
 
-    // @@@ DRY awar code
-
-    char buffer[200];
     if (orientation == AW_HORIZONTAL) {
-        sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name); 
-        XtVaSetValues(p_w->scroll_bar_horizontal, XmNpageIncrement, (int)(scrolled.r*(get_root()->awar(buffer)->read_int()*0.01)), NULL);
-
-        sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
-        XtVaSetValues(p_w->scroll_bar_horizontal, XmNincrement, (int)(get_root()->awar(buffer)->read_int()), NULL);
-
-        sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
-        XtVaSetValues(p_w->scroll_bar_horizontal, XmNrepeatDelay, (int)(get_root()->awar(buffer)->read_int()), NULL);
+        XtVaSetValues(p_w->scroll_bar_horizontal, XmNpageIncrement, (int)(scrolled.r*(window_local_awar("horizontal_page_increment")->read_int()*0.01)), NULL);
+        XtVaSetValues(p_w->scroll_bar_horizontal, XmNincrement,     (int)(window_local_awar("scroll_width_horizontal")->read_int()), NULL);
+        XtVaSetValues(p_w->scroll_bar_horizontal, XmNrepeatDelay,   (int)(window_local_awar("scroll_delay_horizontal")->read_int()), NULL);
     }
     else {
-        sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
-        XtVaSetValues(p_w->scroll_bar_vertical, XmNpageIncrement, (int)(scrolled.b*(get_root()->awar(buffer)->read_int()*0.01)), NULL);
-
-        sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
-        XtVaSetValues(p_w->scroll_bar_vertical, XmNincrement, (int)(get_root()->awar(buffer)->read_int()), NULL);
-
-        sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
-        XtVaSetValues(p_w->scroll_bar_vertical, XmNrepeatDelay, (int)(get_root()->awar(buffer)->read_int()), NULL);
+        XtVaSetValues(p_w->scroll_bar_vertical, XmNpageIncrement, (int)(scrolled.b*(window_local_awar("vertical_page_increment")->read_int()*0.01)), NULL);
+        XtVaSetValues(p_w->scroll_bar_vertical, XmNincrement,     (int)(window_local_awar("scroll_width_vertical")->read_int()), NULL);
+        XtVaSetValues(p_w->scroll_bar_vertical, XmNrepeatDelay,   (int)(window_local_awar("scroll_delay_vertical")->read_int()), NULL);
     }
 }
 

@@ -324,18 +324,11 @@ void PH_display::print()
 }
 
 
-void PH_display::set_scrollbar_steps(AW_window *aww, long width_h, long width_v, long page_h, long page_v)
-{
-    char buffer[200];
-
-    sprintf(buffer, "window/%s/scroll_width_horizontal", aww->window_defaults_name);
-    aww->get_root()->awar(buffer)->write_int(width_h);
-    sprintf(buffer, "window/%s/scroll_width_vertical", aww->window_defaults_name);
-    aww->get_root()->awar(buffer)->write_int(width_v);
-    sprintf(buffer, "window/%s/horizontal_page_increment", aww->window_defaults_name);
-    aww->get_root()->awar(buffer)->write_int(page_h);
-    sprintf(buffer, "window/%s/vertical_page_increment", aww->window_defaults_name);
-    aww->get_root()->awar(buffer)->write_int(page_v);
+void PH_display::set_scrollbar_steps(AW_window *aww, long width_h, long width_v, long page_h, long page_v) {
+    aww->window_local_awar("scroll_width_horizontal")  ->write_int(width_h);
+    aww->window_local_awar("scroll_width_vertical")    ->write_int(width_v);
+    aww->window_local_awar("horizontal_page_increment")->write_int(page_h);
+    aww->window_local_awar("vertical_page_increment")  ->write_int(page_v);
 }
 
 
