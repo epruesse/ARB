@@ -43,6 +43,7 @@
 
 #include <algorithm>
 #include <arb_misc.h>
+#include <arb_defs.h>
 
 static int gbcm_pipe_violation_flag = 0;
 void gbcms_sigpipe(int) {
@@ -1133,15 +1134,14 @@ GB_CSTR GB_canonical_path(const char *anypath) {
 
                 const char *canonical_dir = NULL;
                 if (!dir) {
-                    gb_assert(anypath[0] == '/' && !strchr(anypath+1, '/'));
-                    canonical_dir = "/";
+                    gb_assert(!strchr(anypath, '/'));
+                    canonical_dir = GB_canonical_path("."); // use working directory
                 }
                 else {
                     gb_assert(strcmp(dir, anypath) != 0); // avoid deadlock
-
                     canonical_dir = GB_canonical_path(dir);
-                    gb_assert(canonical_dir);
                 }
+                gb_assert(canonical_dir);
 
                 // manually resolve '.' and '..' in non-existing parent directories
                 if (strcmp(fullname, "..") == 0) {
@@ -1364,7 +1364,13 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
     // If parts are not valid (e.g. cause 'fullpath' doesn't have a .suffix) the corresponding result pointer
     // is set to NULL.
     //
-    // The '/' and '.' characters are not included in the results (except the '.' in 'res_fullname')
+    // The '/' and '.' characters at the split-positions will be removed (not included in the results-strings).
+    // Exceptions:
+    // - the '.' in 'res_fullname'
+    // - the '/' if directory part is the rootdir
+    //
+    // Note:
+    // - if the filename starts with '.' (and that is the only '.' in the filename, an empty filename is returned: "")
 
     if (fullpath && fullpath[0]) {
         const char *lslash     = strrchr(fullpath, '/');
@@ -1374,13 +1380,20 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
 
         gb_assert(terminal);
         gb_assert(name_start);
-
         gb_assert(terminal > fullpath); // ensure (terminal-1) is a valid character position in path
 
-        if (res_dir)       *res_dir       = lslash ? GB_strpartdup(fullpath, lslash-1) : NULL;
-        if (res_fullname)  *res_fullname  = GB_strpartdup(name_start, terminal-1);
-        if (res_name_only) *res_name_only = GB_strpartdup(name_start, ldot ? ldot-1 : terminal-1);
-        if (res_suffix)    *res_suffix    = ldot ? GB_strpartdup(ldot+1, terminal-1) : NULL;
+        if (!lslash && fullpath[0] == '.' && (fullpath[1] == 0 || (fullpath[1] == '.' && fullpath[2] == 0))) { // '.' and '..'
+            if (res_dir)       *res_dir       = strdup(fullpath);
+            if (res_fullname)  *res_fullname  = NULL;
+            if (res_name_only) *res_name_only = NULL;
+            if (res_suffix)    *res_suffix    = NULL;
+        }
+        else {
+            if (res_dir)       *res_dir       = lslash ? GB_strpartdup(fullpath, lslash == fullpath ? lslash : lslash-1) : NULL;
+            if (res_fullname)  *res_fullname  = GB_strpartdup(name_start, terminal-1);
+            if (res_name_only) *res_name_only = GB_strpartdup(name_start, ldot ? ldot-1 : terminal-1);
+            if (res_suffix)    *res_suffix    = ldot ? GB_strpartdup(ldot+1, terminal-1) : NULL;
+        }
     }
     else {
         if (res_dir)       *res_dir       = NULL;
@@ -1480,14 +1493,94 @@ void TEST_gbcm_get_m_id() {
         free(arb_not_cano);                                             \
     } while (0)
 
-void TEST_paths() {
+arb_test::match_expectation path_splits_into(const char *path, const char *Edir, const char *Enameext, const char *Ename, const char *Eext) {
+    using namespace arb_test;
+    expectation_group expected;
 
+    char *Sdir,*Snameext,*Sname,*Sext;
+    GB_split_full_path(path, &Sdir, &Snameext, &Sname, &Sext);
+
+    expected.add(that(Sdir).is_equal_to(Edir));
+    expected.add(that(Snameext).is_equal_to(Enameext));
+    expected.add(that(Sname).is_equal_to(Ename));
+    expected.add(that(Sext).is_equal_to(Eext));
+
+    free(Sdir);
+    free(Snameext);
+    free(Sname);
+    free(Sext);
+
+    return all().ofgroup(expected);
+}
+
+#define TEST_EXPECT_PATH_SPLITS_INTO(path,dir,nameext,name,ext)         TEST_EXPECTATION(path_splits_into(path,dir,nameext,name,ext))
+#define TEST_EXPECT_PATH_SPLITS_INTO__BROKEN(path,dir,nameext,name,ext) TEST_EXPECTATION__BROKEN(path_splits_into(path,dir,nameext,name,ext))
+
+arb_test::match_expectation path_splits_reversible(const char *path) {
+    using namespace arb_test;
+    expectation_group expected;
+
+    char *Sdir,*Snameext,*Sname,*Sext;
+    GB_split_full_path(path, &Sdir, &Snameext, &Sname, &Sext);
+
+    expected.add(that(GB_append_suffix(Sname, Sext)).is_equal_to(Snameext)); // GB_append_suffix should reverse name.ext-split
+    expected.add(that(GB_concat_path(Sdir, Snameext)).is_equal_to(path));    // GB_concat_path should reverse dir/file-split
+
+    free(Sdir);
+    free(Snameext);
+    free(Sname);
+    free(Sext);
+
+    return all().ofgroup(expected);
+}
+
+#define TEST_SPLIT_REVERSIBILITY(path)         TEST_EXPECTATION(path_splits_reversible(path))
+#define TEST_SPLIT_REVERSIBILITY__BROKEN(path) TEST_EXPECTATION__BROKEN(path_splits_reversible(path))
+
+void TEST_paths() {
     // test GB_concat_path
     TEST_EXPECT_EQUAL(GB_concat_path("a", NULL), "a");
     TEST_EXPECT_EQUAL(GB_concat_path(NULL, "b"), "b");
     TEST_EXPECT_EQUAL(GB_concat_path("a", "b"), "a/b");
 
     TEST_EXPECT_EQUAL(GB_concat_path("/", "test.fig"), "/test.fig");
+
+    // test GB_split_full_path
+    TEST_EXPECT_PATH_SPLITS_INTO("dir/sub/.ext",              "dir/sub",   ".ext",            "",            "ext");
+    TEST_EXPECT_PATH_SPLITS_INTO("/root/sub/file.notext.ext", "/root/sub", "file.notext.ext", "file.notext", "ext");
+
+    TEST_EXPECT_PATH_SPLITS_INTO("./file.ext", ".", "file.ext", "file", "ext");
+    TEST_EXPECT_PATH_SPLITS_INTO("/file",      "/", "file",     "file", NULL);
+    TEST_EXPECT_PATH_SPLITS_INTO(".",          ".", NULL,       NULL,   NULL);
+
+    // test reversibility of GB_split_full_path and GB_concat_path/GB_append_suffix
+    {
+        const char *prefix[] = {
+            "",
+            "dir/",
+            "dir/sub/",
+            "/dir/",
+            "/dir/sub/",
+            "/",
+            "./",
+            "../",
+        };
+
+        for (size_t d = 0; d<ARRAY_ELEMS(prefix); ++d) {
+            TEST_ANNOTATE(GBS_global_string("prefix='%s'", prefix[d]));
+
+            TEST_SPLIT_REVERSIBILITY(GBS_global_string("%sfile.ext", prefix[d]));
+            TEST_SPLIT_REVERSIBILITY(GBS_global_string("%sfile", prefix[d]));
+            TEST_SPLIT_REVERSIBILITY(GBS_global_string("%s.ext", prefix[d]));
+            if (prefix[d][0]) { // empty string "" reverts to NULL
+                TEST_SPLIT_REVERSIBILITY(prefix[d]);
+            }
+        }
+    }
+
+    // GB_canonical_path basics
+    TEST_EXPECT_CONTAINS(GB_canonical_path("./bla"), "UNIT_TESTER/run/bla");
+    TEST_EXPECT_CONTAINS(GB_canonical_path("bla"),   "UNIT_TESTER/run/bla");
 
     {
         char        *arbhome    = strdup(GB_getenvARBHOME());
