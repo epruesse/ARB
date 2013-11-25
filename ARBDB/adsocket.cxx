@@ -43,6 +43,7 @@
 
 #include <algorithm>
 #include <arb_misc.h>
+#include <arb_defs.h>
 
 static int gbcm_pipe_violation_flag = 0;
 void gbcms_sigpipe(int) {
@@ -1480,14 +1481,98 @@ void TEST_gbcm_get_m_id() {
         free(arb_not_cano);                                             \
     } while (0)
 
-void TEST_paths() {
+arb_test::match_expectation path_splits_into(const char *path, const char *Edir, const char *Enameext, const char *Ename, const char *Eext) {
+    using namespace arb_test;
+    expectation_group expected;
 
+    char *Sdir,*Snameext,*Sname,*Sext;
+    GB_split_full_path(path, &Sdir, &Snameext, &Sname, &Sext);
+
+    expected.add(that(Sdir).is_equal_to(Edir));
+    expected.add(that(Snameext).is_equal_to(Enameext));
+    expected.add(that(Sname).is_equal_to(Ename));
+    expected.add(that(Sext).is_equal_to(Eext));
+
+    free(Sdir);
+    free(Snameext);
+    free(Sname);
+    free(Sext);
+
+    return all().ofgroup(expected);
+}
+
+#define TEST_EXPECT_PATH_SPLITS_INTO(path,dir,nameext,name,ext)         TEST_EXPECTATION(path_splits_into(path,dir,nameext,name,ext))
+#define TEST_EXPECT_PATH_SPLITS_INTO__BROKEN(path,dir,nameext,name,ext) TEST_EXPECTATION__BROKEN(path_splits_into(path,dir,nameext,name,ext))
+
+arb_test::match_expectation path_splits_reversible(const char *path) {
+    using namespace arb_test;
+    expectation_group expected;
+
+    char *Sdir,*Snameext,*Sname,*Sext;
+    GB_split_full_path(path, &Sdir, &Snameext, &Sname, &Sext);
+
+    expected.add(that(GB_append_suffix(Sname, Sext)).is_equal_to(Snameext)); // GB_append_suffix should reverse name.ext-split
+    expected.add(that(GB_concat_path(Sdir, Snameext)).is_equal_to(path));    // GB_concat_path should reverse dir/file-split
+
+    free(Sdir);
+    free(Snameext);
+    free(Sname);
+    free(Sext);
+
+    return all().ofgroup(expected);
+}
+
+#define TEST_SPLIT_REVERSIBILITY(path)         TEST_EXPECTATION(path_splits_reversible(path))
+#define TEST_SPLIT_REVERSIBILITY__BROKEN(path) TEST_EXPECTATION__BROKEN(path_splits_reversible(path))
+
+void TEST_paths() {
     // test GB_concat_path
     TEST_EXPECT_EQUAL(GB_concat_path("a", NULL), "a");
     TEST_EXPECT_EQUAL(GB_concat_path(NULL, "b"), "b");
     TEST_EXPECT_EQUAL(GB_concat_path("a", "b"), "a/b");
 
     TEST_EXPECT_EQUAL(GB_concat_path("/", "test.fig"), "/test.fig");
+
+    // test GB_split_full_path
+    TEST_EXPECT_PATH_SPLITS_INTO("dir/sub/.ext",              "dir/sub",   ".ext",            "",            "ext");
+    TEST_EXPECT_PATH_SPLITS_INTO("/root/sub/file.notext.ext", "/root/sub", "file.notext.ext", "file.notext", "ext");
+
+    TEST_EXPECT_PATH_SPLITS_INTO("./file.ext", ".", "file.ext", "file", "ext");
+
+    TEST_EXPECT_PATH_SPLITS_INTO        ("/file", "",  "file", "file", NULL); // @@@ current unwanted behavior
+    TEST_EXPECT_PATH_SPLITS_INTO__BROKEN("/file", "/", "file", "file", NULL);
+
+    TEST_EXPECT_PATH_SPLITS_INTO        (".", NULL, ".",  "",   ""); // @@@ current unwanted behavior
+    TEST_EXPECT_PATH_SPLITS_INTO__BROKEN(".", ".",  NULL, NULL, NULL);
+
+    // test reversibility of GB_split_full_path and GB_concat_path/GB_append_suffix
+    {
+        const char *prefix[] = {
+            "",
+            "dir/",
+            "dir/sub/",
+            "/dir/",
+            "/dir/sub/",
+            "/",
+            "./",
+            "../",
+        };
+
+        for (size_t d = 0; d<ARRAY_ELEMS(prefix); ++d) {
+            TEST_ANNOTATE(GBS_global_string("prefix='%s'", prefix[d]));
+
+            TEST_SPLIT_REVERSIBILITY(GBS_global_string("%sfile.ext", prefix[d]));
+            TEST_SPLIT_REVERSIBILITY(GBS_global_string("%sfile", prefix[d]));
+            TEST_SPLIT_REVERSIBILITY(GBS_global_string("%s.ext", prefix[d]));
+            if (prefix[d][0]) { // empty string "" reverts to NULL
+                TEST_SPLIT_REVERSIBILITY(prefix[d]);
+            }
+        }
+    }
+
+    // GB_canonical_path basics
+    TEST_EXPECT_CONTAINS(GB_canonical_path("./bla"), "UNIT_TESTER/run/bla");
+    // TEST_EXPECT_CONTAINS(GB_canonical_path("bla"),   "UNIT_TESTER/run/bla"); // @@@ fails assertion
 
     {
         char        *arbhome    = strdup(GB_getenvARBHOME());
