@@ -101,15 +101,12 @@ static void fix_config_and_macros_in_props() {
     free(props);
 }
 
-static void fix_expiry_test() {}
-
 void NT_repair_userland_problems() {
     // place to repair problems caused by earlier bugs
 
     UserlandCheck checks;
     // generate timestamp: date "--date=2013/09/20" "+%s"
     //                     date +%s
-    checks.Register(fix_expiry_test,                1385141688 /* = 2013/11/22 */, 3 * DAYS);
     checks.Register(fix_config_and_macros_in_props, 1385141688 /* = 2013/11/22 */, 1 * YEARS);
     checks.Run();
 }
