@@ -455,6 +455,8 @@ static ArgType detectArgType(const char *arg) {
 
 enum RunMode { NORMAL, IMPORT, MERGE, BROWSE };
 
+#define ABORTED_BY_USER "aborted by user"
+
 static ARB_ERROR check_argument_for_mode(const char *database, char *&browser_startdir, RunMode& mode) {
     // Check whether 'database' is a
     // - ARB database
@@ -495,7 +497,7 @@ static ARB_ERROR check_argument_for_mode(const char *database, char *&browser_st
                     case CONVERT_DB:    mode = IMPORT; break;
                     case LOAD_DB:       break;
                     case NOIDEA:        nt_assert(0);
-                    case EXIT:          error = "User abort"; break;
+                    case EXIT:          error = ABORTED_BY_USER; break;
                     case BROWSE_DB: {
                         char *dir = nulldup(full_path);
                         while (dir && !GB_is_directory(dir)) freeset(dir, AW_extract_directory(dir));
@@ -874,6 +876,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
 
             if (cl.free_args() > 0) database = cl.get_arg(0);
 
+            aw_root->setUserActionTracker(new NullTracker); // no macro recording inside prompters that may popup
             error = check_argument_for_mode(database, browser_startdir, mode);
             if (!error) {
                 if (mode == IMPORT) {
@@ -919,8 +922,10 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
         }
     }
 
-    if (error) aw_popup_ok(error.preserve());
-    delete aw_root;
+    if (error) {
+        const char *msg = error.preserve();
+        if (strcmp(msg, ABORTED_BY_USER) != 0) aw_popup_ok(msg);
+    }
 }
 
 int ARB_main(int argc, char *argv[]) {
