@@ -109,7 +109,7 @@ GB_ERROR PHDATA::save(char *filename) {
         return "Cannot save your File";
     }
     unsigned row, col;
-    fprintf(out, "%i\n", nentries);
+    fprintf(out, "%u\n", nentries);
     for (row = 0; row<nentries; row++) {
         fprintf(out, "%-13s", hash_elements[row]->name);
         for (col=0; col<=row; col++) {
@@ -123,7 +123,7 @@ GB_ERROR PHDATA::save(char *filename) {
 
 void PHDATA::print() {
     unsigned row, col;
-    printf("    %i\n", nentries);
+    printf("    %u\n", nentries);
     for (row = 0; row<nentries; row++) {
         printf("%-10s ", hash_elements[row]->name);
         for (col=0; col<row; col++) {
