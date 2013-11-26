@@ -85,17 +85,19 @@ static void startup_sequence_cb(AW_window *alisel_window, AW_window *main_window
     }
 }
 
-__ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
-    GBDATA *gb_main = ph_root->get_gb_main();
+__ATTR__NORETURN static void ph_exit(AW_window *aw_window) {
+    AW_root *aw_root = aw_window->get_root();
+    shutdown_macro_recording(aw_root);
+
+    GBDATA *gb_main = GLOBAL_gb_main;
     if (gb_main) {
-        AW_root *aw_root = aw_window->get_root();
-        shutdown_macro_recording(aw_root);
         aw_root->unlink_awars_from_DB(gb_main);
 #if defined(DEBUG)
         AWT_browser_forget_db(gb_main);
 #endif // DEBUG
         GB_close(gb_main);
     }
+
     exit(0);
 }
 
@@ -424,7 +426,7 @@ static AW_window *PH_save_markerline(AW_root *root, int multi_line) {
     return aws;
 }
 
-static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AWT_graphic * /*awd*/) {
+static AW_window *create_phyl_main_window(AW_root *aw_root) {
     AW_window_menu_modes *awm = new AW_window_menu_modes;
     awm->init(aw_root, "ARB_PHYLO", "ARB_PHYLO", 830, 630);
 
@@ -462,7 +464,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
     awm->insert_menu_topic("export_freq",   "Export Frequencies", "F", "ph_export_markerline.hlp", AWM_ALL, makeCreateWindowCallback(PH_save_markerline, 1));
     insert_macro_menu_entry(awm, false);
 
-    awm->insert_menu_topic("quit", "Quit", "Q", "quit.hlp", AWM_ALL, makeWindowCallback(ph_exit, ph_root));
+    awm->insert_menu_topic("quit", "Quit", "Q", "quit.hlp", AWM_ALL, ph_exit);
 
     // Calculate menu
     awm->create_menu("Calculate", "C");
@@ -487,7 +489,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
     awm->at(5, 2);
     awm->auto_space(5, -2);
 
-    awm->callback(makeWindowCallback(ph_exit, ph_root));
+    awm->callback(ph_exit);
     awm->button_length(0);
     awm->help_text("quit.hlp");
     awm->create_button("QUIT", "QUIT");
@@ -511,16 +513,22 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
 static AW_window *create_select_alignment_window(AW_root *aw_root, AW_window *main_window) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(aw_root, "SELECT_ALIGNMENT", "SELECT ALIGNMENT");
+    aws->init(aw_root, "SELECT_ALIGNMENT", "ARB_PHYLO: Select alignment");
     aws->load_xfig("phylo/select_ali.fig");
     aws->button_length(10);
 
-    aws->at("done");
-    aws->callback(makeWindowCallback(startup_sequence_cb, main_window));
-    aws->create_button("DONE", "DONE", "D");
-
     aws->at("which_alignment");
     awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_PHYLO_ALIGNMENT, "*=");
+
+    aws->auto_space(10, 10);
+
+    aws->at("ok");
+    aws->callback(makeWindowCallback(startup_sequence_cb, main_window));
+    aws->create_button("OK", "Ok", "D");
+
+    aws->callback(ph_exit);
+    aws->create_button("ABORT", "Abort", "D");
+
     return aws;
 }
 
@@ -575,7 +583,7 @@ int ARB_main(int argc, char *argv[]) {
 
             // create main window :
 
-            puw->phylo_main_window = create_phyl_main_window(aw_root, ph_root, 0);
+            puw->phylo_main_window = create_phyl_main_window(aw_root);
             puw->windowList        = puw;
 
             phd->ph_display = phd;
