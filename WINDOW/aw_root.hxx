@@ -26,8 +26,6 @@
 class AW_selection_list;
 class AW_action;
 
-typedef AW_window *(*AW_PPP)(AW_root*, AW_CL, AW_CL); // @@@ [CB] similar to AW_Window_Creator
-
 typedef char *AW_error;
 // asynchronous messages:
 extern char AW_ERROR_BUFFER[1024];

@@ -41,7 +41,7 @@
 
 class  AW_root_cblist;
 
-// @@@ [CB] eliminate decls below? just use AW_RCB instead
+// @@@ [CB] eliminate decls below? just use AW_RCB instead // @@@ duplicated in cb.h
 typedef AW_RCB  Awar_CB;
 typedef Awar_CB Awar_CB2;
 typedef         void (*Awar_CB1)(AW_root *, AW_CL);
