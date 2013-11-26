@@ -1005,11 +1005,14 @@ static void init_TEST_menu(AW_window_menu_modes *awm, AWT_canvas *ntw)
 }
 #endif // TESTMENU
 
-static GB_ERROR pars_check_size(AW_root *awr) {
+static GB_ERROR pars_check_size(AW_root *awr, GB_ERROR& warning) {
+    GB_ERROR error = NULL;
+    warning        = NULL;
+
     char *tree_name = awr->awar(AWAR_TREE)->read_string();
-    char *filter = awr->awar(AWAR_FILTER_FILTER)->read_string();
-    GB_ERROR error = 0;
-    long ali_len = 0;
+    char *filter    = awr->awar(AWAR_FILTER_FILTER)->read_string();
+    long  ali_len   = 0;
+
     if (strlen(filter)) {
         int i;
         for (i=0; filter[i]; i++) {
@@ -1029,13 +1032,14 @@ static GB_ERROR pars_check_size(AW_root *awr) {
     else {
         unsigned long expected_memuse = (ali_len * tree_size * 4 / 1000);
         if (expected_memuse > GB_get_usable_memory()) {
-            error  = GBS_global_string("Estimated memory usage (%s) exceeds physical memory (will swap)\n"
-                                       "(did you specify a filter?)",
-                                       GBS_readable_size(expected_memuse, "b"));
+            warning = GBS_global_string("Estimated memory usage (%s) exceeds physical memory (will swap)\n"
+                                         "(did you specify a filter?)",
+                                        GBS_readable_size(expected_memuse, "b"));
         }
     }
     free(filter);
     free(tree_name);
+
     return error;
 }
 
@@ -1048,22 +1052,26 @@ static void pars_reset_optimal_parsimony(AW_window *aww, AW_CL *cl_ntw) {
 }
 
 
-static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL cl_cmds) {
-    WeightedFilter *wfilt = (WeightedFilter*)cd_weightedFilter;
-    PARS_commands  *cmds  = (PARS_commands*)cl_cmds;
-    AW_root        *awr   = aw_parent->get_root();
+static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PARS_commands *cmds) {
+    AW_root *awr = aw_parent->get_root();
     GB_begin_transaction(GLOBAL_gb_main);
     {
-        GB_ERROR warning = pars_check_size(awr);
-        if (warning) {
+        GB_ERROR warning;
+        GB_ERROR error = pars_check_size(awr, warning);
+
+        if (warning && !error) {
             char *question = GBS_global_string_copy("%s\nDo you want to continue?", warning);
             bool  cont     = aw_ask_sure("swap_warning", question);
             free(question);
 
-            if (!cont) {
-                GB_commit_transaction(GLOBAL_gb_main);
-                return;
-            }
+            if (!cont) error = "User abort";
+
+        }
+
+        if (error) {
+            aw_message(error);
+            GB_commit_transaction(GLOBAL_gb_main);
+            return;
         }
     }
 
@@ -1364,7 +1372,7 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     aws->at("tree");
     awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_TREE);
 
-    aws->callback(pars_start_cb, (AW_CL)weighted_filter, (AW_CL)cmds);
+    aws->callback(makeWindowCallback(pars_start_cb, weighted_filter, cmds));
     aws->at("go");
     aws->create_button("GO", "GO", "G");
 
