@@ -17,22 +17,22 @@
 #ifndef _GLIBCXX_CSTDLIB
 #include <cstdlib>
 #endif
-
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 #define nt_assert(cond) arb_assert(cond)
 
 #define MAX_NT_WINDOWS          5
 #define MAX_NT_WINDOWS_NULLINIT NULL,NULL,NULL,NULL,NULL
 
-struct NT_global {
-    AW_root           *aw_root;
-    GBDATA            *gb_main;
-    AW_Window_Creator  window_creator;
+struct NT_global : virtual Noncopyable {
+    AW_root *aw_root;
+    GBDATA  *gb_main;
 
     NT_global()
         : aw_root(NULL),
-          gb_main(NULL),
-          window_creator(NULL)
+          gb_main(NULL)
     {}
 };
 
