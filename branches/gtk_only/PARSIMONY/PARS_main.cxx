@@ -1216,7 +1216,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
         awm->sep______________();
         AW_insert_common_property_menu_entries(awm);
         awm->sep______________();
-        awm->insert_menu_topic("save_props",  "Save Defaults (pars.arb)",   "D", "savedef.hlp",          AWM_ALL,          (AW_CB)AW_save_properties,      0, 0);
+        awm->insert_menu_topic("save_props", "Save Defaults (pars.arb)", "D", "savedef.hlp", AWM_ALL, AW_save_properties);
     }
     awm->button_length(5);
 
