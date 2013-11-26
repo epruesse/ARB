@@ -39,8 +39,6 @@ class PH_display {
     long off_dy;
 
     void set_scrollbar_steps(AW_window *, long, long, long, long);
-    void print();                        // print private parameters (debugging)
-
 
 public:
     PH_display();                   // constructor
