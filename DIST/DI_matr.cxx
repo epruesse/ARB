@@ -111,8 +111,6 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
         GB_add_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(delete_matrix_cb));
     }
 
-    aw_root->awar_string("tmp/dummy_string", "0", def);
-
     aw_root->awar_string(AWAR_DIST_WHICH_SPECIES, "marked", def)->add_callback(delete_matrix_callback);
     {
         char *default_ali = GBT_get_default_alignment(db);
