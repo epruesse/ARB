@@ -96,7 +96,6 @@ enum {
 };
 
 // make awars :
-void PH_create_matrix_variables(AW_root *aw_root, AW_default aw_def);
 void PH_create_filter_variables(AW_root *aw_root, AW_default aw_def);
 
 AW_window *PH_create_filter_window(AW_root *aw_root);

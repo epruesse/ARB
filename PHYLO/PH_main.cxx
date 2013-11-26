@@ -534,6 +534,11 @@ PH_used_windows *PH_used_windows::windowList = 0;
 PH_display *PH_display::ph_display=0;
 PHDATA *PHDATA::ROOT = 0;
 
+static void create_variables(AW_root *aw_root, AW_default def) {
+    aw_root->awar_string(AWAR_PHYLO_ALIGNMENT,     "", def);
+    aw_root->awar_string(AWAR_PHYLO_FILTER_FILTER, "", def);
+    PH_create_filter_variables(aw_root, def);
+}
 
 int ARB_main(int argc, char *argv[]) {
     aw_initstatus();
@@ -560,8 +565,7 @@ int ARB_main(int argc, char *argv[]) {
             GBDATA *gb_main = ph_root->get_gb_main();
 
             // create arb_phylo awars :
-            PH_create_filter_variables(aw_root, AW_ROOT_DEFAULT);
-            PH_create_matrix_variables(aw_root, AW_ROOT_DEFAULT);
+            create_variables(aw_root, AW_ROOT_DEFAULT);
             ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, gb_main);
 #if defined(DEBUG)
             AWT_create_db_browser_awars(aw_root, AW_ROOT_DEFAULT);
