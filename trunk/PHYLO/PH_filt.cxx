@@ -91,10 +91,11 @@ float *PH_filter::calculate_column_homology() {
     if (!PHDATA::ROOT) return 0;                    // nothing loaded yet
 
     arb_progress filt_progress("Calculating filter");
-    
-    GB_transaction dummy(PHDATA::ROOT->gb_main);
-    bool           isNUC = true; // rna oder dna sequence : nur zum testen und Entwicklung
-    if (GBT_is_alignment_protein(PHDATA::ROOT->gb_main, PHDATA::ROOT->use)) {
+
+    GB_transaction ta(PHDATA::ROOT->get_gb_main());
+
+    bool isNUC = true; // rna oder dna sequence : nur zum testen und Entwicklung
+    if (GBT_is_alignment_protein(PHDATA::ROOT->get_gb_main(), PHDATA::ROOT->use)) {
         isNUC = false;
     }
 
