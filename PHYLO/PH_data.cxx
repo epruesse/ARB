@@ -15,11 +15,6 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 
-PHDATA::PHDATA(AW_root *awr) {
-    memset((char *)this, 0, sizeof(PHDATA));
-    aw_root = awr;
-}
-
 char *PHDATA::unload() {
     PHENTRY *phentry;
 
@@ -34,17 +29,11 @@ char *PHDATA::unload() {
     return 0;
 }
 
-PHDATA::~PHDATA() {
-    unload();
-    delete matrix;
-}
-
-
-char *PHDATA::load(char *usei) {
-    use             = strdup(usei);
-    gb_main         = GLOBAL_gb_main;
+char *PHDATA::load(char*& Use) {
+    reassign(use, Use);
     last_key_number = 0;
 
+    GBDATA *gb_main = get_gb_main();
     GB_push_transaction(gb_main);
 
     seq_len  = GBT_get_alignment_len(gb_main, use);
@@ -253,7 +242,7 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
     // counting routine
     sequence_bufferi = 0;
     sequence_bufferj = 0;
-    GB_transaction dummy(PHDATA::ROOT->gb_main);
+    GB_transaction ta(PHDATA::ROOT->get_gb_main());
 
     GB_ERROR error = 0;
     for (i = 0; i < long(nentries); i++) {
