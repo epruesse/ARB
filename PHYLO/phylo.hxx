@@ -29,22 +29,8 @@
 
 #define ph_assert(cond) arb_assert(cond)
 
-#define AWAR_PHYLO_ALIGNMENT "phyl/alignment"
-
-#define AWAR_PHYLO_FILTER_ALIGNMENT "phyl/filter/alignment"
-#define AWAR_PHYLO_FILTER_NAME      "phyl/filter/name"
-#define AWAR_PHYLO_FILTER_FILTER    "phyl/filter/filter"
-
-#define AWAR_PHYLO_WEIGHTS_NAME      "phyl/weights/name"
-#define AWAR_PHYLO_WEIGHTS_ALIGNMENT "phyl/weights/alignment"
-
-#define AWAR_PHYLO_RATES_NAME                "phyl/rates/name"
-#define AWAR_PHYLO_CANCEL_CHARS              "phyl/cancel/chars"
-#define AWAR_PHYLO_CORRECTION_TRANSFORMATION "phyl/correction/transformation"
-#define AWAR_PHYLO_SAVE_MATRIX               "tmp/phyl/save_matrix"
-#define AWAR_PHYLO_TREE_NAME                 "phyl/tree/tree_name"
-#define AWAR_PHYLO_ALPHA                     "phyl/alpha"
-#define AWAR_PHYLO_RATEMATRIX_VAL_TEMPLATE   "phyl/ratematrix/val_%li_%li"
+#define AWAR_PHYLO_ALIGNMENT     "tmp/phyl/alignment"
+#define AWAR_PHYLO_FILTER_FILTER "phyl/filter/filter"
 
 #define AWAR_PHYLO_MATRIX_POINT "phyl/matrix/point"
 #define AWAR_PHYLO_MATRIX_MINUS "phyl/matrix/minus"
@@ -109,11 +95,7 @@ enum {
     PH_GC_0_DRAG
 };
 
-
-extern GBDATA *GLOBAL_gb_main;
-
 // make awars :
-void PH_create_matrix_variables(AW_root *aw_root, AW_default aw_def);
 void PH_create_filter_variables(AW_root *aw_root, AW_default aw_def);
 
 AW_window *PH_create_filter_window(AW_root *aw_root);
@@ -140,11 +122,8 @@ enum PH_TRANSFORMATION {
 // ---------------------------
 //      class definitions
 
-class AWT_graphic;
-
 class PH_root : virtual Noncopyable {
     char        *use;
-    AWT_graphic *display;
     GBDATA      *gb_main;
 
     static PH_root *SINGLETON;
@@ -153,7 +132,6 @@ public:
 
     PH_root()
         : use(NULL),
-          display(NULL),
           gb_main(NULL)
     {
         ph_assert(!SINGLETON);
@@ -167,6 +145,7 @@ public:
 
     GB_ERROR open(const char *db_server);
     GBDATA *get_gb_main() const { ph_assert(gb_main); return gb_main; }
+    const char *get_aliname() const { return use; }
 };
 
 
@@ -176,7 +155,7 @@ class PHDATA : virtual Noncopyable {
     // connection to database
     // pointers to all elements and important values of the database
 
-    struct PHENTRY {
+    struct PHENTRY : virtual Noncopyable {
         unsigned int  key;
         char         *name;
         char         *full_name;
@@ -184,29 +163,66 @@ class PHDATA : virtual Noncopyable {
         PHENTRY      *next;
         PHENTRY      *prev;
         int           group_members; // >0: this elem is grouphead
-        elem         *first_member; // !=NULL: elem is grouphead
+        elem         *first_member;  // !=NULL: elem is grouphead
         bool          selected;
+
+        PHENTRY()
+            : key(0),
+              name(NULL),
+              full_name(NULL),
+              gb_species_data_ptr(NULL),
+              next(NULL),
+              prev(NULL),
+              group_members(0),
+              first_member(NULL),
+              selected(false)
+        {}
+
+        ~PHENTRY() {
+            ph_assert(0); // @@@ why not called?
+        }
     };
+
     unsigned int last_key_number;
     long         seq_len;
 
-    AW_root *aw_root;       // only link
+    AW_root *aw_root; // only link
+    PH_root *ph_root; // only link
 
 public:
-    GBDATA         *gb_main;
-    char           *use;
-    PHENTRY        *entries;
-    PHENTRY       **hash_elements;
-    unsigned int    nentries;                       // total number of entries
-    static PHDATA  *ROOT;                           // 'global' pointer
-    AP_smatrix     *distance_table;                 // weights between different characters
-    AP_smatrix     *matrix;                         // calculated matrix
-    float          *markerline;
+    GBDATA *get_gb_main() { return ph_root->get_gb_main(); }
 
-    PHDATA(AW_root *awr);
-    ~PHDATA();
+    char *use;               // @@@ elim (PH_root has same field)
 
-    char     *load(char *use);  // open database and get pointers to it
+    PHENTRY       *entries;
+    PHENTRY      **hash_elements;
+    unsigned int   nentries;                        // total number of entries
+
+    static PHDATA *ROOT;                            // 'global' pointer
+
+    AP_smatrix *distance_table;                     // weights between different characters
+    AP_smatrix *matrix;                             // calculated matrix
+    float      *markerline;
+
+    PHDATA(AW_root *aw_root_, PH_root *ph_root_)
+        : last_key_number(0),
+          seq_len(0),
+          aw_root(aw_root_),
+          ph_root(ph_root_),
+          use(NULL),
+          entries(NULL),
+          hash_elements(NULL),
+          nentries(0),
+          distance_table(NULL),
+          matrix(NULL),
+          markerline(NULL)
+    {}
+    ~PHDATA() {
+        unload();
+        delete matrix;
+    }
+
+    char     *load(char*& use);  // open database and get pointers to it
     char     *unload();
     GB_ERROR  save(char *filename);
     void      print();
