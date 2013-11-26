@@ -271,10 +271,10 @@ void PH_display::display()       // draw area
 
             const AW_font_limits& lim = device->get_font_limits(0, 0);
 
-            minhom   = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
-            maxhom   = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
-            startcol = main_win->get_root()->awar("phyl/filter/startcol")->read_int();
-            stopcol  = main_win->get_root()->awar("phyl/filter/stopcol")->read_int();
+            minhom   = main_win->get_root()->awar(AWAR_PHYLO_FILTER_MINHOM)->read_int();
+            maxhom   = main_win->get_root()->awar(AWAR_PHYLO_FILTER_MAXHOM)->read_int();
+            startcol = main_win->get_root()->awar(AWAR_PHYLO_FILTER_STARTCOL)->read_int();
+            stopcol  = main_win->get_root()->awar(AWAR_PHYLO_FILTER_STOPCOL)->read_int();
 
             for (x = horiz_page_start; x < horiz_page_start + horiz_page_size; x++) {
                 int             gc = 1;
@@ -469,35 +469,35 @@ void display_status_cb() {
                 phds.newline();
 
                 phds.writePadded("Start at column:", LABEL_LEN);
-                phds.write((long)aw_root->awar("phyl/filter/startcol")->read_int());
+                phds.write((long)aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->read_int());
                 phds.move_x(15);
                 phds.set_tab();
                 phds.writePadded("Stop at column:", LABEL_LEN);
-                phds.write((long)aw_root->awar("phyl/filter/stopcol")->read_int());
+                phds.write((long)aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->read_int());
                 phds.newline();
 
                 phds.writePadded("Minimal similarity:", LABEL_LEN);
-                phds.write((long)aw_root->awar("phyl/filter/minhom")->read_int());
+                phds.write((long)aw_root->awar(AWAR_PHYLO_FILTER_MINHOM)->read_int());
                 phds.set_cursor_x(phds.get_tab());
                 phds.writePadded("Maximal similarity:", LABEL_LEN);
-                phds.write((long)aw_root->awar("phyl/filter/maxhom")->read_int());
+                phds.write((long)aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM)->read_int());
                 phds.newline();
                 phds.newline();
 
                 phds.writePadded("'.':", LABEL_LEN);
-                phds.write(filter_text[aw_root->awar("phyl/filter/point")->read_int()]);
+                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_POINT)->read_int()]);
                 phds.newline();
 
                 phds.writePadded("'-':", LABEL_LEN);
-                phds.write(filter_text[aw_root->awar("phyl/filter/minus")->read_int()]);
+                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_MINUS)->read_int()]);
                 phds.newline();
 
                 phds.writePadded("ambiguity codes:", LABEL_LEN);
-                phds.write(filter_text[aw_root->awar("phyl/filter/rest")->read_int()]);
+                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_REST)->read_int()]);
                 phds.newline();
 
                 phds.writePadded("lowercase chars:", LABEL_LEN);
-                phds.write(filter_text[aw_root->awar("phyl/filter/lower")->read_int()]);
+                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_LOWER)->read_int()]);
                 break;
 
             case matrix_dpy: phds.set_origin();
