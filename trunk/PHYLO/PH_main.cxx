@@ -460,8 +460,8 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
 
     // Properties menu
     awm->create_menu("Properties", "P");
-    awm->insert_menu_topic("props_menu", "Menu: Colors and Fonts ...",  "M", "props_frame.hlp",   AWM_ALL, AW_preset_window);
-    awm->insert_menu_topic("props_data", "Data: Colors and Fonts ...",  "D", "ph_props_data.hlp", AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window, (AW_CL)gcmiddle);
+    awm->insert_menu_topic("props_menu", "Frame settings ...",   "F", "props_frame.hlp",   AWM_ALL, AW_preset_window);
+    awm->insert_menu_topic("props_data", "Colors and Fonts ...", "D", "ph_props_data.hlp", AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window, (AW_CL)gcmiddle);
     awm->sep______________();
     AW_insert_common_property_menu_entries(awm);
     awm->sep______________();

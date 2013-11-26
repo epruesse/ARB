@@ -1496,12 +1496,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         awm->create_menu("Properties", "r", AWM_ALL);
         {
             awm->insert_menu_topic("props_menu",    "Frame settings", "F", "props_frame.hlp",     AWM_ALL, AW_preset_window);
-            awm->insert_sub_menu("Tree settings",  "T");
-            {
-                awm->insert_menu_topic(awm->local_id("props_tree2"), "Tree options",        "o", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw);
-                awm->insert_menu_topic("props_tree",                 "Tree colors & fonts", "c", "nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window,    (AW_CL)ntw->gc_manager);
-            }
-            awm->close_sub_menu();
+            awm->insert_menu_topic(awm->local_id("props_tree2"), "Tree options",        "o", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw);
+            awm->insert_menu_topic("props_tree",                 "Tree colors & fonts", "c", "nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window,    (AW_CL)ntw->gc_manager);
             awm->insert_menu_topic("props_www", "Search world wide web (WWW)", "W", "props_www.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window, (AW_CL)GLOBAL.gb_main);
             awm->sep______________();
             awm->insert_menu_topic("!toggle_expert", "Toggle expert mode",         "x", 0,            AWM_ALL, NT_toggle_expert_mode,              0, 0);
