@@ -45,29 +45,43 @@ static void create_filter_text()
     strcpy(filter_text[TREAT_AS_REGULAR],     "treat as regular character                        ");
 }
 
-static void startup_sequence_cb(AW_window *aww, AW_root *aw_root, AW_window *main_window) {
-    if (aww) aww->hide();
-    // loading database
-    GB_push_transaction(GLOBAL_gb_main);
-    if (GBT_get_alignment_len(GLOBAL_gb_main, aw_root->awar(AWAR_PHYLO_ALIGNMENT)->read_string())<1) {
-        aw_root->awar(AWAR_PHYLO_ALIGNMENT)->write_string(GBT_get_default_alignment(GLOBAL_gb_main));
+static bool valid_alignment_selected(AW_root *aw_root, GBDATA *gb_main) {
+    GB_transaction  ta(gb_main);
+    const char     *aliname = aw_root->awar(AWAR_PHYLO_ALIGNMENT)->read_char_pntr();
+    if (GBT_get_alignment_len(gb_main, aliname)<1) {
+        GB_clear_error();
+        return false;
     }
-    GB_pop_transaction(GLOBAL_gb_main);
+    return true;
+}
 
-    char   *use = aw_root->awar(AWAR_PHYLO_ALIGNMENT)->read_string();
-    PHDATA *phd = new PHDATA(aw_root);
+static void startup_sequence_cb(AW_window *alisel_window, AW_root *aw_root, AW_window *main_window) {
+    if (valid_alignment_selected(aw_root, GLOBAL_gb_main)) {
+        if (alisel_window) alisel_window->hide();
 
-    GB_set_cache_size(GLOBAL_gb_main, PH_DB_CACHE_SIZE);
-    phd->load(use);
-    phd->ROOT = phd;
+        char   *use = aw_root->awar(AWAR_PHYLO_ALIGNMENT)->read_string();
+        PHDATA *phd = new PHDATA(aw_root);
+
+        GB_set_cache_size(GLOBAL_gb_main, PH_DB_CACHE_SIZE);
+        phd->load(use);
+        phd->ROOT = phd;
     
-    long len = PHDATA::ROOT->get_seq_len();
-    aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->write_int(len);
-    aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->set_minmax(0, len);
-    aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->set_minmax(0, len);
+        long len = PHDATA::ROOT->get_seq_len();
+        aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->write_int(len);
+        aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->set_minmax(0, len);
+        aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->set_minmax(0, len);
 
-    main_window->activate();
-    ph_view_species_cb();
+        main_window->activate();
+        ph_view_species_cb();
+    }
+    else {
+        if (alisel_window) {
+            aw_message("Please select a valid alignment");
+        }
+        else {
+            GBK_terminate("Expected to have a valid alignment");
+        }
+    }
 }
 
 __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
@@ -575,6 +589,12 @@ int ARB_main(int argc, char *argv[]) {
             for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++) {}
 
             if (num_alignments > 1) {
+                {
+                    char *defaultAli = GBT_get_default_alignment(GLOBAL_gb_main);
+                    aw_root->awar(AWAR_PHYLO_ALIGNMENT)->write_string(defaultAli);
+                    free(defaultAli);
+                }
+
                 AW_window *sel_ali_aww = create_select_alignment_window(aw_root, puw->phylo_main_window);
                 sel_ali_aww->show();
             }
