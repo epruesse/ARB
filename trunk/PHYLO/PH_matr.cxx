@@ -32,11 +32,7 @@ static void set_globel_r_m_value(AW_root *aw_root, long i, long j) {
     global_ratematrix->set(i, j, aw_root->awar(buffer)->read_float());
 }
 
-void PH_create_matrix_variables(AW_root *aw_root, AW_default def)
-{
-    aw_root->awar_string("tmp/dummy_string", "0", def);
-
-
+void PH_create_matrix_variables(AW_root *aw_root, AW_default def) {
     aw_root->awar_string("phyl/which_species", "marked", def);
     aw_root->awar_string("phyl/alignment", "", def);
 
