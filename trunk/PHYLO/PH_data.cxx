@@ -174,10 +174,10 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
 
     // initialize variables
 
-    options_vector[OPT_FILTER_POINT] = aw_root->awar("phyl/matrix/point")->read_int();
-    options_vector[OPT_FILTER_MINUS] = aw_root->awar("phyl/matrix/minus")->read_int();
-    options_vector[OPT_FILTER_AMBIG] = aw_root->awar("phyl/matrix/rest")->read_int();
-    options_vector[OPT_FILTER_LOWER] = aw_root->awar("phyl/matrix/lower")->read_int();
+    options_vector[OPT_FILTER_POINT] = aw_root->awar(AWAR_PHYLO_MATRIX_POINT)->read_int();
+    options_vector[OPT_FILTER_MINUS] = aw_root->awar(AWAR_PHYLO_MATRIX_MINUS)->read_int();
+    options_vector[OPT_FILTER_AMBIG] = aw_root->awar(AWAR_PHYLO_MATRIX_REST)->read_int();
+    options_vector[OPT_FILTER_LOWER] = aw_root->awar(AWAR_PHYLO_MATRIX_LOWER)->read_int();
 
 
     for (i=0; i<256; i++) compare[i]=false;
@@ -207,7 +207,7 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
     }
     distance_table->set(reference_table[(unsigned char)'.'], reference_table[(unsigned char)'-'], 0.0);
 
-    char *filter = aw_root->awar("phyl/filter/filter")->read_string();
+    char *filter = aw_root->awar(AWAR_PHYLO_FILTER_FILTER)->read_string();
 
     // set compare-table according to options_vector
     switch (options_vector[OPT_FILTER_POINT]) // '.' in column
