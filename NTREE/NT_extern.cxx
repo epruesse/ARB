@@ -1495,7 +1495,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->create_menu("Properties", "r", AWM_ALL);
         {
-            awm->insert_menu_topic("props_menu",    "Frame settings", "F", "props_frame.hlp",     AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0);
+            awm->insert_menu_topic("props_menu",    "Frame settings", "F", "props_frame.hlp",     AWM_ALL, AW_preset_window);
             awm->insert_sub_menu("Tree settings",  "T");
             {
                 awm->insert_menu_topic(awm->local_id("props_tree2"), "Tree options",        "o", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw);
@@ -1509,7 +1509,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->sep______________();
             AW_insert_common_property_menu_entries(awm);
             awm->sep______________();
-            awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "S", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
+            awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "S", "savedef.hlp", AWM_ALL, AW_save_properties);
         }
     }
 
