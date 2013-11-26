@@ -29,6 +29,39 @@
 
 #define ph_assert(cond) arb_assert(cond)
 
+#define AWAR_PHYLO_ALIGNMENT "phyl/alignment"
+
+#define AWAR_PHYLO_FILTER_ALIGNMENT "phyl/filter/alignment"
+#define AWAR_PHYLO_FILTER_NAME      "phyl/filter/name"
+#define AWAR_PHYLO_FILTER_FILTER    "phyl/filter/filter"
+
+#define AWAR_PHYLO_WEIGHTS_NAME      "phyl/weights/name"
+#define AWAR_PHYLO_WEIGHTS_ALIGNMENT "phyl/weights/alignment"
+
+#define AWAR_PHYLO_RATES_NAME                "phyl/rates/name"
+#define AWAR_PHYLO_CANCEL_CHARS              "phyl/cancel/chars"
+#define AWAR_PHYLO_CORRECTION_TRANSFORMATION "phyl/correction/transformation"
+#define AWAR_PHYLO_SAVE_MATRIX               "tmp/phyl/save_matrix"
+#define AWAR_PHYLO_TREE_NAME                 "phyl/tree/tree_name"
+#define AWAR_PHYLO_ALPHA                     "phyl/alpha"
+#define AWAR_PHYLO_RATEMATRIX_VAL_TEMPLATE   "phyl/ratematrix/val_%li_%li"
+
+#define AWAR_PHYLO_MATRIX_POINT "phyl/matrix/point"
+#define AWAR_PHYLO_MATRIX_MINUS "phyl/matrix/minus"
+#define AWAR_PHYLO_MATRIX_REST  "phyl/matrix/rest"
+#define AWAR_PHYLO_MATRIX_LOWER "phyl/matrix/lower"
+
+#define AWAR_PHYLO_FILTER_STARTCOL "phyl/filter/startcol"
+#define AWAR_PHYLO_FILTER_STOPCOL  "phyl/filter/stopcol"
+#define AWAR_PHYLO_FILTER_MINHOM   "phyl/filter/minhom"
+#define AWAR_PHYLO_FILTER_MAXHOM   "phyl/filter/maxhom"
+#define AWAR_PHYLO_FILTER_POINT    "phyl/filter/point"
+#define AWAR_PHYLO_FILTER_MINUS    "phyl/filter/minus"
+#define AWAR_PHYLO_FILTER_REST     "phyl/filter/rest"
+#define AWAR_PHYLO_FILTER_LOWER    "phyl/filter/lower"
+
+
+
 enum {
     DONT_COUNT           = 0,
     SKIP_COLUMN_IF_MAX   = 1,
