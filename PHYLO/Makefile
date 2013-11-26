@@ -181,7 +181,6 @@ PH_main.o: $(ARBHOME)/INCLUDE/ttypes.h
 PH_matr.o: PH_filter.hxx
 PH_matr.o: phylo.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -190,11 +189,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_matr.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_file.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/cb.h
 PH_matr.o: $(ARBHOME)/INCLUDE/cb_base.h
 PH_matr.o: $(ARBHOME)/INCLUDE/cbtypes.h
