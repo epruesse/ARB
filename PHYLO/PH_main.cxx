@@ -243,7 +243,7 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
 static void PH_save_ml_multiline_cb(AW_window *aww) {
     GB_begin_transaction(GLOBAL_gb_main);
     GB_ERROR error = 0;
-    char *fname = aww->get_root()->awar("tmp/phylo/markerlinename")->read_string();
+    char *fname = aww->get_root()->awar(AWAR_PHYLO_MARKERLINENAME)->read_string();
     int fname_len = strlen(fname);
     {
         char *digit_appended = (char*)malloc(fname_len+2);
@@ -273,7 +273,7 @@ static void PH_save_ml_multiline_cb(AW_window *aww) {
 static void PH_save_ml_cb(AW_window *aww) {
     GB_begin_transaction(GLOBAL_gb_main);
 
-    char   *fname  = aww->get_root()->awar("tmp/phylo/markerlinename")->read_string();
+    char   *fname  = aww->get_root()->awar(AWAR_PHYLO_MARKERLINENAME)->read_string();
     GBDATA *gb_sai = GBT_find_or_create_SAI(GLOBAL_gb_main, fname);
 
     GB_ERROR error = ph_check_initialized();
@@ -376,7 +376,7 @@ static AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
 {
     int multi_line = int(cl_multi_line); // ==1 -> save three SAI's usable as column percentage
 
-    root->awar_string("tmp/phylo/markerlinename", "markerline", AW_ROOT_DEFAULT);
+    root->awar_string(AWAR_PHYLO_MARKERLINENAME, "markerline", AW_ROOT_DEFAULT);
 
     AW_window_simple *aws = new AW_window_simple;
 
@@ -398,10 +398,10 @@ static AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("name");
-    aws->create_input_field("tmp/phylo/markerlinename");
+    aws->create_input_field(AWAR_PHYLO_MARKERLINENAME);
 
     aws->at("box");
-    awt_create_selection_list_on_sai(GLOBAL_gb_main, aws, "tmp/phylo/markerlinename");
+    awt_create_selection_list_on_sai(GLOBAL_gb_main, aws, AWAR_PHYLO_MARKERLINENAME);
 
     aws->at("save");
     if (multi_line)     aws->callback(PH_save_ml_multiline_cb);
@@ -456,15 +456,15 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
 
     // Config menu
     awm->create_menu("Config", "o");
-    awm->insert_menu_topic("config_column_filter", "Column Filter", "F", "no help", AWM_ALL, AW_POPUP, (AW_CL)PH_create_filter_window, 0);
+    awm->insert_menu_topic("config_column_filter", "Column Filter", "F", "no help", AWM_ALL, PH_create_filter_window);
 
     // Properties menu
     awm->create_menu("Properties", "P");
-    awm->insert_menu_topic("props_data", "Colors and Fonts ...",  "D", "ph_props_data.hlp", AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window, (AW_CL)gcmiddle);
+    awm->insert_menu_topic("props_data", "Colors and Fonts ...", "D", "ph_props_data.hlp", AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window, (AW_CL)gcmiddle);
     awm->sep______________();
     AW_insert_common_property_menu_entries(awm);
     awm->sep______________();
-    awm->insert_menu_topic("save_props", "Save Properties (phylo.arb)", "S", "savedef.hlp",       AWM_ALL,          (AW_CB)AW_save_properties,  0, 0);
+    awm->insert_menu_topic("save_props", "Save Properties (phylo.arb)", "S", "savedef.hlp", AWM_ALL, AW_save_properties);
 
 
     // set window areas

@@ -1502,7 +1502,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->sep______________();
             AW_insert_common_property_menu_entries(awm);
             awm->sep______________();
-            awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "S", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
+            awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "S", "savedef.hlp", AWM_ALL, AW_save_properties);
         }
     }
 

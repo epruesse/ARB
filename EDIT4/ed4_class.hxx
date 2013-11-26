@@ -2354,7 +2354,7 @@ void        ED4_set_reference_species   (AW_window *aww, AW_CL cd1, AW_CL cd2);
 
 void        ED4_new_editor_window       (AW_window *aww);
 
-AW_window   *ED4_create_consensus_definition_window (AW_root *root);
+AW_window  *ED4_create_consensus_definition_window (AW_root *root);
 void        ED4_create_consensus_awars      (AW_root *aw_root);
 void        ED4_consensus_definition_changed    (AW_root*, AW_CL, AW_CL);
 void        ED4_consensus_display_changed       (AW_root*, AW_CL, AW_CL);

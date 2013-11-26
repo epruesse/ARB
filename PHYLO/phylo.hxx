@@ -60,7 +60,7 @@
 #define AWAR_PHYLO_FILTER_REST     "phyl/filter/rest"
 #define AWAR_PHYLO_FILTER_LOWER    "phyl/filter/lower"
 
-
+#define AWAR_PHYLO_MARKERLINENAME "tmp/phylo/markerlinename"
 
 enum {
     DONT_COUNT           = 0,
