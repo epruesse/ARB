@@ -456,16 +456,16 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
 
     // Config menu
     awm->create_menu("Config", "o");
-    awm->insert_menu_topic("config_column_filter", "Column Filter", "F", "no help", AWM_ALL, AW_POPUP, (AW_CL)PH_create_filter_window, 0);
+    awm->insert_menu_topic("config_column_filter", "Column Filter", "F", "no help", AWM_ALL, PH_create_filter_window);
 
     // Properties menu
     awm->create_menu("Properties", "P");
-    awm->insert_menu_topic("props_menu", "Menu: Colors and Fonts ...",  "M", "props_frame.hlp",   AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,    0);
+    awm->insert_menu_topic("props_menu", "Menu: Colors and Fonts ...",  "M", "props_frame.hlp",   AWM_ALL, AW_preset_window);
     awm->insert_menu_topic("props_data", "Data: Colors and Fonts ...",  "D", "ph_props_data.hlp", AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window, (AW_CL)gcmiddle);
     awm->sep______________();
     AW_insert_common_property_menu_entries(awm);
     awm->sep______________();
-    awm->insert_menu_topic("save_props", "Save Properties (phylo.arb)", "S", "savedef.hlp",       AWM_ALL,          (AW_CB)AW_save_properties,  0, 0);
+    awm->insert_menu_topic("save_props", "Save Properties (phylo.arb)", "S", "savedef.hlp", AWM_ALL, AW_save_properties);
 
 
     // set window areas

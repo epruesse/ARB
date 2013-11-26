@@ -1210,14 +1210,14 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
 
     awm->create_menu("Properties", "r", AWM_ALL);
     {
-        awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...", "M", "props_frame.hlp",      AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,        0);
+        awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...", "M", "props_frame.hlp",      AWM_ALL, AW_preset_window);
         awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...", "C", "pars_props_data.hlp",  AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window,     (AW_CL)ntw->gc_manager);
         awm->insert_menu_topic("props_tree2", "Tree: Settings ...",         "T", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP,(AW_CL)NT_create_tree_setting,  (AW_CL)ntw);
         awm->insert_menu_topic("props_kl",    "KERN. LIN ...",              "K", "kernlin.hlp",          AWM_ALL, AW_POPUP,(AW_CL)create_kernighan_window, 0);
         awm->sep______________();
         AW_insert_common_property_menu_entries(awm);
         awm->sep______________();
-        awm->insert_menu_topic("save_props",  "Save Defaults (pars.arb)",   "D", "savedef.hlp",          AWM_ALL,          (AW_CB)AW_save_properties,      0, 0);
+        awm->insert_menu_topic("save_props", "Save Defaults (pars.arb)", "D", "savedef.hlp", AWM_ALL, AW_save_properties);
     }
     awm->button_length(5);
 

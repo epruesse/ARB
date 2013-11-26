@@ -1425,11 +1425,11 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->insert_menu_topic("quit",   "Quit",        "Q", "quit.hlp",  AWM_ALL, (AW_CB)di_exit,  0,  0);
 
     aws->create_menu("Properties", "P", AWM_ALL);
-    aws->insert_menu_topic("frame_props", "Frame ...",                  "F", "props_frame.hlp", AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,   0);
+    aws->insert_menu_topic("frame_props", "Frame ...", "F", "props_frame.hlp", AWM_ALL, AW_preset_window);
     aws->sep______________();
     AW_insert_common_property_menu_entries(aws);
     aws->sep______________();
-    aws->insert_menu_topic("save_props",  "Save Properties (dist.arb)", "S", "savedef.hlp",     AWM_ALL,          (AW_CB)AW_save_properties, 0, 0);
+    aws->insert_menu_topic("save_props", "Save Properties (dist.arb)", "S", "savedef.hlp", AWM_ALL, AW_save_properties);
 
     aws->insert_help_topic("ARB_DIST help", "h", "dist.hlp", AWM_ALL, makeHelpCallback("dist.hlp"));
 
