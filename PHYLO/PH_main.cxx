@@ -45,9 +45,8 @@ static void create_filter_text()
     strcpy(filter_text[TREAT_AS_REGULAR],     "treat as regular character                        ");
 }
 
-static void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww) {
+static void startup_sequence_cb(AW_window *aww, AW_root *aw_root, AW_window *main_window) {
     if (aww) aww->hide();
-    AW_root *aw_root = (AW_root *) cd1;
     // loading database
     GB_push_transaction(GLOBAL_gb_main);
     if (GBT_get_alignment_len(GLOBAL_gb_main, aw_root->awar(AWAR_PHYLO_ALIGNMENT)->read_string())<1) {
@@ -67,7 +66,7 @@ static void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww) {
     aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->set_minmax(0, len);
     aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->set_minmax(0, len);
 
-    ((AW_window*)cl_aww)->activate(); // pop up main window
+    main_window->activate();
     ph_view_species_cb();
 }
 
@@ -372,9 +371,8 @@ static void PH_save_ml_cb(AW_window *aww) {
 }
 
 
-static AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
-{
-    int multi_line = int(cl_multi_line); // ==1 -> save three SAI's usable as column percentage
+static AW_window *PH_save_markerline(AW_root *root, int multi_line) {
+    // multi_line ==1 -> save three SAI's usable as column percentage
 
     root->awar_string(AWAR_PHYLO_MARKERLINENAME, "markerline", AW_ROOT_DEFAULT);
 
@@ -445,10 +443,11 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
 
     // File menu
     awm->create_menu("File", "F");
-    awm->insert_menu_topic("export_filter", "Export Filter",      "E", "ph_export_markerline.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)PH_save_markerline, 0);
-    awm->insert_menu_topic("export_freq",   "Export Frequencies", "F", "ph_export_markerline.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)PH_save_markerline, 1);
+    awm->insert_menu_topic("export_filter", "Export Filter",      "E", "ph_export_markerline.hlp", AWM_ALL, makeCreateWindowCallback(PH_save_markerline, 0));
+    awm->insert_menu_topic("export_freq",   "Export Frequencies", "F", "ph_export_markerline.hlp", AWM_ALL, makeCreateWindowCallback(PH_save_markerline, 1));
     insert_macro_menu_entry(awm, false);
-    awm->insert_menu_topic("quit",          "Quit",               "Q", "quit.hlp",                 AWM_ALL, (AW_CB)ph_exit,  (AW_CL)ph_root,            0);
+
+    awm->insert_menu_topic("quit", "Quit", "Q", "quit.hlp", AWM_ALL, makeWindowCallback(ph_exit, ph_root));
 
     // Calculate menu
     awm->create_menu("Calculate", "C");
@@ -461,7 +460,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
     // Properties menu
     awm->create_menu("Properties", "P");
     awm->insert_menu_topic("props_menu", "Frame settings ...",   "F", "props_frame.hlp",   AWM_ALL, AW_preset_window);
-    awm->insert_menu_topic("props_data", "Colors and Fonts ...", "D", "ph_props_data.hlp", AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window, (AW_CL)gcmiddle);
+    awm->insert_menu_topic("props_data", "Colors and Fonts ...", "D", "ph_props_data.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gcmiddle));
     awm->sep______________();
     AW_insert_common_property_menu_entries(awm);
     awm->sep______________();
@@ -473,7 +472,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
     awm->at(5, 2);
     awm->auto_space(5, -2);
 
-    awm->callback((AW_CB1)ph_exit, (AW_CL)ph_root);
+    awm->callback(makeWindowCallback(ph_exit, ph_root));
     awm->button_length(0);
     awm->help_text("quit.hlp");
     awm->create_button("QUIT", "QUIT");
@@ -494,8 +493,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
 }
 
 
-static AW_window *create_select_alignment_window(AW_root *aw_root, AW_CL cl_aww)
-{
+static AW_window *create_select_alignment_window(AW_root *aw_root, AW_window *main_window) {
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(aw_root, "SELECT_ALIGNMENT", "SELECT ALIGNMENT");
@@ -503,7 +501,7 @@ static AW_window *create_select_alignment_window(AW_root *aw_root, AW_CL cl_aww)
     aws->button_length(10);
 
     aws->at("done");
-    aws->callback(startup_sequence_cb, (AW_CL) aw_root, cl_aww);
+    aws->callback(makeWindowCallback(startup_sequence_cb, aw_root, main_window));
     aws->create_button("DONE", "DONE", "D");
 
     aws->at("which_alignment");
@@ -577,12 +575,12 @@ int ARB_main(int argc, char *argv[]) {
             for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++) {}
 
             if (num_alignments > 1) {
-                AW_window *sel_ali_aww = create_select_alignment_window(aw_root, (AW_CL)puw->phylo_main_window);
+                AW_window *sel_ali_aww = create_select_alignment_window(aw_root, puw->phylo_main_window);
                 sel_ali_aww->show();
             }
             else {
                 aw_root->awar(AWAR_PHYLO_ALIGNMENT)->write_string(alignment_names[0]);
-                startup_sequence_cb(0, (AW_CL)aw_root, (AW_CL)puw->phylo_main_window);
+                startup_sequence_cb(NULL, aw_root, puw->phylo_main_window);
             }
             GB_pop_transaction(GLOBAL_gb_main);
 

@@ -19,7 +19,7 @@
 #include <AP_pro_a_nucs.hxx>
 
 #if defined(WARN_TODO)
-#warning module completely unused
+#warning module partly unused
 #endif
 
 #define CHECK_NAN(x) if ((!(x>=0.0)) && (!(x<0.0))) *(int *)0=0;
