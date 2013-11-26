@@ -243,7 +243,7 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
 static void PH_save_ml_multiline_cb(AW_window *aww) {
     GB_begin_transaction(GLOBAL_gb_main);
     GB_ERROR error = 0;
-    char *fname = aww->get_root()->awar("tmp/phylo/markerlinename")->read_string();
+    char *fname = aww->get_root()->awar(AWAR_PHYLO_MARKERLINENAME)->read_string();
     int fname_len = strlen(fname);
     {
         char *digit_appended = (char*)malloc(fname_len+2);
@@ -273,7 +273,7 @@ static void PH_save_ml_multiline_cb(AW_window *aww) {
 static void PH_save_ml_cb(AW_window *aww) {
     GB_begin_transaction(GLOBAL_gb_main);
 
-    char   *fname  = aww->get_root()->awar("tmp/phylo/markerlinename")->read_string();
+    char   *fname  = aww->get_root()->awar(AWAR_PHYLO_MARKERLINENAME)->read_string();
     GBDATA *gb_sai = GBT_find_or_create_SAI(GLOBAL_gb_main, fname);
 
     GB_ERROR error = ph_check_initialized();
@@ -376,7 +376,7 @@ static AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
 {
     int multi_line = int(cl_multi_line); // ==1 -> save three SAI's usable as column percentage
 
-    root->awar_string("tmp/phylo/markerlinename", "markerline", AW_ROOT_DEFAULT);
+    root->awar_string(AWAR_PHYLO_MARKERLINENAME, "markerline", AW_ROOT_DEFAULT);
 
     AW_window_simple *aws = new AW_window_simple;
 
@@ -398,10 +398,10 @@ static AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("name");
-    aws->create_input_field("tmp/phylo/markerlinename");
+    aws->create_input_field(AWAR_PHYLO_MARKERLINENAME);
 
     aws->at("box");
-    awt_create_selection_list_on_sai(GLOBAL_gb_main, aws, "tmp/phylo/markerlinename");
+    awt_create_selection_list_on_sai(GLOBAL_gb_main, aws, AWAR_PHYLO_MARKERLINENAME);
 
     aws->at("save");
     if (multi_line)     aws->callback(PH_save_ml_multiline_cb);
