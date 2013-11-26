@@ -78,24 +78,12 @@ __ATTR__NORETURN static void pars_exit(AW_window *aww) {
     exit(0);
 }
 
-static void PARS_export_cb(AW_window *aww, AWT_canvas *, AW_CL mode) {
-    if (mode &1) {      // export tree
-        pars_export_tree();
-    }
-    if (mode &2) {
-        // quit
-        pars_exit(aww);
-    }
-}
-
-static void AP_user_push_cb(AW_window *aww, AWT_canvas *)
-{
+static void AP_user_push_cb(AW_window *aww, AWT_canvas *) {
     ap_main->user_push();
     aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->get_user_push_counter());
 }
 
-static void AP_user_pop_cb(AW_window *aww, AWT_canvas *ntw)
-{
+static void AP_user_pop_cb(AW_window *aww, AWT_canvas *ntw) {
     if (ap_main->get_user_push_counter()<=0) {
         aw_message("No tree on stack.");
         return;
@@ -1141,8 +1129,8 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     awm->create_menu("File", "F", AWM_ALL);
     {
         insert_macro_menu_entry(awm, false);
-        awm->insert_menu_topic("print_tree", "Print Tree ...",          "P", "tree2prt.hlp", AWM_ALL, AWT_popup_print_window, (AW_CL)ntw, 0);
-        awm->insert_menu_topic("quit",      "Quit",             "Q", "quit.hlp",    AWM_ALL, (AW_CB)PARS_export_cb, (AW_CL)ntw, 2);
+        awm->insert_menu_topic("print_tree", "Print Tree ...", "P", "tree2prt.hlp", AWM_ALL, AWT_popup_print_window, (AW_CL)ntw, 0);
+        awm->insert_menu_topic("quit",       "Quit",           "Q", "quit.hlp",     AWM_ALL, pars_exit);
     }
 
     awm->create_menu("Species", "S", AWM_ALL);
