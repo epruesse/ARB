@@ -2,18 +2,18 @@
 
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS =  PH_data.o PH_root.o PH_main.o PH_filt.o PH_display.o PH_matr.o
+OBJECTS=$(subst .cxx,.o,$(wildcard *.cxx))
 
-$(MAIN): $(CPP_OBJECTS)
-	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
+$(MAIN): $(OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
 	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
-	rm -f $(CPP_OBJECTS) *.a
+	rm -f $(OBJECTS) *.a
 
-DEPENDS = $(CPP_OBJECTS:.o=.depend)
+DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
 	@rm $(DEPENDS)
@@ -280,66 +280,6 @@ PH_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 PH_main.o: $(ARBHOME)/INCLUDE/test_global.h
 PH_main.o: $(ARBHOME)/INCLUDE/ttypes.h
-
-PH_matr.o: PH_filter.hxx
-PH_matr.o: phylo.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
-PH_matr.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
-PH_matr.o: $(ARBHOME)/INCLUDE/arb_core.h
-PH_matr.o: $(ARBHOME)/INCLUDE/arb_defs.h
-PH_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
-PH_matr.o: $(ARBHOME)/INCLUDE/arb_msg.h
-PH_matr.o: $(ARBHOME)/INCLUDE/arb_string.h
-PH_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
-PH_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-PH_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
-PH_matr.o: $(ARBHOME)/INCLUDE/attributes.h
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_action.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_at.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_gtk.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_impl.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_print.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_device_size.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_element.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_file.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_help.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/cb.h
-PH_matr.o: $(ARBHOME)/INCLUDE/cb_base.h
-PH_matr.o: $(ARBHOME)/INCLUDE/cbtypes.h
-PH_matr.o: $(ARBHOME)/INCLUDE/cxxforward.h
-PH_matr.o: $(ARBHOME)/INCLUDE/downcast.h
-PH_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
-PH_matr.o: $(ARBHOME)/INCLUDE/gccver.h
-PH_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
-PH_matr.o: $(ARBHOME)/INCLUDE/static_assert.h
-PH_matr.o: $(ARBHOME)/INCLUDE/test_global.h
-PH_matr.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 PH_root.o: PH_filter.hxx
 PH_root.o: phylo.hxx
