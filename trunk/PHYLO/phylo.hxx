@@ -29,22 +29,8 @@
 
 #define ph_assert(cond) arb_assert(cond)
 
-#define AWAR_PHYLO_ALIGNMENT "phyl/alignment"
-
-#define AWAR_PHYLO_FILTER_ALIGNMENT "phyl/filter/alignment"
-#define AWAR_PHYLO_FILTER_NAME      "phyl/filter/name"
-#define AWAR_PHYLO_FILTER_FILTER    "phyl/filter/filter"
-
-#define AWAR_PHYLO_WEIGHTS_NAME      "phyl/weights/name"
-#define AWAR_PHYLO_WEIGHTS_ALIGNMENT "phyl/weights/alignment"
-
-#define AWAR_PHYLO_RATES_NAME                "phyl/rates/name"
-#define AWAR_PHYLO_CANCEL_CHARS              "phyl/cancel/chars"
-#define AWAR_PHYLO_CORRECTION_TRANSFORMATION "phyl/correction/transformation"
-#define AWAR_PHYLO_SAVE_MATRIX               "tmp/phyl/save_matrix"
-#define AWAR_PHYLO_TREE_NAME                 "phyl/tree/tree_name"
-#define AWAR_PHYLO_ALPHA                     "phyl/alpha"
-#define AWAR_PHYLO_RATEMATRIX_VAL_TEMPLATE   "phyl/ratematrix/val_%li_%li"
+#define AWAR_PHYLO_ALIGNMENT     "phyl/alignment"
+#define AWAR_PHYLO_FILTER_FILTER "phyl/filter/filter"
 
 #define AWAR_PHYLO_MATRIX_POINT "phyl/matrix/point"
 #define AWAR_PHYLO_MATRIX_MINUS "phyl/matrix/minus"
@@ -194,7 +180,7 @@ class PHDATA : virtual Noncopyable {
         {}
 
         ~PHENTRY() {
-            ph_assert(0); // @@@ called?
+            ph_assert(0); // @@@ why not called?
         }
     };
 
