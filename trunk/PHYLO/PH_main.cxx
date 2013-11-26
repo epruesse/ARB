@@ -55,7 +55,8 @@ static bool valid_alignment_selected(AW_root *aw_root, GBDATA *gb_main) {
     return true;
 }
 
-static void startup_sequence_cb(AW_window *alisel_window, AW_root *aw_root, AW_window *main_window) {
+static void startup_sequence_cb(AW_window *alisel_window, AW_window *main_window) {
+    AW_root *aw_root = main_window->get_root();
     if (valid_alignment_selected(aw_root, GLOBAL_gb_main)) {
         if (alisel_window) alisel_window->hide();
 
@@ -515,7 +516,7 @@ static AW_window *create_select_alignment_window(AW_root *aw_root, AW_window *ma
     aws->button_length(10);
 
     aws->at("done");
-    aws->callback(makeWindowCallback(startup_sequence_cb, aw_root, main_window));
+    aws->callback(makeWindowCallback(startup_sequence_cb, main_window));
     aws->create_button("DONE", "DONE", "D");
 
     aws->at("which_alignment");
@@ -589,18 +590,14 @@ int ARB_main(int argc, char *argv[]) {
             for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++) {}
 
             if (num_alignments > 1) {
-                {
-                    char *defaultAli = GBT_get_default_alignment(GLOBAL_gb_main);
-                    aw_root->awar(AWAR_PHYLO_ALIGNMENT)->write_string(defaultAli);
-                    free(defaultAli);
-                }
-
-                AW_window *sel_ali_aww = create_select_alignment_window(aw_root, puw->phylo_main_window);
-                sel_ali_aww->show();
+                char *defaultAli = GBT_get_default_alignment(GLOBAL_gb_main);
+                aw_root->awar(AWAR_PHYLO_ALIGNMENT)->write_string(defaultAli);
+                create_select_alignment_window(aw_root, puw->phylo_main_window)->show();
+                free(defaultAli);
             }
             else {
                 aw_root->awar(AWAR_PHYLO_ALIGNMENT)->write_string(alignment_names[0]);
-                startup_sequence_cb(NULL, aw_root, puw->phylo_main_window);
+                startup_sequence_cb(NULL, puw->phylo_main_window);
             }
             GB_pop_transaction(GLOBAL_gb_main);
 
