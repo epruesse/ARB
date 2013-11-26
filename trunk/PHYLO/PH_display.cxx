@@ -310,20 +310,6 @@ void PH_display::display()       // draw area
 }
 
 
-void PH_display::print()
-{
-    printf("\nContents of class PH_display:\n");
-    printf("display_what: %d\n", display_what);
-    printf("screen_width:          %f  screen_height:        %f\n", screen_width, screen_height);
-    printf("cell_width:            %ld  cell_height:          %ld\n", cell_width, cell_height);
-    printf("cell_offset:           %ld\n", cell_offset);
-    printf("horiz_page_size:       %ld  vert_page_size:       %ld\n", horiz_page_size, vert_page_size);
-    printf("horiz_page_start:      %ld  vert_page_start:      %ld\n", horiz_page_start, vert_page_start);
-    printf("off_dx:                %ld  off_dy:               %ld\n", off_dx, off_dy);
-    printf("horiz_last_view_start: %ld  vert_last_view_start: %ld\n", horiz_last_view_start, vert_last_view_start);
-}
-
-
 void PH_display::set_scrollbar_steps(AW_window *aww, long width_h, long width_v, long page_h, long page_v) {
     aww->window_local_awar("scroll_width_horizontal")  ->write_int(width_h);
     aww->window_local_awar("scroll_width_vertical")    ->write_int(width_v);
