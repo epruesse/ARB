@@ -29,7 +29,7 @@
 
 #define ph_assert(cond) arb_assert(cond)
 
-#define AWAR_PHYLO_ALIGNMENT     "phyl/alignment"
+#define AWAR_PHYLO_ALIGNMENT     "tmp/phyl/alignment"
 #define AWAR_PHYLO_FILTER_FILTER "phyl/filter/filter"
 
 #define AWAR_PHYLO_MATRIX_POINT "phyl/matrix/point"
