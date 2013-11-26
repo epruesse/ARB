@@ -905,14 +905,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
                         aw_root->awar(AWAR_DB_PATH)->write_string(latest);
                         free(latest);
                     }
-                    AW_window *iws;
-                    if (GLOBAL.window_creator) {
-                        iws = GLOBAL.window_creator(aw_root, 0);
-                    }
-                    else {
-                        iws = nt_create_intro_window(aw_root);
-                    }
-                    iws->show();
+                    nt_create_intro_window(aw_root)->show();
                     aw_root->setUserActionTracker(new NullTracker); // no macro recording inside intro window
                     aw_root->main_loop();
                 }

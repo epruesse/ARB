@@ -21,8 +21,6 @@
 #define aw_assert(bed) arb_assert(bed)
 #endif
 
-typedef AW_window *(*AW_PPP)(AW_root*, AW_CL, AW_CL); // @@@ [CB] similar to AW_Window_Creator
-
 #if defined(ASSERTION_USED)
 #define legal_mask(m) (((m)&AWM_ALL) == (m))
 #endif // ASSERTION_USED

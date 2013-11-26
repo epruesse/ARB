@@ -22,10 +22,14 @@ class AW_window;
 // generic callback parameter (used like a void*)
 typedef long AW_CL; // client data (casted from pointer or value)
 
+// Note:
+// most callbacks below are considered obsolete (as soon as #432 is completed)
+// They are mostly used to cast functions; better use make....Callback-wrappers 
+
 // AW_root callbacks
 typedef void (*AW_RCB2)(AW_root*, AW_CL, AW_CL);
 typedef void (*AW_RCB1)(AW_root*, AW_CL);
-typedef void (*AW_RCB0)(AW_root*);
+typedef void (*AW_RCB0)(AW_root*); // simplest RootCallback-type @@@ rename -> RootCallbackSimple
 typedef AW_RCB2 AW_RCB;
 
 // AW_awar callbacks
@@ -37,11 +41,11 @@ typedef AW_RCB  Awar_CB;
 // AW_window callbacks
 typedef void (*AW_CB2)(AW_window*, AW_CL, AW_CL);
 typedef void (*AW_CB1)(AW_window*, AW_CL);
-typedef void (*AW_CB0)(AW_window*);
+typedef void (*AW_CB0)(AW_window*); // simplest WindowCallback-type @@@ rename -> WindowCallbackSimple
 typedef AW_CB2 AW_CB;
 
 // AW_window-builder callbacks
-typedef AW_window *(*AW_Window_Creator)(AW_root*, AW_CL);
+// typedef AW_window *(*CreateWindowCallbackSimple)(AW_root*); // @@@ use in insert_menu_topic
 
 // ---------------------------
 //      typesafe callbacks
@@ -50,9 +54,7 @@ typedef AW_window *(*AW_Window_Creator)(AW_root*, AW_CL);
 #include <cbtypes.h>
 #endif
 
-typedef AW_window *(*AWC_CB)(AW_root *, AW_CL, AW_CL);
-
-// @@@ when gtk port is back to trunk, the definition of these cb-types may be moved into WINDOW
+// @@@ when gtk port is back to trunk, the definition of some of these cb-types may be moved into WINDOW
 
 DECLARE_CBTYPE_FVV_AND_BUILDERS(RootCallback,         void,       AW_root*);   // generates makeRootCallback
 DECLARE_CBTYPE_FVV_AND_BUILDERS(TimedCallback,        unsigned,   AW_root*);   // generates makeTimedCallback (return value: 0->do not call again, else: call again after XXX ms)
