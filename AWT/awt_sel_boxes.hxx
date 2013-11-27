@@ -116,13 +116,15 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
 // -------------------------------
 //      generic file prompter
 
-AW_window *awt_create_load_box(AW_root *aw_root, const char *action, const char *what,
-                               const char *default_directory, const char *file_extension,
-                               char **set_file_name_awar,
-                               void (*callback)(AW_window*, AW_CL),
-                               AW_window* (*create_popup)(AW_root *, AW_CL),
-                               void (*close_cb)(AW_window*, AW_CL), const char *close_button_text,
-                               AW_CL cl_user);
+AW_window *awt_create_load_box(AW_root                *aw_root,
+                               const char             *action,
+                               const char             *what,
+                               const char             *default_directory,
+                               const char             *file_extension,
+                               char                  **set_file_name_awar,
+                               const WindowCallback&   ok_cb,
+                               const WindowCallback&   abort_cb          = makeWindowCallback(AW_POPDOWN),
+                               const char             *close_button_text = NULL);
 
 // ------------------------------------------
 //      save/load selection list content

@@ -971,24 +971,15 @@ void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL cl_typedse
     free(data);
 }
 
-typedef AW_window* (*PopupCallbackType)(AW_root*, AW_CL);
-
-static void popdown_loadbox_and_popup_user(AW_window *aw_loadbox, AW_CL cl_create_popup, AW_CL cl_user) {
-    PopupCallbackType  create_popup = (PopupCallbackType)cl_create_popup;
-    AW_root           *aw_root      = aw_loadbox->get_root();
-    AW_window         *aw_popup     = create_popup(aw_root, cl_user);
-
-    aw_loadbox->hide();
-    aw_popup->activate();
-}
-
-AW_window *awt_create_load_box(AW_root *aw_root, const char *action, const char *what,
-                               const char *default_directory, const char *file_extension,
-                               char **set_file_name_awar,
-                               void (*callback)(AW_window*, AW_CL),
-                               AW_window* (*create_popup)(AW_root *, AW_CL),
-                               void (*close_cb)(AW_window*, AW_CL), const char *close_button_text,
-                               AW_CL cl_user)
+AW_window *awt_create_load_box(AW_root     *aw_root,
+                               const char  *action,
+                               const char  *what,
+                               const char  *default_directory,
+                               const char  *file_extension,
+                               char       **set_file_name_awar,
+                               const WindowCallback& ok_cb,
+                               const WindowCallback& close_cb,
+                               const char *close_button_text)
 {
     /* general purpose file selection box
      *
@@ -1006,15 +997,14 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *action, const char 
      *
      * 'file_extension' specifies the filter to be used (which files are shown)
      *
-     * You can either provide a normal 'callback' or a 'create_popup'-callback
-     * (the not-used callback has to be NULL).
-     *
+     * You have to provide an 'ok_cb', which will be called when 'OK' is pressed.
      * Optionally you may pass a 'close_cb' which will be called when 'CLOSE' is pressed.
      * If not given, AW_POPDOWN will be called.
      *
-     * Optionally you may pass the button text for the 'CLOSE'-button (e.g. 'EXIT' or 'Abort')
+     * Both callbacks will be called as callbacks of the load-box-window.
+     * The load-box does not popdown, the callback has to do that.
      *
-     * 'cl_user' will be forwarded to any specified callbacks.
+     * Optionally you may also pass the button text for the 'CLOSE'-button (e.g. 'EXIT' or 'Abort')
      */
 
 
@@ -1036,18 +1026,14 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *action, const char 
     }
 
     aws->at("close");
-    if (close_cb) {
-        aws->callback(close_cb, cl_user);
-    }
-    else {
-        aws->callback(AW_POPDOWN);
-    }
+    aws->callback(close_cb);
     if (close_button_text) {
         aws->create_button("CLOSE", close_button_text, "");
     }
     else {
         aws->create_button("CLOSE", "CLOSE", "C");
     }
+    // @@@ gtk: set_close_action
 
 #if 0
     // @@@ allow to pass helpfile
@@ -1057,16 +1043,7 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *action, const char 
 #endif
 
     aws->at("go");
-
-    if (callback) {
-        awt_assert(!create_popup);
-        aws->callback(callback, cl_user);
-    }
-    else {
-        awt_assert(create_popup);
-        aws->callback(popdown_loadbox_and_popup_user, AW_CL(create_popup), cl_user);
-    }
-
+    aws->callback(ok_cb);
     aws->create_button("GO", action);
 
     AW_create_fileselection(aws, base_name);

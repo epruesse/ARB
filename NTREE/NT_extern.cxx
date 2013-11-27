@@ -940,22 +940,21 @@ static void merge_from_to(AW_root *awr, const char *db_awar_name, bool merge_to)
 static void merge_from_cb(AW_window *aww, AW_CL cl_awarNamePtr) { merge_from_to(aww->get_root(), *(const char**)cl_awarNamePtr, false); }
 static void merge_into_cb(AW_window *aww, AW_CL cl_awarNamePtr) { merge_from_to(aww->get_root(), *(const char**)cl_awarNamePtr, true); }
 
-static AW_window *NT_create_merge_from_window(AW_root *awr, AW_CL) {
+static AW_window *NT_create_merge_from_window(AW_root *awr, AW_CL) { // @@@ fix cb
     static char *awar_name = NULL; // do not free, bound to callback
-
-    AW_window *aw_from =
+    AW_window *aw_from     =
         awt_create_load_box(awr, "Merge data from", "other ARB database",
                             ".", ".arb", &awar_name,
-                            merge_from_cb, NULL, NULL, NULL, AW_CL(&awar_name));
+                            makeWindowCallback(merge_from_cb, AW_CL(&awar_name)));
     return aw_from;
 }
-static AW_window *NT_create_merge_to_window(AW_root *awr, AW_CL) {
+static AW_window *NT_create_merge_to_window(AW_root *awr, AW_CL) { // @@@ fix cb
     static char *awar_name = NULL; // do not free, bound to callback
-
-    AW_window *aw_to =
+    AW_window *aw_to       =
         awt_create_load_box(awr, "Merge data to", "other ARB database",
                             ".", ".arb", &awar_name,
-                            merge_into_cb, NULL, NULL, NULL, AW_CL(&awar_name));
+                            makeWindowCallback(merge_into_cb, AW_CL(&awar_name)),
+                            makeWindowCallback(AW_POPDOWN), NULL);
     return aw_to;
 }
 
