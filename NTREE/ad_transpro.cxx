@@ -15,7 +15,6 @@
 #include <AP_codon_table.hxx>
 #include <AP_pro_a_nucs.hxx>
 #include <aw_awars.hxx>
-#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <aw_msg.hxx>

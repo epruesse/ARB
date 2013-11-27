@@ -20,7 +20,6 @@
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
-#include <aw_window.hxx>
 
 #define AWAR_CONFIG_NAME_SRC AWAR_MERGE_TMP_SRC "name"
 #define AWAR_CONFIG_NAME_DST AWAR_MERGE_TMP_DST "name"

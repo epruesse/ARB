@@ -15,7 +15,6 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
-#include <aw_window.hxx>
 #include <arbdbt.h>
 
 #define AWAR_EX_NAME_SRC    AWAR_MERGE_TMP_SRC "extended_name"

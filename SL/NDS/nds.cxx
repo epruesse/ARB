@@ -12,7 +12,6 @@
 #include <awt_config_manager.hxx>
 #include <awt_sel_boxes.hxx>
 
-#include <aw_window.hxx>
 #include <aw_awar.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
