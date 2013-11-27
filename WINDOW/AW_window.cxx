@@ -59,7 +59,7 @@ void AW_POPDOWN(AW_window *window){
 #define NOWINWARN() 
 #endif
 
-void AW_window::popper(AW_window *, CreateWindowCallback *windowMaker) {
+static AW_window *find_or_createAndRegisterWindow(CreateWindowCallback *windowMaker) {
     typedef std::map<CreateWindowCallback, AW_window*> window_map;
 
     static window_map     window;  // previously popped up windows
@@ -67,14 +67,26 @@ void AW_window::popper(AW_window *, CreateWindowCallback *windowMaker) {
 
     if (window.find(maker) == window.end()) {
         AW_window *made = maker(AW_root::SINGLETON);
-        if (!made) { NOWINWARN(); return; }
+        if (!made) { NOWINWARN(); return NULL; }
 
         window[maker] = made;
     }
-    window[maker]->activate();
+    return window[maker];
 }
 
-void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) {
+void AW_window::popper(AW_window *, CreateWindowCallback *windowMaker) {
+    AW_window *toPopup = find_or_createAndRegisterWindow(windowMaker);
+    if (toPopup) toPopup->activate();
+}
+void AW_window::replacer(AW_window *caller, CreateWindowCallback *windowMaker) {
+    AW_window *toPopup = find_or_createAndRegisterWindow(windowMaker);
+    if (toPopup) {
+        toPopup->activate();
+        caller->hide();
+    }
+}
+
+void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) { // @@@ obsolete (when #432 is done)
     typedef AW_window* (*popup_cb_t)(AW_root*, AW_CL);
     typedef std::map<std::pair<popup_cb_t,AW_CL>, AW_window*> window_map;
 
