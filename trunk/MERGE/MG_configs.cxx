@@ -63,7 +63,7 @@ static void MG_config_rename_cb(AW_window *aww, GBDATA *gbd, int db_nr) {
     free(dest);
 }
 
-static AW_window *MG_create_config_rename_window(AW_root *root, AW_CL db_nr) {
+static AW_window *MG_create_config_rename_window(AW_root *root, int db_nr) {
     AW_window_simple *aws = new AW_window_simple;
     if (db_nr == 1) {
         aws->init(root, "MERGE_RENAME_CONFIG_1", "CONFIGURATION RENAME 1");
@@ -84,13 +84,13 @@ static AW_window *MG_create_config_rename_window(AW_root *root, AW_CL db_nr) {
     aws->create_input_field(AWAR_CONFIG_NEWNAME, 15);
 
     aws->at("ok");
-    aws->callback((AW_CB)MG_config_rename_cb, (AW_CL)GLOBAL_gb_dst, db_nr);
+    aws->callback(makeWindowCallback(MG_config_rename_cb, GLOBAL_gb_dst, db_nr));
     aws->create_button("GO", "GO", "G");
 
     return aws;
 }
 
-static void MG_config_delete_cb(AW_window *aww, AW_CL db_nr) {
+static void MG_config_delete_cb(AW_window *aww, int db_nr) {
     const char *config_name_awar = db_nr == 1 ? AWAR_CONFIG_NAME_SRC : AWAR_CONFIG_NAME_DST;
     char       *config_name      = aww->get_root()->awar(config_name_awar)->read_string();
 
@@ -151,11 +151,15 @@ static void MG_transfer_config(AW_window *aww) {
     free(dest);
 }
 
-AW_window *MG_merge_configs_cb(AW_root *awr) {
-    static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
+AW_window *MG_create_merge_configs_window(AW_root *awr) {
+    GB_ERROR error = MG_expect_renamed();
+    if (error) {
+        aw_message(error);
+        return NULL; // deny to open window before user has renamed species
+    }
 
-    aws = new AW_window_simple;
+    AW_window_simple *aws = new AW_window_simple;
+
     aws->init(awr, "MERGE_CONFIGS", "MERGE CONFIGS");
     aws->load_xfig("merge/configs.fig");
 
@@ -175,19 +179,19 @@ AW_window *MG_merge_configs_cb(AW_root *awr) {
     awt_create_selection_list_on_configurations(GLOBAL_gb_dst, aws, AWAR_CONFIG_NAME_DST);
 
     aws->at("delete1");
-    aws->callback(MG_config_delete_cb, 1);
+    aws->callback(makeWindowCallback(MG_config_delete_cb, 1));
     aws->create_button("DELETE CONFIG_DB1", "Delete Config");
 
     aws->at("delete2");
-    aws->callback(MG_config_delete_cb, 2);
+    aws->callback(makeWindowCallback(MG_config_delete_cb, 2));
     aws->create_button("DELETE_CONFIG_DB2", "Delete Config");
 
     aws->at("rename1");
-    aws->callback(AW_POPUP, (AW_CL)MG_create_config_rename_window, 1);
+    aws->callback(makeCreateWindowCallback(MG_create_config_rename_window, 1));
     aws->create_button("RENAME_CONFIG_DB1", "Rename Config");
 
     aws->at("rename2");
-    aws->callback(AW_POPUP, (AW_CL)MG_create_config_rename_window, 2);
+    aws->callback(makeCreateWindowCallback(MG_create_config_rename_window, 2));
     aws->create_button("RENAME_CONFIG_DB2", "Rename Config");
 
     aws->at("transfer");
@@ -200,7 +204,7 @@ AW_window *MG_merge_configs_cb(AW_root *awr) {
     aws->callback(makeHelpCallback("mg_configs.hlp"));
     aws->create_button("HELP_MERGE", "#merge/icon.xpm");
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 

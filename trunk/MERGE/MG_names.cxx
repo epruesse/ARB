@@ -176,53 +176,52 @@ static void override_toggle_cb(AW_window *aww) {
     }
 }
 
-AW_window *MG_merge_names_cb(AW_root *awr) {
-    static AW_window_simple *aws = 0;
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(awr, "MERGE_AUTORENAME_SPECIES", "Synchronize IDs");
-        aws->load_xfig("merge/names.fig");
+AW_window *MG_create_merge_names_window(AW_root *awr) {
+    AW_window_simple *aws = new AW_window_simple;
 
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+    aws->init(awr, "MERGE_AUTORENAME_SPECIES", "Synchronize IDs");
+    aws->load_xfig("merge/names.fig");
 
-        aws->at("help");
-        aws->callback(makeHelpCallback("mg_names.hlp"));
-        aws->create_button("HELP", "HELP", "H");
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("addid1");
-        aws->create_input_field(AWAR_ADDID_SRC, 10);
+    aws->at("help");
+    aws->callback(makeHelpCallback("mg_names.hlp"));
+    aws->create_button("HELP", "HELP", "H");
 
-        aws->at("addid2");
-        aws->create_input_field(AWAR_ADDID_DST, 10);
+    aws->at("addid1");
+    aws->create_input_field(AWAR_ADDID_SRC, 10);
 
-        aws->at("dups");
-        aws->label("Allow merging duplicates (dangerous! see HELP)");
-        aws->create_toggle(AWAR_ALLOW_DUPS);
+    aws->at("addid2");
+    aws->create_input_field(AWAR_ADDID_DST, 10);
 
-        aws->at("override");
-        aws->label("Override (even more dangerous! see HELP)");
-        aws->callback(override_toggle_cb);
-        aws->create_toggle(AWAR_OVERRIDE);
+    aws->at("dups");
+    aws->label("Allow merging duplicates (dangerous! see HELP)");
+    aws->create_toggle(AWAR_ALLOW_DUPS);
 
-        aws->at("match");
-        aws->button_length(12);
-        aws->create_button(0, AWAR_ADDID_MATCH, 0, "+");
+    aws->at("override");
+    aws->label("Override (even more dangerous! see HELP)");
+    aws->callback(override_toggle_cb);
+    aws->create_toggle(AWAR_OVERRIDE);
 
-        aws->at("status");
-        aws->button_length(25);
-        aws->label("Status:");
-        aws->create_button(0, AWAR_RENAME_STATUS, 0, "+");
+    aws->at("match");
+    aws->button_length(12);
+    aws->create_button(0, AWAR_ADDID_MATCH, 0, "+");
 
-        aws->at("rename");
-        aws->callback(rename_both_databases);
-        aws->create_autosize_button("RENAME_DATABASES", "Synchronize");
+    aws->at("status");
+    aws->button_length(25);
+    aws->label("Status:");
+    aws->create_button(0, AWAR_RENAME_STATUS, 0, "+");
 
-        aws->button_length(0);
-        aws->shadow_width(1);
-        aws->at("icon");
-        aws->callback(makeHelpCallback("mg_names.hlp"));
-        aws->create_button("HELP_MERGE", "#merge/icon.xpm");
-    }
+    aws->at("rename");
+    aws->callback(rename_both_databases);
+    aws->create_autosize_button("RENAME_DATABASES", "Synchronize");
+
+    aws->button_length(0);
+    aws->shadow_width(1);
+    aws->at("icon");
+    aws->callback(makeHelpCallback("mg_names.hlp"));
+    aws->create_button("HELP_MERGE", "#merge/icon.xpm");
+
     return aws;
 }
