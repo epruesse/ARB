@@ -233,19 +233,19 @@ AW_window *MG_merge_trees_cb(AW_root *awr) {
         aws->button_length(15);
 
         aws->at("delete1");
-        aws->callback(TreeAdmin::delete_tree_cb, (AW_CL)&src_spec);
+        aws->callback(makeWindowCallback(TreeAdmin::delete_tree_cb, &src_spec));
         aws->create_button("DELETE TREE_DB1", "Delete Tree");
 
         aws->at("delete2");
-        aws->callback(TreeAdmin::delete_tree_cb, (AW_CL)&dst_spec);
+        aws->callback(makeWindowCallback(TreeAdmin::delete_tree_cb, &dst_spec));
         aws->create_button("DELETE_TREE_DB2", "Delete Tree");
 
         aws->at("rename1");
-        aws->callback(AW_POPUP, (AW_CL)TreeAdmin::create_rename_window, (AW_CL)&src_spec);
+        aws->callback(makeCreateWindowCallback(TreeAdmin::create_rename_window, &src_spec));
         aws->create_button("RENAME_TREE_DB1", "Rename Tree");
 
         aws->at("rename2");
-        aws->callback(AW_POPUP, (AW_CL)TreeAdmin::create_rename_window, (AW_CL)&dst_spec);
+        aws->callback(makeCreateWindowCallback(TreeAdmin::create_rename_window, &dst_spec));
         aws->create_button("RENAME_TREE_DB2", "Rename Tree");
 
         aws->at("transfer");
