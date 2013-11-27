@@ -633,6 +633,7 @@ public:
     }
 
     GB_ERROR open_db_for_merge(bool is_source_db);
+    void close_db() { if (gb_main) GB_close(gb_main); }
 };
 
 GB_ERROR SelectedDatabase::open_db_for_merge(bool is_source_db) {
@@ -674,7 +675,7 @@ GB_ERROR SelectedDatabase::open_db_for_merge(bool is_source_db) {
     return error;
 }
 
-struct merge_scheme {
+struct merge_scheme : virtual Noncopyable {
     SelectedDatabase *src;
     SelectedDatabase *dst;
 
@@ -690,6 +691,17 @@ struct merge_scheme {
           awar_dst(NULL),
           error(NULL)
     {}
+    ~merge_scheme() {
+        if (error) {
+            src->close_db();
+            dst->close_db();
+        }
+        delete src;
+        delete dst;
+        free(awar_src);
+        free(awar_dst);
+    }
+
 
     void open_dbs() {
         if (!error) error = src->open_db_for_merge(true);
