@@ -439,11 +439,15 @@ public:
 
 private:
     static void popper(AW_window *, CreateWindowCallback *windowMaker);
+    static void replacer(AW_window *aww, CreateWindowCallback *windowMaker);
+public:
     static WindowCallback makeWindowPopper(const CreateWindowCallback& cwcb) {
         return makeWindowCallback(popper, new CreateWindowCallback(cwcb));
     }
+    static WindowCallback makeWindowReplacer(const CreateWindowCallback& cwcb) {
+        return makeWindowCallback(replacer, new CreateWindowCallback(cwcb));
+    }
 
-public:
     // normal callbacks
     void callback(const WindowCallback& cb);
 

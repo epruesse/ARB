@@ -15,7 +15,6 @@
 #include <aw_question.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
-#include <aw_window.hxx>
 #include <arbdbt.h>
 #include <arb_strarray.h>
 

@@ -634,6 +634,7 @@ public:
     }
 
     GB_ERROR open_db_for_merge(bool is_source_db);
+    void close_db() { if (gb_main) GB_close(gb_main); }
 };
 
 GB_ERROR SelectedDatabase::open_db_for_merge(bool is_source_db) {
@@ -675,7 +676,7 @@ GB_ERROR SelectedDatabase::open_db_for_merge(bool is_source_db) {
     return error;
 }
 
-struct merge_scheme {
+struct merge_scheme : virtual Noncopyable {
     SelectedDatabase *src;
     SelectedDatabase *dst;
 
@@ -691,6 +692,17 @@ struct merge_scheme {
           awar_dst(NULL),
           error(NULL)
     {}
+    ~merge_scheme() {
+        if (error) {
+            src->close_db();
+            dst->close_db();
+        }
+        delete src;
+        delete dst;
+        free(awar_src);
+        free(awar_dst);
+    }
+
 
     void open_dbs() {
         if (!error) error = src->open_db_for_merge(true);
@@ -715,14 +727,13 @@ static void exit_from_merge(const char *restart_args) {
     }
 }
 
-static void merge_startup_abort_cb(AW_window *, AW_CL) {
+static void merge_startup_abort_cb(AW_window*) {
     fputs("Error: merge aborted by user\n", stderr);
     exit_from_merge(NULL);
 }
 
-static AW_window *merge_startup_error_window(AW_root *aw_root, AW_CL cl_error) {
+static AW_window *merge_startup_error_window(AW_root *aw_root, GB_ERROR error) {
     AW_window_simple *aw_msg = new AW_window_simple;
-    GB_ERROR          error  = GB_ERROR(cl_error);
 
     aw_msg->init(aw_root, "arb_merge_error", "ARB merge error");
     aw_msg->recalc_size_atShow(AW_RESIZE_DEFAULT); // force size recalc (ignores user size)
@@ -733,16 +744,14 @@ static AW_window *merge_startup_error_window(AW_root *aw_root, AW_CL cl_error) {
     aw_msg->create_autosize_button(NULL, error, "", 2);
     aw_msg->at_newline();
 
-    aw_msg->callback(merge_startup_abort_cb, 0);
+    aw_msg->callback(merge_startup_abort_cb);
     aw_msg->create_autosize_button("OK", "Ok", "O", 2);
 
     aw_msg->window_fit();
 
     return aw_msg;
 }
-static AW_window *startup_merge_main_window(AW_root *aw_root, AW_CL cl_merge_scheme) {
-    merge_scheme *ms = (merge_scheme*)cl_merge_scheme;
-
+static AW_window *startup_merge_main_window(AW_root *aw_root, merge_scheme *ms) {
     ms->fix_src(aw_root);
     ms->fix_dst(aw_root);
 
@@ -762,49 +771,41 @@ static AW_window *startup_merge_main_window(AW_root *aw_root, AW_CL cl_merge_sch
         nt_assert(got_macro_ability(aw_root));
     }
     else {
-        aw_result = merge_startup_error_window(aw_root, AW_CL(ms->error));
+        aw_result = merge_startup_error_window(aw_root, ms->error);
     }
     delete ms; // was allocated in startup_gui()
     return aw_result;
 }
 
-static AW_window *startup_merge_prompting_for_nonexplicit_dst_db(AW_root *aw_root, AW_CL cl_merge_scheme) {
-    merge_scheme *ms = (merge_scheme*)cl_merge_scheme;
-    AW_window    *aw_result;
-
+static AW_window *startup_merge_prompting_for_nonexplicit_dst_db(AW_root *aw_root, merge_scheme *ms) {
+    AW_window *aw_result;
     if (ms->dst->needs_to_prompt()) {
         aw_result = awt_create_load_box(aw_root, "Select", ms->dst->get_role(),
                                         ms->dst->get_dir(), ms->dst->get_mask(),
                                         &(ms->awar_dst),
-                                        0,
-                                        startup_merge_main_window,
-                                        merge_startup_abort_cb, "Cancel",
-                                        cl_merge_scheme);
+                                        AW_window::makeWindowReplacer(makeCreateWindowCallback(startup_merge_main_window, ms)),
+                                        makeWindowCallback(merge_startup_abort_cb), "Cancel");
     }
     else {
-        aw_result = startup_merge_main_window(aw_root, cl_merge_scheme);
+        aw_result = startup_merge_main_window(aw_root, ms);
     }
     return aw_result;
 }
 
-static AW_window *startup_merge_prompting_for_nonexplicit_dbs(AW_root *aw_root, AW_CL cl_merge_scheme) {
+static AW_window *startup_merge_prompting_for_nonexplicit_dbs(AW_root *aw_root, merge_scheme *ms) {
     // if src_spec or dst_spec needs to be prompted for -> startup prompters with callbacks bound to continue
     // otherwise just startup merge
 
-    merge_scheme *ms = (merge_scheme*)cl_merge_scheme;
-    AW_window    *aw_result;
-
+    AW_window *aw_result;
     if (ms->src->needs_to_prompt()) {
         aw_result = awt_create_load_box(aw_root, "Select", ms->src->get_role(),
                                         ms->src->get_dir(), ms->src->get_mask(),
                                         &(ms->awar_src),
-                                        0,
-                                        startup_merge_prompting_for_nonexplicit_dst_db,
-                                        merge_startup_abort_cb, "Cancel",
-                                        cl_merge_scheme);
+                                        AW_window::makeWindowReplacer(makeCreateWindowCallback(startup_merge_prompting_for_nonexplicit_dst_db, ms)),
+                                        makeWindowCallback(merge_startup_abort_cb), "Cancel");
     }
     else {
-        aw_result = startup_merge_prompting_for_nonexplicit_dst_db(aw_root, cl_merge_scheme);
+        aw_result = startup_merge_prompting_for_nonexplicit_dst_db(aw_root, ms);
     }
     return aw_result;
 }
@@ -859,7 +860,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
             }
             else {
                 aw_root->setUserActionTracker(new NullTracker); // no macro recording during startup of merge tool (file prompts)
-                AW_window *aww = startup_merge_prompting_for_nonexplicit_dbs(aw_root, AW_CL(ms));
+                AW_window *aww = startup_merge_prompting_for_nonexplicit_dbs(aw_root, ms);
 
                 nt_assert(contradicted(aww, error));
 
