@@ -13,25 +13,15 @@
 #ifndef AWT_SEL_BOXES_HXX
 #define AWT_SEL_BOXES_HXX
 
-#ifndef CB_BASE_H
-#include <cb_base.h>
-#endif
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
-#ifndef AW_BASE_HXX
-#include <aw_base.hxx>
-#endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
-#ifndef ATTRIBUTES_H
-#include <attributes.h>
-#endif
 #ifndef _GLIBCXX_STRING
 #include <string>
 #endif
-
+#ifndef CB_H
+#include <cb.h>
+#endif
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
+#endif
 
 class AP_filter;
 class AW_DB_selection;

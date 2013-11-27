@@ -46,7 +46,6 @@
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
-#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <aw_device.hxx>
