@@ -42,6 +42,12 @@ void AW_POPDOWN(AW_window *window){
  * is only created once.
  */
 
+#if defined(DEBUG)
+#define NOWINWARN() fputs("window factory did not create a window\n", stderr)
+#else
+#define NOWINWARN() 
+#endif
+
 void AW_window::popper(AW_window *, CreateWindowCallback *windowMaker) {
     typedef std::map<CreateWindowCallback, AW_window*> window_map;
 
@@ -49,7 +55,10 @@ void AW_window::popper(AW_window *, CreateWindowCallback *windowMaker) {
     CreateWindowCallback& maker = *windowMaker;
 
     if (window.find(maker) == window.end()) {
-        window[maker] = maker(AW_root::SINGLETON);
+        AW_window *made = maker(AW_root::SINGLETON);
+        if (!made) { NOWINWARN(); return; }
+
+        window[maker] = made;
     }
     window[maker]->activate();
 }
@@ -63,7 +72,10 @@ void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) {
     std::pair<popup_cb_t, AW_CL> popup((popup_cb_t)callback, callback_data);
 
     if (windows.find(popup) == windows.end()) {
-        windows[popup] = popup.first(AW_root::SINGLETON, popup.second);
+        AW_window *made = popup.first(AW_root::SINGLETON, popup.second);
+        if (!made) { NOWINWARN(); return; }
+
+        windows[popup] = made;
     }
 
     windows[popup]->activate();
