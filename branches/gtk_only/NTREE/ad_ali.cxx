@@ -11,7 +11,6 @@
 #include "NT_local.h"
 #include <insdel.h>
 #include <awt_sel_boxes.hxx>
-#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <aw_awar.hxx>

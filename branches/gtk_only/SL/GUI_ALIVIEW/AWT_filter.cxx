@@ -2,7 +2,6 @@
 #include "awt_sel_boxes.hxx"
 #include "ga_local.h"
 
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_select.hxx>

@@ -2056,7 +2056,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
     }
 }
 
-static void create_probe_group_groups_window(AW_window *aww, AW_CL) {
+static void create_probe_group_groups_window(AW_window *aww) {
     AW_root *aw_root = aww->get_root();
     GBDATA  *gb_main = pg_global.ntw->gb_main;
 
@@ -2089,7 +2089,8 @@ AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canva
     freenull(pg_global.awar_pg_result_filename);
     pg_global.ntw = (AWT_canvas*)cl_AW_canvas_ntw;
 
-    return awt_create_load_box(awr, "Load", "arb_probe_group result", ".", "arb", &pg_global.awar_pg_result_filename,
-                               create_probe_group_groups_window, NULL, NULL, NULL, 0);
+    return awt_create_load_box(awr, "Load", "arb_probe_group result", ".", "arb",
+                               &pg_global.awar_pg_result_filename,
+                               makeWindowCallback(create_probe_group_groups_window));
 }
 
