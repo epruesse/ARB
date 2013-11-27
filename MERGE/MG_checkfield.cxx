@@ -293,7 +293,7 @@ static void mg_check_field_cb(AW_window *aww) {
 }
 
 
-AW_window *create_mg_check_fields(AW_root *aw_root) {
+AW_window *create_mg_check_fields_window(AW_root *aw_root) {
     aw_root->awar_string(AWAR_SOURCE_FIELD);
     aw_root->awar_string(AWAR_DEST_FIELD, "tmp", AW_ROOT_DEFAULT);
     aw_root->awar_string(AWAR_EXCLUDE, ".-", AW_ROOT_DEFAULT);
