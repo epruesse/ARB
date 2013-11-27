@@ -62,11 +62,6 @@ static void pars_saveNrefresh_changed_tree(AWT_canvas *ntw) {
     ntw->zoom_reset_and_refresh();
 }
 
-static void pars_export_tree() {
-    GB_ERROR error = global_tree()->save(0, 0, 0, 0);
-    if (error) aw_message(error);
-}
-
 __ATTR__NORETURN static void pars_exit(AW_window *aww) {
     AW_root *aw_root = aww->get_root();
     shutdown_macro_recording(aw_root);
