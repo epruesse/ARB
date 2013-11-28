@@ -1126,6 +1126,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         insert_macro_menu_entry(awm, false);
         awm->insert_menu_topic("print_tree", "Print Tree ...", "P", "tree2prt.hlp", AWM_ALL, AWT_popup_print_window, (AW_CL)ntw, 0);
         awm->insert_menu_topic("quit",       "Quit",           "Q", "quit.hlp",     AWM_ALL, pars_exit);
+        awm->set_close_action("quit");
     }
 
     awm->create_menu("Species", "S", AWM_ALL);
@@ -1331,6 +1332,7 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     aws->callback(pars_exit);
     aws->at("close");
     aws->create_button("ABORT", "ABORT", "A");
+    aws->set_close_action("ABORT");
 
     aws->callback(makeHelpCallback("arb_pars_init.hlp"));
     aws->at("help");

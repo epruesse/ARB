@@ -1288,6 +1288,7 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
         aws->at("close");
         aws->callback(import_window_close_cb);
         aws->create_button("CLOSE", "CLOSE", "C");
+        aws->set_close_action("CLOSE");
 
         aws->at("help");
         aws->callback(makeHelpCallback("arb_import.hlp"));

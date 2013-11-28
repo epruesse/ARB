@@ -280,6 +280,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
         }
 
         awm->insert_menu_topic("quit", "Quit", "Q", "quit.hlp", AWM_ALL, makeWindowCallback(MG_exit, false));
+
         if (save_dst_enabled) {
             awm->insert_menu_topic("quitnstart", "Quit & start target DB", "D", "quit.hlp", AWM_ALL, makeWindowCallback(MG_exit, true));
         }
@@ -365,6 +366,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
         awm->at("quit");
         awm->callback(makeWindowCallback(MG_exit, false));
         awm->create_button("QUIT", save_dst_enabled ? "Quit" : "Close");
+        awm->set_close_action("QUIT");
 
         awm->activate();
 

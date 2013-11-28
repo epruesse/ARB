@@ -482,6 +482,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
     awm->button_length(0);
     awm->help_text("quit.hlp");
     awm->create_button("QUIT", "QUIT");
+    awm->set_close_action("QUIT");
 
     awm->callback(makeHelpCallback("phylo.hlp"));
     awm->button_length(0);
@@ -517,6 +518,8 @@ static AW_window *create_select_alignment_window(AW_root *aw_root, AW_window *ma
 
     aws->callback(makeWindowCallback(ph_exit, ph_root));
     aws->create_button("ABORT", "Abort", "D");
+
+    aws->set_close_action("ABORT");
 
     return aws;
 }
