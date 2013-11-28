@@ -1408,6 +1408,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->at("close");
     aws->callback(di_exit);
     aws->create_button("CLOSE", "CLOSE", "C");
+    aws->set_close_action("CLOSE");
 
     aws->at("help");
     aws->callback(makeHelpCallback("dist.hlp"));

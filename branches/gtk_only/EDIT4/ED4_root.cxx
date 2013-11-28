@@ -1643,8 +1643,14 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->callback(ED4_quit_editor);
     awmm->help_text("quit.hlp");
 
-    if (clone) awmm->create_button("CLOSE", "#close.xpm");
-    else       awmm->create_button("QUIT", "#quit.xpm");
+    if (clone) {
+        awmm->create_button("CLOSE", "#close.xpm");
+        awmm->set_close_action("CLOSE");
+    }
+    else {
+        awmm->create_button("QUIT", "#quit.xpm");
+        awmm->set_close_action("QUIT");
+    }
 
     awmm->at("help");
     awmm->callback(AW_help_entry_pressed);

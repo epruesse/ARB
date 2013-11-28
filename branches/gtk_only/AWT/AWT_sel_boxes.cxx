@@ -1045,7 +1045,7 @@ AW_window *awt_create_load_box(AW_root     *aw_root,
     else {
         aws->create_button("CLOSE", "CLOSE", "C");
     }
-    // @@@ gtk: set_close_action
+    aws->set_close_action("CLOSE");
 
 #if 0
     // @@@ allow to pass helpfile
