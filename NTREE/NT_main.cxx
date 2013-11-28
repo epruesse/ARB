@@ -838,6 +838,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
 
     ARB_declare_global_awars(aw_root, AW_ROOT_DEFAULT);
 
+    aw_root->setUserActionTracker(new NullTracker); // no macro recording inside prompters that may popup
     if (!error) {
         nt_assert(!cl.wants_help());
                 
@@ -877,7 +878,6 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
 
             if (cl.free_args() > 0) database = cl.get_arg(0);
 
-            aw_root->setUserActionTracker(new NullTracker); // no macro recording inside prompters that may popup
             error = check_argument_for_mode(database, browser_startdir, mode);
             if (!error) {
                 if (mode == IMPORT) {

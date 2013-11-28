@@ -56,6 +56,8 @@ static void MG_exit(AW_window *aww, bool start_dst_db) {
         }
     }
 
+    shutdown_macro_recording(AW_root::SINGLETON);
+
     // @@@ code below duplicates code from nt_disconnect_from_db()
     aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_src);
     aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_dst);
