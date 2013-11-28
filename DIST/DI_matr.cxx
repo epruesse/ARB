@@ -1343,6 +1343,7 @@ __ATTR__NORETURN static void di_exit(AW_window *aww) {
         aw_root->unlink_awars_from_DB(GLOBAL_gb_main);
         GB_close(GLOBAL_gb_main);
     }
+    GLOBAL_MATRIX.set_changed_cb(NULL);
     exit(0);
 }
 
