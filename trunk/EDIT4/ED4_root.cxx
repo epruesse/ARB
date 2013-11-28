@@ -548,7 +548,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
         }
     }
 
-    arb_progress startup_progress("EDIT4 startup");
+    SmartPtr<arb_progress> startup_progress = new arb_progress("EDIT4 startup");
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -709,6 +709,15 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     resize_all();
 
     main_manager->route_down_hierarchy(force_group_update).expect_no_error();
+
+    if (!scroll_links.link_for_hor_slider) { // happens when no species AND no SAI has data
+        startup_progress->done();
+        startup_progress.SetNull(); // make progress disappear (otherwise prompter below is often behind progress window)
+        GB_pop_transaction(GLOBAL_gb_main);
+        
+        aw_popup_ok(GBS_global_string("No species/SAI contains data in '%s'\nARB_EDIT4 will terminate", alignment_name));
+        ED4_exit();
+    }
 
     // build consensi
     {
