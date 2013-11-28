@@ -186,7 +186,7 @@ public:
     bool exists() const { return matrix != NULL; }
 
     void set_changed_cb(DI_MATRIX_CB cb) {
-        announce_change();
+        // announce_change(); // do by caller if really needed
         changed_cb = cb;
     }
 
