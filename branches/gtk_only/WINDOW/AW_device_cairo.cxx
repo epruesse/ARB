@@ -130,12 +130,10 @@ bool AW_device_cairo::box_impl(int gc, bool filled, const Rectangle& rect, AW_bi
 
     if (filled) {
         get_common()->update_cr(cr, gc, true);
-        cairo_fill(cr);
+        cairo_fill_preserve(cr);
         get_common()->update_cr(cr, gc, false);
     }
-    else {
-        cairo_stroke(cr);
-    }
+    cairo_stroke(cr);
 
     TRACE("%i %i %i %i %s", (int)x, (int)y, (int)width, (int)height, filled?"filled":"");
 
