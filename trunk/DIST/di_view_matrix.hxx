@@ -31,7 +31,7 @@ class  AW_device;
 struct AW_event;
 class  DI_MATRIX;
 
-class DI_dmatrix {
+class MatrixDisplay {
     int screen_width;             // dimensions of main screen
     int screen_height;
 
@@ -82,12 +82,12 @@ public:
     void handle_move(AW_event& event);
     void scroll_cells(int cells_x, int cells_y);
 
-    DI_dmatrix();
+    MatrixDisplay();
     void init();
 };
 
 struct save_matrix_params;
-AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_matrix_params *sparam);
+AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_matrix_params *sparam);
 
 
 #else
