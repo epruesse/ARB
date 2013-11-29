@@ -12,7 +12,6 @@
 #include "di_clusters.hxx"
 #include "dist.hxx"
 #include "di_view_matrix.hxx"
-#include "di_matr.hxx"
 #include "di_awars.hxx"
 
 #include <neighbourjoin.hxx>
