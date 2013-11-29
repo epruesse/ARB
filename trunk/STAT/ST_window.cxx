@@ -212,7 +212,7 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
 
         
         aws->at("filter");
-        aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)(cb_data->filter->get_adfiltercbstruct()));
+        aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, cb_data->filter->get_adfiltercbstruct()));
         aws->create_button("SELECT_FILTER", ST_ML_AWAR_FILTER_NAME);
         
         aws->at("sb");

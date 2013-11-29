@@ -50,7 +50,7 @@ struct adfiltercbstruct {
 adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, const char *def_name);
 void awt_set_awar_to_valid_filter_good_for_tree_methods(GBDATA *gb_main, AW_root *awr, const char *awar_name);
 
-AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL cd_adfiltercbstruct);
+AW_window *awt_create_select_filter_win(AW_root *aw_root, adfiltercbstruct *acbs);
 
 AP_filter *awt_get_filter(adfiltercbstruct *acbs);
 void awt_destroy_filter(AP_filter *filter);
