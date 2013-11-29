@@ -1458,7 +1458,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     aws->at("weights_select");
     aws->sens_mask(AWM_EXP);
-    aws->callback(AW_POPUP, (AW_CL)COLSTAT_create_selection_window, (AW_CL)weighted_filter->get_column_stat());
+    aws->callback(makeCreateWindowCallback(COLSTAT_create_selection_window, weighted_filter->get_column_stat()));
     aws->create_button("SELECT_COL_STAT", AWAR_DIST_COLUMN_STAT_NAME);
     aws->sens_mask(AWM_ALL);
 

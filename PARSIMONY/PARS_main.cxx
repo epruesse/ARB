@@ -1345,7 +1345,7 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     aws->create_button("SELECT_FILTER", AWAR_FILTER_NAME);
 
     aws->at("weights");
-    aws->callback(AW_POPUP, (AW_CL)COLSTAT_create_selection_window, (AW_CL)weighted_filter->get_column_stat());
+    aws->callback(makeCreateWindowCallback(COLSTAT_create_selection_window, weighted_filter->get_column_stat()));
     aws->sens_mask(AWM_EXP);
     aws->create_button("SELECT_CSP", AWAR_COLUMNSTAT_NAME);
     aws->sens_mask(AWM_ALL);
