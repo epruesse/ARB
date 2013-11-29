@@ -60,13 +60,13 @@
 
 DI_GLOBAL_MATRIX GLOBAL_MATRIX;
 
-static DI_dmatrix *di_dmatrix = 0;
-static AP_matrix   DI_dna_matrix(AP_MAX);
+static MatrixDisplay *matrixDisplay = 0;
+static AP_matrix      DI_dna_matrix(AP_MAX);
 
 static void refresh_matrix_display() {
-    if (di_dmatrix) {
-        di_dmatrix->resized();
-        di_dmatrix->display(false);
+    if (matrixDisplay) {
+        matrixDisplay->resized();
+        matrixDisplay->display(false);
     }
 }
 
@@ -1015,13 +1015,13 @@ static void di_view_matrix_cb(AW_window *aww, save_matrix_params *sparam) {
     GB_ERROR error = di_calculate_matrix(aww, sparam->weighted_filter, 0, true, NULL);
     if (error) return;
 
-    if (!di_dmatrix) di_dmatrix = new DI_dmatrix;
+    if (!matrixDisplay) matrixDisplay = new MatrixDisplay;
 
     static AW_window *viewer = 0;
-    if (!viewer) viewer = DI_create_view_matrix_window(aww->get_root(), di_dmatrix, sparam);
+    if (!viewer) viewer = DI_create_view_matrix_window(aww->get_root(), matrixDisplay, sparam);
 
-    di_dmatrix->init();
-    di_dmatrix->display(false);
+    matrixDisplay->init();
+    matrixDisplay->display(false);
 
     GLOBAL_MATRIX.set_changed_cb(refresh_matrix_display);
 

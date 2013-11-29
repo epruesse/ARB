@@ -27,29 +27,29 @@
 #define AWAR_MATRIX_NAMECHARS_TOP  AWAR_MATRIX "namechars_top"
 #define AWAR_MATRIX_NAMECHARS_LEFT AWAR_MATRIX "namechars_left"
 
-static void vertical_change_cb  (AW_window *aww, DI_dmatrix *dis) { dis->monitor_vertical_scroll_cb(aww); }
-static void horizontal_change_cb(AW_window *aww, DI_dmatrix *dis) { dis->monitor_horizontal_scroll_cb(aww); }
+static void vertical_change_cb  (AW_window *aww, MatrixDisplay *disp) { disp->monitor_vertical_scroll_cb(aww); }
+static void horizontal_change_cb(AW_window *aww, MatrixDisplay *disp) { disp->monitor_horizontal_scroll_cb(aww); }
 
-static void redisplay_needed(AW_window *, DI_dmatrix *dis) {
-    dis->display(true);
+static void redisplay_needed(AW_window *, MatrixDisplay *disp) {
+    disp->display(true);
 }
 
-static void reinit_needed(AW_root *, DI_dmatrix *dis) {
-    dis->init();
-    dis->display(false);
+static void reinit_needed(AW_root *, MatrixDisplay *disp) {
+    disp->init();
+    disp->display(false);
 }
 
-static void resize_needed(AW_window *, DI_dmatrix *dis) {
-    dis->init();
-    dis->resized();
-    dis->display(false);
+static void resize_needed(AW_window *, MatrixDisplay *disp) {
+    disp->init();
+    disp->resized();
+    disp->display(false);
 }
 
-DI_dmatrix::DI_dmatrix() {
-    memset((char *) this, 0, sizeof(DI_dmatrix));
+MatrixDisplay::MatrixDisplay() {
+    memset((char *) this, 0, sizeof(MatrixDisplay)); // @@@ fix
 }
 
-void DI_dmatrix::init() {
+void MatrixDisplay::init() {
     DI_MATRIX *m   = get_matrix();
     AW_root   *awr = awm->get_root();
 
@@ -115,7 +115,7 @@ void DI_dmatrix::init() {
     resized();  // initialize window_size dependent parameters
 }
 
-void DI_dmatrix::resized() {
+void MatrixDisplay::resized() {
     const AW_font_limits& lim = device->get_font_limits(DI_G_STANDARD, 0);
 
     DI_MATRIX *m = get_matrix();
@@ -167,7 +167,7 @@ enum ClickAction {
 #define MINMAX_GRANULARITY 10000L
 #define ROUNDUP            0.00005 // in order to round to 4 digits
 
-void DI_dmatrix::scroll_to(int sxpos, int sypos) {
+void MatrixDisplay::scroll_to(int sxpos, int sypos) {
     sxpos = force_in_range(0, sxpos, int(awm->get_scrolled_picture_width())-screen_width);
     sypos = force_in_range(0, sypos, int(awm->get_scrolled_picture_height())-screen_height);
 
@@ -178,12 +178,12 @@ void DI_dmatrix::scroll_to(int sxpos, int sypos) {
     monitor_horizontal_scroll_cb(awm);
 }
 
-void DI_dmatrix::scroll_cells(int cells_x, int cells_y) {
+void MatrixDisplay::scroll_cells(int cells_x, int cells_y) {
     scroll_to(awm->slider_pos_horizontal + cells_x*cell_width,
               awm->slider_pos_vertical + cells_y*cell_height);
 }
 
-void DI_dmatrix::handle_move(AW_event& event) {
+void MatrixDisplay::handle_move(AW_event& event) {
     static int clickx, clicky; // original click pos
     static int startx, starty; // original slider position
 
@@ -202,16 +202,16 @@ void DI_dmatrix::handle_move(AW_event& event) {
     }
 }
 
-static void motion_cb(AW_window *aww, DI_dmatrix *dmatrix) {
+static void motion_cb(AW_window *aww, MatrixDisplay *disp) {
     AW_event event;
     aww->get_event(&event);
 
     if (event.button == AW_BUTTON_MIDDLE) {
-        dmatrix->handle_move(event);
+        disp->handle_move(event);
     }
 }
 
-static void input_cb(AW_window *aww, DI_dmatrix *dmatrix) {
+static void input_cb(AW_window *aww, MatrixDisplay *disp) {
     AW_event event;
     aww->get_event(&event);
 
@@ -219,11 +219,11 @@ static void input_cb(AW_window *aww, DI_dmatrix *dmatrix) {
         if (event.type == AW_Mouse_Press) {
             bool horizontal = event.keymodifier & AW_KEYMODE_ALT;
             int  direction  = event.button == AW_WHEEL_UP ? -1 : 1;
-            dmatrix->scroll_cells(horizontal*direction, !horizontal*direction);
+            disp->scroll_cells(horizontal*direction, !horizontal*direction);
         }
     }
     else if (event.button == AW_BUTTON_MIDDLE) {
-        dmatrix->handle_move(event);
+        disp->handle_move(event);
     }
     else {
         AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
@@ -232,11 +232,11 @@ static void input_cb(AW_window *aww, DI_dmatrix *dmatrix) {
         click_device->reset();
 
         {
-            AW_device *oldMatrixDevice = dmatrix->device;
+            AW_device *oldMatrixDevice = disp->device;
 
-            dmatrix->device = click_device;
-            dmatrix->display(false); // detect clicked element
-            dmatrix->device = oldMatrixDevice;
+            disp->device = click_device;
+            disp->display(false); // detect clicked element
+            disp->device = oldMatrixDevice;
         }
 
         if (event.type == AW_Mouse_Press) {
@@ -253,7 +253,7 @@ static void input_cb(AW_window *aww, DI_dmatrix *dmatrix) {
 
                 if (action == CLICK_SELECT_SPECIES) {
                     long       idx    = long(clicked->cd2());
-                    DI_MATRIX *matrix = dmatrix->get_matrix();
+                    DI_MATRIX *matrix = disp->get_matrix();
                     if (idx >= matrix->nentries) {
                         aw_message(GBS_global_string("Illegal idx %li [allowed: 0-%li]", idx, matrix->nentries));
                     }
@@ -284,7 +284,7 @@ static void input_cb(AW_window *aww, DI_dmatrix *dmatrix) {
     }
 }
 
-void DI_dmatrix::display(bool clear) {
+void MatrixDisplay::display(bool clear) {
     // draw matrix
 
     long           x, y, xpos, ypos;
@@ -454,7 +454,7 @@ void DI_dmatrix::display(bool clear) {
 #undef BUFLEN
 }
 
-void DI_dmatrix::set_scrollbar_steps(long width_h, long width_v, long page_h, long page_v) {
+void MatrixDisplay::set_scrollbar_steps(long width_h, long width_v, long page_h, long page_v) {
     awm->window_local_awar("scroll_width_horizontal")->write_int(width_h);
     awm->window_local_awar("scroll_width_vertical")->write_int(width_v);
     awm->window_local_awar("horizontal_page_increment")->write_int(page_h);
@@ -469,7 +469,7 @@ void DI_dmatrix::set_scrollbar_steps(long width_h, long width_v, long page_h, lo
 #define DEBUG_GC DI_G_STANDARD
 #endif
 
-void DI_dmatrix::monitor_vertical_scroll_cb(AW_window *aww) { // draw area
+void MatrixDisplay::monitor_vertical_scroll_cb(AW_window *aww) { // draw area
     if (!device) return;
 
     int old_vert_page_start = vert_page_start;
@@ -513,7 +513,7 @@ void DI_dmatrix::monitor_vertical_scroll_cb(AW_window *aww) { // draw area
     }
 }
 
-void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
+void MatrixDisplay::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
     if (!device) return;
 
     int old_horiz_page_start = horiz_page_start;
@@ -568,7 +568,7 @@ static void di_view_set_max_dist(AW_window *aww, int max_dist) {
     aw_root->awar(AWAR_DIST_MAX_DIST)->write_float(max_dist);
 }
 
-static void di_view_set_distances(AW_root *awr, int setmax, DI_dmatrix *dmatrix) {
+static void di_view_set_distances(AW_root *awr, int setmax, MatrixDisplay *disp) {
     // cl_dmatrix: 0 -> set min and fix max, 1 -> set max and fix min, 2 -> set both
     double max_dist = awr->awar(AWAR_DIST_MAX_DIST)->read_float();
     double min_dist = awr->awar(AWAR_DIST_MIN_DIST)->read_float();
@@ -578,14 +578,14 @@ static void di_view_set_distances(AW_root *awr, int setmax, DI_dmatrix *dmatrix)
 
         switch (setmax) {
             case 2:                 // both
-                dmatrix->set_slider_max(max_dist);
+                disp->set_slider_max(max_dist);
                 // fall-through
             case 0:                 // set min and fix max
-                dmatrix->set_slider_min(min_dist);
+                disp->set_slider_min(min_dist);
                 if (min_dist>max_dist) awr->awar(AWAR_DIST_MAX_DIST)->write_float(min_dist);
                 break;
             case 1:                 // set max and fix min
-                dmatrix->set_slider_max(max_dist);
+                disp->set_slider_max(max_dist);
                 if (min_dist>max_dist) awr->awar(AWAR_DIST_MIN_DIST)->write_float(max_dist);
                 break;
 
@@ -594,7 +594,7 @@ static void di_view_set_distances(AW_root *awr, int setmax, DI_dmatrix *dmatrix)
                 break;
         }
     }
-    if (update_display_on_dist_change) dmatrix->display(true);
+    if (update_display_on_dist_change) disp->display(true);
 }
 
 static void di_change_dist(AW_window *aww, int mode) {
@@ -618,13 +618,13 @@ static void di_change_dist(AW_window *aww, int mode) {
     if (!(dist<0)) awr->awar(awar_name)->write_float(dist);
 }
 
-static void di_bind_dist_awars(AW_root *aw_root, DI_dmatrix *dmatrix) {
-    aw_root->awar_float(AWAR_DIST_MIN_DIST)->add_callback(makeRootCallback(di_view_set_distances, 0, dmatrix));
-    aw_root->awar_float(AWAR_DIST_MAX_DIST)->add_callback(makeRootCallback(di_view_set_distances, 1, dmatrix));
+static void di_bind_dist_awars(AW_root *aw_root, MatrixDisplay *disp) {
+    aw_root->awar_float(AWAR_DIST_MIN_DIST)->add_callback(makeRootCallback(di_view_set_distances, 0, disp));
+    aw_root->awar_float(AWAR_DIST_MAX_DIST)->add_callback(makeRootCallback(di_view_set_distances, 1, disp));
 }
 
-static void create_matrix_awars(AW_root *awr, DI_dmatrix *dmatrix) {
-    RootCallback reinit_needed_cb = makeRootCallback(reinit_needed, dmatrix);
+static void create_matrix_awars(AW_root *awr, MatrixDisplay *disp) {
+    RootCallback reinit_needed_cb = makeRootCallback(reinit_needed, disp);
 
     awr->awar_int(AWAR_MATRIX_PADDING,        4) ->add_callback(reinit_needed_cb);
     awr->awar_int(AWAR_MATRIX_SHOWZERO,       1) ->add_callback(reinit_needed_cb);
@@ -671,35 +671,35 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
     return aws;
 }
 
-static void selected_species_changed_cb(AW_root*, DI_dmatrix *dmatrix) {
-    if (dmatrix) redisplay_needed(dmatrix->awm, dmatrix);
+static void selected_species_changed_cb(AW_root*, MatrixDisplay *disp) {
+    if (disp) redisplay_needed(disp->awm, disp);
 }
 
-AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_matrix_params *sparam) {
-    di_bind_dist_awars(awr, dmatrix);
-    create_matrix_awars(awr, dmatrix);
+AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_matrix_params *sparam) {
+    di_bind_dist_awars(awr, disp);
+    create_matrix_awars(awr, disp);
     
     AW_window_menu *awm = new AW_window_menu;
     awm->init(awr, "SHOW_MATRIX", "ARB_SHOW_MATRIX", 800, 600);
 
-    dmatrix->device = awm->get_device(AW_MIDDLE_AREA);
-    dmatrix->awm    = awm;
+    disp->device = awm->get_device(AW_MIDDLE_AREA);
+    disp->awm    = awm;
 
-    awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(selected_species_changed_cb, dmatrix));
+    awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(selected_species_changed_cb, disp));
     
-    awm->set_vertical_change_callback  (makeWindowCallback(vertical_change_cb,  dmatrix));
-    awm->set_horizontal_change_callback(makeWindowCallback(horizontal_change_cb, dmatrix));
+    awm->set_vertical_change_callback  (makeWindowCallback(vertical_change_cb,   disp));
+    awm->set_horizontal_change_callback(makeWindowCallback(horizontal_change_cb, disp));
 
-    awm->set_resize_callback(AW_MIDDLE_AREA, makeWindowCallback(resize_needed, dmatrix));
-    awm->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(redisplay_needed, dmatrix));
-    awm->set_input_callback (AW_MIDDLE_AREA, makeWindowCallback(input_cb, dmatrix));
-    awm->set_motion_callback(AW_MIDDLE_AREA, makeWindowCallback(motion_cb, dmatrix));
+    awm->set_resize_callback(AW_MIDDLE_AREA, makeWindowCallback(resize_needed,    disp));
+    awm->set_expose_callback(AW_MIDDLE_AREA, makeWindowCallback(redisplay_needed, disp));
+    awm->set_input_callback (AW_MIDDLE_AREA, makeWindowCallback(input_cb,         disp));
+    awm->set_motion_callback(AW_MIDDLE_AREA, makeWindowCallback(motion_cb,        disp));
 
     AW_gc_manager gc_manager =
         AW_manage_GC(awm,
                      awm->get_window_id(),
-                     dmatrix->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
-                     makeWindowCallback(resize_needed, dmatrix),
+                     disp->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
+                     makeWindowCallback(resize_needed, disp),
                      false,
                      "#D0D0D0",
                      "#Standard$#000000",
@@ -763,9 +763,9 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
 
     awm->set_info_area_height(40);
 
-    dmatrix->init();
+    disp->init();
 
-    di_view_set_distances(awm->get_root(), 2, dmatrix);
+    di_view_set_distances(awm->get_root(), 2, disp);
 
     return awm;
 }
