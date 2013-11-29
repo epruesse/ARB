@@ -1341,7 +1341,7 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
         new WeightedFilter(GLOBAL_gb_main, aws->get_root(), AWAR_FILTER_NAME, AWAR_COLUMNSTAT_NAME, aws->get_root()->awar_string(AWAR_ALIGNMENT));
 
     aws->at("filter");
-    aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)weighted_filter->get_adfiltercbstruct());
+    aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, weighted_filter->get_adfiltercbstruct()));
     aws->create_button("SELECT_FILTER", AWAR_FILTER_NAME);
 
     aws->at("weights");

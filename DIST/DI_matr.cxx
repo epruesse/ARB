@@ -1453,7 +1453,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
         new WeightedFilter(GLOBAL_gb_main, aws->get_root(), AWAR_DIST_FILTER_NAME, AWAR_DIST_COLUMN_STAT_NAME, awar_dist_alignment);
 
     aws->at("filter_select");
-    aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)(weighted_filter->get_adfiltercbstruct()));
+    aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, weighted_filter->get_adfiltercbstruct()));
     aws->create_button("SELECT_FILTER", AWAR_DIST_FILTER_NAME);
 
     aws->at("weights_select");

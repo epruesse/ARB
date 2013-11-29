@@ -190,7 +190,7 @@ AW_window *open_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
 
     aws->at("seqfilter");
     adfiltercbstruct *filtercd = awt_create_select_filter(aws->get_root(), gb_main, AWAR_EXPORT_FILTER_NAME);
-    aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)filtercd);
+    aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, filtercd));
     aws->create_button("SELECT_FILTER", AWAR_EXPORT_FILTER_NAME);
 
     aws->at("cutstop");
