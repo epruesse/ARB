@@ -242,18 +242,18 @@ static void mark_cluster(ClusterPtr cluster, AW_CL cl_mask) {
         global_data->get_aw_root()->awar(AWAR_SPECIES_NAME)->write_string(name);
     }
 }
-static void mark_clusters(AW_window *, AW_CL cl_affected, AW_CL cl_warn_if_none_affected) {
-    AffectedClusters  affected = AffectedClusters(cl_affected);
-    AW_root          *aw_root  = global_data->get_aw_root();
-    GBDATA           *gb_main  = global_data->get_gb_main();
-    GB_transaction    ta(gb_main);
+static void mark_clusters(AW_window *, AffectedClusters affected, bool warn_if_none_affected) {
+    AW_root *aw_root = global_data->get_aw_root();
+    GBDATA  *gb_main = global_data->get_gb_main();
+
+    GB_transaction ta(gb_main);
 
     bool  markRep = aw_root->awar(AWAR_CLUSTER_MARKREP)->read_int();
     bool  selRep  = aw_root->awar(AWAR_CLUSTER_SELECTREP)->read_int();
     AW_CL mask    = markRep * MARK_REPRES + selRep * SELECT_REPRES;
 
     GBT_mark_all(gb_main, 0);                       // unmark all
-    int marked = with_affected_clusters_do(aw_root, affected, cl_warn_if_none_affected, mask, mark_cluster);
+    int marked = with_affected_clusters_do(aw_root, affected, warn_if_none_affected, mask, mark_cluster);
     if (!marked || !selRep) {
         // nothing marked -> force tree refresh
         if (selRep) {
@@ -759,14 +759,13 @@ static void accept_proposed_names(ClusterPtr cluster, AW_CL cl_accept) {
     cluster->accept_proposed(accept);
 }
 
-static void group_clusters(AW_window *, AW_CL cl_Group_Action) {
-    Group_Action      action   = (Group_Action)cl_Group_Action;
+static void group_clusters(AW_window *, Group_Action action) {
     AW_root          *aw_root  = global_data->get_aw_root();
     Group_What        what     = (Group_What)aw_root->awar(AWAR_CLUSTER_GROUP_WHAT)->read_int();
     AffectedClusters  affected = what == GROUP_LISTED ? ALL_CLUSTERS : SEL_CLUSTER;
 
     GroupBuilder groupBuilder(global_data->get_gb_main(), action);
-    
+
     GB_transaction ta(global_data->get_gb_main());
     with_affected_clusters_do(aw_root, affected, true, (AW_CL)&groupBuilder, update_cluster_group);
 
@@ -830,7 +829,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->at_newline();
 
-        aws->callback(group_clusters, GROUP_CREATE);
+        aws->callback(makeWindowCallback(group_clusters, GROUP_CREATE));
         aws->create_autosize_button("CREATE_GROUPS", "create groups!");
 
         aws->create_option_menu(AWAR_CLUSTER_GROUP_EXISTING, "If group exists", "x");
@@ -842,7 +841,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->at_newline();
 
-        aws->callback(group_clusters, GROUP_DELETE);
+        aws->callback(makeWindowCallback(group_clusters, GROUP_DELETE));
         aws->create_autosize_button("DELETE_GROUPS", "delete groups!");
 
         aws->create_text_toggle(AWAR_CLUSTER_GROUP_PREFIX_MATCH, "(all)", "(where prefix matches)", 30);
@@ -853,7 +852,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
         aws->at_newline();
         aws->button_length(60);
         aws->label("=>"); 
-        aws->create_button("=>", AWAR_CLUSTER_GROUP_EXAMPLE);
+        aws->create_button(NULL, AWAR_CLUSTER_GROUP_EXAMPLE);
 
         aws->window_fit();
     }
@@ -870,12 +869,10 @@ static void delete_selected_cluster(ClusterPtr cluster, AW_CL) {
     select_cluster(nextId);
     global_data->remove(cluster, SHOWN_CLUSTERS);
 }
-static void delete_clusters(AW_window *aww, AW_CL cl_affected) {
-    AffectedClusters affected = AffectedClusters(cl_affected);
-
+static void delete_clusters(AW_window *aww, AffectedClusters affected) {
     switch (affected) {
         case SEL_CLUSTER:
-            with_affected_clusters_do(aww->get_root(), affected, true, cl_affected, delete_selected_cluster);
+            with_affected_clusters_do(aww->get_root(), affected, true, affected, delete_selected_cluster);
             break;
         case ALL_CLUSTERS:
             select_cluster(0);
@@ -896,12 +893,10 @@ static void store_selected_cluster(ClusterPtr cluster, AW_CL) {
     select_cluster(nextId);
     global_data->store(cluster->get_ID());
 }
-static void store_clusters(AW_window *aww, AW_CL cl_affected) {
-    AffectedClusters affected = AffectedClusters(cl_affected);
-
+static void store_clusters(AW_window *aww, AffectedClusters affected) {
     switch (affected) {
         case SEL_CLUSTER:
-            with_affected_clusters_do(aww->get_root(), affected, true, cl_affected, store_selected_cluster);
+            with_affected_clusters_do(aww->get_root(), affected, true, affected, store_selected_cluster);
             break;
         case ALL_CLUSTERS:
             select_cluster(0);
@@ -939,11 +934,11 @@ static void load_clusters(AW_window *) {
 // ---------------------------------
 //      cluster detection window
 
-AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weightedFilter) {
+AW_window *DI_create_cluster_detection_window(AW_root *aw_root, WeightedFilter *weightedFilter) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         cl_assert(!global_data);
-        global_data = new ClustersData(*(WeightedFilter*)cl_weightedFilter);
+        global_data = new ClustersData(*weightedFilter);
 
         aws = new AW_window_simple;
         aws->init(aw_root, "DETECT_CLUSTERS", "Detect clusters in tree");
@@ -985,13 +980,13 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
 
         // column 1
 
-        aws->at("mark_all"); aws->callback(mark_clusters, ALL_CLUSTERS, true); aws->create_button("MARKALL", "Mark all");
+        aws->at("mark_all"); aws->callback(makeWindowCallback(mark_clusters, ALL_CLUSTERS, true)); aws->create_button("MARKALL", "Mark all");
 
         aws->at("auto_mark");  aws->create_toggle(AWAR_CLUSTER_AUTOMARK);
         aws->at("mark_rep");   aws->create_toggle(AWAR_CLUSTER_MARKREP);
         aws->at("select_rep"); aws->create_toggle(AWAR_CLUSTER_SELECTREP);
 
-        aws->at("mark"); aws->callback(mark_clusters, SEL_CLUSTER, true); aws->create_button("MARK", "Mark cluster");
+        aws->at("mark"); aws->callback(makeWindowCallback(mark_clusters, SEL_CLUSTER, true)); aws->create_button("MARK", "Mark cluster");
 
         // column 2
 
@@ -1010,18 +1005,18 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
 
         // store/restore
 
-        aws->at("store_all"); aws->callback(store_clusters,  ALL_CLUSTERS); aws->create_button("STOREALL", "Store all");
-        aws->at("store");     aws->callback(store_clusters,  SEL_CLUSTER);  aws->create_button("STORESEL", "Store selected");
-        aws->at("restore");   aws->callback(restore_clusters);              aws->create_button("RESTORE",  AWAR_CLUSTER_RESTORE_LABEL);
-        aws->at("swap");      aws->callback(swap_clusters);                 aws->create_button("Swap",     "Swap stored");
+        aws->at("store_all"); aws->callback(makeWindowCallback(store_clusters, ALL_CLUSTERS)); aws->create_button("STOREALL", "Store all");
+        aws->at("store");     aws->callback(makeWindowCallback(store_clusters, SEL_CLUSTER));  aws->create_button("STORESEL", "Store selected");
+        aws->at("restore");   aws->callback(restore_clusters);                                 aws->create_button("RESTORE",  AWAR_CLUSTER_RESTORE_LABEL);
+        aws->at("swap");      aws->callback(swap_clusters);                                    aws->create_button("Swap",     "Swap stored");
 
         // column 4
 
-        aws->at("clear");     aws->callback(delete_clusters, ALL_CLUSTERS); aws->create_button("CLEAR",    "Clear list");
-        aws->at("delete");    aws->callback(delete_clusters, SEL_CLUSTER);  aws->create_button("DEL",      "Delete selected");
+        aws->at("clear");  aws->callback(makeWindowCallback(delete_clusters, ALL_CLUSTERS)); aws->create_button("CLEAR", "Clear list");
+        aws->at("delete"); aws->callback(makeWindowCallback(delete_clusters, SEL_CLUSTER));  aws->create_button("DEL",   "Delete selected");
         aws->sens_mask(AWM_DISABLED);
-        aws->at("save");    aws->callback(save_clusters);    aws->create_button("SAVE",    "Save list");
-        aws->at("load");    aws->callback(load_clusters);    aws->create_button("LOAD",    "Load list");
+        aws->at("save"); aws->callback(save_clusters); aws->create_button("SAVE", "Save list");
+        aws->at("load"); aws->callback(load_clusters); aws->create_button("LOAD", "Load list");
         aws->sens_mask(AWM_ALL);
 
 
