@@ -910,7 +910,7 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_window *aww, const Weig
     return error;
 }
 
-static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
+static void di_mark_by_distance(AW_window *aww, WeightedFilter *weighted_filter) {
     AW_root *aw_root    = aww->get_root();
     double   lowerBound = aw_root->awar(AWAR_DIST_MIN_DIST)->read_float();
     double   upperBound = aw_root->awar(AWAR_DIST_MAX_DIST)->read_float();
@@ -940,11 +940,10 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
                 error = GBS_global_string("Couldn't find species '%s'", selected);
             }
             else {
-                char              *use             = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
-                char              *cancel          = aw_root->awar(AWAR_DIST_CANCEL_CHARS)->read_string();
-                DI_TRANSFORMATION  trans           = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
-                WeightedFilter    *weighted_filter = (WeightedFilter*)cl_weightedFilter;
-                AliView           *aliview         = weighted_filter->create_aliview(use);
+                char              *use     = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
+                char              *cancel  = aw_root->awar(AWAR_DIST_CANCEL_CHARS)->read_string();
+                DI_TRANSFORMATION  trans   = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
+                AliView           *aliview = weighted_filter->create_aliview(use);
 
                 if (!error) {
                     DI_MATRIX *prev_global = GLOBAL_MATRIX.swap(NULL);
@@ -1013,9 +1012,8 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
     }
 }
 
-static void di_view_matrix_cb(AW_window *aww, AW_CL cl_sparam) {
-    save_matrix_params *sparam = (save_matrix_params*)cl_sparam;
-    GB_ERROR            error  = di_calculate_matrix(aww, sparam->weighted_filter, 0, true, NULL);
+static void di_view_matrix_cb(AW_window *aww, save_matrix_params *sparam) {
+    GB_ERROR error = di_calculate_matrix(aww, sparam->weighted_filter, 0, true, NULL);
     if (error) return;
 
     if (!di_dmatrix) di_dmatrix = new DI_dmatrix;
@@ -1031,9 +1029,8 @@ static void di_view_matrix_cb(AW_window *aww, AW_CL cl_sparam) {
     viewer->activate();
 }
 
-static void di_save_matrix_cb(AW_window *aww, AW_CL cl_weightedFilter) {
+static void di_save_matrix_cb(AW_window *aww, const WeightedFilter *weighted_filter) {
     // save the matrix
-    WeightedFilter *weighted_filter = (WeightedFilter*)cl_weightedFilter;
     GB_ERROR error = di_calculate_matrix(aww, weighted_filter, 0, true, NULL);
     if (!error) {
         char              *filename = aww->get_root()->awar(AWAR_DIST_SAVE_MATRIX_FILENAME)->read_string();
@@ -1070,7 +1067,7 @@ AW_window *DI_create_save_matrix_window(AW_root *aw_root, save_matrix_params *sa
         AW_create_fileselection(aws, save_params->awar_base);
 
         aws->at("save2");
-        aws->callback(di_save_matrix_cb, (AW_CL)save_params->weighted_filter);
+        aws->callback(makeWindowCallback(di_save_matrix_cb, save_params->weighted_filter));
         aws->create_button("SAVE", "SAVE", "S");
 
         aws->callback((AW_CB0)AW_POPDOWN);
@@ -1080,8 +1077,7 @@ AW_window *DI_create_save_matrix_window(AW_root *aw_root, save_matrix_params *sa
     return aws;
 }
 
-static AW_window *awt_create_select_cancel_window(AW_root *aw_root)
-{
+static AW_window *awt_create_select_cancel_window(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SELECT_CHARS_TO_CANCEL_COLUMN", "CANCEL SELECT");
     aws->load_xfig("di_cancel.fig");
@@ -1114,7 +1110,7 @@ static const char *enum_trans_to_string[] = {
     "max ml"
 };
 
-static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL bootstrap_flag) {
+static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter, bool bootstrap_flag) {
     AW_root  *aw_root   = aww->get_root();
     GB_ERROR  error     = 0;
     GBT_TREE *tree      = 0;
@@ -1128,8 +1124,6 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         error           = GBT_check_tree_name(tree_name);
         free(tree_name);
     }
-
-    WeightedFilter *weighted_filter = (WeightedFilter*)cl_weightedFilter;
 
     SmartPtr<arb_progress>  progress;
     SmartPtr<ConsensusTree> ctree;
@@ -1347,28 +1341,25 @@ __ATTR__NORETURN static void di_exit(AW_window *aww) {
     exit(0);
 }
 
-static void di_calculate_full_matrix_cb(AW_window *aww, AW_CL cl_weightedFilter) {
+static void di_calculate_full_matrix_cb(AW_window *aww, WeightedFilter *weighted_filter) {
     GLOBAL_MATRIX.forget_if_not_has_type(DI_MATRIX_FULL);
-
-    WeightedFilter *weighted_filter = (WeightedFilter*)cl_weightedFilter;
-    GB_ERROR        error           = di_calculate_matrix(aww, weighted_filter, 0, true, NULL);
-
+    GB_ERROR error = di_calculate_matrix(aww, weighted_filter, 0, true, NULL);
     aw_message_if(error);
 }
 
-static void di_compress_tree_cb(AW_window *aww, AW_CL cl_weightedFilter) {
-    GB_transaction  ta(GLOBAL_gb_main);
-    char           *treename = aww->get_root()->awar(AWAR_DIST_TREE_COMP_NAME)->read_string();
-    GB_ERROR        error    = 0;
-    GBT_TREE       *tree     = GBT_read_tree(GLOBAL_gb_main, treename, sizeof(GBT_TREE));
-    
+static void di_calculate_compressed_matrix_cb(AW_window *aww, WeightedFilter *weighted_filter) {
+    GB_transaction ta(GLOBAL_gb_main);
+
+    char     *treename = aww->get_root()->awar(AWAR_DIST_TREE_COMP_NAME)->read_string();
+    GB_ERROR  error    = 0;
+    GBT_TREE *tree     = GBT_read_tree(GLOBAL_gb_main, treename, sizeof(GBT_TREE));
+
     if (!tree) {
         error = GB_await_error();
     }
     else {
         GLOBAL_MATRIX.forget_if_not_has_type(DI_MATRIX_COMPRESSED);
 
-        WeightedFilter *weighted_filter = (WeightedFilter*)cl_weightedFilter;
         error = di_calculate_matrix(aww, weighted_filter, 0, true, NULL);
         if (!error && !GLOBAL_MATRIX.exists()) error = "Failed to calculate your matrix (bug?)";
         if (!error) error = GLOBAL_MATRIX.get()->compress(tree);
@@ -1423,7 +1414,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     aws->create_menu("File", "F", AWM_ALL);
     insert_macro_menu_entry(aws, false);
-    aws->insert_menu_topic("quit",   "Quit",        "Q", "quit.hlp",  AWM_ALL, (AW_CB)di_exit,  0,  0);
+    aws->insert_menu_topic("quit", "Quit", "Q", "quit.hlp", AWM_ALL, di_exit);
 
     aws->create_menu("Properties", "P", AWM_ALL);
     aws->insert_menu_topic("frame_props", "Frame ...", "F", "props_frame.hlp", AWM_ALL, AW_preset_window);
@@ -1466,11 +1457,11 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->create_input_field(AWAR_DIST_CANCEL_CHARS, 12);
 
     aws->at("cancel_select");
-    aws->callback((AW_CB1)AW_POPUP, (AW_CL)awt_create_select_cancel_window);
+    aws->callback(awt_create_select_cancel_window);
     aws->create_button("SELECT_CANCEL_CHARS", "Info", "C");
 
     aws->at("change_matrix");
-    aws->callback(AW_POPUP, (AW_CL)create_dna_matrix_window, 0);
+    aws->callback(create_dna_matrix_window);
     aws->create_button("EDIT_MATRIX", "Edit Matrix");
 
     aws->at("enable");
@@ -1506,7 +1497,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
 
     aws->at("mark_distance");
-    aws->callback(di_mark_by_distance, (AW_CL)weighted_filter);
+    aws->callback(makeWindowCallback(di_mark_by_distance, weighted_filter));
     aws->create_autosize_button("MARK_BY_DIST", "Mark all species");
 
     aws->at("mark_lower");
@@ -1523,17 +1514,19 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_DIST_TREE_CURR_NAME);
 
     aws->at("detect_clusters");
-    aws->callback(AW_POPUP, (AW_CL)DI_create_cluster_detection_window, (AW_CL)weighted_filter);
+    aws->callback(makeCreateWindowCallback(DI_create_cluster_detection_window, weighted_filter));
     aws->create_autosize_button("DETECT_CLUSTERS", "Detect homogenous clusters in tree", "D");
 
     // matrix calculation
 
     aws->button_length(18);
+
     aws->at("calculate");
-    aws->callback(di_calculate_full_matrix_cb, (AW_CL)weighted_filter);
+    aws->callback(makeWindowCallback(di_calculate_full_matrix_cb, weighted_filter));
     aws->create_button("CALC_FULL_MATRIX", "Calculate\nFull Matrix", "F");
+
     aws->at("compress");
-    aws->callback(di_compress_tree_cb, (AW_CL)weighted_filter);
+    aws->callback(makeWindowCallback(di_calculate_compressed_matrix_cb, weighted_filter));
     aws->create_button("CALC_COMPRESSED_MATRIX", "Calculate\nCompressed Matrix", "C");
 
     aws->button_length(13);
@@ -1545,11 +1538,11 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
         sparams->weighted_filter = weighted_filter;
 
         aws->at("save_matrix");
-        aws->callback(AW_POPUP, (AW_CL)DI_create_save_matrix_window, (AW_CL)sparams);
+        aws->callback(makeCreateWindowCallback(DI_create_save_matrix_window, sparams));
         aws->create_button("SAVE_MATRIX", "Save matrix", "M");
 
         aws->at("view_matrix");
-        aws->callback(di_view_matrix_cb, (AW_CL)sparams);
+        aws->callback(makeWindowCallback(di_view_matrix_cb, sparams));
         aws->create_button("VIEW_MATRIX", "View matrix", "V");
     }
 
@@ -1570,10 +1563,10 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     aws->button_length(18);
     aws->at("t_calculate");
-    aws->callback(di_calculate_tree_cb, (AW_CL)weighted_filter, 0);
+    aws->callback(makeWindowCallback(di_calculate_tree_cb, weighted_filter, false));
     aws->create_button("CALC_TREE", "Calculate \ntree", "C");
     aws->at("bootstrap");
-    aws->callback(di_calculate_tree_cb, (AW_CL)weighted_filter, 1);
+    aws->callback(makeWindowCallback(di_calculate_tree_cb, weighted_filter, true));
     aws->create_button("CALC_BOOTSTRAP_TREE", "Calculate \nbootstrap tree");
 
     aws->button_length(22);

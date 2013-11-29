@@ -35,8 +35,7 @@ static void redisplay_needed(AW_window *, DI_dmatrix *dis) {
     dis->display(true);
 }
 
-static void reinit_needed(AW_root *, AW_CL cl_dis) {
-    DI_dmatrix *dis = (DI_dmatrix*)cl_dis;
+static void reinit_needed(AW_root *, DI_dmatrix *dis) {
     dis->init();
     dis->display(false);
 }
@@ -569,27 +568,24 @@ void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
 
 static bool update_display_on_dist_change = true;
 
-static void di_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /* clmatr */) {
-    double   max_d   = cl_max_d*0.01;
+static void di_view_set_max_dist(AW_window *aww, int max_dist) {
     AW_root *aw_root = aww->get_root();
-
     {
         LocallyModify<bool> flag(update_display_on_dist_change, false);
         aw_root->awar(AWAR_DIST_MIN_DIST)->write_float(0.0);
     }
-    aw_root->awar(AWAR_DIST_MAX_DIST)->write_float(max_d);
+    aw_root->awar(AWAR_DIST_MAX_DIST)->write_float(max_dist);
 }
 
-static void di_view_set_distances(AW_root *awr, AW_CL cl_setmax, AW_CL cl_dmatrix) {
+static void di_view_set_distances(AW_root *awr, int setmax, DI_dmatrix *dmatrix) {
     // cl_dmatrix: 0 -> set min and fix max, 1 -> set max and fix min, 2 -> set both
-    DI_dmatrix *dmatrix  = (DI_dmatrix *)cl_dmatrix;
-    double      max_dist = awr->awar(AWAR_DIST_MAX_DIST)->read_float();
-    double      min_dist = awr->awar(AWAR_DIST_MIN_DIST)->read_float();
+    double max_dist = awr->awar(AWAR_DIST_MAX_DIST)->read_float();
+    double min_dist = awr->awar(AWAR_DIST_MIN_DIST)->read_float();
 
     {
         LocallyModify<bool> flag(update_display_on_dist_change, false);
 
-        switch (cl_setmax) {
+        switch (setmax) {
             case 2:                 // both
                 dmatrix->set_slider_max(max_dist);
                 // fall-through
@@ -610,13 +606,13 @@ static void di_view_set_distances(AW_root *awr, AW_CL cl_setmax, AW_CL cl_dmatri
     if (update_display_on_dist_change) dmatrix->display(true);
 }
 
-static void di_change_dist(AW_window *aww, AW_CL cl_mode) {
+static void di_change_dist(AW_window *aww, int mode) {
     AW_root *awr = aww->get_root();
+
+    di_assert(mode>=0 && mode<=3);
+
     const char *awar_name;
-
-    di_assert(cl_mode>=0 && cl_mode<=3);
-
-    if (cl_mode<2) { // change min
+    if (mode<2) { // change min
         awar_name = AWAR_DIST_MIN_DIST;
     }
     else { // change max
@@ -626,22 +622,24 @@ static void di_change_dist(AW_window *aww, AW_CL cl_mode) {
     double dist = awr->awar(awar_name)->read_float();
     double increment = 0.01;
 
-    if (cl_mode%2) increment = -increment; // decrement value
+    if (mode%2) increment = -increment; // decrement value
     dist += increment;
     if (!(dist<0)) awr->awar(awar_name)->write_float(dist);
 }
 
 static void di_bind_dist_awars(AW_root *aw_root, DI_dmatrix *dmatrix) {
-    aw_root->awar_float(AWAR_DIST_MIN_DIST)->add_callback(di_view_set_distances, 0, (AW_CL)dmatrix);
-    aw_root->awar_float(AWAR_DIST_MAX_DIST)->add_callback(di_view_set_distances, 1, (AW_CL)dmatrix);
+    aw_root->awar_float(AWAR_DIST_MIN_DIST)->add_callback(makeRootCallback(di_view_set_distances, 0, dmatrix));
+    aw_root->awar_float(AWAR_DIST_MAX_DIST)->add_callback(makeRootCallback(di_view_set_distances, 1, dmatrix));
 }
 
 static void create_matrix_awars(AW_root *awr, DI_dmatrix *dmatrix) {
-    awr->awar_int(AWAR_MATRIX_PADDING, 4)->add_callback(reinit_needed, (AW_CL)dmatrix);
-    awr->awar_int(AWAR_MATRIX_SHOWZERO, 1)->add_callback(reinit_needed, (AW_CL)dmatrix);
-    awr->awar_int(AWAR_MATRIX_DIGITS, 4)->add_callback(reinit_needed, (AW_CL)dmatrix);
-    awr->awar_int(AWAR_MATRIX_NAMECHARS_TOP, 8)->add_callback(reinit_needed, (AW_CL)dmatrix);
-    awr->awar_int(AWAR_MATRIX_NAMECHARS_LEFT, 10)->add_callback(reinit_needed, (AW_CL)dmatrix);
+    RootCallback reinit_needed_cb = makeRootCallback(reinit_needed, dmatrix);
+
+    awr->awar_int(AWAR_MATRIX_PADDING,        4) ->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_SHOWZERO,       1) ->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_DIGITS,         4) ->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_NAMECHARS_TOP,  8) ->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_NAMECHARS_LEFT, 10)->add_callback(reinit_needed_cb);
 }
 
 static AW_window *create_matrix_settings_window(AW_root *awr) {
@@ -682,12 +680,8 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
     return aws;
 }
 
-static void selected_species_changed_cb(AW_root*, AW_CL cl_maxtrix_window, AW_CL cl_dmatrix) {
-    DI_dmatrix *dmatrix = (DI_dmatrix*)cl_dmatrix;
-    if (dmatrix) {
-        AW_window *awm = reinterpret_cast<AW_window*>(cl_maxtrix_window);
-        redisplay_needed(awm, dmatrix);
-    }
+static void selected_species_changed_cb(AW_root*, DI_dmatrix *dmatrix) {
+    if (dmatrix) redisplay_needed(dmatrix->awm, dmatrix);
 }
 
 AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_matrix_params *sparam) {
@@ -700,8 +694,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     dmatrix->device = awm->get_device(AW_MIDDLE_AREA);
     dmatrix->awm    = awm;
 
-    AW_awar *awar_sel = awr->awar(AWAR_SPECIES_NAME);
-    awar_sel->add_callback(selected_species_changed_cb, (AW_CL)awm, (AW_CL)dmatrix);
+    awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(selected_species_changed_cb, dmatrix));
     
     awm->set_vertical_change_callback  (makeWindowCallback(vertical_change_cb,  dmatrix));
     awm->set_horizontal_change_callback(makeWindowCallback(horizontal_change_cb, dmatrix));
@@ -726,20 +719,20 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
                      NULL);
 
     awm->create_menu("File", "F");
-    awm->insert_menu_topic("save_matrix", "Save Matrix to File", "S", "save_matrix.hlp", AWM_ALL, AW_POPUP,          (AW_CL)DI_create_save_matrix_window, (AW_CL)sparam);
-    awm->insert_menu_topic("close",       "Close",               "C", 0,                 AWM_ALL, (AW_CB)AW_POPDOWN, (AW_CL)0, 0);
+    awm->insert_menu_topic("save_matrix", "Save Matrix to File", "S", "save_matrix.hlp", AWM_ALL, makeCreateWindowCallback(DI_create_save_matrix_window, sparam));
+    awm->insert_menu_topic("close",       "Close",               "C", 0,                 AWM_ALL, AW_POPDOWN);
 
     awm->create_menu("Range", "R");
-    awm->insert_menu_topic("deselect_range",    "Deselect range",           "D", 0, AWM_ALL, di_view_set_max_d, 0,   (AW_CL)dmatrix);
-    awm->insert_menu_topic("show_dist_species", "Species range [ <=  2% ]", "S", 0, AWM_ALL, di_view_set_max_d, 2,   (AW_CL)dmatrix);
-    awm->insert_menu_topic("show_dist_genus",   "Genus range   [ <=  5% ]", "G", 0, AWM_ALL, di_view_set_max_d, 5,   (AW_CL)dmatrix);
-    awm->insert_menu_topic("show_dist_010",     "Range         [ <= 10% ]", "1", 0, AWM_ALL, di_view_set_max_d, 10,  (AW_CL)dmatrix);
-    awm->insert_menu_topic("show_dist_025",     "Range         [ <= 25% ]", "2", 0, AWM_ALL, di_view_set_max_d, 25,  (AW_CL)dmatrix);
-    awm->insert_menu_topic("show_dist_050",     "Range         [ <= 50% ]", "5", 0, AWM_ALL, di_view_set_max_d, 50,  (AW_CL)dmatrix);
-    awm->insert_menu_topic("show_dist_100",     "Whole range   [ 0-100% ]", "0", 0, AWM_ALL, di_view_set_max_d, 100, (AW_CL)dmatrix);
+    awm->insert_menu_topic("deselect_range",    "Deselect range",           "D", 0, AWM_ALL, makeWindowCallback(di_view_set_max_dist, 0));
+    awm->insert_menu_topic("show_dist_species", "Species range [ <=  2% ]", "S", 0, AWM_ALL, makeWindowCallback(di_view_set_max_dist, 2));
+    awm->insert_menu_topic("show_dist_genus",   "Genus range   [ <=  5% ]", "G", 0, AWM_ALL, makeWindowCallback(di_view_set_max_dist, 5));
+    awm->insert_menu_topic("show_dist_010",     "Range         [ <= 10% ]", "1", 0, AWM_ALL, makeWindowCallback(di_view_set_max_dist, 10));
+    awm->insert_menu_topic("show_dist_025",     "Range         [ <= 25% ]", "2", 0, AWM_ALL, makeWindowCallback(di_view_set_max_dist, 25));
+    awm->insert_menu_topic("show_dist_050",     "Range         [ <= 50% ]", "5", 0, AWM_ALL, makeWindowCallback(di_view_set_max_dist, 50));
+    awm->insert_menu_topic("show_dist_100",     "Whole range   [ 0-100% ]", "0", 0, AWM_ALL, makeWindowCallback(di_view_set_max_dist, 100));
 
     awm->create_menu("Properties", "P");
-    awm->insert_menu_topic("matrix_settings", "Settings ...",         "S", "matrix_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_matrix_settings_window, (AW_CL)0);
+    awm->insert_menu_topic("matrix_settings", "Settings ...",         "S", "matrix_settings.hlp", AWM_ALL, create_matrix_settings_window);
     awm->insert_menu_topic("matrix_colors",   "Colors and Fonts ...", "C", "neprops_data.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gc_manager));
     
     int x, y;
@@ -754,12 +747,12 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     x += FIELD_XSIZE;
 
     awm->at_x(x);
-    awm->callback(di_change_dist, 0);
+    awm->callback(makeWindowCallback(di_change_dist, 0));
     awm->create_button("PLUS_MIN", "+");
     x += BUTTON_XSIZE;
 
     awm->at_x(x);
-    awm->callback(di_change_dist, 1);
+    awm->callback(makeWindowCallback(di_change_dist, 1));
     awm->create_button("MINUS_MIN", "-");
     x += BUTTON_XSIZE;
 
@@ -769,19 +762,19 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
     x += FIELD_XSIZE;
 
     awm->at_x(x);
-    awm->callback(di_change_dist, 2);
+    awm->callback(makeWindowCallback(di_change_dist, 2));
     awm->create_button("PLUS_MAX", "+");
     x += BUTTON_XSIZE;
 
     awm->at_x(x);
-    awm->callback(di_change_dist, 3);
+    awm->callback(makeWindowCallback(di_change_dist, 3));
     awm->create_button("MINUS_MAX", "-");
 
     awm->set_info_area_height(40);
 
     dmatrix->init(dmatrix->di_matrix);
 
-    di_view_set_distances(awm->get_root(), 2, AW_CL(dmatrix));
+    di_view_set_distances(awm->get_root(), 2, dmatrix);
 
     return awm;
 }
