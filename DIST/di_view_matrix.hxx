@@ -13,6 +13,9 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
+#ifndef DI_MATR_HXX
+#include "di_matr.hxx"
+#endif
 
 enum DI_gc {
     DI_G_STANDARD,
@@ -64,9 +67,8 @@ class DI_dmatrix {
 public:
     AW_window *awm;
     AW_device *device;          // device to draw in
-    DI_MATRIX  *di_matrix;       // the Matrix
 
-    DI_MATRIX *get_matrix();
+    DI_MATRIX *get_matrix() { return GLOBAL_MATRIX.get(); }
 
     void monitor_vertical_scroll_cb(AW_window *);   // vertical and horizontal
     void monitor_horizontal_scroll_cb(AW_window *); // scrollbar movements
@@ -81,9 +83,7 @@ public:
     void scroll_cells(int cells_x, int cells_y);
 
     DI_dmatrix();
-    void init(DI_MATRIX *matrix=0); // set the output matrix
-
-    // if matrix == 0, use DI_MATRIX::root
+    void init();
 };
 
 struct save_matrix_params;

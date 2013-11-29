@@ -9,7 +9,6 @@
 // =============================================================== //
 
 #include "di_view_matrix.hxx"
-#include "di_matr.hxx"
 #include "dist.hxx"
 
 #include <aw_awars.hxx>
@@ -50,12 +49,9 @@ DI_dmatrix::DI_dmatrix() {
     memset((char *) this, 0, sizeof(DI_dmatrix));
 }
 
-void DI_dmatrix::init (DI_MATRIX *matrix) {
-    di_matrix = matrix;
-    DI_MATRIX *m = get_matrix();
-
-    AW_root *awr = awm->get_root();
-
+void DI_dmatrix::init() {
+    DI_MATRIX *m   = get_matrix();
+    AW_root   *awr = awm->get_root();
 
     leadZero = awr->awar(AWAR_MATRIX_SHOWZERO)->read_int();
     digits   = awr->awar(AWAR_MATRIX_DIGITS)->read_int();
@@ -117,11 +113,6 @@ void DI_dmatrix::init (DI_MATRIX *matrix) {
     }
     set_scrollbar_steps(cell_width, cell_height, 50, 50);
     resized();  // initialize window_size dependent parameters
-}
-
-DI_MATRIX *DI_dmatrix::get_matrix() {
-    if (di_matrix) return di_matrix;
-    return GLOBAL_MATRIX.get();
 }
 
 void DI_dmatrix::resized() {
@@ -772,7 +763,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
 
     awm->set_info_area_height(40);
 
-    dmatrix->init(dmatrix->di_matrix);
+    dmatrix->init();
 
     di_view_set_distances(awm->get_root(), 2, dmatrix);
 
