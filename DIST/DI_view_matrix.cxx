@@ -740,7 +740,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_
 
     awm->create_menu("Properties", "P");
     awm->insert_menu_topic("matrix_settings", "Settings ...",         "S", "matrix_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_matrix_settings_window, (AW_CL)0);
-    awm->insert_menu_topic("matrix_colors",   "Colors and Fonts ...", "C", "neprops_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)gc_manager);
+    awm->insert_menu_topic("matrix_colors",   "Colors and Fonts ...", "C", "neprops_data.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gc_manager));
     
     int x, y;
     awm->get_at_position(&x, &y);

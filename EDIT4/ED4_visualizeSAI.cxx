@@ -689,7 +689,7 @@ static AW_window *create_editColorTranslationTable_window(AW_root *aw_root) { //
     aws->create_button("REVERSE", "Reverse", "R");
 
     aws->at("colors");
-    aws->callback(AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)ED4_ROOT->gc_manager);
+    aws->callback(makeCreateWindowCallback(AW_create_gc_window, ED4_ROOT->gc_manager));
     aws->button_length(0);
     aws->create_button("COLORS", "#colors.xpm");
 
