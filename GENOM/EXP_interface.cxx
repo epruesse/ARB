@@ -200,7 +200,7 @@ static struct MutableItemSelector EXP_item_selector = {
     EXP_select_experiment,
     EXP_get_experiment_id,
     EXP_find_experiment_by_id,
-    (AW_CB)experiment_field_selection_list_update_cb,
+    experiment_field_selection_list_update_cb,
     -1, // unknown
     CHANGE_KEY_PATH_EXPERIMENTS,
     "experiment",
@@ -469,9 +469,9 @@ static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
     aws->sep______________();
     aws->insert_menu_topic("exp_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_unhide_all_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->sep______________();
-    aws->insert_menu_topic("exp_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, FIELD_FILTER_NDS);
-    aws->insert_menu_topic("exp_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_delete_unused_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
-    aws->insert_menu_topic("exp_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_update_cb,        (AW_CL)gb_main, FIELD_FILTER_NDS);
+    aws->insert_menu_topic("exp_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, makeWindowCallback(experiment_field_selection_list_scan_unknown_cb,  gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("exp_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, makeWindowCallback(experiment_field_selection_list_delete_unused_cb, gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("exp_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, makeWindowCallback(experiment_field_selection_list_update_cb,        gb_main, FIELD_FILTER_NDS));
 }
 
 #if defined(WARN_TODO)
