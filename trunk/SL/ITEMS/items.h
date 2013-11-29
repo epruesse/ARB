@@ -75,7 +75,7 @@ struct MutableItemSelector { // @@@ remove AW_root arguments!
 
 #define AWAR_KEY_SELECT "tmp/viewkeys/key_select"
 
-void popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main);
+void popup_select_species_field_window(AW_window *aww, const char *awar_name, GBDATA *gb_main);
 
 struct MutableBoundItemSel {
     GBDATA        *gb_main;

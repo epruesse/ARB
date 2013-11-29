@@ -114,18 +114,14 @@ ItemSelector& ORGANISM_get_selector() { return ITEM_organism; }
 
 // ----------------------------------------
 
-static void popdown_select_species_field_window(AW_root*, AW_CL cl_window) {
-    AW_window *aww = (AW_window*)cl_window;
-    aww->hide();
-}
+static void popdown_select_species_field_window(AW_root*, AW_window *aww) { aww->hide(); }
 
-void popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main) {
+void popup_select_species_field_window(AW_window *aww, const char *awar_name, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
 
     // everytime map selection awar to latest user awar:
-    AW_root    *aw_root     = aww->get_root();
-    const char *awar_name   = (const char *)cl_awar_name;
-    AW_awar    *common_awar = aw_root->awar(AWAR_KEY_SELECT);
+    AW_root *aw_root     = aww->get_root();
+    AW_awar *common_awar = aw_root->awar(AWAR_KEY_SELECT);
     common_awar->map(awar_name);
 
     if (!aws) {
@@ -139,14 +135,14 @@ void popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        create_selection_list_on_itemfields((GBDATA *)cl_gb_main,
+        create_selection_list_on_itemfields(gb_main,
                                             aws,
                                             AWAR_KEY_SELECT,
                                             FIELD_FILTER_NDS,
                                             "scandb", "rescandb", SPECIES_get_selector(), 20, 10);
         aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
-        common_awar->add_callback(popdown_select_species_field_window, AW_CL(aws));
+        common_awar->add_callback(makeRootCallback(popdown_select_species_field_window, static_cast<AW_window*>(aws)));
     }
     aws->activate();
 }
