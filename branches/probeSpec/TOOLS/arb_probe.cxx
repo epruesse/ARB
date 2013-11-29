@@ -93,7 +93,7 @@ static const char *AP_probe_pt_look_for_server(ARB_ERROR& error) {
 
     error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
     if (error) return NULL;
-    
+
     return GBS_read_arb_tcp(server_tag);
 }
 
@@ -403,7 +403,7 @@ static const char *getString(const char *param, const char *val, const char *des
 
 static bool parseCommandLine(int argc, const char * const * const argv) {
     pargc = argc;
-    
+
     // copy argv (since parser will remove matched arguments)
     free(pargv);
     pargv = (const char **)malloc(sizeof(*pargv)*pargc);
@@ -446,7 +446,7 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
 
     P.SEQUENCE = getString("matchsequence",   "agtagtagt", "The sequence to search for");
 
-    P.MISMATCHES = getInt("matchmismatches", 0,       0, 5,       "Maximum Number of allowed mismatches");
+    P.MISMATCHES = getInt("matchmismatches", 0,       0, 20,      "Maximum Number of allowed mismatches");
     P.COMPLEMENT = getInt("matchcomplement", 0,       0, 1,       "Match reversed and complemented probe");
     P.WEIGHTED   = getInt("matchweighted",   0,       0, 1,       "Use weighted mismatches");
     P.ACCEPTN    = getInt("matchacceptN",    1,       0, 20,      "Amount of N-matches not counted as mismatch");
@@ -535,7 +535,7 @@ int ARB_main(int argc, char *argv[]) {
         char      *answer = execute(error);
 
         arb_assert(contradicted(answer, error));
-        
+
         if (!answer) {
             fprintf(stderr,
                     "arb_probe: Failed to process your request\n"
@@ -609,8 +609,8 @@ void TEST_SLOW_match_geneprobe() {
         const char *arguments[] = {
             "prgnamefake",
             "matchsequence=NNUCNN",
-            "matchacceptN=4", 
-            "matchlimitN=5", 
+            "matchacceptN=4",
+            "matchlimitN=5",
         };
         CCP expectd = "    organism genename------- mis N_mis wmis pos gpos rev          'NNUCNN'\1"
             "genome2\1" "  genome2  gene3             0     4  0.0   2    1 0   .........-UU==GG-UUGAUC\1"
@@ -621,15 +621,15 @@ void TEST_SLOW_match_geneprobe() {
             "genome2\1" "  genome2  intergene_19_65   0     4  0.0  38   19 0   GCAUUCGGU-GU==GC-CUAAGCACU\1"
             "genome1\1" "  genome1  intergene_17_65   0     4  0.0  38   21 0   GCUAUCGGU-GU==GC-CUAAGCCAU\1"
             "genome1\1" "  genome1  intergene_17_65   0     4  0.0  56   39 0   AGCCAUGCG-AG==AU-AUGUA\1" "";
-        
+
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd);
     }
     {
         const char *arguments[] = {
             "prgnamefake",
             "matchsequence=NGGUUN",
-            "matchacceptN=2", 
-            "matchlimitN=3", 
+            "matchacceptN=2",
+            "matchlimitN=3",
         };
         CCP expectd = "    organism genename------- mis N_mis wmis pos gpos rev          'NGGUUN'\1"
             "genome1\1" "  genome1  joined1           0     2  0.0   5    2 0   ........C-U====G-AUCCUGC\1"
@@ -665,7 +665,7 @@ void TEST_SLOW_match_geneprobe() {
     {
         const char *arguments[] = {
             "prgnamefake",
-            "matchsequence=UUUCGG", // exists only in genome2 
+            "matchsequence=UUUCGG", // exists only in genome2
         };
         CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'UUUCGG'\1"
             "genome2\1" "  genome2  gene3      0     0  0.0   2    1 0   .........-======-UUGAUC\1"
@@ -676,7 +676,7 @@ void TEST_SLOW_match_geneprobe() {
     {
         const char *arguments[] = {
             "prgnamefake",
-            "matchsequence=AUCCUG", 
+            "matchsequence=AUCCUG",
         };
         CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'AUCCUG'\1"
             "genome2\1" "  genome2  gene2      0     0  0.0  11    5 0   .....GUUG-======-CCA\1" "";
@@ -779,7 +779,7 @@ void TEST_SLOW_match_probe() {
 
         CCP expectd1 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCUCCUUUC'\1"
             "BcSSSS00\1" "  BcSSSS00            0     1  0.0 176   162 0   CGGCUGGAU-==C========-U\1" "";
- 
+
         CCP expectd2 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCUCCUUUC'\1"
             "BcSSSS00\1" "  BcSSSS00            0     1  0.0 176   162 0   CGGCUGGAU-==C========-U\1"
             "PbcAcet2\1" "  PbcAcet2            0     2  0.0 176   162 0   CGGCUGGAU-==C=======N-N\1"
@@ -809,7 +809,7 @@ void TEST_SLOW_match_probe() {
             "PbcAcet2\1" "  PbcAcet2            0     1  0.0 175   161 0   GCGGCUGGA-===========N-N\1"
             "DlcTolu2\1" "  DlcTolu2            0     2  0.0 175   161 0   GCGGCUGGA-==========NN-N\1"
             "ClfPerfr\1" "  ClfPerfr            2     0  2.2 175   161 0   AAGAUUAAU-A=C=========-U\1" "";
-        
+
         arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
         arguments[2] = "matchmismatches=2"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
@@ -835,13 +835,13 @@ void TEST_SLOW_match_probe() {
             "DlcTolu2\1" "  DlcTolu2            0     3  0.0 176   162 0   CGGCUGGAU-==C=======N-N\1"
             "PbcAcet2\1" "  PbcAcet2            0     3  0.0 176   162 0   CGGCUGGAU-==C======UN-N\1"
             "ClfPerfr\1" "  ClfPerfr            1     2  1.1 176   162 0   AGAUUAAUA-=CC======U=-U\1" "";
-        
+
         CCP expectd2 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCUCCUUNC'\1"
             "BcSSSS00\1" "  BcSSSS00            0     2  0.0 176   162 0   CGGCUGGAU-==C======U=-U\1"
             "DlcTolu2\1" "  DlcTolu2            0     3  0.0 176   162 0   CGGCUGGAU-==C=======N-N\1"
             "PbcAcet2\1" "  PbcAcet2            0     3  0.0 176   162 0   CGGCUGGAU-==C======UN-N\1"
             "ClfPerfr\1" "  ClfPerfr            1     2  1.1 176   162 0   AGAUUAAUA-=CC======U=-U\1" "";
-        
+
         arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
         arguments[2] = "matchmismatches=2"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
@@ -869,7 +869,7 @@ void TEST_SLOW_match_probe() {
             "PbcAcet2\1" "  PbcAcet2            0     6  0.0 176   162 0   CGGCUGGAU-==C=U=CU=UN-N\1"
             "LgtLytic\1" "  LgtLytic            1     5  0.6  31    26 0   GUCGAACGG-==G=A=AG=Cu-AGCUUGCUA\1"
             "ClfPerfr\1" "  ClfPerfr            1     5  0.6 111    99 0   CGGCUGGAU-==U=AuAA=G=-AGCGAUUGG\1"; // one hit is truncated here
-        
+
         CCP expectd2 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCNCNNUNC'\1"
             "HllHalod\1" "  HllHalod            2     5  1.6  45    40 0   AAACGAUGG-a=G=UuGC=U=-CAGGCGUCG\1"
             "VblVulni\1" "  VblVulni            2     5  1.6  49    44 0   AGCACAGAG-a=A=UuGU=U=-UCGGGUGGC\1"
@@ -1027,8 +1027,8 @@ void TEST_SLOW_design_probe() {
 void TEST_SLOW_match_designed_probe() {
     bool use_gene_ptserver = false;
     const char *arguments[] = {
-        "prgnamefake", 
-        "matchsequence=UCAAGUCGAGCGAUGAAG", 
+        "prgnamefake",
+        "matchsequence=UCAAGUCGAGCGAUGAAG",
     };
     CCP expected = "    name---- fullname mis N_mis wmis pos ecoli rev          'UCAAGUCGAGCGAUGAAG'\1"
         "ClnCorin\1" "  ClnCorin            0     0  0.0  18    17 0   .GAGUUUGA-==================-UUCCUUCGG\1"
@@ -1223,7 +1223,7 @@ void TEST_SLOW_find_unmatched_probes() {
 arb_test::match_expectation partial_covers_full_probe(const char *part, const char *full) {
     using namespace arb_test;
     using namespace std;
-    
+
     expectation_group expected;
     expected.add(that(strstr(full, part)).does_differ_from_NULL());
     expected.add(that(strlen(part)).is_less_than(strlen(full)));
@@ -1276,13 +1276,13 @@ void TEST_SLOW_unmatched_probes() {
     TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUC",          "GGGGAACCUGGCGCUGGAUC");
     TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CGGUUGGAUCACCUCCUU",  "UGCGGUUGGAUCACCUCCUU");
     TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUCACCUCCUU",  "UGGCGCUGGAUCACCUCCUU");
-    
+
     // near and at 3'end of alignment
     TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCUGGAUCACCUCCUUU",   "GCGGCUGGAUCACCUCCUUU");
     TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCUGGAUCACCUCCUU",    "UGCGGCUGGAUCACCUCCUU");
-    
+
     // at 3'end of alignment
-    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CCUCCUUUCU",          "GAUUAAUACCCCUCCUUUCU"); // full probe has only one hit 
+    TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CCUCCUUUCU",          "GAUUAAUACCCCUCCUUUCU"); // full probe has only one hit
     TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("CGGUUGGAUCACCUCCUUA", "GCGGUUGGAUCACCUCCUUA");
     TEST_PARTIAL_COVERS_FULL_PROBE__BROKEN("GCGCUGGAUCACCUCCUUU", "GGCGCUGGAUCACCUCCUUU");
 
@@ -1313,9 +1313,9 @@ void TEST_SLOW_variable_defaults_in_server() {
     {
 #define LOCAL(rvar) (prev_read_##rvar)
 
-        
-#define FREE_LOCAL_long(rvar) 
-#define FREE_LOCAL_charp(rvar) free(LOCAL(rvar)) 
+
+#define FREE_LOCAL_long(rvar)
+#define FREE_LOCAL_charp(rvar) free(LOCAL(rvar))
 #define FREE_LOCAL(type,rvar) FREE_LOCAL_##type(rvar)
 
 #define TEST__READ(type,rvar,expected)                                  \

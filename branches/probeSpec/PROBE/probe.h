@@ -130,17 +130,17 @@ class probe_input_data : virtual Noncopyable {      // every taxa's own data
     GBDATA *get_gbdata() const { return gbd; }
     void set_data(char *assign, int size_) { pt_assert(!data); data = assign; size = size_; }
     void set_checksum(long cs) { checksum = cs; }
-    
+
 public:
 
     probe_input_data()
         : data(0),
-          checksum(0), 
-          size(0), 
-          name(0), 
-          fullname(0), 
-          gbd(0), 
-          group(false) 
+          checksum(0),
+          size(0),
+          name(0),
+          fullname(0),
+          gbd(0),
+          group(false)
     {}
     ~probe_input_data() {
         free(data);
@@ -253,7 +253,8 @@ extern struct probe_struct_global {
     int    mismatches;                              // chain handle in match
     double wmismatches;
     int    N_mismatches;
-    int    w_N_mismatches[PT_POS_TREE_HEIGHT+PT_POS_SECURITY+1];
+    int*   w_N_mismatches;
+    int    w_N_mismatches_Size;
 
     int reversed;                                   // tell the matcher whether probe is reversed
 
@@ -263,7 +264,7 @@ extern struct probe_struct_global {
     int deep;                                       // for probe matching
     int height;
     int length;
-    
+
     MostUsedPos abs_pos;
 
     int sort_by;
@@ -282,7 +283,7 @@ extern struct probe_struct_global {
 
     void setup();
     void cleanup();
-    
+
 } psg;
 
 class gene_struct {
@@ -354,12 +355,11 @@ extern gene_struct_index_internal gene_struct_internal2arb; // sorted by interna
 #define PT_base_string_counter_eof(str) (*(unsigned char *)(str) == 255)
 
 inline void fflush_all() { // @@@ will become a duplicate (when merging PT_tools.h later)
-    fflush(stderr); 
-    fflush(stdout); 
-} 
+    fflush(stderr);
+    fflush(stdout);
+}
 
 #else
 #error probe.h included twice
 #endif
-
 

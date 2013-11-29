@@ -21,6 +21,9 @@ AW_window *create_probe_design_window(AW_root *root, AW_CL cl_gb_main);
 AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main);
 AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main);
 AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canvas_ntw);
+AW_window *create_probe_match_with_specificity_window(AW_root *root, AW_CL cl_gb_main);
+AW_window *create_probe_collection_window(AW_root *root, AW_CL cl_gb_main);
+AW_window *create_probe_match_specificity_control_window(AW_root *root, AW_CL cl_gb_main);
 
 #define PROBE_DESIGN_EXCEPTION_MAX 1
 #define AWAR_PROBE_ADMIN_PT_SERVER "tmp/probe_admin/pt_server"

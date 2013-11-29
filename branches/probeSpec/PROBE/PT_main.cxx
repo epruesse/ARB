@@ -71,7 +71,7 @@ void probe_statistic_struct::setup() {
 
 void probe_struct_global::setup() {
     // init uninitialized data
-    
+
     gb_shell        = NULL;
     gb_main         = NULL;
     gb_species_data = NULL;
@@ -85,14 +85,13 @@ void probe_struct_global::setup() {
 
     max_size   = 0;
     char_count = 0;
-    
+
     mismatches = 0;
     wmismatches = 0.0;
     N_mismatches = 0;
 
-    for (size_t i = 0; i<ARRAY_ELEMS(w_N_mismatches); ++i) {
-        w_N_mismatches[i] = 0;
-    }
+    w_N_mismatches = 0;
+    w_N_mismatches_Size = 0;
 
     reversed = 0;
 
@@ -114,7 +113,7 @@ void probe_struct_global::setup() {
     link        = NULL;
 
     main.clear();
-    
+
     com_so = NULL;
     pt     = NULL;
     ptmain = NULL;
@@ -170,7 +169,7 @@ static void PT_exit_psg() {
     }
 }
 
-static void PT_exit() { 
+static void PT_exit() {
     // unique exit point to ensure cleanup
     if (aisc_main) destroy_PT_main(aisc_main);
     if (psg_initialized) PT_exit_psg();
@@ -293,7 +292,7 @@ static GB_ERROR PT_init_map() { // goes to header: __ATTR__USERESULT
 
         if (gb_gene_map) {
             gene_flag = 1;
-            
+
             GBDATA     *map_ptr_str = GB_entry(gb_gene_map, "map_string");
             const char *map_str     = GB_read_char_pntr(map_ptr_str);
 
@@ -398,8 +397,8 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
                 };
 
                 for (size_t s = 0; !error && s<ARRAY_ELEMS(build_step); s++) {
-                    if (s == 1 && !GB_supports_mapfile()) continue; // skip useless step 
-                    
+                    if (s == 1 && !GB_supports_mapfile()) continue; // skip useless step
+
                     char *build_cmd = GBS_global_string_copy("%s -%s -D%s", exename, build_step[s], arbdb_name);
                     make_valgrinded_call(build_cmd);
                     error           = GBK_system(build_cmd);

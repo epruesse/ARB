@@ -83,7 +83,7 @@ void SAI_graphic::command(AW_device * /* device */, AWT_COMMAND_MODE /* cmd */, 
     if (type == AW_Mouse_Press && (cl->exists || ct->exists) && button != AW_BUTTON_MIDDLE) {
         if (ct->exists) {
             int         clicked_idx  = (int)ct->client_data1;
-            const char *species_name = g_pbdata->probeSpecies[clicked_idx];
+            const char *species_name = g_pbdata->probeSpecies[clicked_idx].c_str();
 
             aw_root->awar(AWAR_SPECIES_NAME)->write_string(species_name);
             aw_root->awar(AWAR_SPV_SELECTED_PROBE)->write_string(species_name);
@@ -214,7 +214,7 @@ static const char *translateSAItoColors(AW_root *awr, GBDATA *gb_main, int start
                     }
                 }
 
-                const char *species_name = g_pbdata->probeSpecies[speciesNo];
+                const char *species_name = g_pbdata->probeSpecies[speciesNo].c_str();
                 GBDATA *gb_species       = GBT_find_species(gb_main, species_name);
                 GBDATA *gb_seq_data      = GBT_read_sequence(gb_species, alignment_name);
                 if (gb_seq_data) seqData = GB_read_char_pntr(gb_seq_data);
@@ -278,7 +278,7 @@ static int calculateEndPosition(GBDATA *gb_main, int startPos, int speciesNo, in
 
     GB_push_transaction(gb_main);
     char       *alignment_name = GBT_get_default_alignment(gb_main);
-    const char *species_name   = g_pbdata->probeSpecies[speciesNo];
+    const char *species_name   = g_pbdata->probeSpecies[speciesNo].c_str();
     GBDATA     *gb_species     = GBT_find_species(gb_main, species_name);
     if (gb_species) {
         GBDATA *gb_seq_data      = GBT_read_sequence(gb_species, alignment_name);
@@ -432,7 +432,7 @@ void SAI_graphic::paint(AW_device *device) {
 
     AW_pos fgY = yStep + 10;
     AW_pos pbY = yStep + 10;
-    
+
     char *saiSelected  = aw_root->awar(AWAR_SPV_SAI_2_PROBE)->read_string();
     int   dispSai      = aw_root->awar(AWAR_SPV_DISP_SAI)->read_int();       // to display SAI below probe targets
     int   displayWidth = aw_root->awar(AWAR_SPV_DB_FIELD_WIDTH)->read_int(); // display column width of the selected database field
@@ -453,11 +453,11 @@ void SAI_graphic::paint(AW_device *device) {
             char *selectedProbe = aw_root->awar(AWAR_SPV_SELECTED_PROBE)->read_string();
 
             for (size_t j = 0; j < g_pbdata->probeSpecies.size(); ++j) {
-                const char *name        = g_pbdata->probeSpecies[j];
+                const char *name        = g_pbdata->probeSpecies[j].c_str();
                 char       *displayInfo = GetDisplayInfo(aw_root, gb_main, name, displayWidth, default_tree);
 
                 AW_pos fgX = 0;
-                
+
                 AW_click_cd cd(device, j);
                 if (strcmp(selectedProbe, name) == 0) {
                     device->box(SAI_GC_FOREGROUND, true, fgX, (fgY - (yStep * 0.9)), (displayWidth * xStep_info), yStep);
@@ -496,7 +496,7 @@ void SAI_graphic::paint(AW_device *device) {
         else {
             for (size_t i = 0;  i < g_pbdata->probeSeq.size(); ++i) { // loop over all matches
                 GB_ERROR         error;
-                ParsedProbeMatch parsed(g_pbdata->probeSeq[i], parser);
+                ParsedProbeMatch parsed(g_pbdata->probeSeq[i].c_str(), parser);
                 AW_click_cd      cd(device, i);
 
                 if ((error = parsed.get_error())) {
@@ -529,7 +529,7 @@ void SAI_graphic::paint(AW_device *device) {
                             const char *endErr;
                             int         endPos = calculateEndPosition(gb_main, startPos-1, i, PROBE_PREFIX, probeLen, &endErr);
                             if (endPos == -2) {
-                                err = GBS_global_string("Can't handle '%s' (%s)", g_pbdata->probeSpecies[i], endErr);
+                                err = GBS_global_string("Can't handle '%s' (%s)", g_pbdata->probeSpecies[i].c_str(), endErr);
                             }
                             else {
                                 sai_assert(!endErr);
@@ -718,4 +718,3 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
 
     return awm;
 }
-

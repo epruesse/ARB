@@ -11,6 +11,8 @@
 #include <awt_canvas.hxx>
 #endif
 
+#include <string>
+
 #define sai_assert(cond) arb_assert(cond)
 
 #define AWAR_SPV_SAI_2_PROBE "sai_visualize/sai_2_probe"
@@ -44,44 +46,42 @@ enum {
 // global data for interaction with probe match result list:
 
 class saiProbeData : virtual Noncopyable {
-    char   *probeTarget;
-    size_t  probeTargetLen;
-    char   *headline;           // needed for ProbeMatchParser
+    std::string probeTarget;
+    std::string headline;           // needed for ProbeMatchParser
 
 public:
 
-    std::vector<const char*> probeSpecies;
-    std::vector<const char*> probeSeq;
+    std::vector<std::string> probeSpecies;
+    std::vector<std::string> probeSeq;
 
-    saiProbeData() : probeTarget(strdup("<notarget>")), probeTargetLen(0), headline(0) {}
+    saiProbeData() : probeTarget("<notarget>"), headline() {}
     ~saiProbeData() {
-        free(probeTarget);
-        free(headline);
+        probeSpecies.clear();
+        probeSeq.clear();
     }
 
     const char *getProbeTarget() const {
-        sai_assert(probeTarget); // always need a target
-        return probeTarget;
+        // sai_assert(probeTarget.length() > 0); // always need a target
+        return probeTarget.c_str();
     }
     size_t getProbeTargetLen() const {
-        return probeTargetLen;
+        return probeTarget.length();
     }
-    const char *getHeadline() const { return headline; }
+    const char *getHeadline() const { return headline.c_str(); }
 
     void setProbeTarget(const char *target) {
         sai_assert(target);
-        free(probeTarget);
+
         unsigned int len = strlen(target);
         char temp[len]; temp[len] = '\0';
         for (unsigned int i = 0; i < len; i++) {
             temp[i] = toupper(target[i]);  // converting the Bases to Upper case
         }
-        probeTarget    = strdup(temp);
-        probeTargetLen = strlen(probeTarget);
+        probeTarget = temp;
     }
     void setHeadline(const char *hline) {
         sai_assert(hline);
-        freedup(headline, hline);
+        headline = hline;
     }
 };
 
@@ -109,4 +109,3 @@ void transferProbeData(saiProbeData *spd);
 #else
 #error SaiProbeVisualization.hxx included twice
 #endif
-

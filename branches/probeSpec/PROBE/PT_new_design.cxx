@@ -211,20 +211,20 @@ static int ptnd_count_mishits2(POS_TREE *pt) {
     //! go down the tree to chains and leafs; count the species that are in the non member group
     if (pt == NULL)
         return 0;
-    
+
     if (PT_read_type(pt) == PT_NT_LEAF) {
         DataLoc loc(pt);
         psg.abs_pos.announce(loc.apos);
         return psg.data[loc.name].outside_group();
     }
-    
+
     if (PT_read_type(pt) == PT_NT_CHAIN) {
         psg.probe = 0;
         ptnd.mishits = 0;
         PT_forwhole_chain(pt, ptnd_chain_count_mishits());
         return ptnd.mishits;
     }
-    
+
     int mishits = 0;
     for (int base = PT_QU; base< PT_B_MAX; base++) {
         mishits += ptnd_count_mishits2(PT_read_son(pt, (PT_BASES)base));
@@ -303,6 +303,10 @@ char *get_design_info(PT_tprobes  *tprobe) {
     // grps
     p += sprintf(p, "%4i ", tprobe->groupsize);
 
+    // mis
+    sprintf(p,"%4i ",tprobe->mishit);
+    p += strlen(p);
+
     // G+C
     p += sprintf(p, "%-4.1f ", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0);
 
@@ -364,13 +368,15 @@ char *get_design_hinfo(PT_tprobes  *tprobe) {
                 "Temperature        [%4.1f -%4.1f]\n"
                 "GC-Content         [%4.1f -%4.1f]\n"
                 "E.Coli Position    [%s]\n"
-                "Max Non Group Hits  %4i\n"
-                "Min Group Hits      %4.0f%%\n",
+                "Max Non Group Hits   %4i\n"
+                "Min Group Hits       %4.0f%%\n"
+                "Allowable mismatches %4i\n",
                 pdc->probelen,
                 pdc->mintemp, pdc->maxtemp,
                 pdc->min_gc*100.0, pdc->max_gc*100.0,
                 ecolipos,
-                pdc->mishit, pdc->mintarget*100.0);
+                pdc->mishit, pdc->mintarget*100.0,
+                pdc->mismatches);
 
         free(ecolipos);
     }
@@ -384,6 +390,9 @@ char *get_design_hinfo(PT_tprobes  *tprobe) {
     s += strlen(s);
 
     sprintf(s, "%4s ", "grps"); // groupsize
+    s += strlen(s);
+
+    sprintf(s,"%4s ","mis"); // mishits
     s += strlen(s);
 
     sprintf(s, "%-4s %-7s %-*s | ", " G+C", "4GC+2AT", pdc->probelen, "Probe sequence");
@@ -432,26 +441,81 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
 
 static void ptnd_first_check(PT_pdc *pdc) {
     //! Check for direct mishits
+    PT_tprobes  *tprobe, *tprobe_next;
 
-    PT_tprobes *tprobe, *tprobe_next;
     for (tprobe = pdc->tprobes;
          tprobe;
-         tprobe = tprobe_next) {
+         tprobe = tprobe_next)
+    {
+        int nScaleMisHitTest = 1;
+
         tprobe_next = tprobe->next;
+
         psg.abs_pos.clear();
-        tprobe->mishit = ptnd_count_mishits(tprobe->sequence, psg.pt, 0);
+
+        if (pdc->mismatches == 0)
+        {
+            tprobe->mishit = ptnd_count_mishits(tprobe->sequence,psg.pt,0);
+        }
+        else
+        {
+            PT_probematch*  pm;
+            aisc_string     seq;
+            PT_local*       locs = (PT_local*)pdc->mh.parent->parent;
+            int             nMaxMismatches = 20;
+
+            locs->pm_max      = pdc->mismatches;
+            seq               = strdup(tprobe->sequence);
+            tprobe->mishit    = 0;
+            tprobe->groupsize = 0;
+            nScaleMisHitTest  = 0;
+
+            PT_base_2_string(seq);
+
+            probe_match(locs, seq);
+
+            for (pm = locs->pm ; pm != 0 ; pm = pm->next)
+            {
+                psg.abs_pos.announce(pm->b_pos);
+
+                switch (pm->is_member)
+                {
+                    case 1:
+                    {
+                        if (pm->mismatches <= nMaxMismatches)
+                        {
+                            nScaleMisHitTest = nScaleMisHitTest | (1 << pm->mismatches);
+                        }
+
+                        tprobe->groupsize++;
+                        break;
+                    }
+
+                    case 0:
+                    default:
+                    {
+                        tprobe->mishit++;
+                        break;
+                    }
+                  }
+            }
+        }
+
         tprobe->apos = psg.abs_pos.get_most_used();
-        if (tprobe->mishit > pdc->mishit) {
+
+        if (tprobe->mishit > pdc->mishit * nScaleMisHitTest)
+        {
             destroy_PT_tprobes(tprobe);
         }
     }
+
     psg.abs_pos.clear();
 }
 
 static void ptnd_check_position(PT_pdc *pdc) {
     //! Check the probes position.
     PT_tprobes *tprobe, *tprobe_next;
-    // if (pdc->min_ecolipos == pdc->max_ecolipos) return; // @@@ wtf was this for?  
+    // if (pdc->min_ecolipos == pdc->max_ecolipos) return; // @@@ wtf was this for?
 
     for (tprobe = pdc->tprobes; tprobe; tprobe = tprobe_next) {
         tprobe_next = tprobe->next;
@@ -1054,4 +1118,3 @@ int PT_start_design(PT_pdc *pdc, int /* dummy */) {
 
     return 0;
 }
-

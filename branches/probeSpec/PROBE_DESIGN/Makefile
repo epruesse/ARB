@@ -1,6 +1,6 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
-CPP_OBJECTS = probe_design.o SaiProbeVisualization.o probe_match_parser.o
+CPP_OBJECTS = probe_design.o SaiProbeVisualization.o probe_match_parser.o probe_collection.o
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:

@@ -46,7 +46,7 @@ static const char *clipstatestr(AW_device *device) {
             "offset={x=%f y=%f}" ,
             clip_rect.t, clip_rect.b, clip_rect.l, clip_rect.r,
             fo.top, fo.bottom, fo.left, fo.right,
-            device->get_scale(), device->get_unscale(), 
+            device->get_scale(), device->get_unscale(),
             offset.x(), offset.y());
 
     return buffer;
@@ -56,7 +56,6 @@ static const char *clipstatestr(AW_device *device) {
 const AW_screen_area& AW_device::get_area_size() const {
     return get_common()->get_screen();
 }
-
 
 void AW_device::pop_clip_scale() {
     if (!clip_scale_stack) {
@@ -262,7 +261,7 @@ bool AW_device::generic_filled_area(int gc, int npos, const AW::Position *pos, A
     return drawflag;
 }
 
-void AW_device::move_region(AW_pos /* src_x */, AW_pos /* src_y */, AW_pos /* width */, AW_pos /* height */, 
+void AW_device::move_region(AW_pos /* src_x */, AW_pos /* src_y */, AW_pos /* width */, AW_pos /* height */,
                             AW_pos /* dest_x */, AW_pos /* dest_y */) {
     // empty default
 }
@@ -359,14 +358,37 @@ AW_GC_Xm::AW_GC_Xm(AW_common *common_)
     val.cap_style  = GC_DEFAULT_CAP_STYLE;
     val.join_style = GC_JOIN_STYLE;
 
+    #define hash_width 8
+    #define hash_height 8
+
+    static char hash_bits[] = {0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa,0x55, 0xaa};
+    Pixmap      stipple     = XCreateBitmapFromData(get_common()->get_display(), get_common()->get_window_id(), hash_bits, hash_width, hash_height);
+
     unsigned long value_mask = GCLineWidth|GCLineStyle|GCCapStyle|GCJoinStyle;
 
     gc = XCreateGC(get_common()->get_display(), get_common()->get_window_id(), value_mask, &val);
     wm_set_function(get_function());
+
+    XSetStipple(get_common()->get_display(), gc, stipple);
+    set_fill_solid();
 }
+
 AW_GC_Xm::~AW_GC_Xm() {
     if (gc) XFreeGC(get_common()->get_display(), gc);
 }
+
+void AW_GC_Xm::wm_set_fill_solid()
+{
+    XSetFillStyle(get_common()->get_display(), gc, FillSolid);
+}
+
+
+void AW_GC_Xm::wm_set_fill_stipple()
+{
+    XSetFillStyle(get_common()->get_display(), gc, FillStippled);
+}
+
+
 void AW_GC_Xm::wm_set_lineattributes(short lwidth, AW_linestyle lstyle) {
     Display            *display = get_common()->get_display();
     aw_assert(lwidth>0);
@@ -386,6 +408,7 @@ void AW_GC_Xm::wm_set_lineattributes(short lwidth, AW_linestyle lstyle) {
         }
     }
 }
+
 void AW_GC_Xm::wm_set_function(AW_function mode) {
     switch (mode) {
         case AW_XOR:
@@ -396,6 +419,7 @@ void AW_GC_Xm::wm_set_function(AW_function mode) {
             break;
     }
 }
+
 void AW_GC_Xm::wm_set_foreground_color(AW_rgb col) {
     XSetForeground(get_common()->get_display(), gc, col);
 }
@@ -456,11 +480,20 @@ int AW_stylable::get_available_fontsizes(int gc, AW_font font_nr, int *available
 void AW_stylable::set_line_attributes(int gc, short width, AW_linestyle style) {
     get_common()->map_mod_gc(gc)->set_line_attributes(width, style);
 }
+void AW_stylable::set_fill_solid(int gc) {
+    get_common()->map_mod_gc(gc)->set_fill_solid();
+}
+void AW_stylable::set_fill_stipple(int gc) {
+    get_common()->map_mod_gc(gc)->set_fill_stipple();
+}
 void AW_stylable::set_function(int gc, AW_function function) {
     get_common()->map_mod_gc(gc)->set_function(function);
 }
 void AW_stylable::set_foreground_color(int gc, AW_color_idx color) {
     get_common()->map_mod_gc(gc)->set_fg_color(get_common()->get_color(color));
+}
+AW_color_idx AW_stylable::get_foreground_color(int gc) {
+    return ((AW_color_idx)get_common()->find_color_idx(get_common()->map_mod_gc(gc)->get_last_fg_color()));
 }
 void AW_stylable::establish_default(int gc) {
     get_common()->map_mod_gc(gc)->establish_default();
@@ -492,4 +525,3 @@ void AW_common_Xm::install_common_extends_cb(AW_window *aww, AW_area area) {
     aww->set_resize_callback(area, AW_get_common_extends_cb, (AW_CL)this);
     AW_get_common_extends_cb(aww, (AW_CL)this, 0);
 }
-

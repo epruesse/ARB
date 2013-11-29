@@ -51,7 +51,7 @@ bool AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filter
                     line_mode,
                     AW_INT(line_width),
                     find_color_idx(gcm->get_last_fg_color()),
-                    gap_ratio, 
+                    gap_ratio,
                     print_pos(clippedLine.xpos()),
                     print_pos(clippedLine.ypos()),
                     print_pos(clippedLine.head().xpos()),
@@ -157,6 +157,37 @@ int AW_common::find_data_color_idx(AW_rgb color) const {
     return -1;
 }
 
+int AW_common::find_color_idx(AW_rgb color) const {
+    int   cn;
+    bool  bFound      = false;
+    int   color_index = -1;
+
+    for (cn = 0 ; cn < AW_STD_COLOR_IDX_MAX ; cn++)
+    {
+        if (frame_colors[cn] == color)
+        {
+            color_index = cn;
+            bFound      = true;
+            break;
+        }
+    }
+
+    if (!bFound)
+    {
+        for (cn = 0 ; cn < data_colors_size ; cn++)
+        {
+            if (data_colors[cn] == color)
+            {
+                color_index = cn;
+                bFound      = true;
+                break;
+            }
+        }
+    }
+
+    return (color_index);
+}
+
 int AW_device_print::find_color_idx(AW_rgb color) {
     int idx = -1;
     if (color_mode) {
@@ -250,8 +281,8 @@ bool AW_device_print::circle_impl(int gc, bool filled, const Position& center, c
 
             fprintf(out, "%d %d ", cx, cy); // center
             fprintf(out, "%d %d ", rx, ry); // radius
-            fprintf(out, "%d %d ", cx, cy); // start 
-            fprintf(out, "%d %d\n", print_pos(Center.xpos()+screen_radius.x()), cy); // end 
+            fprintf(out, "%d %d ", cx, cy); // start
+            fprintf(out, "%d %d\n", print_pos(Center.xpos()+screen_radius.x()), cy); // end
         }
     }
     return drawflag;
@@ -398,7 +429,7 @@ bool AW_device_print::filled_area_impl(int gc, int npos, const Position *pos, AW
 
                 Position transPos = transform(pos[j]);
                 Position clippedPos;
-                ASSERT_RESULT(bool, true, force_into_clipbox(transPos, clippedPos)); 
+                ASSERT_RESULT(bool, true, force_into_clipbox(transPos, clippedPos));
                 fprintf(out, "   %d %d\n", print_pos(clippedPos.xpos()), print_pos(clippedPos.ypos()));
             }
         }

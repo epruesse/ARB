@@ -15,26 +15,48 @@
 #include <struct_man.h>
 #include <arb_strbuf.h>
 
-void set_table_for_PT_N_mis(int ignored_Nmismatches, int when_less_than_Nmismatches) {
+void create_table_for_PT_N_mis(int ignored_Nmismatches, int when_less_than_Nmismatches, int nSize)
+{
     // calculate table for PT_N mismatches
-    // 
+    //
     // 'ignored_Nmismatches' specifies, how many N-mismatches will be accepted as
     // matches, when overall number of N-mismatches is below 'when_less_than_Nmismatches'.
     //
     // above that limit, every N-mismatch counts as mismatch
 
-    if ((when_less_than_Nmismatches-1)>PT_POS_TREE_HEIGHT) when_less_than_Nmismatches = PT_POS_TREE_HEIGHT+1;
+    if ((when_less_than_Nmismatches-1) > nSize) when_less_than_Nmismatches = nSize + 1;
     if (ignored_Nmismatches >= when_less_than_Nmismatches) ignored_Nmismatches = when_less_than_Nmismatches-1;
 
-    psg.w_N_mismatches[0] = 0;
+    free_table_for_PT_N_mis();
+
+    psg.w_N_mismatches_Size = nSize;
+    psg.w_N_mismatches      = new int[nSize + PT_POS_SECURITY + 1];
+
     int mm;
-    for (mm = 1; mm<when_less_than_Nmismatches; ++mm) {
-        psg.w_N_mismatches[mm] = mm>ignored_Nmismatches ? mm-ignored_Nmismatches : 0;
+
+    psg.w_N_mismatches[0] = 0;
+
+    for (mm = 1; mm < when_less_than_Nmismatches ; ++mm)
+    {
+        psg.w_N_mismatches[mm] = (mm > ignored_Nmismatches) ? mm - ignored_Nmismatches : 0;
     }
-    pt_assert(mm <= (PT_POS_TREE_HEIGHT+1));
-    for (; mm <= PT_POS_TREE_HEIGHT; ++mm) {
+
+    pt_assert(mm <= (psg.w_N_mismatches_Size + 1));
+
+    for ( ; mm <= psg.w_N_mismatches_Size + PT_POS_SECURITY ; ++mm)
+    {
         psg.w_N_mismatches[mm] = mm;
     }
+}
+
+void free_table_for_PT_N_mis()
+{
+  if (psg.w_N_mismatches != 0)
+  {
+      delete [] psg.w_N_mismatches;
+
+      psg.w_N_mismatches = 0;
+  }
 }
 
 void pt_export_error(PT_local *locs, const char *error) {
@@ -71,7 +93,7 @@ static const char *arb2internal_name(const char *name) {
     return found ? found->get_internal_gene_name() : 0;
 }
 
-const char *virt_name(PT_probematch *ml) 
+const char *virt_name(PT_probematch *ml)
 {
     // get the name with a virtual function
     if (gene_flag) {
@@ -84,7 +106,7 @@ const char *virt_name(PT_probematch *ml)
     }
 }
 
-const char *virt_fullname(PT_probematch * ml) 
+const char *virt_fullname(PT_probematch * ml)
 {
     if (gene_flag) {
         const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].get_name());

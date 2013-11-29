@@ -34,7 +34,7 @@
 #                       configurable in config.makefile
 #
 # -----------------------------------------------------
-# Read configuration 
+# Read configuration
 include config.makefile
 
 ifeq ($(LD_LIBRARY_PATH),'')
@@ -70,7 +70,7 @@ ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_4xx_VERSIONS)
 GCC_VERSION_FOUND=$(shell SOURCE_TOOLS/arb_gcc_version.pl)
 GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
 
-#---------------------- split gcc version 
+#---------------------- split gcc version
 
 SPLITTED_VERSION:=$(subst ., ,$(GCC_VERSION_FOUND))
 
@@ -165,10 +165,10 @@ ifeq ($(DEBUG),1)
 	extended_warnings :=
 	extended_cpp_warnings :=
 
-#       C and C++ 
+#       C and C++
 	extended_warnings     += -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
 
-#       C++ only 
+#       C++ only
 	extended_cpp_warnings += -Wnon-virtual-dtor -Wreorder -Wpointer-arith -Wdisabled-optimization -Wmissing-format-attribute
 	extended_cpp_warnings += -Wctor-dtor-privacy# < gcc 3
 # 	extended_cpp_warnings += -Wfloat-equal# gcc 3.0
@@ -192,7 +192,7 @@ ifeq ($(DEBUG),1)
  endif
 endif
 
-#---------------------- developer 
+#---------------------- developer
 
 ifneq ($(DEVELOPER),ANY) # ANY=default setting (skip all developer specific code)
  ifdef dflags
@@ -224,7 +224,7 @@ cross_cflags:=
 cross_lflags:=
 
 ifeq ($(ARB_64),1)
-	dflags += -DARB_64 #-fPIC 
+	dflags += -DARB_64 #-fPIC
 	lflags +=
 	shared_cflags += -fPIC
 
@@ -246,7 +246,7 @@ else
 #		build 32-bit ARB version on 64-bit host
 		CROSS_LIB:=# empty = autodetect below
 		cross_cflags += -m32
-		cross_lflags += -m32 -m elf_i386 
+		cross_lflags += -m32 -m elf_i386
 	else
 #		build 32-bit ARB version on 32-bit host
 		CROSS_LIB:=/lib
@@ -334,7 +334,7 @@ endif
 
 #---------------------- open GL
 
-ifeq ($(OPENGL),1) 
+ifeq ($(OPENGL),1)
 	cflags += -DARB_OPENGL # activate OPENGL code
 	GL     := gl # this is the name of the OPENGL base target
 	GL_LIB_SYS := -lGL -lGLU
@@ -382,9 +382,9 @@ TIFFLIBS := -ltiff
 SYSLIBS:=
 
 ifdef DARWIN
-	SYSLIBS += -lstdc++
+	SYSLIBS += -lstdc++ -lxerces-c
 else
-	SYSLIBS += -lm
+	SYSLIBS += -lm -lxerces-c
 endif
 
 #---------------------- include symbols?
@@ -470,9 +470,9 @@ SEP=[`date +%M:%S.%N`] ------------------------------------------------
 
 lflags:=
 
-# ------------------------- 
-#     Main arb targets:     
-# ------------------------- 
+# -------------------------
+#     Main arb targets:
+# -------------------------
 
 first_target:
 		$(MAKE) checks
@@ -662,7 +662,7 @@ force_tab_check:
 
 # ---------------------
 
-check_setup: check_ENVIRONMENT check_DEBUG check_ARB_64 check_DEVELOPER check_GCC_VERSION 
+check_setup: check_ENVIRONMENT check_DEBUG check_ARB_64 check_DEVELOPER check_GCC_VERSION
 		@echo Your setup seems to be ok.
 
 checks: check_setup check_tabs
@@ -677,7 +677,7 @@ LIBS = $(ARBDB_LIB) $(SYSLIBS)
 
 GUI_LIBS_PREFIX:=
 ifdef DARWIN
-#       this seem to be added at wrong place, since opengl is only needed to link EDIT4 
+#       this seem to be added at wrong place, since opengl is only needed to link EDIT4
         GUI_LIBS_PREFIX:=-framework GLUT -framework OpenGL
 endif
 
@@ -700,7 +700,7 @@ ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 cflags:=$(cflags) -DFAKE_VTAB_PTR=char
 endif
 
-# ------------------------------- 
+# -------------------------------
 #     old PTSERVER or PTPAN?
 
 ifeq ($(PTPAN),1)
@@ -792,8 +792,8 @@ ARCHS = \
 			WINDOW/libWINDOW.a \
 			XML/XML.a \
 
-# ----------------------- 
-#     library packets     
+# -----------------------
+#     library packets
 
 ARCHS_CLIENT_PROBE = PROBE_COM/client.a
 ARCHS_CLIENT_NAMES = NAMES_COM/client.a
@@ -829,7 +829,7 @@ link_aw:	aw link_db
 link_awt:	awt link_aw
 
 #***************************************************************************************
-#		Individual_Programs_Section 
+#		Individual_Programs_Section
 #***************************************************************************************
 
 #***********************************	arb_ntree **************************************
@@ -874,8 +874,8 @@ ARCHS_NTREE = \
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) $(SYSLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -907,11 +907,11 @@ endif
 
 LIBS_EDIT4 := $(GL_LIBS)
 
-$(EDIT4): $(ARCHS_EDIT4:.a=.dummy) link_awt 
+$(EDIT4): $(ARCHS_EDIT4:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS) $(SYSLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -923,8 +923,8 @@ ARCHS_RNACMA = \
 $(RNACMA) : $(ARCHS_RNACMA:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNACMA) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_RNACMA) $(LIBS) $(EXECLIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_RNACMA) $(LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_RNACMA) $(LIBS) $(EXECLIBS) $(SYSLIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_RNACMA) $(LIBS) $(EXECLIBS) $(SYSLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -939,8 +939,8 @@ ARCHS_WETC = \
 $(WETC): $(ARCHS_WETC:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) $(SYSLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -964,8 +964,8 @@ ARCHS_DIST = \
 $(DIST): $(ARCHS_DIST:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) $(SYSLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -988,8 +988,8 @@ ARCHS_PARSIMONY = \
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS) $(SYSLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1030,8 +1030,8 @@ ARCHS_NALIGNER = \
 $(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NALIGNER) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS) $(SYSLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1048,8 +1048,8 @@ ARCHS_PHYLO = \
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PHYLO) $(GUI_LIBS) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS) $(SYSLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1086,7 +1086,7 @@ ARCHS_PROBE_DEPEND = \
 		$(ARCHS_PROBE_COMMON) \
 		$(ARCHS_PT_SERVER) \
 
-$(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db 
+$(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) config.makefile || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) PROBE_COM/server.a $(SYSLIBS) $(EXECLIBS)" ; \
@@ -1191,7 +1191,7 @@ PROBE_COM/client.dummy:
 	@echo Unwanted request to make target $<
 	false
 
-NAMES_COM/server.dummy: 
+NAMES_COM/server.dummy:
 	@echo Unwanted request to make target $<
 	false
 
@@ -1353,7 +1353,7 @@ dep_graph:
 
 help:   HELP_SOURCE/HELP_SOURCE.dummy
 
-# @@@ when backtracing code is in libCORE, link vs ARBDB is no longer needed 
+# @@@ when backtracing code is in libCORE, link vs ARBDB is no longer needed
 HELP_SOURCE/HELP_SOURCE.dummy: link_db xml menus
 
 db:	ARBDB/libARBDB.dummy
@@ -1601,7 +1601,7 @@ preplib:
 # make 'perl' is a BIG target, so when it has to be made, it has to be started
 # as early as possible to reduce overall compile time. Since 'make' does not
 # provide any priotities, i force it to build all 'perl'-prerequisites early, by
-# adding  artificial dependencies to these prerequisites 
+# adding  artificial dependencies to these prerequisites
 #
 # That behavior is likely to be system-dependent.
 # My goal was only to make it work on my current development system,
@@ -1764,7 +1764,7 @@ clean4ever: clean
 test4ever: ut
 	$(MAKE) test4ever
 
-perl4ever: clean 
+perl4ever: clean
 	$(MAKE) links
 	$(MAKE) perl
 	$(MAKE) perl4ever
@@ -1779,14 +1779,14 @@ relink: bin/bin.clean libclean
 	$(MAKE) build
 
 tarfile: rebuild
-	$(MAKE) prepare_libdir 
+	$(MAKE) prepare_libdir
 	util/arb_compress
 
 tarfile_quick: build
-	$(MAKE) prepare_libdir 
+	$(MAKE) prepare_libdir
 	util/arb_compress
 
-save: sourcetarfile 
+save: sourcetarfile
 
 patch:
 	SOURCE_TOOLS/arb_create_patch.sh arbPatch
@@ -1818,14 +1818,14 @@ rel_major:
 	touch SOURCE_TOOLS/inc_major.stamp
 	$(MAKE) do_release
 
-do_release: 
+do_release:
 	@echo Building release
 	@echo PATH=$(PATH)
 	@echo ARBHOME=$(ARBHOME)
 	-rm arb.tgz arbsrc.tgz
 	$(MAKE) testsave
 	$(MAKE) genheaders # auto upgrades version early
-	$(MAKE) tarfile 
+	$(MAKE) tarfile
 	$(MAKE) sourcetarfile
 
 release_quick:
@@ -1878,7 +1878,7 @@ rac_arb_treegen:	tg
 rac_arb_rnacma:		cma
 
 # --------------------------------------------------------------------------------
-# unit testing 
+# unit testing
 # @@@ work in progress
 #
 # goal is to automatically test all libraries/executables using TESTED_UNITS_AUTO
@@ -1947,6 +1947,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	GENOM_IMPORT/GENOM_IMPORT.test \
 	SL/MACROS/MACROS.test \
 	SL/REGEXPR/REGEXPR.test \
 	SL/FILTER/FILTER.test \
@@ -2125,5 +2126,4 @@ endif
 	@$(MAKE) save_test_no_error >/dev/null # just show hints
 	@cat $(TIMELOG)
 	@rm $(TIMELOG)
-
 
