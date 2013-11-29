@@ -153,7 +153,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
         aws->get_at_position(&x, &y);
 
         aws->at(rescan_xfig_label);
-        aws->callback(selector.selection_list_rescan_cb, (AW_CL)gb_main, (AW_CL)-1);
+        aws->callback(makeWindowCallback(selector.selection_list_rescan_cb, gb_main, FIELD_UNFILTERED));
         aws->create_button(rescan_xfig_label, "RESCAN", "R");
 
         if (popup_button_id) aws->at(x, y); // restore 'at' position if popup_list_in_window

@@ -228,7 +228,7 @@ static struct MutableItemSelector GEN_item_selector = {
     GEN_select_gene,
     gen_get_gene_id,
     gen_find_gene_by_id,
-    (AW_CB)gene_field_selection_list_update_cb,
+    gene_field_selection_list_update_cb,
     -1, // unknown
     CHANGE_KEY_PATH_GENES,
     "gene",
@@ -940,9 +940,9 @@ static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
     aws->sep______________();
     aws->insert_menu_topic("gen_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_unhide_all_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->sep______________();
-    aws->insert_menu_topic("gen_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, FIELD_FILTER_NDS);
-    aws->insert_menu_topic("gen_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_delete_unused_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
-    aws->insert_menu_topic("gen_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_update_cb,        (AW_CL)gb_main, FIELD_FILTER_NDS);
+    aws->insert_menu_topic("gen_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_scan_unknown_cb,  gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("gen_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_delete_unused_cb, gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("gen_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_update_cb,        gb_main, FIELD_FILTER_NDS));
     aws->sep______________();
     aws->insert_menu_topic("gen_edit_loc", "Edit gene location", "l", "gen_create.hlp", AD_F_ALL, popup_gene_location_editor, (AW_CL)gb_main, 0);
 }
