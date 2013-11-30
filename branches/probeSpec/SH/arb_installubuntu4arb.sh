@@ -40,6 +40,7 @@ else
                 gnuplot \
                 gv \
                 libmotif4 \
+                libxerces-c28 \
                 xfig \
                 transfig \
                 xterm \
@@ -58,6 +59,7 @@ else
                 libtiff4-dev \
                 libx11-dev \
                 libxaw7-dev \
+                libxerces-c-dev \
                 libxext-dev \
                 libxml2-utils \
                 libxpm-dev \
