@@ -137,13 +137,15 @@ void MatrixDisplay::adapt_to_canvas_size() {
         rect.r = (int)((n-horiz_page_size)*cell_width+squ.r);
         rect.b = (int)((n-vert_page_size)*cell_height+squ.b);
     }
+    else {
+        horiz_page_size = 0;
+        vert_page_size  = 0;
+    }
 
     horiz_page_start      = 0;
     horiz_last_view_start = 0;
     vert_page_start       = 0;
     vert_last_view_start  = 0;
-
-    // @@@ things done below are suspicious (why done here and not in update?)
 
     device->reset();            // clip_size == device_size
     device->clear(-1);
@@ -153,9 +155,13 @@ void MatrixDisplay::adapt_to_canvas_size() {
     awm->set_horizontal_scrollbar_position(0);
     awm->tell_scrolled_picture_size(rect);
     awm->calculate_scrollbars();
+
+    // @@@ do in draw()? 
     if (!awm->is_shown() && m) {
         awm->show();
     }
+
+    mark(NEED_CLEAR);
 }
 
 enum ClickAction {
