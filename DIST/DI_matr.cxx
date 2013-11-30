@@ -63,9 +63,9 @@ DI_GLOBAL_MATRIX GLOBAL_MATRIX;
 static MatrixDisplay *matrixDisplay = 0;
 static AP_matrix      DI_dna_matrix(AP_MAX);
 
-static void refresh_matrix_display() {
+static void matrix_changed_cb() {
     if (matrixDisplay) {
-        matrixDisplay->mark(MatrixDisplay::NEED_RESIZE);
+        matrixDisplay->mark(MatrixDisplay::NEED_SETUP);
         matrixDisplay->update_display();
     }
 }
@@ -1023,7 +1023,7 @@ static void di_view_matrix_cb(AW_window *aww, save_matrix_params *sparam) {
     matrixDisplay->mark(MatrixDisplay::NEED_SETUP);
     matrixDisplay->update_display();
 
-    GLOBAL_MATRIX.set_changed_cb(refresh_matrix_display);
+    GLOBAL_MATRIX.set_changed_cb(matrix_changed_cb);
 
     viewer->activate();
 }
@@ -1357,13 +1357,26 @@ static void di_calculate_compressed_matrix_cb(AW_window *aww, WeightedFilter *we
         error = GB_await_error();
     }
     else {
-        GLOBAL_MATRIX.forget_if_not_has_type(DI_MATRIX_COMPRESSED);
+        GLOBAL_MATRIX.forget(); // always forget (as tree might have changed)
 
-        error = di_calculate_matrix(aww, weighted_filter, 0, true, NULL);
-        if (!error && !GLOBAL_MATRIX.exists()) error = "Failed to calculate your matrix (bug?)";
-        if (!error) error = GLOBAL_MATRIX.get()->compress(tree);
+        {
+            LocallyModify<MatrixDisplay*> skipRefresh(matrixDisplay, NULL); // skip refresh, until matrix has been compressed
 
+            error = di_calculate_matrix(aww, weighted_filter, 0, true, NULL);
+            if (!error && !GLOBAL_MATRIX.exists()) {
+                error = "Failed to calculate your matrix (bug?)";
+            }
+            if (!error) {
+                error = GLOBAL_MATRIX.get()->compress(tree);
+            }
+        }
         GBT_delete_tree(tree);
+
+        // now force refresh
+        if (matrixDisplay) {
+            matrixDisplay->mark(MatrixDisplay::NEED_SETUP);
+            matrixDisplay->update_display();
+        }
     }
     free(treename);
     aw_message_if(error);
