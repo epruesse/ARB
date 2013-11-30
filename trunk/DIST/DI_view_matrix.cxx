@@ -31,25 +31,21 @@ static void vertical_change_cb  (AW_window *aww, MatrixDisplay *disp) { disp->mo
 static void horizontal_change_cb(AW_window *aww, MatrixDisplay *disp) { disp->monitor_horizontal_scroll_cb(aww); }
 
 static void redisplay_needed(AW_window *, MatrixDisplay *disp) {
-    disp->display(true);
+    disp->mark(MatrixDisplay::NEED_CLEAR);
+    disp->update_display();
 }
 
 static void reinit_needed(AW_root *, MatrixDisplay *disp) {
-    disp->init();
-    disp->display(false);
+    disp->mark(MatrixDisplay::NEED_SETUP);
+    disp->update_display();
 }
 
 static void resize_needed(AW_window *, MatrixDisplay *disp) {
-    disp->init();
-    disp->resized();
-    disp->display(false);
+    disp->mark(MatrixDisplay::NEED_SETUP); // @@@ why not NEED_RESIZE?
+    disp->update_display();
 }
 
-MatrixDisplay::MatrixDisplay() {
-    memset((char *) this, 0, sizeof(MatrixDisplay)); // @@@ fix
-}
-
-void MatrixDisplay::init() {
+void MatrixDisplay::setup() {
     DI_MATRIX *m   = get_matrix();
     AW_root   *awr = awm->get_root();
 
@@ -112,10 +108,11 @@ void MatrixDisplay::init() {
         total_cells_vert=m->nentries;
     }
     set_scrollbar_steps(cell_width, cell_height, 50, 50);
-    resized();  // initialize window_size dependent parameters
+
+    mark(NEED_RESIZE);
 }
 
-void MatrixDisplay::resized() {
+void MatrixDisplay::adapt_to_canvas_size() {
     const AW_font_limits& lim = device->get_font_limits(DI_G_STANDARD, 0);
 
     DI_MATRIX *m = get_matrix();
@@ -145,6 +142,8 @@ void MatrixDisplay::resized() {
     horiz_last_view_start = 0;
     vert_page_start       = 0;
     vert_last_view_start  = 0;
+
+    // @@@ things done below are suspicious (why done here and not in update?)
 
     device->reset();            // clip_size == device_size
     device->clear(-1);
@@ -235,7 +234,7 @@ static void input_cb(AW_window *aww, MatrixDisplay *disp) {
             AW_device *oldMatrixDevice = disp->device;
 
             disp->device = click_device;
-            disp->display(false); // detect clicked element
+            disp->update_display(); // detect clicked element
             disp->device = oldMatrixDevice;
         }
 
@@ -284,7 +283,7 @@ static void input_cb(AW_window *aww, MatrixDisplay *disp) {
     }
 }
 
-void MatrixDisplay::display(bool clear) {
+void MatrixDisplay::draw() {
     // draw matrix
 
     long           x, y, xpos, ypos;
@@ -298,7 +297,7 @@ void MatrixDisplay::display(bool clear) {
         return;
     }
 
-    if (clear) device->clear(-1);
+    if (beforeUpdate&NEED_CLEAR) device->clear(-1);
     device->set_offset(AW::Vector(off_dx, off_dy));
     xpos = 0;
 
@@ -479,11 +478,10 @@ void MatrixDisplay::monitor_vertical_scroll_cb(AW_window *aww) { // draw area
 
     int diff = vert_page_start-old_vert_page_start; // amount of rows to scroll
     if (diff) {
-        int  diff_pix   = abs(diff)*cell_height;
-        int  top_y      = off_dy-cell_height;
-        bool clear      = false;
-        int  keep_cells = vert_page_size-abs(diff);
-        int  keep_pix   = keep_cells*cell_height;
+        int diff_pix   = abs(diff)*cell_height;
+        int top_y      = off_dy-cell_height;
+        int keep_cells = vert_page_size-abs(diff);
+        int keep_pix   = keep_cells*cell_height;
 
         if (diff>0 && diff<vert_page_size) { // scroll some positions up
             device->move_region(0, top_y+diff_pix, screen_width, keep_pix, 0, top_y);
@@ -505,10 +503,10 @@ void MatrixDisplay::monitor_vertical_scroll_cb(AW_window *aww) { // draw area
         }
         else { // repaint
             device->push_clip_scale();
-            clear = true;
+            mark(NEED_CLEAR);
         }
 
-        display(clear);
+        update_display();
         device->pop_clip_scale();
     }
 }
@@ -524,10 +522,9 @@ void MatrixDisplay::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
     int diff = horiz_page_start-old_horiz_page_start; // amount of columns to scroll
 
     if (diff) {
-        bool clear      = false;
-        int  diff_pix   = abs(diff)*cell_width;
-        int  keep_cells = horiz_page_size-abs(diff);
-        int  keep_pix   = keep_cells*cell_width;
+        int diff_pix   = abs(diff)*cell_width;
+        int keep_cells = horiz_page_size-abs(diff);
+        int keep_pix   = keep_cells*cell_width;
 
         if (diff>0 && diff<horiz_page_size) {      // scroll some positions left
             device->move_region(off_dx+diff_pix, 0, keep_pix, screen_height, off_dx, 0);
@@ -549,10 +546,10 @@ void MatrixDisplay::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
         }
         else { // repaint
             device->push_clip_scale();
-            clear = true;
+            mark(NEED_CLEAR);
         }
 
-        display(clear);
+        update_display();
         device->pop_clip_scale();
     }
 }
@@ -594,7 +591,10 @@ static void di_view_set_distances(AW_root *awr, int setmax, MatrixDisplay *disp)
                 break;
         }
     }
-    if (update_display_on_dist_change) disp->display(true);
+    if (update_display_on_dist_change) {
+        disp->mark(MatrixDisplay::NEED_CLEAR);
+        disp->update_display();
+    }
 }
 
 static void di_change_dist(AW_window *aww, int mode) {
@@ -762,8 +762,6 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_
     awm->create_button("MINUS_MAX", "-");
 
     awm->set_info_area_height(40);
-
-    disp->init();
 
     di_view_set_distances(awm->get_root(), 2, disp);
 

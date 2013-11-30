@@ -65,8 +65,8 @@ static AP_matrix      DI_dna_matrix(AP_MAX);
 
 static void refresh_matrix_display() {
     if (matrixDisplay) {
-        matrixDisplay->resized();
-        matrixDisplay->display(false);
+        matrixDisplay->mark(MatrixDisplay::NEED_RESIZE);
+        matrixDisplay->update_display();
     }
 }
 
@@ -1020,8 +1020,8 @@ static void di_view_matrix_cb(AW_window *aww, save_matrix_params *sparam) {
     static AW_window *viewer = 0;
     if (!viewer) viewer = DI_create_view_matrix_window(aww->get_root(), matrixDisplay, sparam);
 
-    matrixDisplay->init();
-    matrixDisplay->display(false);
+    matrixDisplay->mark(MatrixDisplay::NEED_SETUP);
+    matrixDisplay->update_display();
 
     GLOBAL_MATRIX.set_changed_cb(refresh_matrix_display);
 
