@@ -2497,7 +2497,7 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AW_CL cl_gb
   aws->at("close");
   aws->create_button("CLOSE", "CLOSE", "C");
 
-  aws->callback(AW_POPUP_HELP, (AW_CL)"probematch.hlp");
+  aws->callback(AW_POPUP_HELP, (AW_CL)"probespec.hlp");
   aws->at("help");
   aws->create_button("HELP", "HELP", "H");
 
@@ -2903,7 +2903,7 @@ AW_window* create_probe_collection_window_ext(AW_root *root, AW_CL cl_gb_main, A
   aws->at("close");
   aws->create_button("CLOSE", "CLOSE", "C");
 
-  aws->callback(AW_POPUP_HELP, (AW_CL)"probematch.hlp");
+  aws->callback(AW_POPUP_HELP, (AW_CL)"probespec.hlp");
   aws->at("help");
   aws->create_button("HELP", "HELP", "H");
 

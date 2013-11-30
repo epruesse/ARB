@@ -1303,9 +1303,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_menu_topic("probe_multi",  "Calculate Multi-Probes", "u", "multiprobe.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_multiprobe_window,   (AW_CL)ntw);
             awm->insert_menu_topic("probe_match",  "Match Probes",           "M", "probematch.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_window,  (AW_CL)GLOBAL.gb_main);
             awm->sep______________();
-            awm->insert_menu_topic("probe_match_col",   "Probe Collection",               "C", "probematch.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_collection_window,                 (AW_CL)GLOBAL.gb_main);
-            awm->insert_menu_topic("probe_match_sp",    "Match Probes with Specificity",  "f", "probematch.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_with_specificity_window,     (AW_CL)GLOBAL.gb_main);
-            awm->insert_menu_topic("probe_match_cont",  "Match Display Control",          "l", "probematch.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_specificity_control_window,  (AW_CL)GLOBAL.gb_main);
+            awm->insert_menu_topic("probe_match_col",   "Probe Collection",               "C", "probespec.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_collection_window,                 (AW_CL)GLOBAL.gb_main);
+            awm->insert_menu_topic("probe_match_sp",    "Match Probes with Specificity",  "f", "probespec.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_with_specificity_window,     (AW_CL)GLOBAL.gb_main);
+            awm->insert_menu_topic("probe_match_cont",  "Match Display Control",          "l", "probespec.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_specificity_control_window,  (AW_CL)GLOBAL.gb_main);
             awm->sep______________();
             awm->insert_menu_topic("primer_design_new", "Design Primers",            "P", "primer_new.hlp", AWM_EXP, AW_POPUP,(AW_CL)create_primer_design_window, (AW_CL)GLOBAL.gb_main);
             awm->insert_menu_topic("primer_design",     "Design Sequencing Primers", "S", "primer.hlp",     AWM_EXP, (AW_CB)NT_primer_cb, 0, 0);
