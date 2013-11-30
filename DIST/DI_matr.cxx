@@ -963,26 +963,28 @@ static void di_mark_by_distance(AW_window *aww, WeightedFilter *weighted_filter)
 
                         error = phm->load(DI_LOAD_LIST, order, false, species_pair);
 
-                        if (!error) {
-                            if (phm->is_AA) {
-                                error = phm->calculate_pro(trans, NULL);
+                        if (phm->nentries == 2) { // if species has no alignment -> nentries<2
+                            if (!error) {
+                                if (phm->is_AA) {
+                                    error = phm->calculate_pro(trans, NULL);
+                                }
+                                else {
+                                    error = phm->calculate(aw_root, cancel, 0.0, trans, NULL);
+                                }
                             }
-                            else {
-                                error = phm->calculate(aw_root, cancel, 0.0, trans, NULL);
-                            }
-                        }
 
-                        if (!error) {
-                            double dist_value = phm->matrix->get(0, 1);                         // distance or conformance
-                            bool   mark       = (lowerBound <= dist_value && dist_value <= upperBound);
-                            GB_write_flag(gb_species, mark);
+                            if (!error) {
+                                double dist_value = phm->matrix->get(0, 1);                         // distance or conformance
+                                bool   mark       = (lowerBound <= dist_value && dist_value <= upperBound);
+                                GB_write_flag(gb_species, mark);
 
-                            if (!markedSelected) {
-                                dist_value = phm->matrix->get(0, 0);                                     // distance or conformance to self
-                                mark       = (lowerBound <= dist_value && dist_value <= upperBound);
-                                GB_write_flag(gb_selected, mark);
+                                if (!markedSelected) {
+                                    dist_value = phm->matrix->get(0, 0);                                     // distance or conformance to self
+                                    mark       = (lowerBound <= dist_value && dist_value <= upperBound);
+                                    GB_write_flag(gb_selected, mark);
 
-                                markedSelected = true;
+                                    markedSelected = true;
+                                }
                             }
                         }
 
