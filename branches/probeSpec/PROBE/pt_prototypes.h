@@ -26,7 +26,7 @@ void PT_dump_POS_TREE_to_file(const char *IF_DEBUG (dumpfile));
 
 /* PT_etc.cxx */
 void create_table_for_PT_N_mis(int ignored_Nmismatches, int when_less_than_Nmismatches, int nSize);
-void free_table_for_PT_N_mis();
+void free_table_for_PT_N_mis(void);
 void pt_export_error(PT_local *locs, const char *error);
 const char *virt_name(PT_probematch *ml);
 const char *virt_fullname(PT_probematch *ml);

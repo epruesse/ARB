@@ -26,6 +26,13 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
+probe_collection.o: probe_collection.hxx
+probe_collection.o: $(ARBHOME)/INCLUDE/arb_assert.h
+probe_collection.o: $(ARBHOME)/INCLUDE/arb_core.h
+probe_collection.o: $(ARBHOME)/INCLUDE/dupstr.h
+probe_collection.o: $(ARBHOME)/INCLUDE/test_global.h
+
+probe_design.o: probe_collection.hxx
 probe_design.o: probe_design.hxx
 probe_design.o: probe_match_parser.hxx
 probe_design.o: SaiProbeVisualization.hxx
@@ -56,6 +63,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -65,6 +73,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_window_Xm_interface.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
