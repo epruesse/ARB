@@ -568,7 +568,7 @@ static void di_view_set_max_dist(AW_window *aww, int max_dist) {
         LocallyModify<bool> flag(update_display_on_dist_change, false);
         aw_root->awar(AWAR_DIST_MIN_DIST)->write_float(0.0);
     }
-    aw_root->awar(AWAR_DIST_MAX_DIST)->write_float(max_dist);
+    aw_root->awar(AWAR_DIST_MAX_DIST)->write_float(max_dist*0.01);
 }
 
 static void di_view_set_distances(AW_root *awr, int setmax, MatrixDisplay *disp) {
