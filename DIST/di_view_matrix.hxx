@@ -65,15 +65,61 @@ class MatrixDisplay {
     void scroll_to(int sxpos, int sypos);
 
 public:
+    enum UpdateFlag { // bits
+        NEED_NOTHING = 0,
+        NEED_CLEAR   = 1,
+        NEED_RESIZE  = 2,
+        NEED_SETUP   = 4,
+    };
+private:
+    UpdateFlag beforeUpdate;
+
+    void setup();
+    void adapt_to_canvas_size();                                 // call after resize main window
+    void draw();
+
+public:
     AW_window *awm;
     AW_device *device;          // device to draw in
+
+    MatrixDisplay()
+        : screen_width(0),
+          screen_height(0),
+          cell_width(0),
+          cell_height(0),
+          cell_padd(0),
+          leadZero(false),
+          digits(0),
+          horiz_page_start(0),
+          vert_page_start(0),
+          vert_last_view_start(0),
+          horiz_last_view_start(0),
+          total_cells_horiz(0),
+          total_cells_vert(0),
+          horiz_page_size(0),
+          vert_page_size(0),
+          off_dx(0),
+          off_dy(0),
+          min_view_dist(0.0),
+          max_view_dist(0.0),
+          beforeUpdate(NEED_SETUP),
+          awm(NULL),
+          device(NULL)
+    {}
 
     DI_MATRIX *get_matrix() { return GLOBAL_MATRIX.get(); }
 
     void monitor_vertical_scroll_cb(AW_window *);   // vertical and horizontal
     void monitor_horizontal_scroll_cb(AW_window *); // scrollbar movements
-    void display(bool clear);                       // display data
-    void resized();                                 // call after resize main window
+
+    void mark(UpdateFlag needed) { beforeUpdate = UpdateFlag(beforeUpdate|needed); }
+
+    void update_display() {
+        if (beforeUpdate&NEED_SETUP) setup();
+        if (beforeUpdate&NEED_RESIZE) adapt_to_canvas_size();
+        draw();
+        beforeUpdate = NEED_NOTHING;
+    }
 
     // ******************** real public section *******************
     void set_slider_min(double d) { min_view_dist = d; };
@@ -81,9 +127,6 @@ public:
 
     void handle_move(AW_event& event);
     void scroll_cells(int cells_x, int cells_y);
-
-    MatrixDisplay();
-    void init();
 };
 
 struct save_matrix_params;
