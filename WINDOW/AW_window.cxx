@@ -381,7 +381,7 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
     GtkWidget *button_label, *button;
     button_label = make_label(button_text, _at.length_of_buttons, mnemonic);
 
-    AW_action *act = action_register(macro_name);
+    AW_action *act = action_register(macro_name, true);
         
     if (button_text) act->set_label(button_text); // FIXME Mnemonic
 
@@ -933,7 +933,7 @@ void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
     if (helpText) help_text(helpText);
     sens_mask(mask);
     callback(wcb);
-    AW_action *act = action_register(cmd);
+    AW_action *act = action_register(cmd, false);
 
     GtkWidget *wlabel    = make_label(labeli, 0, mnemonic);
     GtkWidget *alignment = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f);
@@ -1391,7 +1391,18 @@ void AW_window::set_close_action(AW_action *act) {
  * See set_close_action(AW_action *act)
  */
 void AW_window::set_close_action(const char* act_name) {
-    set_close_action(action(act_name));
+    AW_action *have_local  = action_try(act_name, true);
+    AW_action *have_global = action_try(act_name, false);
+
+    bool got_action = have_local || have_global;
+    aw_warn_if_fail(got_action);
+    if (got_action) {
+        bool ambiguous_action = have_local && have_global;
+#if defined(DEBUG)
+        aw_warn_if_fail(!ambiguous_action); // possibly wrong behavior; resolve in client code
+#endif
+        set_close_action(have_local ? have_local : have_global);
+    }
 }
 
 
@@ -1526,22 +1537,25 @@ void AW_window::set_hide_on_close(bool value) {
 
 /********* awar / action helpers ***********/
 
+#define OPTIONALLY(loc,id) (loc ? local_id(id) : (id))
+
 /** Calls AW_root::action_try with the ID of this window prefixed to action_id */
-AW_action* AW_window::action_try(const char* action_id) {
-    return get_root()->action_try(local_id(action_id));
+AW_action* AW_window::action_try(const char* action_id, bool localize) {
+    return get_root()->action_try(OPTIONALLY(localize, action_id));
 }
 
 /** Calls AW_root::action with the ID of this window prefixed to action_id */
-AW_action* AW_window::action(const char* action_id) {
-    return get_root()->action(local_id(action_id));
+AW_action* AW_window::action(const char* action_id, bool localize) {
+    return get_root()->action(OPTIONALLY(localize, action_id));
 }
 
 /** Calls AW_root::action_register with the ID of this window prefixed to action_id */
-AW_action* AW_window::action_register(const char* action_id) {
+AW_action* AW_window::action_register(const char* action_id, bool localize) {
     // create action using template action from pimpl
-    AW_action* act = get_root()->action_register(local_id(action_id), prvt->action_template);
+    AW_action* act = get_root()->action_register(OPTIONALLY(localize, action_id), prvt->action_template);
     // clear action template
     prvt->action_template = AW_action(); 
     return act;
 }
 
+#undef OPTIONALLY
