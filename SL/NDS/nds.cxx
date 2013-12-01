@@ -279,14 +279,14 @@ static void awt_pre_to_view(AW_root *aw_root) {
     }
     free(str);
 }
-void AWT_create_select_srtaci_window(AW_window *aww, AW_CL awar_acisrt, AW_CL /*awar_short*/) {
+void AWT_popup_select_srtaci_window(AW_window *aww, const char *acisrt_awarname) {
     static AW_window *win = 0;
 
     if (!win) {
         AW_root *aw_root = aww->get_root();
         aw_root->awar_string(AWAR_SELECT_ACISRT);
         aw_root->awar_string(AWAR_SELECT_ACISRT_PRE);
-        aw_root->awar(AWAR_SELECT_ACISRT)->map((char *)awar_acisrt);
+        aw_root->awar(AWAR_SELECT_ACISRT)->map(acisrt_awarname);
 
         AW_window_simple *aws = new AW_window_simple;
         aws->init(aw_root, "SRT_ACI_SELECT", "SRT_ACI_SELECT");
@@ -433,7 +433,7 @@ static void nds_restore_config(AW_window *aww, const char *stored, AW_CL, AW_CL)
     }
 }
 
-AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main) {
+AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
@@ -483,14 +483,14 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main) {
             aws->create_toggle(viewkeyAwarName(i, "group"));
 
             {
-                char *awar_name = strdup(viewkeyAwarName(i, "key_text"));
+                const char *awar_name = strdup(viewkeyAwarName(i, "key_text"));
 
                 aws->button_length(20);
                 aws->get_at_position(&fieldx, &dummy);
                 aws->create_input_field(awar_name, 15);
 
                 aws->button_length(0);
-                aws->callback(popup_select_species_field_window, (AW_CL)awar_name, cgb_main); // awar_name belongs to cbs now
+                aws->callback(makeWindowCallback(popup_select_species_field_window, awar_name, gb_main)); // awar_name belongs to cbs now
                 aws->get_at_position(&fieldselectx, &dummy);
 
                 char *button_id = GBS_global_string_copy("SELECT_NDS_%i", i+1);
@@ -506,7 +506,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main) {
 
                 aws->get_at_position(&srtx, &dummy);
                 aws->button_length(0);
-                aws->callback(AWT_create_select_srtaci_window, (AW_CL)awar_name, 0); // awar_name belongs to cbs now
+                aws->callback(makeWindowCallback(AWT_popup_select_srtaci_window, awar_name)); // awar_name belongs to cbs now
                 {
                     char *button_id = GBS_global_string_copy("SELECT_SRTACI_%i", i+1);
                     aws->create_button(button_id, "S");

@@ -88,6 +88,10 @@
 #define __ATTR__DEPRECATED_TODO(reason)
 #endif
 
+// no warning now, but it's planned to get deprecated
+// -> just works as annotation and placeholder for __ATTR__DEPRECATED or __ATTR__DEPRECATED_TODO
+#define __ATTR__DEPRECATED_LATER(reason)
+
 // ------------------------------------------------------------
 // casting result to void does not help when a function is
 // declared with __ATTR__USERESULT. Use

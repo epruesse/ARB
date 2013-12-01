@@ -32,7 +32,7 @@ const char *GBS_global_string(const char *templat, ...) __ATTR__FORMAT(1);
 const char *GBS_static_string(const char *str);
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr);
 GB_ERROR GB_export_error(const char *error);
-GB_ERROR GB_export_errorf(const char *templat, ...) __ATTR__FORMAT(1) __ATTR__DEPRECATED_TODO("use GB_export_error(GBS_global_string(...))");
+GB_ERROR GB_export_errorf(const char *templat, ...) __ATTR__FORMAT(1) __ATTR__DEPRECATED_LATER("use GB_export_error(GBS_global_string(...))");
 GB_ERROR GB_IO_error(const char *action, const char *filename);
 GB_ERROR GB_export_IO_error(const char *action, const char *filename) __ATTR__DEPRECATED_TODO("use GB_export_error(GB_IO_error(...))");
 GB_ERROR GB_print_error(void) __ATTR__DEPRECATED_TODO("will be removed completely");

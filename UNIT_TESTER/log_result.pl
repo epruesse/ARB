@@ -2,14 +2,16 @@
 use strict;
 use warnings;
 
-my $reg_summary = qr/^UnitTester:.*\stests=([0-9]+)\s/;
+my $reg_summary     = qr/^UnitTester:.*\stests=([0-9]+)\s/;
+my $reg_interrupted = qr/interrupting.*deadlocked.*test/i;
 
 sub log_summary($) {
   my ($log) = @_;
+  my $interrupted = 0;
 
   open(LOG,$log) || die "Failed to read '$log' (Reason: $!)";
   my $line;
-  while (defined ($line=<LOG>)) {
+ LINE:  while (defined ($line=<LOG>)) {
     if ($line =~ $reg_summary) {
       my $testCount = $1;
       if ($testCount==0) {
@@ -38,18 +40,33 @@ sub log_summary($) {
       close(LOG);
       return;
     }
+    elsif ($line =~ $reg_interrupted) {
+      $interrupted = 1;
+      last LINE;
+    }
   }
 
   close(LOG);
 
   # no summary found -> problem
-  if ($log =~ /logs\/([^\.]+)\.test/) {
-    my $module = $1;
-    print "- $module (no summary; crashed?)\n";
+  my $module   = $log; # fallback
+  my $extraMsg = '; invalid logname';
+
+  if ($log =~ /logs\//o) {
+    my $name = $';
+    if ($name =~ /^([^\.]+)\.test/o) {
+      $module = $1;
+      $extraMsg = '';
+    }
+    else {
+      $module = $name;
+    }
   }
-  else {
-    print "- $log (no summary; invalid logname)\n";
-  }
+
+  my $msg = 'no summary; crashed?';
+  if ($interrupted==1) { $msg = 'interrupted; deadlock?'; }
+
+  print "- $module ($msg$extraMsg)\n";
 }
 
 sub main() {

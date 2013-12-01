@@ -19,7 +19,7 @@
 using namespace std;
 
 #define DEFAULT_COLOR 8
-extern adfiltercbstruct *agde_filtercd;
+extern adfiltercbstruct *agde_filter;
 
 /*
   ReplaceArgs():
@@ -453,7 +453,7 @@ static char *preCreateTempfile(const char *name) {
 
 void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     AW_root   *aw_root           = aw->get_root();
-    AP_filter *filter2           = awt_get_filter(agde_filtercd);
+    AP_filter *filter2           = awt_get_filter(agde_filter);
     char      *filter_name       = 0;      // aw_root->awar(AWAR_GDE_FILTER_NAME)->read_string()
     char      *alignment_name    = strdup("ali_unknown");
     bool       marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);
