@@ -44,14 +44,16 @@
 
 // --------------------------------------------------------------------------------
 
-#define AWAR_DIST_BOOTSTRAP_COUNT AWAR_DIST_PREFIX "bootstrap/count"
-#define AWAR_DIST_CANCEL_CHARS    AWAR_DIST_PREFIX "cancel/chars"
+#define AWAR_DIST_BOOTSTRAP_COUNT    AWAR_DIST_PREFIX "bootstrap/count"
+#define AWAR_DIST_CANCEL_CHARS       AWAR_DIST_PREFIX "cancel/chars"
+#define AWAR_DIST_MATRIX_AUTO_RECALC AWAR_DIST_PREFIX "recalc"
 
 #define AWAR_DIST_COLUMN_STAT_NAME AWAR_DIST_COLUMN_STAT_PREFIX "name"
 
-#define AWAR_DIST_TREE_SORT_NAME "tmp/" AWAR_DIST_TREE_PREFIX "sort_tree_name"
-#define AWAR_DIST_TREE_COMP_NAME "tmp/" AWAR_DIST_TREE_PREFIX "compr_tree_name"
-#define AWAR_DIST_TREE_STD_NAME  AWAR_DIST_TREE_PREFIX "tree_name"
+#define AWAR_DIST_TREE_SORT_NAME        "tmp/" AWAR_DIST_TREE_PREFIX "sort_tree_name"
+#define AWAR_DIST_TREE_COMP_NAME        "tmp/" AWAR_DIST_TREE_PREFIX "compr_tree_name"
+#define AWAR_DIST_TREE_STD_NAME         AWAR_DIST_TREE_PREFIX "tree_name"
+#define AWAR_DIST_MATRIX_AUTO_CALC_TREE AWAR_DIST_TREE_PREFIX "autocalc"
 
 #define AWAR_DIST_SAVE_MATRIX_TYPE     AWAR_DIST_SAVE_MATRIX_BASE "/type"
 #define AWAR_DIST_SAVE_MATRIX_FILENAME AWAR_DIST_SAVE_MATRIX_BASE "/file_name"
@@ -63,6 +65,22 @@ DI_GLOBAL_MATRIX GLOBAL_MATRIX;
 static MatrixDisplay *matrixDisplay = 0;
 static AP_matrix      DI_dna_matrix(AP_MAX);
 
+class BoundWindowCallback : virtual Noncopyable {
+    AW_window      *aww;
+    WindowCallback  cb;
+public:
+    BoundWindowCallback(AW_window *aww_, const WindowCallback& cb_)
+        : aww(aww_),
+          cb(cb_)
+    {}
+    void operator()() { cb(aww); }
+};
+
+static SmartPtr<BoundWindowCallback> recalculate_matrix_cb;
+static SmartPtr<BoundWindowCallback> recalculate_tree_cb;
+
+static GB_ERROR last_matrix_calculation_error = NULL;
+
 static void matrix_changed_cb() {
     if (matrixDisplay) {
         matrixDisplay->mark(MatrixDisplay::NEED_SETUP);
@@ -70,9 +88,22 @@ static void matrix_changed_cb() {
     }
 }
 
-static void delete_matrix_cb() {
-    GLOBAL_MATRIX.forget();
+struct RecalcNeeded {
+    bool matrix;
+    bool tree;
+    RecalcNeeded() : matrix(false), tree(false) { }
+};
+static RecalcNeeded need_recalc;
+
+static void matrix_needs_recalc_cb() { need_recalc.matrix = true; }
+static void tree_needs_recalc_cb() { need_recalc.tree   = true; } // @@@ need more binds?
+
+static void compressed_matrix_needs_recalc_cb() {
+    if (GLOBAL_MATRIX.has_type(DI_MATRIX_COMPRESSED)) {
+        matrix_needs_recalc_cb();
+    }
 }
+
 
 static AW_window *create_dna_matrix_window(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
@@ -92,37 +123,117 @@ static AW_window *create_dna_matrix_window(AW_root *aw_root) {
     return aws;
 }
 
-void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
-{
+static void sort_tree_changed_cb() {
+    {
+        GB_transaction ta(GLOBAL_gb_main);
+
+        static GBDATA *last_gb_tree = NULL;
+        if (last_gb_tree) {
+            GB_remove_callback(last_gb_tree, GB_CB_CHANGED, makeDatabaseCallback(matrix_needs_recalc_cb));
+            last_gb_tree = NULL;
+        }
+
+        char   *treename = AW_root::SINGLETON->awar(AWAR_DIST_TREE_SORT_NAME)->read_string();
+        GBDATA *gb_tree  = GBT_find_tree(GLOBAL_gb_main, treename);
+
+        if (gb_tree) {
+            GB_add_callback(gb_tree, GB_CB_CHANGED, makeDatabaseCallback(matrix_needs_recalc_cb));
+            last_gb_tree = gb_tree;
+        }
+
+        free(treename);
+    }
+    matrix_needs_recalc_cb();
+}
+static void compress_tree_changed_cb() {
+    {
+        GB_transaction ta(GLOBAL_gb_main);
+
+        static GBDATA *last_gb_tree = NULL;
+        if (last_gb_tree) {
+            GB_remove_callback(last_gb_tree, GB_CB_CHANGED, makeDatabaseCallback(compressed_matrix_needs_recalc_cb));
+            last_gb_tree = NULL;
+        }
+
+        char   *treename = AW_root::SINGLETON->awar(AWAR_DIST_TREE_COMP_NAME)->read_string();
+        GBDATA *gb_tree  = GBT_find_tree(GLOBAL_gb_main, treename);
+
+        if (gb_tree) {
+            GB_add_callback(gb_tree, GB_CB_CHANGED, makeDatabaseCallback(compressed_matrix_needs_recalc_cb));
+            last_gb_tree = gb_tree;
+        }
+
+        free(treename);
+    }
+    compressed_matrix_needs_recalc_cb();
+}
+
+CONSTEXPR unsigned AUTO_RECALC_TIMER_DELAY = 500;
+
+static unsigned auto_recalc_if_changed_cb(AW_root *aw_root) {
+    int matrix_autocalc = aw_root->awar(AWAR_DIST_MATRIX_AUTO_RECALC)->read_int();
+    int tree_autocalc   = aw_root->awar(AWAR_DIST_MATRIX_AUTO_CALC_TREE)->read_int();
+
+    if (tree_autocalc||matrix_autocalc) {
+        if (need_recalc.matrix) {
+            if (recalculate_matrix_cb.isSet()) {
+                GLOBAL_MATRIX.forget();
+                (*recalculate_matrix_cb)();
+            }
+            else {
+                need_recalc.tree = true;
+            }
+            need_recalc.matrix = false;
+        }
+        if (tree_autocalc && need_recalc.tree && recalculate_tree_cb.isSet()) {
+            (*recalculate_tree_cb)();
+            need_recalc.tree   = false;
+            need_recalc.matrix = false; // otherwise endless loop, e.g.if output-tree is used for sorting
+        }
+    }
+    return AUTO_RECALC_TIMER_DELAY;
+}
+
+static void auto_calc_changed_cb(AW_root *aw_root) {
+    int matrix_autocalc = aw_root->awar(AWAR_DIST_MATRIX_AUTO_RECALC)->read_int();
+    int tree_autocalc   = aw_root->awar(AWAR_DIST_MATRIX_AUTO_CALC_TREE)->read_int();
+
+    if (matrix_autocalc||tree_autocalc) {
+        aw_root->add_timed_callback(AUTO_RECALC_TIMER_DELAY, makeTimedCallback(auto_recalc_if_changed_cb));
+    }
+
+}
+
+void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db) {
     GB_transaction dummy(db);
-    DI_dna_matrix.set_descriptions(AP_A, "A");   
-    DI_dna_matrix.set_descriptions(AP_C, "C");   
+    DI_dna_matrix.set_descriptions(AP_A, "A");
+    DI_dna_matrix.set_descriptions(AP_C, "C");
     DI_dna_matrix.set_descriptions(AP_G, "G");   
     DI_dna_matrix.set_descriptions(AP_T, "TU");  
     DI_dna_matrix.set_descriptions(AP_S, "GAP"); 
 
     DI_dna_matrix.create_awars(aw_root, AWAR_DIST_MATRIX_DNA_BASE);
 
-    RootCallback delete_matrix_callback = makeRootCallback(delete_matrix_cb);
-    aw_root->awar_int(AWAR_DIST_MATRIX_DNA_ENABLED, 0)->add_callback(delete_matrix_callback); // user matrix disabled by default
+    RootCallback matrix_needs_recalc_callback = makeRootCallback(matrix_needs_recalc_cb);
+    aw_root->awar_int(AWAR_DIST_MATRIX_DNA_ENABLED, 0)->add_callback(matrix_needs_recalc_callback); // user matrix disabled by default
     {
         GBDATA *gbd = GB_search(AW_ROOT_DEFAULT, AWAR_DIST_MATRIX_DNA_BASE, GB_FIND);
-        GB_add_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(delete_matrix_cb));
+        GB_add_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(matrix_needs_recalc_cb));
     }
 
-    aw_root->awar_string(AWAR_DIST_WHICH_SPECIES, "marked", def)->add_callback(delete_matrix_callback);
+    aw_root->awar_string(AWAR_DIST_WHICH_SPECIES, "marked", def)->add_callback(matrix_needs_recalc_callback);
     {
         char *default_ali = GBT_get_default_alignment(db);
-        aw_root->awar_string(AWAR_DIST_ALIGNMENT, "", def)     ->add_callback(delete_matrix_callback)->write_string(default_ali);
+        aw_root->awar_string(AWAR_DIST_ALIGNMENT, "", def)->add_callback(matrix_needs_recalc_callback)->write_string(default_ali);
         free(default_ali);
     }
     aw_root->awar_string(AWAR_DIST_FILTER_ALIGNMENT, "none", def);
     aw_root->awar_string(AWAR_DIST_FILTER_NAME,      "none", def);
-    aw_root->awar_string(AWAR_DIST_FILTER_FILTER,    "",     def)->add_callback(delete_matrix_callback);
-    aw_root->awar_int   (AWAR_DIST_FILTER_SIMPLIFY,  0,      def)->add_callback(delete_matrix_callback);
+    aw_root->awar_string(AWAR_DIST_FILTER_FILTER,    "",     def)->add_callback(matrix_needs_recalc_callback);
+    aw_root->awar_int   (AWAR_DIST_FILTER_SIMPLIFY,  0,      def)->add_callback(matrix_needs_recalc_callback);
 
-    aw_root->awar_string(AWAR_DIST_CANCEL_CHARS, ".", def)->add_callback(delete_matrix_callback);
-    aw_root->awar_int(AWAR_DIST_CORR_TRANS, (int)DI_TRANSFORMATION_SIMILARITY, def)->add_callback(delete_matrix_callback);
+    aw_root->awar_string(AWAR_DIST_CANCEL_CHARS, ".", def)->add_callback(matrix_needs_recalc_callback);
+    aw_root->awar_int(AWAR_DIST_CORR_TRANS, (int)DI_TRANSFORMATION_SIMILARITY, def)->add_callback(matrix_needs_recalc_callback);
 
     aw_root->awar(AWAR_DIST_FILTER_ALIGNMENT)->map(AWAR_DIST_ALIGNMENT);
 
@@ -133,12 +244,14 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
     {
         char *currentTree = aw_root->awar_string(AWAR_TREE, "", db)->read_string();
         aw_root->awar_string(AWAR_DIST_TREE_CURR_NAME, currentTree, def);
-        aw_root->awar_string(AWAR_DIST_TREE_SORT_NAME, currentTree, def)->add_callback(delete_matrix_callback);
+        aw_root->awar_string(AWAR_DIST_TREE_SORT_NAME, currentTree, def)->add_callback(makeRootCallback(sort_tree_changed_cb));
         free(currentTree);
     }
-    aw_root->awar_string(AWAR_DIST_TREE_COMP_NAME, NO_TREE_SELECTED, def)->add_callback(delete_matrix_callback);
+    aw_root->awar_string(AWAR_DIST_TREE_COMP_NAME, NO_TREE_SELECTED, def)->add_callback(makeRootCallback(compress_tree_changed_cb));
 
     aw_root->awar_int(AWAR_DIST_BOOTSTRAP_COUNT, 1000, def);
+    aw_root->awar_int(AWAR_DIST_MATRIX_AUTO_RECALC, 0, def)->add_callback(auto_calc_changed_cb);
+    aw_root->awar_int(AWAR_DIST_MATRIX_AUTO_CALC_TREE, 0, def)->add_callback(auto_calc_changed_cb);
 
     aw_root->awar_float(AWAR_DIST_MIN_DIST, 0.0);
     aw_root->awar_float(AWAR_DIST_MAX_DIST, 0.0);
@@ -155,10 +268,12 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
         GB_push_transaction(db);
 
         GBDATA *gb_species_data = GBT_get_species_data(db);
-        GB_add_callback(gb_species_data, GB_CB_CHANGED, makeDatabaseCallback(delete_matrix_cb));
+        GB_add_callback(gb_species_data, GB_CB_CHANGED, makeDatabaseCallback(matrix_needs_recalc_cb));
 
         GB_pop_transaction(db);
     }
+
+    auto_calc_changed_cb(aw_root);
 }
 
 DI_ENTRY::DI_ENTRY(GBDATA *gbd, DI_MATRIX *phmatri) {
@@ -338,7 +453,11 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
     }
     else {
         if (show_warnings) {
-            aw_message("No valid tree given to sort matrix (using default database order)");
+            static bool shown = false;
+            if (!shown) { // showing once is enough
+                aw_message("No valid tree given to sort matrix (using default database order)");
+                shown = true;
+            }
         }
     }
 
@@ -424,7 +543,7 @@ long *DI_MATRIX::create_helix_filter(BI_helix *helix, const AP_filter *filter) {
 
 GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI_MUT_MATR &pairs, long *filter) {
     if (nentries<=1) {
-        return "There are no species selected";
+        return "Not enough species selected to calculate rates";
     }
 
     arb_progress progress("rates", (nentries*(nentries+1))/2);
@@ -460,6 +579,7 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI
             }
         }
     }
+    progress.done();
     return error;
 }
 
@@ -610,9 +730,11 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
             case DI_TRANSFORMATION_JUKES_CANTOR:
                 break;
             default:
-                return GB_export_error("Sorry not implemented:\n"
-                                       "    This kind of distance correction does not support\n"
-                                       "    a user defined matrix");
+                aw_message("Sorry not implemented:\n"
+                           "    This kind of distance correction does not support\n"
+                           "    a user defined matrix - it will be ignored");
+                user_matrix_enabled = false;
+                break;
         }
         DI_dna_matrix.read_awars(awr, AWAR_DIST_MATRIX_DNA_BASE);
         DI_dna_matrix.normize();
@@ -629,7 +751,7 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
     size_t i;
 
     if (nentries<=1) {
-        return "There are no species selected";
+        return "Not enough species selected to calculate matrix";
     }
     memset(&cancel_columns[0], 0, 256);
 
@@ -828,16 +950,16 @@ GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation, bool *aborte
     return prodist.makedists(aborted_flag);
 }
 
-__ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_window *aww, const WeightedFilter *weighted_filter, bool bootstrap_flag, bool show_warnings, bool *aborted_flag) {
+__ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const WeightedFilter *weighted_filter, bool bootstrap_flag, bool show_warnings, bool *aborted_flag) {
     // sets 'aborted_flag' to true, if it is non-NULL and the calculation has been aborted
     GB_push_transaction(GLOBAL_gb_main);
     if (GLOBAL_MATRIX.exists()) {
         GB_pop_transaction(GLOBAL_gb_main);
         return 0;
     }
-    AW_root *aw_root = aww->get_root();
-    char    *use = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
-    long ali_len = GBT_get_alignment_len(GLOBAL_gb_main, use);
+
+    char *use     = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
+    long  ali_len = GBT_get_alignment_len(GLOBAL_gb_main, use);
     if (ali_len<=0) {
         GB_pop_transaction(GLOBAL_gb_main);
         delete use;
@@ -898,6 +1020,7 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_window *aww, const Weig
         }
         else {
             GLOBAL_MATRIX.replaceBy(phm);
+            tree_needs_recalc_cb();
         }
     }
     free(load_what);
@@ -1013,8 +1136,18 @@ static void di_mark_by_distance(AW_window *aww, WeightedFilter *weighted_filter)
     }
 }
 
+static void di_calculate_full_matrix_cb(AW_window *aww, const WeightedFilter *weighted_filter);
+
+static GB_ERROR di_recalc_matrix() {
+    // recalculate matrix
+    last_matrix_calculation_error = NULL;
+    di_assert(recalculate_matrix_cb.isSet());
+    (*recalculate_matrix_cb)();
+    return last_matrix_calculation_error;
+}
+
 static void di_view_matrix_cb(AW_window *aww, save_matrix_params *sparam) {
-    GB_ERROR error = di_calculate_matrix(aww, sparam->weighted_filter, 0, true, NULL);
+    GB_ERROR error = di_recalc_matrix();
     if (error) return;
 
     if (!matrixDisplay) matrixDisplay = new MatrixDisplay;
@@ -1030,9 +1163,9 @@ static void di_view_matrix_cb(AW_window *aww, save_matrix_params *sparam) {
     viewer->activate();
 }
 
-static void di_save_matrix_cb(AW_window *aww, const WeightedFilter *weighted_filter) {
+static void di_save_matrix_cb(AW_window *aww) {
     // save the matrix
-    GB_ERROR error = di_calculate_matrix(aww, weighted_filter, 0, true, NULL);
+    GB_ERROR error = di_recalc_matrix();
     if (!error) {
         char              *filename = aww->get_root()->awar(AWAR_DIST_SAVE_MATRIX_FILENAME)->read_string();
         enum DI_SAVE_TYPE  type     = (enum DI_SAVE_TYPE)aww->get_root()->awar(AWAR_DIST_SAVE_MATRIX_TYPE)->read_int();
@@ -1068,7 +1201,7 @@ AW_window *DI_create_save_matrix_window(AW_root *aw_root, save_matrix_params *sa
         AW_create_fileselection(aws, save_params->awar_base);
 
         aws->at("save2");
-        aws->callback(makeWindowCallback(di_save_matrix_cb, save_params->weighted_filter));
+        aws->callback(makeWindowCallback(di_save_matrix_cb));
         aws->create_button("SAVE", "SAVE", "S");
 
         aws->callback((AW_CB0)AW_POPDOWN);
@@ -1112,6 +1245,8 @@ static const char *enum_trans_to_string[] = {
 };
 
 static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter, bool bootstrap_flag) {
+    recalculate_tree_cb = new BoundWindowCallback(aww, makeWindowCallback(di_calculate_tree_cb, weighted_filter, bootstrap_flag));
+
     AW_root  *aw_root   = aww->get_root();
     GB_ERROR  error     = 0;
     GBT_TREE *tree      = 0;
@@ -1147,7 +1282,7 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
             GLOBAL_MATRIX.forget();
             GLOBAL_MATRIX.set_changed_cb(NULL); // otherwise matrix window will repeatedly pop up/down
 
-            error = di_calculate_matrix(aww, weighted_filter, bootstrap_flag, true, NULL);
+            error = di_calculate_matrix(aw_root, weighted_filter, bootstrap_flag, true, NULL);
             if (!error) {
                 DI_MATRIX *matr = GLOBAL_MATRIX.get();
                 if (!matr) {
@@ -1172,7 +1307,7 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
         bool aborted = false;
 
         if (bootstrap_flag && loop_count) GLOBAL_MATRIX.forget(); // in first loop we already have a valid matrix
-        error = di_calculate_matrix(aww, weighted_filter, bootstrap_flag, !bootstrap_flag, &aborted);
+        error = di_calculate_matrix(aw_root, weighted_filter, bootstrap_flag, !bootstrap_flag, &aborted);
         if (error && aborted) {
             error = 0;          // clear error (otherwise no tree will be read below)
             break;              // end of bootstrap
@@ -1248,6 +1383,8 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
 
     if (error) aw_message(error);
     progress->done();
+
+    aw_root->awar(AWAR_TREE_REFRESH)->touch();
 }
 
 
@@ -1342,16 +1479,22 @@ __ATTR__NORETURN static void di_exit(AW_window *aww) {
     exit(0);
 }
 
-static void di_calculate_full_matrix_cb(AW_window *aww, WeightedFilter *weighted_filter) {
+static void di_calculate_full_matrix_cb(AW_window *aww, const WeightedFilter *weighted_filter) {
+    recalculate_matrix_cb = new BoundWindowCallback(aww, makeWindowCallback(di_calculate_full_matrix_cb, weighted_filter));
+
     GLOBAL_MATRIX.forget_if_not_has_type(DI_MATRIX_FULL);
-    GB_ERROR error = di_calculate_matrix(aww, weighted_filter, 0, true, NULL);
+    GB_ERROR error = di_calculate_matrix(aww->get_root(), weighted_filter, 0, true, NULL);
     aw_message_if(error);
+    last_matrix_calculation_error = error;
 }
 
 static void di_calculate_compressed_matrix_cb(AW_window *aww, WeightedFilter *weighted_filter) {
+    recalculate_matrix_cb = new BoundWindowCallback(aww, makeWindowCallback(di_calculate_compressed_matrix_cb, weighted_filter));
+
     GB_transaction ta(GLOBAL_gb_main);
 
-    char     *treename = aww->get_root()->awar(AWAR_DIST_TREE_COMP_NAME)->read_string();
+    AW_root  *aw_root  = aww->get_root();
+    char     *treename = aw_root->awar(AWAR_DIST_TREE_COMP_NAME)->read_string();
     GB_ERROR  error    = 0;
     GBT_TREE *tree     = GBT_read_tree(GLOBAL_gb_main, treename, sizeof(GBT_TREE));
 
@@ -1359,12 +1502,11 @@ static void di_calculate_compressed_matrix_cb(AW_window *aww, WeightedFilter *we
         error = GB_await_error();
     }
     else {
-        GLOBAL_MATRIX.forget(); // always forget (as tree might have changed)
-
         {
             LocallyModify<MatrixDisplay*> skipRefresh(matrixDisplay, NULL); // skip refresh, until matrix has been compressed
 
-            error = di_calculate_matrix(aww, weighted_filter, 0, true, NULL);
+            GLOBAL_MATRIX.forget(); // always forget (as tree might have changed)
+            error = di_calculate_matrix(aw_root, weighted_filter, 0, true, NULL);
             if (!error && !GLOBAL_MATRIX.exists()) {
                 error = "Failed to calculate your matrix (bug?)";
             }
@@ -1382,6 +1524,7 @@ static void di_calculate_compressed_matrix_cb(AW_window *aww, WeightedFilter *we
     }
     free(treename);
     aw_message_if(error);
+    last_matrix_calculation_error = error;
 }
 
 static void di_define_sort_tree_name_cb(AW_window *aww) {
@@ -1543,6 +1686,12 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->callback(makeWindowCallback(di_calculate_compressed_matrix_cb, weighted_filter));
     aws->create_button("CALC_COMPRESSED_MATRIX", "Calculate\nCompressed Matrix", "C");
 
+    recalculate_matrix_cb = new BoundWindowCallback(aws, makeWindowCallback(di_calculate_full_matrix_cb, weighted_filter));
+
+    aws->at("auto_recalc");
+    aws->label("Auto recalculate");
+    aws->create_toggle(AWAR_DIST_MATRIX_AUTO_RECALC);
+
     aws->button_length(13);
 
     {
@@ -1568,20 +1717,22 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->callback(di_define_sort_tree_name_cb);
     aws->create_button("USE_SORT_TREE", "Use to sort", "");
 
-    aws->at("compr_tree_name");
-    aws->create_input_field(AWAR_DIST_TREE_COMP_NAME, 12);
-    aws->at("sort_tree_name");
-    aws->create_input_field(AWAR_DIST_TREE_SORT_NAME, 12);
+    aws->at("compr_tree_name"); aws->create_input_field(AWAR_DIST_TREE_COMP_NAME, 12);
+    aws->at("sort_tree_name");  aws->create_input_field(AWAR_DIST_TREE_SORT_NAME, 12);
 
     // tree calculation
 
     aws->button_length(18);
+
     aws->at("t_calculate");
     aws->callback(makeWindowCallback(di_calculate_tree_cb, weighted_filter, false));
     aws->create_button("CALC_TREE", "Calculate \ntree", "C");
+
     aws->at("bootstrap");
     aws->callback(makeWindowCallback(di_calculate_tree_cb, weighted_filter, true));
     aws->create_button("CALC_BOOTSTRAP_TREE", "Calculate \nbootstrap tree");
+
+    recalculate_tree_cb = new BoundWindowCallback(aws, makeWindowCallback(di_calculate_tree_cb, weighted_filter, false));
 
     aws->button_length(22);
     aws->at("use_existing");
@@ -1593,6 +1744,10 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     aws->at("bcount");
     aws->create_input_field(AWAR_DIST_BOOTSTRAP_COUNT, 7);
+
+    aws->at("auto_calc_tree");
+    aws->label("Auto calculate tree");
+    aws->create_toggle(AWAR_DIST_MATRIX_AUTO_CALC_TREE);
 
     GB_pop_transaction(GLOBAL_gb_main);
     return aws;

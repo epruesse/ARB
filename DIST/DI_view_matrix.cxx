@@ -156,11 +156,6 @@ void MatrixDisplay::adapt_to_canvas_size() {
     awm->tell_scrolled_picture_size(rect);
     awm->calculate_scrollbars();
 
-    // @@@ do in draw()? 
-    if (!awm->is_shown() && m) {
-        awm->show();
-    }
-
     mark(NEED_CLEAR);
 }
 
@@ -292,16 +287,33 @@ static void input_cb(AW_window *aww, MatrixDisplay *disp) {
 void MatrixDisplay::draw() {
     // draw matrix
 
-    long           x, y, xpos, ypos;
-    GB_transaction dummy(GLOBAL_gb_main);
-
     if (!device) return;
 
+    long x, y, xpos, ypos;
+
     DI_MATRIX *m = get_matrix();
-    if (!m) {
-        if (awm) awm->hide();
-        return;
+
+    // handle automatic hide/show of matrix view
+    // - avoid popup if was not auto-hidden
+    {
+        enum LastAutoPop { UNKNOWN, UP, DOWN };
+        static LastAutoPop lastautopop = UNKNOWN;
+
+        if (!m) {
+            if (awm && awm->is_shown()) {
+                awm->hide();
+                lastautopop = DOWN;
+            }
+            return;
+        }
+
+        if (!awm->is_shown() && lastautopop == DOWN) {
+            awm->show();
+            lastautopop = UP;
+        }
     }
+
+    GB_transaction dummy(GLOBAL_gb_main);
 
     if (beforeUpdate&NEED_CLEAR) device->clear(-1);
     device->set_offset(AW::Vector(off_dx, off_dy));
