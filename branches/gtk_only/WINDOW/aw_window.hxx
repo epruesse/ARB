@@ -543,9 +543,9 @@ public:
     void create_color_button(const char *awar_name, const char *label);
 
     // *** awar/action access helpers 
-    AW_action* action(const char* action_id);
-    AW_action* action_try(const char* action_id);
-    AW_action* action_register(const char* action_id);
+    AW_action* action(const char* action_id, bool localize);
+    AW_action* action_try(const char* action_id, bool localize);
+    AW_action* action_register(const char* action_id, bool localize);
 };
 
 
