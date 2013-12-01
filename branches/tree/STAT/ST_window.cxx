@@ -37,8 +37,7 @@
 #define ST_ML_AWAR_CQ_REPORT       ST_ML_AWAR "report"
 #define ST_ML_AWAR_CQ_KEEP_REPORTS ST_ML_AWAR "keep_reports"
 
-static void st_ok_cb(AW_window *aww, AW_CL cl_st_ml) {
-    ST_ML   *st_ml          = (ST_ML*)cl_st_ml;
+static void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
     AW_root *root           = aww->get_root();
     char    *alignment_name = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->get_gb_main())->read_string();
     char    *tree_name      = root->awar_string(AWAR_TREE, "", st_ml->get_gb_main())->read_string();
@@ -84,11 +83,11 @@ AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml) {
     st_ml->create_column_statistic(root, ST_ML_AWAR_COLSTAT_NAME, awar_default_alignment);
 
     aws->at("GO");
-    aws->callback(st_ok_cb, (AW_CL)st_ml);
+    aws->callback(makeWindowCallback(st_ok_cb, st_ml));
     aws->create_button("GO", "GO", "G");
 
     aws->at("awt_csp");
-    aws->callback(AW_POPUP, (AW_CL)COLSTAT_create_selection_window, (AW_CL)st_ml->get_column_statistic());
+    aws->callback(makeCreateWindowCallback(COLSTAT_create_selection_window, st_ml->get_column_statistic()));
     aws->button_length(20);
     aws->create_button("SELECT_CSP", ST_ML_AWAR_COLSTAT_NAME);
 
@@ -130,9 +129,8 @@ struct st_check_cb_data : public Noncopyable {
     }
 };
 
-static void st_check_cb(AW_window *aww, AW_CL cl_st_check_cb_data) {
-    st_check_cb_data *data = (st_check_cb_data*)cl_st_check_cb_data;
-    GB_transaction    ta(data->gb_main);
+static void st_check_cb(AW_window *aww, st_check_cb_data *data) {
+    GB_transaction ta(data->gb_main);
 
     AW_root *r = aww->get_root();
 
@@ -207,12 +205,12 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
         }
 
         aws->at("colstat");
-        aws->callback(AW_POPUP, (AW_CL)COLSTAT_create_selection_window, (AW_CL)cb_data->colstat);
+        aws->callback(makeCreateWindowCallback(COLSTAT_create_selection_window, cb_data->colstat));
         aws->create_button("SELECT_CSP", ST_ML_AWAR_COLSTAT_NAME);
 
         
         aws->at("filter");
-        aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)(cb_data->filter->get_adfiltercbstruct()));
+        aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, cb_data->filter->get_adfiltercbstruct()));
         aws->create_button("SELECT_FILTER", ST_ML_AWAR_FILTER_NAME);
         
         aws->at("sb");
@@ -251,7 +249,7 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
         }
 
         aws->at("GO");
-        aws->callback(st_check_cb, (AW_CL)cb_data);
+        aws->callback(makeWindowCallback(st_check_cb, cb_data));
         aws->create_button("GO", "GO", "G");
     }
     return aws;

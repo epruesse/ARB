@@ -1068,8 +1068,10 @@ NT_validNameParser.o: NT_validNameParser.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+NT_validNameParser.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+NT_validNameParser.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/test_global.h

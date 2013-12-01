@@ -14,7 +14,6 @@
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
-#include <aw_window.hxx>
 #include <arbdbt.h>
 #include <arb_global_defs.h>
 
@@ -205,71 +204,76 @@ static void MG_transfer_tree(AW_window *aww) {
     free(source_name);
 }
 
-AW_window *MG_merge_trees_cb(AW_root *awr) {
-    static AW_window_simple *aws = 0;
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(awr, "MERGE_TREES", "MERGE TREES");
-        aws->load_xfig("merge/trees.fig");
-
-        aws->button_length(7);
-
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("help");
-        aws->callback(makeHelpCallback("mg_trees.hlp"));
-        aws->create_button("HELP", "HELP", "H");
-
-        aws->at("trees1");
-        awt_create_selection_list_on_trees(GLOBAL_gb_src, (AW_window *)aws, AWAR_TREE_NAME_SRC);
-
-        aws->at("trees2");
-        awt_create_selection_list_on_trees(GLOBAL_gb_dst, (AW_window *)aws, AWAR_TREE_NAME_DST);
-
-        static TreeAdmin::Spec src_spec(GLOBAL_gb_src, AWAR_TREE_NAME_SRC);
-        static TreeAdmin::Spec dst_spec(GLOBAL_gb_dst,  AWAR_TREE_NAME_DST);
-    
-        aws->button_length(15);
-
-        aws->at("delete1");
-        aws->callback(TreeAdmin::delete_tree_cb, (AW_CL)&src_spec);
-        aws->create_button("DELETE TREE_DB1", "Delete Tree");
-
-        aws->at("delete2");
-        aws->callback(TreeAdmin::delete_tree_cb, (AW_CL)&dst_spec);
-        aws->create_button("DELETE_TREE_DB2", "Delete Tree");
-
-        aws->at("rename1");
-        aws->callback(AW_POPUP, (AW_CL)TreeAdmin::create_rename_window, (AW_CL)&src_spec);
-        aws->create_button("RENAME_TREE_DB1", "Rename Tree");
-
-        aws->at("rename2");
-        aws->callback(AW_POPUP, (AW_CL)TreeAdmin::create_rename_window, (AW_CL)&dst_spec);
-        aws->create_button("RENAME_TREE_DB2", "Rename Tree");
-
-        aws->at("transfer");
-        aws->callback(MG_transfer_tree);
-        aws->create_autosize_button("TRANSFER_TREE", "Transfer");
-
-        aws->at("xfer_what");
-        aws->create_option_menu(AWAR_TREE_XFER_WHAT);
-        aws->insert_default_option("selected tree",  "s", XFER_SELECTED);
-        aws->insert_option        ("all trees",      "a", XFER_ALL);
-        aws->insert_option        ("missing trees",  "m", XFER_MISSING);
-        aws->insert_option        ("existing trees", "e", XFER_EXISTING);
-        aws->update_option_menu();
-
-        aws->at("overwrite");
-        aws->label("Overwrite trees?");
-        aws->create_toggle(AWAR_TREE_OVERWRITE);
-
-        aws->button_length(0);
-        aws->shadow_width(1);
-        aws->at("icon");
-        aws->callback(makeHelpCallback("mg_trees.hlp"));
-        aws->create_button("HELP_MERGE", "#merge/icon.xpm");
+AW_window *MG_create_merge_trees_window(AW_root *awr) {
+    GB_ERROR error = MG_expect_renamed();
+    if (error) {
+        aw_message(error);
+        return NULL; // deny to open window before user has renamed species
     }
+
+    AW_window_simple *aws = new AW_window_simple;
+
+    aws->init(awr, "MERGE_TREES", "MERGE TREES");
+    aws->load_xfig("merge/trees.fig");
+
+    aws->button_length(7);
+
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->at("help");
+    aws->callback(makeHelpCallback("mg_trees.hlp"));
+    aws->create_button("HELP", "HELP", "H");
+
+    aws->at("trees1");
+    awt_create_selection_list_on_trees(GLOBAL_gb_src, (AW_window *)aws, AWAR_TREE_NAME_SRC);
+
+    aws->at("trees2");
+    awt_create_selection_list_on_trees(GLOBAL_gb_dst, (AW_window *)aws, AWAR_TREE_NAME_DST);
+
+    static TreeAdmin::Spec src_spec(GLOBAL_gb_src, AWAR_TREE_NAME_SRC);
+    static TreeAdmin::Spec dst_spec(GLOBAL_gb_dst,  AWAR_TREE_NAME_DST);
+    
+    aws->button_length(15);
+
+    aws->at("delete1");
+    aws->callback(makeWindowCallback(TreeAdmin::delete_tree_cb, &src_spec));
+    aws->create_button("DELETE TREE_DB1", "Delete Tree");
+
+    aws->at("delete2");
+    aws->callback(makeWindowCallback(TreeAdmin::delete_tree_cb, &dst_spec));
+    aws->create_button("DELETE_TREE_DB2", "Delete Tree");
+
+    aws->at("rename1");
+    aws->callback(makeCreateWindowCallback(TreeAdmin::create_rename_window, &src_spec));
+    aws->create_button("RENAME_TREE_DB1", "Rename Tree");
+
+    aws->at("rename2");
+    aws->callback(makeCreateWindowCallback(TreeAdmin::create_rename_window, &dst_spec));
+    aws->create_button("RENAME_TREE_DB2", "Rename Tree");
+
+    aws->at("transfer");
+    aws->callback(MG_transfer_tree);
+    aws->create_autosize_button("TRANSFER_TREE", "Transfer");
+
+    aws->at("xfer_what");
+    aws->create_option_menu(AWAR_TREE_XFER_WHAT);
+    aws->insert_default_option("selected tree",  "s", XFER_SELECTED);
+    aws->insert_option        ("all trees",      "a", XFER_ALL);
+    aws->insert_option        ("missing trees",  "m", XFER_MISSING);
+    aws->insert_option        ("existing trees", "e", XFER_EXISTING);
+    aws->update_option_menu();
+
+    aws->at("overwrite");
+    aws->label("Overwrite trees?");
+    aws->create_toggle(AWAR_TREE_OVERWRITE);
+
+    aws->button_length(0);
+    aws->shadow_width(1);
+    aws->at("icon");
+    aws->callback(makeHelpCallback("mg_trees.hlp"));
+    aws->create_button("HELP_MERGE", "#merge/icon.xpm");
+
     return aws;
 }
 

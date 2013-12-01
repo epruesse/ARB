@@ -17,8 +17,6 @@ class AW_window;
 
 typedef long AW_CL; // client data (casted from pointer or value) // @@@ [CB] eliminate later
 
-typedef AW_window *(*AW_Window_Creator)(AW_root*, AW_CL);
-
 typedef void (*AW_postcb_cb)(AW_window *);
 
 struct          GBDATA;

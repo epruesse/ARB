@@ -940,22 +940,21 @@ static void merge_from_to(AW_root *awr, const char *db_awar_name, bool merge_to)
 static void merge_from_cb(AW_window *aww, AW_CL cl_awarNamePtr) { merge_from_to(aww->get_root(), *(const char**)cl_awarNamePtr, false); }
 static void merge_into_cb(AW_window *aww, AW_CL cl_awarNamePtr) { merge_from_to(aww->get_root(), *(const char**)cl_awarNamePtr, true); }
 
-static AW_window *NT_create_merge_from_window(AW_root *awr, AW_CL) {
+static AW_window *NT_create_merge_from_window(AW_root *awr) {
     static char *awar_name = NULL; // do not free, bound to callback
-
-    AW_window *aw_from =
+    AW_window *aw_from     =
         awt_create_load_box(awr, "Merge data from", "other ARB database",
                             ".", ".arb", &awar_name,
-                            merge_from_cb, NULL, NULL, NULL, AW_CL(&awar_name));
+                            makeWindowCallback(merge_from_cb, AW_CL(&awar_name)));
     return aw_from;
 }
-static AW_window *NT_create_merge_to_window(AW_root *awr, AW_CL) {
+static AW_window *NT_create_merge_to_window(AW_root *awr) {
     static char *awar_name = NULL; // do not free, bound to callback
-
-    AW_window *aw_to =
+    AW_window *aw_to       =
         awt_create_load_box(awr, "Merge data to", "other ARB database",
                             ".", ".arb", &awar_name,
-                            merge_into_cb, NULL, NULL, NULL, AW_CL(&awar_name));
+                            makeWindowCallback(merge_into_cb, AW_CL(&awar_name)),
+                            makeWindowCallback(AW_POPDOWN), NULL);
     return aw_to;
 }
 
@@ -1132,15 +1131,15 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             awm->insert_sub_menu("Import",      "I");
             {
-                awm->insert_menu_topic("merge_from", "Merge from other ARB database", "d", "arb_merge_into.hlp", AWM_ALL, AW_POPUP,            (AW_CL)NT_create_merge_from_window, 0);
-                awm->insert_menu_topic("import_seq", "Import from external format",   "I", "arb_import.hlp",     AWM_ALL, NT_import_sequences, 0,                                  0);
+                awm->insert_menu_topic("merge_from", "Merge from other ARB database", "d", "arb_merge_into.hlp", AWM_ALL, NT_create_merge_from_window);
+                awm->insert_menu_topic("import_seq", "Import from external format",   "I", "arb_import.hlp",     AWM_ALL, NT_import_sequences, 0, 0);
                 GDE_load_menu(awm, AWM_EXP, "Import");
             }
             awm->close_sub_menu();
 
             awm->insert_sub_menu("Export",      "E");
             {
-                awm->insert_menu_topic("export_to_ARB", "Merge to (new) ARB database", "A", "arb_merge_outof.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_merge_to_window, 0);
+                awm->insert_menu_topic("export_to_ARB", "Merge to (new) ARB database", "A", "arb_merge_outof.hlp", AWM_ALL, NT_create_merge_to_window);
                 awm->insert_menu_topic("export_seqs",   "Export to external format",   "f", "arb_export.hlp",      AWM_ALL, AW_POPUP, (AW_CL)open_AWTC_export_window,   (AW_CL)GLOBAL.gb_main);
                 GDE_load_menu(awm, AWM_ALL, "Export");
                 awm->insert_menu_topic("export_nds",    "Export fields (to calc-sheet using NDS)", "N", "arb_export_nds.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_nds_export_window, 0);
@@ -1433,7 +1432,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         if (!clone) {
             awm->insert_menu_topic("tree_admin", "Tree admin",               "i", "treeadm.hlp",   AWM_ALL, popup_tree_admin_window);
-            awm->insert_menu_topic("nds",        "NDS (Node display setup)", "N", "props_nds.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_nds_window, (AW_CL)GLOBAL.gb_main);
+            awm->insert_menu_topic("nds",        "NDS (Node display setup)", "N", "props_nds.hlp", AWM_ALL, makeCreateWindowCallback(AWT_create_nds_window, GLOBAL.gb_main));
         }
         awm->sep______________();
 
@@ -1495,21 +1494,17 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->create_menu("Properties", "r", AWM_ALL);
         {
-            awm->insert_menu_topic("props_menu",    "Frame settings", "F", "props_frame.hlp",     AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0);
-            awm->insert_sub_menu("Tree settings",  "T");
-            {
-                awm->insert_menu_topic(awm->local_id("props_tree2"), "Tree options",        "o", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw);
-                awm->insert_menu_topic("props_tree",                 "Tree colors & fonts", "c", "nt_props_data.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window,    (AW_CL)ntw->gc_manager);
-            }
-            awm->close_sub_menu();
-            awm->insert_menu_topic("props_www", "Search world wide web (WWW)", "W", "props_www.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window, (AW_CL)GLOBAL.gb_main);
+            awm->insert_menu_topic("props_menu",                 "Frame settings",              "F", "props_frame.hlp",      AWM_ALL, AW_preset_window);
+            awm->insert_menu_topic(awm->local_id("props_tree2"), "Tree options",                "o", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw);
+            awm->insert_menu_topic("props_tree",                 "Tree colors & fonts",         "c", "nt_props_data.hlp",    AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
+            awm->insert_menu_topic("props_www",                  "Search world wide web (WWW)", "W", "props_www.hlp",        AWM_ALL, AW_POPUP, (AW_CL)AWT_open_www_window, (AW_CL)GLOBAL.gb_main);
             awm->sep______________();
-            awm->insert_menu_topic("!toggle_expert", "Toggle expert mode",         "x", 0,            AWM_ALL, NT_toggle_expert_mode,              0, 0);
-            awm->insert_menu_topic("!toggle_focus",  "Toggle focus follows mouse", "f", 0,            AWM_ALL, NT_toggle_focus_policy,             0, 0);
+            awm->insert_menu_topic("!toggle_expert", "Toggle expert mode",         "x", 0, AWM_ALL, NT_toggle_expert_mode,  0, 0);
+            awm->insert_menu_topic("!toggle_focus",  "Toggle focus follows mouse", "f", 0, AWM_ALL, NT_toggle_focus_policy, 0, 0);
             awm->sep______________();
             AW_insert_common_property_menu_entries(awm);
             awm->sep______________();
-            awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "S", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
+            awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "S", "savedef.hlp", AWM_ALL, AW_save_properties);
         }
     }
 
@@ -1745,6 +1740,10 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 #endif // DEVEL_RALF
 
     GB_pop_transaction(GLOBAL.gb_main);
+
+#if defined(DEBUG)
+    AWT_check_action_ids(awr, is_genome_db ? "_genome" : "");
+#endif
 
     return awm;
 }

@@ -15,11 +15,6 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 
-PHDATA::PHDATA(AW_root *awr) {
-    memset((char *)this, 0, sizeof(PHDATA));
-    aw_root = awr;
-}
-
 char *PHDATA::unload() {
     PHENTRY *phentry;
 
@@ -34,17 +29,11 @@ char *PHDATA::unload() {
     return 0;
 }
 
-PHDATA::~PHDATA() {
-    unload();
-    delete matrix;
-}
-
-
-char *PHDATA::load(char *usei) {
-    use             = strdup(usei);
-    gb_main         = GLOBAL_gb_main;
+char *PHDATA::load(char*& Use) {
+    reassign(use, Use);
     last_key_number = 0;
 
+    GBDATA *gb_main = get_gb_main();
     GB_push_transaction(gb_main);
 
     seq_len  = GBT_get_alignment_len(gb_main, use);
@@ -109,7 +98,7 @@ GB_ERROR PHDATA::save(char *filename) {
         return "Cannot save your File";
     }
     unsigned row, col;
-    fprintf(out, "%i\n", nentries);
+    fprintf(out, "%u\n", nentries);
     for (row = 0; row<nentries; row++) {
         fprintf(out, "%-13s", hash_elements[row]->name);
         for (col=0; col<=row; col++) {
@@ -123,7 +112,7 @@ GB_ERROR PHDATA::save(char *filename) {
 
 void PHDATA::print() {
     unsigned row, col;
-    printf("    %i\n", nentries);
+    printf("    %u\n", nentries);
     for (row = 0; row<nentries; row++) {
         printf("%-10s ", hash_elements[row]->name);
         for (col=0; col<row; col++) {
@@ -174,10 +163,10 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
 
     // initialize variables
 
-    options_vector[OPT_FILTER_POINT] = aw_root->awar("phyl/matrix/point")->read_int();
-    options_vector[OPT_FILTER_MINUS] = aw_root->awar("phyl/matrix/minus")->read_int();
-    options_vector[OPT_FILTER_AMBIG] = aw_root->awar("phyl/matrix/rest")->read_int();
-    options_vector[OPT_FILTER_LOWER] = aw_root->awar("phyl/matrix/lower")->read_int();
+    options_vector[OPT_FILTER_POINT] = aw_root->awar(AWAR_PHYLO_MATRIX_POINT)->read_int();
+    options_vector[OPT_FILTER_MINUS] = aw_root->awar(AWAR_PHYLO_MATRIX_MINUS)->read_int();
+    options_vector[OPT_FILTER_AMBIG] = aw_root->awar(AWAR_PHYLO_MATRIX_REST)->read_int();
+    options_vector[OPT_FILTER_LOWER] = aw_root->awar(AWAR_PHYLO_MATRIX_LOWER)->read_int();
 
 
     for (i=0; i<256; i++) compare[i]=false;
@@ -207,7 +196,7 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
     }
     distance_table->set(reference_table[(unsigned char)'.'], reference_table[(unsigned char)'-'], 0.0);
 
-    char *filter = aw_root->awar("phyl/filter/filter")->read_string();
+    char *filter = aw_root->awar(AWAR_PHYLO_FILTER_FILTER)->read_string();
 
     // set compare-table according to options_vector
     switch (options_vector[OPT_FILTER_POINT]) // '.' in column
@@ -253,7 +242,7 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
     // counting routine
     sequence_bufferi = 0;
     sequence_bufferj = 0;
-    GB_transaction dummy(PHDATA::ROOT->gb_main);
+    GB_transaction ta(PHDATA::ROOT->get_gb_main());
 
     GB_ERROR error = 0;
     for (i = 0; i < long(nentries); i++) {

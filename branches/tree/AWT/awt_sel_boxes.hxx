@@ -13,25 +13,15 @@
 #ifndef AWT_SEL_BOXES_HXX
 #define AWT_SEL_BOXES_HXX
 
-#ifndef CB_BASE_H
-#include <cb_base.h>
-#endif
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
-#ifndef AW_BASE_HXX
-#include <aw_base.hxx>
-#endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
-#ifndef ATTRIBUTES_H
-#include <attributes.h>
-#endif
 #ifndef _GLIBCXX_STRING
 #include <string>
 #endif
-
+#ifndef CB_H
+#include <cb.h>
+#endif
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
+#endif
 
 class AP_filter;
 class AW_DB_selection;
@@ -126,13 +116,15 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
 // -------------------------------
 //      generic file prompter
 
-AW_window *awt_create_load_box(AW_root *aw_root, const char *action, const char *what,
-                               const char *default_directory, const char *file_extension,
-                               char **set_file_name_awar,
-                               void (*callback)(AW_window*, AW_CL),
-                               AW_window* (*create_popup)(AW_root *, AW_CL),
-                               void (*close_cb)(AW_window*, AW_CL), const char *close_button_text,
-                               AW_CL cl_user);
+AW_window *awt_create_load_box(AW_root                *aw_root,
+                               const char             *action,
+                               const char             *what,
+                               const char             *default_directory,
+                               const char             *file_extension,
+                               char                  **set_file_name_awar,
+                               const WindowCallback&   ok_cb,
+                               const WindowCallback&   abort_cb          = makeWindowCallback(AW_POPDOWN),
+                               const char             *close_button_text = NULL);
 
 // ------------------------------------------
 //      save/load selection list content

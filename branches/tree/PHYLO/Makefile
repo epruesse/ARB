@@ -2,18 +2,18 @@
 
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS =  PH_data.o PH_root.o PH_main.o PH_filt.o PH_display.o PH_matr.o
+OBJECTS=$(subst .cxx,.o,$(wildcard *.cxx))
 
-$(MAIN): $(CPP_OBJECTS)
-	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
+$(MAIN): $(OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
 	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
-	rm -f $(CPP_OBJECTS) *.a
+	rm -f $(OBJECTS) *.a
 
-DEPENDS = $(CPP_OBJECTS:.o=.depend)
+DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
 	@rm $(DEPENDS)
@@ -177,34 +177,6 @@ PH_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 PH_main.o: $(ARBHOME)/INCLUDE/test_global.h
 PH_main.o: $(ARBHOME)/INCLUDE/ttypes.h
-
-PH_matr.o: PH_filter.hxx
-PH_matr.o: phylo.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
-PH_matr.o: $(ARBHOME)/INCLUDE/arb_core.h
-PH_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
-PH_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-PH_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
-PH_matr.o: $(ARBHOME)/INCLUDE/attributes.h
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_file.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/cb.h
-PH_matr.o: $(ARBHOME)/INCLUDE/cb_base.h
-PH_matr.o: $(ARBHOME)/INCLUDE/cbtypes.h
-PH_matr.o: $(ARBHOME)/INCLUDE/cxxforward.h
-PH_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
-PH_matr.o: $(ARBHOME)/INCLUDE/gccver.h
-PH_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
-PH_matr.o: $(ARBHOME)/INCLUDE/static_assert.h
-PH_matr.o: $(ARBHOME)/INCLUDE/test_global.h
-PH_matr.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 PH_root.o: PH_filter.hxx
 PH_root.o: phylo.hxx

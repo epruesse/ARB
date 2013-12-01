@@ -645,15 +645,15 @@ void popup_tree_admin_window(AW_root *aw_root) {
         static TreeAdmin::Spec spec(GLOBAL.gb_main, AWAR_TREE_NAME);
 
         aws->at("delete");
-        aws->callback(TreeAdmin::delete_tree_cb, (AW_CL)&spec);
+        aws->callback(makeWindowCallback(TreeAdmin::delete_tree_cb, &spec));
         aws->create_button("DELETE", "Delete", "D");
 
         aws->at("rename");
-        aws->callback(AW_POPUP, (AW_CL)TreeAdmin::create_rename_window, (AW_CL)&spec);
+        aws->callback(makeCreateWindowCallback(TreeAdmin::create_rename_window, &spec));
         aws->create_button("RENAME", "Rename", "R");
 
         aws->at("copy");
-        aws->callback(AW_POPUP, (AW_CL)TreeAdmin::create_copy_window, (AW_CL)&spec);
+        aws->callback(makeCreateWindowCallback(TreeAdmin::create_copy_window, &spec));
         aws->create_button("COPY", "Copy", "C");
 
         aws->at("move");

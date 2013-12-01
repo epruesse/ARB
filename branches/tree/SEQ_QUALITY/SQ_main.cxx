@@ -18,7 +18,6 @@
 #include <awt_filter.hxx>
 #include <awt_sel_boxes.hxx>
 
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
@@ -254,12 +253,12 @@ AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL cl_gb_main) {
     awt_create_selection_list_on_trees(gb_main, (AW_window *) aws, AWAR_TREE);
 
     aws->at("filter");
-    adfiltercbstruct *filtercd = awt_create_select_filter(aws->get_root(), gb_main, AWAR_FILTER_NAME);
-    aws->callback(AW_POPUP, (AW_CL) awt_create_select_filter_win, (AW_CL)filtercd);
+    adfiltercbstruct *adfilter = awt_create_select_filter(aws->get_root(), gb_main, AWAR_FILTER_NAME);
+    aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, adfilter));
     aws->create_button("SELECT_FILTER", AWAR_FILTER_NAME);
 
     aws->at("go");
-    aws->callback(sq_calc_seq_quality_cb, (AW_CL)filtercd, (AW_CL)gb_main);
+    aws->callback(sq_calc_seq_quality_cb, (AW_CL)adfilter, (AW_CL)gb_main);
     aws->highlight();
     aws->create_button("GO", "GO", "G");
 

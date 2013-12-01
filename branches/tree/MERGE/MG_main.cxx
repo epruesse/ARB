@@ -34,9 +34,7 @@ GBDATA *GLOBAL_gb_dst = NULL;
 
 static void (*MG_exit_cb)(const char *) = NULL;
 
-static void MG_exit(AW_window *aww, AW_CL cl_start_dst_db) {
-    int start_dst_db = (int)cl_start_dst_db;
-
+static void MG_exit(AW_window *aww, bool start_dst_db) {
     char *arb_ntree_restart_args = NULL;
 
     if (start_dst_db) {
@@ -57,6 +55,8 @@ static void MG_exit(AW_window *aww, AW_CL cl_start_dst_db) {
             }
         }
     }
+
+    shutdown_macro_recording(AW_root::SINGLETON);
 
     // @@@ code below duplicates code from nt_disconnect_from_db()
     aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_src);
@@ -86,8 +86,7 @@ static void MG_save_merge_cb(AW_window *aww) {
     free(name);
 }
 
-static AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
-{
+static AW_window *MG_save_source_cb(AW_root *aw_root, const char *base_name) {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
 
@@ -130,8 +129,7 @@ static void MG_save_cb(AW_window *aww) {
     free(name);
 }
 
-static AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
-{
+static AW_window *MG_create_save_result_window(AW_root *aw_root, const char *base_name) {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
     aw_root->awar_string(AWAR_DB_COMMENT, "<no description>", GLOBAL_gb_dst);
@@ -185,25 +183,6 @@ static void MG_save_quick_result_cb(AW_window *aww) {
 
 static void MG_create_db_dependent_awars(AW_root *aw_root, GBDATA *gb_src, GBDATA *gb_dst) {
     MG_create_db_dependent_rename_awars(aw_root, gb_src, gb_dst);
-}
-
-static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window, AW_CL cl_user) {
-    GB_ERROR error = MG_expect_renamed();
-    if (!error) {
-        static GB_NUMHASH *popup_hash = GBS_create_numhash(10);
-        AW_window         *aw_popup   = (AW_window*)GBS_read_numhash(popup_hash, cl_create_window);
-
-        if (!aw_popup) { // window has not been created yet
-            typedef AW_window *(*window_creator)(AW_root *, AW_CL);
-            window_creator create_window = (window_creator)cl_create_window;
-            aw_popup                     = create_window(aww->get_root(), cl_user);
-            GBS_write_numhash(popup_hash, cl_create_window, (long)aw_popup);
-        }
-
-        aw_popup->activate();
-    }
-
-    if (error) aw_message(error);
 }
 
 AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*exit_cb)(const char *)) {
@@ -297,19 +276,19 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
 
         awm->create_menu("File", "F", AWM_ALL);
         if (save_src_enabled) {
-            awm->insert_menu_topic("save_DB1", "Save source DB ...", "S", "save_as.hlp", AWM_ALL, AW_POPUP, (AW_CL)MG_save_source_cb, (AW_CL)AWAR_DB_SRC);
+            awm->insert_menu_topic("save_DB1", "Save source DB ...", "S", "save_as.hlp", AWM_ALL, makeCreateWindowCallback(MG_save_source_cb, AWAR_DB_SRC));
         }
 
-        awm->insert_menu_topic("quit", "Quit", "Q", "quit.hlp", AWM_ALL, MG_exit, 0);
+        awm->insert_menu_topic("quit", "Quit", "Q", "quit.hlp", AWM_ALL, makeWindowCallback(MG_exit, false));
         if (save_dst_enabled) {
-            awm->insert_menu_topic("quitnstart", "Quit & start target DB", "D", "quit.hlp", AWM_ALL, MG_exit, 1);
+            awm->insert_menu_topic("quitnstart", "Quit & start target DB", "D", "quit.hlp", AWM_ALL, makeWindowCallback(MG_exit, true));
         }
 
         insert_macro_menu_entry(awm, true);
         awm->sep______________();
         AW_insert_common_property_menu_entries(awm);
         awm->sep______________();
-        awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "p", "savedef.hlp", AWM_ALL, (AW_CB)AW_save_properties, 0, 0);
+        awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "p", "savedef.hlp", AWM_ALL, AW_save_properties);
 
         awm->insert_help_topic("ARB_MERGE help", "h", "arb_merge.hlp", AWM_ALL, makeHelpCallback("arb_merge.hlp"));
 
@@ -331,12 +310,12 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
             if (dst_is_new) awm->sens_mask(AWM_DISABLED);
 
             awm->at("alignment");
-            awm->callback((AW_CB1)AW_POPUP, (AW_CL)MG_merge_alignment_cb);
+            awm->callback(MG_create_merge_alignment_window);
             awm->help_text("mg_alignment.hlp");
             awm->create_button("CHECK_ALIGNMENTS", "Check alignments ...");
 
             awm->at("names");
-            awm->callback((AW_CB1)AW_POPUP, (AW_CL)MG_merge_names_cb);
+            awm->callback(MG_create_merge_names_window);
             awm->help_text("mg_names.hlp");
             awm->create_button("CHECK_NAMES", "Check IDs ...");
 
@@ -347,22 +326,22 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
         }
 
         awm->at("species");
-        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_species_cb, (AW_CL)dst_is_new);
+        awm->callback(makeCreateWindowCallback(MG_create_merge_species_window, dst_is_new));
         awm->help_text("mg_species.hlp");
         awm->create_button("TRANSFER_SPECIES", "Transfer species ... ");
 
         awm->at("extendeds");
-        awm->callback((AW_CB1)AW_POPUP, (AW_CL)MG_merge_extendeds_cb);
+        awm->callback(MG_create_merge_SAIs_window);
         awm->help_text("mg_extendeds.hlp");
         awm->create_button("TRANSFER_SAIS", "Transfer SAIs ...");
 
         awm->at("trees");
-        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_trees_cb, 0);
+        awm->callback(MG_create_merge_trees_window);
         awm->help_text("mg_trees.hlp");
         awm->create_button("TRANSFER_TREES", "Transfer trees ...");
 
         awm->at("configs");
-        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_configs_cb, 0);
+        awm->callback(MG_create_merge_configs_window);
         awm->help_text("mg_configs.hlp");
         awm->create_button("TRANSFER_CONFIGS", "Transfer configurations ...");
 
@@ -373,7 +352,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
             if (!save_dst_enabled) awm->sens_mask(AWM_DISABLED);
 
             awm->at("save");
-            awm->callback(AW_POPUP, (AW_CL)MG_save_result_cb, (AW_CL)AWAR_DB_DST);
+            awm->callback(makeCreateWindowCallback(MG_create_save_result_window, AWAR_DB_DST));
             awm->create_button("SAVE_WHOLE_DB2", "Save whole target DB as ...");
 
             awm->at("save_quick");
@@ -384,7 +363,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
         }
 
         awm->at("quit");
-        awm->callback(MG_exit, 0);
+        awm->callback(makeWindowCallback(MG_exit, false));
         awm->create_button("QUIT", save_dst_enabled ? "Quit" : "Close");
 
         awm->activate();
@@ -412,9 +391,7 @@ inline const char *get_awar_name(const char *awar_base_name, const char *entry) 
     return GBS_global_string("%s/%s", awar_base_name, entry);
 }
 
-static void filename_changed_cb(AW_root *awr, AW_CL cl_awar_base) {
-    const char *awar_base_name = (const char *)cl_awar_base;
-
+static void filename_changed_cb(AW_root *awr, const char *awar_base_name) {
     AW_awar *name_awar     = awr->awar(get_awar_name(awar_base_name, "name"));
     AW_awar *filename_awar = awr->awar(get_awar_name(awar_base_name, "file_name"));
 
@@ -441,7 +418,7 @@ static void create_fileselection_and_name_awars(AW_root *awr, AW_default aw_def,
     awr->awar_string(get_awar_name(awar_base_name, "name"), "", aw_def); // create awar to display DB-names w/o path
     AW_awar *filename_awar = awr->awar(get_awar_name(awar_base_name, "file_name")); // defined by AW_create_fileselection_awars above
 
-    filename_awar->add_callback(filename_changed_cb, AW_CL(awar_base_name));
+    filename_awar->add_callback(makeRootCallback(filename_changed_cb, awar_base_name));
     filename_awar->touch(); // trigger callback once
 }
 

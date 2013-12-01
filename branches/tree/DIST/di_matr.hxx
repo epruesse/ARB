@@ -94,11 +94,14 @@ class MatrixOrder {
                        // if no sort tree was specified, name2pos is NULL
     int      leafs;    // number of leafs
 
+    bool tree_contains_dups; // unused (if true, matrix sorting works partly wrong)
 
     void insert_in_hash(GBT_TREE *tree) {
         if (tree->is_leaf) {
             arb_assert(tree->name);
-            ASSERT_RESULT(long, 0, GBS_write_hash(name2pos, tree->name, ++leafs));
+            if (GBS_write_hash(name2pos, tree->name, ++leafs) != 0) {
+                tree_contains_dups = true;
+            }
         }
         else {
             insert_in_hash(tree->rightson);
@@ -175,19 +178,29 @@ class DI_GLOBAL_MATRIX : virtual Noncopyable {
 
     void announce_change() { if (changed_cb) changed_cb(); }
 
+    void forget_no_announce() {
+        delete matrix;
+        matrix = NULL;
+    }
+
 public:
     DI_GLOBAL_MATRIX() : matrix(NULL), changed_cb(NULL) {}
     ~DI_GLOBAL_MATRIX() { forget(); }
 
     DI_MATRIX *get() { return matrix; }
     void set(DI_MATRIX *new_global) { di_assert(!matrix); matrix = new_global; announce_change(); }
-    void forget() { delete matrix; matrix = NULL; announce_change(); }
-    void replaceBy(DI_MATRIX *new_global) { forget(); set(new_global); }
+    void forget() {
+        if (matrix) {
+            forget_no_announce();
+            announce_change();
+        }
+    }
+    void replaceBy(DI_MATRIX *new_global) { forget_no_announce(); set(new_global); }
 
     bool exists() const { return matrix != NULL; }
 
     void set_changed_cb(DI_MATRIX_CB cb) {
-        announce_change();
+        // announce_change(); // do by caller if really needed
         changed_cb = cb;
     }
 
@@ -198,6 +211,9 @@ public:
         return prev;
     }
 
+    bool has_type(DI_MATRIX_TYPE type) const {
+        return matrix && matrix->matrix_type == type;
+    }
     void forget_if_not_has_type(DI_MATRIX_TYPE wanted_type) {
         if (matrix && matrix->matrix_type != wanted_type) {
             forget();

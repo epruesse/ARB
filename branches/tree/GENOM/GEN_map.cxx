@@ -1621,17 +1621,15 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     // Properties Menu
     create_menu("Properties", "r", AWM_ALL);
-    insert_menu_topic("gene_props_menu",   "Menu: Colors and Fonts ...",   "M", "props_frame.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0);
-    // @@@ FIXME: replace AW_preset_window by local function returning same window for all mapped views
-    insert_menu_topic("gene_props",        "GENEMAP: Colors and Fonts ...", "C", "gene_props_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)gen_canvas->gc_manager);
-    // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
-    insert_menu_topic("gene_layout",       "Layout",   "L", "gene_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_layout_window, 0);
-    insert_menu_topic("gene_options",      "Options",  "O", "gene_options.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_options_window, 0);
-    insert_menu_topic("gene_nds",          "NDS ( Select Gene Information ) ...",      "N", "props_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)GEN_open_nds_window, (AW_CL)gb_main);
+    insert_menu_topic("gene_props_menu", "Menu: Colors and Fonts ...",          "M", "props_frame.hlp",     AWM_ALL, AW_preset_window);
+    insert_menu_topic("gene_props",      "GENEMAP: Colors and Fonts ...",       "C", "gene_props_data.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gen_canvas->gc_manager)); // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
+    insert_menu_topic("gene_layout",     "Layout",                              "L", "gene_layout.hlp",     AWM_ALL, GEN_create_layout_window);
+    insert_menu_topic("gene_options",    "Options",                             "O", "gene_options.hlp",    AWM_ALL, GEN_create_options_window);
+    insert_menu_topic("gene_nds",        "NDS ( Select Gene Information ) ...", "N", "props_nds.hlp",       AWM_ALL, AW_POPUP, (AW_CL)GEN_open_nds_window, (AW_CL)gb_main);
     sep______________();
     AW_insert_common_property_menu_entries(this);
     sep______________();
-    insert_menu_topic("gene_save_props",   "Save Defaults (ntree.arb)", "D", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
+    insert_menu_topic("gene_save_props",   "Save Defaults (ntree.arb)", "D", "savedef.hlp", AWM_ALL, AW_save_properties);
 
     // ----------------------
     //      mode buttons

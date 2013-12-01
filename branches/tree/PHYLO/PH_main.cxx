@@ -45,43 +45,60 @@ static void create_filter_text()
     strcpy(filter_text[TREAT_AS_REGULAR],     "treat as regular character                        ");
 }
 
-static void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww) {
-    if (aww) aww->hide();
-    AW_root *aw_root = (AW_root *) cd1;
-    // loading database
-    GB_push_transaction(GLOBAL_gb_main);
-    if (GBT_get_alignment_len(GLOBAL_gb_main, aw_root->awar("phyl/alignment")->read_string())<1) {
-        aw_root->awar("phyl/alignment")->write_string(GBT_get_default_alignment(GLOBAL_gb_main));
+static bool valid_alignment_selected(AW_root *aw_root, GBDATA *gb_main) {
+    GB_transaction  ta(gb_main);
+    const char     *aliname = aw_root->awar(AWAR_PHYLO_ALIGNMENT)->read_char_pntr();
+    if (GBT_get_alignment_len(gb_main, aliname)<1) {
+        GB_clear_error();
+        return false;
     }
-    GB_pop_transaction(GLOBAL_gb_main);
+    return true;
+}
 
-    char   *use = aw_root->awar("phyl/alignment")->read_string();
-    PHDATA *phd = new PHDATA(aw_root);
+static void startup_sequence_cb(AW_window *alisel_window, AW_window *main_window, PH_root *ph_root) {
+    AW_root *aw_root = main_window->get_root();
+    GBDATA  *gb_main = ph_root->get_gb_main();
+    if (valid_alignment_selected(aw_root, gb_main)) {
+        if (alisel_window) alisel_window->hide();
 
-    GB_set_cache_size(GLOBAL_gb_main, PH_DB_CACHE_SIZE);
-    phd->load(use);
-    phd->ROOT = phd;
-    
-    long len = PHDATA::ROOT->get_seq_len();
-    aw_root->awar("phyl/filter/stopcol")->write_int(len);
-    aw_root->awar("phyl/filter/startcol")->set_minmax(0, len);
-    aw_root->awar("phyl/filter/stopcol")->set_minmax(0, len);
+        char   *use = aw_root->awar(AWAR_PHYLO_ALIGNMENT)->read_string();
+        PHDATA *phd = new PHDATA(aw_root, ph_root);
 
-    ((AW_window*)cl_aww)->activate(); // pop up main window
-    ph_view_species_cb();
+        GB_set_cache_size(gb_main, PH_DB_CACHE_SIZE);
+        phd->load(use);
+        phd->ROOT = phd;
+
+        long len = PHDATA::ROOT->get_seq_len();
+        aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->write_int(len);
+        aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->set_minmax(0, len);
+        aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->set_minmax(0, len);
+
+        main_window->activate();
+        ph_view_species_cb();
+    }
+    else {
+        if (alisel_window) {
+            aw_message("Please select a valid alignment");
+        }
+        else {
+            GBK_terminate("Expected to have a valid alignment");
+        }
+    }
 }
 
 __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
+    AW_root *aw_root = aw_window->get_root();
+    shutdown_macro_recording(aw_root);
+
     GBDATA *gb_main = ph_root->get_gb_main();
     if (gb_main) {
-        AW_root *aw_root = aw_window->get_root();
-        shutdown_macro_recording(aw_root);
         aw_root->unlink_awars_from_DB(gb_main);
 #if defined(DEBUG)
         AWT_browser_forget_db(gb_main);
 #endif // DEBUG
         GB_close(gb_main);
     }
+
     exit(0);
 }
 
@@ -101,8 +118,8 @@ static void resize_cb() {
     }
 }
 
-static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb_sai_ptr) {
-    GBDATA   *gb_sai = GBT_find_or_create_SAI(GLOBAL_gb_main, sai_name);
+static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb_sai_ptr, PH_root *ph_root) {
+    GBDATA   *gb_sai = GBT_find_or_create_SAI(ph_root->get_gb_main(), sai_name);
     GBDATA   *gbd, *gb2;
     GB_ERROR  error  = ph_check_initialized();
 
@@ -165,10 +182,10 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
 
         if (!error) {
             AW_window *main_win   = PH_used_windows::windowList->phylo_main_window;
-            long       minhom     = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
-            long       maxhom     = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
-            long       startcol   = main_win->get_root()->awar("phyl/filter/startcol")->read_int();
-            long       stopcol    = main_win->get_root()->awar("phyl/filter/stopcol")->read_int();
+            long       minhom     = main_win->get_root()->awar(AWAR_PHYLO_FILTER_MINHOM)->read_int();
+            long       maxhom     = main_win->get_root()->awar(AWAR_PHYLO_FILTER_MAXHOM)->read_int();
+            long       startcol   = main_win->get_root()->awar(AWAR_PHYLO_FILTER_STARTCOL)->read_int();
+            long       stopcol    = main_win->get_root()->awar(AWAR_PHYLO_FILTER_STOPCOL)->read_int();
             float     *markerline = PHDATA::ROOT->markerline;
             long       len        = PHDATA::ROOT->get_seq_len();
 
@@ -240,11 +257,12 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
     return error;
 }
 
-static void PH_save_ml_multiline_cb(AW_window *aww) {
-    GB_begin_transaction(GLOBAL_gb_main);
-    GB_ERROR error = 0;
-    char *fname = aww->get_root()->awar("tmp/phylo/markerlinename")->read_string();
-    int fname_len = strlen(fname);
+static void PH_save_ml_multiline_cb(AW_window *aww, PH_root *ph_root) {
+    GB_transaction ta(ph_root->get_gb_main());
+
+    GB_ERROR  error     = 0;
+    char     *fname     = aww->get_root()->awar(AWAR_PHYLO_MARKERLINENAME)->read_string();
+    int       fname_len = strlen(fname);
     {
         char *digit_appended = (char*)malloc(fname_len+2);
         memcpy(digit_appended, fname, fname_len);
@@ -256,25 +274,20 @@ static void PH_save_ml_multiline_cb(AW_window *aww) {
     int i;
     for (i=0; !error && i<3; i++) {
         fname[fname_len] = '0'+i;
-        error = PH_create_ml_multiline_SAI(fname, i, &gb_sai[i]);
+        error = PH_create_ml_multiline_SAI(fname, i, &gb_sai[i], ph_root);
     }
 
     delete fname;
 
-    if (error) {
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(error);
-    }
-    else {
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
+    aw_message_if(ta.close(error));
 }
 
-static void PH_save_ml_cb(AW_window *aww) {
-    GB_begin_transaction(GLOBAL_gb_main);
+static void PH_save_ml_cb(AW_window *aww, PH_root *ph_root) {
+    GBDATA  *gb_main = ph_root->get_gb_main();
+    GB_transaction ta(gb_main);
 
-    char   *fname  = aww->get_root()->awar("tmp/phylo/markerlinename")->read_string();
-    GBDATA *gb_sai = GBT_find_or_create_SAI(GLOBAL_gb_main, fname);
+    char   *fname  = aww->get_root()->awar(AWAR_PHYLO_MARKERLINENAME)->read_string();
+    GBDATA *gb_sai = GBT_find_or_create_SAI(gb_main, fname);
 
     GB_ERROR error = ph_check_initialized();
 
@@ -325,10 +338,10 @@ static void PH_save_ml_cb(AW_window *aww) {
 
     if (!error) {
         AW_window *main_win   = PH_used_windows::windowList->phylo_main_window;
-        long       minhom     = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
-        long       maxhom     = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
-        long       startcol   = main_win->get_root()->awar("phyl/filter/startcol")->read_int();
-        long       stopcol    = main_win->get_root()->awar("phyl/filter/stopcol")->read_int();
+        long       minhom     = main_win->get_root()->awar(AWAR_PHYLO_FILTER_MINHOM)->read_int();
+        long       maxhom     = main_win->get_root()->awar(AWAR_PHYLO_FILTER_MAXHOM)->read_int();
+        long       startcol   = main_win->get_root()->awar(AWAR_PHYLO_FILTER_STARTCOL)->read_int();
+        long       stopcol    = main_win->get_root()->awar(AWAR_PHYLO_FILTER_STOPCOL)->read_int();
         long       len        = PHDATA::ROOT->get_seq_len();
         char      *bits       = (char *)calloc(sizeof(char), (int)len+1);
         int        x;
@@ -361,22 +374,14 @@ static void PH_save_ml_cb(AW_window *aww) {
         free(bits);
     }
     free(fname);
-
-    if (error) {
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(error);
-    }
-    else {
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
+    aw_message_if(ta.close(error));
 }
 
 
-static AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
-{
-    int multi_line = int(cl_multi_line); // ==1 -> save three SAI's usable as column percentage
+static AW_window *PH_save_markerline(AW_root *root, PH_root *ph_root, int multi_line) {
+    // multi_line ==1 -> save three SAI's usable as column percentage
 
-    root->awar_string("tmp/phylo/markerlinename", "markerline", AW_ROOT_DEFAULT);
+    root->awar_string(AWAR_PHYLO_MARKERLINENAME, "markerline", AW_ROOT_DEFAULT);
 
     AW_window_simple *aws = new AW_window_simple;
 
@@ -398,20 +403,20 @@ static AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("name");
-    aws->create_input_field("tmp/phylo/markerlinename");
+    aws->create_input_field(AWAR_PHYLO_MARKERLINENAME);
 
     aws->at("box");
-    awt_create_selection_list_on_sai(GLOBAL_gb_main, aws, "tmp/phylo/markerlinename");
+    awt_create_selection_list_on_sai(ph_root->get_gb_main(), aws, AWAR_PHYLO_MARKERLINENAME);
 
     aws->at("save");
-    if (multi_line)     aws->callback(PH_save_ml_multiline_cb);
-    else        aws->callback(PH_save_ml_cb);
+    if (multi_line) aws->callback(makeWindowCallback(PH_save_ml_multiline_cb, ph_root));
+    else            aws->callback(makeWindowCallback(PH_save_ml_cb, ph_root));
     aws->create_button("EXPORT", "EXPORT", "E");
 
     return aws;
 }
 
-static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AWT_graphic * /*awd*/) {
+static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
     AW_window_menu_modes *awm = new AW_window_menu_modes;
     awm->init(aw_root, "ARB_PHYLO", "ARB_PHYLO", 830, 630);
 
@@ -445,10 +450,11 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
 
     // File menu
     awm->create_menu("File", "F");
-    awm->insert_menu_topic("export_filter", "Export Filter",      "E", "ph_export_markerline.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)PH_save_markerline, 0);
-    awm->insert_menu_topic("export_freq",   "Export Frequencies", "F", "ph_export_markerline.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)PH_save_markerline, 1);
+    awm->insert_menu_topic("export_filter", "Export Filter",      "E", "ph_export_markerline.hlp", AWM_ALL, makeCreateWindowCallback(PH_save_markerline, ph_root, 0));
+    awm->insert_menu_topic("export_freq",   "Export Frequencies", "F", "ph_export_markerline.hlp", AWM_ALL, makeCreateWindowCallback(PH_save_markerline, ph_root, 1));
     insert_macro_menu_entry(awm, false);
-    awm->insert_menu_topic("quit",          "Quit",               "Q", "quit.hlp",                 AWM_ALL, (AW_CB)ph_exit,  (AW_CL)ph_root,            0);
+
+    awm->insert_menu_topic("quit", "Quit", "Q", "quit.hlp", AWM_ALL, makeWindowCallback(ph_exit, ph_root));
 
     // Calculate menu
     awm->create_menu("Calculate", "C");
@@ -456,16 +462,16 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
 
     // Config menu
     awm->create_menu("Config", "o");
-    awm->insert_menu_topic("config_column_filter", "Column Filter", "F", "no help", AWM_ALL, AW_POPUP, (AW_CL)PH_create_filter_window, 0);
+    awm->insert_menu_topic("config_column_filter", "Column Filter", "F", "no help", AWM_ALL, PH_create_filter_window);
 
     // Properties menu
     awm->create_menu("Properties", "P");
-    awm->insert_menu_topic("props_menu", "Menu: Colors and Fonts ...",  "M", "props_frame.hlp",   AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,    0);
-    awm->insert_menu_topic("props_data", "Data: Colors and Fonts ...",  "D", "ph_props_data.hlp", AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window, (AW_CL)gcmiddle);
+    awm->insert_menu_topic("props_menu", "Frame settings ...",   "F", "props_frame.hlp",   AWM_ALL, AW_preset_window);
+    awm->insert_menu_topic("props_data", "Colors and Fonts ...", "D", "ph_props_data.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gcmiddle));
     awm->sep______________();
     AW_insert_common_property_menu_entries(awm);
     awm->sep______________();
-    awm->insert_menu_topic("save_props", "Save Properties (phylo.arb)", "S", "savedef.hlp",       AWM_ALL,          (AW_CB)AW_save_properties,  0, 0);
+    awm->insert_menu_topic("save_props", "Save Properties (phylo.arb)", "S", "savedef.hlp", AWM_ALL, AW_save_properties);
 
 
     // set window areas
@@ -473,7 +479,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
     awm->at(5, 2);
     awm->auto_space(5, -2);
 
-    awm->callback((AW_CB1)ph_exit, (AW_CL)ph_root);
+    awm->callback(makeWindowCallback(ph_exit, ph_root));
     awm->button_length(0);
     awm->help_text("quit.hlp");
     awm->create_button("QUIT", "QUIT");
@@ -494,20 +500,25 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AW
 }
 
 
-static AW_window *create_select_alignment_window(AW_root *aw_root, AW_CL cl_aww)
-{
+static AW_window *create_select_alignment_window(AW_root *aw_root, AW_window *main_window, PH_root *ph_root) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(aw_root, "SELECT_ALIGNMENT", "SELECT ALIGNMENT");
+    aws->init(aw_root, "SELECT_ALIGNMENT", "ARB_PHYLO: Select alignment");
     aws->load_xfig("phylo/select_ali.fig");
     aws->button_length(10);
 
-    aws->at("done");
-    aws->callback(startup_sequence_cb, (AW_CL) aw_root, cl_aww);
-    aws->create_button("DONE", "DONE", "D");
-
     aws->at("which_alignment");
-    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, "phyl/alignment", "*=");
+    awt_create_selection_list_on_alignments(ph_root->get_gb_main(), (AW_window *)aws, AWAR_PHYLO_ALIGNMENT, "*=");
+
+    aws->auto_space(10, 10);
+
+    aws->at("ok");
+    aws->callback(makeWindowCallback(startup_sequence_cb, main_window, ph_root));
+    aws->create_button("OK", "Ok", "D");
+
+    aws->callback(makeWindowCallback(ph_exit, ph_root));
+    aws->create_button("ABORT", "Abort", "D");
+
     return aws;
 }
 
@@ -523,6 +534,11 @@ PH_used_windows *PH_used_windows::windowList = 0;
 PH_display *PH_display::ph_display=0;
 PHDATA *PHDATA::ROOT = 0;
 
+static void create_variables(AW_root *aw_root, AW_default def) {
+    aw_root->awar_string(AWAR_PHYLO_ALIGNMENT,     "", def);
+    aw_root->awar_string(AWAR_PHYLO_FILTER_FILTER, "", def);
+    PH_create_filter_variables(aw_root, def);
+}
 
 int ARB_main(int argc, char *argv[]) {
     aw_initstatus();
@@ -544,47 +560,50 @@ int ARB_main(int argc, char *argv[]) {
         PH_root  *ph_root = new PH_root;
         GB_ERROR  error   = ph_root->open(db_server);
 
-        if (!error) error = configure_macro_recording(aw_root, "ARB_PHYLO", GLOBAL_gb_main);
+        if (!error) error = configure_macro_recording(aw_root, "ARB_PHYLO", ph_root->get_gb_main());
         if (!error) {
+            GBDATA *gb_main = ph_root->get_gb_main();
+
             // create arb_phylo awars :
-            PH_create_filter_variables(aw_root, AW_ROOT_DEFAULT);
-            PH_create_matrix_variables(aw_root, AW_ROOT_DEFAULT);
-            ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
+            create_variables(aw_root, AW_ROOT_DEFAULT);
+            ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, gb_main);
 #if defined(DEBUG)
             AWT_create_db_browser_awars(aw_root, AW_ROOT_DEFAULT);
 #endif // DEBUG
 
 #if defined(DEBUG)
-            AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
+            AWT_announce_db_to_browser(gb_main, GBS_global_string("ARB-database (%s)", db_server));
 #endif // DEBUG
 
             create_filter_text();
 
             // create main window :
 
-            puw->phylo_main_window = create_phyl_main_window(aw_root, ph_root, 0);
+            puw->phylo_main_window = create_phyl_main_window(aw_root, ph_root);
             puw->windowList        = puw;
 
             phd->ph_display = phd;
 
             // loading database
-            GB_push_transaction(GLOBAL_gb_main);
+            GB_push_transaction(gb_main);
 
             ConstStrArray alignment_names;
-            GBT_get_alignment_names(alignment_names, GLOBAL_gb_main);
+            GBT_get_alignment_names(alignment_names, gb_main);
 
             int num_alignments;
             for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++) {}
 
             if (num_alignments > 1) {
-                AW_window *sel_ali_aww = create_select_alignment_window(aw_root, (AW_CL)puw->phylo_main_window);
-                sel_ali_aww->show();
+                char *defaultAli = GBT_get_default_alignment(gb_main);
+                aw_root->awar(AWAR_PHYLO_ALIGNMENT)->write_string(defaultAli);
+                create_select_alignment_window(aw_root, puw->phylo_main_window, ph_root)->show();
+                free(defaultAli);
             }
             else {
-                aw_root->awar("phyl/alignment")->write_string(alignment_names[0]);
-                startup_sequence_cb(0, (AW_CL)aw_root, (AW_CL)puw->phylo_main_window);
+                aw_root->awar(AWAR_PHYLO_ALIGNMENT)->write_string(alignment_names[0]);
+                startup_sequence_cb(NULL, puw->phylo_main_window, ph_root);
             }
-            GB_pop_transaction(GLOBAL_gb_main);
+            GB_pop_transaction(gb_main);
 
             AWT_install_cb_guards();
             aw_root->main_loop();

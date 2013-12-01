@@ -548,7 +548,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
         }
     }
 
-    arb_progress startup_progress("EDIT4 startup");
+    SmartPtr<arb_progress> startup_progress = new arb_progress("EDIT4 startup");
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -709,6 +709,15 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     resize_all();
 
     main_manager->route_down_hierarchy(force_group_update).expect_no_error();
+
+    if (!scroll_links.link_for_hor_slider) { // happens when no species AND no SAI has data
+        startup_progress->done();
+        startup_progress.SetNull(); // make progress disappear (otherwise prompter below is often behind progress window)
+        GB_pop_transaction(GLOBAL_gb_main);
+        
+        aw_popup_ok(GBS_global_string("No species/SAI contains data in '%s'\nARB_EDIT4 will terminate", alignment_name));
+        ED4_exit();
+    }
 
     // build consensi
     {
@@ -1573,9 +1582,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->create_menu("Properties", "P", AWM_ALL);
 
-    awmm->insert_menu_topic("props_frame",     "Frame Settings ",       "F", 0,                  AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window,                       0);
-    awmm->insert_menu_topic("props_options",   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, AW_POPUP, (AW_CL)ED4_create_level_1_options_window,      0);
-    awmm->insert_menu_topic("props_consensus", "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_consensus_definition_window, 0);
+    awmm->insert_menu_topic("props_frame",     "Frame Settings ",       "F", 0,                  AWM_ALL, AW_preset_window);
+    awmm->insert_menu_topic("props_options",   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, ED4_create_level_1_options_window);
+    awmm->insert_menu_topic("props_consensus", "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, ED4_create_consensus_definition_window);
     awmm->sep______________();
 
     awmm->insert_menu_topic("props_data",       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, AW_POPUP, (AW_CL)ED4_create_gc_window,     (AW_CL)first_gc_manager);
@@ -1870,6 +1879,10 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->create_mode("edit/mark.xpm",  "mark.hlp",   AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_MARK));
 
     FastAligner_create_variables(awmm->get_root(), props_db);
+
+#if defined(DEBUG)
+    AWT_check_action_ids(awmm->get_root(), "");
+#endif
 
     return (ED4_R_OK);
 }

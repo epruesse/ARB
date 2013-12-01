@@ -901,6 +901,7 @@ adsocket.o: gb_prot.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_core.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_cs.h
+adsocket.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_error.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_file.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_misc.h

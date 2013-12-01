@@ -5,7 +5,10 @@ Major changes for next release:
  - merge databases allows to
    - merge from an existing database into the database loaded in ARB_NT
    - merge to existing databases from the database loaded in ARB_NT
- - Detect clusters of species with similar sequences (OTUs) in ARB_DIST
+ - ARB_DIST
+   - Detect clusters of species with similar sequences (OTUs)
+   - allow automatic recalculation of matrix and/or tree whenever some parameter or
+     data changes (only makes sense for smaller species sets)
  - Rewrote chimera check. Allows filtering
  - added RNACMA (computes clusters of correlated positions)
  - PT-Server

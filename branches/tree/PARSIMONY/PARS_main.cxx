@@ -62,11 +62,6 @@ static void pars_saveNrefresh_changed_tree(AWT_canvas *ntw) {
     ntw->zoom_reset_and_refresh();
 }
 
-static void pars_export_tree() {
-    GB_ERROR error = global_tree()->save(0, 0, 0, 0);
-    if (error) aw_message(error);
-}
-
 __ATTR__NORETURN static void pars_exit(AW_window *aww) {
     AW_root *aw_root = aww->get_root();
     shutdown_macro_recording(aw_root);
@@ -78,24 +73,12 @@ __ATTR__NORETURN static void pars_exit(AW_window *aww) {
     exit(0);
 }
 
-static void PARS_export_cb(AW_window *aww, AWT_canvas *, AW_CL mode) {
-    if (mode &1) {      // export tree
-        pars_export_tree();
-    }
-    if (mode &2) {
-        // quit
-        pars_exit(aww);
-    }
-}
-
-static void AP_user_push_cb(AW_window *aww, AWT_canvas *)
-{
+static void AP_user_push_cb(AW_window *aww, AWT_canvas *) {
     ap_main->user_push();
     aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->get_user_push_counter());
 }
 
-static void AP_user_pop_cb(AW_window *aww, AWT_canvas *ntw)
-{
+static void AP_user_pop_cb(AW_window *aww, AWT_canvas *ntw) {
     if (ap_main->get_user_push_counter()<=0) {
         aw_message("No tree on stack.");
         return;
@@ -1005,11 +988,14 @@ static void init_TEST_menu(AW_window_menu_modes *awm, AWT_canvas *ntw)
 }
 #endif // TESTMENU
 
-static GB_ERROR pars_check_size(AW_root *awr) {
+static GB_ERROR pars_check_size(AW_root *awr, GB_ERROR& warning) {
+    GB_ERROR error = NULL;
+    warning        = NULL;
+
     char *tree_name = awr->awar(AWAR_TREE)->read_string();
-    char *filter = awr->awar(AWAR_FILTER_FILTER)->read_string();
-    GB_ERROR error = 0;
-    long ali_len = 0;
+    char *filter    = awr->awar(AWAR_FILTER_FILTER)->read_string();
+    long  ali_len   = 0;
+
     if (strlen(filter)) {
         int i;
         for (i=0; filter[i]; i++) {
@@ -1029,13 +1015,14 @@ static GB_ERROR pars_check_size(AW_root *awr) {
     else {
         unsigned long expected_memuse = (ali_len * tree_size * 4 / 1000);
         if (expected_memuse > GB_get_usable_memory()) {
-            error  = GBS_global_string("Estimated memory usage (%s) exceeds physical memory (will swap)\n"
-                                       "(did you specify a filter?)",
-                                       GBS_readable_size(expected_memuse, "b"));
+            warning = GBS_global_string("Estimated memory usage (%s) exceeds physical memory (will swap)\n"
+                                         "(did you specify a filter?)",
+                                        GBS_readable_size(expected_memuse, "b"));
         }
     }
     free(filter);
     free(tree_name);
+
     return error;
 }
 
@@ -1048,22 +1035,26 @@ static void pars_reset_optimal_parsimony(AW_window *aww, AW_CL *cl_ntw) {
 }
 
 
-static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL cl_cmds) {
-    WeightedFilter *wfilt = (WeightedFilter*)cd_weightedFilter;
-    PARS_commands  *cmds  = (PARS_commands*)cl_cmds;
-    AW_root        *awr   = aw_parent->get_root();
+static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PARS_commands *cmds) {
+    AW_root *awr = aw_parent->get_root();
     GB_begin_transaction(GLOBAL_gb_main);
     {
-        GB_ERROR warning = pars_check_size(awr);
-        if (warning) {
+        GB_ERROR warning;
+        GB_ERROR error = pars_check_size(awr, warning);
+
+        if (warning && !error) {
             char *question = GBS_global_string_copy("%s\nDo you want to continue?", warning);
             bool  cont     = aw_ask_sure("swap_warning", question);
             free(question);
 
-            if (!cont) {
-                GB_commit_transaction(GLOBAL_gb_main);
-                return;
-            }
+            if (!cont) error = "User abort";
+
+        }
+
+        if (error) {
+            aw_message(error);
+            GB_commit_transaction(GLOBAL_gb_main);
+            return;
         }
     }
 
@@ -1133,8 +1124,8 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     awm->create_menu("File", "F", AWM_ALL);
     {
         insert_macro_menu_entry(awm, false);
-        awm->insert_menu_topic("print_tree", "Print Tree ...",          "P", "tree2prt.hlp", AWM_ALL, AWT_popup_print_window, (AW_CL)ntw, 0);
-        awm->insert_menu_topic("quit",      "Quit",             "Q", "quit.hlp",    AWM_ALL, (AW_CB)PARS_export_cb, (AW_CL)ntw, 2);
+        awm->insert_menu_topic("print_tree", "Print Tree ...", "P", "tree2prt.hlp", AWM_ALL, AWT_popup_print_window, (AW_CL)ntw, 0);
+        awm->insert_menu_topic("quit",       "Quit",           "Q", "quit.hlp",     AWM_ALL, pars_exit);
     }
 
     awm->create_menu("Species", "S", AWM_ALL);
@@ -1145,7 +1136,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
     awm->create_menu("Tree", "T", AWM_ALL);
     {
 
-        awm->insert_menu_topic("nds",       "NDS (Node Display Setup) ...",      "N", "props_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)AWT_create_nds_window, (AW_CL)ntw->gb_main);
+        awm->insert_menu_topic("nds",       "NDS (Node Display Setup) ...",      "N", "props_nds.hlp",   AWM_ALL, makeCreateWindowCallback(AWT_create_nds_window, ntw->gb_main));
 
         awm->sep______________();
         awm->insert_menu_topic("tree_2_xfig", "Export tree to XFIG ...", "E", "tree2file.hlp", AWM_ALL, AWT_popup_tree_export_window, (AW_CL)ntw, 0);
@@ -1210,14 +1201,14 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
 
     awm->create_menu("Properties", "r", AWM_ALL);
     {
-        awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...", "M", "props_frame.hlp",      AWM_ALL, AW_POPUP,(AW_CL)AW_preset_window,        0);
-        awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...", "C", "pars_props_data.hlp",  AWM_ALL, AW_POPUP,(AW_CL)AW_create_gc_window,     (AW_CL)ntw->gc_manager);
+        awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...", "M", "props_frame.hlp",      AWM_ALL, AW_preset_window);
+        awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...", "C", "pars_props_data.hlp",  AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
         awm->insert_menu_topic("props_tree2", "Tree: Settings ...",         "T", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP,(AW_CL)NT_create_tree_setting,  (AW_CL)ntw);
         awm->insert_menu_topic("props_kl",    "KERN. LIN ...",              "K", "kernlin.hlp",          AWM_ALL, AW_POPUP,(AW_CL)create_kernighan_window, 0);
         awm->sep______________();
         AW_insert_common_property_menu_entries(awm);
         awm->sep______________();
-        awm->insert_menu_topic("save_props",  "Save Defaults (pars.arb)",   "D", "savedef.hlp",          AWM_ALL,          (AW_CB)AW_save_properties,      0, 0);
+        awm->insert_menu_topic("save_props", "Save Defaults (pars.arb)", "D", "savedef.hlp", AWM_ALL, AW_save_properties);
     }
     awm->button_length(5);
 
@@ -1350,11 +1341,11 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
         new WeightedFilter(GLOBAL_gb_main, aws->get_root(), AWAR_FILTER_NAME, AWAR_COLUMNSTAT_NAME, aws->get_root()->awar_string(AWAR_ALIGNMENT));
 
     aws->at("filter");
-    aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)weighted_filter->get_adfiltercbstruct());
+    aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, weighted_filter->get_adfiltercbstruct()));
     aws->create_button("SELECT_FILTER", AWAR_FILTER_NAME);
 
     aws->at("weights");
-    aws->callback(AW_POPUP, (AW_CL)COLSTAT_create_selection_window, (AW_CL)weighted_filter->get_column_stat());
+    aws->callback(makeCreateWindowCallback(COLSTAT_create_selection_window, weighted_filter->get_column_stat()));
     aws->sens_mask(AWM_EXP);
     aws->create_button("SELECT_CSP", AWAR_COLUMNSTAT_NAME);
     aws->sens_mask(AWM_ALL);
@@ -1365,7 +1356,7 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     aws->at("tree");
     awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_TREE);
 
-    aws->callback(pars_start_cb, (AW_CL)weighted_filter, (AW_CL)cmds);
+    aws->callback(makeWindowCallback(pars_start_cb, weighted_filter, cmds));
     aws->at("go");
     aws->create_button("GO", "GO", "G");
 
