@@ -607,7 +607,7 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
 
     adfiltercbstruct *filter = awt_create_select_filter(root, GLOBAL.gb_main, AWAR_CS2GP_FILTER_NAME);
     aws->at("ap_filter");
-    aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)filter);
+    aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, filter));
     aws->create_button("SELECT_FILTER", AWAR_CS2GP_FILTER_NAME);
 
     aws->at("smooth");

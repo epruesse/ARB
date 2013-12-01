@@ -65,36 +65,6 @@ DECLARE_CBTYPE_FVV_AND_BUILDERS(CreateWindowCallback, AW_window*, AW_root*);   /
 
 DECLARE_CBTYPE_FVF_AND_BUILDERS(DatabaseCallback, void, GBDATA*, GB_CB_TYPE);    // generates makeDatabaseCallback
 
-#if defined(DEVEL_RALF)
-#define DEPRECATE_UNSAFE_CALLBACKS
-// #define DEPRECATE_UNSAFE_CALLBACKS_HIDDEN
-#endif
-
-// @@@ remove include when done
-#ifndef ATTRIBUTES_H
-#include <attributes.h>
-#endif
-
-#if defined(DEPRECATE_UNSAFE_CALLBACKS)
-
-#define __ATTR__DEPRECATED_CALLBACK         __ATTR__DEPRECATED("use typesafe callback")
-#define __ATTR__DEPRECATED_CALLBACK_IN_CTOR __ATTR__DEPRECATED_FUNCTION
-
-#else
-
-#define __ATTR__DEPRECATED_CALLBACK
-#define __ATTR__DEPRECATED_CALLBACK_IN_CTOR 
-
-#endif
-
-#if defined(DEPRECATE_UNSAFE_CALLBACKS_HIDDEN)
-#define __ATTR__DEPRECATED_CALLBACK_LATER         __ATTR__DEPRECATED_CALLBACK
-#define __ATTR__DEPRECATED_CALLBACK_IN_CTOR_LATER __ATTR__DEPRECATED_CALLBACK_IN_CTOR
-#else
-#define __ATTR__DEPRECATED_CALLBACK_LATER
-#define __ATTR__DEPRECATED_CALLBACK_IN_CTOR_LATER
-#endif
-
 #else
 #error cb.h included twice
 #endif // CB_H

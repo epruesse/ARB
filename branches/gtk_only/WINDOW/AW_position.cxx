@@ -109,7 +109,10 @@ namespace AW {
         //    where 0.0 means "at line.start()"
         //    and   1.0 means "at line.head()"
 
-        if (!line.has_length()) return line.start();
+        if (!line.has_length()) {
+            factor = 0.5;
+            return line.start();
+        }
 
         Vector upright(line.line_vector());
         upright.rotate90deg();

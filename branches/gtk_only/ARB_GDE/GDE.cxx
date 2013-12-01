@@ -16,7 +16,7 @@
 // AISC_MKPT_PROMOTE:#include "GDE_menu.h"
 // AISC_MKPT_PROMOTE:#endif
 
-adfiltercbstruct *agde_filtercd = 0;
+adfiltercbstruct *agde_filter = 0;
 
 Gmenu         menu[GDEMAXMENU];
 int           num_menus = 0;
@@ -208,10 +208,10 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
                 aws->button_length(12);
                 aws->at("filtername");
-                if (!agde_filtercd) { // create only one filter - used for all GDE calls
-                    agde_filtercd = awt_create_select_filter(aws->get_root(), db_access.gb_main, AWAR_GDE_FILTER_NAME);
+                if (!agde_filter) { // create only one filter - used for all GDE calls
+                    agde_filter = awt_create_select_filter(aws->get_root(), db_access.gb_main, AWAR_GDE_FILTER_NAME);
                 }
-                aws->callback((AW_CB2)AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)agde_filtercd);
+                aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, agde_filter));
                 aws->create_button("SELECT_FILTER", AWAR_GDE_FILTER_NAME);
             }
 

@@ -2127,7 +2127,7 @@ void TEST_SLOW_get_existing_probes() {
 
 // #define TEST_AUTO_UPDATE // uncomment to auto-update expected index dumps
 
-void TEST_index_dump() {
+void TEST_SLOW_index_dump() {
     for (int use_gene_ptserver = 0; use_gene_ptserver <= 1; use_gene_ptserver++) {
         const char *dumpfile     = use_gene_ptserver ? "index_gpt.dump" : "index_pt.dump";
         char       *dumpfile_exp = GBS_global_string_copy("%s.expected", dumpfile);

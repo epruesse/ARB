@@ -363,7 +363,7 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, AW_CL cgb_main)
 
             aws->button_length(0);
 
-            aws->callback(AWT_create_select_srtaci_window, AW_CL(inputFieldAwarName), 0);
+            aws->callback(makeWindowCallback(AWT_popup_select_srtaci_window, inputFieldAwarName));
             sprintf(buf, "SELECT_SRTACI_%i", i);
             aws->create_button(buf, "S", "S");
 
