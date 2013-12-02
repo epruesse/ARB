@@ -91,19 +91,73 @@ static void matrix_changed_cb() {
 struct RecalcNeeded {
     bool matrix;
     bool tree;
+
     RecalcNeeded() : matrix(false), tree(false) { }
 };
+
 static RecalcNeeded need_recalc;
 
-static void matrix_needs_recalc_cb() { need_recalc.matrix = true; }
-static void tree_needs_recalc_cb() { need_recalc.tree   = true; } // @@@ need more binds?
+CONSTEXPR unsigned UPDATE_DELAY = 200;
 
-static void compressed_matrix_needs_recalc_cb() {
+static unsigned update_cb(AW_root *aw_root);
+inline void add_update_cb() {
+    AW_root::SINGLETON->add_timed_callback(UPDATE_DELAY, makeTimedCallback(update_cb));
+}
+
+inline void matrix_needs_recalc_cb() {
+    need_recalc.matrix = true;
+    add_update_cb();
+}
+inline void tree_needs_recalc_cb() {
+    need_recalc.tree = true;
+    add_update_cb();
+}
+
+inline void compressed_matrix_needs_recalc_cb() {
     if (GLOBAL_MATRIX.has_type(DI_MATRIX_COMPRESSED)) {
         matrix_needs_recalc_cb();
     }
 }
 
+static unsigned update_cb(AW_root *aw_root) {
+    if (need_recalc.matrix) {
+        GLOBAL_MATRIX.forget();
+        need_recalc.matrix = false; // because it's forgotten
+
+        int matrix_autocalc = aw_root->awar(AWAR_DIST_MATRIX_AUTO_RECALC)->read_int();
+        if (matrix_autocalc) {
+            bool recalc_now    = true;
+            int  tree_autocalc = aw_root->awar(AWAR_DIST_MATRIX_AUTO_CALC_TREE)->read_int();
+            if (!tree_autocalc) recalc_now = matrixDisplay ? matrixDisplay->willShow() : false;
+
+            if (recalc_now) {
+                di_assert(recalculate_matrix_cb.isSet());
+                (*recalculate_matrix_cb)();
+                di_assert(need_recalc.tree == true);
+            }
+        }
+        di_assert(need_recalc.matrix == false);
+    }
+
+    if (need_recalc.tree) {
+        int tree_autocalc = aw_root->awar(AWAR_DIST_MATRIX_AUTO_CALC_TREE)->read_int();
+        if (tree_autocalc) {
+            di_assert(recalculate_tree_cb.isSet());
+            (*recalculate_tree_cb)();
+            need_recalc.matrix = false; // otherwise endless loop, e.g. if output-tree is used for sorting
+        }
+    }
+
+    return 0; // do not call again
+}
+
+static void auto_calc_changed_cb(AW_root *aw_root) {
+    int matrix_autocalc = aw_root->awar(AWAR_DIST_MATRIX_AUTO_RECALC)->read_int();
+    int tree_autocalc   = aw_root->awar(AWAR_DIST_MATRIX_AUTO_CALC_TREE)->read_int();
+
+    if (matrix_autocalc && !GLOBAL_MATRIX.exists()) matrix_needs_recalc_cb();
+    if (tree_autocalc && (matrix_autocalc || GLOBAL_MATRIX.exists())) tree_needs_recalc_cb();
+}
 
 static AW_window *create_dna_matrix_window(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
@@ -166,42 +220,6 @@ static void compress_tree_changed_cb() {
         free(treename);
     }
     compressed_matrix_needs_recalc_cb();
-}
-
-CONSTEXPR unsigned AUTO_RECALC_TIMER_DELAY = 500;
-
-static unsigned auto_recalc_if_changed_cb(AW_root *aw_root) {
-    int matrix_autocalc = aw_root->awar(AWAR_DIST_MATRIX_AUTO_RECALC)->read_int();
-    int tree_autocalc   = aw_root->awar(AWAR_DIST_MATRIX_AUTO_CALC_TREE)->read_int();
-
-    if (tree_autocalc||matrix_autocalc) {
-        if (need_recalc.matrix) {
-            if (recalculate_matrix_cb.isSet()) {
-                GLOBAL_MATRIX.forget();
-                (*recalculate_matrix_cb)();
-            }
-            else {
-                need_recalc.tree = true;
-            }
-            need_recalc.matrix = false;
-        }
-        if (tree_autocalc && need_recalc.tree && recalculate_tree_cb.isSet()) {
-            (*recalculate_tree_cb)();
-            need_recalc.tree   = false;
-            need_recalc.matrix = false; // otherwise endless loop, e.g.if output-tree is used for sorting
-        }
-    }
-    return AUTO_RECALC_TIMER_DELAY;
-}
-
-static void auto_calc_changed_cb(AW_root *aw_root) {
-    int matrix_autocalc = aw_root->awar(AWAR_DIST_MATRIX_AUTO_RECALC)->read_int();
-    int tree_autocalc   = aw_root->awar(AWAR_DIST_MATRIX_AUTO_CALC_TREE)->read_int();
-
-    if (matrix_autocalc||tree_autocalc) {
-        aw_root->add_timed_callback(AUTO_RECALC_TIMER_DELAY, makeTimedCallback(auto_recalc_if_changed_cb));
-    }
-
 }
 
 void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db) {
@@ -954,6 +972,7 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const We
     // sets 'aborted_flag' to true, if it is non-NULL and the calculation has been aborted
     GB_push_transaction(GLOBAL_gb_main);
     if (GLOBAL_MATRIX.exists()) {
+        di_assert(!need_recalc.matrix);
         GB_pop_transaction(GLOBAL_gb_main);
         return 0;
     }
@@ -1021,6 +1040,7 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const We
         else {
             GLOBAL_MATRIX.replaceBy(phm);
             tree_needs_recalc_cb();
+            need_recalc.matrix = false;
         }
     }
     free(load_what);
@@ -1306,7 +1326,15 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
 
         bool aborted = false;
 
-        if (bootstrap_flag && loop_count) GLOBAL_MATRIX.forget(); // in first loop we already have a valid matrix
+        if (bootstrap_flag) {
+            if (loop_count>0) { // in first loop we already have a valid matrix -> no need to recalculate
+                GLOBAL_MATRIX.forget();
+            }
+        }
+        else if (need_recalc.matrix) {
+            GLOBAL_MATRIX.forget();
+        }
+
         error = di_calculate_matrix(aw_root, weighted_filter, bootstrap_flag, !bootstrap_flag, &aborted);
         if (error && aborted) {
             error = 0;          // clear error (otherwise no tree will be read below)
@@ -1381,10 +1409,14 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
     }
 #endif // DEBUG
 
-    if (error) aw_message(error);
     progress->done();
-
-    aw_root->awar(AWAR_TREE_REFRESH)->touch();
+    if (error) {
+        aw_message(error);
+    }
+    else {
+        need_recalc.tree = false;
+        aw_root->awar(AWAR_TREE_REFRESH)->touch();
+    }
 }
 
 
@@ -1486,6 +1518,7 @@ static void di_calculate_full_matrix_cb(AW_window *aww, const WeightedFilter *we
     GB_ERROR error = di_calculate_matrix(aww->get_root(), weighted_filter, 0, true, NULL);
     aw_message_if(error);
     last_matrix_calculation_error = error;
+    if (!error) tree_needs_recalc_cb();
 }
 
 static void di_calculate_compressed_matrix_cb(AW_window *aww, WeightedFilter *weighted_filter) {
@@ -1525,6 +1558,7 @@ static void di_calculate_compressed_matrix_cb(AW_window *aww, WeightedFilter *we
     free(treename);
     aw_message_if(error);
     last_matrix_calculation_error = error;
+    if (!error) tree_needs_recalc_cb();
 }
 
 static void di_define_sort_tree_name_cb(AW_window *aww) {
@@ -1688,10 +1722,6 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     recalculate_matrix_cb = new BoundWindowCallback(aws, makeWindowCallback(di_calculate_full_matrix_cb, weighted_filter));
 
-    aws->at("auto_recalc");
-    aws->label("Auto recalculate");
-    aws->create_toggle(AWAR_DIST_MATRIX_AUTO_RECALC);
-
     aws->button_length(13);
 
     {
@@ -1745,9 +1775,25 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->at("bcount");
     aws->create_input_field(AWAR_DIST_BOOTSTRAP_COUNT, 7);
 
-    aws->at("auto_calc_tree");
-    aws->label("Auto calculate tree");
-    aws->create_toggle(AWAR_DIST_MATRIX_AUTO_CALC_TREE);
+    {
+        aws->sens_mask(AWM_EXP);
+
+        aws->at("auto_calc_tree");
+        aws->label("Auto calculate tree");
+        aws->create_toggle(AWAR_DIST_MATRIX_AUTO_CALC_TREE);
+
+        aws->at("auto_recalc");
+        aws->label("Auto recalculate");
+        aws->create_toggle(AWAR_DIST_MATRIX_AUTO_RECALC);
+
+        aws->sens_mask(AWM_ALL);
+    }
+
+    bool disable_autocalc = !ARB_in_expert_mode(aw_root);
+    if (disable_autocalc) {
+        aw_root->awar(AWAR_DIST_MATRIX_AUTO_RECALC)->write_int(0);
+        aw_root->awar(AWAR_DIST_MATRIX_AUTO_CALC_TREE)->write_int(0);
+    }
 
     GB_pop_transaction(GLOBAL_gb_main);
     return aws;

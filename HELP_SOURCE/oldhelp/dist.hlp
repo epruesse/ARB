@@ -41,7 +41,7 @@ DESCRIPTION	Reconstructs a tree for all or marked species by first
 
 		5. Define Weights: !!! not implemented !!!
 
-		6. Select rate matrix: !!! not implemented !!!
+		6. Select rate matrix (only implemented for some corrections; see LINK{user_matrix.hlp})
 
                 7. Type characters for the exclusion of alignment postions to
 		   the 'Exclude Column' subwindow. The positions are
@@ -121,6 +121,40 @@ SECTION 	Calculate compressed matrix
 		
 		The distance shown for each group is the arithmetic average of 
 		of the distances of all contained species.
+
+SECTION		Automatic calculation
+
+                There are two toggles in the ARB_DIST main window allowing to
+                trigger instant recalculation:
+
+                - 'Auto recalculate' will force recalculation of the matrix
+                - 'Auto calculate tree' will force calculation of the tree
+
+                If 'Auto calculate tree' is checked, the tree will be calculated
+                whenever the matrix has been updated.
+
+                If 'Auto recalculate' is checked, the matrix will be recalculated
+                whenever any input changes, e.g. if
+
+                - the filter is changed (or its underlaying SAI changes),
+                - the excluded columns change,
+                - the user defined matrix changes,
+                - the correction is changed,
+                - the sequence data changes or species marks change or
+                - the tree selected for compression or sorting changes or a different
+                  tree is selected.
+
+                As you might have guessed, this is only useful for smaller sets of sequences.
+
+                Some suggestions:
+
+                     You might for example display the resulting NJ tree in one window and
+                     play with distance parameter to instantly see their effect on the tree.
+
+                     Or you may unmark unwanted species/subtrees in the tree display.
+
+                     Or you might align sequences to see the effect on the resulting topology.
+
 
 NOTES           Computing time can be estimated using the following formula:
 
