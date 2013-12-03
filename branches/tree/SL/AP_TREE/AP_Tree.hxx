@@ -85,6 +85,9 @@ enum AWT_RemoveType { // bit flags
 
     // please keep AWT_RemoveType in sync with GBT_TreeRemoveType
     // see ../../ARBDB/arbdbt.h@sync_GBT_TreeRemoveType__AWT_RemoveType
+
+    // combined defines:
+    AWT_KEEP_MARKED = AWT_REMOVE_UNMARKED|AWT_REMOVE_ZOMBIES,
 };
 
 struct AP_rates : virtual Noncopyable {

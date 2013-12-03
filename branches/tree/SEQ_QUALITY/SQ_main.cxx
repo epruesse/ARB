@@ -88,9 +88,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
                 else {
                     error = GBT_link_tree(tree, gb_main, false, NULL, NULL);
                     if (!error) {
-                        GBT_TreeRemoveType mode = GBT_REMOVE_ZOMBIES;
-                        if (marked_only) mode   = GBT_TreeRemoveType(mode|GBT_REMOVE_UNMARKED);
-
+                        GBT_TreeRemoveType mode = marked_only ? GBT_KEEP_MARKED : GBT_REMOVE_ZOMBIES;
                         tree = GBT_remove_leafs(tree, mode, NULL, NULL, NULL);
                         if (!tree || tree->is_leaf) {
                             error = GBS_global_string("Tree contains less than 2 species after removing zombies%s",

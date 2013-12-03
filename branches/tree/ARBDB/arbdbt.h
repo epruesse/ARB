@@ -70,6 +70,9 @@ enum GBT_TreeRemoveType {
 
     // please keep AWT_RemoveType in sync with GBT_TreeRemoveType
     // see ../SL/AP_TREE/AP_Tree.hxx@sync_GBT_TreeRemoveType__AWT_RemoveType
+
+    // combined defines:
+    GBT_KEEP_MARKED = GBT_REMOVE_UNMARKED|GBT_REMOVE_ZOMBIES,
 };
 
 enum GBT_ORDER_MODE {
