@@ -149,7 +149,7 @@ public:
     void set_root_changed_callback(AP_rootChangedCb cb, void *cd);
     void set_node_deleted_callback(AP_nodeDelCb cb, void *cd);
 
-    long remove_leafs(int awt_remove_type);
+    long remove_leafs(AWT_RemoveType awt_remove_type);
     ARB_edge find_innermost_edge();
 };
 

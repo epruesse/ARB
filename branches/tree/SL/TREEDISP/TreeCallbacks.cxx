@@ -435,13 +435,13 @@ void NT_set_tree_style(void *, AWT_canvas *ntw, AP_tree_display_type type) {
     ntw->zoom_reset_and_refresh();
 }
 
-void NT_remove_leafs(void *, AWT_canvas *ntw, long mode) {
+void NT_remove_leafs(UNFIXED, AWT_canvas *ntw, AWT_RemoveType mode) {
     GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     if (tree_root) {
-        AWT_TREE(ntw)->tree_static->remove_leafs((int)mode);
+        AWT_TREE(ntw)->tree_static->remove_leafs(mode);
 
         tree_root = AWT_TREE(ntw)->get_root_node(); // root might have changed -> get again
         if (tree_root) tree_root->compute_tree(ntw->gb_main);

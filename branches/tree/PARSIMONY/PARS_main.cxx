@@ -790,7 +790,7 @@ static void NT_radd_internal(AW_window * aww, AWT_canvas *ntw, AddWhat what, boo
 
     AWT_graphic_tree *agt = AWT_TREE(ntw);
     if (agt->get_root_node()) {
-        agt->tree_static->remove_leafs(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED);
+        agt->tree_static->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
     }
 
     // restore old parsimony value (otherwise the state where species were removed would count) :
@@ -1084,7 +1084,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
             long removed = global_tree()->tree_static->remove_leafs(AWT_REMOVE_ZOMBIES);
 
             PARS_tree_init(global_tree());
-            removed += global_tree()->tree_static->remove_leafs(AWT_REMOVE_ZOMBIES | AWT_REMOVE_NO_SEQUENCE);
+            removed += global_tree()->tree_static->remove_leafs(AWT_RemoveType(AWT_REMOVE_ZOMBIES | AWT_REMOVE_NO_SEQUENCE));
 
             if (!global_tree()->get_root_node()) {
                 const char *aliname = global_tree()->tree_static->get_aliview()->get_aliname();
@@ -1154,9 +1154,9 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->sep______________();
         awm->insert_sub_menu("Remove Species from Tree",     "R");
         {
-            awm->insert_menu_topic("tree_remove_deleted", "Remove Zombies", "Z", "trm_del.hlp",    AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_ZOMBIES|AWT_REMOVE_BUT_DONT_FREE);
-            awm->insert_menu_topic("tree_remove_marked",  "Remove Marked",  "M", "trm_mrkd.hlp",   AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_MARKED|AWT_REMOVE_BUT_DONT_FREE);
-            awm->insert_menu_topic("tree_keep_marked",    "Keep Marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_KEEP_MARKED|AWT_REMOVE_BUT_DONT_FREE);
+            awm->insert_menu_topic("tree_remove_deleted", "Remove Zombies", "Z", "trm_del.hlp",    AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_ZOMBIES)));
+            awm->insert_menu_topic("tree_remove_marked",  "Remove Marked",  "M", "trm_mrkd.hlp",   AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED)));
+            awm->insert_menu_topic("tree_keep_marked",    "Keep Marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_KEEP_MARKED)));
         }
         awm->close_sub_menu();
         awm->insert_sub_menu("Add Species to Tree",      "A");

@@ -1040,7 +1040,7 @@ void AP_tree::buildBranchList(AP_tree **&list, long &num, bool create_terminal_b
 }
 
 
-long AP_tree_root::remove_leafs(int awt_remove_type) {
+long AP_tree_root::remove_leafs(AWT_RemoveType awt_remove_type) {
     // may remove the complete tree (if awt_remove_type does not contain AWT_REMOVE_BUT_DONT_FREE)
 
     ASSERT_VALID_TREE(get_root_node());
