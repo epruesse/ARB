@@ -23,7 +23,7 @@ my $unmark_filtered = "(filt) ";
 # prefix to write before other non-error lines
 my $unmark_rest     = "(note) ";
 
-sub check_ignore($\$$) {
+sub check_ignore_external($\$$) {
   my ($text,$ignore_r,$reason) = @_;
   if (not defined $$ignore_r) {
     # if you encounter errors/warnings in foreign libraries you wont be able to fix them.
@@ -31,7 +31,7 @@ sub check_ignore($\$$) {
     # Please add current date as well, to make it easier to find outdated expressions.
 
     if ($reason =~ 'loss record') { # memory leaks
-      # Xtoolkit leaks:
+      # Xtoolkit leaks / ARB leaks which we wont fix for motif - retry after gtk merge
       if ($text =~ /\b(XtAppMainLoop)\b.*libXt/) { $$ignore_r = $&; return; } # 15/06/2009
 
       if ($reason =~ 'still reachable' or $reason =~ 'possibly lost') { # reachable memory leaks
@@ -43,6 +43,9 @@ sub check_ignore($\$$) {
         if ($text =~ /\b(XtVaCreateManagedWidget)\b.*libXt/) { $$ignore_r = $&; return; } # 29/05/2010
         if ($text =~ /\b(XtVaCreatePopupShell)\b.*libXt/) { $$ignore_r = $&; return; } # 29/05/2010
         if ($text =~ /\b(XtVaSetValues)\b.*libXt/) { $$ignore_r = $&; return; } # 29/05/2010
+        if ($text =~ /\b(XtVaCreateWidget)\b.*libXt/) { $$ignore_r = $&; return; } # 03/12/2013
+        if ($text =~ /\b(XtParseTranslationTable)\b.*libXt/) { $$ignore_r = $&; return; } # 03/12/2013
+        if ($text =~ /\b(XtAugmentTranslations)\b.*libXt/) { $$ignore_r = $&; return; } # 03/12/2013
       }
     }
     else { # illegal memory access
@@ -61,6 +64,37 @@ sub check_ignore($\$$) {
     }
   }
 }
+
+sub check_ignore_internal($\$$) {
+  my ($text,$ignore_r,$reason) = @_;
+  if (not defined $$ignore_r) {
+    # defines ignored leaks/errors occurring in internal libraries (wontfixes)
+    # To ignore them add a search expression here.
+    # Please add current date as well, to make it easier to find outdated expressions.
+
+    print "check_ignore_internal: reason='$reason'\n";
+
+    if ($reason =~ 'loss record') { # memory leaks
+      if ($reason =~ 'still reachable' or $reason =~ 'possibly lost') { # reachable memory leaks
+        # things broken in ARB motif (wontfix; remove these exclusions after gtk merge)
+        if ($text =~ /\b(aw_create_shell)\b/) { $$ignore_r = $&; return; } # 03/12/2013
+        if ($text =~ /\b(AW_window::load_xfig)\b/) { $$ignore_r = $&; return; } # 03/12/2013
+      }
+      elsif ($reason =~ 'definitely lost') { # unreachable memory leaks
+        if ($text =~ /\b(awt_create_selection_list_on_(trees|alignments))\b/) { $$ignore_r = $&; return; } # 03/12/2013
+        if ($text =~ /\b(AW_window::(create_toggle|create_option_menu))\b/) { $$ignore_r = $&; return; } # 03/12/2013
+        if ($text =~ /\b(AW_root::create_colormap)\b/) { $$ignore_r = $&; return; } # 03/12/2013
+      }
+    }
+    elsif ($reason =~ 'file descriptor') { # open file descriptors
+      if ($text =~ /\b(aw_initstatus)\b/) { $$ignore_r = $&; return; } # 03/12/2013
+    }
+    # else { # illegal memory access
+    # }
+  }
+}
+
+
 
 sub is_boring($) {
   my ($text) = @_;
@@ -235,15 +269,18 @@ sub leaving() {
 # variables:
 
 my $i;
-my $called_from      = "called from";
-my $reason           = 'no reason yet';
-my $caller_count     = 0;       # counts callers
-my $filtered         = 0;       # filter current error
-my $ignore           = undef;
-my $last_ignore      = '';
-my $ignore_curr_line = 0;
+my $called_from       = "called from";
+my $reason            = 'no reason yet';
+my $non_caller_reason = 'no reason yet';
+my $caller_count      = 0;       # counts callers
+my $filtered          = 0;       # filter current error
+my $ignore            = undef;
+my $last_ignore       = '';
+my $ignore_curr_line  = 0;
 
 # the filter loop:
+
+my @outstack = ();
 
 while (not $in->eof) {
   # read one line:
@@ -297,11 +334,16 @@ while (not $in->eof) {
           else {                # location in unavailable file (i.e. in library)
             $_ = $unmark_rest.$prefix.$reason." $content (in unavailable file $file line $line)\n";
           }
+          if ($reason ne $called_from) { $non_caller_reason = $reason; }
+          if ($suppress_common==1) {
+            check_ignore_internal($_, $ignore, $non_caller_reason);
+          }
         }
       }
       else {                    # valgrind error w/o location
+        $non_caller_reason = $reason;
         $_=$unmark_rest.' '.$_;
-        if ($suppress_common==1) { check_ignore($_, $ignore, $reason); }
+        if ($suppress_common==1) { check_ignore_external($_, $ignore, $reason); }
       }
     }
     else {                      # no location found
@@ -312,6 +354,12 @@ while (not $in->eof) {
         $ignore_curr_line = 1;
       }
       elsif ($content =~ /^[ ]*$/) {
+        if (defined $ignore) {
+          foreach my $line (@outstack) { $out->print('(ign3) '.$line); } @outstack = ();
+        }
+        else {
+          foreach my $line (@outstack) { $out->print($line); } @outstack = ();
+        }
         $ignore = undef;
         $_      = '(    ) '.$_;
       }
@@ -330,6 +378,7 @@ while (not $in->eof) {
 
           if ($filtered == 1) { $ignore = undef; }
         }
+        if ($filtered==0) { $non_caller_reason = $reason; }
       }
     }
   }
@@ -343,11 +392,13 @@ while (not $in->eof) {
   if ($ignore_curr_line==0) {
     if (not defined $ignore) {
       entering();
-      $out->print(shorten_location($_));
-      $out->flush;
+      push @outstack, shorten_location($_);
+      # $out->print(shorten_location($_));
+      # $out->flush;
       $last_ignore = '';
     }
     else {
+      foreach my $line (@outstack) { $out->print('(ign2) '.$line); } @outstack = ();
       if ($ignore ne $last_ignore) {
         s/^\(note\)[ ]*//;
         $out->print("(igno) '$ignore' ".$_);
@@ -376,6 +427,7 @@ while (not $in->eof) {
   }
 }
 
+foreach my $line (@outstack) { $out->print($line); } @outstack = ();
 leaving();
 
 $in->close;
