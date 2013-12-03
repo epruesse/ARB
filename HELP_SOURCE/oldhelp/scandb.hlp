@@ -12,20 +12,14 @@ UP	sp_info.hlp
 TITLE		Scan Database for all Fields
 
 OCCURRENCE	ARB_NT/Species|Genes|Experiments/Info/FIELDS/Show all hidden fields
-                ARB_NT/Species|Genes|Experiments/Info/FIELDS/Scan unknown fields
-                ARB_NT/Species|Genes|Experiments/Info/FIELDS/Remove unused fields
+                ARB_NT/Species|Genes|Experiments/Info/FIELDS/Refresh fields
 
 DESCRIPTION     Each function scans the database to detect all existing fields.
 
                 - 'Show all hidden fields' unhides all currently hidden fields.
+                - 'Refresh fields' scans the database for existing fields and updates the field list.
 
-                - 'Scan unknown fields' scans the database for fields that are not listed
-                  in the field list and adds them to that list.
-
-                - 'Remove unused fields' deletes all fields from the field-list which are
-                  not used anywhere in the database.
-
-NOTE		Normally it is not necessary to run 'Scan unknown fields' unless
+NOTE		Normally it is not necessary to run 'Refresh fields' unless
 		some external programs generate new and yet unknown fields
                 or if the ARB programmers forgot to announce a field as known.
 
