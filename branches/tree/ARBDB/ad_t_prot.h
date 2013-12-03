@@ -146,7 +146,7 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message);
 
 /* adtree.cxx */
 GBDATA *GBT_get_tree_data(GBDATA *gb_main);
-GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_HASH *species_hash, int *removed, int *groups_removed);
+GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HASH *species_hash, int *removed, int *groups_removed);
 void GBT_delete_tree(GBT_TREE*& tree);
 GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name);
 GB_ERROR GBT_write_tree(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree);

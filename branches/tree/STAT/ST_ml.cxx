@@ -535,7 +535,7 @@ GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
 
             // delete species from tree:
             if (species_names) {                    // keep names
-                tree_root->remove_leafs(AWT_REMOVE_DELETED);
+                tree_root->remove_leafs(AWT_REMOVE_ZOMBIES);
 
                 error = tree_size_ok(tree_root);
                 if (!error) {
@@ -557,7 +557,7 @@ GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
             }
             else {                                  // keep marked/all
                 GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, true, 0, 0);
-                tree_root->remove_leafs((marked_only ? AWT_REMOVE_NOT_MARKED : 0)|AWT_REMOVE_DELETED);
+                tree_root->remove_leafs((marked_only ? AWT_REMOVE_UNMARKED : 0)|AWT_REMOVE_ZOMBIES);
 
                 error = tree_size_ok(tree_root);
                 if (!error) insert_tree_into_hash_rek(tree_root->get_root_node());

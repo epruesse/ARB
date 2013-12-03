@@ -76,15 +76,15 @@ enum AP_TREE_SIDE {  // flags zum kennzeichnen von knoten
     AP_NONE
 };
 
-enum AWT_REMOVE_TYPE { // bit flags
+enum AWT_RemoveType { // bit flags
     AWT_REMOVE_MARKED        = GBT_REMOVE_MARKED,
-    AWT_REMOVE_NOT_MARKED    = GBT_REMOVE_NOT_MARKED,
-    AWT_REMOVE_DELETED       = GBT_REMOVE_DELETED,
+    AWT_REMOVE_UNMARKED      = GBT_REMOVE_UNMARKED,
+    AWT_REMOVE_ZOMBIES       = GBT_REMOVE_ZOMBIES,
     AWT_REMOVE_NO_SEQUENCE   = 8,
-    AWT_REMOVE_BUT_DONT_FREE = 16
+    AWT_REMOVE_BUT_DONT_FREE = 16,
 
-    // please keep AWT_REMOVE_TYPE in sync with GBT_TREE_REMOVE_TYPE
-    // see ../../ARBDB/arbdbt.h@sync_GBT_TREE_REMOVE_TYPE_AWT_REMOVE_TYPE
+    // please keep AWT_RemoveType in sync with GBT_TreeRemoveType
+    // see ../../ARBDB/arbdbt.h@sync_GBT_TreeRemoveType__AWT_RemoveType
 };
 
 struct AP_rates : virtual Noncopyable {

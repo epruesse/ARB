@@ -839,7 +839,7 @@ static void NT_update_marked_counter(GBDATA*, AW_window* aww) {
 
 static void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) { // @@@ test and activate for public
     GBDATA               *gb_main = (GBDATA*)cl_gb_main;
-    GBT_TREE_REMOVE_TYPE  mode    = (GBT_TREE_REMOVE_TYPE)cl_mode;
+    GBT_TreeRemoveType  mode    = (GBT_TreeRemoveType)cl_mode;
 
     GB_ERROR       error = 0;
     GB_transaction ta(gb_main);
@@ -1342,15 +1342,15 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->insert_sub_menu("Remove Species from Tree",     "R");
         {
-            awm->insert_menu_topic(awm->local_id("tree_remove_deleted"), "Remove zombies", "z", "trm_del.hlp",    AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_DELETED);
+            awm->insert_menu_topic(awm->local_id("tree_remove_deleted"), "Remove zombies", "z", "trm_del.hlp",    AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_ZOMBIES);
             awm->insert_menu_topic(awm->local_id("tree_remove_marked"),  "Remove marked",  "m", "trm_mrkd.hlp",   AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_MARKED);
-            awm->insert_menu_topic(awm->local_id("tree_keep_marked"),    "Keep marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED);
+            awm->insert_menu_topic(awm->local_id("tree_keep_marked"),    "Keep marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_UNMARKED|AWT_REMOVE_ZOMBIES);
 #if defined(DEVEL_RALF)
 #if defined(WARN_TODO)
 #warning add "remove duplicates from tree"
 #endif
             awm->sep______________();
-            awm->insert_menu_topic("all_tree_remove_deleted", "Remove zombies from all trees", "a", "trm_del.hlp", AWM_ALL, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_DELETED, (AW_CL)GLOBAL.gb_main);
+            awm->insert_menu_topic("all_tree_remove_deleted", "Remove zombies from all trees", "a", "trm_del.hlp", AWM_ALL, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_ZOMBIES, (AW_CL)GLOBAL.gb_main);
             awm->insert_menu_topic("all_tree_remove_marked",  "Remove marked from all trees",  "l", "trm_del.hlp", AWM_ALL, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_MARKED, (AW_CL)GLOBAL.gb_main);
 #endif // DEVEL_RALF
         }

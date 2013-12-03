@@ -74,7 +74,7 @@ static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
 }
 
 
-GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_HASH *species_hash, int *removed, int *groups_removed) {
+GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HASH *species_hash, int *removed, int *groups_removed) {
     // Given 'tree' can either
     // - be linked (in this case 'species_hash' shall be NULL)
     // - be unlinked (in this case 'species_hash' has to be provided)
@@ -93,13 +93,13 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_H
             else gb_node = tree->gb_node;
 
             if (gb_node) {
-                if (mode & (GBT_REMOVE_MARKED|GBT_REMOVE_NOT_MARKED)) {
+                if (mode & (GBT_REMOVE_MARKED|GBT_REMOVE_UNMARKED)) {
                     long flag = GB_read_flag(gb_node);
-                    deleteSelf = (flag && (mode&GBT_REMOVE_MARKED)) || (!flag && (mode&GBT_REMOVE_NOT_MARKED));
+                    deleteSelf = (flag && (mode&GBT_REMOVE_MARKED)) || (!flag && (mode&GBT_REMOVE_UNMARKED));
                 }
             }
             else { // zombie
-                if (mode & GBT_REMOVE_DELETED) deleteSelf = true;
+                if (mode & GBT_REMOVE_ZOMBIES) deleteSelf = true;
             }
 
             if (deleteSelf) {

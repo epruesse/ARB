@@ -63,13 +63,13 @@ struct GBT_TREE {
     GBT_VTAB_AND_TREE_ELEMENTS(GBT_TREE);
 };
 
-enum GBT_TREE_REMOVE_TYPE {
-    GBT_REMOVE_MARKED     = 1,
-    GBT_REMOVE_NOT_MARKED = 2,
-    GBT_REMOVE_DELETED    = 4,
+enum GBT_TreeRemoveType {
+    GBT_REMOVE_MARKED   = 1,
+    GBT_REMOVE_UNMARKED = 2,
+    GBT_REMOVE_ZOMBIES  = 4,
 
-    // please keep AWT_REMOVE_TYPE in sync with GBT_TREE_REMOVE_TYPE
-    // see ../SL/AP_TREE/AP_Tree.hxx@sync_GBT_TREE_REMOVE_TYPE_AWT_REMOVE_TYPE
+    // please keep AWT_RemoveType in sync with GBT_TreeRemoveType
+    // see ../SL/AP_TREE/AP_Tree.hxx@sync_GBT_TreeRemoveType__AWT_RemoveType
 };
 
 enum GBT_ORDER_MODE {

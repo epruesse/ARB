@@ -88,8 +88,8 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
                 else {
                     error = GBT_link_tree(tree, gb_main, false, NULL, NULL);
                     if (!error) {
-                        GBT_TREE_REMOVE_TYPE mode = GBT_REMOVE_DELETED;
-                        if (marked_only) mode     = GBT_TREE_REMOVE_TYPE(mode|GBT_REMOVE_NOT_MARKED);
+                        GBT_TreeRemoveType mode = GBT_REMOVE_ZOMBIES;
+                        if (marked_only) mode   = GBT_TreeRemoveType(mode|GBT_REMOVE_UNMARKED);
 
                         tree = GBT_remove_leafs(tree, mode, NULL, NULL, NULL);
                         if (!tree || tree->is_leaf) {

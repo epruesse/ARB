@@ -1060,13 +1060,13 @@ long AP_tree_root::remove_leafs(int awt_remove_type) {
             if ((awt_remove_type & AWT_REMOVE_NO_SEQUENCE) && !leaf->get_seq()) {
                 removeNode = true;
             }
-            else if (awt_remove_type & (AWT_REMOVE_MARKED|AWT_REMOVE_NOT_MARKED)) {
+            else if (awt_remove_type & (AWT_REMOVE_MARKED|AWT_REMOVE_UNMARKED)) {
                 long flag  = GB_read_flag(list[i]->gb_node);
-                removeNode = (flag && (awt_remove_type&AWT_REMOVE_MARKED)) || (!flag && (awt_remove_type&AWT_REMOVE_NOT_MARKED));
+                removeNode = (flag && (awt_remove_type&AWT_REMOVE_MARKED)) || (!flag && (awt_remove_type&AWT_REMOVE_UNMARKED));
             }
         }
         else {
-            if (awt_remove_type & AWT_REMOVE_DELETED) {
+            if (awt_remove_type & AWT_REMOVE_ZOMBIES) {
                 removeNode = true;
             }
         }
