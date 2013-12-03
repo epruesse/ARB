@@ -89,7 +89,7 @@ class BI_helix;
 
 enum LoadWhat { DI_LOAD_ALL, DI_LOAD_MARKED, DI_LOAD_LIST };
 
-class MatrixOrder {
+class MatrixOrder : virtual Noncopyable {
     GB_HASH *name2pos; // key = species name, value = order in sort_tree [1..n]
                        // if no sort tree was specified, name2pos is NULL
     int      leafs;    // number of leafs
@@ -111,6 +111,7 @@ class MatrixOrder {
 
 public:
     MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name);
+    ~MatrixOrder() { GBS_free_hash(name2pos); }
 
     bool defined() const { return leafs; }
     int get_size() const { return leafs; }

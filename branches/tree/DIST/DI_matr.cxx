@@ -985,14 +985,14 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const We
         DI_MATRIX *phm   = new DI_MATRIX(*aliview, aw_root);
         phm->matrix_type = DI_MATRIX_FULL;
 
-        static char        *last_sort_tree_name = 0;
-        static MatrixOrder *last_order          = 0;
+        static SmartCharPtr          last_sort_tree_name;
+        static SmartPtr<MatrixOrder> last_order;
 
-        if (!last_sort_tree_name || !sort_tree_name || strcmp(last_sort_tree_name, sort_tree_name) != 0) {
+        if (last_sort_tree_name.isNull() || !sort_tree_name || strcmp(&*last_sort_tree_name, sort_tree_name) != 0) {
             last_sort_tree_name = nulldup(sort_tree_name);
             last_order = new MatrixOrder(GLOBAL_gb_main, sort_tree_name);
         }
-        di_assert(last_order);
+        di_assert(last_order.isSet());
         error = phm->load(all_flag, *last_order, show_warnings, NULL);
 
         free(sort_tree_name);
