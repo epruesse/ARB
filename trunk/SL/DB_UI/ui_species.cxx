@@ -916,11 +916,8 @@ void DBUI::insert_field_admin_menuitems(AW_window *aws, GBDATA *gb_main) {
     aws->insert_menu_topic("spec_create_field",   "Create fields ...",      "C", "spaf_create.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_field_create_window,  (AW_CL)bis);
     aws->insert_menu_topic("spec_convert_field",  "Convert fields ...",     "t", "spaf_convert.hlp", AWM_EXP, AW_POPUP, (AW_CL)create_field_convert_window, (AW_CL)bis);
     aws->sep______________();
-    aws->insert_menu_topic("spec_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AWM_ALL, (AW_CB)species_field_selection_list_unhide_all_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
-    aws->sep______________();
-    aws->insert_menu_topic("spec_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_scan_unknown_cb,  gb_main, FIELD_FILTER_NDS));
-    aws->insert_menu_topic("spec_del_unused_fields",   "Forget unused fields",  "e", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_delete_unused_cb, gb_main, FIELD_FILTER_NDS));
-    aws->insert_menu_topic("spec_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_update_cb,        gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("spec_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_unhide_all_cb, gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("spec_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_update_cb,     gb_main, FIELD_FILTER_NDS));
 }
 
 inline int get_and_fix_range_from_awar(AW_awar *awar) {
