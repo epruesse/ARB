@@ -398,7 +398,12 @@ while (not $in->eof) {
       $last_ignore = '';
     }
     else {
-      foreach my $line (@outstack) { $out->print('(ign2) '.$line); } @outstack = ();
+      if ($last_ignore eq '') {
+        foreach my $line (@outstack) { $out->print($line); } @outstack = ();
+      }
+      else {
+        foreach my $line (@outstack) { $out->print('(ign2) '.$line); } @outstack = ();
+      }
       if ($ignore ne $last_ignore) {
         s/^\(note\)[ ]*//;
         $out->print("(igno) '$ignore' ".$_);
