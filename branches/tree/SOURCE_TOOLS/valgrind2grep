@@ -72,7 +72,7 @@ sub check_ignore_internal($\$$) {
     # To ignore them add a search expression here.
     # Please add current date as well, to make it easier to find outdated expressions.
 
-    print "check_ignore_internal: reason='$reason'\n";
+    # print "check_ignore_internal: reason='$reason'\n";
 
     if ($reason =~ 'loss record') { # memory leaks
       if ($reason =~ 'still reachable' or $reason =~ 'possibly lost') { # reachable memory leaks
