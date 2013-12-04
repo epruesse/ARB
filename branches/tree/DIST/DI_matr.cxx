@@ -352,8 +352,8 @@ MatrixOrder::MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name)
       leafs(0)
 {
     if (sort_tree_name) {
-        int size;
-        GBT_TREE *sort_tree = GBT_read_tree_and_size(gb_main, sort_tree_name, sizeof(GBT_TREE), &size);
+        int       size;
+        GBT_TREE *sort_tree = GBT_read_tree_and_size(gb_main, sort_tree_name, GBT_TREE_NodeFactory(), &size);
 
         if (sort_tree) {
             leafs    = size+1;
@@ -1252,7 +1252,6 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
 
     AW_root  *aw_root   = aww->get_root();
     GB_ERROR  error     = 0;
-    GBT_TREE *tree      = 0;
     StrArray *all_names = 0;
 
     int loop_count      = 0;
@@ -1304,6 +1303,7 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
         }
     }
 
+    GBT_TREE *tree = 0;
     do {
         if (error) break;
 
@@ -1328,11 +1328,11 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
             names[i] = matr->entries[i]->name;
         }
         di_assert(matr->nentries == matr->matrix->size());
-        tree = neighbourjoining(names, *matr->matrix, sizeof(GBT_TREE));
+        tree = neighbourjoining(names, *matr->matrix);
 
         if (bootstrap_flag) {
             ctree->insert_tree_weighted(tree, 1);
-            GBT_delete_tree(tree);
+            delete tree; tree = NULL;
             loop_count++;
             progress->inc();
             if (!bootstrap_count) { // when waiting for kill
@@ -1372,7 +1372,7 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
         free(tree_name);
     }
 
-    GBT_delete_tree(tree);
+    delete tree;
 
     // aw_status(); // remove 'abort' flag (@@@ got no equiv for arb_progress yet. really needed?)
 
@@ -1501,7 +1501,7 @@ static void di_calculate_compressed_matrix_cb(AW_window *aww, WeightedFilter *we
     AW_root  *aw_root  = aww->get_root();
     char     *treename = aw_root->awar(AWAR_DIST_TREE_COMP_NAME)->read_string();
     GB_ERROR  error    = 0;
-    GBT_TREE *tree     = GBT_read_tree(GLOBAL_gb_main, treename, sizeof(GBT_TREE));
+    GBT_TREE  *tree    = GBT_read_tree(GLOBAL_gb_main, treename, GBT_TREE_NodeFactory());
 
     if (!tree) {
         error = GB_await_error();
@@ -1519,7 +1519,7 @@ static void di_calculate_compressed_matrix_cb(AW_window *aww, WeightedFilter *we
                 error = GLOBAL_MATRIX.get()->compress(tree);
             }
         }
-        GBT_delete_tree(tree);
+        delete tree;
 
         // now force refresh
         if (matrixDisplay) {

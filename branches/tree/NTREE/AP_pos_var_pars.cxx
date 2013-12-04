@@ -304,10 +304,12 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
 
     arb_progress progress("Calculating positional variability");
     progress.subtitle("Loading Tree");
+
+    // get tree
     GBT_TREE *tree;
-    {           // get tree
+    {
         tree_name = root->awar(AWAR_PVP_TREE)->read_string();
-        tree = GBT_read_tree(GLOBAL.gb_main, tree_name, sizeof(GBT_TREE));
+        tree = GBT_read_tree(GLOBAL.gb_main, tree_name, GBT_TREE_NodeFactory());
         if (!tree) {
             error = GB_await_error();
         }
@@ -340,7 +342,7 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
         free(ali_name);
     }
 
-    GBT_delete_tree(tree);
+    delete tree;
     free(tree_name);
 
     if (error) aw_message(error);

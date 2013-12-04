@@ -91,7 +91,7 @@ class ConsensusTreeBuilder {
 public:
     ~ConsensusTreeBuilder() {
         for (size_t i = 0; i<trees.size(); ++i) {
-            GBT_delete_tree(trees[i]);
+            delete trees[i];
         }
     }
 

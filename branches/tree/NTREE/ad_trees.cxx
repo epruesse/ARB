@@ -377,12 +377,12 @@ static void tree_load_cb(AW_window *aww) {
         GBT_TREE *tree;
         if (strcmp(pcTreeFormat, "xml") == 0) {
             char *tempFname = readXmlTree(fname);
-            tree = TREE_load(tempFname, sizeof(GBT_TREE), &tree_comment, true, &warnings);
+            tree = TREE_load(tempFname, &tree_comment, true, &warnings);
             GB_unlink_or_warn(tempFname, NULL);
             free(tempFname);
         }
         else {
-            tree = TREE_load(fname, sizeof(GBT_TREE), &tree_comment, true, &warnings);
+            tree = TREE_load(fname, &tree_comment, true, &warnings);
         }
 
         if (!tree) error = GB_await_error();
@@ -397,7 +397,7 @@ static void tree_load_cb(AW_window *aww) {
 
             if (!error) aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
 
-            GBT_delete_tree(tree);
+            delete tree;
         }
 
         free(warnings);
@@ -724,7 +724,7 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
                     remark.put(' ');
                     remark.cat(tree_names[t]);
                     remark.put('\n');
-                    GBT_TREE *tree = GBT_read_tree(gb_main, tree_names[t], sizeof(*tree));
+                    GBT_TREE *tree = GBT_read_tree(gb_main, tree_names[t], GBT_TREE_NodeFactory());
                     tree_builder.add(tree, 1.0);
                     ++progress;
                 }

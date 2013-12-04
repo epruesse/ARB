@@ -8,37 +8,14 @@
 #include <downcast.h>
 #endif
 
+#define gb_assert(cond) arb_assert(cond)
+
 #define GBT_SPECIES_INDEX_SIZE       10000L
 #define GBT_SAI_INDEX_SIZE           1000L
 
 #define GB_GROUP_NAME_MAX 256
 
 #define DEFAULT_BRANCH_LENGTH 0.1
-
-#define GBT_TREE_ELEMENTS(type)                 \
-    bool     is_leaf;                           \
-    type    *father, *leftson, *rightson;       \
-    GBT_LEN  leftlen, rightlen;                 \
-    GBDATA  *gb_node;                           \
-    char    *name;                              \
-    char    *remark_branch
-
-// remark_branch normally contains some bootstrap value in format 'xx%'
-// if you store other info there, please make sure that this info does not
-// start with digits!!
-// Otherwise the tree export routines will not work correctly!
-// --------------------------------------------------------------------------------
-
-#define CLEAR_GBT_TREE_ELEMENTS(tree_obj_ptr)                   \
-    (tree_obj_ptr)->is_leaf = false;                            \
-    (tree_obj_ptr)->father = 0;                                 \
-    (tree_obj_ptr)->leftson = 0;                                \
-    (tree_obj_ptr)->rightson = 0;                               \
-    (tree_obj_ptr)->leftlen = 0;                                \
-    (tree_obj_ptr)->rightlen = 0;                               \
-    (tree_obj_ptr)->gb_node = 0;                                \
-    (tree_obj_ptr)->name = 0;                                   \
-    (tree_obj_ptr)->remark_branch = 0
 
 #define ERROR_CONTAINER_PATH    "tmp/message/pending"
 
@@ -49,18 +26,69 @@
 #define MACRO_TRIGGER_ERROR      MACRO_TRIGGER_CONTAINER "/error"
 #define MACRO_TRIGGER_TRACKED    MACRO_TRIGGER_CONTAINER "/tracked"
 
-#ifdef FAKE_VTAB_PTR
-// if defined, FAKE_VTAB_PTR contains 'char'
-typedef FAKE_VTAB_PTR  virtualTable;
-#define GBT_VTAB_AND_TREE_ELEMENTS(type)        \
-    virtualTable      *dummy_virtual;           \
-    GBT_TREE_ELEMENTS(type)
-#else
-#define GBT_VTAB_AND_TREE_ELEMENTS(type) GBT_TREE_ELEMENTS(type)
-#endif
+#define DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeType)        \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_father, father);    \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_leftson, leftson);  \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_rightson, rightson)
 
-struct GBT_TREE {
-    GBT_VTAB_AND_TREE_ELEMENTS(GBT_TREE);
+struct GBT_TREE : virtual Noncopyable {
+    bool      is_leaf;
+    GBT_TREE *father, *leftson, *rightson;
+    GBT_LEN   leftlen, rightlen;
+    GBDATA   *gb_node;
+    char     *name;
+
+    char *remark_branch; // remark_branch normally contains some bootstrap value in format 'xx%'
+                         // if you store other info there, please make sure that this info does not start with digits!!
+                         // Otherwise the tree export routines will not work correctly!
+
+protected:
+    GBT_TREE*& self_ref() {
+        return is_leftson() ? father->leftson : father->rightson;
+    }
+public:
+    GBT_TREE()
+        : is_leaf(false),
+          father(NULL), leftson(NULL), rightson(NULL),
+          leftlen(0.0), rightlen(0.0),
+          gb_node(NULL),
+          name(NULL),
+          remark_branch(NULL)
+    {}
+    virtual ~GBT_TREE() {
+        delete leftson;  gb_assert(!leftson);
+        delete rightson; gb_assert(!rightson);
+
+        if (father) self_ref() = NULL;
+
+        free(name);
+        free(remark_branch);
+    }
+
+    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(GBT_TREE);
+
+    bool is_son_of(const GBT_TREE *Father) const {
+        return father == Father &&
+            (father->leftson == this || father->rightson == this);
+    }
+    bool is_leftson() const {
+        gb_assert(is_son_of(get_father())); // do only call with sons!
+        return father->leftson == this;
+    }
+    bool is_rightson() const {
+        gb_assert(is_son_of(get_father())); // do only call with sons!
+        return father->rightson == this;
+    }
+
+};
+
+struct TreeNodeFactory {
+    virtual ~TreeNodeFactory() {}
+    virtual GBT_TREE *makeNode() const = 0;
+};
+
+struct GBT_TREE_NodeFactory : public TreeNodeFactory {
+    virtual GBT_TREE *makeNode() const OVERRIDE { return new GBT_TREE; }
 };
 
 enum GBT_TreeRemoveType {

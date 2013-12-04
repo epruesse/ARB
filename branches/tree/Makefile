@@ -514,6 +514,8 @@ CC_INCLUDES  := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
 CXX_INCLUDES := $(CC_INCLUDES)
 MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
+# @@@ elim VTABLE_INFRONTOF_CLASS, FAKE_VTAB_PTR ...
+
 # Some code in ARB depends on the location of the vtable pointer
 # (it does a cast from class AP_tree to struct GBT_TREE). In order to
 # work around that hack properly, we define FAKE_VTAB_PTR

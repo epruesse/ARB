@@ -93,7 +93,7 @@ GB_ERROR ARB_tree_root::loadFromDB(const char *name) {
             freenull(tree_name);
         }
 
-        GBT_TREE *gbt_tree   = GBT_read_tree(gb_main, name, sizeof(GBT_TREE));
+        GBT_TREE *gbt_tree   = GBT_read_tree(gb_main, name, GBT_TREE_NodeFactory());
         if (!gbt_tree) error = GB_await_error();
         else {
             gb_tree             = GBT_find_tree(gb_main, name);
@@ -102,7 +102,8 @@ GB_ERROR ARB_tree_root::loadFromDB(const char *name) {
                 error = GB_add_callback(gb_tree, GB_CB_DELETE, makeDatabaseCallback(tree_deleted_cbwrapper, this));
                 if (!error) {
                     ARB_tree *arb_tree = nodeTemplate->dup();
-                    arb_tree->move_gbt_info(gbt_tree);
+                    arb_tree->move_gbt_info(gbt_tree); // @@@ wrong
+
 
                     change_root(NULL, arb_tree);
                     tree_name    = strdup(name);
@@ -112,7 +113,7 @@ GB_ERROR ARB_tree_root::loadFromDB(const char *name) {
                     gb_tree = NULL;
                 }
             }
-            GBT_delete_tree(gbt_tree);
+            delete gbt_tree;
         }
     }
 
@@ -186,8 +187,8 @@ void ARB_tree::calcTreeInfo(ARB_tree_info& info) {
     else {
         info.innerNodes++;
         if (gb_node) info.groups++;
-        leftson->calcTreeInfo(info);
-        rightson->calcTreeInfo(info);
+        get_leftson()->calcTreeInfo(info);
+        get_rightson()->calcTreeInfo(info);
     }
 }
 
@@ -196,13 +197,14 @@ void ARB_tree::calcTreeInfo(ARB_tree_info& info) {
 
 
 #if defined(DEBUG)
-static bool vtable_ptr_check_done = false;
+static bool vtable_ptr_check_done = false; // @@@ elim
 #endif // DEBUG
 
 ARB_tree::ARB_tree(ARB_tree_root *troot)
     : seq(NULL)
 {
-    CLEAR_GBT_TREE_ELEMENTS(this);
+    // @@@ init all other ARB_tree members!
+
     tree_root = troot;
 
 #if defined(DEBUG)
@@ -222,24 +224,16 @@ ARB_tree::ARB_tree(ARB_tree_root *troot)
 }
 
 ARB_tree::~ARB_tree() {
-    free(name);
-    free(remark_branch);
-
-    unlink_from_father();
+    unlink_from_father(); // @@@ dupped (also done by ~GBT_TREE)
 
     if (tree_root && tree_root->get_root_node() == this) {
         tree_root->ARB_tree_root::change_root(this, NULL);
     }
 
-    delete leftson;                                 // implicitely sets leftson  = NULL
-    at_assert(!leftson);
-    delete rightson;                                // implicitely sets rightson = NULL
-    at_assert(!rightson);
-
     delete seq;
 }
 
-void ARB_tree::move_gbt_info(GBT_TREE *tree) {
+void ARB_tree::move_gbt_info(GBT_TREE *tree) { // @@@ eliminate, instead already create tree with correct TreeNodeFactory
     is_leaf  = tree->is_leaf;
     leftlen  = tree->leftlen;
     rightlen = tree->rightlen;
@@ -255,13 +249,13 @@ void ARB_tree::move_gbt_info(GBT_TREE *tree) {
         rightson         = dup();
         rightson->father = this;
 
-        leftson->move_gbt_info(tree->leftson);
-        rightson->move_gbt_info(tree->rightson);
+        get_leftson()->move_gbt_info(tree->leftson);
+        get_rightson()->move_gbt_info(tree->rightson);
     }
 }
 
 bool ARB_tree::is_inside(const ARB_tree *subtree) const {
-    return this == subtree || (father && father->is_inside(subtree));
+    return this == subtree || (father && get_father()->is_inside(subtree));
 }
 
 #if defined(CHECK_TREE_STRUCTURE)
@@ -299,8 +293,8 @@ void ARB_tree::mark_subtree() {
         if (gb_node) GB_write_flag(gb_node, 1);
     }
     else {
-        leftson->mark_subtree();
-        rightson->mark_subtree();
+        get_leftson()->mark_subtree();
+        get_rightson()->mark_subtree();
     }
 }
 
@@ -308,14 +302,16 @@ bool ARB_tree::contains_marked_species() {
     if (is_leaf) {
         return gb_node && GB_read_flag(gb_node) != 0;
     }
-    return leftson->contains_marked_species() || rightson->contains_marked_species();
+    return
+        get_leftson()->contains_marked_species() ||
+        get_rightson()->contains_marked_species();
 }
 
 void ARB_tree::set_tree_root(ARB_tree_root *new_root) {
     if (tree_root != new_root) {
         tree_root = new_root;
-        if (leftson) leftson->set_tree_root(new_root);
-        if (rightson) rightson->set_tree_root(new_root);
+        if (leftson) get_leftson()->set_tree_root(new_root);
+        if (rightson) get_rightson()->set_tree_root(new_root);
     }
 }
 
@@ -327,8 +323,8 @@ GB_ERROR ARB_tree::add_delete_cb_rec(ARB_tree_node_del_cb cb) {
         }
     }
     else {
-        error            = leftson ->add_delete_cb_rec(cb);
-        if (error) error = rightson->add_delete_cb_rec(cb);
+        error            = get_leftson() ->add_delete_cb_rec(cb);
+        if (error) error = get_rightson()->add_delete_cb_rec(cb);
     }
     return error;
 }
@@ -338,8 +334,8 @@ void ARB_tree::remove_delete_cb_rec(ARB_tree_node_del_cb cb) {
         if (gb_node) GB_remove_callback(gb_node, GB_CB_DELETE, makeDatabaseCallback(cb, this));
     }
     else {
-        leftson ->remove_delete_cb_rec(cb);
-        rightson->remove_delete_cb_rec(cb);
+        get_leftson() ->remove_delete_cb_rec(cb);
+        get_rightson()->remove_delete_cb_rec(cb);
     }
 
 }
@@ -352,8 +348,8 @@ void ARB_tree::preloadLeafSequences() {
         }
     }
     else {
-        leftson->preloadLeafSequences();
-        rightson->preloadLeafSequences();
+        get_leftson()->preloadLeafSequences();
+        get_rightson()->preloadLeafSequences();
     }
 }
 
@@ -361,8 +357,8 @@ void ARB_tree::unloadSequences() {
     delete seq;
     seq = NULL;
     if (!is_leaf) {
-        leftson->unloadSequences();
-        rightson->unloadSequences();
+        get_leftson()->unloadSequences();
+        get_rightson()->unloadSequences();
     }
 }
 

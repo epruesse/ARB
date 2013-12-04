@@ -86,8 +86,8 @@ static int RB_INFO_order(const void *v1, const void *v2, void *) {
 RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
     // doing all the work for rb_gettree() :-)
     // convert a Ntree into a GBT-Tree
-    
-    GBT_TREE *gbtnode = (GBT_TREE *) getmem(sizeof(GBT_TREE));
+
+    GBT_TREE *gbtnode = new GBT_TREE;
     gbtnode->father   = father;
 
     RB_INFO *info = (RB_INFO *) getmem(sizeof(RB_INFO));
@@ -130,7 +130,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
                     RB_INFO *sinfo;
 
                     if (multifurc > 2) {
-                        mf    = (GBT_TREE *) getmem(sizeof(GBT_TREE));
+                        mf    = new GBT_TREE;
                         sinfo = (RB_INFO *) getmem(sizeof(RB_INFO));
 
                         mf->father = NULL;

@@ -35,7 +35,7 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
         for (size_t i = 0; !error && i<input_trees.size(); ++i) {
             char *warnings = NULL;
 
-            GBT_TREE *tree = TREE_load(input_trees[i], sizeof(*tree), NULL, true, &warnings);
+            GBT_TREE *tree = TREE_load(input_trees[i], NULL, true, &warnings);
             if (!tree) {
                 error = GBS_global_string("Failed to load tree '%s' (Reason: %s)", input_trees[i], GB_await_error());
             }
@@ -169,7 +169,7 @@ int ARB_main(int argc, char *argv[]) {
                     printf("sucessfully created consensus tree\n"
                            "(no savename specified -> tree not saved)\n");
                 }
-                GBT_delete_tree(cons_tree);
+                delete cons_tree;
             }
         }
         free(savename);
@@ -267,7 +267,7 @@ void TEST_consensus_tree_1() {
                                    custom_tree_name(treedir, "consense1_expected"));
     // ../UNIT_TESTER/run/consense/1/consense1.tree
 
-    GBT_delete_tree(tree);
+    delete tree;
 }
 void TEST_consensus_tree_1_single() {
     GB_ERROR  error   = NULL;
@@ -285,7 +285,7 @@ void TEST_consensus_tree_1_single() {
                                        custom_tree_name(treedir, "consense1_single_expected"));
         // ../UNIT_TESTER/run/consense/1/consense1_single.tree
 
-        GBT_delete_tree(tree);
+        delete tree;
     }
 }
 
@@ -305,7 +305,7 @@ void TEST_consensus_tree_2() {
                                        custom_tree_name(treedir, "consense2_expected"));
         // ../UNIT_TESTER/run/consense/2/consense2.tree
 
-        GBT_delete_tree(tree);
+        delete tree;
     }
 }
 
@@ -325,7 +325,7 @@ void TEST_consensus_tree_3() {
                                        custom_tree_name(treedir, "consense3_expected"));
         // ../UNIT_TESTER/run/consense/3/consense3.tree
 
-        GBT_delete_tree(tree);
+        delete tree;
     }
 }
 
@@ -348,7 +348,7 @@ void TEST_consensus_tree_from_disjunct_trees() {
         // @@@ tree generated here looks broken
         // (expected it to connect the 2 disjunct trees by one branch with bootstrap == 0)
 
-        GBT_delete_tree(tree);
+        delete tree;
     }
 }
 
@@ -372,7 +372,7 @@ void TEST_consensus_tree_from_partly_overlapping_trees() {
                                        custom_tree_name(treedir, "overlap_merged_expected"));
         // ../UNIT_TESTER/run/consense/4/overlap_merged.tree
 
-        GBT_delete_tree(tree);
+        delete tree;
     }
 }
 
@@ -396,7 +396,7 @@ void TEST_consensus_tree_from_minimal_overlapping_trees() {
                                        custom_tree_name(treedir, "overlap_mini_merged_expected"));
         // ../UNIT_TESTER/run/consense/4/overlap_mini_merged.tree
 
-        GBT_delete_tree(tree);
+        delete tree;
     }
 }
 
@@ -419,7 +419,7 @@ void TEST_consensus_tree_described_in_arbhelp() {
         // ../UNIT_TESTER/run/consense/5/help_merged.tree
         // @@@ constructed tree is not same as stated in helpfile
 
-        GBT_delete_tree(tree);
+        delete tree;
     }
 }
 
@@ -442,7 +442,7 @@ void TEST_consensus_tree_from_trees_overlapping_by_twothirds() {
                                        custom_tree_name(treedir, "overlap_twothirds_merged_expected"));
         // ../UNIT_TESTER/run/consense/6/overlap_twothirds_merged.tree
 
-        GBT_delete_tree(tree);
+        delete tree;
     }
 }
 
@@ -465,7 +465,7 @@ void TEST_consensus_tree_from_mostly_overlapping_trees() {
                                        custom_tree_name(treedir, "overlap_mostly_expected"));
         // ../UNIT_TESTER/run/consense/7/overlap_mostly.tree
 
-        GBT_delete_tree(tree);
+        delete tree;
     }
 }
 
@@ -595,7 +595,7 @@ void TEST_SLOW_treeIO_stable() {
                         const char *reloaded_treename = "tree_reloaded";
                         {
                             char     *comment    = NULL;
-                            GBT_TREE *tree       = TREE_load(expectedfile, sizeof(*tree), &comment, true, NULL);
+                            GBT_TREE *tree       = TREE_load(expectedfile, &comment, true, NULL);
                             GB_ERROR  load_error = tree ? NULL : GB_await_error();
 
                             TEST_EXPECTATION(all().of(that(tree).does_differ_from_NULL(),
@@ -617,7 +617,7 @@ void TEST_SLOW_treeIO_stable() {
                             const char *capsLeaf = findFirstNameContaining(tree, "Caps");
                             TEST_EXPECT_EQUAL(capsLeaf, "_MhuCaps");
 
-                            GBT_delete_tree(tree);
+                            delete tree;
                         }
 
                         // export again

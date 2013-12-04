@@ -307,7 +307,7 @@ public:
     void bootstrap2branchlen();                     // copy bootstraps to branchlengths
     void branchlen2bootstrap();                     // copy branchlengths to bootstraps
 
-    virtual void move_gbt_info(GBT_TREE *tree) OVERRIDE;
+    virtual void move_gbt_info(GBT_TREE *tree) OVERRIDE; // @@@ elim?
 
     GB_ERROR tree_write_tree_rek(GBDATA *gb_tree);
     GB_ERROR relink() __ATTR__USERESULT; // @@@ used ? if yes -> move to AP_tree_root or ARB_tree_root
@@ -325,7 +325,7 @@ public:
     void set_angle(float angle) {
         if (father) {
             angle_ref() = angle;
-            if (father->is_root_node()) {
+            if (get_father()->is_root_node()) {
                 // always set angle of other son at root-node
                 // @@@ works wrong if locigal-zoom is active
                 get_brother()->angle_ref() = angle;

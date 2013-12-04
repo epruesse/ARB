@@ -28,11 +28,13 @@
 
 // --------------------------------------------------------------------------------
 
-struct CompressionTree {
-    GBT_VTAB_AND_TREE_ELEMENTS(CompressionTree);
-
+struct CompressionTree : public GBT_TREE {
     int index;                  // master(inner nodes) or sequence(leaf nodes) index
     int sons;                   // sons with sequence or masters (in subtree)
+
+    virtual ~CompressionTree() {}
+
+    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(CompressionTree);
 };
 
 struct Consensus {
@@ -147,7 +149,7 @@ static char *g_b_Consensus_get_sequence(Consensus *gcon) {
 static int g_b_count_leafs(CompressionTree *node) {
     if (node->is_leaf) return 1;
     node->gb_node = 0;
-    return (g_b_count_leafs(node->leftson) + g_b_count_leafs(node->rightson));
+    return (g_b_count_leafs(node->get_leftson()) + g_b_count_leafs(node->get_rightson()));
 }
 
 static void g_b_put_sequences_in_container(CompressionTree *ctree, Sequence *seqs, MasterSequence **masters, Consensus *gcon) {
@@ -159,8 +161,8 @@ static void g_b_put_sequences_in_container(CompressionTree *ctree, Sequence *seq
         }
     }
     else if (ctree->index<0) {
-        g_b_put_sequences_in_container(ctree->leftson, seqs, masters, gcon);
-        g_b_put_sequences_in_container(ctree->rightson, seqs, masters, gcon);
+        g_b_put_sequences_in_container(ctree->get_leftson(), seqs, masters, gcon);
+        g_b_put_sequences_in_container(ctree->get_rightson(), seqs, masters, gcon);
     }
     else {
         GB_CSTR data = GB_read_char_pntr(masters[ctree->index]->gb_mas);
@@ -185,14 +187,14 @@ static void g_b_create_master(CompressionTree *node, Sequence *seqs, MasterSeque
             masters[node->index]->master = my_master;
             my_master = node->index;
         }
-        g_b_create_master(node->leftson, seqs, masters, my_master, ali_name, seq_len, progress);
-        g_b_create_master(node->rightson, seqs, masters, my_master, ali_name, seq_len, progress);
+        g_b_create_master(node->get_leftson(), seqs, masters, my_master, ali_name, seq_len, progress);
+        g_b_create_master(node->get_rightson(), seqs, masters, my_master, ali_name, seq_len, progress);
         if (node->index>=0 && !progress.aborted()) { // build me
             char      *data;
             Consensus *gcon = g_b_new_Consensus(seq_len);
 
-            g_b_put_sequences_in_container(node->leftson, seqs, masters, gcon);
-            g_b_put_sequences_in_container(node->rightson, seqs, masters, gcon);
+            g_b_put_sequences_in_container(node->get_leftson(), seqs, masters, gcon);
+            g_b_put_sequences_in_container(node->get_rightson(), seqs, masters, gcon);
 
             data = g_b_Consensus_get_sequence(gcon);
 
@@ -213,7 +215,7 @@ static void g_b_create_master(CompressionTree *node, Sequence *seqs, MasterSeque
 static void subtract_sons_from_tree(CompressionTree *node, int subtract) {
     while (node) {
         node->sons -= subtract;
-        node        = node->father;
+        node        = node->get_father();
     }
 }
 
@@ -225,12 +227,12 @@ static int set_masters_with_sons(CompressionTree *node, int wantedSons, int *mco
             node->index = *mcount;
             (*mcount)++;
 
-            subtract_sons_from_tree(node->father, node->sons-1);
+            subtract_sons_from_tree(node->get_father(), node->sons-1);
             node->sons = 1;
         }
         else if (node->sons>wantedSons) {
-            int lMax = set_masters_with_sons(node->leftson,  wantedSons, mcount);
-            int rMax = set_masters_with_sons(node->rightson, wantedSons, mcount);
+            int lMax = set_masters_with_sons(node->get_leftson(),  wantedSons, mcount);
+            int rMax = set_masters_with_sons(node->get_rightson(), wantedSons, mcount);
 
             int maxSons = lMax<rMax ? rMax : lMax;
             if (node->sons <= MAX_SEQUENCE_PER_MASTER && node->sons>maxSons) {
@@ -247,8 +249,8 @@ static int maxCompressionSteps(CompressionTree *node) {
         return 0;
     }
 
-    int left  = maxCompressionSteps(node->leftson);
-    int right = maxCompressionSteps(node->rightson);
+    int left  = maxCompressionSteps(node->get_leftson());
+    int right = maxCompressionSteps(node->get_rightson());
 
 #if defined(SAVE_COMPRESSION_TREE_TO_DB)
     freenull(node->name);
@@ -275,8 +277,8 @@ static int init_indices_and_count_sons(CompressionTree *node, int *scount, const
     else {
         node->index = -1;
         node->sons  =
-            init_indices_and_count_sons(node->leftson, scount, ali_name) +
-            init_indices_and_count_sons(node->rightson, scount, ali_name);
+            init_indices_and_count_sons(node->get_leftson(), scount, ali_name) +
+            init_indices_and_count_sons(node->get_rightson(), scount, ali_name);
     }
     return node->sons;
 }
@@ -852,6 +854,10 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
     return error;
 }
 
+class CompressionTree_NodeFactory : public TreeNodeFactory {
+    virtual GBT_TREE *makeNode() const OVERRIDE { return new CompressionTree; }
+};
+
 GB_ERROR GBT_compress_sequence_tree2(GBDATA *gbd, const char *tree_name, const char *ali_name) { // goes to header: __ATTR__USERESULT // @@@ rename function
     // Compress sequences, call only outside a transaction
     GB_ERROR      error = NULL;
@@ -876,14 +882,12 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gbd, const char *tree_name, const c
                 }
 
                 {
-                    CompressionTree *ctree = (CompressionTree *)GBT_read_tree(gb_main, tree_name, sizeof(CompressionTree));
+                    CompressionTree *ctree = (CompressionTree *)GBT_read_tree(gb_main, tree_name, CompressionTree_NodeFactory());
                     if (!ctree) error      = GB_await_error();
                     else {
                         error             = GBT_link_tree((GBT_TREE *)ctree, gb_main, false, 0, 0);
                         if (!error) error = compress_sequence_tree(gb_main, ctree, ali_name);
-
-                        GBT_TREE *freetree = (GBT_TREE*)ctree;
-                        GBT_delete_tree(freetree);
+                        delete ctree;
                     }
                 }
                 if (!error) GB_disable_quicksave(gb_main, "Database optimized");

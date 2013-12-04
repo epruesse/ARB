@@ -262,7 +262,7 @@ void AP_tree::remove() {
         AP_tree      *brother     = get_brother();  // brother remains in tree
         GBT_LEN       brothersLen = brother->get_branchlength();
         AP_tree      *fath        = get_father();   // fath of this is removed as well
-        ARB_tree     *grandfather = fath->father;
+        ARB_tree     *grandfather = fath->get_father();
         AP_tree_root *troot       = get_tree_root();
 
         if (fath->gb_node) {                      // move inner information to remaining subtree
@@ -339,7 +339,7 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
         get_tree_root()->change_root(get_father(), get_brother());
     }
     else {
-        ARB_tree *grandfather = father->father;
+        ARB_tree *grandfather = get_father()->get_father();
         if (father == new_brother) {    // just pull branches !!
             new_brother  = get_brother();
             if (grandfather->leftson == father) {
@@ -368,8 +368,8 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
         }
     }
 
-    ARB_tree *new_tree          = father;
-    ARB_tree *brother_father    = new_brother->father;
+    ARB_tree *new_tree          = get_father();
+    ARB_tree *brother_father    = new_brother->get_father();
     AP_FLOAT  laenge;
 
     if (brother_father->leftson == new_brother) {
@@ -437,7 +437,7 @@ void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
         if (!pntr_brother->is_leaf) {
             if (mode == AP_LEFT) {
                 pntr_brother->leftson->father = this;
-                pntr                          = pntr_brother->leftson;
+                pntr                          = pntr_brother->get_leftson();
                 pntr_brother->leftson         = leftson;
                 leftson->father               = pntr_brother;
                 leftson                       = pntr;
@@ -445,7 +445,7 @@ void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
             else {
                 pntr_brother->leftson->father = this;
                 rightson->father              = pntr_brother;
-                pntr                          = pntr_brother->leftson;
+                pntr                          = pntr_brother->get_leftson();
                 pntr_brother->leftson         = rightson;
                 rightson                      = pntr;
             }
@@ -456,7 +456,7 @@ void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
             if (father->leftson == this) {
                 father->rightson->father = this;
                 leftson->father          = father;
-                pntr                     = father->rightson;
+                pntr                     = get_father()->get_rightson();
                 AP_FLOAT help_len        = father->rightlen;
                 father->rightlen         = leftlen;
                 leftlen                  = help_len;
@@ -466,7 +466,7 @@ void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
             else {
                 father->leftson->father = this;
                 leftson->father         = father;
-                pntr                    = father->leftson;
+                pntr                    = get_father()->get_leftson();
                 AP_FLOAT help_len       = father->leftlen;
                 father->leftlen         = leftlen;
                 leftlen                 = help_len;
@@ -478,7 +478,7 @@ void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
             if (father->leftson == this) {
                 father->rightson->father = this;
                 rightson->father         = father;
-                pntr                     = father->rightson;
+                pntr                     = get_father()->get_rightson();
                 AP_FLOAT help_len        = father->rightlen;
                 father->rightlen         = rightlen;
                 rightlen                 = help_len;
@@ -488,7 +488,7 @@ void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
             else {
                 father->leftson->father = this;
                 rightson->father        = father;
-                pntr                    = father->leftson;
+                pntr                    = get_father()->get_leftson();
                 AP_FLOAT help_len       = father->leftlen;
                 father->leftson         = rightson;
                 father->leftlen         = rightlen;
@@ -527,7 +527,7 @@ void AP_tree::set_root() {
         ARB_tree *node;
         char     *remark = nulldup(remark_branch);
 
-        for (node = this; node->father; node = node->father) {
+        for (node = this; node->father; node = node->get_father()) {
             char *sh            = node->remark_branch;
             node->remark_branch = remark;
             remark              = sh;
@@ -548,9 +548,9 @@ void AP_tree::set_root() {
         old_root->leftlen = old_root->rightlen = father->rightlen*.5;
     }
 
-    ARB_tree *next = father->father;
+    ARB_tree *next = get_father()->get_father();
     ARB_tree *prev = old_root;
-    ARB_tree *pntr = father;
+    ARB_tree *pntr = get_father();
 
     if (father->leftson == this)    father->leftson = old_root; // to set the flag correctly
 
@@ -570,7 +570,7 @@ void AP_tree::set_root() {
         pntr->father = prev;
         prev         = pntr;
         pntr         = next;
-        next         = next->father;
+        next         = next->get_father();
     }
     // now next points to the old root, which has been destroyed above
     //
@@ -1408,13 +1408,13 @@ class LongBranchMarker {
         if (abs_diff>min_abs_diff && rel_diff>min_rel_diff) {
             if (max_is_left) {
                 if (!marked_left) {
-                    at->leftson->mark_subtree();
+                    at->get_leftson()->mark_subtree();
                     marked = true;
                 }
             }
             else {
                 if (!marked_right) {
-                    at->rightson->mark_subtree();
+                    at->get_rightson()->mark_subtree();
                     marked = true;
                 }
             }
@@ -1717,14 +1717,14 @@ static int ap_mark_degenerated(AP_tree *at, double degeneration_factor, double& 
     if (lSons<rSons) {
         this_degeneration = rSons/double(lSons);
         if (this_degeneration >= degeneration_factor) {
-            at->leftson->mark_subtree();
+            at->get_leftson()->mark_subtree();
         }
 
     }
     else if (rSons<lSons) {
         this_degeneration = lSons/double(rSons);
         if (this_degeneration >= degeneration_factor) {
-            at->rightson->mark_subtree();
+            at->get_rightson()->mark_subtree();
         }
     }
 

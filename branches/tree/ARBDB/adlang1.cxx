@@ -1528,7 +1528,7 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
     }
     cached = GBS_read_hash(cached_taxonomies, tree_name);
     if (!cached) {
-        GBT_TREE *tree    = GBT_read_tree(gb_main, tree_name, sizeof(*tree));
+        GBT_TREE *tree    = GBT_read_tree(gb_main, tree_name, GBT_TREE_NodeFactory());
         if (!tree) *error = GB_await_error();
         else     *error   = GBT_link_tree(tree, gb_main, false, 0, 0);
 
@@ -1581,7 +1581,7 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
             }
         }
 
-        GBT_delete_tree(tree);
+        delete tree;
     }
 
     if (!*error) {

@@ -343,7 +343,7 @@ void TEST_close_after_pending_notification_removed() {
     TEST_EXPECT_NO_ERROR(GB_remove_last_notification(gb_main));
     EXIT_NOTIFICATION;
 }
-void TEST_arb_notify() {
+void TEST_arb_notify() { // @@@ do not checkin!
     INIT_NOTIFICATION;
 
     TEST_DBSERVER_OPEN(gb_main);

@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
                 char *warnings             = 0;
                 bool  allow_length_scaling = !param.consense && !param.scale;
 
-                tree = TREE_load(param.treefilename, sizeof(GBT_TREE), &comment_from_treefile, allow_length_scaling, &warnings);
+                tree = TREE_load(param.treefilename, &comment_from_treefile, allow_length_scaling, &warnings);
                 if (!tree) {
                     error = GB_await_error();
                 }
@@ -282,7 +282,7 @@ int main(int argc, char **argv) {
         if (error) show_error(gb_main, error);
         else       show_message(gb_msg_main, GBS_global_string("Tree %s read into the database", param.tree_name));
 
-        GBT_delete_tree(tree);
+        delete tree;
         free(comment_from_file);
         free(comment_from_treefile);
     }
