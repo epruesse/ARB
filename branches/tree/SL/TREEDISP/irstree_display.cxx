@@ -98,7 +98,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         }
 
         Position    textpos  = leaf+IRS.adjust_text;
-        const char *specinfo = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node->get_gbt_tree(), tree_static->get_tree_name());
+        const char *specinfo = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node, tree_static->get_tree_name());
         disp_device->text(gc, specinfo, textpos);
 
         return IRS.y;
@@ -112,7 +112,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             group_name = tree_static->get_tree_name();
         }
         else {
-            group_name = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node->get_gbt_tree(), tree_static->get_tree_name());
+            group_name = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node, tree_static->get_tree_name());
         }
         frame_width = node->gr.tree_depth * IRS.x_scale;
     }

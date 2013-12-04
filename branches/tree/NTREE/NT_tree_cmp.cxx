@@ -331,8 +331,8 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
 
                     AP_tree *root = new_rootr->get_root_node();
 
-                    error             = GBT_overwrite_tree(gb_main, rdest.get_gb_tree(), root->get_gbt_tree());
-                    if (!error) error = GBT_overwrite_tree(gb_main, rsource.get_gb_tree(), source->get_gbt_tree());
+                    error             = GBT_overwrite_tree(gb_main, rdest.get_gb_tree(), root);
+                    if (!error) error = GBT_overwrite_tree(gb_main, rsource.get_gb_tree(), source);
                 }
 
                 delete root_setl;

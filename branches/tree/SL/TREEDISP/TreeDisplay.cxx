@@ -1945,7 +1945,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
             // display text
-            const char            *data       = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
+            const char            *data       = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             const AW_font_limits&  charLimits = disp_device->get_font_limits(at->gr.gc, 'A');
 
             double   unscale  = disp_device->get_unscale();
@@ -1993,7 +1993,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         limits.x_right = n0.xpos();
 
         if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-            const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
+            const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             size_t      data_len = strlen(data);
 
             Position textPos = n0+text_offset;
@@ -2062,7 +2062,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                 limits.x_right = x2;
             
                 if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-                    const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
+                    const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
                     size_t      data_len = strlen(data);
 
                     LineVector worldBracket = disp_device->transform(bracket.right_edge());
@@ -2146,7 +2146,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
             if (at->hasName(species_name)) cursor = Position(x_center, y_center);
             scale_text_koordinaten(disp_device, at->gr.gc, x_center, y_center, tree_orientation, 0);
-            const char *data =  make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
+            const char *data =  make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
                               (AW_pos)x_center, (AW_pos) y_center,
                               (AW_pos) .5 - .5 * cos(tree_orientation),
@@ -2181,7 +2181,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
             scale_text_koordinaten(disp_device, at->gr.gc, x_center, y_center, w, 0);
 
             // insert text (e.g. name of group)
-            const char *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
+            const char *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
                               (AW_pos)x_center, (AW_pos) y_center,
                               (AW_pos).5 - .5 * cos(tree_orientation),

@@ -552,11 +552,11 @@ GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
                     GBS_hash_do_loop(hash_2_ap_tree, delete_species, this);
                     GBS_free_hash(keep_species_hash);
                     keep_species_hash = 0;
-                    GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, true, 0, 0);
+                    GBT_link_tree(tree_root->get_root_node(), gb_main, true, 0, 0);
                 }
             }
             else {                                  // keep marked/all
-                GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, true, 0, 0);
+                GBT_link_tree(tree_root->get_root_node(), gb_main, true, 0, 0);
                 tree_root->remove_leafs(marked_only ? AWT_KEEP_MARKED : AWT_REMOVE_ZOMBIES);
 
                 error = tree_size_ok(tree_root);
@@ -847,7 +847,7 @@ void ST_ML::create_column_statistic(AW_root *awr, const char *awarname, AW_awar 
 }
 
 const GBT_TREE *ST_ML::get_gbt_tree() const {
-    return tree_root->get_root_node()->get_gbt_tree();
+    return tree_root->get_root_node();
 }
 
 size_t ST_ML::count_species_in_tree() const {

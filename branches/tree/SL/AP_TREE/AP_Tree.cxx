@@ -928,7 +928,7 @@ GB_ERROR AP_tree_root::loadFromDB(const char *name) {
 
 GB_ERROR AP_tree::relink() {
     GB_transaction dummy(get_tree_root()->get_gb_main()); // open close a transaction
-    GB_ERROR error = GBT_link_tree(get_gbt_tree(), get_tree_root()->get_gb_main(), false, 0, 0); // no status
+    GB_ERROR error = GBT_link_tree(this, get_tree_root()->get_gb_main(), false, 0, 0); // no status
     get_tree_root()->update_timers();
     return error;
 }

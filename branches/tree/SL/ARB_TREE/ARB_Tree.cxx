@@ -93,7 +93,7 @@ GB_ERROR ARB_tree_root::loadFromDB(const char *name) {
             freenull(tree_name);
         }
 
-        GBT_TREE *gbt_tree   = GBT_read_tree(gb_main, name, GBT_TREE_NodeFactory());
+        GBT_TREE *gbt_tree   = GBT_read_tree(gb_main, name, GBT_TREE_NodeFactory()); // @@@ should use an ARB_tree_root NodeFactory
         if (!gbt_tree) error = GB_await_error();
         else {
             gb_tree             = GBT_find_tree(gb_main, name);
@@ -129,7 +129,7 @@ GB_ERROR ARB_tree_root::saveToDB() {
         GBDATA *gb_main   = get_gb_main();
         error             = GB_push_transaction(gb_main);
         at_assert(rootNode);
-        if (!error) error = GBT_overwrite_tree(gb_main, gb_tree, rootNode->get_gbt_tree());
+        if (!error) error = GBT_overwrite_tree(gb_main, gb_tree, rootNode);
         error             = GB_end_transaction(gb_main, error);
     }
     return error;
@@ -148,7 +148,7 @@ GB_ERROR ARB_tree_root::linkToDB(int *zombies, int *duplicates) {
 
     GB_ERROR error = 0;
     if (!isLinkedToDB) {
-        error = GBT_link_tree(rootNode->get_gbt_tree(), get_gb_main(), false, zombies, duplicates);
+        error = GBT_link_tree(rootNode, get_gb_main(), false, zombies, duplicates);
         if (!error && addDeleteCallbacks) error = rootNode->add_delete_cb_rec(arb_tree_species_deleted_cb);
         if (!error) {
             if (ali->has_data() && seqTemplate) rootNode->preloadLeafSequences();
@@ -161,7 +161,7 @@ GB_ERROR ARB_tree_root::linkToDB(int *zombies, int *duplicates) {
 void ARB_tree_root::unlinkFromDB() {
     if (isLinkedToDB) {
         if (addDeleteCallbacks) rootNode->remove_delete_cb_rec(arb_tree_species_deleted_cb);
-        GBT_unlink_tree(rootNode->get_gbt_tree());
+        GBT_unlink_tree(rootNode);
         if (ali->has_data() && seqTemplate) rootNode->unloadSequences();
         isLinkedToDB = false;
     }
@@ -209,7 +209,7 @@ ARB_tree::ARB_tree(ARB_tree_root *troot)
 
 #if defined(DEBUG)
     if (!vtable_ptr_check_done) {
-        GBT_TREE *tree     = get_gbt_tree();        // hack-warning: points to part of this!
+        GBT_TREE *tree     = this;        // hack-warning: points to part of this!
         bool      was_leaf = tree->is_leaf;
 
         // if one of the assertions below fails, then there is a problem with the

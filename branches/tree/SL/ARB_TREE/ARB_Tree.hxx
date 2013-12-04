@@ -193,9 +193,6 @@ public:
     GBT_LEN get_branchlength() const { return length_ref(); }
     void set_branchlength(GBT_LEN newlen) { length_ref() = newlen; }
 
-    const GBT_TREE *get_gbt_tree() const { return (const GBT_TREE*)this; } // @@@ elim
-    GBT_TREE *get_gbt_tree() { return (GBT_TREE*)this; } // @@@ elim
-
     AP_sequence *get_seq() { return seq; }
     const AP_sequence *get_seq() const { return seq; }
     AP_sequence * set_seq(AP_sequence *sequence) {

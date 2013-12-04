@@ -917,7 +917,7 @@ GBT_TREE *nt_get_tree_root_of_canvas(AWT_canvas *ntw) {
     AWT_graphic_tree *tree = AWT_TREE(ntw);
     if (tree) {
         AP_tree *root = tree->get_root_node();
-        if (root) return root->get_gbt_tree();
+        if (root) return root;
     }
     return NULL;
 }
