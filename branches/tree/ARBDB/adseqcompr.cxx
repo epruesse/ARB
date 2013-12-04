@@ -588,8 +588,8 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
 
 #if defined(SAVE_COMPRESSION_TREE_TO_DB)
                 {
-                    error = GBT_link_tree((GBT_TREE*)tree, gb_main, 0, NULL, NULL);
-                    if (!error) error = GBT_write_tree(gb_main, 0, "tree_compression_new", (GBT_TREE*)tree);
+                    error = GBT_link_tree(tree, gb_main, 0, NULL, NULL);
+                    if (!error) error = GBT_write_tree(gb_main, 0, "tree_compression_new", tree);
                     GB_information("Only generated compression tree (do NOT save DB anymore)");
                     return error;
                 }
@@ -885,7 +885,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gbd, const char *tree_name, const c
                     CompressionTree *ctree = (CompressionTree *)GBT_read_tree(gb_main, tree_name, CompressionTree_NodeFactory());
                     if (!ctree) error      = GB_await_error();
                     else {
-                        error             = GBT_link_tree((GBT_TREE *)ctree, gb_main, false, 0, 0);
+                        error             = GBT_link_tree(ctree, gb_main, false, 0, 0);
                         if (!error) error = compress_sequence_tree(gb_main, ctree, ali_name);
                         delete ctree;
                     }
