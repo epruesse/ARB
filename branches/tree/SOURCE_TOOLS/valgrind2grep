@@ -35,6 +35,7 @@ sub check_ignore_external($\$$) {
       if ($text =~ /\b(XtAppMainLoop)\b.*libXt/) { $$ignore_r = $&; return; } # 15/06/2009
 
       if ($reason =~ 'still reachable' or $reason =~ 'possibly lost') { # reachable memory leaks
+
         if ($text =~ /\b(XLoadQueryFont)\b.*libXt/) { $$ignore_r = $&; return; } # 29/05/2010
         if ($text =~ /\b(XRebindKeysym)\b.*libXt/) { $$ignore_r = $&; return; } # 29/05/2010
         if ($text =~ /\b(XmGetPixmap)\b.*libXm/) { $$ignore_r = $&; return; } # 29/05/2010
@@ -46,6 +47,7 @@ sub check_ignore_external($\$$) {
         if ($text =~ /\b(XtVaCreateWidget)\b.*libXt/) { $$ignore_r = $&; return; } # 03/12/2013
         if ($text =~ /\b(XtParseTranslationTable)\b.*libXt/) { $$ignore_r = $&; return; } # 03/12/2013
         if ($text =~ /\b(XtAugmentTranslations)\b.*libXt/) { $$ignore_r = $&; return; } # 03/12/2013
+        if ($text =~ /\b(XQueryColor|XGetGeometry|XAllocNamedColor)\b.*libX11/) { $$ignore_r = $&; return; } # 04/12/2013
       }
     }
     else { # illegal memory access
@@ -78,13 +80,15 @@ sub check_ignore_internal($\$$) {
       if ($reason =~ 'still reachable' or $reason =~ 'possibly lost') { # reachable memory leaks
         # things broken in ARB motif (wontfix; remove these exclusions after gtk merge)
         if ($text =~ /\b(aw_create_shell)\b/) { $$ignore_r = $&; return; } # 03/12/2013
-        if ($text =~ /\b(AW_window::load_xfig)\b/) { $$ignore_r = $&; return; } # 03/12/2013
+        if ($text =~ /\b(AW_window::(load_xfig|insert_option_internal))\b/) { $$ignore_r = $&; return; } # 04/12/2013
+        if ($text =~ /\b(gbmGetMemImpl)\b/) { $$ignore_r = $&; return; } # 04/12/2013 -- not all blocks of internal mem.management were freed (set MEMORY_TEST 1 in gb_memory.h to find leakers)
       }
       elsif ($reason =~ 'definitely lost') { # unreachable memory leaks
         if ($text =~ /\b(awt_create_selection_list_on_(trees|alignments))\b/) { $$ignore_r = $&; return; } # 03/12/2013
         if ($text =~ /\b(AW_window::(create_toggle|create_option_menu))\b/) { $$ignore_r = $&; return; } # 03/12/2013
         if ($text =~ /\b(AW_root::create_colormap)\b/) { $$ignore_r = $&; return; } # 03/12/2013
       }
+      if ($text =~ /\b(AW_manage_GC)\b/) { $$ignore_r = $&; return; } # 04/12/2013
     }
     elsif ($reason =~ 'file descriptor') { # open file descriptors
       if ($text =~ /\b(aw_initstatus)\b/) { $$ignore_r = $&; return; } # 03/12/2013
@@ -266,6 +270,12 @@ sub leaving() {
   }
 }
 
+sub hideMessages($\@) {
+  my ($hidePrefix,$outstack_r) = @_;
+  $hidePrefix = "($hidePrefix) ";
+  @$outstack_r = map { $hidePrefix.$_; } @$outstack_r;
+}
+
 # variables:
 
 my $i;
@@ -354,12 +364,10 @@ while (not $in->eof) {
         $ignore_curr_line = 1;
       }
       elsif ($content =~ /^[ ]*$/) {
-        if (defined $ignore) {
-          foreach my $line (@outstack) { $out->print('(ign3) '.$line); } @outstack = ();
-        }
-        else {
-          foreach my $line (@outstack) { $out->print($line); } @outstack = ();
-        }
+        if (defined $ignore) { hideMessages('ign2', @outstack); }
+        foreach my $line (@outstack) { $out->print($line); } @outstack = ();
+        $out->flush;
+
         $ignore = undef;
         $_      = '(    ) '.$_;
       }
@@ -393,18 +401,14 @@ while (not $in->eof) {
     if (not defined $ignore) {
       entering();
       push @outstack, shorten_location($_);
-      # $out->print(shorten_location($_));
-      # $out->flush;
       $last_ignore = '';
     }
-    else {
-      if ($last_ignore eq '') {
-        foreach my $line (@outstack) { $out->print($line); } @outstack = ();
-      }
-      else {
-        foreach my $line (@outstack) { $out->print('(ign2) '.$line); } @outstack = ();
-      }
+    else { # defined ignore
+      # print "last_ignore='$last_ignore' ignore='$ignore'\n";
       if ($ignore ne $last_ignore) {
+        hideMessages('ign3', @outstack);
+        foreach my $line (@outstack) { $out->print($line); } @outstack = ();
+
         s/^\(note\)[ ]*//;
         $out->print("(igno) '$ignore' ".$_);
         $out->print("(skip) further messages suppressed\n");
@@ -432,8 +436,10 @@ while (not $in->eof) {
   }
 }
 
+if (defined $ignore) { hideMessages('ign4', @outstack); }
 foreach my $line (@outstack) { $out->print($line); } @outstack = ();
 leaving();
+$out->flush;
 
 $in->close;
 $out->close;
