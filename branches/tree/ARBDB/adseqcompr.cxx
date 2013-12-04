@@ -882,7 +882,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gbd, const char *tree_name, const c
                 }
 
                 {
-                    CompressionTree *ctree = (CompressionTree *)GBT_read_tree(gb_main, tree_name, CompressionTree_NodeFactory());
+                    CompressionTree *ctree = DOWNCAST(CompressionTree*, GBT_read_tree(gb_main, tree_name, CompressionTree_NodeFactory()));
                     if (!ctree) error      = GB_await_error();
                     else {
                         error             = GBT_link_tree(ctree, gb_main, false, 0, 0);
