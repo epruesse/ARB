@@ -240,32 +240,28 @@ inline void sortOldestFirst(AP_tree_edge **e1, AP_tree_edge **e2, AP_tree_edge *
 }
 
 
-void AP_tree_nlen::insert(AP_tree_nlen *new_brother) {
+void AP_tree_nlen::insert(AP_tree_nlen *newBrother) {
     //  inserts a node at the father-edge of new_brother
+    ap_assert(newBrother);
 
     ASSERT_VALID_TREE(this);
-    ASSERT_VALID_TREE(new_brother);
-
-    AP_tree_nlen *newBrother = dynamic_cast<AP_tree_nlen*>(new_brother);
-    ap_assert(new_brother);
-
-    AP_tree_edge *oldEdge;
+    ASSERT_VALID_TREE(newBrother);
 
     ap_main->push_node(newBrother, STRUCTURE);
 
-    if (new_brother->father) {
-        AP_tree_nlen *brothersFather = newBrother->get_father();
+    AP_tree_nlen *brothersFather = newBrother->get_father();
+    if (brothersFather) {
         ap_main->push_node(brothersFather, BOTH);
         push_all_upnode_sequences(brothersFather);
 
         if (brothersFather->get_father()) {
-            oldEdge = newBrother->edgeTo(newBrother->get_father())->unlink();
-            AP_tree::insert(new_brother);
+            AP_tree_edge *oldEdge = newBrother->edgeTo(newBrother->get_father())->unlink();
+            AP_tree::insert(newBrother);
             oldEdge->relink(get_father(), get_father()->get_father());
         }
         else { // insert to son of root
-            oldEdge = newBrother->edgeTo(newBrother->get_brother())->unlink();
-            AP_tree::insert(new_brother);
+            AP_tree_edge *oldEdge = newBrother->edgeTo(newBrother->get_brother())->unlink();
+            AP_tree::insert(newBrother);
             oldEdge->relink(get_father(), get_father()->get_brother());
         }
 
@@ -276,7 +272,7 @@ void AP_tree_nlen::insert(AP_tree_nlen *new_brother) {
     }
     else {                                          // insert at root
         if (newBrother->is_leaf) {                  // tree contains exactly one species (only legal during insert)
-            AP_tree::insert(new_brother);
+            AP_tree::insert(newBrother);
             new AP_tree_edge(newBrother, this);    // build the root edge
         }
         else {
@@ -286,9 +282,9 @@ void AP_tree_nlen::insert(AP_tree_nlen *new_brother) {
             ap_main->push_node(lson, STRUCTURE);
             ap_main->push_node(rson, STRUCTURE);
 
-            oldEdge = lson->edgeTo(rson)->unlink();
+            AP_tree_edge *oldEdge = lson->edgeTo(rson)->unlink();
 
-            AP_tree::insert(new_brother);
+            AP_tree::insert(newBrother);
 
             oldEdge->relink(this, newBrother);
             new AP_tree_edge(newBrother, rson);
@@ -896,30 +892,30 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
     if (rek_deep >= rek_deep_max || is_leaf || *abort_flag)   return;
 
     // Referenzzeiger auf die vier Kanten und zwei swapmoeglichkeiten initialisieren
-    AP_tree *this_brother = this->get_brother();
+    AP_tree_nlen *this_brother = this->get_brother();
     if (rek_deep == 0) {
         for (i = 0; i < 8; i+=2) {
             pars_side_ref[i] = AP_LEFT;
             pars_side_ref[i+1] = AP_RIGHT;
         }
-        pars_refpntr[0] = pars_refpntr[1] = static_cast<AP_tree_nlen *>(this);
+        pars_refpntr[0] = pars_refpntr[1] = this;
         pars_refpntr[2] = pars_refpntr[3] = 0;
         pars_refpntr[4] = pars_refpntr[5] = 0;
         pars_refpntr[6] = pars_refpntr[7] = 0;
     }
     else {
-        pars_refpntr[0] = pars_refpntr[1] = static_cast<AP_tree_nlen *>(this->leftson);
-        pars_refpntr[2] = pars_refpntr[3] = static_cast<AP_tree_nlen *>(this->rightson);
+        pars_refpntr[0] = pars_refpntr[1] = this->get_leftson();
+        pars_refpntr[2] = pars_refpntr[3] = this->get_rightson();
         if (father->father != 0) {
             // Referenzzeiger falls nicht an der Wurzel
-            pars_refpntr[4] = pars_refpntr[5] = static_cast<AP_tree_nlen *>(this->father);
-            pars_refpntr[6] = pars_refpntr[7] = static_cast<AP_tree_nlen *>(this_brother);
+            pars_refpntr[4] = pars_refpntr[5] = this->get_father();
+            pars_refpntr[6] = pars_refpntr[7] = this_brother;
         }
         else {
             // an der Wurzel nehme linken und rechten Sohns des Bruders
             if (!get_brother()->is_leaf) {
-                pars_refpntr[4] = pars_refpntr[5] = static_cast<AP_tree_nlen *>(this_brother->leftson);
-                pars_refpntr[6] = pars_refpntr[7] = static_cast<AP_tree_nlen *>(this_brother->rightson);
+                pars_refpntr[4] = pars_refpntr[5] = this_brother->get_leftson();
+                pars_refpntr[6] = pars_refpntr[7] = this_brother->get_rightson();
             }
             else {
                 pars_refpntr[4] = pars_refpntr[5] = 0;

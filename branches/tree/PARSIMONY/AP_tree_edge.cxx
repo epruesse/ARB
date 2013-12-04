@@ -625,11 +625,11 @@ static void ap_calc_branch_lengths(AP_tree_nlen * /* root */, AP_tree_nlen *son,
     }
 
     if (son->leftson->is_leaf) {
-        ap_calc_leaf_branch_length((AP_tree_nlen*)son->leftson);
+        ap_calc_leaf_branch_length(son->get_leftson());
     }
 
     if (son->rightson->is_leaf) {
-        ap_calc_leaf_branch_length((AP_tree_nlen*)son->rightson);
+        ap_calc_leaf_branch_length(son->get_rightson());
     }
 }
 const double ap_undef_bl = 10.5;
@@ -654,8 +654,8 @@ static void ap_check_leaf_bl(AP_tree_nlen *node) {
         return;
     }
     else {
-        if (node->leftlen == ap_undef_bl)   ap_calc_leaf_branch_length((AP_tree_nlen *)node->leftson);
-        if (node->rightlen == ap_undef_bl)  ap_calc_leaf_branch_length((AP_tree_nlen *)node->rightson);
+        if (node->leftlen == ap_undef_bl)   ap_calc_leaf_branch_length(node->get_leftson());
+        if (node->rightlen == ap_undef_bl)  ap_calc_leaf_branch_length(node->get_rightson());
     }
 }
 

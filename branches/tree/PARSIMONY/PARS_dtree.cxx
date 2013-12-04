@@ -139,7 +139,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
     GB_pop_transaction(GLOBAL_gb_main);
 
     for (int i=0; i<anzahl && !progress.aborted(); i++) {
-        AP_tree_nlen *tree_elem = (AP_tree_nlen *)list[i];
+        AP_tree_nlen *tree_elem = DOWNCAST(AP_tree_nlen*, list[i]); // @@@ pass 'at' as AP_tree_nlen
 
         bool in_folded_group = tree_elem->gr.hidden ||
             (tree_elem->father && tree_elem->get_father()->gr.hidden);
@@ -181,7 +181,7 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
     progress.subtitle(GBS_global_string("Old parsimony: %.1f", org_pars));
 
     while (!progress.aborted()) {
-        AP_FLOAT nni_pars = ((AP_tree_nlen *)at)->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
+        AP_FLOAT nni_pars = DOWNCAST(AP_tree_nlen*, at)->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
 
         if (nni_pars == prev_pars) { // NNI did not reduce costs -> kern-lin
             kernighan_optimize_tree(at);
