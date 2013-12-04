@@ -155,12 +155,17 @@ protected:
     void replace_seq(AP_sequence *sequence);
 
 public:
-    ARB_tree(ARB_tree_root *root);
-    virtual ~ARB_tree();                            // needed (see FAKE_VTAB_PTR)
+    ARB_tree(ARB_tree_root *root)
+        : tree_root(root),
+          seq(NULL)
+    {
+
+    }
+    ~ARB_tree() OVERRIDE;
 
     DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(ARB_tree);
 
-    virtual ARB_tree *dup() const = 0;              // create new ARB_tree element from prototype
+    virtual ARB_tree *dup() const = 0;              // create new ARB_tree element from prototype // @@@ elim!
 
     void calcTreeInfo(ARB_tree_info& info);
 

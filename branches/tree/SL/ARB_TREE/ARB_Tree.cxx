@@ -196,33 +196,6 @@ void ARB_tree::calcTreeInfo(ARB_tree_info& info) {
 //      ARB_tree
 
 
-#if defined(DEBUG)
-static bool vtable_ptr_check_done = false; // @@@ elim
-#endif // DEBUG
-
-ARB_tree::ARB_tree(ARB_tree_root *troot)
-    : seq(NULL)
-{
-    // @@@ init all other ARB_tree members!
-
-    tree_root = troot;
-
-#if defined(DEBUG)
-    if (!vtable_ptr_check_done) {
-        GBT_TREE *tree     = this;        // hack-warning: points to part of this!
-        bool      was_leaf = tree->is_leaf;
-
-        // if one of the assertions below fails, then there is a problem with the
-        // vtable-pointer position (grep for FAKE_VTAB_PTR for more info)
-        tree->is_leaf = false; at_assert(!is_leaf);
-        tree->is_leaf = true;  at_assert(is_leaf);
-        tree->is_leaf = was_leaf;
-
-        vtable_ptr_check_done = true;
-    }
-#endif // DEBUG
-}
-
 ARB_tree::~ARB_tree() {
     unlink_from_father(); // @@@ dupped (also done by ~GBT_TREE)
 
