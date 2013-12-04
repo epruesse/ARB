@@ -321,8 +321,8 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
                     long             dummy         = 0;
                     AWT_species_set *new_root_setl = ssr->search(root_setl, &dummy);
                     AWT_species_set *new_root_setr = ssr->search(root_setr, &dummy);
-                    AP_tree         *new_rootl     = (AP_tree *) new_root_setl->node;
-                    AP_tree         *new_rootr     = (AP_tree *) new_root_setr->node;
+                    AP_tree         *new_rootl     = new_root_setl->node;
+                    AP_tree         *new_rootr     = new_root_setr->node;
 
                     new_rootl->set_root(); // set root correctly
                     new_rootr->set_root(); // set root correctly
