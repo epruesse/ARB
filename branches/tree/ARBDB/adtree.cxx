@@ -245,7 +245,7 @@ static char *gbt_write_tree_rek_new(const GBT_TREE *node, char *dest, long mode)
     }
 }
 
-static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree, int plain_only) {
+static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree) {
     /*! writes a tree to the database.
      *
      * If tree is loaded by function GBT_read_tree(..) then 'tree_name' should be NULL
@@ -253,13 +253,9 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
      *
      * To copy a tree call GB_copy(dest,source);
      * or set recursively all tree->gb_node variables to zero (that unlinks the tree),
-     *
-     * if 'plain_only' == 1 only the plain tree string is written
      */
 
     GB_ERROR error = 0;
-
-    gb_assert(implicated(plain_only, tree_name == 0));
 
     if (tree) {
         if (tree_name) {
@@ -281,12 +277,10 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
         gb_assert(gb_tree || error);
 
         if (!error) {
-            if (!plain_only) {
-                // mark all old style tree data for deletion
-                GBDATA *gb_node;
-                for (gb_node = GB_entry(gb_tree, "node"); gb_node; gb_node = GB_nextEntry(gb_node)) {
-                    GB_write_usr_private(gb_node, 1);
-                }
+            // mark all old style tree data for deletion
+            GBDATA *gb_node;
+            for (gb_node = GB_entry(gb_tree, "node"); gb_node; gb_node = GB_nextEntry(gb_node)) {
+                GB_write_usr_private(gb_node, 1); // used below
             }
 
             // build tree-string and save to DB
@@ -304,7 +298,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
             }
         }
 
-        if (!plain_only && !error) {
+        if (!error) {
             // save nodes to DB
             long size         = 0;
             error             = gbt_write_tree_nodes(gb_tree, tree, &size); // reports number of nodes in 'size'
@@ -332,10 +326,10 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
 }
 
 GB_ERROR GBT_write_tree(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree) {
-    return gbt_write_tree(gb_main, NULL, tree_name, tree, NULL);
+    return gbt_write_tree(gb_main, NULL, tree_name, tree);
 }
 GB_ERROR GBT_overwrite_tree(GBDATA *gb_main, GBDATA *gb_tree, GBT_TREE *tree) {
-    return gbt_write_tree(gb_main, gb_tree, NULL, tree, NULL);
+    return gbt_write_tree(gb_main, gb_tree, NULL, tree);
 }
 GB_ERROR GBT_write_tree_remark(GBDATA *gb_main, const char *tree_name, const char *remark) {
     return GBT_write_string(GBT_find_tree(gb_main, tree_name), "remark", remark);
