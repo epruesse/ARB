@@ -36,7 +36,7 @@
 #define AWAR_DTREE_DENDRO_ZOOM_TEXT "awt/dtree/dendro/zoomtext"
 #define AWAR_DTREE_DENDRO_XPAD      "awt/dtree/dendro/xpadding"
 
-void awt_create_dtree_awars(AW_root *aw_root, AW_default def);
+void awt_create_dtree_awars(AW_root *aw_root, AW_default db);
 
 #define NT_BOX_WIDTH      7 // pixel
 #define NT_ROOT_WIDTH     9

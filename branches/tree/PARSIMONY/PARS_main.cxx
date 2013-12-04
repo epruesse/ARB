@@ -1363,52 +1363,28 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     return aws;
 }
 
-static void create_parsimony_variables(AW_root *aw_root, AW_default def)
-{
-    // parsimony
-#if 0
-    aw_root->awar_float("genetic/m_rate", 0, def);
-    aw_root->awar_int("genetic/input_1", 0, def);
-    aw_root->awar_int("genetic/input_2", 0, def);
-    aw_root->awar_float("genetic/input_3", 0, def);
-    aw_root->awar_float("genetic/input_4", 0, def);
-    aw_root->awar_float("genetic/input_5", 0, def);
-    aw_root->awar_float("genetic/input_6", 0, def);
-    aw_root->awar_float("genetic/input_7", 0, def);
-    aw_root->awar_float("genetic/input_8", 0, def);
-    aw_root->awar_float("genetic/input_9", 0, def);
-    aw_root->awar_float("genetic/input_10", 0, def);
-    aw_root->awar_float("genetic/input_11", 0, def);
-    aw_root->awar_int("genetic/out_1", 0, def);
-    aw_root->awar_float("genetic/out_2", 0, def);
-    aw_root->awar_float("genetic/out_3", 0, def);
-    aw_root->awar_float("genetic/out_4", 0, def);
-    aw_root->awar_float("genetic/out_5", 0, def);
-    aw_root->awar_float("genetic/out_6", 0, def);
-    aw_root->awar_float("genetic/out_7", 0, def);
-    aw_root->awar_float("genetic/out_8", 0, def);
-#endif
+static void create_parsimony_variables(AW_root *aw_root, AW_default db) {
     // kernighan
 
-    aw_root->awar_float("genetic/kh/nodes", 1.7, def);
-    aw_root->awar_int("genetic/kh/maxdepth", 15, def);
-    aw_root->awar_int("genetic/kh/incdepth", 5, def);
+    aw_root->awar_float("genetic/kh/nodes", 1.7, db);
+    aw_root->awar_int("genetic/kh/maxdepth", 15, db);
+    aw_root->awar_int("genetic/kh/incdepth", 5, db);
 
-    aw_root->awar_int("genetic/kh/static/enable", 1, def);
-    aw_root->awar_int("genetic/kh/static/depth0", 2, def);
-    aw_root->awar_int("genetic/kh/static/depth1", 2, def);
-    aw_root->awar_int("genetic/kh/static/depth2", 2, def);
-    aw_root->awar_int("genetic/kh/static/depth3", 2, def);
-    aw_root->awar_int("genetic/kh/static/depth4", 1, def);
+    aw_root->awar_int("genetic/kh/static/enable", 1, db);
+    aw_root->awar_int("genetic/kh/static/depth0", 2, db);
+    aw_root->awar_int("genetic/kh/static/depth1", 2, db);
+    aw_root->awar_int("genetic/kh/static/depth2", 2, db);
+    aw_root->awar_int("genetic/kh/static/depth3", 2, db);
+    aw_root->awar_int("genetic/kh/static/depth4", 1, db);
 
-    aw_root->awar_int("genetic/kh/dynamic/enable", 1, def);
-    aw_root->awar_int("genetic/kh/dynamic/start", 100, def);
-    aw_root->awar_int("genetic/kh/dynamic/maxx", 6, def);
-    aw_root->awar_int("genetic/kh/dynamic/maxy", 150, def);
+    aw_root->awar_int("genetic/kh/dynamic/enable", 1,   db);
+    aw_root->awar_int("genetic/kh/dynamic/start",  100, db);
+    aw_root->awar_int("genetic/kh/dynamic/maxx",   6,   db);
+    aw_root->awar_int("genetic/kh/dynamic/maxy",   150, db);
 
-    aw_root->awar_int("genetic/kh/function_type", AP_QUADRAT_START, def);
+    aw_root->awar_int("genetic/kh/function_type", AP_QUADRAT_START, db);
 
-    awt_create_dtree_awars(aw_root, def);
+    awt_create_dtree_awars(aw_root, db);
 }
 
 static void pars_create_all_awars(AW_root *awr, AW_default aw_def)
