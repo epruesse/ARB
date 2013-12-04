@@ -17,27 +17,9 @@
 
 using namespace std;
 
-// #define ap_assert(x) arb_assert(x)
-
 // ---------------------------------
 //      Section base operations:
 // ---------------------------------
-
-//  constructor/destructor
-//  dup
-//  check_update
-//  copy
-//  ostream&<<
-
-AP_tree_nlen::AP_tree_nlen(AP_tree_root *Tree_root)
-    : AP_tree(Tree_root)
-    , kernighan(AP_NONE)
-    , distance(INT_MAX)
-    , mutation_rate(0)
-{
-    edge[0]  = edge[1]  = edge[2]  = NULL;
-    index[0] = index[1] = index[2] = 0;
-}
 
 AP_tree_nlen *AP_tree_nlen::dup() const {
     return new AP_tree_nlen(const_cast<AP_tree_root*>(get_tree_root()));

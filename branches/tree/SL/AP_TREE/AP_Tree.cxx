@@ -141,14 +141,6 @@ static void ap_tree_node_deleted(GBDATA *, AP_tree *tree) {
     tree->gb_node = 0;
 }
 
-AP_tree::AP_tree(AP_tree_root *tree_rooti)
-    : ARB_tree(tree_rooti)
-    , stack_level(0)
-{
-    gr.clear();
-    br.clear();
-}
-
 AP_tree::~AP_tree() {
     if (gr.callback_exists && gb_node) {
         GB_remove_callback(gb_node, GB_CB_DELETE, makeDatabaseCallback(ap_tree_node_deleted, this));

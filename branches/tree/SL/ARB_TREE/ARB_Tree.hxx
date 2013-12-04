@@ -248,10 +248,10 @@ struct ARB_tree_predicate {
 //      tree who knows its size
 
 struct ARB_countedTree : public ARB_tree {
-    ARB_countedTree(ARB_tree_root *tree_root_)
+    explicit ARB_countedTree(ARB_tree_root *tree_root_)
         : ARB_tree(tree_root_)
     {}
-    virtual ~ARB_countedTree() OVERRIDE {}
+    ~ARB_countedTree() OVERRIDE {}
     DEFINE_TREE_ACCESSORS(ARB_tree_root, ARB_countedTree);
 
     virtual size_t get_leaf_count() const = 0;

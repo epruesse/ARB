@@ -29,10 +29,11 @@
 // --------------------------------------------------------------------------------
 
 struct CompressionTree : public GBT_TREE {
-    int index;                  // master(inner nodes) or sequence(leaf nodes) index
-    int sons;                   // sons with sequence or masters (in subtree)
+    // members initialized by init_indices_and_count_sons
+    int index; // master(inner nodes) or sequence(leaf nodes) index
+    int sons;  // sons with sequence or masters (in subtree)
 
-    virtual ~CompressionTree() {}
+    ~CompressionTree() OVERRIDE {}
 
     DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(CompressionTree);
 };

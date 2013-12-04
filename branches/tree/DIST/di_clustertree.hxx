@@ -139,7 +139,7 @@ class ClusterTree : public ARB_countedTree { // derived from a Noncopyable
 #endif // TRACE_DIST_CALC
 
 public:
-    ClusterTree(ClusterTreeRoot *tree_root_)
+    explicit ClusterTree(ClusterTreeRoot *tree_root_)
         : ARB_countedTree(tree_root_)
         , state(CS_UNKNOWN)
         , leaf_count(0)
@@ -152,7 +152,7 @@ public:
         , worstKnownDistance(NULL)
     {}
 
-    virtual ~ClusterTree() OVERRIDE {
+    ~ClusterTree() OVERRIDE {
         delete worstKnownDistance;
         delete sequenceDists;
         delete branchDists;

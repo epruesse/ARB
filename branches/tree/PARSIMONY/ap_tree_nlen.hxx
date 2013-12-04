@@ -72,8 +72,17 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable
     void createListRekSide(AP_CO_LIST *list, int *cn);
 
 public:
-    AP_tree_nlen(AP_tree_root *tree_root);
-    virtual ~AP_tree_nlen() OVERRIDE {}
+    explicit AP_tree_nlen(AP_tree_root *troot)
+        : AP_tree(troot),
+          kernighan(AP_NONE),
+          distance(INT_MAX),
+          mutation_rate(0)
+    {
+        edge[0]  = edge[1]  = edge[2]  = NULL;
+        index[0] = index[1] = index[2] = 0;
+    }
+    ~AP_tree_nlen() OVERRIDE {}
+
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree_nlen);
 
     // ARB_tree interface

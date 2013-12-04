@@ -298,10 +298,10 @@ class GroupTree : public ARB_countedTree {
     void update_tag_counters();
 public:
 
-    GroupTree(ARB_tree_root *root)
-        : ARB_countedTree(root)
-        , leaf_count(0)
-        , tagged_count(0)
+    explicit GroupTree(ARB_tree_root *root)
+        : ARB_countedTree(root),
+          leaf_count(0),
+          tagged_count(0)
     {}
 
     // ARB_countedTree interface

@@ -234,7 +234,8 @@ class AP_tree : public ARB_tree {
 public: // @@@ fix public member
     AP_tree_members   gr;
     AP_branch_members br;
-    unsigned long     stack_level;
+
+    unsigned long stack_level; // @@@ maybe can be moved to AP_tree_nlen
 
     // ------------------
     //      functions
@@ -268,12 +269,19 @@ private:
     void reorder_subtree(TreeOrder mode);
 
 public:
-    explicit AP_tree(AP_tree_root *tree_root);
-    virtual ~AP_tree() OVERRIDE; // leave this here to force creation of virtual table
+    explicit AP_tree(AP_tree_root *troot)
+        : ARB_tree(troot),
+          stack_level(0)
+    {
+        gr.clear();
+        br.clear();
+    }
+    ~AP_tree() OVERRIDE;
+
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
 
     // ARB_tree interface
-    virtual AP_tree *dup() const OVERRIDE;
+    virtual AP_tree *dup() const OVERRIDE; // @@@ elim
     // ARB_tree interface (end)
 
     void compute_tree(GBDATA *gb_main);
