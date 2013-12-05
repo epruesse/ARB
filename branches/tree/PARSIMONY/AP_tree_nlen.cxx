@@ -21,10 +21,6 @@ using namespace std;
 //      Section base operations:
 // ---------------------------------
 
-AP_tree_nlen *AP_tree_nlen::dup() const {
-    return new AP_tree_nlen(const_cast<AP_tree_root*>(get_tree_root()));
-}
-
 AP_UPDATE_FLAGS AP_tree_nlen::check_update() {
     AP_UPDATE_FLAGS res = AP_tree::check_update();
 

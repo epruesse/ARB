@@ -127,8 +127,8 @@ public:
     long      table_timer;
     AP_rates *rates;
 
-    AP_tree_root(AliView *aliView, const AP_tree& tree_proto, AP_sequence *seq_proto, bool add_delete_callbacks);
-    virtual ~AP_tree_root() OVERRIDE;
+    AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks);
+    ~AP_tree_root() OVERRIDE;
     DEFINE_TREE_ROOT_ACCESSORS(AP_tree_root, AP_tree);
 
     // ARB_tree_root interface
@@ -231,7 +231,7 @@ enum TreeOrder { // contains bit values!
 };
 
 class AP_tree : public ARB_tree {
-public: // @@@ fix public member
+public: // @@@ fix public members
     AP_tree_members   gr;
     AP_branch_members br;
 
@@ -240,7 +240,7 @@ public: // @@@ fix public member
     // ------------------
     //      functions
 private:
-    void load_node_info();                          // load linewidth etc from DB
+    void load_node_info();    // load linewidth etc from DB
 
     char& linewidth_ref() {
         AP_tree_members& tm = get_father()->gr;
@@ -280,10 +280,7 @@ public:
 
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
 
-    // ARB_tree interface
-    virtual AP_tree *dup() const OVERRIDE; // @@@ elim
-    // ARB_tree interface (end)
-
+    void load_subtree_info(); // recursive load_node_info (no need to call, called by loadFromDB)
     void compute_tree(GBDATA *gb_main);
 
     int update_leafsum_viewsum(); // count all visible leafs -> gr.viewsum + gr.leafsum
@@ -314,8 +311,6 @@ public:
     void scale_branchlengths(double factor);
     void bootstrap2branchlen();                     // copy bootstraps to branchlengths
     void branchlen2bootstrap();                     // copy branchlengths to bootstraps
-
-    virtual void move_gbt_info(GBT_TREE *tree) OVERRIDE; // @@@ elim?
 
     GB_ERROR tree_write_tree_rek(GBDATA *gb_tree);
     GB_ERROR relink() __ATTR__USERESULT; // @@@ used ? if yes -> move to AP_tree_root or ARB_tree_root
@@ -373,6 +368,12 @@ public:
     bool hasName(const char *Name) const { return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0; }
 
     void reorder_tree(TreeOrder mode);
+};
+
+struct AP_TreeNodeFactory : public RootedTreeNodeFactory {
+    virtual ARB_tree *makeNode(ARB_tree_root *root) const {
+        return new AP_tree(DOWNCAST(AP_tree_root*, root));
+    }
 };
 
 #else

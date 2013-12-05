@@ -32,16 +32,22 @@
 
 typedef void (*ARB_tree_node_del_cb)(GBDATA*, class ARB_tree*);
 
+class ARB_tree_root;
 class ARB_tree;
 class ARB_edge;
 class AP_weights;
 class AP_sequence;
 class AliView;
 
-class ARB_tree_root : virtual Noncopyable {
-    AliView     *ali;
-    ARB_tree    *rootNode;                          // root node of the tree
-    ARB_tree    *nodeTemplate; // @@@ elim? use TreeNodeFactory here?
+struct RootedTreeNodeFactory { // acts similar to TreeNodeFactory for trees with root
+    virtual ~RootedTreeNodeFactory() {}
+    virtual ARB_tree *makeNode(ARB_tree_root *root) const = 0;
+};
+
+class ARB_tree_root : public TreeNodeFactory, virtual Noncopyable {
+    AliView  *ali;
+    ARB_tree *rootNode;                             // root node of the tree
+
     AP_sequence *seqTemplate;
 
     // following variables are set, if the tree has been loaded from DB
@@ -51,6 +57,8 @@ class ARB_tree_root : virtual Noncopyable {
     bool isLinkedToDB;
     bool addDeleteCallbacks;
 
+    RootedTreeNodeFactory *nodeMaker;
+
 protected:
     void set_gb_tree(GBDATA *gbTree) {
         at_assert(implicated(gb_tree, gb_tree == gbTree));
@@ -59,9 +67,11 @@ protected:
     }
 
 public:
-    ARB_tree_root(AliView *aliView, const ARB_tree& nodeTempl, AP_sequence *seqTempl, bool add_delete_callbacks);
-
+    ARB_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seqTempl, bool add_delete_callbacks);
     virtual ~ARB_tree_root();
+
+    // TreeNodeFactory interface
+    inline GBT_TREE *makeNode() const OVERRIDE;
 
     virtual void change_root(ARB_tree *old, ARB_tree *newroot);
 
@@ -79,8 +89,6 @@ public:
 
     ARB_tree *get_root_node() { return rootNode; }
     const ARB_tree *get_root_node() const { return rootNode; }
-
-    const ARB_tree *get_nodeTemplate() const { return nodeTemplate; }
 
     virtual GB_ERROR loadFromDB(const char *name) __ATTR__USERESULT;
     virtual GB_ERROR saveToDB() __ATTR__USERESULT;
@@ -140,16 +148,12 @@ protected:
         }
     }
 
-    virtual void move_gbt_info(GBT_TREE *tree); // @@@ elim?
-
     void set_tree_root(ARB_tree_root *new_root);
     ARB_tree_root *get_tree_root() const { return tree_root; }
 
     AP_sequence *take_seq() {                       // afterwards not has no seq and caller is responsible for sequence
         AP_sequence *result = seq;
-
         seq = NULL;
-
         return result;
     }
     void replace_seq(AP_sequence *sequence);
@@ -158,14 +162,10 @@ public:
     ARB_tree(ARB_tree_root *root)
         : tree_root(root),
           seq(NULL)
-    {
-
-    }
+    {}
     ~ARB_tree() OVERRIDE;
 
     DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(ARB_tree);
-
-    virtual ARB_tree *dup() const = 0;              // create new ARB_tree element from prototype // @@@ elim!
 
     void calcTreeInfo(ARB_tree_info& info);
 
@@ -217,6 +217,10 @@ public:
     bool contains_marked_species();
 
 };
+
+inline GBT_TREE *ARB_tree_root::makeNode() const {
+    return nodeMaker->makeNode(const_cast<ARB_tree_root*>(this));
+}
 
 struct ARB_tree_predicate {
     virtual ~ARB_tree_predicate() {}

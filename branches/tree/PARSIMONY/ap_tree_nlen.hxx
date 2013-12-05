@@ -85,10 +85,6 @@ public:
 
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree_nlen);
 
-    // ARB_tree interface
-    virtual AP_tree_nlen *dup() const OVERRIDE;
-    // ARB_tree interface (end)
-
     void     unhash_sequence();
     AP_FLOAT costs(char *mutPerSite = NULL);        // cost of a tree (number of changes ..)
 
@@ -170,6 +166,12 @@ public:
 
     friend      class AP_tree_edge;
     friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);
+};
+
+struct AP_TreeNlenNodeFactory : public RootedTreeNodeFactory {
+    ARB_tree *makeNode(ARB_tree_root *root) const OVERRIDE {
+        return new AP_tree_nlen(DOWNCAST(AP_tree_root*, root));
+    }
 };
 
 // ---------------------

@@ -282,8 +282,8 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
 
     GB_begin_transaction(gb_main);
 
-    AP_tree_root rsource(new AliView(gb_main), AP_tree(0), NULL, false);
-    AP_tree_root rdest  (new AliView(gb_main), AP_tree(0), NULL, false);
+    AP_tree_root rsource(new AliView(gb_main), new AP_TreeNodeFactory, NULL, false);
+    AP_tree_root rdest  (new AliView(gb_main), new AP_TreeNodeFactory, NULL, false);
 
     arb_progress progress("Comparing Topologies");
 

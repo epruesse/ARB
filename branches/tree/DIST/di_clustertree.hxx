@@ -56,7 +56,7 @@ class ClusterTreeRoot : public ARB_tree_root {
 
 public:
     ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_);
-    virtual ~ClusterTreeRoot() OVERRIDE;
+    virtual ~ClusterTreeRoot() OVERRIDE {}
 
     DEFINE_DOWNCAST_ACCESSORS(ClusterTree, get_root_node, ARB_tree_root::get_root_node());
 
@@ -160,10 +160,6 @@ public:
     }
     DEFINE_TREE_ACCESSORS(ClusterTreeRoot, ClusterTree);
 
-    virtual ClusterTree *dup() const OVERRIDE {              // create new ClusterTree element from prototype
-        return new ClusterTree(const_cast<ClusterTreeRoot*>(get_tree_root()));
-    }
-
     size_t get_cluster_count() const { return clus_count; }
     size_t get_leaf_count() const OVERRIDE { return leaf_count; }
     size_t get_depth() const { return depth; }
@@ -202,6 +198,12 @@ public:
     AP_FLOAT get_min_bases() const { return min_bases; }
 
     void oblivion(bool forgetDistances); // forget unneeded data
+};
+
+struct ClusterTreeNodeFactory : public RootedTreeNodeFactory {
+    virtual ARB_tree *makeNode(ARB_tree_root *root) const {
+        return new ClusterTree(DOWNCAST(ClusterTreeRoot*, root));
+    }
 };
 
 struct UseAnyTree : public ARB_tree_predicate {

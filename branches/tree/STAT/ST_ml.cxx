@@ -522,7 +522,7 @@ GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
                 }
                 MostLikelySeq *seq_templ = new MostLikelySeq(aliview, this); // @@@ error: never freed! (should be freed when freeing tree_root!)
 
-                tree_root = new AP_tree_root(aliview, AP_tree(0), seq_templ, false);
+                tree_root = new AP_tree_root(aliview, new AP_TreeNodeFactory, seq_templ, false);
                 // do not delete 'aliview' or 'seq_templ' (they belong to 'tree_root' now)
             }
 

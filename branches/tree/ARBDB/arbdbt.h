@@ -88,7 +88,7 @@ struct TreeNodeFactory {
 };
 
 struct GBT_TREE_NodeFactory : public TreeNodeFactory {
-    virtual GBT_TREE *makeNode() const OVERRIDE { return new GBT_TREE; }
+    GBT_TREE *makeNode() const OVERRIDE { return new GBT_TREE; }
 };
 
 enum GBT_TreeRemoveType {

@@ -305,7 +305,6 @@ public:
     {}
 
     // ARB_countedTree interface
-    virtual GroupTree *dup() const OVERRIDE { return new GroupTree(const_cast<ARB_tree_root*>(get_tree_root())); }
     virtual void init_tree() OVERRIDE { update_leaf_counters(); }
     // ARB_countedTree interface end
 
@@ -325,6 +324,12 @@ public:
     void clear_tags();
 
     double tagged_rate() const { return double(get_tagged_count())/get_leaf_count(); }
+};
+
+struct GroupTreeNodeFactory : public RootedTreeNodeFactory {
+    virtual ARB_tree *makeNode(ARB_tree_root *root) const {
+        return new GroupTree(root);
+    }
 };
 
 size_t GroupTree::update_leaf_counters() {
@@ -464,7 +469,7 @@ public:
 void GroupBuilder::load_tree() {
     di_assert(!tree_root);
 
-    tree_root = new ARB_tree_root(new AliView(gb_main), GroupTree(NULL), NULL, false);
+    tree_root = new ARB_tree_root(new AliView(gb_main), new GroupTreeNodeFactory, NULL, false);
     error     = tree_root->loadFromDB(tree_name.c_str());
 
     if (error) {

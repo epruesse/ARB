@@ -26,15 +26,15 @@ static void tree_deleted_cbwrapper(GBDATA *gb_tree, ARB_tree_root *troot) {
 }
 
 
-ARB_tree_root::ARB_tree_root(AliView *aliView, const ARB_tree& nodeTempl, AP_sequence *seqTempl, bool add_delete_callbacks)
-    : ali(aliView)
-    , rootNode(NULL)
-    , nodeTemplate(nodeTempl.dup())
-    , seqTemplate(seqTempl ? seqTempl->dup() : NULL)
-    , tree_name(NULL)
-    , gb_tree(NULL)
-    , isLinkedToDB(false)
-    , addDeleteCallbacks(add_delete_callbacks)
+ARB_tree_root::ARB_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seqTempl, bool add_delete_callbacks)
+    : ali(aliView),
+      rootNode(NULL),
+      seqTemplate(seqTempl ? seqTempl->dup() : NULL),
+      tree_name(NULL),
+      gb_tree(NULL),
+      isLinkedToDB(false),
+      addDeleteCallbacks(add_delete_callbacks),
+      nodeMaker(nodeMaker_)
 {
 #if defined(DEBUG)
     at_assert(ali);
@@ -52,8 +52,8 @@ ARB_tree_root::~ARB_tree_root() {
     delete rootNode;
     at_assert(!rootNode);
     delete ali;
-    delete nodeTemplate;
     delete seqTemplate;
+    delete nodeMaker;
 
     if (gb_tree) GB_remove_callback(gb_tree, GB_CB_DELETE, makeDatabaseCallback(tree_deleted_cbwrapper, this));
     free(tree_name);
@@ -80,6 +80,7 @@ GB_ERROR ARB_tree_root::loadFromDB(const char *name) {
     GBDATA   *gb_main = get_gb_main();
     GB_ERROR  error   = GB_push_transaction(gb_main);
 
+
     if (!error) {
         ARB_tree *old_root = get_root_node();
         if (old_root) {
@@ -93,18 +94,14 @@ GB_ERROR ARB_tree_root::loadFromDB(const char *name) {
             freenull(tree_name);
         }
 
-        GBT_TREE *gbt_tree   = GBT_read_tree(gb_main, name, GBT_TREE_NodeFactory()); // @@@ should use an ARB_tree_root NodeFactory
-        if (!gbt_tree) error = GB_await_error();
+        ARB_tree *arb_tree   = DOWNCAST(ARB_tree*, GBT_read_tree(gb_main, name, *this));
+        if (!arb_tree) error = GB_await_error();
         else {
             gb_tree             = GBT_find_tree(gb_main, name);
             if (!gb_tree) error = GB_await_error();
             else {
                 error = GB_add_callback(gb_tree, GB_CB_DELETE, makeDatabaseCallback(tree_deleted_cbwrapper, this));
                 if (!error) {
-                    ARB_tree *arb_tree = nodeTemplate->dup();
-                    arb_tree->move_gbt_info(gbt_tree); // @@@ wrong
-
-
                     change_root(NULL, arb_tree);
                     tree_name    = strdup(name);
                     isLinkedToDB = false;
@@ -113,7 +110,7 @@ GB_ERROR ARB_tree_root::loadFromDB(const char *name) {
                     gb_tree = NULL;
                 }
             }
-            delete gbt_tree;
+            if (error) delete arb_tree;
         }
     }
 
@@ -204,27 +201,6 @@ ARB_tree::~ARB_tree() {
     }
 
     delete seq;
-}
-
-void ARB_tree::move_gbt_info(GBT_TREE *tree) { // @@@ eliminate, instead already create tree with correct TreeNodeFactory
-    is_leaf  = tree->is_leaf;
-    leftlen  = tree->leftlen;
-    rightlen = tree->rightlen;
-    gb_node  = tree->gb_node;
-
-    reassign(name, tree->name);
-    reassign(remark_branch, tree->remark_branch);
-
-    if (!is_leaf) {                                 // inner node
-        leftson         = dup();                    // creates two clones of 'this'
-        leftson->father = this;
-
-        rightson         = dup();
-        rightson->father = this;
-
-        get_leftson()->move_gbt_info(tree->leftson);
-        get_rightson()->move_gbt_info(tree->rightson);
-    }
 }
 
 bool ARB_tree::is_inside(const ARB_tree *subtree) const {

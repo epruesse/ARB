@@ -220,7 +220,7 @@ void ArbParsimony::generate_tree(WeightedFilter *pars_weighted_filter) {
     }
 
     tree = new AWT_graphic_parsimony(*this, aliview->get_gb_main(), PARS_map_viewer);
-    tree->init(AP_tree_nlen(0), aliview, seq_templ, true, false);
+    tree->init(new AP_TreeNlenNodeFactory, aliview, seq_templ, true, false);
     ap_main->set_tree_root(tree);
 }
 

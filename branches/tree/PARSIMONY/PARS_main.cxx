@@ -146,7 +146,7 @@ static long transform_gbd_to_leaf(const char *key, long val, void *) {
 
     GBDATA       *gb_node = (GBDATA *)val;
     AP_tree_root *troot   = ap_main->get_tree_root()->tree_static;
-    AP_tree_nlen *leaf    = DOWNCAST(AP_tree_nlen*, troot->get_nodeTemplate()->dup());
+    AP_tree_nlen *leaf    = DOWNCAST(AP_tree_nlen*, troot->makeNode());
 
     leaf->gb_node = gb_node;
     leaf->name    = strdup(key);

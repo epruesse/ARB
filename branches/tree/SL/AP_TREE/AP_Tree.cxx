@@ -82,15 +82,15 @@ AP_rates::~AP_rates() { delete [] rates; }
  ************           AP_tree_root                    **********
  *****************************************************************************************/
 
-AP_tree_root::AP_tree_root(AliView *aliView, const AP_tree& tree_proto, AP_sequence *seq_proto, bool add_delete_callbacks)
-    : ARB_tree_root(aliView, tree_proto, seq_proto, add_delete_callbacks)
-    , root_changed_cb(NULL), root_changed_cd(NULL)
-    , node_deleted_cb(NULL), node_deleted_cd(NULL)
-    , gb_tree_gone(NULL)
-    , tree_timer(0)
-    , species_timer(0)
-    , table_timer(0)
-    , rates(NULL)
+AP_tree_root::AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks)
+    : ARB_tree_root(aliView, nodeMaker_, seq_proto, add_delete_callbacks),
+      root_changed_cb(NULL), root_changed_cd(NULL),
+      node_deleted_cb(NULL), node_deleted_cd(NULL),
+      gb_tree_gone(NULL),
+      tree_timer(0),
+      species_timer(0),
+      table_timer(0),
+      rates(NULL)
 {
     GBDATA         *gb_main = get_gb_main();
     GB_transaction  ta(gb_main);
@@ -150,10 +150,6 @@ AP_tree::~AP_tree() {
     if (root) root->inform_about_delete(this);
 }
 
-AP_tree *AP_tree::dup() const {
-    return new AP_tree(const_cast<AP_tree_root*>(get_tree_root()));
-}
-
 void AP_tree::clear_branch_flags() {
     br.clear();
     if (!is_leaf) {
@@ -166,7 +162,7 @@ void AP_tree::insert(AP_tree *new_brother) {
     ASSERT_VALID_TREE(this);
     ASSERT_VALID_TREE(new_brother);
 
-    AP_tree  *new_tree = dup();
+    AP_tree  *new_tree = DOWNCAST(AP_tree*, get_tree_root()->makeNode());
     AP_FLOAT  laenge;
 
     new_tree->leftson  = this;
@@ -612,12 +608,13 @@ void AP_tree::load_node_info() {
     gr.grouped         = tree_read_byte (gb_node, "grouped",         0);
 }
 
-void AP_tree::move_gbt_info(GBT_TREE *tree) {
-    ARB_tree::move_gbt_info(tree);
+void AP_tree::load_subtree_info() {
     load_node_info();
+    if (!is_leaf) {
+        get_leftson()->load_subtree_info();
+        get_rightson()->load_subtree_info();
+    }
 }
-
-
 
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
@@ -914,7 +911,11 @@ void AP_tree::compute_tree(GBDATA *gb_main) {
 
 GB_ERROR AP_tree_root::loadFromDB(const char *name) {
     GB_ERROR error = ARB_tree_root::loadFromDB(name);
-    update_timers();                                // maybe after link() ?
+    if (!error) {
+        AP_tree *rNode = DOWNCAST(AP_tree*, get_root_node());
+        rNode->load_subtree_info();
+    }
+    update_timers(); // maybe after link() ? // @@@ really do if error?
     return error;
 }
 
@@ -1927,3 +1928,4 @@ void AP_tree::reorder_tree(TreeOrder mode) {
     update_leafsum_viewsum();
     reorder_subtree(mode);
 }
+
