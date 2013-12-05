@@ -356,9 +356,11 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick) {
 
         NT_remove_species_in_tree_from_hash(rootNode(), hash);
 
-        long       max_species = 0;
+        long max_species = 0;
         GBS_hash_do_loop(hash, count_hash_elements, &max_species);
-        InsertData isits(quick, max_species, 1); // 1 extra step for calc_branchlengths below
+
+        int        implicitSteps = quick ? 1 : 2; // 1 step for calc_branchlengths, 1 step for NNI 
+        InsertData isits(quick, max_species, implicitSteps);
 
         GB_begin_transaction(GLOBAL_gb_main);
         GBS_hash_do_loop(hash, transform_gbd_to_leaf, NULL);
