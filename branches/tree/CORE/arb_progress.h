@@ -115,7 +115,7 @@ public:
     virtual void update_gauge(double gauge)            = 0;
 
 #if defined(DUMP_PROGRESS)
-    void dump() OVERRIDE;
+    virtual void dump();
 #endif
 
     void child_sets_text(int level, const char *text) {
