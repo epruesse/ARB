@@ -584,20 +584,20 @@ void AP_tree::set_root() {
 }
 
 
-inline short tree_read_byte(GBDATA *tree, const char *key, int init) {
-    GBDATA *gbd;
-    if (!tree) return init;
-    gbd = GB_entry(tree, key);
-    if (!gbd) return init;
-    return (short)GB_read_byte(gbd);
+inline int tree_read_byte(GBDATA *tree, const char *key, int init) {
+    if (tree) {
+        GBDATA *gbd = GB_entry(tree, key);
+        if (gbd) return GB_read_byte(gbd);
+    }
+    return init;
 }
 
-inline float tree_read_float(GBDATA *tree, const char *key, double init) {
-    GBDATA *gbd;
-    if (!tree) return (float)init;
-    gbd = GB_entry(tree, key);
-    if (!gbd) return (float)init;
-    return (float)GB_read_float(gbd);
+inline float tree_read_float(GBDATA *tree, const char *key, float init) {
+    if (tree) {
+        GBDATA *gbd = GB_entry(tree, key);
+        if (gbd) return GB_read_float(gbd);
+    }
+    return init;
 }
 
 
