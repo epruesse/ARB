@@ -1889,6 +1889,7 @@ void AP_tree::reorder_subtree(TreeOrder mode) {
 void AP_tree::reorder_tree(TreeOrder mode) {
     /*! beautify tree (does not change topology, only swaps branches)
      */
+    GB_transaction ta(get_tree_root()->get_gb_main());
     update_subtree_information();
     reorder_subtree(mode);
 }
