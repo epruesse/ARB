@@ -21,6 +21,9 @@
 #ifndef DOWNCAST_H
 #include <downcast.h>
 #endif
+#ifndef ROOTEDTREE_H
+#include <RootedTree.h>
+#endif
 
 #define at_assert(cond) arb_assert(cond)
 
@@ -44,7 +47,7 @@ struct RootedTreeNodeFactory { // acts similar to TreeNodeFactory for trees with
     virtual ARB_seqtree *makeNode(ARB_seqtree_root *root) const = 0;
 };
 
-class ARB_seqtree_root : public TreeNodeFactory, virtual Noncopyable {
+class ARB_seqtree_root : public TreeRoot, public TreeNodeFactory, virtual Noncopyable {
     AliView     *ali;
     ARB_seqtree *rootNode; // root node of the tree
 
@@ -116,7 +119,7 @@ struct ARB_tree_info {
 };
 
 
-class ARB_seqtree : public GBT_TREE { // derived from Noncopyable
+class ARB_seqtree : public RootedTree { // derived from Noncopyable
     friend void     ARB_seqtree_root::change_root(ARB_seqtree *old, ARB_seqtree *newroot);
     friend GB_ERROR ARB_seqtree_root::loadFromDB(const char *name);
     friend GB_ERROR ARB_seqtree_root::linkToDB(int *zombies, int *duplicates);

@@ -828,6 +828,7 @@ ARCHS_TREE = \
 		$(ARCHS_SEQUENCE) \
 		SL/FILTER/FILTER.a \
 		SL/ARB_TREE/ARB_TREE.a \
+		SL/ROOTED_TREE/ROOTED_TREE.a \
 
 # parsimony tree (used by NTREE, PARSIMONY, STAT(->EDIT4), DIST(obsolete!))
 ARCHS_AP_TREE = \
@@ -1272,6 +1273,7 @@ SL/PRONUC/PRONUC.dummy:			links_non_perl
 SL/PTCLEAN/PTCLEAN.dummy:		links_non_perl link_db
 SL/REFENTRIES/REFENTRIES.dummy:		links_non_perl
 SL/REGEXPR/REGEXPR.dummy:		links_non_perl
+SL/ROOTED_TREE/ROOTED_TREE.dummy:	links_non_perl
 SL/SEQIO/SEQIO.dummy:			links_non_perl
 SL/SEQUENCE/SEQUENCE.dummy:		links_non_perl
 SL/TRANSLATE/TRANSLATE.dummy:		links_non_perl
@@ -1977,6 +1979,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	SL/ROOTED_TREE/ROOTED_TREE.test \
 	SL/NEIGHBOURJOIN/NEIGHBOURJOIN.test \
 	SL/NDS/NDS.test \
 	ARB_GDE/ARB_GDE.test \
