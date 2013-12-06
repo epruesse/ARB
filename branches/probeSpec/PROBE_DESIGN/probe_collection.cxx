@@ -238,7 +238,7 @@ double ArbProbeMatchWeighting::positionalWeight(int nPos, int nLength) const
 {
   double dS       = -(::log(10) / Width);
   double dP       = ((2.0 * nPos - nLength) / nLength) - Bias;
-  double dWeight  = ::exp(dS *dP * dP);
+  double dWeight  = ::exp(dS * dP * dP);
 
   return (dWeight);
 }

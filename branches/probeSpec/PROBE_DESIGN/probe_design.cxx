@@ -2448,7 +2448,7 @@ void probe_match_clear_event(AW_window *aww, AW_CL cl_Context)
 {
   ArbPM_Context*  pContext  = (ArbPM_Context*)cl_Context;
 
-  int action = aw_question("Probe Match with Specificity",
+  int action = aw_question("probe_match_with_specificity_clear",
                            "Do you want to clear the probe match results?",
                            "Yes,No");
 
@@ -2459,6 +2459,9 @@ void probe_match_clear_event(AW_window *aww, AW_CL cl_Context)
       AW_root*  root = aww->get_root();
 
       g_results_manager.reset();
+
+      root->awar(AWAR_PC_HAS_RESULTS)->write_int(0);
+      root->awar(AWAR_PMC_MATCH_NHITS)->write_int(0);
 
       // Force a refresh of the phylogenic tree
       allow_probe_match_event = false;
@@ -2695,7 +2698,7 @@ void probe_collection_save_file_selection_event(Widget dialog, XtPointer client_
   if (nResult == 0)
   {
     // File already exists. Overwrite?
-    bWrite = (aw_question("Probe Collection", "File already exists. Overwrite?", "YES,NO") == 0);
+    bWrite = (aw_question("probe_collection_save", "File already exists. Overwrite?", "YES,NO") == 0);
   }
 
   if (bWrite)

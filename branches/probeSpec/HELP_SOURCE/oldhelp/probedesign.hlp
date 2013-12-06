@@ -58,6 +58,13 @@ SECTION         PARAMETERS
 
                      Minimum percentage of marked species to match a probe.
 
+		Allowable mismatches:
+
+                     Specifies the number of sequence mismatches allowed in a potential probe.
+                     Defaults to zero. A non-zero value can be useful in designing probes
+                     to match a large clade but where exact matches with good coverage is
+                     unlikely.
+
 		ECOLI-position:
 
                                         Restricts the target position.
