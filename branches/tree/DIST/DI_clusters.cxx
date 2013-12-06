@@ -298,7 +298,7 @@ class GroupTree : public ARB_countedTree {
     void update_tag_counters();
 public:
 
-    explicit GroupTree(ARB_tree_root *root)
+    explicit GroupTree(ARB_seqtree_root *root)
         : ARB_countedTree(root),
           leaf_count(0),
           tagged_count(0)
@@ -327,7 +327,7 @@ public:
 };
 
 struct GroupTreeNodeFactory : public RootedTreeNodeFactory {
-    virtual ARB_tree *makeNode(ARB_tree_root *root) const {
+    virtual ARB_seqtree *makeNode(ARB_seqtree_root *root) const {
         return new GroupTree(root);
     }
 };
@@ -402,7 +402,7 @@ typedef map<GroupTree*, ClusterPtr> Group2Cluster;
 class GroupBuilder : virtual Noncopyable {
     GBDATA         *gb_main;
     string          tree_name;
-    ARB_tree_root  *tree_root;
+    ARB_seqtree_root  *tree_root;
     Group_Action    action;                         // create or delete ?
     Species2Tip     species2tip;                    // map speciesName -> leaf
     ARB_ERROR       error;
@@ -469,7 +469,7 @@ public:
 void GroupBuilder::load_tree() {
     di_assert(!tree_root);
 
-    tree_root = new ARB_tree_root(new AliView(gb_main), new GroupTreeNodeFactory, NULL, false);
+    tree_root = new ARB_seqtree_root(new AliView(gb_main), new GroupTreeNodeFactory, NULL, false);
     error     = tree_root->loadFromDB(tree_name.c_str());
 
     if (error) {
@@ -522,7 +522,7 @@ class HasntCurrentClusterPrefix : public ARB_tree_predicate {
     const GroupBuilder& builder;
 public:
     HasntCurrentClusterPrefix(const GroupBuilder& builder_) : builder(builder_) {}
-    bool selects(const ARB_tree& tree) const OVERRIDE {
+    bool selects(const ARB_seqtree& tree) const OVERRIDE {
         const char *groupname        = tree.group_name();
         bool        hasClusterPrefix = groupname && builder.matches_current_prefix(groupname);
         return !hasClusterPrefix;
@@ -538,7 +538,7 @@ string concatenate_name_parts(const list<string>& namepart) {
 }
 
 struct UseTreeRoot : public ARB_tree_predicate {
-    bool selects(const ARB_tree& tree) const OVERRIDE { return tree.is_root_node(); }
+    bool selects(const ARB_seqtree& tree) const OVERRIDE { return tree.is_root_node(); }
 };
 
 string GroupBuilder::generate_group_name(ClusterPtr cluster, const GroupTree *group_node) {

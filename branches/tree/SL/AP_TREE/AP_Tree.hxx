@@ -111,7 +111,7 @@ class AP_tree;
 typedef void (*AP_rootChangedCb)(void *cd, AP_tree *old, AP_tree *newroot);
 typedef void (*AP_nodeDelCb)(void *cd, AP_tree *del);
 
-class AP_tree_root : public ARB_tree_root { // derived from a Noncopyable
+class AP_tree_root : public ARB_seqtree_root { // derived from a Noncopyable
     AP_rootChangedCb  root_changed_cb;
     void             *root_changed_cd;
     AP_nodeDelCb      node_deleted_cb;
@@ -120,7 +120,7 @@ class AP_tree_root : public ARB_tree_root { // derived from a Noncopyable
     GBDATA *gb_species_data;                        // @@@ needed ?
 
 public:
-    GBDATA   *gb_tree_gone;                         // if all leafs have been removed by tree operations, remember 'ARB_tree_root::gb_tree' here (see change_root)
+    GBDATA   *gb_tree_gone;                         // if all leafs have been removed by tree operations, remember 'ARB_seqtree_root::gb_tree' here (see change_root)
     GBDATA   *gb_table_data;
     long      tree_timer;
     long      species_timer;
@@ -131,9 +131,9 @@ public:
     ~AP_tree_root() OVERRIDE;
     DEFINE_TREE_ROOT_ACCESSORS(AP_tree_root, AP_tree);
 
-    // ARB_tree_root interface
+    // ARB_seqtree_root interface
 
-    virtual void change_root(ARB_tree *old, ARB_tree *newroot) OVERRIDE;
+    virtual void change_root(ARB_seqtree *old, ARB_seqtree *newroot) OVERRIDE;
 
     virtual GB_ERROR loadFromDB(const char *name) OVERRIDE;
     virtual GB_ERROR saveToDB() OVERRIDE;
@@ -230,7 +230,7 @@ enum TreeOrder { // contains bit values!
     BIG_BRANCHES_TO_CENTER = 2, // bit 1 = center or edge
 };
 
-class AP_tree : public ARB_tree {
+class AP_tree : public ARB_seqtree {
 public: // @@@ fix public members
     AP_tree_members   gr;
     AP_branch_members br;
@@ -272,7 +272,7 @@ private:
 
 public:
     explicit AP_tree(AP_tree_root *troot)
-        : ARB_tree(troot),
+        : ARB_seqtree(troot),
           stack_level(0)
     {
         gr.clear();
@@ -310,7 +310,7 @@ public:
     void branchlen2bootstrap();                     // copy branchlengths to bootstraps
 
     GB_ERROR tree_write_tree_rek(GBDATA *gb_tree);
-    GB_ERROR relink() __ATTR__USERESULT; // @@@ used ? if yes -> move to AP_tree_root or ARB_tree_root
+    GB_ERROR relink() __ATTR__USERESULT; // @@@ used ? if yes -> move to AP_tree_root or ARB_seqtree_root
 
     virtual AP_UPDATE_FLAGS check_update();
 
@@ -368,7 +368,7 @@ public:
 };
 
 struct AP_TreeNodeFactory : public RootedTreeNodeFactory {
-    virtual ARB_tree *makeNode(ARB_tree_root *root) const {
+    virtual ARB_seqtree *makeNode(ARB_seqtree_root *root) const {
         return new AP_tree(DOWNCAST(AP_tree_root*, root));
     }
 };

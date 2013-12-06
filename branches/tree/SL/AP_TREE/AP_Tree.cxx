@@ -83,7 +83,7 @@ AP_rates::~AP_rates() { delete [] rates; }
  *****************************************************************************************/
 
 AP_tree_root::AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks)
-    : ARB_tree_root(aliView, nodeMaker_, seq_proto, add_delete_callbacks),
+    : ARB_seqtree_root(aliView, nodeMaker_, seq_proto, add_delete_callbacks),
       root_changed_cb(NULL), root_changed_cd(NULL),
       node_deleted_cb(NULL), node_deleted_cd(NULL),
       gb_tree_gone(NULL),
@@ -200,9 +200,9 @@ void AP_tree::insert(AP_tree *new_brother) {
 }
 
 #if defined(WARN_TODO)
-#warning move to ARB_tree ?
+#warning move to ARB_seqtree ?
 #endif
-void AP_tree_root::change_root(ARB_tree *oldroot, ARB_tree *newroot) {
+void AP_tree_root::change_root(ARB_seqtree *oldroot, ARB_seqtree *newroot) {
     if (root_changed_cb) {
         root_changed_cb(root_changed_cd, DOWNCAST(AP_tree*, oldroot), DOWNCAST(AP_tree*, newroot));
     }
@@ -220,7 +220,7 @@ void AP_tree_root::change_root(ARB_tree *oldroot, ARB_tree *newroot) {
             gb_tree_gone = gbtree;                  // remember for deletion (done in AP_tree::save)
         }
     }
-    ARB_tree_root::change_root(oldroot, newroot);
+    ARB_seqtree_root::change_root(oldroot, newroot);
 }
 
 void AP_tree_root::inform_about_delete(AP_tree *del) {
@@ -250,7 +250,7 @@ void AP_tree::remove() {
         AP_tree      *brother     = get_brother();  // brother remains in tree
         GBT_LEN       brothersLen = brother->get_branchlength();
         AP_tree      *fath        = get_father();   // fath of this is removed as well
-        ARB_tree     *grandfather = fath->get_father();
+        ARB_seqtree     *grandfather = fath->get_father();
         AP_tree_root *troot       = get_tree_root();
 
         if (fath->gb_node) {                      // move inner information to remaining subtree
@@ -327,7 +327,7 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
         get_tree_root()->change_root(get_father(), get_brother());
     }
     else {
-        ARB_tree *grandfather = get_father()->get_father();
+        ARB_seqtree *grandfather = get_father()->get_father();
         if (father == new_brother) {    // just pull branches !!
             new_brother  = get_brother();
             if (grandfather->leftson == father) {
@@ -356,8 +356,8 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
         }
     }
 
-    ARB_tree *new_tree          = get_father();
-    ARB_tree *brother_father    = new_brother->get_father();
+    ARB_seqtree *new_tree          = get_father();
+    ARB_seqtree *brother_father    = new_brother->get_father();
     AP_FLOAT  laenge;
 
     if (brother_father->leftson == new_brother) {
@@ -418,7 +418,7 @@ void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
     ap_assert(father);                             // cannot swap root (has no brother)
     ap_assert(mode == AP_LEFT || mode == AP_RIGHT); // illegal mode
 
-    ARB_tree *pntr;
+    ARB_seqtree *pntr;
 
     if (father->father == 0) { // father is root
         AP_tree *pntr_brother = get_brother();
@@ -512,7 +512,7 @@ void AP_tree::set_root() {
 
     {
         // move remark branches to top
-        ARB_tree *node;
+        ARB_seqtree *node;
         char     *remark = nulldup(remark_branch);
 
         for (node = this; node->father; node = node->get_father()) {
@@ -536,9 +536,9 @@ void AP_tree::set_root() {
         old_root->leftlen = old_root->rightlen = father->rightlen*.5;
     }
 
-    ARB_tree *next = get_father()->get_father();
-    ARB_tree *prev = old_root;
-    ARB_tree *pntr = get_father();
+    ARB_seqtree *next = get_father()->get_father();
+    ARB_seqtree *prev = old_root;
+    ARB_seqtree *pntr = get_father();
 
     if (father->leftson == this)    father->leftson = old_root; // to set the flag correctly
 
@@ -698,7 +698,7 @@ GB_ERROR AP_tree_root::saveToDB() {
     else {
         ap_assert(!gb_tree_gone);      // should have been handled by caller (e.g. in AWT_graphic_tree::save)
     }
-    if (!error) error = ARB_tree_root::saveToDB();
+    if (!error) error = ARB_seqtree_root::saveToDB();
     if (!error) update_timers();
 
     return GB_end_transaction(get_gb_main(), error);
@@ -874,7 +874,7 @@ void AP_tree::compute_tree(GBDATA *gb_main) {
 }
 
 GB_ERROR AP_tree_root::loadFromDB(const char *name) {
-    GB_ERROR error = ARB_tree_root::loadFromDB(name);
+    GB_ERROR error = ARB_seqtree_root::loadFromDB(name);
     if (!error) {
         AP_tree *rNode = DOWNCAST(AP_tree*, get_root_node());
         rNode->load_subtree_info();

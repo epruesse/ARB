@@ -169,7 +169,7 @@ public:
 };
 
 struct AP_TreeNlenNodeFactory : public RootedTreeNodeFactory {
-    ARB_tree *makeNode(ARB_tree_root *root) const OVERRIDE {
+    ARB_seqtree *makeNode(ARB_seqtree_root *root) const OVERRIDE {
         return new AP_tree_nlen(DOWNCAST(AP_tree_root*, root));
     }
 };

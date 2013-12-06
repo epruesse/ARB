@@ -50,7 +50,7 @@ const float NO_DISTANCE = -1.0;
 // ------------------------
 //      ClusterTreeRoot
 
-class ClusterTreeRoot : public ARB_tree_root {
+class ClusterTreeRoot : public ARB_seqtree_root {
     AP_FLOAT maxDistance;                           // max. allowed distance inside cluster
     size_t   minClusterSize;                        // min. size of cluster (number of leafs)
 
@@ -58,7 +58,7 @@ public:
     ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_);
     virtual ~ClusterTreeRoot() OVERRIDE {}
 
-    DEFINE_DOWNCAST_ACCESSORS(ClusterTree, get_root_node, ARB_tree_root::get_root_node());
+    DEFINE_DOWNCAST_ACCESSORS(ClusterTree, get_root_node, ARB_seqtree_root::get_root_node());
 
     GB_ERROR find_clusters();
     size_t get_minClusterSize() const { return minClusterSize; }
@@ -201,13 +201,13 @@ public:
 };
 
 struct ClusterTreeNodeFactory : public RootedTreeNodeFactory {
-    virtual ARB_tree *makeNode(ARB_tree_root *root) const {
+    virtual ARB_seqtree *makeNode(ARB_seqtree_root *root) const {
         return new ClusterTree(DOWNCAST(ClusterTreeRoot*, root));
     }
 };
 
 struct UseAnyTree : public ARB_tree_predicate {
-    bool selects(const ARB_tree&) const OVERRIDE { return true; }
+    bool selects(const ARB_seqtree&) const OVERRIDE { return true; }
 };
 
 #else

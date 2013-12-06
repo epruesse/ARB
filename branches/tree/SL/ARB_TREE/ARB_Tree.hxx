@@ -1,7 +1,7 @@
 // =============================================================== //
 //                                                                 //
 //   File      : ARB_Tree.hxx                                      //
-//   Purpose   : C++ wrapper for (linked) GBT_TREEs                //
+//   Purpose   : Tree types with sequence knowledge                //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in October 2009   //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -30,10 +30,10 @@
 #endif // DEVEL_RALF
 #endif // DEBUG
 
-typedef void (*ARB_tree_node_del_cb)(GBDATA*, class ARB_tree*);
+typedef void (*ARB_tree_node_del_cb)(GBDATA*, class ARB_seqtree*);
 
-class ARB_tree_root;
-class ARB_tree;
+class ARB_seqtree_root;
+class ARB_seqtree;
 class ARB_edge;
 class AP_weights;
 class AP_sequence;
@@ -41,12 +41,12 @@ class AliView;
 
 struct RootedTreeNodeFactory { // acts similar to TreeNodeFactory for trees with root
     virtual ~RootedTreeNodeFactory() {}
-    virtual ARB_tree *makeNode(ARB_tree_root *root) const = 0;
+    virtual ARB_seqtree *makeNode(ARB_seqtree_root *root) const = 0;
 };
 
-class ARB_tree_root : public TreeNodeFactory, virtual Noncopyable {
-    AliView  *ali;
-    ARB_tree *rootNode;                             // root node of the tree
+class ARB_seqtree_root : public TreeNodeFactory, virtual Noncopyable {
+    AliView     *ali;
+    ARB_seqtree *rootNode; // root node of the tree
 
     AP_sequence *seqTemplate;
 
@@ -67,13 +67,13 @@ protected:
     }
 
 public:
-    ARB_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seqTempl, bool add_delete_callbacks);
-    virtual ~ARB_tree_root();
+    ARB_seqtree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seqTempl, bool add_delete_callbacks);
+    virtual ~ARB_seqtree_root();
 
     // TreeNodeFactory interface
     inline GBT_TREE *makeNode() const OVERRIDE;
 
-    virtual void change_root(ARB_tree *old, ARB_tree *newroot);
+    virtual void change_root(ARB_seqtree *old, ARB_seqtree *newroot);
 
     const AliView *get_aliview() const { return ali; }
 
@@ -87,8 +87,8 @@ public:
 
     const char *get_tree_name() const { return tree_name; } // NULL if no tree loaded (or tree disappeared from DB)
 
-    ARB_tree *get_root_node() { return rootNode; }
-    const ARB_tree *get_root_node() const { return rootNode; }
+    ARB_seqtree *get_root_node() { return rootNode; }
+    const ARB_seqtree *get_root_node() const { return rootNode; }
 
     virtual GB_ERROR loadFromDB(const char *name) __ATTR__USERESULT;
     virtual GB_ERROR saveToDB() __ATTR__USERESULT;
@@ -106,7 +106,7 @@ struct ARB_tree_info {
     size_t groups;
     size_t unlinked;                                // unlinked leafs (same as 'leafs' if tree is unlinked)
     size_t marked;                                  // leafs linked to marked species
-    // size_t with_sequence; // @@@ add when AP_sequence is member of ARB_tree
+    // size_t with_sequence; // @@@ add when AP_sequence is member of ARB_seqtree
 
     ARB_tree_info();
 
@@ -116,13 +116,13 @@ struct ARB_tree_info {
 };
 
 
-class ARB_tree : public GBT_TREE { // derived from Noncopyable
-    friend void     ARB_tree_root::change_root(ARB_tree *old, ARB_tree *newroot);
-    friend GB_ERROR ARB_tree_root::loadFromDB(const char *name);
-    friend GB_ERROR ARB_tree_root::linkToDB(int *zombies, int *duplicates);
-    friend void ARB_tree_root::unlinkFromDB();
+class ARB_seqtree : public GBT_TREE { // derived from Noncopyable
+    friend void     ARB_seqtree_root::change_root(ARB_seqtree *old, ARB_seqtree *newroot);
+    friend GB_ERROR ARB_seqtree_root::loadFromDB(const char *name);
+    friend GB_ERROR ARB_seqtree_root::linkToDB(int *zombies, int *duplicates);
+    friend void ARB_seqtree_root::unlinkFromDB();
 
-    ARB_tree_root *tree_root;
+    ARB_seqtree_root *tree_root;
     AP_sequence   *seq;                          /* NULL if tree is unlinked
                                                   * otherwise automatically valid for leafs with gb_node!
                                                   * may be set manually for inner nodes
@@ -132,7 +132,7 @@ class ARB_tree : public GBT_TREE { // derived from Noncopyable
     //      functions
 
     GBT_LEN& length_ref() { return is_leftson() ? father->leftlen : father->rightlen; } // @@@ move to GBT_TREE
-    const GBT_LEN& length_ref() const { return const_cast<ARB_tree*>(this)->length_ref(); }
+    const GBT_LEN& length_ref() const { return const_cast<ARB_seqtree*>(this)->length_ref(); }
 
     void unloadSequences();
     void preloadLeafSequences();
@@ -148,8 +148,8 @@ protected:
         }
     }
 
-    void set_tree_root(ARB_tree_root *new_root);
-    ARB_tree_root *get_tree_root() const { return tree_root; }
+    void set_tree_root(ARB_seqtree_root *new_root);
+    ARB_seqtree_root *get_tree_root() const { return tree_root; }
 
     AP_sequence *take_seq() {                       // afterwards not has no seq and caller is responsible for sequence
         AP_sequence *result = seq;
@@ -159,18 +159,18 @@ protected:
     void replace_seq(AP_sequence *sequence);
 
 public:
-    ARB_tree(ARB_tree_root *root)
+    ARB_seqtree(ARB_seqtree_root *root)
         : tree_root(root),
           seq(NULL)
     {}
-    ~ARB_tree() OVERRIDE;
+    ~ARB_seqtree() OVERRIDE;
 
-    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(ARB_tree);
+    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(ARB_seqtree);
 
     void calcTreeInfo(ARB_tree_info& info);
 
-    bool is_inside(const ARB_tree *subtree) const;
-    bool is_anchestor_of(const ARB_tree *descendant) const {
+    bool is_inside(const ARB_seqtree *subtree) const;
+    bool is_anchestor_of(const ARB_seqtree *descendant) const {
         return !is_leaf && descendant != this && descendant->is_inside(this);
     }
 
@@ -178,21 +178,21 @@ public:
     bool is_upper_son() const { return is_leftson(); }
     bool is_lower_son() const { return is_rightson(); }
 
-    const ARB_tree *get_root_node() const {
-        const ARB_tree *root = get_tree_root()->get_root_node();
+    const ARB_seqtree *get_root_node() const {
+        const ARB_seqtree *root = get_tree_root()->get_root_node();
         at_assert(is_inside(root)); // this is not in tree - behavior of get_root_node() changed!
         return root;
     }
-    ARB_tree *get_root_node() { return const_cast<ARB_tree*>(const_cast<const ARB_tree*>(this)->get_root_node()); }
+    ARB_seqtree *get_root_node() { return const_cast<ARB_seqtree*>(const_cast<const ARB_seqtree*>(this)->get_root_node()); }
 
     bool is_root_node() const { return get_root_node() == this; }
 
-    ARB_tree *get_brother() {
+    ARB_seqtree *get_brother() {
         at_assert(!is_root_node()); // root node has no brother
         return is_leftson() ? get_father()->get_rightson() : get_father()->get_leftson();
     }
-    const ARB_tree *get_brother() const {
-        return const_cast<const ARB_tree*>(const_cast<ARB_tree*>(this)->get_brother());
+    const ARB_seqtree *get_brother() const {
+        return const_cast<const ARB_seqtree*>(const_cast<ARB_seqtree*>(this)->get_brother());
     }
 
     GBT_LEN get_branchlength() const { return length_ref(); }
@@ -218,26 +218,26 @@ public:
 
 };
 
-inline GBT_TREE *ARB_tree_root::makeNode() const {
-    return nodeMaker->makeNode(const_cast<ARB_tree_root*>(this));
+inline GBT_TREE *ARB_seqtree_root::makeNode() const {
+    return nodeMaker->makeNode(const_cast<ARB_seqtree_root*>(this));
 }
 
 struct ARB_tree_predicate {
     virtual ~ARB_tree_predicate() {}
-    virtual bool selects(const ARB_tree& tree) const = 0;
+    virtual bool selects(const ARB_seqtree& tree) const = 0;
 };
 
-// macros to overwrite accessors in classes derived from ARB_tree_root or ARB_tree:
-#define DEFINE_TREE_ROOT_ACCESSORS(RootType, TreeType)                                  \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, ARB_tree_root::get_root_node())
+// macros to overwrite accessors in classes derived from ARB_seqtree_root or ARB_seqtree:
+#define DEFINE_TREE_ROOT_ACCESSORS(RootType, TreeType)                                          \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, ARB_seqtree_root::get_root_node())
 
 #define DEFINE_TREE_RELATIVES_ACCESSORS(TreeType)                                       \
     DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeType);                                   \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_brother, ARB_tree::get_brother());          \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, ARB_tree::get_root_node())
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_brother, ARB_seqtree::get_brother());       \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, ARB_seqtree::get_root_node())
 
 #define DEFINE_TREE_ACCESSORS(RootType, TreeType)                                       \
-    DEFINE_DOWNCAST_ACCESSORS(RootType, get_tree_root, ARB_tree::get_tree_root());      \
+    DEFINE_DOWNCAST_ACCESSORS(RootType, get_tree_root, ARB_seqtree::get_tree_root());   \
     DEFINE_TREE_RELATIVES_ACCESSORS(TreeType)
 
 #if defined(CHECK_TREE_STRUCTURE)
@@ -251,12 +251,12 @@ struct ARB_tree_predicate {
 //      ARB_countedTree
 //      tree who knows its size
 
-struct ARB_countedTree : public ARB_tree {
-    explicit ARB_countedTree(ARB_tree_root *tree_root_)
-        : ARB_tree(tree_root_)
+struct ARB_countedTree : public ARB_seqtree {
+    explicit ARB_countedTree(ARB_seqtree_root *tree_root_)
+        : ARB_seqtree(tree_root_)
     {}
     ~ARB_countedTree() OVERRIDE {}
-    DEFINE_TREE_ACCESSORS(ARB_tree_root, ARB_countedTree);
+    DEFINE_TREE_ACCESSORS(ARB_seqtree_root, ARB_countedTree);
 
     virtual size_t get_leaf_count() const = 0;
     virtual void init_tree()              = 0;      /* impl. shall initialize the tree
@@ -279,7 +279,7 @@ enum ARB_edge_type {
 class ARB_edge {
     // ARB_edge is a directional edge between two non-root-nodes of the same tree
 
-    ARB_tree      *from, *to;
+    ARB_seqtree      *from, *to;
     ARB_edge_type  type;
 
     ARB_edge_type detectType() const {
@@ -296,12 +296,12 @@ class ARB_edge {
     }
 
 public:
-    ARB_edge(ARB_tree *From, ARB_tree *To)
+    ARB_edge(ARB_seqtree *From, ARB_seqtree *To)
         : from(From)
         , to(To)
         , type(detectType())
     {}
-    ARB_edge(ARB_tree *From, ARB_tree *To, ARB_edge_type Type)
+    ARB_edge(ARB_seqtree *From, ARB_seqtree *To, ARB_edge_type Type)
         : from(From)
         , to(To)
         , type(Type)
@@ -315,11 +315,11 @@ public:
     {}
 
     ARB_edge_type get_type() const { return type; }
-    ARB_tree *source() const { return from; }
-    ARB_tree *dest() const { return to; }
+    ARB_seqtree *source() const { return from; }
+    ARB_seqtree *dest() const { return to; }
 
-    ARB_tree *son() const  { return type == EDGE_TO_ROOT ? from : to; }
-    ARB_tree *other() const  { return type == EDGE_TO_ROOT ? to : from; }
+    ARB_seqtree *son() const  { return type == EDGE_TO_ROOT ? from : to; }
+    ARB_seqtree *other() const  { return type == EDGE_TO_ROOT ? to : from; }
 
     GBT_LEN length() const {
         if (type == ROOT_EDGE) return from->get_branchlength() + to->get_branchlength();
@@ -335,7 +335,7 @@ public:
         if (type == EDGE_TO_ROOT) {
             at_assert(from->is_son_of(to));
             if (from->is_rightson()) return ARB_edge(to, to->get_leftson(), EDGE_TO_LEAF);
-            ARB_tree *father = to->get_father();
+            ARB_seqtree *father = to->get_father();
             if (father->is_root_node()) return ARB_edge(to, to->get_brother(), ROOT_EDGE);
             return ARB_edge(to, father, EDGE_TO_ROOT);
         }
