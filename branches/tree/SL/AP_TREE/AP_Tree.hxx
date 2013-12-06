@@ -39,7 +39,7 @@ enum {
     AWT_GC_SELECTED,        // == zero mismatches
     AWT_GC_UNDIFF,
     AWT_GC_NSELECTED,       // no hit
-    AWT_GC_SOME_MISMATCHES,
+    AWT_GC_ZOMBIES,
 
     // for multiprobecoloring
 
@@ -174,7 +174,7 @@ public: // @@@ make members private
     int leaf_sum;   // number of leaf children of this node
     int view_sum;   // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
 
-    float tree_depth;     // max length of path; for drawing triangles
+    float max_tree_depth; // max length of path; for drawing triangles
     float min_tree_depth; // min length of path; for drawing triangle
     float spread;
 
@@ -208,7 +208,7 @@ public: // @@@ make members private
         gc                  = 0;
         leaf_sum            = 0;
         view_sum            = 0;
-        tree_depth          = 0;
+        max_tree_depth      = 0;
         min_tree_depth      = 0;
     }
 
@@ -268,6 +268,8 @@ private:
 
     void reorder_subtree(TreeOrder mode);
 
+    void update_subtree_information();
+
 public:
     explicit AP_tree(AP_tree_root *troot)
         : ARB_tree(troot),
@@ -283,15 +285,10 @@ public:
     void load_subtree_info(); // recursive load_node_info (no need to call, called by loadFromDB)
     void compute_tree(GBDATA *gb_main);
 
-    int update_leafsum_viewsum(); // count all visible leafs -> gr.viewsum + gr.leafsum
     int count_leafs();
 
-    void calc_hidden_flag(int father_is_hidden);
-    int  calc_color();                        // start a transaction first
-    int  calc_color_probes(GB_HASH *hashptr); // new function for coloring the tree; ak
-
-    GBT_LEN arb_tree_min_deep();
-    GBT_LEN arb_tree_deep();
+    int colorize(GB_HASH *hashptr);  // function for coloring the tree; ak
+    void uncolorize() { update_subtree_information(); }
 
     virtual void insert(AP_tree *new_brother);
     virtual void remove();                          // remove this+father (but do not delete)

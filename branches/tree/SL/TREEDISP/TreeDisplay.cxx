@@ -1606,7 +1606,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                 }
                 exports.refresh = 1;
                 tree_static->update_timers(); // do not reload the tree
-                get_root_node()->calc_color();
+                update_structure();
             }
             break;
 
@@ -1976,7 +1976,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         Position s0(Pen);
         Position s1(s0);  s1.movey(box_height);
-        Position n0(s0);  n0.movex(at->gr.tree_depth);
+        Position n0(s0);  n0.movex(at->gr.max_tree_depth);
         Position n1(s1);  n1.movex(at->gr.min_tree_depth);
 
         Position group[4] = { s0, s1, n1, n0 };
@@ -2157,7 +2157,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
 
     if (at->gr.grouped) {
         l_min = at->gr.min_tree_depth;
-        l_max = at->gr.tree_depth;
+        l_max = at->gr.max_tree_depth;
 
         r    = l = 0.5;
         AW_pos q[6];
@@ -2735,7 +2735,7 @@ static AW_rgb colors_def[] = {
     0xf0c000, // AWT_GC_SELECTED
     0xbb8833, // AWT_GC_UNDIFF
     0x622300, // AWT_GC_NSELECTED
-    0x977a0e, // AWT_GC_SOME_MISMATCHES
+    0x977a0e, // AWT_GC_ZOMBIES
     0x000000, // AWT_GC_BLACK
     0xffff00, // AWT_GC_YELLOW
     0xff0000, // AWT_GC_RED

@@ -114,7 +114,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         else {
             group_name = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node, tree_static->get_tree_name());
         }
-        frame_width = node->gr.tree_depth * IRS.x_scale;
+        frame_width = node->gr.max_tree_depth * IRS.x_scale;
     }
 
     if (node->gr.grouped) { // folded group
@@ -269,7 +269,7 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, double height) {
     IRS.onePixel       = disp_device->rtransform_size(1.0);
     IRS.gap            = 3*IRS.onePixel;
     IRS.group_closed   = 0;
-    IRS.tree_depth     = at->gr.tree_depth;
+    IRS.tree_depth     = at->gr.max_tree_depth;
     IRS.openGroupExtra = IRS.step_y+IRS.gap;
     IRS.sep_filter     = AW_SCREEN|AW_PRINTER_CLIP;
 

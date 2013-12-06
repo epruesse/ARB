@@ -760,46 +760,76 @@ void AP_tree::update() {
     get_tree_root()->update_timers();
 }
 
-GBT_LEN AP_tree::arb_tree_deep()
-{
-    GBT_LEN l, r;
-    if (is_leaf) return 0.0;
-    l = leftlen + get_leftson()->arb_tree_deep();
-    r = rightlen + get_rightson()->arb_tree_deep();
-    if (l<r) l=r;
-    gr.tree_depth = l;
-    return l;
-}
+void AP_tree::update_subtree_information() {
+    gr.hidden = get_father() ? (get_father()->gr.hidden || get_father()->gr.grouped) : 0;
 
-GBT_LEN AP_tree::arb_tree_min_deep()
-{
-    GBT_LEN l, r;
-    if (is_leaf) return 0.0;
-    l = leftlen + get_leftson()->arb_tree_min_deep();
-    r = rightlen + get_rightson()->arb_tree_min_deep();
-    if (l>r) l=r;
-    gr.min_tree_depth = l;
-    return l;
-}
-
-int AP_tree::update_leafsum_viewsum() {
-    // update information in AP_tree_members::leaf_sum and view_sum
     if (is_leaf) {
         gr.view_sum = 1;
         gr.leaf_sum = 1;
-    }
-    else {
-        int l = get_leftson()->update_leafsum_viewsum();
-        int r = get_rightson()->update_leafsum_viewsum();
 
-        gr.leaf_sum = r+l;
-        gr.view_sum = get_leftson()->gr.view_sum + get_rightson()->gr.view_sum;
+        gr.max_tree_depth = 0.0;
+        gr.min_tree_depth = 0.0;
 
-        if (gr.grouped) {
-            gr.view_sum = (int)pow((double)(gr.leaf_sum - GROUPED_SUM + 9), .33);
+        bool is_marked = gb_node && GB_read_flag(gb_node);
+
+        gr.has_marked_children = is_marked;
+
+        // colors:
+        if (gb_node) {
+            if (is_marked) {
+                gr.gc = AWT_GC_SELECTED;
+            }
+            else {
+                // check for user color
+                long color_group = AWT_species_get_dominant_color(gb_node);
+                if (color_group == 0) {
+                    gr.gc = AWT_GC_NSELECTED;
+                }
+                else {
+                    gr.gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
+                }
+            }
+        }
+        else {
+            gr.gc = AWT_GC_ZOMBIES;
         }
     }
-    return gr.leaf_sum;
+    else {
+        get_leftson()->update_subtree_information();
+        get_rightson()->update_subtree_information();
+
+        {
+            AP_tree_members& left  = get_leftson()->gr;
+            AP_tree_members& right = get_rightson()->gr;
+
+            gr.leaf_sum = left.leaf_sum + right.leaf_sum;
+            gr.view_sum = left.view_sum + right.view_sum;
+            if (gr.grouped) {
+                gr.view_sum = (int)pow((double)(gr.leaf_sum - GROUPED_SUM + 9), .33);
+            }
+
+            gr.min_tree_depth = std::min(leftlen+left.min_tree_depth, rightlen+right.min_tree_depth);
+            gr.max_tree_depth = std::max(leftlen+left.max_tree_depth, rightlen+right.max_tree_depth);
+
+            gr.has_marked_children = left.has_marked_children || right.has_marked_children;
+
+            // colors:
+            if (left.gc == right.gc) gr.gc = left.gc;
+
+            else if (left.gc == AWT_GC_SELECTED || right.gc == AWT_GC_SELECTED) gr.gc = AWT_GC_UNDIFF;
+
+            else if (left.gc  == AWT_GC_ZOMBIES) gr.gc = right.gc;
+            else if (right.gc == AWT_GC_ZOMBIES) gr.gc = left.gc;
+
+            else if (left.gc == AWT_GC_UNDIFF || right.gc == AWT_GC_UNDIFF) gr.gc = AWT_GC_UNDIFF;
+
+            else {
+                ap_assert(left.gc != AWT_GC_SELECTED && right.gc != AWT_GC_SELECTED);
+                ap_assert(left.gc != AWT_GC_UNDIFF   && right.gc != AWT_GC_UNDIFF);
+                gr.gc = AWT_GC_NSELECTED;
+            }
+        }
+    }
 }
 
 int AP_tree::count_leafs() {
@@ -808,74 +838,12 @@ int AP_tree::count_leafs() {
         : get_leftson()->count_leafs() + get_rightson()->count_leafs();
 }
 
-void AP_tree::calc_hidden_flag(int father_is_hidden) {
-    gr.hidden = father_is_hidden;
-    if (!is_leaf) {
-        if (gr.grouped) father_is_hidden = 1;
-        get_leftson()->calc_hidden_flag(father_is_hidden);
-        get_rightson()->calc_hidden_flag(father_is_hidden);
-    }
-}
+int AP_tree::colorize(GB_HASH *hashptr) {
+    // colorizes the tree according to 'hashptr'
+    // hashkey   = species id
+    // hashvalue = gc
 
-int AP_tree::calc_color() {
     int res;
-    if (is_leaf) {
-        if (gb_node) {
-            if (GB_read_flag(gb_node)) {
-                res = AWT_GC_SELECTED;
-            }
-            else {
-                // check for user color
-                long color_group = AWT_species_get_dominant_color(gb_node);
-                if (color_group == 0) {
-                    res = AWT_GC_NSELECTED;
-                }
-                else {
-                    res = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
-                }
-            }
-        }
-        else {
-            res = AWT_GC_SOME_MISMATCHES;
-        }
-    }
-    else {
-        int l = get_leftson()->calc_color();
-        int r = get_rightson()->calc_color();
-
-        if (l == r) res = l;
-
-        else if (l == AWT_GC_SELECTED && r != AWT_GC_SELECTED) res = AWT_GC_UNDIFF;
-        else if (l != AWT_GC_SELECTED && r == AWT_GC_SELECTED) res = AWT_GC_UNDIFF;
-
-        else if (l == AWT_GC_SOME_MISMATCHES) res = r;
-        else if (r == AWT_GC_SOME_MISMATCHES) res = l;
-
-        else if (l == AWT_GC_UNDIFF || r == AWT_GC_UNDIFF) res = AWT_GC_UNDIFF;
-
-        else {
-            ap_assert(l != AWT_GC_SELECTED && r != AWT_GC_SELECTED);
-            ap_assert(l != AWT_GC_UNDIFF && r != AWT_GC_UNDIFF);
-            res = AWT_GC_NSELECTED;
-        }
-    }
-
-    gr.gc = res;
-    if (res == AWT_GC_NSELECTED) {
-        gr.has_marked_children = 0;
-    }
-    else {
-        gr.has_marked_children = 1;
-    }
-    return res;
-}
-
-// Diese Funktion nimmt eine Hashtabelle mit Bakteriennamen und
-// faerbt Bakterien die darin vorkommen mit den entsprechenden Farben
-// in der Hashtabelle ist eine Struktur aus Bak.namen und Farben(GC's)
-int AP_tree::calc_color_probes(GB_HASH *hashptr) {
-    int res;
-
     if (is_leaf) {
         if (gb_node) {
             res = GBS_read_hash(hashptr, name);
@@ -884,17 +852,17 @@ int AP_tree::calc_color_probes(GB_HASH *hashptr) {
             }
         }
         else {
-            res = AWT_GC_SOME_MISMATCHES;
+            res = AWT_GC_ZOMBIES;
         }
     }
     else {
-        int l = get_leftson()->calc_color_probes(hashptr);
-        int r = get_rightson()->calc_color_probes(hashptr);
+        int l = get_leftson()->colorize(hashptr);
+        int r = get_rightson()->colorize(hashptr);
 
-        if      (l == r)                      res = l;
-        else if (l == AWT_GC_SOME_MISMATCHES) res = r;
-        else if (r == AWT_GC_SOME_MISMATCHES) res = l;
-        else                                  res = AWT_GC_UNDIFF;
+        if      (l == r)              res = l;
+        else if (l == AWT_GC_ZOMBIES) res = r;
+        else if (r == AWT_GC_ZOMBIES) res = l;
+        else                          res = AWT_GC_UNDIFF;
     }
     gr.gc = res;
     return res;
@@ -902,11 +870,7 @@ int AP_tree::calc_color_probes(GB_HASH *hashptr) {
 
 void AP_tree::compute_tree(GBDATA *gb_main) {
     GB_transaction dummy(gb_main);
-    arb_tree_deep();
-    arb_tree_min_deep();
-    update_leafsum_viewsum();
-    calc_color();
-    calc_hidden_flag(0);
+    update_subtree_information();
 }
 
 GB_ERROR AP_tree_root::loadFromDB(const char *name) {
@@ -1925,7 +1889,7 @@ void AP_tree::reorder_subtree(TreeOrder mode) {
 void AP_tree::reorder_tree(TreeOrder mode) {
     /*! beautify tree (does not change topology, only swaps branches)
      */
-    update_leafsum_viewsum();
+    update_subtree_information();
     reorder_subtree(mode);
 }
 
