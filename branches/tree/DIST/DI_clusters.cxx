@@ -106,8 +106,8 @@ static void update_cluster_sellist() {
 static void update_restore_label(AW_window *aww) {
     AW_root    *aw_root = aww->get_root();
     AW_awar    *awar    = aw_root->awar(AWAR_CLUSTER_RESTORE_LABEL);
-    size_t      size    = global_data->count(STORED_CLUSTERS);
-    const char *label   = size ? GBS_global_string("Stored: %zu", size) : "None stored";
+    unsigned    size    = global_data->count(STORED_CLUSTERS);
+    const char *label   = size ? GBS_global_string("Stored: %u", size) : "None stored";
 
     awar->write_string(label);
 }
@@ -152,7 +152,7 @@ static void calculate_clusters(AW_window *aww) {
                 : new AP_sequence_parsimony(aliview);
 
             AP_FLOAT maxDistance    = aw_root->awar(AWAR_CLUSTER_MAXDIST)->read_float();
-            size_t   minClusterSize = aw_root->awar(AWAR_CLUSTER_MINSIZE)->read_int();
+            unsigned minClusterSize = aw_root->awar(AWAR_CLUSTER_MINSIZE)->read_int();
 
             tree = new ClusterTreeRoot(aliview, seq, maxDistance/100, minClusterSize);
 
@@ -199,7 +199,7 @@ static int with_affected_clusters_do(AW_root *aw_root, AffectedClusters affected
         }
     }
     else {
-        size_t shown = global_data->count(SHOWN_CLUSTERS);
+        unsigned shown = global_data->count(SHOWN_CLUSTERS);
         if (shown) {
             ClusterIDs     clusters(global_data->get_clusterIDs(SHOWN_CLUSTERS)); // intended copy!
             ClusterIDsIter cli_end = clusters.end();
@@ -292,8 +292,8 @@ class GroupTree;
 typedef map<string, GroupTree*> Species2Tip;
 
 class GroupTree : public ARB_countedTree {
-    size_t leaf_count;                              // total number of leafs in subtree
-    size_t tagged_count;                            // tagged leafs
+    unsigned leaf_count;   // total number of leafs in subtree
+    unsigned tagged_count; // tagged leafs
 
     void update_tag_counters();
 public:
@@ -312,15 +312,15 @@ public:
 
     void map_species2tip(Species2Tip& mapping);
 
-    size_t get_leaf_count() const OVERRIDE { return leaf_count; }
-    size_t update_leaf_counters();
+    unsigned get_leaf_count() const OVERRIDE { return leaf_count; }
+    unsigned update_leaf_counters();
 
     void tag_leaf() {
         di_assert(is_leaf);
         tagged_count = 1;
         get_father()->update_tag_counters();
     }
-    size_t get_tagged_count() const { return tagged_count; }
+    unsigned get_tagged_count() const { return tagged_count; }
     void clear_tags();
 
     double tagged_rate() const { return double(get_tagged_count())/get_leaf_count(); }
@@ -332,7 +332,7 @@ struct GroupTreeNodeFactory : public RootedTreeNodeFactory {
     }
 };
 
-size_t GroupTree::update_leaf_counters() {
+unsigned GroupTree::update_leaf_counters() {
     if (is_leaf) leaf_count = 1;
     else leaf_count = get_leftson()->update_leaf_counters() + get_rightson()->update_leaf_counters();
     return leaf_count;
@@ -366,11 +366,11 @@ void GroupTree::update_tag_counters() {
 }
 
 struct GroupChanges {
-    size_t created;
-    size_t skipped;
-    size_t overwritten;
-    size_t deleted;
-    size_t restored;
+    unsigned created;
+    unsigned skipped;
+    unsigned overwritten;
+    unsigned deleted;
+    unsigned restored;
 
     void clear() { created = skipped = overwritten = deleted = restored = 0; }
     bool exist() const { return created||overwritten||deleted||restored; }
@@ -378,11 +378,11 @@ struct GroupChanges {
     void show_message() {
         string msg;
 
-        if (created)     msg += GBS_global_string("%zu created  ",     created);
-        if (overwritten) msg += GBS_global_string("%zu overwritten  ", overwritten);
-        if (skipped)     msg += GBS_global_string("%zu skipped  ",     skipped);
-        if (deleted)     msg += GBS_global_string("%zu deleted  ",     deleted);
-        if (restored)    msg += GBS_global_string("%zu restored  ",    restored);
+        if (created)     msg += GBS_global_string("%u created  ",     created);
+        if (overwritten) msg += GBS_global_string("%u overwritten  ", overwritten);
+        if (skipped)     msg += GBS_global_string("%u skipped  ",     skipped);
+        if (deleted)     msg += GBS_global_string("%u deleted  ",     deleted);
+        if (restored)    msg += GBS_global_string("%u restored  ",    restored);
 
         if (!msg.empty()) {
             msg = string("Group changes: ")+msg;
@@ -400,24 +400,24 @@ struct GroupChanges {
 typedef map<GroupTree*, ClusterPtr> Group2Cluster;
 
 class GroupBuilder : virtual Noncopyable {
-    GBDATA         *gb_main;
-    string          tree_name;
-    ARB_seqtree_root  *tree_root;
-    Group_Action    action;                         // create or delete ?
-    Species2Tip     species2tip;                    // map speciesName -> leaf
-    ARB_ERROR       error;
-    ClusterPtr      bad_cluster;                    // error occurred here (is set)
-    Group_Existing  existing;
-    size_t          existing_count;                 // counts existing groups
-    Group_NotFound  notfound;
-    double          matchRatio;                     // needed identity of subtree and cluster
-    double          maxDist;                        // max. Distance used for calculation
-    string          cluster_prefix;                 // prefix for cluster name
-    string          cluster_suffix_def;             // suffix-definition for cluster name
-    GroupChanges    changes;                        // count tree modifications
-    bool            del_match_prefixes;             // only delete groups, where prefix matches
+    GBDATA           *gb_main;
+    string            tree_name;
+    ARB_seqtree_root *tree_root;
+    Group_Action      action;                       // create or delete ?
+    Species2Tip       species2tip;                  // map speciesName -> leaf
+    ARB_ERROR         error;
+    ClusterPtr        bad_cluster;                  // error occurred here (is set)
+    Group_Existing    existing;
+    unsigned          existing_count;               // counts existing groups
+    Group_NotFound    notfound;
+    double            matchRatio;                   // needed identity of subtree and cluster
+    double            maxDist;                      // max. Distance used for calculation
+    string            cluster_prefix;               // prefix for cluster name
+    string            cluster_suffix_def;           // suffix-definition for cluster name
+    GroupChanges      changes;                      // count tree modifications
+    bool              del_match_prefixes;           // only delete groups, where prefix matches
 
-    GroupTree *find_group_position(GroupTree *subtree, size_t cluster_size);
+    GroupTree *find_group_position(GroupTree *subtree, unsigned cluster_size);
 
 public:
     GroupBuilder(GBDATA *gb_main_, Group_Action action_)
@@ -445,7 +445,7 @@ public:
     ARB_ERROR get_error() const { return error; }
     ClusterPtr get_bad_cluster() const { return bad_cluster; }
     Group_Existing with_existing() const { return existing; }
-    size_t get_existing_count() const { return existing_count; }
+    unsigned get_existing_count() const { return existing_count; }
     double get_max_distance() const { return maxDist; }
 
     ARB_ERROR save_modified_tree();
@@ -501,7 +501,7 @@ ARB_ERROR GroupBuilder::save_modified_tree() {
     return error;
 }
 
-GroupTree *GroupBuilder::find_group_position(GroupTree *subtree, size_t cluster_size) {
+GroupTree *GroupBuilder::find_group_position(GroupTree *subtree, unsigned cluster_size) {
     // searches for best group in subtree matching the cluster
 
     GroupTree *groupPos = NULL;

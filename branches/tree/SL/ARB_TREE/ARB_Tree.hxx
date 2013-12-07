@@ -168,7 +168,7 @@ struct ARB_countedTree : public ARB_seqtree {
     ~ARB_countedTree() OVERRIDE {}
     DEFINE_TREE_ACCESSORS(ARB_seqtree_root, ARB_countedTree);
 
-    virtual size_t get_leaf_count() const = 0;
+    virtual unsigned get_leaf_count() const = 0;
     virtual void init_tree()              = 0;      /* impl. shall initialize the tree
                                                      * (including some kind of leaf counter)
                                                      * needs to be called manually */

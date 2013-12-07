@@ -66,9 +66,9 @@ GB_ERROR ClusterTreeRoot::find_clusters() {
 #if defined(DEBUG)
     printf("----------------------------------------\n");
     printf("maxDistance:       %f\n", maxDistance);
-    printf("minClusterSize:    %zu\n", minClusterSize);
-    printf("Leafs in tree:     %zu\n", root->get_leaf_count());
-    printf("Possible clusters: %zu\n", root->get_cluster_count());
+    printf("minClusterSize:    %u\n", minClusterSize);
+    printf("Leafs in tree:     %u\n", root->get_leaf_count());
+    printf("Possible clusters: %u\n", root->get_cluster_count());
 #endif // DEBUG
 
     arb_progress cluster_progress(root->get_cluster_count());
