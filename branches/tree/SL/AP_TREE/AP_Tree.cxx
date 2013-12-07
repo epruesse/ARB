@@ -162,7 +162,7 @@ void AP_tree::insert(AP_tree *new_brother) {
     ASSERT_VALID_TREE(this);
     ASSERT_VALID_TREE(new_brother);
 
-    AP_tree  *new_tree = DOWNCAST(AP_tree*, get_tree_root()->makeNode());
+    AP_tree  *new_tree = DOWNCAST(AP_tree*, new_brother->get_tree_root()->makeNode());
     AP_FLOAT  laenge;
 
     new_tree->leftson  = this;
@@ -191,6 +191,7 @@ void AP_tree::insert(AP_tree *new_brother) {
     if (troot) {
         if (!new_tree->father) troot->change_root(new_brother, new_tree);
         else new_tree->set_tree_root(troot);
+        set_tree_root(troot);
 
         ASSERT_VALID_TREE(troot->get_root_node());
     }
@@ -244,13 +245,13 @@ void AP_tree::remove() {
 
     ASSERT_VALID_TREE(this);
     if (father == 0) {
-        get_tree_root()->change_root(this, NULL); // wot ?
+        get_tree_root()->change_root(this, NULL); // tell AP_tree_root that the root node has been removed
     }
     else {
         AP_tree      *brother     = get_brother();  // brother remains in tree
         GBT_LEN       brothersLen = brother->get_branchlength();
         AP_tree      *fath        = get_father();   // fath of this is removed as well
-        ARB_seqtree     *grandfather = fath->get_father();
+        ARB_seqtree  *grandfather = fath->get_father();
         AP_tree_root *troot       = get_tree_root();
 
         if (fath->gb_node) {                      // move inner information to remaining subtree
@@ -297,6 +298,8 @@ void AP_tree::remove() {
         troot->inform_about_delete(fath);
         troot->inform_about_delete(this);
     }
+
+    forget_origin(); // removed nodes are rootless
 }
 
 GB_ERROR AP_tree::cantMoveNextTo(AP_tree *new_brother) {
