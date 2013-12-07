@@ -1069,7 +1069,7 @@ const char* AP_tree_nlen::sortByName()
 
     if (strcmp(n1, n2)<0) return n1;
 
-    AP_tree::swap_featured_sons();
+    AP_tree::swap_sons();
 
     return n2;
 }

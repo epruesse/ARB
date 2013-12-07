@@ -300,7 +300,6 @@ public:
     virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
 
     void swap_sons();
-    void swap_featured_sons();
     void rotate_subtree(); // flip whole subtree ( = recursive swap_sons())
 
     GB_ERROR cantMoveNextTo(AP_tree *new_brother);  // use this to detect impossible moves

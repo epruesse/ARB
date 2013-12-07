@@ -1585,7 +1585,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         case AWT_MODE_SWAP:
             if (event.type()==AW_Mouse_Press && clicked.node()) {
                 switch (event.button()) {
-                    case AW_BUTTON_LEFT:  clicked.node()->swap_featured_sons(); break;
+                    case AW_BUTTON_LEFT:  clicked.node()->swap_sons(); break;
                     case AW_BUTTON_RIGHT: clicked.node()->rotate_subtree();     break;
                     default: td_assert(0); break;
                 }

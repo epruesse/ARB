@@ -320,7 +320,7 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     ap_assert(new_brother->father != father);       // already there
     ap_assert(!new_brother->is_inside(this));       // can't move tree into itself
 
-    if (father->leftson != this) get_father()->swap_sons(); // @@@ move from graphical tree will ignore layout!
+    if (father->leftson != this) get_father()->swap_sons();
 
     if (father->father == 0) {
         get_brother()->father = 0;
@@ -392,19 +392,13 @@ void AP_tree::swap_sons() {
     if (!is_leaf) {
         std::swap(leftson, rightson);
         std::swap(leftlen, rightlen);
-    }
-}
-
-void AP_tree::swap_featured_sons() {
-    if (!is_leaf) {
-        swap_sons();
         gr.swap_son_layout();
     }
 }
 
 void AP_tree::rotate_subtree() {
     if (!is_leaf) {
-        swap_featured_sons();
+        swap_sons();
         get_leftson()->rotate_subtree();
         get_rightson()->rotate_subtree();
     }
@@ -1743,7 +1737,7 @@ void AP_tree::reorder_subtree(TreeOrder mode) {
             swap_branches = (mode&BIG_BRANCHES_TO_BOTTOM) ? big_at_top : big_at_bottom;
         }
 
-        if (swap_branches) swap_featured_sons();
+        if (swap_branches) swap_sons();
 
         TreeOrder lmode = mode;
         TreeOrder rmode = mode;
@@ -1767,7 +1761,7 @@ void AP_tree::reorder_subtree(TreeOrder mode) {
             else {
                 smallest_leafname = rightleafname;
                 if (leftsize == rightsize) { // if sizes of subtrees are equal and rightleafname<leftleafname -> swap branches
-                    swap_featured_sons();
+                    swap_sons();
                 }
             }
         }
