@@ -155,7 +155,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             Position box_rcenter = gbox.right_edge().centroid();
 
             if (group_name) { //  a node name should be displayed
-                const char *groupinfo = GBS_global_string("%s (%i)", group_name, node->gr.leaf_sum);
+                const char *groupinfo = GBS_global_string("%s (%u)", group_name, node->gr.leaf_sum);
                 disp_device->text(gc, groupinfo, box_rcenter+IRS.adjust_text);
             }
 
@@ -193,7 +193,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         disp_device->set_line_attributes(gc, 1, AW_DOTTED);
         disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset+frame_width, group_y1); // opened-group-frame
 
-        const char *groupinfo = GBS_global_string("%s (%i)", group_name, node->gr.leaf_sum);
+        const char *groupinfo = GBS_global_string("%s (%u)", group_name, node->gr.leaf_sum);
         disp_device->text(node->gr.gc, groupinfo, x_offset-IRS.onePixel + IRS.gap, group_y1 + 2*IRS.adjust_text.y() + IRS.gap);
     }
 

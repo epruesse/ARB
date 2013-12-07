@@ -832,7 +832,7 @@ void AP_tree::update_subtree_information() {
     }
 }
 
-int AP_tree::count_leafs() {
+unsigned AP_tree::count_leafs() const {
     return is_leaf
         ? 1
         : get_leftson()->count_leafs() + get_rightson()->count_leafs();

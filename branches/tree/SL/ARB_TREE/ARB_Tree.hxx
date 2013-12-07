@@ -159,19 +159,19 @@ struct ARB_tree_predicate {
 
 // ------------------------
 //      ARB_countedTree
-//      tree who knows its size
+//      tree that knows its size
 
 struct ARB_countedTree : public ARB_seqtree {
     explicit ARB_countedTree(ARB_seqtree_root *tree_root_)
         : ARB_seqtree(tree_root_)
     {}
-    ~ARB_countedTree() OVERRIDE {}
     DEFINE_TREE_ACCESSORS(ARB_seqtree_root, ARB_countedTree);
 
-    virtual unsigned get_leaf_count() const = 0;
     virtual void init_tree()              = 0;      /* impl. shall initialize the tree
                                                      * (including some kind of leaf counter)
                                                      * needs to be called manually */
+
+    void compute_tree() OVERRIDE {} // ARB_countedTree always is informed about its subtrees
 
     size_t relative_position_in(const ARB_countedTree *upgroup) const;
 };

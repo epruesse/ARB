@@ -79,6 +79,9 @@ public:
         }
     }
 
+    virtual unsigned get_leaf_count() const = 0;
+    virtual void compute_tree()             = 0;
+
     DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(RootedTree);
 
     bool is_inside(const RootedTree *subtree) const;

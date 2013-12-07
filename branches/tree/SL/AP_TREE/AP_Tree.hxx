@@ -170,8 +170,8 @@ public: // @@@ make members private
     char left_linewidth; // @@@ it's stupid to store linewidth IN FATHER (also wastes space)
     char right_linewidth;
 
-    int leaf_sum;   // number of leaf children of this node
-    int view_sum;   // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
+    unsigned leaf_sum;   // number of leaf children of this node
+    unsigned view_sum;   // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
 
     float max_tree_depth; // max length of path; for drawing triangles
     float min_tree_depth; // min length of path; for drawing triangle
@@ -281,10 +281,16 @@ public:
 
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
 
-    void load_subtree_info(); // recursive load_node_info (no need to call, called by loadFromDB)
-    void compute_tree();
+    void compute_tree() OVERRIDE;
 
-    int count_leafs();
+    unsigned count_leafs() const;
+    unsigned get_leaf_count() const OVERRIDE { // assumes compute_tree has been called (since last tree modification)
+        ap_assert(count_leafs() == gr.leaf_sum); // @@@ slow! remove later
+        return gr.leaf_sum;
+    }
+
+
+    void load_subtree_info(); // recursive load_node_info (no need to call, called by loadFromDB)
 
     int colorize(GB_HASH *hashptr);  // function for coloring the tree; ak
     void uncolorize() { compute_tree(); }

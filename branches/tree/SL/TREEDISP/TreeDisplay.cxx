@@ -2004,7 +2004,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
 
         Position    countPos = s0+text_offset;
-        const char *count    = GBS_global_string(" %i", at->gr.leaf_sum);
+        const char *count    = GBS_global_string(" %u", at->gr.leaf_sum);
         disp_device->text(at->gr.gc, count, countPos, 0.0, group_text_filter);
 
         limits.y_top    = s0.ypos();
