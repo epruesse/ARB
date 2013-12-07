@@ -1266,7 +1266,7 @@ public:
     }
 };
 
-class BranchLinewidthScaler : public Scaler {
+class BranchLinewidthScaler : public Scaler, virtual Noncopyable {
     AP_tree *node;
     int      start_width;
     bool     wholeSubtree;
@@ -1300,7 +1300,7 @@ public:
     }
 };
 
-class BranchRotator : public Dragged {
+class BranchRotator : public Dragged, virtual Noncopyable {
     AW_device  *device;
     AP_tree    *node;
     LineVector  clicked_branch;
