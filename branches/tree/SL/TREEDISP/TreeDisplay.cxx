@@ -382,7 +382,7 @@ int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)    // r
             }
         }
     }
-    if (!at->father) get_root_node()->compute_tree(tree_static->get_gb_main());
+    if (!at->father) get_root_node()->compute_tree();
 
     return flag;
 }
@@ -391,7 +391,7 @@ void AWT_graphic_tree::reorder_tree(TreeOrder mode) {
     AP_tree *at = get_root_node();
     if (at) {
         at->reorder_tree(mode);
-        at->compute_tree(gb_main);
+        at->compute_tree();
     }
 }
 
@@ -1754,7 +1754,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_
         else {
             tree_root_display = get_root_node();
 
-            get_root_node()->compute_tree(gb_main);
+            get_root_node()->compute_tree();
 
             tree_static->set_root_changed_callback(AWT_graphic_tree_root_changed, this);
             tree_static->set_node_deleted_callback(AWT_graphic_tree_node_deleted, this);
@@ -1817,7 +1817,7 @@ int AWT_graphic_tree::check_update(GBDATA *) {
                 }
                 case AP_UPDATE_RELINKED: {
                     GB_ERROR error = tree_root->relink();
-                    if (!error) tree_root->compute_tree(gb_main);
+                    if (!error) tree_root->compute_tree();
                     if (error) aw_message(error);
                     break;
                 }

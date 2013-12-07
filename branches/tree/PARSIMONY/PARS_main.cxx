@@ -84,7 +84,7 @@ static void AP_user_pop_cb(AW_window *aww, AWT_canvas *ntw) {
         return;
     }
     ap_main->user_pop();
-    rootNode()->compute_tree(GLOBAL_gb_main);
+    rootNode()->compute_tree();
     ASSERT_VALID_TREE(rootNode());
     aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->get_user_push_counter());
 
@@ -376,7 +376,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick) {
             ++isits.get_progress();
 
             ASSERT_VALID_TREE(rootNode());
-            rootNode()->compute_tree(GLOBAL_gb_main);
+            rootNode()->compute_tree();
 
             if (oldrootleft) {
                 if (oldrootleft->father == oldrootright) oldrootleft->set_root();
@@ -837,7 +837,7 @@ static void NT_optimize(AW_window *, AWT_canvas *ntw) {
     ASSERT_VALID_TREE(rootNode());
     rootEdge()->calc_branchlengths();
     AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
-    rootNode()->compute_tree(GLOBAL_gb_main);
+    rootNode()->compute_tree();
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -854,7 +854,7 @@ static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
     }
     rootEdge()->calc_branchlengths();
     AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
-    rootNode()->compute_tree(GLOBAL_gb_main);
+    rootNode()->compute_tree();
     pars_saveNrefresh_changed_tree(ntw);
 }
 

@@ -444,7 +444,7 @@ void NT_remove_leafs(UNFIXED, AWT_canvas *ntw, AWT_RemoveType mode) {
         AWT_TREE(ntw)->tree_static->remove_leafs(mode);
 
         tree_root = AWT_TREE(ntw)->get_root_node(); // root might have changed -> get again
-        if (tree_root) tree_root->compute_tree(ntw->gb_main);
+        if (tree_root) tree_root->compute_tree();
         save_changed_tree(ntw);
     }
     else {
@@ -462,7 +462,7 @@ void NT_remove_bootstrap(AW_window*, AW_CL cl_ntw, AW_CL) // delete all bootstra
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     if (tree_root) {
         tree_root->remove_bootstrap();
-        tree_root->compute_tree(ntw->gb_main);
+        tree_root->compute_tree();
         save_changed_tree(ntw);
     }
 }
@@ -476,7 +476,7 @@ void NT_reset_branchlengths(AW_window*, AW_CL cl_ntw, AW_CL) // set all branchle
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     if (tree_root) {
         tree_root->reset_branchlengths();
-        tree_root->compute_tree(ntw->gb_main);
+        tree_root->compute_tree();
         save_changed_tree(ntw);
     }
 }
@@ -494,7 +494,7 @@ void NT_move_boot_branch(AW_window*, AW_CL cl_ntw, AW_CL cl_direction) // copy b
         if (direction == 0) tree_root->bootstrap2branchlen();
         else                tree_root->branchlen2bootstrap();
 
-        tree_root->compute_tree(ntw->gb_main);
+        tree_root->compute_tree();
         save_changed_tree(ntw);
 
         char *adviceText = GBS_global_string_copy("Please note, that you just overwrote your existing %s.",
@@ -515,7 +515,7 @@ void NT_scale_tree(AW_window*, AW_CL cl_ntw, AW_CL) // scale branchlengths
         AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
         if (tree_root) {
             tree_root->scale_branchlengths(factor);
-            tree_root->compute_tree(ntw->gb_main);
+            tree_root->compute_tree();
             save_changed_tree(ntw);
         }
         free(answer);
@@ -559,7 +559,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups) {
                         found = found->get_father();
                     }
                     if (changed) {
-                        gtree->get_root_node()->compute_tree(ntw->gb_main);
+                        gtree->get_root_node()->compute_tree();
                         GB_ERROR error = gtree->save(ntw->gb_main, 0, 0, 0);
                         if (error) aw_message(error);
                         ntw->zoom_reset();
@@ -692,7 +692,7 @@ void TREE_recompute_cb(AW_root *, AWT_canvas *ntw) {
     AWT_graphic_tree *gt = dynamic_cast<AWT_graphic_tree*>(ntw->gfx);
     td_assert(gt);
 
-    gt->get_root_node()->compute_tree(ntw->gb_main);
+    gt->get_root_node()->compute_tree();
     AWT_expose_cb(NULL, ntw);
 }
 

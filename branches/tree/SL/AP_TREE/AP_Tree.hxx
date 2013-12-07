@@ -282,12 +282,12 @@ public:
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
 
     void load_subtree_info(); // recursive load_node_info (no need to call, called by loadFromDB)
-    void compute_tree(GBDATA *gb_main);
+    void compute_tree();
 
     int count_leafs();
 
     int colorize(GB_HASH *hashptr);  // function for coloring the tree; ak
-    void uncolorize() { update_subtree_information(); }
+    void uncolorize() { compute_tree(); }
 
     virtual void insert(AP_tree *new_brother);
     virtual void remove();                          // remove this+father (but do not delete)

@@ -868,8 +868,8 @@ int AP_tree::colorize(GB_HASH *hashptr) {
     return res;
 }
 
-void AP_tree::compute_tree(GBDATA *gb_main) {
-    GB_transaction dummy(gb_main);
+void AP_tree::compute_tree() {
+    GB_transaction dummy(get_tree_root()->get_gb_main());
     update_subtree_information();
 }
 
@@ -1778,8 +1778,7 @@ void AP_tree::reorder_subtree(TreeOrder mode) {
 void AP_tree::reorder_tree(TreeOrder mode) {
     /*! beautify tree (does not change topology, only swaps branches)
      */
-    GB_transaction ta(get_tree_root()->get_gb_main());
-    update_subtree_information();
+    compute_tree();
     reorder_subtree(mode);
 }
 

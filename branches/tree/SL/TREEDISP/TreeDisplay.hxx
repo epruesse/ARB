@@ -172,7 +172,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     }
 
     virtual void read_tree_settings();
-    void update_structure() { get_root_node()->compute_tree(tree_static->get_gb_main()); }
+    void update_structure() { get_root_node()->compute_tree(); }
     void apply_zoom_settings_for_treetype(AWT_canvas *ntw);
 
     int draw_branch_line(int gc, const AW::Position& root, const AW::Position& leaf, AW_bitset filter) {
