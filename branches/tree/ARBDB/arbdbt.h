@@ -46,6 +46,13 @@ protected:
     GBT_TREE*& self_ref() {
         return is_leftson() ? father->leftson : father->rightson;
     }
+    void unlink_from_father() {
+        if (father) {
+            self_ref() = NULL;
+            father     = NULL;
+        }
+    }
+
 public:
     GBT_TREE()
         : is_leaf(false),
@@ -59,7 +66,7 @@ public:
         delete leftson;  gb_assert(!leftson);
         delete rightson; gb_assert(!rightson);
 
-        if (father) self_ref() = NULL;
+        unlink_from_father();
 
         free(name);
         free(remark_branch);

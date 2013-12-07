@@ -27,14 +27,13 @@ static void tree_deleted_cbwrapper(GBDATA *gb_tree, ARB_seqtree_root *troot) {
 
 
 ARB_seqtree_root::ARB_seqtree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seqTempl, bool add_delete_callbacks)
-    : ali(aliView),
-      rootNode(NULL),
+    : TreeRoot(nodeMaker_),
+      ali(aliView),
       seqTemplate(seqTempl ? seqTempl->dup() : NULL),
       tree_name(NULL),
       gb_tree(NULL),
       isLinkedToDB(false),
-      addDeleteCallbacks(add_delete_callbacks),
-      nodeMaker(nodeMaker_)
+      addDeleteCallbacks(add_delete_callbacks)
 {
 #if defined(DEBUG)
     at_assert(ali);
@@ -49,11 +48,8 @@ ARB_seqtree_root::ARB_seqtree_root(AliView *aliView, RootedTreeNodeFactory *node
 }
 
 ARB_seqtree_root::~ARB_seqtree_root() {
-    delete rootNode;
-    at_assert(!rootNode);
     delete ali;
     delete seqTemplate;
-    delete nodeMaker;
 
     if (gb_tree) GB_remove_callback(gb_tree, GB_CB_DELETE, makeDatabaseCallback(tree_deleted_cbwrapper, this));
     free(tree_name);
@@ -68,14 +64,6 @@ void ARB_seqtree_root::tree_deleted_cb(GBDATA *gb_tree_del) {
         at_assert(0); // callback for wrong tree received
     }
 }
-void ARB_seqtree_root::change_root(ARB_seqtree *oldroot, ARB_seqtree *newroot) {
-    at_assert(rootNode == oldroot);
-    rootNode = newroot;
-
-    if (oldroot && oldroot->get_tree_root() && !oldroot->is_inside(newroot)) oldroot->set_tree_root(0); // unlink from this
-    if (newroot && newroot->get_tree_root() != this) newroot->set_tree_root(this); // link to this
-}
-
 GB_ERROR ARB_seqtree_root::loadFromDB(const char *name) {
     GBDATA   *gb_main = get_gb_main();
     GB_ERROR  error   = GB_push_transaction(gb_main);
@@ -125,8 +113,8 @@ GB_ERROR ARB_seqtree_root::saveToDB() {
     else {
         GBDATA *gb_main   = get_gb_main();
         error             = GB_push_transaction(gb_main);
-        at_assert(rootNode);
-        if (!error) error = GBT_overwrite_tree(gb_main, gb_tree, rootNode);
+        at_assert(get_root_node());
+        if (!error) error = GBT_overwrite_tree(gb_main, gb_tree, get_root_node());
         error             = GB_end_transaction(gb_main, error);
     }
     return error;
@@ -145,10 +133,10 @@ GB_ERROR ARB_seqtree_root::linkToDB(int *zombies, int *duplicates) {
 
     GB_ERROR error = 0;
     if (!isLinkedToDB) {
-        error = GBT_link_tree(rootNode, get_gb_main(), false, zombies, duplicates);
-        if (!error && addDeleteCallbacks) error = rootNode->add_delete_cb_rec(arb_tree_species_deleted_cb);
+        error = GBT_link_tree(get_root_node(), get_gb_main(), false, zombies, duplicates);
+        if (!error && addDeleteCallbacks) error = get_root_node()->add_delete_cb_rec(arb_tree_species_deleted_cb);
         if (!error) {
-            if (ali->has_data() && seqTemplate) rootNode->preloadLeafSequences();
+            if (ali->has_data() && seqTemplate) get_root_node()->preloadLeafSequences();
             isLinkedToDB = true;
         }
     }
@@ -157,9 +145,9 @@ GB_ERROR ARB_seqtree_root::linkToDB(int *zombies, int *duplicates) {
 
 void ARB_seqtree_root::unlinkFromDB() {
     if (isLinkedToDB) {
-        if (addDeleteCallbacks) rootNode->remove_delete_cb_rec(arb_tree_species_deleted_cb);
-        GBT_unlink_tree(rootNode);
-        if (ali->has_data() && seqTemplate) rootNode->unloadSequences();
+        if (addDeleteCallbacks) get_root_node()->remove_delete_cb_rec(arb_tree_species_deleted_cb);
+        GBT_unlink_tree(get_root_node());
+        if (ali->has_data() && seqTemplate) get_root_node()->unloadSequences();
         isLinkedToDB = false;
     }
 }
@@ -193,48 +181,8 @@ void ARB_seqtree::calcTreeInfo(ARB_tree_info& info) {
 //      ARB_seqtree
 
 ARB_seqtree::~ARB_seqtree() {
-    unlink_from_father(); // @@@ dupped (also done by ~GBT_TREE)
-
-    if (tree_root && tree_root->get_root_node() == this) {
-        tree_root->ARB_seqtree_root::change_root(this, NULL);
-    }
-
     delete seq;
 }
-
-bool ARB_seqtree::is_inside(const ARB_seqtree *subtree) const {
-    return this == subtree || (father && get_father()->is_inside(subtree));
-}
-
-#if defined(CHECK_TREE_STRUCTURE)
-
-void ARB_seqtree::assert_valid() const {
-    at_assert(this);
-    if (!is_leaf) {
-        at_assert(rightson);
-        at_assert(leftson);
-        rightson->assert_valid();
-        leftson->assert_valid();
-    }
-
-    ARB_seqtree_root *troot = get_tree_root();
-    if (father) {
-        at_assert(is_son(father));
-        if (troot) {
-            at_assert(troot->get_root_node()->is_anchestor_of(this));
-        }
-        else {
-            at_assert(father->get_tree_root() == NULL); // if this has no root, father as well shouldn't have root
-        }
-    }
-    else {                                          // this is root
-        if (troot) {
-            at_assert(troot->get_root_node()  == this);
-            at_assert(!is_leaf);                    // leaf@root (tree has to have at least 2 leafs)
-        }
-    }
-}
-#endif // CHECK_TREE_STRUCTURE
 
 void ARB_seqtree::mark_subtree() {
     if (is_leaf) {
@@ -253,14 +201,6 @@ bool ARB_seqtree::contains_marked_species() {
     return
         get_leftson()->contains_marked_species() ||
         get_rightson()->contains_marked_species();
-}
-
-void ARB_seqtree::set_tree_root(ARB_seqtree_root *new_root) {
-    if (tree_root != new_root) {
-        tree_root = new_root;
-        if (leftson) get_leftson()->set_tree_root(new_root);
-        if (rightson) get_rightson()->set_tree_root(new_root);
-    }
 }
 
 GB_ERROR ARB_seqtree::add_delete_cb_rec(ARB_tree_node_del_cb cb) {
@@ -291,7 +231,7 @@ void ARB_seqtree::remove_delete_cb_rec(ARB_tree_node_del_cb cb) {
 void ARB_seqtree::preloadLeafSequences() {
     if (is_leaf) {
         if (gb_node) {
-            seq = tree_root->get_seqTemplate()->dup();
+            seq = get_tree_root()->get_seqTemplate()->dup();
             seq->bind_to_species(gb_node); // does not load sequences yet
         }
     }

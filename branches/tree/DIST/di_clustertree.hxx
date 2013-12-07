@@ -201,7 +201,7 @@ public:
 };
 
 struct ClusterTreeNodeFactory : public RootedTreeNodeFactory {
-    virtual ARB_seqtree *makeNode(ARB_seqtree_root *root) const {
+    virtual RootedTree *makeNode(TreeRoot *root) const {
         return new ClusterTree(DOWNCAST(ClusterTreeRoot*, root));
     }
 };

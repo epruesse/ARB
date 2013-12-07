@@ -1,0 +1,225 @@
+// ================================================================ //
+//                                                                  //
+//   File      : RootedTree.h                                       //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Coded by Ralf Westram (coder@reallysoft.de) in December 2013   //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
+#ifndef ROOTEDTREE_H
+#define ROOTEDTREE_H
+
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+
+#define rt_assert(cond) arb_assert(cond)
+
+#if defined(DEBUG)
+#if defined(DEVEL_RALF)
+#define CHECK_TREE_STRUCTURE
+#endif // DEVEL_RALF
+#endif // DEBUG
+
+class TreeRoot;
+class RootedTree;
+class ARB_edge;
+
+struct RootedTreeNodeFactory { // acts similar to TreeNodeFactory for trees with root
+    virtual ~RootedTreeNodeFactory() {}
+    virtual RootedTree *makeNode(TreeRoot *root) const = 0;
+};
+
+class TreeRoot : public TreeNodeFactory, virtual Noncopyable {
+    RootedTree *rootNode; // root node of the tree
+    RootedTreeNodeFactory *nodeMaker;
+
+public:
+    TreeRoot(RootedTreeNodeFactory *nodeMaker_)
+        : rootNode(NULL),
+          nodeMaker(nodeMaker_)
+    {}
+    virtual ~TreeRoot();
+    virtual void change_root(RootedTree *old, RootedTree *newroot);
+
+    // TreeNodeFactory interface
+    inline GBT_TREE *makeNode() const OVERRIDE;
+
+    RootedTree *get_root_node() { return rootNode; }
+    const RootedTree *get_root_node() const { return rootNode; }
+
+    ARB_edge find_innermost_edge();
+};
+
+class RootedTree : public GBT_TREE {
+    friend void TreeRoot::change_root(RootedTree *old, RootedTree *newroot);
+
+    TreeRoot *tree_root;
+
+    // ------------------
+    //      functions
+
+    GBT_LEN& length_ref() { return is_leftson() ? father->leftlen : father->rightlen; }
+    const GBT_LEN& length_ref() const { return const_cast<RootedTree*>(this)->length_ref(); }
+
+protected:
+    void set_tree_root(TreeRoot *new_root);
+    TreeRoot *get_tree_root() const { return tree_root; }
+
+public:
+    RootedTree(TreeRoot *root)
+        : tree_root(root)
+    {}
+    ~RootedTree() OVERRIDE {
+        if (tree_root && tree_root->get_root_node() == this) {
+            tree_root->TreeRoot::change_root(this, NULL);
+        }
+    }
+
+    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(RootedTree);
+
+    bool is_inside(const RootedTree *subtree) const;
+    bool is_anchestor_of(const RootedTree *descendant) const {
+        return !is_leaf && descendant != this && descendant->is_inside(this);
+    }
+
+    const RootedTree *get_root_node() const {
+        const RootedTree *root = get_tree_root()->get_root_node();
+        rt_assert(is_inside(root)); // this is not in tree - behavior of get_root_node() changed!
+        return root;
+    }
+    RootedTree *get_root_node() { return const_cast<RootedTree*>(const_cast<const RootedTree*>(this)->get_root_node()); }
+
+    bool is_root_node() const { return get_root_node() == this; }
+
+    RootedTree *get_brother() {
+        rt_assert(!is_root_node()); // root node has no brother
+        return is_leftson() ? get_father()->get_rightson() : get_father()->get_leftson();
+    }
+    const RootedTree *get_brother() const {
+        return const_cast<const RootedTree*>(const_cast<RootedTree*>(this)->get_brother());
+    }
+
+    GBT_LEN get_branchlength() const { return length_ref(); }
+    void set_branchlength(GBT_LEN newlen) { length_ref() = newlen; }
+
+    const char *group_name() const { return gb_node && name ? name : NULL; }
+
+#if defined(CHECK_TREE_STRUCTURE)
+    void assert_valid() const;
+#endif // CHECK_TREE_STRUCTURE
+};
+
+inline GBT_TREE *TreeRoot::makeNode() const {
+    return nodeMaker->makeNode(const_cast<TreeRoot*>(this));
+}
+
+// ---------------------------------------------------------------------------------------
+//      macros to overwrite accessors in classes derived from TreeRoot or RootedTree:
+
+#define DEFINE_TREE_ROOT_ACCESSORS(RootType, TreeType)                                  \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, TreeRoot::get_root_node())
+
+#define DEFINE_TREE_RELATIVES_ACCESSORS(TreeType)                                       \
+    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeType);                                   \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_brother, RootedTree::get_brother());        \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, RootedTree::get_root_node())
+
+#define DEFINE_TREE_ACCESSORS(RootType, TreeType)                                       \
+    DEFINE_DOWNCAST_ACCESSORS(RootType, get_tree_root, RootedTree::get_tree_root());    \
+    DEFINE_TREE_RELATIVES_ACCESSORS(TreeType)
+
+
+#if defined(CHECK_TREE_STRUCTURE)
+#define ASSERT_VALID_TREE(tree) (tree)->assert_valid()
+#else
+#define ASSERT_VALID_TREE(tree)
+#endif // CHECK_TREE_STRUCTURE
+
+// ----------------------
+//      ARB_edge_type
+
+enum ARB_edge_type {
+    EDGE_TO_ROOT, // edge points towards the root node
+    EDGE_TO_LEAF, // edge points away from the root node
+    ROOT_EDGE, // edge between sons of root node
+};
+
+class ARB_edge {
+    // ARB_edge is a directional edge between two non-root-nodes of the same tree
+
+    RootedTree    *from, *to;
+    ARB_edge_type  type;
+
+    ARB_edge_type detectType() const {
+        rt_assert(to != from);
+        rt_assert(!from->is_root_node());                // edges cannot be at root - use edge between sons of root!
+        rt_assert(!to->is_root_node());
+
+        if (from->father == to) return EDGE_TO_ROOT;
+        if (to->father == from) return EDGE_TO_LEAF;
+
+        rt_assert(from->get_brother() == to);       // no edge exists between 'from' and 'to'
+        rt_assert(to->get_father()->is_root_node());
+        return ROOT_EDGE;
+    }
+
+public:
+    ARB_edge(RootedTree *From, RootedTree *To)
+        : from(From)
+        , to(To)
+        , type(detectType())
+    {}
+    ARB_edge(RootedTree *From, RootedTree *To, ARB_edge_type Type)
+        : from(From)
+        , to(To)
+        , type(Type)
+    {
+        rt_assert(type == detectType());
+    }
+    ARB_edge(const ARB_edge& otherEdge)
+        : from(otherEdge.from)
+        , to(otherEdge.to)
+        , type(otherEdge.type)
+    {}
+
+    ARB_edge_type get_type() const { return type; }
+    RootedTree *source() const { return from; }
+    RootedTree *dest() const { return to; }
+
+    RootedTree *son() const  { return type == EDGE_TO_ROOT ? from : to; }
+    RootedTree *other() const  { return type == EDGE_TO_ROOT ? to : from; }
+
+    GBT_LEN length() const {
+        if (type == ROOT_EDGE) return from->get_branchlength() + to->get_branchlength();
+        return other()->get_branchlength();
+    }
+
+    ARB_edge inverse() const {
+        return ARB_edge(to, from, ARB_edge_type(type == ROOT_EDGE ? ROOT_EDGE : (EDGE_TO_LEAF+EDGE_TO_ROOT)-type));
+    }
+
+    // iterator functions: endlessly iterate over all edges of tree
+    ARB_edge next() const { // descends rightson first
+        if (type == EDGE_TO_ROOT) {
+            rt_assert(from->is_son_of(to));
+            if (from->is_rightson()) return ARB_edge(to, to->get_leftson(), EDGE_TO_LEAF);
+            RootedTree *father = to->get_father();
+            if (father->is_root_node()) return ARB_edge(to, to->get_brother(), ROOT_EDGE);
+            return ARB_edge(to, father, EDGE_TO_ROOT);
+        }
+        if (to->is_leaf) return inverse();
+        return ARB_edge(to, to->get_rightson(), EDGE_TO_LEAF);
+    }
+
+    bool operator == (const ARB_edge& otherEdge) const {
+        return from == otherEdge.from && to == otherEdge.to;
+    }
+};
+
+#else
+#error RootedTree.h included twice
+#endif // ROOTEDTREE_H

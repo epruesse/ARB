@@ -133,7 +133,7 @@ public:
 
     // ARB_seqtree_root interface
 
-    virtual void change_root(ARB_seqtree *old, ARB_seqtree *newroot) OVERRIDE;
+    virtual void change_root(RootedTree *old, RootedTree *newroot) OVERRIDE;
 
     virtual GB_ERROR loadFromDB(const char *name) OVERRIDE;
     virtual GB_ERROR saveToDB() OVERRIDE;
@@ -150,7 +150,6 @@ public:
     void set_node_deleted_callback(AP_nodeDelCb cb, void *cd);
 
     long remove_leafs(AWT_RemoveType awt_remove_type);
-    ARB_edge find_innermost_edge();
 };
 
 namespace tree_defaults {
@@ -368,7 +367,7 @@ public:
 };
 
 struct AP_TreeNodeFactory : public RootedTreeNodeFactory {
-    virtual ARB_seqtree *makeNode(ARB_seqtree_root *root) const {
+    virtual RootedTree *makeNode(TreeRoot *root) const {
         return new AP_tree(DOWNCAST(AP_tree_root*, root));
     }
 };

@@ -1966,6 +1966,7 @@ UNITS_WORKING = \
 	TREEGEN/TREEGEN.test \
 	WETC/WETC.test \
 	XML/XML.test \
+	SL/ROOTED_TREE/ROOTED_TREE.test \
 
 # untestable units
 
@@ -1979,7 +1980,6 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
-	SL/ROOTED_TREE/ROOTED_TREE.test \
 	SL/NEIGHBOURJOIN/NEIGHBOURJOIN.test \
 	SL/NDS/NDS.test \
 	ARB_GDE/ARB_GDE.test \

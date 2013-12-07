@@ -202,7 +202,7 @@ void AP_tree::insert(AP_tree *new_brother) {
 #if defined(WARN_TODO)
 #warning move to ARB_seqtree ?
 #endif
-void AP_tree_root::change_root(ARB_seqtree *oldroot, ARB_seqtree *newroot) {
+void AP_tree_root::change_root(RootedTree *oldroot, RootedTree *newroot) {
     if (root_changed_cb) {
         root_changed_cb(root_changed_cd, DOWNCAST(AP_tree*, oldroot), DOWNCAST(AP_tree*, newroot));
     }
@@ -1046,117 +1046,6 @@ long AP_tree_root::remove_leafs(AWT_RemoveType awt_remove_type) {
     if (get_root_node()) ASSERT_VALID_TREE(get_root_node());
 #endif // CHECK_TREE_STRUCTURE
     return removed;
-}
-
-// ----------------------------
-//      find_innermost_edge
-
-class NodeLeafDistance {
-    AP_FLOAT  downdist, updist;
-    enum { NLD_NODIST = 0, NLD_DOWNDIST, NLD_BOTHDIST } state;
-
-public:
-
-    NodeLeafDistance()
-        : downdist(-1.0)
-        , updist(-1.0)
-        , state(NLD_NODIST)
-    {}
-
-    AP_FLOAT get_downdist() const { ap_assert(state >= NLD_DOWNDIST); return downdist; }
-    void set_downdist(AP_FLOAT DownDist) {
-        if (state < NLD_DOWNDIST) state = NLD_DOWNDIST;
-        downdist = DownDist;
-    }
-
-    AP_FLOAT get_updist() const { ap_assert(state >= NLD_BOTHDIST); return updist; }
-    void set_updist(AP_FLOAT UpDist) {
-        if (state < NLD_BOTHDIST) state = NLD_BOTHDIST;
-        updist = UpDist;
-    }
-
-};
-
-class EdgeFinder {
-    map<AP_tree*, NodeLeafDistance> data;
-
-    ARB_edge innermost;
-    AP_FLOAT min_maxDist;
-
-    void insert_tree(AP_tree *node) {
-        if (node->is_leaf) {
-            data[node].set_downdist(0.0);
-        }
-        else {
-            insert_tree(node->get_leftson());
-            insert_tree(node->get_rightson());
-
-            data[node].set_downdist(max(data[node->get_leftson()].get_downdist()+node->leftlen,
-                                        data[node->get_rightson()].get_downdist()+node->rightlen));
-        }
-    }
-
-    void findBetterEdge_sub(AP_tree *node) {
-        AP_tree *father  = node->get_father();
-        AP_tree *brother = node->get_brother();
-
-        AP_FLOAT len      = node->get_branchlength();
-        AP_FLOAT brothLen = brother->get_branchlength();
-
-        AP_FLOAT upDist   = max(data[father].get_updist(), data[brother].get_downdist()+brothLen);
-        AP_FLOAT downDist = data[node].get_downdist();
-
-        AP_FLOAT edgedist = max(upDist, downDist)+len/2;
-
-        if (edgedist<min_maxDist) { // found better edge
-            innermost   = ARB_edge(node, father);
-            min_maxDist = edgedist;
-        }
-
-        data[node].set_updist(upDist+len);
-
-        if (!node->is_leaf) {
-            findBetterEdge_sub(node->get_leftson());
-            findBetterEdge_sub(node->get_rightson());
-        }
-    }
-
-    void findBetterEdge(AP_tree *node) {
-        if (!node->is_leaf) {
-            findBetterEdge_sub(node->get_leftson());
-            findBetterEdge_sub(node->get_rightson());
-        }
-    }
-
-public:
-    EdgeFinder(AP_tree *rootNode)
-        : innermost(rootNode->get_leftson(), rootNode->get_rightson()) // root-edge
-    {
-        insert_tree(rootNode);
-
-        AP_tree *lson = rootNode->get_leftson();
-        AP_tree *rson = rootNode->get_rightson();
-
-        AP_FLOAT rootEdgeLen = rootNode->leftlen + rootNode->rightlen;
-
-        AP_FLOAT lddist = data[lson].get_downdist();
-        AP_FLOAT rddist = data[rson].get_downdist();
-
-        data[lson].set_updist(rddist+rootEdgeLen);
-        data[rson].set_updist(lddist+rootEdgeLen);
-
-        min_maxDist = max(lddist, rddist)+rootEdgeLen/2;
-
-        findBetterEdge(lson);
-        findBetterEdge(rson);
-    }
-
-    const ARB_edge& innermost_edge() const { return innermost; }
-};
-
-ARB_edge AP_tree_root::find_innermost_edge() {
-    EdgeFinder edgeFinder(get_root_node());
-    return edgeFinder.innermost_edge();
 }
 
 // ----------------------------------------

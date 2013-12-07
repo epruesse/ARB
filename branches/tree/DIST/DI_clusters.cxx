@@ -327,8 +327,8 @@ public:
 };
 
 struct GroupTreeNodeFactory : public RootedTreeNodeFactory {
-    virtual ARB_seqtree *makeNode(ARB_seqtree_root *root) const {
-        return new GroupTree(root);
+    virtual RootedTree *makeNode(TreeRoot *root) const {
+        return new GroupTree(DOWNCAST(ARB_seqtree_root*, root));
     }
 };
 

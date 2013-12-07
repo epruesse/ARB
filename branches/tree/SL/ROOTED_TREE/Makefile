@@ -51,4 +51,3 @@ RootedTree.o: $(ARBHOME)/INCLUDE/gccver.h
 RootedTree.o: $(ARBHOME)/INCLUDE/smartptr.h
 RootedTree.o: $(ARBHOME)/INCLUDE/static_assert.h
 RootedTree.o: $(ARBHOME)/INCLUDE/test_global.h
-RootedTree.o: $(ARBHOME)/INCLUDE/test_unit.h
