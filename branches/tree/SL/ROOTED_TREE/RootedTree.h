@@ -54,7 +54,7 @@ public:
     ARB_edge find_innermost_edge();
 };
 
-class RootedTree : public GBT_TREE {
+class RootedTree : public GBT_TREE { // derived from Noncopyable
     friend void TreeRoot::change_root(RootedTree *old, RootedTree *newroot);
 
     TreeRoot *tree_root;
