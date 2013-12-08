@@ -203,3 +203,97 @@ const char *AP_main::get_aliname() const {
     return agt->tree_static->get_aliview()->get_aliname();
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+// @@@ tests wanted:
+// - set root to different edge + set root back
+// - remove node
+// - insert node
+// - NNI
+// - tree stack
+
+struct fake_agt : public AWT_graphic_tree {
+    fake_agt() : AWT_graphic_tree(NULL, GLOBAL_gb_main, NULL) {}
+    void init(const AP_tree_nlen& proto, AliView *aliview) {
+        AWT_graphic_tree::init(proto, aliview, NULL, false, false);
+    }
+};
+
+struct PARSIMONY_testenv {
+    GB_shell shell;
+    AP_main  apMain;
+    fake_agt agt;
+    AP_tree_nlen proto;
+
+    PARSIMONY_testenv(const char  *dbname)
+        : proto(NULL)
+    {
+        GLOBAL_gb_main = NULL;
+        apMain.open(dbname);
+        apMain.set_tree_root(&agt);
+        agt.init(proto, new AliView(GLOBAL_gb_main));
+    }
+    ~PARSIMONY_testenv() {
+        GB_close(GLOBAL_gb_main);
+        GLOBAL_gb_main = NULL;
+    }
+
+    GB_ERROR load_tree(const char *tree_name) { return agt.load(GLOBAL_gb_main, tree_name, 0, 0); }
+    AP_tree_nlen *tree_root() { return apMain.get_root_node(); }
+};
+
+static arb_test::match_expectation convertsToNewick(GBT_TREE *tree, const char *newick_expected) {
+    using namespace   arb_test;
+    expectation_group expected;
+
+    expected.add(that(tree).does_differ_from_NULL());
+    if (tree) {
+        char *newick = GBT_tree_2_newick(tree);
+        expected.add(that(newick).is_equal_to(newick_expected));
+        free(newick);
+    }
+    return all().ofgroup(expected);
+}
+
+static arb_test::match_expectation convertsToNewick(AP_tree_nlen *tree, const char *newick_expected) {
+    return convertsToNewick(tree->get_gbt_tree(), newick_expected);
+}
+
+#define TEST_EXPECT_TREE_EQUALS(root,newickExpected) TEST_EXPECTATION(convertsToNewick(root,newickExpected))
+
+void TEST_tree_modifications() {
+    PARSIMONY_testenv env("TEST_trees.arb");
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
+
+    {
+        AP_tree_nlen *root = env.tree_root();
+        TEST_REJECT_NULL(root);
+
+        root->compute_tree(GLOBAL_gb_main);
+
+        // first check initial state:
+        {
+            AP_tree_members& root_info = root->gr;
+
+            TEST_EXPECT_EQUAL(root_info.grouped,             0);
+            TEST_EXPECT_EQUAL(root_info.hidden,              0);
+            TEST_EXPECT_EQUAL(root_info.has_marked_children, 1);
+            TEST_EXPECT_EQUAL(root_info.leaf_sum,            15);
+
+            TEST_EXPECT_SIMILAR(root_info.tree_depth,     1.624975, 0.000001);
+            TEST_EXPECT_SIMILAR(root_info.min_tree_depth, 0.341681, 0.000001);
+        }
+
+        TEST_EXPECT_TREE_EQUALS(root, "(((((((CloTyro3,CloTyro4),CloTyro2),CloTyrob),CloInnoc),CloBifer),(((CloButy2,CloButyr),CloCarni),CloPaste)),((((CorAquat,CurCitre),CorGluta),CelBiazo),CytAquat));");
+    }
+
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

@@ -94,6 +94,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_main.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_main.o: $(ARBHOME)/INCLUDE/test_unit.h
 AP_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/ttypes.h
 
