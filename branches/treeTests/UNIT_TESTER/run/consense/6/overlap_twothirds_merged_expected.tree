@@ -1,0 +1,45 @@
+[Tue Sep  3 13:54:57 2013: tree_overlap_twothirds_merged saved to consense/6/overlap_twothirds_merged.tree
+]
+(
+  (
+    (
+      (
+        DewArch3:0.08664,
+        DewArch4:0.04019
+      )33:0.01083,
+      DewArch2:0.08560
+    )33:0.01067,
+    EbiProk2:0.07695
+  )33:0.00318,
+  (
+    (
+      (
+        (
+          (
+            (
+              (
+                EbiProk4:0.09365,
+                EbiProk5:0.07129
+              )33:0.01306,
+              DewBact4:0.04690
+            )33:0.04380,
+            EbiProk3:0.08832
+          )33:0.01168,
+          DewBacte:0.06084
+        )33:0.71564,
+        (
+          DewBact3:0.04045,
+          DewBact5:0.03355
+        )33:0.04086
+      ):0.00000,
+      (
+        DewArcha:0.07025,
+        EbiProka:0.06721
+      ):0.00000
+    ):0.00000,
+    (
+      DewBact2:0.06017,
+      NoName00:0.03771
+    ):0.00000
+  )33:0.00318
+);

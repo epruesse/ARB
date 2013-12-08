@@ -1,0 +1,162 @@
+\begin{theindex}
+
+  \item $\kappa$, \hyperpage{10}, \hyperpage{16}
+  \item *BEAST, \hyperpage{30}
+
+  \indexspace
+
+  \item BEAST, \hyperpage{54}
+  \item BEST, \hyperpage{30}
+  \item binary characters, \hyperpage{22}
+  \item BioNJ, \hyperpage{12}
+  \item bootstrap, \hyperpage{14}
+    \subitem parallel, \hyperpage{6}, \hyperpage{19}
+  \item bug, \hyperpage{5}
+
+  \indexspace
+
+  \item command-line  options
+    \subitem \x{--constraint\_file}, \hyperpage{18}
+  \item command-line options
+    \subitem \x{--aa\_rate\_file}, \hyperpage{15}
+    \subitem \x{--alpha}, \hyperpage{16}
+    \subitem \x{--bootstrap}, \hyperpage{14}
+    \subitem \x{--calibration}, \hyperpage{52}
+    \subitem \x{--chain\_len}, \hyperpage{53}
+    \subitem \x{--codpos}, \hyperpage{16}
+    \subitem \x{--constrained\_lens}, \hyperpage{18}
+    \subitem \x{--data\_type}, \hyperpage{13}
+    \subitem \x{--fastlk}, \hyperpage{53}
+    \subitem \x{--free\_rates}, \hyperpage{16}
+    \subitem \x{--inputtree}, \hyperpage{17}
+    \subitem \x{--input}, \hyperpage{13}
+    \subitem \x{--model}, \hyperpage{14}
+    \subitem \x{--multiple}, \hyperpage{14}
+    \subitem \x{--n\_rand\_starts}, \hyperpage{17}
+    \subitem \x{--nclasses}, \hyperpage{16}
+    \subitem \x{--no\_colalias}, \hyperpage{18}
+    \subitem \x{--no\_memory\_check}, \hyperpage{18}
+    \subitem \x{--no\_sequences}, \hyperpage{54}
+    \subitem \x{--pars}, \hyperpage{14}
+    \subitem \x{--pinv}, \hyperpage{16}
+    \subitem \x{--print\_site\_lk}, \hyperpage{17}
+    \subitem \x{--print\_trace}, \hyperpage{18}
+    \subitem \x{--quiet}, \hyperpage{18}
+    \subitem \x{--r\_seed}, \hyperpage{17}
+    \subitem \x{--rand\_start}, \hyperpage{17}
+    \subitem \x{--rate\_model}, \hyperpage{54}
+    \subitem \x{--run\_id}, \hyperpage{18}
+    \subitem \x{--sample\_freq}, \hyperpage{53}
+    \subitem \x{--search}, \hyperpage{17}
+    \subitem \x{--sequential}, \hyperpage{13}
+    \subitem \x{--ts/tv}, \hyperpage{16}
+    \subitem \x{--use\_median}, \hyperpage{16}
+    \subitem \x{--xml}, \hyperpage{19}
+    \subitem \x{-f}, \hyperpage{15}
+    \subitem \x{-o}, \hyperpage{17}
+  \item compilation, \hyperpage{5}
+  \item custom models, \hyperpage{15}
+
+  \indexspace
+
+  \item data partitions, \hyperpage{29}, \hyperpage{35}
+
+  \indexspace
+
+  \item frequencies
+    \subitem amino-acid, \hyperpage{15}
+    \subitem nucleotide, \hyperpage{15}
+
+  \indexspace
+
+  \item gamma distribution (discrete)
+    \subitem mean vs. median, \hyperpage{10}, \hyperpage{16}
+    \subitem number of categories, \hyperpage{10}, \hyperpage{16}
+    \subitem shape parameter, \hyperpage{10}, \hyperpage{16}
+  \item GARLI, \hyperpage{5}
+
+  \indexspace
+
+  \item input tree, \hyperpage{17}
+  \item interleaved, \hyperpage{20}
+  \item invariable sites, \hyperpage{10}, \hyperpage{16}
+
+  \indexspace
+
+  \item lg4x, \hyperpage{44}
+  \item likelihood
+    \subitem print site likelihood, \hyperpage{17}
+
+  \indexspace
+
+  \item mixture   models, \hyperpage{35}
+  \item mixture models, \hyperpage{28}
+  \item MPI, \hyperpage{6}, \hyperpage{19}
+  \item Multidivtime, \hyperpage{54}
+  \item multiple data sets, \hyperpage{14}, \hyperpage{24}
+
+  \indexspace
+
+  \item Newick format, \hyperpage{24}
+  \item NEXUS, \hyperpage{20}
+  \item NNI, \hyperpage{17}
+
+  \indexspace
+
+  \item optimisation
+    \subitem substitution parameters, \hyperpage{17}
+    \subitem topology, \hyperpage{17}
+
+  \indexspace
+
+  \item PAML, \hyperpage{10}, \hyperpage{25}
+  \item partitionned analysis, \hyperpage{29}, \hyperpage{35}
+  \item PHYLIP, \hyperpage{10}, \hyperpage{20}
+  \item PhyTime, \hyperpage{50}
+  \item proportion of invariants, \hyperpage{10}, \hyperpage{16}
+
+  \indexspace
+
+  \item random number, \hyperpage{17}
+  \item random tree, \hyperpage{17}
+  \item RAxML, \hyperpage{5}
+  \item run ID, \hyperpage{8}, \hyperpage{18}
+
+  \indexspace
+
+  \item sequence format
+    \subitem interleaved, \hyperpage{13}
+    \subitem sequential, \hyperpage{13}
+  \item sequential, \hyperpage{20}
+  \item serial sample, \hyperpage{52}
+  \item SPR, \hyperpage{17}
+  \item stationary frequencies, \hyperpage{15}
+  \item STEM, \hyperpage{30}
+  \item substitution models
+    \subitem amino acids, \hyperpage{14}
+    \subitem DNA, \hyperpage{14}
+
+  \indexspace
+
+  \item time scale, \hyperpage{53}
+  \item Tracer, \hyperpage{54}
+  \item ts/tv ratio, \hyperpage{10}, \hyperpage{16}
+
+  \indexspace
+
+  \item user tree, \hyperpage{17}
+
+  \indexspace
+
+  \item XML, \hyperpage{28}
+  \item XML options
+    \subitem {\tt branchlengths} component, \hyperpage{40}
+    \subitem {\tt equfreqs} component, \hyperpage{40}
+    \subitem {\tt mixtureelem} component, \hyperpage{42}
+    \subitem {\tt partitionelem}   component, \hyperpage{42}
+    \subitem {\tt phyml} component, \hyperpage{37}
+    \subitem {\tt ratematrices} component, \hyperpage{39}
+    \subitem {\tt siterates} component, \hyperpage{41}
+    \subitem {\tt topology} component, \hyperpage{38}
+
+\end{theindex}
