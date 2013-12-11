@@ -206,6 +206,7 @@ const char *AP_main::get_aliname() const {
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
+#include <arb_diff.h>
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
 #endif
@@ -247,25 +248,6 @@ struct PARSIMONY_testenv {
     AP_tree_nlen *tree_root() { return apMain.get_root_node(); }
 };
 
-static arb_test::match_expectation convertsToNewick(GBT_TREE *tree, const char *newick_expected) {
-    using namespace   arb_test;
-    expectation_group expected;
-
-    expected.add(that(tree).does_differ_from_NULL());
-    if (tree) {
-        char *newick = GBT_tree_2_newick(tree);
-        expected.add(that(newick).is_equal_to(newick_expected));
-        free(newick);
-    }
-    return all().ofgroup(expected);
-}
-
-static arb_test::match_expectation convertsToNewick(AP_tree_nlen *tree, const char *newick_expected) {
-    return convertsToNewick(tree->get_gbt_tree(), newick_expected);
-}
-
-#define TEST_EXPECT_TREE_EQUALS(root,newickExpected) TEST_EXPECTATION(convertsToNewick(root,newickExpected))
-
 void TEST_tree_modifications() {
     PARSIMONY_testenv env("TEST_trees.arb");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
@@ -289,9 +271,18 @@ void TEST_tree_modifications() {
             TEST_EXPECT_SIMILAR(root_info.min_tree_depth, 0.341681, 0.000001);
         }
 
-        TEST_EXPECT_TREE_EQUALS(root, "(((((((CloTyro3,CloTyro4),CloTyro2),CloTyrob),CloInnoc),CloBifer),(((CloButy2,CloButyr),CloCarni),CloPaste)),((((CorAquat,CurCitre),CorGluta),CelBiazo),CytAquat));");
-    }
+        const char *initial_topology = "(((((((CloTyro3,CloTyro4),CloTyro2),CloTyrob),CloInnoc),CloBifer),(((CloButy2,CloButyr),CloCarni),CloPaste)),((((CorAquat,CurCitre),CorGluta),CelBiazo),CytAquat));";
+        TEST_EXPECT_NEWICK_EQUAL(root->get_gbt_tree(), initial_topology);
 
+        root->reorder_tree(BIG_BRANCHES_TO_BOTTOM);
+        TEST_EXPECT_NEWICK_EQUAL(root->get_gbt_tree(), "((CytAquat,(CelBiazo,(CorGluta,(CorAquat,CurCitre)))),((CloPaste,(CloCarni,(CloButy2,CloButyr))),(CloBifer,(CloInnoc,(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4)))))));");
+
+        root->reorder_tree(BIG_BRANCHES_TO_CENTER);
+        TEST_EXPECT_NEWICK_EQUAL(root->get_gbt_tree(), "(((((((CloTyro3,CloTyro4),CloTyro2),CloTyrob),CloInnoc),CloBifer),(CloPaste,(CloCarni,(CloButy2,CloButyr)))),(CytAquat,(CelBiazo,(CorGluta,(CorAquat,CurCitre)))));");
+
+        root->reorder_tree(BIG_BRANCHES_TO_TOP);
+        TEST_EXPECT_NEWICK_EQUAL(root->get_gbt_tree(), initial_topology);
+    }
 }
 
 #endif // UNIT_TESTS

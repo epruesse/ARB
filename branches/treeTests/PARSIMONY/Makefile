@@ -67,6 +67,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_core.h
+AP_main.o: $(ARBHOME)/INCLUDE/arb_diff.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_string.h
