@@ -409,6 +409,13 @@ void AP_tree_nlen::remove() {
 
 }
 
+void AP_tree_nlen::swap_sons() {
+    ap_assert(!is_leaf); // cannot swap leafs
+
+    ap_main->push_node(this, STRUCTURE);
+    AP_tree::swap_sons();
+}
+
 void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
     // mode AP_LEFT exchanges leftson with brother
     // mode AP_RIGHT exchanges rightson with brother

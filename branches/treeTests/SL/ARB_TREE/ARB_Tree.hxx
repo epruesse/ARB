@@ -216,8 +216,11 @@ public:
     AP_sequence *get_seq() { return seq; }
     const AP_sequence *get_seq() const { return seq; }
     AP_sequence * set_seq(AP_sequence *sequence) {
-        at_assert(!seq);                            // already set
+        at_assert(!seq); // already set
+#ifndef UNIT_TESTS
+        // unit tests are allowed to leave sequence undefined // @@@ better solution?
         at_assert(sequence);
+#endif
         seq = sequence;
         return seq;
     }
@@ -325,7 +328,9 @@ public:
         : from(otherEdge.from)
         , to(otherEdge.to)
         , type(otherEdge.type)
-    {}
+    {
+        at_assert(type == detectType());
+    }
 
     ARB_edge_type get_type() const { return type; }
     ARB_tree *source() const { return from; }

@@ -211,12 +211,8 @@ const char *AP_main::get_aliname() const {
 #include <test_unit.h>
 #endif
 
-// @@@ tests wanted:
-// - set root to different edge + set root back
-// - remove node
-// - insert node
-// - NNI
-// - tree stack
+// @@@ Tests wanted:
+// - NNI (difficult - needs sequences)
 
 struct fake_agt : public AWT_graphic_tree {
     fake_agt() : AWT_graphic_tree(NULL, GLOBAL_gb_main, NULL) {}
@@ -229,6 +225,7 @@ struct PARSIMONY_testenv {
     GB_shell shell;
     AP_main  apMain;
     fake_agt agt;
+
     AP_tree_nlen proto;
 
     PARSIMONY_testenv(const char  *dbname)
@@ -241,12 +238,24 @@ struct PARSIMONY_testenv {
     }
     ~PARSIMONY_testenv() {
         GB_close(GLOBAL_gb_main);
-        GLOBAL_gb_main = NULL;
+        GLOBAL_gb_main  = NULL;
     }
 
     GB_ERROR load_tree(const char *tree_name) { return agt.load(GLOBAL_gb_main, tree_name, 0, 0); }
     AP_tree_nlen *tree_root() { return apMain.get_root_node(); }
+
+    void push() { apMain.push(); }
+    void pop() { apMain.pop(); }
 };
+
+static AP_tree_nlen *findNode(AP_tree_nlen *node, const char *name) {
+    if (node->name && strcmp(node->name, name) == 0) return node;
+    if (node->is_leaf) return NULL;
+
+    AP_tree_nlen *found = findNode(node->get_leftson(), name);
+    if (!found) found   = findNode(node->get_rightson(), name);
+    return found;
+}
 
 void TEST_tree_modifications() {
     PARSIMONY_testenv env("TEST_trees.arb");
@@ -255,6 +264,8 @@ void TEST_tree_modifications() {
     {
         AP_tree_nlen *root = env.tree_root();
         TEST_REJECT_NULL(root);
+
+        AP_tree_edge::initialize(root);   // builds edges
 
         root->compute_tree(GLOBAL_gb_main);
 
@@ -271,23 +282,101 @@ void TEST_tree_modifications() {
             TEST_EXPECT_SIMILAR(root_info.min_tree_depth, 0.341681, 0.000001);
         }
 
-        const char *initial_topology =
-            "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,(((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,"
-            "((((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
-        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), initial_topology);
+#define B1_TOP "(((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124"
+#define B1_BOT "(CloBifer:0.388,(CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.057):0.124"
+#define B2_TOP "(((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131"
+#define B2_BOT "(CloPaste:0.179,(CloCarni:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.010):0.131"
 
-        root->reorder_tree(BIG_BRANCHES_TO_BOTTOM);
-        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(),
-                                     "((CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207):0.081,"
-                                     "((CloPaste:0.179,(CloCarni:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.010):0.131,(CloBifer:0.388,(CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.057):0.124):0.081);");
+#define B3_TOP_SONS     "(((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711"
+#define B3_TOP_SONS_CCR "((CorAquat:0.187,CorGluta:0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711" // CCR = CurCitre removed
+#define B3_TOP          "(" B3_TOP_SONS "):0.081"
+#define B3_BOT          "(CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207):0.081"
 
-        root->reorder_tree(BIG_BRANCHES_TO_CENTER);
-        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(),
-                                     "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,(CloPaste:0.179,(CloCarni:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.010):0.131):0.081,"
-                                     "(CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207):0.081);");
 
-        root->reorder_tree(BIG_BRANCHES_TO_TOP);
-        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), initial_topology);
+        const char *top_topo    = "((" B1_TOP "," B2_TOP "):0.081," B3_TOP ");";
+        const char *center_topo = "((" B1_TOP "," B2_BOT "):0.081," B3_BOT ");";
+        const char *bottom_topo = "(" B3_BOT ",(" B2_BOT "," B1_BOT "):0.081);";
+
+        LocallyModify<AP_main*> setGlobal(ap_main, &env.apMain);
+        env.push(); // 1st stack level (=top_topo)
+
+        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), top_topo);
+        // test reorder_tree:
+        root->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), center_topo); env.push(); // 2nd stack level (=center_topo)
+        root->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), bottom_topo); env.push(); // 3rd stack level (=bottom_topo)
+        root->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), top_topo);
+
+        // test set root:
+        AP_tree_nlen *CloTyrob = findNode(root, "CloTyrob");
+        TEST_REJECT_NULL(CloTyrob);
+
+        ARB_edge rootEdge(root->get_leftson(), root->get_rightson());
+        CloTyrob->set_root();
+
+        const char *rootAtCloTyrob_topo =
+            "(CloTyrob:0.004,"
+            "(((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,"
+            "((((" B3_TOP_SONS "):0.162," B2_TOP "):0.124,CloBifer:0.388):0.057,CloInnoc:0.371):0.274):0.004);";
+
+        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), rootAtCloTyrob_topo);
+        env.push(); // 4th stack level (=rootAtCloTyrob_topo)
+
+        ARB_edge oldRootEdge(rootEdge.source(), rootEdge.dest());
+        DOWNCAST(AP_tree_nlen*,oldRootEdge.son())->set_root();
+
+        const char *rootSetBack_topo = "(" B3_TOP "," "(" B1_TOP "," B2_TOP "):0.081);"; // nearly like top_topo (just sons are swapped)
+        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), rootSetBack_topo);
+        env.push(); // 5th stack level (=rootSetBack_topo)
+
+        root->swap_featured_sons();
+        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), top_topo);
+
+        // test remove:
+        AP_tree_nlen *CurCitre = findNode(root, "CurCitre");
+        TEST_REJECT_NULL(CurCitre);
+        TEST_REJECT_NULL(CurCitre->get_father());
+
+        CurCitre->remove();
+        const char *CurCitre_removed_topo = "((" B1_TOP "," B2_TOP "):0.081,(" B3_TOP_SONS_CCR "):0.081);";
+        // ------------------------------------------------------------------- ^^^ = B3_TOP_SONS minus CurCitre
+        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), CurCitre_removed_topo);
+
+        TEST_EXPECT_EQUAL(root->gr.leaf_sum, 15); // out of date
+        root->compute_tree(GLOBAL_gb_main);
+        TEST_EXPECT_EQUAL(root->gr.leaf_sum, 14);
+
+        env.push(); // 6th stack level (=CurCitre_removed_topo)
+
+        // test insert:
+        AP_tree_nlen *CloCarni = findNode(root, "CloCarni");
+        TEST_REJECT_NULL(CloCarni);
+        CurCitre->insert(CloCarni); // this creates two extra edges (not destroyed by destroy() below) and one extra node
+
+        const char *CurCitre_inserted_topo = "((" B1_TOP ",(((CloButy2:0.009,CloButyr:0.000):0.564,(CurCitre:0.060,CloCarni:0.060):0.060):0.010,CloPaste:0.179):0.131):0.081,(" B3_TOP_SONS_CCR "):0.081);";
+        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), CurCitre_inserted_topo);
+
+        AP_tree_nlen *node_del_manually  = CurCitre->get_father();
+        AP_tree_edge *edge1_del_manually = CurCitre->edgeTo(node_del_manually);
+        AP_tree_edge *edge2_del_manually = CurCitre->get_brother()->edgeTo(node_del_manually);
+
+        // now check pops:
+        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), CurCitre_removed_topo);
+        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), rootSetBack_topo);
+        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), rootAtCloTyrob_topo);
+        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), bottom_topo);
+        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), center_topo);
+        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), top_topo);
+
+        AP_tree_edge::destroy(root);
+
+        // delete memory allocated by insert() above and lost due to pop()s
+        delete edge1_del_manually;
+        delete edge2_del_manually;
+
+        node_del_manually->father   = NULL;
+        node_del_manually->leftson  = NULL;
+        node_del_manually->rightson = NULL;
+        delete node_del_manually;
     }
 }
 

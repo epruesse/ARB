@@ -69,6 +69,24 @@ void AP_tree_edge::initialize(AP_tree_nlen *tree) {
     new AP_tree_edge(tree->get_leftson(), tree->get_rightson()); // link brothers
 }
 
+void AP_tree_edge::destroy(AP_tree_nlen *tree) {
+    /*! Destroys all edges in the whole tree */
+    AP_tree_edge *edge = tree->nextEdge(NULL);
+    if (!edge) {
+        ap_assert(tree->is_root_node());
+        edge = tree->get_leftson()->edgeTo(tree->get_rightson());
+    }
+    ap_assert(edge); // got no edges?
+
+    edge->buildChain(-1);
+    while (edge) {
+        AP_tree_edge *next = edge->Next();
+        delete edge;
+        edge = next;
+    }
+}
+
+
 void AP_tree_edge::tailDistance(AP_tree_nlen *n)
 {
     ap_assert(!n->is_leaf);    // otherwise call was not necessary!
