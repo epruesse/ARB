@@ -179,7 +179,7 @@ NOT4PERL GB_ERROR GBT_move_tree(GBDATA *gb_moved_tree, GBT_ORDER_MODE mode, GBDA
 GB_ERROR GBT_copy_tree(GBDATA *gb_main, const char *source_name, const char *dest_name);
 GB_ERROR GBT_rename_tree(GBDATA *gb_main, const char *source_name, const char *dest_name);
 GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count);
-char *GBT_tree_2_newick(const GBT_TREE *tree);
+char *GBT_tree_2_newick(const GBT_TREE *tree, bool write_lengths);
 
 #else
 #error ad_t_prot.h included twice

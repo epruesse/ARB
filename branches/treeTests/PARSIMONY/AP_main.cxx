@@ -271,17 +271,23 @@ void TEST_tree_modifications() {
             TEST_EXPECT_SIMILAR(root_info.min_tree_depth, 0.341681, 0.000001);
         }
 
-        const char *initial_topology = "(((((((CloTyro3,CloTyro4),CloTyro2),CloTyrob),CloInnoc),CloBifer),(((CloButy2,CloButyr),CloCarni),CloPaste)),((((CorAquat,CurCitre),CorGluta),CelBiazo),CytAquat));";
-        TEST_EXPECT_NEWICK_EQUAL(root->get_gbt_tree(), initial_topology);
+        const char *initial_topology =
+            "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,(((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,"
+            "((((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
+        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), initial_topology);
 
         root->reorder_tree(BIG_BRANCHES_TO_BOTTOM);
-        TEST_EXPECT_NEWICK_EQUAL(root->get_gbt_tree(), "((CytAquat,(CelBiazo,(CorGluta,(CorAquat,CurCitre)))),((CloPaste,(CloCarni,(CloButy2,CloButyr))),(CloBifer,(CloInnoc,(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4)))))));");
+        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(),
+                                     "((CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207):0.081,"
+                                     "((CloPaste:0.179,(CloCarni:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.010):0.131,(CloBifer:0.388,(CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.057):0.124):0.081);");
 
         root->reorder_tree(BIG_BRANCHES_TO_CENTER);
-        TEST_EXPECT_NEWICK_EQUAL(root->get_gbt_tree(), "(((((((CloTyro3,CloTyro4),CloTyro2),CloTyrob),CloInnoc),CloBifer),(CloPaste,(CloCarni,(CloButy2,CloButyr)))),(CytAquat,(CelBiazo,(CorGluta,(CorAquat,CurCitre)))));");
+        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(),
+                                     "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,(CloPaste:0.179,(CloCarni:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.010):0.131):0.081,"
+                                     "(CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207):0.081);");
 
         root->reorder_tree(BIG_BRANCHES_TO_TOP);
-        TEST_EXPECT_NEWICK_EQUAL(root->get_gbt_tree(), initial_topology);
+        TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), initial_topology);
     }
 }
 
