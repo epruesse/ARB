@@ -100,6 +100,7 @@ public:
     // tree reconstruction methods:
     void insert(AP_tree_nlen *new_brother);
     void remove() OVERRIDE;
+    void swap_sons() OVERRIDE;
     void swap_assymetric(AP_TREE_SIDE mode) OVERRIDE;
     void moveNextTo(AP_tree_nlen *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveNextTo to test if possible
     void set_root() OVERRIDE;
@@ -216,6 +217,9 @@ class AP_tree_edge : virtual Noncopyable {
 
     friend class AP_tree_nlen;
     friend std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
+#if defined(UNIT_TESTS)
+    friend void TEST_tree_modifications();
+#endif
 
 protected:
 
@@ -231,6 +235,7 @@ public:
     AP_tree_edge(AP_tree_nlen *node1, AP_tree_nlen *node2);
 
     static void initialize(AP_tree_nlen *root);
+    static void destroy(AP_tree_nlen *root);
 
     // access methods:
 

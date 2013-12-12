@@ -517,7 +517,7 @@ void AP_tree::set_root() {
             node->remark_branch = remark;
             remark              = sh;
         }
-        delete remark;
+        free(remark);
     }
     AP_FLOAT old_root_len = old_root->leftlen + old_root->rightlen;
 

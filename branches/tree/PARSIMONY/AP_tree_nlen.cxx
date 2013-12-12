@@ -381,6 +381,17 @@ void AP_tree_nlen::remove() {
         }
     }
 
+    father = NULL;
+    set_tree_root(NULL);
+
+    ASSERT_VALID_TREE(this);
+}
+
+void AP_tree_nlen::swap_sons() {
+    ap_assert(!is_leaf); // cannot swap leafs
+
+    ap_main->push_node(this, STRUCTURE);
+    AP_tree::swap_sons();
 }
 
 void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {

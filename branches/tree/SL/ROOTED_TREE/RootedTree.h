@@ -187,7 +187,9 @@ public:
         : from(otherEdge.from)
         , to(otherEdge.to)
         , type(otherEdge.type)
-    {}
+    {
+        rt_assert(type == detectType());
+    }
 
     ARB_edge_type get_type() const { return type; }
     RootedTree *source() const { return from; }

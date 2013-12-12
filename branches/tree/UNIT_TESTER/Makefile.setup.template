@@ -65,6 +65,7 @@ RESTRICT_LIB=# run all tests
 #RESTRICT_LIB=libCORE
 #RESTRICT_LIB=EDIT4
 #RESTRICT_LIB=TREEDISP
+#RESTRICT_LIB=PARSIMONY
 
 #RESTRICT_LIB=arb_probe
 #RESTRICT_LIB=arb_probe:arb_test
@@ -80,8 +81,8 @@ RESTRICT_LIB=# run all tests
 
 #RESTRICT_LIB=CONSENSUS_TREE:arb_consensus_tree:DIST:NEIGHBOURJOIN# NJ related
 #RESTRICT_LIB=arb_probe:arb_test:AWTC:PTCLEAN:PROBE:MULTI_PROBE# ptserver related tests
-#RESTRICT_LIB=TREE_READ:CONSENSUS_TREE:arb_consensus_tree:arb_test:TREEDISP# tree related tests
-#RESTRICT_LIB=libARBDB:TREE_READ:CONSENSUS_TREE:arb_consensus_tree:arb_test:TREEDISP# tree related tests (including tree handling in ARBDB)
+#RESTRICT_LIB=TREE_READ:CONSENSUS_TREE:arb_consensus_tree:arb_test:TREEDISP:PARSIMONY# tree related tests
+#RESTRICT_LIB=libARBDB:TREE_READ:CONSENSUS_TREE:arb_consensus_tree:arb_test:TREEDISP:PARSIMONY# tree related tests (including tree handling in ARBDB)
 
 # ---------- slow tests 
 SKIP_SLOW=15# skip slow tests (run only every SKIP_SLOW minutes)

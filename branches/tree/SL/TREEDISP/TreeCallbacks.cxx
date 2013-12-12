@@ -665,7 +665,7 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose) {
     }
     else {
         int zombies, duplicates;
-        ((AWT_graphic_tree*)ntw->gfx)->get_zombies_and_duplicates(zombies, duplicates);
+        DOWNCAST(AWT_graphic_tree*, ntw->gfx)->get_zombies_and_duplicates(zombies, duplicates);
 
         if (zombies || duplicates) {
             const char *msg = 0;

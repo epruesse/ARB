@@ -1254,9 +1254,15 @@ namespace arb_test {
 #define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size) TEST_EXPECT__BROKEN(arb_test::memory_is_equal(m1,m2,size)) 
 
 #define TEST_EXPECT_NEWICK_EQUAL(tree,expected_newick) do{      \
-        char *newick = GBT_tree_2_newick(tree);                 \
+        char *newick = GBT_tree_2_newick(tree, false);          \
         TEST_EXPECT_EQUAL(newick,expected_newick);              \
         free(newick);                                           \
+    }while(0)
+
+#define TEST_EXPECT_NEWICK_LEN_EQUAL(tree,expected_newick) do{      \
+        char *newick = GBT_tree_2_newick(tree, true);               \
+        TEST_EXPECT_EQUAL(newick,expected_newick);                  \
+        free(newick);                                               \
     }while(0)
 
 #else
@@ -1274,6 +1280,7 @@ namespace arb_test {
 #define TEST_EXPECT_MEM_EQUAL(m1,m2,size)                               WARN_MISS_ARBDIFF()
 #define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size)                       WARN_MISS_ARBDIFF()
 #define TEST_EXPECT_NEWICK_EQUAL(tree,expected_newick)                  WARN_MISS_ARBDIFF()
+#define TEST_EXPECT_NEWICK_LEN_EQUAL(tree,expected_newick)              WARN_MISS_ARBDIFF()
 
 #define memory_is_equal(m1,m2,size)                    WARN_MISS_ARBDIFF()
 #define files_are_equal(f1,f2)                         WARN_MISS_ARBDIFF()
