@@ -1693,8 +1693,10 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
       other_text_filter    (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
       ruler_filter         (AW_SCREEN|AW_CLICK|AW_PRINTER), // appropriate size-filter added manually in code
       root_filter          (AW_SCREEN|AW_PRINTER_EXT)
-      
+
 {
+    td_assert(gb_main_);
+
     set_tree_type(AP_TREE_NORMAL, NULL);
     tree_root_display = 0;
     tree_proto        = 0;

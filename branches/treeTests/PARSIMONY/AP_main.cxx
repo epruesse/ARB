@@ -214,17 +214,20 @@ const char *AP_main::get_aliname() const {
 // @@@ Tests wanted:
 // - NNI (difficult - needs sequences)
 
+void fake_AW_init_color_groups();
+
 struct fake_agt : public AWT_graphic_tree {
     fake_agt() : AWT_graphic_tree(NULL, GLOBAL_gb_main, NULL) {}
     void init(const AP_tree_nlen& proto, AliView *aliview) {
-        AWT_graphic_tree::init(proto, aliview, NULL, false, false);
+        fake_AW_init_color_groups(); // acts like no species has a color
+        AWT_graphic_tree::init(proto, aliview, NULL, true, false);
     }
 };
 
 struct PARSIMONY_testenv {
-    GB_shell shell;
-    AP_main  apMain;
-    fake_agt agt;
+    GB_shell  shell;
+    AP_main   apMain;
+    fake_agt *agt;
 
     AP_tree_nlen proto;
 
@@ -233,15 +236,18 @@ struct PARSIMONY_testenv {
     {
         GLOBAL_gb_main = NULL;
         apMain.open(dbname);
-        apMain.set_tree_root(&agt);
-        agt.init(proto, new AliView(GLOBAL_gb_main));
+
+        agt = new fake_agt;
+        apMain.set_tree_root(agt);
+        agt->init(proto, new AliView(GLOBAL_gb_main));
     }
     ~PARSIMONY_testenv() {
+        delete agt;
         GB_close(GLOBAL_gb_main);
-        GLOBAL_gb_main  = NULL;
+        GLOBAL_gb_main = NULL;
     }
 
-    GB_ERROR load_tree(const char *tree_name) { return agt.load(GLOBAL_gb_main, tree_name, 0, 0); }
+    GB_ERROR load_tree(const char *tree_name) { return agt->load(GLOBAL_gb_main, tree_name, 0, 0); }
     AP_tree_nlen *tree_root() { return apMain.get_root_node(); }
 
     void push() { apMain.push(); }
@@ -284,7 +290,7 @@ void TEST_tree_modifications() {
             GB_transaction ta(GLOBAL_gb_main);
             GBT_mark_all(GLOBAL_gb_main, 0); // unmark all species
             root->compute_tree(GLOBAL_gb_main);
-            TEST_EXPECT_EQUAL__BROKEN(root_info.has_marked_children, 0); // bug (related to [11313] - which is not merged yet)
+            TEST_EXPECT_EQUAL(root_info.has_marked_children, 0);
         }
 
 
