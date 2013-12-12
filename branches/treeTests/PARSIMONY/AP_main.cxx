@@ -280,7 +280,13 @@ void TEST_tree_modifications() {
 
             TEST_EXPECT_SIMILAR(root_info.tree_depth,     1.624975, 0.000001);
             TEST_EXPECT_SIMILAR(root_info.min_tree_depth, 0.341681, 0.000001);
+
+            GB_transaction ta(GLOBAL_gb_main);
+            GBT_mark_all(GLOBAL_gb_main, 0); // unmark all species
+            root->compute_tree(GLOBAL_gb_main);
+            TEST_EXPECT_EQUAL__BROKEN(root_info.has_marked_children, 0); // bug (related to [11313] - which is not merged yet)
         }
+
 
 #define B1_TOP "(((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124"
 #define B1_BOT "(CloBifer:0.388,(CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.057):0.124"
