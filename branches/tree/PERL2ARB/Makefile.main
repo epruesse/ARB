@@ -97,7 +97,7 @@ else
 	hacked_cflags:=$(cross_cflags)
 endif
 
-used_cflags:=$(subst -Weffc++,,$(hacked_cflags))
+used_cflags:=$(subst -Weffc++,,$(hacked_cflags)) -Wno-literal-suffix
 used_lflags:=$(cross_lflags)
 
 MAKE_MAKEFILE=make_arbperl_makefile.pl

@@ -292,26 +292,7 @@ void MatrixDisplay::draw() {
     long x, y, xpos, ypos;
 
     DI_MATRIX *m = get_matrix();
-
-    // handle automatic hide/show of matrix view
-    // - avoid popup if was not auto-hidden
-    {
-        enum LastAutoPop { UNKNOWN, UP, DOWN };
-        static LastAutoPop lastautopop = UNKNOWN;
-
-        if (!m) {
-            if (awm && awm->is_shown()) {
-                awm->hide();
-                lastautopop = DOWN;
-            }
-            return;
-        }
-
-        if (!awm->is_shown() && lastautopop == DOWN) {
-            awm->show();
-            lastautopop = UP;
-        }
-    }
+    if (!autopop(m)) return;
 
     GB_transaction dummy(GLOBAL_gb_main);
 

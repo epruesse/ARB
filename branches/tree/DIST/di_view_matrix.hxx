@@ -10,8 +10,8 @@
 #ifndef DI_VIEW_MATRIX_HXX
 #define DI_VIEW_MATRIX_HXX
 
-#ifndef AW_BASE_HXX
-#include <aw_base.hxx>
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
 #endif
 #ifndef DI_MATR_HXX
 #include "di_matr.hxx"
@@ -78,6 +78,24 @@ private:
     void adapt_to_canvas_size();                                 // call after resize main window
     void draw();
 
+    enum LastAutoPop { UNKNOWN, UP, DOWN };
+    LastAutoPop lastautopop;
+
+    bool autopop(bool show) {
+        // handle automatic hide/show of matrix view
+        // - avoid popup if was not auto-hidden
+        if (!awm) return false;
+        if (!show) {
+            if (awm->is_shown()) {
+                awm->hide(); lastautopop = DOWN;
+            }
+        }
+        else if (!awm->is_shown() && lastautopop == DOWN) {
+            awm->show(); lastautopop = UP;
+        }
+        return awm->is_shown();
+    }
+
 public:
     AW_window *awm;
     AW_device *device;          // device to draw in
@@ -103,11 +121,17 @@ public:
           min_view_dist(0.0),
           max_view_dist(0.0),
           beforeUpdate(NEED_SETUP),
+          lastautopop(UNKNOWN),
           awm(NULL),
           device(NULL)
     {}
 
     DI_MATRIX *get_matrix() { return GLOBAL_MATRIX.get(); }
+
+    bool willShow() {
+        if (!awm) return false;
+        return awm->is_shown() || lastautopop == DOWN;
+    }
 
     void monitor_vertical_scroll_cb(AW_window *);   // vertical and horizontal
     void monitor_horizontal_scroll_cb(AW_window *); // scrollbar movements

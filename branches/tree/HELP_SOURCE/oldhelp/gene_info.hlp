@@ -8,7 +8,7 @@ UP  Protection.hlp
 SUB     spaf_reorder.hlp
 SUB     spaf_delete.hlp
 SUB     spaf_create.hlp
-SUB     spaf_scandb.hlp
+SUB     scandb.hlp
 SUB     spa_delete.hlp
 SUB     spa_rename.hlp
 SUB     spa_copy.hlp
