@@ -32,7 +32,7 @@ my $reg_is_error = qr/^error:\s/i;
 my $reg_is_warning = qr/^warning:\s/i;
 my $reg_is_note = qr/^note:\s/i;
 my $reg_is_instantiated = qr/^\s\s+instantiated\sfrom\s/;
-my $reg_is_required = qr/^\s\s+required\sfrom\s/;
+my $reg_is_required = qr/^\s\s+required\s(from|by)\s/;
 
 # regexps for warning messages (for part behind 'warning: ')
 my $reg_shadow_warning = qr/^declaration\sof\s.*\sshadows\s/;
