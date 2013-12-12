@@ -277,7 +277,7 @@ void ARB_tree::assert_valid() const {
 
     ARB_tree_root *troot = get_tree_root();
     if (father) {
-        at_assert(is_son(father));
+        at_assert(is_inside(father));
         if (troot) {
             at_assert(troot->get_root_node()->is_anchestor_of(this));
         }

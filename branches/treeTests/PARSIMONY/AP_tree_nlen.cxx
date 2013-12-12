@@ -407,6 +407,10 @@ void AP_tree_nlen::remove() {
         }
     }
 
+    father = NULL;
+    set_tree_root(NULL);
+
+    ASSERT_VALID_TREE(this);
 }
 
 void AP_tree_nlen::swap_sons() {

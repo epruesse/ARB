@@ -26,7 +26,7 @@
 
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
-// #define CHECK_TREE_STRUCTURE
+#define CHECK_TREE_STRUCTURE
 #endif // DEVEL_RALF
 #endif // DEBUG
 

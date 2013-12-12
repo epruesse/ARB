@@ -263,6 +263,12 @@ static AP_tree_nlen *findNode(AP_tree_nlen *node, const char *name) {
     return found;
 }
 
+#if defined(CHECK_TREE_STRUCTURE)
+#define ASSERT_TREE_VALID(node) (node)->assert_valid()
+#else
+#define ASSERT_TREE_VALID(node) 
+#endif
+
 void TEST_tree_modifications() {
     PARSIMONY_testenv env("TEST_trees.arb");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
@@ -272,6 +278,8 @@ void TEST_tree_modifications() {
         TEST_REJECT_NULL(root);
 
         AP_tree_edge::initialize(root);   // builds edges
+
+        ASSERT_TREE_VALID(root);
 
         root->compute_tree(GLOBAL_gb_main);
 
@@ -312,11 +320,15 @@ void TEST_tree_modifications() {
         LocallyModify<AP_main*> setGlobal(ap_main, &env.apMain);
         env.push(); // 1st stack level (=top_topo)
 
+        ASSERT_TREE_VALID(root);
+
         TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), top_topo);
         // test reorder_tree:
         root->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), center_topo); env.push(); // 2nd stack level (=center_topo)
         root->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), bottom_topo); env.push(); // 3rd stack level (=bottom_topo)
         root->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), top_topo);
+
+        ASSERT_TREE_VALID(root);
 
         // test set root:
         AP_tree_nlen *CloTyrob = findNode(root, "CloTyrob");
@@ -324,6 +336,8 @@ void TEST_tree_modifications() {
 
         ARB_edge rootEdge(root->get_leftson(), root->get_rightson());
         CloTyrob->set_root();
+
+        ASSERT_TREE_VALID(root);
 
         const char *rootAtCloTyrob_topo =
             "(CloTyrob:0.004,"
@@ -333,6 +347,8 @@ void TEST_tree_modifications() {
         TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), rootAtCloTyrob_topo);
         env.push(); // 4th stack level (=rootAtCloTyrob_topo)
 
+        ASSERT_TREE_VALID(root);
+
         ARB_edge oldRootEdge(rootEdge.source(), rootEdge.dest());
         DOWNCAST(AP_tree_nlen*,oldRootEdge.son())->set_root();
 
@@ -340,8 +356,12 @@ void TEST_tree_modifications() {
         TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), rootSetBack_topo);
         env.push(); // 5th stack level (=rootSetBack_topo)
 
+        ASSERT_TREE_VALID(root);
+
         root->swap_featured_sons();
         TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), top_topo);
+
+        ASSERT_TREE_VALID(root);
 
         // test remove:
         AP_tree_nlen *CurCitre = findNode(root, "CurCitre");
@@ -353,11 +373,15 @@ void TEST_tree_modifications() {
         // ------------------------------------------------------------------- ^^^ = B3_TOP_SONS minus CurCitre
         TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), CurCitre_removed_topo);
 
+        ASSERT_TREE_VALID(root);
+
         TEST_EXPECT_EQUAL(root->gr.leaf_sum, 15); // out of date
         root->compute_tree(GLOBAL_gb_main);
         TEST_EXPECT_EQUAL(root->gr.leaf_sum, 14);
 
         env.push(); // 6th stack level (=CurCitre_removed_topo)
+
+        ASSERT_TREE_VALID(root);
 
         // test insert:
         AP_tree_nlen *CloCarni = findNode(root, "CloCarni");
@@ -371,6 +395,8 @@ void TEST_tree_modifications() {
         AP_tree_edge *edge1_del_manually = CurCitre->edgeTo(node_del_manually);
         AP_tree_edge *edge2_del_manually = CurCitre->get_brother()->edgeTo(node_del_manually);
 
+        ASSERT_TREE_VALID(root);
+
         // now check pops:
         env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), CurCitre_removed_topo);
         env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), rootSetBack_topo);
@@ -378,6 +404,8 @@ void TEST_tree_modifications() {
         env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), bottom_topo);
         env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), center_topo);
         env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root->get_gbt_tree(), top_topo);
+
+        ASSERT_TREE_VALID(root);
 
         AP_tree_edge::destroy(root);
 
