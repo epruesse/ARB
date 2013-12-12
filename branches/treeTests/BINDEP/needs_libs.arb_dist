@@ -1,6 +1,0 @@
-# libraries needed to link arb_dist
-
-DIST/DIST.a
-EISPACK/EISPACK.a
-
-
