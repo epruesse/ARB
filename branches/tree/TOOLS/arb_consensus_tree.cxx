@@ -695,22 +695,60 @@ void TEST_wanted_tree_functionality() {
 
     char       *comment = NULL;
     TreeRoot    root(new MyTreeTypeNodeFactory());
-    MyTreeType *tree    = DOWNCAST(MyTreeType*, TREE_load("trees/test.tree", root, &comment, false, NULL));
-    // -> ../UNIT_TESTER/run/trees/test.tree
+    MyTreeType *tree    = DOWNCAST(MyTreeType*, TREE_load("trees/bg_exp_p_GrpLen_0.tree", root, &comment, false, NULL));
+    // -> ../UNIT_TESTER/run/trees/bg_exp_p_GrpLen_0.tree
 
-#define BRANCH1     "((s1:0.200,s2:0.400):0.600,(s3:0.300,s 4:0.100):0.100):0.000"
-#define BRANCH1_TOP "((s 4:0.100,s3:0.300):0.100,(s1:0.200,s2:0.400):0.600):0.000"
+#define ORG_1111 "(AticSea6,(RblAerol,RblMesop))"
+#define TOP_1111 "((RblAerol,RblMesop),AticSea6)"
+#define BOT_1111 ORG_1111
 
-#define BRANCH2     "(s5:0.020,s-6:0.040):0.060"
-#define BRANCH2_TOP "(s-6:0.040,s5:0.020):0.060"
+#define ORG_11121 "((DnrShiba,RsbElon4),MmbAlkal)"
+#define TOP_11121 ORG_11121
+#define BOT_11121 "(MmbAlkal,(DnrShiba,RsbElon4))"
 
-    TEST_EXPECT_NEWICK_LEN_EQUAL(tree, "(" BRANCH1 "," BRANCH2 ");");
+#define ORG_11122 "((MabPelag,MabSalin),PaoMaris)"
+#define TOP_11122 ORG_11122
+#define BOT_11122 "(PaoMaris,(MabPelag,MabSalin))"
 
+#define ORG_1112 "(" ORG_11121 "," ORG_11122 ")"
+#define TOP_1112 "(" TOP_11121 "," TOP_11122 ")"
+#define BOT_1112 "(" BOT_11121 "," BOT_11122 ")"
+#define CEN_1112 "(" TOP_11121 "," BOT_11122 ")"
+
+#define ORG_111 "(" ORG_1111 "," ORG_1112 ")"
+#define TOP_111 "(" TOP_1112 "," TOP_1111 ")"
+#define BOT_111 "(" BOT_1111 "," BOT_1112 ")"
+#define CEN_111 "(" CEN_1112 "," BOT_1111 ")"
+
+#define ORG_112 "(OnlGran2,RsnAnta2)"
+#define TOP_112 ORG_112
+#define BOT_112 ORG_112
+
+#define ORG_11 "(" ORG_111 "," ORG_112 ")"
+#define TOP_11 "(" TOP_111 "," TOP_112 ")"
+#define BOT_11 "(" BOT_112 "," BOT_111 ")"
+#define CEN_11 "(" CEN_111 "," BOT_112 ")"
+
+#define ORG_12 "(_MhuCaps,ThtNivea)"
+#define TOP_12 "(ThtNivea,_MhuCaps)"
+#define BOT_12 TOP_12
+
+#define ORG_1 "(" ORG_11 "," ORG_12 ")"
+#define TOP_1 "(" TOP_11 "," TOP_12 ")"
+#define BOT_1 "(" BOT_12 "," BOT_11 ")"
+#define CEN_1 "(" CEN_11 "," BOT_12 ")"
+
+#define ORG_2 "((LbnMarin,LbnzAlb4),LbnAlexa)"
+#define TOP_2 ORG_2
+#define BOT_2 "(LbnAlexa,(LbnMarin,LbnzAlb4))"
+
+    TEST_EXPECT_NEWICK_EQUAL(tree, "(" ORG_1 "," ORG_2 ");");
     tree->swap_sons();
-    TEST_EXPECT_NEWICK_LEN_EQUAL(tree, "(" BRANCH2 "," BRANCH1 ");");
+    TEST_EXPECT_NEWICK_EQUAL(tree, "(" ORG_2 "," ORG_1 ");");
 
-    tree->reorder_tree(BIG_BRANCHES_TO_TOP);
-    TEST_EXPECT_NEWICK_LEN_EQUAL(tree, "(" BRANCH1_TOP "," BRANCH2_TOP ");");
+    tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL(tree, "(" TOP_1 "," TOP_2 ");");
+    tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_EQUAL(tree, "(" BOT_2 "," BOT_1 ");");
+    tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_EQUAL(tree, "(" CEN_1 "," BOT_2 ");");
 
     // @@@ test set_root
     // @@@ test auto-detection of "best" root
