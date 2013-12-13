@@ -684,6 +684,8 @@ public:
             leaf_count = get_leftson()->get_leaf_count()+get_rightson()->get_leaf_count();
         }
     }
+
+    void nothing() {}
 };
 
 struct MyTreeTypeNodeFactory : public RootedTreeNodeFactory {
@@ -746,13 +748,19 @@ void TEST_wanted_tree_functionality() {
     tree->swap_sons();
     TEST_EXPECT_NEWICK_EQUAL(tree, "(" ORG_2 "," ORG_1 ");");
 
-    tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL(tree, "(" TOP_1 "," TOP_2 ");"); // org->top
-    tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_EQUAL(tree, "(" CEN_1 "," BOT_2 ");"); // top->center
-    tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_EQUAL(tree, "(" BOT_2 "," BOT_1 ");"); // center->bottom
-    tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_EQUAL(tree, "(" CEN_1 "," BOT_2 ");"); // bottom->center
-    tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL(tree, "(" TOP_1 "," TOP_2 ");"); // center->top
-    tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_EQUAL(tree, "(" BOT_2 "," BOT_1 ");"); // top->bottom
-    tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL(tree, "(" TOP_1 "," TOP_2 ");"); // bottom->top
+    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL        (tree, "(" TOP_1 "," TOP_2 ");"); // org->top
+
+    tree->nothing       (); tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_EQUAL        (tree, "(" CEN_1 "," BOT_2 ");"); // top->center
+    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_EQUAL__BROKEN(tree, "(" CEN_1 "," BOT_2 ");"); // top->center
+
+    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_EQUAL        (tree, "(" BOT_2 "," BOT_1 ");"); // center->bottom
+
+    tree->nothing       (); tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_EQUAL        (tree, "(" CEN_1 "," BOT_2 ");"); // bottom->center
+    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_EQUAL__BROKEN(tree, "(" CEN_1 "," BOT_2 ");"); // bottom->center
+
+    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL        (tree, "(" TOP_1 "," TOP_2 ");"); // center->top
+    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_EQUAL        (tree, "(" BOT_2 "," BOT_1 ");"); // top->bottom
+    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL        (tree, "(" TOP_1 "," TOP_2 ");"); // bottom->top
 
     tree->rotate_subtree();                     TEST_EXPECT_NEWICK_EQUAL(tree, "((LbnAlexa,(LbnzAlb4,LbnMarin)),((_MhuCaps,ThtNivea),((RsnAnta2,OnlGran2),((AticSea6,(RblMesop,RblAerol)),((PaoMaris,(MabSalin,MabPelag)),(MmbAlkal,(RsbElon4,DnrShiba)))))));");
     tree->rotate_subtree();                     TEST_EXPECT_NEWICK_EQUAL(tree, "(" TOP_1 "," TOP_2 ");");

@@ -1265,6 +1265,18 @@ namespace arb_test {
         free(newick);                                               \
     }while(0)
 
+#define TEST_EXPECT_NEWICK_EQUAL__BROKEN(tree,expected_newick) do{      \
+        char *newick = GBT_tree_2_newick(tree, false);                  \
+        TEST_EXPECT_EQUAL__BROKEN(newick,expected_newick);              \
+        free(newick);                                                   \
+    }while(0)
+
+#define TEST_EXPECT_NEWICK_LEN_EQUAL__BROKEN(tree,expected_newick) do{  \
+        char *newick = GBT_tree_2_newick(tree, true);                   \
+        TEST_EXPECT_EQUAL__BROKEN(newick,expected_newick);              \
+        free(newick);                                                   \
+    }while(0)
+
 #else
 
 #define WARN_MISS_ARBDIFF() need_include__arb_diff_h__BEFORE__test_unit_h
