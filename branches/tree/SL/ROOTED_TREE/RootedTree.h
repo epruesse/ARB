@@ -15,6 +15,9 @@
 #ifndef ARBDBT_H
 #include <arbdbt.h>
 #endif
+#ifndef _GLIBCXX_ALGORITHM
+#include <algorithm>
+#endif
 
 #define rt_assert(cond) arb_assert(cond)
 
@@ -110,6 +113,14 @@ public:
     void set_branchlength(GBT_LEN newlen) { length_ref() = newlen; }
 
     const char *group_name() const { return gb_node && name ? name : NULL; }
+
+    virtual void swap_sons() {
+        rt_assert(!is_leaf); // @@@ if never fails -> remove condition below 
+        if (!is_leaf) {
+            std::swap(leftson, rightson);
+            std::swap(leftlen, rightlen);
+        }
+    }
 
 #if defined(CHECK_TREE_STRUCTURE)
     void assert_valid() const;

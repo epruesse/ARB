@@ -688,8 +688,19 @@ void TEST_wanted_tree_functionality() {
     char       *comment = NULL;
     TreeRoot    root(new MyTreeTypeNodeFactory());
     MyTreeType *tree    = DOWNCAST(MyTreeType*, TREE_load("trees/test.tree", root, &comment, false, NULL));
+    // -> ../UNIT_TESTER/run/trees/test.tree
+
+#define BRANCH1 "((s1:0.200,s2:0.400):0.600,(s3:0.300,s 4:0.100):0.100):0.000"
+#define BRANCH2 "(s5:0.020,s-6:0.040):0.060"
+
+    TEST_EXPECT_NEWICK_LEN_EQUAL(tree, "(" BRANCH1 "," BRANCH2 ");");
+
+    tree->swap_sons();
+    TEST_EXPECT_NEWICK_LEN_EQUAL(tree, "(" BRANCH2 "," BRANCH1 ");");
 
     // @@@ test reorder_tree
+    // tree->reorder_tree(BIG_BRANCHES_TO_TOP);
+
     // @@@ test set_root
     // @@@ test auto-detection of "best" root
 

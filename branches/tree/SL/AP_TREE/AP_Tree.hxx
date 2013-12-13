@@ -211,7 +211,15 @@ public: // @@@ make members private
         min_tree_depth      = 0;
     }
 
-    void swap_son_layout();
+    void swap_son_layout() {
+        std::swap(left_linewidth, right_linewidth);
+
+        // angles need to change orientation when swapped
+        // (they are relative angles, i.e. represent the difference to the default-angle)
+        float org_left = left_angle;
+        left_angle     = -right_angle;
+        right_angle    = -org_left;
+    }
 };
 
 struct AP_branch_members {
@@ -300,8 +308,14 @@ public:
     virtual void insert(AP_tree *new_brother);
     virtual void remove();                          // remove this+father (but do not delete)
     virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
-    virtual void swap_sons();
 
+    void swap_sons() OVERRIDE {
+        rt_assert(!is_leaf); // @@@ if never fails -> remove condition below 
+        if (!is_leaf) {
+            ARB_seqtree::swap_sons();
+            gr.swap_son_layout();
+        }
+    }
     void rotate_subtree(); // flip whole subtree ( = recursive swap_sons())
 
     GB_ERROR cantMoveNextTo(AP_tree *new_brother);  // use this to detect impossible moves
