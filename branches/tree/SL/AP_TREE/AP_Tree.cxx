@@ -380,14 +380,6 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     new_tree->father    = brother_father;
 }
 
-void AP_tree::rotate_subtree() { // @@@ move to RootedTree as well
-    if (!is_leaf) {
-        swap_sons();
-        get_leftson()->rotate_subtree();
-        get_rightson()->rotate_subtree();
-    }
-}
-
 void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
     // mode AP_LEFT exchanges lefts with brother
     // mode AP_RIGHT exchanges rights with brother

@@ -129,7 +129,7 @@ public:
             std::swap(leftlen, rightlen);
         }
     }
-
+    void rotate_subtree(); // flip whole subtree ( = recursive swap_sons())
     void reorder_tree(TreeOrder mode);
 
 #if defined(CHECK_TREE_STRUCTURE)

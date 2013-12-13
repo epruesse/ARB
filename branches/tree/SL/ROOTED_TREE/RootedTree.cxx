@@ -131,6 +131,14 @@ void RootedTree::reorder_tree(TreeOrder mode) {
     reorder_subtree(mode);
 }
 
+void RootedTree::rotate_subtree() {
+    if (!is_leaf) {
+        swap_sons();
+        get_leftson()->rotate_subtree();
+        get_rightson()->rotate_subtree();
+    }
+}
+
 // ----------------------------
 //      find_innermost_edge
 
