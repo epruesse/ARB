@@ -218,7 +218,7 @@ void fake_AW_init_color_groups();
 
 struct fake_agt : public AWT_graphic_tree {
     fake_agt() : AWT_graphic_tree(NULL, GLOBAL_gb_main, NULL) {}
-    void init(const AP_tree_nlen& proto, AliView *aliview) {
+    void init(AliView *aliview) {
         fake_AW_init_color_groups(); // acts like no species has a color
         AWT_graphic_tree::init(new AP_TreeNlenNodeFactory, aliview, NULL, true, false);
     }
@@ -229,17 +229,13 @@ struct PARSIMONY_testenv {
     AP_main   apMain;
     fake_agt *agt;
 
-    AP_tree_nlen proto;
-
-    PARSIMONY_testenv(const char  *dbname)
-        : proto(NULL)
-    {
+    PARSIMONY_testenv(const char  *dbname) {
         GLOBAL_gb_main = NULL;
         apMain.open(dbname);
 
         agt = new fake_agt;
         apMain.set_tree_root(agt);
-        agt->init(proto, new AliView(GLOBAL_gb_main));
+        agt->init(new AliView(GLOBAL_gb_main));
     }
     ~PARSIMONY_testenv() {
         delete agt;
@@ -310,10 +306,12 @@ void TEST_tree_modifications() {
 #define B2_TOP "(((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131"
 #define B2_BOT "(CloPaste:0.179,(CloCarni:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.010):0.131"
 
-#define B3_TOP_SONS     "(((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711"
-#define B3_TOP_SONS_CCR "((CorAquat:0.187,CorGluta:0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711" // CCR = CurCitre removed
-#define B3_TOP          "(" B3_TOP_SONS "):0.081"
-#define B3_BOT          "(CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207):0.081"
+
+#define B3_LEFT_TOP_SONS "(((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053,CelBiazo:0.059)"
+#define B3_TOP_SONS      B3_LEFT_TOP_SONS ":0.207,CytAquat:0.711"
+#define B3_TOP_SONS_CCR  "((CorAquat:0.187,CorGluta:0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711" // CCR = CurCitre removed
+#define B3_TOP           "(" B3_TOP_SONS "):0.081"
+#define B3_BOT           "(CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207):0.081"
 
 
         const char *top_topo    = "((" B1_TOP "," B2_TOP "):0.081," B3_TOP ");";
@@ -352,17 +350,21 @@ void TEST_tree_modifications() {
 
         ASSERT_TREE_VALID(root);
 
-        ARB_edge oldRootEdge(rootEdge.source(), rootEdge.dest());
-        DOWNCAST(AP_tree_nlen*,oldRootEdge.son())->set_root();
+        AP_tree_nlen *CelBiazoFather = findNode(root, "CelBiazo")->get_father();
+        TEST_REJECT_NULL(CelBiazoFather);
+        CelBiazoFather->set_root();
 
-        const char *rootSetBack_topo = "(" B3_TOP "," "(" B1_TOP "," B2_TOP "):0.081);"; // nearly like top_topo (just sons are swapped)
-        TEST_EXPECT_NEWICK_LEN_EQUAL(root, rootSetBack_topo);
-        env.push(); // 5th stack level (=rootSetBack_topo)
+        const char *rootAtCelBiazoFather_topo = "(" B3_LEFT_TOP_SONS ":0.104,((" B1_TOP "," B2_TOP "):0.162,CytAquat:0.711):0.104);";
+        TEST_EXPECT_NEWICK_LEN_EQUAL(root, rootAtCelBiazoFather_topo);
 
         ASSERT_TREE_VALID(root);
 
-        root->swap_sons();
-        TEST_EXPECT_NEWICK_LEN_EQUAL(root, top_topo);
+        ARB_edge oldRootEdge(rootEdge.source(), rootEdge.dest());
+        DOWNCAST(AP_tree_nlen*,oldRootEdge.son())->set_root();
+
+        const char *rootSetBack_topo = top_topo;
+        TEST_EXPECT_NEWICK_LEN_EQUAL(root, rootSetBack_topo);
+        env.push(); // 5th stack level (=rootSetBack_topo)
 
         ASSERT_TREE_VALID(root);
 
