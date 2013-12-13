@@ -13,9 +13,10 @@
 #include <CT_ctree.hxx>
 #include <TreeRead.h>
 #include <TreeWrite.h>
+#include <RootedTree.h>
 #include <arb_str.h>
 #include <arb_diff.h>
-#include <RootedTree.h>
+#include <arb_defs.h>
 
 using namespace std;
 
@@ -748,22 +749,31 @@ void TEST_wanted_tree_functionality() {
     tree->swap_sons();
     TEST_EXPECT_NEWICK_EQUAL(tree, "(" ORG_2 "," ORG_1 ");");
 
-    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL        (tree, "(" TOP_1 "," TOP_2 ");"); // org->top
+    TreeOrder order[] = { BIG_BRANCHES_TO_TOP, BIG_BRANCHES_TO_BOTTOM, BIG_BRANCHES_TO_EDGE };
 
-    tree->nothing       (); tree->reorder_tree(BIG_BRANCHES_TO_EDGE);   TEST_EXPECT_NEWICK_EQUAL        (tree, "(" EDG_1 "," BOT_2 ");"); // top->edge
-    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_EDGE);   TEST_EXPECT_NEWICK_EQUAL__BROKEN(tree, "(" EDG_1 "," BOT_2 ");"); // top->edge
+    for (int o1 = 0; o1<ARRAY_ELEMS(order); ++o1) {
+        TreeOrder to_order = order[o1];
+        for (int o2 = 0; o2<ARRAY_ELEMS(order); ++o2) {
+            TreeOrder from_order = order[o2];
 
-    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_EQUAL        (tree, "(" BOT_2 "," BOT_1 ");"); // edge->bottom
+            for (int rotate = 0; rotate<=1; ++rotate) {
+                tree->reorder_tree(from_order);
+                if (rotate) tree->rotate_subtree();
+                tree->reorder_tree(to_order);
 
-    tree->nothing       (); tree->reorder_tree(BIG_BRANCHES_TO_EDGE);   TEST_EXPECT_NEWICK_EQUAL        (tree, "(" EDG_1 "," BOT_2 ");"); // bottom->edge
-    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_EDGE);   TEST_EXPECT_NEWICK_EQUAL__BROKEN(tree, "(" EDG_1 "," BOT_2 ");"); // bottom->edge
+                switch (to_order) {
+                    case BIG_BRANCHES_TO_TOP:    TEST_EXPECT_NEWICK_EQUAL(tree, "(" TOP_1 "," TOP_2 ");"); break;
+                    case BIG_BRANCHES_TO_EDGE:   TEST_EXPECT_NEWICK_EQUAL(tree, "(" EDG_1 "," BOT_2 ");"); break;
+                    case BIG_BRANCHES_TO_BOTTOM: TEST_EXPECT_NEWICK_EQUAL(tree, "(" BOT_2 "," BOT_1 ");"); break;
+                    default: TEST_REJECT(true); break;
+                }
+            }
+        }
+    }
 
-    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL        (tree, "(" TOP_1 "," TOP_2 ");"); // edge->top
-    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_EQUAL        (tree, "(" BOT_2 "," BOT_1 ");"); // top->bottom
-    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL        (tree, "(" TOP_1 "," TOP_2 ");"); // bottom->top
-
-    tree->rotate_subtree();                     TEST_EXPECT_NEWICK_EQUAL(tree, "((LbnAlexa,(LbnzAlb4,LbnMarin)),((_MhuCaps,ThtNivea),((RsnAnta2,OnlGran2),((AticSea6,(RblMesop,RblAerol)),((PaoMaris,(MabSalin,MabPelag)),(MmbAlkal,(RsbElon4,DnrShiba)))))));");
-    tree->rotate_subtree();                     TEST_EXPECT_NEWICK_EQUAL(tree, "(" TOP_1 "," TOP_2 ");");
+    tree->reorder_tree(BIG_BRANCHES_TO_TOP);
+    tree->rotate_subtree(); TEST_EXPECT_NEWICK_EQUAL(tree, "((LbnAlexa,(LbnzAlb4,LbnMarin)),((_MhuCaps,ThtNivea),((RsnAnta2,OnlGran2),((AticSea6,(RblMesop,RblAerol)),((PaoMaris,(MabSalin,MabPelag)),(MmbAlkal,(RsbElon4,DnrShiba)))))));");
+    tree->rotate_subtree(); TEST_EXPECT_NEWICK_EQUAL(tree, "(" TOP_1 "," TOP_2 ");");
 
     // @@@ test set_root
     // @@@ test auto-detection of "best" root

@@ -116,7 +116,13 @@ void RootedTree::reorder_subtree(TreeOrder mode) {
             else {
                 smallest_leafname = rightleafname;
                 if (leftsize == rightsize) { // if sizes of subtrees are equal and rightleafname<leftleafname -> swap branches
+                    const char *smallest_leafname_save = smallest_leafname;
+
                     swap_sons();
+                    get_leftson ()->reorder_subtree(lmode); rt_assert(strcmp(smallest_leafname, rightleafname)== 0);
+                    get_rightson()->reorder_subtree(rmode); rt_assert(strcmp(smallest_leafname, leftleafname) == 0);
+
+                    smallest_leafname = smallest_leafname_save;
                 }
             }
         }

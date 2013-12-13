@@ -135,6 +135,7 @@ arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_defs.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_diff.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_file.h
