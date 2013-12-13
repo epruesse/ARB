@@ -35,7 +35,7 @@ LIB_ARBDB               := $(LIBPATH) $(ARBDB_LIB)
 LIBS_ARB_PROBE          := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a ../PROBE_COM/common.a ../SL/REGEXPR/REGEXPR.a
 LIBS_ARB_READ_TREE      := ../SL/TREE_READ/TREE_READ.a
 LIBS_ARB_EXPORT_TREE    := ../SL/TREE_WRITE/TREE_WRITE.a ../XML/XML.a $(LIBS_ARB_READ_TREE)
-LIBS_ARB_CONSENSUS_TREE := $(LIBS_ARB_EXPORT_TREE) ../CONSENSUS_TREE/CONSENSUS_TREE.a
+LIBS_ARB_CONSENSUS_TREE := $(LIBS_ARB_EXPORT_TREE) ../CONSENSUS_TREE/CONSENSUS_TREE.a ../SL/ROOTED_TREE/ROOTED_TREE.a
 
 OBJECTS:=$(addsuffix .o,$(TOOLS))
 BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
@@ -155,6 +155,7 @@ arb_consensus_tree.o: $(ARBHOME)/INCLUDE/downcast.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/nds.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/test_global.h

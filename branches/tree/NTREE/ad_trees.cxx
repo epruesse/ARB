@@ -25,7 +25,6 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 
-#include <arbdbt.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
 #include <arb_strarray.h>
@@ -377,12 +376,12 @@ static void tree_load_cb(AW_window *aww) {
         GBT_TREE *tree;
         if (strcmp(pcTreeFormat, "xml") == 0) {
             char *tempFname = readXmlTree(fname);
-            tree = TREE_load(tempFname, &tree_comment, true, &warnings);
+            tree = TREE_load(tempFname, GBT_TREE_NodeFactory(), &tree_comment, true, &warnings);
             GB_unlink_or_warn(tempFname, NULL);
             free(tempFname);
         }
         else {
-            tree = TREE_load(fname, &tree_comment, true, &warnings);
+            tree = TREE_load(fname, GBT_TREE_NodeFactory(), &tree_comment, true, &warnings);
         }
 
         if (!tree) error = GB_await_error();

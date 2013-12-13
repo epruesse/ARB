@@ -15,6 +15,7 @@
 #include <TreeWrite.h>
 #include <arb_str.h>
 #include <arb_diff.h>
+#include <RootedTree.h>
 
 using namespace std;
 
@@ -31,11 +32,12 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
     }
     else {
         ConsensusTreeBuilder tree_builder;
+        GBT_TREE_NodeFactory nodeMaker;
 
         for (size_t i = 0; !error && i<input_trees.size(); ++i) {
             char *warnings = NULL;
 
-            GBT_TREE *tree = TREE_load(input_trees[i], NULL, true, &warnings);
+            GBT_TREE *tree = TREE_load(input_trees[i], nodeMaker, NULL, true, &warnings);
             if (!tree) {
                 error = GBS_global_string("Failed to load tree '%s' (Reason: %s)", input_trees[i], GB_await_error());
             }
@@ -554,7 +556,9 @@ void TEST_SLOW_treeIO_stable() {
 
     TEST_REJECT_NULL(gb_main);
 
-    char *outfile  = GBS_global_string_copy("trees/%s.tree", savename);
+    GBT_TREE_NodeFactory nodeMaker;
+
+    char *outfile = GBS_global_string_copy("trees/%s.tree", savename);
 
     for (int save_branchlengths = 0; save_branchlengths <= 1; ++save_branchlengths) {
         for (int save_bootstraps = 0; save_bootstraps <= 1; ++save_bootstraps) {
@@ -595,7 +599,7 @@ void TEST_SLOW_treeIO_stable() {
                         const char *reloaded_treename = "tree_reloaded";
                         {
                             char     *comment    = NULL;
-                            GBT_TREE *tree       = TREE_load(expectedfile, &comment, true, NULL);
+                            GBT_TREE *tree       = TREE_load(expectedfile, nodeMaker, &comment, true, NULL);
                             GB_ERROR  load_error = tree ? NULL : GB_await_error();
 
                             TEST_EXPECTATION(all().of(that(tree).does_differ_from_NULL(),
@@ -661,6 +665,36 @@ void TEST_SLOW_treeIO_stable() {
     free(outfile);
 
     GB_close(gb_main);
+}
+
+struct MyTreeType : public RootedTree {
+    MyTreeType(TreeRoot *root) : RootedTree(root) {}
+    unsigned get_leaf_count() const OVERRIDE {
+        arb_assert(0);
+        return 0;
+    }
+    void compute_tree() OVERRIDE {
+        arb_assert(0);
+    }
+};
+
+struct MyTreeTypeNodeFactory : public RootedTreeNodeFactory {
+    RootedTree *makeNode(TreeRoot *root) const OVERRIDE { return new MyTreeType(root); }
+};
+
+void TEST_wanted_tree_functionality() {
+    // functionality wanted in RootedTree (for use in arb_consensus_tree)
+
+    char       *comment = NULL;
+    TreeRoot    root(new MyTreeTypeNodeFactory());
+    MyTreeType *tree    = DOWNCAST(MyTreeType*, TREE_load("trees/test.tree", root, &comment, false, NULL));
+
+    // @@@ test reorder_tree
+    // @@@ test set_root
+    // @@@ test auto-detection of "best" root
+
+    delete tree;
+    free(comment);
 }
 
 #endif // UNIT_TESTS

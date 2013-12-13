@@ -10,8 +10,6 @@
 
 #include "TreeRead.h"
 
-#include <arbdbt.h>
-
 void TREE_scale(GBT_TREE *tree, double length_scale, double bootstrap_scale) {
     if (tree->leftson) {
         if (is_marked_as_default_len(tree->leftlen)) tree->leftlen  = DEFAULT_BRANCH_LENGTH;
