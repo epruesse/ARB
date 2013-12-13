@@ -97,9 +97,9 @@ void RootedTree::reorder_subtree(TreeOrder mode) {
         TreeOrder lmode = mode;
         TreeOrder rmode = mode;
 
-        if (mode & BIG_BRANCHES_TO_CENTER) {
-            lmode = BIG_BRANCHES_TO_CENTER;
-            rmode = TreeOrder(BIG_BRANCHES_TO_CENTER | BIG_BRANCHES_TO_BOTTOM);
+        if (mode & BIG_BRANCHES_TO_EDGE) {
+            lmode = BIG_BRANCHES_TO_EDGE;
+            rmode = TreeOrder(BIG_BRANCHES_TO_EDGE | BIG_BRANCHES_TO_BOTTOM);
         }
 
         get_leftson()->reorder_subtree(lmode);

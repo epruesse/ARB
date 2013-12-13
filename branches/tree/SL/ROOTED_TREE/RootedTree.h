@@ -60,7 +60,7 @@ public:
 enum TreeOrder { // contains bit values!
     BIG_BRANCHES_TO_TOP    = 0, // bit 0 = top or bottom
     BIG_BRANCHES_TO_BOTTOM = 1,
-    BIG_BRANCHES_TO_CENTER = 2, // bit 1 = center or edge
+    BIG_BRANCHES_TO_EDGE   = 2, // bit 1 = center or edge
 };
 
 class RootedTree : public GBT_TREE { // derived from Noncopyable

@@ -715,12 +715,12 @@ void TEST_wanted_tree_functionality() {
 #define ORG_1112 "(" ORG_11121 "," ORG_11122 ")"
 #define TOP_1112 "(" TOP_11121 "," TOP_11122 ")"
 #define BOT_1112 "(" BOT_11121 "," BOT_11122 ")"
-#define CEN_1112 "(" TOP_11121 "," BOT_11122 ")"
+#define EDG_1112 "(" TOP_11121 "," BOT_11122 ")"
 
 #define ORG_111 "(" ORG_1111 "," ORG_1112 ")"
 #define TOP_111 "(" TOP_1112 "," TOP_1111 ")"
 #define BOT_111 "(" BOT_1111 "," BOT_1112 ")"
-#define CEN_111 "(" CEN_1112 "," BOT_1111 ")"
+#define EDG_111 "(" EDG_1112 "," BOT_1111 ")"
 
 #define ORG_112 "(OnlGran2,RsnAnta2)"
 #define TOP_112 ORG_112
@@ -729,7 +729,7 @@ void TEST_wanted_tree_functionality() {
 #define ORG_11 "(" ORG_111 "," ORG_112 ")"
 #define TOP_11 "(" TOP_111 "," TOP_112 ")"
 #define BOT_11 "(" BOT_112 "," BOT_111 ")"
-#define CEN_11 "(" CEN_111 "," BOT_112 ")"
+#define EDG_11 "(" EDG_111 "," BOT_112 ")"
 
 #define ORG_12 "(_MhuCaps,ThtNivea)"
 #define TOP_12 "(ThtNivea,_MhuCaps)"
@@ -738,7 +738,7 @@ void TEST_wanted_tree_functionality() {
 #define ORG_1 "(" ORG_11 "," ORG_12 ")"
 #define TOP_1 "(" TOP_11 "," TOP_12 ")"
 #define BOT_1 "(" BOT_12 "," BOT_11 ")"
-#define CEN_1 "(" CEN_11 "," BOT_12 ")"
+#define EDG_1 "(" EDG_11 "," BOT_12 ")"
 
 #define ORG_2 "((LbnMarin,LbnzAlb4),LbnAlexa)"
 #define TOP_2 ORG_2
@@ -750,15 +750,15 @@ void TEST_wanted_tree_functionality() {
 
     tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL        (tree, "(" TOP_1 "," TOP_2 ");"); // org->top
 
-    tree->nothing       (); tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_EQUAL        (tree, "(" CEN_1 "," BOT_2 ");"); // top->center
-    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_EQUAL__BROKEN(tree, "(" CEN_1 "," BOT_2 ");"); // top->center
+    tree->nothing       (); tree->reorder_tree(BIG_BRANCHES_TO_EDGE);   TEST_EXPECT_NEWICK_EQUAL        (tree, "(" EDG_1 "," BOT_2 ");"); // top->edge
+    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_EDGE);   TEST_EXPECT_NEWICK_EQUAL__BROKEN(tree, "(" EDG_1 "," BOT_2 ");"); // top->edge
 
-    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_EQUAL        (tree, "(" BOT_2 "," BOT_1 ");"); // center->bottom
+    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_EQUAL        (tree, "(" BOT_2 "," BOT_1 ");"); // edge->bottom
 
-    tree->nothing       (); tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_EQUAL        (tree, "(" CEN_1 "," BOT_2 ");"); // bottom->center
-    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_EQUAL__BROKEN(tree, "(" CEN_1 "," BOT_2 ");"); // bottom->center
+    tree->nothing       (); tree->reorder_tree(BIG_BRANCHES_TO_EDGE);   TEST_EXPECT_NEWICK_EQUAL        (tree, "(" EDG_1 "," BOT_2 ");"); // bottom->edge
+    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_EDGE);   TEST_EXPECT_NEWICK_EQUAL__BROKEN(tree, "(" EDG_1 "," BOT_2 ");"); // bottom->edge
 
-    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL        (tree, "(" TOP_1 "," TOP_2 ");"); // center->top
+    tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL        (tree, "(" TOP_1 "," TOP_2 ");"); // edge->top
     tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_EQUAL        (tree, "(" BOT_2 "," BOT_1 ");"); // top->bottom
     tree->rotate_subtree(); tree->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_EQUAL        (tree, "(" TOP_1 "," TOP_2 ");"); // bottom->top
 

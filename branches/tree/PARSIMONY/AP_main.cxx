@@ -317,7 +317,7 @@ void TEST_tree_modifications() {
 
 
         const char *top_topo    = "((" B1_TOP "," B2_TOP "):0.081," B3_TOP ");";
-        const char *center_topo = "((" B1_TOP "," B2_BOT "):0.081," B3_BOT ");";
+        const char *edge_topo   = "((" B1_TOP "," B2_BOT "):0.081," B3_BOT ");";
         const char *bottom_topo = "(" B3_BOT ",(" B2_BOT "," B1_BOT "):0.081);";
 
         LocallyModify<AP_main*> setGlobal(ap_main, &env.apMain);
@@ -327,7 +327,7 @@ void TEST_tree_modifications() {
 
         TEST_EXPECT_NEWICK_LEN_EQUAL(root, top_topo);
         // test reorder_tree:
-        root->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NEWICK_LEN_EQUAL(root, center_topo); env.push(); // 2nd stack level (=center_topo)
+        root->reorder_tree(BIG_BRANCHES_TO_EDGE);   TEST_EXPECT_NEWICK_LEN_EQUAL(root, edge_topo); env.push();   // 2nd stack level (=edge_topo)
         root->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_LEN_EQUAL(root, bottom_topo); env.push(); // 3rd stack level (=bottom_topo)
         root->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_LEN_EQUAL(root, top_topo);
 
@@ -405,7 +405,7 @@ void TEST_tree_modifications() {
         env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, rootSetBack_topo);
         env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, rootAtCloTyrob_topo);
         env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, bottom_topo);
-        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, center_topo);
+        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, edge_topo);
         env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, top_topo);
 
         ASSERT_TREE_VALID(root);
