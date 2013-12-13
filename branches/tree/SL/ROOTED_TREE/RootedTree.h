@@ -57,6 +57,12 @@ public:
     ARB_edge find_innermost_edge();
 };
 
+enum TreeOrder { // contains bit values!
+    BIG_BRANCHES_TO_TOP    = 0, // bit 0 = top or bottom
+    BIG_BRANCHES_TO_BOTTOM = 1,
+    BIG_BRANCHES_TO_CENTER = 2, // bit 1 = center or edge
+};
+
 class RootedTree : public GBT_TREE { // derived from Noncopyable
     friend void TreeRoot::change_root(RootedTree *old, RootedTree *newroot);
 
@@ -67,6 +73,8 @@ class RootedTree : public GBT_TREE { // derived from Noncopyable
 
     GBT_LEN& length_ref() { return is_leftson() ? father->leftlen : father->rightlen; }
     const GBT_LEN& length_ref() const { return const_cast<RootedTree*>(this)->length_ref(); }
+
+    void reorder_subtree(TreeOrder mode);
 
 protected:
     void set_tree_root(TreeRoot *new_root);
@@ -121,6 +129,8 @@ public:
             std::swap(leftlen, rightlen);
         }
     }
+
+    void reorder_tree(TreeOrder mode);
 
 #if defined(CHECK_TREE_STRUCTURE)
     void assert_valid() const;

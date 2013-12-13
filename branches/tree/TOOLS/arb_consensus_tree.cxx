@@ -667,14 +667,22 @@ void TEST_SLOW_treeIO_stable() {
     GB_close(gb_main);
 }
 
-struct MyTreeType : public RootedTree {
+class MyTreeType : public RootedTree {
+    unsigned leaf_count;
+public:
     MyTreeType(TreeRoot *root) : RootedTree(root) {}
     unsigned get_leaf_count() const OVERRIDE {
-        arb_assert(0);
-        return 0;
+        return leaf_count;
     }
     void compute_tree() OVERRIDE {
-        arb_assert(0);
+        if (is_leaf) {
+            leaf_count = 1;
+        }
+        else {
+            get_leftson()->compute_tree();
+            get_rightson()->compute_tree();
+            leaf_count = get_leftson()->get_leaf_count()+get_rightson()->get_leaf_count();
+        }
     }
 };
 
@@ -690,16 +698,19 @@ void TEST_wanted_tree_functionality() {
     MyTreeType *tree    = DOWNCAST(MyTreeType*, TREE_load("trees/test.tree", root, &comment, false, NULL));
     // -> ../UNIT_TESTER/run/trees/test.tree
 
-#define BRANCH1 "((s1:0.200,s2:0.400):0.600,(s3:0.300,s 4:0.100):0.100):0.000"
-#define BRANCH2 "(s5:0.020,s-6:0.040):0.060"
+#define BRANCH1     "((s1:0.200,s2:0.400):0.600,(s3:0.300,s 4:0.100):0.100):0.000"
+#define BRANCH1_TOP "((s 4:0.100,s3:0.300):0.100,(s1:0.200,s2:0.400):0.600):0.000"
+
+#define BRANCH2     "(s5:0.020,s-6:0.040):0.060"
+#define BRANCH2_TOP "(s-6:0.040,s5:0.020):0.060"
 
     TEST_EXPECT_NEWICK_LEN_EQUAL(tree, "(" BRANCH1 "," BRANCH2 ");");
 
     tree->swap_sons();
     TEST_EXPECT_NEWICK_LEN_EQUAL(tree, "(" BRANCH2 "," BRANCH1 ");");
 
-    // @@@ test reorder_tree
-    // tree->reorder_tree(BIG_BRANCHES_TO_TOP);
+    tree->reorder_tree(BIG_BRANCHES_TO_TOP);
+    TEST_EXPECT_NEWICK_LEN_EQUAL(tree, "(" BRANCH1_TOP "," BRANCH2_TOP ");");
 
     // @@@ test set_root
     // @@@ test auto-detection of "best" root

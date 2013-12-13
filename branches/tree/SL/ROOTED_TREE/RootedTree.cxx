@@ -74,6 +74,63 @@ void RootedTree::set_tree_root(TreeRoot *new_root) {
     }
 }
 
+void RootedTree::reorder_subtree(TreeOrder mode) {
+    static const char *smallest_leafname; // has to be set to the alphabetically smallest name (when function exits)
+
+    if (is_leaf) {
+        smallest_leafname = name;
+    }
+    else {
+        int leftsize  = get_leftson() ->get_leaf_count();
+        int rightsize = get_rightson()->get_leaf_count();
+
+        bool swap_branches;
+        {
+            bool big_at_top    = leftsize>rightsize;
+            bool big_at_bottom = leftsize<rightsize;
+
+            swap_branches = (mode&BIG_BRANCHES_TO_BOTTOM) ? big_at_top : big_at_bottom;
+        }
+
+        if (swap_branches) swap_sons();
+
+        TreeOrder lmode = mode;
+        TreeOrder rmode = mode;
+
+        if (mode & BIG_BRANCHES_TO_CENTER) {
+            lmode = BIG_BRANCHES_TO_CENTER;
+            rmode = TreeOrder(BIG_BRANCHES_TO_CENTER | BIG_BRANCHES_TO_BOTTOM);
+        }
+
+        get_leftson()->reorder_subtree(lmode);
+        const char *leftleafname = smallest_leafname;
+
+        get_rightson()->reorder_subtree(rmode);
+        const char *rightleafname = smallest_leafname;
+
+        if (leftleafname && rightleafname) {
+            int name_cmp = strcmp(leftleafname, rightleafname);
+            if (name_cmp <= 0) {
+                smallest_leafname = leftleafname;
+            }
+            else {
+                smallest_leafname = rightleafname;
+                if (leftsize == rightsize) { // if sizes of subtrees are equal and rightleafname<leftleafname -> swap branches
+                    swap_sons();
+                }
+            }
+        }
+    }
+    rt_assert(smallest_leafname);
+}
+
+void RootedTree::reorder_tree(TreeOrder mode) {
+    /*! beautify tree (does not change topology, only swaps branches)
+     */
+    compute_tree();
+    reorder_subtree(mode);
+}
+
 // ----------------------------
 //      find_innermost_edge
 

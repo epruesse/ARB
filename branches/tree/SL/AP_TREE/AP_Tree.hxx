@@ -231,12 +231,6 @@ public:
     }
 };
 
-enum TreeOrder { // contains bit values!
-    BIG_BRANCHES_TO_TOP    = 0, // bit 0 = top or bottom
-    BIG_BRANCHES_TO_BOTTOM = 1,
-    BIG_BRANCHES_TO_CENTER = 2, // bit 1 = center or edge
-};
-
 class AP_tree : public ARB_seqtree {
 public: // @@@ fix public members
     AP_tree_members   gr;
@@ -272,8 +266,6 @@ private:
     void reset_child_angles();
     void reset_child_linewidths();
     void reset_child_layout();
-
-    void reorder_subtree(TreeOrder mode);
 
     void update_subtree_information();
 
@@ -383,8 +375,6 @@ public:
     void reset_subtree_layout();
 
     bool hasName(const char *Name) const { return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0; }
-
-    void reorder_tree(TreeOrder mode);
 };
 
 struct AP_TreeNodeFactory : public RootedTreeNodeFactory {
