@@ -890,18 +890,16 @@ ostream& operator<<(ostream& out, const AP_tree_edge& e)
 
     out << ' ';
 
-    if (notTooDeep || &e==NULL)
-    {
+    if (notTooDeep || &e==NULL) {
         out << e;
     }
-    else
-    {
+    else {
         notTooDeep = 1;
         out << "AP_tree_edge(" << e
             << ", node[0]=" << *(e.node[0])
             << ", node[1]=" << *(e.node[1])
             << ")";
-        notTooDeep = 0;
+        notTooDeep = 0; // cppcheck-suppress redundantAssignment
     }
 
     return out << ' ';

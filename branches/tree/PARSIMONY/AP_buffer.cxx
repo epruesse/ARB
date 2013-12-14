@@ -56,14 +56,12 @@ void * AP_STACK::pop() {
 }
 
 void AP_STACK::clear() {
-    AP_STACK_ELEM * pntr;
     while (stacksize > 0) {
-        pntr = first;
+        AP_STACK_ELEM *pntr = first;
         first = first->next;
         stacksize --;
         delete pntr;
     }
-    return;
 }
 
 void AP_STACK::get_init() {
