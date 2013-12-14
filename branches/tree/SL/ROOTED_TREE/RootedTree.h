@@ -81,6 +81,11 @@ protected:
     void set_tree_root(TreeRoot *new_root);
     TreeRoot *get_tree_root() const { return tree_root; }
 
+    bool at_root() const {
+        //! return true for root-node and its sons
+        return !father || !father->father;
+    }
+
 public:
     RootedTree(TreeRoot *root)
         : tree_root(root)
@@ -114,6 +119,7 @@ public:
     RootedTree *get_root_node() { return const_cast<RootedTree*>(const_cast<const RootedTree*>(this)->get_root_node()); }
 
     bool is_root_node() const { return get_root_node() == this; }
+    virtual void set_root();
 
     RootedTree *get_brother() {
         rt_assert(!is_root_node()); // root node has no brother

@@ -453,13 +453,11 @@ void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
 }
 
 void AP_tree::set_root() {
-    if (!father) return;                            // already root
-    if (!father->father) return;                    // already root?
+    if (at_root()) return; // already root
 
-    AP_tree *old_root    = 0;
-    AP_tree *old_brother = 0;
     {
-        AP_branch_members  br1 = br;
+        AP_tree           *old_brother = 0;
+        AP_branch_members  br1         = br;
         AP_tree           *pntr;
 
         for  (pntr = get_father(); pntr->father; pntr = pntr->get_father()) {
@@ -471,77 +469,9 @@ void AP_tree::set_root() {
         if (pntr->leftson == old_brother) {
             pntr->get_rightson()->br = br1;
         }
-        old_root = pntr;
-    }
-    if (old_brother) old_brother = old_brother->get_brother();
-
-    {
-        // move remark branches to top
-        ARB_seqtree *node;
-        char     *remark = nulldup(remark_branch);
-
-        for (node = this; node->father; node = node->get_father()) {
-            char *sh            = node->remark_branch;
-            node->remark_branch = remark;
-            remark              = sh;
-        }
-        free(remark);
-    }
-    AP_FLOAT old_root_len = old_root->leftlen + old_root->rightlen;
-
-    // new node & this init
-
-    old_root->leftson  = this;
-    old_root->rightson = father;                    // will be set later
-
-    if (father->leftson == this) {
-        old_root->leftlen = old_root->rightlen = father->leftlen*.5;
-    }
-    else {
-        old_root->leftlen = old_root->rightlen = father->rightlen*.5;
     }
 
-    ARB_seqtree *next = get_father()->get_father();
-    ARB_seqtree *prev = old_root;
-    ARB_seqtree *pntr = get_father();
-
-    if (father->leftson == this)    father->leftson = old_root; // to set the flag correctly
-
-    // loop from father to son of root, rotate tree
-    while  (next->father) {
-        double len = (next->leftson == pntr) ? next->leftlen : next->rightlen;
-
-        if (pntr->leftson == prev) {
-            pntr->leftson = next;
-            pntr->leftlen = len;
-        }
-        else {
-            pntr->rightson = next;
-            pntr->rightlen = len;
-        }
-
-        pntr->father = prev;
-        prev         = pntr;
-        pntr         = next;
-        next         = next->get_father();
-    }
-    // now next points to the old root, which has been destroyed above
-    //
-    // pointer at oldroot
-    // pntr == brother before old root == next
-
-    if (pntr->leftson == prev) {
-        pntr->leftlen = old_root_len;
-        pntr->leftson = old_brother;
-    }
-    else {
-        pntr->rightlen = old_root_len;
-        pntr->rightson = old_brother;
-    }
-
-    old_brother->father = pntr;
-    pntr->father        = prev;
-    father              = old_root;
+    ARB_seqtree::set_root();
 }
 
 

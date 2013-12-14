@@ -446,7 +446,7 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
 }
 
 void AP_tree_nlen::set_root() {
-    if (!father || !father->father) return; // already root
+    if (at_root()) return; // already root
 
     // from this to root buffer the nodes
     ap_main->push_node(this,  STRUCTURE);

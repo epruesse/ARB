@@ -312,7 +312,7 @@ public:
     GB_ERROR cantMoveNextTo(AP_tree *new_brother);  // use this to detect impossible moves
     virtual void moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
 
-    virtual void set_root();
+    void set_root() OVERRIDE;
 
     void remove_bootstrap();                        // remove bootstrap values from subtree
     void reset_branchlengths();                     // reset branchlengths of subtree to tree_defaults::LENGTH

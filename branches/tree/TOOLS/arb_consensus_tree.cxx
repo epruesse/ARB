@@ -693,6 +693,15 @@ struct MyTreeTypeNodeFactory : public RootedTreeNodeFactory {
     RootedTree *makeNode(TreeRoot *root) const OVERRIDE { return new MyTreeType(root); }
 };
 
+static RootedTree *findNode(RootedTree *node, const char *name) {
+    if (node->name && strcmp(node->name, name) == 0) return node;
+    if (node->is_leaf) return NULL;
+
+    RootedTree *found = findNode(node->get_leftson(), name);
+    if (!found) found   = findNode(node->get_rightson(), name);
+    return found;
+}
+
 void TEST_wanted_tree_functionality() {
     // functionality wanted in RootedTree (for use in arb_consensus_tree)
 
@@ -700,8 +709,6 @@ void TEST_wanted_tree_functionality() {
     TreeRoot    root(new MyTreeTypeNodeFactory());
     MyTreeType *tree    = DOWNCAST(MyTreeType*, TREE_load("trees/bg_exp_p_GrpLen_0.tree", root, &comment, false, NULL));
     // -> ../UNIT_TESTER/run/trees/bg_exp_p_GrpLen_0.tree
-
-    TEST_ASSERT_VALID_TREE(tree);
 
 #define ORG_1111 "(AticSea6,(RblAerol,RblMesop))"
 #define TOP_1111 "((RblAerol,RblMesop),AticSea6)"
@@ -747,15 +754,19 @@ void TEST_wanted_tree_functionality() {
 #define TOP_2 ORG_2
 #define BOT_2 "(LbnAlexa,(LbnMarin,LbnzAlb4))"
 
+    // test swap_sons
+    TEST_ASSERT_VALID_TREE(tree);
     TEST_EXPECT_NEWICK_EQUAL(tree, "(" ORG_1 "," ORG_2 ");");
     tree->swap_sons();
     TEST_EXPECT_NEWICK_EQUAL(tree, "(" ORG_2 "," ORG_1 ");");
 
+    // test reorder_tree
+    TEST_ASSERT_VALID_TREE(tree);
     TreeOrder order[] = { BIG_BRANCHES_TO_TOP, BIG_BRANCHES_TO_BOTTOM, BIG_BRANCHES_TO_EDGE };
 
-    for (int o1 = 0; o1<ARRAY_ELEMS(order); ++o1) {
+    for (size_t o1 = 0; o1<ARRAY_ELEMS(order); ++o1) {
         TreeOrder to_order = order[o1];
-        for (int o2 = 0; o2<ARRAY_ELEMS(order); ++o2) {
+        for (size_t o2 = 0; o2<ARRAY_ELEMS(order); ++o2) {
             TreeOrder from_order = order[o2];
 
             for (int rotate = 0; rotate<=1; ++rotate) {
@@ -769,15 +780,29 @@ void TEST_wanted_tree_functionality() {
                     case BIG_BRANCHES_TO_BOTTOM: TEST_EXPECT_NEWICK_EQUAL(tree, "(" BOT_2 "," BOT_1 ");"); break;
                     default: TEST_REJECT(true); break;
                 }
+
             }
         }
     }
 
+    // test rotate_subtree
+    TEST_ASSERT_VALID_TREE(tree);
     tree->reorder_tree(BIG_BRANCHES_TO_TOP);
     tree->rotate_subtree(); TEST_EXPECT_NEWICK_EQUAL(tree, "((LbnAlexa,(LbnzAlb4,LbnMarin)),((_MhuCaps,ThtNivea),((RsnAnta2,OnlGran2),((AticSea6,(RblMesop,RblAerol)),((PaoMaris,(MabSalin,MabPelag)),(MmbAlkal,(RsbElon4,DnrShiba)))))));");
     tree->rotate_subtree(); TEST_EXPECT_NEWICK_EQUAL(tree, "(" TOP_1 "," TOP_2 ");");
 
-    // @@@ test set_root
+
+    // test set_root
+    TEST_ASSERT_VALID_TREE(tree);
+    RootedTree *AticSea6Grandpa = findNode(tree, "AticSea6")->get_father()->get_father();
+    TEST_REJECT_NULL(AticSea6Grandpa);
+    TEST_ASSERT_VALID_TREE(AticSea6Grandpa);
+
+    AticSea6Grandpa->set_root();
+    TEST_EXPECT_NEWICK_EQUAL(tree,
+                             "((" ORG_1112 "," TOP_1111 ")," // AticSea6 is direct son of TOP_1111
+                             "((" ORG_2 "," TOP_12 ")," ORG_112 "));");
+
     // @@@ test auto-detection of "best" root
 
     delete tree;

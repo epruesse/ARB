@@ -145,6 +145,81 @@ void RootedTree::rotate_subtree() {
     }
 }
 
+void RootedTree::set_root() {
+    if (at_root()) return; // already root
+
+    RootedTree *old_root    = get_root_node();
+    RootedTree *old_brother = is_inside(old_root->get_leftson()) ? old_root->get_rightson() : old_root->get_leftson();
+
+    {
+        // move remark branches to top
+        RootedTree *node;
+        char     *remark = nulldup(remark_branch);
+
+        for (node = this; node->father; node = node->get_father()) {
+            char *sh            = node->remark_branch;
+            node->remark_branch = remark;
+            remark              = sh;
+        }
+        free(remark);
+    }
+
+    GBT_LEN old_root_len = old_root->leftlen + old_root->rightlen;
+
+    // new node & this init
+    old_root->leftson  = this;
+    old_root->rightson = father; // will be set later
+
+    if (father->leftson == this) {
+        old_root->leftlen = old_root->rightlen = father->leftlen*.5;
+    }
+    else {
+        old_root->leftlen = old_root->rightlen = father->rightlen*.5;
+    }
+
+    RootedTree *next = get_father()->get_father();
+    RootedTree *prev = old_root;
+    RootedTree *pntr = get_father();
+
+    if (father->leftson == this)    father->leftson = old_root; // to set the flag correctly
+
+    // loop from father to son of root, rotate tree
+    while  (next->father) {
+        double len = (next->leftson == pntr) ? next->leftlen : next->rightlen;
+
+        if (pntr->leftson == prev) {
+            pntr->leftson = next;
+            pntr->leftlen = len;
+        }
+        else {
+            pntr->rightson = next;
+            pntr->rightlen = len;
+        }
+
+        pntr->father = prev;
+        prev         = pntr;
+        pntr         = next;
+        next         = next->get_father();
+    }
+    // now next points to the old root, which has been destroyed above
+    //
+    // pointer at oldroot
+    // pntr == brother before old root == next
+
+    if (pntr->leftson == prev) {
+        pntr->leftlen = old_root_len;
+        pntr->leftson = old_brother;
+    }
+    else {
+        pntr->rightlen = old_root_len;
+        pntr->rightson = old_brother;
+    }
+
+    old_brother->father = pntr;
+    pntr->father        = prev;
+    father              = old_root;
+}
+
 // ----------------------------
 //      find_innermost_edge
 
