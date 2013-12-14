@@ -147,7 +147,7 @@ void AP_tree_nlen::linkAllEdges(AP_tree_edge *edge1, AP_tree_edge *edge2, AP_tre
 // -----------------------------
 //      Check tree structure
 
-#if defined(CHECK_TREE_STRUCTURE)
+#if defined(PROVIDE_TREE_STRUCTURE_TESTS)
 
 inline const AP_tree_edge *edge_between(const AP_tree_nlen *node1, const AP_tree_nlen *node2) {
     AP_tree_edge *edge_12 = node1->edgeTo(node2);
@@ -183,7 +183,7 @@ void AP_tree_nlen::assert_valid() const {
     AP_tree::assert_valid();
 }
 
-#endif
+#endif // PROVIDE_TREE_STRUCTURE_TESTS
 
 // -------------------------
 //      Tree operations:

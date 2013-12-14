@@ -262,12 +262,6 @@ static AP_tree_nlen *findNode(AP_tree_nlen *node, const char *name) {
     return found;
 }
 
-#if defined(CHECK_TREE_STRUCTURE)
-#define ASSERT_TREE_VALID(node) (node)->assert_valid()
-#else
-#define ASSERT_TREE_VALID(node) 
-#endif
-
 void TEST_tree_modifications() {
     PARSIMONY_testenv env("TEST_trees.arb");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
@@ -278,7 +272,7 @@ void TEST_tree_modifications() {
 
         AP_tree_edge::initialize(root);   // builds edges
 
-        ASSERT_TREE_VALID(root);
+        TEST_ASSERT_VALID_TREE(root);
 
         root->compute_tree();
 
@@ -321,7 +315,7 @@ void TEST_tree_modifications() {
         LocallyModify<AP_main*> setGlobal(ap_main, &env.apMain);
         env.push(); // 1st stack level (=top_topo)
 
-        ASSERT_TREE_VALID(root);
+        TEST_ASSERT_VALID_TREE(root);
 
         TEST_EXPECT_NEWICK_LEN_EQUAL(root, top_topo);
         // test reorder_tree:
@@ -329,7 +323,7 @@ void TEST_tree_modifications() {
         root->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_LEN_EQUAL(root, bottom_topo); env.push(); // 3rd stack level (=bottom_topo)
         root->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_LEN_EQUAL(root, top_topo);
 
-        ASSERT_TREE_VALID(root);
+        TEST_ASSERT_VALID_TREE(root);
 
         // test set root:
         AP_tree_nlen *CloTyrob = findNode(root, "CloTyrob");
@@ -338,7 +332,7 @@ void TEST_tree_modifications() {
         ARB_edge rootEdge(root->get_leftson(), root->get_rightson());
         CloTyrob->set_root();
 
-        ASSERT_TREE_VALID(root);
+        TEST_ASSERT_VALID_TREE(root);
 
         const char *rootAtCloTyrob_topo =
             "(CloTyrob:0.004,"
@@ -348,7 +342,7 @@ void TEST_tree_modifications() {
         TEST_EXPECT_NEWICK_LEN_EQUAL(root, rootAtCloTyrob_topo);
         env.push(); // 4th stack level (=rootAtCloTyrob_topo)
 
-        ASSERT_TREE_VALID(root);
+        TEST_ASSERT_VALID_TREE(root);
 
         AP_tree_nlen *CelBiazoFather = findNode(root, "CelBiazo")->get_father();
         TEST_REJECT_NULL(CelBiazoFather);
@@ -357,7 +351,7 @@ void TEST_tree_modifications() {
         const char *rootAtCelBiazoFather_topo = "(" B3_LEFT_TOP_SONS ":0.104,((" B1_TOP "," B2_TOP "):0.162,CytAquat:0.711):0.104);";
         TEST_EXPECT_NEWICK_LEN_EQUAL(root, rootAtCelBiazoFather_topo);
 
-        ASSERT_TREE_VALID(root);
+        TEST_ASSERT_VALID_TREE(root);
 
         ARB_edge oldRootEdge(rootEdge.source(), rootEdge.dest());
         DOWNCAST(AP_tree_nlen*,oldRootEdge.son())->set_root();
@@ -366,7 +360,7 @@ void TEST_tree_modifications() {
         TEST_EXPECT_NEWICK_LEN_EQUAL(root, rootSetBack_topo);
         env.push(); // 5th stack level (=rootSetBack_topo)
 
-        ASSERT_TREE_VALID(root);
+        TEST_ASSERT_VALID_TREE(root);
 
         // test remove:
         AP_tree_nlen *CurCitre = findNode(root, "CurCitre");
@@ -378,7 +372,7 @@ void TEST_tree_modifications() {
         // ------------------------------------------------------------------- ^^^ = B3_TOP_SONS minus CurCitre
         TEST_EXPECT_NEWICK_LEN_EQUAL(root, CurCitre_removed_topo);
 
-        ASSERT_TREE_VALID(root);
+        TEST_ASSERT_VALID_TREE(root);
 
         TEST_EXPECT_EQUAL(root->gr.leaf_sum, 15); // out of date
         root->compute_tree();
@@ -386,7 +380,7 @@ void TEST_tree_modifications() {
 
         env.push(); // 6th stack level (=CurCitre_removed_topo)
 
-        ASSERT_TREE_VALID(root);
+        TEST_ASSERT_VALID_TREE(root);
 
         // test insert:
         AP_tree_nlen *CloCarni = findNode(root, "CloCarni");
@@ -400,7 +394,7 @@ void TEST_tree_modifications() {
         AP_tree_edge *edge1_del_manually = CurCitre->edgeTo(node_del_manually);
         AP_tree_edge *edge2_del_manually = CurCitre->get_brother()->edgeTo(node_del_manually);
 
-        ASSERT_TREE_VALID(root);
+        TEST_ASSERT_VALID_TREE(root);
 
         // now check pops:
         env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, CurCitre_removed_topo);
@@ -410,7 +404,7 @@ void TEST_tree_modifications() {
         env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, edge_topo);
         env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, top_topo);
 
-        ASSERT_TREE_VALID(root);
+        TEST_ASSERT_VALID_TREE(root);
 
         AP_tree_edge::destroy(root);
 

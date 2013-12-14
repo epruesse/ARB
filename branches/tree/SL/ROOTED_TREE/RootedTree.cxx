@@ -36,7 +36,7 @@ bool RootedTree::is_inside(const RootedTree *subtree) const {
     return this == subtree || (father && get_father()->is_inside(subtree));
 }
 
-#if defined(CHECK_TREE_STRUCTURE)
+#if defined(PROVIDE_TREE_STRUCTURE_TESTS)
 
 void RootedTree::assert_valid() const {
     rt_assert(this);
@@ -64,7 +64,7 @@ void RootedTree::assert_valid() const {
         }
     }
 }
-#endif // CHECK_TREE_STRUCTURE
+#endif // PROVIDE_TREE_STRUCTURE_TESTS
 
 void RootedTree::set_tree_root(TreeRoot *new_root) {
     if (tree_root != new_root) {

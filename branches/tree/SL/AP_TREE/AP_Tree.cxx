@@ -291,9 +291,7 @@ void AP_tree::remove() {
 
         ap_assert(fath == father);
 
-#if defined(CHECK_TREE_STRUCTURE)
-        if (troot->get_root_node()) ASSERT_VALID_TREE(troot->get_root_node());
-#endif // CHECK_TREE_STRUCTURE
+        ASSERT_VALID_TREE_OR_NULL(troot->get_root_node());
 
         troot->inform_about_delete(fath);
         troot->inform_about_delete(this);
@@ -1012,9 +1010,7 @@ long AP_tree_root::remove_leafs(AWT_RemoveType awt_remove_type) {
     }
     delete [] list;
 
-#if defined(CHECK_TREE_STRUCTURE)
-    if (get_root_node()) ASSERT_VALID_TREE(get_root_node());
-#endif // CHECK_TREE_STRUCTURE
+    ASSERT_VALID_TREE_OR_NULL(get_root_node());
     return removed;
 }
 

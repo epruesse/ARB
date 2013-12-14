@@ -159,10 +159,10 @@ public:
 
     char *getSequenceCopy();
 
-#if defined(CHECK_TREE_STRUCTURE)
+#if defined(PROVIDE_TREE_STRUCTURE_TESTS)
     void assert_edges_valid() const;
     void assert_valid() const;
-#endif // CHECK_TREE_STRUCTURE
+#endif // PROVIDE_TREE_STRUCTURE_TESTS
 
 
     friend      class AP_tree_edge;

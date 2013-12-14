@@ -21,11 +21,12 @@
 
 #define rt_assert(cond) arb_assert(cond)
 
-#if defined(DEBUG)
-#if defined(DEVEL_RALF)
-#define CHECK_TREE_STRUCTURE
-#endif // DEVEL_RALF
-#endif // DEBUG
+#if defined(DEBUG) || defined(UNIT_TESTS)
+#define PROVIDE_TREE_STRUCTURE_TESTS
+#endif
+#if defined(DEVEL_RALF) && defined(PROVIDE_TREE_STRUCTURE_TESTS)
+#define AUTO_CHECK_TREE_STRUCTURE // Note: dramatically slows down most tree operations
+#endif
 
 class TreeRoot;
 class RootedTree;
@@ -132,9 +133,9 @@ public:
     void rotate_subtree(); // flip whole subtree ( = recursive swap_sons())
     void reorder_tree(TreeOrder mode);
 
-#if defined(CHECK_TREE_STRUCTURE)
+#if defined(PROVIDE_TREE_STRUCTURE_TESTS)
     void assert_valid() const;
-#endif // CHECK_TREE_STRUCTURE
+#endif // PROVIDE_TREE_STRUCTURE_TESTS
 };
 
 inline GBT_TREE *TreeRoot::makeNode() const {
@@ -157,11 +158,32 @@ inline GBT_TREE *TreeRoot::makeNode() const {
     DEFINE_TREE_RELATIVES_ACCESSORS(TreeType)
 
 
-#if defined(CHECK_TREE_STRUCTURE)
-#define ASSERT_VALID_TREE(tree) (tree)->assert_valid()
+// -------------------------
+//      structure tests
+
+#if defined(PROVIDE_TREE_STRUCTURE_TESTS)
+template <typename TREE>
+inline void assert_tree_has_valid_structure(const TREE *tree, bool acceptNULL) {
+    rt_assert(acceptNULL || tree);
+    if (tree) tree->assert_valid();
+}
+#endif
+
+#if defined(AUTO_CHECK_TREE_STRUCTURE)
+#define ASSERT_VALID_TREE(tree)         assert_tree_has_valid_structure(tree, false)
+#define ASSERT_VALID_TREE_OR_NULL(tree) assert_tree_has_valid_structure(tree, true)
 #else
 #define ASSERT_VALID_TREE(tree)
-#endif // CHECK_TREE_STRUCTURE
+#define ASSERT_VALID_TREE_OR_NULL(tree)
+#endif // AUTO_CHECK_TREE_STRUCTURE
+
+#if defined(PROVIDE_TREE_STRUCTURE_TESTS) && defined(UNIT_TESTS)
+#define TEST_ASSERT_VALID_TREE(tree)         assert_tree_has_valid_structure(tree, false)
+#define TEST_ASSERT_VALID_TREE_OR_NULL(tree) assert_tree_has_valid_structure(tree, true)
+#else
+#define TEST_ASSERT_VALID_TREE(tree)
+#define TEST_ASSERT_VALID_TREE_OR_NULL(tree)
+#endif
 
 // ----------------------
 //      ARB_edge_type
