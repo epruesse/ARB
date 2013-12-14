@@ -170,6 +170,10 @@ struct ARB_countedTree : public ARB_seqtree {
     {}
     DEFINE_TREE_ACCESSORS(ARB_seqtree_root, ARB_countedTree);
 
+    // @@@ TODO:
+    // - add debug code (checking init_tree() is called exactly once)
+    // - init_tree() might be called automatically via announce_tree_constructed()
+
     virtual void init_tree()              = 0;      /* impl. shall initialize the tree
                                                      * (including some kind of leaf counter)
                                                      * needs to be called manually */
