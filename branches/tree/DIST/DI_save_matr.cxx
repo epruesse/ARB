@@ -23,7 +23,7 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
     switch (type) {
         case DI_SAVE_PHYLIP_COMP:
             {
-                fprintf(out, "    %li\n", nentries);
+                fprintf(out, "    %zu\n", nentries);
                 for (row = 0; row<nentries; row++) {
                     fprintf(out, "%-10s ", entries[row]->name);
                     for (col=0; col<row; col++) {

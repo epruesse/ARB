@@ -640,7 +640,7 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path) {
 
                 s_len = aliview->get_length();
                 fprintf(out, "\nDistance matrix (Helixdist Helixlen Nonhelixdist Nonhelixlen):");
-                fprintf(out, "\n%li", nentries);
+                fprintf(out, "\n%zu", nentries);
 
                 const int MAXDISTDEBUG = 1000;
                 double    distdebug[MAXDISTDEBUG];
@@ -836,11 +836,9 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
                         dist = diffsum / all_sum;
                     }
                     else {
-                        int pos;
-                        int b1, b2;
-                        for (pos = s_len; pos >= 0; pos--) {
-                            b1 = *(seq1++);
-                            b2 = *(seq2++);
+                        for (int pos = s_len; pos >= 0; pos--) {
+                            int b1 = *(seq1++);
+                            int b2 = *(seq2++);
                             if (cancel_columns[b1]) continue;
                             if (cancel_columns[b2]) continue;
                             columns++;
@@ -1073,14 +1071,12 @@ static void di_mark_by_distance(AW_window *aww, WeightedFilter *weighted_filter)
     else {
         GB_transaction ta(GLOBAL_gb_main);
 
-        char   *selected    = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
-        GBDATA *gb_selected = 0;
-
+        char *selected = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
         if (!selected[0]) {
             error = "Please select a species";
         }
         else {
-            gb_selected = GBT_find_species(GLOBAL_gb_main, selected);
+            GBDATA *gb_selected = GBT_find_species(GLOBAL_gb_main, selected);
             if (!gb_selected) {
                 error = GBS_global_string("Couldn't find species '%s'", selected);
             }
