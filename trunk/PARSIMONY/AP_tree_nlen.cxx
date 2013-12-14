@@ -173,9 +173,12 @@ void AP_tree_nlen::linkAllEdges(AP_tree_edge *edge1, AP_tree_edge *edge2, AP_tre
 
 inline const AP_tree_edge *edge_between(const AP_tree_nlen *node1, const AP_tree_nlen *node2) {
     AP_tree_edge *edge_12 = node1->edgeTo(node2);
-    AP_tree_edge *edge_21 = node2->edgeTo(node1);
 
+#if defined(ASSERTION_USED)
+    AP_tree_edge *edge_21 = node2->edgeTo(node1);
     ap_assert(edge_12 == edge_21); // nodes should agree about their edge
+#endif
+
     return edge_12;
 }
 
@@ -536,14 +539,14 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
     AP_tree_nlen *oldBrother        = get_brother();
     AP_tree_nlen *newBrothersFather = newBrother->get_father();
     int           edgesChange       = ! (father==newBrother || newBrother->father==father);
-    AP_tree_edge *e1, *e2, *e3, *e4;
+    AP_tree_edge *e1, *e2, *e3;
 
     if (edgesChange) {
         if (thisFather==newBrothersFather->get_father()) { // son -> son of brother
             if (grandFather) {
                 if (grandFather->get_father()) {
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                    e4 = newBrother->edgeTo(oldBrother)->unlink();
+                    AP_tree_edge *e4 = newBrother->edgeTo(oldBrother)->unlink();
 
                     AP_tree::moveNextTo(newBrother, rel_pos);
 
@@ -555,7 +558,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                     AP_tree_nlen *uncle = thisFather->get_brother();
 
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                    e4 = newBrother->edgeTo(oldBrother)->unlink();
+                    AP_tree_edge *e4 = newBrother->edgeTo(oldBrother)->unlink();
 
                     AP_tree::moveNextTo(newBrother, rel_pos);
 
@@ -573,7 +576,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
         else if (grandFather==newBrothersFather) { // son -> brother of father
             if (grandFather->father) {
                 thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                e4 = grandFather->edgeTo(newBrother)->unlink();
+                AP_tree_edge *e4 = grandFather->edgeTo(newBrother)->unlink();
 
                 AP_tree::moveNextTo(newBrother, rel_pos);
 
@@ -593,7 +596,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
 
             if (!grandFather) { // son of root
                 oldBrother->unlinkAllEdges(&e1, &e2, &e3);
-                e4 = newBrother->edgeTo(newBrothersFather)->unlink();
+                AP_tree_edge *e4 = newBrother->edgeTo(newBrothersFather)->unlink();
 
                 AP_tree::moveNextTo(newBrother, rel_pos);
 
@@ -604,7 +607,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
             else if (!grandFather->get_father()) { // grandson of root
                 if (newBrothersFather->get_father()->get_father()==NULL) { // grandson of root -> grandson of root
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                    e4 = newBrother->edgeTo(newBrothersFather)->unlink();
+                    AP_tree_edge *e4 = newBrother->edgeTo(newBrothersFather)->unlink();
 
                     AP_tree::moveNextTo(newBrother, rel_pos);
 
@@ -616,7 +619,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                     AP_tree_nlen *uncle = thisFather->get_brother();
 
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                    e4 = newBrother->edgeTo(newBrothersFather)->unlink();
+                    AP_tree_edge *e4 = newBrother->edgeTo(newBrothersFather)->unlink();
 
                     AP_tree::moveNextTo(newBrother, rel_pos);
 
@@ -630,7 +633,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                     AP_tree_nlen *newBrothersBrother = newBrother->get_brother();
 
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                    e4 = newBrother->edgeTo(newBrothersBrother)->unlink();
+                    AP_tree_edge *e4 = newBrother->edgeTo(newBrothersBrother)->unlink();
 
                     AP_tree::moveNextTo(newBrother, rel_pos);
 
@@ -640,7 +643,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                 }
                 else { // simple independent move
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                    e4 = newBrother->edgeTo(newBrothersFather)->unlink();
+                    AP_tree_edge *e4 = newBrother->edgeTo(newBrothersFather)->unlink();
 
                     AP_tree::moveNextTo(newBrother, rel_pos);
 

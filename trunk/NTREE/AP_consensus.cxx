@@ -103,15 +103,14 @@ static void CON_evaluatestatistic(char   *&result, int **statistic, char **group
     int j = 0;
     int groupfr[MAX_GROUPS]; // frequency of group
     int highestfr, highestgr;
-    long numentries;
 
     arb_progress progress("calculating result", alignlength);
 
     result=(char *)GB_calloc(alignlength+1, 1);
 
     for (int column=0; column<alignlength; column++) {
-        numentries=0;
-        for (row=0; statistic[row]; row++) numentries+=statistic[row][column];
+        long numentries = 0;
+        for (row=0; statistic[row]; row++) numentries += statistic[row][column];
         if (numentries==0) {
             result[column]='.';
         }
@@ -287,12 +286,10 @@ static int CON_makegrouptable(char **gf, char *groupnames,
  */
 
 
-static long CON_makestatistic(int **statistic, int *convtable, char *align, int onlymarked)
-{
-    long maxalignlen=GBT_get_alignment_len(GLOBAL.gb_main, align);
-    GBDATA *gb_species, *alidata;
-    int i, nrofspecies=0;
+static long CON_makestatistic(int **statistic, int *convtable, char *align, int onlymarked) {
+    long maxalignlen = GBT_get_alignment_len(GLOBAL.gb_main, align);
 
+    int nrofspecies;
     if (onlymarked) {
         nrofspecies = GBT_count_marked_species(GLOBAL.gb_main);
     }
@@ -303,6 +300,7 @@ static long CON_makestatistic(int **statistic, int *convtable, char *align, int 
     arb_progress progress(nrofspecies);
     progress.auto_subtitles("Examining sequence");
 
+    GBDATA *gb_species;
     if (onlymarked) {
         gb_species = GBT_first_marked_species(GLOBAL.gb_main);
     }
@@ -311,11 +309,12 @@ static long CON_makestatistic(int **statistic, int *convtable, char *align, int 
     }
 
     while (gb_species) {
-        if ((alidata=GBT_read_sequence(gb_species, align))) {
+        GBDATA *alidata = GBT_read_sequence(gb_species, align);
+        if (alidata) {
             unsigned char        c;
             const unsigned char *data = (const unsigned char *)GB_read_char_pntr(alidata);
 
-            i = 0;
+            int i = 0;
             while ((c=data[i])) {
                 if ((c=='-') || ((c>='a')&&(c<='z')) || ((c>='A')&&(c<='Z'))
                     || (c=='*')) {
@@ -333,7 +332,7 @@ static long CON_makestatistic(int **statistic, int *convtable, char *align, int 
         }
         ++progress;
     }
-    return (nrofspecies);
+    return nrofspecies;
 }
 
 

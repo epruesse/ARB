@@ -40,7 +40,7 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
 
     if (!error) {
         const int MAXLETTER   = 256;
-        const int FIRSTLETTER = 0;
+        const int FIRSTLETTER = 0; // cppcheck-suppress variableScope
 
         typedef bool letterOccurs[MAXLETTER];
 
