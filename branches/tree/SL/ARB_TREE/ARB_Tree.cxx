@@ -90,7 +90,8 @@ GB_ERROR ARB_seqtree_root::loadFromDB(const char *name) {
             else {
                 error = GB_add_callback(gb_tree, GB_CB_DELETE, makeDatabaseCallback(tree_deleted_cbwrapper, this));
                 if (!error) {
-                    change_root(NULL, arb_tree);
+                    at_assert(arb_tree->get_root_node() == arb_tree);
+
                     tree_name    = strdup(name);
                     isLinkedToDB = false;
                 }

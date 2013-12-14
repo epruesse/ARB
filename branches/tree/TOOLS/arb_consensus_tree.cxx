@@ -701,6 +701,8 @@ void TEST_wanted_tree_functionality() {
     MyTreeType *tree    = DOWNCAST(MyTreeType*, TREE_load("trees/bg_exp_p_GrpLen_0.tree", root, &comment, false, NULL));
     // -> ../UNIT_TESTER/run/trees/bg_exp_p_GrpLen_0.tree
 
+    TEST_ASSERT_VALID_TREE(tree);
+
 #define ORG_1111 "(AticSea6,(RblAerol,RblMesop))"
 #define TOP_1111 "((RblAerol,RblMesop),AticSea6)"
 #define BOT_1111 ORG_1111

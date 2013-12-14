@@ -502,6 +502,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, const T
                             if (!error) {
                                 gb_assert(tree);
                                 if (tree_size) *tree_size = size; // return size of tree (=leafs-1)
+                                tree->announce_tree_constructed();
                                 return tree;
                             }
 

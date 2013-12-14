@@ -91,6 +91,7 @@ public:
                 add_warningf("Unexpected input-data after tree: '%s'", unused_input);
                 free(unused_input);
             }
+            tree->announce_tree_constructed();
         }
         return tree;
     }

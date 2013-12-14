@@ -74,6 +74,11 @@ public:
 
     DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(GBT_TREE);
 
+    virtual void announce_tree_constructed() {
+        // (has to be) called after tree has been constructed
+        gb_assert(!father); // has to be called with root-node!
+    }
+
     bool is_son_of(const GBT_TREE *Father) const {
         return father == Father &&
             (father->leftson == this || father->rightson == this);

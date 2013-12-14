@@ -200,9 +200,6 @@ void AP_tree::insert(AP_tree *new_brother) {
     }
 }
 
-#if defined(WARN_TODO)
-#warning move to ARB_seqtree ?
-#endif
 void AP_tree_root::change_root(RootedTree *oldroot, RootedTree *newroot) {
     if (root_changed_cb) {
         root_changed_cb(root_changed_cd, DOWNCAST(AP_tree*, oldroot), DOWNCAST(AP_tree*, newroot));

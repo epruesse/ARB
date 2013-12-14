@@ -91,6 +91,11 @@ public:
         }
     }
 
+    void announce_tree_constructed() OVERRIDE {
+        GBT_TREE::announce_tree_constructed();
+        get_tree_root()->change_root(NULL, this);
+    }
+
     virtual unsigned get_leaf_count() const = 0;
     virtual void compute_tree()             = 0;
 
