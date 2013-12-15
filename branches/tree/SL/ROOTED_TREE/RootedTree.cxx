@@ -11,6 +11,7 @@
 
 #include "RootedTree.h"
 #include <map>
+#include <cmath> // needed with 4.4.3 (but not with 4.7.3)
 
 // ------------------
 //      TreeRoot
