@@ -250,10 +250,12 @@ public:
 };
 
 class EdgeFinder {
-    std::map<RootedTree*, NodeLeafDistance> data;
+    std::map<RootedTree*, NodeLeafDistance> data; // maximum distance to farthest leaf
 
     ARB_edge innermost;
-    GBT_LEN  min_maxDist;
+    double   min_distdiff; // abs diff between up- and downdiff
+
+    GBT_LEN calc_distdiff(GBT_LEN d1, GBT_LEN d2) { return fabs(d1-d2); }
 
     void insert_tree(RootedTree *node) {
         if (node->is_leaf) {
@@ -278,11 +280,12 @@ class EdgeFinder {
         GBT_LEN upDist   = std::max(data[father].get_updist(), data[brother].get_downdist()+brothLen);
         GBT_LEN downDist = data[node].get_downdist();
 
-        GBT_LEN edgedist = std::max(upDist, downDist)+len/2;
-
-        if (edgedist<min_maxDist) { // found better edge
-            innermost   = ARB_edge(node, father);
-            min_maxDist = edgedist;
+        {
+            GBT_LEN edge_dd = calc_distdiff(upDist, downDist);
+            if (edge_dd<min_distdiff) { // found better edge
+                innermost    = ARB_edge(node, father);
+                min_distdiff = edge_dd;
+            }
         }
 
         data[node].set_updist(upDist+len);
@@ -317,7 +320,7 @@ public:
         data[lson].set_updist(rddist+rootEdgeLen);
         data[rson].set_updist(lddist+rootEdgeLen);
 
-        min_maxDist = std::max(lddist, rddist)+rootEdgeLen/2;
+        min_distdiff = calc_distdiff(lddist, rddist);
 
         findBetterEdge(lson);
         findBetterEdge(rson);
