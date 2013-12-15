@@ -83,12 +83,12 @@ static int RB_INFO_order(const void *v1, const void *v2, void *) {
     return cmp;
 }
 
-RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
+RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree) {
     // doing all the work for rb_gettree() :-)
     // convert a Ntree into a GBT-Tree
 
     GBT_TREE *gbtnode = new GBT_TREE;
-    gbtnode->father   = father;
+    gbtnode->father   = NULL;
 
     RB_INFO *info = (RB_INFO *) getmem(sizeof(RB_INFO));
     info->node    = gbtnode;                             // return-information
@@ -114,7 +114,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
         {
             int sidx = 0;
             while (nsonp) {
-                son_info[sidx++] = rbtree(nsonp->node, NULL);
+                son_info[sidx++] = rbtree(nsonp->node);
                 nsonp            = nsonp->next;
             }
 
@@ -167,7 +167,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
 
         arb_assert(multifurc == 1);
         arb_assert(son_info[0] == info);
-        arb_assert(info->node->father == father);
+        arb_assert(info->node->father == NULL);
     }
     return info;
 }
@@ -175,7 +175,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
 
 GBT_TREE *ConsensusTree::rb_gettree(const NT_NODE *tree) {
     // reconstruct GBT Tree from Ntree. Ntree is not destructed afterwards!
-    RB_INFO  *info    = rbtree(tree, NULL);
+    RB_INFO  *info    = rbtree(tree);
     GBT_TREE *gbttree = info->node;
     free(info);
     return gbttree;

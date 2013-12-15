@@ -58,7 +58,7 @@ class ConsensusTree : virtual Noncopyable {
         return names[idx];
     }
 
-    struct RB_INFO *rbtree(const NT_NODE *tree, GBT_TREE *father);
+    struct RB_INFO *rbtree(const NT_NODE *tree);
     GBT_TREE       *rb_gettree(const NT_NODE *tree);
 
 
