@@ -79,7 +79,6 @@ class RootedTree : public GBT_TREE { // derived from Noncopyable
 
 protected:
     void set_tree_root(TreeRoot *new_root);
-    TreeRoot *get_tree_root() const { return tree_root; }
 
     bool at_root() const {
         //! return true for root-node and its sons
@@ -110,6 +109,8 @@ public:
     bool is_anchestor_of(const RootedTree *descendant) const {
         return !is_leaf && descendant != this && descendant->is_inside(this);
     }
+
+    TreeRoot *get_tree_root() const { return tree_root; }
 
     const RootedTree *get_root_node() const {
         const RootedTree *root = get_tree_root()->get_root_node();
