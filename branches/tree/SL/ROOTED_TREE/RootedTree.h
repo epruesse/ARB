@@ -38,16 +38,44 @@ struct RootedTreeNodeFactory { // acts similar to TreeNodeFactory for trees with
 };
 
 class TreeRoot : public TreeNodeFactory, virtual Noncopyable {
-    RootedTree *rootNode; // root node of the tree
+    RootedTree            *rootNode; // root node of the tree
     RootedTreeNodeFactory *nodeMaker;
+    bool                   deleteWithNodes;
 
 public:
-    TreeRoot(RootedTreeNodeFactory *nodeMaker_)
+    TreeRoot(RootedTreeNodeFactory *nodeMaker_, bool deleteWithNodes_)
         : rootNode(NULL),
-          nodeMaker(nodeMaker_)
-    {}
+          nodeMaker(nodeMaker_),
+          deleteWithNodes(deleteWithNodes_)
+    {
+        /*! Create a new TreeRoot for a RootedTree.
+         * Purpose:
+         * - act as TreeNodeFactory
+         * - place to store the current rootNode
+         * - place to store other tree related information by deriving from TreeRoot
+         *
+         * @param nodeMaker_ heap-copy of a RootedTreeNodeFactory, will be deleted when this is destructed
+         * @param deleteWithNodes_ true -> delete TreeRoot when the rootNode gets destroyed (TreeRoot needs to be a heap-copy in that case)
+         *
+         * Ressource handling of the tree structure is quite difficult (and error-prone).
+         * There are two common use-cases:
+         * 1. TreeRoot is owned by some other object/scope
+         *    - pass false for deleteWithNodes_
+         *    - you may or may not destroy (parts of) the RootedTree manually
+         * 2. TreeRoot is owned by the RootedTree
+         *    - pass true for deleteWithNodes_
+         *    - when the rootNode gets destroyed, the TreeRoot will be destroyed as well
+         */
+    }
     virtual ~TreeRoot();
     virtual void change_root(RootedTree *old, RootedTree *newroot);
+
+    void delete_by_node() {
+        if (deleteWithNodes) {
+            rt_assert(!rootNode);
+            delete this;
+        }
+    }
 
     // TreeNodeFactory interface
     inline GBT_TREE *makeNode() const OVERRIDE;
@@ -90,8 +118,12 @@ public:
         : tree_root(root)
     {}
     ~RootedTree() OVERRIDE {
-        if (tree_root && tree_root->get_root_node() == this) {
-            tree_root->TreeRoot::change_root(this, NULL);
+        if (tree_root) {
+            rt_assert(tree_root->get_root_node() == this); // you may only free the root-node or unlinked nodes (i.e. such with tree_root==NULL)
+
+            TreeRoot *root = tree_root;
+            root->TreeRoot::change_root(this, NULL);
+            root->delete_by_node();
         }
     }
 
@@ -104,6 +136,8 @@ public:
     virtual void compute_tree()             = 0;
 
     DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(RootedTree);
+
+    void forget_origin() { set_tree_root(NULL); }
 
     bool is_inside(const RootedTree *subtree) const;
     bool is_anchestor_of(const RootedTree *descendant) const {

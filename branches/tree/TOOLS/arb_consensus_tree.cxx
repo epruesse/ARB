@@ -705,9 +705,11 @@ static RootedTree *findNode(RootedTree *node, const char *name) {
 void TEST_wanted_tree_functionality() {
     // functionality wanted in RootedTree (for use in arb_consensus_tree)
 
-    char       *comment = NULL;
-    TreeRoot    root(new MyTreeTypeNodeFactory());
-    MyTreeType *tree    = DOWNCAST(MyTreeType*, TREE_load("trees/bg_exp_p_GrpLen_0.tree", root, &comment, false, NULL));
+    char *comment = NULL;
+
+    MyTreeType *tree = DOWNCAST(MyTreeType*, TREE_load("trees/bg_exp_p_GrpLen_0.tree",
+                                                       *new TreeRoot(new MyTreeTypeNodeFactory, true),
+                                                       &comment, false, NULL));
     // -> ../UNIT_TESTER/run/trees/bg_exp_p_GrpLen_0.tree
 
 #define ORG_1111 "(AticSea6,(RblAerol,RblMesop))"

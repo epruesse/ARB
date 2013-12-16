@@ -17,6 +17,7 @@
 //      TreeRoot
 
 TreeRoot::~TreeRoot() {
+    deleteWithNodes = false; // avoid recursive call of ~TreeRoot
     delete rootNode;
     rt_assert(!rootNode);
     delete nodeMaker;

@@ -412,6 +412,7 @@ void TEST_tree_modifications() {
         delete edge1_del_manually;
         delete edge2_del_manually;
 
+        node_del_manually->forget_origin();
         node_del_manually->father   = NULL;
         node_del_manually->leftson  = NULL;
         node_del_manually->rightson = NULL;
