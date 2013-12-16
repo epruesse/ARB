@@ -1,18 +1,18 @@
-[Mon Sep  2 20:09:10 2013: tree_help_merged saved to consense/5/help_merged.tree
+[Mon Dec 16 14:51:34 2013: tree_help_merged saved to consense/5/help_merged.tree
 ]
 (
   (
+    C:0.10000,
     (
       A:0.10000,
       B:0.10000
-    )50:0.10000,
-    C:0.10000
+    )50:0.10000
   )50:0.10000,
   (
+    D:0.10000,
     (
-      F:0.10000,
-      E:0.10000
-    )50:0.10000,
-    D:0.10000
+      E:0.10000,
+      F:0.10000
+    )50:0.10000
   )50:0.10000
 );

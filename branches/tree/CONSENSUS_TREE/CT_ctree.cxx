@@ -78,7 +78,7 @@ SizeAwareTree *ConsensusTree::get_consensus_tree() {
     ntree_cleanup();
 
     result_tree->get_tree_root()->find_innermost_edge().set_root();
-    // result_tree->reorder_tree(BIG_BRANCHES_TO_TOP);
+    result_tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM);
 
     return result_tree;
 }

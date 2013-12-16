@@ -1,29 +1,11 @@
-[Mon Dec 16 14:37:36 2013: tree_disjunct_merged saved to consense/4/disjunct_merged.tree
+[Mon Dec 16 14:51:33 2013: tree_disjunct_merged saved to consense/4/disjunct_merged.tree
 ]
 (
   (
     (
-      EbiProka:0.07227,
-      EbiProk3:0.07157
-    ):0.00000,
-    (
-      EbiProk2:0.06546,
-      (
-        (
-          DewBact5:0.02497,
-          (
-            DewBact3:0.02732,
-            DewBact4:0.01332
-          )50:0.02367
-        )50:0.03519,
-        (
-          EbiProk4:0.08063,
-          EbiProk5:0.05481
-        )50:0.01546
-      )50:0.05375
-    ):0.00000
-  ):0.00000,
-  (
+      DewBact2:0.02784,
+      DewBacte:0.02655
+    )50:0.04567,
     (
       DewArcha:0.05453,
       (
@@ -31,15 +13,33 @@
         (
           DewArch3:0.07761,
           (
-            NoName00:0.01261,
-            DewArch4:0.01016
+            DewArch4:0.01016,
+            NoName00:0.01261
           )50:0.04936
         )50:0.02020
       )50:0.01245
-    )50:0.01663,
+    )50:0.01663
+  ):0.00000,
+  (
     (
-      DewBact2:0.02784,
-      DewBacte:0.02655
-    )50:0.04567
+      EbiProk3:0.07157,
+      EbiProka:0.07227
+    ):0.00000,
+    (
+      EbiProk2:0.06546,
+      (
+        (
+          EbiProk4:0.08063,
+          EbiProk5:0.05481
+        )50:0.01546,
+        (
+          DewBact5:0.02497,
+          (
+            DewBact3:0.02732,
+            DewBact4:0.01332
+          )50:0.02367
+        )50:0.03519
+      )50:0.05375
+    ):0.00000
   ):0.00000
 );
