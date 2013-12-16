@@ -1,45 +1,45 @@
-[Thu Aug 29 10:06:04 2013: tree_overlap_mini_merged saved to consense/4/overlap_mini_merged.tree
+[Mon Dec 16 14:37:36 2013: tree_overlap_mini_merged saved to consense/4/overlap_mini_merged.tree
 ]
 (
   (
-    DewArcha:0.05453,
+    NoName00:0.01261,
+    DewArch4:0.37249
+  )33:0.02468,
+  (
+    DewArch3:0.07761,
     (
       DewArch2:0.06831,
       (
-        DewArch3:0.07761,
-        (
-          NoName00:0.01261,
-          DewArch4:0.37249
-        )33:0.04936
-      )33:0.02020
-    )33:0.01245
-  )33:0.00831,
-  (
-    (
-      (
-        EbiProka:0.07227,
-        EbiProk3:0.07157
-      ):0.00000,
-      (
-        EbiProk2:0.06546,
+        DewArcha:0.05453,
         (
           (
-            DewBact5:0.02497,
             (
-              DewBact3:0.02732,
-              DewBact4:0.01332
-            )33:0.02367
-          )33:0.03519,
+              EbiProka:0.07227,
+              EbiProk3:0.07157
+            ):0.00000,
+            (
+              EbiProk2:0.06546,
+              (
+                (
+                  DewBact5:0.02497,
+                  (
+                    DewBact3:0.02732,
+                    DewBact4:0.01332
+                  )33:0.02367
+                )33:0.03519,
+                (
+                  EbiProk4:0.08063,
+                  EbiProk5:0.05481
+                )33:0.01546
+              )33:0.05375
+            ):0.00000
+          ):0.00000,
           (
-            EbiProk4:0.08063,
-            EbiProk5:0.05481
-          )33:0.01546
-        )33:0.05375
-      ):0.00000
-    ):0.00000,
-    (
-      DewBact2:0.02784,
-      DewBacte:0.02655
-    )33:0.04567
-  )33:0.00831
+            DewBact2:0.02784,
+            DewBacte:0.02655
+          )33:0.04567
+        )33:0.01663
+      )33:0.01245
+    )33:0.02020
+  )33:0.02468
 );
