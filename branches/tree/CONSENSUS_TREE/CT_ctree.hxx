@@ -101,7 +101,7 @@ public:
 
     void insert_tree_weighted(GBT_TREE *tree, double weight);
 
-    GBT_TREE *get_consensus_tree();
+    SizeAwareTree *get_consensus_tree();
 };
 
 // ------------------------------
@@ -150,7 +150,7 @@ public:
         tree = NULL;
     }
 
-    GBT_TREE *get(size_t& different_species) {
+    SizeAwareTree *get(size_t& different_species) {
         ConstStrArray species_names;
 
         for (OccurCount::iterator s = species_occurred.begin(); s != species_occurred.end(); ++s) {

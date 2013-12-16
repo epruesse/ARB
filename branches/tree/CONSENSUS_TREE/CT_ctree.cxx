@@ -46,8 +46,9 @@ void ConsensusTree::insert_tree_weighted(GBT_TREE *tree, double weight) {
     remember_subtrees(tree, weight);
 }
 
-GBT_TREE *ConsensusTree::get_consensus_tree() {
-    // Get new consensus-tree -> GBT-tree
+SizeAwareTree *ConsensusTree::get_consensus_tree() {
+    // Get new consensus-tree -> SizeAwareTree
+
     /* This function is little bit tricky:
        the root-partition consist of 111....111 so it must have two sons
        that represent the same partition son1 == ~son2 to do this we must split
