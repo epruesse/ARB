@@ -13,7 +13,6 @@
 #include <CT_ctree.hxx>
 #include <TreeRead.h>
 #include <TreeWrite.h>
-#include <RootedTree.h>
 #include <arb_str.h>
 #include <arb_diff.h>
 #include <arb_defs.h>
@@ -668,31 +667,6 @@ void TEST_SLOW_treeIO_stable() {
     GB_close(gb_main);
 }
 
-class MyTreeType : public RootedTree {
-    unsigned leaf_count;
-public:
-    MyTreeType(TreeRoot *root) : RootedTree(root) {}
-    unsigned get_leaf_count() const OVERRIDE {
-        return leaf_count;
-    }
-    void compute_tree() OVERRIDE {
-        if (is_leaf) {
-            leaf_count = 1;
-        }
-        else {
-            get_leftson()->compute_tree();
-            get_rightson()->compute_tree();
-            leaf_count = get_leftson()->get_leaf_count()+get_rightson()->get_leaf_count();
-        }
-    }
-
-    void nothing() {}
-};
-
-struct MyTreeTypeNodeFactory : public RootedTreeNodeFactory {
-    RootedTree *makeNode(TreeRoot *root) const OVERRIDE { return new MyTreeType(root); }
-};
-
 static RootedTree *findNode(RootedTree *node, const char *name) {
     if (node->name && strcmp(node->name, name) == 0) return node;
     if (node->is_leaf) return NULL;
@@ -702,14 +676,14 @@ static RootedTree *findNode(RootedTree *node, const char *name) {
     return found;
 }
 
-void TEST_wanted_tree_functionality() {
-    // functionality wanted in RootedTree (for use in arb_consensus_tree)
+void TEST_CONSENSUS_TREE_functionality() {
+    // functionality wanted in RootedTree (for use in library CONSENSUS_TREE)
 
     char *comment = NULL;
 
-    MyTreeType *tree = DOWNCAST(MyTreeType*, TREE_load("trees/bg_exp_p_GrpLen_0.tree",
-                                                       *new TreeRoot(new MyTreeTypeNodeFactory, true),
-                                                       &comment, false, NULL));
+    SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, TREE_load("trees/bg_exp_p_GrpLen_0.tree",
+                                                             *new TreeRoot(new SizeAwareNodeFactory, true),
+                                                             &comment, false, NULL));
     // -> ../UNIT_TESTER/run/trees/bg_exp_p_GrpLen_0.tree
 
 #define ORG_1111 "(AticSea6,(RblAerol,RblMesop))"

@@ -73,7 +73,7 @@ GBT_TREE *ConsensusTree::get_consensus_tree() {
     arb_assert(is_well_formed(n));
 #endif
 
-    GBT_TREE *result_tree = rb_gettree(n);
+    SizeAwareTree *result_tree = rb_gettree(n);
     ntree_cleanup();
 
     return result_tree;

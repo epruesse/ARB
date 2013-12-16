@@ -248,6 +248,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/downcast.h
 ad_trees.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_trees.o: $(ARBHOME)/INCLUDE/gccver.h
 ad_trees.o: $(ARBHOME)/INCLUDE/nds.h
+ad_trees.o: $(ARBHOME)/INCLUDE/RootedTree.h
 ad_trees.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_trees.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_trees.o: $(ARBHOME)/INCLUDE/test_global.h

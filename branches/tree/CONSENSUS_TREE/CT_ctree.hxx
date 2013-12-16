@@ -1,7 +1,7 @@
 // ============================================================= //
 //                                                               //
 //   File      : CT_ctree.hxx                                    //
-//   Purpose   :                                                 //
+//   Purpose   : interface of CONSENSUS_TREE library             //
 //                                                               //
 //   Institute of Microbiology (Technical University Munich)     //
 //   http://www.arb-home.de/                                     //
@@ -29,12 +29,45 @@
 #ifndef _GLIBCXX_STRING
 #include <string>
 #endif
+#ifndef ROOTEDTREE_H
+#include <RootedTree.h>
+#endif
 
 class  PART;
 struct NT_NODE;
 class  PartitionSize;
 class  PartRegistry;
-class RB_INFO;
+class  RB_INFO;
+
+// -----------------------
+//      SizeAwareTree
+
+class SizeAwareTree : public RootedTree {
+    // simple size-aware tree
+    unsigned leaf_count;
+public:
+    SizeAwareTree(TreeRoot *root) : RootedTree(root) {}
+    unsigned get_leaf_count() const OVERRIDE {
+        return leaf_count;
+    }
+    void compute_tree() OVERRIDE {
+        if (is_leaf) {
+            leaf_count = 1;
+        }
+        else {
+            get_leftson()->compute_tree();
+            get_rightson()->compute_tree();
+            leaf_count = get_leftson()->get_leaf_count()+get_rightson()->get_leaf_count();
+        }
+    }
+};
+
+struct SizeAwareNodeFactory : public RootedTreeNodeFactory {
+    RootedTree *makeNode(TreeRoot *root) const OVERRIDE { return new SizeAwareTree(root); }
+};
+
+// -----------------------
+//      ConsensusTree
 
 class ConsensusTree : virtual Noncopyable {
     double   overall_weight;
@@ -58,8 +91,8 @@ class ConsensusTree : virtual Noncopyable {
         return names[idx];
     }
 
-    struct RB_INFO *rbtree(const NT_NODE *tree);
-    GBT_TREE       *rb_gettree(const NT_NODE *tree);
+    struct RB_INFO *rbtree(const NT_NODE *tree, TreeRoot *root);
+    SizeAwareTree  *rb_gettree(const NT_NODE *tree);
 
 
 public:
@@ -69,9 +102,10 @@ public:
     void insert_tree_weighted(GBT_TREE *tree, double weight);
 
     GBT_TREE *get_consensus_tree();
-
 };
 
+// ------------------------------
+//      ConsensusTreeBuilder
 
 class ConsensusTreeBuilder {
     // wrapper for ConsensusTree

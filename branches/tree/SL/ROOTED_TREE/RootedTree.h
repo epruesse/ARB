@@ -48,7 +48,7 @@ public:
           nodeMaker(nodeMaker_),
           deleteWithNodes(deleteWithNodes_)
     {
-        /*! Create a new TreeRoot for a RootedTree.
+        /*! Create a TreeRoot for a RootedTree.
          * Purpose:
          * - act as TreeNodeFactory
          * - place to store the current rootNode
