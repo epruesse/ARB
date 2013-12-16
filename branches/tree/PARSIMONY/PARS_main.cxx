@@ -386,7 +386,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick) {
             }
             else {
                 ARB_edge innermost = rootNode()->get_tree_root()->find_innermost_edge();
-                DOWNCAST(AP_tree*, innermost.son())->set_root();
+                innermost.set_root();
             }
         }
         else {
