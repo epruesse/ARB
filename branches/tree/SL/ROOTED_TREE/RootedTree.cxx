@@ -148,6 +148,12 @@ void RootedTree::rotate_subtree() {
 }
 
 void RootedTree::set_root() {
+    /*! set the root at parent edge of this
+     * pointers to tree-nodes remain valid, but all parent-nodes of this change their meaning
+     * (afterwards they will point to [father+brother] instead of [this+brother])
+     * esp. pointers to the root-node will still point to the root-node (which only changed children)
+     */
+
     if (at_root()) return; // already root
 
     RootedTree *old_root    = get_root_node();
@@ -220,6 +226,8 @@ void RootedTree::set_root() {
     old_brother->father = pntr;
     pntr->father        = prev;
     father              = old_root;
+
+    rt_assert(get_root_node() == old_root);
 }
 
 // ----------------------------
