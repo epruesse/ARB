@@ -781,7 +781,7 @@ void TEST_CONSENSUS_TREE_functionality() {
 
     // test auto-detection of "best" root
     TEST_ASSERT_VALID_TREE(tree);
-    tree->get_tree_root()->find_innermost_edge().son()->set_root();
+    tree->get_tree_root()->find_innermost_edge().set_root();
     TEST_EXPECT_NEWICK_LEN_EQUAL(tree,
                                  "((((LbnMarin:0.019,LbnzAlb4:0.003):0.016,LbnAlexa:0.032):0.122,(ThtNivea:0.230,_MhuCaps:0.194):0.427):0.076,"
                                  "(((((DnrShiba:0.076,RsbElon4:0.053):0.034,MmbAlkal:0.069):0.016,((MabPelag:0.001,MabSalin:0.009):0.095,PaoMaris:0.092):0.036):0.030,((RblAerol:0.085,RblMesop:0.042):0.238,AticSea6:0.111):0.018):0.036,(OnlGran2:0.057,RsnAnta2:0.060):0.021):0.076);");

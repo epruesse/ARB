@@ -1573,7 +1573,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                         if (clicked.node()) clicked.node()->set_root();
                         break;
                     case AW_BUTTON_RIGHT:
-                        tree_static->find_innermost_edge().son()->set_root();
+                        tree_static->find_innermost_edge().set_root();
                         break;
                     default: td_assert(0); break;
                 }

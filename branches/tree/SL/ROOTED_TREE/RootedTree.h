@@ -312,6 +312,8 @@ public:
     bool operator == (const ARB_edge& otherEdge) const {
         return from == otherEdge.from && to == otherEdge.to;
     }
+
+    void set_root() { son()->set_root(); }
 };
 
 #else
