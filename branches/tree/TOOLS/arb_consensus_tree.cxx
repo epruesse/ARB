@@ -32,12 +32,12 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
     }
     else {
         ConsensusTreeBuilder tree_builder;
-        GBT_TREE_NodeFactory nodeMaker;
 
         for (size_t i = 0; !error && i<input_trees.size(); ++i) {
             char *warnings = NULL;
 
-            GBT_TREE *tree = TREE_load(input_trees[i], nodeMaker, NULL, true, &warnings);
+            TreeRoot      *root = new TreeRoot(new SizeAwareNodeFactory, true); // will be deleted when tree gets deleted
+            SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, TREE_load(input_trees[i], *root, NULL, true, &warnings));
             if (!tree) {
                 error = GBS_global_string("Failed to load tree '%s' (Reason: %s)", input_trees[i], GB_await_error());
             }

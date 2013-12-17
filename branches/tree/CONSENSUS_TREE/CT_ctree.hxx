@@ -111,11 +111,11 @@ class ConsensusTreeBuilder {
     // wrapper for ConsensusTree
     // - automatically collects species occurring in added trees (has to be done by caller of ConsensusTree)
     // - uses much more memory than using ConsensusTree directly, since it stores all added trees
-    // 
+    //
     // Not helpful for consensing thousands of trees like bootstrapping does
 
     typedef std::map<std::string, size_t> OccurCount;
-    typedef std::vector<GBT_TREE*>        Trees;
+    typedef std::vector<SizeAwareTree*>   Trees;
     typedef std::vector<double>           Weights;
 
     OccurCount species_occurred;
@@ -129,7 +129,7 @@ public:
         }
     }
 
-    void add(GBT_TREE*& tree, double weight) {
+    void add(SizeAwareTree*& tree, double weight) {
         trees.push_back(tree);
         weights.push_back(weight);
 

@@ -723,7 +723,8 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
                     remark.put(' ');
                     remark.cat(tree_names[t]);
                     remark.put('\n');
-                    GBT_TREE *tree = GBT_read_tree(gb_main, tree_names[t], GBT_TREE_NodeFactory());
+                    TreeRoot      *root = new TreeRoot(new SizeAwareNodeFactory, true); // will be deleted when tree gets deleted
+                    SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree_names[t], *root));
                     tree_builder.add(tree, 1.0);
                     ++progress;
                 }
