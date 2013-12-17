@@ -42,27 +42,33 @@ bool RootedTree::is_inside(const RootedTree *subtree) const {
 
 void RootedTree::assert_valid() const {
     rt_assert(this);
-    if (!is_leaf) {
-        rt_assert(rightson);
-        rt_assert(leftson);
-        get_rightson()->assert_valid();
-        get_leftson()->assert_valid();
-    }
 
     TreeRoot *troot = get_tree_root();
-    if (father) {
-        rt_assert(is_inside(get_father()));
-        if (troot) {
+    if (troot) {
+        if (!is_leaf) {
+            rt_assert(rightson);
+            rt_assert(leftson);
+            get_rightson()->assert_valid();
+            get_leftson()->assert_valid();
+        }
+        if (father) {
+            rt_assert(is_inside(get_father()));
             rt_assert(troot->get_root_node()->is_anchestor_of(this));
+            rt_assert(get_father()->get_tree_root() == troot);
         }
         else {
-            rt_assert(get_father()->get_tree_root() == NULL); // if this has no root, father as well shouldn't have root
-        }
-    }
-    else {                                          // this is root
-        if (troot) {
             rt_assert(troot->get_root_node()  == this);
             rt_assert(!is_leaf);                    // leaf@root (tree has to have at least 2 leafs)
+        }
+    }
+    else { // removed node (may be incomplete)
+        if (!is_leaf) {
+            if (rightson) get_rightson()->assert_valid();
+            if (leftson)  get_leftson()->assert_valid();
+        }
+        if (father) {
+            rt_assert(is_inside(get_father()));
+            rt_assert(!get_father()->get_tree_root());
         }
     }
 }

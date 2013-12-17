@@ -243,6 +243,7 @@ void AP_tree::remove() {
     ASSERT_VALID_TREE(this);
     if (father == 0) {
         get_tree_root()->change_root(this, NULL); // tell AP_tree_root that the root node has been removed
+        forget_origin(); // removed nodes are rootless
     }
     else {
         AP_tree      *brother     = get_brother();  // brother remains in tree
@@ -292,9 +293,10 @@ void AP_tree::remove() {
 
         troot->inform_about_delete(fath);
         troot->inform_about_delete(this);
-    }
 
-    forget_origin(); // removed nodes are rootless
+        fath->forget_origin();
+        ASSERT_VALID_TREE(fath);
+    }
 }
 
 GB_ERROR AP_tree::cantMoveNextTo(AP_tree *new_brother) {
