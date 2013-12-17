@@ -147,7 +147,9 @@ public:
     TreeRoot *get_tree_root() const { return tree_root; }
 
     const RootedTree *get_root_node() const {
-        const RootedTree *root = get_tree_root()->get_root_node();
+        if (!tree_root) return NULL; // nodes removed from tree have no root-node
+
+        const RootedTree *root = tree_root->get_root_node();
         rt_assert(is_inside(root)); // this is not in tree - behavior of get_root_node() changed!
         return root;
     }
@@ -158,6 +160,7 @@ public:
 
     RootedTree *get_brother() {
         rt_assert(!is_root_node()); // root node has no brother
+        rt_assert(father);          // this is a removed node (not root, but no father)
         return is_leftson() ? get_father()->get_rightson() : get_father()->get_leftson();
     }
     const RootedTree *get_brother() const {

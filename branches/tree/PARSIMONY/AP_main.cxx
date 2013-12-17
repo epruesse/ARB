@@ -373,6 +373,7 @@ void TEST_tree_modifications() {
         TEST_EXPECT_NEWICK_LEN_EQUAL(root, CurCitre_removed_topo);
 
         TEST_ASSERT_VALID_TREE(root);
+        TEST_ASSERT_VALID_TREE(CurCitre);
 
         TEST_EXPECT_EQUAL(root->gr.leaf_sum, 15); // out of date
         root->compute_tree();

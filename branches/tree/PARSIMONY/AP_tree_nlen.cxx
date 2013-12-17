@@ -161,8 +161,8 @@ inline const AP_tree_edge *edge_between(const AP_tree_nlen *node1, const AP_tree
 }
 
 void AP_tree_nlen::assert_edges_valid() const {
-    if (get_father()) {                             // root has no edges
-        if (!get_father()->get_father()) {          // sons of root have one edge between them
+    if (get_father()) {                     // root has no edges
+        if (get_father()->is_root_node()) { // sons of root have one edge between them
             ap_assert(edge_between(this, get_brother()));
         }
         else {
