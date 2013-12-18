@@ -1,0 +1,24 @@
+[Wed Dec 18 10:27:18 2013: tree_overlap2_mostly saved to consense/8/overlap2_mostly.tree
+]
+(
+  (
+    EbiProk3:0.07157,
+    (
+      DewBact2:0.04306,
+      DewBacte:0.02655
+    )67:0.04567
+  )67:0.02688,
+  (
+    (
+      EbiProk4:0.08578,
+      EbiProk5:0.05481
+    )67:0.01546,
+    (
+      DewBact5:0.02497,
+      (
+        DewBact3:0.03521,
+        DewBact4:0.01332
+      )67:0.02367
+    )67:0.03519
+  )67:0.02688
+);

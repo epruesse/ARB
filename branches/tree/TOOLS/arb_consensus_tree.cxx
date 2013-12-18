@@ -471,6 +471,29 @@ void TEST_consensus_tree_from_mostly_overlapping_trees() {
     }
 }
 
+void TEST_consensus_tree_from_mostly_overlapping_trees_2() {
+    GB_ERROR  error   = NULL;
+    StrArray  input_tree_names;
+    const int treedir = 8;
+    add_inputnames(input_tree_names, treedir, "overlap2", 1, 3);
+
+    // the 3 trees were copied from tree_disjunct1
+    // from each tree 1 (different) species was deleted.
+
+    {
+        size_t    species_count;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 8, 0.529027);
+
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+                                       custom_tree_name(treedir, "overlap2_mostly"),
+                                       custom_tree_name(treedir, "overlap2_mostly_expected"));
+        // ../UNIT_TESTER/run/consense/8/overlap2_mostly.tree
+
+        delete tree;
+    }
+}
+
 
 
 #define REPEATED_TESTS
