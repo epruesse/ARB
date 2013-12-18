@@ -420,14 +420,14 @@ static AW_window *create_tree_import_window(AW_root *root)
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("format");
-    aws->label("Tree Format :");
+    aws->label("Tree Format");
     aws->create_option_menu(AWAR_TREE_IMPORT "/filter");
     aws->insert_default_option("Newick", "t", "tree");
     aws->insert_option("XML", "x", "xml");
     aws->update_option_menu();
 
     aws->at("user");
-    aws->label("tree_name:");
+    aws->label("Tree name");
     aws->create_input_field(AWAR_TREE_IMPORT "/tree_name", 15);
 
     AW_create_fileselection(aws, AWAR_TREE_IMPORT "");
