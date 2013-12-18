@@ -59,7 +59,10 @@ static int GBT_TREE_order(const GBT_TREE *t1, const GBT_TREE *t2) {
                 int crr = GBT_TREE_order(t1->rightson, t2->rightson);
 
                 cmp = cll+clr+crl+crr;
-                arb_assert(cmp); // order not strict enough
+                if (!cmp) {
+                    cmp = cll;
+                    arb_assert(cmp); // order not strict enough
+                }
             }
         }
     }
