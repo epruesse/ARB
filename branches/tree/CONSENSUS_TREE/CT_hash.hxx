@@ -41,6 +41,8 @@ public:
     void  put_part(PART*& part);
     void  build_sorted_list(double overall_weight);
     PART *get_part();
+
+    double find_max_weight() const;
 };
 
 #else

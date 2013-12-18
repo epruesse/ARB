@@ -55,16 +55,32 @@ void PartRegistry::build_sorted_list(double overall_weight) {
 
     arb_assert(sorted.empty());
     arb_assert(!parts.empty());
-     
+
     copy(parts.begin(), parts.end(), std::back_insert_iterator<PartVector>(sorted));
     sort(sorted.begin(), sorted.end(), insertionOrder_less);
+
     parts.clear();
 
-    for (size_t i = 0; i<sorted.size(); ++i) {
+    for (size_t i = 0; i<sorted.size(); ++i) { // @@@ use iterator here
         PART *pi = sorted[i];
         pi->takeMean(overall_weight);
     }
 
     arb_assert(!sorted.empty());
+}
+
+double PartRegistry::find_max_weight() const {
+    arb_assert(sorted.empty());
+    arb_assert(!parts.empty());
+
+    double maxWeight = 0.0;
+
+    PartSet::const_iterator end = parts.end();
+    for (PartSet::const_iterator p = parts.begin(); p != end; ++p) {
+        maxWeight = std::max(maxWeight, (*p)->get_weight());
+    }
+
+    arb_assert(maxWeight>0.0);
+    return maxWeight;
 }
 
