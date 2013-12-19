@@ -750,12 +750,19 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
     aw_message_if(error);
 }
 
+static void use_selected_as_target_cb(AW_window *aww) {
+    AW_root *aw_root = aww->get_root();
+    aw_root->awar(AWAR_TREE_CONSENSE_TREE)->write_string(aw_root->awar(AWAR_TREE_CONSENSE_SELECTED)->read_char_pntr());
+}
+
 AW_window *NT_create_consense_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
         aws->init(aw_root, "CONSENSE_TREE", "Consensus Tree");
         aws->load_xfig("ad_cons_tree.fig");
+
+        aws->auto_space(10, 10);
 
         aws->callback(AW_POPDOWN);
         aws->at("close");
@@ -771,6 +778,9 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
 
         aws->at("name");
         aws->create_input_field(AWAR_TREE_CONSENSE_TREE);
+
+        aws->callback(use_selected_as_target_cb);
+        aws->create_button("USE_AS_TARGET", "#moveLeft.xpm", 0);
 
         aws->at("build");
         aws->callback(create_consense_tree_cb, AW_CL(selected_trees));
