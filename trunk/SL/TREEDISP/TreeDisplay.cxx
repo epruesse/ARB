@@ -94,7 +94,7 @@ void AWT_graphic_tree::jump(AP_tree *at, const char *name)
     at = search(at, name);
     if (!at) return;
     if (tree_sort == AP_TREE_NORMAL) {
-        tree_root_display = get_root_node();
+        displayed_root = get_root_node();
     }
     else {
         while (at->father &&
@@ -103,7 +103,7 @@ void AWT_graphic_tree::jump(AP_tree *at, const char *name)
         {
             at = at->get_father();
         }
-        tree_root_display = at;
+        displayed_root = at;
     }
 }
 
@@ -506,18 +506,18 @@ static void show_bootstrap_circle(AW_device *device, const char *bootstrap, doub
 
 static void AWT_graphic_tree_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
-    if (agt->tree_root_display == old || agt->tree_root_display->is_inside(old)) {
-        agt->tree_root_display = newroot;
+    if (agt->displayed_root == old || agt->displayed_root->is_inside(old)) {
+        agt->displayed_root = newroot;
     }
 }
 
 static void AWT_graphic_tree_node_deleted(void *cd, AP_tree *del) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
-    if (agt->tree_root_display == del) {
-        agt->tree_root_display = agt->get_root_node();
+    if (agt->displayed_root == del) {
+        agt->displayed_root = agt->get_root_node();
     }
     if (agt->get_root_node() == del) {
-        agt->tree_root_display = 0;
+        agt->displayed_root = 0;
     }
 }
 void AWT_graphic_tree::toggle_group(AP_tree * at) {
@@ -739,7 +739,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
             // - KEYINFO_RESET (AWT_MODE_LZOOM)
 
             if (event.cmd() == AWT_MODE_LZOOM) {
-                tree_root_display  = tree_root_display->get_root_node();
+                displayed_root     = displayed_root->get_root_node();
                 exports.zoom_reset = 1;
             }
             else if (pointed.is_ruler()) {
@@ -1595,13 +1595,13 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                 switch (event.button()) {
                     case AW_BUTTON_LEFT:
                         if (clicked.node()) {
-                            tree_root_display  = clicked.node();
+                            displayed_root     = clicked.node();
                             exports.zoom_reset = 1;
                         }
                         break;
                     case AW_BUTTON_RIGHT:
-                        if (tree_root_display->father) {
-                            tree_root_display  = tree_root_display->get_father();
+                        if (displayed_root->father) {
+                            displayed_root     = displayed_root->get_father();
                             exports.zoom_reset = 1;
                         }
                         break;
@@ -1768,20 +1768,20 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
       other_text_filter    (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
       ruler_filter         (AW_SCREEN|AW_CLICK|AW_PRINTER), // appropriate size-filter added manually in code
       root_filter          (AW_SCREEN|AW_PRINTER_EXT)
-      
+
 {
     set_tree_type(AP_TREE_NORMAL, NULL);
-    tree_root_display = 0;
-    tree_proto        = 0;
-    link_to_database  = false;
-    tree_static       = 0;
-    baselinewidth     = 1;
-    species_name      = 0;
-    aw_root           = aw_root_;
-    gb_main           = gb_main_;
-    cmd_data          = NULL;
-    nds_show_all      = true;
-    map_viewer_cb     = map_viewer_cb_;
+    displayed_root   = 0;
+    tree_proto       = 0;
+    link_to_database = false;
+    tree_static      = 0;
+    baselinewidth    = 1;
+    species_name     = 0;
+    aw_root          = aw_root_;
+    gb_main          = gb_main_;
+    cmd_data         = NULL;
+    nds_show_all     = true;
+    map_viewer_cb    = map_viewer_cb_;
 }
 
 AWT_graphic_tree::~AWT_graphic_tree() {
@@ -1800,7 +1800,7 @@ void AWT_graphic_tree::init(const AP_tree& tree_prototype, AliView *aliview, AP_
 
 void AWT_graphic_tree::unload() {
     delete tree_static->get_root_node();
-    tree_root_display = 0;
+    displayed_root = 0;
 }
 
 GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_database */, AW_CL /* cl_insert_delete_cbs */) {
@@ -1827,7 +1827,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_
             delete tree_static->get_root_node();
         }
         else {
-            tree_root_display = get_root_node();
+            displayed_root = get_root_node();
 
             get_root_node()->compute_tree(gb_main);
 
@@ -2700,7 +2700,7 @@ void AWT_graphic_tree::show(AW_device *device) {
 
     cursor = Origin;
 
-    if (!tree_root_display && sort_is_tree_style(tree_sort)) { // if there is no tree, but display style needs tree
+    if (!displayed_root && sort_is_tree_style(tree_sort)) { // if there is no tree, but display style needs tree
         static const char *no_tree_text[] = {
             "No tree (selected)",
             "",
@@ -2723,17 +2723,17 @@ void AWT_graphic_tree::show(AW_device *device) {
             case AP_TREE_NORMAL: {
                 DendroSubtreeLimits limits;
                 Position pen(0, 0.05);
-                show_dendrogram(tree_root_display, pen, limits);
+                show_dendrogram(displayed_root, pen, limits);
                 list_tree_ruler_y = pen.ypos() + 2.0 * scaled_branch_distance;
                 break;
             }
             case AP_TREE_RADIAL:
-                empty_box(tree_root_display->gr.gc, Origin, NT_ROOT_WIDTH);
-                show_radial_tree(tree_root_display, 0, 0, 2*M_PI, 0.0, 0, 0);
+                empty_box(displayed_root->gr.gc, Origin, NT_ROOT_WIDTH);
+                show_radial_tree(displayed_root, 0, 0, 2*M_PI, 0.0, 0, 0);
                 break;
 
             case AP_TREE_IRS:
-                show_irs_tree(tree_root_display, scaled_branch_distance);
+                show_irs_tree(displayed_root, scaled_branch_distance);
                 break;
 
             case AP_LIST_NDS:       // this is the list all/marked species mode (no tree)

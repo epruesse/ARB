@@ -424,7 +424,7 @@ void NT_resort_tree_cb(void *, AWT_canvas *ntw, int type) {
 void NT_reset_lzoom_cb(void *, AWT_canvas *ntw) {
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->get_root_node();
+    AWT_TREE(ntw)->displayed_root = AWT_TREE(ntw)->get_root_node();
     ntw->zoom_reset_and_refresh();
 }
 
@@ -539,13 +539,13 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups) {
     
     char *name = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
     if (name[0]) {
-        AP_tree * found = gtree->search(gtree->tree_root_display, name);
-        if (!found && gtree->tree_root_display != gtree->get_root_node()) {
+        AP_tree * found = gtree->search(gtree->displayed_root, name);
+        if (!found && gtree->displayed_root != gtree->get_root_node()) {
             found = gtree->search(gtree->get_root_node(), name);
             if (found) {
                 // now i found a species outside logical zoomed tree
                 aw_message("Species found outside displayed subtree: zoom reset done");
-                gtree->tree_root_display = gtree->get_root_node();
+                gtree->displayed_root = gtree->get_root_node();
                 ntw->zoom_reset();
             }
         }
@@ -629,11 +629,11 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups) {
                 break;
             }
             case AP_TREE_RADIAL: {
-                gtree->tree_root_display = 0;
+                gtree->displayed_root = 0;
                 gtree->jump(gtree->get_root_node(), name);
-                if (!gtree->tree_root_display) {
+                if (!gtree->displayed_root) {
                     aw_message(GBS_global_string("Sorry, I didn't find the species '%s' in this tree", name));
-                    gtree->tree_root_display = gtree->get_root_node();
+                    gtree->displayed_root = gtree->get_root_node();
                 }
                 ntw->zoom_reset_and_refresh();
                 break;
