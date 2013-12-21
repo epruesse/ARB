@@ -71,7 +71,8 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
     return gc_manager;
 }
 
-AP_tree *AWT_graphic_tree::search(AP_tree *node, const char *name) {
+AP_tree *AWT_graphic_tree::search(AP_tree *node, const char *name) { // @@@ duplicated somewhere in unit tests in svn branch 'tree'
+                                                                     // should be a method of AP_tree (or RootedTree)
     if (node) {
         if (node->is_leaf) {
             if (node->name && strcmp(name, node->name) == 0) {
@@ -85,26 +86,6 @@ AP_tree *AWT_graphic_tree::search(AP_tree *node, const char *name) {
         }
     }
     return 0;
-}
-
-void AWT_graphic_tree::jump(AP_tree *at, const char *name)
-{
-    if (sort_is_list_style(tree_sort)) return;
-
-    at = search(at, name);
-    if (!at) return;
-    if (tree_sort == AP_TREE_NORMAL) {
-        displayed_root = get_root_node();
-    }
-    else {
-        while (at->father &&
-               at->gr.view_sum<15 &&
-               0 == at->gr.grouped)
-        {
-            at = at->get_father();
-        }
-        displayed_root = at;
-    }
 }
 
 void AWT_graphic_tree::mark_species_in_tree(AP_tree *at, int mark_mode) {
