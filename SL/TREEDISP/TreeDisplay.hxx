@@ -198,7 +198,7 @@ public:
 
     AW_root      *aw_root;
     AP_tree_sort  tree_sort;
-    AP_tree      *tree_root_display;                // @@@ what is this used for ?
+    AP_tree      *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
     AP_tree_root *tree_static;
     GBDATA       *gb_main;
 
