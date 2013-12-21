@@ -528,7 +528,7 @@ void NT_scale_tree(AW_window*, AW_CL cl_ntw, AW_CL) // scale branchlengths
     }
 }
 
-void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups) {
+void NT_jump_cb(AW_window *, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
     AW_window        *aww   = ntw->aww;
     AWT_graphic_tree *gtree = AWT_TREE(ntw);
     
@@ -536,16 +536,19 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups) {
 
     GB_transaction gb_dummy(ntw->gb_main);
     gtree->check_update(ntw->gb_main);
-    
-    char *name = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
+
+    char *name      = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
+    bool  not_found = false;
     if (name[0]) {
         AP_tree * found = gtree->search(gtree->displayed_root, name);
         if (!found && gtree->displayed_root != gtree->get_root_node()) {
             found = gtree->search(gtree->get_root_node(), name);
-            if (found) {
-                // now i found a species outside logical zoomed tree
+            if (found) { // species is invisible because it is outside logically zoomed tree
+
+                // @@@ this message also appears, on first auto-jump in NDS-list
                 aw_message("Species found outside displayed subtree: zoom reset done");
                 gtree->displayed_root = gtree->get_root_node();
+                // @@@ only do zoom-reset if AP_JUMP_UNFOLD_GROUPS
                 ntw->zoom_reset();
             }
         }
@@ -555,7 +558,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups) {
                 repeat = true;
                 // fall-through
             case AP_TREE_NORMAL: {
-                if (auto_expand_groups) {
+                if (jumpType & AP_JUMP_UNFOLD_GROUPS) {
                     bool changed = false;
                     while (found) {
                         if (found->gr.grouped) {
@@ -602,7 +605,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups) {
                             // position a bit below vertical center
                             scroll_y = (int) (S.ypos() - screen.b * .6);
                         }
-                        else if (S.ypos()<0.0 || S.ypos()>screen.b) {
+                        else if ((jumpType&AP_JUMP_CENTER_IF_VISIBLE) || S.ypos()<0.0 || S.ypos()>screen.b) {
                             scroll_y = (int) (S.ypos() - screen.b * .5);
                         }
 
@@ -617,22 +620,19 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups) {
                         }
                     }
                     else {
-                        if (auto_expand_groups) {
-                            aw_message(GBS_global_string(gtree->tree_sort == AP_LIST_NDS
-                                                         ? "Species '%s' is not in this list"
-                                                         : "Species '%s' is not member of this tree",
-                                                         name));
-                        }
+                        not_found = true;
                     }
                 }
                 ntw->refresh();
                 break;
             }
             case AP_TREE_RADIAL: {
+ // @@@ does not scroll into view!
+ // @@@ does not expand groups (instead does some kind of logical zoom)
                 gtree->displayed_root = 0;
                 gtree->jump(gtree->get_root_node(), name);
                 if (!gtree->displayed_root) {
-                    aw_message(GBS_global_string("Sorry, I didn't find the species '%s' in this tree", name));
+                    not_found = true;
                     gtree->displayed_root = gtree->get_root_node();
                 }
                 ntw->zoom_reset_and_refresh();
@@ -641,6 +641,12 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, bool auto_expand_groups) {
             default: td_assert(0); break;
         }
     }
+
+    if (not_found && (jumpType & AP_JUMP_BE_VERBOOSE)) {
+        aw_message(GBS_global_string("Species '%s' is no member of this %s",
+                                     name, gtree->tree_sort == AP_LIST_NDS ? "list" : "tree"));
+    }
+
     free(name);
 }
 
@@ -651,7 +657,7 @@ void TREE_auto_jump_cb(AW_root *, AWT_canvas *ntw) {   // jump only if auto jump
         tree_sort == AP_TREE_IRS)
     {
         if (ntw->aww->get_root()->awar(AWAR_DTREE_AUTO_JUMP)->read_int()) {
-            NT_jump_cb(NULL, ntw, false);
+            NT_jump_cb(NULL, ntw, AP_JUMP_AUTO);
             return;
         }
     }

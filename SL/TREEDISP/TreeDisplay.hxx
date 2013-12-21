@@ -53,6 +53,16 @@ enum AP_tree_sort {
     AP_LIST_SIMPLE // simple display only showing name (used at startup to avoid NDS error messages)
 };
 
+enum AP_tree_jump_type { // bit-values
+    AP_JUMP_UNFOLD_GROUPS     = 1,
+    AP_JUMP_CENTER_IF_VISIBLE = 2, // if already visible -> center (normally only done if IRS-mode or selected was invisible)
+    AP_JUMP_BE_VERBOOSE       = 4, // tell why nothing happened etc.
+
+    // convenience defs:
+    AP_JUMP_AUTO      = 0,
+    AP_JUMP_BY_BUTTON = AP_JUMP_UNFOLD_GROUPS|AP_JUMP_CENTER_IF_VISIBLE|AP_JUMP_BE_VERBOOSE,
+};
+
 inline bool sort_is_list_style(AP_tree_sort sort) { return sort == AP_LIST_NDS || sort == AP_LIST_SIMPLE; }
 inline bool sort_is_tree_style(AP_tree_sort sort) { return !sort_is_list_style(sort); }
 
