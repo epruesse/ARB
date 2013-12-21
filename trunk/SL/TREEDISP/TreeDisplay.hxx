@@ -218,6 +218,7 @@ public:
     ~AWT_graphic_tree() OVERRIDE;
 
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
+    bool is_logically_zoomed() { return displayed_root != get_root_node(); }
 
     void init(const AP_tree& tree_prototype, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
@@ -248,7 +249,6 @@ public:
     int      resort_tree(int mode, AP_tree *at = 0);
     GB_ERROR create_group(AP_tree * at) __ATTR__USERESULT;
     void     toggle_group(AP_tree * at);
-    void     jump(AP_tree *at, const char *name);
     AP_tree *search(AP_tree *root, const char *name);
     GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL,  AW_CL) OVERRIDE __ATTR__USERESULT;
     GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
