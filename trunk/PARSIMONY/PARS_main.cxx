@@ -1258,7 +1258,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     awm->button_length(0);
 
-    awm->callback(makeWindowCallback(NT_jump_cb, ntw, true));
+    awm->callback(makeWindowCallback(NT_jump_cb, ntw, AP_JUMP_BY_BUTTON));
     awm->help_text("tr_jump.hlp");
     awm->create_button("JUMP", "Jump", 0);
 
