@@ -70,15 +70,20 @@ struct SizeAwareNodeFactory : public RootedTreeNodeFactory {
 //      ConsensusTree
 
 class ConsensusTree : virtual Noncopyable {
-    double   overall_weight;
-    GB_HASH *Name_hash;
+    double               overall_weight;
+    GB_HASH             *Name_hash;
+    PartitionSize       *size;
+    PART                *allSpecies;
+    PartRegistry        *registry;
+    const CharPtrArray&  names;
+    bool                 added_partial_tree;
 
-    PartitionSize *size;
-    PartRegistry  *registry;
+    PART *deconstruct_full_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight);
+    PART *deconstruct_partial_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight, const PART *partialTree);
 
-    const CharPtrArray& names;
+    void deconstruct_full_rootnode(const GBT_TREE *tree, const double& weight);
+    void deconstruct_partial_rootnode(const GBT_TREE *tree, const double& weight, const PART *partialTree);
 
-    PART *dtree(const GBT_TREE *tree, double weight, GBT_LEN len);
     void remember_subtrees(const GBT_TREE *tree, double weight);
 
     int get_species_index(const char *name) const {
@@ -94,6 +99,8 @@ class ConsensusTree : virtual Noncopyable {
     struct RB_INFO *rbtree(const NT_NODE *tree, TreeRoot *root);
     SizeAwareTree  *rb_gettree(const NT_NODE *tree);
 
+    void add_tree_to_PART(const GBT_TREE *tree, PART& part) const;
+    PART *create_tree_PART(const GBT_TREE *tree, const double& weight) const;
 
 public:
     ConsensusTree(const CharPtrArray& names_);
@@ -130,6 +137,15 @@ public:
     }
 
     void add(SizeAwareTree*& tree, double weight) {
+        tree->get_tree_root()->find_innermost_edge().set_root();
+
+        // (currently) reordering trees before deconstructing no longer
+        // affects the resulting consense tree (as performed as unit tests).
+        //
+        // tree->reorder_tree(BIG_BRANCHES_TO_TOP);
+        // tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM);
+        // tree->reorder_tree(BIG_BRANCHES_TO_EDGE);
+
         trees.push_back(tree);
         weights.push_back(weight);
 

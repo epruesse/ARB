@@ -193,7 +193,7 @@ int ARB_main(int argc, char *argv[]) {
 
 #include "command_output.h"
 
-// #define TEST_AUTO_UPDATE // uncomment to update expected trees (if more than date differs)
+#define TEST_AUTO_UPDATE // uncomment to update expected trees (if more than date differs)
 
 static char *custom_tree_name(int dir, const char *name) { return GBS_global_string_copy("consense/%i/%s.tree", dir, name); }
 static char *custom_numbered_tree_name(int dir, const char *name, int treeNr) { return GBS_global_string_copy("consense/%i/%s_%i.tree", dir, name, treeNr); }
@@ -340,7 +340,7 @@ void TEST_consensus_tree_from_disjunct_trees() {
     {
         size_t    species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 0.96034);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 2.007980);
 
         TEST_SAVE_AND_COMPARE_CONSTREE(tree,
                                        custom_tree_name(treedir, "disjunct_merged"),
@@ -367,7 +367,7 @@ void TEST_consensus_tree_from_partly_overlapping_trees() {
     {
         size_t    species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.25562);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 2.577895);
 
         TEST_SAVE_AND_COMPARE_CONSTREE(tree,
                                        custom_tree_name(treedir, "overlap_merged"),
@@ -391,7 +391,7 @@ void TEST_consensus_tree_from_minimal_overlapping_trees() {
     {
         size_t    species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.322665);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 2.724435);
 
         TEST_SAVE_AND_COMPARE_CONSTREE(tree,
                                        custom_tree_name(treedir, "overlap_mini_merged"),
@@ -413,7 +413,7 @@ void TEST_consensus_tree_described_in_arbhelp() {
     {
         size_t    species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.0);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 6, 1.000000);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 6, 1.050000);
 
         TEST_SAVE_AND_COMPARE_CONSTREE(tree,
                                        custom_tree_name(treedir, "help_merged"),
@@ -437,7 +437,7 @@ void TEST_consensus_tree_from_trees_overlapping_by_twothirds() {
     {
         size_t    species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 19.2);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.812630);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 3.585280);
 
         TEST_SAVE_AND_COMPARE_CONSTREE(tree,
                                        custom_tree_name(treedir, "overlap_twothirds_merged"),
@@ -460,7 +460,7 @@ void TEST_consensus_tree_from_mostly_overlapping_trees() {
     {
         size_t    species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.820253);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.820083);
 
         TEST_SAVE_AND_COMPARE_CONSTREE(tree,
                                        custom_tree_name(treedir, "overlap_mostly"),
@@ -483,7 +483,7 @@ void TEST_consensus_tree_from_mostly_overlapping_trees_2() {
     {
         size_t    species_count;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 8, 0.529027);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 8, 0.529071);
 
         TEST_SAVE_AND_COMPARE_CONSTREE(tree,
                                        custom_tree_name(treedir, "overlap2_mostly"),
@@ -500,10 +500,14 @@ void TEST_consensus_tree_from_mostly_overlapping_trees_2() {
 
 #if defined(REPEATED_TESTS)
 void TEST_consensus_tree_generation_is_deterministic() {
+    TEST_consensus_tree_described_in_arbhelp();
+    TEST_consensus_tree_from_minimal_overlapping_trees();
+    TEST_consensus_tree_from_partly_overlapping_trees();
+    TEST_consensus_tree_from_disjunct_trees();
     TEST_consensus_tree_3();
     TEST_consensus_tree_2();
-    TEST_consensus_tree_1();
     TEST_consensus_tree_1_single();
+    TEST_consensus_tree_1();
 }
 
 void TEST_arb_consensus_tree() {

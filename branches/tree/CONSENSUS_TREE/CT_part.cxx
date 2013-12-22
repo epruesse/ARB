@@ -87,7 +87,8 @@ void PART::print() const {
         }
     }
 
-    printf("  len=%.5f  prob=%5.1f%%  leaf=%i  dist2center=%i\n", len, weight*100.0, is_leaf_edge(), distance_to_tree_center());
+    printf("  len=%.5f  prob=%5.1f%%  w.len=%.5f  leaf=%i  dist2center=%i\n",
+           len, weight*100.0, get_len(), is_leaf_edge(), distance_to_tree_center());
 }
 #endif
 
@@ -134,6 +135,23 @@ void PART::invert() {
 
     arb_assert(is_valid());
 }
+
+void PART::invertInSuperset(const PART *superset) {
+    arb_assert(is_valid());
+    arb_assert(is_subset_of(superset));
+
+    int longs = get_longs();
+    for (int i=0; i<longs; i++) {
+        p[i] = p[i] ^ superset->p[i];
+    }
+    p[longs-1] &= get_cutmask();
+
+    members = superset->get_members()-members;
+
+    arb_assert(is_valid());
+    arb_assert(is_subset_of(superset));
+}
+
 
 void PART::add_members_from(const PART *source) {
     //! destination = source or destination
@@ -211,18 +229,20 @@ bool PART::is_standardized() const { // @@@ inline
     // if you change the criteria, generated trees will change
     // (because branch-insertion-order is affected)
 
-    int std_bit = 0;
-    return bit_is_set(std_bit);
+    return bit_is_set(0);
 }
 
-void PART::standardize() { // @@@ inline or elim
+void PART::standardize() {
     /*! standardize the partition
      *
      * Generally two PARTs are equivalent, if one is the inverted version of the other.
      * A standardized PART is equal for equivalent PARTs, i.e. may be used as key (as done in PartRegistry)
      */
     arb_assert(is_valid());
-    if (!is_standardized()) invert();
+    if (!is_standardized()) {
+        invert();
+        arb_assert(is_standardized());
+    }
     arb_assert(is_valid());
 }
 

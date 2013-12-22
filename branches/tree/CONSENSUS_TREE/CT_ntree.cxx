@@ -119,7 +119,7 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
 
     // Tree is leaf
     if (!tree->son_list) {
-#if defined(DUMP_PART_INSERTION) 
+#if defined(DUMP_PART_INSERTION)
         fputs("ins_ntree part=", stdout); newpart->print();
 #endif
 
@@ -129,10 +129,15 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
         return 1;
     }
 
+    arb_assert(newpart->is_subset_of(tree->part)); // @@@ should be invariant for entering this function (really ensured by caller?)
+
     // test if part fits under one son of tree. if so, recurse.
     for (NSONS *nsonp = tree->son_list; nsonp; nsonp=nsonp->next) {
         const PART *sonpart = nsonp->node->part;
         if (newpart->is_subset_of(sonpart)) {
+            if (newpart->equals(sonpart)) return 0; // already inserted -> drop
+
+            arb_assert(newpart->is_real_son_of(sonpart));
             int res = ins_ntree(nsonp->node, newpart);
             arb_assert(contradicted(newpart, res));
             return res;
@@ -149,6 +154,7 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
                 arb_assert(newpart);
                 return 0;
             }
+            arb_assert(sonpart->is_real_son_of(newpart));
             // accept if nsonp is son of newpart (will be pulled down below) 
         }
     }
@@ -167,6 +173,7 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
             NSONS      *nsonp_next = nsonp->next;
             const PART *sonpart    = nsonp->node->part;
             if (sonpart->is_subset_of(newntnode->part)) {
+                arb_assert(sonpart->is_real_son_of(newntnode->part));
                 move_son(tree, newntnode, nsonp);
             }
             nsonp = nsonp_next;

@@ -31,6 +31,14 @@
 typedef unsigned int PELEM;
 class PART;
 
+#if defined(ASSERTION_USED)
+inline bool is_similar(double d1, double d2, double eps) {
+    double diff = d1-d2;
+    if (diff<0) diff = -diff;
+    return diff<eps;
+}
+#endif
+
 class PartitionSize {
     PELEM cutmask;  // this mask is used to zero unused bits from the last long (in PART::p)
     int   longs;    // number of longs per part
@@ -51,21 +59,20 @@ public:
 };
 
 class PART {
-    const class PartitionSize *info;
+    const PartitionSize *info;
 
     PELEM   *p;
-    GBT_LEN  len;               // length between two nodes (weighted by weight)
-    double   weight;            // sum of weights
+    GBT_LEN  len;    // length between two nodes (weighted by weight)
+    double   weight; // sum of weights
     size_t   id;
-
-    int members;
+    int      members;
 
     PART(const PART& other)
         : info(other.info),
           p(info->alloc_mem()),
           len(other.len),
           weight(other.weight),
-          id(info->get_unique_id()), 
+          id(info->get_unique_id()),
           members(other.members)
     {
         int longs = get_longs();
@@ -114,7 +121,7 @@ public:
 
         bool only_valid_bits    = (last&get_cutmask()) == last;
         bool valid_member_count = members >= 0 && members <= get_maxsize();
-        bool valid_weight       = weight>0.0;
+        bool valid_weight       = weight >= 0.0;
 
         return only_valid_bits && valid_member_count && valid_weight;
     }
@@ -150,23 +157,31 @@ public:
         len = length*weight;
     }
     GBT_LEN get_len() const {
+        if (weight == 0.0) {
+            // if weight is 0.0 = > branch never occurred!
+            return 1.0; // return worst distance between these nodes (which are disjunct trees)
+        }
         return len/weight;
     }
 
     double get_weight() const { return weight; }
 
-    void addWeightAndLength(const PART* other) {
+    void addWeightAndLength(const PART *other) {
         weight += other->weight;
         len    += other->len;
     }
 
     void takeMean(double overall_weight) {
-        set_weight(get_weight()/overall_weight);
+        set_weight(get_weight() / overall_weight);
         arb_assert(is_valid());
         arb_assert(weight <= 1.0);
     }
 
+    void set_faked_weight(double w) { set_weight(w); }
+
     void invert();
+    void invertInSuperset(const PART *superset);
+
     bool is_standardized() const;
     void standardize();
 
@@ -181,6 +196,7 @@ public:
         }
         return true;
     }
+    bool is_real_son_of(const PART *father) const { return is_subset_of(father) && differs(father); }
 
     bool overlaps_with(const PART *other) const;
     bool disjunct_from(const PART *other) const { return !overlaps_with(other); }
@@ -192,6 +208,7 @@ public:
     unsigned key() const;
 
     int get_members() const { return members; }
+    int get_nonmembers() const { return get_maxsize() - get_members(); }
 
     bool is_leaf_edge() const { int size = members; return size == 1 || size == (get_maxsize()-1); }
     int distance_to_tree_center() const { return abs(get_maxsize()/2 - members); }
@@ -203,6 +220,12 @@ public:
     void print() const;
 #endif
 };
+
+inline int number_of_edges(int leafs) {
+    //! calculate the number of edges in a tree with 'leafs' leafs
+    int nodes = 2*(leafs-1); // number of nodes (leafs + inner nodes)
+    return nodes-1; // edges = nodes-1
+}
 
 #else
 #error CT_part.hxx included twice

@@ -95,7 +95,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
 
     RB_INFO *info = (RB_INFO *) getmem(sizeof(RB_INFO));
     info->node    = tnode;                             // return-information
-    info->percent = int(tree->part->get_weight()*100.0+.5); 
+    info->percent = int(tree->part->get_weight()*100.0+.5);
     info->len     = tree->part->get_len();
 
     NSONS *nsonp = tree->son_list;
