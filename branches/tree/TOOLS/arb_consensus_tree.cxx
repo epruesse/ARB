@@ -234,9 +234,9 @@ static arb_test::match_expectation consense_tree_generated(GBT_TREE *tree, GB_ER
 #define TEST_EXPECT_CONSTREE(tree,err,sc,esc,eid) TEST_EXPECTATION(consense_tree_generated(tree, err, sc, esc, eid))
 
 #if defined TEST_AUTO_UPDATE
-#define DIFF_OR_UPDATE                                                  \
-    if (!exported_as_expected) {                                        \
-        system(GBS_global_string("cp %s %s", saveas, expected));        \
+#define DIFF_OR_UPDATE                                                                  \
+    if (!exported_as_expected) {                                                        \
+        ASSERT_RESULT(int, 0, system(GBS_global_string("cp %s %s", saveas, expected))); \
     }
 #else
 #define DIFF_OR_UPDATE TEST_EXPECT(exported_as_expected)

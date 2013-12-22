@@ -215,7 +215,7 @@ inline GBT_TREE *TreeRoot::makeNode() const {
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
 template <typename TREE>
-inline void assert_tree_has_valid_structure(const TREE *tree, bool acceptNULL) {
+inline void assert_tree_has_valid_structure(const TREE *tree, bool IF_ASSERTION_USED(acceptNULL)) {
     rt_assert(acceptNULL || tree);
     if (tree) tree->assert_valid();
 }

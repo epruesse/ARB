@@ -73,7 +73,7 @@ void PartRegistry::put_part_from_partial_tree(PART*& part, const PART *partialTr
     //                                   A
     //                                  /
     // assumed tree:               C---+
-    //                                  \
+    //                                  \         .
     //                                   B
     //
     // inserted partitions: A---CB
