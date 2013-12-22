@@ -11,6 +11,7 @@
 #include "CT_ctree.hxx"
 #include "CT_hash.hxx"
 #include "CT_ntree.hxx"
+#include <arb_strbuf.h>
 
 ConsensusTree::ConsensusTree(const CharPtrArray& names_)
     : overall_weight(0),
@@ -88,3 +89,22 @@ SizeAwareTree *ConsensusTree::get_consensus_tree() {
     return result_tree;
 }
 
+
+char *ConsensusTreeBuilder::get_remark() const {
+    GBS_strstruct remark(1000);
+    {
+        char *build_info = GBS_global_string_copy("ARB consensus tree build from %zu trees:", tree_names.size());
+        char *dated      = GBS_log_dated_action_to("", build_info);
+        remark.cat(dated);
+        free(dated);
+        free(build_info);
+    }
+
+    for (size_t t = 0; t<tree_names.size(); ++t) {
+        remark.cat(" - ");
+        remark.cat(tree_names[t].c_str());
+        remark.put('\n');
+    }
+
+    return remark.release();
+}

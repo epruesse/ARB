@@ -19,12 +19,13 @@
 
 using namespace std;
 
-static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR& error, size_t& different_species, double weight) {
+static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR& error, size_t& different_species, double weight, char *&comment) {
     // read all input trees, generate and return consensus tree
     // (Note: the 'weight' used here doesn't matter atm, since all trees are added with the same weight)
 
     arb_assert(!error);
-    error = NULL;
+    error   = NULL;
+    comment = NULL;
 
     GBT_TREE *consense_tree = NULL;
     if (input_trees.empty()) {
@@ -46,12 +47,13 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
                     GB_warningf("while loading tree '%s':\n%s", input_trees[i], warnings);
                     free(warnings);
                 }
-                tree_builder.add(tree, weight);
+                tree_builder.add(tree, input_trees[i], weight);
             }
         }
 
         if (!error) {
             consense_tree = tree_builder.get(different_species);
+            comment       = tree_builder.get_remark();
         }
     }
     arb_assert(contradicted(consense_tree, error));
@@ -79,7 +81,7 @@ static char *create_tree_name(const char *savename) {
     return tree_name;
 }
 
-static GB_ERROR save_tree_as_newick(GBT_TREE *tree, const char *savename) {
+static GB_ERROR save_tree_as_newick(GBT_TREE *tree, const char *savename, const char *comment) {
     // save a tree to a newick file
 
     // since ARB only saves trees out of a database,
@@ -100,7 +102,7 @@ static GB_ERROR save_tree_as_newick(GBT_TREE *tree, const char *savename) {
 
         {
             GB_transaction ta(gb_main);
-            error = GBT_write_tree(gb_main, db_tree_name, tree);
+            error = GBT_write_tree_with_remark(gb_main, db_tree_name, tree, comment);
         }
         if (!error) error = TREE_write_Newick(gb_main, db_tree_name, NULL, true, true, true, true, TREE_SINGLE_QUOTES, savename);
 
@@ -151,8 +153,9 @@ int ARB_main(int argc, char *argv[]) {
         if (!error && input_tree_names.empty()) error = "no input trees specified";
 
         if (!error) {
-            size_t species_count;
-            GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, species_count, 1.0);
+            size_t    species_count;
+            char     *comment;
+            GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, species_count, 1.0, comment);
 
             if (!cons_tree) {
                 error = GBS_global_string("Failed to build consensus tree (Reason: %s)", error);
@@ -165,7 +168,7 @@ int ARB_main(int argc, char *argv[]) {
                        percent, leafs, species_count);
 
                 if (savename) {
-                    error = save_tree_as_newick(cons_tree, savename);
+                    error = save_tree_as_newick(cons_tree, savename, comment);
                 }
                 else {
                     printf("sucessfully created consensus tree\n"
@@ -173,6 +176,7 @@ int ARB_main(int argc, char *argv[]) {
                 }
                 delete cons_tree;
             }
+            free(comment);
         }
         free(savename);
     }
@@ -193,7 +197,7 @@ int ARB_main(int argc, char *argv[]) {
 
 #include "command_output.h"
 
-#define TEST_AUTO_UPDATE // uncomment to update expected trees (if more than date differs)
+// #define TEST_AUTO_UPDATE // uncomment to update expected trees (if more than date differs)
 
 static char *custom_tree_name(int dir, const char *name) { return GBS_global_string_copy("consense/%i/%s.tree", dir, name); }
 static char *custom_numbered_tree_name(int dir, const char *name, int treeNr) { return GBS_global_string_copy("consense/%i/%s_%i.tree", dir, name, treeNr); }
@@ -242,10 +246,10 @@ static arb_test::match_expectation consense_tree_generated(GBT_TREE *tree, GB_ER
 #define DIFF_OR_UPDATE TEST_EXPECT(exported_as_expected)
 #endif
 
-#define TEST_SAVE_AND_COMPARE_CONSTREE(tree,saveasHC,expectedHC) do {                   \
+#define TEST_SAVE_AND_COMPARE_CONSTREE(tree,comment,saveasHC,expectedHC) do {           \
         char *saveas   = saveasHC;                                                      \
         char *expected = expectedHC;                                                    \
-        TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));                        \
+        TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas, comment));               \
         bool exported_as_expected =                                                     \
             arb_test::textfiles_have_difflines_ignoreDates(expected, saveas, 0);        \
         DIFF_OR_UPDATE;                                                                 \
@@ -261,14 +265,16 @@ void TEST_consensus_tree_1() {
     add_inputnames(input_tree_names, treedir, "bootstrapped", 1, 5);
 
     size_t    species_count;
-    GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.7);
+    char     *comment;
+    GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.7, comment);
     TEST_EXPECT_CONSTREE(tree, error, species_count, 22, 0.925779);
 
-    TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+    TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
                                    custom_tree_name(treedir, "consense1"),
                                    custom_tree_name(treedir, "consense1_expected"));
     // ../UNIT_TESTER/run/consense/1/consense1.tree
 
+    free(comment);
     delete tree;
 }
 void TEST_consensus_tree_1_single() {
@@ -279,14 +285,16 @@ void TEST_consensus_tree_1_single() {
 
     {
         size_t    species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.01);
+        char     *comment;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.01, comment);
         TEST_EXPECT_CONSTREE(tree, error, species_count, 22, 0.924610);
 
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
                                        custom_tree_name(treedir, "consense1_single"),
                                        custom_tree_name(treedir, "consense1_single_expected"));
         // ../UNIT_TESTER/run/consense/1/consense1_single.tree
 
+        free(comment);
         delete tree;
     }
 }
@@ -299,14 +307,16 @@ void TEST_consensus_tree_2() {
 
     {
         size_t    species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.5);
+        char     *comment;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.5, comment);
         TEST_EXPECT_CONSTREE(tree, error, species_count, 59, 2.789272);
 
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
                                        custom_tree_name(treedir, "consense2"),
                                        custom_tree_name(treedir, "consense2_expected"));
         // ../UNIT_TESTER/run/consense/2/consense2.tree
 
+        free(comment);
         delete tree;
     }
 }
@@ -319,14 +329,16 @@ void TEST_consensus_tree_3() {
 
     {
         size_t    species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
+        char     *comment;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
         TEST_EXPECT_CONSTREE(tree, error, species_count, 128, 2.171485);
 
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
                                        custom_tree_name(treedir, "consense3"),
                                        custom_tree_name(treedir, "consense3_expected"));
         // ../UNIT_TESTER/run/consense/3/consense3.tree
 
+        free(comment);
         delete tree;
     }
 }
@@ -339,10 +351,11 @@ void TEST_consensus_tree_from_disjunct_trees() {
 
     {
         size_t    species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
+        char     *comment;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
         TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 2.007980);
 
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
                                        custom_tree_name(treedir, "disjunct_merged"),
                                        custom_tree_name(treedir, "disjunct_merged_expected"));
         // ../UNIT_TESTER/run/consense/4/disjunct_merged.tree
@@ -350,6 +363,7 @@ void TEST_consensus_tree_from_disjunct_trees() {
         // @@@ tree generated here looks broken
         // (expected it to connect the 2 disjunct trees by one branch with bootstrap == 0)
 
+        free(comment);
         delete tree;
     }
 }
@@ -366,14 +380,16 @@ void TEST_consensus_tree_from_partly_overlapping_trees() {
 
     {
         size_t    species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
+        char     *comment;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
         TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 2.577895);
 
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
                                        custom_tree_name(treedir, "overlap_merged"),
                                        custom_tree_name(treedir, "overlap_merged_expected"));
         // ../UNIT_TESTER/run/consense/4/overlap_merged.tree
 
+        free(comment);
         delete tree;
     }
 }
@@ -390,14 +406,16 @@ void TEST_consensus_tree_from_minimal_overlapping_trees() {
 
     {
         size_t    species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
+        char     *comment;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
         TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 2.724435);
 
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
                                        custom_tree_name(treedir, "overlap_mini_merged"),
                                        custom_tree_name(treedir, "overlap_mini_merged_expected"));
         // ../UNIT_TESTER/run/consense/4/overlap_mini_merged.tree
 
+        free(comment);
         delete tree;
     }
 }
@@ -412,15 +430,17 @@ void TEST_consensus_tree_described_in_arbhelp() {
 
     {
         size_t    species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.0);
+        char     *comment;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.0, comment);
         TEST_EXPECT_CONSTREE(tree, error, species_count, 6, 1.050000);
 
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
                                        custom_tree_name(treedir, "help_merged"),
                                        custom_tree_name(treedir, "help_merged_expected"));
         // ../UNIT_TESTER/run/consense/5/help_merged.tree
         // @@@ constructed tree is not same as stated in helpfile
 
+        free(comment);
         delete tree;
     }
 }
@@ -436,14 +456,16 @@ void TEST_consensus_tree_from_trees_overlapping_by_twothirds() {
 
     {
         size_t    species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 19.2);
+        char     *comment;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 19.2, comment);
         TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 3.585280);
 
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
                                        custom_tree_name(treedir, "overlap_twothirds_merged"),
                                        custom_tree_name(treedir, "overlap_twothirds_merged_expected"));
         // ../UNIT_TESTER/run/consense/6/overlap_twothirds_merged.tree
 
+        free(comment);
         delete tree;
     }
 }
@@ -459,14 +481,16 @@ void TEST_consensus_tree_from_mostly_overlapping_trees() {
 
     {
         size_t    species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
+        char     *comment;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
         TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.820083);
 
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
                                        custom_tree_name(treedir, "overlap_mostly"),
                                        custom_tree_name(treedir, "overlap_mostly_expected"));
         // ../UNIT_TESTER/run/consense/7/overlap_mostly.tree
 
+        free(comment);
         delete tree;
     }
 }
@@ -482,14 +506,16 @@ void TEST_consensus_tree_from_mostly_overlapping_trees_2() {
 
     {
         size_t    species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
+        char     *comment;
+        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
         TEST_EXPECT_CONSTREE(tree, error, species_count, 8, 0.529071);
 
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree,
+        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
                                        custom_tree_name(treedir, "overlap2_mostly"),
                                        custom_tree_name(treedir, "overlap2_mostly_expected"));
         // ../UNIT_TESTER/run/consense/8/overlap2_mostly.tree
 
+        free(comment);
         delete tree;
     }
 }

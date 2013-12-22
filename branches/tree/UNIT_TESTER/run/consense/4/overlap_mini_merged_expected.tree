@@ -1,4 +1,9 @@
-[Fri Dec 20 12:38:52 2013: tree_overlap_mini_merged saved to consense/4/overlap_mini_merged.tree
+[
+Sun Dec 22 16:36:05 2013: ARB consensus tree build from 3 trees:
+ - consense/4/disjunct_1.tree
+ - consense/4/disjunct_2.tree
+ - consense/4/disjunct_4.tree
+Sun Dec 22 16:36:05 2013: tree_overlap_mini_merged saved to consense/4/overlap_mini_merged.tree
 ]
 (
   (

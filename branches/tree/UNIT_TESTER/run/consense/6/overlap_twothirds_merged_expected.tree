@@ -1,4 +1,9 @@
-[Fri Dec 20 12:38:52 2013: tree_overlap_twothirds_merged saved to consense/6/overlap_twothirds_merged.tree
+[
+Sun Dec 22 16:36:05 2013: ARB consensus tree build from 3 trees:
+ - consense/6/overlap_two_thirds_1.tree
+ - consense/6/overlap_two_thirds_2.tree
+ - consense/6/overlap_two_thirds_3.tree
+Sun Dec 22 16:36:05 2013: tree_overlap_twothirds_merged saved to consense/6/overlap_twothirds_merged.tree
 ]
 (
   (

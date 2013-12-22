@@ -40,6 +40,7 @@ CT_ctree.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_error.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_strarray.h
+CT_ctree.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_string.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arbdb.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arbdb_base.h

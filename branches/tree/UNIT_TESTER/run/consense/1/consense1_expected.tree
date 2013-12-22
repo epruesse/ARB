@@ -1,4 +1,11 @@
-[Mon Dec 16 14:51:33 2013: tree_consense1 saved to consense/1/consense1.tree
+[
+Sun Dec 22 16:36:04 2013: ARB consensus tree build from 5 trees:
+ - consense/1/bootstrapped_1.tree
+ - consense/1/bootstrapped_2.tree
+ - consense/1/bootstrapped_3.tree
+ - consense/1/bootstrapped_4.tree
+ - consense/1/bootstrapped_5.tree
+Sun Dec 22 16:36:04 2013: tree_consense1 saved to consense/1/consense1.tree
 ]
 (
   (

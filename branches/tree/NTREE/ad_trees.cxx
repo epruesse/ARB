@@ -693,7 +693,6 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
     AW_root  *aw_root = aww->get_root();
     GB_ERROR  error   = NULL;
 
-    // const char *cons_tree_name = TreeAdmin::dest_tree_awar(aw_root)->read_char_pntr();
     const char *cons_tree_name = aw_root->awar(AWAR_TREE_CONSENSE_TREE)->read_char_pntr();
     if (!cons_tree_name || !cons_tree_name[0]) {
         error = "No name specified for the consensus tree";
@@ -714,26 +713,26 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
             {
                 arb_progress         progress("Building consensus tree", tree_names.size()+1);
                 ConsensusTreeBuilder tree_builder;
-                GBS_strstruct        remark(1000);
-
-                remark.nprintf(100, "ARB consensus tree build from %zu trees:\n", tree_names.size());
 
                 for (size_t t = 0; t<tree_names.size(); ++t) {
                     progress.subtitle(GBS_global_string("Adding %s", tree_names[t]));
-                    remark.put(' ');
-                    remark.cat(tree_names[t]);
-                    remark.put('\n');
                     TreeRoot      *root = new TreeRoot(new SizeAwareNodeFactory, true); // will be deleted when tree gets deleted
                     SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree_names[t], *root));
-                    tree_builder.add(tree, 1.0);
+                    tree_builder.add(tree, tree_names[t], 1.0);
                     ++progress;
                 }
 
                 progress.subtitle("consensus tree construction");
-                size_t species_count;
+                size_t    species_count;
                 GBT_TREE *cons_tree = tree_builder.get(species_count);
                 nt_assert(cons_tree);
-                error = GBT_write_tree_with_remark(gb_main, cons_tree_name, cons_tree, remark.get_data());
+
+                {
+                    char *comment = tree_builder.get_remark();
+                    error         = GBT_write_tree_with_remark(gb_main, cons_tree_name, cons_tree, comment);
+                    free(comment);
+                }
+
                 ++progress;
 
                 if (error) progress.done();

@@ -76,7 +76,7 @@ class ConsensusTree : virtual Noncopyable {
     PART                *allSpecies;
     PartRegistry        *registry;
     const CharPtrArray&  names;
-    bool                 added_partial_tree;
+    bool                 added_partial_tree; // @@@ not used for anything
 
     PART *deconstruct_full_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight);
     PART *deconstruct_partial_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight, const PART *partialTree);
@@ -129,6 +129,8 @@ class ConsensusTreeBuilder {
     Trees      trees;
     Weights    weights;
 
+    std::vector<std::string> tree_names;
+
 public:
     ~ConsensusTreeBuilder() {
         for (size_t i = 0; i<trees.size(); ++i) {
@@ -136,7 +138,8 @@ public:
         }
     }
 
-    void add(SizeAwareTree*& tree, double weight) {
+    void add(SizeAwareTree*& tree, const char *treename, double weight) {
+        tree_names.push_back(treename);
         tree->get_tree_root()->find_innermost_edge().set_root();
 
         // (currently) reordering trees before deconstructing no longer
@@ -187,6 +190,8 @@ public:
 
         return ctree.get_consensus_tree();
     }
+
+    char *get_remark() const;
 };
 
 
