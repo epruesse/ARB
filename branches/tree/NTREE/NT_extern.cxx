@@ -1721,7 +1721,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->create_button("SEARCH",  "Search");
 
     awm->at(db_searchx, second_uppery);
-    awm->callback(makeWindowCallback(NT_jump_cb, ntw, true));
+    awm->callback(makeWindowCallback(NT_jump_cb, ntw, AP_JUMP_BY_BUTTON));
     awm->help_text("tr_jump.hlp");
     awm->create_button("JUMP", "Jump");
 

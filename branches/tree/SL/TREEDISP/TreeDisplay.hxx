@@ -53,6 +53,16 @@ enum AP_tree_display_type {
     AP_LIST_SIMPLE // simple display only showing name (used at startup to avoid NDS error messages)
 };
 
+enum AP_tree_jump_type { // bit-values
+    AP_JUMP_UNFOLD_GROUPS     = 1,
+    AP_JUMP_CENTER_IF_VISIBLE = 2, // if already visible -> center (normally only done if IRS-mode or selected was invisible)
+    AP_JUMP_BE_VERBOOSE       = 4, // tell why nothing happened etc.
+
+    // convenience defs:
+    AP_JUMP_AUTO      = 0,
+    AP_JUMP_BY_BUTTON = AP_JUMP_UNFOLD_GROUPS|AP_JUMP_CENTER_IF_VISIBLE|AP_JUMP_BE_VERBOOSE,
+};
+
 inline bool sort_is_list_style(AP_tree_display_type sort) { return sort == AP_LIST_NDS || sort == AP_LIST_SIMPLE; }
 inline bool sort_is_tree_style(AP_tree_display_type sort) { return !sort_is_list_style(sort); }
 
@@ -198,7 +208,7 @@ public:
 
     AW_root      *aw_root;
     AP_tree_display_type  tree_sort;
-    AP_tree      *tree_root_display;                // @@@ what is this used for ?
+    AP_tree      *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
     AP_tree_root *tree_static;
     GBDATA       *gb_main;
 
@@ -208,6 +218,7 @@ public:
     ~AWT_graphic_tree() OVERRIDE;
 
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
+    bool is_logically_zoomed() { return displayed_root != get_root_node(); }
 
     void init(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
@@ -238,7 +249,6 @@ public:
     void     reorder_tree(TreeOrder mode);
     GB_ERROR create_group(AP_tree * at) __ATTR__USERESULT;
     void     toggle_group(AP_tree * at);
-    void     jump(AP_tree *at, const char *name);
     AP_tree *search(AP_tree *root, const char *name);
     GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL,  AW_CL) OVERRIDE __ATTR__USERESULT;
     GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;

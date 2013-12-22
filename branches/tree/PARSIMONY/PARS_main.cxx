@@ -829,7 +829,7 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, AW_CL limit_only) {
     AP_BL_MODE mode       = AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY);
     rootEdge()->nni_rek(-1, false, mode, NULL);
     AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
-    AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->get_root_node();
+    AWT_TREE(ntw)->displayed_root = AWT_TREE(ntw)->get_root_node();
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -1262,7 +1262,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     awm->button_length(0);
 
-    awm->callback(makeWindowCallback(NT_jump_cb, ntw, true));
+    awm->callback(makeWindowCallback(NT_jump_cb, ntw, AP_JUMP_BY_BUTTON));
     awm->help_text("tr_jump.hlp");
     awm->create_button("JUMP", "Jump", 0);
 
