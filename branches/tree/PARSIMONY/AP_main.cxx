@@ -253,15 +253,6 @@ struct PARSIMONY_testenv {
     void pop() { apMain.pop(); }
 };
 
-static AP_tree_nlen *findNode(AP_tree_nlen *node, const char *name) {
-    if (node->name && strcmp(node->name, name) == 0) return node;
-    if (node->is_leaf) return NULL;
-
-    AP_tree_nlen *found = findNode(node->get_leftson(), name);
-    if (!found) found   = findNode(node->get_rightson(), name);
-    return found;
-}
-
 void TEST_tree_modifications() {
     PARSIMONY_testenv env("TEST_trees.arb");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
@@ -326,7 +317,7 @@ void TEST_tree_modifications() {
         TEST_ASSERT_VALID_TREE(root);
 
         // test set root:
-        AP_tree_nlen *CloTyrob = findNode(root, "CloTyrob");
+        AP_tree_nlen *CloTyrob = root->findLeafNamed("CloTyrob");
         TEST_REJECT_NULL(CloTyrob);
 
         ARB_edge rootEdge(root->get_leftson(), root->get_rightson());
@@ -344,7 +335,7 @@ void TEST_tree_modifications() {
 
         TEST_ASSERT_VALID_TREE(root);
 
-        AP_tree_nlen *CelBiazoFather = findNode(root, "CelBiazo")->get_father();
+        AP_tree_nlen *CelBiazoFather = root->findLeafNamed("CelBiazo")->get_father();
         TEST_REJECT_NULL(CelBiazoFather);
         CelBiazoFather->set_root();
 
@@ -363,7 +354,7 @@ void TEST_tree_modifications() {
         TEST_ASSERT_VALID_TREE(root);
 
         // test remove:
-        AP_tree_nlen *CurCitre = findNode(root, "CurCitre");
+        AP_tree_nlen *CurCitre = root->findLeafNamed("CurCitre");
         TEST_REJECT_NULL(CurCitre);
         TEST_REJECT_NULL(CurCitre->get_father());
 
@@ -384,7 +375,7 @@ void TEST_tree_modifications() {
         TEST_ASSERT_VALID_TREE(root);
 
         // test insert:
-        AP_tree_nlen *CloCarni = findNode(root, "CloCarni");
+        AP_tree_nlen *CloCarni = root->findLeafNamed("CloCarni");
         TEST_REJECT_NULL(CloCarni);
         CurCitre->insert(CloCarni); // this creates two extra edges (not destroyed by destroy() below) and one extra node
 

@@ -236,6 +236,18 @@ void RootedTree::set_root() {
     rt_assert(get_root_node() == old_root);
 }
 
+RootedTree *RootedTree::findLeafNamed(const char *wantedName) {
+    RootedTree *found = NULL;
+    if (is_leaf) {
+        if (name && strcmp(name, wantedName) == 0) found = this;
+    }
+    else {
+        found             = get_leftson()->findLeafNamed(wantedName);
+        if (!found) found = get_rightson()->findLeafNamed(wantedName);
+    }
+    return found;
+}
+
 // ----------------------------
 //      find_innermost_edge
 

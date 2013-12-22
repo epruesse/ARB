@@ -690,15 +690,6 @@ void TEST_SLOW_treeIO_stable() {
     GB_close(gb_main);
 }
 
-static RootedTree *findNode(RootedTree *node, const char *name) {
-    if (node->name && strcmp(node->name, name) == 0) return node;
-    if (node->is_leaf) return NULL;
-
-    RootedTree *found = findNode(node->get_leftson(), name);
-    if (!found) found   = findNode(node->get_rightson(), name);
-    return found;
-}
-
 void TEST_CONSENSUS_TREE_functionality() {
     // functionality wanted in RootedTree (for use in library CONSENSUS_TREE)
 
@@ -793,7 +784,7 @@ void TEST_CONSENSUS_TREE_functionality() {
 
     // test set_root
     TEST_ASSERT_VALID_TREE(tree);
-    RootedTree *AticSea6Grandpa = findNode(tree, "AticSea6")->get_father()->get_father();
+    RootedTree *AticSea6Grandpa = tree->findLeafNamed("AticSea6")->get_father()->get_father();
     TEST_REJECT_NULL(AticSea6Grandpa);
     TEST_ASSERT_VALID_TREE(AticSea6Grandpa);
 

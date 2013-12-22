@@ -182,6 +182,8 @@ public:
     void rotate_subtree(); // flip whole subtree ( = recursive swap_sons())
     void reorder_tree(TreeOrder mode);
 
+    RootedTree *findLeafNamed(const char *wantedName);
+
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
     void assert_valid() const;
 #endif // PROVIDE_TREE_STRUCTURE_TESTS
@@ -200,7 +202,8 @@ inline GBT_TREE *TreeRoot::makeNode() const {
 #define DEFINE_TREE_RELATIVES_ACCESSORS(TreeType)                                       \
     DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeType);                                   \
     DEFINE_DOWNCAST_ACCESSORS(TreeType, get_brother, RootedTree::get_brother());        \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, RootedTree::get_root_node())
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, RootedTree::get_root_node());    \
+    TreeType *findLeafNamed(const char *wantedName) { return DOWNCAST(TreeType*, RootedTree::findLeafNamed(wantedName)); }
 
 #define DEFINE_TREE_ACCESSORS(RootType, TreeType)                                       \
     DEFINE_DOWNCAST_ACCESSORS(RootType, get_tree_root, RootedTree::get_tree_root());    \

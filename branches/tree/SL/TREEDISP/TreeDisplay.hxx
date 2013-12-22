@@ -249,7 +249,6 @@ public:
     void     reorder_tree(TreeOrder mode);
     GB_ERROR create_group(AP_tree * at) __ATTR__USERESULT;
     void     toggle_group(AP_tree * at);
-    AP_tree *search(AP_tree *root, const char *name);
     GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL,  AW_CL) OVERRIDE __ATTR__USERESULT;
     GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
     int      check_update(GBDATA *gb_main) OVERRIDE;         // reload tree if needed

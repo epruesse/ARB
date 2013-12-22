@@ -71,23 +71,6 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
     return gc_manager;
 }
 
-AP_tree *AWT_graphic_tree::search(AP_tree *node, const char *name) { // @@@ duplicated somewhere in unit tests in svn branch 'tree'
-                                                                     // should be a method of AP_tree (or RootedTree)
-    if (node) {
-        if (node->is_leaf) {
-            if (node->name && strcmp(name, node->name) == 0) {
-                return node;
-            }
-        }
-        else {
-            AP_tree *result = search(node->get_leftson(), name);
-            if (!result) result = search(node->get_rightson(), name);
-            return result;
-        }
-    }
-    return 0;
-}
-
 void AWT_graphic_tree::mark_species_in_tree(AP_tree *at, int mark_mode) {
     /*
       mode      does

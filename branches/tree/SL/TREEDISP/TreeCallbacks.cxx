@@ -567,9 +567,9 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
         bool     is_tree = sort_is_tree_style(gtree->tree_sort);
 
         if (is_tree) {
-            found = gtree->search(gtree->displayed_root, name);
+            found = gtree->displayed_root->findLeafNamed(name);
             if (!found && gtree->is_logically_zoomed()) {
-                found = gtree->search(gtree->get_root_node(), name);
+                found = gtree->get_root_node()->findLeafNamed(name);
                 if (found) { // species is invisible because it is outside logically zoomed tree
                     if (jumpType & AP_JUMP_UNFOLD_GROUPS) {
                         gtree->displayed_root = common_ancestor(found, gtree->displayed_root);
