@@ -76,7 +76,6 @@ class ConsensusTree : virtual Noncopyable {
     PART                *allSpecies;
     PartRegistry        *registry;
     const CharPtrArray&  names;
-    bool                 added_partial_tree; // @@@ not used for anything
 
     PART *deconstruct_full_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight);
     PART *deconstruct_partial_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight, const PART *partialTree);
@@ -114,6 +113,21 @@ public:
 // ------------------------------
 //      ConsensusTreeBuilder
 
+class TreeInfo {
+    std::string Name;
+    size_t      specCount;
+
+public:
+    explicit TreeInfo(const char *Name_, size_t specCount_)
+        : Name(Name_),
+          specCount(specCount_)
+    {
+    }
+
+    const char *name() const { return Name.c_str(); }
+    size_t species_count() const { return specCount; }
+};
+
 class ConsensusTreeBuilder {
     // wrapper for ConsensusTree
     // - automatically collects species occurring in added trees (has to be done by caller of ConsensusTree)
@@ -129,7 +143,7 @@ class ConsensusTreeBuilder {
     Trees      trees;
     Weights    weights;
 
-    std::vector<std::string> tree_names;
+    std::vector<TreeInfo> tree_info;
 
 public:
     ~ConsensusTreeBuilder() {
@@ -139,7 +153,6 @@ public:
     }
 
     void add(SizeAwareTree*& tree, const char *treename, double weight) {
-        tree_names.push_back(treename);
         tree->get_tree_root()->find_innermost_edge().set_root();
 
         // (currently) reordering trees before deconstructing no longer
@@ -164,6 +177,8 @@ public:
                 species_occurred[name]++;
             }
         }
+
+        tree_info.push_back(TreeInfo(treename, name_count));
 
         free(names);
         tree = NULL;
@@ -192,6 +207,7 @@ public:
     }
 
     char *get_remark() const;
+    size_t species_count() const { return species_occurred.size(); }
 };
 
 

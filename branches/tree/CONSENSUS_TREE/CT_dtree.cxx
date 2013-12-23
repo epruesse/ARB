@@ -138,7 +138,6 @@ void ConsensusTree::remember_subtrees(const GBT_TREE *tree, double weight) {
         deconstruct_full_rootnode(tree, weight);
     }
     else {
-        added_partial_tree = true;
         deconstruct_partial_rootnode(tree, weight, wholeTree);
     }
 

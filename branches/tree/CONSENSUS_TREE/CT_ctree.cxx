@@ -17,8 +17,7 @@ ConsensusTree::ConsensusTree(const CharPtrArray& names_)
     : overall_weight(0),
       Name_hash(NULL),
       size(NULL),
-      names(names_),
-      added_partial_tree(false)
+      names(names_)
 {
     // names = leafnames (=species names)
 
@@ -93,16 +92,23 @@ SizeAwareTree *ConsensusTree::get_consensus_tree() {
 char *ConsensusTreeBuilder::get_remark() const {
     GBS_strstruct remark(1000);
     {
-        char *build_info = GBS_global_string_copy("ARB consensus tree build from %zu trees:", tree_names.size());
+        char *build_info = GBS_global_string_copy("ARB consensus tree build from %zu trees:", tree_info.size());
         char *dated      = GBS_log_dated_action_to("", build_info);
         remark.cat(dated);
         free(dated);
         free(build_info);
     }
 
-    for (size_t t = 0; t<tree_names.size(); ++t) {
+    size_t allCount = species_count();
+
+    for (size_t t = 0; t<tree_info.size(); ++t) {
+        const TreeInfo& tree = tree_info[t];
         remark.cat(" - ");
-        remark.cat(tree_names[t].c_str());
+        remark.cat(tree.name());
+        if (tree.species_count()<allCount) {
+            double pc = tree.species_count() / double(allCount);
+            remark.nprintf(50, " (%.1f%%; %zu/%zu)", pc*100.0, tree.species_count(), allCount);
+        }
         remark.put('\n');
     }
 

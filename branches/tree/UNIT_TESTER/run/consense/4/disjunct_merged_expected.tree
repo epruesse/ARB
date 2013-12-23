@@ -1,8 +1,8 @@
 [
-Sun Dec 22 16:36:05 2013: ARB consensus tree build from 2 trees:
- - consense/4/disjunct_1.tree
- - consense/4/disjunct_2.tree
-Sun Dec 22 16:36:05 2013: tree_disjunct_merged saved to consense/4/disjunct_merged.tree
+Mon Dec 23 10:04:13 2013: ARB consensus tree build from 2 trees:
+ - consense/4/disjunct_1.tree (53.3%; 8/15)
+ - consense/4/disjunct_2.tree (46.7%; 7/15)
+Mon Dec 23 10:04:13 2013: tree_disjunct_merged saved to consense/4/disjunct_merged.tree
 ]
 (
   (
