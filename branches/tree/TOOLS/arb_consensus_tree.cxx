@@ -483,7 +483,7 @@ void TEST_consensus_tree_from_mostly_overlapping_trees() {
         size_t    species_count;
         char     *comment;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.820083);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.820057);
 
         TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
                                        custom_tree_name(treedir, "overlap_mostly"),
@@ -508,7 +508,7 @@ void TEST_consensus_tree_from_mostly_overlapping_trees_2() {
         size_t    species_count;
         char     *comment;
         GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 8, 0.529071);
+        TEST_EXPECT_CONSTREE(tree, error, species_count, 8, 0.529109);
 
         TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
                                        custom_tree_name(treedir, "overlap2_mostly"),

@@ -223,7 +223,7 @@ public:
 
 inline int number_of_edges(int leafs) {
     //! calculate the number of edges in a tree with 'leafs' leafs
-    int nodes = 2*(leafs-1); // number of nodes (leafs + inner nodes)
+    int nodes = 2*leafs-1; // number of nodes (leafs + inner nodes)
     return nodes-1; // edges = nodes-1
 }
 
