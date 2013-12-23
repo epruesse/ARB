@@ -140,6 +140,7 @@ arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_diff.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_file.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_str.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_string.h

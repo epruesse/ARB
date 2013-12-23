@@ -36,6 +36,7 @@ PART *ConsensusTree::deconstruct_full_subtree(const GBT_TREE *tree, const GBT_LE
         registry->put_part_from_complete_tree(p2);
     }
     ptree->set_len(len);
+    inc_insert_progress();
     return ptree;
 }
 
@@ -57,6 +58,8 @@ void ConsensusTree::deconstruct_full_rootnode(const GBT_TREE *tree, const double
     // add only one of the partition p1 and p2 (they both represent the root-edge)
     registry->put_part_from_complete_tree(p1);
     delete p2;
+
+    inc_insert_progress();
 }
 
 PART *ConsensusTree::deconstruct_partial_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight, const PART *partialTree) {
@@ -85,6 +88,7 @@ PART *ConsensusTree::deconstruct_partial_subtree(const GBT_TREE *tree, const GBT
         registry->put_part_from_partial_tree(p2, partialTree);
     }
     ptree->set_len(len);
+    inc_insert_progress();
     return ptree;
 }
 
@@ -112,6 +116,7 @@ void ConsensusTree::deconstruct_partial_rootnode(const GBT_TREE *tree, const dou
 
     arb_assert(is_similar(p2->get_weight(), weight, 0.01));
     registry->put_artificial_part(p2);
+    inc_insert_progress();
 }
 
 void ConsensusTree::add_tree_to_PART(const GBT_TREE *tree, PART& part) const {

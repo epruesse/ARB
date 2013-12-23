@@ -711,21 +711,27 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
             GB_transaction ta(gb_main);
 
             {
-                arb_progress         progress("Building consensus tree", tree_names.size()+1);
+                arb_progress progress("Building consensus tree", 2); // 2 steps: deconstruct, reconstruct
                 ConsensusTreeBuilder tree_builder;
 
-                for (size_t t = 0; t<tree_names.size(); ++t) {
-                    progress.subtitle(GBS_global_string("Adding %s", tree_names[t]));
+                progress.subtitle("loading input trees");
+                for (size_t t = 0; t<tree_names.size() && !error; ++t) {
                     TreeRoot      *root = new TreeRoot(new SizeAwareNodeFactory, true); // will be deleted when tree gets deleted
                     SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree_names[t], *root));
-                    tree_builder.add(tree, tree_names[t], 1.0);
-                    ++progress;
+                    if (!tree) {
+                        error = GB_await_error();
+                    }
+                    else {
+                        tree_builder.add(tree, tree_names[t], 1.0);
+                    }
                 }
 
-                progress.subtitle("consensus tree construction");
-
                 size_t    species_count;
-                GBT_TREE *cons_tree = tree_builder.get(species_count, error);
+                GBT_TREE *cons_tree = tree_builder.get(species_count, error); // triggers 2 implicit progress increments
+
+                if (!error && progress.aborted()) {
+                    error = "user abort";
+                }
 
                 arb_assert(contradicted(cons_tree, error));
                 if (cons_tree) {
@@ -733,10 +739,8 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
                     error         = GBT_write_tree_with_remark(gb_main, cons_tree_name, cons_tree, comment);
                     free(comment);
                 }
-                ++progress;
                 if (error) progress.done();
             }
-
             error = ta.close(error);
         }
     }

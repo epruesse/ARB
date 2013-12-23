@@ -32,6 +32,9 @@
 #ifndef ROOTEDTREE_H
 #include <RootedTree.h>
 #endif
+#ifndef ARB_PROGRESS_H
+#include <arb_progress.h>
+#endif
 
 class  PART;
 struct NT_NODE;
@@ -77,6 +80,8 @@ class ConsensusTree : virtual Noncopyable {
     PartRegistry        *registry;
     const CharPtrArray&  names;
 
+    arb_progress *insertProgress;
+
     PART *deconstruct_full_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight);
     PART *deconstruct_partial_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight, const PART *partialTree);
 
@@ -99,11 +104,13 @@ class ConsensusTree : virtual Noncopyable {
     void add_tree_to_PART(const GBT_TREE *tree, PART& part) const;
     PART *create_tree_PART(const GBT_TREE *tree, const double& weight) const;
 
+    void inc_insert_progress() { if (insertProgress) ++(*insertProgress); }
+
 public:
     ConsensusTree(const CharPtrArray& names_);
     ~ConsensusTree();
 
-    __ATTR__USERESULT GB_ERROR insert_tree_weighted(const GBT_TREE *tree, int leafs, double weight);
+    __ATTR__USERESULT GB_ERROR insert_tree_weighted(const GBT_TREE *tree, int leafs, double weight, bool provideProgress);
 
     SizeAwareTree *get_consensus_tree();
 };
@@ -186,18 +193,23 @@ public:
         arb_assert(!error);
 
         ConstStrArray species_names;
-
         for (OccurCount::iterator s = species_occurred.begin(); s != species_occurred.end(); ++s) {
             species_names.put(s->first.c_str());
         }
 
-        different_species   = species_occurred.size();
+        different_species = species_occurred.size();
         ConsensusTree ctree(species_names);
-        for (size_t i = 0; i<trees.size() && !error; ++i) {
-            error = ctree.insert_tree_weighted(trees[i], tree_info[i].species_count(), weights[i]);
-            if (error) {
-                error = GBS_global_string("Failed to deconstruct '%s' (Reason: %s)", tree_info[i].name(), error);
+        {
+            arb_progress deconstruct("deconstructing", trees.size());
+
+            for (size_t i = 0; i<trees.size() && !error; ++i) {
+                error = ctree.insert_tree_weighted(trees[i], tree_info[i].species_count(), weights[i], true);
+                ++deconstruct;
+                if (error) {
+                    error = GBS_global_string("Failed to deconstruct '%s' (Reason: %s)", tree_info[i].name(), error);
+                }
             }
+            if (error) deconstruct.done();
         }
 
         if (error) return NULL;
@@ -208,6 +220,7 @@ public:
         ConsensusTree influence(species_names);
 #endif
 
+        arb_progress reconstruct("reconstructing");
         return ctree.get_consensus_tree();
     }
 

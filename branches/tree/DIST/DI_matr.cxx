@@ -29,7 +29,6 @@
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
-#include <arb_progress.h>
 #include <aw_root.hxx>
 
 #include <gui_aliview.hxx>
@@ -1355,7 +1354,7 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
         tree = neighbourjoining(names, *matr->matrix);
 
         if (bootstrap_flag) {
-            error = ctree->insert_tree_weighted(tree, matr->nentries, 1);
+            error = ctree->insert_tree_weighted(tree, matr->nentries, 1, false);
             delete tree; tree = NULL;
             loop_count++;
             progress->inc();

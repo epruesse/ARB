@@ -17,7 +17,8 @@ ConsensusTree::ConsensusTree(const CharPtrArray& names_)
     : overall_weight(0),
       Name_hash(NULL),
       size(NULL),
-      names(names_)
+      names(names_),
+      insertProgress(NULL)
 {
     // names = leafnames (=species names)
 
@@ -33,6 +34,8 @@ ConsensusTree::ConsensusTree(const CharPtrArray& names_)
 }
 
 ConsensusTree::~ConsensusTree() {
+    arb_assert(!insertProgress);
+
     delete registry;
     delete allSpecies;
     delete size;
@@ -43,7 +46,7 @@ ConsensusTree::~ConsensusTree() {
     }
 }
 
-GB_ERROR ConsensusTree::insert_tree_weighted(const GBT_TREE *tree, int leafs, double weight) {
+GB_ERROR ConsensusTree::insert_tree_weighted(const GBT_TREE *tree, int leafs, double weight, bool provideProgress) {
     // Insert a GBT-tree in the Hash-Table
     // The GBT-tree is destructed afterwards!
     arb_assert(GBT_count_leafs(tree) == size_t(leafs));
@@ -56,6 +59,11 @@ GB_ERROR ConsensusTree::insert_tree_weighted(const GBT_TREE *tree, int leafs, do
         return "tree contains duplicated species";
     }
 
+    if (provideProgress) {
+        int nodeCount  = number_of_edges(wholeTree->get_members())+1;
+        insertProgress = new arb_progress(nodeCount);
+    }
+
     bool contains_all_species = wholeTree->equals(allSpecies);
 
     if (contains_all_species) {
@@ -63,6 +71,11 @@ GB_ERROR ConsensusTree::insert_tree_weighted(const GBT_TREE *tree, int leafs, do
     }
     else {
         deconstruct_partial_rootnode(tree, weight, wholeTree);
+    }
+
+    if (provideProgress) {
+        delete insertProgress;
+        insertProgress = NULL;
     }
 
     delete wholeTree;
@@ -82,10 +95,12 @@ SizeAwareTree *ConsensusTree::get_consensus_tree() {
 
     registry->build_sorted_list(overall_weight);
 
+    arb_progress progress(registry->size()+2);
     {
         PART *p = registry->get_part();
-        while (p != NULL) {
+        while (p != NULL && !progress.aborted()) {
             insert_ntree(p);
+            ++progress;
             p = registry->get_part();
         }
     }
@@ -101,8 +116,12 @@ SizeAwareTree *ConsensusTree::get_consensus_tree() {
     SizeAwareTree *result_tree = rb_gettree(n);
     ntree_cleanup();
 
+    ++progress;
+
     result_tree->get_tree_root()->find_innermost_edge().set_root();
     result_tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM);
+
+    ++progress;
 
     return result_tree;
 }

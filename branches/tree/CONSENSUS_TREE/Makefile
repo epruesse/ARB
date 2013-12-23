@@ -39,6 +39,7 @@ CT_ctree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_error.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+CT_ctree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -67,6 +68,7 @@ CT_dtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+CT_dtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arb_string.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -95,6 +97,7 @@ CT_hash.o: $(ARBHOME)/INCLUDE/arb_assert.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_error.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_msg.h
+CT_hash.o: $(ARBHOME)/INCLUDE/arb_progress.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_sort.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -171,6 +174,7 @@ CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_sort.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_string.h

@@ -33,10 +33,8 @@ class PartRegistry : virtual Noncopyable {
     PartVector sorted;
     size_t     retrieved;
 
-#if defined(ASSERTION_USED)
     bool registration_phase() const { return sorted.empty(); }
     bool retrieval_phase() const { return !registration_phase(); }
-#endif
 
     void merge_artificial_parts();
 
@@ -55,6 +53,11 @@ public:
 
     void  build_sorted_list(double overall_weight);
     PART *get_part();
+
+    size_t size() const {
+        if (registration_phase()) return parts.size()+artificial_parts.size();
+        return sorted.size();
+    }
 };
 
 #else
