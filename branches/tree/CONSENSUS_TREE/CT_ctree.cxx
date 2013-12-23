@@ -43,11 +43,22 @@ ConsensusTree::~ConsensusTree() {
     }
 }
 
-void ConsensusTree::insert_tree_weighted(GBT_TREE *tree, double weight) {
+void ConsensusTree::insert_tree_weighted(const GBT_TREE *tree, double weight) {
     // Insert a GBT-tree in the Hash-Table
     // The GBT-tree is destructed afterwards!
     overall_weight += weight;
-    remember_subtrees(tree, weight);
+
+    PART *wholeTree            = create_tree_PART(tree, weight);
+    bool  contains_all_species = wholeTree->equals(allSpecies);
+
+    if (contains_all_species) {
+        deconstruct_full_rootnode(tree, weight);
+    }
+    else {
+        deconstruct_partial_rootnode(tree, weight, wholeTree);
+    }
+
+    delete wholeTree;
 }
 
 SizeAwareTree *ConsensusTree::get_consensus_tree() {

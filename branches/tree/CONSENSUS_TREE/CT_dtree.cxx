@@ -130,17 +130,3 @@ PART *ConsensusTree::create_tree_PART(const GBT_TREE *tree, const double& weight
     return part;
 }
 
-void ConsensusTree::remember_subtrees(const GBT_TREE *tree, double weight) {
-    PART *wholeTree            = create_tree_PART(tree, weight);
-    bool  contains_all_species = wholeTree->equals(allSpecies);
-
-    if (contains_all_species) {
-        deconstruct_full_rootnode(tree, weight);
-    }
-    else {
-        deconstruct_partial_rootnode(tree, weight, wholeTree);
-    }
-
-    delete wholeTree;
-}
-

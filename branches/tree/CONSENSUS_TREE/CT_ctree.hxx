@@ -83,8 +83,6 @@ class ConsensusTree : virtual Noncopyable {
     void deconstruct_full_rootnode(const GBT_TREE *tree, const double& weight);
     void deconstruct_partial_rootnode(const GBT_TREE *tree, const double& weight, const PART *partialTree);
 
-    void remember_subtrees(const GBT_TREE *tree, double weight);
-
     int get_species_index(const char *name) const {
         int idx = GBS_read_hash(Name_hash, name);
         arb_assert(idx>0); // given 'name' is unknown
@@ -105,7 +103,7 @@ public:
     ConsensusTree(const CharPtrArray& names_);
     ~ConsensusTree();
 
-    void insert_tree_weighted(GBT_TREE *tree, double weight);
+    void insert_tree_weighted(const GBT_TREE *tree, double weight);
 
     SizeAwareTree *get_consensus_tree();
 };
