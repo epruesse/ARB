@@ -1355,7 +1355,7 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
         tree = neighbourjoining(names, *matr->matrix);
 
         if (bootstrap_flag) {
-            ctree->insert_tree_weighted(tree, 1);
+            error = ctree->insert_tree_weighted(tree, matr->nentries, 1);
             delete tree; tree = NULL;
             loop_count++;
             progress->inc();

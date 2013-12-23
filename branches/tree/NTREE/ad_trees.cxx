@@ -723,18 +723,17 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
                 }
 
                 progress.subtitle("consensus tree construction");
-                size_t    species_count;
-                GBT_TREE *cons_tree = tree_builder.get(species_count);
-                nt_assert(cons_tree);
 
-                {
+                size_t    species_count;
+                GBT_TREE *cons_tree = tree_builder.get(species_count, error);
+
+                arb_assert(contradicted(cons_tree, error));
+                if (cons_tree) {
                     char *comment = tree_builder.get_remark();
                     error         = GBT_write_tree_with_remark(gb_main, cons_tree_name, cons_tree, comment);
                     free(comment);
                 }
-
                 ++progress;
-
                 if (error) progress.done();
             }
 

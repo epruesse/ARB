@@ -103,7 +103,7 @@ public:
     ConsensusTree(const CharPtrArray& names_);
     ~ConsensusTree();
 
-    void insert_tree_weighted(const GBT_TREE *tree, double weight);
+    __ATTR__USERESULT GB_ERROR insert_tree_weighted(const GBT_TREE *tree, int leafs, double weight);
 
     SizeAwareTree *get_consensus_tree();
 };
@@ -182,20 +182,27 @@ public:
         tree = NULL;
     }
 
-    SizeAwareTree *get(size_t& different_species) {
+    SizeAwareTree *get(size_t& different_species, GB_ERROR& error) {
+        arb_assert(!error);
+
         ConstStrArray species_names;
 
         for (OccurCount::iterator s = species_occurred.begin(); s != species_occurred.end(); ++s) {
             species_names.put(s->first.c_str());
         }
 
-        different_species = species_occurred.size();
+        different_species   = species_occurred.size();
         ConsensusTree ctree(species_names);
-        for (size_t i = 0; i<trees.size(); ++i) {
-            ctree.insert_tree_weighted(trees[i], weights[i]);
+        for (size_t i = 0; i<trees.size() && !error; ++i) {
+            error = ctree.insert_tree_weighted(trees[i], tree_info[i].species_count(), weights[i]);
+            if (error) {
+                error = GBS_global_string("Failed to deconstruct '%s' (Reason: %s)", tree_info[i].name(), error);
+            }
         }
 
-#if defined(DEBUG) 
+        if (error) return NULL;
+
+#if defined(DEBUG)
         // if class ConsensusTree does depend on any local data,
         // instanciating another instance will interfere:
         ConsensusTree influence(species_names);

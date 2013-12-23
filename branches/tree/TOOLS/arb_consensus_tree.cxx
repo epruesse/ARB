@@ -51,10 +51,8 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
             }
         }
 
-        if (!error) {
-            consense_tree = tree_builder.get(different_species);
-            comment       = tree_builder.get_remark();
-        }
+        if (!error) consense_tree = tree_builder.get(different_species, error);
+        if (!error) comment = tree_builder.get_remark();
     }
     arb_assert(contradicted(consense_tree, error));
     return consense_tree;

@@ -43,13 +43,20 @@ ConsensusTree::~ConsensusTree() {
     }
 }
 
-void ConsensusTree::insert_tree_weighted(const GBT_TREE *tree, double weight) {
+GB_ERROR ConsensusTree::insert_tree_weighted(const GBT_TREE *tree, int leafs, double weight) {
     // Insert a GBT-tree in the Hash-Table
     // The GBT-tree is destructed afterwards!
+    arb_assert(GBT_count_leafs(tree) == size_t(leafs));
+
     overall_weight += weight;
 
-    PART *wholeTree            = create_tree_PART(tree, weight);
-    bool  contains_all_species = wholeTree->equals(allSpecies);
+    PART *wholeTree = create_tree_PART(tree, weight);
+    if (wholeTree->get_members() != leafs) {
+        arb_assert(wholeTree->get_members() < leafs);
+        return "tree contains duplicated species";
+    }
+
+    bool contains_all_species = wholeTree->equals(allSpecies);
 
     if (contains_all_species) {
         deconstruct_full_rootnode(tree, weight);
@@ -59,6 +66,7 @@ void ConsensusTree::insert_tree_weighted(const GBT_TREE *tree, double weight) {
     }
 
     delete wholeTree;
+    return NULL;
 }
 
 SizeAwareTree *ConsensusTree::get_consensus_tree() {
