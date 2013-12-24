@@ -1,9 +1,8 @@
-[
-Mon Dec 23 12:06:54 2013: ARB consensus tree build from 3 trees:
+[Tue Dec 24 11:02:23 2013: ARB consensus tree build from 3 trees:
  - consense/7/disjunct_del2_1.tree (86.7%; 13/15)
  - consense/7/disjunct_del2_2.tree (86.7%; 13/15)
  - consense/7/disjunct_del2_3.tree (86.7%; 13/15)
-Mon Dec 23 12:06:54 2013: tree_overlap_mostly saved to consense/7/overlap_mostly.tree
+Tue Dec 24 11:02:23 2013: tree_overlap_mostly saved to consense/7/overlap_mostly.tree
 ]
 (
   (
