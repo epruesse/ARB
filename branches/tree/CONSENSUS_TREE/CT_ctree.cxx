@@ -139,10 +139,14 @@ char *ConsensusTreeBuilder::get_remark() const {
 
     size_t allCount = species_count();
 
+    size_t maxnamelen = 0;
+    for (size_t t = 0; t<tree_info.size(); ++t) {
+        maxnamelen = std::max(maxnamelen, strlen(tree_info[t].name()));
+    }
     for (size_t t = 0; t<tree_info.size(); ++t) {
         const TreeInfo& tree = tree_info[t];
         remark.cat(" - ");
-        remark.cat(tree.name());
+        remark.nprintf(maxnamelen, "%-*s", int(maxnamelen), tree.name());
         if (tree.species_count()<allCount) {
             double pc = tree.species_count() / double(allCount);
             remark.nprintf(50, " (%.1f%%; %zu/%zu)", pc*100.0, tree.species_count(), allCount);
