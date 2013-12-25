@@ -738,6 +738,7 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
                     char *comment = tree_builder.get_remark();
                     error         = GBT_write_tree_with_remark(gb_main, cons_tree_name, cons_tree, comment);
                     free(comment);
+                    delete cons_tree;
                 }
                 if (error) progress.done();
             }
