@@ -97,12 +97,20 @@ SizeAwareTree *ConsensusTree::get_consensus_tree() {
 
     arb_progress progress(registry->size()+2);
     {
+#if defined(DUMP_PART_INSERTION)
+        PART::start_pretty_printing(names);
+#endif
+
         PART *p = registry->get_part();
         while (p != NULL && !progress.aborted()) {
             insert_ntree(p);
             ++progress;
             p = registry->get_part();
         }
+
+#if defined(DUMP_PART_INSERTION)
+        PART::stop_pretty_printing();
+#endif
     }
 
     const NT_NODE *n = ntree_get();

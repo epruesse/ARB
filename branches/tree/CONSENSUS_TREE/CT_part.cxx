@@ -15,9 +15,7 @@
 
 #include "CT_part.hxx"
 #include <arbdbt.h>
-
-#if defined(DEBUG)
-#endif
+#include <arb_strarray.h>
 
 #define BITS_PER_PELEM (sizeof(PELEM)*8)
 
@@ -69,21 +67,53 @@ PartitionSize::PartitionSize(const int len)
 }
 
 #if defined(NTREE_DEBUG_FUNCTIONS)
+
+static const CharPtrArray *namesPtr = NULL;
+
+void PART::start_pretty_printing(const CharPtrArray& names) { namesPtr = &names; }
+void PART::stop_pretty_printing() { namesPtr = NULL; }
+
 void PART::print() const {
     // ! Testfunction to print a part
-    int i, j, k=0;
-    PELEM l;
+    int       k     = 0;
+    const int longs = get_longs();
+    const int plen  = info->get_bits();
 
-    int longs = get_longs();
-    int plen = info->get_bits();
-    for (i=0; i<longs; i++) {
-        l = 1;
-        for (j=0; k<plen && size_t(j)<sizeof(PELEM)*8; j++, k++) {
-            if (p[i] & l)
-                printf("1");
-            else
-                printf("0");
-            l <<= 1;
+    if (namesPtr) {
+        const CharPtrArray& names = *namesPtr;
+        for (int part = 0; part<=1; ++part) {
+            bool first = true;
+            for (int i=0; i<longs; i++) {
+                PELEM el = 1;
+                for (int j=0; k<plen && size_t(j)<sizeof(PELEM)*8; j++, k++) {
+                    bool bitset = p[i] & el;
+                    if (bitset == part) {
+                        const char *name = names[k];
+#if 1
+                        fputc(name[0], stdout); // first char of name
+#else
+                        if (!first) fputc(',', stdout);
+                        else first = false;
+                        fputs(name, stdout); // full name
+#endif
+                    }
+                    el <<= 1;
+                }
+            }
+            if (!part) {
+                fputs("---", stdout);
+                k = 0;
+            }
+        }
+    }
+    else {
+        for (int i=0; i<longs; i++) {
+            PELEM el = 1;
+            for (int j=0; k<plen && size_t(j)<sizeof(PELEM)*8; j++, k++) {
+                bool bitset = p[i] & el;
+                fputc('0'+bitset, stdout);
+                el <<= 1;
+            }
         }
     }
 

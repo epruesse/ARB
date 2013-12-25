@@ -148,6 +148,7 @@ CT_part.o: $(ARBHOME)/INCLUDE/arb_assert.h
 CT_part.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_part.o: $(ARBHOME)/INCLUDE/arb_error.h
 CT_part.o: $(ARBHOME)/INCLUDE/arb_msg.h
+CT_part.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 CT_part.o: $(ARBHOME)/INCLUDE/arb_string.h
 CT_part.o: $(ARBHOME)/INCLUDE/arbdb.h
 CT_part.o: $(ARBHOME)/INCLUDE/arbdb_base.h

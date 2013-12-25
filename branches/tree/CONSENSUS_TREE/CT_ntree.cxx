@@ -226,6 +226,9 @@ void insert_ntree(PART*& part) {
         if (!ins_ntree(ntree, part)) {
             part->invert();
             if (!ins_ntree(ntree, part)) {
+#if defined(DUMP_PART_INSERTION)
+                fputs("insert_ntree drops part=", stdout); part->print();
+#endif
                 delete part; // drop non-fitting partition
                 part = NULL;
             }

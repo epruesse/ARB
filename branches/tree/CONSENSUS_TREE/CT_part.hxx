@@ -218,6 +218,8 @@ public:
 
 #if defined(NTREE_DEBUG_FUNCTIONS)
     void print() const;
+    static void start_pretty_printing(const class CharPtrArray& names_);
+    static void stop_pretty_printing();
 #endif
 };
 

@@ -234,8 +234,9 @@ static arb_test::match_expectation consense_tree_generated(GBT_TREE *tree, GB_ER
 }
 
 static arb_test::match_expectation build_expected_consensus_tree(const int treedir, const char *basename, int first_tree, int last_tree, double weight, const char *outbasename, size_t expected_species_count, double expected_intree_distance) {
-    using namespace arb_test;
-    expectation_group expected;
+    using namespace       arb_test;
+    expectation_group     expected;
+    arb_suppress_progress hideProgress;
 
     GB_ERROR  error   = NULL;
     StrArray  input_tree_names;
