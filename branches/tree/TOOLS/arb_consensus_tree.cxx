@@ -315,7 +315,6 @@ void TEST_consensus_tree_described_in_arbhelp() {
     // see ../HELP_SOURCE/oldhelp/consense_algo.hlp
     TEST_EXPECTATION(build_expected_consensus_tree(5, "help", 1, 2, 2.0, "help_merged", 6, 1.050000));
     // ../UNIT_TESTER/run/consense/5/help_merged.tree
-    // @@@ constructed tree is not same as stated in helpfile
 }
 
 void TEST_consensus_tree_from_trees_overlapping_by_twothirds() {
