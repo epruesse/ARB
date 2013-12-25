@@ -233,288 +233,110 @@ static arb_test::match_expectation consense_tree_generated(GBT_TREE *tree, GB_ER
     return all().ofgroup(expected);
 }
 
-#define TEST_EXPECT_CONSTREE(tree,err,sc,esc,eid) TEST_EXPECTATION(consense_tree_generated(tree, err, sc, esc, eid))
+static arb_test::match_expectation build_expected_consensus_tree(const int treedir, const char *basename, int first_tree, int last_tree, double weight, const char *outbasename, size_t expected_species_count, double expected_intree_distance) {
+    using namespace arb_test;
+    expectation_group expected;
 
-#if defined TEST_AUTO_UPDATE
-#define DIFF_OR_UPDATE                                                                  \
-    if (!exported_as_expected) {                                                        \
-        ASSERT_RESULT(int, 0, system(GBS_global_string("cp %s %s", saveas, expected))); \
-    }
-#else
-#define DIFF_OR_UPDATE TEST_EXPECT(exported_as_expected)
-#endif
-
-#define TEST_SAVE_AND_COMPARE_CONSTREE(tree,comment,saveasHC,expectedHC) do {           \
-        char *saveas   = saveasHC;                                                      \
-        char *expected = expectedHC;                                                    \
-        TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas, comment));               \
-        bool exported_as_expected =                                                     \
-            arb_test::textfiles_have_difflines_ignoreDates(expected, saveas, 0);        \
-        DIFF_OR_UPDATE;                                                                 \
-        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));                              \
-        free(expected);                                                                 \
-        free(saveas);                                                                   \
-    } while(0)
-
-void TEST_consensus_tree_1() {
     GB_ERROR  error   = NULL;
     StrArray  input_tree_names;
-    const int treedir = 1;
-    add_inputnames(input_tree_names, treedir, "bootstrapped", 1, 5);
+    add_inputnames(input_tree_names, treedir, basename, first_tree, last_tree);
 
     size_t    species_count;
     char     *comment;
-    GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.7, comment);
-    TEST_EXPECT_CONSTREE(tree, error, species_count, 22, 0.925779);
+    GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, weight, comment);
+    expected.add(consense_tree_generated(tree, error, species_count, expected_species_count, expected_intree_distance));
 
-    TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
-                                   custom_tree_name(treedir, "consense1"),
-                                   custom_tree_name(treedir, "consense1_expected"));
-    // ../UNIT_TESTER/run/consense/1/consense1.tree
+    char *saveas = custom_tree_name(treedir, outbasename);
+    error        = save_tree_as_newick(tree, saveas, comment);
+    expected.add(that(error).is_equal_to_NULL());
 
+    if (!error) {
+        char *expected_save        = custom_tree_name(treedir, GBS_global_string("%s_expected", outbasename));
+        bool  exported_as_expected = arb_test::textfiles_have_difflines_ignoreDates(expected_save, saveas, 0);
+
+#if defined(TEST_AUTO_UPDATE)
+        if (!exported_as_expected) {
+            ASSERT_RESULT(int, 0, system(GBS_global_string("cp %s %s", saveas, expected_save)));
+        }
+#else // !defined(TEST_AUTO_UPDATE)
+        expected.add(that(exported_as_expected).is_equal_to(true));
+#endif
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
+        free(expected_save);
+    }
+
+    free(saveas);
     free(comment);
     delete tree;
+
+    return all().ofgroup(expected);
+}
+
+void TEST_consensus_tree_1() {
+    TEST_EXPECTATION(build_expected_consensus_tree(1, "bootstrapped", 1, 5, 0.7, "consense1", 22, 0.925779));
+    // ../UNIT_TESTER/run/consense/1/consense1.tree
 }
 void TEST_consensus_tree_1_single() {
-    GB_ERROR  error   = NULL;
-    StrArray  input_tree_names;
-    const int treedir = 1;
-    add_inputnames(input_tree_names, treedir, "bootstrapped", 1, 1);
-
-    {
-        size_t    species_count;
-        char     *comment;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.01, comment);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 22, 0.924610);
-
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
-                                       custom_tree_name(treedir, "consense1_single"),
-                                       custom_tree_name(treedir, "consense1_single_expected"));
-        // ../UNIT_TESTER/run/consense/1/consense1_single.tree
-
-        free(comment);
-        delete tree;
-    }
+    TEST_EXPECTATION(build_expected_consensus_tree(1, "bootstrapped", 1, 1, 0.01, "consense1_single", 22, 0.924610));
+    // ../UNIT_TESTER/run/consense/1/consense1_single.tree
 }
 
 void TEST_consensus_tree_2() {
-    GB_ERROR  error   = NULL;
-    StrArray  input_tree_names;
-    const int treedir = 2;
-    add_inputnames(input_tree_names, treedir, "bootstrapped", 1, 4);
-
-    {
-        size_t    species_count;
-        char     *comment;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.5, comment);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 59, 2.789272);
-
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
-                                       custom_tree_name(treedir, "consense2"),
-                                       custom_tree_name(treedir, "consense2_expected"));
-        // ../UNIT_TESTER/run/consense/2/consense2.tree
-
-        free(comment);
-        delete tree;
-    }
+    TEST_EXPECTATION(build_expected_consensus_tree(2, "bootstrapped", 1, 4, 2.5, "consense2", 59, 2.789272));
+    // ../UNIT_TESTER/run/consense/2/consense2.tree
 }
 
 void TEST_consensus_tree_3() {
-    GB_ERROR  error   = NULL;
-    StrArray  input_tree_names;
-    const int treedir = 3;
-    add_inputnames(input_tree_names, treedir, "bootstrapped", 1, 3);
-
-    {
-        size_t    species_count;
-        char     *comment;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 128, 2.171485);
-
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
-                                       custom_tree_name(treedir, "consense3"),
-                                       custom_tree_name(treedir, "consense3_expected"));
-        // ../UNIT_TESTER/run/consense/3/consense3.tree
-
-        free(comment);
-        delete tree;
-    }
+    TEST_EXPECTATION(build_expected_consensus_tree(3, "bootstrapped", 1, 3, 137.772, "consense3", 128, 2.171485));
+    // ../UNIT_TESTER/run/consense/3/consense3.tree
 }
 
 void TEST_consensus_tree_from_disjunct_trees() {
-    GB_ERROR  error   = NULL;
-    StrArray  input_tree_names;
-    const int treedir = 4;
-    add_inputnames(input_tree_names, treedir, "disjunct", 1, 2);
-
-    {
-        size_t    species_count;
-        char     *comment;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 2.007980);
-
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
-                                       custom_tree_name(treedir, "disjunct_merged"),
-                                       custom_tree_name(treedir, "disjunct_merged_expected"));
-        // ../UNIT_TESTER/run/consense/4/disjunct_merged.tree
-
-        // @@@ tree generated here looks broken
-        // (expected it to connect the 2 disjunct trees by one branch with bootstrap == 0)
-
-        free(comment);
-        delete tree;
-    }
+    TEST_EXPECTATION(build_expected_consensus_tree(4, "disjunct", 1, 2, 137.772, "disjunct_merged", 15, 2.007980));
+    // ../UNIT_TESTER/run/consense/4/disjunct_merged.tree
 }
 
 void TEST_consensus_tree_from_partly_overlapping_trees() {
-    GB_ERROR  error   = NULL;
-    StrArray  input_tree_names;
-    const int treedir = 4;
-    add_inputnames(input_tree_names, treedir, "disjunct", 1, 3);
-
     // tree_disjunct_3 contains 7 species
     // (3 from upper subtree (tree_disjunct_1) and 4 from lower subtree (tree_disjunct_2))
-    // The generated consensus-tree has a quite good topology (compared with tree_disjunct_source)
 
-    {
-        size_t    species_count;
-        char     *comment;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 2.577895);
-
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
-                                       custom_tree_name(treedir, "overlap_merged"),
-                                       custom_tree_name(treedir, "overlap_merged_expected"));
-        // ../UNIT_TESTER/run/consense/4/overlap_merged.tree
-
-        free(comment);
-        delete tree;
-    }
+    TEST_EXPECTATION(build_expected_consensus_tree(4, "disjunct", 1, 3, 137.772, "overlap_merged", 15, 2.577895));
+    // ../UNIT_TESTER/run/consense/4/overlap_merged.tree
 }
 
 void TEST_consensus_tree_from_minimal_overlapping_trees() {
-    GB_ERROR  error   = NULL;
-    StrArray  input_tree_names;
-    const int treedir = 4;
-    add_inputnames(input_tree_names, treedir, "disjunct", 0, 2);
-
     // tree_disjunct_0 only contains 2 species (1 from upper and 1 from lower subtree).
-    // topology is poor (compared to tree_disjunct_source), but far better as if merging only disjunct trees.
-
-    {
-        size_t    species_count;
-        char     *comment;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 2.724435);
-
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
-                                       custom_tree_name(treedir, "overlap_mini_merged"),
-                                       custom_tree_name(treedir, "overlap_mini_merged_expected"));
-        // ../UNIT_TESTER/run/consense/4/overlap_mini_merged.tree
-
-        free(comment);
-        delete tree;
-    }
+    TEST_EXPECTATION(build_expected_consensus_tree(4, "disjunct", 0, 2, 137.772, "overlap_mini_merged", 15, 2.724435));
+    // ../UNIT_TESTER/run/consense/4/overlap_mini_merged.tree
 }
 
 void TEST_consensus_tree_described_in_arbhelp() {
     // see ../HELP_SOURCE/oldhelp/consense_algo.hlp
-
-    GB_ERROR  error   = NULL;
-    StrArray  input_tree_names;
-    const int treedir = 5;
-    add_inputnames(input_tree_names, treedir, "help", 1, 2);
-
-    {
-        size_t    species_count;
-        char     *comment;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.0, comment);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 6, 1.050000);
-
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
-                                       custom_tree_name(treedir, "help_merged"),
-                                       custom_tree_name(treedir, "help_merged_expected"));
-        // ../UNIT_TESTER/run/consense/5/help_merged.tree
-        // @@@ constructed tree is not same as stated in helpfile
-
-        free(comment);
-        delete tree;
-    }
+    TEST_EXPECTATION(build_expected_consensus_tree(5, "help", 1, 2, 2.0, "help_merged", 6, 1.050000));
+    // ../UNIT_TESTER/run/consense/5/help_merged.tree
+    // @@@ constructed tree is not same as stated in helpfile
 }
 
 void TEST_consensus_tree_from_trees_overlapping_by_twothirds() {
-    GB_ERROR  error   = NULL;
-    StrArray  input_tree_names;
-    const int treedir = 6;
-    add_inputnames(input_tree_names, treedir, "overlap_two_thirds", 1, 3);
     // These 3 trees where copied from an existing tree.
     // From each copy one third of all species has been removed
     // (removed sets were disjunct)
-
-    {
-        size_t    species_count;
-        char     *comment;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 19.2, comment);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 3.585280);
-
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
-                                       custom_tree_name(treedir, "overlap_twothirds_merged"),
-                                       custom_tree_name(treedir, "overlap_twothirds_merged_expected"));
-        // ../UNIT_TESTER/run/consense/6/overlap_twothirds_merged.tree
-
-        free(comment);
-        delete tree;
-    }
+    TEST_EXPECTATION(build_expected_consensus_tree(6, "overlap_two_thirds", 1, 3, 19.2, "overlap_twothirds_merged", 15, 3.585280));
+    // ../UNIT_TESTER/run/consense/6/overlap_twothirds_merged.tree
 }
 
 void TEST_consensus_tree_from_mostly_overlapping_trees() {
-    GB_ERROR  error   = NULL;
-    StrArray  input_tree_names;
-    const int treedir = 7;
-    add_inputnames(input_tree_names, treedir, "disjunct_del2", 1, 3);
-
     // the 3 trees were copied from tree_disjunct_source.
     // from each tree 2 (different) species were deleted.
-
-    {
-        size_t    species_count;
-        char     *comment;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 15, 1.820057);
-
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
-                                       custom_tree_name(treedir, "overlap_mostly"),
-                                       custom_tree_name(treedir, "overlap_mostly_expected"));
-        // ../UNIT_TESTER/run/consense/7/overlap_mostly.tree
-
-        free(comment);
-        delete tree;
-    }
+    TEST_EXPECTATION(build_expected_consensus_tree(7, "disjunct_del2", 1, 3, 137.772, "overlap_mostly", 15, 1.820057));
+    // ../UNIT_TESTER/run/consense/7/overlap_mostly.tree
 }
 
 void TEST_consensus_tree_from_mostly_overlapping_trees_2() {
-    GB_ERROR  error   = NULL;
-    StrArray  input_tree_names;
-    const int treedir = 8;
-    add_inputnames(input_tree_names, treedir, "overlap2", 1, 3);
-
     // the 3 trees were copied from tree_disjunct1
     // from each tree 1 (different) species was deleted.
-
-    {
-        size_t    species_count;
-        char     *comment;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772, comment);
-        TEST_EXPECT_CONSTREE(tree, error, species_count, 8, 0.529109);
-
-        TEST_SAVE_AND_COMPARE_CONSTREE(tree, comment,
-                                       custom_tree_name(treedir, "overlap2_mostly"),
-                                       custom_tree_name(treedir, "overlap2_mostly_expected"));
-        // ../UNIT_TESTER/run/consense/8/overlap2_mostly.tree
-
-        free(comment);
-        delete tree;
-    }
+    TEST_EXPECTATION(build_expected_consensus_tree(8, "overlap2", 1, 3, 137.772, "overlap2_mostly", 8, 0.529109));
+    // ../UNIT_TESTER/run/consense/8/overlap2_mostly.tree
 }
 
 
