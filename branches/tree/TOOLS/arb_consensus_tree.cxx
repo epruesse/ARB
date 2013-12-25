@@ -396,10 +396,9 @@ void TEST_consensus_tree_from_minimal_overlapping_trees() {
     GB_ERROR  error   = NULL;
     StrArray  input_tree_names;
     const int treedir = 4;
-    add_inputnames(input_tree_names, treedir, "disjunct", 1, 2);
-    add_inputnames(input_tree_names, treedir, "disjunct", 4, 4);
+    add_inputnames(input_tree_names, treedir, "disjunct", 0, 2);
 
-    // tree_disjunct_4 only contains 2 species (1 from upper and 1 from lower subtree).
+    // tree_disjunct_0 only contains 2 species (1 from upper and 1 from lower subtree).
     // topology is poor (compared to tree_disjunct_source), but far better as if merging only disjunct trees.
 
     {
