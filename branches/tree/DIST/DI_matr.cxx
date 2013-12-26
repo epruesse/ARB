@@ -1373,26 +1373,29 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
 
     if (!error) {
         if (bootstrap_flag) {
-            tree  = ctree->get_consensus_tree();
-            error = GBT_is_invalid(tree);
-            di_assert(!error);
+            tree = ctree->get_consensus_tree(error);
+            if (!error) {
+                error = GBT_is_invalid(tree);
+                di_assert(!error);
+            }
         }
-
-        char *tree_name = aw_root->awar(AWAR_DIST_TREE_STD_NAME)->read_string();
-        GB_begin_transaction(GLOBAL_gb_main);
-        error = GBT_write_tree(GLOBAL_gb_main, tree_name, tree);
 
         if (!error) {
-            char       *filter_name = AWT_get_combined_filter_name(aw_root, "dist");
-            int         transr      = aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
-            const char *comment     = GBS_global_string("PRG=dnadist CORR=%s FILTER=%s PKG=ARB", enum_trans_to_string[transr], filter_name);
+            char *tree_name = aw_root->awar(AWAR_DIST_TREE_STD_NAME)->read_string();
+            GB_begin_transaction(GLOBAL_gb_main);
+            error = GBT_write_tree(GLOBAL_gb_main, tree_name, tree);
 
-            error = GBT_write_tree_remark(GLOBAL_gb_main, tree_name, comment);
-            free(filter_name);
+            if (!error) {
+                char       *filter_name = AWT_get_combined_filter_name(aw_root, "dist");
+                int         transr      = aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
+                const char *comment     = GBS_global_string("PRG=dnadist CORR=%s FILTER=%s PKG=ARB", enum_trans_to_string[transr], filter_name);
+
+                error = GBT_write_tree_remark(GLOBAL_gb_main, tree_name, comment);
+                free(filter_name);
+            }
+            error = GB_end_transaction(GLOBAL_gb_main, error);
+            free(tree_name);
         }
-
-        error = GB_end_transaction(GLOBAL_gb_main, error);
-        free(tree_name);
     }
 
     delete tree;

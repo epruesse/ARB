@@ -82,7 +82,7 @@ GB_ERROR ConsensusTree::insert_tree_weighted(const GBT_TREE *tree, int leafs, do
     return NULL;
 }
 
-SizeAwareTree *ConsensusTree::get_consensus_tree() {
+SizeAwareTree *ConsensusTree::get_consensus_tree(GB_ERROR& error) {
     // Get new consensus-tree -> SizeAwareTree
 
     /* This function is little bit tricky:
@@ -91,6 +91,7 @@ SizeAwareTree *ConsensusTree::get_consensus_tree() {
        the fist son-partition in two parts through logical calculation there
        could only be one son! */
 
+    arb_assert(!error);
     ntree_init(size);
 
     registry->build_sorted_list(overall_weight);
@@ -113,24 +114,30 @@ SizeAwareTree *ConsensusTree::get_consensus_tree() {
 #endif
     }
 
-    const NT_NODE *n = ntree_get();
+    SizeAwareTree *result_tree = NULL;
 
-    arb_assert(ntree_count_sons(n) == 2);
+    error = progress.error_if_aborted();
+    if (!error) {
+        const NT_NODE *n = ntree_get();
+
+        arb_assert(ntree_count_sons(n) == 2);
 
 #if defined(NTREE_DEBUG_FUNCTIONS)
-    arb_assert(is_well_formed(n));
+        arb_assert(is_well_formed(n));
 #endif
 
-    SizeAwareTree *result_tree = rb_gettree(n);
+        result_tree = rb_gettree(n);
+
+        ++progress;
+
+        result_tree->get_tree_root()->find_innermost_edge().set_root();
+        result_tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM);
+
+        ++progress;
+    }
+
     ntree_cleanup();
-
-    ++progress;
-
-    result_tree->get_tree_root()->find_innermost_edge().set_root();
-    result_tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM);
-
-    ++progress;
-
+    arb_assert(contradicted(result_tree, error));
     return result_tree;
 }
 

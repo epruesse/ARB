@@ -46,6 +46,7 @@ public:
     {
         arb_assert(registration_phase());
     }
+    ~PartRegistry();
 
     void put_part_from_complete_tree(PART*& part);
     void put_part_from_partial_tree(PART*& part, const PART *partialTree);

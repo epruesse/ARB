@@ -112,7 +112,7 @@ public:
 
     __ATTR__USERESULT GB_ERROR insert_tree_weighted(const GBT_TREE *tree, int leafs, double weight, bool provideProgress);
 
-    SizeAwareTree *get_consensus_tree();
+    SizeAwareTree *get_consensus_tree(GB_ERROR& error);
 };
 
 // ------------------------------
@@ -208,6 +208,9 @@ public:
                 if (error) {
                     error = GBS_global_string("Failed to deconstruct '%s' (Reason: %s)", tree_info[i].name(), error);
                 }
+                else {
+                    error = deconstruct.error_if_aborted();
+                }
             }
             if (error) deconstruct.done();
         }
@@ -221,7 +224,7 @@ public:
 #endif
 
         arb_progress reconstruct("reconstructing");
-        return ctree.get_consensus_tree();
+        return ctree.get_consensus_tree(error);
     }
 
     char *get_remark() const;

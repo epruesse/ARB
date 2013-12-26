@@ -15,6 +15,12 @@
 
 #include <arb_sort.h>
 
+PartRegistry::~PartRegistry() {
+    for (PartSet::iterator p = parts.begin(); p != parts.end(); ++p) delete *p;
+    for (PartSet::iterator p = artificial_parts.begin(); p != artificial_parts.end(); ++p) delete *p;
+    for (PartVector::iterator p = sorted.begin(); p != sorted.end(); ++p) delete *p;
+}
+
 PART *PartRegistry::get_part() {
     /*! each call to get_part() returns the next part from the sorted PART-list.
      * build_sorted_list() has to be called once before.
@@ -24,7 +30,7 @@ PART *PartRegistry::get_part() {
 
     PART *p = NULL;
     if (retrieved<sorted.size()) {
-        p = sorted[retrieved++];
+        std::swap(p, sorted[retrieved++]);
     }
     return p;
 }
