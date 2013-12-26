@@ -11,6 +11,7 @@
 #include "NJ.hxx"
 #include <neighbourjoin.hxx>
 #include <arbdbt.h>
+#include <arb_diff.h>
 
 #define CHECK_NAN(x) if ((!(x>=0.0)) && (!(x<0.0))) *(int *)0 = 0;
 
@@ -20,20 +21,7 @@ PH_NEIGHBOUR_DIST::PH_NEIGHBOUR_DIST()
 }
 
 
-AP_FLOAT PH_NEIGHBOURJOINING::get_max_di(AP_FLOAT **m)  // O(n*2)
-{
-    long i, j;
-    AP_FLOAT max = 0.0;
-    for (i=0; i<size; i++) {
-        for (j=0; j<i; j++) {
-            if (m[i][j] > max) max = m[i][j];
-        }
-    }
-    return max;
-}
-
-void PH_NEIGHBOURJOINING::remove_taxa_from_dist_list(long i)    // O(n/2)
-{
+void PH_NEIGHBOURJOINING::remove_taxa_from_dist_list(long i) { // O(n/2)
     long a, j;
     PH_NEIGHBOUR_DIST *nd;
     for (a=0; a<swap_size; a++) {
@@ -105,57 +93,57 @@ void PH_NEIGHBOURJOINING::remove_taxa_from_swap_tab(long i) // O(n/2)
     swap_size --;
 }
 
-PH_NEIGHBOURJOINING::PH_NEIGHBOURJOINING(AP_FLOAT **m, long isize)
-{
-    long i, j;
+PH_NEIGHBOURJOINING::PH_NEIGHBOURJOINING(const AP_smatrix& smatrix) {
+    size = smatrix.size();
 
-    size = isize;
-    swap_size = size;       // init swap tab
-    swap_tab = new long[size];
-    for (i=0; i<swap_size; i++) swap_tab[i] = i;
+    // init swap tab
+    swap_size = size;
+    swap_tab  = new long[size];
+    for (long i=0; i<swap_size; i++) swap_tab[i] = i;
 
     net_divergence = (AP_FLOAT *)calloc(sizeof(AP_FLOAT), (size_t)size);
 
-
-    dist_list_size = size;      // hope te be the best
-    dist_list = new PH_NEIGHBOUR_DIST[dist_list_size]; // the roots, no elems
-    dist_list_corr = (dist_list_size-2.0)/get_max_di(m);
+    dist_list_size = size;                                  // hope to be the best
+    dist_list      = new PH_NEIGHBOUR_DIST[dist_list_size]; // the roots, no elems
+    dist_list_corr = (dist_list_size-2.0)/smatrix.get_max_value();
 
     dist_matrix = new PH_NEIGHBOUR_DIST*[size];
-    for (i=0; i<size; i++) {
+    for (long i=0; i<size; i++) {
         dist_matrix[i] = new PH_NEIGHBOUR_DIST[i];
-        for (j=0; j<i; j++) {
-            dist_matrix[i][j].val = m[i][j];
+        for (long j=0; j<i; j++) {
+            dist_matrix[i][j].val = smatrix.fast_get(i, j);
             dist_matrix[i][j].i = i;
             dist_matrix[i][j].j = j;
         }
     }
-    for (i=0; i<size; i++) {
-        swap_size = i;      // to calculate the correct net divergence
-        add_taxa_to_dist_list(i);   // add to dist list and add n.d.
+    for (long i=0; i<size; i++) {
+        swap_size = i;              // to calculate the correct net divergence..
+        add_taxa_to_dist_list(i);   // ..add to dist list and add n.d.
     }
     swap_size = size;
 }
 
-PH_NEIGHBOURJOINING::~PH_NEIGHBOURJOINING()
-{
+PH_NEIGHBOURJOINING::~PH_NEIGHBOURJOINING() {
+    for (long i=0; i<size; i++) delete [] dist_matrix[i];
     delete [] dist_matrix;
     delete [] dist_list;
     free(net_divergence);
     delete [] swap_tab;
 }
 
-void PH_NEIGHBOURJOINING::get_min_ij(long& mini, long& minj)    // O(n*n/speedup)
-{
-    AP_FLOAT maxri = get_max_net_divergence();  // O(n/2)
+AP_FLOAT PH_NEIGHBOURJOINING::get_min_ij(long& mini, long& minj) { // O(n*n/speedup)
+    // returns minval (only used by test inspection)
+
+    AP_FLOAT maxri = get_max_net_divergence(); // O(n/2)
     PH_NEIGHBOUR_DIST *dl;
-    long stat = 0;
+    long stat  = 0;
     AP_FLOAT x;
     AP_FLOAT minval;
     minval = 100000.0;
-    AP_FLOAT N_1 = 1.0/(swap_size-2.0);
+    AP_FLOAT N_1   = 1.0/(swap_size-2.0);
     maxri = maxri*2.0*N_1;
     long pos;
+
     get_last_ij(mini, minj);
 
     for (pos=0; pos<dist_list_size; pos++) {
@@ -172,6 +160,7 @@ void PH_NEIGHBOURJOINING::get_min_ij(long& mini, long& minj)    // O(n*n/speedup
             stat++;
         }
     }
+    return minval;
 }
 
 void PH_NEIGHBOURJOINING::join_nodes(long i, long j, AP_FLOAT &leftl, AP_FLOAT& rightl)
@@ -220,51 +209,166 @@ AP_FLOAT PH_NEIGHBOURJOINING::get_dist(long i, long j)
     return dist_matrix[j][i].val;
 }
 
-GBT_TREE *neighbourjoining(char **names, AP_FLOAT **m, long size, size_t structure_size)
-{
+GBT_TREE *neighbourjoining(const char *const *names, const AP_smatrix& smatrix) { // @@@ pass ConstStrArray
     // structure_size >= sizeof(GBT_TREE);
     // lower triangular matrix
     // size: size of matrix
 
+    PH_NEIGHBOURJOINING   nj(smatrix);
+    GBT_TREE            **nodes = (GBT_TREE **)calloc(sizeof(GBT_TREE *), smatrix.size());
 
-    PH_NEIGHBOURJOINING *nj = new PH_NEIGHBOURJOINING(m, size);
-    long i;
-    long a, b;
-    GBT_TREE **nodes;
-    AP_FLOAT ll, rl;
-    nodes = (GBT_TREE **)calloc(sizeof(GBT_TREE *), (size_t)size);
-    for (i=0; i<size; i++) {
-        nodes[i] = (GBT_TREE *)calloc(structure_size, 1);
+    for (size_t i=0; i<smatrix.size(); i++) {
+        nodes[i] = new GBT_TREE;
         nodes[i]->name = strdup(names[i]);
         nodes[i]->is_leaf = true;
     }
 
-    for (i=0; i<size-2; i++) {
-        nj->get_min_ij(a, b);
-        nj->join_nodes(a, b, ll, rl);
-        GBT_TREE *father = (GBT_TREE *)calloc(structure_size, 1);
+    for (size_t i=0; i<smatrix.size()-2; i++) {
+        long a, b;
+        nj.get_min_ij(a, b);
+
+        AP_FLOAT ll, rl;
+        nj.join_nodes(a, b, ll, rl);
+
+        GBT_TREE *father = new GBT_TREE;
+        father->leftson  = nodes[a];
+        father->rightson = nodes[b];
+        father->leftlen  = ll;
+        father->rightlen = rl;
+        nodes[a]->father = father;
+        nodes[b]->father = father;
+        nodes[a]         = father;
+    }
+
+    {
+        long a, b;
+        nj.get_last_ij(a, b);
+
+        AP_FLOAT dist = nj.get_dist(a, b);
+
+        AP_FLOAT ll = dist*0.5;
+        AP_FLOAT rl = dist*0.5;
+
+        GBT_TREE *father = new GBT_TREE;
         father->leftson = nodes[a];
         father->rightson = nodes[b];
         father->leftlen = ll;
         father->rightlen = rl;
         nodes[a]->father = father;
         nodes[b]->father = father;
-        nodes[a] = father;
+
+        free(nodes);
+        return father;
     }
-    nj->get_last_ij(a, b);
-    AP_FLOAT dist = nj->get_dist(a, b);
-    ll = dist*0.5;
-    rl = dist*0.5;
-
-    GBT_TREE *father = (GBT_TREE *)calloc(structure_size, 1);
-    father->leftson = nodes[a];
-    father->rightson = nodes[b];
-    father->leftlen = ll;
-    father->rightlen = rl;
-    nodes[a]->father = father;
-    nodes[b]->father = father;
-
-    delete nj;
-    free(nodes);
-    return father;
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static const AP_FLOAT EPSILON = 0.0001;
+
+static arb_test::match_expectation min_ij_equals(PH_NEIGHBOURJOINING& nj, long expected_i, long expected_j, AP_FLOAT expected_minval) {
+    using namespace   arb_test;
+    expectation_group expected;
+
+    long     i, j;
+    AP_FLOAT minval = nj.get_min_ij(i, j);
+
+    expected.add(that(i).is_equal_to(expected_i));
+    expected.add(that(j).is_equal_to(expected_j));
+    expected.add(that(minval).fulfills(epsilon_similar(EPSILON), expected_minval));
+
+    return all().ofgroup(expected);
+}
+
+#define TEST_EXPECT_MIN_IJ(nj,i,j,minval) TEST_EXPECTATION(min_ij_equals(nj,i,j,minval))
+
+void TEST_neighbourjoining() {
+    const size_t SIZE = 4;
+
+#define TEST_FORWARD_ORDER // @@@ changing the order of nodes here changes the resulting trees
+                           // i do not understand, if that means there is sth wrong or not..
+
+#if defined(TEST_FORWARD_ORDER)
+    const char *names[SIZE] = { "A", "B", "C", "D"};
+    enum { A, B, C, D };
+#else // !defined(TEST_FORWARD_ORDER)
+    const char *names[SIZE] = { "D", "C", "B", "A"};
+    enum { D, C, B, A };
+#endif
+
+    for (int test = 1; test <= 2; ++test) {
+        AP_smatrix sym_matrix(SIZE);
+
+        // Note: values used here are distances
+        for (size_t i = 0; i < SIZE; ++i) sym_matrix.set(i, i, 0.0);
+
+        sym_matrix.set(A, B, 0.0765); sym_matrix.set(A, C, 0.1619); sym_matrix.set(A, D, 0.2266);
+        sym_matrix.set(B, C, 0.1278); sym_matrix.set(B, D, 0.2061);
+
+        switch (test) {
+            case 1: sym_matrix.set(C, D, 0.1646); break;
+            case 2: sym_matrix.set(C, D, 0.30); break;
+            default: arb_assert(0); break;
+        }
+
+        // check net_divergence values:
+        {
+            PH_NEIGHBOURJOINING nj(sym_matrix);
+
+            TEST_EXPECT_SIMILAR(nj.get_net_divergence(A), 0.4650, EPSILON);
+            TEST_EXPECT_SIMILAR(nj.get_net_divergence(B), 0.4104, EPSILON);
+            switch (test) {
+                case 1:
+                    TEST_EXPECT_SIMILAR(nj.get_net_divergence(C), 0.4543, EPSILON);
+                    TEST_EXPECT_SIMILAR(nj.get_net_divergence(D), 0.5973, EPSILON);
+
+#define EXPECTED_MIN_IJ -0.361200
+#if defined(TEST_FORWARD_ORDER)
+                    TEST_EXPECT_MIN_IJ(nj, A, B, EXPECTED_MIN_IJ);
+#else // !defined(TEST_FORWARD_ORDER)
+                    TEST_EXPECT_MIN_IJ(nj, D, C, EXPECTED_MIN_IJ);
+#endif
+#undef EXPECTED_MIN_IJ
+                    break;
+                case 2:
+                    TEST_EXPECT_SIMILAR(nj.get_net_divergence(C), 0.5897, EPSILON);
+                    TEST_EXPECT_SIMILAR(nj.get_net_divergence(D), 0.7327, EPSILON);
+
+#define EXPECTED_MIN_IJ -0.372250
+#if defined(TEST_FORWARD_ORDER)
+                    TEST_EXPECT_MIN_IJ(nj, B, C, EXPECTED_MIN_IJ);
+#else // !defined(TEST_FORWARD_ORDER)
+                    TEST_EXPECT_MIN_IJ(nj, D, A, EXPECTED_MIN_IJ);
+#endif
+#undef EXPECTED_MIN_IJ
+                    break;
+                default: arb_assert(0); break;
+            }
+
+        }
+
+        GBT_TREE *tree = neighbourjoining(names, sym_matrix);
+
+        switch (test) {
+#if defined(TEST_FORWARD_ORDER)
+            case 1: TEST_EXPECT_NEWICK_EQUAL(tree, "(((A,B),C),D);"); break;
+            case 2: TEST_EXPECT_NEWICK_EQUAL(tree, "((A,(B,C)),D);"); break;
+#else // !defined(TEST_FORWARD_ORDER)
+            case 1: TEST_EXPECT_NEWICK_EQUAL(tree, "(((D,C),A),B);"); break;
+            case 2: TEST_EXPECT_NEWICK_EQUAL(tree, "(((D,A),B),C);"); break;
+#endif
+            default: arb_assert(0); break;
+        }
+
+        delete tree;
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

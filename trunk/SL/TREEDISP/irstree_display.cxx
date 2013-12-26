@@ -98,7 +98,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         }
 
         Position    textpos  = leaf+IRS.adjust_text;
-        const char *specinfo = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node->get_gbt_tree(), tree_static->get_tree_name());
+        const char *specinfo = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node, tree_static->get_tree_name());
         disp_device->text(gc, specinfo, textpos);
 
         return IRS.y;
@@ -112,9 +112,9 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             group_name = tree_static->get_tree_name();
         }
         else {
-            group_name = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node->get_gbt_tree(), tree_static->get_tree_name());
+            group_name = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node, tree_static->get_tree_name());
         }
-        frame_width = node->gr.tree_depth * IRS.x_scale;
+        frame_width = node->gr.max_tree_depth * IRS.x_scale;
     }
 
     if (node->gr.grouped) { // folded group
@@ -155,7 +155,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             Position box_rcenter = gbox.right_edge().centroid();
 
             if (group_name) { //  a node name should be displayed
-                const char *groupinfo = GBS_global_string("%s (%i)", group_name, node->gr.leaf_sum);
+                const char *groupinfo = GBS_global_string("%s (%u)", group_name, node->gr.leaf_sum);
                 disp_device->text(gc, groupinfo, box_rcenter+IRS.adjust_text);
             }
 
@@ -193,7 +193,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         disp_device->set_line_attributes(gc, 1, AW_DOTTED);
         disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset+frame_width, group_y1); // opened-group-frame
 
-        const char *groupinfo = GBS_global_string("%s (%i)", group_name, node->gr.leaf_sum);
+        const char *groupinfo = GBS_global_string("%s (%u)", group_name, node->gr.leaf_sum);
         disp_device->text(node->gr.gc, groupinfo, x_offset-IRS.onePixel + IRS.gap, group_y1 + 2*IRS.adjust_text.y() + IRS.gap);
     }
 
@@ -269,7 +269,7 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, double height) {
     IRS.onePixel       = disp_device->rtransform_size(1.0);
     IRS.gap            = 3*IRS.onePixel;
     IRS.group_closed   = 0;
-    IRS.tree_depth     = at->gr.tree_depth;
+    IRS.tree_depth     = at->gr.max_tree_depth;
     IRS.openGroupExtra = IRS.step_y+IRS.gap;
     IRS.sep_filter     = AW_SCREEN|AW_PRINTER_CLIP;
 

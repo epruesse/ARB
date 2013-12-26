@@ -69,6 +69,24 @@ void AP_tree_edge::initialize(AP_tree_nlen *tree) {
     new AP_tree_edge(tree->get_leftson(), tree->get_rightson()); // link brothers
 }
 
+void AP_tree_edge::destroy(AP_tree_nlen *tree) {
+    /*! Destroys all edges in the whole tree */
+    AP_tree_edge *edge = tree->nextEdge(NULL);
+    if (!edge) {
+        ap_assert(tree->is_root_node());
+        edge = tree->get_leftson()->edgeTo(tree->get_rightson());
+    }
+    ap_assert(edge); // got no edges?
+
+    edge->buildChain(-1);
+    while (edge) {
+        AP_tree_edge *next = edge->Next();
+        delete edge;
+        edge = next;
+    }
+}
+
+
 void AP_tree_edge::tailDistance(AP_tree_nlen *n)
 {
     ap_assert(!n->is_leaf);    // otherwise call was not necessary!
@@ -625,11 +643,11 @@ static void ap_calc_branch_lengths(AP_tree_nlen * /* root */, AP_tree_nlen *son,
     }
 
     if (son->leftson->is_leaf) {
-        ap_calc_leaf_branch_length((AP_tree_nlen*)son->leftson);
+        ap_calc_leaf_branch_length(son->get_leftson());
     }
 
     if (son->rightson->is_leaf) {
-        ap_calc_leaf_branch_length((AP_tree_nlen*)son->rightson);
+        ap_calc_leaf_branch_length(son->get_rightson());
     }
 }
 const double ap_undef_bl = 10.5;
@@ -654,8 +672,8 @@ static void ap_check_leaf_bl(AP_tree_nlen *node) {
         return;
     }
     else {
-        if (node->leftlen == ap_undef_bl)   ap_calc_leaf_branch_length((AP_tree_nlen *)node->leftson);
-        if (node->rightlen == ap_undef_bl)  ap_calc_leaf_branch_length((AP_tree_nlen *)node->rightson);
+        if (node->leftlen == ap_undef_bl)   ap_calc_leaf_branch_length(node->get_leftson());
+        if (node->rightlen == ap_undef_bl)  ap_calc_leaf_branch_length(node->get_rightson());
     }
 }
 

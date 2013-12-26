@@ -64,7 +64,7 @@ private:
     AW_awar *awar(const char *name) { return get_awroot()->awar(name); }
 
     void postmark_action() const {
-        get_tree()->compute_tree(get_gbmain());
+        get_tree()->compute_tree();
         get_canvas()->refresh();
     }
 

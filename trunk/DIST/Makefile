@@ -80,6 +80,7 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/gccver.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/RootedTree.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -106,6 +107,7 @@ DI_clustertree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -135,6 +137,7 @@ DI_compress_matrix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/RootedTree.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -170,6 +173,7 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/gccver.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/RootedTree.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -270,6 +274,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/gccver.h
 DI_matr.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/macros.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/neighbourjoin.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/RootedTree.h
 DI_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_matr.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_matr.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -304,6 +309,7 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/RootedTree.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -334,6 +340,7 @@ DI_save_matr.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/gccver.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/nds.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/RootedTree.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -381,6 +388,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/RootedTree.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -419,6 +427,7 @@ distanalyse.o: $(ARBHOME)/INCLUDE/cxxforward.h
 distanalyse.o: $(ARBHOME)/INCLUDE/downcast.h
 distanalyse.o: $(ARBHOME)/INCLUDE/dupstr.h
 distanalyse.o: $(ARBHOME)/INCLUDE/gccver.h
+distanalyse.o: $(ARBHOME)/INCLUDE/RootedTree.h
 distanalyse.o: $(ARBHOME)/INCLUDE/smartptr.h
 distanalyse.o: $(ARBHOME)/INCLUDE/static_assert.h
 distanalyse.o: $(ARBHOME)/INCLUDE/test_global.h

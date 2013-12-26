@@ -964,6 +964,8 @@ static char *dated_info(const char *info) {
 
 char *GBS_log_dated_action_to(const char *comment, const char *action) {
     /*! appends 'action' prefixed by current timestamp to 'comment'
+     * @param comment may be NULL. otherwise '\n' is appended (if not already there)
+     * @param action may NOT be NULL. is prepended with current date. '\n' is appended (if not already there)
      */
     size_t clen = comment ? strlen(comment) : 0;
     size_t alen = strlen(action);
@@ -972,7 +974,7 @@ char *GBS_log_dated_action_to(const char *comment, const char *action) {
 
     if (comment) {
         GBS_strcat(new_comment, comment);
-        if (comment[clen-1] != '\n') GBS_chrcat(new_comment, '\n');
+        if (clen == 0 || comment[clen-1] != '\n') GBS_chrcat(new_comment, '\n');
     }
 
     char *dated_action = dated_info(action);
@@ -1206,6 +1208,27 @@ void TEST_DB_key_generation() {
     TEST_STRING2KEY("a", "a_");                                                          // too short
     TEST_STRING2KEY("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", // too long
                     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+}
+
+void TEST_date_stamping() {
+    {
+        char *dated = GBS_log_dated_action_to("comment", "action");
+        TEST_EXPECT_CONTAINS(dated, "comment\n");
+        TEST_EXPECT_CONTAINS(dated, "action\n");
+        free(dated);
+    }
+    {
+        char *dated = GBS_log_dated_action_to("", "action");
+        TEST_EXPECT_EQUAL(dated[0], '\n');
+        TEST_EXPECT_CONTAINS(dated, "action\n");
+        free(dated);
+    }
+    {
+        char *dated = GBS_log_dated_action_to(NULL, "action");
+        TEST_EXPECT_DIFFERENT(dated[0], '\n');
+        TEST_EXPECT_CONTAINS(dated, "action\n");
+        free(dated);
+    }
 }
 
 #endif

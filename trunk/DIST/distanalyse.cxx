@@ -39,7 +39,7 @@ void DI_MATRIX::analyse() {
         long  max_len  = 0;
 
         // calculate meanvalue of sequencelength:
-        for (long row=0; row<nentries; row++) {
+        for (size_t row=0; row<nentries; row++) {
             const char *sequ = entries[row]->sequence_parsimony->get_sequence();
             size_t      flen = aliview->get_length();
 

@@ -761,7 +761,7 @@ GBDATA *GB_read_pointer(GBDATA *gbd) {
     return gbd->as_entry()->info.ptr;
 }
 
-double GB_read_float(GBDATA *gbd)
+double GB_read_float(GBDATA *gbd) // @@@ change return type to float (that's what's stored in DB)
 {
     XDR          xdrs;
     static float f; // @@@ why static?

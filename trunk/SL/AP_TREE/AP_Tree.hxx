@@ -39,7 +39,7 @@ enum {
     AWT_GC_SELECTED,        // == zero mismatches
     AWT_GC_UNDIFF,
     AWT_GC_NSELECTED,       // no hit
-    AWT_GC_SOME_MISMATCHES,
+    AWT_GC_ZOMBIES,
 
     // for multiprobecoloring
 
@@ -76,15 +76,18 @@ enum AP_TREE_SIDE {  // flags zum kennzeichnen von knoten
     AP_NONE
 };
 
-enum AWT_REMOVE_TYPE { // bit flags
+enum AWT_RemoveType { // bit flags
     AWT_REMOVE_MARKED        = GBT_REMOVE_MARKED,
-    AWT_REMOVE_NOT_MARKED    = GBT_REMOVE_NOT_MARKED,
-    AWT_REMOVE_DELETED       = GBT_REMOVE_DELETED,
+    AWT_REMOVE_UNMARKED      = GBT_REMOVE_UNMARKED,
+    AWT_REMOVE_ZOMBIES       = GBT_REMOVE_ZOMBIES,
     AWT_REMOVE_NO_SEQUENCE   = 8,
-    AWT_REMOVE_BUT_DONT_FREE = 16
+    AWT_REMOVE_BUT_DONT_FREE = 16,
 
-    // please keep AWT_REMOVE_TYPE in sync with GBT_TREE_REMOVE_TYPE
-    // see ../../ARBDB/arbdbt.h@sync_GBT_TREE_REMOVE_TYPE_AWT_REMOVE_TYPE
+    // please keep AWT_RemoveType in sync with GBT_TreeRemoveType
+    // see ../../ARBDB/arbdbt.h@sync_GBT_TreeRemoveType__AWT_RemoveType
+
+    // combined defines:
+    AWT_KEEP_MARKED = AWT_REMOVE_UNMARKED|AWT_REMOVE_ZOMBIES,
 };
 
 struct AP_rates : virtual Noncopyable {
@@ -108,7 +111,7 @@ class AP_tree;
 typedef void (*AP_rootChangedCb)(void *cd, AP_tree *old, AP_tree *newroot);
 typedef void (*AP_nodeDelCb)(void *cd, AP_tree *del);
 
-class AP_tree_root : public ARB_tree_root { // derived from a Noncopyable
+class AP_tree_root : public ARB_seqtree_root { // derived from a Noncopyable
     AP_rootChangedCb  root_changed_cb;
     void             *root_changed_cd;
     AP_nodeDelCb      node_deleted_cb;
@@ -117,20 +120,20 @@ class AP_tree_root : public ARB_tree_root { // derived from a Noncopyable
     GBDATA *gb_species_data;                        // @@@ needed ?
 
 public:
-    GBDATA   *gb_tree_gone;                         // if all leafs have been removed by tree operations, remember 'ARB_tree_root::gb_tree' here (see change_root)
+    GBDATA   *gb_tree_gone;                         // if all leafs have been removed by tree operations, remember 'ARB_seqtree_root::gb_tree' here (see change_root)
     GBDATA   *gb_table_data;
     long      tree_timer;
     long      species_timer;
     long      table_timer;
     AP_rates *rates;
 
-    AP_tree_root(AliView *aliView, const AP_tree& tree_proto, AP_sequence *seq_proto, bool add_delete_callbacks);
-    virtual ~AP_tree_root() OVERRIDE;
+    AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks);
+    ~AP_tree_root() OVERRIDE;
     DEFINE_TREE_ROOT_ACCESSORS(AP_tree_root, AP_tree);
 
-    // ARB_tree_root interface
+    // ARB_seqtree_root interface
 
-    virtual void change_root(ARB_tree *old, ARB_tree *newroot) OVERRIDE;
+    virtual void change_root(RootedTree *old, RootedTree *newroot) OVERRIDE;
 
     virtual GB_ERROR loadFromDB(const char *name) OVERRIDE;
     virtual GB_ERROR saveToDB() OVERRIDE;
@@ -146,11 +149,15 @@ public:
     void set_root_changed_callback(AP_rootChangedCb cb, void *cd);
     void set_node_deleted_callback(AP_nodeDelCb cb, void *cd);
 
-    long remove_leafs(int awt_remove_type);
-    ARB_edge find_innermost_edge();
+    long remove_leafs(AWT_RemoveType awt_remove_type);
 };
 
-#define DEFAULT_LINEWIDTH 0
+namespace tree_defaults {
+    const float SPREAD    = 1.0;
+    const float ANGLE     = 0.0;
+    const char  LINEWIDTH = 0;
+    const float LENGTH    = DEFAULT_BRANCH_LENGTH;
+};
 
 struct AP_tree_members {
 public: // @@@ make members private
@@ -163,35 +170,35 @@ public: // @@@ make members private
     char left_linewidth; // @@@ it's stupid to store linewidth IN FATHER (also wastes space)
     char right_linewidth;
 
-    int leaf_sum;   // number of leaf children of this node
-    int view_sum;   // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
+    unsigned leaf_sum;   // number of leaf children of this node
+    unsigned view_sum;   // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
 
-    float tree_depth;     // max length of path; for drawing triangles
+    float max_tree_depth; // max length of path; for drawing triangles
     float min_tree_depth; // min length of path; for drawing triangle
     float spread;
 
-    float left_angle;   // @@@ it's stupid to store angles IN FATHER (also wastes space)
+    float left_angle;     // @@@ it's stupid to store angles IN FATHER (also wastes space)
     float right_angle;
 
-    void reset_spread() {
-        spread = 1.0;
+    void reset_child_spread() {
+        spread = tree_defaults::SPREAD;
     }
-    void reset_rotation() {
-        left_angle  = 0;
-        right_angle = 0;
+    void reset_both_child_angles() {
+        left_angle  = tree_defaults::ANGLE;
+        right_angle = tree_defaults::ANGLE;
     }
-    void reset_linewidths() {
-        left_linewidth  = DEFAULT_LINEWIDTH;
-        right_linewidth = DEFAULT_LINEWIDTH;
+    void reset_both_child_linewidths() {
+        left_linewidth  = tree_defaults::LINEWIDTH;
+        right_linewidth = tree_defaults::LINEWIDTH;
     }
-    void reset_layout() {
-        reset_spread();
-        reset_rotation();
-        reset_linewidths();
+    void reset_child_layout() {
+        reset_child_spread();
+        reset_both_child_angles();
+        reset_both_child_linewidths();
     }
 
     void clear() {
-        reset_layout();
+        reset_child_layout();
 
         grouped             = 0;
         hidden              = 0;
@@ -200,11 +207,19 @@ public: // @@@ make members private
         gc                  = 0;
         leaf_sum            = 0;
         view_sum            = 0;
-        tree_depth          = 0;
+        max_tree_depth      = 0;
         min_tree_depth      = 0;
     }
 
-    void swap_son_layout();
+    void swap_son_layout() {
+        std::swap(left_linewidth, right_linewidth);
+
+        // angles need to change orientation when swapped
+        // (they are relative angles, i.e. represent the difference to the default-angle)
+        float org_left = left_angle;
+        left_angle     = -right_angle;
+        right_angle    = -org_left;
+    }
 };
 
 struct AP_branch_members {
@@ -216,120 +231,122 @@ public:
     }
 };
 
-
-class AP_tree : public ARB_tree {
-public: // @@@ fix public member
+class AP_tree : public ARB_seqtree {
+public: // @@@ fix public members
     AP_tree_members   gr;
     AP_branch_members br;
-    unsigned long     stack_level;
+
+    unsigned long stack_level; // @@@ maybe can be moved to AP_tree_nlen
 
     // ------------------
     //      functions
 private:
-    void load_node_info();                          // load linewidth etc from DB
+    void load_node_info();    // load linewidth etc from DB
 
-public:
-
-    explicit AP_tree(AP_tree_root *tree_root);
-    virtual ~AP_tree() OVERRIDE; // leave this here to force creation of virtual table
-    DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
-
-    // ARB_tree interface
-    virtual AP_tree *dup() const OVERRIDE;
-    // ARB_tree interface (end)
-
-    int compute_tree(GBDATA *gb_main);
-
-    int arb_tree_set_leafsum_viewsum();             // count all visible leafs -> gr.viewsum + gr.leafsum
-    int arb_tree_leafsum2();                        // count all leafs
-
-    void calc_hidden_flag(int father_is_hidden);
-    int  calc_color();                        // start a transaction first
-    int  calc_color_probes(GB_HASH *hashptr); // new function for coloring the tree; ak
-
-    GBT_LEN arb_tree_min_deep();
-    GBT_LEN arb_tree_deep();
-
-    virtual void insert(AP_tree *new_brother);
-    virtual void remove();                          // remove this+father (but do not delete)
-    virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
-
-    void swap_sons();
-    void swap_featured_sons();
-    void rotate_subtree(); // flip whole subtree ( = recursive swap_sons())
-
-    GB_ERROR cantMoveNextTo(AP_tree *new_brother);  // use this to detect impossible moves
-    virtual void moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
-
-    virtual void set_root();
-
-    void remove_bootstrap();                        // remove bootstrap values from subtree
-    void reset_branchlengths();                     // reset branchlengths of subtree to DEFAULT_BRANCH_LENGTH
-    void scale_branchlengths(double factor);
-    void bootstrap2branchlen();                     // copy bootstraps to branchlengths
-    void branchlen2bootstrap();                     // copy branchlengths to bootstraps
-
-    virtual void move_gbt_info(GBT_TREE *tree) OVERRIDE;
-
-    GB_ERROR tree_write_tree_rek(GBDATA *gb_tree);
-    GB_ERROR relink() __ATTR__USERESULT; // @@@ used ? if yes -> move to AP_tree_root or ARB_tree_root
-
-    virtual AP_UPDATE_FLAGS check_update();
-
-    void update();
-
-    int get_linewidth() const {
-        if (!father) return 0;
-        const AP_tree_members& fgr = get_father()->gr;
-        return is_leftson(father) ? fgr.left_linewidth : fgr.right_linewidth;
+    char& linewidth_ref() {
+        AP_tree_members& tm = get_father()->gr;
+        return is_leftson() ? tm.left_linewidth : tm.right_linewidth;
     }
-    // cppcheck-suppress functionConst
-    void set_linewidth_recursive(int width);
-    void set_linewidth(int width) {
-        ap_assert(width >= 0 && width < 128);
-        if (father) {
-            AP_tree_members& fgr = get_father()->gr;
-            char& lw = is_leftson(father) ? fgr.left_linewidth : fgr.right_linewidth;
-            lw       = width;
-        }
-    }
+    const char& linewidth_ref() const { return const_cast<AP_tree*>(this)->linewidth_ref(); }
 
-    float get_angle() const {
-        if (!father) return 0;
-        const AP_tree_members& fgr = get_father()->gr;
-        return is_leftson(father) ? fgr.left_angle : fgr.right_angle;
+    float& angle_ref() {
+        AP_tree_members& tm = get_father()->gr;
+        return is_leftson() ? tm.left_angle : tm.right_angle;
     }
-    void set_angle(double angle) {
-        if (father) {
-            AP_tree_members& fgr = get_father()->gr;
-            float& a = is_leftson(father) ? fgr.left_angle : fgr.right_angle;
-            a        = angle;
+    const float& angle_ref() const { return const_cast<AP_tree*>(this)->angle_ref(); }
 
-            if (father->is_root_node()) {
-                // always set angle of other son at root-node
-                // @@@ works wrong if locigal-zoom is active
-                float& b = is_leftson(father) ? fgr.right_angle : fgr.left_angle;
-                b        = angle;
-            }
-        }
-    }
+    static inline int force_legal_width(int width) { return width<0 ? 0 : (width>128 ? 128 : width); }
 
-private:
     void buildLeafList_rek(AP_tree **list, long& num);
     void buildNodeList_rek(AP_tree **list, long& num);
     void buildBranchList_rek(AP_tree **list, long& num, bool create_terminal_branches, int deep);
 
     const AP_tree *flag_branch() const { return get_father()->get_father() ? this : get_father()->get_leftson(); }
 
+    void reset_child_angles();
+    void reset_child_linewidths();
+    void reset_child_layout();
+
+    void update_subtree_information();
+
 public:
+    explicit AP_tree(AP_tree_root *troot)
+        : ARB_seqtree(troot),
+          stack_level(0)
+    {
+        gr.clear();
+        br.clear();
+    }
+    ~AP_tree() OVERRIDE;
+
+    DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
+
+    void compute_tree() OVERRIDE;
+
+    unsigned count_leafs() const;
+    unsigned get_leaf_count() const OVERRIDE { // assumes compute_tree has been called (since last tree modification)
+        return gr.leaf_sum;
+    }
+
+
+    void load_subtree_info(); // recursive load_node_info (no need to call, called by loadFromDB)
+
+    int colorize(GB_HASH *hashptr);  // function for coloring the tree; ak
+    void uncolorize() { compute_tree(); }
+
+    virtual void insert(AP_tree *new_brother);
+    virtual void remove();                          // remove this+father (but do not delete)
+    virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
+
+    void swap_sons() OVERRIDE {
+        rt_assert(!is_leaf); // @@@ if never fails -> remove condition below 
+        if (!is_leaf) {
+            ARB_seqtree::swap_sons();
+            gr.swap_son_layout();
+        }
+    }
+
+    GB_ERROR cantMoveNextTo(AP_tree *new_brother);  // use this to detect impossible moves
+    virtual void moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
+
+    void set_root() OVERRIDE;
+
+    void remove_bootstrap();                        // remove bootstrap values from subtree
+    void reset_branchlengths();                     // reset branchlengths of subtree to tree_defaults::LENGTH
+    void scale_branchlengths(double factor);
+    void bootstrap2branchlen();                     // copy bootstraps to branchlengths
+    void branchlen2bootstrap();                     // copy branchlengths to bootstraps
+
+    GB_ERROR tree_write_tree_rek(GBDATA *gb_tree);
+    GB_ERROR relink() __ATTR__USERESULT; // @@@ used ? if yes -> move to AP_tree_root or ARB_seqtree_root
+
+    virtual AP_UPDATE_FLAGS check_update();
+
+    void update();
+
+    int get_linewidth() const { return is_root_node() ? 0 : linewidth_ref(); }
+    void set_linewidth(int width) { if (father) linewidth_ref() = force_legal_width(width); }
+    void reset_linewidth() { set_linewidth(tree_defaults::LINEWIDTH); }
+    void set_linewidth_recursive(int width);
+
+    float get_angle() const { return is_root_node() ? 0.0 : angle_ref(); }
+    void set_angle(float angle) {
+        if (father) {
+            angle_ref() = angle;
+            if (get_father()->is_root_node()) {
+                // always set angle of other son at root-node
+                // @@@ works wrong if locigal-zoom is active
+                get_brother()->angle_ref() = angle;
+            }
+        }
+    }
+    void reset_angle() { set_angle(tree_defaults::ANGLE); }
+
     void buildLeafList(AP_tree **&list, long &num); // returns a list of leafs
     void buildNodeList(AP_tree **&list, long &num); // returns a list of inner nodes (w/o root)
     void buildBranchList(AP_tree **&list, long &num, bool create_terminal_branches, int deep);
 
     AP_tree **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)
-
-    void replace_self(AP_tree *new_son);
-    void set_brother(AP_tree *new_son);
 
     void clear_branch_flags();
 
@@ -347,13 +364,18 @@ public:
     void justify_branch_lenghs(GBDATA *gb_main);
     void relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash), GB_HASH *organism_hash);
 
-    void reset_spread();
-    void reset_rotation();
-    void reset_linewidths();
-    void reset_layout();
+    // reset-functions below affect 'this' and childs:
+    void reset_subtree_spreads();
+    void reset_subtree_angles();
+    void reset_subtree_linewidths();
+    void reset_subtree_layout();
 
-    bool hasName(const char *Name) const {
-        return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0;
+    bool hasName(const char *Name) const { return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0; }
+};
+
+struct AP_TreeNodeFactory : public RootedTreeNodeFactory {
+    virtual RootedTree *makeNode(TreeRoot *root) const {
+        return new AP_tree(DOWNCAST(AP_tree_root*, root));
     }
 };
 

@@ -531,16 +531,12 @@ void di_protdist::build_exptteig(double tt) {
     }
 }
 
-void di_protdist::predict(double /* tt */, long nb1, long  nb2)
-{
+void di_protdist::predict(double /* tt */, long nb1, long  nb2) {
     // make contribution to prediction of this aa pair
-    long            m;
-    double          q;
-    double          TEMP;
-    for (m = 0; m <= 19; m++) {
-        q = prob[m][nb1] * prob[m][nb2] * exptteig[m];
+    for (long m = 0; m <= 19; m++) {
+        double q = prob[m][nb1] * prob[m][nb2] * exptteig[m];
         p += q;
-        TEMP = eig[m];
+        double TEMP = eig[m];
         dp += TEMP * q;
         d2p += TEMP * TEMP * q;
     }

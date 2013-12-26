@@ -23,6 +23,8 @@ DESCRIPTION	The 'SET ROOT MODE' allows to position the root of the displayed
 			Move the cursor to any position along the desired edge
 			and click on the left mouse button.
 
+                Use the right mouse button to search an optimal root, minimizing the
+                distance to the farthest leaf on each side of the root.
 
 NOTES		Short descriptions of the 'MODE' and the functions assigned
 		to the mouse buttons are given in the fourth line of the
