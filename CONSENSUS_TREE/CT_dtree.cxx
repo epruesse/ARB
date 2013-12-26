@@ -11,47 +11,127 @@
 #include "CT_hash.hxx"
 #include "CT_ctree.hxx"
 
-PART *ConsensusTree::dtree(const GBT_TREE *tree, double weight, GBT_LEN len) {
-    /* destruct GBT-Tree and build partitions. This is done recursive by concatenate
-       all sons to build the father partition. All partitions are inserted in the
-       hashtable */
-    // caution: I use the fact that each inner node must have two sons.
-    PART *ptree = 0;
+PART *ConsensusTree::deconstruct_full_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight) {
+    /*! deconstruct GBT_TREE and register found partitions.
+     * @param len length of branch towards subtree 'tree'
+     * @param weight summarized for indentical branches (from different trees)
+     */
+
+    arb_assert(tree->father);
+
+    PART *ptree = NULL;
     if (tree->is_leaf) {
-        ptree = new PART(size, weight);
-        ptree->setbit(get_species_index(tree->name));
+        ptree = create_tree_PART(tree, weight);
     }
     else {
-        // In any possible case left and rightson always exist ...
-        PART *p1 = dtree(tree->leftson, weight, tree->leftlen);
-        PART *p2 = dtree(tree->rightson, weight, tree->rightlen);
+        PART *p1 = deconstruct_full_subtree(tree->leftson, tree->leftlen, weight);
+        PART *p2 = deconstruct_full_subtree(tree->rightson, tree->rightlen, weight);
 
         arb_assert(p1->disjunct_from(p2));
 
         ptree = p1->clone();
-        ptree->add_from(p2);
+        ptree->add_members_from(p2);
 
-        registry->put_part(p1);
-        registry->put_part(p2);
+        registry->put_part_from_complete_tree(p1);
+        registry->put_part_from_complete_tree(p2);
     }
     ptree->set_len(len);
+    inc_insert_progress();
     return ptree;
 }
 
+void ConsensusTree::deconstruct_full_rootnode(const GBT_TREE *tree, const double& weight) {
+    /*! deconstruct GBT_TREE and register found partitions.
+     * @param weight summarized for indentical branches (from different trees)
+     */
 
-void ConsensusTree::remember_subtrees(const GBT_TREE *tree, double weight) {
-    /* it is necessary to destruct the left and the right side separately, because
-       the root is only a virtual node and must be ignored. Moreover the left and
-       rightson are the same partition. So I may only insert right son. */
+    arb_assert(!tree->father);
+    arb_assert(!tree->is_leaf);
 
-    PART *p1 = dtree(tree->leftson, weight, 0.0);
-    PART *p2 = dtree(tree->rightson, weight, 0.0);
+    double root_length = (tree->leftlen + tree->rightlen);
+
+    PART *p1 = deconstruct_full_subtree(tree->leftson, root_length, weight);
+    PART *p2 = deconstruct_full_subtree(tree->rightson, root_length, weight);
 
     arb_assert(p1->disjunct_from(p2));
 
-    delete p1;
+    // add only one of the partition p1 and p2 (they both represent the root-edge)
+    registry->put_part_from_complete_tree(p1);
+    delete p2;
 
-    p2->set_len(tree->leftlen + tree->rightlen);
-    registry->put_part(p2);
+    inc_insert_progress();
+}
+
+PART *ConsensusTree::deconstruct_partial_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight, const PART *partialTree) {
+    /*! deconstruct partial GBT_TREE
+     *
+     * similar to deconstruct_full_subtree(),
+     * but the set of missing species is added at each branch.
+     */
+
+    arb_assert(tree->father);
+
+    PART *ptree = NULL;
+    if (tree->is_leaf) {
+        ptree = create_tree_PART(tree, weight);
+    }
+    else {
+        PART *p1 = deconstruct_partial_subtree(tree->leftson, tree->leftlen, weight, partialTree);
+        PART *p2 = deconstruct_partial_subtree(tree->rightson, tree->rightlen, weight, partialTree);
+
+        arb_assert(p1->disjunct_from(p2));
+
+        ptree = p1->clone();
+        ptree->add_members_from(p2);
+
+        registry->put_part_from_partial_tree(p1, partialTree);
+        registry->put_part_from_partial_tree(p2, partialTree);
+    }
+    ptree->set_len(len);
+    inc_insert_progress();
+    return ptree;
+}
+
+void ConsensusTree::deconstruct_partial_rootnode(const GBT_TREE *tree, const double& weight, const PART *partialTree) {
+    /*! deconstruct partial GBT_TREE
+     *
+     * similar to deconstruct_full_rootnode(),
+     * but the set of missing species is added at each branch.
+     */
+
+    arb_assert(!tree->father);
+    arb_assert(!tree->is_leaf);
+
+    double root_length = (tree->leftlen + tree->rightlen);
+
+    PART *p1 = deconstruct_partial_subtree(tree->leftson, root_length, weight, partialTree);
+    PART *p2 = deconstruct_partial_subtree(tree->rightson, root_length, weight, partialTree);
+
+    arb_assert(p1->disjunct_from(p2));
+
+    p2->add_members_from(p1); // in p2 we collect the whole partialTree
+    registry->put_part_from_partial_tree(p1, partialTree); // because we are at root edge, we only insert one partition
+
+    arb_assert(p2->equals(partialTree));
+
+    arb_assert(is_similar(p2->get_weight(), weight, 0.01));
+    registry->put_artificial_part(p2);
+    inc_insert_progress();
+}
+
+void ConsensusTree::add_tree_to_PART(const GBT_TREE *tree, PART& part) const {
+    if (tree->is_leaf) {
+        part.setbit(get_species_index(tree->name));
+    }
+    else {
+        add_tree_to_PART(tree->leftson, part);
+        add_tree_to_PART(tree->rightson, part);
+    }
+}
+
+PART *ConsensusTree::create_tree_PART(const GBT_TREE *tree, const double& weight) const {
+    PART *part = new PART(size, weight);
+    if (part) add_tree_to_PART(tree, *part);
+    return part;
 }
 

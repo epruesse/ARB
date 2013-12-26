@@ -55,7 +55,7 @@ void MP_close_main(AW_window *aww)
     GB_transaction dummy(scr->gb_main);
 
     AP_tree *ap_tree = AWT_TREE(scr)->get_root_node();
-    if (ap_tree) ap_tree->calc_color();
+    if (ap_tree) ap_tree->uncolorize();
 
     if (scr->gb_main)
         scr->gfx->update(scr->gb_main);
@@ -521,7 +521,7 @@ void MP_show_probes_in_tree(AW_window */*aww*/) {
     mp_main->get_stc()->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
 
     GB_transaction dummy(scr->gb_main);
-    AWT_TREE(scr)->get_root_node()->calc_color_probes(mp_main->get_stc()->sondentopf->get_color_hash());
+    AWT_TREE(scr)->get_root_node()->colorize(mp_main->get_stc()->sondentopf->get_color_hash());
 
     if (scr->gb_main)
         scr->gfx->update(scr->gb_main);
@@ -745,7 +745,7 @@ void MP_normal_colors_in_tree(AW_window */*aww*/) {
     AWT_canvas  *scr = mp_main->get_canvas();
     GB_transaction dummy(scr->gb_main);
 
-    AWT_TREE(scr)->get_root_node()->calc_color();
+    AWT_TREE(scr)->get_root_node()->uncolorize();
 
     if (scr->gb_main)
         scr->gfx->update(scr->gb_main);

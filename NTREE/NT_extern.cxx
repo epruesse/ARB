@@ -701,7 +701,7 @@ static void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl) {
     NT_mark_all_cb(aww, (AW_CL)ntw, (AW_CL)0);
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     tree_root->mark_duplicates();
-    tree_root->compute_tree(ntw->gb_main);
+    tree_root->compute_tree();
     ntw->refresh();
 }
 
@@ -712,7 +712,7 @@ static void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL) {
 
     if (tree_root) {
         tree_root->justify_branch_lenghs(ntw->gb_main);
-        tree_root->compute_tree(ntw->gb_main);
+        tree_root->compute_tree();
         GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
         if (error) aw_message(error);
         ntw->refresh();
@@ -752,7 +752,7 @@ static void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl) {
     if (tree_root) {
         GB_HASH *organism_hash = GBT_create_organism_hash(ntw->gb_main);
         tree_root->relink_tree(ntw->gb_main, relink_pseudo_species_to_organisms, organism_hash);
-        tree_root->compute_tree(ntw->gb_main);
+        tree_root->compute_tree();
         GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
         if (error) aw_message(error);
         ntw->refresh();
@@ -836,10 +836,7 @@ static void NT_update_marked_counter(GBDATA*, AW_window* aww) {
 
 // --------------------------------------------------------------------------------------------------
 
-static void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) { // @@@ test and activate for public
-    GBDATA               *gb_main = (GBDATA*)cl_gb_main;
-    GBT_TREE_REMOVE_TYPE  mode    = (GBT_TREE_REMOVE_TYPE)cl_mode;
-
+static void NT_alltree_remove_leafs(AW_window *, GBT_TreeRemoveType mode, GBDATA *gb_main) {
     GB_ERROR       error = 0;
     GB_transaction ta(gb_main);
 
@@ -847,13 +844,25 @@ static void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main
     GBT_get_tree_names(tree_names, gb_main, false);
 
     if (!tree_names.empty()) {
-        int           treeCount    = tree_names.size();
-        arb_progress  progress("Deleting from trees", treeCount);
+        int treeCount = tree_names.size();
+
+        const char *whats_removed;
+        switch (mode) {
+            case GBT_REMOVE_ZOMBIES: whats_removed = "zombies"; break;
+            case GBT_REMOVE_MARKED:  whats_removed = "marked";  break;
+            default: nt_assert(0); break;
+        }
+
+        const char *task = GBS_global_string("Deleting %s from %i trees", whats_removed, treeCount);
+
+        arb_progress  progress(task, treeCount);
         GB_HASH      *species_hash = GBT_create_species_hash(gb_main);
+
+        int modified = 0;
 
         for (int t = 0; t<treeCount && !error; t++) {
             progress.subtitle(tree_names[t]);
-            GBT_TREE *tree = GBT_read_tree(gb_main, tree_names[t], -sizeof(GBT_TREE));
+            GBT_TREE *tree = GBT_read_tree(gb_main, tree_names[t], GBT_TREE_NodeFactory());
             if (!tree) {
                 aw_message(GBS_global_string("Can't load tree '%s' - skipped", tree_names[t]));
             }
@@ -870,18 +879,31 @@ static void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main
                 }
                 else {
                     if (removed>0) {
-                        error = GBT_write_tree(gb_main, 0, tree_names[t], tree);
-                        if (groups_removed>0) {
-                            aw_message(GBS_global_string("Removed %i species and %i groups from '%s'", removed, groups_removed, tree_names[t]));
+                        error = GBT_write_tree(gb_main, tree_names[t], tree);
+                        if (error) {
+                            aw_message(GBS_global_string("Failed to write '%s' (Reason: %s)", tree_names[t], error));
                         }
                         else {
-                            aw_message(GBS_global_string("Removed %i species from '%s'", removed, tree_names[t]));
+                            if (groups_removed>0) {
+                                aw_message(GBS_global_string("Removed %i species and %i groups from '%s'", removed, groups_removed, tree_names[t]));
+                            }
+                            else {
+                                aw_message(GBS_global_string("Removed %i species from '%s'", removed, tree_names[t]));
+                            }
+                            modified++;
                         }
                     }
-                    GBT_delete_tree(tree);
+                    delete tree;
                 }
             }
             progress.inc_and_check_user_abort(error);
+        }
+
+        if (modified) {
+            aw_message(GBS_global_string("Changed %i of %i trees.", modified, treeCount));
+        }
+        else {
+            aw_message("No tree modified");
         }
 
         GBS_free_hash(species_hash);
@@ -894,7 +916,7 @@ GBT_TREE *nt_get_tree_root_of_canvas(AWT_canvas *ntw) {
     AWT_graphic_tree *tree = AWT_TREE(ntw);
     if (tree) {
         AP_tree *root = tree->get_root_node();
-        if (root) return root->get_gbt_tree();
+        if (root) return root;
     }
     return NULL;
 }
@@ -1036,7 +1058,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     AWT_canvas *ntw;
     {
-        AP_tree_sort old_sort_type = tree->tree_sort;
+        AP_tree_display_type old_sort_type = tree->tree_sort;
         tree->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
 
         ntw = new AWT_canvas(GLOBAL.gb_main, awm, "ARB_NT", tree, awar_tree);
@@ -1341,17 +1363,12 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->insert_sub_menu("Remove Species from Tree",     "R");
         {
-            awm->insert_menu_topic(awm->local_id("tree_remove_deleted"), "Remove zombies", "z", "trm_del.hlp",    AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_DELETED);
-            awm->insert_menu_topic(awm->local_id("tree_remove_marked"),  "Remove marked",  "m", "trm_mrkd.hlp",   AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_MARKED);
-            awm->insert_menu_topic(awm->local_id("tree_keep_marked"),    "Keep marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED);
-#if defined(DEVEL_RALF)
-#if defined(WARN_TODO)
-#warning add "remove duplicates from tree"
-#endif
+            awm->insert_menu_topic(awm->local_id("tree_remove_deleted"), "Remove zombies", "z", "trm_del.hlp",    AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_REMOVE_ZOMBIES));
+            awm->insert_menu_topic(awm->local_id("tree_remove_marked"),  "Remove marked",  "m", "trm_mrkd.hlp",   AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_REMOVE_MARKED));
+            awm->insert_menu_topic(awm->local_id("tree_keep_marked"),    "Keep marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_KEEP_MARKED));
             awm->sep______________();
-            awm->insert_menu_topic("all_tree_remove_deleted", "Remove zombies from all trees", "a", "trm_del.hlp", AWM_ALL, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_DELETED, (AW_CL)GLOBAL.gb_main);
-            awm->insert_menu_topic("all_tree_remove_marked",  "Remove marked from all trees",  "l", "trm_del.hlp", AWM_ALL, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_MARKED, (AW_CL)GLOBAL.gb_main);
-#endif // DEVEL_RALF
+            awm->insert_menu_topic("all_tree_remove_deleted", "Remove zombies from ALL trees", "A", "trm_del.hlp",  AWM_ALL, makeWindowCallback(NT_alltree_remove_leafs, GBT_REMOVE_ZOMBIES, GLOBAL.gb_main));
+            awm->insert_menu_topic("all_tree_remove_marked",  "Remove marked from ALL trees",  "L", "trm_mrkd.hlp", AWM_ALL, makeWindowCallback(NT_alltree_remove_leafs, GBT_REMOVE_MARKED,  GLOBAL.gb_main));
         }
         awm->close_sub_menu();
 
@@ -1400,9 +1417,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         awm->close_sub_menu();
         awm->insert_sub_menu("Beautify tree", "e");
         {
-            awm->insert_menu_topic(awm->local_id("beautifyt_tree"), "#beautifyt.xpm", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 0);
-            awm->insert_menu_topic(awm->local_id("beautifyc_tree"), "#beautifyc.xpm", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 1);
-            awm->insert_menu_topic(awm->local_id("beautifyb_tree"), "#beautifyb.xpm", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 2);
+            awm->insert_menu_topic(awm->local_id("beautifyt_tree"), "#beautifyt.xpm", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, BIG_BRANCHES_TO_TOP);
+            awm->insert_menu_topic(awm->local_id("beautifyc_tree"), "#beautifyc.xpm", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, BIG_BRANCHES_TO_EDGE);
+            awm->insert_menu_topic(awm->local_id("beautifyb_tree"), "#beautifyb.xpm", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, BIG_BRANCHES_TO_BOTTOM);
         }
         awm->close_sub_menu();
         awm->insert_sub_menu("Modify branches", "M");

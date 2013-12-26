@@ -514,13 +514,6 @@ CC_INCLUDES  := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
 CXX_INCLUDES := $(CC_INCLUDES)
 MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
-# Some code in ARB depends on the location of the vtable pointer
-# (it does a cast from class AP_tree to struct GBT_TREE). In order to
-# work around that hack properly, we define FAKE_VTAB_PTR
-# if the vtable is located at the beginning of class.
-# We are really sorry for that hack.
-cflags:=$(cflags) -DFAKE_VTAB_PTR=char
-
 # ------------------------------- 
 #     old PTSERVER or PTPAN?
 
@@ -835,6 +828,7 @@ ARCHS_TREE = \
 		$(ARCHS_SEQUENCE) \
 		SL/FILTER/FILTER.a \
 		SL/ARB_TREE/ARB_TREE.a \
+		SL/ROOTED_TREE/ROOTED_TREE.a \
 
 # parsimony tree (used by NTREE, PARSIMONY, STAT(->EDIT4), DIST(obsolete!))
 ARCHS_AP_TREE = \
@@ -1279,6 +1273,7 @@ SL/PRONUC/PRONUC.dummy:			links_non_perl
 SL/PTCLEAN/PTCLEAN.dummy:		links_non_perl link_db
 SL/REFENTRIES/REFENTRIES.dummy:		links_non_perl
 SL/REGEXPR/REGEXPR.dummy:		links_non_perl
+SL/ROOTED_TREE/ROOTED_TREE.dummy:	links_non_perl
 SL/SEQIO/SEQIO.dummy:			links_non_perl
 SL/SEQUENCE/SEQUENCE.dummy:		links_non_perl
 SL/TRANSLATE/TRANSLATE.dummy:		links_non_perl
@@ -1304,6 +1299,7 @@ UNIT_TESTER/UNIT_TESTER.dummy:		link_db \
 
 TOOLS/TOOLS.dummy : links_non_perl link_db \
 	SERVERCNTRL/SERVERCNTRL.dummy \
+	SL/ROOTED_TREE/ROOTED_TREE.dummy \
 	SL/TREE_WRITE/TREE_WRITE.dummy \
 	SL/TREE_READ/TREE_READ.dummy \
 	CONSENSUS_TREE/CONSENSUS_TREE.dummy \
@@ -1944,7 +1940,6 @@ UNITS_WORKING = \
 	ISLAND_HOPPING/ISLAND_HOPPING.test \
 	NALIGNER/NALIGNER.test \
 	NAMES/NAMES.test \
-	PARSIMONY/PARSIMONY.test \
 	PHYLO/PHYLO.test \
 	PRIMER_DESIGN/PRIMER_DESIGN.test \
 	PROBE_DESIGN/PROBE_DESIGN.test \
@@ -1962,7 +1957,6 @@ UNITS_WORKING = \
 	SL/ITEMS/ITEMS.test \
 	SL/LOCATION/LOCATION.test \
 	SL/MATRIX/MATRIX.test \
-	SL/NEIGHBOURJOIN/NEIGHBOURJOIN.test \
 	SL/REFENTRIES/REFENTRIES.test \
 	SL/SEQUENCE/SEQUENCE.test \
 	SL/TRANSLATE/TRANSLATE.test \
@@ -1972,6 +1966,7 @@ UNITS_WORKING = \
 	TREEGEN/TREEGEN.test \
 	WETC/WETC.test \
 	XML/XML.test \
+	SL/ROOTED_TREE/ROOTED_TREE.test \
 
 # untestable units
 
@@ -1985,6 +1980,8 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	PARSIMONY/PARSIMONY.test \
+	SL/NEIGHBOURJOIN/NEIGHBOURJOIN.test \
 	SL/NDS/NDS.test \
 	ARB_GDE/ARB_GDE.test \
 	GENOM_IMPORT/GENOM_IMPORT.test \

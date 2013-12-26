@@ -53,10 +53,20 @@ static long auto_dontcall2(const char *key, long value, void *) {
     return value;
 }
 
+static void forget_dontCallHash() {
+    if (dontCallHash) {
+        GBS_free_hash(dontCallHash);
+        GBS_free_hash(alreadyCalledHash);
+        dontCallHash = NULL;
+    }
+}
+
 static void build_dontCallHash() {
     aw_assert(!dontCallHash);
     dontCallHash = GBS_create_hash(100, GB_MIND_CASE);
     forgetCalledCallbacks();
+
+    atexit(forget_dontCallHash);
 
     GBS_write_hash(dontCallHash, "ARB_NT/QUIT",                 1);
     GBS_write_hash(dontCallHash, "quit",                        1);

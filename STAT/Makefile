@@ -66,6 +66,7 @@ ST_ml.o: $(ARBHOME)/INCLUDE/downcast.h
 ST_ml.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_ml.o: $(ARBHOME)/INCLUDE/gccver.h
 ST_ml.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
+ST_ml.o: $(ARBHOME)/INCLUDE/RootedTree.h
 ST_ml.o: $(ARBHOME)/INCLUDE/smartptr.h
 ST_ml.o: $(ARBHOME)/INCLUDE/static_assert.h
 ST_ml.o: $(ARBHOME)/INCLUDE/test_global.h

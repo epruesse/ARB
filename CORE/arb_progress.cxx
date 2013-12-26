@@ -286,3 +286,22 @@ SmartPtr<arb_parent_progress> arb_parent_progress::create_suppressor() {
     return new null_progress(new null_counter(NULL));
 }
 
+// --------------------------
+//      progress dumpers
+
+#if defined(DUMP_PROGRESS)
+
+// not inlined in header (otherwise they are missing while debugging)
+
+void arb_parent_progress::dump() {
+    fprintf(stderr, "progress '%s'\n", name);
+    fprintf(stderr, "counter: ");
+    counter->dump();
+}
+void arb_progress::dump() {
+    fprintf(stderr, "--------------------\n");
+    used->dump();
+}
+
+#endif
+
