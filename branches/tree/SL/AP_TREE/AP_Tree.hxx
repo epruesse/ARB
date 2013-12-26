@@ -285,7 +285,6 @@ public:
 
     unsigned count_leafs() const;
     unsigned get_leaf_count() const OVERRIDE { // assumes compute_tree has been called (since last tree modification)
-        ap_assert(count_leafs() == gr.leaf_sum); // @@@ slow! remove later
         return gr.leaf_sum;
     }
 

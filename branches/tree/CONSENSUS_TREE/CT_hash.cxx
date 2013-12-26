@@ -144,9 +144,8 @@ void PartRegistry::build_sorted_list(double overall_weight) {
 
     parts.clear();
 
-    for (size_t i = 0; i<sorted.size(); ++i) { // @@@ use iterator here
-        PART *pi = sorted[i];
-        pi->takeMean(overall_weight);
+    for (PartVector::iterator pi = sorted.begin(); pi != sorted.end(); ++pi) {
+        (*pi)->takeMean(overall_weight);
     }
 
     arb_assert(retrieval_phase());
