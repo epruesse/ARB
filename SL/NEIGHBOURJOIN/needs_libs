@@ -1,4 +1,4 @@
 # libraries needed to link against SL/NEIGHBOURJOIN/NEIGHBOURJOIN.a
 
-lib/libARBDB.so
+SL/MATRIX/MATRIX.a
 

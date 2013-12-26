@@ -400,7 +400,7 @@ AP_ERR *GA_genetic::write_tree(GBDATA *gb_cluster, GA_tree *ga_tree)
     if (ga_tree->criteria > bestTree) {
         bestTree = ga_tree->criteria;
         GB_write_APfloat(gb_bestTree, bestTree);
-        GBT_write_tree(gb_main, 0, 0, (GBT_TREE *)ga_tree->tree);
+        GBT_write_tree(gb_main, 0, 0, ga_tree->tree);
     }
     free(treedata);
     delete [] treename;
@@ -459,7 +459,7 @@ GA_tree *GA_genetic::read_tree(GBDATA *gb_cluster, long tree_id)
         free (fbuf);
     }
     delete_tree(gb_cluster, gb_tree);
-    GBT_link_tree((GBT_TREE*)tree->tree, gb_main, 0, 0);
+    GBT_link_tree(tree->tree, gb_main, 0, 0);
     return tree;
 }
 

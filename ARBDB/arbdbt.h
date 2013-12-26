@@ -8,39 +8,14 @@
 #include <downcast.h>
 #endif
 
+#define gb_assert(cond) arb_assert(cond)
+
 #define GBT_SPECIES_INDEX_SIZE       10000L
 #define GBT_SAI_INDEX_SIZE           1000L
 
 #define GB_GROUP_NAME_MAX 256
 
 #define DEFAULT_BRANCH_LENGTH 0.1
-
-#define GBT_TREE_ELEMENTS(type)                 \
-    bool     is_leaf;                           \
-    bool     tree_is_one_piece_of_memory;       \
-    type    *father, *leftson, *rightson;       \
-    GBT_LEN  leftlen, rightlen;                 \
-    GBDATA  *gb_node;                           \
-    char    *name;                              \
-    char    *remark_branch
-
-// remark_branch normally contains some bootstrap value in format 'xx%'
-// if you store other info there, please make sure that this info does not
-// start with digits!!
-// Otherwise the tree export routines will not work correctly!
-// --------------------------------------------------------------------------------
-
-#define CLEAR_GBT_TREE_ELEMENTS(tree_obj_ptr)                   \
-    (tree_obj_ptr)->is_leaf = false;                            \
-    (tree_obj_ptr)->tree_is_one_piece_of_memory = false;        \
-    (tree_obj_ptr)->father = 0;                                 \
-    (tree_obj_ptr)->leftson = 0;                                \
-    (tree_obj_ptr)->rightson = 0;                               \
-    (tree_obj_ptr)->leftlen = 0;                                \
-    (tree_obj_ptr)->rightlen = 0;                               \
-    (tree_obj_ptr)->gb_node = 0;                                \
-    (tree_obj_ptr)->name = 0;                                   \
-    (tree_obj_ptr)->remark_branch = 0
 
 #define ERROR_CONTAINER_PATH    "tmp/message/pending"
 
@@ -51,27 +26,93 @@
 #define MACRO_TRIGGER_ERROR      MACRO_TRIGGER_CONTAINER "/error"
 #define MACRO_TRIGGER_TRACKED    MACRO_TRIGGER_CONTAINER "/tracked"
 
-#ifdef FAKE_VTAB_PTR
-// if defined, FAKE_VTAB_PTR contains 'char'
-typedef FAKE_VTAB_PTR  virtualTable;
-#define GBT_VTAB_AND_TREE_ELEMENTS(type)        \
-    virtualTable      *dummy_virtual;           \
-    GBT_TREE_ELEMENTS(type)
-#else
-#define GBT_VTAB_AND_TREE_ELEMENTS(type) GBT_TREE_ELEMENTS(type)
-#endif
+#define DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeType)        \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_father, father);    \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_leftson, leftson);  \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_rightson, rightson)
 
-struct GBT_TREE {
-    GBT_VTAB_AND_TREE_ELEMENTS(GBT_TREE);
+struct GBT_TREE : virtual Noncopyable {
+    bool      is_leaf;
+    GBT_TREE *father, *leftson, *rightson;
+    GBT_LEN   leftlen, rightlen;
+    GBDATA   *gb_node;
+    char     *name;
+
+    char *remark_branch; // remark_branch normally contains some bootstrap value in format 'xx%'
+                         // if you store other info there, please make sure that this info does not start with digits!!
+                         // Otherwise the tree export routines will not work correctly!
+
+protected:
+    GBT_TREE*& self_ref() {
+        return is_leftson() ? father->leftson : father->rightson;
+    }
+    void unlink_from_father() {
+        if (father) {
+            self_ref() = NULL;
+            father     = NULL;
+        }
+    }
+
+public:
+    GBT_TREE()
+        : is_leaf(false),
+          father(NULL), leftson(NULL), rightson(NULL),
+          leftlen(0.0), rightlen(0.0),
+          gb_node(NULL),
+          name(NULL),
+          remark_branch(NULL)
+    {}
+    virtual ~GBT_TREE() {
+        delete leftson;  gb_assert(!leftson);
+        delete rightson; gb_assert(!rightson);
+
+        unlink_from_father();
+
+        free(name);
+        free(remark_branch);
+    }
+
+    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(GBT_TREE);
+
+    virtual void announce_tree_constructed() {
+        // (has to be) called after tree has been constructed
+        gb_assert(!father); // has to be called with root-node!
+    }
+
+    bool is_son_of(const GBT_TREE *Father) const {
+        return father == Father &&
+            (father->leftson == this || father->rightson == this);
+    }
+    bool is_leftson() const {
+        gb_assert(is_son_of(get_father())); // do only call with sons!
+        return father->leftson == this;
+    }
+    bool is_rightson() const {
+        gb_assert(is_son_of(get_father())); // do only call with sons!
+        return father->rightson == this;
+    }
+
 };
 
-enum GBT_TREE_REMOVE_TYPE {
-    GBT_REMOVE_MARKED     = 1,
-    GBT_REMOVE_NOT_MARKED = 2,
-    GBT_REMOVE_DELETED    = 4,
+struct TreeNodeFactory {
+    virtual ~TreeNodeFactory() {}
+    virtual GBT_TREE *makeNode() const = 0;
+};
 
-    // please keep AWT_REMOVE_TYPE in sync with GBT_TREE_REMOVE_TYPE
-    // see ../SL/AP_TREE/AP_Tree.hxx@sync_GBT_TREE_REMOVE_TYPE_AWT_REMOVE_TYPE
+struct GBT_TREE_NodeFactory : public TreeNodeFactory {
+    GBT_TREE *makeNode() const OVERRIDE { return new GBT_TREE; }
+};
+
+enum GBT_TreeRemoveType {
+    GBT_REMOVE_MARKED   = 1,
+    GBT_REMOVE_UNMARKED = 2,
+    GBT_REMOVE_ZOMBIES  = 4,
+
+    // please keep AWT_RemoveType in sync with GBT_TreeRemoveType
+    // see ../SL/AP_TREE/AP_Tree.hxx@sync_GBT_TreeRemoveType__AWT_RemoveType
+
+    // combined defines:
+    GBT_KEEP_MARKED = GBT_REMOVE_UNMARKED|GBT_REMOVE_ZOMBIES,
 };
 
 enum GBT_ORDER_MODE {

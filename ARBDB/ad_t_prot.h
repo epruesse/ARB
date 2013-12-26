@@ -146,14 +146,14 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message);
 
 /* adtree.cxx */
 GBDATA *GBT_get_tree_data(GBDATA *gb_main);
-GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_HASH *species_hash, int *removed, int *groups_removed);
-void GBT_delete_tree(GBT_TREE*& tree);
+GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HASH *species_hash, int *removed, int *groups_removed);
 GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name);
-GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree);
+GB_ERROR GBT_write_tree(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree);
+GB_ERROR GBT_overwrite_tree(GBDATA *gb_main, GBDATA *gb_tree, GBT_TREE *tree);
 GB_ERROR GBT_write_tree_remark(GBDATA *gb_main, const char *tree_name, const char *remark);
 GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree, const char *remark);
-GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long structure_size, int *tree_size);
-GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, long structure_size);
+GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, const TreeNodeFactory& nodeFactory, int *tree_size);
+GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, const TreeNodeFactory& nodeFactory);
 size_t GBT_count_leafs(const GBT_TREE *tree);
 GB_ERROR GBT_is_invalid(const GBT_TREE *tree);
 GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *zombies, int *duplicates);
@@ -178,6 +178,7 @@ NOT4PERL GB_ERROR GBT_move_tree(GBDATA *gb_moved_tree, GBT_ORDER_MODE mode, GBDA
 GB_ERROR GBT_copy_tree(GBDATA *gb_main, const char *source_name, const char *dest_name);
 GB_ERROR GBT_rename_tree(GBDATA *gb_main, const char *source_name, const char *dest_name);
 GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count);
+char *GBT_tree_2_newick(const GBT_TREE *tree, bool write_lengths);
 
 #else
 #error ad_t_prot.h included twice

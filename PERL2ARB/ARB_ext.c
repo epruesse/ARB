@@ -82,7 +82,7 @@ GB_ERROR GBP_remove_callback(GBDATA *gbd, const char *perl_func, const char *per
         error = GBS_global_string("Error: You never installed a callback '%s:%s'", perl_func, perl_cl);
     }
     else {
-        GBS_write_hash(gbp_cp_hash_table, data, 0); 
+        GBS_write_hash(gbp_cp_hash_table, data, 0);
         GB_remove_callback(gbd, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(GBP_callback, arg));
         free(arg);
     }

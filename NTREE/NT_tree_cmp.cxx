@@ -282,8 +282,8 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
 
     GB_begin_transaction(gb_main);
 
-    AP_tree_root rsource(new AliView(gb_main), AP_tree(0), NULL, false);
-    AP_tree_root rdest  (new AliView(gb_main), AP_tree(0), NULL, false);
+    AP_tree_root rsource(new AliView(gb_main), new AP_TreeNodeFactory, NULL, false);
+    AP_tree_root rdest  (new AliView(gb_main), new AP_TreeNodeFactory, NULL, false);
 
     arb_progress progress("Comparing Topologies");
 
@@ -296,8 +296,8 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
             AP_tree *source = rsource.get_root_node();
             AP_tree *dest   = rdest.get_root_node();
 
-            long nspecies     = dest->arb_tree_leafsum2();
-            long source_leafs = source->arb_tree_leafsum2();
+            long nspecies     = dest->count_leafs();
+            long source_leafs = source->count_leafs();
             long source_nodes = source_leafs*2-1;
 
             arb_progress compare_progress(source_nodes);
@@ -321,8 +321,8 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
                     long             dummy         = 0;
                     AWT_species_set *new_root_setl = ssr->search(root_setl, &dummy);
                     AWT_species_set *new_root_setr = ssr->search(root_setr, &dummy);
-                    AP_tree         *new_rootl     = (AP_tree *) new_root_setl->node;
-                    AP_tree         *new_rootr     = (AP_tree *) new_root_setr->node;
+                    AP_tree         *new_rootl     = new_root_setl->node;
+                    AP_tree         *new_rootr     = new_root_setr->node;
 
                     new_rootl->set_root(); // set root correctly
                     new_rootr->set_root(); // set root correctly
@@ -331,8 +331,8 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
 
                     AP_tree *root = new_rootr->get_root_node();
 
-                    error             = GBT_write_tree(gb_main, rdest.get_gb_tree(), 0, root->get_gbt_tree());
-                    if (!error) error = GBT_write_tree(gb_main, rsource.get_gb_tree(), 0, source->get_gbt_tree());
+                    error             = GBT_overwrite_tree(gb_main, rdest.get_gb_tree(), root);
+                    if (!error) error = GBT_overwrite_tree(gb_main, rsource.get_gb_tree(), source);
                 }
 
                 delete root_setl;

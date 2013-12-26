@@ -252,7 +252,7 @@ static void input_cb(AW_window *aww, MatrixDisplay *disp) {
                 ClickAction action = static_cast<ClickAction>(clicked->cd1());
 
                 if (action == CLICK_SELECT_SPECIES) {
-                    long       idx    = long(clicked->cd2());
+                    size_t     idx    = size_t(clicked->cd2());
                     DI_MATRIX *matrix = disp->get_matrix();
                     if (idx >= matrix->nentries) {
                         aw_message(GBS_global_string("Illegal idx %li [allowed: 0-%li]", idx, matrix->nentries));
@@ -292,26 +292,7 @@ void MatrixDisplay::draw() {
     long x, y, xpos, ypos;
 
     DI_MATRIX *m = get_matrix();
-
-    // handle automatic hide/show of matrix view
-    // - avoid popup if was not auto-hidden
-    {
-        enum LastAutoPop { UNKNOWN, UP, DOWN };
-        static LastAutoPop lastautopop = UNKNOWN;
-
-        if (!m) {
-            if (awm && awm->is_shown()) {
-                awm->hide();
-                lastautopop = DOWN;
-            }
-            return;
-        }
-
-        if (!awm->is_shown() && lastautopop == DOWN) {
-            awm->show();
-            lastautopop = UP;
-        }
-    }
+    if (!autopop(m)) return;
 
     GB_transaction dummy(GLOBAL_gb_main);
 

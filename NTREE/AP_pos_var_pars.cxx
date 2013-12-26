@@ -126,10 +126,8 @@ const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tba
 // Calculate the positional variability: control procedure
 GB_ERROR AP_pos_var::retrieve(GBT_TREE *tree) {
     GB_ERROR error = 0;
-    int i;
 
     if (is_dna) {
-        long           base;
         unsigned char *char_2_bitstring;
         char_2_freq[(unsigned char)'a'] = 'A';
         char_2_freq[(unsigned char)'A'] = 'A';
@@ -141,11 +139,11 @@ GB_ERROR AP_pos_var::retrieve(GBT_TREE *tree) {
         char_2_freq[(unsigned char)'T'] = 'U';
         char_2_freq[(unsigned char)'u'] = 'U';
         char_2_freq[(unsigned char)'U'] = 'U';
-        char_2_bitstring = (unsigned char *)AP_create_dna_to_ap_bases();
-        for (i=0; i<256; i++) {
+        char_2_bitstring                = (unsigned char *)AP_create_dna_to_ap_bases();
+        for (int i=0; i<256; i++) {
             int j;
             if (i=='-') j = '.'; else j = i;
-            base = char_2_transition[i] = char_2_bitstring[j];
+            long base = char_2_transition[i] = char_2_bitstring[j];
             char_2_transversion[i] = 0;
             if (base & (AP_A | AP_G)) char_2_transversion[i] = 1;
             if (base & (AP_C | AP_T)) char_2_transversion[i] |= 2;
@@ -153,20 +151,19 @@ GB_ERROR AP_pos_var::retrieve(GBT_TREE *tree) {
         delete [] char_2_bitstring;
     }
     else {
-        long            base;
         AWT_translator *translator       = AWT_get_user_translator(gb_main);
         const long     *char_2_bitstring = translator->Pro2Bitset();
 
-        for (i=0; i<256; i++) {
+        for (int i=0; i<256; i++) {
             char_2_transversion[i] = 0;
-            base = char_2_transition[i] = char_2_bitstring[i];
+            long base = char_2_transition[i] = char_2_bitstring[i];
             if (base) char_2_freq[i] = toupper(i);
         }
     }
     treesize = getsize(tree);
     progress = new arb_progress(treesize);
 
-    for (i=0; i<256; i++) {
+    for (int i=0; i<256; i++) {
         int j;
         if ((j = char_2_freq[i])) {
             if (!frequencies[j]) {
@@ -304,10 +301,12 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
 
     arb_progress progress("Calculating positional variability");
     progress.subtitle("Loading Tree");
+
+    // get tree
     GBT_TREE *tree;
-    {           // get tree
+    {
         tree_name = root->awar(AWAR_PVP_TREE)->read_string();
-        tree = GBT_read_tree(GLOBAL.gb_main, tree_name, sizeof(GBT_TREE));
+        tree = GBT_read_tree(GLOBAL.gb_main, tree_name, GBT_TREE_NodeFactory());
         if (!tree) {
             error = GB_await_error();
         }
@@ -340,7 +339,7 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
         free(ali_name);
     }
 
-    GBT_delete_tree(tree);
+    delete tree;
     free(tree_name);
 
     if (error) aw_message(error);

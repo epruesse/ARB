@@ -415,7 +415,7 @@ static GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, Spec
 
                                 free(content);
                                 freeset(new_content, whole);
-                                new_content_len = strlen(new_content);
+                                new_content_len = strlen(new_content); // cppcheck-suppress deallocuse
                             }
                         }
 

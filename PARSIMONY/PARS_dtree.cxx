@@ -33,7 +33,7 @@
 static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
 
-    if (old == agt->tree_root_display) agt->tree_root_display = newroot;
+    if (old == agt->displayed_root) agt->displayed_root = newroot;
 }
 
 static AliView *pars_generate_aliview(WeightedFilter *pars_weighted_filter) {
@@ -129,7 +129,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
     rek_breite[4] = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/depth4");
     int rek_breite_anz = 5;
 
-    int       anzahl = (int)(*GBT_read_float(GLOBAL_gb_main, "genetic/kh/nodes")*at->arb_tree_leafsum2());
+    int       anzahl = (int)(*GBT_read_float(GLOBAL_gb_main, "genetic/kh/nodes")*at->count_leafs());
     AP_tree **list   = at->getRandomNodes(anzahl);
     
     arb_progress progress(anzahl);
@@ -139,7 +139,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
     GB_pop_transaction(GLOBAL_gb_main);
 
     for (int i=0; i<anzahl && !progress.aborted(); i++) {
-        AP_tree_nlen *tree_elem = (AP_tree_nlen *)list[i];
+        AP_tree_nlen *tree_elem = DOWNCAST(AP_tree_nlen*, list[i]); // @@@ pass 'at' as AP_tree_nlen
 
         bool in_folded_group = tree_elem->gr.hidden ||
             (tree_elem->father && tree_elem->get_father()->gr.hidden);
@@ -181,7 +181,7 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
     progress.subtitle(GBS_global_string("Old parsimony: %.1f", org_pars));
 
     while (!progress.aborted()) {
-        AP_FLOAT nni_pars = ((AP_tree_nlen *)at)->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
+        AP_FLOAT nni_pars = DOWNCAST(AP_tree_nlen*, at)->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
 
         if (nni_pars == prev_pars) { // NNI did not reduce costs -> kern-lin
             kernighan_optimize_tree(at);
@@ -220,7 +220,7 @@ void ArbParsimony::generate_tree(WeightedFilter *pars_weighted_filter) {
     }
 
     tree = new AWT_graphic_parsimony(*this, aliview->get_gb_main(), PARS_map_viewer);
-    tree->init(AP_tree_nlen(0), aliview, seq_templ, true, false);
+    tree->init(new AP_TreeNlenNodeFactory, aliview, seq_templ, true, false);
     ap_main->set_tree_root(tree);
 }
 
@@ -369,7 +369,7 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
     if (exports.save == 1) {
         arb_progress progress("Recalculating branch lengths");
         rootEdge()->calc_branchlengths();
-        resort_tree(0); // beautify after recalc_branch_lengths
+        reorder_tree(BIG_BRANCHES_TO_TOP); // beautify after recalc_branch_lengths
     }
 }
 

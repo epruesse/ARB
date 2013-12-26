@@ -300,6 +300,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/PT_com.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/RootedTree.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/servercntrl.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/static_assert.h
@@ -564,6 +565,7 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/PT_com.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/RootedTree.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/static_assert.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/test_global.h

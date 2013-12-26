@@ -83,14 +83,12 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
             error = GB_push_transaction(gb_main);
 
             if (!error) {
-                tree = GBT_read_tree(gb_main, treename, sizeof(*tree));
+                tree = GBT_read_tree(gb_main, treename, GBT_TREE_NodeFactory());
                 if (!tree) error = GB_await_error();
                 else {
                     error = GBT_link_tree(tree, gb_main, false, NULL, NULL);
                     if (!error) {
-                        GBT_TREE_REMOVE_TYPE mode = GBT_REMOVE_DELETED;
-                        if (marked_only) mode     = GBT_TREE_REMOVE_TYPE(mode|GBT_REMOVE_NOT_MARKED);
-
+                        GBT_TreeRemoveType mode = marked_only ? GBT_KEEP_MARKED : GBT_REMOVE_ZOMBIES;
                         tree = GBT_remove_leafs(tree, mode, NULL, NULL, NULL);
                         if (!tree || tree->is_leaf) {
                             error = GBS_global_string("Tree contains less than 2 species after removing zombies%s",
@@ -197,7 +195,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
     if (error) aw_message(error);
 
     SQ_clear_group_dictionary();
-    GBT_delete_tree(tree);
+    delete tree;
 }
 
 static void sq_remove_quality_entries_cb(AW_window *, AW_CL cl_gb_main) {

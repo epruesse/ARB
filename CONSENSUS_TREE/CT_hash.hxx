@@ -29,18 +29,36 @@ inline bool topological_less(const PART *p1, const PART *p2) { return p1->topolo
 
 class PartRegistry : virtual Noncopyable {
     PartSet    parts;
+    PartSet    artificial_parts; // these occurred in no tree
     PartVector sorted;
     size_t     retrieved;
 
+    bool registration_phase() const { return sorted.empty(); }
+    bool retrieval_phase() const { return !registration_phase(); }
+
+    void merge_artificial_parts();
+
 public:
     PartRegistry()
-        : parts(topological_less), 
+        : parts(topological_less),
+          artificial_parts(topological_less),
           retrieved(0)
-    {}
+    {
+        arb_assert(registration_phase());
+    }
+    ~PartRegistry();
 
-    void  put_part(PART*& part);
+    void put_part_from_complete_tree(PART*& part);
+    void put_part_from_partial_tree(PART*& part, const PART *partialTree);
+    void put_artificial_part(PART*& part);
+
     void  build_sorted_list(double overall_weight);
     PART *get_part();
+
+    size_t size() const {
+        if (registration_phase()) return parts.size()+artificial_parts.size();
+        return sorted.size();
+    }
 };
 
 #else

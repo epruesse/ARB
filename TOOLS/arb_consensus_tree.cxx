@@ -15,15 +15,17 @@
 #include <TreeWrite.h>
 #include <arb_str.h>
 #include <arb_diff.h>
+#include <arb_defs.h>
 
 using namespace std;
 
-static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR& error, size_t& different_species, double weight) {
+static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR& error, size_t& different_species, double weight, char *&comment) {
     // read all input trees, generate and return consensus tree
     // (Note: the 'weight' used here doesn't matter atm, since all trees are added with the same weight)
 
     arb_assert(!error);
-    error = NULL;
+    error   = NULL;
+    comment = NULL;
 
     GBT_TREE *consense_tree = NULL;
     if (input_trees.empty()) {
@@ -35,7 +37,8 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
         for (size_t i = 0; !error && i<input_trees.size(); ++i) {
             char *warnings = NULL;
 
-            GBT_TREE *tree = TREE_load(input_trees[i], sizeof(*tree), NULL, true, &warnings);
+            TreeRoot      *root = new TreeRoot(new SizeAwareNodeFactory, true); // will be deleted when tree gets deleted
+            SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, TREE_load(input_trees[i], *root, NULL, true, &warnings));
             if (!tree) {
                 error = GBS_global_string("Failed to load tree '%s' (Reason: %s)", input_trees[i], GB_await_error());
             }
@@ -44,13 +47,12 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
                     GB_warningf("while loading tree '%s':\n%s", input_trees[i], warnings);
                     free(warnings);
                 }
-                tree_builder.add(tree, weight);
+                tree_builder.add(tree, input_trees[i], weight);
             }
         }
 
-        if (!error) {
-            consense_tree = tree_builder.get(different_species);
-        }
+        if (!error) consense_tree = tree_builder.get(different_species, error);
+        if (!error) comment = tree_builder.get_remark();
     }
     arb_assert(contradicted(consense_tree, error));
     return consense_tree;
@@ -77,7 +79,7 @@ static char *create_tree_name(const char *savename) {
     return tree_name;
 }
 
-static GB_ERROR save_tree_as_newick(GBT_TREE *tree, const char *savename) {
+static GB_ERROR save_tree_as_newick(GBT_TREE *tree, const char *savename, const char *comment) {
     // save a tree to a newick file
 
     // since ARB only saves trees out of a database,
@@ -98,7 +100,7 @@ static GB_ERROR save_tree_as_newick(GBT_TREE *tree, const char *savename) {
 
         {
             GB_transaction ta(gb_main);
-            error = GBT_write_tree(gb_main, 0, db_tree_name, tree);
+            error = GBT_write_tree_with_remark(gb_main, db_tree_name, tree, comment);
         }
         if (!error) error = TREE_write_Newick(gb_main, db_tree_name, NULL, true, true, true, true, TREE_SINGLE_QUOTES, savename);
 
@@ -149,8 +151,9 @@ int ARB_main(int argc, char *argv[]) {
         if (!error && input_tree_names.empty()) error = "no input trees specified";
 
         if (!error) {
-            size_t species_count;
-            GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, species_count, 1.0);
+            size_t    species_count;
+            char     *comment;
+            GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, species_count, 1.0, comment);
 
             if (!cons_tree) {
                 error = GBS_global_string("Failed to build consensus tree (Reason: %s)", error);
@@ -163,14 +166,15 @@ int ARB_main(int argc, char *argv[]) {
                        percent, leafs, species_count);
 
                 if (savename) {
-                    error = save_tree_as_newick(cons_tree, savename);
+                    error = save_tree_as_newick(cons_tree, savename, comment);
                 }
                 else {
                     printf("sucessfully created consensus tree\n"
                            "(no savename specified -> tree not saved)\n");
                 }
-                GBT_delete_tree(cons_tree);
+                delete cons_tree;
             }
+            free(comment);
         }
         free(savename);
     }
@@ -191,13 +195,14 @@ int ARB_main(int argc, char *argv[]) {
 
 #include "command_output.h"
 
-static char *savename(int dir) { return GBS_global_string_copy("consense/%i/consense.tree", dir); }
-static char *expected_name(int dir) { return GBS_global_string_copy("consense/%i/consense_expected.tree", dir); }
-static char *inputname(int dir, int tree) { return GBS_global_string_copy("consense/%i/bootstrapped_%i.tree", dir, tree); }
+// #define TEST_AUTO_UPDATE // uncomment to update expected trees (if more than date differs)
 
-static void add_inputnames(StrArray& to, int dir, int first_tree, int last_tree) {
+static char *custom_tree_name(int dir, const char *name) { return GBS_global_string_copy("consense/%i/%s.tree", dir, name); }
+static char *custom_numbered_tree_name(int dir, const char *name, int treeNr) { return GBS_global_string_copy("consense/%i/%s_%i.tree", dir, name, treeNr); }
+
+static void add_inputnames(StrArray& to, int dir, const char *basename, int first_tree, int last_tree) {
     for (int t = first_tree; t <= last_tree; ++t) {
-        to.put(inputname(dir, t));
+        to.put(custom_numbered_tree_name(dir, basename, t));
     }
 }
 
@@ -212,156 +217,142 @@ static double calc_intree_distance(GBT_TREE *tree) {
 
 #define LENSUM_EPSILON .000001
 
-// #define TEST_AUTO_UPDATE // uncomment to update expected trees
+static arb_test::match_expectation consense_tree_generated(GBT_TREE *tree, GB_ERROR error, size_t species_count, size_t expected_species_count, double expected_intree_distance) {
+    using namespace   arb_test;
+    expectation_group expected;
 
-void TEST_consensus_tree_1() {
-    GB_ERROR error = NULL;
-    StrArray input_tree_names;
-    add_inputnames(input_tree_names, 1, 1, 5);
+    expected.add(that(error).is_equal_to_NULL());
+    expected.add(that(tree).does_differ_from_NULL());
+
+    if (tree) {
+        expected.add(that(species_count).is_equal_to(expected_species_count));
+        expected.add(that(GBT_count_leafs(tree)).is_equal_to(expected_species_count));
+        expected.add(that(calc_intree_distance(tree)).fulfills(epsilon_similar(LENSUM_EPSILON), expected_intree_distance));
+    }
+
+    return all().ofgroup(expected);
+}
+
+static arb_test::match_expectation build_expected_consensus_tree(const int treedir, const char *basename, int first_tree, int last_tree, double weight, const char *outbasename, size_t expected_species_count, double expected_intree_distance) {
+    using namespace       arb_test;
+    expectation_group     expected;
+    arb_suppress_progress hideProgress;
+
+    GB_ERROR  error   = NULL;
+    StrArray  input_tree_names;
+    add_inputnames(input_tree_names, treedir, basename, first_tree, last_tree);
 
     size_t    species_count;
-    GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.7);
+    char     *comment;
+    GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, weight, comment);
+    expected.add(consense_tree_generated(tree, error, species_count, expected_species_count, expected_intree_distance));
 
-    TEST_REJECT(error);
-    TEST_REJECT_NULL(tree);
+    char *saveas = custom_tree_name(treedir, outbasename);
+    error        = save_tree_as_newick(tree, saveas, comment);
+    expected.add(that(error).is_equal_to_NULL());
 
-    TEST_EXPECT_EQUAL(species_count, 22);
-    TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
-
-    TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 0.925779, LENSUM_EPSILON);
-        
-    char *saveas   = savename(1);
-    char *expected = expected_name(1);
-
-    TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));
-
-    // ../UNIT_TESTER/run/consense/1/consense.tree
+    if (!error) {
+        char *expected_save        = custom_tree_name(treedir, GBS_global_string("%s_expected", outbasename));
+        bool  exported_as_expected = arb_test::textfiles_have_difflines_ignoreDates(expected_save, saveas, 0);
 
 #if defined(TEST_AUTO_UPDATE)
-    system(GBS_global_string("cp %s %s", saveas, expected));
+        if (!exported_as_expected) {
+            ASSERT_RESULT(int, 0, system(GBS_global_string("cp %s %s", saveas, expected_save)));
+        }
 #else // !defined(TEST_AUTO_UPDATE)
-    TEST_EXPECT_TEXTFILE_DIFFLINES(saveas, expected, 1);
-#endif
-    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
-        
-    free(expected);
-    free(saveas);
-
-    GBT_delete_tree(tree);
-}
-void TEST_consensus_tree_1_single() {
-    GB_ERROR error = NULL;
-    StrArray input_tree_names;
-    add_inputnames(input_tree_names, 1, 1, 1);
-
-    {
-        size_t species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 0.01);
-        TEST_REJECT(error);
-        TEST_REJECT_NULL(tree);
-
-        TEST_EXPECT_EQUAL(species_count, 22);
-        TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
-        TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 0.924610, LENSUM_EPSILON);
-
-        char       *saveas   = savename(1);
-        const char *expected = "consense/1/consense_expected_single.tree";
-
-        TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));
-
-        // ../UNIT_TESTER/run/consense/1/consense.tree
-
-#if defined(TEST_AUTO_UPDATE)
-        system(GBS_global_string("cp %s %s", saveas, expected));
-#else // !defined(TEST_AUTO_UPDATE)
-        TEST_EXPECT_TEXTFILE_DIFFLINES(saveas, expected, 1);
+        expected.add(that(exported_as_expected).is_equal_to(true));
 #endif
         TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
-
-        free(saveas);
-
-        GBT_delete_tree(tree);
+        free(expected_save);
     }
+
+    free(saveas);
+    free(comment);
+    delete tree;
+
+    return all().ofgroup(expected);
+}
+
+void TEST_consensus_tree_1() {
+    TEST_EXPECTATION(build_expected_consensus_tree(1, "bootstrapped", 1, 5, 0.7, "consense1", 22, 0.925779));
+    // ../UNIT_TESTER/run/consense/1/consense1.tree
+}
+void TEST_consensus_tree_1_single() {
+    TEST_EXPECTATION(build_expected_consensus_tree(1, "bootstrapped", 1, 1, 0.01, "consense1_single", 22, 0.924610));
+    // ../UNIT_TESTER/run/consense/1/consense1_single.tree
 }
 
 void TEST_consensus_tree_2() {
-    GB_ERROR      error = NULL;
-    StrArray input_tree_names;
-    add_inputnames(input_tree_names, 2, 1, 4);
-
-    {
-        size_t species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 2.5);
-        TEST_REJECT(error);
-        TEST_REJECT_NULL(tree);
-
-        TEST_EXPECT_EQUAL(species_count, 59);
-        TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
-        TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 2.789272, LENSUM_EPSILON);
-
-        char *saveas   = savename(2);
-        char *expected = expected_name(2);
-        
-        TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));
-
-        // ../UNIT_TESTER/run/consense/2/consense.tree
-
-#if defined(TEST_AUTO_UPDATE)
-        system(GBS_global_string("cp %s %s", saveas, expected));
-#else // !defined(TEST_AUTO_UPDATE)
-        TEST_EXPECT_TEXTFILE_DIFFLINES(saveas, expected, 1);
-#endif
-        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
-
-        free(expected);
-        free(saveas);
-
-        GBT_delete_tree(tree);
-    }
+    TEST_EXPECTATION(build_expected_consensus_tree(2, "bootstrapped", 1, 4, 2.5, "consense2", 59, 2.789272));
+    // ../UNIT_TESTER/run/consense/2/consense2.tree
 }
 
 void TEST_consensus_tree_3() {
-    GB_ERROR      error = NULL;
-    StrArray input_tree_names;
-    add_inputnames(input_tree_names, 3, 1, 3);
-
-    {
-        size_t species_count;
-        GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, 137.772);
-        TEST_REJECT(error);
-        TEST_REJECT_NULL(tree);
-
-        TEST_EXPECT_EQUAL(species_count, 128);
-        TEST_EXPECT_EQUAL(GBT_count_leafs(tree), species_count);
-        TEST_EXPECT_SIMILAR(calc_intree_distance(tree), 2.171485, LENSUM_EPSILON);
-
-        char *saveas   = savename(3);
-        char *expected = expected_name(3);
-        
-        TEST_EXPECT_NO_ERROR(save_tree_as_newick(tree, saveas));
-
-#if defined(TEST_AUTO_UPDATE)
-        system(GBS_global_string("cp %s %s", saveas, expected));
-#else // !defined(TEST_AUTO_UPDATE)
-        TEST_EXPECT_TEXTFILE_DIFFLINES(saveas, expected, 1);
-#endif
-        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
-
-        free(expected);
-        free(saveas);
-
-        GBT_delete_tree(tree);
-    }
+    TEST_EXPECTATION(build_expected_consensus_tree(3, "bootstrapped", 1, 3, 137.772, "consense3", 128, 2.171485));
+    // ../UNIT_TESTER/run/consense/3/consense3.tree
 }
+
+void TEST_consensus_tree_from_disjunct_trees() {
+    TEST_EXPECTATION(build_expected_consensus_tree(4, "disjunct", 1, 2, 137.772, "disjunct_merged", 15, 2.007980));
+    // ../UNIT_TESTER/run/consense/4/disjunct_merged.tree
+}
+
+void TEST_consensus_tree_from_partly_overlapping_trees() {
+    // tree_disjunct_3 contains 7 species
+    // (3 from upper subtree (tree_disjunct_1) and 4 from lower subtree (tree_disjunct_2))
+
+    TEST_EXPECTATION(build_expected_consensus_tree(4, "disjunct", 1, 3, 137.772, "overlap_merged", 15, 2.577895));
+    // ../UNIT_TESTER/run/consense/4/overlap_merged.tree
+}
+
+void TEST_consensus_tree_from_minimal_overlapping_trees() {
+    // tree_disjunct_0 only contains 2 species (1 from upper and 1 from lower subtree).
+    TEST_EXPECTATION(build_expected_consensus_tree(4, "disjunct", 0, 2, 137.772, "overlap_mini_merged", 15, 2.724435));
+    // ../UNIT_TESTER/run/consense/4/overlap_mini_merged.tree
+}
+
+void TEST_consensus_tree_described_in_arbhelp() {
+    // see ../HELP_SOURCE/oldhelp/consense_algo.hlp
+    TEST_EXPECTATION(build_expected_consensus_tree(5, "help", 1, 2, 2.0, "help_merged", 6, 1.050000));
+    // ../UNIT_TESTER/run/consense/5/help_merged.tree
+}
+
+void TEST_consensus_tree_from_trees_overlapping_by_twothirds() {
+    // These 3 trees where copied from an existing tree.
+    // From each copy one third of all species has been removed
+    // (removed sets were disjunct)
+    TEST_EXPECTATION(build_expected_consensus_tree(6, "overlap_two_thirds", 1, 3, 19.2, "overlap_twothirds_merged", 15, 3.585280));
+    // ../UNIT_TESTER/run/consense/6/overlap_twothirds_merged.tree
+}
+
+void TEST_consensus_tree_from_mostly_overlapping_trees() {
+    // the 3 trees were copied from tree_disjunct_source.
+    // from each tree 2 (different) species were deleted.
+    TEST_EXPECTATION(build_expected_consensus_tree(7, "disjunct_del2", 1, 3, 137.772, "overlap_mostly", 15, 1.820057));
+    // ../UNIT_TESTER/run/consense/7/overlap_mostly.tree
+}
+
+void TEST_consensus_tree_from_mostly_overlapping_trees_2() {
+    // the 3 trees were copied from tree_disjunct1
+    // from each tree 1 (different) species was deleted.
+    TEST_EXPECTATION(build_expected_consensus_tree(8, "overlap2", 1, 3, 137.772, "overlap2_mostly", 8, 0.529109));
+    // ../UNIT_TESTER/run/consense/8/overlap2_mostly.tree
+}
+
+
 
 #define REPEATED_TESTS
 
 #if defined(REPEATED_TESTS)
 void TEST_consensus_tree_generation_is_deterministic() {
+    TEST_consensus_tree_described_in_arbhelp();
+    TEST_consensus_tree_from_minimal_overlapping_trees();
+    TEST_consensus_tree_from_partly_overlapping_trees();
+    TEST_consensus_tree_from_disjunct_trees();
     TEST_consensus_tree_3();
     TEST_consensus_tree_2();
-    TEST_consensus_tree_1();
     TEST_consensus_tree_1_single();
+    TEST_consensus_tree_1();
 }
 
 void TEST_arb_consensus_tree() {
@@ -369,11 +360,11 @@ void TEST_arb_consensus_tree() {
     TEST_STDOUT_CONTAINS("(arb_consensus_tree -w sth || true)", "no input trees specified");
 
     {
-        char *saveas   = savename(1);
-        char *expected = expected_name(1);
+        char *saveas   = custom_tree_name(1, "consense1");
+        char *expected = custom_tree_name(1, "consense1_expected");
     
         TEST_STDOUT_CONTAINS("arb_consensus_tree"
-                             " -w consense/1/consense.tree"
+                             " -w consense/1/consense1.tree"
                              " consense/1/bootstrapped_1.tree"
                              " consense/1/bootstrapped_2.tree"
                              " consense/1/bootstrapped_3.tree"
@@ -390,11 +381,11 @@ void TEST_arb_consensus_tree() {
     }
 
     {
-        char *saveas   = savename(2);
-        char *expected = expected_name(2);
+        char *saveas   = custom_tree_name(2, "consense2");
+        char *expected = custom_tree_name(2, "consense2_expected");
     
         TEST_STDOUT_CONTAINS("arb_consensus_tree"
-                             " -w consense/2/consense.tree"
+                             " -w consense/2/consense2.tree"
                              " consense/2/bootstrapped_1.tree"
                              " consense/2/bootstrapped_2.tree"
                              " consense/2/bootstrapped_3.tree"
@@ -437,7 +428,9 @@ void TEST_SLOW_treeIO_stable() {
 
     TEST_REJECT_NULL(gb_main);
 
-    char *outfile  = GBS_global_string_copy("trees/%s.tree", savename);
+    GBT_TREE_NodeFactory nodeMaker;
+
+    char *outfile = GBS_global_string_copy("trees/%s.tree", savename);
 
     for (int save_branchlengths = 0; save_branchlengths <= 1; ++save_branchlengths) {
         for (int save_bootstraps = 0; save_bootstraps <= 1; ++save_bootstraps) {
@@ -478,7 +471,7 @@ void TEST_SLOW_treeIO_stable() {
                         const char *reloaded_treename = "tree_reloaded";
                         {
                             char     *comment    = NULL;
-                            GBT_TREE *tree       = TREE_load(expectedfile, sizeof(*tree), &comment, true, NULL);
+                            GBT_TREE *tree       = TREE_load(expectedfile, nodeMaker, &comment, true, NULL);
                             GB_ERROR  load_error = tree ? NULL : GB_await_error();
 
                             TEST_EXPECTATION(all().of(that(tree).does_differ_from_NULL(),
@@ -500,7 +493,7 @@ void TEST_SLOW_treeIO_stable() {
                             const char *capsLeaf = findFirstNameContaining(tree, "Caps");
                             TEST_EXPECT_EQUAL(capsLeaf, "_MhuCaps");
 
-                            GBT_delete_tree(tree);
+                            delete tree;
                         }
 
                         // export again
@@ -544,6 +537,121 @@ void TEST_SLOW_treeIO_stable() {
     free(outfile);
 
     GB_close(gb_main);
+}
+
+void TEST_CONSENSUS_TREE_functionality() {
+    // functionality wanted in RootedTree (for use in library CONSENSUS_TREE)
+
+    char *comment = NULL;
+
+    SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, TREE_load("trees/bg_exp_p_GrpLen_0.tree",
+                                                             *new TreeRoot(new SizeAwareNodeFactory, true),
+                                                             &comment, false, NULL));
+    // -> ../UNIT_TESTER/run/trees/bg_exp_p_GrpLen_0.tree
+
+#define ORG_1111 "(AticSea6,(RblAerol,RblMesop))"
+#define TOP_1111 "((RblAerol,RblMesop),AticSea6)"
+#define BOT_1111 ORG_1111
+
+#define ORG_11121 "((DnrShiba,RsbElon4),MmbAlkal)"
+#define TOP_11121 ORG_11121
+#define BOT_11121 "(MmbAlkal,(DnrShiba,RsbElon4))"
+
+#define ORG_11122 "((MabPelag,MabSalin),PaoMaris)"
+#define TOP_11122 ORG_11122
+#define BOT_11122 "(PaoMaris,(MabPelag,MabSalin))"
+
+#define ORG_1112 "(" ORG_11121 "," ORG_11122 ")"
+#define TOP_1112 "(" TOP_11121 "," TOP_11122 ")"
+#define BOT_1112 "(" BOT_11121 "," BOT_11122 ")"
+#define EDG_1112 "(" TOP_11121 "," BOT_11122 ")"
+
+#define ORG_111 "(" ORG_1111 "," ORG_1112 ")"
+#define TOP_111 "(" TOP_1112 "," TOP_1111 ")"
+#define BOT_111 "(" BOT_1111 "," BOT_1112 ")"
+#define EDG_111 "(" EDG_1112 "," BOT_1111 ")"
+
+#define ORG_112 "(OnlGran2,RsnAnta2)"
+#define TOP_112 ORG_112
+#define BOT_112 ORG_112
+
+#define ORG_11 "(" ORG_111 "," ORG_112 ")"
+#define TOP_11 "(" TOP_111 "," TOP_112 ")"
+#define BOT_11 "(" BOT_112 "," BOT_111 ")"
+#define EDG_11 "(" EDG_111 "," BOT_112 ")"
+
+#define ORG_12 "(_MhuCaps,ThtNivea)"
+#define TOP_12 "(ThtNivea,_MhuCaps)"
+#define BOT_12 TOP_12
+
+#define ORG_1 "(" ORG_11 "," ORG_12 ")"
+#define TOP_1 "(" TOP_11 "," TOP_12 ")"
+#define BOT_1 "(" BOT_12 "," BOT_11 ")"
+#define EDG_1 "(" EDG_11 "," BOT_12 ")"
+
+#define ORG_2 "((LbnMarin,LbnzAlb4),LbnAlexa)"
+#define TOP_2 ORG_2
+#define BOT_2 "(LbnAlexa,(LbnMarin,LbnzAlb4))"
+
+    // test swap_sons
+    TEST_ASSERT_VALID_TREE(tree);
+    TEST_EXPECT_NEWICK_EQUAL(tree, "(" ORG_1 "," ORG_2 ");");
+    tree->swap_sons();
+    TEST_EXPECT_NEWICK_EQUAL(tree, "(" ORG_2 "," ORG_1 ");");
+
+    // test reorder_tree
+    TEST_ASSERT_VALID_TREE(tree);
+    TreeOrder order[] = { BIG_BRANCHES_TO_TOP, BIG_BRANCHES_TO_BOTTOM, BIG_BRANCHES_TO_EDGE };
+
+    for (size_t o1 = 0; o1<ARRAY_ELEMS(order); ++o1) {
+        TreeOrder to_order = order[o1];
+        for (size_t o2 = 0; o2<ARRAY_ELEMS(order); ++o2) {
+            TreeOrder from_order = order[o2];
+
+            for (int rotate = 0; rotate<=1; ++rotate) {
+                tree->reorder_tree(from_order);
+                if (rotate) tree->rotate_subtree();
+                tree->reorder_tree(to_order);
+
+                switch (to_order) {
+                    case BIG_BRANCHES_TO_TOP:    TEST_EXPECT_NEWICK_EQUAL(tree, "(" TOP_1 "," TOP_2 ");"); break;
+                    case BIG_BRANCHES_TO_EDGE:   TEST_EXPECT_NEWICK_EQUAL(tree, "(" EDG_1 "," BOT_2 ");"); break;
+                    case BIG_BRANCHES_TO_BOTTOM: TEST_EXPECT_NEWICK_EQUAL(tree, "(" BOT_2 "," BOT_1 ");"); break;
+                    default: TEST_REJECT(true); break;
+                }
+
+            }
+        }
+    }
+
+    // test rotate_subtree
+    TEST_ASSERT_VALID_TREE(tree);
+    tree->reorder_tree(BIG_BRANCHES_TO_TOP);
+    tree->rotate_subtree(); TEST_EXPECT_NEWICK_EQUAL(tree, "((LbnAlexa,(LbnzAlb4,LbnMarin)),((_MhuCaps,ThtNivea),((RsnAnta2,OnlGran2),((AticSea6,(RblMesop,RblAerol)),((PaoMaris,(MabSalin,MabPelag)),(MmbAlkal,(RsbElon4,DnrShiba)))))));");
+    tree->rotate_subtree(); TEST_EXPECT_NEWICK_EQUAL(tree, "(" TOP_1 "," TOP_2 ");");
+
+
+    // test set_root
+    TEST_ASSERT_VALID_TREE(tree);
+    RootedTree *AticSea6Grandpa = tree->findLeafNamed("AticSea6")->get_father()->get_father();
+    TEST_REJECT_NULL(AticSea6Grandpa);
+    TEST_ASSERT_VALID_TREE(AticSea6Grandpa);
+
+    AticSea6Grandpa->set_root();
+    TEST_EXPECT_NEWICK_EQUAL(tree,
+                             "((" ORG_1112 "," TOP_1111 ")," // AticSea6 is direct son of TOP_1111
+                             "((" ORG_2 "," TOP_12 ")," ORG_112 "));");
+
+    // test auto-detection of "best" root
+    TEST_ASSERT_VALID_TREE(tree);
+    tree->get_tree_root()->find_innermost_edge().set_root();
+    TEST_EXPECT_NEWICK_LEN_EQUAL(tree,
+                                 "((((LbnMarin:0.019,LbnzAlb4:0.003):0.016,LbnAlexa:0.032):0.122,(ThtNivea:0.230,_MhuCaps:0.194):0.427):0.076,"
+                                 "(((((DnrShiba:0.076,RsbElon4:0.053):0.034,MmbAlkal:0.069):0.016,((MabPelag:0.001,MabSalin:0.009):0.095,PaoMaris:0.092):0.036):0.030,((RblAerol:0.085,RblMesop:0.042):0.238,AticSea6:0.111):0.018):0.036,(OnlGran2:0.057,RsnAnta2:0.060):0.021):0.076);");
+
+    TEST_ASSERT_VALID_TREE(tree);
+    delete tree;
+    free(comment);
 }
 
 #endif // UNIT_TESTS

@@ -467,11 +467,8 @@ static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
     aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_delete_window, (AW_CL)bis);
     aws->insert_menu_topic("exp_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_create_window, (AW_CL)bis);
     aws->sep______________();
-    aws->insert_menu_topic("exp_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_unhide_all_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
-    aws->sep______________();
-    aws->insert_menu_topic("exp_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, makeWindowCallback(experiment_field_selection_list_scan_unknown_cb,  gb_main, FIELD_FILTER_NDS));
-    aws->insert_menu_topic("exp_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, makeWindowCallback(experiment_field_selection_list_delete_unused_cb, gb_main, FIELD_FILTER_NDS));
-    aws->insert_menu_topic("exp_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, makeWindowCallback(experiment_field_selection_list_update_cb,        gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("exp_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, makeWindowCallback(experiment_field_selection_list_unhide_all_cb, gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("exp_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AD_F_ALL, makeWindowCallback(experiment_field_selection_list_update_cb,     gb_main, FIELD_FILTER_NDS));
 }
 
 #if defined(WARN_TODO)
