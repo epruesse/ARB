@@ -1,0 +1,14 @@
+# -----------------------------------------------------------------------------------------
+# All expressions in mod_fields*.sellst appear in 'MODIFY DATABASE FIELD of listed species'
+# -----------------------------------------------------------------------------------------
+replace all 'u' by 't',                             :u=t
+remove all '"',                                     :"=
+copy (full_name) to this field,                     :*=*(full_name)
+append (full_name) to this field,                   :*=*1 *(full_name)
+calculate sequence checksum,                        seqcheck#|sequence|"ARB_";checksum(exclude=.-n;toupper)
+count ambiguities (nry. ...) (filter: ECOLI),       ambig#|sequence|filter(SAI=ECOLI,exclude=.-)|len("-ACGTU")
+truncate seq. ranges outside ecoli range,           |filter(SAI=ECOLI,exclude=.)
+increase G+C content in helical regions by 5%,      ali_*/data#|change(SAI=HELIX,exclude=.-,change=5,to=GC)
+store taxonomy,                                     ARB_treetax#|taxonomy(1)
+store full taxonomy,                                ARB_treetax#|taxonomy(999)
+
