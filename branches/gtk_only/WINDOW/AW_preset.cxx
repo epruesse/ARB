@@ -392,17 +392,33 @@ GB_ERROR AW_set_color_group(GBDATA *gbd, long color_group) {
     return GBT_write_int(gbd, AW_COLOR_GROUP_ENTRY, color_group);
 }
 
-/* species/genes etc. may have a color group entry ('ARB_color')
- * call with ignore_usage_flag == true to read color group regardless of global usage flag (AWAR_COLOR_GROUPS_USE)
- */
+#if defined(UNIT_TESTS)
+static bool always_ignore_usage_flag = false;
+#endif
+
 long AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag) {
-    int use_color_groups = AW_root::SINGLETON->awar(AWAR_COLOR_GROUPS_USE)->read_int();
-    if (!use_color_groups && !ignore_usage_flag) return 0;
+    /* species/genes etc. may have a color group entry ('ARB_color')
+     * call with ignore_usage_flag == true to read color group regardless of global usage flag (AWAR_COLOR_GROUPS_USE)
+     */
+#if defined(UNIT_TESTS)
+    if (always_ignore_usage_flag) ignore_usage_flag = true;
+#endif
+
+    if (!ignore_usage_flag) {
+        int use_color_groups = AW_root::SINGLETON->awar(AWAR_COLOR_GROUPS_USE)->read_int();
+        if (!use_color_groups) return 0;
+    }
 
     GBDATA *gb_group = GB_entry(gbd, AW_COLOR_GROUP_ENTRY);
     if (gb_group) return GB_read_int(gb_group);
     return 0;                   // no color group
 }
+
+#if defined(UNIT_TESTS)
+void fake_AW_init_color_groups() {
+    always_ignore_usage_flag = true;
+}
+#endif
 
 char *AW_get_color_group_name(AW_root *awr, int color_group) {
     aw_assert(color_group>0 && color_group <= AW_COLOR_GROUPS);
@@ -488,8 +504,6 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, con
     aws->window_fit();
     return (AW_window *) aws;
 }
-
-
 
 ////// FIXME, move somewhere more sensible:
 
