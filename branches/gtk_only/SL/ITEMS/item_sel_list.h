@@ -70,11 +70,8 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
 
 
 enum RescanMode {
-    RESCAN_UNKNOWN    = 1, // scan database for unknown fields and add them
-    RESCAN_DEL_UNUSED = 2, // delete all unused fields
-    RESCAN_SHOW_ALL   = 4, // unhide all hidden fields
-
-    RESCAN_REFRESH = RESCAN_UNKNOWN|RESCAN_DEL_UNUSED
+    RESCAN_REFRESH  = 1, // scan database for unregistered/unused fields and update the field list
+    RESCAN_SHOW_ALL = 2, // unhide all hidden fields
 };
 
 // @@@ generalize (use BoundItemSel)
@@ -82,20 +79,14 @@ enum RescanMode {
 void species_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode);
 void gene_field_selection_list_rescan   (GBDATA *gb_main, long bitfilter, RescanMode mode);
 
-void species_field_selection_list_scan_unknown_cb (AW_window*, GBDATA *gb_main, long bitfilter);
-void species_field_selection_list_delete_unused_cb(AW_window*, GBDATA *gb_main, long bitfilter);
-void species_field_selection_list_unhide_all_cb   (AW_window*, GBDATA *gb_main, long bitfilter);
-void species_field_selection_list_update_cb       (AW_window*, GBDATA *gb_main, long bitfilter);
+void species_field_selection_list_unhide_all_cb(AW_window*, GBDATA *gb_main, long bitfilter);
+void species_field_selection_list_update_cb    (AW_window*, GBDATA *gb_main, long bitfilter);
 
-void gene_field_selection_list_scan_unknown_cb (AW_window*, GBDATA *gb_main, long bitfilter);
-void gene_field_selection_list_delete_unused_cb(AW_window*, GBDATA *gb_main, long bitfilter);
-void gene_field_selection_list_unhide_all_cb   (AW_window*, GBDATA *gb_main, long bitfilter);
-void gene_field_selection_list_update_cb       (AW_window*, GBDATA *gb_main, long bitfilter);
+void gene_field_selection_list_unhide_all_cb(AW_window*, GBDATA *gb_main, long bitfilter);
+void gene_field_selection_list_update_cb    (AW_window*, GBDATA *gb_main, long bitfilter);
 
-void experiment_field_selection_list_scan_unknown_cb (AW_window*, GBDATA *gb_main, long bitfilter);
-void experiment_field_selection_list_delete_unused_cb(AW_window*, GBDATA *gb_main, long bitfilter);
-void experiment_field_selection_list_unhide_all_cb   (AW_window*, GBDATA *gb_main, long bitfilter);
-void experiment_field_selection_list_update_cb       (AW_window*, GBDATA *gb_main, long bitfilter);
+void experiment_field_selection_list_unhide_all_cb(AW_window*, GBDATA *gb_main, long bitfilter);
+void experiment_field_selection_list_update_cb    (AW_window*, GBDATA *gb_main, long bitfilter);
 
 #else
 #error item_sel_list.h included twice

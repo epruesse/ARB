@@ -9,7 +9,6 @@
 // ============================================================= //
 
 #include <TreeRead.h>
-#include <arbdbt.h>
 #include <arb_strbuf.h>
 #include <arb_defs.h>
 #include <ctime>
@@ -216,7 +215,7 @@ int main(int argc, char **argv) {
                 char *warnings             = 0;
                 bool  allow_length_scaling = !param.consense && !param.scale;
 
-                tree = TREE_load(param.treefilename, sizeof(GBT_TREE), &comment_from_treefile, allow_length_scaling, &warnings);
+                tree = TREE_load(param.treefilename, GBT_TREE_NodeFactory(), &comment_from_treefile, allow_length_scaling, &warnings);
                 if (!tree) {
                     error = GB_await_error();
                 }
@@ -248,7 +247,7 @@ int main(int argc, char **argv) {
             error = GB_begin_transaction(gb_main);
 
             if (!error && tree->is_leaf) error = "Cannot load tree (need at least 2 leafs)";
-            if (!error) error                  = GBT_write_tree(gb_main, 0, param.tree_name, tree);
+            if (!error) error                  = GBT_write_tree(gb_main, param.tree_name, tree);
 
             if (!error) {
                 // write tree comment
@@ -282,7 +281,7 @@ int main(int argc, char **argv) {
         if (error) show_error(gb_main, error);
         else       show_message(gb_msg_main, GBS_global_string("Tree %s read into the database", param.tree_name));
 
-        GBT_delete_tree(tree);
+        delete tree;
         free(comment_from_file);
         free(comment_from_treefile);
     }

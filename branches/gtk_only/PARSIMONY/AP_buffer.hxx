@@ -15,7 +15,6 @@
 #include <AP_Tree.hxx>
 #endif
 
-
 /* AP_STACK        dynamischer Stack fuer void *
  * AP_LIST         allgemeine doppelt verketteten Liste
  *
@@ -36,7 +35,7 @@ struct AP_STACK_ELEM {
     void *                 node;
 };
 
-class AP_STACK : virtual Noncopyable {
+class AP_STACK : virtual Noncopyable { // @@@ make typesafe (use template)
     struct AP_STACK_ELEM * first;
     struct AP_STACK_ELEM * pointer;
     unsigned long          stacksize;

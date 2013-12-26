@@ -25,7 +25,6 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 
-#include <arbdbt.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
 #include <arb_strarray.h>
@@ -199,7 +198,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def) {
 
     aw_root->awar_string(AWAR_TREE_CONSENSE_TREE, "tree_consensus", aw_def)->set_srt(GBT_TREE_AWAR_SRT);
     aw_root->awar_string(AWAR_TREE_CONSENSE_SELECTED, "", aw_def);
-    
+
     update_filter_cb(aw_root);
     tree_vars_callback(aw_root);
 }
@@ -377,12 +376,12 @@ static void tree_load_cb(AW_window *aww) {
         GBT_TREE *tree;
         if (strcmp(pcTreeFormat, "xml") == 0) {
             char *tempFname = readXmlTree(fname);
-            tree = TREE_load(tempFname, sizeof(GBT_TREE), &tree_comment, true, &warnings);
+            tree = TREE_load(tempFname, GBT_TREE_NodeFactory(), &tree_comment, true, &warnings);
             GB_unlink_or_warn(tempFname, NULL);
             free(tempFname);
         }
         else {
-            tree = TREE_load(fname, sizeof(GBT_TREE), &tree_comment, true, &warnings);
+            tree = TREE_load(fname, GBT_TREE_NodeFactory(), &tree_comment, true, &warnings);
         }
 
         if (!tree) error = GB_await_error();
@@ -397,7 +396,7 @@ static void tree_load_cb(AW_window *aww) {
 
             if (!error) aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
 
-            GBT_delete_tree(tree);
+            delete tree;
         }
 
         free(warnings);
@@ -421,14 +420,14 @@ static AW_window *create_tree_import_window(AW_root *root)
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("format");
-    aws->label("Tree Format :");
+    aws->label("Tree Format");
     aws->create_option_menu(AWAR_TREE_IMPORT "/filter");
     aws->insert_default_option("Newick", "t", "tree");
     aws->insert_option("XML", "x", "xml");
     aws->update_option_menu();
 
     aws->at("user");
-    aws->label("tree_name:");
+    aws->label("Tree name");
     aws->create_input_field(AWAR_TREE_IMPORT "/tree_name", 15);
 
     AW_create_fileselection(aws, AWAR_TREE_IMPORT "");
@@ -621,7 +620,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->button_length(40);
-        
+
         aws->at("sel");
         aws->create_button(0, AWAR_TREE_NAME, 0, "+");
 
@@ -639,11 +638,11 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->at("rem");
         aws->create_text_field(AWAR_TREE_REM);
 
-        
+
         aws->button_length(20);
 
         static TreeAdmin::Spec spec(GLOBAL.gb_main, AWAR_TREE_NAME);
-        
+
         aws->at("delete");
         aws->callback(makeWindowCallback(TreeAdmin::delete_tree_cb, &spec));
         aws->create_button("DELETE", "Delete", "D");
@@ -678,7 +677,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
 
         aws->at("list");
         awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_TREE_NAME);
-        
+
         aws->at("sort");
         awt_create_order_buttons(aws, reorder_trees_cb, 0);
     }
@@ -694,7 +693,6 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
     AW_root  *aw_root = aww->get_root();
     GB_ERROR  error   = NULL;
 
-    // const char *cons_tree_name = TreeAdmin::dest_tree_awar(aw_root)->read_char_pntr();
     const char *cons_tree_name = aw_root->awar(AWAR_TREE_CONSENSE_TREE)->read_char_pntr();
     if (!cons_tree_name || !cons_tree_name[0]) {
         error = "No name specified for the consensus tree";
@@ -713,26 +711,37 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
             GB_transaction ta(gb_main);
 
             {
-                arb_progress         progress("Building consensus tree", tree_names.size()+1);
+                arb_progress progress("Building consensus tree", 2); // 2 steps: deconstruct, reconstruct
                 ConsensusTreeBuilder tree_builder;
 
-                for (size_t t = 0; t<tree_names.size(); ++t) {
-                    progress.subtitle(GBS_global_string("Adding %s", tree_names[t]));
-                    GBT_TREE *tree = GBT_read_tree(gb_main, tree_names[t], sizeof(*tree));
-                    tree_builder.add(tree, 1.0);
-                    ++progress;
+                progress.subtitle("loading input trees");
+                for (size_t t = 0; t<tree_names.size() && !error; ++t) {
+                    TreeRoot      *root = new TreeRoot(new SizeAwareNodeFactory, true); // will be deleted when tree gets deleted
+                    SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree_names[t], *root));
+                    if (!tree) {
+                        error = GB_await_error();
+                    }
+                    else {
+                        tree_builder.add(tree, tree_names[t], 1.0);
+                    }
                 }
 
-                progress.subtitle("consensus tree construction");
-                size_t species_count;
-                GBT_TREE *cons_tree = tree_builder.get(species_count);
-                nt_assert(cons_tree);
-                error = GBT_write_tree(gb_main, 0, cons_tree_name, cons_tree);
-                ++progress;
+                size_t    species_count;
+                GBT_TREE *cons_tree = tree_builder.get(species_count, error); // triggers 2 implicit progress increments
 
+                if (!error && progress.aborted()) {
+                    error = "user abort";
+                }
+
+                arb_assert(contradicted(cons_tree, error));
+                if (cons_tree) {
+                    char *comment = tree_builder.get_remark();
+                    error         = GBT_write_tree_with_remark(gb_main, cons_tree_name, cons_tree, comment);
+                    free(comment);
+                    delete cons_tree;
+                }
                 if (error) progress.done();
             }
-
             error = ta.close(error);
         }
     }
@@ -744,13 +753,20 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
     aw_message_if(error);
 }
 
+static void use_selected_as_target_cb(AW_window *aww) {
+    AW_root *aw_root = aww->get_root();
+    aw_root->awar(AWAR_TREE_CONSENSE_TREE)->write_string(aw_root->awar(AWAR_TREE_CONSENSE_SELECTED)->read_char_pntr());
+}
+
 AW_window *NT_create_consense_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
         aws->init(aw_root, "CONSENSE_TREE", "Consensus Tree");
         aws->load_xfig("ad_cons_tree.fig");
-        
+
+        aws->auto_space(10, 10);
+
         aws->callback(AW_POPDOWN);
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
@@ -765,6 +781,9 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
 
         aws->at("name");
         aws->create_input_field(AWAR_TREE_CONSENSE_TREE);
+
+        aws->callback(use_selected_as_target_cb);
+        aws->create_button("USE_AS_TARGET", "#moveLeft.xpm", 0);
 
         aws->at("build");
         aws->callback(create_consense_tree_cb, AW_CL(selected_trees));

@@ -263,7 +263,7 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
     else {
         GB_transaction gb_dummy(gb_main);
 
-        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, sizeof(GBT_TREE));
+        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, GBT_TREE_NodeFactory());
         if (!tree) error = GB_await_error();
         else {
             error = GBT_link_tree(tree, gb_main, true, 0, 0);
@@ -341,7 +341,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, const char *tree_name, const TREE_no
     else {
         GB_transaction gb_dummy(gb_main);
 
-        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, sizeof(GBT_TREE));
+        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, GBT_TREE_NodeFactory());
         if (!tree) error = GB_await_error();
         else {
             error = GBT_link_tree(tree, gb_main, true, 0, 0);
@@ -374,7 +374,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, const char *tree_name, const TREE_no
                 }
             }
 
-            GBT_delete_tree(tree);
+            delete tree;
         }
 
         fprintf(output, ";\n");

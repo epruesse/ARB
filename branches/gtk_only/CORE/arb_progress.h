@@ -115,11 +115,7 @@ public:
     virtual void update_gauge(double gauge)            = 0;
 
 #if defined(DUMP_PROGRESS)
-    virtual void dump() {
-        fprintf(stderr, "progress '%s'\n", name);
-        fprintf(stderr, "counter: ");
-        counter->dump();
-    }
+    virtual void dump();
 #endif
 
     void child_sets_text(int level, const char *text) {
@@ -251,10 +247,7 @@ public:
 
     void done() { used->done(); } // set "done" (aka 100%). Useful when exiting some loop early
 #if defined(DUMP_PROGRESS)
-    void dump() {
-        fprintf(stderr, "--------------------\n");
-        used->dump();
-    }
+    void dump();
 #endif
     void force_update() { used->force_update(); }
 };

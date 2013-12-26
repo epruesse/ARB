@@ -10,6 +10,7 @@
 
 #include "AP_buffer.hxx"
 #include "AP_error.hxx"
+#include "ap_tree_nlen.hxx"
 
 #include <iostream>
 
@@ -55,14 +56,12 @@ void * AP_STACK::pop() {
 }
 
 void AP_STACK::clear() {
-    AP_STACK_ELEM * pntr;
     while (stacksize > 0) {
-        pntr = first;
+        AP_STACK_ELEM *pntr = first;
         first = first->next;
         stacksize --;
         delete pntr;
     }
-    return;
 }
 
 void AP_STACK::get_init() {
@@ -251,26 +250,22 @@ void AP_tree_buffer::print() {
 }
 
 void AP_main_stack::print() {
-    class AP_tree *elem;
     unsigned long i = this->size();
     cout << "AP_main_stack " << this << "  Size " << i << "\n";
     get_init();
     for (; i > 0; i--) {
-        elem = (AP_tree *)get();
+        AP_tree *elem = get();
         cout << i << " - AP_tree *: " << elem << " \n";
     }
-    return;
 }
 
 
 void AP_tree_stack::print() {
-    AP_tree_buffer *elem;
     unsigned long i = this->size();
     cout << "AP_tree_stack :  Size " << i << "\n";
     get_init();
     for (; i > 0; i--) {
-        elem = (AP_tree_buffer *)get();
+        AP_tree_buffer *elem = get();
         elem->print();
     }
-    return;
 }

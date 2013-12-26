@@ -27,7 +27,7 @@ endif
 ARB_SO=blib/arch/auto/ARB/ARB.$(SO)
 
 TARGET_PM=$(LIB)/ARB.pm
-TARGET_SO=$(LIB)/ARB.$(SO)	
+TARGET_SO=$(LIB)/ARB.$(SO)
 
 TARGETS=$(TARGET_PM) $(TARGET_SO)
 
@@ -97,7 +97,7 @@ else
 	hacked_cflags:=$(cross_cflags)
 endif
 
-used_cflags:=$(subst -Weffc++,,$(hacked_cflags))
+used_cflags:=$(subst -Weffc++,,$(hacked_cflags)) -Wno-literal-suffix
 used_lflags:=$(cross_lflags)
 
 MAKE_MAKEFILE=make_arbperl_makefile.pl
