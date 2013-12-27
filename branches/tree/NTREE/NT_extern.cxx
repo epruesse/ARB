@@ -1416,9 +1416,11 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         awm->close_sub_menu();
         awm->insert_sub_menu("Beautify tree", "e");
         {
-            awm->insert_menu_topic(awm->local_id("beautifyt_tree"), "#beautifyt.xpm", "", "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_TOP));
-            awm->insert_menu_topic(awm->local_id("beautifyc_tree"), "#beautifyc.xpm", "", "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_EDGE));
-            awm->insert_menu_topic(awm->local_id("beautifyb_tree"), "#beautifyb.xpm", "", "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_BOTTOM));
+            awm->insert_menu_topic(awm->local_id("beautifyt_tree"),  "#beautifyt.xpm",  "",  "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_TOP));
+            awm->insert_menu_topic(awm->local_id("beautifyc_tree"),  "#beautifyc.xpm",  "",  "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_EDGE));
+            awm->insert_menu_topic(awm->local_id("beautifyb_tree"),  "#beautifyb.xpm",  "",  "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_BOTTOM));
+            awm->insert_menu_topic(awm->local_id("beautifyr_tree"),  "Radial tree (1)", "1", "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_CENTER));
+            awm->insert_menu_topic(awm->local_id("beautifyr2_tree"), "Radial tree (2)", "2", "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_ALTERNATING));
         }
         awm->close_sub_menu();
         awm->insert_sub_menu("Modify branches", "M");

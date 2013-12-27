@@ -12,8 +12,28 @@ TITLE		Sort Tree Topology
 
 OCCURRENCE	ARB_NT/Tree/Sort Tree
 
-DESCRIPTION	Arranges branches and groups (triangles [radial tree] and
-		rectangles [dendrogram]) according to depth and size.
+DESCRIPTION	Arranges branches and groups according to the size of each 
+		subtree. If the size doesn't differ at a furcation, subtrees
+		will be sorted alphabethically. This ensures the sorting is stable.
+
+		Sorting does not change the tree topology, it only swaps branches!
+		
+SECTION 	Available sort modes
+
+		The first sort mode sorts the bigger branches to the top, 
+		the third sorts them to the bottom.
+
+		The second sort mode sorts the bigger branches to the edges of the 
+		tree and the smaller branches to the center.
+
+		The fourth and fifth mode are designed to sort the tree for 
+		the radial tree display mode. 
+
+		The fourth mode does the opposite of the second mode: it sorts 
+		bigger branches to the center and smaller ones to the borders 
+		of the tree.
+
+		The fifth mode alternates between second and fourth mode.
 
 NOTES		This facilitates the comparison of tree topologies resulting
 		from different treeing approaches.
