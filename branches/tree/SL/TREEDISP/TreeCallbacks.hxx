@@ -12,28 +12,28 @@
 #include <TreeDisplay.hxx>
 #endif
 
-void nt_mode_event(AW_window *, AWT_canvas *ntw, AWT_COMMAND_MODE mode);
-void NT_mark_all_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode);
+void nt_mode_event(UNFIXED, AWT_canvas *ntw, AWT_COMMAND_MODE mode);
+void NT_mark_all_cb(UNFIXED, AWT_canvas *ntw, int mark_mode);
 void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int insert_as_submenu);
-void NT_group_tree_cb(void *, AWT_canvas *ntw);
-void NT_group_not_marked_cb(void *, AWT_canvas *ntw);
-void NT_group_terminal_cb(void *, AWT_canvas *ntw);
-void NT_ungroup_all_cb(void *, AWT_canvas *ntw);
+void NT_group_tree_cb(UNFIXED, AWT_canvas *ntw);
+void NT_group_not_marked_cb(UNFIXED, AWT_canvas *ntw);
+void NT_group_terminal_cb(UNFIXED, AWT_canvas *ntw);
+void NT_ungroup_all_cb(UNFIXED, AWT_canvas *ntw);
 void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas);
-void NT_resort_tree_cb(void *, AWT_canvas *ntw, TreeOrder order);
-void NT_reset_lzoom_cb(void *, AWT_canvas *ntw);
-void NT_reset_pzoom_cb(void *, AWT_canvas *ntw);
-void NT_set_tree_style(void *, AWT_canvas *ntw, AP_tree_display_type type);
+void NT_resort_tree_cb(UNFIXED, AWT_canvas *ntw, TreeOrder order);
+void NT_reset_lzoom_cb(UNFIXED, AWT_canvas *ntw);
+void NT_reset_pzoom_cb(UNFIXED, AWT_canvas *ntw);
+void NT_set_tree_style(UNFIXED, AWT_canvas *ntw, AP_tree_display_type type);
 void NT_remove_leafs(UNFIXED, AWT_canvas *ntw, AWT_RemoveType mode);
-void NT_remove_bootstrap(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
-void NT_reset_branchlengths(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
-void NT_move_boot_branch(AW_window *, AW_CL cl_ntw, AW_CL cl_direction);
-void NT_scale_tree(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
-void NT_jump_cb(AW_window *, AWT_canvas *ntw, AP_tree_jump_type jumpType);
-void TREE_auto_jump_cb(AW_root *, AWT_canvas *ntw);
-void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose);
-void TREE_recompute_cb(AW_root *, AWT_canvas *ntw);
-void NT_reinit_treetype(AW_root *, AWT_canvas *ntw);
+void NT_remove_bootstrap(UNFIXED, AWT_canvas *ntw);
+void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw);
+void NT_move_boot_branch(UNFIXED, AWT_canvas *ntw, int direction);
+void NT_scale_tree(UNFIXED, AWT_canvas *ntw);
+void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType);
+void TREE_auto_jump_cb(UNFIXED, AWT_canvas *ntw);
+void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, bool expose);
+void TREE_recompute_cb(UNFIXED, AWT_canvas *ntw);
+void NT_reinit_treetype(UNFIXED, AWT_canvas *ntw);
 void NT_remove_species_in_tree_from_hash(AP_tree *tree, GB_HASH *hash);
 
 #else
