@@ -24,7 +24,7 @@ void NT_resort_tree_cb(void *, AWT_canvas *ntw, TreeOrder order);
 void NT_reset_lzoom_cb(void *, AWT_canvas *ntw);
 void NT_reset_pzoom_cb(void *, AWT_canvas *ntw);
 void NT_set_tree_style(void *, AWT_canvas *ntw, AP_tree_display_type type);
-void NT_remove_leafs(UNFIXED dummy_1x, AWT_canvas *ntw, AWT_RemoveType mode);
+void NT_remove_leafs(UNFIXED, AWT_canvas *ntw, AWT_RemoveType mode);
 void NT_remove_bootstrap(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
 void NT_reset_branchlengths(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
 void NT_move_boot_branch(AW_window *, AW_CL cl_ntw, AW_CL cl_direction);
