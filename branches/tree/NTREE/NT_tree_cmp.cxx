@@ -335,8 +335,26 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
 
                     AP_tree *root = new_rootr->get_root_node();
 
-                    error             = GBT_overwrite_tree(gb_main, rdest.get_gb_tree(), root);
-                    if (!error) error = GBT_overwrite_tree(gb_main, rsource.get_gb_tree(), source);
+
+                    error             = GBT_overwrite_tree(rdest.get_gb_tree(), root);
+                    if (!error) error = GBT_overwrite_tree(rsource.get_gb_tree(), source);
+
+                    if (!error) {
+                        char *entry;
+                        if (mode == TREE_INFO_COMPARE) {
+                            entry = GBS_global_string_copy("Compared topology with %s", tree_source);
+                        }
+                        else {
+                            const char *copiedOrAdded = mode == TREE_INFO_COPY ? "Copied" : "Added";
+
+                            entry = GBS_global_string_copy("%s node info %sfrom %s",
+                                                           copiedOrAdded,
+                                                           nodes_with_marked_only ? "of marked " : "",
+                                                           tree_source);
+                        }
+                        GBT_log_to_tree_remark(rdest.get_gb_tree(), entry);
+                        free(entry);
+                    }
                 }
 
                 delete root_setl;
