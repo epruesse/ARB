@@ -264,19 +264,23 @@ void AWT_species_set_root::finish(GB_ERROR& error) {
     progress->done();
 }
 
-void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, bool compare_node_info, bool delete_old_nodes, bool nodes_with_marked_only) {
+void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, TreeInfoMode mode, bool nodes_with_marked_only) {
     GB_ERROR  error = 0;
     FILE     *log   = 0;
 
+    nt_assert(contradicted(mode == TREE_INFO_COMPARE, log_file));
+
     if (log_file) {
+        nt_assert(mode == TREE_INFO_COPY || mode == TREE_INFO_ADD);
         log = fopen(log_file, "w");
+
         fprintf(log,
                 "LOGFILE: %s node info\n"
                 "\n"
                 "     Source tree '%s'\n"
                 "Destination tree '%s'\n"
                 "\n",
-                delete_old_nodes ? "Moving" : "Adding",
+                mode == TREE_INFO_COPY ? "Copying" : "Adding",
                 tree_source, tree_dest);
     }
 
@@ -309,13 +313,13 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
 
             if (source_leafs < 3) error = GB_export_error("Destination tree has less than 3 species");
             else {
-                AWT_species_set *root_setl =             ssr->find_best_matches_info(source->get_leftson(),  log, compare_node_info);
-                AWT_species_set *root_setr = root_setl ? ssr->find_best_matches_info(source->get_rightson(), log, compare_node_info) : NULL;
+                AWT_species_set *root_setl =             ssr->find_best_matches_info(source->get_leftson(),  log, mode == TREE_INFO_COMPARE);
+                AWT_species_set *root_setr = root_setl ? ssr->find_best_matches_info(source->get_rightson(), log, mode == TREE_INFO_COMPARE) : NULL;
 
                 if (root_setr) {
-                    if (!compare_node_info) {
+                    if (mode != TREE_INFO_COMPARE) {
                         compare_progress.subtitle("Copying node information");
-                        ssr->copy_node_information(log, delete_old_nodes, nodes_with_marked_only);
+                        ssr->copy_node_information(log, mode == TREE_INFO_COPY, nodes_with_marked_only);
                     }
 
                     long             dummy         = 0;

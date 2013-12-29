@@ -445,34 +445,29 @@ static AW_window *create_tree_import_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-static void ad_move_tree_info(AW_window *aww, AW_CL mode) {
-    /* mode == 0 -> move info (=overwrite info from source tree)
-     * mode == 1 -> compare info
-     * mode == 2 -> add info
-     */
-
-    bool compare_node_info      = mode==1;
-    bool delete_old_nodes       = mode==0;
-    bool nodes_with_marked_only = (mode==0 || mode==2) && aww->get_root()->awar(AWAR_NODE_INFO_ONLY_MARKED)->read_int();
+static void ad_move_tree_info(AW_window *aww, TreeInfoMode mode) {
+    bool nodes_with_marked_only = false;
 
     char     *log_file = 0;
     GB_ERROR  error    = 0;
 
-    if (!compare_node_info) {
+    if (mode == TREE_INFO_COPY || mode == TREE_INFO_ADD) {
         // move or add node-info writes a log file (containing errors)
         // compare_node_info only sets remark branches
         char *log_name       = GB_unique_filename("arb_node", "log");
         log_file             = GB_create_tempfile(log_name);
         if (!log_file) error = GB_await_error();
         free(log_name);
+
+        nodes_with_marked_only = aww->get_root()->awar(AWAR_NODE_INFO_ONLY_MARKED)->read_int();
     }
 
     if (!error) {
         AW_root *awr = aww->get_root();
-        char    *t1  = awr->awar(AWAR_TREE_NAME)->read_string();
+        char    *t1  = TreeAdmin::source_tree_awar(awr)->read_string();
         char    *t2  = TreeAdmin::dest_tree_awar(awr)->read_string();
 
-        AWT_move_info(GLOBAL.gb_main, t1, t2, log_file, compare_node_info, delete_old_nodes, nodes_with_marked_only);
+        AWT_move_info(GLOBAL.gb_main, t1, t2, log_file, mode, nodes_with_marked_only);
         if (log_file) {
             AW_edit(log_file);
             GB_remove_on_exit(log_file);
@@ -488,67 +483,91 @@ static void ad_move_tree_info(AW_window *aww, AW_CL mode) {
     free(log_file);
 }
 
-static AW_window *create_tree_diff_window(AW_root *root) {
-    static AW_window_simple *aws = 0;
-    if (aws) return aws;
-    GB_transaction dummy(GLOBAL.gb_main);
-    aws = new AW_window_simple;
-    aws->init(root, "CMP_TOPOLOGY", "COMPARE TREE TOPOLOGIES");
-    aws->load_xfig("ad_tree_cmp.fig");
+static void swap_source_dest_cb(AW_window *aww) {
+    AW_root *root = aww->get_root();
+
+    AW_awar *s = TreeAdmin::source_tree_awar(root);
+    AW_awar *d = TreeAdmin::dest_tree_awar(root);
+
+    char *old_src = s->read_string();
+    s->write_string(d->read_char_pntr());
+    d->write_string(old_src);
+    free(old_src);
+}
+
+static void current_tree_cb(AW_window *aww, bool dest, bool use) {
+    AW_root *root = aww->get_root();
+    AW_awar *awar = dest ? TreeAdmin::dest_tree_awar(root) : TreeAdmin::source_tree_awar(root);
+    if (use) {
+        awar->write_string(root->awar(AWAR_TREE_NAME)->read_char_pntr());
+    }
+    else {
+        root->awar(AWAR_TREE_NAME)->write_string(awar->read_char_pntr());
+    }
+}
+
+static AW_window_simple *create_two_trees_window(AW_root *root, const char *winId, const char *winTitle, const char *helpFile) {
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init(root, winId, winTitle);
+
+    aws->load_xfig("ad_two_trees.fig");
+
+    aws->at("close");
+    aws->auto_space(10, 3);
 
     aws->callback(AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE", "Close", "C");
 
-    aws->callback(makeHelpCallback("tree_diff.hlp"));
     aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
+    aws->callback(makeHelpCallback(helpFile));
+    aws->create_button("HELP", "Help", "H");
 
     aws->at("tree1");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, AWAR_TREE_NAME);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name);
+
     aws->at("tree2");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, TreeAdmin::dest_tree_awar(root)->awar_name);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::dest_tree_awar(root)->awar_name);
 
-    aws->button_length(20);
+    aws->at("select1");
+    aws->callback(makeWindowCallback(current_tree_cb, false, true));  aws->create_autosize_button("CURR_AS_SOURCE", "Use");
+    aws->callback(makeWindowCallback(current_tree_cb, false, false)); aws->create_autosize_button("SOURCE_AS_CURR", "Select");
 
-    aws->at("move");
-    aws->callback(ad_move_tree_info, 1); // compare
-    aws->create_button("CMP_TOPOLOGY", "COMPARE TOPOLOGY");
+    aws->callback(swap_source_dest_cb);
+    aws->create_autosize_button("SWAP", "Swap");
+
+    aws->at("select2");
+    aws->callback(makeWindowCallback(current_tree_cb, true, true));  aws->create_autosize_button("CURR_AS_DEST", "Use");
+    aws->callback(makeWindowCallback(current_tree_cb, true, false)); aws->create_autosize_button("DEST_AS_CURR", "Select");
+
+    aws->at("user");
 
     return aws;
 }
+
+static AW_window *create_tree_diff_window(AW_root *root) {
+    AW_window_simple *aws = create_two_trees_window(root, "CMP_TOPOLOGY", "Compare tree topologies", "tree_diff.hlp");
+
+    aws->callback(makeWindowCallback(ad_move_tree_info, TREE_INFO_COMPARE));
+    aws->create_autosize_button("CMP_TOPOLOGY", "Compare topologies");
+
+    return aws;
+}
+
 static AW_window *create_tree_cmp_window(AW_root *root) {
-    static AW_window_simple *aws = 0;
-    if (aws) return aws;
-    GB_transaction dummy(GLOBAL.gb_main);
-    aws = new AW_window_simple;
-    aws->init(root, "COPY_NODE_INFO_OF_TREE", "TREE COPY INFO");
-    aws->load_xfig("ad_tree_cmp.fig");
+    AW_window_simple *aws = create_two_trees_window(root, "COPY_NODE_INFO_OF_TREE", "Move tree node info", "tree_cmp.hlp");
 
-    aws->callback(AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->button_length(11);
 
-    aws->callback(makeHelpCallback("tree_cmp.hlp"));
-    aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
+    aws->callback(makeWindowCallback(ad_move_tree_info, TREE_INFO_COPY));
+    aws->create_button("COPY_INFO", "Copy info");
 
-    aws->at("tree1");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, AWAR_TREE_NAME);
-    aws->at("tree2");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, TreeAdmin::dest_tree_awar(root)->awar_name);
-
-    aws->at("move");
-    aws->callback(ad_move_tree_info, 0); // move
-    aws->create_button("COPY_INFO", "COPY INFO");
-
-    aws->at("cmp");
-    aws->callback(ad_move_tree_info, 2); // add
-    aws->create_button("ADD_INFO", "ADD INFO");
-
-    aws->at("only_marked");
-    aws->label("only info containing marked species");
+    aws->label("copy/add only info containing marked species");
     aws->create_toggle(AWAR_NODE_INFO_ONLY_MARKED);
+
+    aws->at_newline();
+
+    aws->callback(makeWindowCallback(ad_move_tree_info, TREE_INFO_ADD));
+    aws->create_button("ADD_INFO", "Add info");
 
     return aws;
 }
@@ -656,11 +675,11 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->create_button("COPY", "Copy", "C");
 
         aws->at("move");
-        aws->callback(AW_POPUP, (AW_CL)create_tree_cmp_window, 0);
+        aws->callback(create_tree_cmp_window);
         aws->create_button("MOVE_NODE_INFO", "Move node info", "C");
 
         aws->at("cmp");
-        aws->callback(AW_POPUP, (AW_CL)create_tree_diff_window, 0);
+        aws->callback(create_tree_diff_window);
         aws->sens_mask(AWM_EXP);
         aws->create_button("CMP_TOPOLOGY", "Compare topology", "T");
         aws->sens_mask(AWM_ALL);

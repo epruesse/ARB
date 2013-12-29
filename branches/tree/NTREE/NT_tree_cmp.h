@@ -65,8 +65,13 @@ struct AWT_species_set : virtual Noncopyable {
     ~AWT_species_set();
 };
 
+enum TreeInfoMode {
+    TREE_INFO_COPY,    // overwrites existing info
+    TREE_INFO_COMPARE, // @@@ does this really compare info?
+    TREE_INFO_ADD,     // doesn't overwrite
+};
 
-void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, bool compare_node_info, bool overwrite_old_nodes, bool nodes_with_marked_only);
+void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, TreeInfoMode mode, bool nodes_with_marked_only);
 
 #else
 #error NT_tree_cmp.h included twice
