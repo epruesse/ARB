@@ -71,7 +71,7 @@ enum TreeInfoMode {
     TREE_INFO_ADD,     // doesn't overwrite
 };
 
-void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, TreeInfoMode mode, bool nodes_with_marked_only);
+GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, TreeInfoMode mode, bool nodes_with_marked_only);
 
 #else
 #error NT_tree_cmp.h included twice

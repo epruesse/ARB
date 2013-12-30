@@ -463,18 +463,20 @@ static void ad_move_tree_info(AW_window *aww, TreeInfoMode mode) {
     }
 
     if (!error) {
-        AW_root *awr = aww->get_root();
-        char    *t1  = TreeAdmin::source_tree_awar(awr)->read_string();
-        char    *t2  = TreeAdmin::dest_tree_awar(awr)->read_string();
+        AW_root *awr      = aww->get_root();
+        char    *src_tree = TreeAdmin::source_tree_awar(awr)->read_string();
+        char    *dst_tree = TreeAdmin::dest_tree_awar(awr)->read_string();
 
-        AWT_move_info(GLOBAL.gb_main, t1, t2, log_file, mode, nodes_with_marked_only);
+        error = AWT_move_info(GLOBAL.gb_main, src_tree, dst_tree, log_file, mode, nodes_with_marked_only);
         if (log_file) {
             AW_edit(log_file);
             GB_remove_on_exit(log_file);
         }
 
-        free(t2);
-        free(t1);
+        if (!error) awr->awar(AWAR_TREE_NAME)->write_string(dst_tree); // select destination tree
+
+        free(dst_tree);
+        free(src_tree);
     }
 
     if (error) aw_message(error);

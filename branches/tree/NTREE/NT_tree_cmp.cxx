@@ -166,12 +166,10 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
             ss = new AWT_species_set(tree_source, this, ls, rs); // Generate new bitstring
             if (compare_node_info) {
                 int mismatches = this->search(ss, log); // Search optimal position
-                delete ss->node->remark_branch;
-                ss->node->remark_branch = 0;
+                freenull(ss->node->remark_branch);
                 if (mismatches) {
-                    char remark[20];
-                    sprintf(remark, "# %i", mismatches); // the #-sign is important (otherwise TREE_write_Newick will not work correctly)
-                    ss->node->remark_branch = strdup(remark);
+                    // the #-sign is important (otherwise TREE_write_Newick will not work correctly; interference with bootstrap values!)
+                    ss->node->remark_branch = GBS_global_string_copy("# %i", mismatches);
                 }
             }
             else {
@@ -281,11 +279,17 @@ void AWT_species_set_root::finish(GB_ERROR& error) {
     progress->done();
 }
 
-void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, TreeInfoMode mode, bool nodes_with_marked_only) {
+GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, TreeInfoMode mode, bool nodes_with_marked_only) {
     GB_ERROR  error = 0;
     FILE     *log   = 0;
 
     nt_assert(contradicted(mode == TREE_INFO_COMPARE, log_file));
+
+    if (mode == TREE_INFO_COMPARE) {
+        // info is written into 'tree_source'
+        // (but we want to modify destination tree - like 'mode node info' does)
+        std::swap(tree_source, tree_dest);
+    }
 
     if (log_file) {
         nt_assert(mode == TREE_INFO_COPY || mode == TREE_INFO_ADD);
@@ -388,6 +392,6 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
         fclose(log);
     }
 
-    GB_end_transaction_show_error(gb_main, error, aw_message);
+    return GB_end_transaction(gb_main, error);
 }
 
