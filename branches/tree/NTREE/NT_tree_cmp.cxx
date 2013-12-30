@@ -94,7 +94,7 @@ int AWT_species_set_root::search(AWT_species_set *set, FILE *log_file) {
     }
     if (log_file) {
         if (net_cost) {
-            fprintf(log_file, "Node '%s' placed not optimal, %li errors\n",
+            fprintf(log_file, "Group '%s' not placed optimal (%li errors)\n",
                     set->node->name,
                     net_cost);
         }
@@ -194,12 +194,14 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
 }
 
 GB_ERROR AWT_species_set_root::copy_node_information(FILE *log, bool delete_old_nodes, bool nodes_with_marked_only) {
-    GB_ERROR error = 0;
-    long j;
+    GB_ERROR error = NULL;
 
-    for (j=this->nsets-1; j>=0; j--) {
+    if (log) fputs("\nDetailed group changes:\n\n", log);
+
+    for (long j=this->nsets-1; j>=0 && !error; j--) {
         AWT_species_set *cset = this->sets[j];
-        char *old_group_name  = 0;
+
+        char *old_group_name  = NULL;
         bool  insert_new_node = cset->best_node && cset->best_node->name;
 
         if (nodes_with_marked_only && insert_new_node) {
@@ -218,44 +220,59 @@ GB_ERROR AWT_species_set_root::copy_node_information(FILE *log, bool delete_old_
             }
 
             old_group_name = strdup(cset->node->name); // store old_group_name to rename new inserted node
-#if defined(DEBUG)
-            printf("delete node '%s'\n", cset->node->name);
-#endif // DEBUG
 
             error = GB_delete(cset->node->gb_node);
-            if (error) break;
-
-            if (log) fprintf(log, "Destination Tree not empty, destination node '%s' deleted\n", old_group_name);
-            cset->node->gb_node = 0;
-            cset->node->name    = 0;
+            if (!error) {
+                cset->node->gb_node = 0;
+                cset->node->name    = 0;
+            }
         }
-        if (insert_new_node) {
-            cset->node->gb_node = GB_create_container(cset->node->get_tree_root()->get_gb_tree(), "node");
-            error = GB_copy(cset->node->gb_node, cset->best_node->gb_node);
-            if (error) break;
 
-            GB_dump(cset->node->gb_node);
-
-            GBDATA *gb_name = GB_entry(cset->node->gb_node, "group_name");
-            nt_assert(gb_name);
-            if (gb_name) {
-                char *name = GB_read_string(gb_name);
-
-                if (old_group_name && strcmp(old_group_name, name)!=0 && !delete_old_nodes) {
-                    // there was a group with a different name and we are adding nodes
-                    string new_group_name = (string)name+" [was: "+old_group_name+"]";
-                    GB_write_string(gb_name, new_group_name.c_str());
-                    delete name; name = GB_read_string(gb_name);
+        if (!error) {
+            if (insert_new_node) {
+                cset->node->gb_node = GB_create_container(cset->node->get_tree_root()->get_gb_tree(), "node");
+                error = GB_copy(cset->node->gb_node, cset->best_node->gb_node);
+                if (!error) {
+                    GBDATA *gb_name = GB_entry(cset->node->gb_node, "group_name");
+                    nt_assert(gb_name);
+                    if (gb_name) {
+                        char *best_group_name = GB_read_string(gb_name);
+                        if (old_group_name) {
+                            if (!delete_old_nodes) {
+                                if (strcmp(old_group_name, best_group_name) != 0) { // old and new name differ
+                                    char *new_group_name = GBS_global_string_copy("%s [was: %s]", best_group_name, old_group_name);
+                                    GB_write_string(gb_name, new_group_name);
+                                    if (log) fprintf(log, "Destination group '%s' overwritten by '%s'\n", old_group_name, new_group_name);
+                                    free(new_group_name);
+                                }
+                                else {
+                                    if (log) fprintf(log, "Group '%s' remains unchanged\n", old_group_name);
+                                }
+                            }
+                            else {
+                                if (log) {
+                                    if (strcmp(old_group_name, best_group_name) == 0) {
+                                        fprintf(log, "Group '%s' remains unchanged\n", old_group_name);
+                                    }
+                                    else {
+                                        fprintf(log, "Destination group '%s' overwritten by '%s'\n", old_group_name, best_group_name);
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            if (log) fprintf(log, "Group '%s' inserted\n", best_group_name);
+                        }
+                        free(best_group_name);
+                    }
                 }
-#if defined(DEBUG)
-                printf("insert node '%s'\n", name);
-#endif // DEBUG
-                free(name);
+            }
+            else {
+                if (old_group_name && log) fprintf(log, "Destination group '%s' removed\n", old_group_name);
             }
         }
         free(old_group_name);
     }
-
     return error;
 }
 
