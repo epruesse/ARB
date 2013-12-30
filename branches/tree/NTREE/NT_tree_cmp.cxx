@@ -15,6 +15,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <string>
+#include <climits>
 
 using namespace std;
 
@@ -61,12 +62,14 @@ void AWT_species_set_root::add(AWT_species_set *set) {
     sets[nsets++] = set;
 }
 
-AWT_species_set *AWT_species_set_root::search(AWT_species_set *set, long *best_co) {
+AWT_species_set *AWT_species_set_root::search_best_match(const AWT_species_set *set, long& best_cost) {
+    // returns best match for 'set'
+    // sets 'best_cost' to minimum mismatches
+
     AWT_species_set *result = 0;
-    long i;
-    long best_cost = 0x7fffffff;
-    unsigned char *sbs = set->bitstring;
-    for (i=nsets-1; i>=0; i--) {
+    best_cost               = LONG_MAX;
+    unsigned char   *sbs    = set->bitstring;
+    for (long i=nsets-1; i>=0; i--) {
         long j;
         long sum = 0;
         unsigned char *rsb = sets[i]->bitstring;
@@ -79,15 +82,20 @@ AWT_species_set *AWT_species_set_root::search(AWT_species_set *set, long *best_c
             result = sets[i];
         }
     }
-    *best_co = best_cost;
     return result;
 }
 
-int AWT_species_set_root::search(AWT_species_set *set, FILE *log_file) {
-    long net_cost;
-    double best_cost;
-    AWT_species_set *bs = this->search(set, &net_cost);
-    best_cost = net_cost + set->unfound_species_count * 0.0001;
+int AWT_species_set_root::search_and_remember_best_match_and_log_errors(const AWT_species_set *set, FILE *log_file) {
+     // set's best_cost & best_node (of best match for 'set' found in other tree)
+     // returns the number of mismatches (plus a small penalty for missing species)
+     //
+     // When moving node info, 'set' represents a subtree of the source tree.
+     // When comparing topologies, 'set' represents a subtree of the destination tree.
+
+    long             net_cost;
+    AWT_species_set *bs = search_best_match(set, net_cost);
+
+    double best_cost = net_cost + set->unfound_species_count * 0.0001;
     if (best_cost < bs->best_cost) {
         bs->best_cost = best_cost;
         bs->best_node = set->node;
@@ -149,23 +157,24 @@ AWT_species_set *AWT_species_set_root::move_tree_2_ssr(AP_tree *node) {
     return ss;
 }
 
-AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_source, FILE *log, bool compare_node_info) {
+AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *node, FILE *log, bool compare_node_info) {
     /* Go through all node of the source tree and search for the best
      * matching node in dest_tree (meaning searching ssr->sets)
-     * If a match is found, set ssr->sets to this match)
+     * If a match is found, set ssr->sets to this match.
      */
+
     AWT_species_set *ss = NULL;
-    if (tree_source->is_leaf) {
-        ss = new AWT_species_set(tree_source, this, tree_source->name);
+    if (node->is_leaf) {
+        ss = new AWT_species_set(node, this, node->name);
     }
     else {
-        AWT_species_set *ls =      find_best_matches_info(tree_source->get_leftson(),  log, compare_node_info);
-        AWT_species_set *rs = ls ? find_best_matches_info(tree_source->get_rightson(), log, compare_node_info) : NULL;
+        AWT_species_set *ls =      find_best_matches_info(node->get_leftson(),  log, compare_node_info);
+        AWT_species_set *rs = ls ? find_best_matches_info(node->get_rightson(), log, compare_node_info) : NULL;
 
         if (rs) {
-            ss = new AWT_species_set(tree_source, this, ls, rs); // Generate new bitstring
+            ss = new AWT_species_set(node, this, ls, rs); // Generate new bitstring
             if (compare_node_info) {
-                int mismatches = this->search(ss, log); // Search optimal position
+                int mismatches = search_and_remember_best_match_and_log_errors(ss, log);
                 freenull(ss->node->remark_branch);
                 if (mismatches) {
                     // the #-sign is important (otherwise TREE_write_Newick will not work correctly; interference with bootstrap values!)
@@ -173,8 +182,8 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
                 }
             }
             else {
-                if (tree_source->name) {
-                    this->search(ss, log);      // Search optimal position
+                if (node->name) {
+                    search_and_remember_best_match_and_log_errors(ss, log);
                 }
             }
         }
@@ -344,8 +353,8 @@ GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tre
                     }
 
                     long             dummy         = 0;
-                    AWT_species_set *new_root_setl = ssr->search(root_setl, &dummy);
-                    AWT_species_set *new_root_setr = ssr->search(root_setr, &dummy);
+                    AWT_species_set *new_root_setl = ssr->search_best_match(root_setl, dummy);
+                    AWT_species_set *new_root_setr = ssr->search_best_match(root_setr, dummy);
                     AP_tree         *new_rootl     = new_root_setl->node;
                     AP_tree         *new_rootr     = new_root_setr->node;
 
