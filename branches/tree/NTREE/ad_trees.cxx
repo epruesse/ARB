@@ -473,8 +473,6 @@ static void ad_move_tree_info(AW_window *aww, TreeInfoMode mode) {
             GB_remove_on_exit(log_file);
         }
 
-        if (!error) awr->awar(AWAR_TREE_NAME)->write_string(dst_tree); // select destination tree
-
         free(dst_tree);
         free(src_tree);
     }
