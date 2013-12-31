@@ -695,8 +695,7 @@ static void NT_primer_cb() {
     if (error) aw_message(error);
 }
 
-static void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl) {
-    AWT_canvas *ntw = (AWT_canvas *)ntwcl;
+static void NT_mark_duplicates(UNFIXED, AWT_canvas *ntw) {
     GB_transaction dummy(ntw->gb_main);
     NT_mark_all_cb(NULL, ntw, 0);
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
@@ -1375,7 +1374,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_sub_menu("Build tree from sequence data",    "B");
             {
                 awm->insert_sub_menu("Distance matrix methods", "D");
-                awm->insert_menu_topic("arb_dist",      "Distance Matrix + ARB NJ",     "J", "dist.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0);
+                awm->insert_menu_topic("arb_dist", "Distance Matrix + ARB NJ", "J", "dist.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_dist &", 0);
                 GDE_load_menu(awm, AWM_ALL, "Phylogeny Distance Matrix");
                 awm->close_sub_menu();
 
@@ -1421,6 +1420,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_menu_topic(awm->local_id("beautifyb_tree"),  "#beautifyb.xpm",  "",  "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_BOTTOM));
             awm->insert_menu_topic(awm->local_id("beautifyr_tree"),  "Radial tree (1)", "1", "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_CENTER));
             awm->insert_menu_topic(awm->local_id("beautifyr2_tree"), "Radial tree (2)", "2", "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_ALTERNATING));
+            awm->sep______________();
+            awm->insert_menu_topic(awm->local_id("sort_by_other"),   "By other tree",   "o", "resortbyother.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_sort_tree_by_other_tree_window));
         }
         awm->close_sub_menu();
         awm->insert_sub_menu("Modify branches", "M");
@@ -1438,7 +1439,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         awm->close_sub_menu();
 
         awm->insert_menu_topic(awm->local_id("branch_analysis"), "Branch analysis", "B", "branch_analysis.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_open_branch_analysis_window, (AW_CL)ntw);
-        awm->insert_menu_topic(awm->local_id("mark_duplicates"), "Mark duplicates", "u", "mark_duplicates.hlp", AWM_ALL, (AW_CB)NT_mark_duplicates, (AW_CL)ntw, 0);
+        awm->insert_menu_topic(awm->local_id("mark_duplicates"), "Mark duplicates", "u", "mark_duplicates.hlp", AWM_ALL, makeWindowCallback(NT_mark_duplicates, ntw));
 
         awm->sep______________();
 

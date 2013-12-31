@@ -12,6 +12,8 @@
 #include "ad_trees.h"
 #include "NT_tree_cmp.h"
 
+#include <CT_ctree.hxx>
+
 #include <TreeAdmin.h>
 #include <TreeRead.h>
 #include <TreeWrite.h>
@@ -24,15 +26,13 @@
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_select.hxx>
 
 #include <arb_strbuf.h>
 #include <arb_file.h>
-#include <arb_strarray.h>
-#include <arb_progress.h>
+#include <arb_diff.h>
 
 #include <cctype>
-#include <aw_select.hxx>
-#include <CT_ctree.hxx>
 
 #define AWAR_TREE_SAV "ad_tree/"
 #define AWAR_TREE_TMP "tmp/ad_tree/"
@@ -810,4 +810,184 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
     }
     return aws;
 }
+
+
+class SortByTopo {
+    typedef std::map<std::string, unsigned> SpeciesPosition;
+
+    SpeciesPosition spos;
+    unsigned        maxSpec;
+
+    unsigned storeSpeciesPosition(const GBT_TREE *node, unsigned specLeftOf) {
+        if (node->is_leaf) {
+            spos[node->name] = specLeftOf;
+            return 1;
+        }
+        unsigned leftsize  = storeSpeciesPosition(node->get_leftson(), specLeftOf);
+        return storeSpeciesPosition(node->get_rightson(), specLeftOf+leftsize) + leftsize;
+    }
+
+public:
+
+    SortByTopo(const GBT_TREE *by) {
+        maxSpec = storeSpeciesPosition(by, 0);
+    }
+
+    double relativePos(const char *name) {
+        SpeciesPosition::iterator found = spos.find(name);
+        double res = (found == spos.end()) ? 0.5 : (found->second/double(maxSpec-1));
+        arb_assert(res>=0.0 && res<=1.0);
+        return res;
+    }
+
+    double reorder_subtree(RootedTree *node) { // similar to ../SL/ROOTED_TREE/RootedTree.cxx@reorder_subtree
+        static const char *smallest_leafname; // has to be set to the alphabetically smallest name (when function exits)
+
+        if (node->is_leaf) {
+            smallest_leafname = node->name;
+            return relativePos(smallest_leafname);
+        }
+
+        double      leftRelSum              = reorder_subtree(node->get_leftson());
+        const char *smallest_leafname_left  = smallest_leafname;
+        double      rightRelSum             = reorder_subtree(node->get_rightson());
+        const char *smallest_leafname_right = smallest_leafname;
+
+        bool left_leafname_bigger = strcmp(smallest_leafname_left, smallest_leafname_right)>0;
+        {
+            double leftRelPos  = leftRelSum  / node->get_leftson() ->get_leaf_count();
+            double rightRelPos = rightRelSum / node->get_rightson()->get_leaf_count();
+
+            if (leftRelPos>=rightRelPos) {
+                if (leftRelPos>rightRelPos || left_leafname_bigger) { // equal -> use leafname
+                    node->swap_sons();
+                }
+            }
+        }
+
+        smallest_leafname = left_leafname_bigger ? smallest_leafname_right : smallest_leafname_left;
+
+        return leftRelSum+rightRelSum;
+    }
+};
+
+static GB_ERROR sort_tree_by_other_tree(GBDATA *gb_main, const char *tree, const char *other_tree) {
+    GB_ERROR       error = NULL;
+    GB_transaction ta(gb_main);
+
+    GBT_TREE *otherTree   = GBT_read_tree(gb_main, other_tree, GBT_TREE_NodeFactory());
+    if (!otherTree) error = GB_await_error();
+    else {
+        SortByTopo sorter(otherTree);
+        delete otherTree;
+
+        SizeAwareTree *Tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree, *new TreeRoot(new SizeAwareNodeFactory, true)));
+        if (!Tree) error = GB_await_error();
+        else {
+            Tree->compute_tree();
+            sorter.reorder_subtree(Tree);
+            error = GBT_write_tree(gb_main, tree, Tree);
+        }
+        delete Tree;
+    }
+    return error;
+}
+
+static void sort_tree_by_other_tree_cb(AW_window *aww) {
+    AW_root  *awr   = aww->get_root();
+
+    const char *src_tree = TreeAdmin::source_tree_awar(awr)->read_char_pntr();
+    const char *dst_tree = TreeAdmin::dest_tree_awar(awr)->read_char_pntr();
+
+    GB_ERROR  error = sort_tree_by_other_tree(GLOBAL.gb_main, dst_tree, src_tree);
+    aw_message_if(error);
+}
+
+AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root) {
+    AW_window_simple *aws = create_two_trees_window(aw_root, "SORT_BY_OTHER", "Sort tree by other tree", "resortbyother.hlp");
+
+    aws->callback(sort_tree_by_other_tree_cb);
+    aws->create_autosize_button("RESORT", "Sort according to source tree");
+
+    return aws;
+}
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static arb_test::match_expectation saved_newick_equals(GBDATA *gb_main, const char *treename, const char *expected_newick) {
+    using namespace    arb_test;
+    expectation_group  expected;
+    GB_transaction     ta(gb_main);
+    GBT_TREE          *tree = GBT_read_tree(gb_main, treename, GBT_TREE_NodeFactory());
+
+    expected.add(that(tree).does_differ_from_NULL());
+    if (tree) {
+        char *newick = GBT_tree_2_newick(tree, false);
+        expected.add(that(newick).is_equal_to(expected_newick));
+        free(newick);
+        delete tree;
+    }
+    return all().ofgroup(expected);
+}
+
+#define TEST_EXPECT_SAVED_NEWICK_EQUAL(gbmain,treename,expected_newick)         TEST_EXPECTATION(saved_newick_equals(gbmain, treename, expected_newick))
+#define TEST_EXPECT_SAVED_NEWICK_EQUAL__BROKEN(gbmain,treename,expected_newick) TEST_EXPECTATION__BROKEN(saved_newick_equals(gbmain, treename, expected_newick))
+
+void TEST_sort_tree_by_other_tree() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
+    TEST_REJECT_NULL(gb_main);
+
+    const char *topo_test   = "(((((((CloTyro3,CloTyro4),CloTyro2),CloTyrob),CloInnoc),CloBifer),(((CloButy2,CloButyr),CloCarni),CloPaste)),((((CorAquat,CurCitre),CorGluta),CelBiazo),CytAquat));";
+    const char *topo_center = "(((CloPaste,((CloButy2,CloButyr),CloCarni)),((CloInnoc,((CloTyro2,(CloTyro3,CloTyro4)),CloTyrob)),CloBifer)),((CelBiazo,((CorAquat,CurCitre),CorGluta)),CytAquat));";
+    const char *topo_bottom = "((CytAquat,(CelBiazo,(CorGluta,(CorAquat,CurCitre)))),((CloPaste,(CloCarni,(CloButy2,CloButyr))),(CloBifer,(CloInnoc,(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4)))))));";
+
+    TEST_EXPECT_DIFFERENT(topo_test,   topo_center);
+    TEST_EXPECT_DIFFERENT(topo_test,   topo_bottom);
+    TEST_EXPECT_DIFFERENT(topo_center, topo_bottom);
+
+    // create sorted copies of tree_test
+    {
+        GB_transaction  ta(gb_main);
+        SizeAwareTree  *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
+        TEST_REJECT_NULL(tree);
+        TEST_EXPECT_NEWICK_EQUAL(tree, topo_test);
+
+        tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_center", tree)); TEST_EXPECT_NEWICK_EQUAL(tree, topo_center);
+        tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_bottom", tree)); TEST_EXPECT_NEWICK_EQUAL(tree, topo_bottom);
+
+        // test SortByTopo
+        {
+            SortByTopo   sbt(tree);
+            const double EPSILON = 0.0001;
+
+            TEST_EXPECT_SIMILAR(sbt.relativePos("CytAquat"), 0.0, EPSILON); // leftmost species (in topo_bottom)
+            TEST_EXPECT_SIMILAR(sbt.relativePos("CloTyro4"), 1.0, EPSILON); // rightmost species
+
+            TEST_EXPECT_SIMILAR(sbt.relativePos("CurCitre"), 0.2857, EPSILON); // (5 of 15)
+            TEST_EXPECT_SIMILAR(sbt.relativePos("CloButy2"), 0.5,    EPSILON); // center species (8 of 15)
+            TEST_EXPECT_SIMILAR(sbt.relativePos("CloTyrob"), 0.7857, EPSILON); // (12 of 15)
+        }
+
+        tree->reorder_tree(BIG_BRANCHES_TO_EDGE); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_work", tree));
+
+        delete tree;
+    }
+
+
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_center")); TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_work", topo_center);
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_bottom")); TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_work", topo_bottom);
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_test"));          TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_work", topo_test);
+
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
 
