@@ -38,6 +38,8 @@ SECTION 	Available sort modes
 NOTES		This facilitates the comparison of tree topologies resulting
 		from different treeing approaches.
 
+                See also LINK{resortbyother.hlp}.
+
 EXAMPLES	None
 
 WARNINGS	None
