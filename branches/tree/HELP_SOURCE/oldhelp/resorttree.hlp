@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Sort Tree Topology
 
-OCCURRENCE	ARB_NT/Tree/Sort Tree
+OCCURRENCE	ARB_NT/Tree/Beautify tree/...
 
 DESCRIPTION	Arranges branches and groups according to the size of each 
 		subtree. If the size doesn't differ at a furcation, subtrees
