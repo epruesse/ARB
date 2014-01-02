@@ -496,15 +496,9 @@ static void swap_source_dest_cb(AW_window *aww) {
     free(old_src);
 }
 
-static void current_tree_cb(AW_window *aww, bool dest, bool use) {
-    AW_root *root = aww->get_root();
-    AW_awar *awar = dest ? TreeAdmin::dest_tree_awar(root) : TreeAdmin::source_tree_awar(root);
-    if (use) {
-        awar->write_string(root->awar(AWAR_TREE_NAME)->read_char_pntr());
-    }
-    else {
-        root->awar(AWAR_TREE_NAME)->write_string(awar->read_char_pntr());
-    }
+static void copy_tree_awar_cb(UNFIXED, AW_awar *aw_source, AW_awar *aw_dest) {
+    const char *tree = aw_source->read_char_pntr();
+    if (tree && tree[0]) aw_dest->write_string(tree);
 }
 
 static AW_window_simple *create_select_two_trees_window(AW_root *root, const char *winId, const char *winTitle, const char *helpFile) {
@@ -527,23 +521,25 @@ static AW_window_simple *create_select_two_trees_window(AW_root *root, const cha
     aws->at("tree2");
     awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::dest_tree_awar(root)->awar_name);
 
+    AW_awar *awar_displayed_tree = root->awar(AWAR_TREE_NAME);
+
     aws->at("select1");
-    aws->callback(makeWindowCallback(current_tree_cb, false, true));  aws->create_autosize_button("CURR_AS_SOURCE", "Use");
-    aws->callback(makeWindowCallback(current_tree_cb, false, false)); aws->create_autosize_button("SOURCE_AS_CURR", "Select");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::source_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED", "Use");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::source_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED", "Display");
 
     aws->callback(swap_source_dest_cb);
     aws->create_autosize_button("SWAP", "Swap");
 
     aws->at("select2");
-    aws->callback(makeWindowCallback(current_tree_cb, true, true));  aws->create_autosize_button("CURR_AS_DEST", "Use");
-    aws->callback(makeWindowCallback(current_tree_cb, true, false)); aws->create_autosize_button("DEST_AS_CURR", "Select");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::dest_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED", "Use");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::dest_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED", "Display");
 
     aws->at("user");
 
     return aws;
 }
 
-static AW_window_simple *create_select_other_tree_window(AW_root *root, const char *winId, const char *winTitle, const char *helpFile) {
+static AW_window_simple *create_select_other_tree_window(AW_root *root, const char *winId, const char *winTitle, const char *helpFile, const char *displayed_tree_awarname) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, winId, winTitle);
     aws->load_xfig("ad_one_tree.fig");
@@ -558,12 +554,14 @@ static AW_window_simple *create_select_other_tree_window(AW_root *root, const ch
     aws->callback(makeHelpCallback(helpFile));
     aws->create_button("HELP", "Help", "H");
 
+    AW_awar *awar_displayed_tree = root->awar(displayed_tree_awarname);
+
     aws->at("tree");
     awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name);
 
     aws->at("select");
-    aws->callback(makeWindowCallback(current_tree_cb, false, true));  aws->create_autosize_button("CURR_AS_SOURCE", "Use");
-    aws->callback(makeWindowCallback(current_tree_cb, false, false)); aws->create_autosize_button("SOURCE_AS_CURR", "Select");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::source_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED", "Use");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::source_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED", "Display");
 
     aws->at("user");
 
@@ -937,7 +935,7 @@ static void sort_tree_by_other_tree_cb(UNFIXED, AWT_canvas *ntw) {
 }
 
 AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, AWT_canvas *ntw) {
-    AW_window_simple *aws = create_select_other_tree_window(aw_root, "SORT_BY_OTHER", "Sort tree by other tree", "resortbyother.hlp");
+    AW_window_simple *aws = create_select_other_tree_window(aw_root, ntw->aww->local_id("SORT_BY_OTHER"), "Sort tree by other tree", "resortbyother.hlp", ntw->user_awar);
 
     aws->callback(makeWindowCallback(sort_tree_by_other_tree_cb, ntw));
     aws->create_autosize_button("RESORT", "Sort according to source tree");
