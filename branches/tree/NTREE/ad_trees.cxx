@@ -17,6 +17,7 @@
 #include <TreeAdmin.h>
 #include <TreeRead.h>
 #include <TreeWrite.h>
+#include <TreeCallbacks.hxx>
 
 #include <awt_sel_boxes.hxx>
 #include <awt_modules.hxx>
@@ -506,10 +507,9 @@ static void current_tree_cb(AW_window *aww, bool dest, bool use) {
     }
 }
 
-static AW_window_simple *create_two_trees_window(AW_root *root, const char *winId, const char *winTitle, const char *helpFile) {
+static AW_window_simple *create_select_two_trees_window(AW_root *root, const char *winId, const char *winTitle, const char *helpFile) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, winId, winTitle);
-
     aws->load_xfig("ad_two_trees.fig");
 
     aws->at("close");
@@ -524,7 +524,6 @@ static AW_window_simple *create_two_trees_window(AW_root *root, const char *winI
 
     aws->at("tree1");
     awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name);
-
     aws->at("tree2");
     awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::dest_tree_awar(root)->awar_name);
 
@@ -544,8 +543,35 @@ static AW_window_simple *create_two_trees_window(AW_root *root, const char *winI
     return aws;
 }
 
+static AW_window_simple *create_select_other_tree_window(AW_root *root, const char *winId, const char *winTitle, const char *helpFile) {
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init(root, winId, winTitle);
+    aws->load_xfig("ad_one_tree.fig");
+
+    aws->at("close");
+    aws->auto_space(10, 3);
+
+    aws->callback(AW_POPDOWN);
+    aws->create_button("CLOSE", "Close", "C");
+
+    aws->at("help");
+    aws->callback(makeHelpCallback(helpFile));
+    aws->create_button("HELP", "Help", "H");
+
+    aws->at("tree");
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name);
+
+    aws->at("select");
+    aws->callback(makeWindowCallback(current_tree_cb, false, true));  aws->create_autosize_button("CURR_AS_SOURCE", "Use");
+    aws->callback(makeWindowCallback(current_tree_cb, false, false)); aws->create_autosize_button("SOURCE_AS_CURR", "Select");
+
+    aws->at("user");
+
+    return aws;
+}
+
 static AW_window *create_tree_diff_window(AW_root *root) {
-    AW_window_simple *aws = create_two_trees_window(root, "CMP_TOPOLOGY", "Compare tree topologies", "tree_diff.hlp");
+    AW_window_simple *aws = create_select_two_trees_window(root, "CMP_TOPOLOGY", "Compare tree topologies", "tree_diff.hlp");
 
     aws->callback(makeWindowCallback(ad_move_tree_info, TREE_INFO_COMPARE));
     aws->create_autosize_button("CMP_TOPOLOGY", "Compare topologies");
@@ -554,7 +580,7 @@ static AW_window *create_tree_diff_window(AW_root *root) {
 }
 
 static AW_window *create_tree_cmp_window(AW_root *root) {
-    AW_window_simple *aws = create_two_trees_window(root, "COPY_NODE_INFO_OF_TREE", "Move tree node info", "tree_cmp.hlp");
+    AW_window_simple *aws = create_select_two_trees_window(root, "COPY_NODE_INFO_OF_TREE", "Move tree node info", "tree_cmp.hlp");
 
     aws->button_length(11);
 
@@ -871,7 +897,7 @@ public:
     }
 };
 
-static GB_ERROR sort_tree_by_other_tree(GBDATA *gb_main, const char *tree, const char *other_tree) {
+static GB_ERROR sort_tree_by_other_tree(GBDATA *gb_main, RootedTree *tree, const char *other_tree) {
     GB_ERROR       error = NULL;
     GB_transaction ta(gb_main);
 
@@ -880,33 +906,40 @@ static GB_ERROR sort_tree_by_other_tree(GBDATA *gb_main, const char *tree, const
     else {
         SortByTopo sorter(otherTree);
         delete otherTree;
-
-        SizeAwareTree *Tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree, *new TreeRoot(new SizeAwareNodeFactory, true)));
-        if (!Tree) error = GB_await_error();
-        else {
-            Tree->compute_tree();
-            sorter.reorder_subtree(Tree);
-            error = GBT_write_tree(gb_main, tree, Tree);
-        }
-        delete Tree;
+        sorter.reorder_subtree(tree);
     }
     return error;
 }
 
-static void sort_tree_by_other_tree_cb(AW_window *aww) {
-    AW_root  *awr   = aww->get_root();
+static GB_ERROR sort_tree_by_other_tree(GBDATA *gb_main, const char *tree, const char *other_tree) {
+    GB_ERROR       error = NULL;
+    GB_transaction ta(gb_main);
+    SizeAwareTree *Tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree, *new TreeRoot(new SizeAwareNodeFactory, true)));
+    if (!Tree) error = GB_await_error();
+    else {
+        Tree->compute_tree();
+        error             = sort_tree_by_other_tree(gb_main, Tree, other_tree);
+        if (!error) error = GBT_write_tree(gb_main, tree, Tree);
+    }
+    delete Tree;
+    return error;
+}
 
-    const char *src_tree = TreeAdmin::source_tree_awar(awr)->read_char_pntr();
-    const char *dst_tree = TreeAdmin::dest_tree_awar(awr)->read_char_pntr();
+static bool sort_dtree_by_other_tree_cb(RootedTree *tree, GB_ERROR& error) {
+    const char *other_tree = TreeAdmin::source_tree_awar(AW_root::SINGLETON)->read_char_pntr();
+    error = sort_tree_by_other_tree(GLOBAL.gb_main, tree, other_tree);
+    return !error;
+}
 
-    GB_ERROR  error = sort_tree_by_other_tree(GLOBAL.gb_main, dst_tree, src_tree);
+static void sort_tree_by_other_tree_cb(UNFIXED, AWT_canvas *ntw) {
+    GB_ERROR error = NT_with_displayed_tree_do(ntw, sort_dtree_by_other_tree_cb);
     aw_message_if(error);
 }
 
-AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root) {
-    AW_window_simple *aws = create_two_trees_window(aw_root, "SORT_BY_OTHER", "Sort tree by other tree", "resortbyother.hlp");
+AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, AWT_canvas *ntw) {
+    AW_window_simple *aws = create_select_other_tree_window(aw_root, "SORT_BY_OTHER", "Sort tree by other tree", "resortbyother.hlp");
 
-    aws->callback(sort_tree_by_other_tree_cb);
+    aws->callback(makeWindowCallback(sort_tree_by_other_tree_cb, ntw));
     aws->create_autosize_button("RESORT", "Sort according to source tree");
 
     return aws;

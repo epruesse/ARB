@@ -1421,7 +1421,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_menu_topic(awm->local_id("beautifyr_tree"),  "Radial tree (1)", "1", "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_CENTER));
             awm->insert_menu_topic(awm->local_id("beautifyr2_tree"), "Radial tree (2)", "2", "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_ALTERNATING));
             awm->sep______________();
-            awm->insert_menu_topic(awm->local_id("sort_by_other"),   "By other tree",   "o", "resortbyother.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_sort_tree_by_other_tree_window));
+            awm->insert_menu_topic(awm->local_id("sort_by_other"),   "By other tree",   "o", "resortbyother.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_sort_tree_by_other_tree_window, ntw));
         }
         awm->close_sub_menu();
         awm->insert_sub_menu("Modify branches", "M");

@@ -20,6 +20,7 @@ void NT_group_not_marked_cb(UNFIXED, AWT_canvas *ntw);
 void NT_group_terminal_cb(UNFIXED, AWT_canvas *ntw);
 void NT_ungroup_all_cb(UNFIXED, AWT_canvas *ntw);
 void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas);
+GB_ERROR NT_with_displayed_tree_do(AWT_canvas *ntw, bool (*displayed_tree_cb)(RootedTree *tree, GB_ERROR& error));
 void NT_resort_tree_cb(UNFIXED, AWT_canvas *ntw, TreeOrder order);
 void NT_reset_lzoom_cb(UNFIXED, AWT_canvas *ntw);
 void NT_reset_pzoom_cb(UNFIXED, AWT_canvas *ntw);

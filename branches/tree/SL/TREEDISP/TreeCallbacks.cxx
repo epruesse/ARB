@@ -392,6 +392,19 @@ void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntr
 // ------------------------
 //      tree sorting :
 
+GB_ERROR NT_with_displayed_tree_do(AWT_canvas *ntw, bool (*displayed_tree_cb)(RootedTree *tree, GB_ERROR& error)) {
+    // 'displayed_tree_cb' has to return true if tree was changed and needs to be saved
+
+    GB_transaction ta(ntw->gb_main);
+    AWT_TREE(ntw)->check_update(ntw->gb_main);
+
+    GB_ERROR error = NULL;
+    if (displayed_tree_cb(AWT_TREE(ntw)->get_root_node(), error)) {
+        save_changed_tree(ntw);
+    }
+    return error;
+}
+
 void NT_resort_tree_cb(UNFIXED, AWT_canvas *ntw, TreeOrder order) {
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
