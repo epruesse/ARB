@@ -685,9 +685,9 @@ inline void append_command_output(GBS_strstruct *out, const char *prefix, const 
     }
 }
 
-static void NT_modify_cb(AW_window *aww, AWT_canvas *canvas, AWT_COMMAND_MODE mode) {
-    DBUI::popup_species_info_window(aww->get_root(), canvas->gb_main);
-    nt_mode_event(aww, canvas, mode);
+static void NT_modify_cb(UNFIXED, AWT_canvas *canvas, AWT_COMMAND_MODE mode) {
+    DBUI::popup_species_info_window(canvas->awr, canvas->gb_main);
+    nt_mode_event(NULL, canvas, mode);
 }
 
 static void NT_primer_cb() {
@@ -695,18 +695,16 @@ static void NT_primer_cb() {
     if (error) aw_message(error);
 }
 
-static void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl) {
-    AWT_canvas *ntw = (AWT_canvas *)ntwcl;
+static void NT_mark_duplicates(UNFIXED, AWT_canvas *ntw) {
     GB_transaction dummy(ntw->gb_main);
-    NT_mark_all_cb(aww, (AW_CL)ntw, (AW_CL)0);
+    NT_mark_all_cb(NULL, ntw, 0);
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     tree_root->mark_duplicates();
     tree_root->compute_tree();
     ntw->refresh();
 }
 
-static void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL) {
-    AWT_canvas     *ntw       = (AWT_canvas *)cl_ntw;
+static void NT_justify_branch_lenghs(UNFIXED, AWT_canvas *ntw) {
     GB_transaction  dummy(ntw->gb_main);
     AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
 
@@ -1080,7 +1078,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             tree->set_tree_type(AP_LIST_NDS, ntw); // no tree -> show NDS list
         }
 
-        tree_awar->add_callback((AW_RCB)NT_reload_tree_event, (AW_CL)ntw, 1);
+        tree_awar->add_callback(makeRootCallback(NT_reload_tree_event, ntw, true));
     }
 
     awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw));
@@ -1376,7 +1374,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_sub_menu("Build tree from sequence data",    "B");
             {
                 awm->insert_sub_menu("Distance matrix methods", "D");
-                awm->insert_menu_topic("arb_dist",      "Distance Matrix + ARB NJ",     "J", "dist.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0);
+                awm->insert_menu_topic("arb_dist", "Distance Matrix + ARB NJ", "J", "dist.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_dist &", 0);
                 GDE_load_menu(awm, AWM_ALL, "Phylogeny Distance Matrix");
                 awm->close_sub_menu();
 
@@ -1401,43 +1399,47 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
         awm->insert_sub_menu("Reset zoom",         "z");
         {
-            awm->insert_menu_topic(awm->local_id("reset_logical_zoom"),  "Logical zoom",  "L", "rst_log_zoom.hlp",  AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0);
-            awm->insert_menu_topic(awm->local_id("reset_physical_zoom"), "Physical zoom", "P", "rst_phys_zoom.hlp", AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0);
+            awm->insert_menu_topic(awm->local_id("reset_logical_zoom"),  "Logical zoom",  "L", "rst_log_zoom.hlp",  AWM_ALL, makeWindowCallback(NT_reset_lzoom_cb, ntw));
+            awm->insert_menu_topic(awm->local_id("reset_physical_zoom"), "Physical zoom", "P", "rst_phys_zoom.hlp", AWM_ALL, makeWindowCallback(NT_reset_pzoom_cb, ntw));
         }
         awm->close_sub_menu();
         awm->insert_sub_menu("Collapse/Expand tree",         "C");
         {
-            awm->insert_menu_topic(awm->local_id("tree_group_all"),         "Group all",               "a", "tgroupall.hlp",   AWM_ALL,  (AW_CB)NT_group_tree_cb,       (AW_CL)ntw, 0);
-            awm->insert_menu_topic(awm->local_id("tree_group_not_marked"),  "Group all except marked", "m", "tgroupnmrkd.hlp", AWM_ALL,  (AW_CB)NT_group_not_marked_cb, (AW_CL)ntw, 0);
-            awm->insert_menu_topic(awm->local_id("tree_group_term_groups"), "Group terminal groups",   "t", "tgroupterm.hlp",  AWM_ALL, (AW_CB)NT_group_terminal_cb,   (AW_CL)ntw, 0);
-            awm->insert_menu_topic(awm->local_id("tree_ungroup_all"),       "Ungroup all",             "U", "tungroupall.hlp", AWM_ALL,  (AW_CB)NT_ungroup_all_cb,      (AW_CL)ntw, 0);
+            awm->insert_menu_topic(awm->local_id("tree_group_all"),         "Group all",               "a", "tgroupall.hlp",   AWM_ALL, makeWindowCallback(NT_group_tree_cb,       ntw));
+            awm->insert_menu_topic(awm->local_id("tree_group_not_marked"),  "Group all except marked", "m", "tgroupnmrkd.hlp", AWM_ALL, makeWindowCallback(NT_group_not_marked_cb, ntw));
+            awm->insert_menu_topic(awm->local_id("tree_group_term_groups"), "Group terminal groups",   "t", "tgroupterm.hlp",  AWM_ALL, makeWindowCallback(NT_group_terminal_cb,   ntw));
+            awm->insert_menu_topic(awm->local_id("tree_ungroup_all"),       "Ungroup all",             "U", "tungroupall.hlp", AWM_ALL, makeWindowCallback(NT_ungroup_all_cb,      ntw));
             awm->sep______________();
             NT_insert_color_collapse_submenu(awm, ntw);
         }
         awm->close_sub_menu();
         awm->insert_sub_menu("Beautify tree", "e");
         {
-            awm->insert_menu_topic(awm->local_id("beautifyt_tree"), "#beautifyt.xpm", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, BIG_BRANCHES_TO_TOP);
-            awm->insert_menu_topic(awm->local_id("beautifyc_tree"), "#beautifyc.xpm", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, BIG_BRANCHES_TO_EDGE);
-            awm->insert_menu_topic(awm->local_id("beautifyb_tree"), "#beautifyb.xpm", "", "resorttree.hlp", AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, BIG_BRANCHES_TO_BOTTOM);
+            awm->insert_menu_topic(awm->local_id("beautifyt_tree"),  "#beautifyt.xpm",  "",  "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_TOP));
+            awm->insert_menu_topic(awm->local_id("beautifyc_tree"),  "#beautifyc.xpm",  "",  "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_EDGE));
+            awm->insert_menu_topic(awm->local_id("beautifyb_tree"),  "#beautifyb.xpm",  "",  "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_BOTTOM));
+            awm->insert_menu_topic(awm->local_id("beautifyr_tree"),  "Radial tree (1)", "1", "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_CENTER));
+            awm->insert_menu_topic(awm->local_id("beautifyr2_tree"), "Radial tree (2)", "2", "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_ALTERNATING));
+            awm->sep______________();
+            awm->insert_menu_topic(awm->local_id("sort_by_other"),   "By other tree",   "o", "resortbyother.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_sort_tree_by_other_tree_window, ntw));
         }
         awm->close_sub_menu();
         awm->insert_sub_menu("Modify branches", "M");
         {
-            awm->insert_menu_topic(awm->local_id("tree_remove_remark"),     "Remove bootstraps",       "b", "trm_boot.hlp",      AWM_ALL, NT_remove_bootstrap,      (AW_CL)ntw, 0);
+            awm->insert_menu_topic(awm->local_id("tree_remove_remark"), "Remove bootstraps", "b", "trm_boot.hlp", AWM_ALL, makeWindowCallback(NT_remove_bootstrap, ntw));
             awm->sep______________();
-            awm->insert_menu_topic(awm->local_id("tree_reset_lengths"),     "Reset branchlengths",    "R", "tbl_reset.hlp",   AWM_ALL, NT_reset_branchlengths,   (AW_CL)ntw, 0);
-            awm->insert_menu_topic(awm->local_id("justify_branch_lengths"), "Justify branchlengths",  "J", "tbl_justify.hlp", AWM_ALL, NT_justify_branch_lenghs, (AW_CL)ntw, 0);
-            awm->insert_menu_topic(awm->local_id("tree_scale_lengths"),     "Scale Branchlengths",    "S", "tbl_scale.hlp",   AWM_ALL, NT_scale_tree,            (AW_CL)ntw, 0);
+            awm->insert_menu_topic(awm->local_id("tree_reset_lengths"),     "Reset branchlengths",   "R", "tbl_reset.hlp",   AWM_ALL, makeWindowCallback(NT_reset_branchlengths, ntw));
+            awm->insert_menu_topic(awm->local_id("justify_branch_lengths"), "Justify branchlengths", "J", "tbl_justify.hlp", AWM_ALL, makeWindowCallback(NT_justify_branch_lenghs, ntw));
+            awm->insert_menu_topic(awm->local_id("tree_scale_lengths"),     "Scale Branchlengths",   "S", "tbl_scale.hlp",   AWM_ALL, makeWindowCallback(NT_scale_tree, ntw));
             awm->sep______________();
-            awm->insert_menu_topic(awm->local_id("tree_boot2len"),      "Bootstraps -> Branchlengths", "l", "tbl_boot2len.hlp", AWM_ALL, NT_move_boot_branch, (AW_CL)ntw, 0);
-            awm->insert_menu_topic(awm->local_id("tree_len2boot"),      "Bootstraps <- Branchlengths", "o", "tbl_boot2len.hlp", AWM_ALL, NT_move_boot_branch, (AW_CL)ntw, 1);
+            awm->insert_menu_topic(awm->local_id("tree_boot2len"), "Bootstraps -> Branchlengths", "l", "tbl_boot2len.hlp", AWM_ALL, makeWindowCallback(NT_move_boot_branch, ntw, 0));
+            awm->insert_menu_topic(awm->local_id("tree_len2boot"), "Bootstraps <- Branchlengths", "o", "tbl_boot2len.hlp", AWM_ALL, makeWindowCallback(NT_move_boot_branch, ntw, 1));
 
         }
         awm->close_sub_menu();
 
         awm->insert_menu_topic(awm->local_id("branch_analysis"), "Branch analysis", "B", "branch_analysis.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_open_branch_analysis_window, (AW_CL)ntw);
-        awm->insert_menu_topic(awm->local_id("mark_duplicates"), "Mark duplicates", "u", "mark_duplicates.hlp", AWM_ALL, (AW_CB)NT_mark_duplicates, (AW_CL)ntw, 0);
+        awm->insert_menu_topic(awm->local_id("mark_duplicates"), "Mark duplicates", "u", "mark_duplicates.hlp", AWM_ALL, makeWindowCallback(NT_mark_duplicates, ntw));
 
         awm->sep______________();
 
@@ -1623,19 +1625,19 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->at(db_treex, second_uppery);
     awm->button_length(0);
 
-    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_RADIAL);
+    awm->callback(makeWindowCallback(NT_set_tree_style, ntw, AP_TREE_RADIAL));
     awm->help_text("tr_type_radial.hlp");
     awm->create_button("RADIAL_TREE_TYPE", "#radial.xpm");
 
-    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_NORMAL);
+    awm->callback(makeWindowCallback(NT_set_tree_style, ntw, AP_TREE_NORMAL));
     awm->help_text("tr_type_list.hlp");
     awm->create_button("LIST_TREE_TYPE", "#dendro.xpm");
 
-    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_IRS);
+    awm->callback(makeWindowCallback(NT_set_tree_style, ntw, AP_TREE_IRS));
     awm->help_text("tr_type_irs.hlp");
     awm->create_button("FOLDED_LIST_TREE_TYPE", "#dendroIrs.xpm");
 
-    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_LIST_NDS);
+    awm->callback(makeWindowCallback(NT_set_tree_style, ntw, AP_LIST_NDS));
     awm->help_text("tr_type_nds.hlp");
     awm->create_button("NO_TREE_TYPE", "#listdisp.xpm");
 

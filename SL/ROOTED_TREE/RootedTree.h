@@ -87,9 +87,17 @@ public:
 };
 
 enum TreeOrder { // contains bit values!
-    BIG_BRANCHES_TO_TOP    = 0, // bit 0 = top or bottom
-    BIG_BRANCHES_TO_BOTTOM = 1,
-    BIG_BRANCHES_TO_EDGE   = 2, // bit 1 = center or edge
+    ORDER_BIG_DOWN      = 1, // bit 0 set -> big branches down
+    ORDER_BIG_TO_EDGE   = 2, // bit 1 set -> big branches to edge
+    ORDER_BIG_TO_CENTER = 4, // bit 2 set -> big branches to center
+    ORDER_ALTERNATING   = 8, // bit 3 set -> alternate bit 0
+
+    // user visible orders:
+    BIG_BRANCHES_TO_TOP      = 0,
+    BIG_BRANCHES_TO_BOTTOM   = ORDER_BIG_DOWN,
+    BIG_BRANCHES_TO_EDGE     = ORDER_BIG_TO_EDGE,
+    BIG_BRANCHES_TO_CENTER   = ORDER_BIG_TO_CENTER,
+    BIG_BRANCHES_ALTERNATING = ORDER_BIG_TO_CENTER|ORDER_ALTERNATING,
 };
 
 class RootedTree : public GBT_TREE { // derived from Noncopyable

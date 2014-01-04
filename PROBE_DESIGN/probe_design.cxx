@@ -1947,7 +1947,7 @@ static void pg_result_selected(AW_window * /* aww */, AW_CL cl_gb_main) {
             aw_message(GBS_global_string("%li species were in group - %li species marked in database", count, marked));
         }
 
-        NT_group_not_marked_cb(0, pg_global.ntw);
+        NT_group_not_marked_cb(NULL, pg_global.ntw);
     }
 }
 

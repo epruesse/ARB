@@ -303,6 +303,26 @@ void TEST_tree_modifications() {
         const char *edge_topo   = "((" B1_TOP "," B2_BOT "):0.081," B3_BOT ");";
         const char *bottom_topo = "(" B3_BOT ",(" B2_BOT "," B1_BOT "):0.081);";
 
+        const char *radial_topo  =
+            "(((CloPaste:0.179,((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010):0.131,"
+            "((CloInnoc:0.371,((CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017,CloTyrob:0.009):0.274):0.057,CloBifer:0.388):0.124):0.081,"
+            "((CelBiazo:0.059,((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053):0.207,CytAquat:0.711):0.081);";
+        const char *radial_topo2 =
+            "(((CloBifer:0.388,(CloInnoc:0.371,(((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274):0.057):0.124," B2_TOP "):0.081,"
+            "(CytAquat:0.711," B3_LEFT_TOP_SONS ":0.207):0.081);";
+
+        // expect that no mode reproduces another mode:
+        TEST_EXPECT_DIFFERENT(top_topo,    edge_topo);
+        TEST_EXPECT_DIFFERENT(top_topo,    bottom_topo);
+        TEST_EXPECT_DIFFERENT(top_topo,    radial_topo);
+        TEST_EXPECT_DIFFERENT(top_topo,    radial_topo2);
+        TEST_EXPECT_DIFFERENT(edge_topo,   bottom_topo);
+        TEST_EXPECT_DIFFERENT(edge_topo,   radial_topo);
+        TEST_EXPECT_DIFFERENT(edge_topo,   radial_topo2);
+        TEST_EXPECT_DIFFERENT(bottom_topo, radial_topo);
+        TEST_EXPECT_DIFFERENT(bottom_topo, radial_topo2);
+        TEST_EXPECT_DIFFERENT(radial_topo, radial_topo2);
+
         LocallyModify<AP_main*> setGlobal(ap_main, &env.apMain);
         env.push(); // 1st stack level (=top_topo)
 
@@ -310,9 +330,11 @@ void TEST_tree_modifications() {
 
         TEST_EXPECT_NEWICK_LEN_EQUAL(root, top_topo);
         // test reorder_tree:
-        root->reorder_tree(BIG_BRANCHES_TO_EDGE);   TEST_EXPECT_NEWICK_LEN_EQUAL(root, edge_topo); env.push();   // 2nd stack level (=edge_topo)
-        root->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NEWICK_LEN_EQUAL(root, bottom_topo); env.push(); // 3rd stack level (=bottom_topo)
-        root->reorder_tree(BIG_BRANCHES_TO_TOP);    TEST_EXPECT_NEWICK_LEN_EQUAL(root, top_topo);
+        root->reorder_tree(BIG_BRANCHES_TO_EDGE);     TEST_EXPECT_NEWICK_LEN_EQUAL(root, edge_topo);    env.push(); // 2nd stack level (=edge_topo)
+        root->reorder_tree(BIG_BRANCHES_TO_BOTTOM);   TEST_EXPECT_NEWICK_LEN_EQUAL(root, bottom_topo);  env.push(); // 3rd stack level (=bottom_topo)
+        root->reorder_tree(BIG_BRANCHES_TO_CENTER);   TEST_EXPECT_NEWICK_LEN_EQUAL(root, radial_topo);
+        root->reorder_tree(BIG_BRANCHES_ALTERNATING); TEST_EXPECT_NEWICK_LEN_EQUAL(root, radial_topo2);
+        root->reorder_tree(BIG_BRANCHES_TO_TOP);      TEST_EXPECT_NEWICK_LEN_EQUAL(root, top_topo);
 
         TEST_ASSERT_VALID_TREE(root);
 

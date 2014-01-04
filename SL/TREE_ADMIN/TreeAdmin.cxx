@@ -21,12 +21,17 @@
 
 #define ta_assert(cond) arb_assert(cond)
 
-#define AWAR_TREE_DEST "tmp/ad_tree/tree_dest"
+#define AWAR_TREE_SOURCE "tmp/ad_tree/tree_source"
+#define AWAR_TREE_DEST   "tmp/ad_tree/tree_dest"
 
 namespace TreeAdmin {
 
     void create_awars(AW_root *root, AW_default aw_def) {
-        root->awar_string(AWAR_TREE_DEST, 0, aw_def)->set_srt(GBT_TREE_AWAR_SRT);
+        root->awar_string(AWAR_TREE_SOURCE, 0, aw_def)->set_srt(GBT_TREE_AWAR_SRT);
+        root->awar_string(AWAR_TREE_DEST,   0, aw_def)->set_srt(GBT_TREE_AWAR_SRT);
+    }
+    AW_awar *source_tree_awar(AW_root *root) {
+        return root->awar(AWAR_TREE_SOURCE);
     }
     AW_awar *dest_tree_awar(AW_root *root) {
         return root->awar(AWAR_TREE_DEST);
