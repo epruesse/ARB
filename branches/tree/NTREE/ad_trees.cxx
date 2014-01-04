@@ -958,7 +958,7 @@ static arb_test::match_expectation saved_newick_equals(GBDATA *gb_main, const ch
 
     expected.add(that(tree).does_differ_from_NULL());
     if (tree) {
-        char *newick = GBT_tree_2_newick(tree, false);
+        char *newick = GBT_tree_2_newick(tree, true);
         expected.add(that(newick).is_equal_to(expected_newick));
         free(newick);
         delete tree;
@@ -974,9 +974,9 @@ void TEST_sort_tree_by_other_tree() {
     GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
     TEST_REJECT_NULL(gb_main);
 
-    const char *topo_test   = "(((((((CloTyro3,CloTyro4),CloTyro2),CloTyrob),CloInnoc),CloBifer),(((CloButy2,CloButyr),CloCarni),CloPaste)),((((CorAquat,CurCitre),CorGluta),CelBiazo),CytAquat));";
-    const char *topo_center = "(((CloPaste,((CloButy2,CloButyr),CloCarni)),((CloInnoc,((CloTyro2,(CloTyro3,CloTyro4)),CloTyrob)),CloBifer)),((CelBiazo,((CorAquat,CurCitre),CorGluta)),CytAquat));";
-    const char *topo_bottom = "((CytAquat,(CelBiazo,(CorGluta,(CorAquat,CurCitre)))),((CloPaste,(CloCarni,(CloButy2,CloButyr))),(CloBifer,(CloInnoc,(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4)))))));";
+    const char *topo_test   = "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,(((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,((((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
+    const char *topo_center = "(((CloPaste:0.179,((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010):0.131,((CloInnoc:0.371,((CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017,CloTyrob:0.009):0.274):0.057,CloBifer:0.388):0.124):0.081,((CelBiazo:0.059,((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053):0.207,CytAquat:0.711):0.081);";
+    const char *topo_bottom = "((CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207):0.081,((CloPaste:0.179,(CloCarni:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.010):0.131,(CloBifer:0.388,(CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.057):0.124):0.081);";
 
     TEST_EXPECT_DIFFERENT(topo_test,   topo_center);
     TEST_EXPECT_DIFFERENT(topo_test,   topo_bottom);
@@ -987,10 +987,10 @@ void TEST_sort_tree_by_other_tree() {
         GB_transaction  ta(gb_main);
         SizeAwareTree  *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
         TEST_REJECT_NULL(tree);
-        TEST_EXPECT_NEWICK_EQUAL(tree, topo_test);
+        TEST_EXPECT_NEWICK_LEN_EQUAL(tree, topo_test);
 
-        tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_center", tree)); TEST_EXPECT_NEWICK_EQUAL(tree, topo_center);
-        tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_bottom", tree)); TEST_EXPECT_NEWICK_EQUAL(tree, topo_bottom);
+        tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_center", tree)); TEST_EXPECT_NEWICK_LEN_EQUAL(tree, topo_center);
+        tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_bottom", tree)); TEST_EXPECT_NEWICK_LEN_EQUAL(tree, topo_bottom);
 
         // test SortByTopo
         {
