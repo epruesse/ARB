@@ -328,11 +328,32 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
 GB_ERROR GBT_write_tree(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree) {
     return gbt_write_tree(gb_main, NULL, tree_name, tree);
 }
-GB_ERROR GBT_overwrite_tree(GBDATA *gb_main, GBDATA *gb_tree, GBT_TREE *tree) {
-    return gbt_write_tree(gb_main, gb_tree, NULL, tree);
+GB_ERROR GBT_overwrite_tree(GBDATA *gb_tree, GBT_TREE *tree) {
+    return gbt_write_tree(GB_get_root(gb_tree), gb_tree, NULL, tree);
+}
+
+GB_ERROR GBT_write_tree_remark(GBDATA *gb_tree, const char *remark) {
+    return GBT_write_string(gb_tree, "remark", remark);
 }
 GB_ERROR GBT_write_tree_remark(GBDATA *gb_main, const char *tree_name, const char *remark) {
-    return GBT_write_string(GBT_find_tree(gb_main, tree_name), "remark", remark);
+    return GBT_write_tree_remark(GBT_find_tree(gb_main, tree_name), remark);
+}
+
+GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_tree, const char *log_entry) {
+    GB_ERROR    error      = NULL;
+    const char *old_remark = GBT_read_char_pntr(gb_tree, "remark");
+    if (!old_remark && GB_have_error()) {
+        error = GB_await_error();
+    }
+    else {
+        char *new_remark = GBS_log_dated_action_to(old_remark, log_entry);
+        error            = GBT_write_tree_remark(gb_tree, new_remark);
+        free(new_remark);
+    }
+    return error;
+}
+GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_main, const char *tree_name, const char *log_entry) {
+    return GBT_log_to_tree_remark(GBT_find_tree(gb_main, tree_name), log_entry);
 }
 
 GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree, const char *remark) {

@@ -1620,3 +1620,9 @@ void AP_tree::reset_subtree_layout() {
     if (!is_leaf) reset_child_layout();
 }
 
+bool AP_tree::is_inside_folded_group() const {
+    if (gr.grouped) return true;
+    if (!father) return false;
+    return get_father()->is_inside_folded_group();
+}
+
