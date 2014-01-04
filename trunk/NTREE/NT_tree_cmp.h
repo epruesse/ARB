@@ -42,8 +42,8 @@ public:
 
     void             add(const char *species_name);                                                // max nspecies
     void             add(AWT_species_set *set);                                                    // max 2 * nspecies !!!
-    AWT_species_set *search(AWT_species_set *set, long *best_cost);
-    int              search(AWT_species_set *set, FILE *log_file);                                 // set's best_cost & best_node
+    AWT_species_set *search_best_match(const AWT_species_set *set, long& best_cost);
+    int              search_and_remember_best_match_and_log_errors(const AWT_species_set *set, FILE *log_file);
     GB_ERROR         copy_node_information(FILE *log, bool delete_old_nodes, bool nodes_with_marked_only);
     AWT_species_set *find_best_matches_info(AP_tree *tree_source, FILE *log, bool setinner_node);
     AWT_species_set *move_tree_2_ssr(AP_tree *node);
@@ -65,8 +65,13 @@ struct AWT_species_set : virtual Noncopyable {
     ~AWT_species_set();
 };
 
+enum TreeInfoMode {
+    TREE_INFO_COPY,    // overwrites existing info
+    TREE_INFO_COMPARE, // compare node info
+    TREE_INFO_ADD,     // doesn't overwrite
+};
 
-void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, bool compare_node_info, bool overwrite_old_nodes, bool nodes_with_marked_only);
+GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, TreeInfoMode mode, bool nodes_with_marked_only);
 
 #else
 #error NT_tree_cmp.h included twice

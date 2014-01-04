@@ -76,7 +76,7 @@ private:
 
 public:
     void set_info(const char *msg) const { awar_info->write_string(msg); }
-    void unmark_all() const { NT_mark_all_cb(get_window(), (AW_CL)get_canvas(), 0); }
+    void unmark_all() const { NT_mark_all_cb(NULL, get_canvas(), 0); }
 
     void markDegeneratedBranches() {
         if (have_tree()) {
