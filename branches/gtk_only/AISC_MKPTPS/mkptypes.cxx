@@ -1073,6 +1073,7 @@ static Word *getparamlist(FILE *f) {
     /* how to handle parameters which contain only one word ?
      *
      * void -> void
+     * UNFIXED -> UNFIXED     see ../SL/CB/cb_base.h@UNFIXED
      * xxx  -> int xxx        (if AUTO_INT is defined)
      * int  -> int dummyXX    (otherwise)
      */
@@ -1091,18 +1092,20 @@ static Word *getparamlist(FILE *f) {
             int add_dummy_name = 0;
 #endif
             {
-                Word *pn_list = pname[i];
-                int cnt = 0;
-                int is_void = 0;
+                Word *pn_list    = pname[i];
+                int   cnt        = 0;
+                bool  is_void    = false;
+                bool  is_UNFIXED = false;
 
                 while (pn_list) {                   // count words
                     if (pn_list->string[0]) {
                         ++cnt;
-                        if (strcmp(pn_list->string, "void")==0) is_void = 1;
+                        if (strcmp(pn_list->string, "void")==0) is_void = true;
+                        if (strcmp(pn_list->string, "UNFIXED")==0) is_UNFIXED = true;
                     }
                     pn_list = pn_list->next;
                 }
-                if (cnt==1 && !is_void) {           // only name, but not void
+                if (cnt==1 && !is_void && !is_UNFIXED) { // only name, but neighter 'void' nor 'UNFIXED'
                     // no type or no parameter name
 #ifdef AUTO_INT
                     // If no type provided, make it an "int"

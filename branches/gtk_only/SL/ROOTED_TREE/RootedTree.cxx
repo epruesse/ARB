@@ -92,22 +92,31 @@ void RootedTree::reorder_subtree(TreeOrder mode) {
         int leftsize  = get_leftson() ->get_leaf_count();
         int rightsize = get_rightson()->get_leaf_count();
 
-        bool swap_branches;
         {
             bool big_at_top    = leftsize>rightsize;
             bool big_at_bottom = leftsize<rightsize;
-
-            swap_branches = (mode&BIG_BRANCHES_TO_BOTTOM) ? big_at_top : big_at_bottom;
+            bool swap_branches = (mode&ORDER_BIG_DOWN) ? big_at_top : big_at_bottom;
+            if (swap_branches) swap_sons();
         }
 
-        if (swap_branches) swap_sons();
+        TreeOrder lmode, rmode;
+        if (mode & (ORDER_BIG_TO_EDGE|ORDER_BIG_TO_CENTER)) { // symmetric
+            if (mode & ORDER_ALTERNATING) mode = TreeOrder(mode^(ORDER_BIG_TO_EDGE|ORDER_BIG_TO_CENTER));
 
-        TreeOrder lmode = mode;
-        TreeOrder rmode = mode;
+            if (mode & ORDER_BIG_TO_CENTER) {
+                lmode = TreeOrder(mode | ORDER_BIG_DOWN);
+                rmode = TreeOrder(mode & ~ORDER_BIG_DOWN);
+            }
+            else {
+                lmode = TreeOrder(mode & ~ORDER_BIG_DOWN);
+                rmode = TreeOrder(mode | ORDER_BIG_DOWN);
+            }
+        }
+        else { // asymmetric
+            if (mode & ORDER_ALTERNATING) mode = TreeOrder(mode^ORDER_BIG_DOWN);
 
-        if (mode & BIG_BRANCHES_TO_EDGE) {
-            lmode = BIG_BRANCHES_TO_EDGE;
-            rmode = TreeOrder(BIG_BRANCHES_TO_EDGE | BIG_BRANCHES_TO_BOTTOM);
+            lmode = mode;
+            rmode = mode;
         }
 
         get_leftson()->reorder_subtree(lmode);

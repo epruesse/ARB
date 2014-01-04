@@ -1149,9 +1149,9 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->sep______________();
         awm->insert_sub_menu("Collapse/Expand Tree",         "C");
         {
-            awm->insert_menu_topic("tree_group_all",        "Group All",            "A", "tgroupall.hlp",   AWM_ALL,    (AW_CB)NT_group_tree_cb,    (AW_CL)ntw, 0);
-            awm->insert_menu_topic("tree_group_not_marked", "Group All Except Marked",  "M", "tgroupnmrkd.hlp", AWM_ALL,    (AW_CB)NT_group_not_marked_cb,  (AW_CL)ntw, 0);
-            awm->insert_menu_topic("tree_ungroup_all",      "Ungroup All",          "U", "tungroupall.hlp", AWM_ALL,    (AW_CB)NT_ungroup_all_cb,   (AW_CL)ntw, 0);
+            awm->insert_menu_topic("tree_group_all",        "Group all",      "a", "tgroupall.hlp",   AWM_ALL, makeWindowCallback(NT_group_tree_cb,       ntw));
+            awm->insert_menu_topic("tree_group_not_marked", "Group unmarked", "m", "tgroupnmrkd.hlp", AWM_ALL, makeWindowCallback(NT_group_not_marked_cb, ntw));
+            awm->insert_menu_topic("tree_ungroup_all",      "Ungroup all",    "U", "tungroupall.hlp", AWM_ALL, makeWindowCallback(NT_ungroup_all_cb,      ntw));
             awm->sep______________();
             NT_insert_color_collapse_submenu(awm, ntw);
         }
@@ -1186,12 +1186,12 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->close_sub_menu();
         awm->insert_menu_topic("reset", "Reset optimal parsimony", "s", "", AWM_ALL, (AW_CB)pars_reset_optimal_parsimony, (AW_CL)ntw, 0);
         awm->sep______________();
-        awm->insert_menu_topic("beautify_tree",       "Beautify Tree",            "B", "resorttree.hlp",       AWM_ALL, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 0);
+        awm->insert_menu_topic("beautify_tree",       "Beautify Tree",            "B", "resorttree.hlp",       AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_TOP));
         awm->insert_menu_topic("calc_branch_lengths", "Calculate Branch Lengths", "L", "pa_branchlengths.hlp", AWM_ALL, (AW_CB)NT_branch_lengths, (AW_CL)ntw, 0);
         awm->sep______________();
         awm->insert_menu_topic("calc_upper_bootstrap_indep", "Calculate Upper Bootstrap Limit (dependent NNI)",   "d", "pa_bootstrap.hlp", AWM_ALL, (AW_CB)NT_bootstrap,        (AW_CL)ntw, 0);
         awm->insert_menu_topic("calc_upper_bootstrap_dep",   "Calculate Upper Bootstrap Limit (independent NNI)", "i", "pa_bootstrap.hlp", AWM_ALL, (AW_CB)NT_bootstrap,        (AW_CL)ntw, 1);
-        awm->insert_menu_topic("tree_remove_remark",         "Remove Bootstrap Values",                           "V", "trm_boot.hlp",     AWM_ALL, (AW_CB)NT_remove_bootstrap, (AW_CL)ntw, 0);
+        awm->insert_menu_topic("tree_remove_remark",         "Remove Bootstrap Values",                           "V", "trm_boot.hlp",     AWM_ALL, makeWindowCallback(NT_remove_bootstrap, ntw));
     }
 
 #if defined(TESTMENU)
@@ -1200,8 +1200,8 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     awm->create_menu("Reset", "R", AWM_ALL);
     {
-        awm->insert_menu_topic("reset_logical_zoom",    "Logical Zoom",   "L", "rst_log_zoom.hlp", AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0);
-        awm->insert_menu_topic("reset_physical_zoom",   "Physical Zoom",  "P", "rst_phys_zoom.hlp", AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0);
+        awm->insert_menu_topic("reset_logical_zoom",  "Logical Zoom",  "L", "rst_log_zoom.hlp",  AWM_ALL, makeWindowCallback(NT_reset_lzoom_cb, ntw));
+        awm->insert_menu_topic("reset_physical_zoom", "Physical Zoom", "P", "rst_phys_zoom.hlp", AWM_ALL, makeWindowCallback(NT_reset_pzoom_cb, ntw));
     }
 
     awm->create_menu("Properties", "r", AWM_ALL);
@@ -1294,11 +1294,11 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     awm->auto_space(0, -2);
 
     awm->at_x(db_treex);
-    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_RADIAL);
+    awm->callback(makeWindowCallback(NT_set_tree_style, ntw, AP_TREE_RADIAL));
     awm->help_text("tr_type_radial.hlp");
     awm->create_button("RADIAL_TREE", "#radial.xpm", 0);
 
-    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_TREE_NORMAL);
+    awm->callback(makeWindowCallback(NT_set_tree_style, ntw, AP_TREE_NORMAL));
     awm->help_text("tr_type_list.hlp");
     awm->create_button("LIST_TREE", "#dendro.xpm", 0);
 

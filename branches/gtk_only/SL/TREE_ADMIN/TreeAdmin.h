@@ -35,7 +35,7 @@ namespace TreeAdmin {
 
     void create_awars(AW_root *root, AW_default aw_def);
     AW_awar *dest_tree_awar(AW_root *root);
-
+    AW_awar *source_tree_awar(AW_root *root);
 
     AW_window *create_rename_window(AW_root *root, const Spec *spec);
     AW_window *create_copy_window(AW_root *root, const Spec *spec);

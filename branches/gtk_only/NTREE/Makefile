@@ -314,9 +314,13 @@ ad_trees.o: NT_local_proto.h
 ad_trees.o: NT_tree_cmp.h
 ad_trees.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_trees.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ad_trees.o: $(ARBHOME)/INCLUDE/AliView.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_defs.h
+ad_trees.o: $(ARBHOME)/INCLUDE/arb_diff.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_file.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -324,6 +328,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_string.h
+ad_trees.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -339,6 +344,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -367,6 +373,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/cb.h
@@ -382,7 +389,10 @@ ad_trees.o: $(ARBHOME)/INCLUDE/RootedTree.h
 ad_trees.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_trees.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_trees.o: $(ARBHOME)/INCLUDE/test_global.h
+ad_trees.o: $(ARBHOME)/INCLUDE/test_unit.h
 ad_trees.o: $(ARBHOME)/INCLUDE/TreeAdmin.h
+ad_trees.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/TreeRead.h
 ad_trees.o: $(ARBHOME)/INCLUDE/TreeWrite.h
 ad_trees.o: $(ARBHOME)/INCLUDE/ttypes.h

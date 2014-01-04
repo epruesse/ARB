@@ -15,6 +15,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <string>
+#include <climits>
 
 using namespace std;
 
@@ -61,12 +62,14 @@ void AWT_species_set_root::add(AWT_species_set *set) {
     sets[nsets++] = set;
 }
 
-AWT_species_set *AWT_species_set_root::search(AWT_species_set *set, long *best_co) {
+AWT_species_set *AWT_species_set_root::search_best_match(const AWT_species_set *set, long& best_cost) {
+    // returns best match for 'set'
+    // sets 'best_cost' to minimum mismatches
+
     AWT_species_set *result = 0;
-    long i;
-    long best_cost = 0x7fffffff;
-    unsigned char *sbs = set->bitstring;
-    for (i=nsets-1; i>=0; i--) {
+    best_cost               = LONG_MAX;
+    unsigned char   *sbs    = set->bitstring;
+    for (long i=nsets-1; i>=0; i--) {
         long j;
         long sum = 0;
         unsigned char *rsb = sets[i]->bitstring;
@@ -79,22 +82,27 @@ AWT_species_set *AWT_species_set_root::search(AWT_species_set *set, long *best_c
             result = sets[i];
         }
     }
-    *best_co = best_cost;
     return result;
 }
 
-int AWT_species_set_root::search(AWT_species_set *set, FILE *log_file) {
-    long net_cost;
-    double best_cost;
-    AWT_species_set *bs = this->search(set, &net_cost);
-    best_cost = net_cost + set->unfound_species_count * 0.0001;
+int AWT_species_set_root::search_and_remember_best_match_and_log_errors(const AWT_species_set *set, FILE *log_file) {
+     // set's best_cost & best_node (of best match for 'set' found in other tree)
+     // returns the number of mismatches (plus a small penalty for missing species)
+     //
+     // When moving node info, 'set' represents a subtree of the source tree.
+     // When comparing topologies, 'set' represents a subtree of the destination tree.
+
+    long             net_cost;
+    AWT_species_set *bs = search_best_match(set, net_cost);
+
+    double best_cost = net_cost + set->unfound_species_count * 0.0001;
     if (best_cost < bs->best_cost) {
         bs->best_cost = best_cost;
         bs->best_node = set->node;
     }
     if (log_file) {
         if (net_cost) {
-            fprintf(log_file, "Node '%s' placed not optimal, %li errors\n",
+            fprintf(log_file, "Group '%s' not placed optimal (%li errors)\n",
                     set->node->name,
                     net_cost);
         }
@@ -149,34 +157,33 @@ AWT_species_set *AWT_species_set_root::move_tree_2_ssr(AP_tree *node) {
     return ss;
 }
 
-AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_source, FILE *log, bool compare_node_info) {
+AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *node, FILE *log, bool compare_node_info) {
     /* Go through all node of the source tree and search for the best
      * matching node in dest_tree (meaning searching ssr->sets)
-     * If a match is found, set ssr->sets to this match)
+     * If a match is found, set ssr->sets to this match.
      */
+
     AWT_species_set *ss = NULL;
-    if (tree_source->is_leaf) {
-        ss = new AWT_species_set(tree_source, this, tree_source->name);
+    if (node->is_leaf) {
+        ss = new AWT_species_set(node, this, node->name);
     }
     else {
-        AWT_species_set *ls =      find_best_matches_info(tree_source->get_leftson(),  log, compare_node_info);
-        AWT_species_set *rs = ls ? find_best_matches_info(tree_source->get_rightson(), log, compare_node_info) : NULL;
+        AWT_species_set *ls =      find_best_matches_info(node->get_leftson(),  log, compare_node_info);
+        AWT_species_set *rs = ls ? find_best_matches_info(node->get_rightson(), log, compare_node_info) : NULL;
 
         if (rs) {
-            ss = new AWT_species_set(tree_source, this, ls, rs); // Generate new bitstring
+            ss = new AWT_species_set(node, this, ls, rs); // Generate new bitstring
             if (compare_node_info) {
-                int mismatches = this->search(ss, log); // Search optimal position
-                delete ss->node->remark_branch;
-                ss->node->remark_branch = 0;
+                int mismatches = search_and_remember_best_match_and_log_errors(ss, log);
+                freenull(ss->node->remark_branch);
                 if (mismatches) {
-                    char remark[20];
-                    sprintf(remark, "# %i", mismatches); // the #-sign is important (otherwise TREE_write_Newick will not work correctly)
-                    ss->node->remark_branch = strdup(remark);
+                    // the #-sign is important (otherwise TREE_write_Newick will not work correctly; interference with bootstrap values!)
+                    ss->node->remark_branch = GBS_global_string_copy("# %i", mismatches);
                 }
             }
             else {
-                if (tree_source->name) {
-                    this->search(ss, log);      // Search optimal position
+                if (node->name) {
+                    search_and_remember_best_match_and_log_errors(ss, log);
                 }
             }
         }
@@ -194,12 +201,14 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
 }
 
 GB_ERROR AWT_species_set_root::copy_node_information(FILE *log, bool delete_old_nodes, bool nodes_with_marked_only) {
-    GB_ERROR error = 0;
-    long j;
+    GB_ERROR error = NULL;
 
-    for (j=this->nsets-1; j>=0; j--) {
+    if (log) fputs("\nDetailed group changes:\n\n", log);
+
+    for (long j=this->nsets-1; j>=0 && !error; j--) {
         AWT_species_set *cset = this->sets[j];
-        char *old_group_name  = 0;
+
+        char *old_group_name  = NULL;
         bool  insert_new_node = cset->best_node && cset->best_node->name;
 
         if (nodes_with_marked_only && insert_new_node) {
@@ -218,44 +227,59 @@ GB_ERROR AWT_species_set_root::copy_node_information(FILE *log, bool delete_old_
             }
 
             old_group_name = strdup(cset->node->name); // store old_group_name to rename new inserted node
-#if defined(DEBUG)
-            printf("delete node '%s'\n", cset->node->name);
-#endif // DEBUG
 
             error = GB_delete(cset->node->gb_node);
-            if (error) break;
-
-            if (log) fprintf(log, "Destination Tree not empty, destination node '%s' deleted\n", old_group_name);
-            cset->node->gb_node = 0;
-            cset->node->name    = 0;
+            if (!error) {
+                cset->node->gb_node = 0;
+                cset->node->name    = 0;
+            }
         }
-        if (insert_new_node) {
-            cset->node->gb_node = GB_create_container(cset->node->get_tree_root()->get_gb_tree(), "node");
-            error = GB_copy(cset->node->gb_node, cset->best_node->gb_node);
-            if (error) break;
 
-            GB_dump(cset->node->gb_node);
-
-            GBDATA *gb_name = GB_entry(cset->node->gb_node, "group_name");
-            nt_assert(gb_name);
-            if (gb_name) {
-                char *name = GB_read_string(gb_name);
-
-                if (old_group_name && strcmp(old_group_name, name)!=0 && !delete_old_nodes) {
-                    // there was a group with a different name and we are adding nodes
-                    string new_group_name = (string)name+" [was: "+old_group_name+"]";
-                    GB_write_string(gb_name, new_group_name.c_str());
-                    delete name; name = GB_read_string(gb_name);
+        if (!error) {
+            if (insert_new_node) {
+                cset->node->gb_node = GB_create_container(cset->node->get_tree_root()->get_gb_tree(), "node");
+                error = GB_copy(cset->node->gb_node, cset->best_node->gb_node);
+                if (!error) {
+                    GBDATA *gb_name = GB_entry(cset->node->gb_node, "group_name");
+                    nt_assert(gb_name);
+                    if (gb_name) {
+                        char *best_group_name = GB_read_string(gb_name);
+                        if (old_group_name) {
+                            if (!delete_old_nodes) {
+                                if (strcmp(old_group_name, best_group_name) != 0) { // old and new name differ
+                                    char *new_group_name = GBS_global_string_copy("%s [was: %s]", best_group_name, old_group_name);
+                                    GB_write_string(gb_name, new_group_name);
+                                    if (log) fprintf(log, "Destination group '%s' overwritten by '%s'\n", old_group_name, new_group_name);
+                                    free(new_group_name);
+                                }
+                                else {
+                                    if (log) fprintf(log, "Group '%s' remains unchanged\n", old_group_name);
+                                }
+                            }
+                            else {
+                                if (log) {
+                                    if (strcmp(old_group_name, best_group_name) == 0) {
+                                        fprintf(log, "Group '%s' remains unchanged\n", old_group_name);
+                                    }
+                                    else {
+                                        fprintf(log, "Destination group '%s' overwritten by '%s'\n", old_group_name, best_group_name);
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            if (log) fprintf(log, "Group '%s' inserted\n", best_group_name);
+                        }
+                        free(best_group_name);
+                    }
                 }
-#if defined(DEBUG)
-                printf("insert node '%s'\n", name);
-#endif // DEBUG
-                free(name);
+            }
+            else {
+                if (old_group_name && log) fprintf(log, "Destination group '%s' removed\n", old_group_name);
             }
         }
         free(old_group_name);
     }
-
     return error;
 }
 
@@ -264,19 +288,29 @@ void AWT_species_set_root::finish(GB_ERROR& error) {
     progress->done();
 }
 
-void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, bool compare_node_info, bool delete_old_nodes, bool nodes_with_marked_only) {
+GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, TreeInfoMode mode, bool nodes_with_marked_only) {
     GB_ERROR  error = 0;
     FILE     *log   = 0;
 
+    nt_assert(contradicted(mode == TREE_INFO_COMPARE, log_file));
+
+    if (mode == TREE_INFO_COMPARE) {
+        // info is written into 'tree_source'
+        // (but we want to modify destination tree - like 'mode node info' does)
+        std::swap(tree_source, tree_dest);
+    }
+
     if (log_file) {
+        nt_assert(mode == TREE_INFO_COPY || mode == TREE_INFO_ADD);
         log = fopen(log_file, "w");
+
         fprintf(log,
                 "LOGFILE: %s node info\n"
                 "\n"
                 "     Source tree '%s'\n"
                 "Destination tree '%s'\n"
                 "\n",
-                delete_old_nodes ? "Moving" : "Adding",
+                mode == TREE_INFO_COPY ? "Copying" : "Adding",
                 tree_source, tree_dest);
     }
 
@@ -309,18 +343,18 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
 
             if (source_leafs < 3) error = GB_export_error("Destination tree has less than 3 species");
             else {
-                AWT_species_set *root_setl =             ssr->find_best_matches_info(source->get_leftson(),  log, compare_node_info);
-                AWT_species_set *root_setr = root_setl ? ssr->find_best_matches_info(source->get_rightson(), log, compare_node_info) : NULL;
+                AWT_species_set *root_setl =             ssr->find_best_matches_info(source->get_leftson(),  log, mode == TREE_INFO_COMPARE);
+                AWT_species_set *root_setr = root_setl ? ssr->find_best_matches_info(source->get_rightson(), log, mode == TREE_INFO_COMPARE) : NULL;
 
                 if (root_setr) {
-                    if (!compare_node_info) {
+                    if (mode != TREE_INFO_COMPARE) {
                         compare_progress.subtitle("Copying node information");
-                        ssr->copy_node_information(log, delete_old_nodes, nodes_with_marked_only);
+                        ssr->copy_node_information(log, mode == TREE_INFO_COPY, nodes_with_marked_only);
                     }
 
                     long             dummy         = 0;
-                    AWT_species_set *new_root_setl = ssr->search(root_setl, &dummy);
-                    AWT_species_set *new_root_setr = ssr->search(root_setr, &dummy);
+                    AWT_species_set *new_root_setl = ssr->search_best_match(root_setl, dummy);
+                    AWT_species_set *new_root_setr = ssr->search_best_match(root_setr, dummy);
                     AP_tree         *new_rootl     = new_root_setl->node;
                     AP_tree         *new_rootr     = new_root_setr->node;
 
@@ -331,8 +365,26 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
 
                     AP_tree *root = new_rootr->get_root_node();
 
-                    error             = GBT_overwrite_tree(gb_main, rdest.get_gb_tree(), root);
-                    if (!error) error = GBT_overwrite_tree(gb_main, rsource.get_gb_tree(), source);
+
+                    error             = GBT_overwrite_tree(rdest.get_gb_tree(), root);
+                    if (!error) error = GBT_overwrite_tree(rsource.get_gb_tree(), source);
+
+                    if (!error) {
+                        char *entry;
+                        if (mode == TREE_INFO_COMPARE) {
+                            entry = GBS_global_string_copy("Compared topology with %s", tree_source);
+                        }
+                        else {
+                            const char *copiedOrAdded = mode == TREE_INFO_COPY ? "Copied" : "Added";
+
+                            entry = GBS_global_string_copy("%s node info %sfrom %s",
+                                                           copiedOrAdded,
+                                                           nodes_with_marked_only ? "of marked " : "",
+                                                           tree_source);
+                        }
+                        GBT_log_to_tree_remark(rdest.get_gb_tree(), entry);
+                        free(entry);
+                    }
                 }
 
                 delete root_setl;
@@ -349,6 +401,6 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
         fclose(log);
     }
 
-    GB_end_transaction_show_error(gb_main, error, aw_message);
+    return GB_end_transaction(gb_main, error);
 }
 

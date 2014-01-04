@@ -12,9 +12,12 @@
 #include "ad_trees.h"
 #include "NT_tree_cmp.h"
 
+#include <CT_ctree.hxx>
+
 #include <TreeAdmin.h>
 #include <TreeRead.h>
 #include <TreeWrite.h>
+#include <TreeCallbacks.hxx>
 
 #include <awt_sel_boxes.hxx>
 #include <awt_modules.hxx>
@@ -24,15 +27,13 @@
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <aw_select.hxx>
 
 #include <arb_strbuf.h>
 #include <arb_file.h>
-#include <arb_strarray.h>
-#include <arb_progress.h>
+#include <arb_diff.h>
 
 #include <cctype>
-#include <aw_select.hxx>
-#include <CT_ctree.hxx>
 
 #define AWAR_TREE_SAV "ad_tree/"
 #define AWAR_TREE_TMP "tmp/ad_tree/"
@@ -445,41 +446,36 @@ static AW_window *create_tree_import_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-static void ad_move_tree_info(AW_window *aww, AW_CL mode) {
-    /* mode == 0 -> move info (=overwrite info from source tree)
-     * mode == 1 -> compare info
-     * mode == 2 -> add info
-     */
-
-    bool compare_node_info      = mode==1;
-    bool delete_old_nodes       = mode==0;
-    bool nodes_with_marked_only = (mode==0 || mode==2) && aww->get_root()->awar(AWAR_NODE_INFO_ONLY_MARKED)->read_int();
+static void ad_move_tree_info(AW_window *aww, TreeInfoMode mode) {
+    bool nodes_with_marked_only = false;
 
     char     *log_file = 0;
     GB_ERROR  error    = 0;
 
-    if (!compare_node_info) {
+    if (mode == TREE_INFO_COPY || mode == TREE_INFO_ADD) {
         // move or add node-info writes a log file (containing errors)
         // compare_node_info only sets remark branches
         char *log_name       = GB_unique_filename("arb_node", "log");
         log_file             = GB_create_tempfile(log_name);
         if (!log_file) error = GB_await_error();
         free(log_name);
+
+        nodes_with_marked_only = aww->get_root()->awar(AWAR_NODE_INFO_ONLY_MARKED)->read_int();
     }
 
     if (!error) {
-        AW_root *awr = aww->get_root();
-        char    *t1  = awr->awar(AWAR_TREE_NAME)->read_string();
-        char    *t2  = TreeAdmin::dest_tree_awar(awr)->read_string();
+        AW_root *awr      = aww->get_root();
+        char    *src_tree = TreeAdmin::source_tree_awar(awr)->read_string();
+        char    *dst_tree = TreeAdmin::dest_tree_awar(awr)->read_string();
 
-        AWT_move_info(GLOBAL.gb_main, t1, t2, log_file, compare_node_info, delete_old_nodes, nodes_with_marked_only);
+        error = AWT_move_info(GLOBAL.gb_main, src_tree, dst_tree, log_file, mode, nodes_with_marked_only);
         if (log_file) {
             AW_edit(log_file);
             GB_remove_on_exit(log_file);
         }
 
-        free(t2);
-        free(t1);
+        free(dst_tree);
+        free(src_tree);
     }
 
     if (error) aw_message(error);
@@ -488,67 +484,114 @@ static void ad_move_tree_info(AW_window *aww, AW_CL mode) {
     free(log_file);
 }
 
-static AW_window *create_tree_diff_window(AW_root *root) {
-    static AW_window_simple *aws = 0;
-    if (aws) return aws;
-    GB_transaction dummy(GLOBAL.gb_main);
-    aws = new AW_window_simple;
-    aws->init(root, "CMP_TOPOLOGY", "COMPARE TREE TOPOLOGIES");
-    aws->load_xfig("ad_tree_cmp.fig");
+static void swap_source_dest_cb(AW_window *aww) {
+    AW_root *root = aww->get_root();
+
+    AW_awar *s = TreeAdmin::source_tree_awar(root);
+    AW_awar *d = TreeAdmin::dest_tree_awar(root);
+
+    char *old_src = s->read_string();
+    s->write_string(d->read_char_pntr());
+    d->write_string(old_src);
+    free(old_src);
+}
+
+static void copy_tree_awar_cb(UNFIXED, AW_awar *aw_source, AW_awar *aw_dest) {
+    const char *tree = aw_source->read_char_pntr();
+    if (tree && tree[0]) aw_dest->write_string(tree);
+}
+
+static AW_window_simple *create_select_two_trees_window(AW_root *root, const char *winId, const char *winTitle, const char *helpFile) {
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init(root, winId, winTitle);
+    aws->load_xfig("ad_two_trees.fig");
+
+    aws->at("close");
+    aws->auto_space(10, 3);
 
     aws->callback(AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE", "Close", "C");
 
-    aws->callback(makeHelpCallback("tree_diff.hlp"));
     aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
+    aws->callback(makeHelpCallback(helpFile));
+    aws->create_button("HELP", "Help", "H");
 
     aws->at("tree1");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, AWAR_TREE_NAME);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name);
     aws->at("tree2");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, TreeAdmin::dest_tree_awar(root)->awar_name);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::dest_tree_awar(root)->awar_name);
 
-    aws->button_length(20);
+    AW_awar *awar_displayed_tree = root->awar(AWAR_TREE_NAME);
 
-    aws->at("move");
-    aws->callback(ad_move_tree_info, 1); // compare
-    aws->create_button("CMP_TOPOLOGY", "COMPARE TOPOLOGY");
+    aws->at("select1");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::source_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED", "Use");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::source_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED", "Display");
+
+    aws->callback(swap_source_dest_cb);
+    aws->create_autosize_button("SWAP", "Swap");
+
+    aws->at("select2");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::dest_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED", "Use");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::dest_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED", "Display");
+
+    aws->at("user");
 
     return aws;
 }
-static AW_window *create_tree_cmp_window(AW_root *root) {
-    static AW_window_simple *aws = 0;
-    if (aws) return aws;
-    GB_transaction dummy(GLOBAL.gb_main);
-    aws = new AW_window_simple;
-    aws->init(root, "COPY_NODE_INFO_OF_TREE", "TREE COPY INFO");
-    aws->load_xfig("ad_tree_cmp.fig");
+
+static AW_window_simple *create_select_other_tree_window(AW_root *root, const char *winId, const char *winTitle, const char *helpFile, const char *displayed_tree_awarname) {
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init(root, winId, winTitle);
+    aws->load_xfig("ad_one_tree.fig");
+
+    aws->at("close");
+    aws->auto_space(10, 3);
 
     aws->callback(AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE", "Close", "C");
 
-    aws->callback(makeHelpCallback("tree_cmp.hlp"));
     aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
+    aws->callback(makeHelpCallback(helpFile));
+    aws->create_button("HELP", "Help", "H");
 
-    aws->at("tree1");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, AWAR_TREE_NAME);
-    aws->at("tree2");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, TreeAdmin::dest_tree_awar(root)->awar_name);
+    AW_awar *awar_displayed_tree = root->awar(displayed_tree_awarname);
 
-    aws->at("move");
-    aws->callback(ad_move_tree_info, 0); // move
-    aws->create_button("COPY_INFO", "COPY INFO");
+    aws->at("tree");
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name);
 
-    aws->at("cmp");
-    aws->callback(ad_move_tree_info, 2); // add
-    aws->create_button("ADD_INFO", "ADD INFO");
+    aws->at("select");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::source_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED", "Use");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::source_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED", "Display");
 
-    aws->at("only_marked");
-    aws->label("only info containing marked species");
+    aws->at("user");
+
+    return aws;
+}
+
+static AW_window *create_tree_diff_window(AW_root *root) {
+    AW_window_simple *aws = create_select_two_trees_window(root, "CMP_TOPOLOGY", "Compare tree topologies", "tree_diff.hlp");
+
+    aws->callback(makeWindowCallback(ad_move_tree_info, TREE_INFO_COMPARE));
+    aws->create_autosize_button("CMP_TOPOLOGY", "Compare topologies");
+
+    return aws;
+}
+
+static AW_window *create_tree_cmp_window(AW_root *root) {
+    AW_window_simple *aws = create_select_two_trees_window(root, "COPY_NODE_INFO_OF_TREE", "Move tree node info", "tree_cmp.hlp");
+
+    aws->button_length(11);
+
+    aws->callback(makeWindowCallback(ad_move_tree_info, TREE_INFO_COPY));
+    aws->create_button("COPY_INFO", "Copy info");
+
+    aws->label("copy/add only info containing marked species");
     aws->create_toggle(AWAR_NODE_INFO_ONLY_MARKED);
+
+    aws->at_newline();
+
+    aws->callback(makeWindowCallback(ad_move_tree_info, TREE_INFO_ADD));
+    aws->create_button("ADD_INFO", "Add info");
 
     return aws;
 }
@@ -656,11 +699,11 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->create_button("COPY", "Copy", "C");
 
         aws->at("move");
-        aws->callback(AW_POPUP, (AW_CL)create_tree_cmp_window, 0);
+        aws->callback(create_tree_cmp_window);
         aws->create_button("MOVE_NODE_INFO", "Move node info", "C");
 
         aws->at("cmp");
-        aws->callback(AW_POPUP, (AW_CL)create_tree_diff_window, 0);
+        aws->callback(create_tree_diff_window);
         aws->sens_mask(AWM_EXP);
         aws->create_button("CMP_TOPOLOGY", "Compare topology", "T");
         aws->sens_mask(AWM_ALL);
@@ -791,4 +834,191 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
     }
     return aws;
 }
+
+
+class SortByTopo {
+    typedef std::map<std::string, unsigned> SpeciesPosition;
+
+    SpeciesPosition spos;
+    unsigned        maxSpec;
+
+    unsigned storeSpeciesPosition(const GBT_TREE *node, unsigned specLeftOf) {
+        if (node->is_leaf) {
+            spos[node->name] = specLeftOf;
+            return 1;
+        }
+        unsigned leftsize  = storeSpeciesPosition(node->get_leftson(), specLeftOf);
+        return storeSpeciesPosition(node->get_rightson(), specLeftOf+leftsize) + leftsize;
+    }
+
+public:
+
+    SortByTopo(const GBT_TREE *by) {
+        maxSpec = storeSpeciesPosition(by, 0);
+    }
+
+    double relativePos(const char *name) {
+        SpeciesPosition::iterator found = spos.find(name);
+        double res = (found == spos.end()) ? 0.5 : (found->second/double(maxSpec-1));
+        arb_assert(res>=0.0 && res<=1.0);
+        return res;
+    }
+
+    double reorder_subtree(RootedTree *node) { // similar to ../SL/ROOTED_TREE/RootedTree.cxx@reorder_subtree
+        static const char *smallest_leafname; // has to be set to the alphabetically smallest name (when function exits)
+
+        if (node->is_leaf) {
+            smallest_leafname = node->name;
+            return relativePos(smallest_leafname);
+        }
+
+        double      leftRelSum              = reorder_subtree(node->get_leftson());
+        const char *smallest_leafname_left  = smallest_leafname;
+        double      rightRelSum             = reorder_subtree(node->get_rightson());
+        const char *smallest_leafname_right = smallest_leafname;
+
+        bool left_leafname_bigger = strcmp(smallest_leafname_left, smallest_leafname_right)>0;
+        {
+            double leftRelPos  = leftRelSum  / node->get_leftson() ->get_leaf_count();
+            double rightRelPos = rightRelSum / node->get_rightson()->get_leaf_count();
+
+            if (leftRelPos>=rightRelPos) {
+                if (leftRelPos>rightRelPos || left_leafname_bigger) { // equal -> use leafname
+                    node->swap_sons();
+                }
+            }
+        }
+
+        smallest_leafname = left_leafname_bigger ? smallest_leafname_right : smallest_leafname_left;
+
+        return leftRelSum+rightRelSum;
+    }
+};
+
+static GB_ERROR sort_tree_by_other_tree(GBDATA *gb_main, RootedTree *tree, const char *other_tree) {
+    GB_ERROR       error = NULL;
+    GB_transaction ta(gb_main);
+
+    GBT_TREE *otherTree   = GBT_read_tree(gb_main, other_tree, GBT_TREE_NodeFactory());
+    if (!otherTree) error = GB_await_error();
+    else {
+        SortByTopo sorter(otherTree);
+        delete otherTree;
+        sorter.reorder_subtree(tree);
+    }
+    return error;
+}
+
+static GB_ERROR sort_tree_by_other_tree(GBDATA *gb_main, const char *tree, const char *other_tree) {
+    GB_ERROR       error = NULL;
+    GB_transaction ta(gb_main);
+    SizeAwareTree *Tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree, *new TreeRoot(new SizeAwareNodeFactory, true)));
+    if (!Tree) error = GB_await_error();
+    else {
+        Tree->compute_tree();
+        error             = sort_tree_by_other_tree(gb_main, Tree, other_tree);
+        if (!error) error = GBT_write_tree(gb_main, tree, Tree);
+    }
+    delete Tree;
+    return error;
+}
+
+static bool sort_dtree_by_other_tree_cb(RootedTree *tree, GB_ERROR& error) {
+    const char *other_tree = TreeAdmin::source_tree_awar(AW_root::SINGLETON)->read_char_pntr();
+    error = sort_tree_by_other_tree(GLOBAL.gb_main, tree, other_tree);
+    return !error;
+}
+
+static void sort_tree_by_other_tree_cb(UNFIXED, AWT_canvas *ntw) {
+    GB_ERROR error = NT_with_displayed_tree_do(ntw, sort_dtree_by_other_tree_cb);
+    aw_message_if(error);
+}
+
+AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, AWT_canvas *ntw) {
+    AW_window_simple *aws = create_select_other_tree_window(aw_root, ntw->aww->local_id("SORT_BY_OTHER"), "Sort tree by other tree", "resortbyother.hlp", ntw->user_awar);
+
+    aws->callback(makeWindowCallback(sort_tree_by_other_tree_cb, ntw));
+    aws->create_autosize_button("RESORT", "Sort according to source tree");
+
+    return aws;
+}
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static arb_test::match_expectation saved_newick_equals(GBDATA *gb_main, const char *treename, const char *expected_newick) {
+    using namespace    arb_test;
+    expectation_group  expected;
+    GB_transaction     ta(gb_main);
+    GBT_TREE          *tree = GBT_read_tree(gb_main, treename, GBT_TREE_NodeFactory());
+
+    expected.add(that(tree).does_differ_from_NULL());
+    if (tree) {
+        char *newick = GBT_tree_2_newick(tree, false);
+        expected.add(that(newick).is_equal_to(expected_newick));
+        free(newick);
+        delete tree;
+    }
+    return all().ofgroup(expected);
+}
+
+#define TEST_EXPECT_SAVED_NEWICK_EQUAL(gbmain,treename,expected_newick)         TEST_EXPECTATION(saved_newick_equals(gbmain, treename, expected_newick))
+#define TEST_EXPECT_SAVED_NEWICK_EQUAL__BROKEN(gbmain,treename,expected_newick) TEST_EXPECTATION__BROKEN(saved_newick_equals(gbmain, treename, expected_newick))
+
+void TEST_sort_tree_by_other_tree() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
+    TEST_REJECT_NULL(gb_main);
+
+    const char *topo_test   = "(((((((CloTyro3,CloTyro4),CloTyro2),CloTyrob),CloInnoc),CloBifer),(((CloButy2,CloButyr),CloCarni),CloPaste)),((((CorAquat,CurCitre),CorGluta),CelBiazo),CytAquat));";
+    const char *topo_center = "(((CloPaste,((CloButy2,CloButyr),CloCarni)),((CloInnoc,((CloTyro2,(CloTyro3,CloTyro4)),CloTyrob)),CloBifer)),((CelBiazo,((CorAquat,CurCitre),CorGluta)),CytAquat));";
+    const char *topo_bottom = "((CytAquat,(CelBiazo,(CorGluta,(CorAquat,CurCitre)))),((CloPaste,(CloCarni,(CloButy2,CloButyr))),(CloBifer,(CloInnoc,(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4)))))));";
+
+    TEST_EXPECT_DIFFERENT(topo_test,   topo_center);
+    TEST_EXPECT_DIFFERENT(topo_test,   topo_bottom);
+    TEST_EXPECT_DIFFERENT(topo_center, topo_bottom);
+
+    // create sorted copies of tree_test
+    {
+        GB_transaction  ta(gb_main);
+        SizeAwareTree  *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
+        TEST_REJECT_NULL(tree);
+        TEST_EXPECT_NEWICK_EQUAL(tree, topo_test);
+
+        tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_center", tree)); TEST_EXPECT_NEWICK_EQUAL(tree, topo_center);
+        tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_bottom", tree)); TEST_EXPECT_NEWICK_EQUAL(tree, topo_bottom);
+
+        // test SortByTopo
+        {
+            SortByTopo   sbt(tree);
+            const double EPSILON = 0.0001;
+
+            TEST_EXPECT_SIMILAR(sbt.relativePos("CytAquat"), 0.0, EPSILON); // leftmost species (in topo_bottom)
+            TEST_EXPECT_SIMILAR(sbt.relativePos("CloTyro4"), 1.0, EPSILON); // rightmost species
+
+            TEST_EXPECT_SIMILAR(sbt.relativePos("CurCitre"), 0.2857, EPSILON); // (5 of 15)
+            TEST_EXPECT_SIMILAR(sbt.relativePos("CloButy2"), 0.5,    EPSILON); // center species (8 of 15)
+            TEST_EXPECT_SIMILAR(sbt.relativePos("CloTyrob"), 0.7857, EPSILON); // (12 of 15)
+        }
+
+        tree->reorder_tree(BIG_BRANCHES_TO_EDGE); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_work", tree));
+
+        delete tree;
+    }
+
+
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_center")); TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_work", topo_center);
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_bottom")); TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_work", topo_bottom);
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_test"));          TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_work", topo_test);
+
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
 

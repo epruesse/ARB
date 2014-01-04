@@ -257,7 +257,7 @@ public:
     // in fact: private
     // (in real fact: needs rewrite)
 
-    char   *user_awar;
+    char   *user_awar; // contains name of awar (awar contains name of tree displayed in canvas)
     void    init_device(AW_device *device);
     AW_pos  trans_to_fit;
     AW_pos  shift_x_to_fit;
