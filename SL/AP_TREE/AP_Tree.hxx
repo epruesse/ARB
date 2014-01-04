@@ -354,6 +354,7 @@ public:
     int get_branch_flag() const { return flag_branch()->br.touched; }
 
     GB_ERROR move_group_info(AP_tree *new_group) __ATTR__USERESULT;
+    bool is_inside_folded_group() const;
 
     void mark_duplicates();
     const char *mark_long_branches(double min_rel_diff, double min_abs_diff);

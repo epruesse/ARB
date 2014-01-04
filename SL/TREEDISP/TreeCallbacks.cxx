@@ -583,8 +583,13 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
                 }
             }
 
-            if (found && jumpType&AP_JUMP_UNFOLD_GROUPS) {
-                if (!make_node_visible(ntw, found)) found = NULL;
+            if (found) {
+                if (jumpType&AP_JUMP_UNFOLD_GROUPS) {
+                    if (!make_node_visible(ntw, found)) found = NULL;
+                }
+                else if (found->is_inside_folded_group()) {
+                    found = NULL;
+                }
             }
         }
 
@@ -647,7 +652,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
             msg = GBS_global_string_copy("Species '%s' is no member of this %s", name, gtree->tree_sort == AP_LIST_NDS ? "list" : "tree");
         }
     }
-    else {
+    else if (verboose) {
         msg = strdup("No species selected");
     }
 
