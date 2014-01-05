@@ -224,7 +224,7 @@ struct fake_agt : public AWT_graphic_tree {
     }
 };
 
-struct PARSIMONY_testenv {
+struct PARSIMONY_testenv : virtual Noncopyable {
     GB_shell  shell;
     AP_main   apMain;
     fake_agt *agt;
