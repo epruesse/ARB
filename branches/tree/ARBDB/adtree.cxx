@@ -17,6 +17,7 @@
 #include <arb_global_defs.h>
 #include <arb_strbuf.h>
 #include <arb_diff.h>
+#include <arb_defs.h>
 
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0
@@ -68,12 +69,20 @@ static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
 }
 
 
-GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HASH *species_hash, int *removed, int *groups_removed) {
-    // Given 'tree' can either
-    // - be linked (in this case 'species_hash' shall be NULL)
-    // - be unlinked (in this case 'species_hash' has to be provided)
-    //
-    // If 'removed' and/or 'groups_removed' is given, it's used to count the removed leafs/groups.
+GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HASH *species_hash, int *removed, int *groups_removed) { // @@@ add tests for GBT_remove_leafs()
+    /*! Remove leafs from given 'tree'.
+     * @param tree tree from which species will be removed
+     * @param mode defines what to remove
+     * @param species_hash hash translation from leaf-name to species-dbnode (not needed if tree is linked; see GBT_link_tree)
+     * @param removed will be incremented for each removed leaf (if !NULL)
+     * @param groups_removed will be incremented for each removed group (if !NULL)
+     * @return new root node
+     *
+     * if 'species_hash' is not provided and tree is not linked,
+     * the function will silently act strange:
+     * - GBT_REMOVE_MARKED and GBT_REMOVE_UNMARKED will remove any leaf
+     * - GBT_REMOVE_ZOMBIES and GBT_KEEP_MARKED will remove all leafs
+     */
 
     if (tree->is_leaf) {
         if (tree->name) {
@@ -1164,6 +1173,7 @@ GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count) {
     return result;
 }
 static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, bool write_lengths) {
+    gb_assert(tree);
     if (tree->is_leaf) {
         out.cat(tree->name);
     }
@@ -1186,7 +1196,7 @@ static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, bool write_len
 
 char *GBT_tree_2_newick(const GBT_TREE *tree, bool write_lengths) {
     GBS_strstruct out(1000);
-    tree2newick(tree, out, write_lengths);
+    if (tree) tree2newick(tree, out, write_lengths);
     out.put(';');
     return out.release();
 }
@@ -1217,7 +1227,7 @@ void TEST_tree_names() {
     TEST_EXPECT_NO_ERROR(GBT_check_tree_name("tree_ok"));
 }
 
-void TEST_tree() {
+void TEST_copy_rename_delete_tree_order() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("TEST_trees.arb", "r");
 
@@ -1227,10 +1237,10 @@ void TEST_tree() {
         {
             TEST_EXPECT_NULL(GBT_get_tree_name(NULL));
             
-            TEST_EXPECT_EQUAL(GBT_name_of_largest_tree(gb_main), "tree_test");
+            TEST_EXPECT_EQUAL(GBT_name_of_largest_tree(gb_main), "tree_removal");
 
             TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_top_tree(gb_main)), "tree_test");
-            TEST_EXPECT_EQUAL(GBT_name_of_bottom_tree(gb_main), "tree_nj_bs");
+            TEST_EXPECT_EQUAL(GBT_name_of_bottom_tree(gb_main), "tree_removal");
 
             long inner_nodes = GBT_size_of_tree(gb_main, "tree_nj_bs");
             TEST_EXPECT_EQUAL(inner_nodes, 5);
@@ -1262,6 +1272,7 @@ void TEST_tree() {
                 free(species);
 
                 TEST_EXPECT_NEWICK_EQUAL(tree, "(CloButyr,(CloButy2,((CorGluta,(CorAquat,CurCitre)),CytAquat)));");
+                TEST_EXPECT_NEWICK_EQUAL(NULL, ";");
 
                 delete tree;
             }
@@ -1272,42 +1283,45 @@ void TEST_tree() {
 
         // changing tree order
         {
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_test|tree_tree2|tree_nj|tree_nj_bs");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_test|tree_tree2|tree_nj|tree_nj_bs|tree_removal");
 
-            GBDATA *gb_test  = GBT_find_tree(gb_main, "tree_test");
-            GBDATA *gb_tree2 = GBT_find_tree(gb_main, "tree_tree2");
-            GBDATA *gb_nj    = GBT_find_tree(gb_main, "tree_nj");
-            GBDATA *gb_nj_bs = GBT_find_tree(gb_main, "tree_nj_bs");
+            GBDATA *gb_test    = GBT_find_tree(gb_main, "tree_test");
+            GBDATA *gb_tree2   = GBT_find_tree(gb_main, "tree_tree2");
+            GBDATA *gb_nj      = GBT_find_tree(gb_main, "tree_nj");
+            GBDATA *gb_nj_bs   = GBT_find_tree(gb_main, "tree_nj_bs");
+            GBDATA *gb_removal = GBT_find_tree(gb_main, "tree_removal");
 
-            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_nj_bs)); // move to bottom
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_nj|tree_nj_bs|tree_test");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_removal)); // move to bottom
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_nj|tree_nj_bs|tree_removal|tree_test");
 
             TEST_EXPECT_EQUAL(GBT_tree_behind(gb_tree2), gb_nj);
             TEST_EXPECT_EQUAL(GBT_tree_behind(gb_nj), gb_nj_bs);
-            TEST_EXPECT_EQUAL(GBT_tree_behind(gb_nj_bs), gb_test);
+            TEST_EXPECT_EQUAL(GBT_tree_behind(gb_nj_bs), gb_removal);
+            TEST_EXPECT_EQUAL(GBT_tree_behind(gb_removal), gb_test);
             TEST_EXPECT_NULL(GBT_tree_behind(gb_test));
 
             TEST_EXPECT_NULL(GBT_tree_infrontof(gb_tree2));
             TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_nj), gb_tree2);
             TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_nj_bs), gb_nj);
-            TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_test), gb_nj_bs);
+            TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_removal), gb_nj_bs);
+            TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_test), gb_removal);
 
-            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_INFRONTOF, gb_tree2)); // move to top
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_test|tree_tree2|tree_nj|tree_nj_bs");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_INFRONTOF, gb_tree2)); // move back to top
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_test|tree_tree2|tree_nj|tree_nj_bs|tree_removal");
 
-            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_tree2));
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj|tree_nj_bs");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_tree2)); // move from top
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_nj|tree_nj_bs|tree_removal");
 
-            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_nj_bs, GBT_INFRONTOF, gb_nj));
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj_bs|tree_nj");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_removal, GBT_INFRONTOF, gb_nj)); // move from end
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_removal|tree_nj|tree_nj_bs");
 
             TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_nj_bs, GBT_INFRONTOF, gb_nj_bs)); // noop
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj_bs|tree_nj");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_removal|tree_nj|tree_nj_bs");
 
             TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_top_tree(gb_main)), "tree_tree2");
 
-            TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj_bs)), "tree_nj");
-            TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj)), "tree_tree2"); // last -> first
+            TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_removal)), "tree_nj");
+            TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj_bs)), "tree_tree2"); // last -> first
         }
 
         // check tree order is maintained by copy, rename and delete
@@ -1320,18 +1334,18 @@ void TEST_tree() {
 
             TEST_EXPECT_NO_ERROR(GBT_copy_tree(gb_main, "tree_test", "tree_test_copy"));
             TEST_REJECT_NULL(GBT_find_tree(gb_main, "tree_test_copy"));
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_nj");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "6:tree_tree2|tree_test|tree_test_copy|tree_removal|tree_nj|tree_nj_bs");
 
             // rename
             TEST_EXPECT_NO_ERROR(GBT_rename_tree(gb_main, "tree_nj", "tree_renamed_nj"));
             TEST_REJECT_NULL(GBT_find_tree(gb_main, "tree_renamed_nj"));
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_renamed_nj");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "6:tree_tree2|tree_test|tree_test_copy|tree_removal|tree_renamed_nj|tree_nj_bs");
 
             TEST_EXPECT_NO_ERROR(GBT_rename_tree(gb_main, "tree_tree2", "tree_renamed_tree2"));
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_renamed_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_renamed_nj");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "6:tree_renamed_tree2|tree_test|tree_test_copy|tree_removal|tree_renamed_nj|tree_nj_bs");
 
             TEST_EXPECT_NO_ERROR(GBT_rename_tree(gb_main, "tree_test_copy", "tree_renamed_test_copy"));
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_renamed_tree2|tree_test|tree_renamed_test_copy|tree_nj_bs|tree_renamed_nj");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "6:tree_renamed_tree2|tree_test|tree_renamed_test_copy|tree_removal|tree_renamed_nj|tree_nj_bs");
 
             // delete
 
@@ -1340,10 +1354,12 @@ void TEST_tree() {
             GBDATA *gb_renamed_test_copy = GBT_find_tree(gb_main, "tree_renamed_test_copy");
             GBDATA *gb_renamed_tree2     = GBT_find_tree(gb_main, "tree_renamed_tree2");
             GBDATA *gb_test              = GBT_find_tree(gb_main, "tree_test");
+            GBDATA *gb_removal           = GBT_find_tree(gb_main, "tree_removal");
 
             TEST_EXPECT_NO_ERROR(GB_delete(gb_renamed_tree2));
             TEST_EXPECT_NO_ERROR(GB_delete(gb_renamed_test_copy));
             TEST_EXPECT_NO_ERROR(GB_delete(gb_renamed_nj));
+            TEST_EXPECT_NO_ERROR(GB_delete(gb_removal));
 
             // .. two trees left
 
@@ -1353,6 +1369,7 @@ void TEST_tree() {
             TEST_EXPECT_EQUAL(GBT_find_top_tree(gb_main), gb_test);
             TEST_EXPECT_EQUAL(GBT_find_bottom_tree(gb_main), gb_nj_bs);
             
+            TEST_EXPECT_EQUAL(GBT_find_next_tree(gb_test), gb_nj_bs);
             TEST_EXPECT_EQUAL(GBT_find_next_tree(gb_test), gb_nj_bs);
             TEST_EXPECT_EQUAL(GBT_find_next_tree(gb_nj_bs), gb_test);
 
@@ -1395,5 +1412,129 @@ void TEST_tree() {
 
     GB_close(gb_main);
 }
+
+void TEST_tree_remove_leafs() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_trees.arb", "r");
+
+    {
+        GBT_TreeRemoveType tested_modes[] = {
+            GBT_REMOVE_MARKED,
+            GBT_REMOVE_UNMARKED,
+            GBT_REMOVE_ZOMBIES,
+            GBT_KEEP_MARKED,
+        };
+
+        const char *org_topo          = "((CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.029,(CloBifer:0.388,((CloCarni:0.120,CurCitre:0.058):1.000,((CloPaste:0.179,(Zombie1:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.010):0.131,(CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,Zombie2:0.058):0.103):0.054):0.207):0.162):0.124):0.124):0.029);";
+        const char *rem_marked_topo   = "((CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.029,(CloBifer:0.388,(CloCarni:1.000,((CloPaste:0.179,Zombie1:0.010):0.131,(CelBiazo:0.059,Zombie2:0.054):0.162):0.124):0.124):0.029);";
+        const char *rem_unmarked_topo = "(CurCitre:1.000,((Zombie1:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.131,(CytAquat:0.711,(CorGluta:0.522,(CorAquat:0.084,Zombie2:0.058):0.103):0.207):0.162):0.124);";
+        const char *rem_zombies_topo  = "((CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.029,(CloBifer:0.388,((CloCarni:0.120,CurCitre:0.058):1.000,((CloPaste:0.179,(CloButy2:0.009,CloButyr:0.000):0.010):0.131,(CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,CorAquat:0.103):0.054):0.207):0.162):0.124):0.124):0.029);";
+        const char *kept_marked_topo  = "(CurCitre:1.000,((CloButy2:0.009,CloButyr:0.000):0.131,(CytAquat:0.711,(CorGluta:0.522,CorAquat:0.103):0.207):0.162):0.124);";
+        const char *kept_zombies_topo = "(Zombie1:0.131,Zombie2:0.162);";
+        const char *empty_topo        = ";";
+
+        GB_transaction ta(gb_main);
+        for (unsigned mode = 0; mode<ARRAY_ELEMS(tested_modes); ++mode) {
+            GBT_TreeRemoveType what = tested_modes[mode];
+
+            for (int linked = 0; linked<=1; ++linked) {
+                TEST_ANNOTATE(GBS_global_string("mode=%u linked=%i", mode, linked));
+
+                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_removal", GBT_TREE_NodeFactory());
+                bool      once = mode == 0 && linked == 0;
+
+                if (linked) {
+                    int zombies    = 0;
+                    int duplicates = 0;
+
+                    TEST_EXPECT_NO_ERROR(GBT_link_tree(tree, gb_main, false, &zombies, &duplicates));
+
+                    TEST_EXPECT_EQUAL(zombies, 2);
+                    TEST_EXPECT_EQUAL(duplicates, 0);
+                }
+
+                if (once) TEST_EXPECT_NEWICK_LEN_EQUAL(tree, org_topo);
+
+                int removedCount       = 0;
+                int groupsRemovedCount = 0;
+
+                tree = GBT_remove_leafs(tree, what, NULL, &removedCount, &groupsRemovedCount);
+
+                if (linked) {
+                    GBT_TreeRemoveType what_next = what;
+
+                    switch (what) {
+                        case GBT_REMOVE_MARKED:
+                            TEST_EXPECT_EQUAL(removedCount, 6);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                            TEST_EXPECT_NEWICK_LEN_EQUAL(tree, rem_marked_topo);
+                            what_next = GBT_REMOVE_UNMARKED;
+                            break;
+                        case GBT_REMOVE_UNMARKED:
+                            TEST_EXPECT_EQUAL(removedCount, 9);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                            TEST_EXPECT_NEWICK_LEN_EQUAL(tree, rem_unmarked_topo);
+                            what_next = GBT_REMOVE_MARKED;
+                            break;
+                        case GBT_REMOVE_ZOMBIES:
+                            TEST_EXPECT_EQUAL(removedCount, 2);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                            TEST_EXPECT_NEWICK_LEN_EQUAL(tree, rem_zombies_topo);
+                            break;
+                        case GBT_KEEP_MARKED:
+                            TEST_EXPECT_EQUAL(removedCount, 11);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                            TEST_EXPECT_NEWICK_LEN_EQUAL(tree, kept_marked_topo);
+                            what_next = GBT_REMOVE_MARKED;
+                            break;
+                    }
+
+                    if (what_next != what) {
+                        gb_assert(tree);
+                        tree = GBT_remove_leafs(tree, what_next, NULL, &removedCount, &groupsRemovedCount);
+
+                        switch (what) {
+                            case GBT_REMOVE_MARKED:
+                            case GBT_REMOVE_UNMARKED:
+                                TEST_EXPECT_EQUAL(removedCount, 15);
+                                TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                                TEST_EXPECT_NEWICK_LEN_EQUAL(tree, kept_zombies_topo);
+                                break;
+                            case GBT_KEEP_MARKED:
+                                TEST_EXPECT_EQUAL(removedCount, 17);
+                                TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                                TEST_EXPECT_NEWICK_LEN_EQUAL(tree, empty_topo);
+                                break;
+                            default:
+                                TEST_REJECT(true);
+                                break;
+                        }
+                    }
+                }
+                else {
+                    switch (what) {
+                        case GBT_REMOVE_MARKED:
+                        case GBT_REMOVE_UNMARKED:
+                            TEST_EXPECT_EQUAL(removedCount, 0);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                            TEST_EXPECT_NEWICK_LEN_EQUAL(tree, org_topo);
+                            break;
+                        case GBT_REMOVE_ZOMBIES:
+                        case GBT_KEEP_MARKED:
+                            TEST_EXPECT_EQUAL(removedCount, 17);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                            TEST_EXPECT_NEWICK_LEN_EQUAL(tree, empty_topo);
+                            break;
+                    }
+                }
+
+                delete tree;
+            }
+        }
+    }
+
+    GB_close(gb_main);
+}
+
 
 #endif // UNIT_TESTS
