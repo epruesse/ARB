@@ -950,7 +950,7 @@ AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, AWT_canvas
 #include <test_unit.h>
 #endif
 
-static arb_test::match_expectation saved_newick_equals(GBDATA *gb_main, const char *treename, const char *expected_newick) {
+static arb_test::match_expectation saved_newick_equals(GBDATA *gb_main, const char *treename, const char *expected_newick, bool write_lengths) {
     using namespace    arb_test;
     expectation_group  expected;
     GB_transaction     ta(gb_main);
@@ -958,7 +958,7 @@ static arb_test::match_expectation saved_newick_equals(GBDATA *gb_main, const ch
 
     expected.add(that(tree).does_differ_from_NULL());
     if (tree) {
-        char *newick = GBT_tree_2_newick(tree, true);
+        char *newick = GBT_tree_2_newick(tree, write_lengths);
         expected.add(that(newick).is_equal_to(expected_newick));
         free(newick);
         delete tree;
@@ -966,8 +966,11 @@ static arb_test::match_expectation saved_newick_equals(GBDATA *gb_main, const ch
     return all().ofgroup(expected);
 }
 
-#define TEST_EXPECT_SAVED_NEWICK_EQUAL(gbmain,treename,expected_newick)         TEST_EXPECTATION(saved_newick_equals(gbmain, treename, expected_newick))
-#define TEST_EXPECT_SAVED_NEWICK_EQUAL__BROKEN(gbmain,treename,expected_newick) TEST_EXPECTATION__BROKEN(saved_newick_equals(gbmain, treename, expected_newick))
+#define TEST_EXPECT_SAVED_NEWICK_LEN_EQUAL(gbmain,treename,expected_newick)         TEST_EXPECTATION(saved_newick_equals(gbmain, treename, expected_newick, true))
+#define TEST_EXPECT_SAVED_NEWICK_LEN_EQUAL__BROKEN(gbmain,treename,expected_newick) TEST_EXPECTATION__BROKEN(saved_newick_equals(gbmain, treename, expected_newick, true))
+
+#define TEST_EXPECT_SAVED_NEWICK_EQUAL(gbmain,treename,expected_newick)         TEST_EXPECTATION(saved_newick_equals(gbmain, treename, expected_newick, false))
+#define TEST_EXPECT_SAVED_NEWICK_EQUAL__BROKEN(gbmain,treename,expected_newick) TEST_EXPECTATION__BROKEN(saved_newick_equals(gbmain, treename, expected_newick, false))
 
 void TEST_sort_tree_by_other_tree() {
     GB_shell  shell;
@@ -1011,9 +1014,44 @@ void TEST_sort_tree_by_other_tree() {
     }
 
 
-    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_center")); TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_work", topo_center);
-    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_bottom")); TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_work", topo_bottom);
-    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_test"));          TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_work", topo_test);
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_center")); TEST_EXPECT_SAVED_NEWICK_LEN_EQUAL(gb_main, "tree_work", topo_center);
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_bottom")); TEST_EXPECT_SAVED_NEWICK_LEN_EQUAL(gb_main, "tree_work", topo_bottom);
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_test"));          TEST_EXPECT_SAVED_NEWICK_LEN_EQUAL(gb_main, "tree_work", topo_test);
+
+    GB_close(gb_main);
+}
+
+void TEST_move_node_info() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_trees.arb", "r");
+
+    const char *unwanted_topo = "((CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2)))),((CloPaste,(Zombie1,(CloButy2,CloButyr))),((CloCarni,CurCitre),(CloBifer,(CloInnoc,(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4))))))));";
+    const char *org_topo      = "((CloInnoc,(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4)))),(CloBifer,((CloCarni,CurCitre),((CloPaste,(Zombie1,(CloButy2,CloButyr))),(CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2))))))));";
+    const char *sorted_topo   = "(((((CloInnoc,(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4)))),CloBifer),(CloCarni,CurCitre)),(CloPaste,(Zombie1,(CloButy2,CloButyr)))),(CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2)))));";
+
+    // create copy of 'tree_removal'
+    {
+        GB_transaction  ta(gb_main);
+        GBT_TREE       *tree = GBT_read_tree(gb_main, "tree_removal", GBT_TREE_NodeFactory());
+
+        TEST_EXPECT_NEWICK_EQUAL(tree, org_topo);
+        TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_removal_copy", tree));
+        delete tree;
+    }
+
+    // move node info
+    {
+        TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_test", "tree_removal", "move_node_info.log", TREE_INFO_COPY, false));
+
+        TEST_EXPECT_SAVED_NEWICK_EQUAL__BROKEN(gb_main, "tree_removal", org_topo); // @@@ moving node info modifies topology (might be necessary to insert groups)
+        TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_removal", unwanted_topo);
+
+        // @@@ when we have a function to set the root according to another tree (#449),
+        // use that function here. sorting tree after that, should again result in 'org_topo'!
+
+        TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_removal", "tree_removal_copy"));
+        TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_removal", sorted_topo);
+    }
 
     GB_close(gb_main);
 }
