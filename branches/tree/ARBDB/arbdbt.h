@@ -92,6 +92,7 @@ public:
         return father->rightson == this;
     }
 
+    GBT_TREE *fixDeletedSon();
 };
 
 struct TreeNodeFactory {
@@ -140,3 +141,4 @@ typedef GB_ERROR (*species_callback)(GBDATA *gb_species, int *clientdata);
 #else
 #error arbdbt.h included twice
 #endif
+

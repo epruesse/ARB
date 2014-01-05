@@ -32,40 +32,39 @@ GBDATA *GBT_get_tree_data(GBDATA *gb_main) {
 // ----------------------
 //      remove leafs
 
+GBT_TREE *GBT_TREE::fixDeletedSon() {
+    // fix node after one son has been deleted
+    GBT_TREE *result = NULL;
 
-static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
-    // fix tree after one son has been deleted
-    GBT_TREE *delNode = tree;
-
-    if (delNode->leftson) {
-        gb_assert(!delNode->rightson);
-        tree             = delNode->leftson;
-        delNode->leftson = 0;
+    if (leftson) {
+        gb_assert(!rightson);
+        result  = leftson;
+        leftson = NULL;
     }
     else {
-        gb_assert(!delNode->leftson);
-        gb_assert(delNode->rightson);
+        gb_assert(!leftson);
+        gb_assert(rightson);
 
-        tree              = delNode->rightson;
-        delNode->rightson = 0;
+        result   = rightson;
+        rightson = NULL;
     }
 
-    // now tree is the new tree
-    tree->father = delNode->father;
+    // now 'result' contains the lasting tree
+    result->father = father;
 
-    if (delNode->remark_branch && !tree->remark_branch) { // rescue remarks if possible
-        tree->remark_branch    = delNode->remark_branch;
-        delNode->remark_branch = 0;
+    if (remark_branch && !result->remark_branch) { // rescue remarks if possible
+        result->remark_branch    = remark_branch;
+        remark_branch = NULL;
     }
-    if (delNode->gb_node && !tree->gb_node) { // rescue group if possible
-        tree->gb_node    = delNode->gb_node;
-        delNode->gb_node = 0;
+    if (gb_node && !result->gb_node) { // rescue group if possible
+        result->gb_node = gb_node;
+        gb_node         = NULL;
     }
 
-    delNode->is_leaf = true; // don't try recursive delete
-    delete delNode;
+    is_leaf = true; // don't try recursive delete
+    delete this;
 
-    return tree;
+    return result;
 }
 
 
@@ -118,12 +117,12 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HAS
 
         if (tree->leftson) {
             if (!tree->rightson) { // right son deleted
-                tree = fixDeletedSon(tree);
+                tree = tree->fixDeletedSon();
             }
             // otherwise no son deleted
         }
         else if (tree->rightson) { // left son deleted
-            tree = fixDeletedSon(tree);
+            tree = tree->fixDeletedSon();
         }
         else {                  // everything deleted -> delete self
             if (tree->name && groups_removed) (*groups_removed)++;
