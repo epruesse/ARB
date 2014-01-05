@@ -524,15 +524,15 @@ static AW_window_simple *create_select_two_trees_window(AW_root *root, const cha
     AW_awar *awar_displayed_tree = root->awar(AWAR_TREE_NAME);
 
     aws->at("select1");
-    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::source_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED", "Use");
-    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::source_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED", "Display");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::source_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED1", "Use");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::source_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED1", "Display");
 
     aws->callback(swap_source_dest_cb);
     aws->create_autosize_button("SWAP", "Swap");
 
     aws->at("select2");
-    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::dest_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED", "Use");
-    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::dest_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED", "Display");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::dest_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED2", "Use");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::dest_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED2", "Display");
 
     aws->at("user");
 
