@@ -1430,8 +1430,11 @@ void TEST_tree_remove_leafs() {
         const char *rem_unmarked_topo = "(CurCitre:1.000,((Zombie1:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.131,(CytAquat:0.711,(CorGluta:0.522,(CorAquat:0.084,Zombie2:0.058):0.103):0.207):0.162):0.124);";
         const char *rem_zombies_topo  = "((CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.029,(CloBifer:0.388,((CloCarni:0.120,CurCitre:0.058):1.000,((CloPaste:0.179,(CloButy2:0.009,CloButyr:0.000):0.010):0.131,(CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,CorAquat:0.103):0.054):0.207):0.162):0.124):0.124):0.029);";
         const char *kept_marked_topo  = "(CurCitre:1.000,((CloButy2:0.009,CloButyr:0.000):0.131,(CytAquat:0.711,(CorGluta:0.522,CorAquat:0.103):0.207):0.162):0.124);";
-        const char *kept_zombies_topo = "(Zombie1:0.131,Zombie2:0.162);";
-        const char *empty_topo        = ";";
+
+        const char *kept_zombies_topo        = "(Zombie1:0.131,Zombie2:0.162);";
+        const char *kept_zombies_broken_topo = "Zombie2;";
+
+        const char *empty_topo = ";";
 
         GB_transaction ta(gb_main);
         for (unsigned mode = 0; mode<ARRAY_ELEMS(tested_modes); ++mode) {
@@ -1472,7 +1475,7 @@ void TEST_tree_remove_leafs() {
                             break;
                         case GBT_REMOVE_UNMARKED:
                             TEST_EXPECT_EQUAL(removedCount, 9);
-                            TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
                             TEST_EXPECT_NEWICK_LEN_EQUAL(tree, rem_unmarked_topo);
                             what_next = GBT_REMOVE_MARKED;
                             break;
@@ -1483,7 +1486,7 @@ void TEST_tree_remove_leafs() {
                             break;
                         case GBT_KEEP_MARKED:
                             TEST_EXPECT_EQUAL(removedCount, 11);
-                            TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
                             TEST_EXPECT_NEWICK_LEN_EQUAL(tree, kept_marked_topo);
                             what_next = GBT_REMOVE_MARKED;
                             break;
@@ -1494,15 +1497,21 @@ void TEST_tree_remove_leafs() {
                         tree = GBT_remove_leafs(tree, what_next, NULL, &removedCount, &groupsRemovedCount);
 
                         switch (what) {
-                            case GBT_REMOVE_MARKED:
-                            case GBT_REMOVE_UNMARKED:
+                            case GBT_REMOVE_MARKED: // + GBT_REMOVE_UNMARKED
+                                TEST_EXPECT_EQUAL(removedCount, 16);
+                                TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
+                                TEST_EXPECT_NEWICK_LEN_EQUAL__BROKEN(tree, kept_zombies_topo);
+                                TEST_EXPECT_NEWICK_LEN_EQUAL(tree, kept_zombies_broken_topo); // @@@ invalid topology (single leaf)
+                                break;
+                            case GBT_REMOVE_UNMARKED: // + GBT_REMOVE_MARKED
                                 TEST_EXPECT_EQUAL(removedCount, 15);
-                                TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                                TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
                                 TEST_EXPECT_NEWICK_LEN_EQUAL(tree, kept_zombies_topo);
                                 break;
-                            case GBT_KEEP_MARKED:
+                            case GBT_KEEP_MARKED: // + GBT_REMOVE_MARKED
                                 TEST_EXPECT_EQUAL(removedCount, 17);
-                                TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                                TEST_EXPECT_EQUAL__BROKEN(groupsRemovedCount, 2); // @@@ expect that all groups have been removed! 
+                                TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
                                 TEST_EXPECT_NEWICK_LEN_EQUAL(tree, empty_topo);
                                 break;
                             default:
@@ -1522,7 +1531,7 @@ void TEST_tree_remove_leafs() {
                         case GBT_REMOVE_ZOMBIES:
                         case GBT_KEEP_MARKED:
                             TEST_EXPECT_EQUAL(removedCount, 17);
-                            TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 2);
                             TEST_EXPECT_NEWICK_LEN_EQUAL(tree, empty_topo);
                             break;
                     }
