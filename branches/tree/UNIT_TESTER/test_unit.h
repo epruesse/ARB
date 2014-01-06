@@ -1254,25 +1254,25 @@ namespace arb_test {
 #define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size) TEST_EXPECT__BROKEN(arb_test::memory_is_equal(m1,m2,size)) 
 
 #define TEST_EXPECT_NEWICK_EQUAL(tree,expected_newick) do{      \
-        char *newick = GBT_tree_2_newick(tree, false);          \
+        char *newick = GBT_tree_2_newick(tree, NEWICK_SIMPLE);  \
         TEST_EXPECT_EQUAL(newick,expected_newick);              \
         free(newick);                                           \
     }while(0)
 
 #define TEST_EXPECT_NEWICK_LEN_EQUAL(tree,expected_newick) do{      \
-        char *newick = GBT_tree_2_newick(tree, true);               \
+        char *newick = GBT_tree_2_newick(tree, NEWICK_LENGTHS);     \
         TEST_EXPECT_EQUAL(newick,expected_newick);                  \
         free(newick);                                               \
     }while(0)
 
 #define TEST_EXPECT_NEWICK_EQUAL__BROKEN(tree,expected_newick) do{      \
-        char *newick = GBT_tree_2_newick(tree, false);                  \
+        char *newick = GBT_tree_2_newick(tree, NEWICK_SIMPLE);          \
         TEST_EXPECT_EQUAL__BROKEN(newick,expected_newick);              \
         free(newick);                                                   \
     }while(0)
 
 #define TEST_EXPECT_NEWICK_LEN_EQUAL__BROKEN(tree,expected_newick) do{  \
-        char *newick = GBT_tree_2_newick(tree, true);                   \
+        char *newick = GBT_tree_2_newick(tree, NEWICK_LENGTHS);         \
         TEST_EXPECT_EQUAL__BROKEN(newick,expected_newick);              \
         free(newick);                                                   \
     }while(0)

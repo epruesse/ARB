@@ -971,7 +971,8 @@ void AP_tree::scale_branchlengths(double factor) {
     }
 }
 
-void AP_tree::bootstrap2branchlen() { // copy bootstraps to branchlengths
+void AP_tree::bootstrap2branchlen() {
+    //! copy bootstraps to branchlengths
     if (is_leaf) {
         set_branchlength(tree_defaults::LENGTH);
     }
@@ -986,7 +987,8 @@ void AP_tree::bootstrap2branchlen() { // copy bootstraps to branchlengths
     }
 }
 
-void AP_tree::branchlen2bootstrap() {               // copy branchlengths to bootstraps
+void AP_tree::branchlen2bootstrap() {
+    //! copy branchlengths to bootstraps
     freenull(remark_branch);
     if (!is_leaf) {
         if (!is_root_node()) {

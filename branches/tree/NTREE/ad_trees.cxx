@@ -958,7 +958,7 @@ static arb_test::match_expectation saved_newick_equals(GBDATA *gb_main, const ch
 
     expected.add(that(tree).does_differ_from_NULL());
     if (tree) {
-        char *newick = GBT_tree_2_newick(tree, write_lengths);
+        char *newick = GBT_tree_2_newick(tree, write_lengths ? NEWICK_LENGTHS : NEWICK_SIMPLE);
         expected.add(that(newick).is_equal_to(expected_newick));
         free(newick);
         delete tree;

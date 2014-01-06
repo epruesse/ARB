@@ -1171,21 +1171,22 @@ GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count) {
 
     return result;
 }
-static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, bool write_lengths) {
+
+static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat format) {
     gb_assert(tree);
     if (tree->is_leaf) {
         out.cat(tree->name);
     }
     else {
         out.put('(');
-        tree2newick(tree->leftson, out, write_lengths);
-        if (write_lengths) {
+        tree2newick(tree->leftson, out, format);
+        if (format&NEWICK_LENGTHS) {
             out.put(':');
             out.nprintf(10, "%5.3f", tree->leftlen);
         }
         out.put(',');
-        tree2newick(tree->rightson, out, write_lengths);
-        if (write_lengths) {
+        tree2newick(tree->rightson, out, format);
+        if (format&NEWICK_LENGTHS) {
             out.put(':');
             out.nprintf(10, "%5.3f", tree->rightlen);
         }
@@ -1193,9 +1194,9 @@ static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, bool write_len
     }
 }
 
-char *GBT_tree_2_newick(const GBT_TREE *tree, bool write_lengths) {
+char *GBT_tree_2_newick(const GBT_TREE *tree, NewickFormat format) {
     GBS_strstruct out(1000);
-    if (tree) tree2newick(tree, out, write_lengths);
+    if (tree) tree2newick(tree, out, format);
     out.put(';');
     return out.release();
 }
