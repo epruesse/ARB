@@ -945,62 +945,6 @@ long AP_tree_root::remove_leafs(AWT_RemoveType awt_remove_type) {
 
 // ----------------------------------------
 
-void AP_tree::remove_bootstrap() {
-    freenull(remark_branch);
-    if (!is_leaf) {
-        get_leftson()->remove_bootstrap();
-        get_rightson()->remove_bootstrap();
-    }
-}
-void AP_tree::reset_branchlengths() {
-    if (!is_leaf) {
-        leftlen = rightlen = tree_defaults::LENGTH;
-
-        get_leftson()->reset_branchlengths();
-        get_rightson()->reset_branchlengths();
-    }
-}
-
-void AP_tree::scale_branchlengths(double factor) {
-    if (!is_leaf) {
-        leftlen  *= factor;
-        rightlen *= factor;
-
-        get_leftson()->scale_branchlengths(factor);
-        get_rightson()->scale_branchlengths(factor);
-    }
-}
-
-void AP_tree::bootstrap2branchlen() {
-    //! copy bootstraps to branchlengths
-    if (is_leaf) {
-        set_branchlength(tree_defaults::LENGTH);
-    }
-    else {
-        if (remark_branch && father) {
-            int    bootstrap = atoi(remark_branch);
-            double len       = bootstrap/100.0;
-            set_branchlength(len);
-        }
-        get_leftson()->bootstrap2branchlen();
-        get_rightson()->bootstrap2branchlen();
-    }
-}
-
-void AP_tree::branchlen2bootstrap() {
-    //! copy branchlengths to bootstraps
-    freenull(remark_branch);
-    if (!is_leaf) {
-        if (!is_root_node()) {
-            remark_branch = GBS_global_string_copy("%i%%", int(get_branchlength()*100.0 + .5));
-        }
-
-        get_leftson()->branchlen2bootstrap();
-        get_rightson()->branchlen2bootstrap();
-    }
-}
-
-
 AP_tree ** AP_tree::getRandomNodes(int anzahl) {
     // function returns a random constructed tree
     // root is tree with species (needed to build a list of species)

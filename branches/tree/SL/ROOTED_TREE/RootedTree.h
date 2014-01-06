@@ -108,9 +108,6 @@ class RootedTree : public GBT_TREE { // derived from Noncopyable
     // ------------------
     //      functions
 
-    GBT_LEN& length_ref() { return is_leftson() ? father->leftlen : father->rightlen; }
-    const GBT_LEN& length_ref() const { return const_cast<RootedTree*>(this)->length_ref(); }
-
     void reorder_subtree(TreeOrder mode);
 
 protected:
@@ -174,9 +171,6 @@ public:
     const RootedTree *get_brother() const {
         return const_cast<const RootedTree*>(const_cast<RootedTree*>(this)->get_brother());
     }
-
-    GBT_LEN get_branchlength() const { return length_ref(); }
-    void set_branchlength(GBT_LEN newlen) { length_ref() = newlen; }
 
     const char *group_name() const { return gb_node && name ? name : NULL; }
 

@@ -42,6 +42,9 @@ struct GBT_TREE : virtual Noncopyable {
                          // if you store other info there, please make sure that this info does not start with digits!!
                          // Otherwise the tree export routines will not work correctly!
 
+    GBT_LEN& length_ref() { return is_leftson() ? father->leftlen : father->rightlen; }
+    const GBT_LEN& length_ref() const { return const_cast<GBT_TREE*>(this)->length_ref(); }
+
 protected:
     GBT_TREE*& self_ref() {
         return is_leftson() ? father->leftson : father->rightson;
@@ -92,7 +95,18 @@ public:
         return father->rightson == this;
     }
 
+    bool is_root_node() const { return !father; }
+
     GBT_TREE *fixDeletedSon();
+
+    GBT_LEN get_branchlength() const { return length_ref(); }
+    void set_branchlength(GBT_LEN newlen) { length_ref() = newlen; }
+
+    void remove_bootstrap();                        // remove bootstrap values from subtree
+    void reset_branchlengths();                     // reset branchlengths of subtree to tree_defaults::LENGTH
+    void scale_branchlengths(double factor);
+    void bootstrap2branchlen();                     // copy bootstraps to branchlengths
+    void branchlen2bootstrap();                     // copy branchlengths to bootstraps
 };
 
 struct TreeNodeFactory {

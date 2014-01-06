@@ -22,15 +22,64 @@
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0
 
-// ----------------
-//      basics
-
 GBDATA *GBT_get_tree_data(GBDATA *gb_main) {
     return GBT_find_or_create(gb_main, "tree_data", 7);
 }
 
-// ----------------------
-//      remove leafs
+void GBT_TREE::remove_bootstrap() {
+    freenull(remark_branch);
+    if (!is_leaf) {
+        get_leftson()->remove_bootstrap();
+        get_rightson()->remove_bootstrap();
+    }
+}
+void GBT_TREE::reset_branchlengths() {
+    if (!is_leaf) {
+        leftlen = rightlen = DEFAULT_BRANCH_LENGTH;
+
+        get_leftson()->reset_branchlengths();
+        get_rightson()->reset_branchlengths();
+    }
+}
+
+void GBT_TREE::scale_branchlengths(double factor) {
+    if (!is_leaf) {
+        leftlen  *= factor;
+        rightlen *= factor;
+
+        get_leftson()->scale_branchlengths(factor);
+        get_rightson()->scale_branchlengths(factor);
+    }
+}
+
+void GBT_TREE::bootstrap2branchlen() {
+    //! copy bootstraps to branchlengths
+    if (is_leaf) {
+        set_branchlength(DEFAULT_BRANCH_LENGTH);
+    }
+    else {
+        if (remark_branch && father) {
+            int    bootstrap = atoi(remark_branch);
+            double len       = bootstrap/100.0;
+            set_branchlength(len);
+        }
+        get_leftson()->bootstrap2branchlen();
+        get_rightson()->bootstrap2branchlen();
+    }
+}
+
+void GBT_TREE::branchlen2bootstrap() {
+    //! copy branchlengths to bootstraps
+    freenull(remark_branch);
+    if (!is_leaf) {
+        if (!is_root_node()) {
+            remark_branch = GBS_global_string_copy("%i%%", int(get_branchlength()*100.0 + .5));
+        }
+
+        get_leftson()->branchlen2bootstrap();
+        get_rightson()->branchlen2bootstrap();
+    }
+}
 
 GBT_TREE *GBT_TREE::fixDeletedSon() {
     // fix node after one son has been deleted
@@ -67,6 +116,8 @@ GBT_TREE *GBT_TREE::fixDeletedSon() {
     return result;
 }
 
+// ----------------------
+//      remove leafs
 
 GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HASH *species_hash, int *removed, int *groups_removed) { // @@@ add tests for GBT_remove_leafs()
     /*! Remove leafs from given 'tree'.

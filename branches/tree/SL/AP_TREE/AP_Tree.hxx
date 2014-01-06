@@ -311,12 +311,6 @@ public:
 
     void set_root() OVERRIDE;
 
-    void remove_bootstrap();                        // remove bootstrap values from subtree
-    void reset_branchlengths();                     // reset branchlengths of subtree to tree_defaults::LENGTH
-    void scale_branchlengths(double factor);
-    void bootstrap2branchlen();                     // copy bootstraps to branchlengths
-    void branchlen2bootstrap();                     // copy branchlengths to bootstraps
-
     GB_ERROR tree_write_tree_rek(GBDATA *gb_tree);
     GB_ERROR relink() __ATTR__USERESULT; // @@@ used ? if yes -> move to AP_tree_root or ARB_seqtree_root
 
