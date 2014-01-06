@@ -1191,15 +1191,24 @@ static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat f
             out.nprintf(10, "%5.3f", tree->rightlen);
         }
         out.put(')');
-        if (tree->name && format&NEWICK_GROUPS) {
-            out.put('\'');
-            out.cat(tree->name);
-            out.put('\'');
+
+        if (format & (NEWICK_GROUPS|NEWICK_REMARKS)) {
+            const char *show = NULL;
+
+            if (tree->name          && format&NEWICK_GROUPS)  show = tree->name;
+            if (tree->remark_branch && format&NEWICK_REMARKS) show = tree->remark_branch;
+
+            if (show) {
+                out.put('\'');
+                out.cat(show);
+                out.put('\'');
+            }
         }
     }
 }
 
 char *GBT_tree_2_newick(const GBT_TREE *tree, NewickFormat format) {
+    gb_assert(!(format&NEWICK_GROUPS && format&NEWICK_REMARKS)); // cannot be used together
     GBS_strstruct out(1000);
     if (tree) tree2newick(tree, out, format);
     out.put(';');
