@@ -24,19 +24,11 @@ struct RB_INFO {
 
 #define RMSTRLEN 81
 
-static char *rb_remark(const char *info, int perc, char *txt) {
-    // build a remark with the percentage representation of the partition
+static char *rb_remark(int perc) {
+    // create bootstrap remark (@@@ replace by GBT_TREE method) 
     char *txt2 = (char *) getmem(RMSTRLEN);
-    sprintf(txt2, "%s%i%%", info, perc);
-    if (txt) {
-        strcat(txt, txt2);
-        free(txt2);
-    }
-    else {
-        txt = txt2;
-    }
-
-    return txt;
+    sprintf(txt2, "%i%%", perc);
+    return txt2;
 }
 
 static int GBT_TREE_order(const GBT_TREE *t1, const GBT_TREE *t2) {
@@ -107,8 +99,9 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
     }
     else {
         tnode->is_leaf = false;
+        arb_assert(!tnode->remark_branch);
         if (info->percent < 100) {
-            tnode->remark_branch = rb_remark("", info->percent, tnode->remark_branch);
+            tnode->remark_branch = rb_remark(info->percent);
         }
 
         int      multifurc = ntree_count_sons(tree);
