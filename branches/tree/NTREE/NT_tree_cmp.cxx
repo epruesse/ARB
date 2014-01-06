@@ -365,7 +365,10 @@ GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tre
 
                     AP_tree *root = new_rootr->get_root_node();
 
-                    error = GBT_overwrite_tree(rdest.get_gb_tree(), root);
+
+                    error             = GBT_overwrite_tree(rdest.get_gb_tree(), root);
+                    if (!error) error = GBT_overwrite_tree(rsource.get_gb_tree(), source);
+
                     if (!error) {
                         char *entry;
                         if (mode == TREE_INFO_COMPARE) {

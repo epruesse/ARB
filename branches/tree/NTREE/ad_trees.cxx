@@ -1045,7 +1045,7 @@ void TEST_move_node_info() {
     const char *sorted_topo1 = "(((((CloInnoc," NAMED_GROUP_TEST "),CloBifer),(CloCarni,CurCitre)),(CloPaste,(Zombie1,(CloButy2,CloButyr)))),(CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2)))));";
     const char *sorted_topo2 = "(((((((CloInnoc," OVERWRITTEN_GROUP_TEST "),CloBifer),(CloCarni,CurCitre)),(CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2))))),CloPaste),Zombie1)'outer',(CloButy2,CloButyr));";
 
-    const char *compared_topo = "(((((((CloInnoc,(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4)))),CloBifer),(CloCarni,CurCitre)'0%')'22%',(CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2)'50%')'50%')'50%')'50%')'50%',CloPaste)'50%',Zombie1),(CloButy2,CloButyr));";
+    const char *compared_topo = "(((((((CloInnoc,(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4)))),CloBifer),(CloCarni,CurCitre)'# 2')'# 2',(CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2)'# 1')'# 1')'# 1')'# 1')'# 1',CloPaste),Zombie1),(CloButy2,CloButyr));";
 
     // create copy of 'tree_removal'
     {
@@ -1087,7 +1087,7 @@ void TEST_move_node_info() {
 
     // compare node info
     {
-        TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_removal_copy", "tree_removal", NULL, TREE_INFO_COMPARE, false));
+        TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_test", "tree_removal", NULL, TREE_INFO_COMPARE, false));
         TEST_EXPECT_SAVED_NEWICK_REMARKS_EQUAL(gb_main, "tree_removal", compared_topo); // @@@ contains bootstraps instead of mismatches (TREE_INFO_COMPARE broken!)
     }
 
