@@ -66,7 +66,7 @@ enum GB_alignment_type {
 enum NewickFormat { // bit-values
     NEWICK_SIMPLE  = 0,
     NEWICK_LENGTHS = 1,
-    // NEWICK_GROUPS  = 2,
+    NEWICK_GROUPS  = 2,
     // NEWICK_REMARKS = 4,
 };
 

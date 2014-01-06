@@ -1191,6 +1191,11 @@ static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat f
             out.nprintf(10, "%5.3f", tree->rightlen);
         }
         out.put(')');
+        if (tree->name && format&NEWICK_GROUPS) {
+            out.put('\'');
+            out.cat(tree->name);
+            out.put('\'');
+        }
     }
 }
 
