@@ -1088,7 +1088,7 @@ void TEST_move_node_info() {
     // compare node info
     {
         TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_test", "tree_removal", NULL, TREE_INFO_COMPARE, false));
-        TEST_EXPECT_SAVED_NEWICK_REMARKS_EQUAL(gb_main, "tree_removal", compared_topo); // @@@ contains bootstraps instead of mismatches (TREE_INFO_COMPARE broken!)
+        TEST_EXPECT_SAVED_NEWICK_REMARKS_EQUAL(gb_main, "tree_removal", compared_topo);
     }
 
     GB_close(gb_main);
