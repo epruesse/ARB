@@ -1265,6 +1265,12 @@ namespace arb_test {
         free(newick);                                               \
     }while(0)
 
+#define TEST_EXPECT_NEWICK_REMARK_EQUAL(tree,expected_newick) do{   \
+        char *newick = GBT_tree_2_newick(tree, NEWICK_REMARKS);     \
+        TEST_EXPECT_EQUAL(newick,expected_newick);                  \
+        free(newick);                                               \
+    }while(0)
+
 #define TEST_EXPECT_NEWICK_EQUAL__BROKEN(tree,expected_newick) do{      \
         char *newick = GBT_tree_2_newick(tree, NEWICK_SIMPLE);          \
         TEST_EXPECT_EQUAL__BROKEN(newick,expected_newick);              \
@@ -1275,6 +1281,12 @@ namespace arb_test {
         char *newick = GBT_tree_2_newick(tree, NEWICK_LENGTHS);         \
         TEST_EXPECT_EQUAL__BROKEN(newick,expected_newick);              \
         free(newick);                                                   \
+    }while(0)
+
+#define TEST_EXPECT_NEWICK_REMARK_EQUAL__BROKEN(tree,expected_newick) do{  \
+        char *newick = GBT_tree_2_newick(tree, NEWICK_REMARKS);            \
+        TEST_EXPECT_EQUAL__BROKEN(newick,expected_newick);                 \
+        free(newick);                                                      \
     }while(0)
 
 #else

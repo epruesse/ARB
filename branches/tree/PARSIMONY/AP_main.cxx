@@ -211,33 +211,67 @@ const char *AP_main::get_aliname() const {
 #include <test_unit.h>
 #endif
 
+#include <AP_filter.hxx> // @@@ move to different module where AP_filter.hxx is already included
+#include <AP_seq_dna.hxx> // @@@ move to different module where AP_seq_dna.hxx is already included
+
 // @@@ Tests wanted:
 // - NNI (difficult - needs sequences)
 
 void fake_AW_init_color_groups();
 
-struct fake_agt : public AWT_graphic_tree {
-    fake_agt() : AWT_graphic_tree(NULL, GLOBAL_gb_main, NULL) {}
+struct fake_agt : public AWT_graphic_tree, virtual Noncopyable {
+    AP_sequence_parsimony *templ;
+
+    fake_agt()
+        : AWT_graphic_tree(NULL, GLOBAL_gb_main, NULL),
+          templ(NULL)
+    {
+    }
+    ~fake_agt() {
+        delete templ;
+    }
     void init(AliView *aliview) {
         fake_AW_init_color_groups(); // acts like no species has a color
-        AWT_graphic_tree::init(new AP_TreeNlenNodeFactory, aliview, NULL, true, false);
+        delete templ;
+        templ = aliview->has_data() ? new AP_sequence_parsimony(aliview) : NULL;
+        AWT_graphic_tree::init(new AP_TreeNlenNodeFactory, aliview, templ, true, false);
     }
 };
 
-struct PARSIMONY_testenv : virtual Noncopyable {
+class PARSIMONY_testenv : virtual Noncopyable {
     GB_shell  shell;
     AP_main   apMain;
     fake_agt *agt;
 
-    PARSIMONY_testenv(const char  *dbname) {
+    void common_init(const char *dbname) {
         GLOBAL_gb_main = NULL;
         apMain.open(dbname);
 
+        TEST_EXPECT_NULL(ap_main);
+        ap_main = &apMain;
+
         agt = new fake_agt;
         apMain.set_tree_root(agt);
+    }
+
+public:
+    PARSIMONY_testenv(const char *dbname) {
+        common_init(dbname);
         agt->init(new AliView(GLOBAL_gb_main));
     }
+    PARSIMONY_testenv(const char *dbname, const char *aliName) {
+        common_init(dbname);
+        GB_transaction ta(GLOBAL_gb_main);
+        size_t aliLength = GBT_get_alignment_len(GLOBAL_gb_main, aliName);
+
+        AP_filter  filter(aliLength);
+        AP_weights weights(&filter);
+        agt->init(new AliView(GLOBAL_gb_main, filter, weights, aliName));
+    }
     ~PARSIMONY_testenv() {
+        TEST_EXPECT_EQUAL(ap_main, &apMain);
+        ap_main = NULL;
+
         delete agt;
         GB_close(GLOBAL_gb_main);
         GLOBAL_gb_main = NULL;
@@ -262,7 +296,6 @@ void TEST_tree_modifications() {
         TEST_REJECT_NULL(root);
 
         AP_tree_edge::initialize(root);   // builds edges
-
         TEST_ASSERT_VALID_TREE(root);
 
         root->compute_tree();
@@ -323,7 +356,6 @@ void TEST_tree_modifications() {
         TEST_EXPECT_DIFFERENT(bottom_topo, radial_topo2);
         TEST_EXPECT_DIFFERENT(radial_topo, radial_topo2);
 
-        LocallyModify<AP_main*> setGlobal(ap_main, &env.apMain);
         env.push(); // 1st stack level (=top_topo)
 
         TEST_ASSERT_VALID_TREE(root);
@@ -431,6 +463,34 @@ void TEST_tree_modifications() {
         node_del_manually->leftson  = NULL;
         node_del_manually->rightson = NULL;
         delete node_del_manually;
+    }
+}
+
+void TEST_calc_bootstraps() {
+    PARSIMONY_testenv env("TEST_trees.arb", "ali_5s");
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
+
+    const char *bs_origi_topo = "(((((((CloTyro3,CloTyro4)'40%',CloTyro2)'0%',CloTyrob)'97%',CloInnoc)'0%',CloBifer)'53%',(((CloButy2,CloButyr)'100%',CloCarni)'33%',CloPaste)'97%')'100%',((((CorAquat,CurCitre)'100%',CorGluta)'17%',CelBiazo)'40%',CytAquat)'100%');";
+    const char *bs_limit_topo = "(((((((CloTyro3,CloTyro4)'87%',CloTyro2)'0%',CloTyrob)'100%',CloInnoc)'87%',CloBifer)'83%',(((CloButy2,CloButyr)'99%',CloCarni)'17%',CloPaste)'56%')'61%',((((CorAquat,CurCitre)'78%',CorGluta)'0%',CelBiazo)'59%',CytAquat)'61%');";
+    const char *bs_estim_topo = "(((((((CloTyro3,CloTyro4)'75%',CloTyro2)'0%',CloTyrob)'100%',CloInnoc)'75%',CloBifer)'78%',(((CloButy2,CloButyr)'99%',CloCarni)'13%',CloPaste)'32%')'53%',((((CorAquat,CurCitre)'74%',CorGluta)'0%',CelBiazo)'56%',CytAquat)'53%');";
+
+    {
+        AP_tree_nlen *root = env.tree_root();
+        TEST_REJECT_NULL(root);
+
+        AP_tree_edge::initialize(root);   // builds edges
+        TEST_EXPECT_EQUAL(root, rootNode()); // need tree-access via global 'ap_main' (too much code is based on that)
+
+        AP_tree_edge *root_edge = rootEdge();
+        TEST_REJECT_NULL(root_edge);
+
+        root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK_REMARK_EQUAL(root, bs_origi_topo);
+
+        root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK_REMARK_EQUAL(root, bs_limit_topo);
+        root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK_REMARK_EQUAL(root, bs_estim_topo);
+
+        TEST_EXPECT_EQUAL(env.tree_root(), root);
+        AP_tree_edge::destroy(root);
     }
 }
 

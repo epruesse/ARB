@@ -77,6 +77,8 @@ AP_main.o: ap_tree_nlen.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_main.o: $(ARBHOME)/INCLUDE/AliView.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
