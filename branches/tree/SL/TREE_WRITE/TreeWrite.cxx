@@ -102,15 +102,15 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
                                           bool save_bootstraps, bool save_groupnames, TREE_node_quoting qmode)
 {
     const char *error = 0;
-    const char *buf;
 
     if (pretty) indentTo(indent, out);
 
     if (tree->is_leaf) {
-        if (node_gen) buf = node_gen->gen(gb_main, tree->gb_node, NDS_OUTPUT_LEAFTEXT, tree, tree_name);
-        else          buf = tree->name;
+        const char *label;
+        if (node_gen) label = node_gen->gen(gb_main, tree->gb_node, NDS_OUTPUT_LEAFTEXT, tree, tree_name);
+        else          label = tree->name;
 
-        export_tree_label(buf, out, qmode);
+        export_tree_label(label, out, qmode);
     }
     else {
         if (pretty) fputs("(\n", out);
@@ -129,7 +129,6 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
         if (pretty) indentTo(indent, out);
         fputc(')', out);
 
-        buf             = 0;
         char *bootstrap = 0;
 
         if (tree->remark_branch && save_bootstraps) {
@@ -144,16 +143,15 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
             bootstrap = strdup(boot);
         }
 
-        if (tree->name && save_groupnames) buf = tree->name;
-
-        const char *print = 0;
-        if (buf) {
-            if (bootstrap) print = GBS_global_string("%s:%s", bootstrap, buf);
-            else           print = buf;
+        const char *group = (tree->name && save_groupnames) ? tree->name : 0;
+        const char *label = 0;
+        if (group) {
+            if (bootstrap) label = GBS_global_string("%s:%s", bootstrap, group);
+            else           label = group;
         }
-        else if (bootstrap) print = bootstrap;
+        else if (bootstrap) label = bootstrap;
 
-        if (print) export_tree_label(print, out, qmode);
+        if (label) export_tree_label(label, out, qmode);
 
         free(bootstrap);
     }
