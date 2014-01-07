@@ -8,10 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-#include "NT_tree_cmp.h"
+#include "NT_species_set.h"
 #include "NT_local.h"
-
-#include <AP_Tree.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <string>
@@ -26,8 +24,7 @@ AWT_species_set_root::AWT_species_set_root(GBDATA *gb_maini, long nspeciesi, arb
     progress = progress_;
     sets     = (AWT_species_set **)GB_calloc(sizeof(AWT_species_set *), (size_t)(nspecies*2+1));
 
-    int i;
-    for (i=0; i<256; i++) {
+    for (int i=0; i<256; i++) {
         int j = i;
         int count = 0;
         while (j) {             // count bits
@@ -41,11 +38,9 @@ AWT_species_set_root::AWT_species_set_root(GBDATA *gb_maini, long nspeciesi, arb
 }
 
 AWT_species_set_root::~AWT_species_set_root() {
-    int i;
-    for (i=0; i<nsets; i++) {
-        delete sets[i];
-    }
+    for (int i=0; i<nsets; i++) delete sets[i];
     free(sets);
+    GBS_free_hash(species_hash);
 }
 
 void AWT_species_set_root::add(const char *species_name) {
@@ -68,13 +63,14 @@ AWT_species_set *AWT_species_set_root::search_best_match(const AWT_species_set *
 
     AWT_species_set *result = 0;
     best_cost               = LONG_MAX;
-    unsigned char   *sbs    = set->bitstring;
+
+    unsigned char *sbs = set->bitstring;
     for (long i=nsets-1; i>=0; i--) {
-        long j;
-        long sum = 0;
+        long           sum = 0;
         unsigned char *rsb = sets[i]->bitstring;
-        for (j=nspecies/8 -1 + 1; j>=0; j--) {
-            sum += diff_bits[(sbs[j]) ^ (rsb[j])];
+
+        for (long j=bitstring_bytes()-1; j>=0; j--) {
+            sum += diff_bits[ sbs[j] ^ rsb[j] ];
         }
         if (sum > nspecies/2) sum = nspecies - sum; // take always the minimum
         if (sum < best_cost) {
@@ -110,13 +106,17 @@ int AWT_species_set_root::search_and_remember_best_match_and_log_errors(const AW
     return net_cost;
 }
 
-void AWT_species_set::init(long nspecies) {
+void AWT_species_set::init(AP_tree *nodei, const AWT_species_set_root *ssr) {
     memset((char *)this, 0, sizeof(*this));
-    bitstring = (unsigned char *)GB_calloc(sizeof(char), size_t(nspecies/8)+sizeof(long)+1);
+
+    bitstring  = (unsigned char *)GB_calloc(sizeof(char), ssr->bitstring_longs()*sizeof(long));
+    this->node = nodei;
+    best_cost  = 0x7fffffff;
 }
 
-AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, char *species_name) {
-    init(ssr->nspecies);
+AWT_species_set::AWT_species_set(AP_tree *nodei, const AWT_species_set_root *ssr, const char *species_name) {
+    init(nodei, ssr);
+
     long species_index = GBS_read_hash(ssr->species_hash, species_name);
     if (species_index) {
         bitstring[species_index/8] |= 1 << (species_index % 8);
@@ -124,21 +124,19 @@ AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, char
     else {
         unfound_species_count = 1;
     }
-    this->node = nodei;
-    best_cost = 0x7fffffff;
 }
 
-AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, AWT_species_set *l, AWT_species_set *r) {
-    init(ssr->nspecies);
-    long *lbits = (long *)l->bitstring;
-    long *rbits = (long *)r->bitstring;
-    long *dest = (long *)bitstring;
-    for (long j = ssr->nspecies/8/sizeof(long) - 1 + 1; j>=0; j--) {
+AWT_species_set::AWT_species_set(AP_tree *nodei, const AWT_species_set_root *ssr, const AWT_species_set *l, const AWT_species_set *r) {
+    init(nodei, ssr);
+
+    const long *lbits = (const long *)l->bitstring;
+    const long *rbits = (const long *)r->bitstring;
+    long       *dest  = (long *)bitstring;
+
+    for (long j = ssr->bitstring_longs()-1; j>=0; j--) {
         dest[j] = lbits[j] | rbits[j];
     }
     unfound_species_count = l->unfound_species_count + r->unfound_species_count;
-    this->node = nodei;
-    best_cost = 0x7fffffff;
 }
 
 AWT_species_set::~AWT_species_set() {
@@ -147,15 +145,25 @@ AWT_species_set::~AWT_species_set() {
 
 AWT_species_set *AWT_species_set_root::move_tree_2_ssr(AP_tree *node) {
     AWT_species_set *ss;
+    // Warning: confusing ressource handling:
+    // - leafs are returned "NOT owned by anybody"
+    // - inner nodes are added to and owned by this->sets
+
     if (node->is_leaf) {
         this->add(node->name);
         ss = new AWT_species_set(node, this, node->name);
+        nt_assert(ss->is_leaf_set());
     }
     else {
         AWT_species_set *ls = move_tree_2_ssr(node->get_leftson());
         AWT_species_set *rs = move_tree_2_ssr(node->get_rightson());
+
         ss = new AWT_species_set(node, this, ls, rs);
         this->add(ss);
+        nt_assert(!ss->is_leaf_set());
+
+        if (ls->is_leaf_set()) delete ls;
+        if (rs->is_leaf_set()) delete rs;
     }
     return ss;
 }
@@ -175,7 +183,7 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *node, FIL
         AWT_species_set *rs = ls ? find_best_matches_info(node->get_rightson(), log, compare_node_info) : NULL;
 
         if (rs) {
-            ss = new AWT_species_set(node, this, ls, rs); // Generate new bitstring
+            ss = new AWT_species_set(node, this, ls, rs);
             if (compare_node_info) {
                 int mismatches = search_and_remember_best_match_and_log_errors(ss, log);
                 freenull(ss->node->remark_branch);
@@ -200,7 +208,7 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *node, FIL
             ss = NULL;
         }
     }
-    return ss;                  // return bitstring for this node
+    return ss;
 }
 
 GB_ERROR AWT_species_set_root::copy_node_information(FILE *log, bool delete_old_nodes, bool nodes_with_marked_only) {
@@ -234,7 +242,7 @@ GB_ERROR AWT_species_set_root::copy_node_information(FILE *log, bool delete_old_
             error = GB_delete(cset->node->gb_node);
             if (!error) {
                 cset->node->gb_node = 0;
-                cset->node->name    = 0;
+                freenull(cset->node->name);
             }
         }
 
