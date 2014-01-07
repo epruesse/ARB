@@ -45,7 +45,7 @@ AWT_species_set_root::~AWT_species_set_root() {
     for (i=0; i<nsets; i++) {
         delete sets[i];
     }
-    delete sets;
+    free(sets);
 }
 
 void AWT_species_set_root::add(const char *species_name) {
@@ -110,9 +110,13 @@ int AWT_species_set_root::search_and_remember_best_match_and_log_errors(const AW
     return net_cost;
 }
 
-AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, char *species_name) {
+void AWT_species_set::init(long nspecies) {
     memset((char *)this, 0, sizeof(*this));
-    bitstring = (unsigned char *)GB_calloc(sizeof(char), size_t(ssr->nspecies/8)+sizeof(long)+1);
+    bitstring = (unsigned char *)GB_calloc(sizeof(char), size_t(nspecies/8)+sizeof(long)+1);
+}
+
+AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, char *species_name) {
+    init(ssr->nspecies);
     long species_index = GBS_read_hash(ssr->species_hash, species_name);
     if (species_index) {
         bitstring[species_index/8] |= 1 << (species_index % 8);
@@ -125,8 +129,7 @@ AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, char
 }
 
 AWT_species_set::AWT_species_set(AP_tree *nodei, AWT_species_set_root *ssr, AWT_species_set *l, AWT_species_set *r) {
-    memset((char *)this, 0, sizeof(*this));
-    bitstring = (unsigned char *)GB_calloc(sizeof(char), size_t(ssr->nspecies/8)+5);
+    init(ssr->nspecies);
     long *lbits = (long *)l->bitstring;
     long *rbits = (long *)r->bitstring;
     long *dest = (long *)bitstring;
