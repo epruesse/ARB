@@ -359,7 +359,7 @@ void AWT_graphic_tree::reorder_tree(TreeOrder mode) {
     }
 }
 
-static void show_bootstrap_circle(AW_device *device, const char *bootstrap, double zoom_factor, double max_radius, double len, const Position& center, bool elipsoid, double elip_ysize, int filter) {
+static void show_bootstrap_circle(AW_device *device, const char *bootstrap, double zoom_factor, double max_radius, double len, const Position& center, bool elipsoid, double elip_ysize, int filter) { // @@@ directly pass bootstrap value?
     double radius           = .01 * atoi(bootstrap); // bootstrap values are given in % (0..100)
     if (radius < .1) radius = .1;
 
@@ -2063,12 +2063,12 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             }
 
             AW_click_cd cds(disp_device, (AW_CL)son);
-            if (son->remark_branch) {
+            if (son->get_remark()) {
                 Position remarkPos(n);
                 remarkPos.movey(-scaled_font.ascent*0.1);
-                bool bootstrap_shown = AWT_show_branch_remark(disp_device, son->remark_branch, son->is_leaf, remarkPos, 1, remark_text_filter);
+                bool bootstrap_shown = AWT_show_branch_remark(disp_device, son->get_remark(), son->is_leaf, remarkPos, 1, remark_text_filter);
                 if (show_circle && bootstrap_shown) {
-                    show_bootstrap_circle(disp_device, son->remark_branch, circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, bs_circle_filter);
+                    show_bootstrap_circle(disp_device, son->get_remark(), circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, bs_circle_filter);
                 }
             }
 
@@ -2208,19 +2208,19 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         }
     }
     if (show_circle) {
-        if (at->leftson->remark_branch) {
+        if (at->leftson->get_remark()) {
             AW_click_cd cdl(disp_device, (AW_CL)at->leftson);
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
             z = at->leftlen * .5;
             Position center(x_center + z * cos(w), y_center + z * sin(w));
-            show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, center, false, 0, bs_circle_filter);
+            show_bootstrap_circle(disp_device, at->leftson->get_remark(), circle_zoom_factor, circle_max_size, at->leftlen, center, false, 0, bs_circle_filter);
         }
-        if (at->rightson->remark_branch) {
+        if (at->rightson->get_remark()) {
             AW_click_cd cdr(disp_device, (AW_CL)at->rightson);
             w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
             z = at->rightlen * .5;
             Position center(x_center + z * cos(w), y_center + z * sin(w));
-            show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, center, false, 0, bs_circle_filter);
+            show_bootstrap_circle(disp_device, at->rightson->get_remark(), circle_zoom_factor, circle_max_size, at->rightlen, center, false, 0, bs_circle_filter);
         }
     }
 }

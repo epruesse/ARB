@@ -252,7 +252,7 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
 
 static char *gbt_write_tree_rek_new(const GBT_TREE *node, char *dest, long mode) {
     {
-        char *c1 = node->remark_branch;
+        const char *c1 = node->get_remark();
         if (c1) {
             if (mode == GBT_PUT_DATA) {
                 int c;
@@ -435,7 +435,7 @@ static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
         if (c=='R') {
             p1 = strchr(*data, 1);
             *(p1++) = 0;
-            node->remark_branch = strdup(*data);
+            node->set_remark(*data);
             c = *(p1++);
             *data = p1;
         }
@@ -1246,8 +1246,8 @@ static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat f
         if (format & (NEWICK_GROUPS|NEWICK_REMARKS)) {
             const char *show = NULL;
 
-            if (tree->name          && format&NEWICK_GROUPS)  show = tree->name;
-            if (tree->remark_branch && format&NEWICK_REMARKS) show = tree->remark_branch;
+            if (tree->name         && format&NEWICK_GROUPS)  show = tree->name;
+            if (tree->get_remark() && format&NEWICK_REMARKS) show = tree->get_remark();
 
             if (show) {
                 out.put('\'');

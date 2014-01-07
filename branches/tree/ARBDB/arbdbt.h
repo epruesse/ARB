@@ -31,6 +31,8 @@
     DEFINE_DOWNCAST_ACCESSORS(TreeType, get_leftson, leftson);  \
     DEFINE_DOWNCAST_ACCESSORS(TreeType, get_rightson, rightson)
 
+enum GBT_RemarkType { REMARK_NONE, REMARK_BOOTSTRAP, REMARK_OTHER };
+
 struct GBT_TREE : virtual Noncopyable {
     bool      is_leaf;
     GBT_TREE *father, *leftson, *rightson;
@@ -38,6 +40,7 @@ struct GBT_TREE : virtual Noncopyable {
     GBDATA   *gb_node;
     char     *name;
 
+private:
     char *remark_branch; // remark_branch normally contains some bootstrap value in format 'xx%'
                          // if you store other info there, please make sure that this info does not start with digits!!
                          // Otherwise the tree export routines will not work correctly!
@@ -54,6 +57,12 @@ protected:
             self_ref() = NULL;
             father     = NULL;
         }
+    }
+
+    char *swap_remark(char *new_remark) {
+        char *result  = remark_branch;
+        remark_branch = new_remark;
+        return result;
     }
 
 public:
@@ -107,6 +116,24 @@ public:
     void scale_branchlengths(double factor);
     void bootstrap2branchlen();                     // copy bootstraps to branchlengths
     void branchlen2bootstrap();                     // copy branchlengths to bootstraps
+
+    GBT_RemarkType parse_bootstrap(double& bootstrap) const {
+        /*! analyse 'remark_branch' and return GBT_RemarkType.
+         * If result is REMARK_BOOTSTRAP, 'bootstrap' contains the bootstrap value
+         */
+        if (!remark_branch) return REMARK_NONE;
+
+        const char *end = 0;
+        bootstrap       = strtod(remark_branch, (char**)&end);
+
+        bool is_bootstrap = end[0] == '%' && end[1] == 0;
+        return is_bootstrap ? REMARK_BOOTSTRAP : REMARK_OTHER;
+    }
+    const char *get_remark() const { return remark_branch; }
+    void use_as_remark(char *newRemark) { freeset(remark_branch, newRemark); }
+    void set_remark(const char *newRemark) { freedup(remark_branch, newRemark); }
+    void set_bootstrap(double bootstrap) { use_as_remark(GBS_global_string_copy("%i%%", int(bootstrap+0.5))); } // @@@ protect against "100%"?
+    void remove_remark() { use_as_remark(NULL); }
 };
 
 struct TreeNodeFactory {

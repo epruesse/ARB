@@ -185,12 +185,10 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *node, FIL
         if (rs) {
             ss = new AWT_species_set(node, this, ls, rs);
             if (compare_node_info) {
-                int mismatches = search_and_remember_best_match_and_log_errors(ss, log);
-                freenull(ss->node->remark_branch);
-                if (mismatches) {
-                    // the #-sign is important (otherwise TREE_write_Newick will not work correctly; interference with bootstrap values!)
-                    ss->node->remark_branch = GBS_global_string_copy("# %i", mismatches);
-                }
+                int   mismatches = search_and_remember_best_match_and_log_errors(ss, log);
+                // the #-sign is important (otherwise TREE_write_Newick will not work correctly; interference with bootstrap values!)
+                char *new_remark = mismatches ? GBS_global_string_copy("# %i", mismatches) : NULL;
+                node->use_as_remark(new_remark);
             }
             else {
                 if (node->name) {

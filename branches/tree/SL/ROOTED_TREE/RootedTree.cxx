@@ -174,15 +174,11 @@ void RootedTree::set_root() {
     RootedTree *old_root    = get_root_node();
     RootedTree *old_brother = is_inside(old_root->get_leftson()) ? old_root->get_rightson() : old_root->get_leftson();
 
+    // move remark branches to top
     {
-        // move remark branches to top
-        RootedTree *node;
-        char     *remark = nulldup(remark_branch);
-
-        for (node = this; node->father; node = node->get_father()) {
-            char *sh            = node->remark_branch;
-            node->remark_branch = remark;
-            remark              = sh;
+        char *remark = nulldup(get_remark());
+        for (RootedTree *node = this; node->father; node = node->get_father()) {
+            remark = node->swap_remark(remark);
         }
         free(remark);
     }

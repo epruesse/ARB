@@ -130,17 +130,13 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
         fputc(')', out);
 
         char *bootstrap = 0;
-
-        if (tree->remark_branch && save_bootstraps) {
-            const char *boot = tree->remark_branch;
-            if (boot[strlen(boot)-1] == '%') { // does remark_branch contain a bootstrap value ?
-                char   *end = 0;
-                double  val = strtod(boot, &end);
-                tree_assert(end[0] == '%');        // otherwise sth strange is contained in remark_branch
-
-                boot = GBS_global_string("%i", int(val+0.5));
+        if (save_bootstraps) {
+            double value;
+            switch (tree->parse_bootstrap(value)) {
+                case REMARK_BOOTSTRAP: bootstrap = GBS_global_string_copy("%i", int(value+0.5)); break;
+                case REMARK_OTHER:     bootstrap = strdup(tree->get_remark()); break;
+                case REMARK_NONE:      break;
             }
-            bootstrap = strdup(boot);
         }
 
         const char *group = (tree->name && save_groupnames) ? tree->name : 0;
@@ -182,20 +178,18 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
         item_tag.add_attribute("length", GBS_global_string("%.5f", my_length));
     }
     else {
-        char *groupname = 0;
         char *bootstrap = 0;
-
-        if (tree->remark_branch) {
-            const char *boot = tree->remark_branch;
-            if (boot[0] && boot[strlen(boot)-1] == '%') { // does remark_branch contain a bootstrap value ?
-                char   *end = 0;
-                double  val = strtod(boot, &end);
-
-                tree_assert(end[0] == '%');          // otherwise sth strange is contained in remark_branch
-                bootstrap = GBS_global_string_copy("%i", int(val+0.5));
+        {
+            double value;
+            switch (tree->parse_bootstrap(value)) {
+                case REMARK_BOOTSTRAP: bootstrap = GBS_global_string_copy("%i", int(value+0.5)); break;
+                case REMARK_OTHER:     break; // @@@ other branch-remarks are currently not saved into xml format
+                case REMARK_NONE:      break;
             }
         }
-        bool folded = false;
+
+        bool  folded    = false;
+        char *groupname = 0;
         if (tree->name) {
             const char *buf;
 

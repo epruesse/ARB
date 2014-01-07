@@ -21,16 +21,6 @@ struct RB_INFO {
     int         percent;    // branch probability [0..100]
 };
 
-
-#define RMSTRLEN 81
-
-static char *rb_remark(int perc) {
-    // create bootstrap remark (@@@ replace by GBT_TREE method) 
-    char *txt2 = (char *) getmem(RMSTRLEN);
-    sprintf(txt2, "%i%%", perc);
-    return txt2;
-}
-
 static int GBT_TREE_order(const GBT_TREE *t1, const GBT_TREE *t2) {
     // define a strict order on trees
 
@@ -99,9 +89,9 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
     }
     else {
         tnode->is_leaf = false;
-        arb_assert(!tnode->remark_branch);
+        arb_assert(!tnode->get_remark());
         if (info->percent < 100) {
-            tnode->remark_branch = rb_remark(info->percent);
+            tnode->set_bootstrap(info->percent);
         }
 
         int      multifurc = ntree_count_sons(tree);
