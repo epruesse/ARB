@@ -1231,23 +1231,23 @@ static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat f
     else {
         out.put('(');
         tree2newick(tree->leftson, out, format);
-        if (format&NEWICK_LENGTHS) {
+        if (format&nLENGTH) {
             out.put(':');
             out.nprintf(10, "%5.3f", tree->leftlen);
         }
         out.put(',');
         tree2newick(tree->rightson, out, format);
-        if (format&NEWICK_LENGTHS) {
+        if (format&nLENGTH) {
             out.put(':');
             out.nprintf(10, "%5.3f", tree->rightlen);
         }
         out.put(')');
 
-        if (format & (NEWICK_GROUPS|NEWICK_REMARKS)) {
+        if (format & (nGROUP|nREMARK)) {
             const char *show = NULL;
 
-            if (tree->name         && format&NEWICK_GROUPS)  show = tree->name;
-            if (tree->get_remark() && format&NEWICK_REMARKS) show = tree->get_remark();
+            if (tree->name         && format&nGROUP)  show = tree->name;
+            if (tree->get_remark() && format&nREMARK) show = tree->get_remark();
 
             if (show) {
                 out.put('\'');
@@ -1259,7 +1259,7 @@ static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat f
 }
 
 char *GBT_tree_2_newick(const GBT_TREE *tree, NewickFormat format) {
-    gb_assert(!(format&NEWICK_GROUPS && format&NEWICK_REMARKS)); // cannot be used together
+    gb_assert(!(format&nGROUP && format&nREMARK)); // cannot be used together
     GBS_strstruct out(1000);
     if (tree) tree2newick(tree, out, format);
     out.put(';');
@@ -1336,8 +1336,8 @@ void TEST_copy_rename_delete_tree_order() {
 
                 free(species);
 
-                TEST_EXPECT_NEWICK_EQUAL(tree, "(CloButyr,(CloButy2,((CorGluta,(CorAquat,CurCitre)),CytAquat)));");
-                TEST_EXPECT_NEWICK_EQUAL(NULL, ";");
+                TEST_EXPECT_NEWICK(nSIMPLE, tree, "(CloButyr,(CloButy2,((CorGluta,(CorAquat,CurCitre)),CytAquat)));");
+                TEST_EXPECT_NEWICK(nSIMPLE, NULL, ";");
 
                 delete tree;
             }
@@ -1521,7 +1521,7 @@ void TEST_tree_remove_leafs() {
                     TEST_EXPECT_EQUAL(duplicates, 0);
                 }
 
-                if (once) TEST_EXPECT_NEWICK_LEN_EQUAL(tree, org_topo);
+                if (once) TEST_EXPECT_NEWICK(nLENGTH, tree, org_topo);
 
                 int removedCount       = 0;
                 int groupsRemovedCount = 0;
@@ -1535,24 +1535,24 @@ void TEST_tree_remove_leafs() {
                         case GBT_REMOVE_MARKED:
                             TEST_EXPECT_EQUAL(removedCount, 6);
                             TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
-                            TEST_EXPECT_NEWICK_LEN_EQUAL(tree, rem_marked_topo);
+                            TEST_EXPECT_NEWICK(nLENGTH, tree, rem_marked_topo);
                             what_next = GBT_REMOVE_UNMARKED;
                             break;
                         case GBT_REMOVE_UNMARKED:
                             TEST_EXPECT_EQUAL(removedCount, 9);
                             TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
-                            TEST_EXPECT_NEWICK_LEN_EQUAL(tree, rem_unmarked_topo);
+                            TEST_EXPECT_NEWICK(nLENGTH, tree, rem_unmarked_topo);
                             what_next = GBT_REMOVE_MARKED;
                             break;
                         case GBT_REMOVE_ZOMBIES:
                             TEST_EXPECT_EQUAL(removedCount, 2);
                             TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
-                            TEST_EXPECT_NEWICK_LEN_EQUAL(tree, rem_zombies_topo);
+                            TEST_EXPECT_NEWICK(nLENGTH, tree, rem_zombies_topo);
                             break;
                         case GBT_KEEP_MARKED:
                             TEST_EXPECT_EQUAL(removedCount, 11);
                             TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
-                            TEST_EXPECT_NEWICK_LEN_EQUAL(tree, kept_marked_topo);
+                            TEST_EXPECT_NEWICK(nLENGTH, tree, kept_marked_topo);
                             what_next = GBT_REMOVE_MARKED;
                             break;
                     }
@@ -1565,19 +1565,19 @@ void TEST_tree_remove_leafs() {
                             case GBT_REMOVE_MARKED: // + GBT_REMOVE_UNMARKED
                                 TEST_EXPECT_EQUAL(removedCount, 16);
                                 TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
-                                TEST_EXPECT_NEWICK_LEN_EQUAL__BROKEN(tree, kept_zombies_topo);
-                                TEST_EXPECT_NEWICK_LEN_EQUAL(tree, kept_zombies_broken_topo); // @@@ invalid topology (single leaf)
+                                TEST_EXPECT_NEWICK__BROKEN(nLENGTH, tree, kept_zombies_topo);
+                                TEST_EXPECT_NEWICK(nLENGTH, tree, kept_zombies_broken_topo); // @@@ invalid topology (single leaf)
                                 break;
                             case GBT_REMOVE_UNMARKED: // + GBT_REMOVE_MARKED
                                 TEST_EXPECT_EQUAL(removedCount, 15);
                                 TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
-                                TEST_EXPECT_NEWICK_LEN_EQUAL(tree, kept_zombies_topo);
+                                TEST_EXPECT_NEWICK(nLENGTH, tree, kept_zombies_topo);
                                 break;
                             case GBT_KEEP_MARKED: // + GBT_REMOVE_MARKED
                                 TEST_EXPECT_EQUAL(removedCount, 17);
                                 TEST_EXPECT_EQUAL__BROKEN(groupsRemovedCount, 2); // @@@ expect that all groups have been removed! 
                                 TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
-                                TEST_EXPECT_NEWICK_LEN_EQUAL(tree, empty_topo);
+                                TEST_EXPECT_NEWICK(nLENGTH, tree, empty_topo);
                                 break;
                             default:
                                 TEST_REJECT(true);
@@ -1591,13 +1591,13 @@ void TEST_tree_remove_leafs() {
                         case GBT_REMOVE_UNMARKED:
                             TEST_EXPECT_EQUAL(removedCount, 0);
                             TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
-                            TEST_EXPECT_NEWICK_LEN_EQUAL(tree, org_topo);
+                            TEST_EXPECT_NEWICK(nLENGTH, tree, org_topo);
                             break;
                         case GBT_REMOVE_ZOMBIES:
                         case GBT_KEEP_MARKED:
                             TEST_EXPECT_EQUAL(removedCount, 17);
                             TEST_EXPECT_EQUAL(groupsRemovedCount, 2);
-                            TEST_EXPECT_NEWICK_LEN_EQUAL(tree, empty_topo);
+                            TEST_EXPECT_NEWICK(nLENGTH, tree, empty_topo);
                             break;
                     }
                 }

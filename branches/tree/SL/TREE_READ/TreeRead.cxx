@@ -721,7 +721,7 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
     expected.add(that(tree).does_differ_from_NULL());
     expected.add(that(GB_get_error()).is_equal_to_NULL());
     if (!GB_have_error() && tree) {
-        char *newick = GBT_tree_2_newick(tree, NEWICK_SIMPLE);
+        char *newick = GBT_tree_2_newick(tree, nSIMPLE);
         expected.add(that(newick).is_equal_to(newick_expected));
         free(newick);
     }

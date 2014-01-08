@@ -950,35 +950,6 @@ AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, AWT_canvas
 #include <test_unit.h>
 #endif
 
-static arb_test::match_expectation saved_newick_equals(GBDATA *gb_main, const char *treename, const char *expected_newick, NewickFormat format) {
-    using namespace    arb_test;
-    expectation_group  expected;
-    GB_transaction     ta(gb_main);
-    GBT_TREE          *tree = GBT_read_tree(gb_main, treename, GBT_TREE_NodeFactory());
-
-    expected.add(that(tree).does_differ_from_NULL());
-    if (tree) {
-        char *newick = GBT_tree_2_newick(tree, format);
-        expected.add(that(newick).is_equal_to(expected_newick));
-        free(newick);
-        delete tree;
-    }
-    return all().ofgroup(expected);
-}
-
-#define TEST_EXPECT_SAVED_NEWICK_LEN_EQUAL(gbmain,treename,expected_newick)         TEST_EXPECTATION(saved_newick_equals(gbmain, treename, expected_newick, NEWICK_LENGTHS))
-#define TEST_EXPECT_SAVED_NEWICK_LEN_EQUAL__BROKEN(gbmain,treename,expected_newick) TEST_EXPECTATION__BROKEN(saved_newick_equals(gbmain, treename, expected_newick, NEWICK_LENGTHS))
-
-#define TEST_EXPECT_SAVED_NEWICK_EQUAL(gbmain,treename,expected_newick)         TEST_EXPECTATION(saved_newick_equals(gbmain, treename, expected_newick, NEWICK_SIMPLE))
-#define TEST_EXPECT_SAVED_NEWICK_EQUAL__BROKEN(gbmain,treename,expected_newick) TEST_EXPECTATION__BROKEN(saved_newick_equals(gbmain, treename, expected_newick, NEWICK_SIMPLE))
-
-#define TEST_EXPECT_SAVED_NEWICK_GROUPS_EQUAL(gbmain,treename,expected_newick)         TEST_EXPECTATION(saved_newick_equals(gbmain, treename, expected_newick, NEWICK_GROUPS))
-#define TEST_EXPECT_SAVED_NEWICK_GROUPS_EQUAL__BROKEN(gbmain,treename,expected_newick) TEST_EXPECTATION__BROKEN(saved_newick_equals(gbmain, treename, expected_newick, NEWICK_GROUPS))
-
-#define TEST_EXPECT_SAVED_NEWICK_REMARKS_EQUAL(gbmain,treename,expected_newick)         TEST_EXPECTATION(saved_newick_equals(gbmain, treename, expected_newick, NEWICK_REMARKS))
-#define TEST_EXPECT_SAVED_NEWICK_REMARKS_EQUAL__BROKEN(gbmain,treename,expected_newick) TEST_EXPECTATION__BROKEN(saved_newick_equals(gbmain, treename, expected_newick, NEWICK_REMARKS))
-
-
 void TEST_sort_tree_by_other_tree() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
@@ -997,10 +968,10 @@ void TEST_sort_tree_by_other_tree() {
         GB_transaction  ta(gb_main);
         SizeAwareTree  *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
         TEST_REJECT_NULL(tree);
-        TEST_EXPECT_NEWICK_LEN_EQUAL(tree, topo_test);
+        TEST_EXPECT_NEWICK(nLENGTH, tree, topo_test);
 
-        tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_center", tree)); TEST_EXPECT_NEWICK_LEN_EQUAL(tree, topo_center);
-        tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_bottom", tree)); TEST_EXPECT_NEWICK_LEN_EQUAL(tree, topo_bottom);
+        tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_center", tree)); TEST_EXPECT_NEWICK(nLENGTH, tree, topo_center);
+        tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_bottom", tree)); TEST_EXPECT_NEWICK(nLENGTH, tree, topo_bottom);
 
         // test SortByTopo
         {
@@ -1021,9 +992,9 @@ void TEST_sort_tree_by_other_tree() {
     }
 
 
-    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_center")); TEST_EXPECT_SAVED_NEWICK_LEN_EQUAL(gb_main, "tree_work", topo_center);
-    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_bottom")); TEST_EXPECT_SAVED_NEWICK_LEN_EQUAL(gb_main, "tree_work", topo_bottom);
-    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_test"));          TEST_EXPECT_SAVED_NEWICK_LEN_EQUAL(gb_main, "tree_work", topo_test);
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_center")); TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_center);
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_bottom")); TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_bottom);
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_test"));          TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_test);
 
     GB_close(gb_main);
 }
@@ -1052,7 +1023,7 @@ void TEST_move_node_info() {
         GB_transaction  ta(gb_main);
         GBT_TREE       *tree = GBT_read_tree(gb_main, "tree_removal", GBT_TREE_NodeFactory());
 
-        TEST_EXPECT_NEWICK_EQUAL(tree, org_topo);
+        TEST_EXPECT_NEWICK(nSIMPLE, tree, org_topo);
         TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_removal_copy", tree));
         delete tree;
     }
@@ -1061,34 +1032,34 @@ void TEST_move_node_info() {
     {
         TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_test", "tree_removal", "move_node_info.log", TREE_INFO_COPY, false));
 
-        TEST_EXPECT_SAVED_NEWICK_EQUAL__BROKEN(gb_main, "tree_removal", org_topo); // @@@ moving node info modifies topology (might be necessary to insert groups)
-        TEST_EXPECT_SAVED_NEWICK_GROUPS_EQUAL(gb_main, "tree_removal", unwanted_topo1);
+        TEST_EXPECT_SAVED_NEWICK__BROKEN(nSIMPLE, gb_main, "tree_removal", org_topo); // @@@ moving node info modifies topology (might be necessary to insert groups)
+        TEST_EXPECT_SAVED_NEWICK(nGROUP, gb_main, "tree_removal", unwanted_topo1);
 
         // @@@ when we have a function to set the root according to another tree (#449),
         // use that function here. sorting tree after that, should again result in 'org_topo'!
 
         TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_removal", "tree_removal_copy"));
-        TEST_EXPECT_SAVED_NEWICK_GROUPS_EQUAL(gb_main, "tree_removal", sorted_topo1);
+        TEST_EXPECT_SAVED_NEWICK(nGROUP, gb_main, "tree_removal", sorted_topo1);
     }
 
     // add node info
     {
         TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_tree2", "tree_removal", "move_node_info.log", TREE_INFO_ADD, false));
 
-        TEST_EXPECT_SAVED_NEWICK_EQUAL__BROKEN(gb_main, "tree_removal", org_topo); // @@@ moving node info modifies topology (might be necessary to insert groups)
-        TEST_EXPECT_SAVED_NEWICK_GROUPS_EQUAL(gb_main, "tree_removal", unwanted_topo2);
+        TEST_EXPECT_SAVED_NEWICK__BROKEN(nSIMPLE, gb_main, "tree_removal", org_topo); // @@@ moving node info modifies topology (might be necessary to insert groups)
+        TEST_EXPECT_SAVED_NEWICK(nGROUP, gb_main, "tree_removal", unwanted_topo2);
 
         // @@@ when we have a function to set the root according to another tree (#449),
         // use that function here. sorting tree after that, should again result in 'org_topo'!
 
         TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_removal", "tree_removal_copy"));
-        TEST_EXPECT_SAVED_NEWICK_GROUPS_EQUAL(gb_main, "tree_removal", sorted_topo2);
+        TEST_EXPECT_SAVED_NEWICK(nGROUP, gb_main, "tree_removal", sorted_topo2);
     }
 
     // compare node info
     {
         TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_test", "tree_removal", NULL, TREE_INFO_COMPARE, false));
-        TEST_EXPECT_SAVED_NEWICK_REMARKS_EQUAL(gb_main, "tree_removal", compared_topo);
+        TEST_EXPECT_SAVED_NEWICK(nREMARK, gb_main, "tree_removal", compared_topo);
     }
 
     GB_close(gb_main);

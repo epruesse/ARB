@@ -525,13 +525,13 @@ void TEST_tree_modifications() {
 
         TEST_ASSERT_VALID_TREE(root);
 
-        TEST_EXPECT_NEWICK_LEN_EQUAL(root, top_topo);
+        TEST_EXPECT_NEWICK(nLENGTH, root, top_topo);
         // test reorder_tree:
-        root->reorder_tree(BIG_BRANCHES_TO_EDGE);     TEST_EXPECT_NEWICK_LEN_EQUAL(root, edge_topo);    env.push(); // 2nd stack level (=edge_topo)
-        root->reorder_tree(BIG_BRANCHES_TO_BOTTOM);   TEST_EXPECT_NEWICK_LEN_EQUAL(root, bottom_topo);  env.push(); // 3rd stack level (=bottom_topo)
-        root->reorder_tree(BIG_BRANCHES_TO_CENTER);   TEST_EXPECT_NEWICK_LEN_EQUAL(root, radial_topo);
-        root->reorder_tree(BIG_BRANCHES_ALTERNATING); TEST_EXPECT_NEWICK_LEN_EQUAL(root, radial_topo2);
-        root->reorder_tree(BIG_BRANCHES_TO_TOP);      TEST_EXPECT_NEWICK_LEN_EQUAL(root, top_topo);
+        root->reorder_tree(BIG_BRANCHES_TO_EDGE);     TEST_EXPECT_NEWICK(nLENGTH, root, edge_topo);    env.push(); // 2nd stack level (=edge_topo)
+        root->reorder_tree(BIG_BRANCHES_TO_BOTTOM);   TEST_EXPECT_NEWICK(nLENGTH, root, bottom_topo);  env.push(); // 3rd stack level (=bottom_topo)
+        root->reorder_tree(BIG_BRANCHES_TO_CENTER);   TEST_EXPECT_NEWICK(nLENGTH, root, radial_topo);
+        root->reorder_tree(BIG_BRANCHES_ALTERNATING); TEST_EXPECT_NEWICK(nLENGTH, root, radial_topo2);
+        root->reorder_tree(BIG_BRANCHES_TO_TOP);      TEST_EXPECT_NEWICK(nLENGTH, root, top_topo);
 
         TEST_ASSERT_VALID_TREE(root);
 
@@ -549,7 +549,7 @@ void TEST_tree_modifications() {
             "(((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,"
             "((((" B3_TOP_SONS "):0.162," B2_TOP "):0.124,CloBifer:0.388):0.057,CloInnoc:0.371):0.274):0.004);";
 
-        TEST_EXPECT_NEWICK_LEN_EQUAL(root, rootAtCloTyrob_topo);
+        TEST_EXPECT_NEWICK(nLENGTH, root, rootAtCloTyrob_topo);
         env.push(); // 4th stack level (=rootAtCloTyrob_topo)
 
         TEST_ASSERT_VALID_TREE(root);
@@ -559,7 +559,7 @@ void TEST_tree_modifications() {
         CelBiazoFather->set_root();
 
         const char *rootAtCelBiazoFather_topo = "(" B3_LEFT_TOP_SONS ":0.104,((" B1_TOP "," B2_TOP "):0.162,CytAquat:0.711):0.104);";
-        TEST_EXPECT_NEWICK_LEN_EQUAL(root, rootAtCelBiazoFather_topo);
+        TEST_EXPECT_NEWICK(nLENGTH, root, rootAtCelBiazoFather_topo);
 
         TEST_ASSERT_VALID_TREE(root);
 
@@ -567,7 +567,7 @@ void TEST_tree_modifications() {
         DOWNCAST(AP_tree_nlen*,oldRootEdge.son())->set_root();
 
         const char *rootSetBack_topo = top_topo;
-        TEST_EXPECT_NEWICK_LEN_EQUAL(root, rootSetBack_topo);
+        TEST_EXPECT_NEWICK(nLENGTH, root, rootSetBack_topo);
         env.push(); // 5th stack level (=rootSetBack_topo)
 
         TEST_ASSERT_VALID_TREE(root);
@@ -580,7 +580,7 @@ void TEST_tree_modifications() {
         CurCitre->remove();
         const char *CurCitre_removed_topo = "((" B1_TOP "," B2_TOP "):0.081,(" B3_TOP_SONS_CCR "):0.081);";
         // ------------------------------------------------------------------- ^^^ = B3_TOP_SONS minus CurCitre
-        TEST_EXPECT_NEWICK_LEN_EQUAL(root, CurCitre_removed_topo);
+        TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_removed_topo);
 
         TEST_ASSERT_VALID_TREE(root);
         TEST_ASSERT_VALID_TREE(CurCitre);
@@ -599,7 +599,7 @@ void TEST_tree_modifications() {
         CurCitre->insert(CloCarni); // this creates two extra edges (not destroyed by destroy() below) and one extra node
 
         const char *CurCitre_inserted_topo = "((" B1_TOP ",(((CloButy2:0.009,CloButyr:0.000):0.564,(CurCitre:0.060,CloCarni:0.060):0.060):0.010,CloPaste:0.179):0.131):0.081,(" B3_TOP_SONS_CCR "):0.081);";
-        TEST_EXPECT_NEWICK_LEN_EQUAL(root, CurCitre_inserted_topo);
+        TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_inserted_topo);
 
         AP_tree_nlen *node_del_manually  = CurCitre->get_father();
         AP_tree_edge *edge1_del_manually = CurCitre->edgeTo(node_del_manually);
@@ -608,12 +608,12 @@ void TEST_tree_modifications() {
         TEST_ASSERT_VALID_TREE(root);
 
         // now check pops:
-        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, CurCitre_removed_topo);
-        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, rootSetBack_topo);
-        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, rootAtCloTyrob_topo);
-        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, bottom_topo);
-        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, edge_topo);
-        env.pop(); TEST_EXPECT_NEWICK_LEN_EQUAL(root, top_topo);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_removed_topo);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootSetBack_topo);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootAtCloTyrob_topo);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, bottom_topo);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, edge_topo);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, top_topo);
 
         TEST_ASSERT_VALID_TREE(root);
 
@@ -654,10 +654,10 @@ void TEST_calc_bootstraps() {
         AP_tree_edge *root_edge = rootEdge();
         TEST_REJECT_NULL(root_edge);
 
-        root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK_REMARK_EQUAL(root, bs_origi_topo);
+        root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_origi_topo);
 
-        root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK_REMARK_EQUAL(root, bs_limit_topo);
-        root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK_REMARK_EQUAL(root, bs_estim_topo);
+        root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_limit_topo);
+        root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_estim_topo);
 
         TEST_EXPECT_EQUAL(env.tree_root(), root);
         AP_tree_edge::destroy(root);

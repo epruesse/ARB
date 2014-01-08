@@ -1253,42 +1253,6 @@ namespace arb_test {
 #define TEST_EXPECT_MEM_EQUAL(m1,m2,size)         TEST_EXPECT(arb_test::memory_is_equal(m1,m2,size)) 
 #define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size) TEST_EXPECT__BROKEN(arb_test::memory_is_equal(m1,m2,size)) 
 
-#define TEST_EXPECT_NEWICK_EQUAL(tree,expected_newick) do{      \
-        char *newick = GBT_tree_2_newick(tree, NEWICK_SIMPLE);  \
-        TEST_EXPECT_EQUAL(newick,expected_newick);              \
-        free(newick);                                           \
-    }while(0)
-
-#define TEST_EXPECT_NEWICK_LEN_EQUAL(tree,expected_newick) do{      \
-        char *newick = GBT_tree_2_newick(tree, NEWICK_LENGTHS);     \
-        TEST_EXPECT_EQUAL(newick,expected_newick);                  \
-        free(newick);                                               \
-    }while(0)
-
-#define TEST_EXPECT_NEWICK_REMARK_EQUAL(tree,expected_newick) do{   \
-        char *newick = GBT_tree_2_newick(tree, NEWICK_REMARKS);     \
-        TEST_EXPECT_EQUAL(newick,expected_newick);                  \
-        free(newick);                                               \
-    }while(0)
-
-#define TEST_EXPECT_NEWICK_EQUAL__BROKEN(tree,expected_newick) do{      \
-        char *newick = GBT_tree_2_newick(tree, NEWICK_SIMPLE);          \
-        TEST_EXPECT_EQUAL__BROKEN(newick,expected_newick);              \
-        free(newick);                                                   \
-    }while(0)
-
-#define TEST_EXPECT_NEWICK_LEN_EQUAL__BROKEN(tree,expected_newick) do{  \
-        char *newick = GBT_tree_2_newick(tree, NEWICK_LENGTHS);         \
-        TEST_EXPECT_EQUAL__BROKEN(newick,expected_newick);              \
-        free(newick);                                                   \
-    }while(0)
-
-#define TEST_EXPECT_NEWICK_REMARK_EQUAL__BROKEN(tree,expected_newick) do{  \
-        char *newick = GBT_tree_2_newick(tree, NEWICK_REMARKS);            \
-        TEST_EXPECT_EQUAL__BROKEN(newick,expected_newick);                 \
-        free(newick);                                                      \
-    }while(0)
-
 #else
 
 #define WARN_MISS_ARBDIFF() need_include__arb_diff_h__BEFORE__test_unit_h
@@ -1303,8 +1267,6 @@ namespace arb_test {
 #define TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(f1,f2)                      WARN_MISS_ARBDIFF()
 #define TEST_EXPECT_MEM_EQUAL(m1,m2,size)                               WARN_MISS_ARBDIFF()
 #define TEST_EXPECT_MEM_EQUAL__BROKEN(m1,m2,size)                       WARN_MISS_ARBDIFF()
-#define TEST_EXPECT_NEWICK_EQUAL(tree,expected_newick)                  WARN_MISS_ARBDIFF()
-#define TEST_EXPECT_NEWICK_LEN_EQUAL(tree,expected_newick)              WARN_MISS_ARBDIFF()
 
 #define memory_is_equal(m1,m2,size)                    WARN_MISS_ARBDIFF()
 #define files_are_equal(f1,f2)                         WARN_MISS_ARBDIFF()
@@ -1312,6 +1274,49 @@ namespace arb_test {
 #define textfiles_have_difflines_ignoreDates(f1,f2,ed) WARN_MISS_ARBDIFF()
 
 #endif // ARB_DIFF_H
+
+// --------------------------------------------------------------------------------
+
+#ifdef ARBDBT_H
+
+namespace arb_test {
+    inline match_expectation expect_newick_equals(NewickFormat format, const GBT_TREE *tree, const char *expected_newick) {
+        char              *newick   = GBT_tree_2_newick(tree, format);
+        match_expectation  expected = that(newick).is_equal_to(expected_newick);
+        free(newick);
+        return expected;
+    }
+    inline match_expectation saved_newick_equals(NewickFormat format, GBDATA *gb_main, const char *treename, const char *expected_newick) {
+        expectation_group  expected;
+        GB_transaction     ta(gb_main);
+        GBT_TREE          *tree = GBT_read_tree(gb_main, treename, GBT_TREE_NodeFactory());
+
+        expected.add(that(tree).does_differ_from_NULL());
+        if (tree) {
+            expected.add(expect_newick_equals(format, tree, expected_newick));
+            delete tree;
+        }
+        return all().ofgroup(expected);
+    }
+};
+
+#define TEST_EXPECT_NEWICK(format,tree,expected_newick)         TEST_EXPECTATION(arb_test::expect_newick_equals(format, tree, expected_newick))
+#define TEST_EXPECT_NEWICK__BROKEN(format,tree,expected_newick) TEST_EXPECTATION__BROKEN(arb_test::expect_newick_equals(format, tree, expected_newick))
+
+#define TEST_EXPECT_SAVED_NEWICK(format,gb_main,treename,expected_newick)         TEST_EXPECTATION(arb_test::saved_newick_equals(format, gb_main, treename, expected_newick))
+#define TEST_EXPECT_SAVED_NEWICK__BROKEN(format,gb_main,treename,expected_newick) TEST_EXPECTATION__BROKEN(arb_test::saved_newick_equals(format, gb_main, treename, expected_newick))
+
+#else
+
+#define WARN_MISS_ARBDBT() need_include__arbdbt_h__BEFORE__test_unit_h
+
+#define TEST_EXPECT_NEWICK(format,tree,expected_newick)         WARN_MISS_ARBDBT()
+#define TEST_EXPECT_NEWICK__BROKEN(format,tree,expected_newick) WARN_MISS_ARBDBT()
+
+#define TEST_EXPECT_SAVED_NEWICK(format,gb_main,treename,expected_newick)         WARN_MISS_ARBDBT()
+#define TEST_EXPECT_SAVED_NEWICK__BROKEN(format,gb_main,treename,expected_newick) WARN_MISS_ARBDBT()
+
+#endif
 
 // --------------------------------------------------------------------------------
 
