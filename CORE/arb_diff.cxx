@@ -482,5 +482,66 @@ void TEST_logic() {
     }
 }
 
+#include <cmath>
+// #include <math.h>
+
+void TEST_naninf() {
+    double num  = 3.1415;
+    double zero = num-num;
+    double inf  = num/zero;
+    double ninf = -inf;
+    double nan  = 0*inf;
+
+    TEST_EXPECT_DIFFERENT(inf, ninf);
+    TEST_EXPECT_EQUAL(ninf, -1.0/zero);
+
+    // decribe how isnan, isinf and isnormal shall behave:
+#define TEST_ISINF(isinf_fun)           \
+    TEST_EXPECT(isinf_fun(inf));        \
+    TEST_EXPECT(isinf_fun(ninf));       \
+    TEST_EXPECT(isinf_fun(INFINITY));   \
+    TEST_EXPECT(!isinf_fun(nan));       \
+    TEST_EXPECT(!isinf_fun(NAN));       \
+    TEST_EXPECT(!isinf_fun(num));       \
+    TEST_EXPECT(!isinf_fun(zero))
+
+#define TEST_ISNAN(isnan_fun)           \
+    TEST_EXPECT(isnan_fun(nan));        \
+    TEST_EXPECT(isnan_fun(NAN));        \
+    TEST_EXPECT(!isnan_fun(inf));       \
+    TEST_EXPECT(!isnan_fun(ninf));      \
+    TEST_EXPECT(!isnan_fun(INFINITY));  \
+    TEST_EXPECT(!isnan_fun(zero));  \
+    TEST_EXPECT(!isnan_fun(num))
+
+#define TEST_ISNORMAL(isnormal_fun)             \
+    TEST_EXPECT(isnormal_fun(num));             \
+    TEST_EXPECT(!isnormal_fun(zero));           \
+    TEST_EXPECT(!isnormal_fun(inf));            \
+    TEST_EXPECT(!isnormal_fun(ninf));           \
+    TEST_EXPECT(!isnormal_fun(nan));            \
+    TEST_EXPECT(!isnormal_fun(INFINITY));       \
+    TEST_EXPECT(!isnormal_fun(NAN))
+
+    // check behavior of arb templates:
+    TEST_ISNAN(is_nan);
+    TEST_ISINF(is_inf);
+    TEST_ISNORMAL(is_normal);
+
+    // document behavior of math.h macros:
+    TEST_ISNAN(isnan);
+#if (GCC_VERSION_CODE<=404)
+    // TEST_ISINF(isinf); // isinf macro is broken (gcc 4.4.3)
+    TEST_EXPECT__BROKEN(isinf(ninf)); // broken; contradicts http://www.cplusplus.com/reference/cmath/isinf/
+#else
+    TEST_ISINF(isinf);
+#endif
+    // TEST_ISNORMAL(isnormal); // ok if <math.h> included,  compile error if <cmath> included
+
+    // check behavior of std-versions:
+    TEST_ISNAN(std::isnan);
+    TEST_ISINF(std::isinf);
+    TEST_ISNORMAL(std::isnormal);
+}
 
 #endif // UNIT_TESTS
