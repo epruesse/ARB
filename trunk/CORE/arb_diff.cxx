@@ -530,7 +530,7 @@ void TEST_naninf() {
 
     // document behavior of math.h macros:
     TEST_ISNAN(isnan);
-#if (GCC_VERSION_CODE<=404)
+#if (403<GCC_VERSION_CODE && GCC_VERSION_CODE<=404)
     // TEST_ISINF(isinf); // isinf macro is broken (gcc 4.4.3)
     TEST_EXPECT__BROKEN(isinf(ninf)); // broken; contradicts http://www.cplusplus.com/reference/cmath/isinf/
 #else
