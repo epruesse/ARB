@@ -1231,35 +1231,33 @@ static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat f
     else {
         out.put('(');
         tree2newick(tree->leftson, out, format);
-        if (format&nLENGTH) {
-            out.put(':');
-            out.nprintf(10, "%5.3f", tree->leftlen);
-        }
         out.put(',');
         tree2newick(tree->rightson, out, format);
-        if (format&nLENGTH) {
-            out.put(':');
-            out.nprintf(10, "%5.3f", tree->rightlen);
-        }
         out.put(')');
 
         if (format & (nGROUP|nREMARK)) {
-            const char *show = NULL;
+            const char *remark = format&nREMARK ? tree->get_remark() : NULL;
+            const char *group  = format&nGROUP ? tree->name : NULL;
 
-            if (tree->name         && format&nGROUP)  show = tree->name;
-            if (tree->get_remark() && format&nREMARK) show = tree->get_remark();
-
-            if (show) {
+            if (remark || group) {
                 out.put('\'');
-                out.cat(show);
+                if (remark) {
+                    out.cat(remark);
+                    if (group) out.put(':');
+                }
+                if (group) out.cat(group);
                 out.put('\'');
             }
         }
     }
+
+    if (format&nLENGTH && !tree->is_root_node()) {
+        out.put(':');
+        out.nprintf(10, "%5.3f", tree->get_branchlength());
+    }
 }
 
 char *GBT_tree_2_newick(const GBT_TREE *tree, NewickFormat format) {
-    gb_assert(!(format&nGROUP && format&nREMARK)); // cannot be used together
     GBS_strstruct out(1000);
     if (tree) tree2newick(tree, out, format);
     out.put(';');
