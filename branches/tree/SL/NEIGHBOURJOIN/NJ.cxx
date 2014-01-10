@@ -13,8 +13,6 @@
 #include <arbdbt.h>
 #include <arb_diff.h>
 
-#define CHECK_NAN(x) if ((!(x>=0.0)) && (!(x<0.0))) *(int *)0 = 0;
-
 PH_NEIGHBOUR_DIST::PH_NEIGHBOUR_DIST()
 {
     memset((char *)this, 0, sizeof(PH_NEIGHBOUR_DIST));

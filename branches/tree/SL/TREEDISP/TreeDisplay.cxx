@@ -970,7 +970,7 @@ public:
           last_drag_pos(start),
           unscale(unscale_)
     {
-        td_assert(unscale == unscale); // !nan
+        td_assert(!is_nan_or_inf(unscale));
     }
 
     void draw_drag_indicator(AW_device *device, int drag_gc) const { draw_scale_indicator(last_drag_pos, device, drag_gc); }
@@ -2295,17 +2295,17 @@ void AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
         float ruler_x = 0.0;
         ruler_x       = ruler_add_x + *GBT_readOrCreate_float(gb_tree, ruler_awar("ruler_x"), ruler_x);
 
-        td_assert(ruler_x == ruler_x); // !nan
+        td_assert(!is_nan_or_inf(ruler_x));
 
         float ruler_text_x = 0.0;
         ruler_text_x       = *GBT_readOrCreate_float(gb_tree, ruler_awar("text_x"), ruler_text_x);
 
-        td_assert(ruler_text_x == ruler_text_x); // !nan
+        td_assert(!is_nan_or_inf(ruler_text_x));
 
         float ruler_text_y = 0.0;
         ruler_text_y       = *GBT_readOrCreate_float(gb_tree, ruler_awar("text_y"), ruler_text_y);
 
-        td_assert(ruler_text_y == ruler_text_y); // !nan
+        td_assert(!is_nan_or_inf(ruler_text_y));
 
         int ruler_width = *GBT_readOrCreate_int(gb_tree, RULER_LINEWIDTH, DEFAULT_RULER_LINEWIDTH);
 
