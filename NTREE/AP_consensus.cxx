@@ -687,7 +687,7 @@ static void CON_calculate_cb(AW_window *aw)
 
 void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def)
 {
-    GB_transaction dummy(GLOBAL.gb_main);
+    GB_transaction ta(GLOBAL.gb_main);
     {
         char *defali = GBT_get_default_alignment(GLOBAL.gb_main);
         aw_root->awar_string("tmp/con/alignment", defali, aw_def);

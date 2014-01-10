@@ -93,7 +93,7 @@ AW_window *NT_create_select_tree_window(AW_root *awr, const char *awar_tree) {
 }
 
 void NT_select_bottom_tree(AW_window *aww, const char *awar_tree) {
-    GB_transaction dummy(GLOBAL.gb_main);
+    GB_transaction ta(GLOBAL.gb_main);
     const char *ltree = GBT_name_of_bottom_tree(GLOBAL.gb_main);
     if (ltree) aww->get_root()->awar(awar_tree)->write_string(ltree);
 }

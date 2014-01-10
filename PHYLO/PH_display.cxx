@@ -197,7 +197,7 @@ void PH_display::display()       // draw area
 
     if (!device) return;
     
-    GB_transaction dummy(PHDATA::ROOT->get_gb_main());
+    GB_transaction ta(PHDATA::ROOT->get_gb_main());
     switch (display_what) // be careful: text origin is lower left
     {
         case NONE: return;

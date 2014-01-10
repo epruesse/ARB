@@ -1016,7 +1016,7 @@ static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL om
 
     aww->clear_option_menu(_oms);
     aww->insert_default_option(selected_sai, "", selected_sai);
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
 
     for (GBDATA *sai = GBT_first_SAI(GLOBAL_gb_main);
          sai;

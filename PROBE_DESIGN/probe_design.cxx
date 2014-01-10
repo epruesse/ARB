@@ -551,7 +551,7 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
             abort = true;
         }
         else {
-            GB_transaction dummy(gb_main);
+            GB_transaction ta(gb_main);
 
             char *ali_name = GBT_get_default_alignment(gb_main);
 
@@ -1539,7 +1539,7 @@ static AW_window *create_IUPAC_resolve_window(AW_root *root, AW_CL cl_gb_main) {
 
     // automatically resolve AWAR_ITARGET_STRING:
     {
-        GB_transaction dummy(gb_main);
+        GB_transaction ta(gb_main);
         ali_used_for_resolvement = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
     }
     root->awar(AWAR_ITARGET_STRING)->add_callback(resolve_IUPAC_target_string, AW_CL(aws), AW_CL(iselection_id));
@@ -1911,8 +1911,8 @@ static void pg_result_selected(AW_window * /* aww */, AW_CL cl_gb_main) {
         long i = 1;
 
         GBDATA         *gb_main = (GBDATA*)cl_gb_main;
-        GB_transaction  dummy(pg_global.pg_main);
-        GB_transaction  dummy2(gb_main);
+        GB_transaction  ta1(pg_global.pg_main);
+        GB_transaction  ta2(gb_main);
 
         GBT_mark_all(gb_main, 0); // unmark all species
 
@@ -1993,7 +1993,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
         int32_t i = 0;
         selList->insert("members | probes | fitness | quality | mintarget | mishit | probelen | birth", i++);
 
-        GB_transaction dummy(pg_global.pg_main);
+        GB_transaction ta(pg_global.pg_main);
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
         if (pg_group) {
             for (; pg_group; pg_group=GB_nextChild(pg_group), ++i) {

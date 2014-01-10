@@ -142,7 +142,7 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
 
     {
         GBDATA         *gb_main          = (GBDATA*)cl_gb_main;
-        GB_transaction  dummy(gb_main);
+        GB_transaction  ta(gb_main);
         char           *selected_species = root->awar(AWAR_SPECIES_NAME)->read_string();
         GBDATA         *gb_species       = GBT_find_species(gb_main, selected_species);
 
@@ -281,7 +281,7 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
     AW_root        *root             = aww->get_root();
     GB_ERROR        error            = 0;
     GBDATA         *gb_main          = (GBDATA*)cl_gb_main;
-    GB_transaction  dummy(gb_main);
+    GB_transaction  ta(gb_main);
     char           *selected_species = 0;
     char           *selected_gene    = 0;
     GBDATA         *gb_species       = 0;
@@ -466,7 +466,7 @@ AW_window *create_primer_design_window(AW_root *root, AW_CL cl_gb_main) {
     GBDATA *gb_main = (GBDATA*)cl_gb_main;
     bool    is_genome_db;
     {
-        GB_transaction  dummy(gb_main);
+        GB_transaction  ta(gb_main);
         char           *selected_species = root->awar(AWAR_SPECIES_NAME)->read_string();
         GBDATA         *gb_species       = GBT_find_species(gb_main, selected_species);
 

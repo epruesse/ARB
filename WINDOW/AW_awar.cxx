@@ -194,7 +194,7 @@ char *AW_awar::read_string() {
 
 void AW_awar::touch() {
     if (gb_var) {
-        GB_transaction dummy(gb_var);
+        GB_transaction ta(gb_var);
         GB_touch(gb_var);
     }
 }

@@ -690,7 +690,7 @@ static AW_window *createSaiColorWindow(AW_root *aw_root, AW_gc_manager gc_manage
 
 AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
     // Main Window - Canvas on which the actual painting is done
-    GB_transaction dummy(gb_main);
+    GB_transaction ta(gb_main);
 
     createSaiProbeAwars(awr); // creating awars for colors ( 0 to 9)
 
