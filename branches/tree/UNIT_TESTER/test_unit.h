@@ -551,7 +551,7 @@ namespace arb_test {
         const char *make(bool expected, bool got) const {
             if (expected) return make(primary, got);
             if (inverse) return make(inverse, !got);
-            return make(primary, !got);
+            return make(primary, got);
         }
     };
 
@@ -975,7 +975,8 @@ namespace arb_test {
 #define fulfills(pred,arg)    predicate_expectation(true, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
 #define contradicts(pred,arg) predicate_expectation(false, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
 
-#define does_contain(val) fulfills(containing(),val)
+#define does_contain(val)   fulfills(containing(),val)
+#define doesnt_contain(val) contradicts(containing(),val)
 
 #define that(thing) CREATE_matchable(MATCHABLE_ARGS_TYPED(thing))
 
