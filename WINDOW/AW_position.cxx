@@ -63,11 +63,6 @@ void Angle::recalcNormal() const {
 
 namespace AW {
     
-    bool Position::valid() const {
-        return !std::isnan(x) && !std::isnan(y);
-    }
-    
-    
     Position crosspoint(const LineVector& l1, const LineVector& l2, double& factor_l1, double& factor_l2) {
         // calculates the crossing point of the two straight lines defined by l1 and l2.
         // sets two factors, so that

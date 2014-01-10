@@ -393,7 +393,7 @@ AP_FLOAT ClusterTree::get_seqDist(const TwoLeafs& pair) {
                    name1, name2, mutations, wbc1, wbc2, minBaseCount, dist);
 #endif // DEBUG
 
-            cl_assert(!std::isnan(dist));
+            cl_assert(!is_nan_or_inf(dist));
             
             (*sequenceDists)[pair] = dist;
             delete ancestor;

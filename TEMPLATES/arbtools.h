@@ -114,6 +114,13 @@ public:
     BASE*& forward() { return forwarded_ptr; }
 };
 
+// NAN/INF checks
+// replace c99 macros isnan, isnormal and isinf. isinf is broken for gcc 4.4.3; see ../CORE/arb_diff.cxx@isinf
+
+template <typename T> inline bool is_nan(const T& n) { return n != n; }
+template <typename T> inline bool is_nan_or_inf(const T& n) { return is_nan(0*n); }
+template <typename T> inline bool is_normal(const T& n) { return n != 0 && !is_nan_or_inf(n); }
+template <typename T> inline bool is_inf(const T& n) { return !is_nan(n) && is_nan_or_inf(n); }
 
 #else
 #error arbtools.h included twice
