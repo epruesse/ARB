@@ -19,6 +19,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 #ifndef _GLIBCXX_CMATH
 #include <cmath>
 #endif
@@ -79,7 +82,7 @@ namespace AW {
 
     public:
 
-        bool valid() const;
+        bool valid() const { return !is_nan_or_inf(x) && !is_nan_or_inf(y); }
 
         Position(double X, double Y) : x(X), y(Y) {
             ISVALID(*this);
@@ -125,7 +128,7 @@ namespace AW {
         mutable double len;                         // once calculated, length of vector is stored here (negative value means "not calculated")
 
     public:
-        bool valid() const { return end.valid() && (len == len); } // len == len fails if len is NAN
+        bool valid() const { return end.valid() && !is_nan(len); } // infinite len is allowed (but untested)
 
         Vector()                                         : len(NAN) {} // default is not a vector
         Vector(const double& X, const double& Y)         : end(X, Y), len(-1) { ISVALID(*this); } // vector (0,0)->(X,Y)
@@ -417,7 +420,7 @@ namespace AW {
         void recalcNormal() const;
 
     public:
-        bool valid() const { return Normal.valid() && (Radian == Radian); } // Radian == Radian fails if Radian is NAN
+        bool valid() const { return Normal.valid() && !is_nan_or_inf(Radian); }
 
         static const double rad2deg;
         static const double deg2rad;
