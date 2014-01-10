@@ -872,7 +872,7 @@ static void child_changed_cb(AW_root *aw_root) {
                 GBDATA     *gb_main = browser->get_db();
 
                 if (gb_main) {
-                    GB_transaction  dummy(gb_main);
+                    GB_transaction  ta(gb_main);
                     GBDATA         *gb_selected_node = GB_search_numbered(gb_main, fullpath, GB_FIND);
 
                     string info;

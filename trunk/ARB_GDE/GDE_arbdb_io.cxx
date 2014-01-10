@@ -193,7 +193,7 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
     }
 
     {
-        GB_transaction  dummy(db_access.gb_main);
+        GB_transaction  ta(db_access.gb_main);
         char           *str   = filter->to_string();
         GB_ERROR        error = GBT_write_string(db_access.gb_main, AWAR_GDE_EXPORT_FILTER, str);
         free(str);

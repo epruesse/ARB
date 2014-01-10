@@ -87,7 +87,7 @@ static void export_nds_cb(AW_window *aww, AW_CL print_flag) {
         aw_message("Error: Cannot open and write to file");
     }
     else {
-        GB_transaction dummy(GLOBAL.gb_main);
+        GB_transaction ta(GLOBAL.gb_main);
 
         make_node_text_init(GLOBAL.gb_main);
         NDS_Type  nds_type  = (NDS_Type)aw_root->awar(AWAR_EXPORT_NDS_SEPARATOR)->read_int();
@@ -461,7 +461,7 @@ static void NT_database_optimization(AW_window *aww) {
 static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
-    GB_transaction dummy(GLOBAL.gb_main);
+    GB_transaction ta(GLOBAL.gb_main);
 
     const char *largest_tree = GBT_name_of_largest_tree(GLOBAL.gb_main);
     aw_root->awar_string("tmp/nt/arbdb/optimize_tree_name", largest_tree);
@@ -530,7 +530,7 @@ static void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw) {
     GB_ERROR error = GB_undo(GLOBAL.gb_main, (GB_UNDO_TYPE)undo_type);
     if (error) aw_message(error);
     else {
-        GB_transaction dummy(GLOBAL.gb_main);
+        GB_transaction ta(GLOBAL.gb_main);
         ((AWT_canvas *)ntw)->refresh();
     }
 }
@@ -696,7 +696,7 @@ static void NT_primer_cb() {
 }
 
 static void NT_mark_duplicates(UNFIXED, AWT_canvas *ntw) {
-    GB_transaction dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
     NT_mark_all_cb(NULL, ntw, 0);
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     tree_root->mark_duplicates();
@@ -705,7 +705,7 @@ static void NT_mark_duplicates(UNFIXED, AWT_canvas *ntw) {
 }
 
 static void NT_justify_branch_lenghs(UNFIXED, AWT_canvas *ntw) {
-    GB_transaction  dummy(ntw->gb_main);
+    GB_transaction  ta(ntw->gb_main);
     AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
 
     if (tree_root) {
@@ -744,7 +744,7 @@ static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_
 
 static void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl) {
     AWT_canvas     *ntw       = (AWT_canvas *)ntwcl;
-    GB_transaction  dummy(ntw->gb_main);
+    GB_transaction  ta(ntw->gb_main);
     AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
 
     if (tree_root) {
@@ -788,7 +788,7 @@ struct nt_item_type_species_selector : public awt_item_type_selector {
         GBDATA         *gb_species   = 0;
 
         if (species_name[0]) {
-            GB_transaction dummy(gb_main);
+            GB_transaction ta(gb_main);
             gb_species = GBT_find_species(gb_main, species_name);
         }
 

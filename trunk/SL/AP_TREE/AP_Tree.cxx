@@ -125,7 +125,7 @@ bool AP_tree_root::is_species_updated() {
 
 void AP_tree_root::update_timers() {
     if (gb_species_data) {
-        GB_transaction  dummy(GB_get_root(gb_species_data));
+        GB_transaction  ta(GB_get_root(gb_species_data));
         GBDATA         *gbtree = get_gb_tree();
         if (gbtree) tree_timer = GB_read_clock(gbtree);
         species_timer          = GB_read_clock(gb_species_data);
@@ -653,7 +653,7 @@ GB_ERROR AP_tree::move_group_info(AP_tree *new_group) {
 }
 
 void AP_tree::update() {
-    GB_transaction dummy(get_tree_root()->get_gb_main());
+    GB_transaction ta(get_tree_root()->get_gb_main());
     get_tree_root()->update_timers();
 }
 
@@ -766,7 +766,7 @@ int AP_tree::colorize(GB_HASH *hashptr) {
 }
 
 void AP_tree::compute_tree() {
-    GB_transaction dummy(get_tree_root()->get_gb_main());
+    GB_transaction ta(get_tree_root()->get_gb_main());
     update_subtree_information();
 }
 
@@ -781,7 +781,7 @@ GB_ERROR AP_tree_root::loadFromDB(const char *name) {
 }
 
 GB_ERROR AP_tree::relink() {
-    GB_transaction dummy(get_tree_root()->get_gb_main()); // open close a transaction
+    GB_transaction ta(get_tree_root()->get_gb_main()); // open close a transaction
     GB_ERROR error = GBT_link_tree(this, get_tree_root()->get_gb_main(), false, 0, 0); // no status
     get_tree_root()->update_timers();
     return error;
@@ -795,7 +795,7 @@ AP_UPDATE_FLAGS AP_tree::check_update() {
         return AP_UPDATE_RELOADED;
     }
     else {
-        GB_transaction dummy(gb_main);
+        GB_transaction ta(gb_main);
 
         if (troot->is_tree_updated()) return AP_UPDATE_RELOADED;
         if (troot->is_species_updated()) return AP_UPDATE_RELINKED;
@@ -1541,7 +1541,7 @@ static double ap_just_tree_rek(AP_tree *at) {
 
 void AP_tree::justify_branch_lenghs(GBDATA *gb_main) {
     // shift branches to create a symmetric looking tree
-    GB_transaction dummy(gb_main);
+    GB_transaction ta(gb_main);
     ap_just_tree_rek(this);
 }
 
@@ -1560,7 +1560,7 @@ void AP_tree::relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node
     // every node in tree is passed to relinker, relinker might modify
     // these values (ref_gb_node and ref_name) and the modified values are written back into tree
 
-    GB_transaction  dummy(gb_main);
+    GB_transaction  ta(gb_main);
     relink_tree_rek(this, relinker, organism_hash);
 }
 

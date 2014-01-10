@@ -111,7 +111,7 @@ void AWT_graphic_tree::mark_species_in_tree_that(AP_tree *at, int mark_mode, int
 
     if (!at) return;
 
-    GB_transaction dummy(tree_static->get_gb_main());
+    GB_transaction ta(tree_static->get_gb_main());
     if (at->is_leaf) {
         if (at->gb_node) {      // not a zombie
             int oldMark = GB_read_flag(at->gb_node);
@@ -136,7 +136,7 @@ void AWT_graphic_tree::mark_species_in_rest_of_tree(AP_tree *at, int mark_mode) 
     if (at) {
         AP_tree *pa = at->get_father();
         if (pa) {
-            GB_transaction dummy(tree_static->get_gb_main());
+            GB_transaction ta(tree_static->get_gb_main());
 
             mark_species_in_tree(at->get_brother(), mark_mode);
             mark_species_in_rest_of_tree(pa, mark_mode);
@@ -149,7 +149,7 @@ void AWT_graphic_tree::mark_species_in_rest_of_tree_that(AP_tree *at, int mark_m
     if (at) {
         AP_tree *pa = at->get_father();
         if (pa) {
-            GB_transaction dummy(tree_static->get_gb_main());
+            GB_transaction ta(tree_static->get_gb_main());
 
             mark_species_in_tree_that(at->get_brother(), mark_mode, condition, cd);
             mark_species_in_rest_of_tree_that(pa, mark_mode, condition, cd);
@@ -307,7 +307,7 @@ int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)    // r
 
     if (!at) return 1;
 
-    GB_transaction dummy(tree_static->get_gb_main());
+    GB_transaction ta(tree_static->get_gb_main());
 
     if (at->is_leaf) {
         int ungroup_me = 0;
@@ -2256,7 +2256,7 @@ void AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
 
     bool mode_has_ruler = ruler_awar(NULL);
     if (mode_has_ruler) {
-        GB_transaction dummy(gb_tree);
+        GB_transaction ta(gb_tree);
 
         float ruler_size = *GBT_readOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
         float ruler_y    = 0.0;

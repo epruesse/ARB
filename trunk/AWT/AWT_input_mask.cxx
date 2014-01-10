@@ -289,7 +289,7 @@ awt_script_viewport::~awt_script_viewport()
 GB_ERROR awt_script_viewport::link_to(GBDATA *gb_new_item)
 {
     GB_ERROR       error = 0;
-    GB_transaction dummy(mask_global().get_gb_main());
+    GB_transaction ta(mask_global().get_gb_main());
 
     remove_awar_callbacks();    // unbind awar callbacks temporarily
 
@@ -355,7 +355,7 @@ awt_input_handler::~awt_input_handler() {
 
 GB_ERROR awt_input_handler::link_to(GBDATA *gb_new_item) {
     GB_ERROR       error = 0;
-    GB_transaction dummy(mask_global().get_gb_main());
+    GB_transaction ta(mask_global().get_gb_main());
 
     remove_awar_callbacks(); // unbind awar callbacks temporarily
 
@@ -444,7 +444,7 @@ void awt_string_handler::awar_changed() {
 void awt_string_handler::db_changed() {
     GBDATA *gbdata = data();
     if (gbdata) { // gbdata may be zero, if field does not exist
-        GB_transaction  dummy(mask_global().get_gb_main());
+        GB_transaction  ta(mask_global().get_gb_main());
         char           *content = GB_read_as_string(gbdata);
         awar()->write_string(db2awar(content).c_str());
         free(content);
@@ -1338,7 +1338,7 @@ public:
 
 GB_ERROR awt_marked_checkbox::link_to(GBDATA *gb_new_item) { // link to a new item
     GB_ERROR       error = 0;
-    GB_transaction dummy(mask_global().get_gb_main());
+    GB_transaction ta(mask_global().get_gb_main());
 
     remove_awar_callbacks();    // unbind awar callbacks temporarily
 
@@ -1361,7 +1361,7 @@ void awt_marked_checkbox::awar_changed() { // called when awar changes
     if (item()) {
         string         value  = get_value();
         bool           marked = value == "yes";
-        GB_transaction dummy(mask_global().get_gb_main());
+        GB_transaction ta(mask_global().get_gb_main());
         GB_write_flag(item(), marked);
     }
     else {
@@ -1371,7 +1371,7 @@ void awt_marked_checkbox::awar_changed() { // called when awar changes
 
 void awt_marked_checkbox::db_changed() {
     if (item()) {
-        GB_transaction dummy(mask_global().get_gb_main());
+        GB_transaction ta(mask_global().get_gb_main());
         set_value(GB_read_flag(item()) ? "yes" : "no");
     }
 }

@@ -294,7 +294,7 @@ void MatrixDisplay::draw() {
     DI_MATRIX *m = get_matrix();
     if (!autopop(m)) return;
 
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
 
     if (beforeUpdate&NEED_CLEAR) device->clear(-1);
     device->set_offset(AW::Vector(off_dx, off_dy));

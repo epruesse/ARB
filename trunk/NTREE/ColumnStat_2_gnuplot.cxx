@@ -339,7 +339,7 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
     // cl_mode = 1 -> write file and run gnuplot
     // cl_mode = 2 -> delete all files with same prefix
 
-    GB_transaction  dummy(GLOBAL.gb_main);
+    GB_transaction  ta(GLOBAL.gb_main);
     ColumnStat     *column_stat = (ColumnStat *)cl_column_stat;
     GB_ERROR        error       = 0;
     int             mode        = int(cl_mode);

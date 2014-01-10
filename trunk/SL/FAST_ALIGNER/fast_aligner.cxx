@@ -2320,7 +2320,7 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
             GBDATA *gb_main          = data_access->gb_main;
             char   *editor_alignment = 0;
             {
-                GB_transaction  dummy(gb_main);
+                GB_transaction  ta(gb_main);
                 char           *default_alignment = GBT_get_default_alignment(gb_main);
 
                 editor_alignment = root->awar_string(AWAR_EDITOR_ALIGNMENT, default_alignment)->read_string();
