@@ -239,7 +239,7 @@ static void nt_trans_cursorpos_changed(AW_root *awr) {
 }
 
 AW_window *NT_create_dna_2_pro_window(AW_root *root) {
-    GB_transaction dummy(GLOBAL.gb_main);
+    GB_transaction ta(GLOBAL.gb_main);
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "TRANSLATE_DNA_TO_PRO", "TRANSLATE DNA TO PRO");

@@ -96,7 +96,7 @@ ColumnStat::~ColumnStat() {
 GB_ERROR ColumnStat::calculate(AP_filter *filter) {
     forget(); // delete previously calculated stats
 
-    GB_transaction dummy(gb_main);
+    GB_transaction ta(gb_main);
     GB_ERROR       error            = 0;
     size_t         alignment_length = 0;
     {

@@ -417,7 +417,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
     // Set background
 
     {
-        GB_transaction       dummy(GLOBAL_gb_main);
+        GB_transaction       ta(GLOBAL_gb_main);
         ST_ML_Color         *colors       = 0;
         char                *searchColors = results().buildColorString(this, seq_start, seq_end); // defined in ED4_SearchResults class : ED4_search.cxx
         ED4_species_manager *spec_man     = get_parent(ED4_L_SPECIES)->to_species_manager();

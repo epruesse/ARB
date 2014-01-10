@@ -273,7 +273,7 @@ static void auto_select_pseudo_species(AW_root *awr, GBDATA *gb_main, const char
 }
 
 static void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
-    GB_transaction  dummy(gb_main);
+    GB_transaction  ta(gb_main);
     GBDATA         *gb_gene      = GEN_get_current_gene(gb_main, awr);
     bool            clear        = true;
     AW_awar        *awar_content = awr->awar(AWAR_GENE_CONTENT);

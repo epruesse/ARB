@@ -216,7 +216,7 @@ int main(int  _argc,
     printf("..loaded database (enter to continue)  ");
     PS_print_time_diff(&before);
 
-    GB_transaction dummy(gb_main);
+    GB_transaction ta(gb_main);
     GBDATA *group_tree = GB_entry(gb_main, "group_tree");
     if (!group_tree) {
         printf("no 'group_tree' in database\n");

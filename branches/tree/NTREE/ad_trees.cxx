@@ -95,7 +95,7 @@ static void tree_vars_callback(AW_root *aw_root) // Map tree vars to display obj
 }
 //  update import tree name depending on file name
 static void tree_import_callback(AW_root *aw_root) {
-    GB_transaction  dummy(GLOBAL.gb_main);
+    GB_transaction  ta(GLOBAL.gb_main);
     char           *treename        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
     char           *treename_nopath = strrchr(treename, '/');
 
@@ -117,7 +117,7 @@ static void tree_import_callback(AW_root *aw_root) {
 static void ad_tree_set_security(AW_root *aw_root)
 {
     if (GLOBAL.gb_main) {
-        GB_transaction dummy(GLOBAL.gb_main);
+        GB_transaction ta(GLOBAL.gb_main);
         char *treename = aw_root->awar(AWAR_TREE_NAME)->read_string();
         GBDATA *ali_cont = GBT_find_tree(GLOBAL.gb_main, treename);
         if (ali_cont) {

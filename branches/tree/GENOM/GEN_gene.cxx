@@ -167,7 +167,7 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
     , length(-1)
     , gb_gene_data(0)
 {
-    GB_transaction  dummy(gb_main);
+    GB_transaction  ta(gb_main);
     GBDATA         *gb_organism = GBT_find_species(gb_main, organism_name.c_str());
 
     if (!gb_organism) {

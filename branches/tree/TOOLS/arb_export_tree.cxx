@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
             if (!gb_main) error = GB_await_error();
             else {
                 { 
-                    GB_transaction dummy(gb_main);
+                    GB_transaction ta(gb_main);
 
                     GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, GBT_TREE_NodeFactory());
                     if (tree) {

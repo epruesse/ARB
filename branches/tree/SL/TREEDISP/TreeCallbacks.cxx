@@ -109,7 +109,7 @@ void NT_mark_all_cb(UNFIXED, AWT_canvas *ntw, int mark_mode) {
     // mark_mode&12 == 16 -> affect only species with data in current alignment
     // else -> affect all sequences
 
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
 
     switch (mark_mode&MARK_MODE_UPPER_BITS) {
         case 0:                 // all sequences
@@ -137,7 +137,7 @@ void NT_mark_all_cb(UNFIXED, AWT_canvas *ntw, int mark_mode) {
 
 static void mark_tree_cb(UNFIXED, AWT_canvas *ntw, int mark_mode) {
     AWT_graphic_tree *gtree = AWT_TREE(ntw);
-    GB_transaction    gb_dummy(ntw->gb_main);
+    GB_transaction    ta(ntw->gb_main);
 
     gtree->check_update(ntw->gb_main);
     AP_tree *tree_root = gtree->get_root_node();
@@ -201,7 +201,7 @@ static int are_not_in_tree(GBDATA *gb_species, void *cb_data) {
 
 static void mark_nontree_cb(UNFIXED, AWT_canvas *ntw, int mark_mode) {
     AWT_graphic_tree            *gtree = AWT_TREE(ntw);
-    GB_transaction               gb_dummy(ntw->gb_main);
+    GB_transaction               ta(ntw->gb_main);
     struct mark_nontree_cb_data  cd;
 
     if ((mark_mode&MARK_MODE_LOWER_BITS) == 0) {   // unmark is much faster
@@ -338,7 +338,7 @@ static void save_changed_tree(AWT_canvas *ntw) {
 //      Automated collapse/expand tree
 
 static void group_and_save_tree(AWT_canvas *ntw, int mode, int color_group) {
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->get_root_node(), mode, color_group);
@@ -406,27 +406,27 @@ GB_ERROR NT_with_displayed_tree_do(AWT_canvas *ntw, bool (*displayed_tree_cb)(Ro
 }
 
 void NT_resort_tree_cb(UNFIXED, AWT_canvas *ntw, TreeOrder order) {
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->reorder_tree(order);
     save_changed_tree(ntw);
 }
 
 void NT_reset_lzoom_cb(UNFIXED, AWT_canvas *ntw) {
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->displayed_root = AWT_TREE(ntw)->get_root_node();
     ntw->zoom_reset_and_refresh();
 }
 
 void NT_reset_pzoom_cb(UNFIXED, AWT_canvas *ntw) {
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     ntw->zoom_reset_and_refresh();
 }
 
 void NT_set_tree_style(UNFIXED, AWT_canvas *ntw, AP_tree_display_type type) {
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->set_tree_type(type, ntw);
     ntw->zoom_reset_and_refresh();
@@ -450,7 +450,7 @@ void NT_remove_leafs(UNFIXED, AWT_canvas *ntw, AWT_RemoveType mode) {
 }
 
 void NT_remove_bootstrap(UNFIXED, AWT_canvas *ntw) { // delete all bootstrap values
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
@@ -463,7 +463,7 @@ void NT_remove_bootstrap(UNFIXED, AWT_canvas *ntw) { // delete all bootstrap val
 }
 
 void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths to tree_defaults::LENGTH
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
@@ -475,7 +475,7 @@ void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths
 }
 
 void NT_move_boot_branch(UNFIXED, AWT_canvas *ntw, int direction) { // copy branchlengths to bootstraps (or vice versa)
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 

@@ -68,7 +68,7 @@ void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
     awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? IMP_GENOME_FLATFILE : IMP_PLAIN_SEQUENCE);
 
     {
-        GB_transaction dummy(GLOBAL.gb_main);
+        GB_transaction ta(GLOBAL.gb_main);
         char *ali_name = GBT_get_default_alignment(GLOBAL.gb_main);
         char *ali_type = GBT_get_alignment_type_string(GLOBAL.gb_main, ali_name);
 

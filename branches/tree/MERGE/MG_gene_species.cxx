@@ -262,7 +262,7 @@ static void MG_update_example(AW_root *aw_root) {
 
     if (!curr_species || !curr_species[0]) error = "No species selected.";
     else {
-        GB_transaction  dummy(GLOBAL_gb_src);
+        GB_transaction  ta(GLOBAL_gb_src);
         GBDATA         *gb_species = GBT_find_species(GLOBAL_gb_src, curr_species);
 
         if (!gb_species)                                    error = GB_export_errorf("No such species: '%s'", curr_species);

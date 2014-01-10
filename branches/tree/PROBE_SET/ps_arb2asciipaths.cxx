@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
         GBDATA *pb_main     = GB_open(input_DB_name, "rwcN"); // open probe-group-database
         if (!pb_main) error = GB_await_error();
         else {
-            GB_transaction  dummy(pb_main);
+            GB_transaction  ta(pb_main);
             GBDATA         *group_tree = GB_entry(pb_main, "group_tree");
             if (!group_tree) error     = "no 'group_tree' in database";
             else {

@@ -901,7 +901,7 @@ static AW_window *NT_create_tree_setting(AW_root *aw_root)
 
 #if defined(TESTMENU)
 static void refreshTree(AWT_canvas *ntw) {
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
@@ -1116,7 +1116,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     if (cmds->calc_bootstrap)       NT_bootstrap(awm, ntw, 0);
     if (cmds->quit)                 pars_exit(awm);
 
-    GB_transaction dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
 
     GBDATA *gb_arb_presets = GB_search(ntw->gb_main, "arb_presets", GB_CREATE_CONTAINER);
     GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, ntw));

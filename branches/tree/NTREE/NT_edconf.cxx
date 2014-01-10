@@ -355,7 +355,7 @@ enum extractType {
 };
 
 static void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType) {
-    GB_transaction  dummy2(GLOBAL.gb_main);         // open close transaction
+    GB_transaction  ta(GLOBAL.gb_main);         // open close transaction
     AW_root        *aw_root = aww->get_root();
     char           *cn      = aw_root->awar(AWAR_CONFIGURATION)->read_string();
     
@@ -548,7 +548,7 @@ static void nt_rename_configuration(AW_window *aww) {
     char     *old_name      = awar_curr_cfg->read_string();
     GB_ERROR  err           = 0;
 
-    GB_transaction dummy(GLOBAL.gb_main);
+    GB_transaction ta(GLOBAL.gb_main);
 
     char *new_name = aw_input("Rename selection", "Enter the new name of the selection", old_name);
     if (new_name) {
