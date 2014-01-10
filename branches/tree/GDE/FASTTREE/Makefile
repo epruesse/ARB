@@ -5,11 +5,14 @@ PROG  = FASTTREE
 
 CC ?= gcc
 
+#WFLAGS=-Wall
+WFLAGS=-w
+
 # ARBs standard target
 $(MAIN) : FastTree
 
 FastTree:
-	$(CC) -O3 -finline-functions -funroll-loops -Wall -o FastTree FastTree.c -lm
+	$(CC) -O3 -finline-functions -funroll-loops $(WFLAGS) -o FastTree FastTree.c -lm
 	cp -f FastTree $(ARBHOME)/bin
 
 clean :

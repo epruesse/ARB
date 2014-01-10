@@ -51,6 +51,11 @@ ifeq ('$(UNIT_TESTS)','0')
 sub_cflags:=$(subst -DUNIT_TESTS,,$(sub_cflags))
 endif
 
+# note the above does not affect all subdirs. see also manual changes to:
+# - MrBAYES/mrbayes_3.2.1/Makefile
+# - PROBCONS/probcons/Makefile
+# - FASTTREE/Makefile
+
 # --------------------------------------------------------------------------------
 
 $(MAIN):

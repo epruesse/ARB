@@ -9,6 +9,7 @@ DEVELOPER := ANY
 
 DEBUG := 0# build with debug information
 DEBUG_GRAPHICS := 0# force instant graphic update
+STABS := 0# force stabs format?
 
 TRACESYM := 1# insert symbols for meaningful backtraces into executables 
 
