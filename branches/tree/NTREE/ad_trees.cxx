@@ -1190,14 +1190,12 @@ void TEST_edges() {
             TEST_EXPECT(down.next().dest()      == right); // next descends into right son
             TEST_EXPECT(down.otherNext().dest() == left);
 
-            {
-                ARB_edge toLeaf(node, left);
-                TEST_EXPECT(toLeaf.at_leaf());
+            ARB_edge toLeaf(node, left);
+            TEST_EXPECT(toLeaf.at_leaf());
 
-                // both iterators should turn around at leaf:
-                TEST_EXPECT(toLeaf.next().dest()      == node);
-                TEST_EXPECT(toLeaf.otherNext().dest() == node);
-            }
+            // both iterators should turn around at leaf:
+            TEST_EXPECT(toLeaf.next().dest()      == node);
+            TEST_EXPECT(toLeaf.otherNext().dest() == node);
 
             // test adjacent_distance
             const double EPSILON = 0.000001;
@@ -1221,6 +1219,17 @@ void TEST_edges() {
             TEST_EXPECT_SIMILAR(left ->get_branchlength(),  LLEN, EPSILON);
             TEST_EXPECT_SIMILAR(right->get_branchlength(),  RLEN, EPSILON);
             TEST_EXPECT_SIMILAR__BROKEN(down.adjacent_distance(), LLEN+RLEN, EPSILON);
+
+            // modify lengths
+            const double MOD_NLEN = 0.123456;
+            const double MOD_LLEN = 0.246802;
+
+            toLeaf.set_length(MOD_LLEN);
+            nodeUp.set_length(MOD_NLEN);
+
+            TEST_EXPECT_SIMILAR(toLeaf.length(), MOD_LLEN, EPSILON);
+            TEST_EXPECT_SIMILAR(nodeUp.length(), MOD_NLEN, EPSILON);
+            TEST_EXPECT_SIMILAR(down.length(),   MOD_NLEN, EPSILON);
         }
 
         delete tree;
