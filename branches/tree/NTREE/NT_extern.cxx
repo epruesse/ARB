@@ -229,6 +229,8 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     SQ_create_awars(awr, def);
     RefEntries::create_refentries_awars(awr, def);
 
+    NT_create_multifurcate_tree_awars(awr, def);
+
     GB_ERROR error = ARB_bind_global_awars(GLOBAL.gb_main);
     if (!error) {
         AW_awar *awar_expert = awr->awar(AWAR_EXPERT);
@@ -1428,9 +1430,11 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         {
             awm->insert_menu_topic(awm->local_id("tree_remove_remark"), "Remove bootstraps", "b", "trm_boot.hlp", AWM_ALL, makeWindowCallback(NT_remove_bootstrap, ntw));
             awm->sep______________();
-            awm->insert_menu_topic(awm->local_id("tree_reset_lengths"),     "Reset branchlengths",   "R", "tbl_reset.hlp",   AWM_ALL, makeWindowCallback(NT_reset_branchlengths, ntw));
+            awm->insert_menu_topic(awm->local_id("tree_reset_lengths"),     "Reset branchlengths",   "R", "tbl_reset.hlp",   AWM_ALL, makeWindowCallback(NT_reset_branchlengths,   ntw));
             awm->insert_menu_topic(awm->local_id("justify_branch_lengths"), "Justify branchlengths", "J", "tbl_justify.hlp", AWM_ALL, makeWindowCallback(NT_justify_branch_lenghs, ntw));
-            awm->insert_menu_topic(awm->local_id("tree_scale_lengths"),     "Scale Branchlengths",   "S", "tbl_scale.hlp",   AWM_ALL, makeWindowCallback(NT_scale_tree, ntw));
+            awm->insert_menu_topic(awm->local_id("tree_scale_lengths"),     "Scale Branchlengths",   "S", "tbl_scale.hlp",   AWM_ALL, makeWindowCallback(NT_scale_tree,            ntw));
+            awm->sep______________();
+            awm->insert_menu_topic(awm->local_id("tree_multifurcate"), "Multifurcate...", "M", "multifurcate.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_multifurcate_tree_window, ntw));
             awm->sep______________();
             awm->insert_menu_topic(awm->local_id("tree_boot2len"), "Bootstraps -> Branchlengths", "l", "tbl_boot2len.hlp", AWM_ALL, makeWindowCallback(NT_move_boot_branch, ntw, 0));
             awm->insert_menu_topic(awm->local_id("tree_len2boot"), "Bootstraps <- Branchlengths", "o", "tbl_boot2len.hlp", AWM_ALL, makeWindowCallback(NT_move_boot_branch, ntw, 1));

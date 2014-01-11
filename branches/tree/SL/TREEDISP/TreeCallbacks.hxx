@@ -28,6 +28,7 @@ void NT_set_tree_style(UNFIXED, AWT_canvas *ntw, AP_tree_display_type type);
 void NT_remove_leafs(UNFIXED, AWT_canvas *ntw, AWT_RemoveType mode);
 void NT_remove_bootstrap(UNFIXED, AWT_canvas *ntw);
 void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw);
+void NT_multifurcate_tree(AWT_canvas *ntw, const RootedTree ::multifurc_limits& below);
 void NT_move_boot_branch(UNFIXED, AWT_canvas *ntw, int direction);
 void NT_scale_tree(UNFIXED, AWT_canvas *ntw);
 void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType);

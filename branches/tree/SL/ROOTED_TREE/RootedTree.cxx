@@ -367,3 +367,89 @@ ARB_edge TreeRoot::find_innermost_edge() {
     return edgeFinder.innermost_edge();
 }
 
+// ------------------------
+//      multifurcation
+
+GBT_LEN ARB_edge::adjacent_distance() const {
+    //! return length of edges starting from this->dest()
+
+    if (at_leaf()) return 0.0;
+    return next().length_or_adjacent_distance() + otherNext().length_or_adjacent_distance();
+}
+
+void ARB_edge::distribute_length_forward(GBT_LEN len) {
+    /*! distribute length to edges adjacent in edge direction (i.e. edges starting from this->dest())
+     * Split 'len' proportional to adjacent edges lengths.
+     */
+
+    rt_assert(is_normal(len));
+    rt_assert(!at_leaf()); // cannot forward anything (nothing beyond leafs)
+
+    ARB_edge e1 = next();
+    ARB_edge e2 = otherNext();
+
+    GBT_LEN d1 = e1.length_or_adjacent_distance();
+    GBT_LEN d2 = e2.length_or_adjacent_distance();
+
+    len = len/(d1+d2);
+
+    e1.add_or_distribute_length_forward(len*d1);
+    e2.add_or_distribute_length_forward(len*d2);
+}
+
+void ARB_edge::distribute_length(GBT_LEN len) {
+    /*! distribute length to all (up to 4) adjacent edges.
+     * Longer edges receive more than shorter ones.
+     * Edges with length zero will not be changed!
+     */
+
+    ARB_edge backEdge = inverse();
+    GBT_LEN len_fwd, len_bwd;
+    {
+        GBT_LEN dist_fwd = adjacent_distance();
+        GBT_LEN dist_bwd = backEdge.adjacent_distance();
+        GBT_LEN lenW     = len/(dist_fwd+dist_bwd);
+        len_fwd          = lenW*dist_fwd;
+        len_bwd          = lenW*dist_bwd;
+
+    }
+
+    if (is_normal(len_fwd)) distribute_length_forward(len_fwd);
+    if (is_normal(len_bwd)) backEdge.distribute_length_forward(len_bwd);
+}
+
+void RootedTree::multifurcate() {
+    /*! eliminate branch from 'this' to 'father' (or brother @ root)
+     * - sets its length to zero
+     * - removes remark (bootstrap)
+     * - distributes length to neighbour-branches
+     */
+
+    rt_assert(father); // cannot multifurcate at root
+    if (father) parentEdge(this).multifurcate();
+}
+
+void RootedTree::multifurcate_subtree(const multifurc_limits& below) {
+    if (!is_root_node()) {
+        double value;
+        switch (parse_bootstrap(value)) {
+            case REMARK_NONE:
+                value = 100.0;
+                // fall-through
+            case REMARK_BOOTSTRAP:
+                if (value<below.bootstrap && get_branchlength()<below.branchlength) {
+                    multifurcate();
+                }
+                break;
+
+            case REMARK_OTHER: break;
+        }
+    }
+
+    if (!is_leaf) {
+        get_leftson() ->multifurcate_subtree(below);
+        get_rightson()->multifurcate_subtree(below);
+    }
+}
+
+
