@@ -1137,6 +1137,8 @@ void TEST_multifurcate_tree() {
     TEST_REJECT_NULL(gb_main);
 
     const char *topo_test            = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.026,CloTyro2:0.017)'0%':0.017,CloTyrob:0.009)'97%:test':0.274,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
+    // changes                       = "                                                                                                                   -0.371     +0.117                     +0.255 "
+    const char *topo_single          = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.026,CloTyro2:0.017)'0%':0.017,CloTyrob:0.009)'97%:test':0.274,CloInnoc:0.000)'0%':0.174,CloBifer:0.388)'53%':0.379,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
     const char *topo_bs_less_101_005 = "(((((((CloTyro3:1.046,CloTyro4:0.061)"   ":0.000,CloTyro2:0.000)"  ":0.000,CloTyrob:0.000)'97%:test':0.339,CloInnoc:0.371)'0%':0.061,CloBifer:0.388)'53%':0.124,(((CloButy2:0.000,CloButyr:0.000)'100%':0.580,CloCarni:0.120)"   ":0.000,CloPaste:0.179)'97%':0.133)'100%':0.082,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
     const char *topo_bs_less_30_005  = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.028,CloTyro2:0.017)"  ":0.000,CloTyrob:0.009)'97%:test':0.286,CloInnoc:0.371)'0%':0.060,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
     const char *topo_bs_less_30      = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.028,CloTyro2:0.017)"  ":0.000,CloTyrob:0.009)'97%:test':0.326,CloInnoc:0.371)"  ":0.000,CloBifer:0.388)'53%':0.139,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.087,((((CorAquat:0.084,CurCitre:0.058)'100%':0.125,CorGluta:0.522)"   ":0.000,CelBiazo:0.059)'40%':0.230,CytAquat:0.711)'100%':0.090);";
@@ -1145,7 +1147,7 @@ void TEST_multifurcate_tree() {
     const double STABLE_LENGTH = 5.362750;
     const double EPSILON       = 0.000001;
 
-    for (int test = 1; test<=4; ++test) {
+    for (int test = 1; test<=5; ++test) {
         GB_transaction  ta(gb_main);
         RootedTree     *tree = DOWNCAST(RootedTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
 
@@ -1176,6 +1178,16 @@ void TEST_multifurcate_tree() {
                 TEST_EXPECT_NEWICK(nALL, tree, topo_all);
                 TEST_EXPECT_SIMILAR(childLenSum(tree), 0.0, EPSILON);
                 break;
+            case 5: {
+                RootedTree *CloInnoc = tree->findLeafNamed("CloInnoc");
+                TEST_REJECT_NULL(CloInnoc);
+
+                parentEdge(CloInnoc).multifurcate();
+                TEST_EXPECT_NEWICK(nALL, tree, topo_single); // @@@ result is wrong (distributes to wrong branches!)
+
+                TEST_EXPECT_SIMILAR(childLenSum(tree), STABLE_LENGTH, EPSILON);
+                break;
+            }
             default:
                 nt_assert(0);
                 break;
