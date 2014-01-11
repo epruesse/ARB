@@ -313,6 +313,10 @@ class ARB_edge {
         return son()->reset_length_and_bootstrap();
     }
 
+#if defined(UNIT_TESTS)
+    friend void TEST_edges();
+#endif
+
 public:
     ARB_edge(RootedTree *From, RootedTree *To)
         : from(From)

@@ -1131,6 +1131,104 @@ static double childLenSum(RootedTree *tree) {
         childLenSum(tree->get_leftson()) + childLenSum(tree->get_rightson());
 }
 
+void TEST_edges() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
+    TEST_REJECT_NULL(gb_main);
+
+    {
+        GB_transaction  ta(gb_main);
+        RootedTree     *tree = DOWNCAST(RootedTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
+
+        RootedTree *left  = tree->findLeafNamed("CloTyro3"); TEST_REJECT_NULL(left);
+        RootedTree *node  = left->get_father();              TEST_REJECT_NULL(node);
+        RootedTree *right = node->findLeafNamed("CloTyro4"); TEST_REJECT_NULL(right);
+
+        TEST_EXPECT(node == right->get_father());
+        TEST_EXPECT(node->get_leftson()  == left);
+        TEST_EXPECT(node->get_rightson() == right);
+
+        RootedTree *parent  = node->get_father();                TEST_REJECT_NULL(parent);
+        RootedTree *brother = parent->findLeafNamed("CloTyro2"); TEST_REJECT_NULL(brother);
+
+        TEST_EXPECT(node->get_brother() == brother);
+
+        RootedTree *grandpa  = parent->get_father(); TEST_REJECT_NULL(grandpa);
+
+        // topology:
+        //
+        //            grandpa
+        //              /
+        //             /
+        //            /
+        //          parent
+        //           /\              .
+        //          /  \             .
+        //         /    \            .
+        //       node  brother
+        //        /\                 .
+        //       /  \                .
+        //      /    \               .
+        //    left right
+
+        // test next() and otherNext() for inner edge 'node->parent'
+        {
+            ARB_edge nodeUp = parentEdge(node);
+
+            TEST_EXPECT(node->is_leftson()); // if child is left son..
+            TEST_EXPECT(nodeUp.next().dest()      == grandpa); // .. next() continues rootwards
+            TEST_EXPECT(nodeUp.otherNext().dest() == brother);
+
+            ARB_edge brotherUp = parentEdge(brother);
+
+            TEST_EXPECT(brother->is_rightson());               // if child is right son..
+            TEST_EXPECT(brotherUp.next().dest()      == node); // .. next() continues with other son
+            TEST_EXPECT(brotherUp.otherNext().dest() == grandpa);
+
+            ARB_edge down = nodeUp.inverse();
+
+            TEST_EXPECT(down.next().dest()      == right); // next descends into right son
+            TEST_EXPECT(down.otherNext().dest() == left);
+
+            {
+                ARB_edge toLeaf(node, left);
+                TEST_EXPECT(toLeaf.at_leaf());
+
+                // both iterators should turn around at leaf:
+                TEST_EXPECT(toLeaf.next().dest()      == node);
+                TEST_EXPECT(toLeaf.otherNext().dest() == node);
+            }
+
+            // test adjacent_distance
+            const double EPSILON = 0.000001;
+
+            const double NLEN = 0.025806;
+            const double BLEN = 0.017316;
+            const double PLEN = 0.017167;
+            const double LLEN = 1.045690;
+            const double RLEN = 0.060606;
+
+            TEST_EXPECT_SIMILAR(node->get_branchlength(),             NLEN, EPSILON);
+            TEST_EXPECT_SIMILAR__BROKEN(nodeUp.length(),                      NLEN, EPSILON);
+            TEST_EXPECT_SIMILAR__BROKEN(down.length(),                        NLEN, EPSILON);
+            TEST_EXPECT_SIMILAR__BROKEN(nodeUp.length_or_adjacent_distance(), NLEN, EPSILON);
+            TEST_EXPECT_SIMILAR__BROKEN(down.length_or_adjacent_distance(),   NLEN, EPSILON);
+
+            TEST_EXPECT_SIMILAR(brother->get_branchlength(),  BLEN, EPSILON);
+            TEST_EXPECT_SIMILAR(parent ->get_branchlength(),  PLEN, EPSILON);
+            TEST_EXPECT_SIMILAR__BROKEN(nodeUp.adjacent_distance(), BLEN+PLEN, EPSILON);
+
+            TEST_EXPECT_SIMILAR(left ->get_branchlength(),  LLEN, EPSILON);
+            TEST_EXPECT_SIMILAR(right->get_branchlength(),  RLEN, EPSILON);
+            TEST_EXPECT_SIMILAR__BROKEN(down.adjacent_distance(), LLEN+RLEN, EPSILON);
+        }
+
+        delete tree;
+    }
+
+    GB_close(gb_main);
+}
+
 void TEST_multifurcate_tree() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
