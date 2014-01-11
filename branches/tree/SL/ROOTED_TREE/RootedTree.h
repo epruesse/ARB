@@ -347,7 +347,7 @@ public:
 
     GBT_LEN length() const {
         if (type == ROOT_EDGE) return from->get_branchlength() + to->get_branchlength();
-        return other()->get_branchlength();
+        return son()->get_branchlength();
     }
     void set_length(GBT_LEN len)  {
         if (type == ROOT_EDGE) {
@@ -355,7 +355,7 @@ public:
             to->set_branchlength(len/2);
         }
         else {
-            other()->set_branchlength(len);
+            son()->set_branchlength(len);
         }
     }
 
