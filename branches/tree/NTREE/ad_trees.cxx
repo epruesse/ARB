@@ -982,22 +982,22 @@ AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw)
     aws->callback(makeHelpCallback("multifurcate.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    const int LABEL_LENGTH = 29;
+    const int LABEL_LENGTH = 43;
     aws->label_length(LABEL_LENGTH);
 
     aws->at_newline();
-    aws->label("branches with bootstrap below");
+    aws->label("Multifurcate branches with bootstrap below");
     aws->create_toggle(AWAR_MFURC_CONSIDER_BOOTSTRAP);
     aws->create_input_field(AWAR_MFURC_BOOTSTRAP_LIMIT, 10);
 
     aws->at_newline();
-    aws->label("branches with length below");
+    aws->label("                    AND branchlength below");
     aws->create_toggle(AWAR_MFURC_CONSIDER_LENGTH);
     aws->create_input_field(AWAR_MFURC_LENGTH_LIMIT, 10);
 
     aws->at_newline();
     aws->callback(makeWindowCallback(multifurcation_cb, ntw));
-    aws->create_autosize_button("MULTIFURCATE", "Multifurcate!", "M");
+    aws->create_autosize_button("MULTIFURCATE", "Multifurcate", "M");
 
     return aws;
 }
