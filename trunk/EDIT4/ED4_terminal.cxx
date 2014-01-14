@@ -273,12 +273,14 @@ ED4_returncode ED4_terminal::remove_callbacks()                     // removes c
     return ED4_R_OK;
 }
 
+#if 0
 static ARB_ERROR ed4_remove_species_manager_callbacks(ED4_base *base) { // @@@ unused since [8286]
     if (base->is_species_manager()) {
         base->to_species_manager()->remove_all_callbacks();
     }
     return NULL;
 }
+#endif
 
 inline void remove_from_consensus(ED4_manager *group_or_species_man) {
     GB_transaction ta(GLOBAL_gb_main);
