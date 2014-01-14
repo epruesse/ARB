@@ -1246,7 +1246,7 @@ void TEST_multifurcate_tree() {
     const char *topo_test            = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.026,CloTyro2:0.017)'0%':0.017,CloTyrob:0.009)'97%:test':0.274,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
     // changes                       = "                                                                                                    +0.307         -0.371     +0.064 "
     const char *topo_single          = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.026,CloTyro2:0.017)'0%':0.017,CloTyrob:0.009)'97%:test':0.581,CloInnoc:0.000)'0%':0.121,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
-    const char *topo_bs_less_101_005 = "(((((((CloTyro3:1.087,CloTyro4:0.063)"   ":0.000,CloTyro2:0.000)"  ":0.000,CloTyrob:0.000)'97%:test':0.299,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.000,CloButyr:0.000)'100%':0.578,CloCarni:0.121)"   ":0.000,CloPaste:0.181)'97%':0.132)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
+    const char *topo_bs_less_101_005 = "(((((((CloTyro3:1.098,CloTyro4:0.064)"   ":0.000,CloTyro2:0.000)"  ":0.000,CloTyrob:0.000)'97%:test':0.287,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.000,CloButyr:0.000)'100%':0.578,CloCarni:0.121)"   ":0.000,CloPaste:0.181)'97%':0.132)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
     const char *topo_bs_less_30_005  = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.027,CloTyro2:0.018)"  ":0.000,CloTyrob:0.009)'97%:test':0.288,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
     const char *topo_bs_less_30      = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.027,CloTyro2:0.018)"  ":0.000,CloTyrob:0.009)'97%:test':0.302,CloInnoc:0.390)"  ":0.000,CloBifer:0.407)'53%':0.131,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.109,CorGluta:0.554)"   ":0.000,CelBiazo:0.062)'40%':0.220,CytAquat:0.711)'100%':0.081);";
     const char *topo_all             = "(((((((CloTyro3:0.000,CloTyro4:0.000)"   ":0.000,CloTyro2:0.000)"  ":0.000,CloTyrob:0.000)'"  "test':0.000,CloInnoc:0.000)"  ":0.000,CloBifer:0.000)"   ":0.000,(((CloButy2:0.000,CloButyr:0.000)"    ":0.000,CloCarni:0.000)"   ":0.000,CloPaste:0.000)"   ":0.000)"    ":0.000,((((CorAquat:0.000,CurCitre:0.000)"    ":0.000,CorGluta:0.000)"   ":0.000,CelBiazo:0.000)"   ":0.000,CytAquat:0.000)"    ":0.000);";
@@ -1266,22 +1266,22 @@ void TEST_multifurcate_tree() {
 
         switch (test) {
             case 1:
-                tree->multifurcate_subtree(RootedTree::multifurc_limits(101, 0.05));
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 0.05));
                 TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_101_005);
                 TEST_EXPECT_SIMILAR(childLenSum(tree), STABLE_LENGTH, EPSILON);
                 break;
             case 2:
-                tree->multifurcate_subtree(RootedTree::multifurc_limits(30, 0.05));
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(30, 0.05));
                 TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_30_005);
                 TEST_EXPECT_SIMILAR(childLenSum(tree), STABLE_LENGTH, EPSILON);
                 break;
             case 3:
-                tree->multifurcate_subtree(RootedTree::multifurc_limits(30, 1000));
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(30, 1000));
                 TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_30);
                 TEST_EXPECT_SIMILAR(childLenSum(tree), STABLE_LENGTH, EPSILON);
                 break;
             case 4:
-                tree->multifurcate_subtree(RootedTree::multifurc_limits(101, 1000)); // multifurcate all
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 1000)); // multifurcate all
                 TEST_EXPECT_NEWICK(nALL, tree, topo_all);
                 TEST_EXPECT_SIMILAR(childLenSum(tree), 0.0, EPSILON);
                 break;

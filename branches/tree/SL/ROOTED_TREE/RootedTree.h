@@ -194,14 +194,18 @@ public:
         return len;
     }
 
-    void multifurcate();
-
     struct multifurc_limits {
         double bootstrap;
         double branchlength;
         multifurc_limits(double bootstrap_, double branchlength_) : bootstrap(bootstrap_), branchlength(branchlength_) {}
     };
-    void multifurcate_subtree(const multifurc_limits& below);
+    class LengthCollector;
+
+    void multifurcate();
+    void multifurcate_whole_tree(const multifurc_limits& below);
+private:
+    void eliminate_and_collect(const multifurc_limits& below, LengthCollector& collect);
+public:
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
     void assert_valid() const;
@@ -293,25 +297,11 @@ class ARB_edge {
         return adjacent_distance();
     }
 
-    void add_or_distribute_length_forward(GBT_LEN len) {
-        rt_assert(!is_nan_or_inf(len));
-        if (length() > 0.0) {
-            set_length(length()+len);
-        }
-        else {
-            if (len != 0.0) distribute_length_forward(len);
-        }
-    }
-    void distribute_length_forward(GBT_LEN len);
-    void distribute_length(GBT_LEN len);
-
-    GBT_LEN eliminate() {
-        //! eliminates edge (zeroes length and bootstrap). returns eliminated length.
-        if (type == ROOT_EDGE) {
-            return source()->reset_length_and_bootstrap() + dest()->reset_length_and_bootstrap();
-        }
-        return son()->reset_length_and_bootstrap();
-    }
+    void virtually_add_or_distribute_length_forward(GBT_LEN len, RootedTree::LengthCollector& collect) const;
+    void virtually_distribute_length_forward(GBT_LEN len, RootedTree::LengthCollector& collect) const;
+public:
+    void virtually_distribute_length(GBT_LEN len, RootedTree::LengthCollector& collect) const; // @@@ hm public :(
+private:
 
 #if defined(UNIT_TESTS)
     friend void TEST_edges();
@@ -358,6 +348,13 @@ public:
             son()->set_branchlength(len);
         }
     }
+    GBT_LEN eliminate() {
+        //! eliminates edge (zeroes length and bootstrap). returns eliminated length.
+        if (type == ROOT_EDGE) {
+            return source()->reset_length_and_bootstrap() + dest()->reset_length_and_bootstrap();
+        }
+        return son()->reset_length_and_bootstrap();
+    }
 
     ARB_edge inverse() const {
         return ARB_edge(to, from, ARB_edge_type(type == ROOT_EDGE ? ROOT_EDGE : (EDGE_TO_LEAF+EDGE_TO_ROOT)-type));
@@ -391,7 +388,7 @@ public:
 
     void set_root() { son()->set_root(); }
 
-    void multifurcate() { distribute_length(eliminate()); }
+    void multifurcate();
 };
 
 inline ARB_edge parentEdge(RootedTree *son) {
