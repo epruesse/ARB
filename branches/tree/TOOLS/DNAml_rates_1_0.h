@@ -43,7 +43,11 @@ typedef double  xtype;
 struct          node;
 typedef node   *nodeptr;
 
+#if defined(Cxx11)
 CONSTEXPR int MAXNODES = leafs_2_nodes(maxsp, ROOTED);
+#else // !defined(Cxx11)
+const int MAXNODES = 2*maxsp+1;
+#endif
 
 struct xarray {
     xarray  *prev;
