@@ -855,6 +855,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                         prob /= count;
                         prob = (prob + max_breaker_value[current_struct] - min_former_value[current_struct]) / (max_breaker_value[current_struct] + max_former_value[current_struct] - min_former_value[current_struct]);
 
+#if 0 // code w/o effect
                         // map to match characters and store in result_buffer
                         int prob_normalized = ED4_pfold_round_sym(prob * 9);
                         // e4_assert(prob_normalized >= 0 && prob_normalized <= 9); // if this happens check if normalization is correct or some undefined characters mess everything up
@@ -862,6 +863,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                         if (prob_normalized >= 0 && prob_normalized <= 9) {
                             prob_symbol = pair_chars_2[prob_normalized];
                         }
+#endif
                     }
                 }
 

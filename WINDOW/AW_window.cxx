@@ -1060,7 +1060,7 @@ void AW_window::get_pos_from_awars(int& posx, int& posy) {
 #undef aw_awar_name_height
 
 static void aw_onExpose_calc_WM_offsets(AW_window *aww);
-static unsigned aw_calc_WM_offsets_delayed(AW_root *, AW_window*aww) { aw_onExpose_calc_WM_offsets(aww); }
+static unsigned aw_calc_WM_offsets_delayed(AW_root *, AW_window*aww) { aw_onExpose_calc_WM_offsets(aww); return 0; }
 
 static void aw_onExpose_calc_WM_offsets(AW_window *aww) {
     AW_window_Motif *motif = p_aww(aww);
