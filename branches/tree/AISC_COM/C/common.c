@@ -28,6 +28,8 @@ inline const char *who(ClientOrServer cos) {
         case AISC_SERVER: return "AISC_SERVER";
         case AISC_CLIENT: return "AISC_CLIENT";
     }
+    arb_assert(0);
+    return "<unknown>";
 }
 
 static GB_ERROR common_get_m_id(const char *path, char **m_name, int *id) {

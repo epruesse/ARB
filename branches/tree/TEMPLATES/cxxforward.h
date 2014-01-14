@@ -34,7 +34,7 @@ static_assert(true, "This fails to compile, if C++11 is available but unused");
 //      constexpr
 
 // allows static member initialisation in class definition:
-#if (GCC_VERSION_CODE >= 407) // constexpr is supported starting with gcc 4.6. We use it starting with 4.7
+#if (GCC_VERSION_CODE >= 407) && !defined(DONT_USE_CXX11) // constexpr is supported starting with gcc 4.6. We use it starting with 4.7
 # define CONSTEXPR constexpr
 #else
 # define CONSTEXPR const
@@ -44,7 +44,7 @@ static_assert(true, "This fails to compile, if C++11 is available but unused");
 //      override
 
 // allows to protect overloading functions against signature changes of overload functions 
-#if (GCC_VERSION_CODE >= 407) // override is supported starting with gcc 4.7
+#if (GCC_VERSION_CODE >= 407) && !defined(DONT_USE_CXX11) // override is supported starting with gcc 4.7
 # define OVERRIDE override
 #else
 # define OVERRIDE
