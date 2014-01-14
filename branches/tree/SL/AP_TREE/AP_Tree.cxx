@@ -1061,7 +1061,9 @@ class LongBranchMarker {
     double min_rel_diff;
     double min_abs_diff;
 
-    int furcs;
+    int leafs;
+    int nonzeroleafs;
+    int multifurcs;
 
     ValueCounter<double> absdiff;
     ValueCounter<double> reldiff;
@@ -1069,14 +1071,25 @@ class LongBranchMarker {
     ValueCounter<double> reldiff_marked;
 
     double perform_marking(AP_tree *at, bool& marked) {
-        furcs++;
-
         marked = false;
-        if (at->is_leaf) return 0.0;
+        if (at->is_leaf) {
+            if (at->get_branchlength() != 0.0) {
+                nonzeroleafs++;
+            }
+            leafs++;
+            return 0.0;
+        }
 
-        bool marked_left;
-        bool marked_right;
+        if (!at->is_root_node()) {
+            if (at->get_branchlength() == 0.0) { // is multifurcation
+                if (!at->get_father()->is_root_node() || at->is_leftson()) { // do not count two multifurcs @ sons of root
+                    multifurcs++;
+                }
+            }
+        }
 
+        bool   marked_left;
+        bool   marked_right;
         double max = perform_marking(at->get_leftson(),  marked_left)  + at->leftlen;
         double min = perform_marking(at->get_rightson(), marked_right) + at->rightlen;
 
@@ -1130,7 +1143,9 @@ public:
     LongBranchMarker(AP_tree *root, double min_rel_diff_, double min_abs_diff_)
         : min_rel_diff(min_rel_diff_),
           min_abs_diff(min_abs_diff_),
-          furcs(0)
+          leafs(0),
+          nonzeroleafs(0),
+          multifurcs(0)
     {
         bool UNUSED;
         perform_marking(root, UNUSED);
@@ -1140,17 +1155,42 @@ public:
         char *diffs_all    = meanDiffs(absdiff, reldiff);
         char *diffs_marked = meanDiffs(absdiff_marked, reldiff_marked);
 
+        int nodes     = leafs_2_nodes(leafs, UNROOTED);
+        int edges     = nodes_2_edges(nodes);
+        int zeroleafs = leafs-nonzeroleafs;
+        int zeroedges = multifurcs+zeroleafs;
+        int realedges = edges-zeroedges;
+        int furcs     = nodes-leafs;    // = inner nodes
+        int realfurcs = furcs-multifurcs;
+
+        int node_digits = log10(nodes)+1;
+
+        ap_assert(zeroleafs<=leafs);
+        ap_assert(zeroedges<=edges);
+        ap_assert(realedges<=edges);
+        ap_assert(multifurcs<=furcs);
+        ap_assert(realfurcs<=furcs);
+
         const char *msg = GBS_global_string(
-            "Tree contains %i furcations.\n"
+            "Unrooted tree contains %*i furcations,\n"
+            "              of which %*i are multifurcations,\n"
+            "                  i.e. %*i are \"real\" furcations.\n"
+            "\n"
+            "Unrooted tree contains %*i edges,\n"
+            "              of which %*i have a length > zero.\n"
             "\n"
             "%s\n"
             "\n"
             "%i subtrees have been marked:\n"
             "%s\n"
             "\n",
-            furcs-1, // no furcation at root!
+            node_digits, furcs,
+            node_digits, multifurcs,
+            node_digits, realfurcs,
+            node_digits, edges,
+            node_digits, realedges,
             diffs_all,
-            absdiff_marked.get_count(), 
+            absdiff_marked.get_count(),
             diffs_marked);
 
         free(diffs_all);
@@ -1254,7 +1294,7 @@ const char *AP_tree::mark_deep_leafs(int min_depth, double min_rootdist) {
 typedef ValueCounter<double> Distance;
 
 class DistanceCounter {
-    ValueCounter<double> min, max, mean;
+    Distance min, max, mean;
 public:
 
     void count_distance(const Distance& d) {
