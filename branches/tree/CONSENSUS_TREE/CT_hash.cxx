@@ -109,8 +109,8 @@ void PartRegistry::put_part_from_partial_tree(PART*& part, const PART *partialTr
         // now part contains bigger partition
 
         // Note: adding 'part' means "add unknown species to smaller side of the partition"
-        int edges_in_part = number_of_edges(part->get_members()+1);
-        int edges_in_invs = number_of_edges(invs->get_members()+1);
+        int edges_in_part = leafs_2_edges(part->get_members()+1, ROOTED);
+        int edges_in_invs = leafs_2_edges(invs->get_members()+1, ROOTED);
 
         double part_prob = double(edges_in_invs)/edges_in_part; // probability for one unkown species to reside inside smaller set
         arb_assert(part_prob>0.0 && part_prob<1.0);

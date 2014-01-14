@@ -164,7 +164,29 @@ enum GBT_ORDER_MODE {
     GBT_BEHIND, 
     GBT_INFRONTOF, 
 };
-    
+
+enum TreeModel { ROOTED = 0, UNROOTED = 1 };
+
+inline CONSTEXPR_RETURN int nodes_2_edges(int nodes) { return nodes-1; }
+inline CONSTEXPR_RETURN int edges_2_nodes(int nodes) { return nodes+1; }
+
+inline CONSTEXPR_RETURN int leafs_2_nodes(int leafs, TreeModel model) {
+    //! calculate the number of nodes (leaf- plus inner-nodes) in a tree with 'leafs' leafs
+    return 2*leafs-1-int(model);
+}
+inline CONSTEXPR_RETURN int nodes_2_leafs(int nodes, TreeModel model) {
+    //! calculate the number of leafs in a tree with 'nodes' nodes
+    return (nodes+1+int(model))/2;
+}
+inline CONSTEXPR_RETURN int leafs_2_edges(int leafs, TreeModel model) {
+    //! calculate the number of edges in a tree with 'leafs' leafs
+    return nodes_2_edges(leafs_2_nodes(leafs, model));
+}
+inline CONSTEXPR_RETURN int edges_2_leafs(int edges, TreeModel model) {
+    //! calculate the number of leafs in a tree with 'edges' edges
+    return nodes_2_leafs(edges_2_nodes(edges), model);
+}
+
 #define GBT_TREE_AWAR_SRT       " = :\n=:*=tree_*1:tree_tree_*=tree_*1"
 #define GBT_ALI_AWAR_SRT        " =:\n=:*=ali_*1:ali_ali_*=ali_*1"
 

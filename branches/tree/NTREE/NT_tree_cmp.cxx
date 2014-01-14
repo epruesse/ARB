@@ -22,7 +22,7 @@ AWT_species_set_root::AWT_species_set_root(GBDATA *gb_maini, long nspeciesi, arb
     gb_main  = gb_maini;
     nspecies = nspeciesi;
     progress = progress_;
-    sets     = (AWT_species_set **)GB_calloc(sizeof(AWT_species_set *), (size_t)(nspecies*2+1));
+    sets     = (AWT_species_set **)GB_calloc(sizeof(AWT_species_set *), (size_t)leafs_2_nodes(nspecies, ROOTED));
 
     for (int i=0; i<256; i++) {
         int j = i;
@@ -341,7 +341,7 @@ GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tre
 
             long nspecies     = dest->count_leafs();
             long source_leafs = source->count_leafs();
-            long source_nodes = source_leafs*2-1;
+            long source_nodes = leafs_2_nodes(source_leafs, ROOTED);
 
             arb_progress compare_progress(source_nodes);
             compare_progress.subtitle("Comparing both trees");

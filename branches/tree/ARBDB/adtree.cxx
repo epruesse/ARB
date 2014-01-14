@@ -1290,6 +1290,49 @@ void TEST_tree_names() {
     TEST_EXPECT_NO_ERROR(GBT_check_tree_name("tree_ok"));
 }
 
+void TEST_tree_contraints() {
+    // test minima
+    const int MIN_LEAFS = 2;
+
+    TEST_EXPECT_EQUAL(leafs_2_nodes(MIN_LEAFS, ROOTED), 3);
+    TEST_EXPECT_EQUAL(leafs_2_nodes(MIN_LEAFS, UNROOTED), 2);
+    TEST_EXPECT_EQUAL(leafs_2_edges(MIN_LEAFS, ROOTED), 2);
+    TEST_EXPECT_EQUAL(leafs_2_edges(MIN_LEAFS, UNROOTED), 1);
+
+    TEST_EXPECT_EQUAL(MIN_LEAFS, nodes_2_leafs(3, ROOTED));   // test minimum (3 nodes rooted)
+    TEST_EXPECT_EQUAL(MIN_LEAFS, nodes_2_leafs(2, UNROOTED)); // test minimum (2 nodes unrooted)
+
+    TEST_EXPECT_EQUAL(MIN_LEAFS, edges_2_leafs(2, ROOTED));   // test minimum (2 edges rooted)
+    TEST_EXPECT_EQUAL(MIN_LEAFS, edges_2_leafs(1, UNROOTED)); // test minimum (1 edge unrooted)
+
+    // test inverse functions:
+    for (int i = 3; i<=7; ++i) {
+        // test "leaf->XXX" and back conversions (any number of leafs is possible)
+        TEST_EXPECT_EQUAL(i, nodes_2_leafs(leafs_2_nodes(i, ROOTED), ROOTED));
+        TEST_EXPECT_EQUAL(i, nodes_2_leafs(leafs_2_nodes(i, UNROOTED), UNROOTED));
+
+        TEST_EXPECT_EQUAL(i, edges_2_leafs(leafs_2_edges(i, ROOTED), ROOTED));
+        TEST_EXPECT_EQUAL(i, edges_2_leafs(leafs_2_edges(i, UNROOTED), UNROOTED));
+
+        bool odd = i%2;
+        if (odd) {
+            TEST_EXPECT_EQUAL(i, leafs_2_nodes(nodes_2_leafs(i, ROOTED), ROOTED)); // rooted trees only contain odd numbers of nodes
+            TEST_EXPECT_EQUAL(i, leafs_2_edges(edges_2_leafs(i, UNROOTED), UNROOTED)); // unrooted trees only contain odd numbers of edges
+        }
+        else { // even
+            TEST_EXPECT_EQUAL(i, leafs_2_nodes(nodes_2_leafs(i, UNROOTED), UNROOTED)); // unrooted trees only contain even numbers of nodes
+            TEST_EXPECT_EQUAL(i, leafs_2_edges(edges_2_leafs(i, ROOTED), ROOTED)); // rooted trees only contain even numbers of edges
+        }
+
+        // test adding a leaf adds two nodes:
+        int added = i+1;
+        TEST_EXPECT_EQUAL(leafs_2_nodes(added, ROOTED)-leafs_2_nodes(i, ROOTED), 2);
+        TEST_EXPECT_EQUAL(leafs_2_nodes(added, UNROOTED)-leafs_2_nodes(i, UNROOTED), 2);
+    }
+
+
+}
+
 void TEST_copy_rename_delete_tree_order() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("TEST_trees.arb", "r");
