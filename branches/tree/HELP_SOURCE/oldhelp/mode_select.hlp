@@ -12,7 +12,7 @@ SUB mode_group.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		SELECT MODE
 
-OCCURRENCE	ARB_NT <SEL> button (first button of left column)
+OCCURRENCE	ARB_NT and ARB_PARSIMONY: <SEL> button in the left column
 		F1 on keyboard
 
 DESCRIPTION 	Like in the info mode you can select species by clicking them,

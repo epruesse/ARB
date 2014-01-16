@@ -28,7 +28,8 @@ void nt_mode_event(UNFIXED, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
     const char *text;
 
     switch (mode) {
-        case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
+        case AWT_MODE_ZOOM:  text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
+        case AWT_MODE_EMPTY: text = MODE_TEXT_PLACEHOLDER();       break;
 
         case AWT_MODE_SELECT: text = MODE_TEXT_1BUTTON("SELECT", "select species or open/close group");                  break;
         case AWT_MODE_INFO:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");                                      break;

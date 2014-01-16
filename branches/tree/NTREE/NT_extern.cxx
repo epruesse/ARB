@@ -1532,21 +1532,32 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     awm->insert_help_topic("ARB_NT help",     "N", "arb_ntree.hlp", AWM_ALL, makeHelpCallback("arb_ntree.hlp"));
 
+    // ----------------------
+    //      mode buttons
+    //
+    // keep them synchronized as far as possible with those in ARB_PARSIMONY
+    // see ../PARSIMONY/PARS_main.cxx@keepModesSynchronized
+
     awm->create_mode("mode_select.xpm", "mode_select.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SELECT));
     awm->create_mode("mode_mark.xpm",   "mode_mark.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MARK));
     awm->create_mode("mode_group.xpm",  "mode_group.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_GROUP));
     awm->create_mode("mode_zoom.xpm",   "mode_pzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ZOOM));
     awm->create_mode("mode_lzoom.xpm",  "mode_lzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LZOOM));
-    awm->create_mode("mode_info.xpm",   "mode_info.hlp",   AWM_ALL, makeWindowCallback(NT_modify_cb,  ntw, AWT_MODE_INFO));
-    awm->create_mode("mode_www.xpm",    "mode_www.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_WWW));
 
-    awm->create_mode("mode_line.xpm",    "mode_width.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LINE));
-    awm->create_mode("mode_rotate.xpm",  "mode_rotate.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ROTATE));
-    awm->create_mode("mode_spread.xpm",  "mode_spread.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SPREAD));
-    awm->create_mode("mode_swap.xpm",    "mode_swap.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
-    awm->create_mode("mode_length.xpm",  "mode_length.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LENGTH));
-    awm->create_mode("mode_move.xpm",    "mode_move.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
+
+    awm->create_mode("mode_info.xpm", "mode_info.hlp", AWM_ALL, makeWindowCallback(NT_modify_cb,  ntw, AWT_MODE_INFO));
+    awm->create_mode("mode_www.xpm",  "mode_www.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_WWW));
+
+    // topology-modification-modes
     awm->create_mode("mode_setroot.xpm", "mode_setroot.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
+    awm->create_mode("mode_swap.xpm",    "mode_swap.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
+    awm->create_mode("mode_move.xpm",    "mode_move.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
+    awm->create_mode("mode_length.xpm",  "mode_length.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LENGTH));
+
+    // layout-modes
+    awm->create_mode("mode_line.xpm",   "mode_width.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LINE));
+    awm->create_mode("mode_rotate.xpm", "mode_rotate.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ROTATE));
+    awm->create_mode("mode_spread.xpm", "mode_spread.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SPREAD));
 
     awm->set_info_area_height(250);
     awm->at(5, 2);

@@ -11,7 +11,7 @@ SUB	sp_info.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		INFO MODE
 
-OCCURRENCE	ARB_NT <INFO> button in the left column
+OCCURRENCE	ARB_NT: <INFO> button in the left column
 		F6 on the keyboard
 
 
