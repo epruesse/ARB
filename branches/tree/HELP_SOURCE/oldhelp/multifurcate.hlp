@@ -68,12 +68,19 @@ DESCRIPTION     Trees constructed by treeing algorithms often suggest a precisio
                 and avoiding summarizing effects at repeatedly affected branches (i.e. at branches
                 with multiple removed neighbour branches)
 
-NOTES           None
+NOTES           The sum of all branchlengths in a tree modified with 'Multifurcate tree' will
+                remain constant (disregarding possible numerical problems and the abnormal case that
+                ALL branches get multifurcated).
 
-EXAMPLES        None
+                See LINK{/branch_analysis.hlp} on HOWTO calculate the sum of all
+                branchlengths of a tree.
+
+EXAMPLES        To see how the distribution works for single branches, display a small tree
+                with only a few species, select the MULTIFURCATE MODE (see LINK{mode_length.hlp})
+                and drag some branches to scale their length.
 
 WARNINGS        Selecting none of the limits will remove the lengths from all branches and the sum
-                of branchlengths of the tree will change in this (and only in this!) case. This
+                of branchlengths of the tree will change to zero. This
                 option makes no sense at all and is only provided for your relief in case you're
                 fed up with topologies and feel the urgent need to easily get rid of one of them.
 

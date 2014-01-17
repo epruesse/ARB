@@ -516,6 +516,24 @@ void RootedTree::multifurcate() {
     if (father) parentEdge(this).multifurcate();
 }
 
+void RootedTree::set_branchlength_preserving(GBT_LEN new_len) {
+    /*! set branchlength to 'new_len' while preserving overall distance in tree.
+     *
+     * works analog to the algorithm used in multifurcate()
+     */
+    GBT_LEN old_len = get_branchlength();
+    GBT_LEN change  = new_len-old_len;
+
+    char *old_remark = nulldup(get_remark());
+
+    // distribute the negative 'change' to neighbours:
+    set_branchlength(-change);
+    multifurcate();
+
+    set_branchlength(new_len);
+    use_as_remark(old_remark); // restore remark (was removed by multifurcate())
+}
+
 void RootedTree::multifurcate_whole_tree(const multifurc_limits& below) {
     /*! multifurcate all branches specified by 'below'
      * - step 1: eliminate all branches, store eliminated lengths
@@ -534,5 +552,4 @@ void RootedTree::multifurcate_whole_tree(const multifurc_limits& below) {
     // step 2 and 3:
     collector.independent_distribution();
 }
-
 

@@ -46,10 +46,11 @@ void nt_mode_event(UNFIXED, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
         case AWT_MODE_ROTATE: text = MODE_TEXT_1BUTTON_KEYS("ROTATE", "drag branch to rotate",         KEYINFO_ABORT_AND_RESET); break;
         case AWT_MODE_SPREAD: text = MODE_TEXT_1BUTTON_KEYS("SPREAD", "drag branch to spread subtree", KEYINFO_ABORT_AND_RESET); break;
 
-        case AWT_MODE_LENGTH: text = MODE_TEXT_2BUTTONS_KEYS("LENGTH",       "drag branch/ruler", "use discrete lengths", KEYINFO_ABORT_AND_RESET); break;
-        case AWT_MODE_LINE:   text = MODE_TEXT_2BUTTONS_KEYS("LINE",         "drag branch/ruler", "whole subtree",        KEYINFO_ABORT_AND_RESET); break;
-        case AWT_MODE_MOVE:   text = MODE_TEXT_2BUTTONS_KEYS("MOVE",         "drag branch/ruler", "move groupinfo only",  KEYINFO_ABORT);           break;
-        case AWT_MODE_LZOOM:  text = MODE_TEXT_2BUTTONS_KEYS("LOGICAL ZOOM", "show only subtree", "go up one step",       KEYINFO_RESET);           break;
+        case AWT_MODE_LENGTH:    text = MODE_TEXT_2BUTTONS_KEYS("LENGTH",       "drag branch/ruler", "use discrete lengths", KEYINFO_ABORT_AND_RESET); break;
+        case AWT_MODE_MULTIFURC: text = MODE_TEXT_2BUTTONS_KEYS("MULTIFURC",    "drag branch",       "use discrete lengths", KEYINFO_ABORT_AND_RESET); break;
+        case AWT_MODE_LINE:      text = MODE_TEXT_2BUTTONS_KEYS("LINE",         "drag branch/ruler", "whole subtree",        KEYINFO_ABORT_AND_RESET); break;
+        case AWT_MODE_MOVE:      text = MODE_TEXT_2BUTTONS_KEYS("MOVE",         "drag branch/ruler", "move groupinfo only",  KEYINFO_ABORT);           break;
+        case AWT_MODE_LZOOM:     text = MODE_TEXT_2BUTTONS_KEYS("LOGICAL ZOOM", "show only subtree", "go up one step",       KEYINFO_RESET);           break;
 
         default: text = no_mode_text_defined(); break;
     }

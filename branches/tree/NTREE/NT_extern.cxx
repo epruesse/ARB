@@ -1549,10 +1549,11 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->create_mode("mode_www.xpm",  "mode_www.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_WWW));
 
     // topology-modification-modes
-    awm->create_mode("mode_setroot.xpm", "mode_setroot.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
-    awm->create_mode("mode_swap.xpm",    "mode_swap.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
-    awm->create_mode("mode_move.xpm",    "mode_move.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
-    awm->create_mode("mode_length.xpm",  "mode_length.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LENGTH));
+    awm->create_mode("mode_setroot.xpm",   "mode_setroot.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
+    awm->create_mode("mode_swap.xpm",      "mode_swap.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
+    awm->create_mode("mode_move.xpm",      "mode_move.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
+    awm->create_mode("mode_length.xpm",    "mode_length.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LENGTH));
+    awm->create_mode("mode_multifurc.xpm", "mode_length.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MULTIFURC));
 
     // layout-modes
     awm->create_mode("mode_line.xpm",   "mode_width.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LINE));

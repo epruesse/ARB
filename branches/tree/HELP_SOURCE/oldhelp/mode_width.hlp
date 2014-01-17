@@ -12,15 +12,11 @@ UP	mode.hlp
 TITLE		LINE MODE
 
 OCCURRENCE	ARB_NT <'WIDTH'> button in the left column
-		F12 on the keyboard
 
 DESCRIPTION	The 'LINE MODE' allows you to change the line width
 		of the edges of the displayed tree.
 
-		Click on the 'WIDTH' button of the 'ARB_NT' window or press the
-			'F12' key on the keyboard to activate the 'LINE MODE'. In
-			the latter case, the cursor has to be placed within the
-			tree display area.
+		Click on the 'WIDTH' button of the 'ARB_NT' window to activate the 'LINE MODE'.
 
 		Change line width:
 

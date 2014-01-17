@@ -202,6 +202,8 @@ public:
     class LengthCollector;
 
     void multifurcate();
+    void set_branchlength_preserving(GBT_LEN new_len);
+
     void multifurcate_whole_tree(const multifurc_limits& below);
 private:
     void eliminate_and_collect(const multifurc_limits& below, LengthCollector& collect);
