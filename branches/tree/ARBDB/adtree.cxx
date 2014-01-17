@@ -52,6 +52,15 @@ void GBT_TREE::scale_branchlengths(double factor) {
     }
 }
 
+GBT_LEN GBT_TREE::sum_child_lengths() const {
+    if (is_leaf) return 0.0;
+    return
+        leftlen +
+        rightlen +
+        get_leftson()->sum_child_lengths() +
+        get_rightson()->sum_child_lengths();
+}
+
 void GBT_TREE::bootstrap2branchlen() {
     //! copy bootstraps to branchlengths
     if (is_leaf) {

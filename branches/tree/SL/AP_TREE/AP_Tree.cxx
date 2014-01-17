@@ -1323,6 +1323,8 @@ class EdgeDistances {
     DistanceMap downdist; // inclusive length of branch itself
     DistanceMap updist;   // inclusive length of branch itself
 
+    GBT_LEN distSum; // of all distances in tree
+
     arb_progress progress;
 
     const Distance& calc_downdist(AP_tree *at, AP_FLOAT len) {
@@ -1395,7 +1397,8 @@ class EdgeDistances {
 public:
 
     EdgeDistances(AP_tree *root)
-        : progress("Analysing distances", root->count_leafs()*3)
+        : distSum(root->sum_child_lengths()),
+          progress("Analysing distances", root->count_leafs()*3)
     {
         calc_downdist(root->get_leftson(),  root->leftlen);
         calc_downdist(root->get_rightson(), root->rightlen);
@@ -1411,6 +1414,9 @@ public:
         char *markeddists_report = markeddists.get_report();
 
         const char *msg = GBS_global_string(
+            "Overall in-tree-distance (ITD): %.3f\n"
+            "    per-species-distance (PSD): %.6f\n"
+            "\n"
             "Distance statistic for %i leafs:\n"
             "(each leaf to all other leafs)\n"
             "\n"
@@ -1418,11 +1424,15 @@ public:
             "\n"
             "Distance statistic for %i marked leafs:\n"
             "\n"
-            "%s\n", 
+            "%s\n",
+            distSum,
+            distSum / alldists.get_count(),
             alldists.get_count(), alldists_report,
             markeddists.get_count(), markeddists_report);
+
         free(markeddists_report);
         free(alldists_report);
+
         return msg;
     }
 };

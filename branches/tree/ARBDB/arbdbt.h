@@ -114,6 +114,8 @@ public:
         length_ref() = newlen;
     }
 
+    GBT_LEN sum_child_lengths() const;
+
     void remove_bootstrap();                        // remove bootstrap values from subtree
     void reset_branchlengths();                     // reset branchlengths of subtree to tree_defaults::LENGTH
     void scale_branchlengths(double factor);
@@ -207,5 +209,4 @@ typedef GB_ERROR (*species_callback)(GBDATA *gb_species, int *clientdata);
 #else
 #error arbdbt.h included twice
 #endif
-
 

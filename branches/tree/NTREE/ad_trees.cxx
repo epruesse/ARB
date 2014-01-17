@@ -1124,13 +1124,6 @@ void TEST_move_node_info() {
     GB_close(gb_main);
 }
 
-static double childLenSum(RootedTree *tree) {
-    if (tree->is_leaf) return 0.0;
-    return
-        tree->leftlen + tree->rightlen +
-        childLenSum(tree->get_leftson()) + childLenSum(tree->get_rightson());
-}
-
 void TEST_edges() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
@@ -1261,29 +1254,29 @@ void TEST_multifurcate_tree() {
         TEST_REJECT_NULL(tree);
         if (test == 1) {
             TEST_EXPECT_NEWICK(nALL, tree, topo_test);
-            TEST_EXPECT_SIMILAR(childLenSum(tree), STABLE_LENGTH, EPSILON);
+            TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
         }
 
         switch (test) {
             case 1:
                 tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 0.05));
                 TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_101_005);
-                TEST_EXPECT_SIMILAR(childLenSum(tree), STABLE_LENGTH, EPSILON);
+                TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
                 break;
             case 2:
                 tree->multifurcate_whole_tree(RootedTree::multifurc_limits(30, 0.05));
                 TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_30_005);
-                TEST_EXPECT_SIMILAR(childLenSum(tree), STABLE_LENGTH, EPSILON);
+                TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
                 break;
             case 3:
                 tree->multifurcate_whole_tree(RootedTree::multifurc_limits(30, 1000));
                 TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_30);
-                TEST_EXPECT_SIMILAR(childLenSum(tree), STABLE_LENGTH, EPSILON);
+                TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
                 break;
             case 4:
                 tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 1000)); // multifurcate all
                 TEST_EXPECT_NEWICK(nALL, tree, topo_all);
-                TEST_EXPECT_SIMILAR(childLenSum(tree), 0.0, EPSILON);
+                TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), 0.0, EPSILON);
                 break;
             case 5: {
                 RootedTree *CloInnoc = tree->findLeafNamed("CloInnoc");
@@ -1292,7 +1285,7 @@ void TEST_multifurcate_tree() {
                 parentEdge(CloInnoc).multifurcate();
                 TEST_EXPECT_NEWICK(nALL, tree, topo_single); // @@@ result is wrong (distributes to wrong branches!)
 
-                TEST_EXPECT_SIMILAR(childLenSum(tree), STABLE_LENGTH, EPSILON);
+                TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
                 break;
             }
             default:
