@@ -1218,17 +1218,30 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     awm->insert_help_topic("ARB_PARSIMONY help", "N", "arb_pars.hlp", AWM_ALL, makeHelpCallback("arb_pars.hlp"));
 
-    awm->create_mode("mode_select.xpm",   "mode_select.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SELECT));
-    awm->create_mode("mode_mark.xpm",     "mode_mark.hlp",     AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MARK));
-    awm->create_mode("mode_group.xpm",    "mode_group.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_GROUP));
-    awm->create_mode("mode_zoom.xpm",     "mode_pzoom.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ZOOM));
-    awm->create_mode("mode_lzoom.xpm",    "mode_lzoom.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LZOOM));
-    awm->create_mode("mode_swap.xpm",     "mode_swap.hlp",     AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
-    awm->create_mode("mode_move.xpm",     "mode_move.hlp",     AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
+    // ----------------------
+    //      mode buttons
+    //
+    // keep them synchronized as far as possible with those in ARB_PARSIMONY
+    // see ../NTREE/NT_extern.cxx@keepModesSynchronized
+
+    awm->create_mode("mode_select.xpm", "mode_select.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SELECT));
+    awm->create_mode("mode_mark.xpm",   "mode_mark.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MARK));
+    awm->create_mode("mode_group.xpm",  "mode_group.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_GROUP));
+    awm->create_mode("mode_zoom.xpm",   "mode_pzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ZOOM));
+    awm->create_mode("mode_lzoom.xpm",  "mode_lzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LZOOM));
+
+    // reserve mode-locations (to put the modes below at the same position as in ARB_NT)
+    awm->create_mode("mode_empty.xpm", "mode.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_EMPTY));
+    awm->create_mode("mode_empty.xpm", "mode.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_EMPTY));
+
+    // topology-modification-modes
+    awm->create_mode("mode_setroot.xpm", "mode_setroot.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
+    awm->create_mode("mode_swap.xpm",    "mode_swap.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
+    awm->create_mode("mode_move.xpm",    "mode_move.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
+
     awm->create_mode("mode_nni.xpm",      "mode_nni.hlp",      AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_NNI));
     awm->create_mode("mode_kernlin.xpm",  "mode_kernlin.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_KERNINGHAN));
     awm->create_mode("mode_optimize.xpm", "mode_optimize.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_OPTIMIZE));
-    awm->create_mode("mode_setroot.xpm",  "mode_setroot.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
 
     awm->at(5, 2);
     awm->auto_space(0, -2);

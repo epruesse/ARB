@@ -111,6 +111,8 @@ void NT_create_transpro_variables(AW_root *root, AW_default db1);
 /* ad_trees.cxx */
 AW_window *NT_create_consense_window(AW_root *aw_root);
 AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, AWT_canvas *ntw);
+void NT_create_multifurcate_tree_awars(AW_root *aw_root, AW_default props);
+AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw);
 
 #else
 #error NT_local_proto.h included twice

@@ -13,30 +13,31 @@
 #include <arb_defs.h>
 #include <ctime>
 
-// add_bootstrap interprets the length of the branches as bootstrap value
-// (this is needed by Phylip DNAPARS/PROTPARS with bootstrapping)
-//
-// 'hundred' specifies which value represents 100%
 
 static void add_bootstrap(GBT_TREE *node, double hundred) {
+    // add_bootstrap interprets the length of the branches as bootstrap value
+    // (this is needed by Phylip DNAPARS/PROTPARS with bootstrapping)
+    //
+    // 'hundred' specifies which value represents 100%
+
     if (node->is_leaf) {
-        freenull(node->remark_branch);
+        node->remove_remark();
         return;
     }
 
     node->leftlen  /= hundred;
     node->rightlen /= hundred;
 
-    double left_bs  = node->leftlen  * 100.0 + 0.5;
-    double right_bs = node->rightlen * 100.0 + 0.5;
+    double left_bs  = node->leftlen  * 100.0;
+    double right_bs = node->rightlen * 100.0;
 
 #if defined(DEBUG) && 0
     fprintf(stderr, "node->leftlen  = %f left_bs  = %f\n", node->leftlen, left_bs);
     fprintf(stderr, "node->rightlen = %f right_bs = %f\n", node->rightlen, right_bs);
 #endif // DEBUG
 
-    node->leftson->remark_branch  = GBS_global_string_copy("%2.0f%%", left_bs);
-    node->rightson->remark_branch = GBS_global_string_copy("%2.0f%%", right_bs);
+    node->leftson ->set_bootstrap(left_bs);
+    node->rightson->set_bootstrap(right_bs);
 
     node->leftlen  = DEFAULT_BRANCH_LENGTH; // reset branchlengths
     node->rightlen = DEFAULT_BRANCH_LENGTH;

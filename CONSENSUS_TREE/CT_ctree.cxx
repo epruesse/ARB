@@ -60,7 +60,7 @@ GB_ERROR ConsensusTree::insert_tree_weighted(const GBT_TREE *tree, int leafs, do
     }
 
     if (provideProgress) {
-        int nodeCount  = number_of_edges(wholeTree->get_members())+1;
+        int nodeCount  = leafs_2_nodes(wholeTree->get_members(), ROOTED);
         insertProgress = new arb_progress(nodeCount);
     }
 

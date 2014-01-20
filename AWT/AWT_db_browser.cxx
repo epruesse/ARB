@@ -1170,6 +1170,10 @@ void AWT_create_debug_menu(AW_window *awmm) {
 
 }
 
+#if 0
+void AWT_check_action_ids(AW_root *, const char *) {
+}
+#else
 void AWT_check_action_ids(AW_root *aw_root, const char *suffix) {
     // check actions ids (see #428)
     // suffix is appended to filenames (needed if one application may have different states)
@@ -1201,6 +1205,7 @@ void AWT_check_action_ids(AW_root *aw_root, const char *suffix) {
     }
     if (error) fprintf(stderr, "AWT_check_action_ids: Error: %s\n", error);
 }
+#endif
 
 #endif // DEBUG
 

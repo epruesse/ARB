@@ -173,32 +173,32 @@ sub filter($$) {
   my $reg_fun = qr/$expr_fun/;
 
   my %del = ();
-  foreach my $symbol (keys %location) {
+  foreach my $symbol (keys %simple_test) {
     my $loc = $location{$symbol};
-    if (not $loc =~ $reg_mod) { $del{$symbol} = 1; }
+    if (defined $loc and not $loc =~ $reg_mod) { $del{$symbol} = 1; }
     elsif (not $symbol =~ $reg_fun) { $del{$symbol} = 2; }
     else { $del{$symbol} = 0; }
   }
 
   {
-    my $warn = 0;
+    my $warned = 0;
     foreach (sort keys %simple_test) {
       my $del = $del{$_};
       if (defined $del and $del==1) {
-        if ($warn==0) {
+        if ($warned==0) {
           print "Skipped tests (restricting to modules matching '$expr_mod'):\n";
-          $warn = 1;
+          $warned = 1;
         }
         print '* '.$_."\n";
       }
     }
-    $warn = 0;
+    $warned = 0;
     foreach (sort keys %simple_test) {
       my $del = $del{$_};
       if (defined $del and $del==2) {
-        if ($warn==0) {
+        if ($warned==0) {
           print "Skipped tests (restricting to functions matching '$expr_fun'):\n";
-          $warn = 1;
+          $warned = 1;
         }
         print '* '.$_."\n";
       }

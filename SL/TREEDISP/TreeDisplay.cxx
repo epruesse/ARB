@@ -359,7 +359,7 @@ void AWT_graphic_tree::reorder_tree(TreeOrder mode) {
     }
 }
 
-static void show_bootstrap_circle(AW_device *device, const char *bootstrap, double zoom_factor, double max_radius, double len, const Position& center, bool elipsoid, double elip_ysize, int filter) {
+static void show_bootstrap_circle(AW_device *device, const char *bootstrap, double zoom_factor, double max_radius, double len, const Position& center, bool elipsoid, double elip_ysize, int filter) { // @@@ directly pass bootstrap value?
     double radius           = .01 * atoi(bootstrap); // bootstrap values are given in % (0..100)
     if (radius < .1) radius = .1;
 
@@ -625,7 +625,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
 
         if (!handled && event.key_char() == '0') {
             // handle reset-key promised by
-            // - KEYINFO_ABORT_AND_RESET (AWT_MODE_ROTATE, AWT_MODE_LENGTH, AWT_MODE_LINE, AWT_MODE_SPREAD)
+            // - KEYINFO_ABORT_AND_RESET (AWT_MODE_ROTATE, AWT_MODE_LENGTH, AWT_MODE_MULTIFURC, AWT_MODE_LINE, AWT_MODE_SPREAD)
             // - KEYINFO_RESET (AWT_MODE_LZOOM)
 
             if (event.cmd() == AWT_MODE_LZOOM) {
@@ -664,13 +664,16 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                         exports.save = 1;
                         break;
 
-                    case AWT_MODE_LENGTH: {
-                        GBT_LEN blen = pointed.node()->get_branchlength();
-                        blen         = (blen == 0.0) ? tree_defaults::LENGTH : 0.0; // @@@ toggling doesnt work; when branch is zeroed, it's inaccessible
-                        pointed.node()->set_branchlength(blen);
+                    case AWT_MODE_LENGTH:
+                        pointed.node()->set_branchlength_unrooted(0.0);
                         exports.save = 1;
                         break;
-                    }
+
+                    case AWT_MODE_MULTIFURC:
+                        pointed.node()->multifurcate();
+                        exports.save = 1;
+                        break;
+
                     case AWT_MODE_LINE:
                         pointed.node()->reset_subtree_linewidths();
                         exports.save = 1;
@@ -1087,7 +1090,8 @@ static void text_near_head(AW_device *device, int gc, const LineVector& line, co
     device->text(gc, text, at);
 }
 
-enum ScaleMode { SCALE_LENGTH, SCALE_SPREAD };
+enum ScaleMode { SCALE_LENGTH, SCALE_LENGTH_PRESERVING, SCALE_SPREAD };
+
 class BranchScaler : public Scaler { // derived from Noncopyable
     ScaleMode  mode;
     AP_tree   *node;
@@ -1105,7 +1109,8 @@ class BranchScaler : public Scaler { // derived from Noncopyable
 
     float get_val() const {
         switch (mode) {
-            case SCALE_LENGTH: return node->get_branchlength();
+            case SCALE_LENGTH_PRESERVING:
+            case SCALE_LENGTH: return node->get_branchlength_unrooted();
             case SCALE_SPREAD: return node->gr.spread;
         }
         td_assert(0);
@@ -1113,7 +1118,8 @@ class BranchScaler : public Scaler { // derived from Noncopyable
     }
     void set_val(float val) {
         switch (mode) {
-            case SCALE_LENGTH: node->set_branchlength(val); break;
+            case SCALE_LENGTH_PRESERVING: node->set_branchlength_preserving(val); break;
+            case SCALE_LENGTH: node->set_branchlength_unrooted(val); break;
             case SCALE_SPREAD: node->gr.spread = val; break;
         }
     }
@@ -1170,6 +1176,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
             if (!zero_val_removed) {
                 switch (mode) {
                     case SCALE_LENGTH:
+                    case SCALE_LENGTH_PRESERVING:
                         set_val(tree_defaults::LENGTH); // fake branchlength (can't scale zero-length branches)
                         aw_message("Cannot scale zero sized branches\nBranchlength has been set to 0.1\nNow you may scale the branch");
                         break;
@@ -1197,7 +1204,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
                     float val = start_val * scale;
                     if (val<0.0) {
                         if (node->is_leaf || !allow_neg_val) {
-                            val = -val; // do NOT accept negative values
+                            val = 0.0; // do NOT accept negative values
                         }
                     }
                     if (discrete) {
@@ -1324,6 +1331,7 @@ AWT_graphic_event::ClickPreference preferredForCommand(AWT_COMMAND_MODE mode) {
     switch (mode) {
         case AWT_MODE_ROTATE:
         case AWT_MODE_LENGTH:
+        case AWT_MODE_MULTIFURC:
         case AWT_MODE_SPREAD:
             return AWT_graphic_event::PREFER_LINE;
 
@@ -1393,29 +1401,35 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         DB_scalable ydata;
         double      unscale = device->get_unscale();
 
-        if (event.cmd() == AWT_MODE_LENGTH) { // scale ruler
-            xdata = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
+        switch (event.cmd()) {
+            case AWT_MODE_LENGTH:
+            case AWT_MODE_MULTIFURC: { // scale ruler
+                xdata = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
 
-            double rel  = clicked.get_rel_attach();
-            if (tree_sort == AP_TREE_IRS) {
-                unscale /= (rel-1)*irs_tree_ruler_scale_factor; // ruler has opposite orientation in IRS mode
-            }
-            else {
-                unscale /= rel;
-            }
+                double rel  = clicked.get_rel_attach();
+                if (tree_sort == AP_TREE_IRS) {
+                    unscale /= (rel-1)*irs_tree_ruler_scale_factor; // ruler has opposite orientation in IRS mode
+                }
+                else {
+                    unscale /= rel;
+                }
 
-            if (event.button() == AW_BUTTON_RIGHT) xdata.set_discretion_factor(10);
-            xdata.set_min(0.01);
-        }
-        else if (event.cmd() == AWT_MODE_LINE) { // scale ruler linewidth
-            ydata = GB_searchOrCreate_int(gb_tree, RULER_LINEWIDTH, DEFAULT_RULER_LINEWIDTH);
-            ydata.set_min(0);
-            ydata.inverse();
-        }
-        else { // move ruler or ruler text
-            bool isText = clicked.is_text();
-            xdata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_x" : "ruler_x"), 0.0);
-            ydata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_y" : "ruler_y"), 0.0);
+                if (event.button() == AW_BUTTON_RIGHT) xdata.set_discretion_factor(10);
+                xdata.set_min(0.01);
+                break;
+            }
+            case AWT_MODE_LINE: // scale ruler linewidth
+                ydata = GB_searchOrCreate_int(gb_tree, RULER_LINEWIDTH, DEFAULT_RULER_LINEWIDTH);
+                ydata.set_min(0);
+                ydata.inverse();
+                break;
+
+            default: { // move ruler or ruler text
+                bool isText = clicked.is_text();
+                xdata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_x" : "ruler_x"), 0.0);
+                ydata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_y" : "ruler_y"), 0.0);
+                break;
+            }
         }
         store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
         return;
@@ -1436,13 +1450,17 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             break;
 
         case AWT_MODE_LENGTH:
+        case AWT_MODE_MULTIFURC:
             if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
                 bool allow_neg_branches = aw_root->awar(AWAR_EXPERT)->read_int();
                 bool discrete_lengths   = event.button() == AW_BUTTON_RIGHT;
 
                 const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
                 td_assert(cl);
-                BranchScaler *scaler = new BranchScaler(SCALE_LENGTH, clicked.node(), cl->get_line(), clicked.element()->get_attach_point(), mousepos, device->get_unscale(), discrete_lengths, allow_neg_branches, exports);
+
+                ScaleMode     mode   = event.cmd() == AWT_MODE_LENGTH ? SCALE_LENGTH : SCALE_LENGTH_PRESERVING;
+                BranchScaler *scaler = new BranchScaler(mode, clicked.node(), cl->get_line(), clicked.element()->get_attach_point(), mousepos, device->get_unscale(), discrete_lengths, allow_neg_branches, exports);
+
                 store_command_data(scaler);
                 scaler->draw_drag_indicator(device, drag_gc);
             }
@@ -2063,12 +2081,12 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             }
 
             AW_click_cd cds(disp_device, (AW_CL)son);
-            if (son->remark_branch) {
+            if (son->get_remark()) {
                 Position remarkPos(n);
                 remarkPos.movey(-scaled_font.ascent*0.1);
-                bool bootstrap_shown = AWT_show_branch_remark(disp_device, son->remark_branch, son->is_leaf, remarkPos, 1, remark_text_filter);
+                bool bootstrap_shown = AWT_show_branch_remark(disp_device, son->get_remark(), son->is_leaf, remarkPos, 1, remark_text_filter);
                 if (show_circle && bootstrap_shown) {
-                    show_bootstrap_circle(disp_device, son->remark_branch, circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, bs_circle_filter);
+                    show_bootstrap_circle(disp_device, son->get_remark(), circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, bs_circle_filter);
                 }
             }
 
@@ -2208,19 +2226,19 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         }
     }
     if (show_circle) {
-        if (at->leftson->remark_branch) {
+        if (at->leftson->get_remark()) {
             AW_click_cd cdl(disp_device, (AW_CL)at->leftson);
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
             z = at->leftlen * .5;
             Position center(x_center + z * cos(w), y_center + z * sin(w));
-            show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, center, false, 0, bs_circle_filter);
+            show_bootstrap_circle(disp_device, at->leftson->get_remark(), circle_zoom_factor, circle_max_size, at->leftlen, center, false, 0, bs_circle_filter);
         }
-        if (at->rightson->remark_branch) {
+        if (at->rightson->get_remark()) {
             AW_click_cd cdr(disp_device, (AW_CL)at->rightson);
             w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
             z = at->rightlen * .5;
             Position center(x_center + z * cos(w), y_center + z * sin(w));
-            show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, center, false, 0, bs_circle_filter);
+            show_bootstrap_circle(disp_device, at->rightson->get_remark(), circle_zoom_factor, circle_max_size, at->rightlen, center, false, 0, bs_circle_filter);
         }
     }
 }

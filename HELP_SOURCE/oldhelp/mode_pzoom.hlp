@@ -11,13 +11,13 @@ SUB	rst_phys_zoom.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		ZOOM MODE
 
-OCCURRENCE	ARB_NT <PZoom> button in the left column
+OCCURRENCE	ARB_NT and ARB_PARSIMONY: <PZoom> button in the left column
 		F4 on the keyboard
 
 DESCRIPTION	The 'ZOOM MODE' allows you to magnify selected square sections of
-		the tree display area within the 'ARB_NT' window.
+		the tree display area within the main window.
 
-		Click on the <PZoom> button of the 'ARB_NT' window or press
+		Click on the <PZoom> button of the main window or press
 			the 'F4' key on the keyboard to activate the 'ZOOM
 			MODE'. In the latter case, the cursor has to be placed
 			within the tree display area.

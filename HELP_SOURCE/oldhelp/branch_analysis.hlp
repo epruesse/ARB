@@ -23,13 +23,37 @@ DESCRIPTION     Branch analysis functions
 
 SECTION         Analyse distances in tree
 
+                For the whole tree
+                 - the in-tree-distance (ITD = sum of all branchlengths) and
+                 - the per-species-distance (PSD = ITD / number of species) are displayed.
+
                 For all leafs in the tree the following values are calculated:
-                - mean distance to all other leafs
-                - minimum distance to any other leaf
-                - maximum distance to any other leaf
+                 - mean distance to all other leafs
+                 - minimum distance to any other leaf
+                 - maximum distance to any other leaf
                 
                 It reports the mean and the range of each of these 3 values separately
                 for all and for marked species.
+
+SECTION         Using the PSD to compare trees
+
+                The PSD is useful when comparing tree topologies (based on similar sets
+                of species) that were reconstructed using different methods. Imagine
+                you have two trees:
+
+                 - tree_raxml (reconstructed with RAxML)
+                 - tree_arbpars (reconstructed with ARB parsimony)
+
+                The PSDs of both trees will be quite different (maybe by factor 50 or 60).
+                Calculating the ratio of both PSDs, give you a good value for scaling
+                the branchlengths of (a copy of) one of the trees. For example the PSDs
+                might be
+
+                 - PSDr = PSD(tree_raxml)    =  0.002219
+                 - PSDp = PSD(tree_arbpars)  =  0.118483
+
+                Now you may scale the branchlengths of tree_arbpars by factor 0.01873 (=PSDr/PSDp) or those
+                of tree_raxml by factor 53.39 (==PSDp/PSDr) to ease comparison of the two trees.
 
 SECTION         Mark long branches
 

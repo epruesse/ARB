@@ -21,6 +21,7 @@ class AW_clicked_text;
 
 enum AWT_COMMAND_MODE {
     AWT_MODE_NONE,
+    AWT_MODE_EMPTY, // placeholder (currently used in PARSIMONY)
 
     // NTREE, PARSIMONY, GENEMAP and SECEDIT:
     AWT_MODE_ZOOM,
@@ -49,6 +50,7 @@ enum AWT_COMMAND_MODE {
     AWT_MODE_WWW,
     AWT_MODE_SPREAD,
     AWT_MODE_LENGTH,
+    AWT_MODE_MULTIFURC,
 
     // PARSIMONY only:
     AWT_MODE_KERNINGHAN,
