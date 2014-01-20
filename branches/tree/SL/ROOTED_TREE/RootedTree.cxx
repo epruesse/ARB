@@ -11,6 +11,7 @@
 
 #include "RootedTree.h"
 #include <map>
+#include <set>
 #include <cmath> // needed with 4.4.3 (but not with 4.7.3)
 
 // ------------------
@@ -372,6 +373,7 @@ ARB_edge TreeRoot::find_innermost_edge() {
 
 class RootedTree::LengthCollector {
     typedef std::map<RootedTree*,GBT_LEN> LengthMap;
+    typedef std::set<RootedTree*>         NodeSet;
 
     LengthMap eliminatedParentLength;
     LengthMap addedParentLength;
@@ -389,18 +391,46 @@ public:
 
     void independent_distribution() {
         // step 2: (see caller)
-        for (LengthMap::iterator from = eliminatedParentLength.begin(); from != eliminatedParentLength.end(); ++from) {
-            ARB_edge elimEdge = parentEdge(from->first);
-            GBT_LEN  elimLen  = from->second;
+        while (!eliminatedParentLength.empty()) { // got eliminated lengths which need to be distributed
+            for (LengthMap::iterator from = eliminatedParentLength.begin(); from != eliminatedParentLength.end(); ++from) {
+                ARB_edge elimEdge = parentEdge(from->first);
+                GBT_LEN  elimLen  = from->second;
 
-            elimEdge.virtually_distribute_length(elimLen, *this);
+                elimEdge.virtually_distribute_length(elimLen, *this);
+            }
+            eliminatedParentLength.clear(); // all distributed!
+
+            // handle special cases where distributed length is negative and results in negative destination branches.
+            // Avoid generating negative dest. branchlengths by
+            // - eliminating the dest. branch
+            // - redistributing the additional (negative) length (may cause additional negative lengths on other dest. branches)
+
+            NodeSet handled;
+            for (LengthMap::iterator to = addedParentLength.begin(); to != addedParentLength.end(); ++to) {
+                ARB_edge affectedEdge     = parentEdge(to->first);
+                GBT_LEN  additionalLen    = to->second;
+                double   effective_length = affectedEdge.length() + additionalLen;
+
+                if (effective_length<=0.0) { // negative or zero
+                    affectedEdge.set_length(effective_length);
+                    eliminate_parent_edge(to->first); // adds entry to eliminatedParentLength and causes another additional loop
+                    handled.insert(to->first);
+                }
+            }
+
+            // remove all redistributed nodes
+            for (NodeSet::iterator del = handled.begin(); del != handled.end(); ++del) {
+                addedParentLength.erase(*del);
+            }
         }
+
         // step 3:
         for (LengthMap::iterator to = addedParentLength.begin(); to != addedParentLength.end(); ++to) {
-            ARB_edge affectedEdge  = parentEdge(to->first);
-            GBT_LEN  additionalLen = to->second;
+            ARB_edge affectedEdge     = parentEdge(to->first);
+            GBT_LEN  additionalLen    = to->second;
+            double   effective_length = affectedEdge.length() + additionalLen;
 
-            affectedEdge.set_length(affectedEdge.length() + additionalLen);
+            affectedEdge.set_length(effective_length);
         }
     }
 };

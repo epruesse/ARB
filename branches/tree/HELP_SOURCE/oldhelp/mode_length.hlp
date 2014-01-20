@@ -39,13 +39,21 @@ SECTION         Differences between LENGTH- and MULTIFURC-MODES
                 neighbour-branches.
                 Distribution is based on the same algorithm as LINK{multifurcate.hlp}.
 
-NOTES           None
+NOTES           To multifurcate explicit single branches, you may as well focus the tree-display,
+		move the mouse pointer to the bootstrap value of the branch to eliminate and then
+		press '0' to actually eliminate the branch.
+
+		Increasing the length of a branch in MULTIFURC-MODE may cause neighbour branches 
+		to become multifurcations. This is irreversible, i.e. reducing the length back 
+		to the original value will not "un-multifurcate" the affected branches.
+
+                In both modes it is possible to set branchlengths to negative values if expert-mode
+                is enabled.
 
 EXAMPLE         None
 
 WARNINGS        In MULTIFURC MODE you may not expect to undo all length distributions, by
-                scaling the branchlength back to the value it had before a previous scale
-                operation!
+                scaling the branchlength back to the original value it had before a previous
+                scale operation!
 
-BUGS            Increasing the branchlength in MULTIFURC mode may result in
-                neighbour-branches with negative branchlengths!
+BUGS            unknown

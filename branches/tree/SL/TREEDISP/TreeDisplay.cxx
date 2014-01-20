@@ -1204,7 +1204,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
                     float val = start_val * scale;
                     if (val<0.0) {
                         if (node->is_leaf || !allow_neg_val) {
-                            val = -val; // do NOT accept negative values
+                            val = 0.0; // do NOT accept negative values
                         }
                     }
                     if (discrete) {
