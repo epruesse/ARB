@@ -11,7 +11,7 @@ SUB	rst_log_zoom.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		LOGICAL ZOOM MODE
 
-OCCURRENCE	ARB_NT <LZoom> button in the left column
+OCCURRENCE	ARB_NT and ARB_PARSIMONY: <LZoom> button in the left column
 		F5 on the keyboard
 
 DESCRIPTION	The 'LOGICAL ZOOM MODE' allows you to display subtrees within

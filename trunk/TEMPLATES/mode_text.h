@@ -33,6 +33,7 @@
 #define MODE_TEXT_3BUTTONS_KEYS(modeName,leftInfo,middleInfo,rightInfo,keyInfo) MT_MODE(modeName) MT_LEFT(leftInfo) MT_MIDDLE(middleInfo) MT_RIGHT(rightInfo) MT_KEYS(keyInfo)
 
 #define MODE_TEXT_STANDARD_ZOOMMODE() MODE_TEXT_2BUTTONS_KEYS("ZOOM", "zoom in", "zoom out (click or drag)", KEYINFO_RESET)
+#define MODE_TEXT_PLACEHOLDER()       MT_MODE("PLACEHOLDER") "  (reserved)"
 
 inline const char *no_mode_text_defined() {
     arb_assert(0); // pleae define an infotext for current mode in caller

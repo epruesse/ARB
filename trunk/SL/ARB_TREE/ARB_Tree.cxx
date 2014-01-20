@@ -68,7 +68,6 @@ GB_ERROR ARB_seqtree_root::loadFromDB(const char *name) {
     GBDATA   *gb_main = get_gb_main();
     GB_ERROR  error   = GB_push_transaction(gb_main);
 
-
     if (!error) {
         ARB_seqtree *old_root = get_root_node();
         if (old_root) {
@@ -90,8 +89,8 @@ GB_ERROR ARB_seqtree_root::loadFromDB(const char *name) {
             else {
                 error = GB_add_callback(gb_tree, GB_CB_DELETE, makeDatabaseCallback(tree_deleted_cbwrapper, this));
                 if (!error) {
-                    at_assert(arb_tree->get_root_node() == arb_tree);
-
+                    at_assert(arb_tree == arb_tree->get_root_node());
+                    at_assert(arb_tree == get_root_node());
                     tree_name    = strdup(name);
                     isLinkedToDB = false;
                 }

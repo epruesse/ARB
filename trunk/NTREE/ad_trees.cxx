@@ -524,15 +524,15 @@ static AW_window_simple *create_select_two_trees_window(AW_root *root, const cha
     AW_awar *awar_displayed_tree = root->awar(AWAR_TREE_NAME);
 
     aws->at("select1");
-    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::source_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED", "Use");
-    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::source_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED", "Display");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::source_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED1", "Use");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::source_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED1", "Display");
 
     aws->callback(swap_source_dest_cb);
     aws->create_autosize_button("SWAP", "Swap");
 
     aws->at("select2");
-    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::dest_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED", "Use");
-    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::dest_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED", "Display");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::dest_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED2", "Use");
+    aws->callback(makeWindowCallback(copy_tree_awar_cb, TreeAdmin::dest_tree_awar(root), awar_displayed_tree));  aws->create_autosize_button("DISPLAY_SELECTED2", "Display");
 
     aws->at("user");
 
@@ -943,6 +943,65 @@ AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, AWT_canvas
     return aws;
 }
 
+// ---------------------------
+//      multifurcate tree
+
+#define AWAR_MFURC                    "tree/mfurc/"
+#define AWAR_MFURC_CONSIDER_BOOTSTRAP AWAR_MFURC "use_bs"
+#define AWAR_MFURC_CONSIDER_LENGTH    AWAR_MFURC "use_len"
+#define AWAR_MFURC_LENGTH_LIMIT       AWAR_MFURC "len"
+#define AWAR_MFURC_BOOTSTRAP_LIMIT    AWAR_MFURC "bs"
+
+void NT_create_multifurcate_tree_awars(AW_root *aw_root, AW_default props) {
+    aw_root->awar_int  (AWAR_MFURC_CONSIDER_BOOTSTRAP, 1,   props);
+    aw_root->awar_int  (AWAR_MFURC_CONSIDER_LENGTH,    1,   props);
+    aw_root->awar_float(AWAR_MFURC_LENGTH_LIMIT,       0.1, props);
+    aw_root->awar_float(AWAR_MFURC_BOOTSTRAP_LIMIT,    50,  props);
+}
+static void multifurcation_cb(UNFIXED, AWT_canvas *ntw) {
+    AW_root *aw_root = ntw->aww->get_root();
+
+    double below_bootstrap = 101.0;
+    double below_length    = 1000000.0;
+
+    if (aw_root->awar(AWAR_MFURC_CONSIDER_BOOTSTRAP)->read_int()) below_bootstrap = aw_root->awar(AWAR_MFURC_BOOTSTRAP_LIMIT)->read_float();
+    if (aw_root->awar(AWAR_MFURC_CONSIDER_LENGTH)   ->read_int()) below_length    = aw_root->awar(AWAR_MFURC_LENGTH_LIMIT)   ->read_float();
+
+    NT_multifurcate_tree(ntw, RootedTree::multifurc_limits(below_bootstrap, below_length));
+}
+AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw) {
+    AW_window_simple *aws = new AW_window_simple;
+
+    aws->init(aw_root, ntw->aww->local_id("multifurcate"), "Multifurcate tree");
+    aws->at(10, 10);
+    aws->auto_space(10, 10);
+
+    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->callback(makeHelpCallback("multifurcate.hlp"));
+    aws->create_button("HELP", "HELP", "H");
+
+    const int LABEL_LENGTH = 43;
+    aws->label_length(LABEL_LENGTH);
+
+    aws->at_newline();
+    aws->label("Multifurcate branches with bootstrap below");
+    aws->create_toggle(AWAR_MFURC_CONSIDER_BOOTSTRAP);
+    aws->create_input_field(AWAR_MFURC_BOOTSTRAP_LIMIT, 10);
+
+    aws->at_newline();
+    aws->label("                    AND branchlength below");
+    aws->create_toggle(AWAR_MFURC_CONSIDER_LENGTH);
+    aws->create_input_field(AWAR_MFURC_LENGTH_LIMIT, 10);
+
+    aws->at_newline();
+    aws->callback(makeWindowCallback(multifurcation_cb, ntw));
+    aws->create_autosize_button("MULTIFURCATE", "Multifurcate", "M");
+
+    return aws;
+}
+
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
@@ -950,33 +1009,14 @@ AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, AWT_canvas
 #include <test_unit.h>
 #endif
 
-static arb_test::match_expectation saved_newick_equals(GBDATA *gb_main, const char *treename, const char *expected_newick) {
-    using namespace    arb_test;
-    expectation_group  expected;
-    GB_transaction     ta(gb_main);
-    GBT_TREE          *tree = GBT_read_tree(gb_main, treename, GBT_TREE_NodeFactory());
-
-    expected.add(that(tree).does_differ_from_NULL());
-    if (tree) {
-        char *newick = GBT_tree_2_newick(tree, false);
-        expected.add(that(newick).is_equal_to(expected_newick));
-        free(newick);
-        delete tree;
-    }
-    return all().ofgroup(expected);
-}
-
-#define TEST_EXPECT_SAVED_NEWICK_EQUAL(gbmain,treename,expected_newick)         TEST_EXPECTATION(saved_newick_equals(gbmain, treename, expected_newick))
-#define TEST_EXPECT_SAVED_NEWICK_EQUAL__BROKEN(gbmain,treename,expected_newick) TEST_EXPECTATION__BROKEN(saved_newick_equals(gbmain, treename, expected_newick))
-
 void TEST_sort_tree_by_other_tree() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
     TEST_REJECT_NULL(gb_main);
 
-    const char *topo_test   = "(((((((CloTyro3,CloTyro4),CloTyro2),CloTyrob),CloInnoc),CloBifer),(((CloButy2,CloButyr),CloCarni),CloPaste)),((((CorAquat,CurCitre),CorGluta),CelBiazo),CytAquat));";
-    const char *topo_center = "(((CloPaste,((CloButy2,CloButyr),CloCarni)),((CloInnoc,((CloTyro2,(CloTyro3,CloTyro4)),CloTyrob)),CloBifer)),((CelBiazo,((CorAquat,CurCitre),CorGluta)),CytAquat));";
-    const char *topo_bottom = "((CytAquat,(CelBiazo,(CorGluta,(CorAquat,CurCitre)))),((CloPaste,(CloCarni,(CloButy2,CloButyr))),(CloBifer,(CloInnoc,(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4)))))));";
+    const char *topo_test   = "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,(((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,((((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
+    const char *topo_center = "(((CloPaste:0.179,((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010):0.131,((CloInnoc:0.371,((CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017,CloTyrob:0.009):0.274):0.057,CloBifer:0.388):0.124):0.081,((CelBiazo:0.059,((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053):0.207,CytAquat:0.711):0.081);";
+    const char *topo_bottom = "((CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207):0.081,((CloPaste:0.179,(CloCarni:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.010):0.131,(CloBifer:0.388,(CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.057):0.124):0.081);";
 
     TEST_EXPECT_DIFFERENT(topo_test,   topo_center);
     TEST_EXPECT_DIFFERENT(topo_test,   topo_bottom);
@@ -987,10 +1027,10 @@ void TEST_sort_tree_by_other_tree() {
         GB_transaction  ta(gb_main);
         SizeAwareTree  *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
         TEST_REJECT_NULL(tree);
-        TEST_EXPECT_NEWICK_EQUAL(tree, topo_test);
+        TEST_EXPECT_NEWICK(nLENGTH, tree, topo_test);
 
-        tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_center", tree)); TEST_EXPECT_NEWICK_EQUAL(tree, topo_center);
-        tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_bottom", tree)); TEST_EXPECT_NEWICK_EQUAL(tree, topo_bottom);
+        tree->reorder_tree(BIG_BRANCHES_TO_CENTER); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_center", tree)); TEST_EXPECT_NEWICK(nLENGTH, tree, topo_center);
+        tree->reorder_tree(BIG_BRANCHES_TO_BOTTOM); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_sorted_bottom", tree)); TEST_EXPECT_NEWICK(nLENGTH, tree, topo_bottom);
 
         // test SortByTopo
         {
@@ -1011,9 +1051,281 @@ void TEST_sort_tree_by_other_tree() {
     }
 
 
-    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_center")); TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_work", topo_center);
-    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_bottom")); TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_work", topo_bottom);
-    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_test"));          TEST_EXPECT_SAVED_NEWICK_EQUAL(gb_main, "tree_work", topo_test);
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_center")); TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_center);
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_bottom")); TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_bottom);
+    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_test"));          TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_test);
+
+    GB_close(gb_main);
+}
+
+void TEST_move_node_info() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_trees.arb", "r");
+
+#define GROUP_TEST "(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4)))"
+
+#define NAMED_GROUP_TEST       GROUP_TEST "'test'"
+#define OVERWRITTEN_GROUP_TEST GROUP_TEST "'g2 [was: test]'"
+
+    const char *org_topo = "((CloInnoc," GROUP_TEST "),(CloBifer,((CloCarni,CurCitre),((CloPaste,(Zombie1,(CloButy2,CloButyr))),(CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2))))))));";
+
+    const char *unwanted_topo1 = "((CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2)))),((CloPaste,(Zombie1,(CloButy2,CloButyr))),((CloCarni,CurCitre),(CloBifer,(CloInnoc," NAMED_GROUP_TEST ")))));";
+    const char *unwanted_topo2 = "((CloButy2,CloButyr),(Zombie1,(CloPaste,((((CloInnoc," OVERWRITTEN_GROUP_TEST "),CloBifer),(CloCarni,CurCitre)),(CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2)))))))'outer');";
+
+    const char *sorted_topo1 = "(((((CloInnoc," NAMED_GROUP_TEST "),CloBifer),(CloCarni,CurCitre)),(CloPaste,(Zombie1,(CloButy2,CloButyr)))),(CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2)))));";
+    const char *sorted_topo2 = "(((((((CloInnoc," OVERWRITTEN_GROUP_TEST "),CloBifer),(CloCarni,CurCitre)),(CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2))))),CloPaste),Zombie1)'outer',(CloButy2,CloButyr));";
+
+    const char *compared_topo = "(((((((CloInnoc,(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4)))),CloBifer),(CloCarni,CurCitre)'# 2')'# 2',(CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2)'# 1')'# 1')'# 1')'# 1')'# 1',CloPaste),Zombie1),(CloButy2,CloButyr));";
+
+    // create copy of 'tree_removal'
+    {
+        GB_transaction  ta(gb_main);
+        GBT_TREE       *tree = GBT_read_tree(gb_main, "tree_removal", GBT_TREE_NodeFactory());
+
+        TEST_EXPECT_NEWICK(nSIMPLE, tree, org_topo);
+        TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_removal_copy", tree));
+        delete tree;
+    }
+
+    // move node info
+    {
+        TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_test", "tree_removal", "move_node_info.log", TREE_INFO_COPY, false));
+
+        TEST_EXPECT_SAVED_NEWICK__BROKEN(nSIMPLE, gb_main, "tree_removal", org_topo); // @@@ moving node info modifies topology (might be necessary to insert groups)
+        TEST_EXPECT_SAVED_NEWICK(nGROUP, gb_main, "tree_removal", unwanted_topo1);
+
+        // @@@ when we have a function to set the root according to another tree (#449),
+        // use that function here. sorting tree after that, should again result in 'org_topo'!
+
+        TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_removal", "tree_removal_copy"));
+        TEST_EXPECT_SAVED_NEWICK(nGROUP, gb_main, "tree_removal", sorted_topo1);
+    }
+
+    // add node info
+    {
+        TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_tree2", "tree_removal", "move_node_info.log", TREE_INFO_ADD, false));
+
+        TEST_EXPECT_SAVED_NEWICK__BROKEN(nSIMPLE, gb_main, "tree_removal", org_topo); // @@@ moving node info modifies topology (might be necessary to insert groups)
+        TEST_EXPECT_SAVED_NEWICK(nGROUP, gb_main, "tree_removal", unwanted_topo2);
+
+        // @@@ when we have a function to set the root according to another tree (#449),
+        // use that function here. sorting tree after that, should again result in 'org_topo'!
+
+        TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_removal", "tree_removal_copy"));
+        TEST_EXPECT_SAVED_NEWICK(nGROUP, gb_main, "tree_removal", sorted_topo2);
+    }
+
+    // compare node info
+    {
+        TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_test", "tree_removal", NULL, TREE_INFO_COMPARE, false));
+        TEST_EXPECT_SAVED_NEWICK(nREMARK, gb_main, "tree_removal", compared_topo);
+    }
+
+    GB_close(gb_main);
+}
+
+void TEST_edges() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
+    TEST_REJECT_NULL(gb_main);
+
+    {
+        GB_transaction  ta(gb_main);
+        RootedTree     *tree = DOWNCAST(RootedTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
+
+        RootedTree *left  = tree->findLeafNamed("CloTyro3"); TEST_REJECT_NULL(left);
+        RootedTree *node  = left->get_father();              TEST_REJECT_NULL(node);
+        RootedTree *right = node->findLeafNamed("CloTyro4"); TEST_REJECT_NULL(right);
+
+        TEST_EXPECT(node == right->get_father());
+        TEST_EXPECT(node->get_leftson()  == left);
+        TEST_EXPECT(node->get_rightson() == right);
+
+        RootedTree *parent  = node->get_father();                TEST_REJECT_NULL(parent);
+        RootedTree *brother = parent->findLeafNamed("CloTyro2"); TEST_REJECT_NULL(brother);
+
+        TEST_EXPECT(node->get_brother() == brother);
+
+        RootedTree *grandpa  = parent->get_father(); TEST_REJECT_NULL(grandpa);
+
+        // topology:
+        //
+        //            grandpa
+        //              /
+        //             /
+        //            /
+        //          parent
+        //           /\              .
+        //          /  \             .
+        //         /    \            .
+        //       node  brother
+        //        /\                 .
+        //       /  \                .
+        //      /    \               .
+        //    left right
+
+        // test next() and otherNext() for inner edge 'node->parent'
+        {
+            ARB_edge nodeUp = parentEdge(node);
+
+            TEST_EXPECT(node->is_leftson()); // if child is left son..
+            TEST_EXPECT(nodeUp.next().dest()      == grandpa); // .. next() continues rootwards
+            TEST_EXPECT(nodeUp.otherNext().dest() == brother);
+
+            ARB_edge brotherUp = parentEdge(brother);
+
+            TEST_EXPECT(brother->is_rightson());               // if child is right son..
+            TEST_EXPECT(brotherUp.next().dest()      == node); // .. next() continues with other son
+            TEST_EXPECT(brotherUp.otherNext().dest() == grandpa);
+
+            ARB_edge down = nodeUp.inverse();
+
+            TEST_EXPECT(down.next().dest()      == right); // next descends into right son
+            TEST_EXPECT(down.otherNext().dest() == left);
+
+            ARB_edge toLeaf(node, left);
+            TEST_EXPECT(toLeaf.at_leaf());
+
+            // both iterators should turn around at leaf:
+            TEST_EXPECT(toLeaf.next().dest()      == node);
+            TEST_EXPECT(toLeaf.otherNext().dest() == node);
+
+            // test adjacent_distance
+            const double EPSILON = 0.000001;
+
+            const double NLEN = 0.025806;
+            const double BLEN = 0.017316;
+            const double PLEN = 0.017167;
+            const double LLEN = 1.045690;
+            const double RLEN = 0.060606;
+
+            TEST_EXPECT_SIMILAR(node->get_branchlength(),             NLEN, EPSILON);
+            TEST_EXPECT_SIMILAR(nodeUp.length(),                      NLEN, EPSILON);
+            TEST_EXPECT_SIMILAR(down.length(),                        NLEN, EPSILON);
+            TEST_EXPECT_SIMILAR(nodeUp.length_or_adjacent_distance(), NLEN, EPSILON);
+            TEST_EXPECT_SIMILAR(down.length_or_adjacent_distance(),   NLEN, EPSILON);
+
+            TEST_EXPECT_SIMILAR(brother->get_branchlength(), BLEN,      EPSILON);
+            TEST_EXPECT_SIMILAR(parent ->get_branchlength(), PLEN,      EPSILON);
+            TEST_EXPECT_SIMILAR(nodeUp.adjacent_distance(),  BLEN+PLEN, EPSILON);
+
+            TEST_EXPECT_SIMILAR(left ->get_branchlength(), LLEN,      EPSILON);
+            TEST_EXPECT_SIMILAR(right->get_branchlength(), RLEN,      EPSILON);
+            TEST_EXPECT_SIMILAR(down.adjacent_distance(),  LLEN+RLEN, EPSILON);
+
+            // modify lengths
+            const double MOD_NLEN = 0.123456;
+            const double MOD_LLEN = 0.246802;
+
+            toLeaf.set_length(MOD_LLEN);
+            nodeUp.set_length(MOD_NLEN);
+
+            TEST_EXPECT_SIMILAR(toLeaf.length(), MOD_LLEN, EPSILON);
+            TEST_EXPECT_SIMILAR(nodeUp.length(), MOD_NLEN, EPSILON);
+            TEST_EXPECT_SIMILAR(down.length(),   MOD_NLEN, EPSILON);
+        }
+
+        delete tree;
+    }
+
+    GB_close(gb_main);
+}
+
+void TEST_toggle_bootstraps100() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
+    TEST_REJECT_NULL(gb_main);
+
+    {
+        GB_transaction  ta(gb_main);
+        RootedTree     *tree = DOWNCAST(RootedTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
+        TEST_REJECT_NULL(tree);
+
+        const char *topo_org   = "(((((((CloTyro3,CloTyro4)'40%',CloTyro2)'0%',CloTyrob)'97%',CloInnoc)'0%',CloBifer)'53%',(((CloButy2,CloButyr)'100%',CloCarni)'33%',CloPaste)'97%')'100%',((((CorAquat,CurCitre)'100%',CorGluta)'17%',CelBiazo)'40%',CytAquat)'100%');";
+        const char *topo_no100 = "(((((((CloTyro3,CloTyro4)'40%',CloTyro2)'0%',CloTyrob)'97%',CloInnoc)'0%',CloBifer)'53%',(((CloButy2,CloButyr)"    ",CloCarni)'33%',CloPaste)'97%')"    ",((((CorAquat,CurCitre)"    ",CorGluta)'17%',CelBiazo)'40%',CytAquat)"    ");";
+        const char *topo_rem   = "(((((((CloTyro3,CloTyro4),CloTyro2),CloTyrob),CloInnoc),CloBifer),(((CloButy2,CloButyr),CloCarni),CloPaste)),((((CorAquat,CurCitre),CorGluta),CelBiazo),CytAquat));";
+
+        TEST_EXPECT_NEWICK(nREMARK, tree, topo_org);
+
+        tree->toggle_bootstrap100();
+        TEST_EXPECT_NEWICK(nREMARK, tree, topo_no100);
+
+        tree->toggle_bootstrap100();
+        TEST_EXPECT_NEWICK(nREMARK, tree, topo_org);
+
+        tree->remove_bootstrap();
+        TEST_EXPECT_NEWICK(nREMARK, tree, topo_rem);
+
+        delete tree;
+    }
+
+    GB_close(gb_main);
+}
+
+void TEST_multifurcate_tree() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
+    TEST_REJECT_NULL(gb_main);
+
+    const char *topo_test            = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.026,CloTyro2:0.017)'0%':0.017,CloTyrob:0.009)'97%:test':0.274,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
+    // changes                       = "                                                                                                    +0.307         -0.371     +0.064 "
+    const char *topo_single          = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.026,CloTyro2:0.017)'0%':0.017,CloTyrob:0.009)'97%:test':0.581,CloInnoc:0.000)'0%':0.121,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
+    const char *topo_bs_less_101_005 = "(((((((CloTyro3:1.098,CloTyro4:0.064)"   ":0.000,CloTyro2:0.000)"  ":0.000,CloTyrob:0.000)'97%:test':0.287,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.000,CloButyr:0.000)'100%':0.578,CloCarni:0.121)"   ":0.000,CloPaste:0.181)'97%':0.132)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
+    const char *topo_bs_less_30_005  = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.027,CloTyro2:0.018)"  ":0.000,CloTyrob:0.009)'97%:test':0.288,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
+    const char *topo_bs_less_30      = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.027,CloTyro2:0.018)"  ":0.000,CloTyrob:0.009)'97%:test':0.302,CloInnoc:0.390)"  ":0.000,CloBifer:0.407)'53%':0.131,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.109,CorGluta:0.554)"   ":0.000,CelBiazo:0.062)'40%':0.220,CytAquat:0.711)'100%':0.081);";
+    const char *topo_all             = "(((((((CloTyro3:0.000,CloTyro4:0.000)"   ":0.000,CloTyro2:0.000)"  ":0.000,CloTyrob:0.000)'"  "test':0.000,CloInnoc:0.000)"  ":0.000,CloBifer:0.000)"   ":0.000,(((CloButy2:0.000,CloButyr:0.000)"    ":0.000,CloCarni:0.000)"   ":0.000,CloPaste:0.000)"   ":0.000)"    ":0.000,((((CorAquat:0.000,CurCitre:0.000)"    ":0.000,CorGluta:0.000)"   ":0.000,CelBiazo:0.000)"   ":0.000,CytAquat:0.000)"    ":0.000);";
+
+    const double STABLE_LENGTH = 5.362750;
+    const double EPSILON       = 0.000001;
+
+    for (int test = 1; test<=5; ++test) {
+        GB_transaction  ta(gb_main);
+        RootedTree     *tree = DOWNCAST(RootedTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
+
+        TEST_REJECT_NULL(tree);
+        if (test == 1) {
+            TEST_EXPECT_NEWICK(nALL, tree, topo_test);
+            TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
+        }
+
+        switch (test) {
+            case 1:
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 0.05));
+                TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_101_005);
+                TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
+                break;
+            case 2:
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(30, 0.05));
+                TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_30_005);
+                TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
+                break;
+            case 3:
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(30, 1000));
+                TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_30);
+                TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
+                break;
+            case 4:
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 1000)); // multifurcate all
+                TEST_EXPECT_NEWICK(nALL, tree, topo_all);
+                TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), 0.0, EPSILON);
+                break;
+            case 5: {
+                RootedTree *CloInnoc = tree->findLeafNamed("CloInnoc");
+                TEST_REJECT_NULL(CloInnoc);
+
+                parentEdge(CloInnoc).multifurcate();
+                TEST_EXPECT_NEWICK(nALL, tree, topo_single);
+
+                TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
+                break;
+            }
+            default:
+                nt_assert(0);
+                break;
+        }
+
+        delete tree;
+    }
 
     GB_close(gb_main);
 }

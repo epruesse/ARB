@@ -35,9 +35,11 @@ static_assert(true, "This fails to compile, if C++11 is available but unused");
 
 // allows static member initialisation in class definition:
 #if (GCC_VERSION_CODE >= 407) && !defined(DONT_USE_CXX11) // constexpr is supported starting with gcc 4.6. We use it starting with 4.7
-# define CONSTEXPR constexpr
+# define CONSTEXPR        constexpr
+# define CONSTEXPR_RETURN constexpr
 #else
-# define CONSTEXPR const
+# define CONSTEXPR        const
+# define CONSTEXPR_RETURN
 #endif
 
 // ------------------

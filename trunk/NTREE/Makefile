@@ -995,6 +995,7 @@ NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 NT_tree_cmp.o: NT_local.h
 NT_tree_cmp.o: NT_local_proto.h
+NT_tree_cmp.o: NT_species_set.h
 NT_tree_cmp.o: NT_tree_cmp.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

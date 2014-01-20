@@ -28,7 +28,8 @@ void nt_mode_event(UNFIXED, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
     const char *text;
 
     switch (mode) {
-        case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
+        case AWT_MODE_ZOOM:  text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
+        case AWT_MODE_EMPTY: text = MODE_TEXT_PLACEHOLDER();       break;
 
         case AWT_MODE_SELECT: text = MODE_TEXT_1BUTTON("SELECT", "select species or open/close group");                  break;
         case AWT_MODE_INFO:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");                                      break;
@@ -45,10 +46,11 @@ void nt_mode_event(UNFIXED, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
         case AWT_MODE_ROTATE: text = MODE_TEXT_1BUTTON_KEYS("ROTATE", "drag branch to rotate",         KEYINFO_ABORT_AND_RESET); break;
         case AWT_MODE_SPREAD: text = MODE_TEXT_1BUTTON_KEYS("SPREAD", "drag branch to spread subtree", KEYINFO_ABORT_AND_RESET); break;
 
-        case AWT_MODE_LENGTH: text = MODE_TEXT_2BUTTONS_KEYS("LENGTH",       "drag branch/ruler", "use discrete lengths", KEYINFO_ABORT_AND_RESET); break;
-        case AWT_MODE_LINE:   text = MODE_TEXT_2BUTTONS_KEYS("LINE",         "drag branch/ruler", "whole subtree",        KEYINFO_ABORT_AND_RESET); break;
-        case AWT_MODE_MOVE:   text = MODE_TEXT_2BUTTONS_KEYS("MOVE",         "drag branch/ruler", "move groupinfo only",  KEYINFO_ABORT);           break;
-        case AWT_MODE_LZOOM:  text = MODE_TEXT_2BUTTONS_KEYS("LOGICAL ZOOM", "show only subtree", "go up one step",       KEYINFO_RESET);           break;
+        case AWT_MODE_LENGTH:    text = MODE_TEXT_2BUTTONS_KEYS("LENGTH",       "drag branch/ruler", "use discrete lengths", KEYINFO_ABORT_AND_RESET); break;
+        case AWT_MODE_MULTIFURC: text = MODE_TEXT_2BUTTONS_KEYS("MULTIFURC",    "drag branch",       "use discrete lengths", KEYINFO_ABORT_AND_RESET); break;
+        case AWT_MODE_LINE:      text = MODE_TEXT_2BUTTONS_KEYS("LINE",         "drag branch/ruler", "whole subtree",        KEYINFO_ABORT_AND_RESET); break;
+        case AWT_MODE_MOVE:      text = MODE_TEXT_2BUTTONS_KEYS("MOVE",         "drag branch/ruler", "move groupinfo only",  KEYINFO_ABORT);           break;
+        case AWT_MODE_LZOOM:     text = MODE_TEXT_2BUTTONS_KEYS("LOGICAL ZOOM", "show only subtree", "go up one step",       KEYINFO_RESET);           break;
 
         default: text = no_mode_text_defined(); break;
     }
@@ -461,6 +463,18 @@ void NT_remove_bootstrap(UNFIXED, AWT_canvas *ntw) { // delete all bootstrap val
         save_changed_tree(ntw);
     }
 }
+void NT_toggle_bootstrap100(UNFIXED, AWT_canvas *ntw) { // toggle 100% bootstrap values
+    GB_transaction ta(ntw->gb_main);
+
+    AWT_TREE(ntw)->check_update(ntw->gb_main);
+
+    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
+    if (tree_root) {
+        tree_root->toggle_bootstrap100();
+        tree_root->compute_tree();
+        save_changed_tree(ntw);
+    }
+}
 
 void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths to tree_defaults::LENGTH
     GB_transaction ta(ntw->gb_main);
@@ -472,6 +486,13 @@ void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths
         tree_root->compute_tree();
         save_changed_tree(ntw);
     }
+}
+
+void NT_multifurcate_tree(AWT_canvas *ntw, const RootedTree::multifurc_limits& below) {
+    GB_transaction ta(ntw->gb_main);
+    AWT_TREE(ntw)->check_update(ntw->gb_main);
+    AWT_TREE(ntw)->get_root_node()->multifurcate_whole_tree(below);
+    save_changed_tree(ntw);
 }
 
 void NT_move_boot_branch(UNFIXED, AWT_canvas *ntw, int direction) { // copy branchlengths to bootstraps (or vice versa)
