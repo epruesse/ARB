@@ -1231,6 +1231,37 @@ void TEST_edges() {
     GB_close(gb_main);
 }
 
+void TEST_toggle_bootstraps100() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
+    TEST_REJECT_NULL(gb_main);
+
+    {
+        GB_transaction  ta(gb_main);
+        RootedTree     *tree = DOWNCAST(RootedTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
+        TEST_REJECT_NULL(tree);
+
+        const char *topo_org   = "(((((((CloTyro3,CloTyro4)'40%',CloTyro2)'0%',CloTyrob)'97%',CloInnoc)'0%',CloBifer)'53%',(((CloButy2,CloButyr)'100%',CloCarni)'33%',CloPaste)'97%')'100%',((((CorAquat,CurCitre)'100%',CorGluta)'17%',CelBiazo)'40%',CytAquat)'100%');";
+        const char *topo_no100 = "(((((((CloTyro3,CloTyro4)'40%',CloTyro2)'0%',CloTyrob)'97%',CloInnoc)'0%',CloBifer)'53%',(((CloButy2,CloButyr)"    ",CloCarni)'33%',CloPaste)'97%')"    ",((((CorAquat,CurCitre)"    ",CorGluta)'17%',CelBiazo)'40%',CytAquat)"    ");";
+        const char *topo_rem   = "(((((((CloTyro3,CloTyro4),CloTyro2),CloTyrob),CloInnoc),CloBifer),(((CloButy2,CloButyr),CloCarni),CloPaste)),((((CorAquat,CurCitre),CorGluta),CelBiazo),CytAquat));";
+
+        TEST_EXPECT_NEWICK(nREMARK, tree, topo_org);
+
+        tree->toggle_bootstrap100();
+        TEST_EXPECT_NEWICK(nREMARK, tree, topo_no100);
+
+        tree->toggle_bootstrap100();
+        TEST_EXPECT_NEWICK(nREMARK, tree, topo_org);
+
+        tree->remove_bootstrap();
+        TEST_EXPECT_NEWICK(nREMARK, tree, topo_rem);
+
+        delete tree;
+    }
+
+    GB_close(gb_main);
+}
+
 void TEST_multifurcate_tree() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");

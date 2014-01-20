@@ -26,6 +26,36 @@ GBDATA *GBT_get_tree_data(GBDATA *gb_main) {
     return GBT_find_or_create(gb_main, "tree_data", 7);
 }
 
+GBT_TREE::bs100_mode GBT_TREE::toggle_bootstrap100(bs100_mode mode) {
+    if (!is_leaf) {
+        if (!is_root_node()) {
+            double bootstrap;
+            switch (parse_bootstrap(bootstrap)) {
+                case REMARK_NONE:
+                case REMARK_OTHER:
+                    switch (mode) {
+                        case BS_UNDECIDED: mode = BS_INSERT;
+                        case BS_INSERT: set_bootstrap(100);
+                        case BS_REMOVE: break;
+                    }
+                    break;
+                case REMARK_BOOTSTRAP:
+                    if (bootstrap >= 99.5) {
+                        switch (mode) {
+                            case BS_UNDECIDED: mode = BS_REMOVE;
+                            case BS_REMOVE: remove_remark();
+                            case BS_INSERT: break;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        mode = get_leftson()->toggle_bootstrap100(mode);
+        mode = get_rightson()->toggle_bootstrap100(mode);
+    }
+    return mode;
+}
 void GBT_TREE::remove_bootstrap() {
     freenull(remark_branch);
     if (!is_leaf) {

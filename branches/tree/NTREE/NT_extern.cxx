@@ -1428,7 +1428,8 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         awm->close_sub_menu();
         awm->insert_sub_menu("Modify branches", "M");
         {
-            awm->insert_menu_topic(awm->local_id("tree_remove_remark"), "Remove bootstraps", "b", "trm_boot.hlp", AWM_ALL, makeWindowCallback(NT_remove_bootstrap, ntw));
+            awm->insert_menu_topic(awm->local_id("tree_remove_remark"),     "Remove bootstraps",      "b", "trm_boot.hlp", AWM_ALL, makeWindowCallback(NT_remove_bootstrap,    ntw));
+            awm->insert_menu_topic(awm->local_id("tree_toggle_bootstraps"), "Toggle 100% bootstraps", "%", "trm_boot.hlp", AWM_ALL, makeWindowCallback(NT_toggle_bootstrap100, ntw));
             awm->sep______________();
             awm->insert_menu_topic(awm->local_id("tree_reset_lengths"),     "Reset branchlengths",   "R", "tbl_reset.hlp",   AWM_ALL, makeWindowCallback(NT_reset_branchlengths,   ntw));
             awm->insert_menu_topic(awm->local_id("justify_branch_lengths"), "Justify branchlengths", "J", "tbl_justify.hlp", AWM_ALL, makeWindowCallback(NT_justify_branch_lenghs, ntw));

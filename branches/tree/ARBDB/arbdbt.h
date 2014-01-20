@@ -133,9 +133,13 @@ public:
 
     GBT_LEN sum_child_lengths() const;
 
-    void remove_bootstrap();                        // remove bootstrap values from subtree
+    enum bs100_mode { BS_UNDECIDED, BS_REMOVE, BS_INSERT };
+    bs100_mode toggle_bootstrap100(bs100_mode mode = BS_UNDECIDED); // toggle bootstrap '100%' <-> ''
+    void       remove_bootstrap();                                  // remove bootstrap values from subtree
+
     void reset_branchlengths();                     // reset branchlengths of subtree to tree_defaults::LENGTH
     void scale_branchlengths(double factor);
+
     void bootstrap2branchlen();                     // copy bootstraps to branchlengths
     void branchlen2bootstrap();                     // copy branchlengths to bootstraps
 

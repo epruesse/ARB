@@ -463,6 +463,18 @@ void NT_remove_bootstrap(UNFIXED, AWT_canvas *ntw) { // delete all bootstrap val
         save_changed_tree(ntw);
     }
 }
+void NT_toggle_bootstrap100(UNFIXED, AWT_canvas *ntw) { // toggle 100% bootstrap values
+    GB_transaction ta(ntw->gb_main);
+
+    AWT_TREE(ntw)->check_update(ntw->gb_main);
+
+    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
+    if (tree_root) {
+        tree_root->toggle_bootstrap100();
+        tree_root->compute_tree();
+        save_changed_tree(ntw);
+    }
+}
 
 void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths to tree_defaults::LENGTH
     GB_transaction ta(ntw->gb_main);
