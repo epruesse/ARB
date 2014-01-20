@@ -114,6 +114,23 @@ public:
         length_ref() = newlen;
     }
 
+    GBT_LEN get_branchlength_unrooted() const {
+        //! like get_branchlength, but root-edge is treated correctly
+        if (father->is_root_node()) {
+            return father->leftlen+father->rightlen;
+        }
+        return get_branchlength();
+    }
+    void set_branchlength_unrooted(GBT_LEN newlen) {
+        //! like set_branchlength, but root-edge is treated correctly
+        if (father->is_root_node()) {
+            father->leftlen = father->rightlen = newlen/2;
+        }
+        else {
+            set_branchlength(newlen);
+        }
+    }
+
     GBT_LEN sum_child_lengths() const;
 
     void remove_bootstrap();                        // remove bootstrap values from subtree

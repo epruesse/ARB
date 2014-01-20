@@ -64,13 +64,20 @@ GBT_LEN GBT_TREE::sum_child_lengths() const {
 void GBT_TREE::bootstrap2branchlen() {
     //! copy bootstraps to branchlengths
     if (is_leaf) {
-        set_branchlength(DEFAULT_BRANCH_LENGTH);
+        set_branchlength_unrooted(DEFAULT_BRANCH_LENGTH);
     }
     else {
-        if (remark_branch && father) {
-            int    bootstrap = atoi(remark_branch);
-            double len       = bootstrap/100.0;
-            set_branchlength(len);
+        if (father) {
+            double         bootstrap;
+            GBT_RemarkType rtype = parse_bootstrap(bootstrap);
+
+            if (rtype == REMARK_BOOTSTRAP) {
+                double len = bootstrap/100.0;
+                set_branchlength_unrooted(len);
+            }
+            else {
+                set_branchlength_unrooted(1.0); // no bootstrap means "100%"
+            }
         }
         get_leftson()->bootstrap2branchlen();
         get_rightson()->bootstrap2branchlen();
@@ -79,12 +86,11 @@ void GBT_TREE::bootstrap2branchlen() {
 
 void GBT_TREE::branchlen2bootstrap() {
     //! copy branchlengths to bootstraps
-    freenull(remark_branch);
+    remove_remark();
     if (!is_leaf) {
         if (!is_root_node()) {
-            remark_branch = GBS_global_string_copy("%i%%", int(get_branchlength()*100.0 + .5));
+            set_bootstrap(get_branchlength_unrooted()*100.0);
         }
-
         get_leftson()->branchlen2bootstrap();
         get_rightson()->branchlen2bootstrap();
     }

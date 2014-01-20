@@ -189,8 +189,8 @@ public:
     GBT_LEN reset_length_and_bootstrap() {
         //! remove remark + zero but return branchlen
         remove_remark();
-        GBT_LEN len = get_branchlength();
-        set_branchlength(0.0);
+        GBT_LEN len = get_branchlength_unrooted();
+        set_branchlength_unrooted(0.0);
         return len;
     }
 

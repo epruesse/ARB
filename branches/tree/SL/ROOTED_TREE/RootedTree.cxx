@@ -483,7 +483,7 @@ void RootedTree::eliminate_and_collect(const multifurc_limits& below, LengthColl
                 value = 100.0;
                 // fall-through
             case REMARK_BOOTSTRAP:
-                if (value<below.bootstrap && get_branchlength()<below.branchlength) {
+                if (value<below.bootstrap && get_branchlength_unrooted()<below.branchlength) {
                     collect.eliminate_parent_edge(this);
                 }
                 break;
@@ -519,18 +519,20 @@ void RootedTree::multifurcate() {
 void RootedTree::set_branchlength_preserving(GBT_LEN new_len) {
     /*! set branchlength to 'new_len' while preserving overall distance in tree.
      *
-     * works analog to the algorithm used in multifurcate()
+     * Always works on unrooted tree (i.e. lengths @ root are treated correctly).
+     * Length is preserved as in multifurcate()
      */
-    GBT_LEN old_len = get_branchlength();
+
+    GBT_LEN old_len = get_branchlength_unrooted();
     GBT_LEN change  = new_len-old_len;
 
     char *old_remark = nulldup(get_remark());
 
     // distribute the negative 'change' to neighbours:
-    set_branchlength(-change);
+    set_branchlength_unrooted(-change);
     multifurcate();
 
-    set_branchlength(new_len);
+    set_branchlength_unrooted(new_len);
     use_as_remark(old_remark); // restore remark (was removed by multifurcate())
 }
 

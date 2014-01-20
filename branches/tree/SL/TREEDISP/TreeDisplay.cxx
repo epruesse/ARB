@@ -665,7 +665,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                         break;
 
                     case AWT_MODE_LENGTH:
-                        pointed.node()->set_branchlength(0.0);
+                        pointed.node()->set_branchlength_unrooted(0.0);
                         exports.save = 1;
                         break;
 
@@ -1110,7 +1110,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
     float get_val() const {
         switch (mode) {
             case SCALE_LENGTH_PRESERVING:
-            case SCALE_LENGTH: return node->get_branchlength();
+            case SCALE_LENGTH: return node->get_branchlength_unrooted();
             case SCALE_SPREAD: return node->gr.spread;
         }
         td_assert(0);
@@ -1119,7 +1119,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
     void set_val(float val) {
         switch (mode) {
             case SCALE_LENGTH_PRESERVING: node->set_branchlength_preserving(val); break;
-            case SCALE_LENGTH: node->set_branchlength(val); break;
+            case SCALE_LENGTH: node->set_branchlength_unrooted(val); break;
             case SCALE_SPREAD: node->gr.spread = val; break;
         }
     }
