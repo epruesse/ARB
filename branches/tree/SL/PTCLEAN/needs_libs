@@ -1,5 +1,0 @@
-# libraries needed to link against SL/PTCLEAN/PTCLEAN.a
-
-# lib/libCORE.so
-lib/libARBDB.so
-
