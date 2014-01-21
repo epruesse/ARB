@@ -1,0 +1,28 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	rst_log_zoom.hlp
+SUB	mode.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Search & Logical Zoom
+
+OCCURRENCE	ARB_NT/top-area/<JUMP> button
+	
+DESCRIPTION	Searches the selected species in the tree shown in the tree
+		display area of the 'ARB_NT" window and displays the subtree
+		containing the selected species.
+
+NOTES		The selected species is indicated by an open square at the
+		respective terminal node of the tree shown in the tree display
+		area of the 'ARB_NT" window.
+	
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

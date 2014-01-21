@@ -1,0 +1,153 @@
+#-
+#-
+#-	editor
+#-	Mon Oct 25 11:19:26 2010
+#-
+#-
+#-	Reference sequence:  AF375552;
+#-	Attributes:
+#=		AF375552;	in  out  vis  prt   ord  dna  lin  5>3  func ref
+#=		A1MVRNA2	in  out  vis  prt   ord  dna  lin  5>3  func
+#=		ER781674_1	in  out  vis  prt   ord  dna  lin  5>3  func
+#=		AY704744_1	in  out  vis  prt   ord  dna  lin  5>3  func
+#=		Y15714;		in  out  vis  prt   ord  dna  lin  5>3  func
+#-
+#:AF375552;:name:Lactococcus lactis subsp. lactis
+#:AF375552;:strain:NCDO2118 tmRNA gene, partial sequence
+#:AF375552;:subsp:lactis
+#:AF375552;:atcc:NCDO 2118 tmRNA gene
+#:AF375552;:date:31-MAY-2001
+#:AF375552;:acs:AF375552;
+#:AF375552;:auth:Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R. and
+#:AF375552;:auth:Kulakauskas,S.
+#:AF375552;:jour:BMC Microbiol. 1(1), 20-20 (2001)
+#:AF375552;:title:Utilization of tmRNA sequences for bacterial identification
+#:AF375552;:rem:ref:1  (bases 1 to 310)
+#:AF375552;:rem:ref:2  (bases 1 to 310)
+#:AF375552;:rem:auth:Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R.I.
+#:AF375552;:rem::  and Kulakauskas,S.
+#:AF375552;:rem:jour:Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ
+#:AF375552;:rem::  databases. Microbiology, Institut National de la Recherche
+#:AF375552;:rem::  Agronomique, Domaine de Vilvert, Jouy-en-Josas 78352,
+#:AF375552;:rem::  France
+#:AF375552;:rem:GenBank ACCESSION:AF375552;
+#:AF375552;:rem:Please note: all these entries have been modified for test
+#:AF375552;:rem:purposes.
+#:AF375552;:rem:*source: strain=NCDO2118 tmRNA gene, partial sequence;
+#:AF375552;:rem:*source: subspecies=lactis;
+#:A1MVRNA2:name:Alfalfa mosaic virus
+#:A1MVRNA2:date:07-NOV-1985
+#:A1MVRNA2:acs:X01572;
+#:A1MVRNA2:auth:Cornelissen,B.J., Brederode,F.T.M., Veeneman,G.H., van Boom,J.
+#:A1MVRNA2:auth:H. and Bol,J.F.
+#:A1MVRNA2:title:Complete nucleotide sequence of alfalfa mosaic virus RNA 2
+#:A1MVRNA2:rem:ref:1  (bases 1 to 2593)
+#:A1MVRNA2:rem:KEYWORDS:unidentified reading frame.
+#:A1MVRNA2:rem:GenBank ACCESSION:X01572; J02002; K02702;
+#:A1MVRNA2:rem:Data kindly reviewed (30-JAN-1986) by J.F. Bol
+#:ER781674_1:rna:This is the content of the special entry 'Sequencing methods'
+#:ER781674_1:date:25-OCT-2010
+#:ER781674_1:acs:ER781674;
+#:ER781674_1:rem:GenBank ACCESSION:ER781674;
+#:ER781674_1:rem:Source of strain:This is the content of the special entry
+#:ER781674_1:rem::  'Source of strain'
+#:ER781674_1:rem:Former name:This is the content of the special entry 'Former
+#:ER781674_1:rem::  name'
+#:ER781674_1:rem:Alternate name:This is the content of the special entry
+#:ER781674_1:rem::  'Alternate name'. It is quite long, since i need to test
+#:ER781674_1:rem::  some special entry which occupies many lines and when i
+#:ER781674_1:rem::  say many lines, i really mean at least five lines, so i
+#:ER781674_1:rem::  could not stop writing before i came here.
+#:ER781674_1:rem:Common name:This is the content of the special entry 'Common
+#:ER781674_1:rem::  name'
+#:ER781674_1:rem:Host organism:This is the content of the special entry 'Host
+#:ER781674_1:rem::  organism'
+#:ER781674_1:rem:RDP ID:This is the content of the special entry 'RDP ID'
+#:ER781674_1:rem:Sequencing methods:This is the content of the special entry
+#:ER781674_1:rem::  'Sequencing methods'
+#:ER781674_1:rem:3' end complete:  No
+#:ER781674_1:rem:5' end complete:  Yes
+#:ER781674_1:rem:Organism and Sequence information have only been added for
+#:ER781674_1:rem:test purposes. They are complete nonsense!
+#:AY704744_1:date:25-OCT-2010
+#:AY704744_1:acs:AY704744;
+#:AY704744_1:rem:GenBank ACCESSION:AY704744;
+#:AY704744_1:rem:3' end complete:  Yes
+#:AY704744_1:rem:5' end complete:  No
+#:AY704744_1:rem:Next 2 lines are nonsense
+#:Y15714;:name:Macrococcus bovicus
+#:Y15714;:date:17-NOV-1998
+#:Y15714;:acs:Y15714;
+#:Y15714;:auth:Kloos,W.E., Ballard,D.N., George,C.G., Webster,J.A., Hubner,R.J.
+#:Y15714;:auth:, Ludwig,W., Schleifer,K.H., Fiedler,F. and Schubert,K.
+#:Y15714;:jour:Int. J. Syst. Bacteriol. 48, 859-877 (1998)
+#:Y15714;:title:Delimiting the genus Staphylococcus through description of
+#:Y15714;:title:Macrococcus caseolyticus gen. nov., comb. nov. and the new
+#:Y15714;:title:species Macrococcus equipercicus sp. nov., Macrococcus bovicus
+#:Y15714;:title:sp. nov., and Macrococcus carouselicus sp. nov.
+#:Y15714;:rem:ref:1
+#:Y15714;:rem:ref:2  (bases 1 to 1546)
+#:Y15714;:rem:auth:Ludwig,W.
+#:Y15714;:rem:jour:Submitted (26-NOV-1997) to the EMBL/GenBank/DDBJ databases.
+#:Y15714;:rem::  W. Ludwig, Lehrstuhl fuer Mikrobiologie, Technische
+#:Y15714;:rem::  Universitaet Muenchen, Munich, FRG
+#:Y15714;:rem:KEYWORDS:16S ribosomal RNA; 16S rRNA gene.
+#:Y15714;:rem:GenBank ACCESSION:Y15714;
+AF375552;     0 cattgtcgcgcatgaactgcaactgctgagggatcaggataatcatccgc
+AF375552;    50 agataaatataactgctaaaaataatacacaaacttacgcaatggcagcc
+AF375552;   100 taaacagcaccatgcgtgcctgatttttgctcactgatggcaatttgacg
+AF375552;   150 gcctaaacttttagtcagatacgttgttgtggaggcttgacgcagcaaaa
+AF375552;   200 gagatttaaagccccgcaaaatgtcgctgtttgagactggctttggcatt
+AF375552;   250 ttgttaaatttgagaaagtcctatggttgtagacgttgatgtagcaaggt
+AF375552;   300 gtttggacag
+A1MVRNA2     0 gtttttatcttttcgcgattgaaaagataagtttttcagtttaatctttt
+A1MVRNA2    50 caatatgttcactcttttgagatgtctcggattcggtgttaatgaaccta
+A1MVRNA2   100 ctaacacttcctcatcagagtatgttcccgagtattccgttgaagagatt
+A1MVRNA2   150 tccaacgaagtcgctgaactcgattcagtggatccattattccaatgtta
+A1MVRNA2   200 caaacatgtttttgtatcattgatgctcgtaagaaagatgactcaagctg
+A1MVRNA2   250 ccgaagacttcctcgagagttttgggggaga
+ER781674_1     0 tggcgccgtagatgcagcgcgactggcccggcttctcggcgtcgaggtac
+ER781674_1    50 tgcgccacggccttggcgctggccacgtccgggcagaccacgatgctctt
+ER781674_1   100 gcgtgagccggcgacgtggacgatgcccttggccagttcgatcatcgtct
+ER781674_1   150 ggtcgttggtgatccgggcggcgatctcggcgtcggaatagtccttctcg
+ER781674_1   200 ccggcctcgttctccgccacggtcagcgtggagaagtcgatggagacgcg
+ER781674_1   250 gacgaacgcctgcttggcggggcagagccataccgttggccatgcctcac
+ER781674_1   300 aggatgtcgcggttgaaggcgaggccctggaacaggttggccatcgccac
+AY704744_1     0 gcatcgatgaagaacgcagcgaaatgcgataagtaatgtgaattgcagaa
+AY704744_1    50 ttcagtgaatcatcgaatctttgaacgcacattgcgcccattagtattct
+AY704744_1   100 agtgggcatgcctgttcgagcgtcatttcaacccttaagcttagcttagt
+AY704744_1   150 attgggaatctgcttaaccgcagctccttaaatctagttggcagagcaca
+AY704744_1   200 gctgtactctgagcgtagtaattcattatctcgctttctgaagacagtcg
+AY704744_1   250 tacgatagccacaaactttgcatcttgcaaactttttaatggttgacctc
+AY704744_1   300 ggatcaggtaggaatacccgctgaacttaagcatatcaataagcggagga
+Y15714;     0 agagtttgatnngggctcaggatgaacgctggcggcgtgcctaatacatg
+Y15714;    50 caagtcgagcggacagacgaggtgcttgcacctctgaagtcagcggcgga
+Y15714;   100 cgggtgagtaacacgtgggtaacctacctgtaagactgggataacttcgg
+Y15714;   150 gaaaccggagctaataccggataatattttccacctcatggtggaatagt
+Y15714;   200 gaaagacggttttgctgtcacttacagatggacccgcggcgcattagcta
+Y15714;   250 gttggtgaggtaacggctcaccaaggcgacgatgcgtagccgacctgaga
+Y15714;   300 gggtgatcggccacactgggactgagacacggcccagactcctacgggag
+Y15714;   350 gcagcagtagggaatcttccgcaatggacgaaagtctgacggagcaacgc
+Y15714;   400 cgcgtgagtgaagaaggtcttcggatcgtaaaactctgttgtaagggaag
+Y15714;   450 aacaagtacgttagtaactgaacgtaccttgacggtaccttaccagaaag
+Y15714;   500 ccacggctaactacgtgccagcagccgcggtaatacgtaggtggcaagcg
+Y15714;   550 ttatccggaattattgggcgtaaagcgcgcgtaggcggtttcttaagtct
+Y15714;   600 gatgtgaaagcccccggctcaaccggggagggtcattggaaactgggaga
+Y15714;   650 cttgagtgcagaagaggagagtggaattccatgtgtagcggtgaaatgcg
+Y15714;   700 cagagatatggaggaacaccagtggcgaaggcggctctctggtctgtaac
+Y15714;   750 tgacgctgaggtgcgaaagcgtggggatcaaacaggattagataccctgg
+Y15714;   800 tagtccacgccgtaaacgatgagtgctaagtgttggggggtttccgcccc
+Y15714;   850 tcagtgctgcagctaacgcattaagcactccgcctggggagtacggtcgc
+Y15714;   900 aagactgaaactcaaaggaattgacggggacccgcacaagcggtggagca
+Y15714;   950 tgtggtttaattcgaagcaacgcgaagaaccttaccaaatcttgacatcc
+Y15714;  1000 tctgacaactctggagacagagcgttccccttcgggggacagagtgacag
+Y15714;  1050 gtggtgcatggttgtcgtcagctcgtgtcgtgagatgttgggttaagtcc
+Y15714;  1100 cgcaacgagcgcaacccttatctttagttgccatcattcagttgggcact
+Y15714;  1150 ctagagagactgccggtgacaaaccggaggaaggtggggatgacgtcaaa
+Y15714;  1200 tcatcatgccccttatgatttgggctacacacgtgctacaatggatggta
+Y15714;  1250 caaagggcagcaaaaccgcgaggtcaagcaaatcccataaaaccattctc
+Y15714;  1300 agttcggattgtagtctgcaactcgactacatgaagctggaatcgctagt
+Y15714;  1350 aatcgtagatcagcatgctacggtgaatacgttcccgggtcttgtacaca
+Y15714;  1400 ccgcccgtcacaccacgagagtttgtaacacccgaagccggtggagtaac
+Y15714;  1450 ctttacaggagctagccgtcgaaggtgggacagatgattggggtgaagtc
+Y15714;  1500 gtaacaaggtagccgtatcggaaggtgcggctggatcacctccttt
