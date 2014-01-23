@@ -371,7 +371,7 @@ static void MG_transfer_fields_cb(AW_window *aww) {
 }
 
 static AW_window *MG_create_transfer_fields_window(AW_root *aw_root) {
-    GB_transaction    dummy(GLOBAL_gb_src);
+    GB_transaction    ta(GLOBAL_gb_src);
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(aw_root, "MERGE_TRANSFER_FIELD", "TRANSFER FIELD");
@@ -477,7 +477,7 @@ static void MG_move_field_cb(AW_window *aww) {
 }
 
 static AW_window *create_mg_move_fields_window(AW_root *aw_root) {
-    GB_transaction dummy(GLOBAL_gb_src);
+    GB_transaction ta(GLOBAL_gb_src);
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "MERGE_CROSS_MOVE_FIELD", "CROSS MOVE FIELD");
@@ -569,7 +569,7 @@ static AW_window *create_mg_merge_tagged_fields_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
 
-    GB_transaction dummy(GLOBAL_gb_src);
+    GB_transaction ta(GLOBAL_gb_src);
 
     aw_root->awar_string(AWAR_FIELD_SRC, "full_name");
     aw_root->awar_string(AWAR_FIELD_DST, "full_name");
@@ -837,7 +837,7 @@ static GBDATA *mg_get_first_species_data2(GBDATA *, AW_root *, QUERY_RANGE) {
 }
 
 static GBDATA *mg_get_selected_species1(GBDATA * /* gb_main */, AW_root *aw_root) {
-    GB_transaction dummy(GLOBAL_gb_src);
+    GB_transaction ta(GLOBAL_gb_src);
     char   *species_name            = aw_root->awar(AWAR_SPECIES_SRC)->read_string();
     GBDATA *gb_species              = 0;
     if (species_name[0]) gb_species = GBT_find_species(GLOBAL_gb_src, species_name);
@@ -845,7 +845,7 @@ static GBDATA *mg_get_selected_species1(GBDATA * /* gb_main */, AW_root *aw_root
     return gb_species;
 }
 static GBDATA *mg_get_selected_species2(GBDATA * /* gb_main */, AW_root *aw_root) {
-    GB_transaction dummy(GLOBAL_gb_dst);
+    GB_transaction ta(GLOBAL_gb_dst);
     char   *species_name            = aw_root->awar(AWAR_SPECIES_DST)->read_string();
     GBDATA *gb_species              = 0;
     if (species_name[0]) gb_species = GBT_find_species(GLOBAL_gb_dst, species_name);

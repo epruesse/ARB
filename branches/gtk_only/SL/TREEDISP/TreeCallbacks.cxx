@@ -28,7 +28,8 @@ void nt_mode_event(UNFIXED, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
     const char *text;
 
     switch (mode) {
-        case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
+        case AWT_MODE_ZOOM:  text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
+        case AWT_MODE_EMPTY: text = MODE_TEXT_PLACEHOLDER();       break;
 
         case AWT_MODE_SELECT: text = MODE_TEXT_1BUTTON("SELECT", "select species or open/close group");                  break;
         case AWT_MODE_INFO:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");                                      break;
@@ -45,10 +46,11 @@ void nt_mode_event(UNFIXED, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
         case AWT_MODE_ROTATE: text = MODE_TEXT_1BUTTON_KEYS("ROTATE", "drag branch to rotate",         KEYINFO_ABORT_AND_RESET); break;
         case AWT_MODE_SPREAD: text = MODE_TEXT_1BUTTON_KEYS("SPREAD", "drag branch to spread subtree", KEYINFO_ABORT_AND_RESET); break;
 
-        case AWT_MODE_LENGTH: text = MODE_TEXT_2BUTTONS_KEYS("LENGTH",       "drag branch/ruler", "use discrete lengths", KEYINFO_ABORT_AND_RESET); break;
-        case AWT_MODE_LINE:   text = MODE_TEXT_2BUTTONS_KEYS("LINE",         "drag branch/ruler", "whole subtree",        KEYINFO_ABORT_AND_RESET); break;
-        case AWT_MODE_MOVE:   text = MODE_TEXT_2BUTTONS_KEYS("MOVE",         "drag branch/ruler", "move groupinfo only",  KEYINFO_ABORT);           break;
-        case AWT_MODE_LZOOM:  text = MODE_TEXT_2BUTTONS_KEYS("LOGICAL ZOOM", "show only subtree", "go up one step",       KEYINFO_RESET);           break;
+        case AWT_MODE_LENGTH:    text = MODE_TEXT_2BUTTONS_KEYS("LENGTH",       "drag branch/ruler", "use discrete lengths", KEYINFO_ABORT_AND_RESET); break;
+        case AWT_MODE_MULTIFURC: text = MODE_TEXT_2BUTTONS_KEYS("MULTIFURC",    "drag branch",       "use discrete lengths", KEYINFO_ABORT_AND_RESET); break;
+        case AWT_MODE_LINE:      text = MODE_TEXT_2BUTTONS_KEYS("LINE",         "drag branch/ruler", "whole subtree",        KEYINFO_ABORT_AND_RESET); break;
+        case AWT_MODE_MOVE:      text = MODE_TEXT_2BUTTONS_KEYS("MOVE",         "drag branch/ruler", "move groupinfo only",  KEYINFO_ABORT);           break;
+        case AWT_MODE_LZOOM:     text = MODE_TEXT_2BUTTONS_KEYS("LOGICAL ZOOM", "show only subtree", "go up one step",       KEYINFO_RESET);           break;
 
         default: text = no_mode_text_defined(); break;
     }
@@ -109,7 +111,7 @@ void NT_mark_all_cb(UNFIXED, AWT_canvas *ntw, int mark_mode) {
     // mark_mode&12 == 16 -> affect only species with data in current alignment
     // else -> affect all sequences
 
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
 
     switch (mark_mode&MARK_MODE_UPPER_BITS) {
         case 0:                 // all sequences
@@ -137,7 +139,7 @@ void NT_mark_all_cb(UNFIXED, AWT_canvas *ntw, int mark_mode) {
 
 static void mark_tree_cb(UNFIXED, AWT_canvas *ntw, int mark_mode) {
     AWT_graphic_tree *gtree = AWT_TREE(ntw);
-    GB_transaction    gb_dummy(ntw->gb_main);
+    GB_transaction    ta(ntw->gb_main);
 
     gtree->check_update(ntw->gb_main);
     AP_tree *tree_root = gtree->get_root_node();
@@ -201,7 +203,7 @@ static int are_not_in_tree(GBDATA *gb_species, void *cb_data) {
 
 static void mark_nontree_cb(UNFIXED, AWT_canvas *ntw, int mark_mode) {
     AWT_graphic_tree            *gtree = AWT_TREE(ntw);
-    GB_transaction               gb_dummy(ntw->gb_main);
+    GB_transaction               ta(ntw->gb_main);
     struct mark_nontree_cb_data  cd;
 
     if ((mark_mode&MARK_MODE_LOWER_BITS) == 0) {   // unmark is much faster
@@ -338,7 +340,7 @@ static void save_changed_tree(AWT_canvas *ntw) {
 //      Automated collapse/expand tree
 
 static void group_and_save_tree(AWT_canvas *ntw, int mode, int color_group) {
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->group_tree(AWT_TREE(ntw)->get_root_node(), mode, color_group);
@@ -406,27 +408,27 @@ GB_ERROR NT_with_displayed_tree_do(AWT_canvas *ntw, bool (*displayed_tree_cb)(Ro
 }
 
 void NT_resort_tree_cb(UNFIXED, AWT_canvas *ntw, TreeOrder order) {
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->reorder_tree(order);
     save_changed_tree(ntw);
 }
 
 void NT_reset_lzoom_cb(UNFIXED, AWT_canvas *ntw) {
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->displayed_root = AWT_TREE(ntw)->get_root_node();
     ntw->zoom_reset_and_refresh();
 }
 
 void NT_reset_pzoom_cb(UNFIXED, AWT_canvas *ntw) {
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     ntw->zoom_reset_and_refresh();
 }
 
 void NT_set_tree_style(UNFIXED, AWT_canvas *ntw, AP_tree_display_type type) {
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->set_tree_type(type, ntw);
     ntw->zoom_reset_and_refresh();
@@ -450,7 +452,7 @@ void NT_remove_leafs(UNFIXED, AWT_canvas *ntw, AWT_RemoveType mode) {
 }
 
 void NT_remove_bootstrap(UNFIXED, AWT_canvas *ntw) { // delete all bootstrap values
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
@@ -461,9 +463,21 @@ void NT_remove_bootstrap(UNFIXED, AWT_canvas *ntw) { // delete all bootstrap val
         save_changed_tree(ntw);
     }
 }
+void NT_toggle_bootstrap100(UNFIXED, AWT_canvas *ntw) { // toggle 100% bootstrap values
+    GB_transaction ta(ntw->gb_main);
+
+    AWT_TREE(ntw)->check_update(ntw->gb_main);
+
+    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
+    if (tree_root) {
+        tree_root->toggle_bootstrap100();
+        tree_root->compute_tree();
+        save_changed_tree(ntw);
+    }
+}
 
 void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths to tree_defaults::LENGTH
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
@@ -474,8 +488,15 @@ void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths
     }
 }
 
+void NT_multifurcate_tree(AWT_canvas *ntw, const RootedTree::multifurc_limits& below) {
+    GB_transaction ta(ntw->gb_main);
+    AWT_TREE(ntw)->check_update(ntw->gb_main);
+    AWT_TREE(ntw)->get_root_node()->multifurcate_whole_tree(below);
+    save_changed_tree(ntw);
+}
+
 void NT_move_boot_branch(UNFIXED, AWT_canvas *ntw, int direction) { // copy branchlengths to bootstraps (or vice versa)
-    GB_transaction gb_dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 

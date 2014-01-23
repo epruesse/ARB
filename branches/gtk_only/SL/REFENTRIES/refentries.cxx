@@ -230,6 +230,7 @@ namespace RefEntries {
         AW_window_simple *aws = new AW_window_simple;
 
         aws->init(aw_root, window_id, title);
+        aws->at(10, 10);
         aws->auto_space(10, 10);
 
         bind_result_refresh_cbs(aw_root, reh);

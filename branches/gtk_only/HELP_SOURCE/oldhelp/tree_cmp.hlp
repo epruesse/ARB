@@ -37,6 +37,9 @@ NOTES		Moving node info depends on placement of the tree root. Setting the
 		root in the destination tree similar to the root in the source tree
 		can greatly improve results of node transfer.
 
+BUGS		ARB sets the root-node of the destination tree, but often fails to 
+		find the best possible node (see also LINK{http://bugs.arb-home.de/ticket/451})
+
 EXAMPLES	None
 
 WARNINGS	It's slow..

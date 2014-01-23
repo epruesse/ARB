@@ -27,24 +27,24 @@
 
 
 template <int OFF, int SIZE>
-static void TEST_CMEM_INITIALIZED(const char *ptr) {
+static void CHECK_CMEM_INITIALIZED(const char *ptr) {
     arb_assert(SIZE); // SIZE == 0 is invalid
     if (SIZE == 1) {
         TEST_EXPR_INITIALIZED(ptr[OFF]);
     }
     else {
         const int HALF = SIZE/2;
-        TEST_CMEM_INITIALIZED<OFF,HALF>(ptr);
-        TEST_CMEM_INITIALIZED<OFF+HALF,SIZE-HALF>(ptr);
+        CHECK_CMEM_INITIALIZED<OFF,HALF>(ptr);
+        CHECK_CMEM_INITIALIZED<OFF+HALF,SIZE-HALF>(ptr);
     }
 }
 
 template <int SIZE>
-static void TEST_MEM_INITIALIZED(const void *ptr) {
-    TEST_CMEM_INITIALIZED<0,SIZE>((const char*)ptr);
+static void CHECK_MEM_INITIALIZED(const void *ptr) {
+    CHECK_CMEM_INITIALIZED<0,SIZE>((const char*)ptr);
 }
 
-#define TEST_INITIALIZED(data) TEST_MEM_INITIALIZED< sizeof(data) >( &(data) )
+#define TEST_INITIALIZED(data) CHECK_MEM_INITIALIZED< sizeof(data) >( &(data) )
 
 #else
 

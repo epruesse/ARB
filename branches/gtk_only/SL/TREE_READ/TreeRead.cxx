@@ -364,14 +364,14 @@ void TreeReader::setBranchName_acceptingBootstrap(GBT_TREE *node, char*& name) {
         }
 
         if (is_bootstrap) {
-            bootstrap = bootstrap*100.0 + 0.5; // needed if bootstrap values are between 0.0 and 1.0 (downscaling is done later)
+            bootstrap = bootstrap*100.0; // needed if bootstrap values are between 0.0 and 1.0 (downscaling is done later)
             if (bootstrap > max_found_bootstrap) { max_found_bootstrap = bootstrap; }
 
-            if (node->remark_branch) {
+            if (node->get_remark()) {
                 error = "Invalid duplicated bootstrap specification detected";
             }
             else {
-                node->remark_branch = GBS_global_string_copy("%i%%", int(bootstrap));
+                node->set_bootstrap(bootstrap);
             }
 
             if (end[0] != 0) {      // sth behind bootstrap value
@@ -721,7 +721,7 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
     expected.add(that(tree).does_differ_from_NULL());
     expected.add(that(GB_get_error()).is_equal_to_NULL());
     if (!GB_have_error() && tree) {
-        char *newick = GBT_tree_2_newick(tree, false);
+        char *newick = GBT_tree_2_newick(tree, nSIMPLE);
         expected.add(that(newick).is_equal_to(newick_expected));
         free(newick);
     }
@@ -866,7 +866,7 @@ void TEST_load_tree() {
                 case 2:
                     // test bootstrap with percent-specification is parsed correctly
                     TEST_EXPECT_NULL(tree->rightson->name);
-                    TEST_EXPECT_EQUAL(tree->rightson->remark_branch, "17%");
+                    TEST_EXPECT_EQUAL(tree->rightson->get_remark(), "17%");
                     TEST_EXPECT_EQUAL(tree->rightlen, 0.2);
                     break;
 
@@ -877,21 +877,21 @@ void TEST_load_tree() {
                 case 7:
                 case 8:
                     // check bootstraps
-                    TEST_EXPECT_NULL(tree->leftson->remark_branch);
+                    TEST_EXPECT_NULL(tree->leftson->get_remark());
                     switch (i) {
                         case 4:
                         case 6:
-                            TEST_EXPECT_NULL(tree->leftson->leftson->remark_branch);
-                            TEST_EXPECT_NULL(tree->leftson->rightson->remark_branch);
-                            TEST_EXPECT_NULL(tree->rightson->remark_branch);
+                            TEST_EXPECT_NULL(tree->leftson->leftson->get_remark());
+                            TEST_EXPECT_NULL(tree->leftson->rightson->get_remark());
+                            TEST_EXPECT_NULL(tree->rightson->get_remark());
                             break;
                         case 3:
                         case 5:
                         case 7:
                         case 8:
-                            TEST_EXPECT_EQUAL(tree->leftson->leftson->remark_branch,  "17%");
-                            TEST_EXPECT_EQUAL(tree->leftson->rightson->remark_branch, "33%");
-                            TEST_EXPECT_EQUAL(tree->rightson->remark_branch,          "13%");
+                            TEST_EXPECT_EQUAL(tree->leftson->leftson->get_remark(),  "17%");
+                            TEST_EXPECT_EQUAL(tree->leftson->rightson->get_remark(), "33%");
+                            TEST_EXPECT_EQUAL(tree->rightson->get_remark(),          "13%");
                             break;
                         default:
                             TEST_REJECT(true); // unhandled tree

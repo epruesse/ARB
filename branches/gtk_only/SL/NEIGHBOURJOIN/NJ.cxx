@@ -354,11 +354,11 @@ void TEST_neighbourjoining() {
 
         switch (test) {
 #if defined(TEST_FORWARD_ORDER)
-            case 1: TEST_EXPECT_NEWICK_EQUAL(tree, "(((A,B),C),D);"); break;
-            case 2: TEST_EXPECT_NEWICK_EQUAL(tree, "((A,(B,C)),D);"); break;
+            case 1: TEST_EXPECT_NEWICK(nSIMPLE, tree, "(((A,B),C),D);"); break;
+            case 2: TEST_EXPECT_NEWICK(nSIMPLE, tree, "((A,(B,C)),D);"); break;
 #else // !defined(TEST_FORWARD_ORDER)
-            case 1: TEST_EXPECT_NEWICK_EQUAL(tree, "(((D,C),A),B);"); break;
-            case 2: TEST_EXPECT_NEWICK_EQUAL(tree, "(((D,A),B),C);"); break;
+            case 1: TEST_EXPECT_NEWICK(nSIMPLE, tree, "(((D,C),A),B);"); break;
+            case 2: TEST_EXPECT_NEWICK(nSIMPLE, tree, "(((D,A),B),C);"); break;
 #endif
             default: arb_assert(0); break;
         }

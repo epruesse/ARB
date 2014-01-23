@@ -26,7 +26,8 @@ OTHERFLAGS = -DNumInsertStates=2 -DVERSION="1.12"
 
 # release mode
 #CXXFLAGS = -O3 -W -Wall -pedantic -DNDEBUG $(OTHERFLAGS) -mmmx -msse -msse2 -mfpmath=sse -march=pentium4 -mcpu=pentium4 -funroll-loops -fomit-frame-pointer 
-CXXFLAGS = -O3 -W -Wall -pedantic -DNDEBUG $(OTHERFLAGS) -funroll-loops
+#CXXFLAGS = -O3 -W -Wall -pedantic -DNDEBUG $(OTHERFLAGS) -funroll-loops
+CXXFLAGS = -O3 -w -pedantic -DNDEBUG $(OTHERFLAGS) -funroll-loops
 
 ################################################################################
 # 3) Dependencies

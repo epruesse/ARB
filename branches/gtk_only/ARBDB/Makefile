@@ -1114,6 +1114,7 @@ adtree.o: gb_local.h
 adtree.o: gb_prot.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_core.h
+adtree.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_diff.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_global_defs.h

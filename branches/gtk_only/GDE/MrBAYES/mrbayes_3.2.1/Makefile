@@ -1,7 +1,8 @@
 #MrBayes Makefile modified for use in ARB by Arne Boeckmann (August 2013)
 
 CC     ?= gcc
-CFLAGS  = -O3 -ffast-math -Wall -DNDEBUG -DUSECONFIG_H
+#CFLAGS  = -O3 -ffast-math -Wall -DNDEBUG -DUSECONFIG_H
+CFLAGS  = -O3 -ffast-math -w -DNDEBUG -DUSECONFIG_H
 LDLIBS  = -lreadline -lm
 
 # work around bug in centos5 -- ep 8/7/2013

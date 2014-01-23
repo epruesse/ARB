@@ -18,7 +18,7 @@ using namespace AW;
 
 const int tipBoxSize = 3;
 
-static struct {
+struct IRS_data {
     bool   draw_separator;
     AW_pos y;
     AW_pos min_y;    // ypos of folding line
@@ -52,7 +52,8 @@ static struct {
     }
 
     
-} IRS;
+};
+static IRS_data IRS;
 
 AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     if (!IRS.is_size_device) {
@@ -210,8 +211,8 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     if (left_y > IRS.min_y) {
         if (left_y < IRS.max_y) { // clip y on top border
             AW_click_cd cd(disp_device, (AW_CL)node->leftson);
-            if (node->leftson->remark_branch) {
-                AWT_show_branch_remark(disp_device, node->leftson->remark_branch, node->leftson->is_leaf, left_x, left_y, 1, remark_text_filter);
+            if (node->leftson->get_remark()) {
+                AWT_show_branch_remark(disp_device, node->leftson->get_remark(), node->leftson->is_leaf, left_x, left_y, 1, remark_text_filter);
             }
             set_line_attributes_for(node->get_leftson()); 
             draw_branch_line(node->get_leftson()->gr.gc, Position(x_offset, left_y), Position(left_x, left_y), line_filter);
@@ -225,8 +226,8 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
 
     if (right_y > IRS.min_y && right_y < IRS.max_y) { // visible right branch in lower part of display
         AW_click_cd cd(disp_device, (AW_CL)node->rightson);
-        if (node->rightson->remark_branch) {
-            AWT_show_branch_remark(disp_device, node->rightson->remark_branch, node->rightson->is_leaf, right_x, right_y, 1, remark_text_filter);
+        if (node->rightson->get_remark()) {
+            AWT_show_branch_remark(disp_device, node->rightson->get_remark(), node->rightson->is_leaf, right_x, right_y, 1, remark_text_filter);
         }
         set_line_attributes_for(node->get_rightson()); 
         draw_branch_line(node->get_rightson()->gr.gc, Position(x_offset, right_y), Position(right_x,  right_y), line_filter);

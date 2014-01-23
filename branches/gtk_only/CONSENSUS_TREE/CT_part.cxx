@@ -82,7 +82,7 @@ void PART::print() const {
     if (namesPtr) {
         const CharPtrArray& names = *namesPtr;
         for (int part = 0; part<=1; ++part) {
-            bool first = true;
+            // bool first = true;
             for (int i=0; i<longs; i++) {
                 PELEM el = 1;
                 for (int j=0; k<plen && size_t(j)<sizeof(PELEM)*8; j++, k++) {

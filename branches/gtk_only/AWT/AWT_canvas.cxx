@@ -92,7 +92,7 @@ void AWT_canvas::init_device(AW_device *device) {
 }
 
 void AWT_canvas::recalc_size(bool adjust_scrollbars) {
-    GB_transaction  dummy(this->gb_main);
+    GB_transaction  ta(this->gb_main);
     AW_device_size *size_device = aww->get_size_device(AW_MIDDLE_AREA);
 
     size_device->set_filter(AW_SIZE|(consider_text_for_size ? AW_SIZE_UNSCALED : 0));
@@ -303,7 +303,7 @@ static void clip_expose(AW_window *aww, AWT_canvas *scr,
     device->clear_part(left_border, top_border, right_border-left_border,
                        bottom_border-top_border, -1);
 
-    GB_transaction dummy(scr->gb_main);
+    GB_transaction ta(scr->gb_main);
 
     if (scr->gfx->check_update(scr->gb_main)>0) {
         scr->zoom_reset();

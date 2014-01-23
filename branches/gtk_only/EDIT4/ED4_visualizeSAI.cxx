@@ -277,7 +277,7 @@ static void saiChanged_callback(AW_root *awr) {
             static GBDATA *gb_last_SAI = 0;
 
             if (gb_last_SAI) {
-                GB_transaction dummy(GLOBAL_gb_main);
+                GB_transaction ta(GLOBAL_gb_main);
                 GB_remove_callback(gb_last_SAI, GB_CB_CHANGED, makeDatabaseCallback(refresh_display_cb));
                 gb_last_SAI = 0;
             }
@@ -293,7 +293,7 @@ static void saiChanged_callback(AW_root *awr) {
             }
 
             {
-                GB_transaction dummy(GLOBAL_gb_main);
+                GB_transaction ta(GLOBAL_gb_main);
                 gb_last_SAI = GBT_find_SAI(GLOBAL_gb_main, saiName);
                 if (gb_last_SAI) {
                     GB_add_callback(gb_last_SAI, GB_CB_CHANGED, makeDatabaseCallback(refresh_display_cb));

@@ -1754,7 +1754,7 @@ static void predef_prg(AW_root *aw_root, DbQuery *query) {
 
 static void colorize_queried_cb(AW_window *, DbQuery *query) {
     ItemSelector&   selector    = query->selector;
-    GB_transaction  trans_dummy(query->gb_main);
+    GB_transaction  ta(query->gb_main);
     GB_ERROR        error       = 0;
     AW_root        *aw_root     = query->aws->get_root();
     int             color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
@@ -1779,7 +1779,7 @@ static void colorize_queried_cb(AW_window *, DbQuery *query) {
 
 static void colorize_marked_cb(AW_window *aww, BoundItemSel *cmd) {
     ItemSelector&   sel         = cmd->selector;
-    GB_transaction  trans_dummy(cmd->gb_main);
+    GB_transaction  ta(cmd->gb_main);
     GB_ERROR        error       = 0;
     AW_root        *aw_root     = aww->get_root();
     int             color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
@@ -1815,7 +1815,7 @@ static void mark_colored_cb(AW_window *aww, BoundItemSel *cmd, mark_mode mode) {
     int            color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
     QUERY_RANGE    range       = QUERY_ALL_ITEMS;          // @@@ FIXME: make customizable
 
-    GB_transaction trans_dummy(cmd->gb_main);
+    GB_transaction ta(cmd->gb_main);
 
     for (GBDATA *gb_item_container = sel.get_first_item_container(cmd->gb_main, aw_root, range);
          gb_item_container;

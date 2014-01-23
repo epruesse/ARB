@@ -169,7 +169,7 @@ void TEST_arbtest_copyable() {
         TEST_EXPECT_EQUAL((d).make(false, false), (ff)); \
     } while(0)
 
-#define TEST_SIMPLE_DESCRIPTIONS(d, ae, nae) TEST_DESCRIPTIONS(d, ae, nae, nae, ae)
+#define TEST_SIMPLE_DESCRIPTIONS(d, ae, nae) TEST_DESCRIPTIONS(d, ae, nae, ae, nae)
 
 void TEST_arbtest_predicate_description() {
     TEST_SIMPLE_DESCRIPTIONS(predicate_description("similar"), "is similar", "isnt similar");

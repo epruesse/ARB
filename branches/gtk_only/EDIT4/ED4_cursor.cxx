@@ -522,7 +522,7 @@ void ED4_jump_to_current_species(AW_window *aww, AW_CL) {
     ED4_LocalWinContext uses(aww);
     char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
     if (name && name[0]) {
-        GB_transaction dummy(GLOBAL_gb_main);
+        GB_transaction ta(GLOBAL_gb_main);
 #if defined(TRACE_JUMPS)
         printf("Jump to selected species (%s)\n", name);
 #endif
@@ -589,7 +589,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
 {
     e4_assert(species_name && species_name[0]);
 
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
     ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(species_name);
     int loaded = 0;
 
@@ -664,7 +664,7 @@ void ED4_get_and_jump_to_current_from_menu(AW_window *aw, AW_CL cl, AW_CL) {
 
 void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
 #define BUFFERSIZE 1000
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
     int marked = GBT_count_marked_species(GLOBAL_gb_main);
 
     if (marked) {
@@ -1421,7 +1421,7 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
 
     draw_cursor(win_x, win_y);
 
-    GB_transaction gb_dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
     updateAwars(new_term_selected);
 
     return ED4_R_OK;
@@ -1575,7 +1575,7 @@ public:
 CursorPos *CursorPos::head = 0;
 
 void ED4_store_curpos(AW_window *aww) {
-    GB_transaction       dummy(GLOBAL_gb_main);
+    GB_transaction       ta(GLOBAL_gb_main);
     ED4_LocalWinContext  uses(aww);
     ED4_cursor          *cursor = &current_cursor();
     
@@ -1588,7 +1588,7 @@ void ED4_store_curpos(AW_window *aww) {
 }
 
 void ED4_restore_curpos(AW_window *aww) {
-    GB_transaction       dummy(GLOBAL_gb_main);
+    GB_transaction       ta(GLOBAL_gb_main);
     ED4_LocalWinContext  uses(aww);
     ED4_cursor          *cursor = &current_cursor();
 
@@ -1611,7 +1611,7 @@ void ED4_clear_stored_curpos() {
    -------------------------------------------------------------------------------- */
 
 void ED4_helix_jump_opposite(AW_window *aww) {
-    GB_transaction       dummy(GLOBAL_gb_main);
+    GB_transaction       ta(GLOBAL_gb_main);
     ED4_LocalWinContext  uses(aww);
     ED4_cursor          *cursor = &current_cursor();
 

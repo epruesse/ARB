@@ -275,6 +275,10 @@ public:
         , format_string(NULL)
     {}
 
+    ~DisplayFormat() {
+        free(format_string);
+    }
+
     void announce(size_t count, AP_FLOAT maxDist, AP_FLOAT minBases) {
         max_count    = std::max(max_count, count);
         max_dist     = std::max(max_dist, maxDist);
