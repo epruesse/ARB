@@ -573,7 +573,7 @@ void AW_window::load_xfig(const char *file, bool resize) {
 
 /**
  * Construct window-local id.
- * Prefixes @param id with @member window_defaults_name + "/"
+ * Prefixes @param id with AW_window::window_defaults_name + "/"
  */
 const char *AW_window::local_id(const char *id) const {
     static char *last_local_id = 0;
@@ -589,7 +589,7 @@ void AW_window::sep______________() {
 }
 
 /**
- * Registers an expose callback.
+ * Registers @param wcb as expose callback.
  * Called whenever the @param area receives an expose event.
  * This is where any drawing should be handled.
  */
