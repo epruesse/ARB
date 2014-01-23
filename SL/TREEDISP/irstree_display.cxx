@@ -18,7 +18,7 @@ using namespace AW;
 
 const int tipBoxSize = 3;
 
-static struct {
+struct IRS_data {
     bool   draw_separator;
     AW_pos y;
     AW_pos min_y;    // ypos of folding line
@@ -52,7 +52,8 @@ static struct {
     }
 
     
-} IRS;
+};
+static IRS_data IRS;
 
 AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     if (!IRS.is_size_device) {

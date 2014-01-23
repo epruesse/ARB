@@ -787,9 +787,9 @@ bytestring *match_string(const PT_local *locs) {
 
 
 bytestring *MP_match_string(const PT_local *locs) {
-    /*! Create list of species where probe matches and #mismatches (for multiprobe)
+    /*! Create list of species where probe matches and append number of mismatches and weighted mismatches (used by multiprobe)
      *
-     * Format: header^1name^1#mismatch^1name^1#mismatch....^0
+     * Format: "header^1name^1#mismatches^1#wmismatches^1name^1#mismatches^1#wmismatches....^0"
      *         (where ^0 and ^1 are ASCII 0 and 1)
      *
      * Implements server function 'MP_MATCH_STRING'

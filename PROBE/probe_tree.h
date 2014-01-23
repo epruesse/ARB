@@ -552,8 +552,8 @@ inline char *PT_WRITE_CHAIN_ENTRY(char *ptr, int refabspos, int name, const int 
 
 class ChainIteratorStage1 : virtual Noncopyable {
     bool is_short;
-    union {
-        struct {
+    union _U {
+        struct _S {
             const PT_short_chain_header *header;
             int                          next_entry;
 
@@ -563,7 +563,7 @@ class ChainIteratorStage1 : virtual Noncopyable {
                 ++next_entry;
             }
         } S;
-        struct {
+        struct _L {
             int         refabspos;
             const char *read_pos;
 
