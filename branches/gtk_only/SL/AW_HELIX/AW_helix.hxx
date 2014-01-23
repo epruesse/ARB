@@ -20,8 +20,6 @@
 #include <aw_base.hxx>
 #endif
 
-class AW_cb;
-
 class AW_helix : public BI_helix {
     long enabled; // draw or not
 
