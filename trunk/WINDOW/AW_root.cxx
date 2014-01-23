@@ -554,9 +554,8 @@ static long AW_unlink_awar_from_DB(const char */*key*/, long cl_awar, void *cl_g
     awar->unlink_from_DB(gb_main);
     return cl_awar;
 }
-void AW_root::unlink_awars_from_DB(AW_default database) {
-    GBDATA *gb_main = (GBDATA*)database;
 
+void AW_root::unlink_awars_from_DB(GBDATA *gb_main) {
     aw_assert(GB_get_root(gb_main) == gb_main);
 
     GB_transaction ta(gb_main); // needed in awar-callbacks during unlink
