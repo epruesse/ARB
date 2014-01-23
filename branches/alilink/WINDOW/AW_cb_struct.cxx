@@ -22,7 +22,7 @@ AW_cb_struct_guard AW_cb::guard_after  = NULL;
 AW_postcb_cb       AW_cb::postcb       = NULL;
 
 
-AW_cb::AW_cb(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb *nexti)
+AW_cb::AW_cb(AW_window *awi, AW_CB g, AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb *nexti)
     : cb(makeWindowCallback(g, cd1i, cd2i))
 {
     aw         = awi;

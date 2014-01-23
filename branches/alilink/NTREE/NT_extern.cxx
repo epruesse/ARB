@@ -818,11 +818,10 @@ static AW_window *create_colorize_species_window(AW_root *aw_root) {
     return QUERY::create_colorize_items_window(aw_root, GLOBAL.gb_main, SPECIES_get_selector());
 }
 
-/**
- * Updates marked counter and issues redraw on tree if #marked changes.
- * Called on any change of species_information container.
- */
 static void NT_update_marked_counter(GBDATA*, AW_window* aww) {
+    /*! Updates marked counter and issues redraw on tree if number of marked species changes.
+     * Called on any change of species_information container.
+     */
     long        count   = GBT_count_marked_species(GLOBAL.gb_main);
     const char *buffer  = count ? GBS_global_string("%li marked", count) : "";
     AW_awar    *counter = aww->get_root()->awar(AWAR_MARKED_SPECIES_COUNTER);

@@ -1374,7 +1374,7 @@ show:
 source_doc:
 	@echo "Remove some links (doxygen crashes otherwise):"
 	find . \( -name "AISC" -o -name "C" -o -name "GDEHELP" \) -type l -exec rm {} \;
-	doxygen
+	doxygen 2>&1 1>/dev/null
 	$(MAKE) forcelinks
 
 dep_graph:

@@ -153,8 +153,8 @@ static bool ED4_show_protein_match_on_device(AW_device *device, int gc, const ch
     /*! \brief Calls ED4_pfold_calculate_secstruct_match() for the visible area in the
      *         editor to compute the protein secondary structure match and outputs the
      *         result to the device.
-     *  \param[in] protstruct        The protein structure (primary or secondary) that should be compared to \a global_protstruct
-     *  \param[in] global_protstruct The reference protein secondary structure SAI
+     *  \param[in] protstruct    The protein structure (primary or secondary) that should be compared to \a cl_protstruct
+     *  \param[in] cl_protstruct The reference protein secondary structure SAI
      */
 
     GB_ERROR error = 0;

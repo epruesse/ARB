@@ -28,8 +28,7 @@ using namespace std;
 namespace validNames {
 
 
-    TokLPtr tokenize(const string& description, TokLPtr tokenLP)
-    {
+    TokLPtr tokenize(const std::string& description, TokLPtr tokenLP) {
         size_t tokenEnd = 0;
         size_t tokenBegin = 0;
 
