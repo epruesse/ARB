@@ -203,7 +203,7 @@ GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *align
 /*! \brief Creates the "Protein Match Settings" window.
  *
  *  \param[in] awr   Root window
- *  \param[in] awcbs Callback struct
+ *  \param[in] cb    Callback struct
  *  \return    Window
  *
  *  The "Protein Match Settings" window allows the user to configure the properties
