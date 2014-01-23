@@ -63,6 +63,16 @@ enum GB_alignment_type {
     GB_AT_AA,       // AminoAcid
 };
 
+enum NewickFormat { // bit-values
+    nSIMPLE = 0,
+    nLENGTH = 1,
+    nGROUP  = 2,
+    nREMARK = 4,
+
+    nALL = nLENGTH|nGROUP|nREMARK,
+};
+
+
 #else
 #error arbdb_base.h included twice
 #endif // ARBDB_BASE_H

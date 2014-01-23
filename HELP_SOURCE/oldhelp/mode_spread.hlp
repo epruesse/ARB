@@ -12,7 +12,6 @@ UP	mode.hlp
 TITLE		SPREAD MODE
 
 OCCURRENCE	ARB_NT <button in the left column>
-		F10 on the keyboard
 
 DESCRIPTION	The 'SPREAD MODE' allows you to increase or decrease the angles of
 		adjacent terminal branches or all angles within subtrees.

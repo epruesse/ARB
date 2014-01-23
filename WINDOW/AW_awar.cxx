@@ -645,7 +645,7 @@ void AW_awar_impl::update() {
 
 void AW_awar_impl::touch() {
     if (gb_var) {
-        GB_transaction dummy(gb_var);
+        GB_transaction ta(gb_var);
         GB_touch(gb_var);
     }
 }

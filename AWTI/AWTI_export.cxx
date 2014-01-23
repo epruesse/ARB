@@ -37,7 +37,7 @@
 
 static void export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_create_select_filter) {
     GBDATA           *gb_main = (GBDATA*)cl_gb_main;
-    GB_transaction    dummy(gb_main);
+    GB_transaction    ta(gb_main);
     adfiltercbstruct *acbs    = (adfiltercbstruct*)res_from_awt_create_select_filter;
 
     arb_progress progress("Exporting data");

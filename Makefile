@@ -27,6 +27,7 @@
 # UNIT_TESTS=0/1        1=>compile in unit tests and call them after build
 # COVERAGE=0/1/2        compile in gcov support (useful together with UNIT_TESTS=1)
 #                       0=no, 1+2=compile in, 1=show
+# STABS=0/1             force stabs format? (0 = "use default format")
 #
 # -----------------------------------------------------
 # The ARB source code is aware of the following defines:
@@ -169,14 +170,19 @@ ifeq ($(DEBUG),1)
 
 	gdb_common := -g -g3 -ggdb -ggdb3
 
+ifeq ($(STABS),1)
+	cflags := -O0  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
+else
 	cflags := -O0 $(gdb_common) # (using dwarf - cant debug inlines here, incredible slow on showing variable content)
+endif
+
 #	cflags := -O0 $(gdb_common) -gdwarf-3 # (specify explicit dwarf format)
-#	cflags := -O0  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
 #	cflags := -O0  $(gdb_common) -gstabs  # using stabs (same here IIRC)
 #	cflags := -O2 $(gdb_common) # use this for callgrind (force inlining)
- ifndef DARWIN
+
+ifndef DARWIN
 	lflags += -g
- endif
+endif
 
 # control how much you get spammed
 # (please do not change default in SVN, use developer specific setting as below)
@@ -1374,7 +1380,7 @@ show:
 source_doc:
 	@echo "Remove some links (doxygen crashes otherwise):"
 	find . \( -name "AISC" -o -name "C" -o -name "GDEHELP" \) -type l -exec rm {} \;
-	doxygen
+	doxygen 2>&1 1>/dev/null
 	$(MAKE) forcelinks
 
 dep_graph:

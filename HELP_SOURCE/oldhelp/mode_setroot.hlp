@@ -11,7 +11,8 @@ UP	mode.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		SET ROOT MODE
 
-OCCURRENCE	ARB_NT <S.ROOT> ( button in the left column)
+OCCURRENCE	ARB_NT and ARB_PARSIMONY: <S.ROOT> button in the left column
+                F8 on keyboard
 
 DESCRIPTION	The 'SET ROOT MODE' allows to position the root of the displayed
 		tree to any of the edges.

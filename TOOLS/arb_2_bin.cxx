@@ -70,7 +70,7 @@ int ARB_main(int argc, char *argv[]) {
             if (opt_tree) {
                 char *ali_name;
                 {
-                    GB_transaction dummy(gb_main);
+                    GB_transaction ta(gb_main);
                     ali_name = GBT_get_default_alignment(gb_main);
                 }
                 if (!strlen(opt_tree)) opt_tree = 0;

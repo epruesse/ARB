@@ -1084,7 +1084,7 @@ static void gene_extract_cb(AW_window *aww, AW_CL cl_GEN_extract_mode_param) {
     GB_ERROR                error   = GBT_check_alignment_name(ali);
 
     if (!error) {
-        GB_transaction  dummy(gb_main);
+        GB_transaction  ta(gb_main);
         GBDATA         *gb_ali = GBT_get_alignment(gb_main, ali);
 
         if (!gb_ali && !GBT_create_alignment(gb_main, ali, 0, 0, 0, "dna")) {
@@ -1381,7 +1381,7 @@ struct GEN_item_type_species_selector : public awt_item_type_selector {
         GBDATA *gb_gene      = 0;
 
         if (species_name[0] && gene_name[0]) {
-            GB_transaction dummy(gb_main);
+            GB_transaction ta(gb_main);
             GBDATA *gb_species = GBT_find_species(gb_main, species_name);
             if (gb_species) {
                 gb_gene = GEN_find_gene(gb_species, gene_name);
@@ -1564,7 +1564,7 @@ static AW_window *GEN_create_map(AW_root *aw_root, AW_CL cl_GEN_create_map_param
         GEN_create_genemap_global_awars(aw_root, AW_ROOT_DEFAULT, param->gb_main);
         GEN_add_global_awar_callbacks(aw_root);
         {
-            GB_transaction dummy(param->gb_main);
+            GB_transaction ta(param->gb_main);
             GEN_make_node_text_init(param->gb_main);
         }
     }

@@ -292,7 +292,7 @@ void AWT_reference::init(const char *species_name, const char *alignment_name) {
     awt_assert(species_name);
     awt_assert(alignment_name);
 
-    GB_transaction dummy(gb_main);
+    GB_transaction ta(gb_main);
     GBDATA *gb_species = GBT_find_species(gb_main, species_name);
 
     init();

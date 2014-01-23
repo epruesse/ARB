@@ -295,7 +295,7 @@ GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
 // Calculate the positional variability: window interface
 static void AP_calc_pos_var_pars(AW_window *aww) {
     AW_root        *root  = aww->get_root();
-    GB_transaction  dummy(GLOBAL.gb_main);
+    GB_transaction  ta(GLOBAL.gb_main);
     char           *tree_name;
     GB_ERROR        error = 0;
 
@@ -348,7 +348,7 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
 
 AW_window *AP_open_pos_var_pars_window(AW_root *root) {
 
-    GB_transaction dummy(GLOBAL.gb_main);
+    GB_transaction ta(GLOBAL.gb_main);
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "CSP_BY_PARSIMONY", "Conservation Profile: Parsimony Method");

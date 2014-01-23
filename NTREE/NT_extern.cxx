@@ -87,7 +87,7 @@ static void export_nds_cb(AW_window *aww, AW_CL print_flag) {
         aw_message("Error: Cannot open and write to file");
     }
     else {
-        GB_transaction dummy(GLOBAL.gb_main);
+        GB_transaction ta(GLOBAL.gb_main);
 
         make_node_text_init(GLOBAL.gb_main);
         NDS_Type  nds_type  = (NDS_Type)aw_root->awar(AWAR_EXPORT_NDS_SEPARATOR)->read_int();
@@ -227,6 +227,8 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     NT_createValidNamesAwars(awr, def); // lothar
     SQ_create_awars(awr, def);
     RefEntries::create_refentries_awars(awr, def);
+
+    NT_create_multifurcate_tree_awars(awr, def);
 
     GB_ERROR error = ARB_bind_global_awars(GLOBAL.gb_main);
     if (!error) {
@@ -460,7 +462,7 @@ static void NT_database_optimization(AW_window *aww) {
 static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
-    GB_transaction dummy(GLOBAL.gb_main);
+    GB_transaction ta(GLOBAL.gb_main);
 
     const char *largest_tree = GBT_name_of_largest_tree(GLOBAL.gb_main);
     aw_root->awar_string("tmp/nt/arbdb/optimize_tree_name", largest_tree);
@@ -529,7 +531,7 @@ static void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw) {
     GB_ERROR error = GB_undo(GLOBAL.gb_main, (GB_UNDO_TYPE)undo_type);
     if (error) aw_message(error);
     else {
-        GB_transaction dummy(GLOBAL.gb_main);
+        GB_transaction ta(GLOBAL.gb_main);
         ((AWT_canvas *)ntw)->refresh();
     }
 }
@@ -695,7 +697,7 @@ static void NT_primer_cb() {
 }
 
 static void NT_mark_duplicates(UNFIXED, AWT_canvas *ntw) {
-    GB_transaction dummy(ntw->gb_main);
+    GB_transaction ta(ntw->gb_main);
     NT_mark_all_cb(NULL, ntw, 0);
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     tree_root->mark_duplicates();
@@ -704,7 +706,7 @@ static void NT_mark_duplicates(UNFIXED, AWT_canvas *ntw) {
 }
 
 static void NT_justify_branch_lenghs(UNFIXED, AWT_canvas *ntw) {
-    GB_transaction  dummy(ntw->gb_main);
+    GB_transaction  ta(ntw->gb_main);
     AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
 
     if (tree_root) {
@@ -743,7 +745,7 @@ static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_
 
 static void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl) {
     AWT_canvas     *ntw       = (AWT_canvas *)ntwcl;
-    GB_transaction  dummy(ntw->gb_main);
+    GB_transaction  ta(ntw->gb_main);
     AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
 
     if (tree_root) {
@@ -787,7 +789,7 @@ struct nt_item_type_species_selector : public awt_item_type_selector {
         GBDATA         *gb_species   = 0;
 
         if (species_name[0]) {
-            GB_transaction dummy(gb_main);
+            GB_transaction ta(gb_main);
             gb_species = GBT_find_species(gb_main, species_name);
         }
 
@@ -815,11 +817,10 @@ static AW_window *create_colorize_species_window(AW_root *aw_root) {
     return QUERY::create_colorize_items_window(aw_root, GLOBAL.gb_main, SPECIES_get_selector());
 }
 
-/**
- * Updates marked counter and issues redraw on tree if #marked changes.
- * Called on any change of species_information container.
- */
 static void NT_update_marked_counter(GBDATA*, AW_window* aww) {
+    /*! Updates marked counter and issues redraw on tree if number of marked species changes.
+     * Called on any change of species_information container.
+     */
     long        count   = GBT_count_marked_species(GLOBAL.gb_main);
     const char *buffer  = count ? GBS_global_string("%li marked", count) : "";
     AW_awar    *counter = aww->get_root()->awar(AWAR_MARKED_SPECIES_COUNTER);
@@ -1425,11 +1426,14 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         awm->close_sub_menu();
         awm->insert_sub_menu("Modify branches", "M");
         {
-            awm->insert_menu_topic(awm->local_id("tree_remove_remark"), "Remove bootstraps", "b", "trm_boot.hlp", AWM_ALL, makeWindowCallback(NT_remove_bootstrap, ntw));
+            awm->insert_menu_topic(awm->local_id("tree_remove_remark"),     "Remove bootstraps",      "b", "trm_boot.hlp", AWM_ALL, makeWindowCallback(NT_remove_bootstrap,    ntw));
+            awm->insert_menu_topic(awm->local_id("tree_toggle_bootstraps"), "Toggle 100% bootstraps", "%", "trm_boot.hlp", AWM_ALL, makeWindowCallback(NT_toggle_bootstrap100, ntw));
             awm->sep______________();
-            awm->insert_menu_topic(awm->local_id("tree_reset_lengths"),     "Reset branchlengths",   "R", "tbl_reset.hlp",   AWM_ALL, makeWindowCallback(NT_reset_branchlengths, ntw));
+            awm->insert_menu_topic(awm->local_id("tree_reset_lengths"),     "Reset branchlengths",   "R", "tbl_reset.hlp",   AWM_ALL, makeWindowCallback(NT_reset_branchlengths,   ntw));
             awm->insert_menu_topic(awm->local_id("justify_branch_lengths"), "Justify branchlengths", "J", "tbl_justify.hlp", AWM_ALL, makeWindowCallback(NT_justify_branch_lenghs, ntw));
-            awm->insert_menu_topic(awm->local_id("tree_scale_lengths"),     "Scale Branchlengths",   "S", "tbl_scale.hlp",   AWM_ALL, makeWindowCallback(NT_scale_tree, ntw));
+            awm->insert_menu_topic(awm->local_id("tree_scale_lengths"),     "Scale Branchlengths",   "S", "tbl_scale.hlp",   AWM_ALL, makeWindowCallback(NT_scale_tree,            ntw));
+            awm->sep______________();
+            awm->insert_menu_topic(awm->local_id("tree_multifurcate"), "Multifurcate...", "M", "multifurcate.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_multifurcate_tree_window, ntw));
             awm->sep______________();
             awm->insert_menu_topic(awm->local_id("tree_boot2len"), "Bootstraps -> Branchlengths", "l", "tbl_boot2len.hlp", AWM_ALL, makeWindowCallback(NT_move_boot_branch, ntw, 0));
             awm->insert_menu_topic(awm->local_id("tree_len2boot"), "Bootstraps <- Branchlengths", "o", "tbl_boot2len.hlp", AWM_ALL, makeWindowCallback(NT_move_boot_branch, ntw, 1));
@@ -1525,21 +1529,33 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
     awm->insert_help_topic("ARB_NT help",     "N", "arb_ntree.hlp", AWM_ALL, makeHelpCallback("arb_ntree.hlp"));
 
+    // ----------------------
+    //      mode buttons
+    //
+    // keep them synchronized as far as possible with those in ARB_PARSIMONY
+    // see ../PARSIMONY/PARS_main.cxx@keepModesSynchronized
+
     awm->create_mode("mode_select.xpm", "mode_select.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SELECT));
     awm->create_mode("mode_mark.xpm",   "mode_mark.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MARK));
     awm->create_mode("mode_group.xpm",  "mode_group.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_GROUP));
     awm->create_mode("mode_zoom.xpm",   "mode_pzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ZOOM));
     awm->create_mode("mode_lzoom.xpm",  "mode_lzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LZOOM));
-    awm->create_mode("mode_info.xpm",   "mode_info.hlp",   AWM_ALL, makeWindowCallback(NT_modify_cb,  ntw, AWT_MODE_INFO));
-    awm->create_mode("mode_www.xpm",    "mode_www.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_WWW));
 
-    awm->create_mode("mode_line.xpm",    "mode_width.hlp",   AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LINE));
-    awm->create_mode("mode_rotate.xpm",  "mode_rotate.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ROTATE));
-    awm->create_mode("mode_spread.xpm",  "mode_spread.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SPREAD));
-    awm->create_mode("mode_swap.xpm",    "mode_swap.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
-    awm->create_mode("mode_length.xpm",  "mode_length.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LENGTH));
-    awm->create_mode("mode_move.xpm",    "mode_move.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
-    awm->create_mode("mode_setroot.xpm", "mode_setroot.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
+
+    awm->create_mode("mode_info.xpm", "mode_info.hlp", AWM_ALL, makeWindowCallback(NT_modify_cb,  ntw, AWT_MODE_INFO));
+    awm->create_mode("mode_www.xpm",  "mode_www.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_WWW));
+
+    // topology-modification-modes
+    awm->create_mode("mode_setroot.xpm",   "mode_setroot.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));
+    awm->create_mode("mode_swap.xpm",      "mode_swap.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SWAP));
+    awm->create_mode("mode_move.xpm",      "mode_move.hlp",    AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MOVE));
+    awm->create_mode("mode_length.xpm",    "mode_length.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LENGTH));
+    awm->create_mode("mode_multifurc.xpm", "mode_length.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_MULTIFURC));
+
+    // layout-modes
+    awm->create_mode("mode_line.xpm",   "mode_width.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LINE));
+    awm->create_mode("mode_rotate.xpm", "mode_rotate.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ROTATE));
+    awm->create_mode("mode_spread.xpm", "mode_spread.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SPREAD));
 
     awm->set_info_area_height(250);
     awm->at(5, 2);

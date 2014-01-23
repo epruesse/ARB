@@ -11,12 +11,13 @@ UP	mode.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		SWAP MODE
 
-OCCURRENCE	ARB_NT <button in the left column>
+OCCURRENCE	ARB_NT and ARB_PARSIMONY: <ninth button in the left column>
+                F9 on keyboard
 
 DESCRIPTION	The 'SWAP MODE' allows you to exchange the positions of adjacent
 		branches of the displayed tree.
 
-		Click on the eleventh button in the left column of the 'ARB_NT'
+		Click on the ninth button in the left column of the 'ARB_NT'
 		window to activate the 'SWAP MODE'. 
 
 		Swap branches:

@@ -108,9 +108,6 @@ class RootedTree : public GBT_TREE { // derived from Noncopyable
     // ------------------
     //      functions
 
-    GBT_LEN& length_ref() { return is_leftson() ? father->leftlen : father->rightlen; }
-    const GBT_LEN& length_ref() const { return const_cast<RootedTree*>(this)->length_ref(); }
-
     void reorder_subtree(TreeOrder mode);
 
 protected:
@@ -175,9 +172,6 @@ public:
         return const_cast<const RootedTree*>(const_cast<RootedTree*>(this)->get_brother());
     }
 
-    GBT_LEN get_branchlength() const { return length_ref(); }
-    void set_branchlength(GBT_LEN newlen) { length_ref() = newlen; }
-
     const char *group_name() const { return gb_node && name ? name : NULL; }
 
     virtual void swap_sons() {
@@ -191,6 +185,29 @@ public:
     void reorder_tree(TreeOrder mode);
 
     RootedTree *findLeafNamed(const char *wantedName);
+
+    GBT_LEN reset_length_and_bootstrap() {
+        //! remove remark + zero but return branchlen
+        remove_remark();
+        GBT_LEN len = get_branchlength_unrooted();
+        set_branchlength_unrooted(0.0);
+        return len;
+    }
+
+    struct multifurc_limits {
+        double bootstrap;
+        double branchlength;
+        multifurc_limits(double bootstrap_, double branchlength_) : bootstrap(bootstrap_), branchlength(branchlength_) {}
+    };
+    class LengthCollector;
+
+    void multifurcate();
+    void set_branchlength_preserving(GBT_LEN new_len);
+
+    void multifurcate_whole_tree(const multifurc_limits& below);
+private:
+    void eliminate_and_collect(const multifurc_limits& below, LengthCollector& collect);
+public:
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
     void assert_valid() const;
@@ -273,6 +290,25 @@ class ARB_edge {
         return ROOT_EDGE;
     }
 
+    GBT_LEN adjacent_distance() const;
+    GBT_LEN length_or_adjacent_distance() const {
+        {
+            GBT_LEN len = length();
+            if (len>0.0) return len;
+        }
+        return adjacent_distance();
+    }
+
+    void virtually_add_or_distribute_length_forward(GBT_LEN len, RootedTree::LengthCollector& collect) const;
+    void virtually_distribute_length_forward(GBT_LEN len, RootedTree::LengthCollector& collect) const;
+public:
+    void virtually_distribute_length(GBT_LEN len, RootedTree::LengthCollector& collect) const; // @@@ hm public :(
+private:
+
+#if defined(UNIT_TESTS)
+    friend void TEST_edges();
+#endif
+
 public:
     ARB_edge(RootedTree *From, RootedTree *To)
         : from(From)
@@ -303,7 +339,23 @@ public:
 
     GBT_LEN length() const {
         if (type == ROOT_EDGE) return from->get_branchlength() + to->get_branchlength();
-        return other()->get_branchlength();
+        return son()->get_branchlength();
+    }
+    void set_length(GBT_LEN len)  {
+        if (type == ROOT_EDGE) {
+            from->set_branchlength(len/2);
+            to->set_branchlength(len/2);
+        }
+        else {
+            son()->set_branchlength(len);
+        }
+    }
+    GBT_LEN eliminate() {
+        //! eliminates edge (zeroes length and bootstrap). returns eliminated length.
+        if (type == ROOT_EDGE) {
+            return source()->reset_length_and_bootstrap() + dest()->reset_length_and_bootstrap();
+        }
+        return son()->reset_length_and_bootstrap();
     }
 
     ARB_edge inverse() const {
@@ -319,16 +371,38 @@ public:
             if (father->is_root_node()) return ARB_edge(to, to->get_brother(), ROOT_EDGE);
             return ARB_edge(to, father, EDGE_TO_ROOT);
         }
-        if (to->is_leaf) return inverse();
+        if (at_leaf()) return inverse();
         return ARB_edge(to, to->get_rightson(), EDGE_TO_LEAF);
+    }
+    ARB_edge otherNext() const { // descends leftson first (slow)
+        if (at_leaf()) return inverse();
+        return next().inverse().next();
     }
 
     bool operator == (const ARB_edge& otherEdge) const {
         return from == otherEdge.from && to == otherEdge.to;
     }
 
+    bool at_leaf() const {
+        //! true if edge is leaf edge and points towards the leaf
+        return dest()->is_leaf;
+    }
+
     void set_root() { son()->set_root(); }
+
+    void multifurcate();
 };
+
+inline ARB_edge parentEdge(RootedTree *son) {
+    /*! returns edge to father (or to brother for sons of root).
+     * Cannot be called with root-node (but can be called with each end of any ARB_edge)
+     */
+    RootedTree *father = son->get_father();
+    rt_assert(father);
+
+    if (father->is_root_node()) return ARB_edge(son, son->get_brother(), ROOT_EDGE);
+    return ARB_edge(son, father, EDGE_TO_ROOT);
+}
 
 #else
 #error RootedTree.h included twice

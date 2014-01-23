@@ -451,7 +451,7 @@ SearchTree::SearchTree(const SearchSettings *s)
                 }
 
                 if (s_complement) {
-                    GB_transaction dummy(GLOBAL_gb_main);
+                    GB_transaction ta(GLOBAL_gb_main);
 
                     if (T_or_U) {
                         if (!s_exact || !s_reverse) {

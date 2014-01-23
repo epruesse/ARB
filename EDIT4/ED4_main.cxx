@@ -418,7 +418,7 @@ const char *ED4_propertyName(int mode) {
         static char *result_copy = 0;
 
         if (!ali_name) {
-            GB_transaction dummy(GLOBAL_gb_main);
+            GB_transaction ta(GLOBAL_gb_main);
             ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
             ali_type = GBT_get_alignment_type_string(GLOBAL_gb_main, ali_name);
             result_copy   = new char[21+strlen(ali_name)];

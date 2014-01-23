@@ -107,7 +107,6 @@ AP_main.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_defs.h
-AP_main.o: $(ARBHOME)/INCLUDE/arb_diff.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -160,7 +159,6 @@ AP_main.o: $(ARBHOME)/INCLUDE/RootedTree.h
 AP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_main.o: $(ARBHOME)/INCLUDE/test_global.h
-AP_main.o: $(ARBHOME)/INCLUDE/test_unit.h
 AP_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/ttypes.h
 
@@ -371,6 +369,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_defs.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_diff.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
@@ -432,6 +431,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/test_global.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/test_unit.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ttypes.h
 

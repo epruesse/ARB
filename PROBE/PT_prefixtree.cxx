@@ -848,8 +848,11 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE2*& root_ptr) { //
         // try to find info_area
         main -= 2;
 
-        short info_size     = PT_read_short(main);
-        bool  info_detected = false;
+        short info_size = PT_read_short(main);
+
+#ifndef ARB_64
+        bool info_detected = false;
+#endif
 
         if (info_size>0 && info_size<(main-buffer)) {   // otherwise impossible size
             main -= info_size;
@@ -860,7 +863,9 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE2*& root_ptr) { //
             pt_assert(PT_SERVER_MAGIC>0 && PT_SERVER_MAGIC<INT_MAX);
 
             if (magic == PT_SERVER_MAGIC) {
+#ifndef ARB_64
                 info_detected = true;
+#endif
                 if (version != PT_SERVER_VERSION) {
                     error = "PT-server database has different version (rebuild necessary)";
                 }

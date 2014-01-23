@@ -10,7 +10,7 @@ static bool       __MAPS_INITIALIZED = false;
 
 static GB_ERROR PG_initSpeciesMaps(GBDATA *pb_main) {
 
-  GB_transaction pb_dummy(pb_main);
+  GB_transaction ta(pb_main);
 
   ps_assert(!__MAPS_INITIALIZED);
 

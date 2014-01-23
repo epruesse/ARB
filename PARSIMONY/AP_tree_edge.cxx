@@ -582,15 +582,10 @@ static void ap_calc_bootstrap_remark(AP_tree_nlen *son_node, AP_BL_MODE mode, co
         else {
             if (two<one) one = two; // dependent bootstrap values, take minimum (safe)
         }
-        const char *text = 0;
-        if (one < 1.0) { // was: < 0.99
-            text = GBS_global_string("%i%%", int(100.0 * one + 0.5));
-        }
-        else {
-            text = "100%";
-        }
-        freedup(son_node->remark_branch, text);
-        freedup(son_node->get_brother()->remark_branch, text);
+
+        double bootstrap = one<1.0 ? 100.0 * one : 100.0;
+        son_node->set_bootstrap(bootstrap);
+        son_node->get_brother()->set_remark(son_node->get_remark());
     }
 }
 
@@ -858,13 +853,13 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
         if (node0->gr.leaf_sum > node1->gr.leaf_sum) { // node0 is final son
             node0 = node1;
         }
-        static int num = 0;
-        delete node0->remark_branch;
-        node0->remark_branch = (char *)calloc(sizeof(char), 100);
-        sprintf(node0->remark_branch, "%i %4.0f:%4.0f:%4.0f     %4.0f:%4.0f:%4.0f\n", num++,
-                oldData.parsValue[0], oldData.parsValue[1], oldData.parsValue[2],
-                data.parsValue[0], data.parsValue[1], data.parsValue[2]);
 
+        static int num = 0;
+
+        node0->use_as_remark(GBS_global_string_copy("%i %4.0f:%4.0f:%4.0f     %4.0f:%4.0f:%4.0f\n",
+                                                    num++,
+                                                    oldData.parsValue[0], oldData.parsValue[1], oldData.parsValue[2],
+                                                    data.parsValue[0], data.parsValue[1], data.parsValue[2]));
 
         cout
             << setw(4) << distInsertBorder

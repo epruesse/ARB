@@ -72,7 +72,7 @@ struct EXP_item_type_species_selector : public awt_item_type_selector {
         GBDATA *gb_experiment   = 0;
 
         if (species_name[0] && experiment_name[0]) {
-            GB_transaction dummy(gb_main);
+            GB_transaction ta(gb_main);
             GBDATA *gb_species = GBT_find_species(gb_main, species_name);
             if (gb_species) {
                 gb_experiment = EXP_find_experiment(gb_species, experiment_name);

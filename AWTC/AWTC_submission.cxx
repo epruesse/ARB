@@ -85,7 +85,7 @@ static void ed_submit_info_event(AW_window *aww, AW_CL cl_gbmain) {
     GBDATA  *gb_main = (GBDATA*)cl_gbmain;
     AW_root *aw_root = aww->get_root();
     
-    GB_transaction  dummy(gb_main);  
+    GB_transaction  ta(gb_main);
     char           *species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
     GBDATA         *gb_species   = GBT_find_species(gb_main, species_name);
     GBS_strstruct  *strstruct    = GBS_stropen(1000);

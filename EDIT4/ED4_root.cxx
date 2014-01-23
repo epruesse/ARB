@@ -162,7 +162,7 @@ void ED4_root::special_window_refresh(bool handle_updates) {
 
 ED4_returncode ED4_root::refresh_all_windows(bool redraw) {
     // if 'redraw' -> update everything (ignoring refresh flag)
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
 
     handle_update_requests(redraw);
     
@@ -491,7 +491,7 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE IF_ASSERT
 }
 
 ED4_returncode ED4_root::init_alignment() {
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
 
     alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
     alignment_type = GBT_get_alignment_type(GLOBAL_gb_main, alignment_name);
@@ -663,7 +663,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
             ED4_index help = y;
             {
-                GB_transaction dummy(GLOBAL_gb_main);
+                GB_transaction ta(GLOBAL_gb_main);
                 int index  = 0;
                 database->scan_string(mid_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
                                       area_string_middle, &index, &y, species_progress);
@@ -1156,7 +1156,7 @@ enum MenuSelectType {
 };
 
 static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
     MenuSelectType select = MenuSelectType(type);
     ED4_multi_species_manager *middle_multi_man = ED4_ROOT->middle_area_man->get_multi_species_manager();
 

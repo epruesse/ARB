@@ -31,7 +31,7 @@ static void awar_updated_cb(AW_root*, AW_awar *awar) {
     if (!in_global_awar_cb) {
         char           *content = awar->read_as_string();
         const char     *db_path = get_db_path(awar);
-        GB_transaction  dummy(gb_main4awar);
+        GB_transaction  ta(gb_main4awar);
         GBDATA         *gbd     = GB_search(gb_main4awar, db_path, GB_FIND);
 
         aw_assert(gbd);             // should exists
@@ -58,7 +58,7 @@ GB_ERROR AW_awar::make_global() {
 
     add_callback(makeRootCallback(awar_updated_cb, this));
 
-    GB_transaction  dummy(gb_main4awar);
+    GB_transaction  ta(gb_main4awar);
     const char     *db_path = get_db_path(this);
     GBDATA         *gbd     = GB_search(gb_main4awar, db_path, GB_FIND);
     GB_ERROR        error   = 0;

@@ -193,7 +193,7 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                 ((event->keymodifier & AW_KEYMODE_CONTROL) &&
                  (event->keycode == AW_KEY_HOME || event->keycode == AW_KEY_END)))
             {
-                GB_transaction dummy(GLOBAL_gb_main);
+                GB_transaction ta(GLOBAL_gb_main);
                 while (repeatCount--) {
                     cursor->move_cursor(event);
                 }
@@ -289,7 +289,7 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                 GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 
                 if (work_info->refresh_needed) {
-                    GB_transaction dummy(GLOBAL_gb_main);
+                    GB_transaction ta(GLOBAL_gb_main);
 
                     terminal->request_refresh();
                     if (terminal->is_sequence_terminal()) {
@@ -476,7 +476,7 @@ void ED4_input_cb(AW_window *aww) {
             }
 #endif
 
-            GB_transaction dummy(GLOBAL_gb_main);
+            GB_transaction ta(GLOBAL_gb_main);
             ED4_ROOT->main_manager->event_sent_by_parent(&event, aww);
             break;
         }
@@ -617,7 +617,7 @@ void ED4_motion_cb(AW_window *aww) {
         }
 #endif
 
-        GB_transaction dummy(GLOBAL_gb_main);
+        GB_transaction ta(GLOBAL_gb_main);
         ED4_ROOT->main_manager->event_sent_by_parent(&event, aww);
     }
 }
@@ -853,7 +853,7 @@ void ED4_request_relayout() {
 
 void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
     ED4_LocalWinContext uses(aww);
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction      ta(GLOBAL_gb_main);
 
     if (disable) {
         ED4_ROOT->reference->init();
@@ -1517,7 +1517,7 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
 
 void ED4_create_consensus_awars(AW_root *aw_root)
 {
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
 
     aw_root->awar_int(ED4_AWAR_CONSENSUS_COUNTGAPS, 1)->add_callback(ED4_consensus_definition_changed, 0, 0);
     aw_root->awar_int(ED4_AWAR_CONSENSUS_GAPBOUND, 60)->add_callback(ED4_consensus_definition_changed, 0, 0);

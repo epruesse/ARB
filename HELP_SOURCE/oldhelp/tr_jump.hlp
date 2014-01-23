@@ -11,7 +11,7 @@ SUB	mode.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Search & Logical Zoom
 
-OCCURRENCE	ARB_NT/ETC/<JUMP button>
+OCCURRENCE	ARB_NT/top-area/<JUMP> button
 	
 DESCRIPTION	Searches the selected species in the tree shown in the tree
 		display area of the 'ARB_NT" window and displays the subtree
