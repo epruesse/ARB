@@ -656,12 +656,12 @@ static void run_close_callbacks(GBDATA *gb_main, gb_close_callback_list *gccs) {
 static gb_callback_list *g_b_old_callback_list = NULL; // points to callback during callback; NULL otherwise
 static GB_MAIN_TYPE     *g_b_old_main          = NULL; // points to DB root during callback; NULL otherwise
 
-static GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
+void GB_MAIN_TYPE::call_pending_callbacks() {
     gb_callback_list *cbl, *cbl_next;
-    g_b_old_main = Main;
+    g_b_old_main = this;
 
     // first all delete callbacks:
-    for (cbl = Main->cbld; cbl;  cbl = cbl_next) {
+    for (cbl = cbld; cbl;  cbl = cbl_next) {
         g_b_old_callback_list = cbl;
         cbl->spec(cbl->gbd, GB_CB_DELETE);
 
@@ -673,11 +673,11 @@ static GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
         delete cbl;
     }
 
-    Main->cbld_last = NULL;
-    Main->cbld      = NULL;
+    cbld_last = NULL;
+    cbld      = NULL;
 
     // then all update callbacks:
-    for (cbl = Main->cbl; cbl;  cbl = cbl_next) {
+    for (cbl = cblc; cbl;  cbl = cbl_next) {
         g_b_old_callback_list = cbl;
         cbl->spec(cbl->gbd);
 
@@ -689,11 +689,9 @@ static GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
         delete cbl;
     }
 
-    g_b_old_main   = NULL;
-    Main->cbl_last = NULL;
-    Main->cbl      = NULL;
-
-    return 0;
+    g_b_old_main = NULL;
+    cblc_last    = NULL;
+    cblc         = NULL;
 }
 
 void GB_close(GBDATA *gbd) {
@@ -719,13 +717,13 @@ void GB_close(GBDATA *gbd) {
         gb_delete_dummy_father(Main->dummy_father);
         Main->root_container = NULL;
 
-        /* ARBDB applications using awars easily crash in gb_do_callback_list(),
+        /* ARBDB applications using awars easily crash in call_pending_callbacks(),
          * if AWARs are still bound to elements in the closed database.
          *
          * To unlink awars call AW_root::unlink_awars_from_DB().
          * If that doesn't help, test Main->data (often aka as GLOBAL_gb_main)
          */
-        gb_do_callback_list(Main);                  // do all callbacks
+        Main->call_pending_callbacks();                  // do all callbacks
         gb_destroy_main(Main);
     }
 
@@ -1124,29 +1122,11 @@ static void gb_do_callbacks(GBDATA *gbd) {
     gb_assert(GB_MAIN(gbd)->get_transaction_level() < 0); // only use in NO_TRANSACTION_MODE!
 
     while (gbd) {
-        GBDATA *gbdn           = GB_get_father(gbd);
-        bool    need_to_remove = false;
-
-        for (gb_callback *cb = gbd->get_callbacks(); cb; ) {
-            gb_callback *cbn = cb->next;
-            if (cb->spec.get_type() & GB_CB_CHANGED) {
-                if (!cb->spec.is_marked_for_removal()) { // do not call if already marked for removal
-                    ++cb->running;
-                    cb->spec(gbd, GB_CB_CHANGED);
-                    --cb->running;
-                }
-
-                if (!cb->running && cb->spec.is_marked_for_removal()) {
-                    need_to_remove = true;
-                }
-            }
-            cb = cbn;
-        }
-
-        if (need_to_remove) {
+        GBDATA      *gbdn = GB_get_father(gbd);
+        gb_callback *cb   = gbd->get_callbacks();
+        if (cb && cb->call(gbd, GB_CB_CHANGED)) {
             gb_remove_callbacks_marked_for_deletion(gbd);
         }
-
         gbd = gbdn;
     }
 }
@@ -1804,7 +1784,7 @@ GB_ERROR GB_delete(GBDATA*& source) {
         GB_MAIN_TYPE *Main = GB_MAIN(source);
         if (Main->get_transaction_level() < 0) { // no transaction mode
             gb_delete_entry(source);
-            gb_do_callback_list(Main);
+            Main->call_pending_callbacks();
         }
         else {
             gb_touch_entry(source, GB_DELETED);
@@ -2061,7 +2041,7 @@ inline GB_ERROR GB_MAIN_TYPE::start_transaction() {
         /* do all callbacks
          * cb that change the db are no problem, because it's the beginning of a ta
          */
-        gb_do_callback_list(this);
+        call_pending_callbacks();
         ++clock;
     }
     return error;
@@ -2089,7 +2069,7 @@ inline GB_ERROR GB_MAIN_TYPE::abort_transaction() {
         if (error) return error;
     }
     clock--;
-    gb_do_callback_list(this);       // do all callbacks
+    call_pending_callbacks();
     transaction_level = 0;
     gb_untouch_children_and_me(root_container);
     return 0;
@@ -2117,7 +2097,7 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
             error = gb_commit_transaction_local_rek(gb_main_ref(), 0, 0);
             gb_untouch_children_and_me(root_container);
             if (error) break;
-            gb_do_callback_list(this);       // do all callbacks
+            call_pending_callbacks();
         }
         gb_disable_undo(gb_main());
         if (error1) {
@@ -2137,7 +2117,7 @@ inline GB_ERROR GB_MAIN_TYPE::commit_transaction() {
             error = gbcmc_end_sendupdate(gb_main());                      if (error) break;
 
             gb_untouch_children_and_me(root_container);
-            gb_do_callback_list(this);       // do all callbacks
+            call_pending_callbacks();
         }
         if (!error) error = gbcmc_commit_transaction(gb_main());
 
@@ -2173,13 +2153,13 @@ GB_ERROR GB_MAIN_TYPE::send_update_to_server(GBDATA *gbd) {
     if (!transaction_level) error = "send_update_to_server: no transaction running";
     else if (is_server()) error   = "send_update_to_server: only possible from clients (not from server itself)";
     else {
-        gb_callback_list *cbl_old = cbl_last;
+        gb_callback_list *cbl_old = cblc_last;
 
         error             = gbcmc_begin_sendupdate(gb_main());
         if (!error) error = gb_commit_transaction_local_rek(gbd, 2, 0);
         if (!error) error = gbcmc_end_sendupdate(gb_main());
 
-        if (!error && cbl_old != cbl_last) error = "send_update_to_server triggered a callback (this is not allowed)";
+        if (!error && cbl_old != cblc_last) error = "send_update_to_server triggered a callback (this is not allowed)";
     }
     return error;
 }
@@ -2299,30 +2279,28 @@ int GB_get_transaction_level(GBDATA *gbd) {
 static void dummy_db_cb(GBDATA*, GB_CB_TYPE) { gb_assert(0); } // used as marker for deleted callbacks
 DatabaseCallback TypedDatabaseCallback::MARKED_DELETED = makeDatabaseCallback(dummy_db_cb);
 
-void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) {
-    GB_MAIN_TYPE     *Main = GB_MAIN(gbd);
-    gb_callback_list *cbl  = new gb_callback_list(gbd, old, cb);
+void GB_MAIN_TYPE::add_change_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) {
+    gb_callback_list *cbl = new gb_callback_list(gbd, old, cb);
 
-    if (Main->cbl) {
-        Main->cbl_last->next = cbl;
+    if (cblc) {
+        cblc_last->next = cbl;
     }
     else {
-        Main->cbl = cbl;
+        cblc = cbl;
     }
-    Main->cbl_last = cbl;
+    cblc_last = cbl;
 }
 
-void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) {
-    GB_MAIN_TYPE     *Main = GB_MAIN(gbd);
-    gb_callback_list *cbl  = new gb_callback_list(gbd, old, cb.with_type_changed_to(GB_CB_DELETE));
+void GB_MAIN_TYPE::add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) {
+    gb_callback_list *cbl = new gb_callback_list(gbd, old, cb.with_type_changed_to(GB_CB_DELETE));
 
-    if (Main->cbld) {
-        Main->cbld_last->next = cbl;
+    if (cbld) {
+        cbld_last->next = cbl;
     }
     else {
-        Main->cbld = cbl;
+        cbld = cbl;
     }
-    Main->cbld_last = cbl;
+    cbld_last = cbl;
 }
 
 GB_MAIN_TYPE *gb_get_main_during_cb() {
@@ -2340,12 +2318,12 @@ NOT4PERL bool GB_inside_callback(GBDATA *of_gbd, GB_CB_TYPE cbtype) {
         gb_assert(g_b_old_callback_list);
         if (g_b_old_callback_list->gbd == of_gbd) {
             GB_CB_TYPE curr_cbtype;
-            if (Main->cbld) {       // delete callbacks were not all performed yet
-                                    // -> current callback is a delete callback
+            if (Main->has_pending_delete_callback()) { // delete callbacks were not all performed yet
+                                                       // => current callback is a delete callback
                 curr_cbtype = GB_CB_TYPE(g_b_old_callback_list->spec.get_type() & GB_CB_DELETE);
             }
             else {
-                gb_assert(Main->cbl); // change callback
+                gb_assert(Main->has_pending_change_callback());
                 curr_cbtype = GB_CB_TYPE(g_b_old_callback_list->spec.get_type() & (GB_CB_ALL-GB_CB_DELETE));
             }
             gb_assert(curr_cbtype != GB_CB_NONE); // wtf!? are we inside callback or not?

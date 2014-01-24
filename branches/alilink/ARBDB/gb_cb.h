@@ -72,6 +72,29 @@ struct gb_callback : virtual Noncopyable {
     ~gb_callback() {
         gb_assert(!next); // unlink before deleting
     }
+
+    bool may_be_removed() const { return !running && spec.is_marked_for_removal(); }
+
+    bool call(GBDATA *with, GB_CB_TYPE typemask) {
+        /*! call all matching callbacks in chain. only done in NO_TRANSACTION_MODE
+         * @param with database entry passed to callback
+         * @param typemask call only if callback-type and typemask have common bits
+         * @return true if some callback in chain has to be removed afterwards
+         */
+        {
+            GB_CB_TYPE matchingType = GB_CB_TYPE(spec.get_type() & typemask);
+            if (matchingType && !spec.is_marked_for_removal()) {
+                ++running;
+#if defined(ASSERTION_USED)
+                gb_callback *oldnext = next;
+#endif
+                spec(with, matchingType);
+                gb_assert(oldnext == next);
+                --running;
+            }
+        }
+        return (next && next->call(with, typemask)) || may_be_removed();
+    }
 };
 
 struct gb_transaction_save;

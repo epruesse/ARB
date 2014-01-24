@@ -138,11 +138,13 @@ public:
 
     gb_close_callback_list *close_callbacks;
 
-    gb_callback_list *cbl;                          // contains change-callbacks (after change, until callbacks are done)
-    gb_callback_list *cbl_last;
+private:
+    gb_callback_list *cblc;                         // contains change-callbacks (after change, until callbacks are done)
+    gb_callback_list *cblc_last;
 
     gb_callback_list *cbld;                         // contains delete-callbacks (after delete, until callbacks are done)
     gb_callback_list *cbld_last;
+public:
 
     gb_user    *users[GB_MAX_USERS];                // user 0 is server
     gb_project *projects[GB_MAX_PROJECTS];          // projects
@@ -193,6 +195,13 @@ public:
 
     bool is_server() const { return i_am_server; }
     bool is_client() const { return !is_server(); }
+
+    void add_change_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb);
+    void add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb);
+    void call_pending_callbacks();
+
+    bool has_pending_change_callback() const { return cblc; }
+    bool has_pending_delete_callback() const { return cbld; }
 };
 
 

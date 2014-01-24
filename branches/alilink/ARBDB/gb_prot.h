@@ -171,8 +171,6 @@ GBCONTAINER *gb_get_root(GBCONTAINER *gbc);
 GBENTRY *gb_create(GBCONTAINER *father, const char *key, GB_TYPES type);
 GBCONTAINER *gb_create_container(GBCONTAINER *father, const char *key);
 GB_ERROR gb_delete_force(GBDATA *source);
-void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb);
-void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb);
 GB_MAIN_TYPE *gb_get_main_during_cb(void);
 GB_ERROR gb_resort_system_folder_to_top(GBCONTAINER *gb_main);
 
