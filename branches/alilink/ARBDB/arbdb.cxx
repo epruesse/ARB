@@ -16,7 +16,6 @@
 #include <rpc/xdr.h>
 
 #include "gb_key.h"
-#include "gb_cb.h"
 #include "gb_comm.h"
 #include "gb_compress.h"
 #include "gb_localdata.h"

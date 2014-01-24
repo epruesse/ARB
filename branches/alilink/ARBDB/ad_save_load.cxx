@@ -1198,6 +1198,14 @@ void GB_disable_path(GBDATA *gbd, const char *path) {
     freeset(GB_MAIN(gbd)->disabled_path, path ? GBS_eval_env(path) : NULL);
 }
 
+long GB_last_saved_clock(GBDATA *gb_main) {
+    return GB_MAIN(gb_main)->last_saved_transaction;
+}
+
+GB_ULONG GB_last_saved_time(GBDATA *gb_main) {
+    return GB_MAIN(gb_main)->last_saved_time;
+}
+
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS

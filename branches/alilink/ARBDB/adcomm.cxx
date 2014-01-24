@@ -26,7 +26,6 @@
 #include <SigHandler.h>
 #include <arb_signal.h>
 #include <arb_file.h>
-#include <static_assert.h>
 
 static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin);
 

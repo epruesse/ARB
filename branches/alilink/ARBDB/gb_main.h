@@ -14,6 +14,9 @@
 #ifndef GB_LOCAL_H
 #include "gb_local.h"
 #endif
+#ifndef GB_CB_H
+#include "gb_cb.h"
+#endif
 
 // ------------------
 //      constants
@@ -25,7 +28,6 @@
 
 struct g_b_undo_mgr;
 struct gb_close_callback_list;
-struct gb_callback_list;
 struct gb_user;
 struct gb_project;
 struct gb_Key;
