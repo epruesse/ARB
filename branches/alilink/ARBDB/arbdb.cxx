@@ -2472,6 +2472,48 @@ char *GB_get_callback_info(GBDATA *gbd) {
     return result;
 }
 
+static void add_to_callback_chain(gb_callback*& head, const TypedDatabaseCallback& cbs, int priority) {
+    gb_callback *cb = new gb_callback(cbs, priority);
+    if (head) {
+        gb_callback *prev = 0;
+        gb_callback *curr = head;
+
+        while (curr) {
+            if (priority <= curr->priority) {
+                // wanted priority is lower -> insert here
+                break;
+            }
+
+#if defined(DEVEL_RALF)
+            // test if callback already was added (every callback shall only exist once). see below.
+            gb_assert(!curr->spec.is_equal_to(cbs) || curr->spec.is_marked_for_removal());
+#endif // DEVEL_RALF
+
+            prev = curr;
+            curr = curr->next;
+        }
+
+        if (prev) { prev->next = cb; }
+        else { head = cb; }
+
+        cb->next = curr;
+    }
+    else {
+        head = cb;
+    }
+
+#if defined(DEVEL_RALF)
+#if defined(DEBUG)
+    // test if callback already was added (every callback shall only exist once)
+    // maybe you like to use GB_ensure_callback instead of GB_add_callback
+    while (cb->next) {
+        cb = cb->next;
+        gb_assert(!cb->spec.is_equal_to(cbs) || cb->spec.is_marked_for_removal());
+    }
+#endif // DEBUG
+#endif // DEVEL_RALF
+}
+
 static GB_ERROR add_priority_callback(GBDATA *gbd, const TypedDatabaseCallback& cbs, int priority) {
     /* Adds a callback to a DB entry.
      *
@@ -2498,52 +2540,14 @@ static GB_ERROR add_priority_callback(GBDATA *gbd, const TypedDatabaseCallback& 
 
     GB_test_transaction(gbd); // may return error
     gbd->create_extended();
-
-    gb_callback *cb = new gb_callback(cbs, priority);
-    if (gbd->ext->callback) {
-        gb_callback *prev = 0;
-        gb_callback *curr = gbd->ext->callback;
-
-        while (curr) {
-            if (priority <= curr->priority) {
-                // wanted priority is lower -> insert here
-                break;
-            }
-
-#if defined(DEVEL_RALF)
-            // test if callback already was added (every callback shall only exist once). see below.
-            gb_assert(!curr->spec.is_equal_to(cbs) || curr->spec.is_marked_for_removal());
-#endif // DEVEL_RALF
-
-            prev = curr;
-            curr = curr->next;
-        }
-
-        if (prev) { prev->next = cb; }
-        else { gbd->ext->callback = cb; }
-
-        cb->next = curr;
-    }
-    else {
-        gbd->ext->callback = cb;
-    }
-
-#if defined(DEVEL_RALF)
-#if defined(DEBUG)
-    // test if callback already was added (every callback shall only exist once)
-    // maybe you like to use GB_ensure_callback instead of GB_add_callback
-    while (cb->next) {
-        cb = cb->next;
-        gb_assert(!cb->spec.is_equal_to(cbs) || cb->spec.is_marked_for_removal());
-    }
-#endif // DEBUG
-#endif // DEVEL_RALF
-
+    add_to_callback_chain(gbd->ext->callback, cbs, priority);
     return 0;
 }
 
+#define DEFAULT_CB_PRIORITY 5
+
 inline GB_ERROR gb_add_callback(GBDATA *gbd, const TypedDatabaseCallback& cbs) {
-    return add_priority_callback(gbd, cbs, 5); // use default priority 5
+    return add_priority_callback(gbd, cbs, DEFAULT_CB_PRIORITY);
 }
 
 GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
