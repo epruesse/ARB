@@ -1,0 +1,23 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+
+SUB     gde_menus.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+
+TITLE		GDE Extended Menu
+
+DESCRIPTION     ARB does no longer support GDE itself, it only uses the
+                GDE-style menu extensions to plugin external tools into ARB
+
+EXAMPLES	None
+
+WARNINGS        None
+
+BUGS		No bugs known
+
