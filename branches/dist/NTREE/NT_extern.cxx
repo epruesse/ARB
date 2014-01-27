@@ -1392,7 +1392,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
             awm->close_sub_menu();
         }
 
-        awm->insert_menu_topic("consense_tree", "Build consensus tree", "c", "consense_tree.hlp", AWM_ALL, NT_create_consense_window);
+        awm->insert_menu_topic(awm->local_id("consense_tree"), "Build consensus tree", "c", "consense_tree.hlp", AWM_ALL, NT_create_consense_window);
         awm->sep______________();
 
         awm->insert_sub_menu("Reset zoom",         "z");
