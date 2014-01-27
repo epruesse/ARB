@@ -16,7 +16,7 @@
 #endif
 
 
-AW_window *AWT_open_www_window(AW_root *aw_root, AW_CL cgb_main);
+AW_window *AWT_create_www_window(AW_root *aw_root, GBDATA *gb_main);
 void       awt_openDefaultURL_on_species(AW_window *aww, GBDATA *gb_main);
 void       awt_create_aww_vars(AW_root *aw_root, AW_default aw_def);
 GB_ERROR   awt_openURL_by_gbd(AW_root *aw_root, GBDATA *gb_main, GBDATA *gbd, const char *name);

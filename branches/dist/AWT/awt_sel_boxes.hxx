@@ -92,7 +92,7 @@ void awt_reconfigure_selection_list_on_alignments(AW_DB_selection *alisel, const
 AW_DB_selection *awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname);
 
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup);
-void awt_edit_arbtcpdat_cb(AW_window *aww, AW_CL cl_gb_main);
+void awt_edit_arbtcpdat_cb(AW_window *aww, GBDATA *gb_main);
 
 void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const char *varname);
 void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *tablename, const char *varname);

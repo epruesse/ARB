@@ -149,7 +149,7 @@ static void export_form_changed_cb(AW_root *aw_root) {
     if (error) aw_message(error);
 }
 
-AW_window *open_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
+AW_window *create_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
 {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
