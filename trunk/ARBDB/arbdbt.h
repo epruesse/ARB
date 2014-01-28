@@ -106,6 +106,15 @@ public:
 
     bool is_root_node() const { return !father; }
 
+    bool is_inside(const GBT_TREE *subtree) const {
+        return this == subtree || (father && get_father()->is_inside(subtree));
+    }
+    bool is_anchestor_of(const GBT_TREE *descendant) const {
+        return !is_leaf && descendant != this && descendant->is_inside(this);
+    }
+    const GBT_TREE *ancestor_common_with(const GBT_TREE *other) const;
+    GBT_TREE *ancestor_common_with(GBT_TREE *other) { return const_cast<GBT_TREE*>(ancestor_common_with(other)); }
+
     GBT_TREE *fixDeletedSon();
 
     GBT_LEN get_branchlength() const { return length_ref(); }
@@ -132,6 +141,14 @@ public:
     }
 
     GBT_LEN sum_child_lengths() const;
+    GBT_LEN root_distance() const {
+        //! returns distance from node to root (including nodes own length)
+        return father ? get_branchlength()+father->root_distance() : 0.0;
+    }
+    GBT_LEN intree_distance_to(const GBT_TREE *other) const {
+        const GBT_TREE *ancestor = ancestor_common_with(other);
+        return root_distance() + other->root_distance() - 2*ancestor->root_distance();
+    }
 
     enum bs100_mode { BS_UNDECIDED, BS_REMOVE, BS_INSERT };
     bs100_mode toggle_bootstrap100(bs100_mode mode = BS_UNDECIDED); // toggle bootstrap '100%' <-> ''
@@ -230,4 +247,5 @@ typedef GB_ERROR (*species_callback)(GBDATA *gb_species, int *clientdata);
 #else
 #error arbdbt.h included twice
 #endif
+
 

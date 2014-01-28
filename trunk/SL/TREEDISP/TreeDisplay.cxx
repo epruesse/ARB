@@ -1343,7 +1343,8 @@ AWT_graphic_event::ClickPreference preferredForCommand(AWT_COMMAND_MODE mode) {
 void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& event) {
     td_assert(event.button()!=AW_BUTTON_MIDDLE); // shall be handled by caller
 
-    if (!tree_static) return;     // no tree -> no commands
+    if (!tree_static) return;                      // no tree -> no commands
+    if (!tree_static->get_root_node()) return;     // no tree -> no commands
 
     if (event.type() == AW_Keyboard_Release) return;
     if (event.type() == AW_Keyboard_Press) return handle_key(device, event);
