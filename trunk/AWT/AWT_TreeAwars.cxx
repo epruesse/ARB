@@ -21,6 +21,7 @@
 #include <aw_global_awars.hxx>
 
 #include <set>
+#include <cstddef>
 
 #define awt_assert(cond) arb_assert(cond)
 
