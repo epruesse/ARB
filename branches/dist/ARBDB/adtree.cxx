@@ -161,7 +161,7 @@ GBT_TREE *GBT_TREE::fixDeletedSon() {
     return result;
 }
 
-GBT_TREE *GBT_TREE::ancestor_common_with(GBT_TREE *other) {
+const GBT_TREE *GBT_TREE::ancestor_common_with(const GBT_TREE *other) const {
     if (this == other) return this;
     if (is_anchestor_of(other)) return this;
     if (other->is_anchestor_of(this)) return other;
