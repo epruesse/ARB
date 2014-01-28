@@ -177,51 +177,6 @@ static AW_window *create_dna_matrix_window(AW_root *aw_root) {
     return aws;
 }
 
-static void sort_tree_changed_cb() {
-    {
-        GB_transaction ta(GLOBAL_gb_main);
-
-        static GBDATA *last_gb_tree = NULL;
-        if (last_gb_tree) {
-            GB_remove_callback(last_gb_tree, GB_CB_CHANGED, makeDatabaseCallback(matrix_needs_recalc_cb));
-            last_gb_tree = NULL;
-        }
-
-        char   *treename = AW_root::SINGLETON->awar(AWAR_DIST_TREE_SORT_NAME)->read_string();
-        GBDATA *gb_tree  = GBT_find_tree(GLOBAL_gb_main, treename);
-
-        if (gb_tree) {
-            GB_add_callback(gb_tree, GB_CB_CHANGED, makeDatabaseCallback(matrix_needs_recalc_cb));
-            last_gb_tree = gb_tree;
-        }
-
-        free(treename);
-    }
-    matrix_needs_recalc_cb();
-}
-static void compress_tree_changed_cb() {
-    {
-        GB_transaction ta(GLOBAL_gb_main);
-
-        static GBDATA *last_gb_tree = NULL;
-        if (last_gb_tree) {
-            GB_remove_callback(last_gb_tree, GB_CB_CHANGED, makeDatabaseCallback(compressed_matrix_needs_recalc_cb));
-            last_gb_tree = NULL;
-        }
-
-        char   *treename = AW_root::SINGLETON->awar(AWAR_DIST_TREE_COMP_NAME)->read_string();
-        GBDATA *gb_tree  = GBT_find_tree(GLOBAL_gb_main, treename);
-
-        if (gb_tree) {
-            GB_add_callback(gb_tree, GB_CB_CHANGED, makeDatabaseCallback(compressed_matrix_needs_recalc_cb));
-            last_gb_tree = gb_tree;
-        }
-
-        free(treename);
-    }
-    compressed_matrix_needs_recalc_cb();
-}
-
 void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db) {
     GB_transaction ta(db);
     DI_dna_matrix.set_descriptions(AP_A, "A");
