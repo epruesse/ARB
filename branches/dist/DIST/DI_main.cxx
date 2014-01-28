@@ -20,6 +20,7 @@
 #include <aw_msg.hxx>
 #include <macros.hxx>
 #include <aw_question.hxx>
+#include <awt_TreeAwars.hxx>
 
 
 AW_HEADER_MAIN
@@ -77,11 +78,12 @@ int ARB_main(int argc, char *argv[]) {
     }
 
     if (!error) {
+        ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
+        AWT_initTreeAwarRegistry(GLOBAL_gb_main);
         DI_create_matrix_variables(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
 #ifdef FINDCORR
         bc_create_bc_variables(aw_root, AW_ROOT_DEFAULT);
 #endif
-        ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
 
         AW_window *aww = DI_create_matrix_window(aw_root);
         aww->show();

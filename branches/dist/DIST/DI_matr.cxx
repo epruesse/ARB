@@ -40,6 +40,7 @@
 #include <arb_global_defs.h>
 #include <macros.hxx>
 #include <ad_cb.h>
+#include <awt_TreeAwars.hxx>
 
 // --------------------------------------------------------------------------------
 
@@ -257,14 +258,17 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
     AW_create_fileselection_awars(aw_root, AWAR_DIST_SAVE_MATRIX_BASE, ".", "", "infile", def);
     aw_root->awar_int(AWAR_DIST_SAVE_MATRIX_TYPE, 0, def);
 
+    enum treetype { CURR, SORT, COMPRESS, TREEAWARCOUNT };
+    AW_awar *tree_awar[TREEAWARCOUNT] = { NULL, NULL, NULL };
+
     aw_root->awar_string(AWAR_DIST_TREE_STD_NAME,  "tree_nj", def);
     {
         char *currentTree = aw_root->awar_string(AWAR_TREE, "", db)->read_string();
-        aw_root->awar_string(AWAR_DIST_TREE_CURR_NAME, currentTree, def);
-        aw_root->awar_string(AWAR_DIST_TREE_SORT_NAME, currentTree, def)->add_callback(makeRootCallback(sort_tree_changed_cb));
+        tree_awar[CURR]   = aw_root->awar_string(AWAR_DIST_TREE_CURR_NAME, currentTree, def);
+        tree_awar[SORT]   = aw_root->awar_string(AWAR_DIST_TREE_SORT_NAME, currentTree, def);
         free(currentTree);
     }
-    aw_root->awar_string(AWAR_DIST_TREE_COMP_NAME, NO_TREE_SELECTED, def)->add_callback(makeRootCallback(compress_tree_changed_cb));
+    tree_awar[COMPRESS] = aw_root->awar_string(AWAR_DIST_TREE_COMP_NAME, NO_TREE_SELECTED, def);
 
     aw_root->awar_int(AWAR_DIST_BOOTSTRAP_COUNT, 1000, def);
     aw_root->awar_int(AWAR_DIST_MATRIX_AUTO_RECALC, 0, def)->add_callback(auto_calc_changed_cb);
@@ -289,6 +293,12 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
 
         GB_pop_transaction(db);
     }
+
+    // AWT_registerTreeAwarCallback(tree_awar[CURR], selected_tree_changed_cb, true); // @@@ future use
+    AWT_registerTreeAwarSimple(tree_awar[CURR]);
+
+    AWT_registerTreeAwarCallback(tree_awar[SORT],     makeTreeAwarCallback(matrix_needs_recalc_cb),            true);
+    AWT_registerTreeAwarCallback(tree_awar[COMPRESS], makeTreeAwarCallback(compressed_matrix_needs_recalc_cb), true);
 
     auto_calc_changed_cb(aw_root);
 }

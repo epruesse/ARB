@@ -249,6 +249,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/cb.h
 ad_trees.o: $(ARBHOME)/INCLUDE/cb_base.h
 ad_trees.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -389,6 +390,7 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_error.h
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -405,6 +407,7 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/cb.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/cb_base.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -714,6 +717,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awtc_submission.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awti_export.hxx
@@ -902,6 +906,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/cb.h
 NT_main.o: $(ARBHOME)/INCLUDE/cb_base.h

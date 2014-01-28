@@ -13,12 +13,14 @@
 
 #include <AP_pro_a_nucs.hxx>
 #include <awt_sel_boxes.hxx>
+#include <awt_TreeAwars.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <arb_global_defs.h>
 
 #include <cctype>
 #include <cmath>
@@ -355,7 +357,10 @@ AW_window *AP_create_pos_var_pars_window(AW_root *root) {
 
     root->awar_string(AWAR_PVP_SAI, "POS_VAR_BY_PARSIMONY", AW_ROOT_DEFAULT);
     const char *largest_tree = GBT_name_of_largest_tree(GLOBAL.gb_main);
-    root->awar_string(AWAR_PVP_TREE, "tree_full", AW_ROOT_DEFAULT);
+
+    AW_awar *tree_awar = root->awar_string(AWAR_PVP_TREE, NO_TREE_SELECTED, AW_ROOT_DEFAULT);
+    AWT_registerTreeAwarSimple(tree_awar);
+
     root->awar(AWAR_PVP_TREE)->write_string(largest_tree);
 
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
