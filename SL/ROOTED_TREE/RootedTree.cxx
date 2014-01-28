@@ -35,10 +35,6 @@ void TreeRoot::change_root(RootedTree *oldroot, RootedTree *newroot) {
 // --------------------
 //      RootedTree
 
-bool RootedTree::is_inside(const RootedTree *subtree) const {
-    return this == subtree || (father && get_father()->is_inside(subtree));
-}
-
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
 
 void RootedTree::assert_valid() const {

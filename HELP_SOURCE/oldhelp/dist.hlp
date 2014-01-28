@@ -83,6 +83,28 @@ DESCRIPTION	Reconstructs a tree for all or marked species by first
 		   	As Felsenstein, except the base frequencies are
 		   	calculated for each pair of sequences.
 
+                   from selected tree:
+
+                        This is NOT a distance correction! By selecting 'from selected tree'
+                        distances are not calculated using sequence data.
+                        Instead they are extracted from the
+                        tree currently selected in the 'Trees in Database' selection list.
+
+                        The distance between two species is defined as the sum of the lengths
+                        of all branches that connect these two species.
+
+                        Please note that this is an experimental feature. The distances between two species
+                        are not directly based on the sequence differences between these two species.
+                        Instead they reflect the evolutionary distance assumed by the tree reconstruction
+                        algorithm used to build the tree.
+
+                        The distances extracted from a tree are expected to be (slightly) bigger than
+                        the distances directly calculated from the sequences.
+                        This seems reasonable, because it is very unlikely, that evolution always took the
+                        shortest possible way (which is represented by the direct sequence distance).
+                        This effect increases for more distant (unrelated) species, reflecting the
+                        indirections evolution most likely made.
+
                    Please note:
 
                           the other correcting functions are in an experimental state.

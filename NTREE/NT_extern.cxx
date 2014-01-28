@@ -34,6 +34,7 @@
 #include <awt_input_mask.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_www.hxx>
+#include <awt_TreeAwars.hxx>
 #include <nds.h>
 
 #include <db_query.h>
@@ -1017,6 +1018,10 @@ static void update_main_window_title(AW_root* awr, AW_window_menu_modes* aww, in
     }
 }
 
+static void canvas_tree_awar_changed_cb(AW_awar *, bool, AWT_canvas *ntw) {
+    NT_reload_tree_event(AW_root::SINGLETON, ntw, true);
+}
+
 // ##########################################
 // ##########################################
 // ###                                    ###
@@ -1069,14 +1074,14 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
         if (existing_tree_name) {
             tree_awar->write_string(existing_tree_name);
-            NT_reload_tree_event(awr, ntw, 1); // load first tree
+            NT_reload_tree_event(awr, ntw, true); // load first tree
         }
         else {
             AW_advice("Your database contains no tree.", AW_ADVICE_TOGGLE_AND_HELP, 0, "no_tree.hlp");
             tree->set_tree_type(AP_LIST_NDS, ntw); // no tree -> show NDS list
         }
 
-        tree_awar->add_callback(makeRootCallback(NT_reload_tree_event, ntw, true));
+        AWT_registerTreeAwarCallback(tree_awar, makeTreeAwarCallback(canvas_tree_awar_changed_cb, ntw), false);
     }
 
     awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw));

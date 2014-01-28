@@ -144,11 +144,6 @@ public:
 
     void forget_origin() { set_tree_root(NULL); }
 
-    bool is_inside(const RootedTree *subtree) const;
-    bool is_anchestor_of(const RootedTree *descendant) const {
-        return !is_leaf && descendant != this && descendant->is_inside(this);
-    }
-
     TreeRoot *get_tree_root() const { return tree_root; }
 
     const RootedTree *get_root_node() const {
