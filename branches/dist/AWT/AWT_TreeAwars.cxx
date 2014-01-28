@@ -151,7 +151,7 @@ BoundTreeAwarCallback::~BoundTreeAwarCallback() {
 //      TreeAwarRegistry
 
 static void tree_renamed_cb(AW_root *aw_root) {
-    AW_awar *awar_renamed = AW_root::SINGLETON->awar(AWAR_ARB_TREE_RENAMED);
+    AW_awar *awar_renamed = aw_root->awar(AWAR_ARB_TREE_RENAMED);
     char    *name_change  = awar_renamed->read_string();
 
     if (name_change[0]) {
