@@ -13,20 +13,23 @@
 
 /* AP_consensus.cxx */
 void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def);
-AW_window *AP_open_con_expert_window(AW_root *aw_root);
-AW_window *AP_open_max_freq_window(AW_root *aw_root);
+AW_window *AP_create_con_expert_window(AW_root *aw_root);
+AW_window *AP_create_max_freq_window(AW_root *aw_root);
 
 /* AP_cprofile.cxx */
-AW_window *AP_open_cprofile_window(AW_root *aw_root);
+AW_window *AP_create_cprofile_window(AW_root *aw_root);
 
 /* AP_pos_var_pars.cxx */
-AW_window *AP_open_pos_var_pars_window(AW_root *root);
+AW_window *AP_create_pos_var_pars_window(AW_root *root);
 
 /* ColumnStat_2_gnuplot.cxx */
 AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root);
 
 /* NT_branchAnalysis.cxx */
-AW_window *NT_open_branch_analysis_window(AW_root *aw_root, AW_CL cl_ntw);
+
+class AWT_canvas;
+
+AW_window *NT_create_branch_analysis_window(AW_root *aw_root, AWT_canvas *ntw);
 
 /* NT_cb.cxx */
 
@@ -41,7 +44,7 @@ class AWT_canvas;
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw);
 AW_window *NT_create_select_tree_window(AW_root *awr, const char *awar_tree);
 void NT_select_bottom_tree(AW_window *aww, const char *awar_tree);
-AW_window *NT_open_select_alignment_window(AW_root *awr);
+AW_window *NT_create_select_alignment_window(AW_root *awr);
 void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 
@@ -56,7 +59,7 @@ void NT_rerepair_DB(AW_window *, AW_CL cl_gbmain, AW_CL dummy_1x);
 
 /* NT_edconf.cxx */
 void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_ntw, AW_CL dummy_1x);
-AW_window *NT_start_editor_on_old_configuration(AW_root *awr);
+AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr);
 void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL cl_ntw);
 
 /* NT_extern.cxx */
@@ -73,8 +76,8 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main);
 
 /* NT_sort.cxx */
 void NT_resort_data_by_phylogeny(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
-void NT_build_resort_awars(AW_root *awr, AW_default aw_def);
-AW_window *NT_build_resort_window(AW_root *awr);
+void NT_create_resort_awars(AW_root *awr, AW_default aw_def);
+AW_window *NT_create_resort_window(AW_root *awr);
 
 /* NT_trackAliChanges.cxx */
 void NT_create_trackAliChanges_Awars(AW_root *root, AW_default properties);
@@ -85,7 +88,7 @@ void NT_repair_userland_problems(void);
 
 /* NT_validManual.cxx */
 void NT_createValidNamesAwars(AW_root *aw_root, AW_default aw_def);
-AW_window *NT_searchManuallyNames(AW_root *aw_root);
+AW_window *NT_create_searchManuallyNames_window(AW_root *aw_root);
 
 /* NT_validNames.cxx */
 void NT_deleteValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
@@ -94,7 +97,7 @@ void NT_suggestValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
 
 /* ad_ali.cxx */
 void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def);
-AW_window *NT_create_alignment_window(AW_root *root, AW_CL popmedown);
+AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown);
 
 /* ad_ext.cxx */
 AW_window *NT_create_extendeds_window(AW_root *aw_root);

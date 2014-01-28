@@ -563,7 +563,6 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
 }
 
 AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
-
     GB_transaction ta(GLOBAL.gb_main);
 
     AW_awar          *awar_default_alignment = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", GLOBAL.gb_main);

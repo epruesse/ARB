@@ -32,7 +32,7 @@
  *
  * Integration Notes: The main function using this module must have a
  *                    callback to the function
- *                    AW_window *AP_open_cprofile_window( AW_root *aw_root)
+ *                    AW_window *AP_create_cprofile_window( AW_root *aw_root)
  *                    and the function void AP_create_consensus_var
  *                    (AW_root *aw_root, AW_default aw_def) has to be called.
  *
@@ -1544,7 +1544,7 @@ static AW_window *CPRO_calculatewin_cb(AW_root *aw_root, AW_CL which_statistic)
 }
 
 /* -----------------------------------------------------------------
- * Function:                 AP_open_cprofile_window
+ * Function:                 AP_create_cprofile_window
  *
  * Arguments:                    .
  *
@@ -1566,9 +1566,7 @@ static AW_window *CPRO_calculatewin_cb(AW_root *aw_root, AW_CL which_statistic)
  * Dependencies:      Needs xfig file cprofile.fig
  * -----------------------------------------------------------------
  */
-AW_window *
-AP_open_cprofile_window(AW_root *aw_root)
-{
+AW_window *AP_create_cprofile_window(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "CPR_MAIN", "Conservation Profile: Distance Matrix");
     aws->load_xfig("cpro/main.fig");

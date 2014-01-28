@@ -346,8 +346,7 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
     return;
 }
 
-AW_window *AP_open_pos_var_pars_window(AW_root *root) {
-
+AW_window *AP_create_pos_var_pars_window(AW_root *root) {
     GB_transaction ta(GLOBAL.gb_main);
 
     AW_window_simple *aws = new AW_window_simple;

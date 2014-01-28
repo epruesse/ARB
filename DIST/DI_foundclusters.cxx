@@ -234,7 +234,7 @@ string Cluster::get_upgroup_info(const ARB_countedTree *ct, const ARB_tree_predi
 // --------------------------
 //      DisplayFormat
 
-class DisplayFormat {
+class DisplayFormat : virtual Noncopyable {
     size_t   max_count;
     AP_FLOAT max_dist;
     AP_FLOAT max_minBases;

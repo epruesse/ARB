@@ -860,7 +860,7 @@ static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static AW_window *NT_create_tree_setting(AW_root *aw_root)
+static AW_window *PARS_create_tree_settings_window(AW_root *aw_root)
 {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
@@ -1207,7 +1207,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     {
         awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...", "M", "props_frame.hlp",      AWM_ALL, AW_preset_window);
         awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...", "C", "pars_props_data.hlp",  AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
-        awm->insert_menu_topic("props_tree2", "Tree: Settings ...",         "T", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP,(AW_CL)NT_create_tree_setting,  (AW_CL)ntw);
+        awm->insert_menu_topic("props_tree2", "Tree: Settings ...",         "T", "nt_tree_settings.hlp", AWM_ALL, PARS_create_tree_settings_window);
         awm->insert_menu_topic("props_kl",    "KERN. LIN ...",              "K", "kernlin.hlp",          AWM_ALL, AW_POPUP,(AW_CL)create_kernighan_window, 0);
         awm->sep______________();
         AW_insert_common_property_menu_entries(awm);

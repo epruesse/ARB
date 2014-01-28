@@ -33,7 +33,7 @@ namespace DBUI {
     AW_window *create_field_delete_window(AW_root *root, AW_CL cl_bound_item_selector);
     AW_window *create_field_create_window(AW_root *root, AW_CL cl_bound_item_selector);
 
-    AW_window *create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main);
+    AW_window *create_species_query_window(AW_root *aw_root, GBDATA *gb_main);
 
     void popup_species_info_window(AW_root *aw_root, GBDATA *gb_main);
     void popup_organism_info_window(AW_root *aw_root, GBDATA *gb_main);

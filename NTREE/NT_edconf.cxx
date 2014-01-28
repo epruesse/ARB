@@ -651,7 +651,7 @@ static void nt_start_editor_on_configuration(AW_window *aww) {
     aw_message_if(GBK_system(com));
 }
 
-AW_window *NT_start_editor_on_old_configuration(AW_root *awr) {
+AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
     awr->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);
