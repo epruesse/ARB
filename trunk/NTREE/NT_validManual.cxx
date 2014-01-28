@@ -154,10 +154,7 @@ static void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
     free(selectedValName);
 }
 
-// create the manual selsection window
-AW_window *NT_searchManuallyNames(AW_root *aw_root /* , AW_CL */)
-{
-
+AW_window *NT_create_searchManuallyNames_window(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SEARCH_VALID_NAMES_MANUALLY", "Search Names Manually");
     aws->load_xfig("ad_selManNam.fig");
