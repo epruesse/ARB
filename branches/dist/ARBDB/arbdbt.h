@@ -106,6 +106,14 @@ public:
 
     bool is_root_node() const { return !father; }
 
+    bool is_inside(const GBT_TREE *subtree) const {
+        return this == subtree || (father && get_father()->is_inside(subtree));
+    }
+    bool is_anchestor_of(const GBT_TREE *descendant) const {
+        return !is_leaf && descendant != this && descendant->is_inside(this);
+    }
+    GBT_TREE *ancestor_common_with(GBT_TREE *other);
+
     GBT_TREE *fixDeletedSon();
 
     GBT_LEN get_branchlength() const { return length_ref(); }
@@ -230,4 +238,5 @@ typedef GB_ERROR (*species_callback)(GBDATA *gb_species, int *clientdata);
 #else
 #error arbdbt.h included twice
 #endif
+
 

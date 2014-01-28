@@ -161,6 +161,13 @@ GBT_TREE *GBT_TREE::fixDeletedSon() {
     return result;
 }
 
+GBT_TREE *GBT_TREE::ancestor_common_with(GBT_TREE *other) {
+    if (this == other) return this;
+    if (is_anchestor_of(other)) return this;
+    if (other->is_anchestor_of(this)) return other;
+    return get_father()->ancestor_common_with(other->get_father());
+}
+
 // ----------------------
 //      remove leafs
 
