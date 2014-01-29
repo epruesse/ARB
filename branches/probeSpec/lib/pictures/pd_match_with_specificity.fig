@@ -32,3 +32,6 @@ Single
 4 2 -1 0 0 18 12 0.0000 4 165 900 9675 3105 $to:probes\001
 4 0 -1 0 0 18 12 0.0000 4 135 720 5760 4455 $results\001
 4 0 -1 0 0 18 12 0.0000 4 135 540 9855 2700 $clear\001
+4 0 0 50 -1 0 12 0.0000 4 135 90 855 4700 P.Jumppanen, G.Abell and L.Bodrossy: ARB probeSpec - new tools for the design of oligonucleotide probe sets in ARB.\001
+4 0 0 50 -1 0 12 0.0000 4 135 90 4155 4960 In preparation. 2014. ( Lev.Bodrossy@csiro.au )\001
+
