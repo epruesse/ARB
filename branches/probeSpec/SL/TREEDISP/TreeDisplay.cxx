@@ -1855,7 +1855,8 @@ int AWT_graphic_tree::check_update(GBDATA *) {
         }
     }
 
-    if (aw_root->awar("probe_collection/do_refresh")->read_int() != 0)
+    if ((aw_root->awar_no_error("probe_collection/do_refresh")    != 0) &&
+        (aw_root->awar("probe_collection/do_refresh")->read_int() != 0))
     {
         aw_root->awar("probe_collection/do_refresh")->write_int(0);
 
@@ -1945,7 +1946,8 @@ void AWT_graphic_tree::drawMatchFlag(AP_tree *at, bool bPartial, int nProbe, int
 
 void AWT_graphic_tree::drawMatchFlag(AP_tree *at, const char* pName, double y1, double y2)
 {
-  if (aw_root->awar("probe_collection/has_results")->read_int() != 0)
+  if ((aw_root->awar_no_error("probe_collection/has_results")     != 0) &&
+      (aw_root->awar("probe_collection/has_results")->read_int()  != 0))
   {
     AW_color_idx  LastColor;
     bool          bChanged      = false;
@@ -2019,7 +2021,8 @@ void AWT_graphic_tree::drawMatchFlag(AP_tree *at, const char* pName, double y1, 
 
 void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen)
 {
-  if (aw_root->awar("probe_collection/has_results")->read_int() != 0)
+  if ((aw_root->awar_no_error("probe_collection/has_results")     != 0) &&
+      (aw_root->awar("probe_collection/has_results")->read_int()  != 0))
   {
     double        x;
     double        dHalfWidth    = 0.5 * MATCH_COL_WIDTH / disp_device->get_scale();
@@ -2115,7 +2118,8 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen)
 
 void AWT_graphic_tree::clickNotifyWhichProbe(AW_device* device, AW_pos click_x, AW_pos click_y)
 {
-  if (aw_root->awar("probe_collection/has_results")->read_int() != 0)
+  if ((aw_root->awar_no_error("probe_collection/has_results")     != 0) &&
+      (aw_root->awar("probe_collection/has_results")->read_int()  != 0))
   {
     int     nNumProbes    = aw_root->awar("probe_collection/number_of_probes")->read_int();
     double  dHalfWidth    = 0.5 * MATCH_COL_WIDTH / device->get_scale();

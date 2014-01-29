@@ -18,6 +18,9 @@
 #include <arb_sort.h>
 #include "pt_prototypes.h"
 #include <climits>
+#include <set>
+#include <stdint.h>
+
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_tprobes *tprobe)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(tprobe)); }
@@ -152,10 +155,25 @@ static void ptnd_calc_quality(PT_pdc *pdc) {
          tprobe;
          tprobe = tprobe->next)
     {
-        for (i=0; i< PERC_SIZE-1; i++) {
-            if (tprobe->perc[i] > tprobe->mishit) break;
+        if (pdc->mismatches == 0)
+        {
+          for (i=0; i< PERC_SIZE-1; i++) {
+              if (tprobe->perc[i] > tprobe->mishit) break;
+          }
+          tprobe->quality = ((double)tprobe->groupsize * i) + 1000.0/(1000.0 + tprobe->perc[i]);
         }
-        tprobe->quality = ((double)tprobe->groupsize * i) + 1000.0/(1000.0 + tprobe->perc[i]);
+        else
+        {
+          int nMismatchWithIncreasingTemp = 0;
+
+          for (i = 0 ; i < PERC_SIZE - 1 ; i++)
+          {
+              nMismatchWithIncreasingTemp += tprobe->perc[i];
+              if (nMismatchWithIncreasingTemp > tprobe->mishit) break;
+          }
+
+          tprobe->quality = ((double)tprobe->groupsize) / (1 + tprobe->mishit) + 1000.0/(1000.0 + nMismatchWithIncreasingTemp);
+        }
     }
 }
 
@@ -462,13 +480,13 @@ static void ptnd_first_check(PT_pdc *pdc) {
             PT_probematch*  pm;
             aisc_string     seq;
             PT_local*       locs = (PT_local*)pdc->mh.parent->parent;
-            int             nMaxMismatches = 20;
+            std::set<int>   MatchSet;
+            int             MatchKey;
 
             locs->pm_max      = pdc->mismatches;
             seq               = strdup(tprobe->sequence);
             tprobe->mishit    = 0;
             tprobe->groupsize = 0;
-            nScaleMisHitTest  = 0;
 
             PT_base_2_string(seq);
 
@@ -478,32 +496,35 @@ static void ptnd_first_check(PT_pdc *pdc) {
             {
                 psg.abs_pos.announce(pm->b_pos);
 
-                switch (pm->is_member)
+                // create a key out of the species id and check if it is in the
+                // MatchSet. If not add it and count the match stats otherwise
+                // ignore it.
+                MatchKey = pm->name;
+
+                if (MatchSet.find(MatchKey) == MatchSet.end())
                 {
-                    case 1:
+                    MatchSet.insert(MatchKey);
+
+                    switch (pm->is_member)
                     {
-                        if (pm->mismatches <= nMaxMismatches)
+                        case 1:
                         {
-                            nScaleMisHitTest = nScaleMisHitTest | (1 << pm->mismatches);
+                            tprobe->groupsize++;
+                            break;
                         }
 
-                        tprobe->groupsize++;
-                        break;
+                        case 0:
+                        default:
+                        {
+                            tprobe->mishit++;
+                            break;
+                        }
                     }
-
-                    case 0:
-                    default:
-                    {
-                        tprobe->mishit++;
-                        break;
-                    }
-                  }
+                }
             }
         }
 
-        tprobe->apos = psg.abs_pos.get_most_used();
-
-        if (tprobe->mishit > pdc->mishit * nScaleMisHitTest)
+        if (tprobe->mishit > pdc->mishit)
         {
             destroy_PT_tprobes(tprobe);
         }
