@@ -678,7 +678,7 @@ void GB_MAIN_TYPE::call_pending_callbacks() {
     // then all update callbacks:
     for (cbl = cblc; cbl;  cbl = cbl_next) {
         g_b_old_callback_list = cbl;
-        cbl->spec(cbl->gbd);
+        cbl->spec(cbl->gbd, GB_CB_ALL_BUT_DELETE);
 
         cbl_next  = cbl->next;
         cbl->next = NULL;

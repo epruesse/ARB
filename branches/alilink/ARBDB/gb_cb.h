@@ -35,11 +35,11 @@ public:
     GB_CB_TYPE get_type() const { return type; }
 
     void operator()(GBDATA *gbd, GB_CB_TYPE type_) const {
-        gb_assert(type&type_);
+        GB_CB_TYPE effType = GB_CB_TYPE(type&type_);
+        gb_assert(effType);
         gb_assert(!is_marked_for_removal());
-        dbcb(gbd, type_);
+        dbcb(gbd, effType);
     }
-    void operator()(GBDATA *gbd) const { (*this)(gbd, type); }
 
     bool sig_is_equal_to(const TypedDatabaseCallback& other) const { // ignores 'clientdata'
         return type == other.type && dbcb.same_function_as(other.dbcb);
