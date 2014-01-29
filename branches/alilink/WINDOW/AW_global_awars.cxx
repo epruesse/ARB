@@ -134,6 +134,7 @@ void ARB_declare_global_awars(AW_root *aw_root, AW_default aw_def) {
 
     declare_awar_global(aw_root->awar_string(AWAR_WWW_BROWSER, OPENURL " \"$(URL)\"", aw_def));
     declare_awar_global(aw_root->awar_int(AWAR_AWM_MASK, AWM_MASK_UNKNOWN, aw_def)->add_callback(AWAR_AWM_MASK_changed_cb));
+    declare_awar_global(aw_root->awar_string(AWAR_ARB_TREE_RENAMED, "", aw_def));
 
     AW_awar *awar_focus          = aw_root->awar_int(AWAR_AW_FOCUS_FOLLOWS_MOUSE, 0, aw_def);
     aw_root->focus_follows_mouse = awar_focus->read_int();

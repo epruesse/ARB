@@ -462,9 +462,8 @@ static void primer_design_restore_config(AW_window *aww, const char *stored_stri
     primer_design_event_update_memory(aww);
 }
 
-AW_window *create_primer_design_window(AW_root *root, AW_CL cl_gb_main) {
-    GBDATA *gb_main = (GBDATA*)cl_gb_main;
-    bool    is_genome_db;
+AW_window *create_primer_design_window(AW_root *root, GBDATA *gb_main) {
+    bool is_genome_db;
     {
         GB_transaction  ta(gb_main);
         char           *selected_species = root->awar(AWAR_SPECIES_NAME)->read_string();

@@ -182,6 +182,25 @@ public:
 };
 
 template<typename RT, typename F1, typename F2>
+struct Callback_FFV { // FFV stands for arguments (FIXED, FIXED, VARIABLE)
+    typedef StrictlyTypedCallback<RT,F1,F2,AW_CL> Signature;
+
+private:
+    typedef CallbackData<AW_CL, AW_CL> FFV_CallbackData; // 2nd AW_CL is unused
+
+    Signature                  cb;
+    SmartPtr<FFV_CallbackData> cd;
+
+public:
+    Callback_FFV(Signature CB, AW_CL P)
+        : cb(CB),
+          cd(new FFV_CallbackData(P, 0))
+    {}
+
+    RT operator()(F1 f1, F2 f2) const { return cb(f1, f2, cd->p1); }
+};
+
+template<typename RT, typename F1, typename F2>
 struct Callback_FVF { // FVF stands for arguments (FIXED, VARIABLE, FIXED)
     typedef StrictlyTypedCallback<RT,F1,AW_CL,F2>  SigP1;
     typedef StrictlyTypedCallback<RT,F1,F2,void>   SigP0F12;
@@ -220,6 +239,7 @@ public:
     AW_CL inspect_CD1() const { return cd->p1; } // @@@ only intermediate - remove later
     AW_CL inspect_CD2() const { return cd->p2; } // @@@ only intermediate - remove later
 };
+
 
 // ---------------------------
 //      convenience macros
@@ -278,6 +298,25 @@ public:
     CBTYPE_FVV_BUILDER_NP12(BUILDER,CB,RESULT,FIXED,SIG,P1,P2);                                         \
     CBTYPE_FVV_BUILDER_NP12(BUILDER,CB,RESULT,UNFIXED,SIG,P1,P2)
 
+#define CBTYPE_FVV_BUILDER_P(BUILDER,CB,RESULT,F1,F2,SIG,P,Pfun)                                        \
+    template<typename P>                                                                                \
+    inline CB BUILDER(RESULT (*cb)(F1,F2,Pfun), P p) {                                                  \
+        STATIC_ASSERT(CASTABLE_TO_AW_CL(P));                                                            \
+        return CB((SIG)cb, CAST_TO_AW_CL(P,p));                                                         \
+    }                                                                                                   \
+    template<typename P>                                                                                \
+    inline CB BUILDER(RESULT (*cb)(F1,F2,Pfun), void (*dealloc)(P), P p) {                              \
+        STATIC_ASSERT(CASTABLE_TO_AW_CL(P));                                                            \
+        return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P,p));  \
+    }
+
+#define CBTYPE_FFV_BUILDER_TEMPLATES(BUILDER,CB,RESULT,F1,F2,SIG)          \
+    inline CB BUILDER(RESULT (*cb)()) { return CB((SIG)cb, 0); }           \
+    inline CB BUILDER(RESULT (*cb)(F1)) { return CB((SIG)cb, 0); }         \
+    inline CB BUILDER(RESULT (*cb)(F1,F2)) { return CB((SIG)cb, 0); }      \
+    CBTYPE_FVV_BUILDER_P(BUILDER,CB,RESULT,F1,F2,SIG,P,P);                 \
+    CBTYPE_FVV_BUILDER_P(BUILDER,CB,RESULT,F1,F2,SIG,P,CONST_PARAM_T(P))
+
 #define CBTYPE_FVF_BUILDER_P1_F1F2(BUILDER,CB,RESULT,F1,F2,SIG,P1,P1fun)                                        \
     template<typename P1>                                                                                       \
     inline CB BUILDER(RESULT (*cb)(F1, P1fun, F2), P1 p1) {                                                     \
@@ -324,16 +363,19 @@ public:
 #define DECLARE_CBTYPE_FVV_AND_BUILDERS(CBTYPE,RESULT,FIXED)            \
     typedef Callback_FVV<RESULT, FIXED> CBTYPE;                         \
     CBTYPE_FVV_BUILDER_TEMPLATES(make##CBTYPE,CBTYPE,RESULT,FIXED,      \
-                                 CBTYPE::Signature::FuncType);
+                                 CBTYPE::Signature::FuncType)
+
+#define DECLARE_CBTYPE_FFV_AND_BUILDERS(CBTYPE,RESULT,F1,F2)            \
+    typedef Callback_FFV<RESULT,F1,F2> CBTYPE;                          \
+    CBTYPE_FFV_BUILDER_TEMPLATES(make##CBTYPE,CBTYPE,RESULT,F1,F2,      \
+                                 CBTYPE::Signature::FuncType)
 
 #define DECLARE_CBTYPE_FVF_AND_BUILDERS(CBTYPE,RESULT,F1,F2)            \
     typedef Callback_FVF<RESULT,F1,F2> CBTYPE;                          \
     CBTYPE_FVF_BUILDER_TEMPLATES(make##CBTYPE,CBTYPE,RESULT,F1,F2,      \
                                  CBTYPE::SigP1::FuncType,               \
                                  CBTYPE::SigP0F12::FuncType,            \
-                                 CBTYPE::SigP0F2::FuncType);
-
-
+                                 CBTYPE::SigP0F2::FuncType)
 
 #else
 #error cbtypes.h included twice

@@ -235,11 +235,10 @@ AW_window *create_insertDeleteColumn_window(AW_root *root) {
     return aws;
 }
 
-AW_window *create_insertDeleteBySAI_window(AW_root *root, AW_CL cl_gbmain) {
+AW_window *create_insertDeleteBySAI_window(AW_root *root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
     if (!aws) {
-        GBDATA *gb_main = (GBDATA*)cl_gbmain;
-        aws             = new AW_window_simple;
+        aws = new AW_window_simple;
 
         aws->init(root, "INSDEL_BY_SAI", "Insert/delete using SAI");
 

@@ -101,10 +101,10 @@ static void create_tables()
     }
 }
 
-AW_window *create_multiprobe_window(AW_root *root, AW_CL cl_canvas) {
+AW_window *create_multiprobe_window(AW_root *root, AWT_canvas *canvas) {
     if (!mp_main) {
         create_tables();
-        mp_main = new MP_Main(root, (AWT_canvas *)cl_canvas);
+        mp_main = new MP_Main(root, canvas);
     }
 
     AW_window *aw = mp_main->get_mp_window()->get_window();

@@ -1480,7 +1480,7 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool f
 #endif // DEBUG
 
         if (for_ARB_NTREE) {
-            awm->insert_menu_topic("gene_map", "Gene Map", "p", "gene_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_first_map, (AW_CL)gb_main); // initial gene map
+            awm->insert_menu_topic("gene_map", "Gene Map", "p", "gene_map.hlp", AWM_ALL, makeCreateWindowCallback(GEN_create_first_map, gb_main)); // initial gene map
             awm->sep______________();
 
             GEN_create_gene_species_submenu(awm, gb_main, true); // Gene-species
@@ -1547,11 +1547,10 @@ static void GEN_set_display_style(AW_window *aww, AW_CL cl_style) {
     GEN_map_window_zoom_reset_and_refresh(win);
 }
 
-static AW_window *GEN_create_map(AW_root *aw_root, AW_CL cl_GEN_create_map_param) {
+static AW_window *GEN_create_map(AW_root *aw_root, GEN_create_map_param *param) {
     // param->window_nr shall be 0 for first window (called from ARB_NTREE)
     // additional views are always created by the previous window created with GEN_map
-    GEN_create_map_param *param   = (GEN_create_map_param*)cl_GEN_create_map_param;
-    GEN_map_manager      *manager = 0;
+    GEN_map_manager *manager = 0;
 
     if (!GEN_map_manager::initialized()) {          // first call
         gen_assert(param->window_nr == 0); // has to be 0 for first call
@@ -1576,8 +1575,8 @@ static AW_window *GEN_create_map(AW_root *aw_root, AW_CL cl_GEN_create_map_param
     return gmw;
 }
 
-AW_window *GEN_create_first_map(AW_root *aw_root, AW_CL cl_gb_main) {
-    return GEN_create_map(aw_root, (AW_CL)new GEN_create_map_param((GBDATA*)cl_gb_main, 0));
+AW_window *GEN_create_first_map(AW_root *aw_root, GBDATA *gb_main) {
+    return GEN_create_map(aw_root, new GEN_create_map_param(gb_main, 0));
 }
 
 // ____________________________________________________________
@@ -1611,7 +1610,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     // File Menu
     create_menu("File", "F", AWM_ALL);
     insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
-    insert_menu_topic("new_view", "New view", "v", "new_view.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_map, (AW_CL)new GEN_create_map_param(gb_main, window_nr+1));
+    insert_menu_topic("new_view", "New view", "v", "new_view.hlp", AWM_ALL, makeCreateWindowCallback(GEN_create_map, new GEN_create_map_param(gb_main, window_nr+1)));
 
     GEN_create_genes_submenu       (this, gb_main, false); // Genes
     GEN_create_gene_species_submenu(this, gb_main, false); // Gene-species
@@ -1683,7 +1682,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     at(gene_x, first_line_y);
     help_text("organism_search.hlp");
-    callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)gb_main); // @@@ should use an organism search (using ITEM_organism) 
+    callback(makeCreateWindowCallback(DBUI::create_species_query_window, gb_main)); // @@@ should use an organism search (using ITEM_organism) 
     create_button("SEARCH_ORGANISM", AWAR_LOCAL_ORGANISM_NAME(window_nr));
 
     at(gene_x, second_line_y);

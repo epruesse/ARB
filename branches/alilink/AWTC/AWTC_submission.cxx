@@ -224,9 +224,8 @@ static void ed_submit_gen_event(AW_window *aww)
 }
 
 
-AW_window *AWTC_create_submission_window(AW_root *root, AW_CL cl_gbmain) {
-    GBDATA           *gb_main = (GBDATA*)cl_gbmain;
-    AW_window_simple *aws     = new AW_window_simple;
+AW_window *AWTC_create_submission_window(AW_root *root, GBDATA *gb_main) {
+    AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "SUBMISSION", "SUBMISSION");
 
     aws->load_xfig("submiss.fig");

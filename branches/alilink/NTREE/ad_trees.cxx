@@ -21,6 +21,7 @@
 
 #include <awt_sel_boxes.hxx>
 #include <awt_modules.hxx>
+#include <awt_TreeAwars.hxx>
 
 #include <aw_awars.hxx>
 #include <aw_edit.hxx>
@@ -198,7 +199,8 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_NODE_INFO_ONLY_MARKED, 0,    aw_def);
 
     aw_root->awar_string(AWAR_TREE_CONSENSE_TREE, "tree_consensus", aw_def)->set_srt(GBT_TREE_AWAR_SRT);
-    aw_root->awar_string(AWAR_TREE_CONSENSE_SELECTED, "", aw_def);
+    AW_awar *ctree_awar = aw_root->awar_string(AWAR_TREE_CONSENSE_SELECTED, "", aw_def);
+    AWT_registerTreeAwarSimple(ctree_awar);
 
     update_filter_cb(aw_root);
     tree_vars_callback(aw_root);

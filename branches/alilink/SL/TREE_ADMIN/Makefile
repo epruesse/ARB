@@ -51,6 +51,7 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+TreeAdmin.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cb.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cb_base.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cbtypes.h

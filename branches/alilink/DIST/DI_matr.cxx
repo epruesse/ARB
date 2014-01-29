@@ -40,6 +40,8 @@
 #include <arb_global_defs.h>
 #include <macros.hxx>
 #include <ad_cb.h>
+#include <awt_TreeAwars.hxx>
+#include <arb_defs.h>
 
 // --------------------------------------------------------------------------------
 
@@ -176,49 +178,10 @@ static AW_window *create_dna_matrix_window(AW_root *aw_root) {
     return aws;
 }
 
-static void sort_tree_changed_cb() {
-    {
-        GB_transaction ta(GLOBAL_gb_main);
-
-        static GBDATA *last_gb_tree = NULL;
-        if (last_gb_tree) {
-            GB_remove_callback(last_gb_tree, GB_CB_CHANGED, makeDatabaseCallback(matrix_needs_recalc_cb));
-            last_gb_tree = NULL;
-        }
-
-        char   *treename = AW_root::SINGLETON->awar(AWAR_DIST_TREE_SORT_NAME)->read_string();
-        GBDATA *gb_tree  = GBT_find_tree(GLOBAL_gb_main, treename);
-
-        if (gb_tree) {
-            GB_add_callback(gb_tree, GB_CB_CHANGED, makeDatabaseCallback(matrix_needs_recalc_cb));
-            last_gb_tree = gb_tree;
-        }
-
-        free(treename);
+static void selected_tree_changed_cb() {
+    if (AW_root::SINGLETON->awar(AWAR_DIST_CORR_TRANS)->read_int() == DI_TRANSFORMATION_FROM_TREE) {
+        matrix_needs_recalc_cb();
     }
-    matrix_needs_recalc_cb();
-}
-static void compress_tree_changed_cb() {
-    {
-        GB_transaction ta(GLOBAL_gb_main);
-
-        static GBDATA *last_gb_tree = NULL;
-        if (last_gb_tree) {
-            GB_remove_callback(last_gb_tree, GB_CB_CHANGED, makeDatabaseCallback(compressed_matrix_needs_recalc_cb));
-            last_gb_tree = NULL;
-        }
-
-        char   *treename = AW_root::SINGLETON->awar(AWAR_DIST_TREE_COMP_NAME)->read_string();
-        GBDATA *gb_tree  = GBT_find_tree(GLOBAL_gb_main, treename);
-
-        if (gb_tree) {
-            GB_add_callback(gb_tree, GB_CB_CHANGED, makeDatabaseCallback(compressed_matrix_needs_recalc_cb));
-            last_gb_tree = gb_tree;
-        }
-
-        free(treename);
-    }
-    compressed_matrix_needs_recalc_cb();
 }
 
 void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db) {
@@ -250,21 +213,24 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
     aw_root->awar_int   (AWAR_DIST_FILTER_SIMPLIFY,  0,      def)->add_callback(matrix_needs_recalc_callback);
 
     aw_root->awar_string(AWAR_DIST_CANCEL_CHARS, ".", def)->add_callback(matrix_needs_recalc_callback);
-    aw_root->awar_int(AWAR_DIST_CORR_TRANS, (int)DI_TRANSFORMATION_SIMILARITY, def)->add_callback(matrix_needs_recalc_callback);
+    aw_root->awar_int(AWAR_DIST_CORR_TRANS, (int)DI_TRANSFORMATION_SIMILARITY, def)->add_callback(matrix_needs_recalc_callback)->set_minmax(0, DI_TRANSFORMATION_COUNT-1);
 
     aw_root->awar(AWAR_DIST_FILTER_ALIGNMENT)->map(AWAR_DIST_ALIGNMENT);
 
     AW_create_fileselection_awars(aw_root, AWAR_DIST_SAVE_MATRIX_BASE, ".", "", "infile", def);
     aw_root->awar_int(AWAR_DIST_SAVE_MATRIX_TYPE, 0, def);
 
+    enum treetype { CURR, SORT, COMPRESS, TREEAWARCOUNT };
+    AW_awar *tree_awar[TREEAWARCOUNT] = { NULL, NULL, NULL };
+
     aw_root->awar_string(AWAR_DIST_TREE_STD_NAME,  "tree_nj", def);
     {
         char *currentTree = aw_root->awar_string(AWAR_TREE, "", db)->read_string();
-        aw_root->awar_string(AWAR_DIST_TREE_CURR_NAME, currentTree, def);
-        aw_root->awar_string(AWAR_DIST_TREE_SORT_NAME, currentTree, def)->add_callback(makeRootCallback(sort_tree_changed_cb));
+        tree_awar[CURR]   = aw_root->awar_string(AWAR_DIST_TREE_CURR_NAME, currentTree, def);
+        tree_awar[SORT]   = aw_root->awar_string(AWAR_DIST_TREE_SORT_NAME, currentTree, def);
         free(currentTree);
     }
-    aw_root->awar_string(AWAR_DIST_TREE_COMP_NAME, NO_TREE_SELECTED, def)->add_callback(makeRootCallback(compress_tree_changed_cb));
+    tree_awar[COMPRESS] = aw_root->awar_string(AWAR_DIST_TREE_COMP_NAME, NO_TREE_SELECTED, def);
 
     aw_root->awar_int(AWAR_DIST_BOOTSTRAP_COUNT, 1000, def);
     aw_root->awar_int(AWAR_DIST_MATRIX_AUTO_RECALC, 0, def)->add_callback(auto_calc_changed_cb);
@@ -289,6 +255,10 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
 
         GB_pop_transaction(db);
     }
+
+    AWT_registerTreeAwarCallback(tree_awar[CURR],     makeTreeAwarCallback(selected_tree_changed_cb),          true);
+    AWT_registerTreeAwarCallback(tree_awar[SORT],     makeTreeAwarCallback(matrix_needs_recalc_cb),            true);
+    AWT_registerTreeAwarCallback(tree_awar[COMPRESS], makeTreeAwarCallback(compressed_matrix_needs_recalc_cb), true);
 
     auto_calc_changed_cb(aw_root);
 }
@@ -806,6 +776,9 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
 
             b = 0.0;
             switch (transformation) {
+                case  DI_TRANSFORMATION_FROM_TREE:
+                    di_assert(0);
+                    break;
                 case  DI_TRANSFORMATION_JUKES_CANTOR:
                     b = 0.75;
                     // fall-through
@@ -968,6 +941,109 @@ GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation, bool *aborte
     return prodist.makedists(aborted_flag);
 }
 
+struct lessCCP { bool operator()(const char *s1, const char *s2) { return strcmp(s1, s2)<0; } };
+typedef std::map<const char*, GBT_TREE*, lessCCP> NamedNodes;
+
+GB_ERROR link_to_tree(NamedNodes& named, GBT_TREE *node) {
+    GB_ERROR error = NULL;
+    if (node->is_leaf) {
+        NamedNodes::iterator found = named.find(node->name);
+        if (found != named.end()) {
+            if (found->second) {
+                error = GBS_global_string("Invalid tree (two nodes named '%s')", node->name);
+            }
+            else {
+                found->second = node;
+            }
+        }
+        // otherwise, we do not care about the node (e.g. because it is not marked)
+    }
+    else {
+        error             = link_to_tree(named, node->get_leftson());
+        if (!error) error = link_to_tree(named, node->get_rightson());
+    }
+    return error;
+}
+
+GBT_TREE *findNode(GBT_TREE *node, const char *name) {
+    if (node->is_leaf) {
+        return strcmp(node->name, name) == 0 ? node : NULL;
+    }
+
+    GBT_TREE *found   = findNode(node->get_leftson(), name);
+    if (!found) found = findNode(node->get_rightson(), name);
+    return found;
+}
+
+static GB_ERROR init(NamedNodes& node, GBT_TREE *tree, const DI_ENTRY*const*const entries, size_t nentries) {
+    GB_ERROR error = NULL;
+    for (size_t n = 0; n<nentries; ++n) {
+        node[entries[n]->name] = NULL;
+    }
+    error = link_to_tree(node, tree);
+    if (!error) { // check for missing species (needed but not in tree)
+        size_t      missing     = 0;
+        const char *exampleName = NULL;
+
+        for (size_t n = 0; n<nentries; ++n) {
+            NamedNodes::iterator found = node.find(entries[n]->name);
+            if (found == node.end()) {
+                ++missing;
+                exampleName = entries[n]->name;
+            }
+            else {
+                di_assert(node[entries[n]->name] == findNode(tree, entries[n]->name));
+            }
+        }
+
+        if (missing) {
+            error = GBS_global_string("Tree is missing %zu required species (e.g. '%s')", missing, exampleName);
+        }
+    }
+    return error;
+}
+
+GB_ERROR DI_MATRIX::extract_from_tree(const char *treename, bool *aborted_flag) {
+    GB_ERROR error         = NULL;
+    if (nentries<=1) error = "Not enough species selected to calculate matrix";
+    else {
+        GBT_TREE *tree;
+        {
+            GB_transaction ta(get_gb_main());
+            tree = GBT_read_tree(get_gb_main(), treename, GBT_TREE_NodeFactory());
+        }
+        if (!tree) error = GB_await_error();
+        else {
+            size_t       matrix_steps = (nentries*(nentries+1))/2;
+            arb_progress progress("Extracting distances from tree", matrix_steps);
+            NamedNodes   node;
+
+            error  = init(node, tree, entries, nentries);
+            matrix = new AP_smatrix(nentries);
+
+            for (size_t row = 0; row<nentries && !error; row++) {
+                GBT_TREE *rnode = node[entries[row]->name];
+                for (size_t col=0; col<=row && !error; col++) {
+                    double dist;
+                    if (col != row) {
+                        GBT_TREE *cnode = node[entries[col]->name];
+                        dist  = rnode->intree_distance_to(cnode);
+                    }
+                    else {
+                        dist = 0.0;
+                    }
+                    matrix->set(row, col, dist);
+                    progress.inc_and_check_user_abort(error);
+                }
+            }
+            delete tree;
+            if (aborted_flag && progress.aborted()) *aborted_flag = true;
+            if (error) progress.done();
+        }
+    }
+    return error;
+}
+
 __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const WeightedFilter *weighted_filter, bool bootstrap_flag, bool show_warnings, bool *aborted_flag) {
     // sets 'aborted_flag' to true, if it is non-NULL and the calculation has been aborted
     GB_push_transaction(GLOBAL_gb_main);
@@ -1024,8 +1100,14 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const We
             else {
                 DI_TRANSFORMATION trans = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
 
-                if (phm->is_AA) error = phm->calculate_pro(trans, &aborted);
-                else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted);
+                if (trans == DI_TRANSFORMATION_FROM_TREE) {
+                    const char *treename = aw_root->awar(AWAR_DIST_TREE_CURR_NAME)->read_char_pntr();
+                    error                = phm->extract_from_tree(treename, &aborted);
+                }
+                else {
+                    if (phm->is_AA) error = phm->calculate_pro(trans, &aborted);
+                    else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted);
+                }
             }
         }
 
@@ -1259,8 +1341,12 @@ static const char *enum_trans_to_string[] = {
     "olsen",
     "felsenstein voigt",
     "olsen voigt",
-    "max ml"
+    "max ml",
+
+    NULL, // treedist
 };
+
+STATIC_ASSERT(ARRAY_ELEMS(enum_trans_to_string) == DI_TRANSFORMATION_COUNT);
 
 static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter, bool bootstrap_flag) {
     recalculate_tree_cb = new BoundWindowCallback(aww, makeWindowCallback(di_calculate_tree_cb, weighted_filter, bootstrap_flag));
@@ -1386,9 +1472,18 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
             error = GBT_write_tree(GLOBAL_gb_main, tree_name, tree);
 
             if (!error) {
-                char       *filter_name = AWT_get_combined_filter_name(aw_root, "dist");
-                int         transr      = aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
-                const char *comment     = GBS_global_string("PRG=dnadist CORR=%s FILTER=%s PKG=ARB", enum_trans_to_string[transr], filter_name);
+                char *filter_name = AWT_get_combined_filter_name(aw_root, "dist");
+                int   transr      = aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
+
+                const char *comment;
+                if (enum_trans_to_string[transr]) {
+                    comment = GBS_global_string("PRG=dnadist CORR=%s FILTER=%s PKG=ARB", enum_trans_to_string[transr], filter_name);
+                }
+                else {
+                    di_assert(transr == DI_TRANSFORMATION_FROM_TREE);
+                    const char *treename = aw_root->awar(AWAR_DIST_TREE_CURR_NAME)->read_char_pntr();
+                    comment = GBS_global_string("PRG=treedist (from '%s') PKG=ARB", treename);
+                }
 
                 error = GBT_write_tree_remark(GLOBAL_gb_main, tree_name, comment);
                 free(filter_name);
@@ -1676,7 +1771,8 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->insert_option("Cat. Hall(exp)",          "c", (int)DI_TRANSFORMATION_CATEGORIES_HALL);
     aws->insert_option("Cat. Barker(exp)",        "c", (int)DI_TRANSFORMATION_CATEGORIES_BARKER);
     aws->insert_option("Cat.Chem (exp)",          "c", (int)DI_TRANSFORMATION_CATEGORIES_CHEMICAL);
-    aws->insert_default_option("unknown", "u", (int)DI_TRANSFORMATION_NONE);
+    aws->insert_option("from selected tree",      "t", (int)DI_TRANSFORMATION_FROM_TREE);
+    aws->insert_default_option("unknown",         "u", (int)DI_TRANSFORMATION_NONE);
 
     aws->update_option_menu();
 
