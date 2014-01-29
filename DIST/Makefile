@@ -280,6 +280,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/cb.h
 DI_main.o: $(ARBHOME)/INCLUDE/cb_base.h
 DI_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -368,6 +369,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/cb.h
 DI_matr.o: $(ARBHOME)/INCLUDE/cb_base.h

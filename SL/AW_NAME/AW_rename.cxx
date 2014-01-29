@@ -549,7 +549,7 @@ static void awt_rename_cb(AW_window *aww, GBDATA *gb_main) {
 }
 
 
-AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main) {
+AW_window *AWTC_create_rename_window(AW_root *root, GBDATA *gb_main) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "AUTORENAME_SPECIES", "Synchronize species IDs");
 
@@ -565,7 +565,7 @@ AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main) {
 
     aws->at("go");
     aws->highlight();
-    aws->callback((AW_CB1)awt_rename_cb, gb_main);
+    aws->callback(makeWindowCallback(awt_rename_cb, gb_main));
     aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;

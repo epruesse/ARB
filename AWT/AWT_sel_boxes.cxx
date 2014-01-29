@@ -228,10 +228,8 @@ static void arb_tcp_dat_changed_cb(const char * /* path */, bool fileChanged, bo
     }
 }
 
-void awt_edit_arbtcpdat_cb(AW_window *aww, AW_CL cl_gb_main) { 
-    GBDATA *gb_main  = (GBDATA*)cl_gb_main;
-    char   *filename = GB_arbtcpdat_path();
-
+void awt_edit_arbtcpdat_cb(AW_window *aww, GBDATA *gb_main) {
+    char *filename = GB_arbtcpdat_path();
     AW_edit(filename, arb_tcp_dat_changed_cb, aww, gb_main);
     free(filename);
 }

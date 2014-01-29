@@ -158,13 +158,13 @@ static void NT_resort_data_by_user_criteria(AW_window *aw) {
     free(s1);
 }
 
-void NT_build_resort_awars(AW_root *awr, AW_default aw_def) {
+void NT_create_resort_awars(AW_root *awr, AW_default aw_def) {
     awr->awar_string("ad_tree/sort_1", "name",      aw_def);
     awr->awar_string("ad_tree/sort_2", "full_name", aw_def);
     awr->awar_string("ad_tree/sort_3", "name",      aw_def);
 }
 
-AW_window *NT_build_resort_window(AW_root *awr) {
+AW_window *NT_create_resort_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(awr, "SORT_DATABASE", "SORT DATABASE");
     aws->load_xfig("nt_sort.fig");

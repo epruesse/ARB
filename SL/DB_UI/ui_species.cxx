@@ -1406,7 +1406,7 @@ static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_m
     aws->create_button("CLOSE", "Close", "C");
 
     aws->at("search");
-    aws->callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)gb_main);
+    aws->callback(makeCreateWindowCallback(DBUI::create_species_query_window, gb_main));
     aws->create_autosize_button("SEARCH", "Search...", "S");
 
     aws->at("help");
@@ -1462,7 +1462,7 @@ void DBUI::query_update_list() {
     DbQuery_update_list(GLOBAL_species_query);
 }
 
-AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
+AW_window *DBUI::create_species_query_window(AW_root *aw_root, GBDATA *gb_main) {
     static AW_window_simple_menu *aws = 0;
     if (!aws) {
         aws = new AW_window_simple_menu;
@@ -1473,7 +1473,7 @@ AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main)
 
         query_spec awtqs(SPECIES_get_selector());
 
-        awtqs.gb_main             = (GBDATA*)cl_gb_main;
+        awtqs.gb_main             = gb_main;
         awtqs.species_name        = AWAR_SPECIES_NAME;
         awtqs.tree_name           = AWAR_TREE;
         awtqs.select_bit          = 1;

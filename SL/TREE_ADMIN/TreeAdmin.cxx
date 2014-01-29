@@ -18,6 +18,7 @@
 #include <cctype>
 #include <aw_msg.hxx>
 #include <arb_global_defs.h>
+#include <awt_TreeAwars.hxx>
 
 #define ta_assert(cond) arb_assert(cond)
 
@@ -27,8 +28,8 @@
 namespace TreeAdmin {
 
     void create_awars(AW_root *root, AW_default aw_def) {
-        root->awar_string(AWAR_TREE_SOURCE, 0, aw_def)->set_srt(GBT_TREE_AWAR_SRT);
-        root->awar_string(AWAR_TREE_DEST,   0, aw_def)->set_srt(GBT_TREE_AWAR_SRT);
+        AWT_registerTreeAwarSimple(root->awar_string(AWAR_TREE_SOURCE, 0, aw_def)->set_srt(GBT_TREE_AWAR_SRT));
+        root->awar_string(AWAR_TREE_DEST,   0, aw_def)->set_srt(GBT_TREE_AWAR_SRT); // no need to register (awar always follows the tree selected in admin window!)
     }
     AW_awar *source_tree_awar(AW_root *root) {
         return root->awar(AWAR_TREE_SOURCE);
@@ -54,6 +55,7 @@ namespace TreeAdmin {
             gb_tree = GBT_find_tree(gb_main, name);
             if (!gb_tree) error = "Please select tree to delete";
             else {
+                AWT_announce_tree_deleted(name);
                 GBDATA *gb_next = GBT_find_next_tree(gb_tree);
                 awar_tree->write_string(gb_next ? GBT_get_tree_name(gb_next) : NO_TREE_SELECTED);
             }
@@ -120,6 +122,7 @@ namespace TreeAdmin {
                 }
                 else {
                     error = GBT_rename_tree(gb_main, source, dest);
+                    if (!error) AWT_announce_tree_renamed(source, dest);
                 }
             }
 

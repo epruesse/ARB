@@ -755,7 +755,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->callback(concatenateAlignments, (AW_CL)sel_alis);
     aws->create_button("CONCATENATE", "CONCATENATE", "A");
 
-    aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesWindow, 0);
+    aws->callback(NT_createMergeSimilarSpeciesWindow);
     aws->create_button("MERGE_SPECIES", "MERGE SIMILAR SPECIES", "M");
 
     aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesAndConcatenateWindow, (AW_CL)sel_alis);

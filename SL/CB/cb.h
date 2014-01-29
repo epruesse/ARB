@@ -18,6 +18,7 @@
 
 class AW_root;
 class AW_window;
+class AW_awar;
 
 // generic callback parameter (used like a void*)
 typedef long AW_CL; // client data (casted from pointer or value)
@@ -64,6 +65,8 @@ DECLARE_CBTYPE_FVV_AND_BUILDERS(WindowCallback,       void,       AW_window*); /
 DECLARE_CBTYPE_FVV_AND_BUILDERS(CreateWindowCallback, AW_window*, AW_root*);   // generates makeCreateWindowCallback
 
 DECLARE_CBTYPE_FVF_AND_BUILDERS(DatabaseCallback, void, GBDATA*, GB_CB_TYPE);    // generates makeDatabaseCallback
+
+DECLARE_CBTYPE_FFV_AND_BUILDERS(TreeAwarCallback, void, AW_awar*, bool); // generates makeTreeAwarCallback
 
 #else
 #error cb.h included twice

@@ -32,8 +32,9 @@
 #include <arb_version.h>
 #include <arb_progress.h>
 #include <arb_file.h>
-#include <macros.hxx>
 #include <awt_sel_boxes.hxx>
+#include <awt_TreeAwars.hxx>
+#include <macros.hxx>
 
 using namespace std;
 
@@ -177,6 +178,8 @@ static ARB_ERROR load_and_startup_main_window(AW_root *aw_root, const char *auto
     }
     else {
         aw_root->awar(AWAR_DB_PATH)->write_string(db_server);
+
+        AWT_initTreeAwarRegistry(GLOBAL.gb_main);
 
 #define MAXNAMELEN 35
         int len = strlen(db_server);

@@ -722,9 +722,7 @@ static AW_window * CON_showgroupswin_cb(AW_root *aw_root)
     return (AW_window *)aws;
 }
 
-AW_window *
-AP_open_con_expert_window(AW_root *aw_root)
-{
+AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "BUILD_CONSENSUS", "CONSENSUS OF SEQUENCES");
     aws->load_xfig("consensus/expert.fig");
@@ -886,9 +884,7 @@ static void CON_calc_max_freq_cb(AW_window *aw) {
     if (error) aw_message(error);
 }
 
-AW_window *
-AP_open_max_freq_window(AW_root *aw_root)
-{
+AW_window *AP_create_max_freq_window(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "MAX_FREQUENCY", "MAX FREQUENCY");
     aws->load_xfig("consensus/max_freq.fig");

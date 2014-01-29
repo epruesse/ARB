@@ -203,11 +203,10 @@ static void sq_remove_quality_entries_cb(AW_window *, AW_CL cl_gb_main) {
     SQ_remove_quality_entries(gb_main);
 }
 
-AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL cl_gb_main) {
+AW_window *SQ_create_seq_quality_window(AW_root *aw_root, GBDATA *gb_main) {
     // create window for sequence quality calculation (called only once)
-    
-    GBDATA           *gb_main = (GBDATA*)cl_gb_main;
-    AW_window_simple *aws     = new AW_window_simple;
+
+    AW_window_simple *aws = new AW_window_simple;
 
     aws->init(aw_root, "CALC_SEQ_QUALITY", "CALCULATE SEQUENCE QUALITY");
     aws->load_xfig("seq_quality.fig");
