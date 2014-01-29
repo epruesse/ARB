@@ -397,7 +397,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
             gb_save_extern_data_in_ts(gbd->as_entry());
         }
         if (cb->spec.get_type() & GB_CB_DELETE) {
-            Main->add_delete_callback_list(gbd, gbd->ext->old, cb->spec);
+            Main->add_delete_callback_list(gbd, gbd->ext->old, cb->spec.with_type_changed_to(GB_CB_DELETE));
         }
         cb->next = NULL; // was stored above and will be deleted in next iteration
         delete cb;

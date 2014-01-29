@@ -655,42 +655,29 @@ static void run_close_callbacks(GBDATA *gb_main, gb_close_callback_list *gccs) {
 static gb_callback_list *g_b_old_callback_list = NULL; // points to callback during callback; NULL otherwise
 static GB_MAIN_TYPE     *g_b_old_main          = NULL; // points to DB root during callback; NULL otherwise
 
+void gb_pending_callbacks::call_and_forget(GB_CB_TYPE allowedTypes) {
+    for (gb_callback_list *cbl = head; cbl; ) {
+        g_b_old_callback_list = cbl;
+        cbl->spec(cbl->gbd, allowedTypes);
+        g_b_old_callback_list = NULL;
+
+        gb_callback_list *next = cbl->next;
+
+        cbl->next = NULL;
+        delete cbl;
+
+        cbl = next;
+    }
+    head = tail = NULL;
+}
+
 void GB_MAIN_TYPE::call_pending_callbacks() {
-    gb_callback_list *cbl, *cbl_next;
     g_b_old_main = this;
 
-    // first all delete callbacks:
-    for (cbl = cbld; cbl;  cbl = cbl_next) {
-        g_b_old_callback_list = cbl;
-        cbl->spec(cbl->gbd, GB_CB_DELETE);
-
-        cbl_next  = cbl->next;
-        cbl->next = NULL;
-
-        // cppcheck-suppress redundantAssignment (g_b_old_callback_list is tested by callback, e.g. via GB_inside_callback)
-        g_b_old_callback_list = NULL;
-        delete cbl;
-    }
-
-    cbld_last = NULL;
-    cbld      = NULL;
-
-    // then all update callbacks:
-    for (cbl = cblc; cbl;  cbl = cbl_next) {
-        g_b_old_callback_list = cbl;
-        cbl->spec(cbl->gbd, GB_CB_ALL_BUT_DELETE);
-
-        cbl_next  = cbl->next;
-        cbl->next = NULL;
-
-        // cppcheck-suppress redundantAssignment (g_b_old_callback_list is tested by callback, e.g. via GB_inside_callback)
-        g_b_old_callback_list = NULL;
-        delete cbl;
-    }
+    delete_cbs.call_and_forget(GB_CB_DELETE);         // first all delete callbacks:
+    change_cbs.call_and_forget(GB_CB_ALL_BUT_DELETE); // then all change callbacks:
 
     g_b_old_main = NULL;
-    cblc_last    = NULL;
-    cblc         = NULL;
 }
 
 void GB_close(GBDATA *gbd) {
@@ -2152,13 +2139,19 @@ GB_ERROR GB_MAIN_TYPE::send_update_to_server(GBDATA *gbd) {
     if (!transaction_level) error = "send_update_to_server: no transaction running";
     else if (is_server()) error   = "send_update_to_server: only possible from clients (not from server itself)";
     else {
-        gb_callback_list *cbl_old = cblc_last;
+        const gb_callback_list *chg_cbl_old = change_cbs.get_tail();
+        const gb_callback_list *del_cbl_old = delete_cbs.get_tail();
 
         error             = gbcmc_begin_sendupdate(gb_main());
         if (!error) error = gb_commit_transaction_local_rek(gbd, 2, 0);
         if (!error) error = gbcmc_end_sendupdate(gb_main());
 
-        if (!error && cbl_old != cblc_last) error = "send_update_to_server triggered a callback (this is not allowed)";
+        if (!error &&
+            (chg_cbl_old != change_cbs.get_tail() ||
+             del_cbl_old != delete_cbs.get_tail()))
+        {
+            error = "send_update_to_server triggered a callback (this is not allowed)";
+        }
     }
     return error;
 }
@@ -2277,30 +2270,6 @@ int GB_get_transaction_level(GBDATA *gbd) {
 
 static void dummy_db_cb(GBDATA*, GB_CB_TYPE) { gb_assert(0); } // used as marker for deleted callbacks
 DatabaseCallback TypedDatabaseCallback::MARKED_DELETED = makeDatabaseCallback(dummy_db_cb);
-
-void GB_MAIN_TYPE::add_change_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) {
-    gb_callback_list *cbl = new gb_callback_list(gbd, old, cb);
-
-    if (cblc) {
-        cblc_last->next = cbl;
-    }
-    else {
-        cblc = cbl;
-    }
-    cblc_last = cbl;
-}
-
-void GB_MAIN_TYPE::add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) {
-    gb_callback_list *cbl = new gb_callback_list(gbd, old, cb.with_type_changed_to(GB_CB_DELETE));
-
-    if (cbld) {
-        cbld_last->next = cbl;
-    }
-    else {
-        cbld = cbl;
-    }
-    cbld_last = cbl;
-}
 
 GB_MAIN_TYPE *gb_get_main_during_cb() {
     /* if inside a callback, return the DB root of the DB element, the callback was called for.

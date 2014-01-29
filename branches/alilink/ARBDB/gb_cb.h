@@ -120,7 +120,21 @@ struct gb_callback_list : virtual Noncopyable {
     }
 };
 
+class gb_pending_callbacks {
+    gb_callback_list *head, *tail;
+public:
+    gb_pending_callbacks() : head(NULL), tail(NULL) {}
+
+    void append(gb_callback_list *cbl) { tail = (head ? tail->next : head) = cbl; }
+
+    bool pending() const { return head; }
+    const gb_callback_list *get_tail() const { return tail; }
+
+    void call_and_forget(GB_CB_TYPE allowedTypes);
+};
+
 #else
 #error gb_cb.h included twice
 #endif // GB_CB_H
+
 
