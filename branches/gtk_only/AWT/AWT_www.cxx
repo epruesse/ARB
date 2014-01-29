@@ -185,8 +185,7 @@ static void www_restore_config(AW_window *aww, const char *stored_string, AW_CL 
     cdef.write(stored_string);
 }
 
-AW_window *AWT_open_www_window(AW_root *aw_root, AW_CL cgb_main) {
-
+AW_window *AWT_create_www_window(AW_root *aw_root, GBDATA *gb_main) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "WWW_PROPS", "WWW");
     aws->load_xfig("awt/www.fig");
@@ -201,7 +200,7 @@ AW_window *AWT_open_www_window(AW_root *aw_root, AW_CL cgb_main) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("action");
-    aws->callback((AW_CB1)awt_openDefaultURL_on_species, cgb_main);
+    aws->callback(makeWindowCallback(awt_openDefaultURL_on_species, gb_main));
     aws->create_button("WWW", "WWW", "W");
 
     aws->button_length(13);

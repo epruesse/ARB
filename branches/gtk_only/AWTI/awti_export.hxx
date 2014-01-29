@@ -19,7 +19,7 @@
 class AW_window;
 class AW_root;
 
-AW_window *open_AWTC_export_window(AW_root *awr, GBDATA *gb_main);
+AW_window *create_AWTC_export_window(AW_root *awr, GBDATA *gb_main);
 
 #else
 #error awti_export.hxx included twice

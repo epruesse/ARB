@@ -17,14 +17,15 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#ifndef NT_LOCAL_PROTO_H
+#include "NT_local_proto.h"
+#endif
 
 class AW_window;
 class AW_root;
 
 #define AWAR_PVP_SAI  "tmp/pos_var_pars/sai"
 #define AWAR_PVP_TREE "tmp/pos_var_pars/tree"
-
-AW_window *AP_open_pos_var_pars_window(AW_root *root);
 
 class arb_progress;
 

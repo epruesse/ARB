@@ -176,16 +176,16 @@ static void enable_auto_match_cb(AW_root *root, AW_window *aww, ProbeMatchEventP
     auto_match_changed(root);
 }
 
-static void popup_match_window_cb(AW_window *aww, AW_CL cl_gb_main) { // @@@ shall be called by auto_match_cb (if never opened b4)
+static void popup_match_window_cb(AW_window *aww, GBDATA *gb_main) { // @@@ shall be called by auto_match_cb (if never opened b4)
     AW_root   *root         = aww->get_root();
-    AW_window *match_window = create_probe_match_window(root, cl_gb_main);
+    AW_window *match_window = create_probe_match_window(root, gb_main);
     match_window->activate();
     root->awar(AWAR_TARGET_STRING)->touch(); // force re-match
 }
 
 // --------------------------------------------------------------------------------
 
-static void popup_probe_design_result_window(AW_window *aww, AW_CL cl_gb_main) {
+static void popup_probe_design_result_window(AW_window *aww, GBDATA *gb_main) {
     if (!PD.win) {
         AW_root *root = aww->get_root();
 
@@ -224,7 +224,7 @@ static void popup_probe_design_result_window(AW_window *aww, AW_CL cl_gb_main) {
         PD.win->callback(create_print_box_for_selection_lists, (AW_CL)&storable_result_list->get_typedsellist());
         PD.win->create_button("PRINT", "PRINT", "P");
 
-        PD.win->callback(popup_match_window_cb, cl_gb_main);
+        PD.win->callback(makeWindowCallback(popup_match_window_cb, gb_main));
         PD.win->create_button("MATCH", "MATCH", "M");
 
         PD.win->label("Auto match");
@@ -434,14 +434,13 @@ static char *readableUnknownNames(const ConstStrArray& unames) {
     return readable.release();
 }
 
-static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
-    AW_root     *root    = aww->get_root();
+static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
+    AW_root     *root  = aww->get_root();
     T_PT_PDC     pdc;
     T_PT_TPROBE  tprobe;
     bytestring   bs;
     bytestring   check;
-    GB_ERROR     error   = 0;
-    GBDATA      *gb_main = (GBDATA*)cl_gb_main;
+    GB_ERROR     error = 0;
 
     arb_progress progress("Probe design");
     progress.subtitle("Connecting PT-server");
@@ -618,7 +617,7 @@ static void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
                  PDC_TPROBE, tprobe.as_result_param(),
                  NULL);
 
-        popup_probe_design_result_window(aww, cl_gb_main);
+        popup_probe_design_result_window(aww, gb_main);
         PD.resultList->clear();
 
         {
@@ -1278,14 +1277,14 @@ static void probe_design_restore_config(AW_window *aww, const char *stored_strin
     cdef.write(stored_string);
 }
 
-AW_window *create_probe_design_window(AW_root *root, AW_CL cl_gb_main) {
-    AW_window_simple *aws     = new AW_window_simple;
-    GBDATA           *gb_main = (GBDATA*)cl_gb_main;
-    bool              is_genom_db;
+AW_window *create_probe_design_window(AW_root *root, GBDATA *gb_main) {
+    bool is_genom_db;
     {
         GB_transaction ta(gb_main);
         is_genom_db = GEN_is_genome_db(gb_main, -1);
     }
+
+    AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "PROBE_DESIGN", "PROBE DESIGN");
 
     aws->load_xfig("pd_main.fig");
@@ -1298,12 +1297,12 @@ AW_window *create_probe_design_window(AW_root *root, AW_CL cl_gb_main) {
     aws->callback(makeHelpCallback("probedesign.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    aws->callback(probe_design_event, cl_gb_main);
+    aws->callback(makeWindowCallback(probe_design_event, gb_main));
     aws->at("design");
     aws->highlight();
     aws->create_button("GO", "GO", "G");
 
-    aws->callback(popup_probe_design_result_window, (AW_CL)gb_main);
+    aws->callback(makeWindowCallback(popup_probe_design_result_window, gb_main));
     aws->at("result");
     aws->create_button("RESULT", "RESULT", "S");
 
@@ -1560,11 +1559,10 @@ static void popupSaiProbeMatchWindow(AW_window *aw, AW_CL cl_gb_main) {
     aw_saiProbeMatch->activate();
 }
 
-AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
+AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0; // the one and only probe match window
     if (!aws) {
-        GBDATA *gb_main = (GBDATA*)cl_gb_main;
-        aws             = new AW_window_simple;
+        aws = new AW_window_simple;
 
         aws->init(root, "PROBE_MATCH", "PROBE MATCH");
 
@@ -1820,16 +1818,14 @@ static void pd_view_pt_log(AW_window *) {
     AW_edit(GBS_ptserver_logname());
 }
 
-AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
-    GBDATA           *gb_main = (GBDATA*)cl_gb_main;
-    AW_window_simple *aws     = new AW_window_simple;
-    bool              is_genom_db;
-
+AW_window *create_probe_admin_window(AW_root *root, GBDATA *gb_main) {
+    bool is_genom_db;
     {
         GB_transaction ta(gb_main);
         is_genom_db = GEN_is_genome_db(gb_main, -1);
     }
 
+    AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "PT_SERVER_ADMIN", "PT_SERVER ADMIN");
 
     aws->load_xfig("pd_admin.fig");
@@ -1865,7 +1861,7 @@ AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
     aws->create_button("KILL_ALL_SERVERS", "Stop all servers");
 
     aws->at("edit");
-    aws->callback(awt_edit_arbtcpdat_cb, (AW_CL)gb_main);
+    aws->callback(makeWindowCallback(awt_edit_arbtcpdat_cb, gb_main));
     aws->create_button("CREATE_TEMPLATE", "Configure");
 
     aws->at("log");
@@ -2085,9 +2081,9 @@ static void create_probe_group_groups_window(AW_window *aww) {
     pg_global.pg_groups_window->show();
 }
 
-AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canvas_ntw) {
+AW_window *create_probe_group_result_window(AW_root *awr, AWT_canvas *ntw) {
     freenull(pg_global.awar_pg_result_filename);
-    pg_global.ntw = (AWT_canvas*)cl_AW_canvas_ntw;
+    pg_global.ntw = ntw;
 
     return awt_create_load_box(awr, "Load", "arb_probe_group result", ".", "arb",
                                &pg_global.awar_pg_result_filename,

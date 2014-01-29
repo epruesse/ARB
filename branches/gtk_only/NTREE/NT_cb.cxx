@@ -98,7 +98,7 @@ void NT_select_bottom_tree(AW_window *aww, const char *awar_tree) {
     if (ltree) aww->get_root()->awar(awar_tree)->write_string(ltree);
 }
 
-AW_window *NT_open_select_alignment_window(AW_root *awr)
+AW_window *NT_create_select_alignment_window(AW_root *awr)
 {
     static AW_window_simple *aws = 0;
     if (!aws) {
@@ -118,7 +118,7 @@ AW_window *NT_open_select_alignment_window(AW_root *awr)
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP, (AW_CL)NT_create_alignment_window, (AW_CL)aws);
+        aws->callback(makeCreateWindowCallback(NT_create_alignment_window, static_cast<AW_window*>(aws)));
         aws->help_text("ad_align.hlp");
         aws->create_button("MODIFY", "ADMIN", "A");
 

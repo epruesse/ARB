@@ -78,6 +78,7 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+TreeAdmin.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cb.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cb_base.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/cbtypes.h

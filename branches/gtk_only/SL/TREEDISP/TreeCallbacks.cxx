@@ -531,10 +531,8 @@ void NT_scale_tree(UNFIXED, AWT_canvas *ntw) { // scale branchlengths
     }
 }
 
-static AP_tree *common_ancestor(AP_tree *t1, AP_tree *t2) { // @@@ move into some tree class after merge
-    if (t1->is_anchestor_of(t2)) return t1;
-    if (t2->is_anchestor_of(t1)) return t2;
-    return common_ancestor(t1->get_father(), t2->get_father());
+inline AP_tree *common_ancestor(AP_tree *t1, AP_tree *t2) {
+    return DOWNCAST(AP_tree*, t1->ancestor_common_with(t2));
 }
 
 static bool make_node_visible(AWT_canvas *ntw, AP_tree *node) {
