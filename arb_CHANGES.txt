@@ -9,6 +9,7 @@ Major changes for next release:
    - Detect clusters of species with similar sequences (OTUs)
    - allow automatic recalculation of matrix and/or tree whenever some parameter or
      data changes (only makes sense for smaller species sets)
+   - extract distance matrix from tree
  - Rewrote chimera check. Allows filtering
  - added RNACMA (computes clusters of correlated positions)
  - PT-Server
@@ -53,9 +54,8 @@ Major changes for next release:
    - ARBs extended newick format (with bootstrap values) handled more restrictive now
    - fixed several bugs; improved errors/warnings
  - consensus trees
-   - calculate from multiple existing trees
+   - calculate from multiple existing trees (also allows to merge not completely overlapping trees)
    - fixed NJ-bootstrapping (no longer drops species)
- - trees sortable now
  - tree display
    - Show brackets on open groups (dendrogram tree only)
    - rewrote IRS (folded) display
@@ -64,6 +64,12 @@ Major changes for next release:
  - added a branch analysis tool
    - groups several functions previously availiable via menuitems (e.g. mark long branches, etc.)
    - added leaf-distance analysis
+ - other tree functionality
+   - treelist sortable now
+   - new beautify-tree modes (radial tree / according to other tree)
+   - function to remove marked/zombies from ALL trees
+   - create multifurcations
+   - toggle 100% bootstrap values
  - tweaked printing (interface, overlapping)
  - probe design:
    - added LOAD to result window
