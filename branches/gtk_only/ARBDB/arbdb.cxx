@@ -382,7 +382,7 @@ struct gb_exitfun {
 void GB_atexit(void (*exitfun)()) {
     // called when GB_shell is destroyed (use similar to atexit()) 
     //
-    // Since the program does not neccessarily terminated, your code calling
+    // Since the program does not neccessarily terminate, your code calling
     // GB_atexit() may run multiple times. Make sure everything is completely reset by your 'exitfun'
 
     gb_exitfun *fun = new gb_exitfun;
