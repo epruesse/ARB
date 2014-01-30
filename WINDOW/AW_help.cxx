@@ -224,8 +224,7 @@ static void aw_help_edit_help(AW_window *aww) {
     else {
         AW_edit(helpfile);
         aw_message("Warning: Automatic archive-after-edit not possible (yet)\n"
-                   "         (Workaround: leave help window open, open a\n"
-                   "                      database, then click EDIT again");
+                   "Workaround: leave help window open, open a database, then click EDIT again.");
     }
 #else
     AW_edit(helpfile);
