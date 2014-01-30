@@ -1035,6 +1035,7 @@ AW_help.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_file.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_help.o: $(ARBHOME)/INCLUDE/arb_str.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_help.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_help.o: $(ARBHOME)/INCLUDE/arbdb_base.h

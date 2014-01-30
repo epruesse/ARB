@@ -145,3 +145,7 @@ GB_ERROR ARB_bind_global_awars(GBDATA *gb_main) {
     return error;
 }
 
+GBDATA *get_globalawars_gbmain() {
+    //! hack to access open ARB database (used for helpfile editing)
+    return gb_main4awar;
+}
