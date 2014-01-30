@@ -213,7 +213,7 @@ static void aw_help_edit_help(AW_window *aww) {
 
     if (!GB_is_writeablefile(helpfile)) {
         aw_message("Warning: you do not have the permission to save changes to that helpfile\n"
-                   "         (ask your admin to gain write access)");
+                   "(ask your admin to gain write access)");
     }
 
     GBDATA *get_globalawars_gbmain();
@@ -222,9 +222,11 @@ static void aw_help_edit_help(AW_window *aww) {
         AW_edit(helpfile, aw_helpfile_modified_cb, aww, gbmain);
     }
     else {
-        AW_edit(helpfile);
-        aw_message("Warning: Automatic archive-after-edit not possible (yet)\n"
-                   "Workaround: leave help window open, open a database, then click EDIT again.");
+        aw_message("Warning: Editing help not possible yet!\n"
+                   "To make it possible:\n"
+                   "- leave help window open,\n"
+                   "- open a database and\n"
+                   "- then click EDIT again.");
     }
 #else
     AW_edit(helpfile);
