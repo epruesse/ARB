@@ -21,6 +21,7 @@
 #include <arbdb.h>
 #endif
 #include <sys/stat.h>
+#include <arb_str.h>
 
 
 #define AWAR_HELP       "tmp/help/"
@@ -173,21 +174,75 @@ static char *get_local_help_url(AW_root *awr) {
     return result;
 }
 
+#if defined(NDEBUG)
+static void store_helpfile_in_tarball(const char *path, const char *mode) {
+    GB_ERROR    error = NULL;
+    const char *base  = GB_path_in_ARBLIB("help");
+
+    if (ARB_strBeginsWith(path, base)) {
+        char *cmd = GBS_global_string_copy("arb_help_useredit.sh %s %s", path+strlen(base)+1, mode);
+        error     = GBK_system(cmd);
+    }
+    else {
+        error = "Unexpected helpfile name (in store_helpfile_in_tarball)";
+    }
+
+    if (error) aw_message(error);
+}
+static void aw_helpfile_modified_cb(const char *path, bool fileWasChanged, bool editorTerminated) {
+    static enum { UNMODIFIED, MODIFIED, NOTIFIED } state = UNMODIFIED;
+
+    if (fileWasChanged) {
+        store_helpfile_in_tarball(path, "end");
+        if (state == UNMODIFIED) state = MODIFIED;
+    }
+    if (editorTerminated) {
+        if (state == MODIFIED) {
+            aw_message("Your changes to ARB help have been stored in an archive.\n"
+                       "See console for what to send to ARB developers!");
+            state = NOTIFIED;
+        }
+    }
+}
+#endif
+
 static void aw_help_edit_help(AW_window *aww) {
     char *helpfile = get_full_qualified_help_file_name(aww->get_root(), true);
 
     if (GB_size_of_file(helpfile)<=0) {
-#if defined(RELEASE)
+#if defined(NDEBUG)
         const char *base = GB_path_in_ARBLIB("help");
 #else
         const char *base = GB_path_in_ARBHOME("HELP_SOURCE/oldhelp");
-#endif // DEBUG
+#endif
 
         const char *copy_cmd = GBS_global_string("cp %s/FORM.hlp %s", base, helpfile); // uses_hlp_res("FORM.hlp"); see ../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
         aw_message_if(GBK_system(copy_cmd));
     }
 
+#if defined(NDEBUG)
+    store_helpfile_in_tarball(helpfile, "start");
+
+    if (!GB_is_writeablefile(helpfile)) {
+        aw_message("Warning: you do not have the permission to save changes to that helpfile\n"
+                   "(ask your admin to gain write access)");
+    }
+
+    GBDATA *get_globalawars_gbmain();
+    GBDATA *gbmain = get_globalawars_gbmain(); // hack -- really need main ARB DB here (properties DB does not work with notifications)
+    if (gbmain) {
+        AW_edit(helpfile, aw_helpfile_modified_cb, aww, gbmain);
+    }
+    else {
+        aw_message("Warning: Editing help not possible yet!\n"
+                   "To make it possible:\n"
+                   "- leave help window open,\n"
+                   "- open a database and\n"
+                   "- then click EDIT again.");
+    }
+#else
     AW_edit(helpfile);
+#endif
 
     free(helpfile);
 }
