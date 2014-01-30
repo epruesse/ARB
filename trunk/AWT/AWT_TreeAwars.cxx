@@ -55,10 +55,6 @@ public:
         return diff<0;
     }
 
-    void ignore_db_callbacks() const {
-        // hack needed for proper destruction on exit
-        triggerOnDataChange = false;
-    }
     void tree_lost() { gb_tree = NULL; }
 };
 
@@ -78,7 +74,6 @@ class TreeAwarRegistry : virtual Noncopyable {
 
 public:
     TreeAwarRegistry(GBDATA *gb_main_);
-    ~TreeAwarRegistry();
 
     static SmartPtr<TreeAwarRegistry> SINGLETON;
 
@@ -90,7 +85,7 @@ public:
 
 SmartPtr<TreeAwarRegistry> TreeAwarRegistry::SINGLETON;
 
-static void destroy_TreeAwarRegistry() {
+static void destroy_TreeAwarRegistry(GBDATA*,void*) {
     TreeAwarRegistry::SINGLETON.SetNull();
 }
 
@@ -179,14 +174,7 @@ TreeAwarRegistry::TreeAwarRegistry(GBDATA *gb_main_)
 {
     // uses global awar AWAR_ARB_TREE_RENAMED to synchronize between multiple ARB apps
     AW_root::SINGLETON->awar(AWAR_ARB_TREE_RENAMED)->add_callback(tree_renamed_cb);
-    GB_atexit(destroy_TreeAwarRegistry);
-}
-TreeAwarRegistry::~TreeAwarRegistry() {
-    // ignore DB callbacks when destroying BoundTreeAwarCallbacks
-    // (i.e. do not try to GB_remove_callback; impossible because we are exiting the DB atm)
-    for (BoundTreeAwarCallbacks::iterator bcb = callbacks.begin(); bcb != callbacks.end(); ++bcb) {
-        (*bcb)->ignore_db_callbacks();
-    }
+    GB_atclose(gb_main_, destroy_TreeAwarRegistry, NULL);
 }
 
 void TreeAwarRegistry::tree_renamed(const char *oldname, const char *newname) {
