@@ -1324,6 +1324,8 @@ NALIGNER/NALIGNER.dummy : 		com
 
 ARB_GDE/ARB_GDE.dummy : 		proto_tools
 
+compile_compatibility: SOURCE_TOOLS/COMPILE_COMPAT/COMPILE_COMPAT.dummy
+
 #***************************************************************************************
 #			Short aliases to make targets
 #***************************************************************************************
@@ -1477,7 +1479,9 @@ comdepends: comtools clrdotdepends
 depends: genheaders comdepends
 	@echo "$(SEP) Updating other dependencies"
 	$(MAKE) $(subst NAMES_COM/server.depends,,$(subst PROBE_COM/server.depends,,$(ARCHS:.a=.depends))) \
-		HELP_SOURCE/HELP_SOURCE.depends
+		HELP_SOURCE/HELP_SOURCE.depends \
+		SOURCE_TOOLS/COMPILE_COMPAT/COMPILE_COMPAT.depends \
+
 	$(MAKE) libdepends
 
 depend: depends
@@ -1749,6 +1753,7 @@ clean2: $(ARCHS:.a=.clean) \
 		GDEHELP/GDEHELP.clean \
 		HEADERLIBS/HEADERLIBS.clean \
 		SOURCE_TOOLS/SOURCE_TOOLS.clean \
+		SOURCE_TOOLS/COMPILE_COMPAT/COMPILE_COMPAT.clean \
 		UNIT_TESTER/UNIT_TESTER.clean \
 		TEMPLATES/TEMPLATES.clean \
 		perl_clean \
@@ -2213,7 +2218,7 @@ post_commit_check:
 # --------------------------------------------------------------------------------
 
 build: arb
-	$(MAKE) binlink preplib
+	$(MAKE) binlink preplib compile_compatibility
 
 all:
 	@echo "Build time" > $(TIMELOG)
