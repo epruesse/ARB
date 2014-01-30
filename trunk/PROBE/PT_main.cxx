@@ -407,7 +407,7 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
                 aisc_accept_calls(so);
             }
         }
-        aisc_server_shutdown(so);
+        aisc_server_shutdown(psg.com_so);
     }
     return error;
 }
