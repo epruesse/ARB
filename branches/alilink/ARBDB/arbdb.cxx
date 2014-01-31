@@ -652,16 +652,16 @@ static void run_close_callbacks(GBDATA *gb_main, gb_close_callback_list *gccs) {
     }
 }
 
-static gb_callback_list *g_b_old_callback_list = NULL; // points to callback during callback; NULL otherwise
-static GB_MAIN_TYPE     *g_b_old_main          = NULL; // points to DB root during callback; NULL otherwise
+static gb_triggered_callback *currently_called_back = NULL; // points to callback during callback; NULL otherwise
+static GB_MAIN_TYPE          *inside_callback_main  = NULL; // points to DB root during callback; NULL otherwise
 
 void gb_pending_callbacks::call_and_forget(GB_CB_TYPE allowedTypes) {
-    for (gb_callback_list *cbl = head; cbl; ) {
-        g_b_old_callback_list = cbl;
+    for (gb_triggered_callback *cbl = head; cbl; ) {
+        currently_called_back = cbl;
         cbl->spec(cbl->gbd, allowedTypes);
-        g_b_old_callback_list = NULL;
+        currently_called_back = NULL;
 
-        gb_callback_list *next = cbl->next;
+        gb_triggered_callback *next = cbl->next;
 
         cbl->next = NULL;
         delete cbl;
@@ -672,12 +672,12 @@ void gb_pending_callbacks::call_and_forget(GB_CB_TYPE allowedTypes) {
 }
 
 void GB_MAIN_TYPE::call_pending_callbacks() {
-    g_b_old_main = this;
+    inside_callback_main = this;
 
     delete_cbs.call_and_forget(GB_CB_DELETE);         // first all delete callbacks:
     change_cbs.call_and_forget(GB_CB_ALL_BUT_DELETE); // then all change callbacks:
 
-    g_b_old_main = NULL;
+    inside_callback_main = NULL;
 }
 
 void GB_close(GBDATA *gbd) {
@@ -2139,8 +2139,8 @@ GB_ERROR GB_MAIN_TYPE::send_update_to_server(GBDATA *gbd) {
     if (!transaction_level) error = "send_update_to_server: no transaction running";
     else if (is_server()) error   = "send_update_to_server: only possible from clients (not from server itself)";
     else {
-        const gb_callback_list *chg_cbl_old = change_cbs.get_tail();
-        const gb_callback_list *del_cbl_old = delete_cbs.get_tail();
+        const gb_triggered_callback *chg_cbl_old = change_cbs.get_tail();
+        const gb_triggered_callback *del_cbl_old = delete_cbs.get_tail();
 
         error             = gbcmc_begin_sendupdate(gb_main());
         if (!error) error = gb_commit_transaction_local_rek(gbd, 2, 0);
@@ -2275,7 +2275,7 @@ GB_MAIN_TYPE *gb_get_main_during_cb() {
     /* if inside a callback, return the DB root of the DB element, the callback was called for.
      * if not inside a callback, return NULL.
      */
-    return g_b_old_main;
+    return inside_callback_main;
 }
 
 NOT4PERL bool GB_inside_callback(GBDATA *of_gbd, GB_CB_TYPE cbtype) {
@@ -2283,16 +2283,16 @@ NOT4PERL bool GB_inside_callback(GBDATA *of_gbd, GB_CB_TYPE cbtype) {
     bool          inside = false;
 
     if (Main) {                 // inside a callback
-        gb_assert(g_b_old_callback_list);
-        if (g_b_old_callback_list->gbd == of_gbd) {
+        gb_assert(currently_called_back);
+        if (currently_called_back->gbd == of_gbd) {
             GB_CB_TYPE curr_cbtype;
             if (Main->has_pending_delete_callback()) { // delete callbacks were not all performed yet
                                                        // => current callback is a delete callback
-                curr_cbtype = GB_CB_TYPE(g_b_old_callback_list->spec.get_type() & GB_CB_DELETE);
+                curr_cbtype = GB_CB_TYPE(currently_called_back->spec.get_type() & GB_CB_DELETE);
             }
             else {
                 gb_assert(Main->has_pending_change_callback());
-                curr_cbtype = GB_CB_TYPE(g_b_old_callback_list->spec.get_type() & (GB_CB_ALL-GB_CB_DELETE));
+                curr_cbtype = GB_CB_TYPE(currently_called_back->spec.get_type() & (GB_CB_ALL-GB_CB_DELETE));
             }
             gb_assert(curr_cbtype != GB_CB_NONE); // wtf!? are we inside callback or not?
 
@@ -2335,30 +2335,30 @@ static GB_CSTR gb_read_pntr_ts(GBDATA *gbd, gb_transaction_save *ts) {
 NOT4PERL const void *GB_read_old_value() {
     char *data;
 
-    if (!g_b_old_callback_list) {
+    if (!currently_called_back) {
         GB_export_error("You cannot call GB_read_old_value outside a ARBDB callback");
         return NULL;
     }
-    if (!g_b_old_callback_list->old) {
+    if (!currently_called_back->old) {
         GB_export_error("No old value available in GB_read_old_value");
         return NULL;
     }
-    data = GB_GETDATA_TS(g_b_old_callback_list->old);
+    data = GB_GETDATA_TS(currently_called_back->old);
     if (!data) return NULL;
 
-    return gb_read_pntr_ts(g_b_old_callback_list->gbd, g_b_old_callback_list->old);
+    return gb_read_pntr_ts(currently_called_back->gbd, currently_called_back->old);
 }
 // same for size
 long GB_read_old_size() {
-    if (!g_b_old_callback_list) {
+    if (!currently_called_back) {
         GB_export_error("You cannot call GB_read_old_size outside a ARBDB callback");
         return -1;
     }
-    if (!g_b_old_callback_list->old) {
+    if (!currently_called_back->old) {
         GB_export_error("No old value available in GB_read_old_size");
         return -1;
     }
-    return GB_GETSIZE_TS(g_b_old_callback_list->old);
+    return GB_GETSIZE_TS(currently_called_back->old);
 }
 
 inline char *cbtype2readable(GB_CB_TYPE type) {

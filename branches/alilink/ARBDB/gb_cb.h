@@ -1,7 +1,7 @@
 // =============================================================== //
 //                                                                 //
 //   File      : gb_cb.h                                           //
-//   Purpose   : gb_callback_list                                   //
+//   Purpose   : database callback types                           //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -99,14 +99,14 @@ struct gb_callback : virtual Noncopyable {
 
 struct gb_transaction_save;
 
-struct gb_callback_list : virtual Noncopyable {
+struct gb_triggered_callback : virtual Noncopyable {
     // @@@ make members private
-    gb_callback_list      *next;
+    gb_triggered_callback *next;
     TypedDatabaseCallback  spec;
     gb_transaction_save   *old;
     GBDATA                *gbd;
 
-    gb_callback_list(GBDATA *gbd_, gb_transaction_save *old_, const TypedDatabaseCallback& spec_)
+    gb_triggered_callback(GBDATA *gbd_, gb_transaction_save *old_, const TypedDatabaseCallback& spec_)
         : next(NULL),
           spec(spec_),
           old(old_),
@@ -114,21 +114,21 @@ struct gb_callback_list : virtual Noncopyable {
     {
         gb_add_ref_gb_transaction_save(old);
     }
-    ~gb_callback_list() {
+    ~gb_triggered_callback() {
         gb_assert(!next); // unlink before deleting
         gb_del_ref_gb_transaction_save(old);
     }
 };
 
 class gb_pending_callbacks {
-    gb_callback_list *head, *tail;
+    gb_triggered_callback *head, *tail;
 public:
     gb_pending_callbacks() : head(NULL), tail(NULL) {}
 
-    void append(gb_callback_list *cbl) { tail = (head ? tail->next : head) = cbl; }
+    void append(gb_triggered_callback *cbl) { tail = (head ? tail->next : head) = cbl; }
 
     bool pending() const { return head; }
-    const gb_callback_list *get_tail() const { return tail; }
+    const gb_triggered_callback *get_tail() const { return tail; }
 
     void call_and_forget(GB_CB_TYPE allowedTypes);
 };
