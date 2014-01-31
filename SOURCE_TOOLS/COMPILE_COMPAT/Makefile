@@ -9,11 +9,18 @@
 
 OBJECTS = c0x.o nostd.o
 
-BINARIES = $(subst .o,,$(OBJECTS))
+OLD_BIN=$(subst .o,,$(OBJECTS))
+# OLD_BIN and clean_old can be removed (later)
+
+BINARIES = $(addprefix bin/,$(OLD_BIN))
 
 LIB_ARBDB := $(LIBPATH) $(ARBDB_LIB)
 
-$(MAIN): $(BINARIES)
+$(MAIN): bin
+
+bin: clean_old
+	mkdir -p bin
+	$(MAKE) $(BINARIES)
 
 cxxflags_c0x=$(subst -std=gnu++11,-std=gnu++0x,$(cxxflags))
 cxxflags_nostd=$(subst -std=gnu++0x,,$(subst -std=gnu++11,,$(cxxflags)))
@@ -24,10 +31,13 @@ c0x.o: c0x.cxx Makefile
 nostd.o: nostd.cxx Makefile
 	$(A_CXX) $(cflags) $(cxxflags_nostd) -c $< $(CXX_INCLUDES) -o $@ $(POST_COMPILE)
 
-% : %.o
+bin/% : %.o
 	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB)
 
-clean:
+clean_old:
+	rm -f $(OLD_BIN)
+
+clean: clean_old
 	rm -f $(BINARIES) $(OBJECTS)
 
 DEPENDS = $(OBJECTS:.o=.depend)
