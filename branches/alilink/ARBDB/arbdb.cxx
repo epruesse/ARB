@@ -710,7 +710,7 @@ void GB_close(GBDATA *gbd) {
          * If that doesn't help, test Main->data (often aka as GLOBAL_gb_main)
          */
         Main->call_pending_callbacks();                  // do all callbacks
-        gb_destroy_main(Main);
+        delete Main;
     }
 
     if (error) {

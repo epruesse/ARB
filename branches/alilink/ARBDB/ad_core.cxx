@@ -229,10 +229,6 @@ GB_MAIN_TYPE::GB_MAIN_TYPE(const char *db_path) {
     gb_local->announce_db_open(this);
 }
 
-GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) { // @@@ inline
-    return new GB_MAIN_TYPE(path);
-}
-
 GB_MAIN_TYPE::~GB_MAIN_TYPE() {
     gb_assert(!dummy_father);
     gb_assert(!root_container);
@@ -257,11 +253,8 @@ GB_MAIN_TYPE::~GB_MAIN_TYPE() {
     free(path);
     free(disabled_path);
     free(qs.quick_save_disabled);
-}
 
-void gb_destroy_main(GB_MAIN_TYPE *Main) { // @@@ inline
-    delete Main;
-    gb_local->announce_db_close(Main); // @@@ do inside dtor!
+    gb_local->announce_db_close(this);
 }
 
 GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_pos, GBQUARK keyq) {
