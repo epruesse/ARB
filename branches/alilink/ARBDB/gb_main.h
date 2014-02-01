@@ -44,6 +44,11 @@ enum gb_open_types {
 struct gb_quick_save {
     char *quick_save_disabled;                      // if set, quick save is not possible and text describes reason why
     int   last_index;
+
+    gb_quick_save()
+        : quick_save_disabled(NULL),
+          last_index(0)
+    {}
 };
 
 // --------------------------------------------------------------------------------
@@ -72,6 +77,15 @@ struct gb_cache {
     GB_HASH *reuse_sum;                             // key = DB_path, value = how often entries were reused
 #endif
 
+    gb_cache() {
+        memset(this, 0, sizeof(*this));
+        init();
+    }
+    ~gb_cache() {
+        destroy();
+    }
+
+private:
     void init();
     void destroy();
 };
@@ -93,7 +107,6 @@ class GB_MAIN_TYPE : virtual Noncopyable {
     bool i_am_server;
 
 public:
-
 
     gbcmc_comm     *c_link;
     gb_server_data *server_data;

@@ -171,6 +171,7 @@ ad_core.o: gb_ts.h
 ad_core.o: gb_tune.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_core.h
+ad_core.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_string.h

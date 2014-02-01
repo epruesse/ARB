@@ -13,6 +13,7 @@
 #include "gb_index.h"
 #include "gb_localdata.h"
 #include "gb_storage.h"
+#include <arb_defs.h>
 
 // Copy all info + external data mem to an one step undo buffer
 // (needed to abort transactions)
@@ -218,14 +219,52 @@ static void gb_unlink_entry(GBDATA * gbd) {
     }
 }
 
-GB_MAIN_TYPE::GB_MAIN_TYPE(const char *db_path) {
-    memset(this, 0, sizeof(*this)); // @@@ elim
-    if (db_path) path = strdup(db_path);
-    key_2_index_hash  = GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE);
-    compression_mask  = -1; // allow all compressions
-    cache.init();
+GB_MAIN_TYPE::GB_MAIN_TYPE(const char *db_path)
+    : transaction_level(0),
+      aborted_transaction(0),
+      i_am_server(false),
+      c_link(NULL),
+      server_data(NULL),
+      dummy_father(NULL),
+      root_container(NULL),
+      gb_key_data(NULL),
+      path(nulldup(db_path)),
+      opentype(gb_open_all),
+      disabled_path(NULL),
+      allow_corrupt_file_recovery(0),
+      compression_mask(-1), // allow all compressions
+      keycnt(0),
+      sizeofkeys(0),
+      first_free_key(0),
+      keys(NULL),
+      key_2_index_hash(GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE)),
+      key_clock(0),
+      last_updated(0),
+      last_saved_time(0),
+      last_saved_transaction(0),
+      last_main_saved_transaction(0),
+      requested_undo_type(GB_UNDO_NONE),
+      undo_type(GB_UNDO_NONE),
+      undo(NULL),
+      security_level(0),
+      old_security_level(0),
+      pushed_security_level(0),
+      clock(0),
+      remote_hash(NULL),
+      command_hash(NULL),
+      resolve_link_hash(NULL),
+      table_hash(NULL),
+      close_callbacks(NULL),
+      this_user(NULL),
+      this_project(NULL)
+{
+    for (int i = 0; i<ARRAY_ELEMS(keys_new); ++i) keys_new[i] = NULL;
+    for (int i = 0; i<ALLOWED_DATES;         ++i) dates[i]    = NULL;
+    for (int i = 0; i<GB_MAX_USERS;          ++i) users[i]    = NULL;
+    for (int i = 0; i<GB_MAX_PROJECTS;       ++i) projects[i] = NULL;
+
     gb_init_undo_stack(this);
-    gb_init_ctype_table();
+    gb_init_ctype_table(); // @@@ wrong placed (but harmless)
     gb_local->announce_db_open(this);
 }
 
@@ -233,7 +272,6 @@ GB_MAIN_TYPE::~GB_MAIN_TYPE() {
     gb_assert(!dummy_father);
     gb_assert(!root_container);
 
-    cache.destroy();
     release_main_idx();
 
     if (command_hash)      GBS_free_hash(command_hash);
