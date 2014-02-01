@@ -262,7 +262,6 @@ GB_MAIN_TYPE::GB_MAIN_TYPE(const char *db_path)
     for (int i = 0; i<GB_MAX_PROJECTS;       ++i) projects[i] = NULL;
 
     gb_init_undo_stack(this);
-    gb_init_ctype_table(); // @@@ wrong placed (but harmless)
     gb_local->announce_db_open(this);
 }
 

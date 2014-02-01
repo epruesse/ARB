@@ -60,7 +60,7 @@ struct gb_quick_save {
 typedef uint16_t gb_cache_idx;
 
 struct gb_cache_entry;
-struct gb_cache {
+struct gb_cache : virtual Noncopyable {
     gb_cache_entry *entries;
 
     gb_cache_idx firstfree_entry;

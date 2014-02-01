@@ -387,37 +387,34 @@ GBDATA *gb_find_by_nr(GBCONTAINER *father, int index) {
     return gb;
 }
 
-static char  gb_ctype_table[256];
-void gb_init_ctype_table() {
-    int i;
-    for (i=0; i<256; i++) {
-        if (islower(i) || isupper(i) || isdigit(i) || i=='_' || i=='@') {
-            gb_ctype_table[i] = 1;
-        }
-        else {
-            gb_ctype_table[i] = 0;
+class keychar_table {
+    bool table[256];
+public:
+    keychar_table() {
+        for (int i=0; i<256; i++) {
+            table[i] = islower(i) || isupper(i) || isdigit(i) || i=='_' || i=='@';
         }
     }
-}
-
-inline const char *first_non_key_character(const char *str) {
-    while (1) {
-        int c = *str;
-        if (!gb_ctype_table[c]) {
-            if (c == 0) break;
-            return str;
+    const char *first_non_key_character(const char *str) const {
+        while (1) {
+            int c = *str;
+            if (!table[c]) {
+                if (c == 0) break;
+                return str;
+            }
+            str++;
         }
-        str++;
+        return NULL;
     }
-    return NULL;
-}
+};
+static keychar_table keychars;
 
 const char *GB_first_non_key_char(const char *str) {
-    return first_non_key_character(str);
+    return keychars.first_non_key_character(str);
 }
 
 inline GBDATA *find_or_create(GBCONTAINER *gb_parent, const char *key, GB_TYPES create, bool internflag) {
-    gb_assert(!first_non_key_character(key));
+    gb_assert(!keychars.first_non_key_character(key));
 
     GBDATA *gbd = GB_entry(gb_parent, key);
     if (create) {
@@ -463,7 +460,7 @@ GBDATA *gb_search(GBCONTAINER *gbc, const char *key, GB_TYPES create, int intern
     }
 
     GBDATA     *gb_result     = NULL;
-    const char *separator     = first_non_key_character(key);
+    const char *separator     = keychars.first_non_key_character(key);
     if (!separator) gb_result = find_or_create(gbc, key, create, internflag);
     else {
         int  len = separator-key;

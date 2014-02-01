@@ -127,7 +127,6 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, size_t si
 
 /* adquery.cxx */
 GBDATA *gb_find_by_nr(GBCONTAINER *father, int index);
-void gb_init_ctype_table(void);
 GBDATA *gb_search(GBCONTAINER *gbc, const char *key, GB_TYPES create, int internflag);
 void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, size_t table_size);
 char *gbs_search_second_bracket(const char *source);
