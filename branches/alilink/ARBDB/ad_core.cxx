@@ -218,23 +218,22 @@ static void gb_unlink_entry(GBDATA * gbd) {
     }
 }
 
-void GB_MAIN_TYPE::init(const char *db_path) {
+GB_MAIN_TYPE::GB_MAIN_TYPE(const char *db_path) {
+    memset(this, 0, sizeof(*this)); // @@@ elim
     if (db_path) path = strdup(db_path);
-    key_2_index_hash = GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE);
-    compression_mask = -1; // allow all compressions
+    key_2_index_hash  = GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE);
+    compression_mask  = -1; // allow all compressions
     cache.init();
     gb_init_undo_stack(this);
     gb_init_ctype_table();
     gb_local->announce_db_open(this);
 }
 
-GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) {
-    GB_MAIN_TYPE *Main = (GB_MAIN_TYPE *)gbm_get_mem(sizeof(*Main), 0);
-    Main->init(path);
-    return Main;
+GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) { // @@@ inline
+    return new GB_MAIN_TYPE(path);
 }
 
-void GB_MAIN_TYPE::cleanup() {
+GB_MAIN_TYPE::~GB_MAIN_TYPE() {
     gb_assert(!dummy_father);
     gb_assert(!root_container);
 
@@ -260,10 +259,9 @@ void GB_MAIN_TYPE::cleanup() {
     free(qs.quick_save_disabled);
 }
 
-void gb_destroy_main(GB_MAIN_TYPE *Main) {
-    Main->cleanup();
-    gb_local->announce_db_close(Main);
-    gbm_free_mem(Main, sizeof(*Main), 0);
+void gb_destroy_main(GB_MAIN_TYPE *Main) { // @@@ inline
+    delete Main;
+    gb_local->announce_db_close(Main); // @@@ do inside dtor!
 }
 
 GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_pos, GBQUARK keyq) {
