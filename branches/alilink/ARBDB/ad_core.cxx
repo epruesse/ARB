@@ -13,7 +13,6 @@
 #include "gb_index.h"
 #include "gb_localdata.h"
 #include "gb_storage.h"
-#include <arb_defs.h>
 
 // Copy all info + external data mem to an one step undo buffer
 // (needed to abort transactions)
@@ -258,7 +257,6 @@ GB_MAIN_TYPE::GB_MAIN_TYPE(const char *db_path)
       this_user(NULL),
       this_project(NULL)
 {
-    for (int i = 0; i<ARRAY_ELEMS(keys_new); ++i) keys_new[i] = NULL;
     for (int i = 0; i<ALLOWED_DATES;         ++i) dates[i]    = NULL;
     for (int i = 0; i<GB_MAX_USERS;          ++i) users[i]    = NULL;
     for (int i = 0; i<GB_MAX_PROJECTS;       ++i) projects[i] = NULL;

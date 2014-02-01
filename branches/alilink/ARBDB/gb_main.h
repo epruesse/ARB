@@ -129,11 +129,10 @@ public:
     GB_HASH *key_2_index_hash;
     long     key_clock;                             // trans. nr. of last change
 
-    char         *keys_new[256];
-    unsigned int  last_updated;
-    long          last_saved_time;
-    long          last_saved_transaction;
-    long          last_main_saved_transaction;
+    unsigned int last_updated;
+    long         last_saved_time;
+    long         last_saved_transaction;
+    long         last_main_saved_transaction;
 
     GB_UNDO_TYPE requested_undo_type;
     GB_UNDO_TYPE undo_type;
