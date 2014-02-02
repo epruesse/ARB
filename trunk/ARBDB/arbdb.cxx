@@ -3198,8 +3198,8 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
 
 #define TEST_EXPECT_NCHILD_TRIGGERED__WRONG_TYPE(TRACE,GBD) TEST_EXPECT_CB_TRIGGERED__WRONG_TYPE(TRACE, GBD, GB_CB_SON_CREATED)
 
-#define TEST_EXPECT_TRIGGER__UNWANTED(TRACE)            \
-    TEST_EXPECT__BROKEN(TRACE.was_not_called());        \
+#define TEST_EXPECT_TRIGGER__UNWANTED(TRACE)       \
+    TEST_EXPECT__BROKEN(TRACE.was_not_called());   \
     TRACE.reset()
 
 #define TEST_EXPECT_TRIGGER__MISSING(TRACE)     \

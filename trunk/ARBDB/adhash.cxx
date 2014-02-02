@@ -1122,7 +1122,7 @@ void TEST_GBS_hashtab_2_string() {
         char *as_string2 = GBS_hashtab_2_string(hash2); 
         char *as_string3 = GBS_hashtab_2_string(hash3); 
 
-        TEST_EXPECT_EQUAL__BROKEN(as_string, as_string2);
+        TEST_EXPECT_EQUAL__BROKEN(as_string, as_string2, "FOO::bar:4 BAR:4 bar:2 foo:1 FOO:3 foo::bar:3 ");
         TEST_EXPECT_EQUAL        (as_string, as_string3);
 
         GBS_free_hash(hash3);
