@@ -3342,8 +3342,11 @@ void TEST_SLOW_Aligner_checksumError() {
 
         error = aligner.run();
     }
-    TEST_EXPECT_NULL__BROKEN(error.deliver());
-    TEST_EXPECT_EQUAL__BROKEN(USED_RELS_FOR("MtnK1722"), "???");
+    {
+        GB_ERROR err = error.deliver();
+        TEST_EXPECT_NULL__BROKEN(err, "Aligner produced 1 error");
+    }
+    TEST_EXPECT_EQUAL__BROKEN(USED_RELS_FOR("MtnK1722"), "???", "<No such field 'used_rels'>"); // subsequent failure
 
     GB_close(gb_main);
 }
@@ -3404,13 +3407,17 @@ void TEST_BASIC_UnalignedBases() {
 
         LooseBases selfRecalc;
         selfRecalc.follow_ali_change_and_append(ub, AliChange(New, New));
-        TEST_EXPECT_EQUAL__BROKEN(asstr(selfRecalc), " 3/18 8/15 0/6 3/11 8/11 10/15 10/17"); // wanted behavior?
-        TEST_EXPECT_EQUAL(asstr(selfRecalc),         " 3/18 8/17 0/6 3/11 8/13 10/15 10/18"); // doc wrong behavior @@@ "8/17", "8/13", "10/18" are wrong
+        TEST_EXPECT_EQUAL__BROKEN(asstr(selfRecalc),
+                                  " 3/18 8/15 0/6 3/11 8/11 10/15 10/17",  // wanted behavior?
+                                  " 3/18 8/17 0/6 3/11 8/13 10/15 10/18"); // doc wrong behavior @@@ "8/17", "8/13", "10/18" are wrong
 
         ub.follow_ali_change_and_append(selfRecalc, AliChange(New, Old));
-        TEST_EXPECT_EQUAL__BROKEN(asstr(ub), " 1/7 3/5 0/1 1/3 3/3 4/5 4/6"); // wanted behavior? (from wanted behavior above)
-        TEST_EXPECT_EQUAL__BROKEN(asstr(ub), " 1/7 3/6 0/1 1/3 3/4 4/5 4/7"); // wanted behavior? (from wrong result above)
-        TEST_EXPECT_EQUAL(asstr(ub),         " 1/7 3/7 0/2 1/4 3/5 4/6 4/7"); // doc wrong
+        TEST_EXPECT_EQUAL__BROKEN(asstr(ub),
+                                  " 1/7 3/5 0/1 1/3 3/3 4/5 4/6",  // wanted behavior? (from wanted behavior above)
+                                  " 1/7 3/7 0/2 1/4 3/5 4/6 4/7"); // document wrong behavior
+        TEST_EXPECT_EQUAL__BROKEN(asstr(ub),
+                                  " 1/7 3/6 0/1 1/3 3/4 4/5 4/7",  // wanted behavior? (from wrong result above)
+                                  " 1/7 3/7 0/2 1/4 3/5 4/6 4/7"); // document wrong behavior
     }
 }
 
