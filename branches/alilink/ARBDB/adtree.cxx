@@ -1668,7 +1668,7 @@ void TEST_tree_remove_leafs() {
                                 break;
                             case GBT_KEEP_MARKED: // + GBT_REMOVE_MARKED
                                 TEST_EXPECT_EQUAL(removedCount, 17);
-                                TEST_EXPECT_EQUAL__BROKEN(groupsRemovedCount, 2); // @@@ expect that all groups have been removed! 
+                                TEST_EXPECT_EQUAL__BROKEN(groupsRemovedCount, 2, 1); // @@@ expect that all groups have been removed! 
                                 TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
                                 TEST_EXPECT_NEWICK(nLENGTH, tree, empty_topo);
                                 break;

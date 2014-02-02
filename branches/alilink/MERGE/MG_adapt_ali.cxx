@@ -743,44 +743,37 @@ GB_ERROR MG_transfer_all_alignments(MG_remaps *remaps, GBDATA *source_species, G
 #define DUMP_REMAP_STR(str)
 #endif
 
-#define TEST_REMAP(id, remapper, ASS_EQ, seqold, expected)      \
+#define TEST_REMAP(id, remapper, ASS_EQ, seqold, expected, got) \
     char *calculated = remapper.remap(seqold);                  \
     DUMP_REMAP(id, "want", seqold, expected);                   \
     DUMP_REMAP(id, "calc", seqold, calculated);                 \
-    ASS_EQ(expected, calculated);                               \
+    ASS_EQ(calculated, expected, got);                          \
     DUMP_REMAP_STR("\n");                                       \
     free(calculated);
 
-#define TEST_REMAP1REF_INT(id, ASS_EQ, refold, refnew, seqold, expected) \
-    do {                                                                \
-        MG_remap  remapper;                                             \
-        DUMP_REMAP(id, "ref ", refold, refnew);                         \
-        remapper.add_reference(refold, refnew);                         \
-        TEST_REMAP(id, remapper, ASS_EQ, seqold, expected);             \
+#define TEST_REMAP1REF_INT(id, ASS_EQ, refold, refnew, seqold, expected, got)   \
+    do {                                                                        \
+        MG_remap  remapper;                                                     \
+        DUMP_REMAP(id, "ref ", refold, refnew);                                 \
+        remapper.add_reference(refold, refnew);                                 \
+        TEST_REMAP(id, remapper, ASS_EQ, seqold, expected, got);                \
     } while(0)
 
-#define TEST_REMAP2REFS_INT(id, ASS_EQ, refold1, refnew1, refold2, refnew2, seqold, expected) \
-    do {                                                                \
-        MG_remap remapper;                                              \
-        DUMP_REMAP(id, "ref1", refold1, refnew1);                       \
-        DUMP_REMAP(id, "ref2", refold2, refnew2);                       \
-        remapper.add_reference(refold1, refnew1);                       \
-        remapper.add_reference(refold2, refnew2);                       \
-        TEST_REMAP(id, remapper, ASS_EQ, seqold, expected);             \
+#define TEST_REMAP2REFS_INT(id, ASS_EQ, refold1, refnew1, refold2, refnew2, seqold, expected, got)      \
+    do {                                                                                                \
+        MG_remap remapper;                                                                              \
+        DUMP_REMAP(id, "ref1", refold1, refnew1);                                                       \
+        DUMP_REMAP(id, "ref2", refold2, refnew2);                                                       \
+        remapper.add_reference(refold1, refnew1);                                                       \
+        remapper.add_reference(refold2, refnew2);                                                       \
+        TEST_REMAP(id, remapper, ASS_EQ, seqold, expected, got);                                        \
     } while(0)
 
+#define TEST_REMAP1REF(id,ro,rn,seqold,expected)             TEST_REMAP1REF_INT(id, TEST_EXPECT_EQUAL__IGNARG, ro, rn, seqold, expected, NULL)
+#define TEST_REMAP1REF__BROKEN(id,ro,rn,seqold,expected,got) TEST_REMAP1REF_INT(id, TEST_EXPECT_EQUAL__BROKEN, ro, rn, seqold, expected, got)
 
-#define TEST_REMAP1REF(id, ro, rn, seqold, expected)                    \
-    TEST_REMAP1REF_INT(id, TEST_EXPECT_EQUAL, ro, rn, seqold, expected)
-
-#define TEST_REMAP1REF__BROKEN(id, ro, rn, seqold, expected)            \
-    TEST_REMAP1REF_INT(id, TEST_EXPECT_EQUAL__BROKEN, ro, rn, seqold, expected)
-
-#define TEST_REMAP2REFS(id, ro1, rn1, ro2, rn2, seqold, expected)       \
-    TEST_REMAP2REFS_INT(id, TEST_EXPECT_EQUAL, ro1, rn1, ro2, rn2, seqold, expected)
-
-#define TEST_REMAP2REFS__BROKEN(id, ro1, rn1, ro2, rn2, seqold, expected) \
-    TEST_REMAP2REFS_INT(id, TEST_EXPECT_EQUAL__BROKEN, ro1, rn1, ro2, rn2, seqold, expected)
+#define TEST_REMAP2REFS(id,ro1,rn1,ro2,rn2,seqold,expected)             TEST_REMAP2REFS_INT(id, TEST_EXPECT_EQUAL__IGNARG, ro1, rn1, ro2, rn2, seqold, expected, NULL)
+#define TEST_REMAP2REFS__BROKEN(id,ro1,rn1,ro2,rn2,seqold,expected,got) TEST_REMAP2REFS_INT(id, TEST_EXPECT_EQUAL__BROKEN, ro1, rn1, ro2, rn2, seqold, expected, got)
 
 #define TEST_REMAP1REF_FWDREV(id, ro, rn, so, sn)       \
     TEST_REMAP1REF(id "(fwd)", ro, rn, so, sn);         \
@@ -834,7 +827,8 @@ void TEST_remapping() {
                    ".........XX", "..........XX");
     TEST_REMAP1REF__BROKEN("lead+trail",
                            "...A-C-G...", "...A--C--G...",
-                           "XX.......XX", ".XX-------XX");
+                           "XX.......XX", ".XX-------XX",
+                                          ".XX.......XX");
 
     TEST_REMAP1REF("enforce leading dots (1)",
                    "--A-T", "------A--T",

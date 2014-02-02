@@ -1102,24 +1102,17 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 
-#define TEST_CI__INTERNAL(input,cmd,expected,TEST_RESULT) do {          \
-        char *result;                                                   \
-        TEST_EXPECT_RESULT__NOERROREXPORTED(result = GB_command_interpreter(gb_main, input, cmd, gb_data, NULL)); \
-        TEST_RESULT(result,expected);                                   \
-        free(result);                                                   \
+#define TEST_CI__INTERNAL(input,cmd,expected,got,TEST_RESULT) do {                                                      \
+        char *result;                                                                                                   \
+        TEST_EXPECT_RESULT__NOERROREXPORTED(result = GB_command_interpreter(gb_main, input, cmd, gb_data, NULL));       \
+        TEST_RESULT(result,expected,got);                                                                               \
+        free(result);                                                                                                   \
     } while(0)
 
-
-#define TEST_CI(input,cmd,expected)         do {                        \
-        TEST_CI__INTERNAL(input,cmd,expected,TEST_EXPECT_EQUAL);        \
-    } while(0)
-
-#define TEST_CI__BROKEN(input,cmd,expected) do {                        \
-        TEST_CI__INTERNAL(input,cmd,expected,TEST_EXPECT_EQUAL__BROKEN); \
-    } while(0)
-
-#define TEST_CI_NOOP(inandout,cmd)         TEST_CI__INTERNAL(inandout,cmd,inandout,TEST_EXPECT_EQUAL)
-#define TEST_CI_NOOP__BROKEN(inandout,cmd) TEST_CI__INTERNAL(inandout,cmd,inandout,TEST_EXPECT_EQUAL__BROKEN)
+#define TEST_CI(input,cmd,expected)              TEST_CI__INTERNAL(input,cmd,expected,narg, TEST_EXPECT_EQUAL__IGNARG)
+#define TEST_CI__BROKEN(input,cmd,expected,regr) TEST_CI__INTERNAL(input,cmd,expected,regr, TEST_EXPECT_EQUAL__BROKEN)
+#define TEST_CI_NOOP(inandout,cmd)               TEST_CI__INTERNAL(inandout,cmd,inandout,narg,TEST_EXPECT_EQUAL__IGNARG)
+#define TEST_CI_NOOP__BROKEN(inandout,regr,cmd)  TEST_CI__INTERNAL(inandout,cmd,inandout,regr,TEST_EXPECT_EQUAL__BROKEN)
 
 #define TEST_CI_INVERSE(in,cmd,inv_cmd,out) do {        \
         TEST_CI(in,  cmd,     out);                     \
@@ -1176,17 +1169,17 @@ void TEST_GB_command_interpreter() {
         TEST_CI("bla",    "|count(\"\")",       "0");   // empty parameter
         TEST_CI("b a",    "|count(\" \")",      "1");   // space in quotes
         TEST_CI("b\\a",   "|count(\\a)",        "2");   // count '\\' and 'a' (ok)
-        TEST_CI__BROKEN("b\\a",   "|count(\"\\a\")",    "1"); // should only count 'a' (which is escaped in param)
+        TEST_CI__BROKEN("b\\a",   "|count(\"\\a\")",    "1", "2"); // should only count 'a' (which is escaped in param)
         TEST_CI("b\\a",   "|count(\"\a\")",     "0");   // does not contain '\a'
         TEST_CI("b\a",    "|count(\"\a\")",     "1");   // counts '\a'
 
         // escaping (@@@ wrong behavior?)
         TEST_CI("b\\a",   "|count(\\a)",         "2"); // i would expect '1' as result (the 'a'), but it counts '\\' and 'a'
         TEST_CI("b\\a",   "|contains(\"\\\\\")", "0"); // searches for 2 backslashes, finds none
-        TEST_CI__BROKEN("b\\a",   "|contains(\"\")", "0"); // search for nothing, but reports 1 hit
-        TEST_CI__BROKEN("b\\a",   "|contains(\\)",       "1"); // searches for 1 backslash (ok), but reports two hits instead of one
-        TEST_CI__BROKEN("b\\\\a", "|contains(\"\\\\\")", "1"); // searches for 2 backslashes (ok), but reports two hits instead of one
-        TEST_CI_ERROR_CONTAINS("b\\a", "|contains(\"\\\")", "ARB ERROR: unbalanced '\"' in '|contains(\"\\\")'"); // raises error (should searches for 1 backslash)
+        TEST_CI__BROKEN("b\\a",   "|contains(\"\")",     "0", "1"); // search for nothing,              but reports 1 hit
+        TEST_CI__BROKEN("b\\a",   "|contains(\\)",       "1", "2"); // searches for 1 backslash (ok),   but reports two hits instead of one
+        TEST_CI__BROKEN("b\\\\a", "|contains(\"\\\\\")", "1", "2"); // searches for 2 backslashes (ok), but reports two hits instead of one
+        TEST_CI_ERROR_CONTAINS("b\\a", "|contains(\"\\\")", "ARB ERROR: unbalanced '\"' in '|contains(\"\\\")'"); // raises error (should search for 1 backslash)
 
         // test binary ops
         TEST_CI("", "\"5\";\"7\"|minus",            "-2");
@@ -1432,9 +1425,10 @@ void TEST_GB_command_interpreter() {
         TEST_CI("", "sequence | gcgchecksum", "4308");
 
         // SRT
-        TEST_CI("The quick brown fox", "srt(\"quick=lazy:brown fox=dog\")", "The lazy dog");
-        TEST_CI__BROKEN("The quick brown fox", "srt(quick=lazy:brown fox=dog)", "The lazy dog"); // @@@ parsing problem ?
-        TEST_CI("The quick brown fox", "srt(quick=lazy:brown fox=dog)", "The lazy brown fox"); // document current (unwanted behavior)
+        TEST_CI(        "The quick brown fox", "srt(\"quick=lazy:brown fox=dog\")", "The lazy dog");
+        TEST_CI__BROKEN("The quick brown fox", "srt(quick=lazy:brown fox=dog)",
+                        "The lazy dog",        // @@@ parsing problem ?
+                        "The lazy brown fox"); // document current (unwanted behavior)
         TEST_CI_ERROR_CONTAINS("x", "srt(x=y,z)", "SRT ERROR: no '=' found in command");
 
         // REG

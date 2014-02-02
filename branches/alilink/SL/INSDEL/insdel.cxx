@@ -95,7 +95,7 @@ public:
         return operate_on_mem(const_cast<void*>(mem), start, count, COMPARE_WITH); // COMPARE_WITH does not modify
     }
     GB_ERROR check_delete_allowed(size_t start, size_t count) const {
-        op_error      = NULL;
+        op_error = NULL;
         id_assert(start <= size);
         IF_ASSERTION_USED(int forbidden =) operate_on_mem(NULL, start, std::min(count, size-start), CHECK_DELETE);
         id_assert(correlated(forbidden, op_error));
