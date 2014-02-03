@@ -3047,22 +3047,44 @@ void TEST_db_callbacks_ta_nota() {
 
         // test that a callback may remove and re-add itself
         {
-            GBDATA *gbe;
-            int     counter = 0;
+            GBDATA *gbn1;
+            GBDATA *gbn2;
+
+            int counter1 = 0;
+            int counter2 = 0;
+
             {
                 GB_transaction ta(gb_main);
-                gbe = GB_create(gb_main, "new_e2", GB_INT);
-                GB_add_callback(gbe, GB_CB_CHANGED, makeDatabaseCallback(re_add_self_cb, &counter));
+                gbn1 = GB_create(gb_main, "new_e1", GB_INT);
+                gbn2 = GB_create(gb_main, "new_e2", GB_INT);
+                GB_add_callback(gbn1, GB_CB_CHANGED, makeDatabaseCallback(re_add_self_cb, &counter1));
             }
 
-            TEST_EXPECT_COUNTER(NO_TA, counter, 0);
-            TEST_EXPECT_COUNTER__BROKEN(WITH_TA, counter, 0, 1); // @@@ callback already triggered by adding it (bug!)
+            TEST_EXPECT_COUNTER(NO_TA,         counter1, 0); // no callback triggered (trigger happens BEFORE call to GB_add_callback in NO_TA mode!)
+            TEST_EXPECT_COUNTER(WITH_TA,       counter1, 1); // callback gets triggered by GB_create
+            TEST_EXPECT_COUNTER(BOTH_TA_MODES, counter2, 0);
 
-            counter = 0;
-            { GB_transaction ta(gb_main); GB_touch(gbe); }
-            TEST_EXPECT_COUNTER(BOTH_TA_MODES, counter, 1);
+            counter1 = 0; counter2 = 0;
+
+            // test no callback is triggered by just adding a callback
+            {
+                GB_transaction ta(gb_main);
+                GB_add_callback(gbn2, GB_CB_CHANGED, makeDatabaseCallback(re_add_self_cb, &counter2));
+            }
+            TEST_EXPECT_COUNTER(BOTH_TA_MODES, counter1, 0);
+            TEST_EXPECT_COUNTER(BOTH_TA_MODES, counter2, 0);
+
+            { GB_transaction ta(gb_main); GB_touch(gbn1); }
+            TEST_EXPECT_COUNTER(BOTH_TA_MODES, counter1, 1);
+            TEST_EXPECT_COUNTER(BOTH_TA_MODES, counter2, 0);
+
+            { GB_transaction ta(gb_main); GB_touch(gbn2); }
+            TEST_EXPECT_COUNTER(BOTH_TA_MODES, counter1, 1);
+            TEST_EXPECT_COUNTER(BOTH_TA_MODES, counter2, 1);
+
             { GB_transaction ta(gb_main);  }
-            TEST_EXPECT_COUNTER(BOTH_TA_MODES, counter, 1);
+            TEST_EXPECT_COUNTER(BOTH_TA_MODES, counter1, 1);
+            TEST_EXPECT_COUNTER(BOTH_TA_MODES, counter2, 1);
         }
 
         GB_close(gb_main);
