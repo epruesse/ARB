@@ -2868,6 +2868,16 @@ static void remove_self_cb(GBDATA *gbe, GB_CB_TYPE cbtype) {
     GB_remove_callback(gbe, cbtype, makeDatabaseCallback(remove_self_cb));
 }
 
+static void re_add_self_cb(GBDATA *gbe, int *calledCounter, GB_CB_TYPE cbtype) {
+    ++(*calledCounter);
+
+    DatabaseCallback dbcb = makeDatabaseCallback(re_add_self_cb, calledCounter);
+    GB_remove_callback(gbe, cbtype, dbcb);
+
+    GB_ERROR error = GB_add_callback(gbe, cbtype, dbcb);
+    gb_assert(!error);
+}
+
 void TEST_db_callbacks_ta_nota() {
     GB_shell shell;
 
@@ -2928,6 +2938,9 @@ void TEST_db_callbacks_ta_nota() {
 
 #define TEST_EXPECT_DLCB_COUNTERS(e1d,e2d,e3d,cd,tam) do{ if (ta_mode & (tam)) TEST_EXPECTATION(all().of(DLCB_COUNTERS_EXPECTATION(e1d,e2d,e3d,cd))); }while(0)
 #define TEST_EXPECT_DLCB___WANTED(e1d,e2d,e3d,cd,tam) do{ if (ta_mode & (tam)) TEST_EXPECTATION__WANTED(all().of(DLCB_COUNTERS_EXPECTATION(e1d,e2d,e3d,cd))); }while(0)
+
+#define TEST_EXPECT_COUNTER(tam,cnt,expected)             do{ if (ta_mode & (tam)) TEST_EXPECT_EQUAL(cnt, expected); }while(0)
+#define TEST_EXPECT_COUNTER__BROKEN(tam,cnt,expected,got) do{ if (ta_mode & (tam)) TEST_EXPECT_EQUAL__BROKEN(cnt, expected, got); }while(0)
 
 #define RESET_CHCB_COUNTERS()   do{ e1_changed = e2_changed = c_changed = c_son_created = 0; }while(0)
 #define RESET_DLCB_COUNTERS()   do{ e1_deleted = e2_deleted = e3_deleted = c_deleted = 0; }while(0)
@@ -3023,13 +3036,33 @@ void TEST_db_callbacks_ta_nota() {
         // document that a callback now can be removed while it is running
         // (in NO_TA mode; always worked in WITH_TA mode)
         {
-            GB_transaction ta(gb_main);
-            gbe1 = GB_create(gb_main, "new_e1", GB_INT); // recreate
-            GB_add_callback(gbe1, GB_CB_CHANGED, makeDatabaseCallback(remove_self_cb));
+            GBDATA *gbe;
+            {
+                GB_transaction ta(gb_main);
+                gbe = GB_create(gb_main, "new_e1", GB_INT); // recreate
+                GB_add_callback(gbe, GB_CB_CHANGED, makeDatabaseCallback(remove_self_cb));
+            }
+            { GB_transaction ta(gb_main); GB_touch(gbe); }
         }
+
+        // test that a callback may remove and re-add itself
         {
-            GB_transaction ta(gb_main);
-            GB_touch(gbe1);
+            GBDATA *gbe;
+            int     counter = 0;
+            {
+                GB_transaction ta(gb_main);
+                gbe = GB_create(gb_main, "new_e2", GB_INT);
+                GB_add_callback(gbe, GB_CB_CHANGED, makeDatabaseCallback(re_add_self_cb, &counter));
+            }
+
+            TEST_EXPECT_COUNTER(NO_TA, counter, 0);
+            TEST_EXPECT_COUNTER__BROKEN(WITH_TA, counter, 0, 1); // @@@ callback already triggered by adding it (bug!)
+
+            counter = 0;
+            { GB_transaction ta(gb_main); GB_touch(gbe); }
+            TEST_EXPECT_COUNTER(BOTH_TA_MODES, counter, 1);
+            { GB_transaction ta(gb_main);  }
+            TEST_EXPECT_COUNTER(BOTH_TA_MODES, counter, 1);
         }
 
         GB_close(gb_main);
