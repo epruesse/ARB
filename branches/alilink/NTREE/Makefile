@@ -1091,6 +1091,7 @@ NT_validNameParser.o: NT_local_proto.h
 NT_validNameParser.o: NT_validNameParser.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/arb_core.h
+NT_validNameParser.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -1108,6 +1109,7 @@ NT_validNames.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_validNames.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arb_msg.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arb_string.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arbdb.h
