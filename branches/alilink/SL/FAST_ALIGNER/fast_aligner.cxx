@@ -36,8 +36,6 @@
 
 #include <list>
 
-using std::list;
-
 // --------------------------------------------------------------------------------
 
 #if defined(DEBUG)
@@ -297,7 +295,7 @@ public:
 };
 
 class LooseBases {
-    typedef list<ExplicitRange> Ranges;
+    typedef std::list<ExplicitRange> Ranges;
 
     Ranges ranges;
     
@@ -1847,15 +1845,17 @@ class Aligner : virtual Noncopyable {
     int                maxProtection;         // protection level
 
     // -------------------- new members
-    int            wasNotAllowedToAlign;      // number of failures caused by wrong protection
-    int            err_count;                 // count errors
-    bool           continue_on_error;         /* true -> run single alignments in separate transactions.
+    int                wasNotAllowedToAlign;  // number of failures caused by wrong protection
+    int                err_count;             // count errors
+    bool               continue_on_error;         /* true -> run single alignments in separate transactions.
                                                *         If one target fails, continue with rest.
                                                * false -> run all in one transaction
                                                *          One fails -> all fail!
                                                */
-    FA_errorAction error_action;
-    list<GBDATA*>  species_to_mark;           // species that will be marked after aligning
+    FA_errorAction     error_action;
+
+    typedef std::list<GBDATA*> GBDATAlist;
+    GBDATAlist species_to_mark;       // species that will be marked after aligning
 
     ARB_ERROR alignToReference(GBDATA *gb_toalign, const AlignmentReference& ref);
     ARB_ERROR alignTargetsToReference(const AlignmentReference& ref, GBDATA *gb_species_data);
@@ -2146,7 +2146,7 @@ ARB_ERROR Aligner::run() {
 
         GB_transaction ta(gb_main);
         GBT_mark_all(gb_main, 0);
-        for (list<GBDATA*>::iterator sp = species_to_mark.begin(); sp != species_to_mark.end(); ++sp) {
+        for (GBDATAlist::iterator sp = species_to_mark.begin(); sp != species_to_mark.end(); ++sp) {
             GB_write_flag(*sp, 1);
         }
 
