@@ -1,0 +1,238 @@
+#!/bin/bash
+
+trace() {
+    local MSG=$1
+    echo "[arb_launcher[${ARB_LAUNCHER:?}]: $1]"
+}
+debug() {
+    local MSG=$1
+    # to debug uncomment next line:
+    # trace "DEBUG: $MSG"
+}
+
+send_to_launcher() {
+    local NAMED_PIPE=$1
+    local CMD=$2
+
+    debug "Sending '$CMD' to $NAMED_PIPE"
+    echo "$CMD" >$NAMED_PIPE
+    sleep 1
+    debug "send_to_launcher terminates"
+}
+
+pipe_command() {
+    local NAMED_PIPE=$1
+    local CMD=$2
+
+    trace "Starting '$CMD'.."
+    $CMD
+    trace "'$CMD' has terminated"
+
+    send_to_launcher $NAMED_PIPE 'cmd_terminated'
+}
+
+read_line() {
+    local NAMED_PIPE=$1
+    local LINE=""
+
+    if read ATTEMPT <$NAMED_PIPE; then
+        LINE=$ATTEMPT
+    fi
+    echo $LINE
+}
+
+listen_pipe() {
+    local NAMED_PIPE=$1
+    local RUNNING=1
+    local STARTED=0
+    # RUNNING is set to 1 (otherwise listen_pipe would terminate instantly)
+
+    while (($RUNNING > 0))
+      do
+      LINE=`read_line $NAMED_PIPE 2>/dev/null`
+      if [[ ! -z "$LINE" ]]; then
+          debug "'$NAMED_PIPE' received '$LINE'"
+          if [[ "$LINE" == 'TERMINATE' ]]; then
+              trace "Received request to TERMINATE"
+              break;
+          else
+              if [[ "$LINE" == 'cmd_terminated' ]]; then
+                  RUNNING=$(($RUNNING - 1))
+                  if (($RUNNING>0)); then
+                      trace "Still have $RUNNING arb processes.."
+                  fi
+              else
+                  if [[ "$LINE" == 'allow_termination' ]]; then
+                      RUNNING=$(($RUNNING - 1))
+                  else
+                      pipe_command $NAMED_PIPE "$LINE" &
+                      RUNNING=$(($RUNNING + 1))
+                      STARTED=$(($STARTED + 1))
+                      debug "RUNNING=$RUNNING"
+                      debug "STARTED=$STARTED"
+                  fi
+              fi
+          fi
+      fi
+    done
+
+    if (($RUNNING==0)); then
+        if (($STARTED>0)); then
+            trace "All launched processes terminated"
+        else
+            trace "Nothing was ever launched"
+        fi
+    else
+        trace "Still have $RUNNING arb-processes - terminating nevertheless"
+    fi
+}
+
+killtree() {
+    local _pid=$1
+    local _sig=${2:-TERM}
+
+    debug "killtree pid=${_pid} with sig=${_sig} pid=$$"
+    kill -stop ${_pid} # stop quickly forking parent from producing childs
+    killchilds ${_pid} ${_sig}
+    kill ${_sig} ${_pid}
+}
+killchilds() {
+    local _pid=$1
+    local _sig=${2:-TERM}
+
+    debug "killchilds pid=${_pid} with sig=${_sig} pid=$$"
+    for _child in $(ps -o pid --no-headers --ppid ${_pid}); do
+        killtree ${_child} ${_sig}
+    done
+}
+
+term_handler() {
+    local NAMED_PIPE=$1
+
+    trace "Killing ARB session for ARB_PID=$ARB_PID"
+    arb_clean session
+    debug "arb_clean done - now killing process tree"
+    killchilds $$ -TERM
+    debug "killchilds done - exiting $$"
+    exit
+}
+int_handler() {
+    echo ""
+    echo "Ctrl-C pressed - do you want to kill this ARB session and all child sessions? [n]"
+    read ANSWER
+    if [ "$ANSWER" = "y" ]; then
+        # term_handler
+        kill -TERM $$
+    else
+        echo "Continuing ARB session"
+    fi
+}
+
+create_pipe_reader() {
+    local NAMED_PIPE=$1
+    local PARENT_PID=$2
+
+    if [ -z "$ARB_LAUNCHER" ]; then
+        export ARB_LAUNCHER=0
+    else
+        export ARB_LAUNCHER=$(($ARB_LAUNCHER+1))
+    fi
+
+    debug "Creating named pipe '$NAMED_PIPE'"
+
+    trap int_handler INT
+    trap "term_handler $NAMED_PIPE" TERM
+    trap "rm -f $NAMED_PIPE" EXIT
+
+    { mkfifo $NAMED_PIPE && listen_pipe $NAMED_PIPE ; } || \
+      { echo "Error creating pipe '$NAMED_PIPE'" ; kill $PARENT_PID ; }
+
+
+    debug "Pipe reader for '$NAMED_PIPE' terminates.."
+    rm -f $NAMED_PIPE
+}
+
+initial_send_to_launcher() {
+    local NAMED_PIPE=$1
+    local CMD=$2
+
+    send_to_launcher $NAMED_PIPE "$CMD"
+
+    # now allow pipe reader to terminate:
+    send_to_launcher $NAMED_PIPE "allow_termination"
+}
+
+wait_for_pipe() {
+    local NAMED_PIPE=$1
+
+    while [[ ! -p $NAMED_PIPE ]];
+      do
+      echo "Waiting for '$NAMED_PIPE'.."
+      sleep 1
+    done
+    debug "pipe is open"
+}
+
+get_pipe_name() {
+    local SOCKETDIR=$HOME/.arb_tmp/sockets
+    mkdir -p $SOCKETDIR
+    echo "$SOCKETDIR/arb_launcher.$ARB_PID"
+
+    # instead of the above code, use the following to test a pipe-creation failure:
+    # echo "/arb_launcher.$ARB_PID"
+}
+
+launcher() {
+    local ASYNC=0
+    if [ "$1" = "--async" ]; then
+        ASYNC=1
+        shift
+    fi
+    local CMD="$*"
+
+    if [ -z "$ARB_PID" ]; then
+        echo "Error: environment variable ARB_PID is unset. terminating.."
+        false
+    else
+        if [ -z "$1" ]; then
+            echo "Usage: arb_launcher \"shellcommand\""
+            echo ""
+            echo "          runs 'shellcommand'"
+            echo "          "
+            echo "          The initial call to arb_launcher will block until 'shellcommand' terminates."
+            echo ""
+            echo "          Subsequent calls will not block. They are started from the context of the"
+            echo "          initial call. The initial call will wait for all started commands."
+            echo ""
+            echo "       arb_launcher \"TERMINATE\""
+            echo ""
+            echo "          terminate the launcher without waiting for spawned commands."
+            echo ""
+        else
+            debug "Using ARB_PID '$ARB_PID'"
+            local NAMED_PIPE=$(get_pipe_name)
+            debug "Using NAMED_PIPE '$NAMED_PIPE'"
+
+            if [[ ! -p $NAMED_PIPE ]]; then
+                ( wait_for_pipe $NAMED_PIPE ; initial_send_to_launcher $NAMED_PIPE "$CMD" ) &
+                if (( $ASYNC==1 )); then
+                    create_pipe_reader $NAMED_PIPE $$ &
+                else
+                    create_pipe_reader $NAMED_PIPE $$
+                fi
+            else
+                debug "pipe already was open"
+                send_to_launcher $NAMED_PIPE "$CMD"
+            fi
+
+            # if pipe-reader was started from current process
+            # -> blocks until all launched processes have terminated
+            if (( $ASYNC==0 )); then
+                wait
+            fi
+        fi
+    fi
+}
+
+launcher "$@"
+debug "arb_launcher exits!"
