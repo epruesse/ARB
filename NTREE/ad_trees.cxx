@@ -948,15 +948,17 @@ AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, AWT_canvas
 // ---------------------------
 //      multifurcate tree
 
-#define AWAR_MFURC                    "tree/mfurc/"
+#define AWAR_MFURC                    "tree/multifurc/"
 #define AWAR_MFURC_CONSIDER_BOOTSTRAP AWAR_MFURC "use_bs"
 #define AWAR_MFURC_CONSIDER_LENGTH    AWAR_MFURC "use_len"
+#define AWAR_MFURC_CONSIDER_TERMINALS AWAR_MFURC "terminals"
 #define AWAR_MFURC_LENGTH_LIMIT       AWAR_MFURC "len"
 #define AWAR_MFURC_BOOTSTRAP_LIMIT    AWAR_MFURC "bs"
 
 void NT_create_multifurcate_tree_awars(AW_root *aw_root, AW_default props) {
-    aw_root->awar_int  (AWAR_MFURC_CONSIDER_BOOTSTRAP, 1,   props);
+    aw_root->awar_int  (AWAR_MFURC_CONSIDER_BOOTSTRAP, 0,   props);
     aw_root->awar_int  (AWAR_MFURC_CONSIDER_LENGTH,    1,   props);
+    aw_root->awar_int  (AWAR_MFURC_CONSIDER_TERMINALS, 0,   props);
     aw_root->awar_float(AWAR_MFURC_LENGTH_LIMIT,       0.1, props);
     aw_root->awar_float(AWAR_MFURC_BOOTSTRAP_LIMIT,    50,  props);
 }
@@ -965,11 +967,12 @@ static void multifurcation_cb(UNFIXED, AWT_canvas *ntw) {
 
     double below_bootstrap = 101.0;
     double below_length    = 1000000.0;
+    bool   applyAtLeafs    = aw_root->awar(AWAR_MFURC_CONSIDER_TERMINALS)->read_int();
 
     if (aw_root->awar(AWAR_MFURC_CONSIDER_BOOTSTRAP)->read_int()) below_bootstrap = aw_root->awar(AWAR_MFURC_BOOTSTRAP_LIMIT)->read_float();
     if (aw_root->awar(AWAR_MFURC_CONSIDER_LENGTH)   ->read_int()) below_length    = aw_root->awar(AWAR_MFURC_LENGTH_LIMIT)   ->read_float();
 
-    NT_multifurcate_tree(ntw, RootedTree::multifurc_limits(below_bootstrap, below_length));
+    NT_multifurcate_tree(ntw, RootedTree::multifurc_limits(below_bootstrap, below_length, applyAtLeafs));
 }
 AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
@@ -984,18 +987,23 @@ AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw)
     aws->callback(makeHelpCallback("multifurcate.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    const int LABEL_LENGTH = 43;
+    const int LABEL_LENGTH = 46;
     aws->label_length(LABEL_LENGTH);
 
     aws->at_newline();
-    aws->label("Multifurcate branches with bootstrap below");
+    aws->label("Multifurcate branches with branchlength below");
+    aws->create_toggle(AWAR_MFURC_CONSIDER_LENGTH);
+    aws->create_input_field(AWAR_MFURC_LENGTH_LIMIT, 10);
+
+    aws->at_newline();
+    aws->label("                          AND bootstrap below");
     aws->create_toggle(AWAR_MFURC_CONSIDER_BOOTSTRAP);
     aws->create_input_field(AWAR_MFURC_BOOTSTRAP_LIMIT, 10);
 
+    aws->label_length(0);
     aws->at_newline();
-    aws->label("                    AND branchlength below");
-    aws->create_toggle(AWAR_MFURC_CONSIDER_LENGTH);
-    aws->create_input_field(AWAR_MFURC_LENGTH_LIMIT, 10);
+    aws->label("Also apply to terminal branches");
+    aws->create_toggle(AWAR_MFURC_CONSIDER_TERMINALS);
 
     aws->at_newline();
     aws->callback(makeWindowCallback(multifurcation_cb, ntw));
@@ -1269,18 +1277,19 @@ void TEST_multifurcate_tree() {
     GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
     TEST_REJECT_NULL(gb_main);
 
-    const char *topo_test            = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.026,CloTyro2:0.017)'0%':0.017,CloTyrob:0.009)'97%:test':0.274,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
-    // changes                       = "                                                                                                    +0.307         -0.371     +0.064 "
-    const char *topo_single          = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.026,CloTyro2:0.017)'0%':0.017,CloTyrob:0.009)'97%:test':0.581,CloInnoc:0.000)'0%':0.121,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
-    const char *topo_bs_less_101_005 = "(((((((CloTyro3:1.098,CloTyro4:0.064)"   ":0.000,CloTyro2:0.000)"  ":0.000,CloTyrob:0.000)'97%:test':0.287,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.000,CloButyr:0.000)'100%':0.578,CloCarni:0.121)"   ":0.000,CloPaste:0.181)'97%':0.132)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
-    const char *topo_bs_less_30_005  = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.027,CloTyro2:0.018)"  ":0.000,CloTyrob:0.009)'97%:test':0.288,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
-    const char *topo_bs_less_30      = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.027,CloTyro2:0.018)"  ":0.000,CloTyrob:0.009)'97%:test':0.302,CloInnoc:0.390)"  ":0.000,CloBifer:0.407)'53%':0.131,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.109,CorGluta:0.554)"   ":0.000,CelBiazo:0.062)'40%':0.220,CytAquat:0.711)'100%':0.081);";
-    const char *topo_all             = "(((((((CloTyro3:0.000,CloTyro4:0.000)"   ":0.000,CloTyro2:0.000)"  ":0.000,CloTyrob:0.000)'"  "test':0.000,CloInnoc:0.000)"  ":0.000,CloBifer:0.000)"   ":0.000,(((CloButy2:0.000,CloButyr:0.000)"    ":0.000,CloCarni:0.000)"   ":0.000,CloPaste:0.000)"   ":0.000)"    ":0.000,((((CorAquat:0.000,CurCitre:0.000)"    ":0.000,CorGluta:0.000)"   ":0.000,CelBiazo:0.000)"   ":0.000,CytAquat:0.000)"    ":0.000);";
+    const char *topo_test               = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.026,CloTyro2:0.017)'0%':0.017,CloTyrob:0.009)'97%:test':0.274,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
+    // changes                          = "                                                                                                    +0.307         -0.371     +0.064 "
+    const char *topo_single             = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.026,CloTyro2:0.017)'0%':0.017,CloTyrob:0.009)'97%:test':0.581,CloInnoc:0.000)'0%':0.121,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
+    const char *topo_bs_less_101_005    = "(((((((CloTyro3:1.098,CloTyro4:0.064)"   ":0.000,CloTyro2:0.000)"  ":0.000,CloTyrob:0.000)'97%:test':0.287,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.000,CloButyr:0.000)'100%':0.578,CloCarni:0.121)"   ":0.000,CloPaste:0.181)'97%':0.132)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
+    const char *topo_bs_less_101_005_NT = "(((((((CloTyro3:1.078,CloTyro4:0.062)"   ":0.000,CloTyro2:0.018)"  ":0.000,CloTyrob:0.009)'97%:test':0.282,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.570,CloCarni:0.121)"   ":0.000,CloPaste:0.181)'97%':0.132)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
+    const char *topo_bs_less_30_005     = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.027,CloTyro2:0.018)"  ":0.000,CloTyrob:0.009)'97%:test':0.288,CloInnoc:0.371)'0%':0.057,CloBifer:0.388)'53%':0.124,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.103,CorGluta:0.522)'17%':0.053,CelBiazo:0.059)'40%':0.207,CytAquat:0.711)'100%':0.081);";
+    const char *topo_bs_less_30         = "(((((((CloTyro3:1.046,CloTyro4:0.061)'40%':0.027,CloTyro2:0.018)"  ":0.000,CloTyrob:0.009)'97%:test':0.302,CloInnoc:0.390)"  ":0.000,CloBifer:0.407)'53%':0.131,(((CloButy2:0.009,CloButyr:0.000)'100%':0.564,CloCarni:0.120)'33%':0.010,CloPaste:0.179)'97%':0.131)'100%':0.081,((((CorAquat:0.084,CurCitre:0.058)'100%':0.109,CorGluta:0.554)"   ":0.000,CelBiazo:0.062)'40%':0.220,CytAquat:0.711)'100%':0.081);";
+    const char *topo_all                = "(((((((CloTyro3:0.000,CloTyro4:0.000)"   ":0.000,CloTyro2:0.000)"  ":0.000,CloTyrob:0.000)'"  "test':0.000,CloInnoc:0.000)"  ":0.000,CloBifer:0.000)"   ":0.000,(((CloButy2:0.000,CloButyr:0.000)"    ":0.000,CloCarni:0.000)"   ":0.000,CloPaste:0.000)"   ":0.000)"    ":0.000,((((CorAquat:0.000,CurCitre:0.000)"    ":0.000,CorGluta:0.000)"   ":0.000,CelBiazo:0.000)"   ":0.000,CytAquat:0.000)"    ":0.000);";
 
     const double STABLE_LENGTH = 5.362750;
     const double EPSILON       = 0.000001;
 
-    for (int test = 1; test<=5; ++test) {
+    for (int test = 1; test<=6; ++test) {
         GB_transaction  ta(gb_main);
         RootedTree     *tree = DOWNCAST(RootedTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
 
@@ -1292,22 +1301,27 @@ void TEST_multifurcate_tree() {
 
         switch (test) {
             case 1:
-                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 0.05));
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 0.05, true));
                 TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_101_005);
                 TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
                 break;
+            case 6:
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 0.05, false));
+                TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_101_005_NT);
+                TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
+                break;
             case 2:
-                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(30, 0.05));
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(30, 0.05, true));
                 TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_30_005);
                 TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
                 break;
             case 3:
-                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(30, 1000));
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(30, 1000, true));
                 TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_30);
                 TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
                 break;
             case 4:
-                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 1000)); // multifurcate all
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 1000, true)); // multifurcate all
                 TEST_EXPECT_NEWICK(nALL, tree, topo_all);
                 TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), 0.0, EPSILON);
                 break;
