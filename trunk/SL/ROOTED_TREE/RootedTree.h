@@ -192,7 +192,12 @@ public:
     struct multifurc_limits {
         double bootstrap;
         double branchlength;
-        multifurc_limits(double bootstrap_, double branchlength_) : bootstrap(bootstrap_), branchlength(branchlength_) {}
+        bool   applyAtLeafs;
+        multifurc_limits(double bootstrap_, double branchlength_, bool applyAtLeafs_)
+            : bootstrap(bootstrap_),
+              branchlength(branchlength_),
+              applyAtLeafs(applyAtLeafs_)
+        {}
     };
     class LengthCollector;
 
