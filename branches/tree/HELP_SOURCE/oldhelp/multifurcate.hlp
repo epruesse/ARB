@@ -31,28 +31,32 @@ DESCRIPTION     Trees constructed by treeing algorithms often suggest a precisio
                 To achieve that the algorithm distributes the former branchlength of each removed
                 branch to its directly adjacent neighbour branches.
 
-                Removing the branch E from this example tree
+                Removing the branch C from this example tree
 
-                         \            /
-                        A \          / B
-                           \________/
-                           /   E    \
-                        C /          \ D
-                         /            \
+                            B
+                         +----
+                      A  |
+                     ----+       D
+                         |    +----
+                         +----|
+                            C +----
+                                 E
 
                 will result in a multifurcated tree
 
-                         \    /
-                        a \  / b
-                           \/
-                           /\
-                        c /  \ d
-                         /    \
+                             b
+                          +-----
+                      a   |
+                     -----+  d
+                          +-----
+                          |
+                          +-----
+                             e
 
 
                 with modified branchlengths, where
 
-                     SUM(a,b,c,d) = SUM(A,B,C,D,E)
+                     SUM(a,b,d,e) = SUM(A,B,C,D,E)
 
                 The distribution is performed proportionally to the length of the target branches
                 of the distribution, i.e. longer branches receive more of the distributed
