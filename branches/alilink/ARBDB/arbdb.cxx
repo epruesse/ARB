@@ -656,19 +656,20 @@ static gb_triggered_callback *currently_called_back = NULL; // points to callbac
 static GB_MAIN_TYPE          *inside_callback_main  = NULL; // points to DB root during callback; NULL otherwise
 
 void gb_pending_callbacks::call_and_forget(GB_CB_TYPE allowedTypes) {
-    for (gb_triggered_callback *cbl = head; cbl; ) {
-        currently_called_back = cbl;
-        cbl->spec(cbl->gbd, allowedTypes);
+#if defined(ASSERTION_USED)
+    const gb_triggered_callback *tail = get_tail();
+#endif
+
+    for (itertype cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
+        currently_called_back = &*cb;
+        gb_assert(currently_called_back);
+        currently_called_back->spec(cb->gbd, allowedTypes);
         currently_called_back = NULL;
-
-        gb_triggered_callback *next = cbl->next;
-
-        cbl->next = NULL;
-        delete cbl;
-
-        cbl = next;
     }
-    head = tail = NULL;
+
+    gb_assert(tail == get_tail());
+
+    callbacks.clear();
 }
 
 void GB_MAIN_TYPE::call_pending_callbacks() {
@@ -768,9 +769,9 @@ long GB_read_memuse(GBDATA *gbd) {
     return gbd->as_entry()->memsize();
 }
 
-inline long calc_size(gb_callback *gbcb) {
-    return gbcb
-        ? sizeof(*gbcb) + calc_size(gbcb->next)
+inline long calc_size(gb_callback_list *gbcbl) {
+    return gbcbl
+        ? sizeof(*gbcbl) + gbcbl->callbacks.size()*sizeof(std::_List_node<gb_callback_list::cbtype>)
         : 0;
 }
 inline long calc_size(gb_transaction_save *gbts) {
@@ -1108,9 +1109,9 @@ static void gb_do_callbacks(GBDATA *gbd) {
     gb_assert(GB_MAIN(gbd)->get_transaction_level() < 0); // only use in NO_TRANSACTION_MODE!
 
     while (gbd) {
-        GBDATA      *gbdn = GB_get_father(gbd);
-        gb_callback *cb   = gbd->get_callbacks();
-        if (cb && cb->call(gbd, GB_CB_CHANGED)) {
+        GBDATA *gbdn = GB_get_father(gbd);
+        gb_callback_list *cbl = gbd->get_callbacks();
+        if (cbl && cbl->call(gbd, GB_CB_CHANGED)) {
             gb_remove_callbacks_marked_for_deletion(gbd);
         }
         gbd = gbdn;
@@ -2395,69 +2396,67 @@ char *GB_get_callback_info(GBDATA *gbd) {
     // returns human-readable information about callbacks of 'gbd' or 0
     char *result = 0;
     if (gbd->ext) {
-        gb_callback *cb = gbd->ext->callback;
-        while (cb) {
-            char *cb_info; {
-                char *cb_spec_info = cb->spec.get_info();
-                cb_info            = GBS_global_string_copy("%s priority=%i", cb_spec_info, cb->priority);
-                free(cb_spec_info);
+        gb_callback_list *cbl = gbd->get_callbacks();
+        if (cbl) {
+            for (gb_callback_list::itertype cb = cbl->callbacks.begin(); cb != cbl->callbacks.end(); ++cb) {
+                char *cb_info; {
+                    char *cb_spec_info = cb->spec.get_info();
+                    cb_info            = GBS_global_string_copy("%s priority=%i", cb_spec_info, cb->priority);
+                    free(cb_spec_info);
+                }
+                if (result) {
+                    char *new_result = GBS_global_string_copy("%s\n%s", result, cb_info);
+                    free(result);
+                    free(cb_info);
+                    result = new_result;
+                }
+                else {
+                    result = cb_info;
+                }
             }
-            if (result) {
-                char *new_result = GBS_global_string_copy("%s\n%s", result, cb_info);
-                free(result);
-                free(cb_info);
-                result = new_result;
-            }
-            else {
-                result = cb_info;
-            }
-            cb = cb->next;
         }
     }
 
     return result;
 }
 
-static void add_to_callback_chain(gb_callback*& head, const TypedDatabaseCallback& cbs, int priority) {
-    gb_callback *cb = new gb_callback(cbs, priority);
-    if (head) {
-        gb_callback *prev = 0;
-        gb_callback *curr = head;
-
-        while (curr) {
-            if (priority <= curr->priority) {
-                // wanted priority is lower -> insert here
-                break;
-            }
-
-#if defined(DEVEL_RALF)
-            // test if callback already was added (every callback shall only exist once). see below.
-            gb_assert(!curr->spec.is_equal_to(cbs) || curr->spec.is_marked_for_removal());
-#endif // DEVEL_RALF
-
-            prev = curr;
-            curr = curr->next;
-        }
-
-        if (prev) { prev->next = cb; }
-        else { head = cb; }
-
-        cb->next = curr;
+void gb_callback_list::add_by_priority(const gb_callback& newcb) {
+    if (empty()) {
+        append(newcb);
     }
     else {
-        head = cb;
-    }
-
+        itertype cb = callbacks.begin();
+        for (; cb != callbacks.end(); ++cb) {
+            if (newcb.priority < cb->priority) {
+                callbacks.insert(cb, newcb);
+                break;
+            }
 #if defined(DEVEL_RALF)
-#if defined(DEBUG)
-    // test if callback already was added (every callback shall only exist once)
-    // maybe you like to use GB_ensure_callback instead of GB_add_callback
-    while (cb->next) {
-        cb = cb->next;
-        gb_assert(!cb->spec.is_equal_to(cbs) || cb->spec.is_marked_for_removal());
-    }
-#endif // DEBUG
+            // fail if callback already exists (every callback shall only exist once). see below.
+            gb_assert(!cb->spec.is_equal_to(newcb.spec) || cb->spec.is_marked_for_removal());
 #endif // DEVEL_RALF
+        }
+
+        if (cb == callbacks.end()) { // newcb not inserted (none with bigger priority existed)
+            callbacks.push_back(newcb);
+        }
+#if defined(DEVEL_RALF)
+#if defined(ASSERTION_USED)
+        else {
+            // test if callback already was added (every callback shall only exist once)
+            // maybe you like to use GB_ensure_callback instead of GB_add_callback
+            for (; cb != callbacks.end(); ++cb) {
+                gb_assert(!cb->spec.is_equal_to(newcb.spec) || cb->spec.is_marked_for_removal());
+            }
+        }
+#endif // ASSERTION_USED
+#endif // DEVEL_RALF
+    }
+}
+
+static void add_to_callback_chain(gb_callback_list*& head, const TypedDatabaseCallback& cbs, int priority) {
+    if (!head) head = new gb_callback_list;
+    head->add_by_priority(gb_callback(cbs, priority));
 }
 
 static GB_ERROR add_priority_callback(GBDATA *gbd, const TypedDatabaseCallback& cbs, int priority) {
@@ -2511,27 +2510,27 @@ inline void gb_remove_callbacks_that(GBDATA *gbd, PRED shallRemove) {
 #endif // DEBUG
 
     if (gbd->ext) {
-        gb_callback **cb_ptr       = &gbd->ext->callback;
-        bool          prev_running = false;
+        gb_callback_list *cbl = gbd->get_callbacks();
+        if (cbl) {
+            bool prev_running = false;
 
-        for (gb_callback *cb = *cb_ptr; cb; cb = *cb_ptr) {
-            bool this_running = cb->running;
+            for (gb_callback_list::itertype cb = cbl->callbacks.begin(); cb != cbl->callbacks.end(); ) {
+                bool this_running = cb->running;
 
-            if (shallRemove(*cb)) {
-                if (prev_running || this_running) {
-                    cb->spec.mark_for_removal();
-                    cb_ptr = &cb->next;
+                if (shallRemove(*cb)) {
+                    if (prev_running || this_running) {
+                        cb->spec.mark_for_removal();
+                        ++cb;
+                    }
+                    else {
+                        cb = cbl->callbacks.erase(cb);
+                    }
                 }
                 else {
-                    *cb_ptr  = cb->next;
-                    cb->next = NULL;
-                    delete cb;
+                    ++cb;
                 }
+                prev_running = this_running;
             }
-            else {
-                cb_ptr = &cb->next;
-            }
-            prev_running = this_running;
         }
     }
 }
@@ -2563,9 +2562,12 @@ void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {
 
 GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
     TypedDatabaseCallback newcb(dbcb, type);
-    for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb->next) {
-        if (cb->spec.is_equal_to(newcb) && !cb->spec.is_marked_for_removal()) {
-            return NULL;        // already in cb list
+    gb_callback_list *cbl = gbd->get_callbacks();
+    if (cbl) {
+        for (gb_callback_list::itertype cb = cbl->callbacks.begin(); cb != cbl->callbacks.end(); ++cb) {
+            if (cb->spec.is_equal_to(newcb) && !cb->spec.is_marked_for_removal()) {
+                return NULL; // already in cb list
+            }
         }
     }
     return gb_add_callback(gbd, newcb);

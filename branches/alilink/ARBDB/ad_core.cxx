@@ -415,18 +415,21 @@ void gb_pre_delete_entry(GBDATA *gbd) {
     GB_MAIN_TYPE *Main = GB_MAIN_NO_FATHER(gbd);
     GB_TYPES      type = gbd->type();
 
-    gb_callback *cb_next;
-    for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb_next) {
-        gbd->ext->callback = 0;
-        cb_next = cb->next;
+    gb_callback_list *cbl = gbd->get_callbacks();
+    if (cbl) {
+        gbd->ext->callback = NULL;
+
         if (!gbd->ext->old && type != GB_DB) {
             gb_save_extern_data_in_ts(gbd->as_entry());
         }
-        if (cb->spec.get_type() & GB_CB_DELETE) {
-            Main->add_delete_callback_list(gbd, gbd->ext->old, cb->spec.with_type_changed_to(GB_CB_DELETE));
+        for (gb_callback_list::itertype cb = cbl->callbacks.begin(); cb != cbl->callbacks.end(); ++cb) {
+            if (cb->spec.get_type() & GB_CB_DELETE) {
+                Main->add_delete_callback_list(gbd, gbd->ext->old, cb->spec.with_type_changed_to(GB_CB_DELETE));
+            }
         }
-        cb->next = NULL; // was stored above and will be deleted in next iteration
-        delete cb;
+
+        gb_assert(gbd->ext->callback == NULL);
+        delete cbl;
     }
 
     {
@@ -925,9 +928,12 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
                     gbd->as_container()->header_update_date = Main->clock;
                 }
 
-                for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb->next) {
-                    if (cb->spec.get_type() & GB_CB_CHANGED_OR_SON_CREATED) { // @@@ why not use gbtype as mask? (be CAREFUL, changing may have hard-to-detect side-effects!!!) see also arbdb.cxx@TEST_db_callbacks
-                        Main->add_change_callback_list(gbd, gbd->ext->old, cb->spec.with_type_changed_to(gbtype));
+                gb_callback_list *cbl = gbd->get_callbacks();
+                if (cbl) {
+                    for (gb_callback_list::itertype cb = cbl->callbacks.begin(); cb != cbl->callbacks.end(); ++cb) {
+                        if (cb->spec.get_type() & GB_CB_CHANGED_OR_SON_CREATED) { // @@@ why not use gbtype as mask? (be CAREFUL, changing may have hard-to-detect side-effects!!!) see also arbdb.cxx@TEST_db_callbacks
+                            Main->add_change_callback_list(gbd, gbd->ext->old, cb->spec.with_type_changed_to(gbtype));
+                        }
                     }
                 }
 
