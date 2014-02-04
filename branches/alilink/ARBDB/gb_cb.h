@@ -59,34 +59,30 @@ public:
 
 template<typename CB>
 struct CallbackList {
-    typedef CB                          cbtype;
-    typedef typename std::list<cbtype>  listtype;
-    typedef typename listtype::iterator itertype;
+    typedef CB                                cbtype;
+    typedef typename std::list<cbtype>        listtype;
+    typedef typename listtype::iterator       itertype;
+    typedef typename listtype::const_iterator const_itertype;
 
     listtype callbacks;
 
     bool empty() const { return callbacks.empty(); }
-    void append(const CB& cb) { callbacks.push_back(cb); }
+    void add_unchecked(const CB& cb) { callbacks.push_back(cb); }
 
     const CB *get_tail() const { return empty() ? NULL : &callbacks.back(); }
-
 };
 
 struct gb_callback {
     // @@@ make members private
     TypedDatabaseCallback spec;
+    short                 running; // only used in no-transaction mode
 
-    short priority;
-    short running; // only used in no-transaction mode
-
-    gb_callback(const TypedDatabaseCallback& spec_, short priority_)
+    explicit gb_callback(const TypedDatabaseCallback& spec_)
         : spec(spec_),
-          priority(priority_),
           running(0)
     {}
     gb_callback(const gb_callback& other)
         : spec(other.spec),
-          priority(other.priority),
           running(other.running)
     {
         gb_assert(!running); // appears pathological - does it ever happen?
@@ -114,6 +110,10 @@ struct gb_callback {
 };
 
 class gb_callback_list : public CallbackList<gb_callback> {
+#if defined(ASSERTION_USED)
+    bool contains_unremoved_callback(const gb_callback& newcb) const;
+#endif
+
 public:
     bool call(GBDATA *with, GB_CB_TYPE typemask) {
         /*! call all matching callbacks. only done in NO_TRANSACTION_MODE
@@ -131,7 +131,10 @@ public:
         return need_del;
     }
 
-    void add_by_priority(const gb_callback& newcb);
+    void add(const gb_callback& newcb) {
+        gb_assert(!contains_unremoved_callback(newcb));
+        add_unchecked(newcb);
+    }
 };
 
 struct gb_transaction_save;
@@ -170,7 +173,3 @@ struct gb_pending_callbacks : public CallbackList<gb_triggered_callback> {
 #else
 #error gb_cb.h included twice
 #endif // GB_CB_H
-
-
-
-

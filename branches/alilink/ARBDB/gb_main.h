@@ -207,8 +207,8 @@ public:
     bool is_server() const { return i_am_server; }
     bool is_client() const { return !is_server(); }
 
-    void add_change_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) { change_cbs.append(gb_triggered_callback(gbd, old, cb)); }
-    void add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) { delete_cbs.append(gb_triggered_callback(gbd, old, cb)); }
+    void add_change_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) { change_cbs.add_unchecked(gb_triggered_callback(gbd, old, cb)); }
+    void add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) { delete_cbs.add_unchecked(gb_triggered_callback(gbd, old, cb)); }
     void call_pending_callbacks();
 
     bool has_pending_change_callback() const { return change_cbs.pending(); }

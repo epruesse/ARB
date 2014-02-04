@@ -2399,11 +2399,7 @@ char *GB_get_callback_info(GBDATA *gbd) {
         gb_callback_list *cbl = gbd->get_callbacks();
         if (cbl) {
             for (gb_callback_list::itertype cb = cbl->callbacks.begin(); cb != cbl->callbacks.end(); ++cb) {
-                char *cb_info; {
-                    char *cb_spec_info = cb->spec.get_info();
-                    cb_info            = GBS_global_string_copy("%s priority=%i", cb_spec_info, cb->priority);
-                    free(cb_spec_info);
-                }
+                char *cb_info = cb->spec.get_info();
                 if (result) {
                     char *new_result = GBS_global_string_copy("%s\n%s", result, cb_info);
                     free(result);
@@ -2420,49 +2416,25 @@ char *GB_get_callback_info(GBDATA *gbd) {
     return result;
 }
 
-void gb_callback_list::add_by_priority(const gb_callback& newcb) {
-    if (empty()) {
-        append(newcb);
-    }
-    else {
-        itertype cb = callbacks.begin();
-        for (; cb != callbacks.end(); ++cb) {
-            if (newcb.priority < cb->priority) {
-                callbacks.insert(cb, newcb);
-                break;
-            }
-#if defined(DEVEL_RALF)
-            // fail if callback already exists (every callback shall only exist once). see below.
-            gb_assert(!cb->spec.is_equal_to(newcb.spec) || cb->spec.is_marked_for_removal());
-#endif // DEVEL_RALF
-        }
-
-        if (cb == callbacks.end()) { // newcb not inserted (none with bigger priority existed)
-            callbacks.push_back(newcb);
-        }
-#if defined(DEVEL_RALF)
 #if defined(ASSERTION_USED)
-        else {
-            // test if callback already was added (every callback shall only exist once)
-            // maybe you like to use GB_ensure_callback instead of GB_add_callback
-            for (; cb != callbacks.end(); ++cb) {
-                gb_assert(!cb->spec.is_equal_to(newcb.spec) || cb->spec.is_marked_for_removal());
-            }
+bool gb_callback_list::contains_unremoved_callback(const gb_callback& like) const {
+    for (gb_callback_list::const_itertype cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
+        // fail if callback already exists (every callback shall only exist once)
+        if (cb->spec.is_equal_to(like.spec) && !cb->spec.is_marked_for_removal()) {
+            return true;
         }
-#endif // ASSERTION_USED
-#endif // DEVEL_RALF
     }
+    return false;
 }
+#endif
 
-static void add_to_callback_chain(gb_callback_list*& head, const TypedDatabaseCallback& cbs, int priority) {
+static void add_to_callback_chain(gb_callback_list*& head, const TypedDatabaseCallback& cbs) {
     if (!head) head = new gb_callback_list;
-    head->add_by_priority(gb_callback(cbs, priority));
+    head->add(gb_callback(cbs));
 }
 
-static GB_ERROR add_priority_callback(GBDATA *gbd, const TypedDatabaseCallback& cbs, int priority) {
+inline GB_ERROR gb_add_callback(GBDATA *gbd, const TypedDatabaseCallback& cbs) {
     /* Adds a callback to a DB entry.
-     *
-     * Callbacks with smaller priority values get executed before bigger priority values.
      *
      * Be careful when writing GB_CB_DELETE callbacks, there is a severe restriction:
      *
@@ -2485,14 +2457,8 @@ static GB_ERROR add_priority_callback(GBDATA *gbd, const TypedDatabaseCallback& 
 
     GB_test_transaction(gbd); // may return error
     gbd->create_extended();
-    add_to_callback_chain(gbd->ext->callback, cbs, priority);
+    add_to_callback_chain(gbd->ext->callback, cbs);
     return 0;
-}
-
-#define DEFAULT_CB_PRIORITY 5
-
-inline GB_ERROR gb_add_callback(GBDATA *gbd, const TypedDatabaseCallback& cbs) {
-    return add_priority_callback(gbd, cbs, DEFAULT_CB_PRIORITY);
 }
 
 GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
