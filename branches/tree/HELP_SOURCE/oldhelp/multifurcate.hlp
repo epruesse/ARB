@@ -20,11 +20,14 @@ DESCRIPTION     Trees constructed by treeing algorithms often suggest a precisio
                 In the 'Multifurcate tree' window you can restrict which branches shall be
                 multifurcated by specifying lower limits for
                   * bootstrap and/or
-                  * branchlength
+                  * branchlength.
 
                 All branches below the specified and selected limits will be multifurcated,
                 i.e. their length will be set to zero and their bootstrap value (if any) will be
                 removed by clicking on the 'Multifurcate' button.
+
+                This is only applied to terminal (i.e. leaf) branches, if 'Also apply to
+                terminal branches' is checked.
 
                 The algorithm does not change the sum of the branchlengths of the tree (which is
                 a measure for the phylogenetic distance between all tree members).
