@@ -948,14 +948,14 @@ AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, AWT_canvas
 // ---------------------------
 //      multifurcate tree
 
-#define AWAR_MFURC                    "tree/mfurc/"
+#define AWAR_MFURC                    "tree/multifurc/"
 #define AWAR_MFURC_CONSIDER_BOOTSTRAP AWAR_MFURC "use_bs"
 #define AWAR_MFURC_CONSIDER_LENGTH    AWAR_MFURC "use_len"
 #define AWAR_MFURC_LENGTH_LIMIT       AWAR_MFURC "len"
 #define AWAR_MFURC_BOOTSTRAP_LIMIT    AWAR_MFURC "bs"
 
 void NT_create_multifurcate_tree_awars(AW_root *aw_root, AW_default props) {
-    aw_root->awar_int  (AWAR_MFURC_CONSIDER_BOOTSTRAP, 1,   props);
+    aw_root->awar_int  (AWAR_MFURC_CONSIDER_BOOTSTRAP, 0,   props);
     aw_root->awar_int  (AWAR_MFURC_CONSIDER_LENGTH,    1,   props);
     aw_root->awar_float(AWAR_MFURC_LENGTH_LIMIT,       0.1, props);
     aw_root->awar_float(AWAR_MFURC_BOOTSTRAP_LIMIT,    50,  props);
@@ -984,18 +984,18 @@ AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw)
     aws->callback(makeHelpCallback("multifurcate.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    const int LABEL_LENGTH = 43;
+    const int LABEL_LENGTH = 46;
     aws->label_length(LABEL_LENGTH);
 
     aws->at_newline();
-    aws->label("Multifurcate branches with bootstrap below");
-    aws->create_toggle(AWAR_MFURC_CONSIDER_BOOTSTRAP);
-    aws->create_input_field(AWAR_MFURC_BOOTSTRAP_LIMIT, 10);
-
-    aws->at_newline();
-    aws->label("                    AND branchlength below");
+    aws->label("Multifurcate branches with branchlength below");
     aws->create_toggle(AWAR_MFURC_CONSIDER_LENGTH);
     aws->create_input_field(AWAR_MFURC_LENGTH_LIMIT, 10);
+
+    aws->at_newline();
+    aws->label("                          AND bootstrap below");
+    aws->create_toggle(AWAR_MFURC_CONSIDER_BOOTSTRAP);
+    aws->create_input_field(AWAR_MFURC_BOOTSTRAP_LIMIT, 10);
 
     aws->at_newline();
     aws->callback(makeWindowCallback(multifurcation_cb, ntw));
