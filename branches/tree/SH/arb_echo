@@ -1,0 +1,11 @@
+#!/bin/bash
+# reads parameters from command line.
+# prints each parameter on its own line.
+#
+# used to control interactive command line programs, lacking a CLI
+
+while [ \! -z "$1" ]; do
+    echo $1
+    shift
+done
+
