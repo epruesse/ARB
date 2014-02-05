@@ -931,7 +931,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
                 gb_callback_list *cbl = gbd->get_callbacks();
                 if (cbl) {
                     for (gb_callback_list::itertype cb = cbl->callbacks.begin(); cb != cbl->callbacks.end(); ++cb) {
-                        if (cb->spec.get_type() & GB_CB_CHANGED_OR_SON_CREATED) { // @@@ why not use gbtype as mask? (be CAREFUL, changing may have hard-to-detect side-effects!!!) see also arbdb.cxx@TEST_db_callbacks
+                        if (cb->spec.get_type() & gbtype) {
                             Main->add_change_callback_list(gbd, gbd->ext->old, cb->spec.with_type_changed_to(gbtype));
                         }
                     }

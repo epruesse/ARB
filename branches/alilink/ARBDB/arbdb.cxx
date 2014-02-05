@@ -2938,11 +2938,9 @@ void TEST_db_callbacks_ta_nota() {
 
         } // [Note: callbacks happen here in ta_mode]
 
-        // GB_CB_SON_CREATED should not be triggered here.
-        // either the name is misleading or there is a bug
+        // test that GB_CB_SON_CREATED is not triggered here:
         TEST_EXPECT_CHCB_COUNTERS(1, 1, 1, 0, NO_TA);
-        TEST_EXPECT_CHCB_COUNTERS(1, 1, 1, 1, WITH_TA); // broken (no son was created)
-        TEST_EXPECT_CHCB___WANTED(1, 1, 1, 0, WITH_TA);
+        TEST_EXPECT_CHCB_COUNTERS(1, 1, 1, 0, WITH_TA);
 
         // really create a son
         RESET_CHCB_COUNTERS();
@@ -2960,9 +2958,7 @@ void TEST_db_callbacks_ta_nota() {
             GB_transaction ta(gb_main);
             error = GB_write_string(gbe3, "bla"); TEST_EXPECT_NO_ERROR(error);
         }
-        TEST_EXPECT_CHCB_COUNTERS(0, 0, 1, 0, NO_TA);
-        TEST_EXPECT_CHCB_COUNTERS(0, 0, 1, 1, WITH_TA); // broken (no son was created; same bug as above)
-        TEST_EXPECT_CHCB___WANTED(0, 0, 1, 0, WITH_TA);
+        TEST_EXPECT_CHCB_COUNTERS(0, 0, 1, 0, BOTH_TA_MODES);
 
 
         // test delete callbacks
@@ -2986,7 +2982,7 @@ void TEST_db_callbacks_ta_nota() {
             TEST_EXPECT_DLCB_COUNTERS(0, 0, 0, 0, WITH_TA);
         }
 
-        TEST_EXPECT_CHCB_COUNTERS(0, 0, 1, 1, WITH_TA); // container changed by deleting a son (gbe3)
+        TEST_EXPECT_CHCB_COUNTERS(0, 0, 1, 0, WITH_TA); // container changed by deleting a son (gbe3); no longer triggers via GB_SON_CHANGED
         TEST_EXPECT_CHCB_COUNTERS(0, 0, 0, 0, NO_TA);   // change is not triggered in NO_TA mode (error?)
         TEST_EXPECT_CHCB___WANTED(0, 0, 1, 1, NO_TA);
 
@@ -3237,8 +3233,6 @@ void TEST_db_callbacks() {
     TEST_EXPECT_CHANGE_TRIGGERED(trace_grandson_changed, grandson);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
-    TEST_EXPECT_TRIGGER__UNWANTED(trace_cont_top_newchild); // @@@ modifying grandson should not trigger newchild callback
-    TEST_EXPECT_TRIGGER__UNWANTED(trace_cont_son_newchild); // @@@ modifying grandson should not trigger newchild callback
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
     // trigger change- and soncreate-callbacks via create
@@ -3256,7 +3250,6 @@ void TEST_db_callbacks() {
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
     TEST_EXPECT_NCHILD_TRIGGERED(trace_cont_son_newchild, cont_son);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
-    TEST_EXPECT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_top_newchild, cont_top); // @@@ wrong GB_CB_TYPE! (should be either GB_CB_SON_CREATED or not be called at all)
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
     // trigger callbacks via delete
@@ -3265,7 +3258,6 @@ void TEST_db_callbacks() {
     GB_delete(son2);
     GB_commit_transaction(gb_main);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
-    TEST_EXPECT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_top_newchild, cont_top); // @@@ wrong GB_CB_TYPE! (should be either new type GB_CB_SON_DELETED or not be called at all)
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
     GB_begin_transaction(gb_main);
@@ -3273,8 +3265,6 @@ void TEST_db_callbacks() {
     GB_commit_transaction(gb_main);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
-    TEST_EXPECT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_top_newchild, cont_top); // @@@ wrong GB_CB_TYPE! (should be either new type GB_CB_SON_DELETED or not be called at all)
-    TEST_EXPECT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_son_newchild, cont_son); // @@@ wrong GB_CB_TYPE! (should be either new type GB_CB_SON_DELETED or not be called at all)
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
     TEST_EXPECT_NO_ERROR(GB_request_undo_type(gb_main, GB_UNDO_UNDO));
@@ -3290,9 +3280,7 @@ void TEST_db_callbacks() {
     GB_commit_transaction(gb_main);
     TEST_EXPECT_DELETE_TRIGGERED(trace_grandson_deleted, grandson);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
-    TEST_EXPECT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_son_newchild, cont_son); // @@@ wrong GB_CB_TYPE! (should be either new type GB_CB_SON_DELETED or not be called at all)
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
-    TEST_EXPECT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_top_newchild, cont_top); // @@@ wrong GB_CB_TYPE! (should be either new type GB_CB_SON_DELETED or not be called at all)
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
     GB_begin_transaction(gb_main);
@@ -3301,7 +3289,6 @@ void TEST_db_callbacks() {
     TEST_EXPECT_TRIGGER__MISSING(trace_son_deleted); // @@@ son gets deleted w/o callback
     TEST_EXPECT_DELETE_TRIGGERED(trace_cont_son_deleted, cont_son);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
-    TEST_EXPECT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_top_newchild, cont_top); // @@@ wrong GB_CB_TYPE! (should be either new type GB_CB_SON_DELETED or not be called at all)
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
     // trigger callbacks by undoing last 3 delete transactions
@@ -3314,7 +3301,6 @@ void TEST_db_callbacks() {
     TEST_EXPECT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO)); // undo delete of grandson
     // cont_son callbacks are not triggered (they are not restored by undo)
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
-    TEST_EXPECT_NCHILD_TRIGGERED__WRONG_TYPE(trace_cont_top_newchild, cont_top); // @@@ wrong GB_CB_TYPE! (should be either GB_CB_SON_CREATED or not be called at all)
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
     TEST_EXPECT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO)); // undo delete of top
@@ -3336,7 +3322,6 @@ void TEST_db_callbacks() {
     TRIGGER(son);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_son_changed, son);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
-    TEST_EXPECT_TRIGGER__UNWANTED(trace_cont_top_newchild); // @@@ modifying son should not trigger newchild callback
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
     GB_begin_transaction(gb_main);
