@@ -3161,11 +3161,13 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
     TEST_EXPECT(trace_top_deleted.was_not_called());            \
     TEST_EXPECT(trace_son_deleted.was_not_called());            \
     TEST_EXPECT(trace_grandson_deleted.was_not_called());       \
+    TEST_EXPECT(trace_ograndson_deleted.was_not_called());      \
     TEST_EXPECT(trace_cont_top_deleted.was_not_called());       \
     TEST_EXPECT(trace_cont_son_deleted.was_not_called());       \
     TEST_EXPECT(trace_top_changed.was_not_called());            \
     TEST_EXPECT(trace_son_changed.was_not_called());            \
     TEST_EXPECT(trace_grandson_changed.was_not_called());       \
+    TEST_EXPECT(trace_ograndson_changed.was_not_called());      \
     TEST_EXPECT(trace_cont_top_changed.was_not_called());       \
     TEST_EXPECT(trace_cont_son_changed.was_not_called());       \
     TEST_EXPECT(trace_cont_top_newchild.was_not_called());      \
@@ -3207,19 +3209,21 @@ void TEST_db_callbacks() {
     GBDATA *cont_top = GB_create_container(gb_main,  "cont_top"); TEST_REJECT_NULL(cont_top);
     GBDATA *cont_son = GB_create_container(cont_top, "cont_son"); TEST_REJECT_NULL(cont_son);
 
-    GBDATA *top      = GB_create(gb_main,  "top",      GB_STRING); TEST_REJECT_NULL(top);
-    GBDATA *son      = GB_create(cont_top, "son",      GB_INT);    TEST_REJECT_NULL(son);
-    GBDATA *grandson = GB_create(cont_son, "grandson", GB_STRING); TEST_REJECT_NULL(grandson);
+    GBDATA *top       = GB_create(gb_main,  "top",       GB_STRING); TEST_REJECT_NULL(top);
+    GBDATA *son       = GB_create(cont_top, "son",       GB_INT);    TEST_REJECT_NULL(son);
+    GBDATA *grandson  = GB_create(cont_son, "grandson",  GB_STRING); TEST_REJECT_NULL(grandson);
+    GBDATA *ograndson = GB_create(cont_son, "ograndson", GB_STRING); TEST_REJECT_NULL(ograndson);
 
     GB_commit_transaction(gb_main);
 
-    // install change callbacks
+    // install callbacks
     GB_begin_transaction(gb_main);
     INIT_CONTAINER_CALLBACKS(cont_top);
     INIT_CONTAINER_CALLBACKS(cont_son);
     INIT_ENTRY_CALLBACKS(top);
     INIT_ENTRY_CALLBACKS(son);
     INIT_ENTRY_CALLBACKS(grandson);
+    INIT_ENTRY_CALLBACKS(ograndson);
     GB_commit_transaction(gb_main);
 
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
@@ -3301,14 +3305,14 @@ void TEST_db_callbacks() {
     GB_delete(grandson);
     GB_commit_transaction(gb_main);
     TEST_EXPECT_DELETE_TRIGGERED(trace_grandson_deleted, grandson);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
     GB_begin_transaction(gb_main);
     GB_delete(cont_son);
     GB_commit_transaction(gb_main);
-    TEST_EXPECT_TRIGGER__MISSING(trace_son_deleted); // @@@ son gets deleted w/o callback
+    TEST_EXPECT_DELETE_TRIGGERED(trace_ograndson_deleted, ograndson);
     TEST_EXPECT_DELETE_TRIGGERED(trace_cont_son_deleted, cont_son);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
