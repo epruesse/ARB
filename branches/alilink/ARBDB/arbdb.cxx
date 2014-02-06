@@ -3125,32 +3125,32 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
 #define TRACESTRUCT(ELEM,FLAVOR) trace_##ELEM##_##FLAVOR
 
 #define ADD_CHANGED_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_CHANGED,     makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,changed))));
-#define ADD_DELETE_CALLBACK(elem)  TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,deleted))));
-#define ADD_NCHILD_CALLBACK(elem)  TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_SON_CREATED, makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,newchild))));
+#define ADD_DELETED_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,deleted))));
+#define ADD_NWCHILD_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_SON_CREATED, makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,newchild))));
 
 #define ENSURE_CHANGED_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_ensure_callback(elem, GB_CB_CHANGED,     makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,changed))));
-#define ENSURE_DELETE_CALLBACK(elem)  TEST_EXPECT_NO_ERROR(GB_ensure_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,deleted))));
-#define ENSURE_NCHILD_CALLBACK(elem)  TEST_EXPECT_NO_ERROR(GB_ensure_callback(elem, GB_CB_SON_CREATED, makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,newchild))));
+#define ENSURE_DELETED_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_ensure_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,deleted))));
+#define ENSURE_NWCHILD_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_ensure_callback(elem, GB_CB_SON_CREATED, makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,newchild))));
 
 #define REMOVE_CHANGED_CALLBACK(elem) GB_remove_callback(elem, GB_CB_CHANGED,     makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,changed)));
-#define REMOVE_DELETE_CALLBACK(elem)  GB_remove_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,deleted)));
-#define REMOVE_NCHILD_CALLBACK(elem)  GB_remove_callback(elem, GB_CB_SON_CREATED, makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,newchild)));
+#define REMOVE_DELETED_CALLBACK(elem) GB_remove_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,deleted)));
+#define REMOVE_NWCHILD_CALLBACK(elem) GB_remove_callback(elem, GB_CB_SON_CREATED, makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,newchild)));
 
-#define INIT_CHANGED_CALLBACK(elem) callback_trace TRACESTRUCT(elem,changed); ADD_CHANGED_CALLBACK(elem)
-#define INIT_DELETE_CALLBACK(elem)  callback_trace TRACESTRUCT(elem,deleted); ADD_DELETE_CALLBACK(elem)
-#define INIT_NCHILD_CALLBACK(elem)  callback_trace TRACESTRUCT(elem,newchild); ADD_NCHILD_CALLBACK(elem)
+#define INIT_CHANGED_CALLBACK(elem) callback_trace TRACESTRUCT(elem,changed);  ADD_CHANGED_CALLBACK(elem)
+#define INIT_DELETED_CALLBACK(elem) callback_trace TRACESTRUCT(elem,deleted);  ADD_DELETED_CALLBACK(elem)
+#define INIT_NWCHILD_CALLBACK(elem) callback_trace TRACESTRUCT(elem,newchild); ADD_NWCHILD_CALLBACK(elem)
 
-#define ADD_ENTRY_CALLBACKS(entry)    ADD_CHANGED_CALLBACK(entry); ADD_DELETE_CALLBACK(entry)
-#define ADD_CONTAINER_CALLBACKS(cont) ADD_CHANGED_CALLBACK(cont);  ADD_NCHILD_CALLBACK(cont); ADD_DELETE_CALLBACK(cont)
+#define ADD_ENTRY_CALLBACKS(entry)    ADD_CHANGED_CALLBACK(entry); ADD_DELETED_CALLBACK(entry)
+#define ADD_CONTAINER_CALLBACKS(cont) ADD_CHANGED_CALLBACK(cont);  ADD_NWCHILD_CALLBACK(cont); ADD_DELETED_CALLBACK(cont)
 
-#define ENSURE_ENTRY_CALLBACKS(entry)    ENSURE_CHANGED_CALLBACK(entry); ENSURE_DELETE_CALLBACK(entry)
-#define ENSURE_CONTAINER_CALLBACKS(cont) ENSURE_CHANGED_CALLBACK(cont);  ENSURE_NCHILD_CALLBACK(cont); ENSURE_DELETE_CALLBACK(cont)
+#define ENSURE_ENTRY_CALLBACKS(entry)    ENSURE_CHANGED_CALLBACK(entry); ENSURE_DELETED_CALLBACK(entry)
+#define ENSURE_CONTAINER_CALLBACKS(cont) ENSURE_CHANGED_CALLBACK(cont);  ENSURE_NWCHILD_CALLBACK(cont); ENSURE_DELETED_CALLBACK(cont)
 
-#define REMOVE_ENTRY_CALLBACKS(entry)    REMOVE_CHANGED_CALLBACK(entry); REMOVE_DELETE_CALLBACK(entry)
-#define REMOVE_CONTAINER_CALLBACKS(cont) REMOVE_CHANGED_CALLBACK(cont);  REMOVE_NCHILD_CALLBACK(cont); REMOVE_DELETE_CALLBACK(cont)
+#define REMOVE_ENTRY_CALLBACKS(entry)    REMOVE_CHANGED_CALLBACK(entry); REMOVE_DELETED_CALLBACK(entry)
+#define REMOVE_CONTAINER_CALLBACKS(cont) REMOVE_CHANGED_CALLBACK(cont);  REMOVE_NWCHILD_CALLBACK(cont); REMOVE_DELETED_CALLBACK(cont)
 
-#define INIT_ENTRY_CALLBACKS(entry)    INIT_CHANGED_CALLBACK(entry); INIT_DELETE_CALLBACK(entry)
-#define INIT_CONTAINER_CALLBACKS(cont) INIT_CHANGED_CALLBACK(cont);  INIT_NCHILD_CALLBACK(cont); INIT_DELETE_CALLBACK(cont)
+#define INIT_ENTRY_CALLBACKS(entry)    INIT_CHANGED_CALLBACK(entry); INIT_DELETED_CALLBACK(entry)
+#define INIT_CONTAINER_CALLBACKS(cont) INIT_CHANGED_CALLBACK(cont);  INIT_NWCHILD_CALLBACK(cont); INIT_DELETED_CALLBACK(cont)
 
 #define TRIGGER(gbd)                    \
     GB_begin_transaction(gb_main);      \
