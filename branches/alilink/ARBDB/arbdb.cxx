@@ -3152,10 +3152,18 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
 #define INIT_ENTRY_CALLBACKS(entry)    INIT_CHANGED_CALLBACK(entry); INIT_DELETED_CALLBACK(entry)
 #define INIT_CONTAINER_CALLBACKS(cont) INIT_CHANGED_CALLBACK(cont);  INIT_NWCHILD_CALLBACK(cont); INIT_DELETED_CALLBACK(cont)
 
-#define TRIGGER(gbd)                    \
-    GB_begin_transaction(gb_main);      \
-    GB_touch(gbd);                      \
-    GB_commit_transaction(gb_main)
+#define TRIGGER_CHANGE(gbd) do {                \
+        GB_initial_transaction ta(gb_main);     \
+        if (ta.ok()) GB_touch(gbd);             \
+        TEST_EXPECT_NO_ERROR(ta.close(NULL));   \
+    } while(0)
+
+#define TRIGGER_DELETE(gbd) do {                \
+        GB_initial_transaction ta(gb_main);     \
+        GB_ERROR error = NULL;                  \
+        if (ta.ok()) error = GB_delete(gbd);    \
+        TEST_EXPECT_NO_ERROR(ta.close(error));  \
+    } while(0)
 
 #define TEST_EXPECT_NO_CALLBACK_TRIGGERED()                     \
     TEST_EXPECT(trace_top_deleted.was_not_called());            \
@@ -3280,38 +3288,28 @@ void TEST_db_callbacks() {
 
     // trigger callbacks via delete
 
-    GB_begin_transaction(gb_main);
-    GB_delete(son2);
-    GB_commit_transaction(gb_main);
+    TRIGGER_DELETE(son2);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
-    GB_begin_transaction(gb_main);
-    GB_delete(grandson2);
-    GB_commit_transaction(gb_main);
+    TRIGGER_DELETE(grandson2);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
     TEST_EXPECT_NO_ERROR(GB_request_undo_type(gb_main, GB_UNDO_UNDO));
 
-    GB_begin_transaction(gb_main);
-    GB_delete(top);
-    GB_commit_transaction(gb_main);
+    TRIGGER_DELETE(top);
     TEST_EXPECT_DELETE_TRIGGERED(trace_top_deleted, top);
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
-    GB_begin_transaction(gb_main);
-    GB_delete(grandson);
-    GB_commit_transaction(gb_main);
+    TRIGGER_DELETE(grandson);
     TEST_EXPECT_DELETE_TRIGGERED(trace_grandson_deleted, grandson);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
-    GB_begin_transaction(gb_main);
-    GB_delete(cont_son);
-    GB_commit_transaction(gb_main);
+    TRIGGER_DELETE(cont_son);
     TEST_EXPECT_DELETE_TRIGGERED(trace_ograndson_deleted, ograndson);
     TEST_EXPECT_DELETE_TRIGGERED(trace_cont_son_deleted, cont_son);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
@@ -3345,7 +3343,7 @@ void TEST_db_callbacks() {
 
     // trigger callbacks which will be removed
 
-    TRIGGER(son);
+    TRIGGER_CHANGE(son);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_son_changed, son);
     TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
@@ -3367,7 +3365,7 @@ void TEST_db_callbacks() {
 
     // "trigger" removed callbacks
 
-    TRIGGER(son);
+    TRIGGER_CHANGE(son);
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
     GB_begin_transaction(gb_main);
