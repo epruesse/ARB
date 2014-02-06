@@ -3058,33 +3058,64 @@ void TEST_db_callbacks_ta_nota() {
 // -----------------------
 //      test callbacks
 
-class callback_trace {
-    GBDATA     *called_gbd;
-    GB_CB_TYPE  called_type;
-    int         callcount;
+struct calledWith {
+    GBDATA     *gbd;
+    GB_CB_TYPE  type;
 
+    calledWith(GBDATA *gbd_, GB_CB_TYPE type_) : gbd(gbd_), type(type_) {}
+    calledWith(const calledWith& other) : gbd(other.gbd), type(other.type) {}
+    DECLARE_ASSIGNMENT_OPERATOR(calledWith);
+};
+
+class callback_trace {
+    typedef std::list<calledWith> calledList;
+    typedef calledList::iterator  calledIter;
+
+    calledList called;
+
+    calledIter find(GBDATA *gbd) {
+        calledIter c = called.begin();
+        while (c != called.end()) {
+            if (c->gbd == gbd) break;
+            ++c;
+        }
+        return c;
+    }
+    calledIter find(GB_CB_TYPE exp_type) {
+        calledIter c = called.begin();
+        while (c != called.end()) {
+            if (c->type&exp_type) break;
+            ++c;
+        }
+        return c;
+    }
+    calledIter find(GBDATA *gbd, GB_CB_TYPE exp_type) {
+        calledIter c = called.begin();
+        while (c != called.end()) {
+            if (c->gbd == gbd && (c->type&exp_type)) break;
+            ++c;
+        }
+        return c;
+    }
+
+    bool removed(calledIter c) {
+        if (c == called.end()) return false;
+        called.erase(c);
+        return true;
+    }
 
 public:
     callback_trace() { reset(); }
 
-    void set_called_by(GBDATA *gbd, GB_CB_TYPE type) { called_gbd = gbd; called_type = type; callcount++; }
-    void reset() { called_gbd = NULL; called_type = GB_CB_NONE; callcount = 0; }
+    void set_called_by(GBDATA *gbd, GB_CB_TYPE type) { called.push_back(calledWith(gbd, type)); }
+    void reset() { called.clear(); }
 
-    bool was_called_by(GBDATA *gbd) const {
-        bool ok = called_gbd == gbd;
-        if (!ok) printf("mismatch in GBDATA (wanted=%p, got=%p)\n", gbd, called_gbd);
-        return ok && callcount <= 1;
-    }
-    bool was_called_by(GB_CB_TYPE exp_type) const {
-        bool ok = (called_type&exp_type) != 0 || exp_type == 0;
-        if (!ok) printf("mismatch in GB_CB_TYPE (wanted=%i, got=%i)\n", exp_type, called_type);
-        return ok && callcount <= 1;
-    }
-    bool was_called_by(GBDATA *gbd, GB_CB_TYPE exp_type) const {
-        return was_called_by(gbd) && was_called_by(exp_type);
-    }
-    bool was_not_called() const { return was_called_by(0, GB_CB_NONE) && callcount == 0; }
-    bool was_called() const { return !was_not_called() && callcount == 1; }
+    bool was_called_by(GBDATA *gbd) { return removed(find(gbd)); }
+    bool was_called_by(GB_CB_TYPE exp_type) { return removed(find(exp_type)); }
+    bool was_called_by(GBDATA *gbd, GB_CB_TYPE exp_type) { return removed(find(gbd, exp_type)); }
+
+    bool was_not_called() const { return called.empty(); }
+    bool was_called() const { return !was_not_called(); }
 };
 
 static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
@@ -3141,19 +3172,15 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
     TEST_EXPECT(trace_cont_son_newchild.was_not_called());      \
 
 
-#define TEST_EXPECT_CB_TRIGGERED(TRACE,GBD,TYPE)        \
-    TEST_EXPECT(TRACE.was_called_by(GBD, TYPE));        \
-    TRACE.reset()
+#define TEST_EXPECT_CB_TRIGGERED(TRACE,GBD,TYPE) TEST_EXPECT(TRACE.was_called_by(GBD, TYPE))
 
 #define TEST_EXPECT_CB_TRIGGERED__WRONG_GBDATA(TRACE,GBD,TYPE)  \
-    TEST_EXPECT(TRACE.was_called_by(TYPE));                     \
-    TEST_EXPECT__BROKEN(TRACE.was_called_by(GBD));              \
-    TRACE.reset()
+    TEST_EXPECT__BROKEN(TRACE.was_called_by(GBD,TYPE));         \
+    TEST_EXPECT(TRACE.was_called_by(TYPE))
 
 #define TEST_EXPECT_CB_TRIGGERED__WRONG_TYPE(TRACE,GBD,TYPE)    \
-    TEST_EXPECT(TRACE.was_called_by(GBD));                      \
-    TEST_EXPECT__BROKEN(TRACE.was_called_by(TYPE));             \
-    TRACE.reset()
+    TEST_EXPECT__BROKEN(TRACE.was_called_by(GBD,TYPE));         \
+    TEST_EXPECT(TRACE.was_called_by(GBD))
 
 #define TEST_EXPECT_CB_TRIGGERED__COMPLETELY_BROKEN(TRACE,GBD,TYPE)     \
     TEST_EXPECT__BROKEN(TRACE.was_called_by(GBD));                      \
@@ -3167,13 +3194,8 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
 
 #define TEST_EXPECT_NCHILD_TRIGGERED__WRONG_TYPE(TRACE,GBD) TEST_EXPECT_CB_TRIGGERED__WRONG_TYPE(TRACE, GBD, GB_CB_SON_CREATED)
 
-#define TEST_EXPECT_TRIGGER__UNWANTED(TRACE)       \
-    TEST_EXPECT__BROKEN(TRACE.was_not_called());   \
-    TRACE.reset()
-
-#define TEST_EXPECT_TRIGGER__MISSING(TRACE)     \
-    TEST_EXPECT__BROKEN(TRACE.was_called());    \
-    TRACE.reset()
+#define TEST_EXPECT_TRIGGER__UNWANTED(TRACE) TEST_EXPECT__BROKEN(TRACE.was_not_called())
+#define TEST_EXPECT_TRIGGER__MISSING(TRACE)  TEST_EXPECT__BROKEN(TRACE.was_called())
 
 void TEST_db_callbacks() {
     GB_shell  shell;
