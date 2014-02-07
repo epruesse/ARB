@@ -241,10 +241,8 @@ void ProbeValuation::init_valuation()
 
 
 
-ProbeValuation::ProbeValuation(char **sonden_array, int no_of_sonden, int *bewertung, int *mismatch)
-{
-
-    memset(this, 0, sizeof(ProbeValuation));
+ProbeValuation::ProbeValuation(char **sonden_array, int no_of_sonden, int *bewertung, int *mismatch) {
+    memset(this, 0, sizeof(ProbeValuation)); // @@@ potentially dangerous (overwrites vtable pointer!)
 
     sondenarray     = sonden_array;
     bewertungarray  = bewertung;
