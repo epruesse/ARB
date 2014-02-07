@@ -157,7 +157,7 @@ extended_cpp_warnings :=# warning flags for C++-compiler only
 
 ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
-	ifdef DARWIN
+	ifdef USE_CLANG
 		cflags := -O3# compiler flags (C and C++)
 	else
 		cflags := -O4# compiler flags (C and C++)
@@ -438,7 +438,7 @@ endif
 #---------------------- include symbols?
 
 ifeq ($(TRACESYM),1)
-	ifdef DARWIN
+	ifdef USE_CLANG
 		cdynamic =
 		ldynamic =
 	else
