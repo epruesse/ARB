@@ -498,7 +498,7 @@ void TEST_naninf() {
     // decribe how isnan, isinf and isnormal shall behave:
 #define TEST_ISINF(isinf_fun)           \
     TEST_EXPECT(isinf_fun(inf));        \
-    TEST_EXPECT(isinf_fun(ninf));       \
+    TEST_EXPECT(!!isinf_fun(ninf));     \
     TEST_EXPECT(isinf_fun(INFINITY));   \
     TEST_EXPECT(!isinf_fun(nan));       \
     TEST_EXPECT(!isinf_fun(NAN));       \
