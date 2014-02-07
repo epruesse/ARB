@@ -843,7 +843,7 @@ static void NT_alltree_remove_leafs(AW_window *, GBT_TreeRemoveType mode, GBDATA
     if (!tree_names.empty()) {
         int treeCount = tree_names.size();
 
-        const char *whats_removed;
+        const char *whats_removed = NULL;
         switch (mode) {
             case GBT_REMOVE_ZOMBIES: whats_removed = "zombies"; break;
             case GBT_REMOVE_MARKED:  whats_removed = "marked";  break;
