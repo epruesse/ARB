@@ -1,5 +1,0 @@
-AUTODETECT      "*Secondary Structure Definition by the program DSSP*"
-
-SYSTEM          "perl $ARBHOME/PERL_SCRIPTS/ARBTOOLS/IFTHELP/format_dssp.pl < $< > $>"
-
-NEW_FORMAT      "lib/import/nonformats/dssp_2nd_struct.ift"
