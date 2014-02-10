@@ -1,0 +1,23 @@
+#!/bin/bash
+set -x
+set -e
+
+rm -f arb.tgz arb-dev.tgz
+
+tar -czf arb.tgz -T <(
+  find demo.arb arb_install.sh arb_*.txt GDEHELP/ARB_GDEmenus
+  find bin lib PERL_SCRIPTS SH GDEHELP/DATA_FILES \
+     ! -type d \
+     ! -path \*/pts/\* \
+     ! -path \*/.svn/\* \
+     ! -path \*/unused/\* \
+     ! -path \*ChangeLog \
+     ! -path \*lib/nas/names.dat \
+     ! -name \#\* 
+)
+   
+tar -czhf arb-dev.tgz -T <(
+  find . -name \*.a -o -path \*/INCLUDE/\*.h\*
+)
+
+ls -al arb*.tgz
