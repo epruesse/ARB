@@ -57,9 +57,8 @@ argchoice:Yes:1
         arglabel: Rate Distribution Model
         argchoice:GTRGAMMA:GTRGAMMA
         argchoice:GTRCAT:GTRCAT
-        argchoice:GTRCAT_GAMMA:GTRCAT_GAMMA
         argchoice:GTRGAMMAI:GTRGAMMAI
-        argchoice:GTRCAT_GAMMAI:GTRCAT_GAMMAI
+        argchoice:GTRCATI:GTRCATI
         
         arg:NUMCATEGORIES
         argtype:text
@@ -73,9 +72,8 @@ argchoice:Yes:1
         arglabel:Rate Distribution Model
         argchoice:PROTGAMMA:PROTGAMMA
         argchoice:PROTCAT:PROTCAT
-        argchoice:PROTCAT_GAMMA:PROTCAT_GAMMA
         argchoice:PROTGAMMAI:PROTGAMMAI
-        argchoice:PROTCAT_GAMMAI:PROTCAT_GAMMAI
+        argchoice:PROTCATI:PROTCATI
         
         arg:MATRIXNAME
         argtype:choice_menu
@@ -90,7 +88,21 @@ argchoice:Yes:1
         argchoice:VT:VT
         argchoice:BLOSUM62:BLOSUM62
         argchoice:MTMAM:MTMAM
+        argchoice:LG:LG
+        argchoice:MTART:MTART
+        argchoice:MTZOA:MTZOA
+        argchoice:PMB:PMB
+        argchoice:HIVB:HIVB
+        argchoice:HIVW:HIVW
+        argchoice:JTTDCMUT:JTTDCMUT
+        argchoice:FLU:FLU
+        argchoice:LG4M:LG4M
+        argchoice:LG4X:LG4X
         argchoice:GTR:GTR
+        argchoice:GTR_UNLINKED:GTR_UNLINKED
+        argchoice:DUMMY:DUMMY
+        argchoice:DUMMY2:DUMMY2
+        argchoice:AUTO:AUTO
 
         arg:EMPBFREQ
         arglabel:Use empirical base frequencies?
