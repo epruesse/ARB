@@ -66,10 +66,19 @@ struct CallbackList {
 
     listtype callbacks;
 
+#if defined(ASSERTION_USED)
+    bool contains_unremoved_callback(const cbtype& like) const;
+#endif
+
     bool empty() const { return callbacks.empty(); }
     void add_unchecked(const CB& cb) { callbacks.push_back(cb); }
+    void add(const CB& newcb) {
+        gb_assert(!contains_unremoved_callback(newcb));
+        add_unchecked(newcb);
+    }
 
     const CB *get_tail() const { return empty() ? NULL : &callbacks.back(); }
+
 };
 
 struct gb_callback {
@@ -109,12 +118,7 @@ struct gb_callback {
     }
 };
 
-class gb_callback_list : public CallbackList<gb_callback> {
-#if defined(ASSERTION_USED)
-    bool contains_unremoved_callback(const gb_callback& newcb) const;
-#endif
-
-public:
+struct gb_callback_list : public CallbackList<gb_callback> {
     bool call(GBDATA *with, GB_CB_TYPE typemask) {
         /*! call all matching callbacks. only done in NO_TRANSACTION_MODE
          * @param with database entry passed to callback
@@ -129,11 +133,6 @@ public:
             cb = next;
         }
         return need_del;
-    }
-
-    void add(const gb_callback& newcb) {
-        gb_assert(!contains_unremoved_callback(newcb));
-        add_unchecked(newcb);
     }
 };
 

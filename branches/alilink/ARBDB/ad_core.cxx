@@ -13,6 +13,7 @@
 #include "gb_index.h"
 #include "gb_localdata.h"
 #include "gb_storage.h"
+#include "ad_hcb.h"
 
 // Copy all info + external data mem to an one step undo buffer
 // (needed to abort transactions)
@@ -28,7 +29,47 @@ inline void _GB_CHECK_IN_UNDO_MODIFY(GB_MAIN_TYPE *Main, GBDATA *gbd) {
     if (Main->undo_type) gb_check_in_undo_modify(Main, gbd);
 }
 
+// ---------------------------
+//      trigger callbacks
+//      (i.e. add them to pending callbacks)
 
+void GB_MAIN_TYPE::callback_group::trigger(GBDATA *gbd, GB_CB_TYPE type, gb_callback_list *dataCBs) {
+    if (hierarchy_cbs) {
+        for (gb_hierarchy_callback_list::itertype cb = hierarchy_cbs->callbacks.begin(); cb != hierarchy_cbs->callbacks.end(); ++cb) {
+            if ((cb->spec.get_type() & type) && cb->triggered_by(gbd)) {
+                pending.add_unchecked(gb_triggered_callback(gbd, gbd->ext->old, cb->spec));
+            }
+        }
+    }
+    if (dataCBs) {
+        for (gb_callback_list::itertype cb = dataCBs->callbacks.begin(); cb != dataCBs->callbacks.end(); ++cb) {
+            if (cb->spec.get_type() & type) {
+                pending.add_unchecked(gb_triggered_callback(gbd, gbd->ext->old, cb->spec));
+            }
+        }
+    }
+}
+
+inline void GB_MAIN_TYPE::trigger_change_callbacks(GBDATA *gbd, GB_CB_TYPE type) {
+    changeCBs.trigger(gbd, type, gbd->get_callbacks());
+}
+
+void GB_MAIN_TYPE::trigger_delete_callbacks(GBDATA *gbd) {
+    gb_callback_list *cbl = gbd->get_callbacks();
+    if (cbl || deleteCBs.hierarchy_cbs) {
+        gb_assert(gbd->ext);
+
+        gbd->ext->callback = NULL;
+        if (!gbd->ext->old && gbd->type() != GB_DB) {
+            gb_save_extern_data_in_ts(gbd->as_entry());
+        }
+
+        deleteCBs.trigger(gbd, GB_CB_DELETE, cbl);
+
+        gb_assert(gbd->ext->callback == NULL);
+        delete cbl;
+    }
+}
 // ---------------------------
 //      GB data management
 
@@ -415,22 +456,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
     GB_MAIN_TYPE *Main = GB_MAIN_NO_FATHER(gbd);
     GB_TYPES      type = gbd->type();
 
-    gb_callback_list *cbl = gbd->get_callbacks();
-    if (cbl) {
-        gbd->ext->callback = NULL;
-
-        if (!gbd->ext->old && type != GB_DB) {
-            gb_save_extern_data_in_ts(gbd->as_entry());
-        }
-        for (gb_callback_list::itertype cb = cbl->callbacks.begin(); cb != cbl->callbacks.end(); ++cb) {
-            if (cb->spec.get_type() & GB_CB_DELETE) {
-                Main->add_delete_callback_list(gbd, gbd->ext->old, cb->spec.with_type_changed_to(GB_CB_DELETE));
-            }
-        }
-
-        gb_assert(gbd->ext->callback == NULL);
-        delete cbl;
-    }
+    Main->trigger_delete_callbacks(gbd);
 
     {
         GBCONTAINER *gb_father = GB_FATHER(gbd);
@@ -883,7 +909,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
             }
             // fall-through
 
-        default:                                    // means GB_SON_CHANGED + GB_NORMAL_CHANGE
+        default: // means GB_SON_CHANGED + GB_NORMAL_CHANGE
 
             if (gbd->is_container()) {
                 GBCONTAINER    *gbc = gbd->as_container();
@@ -921,21 +947,14 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
                 gbd->flags2.update_in_server = 1;
             }
             else {
-                GB_CB_TYPE gbtype = son_created ? GB_CB_CHANGED_OR_SON_CREATED : GB_CB_CHANGED;
+                GB_CB_TYPE cbtype = son_created ? GB_CB_CHANGED_OR_SON_CREATED : GB_CB_CHANGED;
                 gbd->create_extended();
                 gbd->touch_update(Main->clock);
                 if (gbd->flags2.header_changed) {
                     gbd->as_container()->header_update_date = Main->clock;
                 }
 
-                gb_callback_list *cbl = gbd->get_callbacks();
-                if (cbl) {
-                    for (gb_callback_list::itertype cb = cbl->callbacks.begin(); cb != cbl->callbacks.end(); ++cb) {
-                        if (cb->spec.get_type() & gbtype) {
-                            Main->add_change_callback_list(gbd, gbd->ext->old, cb->spec.with_type_changed_to(gbtype));
-                        }
-                    }
-                }
+                Main->trigger_change_callbacks(gbd, cbtype);
 
                 GB_FREE_TRANSACTION_SAVE(gbd);
             }

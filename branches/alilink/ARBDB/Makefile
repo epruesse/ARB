@@ -153,6 +153,7 @@ ad_config.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_config.o: $(ARBHOME)/INCLUDE/test_global.h
 ad_config.o: $(ARBHOME)/INCLUDE/test_unit.h
 
+ad_core.o: ad_hcb.h
 ad_core.o: ad_prot.h
 ad_core.o: arbdb.h
 ad_core.o: arbdb_base.h
@@ -1210,6 +1211,7 @@ adtune.o: gb_tune.h
 
 arbdb.o: ad_cb.h
 arbdb.o: ad_cb_prot.h
+arbdb.o: ad_hcb.h
 arbdb.o: ad_prot.h
 arbdb.o: arbdb.h
 arbdb.o: arbdb_base.h

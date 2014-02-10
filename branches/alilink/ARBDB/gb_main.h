@@ -32,6 +32,8 @@ struct gb_user;
 struct gb_project;
 struct gb_Key;
 struct gb_server_data;
+struct gb_hierarchy_callback;
+struct gb_hierarchy_callback_list;
 
 // --------------------------------------------------------------------------------
 
@@ -106,6 +108,21 @@ class GB_MAIN_TYPE : virtual Noncopyable {
 
     bool i_am_server;
 
+    struct callback_group : virtual Noncopyable {
+        gb_hierarchy_callback_list *hierarchy_cbs; // defined hierarchy callbacks
+        gb_pending_callbacks        pending;       // collect triggered callbacks (will be called by commit; discarded by abort)
+
+        callback_group() : hierarchy_cbs(NULL) {}
+
+        inline void add_hcb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb);
+        inline void forget_hcbs();
+
+        void trigger(GBDATA *gbd, GB_CB_TYPE type, gb_callback_list *dataCBs);
+    };
+
+    callback_group changeCBs; // all but GB_CB_DELETE
+    callback_group deleteCBs; // GB_CB_DELETE
+
 public:
 
     gbcmc_comm     *c_link;
@@ -151,11 +168,6 @@ public:
     GB_HASH *table_hash;
 
     gb_close_callback_list *close_callbacks;
-
-private:
-    gb_pending_callbacks change_cbs; // contains all pending callbacks (except delete-callbacks)
-    gb_pending_callbacks delete_cbs; // contains pending delete callbacks
-public:
 
     gb_user    *users[GB_MAX_USERS];                // user 0 is server
     gb_project *projects[GB_MAX_PROJECTS];          // projects
@@ -207,15 +219,25 @@ public:
     bool is_server() const { return i_am_server; }
     bool is_client() const { return !is_server(); }
 
-    void add_change_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) { change_cbs.add_unchecked(gb_triggered_callback(gbd, old, cb)); }
-    void add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) { delete_cbs.add_unchecked(gb_triggered_callback(gbd, old, cb)); }
+    // @@@ make private: ?
+    void add_change_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) { changeCBs.pending.add_unchecked(gb_triggered_callback(gbd, old, cb)); }
+    void add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) { deleteCBs.pending.add_unchecked(gb_triggered_callback(gbd, old, cb)); }
     void call_pending_callbacks();
 
-    bool has_pending_change_callback() const { return change_cbs.pending(); }
-    bool has_pending_delete_callback() const { return delete_cbs.pending(); }
-};
+    bool has_pending_change_callback() const { return changeCBs.pending.pending(); }
+    bool has_pending_delete_callback() const { return deleteCBs.pending.pending(); }
 
+    GB_ERROR add_hierarchy_cb(GBDATA *gbd, const TypedDatabaseCallback& dbcb);
+    void forget_hierarchy_cbs();
+
+    inline void trigger_change_callbacks(GBDATA *gbd, GB_CB_TYPE type);
+    void trigger_delete_callbacks(GBDATA *gbd);
+};
 
 #else
 #error gb_main.h included twice
 #endif // GB_MAIN_H
+
+
+
+

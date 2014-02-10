@@ -15,7 +15,7 @@
 #include <rpc/types.h>
 #include <rpc/xdr.h>
 
-#include "gb_key.h"
+#include "ad_hcb.h"
 #include "gb_comm.h"
 #include "gb_compress.h"
 #include "gb_localdata.h"
@@ -675,10 +675,20 @@ void gb_pending_callbacks::call_and_forget(GB_CB_TYPE allowedTypes) {
 void GB_MAIN_TYPE::call_pending_callbacks() {
     inside_callback_main = this;
 
-    delete_cbs.call_and_forget(GB_CB_DELETE);         // first all delete callbacks:
-    change_cbs.call_and_forget(GB_CB_ALL_BUT_DELETE); // then all change callbacks:
+    deleteCBs.pending.call_and_forget(GB_CB_DELETE);         // first all delete callbacks:
+    changeCBs.pending.call_and_forget(GB_CB_ALL_BUT_DELETE); // then all change callbacks:
 
     inside_callback_main = NULL;
+}
+
+inline void GB_MAIN_TYPE::callback_group::forget_hcbs() {
+    delete hierarchy_cbs;
+    hierarchy_cbs = NULL;
+}
+
+void GB_MAIN_TYPE::forget_hierarchy_cbs() {
+    changeCBs.forget_hcbs();
+    deleteCBs.forget_hcbs();
 }
 
 void GB_close(GBDATA *gbd) {
@@ -687,10 +697,12 @@ void GB_close(GBDATA *gbd) {
 
     gb_assert(Main->get_transaction_level() <= 0); // transaction running - you can't close DB yet!
 
+    Main->forget_hierarchy_cbs();
+
     gb_assert(Main->gb_main() == gbd);
     run_close_callbacks(gbd, Main->close_callbacks);
     Main->close_callbacks = 0;
-    
+
     if (Main->is_client()) {
         long result            = gbcmc_close(Main->c_link);
         if (result != 0) error = GBS_global_string("gbcmc_close returns %li", result);
@@ -2140,16 +2152,16 @@ GB_ERROR GB_MAIN_TYPE::send_update_to_server(GBDATA *gbd) {
     if (!transaction_level) error = "send_update_to_server: no transaction running";
     else if (is_server()) error   = "send_update_to_server: only possible from clients (not from server itself)";
     else {
-        const gb_triggered_callback *chg_cbl_old = change_cbs.get_tail();
-        const gb_triggered_callback *del_cbl_old = delete_cbs.get_tail();
+        const gb_triggered_callback *chg_cbl_old = changeCBs.pending.get_tail();
+        const gb_triggered_callback *del_cbl_old = deleteCBs.pending.get_tail();
 
         error             = gbcmc_begin_sendupdate(gb_main());
         if (!error) error = gb_commit_transaction_local_rek(gbd, 2, 0);
         if (!error) error = gbcmc_end_sendupdate(gb_main());
 
         if (!error &&
-            (chg_cbl_old != change_cbs.get_tail() ||
-             del_cbl_old != delete_cbs.get_tail()))
+            (chg_cbl_old != changeCBs.pending.get_tail() ||
+             del_cbl_old != deleteCBs.pending.get_tail()))
         {
             error = "send_update_to_server triggered a callback (this is not allowed)";
         }
@@ -2417,9 +2429,9 @@ char *GB_get_callback_info(GBDATA *gbd) {
 }
 
 #if defined(ASSERTION_USED)
-bool gb_callback_list::contains_unremoved_callback(const gb_callback& like) const {
-    for (gb_callback_list::const_itertype cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
-        // fail if callback already exists (every callback shall only exist once)
+template<typename CB>
+bool CallbackList<CB>::contains_unremoved_callback(const CB& like) const {
+    for (const_itertype cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
         if (cb->spec.is_equal_to(like.spec) && !cb->spec.is_marked_for_removal()) {
             return true;
         }
@@ -2428,9 +2440,13 @@ bool gb_callback_list::contains_unremoved_callback(const gb_callback& like) cons
 }
 #endif
 
-static void add_to_callback_chain(gb_callback_list*& head, const TypedDatabaseCallback& cbs) {
+inline void add_to_callback_chain(gb_callback_list*& head, const TypedDatabaseCallback& cbs) {
     if (!head) head = new gb_callback_list;
     head->add(gb_callback(cbs));
+}
+inline void add_to_callback_chain(gb_hierarchy_callback_list*& head, const TypedDatabaseCallback& cbs, GBDATA *gb_representative) {
+    if (!head) head = new gb_hierarchy_callback_list;
+    head->add(gb_hierarchy_callback(cbs, gb_representative));
 }
 
 inline GB_ERROR gb_add_callback(GBDATA *gbd, const TypedDatabaseCallback& cbs) {
@@ -2463,6 +2479,36 @@ inline GB_ERROR gb_add_callback(GBDATA *gbd, const TypedDatabaseCallback& cbs) {
 
 GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
     return gb_add_callback(gbd, TypedDatabaseCallback(dbcb, type));
+}
+
+inline void GB_MAIN_TYPE::callback_group::add_hcb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
+    add_to_callback_chain(hierarchy_cbs, dbcb, gb_representative);
+}
+
+GB_ERROR GB_MAIN_TYPE::add_hierarchy_cb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
+    GB_CB_TYPE type = dbcb.get_type();
+    if (type & GB_CB_DELETE) {
+        deleteCBs.add_hcb(gb_representative, dbcb.with_type_changed_to(GB_CB_DELETE));
+    }
+    if (type & GB_CB_ALL_BUT_DELETE) {
+        changeCBs.add_hcb(gb_representative, dbcb.with_type_changed_to(GB_CB_TYPE(type&GB_CB_ALL_BUT_DELETE)));
+    }
+    return NULL;
+}
+
+GB_ERROR GB_add_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
+    /*! bind callback to ALL entries which are at the same DB-hierarchy as 'gbd'.
+     *
+     * Hierarchy callbacks are triggered before normal callbacks (added by GB_add_callback or GB_ensure_callback).
+     * Nevertheless delete callbacks take precedence over change callbacks
+     * (i.e. a normal delete callback is triggered before a hierarchical change callback).
+     *
+     * Hierarchy callbacks are cannot be installed and will NOT be triggered in NO_TRANSACTION_MODE
+     * (i.e. it will not work in ARBs property DBs)
+     */
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+    gb_assert(Main->get_transaction_level()>=0); // hierarchical callbacks are not supported in NO_TRANSACTION_MODE
+    return Main->add_hierarchy_cb(gbd, TypedDatabaseCallback(dbcb, type));
 }
 
 template <typename PRED>
@@ -3061,11 +3107,16 @@ void TEST_db_callbacks_ta_nota() {
 struct calledWith {
     GBDATA     *gbd;
     GB_CB_TYPE  type;
+    int         time_called;
 
-    calledWith(GBDATA *gbd_, GB_CB_TYPE type_) : gbd(gbd_), type(type_) {}
-    calledWith(const calledWith& other) : gbd(other.gbd), type(other.type) {}
+    static int timer;
+
+    calledWith(GBDATA *gbd_, GB_CB_TYPE type_) : gbd(gbd_), type(type_), time_called(++timer) {}
+    calledWith(const calledWith& other) : gbd(other.gbd), type(other.type), time_called(other.time_called) {}
     DECLARE_ASSIGNMENT_OPERATOR(calledWith);
 };
+
+int calledWith::timer = 0;
 
 class callback_trace {
     typedef std::list<calledWith> calledList;
@@ -3114,6 +3165,15 @@ public:
     bool was_called_by(GB_CB_TYPE exp_type) { return removed(find(exp_type)); }
     bool was_called_by(GBDATA *gbd, GB_CB_TYPE exp_type) { return removed(find(gbd, exp_type)); }
 
+    int call_time(GBDATA *gbd, GB_CB_TYPE exp_type) {
+        calledIter found = find(gbd, exp_type);
+        if (found == called.end()) return -1;
+
+        int t = found->time_called;
+        removed(found);
+        return t;
+    }
+
     bool was_not_called() const { return called.empty(); }
     bool was_called() const { return !was_not_called(); }
 };
@@ -3122,11 +3182,16 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
     trace->set_called_by(gbd, cbtype);
 }
 
-#define TRACESTRUCT(ELEM,FLAVOR) trace_##ELEM##_##FLAVOR
+#define TRACESTRUCT(ELEM,FLAVOR)           trace_##ELEM##_##FLAVOR
+#define HIERARCHY_TRACESTRUCT(ELEM,FLAVOR) traceHier_##ELEM##_##FLAVOR
 
 #define ADD_CHANGED_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_CHANGED,     makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,changed))))
 #define ADD_DELETED_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,deleted))))
 #define ADD_NWCHILD_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_add_callback(elem, GB_CB_SON_CREATED, makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,newchild))))
+
+#define ADD_CHANGED_HIERARCHY_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_add_hierarchy_callback(elem, GB_CB_CHANGED,     makeDatabaseCallback(some_cb, &HIERARCHY_TRACESTRUCT(elem,changed))))
+#define ADD_DELETED_HIERARCHY_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_add_hierarchy_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &HIERARCHY_TRACESTRUCT(elem,deleted))))
+#define ADD_NWCHILD_HIERARCHY_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_add_hierarchy_callback(elem, GB_CB_SON_CREATED, makeDatabaseCallback(some_cb, &HIERARCHY_TRACESTRUCT(elem,newchild))))
 
 #define ENSURE_CHANGED_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_ensure_callback(elem, GB_CB_CHANGED,     makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,changed))))
 #define ENSURE_DELETED_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_ensure_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,deleted))))
@@ -3139,6 +3204,10 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
 #define INIT_CHANGED_CALLBACK(elem) callback_trace TRACESTRUCT(elem,changed);  ADD_CHANGED_CALLBACK(elem)
 #define INIT_DELETED_CALLBACK(elem) callback_trace TRACESTRUCT(elem,deleted);  ADD_DELETED_CALLBACK(elem)
 #define INIT_NWCHILD_CALLBACK(elem) callback_trace TRACESTRUCT(elem,newchild); ADD_NWCHILD_CALLBACK(elem)
+
+#define INIT_CHANGED_HIERARCHY_CALLBACK(elem) callback_trace HIERARCHY_TRACESTRUCT(elem,changed);  ADD_CHANGED_HIERARCHY_CALLBACK(elem)
+#define INIT_DELETED_HIERARCHY_CALLBACK(elem) callback_trace HIERARCHY_TRACESTRUCT(elem,deleted);  ADD_DELETED_HIERARCHY_CALLBACK(elem)
+#define INIT_NWCHILD_HIERARCHY_CALLBACK(elem) callback_trace HIERARCHY_TRACESTRUCT(elem,newchild); ADD_NWCHILD_HIERARCHY_CALLBACK(elem)
 
 #define ADD_ENTRY_CALLBACKS(entry)    ADD_CHANGED_CALLBACK(entry); ADD_DELETED_CALLBACK(entry)
 #define ADD_CONTAINER_CALLBACKS(cont) ADD_CHANGED_CALLBACK(cont);  ADD_NWCHILD_CALLBACK(cont); ADD_DELETED_CALLBACK(cont)
@@ -3155,6 +3224,15 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
 #define TRIGGER_CHANGE(gbd) do {                \
         GB_initial_transaction ta(gb_main);     \
         if (ta.ok()) GB_touch(gbd);             \
+        TEST_EXPECT_NO_ERROR(ta.close(NULL));   \
+    } while(0)
+
+#define TRIGGER_2_CHANGES(gbd1, gbd2) do {      \
+        GB_initial_transaction ta(gb_main);     \
+        if (ta.ok()) {                          \
+            GB_touch(gbd1);                     \
+            GB_touch(gbd2);                     \
+        }                                       \
         TEST_EXPECT_NO_ERROR(ta.close(NULL));   \
     } while(0)
 
@@ -3182,7 +3260,8 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
     TEST_EXPECT(trace_cont_son_newchild.was_not_called());      \
 
 
-#define TEST_EXPECT_CB_TRIGGERED(TRACE,GBD,TYPE) TEST_EXPECT(TRACE.was_called_by(GBD, TYPE))
+#define TEST_EXPECT_CB_TRIGGERED(TRACE,GBD,TYPE)         TEST_EXPECT(TRACE.was_called_by(GBD, TYPE))
+#define TEST_EXPECT_CB_TRIGGERED_AT(TRACE,GBD,TYPE,TIME) TEST_EXPECT_EQUAL(TRACE.call_time(GBD, TYPE), TIME)
 
 #define TEST_EXPECT_CB_TRIGGERED__WRONG_GBDATA(TRACE,GBD,TYPE)  \
     TEST_EXPECT__BROKEN(TRACE.was_called_by(GBD,TYPE));         \
@@ -3201,6 +3280,9 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
 #define TEST_EXPECT_CHANGE_TRIGGERED(TRACE,GBD) TEST_EXPECT_CB_TRIGGERED(TRACE, GBD, GB_CB_CHANGED)
 #define TEST_EXPECT_DELETE_TRIGGERED(TRACE,GBD) TEST_EXPECT_CB_TRIGGERED(TRACE, GBD, GB_CB_DELETE)
 #define TEST_EXPECT_NCHILD_TRIGGERED(TRACE,GBD) TEST_EXPECT_CB_TRIGGERED(TRACE, GBD, GB_CB_SON_CREATED)
+
+#define TEST_EXPECT_CHANGE_TRIGGERED_AT(TRACE,GBD,TIME) TEST_EXPECT_CB_TRIGGERED_AT(TRACE, GBD, GB_CB_CHANGED, TIME)
+#define TEST_EXPECT_DELETE_TRIGGERED_AT(TRACE,GBD,TIME) TEST_EXPECT_CB_TRIGGERED_AT(TRACE, GBD, GB_CB_DELETE, TIME)
 
 #define TEST_EXPECT_NCHILD_TRIGGERED__WRONG_TYPE(TRACE,GBD) TEST_EXPECT_CB_TRIGGERED__WRONG_TYPE(TRACE, GBD, GB_CB_SON_CREATED)
 
@@ -3388,4 +3470,211 @@ void TEST_POSTCOND_arbdb() {
     TEST_REJECT(unclosed_GB_shell); // your test finished w/o destroying GB_shell
 }
 
+#define TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED()                   \
+    TEST_EXPECT(traceHier_anyGrandson_changed.was_not_called());        \
+    TEST_EXPECT(traceHier_anyGrandson_deleted.was_not_called());        \
+    TEST_EXPECT(traceHier_anySonContainer_newchild.was_not_called())
+
+#undef TEST_EXPECT_NO_CALLBACK_TRIGGERED
+
+#define TEST_EXPECT_NO_CALLBACK_TRIGGERED()                             \
+    TEST_EXPECT(trace_anotherGrandson_changed.was_not_called());        \
+    TEST_EXPECT(trace_elimGrandson2_deleted.was_not_called())
+
+void TEST_hierarchy_callbacks() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("new.arb", "c");
+
+    // create some data
+    GB_begin_transaction(gb_main);
+
+    GBDATA *cont_top1 = GB_create_container(gb_main, "cont_top"); TEST_REJECT_NULL(cont_top1);
+    GBDATA *cont_top2 = GB_create_container(gb_main, "cont_top"); TEST_REJECT_NULL(cont_top2);
+
+    GBDATA *cont_son11 = GB_create_container(cont_top1, "cont_son"); TEST_REJECT_NULL(cont_son11);
+    GBDATA *cont_son21 = GB_create_container(cont_top2, "cont_son"); TEST_REJECT_NULL(cont_son21);
+    GBDATA *cont_son22 = GB_create_container(cont_top2, "cont_son"); TEST_REJECT_NULL(cont_son22);
+
+    GBDATA *top1 = GB_create(gb_main, "top", GB_STRING); TEST_REJECT_NULL(top1);
+    GBDATA *top2 = GB_create(gb_main, "top", GB_STRING); TEST_REJECT_NULL(top2);
+
+    GBDATA *son11 = GB_create(cont_top1, "son", GB_INT); TEST_REJECT_NULL(son11);
+    GBDATA *son12 = GB_create(cont_top1, "son", GB_INT); TEST_REJECT_NULL(son12);
+    GBDATA *son21 = GB_create(cont_top2, "son", GB_INT); TEST_REJECT_NULL(son21);
+
+    GBDATA *grandson111 = GB_create(cont_son11, "grandson", GB_STRING); TEST_REJECT_NULL(grandson111);
+    GBDATA *grandson112 = GB_create(cont_son11, "grandson", GB_STRING); TEST_REJECT_NULL(grandson112);
+    GBDATA *grandson211 = GB_create(cont_son21, "grandson", GB_STRING); TEST_REJECT_NULL(grandson211);
+    GBDATA *grandson221 = GB_create(cont_son22, "grandson", GB_STRING); TEST_REJECT_NULL(grandson221);
+    GBDATA *grandson222 = GB_create(cont_son22, "grandson", GB_STRING); TEST_REJECT_NULL(grandson222);
+
+    // create some entries at uncommon locations (compared to entries created above)
+    GBDATA *ctop_top = GB_create          (cont_top2, "top", GB_STRING);      TEST_REJECT_NULL(ctop_top);
+    GBDATA *top_son  = GB_create          (gb_main,   "son", GB_INT);         TEST_REJECT_NULL(top_son);
+    GBDATA *cson     = GB_create_container(gb_main,   "cont_son");            TEST_REJECT_NULL(cson);
+    GBDATA *cson_gs  = GB_create          (cson,      "grandson", GB_STRING); TEST_REJECT_NULL(cson_gs);
+
+    GB_commit_transaction(gb_main);
+
+    // test gb_hierarchy_location
+    {
+        gb_hierarchy_location loc_top(top1);
+        gb_hierarchy_location loc_son(son11);
+        gb_hierarchy_location loc_grandson(grandson222);
+
+        TEST_EXPECT(loc_top.matches(top1));
+        TEST_EXPECT(loc_top.matches(top2));
+        TEST_EXPECT(!loc_top.matches(cont_top1));
+        TEST_EXPECT(!loc_top.matches(son12));
+        TEST_EXPECT(!loc_top.matches(cont_son22));
+        TEST_EXPECT(!loc_top.matches(ctop_top));
+
+        TEST_EXPECT(loc_son.matches(son11));
+        TEST_EXPECT(loc_son.matches(son21));
+        TEST_EXPECT(!loc_son.matches(top1));
+        TEST_EXPECT(!loc_son.matches(grandson111));
+        TEST_EXPECT(!loc_son.matches(cont_son22));
+        TEST_EXPECT(!loc_son.matches(top_son));
+
+        TEST_EXPECT(loc_grandson.matches(grandson222));
+        TEST_EXPECT(loc_grandson.matches(grandson111));
+        TEST_EXPECT(!loc_grandson.matches(son11));
+        TEST_EXPECT(!loc_grandson.matches(top1));
+        TEST_EXPECT(!loc_grandson.matches(cont_son22));
+        TEST_EXPECT(!loc_grandson.matches(cson_gs));
+
+        gb_hierarchy_location loc_ctop_top(ctop_top);
+        TEST_EXPECT(loc_ctop_top.matches(ctop_top));
+        TEST_EXPECT(!loc_ctop_top.matches(top1));
+
+        gb_hierarchy_location loc_top_son(top_son);
+        TEST_EXPECT(loc_top_son.matches(top_son));
+        TEST_EXPECT(!loc_top_son.matches(son11));
+
+        gb_hierarchy_location loc_gs(cson_gs);
+        TEST_EXPECT(loc_gs.matches(cson_gs));
+        TEST_EXPECT(!loc_gs.matches(grandson211));
+
+        gb_hierarchy_location loc_root(gb_main);
+        TEST_EXPECT(loc_root.matches(gb_main));
+        TEST_EXPECT(!loc_root.matches(cont_top1));
+        TEST_EXPECT(!loc_root.matches(cont_son11));
+        TEST_EXPECT(!loc_root.matches(top1));
+        TEST_EXPECT(!loc_root.matches(son11));
+        TEST_EXPECT(!loc_root.matches(grandson211));
+    }
+
+
+    // instanciate callback_trace data and install hierarchy callbacks
+    GBDATA *anySon = son11;
+
+    GBDATA *anySonContainer     = cont_son11;
+    GBDATA *anotherSonContainer = cont_son22;
+
+    GBDATA *anyGrandson     = grandson221;
+    GBDATA *anotherGrandson = grandson112;
+    GBDATA *elimGrandson    = grandson222;
+    GBDATA *elimGrandson2   = grandson111;
+    GBDATA *newGrandson     = NULL;
+
+    INIT_CHANGED_HIERARCHY_CALLBACK(anyGrandson);
+    INIT_DELETED_HIERARCHY_CALLBACK(anyGrandson);
+    INIT_NWCHILD_HIERARCHY_CALLBACK(anySonContainer);
+
+    TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED();
+
+    // trigger change-callback using same DB entry
+    TRIGGER_CHANGE(anyGrandson);
+    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, anyGrandson);
+    TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED();
+
+    // trigger change-callback using another DB entry (same hierarchy)
+    TRIGGER_CHANGE(anotherGrandson);
+    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, anotherGrandson);
+    TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED();
+
+    // check nothing is triggered by an element at different hierarchy
+    TRIGGER_CHANGE(anySon);
+    TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED();
+
+    // trigger change-callback using both DB entries (in two TAs)
+    TRIGGER_CHANGE(anyGrandson);
+    TRIGGER_CHANGE(anotherGrandson);
+    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, anyGrandson);
+    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, anotherGrandson);
+    TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED();
+
+    // trigger change-callback using both DB entries (in one TA)
+    TRIGGER_2_CHANGES(anyGrandson, anotherGrandson);
+    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, anyGrandson);
+    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, anotherGrandson);
+    TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED();
+
+    // trigger son-created-callback
+    {
+        GB_initial_transaction ta(gb_main);
+        if (ta.ok()) {
+            GBDATA *someson = GB_create(anySonContainer, "someson", GB_STRING); TEST_REJECT_NULL(someson);
+        }
+        TEST_EXPECT_NO_ERROR(ta.close(NULL));
+    }
+    TEST_EXPECT_NCHILD_TRIGGERED(traceHier_anySonContainer_newchild, anySonContainer);
+    TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED();
+
+    // trigger 2 son-created-callbacks (for 2 containers) and one change-callback (for a newly created son)
+    {
+        GB_initial_transaction ta(gb_main);
+        if (ta.ok()) {
+            newGrandson     = GB_create(anotherSonContainer, "grandson", GB_STRING); TEST_REJECT_NULL(newGrandson);
+            GBDATA *someson = GB_create(anySonContainer,     "someson",  GB_STRING); TEST_REJECT_NULL(someson);
+        }
+        TEST_EXPECT_NO_ERROR(ta.close(NULL));
+    }
+    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, newGrandson);
+    TEST_EXPECT_NCHILD_TRIGGERED(traceHier_anySonContainer_newchild, anotherSonContainer);
+    TEST_EXPECT_NCHILD_TRIGGERED(traceHier_anySonContainer_newchild, anySonContainer);
+    TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED();
+
+    // trigger delete-callback
+    {
+        GB_initial_transaction ta(gb_main);
+        TEST_EXPECT_NO_ERROR(GB_delete(elimGrandson));
+        TEST_EXPECT_NO_ERROR(ta.close(NULL));
+    }
+    TEST_EXPECT_DELETE_TRIGGERED(traceHier_anyGrandson_deleted, elimGrandson);
+    TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED();
+
+    // bind normal (non-hierarchical) callbacks to entries which trigger hierarchical callbacks and ..
+    calledWith::timer = 0;
+    GB_begin_transaction(gb_main);
+    INIT_CHANGED_CALLBACK(anotherGrandson);
+    INIT_DELETED_CALLBACK(elimGrandson2);
+    GB_commit_transaction(gb_main);
+
+    TEST_EXPECT_NO_CALLBACK_TRIGGERED();
+
+    {
+        GB_initial_transaction ta(gb_main);
+        if (ta.ok()) {
+            GB_touch(anotherGrandson);
+            GB_touch(elimGrandson2);
+            TEST_EXPECT_NO_ERROR(GB_delete(elimGrandson2));
+        }
+    }
+
+    // .. test call-order (delete before change, hierarchical before normal):
+    TEST_EXPECT_DELETE_TRIGGERED_AT(traceHier_anyGrandson_deleted, elimGrandson2,   1);
+    TEST_EXPECT_DELETE_TRIGGERED_AT(trace_elimGrandson2_deleted,   elimGrandson2,   2);
+    TEST_EXPECT_CHANGE_TRIGGERED_AT(traceHier_anyGrandson_changed, anotherGrandson, 3);
+    TEST_EXPECT_CHANGE_TRIGGERED_AT(trace_anotherGrandson_changed, anotherGrandson, 4);
+
+    TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED();
+    TEST_EXPECT_NO_CALLBACK_TRIGGERED();
+
+    // cleanup
+    GB_close(gb_main);
+}
+
 #endif
+
+
