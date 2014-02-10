@@ -111,17 +111,24 @@ typedef const char *(*gb_getenv_hook)(const char *varname);
 //      GB_transaction
 
 class GB_transaction : virtual Noncopyable {
-    GBDATA *ta_main;
+    GBDATA   *ta_main;
     bool      ta_open;          // is transaction open ?
     GB_ERROR  ta_err;
 
+    void init(GBDATA *gb_main, bool initial);
+protected:
+    GB_transaction(GBDATA *gb_main, bool) { init(gb_main, true); }
 public:
-    GB_transaction(GBDATA *gb_main);
+    GB_transaction(GBDATA *gb_main) { init(gb_main, false); }
     ~GB_transaction();
 
     bool ok() const { return ta_open && !ta_err; }  // ready to work on DB?
     GB_ERROR close(GB_ERROR error);                 // abort transaction if error (e.g.: 'return ta.close(error);')
     ARB_ERROR close(ARB_ERROR& error);              // abort transaction if error (e.g.: 'return ta.close(error);')
+};
+
+struct GB_initial_transaction : public GB_transaction {
+    GB_initial_transaction(GBDATA *gb_main) : GB_transaction(gb_main, true) {}
 };
 
 class GB_shell {

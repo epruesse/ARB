@@ -152,6 +152,7 @@ symlink_file ../TEMPLATES/arb_debug.h INCLUDE/arb_debug.h &&
 symlink_file ../TEMPLATES/arb_defs.h INCLUDE/arb_defs.h &&
 symlink_file ../TEMPLATES/arb_early_check.h INCLUDE/arb_early_check.h &&
 symlink_file ../TEMPLATES/arb_error.h INCLUDE/arb_error.h &&
+symlink_file ../TEMPLATES/arb_forward_list.h INCLUDE/arb_forward_list.h &&
 symlink_file ../TEMPLATES/arb_global_defs.h INCLUDE/arb_global_defs.h &&
 symlink_file ../TEMPLATES/arb_simple_assert.h INCLUDE/arb_simple_assert.h &&
 symlink_file ../TEMPLATES/arb_sleep.h INCLUDE/arb_sleep.h &&

@@ -14,22 +14,20 @@
 #ifndef GB_LOCAL_H
 #include "gb_local.h"
 #endif
-
-// ------------------
-//      constants
-
-#define GB_MAX_PROJECTS 256
+#ifndef GB_CB_H
+#include "gb_cb.h"
+#endif
 
 // ------------------------------
 //      forward declare types
 
 struct g_b_undo_mgr;
 struct gb_close_callback_list;
-struct gb_callback_list;
 struct gb_user;
 struct gb_project;
 struct gb_Key;
 struct gb_server_data;
+struct gb_hierarchy_callback_list;
 
 // --------------------------------------------------------------------------------
 
@@ -42,18 +40,23 @@ enum gb_open_types {
 struct gb_quick_save {
     char *quick_save_disabled;                      // if set, quick save is not possible and text describes reason why
     int   last_index;
+
+    gb_quick_save()
+        : quick_save_disabled(NULL),
+          last_index(0)
+    {}
 };
 
 // --------------------------------------------------------------------------------
 
 #if defined(DEBUG)
-// #define GEN_CACHE_STATS
+// #define GEN_CACHE_STATS // unit tests will fail if enabled
 #endif // DEBUG
 
 typedef uint16_t gb_cache_idx;
 
 struct gb_cache_entry;
-struct gb_cache {
+struct gb_cache : virtual Noncopyable {
     gb_cache_entry *entries;
 
     gb_cache_idx firstfree_entry;
@@ -65,11 +68,20 @@ struct gb_cache {
     size_t big_data_min_size;
 
 #if defined(GEN_CACHE_STATS)
-    GB_HASH *not_reused;                            // key = DB_path, value = number of cache entries not reused
-    GB_HASH *reused;                                // key = DB_path, value = number of cache entries reused
-    GB_HASH *reuse_sum;                             // key = DB_path, value = how often entries were reused
+    GB_HASH *not_reused; // key = DB_path, value = number of cache entries not reused
+    GB_HASH *reused;     // key = DB_path, value = number of cache entries reused
+    GB_HASH *reuse_sum;  // key = DB_path, value = how often entries were reused
 #endif
 
+    gb_cache() {
+        memset(this, 0, sizeof(*this));
+        init();
+    }
+    ~gb_cache() {
+        destroy();
+    }
+
+private:
     void init();
     void destroy();
 };
@@ -80,7 +92,7 @@ struct gb_cache {
 #define ALLOWED_KEYS  15000
 #define ALLOWED_DATES 256
 
-class GB_MAIN_TYPE {
+class GB_MAIN_TYPE : virtual Noncopyable {
     inline GB_ERROR start_transaction();
     GB_ERROR check_quick_save() const;
     GB_ERROR initial_client_transaction();
@@ -90,8 +102,22 @@ class GB_MAIN_TYPE {
 
     bool i_am_server;
 
-public:
+    struct callback_group : virtual Noncopyable {
+        gb_hierarchy_callback_list *hierarchy_cbs; // defined hierarchy callbacks
+        gb_pending_callbacks        pending;       // collect triggered callbacks (will be called by commit; discarded by abort)
 
+        callback_group() : hierarchy_cbs(NULL) {}
+
+        inline void add_hcb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb);
+        inline void forget_hcbs();
+
+        void trigger(GBDATA *gbd, GB_CB_TYPE type, gb_callback_list *dataCBs);
+    };
+
+    callback_group changeCBs; // all but GB_CB_DELETE
+    callback_group deleteCBs; // GB_CB_DELETE
+
+public:
 
     gbcmc_comm     *c_link;
     gb_server_data *server_data;
@@ -114,11 +140,10 @@ public:
     GB_HASH *key_2_index_hash;
     long     key_clock;                             // trans. nr. of last change
 
-    char         *keys_new[256];
-    unsigned int  last_updated;
-    long          last_saved_time;
-    long          last_saved_transaction;
-    long          last_main_saved_transaction;
+    unsigned int last_updated;
+    long         last_saved_time;
+    long         last_saved_transaction;
+    long         last_main_saved_transaction;
 
     GB_UNDO_TYPE requested_undo_type;
     GB_UNDO_TYPE undo_type;
@@ -138,22 +163,23 @@ public:
 
     gb_close_callback_list *close_callbacks;
 
-    gb_callback_list *cbl;                          // contains change-callbacks (after change, until callbacks are done)
-    gb_callback_list *cbl_last;
-
-    gb_callback_list *cbld;                         // contains delete-callbacks (after delete, until callbacks are done)
-    gb_callback_list *cbld_last;
-
-    gb_user    *users[GB_MAX_USERS];                // user 0 is server
-    gb_project *projects[GB_MAX_PROJECTS];          // projects
-
-    gb_user    *this_user;
-    gb_project *this_project;
+    gb_user *users[GB_MAX_USERS];                   // user 0 is server
+    gb_user *this_user;
 
     // --------------------
 
-    void init(const char *db_path);
-    void cleanup();
+private:
+    GBCONTAINER*& gb_main_ref() { return root_container; }
+
+    GB_ERROR check_saveable(const char *new_path, const char *flags) const;
+    GB_ERROR check_quick_saveable(const char *new_path, const char *flags) const {
+        GB_ERROR error = check_quick_save();
+        return error ? error : check_saveable(new_path, flags);
+    }
+public:
+
+    GB_MAIN_TYPE(const char *db_path);
+    ~GB_MAIN_TYPE();
 
     void free_all_keys();
     void release_main_idx();
@@ -161,7 +187,6 @@ public:
     int get_transaction_level() const { return transaction_level; }
 
     GBDATA *gb_main() const { return (GBDATA*)root_container; }
-    GBCONTAINER*& gb_main_ref() { return root_container; }
 
     GB_ERROR login_remote(const char *db_path, const char *opent);
 
@@ -176,12 +201,6 @@ public:
 
     __ATTR__USERESULT GB_ERROR send_update_to_server(GBDATA *gbd);
 
-    GB_ERROR check_saveable(const char *new_path, const char *flags) const;
-    GB_ERROR check_quick_saveable(const char *new_path, const char *flags) const {
-        GB_ERROR error = check_quick_save();
-        return error ? error : check_saveable(new_path, flags);
-    }
-
     GB_ERROR save_quick(const char *refpath);
 
     GB_ERROR save_as(const char *as_path, const char *savetype);
@@ -193,9 +212,23 @@ public:
 
     bool is_server() const { return i_am_server; }
     bool is_client() const { return !is_server(); }
-};
 
+    void call_pending_callbacks();
+
+    bool has_pending_change_callback() const { return changeCBs.pending.pending(); }
+    bool has_pending_delete_callback() const { return deleteCBs.pending.pending(); }
+
+    GB_ERROR add_hierarchy_cb(GBDATA *gbd, const TypedDatabaseCallback& dbcb);
+    void forget_hierarchy_cbs();
+
+    inline void trigger_change_callbacks(GBDATA *gbd, GB_CB_TYPE type);
+    void trigger_delete_callbacks(GBDATA *gbd);
+};
 
 #else
 #error gb_main.h included twice
 #endif // GB_MAIN_H
+
+
+
+
