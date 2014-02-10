@@ -23,13 +23,8 @@
 #include "gb_ts.h"
 #include "gb_index.h"
 #include <arb_strarray.h>
-#include "ad_cb.h"
 
 gb_local_data *gb_local = 0;
-
-#ifdef ARBDB_SIZEDEBUG
-long *arbdb_stat;
-#endif
 
 #define INIT_TYPE_NAME(t) GB_TYPES_name[t] = #t
 
@@ -441,16 +436,13 @@ GB_shell::~GB_shell() {
 }
 void GB_shell::ensure_inside()  { if (!inside_shell) GBK_terminate("Not inside GB_shell"); }
 
-bool GB_shell::in_shell() {
-    if (!inside_shell) {
-        return false;
-    }
-    return true;
+bool GB_shell::in_shell() { // used by code based on ARBDB (Kai IIRC)
+    return inside_shell;
 }
 
 struct GB_test_shell_closed {
     ~GB_test_shell_closed() {
-        if (inside_shell) {
+        if (GB_shell::in_shell()) { // leave that call
             inside_shell->~GB_shell(); // call dtor
         }
     }
@@ -470,18 +462,12 @@ static bool closed_open_shell_for_unit_tests() {
 
 void GB_init_gb() {
     GB_shell::ensure_inside();
-
     if (!gb_local) {
         GBK_install_SIGSEGV_handler(true);          // never uninstalled
         gbm_init_mem();
         gb_local = (gb_local_data *)gbm_get_mem(sizeof(gb_local_data), 0);
         ::new(gb_local) gb_local_data(); // inplace-ctor
-
-#ifdef ARBDB_SIZEDEBUG
-        arbdb_stat = (long *)GB_calloc(sizeof(long), 1000);
-#endif
     }
-
 }
 
 int GB_open_DBs() { return gb_local ? gb_local->open_dbs() : 0; }
@@ -1095,7 +1081,7 @@ long GB_read_from_ints(GBDATA *gbd, long index) { // used by ../PERL_SCRIPTS/SAI
     return -1;
 }
 
-double GB_read_from_floats(GBDATA *gbd, long index) {
+double GB_read_from_floats(GBDATA *gbd, long index) { // @@@ unused
     static GBDATA    *last_gbd = 0;
     static long       count    = 0;
     static GB_CFLOAT *f        = 0;
@@ -2802,8 +2788,7 @@ static int gb_info(GBDATA *gbd, int deep) {
     return 0;
 }
 
-
-int GB_info(GBDATA *gbd) {
+int GB_info(GBDATA *gbd) { // unused - intended to be used in debugger
     return gb_info(gbd, 0);
 }
 
@@ -3156,10 +3141,9 @@ class callback_trace {
     }
 
 public:
-    callback_trace() { reset(); }
+    callback_trace() { called.clear(); }
 
     void set_called_by(GBDATA *gbd, GB_CB_TYPE type) { called.push_back(calledWith(gbd, type)); }
-    void reset() { called.clear(); }
 
     bool was_called_by(GBDATA *gbd) { return removed(find(gbd)); }
     bool was_called_by(GB_CB_TYPE exp_type) { return removed(find(exp_type)); }
@@ -3208,9 +3192,6 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
 #define INIT_CHANGED_HIERARCHY_CALLBACK(elem) callback_trace HIERARCHY_TRACESTRUCT(elem,changed);  ADD_CHANGED_HIERARCHY_CALLBACK(elem)
 #define INIT_DELETED_HIERARCHY_CALLBACK(elem) callback_trace HIERARCHY_TRACESTRUCT(elem,deleted);  ADD_DELETED_HIERARCHY_CALLBACK(elem)
 #define INIT_NWCHILD_HIERARCHY_CALLBACK(elem) callback_trace HIERARCHY_TRACESTRUCT(elem,newchild); ADD_NWCHILD_HIERARCHY_CALLBACK(elem)
-
-#define ADD_ENTRY_CALLBACKS(entry)    ADD_CHANGED_CALLBACK(entry); ADD_DELETED_CALLBACK(entry)
-#define ADD_CONTAINER_CALLBACKS(cont) ADD_CHANGED_CALLBACK(cont);  ADD_NWCHILD_CALLBACK(cont); ADD_DELETED_CALLBACK(cont)
 
 #define ENSURE_ENTRY_CALLBACKS(entry)    ENSURE_CHANGED_CALLBACK(entry); ENSURE_DELETED_CALLBACK(entry)
 #define ENSURE_CONTAINER_CALLBACKS(cont) ENSURE_CHANGED_CALLBACK(cont);  ENSURE_NWCHILD_CALLBACK(cont); ENSURE_DELETED_CALLBACK(cont)
@@ -3263,31 +3244,12 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
 #define TEST_EXPECT_CB_TRIGGERED(TRACE,GBD,TYPE)         TEST_EXPECT(TRACE.was_called_by(GBD, TYPE))
 #define TEST_EXPECT_CB_TRIGGERED_AT(TRACE,GBD,TYPE,TIME) TEST_EXPECT_EQUAL(TRACE.call_time(GBD, TYPE), TIME)
 
-#define TEST_EXPECT_CB_TRIGGERED__WRONG_GBDATA(TRACE,GBD,TYPE)  \
-    TEST_EXPECT__BROKEN(TRACE.was_called_by(GBD,TYPE));         \
-    TEST_EXPECT(TRACE.was_called_by(TYPE))
-
-#define TEST_EXPECT_CB_TRIGGERED__WRONG_TYPE(TRACE,GBD,TYPE)    \
-    TEST_EXPECT__BROKEN(TRACE.was_called_by(GBD,TYPE));         \
-    TEST_EXPECT(TRACE.was_called_by(GBD))
-
-#define TEST_EXPECT_CB_TRIGGERED__COMPLETELY_BROKEN(TRACE,GBD,TYPE)     \
-    TEST_EXPECT__BROKEN(TRACE.was_called_by(GBD));                      \
-    TEST_EXPECT__BROKEN(TRACE.was_called_by(TYPE));                     \
-    TRACE.reset()
-
-
 #define TEST_EXPECT_CHANGE_TRIGGERED(TRACE,GBD) TEST_EXPECT_CB_TRIGGERED(TRACE, GBD, GB_CB_CHANGED)
 #define TEST_EXPECT_DELETE_TRIGGERED(TRACE,GBD) TEST_EXPECT_CB_TRIGGERED(TRACE, GBD, GB_CB_DELETE)
 #define TEST_EXPECT_NCHILD_TRIGGERED(TRACE,GBD) TEST_EXPECT_CB_TRIGGERED(TRACE, GBD, GB_CB_SON_CREATED)
 
 #define TEST_EXPECT_CHANGE_TRIGGERED_AT(TRACE,GBD,TIME) TEST_EXPECT_CB_TRIGGERED_AT(TRACE, GBD, GB_CB_CHANGED, TIME)
 #define TEST_EXPECT_DELETE_TRIGGERED_AT(TRACE,GBD,TIME) TEST_EXPECT_CB_TRIGGERED_AT(TRACE, GBD, GB_CB_DELETE, TIME)
-
-#define TEST_EXPECT_NCHILD_TRIGGERED__WRONG_TYPE(TRACE,GBD) TEST_EXPECT_CB_TRIGGERED__WRONG_TYPE(TRACE, GBD, GB_CB_SON_CREATED)
-
-#define TEST_EXPECT_TRIGGER__UNWANTED(TRACE) TEST_EXPECT__BROKEN(TRACE.was_not_called())
-#define TEST_EXPECT_TRIGGER__MISSING(TRACE)  TEST_EXPECT__BROKEN(TRACE.was_called())
 
 void TEST_db_callbacks() {
     GB_shell  shell;

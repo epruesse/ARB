@@ -18,11 +18,6 @@
 #include "gb_cb.h"
 #endif
 
-// ------------------
-//      constants
-
-#define GB_MAX_PROJECTS 256
-
 // ------------------------------
 //      forward declare types
 
@@ -32,7 +27,6 @@ struct gb_user;
 struct gb_project;
 struct gb_Key;
 struct gb_server_data;
-struct gb_hierarchy_callback;
 struct gb_hierarchy_callback_list;
 
 // --------------------------------------------------------------------------------
@@ -56,7 +50,7 @@ struct gb_quick_save {
 // --------------------------------------------------------------------------------
 
 #if defined(DEBUG)
-// #define GEN_CACHE_STATS
+// #define GEN_CACHE_STATS // unit tests will fail if enabled
 #endif // DEBUG
 
 typedef uint16_t gb_cache_idx;
@@ -74,9 +68,9 @@ struct gb_cache : virtual Noncopyable {
     size_t big_data_min_size;
 
 #if defined(GEN_CACHE_STATS)
-    GB_HASH *not_reused;                            // key = DB_path, value = number of cache entries not reused
-    GB_HASH *reused;                                // key = DB_path, value = number of cache entries reused
-    GB_HASH *reuse_sum;                             // key = DB_path, value = how often entries were reused
+    GB_HASH *not_reused; // key = DB_path, value = number of cache entries not reused
+    GB_HASH *reused;     // key = DB_path, value = number of cache entries reused
+    GB_HASH *reuse_sum;  // key = DB_path, value = how often entries were reused
 #endif
 
     gb_cache() {
@@ -169,13 +163,20 @@ public:
 
     gb_close_callback_list *close_callbacks;
 
-    gb_user    *users[GB_MAX_USERS];                // user 0 is server
-    gb_project *projects[GB_MAX_PROJECTS];          // projects
-
-    gb_user    *this_user;
-    gb_project *this_project;
+    gb_user *users[GB_MAX_USERS];                   // user 0 is server
+    gb_user *this_user;
 
     // --------------------
+
+private:
+    GBCONTAINER*& gb_main_ref() { return root_container; }
+
+    GB_ERROR check_saveable(const char *new_path, const char *flags) const;
+    GB_ERROR check_quick_saveable(const char *new_path, const char *flags) const {
+        GB_ERROR error = check_quick_save();
+        return error ? error : check_saveable(new_path, flags);
+    }
+public:
 
     GB_MAIN_TYPE(const char *db_path);
     ~GB_MAIN_TYPE();
@@ -186,7 +187,6 @@ public:
     int get_transaction_level() const { return transaction_level; }
 
     GBDATA *gb_main() const { return (GBDATA*)root_container; }
-    GBCONTAINER*& gb_main_ref() { return root_container; }
 
     GB_ERROR login_remote(const char *db_path, const char *opent);
 
@@ -201,12 +201,6 @@ public:
 
     __ATTR__USERESULT GB_ERROR send_update_to_server(GBDATA *gbd);
 
-    GB_ERROR check_saveable(const char *new_path, const char *flags) const;
-    GB_ERROR check_quick_saveable(const char *new_path, const char *flags) const {
-        GB_ERROR error = check_quick_save();
-        return error ? error : check_saveable(new_path, flags);
-    }
-
     GB_ERROR save_quick(const char *refpath);
 
     GB_ERROR save_as(const char *as_path, const char *savetype);
@@ -219,9 +213,6 @@ public:
     bool is_server() const { return i_am_server; }
     bool is_client() const { return !is_server(); }
 
-    // @@@ make private: ?
-    void add_change_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) { changeCBs.pending.add_unchecked(gb_triggered_callback(gbd, old, cb)); }
-    void add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb) { deleteCBs.pending.add_unchecked(gb_triggered_callback(gbd, old, cb)); }
     void call_pending_callbacks();
 
     bool has_pending_change_callback() const { return changeCBs.pending.pending(); }

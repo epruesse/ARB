@@ -8,7 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include "gb_key.h"
 #include "gb_ts.h"
 #include "gb_index.h"
 #include "gb_localdata.h"
@@ -294,12 +293,10 @@ GB_MAIN_TYPE::GB_MAIN_TYPE(const char *db_path)
       resolve_link_hash(NULL),
       table_hash(NULL),
       close_callbacks(NULL),
-      this_user(NULL),
-      this_project(NULL)
+      this_user(NULL)
 {
-    for (int i = 0; i<ALLOWED_DATES;         ++i) dates[i]    = NULL;
-    for (int i = 0; i<GB_MAX_USERS;          ++i) users[i]    = NULL;
-    for (int i = 0; i<GB_MAX_PROJECTS;       ++i) projects[i] = NULL;
+    for (int i = 0; i<ALLOWED_DATES; ++i) dates[i] = NULL;
+    for (int i = 0; i<GB_MAX_USERS;  ++i) users[i] = NULL;
 
     gb_init_undo_stack(this);
     gb_local->announce_db_open(this);
