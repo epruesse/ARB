@@ -18,7 +18,6 @@
 #include "gb_key.h"
 #include "gb_map.h"
 #include "gb_load.h"
-#include "gb_storage.h"
 #include "ad_io_inline.h"
 
 GB_MAIN_TYPE *gb_main_array[GB_MAIN_ARRAY_SIZE];

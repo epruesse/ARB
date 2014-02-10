@@ -314,6 +314,10 @@ inline void gb_abort_transaction_local_rek(GBCONTAINER*& gbc) {
 
 // --------------------------------------------------------------------------------
 
+#ifndef GB_STORAGE_H
+#include "gb_storage.h"
+#endif
+
 #else
 #error gb_data.h included twice
 #endif // GB_DATA_H

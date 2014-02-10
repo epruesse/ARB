@@ -12,7 +12,6 @@
 #include "gb_ts.h"
 #include "gb_index.h"
 #include "gb_localdata.h"
-#include "gb_storage.h"
 #include "ad_hcb.h"
 
 // Copy all info + external data mem to an one step undo buffer

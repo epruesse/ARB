@@ -19,7 +19,6 @@
 #include <arb_defs.h>
 
 #include "gb_key.h"
-#include "gb_storage.h"
 #include "gb_localdata.h"
 #include "gb_map.h"
 #include "gb_load.h"
