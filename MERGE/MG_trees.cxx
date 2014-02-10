@@ -37,7 +37,7 @@ void MG_create_trees_awar(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_TREE_XFER_WHAT, XFER_SELECTED, aw_def);
     aw_root->awar_int(AWAR_TREE_OVERWRITE, 0,             aw_def);
 
-    TreeAdmin::create_awars(aw_root, aw_def);
+    TreeAdmin::create_awars(aw_root, aw_def, false);
 }
 
 static GB_ERROR transfer_tree(const char *tree_name, bool overwrite, const char *behind_name) {

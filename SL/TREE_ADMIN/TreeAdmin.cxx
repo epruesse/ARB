@@ -27,9 +27,10 @@
 
 namespace TreeAdmin {
 
-    void create_awars(AW_root *root, AW_default aw_def) {
-        AWT_registerTreeAwarSimple(root->awar_string(AWAR_TREE_SOURCE, 0, aw_def)->set_srt(GBT_TREE_AWAR_SRT));
-        root->awar_string(AWAR_TREE_DEST,   0, aw_def)->set_srt(GBT_TREE_AWAR_SRT); // no need to register (awar always follows the tree selected in admin window!)
+    void create_awars(AW_root *root, AW_default aw_def, bool registerTreeAwar) {
+        AW_awar *awar_srcTree = root->awar_string(AWAR_TREE_SOURCE, 0, aw_def)->set_srt(GBT_TREE_AWAR_SRT);
+        if (registerTreeAwar) AWT_registerTreeAwarSimple(awar_srcTree);
+        root->awar_string(AWAR_TREE_DEST, 0, aw_def)->set_srt(GBT_TREE_AWAR_SRT); // no need to register (awar always follows the tree selected in admin window!)
     }
     AW_awar *source_tree_awar(AW_root *root) {
         return root->awar(AWAR_TREE_SOURCE);
