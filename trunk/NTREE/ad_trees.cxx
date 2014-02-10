@@ -171,7 +171,7 @@ static void update_filter_cb(AW_root *root) {
 void create_trees_var(AW_root *aw_root, AW_default aw_def) {
     AW_awar *awar_tree_name = aw_root->awar_string(AWAR_TREE_NAME, 0, aw_def)->set_srt(GBT_TREE_AWAR_SRT);
 
-    TreeAdmin::create_awars(aw_root, aw_def);
+    TreeAdmin::create_awars(aw_root, aw_def, true);
 
     aw_root->awar_int   (AWAR_TREE_SECURITY, 0, aw_def);
     aw_root->awar_string(AWAR_TREE_REM,      0, aw_def);
