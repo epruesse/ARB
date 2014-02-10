@@ -10,13 +10,13 @@
 
 #include "gb_local.h"
 
-GB_transaction::GB_transaction(GBDATA *gb_main)
-    : ta_main(gb_main)
-    , ta_open(false)
-    , ta_err(NULL)
-{
+void GB_transaction::init(GBDATA *gb_main, bool initial) {
+    ta_main = gb_main;
+    ta_open = false;
+    ta_err  = NULL;
+
     if (ta_main) {
-        ta_err = GB_push_transaction(ta_main);
+        ta_err = initial ? GB_begin_transaction(ta_main) : GB_push_transaction(ta_main);
         if (!ta_err) {
             ta_open = true;
         }

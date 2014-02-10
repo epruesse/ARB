@@ -10,11 +10,8 @@
 
 #include "gb_key.h"
 #include "gb_map.h"
-#include "gb_storage.h"
 #include "gb_index.h"
 #include <arb_file.h>
-
-#include <static_assert.h>
 
 #define ADMAP_BYTE_ORDER    0x01020304
 #define GB_MAX_MAPPED_FILES 10

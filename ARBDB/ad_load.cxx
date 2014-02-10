@@ -19,7 +19,6 @@
 #include <arb_defs.h>
 
 #include "gb_key.h"
-#include "gb_storage.h"
 #include "gb_localdata.h"
 #include "gb_map.h"
 #include "gb_load.h"
@@ -1360,7 +1359,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
 
     GB_init_gb();
 
-    Main = gb_make_gb_main_type(path);
+    Main = new GB_MAIN_TYPE(path);
     Main->mark_as_server();
 
     if (strchr(opent, 'R')) Main->allow_corrupt_file_recovery = 1;
@@ -1534,8 +1533,8 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
     if (error) {
         gbcm_logout(Main, user);
         gb_delete_dummy_father(Main->dummy_father);
-        gbc        = NULL;
-        gb_destroy_main(Main);
+        gbc = NULL;
+        delete Main;
 
         GB_export_error(error);
     }

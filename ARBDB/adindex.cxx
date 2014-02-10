@@ -13,7 +13,6 @@
 #include "gb_index.h"
 #include "gb_hashindex.h"
 #include "gb_ts.h"
-#include "gb_storage.h"
 
 #include <arb_strbuf.h>
 
@@ -342,7 +341,7 @@ static g_b_undo_entry *new_g_b_undo_entry(g_b_undo_list *u) {
 
 
 
-void gb_init_undo_stack(GB_MAIN_TYPE *Main) {
+void gb_init_undo_stack(GB_MAIN_TYPE *Main) { // @@@ move into GB_MAIN_TYPE-ctor
     Main->undo = (g_b_undo_mgr *)GB_calloc(sizeof(g_b_undo_mgr), 1);
     Main->undo->max_size_of_all_undos = GB_MAX_UNDO_SIZE;
     Main->undo->u = (g_b_undo_header *) GB_calloc(sizeof(g_b_undo_header), 1);
