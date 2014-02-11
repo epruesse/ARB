@@ -141,6 +141,14 @@ public:
         elems++;
         arb_assert(ok());
     }
+
+    char *replace(int i, char *elem) { // transfers ownership (in both directions!)
+        arb_assert(elem_index(i));
+        char *old = str[i];
+        str[i]    = elem;
+        arb_assert(ok());
+        return old;
+    }
 };
 
 class ConstStrArray : public CharPtrArray { // derived from a Noncopyable
@@ -171,6 +179,14 @@ public:
         str[i+1] = NULL; // sentinel
         elems++;
         arb_assert(ok());
+    }
+
+    const char *replace(int i, const char *elem) {
+        arb_assert(elem_index(i));
+        const char *old = str[i];
+        str[i]    = const_cast<char*>(elem);
+        arb_assert(ok());
+        return old;
     }
 };
 
