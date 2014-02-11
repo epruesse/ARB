@@ -34,6 +34,11 @@ else
             usage
     fi
 
+    if [ $(($NUMBEROFRUNS)) -lt 1 ]; then
+        arb_message "Invalid number of runs specified (NUMBEROFRUNS=$NUMBEROFRUNS)"
+        exit 1
+    fi
+
     if [ "$DATA" == "DNA" ]; then
         if [ -z "$1" ]; then
             usage
@@ -129,14 +134,17 @@ else
     GENERATEDTREES=$NUMBEROFRUNS
 
     case "$SEARCH" in
-        "e" )
+        "e" ) # optimize input tree
             NEEDINPUTTREE=1
             NEEDGAMMA=1
             ;;
-        "t" )
+
+        "t" ) # randomized tree searches
             NEEDINPUTTREE=1
             ;;
-        "d" ) # modes that use (but don't expect) an inputtree
+
+        "d" ) # new rapid hill climbing
+            # modes that use (but don't expect) an inputtree
             USESINPUTTREE=1
             ;;
 
@@ -148,6 +156,7 @@ else
                 TAKETREES=1
             fi
             ;;
+
         "p" ) # add new sequences (MP)
             NEEDINPUTTREE=1
             GENERATEDTREES=1
@@ -157,6 +166,7 @@ else
             fi
             TAKETREES=1
             ;;
+
     esac
 
     if [ "$NEEDINPUTTREE" != "$HAVEINPUTTREE" ]; then
@@ -208,7 +218,7 @@ else
         # otherwise autodetect by RAxML
     fi
     if [ "$NUMBEROFRUNS" != "1" ]; then
-        RAXMLPARAMS="$RAXMLPARAMS -# $NUMBEROFRUNS"
+        RAXMLPARAMS="$RAXMLPARAMS -N $NUMBEROFRUNS"
     fi
     RAXMLPARAMS="$RAXMLPARAMS -p $SEED -s $SEQFILE -a $WEIGHTS $TREEPARAMS $DEPENDENT_PARAMS -n ThisRun"
 
