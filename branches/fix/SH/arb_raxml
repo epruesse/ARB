@@ -132,6 +132,7 @@ else
     USESINPUTTREE=0
     NEEDGAMMA=0
     GENERATEDTREES=$NUMBEROFRUNS
+    MODE=normal
 
     case "$SEARCH" in
         "e" ) # optimize input tree
@@ -149,12 +150,12 @@ else
             ;;
 
         "a" ) # rapid bootstrap analysis
-            DEPENDENT_PARAMS="$DEPENDENT_PARAMS -x $SEED"
-            GENERATEDTREES=1
-            if [ "$TAKETREES" != "1" ]; then
-                arb_message "'rapid bootstrap analysis' only creates 1 tree\n(can't select $TAKETREES trees, falling back to 1)"
-                TAKETREES=1
+            DEPENDENT_PARAMS="$DEPENDENT_PARAMS -k -x $SEED"
+            if [ $(($NUMBEROFRUNS)) -lt 2 ]; then
+                arb_message "You need to specify at least 2 runs (NUMBEROFRUNS=$NUMBEROFRUNS)"
+                exit 1
             fi
+            MODE=bootstrapped
             ;;
 
         "p" ) # add new sequences (MP)
@@ -168,6 +169,11 @@ else
             ;;
 
     esac
+
+    if [ $(($GENERATEDTREES)) < $((TAKETREES)) ]; then
+        arb_message "Can't take $TAKETREES of $GENERATEDTREES tree (using all)"
+        $TAKETREES = $GENERATEDTREES
+    fi
 
     if [ "$NEEDINPUTTREE" != "$HAVEINPUTTREE" ]; then
         if [ "$NEEDINPUTTREE" == "1" ]; then
@@ -220,7 +226,9 @@ else
     if [ "$NUMBEROFRUNS" != "1" ]; then
         RAXMLPARAMS="$RAXMLPARAMS -N $NUMBEROFRUNS"
     fi
-    RAXMLPARAMS="$RAXMLPARAMS -p $SEED -s $SEQFILE -a $WEIGHTS $TREEPARAMS $DEPENDENT_PARAMS -n ThisRun"
+
+    RUNNAME=viaARB
+    RAXMLPARAMS="$RAXMLPARAMS -p $SEED -s $SEQFILE -a $WEIGHTS $TREEPARAMS $DEPENDENT_PARAMS -n $RUNNAME"
 
     echo "------------------------------------------"
     echo "Calling raxmlHPC $RAXMLPARAMS"
@@ -228,5 +236,5 @@ else
     echo "------------------------------------------"
 
     # ../PERL_SCRIPTS/ARBTOOLS/raxml2arb.pl
-    raxml2arb.pl ThisRun "$GENERATEDTREES" "$TAKETREES" "$CONSENSE"
+    raxml2arb.pl "$RUNNAME" "$GENERATEDTREES" "$MODE" "$TAKETREES" "$CONSENSE"
 fi
