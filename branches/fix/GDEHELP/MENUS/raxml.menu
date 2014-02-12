@@ -129,13 +129,8 @@ argchoice:new rapid hill climbing:d
 argchoice:old hill climbing:o
 argchoice:optimize input tree:e
 argchoice:rapid bootstrap analysis:a
-argchoice:advanced bootstrap + refinement of BS tree:i
 argchoice:add new sequences to input tree (MP):p
 argchoice:randomized tree searches (fixed start tree):t
-
-// argchoice:optimize input tree (GAMMA/GAMMAI only):e
-// argchoice:advanced bootstrap + refinement of BS tree (GAMMA):i
-// argchoice:randomized tree searches on one fixed starting tree:t
 
 arg:SEED
 argtype:text

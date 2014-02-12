@@ -102,7 +102,7 @@ else
     if [ "$OPTIMIZEPARAMETERS" == "1" ]; then
         if [ "$DATA" == "DNA" ]; then
             case "$RATEMODELNUC" in
-                GTRGAMMA )
+                "GTRGAMMA" | "GTRGAMMAI" )
                     DEPENDENT_PARAMS="$DEPENDENT_PARAMS -k"
                     ;;
                 * )
@@ -111,7 +111,7 @@ else
             esac
         else
             case "$RATEMODELPROT" in
-                  "PROTGAMMA" )
+                  "PROTGAMMA" | "PROTGAMMAI" )
                     DEPENDENT_PARAMS="$DEPENDENT_PARAMS -k"
                     ;;
                 * )
@@ -138,6 +138,7 @@ else
         "e" ) # optimize input tree
             NEEDINPUTTREE=1
             NEEDGAMMA=1
+            MODE=optimized
             ;;
 
         "t" ) # randomized tree searches
