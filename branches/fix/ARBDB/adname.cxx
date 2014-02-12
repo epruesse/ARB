@@ -199,6 +199,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                     progress.inc_and_check_user_abort(error);
                 }
                 else {
+                    GBT_message(NameSession.gb_main, GBS_global_string("Warning: failed to read '%s' (Reason: %s)", tname, GB_await_error()));
                     ++progress;
                     ++progress;
                 }
