@@ -22,6 +22,9 @@
 #define RUN_IN_WINDOW(cmd)      ${ARB_XCMD} bash -x -c @@LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; cmd ;arb_wait@@
 // Note: @@ will result in a single quote. see ../ARB_GDE/GDE_ParseMenu.cxx@WHY_USE_DOUBLE_AT
 
+#define STOP_ON_FAILURE(WHAT_FAILED) (arb_message "Error running WHAT_FAILED (inspect console for details)";false) 
+// intended use '( command || STOP_ON_FAILURE(command-description)) && ( dependent-command || STOP_ON_FAILURE(dependent-command-description) && ...)'
+
 #include <warning.genmenu>
 
 lmenu:Export
