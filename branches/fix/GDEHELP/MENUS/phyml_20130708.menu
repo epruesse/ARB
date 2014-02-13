@@ -1,6 +1,6 @@
 
 #define PHYML_CALL(seqtype) \
-        (   GOTO_LOCAL_DIR;GEN_PHYLIP(infile); \
+        (   GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
             RUN_IN_WINDOW(if [ "$TREE" != "tree_?????" -a ! -z "$TREE" ]; then arb_export_tree $TREE > input_tree.in; INPUT_TREE_PARAM=-uinput_tree.in; fi; \
                           $ARBHOME/bin/phyml_20130708 \
                           --input=infile \

@@ -36,24 +36,29 @@ insave:
 
 //----------------------
 
-
+#define PREPARE_MRBAYES_INFILE(INFILE) \
+        ( \
+                arb_sed -i '/LABELPOS/d' INFILE     `#MrBayes does not understand the LABELPOS command, therefore it is removed.` && \
+                arb_sed -i '/EQUATE/d' INFILE       `#MrBayes does not support EQUATE macros, remove them.` && \
+                arb_sed -i '/OPTIONS/,/;/d' INFILE  `#MrBayes does not support the OPTIONS block, remove it. (delete everything between OPTIONS and ';')` \
+        )
 
 item:MrBayes
 itemmeta:B
 itemmethod:(GOTO_LOCAL_DIR; \
-            GEN_NEXUS(mrbayes_in); \
-            arb_sed -i '/LABELPOS/d' mrbayes_in                `#MrBayes does not understand the LABELPOS command, therefore it is removed.`; \
-            arb_sed -i '/EQUATE/d' mrbayes_in                  `#MrBayes does not support EQUATE macros, remove them.`; \
-            arb_sed -i '/OPTIONS/,/;/d' mrbayes_in             `#MrBayes does not support the OPTIONS block, remove it. (delete everything between OPTIONS and ';')`; \
-            `#Now we write the mrbayes command block to the nexus file`; \
-            COMMAND="begin mrbayes; \
+            GEN_NEXUS(mrbayes_in) && \
+            PREPARE_MRBAYES_INFILE(mrbayes_in) && \
+            ( \
+                `# append the mrbayes command block to the nexus file`; \
+                COMMAND="begin mrbayes; \
                          set autoclose=yes nowarn=yes; \
                          lset nst=$NST rates=$RATES ngammacat=$NGAMMACAT; \
                          mcmc ngen=$NGEN nchains=$NCHAINS temp=$TEMP samplefreq=$SAMPLEFREQ burninfrac=$BURNINFRAC; \
                          sump; \
                          sumt Outputname=mrbayes_out Conformat=simple; \
                      end;" \
-            && echo $COMMAND >> mrbayes_in; \
+                && echo $COMMAND >> mrbayes_in; \
+            ) && \
             RUN_IN_WINDOW(($ARBHOME/bin/mb mrbayes_in; \
                            $ARBHOME/bin/arb_nexus2newick.awk mrbayes_out.con.tre >> mr_bayes_out.newick;  $DISPLAY_FUNC));)&
 
@@ -124,12 +129,12 @@ insave:
 item:MrBayes (custom)
 itemmeta:B
 itemmethod:(GOTO_LOCAL_DIR; \
-            GEN_NEXUS(mrbayes_in); \
-            arb_sed -i '/LABELPOS/d' mrbayes_in                `#MrBayes does not understand the LABELPOS command, therefore it is removed.`; \
-            arb_sed -i '/EQUATE/d' mrbayes_in                  `#MrBayes does not support EQUATE macros, remove them.`; \
-            arb_sed -i '/OPTIONS/,/;/d' mrbayes_in             `#MrBayes does not support the OPTIONS block, remove it. (delete everything between OPTIONS and ';')`; \
-            `#Now we write the mrbayes command block to the nexus file`; \
-             cat $COMMAD_FILE >> mrbayes_in; \
+            GEN_NEXUS(mrbayes_in) && \
+            PREPARE_MRBAYES_INFILE(mrbayes_in) && \
+            ( \
+                `# append the mrbayes command block to the nexus file`; \
+                cat $COMMAND_FILE >> mrbayes_in; \
+            ) && \
             RUN_IN_WINDOW(($ARBHOME/bin/mb mrbayes_in; \
                            $ARBHOME/bin/arb_nexus2newick.awk mrbayes_out.con.tre >> mr_bayes_out.newick;  $DISPLAY_FUNC));)&
 
@@ -141,7 +146,7 @@ arglabel:What to do with the tree?
 argchoice:Load into ARB ('tree_mrBayes_//'):$ARBHOME/bin/arb_read_tree tree_mrbayes_$$ mr_bayes_out.newick
 argchoice:Treetool:treetool mr_bayes_out.newick
 
-arg:COMMAD_FILE
+arg:COMMAND_FILE
 argtype:filename
 arglabel:MrBayes command file
 
@@ -153,8 +158,7 @@ insave:
 
 item:TREEPUZZLE ...
 itemmeta: T
-itemmethod:(GOTO_LOCAL_DIR; \
-            GEN_PHYLIP(infile);\
+itemmethod:(GOTO_LOCAL_DIR; GEN_PHYLIP(infile) && \
             RUN_IN_WINDOW((puzzle;$DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1 outdist) )&
 itemhelp:treepuzzle.help

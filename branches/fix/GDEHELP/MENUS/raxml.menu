@@ -3,8 +3,8 @@
 
 #define RAXML_CODE(_TYPE_,_PARAMS_) \
         (GOTO_LOCAL_DIR ; \
-         arb_export_rates -r "$RATES" > weights; \
-         GEN_PHYLIP(infile); \
+         arb_export_rates -r "$RATES" > weights && \
+         GEN_PHYLIP(infile) && \
          RUN_IN_WINDOW(arb_raxml _TYPE_ infile weights "$TREE" $CONSTRAINT \
                                 $RANDOMSTART $OPTIMIZEPARAMETERS $SEARCH \
                                 "$INITIALREARRANGEMENT" "$SEED" \

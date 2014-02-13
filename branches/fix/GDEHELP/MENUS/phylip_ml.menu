@@ -1,7 +1,7 @@
 item:Phylip PROML
 seqtype: A
 itemmeta: O
-itemmethod:(GOTO_LOCAL_DIR;GEN_PHYLIP(infile);\
+itemmethod:(GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
             RUN_IN_WINDOW((arb_proml $BOOTSTRAP $MODEL $VIEWOUT $ANALYSIS $RANDOM $REARRANGE \
                                      $RATE_VARIATION $VARIATION_COEFF $HMM_RATES $INV_FRACTION \
                                      $INTERACTIVE; $DISPLAY_FUNC));\
