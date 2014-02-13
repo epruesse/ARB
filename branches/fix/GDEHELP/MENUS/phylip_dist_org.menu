@@ -1,6 +1,6 @@
 item:Phylip Distance Methods (Original Phylip, Interactive)
 itemmeta: I
-itemmethod:(GEN_PHYLIP_INFILE;\
+itemmethod:(GOTO_LOCAL_DIR;GEN_PHYLIP_INFILE;\
             RUN_IN_WINDOW(($DPGM;\
                            mv -f outfile infile;\
                            ${ARB_XCMD} $PROGRAM;\
