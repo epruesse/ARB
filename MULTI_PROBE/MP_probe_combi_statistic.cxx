@@ -11,9 +11,8 @@
 #include "MP_probe.hxx"
 #include "MultiProbe.hxx"
 
-probe_combi_statistic::probe_combi_statistic(probe **pc, probe_tabs *ps, double exp, double fit, int life_cnt)
-{
-    memset(this, 0, sizeof(probe_combi_statistic));
+probe_combi_statistic::probe_combi_statistic(probe **pc, probe_tabs *ps, double exp, double fit, int life_cnt) {
+    memset((void*)this, 0, sizeof(probe_combi_statistic)); // @@@ potentially dangerous (overwrites vtable pointer!)
 
     if (ps)
         probe_tab = ps;

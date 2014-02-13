@@ -214,7 +214,7 @@ void GBT_install_message_handler(GBDATA *gb_main) {
 
 void GBT_message(GBDATA *gb_main, const char *msg) {
     /*! When called in client(or server) this causes the DB server to show the message.
-     * Message is showed via GB_warning (which uses aw_message in GUIs)
+     * Message is shown via GB_warning (which uses aw_message in GUIs)
      *
      * Note: The message is not shown before the transaction ends.
      * If the transaction is aborted, the message is never shown!

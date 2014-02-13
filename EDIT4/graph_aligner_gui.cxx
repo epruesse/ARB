@@ -50,7 +50,6 @@ using std::endl;
 #define GA_AWAR_TURN_CHECK GA_AWAR_ROOT "turncheck"
 #define GA_AWAR_LOGLEVEL GA_AWAR_ROOT "loglevel"
 #define GA_AWAR_REALIGN GA_AWAR_ROOT "realign"
-#define GA_AWAR_PTLOAD GA_AWAR_ROOT "ptload"
 #define GA_AWAR_COPYMARKREF GA_AWAR_ROOT "copymarkref"
 #define GA_AWAR_MATCH_SCORE GA_AWAR_ROOT "match_score"
 #define GA_AWAR_MISMATCH_SCORE GA_AWAR_ROOT "mismatch_score"
@@ -90,7 +89,6 @@ void create_sina_variables(AW_root *root, AW_default db1) {
     root->awar_string(GA_AWAR_LOGLEVEL, "3", db1); // @@@ change to int?
     root->awar_int(GA_AWAR_TURN_CHECK, 1, db1);
     root->awar_int(GA_AWAR_REALIGN, 1, db1);
-    root->awar_int(GA_AWAR_PTLOAD, 0, db1);
     root->awar_int(GA_AWAR_COPYMARKREF, 0, db1);
     root->awar_float(GA_AWAR_GAP_PEN, 5.0, db1);
     root->awar_float(GA_AWAR_GAP_EXT, 2.0, db1);
@@ -267,7 +265,7 @@ static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
 
                     GBS_strcat(cl, root->awar(GA_AWAR_CMD)->read_char_pntr());
                     GBS_strcat(cl, " -i :");
-                    GBS_strcat(cl, " --ptdb ");        GBS_strcat(cl,   root->awar(GA_AWAR_PTLOAD)->read_int() ? pt_db : ":");
+                    GBS_strcat(cl, " --ptdb :");
                     GBS_strcat(cl, " --ptport ");      GBS_strcat(cl,   pt_server);
                     GBS_strcat(cl, " --turn ");        GBS_strcat(cl,   root->awar(GA_AWAR_TURN_CHECK)->read_int() ? "all" : "none");
                     GBS_strcat(cl, " --overhang ");    GBS_strcat(cl,   root->awar(GA_AWAR_OVERHANG)->read_char_pntr());
@@ -420,11 +418,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
         aws->label("Realign");
         aws->create_toggle(GA_AWAR_REALIGN);
 
-        aws->at_newline();
-        aws->label("Load reference sequences from PT-Server");
-        aws->create_toggle(GA_AWAR_PTLOAD);
-
-        /*
+       /*
         aws->at_newline();
         aws->label("(Copy and) mark sequences used as reference");
         aws->create_toggle(GA_AWAR_COPYMARKREF);

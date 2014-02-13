@@ -92,7 +92,7 @@ PERL_GCC:=$(shell perl -e 'print "$$^V\n";')___$(COMPILER_VERSION)
 WONT_COMPILE_CXX11:=$(findstring $(PERL_GCC),$(PERL_GCC_INCOMPAT))
 
 ifneq ('$(WONT_COMPILE_CXX11)','')
-	hacked_cflags:=$(subst -std=gnu++11,,$(cross_cflags)) -DDONT_USE_CXX11
+	hacked_cflags:=$(subst -std=gnu++11,,$(cross_cflags))
 else
 	hacked_cflags:=$(cross_cflags)
 endif

@@ -18,7 +18,6 @@
 #include "gb_key.h"
 #include "gb_map.h"
 #include "gb_load.h"
-#include "gb_storage.h"
 #include "ad_io_inline.h"
 
 GB_MAIN_TYPE *gb_main_array[GB_MAIN_ARRAY_SIZE];
@@ -1196,6 +1195,14 @@ GB_ERROR GB_save_quick(GBDATA *gbd, const char *refpath) {
 void GB_disable_path(GBDATA *gbd, const char *path) {
     // disable directories for save
     freeset(GB_MAIN(gbd)->disabled_path, path ? GBS_eval_env(path) : NULL);
+}
+
+long GB_last_saved_clock(GBDATA *gb_main) {
+    return GB_MAIN(gb_main)->last_saved_transaction;
+}
+
+GB_ULONG GB_last_saved_time(GBDATA *gb_main) {
+    return GB_MAIN(gb_main)->last_saved_time;
 }
 
 // --------------------------------------------------------------------------------

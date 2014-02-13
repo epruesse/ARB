@@ -18,6 +18,7 @@
 #include "gb_memory.h"
 #endif
 
+struct gb_callback_list;
 
 // --------------------------------------------------------------------------------
 
@@ -55,7 +56,7 @@ union gb_data_base_type_union {
 struct gb_db_extended {
     long                 creation_date;
     long                 update_date;
-    struct gb_callback  *callback;
+    gb_callback_list    *callback;
     gb_transaction_save *old;
 };
 
@@ -186,7 +187,7 @@ struct GBDATA {
     long creation_date() const { return ext ? ext->creation_date : 0; }
     long update_date()   const { return ext ? ext->update_date   : 0; }
 
-    gb_callback *get_callbacks() const { return ext ? ext->callback : NULL; }
+    gb_callback_list *get_callbacks() const { return ext ? ext->callback : NULL; }
     gb_transaction_save *get_oldData() const { return ext ? ext->old : 0; }
 };
 
@@ -312,6 +313,10 @@ inline void gb_abort_transaction_local_rek(GBCONTAINER*& gbc) {
 }
 
 // --------------------------------------------------------------------------------
+
+#ifndef GB_STORAGE_H
+#include "gb_storage.h"
+#endif
 
 #else
 #error gb_data.h included twice

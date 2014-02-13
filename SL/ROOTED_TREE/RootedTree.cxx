@@ -502,7 +502,7 @@ void RootedTree::eliminate_and_collect(const multifurc_limits& below, LengthColl
      * store their length in 'collect' for later distribution.
      */
     rt_assert(!is_root_node());
-    {
+    if (!is_leaf || below.applyAtLeafs) {
         double value;
         switch (parse_bootstrap(value)) {
             case REMARK_NONE:

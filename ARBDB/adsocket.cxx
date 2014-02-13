@@ -37,7 +37,6 @@
 #include "gb_comm.h"
 #include "gb_data.h"
 #include "gb_localdata.h"
-#include "gb_main.h"
 
 #include <SigHandler.h>
 
@@ -495,14 +494,6 @@ GB_ULONG GB_time_of_day() {
     timeval tp;
     if (gettimeofday(&tp, 0)) return 0;
     return tp.tv_sec;
-}
-
-long GB_last_saved_clock(GBDATA *gb_main) {
-    return GB_MAIN(gb_main)->last_saved_transaction;
-}
-
-GB_ULONG GB_last_saved_time(GBDATA *gb_main) {
-    return GB_MAIN(gb_main)->last_saved_time;
 }
 
 GB_ERROR GB_textprint(const char *path) {

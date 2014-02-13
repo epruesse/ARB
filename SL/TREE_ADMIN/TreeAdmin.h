@@ -33,7 +33,7 @@ namespace TreeAdmin {
         AW_awar *tree_awar(AW_root *awr) const;
     };
 
-    void create_awars(AW_root *root, AW_default aw_def);
+    void create_awars(AW_root *root, AW_default aw_def, bool registerTreeAwar);
     AW_awar *dest_tree_awar(AW_root *root);
     AW_awar *source_tree_awar(AW_root *root);
 

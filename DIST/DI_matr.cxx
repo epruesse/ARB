@@ -941,7 +941,7 @@ GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation, bool *aborte
     return prodist.makedists(aborted_flag);
 }
 
-struct lessCCP { bool operator()(const char *s1, const char *s2) { return strcmp(s1, s2)<0; } };
+struct lessCCP { bool operator()(const char *s1, const char *s2) const { return strcmp(s1, s2)<0; } };
 typedef std::map<const char*, GBT_TREE*, lessCCP> NamedNodes;
 
 GB_ERROR link_to_tree(NamedNodes& named, GBT_TREE *node) {

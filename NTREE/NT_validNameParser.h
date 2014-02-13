@@ -12,8 +12,8 @@
 #ifndef NT_VALIDNAMEPARSER_H
 #define NT_VALIDNAMEPARSER_H
 
-#ifndef __LIST__
-#include <list>
+#ifndef ARB_FORWARD_LIST_H
+#include <arb_forward_list.h>
 #endif
 #ifndef __STRING__
 #include <string>
@@ -24,11 +24,11 @@
 
 namespace validNames {
 
-    typedef std::list<std::string> LineSet;
-    typedef LineSet* LineSetPtr;
+    typedef arb_forward_list<std::string> LineSet;
+    typedef LineSet*                      LineSetPtr;
 
-    typedef std::vector<std::string> TokL;
-    typedef TokL *TokLPtr;
+    typedef std::vector<std::string>  TokL;
+    typedef TokL                     *TokLPtr;
 
     enum DESCT {
         VALGEN, HETGEN, HOMGEN, RENGEN, CORGEN,

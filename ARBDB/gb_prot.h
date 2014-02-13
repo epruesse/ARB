@@ -20,8 +20,6 @@ void gb_untouch_children(GBCONTAINER *gbc);
 void gb_untouch_me(GBENTRY *gbe);
 void gb_untouch_children_and_me(GBCONTAINER *gbc);
 void gb_create_header_array(GBCONTAINER *gbc, int size);
-GB_MAIN_TYPE *gb_make_gb_main_type(const char *path);
-void gb_destroy_main(GB_MAIN_TYPE *Main);
 GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_pos, GBQUARK keyq);
 GBENTRY *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type);
 GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbc, long index_pos, GBQUARK keyq);
@@ -129,7 +127,6 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, size_t si
 
 /* adquery.cxx */
 GBDATA *gb_find_by_nr(GBCONTAINER *father, int index);
-void gb_init_ctype_table(void);
 GBDATA *gb_search(GBCONTAINER *gbc, const char *key, GB_TYPES create, int internflag);
 void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, size_t table_size);
 char *gbs_search_second_bracket(const char *source);
@@ -171,8 +168,6 @@ GBCONTAINER *gb_get_root(GBCONTAINER *gbc);
 GBENTRY *gb_create(GBCONTAINER *father, const char *key, GB_TYPES type);
 GBCONTAINER *gb_create_container(GBCONTAINER *father, const char *key);
 GB_ERROR gb_delete_force(GBDATA *source);
-void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb);
-void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, const TypedDatabaseCallback& cb);
 GB_MAIN_TYPE *gb_get_main_during_cb(void);
 GB_ERROR gb_resort_system_folder_to_top(GBCONTAINER *gb_main);
 
