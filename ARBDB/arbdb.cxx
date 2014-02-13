@@ -767,6 +767,7 @@ long GB_read_memuse(GBDATA *gbd) {
     return gbd->as_entry()->memsize();
 }
 
+#if defined(DEBUG)
 inline long calc_size(gb_callback_list *gbcbl) {
     return gbcbl
         ? sizeof(*gbcbl) + gbcbl->callbacks.size()*sizeof(std::_List_node<gb_callback_list::cbtype>)
@@ -855,6 +856,7 @@ void GB_SizeInfo::collect(GBDATA *gbd) {
     }
     structure += GB_calc_structure_size(gbd);
 }
+#endif
 
 GB_CSTR GB_read_pntr(GBDATA *gbd) {
     GBENTRY    *gbe  = gbd->as_entry();

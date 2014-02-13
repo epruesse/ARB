@@ -144,6 +144,7 @@ public:
 
 // --------------------------------------------
 
+#if defined(DEBUG)
 struct GB_SizeInfo {
     long containers; // no of containers
     long terminals;  // no of terminals
@@ -155,6 +156,7 @@ struct GB_SizeInfo {
 
     void collect(GBDATA *gbd);
 };
+#endif
 
 // --------------------------------------------
 //      include generated public prototypes
