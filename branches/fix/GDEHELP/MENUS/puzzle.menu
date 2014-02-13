@@ -43,6 +43,8 @@ insave:
                 arb_sed -i '/OPTIONS/,/;/d' INFILE  `#MrBayes does not support the OPTIONS block, remove it. (delete everything between OPTIONS and ';')` \
         )
 
+#define NEXUS2NEWICK(FROM,APPENDTO) (test -f FROM && ($ARBHOME/bin/arb_nexus2newick.awk FROM >> APPENDTO) || (arb_message "Error: No tree created? (FROM doesnt exist; see console for details)";false))
+
 item:MrBayes
 itemmeta:B
 itemmethod:(GOTO_LOCAL_DIR; \
@@ -60,7 +62,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
                 && echo $COMMAND >> mrbayes_in; \
             ) && \
             RUN_IN_WINDOW(($ARBHOME/bin/mb mrbayes_in; \
-                           $ARBHOME/bin/arb_nexus2newick.awk mrbayes_out.con.tre >> mr_bayes_out.newick;  $DISPLAY_FUNC));)&
+                           NEXUS2NEWICK(mrbayes_out.con.tre,mr_bayes_out.newick);  $DISPLAY_FUNC));)&
 
 itemhelp:MrBayes.help
 
@@ -136,7 +138,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
                 cat $COMMAND_FILE >> mrbayes_in; \
             ) && \
             RUN_IN_WINDOW(($ARBHOME/bin/mb mrbayes_in; \
-                           $ARBHOME/bin/arb_nexus2newick.awk mrbayes_out.con.tre >> mr_bayes_out.newick;  $DISPLAY_FUNC));)&
+                           NEXUS2NEWICK(mrbayes_out.con.tre,mr_bayes_out.newick);  $DISPLAY_FUNC));)&
 
 itemhelp:MrBayesCustom.help
 
