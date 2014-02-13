@@ -3,21 +3,24 @@
 
 PROG  = MrBAYES
 FOLDER =$(ARBHOME)/GDE/MrBAYES/mrbayes_3.2.1
-# ARBs standard target
-$(MAIN) : mrbayes.stamp
 
+LOCBIN=$(FOLDER)/mb
+LOCDEPS=$(FOLDER)/Makefile $(wildcard $(FOLDER)/*.c) $(wildcard $(FOLDER)/*.h)
+
+INSTBIN=$(ARBHOME)/bin/mb
+
+# ARBs standard target
+$(MAIN) : $(INSTBIN)
 
 clean :
-	rm -f $(ARBHOME)/bin/mb
-	rm -f mrbayes.stamp
+	rm -f $(INSTBIN)
 	cd $(FOLDER) && make clean
 
+$(INSTBIN) : $(LOCBIN)
+	cp $(LOCBIN) $(INSTBIN)
 
-mrbayes.stamp: 
+$(LOCBIN): $(LOCDEPS)
 	+cd $(FOLDER) && $(MAKE) mb
-	cp $(FOLDER)/mb $(ARBHOME)/bin/mb
-	touch mrbayes.stamp
 
-
-.PHONY : clean
+.PHONY : autounstamp clean
 
