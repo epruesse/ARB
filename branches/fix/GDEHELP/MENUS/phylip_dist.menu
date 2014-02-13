@@ -1,6 +1,6 @@
 item:Phylip Distance Methods (Simple GUI Based Interface)
 itemmeta: G
-itemmethod:(GOTO_LOCAL_DIR;GEN_PHYLIP_INFILE;\
+itemmethod:(GOTO_LOCAL_DIR;GEN_PHYLIP(infile);\
             RUN_IN_WINDOW(($CORRECTION_PROT;$CORRECTION_DNA;$PROGRAM_SEL;\
                            $DPGM;\
                            mv infile infile.1; \
@@ -58,7 +58,7 @@ insave:
 
 item:Phylip Distance Matrix
 itemmeta: M
-itemmethod: GOTO_LOCAL_DIR;GEN_PHYLIP_INFILE; \
+itemmethod: GOTO_LOCAL_DIR;GEN_PHYLIP(infile); \
             RUN_IN_WINDOW(( $PREEDIT  \
                             $DPGM ; \
                             arb_textedit outfile & )) ; \

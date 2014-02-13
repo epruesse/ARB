@@ -2,8 +2,7 @@ item:AxML + FastdnaML (max 500 Species) ...
 seqtype: N
 itemmeta: M
 itemmethod:(/bin/rm -f outfile infile treefile ;\
-            arb_export_rates "$RATES" "Y 1" "Q" "R" "G 0 0" "T 2.0" | \
-                arb_convert_aln -GenBank in1 -fastdnaml infile;\
+            arb_export_rates "$RATES" "Y 1" "Q" "R" "G 0 0" "T 2.0" | GEN_FASTDNAML(infile);\
             arb_export_tree $TREE >>infile;\
             RUN_IN_WINDOW((time arb_fastdnaml $PROGRAM;\
                            $DISPLAY_FUNC));\

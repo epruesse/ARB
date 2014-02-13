@@ -41,7 +41,7 @@ insave:
 item:MrBayes
 itemmeta:B
 itemmethod:(GOTO_LOCAL_DIR; \
-            arb_convert_aln -GenBank in1 -NEXUS mrbayes_in; \
+            GEN_NEXUS(mrbayes_in); \
             arb_sed -i '/LABELPOS/d' mrbayes_in                `#MrBayes does not understand the LABELPOS command, therefore it is removed.`; \
             arb_sed -i '/EQUATE/d' mrbayes_in                  `#MrBayes does not support EQUATE macros, remove them.`; \
             arb_sed -i '/OPTIONS/,/;/d' mrbayes_in             `#MrBayes does not support the OPTIONS block, remove it. (delete everything between OPTIONS and ';')`; \
@@ -124,7 +124,7 @@ insave:
 item:MrBayes (custom)
 itemmeta:B
 itemmethod:(GOTO_LOCAL_DIR; \
-            arb_convert_aln -GenBank in1 -NEXUS mrbayes_in; \
+            GEN_NEXUS(mrbayes_in); \
             arb_sed -i '/LABELPOS/d' mrbayes_in                `#MrBayes does not understand the LABELPOS command, therefore it is removed.`; \
             arb_sed -i '/EQUATE/d' mrbayes_in                  `#MrBayes does not support EQUATE macros, remove them.`; \
             arb_sed -i '/OPTIONS/,/;/d' mrbayes_in             `#MrBayes does not support the OPTIONS block, remove it. (delete everything between OPTIONS and ';')`; \
@@ -154,7 +154,7 @@ insave:
 item:TREEPUZZLE ...
 itemmeta: T
 itemmethod:(GOTO_LOCAL_DIR; \
-            arb_convert_aln -GenBank in1 -phylip infile;\
+            GEN_PHYLIP(infile);\
             RUN_IN_WINDOW((puzzle;$DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1 outdist) )&
 itemhelp:treepuzzle.help
