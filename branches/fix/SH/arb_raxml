@@ -171,7 +171,7 @@ else
 
     esac
 
-    if [ $(($GENERATEDTREES)) < $((TAKETREES)) ]; then
+    if [ $(($GENERATEDTREES)) -lt $((TAKETREES)) ]; then
         arb_message "Can't take $TAKETREES of $GENERATEDTREES tree (using all)"
         $TAKETREES = $GENERATEDTREES
     fi
