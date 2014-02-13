@@ -86,6 +86,8 @@ GB_ERROR GB_delete_database(GB_CSTR filename);
 GB_ERROR GB_save_quick_as(GBDATA *gbd, const char *path);
 GB_ERROR GB_save_quick(GBDATA *gbd, const char *refpath);
 void GB_disable_path(GBDATA *gbd, const char *path);
+long GB_last_saved_clock(GBDATA *gb_main);
+GB_ULONG GB_last_saved_time(GBDATA *gb_main);
 
 /* adcache.cxx */
 void GB_flush_cache(GBDATA *gbd);
@@ -217,8 +219,6 @@ char *GB_read_file(const char *path);
 char *GB_map_FILE(FILE *in, int writeable);
 char *GB_map_file(const char *path, int writeable);
 GB_ULONG GB_time_of_day(void);
-long GB_last_saved_clock(GBDATA *gb_main);
-GB_ULONG GB_last_saved_time(GBDATA *gb_main);
 GB_ERROR GB_textprint(const char *path) __ATTR__USERESULT;
 char *GB_executable(GB_CSTR exe_name);
 GB_CSTR GB_getenvUSER(void);

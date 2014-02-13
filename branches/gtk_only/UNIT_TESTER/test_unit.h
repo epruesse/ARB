@@ -1015,10 +1015,10 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_EXPECT_ZERO(cond)         TEST_EXPECTATION(that(cond).is_equal_to(0))
-#define TEST_EXPECT_ZERO__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(0))
-#define TEST_REJECT_ZERO(cond)         TEST_EXPECTATION(that(cond).does_differ_from(0))
-#define TEST_REJECT_ZERO__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).does_differ_from(0))
+#define TEST_EXPECT_ZERO(cond)             TEST_EXPECT_EQUAL(cond, 0)
+#define TEST_EXPECT_ZERO__BROKEN(cond,got) TEST_EXPECT_EQUAL__BROKEN(cond, 0, got)
+#define TEST_REJECT_ZERO(cond)             TEST_EXPECTATION(that(cond).does_differ_from(0))
+#define TEST_REJECT_ZERO__BROKEN(cond)     TEST_EXPECTATION__BROKEN(that(cond).does_differ_from(0))
 
 #define TEST_EXPECT_ZERO_OR_SHOW_ERRNO(iocond)                  \
     do {                                                        \
@@ -1177,14 +1177,23 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 
 // --------------------------------------------------------------------------------
 
-#define TEST_EXPECT_EQUAL(e1,t2)         TEST_EXPECTATION(that(e1).is_equal_to(t2))
-#define TEST_EXPECT_EQUAL__BROKEN(e1,t2) TEST_EXPECTATION__BROKEN(that(e1).is_equal_to(t2))
+namespace arb_test {
+    template <typename T>
+    inline void expect_broken(const arb_test::matchable_value<T>& That, const T& want, const T& got) {
+        TEST_EXPECTATION__BROKEN(That.is_equal_to(want));
+        TEST_EXPECTATION(That.is_equal_to(got));
+    }
+};
 
-#define TEST_EXPECT_SIMILAR(e1,t2,epsilon)         TEST_EXPECTATION(that(e1).fulfills(epsilon_similar(epsilon), t2))
-#define TEST_EXPECT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECTATION__BROKEN(that(e1).fulfills(epsilon_similar(epsilon), t2))
+#define TEST_EXPECT_EQUAL(expr,want)             TEST_EXPECTATION(that(expr).is_equal_to(want))
+#define TEST_EXPECT_EQUAL__BROKEN(expr,want,got) do { TEST_EXPECTATION__BROKEN(that(expr).is_equal_to(want)); TEST_EXPECTATION(that(expr).is_equal_to(got)); } while(0)
+#define TEST_EXPECT_EQUAL__IGNARG(expr,want,ign) TEST_EXPECTATION(that(expr).is_equal_to(want))
 
-#define TEST_EXPECT_DIFFERENT(e1,t2)         TEST_EXPECTATION(that(e1).does_differ_from(t2));
-#define TEST_EXPECT_DIFFERENT__BROKEN(e1,t2) TEST_EXPECTATION__BROKEN(that(e1).does_differ_from(t2));
+#define TEST_EXPECT_SIMILAR(expr,want,epsilon)         TEST_EXPECTATION(that(expr).fulfills(epsilon_similar(epsilon), want))
+#define TEST_EXPECT_SIMILAR__BROKEN(expr,want,epsilon) TEST_EXPECTATION__BROKEN(that(expr).fulfills(epsilon_similar(epsilon), want))
+
+#define TEST_EXPECT_DIFFERENT(expr,want)         TEST_EXPECTATION(that(expr).does_differ_from(want));
+#define TEST_EXPECT_DIFFERENT__BROKEN(expr,want) TEST_EXPECTATION__BROKEN(that(expr).does_differ_from(want));
 
 #define TEST_EXPECT_LESS(val,ref)              TEST_EXPECTATION(that(val).is_less_than(ref))
 #define TEST_EXPECT_MORE(val,ref)              TEST_EXPECTATION(that(val).is_more_than(ref))
@@ -1196,15 +1205,15 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #define TEST_EXPECT_CONTAINS(str,part)         TEST_EXPECTATION(that(str).does_contain(part))
 #define TEST_EXPECT_CONTAINS__BROKEN(str,part) TEST_EXPECTATION__BROKEN(that(str).does_contain(part))
 
-#define TEST_EXPECT_NULL(n)         TEST_EXPECT_EQUAL(n, (typeof(n))NULL)
-#define TEST_EXPECT_NULL__BROKEN(n) TEST_EXPECT_EQUAL__BROKEN(n, (typeof(n))NULL)
-#define TEST_REJECT_NULL(n)         TEST_EXPECT_DIFFERENT(n, (typeof(n))NULL)
-#define TEST_REJECT_NULL__BROKEN(n) TEST_EXPECT_DIFFERENT__BROKEN(n, (typeof(n))NULL)
+#define TEST_EXPECT_NULL(n)             TEST_EXPECT_EQUAL(n, (typeof(n))NULL)
+#define TEST_EXPECT_NULL__BROKEN(n,got) TEST_EXPECT_EQUAL__BROKEN(n, (typeof(n))NULL, got)
+#define TEST_REJECT_NULL(n)             TEST_EXPECT_DIFFERENT(n, (typeof(n))NULL)
+#define TEST_REJECT_NULL__BROKEN(n)     TEST_EXPECT_DIFFERENT__BROKEN(n, (typeof(n))NULL)
 
-#define TEST_EXPECT(cond)         TEST_EXPECT_EQUAL(cond, true)
-#define TEST_EXPECT__BROKEN(cond) TEST_EXPECT_EQUAL__BROKEN(cond, true)
-#define TEST_REJECT(cond)         TEST_EXPECT_EQUAL(cond, false)
-#define TEST_REJECT__BROKEN(cond) TEST_EXPECT_EQUAL__BROKEN(cond, false)
+#define TEST_EXPECT(cond)         TEST_EXPECTATION(that(cond).is_equal_to(true))
+#define TEST_EXPECT__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(true))
+#define TEST_REJECT(cond)         TEST_EXPECTATION(that(cond).is_equal_to(false))
+#define TEST_REJECT__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(false))
 
 // --------------------------------------------------------------------------------
 // the following macros only work when

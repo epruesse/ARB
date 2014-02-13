@@ -815,7 +815,7 @@ void TEST_path_unfolding() {
             TEST_EXPECT_EQUAL(pts_path_in_arblib, pts_unfold_path);
         }
         else {
-            TEST_EXPECT_EQUAL__BROKEN(pts_path_in_arblib, pts_unfold_path); // fails if directory does not exist
+            TEST_EXPECT_EQUAL__BROKEN(pts_path_in_arblib, pts_unfold_path, "???"); // fails if directory does not exist
         }
         free(pts_unfold_path);
         free(pts_path_in_arblib);

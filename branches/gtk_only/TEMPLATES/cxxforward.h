@@ -17,39 +17,45 @@
 #include "gccver.h"
 #endif
 
+#if defined(__cplusplus)
+# if (GCC_VERSION_CODE >= 407)
+#  if (__cplusplus == 199711L)
+#  else
+#   if (__cplusplus == 201103L)
+#    define ARB_ENABLE_Cxx11_FEATURES
+#   else
+#    error Unknown C++ standard defined in __cplusplus
+#   endif
+#  endif
+# endif
+#else
+# warning C compilation includes cxxforward.h
+#endif
+
+
+#ifdef ARB_ENABLE_Cxx11_FEATURES
+
 // C++11 is enabled starting with gcc 4.7 in ../Makefile@USE_Cxx11
 //
 // Full support for C++11 is available starting with gcc 4.8.
 // Use #ifdef Cxx11 to insert conditional sections using full C++11
-#if (GCC_VERSION_CODE >= 408)
-#define Cxx11 1
-
-#if defined(DEBUG)
-static_assert(true, "This fails to compile, if C++11 is available but unused");
-#endif
-
-#endif
-
-// -------------------
-//      constexpr
+# if (GCC_VERSION_CODE >= 408)
+#  define Cxx11 1
+# endif
 
 // allows static member initialisation in class definition:
-#if (GCC_VERSION_CODE >= 407) && !defined(DONT_USE_CXX11) // constexpr is supported starting with gcc 4.6. We use it starting with 4.7
 # define CONSTEXPR        constexpr
 # define CONSTEXPR_RETURN constexpr
+
+// allows to protect overloading functions against signature changes of overload functions:
+# define OVERRIDE override
+
 #else
+// backward (non C++11) compatibility defines:
 # define CONSTEXPR        const
 # define CONSTEXPR_RETURN
-#endif
-
-// ------------------
-//      override
-
-// allows to protect overloading functions against signature changes of overload functions 
-#if (GCC_VERSION_CODE >= 407) && !defined(DONT_USE_CXX11) // override is supported starting with gcc 4.7
-# define OVERRIDE override
-#else
 # define OVERRIDE
+
 #endif
 
 #else

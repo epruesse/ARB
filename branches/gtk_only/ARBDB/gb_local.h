@@ -29,7 +29,7 @@
 // ---------------------
 //      simple types
 
-typedef short GB_MAIN_IDX;      // random-index
+typedef short    GB_MAIN_IDX;   // random-index
 
 // ------------------------------
 //      forward declare types
