@@ -768,9 +768,12 @@ long GB_read_memuse(GBDATA *gbd) {
 }
 
 #if defined(DEBUG)
+
+#define STD_LIST_NODE_NAME _List_node
+
 inline long calc_size(gb_callback_list *gbcbl) {
     return gbcbl
-        ? sizeof(*gbcbl) + gbcbl->callbacks.size()*sizeof(std::_List_node<gb_callback_list::cbtype>)
+        ? sizeof(*gbcbl) + gbcbl->callbacks.size()* sizeof(std::STD_LIST_NODE_NAME<gb_callback_list::cbtype>)
         : 0;
 }
 inline long calc_size(gb_transaction_save *gbts) {
