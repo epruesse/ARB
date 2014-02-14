@@ -4,7 +4,7 @@ itemmeta: A
 itemmethod:(GOTO_LOCAL_DIR ; \
             arb_export_rates --arb-notify "$RATES" "T 2.0" "Y 1" "$QUICKADD" | GEN_FASTDNAML(infile) && \
             RUN_IN_WINDOW((cp infile last.infile; time arb_fastdnaml $PROGRAM && $DISPLAY_FUNC)); \
-            RM_LOCAL_FILES(in1 last.infile) )&
+            RM_LOCAL_FILES(TmpInputFile last.infile) )&
 
 itemhelp:dnaml.help
 
@@ -31,7 +31,7 @@ arglabel:What to do with the tree?
 argchoice:ARB ('tree_fml_...'):arb_read_tree tree_fml_$$ treefile "PRG=$PROGRAM FILTER=$FILTER RATE=$RATES"
 argchoice:Treetool:treetool treefile
 
-in:in1
+in:TmpInputFile
 informat:genbank
 inmask:
 insave:

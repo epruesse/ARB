@@ -6,7 +6,7 @@ itemmethod:(GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
                                      $RATE_VARIATION $VARIATION_COEFF $HMM_RATES $INV_FRACTION \
                                      $INTERACTIVE && \
                            $DISPLAY_FUNC));\
-            RM_LOCAL_FILES(in1) )&
+            RM_LOCAL_FILES(TmpInputFile) )&
 itemhelp:proml.help
 
 arg:DISPLAY_FUNC
@@ -85,7 +85,7 @@ arglabel:Interactive? (no for bootstrap)
 argchoice:No:0
 argchoice:Yes:1
 
-in:in1
+in:TmpInputFile
 informat:genbank
 inmask:
 insave:

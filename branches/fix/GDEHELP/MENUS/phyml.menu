@@ -56,7 +56,7 @@ arglabel:Interactive?
 argchoice:No:0
 argchoice:Yes:1
 
-in:in1
+in:TmpInputFile
 informat:genbank
 inmask:
 insave:
@@ -105,7 +105,7 @@ arglabel:Interactive?
 argchoice:No:0
 argchoice:Yes:1
 
-in:in1
+in:TmpInputFile
 informat:genbank
 inmask:
 insave:

@@ -1,14 +1,14 @@
 item:Import sequences using Readseq (slow) ...
 seqtype:-
 itemmeta: R
-itemmethod:arb_readseq $INPUTFILE -a -f2 > OUTPUTFILE
+itemmethod:arb_readseq $INPUTFILE -a -f2 > TmpOutputFile
 itemhelp:readseq.help
 
 arg:INPUTFILE
 argtype:filename
 arglabel:Name of file to import
 
-out:OUTPUTFILE
+out:TmpOutputFile
 outformat:genbank
 
 

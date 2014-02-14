@@ -136,7 +136,7 @@ argtype:text
 arglabel: Custom parameters
 argtext:
 
-in:in1
+in:TmpInputFile
 informat:genbank
 inmask:
 insave:

@@ -1,7 +1,7 @@
 item:FastTree2 (nucleotide)
 itemmeta:F
 itemmethod:(GOTO_LOCAL_DIR; \
-            arb_sed 's/#/>/' <in1 | \
+            arb_sed 's/#/>/' <TmpInputFile | \
             arb_sed 's/%/>/' | \
             arb_sed 's/"/>/'| \
             arb_sed 's/@/>/' | \
@@ -30,7 +30,7 @@ argchoice:Jukes-Cantor:
 argchoice:GTR:-gtr
 
 
-in:in1
+in:TmpInputFile
 informat:flat
 insave:
 
@@ -122,7 +122,7 @@ arglabel:Fraction of samples that will be discarded\nwhen convergence diagnostic
 argtext:0.25
 
 
-in:in1
+in:TmpInputFile
 informat:genbank
 insave:
 
@@ -154,7 +154,7 @@ arg:COMMAND_FILE
 argtype:filename
 arglabel:MrBayes command file
 
-in:in1
+in:TmpInputFile
 informat:genbank
 insave:
 
@@ -164,7 +164,7 @@ item:TREEPUZZLE ...
 itemmeta: T
 itemmethod:(GOTO_LOCAL_DIR; GEN_PHYLIP(infile) && \
             RUN_IN_WINDOW(((puzzle || STOP_ON_FAILURE(puzzle)) && $DISPLAY_FUNC));\
-            RM_LOCAL_FILES(in1 outdist) )&
+            RM_LOCAL_FILES(TmpInputFile outdist) )&
 itemhelp:treepuzzle.help
 
 arg:DISPLAY_FUNC
@@ -173,7 +173,7 @@ arglabel:What to do with the tree?
 argchoice:ARB ('tree_puz_//'):arb_read_tree tree_puz_$$ outtree "PRG=PUZZLE FILTER=$FILTER PKG=strimmer/v. haeseler"
 argchoice:Treetool:treetool outtree
 
-in:in1
+in:TmpInputFile
 informat:genbank
 inmask:
 insave:

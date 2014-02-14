@@ -2,8 +2,10 @@
 //
 // * each external command ('itemmethod') runs in its separate directory under ~/.arb_tmp
 // * if sequences are exported ARB writes them in GenBank format into a tmpfile (e.g. sth like '/tmp/gde3170_0')
-//   In 'itemmethod' every occurrance of 'in1' (as specified at entry 'in:') is replaced by the name of that tempfile -
-//   so be careful not to use the term 'in1' if that substitution is not intended.
+//   In 'itemmethod' every occurrance of 'TmpInputFile' (as specified at entry 'in:') is replaced by the name of that tempfile.
+//   Some macros defined below expect that placeholder, i.e. always use 'TmpInputFile' for 'in:'!
+// * if sequences are (re-)imported, ARB prepares a temporary output-file. itemmethod shall use the placeholder 'TmpOutputFile'
+//   to generate its content. Always use 'TmpOutputFile' for 'out:'
 // * 'arg:DISPLAY_FUNC' shall be a single command (to be chainable with && in itemmethod)
 
 #define STD_REMOVE(FILES)       /bin/rm -f FILES infile intree outfile outtree treefile arb_read_tree_args
@@ -14,7 +16,7 @@
 #define GOTO_LOCAL_DIR          mkdir -p ~/.arb_tmp/$$; cd ~/.arb_tmp/$$; STD_REMOVE(nofile)
 #define RM_LOCAL_FILES(FILES)   cd ~/.arb_tmp/$$ ; STD_REMOVE(FILES); cd .. ; rmdir $$
 
-#define GENERATE(OUTFILE,FORMAT) arb_convert_aln --arb-notify -GenBank in1 -FORMAT OUTFILE
+#define GENERATE(OUTFILE,FORMAT) arb_convert_aln --arb-notify -GenBank TmpInputFile -FORMAT OUTFILE
 
 #define GEN_PHYLIP(OUTFILE)     GENERATE(OUTFILE,phylip)
 #define GEN_FASTDNAML(OUTFILE)  GENERATE(OUTFILE,fastdnaml)

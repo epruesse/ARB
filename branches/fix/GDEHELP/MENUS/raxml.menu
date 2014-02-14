@@ -11,7 +11,7 @@
                                 "$NUMBEROFRUNS" "$TAKETREES" $CONSENSE \
                                 _PARAMS_ \
                         ); \
-        RM_LOCAL_FILES(in1 last.infile treefile.in weights RAxML_info.treefile) )& 
+        RM_LOCAL_FILES(TmpInputFile last.infile treefile.in weights RAxML_info.treefile) )&
 
 #ifdef RAXML_DNA
         item:RAxML (DNA)
@@ -158,7 +158,7 @@ arglabel:What to do with selected trees?
 argchoice:Import into ARB:import
 argchoice:Create consensus tree:consense
 
-in:in1
+in:TmpInputFile
 informat:genbank
 inmask:
 insave:

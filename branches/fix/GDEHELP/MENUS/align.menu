@@ -1,7 +1,7 @@
 item:ProbCons
 itemmeta: P
 itemmethod:(GOTO_LOCAL_DIR; \
-            arb_sed 's/#/>HASH_/' <in1 | \
+            arb_sed 's/#/>HASH_/' <TmpInputFile | \
             arb_sed 's/%/>PERCENT_/' | \
             arb_sed 's/"/>QUOTE_/'| \
             arb_sed 's/@/>AT_/' | \
@@ -10,7 +10,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/>HASH_/#/' <probcons_out | \
             arb_sed 's/>PERCENT_/%/' | \
             arb_sed 's/>QUOTE_/"/' | \
-            arb_sed 's/>AT_/@/' > out1; RM_LOCAL_FILES(probcons_in* probcons_out* in1) )
+            arb_sed 's/>AT_/@/' > TmpOutputFile; RM_LOCAL_FILES(probcons_in* probcons_out* TmpInputFile) )
 
 arg:REPS
 argtype:choice_menu
@@ -35,12 +35,12 @@ argmin:0
 argmax:20
 argvalue:0
 
-in:in1
+in:TmpInputFile
 informat:flat
 intyped:detailed
 insave:
 
-out:out1
+out:TmpOutputFile
 outformat:flat
 
 //----------------------------------------------------
@@ -48,7 +48,7 @@ outformat:flat
 item:Muscle
 itemmeta: M
 itemmethod:(GOTO_LOCAL_DIR; \
-            arb_sed 's/#/>HASH_/' <in1 | \
+            arb_sed 's/#/>HASH_/' <TmpInputFile | \
             arb_sed 's/%/>PERCENT_/' | \
             arb_sed 's/"/>QUOTE_/'| \
             arb_sed 's/@/>AT_/' | \
@@ -57,7 +57,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/>HASH_/#/' <muscle_out | \
             arb_sed 's/>PERCENT_/%/' | \
             arb_sed 's/>QUOTE_/"/' | \
-            arb_sed 's/>AT_/@/' > out1; RM_LOCAL_FILES(muscle_in* muscle_out* in1))
+            arb_sed 's/>AT_/@/' > TmpOutputFile; RM_LOCAL_FILES(muscle_in* muscle_out* TmpInputFile))
 
 arg:MAXITERS
 argtype:text
@@ -96,12 +96,12 @@ argtext:16
 //argchoice:Sum-of-pairs profile score (VTML240):-sv
 
 
-in:in1
+in:TmpInputFile
 informat:flat
 intyped:detailed
 insave:
 
-out:out1
+out:TmpOutputFile
 outformat:flat
 
 //-------------------------------------------------------------------
@@ -109,7 +109,7 @@ outformat:flat
 item:Mafft
 itemmeta: F
 itemmethod:(GOTO_LOCAL_DIR; \
-            arb_sed 's/#/>HASH_/' <in1 | \
+            arb_sed 's/#/>HASH_/' <TmpInputFile | \
             arb_sed 's/%/>PERCENT_/' | \
             arb_sed 's/"/>QUOTE_/'| \
             arb_sed 's/@/>AT_/' | \
@@ -118,7 +118,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/>HASH_/#/' <mafft_out | \
             arb_sed 's/>PERCENT_/%/' | \
             arb_sed 's/>QUOTE_/"/' | \
-            arb_sed 's/>AT_/@/' > out1; RM_LOCAL_FILES(mafft_in* in1 mafft_out*))
+            arb_sed 's/>AT_/@/' > TmpOutputFile; RM_LOCAL_FILES(mafft_in* TmpInputFile mafft_out*))
 
 itemhelp:mafft.help
 
@@ -158,12 +158,12 @@ arglabel:Offset value [0..1]\n(Use Values >0.1 for closely related sequences)
 argtext:0.5
 
 
-in:in1
+in:TmpInputFile
 informat:flat
 intyped:detailed
 insave:
 
-out:out1
+out:TmpOutputFile
 outformat:flat
 
 //--------------------------------------------------------
@@ -171,30 +171,30 @@ outformat:flat
 item:ClustalW automatic
 itemmeta: W
 itemmethod:(GOTO_LOCAL_DIR; \
-            tr '"%//' '>' <in1 >clus_in; \
+            tr '"%//' '>' <TmpInputFile >clus_in; \
             RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align ; \
-                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >out1; )); \
-            RM_LOCAL_FILES(clus_in* in1))
+                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >TmpOutputFile; )); \
+            RM_LOCAL_FILES(clus_in* TmpInputFile))
 
 itemhelp:clustalw.help
 
 
-in:in1
+in:TmpInputFile
 informat:flat
 insave:
 
-out:out1
+out:TmpOutputFile
 outformat:flat
 
 // --------------------------------------------------------------------------------
 
 item:Create ClustalW Profile 2
 itemmeta: C
-itemmethod:(GOTO_LOCAL_DIR ; tr '"%//' '>' <in1 >../clus_prf ; RM_LOCAL_FILES(in1))
+itemmethod:(GOTO_LOCAL_DIR ; tr '"%//' '>' <TmpInputFile >../clus_prf ; RM_LOCAL_FILES(TmpInputFile))
 
 itemhelp:clustalw.help
 
-in:in1
+in:TmpInputFile
 informat:flat
 insave:
 
@@ -203,19 +203,19 @@ insave:
 item:ClustalW Profile Alignment
 itemmeta: P
 itemmethod:(GOTO_LOCAL_DIR; \
-            tr '"%//' '>' <in1 >clus_in; \
+            tr '"%//' '>' <TmpInputFile >clus_in; \
             RUN_IN_WINDOW((clustalw -output=PIR -profile1=clus_in -profile2=../clus_prf -align ; \
-                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >out1; )); \
-            RM_LOCAL_FILES(clus_in* in1))
+                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >TmpOutputFile; )); \
+            RM_LOCAL_FILES(clus_in* TmpInputFile))
 
 itemhelp:clustalw.help
 
 
-in:in1
+in:TmpInputFile
 informat:flat
 insave:
 
-out:out1
+out:TmpOutputFile
 outformat:flat
 
 // --------------------------------------------------------------------------------
@@ -224,7 +224,7 @@ item:ClustalW DNA Alignment (fast)
 seqtype: N
 itemmeta: N
 itemmethod:(GOTO_LOCAL_DIR; \
-            tr '"%//' '>' <in1 >clus_in ; \
+            tr '"%//' '>' <TmpInputFile >clus_in ; \
             RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
                                     -quicktree $INTERACTIVE \
                                     -ktuple=$KTUPLE -topdiags=$TOPDIAGS \
@@ -233,8 +233,8 @@ itemmethod:(GOTO_LOCAL_DIR; \
                                     -type=DNA -transweight=$TRANSWEIGHT \
                                     -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
                                     -dnamatrix=$DNAMATRIX; \
-                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | arb_sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >out1; )) ; \
-           RM_LOCAL_FILES(clus_in* in1))
+                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | arb_sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >TmpOutputFile; )) ; \
+           RM_LOCAL_FILES(clus_in* TmpInputFile))
 
 itemhelp:clustalw.help
 
@@ -310,11 +310,11 @@ argtype:choice_menu
 argchoice:No:
 argchoice:Yes:-interactive
 
-in:in1
+in:TmpInputFile
 informat:flat
 insave:
 
-out:out1
+out:TmpOutputFile
 outformat:flat
 
 // --------------------------------------------------------------------------------
@@ -323,7 +323,7 @@ item:ClustalW DNA Alignment (slow & accurate)
 seqtype: N
 itemmeta: s
 itemmethod:(GOTO_LOCAL_DIR; \
-            tr '"%//' '>' <in1 >clus_in ; \
+            tr '"%//' '>' <TmpInputFile >clus_in ; \
             RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
                                      $INTERACTIVE \
                                     -pwdnamatrix=$PWDNAMATRIX \
@@ -331,8 +331,8 @@ itemmethod:(GOTO_LOCAL_DIR; \
                                     -type=DNA -transweight=$TRANSWEIGHT \
                                     -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
                                     -dnamatrix=$DNAMATRIX; \
-                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >out1; )) ; \
-            RM_LOCAL_FILES(clus_in* in1))
+                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >TmpOutputFile; )) ; \
+            RM_LOCAL_FILES(clus_in* TmpInputFile))
 
 itemhelp:clustalw.help
 
@@ -400,11 +400,11 @@ argtype:choice_menu
 argchoice:No:
 argchoice:Yes:-interactive
 
-in:in1
+in:TmpInputFile
 informat:flat
 insave:
 
-out:out1
+out:TmpOutputFile
 outformat:flat
 
 // --------------------------------------------------------------------------------
@@ -413,7 +413,7 @@ item:ClustalW Protein Alignment (fast)
 seqtype: A
 itemmeta: o
 itemmethod:(GOTO_LOCAL_DIR; \
-            tr '"%//' '>' <in1 >clus_in ; \
+            tr '"%//' '>' <TmpInputFile >clus_in ; \
             RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
                                     -quicktree  $INTERACTIVE \
                                     -ktuple=$KTUPLE -topdiags=$TOPDIAGS \
@@ -422,8 +422,8 @@ itemmethod:(GOTO_LOCAL_DIR; \
                                     -type=PROTEIN -transweight=$TRANSWEIGHT \
                                     -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
                                     -matrix=$MATRIX $NEGMATRIX; \
-                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >out1; )) ; \
-            RM_LOCAL_FILES(clus_in* in1))
+                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >TmpOutputFile; )) ; \
+            RM_LOCAL_FILES(clus_in* TmpInputFile))
 
 itemhelp:clustalw.help
 
@@ -507,11 +507,11 @@ argtype:choice_menu
 argchoice:No:
 argchoice:Yes:-interactive
 
-in:in1
+in:TmpInputFile
 informat:flat
 insave:
 
-out:out1
+out:TmpOutputFile
 outformat:flat
 
 // --------------------------------------------------------------------------------
@@ -520,7 +520,7 @@ item:ClustalW Protein Alignment (slow & accurate)
 seqtype: A
 itemmeta: l
 itemmethod:(GOTO_LOCAL_DIR; \
-            tr '"%//' '>' <in1 >clus_in ; \
+            tr '"%//' '>' <TmpInputFile >clus_in ; \
             RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
                                      $INTERACTIVE \
                                     -pwmatrix=$PWMATRIX \
@@ -528,8 +528,8 @@ itemmethod:(GOTO_LOCAL_DIR; \
                                     -type=PROTEIN -transweight=$TRANSWEIGHT \
                                     -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
                                     -matrix=$MATRIX $NEGMATRIX; \
-                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >out1; )) ; \
-            RM_LOCAL_FILES(clus_in* in1))
+                           cat clus_in.pir | arb_sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | arb_sed "s/^\*$//g" >TmpOutputFile; )) ; \
+            RM_LOCAL_FILES(clus_in* TmpInputFile))
 
 itemhelp:clustalw.help
 
@@ -607,11 +607,11 @@ argtype:choice_menu
 argchoice:No:
 argchoice:Yes:-interactive
 
-in:in1
+in:TmpInputFile
 informat:flat
 insave:
 
-out:out1
+out:TmpOutputFile
 outformat:flat
 
 // --------------------------------------------------------------------------------
@@ -619,9 +619,9 @@ outformat:flat
 item:Assemble Contigs
 itemmeta: g
 itemmethod: ( GOTO_LOCAL_DIR; \
-              tr '"%//' '>' <in1 >in1.tmp; \
-              CAP2 in1.tmp $OVERLAP $PMATCH >  out1; \
-              RM_LOCAL_FILES(in1 in1.tmp) )
+              tr '"%//' '>' <TmpInputFile >TmpInputFile.tmp; \
+              CAP2 TmpInputFile.tmp $OVERLAP $PMATCH >  TmpOutputFile; \
+              RM_LOCAL_FILES(TmpInputFile TmpInputFile.tmp) )
 itemhelp:CAP2.help
 
 arg:OVERLAP
@@ -638,9 +638,9 @@ argmin:25
 argmax:100
 argvalue:90
 
-in:in1
+in:TmpInputFile
 informat:flat
 
-out:out1
+out:TmpOutputFile
 outformat:gde
 
