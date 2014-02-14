@@ -2,7 +2,7 @@
 #define PHYML_CALL(seqtype) \
         (   GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
             RUN_IN_WINDOW(if [ "$TREE" != "tree_?????" -a ! -z "$TREE" ]; then arb_export_tree $TREE > input_tree.in; INPUT_TREE_PARAM=-uinput_tree.in; fi; \
-                          $ARBHOME/bin/phyml_20130708 \
+                          ($ARBHOME/bin/phyml_20130708 \
                           --input=infile \
                           --datatype=seqtype \
                           --model=$MODEL \
@@ -14,8 +14,9 @@
                           --pinv=$PROPINVAR \
                           --alpha=$ALPHA \
                           $INPUT_TREE_PARAM \
-                          $CUSTOM_PARAMS \
-                          ;$DISPLAY_FUNC))&
+                          $CUSTOM_PARAMS || STOP_ON_FAILURE(phyml_20130708)) &&  \
+                          mv infile_phyml_tree.txt outtree && \
+                          $DISPLAY_FUNC))&
 
 #ifdef PHYML_DNA
         item: PHYML-20130708 (DNA)
@@ -35,7 +36,7 @@ itemhelp:phyml-20130708.help
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree?
-argchoice:ARB ('tree_phyml_'):mv infile_phyml_tree.txt outtree; arb_read_tree tree_phyml_$$ outtree "PRG=phyml FILTER=$FILTER STYPE=DNA"
+argchoice:ARB ('tree_phyml_'):arb_read_tree tree_phyml_$$ outtree "PRG=phyml FILTER=$FILTER STYPE=DNA"
 argchoice:TextEdit:arb_textedit outfile &
 argchoice:Treetool:treetool outtree
 

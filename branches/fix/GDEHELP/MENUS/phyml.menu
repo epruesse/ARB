@@ -2,7 +2,7 @@ item:PHYML (DNA)
 seqtype: N
 itemmeta: D
 itemmethod:( GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
-             RUN_IN_WINDOW((arb_phyml infile DNA $MODEL $OPTFREQ $BASEFREQEST $TSTVRATIO $PINVAR $INTERACTIVE; \
+             RUN_IN_WINDOW((arb_phyml infile DNA $MODEL $OPTFREQ $BASEFREQEST $TSTVRATIO $PINVAR $INTERACTIVE && \
                             $DISPLAY_FUNC )); \
            )&
 itemhelp:phyml.help
@@ -67,7 +67,7 @@ item:PHYML (Amino acids)
 seqtype: A
 itemmeta: M
 itemmethod:( GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
-             RUN_IN_WINDOW((arb_phyml infile AA $MODEL $PINVAR $INTERACTIVE; \
+             RUN_IN_WINDOW((arb_phyml infile AA $MODEL $PINVAR $INTERACTIVE && \
                             $DISPLAY_FUNC )); \
            )&
 itemhelp:phyml.help

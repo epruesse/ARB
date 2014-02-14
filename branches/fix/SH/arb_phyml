@@ -31,7 +31,7 @@ else
         if [ "$DATATYPE" = "AA" ]; then
             PINVAR=$1; shift
         else
-            echo "Invalid datatype '$DATATYPE'"
+            arb_message "Invalid datatype '$DATATYPE'"
             exit 1
         fi
     fi
@@ -99,6 +99,7 @@ else
         TREEFILE=infile_phyml_tree.txt
         if [ \! -s $TREEFILE ]; then
             arb_message "'$TREEFILE' was not generated or is empty"
+            false
         else
             echo >arb_read_tree_args
             mv $TREEFILE outtree

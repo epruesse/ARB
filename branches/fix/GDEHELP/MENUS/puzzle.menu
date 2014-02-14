@@ -6,7 +6,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/"/>/'| \
             arb_sed 's/@/>/' | \
             arb_sed '/^[^>]/ y/./-/' > fasttree_in; \
-            RUN_IN_WINDOW(($ARBHOME/bin/FastTree $FAST $MODEL -nt fasttree_in > fasttree_out; \
+            RUN_IN_WINDOW(( ($ARBHOME/bin/FastTree $FAST $MODEL -nt fasttree_in > fasttree_out || STOP_ON_FAILURE(FastTree)) && \
                            $DISPLAY_FUNC));)&
 
 
@@ -14,7 +14,7 @@ arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree?
 argchoice:Load into ARB ('tree_fasttree_//'):$ARBHOME/bin/arb_read_tree tree_fasttree_$$ fasttree_out "PRG=FastTree"
-argchoice:Treetool:treetool mr_bayes_out.newick
+argchoice:Treetool:treetool fasttree_out
 
 
 arg:FAST
@@ -163,7 +163,7 @@ insave:
 item:TREEPUZZLE ...
 itemmeta: T
 itemmethod:(GOTO_LOCAL_DIR; GEN_PHYLIP(infile) && \
-            RUN_IN_WINDOW((puzzle;$DISPLAY_FUNC));\
+            RUN_IN_WINDOW(((puzzle || STOP_ON_FAILURE(puzzle)) && $DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1 outdist) )&
 itemhelp:treepuzzle.help
 

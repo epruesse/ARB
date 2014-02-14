@@ -3,7 +3,7 @@ itemmeta: I
 itemmethod:(GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
             RUN_IN_WINDOW(($DPGM;\
                            mv -f outfile infile;\
-                           ${ARB_XCMD} $PROGRAM;\
+                           (${ARB_XCMD} $PROGRAM || STOP_ON_FAILURE($PROGRAM)) && \
                            $DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1))&
 itemhelp:phylip_distance.help

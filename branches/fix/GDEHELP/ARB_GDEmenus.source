@@ -2,8 +2,9 @@
 //
 // * each external command ('itemmethod') runs in its separate directory under ~/.arb_tmp
 // * if sequences are exported ARB writes them in GenBank format into a tmpfile (e.g. sth like '/tmp/gde3170_0')
-//   In 'itemmethod' every occurrance of 'in1' is replaced by the name of that tempfile -
+//   In 'itemmethod' every occurrance of 'in1' (as specified at entry 'in:') is replaced by the name of that tempfile -
 //   so be careful not to use the term 'in1' if that substitution is not intended.
+// * 'arg:DISPLAY_FUNC' shall be a single command (to be chainable with && in itemmethod)
 
 #define STD_REMOVE(FILES)       /bin/rm -f FILES infile intree outfile outtree treefile arb_read_tree_args
 

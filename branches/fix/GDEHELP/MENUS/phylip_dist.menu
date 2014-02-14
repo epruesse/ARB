@@ -5,7 +5,7 @@ itemmethod:(GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
                            $DPGM;\
                            mv infile infile.1; \
                            mv -f outfile infile;\
-                           arb_echo $PROGRAM_FLAGS |$PROGRAM;\
+                           (arb_echo $PROGRAM_FLAGS |$PROGRAM || STOP_ON_FAILURE($PROGRAM)) && \
                            $DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1 infile.1))&
 itemhelp:phylip_distance.help

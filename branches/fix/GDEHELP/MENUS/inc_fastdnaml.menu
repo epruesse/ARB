@@ -4,7 +4,7 @@ itemmeta: M
 itemmethod:(/bin/rm -f outfile infile treefile ;\
             arb_export_rates --arb-notify "$RATES" "Y 1" "Q" "R" "G 0 0" "T 2.0" | GEN_FASTDNAML(infile) && \
             arb_export_tree $TREE >>infile && \
-            RUN_IN_WINDOW((time arb_fastdnaml $PROGRAM; $DISPLAY_FUNC));\
+            RUN_IN_WINDOW((time arb_fastdnaml $PROGRAM && $DISPLAY_FUNC));\
             /bin/rm -f in1 )&
 itemhelp:dnaml.help
 

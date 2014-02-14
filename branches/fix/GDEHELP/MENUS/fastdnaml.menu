@@ -3,7 +3,7 @@ seqtype: N
 itemmeta: A
 itemmethod:(GOTO_LOCAL_DIR ; \
             arb_export_rates --arb-notify "$RATES" "T 2.0" "Y 1" "$QUICKADD" | GEN_FASTDNAML(infile) && \
-            RUN_IN_WINDOW((cp infile last.infile; time arb_fastdnaml $PROGRAM;$DISPLAY_FUNC)); \
+            RUN_IN_WINDOW((cp infile last.infile; time arb_fastdnaml $PROGRAM && $DISPLAY_FUNC)); \
             RM_LOCAL_FILES(in1 last.infile) )&
 
 itemhelp:dnaml.help
