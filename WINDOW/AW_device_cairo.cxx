@@ -76,9 +76,15 @@ bool AW_device_cairo::draw_string_on_screen(AW_device *device, int gc, const  ch
     aw_assert(size <= strlen(str));
 
     AW_device_cairo *device_cairo = DOWNCAST(AW_device_cairo*, device);
+    AW_common_gtk *common = device_cairo->get_common();
+
     cairo_t *cr = device_cairo->get_cr(gc);
     if (!cr) return true; 
-    /*
+
+#undef AW_USE_CLIPPING
+#ifdef AW_USE_CLIPPING
+    // using cairo for clipping is slow and ARB doesn't
+    // currently need it -> disabled
     cairo_save(cr);
     AW_screen_area cliprect = device_cairo->get_cliprect();
     cairo_rectangle(cr, 
@@ -87,18 +93,33 @@ bool AW_device_cairo::draw_string_on_screen(AW_device *device, int gc, const  ch
                     (int)(cliprect.r-cliprect.l+1), 
                     (int)(cliprect.b-cliprect.t+1));
     cairo_clip(cr);
-    */
+#endif
                     
+#ifdef AW_PANGO_SLOW
     PangoLayout *pl = device_cairo->get_common()->map_gc(gc)->get_pl(str+start, size);
 
-    AW_pos base = 13;//pango_layout_get_baseline(pl)  / PANGO_SCALE;
+    AW_pos base   = pango_layout_get_baseline(pl)  / PANGO_SCALE;
     AW_pos x      = AW_INT(X) + 0.5;
     AW_pos y      = AW_INT(Y - base - 1) + 0.5;
 
     cairo_move_to(cr, x, y);
     pango_cairo_show_layout(cr, pl);
+#else 
+
+    AW_pos x      = AW_INT(X);
+    AW_pos y      = AW_INT(Y);
+
+    cairo_glyph_t *glyphstr = common->map_gc(gc)->make_glyph_string(str+start, size);
+    cairo_save(cr);
+    cairo_translate(cr, x, y);
+    cairo_show_glyphs(cr, glyphstr, size);
+    cairo_restore(cr);
+#endif
     
-    //cairo_restore(cr);
+#ifdef AW_USE_CLIPPING
+    cairo_restore(cr);
+#endif
+
     TRACE("%i %i %s", (int)x, (int)y, str+start);
     return true;
 }

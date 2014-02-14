@@ -28,8 +28,8 @@ void AW_stylable::reset_style() {
     get_common()->reset_style();
 }
 
-void AW_stylable::set_font(int gc, const char* fontname) {
-    get_common()->map_mod_gc(gc)->set_font(fontname);
+void AW_stylable::set_font(int gc, const char* fontname, bool force_monospace) {
+    get_common()->map_mod_gc(gc)->set_font(fontname, force_monospace);
 }
 
 void AW_stylable::set_foreground_color(int gc, AW_rgb col) {

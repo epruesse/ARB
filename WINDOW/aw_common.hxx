@@ -86,7 +86,7 @@ private:
     struct Pimpl;
     Pimpl *prvt;
 
-    virtual void wm_set_font(const char* font_name)                       = 0;
+    virtual void wm_set_font(const char* font_name, bool force_monospace=false) = 0;
     virtual int get_actual_string_size(const char */*str*/) const {return 0;};
 
 protected:
@@ -120,7 +120,7 @@ public:
     void          set_fg_color(AW_rgb col);
     AW_rgb        get_fg_color() const { return conf.color; }
     
-    void          set_font(const char* fontname);
+    void          set_font(const char* fontname, bool force_monospace=false);
 
     AW_common    *get_common() const;
 

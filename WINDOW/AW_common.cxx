@@ -243,9 +243,9 @@ void AW_GC::set_fg_color(AW_rgb col) {
  * Sets a font by name. The font is not part of the default
  * config. 
  */
-void AW_GC::set_font(const char* fontname) {
+void AW_GC::set_font(const char* fontname, bool force_monospace) {
     prvt->font_limits.reset();
-    wm_set_font(fontname);
+    wm_set_font(fontname, force_monospace);
     prvt->font_limits.calc_height();
 }
 
@@ -294,10 +294,7 @@ int AW_GC::get_string_size(const char *str, long textlen) const {
     // do the layout and check the size. That's what
     // get_actual_string() does.
 
-    if (str && !prvt->font_limits.is_monospaced())
-        return get_actual_string_size(str);
-    else
-        return get_string_size_fast(NULL, textlen);
+    return get_string_size_fast(str, textlen);
 }
 
 int AW_GC::get_string_size_fast(const char *str, long textlen) const {
@@ -309,7 +306,7 @@ int AW_GC::get_string_size_fast(const char *str, long textlen) const {
     else {
         for (int c = *(str++); c; c = *(str++)) width += prvt->width_of_chars[c];
     }
-   
+
     return width;
 }
 

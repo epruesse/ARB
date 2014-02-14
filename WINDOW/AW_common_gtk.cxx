@@ -168,7 +168,7 @@ AW_GC *AW_common_gtk::create_gc() {
 }
 
 void AW_common_gtk::update_cr(cairo_t* cr, int gc, bool use_grey) {
-    const AW_GC *awgc = map_gc(gc);
+    const AW_GC_gtk *awgc = map_gc(gc);
 
     // set antialias
     cairo_set_antialias(cr, make_cairo_antialias(get_default_aa()));
@@ -202,13 +202,50 @@ void AW_common_gtk::update_cr(cairo_t* cr, int gc, bool use_grey) {
         default:
           aw_assert(false);
     }
+
+    // set font
+    if (awgc->get_scaled_font()) { // have a font
+        cairo_set_scaled_font(cr, awgc->get_scaled_font());
+    }
 }
 
-struct AW_GC_gtk::Pimpl {
-    layout_cache cache;
-    Pimpl() : cache(200) {}
-};
+const int ASCII_CHAR_COUNT = AW_FONTINFO_CHAR_ASCII_MAX - AW_FONTINFO_CHAR_ASCII_MIN;
 
+struct AW_GC_gtk::Pimpl {
+    layout_cache                cache;
+    PangoGlyphInfo              ascii_glyphs[ASCII_CHAR_COUNT + 1];
+    cairo_scaled_font_t        *scaled_font;
+
+    std::vector<char>           last_string;
+    std::vector<cairo_glyph_t>  glyph_store; 
+    int                         last_string_width;
+
+
+    Pimpl() 
+        : cache(200),
+          scaled_font(NULL),
+          last_string_width(0)
+    {}
+
+    ~Pimpl() {
+        set_scaled_font(NULL);
+    }
+
+    /** set scaled font for this GC
+     * manages the reference count for the pango scaled font
+     * structure (old font unreferenced, new one referenced if 
+     * not NULL
+     */
+    void set_scaled_font(cairo_scaled_font_t *font) {
+        if (scaled_font) {
+            cairo_scaled_font_destroy(scaled_font);
+        }
+        scaled_font = font;
+        if (scaled_font) {
+            cairo_scaled_font_reference(scaled_font);
+        }
+    }
+};
 AW_GC_gtk::AW_GC_gtk(AW_common *aw_common) 
     : AW_GC(aw_common),
       prvt(new Pimpl)
@@ -221,27 +258,59 @@ AW_GC_gtk::~AW_GC_gtk(){
     delete prvt;
 };
 
-void AW_GC_gtk::wm_set_font(const char* font_name) {
+void AW_GC_gtk::wm_set_font(const char* font_name, bool force_monospace) {
     AW_common_gtk* common = DOWNCAST(AW_common_gtk*, get_common());
 
     PangoFontDescription * desc = pango_font_description_from_string(font_name);
     prvt->cache.set_font(desc);
 
-    // now determine char sizes; get the font structure first:
+    char ascii_chars[ASCII_CHAR_COUNT+1];
+    for (unsigned char i = 0; i < ASCII_CHAR_COUNT; i++) {
+        ascii_chars[i] = AW_FONTINFO_CHAR_ASCII_MIN + i;
+    }
+    ascii_chars[ASCII_CHAR_COUNT] = 0;
+
+    PangoLayout *pl = pango_layout_new(common->prvt->context);
+    pango_layout_set_font_description(pl, desc);
+    pango_layout_set_text(pl, ascii_chars, ASCII_CHAR_COUNT);
+
+    PangoLayoutLine  *line     = pango_layout_get_line_readonly(pl, 0);
+    PangoGlyphItem   *item     = (PangoGlyphItem*) line->runs->data;
+    PangoGlyphString *glyphstr = item->glyphs;
+
     PangoFont *font = pango_font_map_load_font(common->prvt->fontmap, common->prvt->context, desc);
-    
-    // iterate through the ascii chars
-    for (unsigned int j = AW_FONTINFO_CHAR_ASCII_MIN; j <= AW_FONTINFO_CHAR_ASCII_MAX; j++) {
-        // make a char* and from that a gunichar which is a PangoGlyph
-        char ascii[2]; ascii[0] = j; ascii[1]=0;
-        PangoGlyph glyph = g_utf8_get_char(ascii);
-        PangoRectangle rect;
-        pango_font_get_glyph_extents(font, glyph , 0, &rect);
-        pango_extents_to_pixels(&rect, 0);
-        set_char_size(j, PANGO_ASCENT(rect), PANGO_DESCENT(rect), PANGO_RBEARING(rect));
+    prvt->set_scaled_font(pango_cairo_font_get_scaled_font((PangoCairoFont*) font));
+
+    PangoGlyphItemIter iter;
+    for (bool have_cluster = pango_glyph_item_iter_init_start(&iter, item, ascii_chars);
+         have_cluster; have_cluster = pango_glyph_item_iter_next_cluster(&iter)) {
+        // check that 1 char converted to 1 cluster and 1 glyph
+        // (paranoia, should be the case for ascii)
+        if (iter.start_char + 1 == iter.end_char &&
+            iter.start_index + 1 == iter.end_index &&
+            iter.start_glyph + 1 == iter.end_glyph)  {
+            PangoGlyphInfo     &info = glyphstr->glyphs[iter.start_glyph];
+
+            PangoRectangle      rect;
+            pango_font_get_glyph_extents(font, info.glyph, 0, &rect);
+            
+            set_char_size(ascii_chars[iter.start_index], 
+                          PANGO_PIXELS(PANGO_ASCENT(rect)),
+                          PANGO_PIXELS(PANGO_DESCENT(rect)),
+                          PANGO_PIXELS(info.geometry.width));
+            prvt->ascii_glyphs[iter.start_index] = info;
+        } 
+        else {
+            set_char_size(ascii_chars[iter.start_index], 0, 0, 0);
+            prvt->ascii_glyphs[iter.start_index].glyph = 0;
+        }
     }
 
     g_object_unref(font);
+}
+
+cairo_scaled_font_t* AW_GC_gtk::get_scaled_font() const {
+    return prvt->scaled_font;
 }
 
 /**
@@ -253,10 +322,63 @@ PangoLayout* AW_GC_gtk::get_pl(const char* str, int len) const {
     return prvt->cache.get(str, len);
 }
 
+cairo_glyph_t* AW_GC_gtk::make_glyph_string(const char* str, int len) const {
+    bool is_ascii = true;
+    prvt->glyph_store.reserve(len);
+    prvt->last_string.reserve(len);
+    double x = 0, y = 0;
+    for (int i=0; i<len; i++) {
+        if (str[i] < AW_FONTINFO_CHAR_ASCII_MIN || 
+            str[i] > AW_FONTINFO_CHAR_ASCII_MAX ||
+            prvt->ascii_glyphs[str[i]-AW_FONTINFO_CHAR_ASCII_MIN].glyph == 0) {
+            is_ascii = false;
+            break;
+        }
+        PangoGlyphInfo &ginfo = prvt->ascii_glyphs[str[i] - AW_FONTINFO_CHAR_ASCII_MIN];
+        
+        prvt->glyph_store[i].index = ginfo.glyph;
+        prvt->glyph_store[i].x = PANGO_PIXELS(x + ginfo.geometry.x_offset);
+        prvt->glyph_store[i].y = PANGO_PIXELS(y + ginfo.geometry.y_offset);
+
+        x += ginfo.geometry.width;
+    }
+    if (is_ascii) {
+        prvt->last_string_width = x;
+        strncpy(prvt->last_string.data(), str, len);
+        return prvt->glyph_store.data();
+    } 
+    else {
+        printf("ERRORRRRRR\n");
+    }
+
+
+    /*
+    cairo_scaled_font_t *font = cairo_get_scaled_font(cr);
+    int num_glyphs = size;
+    cairo_glyph_t  glyph_store[num_glyphs];
+    cairo_glyph_t *glyphs = glyph_store;
+    cairo_status_t err;
+    err = cairo_scaled_font_text_to_glyphs(font, 0, 0, str+start, size, &glyphs, &num_glyphs, NULL, NULL, NULL);
+    if (err == CAIRO_STATUS_SUCCESS) {
+        cairo_save(cr);
+        cairo_translate(cr, x, y);
+        cairo_show_glyphs(cr, glyphs, num_glyphs);
+        cairo_restore(cr);
+        if (glyph_store != glyphs) {
+            cairo_glyph_free(glyphs);
+        }
+    }
+    */
+}
+
+
 int AW_GC_gtk::get_actual_string_size(const char* str) const {
+    
+    /*
     PangoLayout *pl = get_pl(str, -1); // update with string if necessary
    
     int w, h;
     pango_layout_get_pixel_size (pl, &w, &h);
     return w;
+    */
 }

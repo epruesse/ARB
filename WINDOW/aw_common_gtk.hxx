@@ -42,12 +42,14 @@ class AW_GC_gtk : public AW_GC { // derived from Noncopyable
     struct Pimpl;
     Pimpl *prvt;
 
-    virtual void wm_set_font(const char* fontname) OVERRIDE;
+    virtual void wm_set_font(const char* fontname, bool force_monospace=false) OVERRIDE;
     virtual int get_actual_string_size(const char *str) const OVERRIDE;
 public:
     AW_GC_gtk(AW_common *common);
     ~AW_GC_gtk() OVERRIDE;
 
-    PangoLayout *get_pl(const char*, int) const;
+    cairo_scaled_font_t* get_scaled_font() const;
+    PangoLayout   *get_pl(const char*, int) const;
+    cairo_glyph_t *make_glyph_string(const char*, int) const;
 
 };
