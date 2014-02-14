@@ -105,3 +105,8 @@ arglabel:Interactive?
 argchoice:No:0
 argchoice:Yes:1
 
+in:in1
+informat:genbank
+inmask:
+insave:
+
