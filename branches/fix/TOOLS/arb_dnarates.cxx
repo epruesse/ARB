@@ -1942,19 +1942,19 @@ int ARB_main(int argc, char *argv[]) {
         }
 
         tree *tr = &curtree;
-        getinput(tr, infile);                       if (anerror)  return 1;
-        linkxarray(3, 3, & freextip, & usedxtip);   if (anerror)  return 1;
-        setupnodex(tr);                             if (anerror)  return 1;
-        makeUserRates(tr, infile);                  if (anerror)  return 1;
-
-        writeToArb();
-        if (dbsavename) saveArb(dbsavename);
+        getinput(tr, infile);
+        if (!anerror) linkxarray(3, 3, & freextip, & usedxtip);
+        if (!anerror) setupnodex(tr);
+        if (!anerror) makeUserRates(tr, infile);
+        if (!anerror) {
+            writeToArb();
+            if (dbsavename) saveArb(dbsavename);
+        }
         closeArb();
-
-        freeTree(tr);
+        if (!anerror) freeTree(tr);
     }
 
     if (wantSTDIN(inputname)) fclose(infile);
 
-    return EXIT_SUCCESS;
+    return anerror ? EXIT_FAILURE : EXIT_SUCCESS;
 }
