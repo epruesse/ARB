@@ -47,10 +47,17 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
      *  is used to represent '-flag's for a given function.  Values are the
      *  associated arguments that some flags require.  All symbols that
      *  require argvalue replacement should have a '$' infront of the symbol
-     *  name in the itemmethod definition.  All symbols without the '$' will
-     *  be replaced by their argmethod.  There is currently no way to do a label
-     *  replacement, as the label is considered to be for use in the dialog
-     *  box only.  An example command line replacement would be:
+     *  name in the itemmethod definition.
+     *
+     *  All symbols without the '$' were replaced by their argmethod.
+     *  ARB doesnt use argmethod in menus, replacement has been removed here (long ago).
+     *
+     *  If '$symbol' is prefixed by '!' ARB_GDE does a label replacement, i.e. insert
+     *  the value visible in GUI. Only works for argchoice arguments!
+     *  This is intended for informational use (e.g. to write used settings
+     *  into the comment of a generated tree).
+     *
+     *  An example command line replacement would be:
      *
      *       itemmethod=>        "lpr arg1 $arg1 $arg2"
      *
@@ -77,10 +84,13 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
      *
      */
 
-    char *textvalue = 0;
-    
-    const char *symbol = gmenuitem->arg[number].symbol;
-    int         type   = gmenuitem->arg[number].type;
+    char       *textvalue  = 0;
+    const char *labelvalue = 0;
+
+    GmenuItemArg& currArg = gmenuitem->arg[number];
+
+    const char *symbol = currArg.symbol;
+    int         type   = currArg.type;
 
     if (type == SLIDER) {
         char *awarname = GDE_makeawarname(gmenuitem, number);
@@ -102,6 +112,17 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     {
         char *awarname = GDE_makeawarname(gmenuitem, number);
         textvalue      = awr->awar(awarname)->read_string();
+
+        if (currArg.choice) {
+            for (int c = 0; c<currArg.numchoices && !labelvalue; ++c) {
+                GargChoice& choice = currArg.choice[c];
+                if (choice.method) {
+                    if (strcmp(choice.method, textvalue) == 0) {
+                        labelvalue = choice.label;
+                    }
+                }
+            }
+        }
     }
 
     if (textvalue == NULL)  textvalue=(char *)calloc(1, sizeof(char));
@@ -114,12 +135,29 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
         i += j;
         ++j;
         if (i>0 && Action[i-1] == '$') {
-            int   newlen = strlen(Action)-strlen(symbol)+strlen(textvalue);
+            const char *replaceBy = textvalue;
+            int         skip      = 1;
+
+            if (i>1 && Action[i-2] == '!') { // use label (if available)
+                if (labelvalue) {
+                    replaceBy = labelvalue;
+                    skip = 2; // skip '!'
+                }
+                else {
+                    Error(GBS_global_string("Cannot access label of '%s'\n", symbol));
+                }
+            }
+
+            int   repLen = strlen(replaceBy);
+            int   symLen = strlen(symbol);
+            int   newlen = strlen(Action)-skip-symLen+repLen+1;
             char *temp   = (char *)calloc(newlen, 1);
+
             if (!temp) Error("ReplaceArgs():Error in calloc");
-            strncat(temp, Action, i-1);
-            strncat(temp, textvalue, strlen(textvalue));
-            strcat(temp, &(Action[i+strlen(symbol)]));
+
+            strncat(temp, Action, i-skip);
+            strncat(temp, replaceBy, repLen);
+            strcat(temp, &(Action[i+symLen]));
             freeset(Action, temp);
         }
         else {
