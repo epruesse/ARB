@@ -619,9 +619,9 @@ outformat:flat
 item:Assemble Contigs
 itemmeta: g
 itemmethod: ( GOTO_LOCAL_DIR; \
-              tr '"%//' '>' <TmpInputFile >TmpInputFile.tmp; \
-              CAP2 TmpInputFile.tmp $OVERLAP $PMATCH >  TmpOutputFile; \
-              RM_LOCAL_FILES(TmpInputFile TmpInputFile.tmp) )
+              tr '"%//' '>' <TmpInputFile > tr.out; \
+              CAP2 tr.out $OVERLAP $PMATCH >  TmpOutputFile; \
+              RM_LOCAL_FILES(TmpInputFile tr.out) )
 itemhelp:CAP2.help
 
 arg:OVERLAP
@@ -640,6 +640,7 @@ argvalue:90
 
 in:TmpInputFile
 informat:flat
+insave:
 
 out:TmpOutputFile
 outformat:gde

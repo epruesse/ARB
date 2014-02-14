@@ -5,7 +5,8 @@
 //   In 'itemmethod' every occurrance of 'TmpInputFile' (as specified at entry 'in:') is replaced by the name of that tempfile.
 //   Some macros defined below expect that placeholder, i.e. always use 'TmpInputFile' for 'in:'!
 // * if sequences are (re-)imported, ARB prepares a temporary output-file. itemmethod shall use the placeholder 'TmpOutputFile'
-//   to generate its content. Always use 'TmpOutputFile' for 'out:'
+//   to generate its content. Always use 'TmpOutputFile' for 'out:'.
+//   Do not remove TmpOutputFile using RM_LOCAL_FILES. It is expected and will be removed by ARB_GDE (after command termination).
 // * 'arg:DISPLAY_FUNC' shall be a single command (to be chainable with && in itemmethod)
 
 #define STD_REMOVE(FILES)       /bin/rm -f FILES infile intree outfile outtree treefile arb_read_tree_args

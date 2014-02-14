@@ -1,10 +1,11 @@
 item:DeSoete Tree fit
 itemmeta: S
-itemmethod: (RUN_IN_WINDOW((arb_readseq -a -f8 TmpInputFile >TmpInputFile.flat;\
-                            count -t $CORR TmpInputFile.flat> TmpInputFile.tmp;\
-                            lsadt <TmpInputFile.tmp -seed $SEED -init $INIT -empty -99.9 > TmpInputFile.out;\
+itemmethod: GOTO_LOCAL_DIR; \
+            (RUN_IN_WINDOW((arb_readseq -a -f8 TmpInputFile >fasta.flat;\
+                            count -t $CORR fasta.flat >count.out;\
+                            lsadt <count.out -seed $SEED -init $INIT -empty -99.9 > outtree;\
                             $DISPLAY_FUNC));\
-            /bin/rm -f TmpInputFile* )&
+            RM_LOCAL_FILES(TmpInputFile fasta.flat count.out outtree) )&
 itemhelp:lsadt.help
 
 in:TmpInputFile
@@ -36,6 +37,6 @@ argvalue:12345
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:View tree using
-argchoice:ARB ('tree_desoete'):arb_read_tree tree_desoete_$$ TmpInputFile.out "PRG=DeSoete CORR=$CORR FILTER=$FILTER"
-argchoice:TextEdit:arb_textedit TmpInputFile.out &
-argchoice:Treetool:treetool TmpInputFile.out
+argchoice:ARB ('tree_desoete'):arb_read_tree tree_desoete_$$ outtree "PRG=DeSoete CORR=$CORR FILTER=$FILTER"
+argchoice:TextEdit:arb_textedit outtree &
+argchoice:Treetool:treetool outtree
