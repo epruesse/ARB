@@ -30,15 +30,20 @@
 itemmeta: D
 itemhelp:phyml-20130708.help
 
-
 // $INPUT_TREE_PARAM is either empty or contains -uinput_tree.in depending on the selection of the starting tree
+
 
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree?
-argchoice:ARB ('tree_phyml_'):arb_read_tree tree_phyml_$$ outtree "PRG=phyml FILTER=$FILTER STYPE=DNA"
+#ifdef PHYML_DNA
+argchoice:ARB ('tree_phyml_'):arb_read_tree tree_phyml_$$ outtree "PRG=phyml-20130708 FILTER=$FILTER STYPE=DNA"
+#else
+argchoice:ARB ('tree_phyml_'):arb_read_tree tree_phyml_$$ outtree "PRG=phyml-20130708 FILTER=$FILTER STYPE=AA"
+#endif
 argchoice:TextEdit:arb_textedit outfile &
 argchoice:Treetool:treetool outtree
+
 
 arg:MODEL
 argtype:choice_menu
