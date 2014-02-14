@@ -13,7 +13,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree?
-argchoice:Load into ARB ('tree_fasttree_//'):$ARBHOME/bin/arb_read_tree tree_fasttree_$$ fasttree_out "PRG=FastTree"
+argchoice:Load into ARB ('tree_fasttree_//'):$ARBHOME/bin/arb_read_tree tree_fasttree_$$ fasttree_out "PRG=FastTree$FAST FILTER=$FILTER MODEL=!$MODEL"
 argchoice:Treetool:treetool fasttree_out
 
 
@@ -70,7 +70,7 @@ itemhelp:MrBayes.help
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree?
-argchoice:Load into ARB ('tree_mrBayes_//'):$ARBHOME/bin/arb_read_tree tree_mrbayes_$$ mr_bayes_out.newick
+argchoice:Load into ARB ('tree_mrBayes_//'):$ARBHOME/bin/arb_read_tree tree_mrbayes_$$ mr_bayes_out.newick "PRG=MrBayes FILTER=$FILTER RATE=$RATES"
 argchoice:Treetool:treetool mr_bayes_out.newick
 
 arg:NST
@@ -147,7 +147,7 @@ itemhelp:MrBayesCustom.help
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree?
-argchoice:Load into ARB ('tree_mrBayes_//'):$ARBHOME/bin/arb_read_tree tree_mrbayes_$$ mr_bayes_out.newick
+argchoice:Load into ARB ('tree_mrBayes_//'):$ARBHOME/bin/arb_read_tree tree_mrbayes_$$ mr_bayes_out.newick "PRG=MrBayes(custom) FILTER=$FILTER RATE=$RATES"
 argchoice:Treetool:treetool mr_bayes_out.newick
 
 arg:COMMAND_FILE
