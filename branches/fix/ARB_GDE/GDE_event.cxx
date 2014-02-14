@@ -77,7 +77,6 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
      *
      */
 
-    char *method    = 0;
     char *textvalue = 0;
     
     const char *symbol = gmenuitem->arg[number].symbol;
@@ -102,12 +101,10 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
              type == TEXTFIELD)
     {
         char *awarname = GDE_makeawarname(gmenuitem, number);
-        method         = awr->awar(awarname)->read_string();
         textvalue      = awr->awar(awarname)->read_string();
     }
 
     if (textvalue == NULL)  textvalue=(char *)calloc(1, sizeof(char));
-    if (method == NULL)     method=(char *)calloc(1, sizeof(char));
     if (symbol == NULL)     symbol="";
 
     set<string>warned_about;
@@ -116,9 +113,8 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     for (int i, j = 0; (i=Find2(Action+j, symbol)) != -1;) {
         i += j;
         ++j;
-        if (i>0 && Action[i-1] == '$')
-        {
-            int   newlen = strlen(Action)-strlen(symbol) +strlen(textvalue);
+        if (i>0 && Action[i-1] == '$') {
+            int   newlen = strlen(Action)-strlen(symbol)+strlen(textvalue);
             char *temp   = (char *)calloc(newlen, 1);
             if (!temp) Error("ReplaceArgs():Error in calloc");
             strncat(temp, Action, i-1);
@@ -144,7 +140,6 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     }
 
     free(textvalue);
-    free(method);
     return (Action);
 }
 
