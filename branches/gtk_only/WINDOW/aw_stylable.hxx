@@ -40,7 +40,7 @@ public:
 
     void new_gc(int gc);
     void set_grey_level(int gc, AW_grey_level grey_level); 
-    void set_font(int gc, const char* fontname);
+    void set_font(int gc, const char* fontname, bool force_monospace=false);
     /**
      *
      * Set width and linestyle of the selected graphic context.
