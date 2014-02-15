@@ -191,6 +191,15 @@ inline char *modifies_awar(const char *line, char *& app_id) {
     return NULL;
 }
 
+inline bool opens_macro_dialog(const char *line) {
+    // return true, if the macro-command in 'line' opens the macro dialog
+    return strcmp(line, "BIO::remote_action($gb_main,\"ARB_NT\",\"macros\");") == 0;
+}
+inline bool is_end_of_macro(const char *line) {
+    // return true, if the macro-command in 'line' belongs to code at end (of any macro)
+    return strcmp(line, "ARB::close($gb_main);") == 0;
+}
+
 inline bool is_comment(const char *line) {
     int i = 0;
     while (isspace(line[i])) ++i;
@@ -229,6 +238,17 @@ void RecordingMacro::post_process() {
                     }
                 }
                 free(mod_awar);
+            }
+            else if (opens_macro_dialog(line[i])) {
+                bool isLastCommand = true;
+                for (size_t n = i+1; n<line.size() && isLastCommand; ++n) {
+                    if (!is_comment(line[n]) && !is_end_of_macro(line[n])) {
+                        isLastCommand = false;
+                    }
+                }
+                if (isLastCommand) {
+                    free(line.replace(i, GBS_global_string_copy("# %s", line[i])));
+                }
             }
             free(app_id);
         }

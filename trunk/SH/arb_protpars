@@ -40,9 +40,11 @@ else
                 arb_textedit outfile &
             fi
         else
-            echo "$WHAT: Warning: generated 'outfile' is empty"
+            arb_message "$WHAT: Error: generated 'outfile' is empty"
+            false
         fi
     else
-        echo "$WHAT: Warning: 'outfile' was not created"
+        arb_message "$WHAT: Error: 'outfile' has not been generated"
+        false
     fi
 fi
