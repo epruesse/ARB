@@ -5,7 +5,7 @@
         (GOTO_LOCAL_DIR ; \
          arb_export_rates --arb-notify -r "$RATES" > weights && \
          GEN_PHYLIP(infile) && \
-         RUN_IN_WINDOW(arb_raxml _TYPE_ infile weights "$TREE" $CONSTRAINT \
+         RUN_IN_WINDOW(arb_raxml _TYPE_ infile weights "$BASETREE" $CONSTRAINT \
                                 $RANDOMSTART $OPTIMIZEPARAMETERS $SEARCH \
                                 "$INITIALREARRANGEMENT" "$SEED" \
                                 "$NUMBEROFRUNS" "$TAKETREES" $CONSENSE \
@@ -31,7 +31,7 @@ argtype:weights
 arglabel:Select a Weighting Mask
 argchoice:POS_VAR_BY_PAR
 
-arg:TREE
+arg:BASETREE
 argtype:tree
 arglabel:Base tree
 argchoice:????
