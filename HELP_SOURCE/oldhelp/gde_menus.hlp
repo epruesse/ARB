@@ -132,10 +132,10 @@ SECTION Using the GDE menus
 
             in:input_file
 
-                        GDE will replace this name with a
-                        randomly generated temporary file
-                        name. It will then write the selected
-                        data out to this file.
+                        GDE will replace this name with a randomly generated temporary file
+                        name. It will then write the selected data out to this file.
+
+                        Convention: always use TmpInputFile as placeholder
 
             informat:file_format
 
@@ -156,11 +156,11 @@ SECTION Using the GDE menus
 
             out:output_file
 
-                        GDE will replace this name with a
-                        randomly generated temporary file
-                        name. It is up to the external function
-                        to fill this file with any results that
+                        GDE will replace this name with a randomly generated temporary file
+                        name. It is up to the external function to fill this file with any results that
                         might be read back into the GDE.
+
+                        Convention: always use TmpOutputFile as placeholder
 
             outformat:file_format
 

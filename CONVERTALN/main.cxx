@@ -29,12 +29,17 @@ static TypeSwitch convertible_type[] = { // see fconv.cxx@format_spec
 
 static void show_command_line_usage() {
     fputs("Command line usage:\n"
-          "  $ arb_convert_aln -INFMT input_file -OUTFMT output_file\n"
+          "  $ arb_convert_aln [--arb-notify] -INFMT input_file -OUTFMT output_file\n"
+          "\n"
           "  where\n"
           "      INFMT  may be 'GenBank', 'EMBL', 'AE2' or 'SwissProt' and\n"
           "      OUTFMT may be 'GenBank', 'EMBL', 'AE2', 'NEXUS', 'PHYLIP', 'FASTDNAML', 'GCG' or 'Printable'\n"
           "  (Note: you may abbreviate the format names)\n"
+          "\n"
           "  FASTDNAML writes a PHYLIP file with content from STDIN appended at end of first line (used for arb_fastdnaml).\n"
+          "\n"
+          "  if argument '--arb-notify' is given, arb_convert_aln assumes it has been started by ARB\n"
+          "  and reports errors using the 'arb_message' script.\n"
           , stderr);
 }
 
@@ -244,13 +249,19 @@ static void do_conversion(const FormattedFile& in, const FormattedFile& out) {
 }
 
 int ARB_main(int argc, char *argv[]) {
-    int exitcode = EXIT_SUCCESS;
+    int  exitcode        = EXIT_SUCCESS;
+    bool use_arb_message = false;
     try {
         FormattedFile in;
         FormattedFile out;
 
+        if (argc>1 && strcmp(argv[1], "--arb-notify") == 0) {
+            use_arb_message = true;
+            argc--; argv++;
+        }
+
         if (argc < 2) {
-            ask_for_conversion_params(in, out); 
+            ask_for_conversion_params(in, out);
             do_conversion(in, out);
         }
         else {
@@ -261,6 +272,16 @@ int ARB_main(int argc, char *argv[]) {
     }
     catch (Convaln_exception& err) {
         fprintf(stderr, "ERROR(%d): %s\n", err.get_code(), err.get_msg());
+        if (use_arb_message) {
+            char *escaped = strdup(err.get_msg());
+            for (int i = 0; escaped[i]; ++i) if (escaped[i] == '\"') escaped[i] = '\'';
+
+            char *command        = strf("arb_message \"Error: %s (in arb_convert_aln; code=%d)\"", escaped, err.get_code());
+            if (system(command) != 0) fprintf(stderr, "ERROR running '%s'\n", command);
+            free(command);
+
+            free(escaped);
+        }
         exitcode = EXIT_FAILURE;
     }
     return exitcode;

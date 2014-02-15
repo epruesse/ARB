@@ -2,11 +2,10 @@ item:Positional Variability by Olsons dnamlrates (max 5000 Species, 8000 seqleng
 seqtype: N
 itemmeta: O
 itemmethod:(GOTO_LOCAL_DIR ; \
-            arb_export_rates "" "M $RESIDUES" "T $TTRATIO" "U" $LENGTHS "F" | \
-                arb_convert_aln -GenBank in1 -fastdnaml in1.ph; \
-            ( echo 1; arb_export_tree $TREE ) >>in1.ph; \
-            RUN_IN_WINDOW(arb_dnarates in1.ph); \
-            RM_LOCAL_FILES(in1) )&
+            arb_export_rates --arb-notify "" "M $RESIDUES" "T $TTRATIO" "U" $LENGTHS "F" | GEN_FASTDNAML(dnarates.in) && \
+            ( echo 1; arb_export_tree $TREE || STOP_ON_FAILURE(arb_export_tree '$TREE') ) >>dnarates.in && \
+            RUN_IN_WINDOW(arb_dnarates dnarates.in); \
+            RM_LOCAL_FILES(TmpInputFile dnarates.in) )&
 
 itemhelp:DNAml_rates.help
 
@@ -42,7 +41,7 @@ argchoice:No:
 // argchoice:Calculate frequencies:F
 // argchoice:Estimate equal frequencies:F 0.25 0.25 0.25 0.25
 
-in:in1
+in:TmpInputFile
 informat:genbank
 inmask:
 insave:

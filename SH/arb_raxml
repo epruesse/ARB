@@ -4,9 +4,8 @@
 usage() {
     arb_message "arb_raxml called with wrong parameters (look @ console for errors)"
     echo "Usage:"
-    echo "   arb_raxml 'DNA'     SEQFILE WEIGHTS TREE CONSTRAINT RANDOMSTART OPTIMIZEPARAMETERS SEARCH INITIALREARRANGEMENT SEED NUMBEROFRUNS TAKETREES [import|consense] RATEMODELNUC
-     NUMCATEGORIES"
-    echo "   arb_raxml 'PROTEIN' SEQFILE WEIGHTS TREE CONSTRAINT RANDOMSTART OPTIMIZEPARAMETERS SEARCH INITIALREARRANGEMENT SEED NUMBEROFRUNS TAKETREES [import|consense] RATEMODELPROT MATRIXNAME"
+    echo "   arb_raxml 'DNA'     SEQFILE WEIGHTS TREE CONSTRAINT RANDOMSTART OPTIMIZEPARAMETERS SEARCH INITIALREARRANGEMENT SEED NUMBEROFRUNS TAKETREES [import|consense] \"COMMENT\" RATEMODELNUC  NUMCATEGORIES"
+    echo "   arb_raxml 'PROTEIN' SEQFILE WEIGHTS TREE CONSTRAINT RANDOMSTART OPTIMIZEPARAMETERS SEARCH INITIALREARRANGEMENT SEED NUMBEROFRUNS TAKETREES [import|consense] \"COMMENT\" RATEMODELPROT MATRIXNAME"
     exit 1
 }
 
@@ -29,17 +28,25 @@ else
     NUMBEROFRUNS=$1 ; shift
     TAKETREES=$1 ; shift
     CONSENSE=$1 ; shift
+    COMMENT=$1 ; shift
 
     if [ -z "$CONSENSE" ]; then
             usage
     fi
 
+    if [ $(($NUMBEROFRUNS)) -lt 1 ]; then
+        arb_message "Invalid number of runs specified (NUMBEROFRUNS=$NUMBEROFRUNS)"
+        exit 1
+    fi
+
+    DIST=unknown
     if [ "$DATA" == "DNA" ]; then
         if [ -z "$1" ]; then
             usage
         fi
         RATEMODELNUC=$1
         NUMCATEGORIES=$2
+        DIST=${RATEMODELNUC}-${NUMCATEGORIES}
     else
         if [ "$DATA" == "PROTEIN" ]; then
             # if [ -z "$2" ]; then
@@ -47,11 +54,14 @@ else
             # fi
             RATEMODELPROT=$1
             MATRIXNAME=$2
+            DIST=${RATEMODELPROT}-${MATRIXNAME}
         else
             arb_message "Unknown datatype '$DATA'"
             exit 1
         fi
     fi
+
+    COMMENT=${COMMENT/ALGO=/DIST=$DIST ALGO=}
 
     if [ -z "$SEED" ]; then
         # seconds since 1970
@@ -97,7 +107,7 @@ else
     if [ "$OPTIMIZEPARAMETERS" == "1" ]; then
         if [ "$DATA" == "DNA" ]; then
             case "$RATEMODELNUC" in
-                GTRGAMMA )
+                "GTRGAMMA" | "GTRGAMMAI" )
                     DEPENDENT_PARAMS="$DEPENDENT_PARAMS -k"
                     ;;
                 * )
@@ -106,7 +116,7 @@ else
             esac
         else
             case "$RATEMODELPROT" in
-                  "PROTGAMMA" )
+                  "PROTGAMMA" | "PROTGAMMAI" )
                     DEPENDENT_PARAMS="$DEPENDENT_PARAMS -k"
                     ;;
                 * )
@@ -127,27 +137,33 @@ else
     USESINPUTTREE=0
     NEEDGAMMA=0
     GENERATEDTREES=$NUMBEROFRUNS
+    MODE=normal
 
     case "$SEARCH" in
-        "e" )
+        "e" ) # optimize input tree
             NEEDINPUTTREE=1
             NEEDGAMMA=1
+            MODE=optimized
             ;;
-        "t" )
+
+        "t" ) # randomized tree searches
             NEEDINPUTTREE=1
             ;;
-        "d" ) # modes that use (but don't expect) an inputtree
+
+        "d" ) # new rapid hill climbing
+            # modes that use (but don't expect) an inputtree
             USESINPUTTREE=1
             ;;
 
         "a" ) # rapid bootstrap analysis
-            DEPENDENT_PARAMS="$DEPENDENT_PARAMS -x $SEED"
-            GENERATEDTREES=1
-            if [ "$TAKETREES" != "1" ]; then
-                arb_message "'rapid bootstrap analysis' only creates 1 tree\n(can't select $TAKETREES trees, falling back to 1)"
-                TAKETREES=1
+            DEPENDENT_PARAMS="$DEPENDENT_PARAMS -k -x $SEED"
+            if [ $(($NUMBEROFRUNS)) -lt 2 ]; then
+                arb_message "You need to specify at least 2 runs (NUMBEROFRUNS=$NUMBEROFRUNS)"
+                exit 1
             fi
+            MODE=bootstrapped
             ;;
+
         "p" ) # add new sequences (MP)
             NEEDINPUTTREE=1
             GENERATEDTREES=1
@@ -157,7 +173,13 @@ else
             fi
             TAKETREES=1
             ;;
+
     esac
+
+    if [ $(($GENERATEDTREES)) -lt $((TAKETREES)) ]; then
+        arb_message "Can't take $TAKETREES of $GENERATEDTREES tree (using all)"
+        $TAKETREES = $GENERATEDTREES
+    fi
 
     if [ "$NEEDINPUTTREE" != "$HAVEINPUTTREE" ]; then
         if [ "$NEEDINPUTTREE" == "1" ]; then
@@ -208,9 +230,11 @@ else
         # otherwise autodetect by RAxML
     fi
     if [ "$NUMBEROFRUNS" != "1" ]; then
-        RAXMLPARAMS="$RAXMLPARAMS -# $NUMBEROFRUNS"
+        RAXMLPARAMS="$RAXMLPARAMS -N $NUMBEROFRUNS"
     fi
-    RAXMLPARAMS="$RAXMLPARAMS -p $SEED -s $SEQFILE -a $WEIGHTS $TREEPARAMS $DEPENDENT_PARAMS -n ThisRun"
+
+    RUNNAME=viaARB
+    RAXMLPARAMS="$RAXMLPARAMS -p $SEED -s $SEQFILE -a $WEIGHTS $TREEPARAMS $DEPENDENT_PARAMS -n $RUNNAME"
 
     echo "------------------------------------------"
     echo "Calling raxmlHPC $RAXMLPARAMS"
@@ -218,5 +242,5 @@ else
     echo "------------------------------------------"
 
     # ../PERL_SCRIPTS/ARBTOOLS/raxml2arb.pl
-    raxml2arb.pl ThisRun "$GENERATEDTREES" "$TAKETREES" "$CONSENSE"
+    raxml2arb.pl "$RUNNAME" "$GENERATEDTREES" "$MODE" "$TAKETREES" "$CONSENSE" "$COMMENT"
 fi
