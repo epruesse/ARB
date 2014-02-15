@@ -4,9 +4,8 @@
 usage() {
     arb_message "arb_raxml called with wrong parameters (look @ console for errors)"
     echo "Usage:"
-    echo "   arb_raxml 'DNA'     SEQFILE WEIGHTS TREE CONSTRAINT RANDOMSTART OPTIMIZEPARAMETERS SEARCH INITIALREARRANGEMENT SEED NUMBEROFRUNS TAKETREES [import|consense] RATEMODELNUC
-     NUMCATEGORIES"
-    echo "   arb_raxml 'PROTEIN' SEQFILE WEIGHTS TREE CONSTRAINT RANDOMSTART OPTIMIZEPARAMETERS SEARCH INITIALREARRANGEMENT SEED NUMBEROFRUNS TAKETREES [import|consense] RATEMODELPROT MATRIXNAME"
+    echo "   arb_raxml 'DNA'     SEQFILE WEIGHTS TREE CONSTRAINT RANDOMSTART OPTIMIZEPARAMETERS SEARCH INITIALREARRANGEMENT SEED NUMBEROFRUNS TAKETREES [import|consense] \"COMMENT\" RATEMODELNUC  NUMCATEGORIES"
+    echo "   arb_raxml 'PROTEIN' SEQFILE WEIGHTS TREE CONSTRAINT RANDOMSTART OPTIMIZEPARAMETERS SEARCH INITIALREARRANGEMENT SEED NUMBEROFRUNS TAKETREES [import|consense] \"COMMENT\" RATEMODELPROT MATRIXNAME"
     exit 1
 }
 
@@ -29,6 +28,7 @@ else
     NUMBEROFRUNS=$1 ; shift
     TAKETREES=$1 ; shift
     CONSENSE=$1 ; shift
+    COMMENT=$1 ; shift
 
     if [ -z "$CONSENSE" ]; then
             usage
@@ -39,12 +39,14 @@ else
         exit 1
     fi
 
+    DIST=unknown
     if [ "$DATA" == "DNA" ]; then
         if [ -z "$1" ]; then
             usage
         fi
         RATEMODELNUC=$1
         NUMCATEGORIES=$2
+        DIST=${RATEMODELNUC}-${NUMCATEGORIES}
     else
         if [ "$DATA" == "PROTEIN" ]; then
             # if [ -z "$2" ]; then
@@ -52,11 +54,14 @@ else
             # fi
             RATEMODELPROT=$1
             MATRIXNAME=$2
+            DIST=${RATEMODELPROT}-${MATRIXNAME}
         else
             arb_message "Unknown datatype '$DATA'"
             exit 1
         fi
     fi
+
+    COMMENT=${COMMENT/ALGO=/DIST=$DIST ALGO=}
 
     if [ -z "$SEED" ]; then
         # seconds since 1970
@@ -237,5 +242,5 @@ else
     echo "------------------------------------------"
 
     # ../PERL_SCRIPTS/ARBTOOLS/raxml2arb.pl
-    raxml2arb.pl "$RUNNAME" "$GENERATEDTREES" "$MODE" "$TAKETREES" "$CONSENSE"
+    raxml2arb.pl "$RUNNAME" "$GENERATEDTREES" "$MODE" "$TAKETREES" "$CONSENSE" "$COMMENT"
 fi

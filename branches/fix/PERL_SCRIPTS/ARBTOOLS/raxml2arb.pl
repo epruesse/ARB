@@ -200,13 +200,13 @@ sub main() {
   eval {
     my $args = scalar(@ARGV);
 
-    if ($args != 5) {
-      die "Usage: raxml2arb.pl RUNNAME NUMBEROFRUNS [normal|bootstrapped|optimized] TAKETREES [import|consense]\n".
+    if ($args != 6) {
+      die "Usage: raxml2arb.pl RUNNAME NUMBEROFRUNS [normal|bootstrapped|optimized] TAKETREES [import|consense] \"COMMENT\"\n".
         "       import: Import the best TAKETREES trees of NUMBEROFRUNS generated trees into ARB\n".
         "       consense: Create and import consensus tree of best TAKETREES trees of NUMBEROFRUNS generated trees\n";
     }
 
-    my ($RUNNAME,$NUMBEROFRUNS,$MODE,$TAKETREES,$CONSENSE) = @ARGV;
+    my ($RUNNAME,$NUMBEROFRUNS,$MODE,$TAKETREES,$CONSENSE,$COMMENT) = @ARGV;
 
     if ($NUMBEROFRUNS<1) { die "NUMBEROFRUNS has to be 1 or higher (NUMBEROFRUNS=$NUMBEROFRUNS)"; }
 
@@ -260,7 +260,7 @@ sub main() {
           $currTreename .= '_'.$count;
           $count++;
         }
-        my $command = 'arb_read_tree '.$currTreename.' '.$_.' "likelyhood='.$likelyhood{$_}.'"';
+        my $command = 'arb_read_tree '.$currTreename.' '.$_.' "'.$COMMENT."\n".'likelyhood='.$likelyhood{$_}.'"';
         if (-f $infofile) { $command .= ' -commentFromFile '.$infofile; }
 
         system($command)==0 || die "can't execute '$command' (Reason: $?)";
@@ -303,7 +303,7 @@ sub main() {
         die "Consense failed (no 'outtree' generated)";
       }
 
-      my $comment = "Consensus tree of $treesToTake trees\nLikelyhood: min=$minLH mean=$meanLH max=$maxLH";
+      my $comment = "$COMMENT\nConsensus tree of $treesToTake trees\nLikelyhood: min=$minLH mean=$meanLH max=$maxLH";
       $command = 'arb_read_tree -consense '.$treesToTake.' '.$treename.' outtree "'.$comment.'"';
       if (-f $infofile) { $command .= ' -commentFromFile '.$infofile; }
       system($command)==0 || die "can't execute '$command' (Reason: $?)";

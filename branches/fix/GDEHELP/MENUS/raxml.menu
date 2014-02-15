@@ -9,6 +9,7 @@
                                 $RANDOMSTART $OPTIMIZEPARAMETERS $SEARCH \
                                 "$INITIALREARRANGEMENT" "$SEED" \
                                 "$NUMBEROFRUNS" "$TAKETREES" $CONSENSE \
+                                "PRG=RAxML FILTER=$FILTER RATE=$RATES ALGO=!$SEARCH" \
                                 _PARAMS_ \
                         ); \
         RM_LOCAL_FILES(TmpInputFile last.infile treefile.in weights RAxML_info.treefile) )&
