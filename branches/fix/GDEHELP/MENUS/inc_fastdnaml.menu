@@ -27,7 +27,7 @@ argchoice:FastdnaML:fastdnaml
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree?
-argchoice:ARB ('tree_fml_//'):arb_read_tree tree_fml_$$ treefile "PRG=$PROGRAM BASETREE=$TREE FILTER=$FILTER PKG=olsen/felsenstein RATE=$RATES"
+argchoice:ARB ('tree_fml_//'):arb_read_tree tree_fml_$$ treefile "PRG=$PROGRAM BASETREE=$TREE FILTER=$FILTER RATE=$RATES PKG=olsen/felsenstein"
 argchoice:Treetool:treetool treefile
 
 
