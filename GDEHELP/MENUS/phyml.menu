@@ -1,8 +1,8 @@
 item:PHYML (DNA)
 seqtype: N
 itemmeta: D
-itemmethod:( GEN_INFILE(in1); \
-             RUN_IN_WINDOW((arb_phyml infile DNA $MODEL $OPTFREQ $BASEFREQEST $TSTVRATIO $PINVAR $INTERACTIVE; \
+itemmethod:( GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
+             RUN_IN_WINDOW((arb_phyml infile DNA $MODEL $OPTFREQ $BASEFREQEST $TSTVRATIO $PINVAR $INTERACTIVE && \
                             $DISPLAY_FUNC )); \
            )&
 itemhelp:phyml.help
@@ -10,7 +10,7 @@ itemhelp:phyml.help
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree?
-argchoice:ARB ('tree_phyml_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_phyml_$$ outtree "PRG=phyml FILTER=$FILTER STYPE=DNA"
+argchoice:ARB ('tree_phyml_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_phyml_$$ outtree "PRG=phyml-2.4.5 FILTER=$FILTER STYPE=DNA"
 argchoice:TextEdit:arb_textedit outfile &
 argchoice:Treetool:treetool outtree
 
@@ -56,7 +56,7 @@ arglabel:Interactive?
 argchoice:No:0
 argchoice:Yes:1
 
-in:in1
+in:TmpInputFile
 informat:genbank
 inmask:
 insave:
@@ -66,8 +66,8 @@ insave:
 item:PHYML (Amino acids)
 seqtype: A
 itemmeta: M
-itemmethod:( GEN_INFILE(in1); \
-             RUN_IN_WINDOW((arb_phyml infile AA $MODEL $PINVAR $INTERACTIVE; \
+itemmethod:( GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
+             RUN_IN_WINDOW((arb_phyml infile AA $MODEL $PINVAR $INTERACTIVE && \
                             $DISPLAY_FUNC )); \
            )&
 itemhelp:phyml.help
@@ -75,7 +75,7 @@ itemhelp:phyml.help
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree?
-argchoice:ARB ('tree_phyml_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_phyml_$$ outtree "PRG=phyml FILTER=$FILTER STYPE=AA"
+argchoice:ARB ('tree_phyml_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_phyml_$$ outtree "PRG=phyml-2.4.5 FILTER=$FILTER STYPE=AA"
 argchoice:TextEdit:arb_textedit outfile &
 argchoice:Treetool:treetool outtree
 
@@ -104,4 +104,9 @@ argtype:choice_menu
 arglabel:Interactive?
 argchoice:No:0
 argchoice:Yes:1
+
+in:TmpInputFile
+informat:genbank
+inmask:
+insave:
 

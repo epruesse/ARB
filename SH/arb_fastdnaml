@@ -9,3 +9,4 @@ wait
 rm -f $tmp
 rm -f checkpoint.$sig
 mv treefile.$sig treefile
+test -f treefile || (arb_message "Error: 'treefile' not generated (inspect console for details)";false)

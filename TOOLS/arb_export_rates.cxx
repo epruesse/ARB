@@ -34,23 +34,31 @@ int ARB_main(int argc, char *argv[]) {
         fprintf(stderr,
                 "\n"
                 "arb_export_rates: Add a line to phylip format which can be used by fastdnaml for rates\n"
-                "syntax: arb_export_rates [-d dbname] [SAI_NAME|'--none'] [other_fastdnaml_args]*\n"
+                "syntax: arb_export_rates [--arb-notify] [-d dbname] [SAI_NAME|'--none'] [other_fastdnaml_args]*\n"
                 "if other_fastdnaml_args are given they are inserted to the output\n"
                 "\n"
                 "or\n"
                 "\n"
                 "arb_export_rates: Write a weightsfile for RAxML\n"
-                "syntax: arb_export_rates [-d dbname] -r [SAI_NAME|'--none']\n"
+                "syntax: arb_export_rates [--arb-notify] [-d dbname] -r [SAI_NAME|'--none']\n"
                 "\n"
                 "Note: if no DB is specified using -d, the default server ':' will be used.\n"
                 );
         return EXIT_FAILURE;
     }
 
-    bool        RAxML_mode = false;
-    const char *dbname     = ":";
-    const char *SAI_name   = NULL;
+    bool RAxML_mode      = false;
+    bool use_arb_message = false;
 
+    const char *dbname   = ":";
+    const char *SAI_name = NULL;
+
+    if (argc >= 2) {
+        if (strcmp(argv[0], "--arb-notify") == 0) {
+            use_arb_message = true;
+            argc--; argv++;
+        }
+    }
     if (argc >= 2) {
         if (strcmp(argv[0], "-d") == 0) {
             dbname  = argv[1];
@@ -247,6 +255,15 @@ int ARB_main(int argc, char *argv[]) {
 
     if (error) {
         fprintf(stderr, "Error in arb_export_rates: %s\n", error);
+        if (use_arb_message) {
+            char *escaped = strdup(error);
+            for (int i = 0; escaped[i]; ++i) if (escaped[i] == '\"') escaped[i] = '\'';
+
+            char *command = GBS_global_string_copy("arb_message \"Error: %s (in arb_export_rates)\"", escaped);
+            if (system(command) != 0) fprintf(stderr, "ERROR running '%s'\n", command);
+            free(command);
+            free(escaped);
+        }
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;

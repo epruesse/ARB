@@ -703,6 +703,8 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
         top_spacer_terminal->set_links(tree_terminal, top_multi_species_manager);
         top_mid_spacer_terminal->set_links(middle_area_manager, NULL);
         total_bottom_spacer->set_links(mid_bot_line_terminal, 0);
+
+        species_progress.done();
     }
 
     first_window->update_window_coords();

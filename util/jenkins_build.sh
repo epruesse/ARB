@@ -95,6 +95,8 @@ if [ $BUILD == 1 ]; then
 
     if [ "$MODE" == "RELEASE" ]; then
         mv arb.tgz     arb-r${SVN_REVISION}${TARSUF}.${TGTNAME}.tgz
+    else
+        rm arb.tgz
     fi
     mv arb-dev.tgz arb-r${SVN_REVISION}${TARSUF}-dev.${TGTNAME}.tgz
 

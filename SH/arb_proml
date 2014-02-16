@@ -40,7 +40,7 @@ else
         2) FLAGS="$FLAGS r r"
            ADD_PARA="$ADD_PARA $VARIATION_COEFF $HMM_RATES $INV_FRACTION"
            ;;
-        *) echo "Illegal value for 'rate_variation'"
+        *) arb_message "Illegal value for 'rate_variation'"
            exit 1
            ;;
     esac
@@ -65,9 +65,11 @@ else
                 arb_textedit outfile &
             fi
         else
-            echo "$WHAT: Warning: generated 'outfile' is empty"
+            arb_message "$WHAT: Error: generated 'outfile' is empty"
+            false
         fi
     else
-        echo "$WHAT: Warning: 'outfile' was not created"
+        arb_message "$WHAT: Error: 'outfile' has not been generated"
+        false
     fi
 fi
