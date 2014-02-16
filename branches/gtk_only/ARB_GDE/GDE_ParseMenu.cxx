@@ -21,6 +21,35 @@ inline bool only_whitespace(const char *line) {
     return line[white] == 0; // only 0 after leading whitespace
 }
 
+static char *readableItemname(const GmenuItem& i) {
+    return GBS_global_string_copy("%s/%s", i.parent_menu->label, i.label);
+}
+
+__ATTR__NORETURN static void ItemError(const GmenuItem& i, const char *error) {
+    char       *itemName = readableItemname(i);
+    const char *msg      = GBS_global_string("Invalid item '%s' in ARB_GDEmenus (Reason: %s)", itemName, error);
+    free(itemName);
+    Error(msg);
+}
+
+static void CheckItemConsistency() {
+    // (incomplete) consistency check.
+    // bailing out with ItemError() here, will make unit-test and arb-startup fail!
+
+    for (int m = 0; m<num_menus; ++m) {
+        const Gmenu& M = menu[m];
+        for (int i = 0; i<M.numitems; ++i) {
+            const GmenuItem& I = M.item[i];
+
+            if (I.seqtype != '-' && I.numinputs<1) {
+                // Such an item would create a window where alignment/species selection has no GUI-elements.
+                // Pressing 'GO' would result in failure or deadlock.
+                ItemError(I, "item defines seqtype ('seqtype:' != '-'), but is lacking input-specification ('in:')");
+            }
+        }
+    }
+}
+
 /*
   ParseMenus(): Read in the menu config file, and generate the internal
   menu structures used by the window system.
@@ -452,6 +481,9 @@ void ParseMenu() {
     free(menufile);
 
     fclose(file);
+
+    CheckItemConsistency();
+
     gde_assert(num_menus>0); // if this fails, the file ARB_GDEmenus contained no menus (maybe file has zero size)
     return;
 }

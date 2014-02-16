@@ -64,7 +64,6 @@
 #define AWAR_NTREE_TITLE_MODE       "tmp/title_mode"
 
 void create_probe_design_variables(AW_root *aw_root, AW_default def, AW_default global);
-void create_cprofile_var(AW_root *aw_root, AW_default aw_def);
 
 void       create_insertDeleteColumn_variables(AW_root *root, AW_default db1);
 AW_window *create_insertDeleteColumn_window(AW_root *root);
@@ -210,7 +209,6 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     DBUI::create_dbui_awars(awr, def);
     AP_create_consensus_var(awr, def);
     GDE_create_var(awr, def, GLOBAL.gb_main);
-    create_cprofile_var(awr, def);
     NT_create_transpro_variables(awr, def);
     NT_create_resort_awars(awr, def);
     NT_create_trackAliChanges_Awars(awr, GLOBAL.gb_main);
@@ -1321,10 +1319,9 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->insert_sub_menu("Other functions", "O");
             {
-                awm->insert_menu_topic("pos_var_dist",          "Positional variability (distance method)", "P", "pos_variability.ps", AWM_EXP, AP_create_cprofile_window);
                 awm->insert_menu_topic("count_different_chars", "Count different chars/column",             "C", "count_chars.hlp",    AWM_EXP, NT_count_different_chars, (AW_CL)GLOBAL.gb_main, 0);
                 awm->insert_menu_topic("corr_mutat_analysis",   "Compute clusters of correlated positions", "m", "",                   AWM_ALL, NT_system_in_xterm_cb,    (AW_CL)"arb_rnacma",   0);
-                awm->insert_menu_topic("export_pos_var",        "Export Column Statistic (GNUPLOT format)", "E", "csp_2_gnuplot.hlp",  AWM_ALL, AP_create_cprofile_window);
+                awm->insert_menu_topic("export_pos_var",        "Export Column Statistic (GNUPLOT format)", "E", "csp_2_gnuplot.hlp",  AWM_ALL, NT_create_colstat_2_gnuplot_window);
             }
             awm->close_sub_menu();
         }

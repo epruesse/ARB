@@ -8,16 +8,21 @@ CC ?= gcc
 #WFLAGS=-Wall
 WFLAGS=-w
 
-# ARBs standard target
-$(MAIN) : FastTree
+SOURCE=FastTree.c
+LOCBIN=FastTree
+INSTBIN=$(ARBHOME)/bin/FastTree
 
-FastTree:
-	$(CC) -O3 -finline-functions -funroll-loops $(WFLAGS) -o FastTree FastTree.c -lm
-	cp -f FastTree $(ARBHOME)/bin
+# ARBs standard target
+$(MAIN) : $(INSTBIN)
+
+$(INSTBIN) : $(LOCBIN)
+	cp -f $(LOCBIN) $(INSTBIN)
+
+$(LOCBIN): Makefile $(SOURCE)
+	$(CC) -O3 -finline-functions -funroll-loops $(WFLAGS) -o $(LOCBIN) $(SOURCE) -lm
 
 clean :
-	rm -f FastTree
-	rm -f $(ARBHOME)/bin/FastTree
+	rm -f $(LOCBIN) $(INSTBIN)
 
 .PHONY : clean
 

@@ -648,7 +648,7 @@ void ReadCMask(const char *filename)
     file = fopen(filename, "r");
     if (file == NULL)
     {
-        Warning("File not found");
+        Warning("GDE: File not found");
         Warning(filename);
         return;
     }
