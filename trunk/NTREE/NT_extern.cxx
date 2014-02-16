@@ -1325,7 +1325,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
                 awm->insert_menu_topic("pos_var_dist",          "Positional variability (distance method)", "P", "pos_variability.ps", AWM_EXP, AP_create_cprofile_window);
                 awm->insert_menu_topic("count_different_chars", "Count different chars/column",             "C", "count_chars.hlp",    AWM_EXP, NT_count_different_chars, (AW_CL)GLOBAL.gb_main, 0);
                 awm->insert_menu_topic("corr_mutat_analysis",   "Compute clusters of correlated positions", "m", "",                   AWM_ALL, NT_system_in_xterm_cb,    (AW_CL)"arb_rnacma",   0);
-                awm->insert_menu_topic("export_pos_var",        "Export Column Statistic (GNUPLOT format)", "E", "csp_2_gnuplot.hlp",  AWM_ALL, AP_create_cprofile_window);
+                awm->insert_menu_topic("export_pos_var",        "Export Column Statistic (GNUPLOT format)", "E", "csp_2_gnuplot.hlp",  AWM_ALL, NT_create_colstat_2_gnuplot_window);
             }
             awm->close_sub_menu();
         }
