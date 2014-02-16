@@ -16,9 +16,6 @@ void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def);
 AW_window *AP_create_con_expert_window(AW_root *aw_root);
 AW_window *AP_create_max_freq_window(AW_root *aw_root);
 
-/* AP_cprofile.cxx */
-AW_window *AP_create_cprofile_window(AW_root *aw_root);
-
 /* AP_pos_var_pars.cxx */
 AW_window *AP_create_pos_var_pars_window(AW_root *root);
 
