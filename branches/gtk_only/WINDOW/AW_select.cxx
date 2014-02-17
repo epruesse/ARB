@@ -262,7 +262,9 @@ AW_selection_list_entry *AW_selection_list::get_entry_at(int index) const {
 
 
 void AW_selection_list::select_default() {
-    set_awar_value(get_default_value()); 
+    if (default_select) {
+        default_select->value.write_to(awar);
+    }
 }
 
 void AW_selection_list::delete_element_at(const int index) {
