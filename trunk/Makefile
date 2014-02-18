@@ -596,8 +596,7 @@ endif
 		@echo ''
 		@echo 'Internal maintenance:'
 		@echo ''
-		@echo ' rel_minor   - build a release (increases minor version number)'
-		@echo ' rel_major   - build a release (increases MAJOR version number)'
+		@echo ' relinfo     - show help on release targets'
 		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE ("savetest" to check filelist)'
 		@echo ' patch       - save svn diff to patchfile'
@@ -616,6 +615,18 @@ endif
 		@echo $(SEP)
 		@echo ''
 
+relinfo:
+		@echo ''
+		@echo $(SEP)
+		@echo 'Release targets:'
+		@echo ''
+		@echo ' inc_candi     - increase RC candidate-number  (only possible in "rc" branch, not needed for RC1)'
+		@echo ' inc_patch     - increase release patchlevel   (only possible in "stable" branch)'
+		@echo ' inc_minor     - increase minor version number (only possible in "trunk")'
+		@echo ' inc_major     - increase MAJOR version number (only possible in "trunk")'
+		@echo ''
+		@echo $(SEP)
+		@echo ''
 
 # auto-generate config.makefile:
 
@@ -1846,23 +1857,26 @@ save_test: rmbak
 save_test_no_error:
 	@-$(MAKE) save_test
 
-rel_minor:
+inc_candi:
+	touch SOURCE_TOOLS/inc_candi.stamp
+	$(MAKE) do_version_update
+
+inc_patch:
+	touch SOURCE_TOOLS/inc_patch.stamp
+	$(MAKE) do_version_update
+
+inc_minor:
 	touch SOURCE_TOOLS/inc_minor.stamp
-	$(MAKE) do_release
+	$(MAKE) do_version_update
 
-rel_major:
+inc_major:
 	touch SOURCE_TOOLS/inc_major.stamp
-	$(MAKE) do_release
+	$(MAKE) do_version_update
 
-do_release: 
-	@echo Building release
-	@echo PATH=$(PATH)
-	@echo ARBHOME=$(ARBHOME)
-	-rm arb.tgz arbsrc.tgz
+do_version_update: 
+	@echo Incrementing version information
 	$(MAKE) testsave
 	$(MAKE) genheaders # auto upgrades version early
-	$(MAKE) tarfile 
-	$(MAKE) sourcetarfile
 
 release_quick:
 	-rm arb.tgz arbsrc.tgz
