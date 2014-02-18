@@ -1171,9 +1171,9 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->insert_sub_menu("VersionInfo/Bugreport/MailingList", "V");
             {
-                awm->insert_menu_topic("version_info", "Version info (" ARB_VERSION ")", "V", "version.hlp", AWM_ALL, makeHelpCallback("version.hlp"));
-                awm->insert_menu_topic("bug_report",   "Report bug",                     "b", NULL,          AWM_ALL, AWT_openURL_cb,       AW_CL("http://bugs.arb-home.de/wiki/BugReport"));
-                awm->insert_menu_topic("mailing_list", "Mailing list",                   "M", NULL,          AWM_ALL, AWT_openURL_cb,       AW_CL("http://bugs.arb-home.de/wiki/ArbMailingList"));
+                awm->insert_menu_topic("version_info", "Version info (" ARB_VERSION_DETAILED ")", "V", "version.hlp", AWM_ALL, makeHelpCallback           ("version.hlp"));
+                awm->insert_menu_topic("bug_report",   "Report bug",                              "b", NULL,          AWM_ALL, AWT_openURL_cb,       AW_CL("http://bugs.arb-home.de/wiki/BugReport"));
+                awm->insert_menu_topic("mailing_list", "Mailing list",                            "M", NULL,          AWM_ALL, AWT_openURL_cb,       AW_CL("http://bugs.arb-home.de/wiki/ArbMailingList"));
             }
             awm->close_sub_menu();
 #if 0
