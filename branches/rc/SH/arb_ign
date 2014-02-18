@@ -1,0 +1,4 @@
+#!/bin/bash
+# this script is used to ignore some arguments from command line
+# (see C code for more info)
+

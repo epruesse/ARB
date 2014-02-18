@@ -1,0 +1,6 @@
+# libraries needed to link against AWTI/AWTI.a
+
+GENOM_IMPORT/GENOM_IMPORT.a
+SL/GUI_ALIVIEW/GUI_ALIVIEW.a
+SL/SEQIO/SEQIO.a
+
