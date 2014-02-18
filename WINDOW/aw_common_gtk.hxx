@@ -50,6 +50,6 @@ public:
 
     cairo_scaled_font_t* get_scaled_font() const;
     PangoLayout   *get_pl(const char*, int) const;
-    cairo_glyph_t *make_glyph_string(const char*, int) const;
+    void make_glyph_string(cairo_glyph_t**, int*, const char*, int) const;
 
 };
