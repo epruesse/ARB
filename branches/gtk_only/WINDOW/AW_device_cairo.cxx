@@ -94,7 +94,8 @@ bool AW_device_cairo::draw_string_on_screen(AW_device *device, int gc, const  ch
                     (int)(cliprect.b-cliprect.t+1));
     cairo_clip(cr);
 #endif
-                    
+
+    //#define AW_PANGO_SLOW                    
 #ifdef AW_PANGO_SLOW
     PangoLayout *pl = device_cairo->get_common()->map_gc(gc)->get_pl(str+start, size);
 
@@ -109,11 +110,17 @@ bool AW_device_cairo::draw_string_on_screen(AW_device *device, int gc, const  ch
     AW_pos x      = AW_INT(X);
     AW_pos y      = AW_INT(Y);
 
-    cairo_glyph_t *glyphstr = common->map_gc(gc)->make_glyph_string(str+start, size);
-    cairo_save(cr);
-    cairo_translate(cr, x, y);
-    cairo_show_glyphs(cr, glyphstr, size);
-    cairo_restore(cr);
+    cairo_glyph_t *glyph_string;
+    int            glyph_string_len;
+    common->map_gc(gc)->make_glyph_string(&glyph_string, &glyph_string_len,
+                                          str+start, size);
+
+    if (glyph_string_len > 0) {
+        cairo_save(cr);
+        cairo_translate(cr, x, y);
+        cairo_show_glyphs(cr, glyph_string, glyph_string_len);
+        cairo_restore(cr);
+    }
 #endif
     
 #ifdef AW_USE_CLIPPING

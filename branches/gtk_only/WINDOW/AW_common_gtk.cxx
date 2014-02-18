@@ -322,11 +322,16 @@ PangoLayout* AW_GC_gtk::get_pl(const char* str, int len) const {
     return prvt->cache.get(str, len);
 }
 
-cairo_glyph_t* AW_GC_gtk::make_glyph_string(const char* str, int len) const {
+void AW_GC_gtk::make_glyph_string(cairo_glyph_t **gstr, int *glen,
+                                            const char* str, int len) const {
     bool is_ascii = true;
     prvt->glyph_store.reserve(len);
     prvt->last_string.reserve(len);
     double x = 0, y = 0;
+
+    *glen = 0; // default = fail
+
+    // try building glyph string from 
     for (int i=0; i<len; i++) {
         if (str[i] < AW_FONTINFO_CHAR_ASCII_MIN || 
             str[i] > AW_FONTINFO_CHAR_ASCII_MAX ||
@@ -342,33 +347,32 @@ cairo_glyph_t* AW_GC_gtk::make_glyph_string(const char* str, int len) const {
 
         x += ginfo.geometry.width;
     }
+
     if (is_ascii) {
         prvt->last_string_width = x;
         strncpy(prvt->last_string.data(), str, len);
-        return prvt->glyph_store.data();
+        
+        *gstr = prvt->glyph_store.data();
+        *glen  = len;
     } 
     else {
-        printf("ERRORRRRRR\n");
+         cairo_status_t err;
+         cairo_glyph_t *glyphs = prvt->glyph_store.data();
+         int glyphs_len = len;
+         err = cairo_scaled_font_text_to_glyphs(prvt->scaled_font, 0, 0, str, len,
+                                                &glyphs, &glyphs_len, NULL, NULL, NULL);
+         if (err == CAIRO_STATUS_SUCCESS) {
+             if (prvt->glyph_store.data() == glyphs) {
+                 *gstr = prvt->glyph_store.data();
+                 *glen  = glyphs_len;
+             } 
+             else {
+                cairo_glyph_free(glyphs);
+             }
+         }
     }
 
-
-    /*
-    cairo_scaled_font_t *font = cairo_get_scaled_font(cr);
-    int num_glyphs = size;
-    cairo_glyph_t  glyph_store[num_glyphs];
-    cairo_glyph_t *glyphs = glyph_store;
-    cairo_status_t err;
-    err = cairo_scaled_font_text_to_glyphs(font, 0, 0, str+start, size, &glyphs, &num_glyphs, NULL, NULL, NULL);
-    if (err == CAIRO_STATUS_SUCCESS) {
-        cairo_save(cr);
-        cairo_translate(cr, x, y);
-        cairo_show_glyphs(cr, glyphs, num_glyphs);
-        cairo_restore(cr);
-        if (glyph_store != glyphs) {
-            cairo_glyph_free(glyphs);
-        }
-    }
-    */
+    return;
 }
 
 
