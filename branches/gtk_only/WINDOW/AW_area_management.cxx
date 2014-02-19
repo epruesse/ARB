@@ -23,7 +23,7 @@
 
 #include <iostream>
 
-#define DUMP_EVENTS
+//#define DUMP_EVENTS
 
 #if defined(DUMP_EVENTS)
 #  define DUMP_EVENT(type)                                              \
