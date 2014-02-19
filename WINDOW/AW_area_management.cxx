@@ -23,7 +23,7 @@
 
 #include <iostream>
 
-//#define DUMP_EVENTS
+#define DUMP_EVENTS
 
 #if defined(DUMP_EVENTS)
 #  define DUMP_EVENT(type)                                              \
@@ -157,6 +157,13 @@ extern "C" gboolean aw_handle_key_event(GtkWidget *, GdkEventKey *event, gpointe
     if (strlen(str) == 1) {
         aww->event.character = str[0];
         aww->event.keycode = AW_KEY_ASCII;
+
+        if (aww->event.keymodifier & GDK_CONTROL_MASK) {
+            // Workaround for Motif reporting ctrl-a as 1, ctrl-b as 2, ...
+            // FIXME: This should be fixed after the merge in client code
+            // @@@ED4_edit_string.cxx:699
+            aww->event.character -= 'a' - 1;
+        }
     }
  
     area->input.emit();
