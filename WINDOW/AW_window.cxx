@@ -24,6 +24,7 @@
 
 #include <arbdbt.h>
 #include <arb_file.h>
+#include <arb_str.h>
 
 #include <X11/Shell.h>
 #include <Xm/AtomMgr.h>
@@ -193,7 +194,7 @@ static const char *possible_mnemonics(int menu_deep, const char *topic_name) {
 
     for (t = 0; unused[t]; ++t) {
         bool remove = false;
-        if (!isalnum(unused[t])) { // remove useless chars
+        if ((menu_deep == 0 && !isalpha(unused[t])) || !isalnum(unused[t])) { // remove useless chars
             remove = true;
         }
         else {
@@ -219,11 +220,9 @@ static const char *possible_mnemonics(int menu_deep, const char *topic_name) {
     for (t = 0; t<topics; ++t) {
         char c = TD_mnemonics[menu_deep][t]; // upper case!
         char *u = strchr(unused, c);
-        if (u)
-            strcpy_overlapping(u, u+1); // remove char
+        if (u) strcpy_overlapping(u, u+1); // remove char
         u = strchr(unused, tolower(c));
-        if (u)
-            strcpy_overlapping(u, u+1); // remove char
+        if (u) strcpy_overlapping(u, u+1); // remove char
     }
 
     return unused;
@@ -249,43 +248,59 @@ static void test_duplicate_mnemonics(int menu_deep, const char *topic_name, cons
         if (mnemonic[1]) { // longer than 1 char -> wrong
             fprintf(stderr, "Warning: Hotkey '%s' is too long; only 1 character allowed (%s|%s)\n", mnemonic, TD_menu_name, topic_name);
         }
+
         if (topic_name[0] == '#') { // graphical menu
             if (mnemonic[0]) {
                 fprintf(stderr, "Warning: Hotkey '%s' is useless for graphical menu entry (%s|%s)\n", mnemonic, TD_menu_name, topic_name);
             }
         }
+        else if (!isalpha(mnemonic[0]) && menu_deep == 0) { // do not allow top-level numeric mnemonics
+            fprintf(stderr, "Warning: Invalid hotkey '%s' (non-alpha) for menu entry (%s|%s)\n", mnemonic, TD_menu_name, topic_name);
+            addToPoss(menu_deep, topic_name);
+        }
+        else if (!isalnum(mnemonic[0])) {
+            fprintf(stderr, "Warning: Invalid hotkey '%s' (non-alnum) for menu entry (%s|%s)\n", mnemonic, TD_menu_name, topic_name);
+            addToPoss(menu_deep, topic_name);
+        }
         else {
-            if (strchr(topic_name, mnemonic[0])) {  // occurs in menu text
-                int topics = TD_topics[menu_deep];
-                int t;
-                char hotkey = toupper(mnemonic[0]); // store hotkeys case-less (case does not matter when pressing the hotkey)
+            char *TOPIC_NAME = ARB_strupper(strdup(topic_name));
+            char  hotkey     = toupper(mnemonic[0]); // store hotkeys case-less (case does not matter when pressing the hotkey)
 
-                TD_mnemonics[menu_deep][topics] = hotkey;
+            if (strchr(TOPIC_NAME, hotkey)) {  // occurs in menu text
+                if (strchr(topic_name, mnemonic[0])) {
+                    int topics = TD_topics[menu_deep];
+                    int t;
 
-                for (t=0; t<topics; t++) {
-                    if (TD_mnemonics[menu_deep][t]==hotkey) {
-                        fprintf(stderr, "Warning: Hotkey '%c' used twice (%s|%s)\n", hotkey, TD_menu_name, topic_name);
-                        addToPoss(menu_deep, topic_name);
-                        break;
+                    TD_mnemonics[menu_deep][topics] = hotkey;
+
+                    for (t=0; t<topics; t++) {
+                        if (TD_mnemonics[menu_deep][t]==hotkey) {
+                            fprintf(stderr, "Warning: Hotkey '%c' used twice (%s|%s)\n", hotkey, TD_menu_name, topic_name);
+                            addToPoss(menu_deep, topic_name);
+                            break;
+                        }
                     }
-                }
 
-                TD_topics[menu_deep] = topics+1;
+                    TD_topics[menu_deep] = topics+1;
+                }
+                else {
+                    fprintf(stderr, "Warning: Hotkey '%c' has wrong case, use '%c' (%s|%s)\n", mnemonic[0], hotkey == mnemonic[0] ? tolower(hotkey) : hotkey, TD_menu_name, topic_name);
+                    addToPoss(menu_deep, topic_name);
+                }
             }
             else {
                 fprintf(stderr, "Warning: Hotkey '%c' is useless; does not occur in text (%s|%s)\n", mnemonic[0], TD_menu_name, topic_name);
                 addToPoss(menu_deep, topic_name);
             }
+            free(TOPIC_NAME);
         }
     }
-#if defined(DEVEL_RALF)
     else {
         if (topic_name[0] != '#') { // not a graphical menu
             fprintf(stderr, "Warning: Missing hotkey for (%s|%s)\n", TD_menu_name, topic_name);
             addToPoss(menu_deep, topic_name);
         }
     }
-#endif // DEVEL_RALF
 }
 
 static void open_test_duplicate_mnemonics(int menu_deep, const char *sub_menu_name, const char *mnemonic) {
@@ -324,21 +339,29 @@ static void close_test_duplicate_mnemonics(int menu_deep) {
 }
 
 static void init_duplicate_mnemonic() {
-    int i;
-
-    if (TD_menu_name) close_test_duplicate_mnemonics(1); // close last menu
-    freedup(TD_menu_name, "");
-
-    for (i=0; i<MAX_DEEP_TO_TEST; i++) {
-        TD_topics[i] = 0;
+    if (TD_menu_name) {
+        while (menu_deep_check>0) {
+            close_test_duplicate_mnemonics(menu_deep_check);
+        }
     }
-    aw_assert(menu_deep_check == 0);
+    else {
+        freedup(TD_menu_name, "");
+
+        for (int i=0; i<MAX_DEEP_TO_TEST; i++) {
+            TD_topics[i] = 0;
+        }
+        aw_assert(menu_deep_check == 0);
+    }
 }
+
 static void exit_duplicate_mnemonic() {
-    close_test_duplicate_mnemonics(1); // close last menu
+    while (menu_deep_check>=0) {
+        close_test_duplicate_mnemonics(menu_deep_check); // close all open menus (including top-menu)
+    }
     aw_assert(TD_menu_name);
     freenull(TD_menu_name);
-    aw_assert(menu_deep_check == 0);
+    aw_assert(menu_deep_check == -1);
+    menu_deep_check = 0;
 }
 #endif
 
