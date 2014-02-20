@@ -187,44 +187,50 @@ static void strcpy_overlapping(char *dest, char *src) {
 }
 
 static const char *possible_mnemonics(int menu_deep, const char *topic_name) {
-    int t;
     static char *unused;
+    for (int fromTopic = 1; fromTopic>=0; --fromTopic) {
+        freedup(unused, fromTopic ? topic_name : "abcdefghijklmnopqrstuvwxyz");
 
-    freedup(unused, topic_name);
-
-    for (t = 0; unused[t]; ++t) {
-        bool remove = false;
-        if ((menu_deep == 0 && !isalpha(unused[t])) || !isalnum(unused[t])) { // remove useless chars
-            remove = true;
-        }
-        else {
-            char *dup = strchr(unused, unused[t]);
-            if (dup && (dup-unused)<t) { // remove duplicated chars
+        for (int t = 0; unused[t]; ++t) {
+            bool remove = false;
+            if ((menu_deep == 0 && !isalpha(unused[t])) || !isalnum(unused[t])) { // remove useless chars
                 remove = true;
             }
             else {
-                dup = strchr(unused, oppositeCase(unused[t]));
-                if (dup && (dup-unused)<t) { // char is duplicated with opposite case
-                    dup[0] = toupper(dup[0]); // prefer upper case
+                char *dup = strchr(unused, unused[t]);
+                if (dup && (dup-unused)<t) { // remove duplicated chars
                     remove = true;
                 }
+                else {
+                    dup = strchr(unused, oppositeCase(unused[t]));
+                    if (dup && (dup-unused)<t) { // char is duplicated with opposite case
+                        dup[0] = toupper(dup[0]); // prefer upper case
+                        remove = true;
+                    }
+                }
+            }
+            if (remove) {
+                strcpy_overlapping(unused+t, unused+t+1);
+                --t;
             }
         }
-        if (remove) {
-            strcpy_overlapping(unused+t, unused+t+1);
-            --t;
+
+        int topics = TD_topics[menu_deep];
+        for (int t = 0; t<topics; ++t) {
+            char c = TD_mnemonics[menu_deep][t]; // upper case!
+            char *u = strchr(unused, c);
+            if (u) strcpy_overlapping(u, u+1); // remove char
+            u = strchr(unused, tolower(c));
+            if (u) strcpy_overlapping(u, u+1); // remove char
+        }
+
+        if (unused[0]) {
+            if (!fromTopic) {
+                freeset(unused, GBS_global_string_copy("unused but not in topic: \"%s\"", unused));
+            }
+            break;
         }
     }
-
-    int topics = TD_topics[menu_deep];
-    for (t = 0; t<topics; ++t) {
-        char c = TD_mnemonics[menu_deep][t]; // upper case!
-        char *u = strchr(unused, c);
-        if (u) strcpy_overlapping(u, u+1); // remove char
-        u = strchr(unused, tolower(c));
-        if (u) strcpy_overlapping(u, u+1); // remove char
-    }
-
     return unused;
 }
 
