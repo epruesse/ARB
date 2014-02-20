@@ -141,7 +141,11 @@ void AW_window::message(char *title, int ms) {
 // -------------------------
 //      Hotkey Checking
 
-#ifdef DEBUG
+#if defined(DEBUG)
+#define CHECK_DUPLICATED_MNEMONICS
+#endif
+
+#ifdef CHECK_DUPLICATED_MNEMONICS
 
 #define MAX_DEEP_TO_TEST       10
 #define MAX_MENU_ITEMS_TO_TEST 50
@@ -439,7 +443,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
 #if defined(DUMP_MENU_LIST)
     dumpMenuEntry(name);
 #endif // DUMP_MENU_LIST
-#ifdef DEBUG
+#ifdef CHECK_DUPLICATED_MNEMONICS
     test_duplicate_mnemonics(p_w->menu_deep, name, mnemonic);
 #endif
     if (mnemonic && *mnemonic && strchr(name, mnemonic[0])) {
@@ -490,7 +494,7 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active m
 #if defined(DUMP_MENU_LIST)
     dumpOpenSubMenu(name);
 #endif // DUMP_MENU_LIST
-#ifdef DEBUG
+#ifdef CHECK_DUPLICATED_MNEMONICS
     open_test_duplicate_mnemonics(p_w->menu_deep+1, name, mnemonic);
 #endif
 
@@ -2530,7 +2534,7 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
 void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask) {
     aw_assert(legal_mask(mask));
     p_w->menu_deep = 0;
-#ifdef DEBUG
+#ifdef CHECK_DUPLICATED_MNEMONICS
     init_duplicate_mnemonic();
 #endif
 #if defined(DUMP_MENU_LIST)
@@ -2540,7 +2544,7 @@ void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask)
 }
 
 void AW_window::close_sub_menu() {
-#ifdef DEBUG
+#ifdef CHECK_DUPLICATED_MNEMONICS
     close_test_duplicate_mnemonics(p_w->menu_deep);
 #endif
 #if defined(DUMP_MENU_LIST)
@@ -2554,10 +2558,13 @@ void AW_window::all_menus_created() const { // this is called by AW_window::show
 #if defined(DEBUG)
     if (p_w->menu_deep>0) { // window had menu
         aw_assert(p_w->menu_deep == 1);
+        
+#ifdef CHECK_DUPLICATED_MNEMONICS
         // some unclosed sub-menus ?
         if (menu_deep_check == 1) { // otherwise the window is just re-shown (already has been checked!)
             exit_duplicate_mnemonic();
         }
+#endif
     }
 #endif // DEBUG
 }
