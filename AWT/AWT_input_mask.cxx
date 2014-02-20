@@ -2366,6 +2366,64 @@ static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL) { /
 // -----------------------------------------------------
 //      Create User-Mask-Submenu for any application
 
+static bool hadMnemonic(char *availableMnemonics, char c) {
+    // return true if 'c' occurs in 'availableMnemonics' (case ignored)
+    // (in that case 'c' is removed from 'availableMnemonics').
+    // returns false otherwise.
+    char  lc   = tolower(c);
+    char *cand = strchr(availableMnemonics, lc);
+    if (cand) {
+        char *last = strchr(cand+1, 0)-1;
+        if (last>cand) {
+            cand[0] = last[0];
+            last[0] = 0;
+        }
+        else {
+            awt_assert(last == cand);
+            cand[0] = 0;
+        }
+        return true;
+    }
+    return false;
+}
+
+static char *selectMnemonic(const char *orgTitle, char *availableMnemonics, char& mnemonic) {
+    // select (and remove) one from 'availableMnemonics' occurring in orgTitle
+    // return selected in 'mnemonic'
+    // return orgTitle (eventually modified if no matching mnemonic available)
+
+    bool prevWasChar = false;
+    for (int startOfWord = 1; startOfWord>=0; --startOfWord) {
+        for (int i = 0; orgTitle[i]; ++i) {
+            char c = orgTitle[i];
+            if (isalnum(c)) {
+                if (!prevWasChar || !startOfWord) {
+                    if (hadMnemonic(availableMnemonics, c)) {
+                        mnemonic = c;
+                        return strdup(orgTitle);
+                    }
+                }
+                prevWasChar = true;
+            }
+            else prevWasChar = false;
+        }
+    }
+
+    for (int i = 0; i<2; ++i) {
+        const char *takeAny = i ? availableMnemonics : "1234567890";
+        for (int t = 0; takeAny[t]; ++t) {
+            char c = takeAny[t];
+            if (hadMnemonic(availableMnemonics, c)) {
+                mnemonic = c;
+                return GBS_global_string_copy("%s [%c]", orgTitle, c);
+            }
+        }
+    }
+
+    mnemonic = 0; // failed
+    return strdup(orgTitle);
+}
+
 void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, AWT_OpenMaskWindowCallback open_mask_window_cb, AW_CL cl_user) {
     // add a user mask submenu at current position
     AW_root *awr = awm->get_root();
@@ -2373,6 +2431,8 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
     if (!global_awars_created) create_global_awars(awr);
 
     awm->insert_sub_menu("User Masks", "k");
+
+    char *availableMnemonics = strdup("abcdefghijklmopqrstuvwxyz0123456789"); // 'n' excluded!
 
     for (int scope = 0; scope <= 1; ++scope) {
         bool entries_made = false;
@@ -2387,12 +2447,16 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
 
             if (item_type == wanted_item_type) {
                 if (!descriptor->is_hidden()) { // do not show masks with hidden-flag
-                    entries_made = true;
+                    entries_made        = true;
                     char *macroname2key = GBS_string_2_key(descriptor->get_internal_maskname());
 #if defined(DEBUG) && 0
                     printf("added user-mask '%s' with id=%i\n", descriptor->get_maskname(), id);
 #endif // DEBUG
-                    awm->insert_menu_topic(macroname2key, descriptor->get_title(), "", "input_mask.hlp", AWM_ALL, open_mask_window_cb, (AW_CL)id, (AW_CL)cl_user);
+                    char  mnemonic[2] = "x";
+                    char *mod_title   = selectMnemonic(descriptor->get_title(), availableMnemonics, mnemonic[0]);
+
+                    awm->insert_menu_topic(macroname2key, mod_title, mnemonic, "input_mask.hlp", AWM_ALL, open_mask_window_cb, (AW_CL)id, (AW_CL)cl_user);
+                    free(mod_title);
                     free(macroname2key);
                 }
                 registerType(item_type, awm, open_mask_window_cb, cl_user);
@@ -2414,6 +2478,7 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
         free(new_item_mask_label);
         free(new_item_mask_id);
     }
+    free(availableMnemonics);
     awm->close_sub_menu();
 }
 
