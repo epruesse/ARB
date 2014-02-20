@@ -285,7 +285,8 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
         }
 
         insert_macro_menu_entry(awm, true);
-        awm->sep______________();
+
+        awm->create_menu("Properties", "P", AWM_ALL);
         AW_insert_common_property_menu_entries(awm);
         awm->sep______________();
         awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "p", "savedef.hlp", AWM_ALL, AW_save_properties);

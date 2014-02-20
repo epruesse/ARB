@@ -1013,7 +1013,7 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
     aws->callback(makeHelpCallback("mg_species.hlp"));
     aws->create_button("HELP_MERGE", "#merge/icon.xpm");
 
-    aws->create_menu("Source->Target", ">");
+    aws->create_menu("Source->Target", "g");
     aws->insert_menu_topic("compare_field_of_listed",   "Compare a field of listed species ...", "C", "checkfield.hlp", AWM_ALL, create_mg_check_fields_window);
     aws->insert_menu_topic("move_field_of_selected",    "Move one field of selected source species to same field of selected target species", "M",
                             "movefield.hlp", AWM_ALL, create_mg_move_fields_window);

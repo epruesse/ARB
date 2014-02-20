@@ -1479,7 +1479,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
         awmm->insert_menu_topic("rna3d", "View 3D molecule", "3", "rna3d_general.hlp", AWM_ALL, ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"RNA3D");
 #endif // ARB_OPENGL
 #if defined(DEBUG)
-        awmm->insert_menu_topic("noplugin", "DEBUG: call unknown plugin", "", 0, AWM_ALL, ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"testplugin");
+        awmm->insert_menu_topic("noplugin", "DEBUG: call unknown plugin", "u", 0, AWM_ALL, ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"testplugin");
 #endif // DEBUG
     }
 
@@ -1533,11 +1533,11 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->sep______________();
     awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat,            0, 0);
     awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, ED4_disable_col_stat,             0, 0);
-    awmm->insert_menu_topic("detail_col_stat",  "Toggle detailed Col.-Stat.", "c", "st_ml.hlp", AWM_EXP, ED4_toggle_detailed_column_stats, 0, 0);
+    awmm->insert_menu_topic("detail_col_stat",  "Toggle detailed Col.-Stat.", "C", "st_ml.hlp", AWM_EXP, ED4_toggle_detailed_column_stats, 0, 0);
     awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, ED4_set_col_stat_threshold,       0, 0);
     awmm->sep______________();
     awmm->insert_menu_topic("visualize_SAI", "Visualize SAIs",                "z", "visualizeSAI.hlp",   AWM_ALL, AW_POPUP,             (AW_CL)ED4_createVisualizeSAI_window, 0);
-    awmm->insert_menu_topic("toggle_saisec", "Toggle secondary info for SAI", "T", "toggle_secinfo.hlp", AWM_ALL, toggle_helix_for_SAI, 0,                                    0);
+    awmm->insert_menu_topic("toggle_saisec", "Toggle secondary info for SAI", "o", "toggle_secinfo.hlp", AWM_ALL, toggle_helix_for_SAI, 0,                                    0);
 
     // Enable ProteinViewer only for DNA sequence type
     if (alignment_type == GB_AT_DNA) {
@@ -1573,11 +1573,11 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("unalignBlockRight",  "Unalign block right",  "b", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN_RIGHT),  0);
     awmm->sep______________();
     awmm->insert_menu_topic("replace", "Search & Replace ", "h", "e4_replace.hlp", AWM_ALL, AW_POPUP, AW_CL(ED4_create_replace_window), 0);
-    awmm->insert_menu_topic("setsai",  "Modify SAI ",       "S", "e4_modsai.hlp",  AWM_ALL, AW_POPUP, AW_CL(ED4_create_modsai_window),  0);
+    awmm->insert_menu_topic("setsai",  "Modify SAI ",       "y", "e4_modsai.hlp",  AWM_ALL, AW_POPUP, AW_CL(ED4_create_modsai_window),  0);
     awmm->sep______________();
-    awmm->insert_menu_topic("toggle_block_type", "Line block <-> Column block", "C", "e4_block.hlp", AWM_ALL, ED4_menu_select,                  AW_CL(ED4_MS_TOGGLE_BLOCKTYPE), 0);
-    awmm->insert_menu_topic("shift_left",        "Shift block left ",           "l", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_LEFT),       0);
-    awmm->insert_menu_topic("shift_right",       "Shift block right",           "r", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_RIGHT),      0);
+    awmm->insert_menu_topic("toggle_block_type", "Exchange: Line<->Column", "x", "e4_block.hlp", AWM_ALL, ED4_menu_select,                  AW_CL(ED4_MS_TOGGLE_BLOCKTYPE), 0);
+    awmm->insert_menu_topic("shift_left",        "Shift block left ",       "l", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_LEFT),       0);
+    awmm->insert_menu_topic("shift_right",       "Shift block right",       "r", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_RIGHT),      0);
 
     // --------------------
     //      Properties
