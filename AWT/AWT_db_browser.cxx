@@ -1143,7 +1143,7 @@ static void callallcallbacks(AW_window *aww, AW_CL mode, AW_CL) {
 
 
 void AWT_create_debug_menu(AW_window *awmm) {
-    awmm->create_menu("4debug", "4", AWM_ALL);
+    awmm->create_menu("4debug", "b", AWM_ALL);
 
     awmm->insert_menu_topic("-db_browser", "Browse loaded database(s)", "B", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_db_browser, 0);
 
@@ -1159,11 +1159,15 @@ void AWT_create_debug_menu(AW_window *awmm) {
         awmm->insert_menu_topic("!forget_called_cbs", "Forget called",     "F", "", AWM_ALL, callallcallbacks, -1, 0);
         awmm->insert_menu_topic("!mark_all_called",   "Mark all called",   "M", "", AWM_ALL, callallcallbacks, -2, 0);
         awmm->sep______________();
-        awmm->insert_menu_topic("!run_all_cbs_alph_inf",  "Call all callbacks (alpha-order repeated)",     "", "", AWM_ALL, callallcallbacks, 8|0, 0);
-        awmm->insert_menu_topic("!run_all_cbs_nalph_inf", "Call all callbacks (alpha-reverse repeated)",   "", "", AWM_ALL, callallcallbacks, 8|1, 0);
-        awmm->insert_menu_topic("!run_all_cbs_loc_inf",   "Call all callbacks (code-order repeated)",      "", "", AWM_ALL, callallcallbacks, 8|2, 0);
-        awmm->insert_menu_topic("!run_all_cbs_nloc_inf",  "Call all callbacks (code-reverse repeated)",    "", "", AWM_ALL, callallcallbacks, 8|3, 0);
-        awmm->insert_menu_topic("!run_all_cbs_rnd_inf",   "Call all callbacks (random repeated)",          "", "", AWM_ALL, callallcallbacks, 8|4, 0);
+        {
+            awmm->insert_sub_menu("Call repeated", "p", AWM_ALL);
+            awmm->insert_menu_topic("!run_all_cbs_alph_inf",  "Call all callbacks (alpha-order repeated)",     "a", "", AWM_ALL, callallcallbacks, 8|0, 0);
+            awmm->insert_menu_topic("!run_all_cbs_nalph_inf", "Call all callbacks (alpha-reverse repeated)",   "l", "", AWM_ALL, callallcallbacks, 8|1, 0);
+            awmm->insert_menu_topic("!run_all_cbs_loc_inf",   "Call all callbacks (code-order repeated)",      "c", "", AWM_ALL, callallcallbacks, 8|2, 0);
+            awmm->insert_menu_topic("!run_all_cbs_nloc_inf",  "Call all callbacks (code-reverse repeated)",    "o", "", AWM_ALL, callallcallbacks, 8|3, 0);
+            awmm->insert_menu_topic("!run_all_cbs_rnd_inf",   "Call all callbacks (random repeated)",          "r", "", AWM_ALL, callallcallbacks, 8|4, 0);
+            awmm->close_sub_menu();
+        }
         awmm->close_sub_menu();
     }
     awmm->sep______________();

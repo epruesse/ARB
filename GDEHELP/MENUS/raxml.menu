@@ -23,7 +23,7 @@
         item:RAxML (Protein)
         itemmethod: RAXML_CODE(PROTEIN,"$RATEMODELPROT" "$MATRIXNAME$EMPBFREQ")
         seqtype:A
-        itemmeta:P
+        itemmeta:x
 #endif
 itemhelp:raxml.help
 

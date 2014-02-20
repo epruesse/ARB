@@ -1186,7 +1186,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->sep______________();
 
-            awm->insert_menu_topic("new_arb",     "Start second database",      "o", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 0);
+            awm->insert_menu_topic("new_arb",     "Start second database",      "d", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 0);
             awm->insert_menu_topic("restart_arb", "Quit + load other database", "l", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 1);
             awm->insert_menu_topic("quit",        "Quit",                       "Q", "quit.hlp", AWM_ALL, nt_exit,          EXIT_SUCCESS);
         }
@@ -1217,7 +1217,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->insert_menu_topic("del_marked",    "Delete Marked Species",    "D", "sp_del_mrkd.hlp", AWM_ALL, (AW_CB)NT_delete_mark_all_cb,      (AW_CL)ntw, 0);
 
-            awm->insert_sub_menu("Sort Species",         "r");
+            awm->insert_sub_menu("Sort Species",         "s");
             {
                 awm->insert_menu_topic("sort_by_field", "According to Database Entries", "D", "sp_sort_fld.hlp",  AWM_ALL, NT_create_resort_window);
                 awm->insert_menu_topic("sort_by_tree",  "According to Phylogeny",        "P", "sp_sort_phyl.hlp", AWM_ALL, NT_resort_data_by_phylogeny, (AW_CL)ntw,                    0);
@@ -1262,7 +1262,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
             awm->insert_menu_topic("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_ALL, makeCreateWindowCallback(NT_create_alignment_window, (AW_window*)0));
             awm->insert_sub_menu("Insert/delete", "I");
             {
-                awm->insert_menu_topic("ins_del_col", ".. column",     "I", "insdel.hlp",     AWM_ALL, create_insertDeleteColumn_window);
+                awm->insert_menu_topic("ins_del_col", ".. column",     "c", "insdel.hlp",     AWM_ALL, create_insertDeleteColumn_window);
                 awm->insert_menu_topic("ins_del_sai", ".. using SAI",  "S", "insdel_sai.hlp", AWM_ALL, makeCreateWindowCallback(create_insertDeleteBySAI_window,  GLOBAL.gb_main));
             }
             awm->close_sub_menu();
@@ -1403,7 +1403,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
             awm->insert_menu_topic(awm->local_id("reset_physical_zoom"), "Physical zoom", "P", "rst_phys_zoom.hlp", AWM_ALL, makeWindowCallback(NT_reset_pzoom_cb, ntw));
         }
         awm->close_sub_menu();
-        awm->insert_sub_menu("Collapse/Expand tree",         "C");
+        awm->insert_sub_menu("Collapse/Expand tree",         "d");
         {
             awm->insert_menu_topic(awm->local_id("tree_group_all"),         "Group all",               "a", "tgroupall.hlp",   AWM_ALL, makeWindowCallback(NT_group_tree_cb,       ntw));
             awm->insert_menu_topic(awm->local_id("tree_group_not_marked"),  "Group all except marked", "m", "tgroupnmrkd.hlp", AWM_ALL, makeWindowCallback(NT_group_not_marked_cb, ntw));
@@ -1427,7 +1427,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
         awm->insert_sub_menu("Modify branches", "M");
         {
             awm->insert_menu_topic(awm->local_id("tree_remove_remark"),     "Remove bootstraps",      "b", "trm_boot.hlp", AWM_ALL, makeWindowCallback(NT_remove_bootstrap,    ntw));
-            awm->insert_menu_topic(awm->local_id("tree_toggle_bootstraps"), "Toggle 100% bootstraps", "%", "trm_boot.hlp", AWM_ALL, makeWindowCallback(NT_toggle_bootstrap100, ntw));
+            awm->insert_menu_topic(awm->local_id("tree_toggle_bootstraps"), "Toggle 100% bootstraps", "1", "trm_boot.hlp", AWM_ALL, makeWindowCallback(NT_toggle_bootstrap100, ntw));
             awm->sep______________();
             awm->insert_menu_topic(awm->local_id("tree_reset_lengths"),     "Reset branchlengths",   "R", "tbl_reset.hlp",   AWM_ALL, makeWindowCallback(NT_reset_branchlengths,   ntw));
             awm->insert_menu_topic(awm->local_id("justify_branch_lengths"), "Justify branchlengths", "J", "tbl_justify.hlp", AWM_ALL, makeWindowCallback(NT_justify_branch_lenghs, ntw));
@@ -1441,7 +1441,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
         }
         awm->close_sub_menu();
 
-        awm->insert_menu_topic(awm->local_id("branch_analysis"), "Branch analysis", "B", "branch_analysis.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_branch_analysis_window, ntw));
+        awm->insert_menu_topic(awm->local_id("branch_analysis"), "Branch analysis", "s", "branch_analysis.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_branch_analysis_window, ntw));
         awm->insert_menu_topic(awm->local_id("mark_duplicates"), "Mark duplicates", "u", "mark_duplicates.hlp", AWM_ALL, makeWindowCallback(NT_mark_duplicates, ntw));
 
         awm->sep______________();
@@ -1521,7 +1521,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
             awm->insert_menu_topic("props_www",                  "Search world wide web (WWW)", "W", "props_www.hlp",        AWM_ALL, makeCreateWindowCallback(AWT_create_www_window, GLOBAL.gb_main));
             awm->sep______________();
             awm->insert_menu_topic("!toggle_expert", "Toggle expert mode",         "x", 0, AWM_ALL, NT_toggle_expert_mode,  0, 0);
-            awm->insert_menu_topic("!toggle_focus",  "Toggle focus follows mouse", "f", 0, AWM_ALL, NT_toggle_focus_policy, 0, 0);
+            awm->insert_menu_topic("!toggle_focus",  "Toggle focus follows mouse", "m", 0, AWM_ALL, NT_toggle_focus_policy, 0, 0);
             awm->sep______________();
             AW_insert_common_property_menu_entries(awm);
             awm->sep______________();
