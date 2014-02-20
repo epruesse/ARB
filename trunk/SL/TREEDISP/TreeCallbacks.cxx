@@ -365,7 +365,7 @@ void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntr
     char        label_buf[MAXLABEL+1];
     char        entry_buf[MAXENTRY+1];
     char hotkey[]       = "x";
-    const char *hotkeys = "N1234567890  ";
+    const char *hotkeys = "N1234567890AB";
 
     for (int i = 0; i <= AW_COLOR_GROUPS; ++i) {
         sprintf(label_buf, "tree_group_not_color_%i", i);
