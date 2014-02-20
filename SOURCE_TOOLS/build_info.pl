@@ -63,10 +63,12 @@ sub getBranchOrTag() {
   # or dies
 
   my $infocmd = "svn info '$ARBHOME'";
+  print "[executing '$infocmd']\n";
   open(INFO,$infocmd.'|') || die "failed to execute '$infocmd' (Reason: $!)";
   my ($root,$url) = (undef,undef);
   foreach (<INFO>) {
     chomp;
+    print "info='$_'\n";
     if (/^Repository\sRoot:\s+/o) { $root = $'; }
     elsif (/^URL:\s+/o) { $url = $'; }
   }
