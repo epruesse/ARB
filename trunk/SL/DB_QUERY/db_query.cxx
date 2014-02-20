@@ -2860,13 +2860,13 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             if (query->expect_hit_in_ref_list) {
                 aws->insert_menu_topic("search_equal_fields_and_listed_in_I", "Search entries existing in both DBs and listed in the source DB hitlist", "S",
                                        "search_equal_fields.hlp", AWM_ALL, makeWindowCallback(perform_query_cb, query, EXT_QUERY_COMPARE_LINES));
-                aws->insert_menu_topic("search_equal_words_and_listed_in_I",  "Search words existing in entries of both DBs and listed in the source DB hitlist", "W",
+                aws->insert_menu_topic("search_equal_words_and_listed_in_I",  "Search words existing in entries of both DBs and listed in the source DB hitlist", "w",
                                        "search_equal_fields.hlp", AWM_ALL, makeWindowCallback(perform_query_cb, query, EXT_QUERY_COMPARE_WORDS));
             }
             else {
                 aws->insert_menu_topic("search_equal_field_in_both_db", "Search entries existing in both DBs", "S",
                                        "search_equal_fields.hlp", AWM_ALL, makeWindowCallback(perform_query_cb, query, EXT_QUERY_COMPARE_LINES));
-                aws->insert_menu_topic("search_equal_word_in_both_db", "Search words existing in entries of both DBs", "W",
+                aws->insert_menu_topic("search_equal_word_in_both_db", "Search words existing in entries of both DBs", "w",
                                        "search_equal_fields.hlp", AWM_ALL, makeWindowCallback(perform_query_cb, query, EXT_QUERY_COMPARE_WORDS));
             }
         }
