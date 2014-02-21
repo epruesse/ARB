@@ -154,6 +154,8 @@ static GB_ERROR nt_check_database_consistency() {
 }
 
 __ATTR__USERESULT static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, const char *autorun_macro) {
+    AWT_initTreeAwarRegistry(GLOBAL.gb_main);
+
     GB_ERROR error = configure_macro_recording(aw_root, "ARB_NT", GLOBAL.gb_main); // @@@ problematic if called from startup-importer
     if (!error) {
         nt_create_main_window(aw_root);
@@ -178,8 +180,6 @@ static ARB_ERROR load_and_startup_main_window(AW_root *aw_root, const char *auto
     }
     else {
         aw_root->awar(AWAR_DB_PATH)->write_string(db_server);
-
-        AWT_initTreeAwarRegistry(GLOBAL.gb_main);
 
 #define MAXNAMELEN 35
         int len = strlen(db_server);
