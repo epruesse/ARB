@@ -377,10 +377,12 @@ public:
     void print_help(FILE *out) const {
         fprintf(out,
                 "\n"
-                "arb_ntree version " ARB_VERSION_DETAILED "\n"
+                "arb_ntree version " ARB_VERSION "\n"
                 "(C) 1993-" ARB_BUILD_YEAR " Lehrstuhl fuer Mikrobiologie - TU Muenchen\n"
                 "http://www.arb-home.de/\n"
+#if defined(SHOW_WHERE_BUILD)
                 "(version build by: " ARB_BUILD_USER "@" ARB_BUILD_HOST ")\n"
+#endif // SHOW_WHERE_BUILD
                 "\n"
                 "Possible usage:\n"
                 "  arb_ntree               => start ARB (intro)\n"
