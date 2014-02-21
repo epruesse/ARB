@@ -6,14 +6,23 @@
 #include <algorithm>
 
 /**
- * Slot carrying the data for the individual callbacks.
- *
- * We have to use a class hierarchy because the callbacks have a
- * non trivial destructor (making the use of union impossible) and
- * no default constructor (making the use of struct impossible).
+ * AW_signal emission will recurse if a handler (slot, cb) emits the
+ * signal again. Recursion is aborted at this depth.
  */
+const int MAX_EMIT_RECURSION = 100;
+
+/**
+ * Slot carrying the data for the individual callbacks.
+ **/
 struct Slot {
-    Slot() {}
+    /* We have to use a class hierarchy because the callbacks have a
+     * non trivial destructor (making the use of union impossible) and
+     * no default constructor (making the use of struct impossible).
+     */
+
+    bool    deleted; //! this slot has been marked for deletion
+    Slot() : deleted(false) {}
+
     virtual void emit() = 0 ;
     virtual AW_window* get_window() const { return NULL; }
     virtual Slot* clone() const = 0;
@@ -23,7 +32,9 @@ struct Slot {
     virtual int slot_type() const = 0;
 };
 
-/** Slot carrying a WindowCallback */
+/**
+ * Slot carrying a WindowCallback 
+ */
 struct WindowCallbackSlot : public Slot {
     WindowCallback cb;
     AW_window* aww;
@@ -65,7 +76,9 @@ struct WindowCallbackSlot : public Slot {
     }
 };
 
-/** Slot carrying a RootCallback */
+/** 
+ * Slot carrying a RootCallback 
+ */
 struct RootCallbackSlot : public Slot {
     RootCallback cb;
 
@@ -102,15 +115,29 @@ struct RootCallbackSlot : public Slot {
 struct AW_signal::Pimpl {
     std::list<Slot*> slots;
     bool enabled;            // false -> no signal propagation
+    int in_emit;            // we're in emit! don't delete from slots!
     AW_window* last_window;
-    Pimpl() : enabled(true) {}
-    ~Pimpl() {
-        for (std::list<Slot*>::iterator it = slots.begin();
-             it != slots.end(); ++it) {
-            delete (*it);
+    Pimpl() : enabled(true), in_emit(0) {}
+};
+
+/** 
+ * Remove Slots that where marked for deletion safely
+ */
+void AW_signal::clean_slots() {
+    //  Only modify Slot-List if we're not in emit():
+    if (prvt->in_emit > 0) return;
+    
+    std::list<Slot*>::iterator it = prvt->slots.begin();
+    while (it != prvt->slots.end()) {
+        if ((*it)->deleted) {
+            delete *it;
+            it = prvt->slots.erase(it);
+        } 
+        else {
+            ++it;
         }
     }
-};
+}
 
      
 /** Default Constructor */
@@ -126,11 +153,16 @@ AW_signal::AW_signal(const AW_signal& o)
     *this = o;
 }
 
-/** Copy (assignment) Operator */
+/** 
+ * Copy (assignment) Operator 
+ *
+ * If we are within emit(), this is equivalent to abort emission
+ * of the current signal and emit @param o!
+ */
 AW_signal& AW_signal::operator=(const AW_signal& o) {
     // copy the slots containing downstream callbacks
-    prvt->slots.clear();
-
+    clear();
+    
     return operator+=(o);
 }
 
@@ -147,6 +179,9 @@ AW_signal& AW_signal::operator+=(const AW_signal& o) {
 
 /** Destructor */
 AW_signal::~AW_signal() {
+    // probably not a good idea to die while in emit()
+    aw_assert(prvt->in_emit == 0); 
+
     // remove downstream signals
     clear();
 
@@ -154,6 +189,10 @@ AW_signal::~AW_signal() {
     delete prvt;
 }
 
+/**
+ * helper functor for accessing pointer-containers 
+ * dereferences both arguments of the binary functor it wraps
+ */
 template<class T> 
 struct dereference : public T {
     typedef typename T::first_argument_type* first_argument_type;
@@ -166,13 +205,14 @@ struct dereference : public T {
     }
 };
 
-/** Equality Comparator */
+/** Equality Comparator 
+ * Warning: ignores deleted state. Should it consider that?
+ */
 bool AW_signal::operator==(const AW_signal& o) const {
     if (size() != o.size()) return false;
     return std::equal(prvt->slots.begin(), prvt->slots.end(), o.prvt->slots.begin(),
                       dereference<std::equal_to<Slot> >());
 }
-
 
 /** Compare Signals ignoring signal order */
 bool AW_signal::unordered_equal(const AW_signal& o) const {
@@ -195,6 +235,7 @@ size_t AW_signal::size() const {
 /** Connects the Signal to the supplied WindowCallback and Window */
 void AW_signal::connect(const WindowCallback& wcb, AW_window* aww) {
     aw_return_if_fail(aww != NULL);
+
 #ifdef DEBUG
     WindowCallbackSlot wcbs(wcb, aww);
     if (std::find_if(prvt->slots.begin(), prvt->slots.end(), 
@@ -203,6 +244,7 @@ void AW_signal::connect(const WindowCallback& wcb, AW_window* aww) {
         aw_warning("duplicate signal!");
     }
 #endif
+
     prvt->slots.push_back(new WindowCallbackSlot(wcb, aww));
 }
 
@@ -216,19 +258,40 @@ void AW_signal::connect(const RootCallback& rcb) {
         aw_warning("duplicate signal!");
     }
 #endif
+
     prvt->slots.push_back(new RootCallbackSlot(rcb));
 }
 
 /** Disconnects the Signal from the supplied RCB */
 void AW_signal::disconnect(const RootCallback& rcb) {
     RootCallbackSlot r(rcb);
-    prvt->slots.remove_if(bind1st(dereference<std::equal_to<Slot> >(), &r));
+
+    // mark slot(s) as deleted
+    for (std::list<Slot*>::iterator it = prvt->slots.begin();
+         it != prvt->slots.end(); ++it) {
+        if (**it == r) {
+            (*it)->deleted = true;
+        }
+    }
+    
+    // remove and free if possible
+    clean_slots();
 }
 
 /** Disconnects the Signal from the supplied RCB */
 void AW_signal::disconnect(const WindowCallback& wcb, AW_window* aww) {
     WindowCallbackSlot w(wcb, aww);
-    prvt->slots.remove_if(bind1st(dereference<std::equal_to<Slot> >(), &w));
+
+    // mark slot(s) as deleted
+    for (std::list<Slot*>::iterator it = prvt->slots.begin();
+         it != prvt->slots.end(); ++it) {
+        if (**it == w) {
+            (*it)->deleted = true;
+        }
+    }
+    
+    // remove and free if possible
+    clean_slots();
 }
 
 
@@ -237,12 +300,28 @@ void AW_signal::disconnect(const WindowCallback& wcb, AW_window* aww) {
 void AW_signal::emit() {
     if (!prvt->enabled) return;
 
+    prvt->in_emit++;
+
+    // guard against emission loops
+    aw_return_if_fail(prvt->in_emit < MAX_EMIT_RECURSION);
+
     for (std::list<Slot*>::iterator it = prvt->slots.begin();
          it != prvt->slots.end(); ++it) {
+        
+        // skip slots marked as deleted
+        if ((*it)->deleted) continue;
+
         (*it)->emit();
+        
+        // remember last touched window
         if ((*it)->get_window()) 
             prvt->last_window = (*it)->get_window();
     }
+
+    prvt->in_emit--;
+
+    // cleanup slots removed during signal emission
+    clean_slots();
 }
 
 AW_window* AW_signal::get_last_window() const {
@@ -251,8 +330,12 @@ AW_window* AW_signal::get_last_window() const {
 
 /** Disconnects all callbacks from signal */
 void AW_signal::clear() {
-    delete prvt;
-    prvt = new Pimpl;
+    for (std::list<Slot*>::iterator it = prvt->slots.begin();
+         it != prvt->slots.end(); ++it) {
+        (*it)->deleted = true;
+    }
+    
+    clean_slots();
 }
 
 
@@ -283,6 +366,8 @@ static void rcb1(AW_root*, const char *) {
 static void rcb2(AW_root*, const char *) {
     rcb2_count ++;
 }
+
+  
 
 void TEST_AW_signal_emit() {
     wcb1_count = 0;
@@ -410,8 +495,34 @@ void TEST_AW_signal_assign() {
     TEST_EXPECT_EQUAL(rcb1_count, 2);
 
     // test duplicate assign?
+}
 
+int rcb_self_remove_count = 0;
+int wcb_self_remove_count = 0;
+
+static void rcb_self_remove(AW_root*, AW_signal* sig) {
+    rcb_self_remove_count ++;
+    sig->disconnect(makeRootCallback(rcb_self_remove, sig));
+    sig->emit();
+}
+
+static void wcb_self_remove(AW_window* w, AW_signal* sig) {
+    wcb_self_remove_count ++;
+    sig->disconnect(makeWindowCallback(wcb_self_remove, sig), w);
+    sig->emit();
+}
+
+void TEST_AW_signal_self_remove() {
+    AW_signal sig;
     
+    sig.connect(makeRootCallback(rcb_self_remove, &sig));
+    sig.connect(makeWindowCallback(wcb_self_remove, &sig), (AW_window*)123);
+    sig.emit();
+    
+    TEST_EXPECT_EQUAL(sig.size(), 0);
+    TEST_EXPECT_EQUAL(rcb_self_remove_count, 1);
+    TEST_EXPECT_EQUAL(wcb_self_remove_count, 1);
 
 }
+
 #endif
