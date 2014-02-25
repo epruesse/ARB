@@ -58,6 +58,7 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
+TestEnvironment.o: ../SOURCE_TOOLS/arb_main.h
 TestEnvironment.o: test_global.h
 TestEnvironment.o: test_unit.h
 TestEnvironment.o: UnitTester.hxx
@@ -87,6 +88,7 @@ TestEnvironment.o: $(ARBHOME)/INCLUDE/PT_com.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/servercntrl.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+UnitTester.o: ../SOURCE_TOOLS/arb_main.h
 UnitTester.o: test_global.h
 UnitTester.o: test_unit.h
 UnitTester.o: UnitTester.hxx
