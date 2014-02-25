@@ -897,7 +897,7 @@ ARCHS_NTREE = \
 		XML/XML.a \
 
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) link_awt
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
@@ -934,7 +934,7 @@ endif
 LIBS_EDIT4 := $(GL_LIBS)
 
 $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) link_awt 
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS) && \
@@ -963,7 +963,7 @@ ARCHS_WETC = \
 		XML/XML.a \
 
 $(WETC): $(ARCHS_WETC:.a=.dummy) link_awt
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) && \
@@ -988,7 +988,7 @@ ARCHS_DIST = \
 		XML/XML.a \
 
 $(DIST): $(ARCHS_DIST:.a=.dummy) link_awt
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
@@ -1012,7 +1012,7 @@ ARCHS_PARSIMONY = \
 		XML/XML.a \
 
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) link_awt
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS) && \
@@ -1025,7 +1025,7 @@ ARCHS_CONVERT_ALN =	\
 		CONVERTALN/CONVERTALN.a \
 
 $(CONVERT_ALN) : $(ARCHS_CONVERT_ALN:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_CONVERT_ALN) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_CONVERT_ALN) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(EXECLIBS)"; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(EXECLIBS) && \
@@ -1039,7 +1039,7 @@ ARCHS_TREEGEN =	\
 		TREEGEN/TREEGEN.a \
 
 $(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy)
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_TREEGEN) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_TREEGEN) $(use_ARB_main_C) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS) && \
@@ -1054,7 +1054,7 @@ ARCHS_NALIGNER = \
 		SL/HELIX/HELIX.a \
 
 $(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NALIGNER) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NALIGNER) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS) && \
@@ -1072,7 +1072,7 @@ ARCHS_PHYLO = \
 		XML/XML.a \
 
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) link_awt
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PHYLO) $(GUI_LIBS) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PHYLO) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS) && \
@@ -1090,7 +1090,7 @@ ARCHS_DBSERVER = \
 		SERVERCNTRL/SERVERCNTRL.a \
 
 $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS) && \
@@ -1113,7 +1113,7 @@ ARCHS_PROBE_DEPEND = \
 		$(ARCHS_PT_SERVER) \
 
 $(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db 
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) config.makefile || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) config.makefile $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS) && \
@@ -1127,7 +1127,7 @@ ARCHS_NAMES = \
 		SERVERCNTRL/SERVERCNTRL.a \
 
 $(NAMES): $(ARCHS_NAMES:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS) && \
@@ -1192,6 +1192,7 @@ AWT/AWT.dummy:       target_is_missing_lib_prefix
 WINDOW/WINDOW.dummy: target_is_missing_lib_prefix
 
 # rule to generate main target (normally a library):
+# @@@ check effect of setting LANG=C below
 %.dummy:
 	@( export ID=$$$$; LANG=C; \
 	(( \
