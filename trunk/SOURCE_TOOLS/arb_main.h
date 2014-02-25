@@ -62,8 +62,9 @@ static void start_of_main() {
     setlocale(LC_TIME,     "C");
 #endif
 
-#if 1
+#if 0
     // enabling this section fails 57 unit tests (for german USER_LOCALE)
+    // (fails 57 unit tests under ubuntu 13.10, centos 5 and 6)
     setlocale(LC_ALL,     "C");
     setlocale(LC_NUMERIC, USER_LOCALE);
 #endif
