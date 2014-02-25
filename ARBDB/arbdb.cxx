@@ -167,8 +167,12 @@ static GB_ERROR GB_safe_atof(const char *str, double *res) {
 
 double GB_atof(const char *str) {
     // convert ASCII to double
-    double res = 0;
-    ASSERT_NO_ERROR(GB_safe_atof(str, &res)); // expected double in 'str'- better use GB_safe_atof()
+    double   res = 0;
+    GB_ERROR err = GB_safe_atof(str, &res);
+    if (err) {
+        // expected double in 'str'- better use GB_safe_atof()
+        GBK_terminatef("GB_safe_atof(\"%s\", ..) returns error: %s", str, err);
+    }
     return res;
 }
 
@@ -2815,6 +2819,17 @@ long GB_number_of_subentries(GBDATA *gbd) {
 #ifdef UNIT_TESTS
 
 #include <test_unit.h>
+
+void TEST_GB_atof() {
+    // startup of ARB (gtk_only@11651) is failing on ubuntu 13.10 (in GBT_read_tree)
+    // (failed with "Error: 'GB_safe_atof("0.0810811", ..) returns error: cannot convert '0.0810811' to double'")
+    // Reason: LANG[UAGE] or LC_NUMERIC set to "de_DE..."
+    //
+    // Notes:
+    // * gtk apparently calls 'setlocale(LC_ALL, "");', motif doesnt
+
+    TEST_EXPECT_SIMILAR(GB_atof("0.031"), 0.031, 0.0001); // @@@ make this fail, then fix it
+}
 
 static void test_another_shell() { delete new GB_shell; }
 static void test_opendb() { GB_close(GB_open("no.arb", "c")); }
