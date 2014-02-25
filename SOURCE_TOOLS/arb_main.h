@@ -13,7 +13,7 @@
 
 #include <locale.h>
 
-inline void start_of_main() {
+static void start_of_main() {
 #if 0
     setlocale(LC_ALL, ""); // this is apparently done by gtk as well.
                            // already call it here to make motif-version behave samesame.
