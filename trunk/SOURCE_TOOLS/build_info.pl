@@ -86,18 +86,18 @@ sub getBranchOrTag() {
   # or dies
 
   my ($jroot,$jurl) = guessSvnBranchInsideJenkins();
-  my ($root,$url) = (undef,undef);
+  my ($root,$url)   = (undef,undef);
   eval {
     my $infocmd = "svn info '$ARBHOME'";
     print "[executing '$infocmd']\n";
-    open(INFO,$infocmd.'|') || die "failed to execute '$infocmd' (Reason: $!)";
+    open(INFO,$infocmd.'|') || die "failed to fork '$infocmd' (Reason: $!)";
     foreach (<INFO>) {
       chomp;
       print "info='$_'\n";
       if (/^Repository\sRoot:\s+/o) { $root = $'; }
       elsif (/^URL:\s+/o) { $url = $'; }
     }
-    close(INFO);
+    close(INFO) || die "failed to execute '$infocmd' (Reason: $!)";;
   };
   if ($@) {
     if (defined $jroot and defined $jurl) {
