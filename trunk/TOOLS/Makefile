@@ -31,7 +31,7 @@ endif
 # if you change lib-dependencies here,
 # please update corresponding definitions in ../BINDEP/
 
-LIB_ARBDB               := $(LIBPATH) $(ARBDB_LIB)
+LIB_ARBDB               := $(LIBPATH) $(ARBDB_LIB) $(ARB_GLIB_LIBS)
 LIBS_ARB_PROBE          := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a ../PROBE_COM/common.a ../SL/REGEXPR/REGEXPR.a
 LIBS_ARB_READ_TREE      := ../SL/TREE_READ/TREE_READ.a
 LIBS_ARB_EXPORT_TREE    := ../SL/TREE_WRITE/TREE_WRITE.a ../XML/XML.a $(LIBS_ARB_READ_TREE)
