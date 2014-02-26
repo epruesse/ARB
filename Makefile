@@ -427,8 +427,10 @@ TIFFLIBS := -ltiff
 
 #---------------------- glib:
 
-ARB_GLIB_INCLUDE=`pkg-config --cflags glib-2.0`
-ARB_GLIB_LIBS=`pkg-config --libs glib-2.0`
+ARB_NEEDED_GLIB=glib-2.0
+
+ARB_GLIB_INCLUDE:=$(strip $(shell pkg-config --cflags $(ARB_NEEDED_GLIB)))
+ARB_GLIB_LIBS:=$(strip    $(shell pkg-config --libs   $(ARB_NEEDED_GLIB)))
 
 #---------------------- basic libs:
 
