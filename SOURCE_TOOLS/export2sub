@@ -45,3 +45,6 @@ export SHOWTODO
 export CLANG_STATIC_CHECKER
 export CCC_ANALYZER_CPLUSPLUS
 
+# jenkins related
+export SVN_URL
+export SVN_REVISION

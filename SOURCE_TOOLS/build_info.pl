@@ -182,6 +182,8 @@ if ($in_SVN) {
                       '#define ARB_SVN_REVISION "'.$revision.'"',
                      );
   update($svn_revision_h,@svn_revision);
+  print "SVN_URL='$ENV{SVN_URL}'\n";
+  print "SVN_REVISION='$ENV{SVN_REVISION}'\n";
 }
 else {
   if (not -f $svn_revision_h) {
