@@ -4,12 +4,16 @@ use strict;
 use warnings;
 
 # create/update build info into
-# $ARBHOME/TEMPLATES/arb_build.h and
-# $ARBHOME/TEMPLATES/svn_revision.h
+#     ../TEMPLATES/arb_build.h
+# and
+#     ../TEMPLATES/svn_revision.h
 
 # --------------------------------------------------------------------------------
 
-my $dump = 1;
+my $dumpFiles = 1;
+
+my $RC_BRANCH     = 'rc';
+my $STABLE_BRANCH = 'stable';
 
 # --------------------------------------------------------------------------------
 
@@ -22,6 +26,12 @@ if ((not -d $ARBHOME) or (not -f $ARBHOME.'/arb_LICENSE.txt')) {
 my $TEMPLATES    = $ARBHOME.'/TEMPLATES';       if (not -d $TEMPLATES)    { die "no such directory '$TEMPLATES'"; }
 my $SOURCE_TOOLS = $ARBHOME.'/SOURCE_TOOLS';    if (not -d $SOURCE_TOOLS) { die "no such directory '$SOURCE_TOOLS'"; }
 my $mv_if_diff   = $SOURCE_TOOLS.'/mv_if_diff'; if (not -x $mv_if_diff)   { die "no such script '$mv_if_diff'"; }
+
+# upgrade version?
+my $inc_major = $SOURCE_TOOLS.'/inc_major.stamp';
+my $inc_minor = $SOURCE_TOOLS.'/inc_minor.stamp';
+my $inc_candi = $SOURCE_TOOLS.'/inc_candi.stamp';
+my $inc_patch = $SOURCE_TOOLS.'/inc_patch.stamp';
 
 # --------------------------------------------------------------------------------
 
@@ -45,6 +55,112 @@ sub getUser() {
   return $user;
 }
 
+sub guessSvnBranchInsideJenkins() {
+  my $root = undef;
+  my $url = $ENV{SVN_URL}; # is set inside jenkins
+
+  if (defined $url) {
+    if ($url eq '') { $url = undef; }
+    else {
+      my $suffix = undef;
+      if ($url =~ /^(http:\/\/svn\.mikro\.biologie\.tu-muenchen\.de\/svn)\//o) {
+        $suffix = $';
+        $root = $1;
+      }
+      elsif ($url =~ /^(svn\+ssh:\/\/.*svn\.arb-home\.de\/svn\/ARB)\//o) {
+        $suffix = $';
+        $root = $1;
+      }
+      if (not defined $suffix) { die "Unexpected value in SVN_URL ('$url')"; }
+      die "root unset (url='$url')" if not defined $root;
+    }
+  }
+  return ($root,$url);
+}
+
+sub getBranchOrTag() {
+  # returns any of
+  #   (0,trunk)
+  #   (0,branchname)
+  #   (1,tagname)
+  # or dies
+
+  my ($jroot,$jurl) = guessSvnBranchInsideJenkins();
+  my ($root,$url) = (undef,undef);
+  eval {
+    my $infocmd = "svn info '$ARBHOME'";
+    print "[executing '$infocmd']\n";
+    open(INFO,$infocmd.'|') || die "failed to execute '$infocmd' (Reason: $!)";
+    foreach (<INFO>) {
+      chomp;
+      print "info='$_'\n";
+      if (/^Repository\sRoot:\s+/o) { $root = $'; }
+      elsif (/^URL:\s+/o) { $url = $'; }
+    }
+    close(INFO);
+  };
+  if ($@) {
+    if (defined $jroot and defined $jurl) {
+      print "Accepting svn failure (apparently running inside jenkins)\n";
+      ($root,$url) = ($jroot,$jurl);
+    }
+    else {
+      die $@."\n";
+    }
+  }
+
+  if (not defined $root) { die "Failed to detect repository root"; }
+  if (not defined $url)  { die "Failed to detect repository URL"; }
+
+  if (defined $jroot) {
+    if (not defined $jurl)  { die "\$jroot defined, \$jurl undefined (bug in guessSvnBranchInsideJenkins?)"; }
+    if ($jroot ne $root) { die "Conflicting SVN root detection:\n1='$root'\n2='$jroot'"; }
+    if ($jurl  ne $url)  { die "Conflicting SVN url detection:\n1='$url'\n2='$jurl'"; }
+  }
+  elsif (defined $jurl) { die "\$jurl defined, \$jroot undefined (bug in guessSvnBranchInsideJenkins?)"; }
+
+  my $rootlen = length($root);
+  my $url_prefix = substr($url,0,$rootlen);
+  if ($url_prefix ne $root) { die "Expected '$url_prefix' to match '$root'"; }
+
+  my $rest = substr($url,$rootlen+1);
+  my $is_tag = 0;
+  if ($rest =~ /^branches\//) {
+    $rest = $';
+  }
+  elsif ($rest =~ /^tags\//) {
+    $rest = $';
+    $is_tag = 1;
+  }
+  return ($is_tag,$rest);
+}
+
+sub getBranchOrTagFromHeader($) {
+  my ($header) = @_;
+  open(HEADER,'<'.$header) || die "Failed to read '$header' (Reason: $!)";
+  my ($revision,$is_tag,$branch) = (undef,undef);
+  foreach (<HEADER>) {
+    chomp;
+    if (/^\#define\s+ARB_SVN_BRANCH\s+\"([^\"]+)\"/o) { $branch = $1; }
+    elsif (/^\#define\s+ARB_SVN_IS_TAG\s+([01])/o) { $is_tag = $1; }
+    elsif (/^\#define\s+ARB_SVN_REVISION\s+\"([^\"]+)\"/o) { $revision = $1; }
+  }
+  close(HEADER);
+
+  if (not defined $branch) { die "Failed to parse branch from $header"; }
+  if (not defined $is_tag) { die "Failed to parse is_tag from $header"; }
+  if (not defined $revision) { die "Failed to parse revision from $header"; }
+  if ($is_tag != 0 and $is_tag != 1) { die "Invalid value is_tag='$is_tag'"; }
+  return ($revision,$is_tag,$branch);
+}
+
+sub dumpFile($) {
+  my ($file) = @_;
+  print "---------------------------------------- [start $file]\n";
+  system("cat $file");
+  print "---------------------------------------- [end $file]\n";
+}
+
 sub update($\@) {
   my ($file,$content_r) = @_;
   my $tmp = $file.'.tmp';
@@ -53,6 +169,7 @@ sub update($\@) {
   foreach (@$content_r) { print TMP $_."\n"; }
   close(TMP);
   `$mv_if_diff '$tmp' '$file'`;
+  if ($dumpFiles) { dumpFile($file); }
 }
 
 sub file2hash($\%$) {
@@ -80,26 +197,53 @@ sub hash2file(\%$) {
 
 # --------------------------------------------------------------------------------
 
-my $dot_build_info = $ENV{HOME}.'/.arb_build_info';
-
-# default build info (may be overridden by ~/.arb_build_info)
 my %build_info =  (
-
-                   user                => getUser(),
-                   host                => getHost(),
-                   tag                 => 'private',
-                   allowVersionUpgrade => 0,
-                   showWhereBuild      => 1,
-
+                   user => getUser(),
+                   host => getHost(),
                   );
-
-# read local settings
-file2hash($dot_build_info,%build_info,0);
 
 my $arb_build_h    = $TEMPLATES.'/arb_build.h';
 my $svn_revision_h = $TEMPLATES.'/svn_revision.h';
 
 my $in_SVN = (-d $ARBHOME.'/.svn');
+
+# update revision info?
+my ($revision,$is_tag,$branch) = (undef,undef,undef);
+if ($in_SVN) {
+  # in SVN checkout -> update revision info
+  $revision = `svnversion -c -n $ARBHOME`;
+  if ($revision =~ /^2:/) {
+    # for some reason -c a "2:" prefix
+    $revision = $';
+  }
+  ($is_tag,$branch) = getBranchOrTag();
+
+  # $branch = $RC_BRANCH; # @@@ fake
+  # $branch = $STABLE_BRANCH; # @@@ fake
+  # $branch = 'gtk_only'; # @@@ fake
+  # ($is_tag,$branch) = (1, 'arb-5.20.1'); # @@@ fake
+  # ($is_tag,$branch) = (1, 'arb-5.19'); # @@@ fake
+  # ($is_tag,$branch) = (1, 'evalSomething'); # @@@ fake
+  # ($is_tag,$branch) = (1, 'arb-5.20'); # @@@ fake
+  # ($is_tag,$branch) = (1, 'arb-5.20-rc1'); # @@@ fake
+  # ($is_tag,$branch) = (1, 'arb-5.20-rc2'); # @@@ fake
+
+  my @svn_revision = (
+                      '#define ARB_SVN_REVISION      "'.$revision.'"',
+                      '#define ARB_SVN_BRANCH        "'.$branch.'"',
+                      '#define ARB_SVN_BRANCH_IS_TAG '.$is_tag,
+                     );
+
+  update($svn_revision_h,@svn_revision);
+}
+else {
+  if (not -f $svn_revision_h) {
+    die "Missing file '$svn_revision_h'";
+  }
+  # use revision info as in source tarball
+  ($revision,$is_tag,$branch) = getBranchOrTagFromHeader($svn_revision_h);
+}
+
 my $date = `date '+%d.%b.%Y'`;
 chomp($date);
 my $year = undef;
@@ -115,17 +259,40 @@ my $version_info = $SOURCE_TOOLS.'/version_info';
 my %version_info = ();
 file2hash($version_info,%version_info,1);
 
-# upgrade version?
-my $inc_major = $SOURCE_TOOLS.'/inc_major.stamp';
-my $inc_minor = $SOURCE_TOOLS.'/inc_minor.stamp';
+if (not defined $version_info{CANDIDATE}) { $version_info{CANDIDATE} = 1; }
+if (not defined $version_info{PATCHLEVEL}) { $version_info{PATCHLEVEL} = 0; }
 
-if ($in_SVN and $build_info{allowVersionUpgrade}==1) {
-  if (-f $inc_major or -f $inc_minor) { # version upgrade requested
-    my $last_version_upgrade = $version_info{last_upgrade};
-    if (not defined $last_version_upgrade) { $last_version_upgrade = 0; }
-
-    my $earliestNextUpgrade = $last_version_upgrade + (60*60);
-    if (time>=$earliestNextUpgrade) { # do not upgrade version more than once per hour
+if (-f $inc_major or -f $inc_minor or -f $inc_candi or -f $inc_patch) { # version/rc-candidate/patchlevel upgrade requested?
+  eval {
+    print "\n";
+    if ($in_SVN) {
+      if ($is_tag==1) {
+        die "Upgrading version information not possible in tag-checkout! (tag of this WC = '$branch')";
+      }
+      if (-f $inc_candi) {
+        if ($branch ne $RC_BRANCH) {
+          die "Upgrading RC-candidate number only possible in branch '$RC_BRANCH' (you are in '$branch')";
+        }
+        my $oldRC = $version_info{CANDIDATE};
+        if (not defined $oldRC) { die "No CANDIDATE defined"; }
+        $version_info{CANDIDATE}++;
+        my $newRC = $version_info{CANDIDATE};
+        print "RC-candidate number upgraded from $oldRC to $newRC\n";
+      }
+      elsif (-f $inc_patch) {
+        if ($branch ne $STABLE_BRANCH) {
+          die "Upgrading patchlevel only possible in branch '$STABLE_BRANCH' (you are in '$branch')";
+        }
+        my $oldPL = $version_info{PATCHLEVEL};
+        if (not defined $oldPL) { die "No PATCHLEVEL defined"; }
+        $version_info{PATCHLEVEL}++;
+        my $newPL = $version_info{PATCHLEVEL};
+        print "patchlevel upgraded from $oldPL to $newPL\n";
+      }
+      else {
+        if ($is_tag==1 or $branch ne 'trunk') {
+          die "Upgrading version only possible in 'trunk' (you are in '$branch')";
+        }
         my $oldVersion = $version_info{MAJOR}.'.'.$version_info{MINOR};
         if (-f $inc_major) {
           $version_info{MAJOR}++;
@@ -134,62 +301,97 @@ if ($in_SVN and $build_info{allowVersionUpgrade}==1) {
         else {
           $version_info{MINOR}++;
         }
+        $version_info{CANDIDATE} = 1; # first release candidate will be rc1
+        $version_info{PATCHLEVEL} = 0; # no patchlevel (yet)
         my $newVersion = $version_info{MAJOR}.'.'.$version_info{MINOR};
         print "Version upgraded from $oldVersion to $newVersion\n";
-        $version_info{last_upgrade}=time; # upgrade timestamp
+      }
 
-        hash2file(%version_info,$version_info);
-        my $command = "cd '$ARBHOME/SOURCE_TOOLS'; ".
-          "svn commit version_info --non-interactive ".
-            "--message 'Auto version upgrade to $newVersion by ".$build_info{user}.'@'.$build_info{host}."';".
-              "( cd '$ARBHOME' ; svn update )"; # update revision of checkout in $ARBHOME
-        `( $command )`;
+      $version_info{last_upgrade}=time; # upgrade timestamp
+      hash2file(%version_info,$version_info);
     }
     else {
-      print "Skipping version upgrade (last upgrade was ".(time-$last_version_upgrade)." seconds ago)\n";
+      die "Upgrading version only possible in SVN WC";
+    }
+    print "\n";
+  };
+  my $failed = $@;
+
+  # always remove requests
+  -f $inc_major && unlink($inc_major);
+  -f $inc_minor && unlink($inc_minor);
+  -f $inc_candi && unlink($inc_candi);
+  -f $inc_patch && unlink($inc_patch);
+
+  if ($failed) { die "$failed\n"; }
+}
+
+# create valid svn-tag for this version
+
+my $svn_tag              = undef;
+my $short_version        = undef;
+my $always_show_revision = 1;
+
+my $orgbranch = $branch; # real branch or branch estimated from tag
+if ($is_tag==1) {
+  if ($branch =~ /^arb-[0-9]+\.[0-9]+/o) {
+    if ($branch =~ /-rc[0-9]+$/o) { $orgbranch = $RC_BRANCH; }
+    else                          { $orgbranch = $STABLE_BRANCH; }
+  }
+  else {
+    $orgbranch = 'unknown';
+  }
+}
+
+if ($orgbranch eq $STABLE_BRANCH or $orgbranch eq $RC_BRANCH) {
+  $always_show_revision = 0;
+  $svn_tag = 'arb-'.$version_info{MAJOR}.'.'.$version_info{MINOR};
+  if ($orgbranch eq $RC_BRANCH) {
+    $svn_tag .= '-rc'.$version_info{CANDIDATE};
+  }
+  else {
+    if ($version_info{PATCHLEVEL} > 0) { $svn_tag .= '.'.$version_info{PATCHLEVEL}; }
+  }
+  $short_version = $svn_tag;
+
+  if ($is_tag==1) {
+    # check real SVN-tag vs generated SVN-tag
+    if ($branch ne $svn_tag) {
+      die "Version info and SVN-branch-tag mismatch:\n".
+        "(version suggests svn-tag = '$svn_tag'\n".
+        " real             svn-tag = '$branch')";
     }
   }
-}
-# remove requests
--f $inc_minor && unlink($inc_minor);
--f $inc_major && unlink($inc_major);
-
-my @arb_build = (
-                 '#define ARB_VERSION_MAJOR "'.$version_info{MAJOR}.'"',
-                 '#define ARB_VERSION_MINOR "'.$version_info{MINOR}.'"',
-                 '#define ARB_VERSION_TAG   "'.$build_info{tag}.'"',
-                 '#define ARB_BUILD_DATE    "'.$date.'"',
-                 '#define ARB_BUILD_YEAR    "'.$year.'"',
-                 '#define ARB_BUILD_HOST    "'.$build_info{host}.'"',
-                 '#define ARB_BUILD_USER    "'.$build_info{user}.'"',
-                );
-
-if ($build_info{showWhereBuild}!=0) {
-  push @arb_build, '#define SHOW_WHERE_BUILD';
-}
-
-update($arb_build_h,@arb_build);
-
-# update revision info?
-if ($in_SVN) {
-  # in SVN checkout -> update revision info
-  my $revision = `svnversion -c -n $ARBHOME`;
-  if ($revision =~ /^2:/) {
-    # for some reason -c a "2:" prefix
-    $revision = $';
-  }
-  my @svn_revision = (
-                      '#define ARB_SVN_REVISION "'.$revision.'"',
-                     );
-  update($svn_revision_h,@svn_revision);
   print "SVN_URL='$ENV{SVN_URL}'\n";
   print "SVN_REVISION='$ENV{SVN_REVISION}'\n";
 }
+elsif ($is_tag==1) {
+  $short_version = 'arb-special-'.$branch; # use custom tag
+}
 else {
-  if (not -f $svn_revision_h) {
-    die "Missing file '$svn_revision_h'";
-  }
-  # use revision info as in source tarball
+  $short_version = 'arb-devel';
+  if ($branch ne 'trunk') { $short_version .= '-'.$branch; }
+  $short_version .= '-'.$version_info{MAJOR}.'.'.$version_info{MINOR};
 }
 
+defined $short_version || die "expected known short_version!";
+defined $revision || die "expected known revision!";
+my $long_version  = $short_version.'.rev'.$revision;
+
+if ($always_show_revision==1) {
+  $short_version = $long_version;
+}
+
+my @arb_build = (
+                 '#define ARB_VERSION            "'.$short_version.'"',
+                 '#define ARB_VERSION_DETAILED   "'.$long_version.'"',
+
+                 '#define ARB_BUILD_DATE         "'.$date.'"',
+                 '#define ARB_BUILD_YEAR         "'.$year.'"',
+
+                 '#define ARB_BUILD_HOST         "'.$build_info{host}.'"',
+                 '#define ARB_BUILD_USER         "'.$build_info{user}.'"',
+                );
+
+update($arb_build_h,@arb_build);
 
