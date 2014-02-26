@@ -2819,6 +2819,7 @@ long GB_number_of_subentries(GBDATA *gbd) {
 #ifdef UNIT_TESTS
 
 #include <test_unit.h>
+#include <locale.h>
 
 void TEST_GB_atof() {
     // startup of ARB (gtk_only@11651) is failing on ubuntu 13.10 (in GBT_read_tree)
