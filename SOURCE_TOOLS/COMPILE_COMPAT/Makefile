@@ -15,7 +15,7 @@ BINARIES = $(addprefix bin/,$(subst .o,,$(OBJECTS)))
 LIB_ARBDB := $(LIBPATH) $(ARBDB_LIB) $(ARB_GLIB_LIBS)
 
 LIBDIR=../../lib
-LIB_DEPENDS := $(LIBDIR)/libARBDB.so $(LIBDIR)/libCORE.so
+LIB_DEPENDS := $(LIBDIR)/libARBDB.$(SHARED_LIB_SUFFIX) $(LIBDIR)/libCORE.$(SHARED_LIB_SUFFIX)
 
 $(MAIN): binaries
 
