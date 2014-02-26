@@ -78,6 +78,36 @@ sub guessSvnBranchInsideJenkins() {
   return ($root,$url);
 }
 
+sub getRevision() {
+  my $jrevision = $ENV{SVN_REVISION}; # is set inside jenkins
+  if (defined $jrevision and $jrevision eq '') { $jrevision = undef; }
+
+  my $revision = undef;
+  eval {
+    $revision = `svnversion -c -n $ARBHOME`;
+    if (not defined $revision) { die "Failed to detect revision number"; }
+    if ($revision =~ /^2:/) {
+      # for some reason -c a "2:" prefix
+      $revision = $';
+    }
+  };
+  if ($@) {
+    if (defined $jrevision) {
+      print "Accepting svn failure (apparently running inside jenkins)\n";
+      $revision = $jrevision;
+    }
+    else { die $@."\n"; }
+  }
+
+  defined $revision || die "impossible!";
+  if (defined $jrevision) {
+    if ($jrevision ne $revision) {
+      die "Conflicting revision numbers (jrevision='$jrevision', revision='$revision')";
+    }
+  }
+  return $revision;
+}
+
 sub getBranchOrTag() {
   # returns any of
   #   (0,trunk)
@@ -104,9 +134,7 @@ sub getBranchOrTag() {
       print "Accepting svn failure (apparently running inside jenkins)\n";
       ($root,$url) = ($jroot,$jurl);
     }
-    else {
-      die $@."\n";
-    }
+    else { die $@."\n"; }
   }
 
   if (not defined $root) { die "Failed to detect repository root"; }
@@ -211,11 +239,7 @@ my $in_SVN = (-d $ARBHOME.'/.svn');
 my ($revision,$is_tag,$branch) = (undef,undef,undef);
 if ($in_SVN) {
   # in SVN checkout -> update revision info
-  $revision = `svnversion -c -n $ARBHOME`;
-  if ($revision =~ /^2:/) {
-    # for some reason -c a "2:" prefix
-    $revision = $';
-  }
+  $revision = getRevision();
   ($is_tag,$branch) = getBranchOrTag();
 
   # $branch = $RC_BRANCH; # @@@ fake
