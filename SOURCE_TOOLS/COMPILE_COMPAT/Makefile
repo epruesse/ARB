@@ -32,8 +32,10 @@ c0x.o: c0x.cxx Makefile
 nostd.o: nostd.cxx Makefile
 	$(A_CXX) $(cflags) $(cxxflags_nostd) -c $< $(CXX_INCLUDES) -o $@ $(POST_COMPILE)
 
-bin/% : %.o $(LIB_DEPENDS)
+bin/% : %.o
 	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB)
+
+$(OBJECTS) : $(LIB_DEPENDS)
 
 clean:
 	rm -f $(BINARIES) $(OBJECTS)
