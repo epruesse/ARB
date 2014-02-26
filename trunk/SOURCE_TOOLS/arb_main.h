@@ -25,9 +25,10 @@ static void start_of_main() {
     // Fails-counts mentioned below were determined under ubuntu 13.10/64bit.
     // Make sure only one section is enabled!
 
-#if 0
+#if 1
     // enabling this section does not fail any unit test
     setlocale(LC_ALL,  "C");
+    // overwritten as soon as gtk-GUI starts (causing wrong behavior throughout ARB)
 #endif
 
 #if 0
