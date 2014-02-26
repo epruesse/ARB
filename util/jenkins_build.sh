@@ -93,10 +93,13 @@ if [ $BUILD == 1 ]; then
     make tarfile_quick
 
     if [ "$MODE" == "RELEASE" ]; then
-        mv arb.tgz     arb-r${SVN_REVISION}${TARSUF}.${TGTNAME}.tgz
+        # published on ftp:
+        mv arb.tgz arb-r${SVN_REVISION}${TARSUF}.${TGTNAME}.tgz
     else
-        rm arb.tgz
+        # not published on ftp (needed by SINA):
+        mv arb.tgz arb-r${SVN_REVISION}${TARSUF}-bin.${TGTNAME}.tgz
     fi
+    # not published on ftp (needed by SINA):
     mv arb-dev.tgz arb-r${SVN_REVISION}${TARSUF}-dev.${TGTNAME}.tgz
 
     make ut
