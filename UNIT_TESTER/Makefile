@@ -30,7 +30,7 @@ $(MAIN): $(TESTER_OBJECTS) test_environment
 $(ALL_OBJECTS): Makefile.setup.local Makefile
 
 test_environment: $(ALL_OBJECTS) $(TEST_ENVIRONMENT_LIBS)
-	$(LINK_EXECUTABLE) test_environment $(ALL_OBJECTS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS) $(EXECLIBS)
+	$(LINK_EXECUTABLE) test_environment $(ALL_OBJECTS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS) $(ARB_GLIB_LIBS) $(EXECLIBS)
 
 .cxx.o:
 	$(A_CXX) $(cflags) $(cxxflags) $(LOCAL_DEFINES) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CXX_INCLUDES) $(POST_COMPILE)

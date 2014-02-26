@@ -24,6 +24,9 @@
 #include "gb_index.h"
 #include <arb_strarray.h>
 
+#include <glib.h>
+#include <glib/gprintf.h>
+
 gb_local_data *gb_local = 0;
 
 #define INIT_TYPE_NAME(t) GB_TYPES_name[t] = #t
@@ -2836,7 +2839,8 @@ void TEST_999_strtod_replacement() {
     // caution: if it fails -> locale is not reset (therefore call with low priority 999)
     const char *old = setlocale(LC_NUMERIC, "de_DE.UTF-8");
     {
-        TEST_EXPECT_SIMILAR(strtod("0.031", NULL), 0.031, 0.0001); // @@@ expected to fail on centos 
+        // TEST_EXPECT_SIMILAR__BROKEN(strtod("0.031", NULL), 0.031, 0.0001);
+        TEST_EXPECT_SIMILAR(g_ascii_strtod("0.031", NULL), 0.031, 0.0001);
     }
     setlocale(LC_NUMERIC, old);
 }

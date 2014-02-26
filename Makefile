@@ -425,6 +425,11 @@ GL_LIBS:=$(GL_LIBS_ARB) $(GL_LIBS_SYS)
 
 TIFFLIBS := -ltiff
 
+#---------------------- glib:
+
+ARB_GLIB_INCLUDE=`pkg-config --cflags glib-2.0`
+ARB_GLIB_LIBS=`pkg-config --libs glib-2.0`
+
 #---------------------- basic libs:
 
 SYSLIBS:=
@@ -432,7 +437,7 @@ SYSLIBS:=
 ifdef DARWIN
 	SYSLIBS += -lstdc++
 else
-	SYSLIBS += -lm
+	SYSLIBS += -lm $(ARB_GLIB_LIBS)
 endif
 
 #---------------------- include symbols?
@@ -516,7 +521,7 @@ LIBPATH = -L$(ARBHOME)/lib
 DEST_LIB = lib
 DEST_BIN = bin
 
-CC_INCLUDES  := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
+CC_INCLUDES  := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES) $(ARB_GLIB_INCLUDE)
 CXX_INCLUDES := $(CC_INCLUDES)
 MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
