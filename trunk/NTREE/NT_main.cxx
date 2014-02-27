@@ -923,6 +923,19 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
 }
 
 int ARB_main(int argc, char *argv[]) {
+    {
+        // i really dont want 'arb_ntree --help' to startup the GUI
+        // hack: parse CL twice
+        NtreeCommandLine cl(argc, argv);
+        bool             cl_ok = !cl.parse().deliver();
+        if (cl_ok) {
+            if (cl.wants_help()) {
+                cl.print_help(stderr);
+                return EXIT_SUCCESS;
+            }
+        }
+    }
+
     aw_initstatus();
     GB_set_verbose();
 

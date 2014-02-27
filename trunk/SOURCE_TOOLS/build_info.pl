@@ -35,6 +35,28 @@ my $inc_patch = $SOURCE_TOOLS.'/inc_patch.stamp';
 
 # --------------------------------------------------------------------------------
 
+sub execAndGetFirstNonemptyLine($) {
+  my ($infocmd) = @_;
+  # returns first nonempty line from infocmd-output
+  # or undef (if output is empty)
+  # or dies (if command fails)
+
+  my $content = undef;
+  print "[executing '$infocmd']\n";
+  open(INFO,$infocmd.'|') || die "failed to fork '$infocmd' (Reason: $!)";
+ LINE: foreach (<INFO>) {
+    if ($_ ne '') {
+      chomp;
+      $content = $_;
+      last LINE;
+    }
+  }
+  close(INFO) || die "failed to execute '$infocmd' (Reason: $!)";;
+  if (defined $content) { print "output='$content'\n"; }
+  else { print "no output :-(\n"; }
+  return $content;
+}
+
 sub getHost() {
   my $host = $ENV{HOST};
   my $hostname = $ENV{HOSTNAME};
@@ -43,7 +65,19 @@ sub getHost() {
   if (defined $host) { push @hosts, $host; }
   if (defined $hostname) { push @hosts, $hostname; }
 
-  if (scalar(@hosts)==0) { push @hosts, "unknownHost"; }
+  if (scalar(@hosts)==0) {
+    my $hostnameout = undef;
+    eval { $hostnameout = execAndGetFirstNonemptyLine('hostname'); };
+    if ($@) { print "Warning: buildhost is unknown ($@)\n"; }
+    if (not defined $hostnameout) { $hostnameout = 'unknown'; }
+
+    my $domainname = undef;
+    eval { $domainname = execAndGetFirstNonemptyLine('domainname'); };
+    if ($@) { print "Warning: domain is unknown ($@)\n"; $domainname = undef; }
+    if ((not defined $domainname) or ($domainname eq '(none)')) { $domainname = 'somewhere'; }
+
+    push @hosts, $hostnameout.'@'.$domainname;
+  }
 
   @hosts = sort { length($b) <=> length($a); } @hosts; # sort longest first
   return $hosts[0];
@@ -51,6 +85,10 @@ sub getHost() {
 
 sub getUser() {
   my $user = $ENV{USER};
+  if (not defined $user) {
+    eval { $user = execAndGetFirstNonemptyLine('whoami'); };
+    if ($@) { print "Warning: user is unknown ($@)\n"; $user = undef; }
+  }
   if (not defined $user) { $user = 'unknownUser'; }
   return $user;
 }
@@ -84,21 +122,8 @@ sub getRevision() {
 
   my $revision = undef;
   eval {
-    my $infocmd = "svnversion -c -n '$ARBHOME'";
-    print "[executing '$infocmd']\n";
-    open(INFO,$infocmd.'|') || die "failed to fork '$infocmd' (Reason: $!)";
-    foreach (<INFO>) {
-      print "info[v]='$_'\n";
-      # $revision = `svnversion -c -n $ARBHOME`;
-      if ($_ =~ /^2:/) {
-        # for some reason -c creates a "2:" prefix
-        $revision = $';
-      }
-      elsif ($_ ne '') {
-        $revision = $_;
-      }
-    }
-    close(INFO) || die "failed to execute '$infocmd' (Reason: $!)";;
+    $revision = execAndGetFirstNonemptyLine("svnversion -c -n '$ARBHOME'");
+    if (defined $revision and $revision =~ /^2:/) { $revision = $'; }
   };
   if ($@) {
     if (defined $jrevision) {
@@ -233,11 +258,6 @@ sub hash2file(\%$) {
 }
 
 # --------------------------------------------------------------------------------
-
-my %build_info =  (
-                   user => getUser(),
-                   host => getHost(),
-                  );
 
 my $arb_build_h    = $TEMPLATES.'/arb_build.h';
 my $svn_revision_h = $TEMPLATES.'/svn_revision.h';
@@ -422,8 +442,8 @@ my @arb_build = (
                  '#define ARB_BUILD_DATE         "'.$date.'"',
                  '#define ARB_BUILD_YEAR         "'.$year.'"',
 
-                 '#define ARB_BUILD_HOST         "'.$build_info{host}.'"',
-                 '#define ARB_BUILD_USER         "'.$build_info{user}.'"',
+                 '#define ARB_BUILD_HOST         "'.getHost().'"',
+                 '#define ARB_BUILD_USER         "'.getUser().'"',
                 );
 
 update($arb_build_h,@arb_build);

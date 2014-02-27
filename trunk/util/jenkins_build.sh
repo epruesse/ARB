@@ -103,6 +103,10 @@ if [ $BUILD == 1 ]; then
     mv arb-dev.tgz arb-r${SVN_REVISION}${TARSUF}-dev.${TGTNAME}.tgz
 
     make ut
+
+    echo "-------------------- compiled-in version info:"
+    (bin/arb_ntree --help || true)
+    echo "--------------------"
 else
     echo "Skipping this build."
     # @@@ maybe need to fake unit-test-result here
