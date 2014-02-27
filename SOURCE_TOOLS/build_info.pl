@@ -84,12 +84,21 @@ sub getRevision() {
 
   my $revision = undef;
   eval {
-    $revision = `svnversion -c -n $ARBHOME`;
-    if (not defined $revision) { die "Failed to detect revision number"; }
-    if ($revision =~ /^2:/) {
-      # for some reason -c a "2:" prefix
-      $revision = $';
+    my $infocmd = "svnversion -c -n '$ARBHOME'";
+    print "[executing '$infocmd']\n";
+    open(INFO,$infocmd.'|') || die "failed to fork '$infocmd' (Reason: $!)";
+    foreach (<INFO>) {
+      print "info[v]='$_'\n";
+      # $revision = `svnversion -c -n $ARBHOME`;
+      if ($_ =~ /^2:/) {
+        # for some reason -c creates a "2:" prefix
+        $revision = $';
+      }
+      elsif ($_ ne '') {
+        $revision = $_;
+      }
     }
+    close(INFO) || die "failed to execute '$infocmd' (Reason: $!)";;
   };
   if ($@) {
     if (defined $jrevision) {
@@ -99,7 +108,7 @@ sub getRevision() {
     else { die $@."\n"; }
   }
 
-  defined $revision || die "impossible!";
+  if (not defined $revision) { die "Failed to detect revision number"; }
   if (defined $jrevision) {
     if ($jrevision ne $revision) {
       die "Conflicting revision numbers (jrevision='$jrevision', revision='$revision')";
@@ -123,7 +132,7 @@ sub getBranchOrTag() {
     open(INFO,$infocmd.'|') || die "failed to fork '$infocmd' (Reason: $!)";
     foreach (<INFO>) {
       chomp;
-      print "info='$_'\n";
+      print "info[b]='$_'\n";
       if (/^Repository\sRoot:\s+/o) { $root = $'; }
       elsif (/^URL:\s+/o) { $url = $'; }
     }
