@@ -28,7 +28,11 @@ retry: clean
 $(INSTALLED_BINARY): $(CONFIG_STATUS)
 	$(MAKE) -C $(BUILDDIR) install
 
-$(CONFIG_STATUS): Makefile
+phyml/configure : phyml/configure.fallback
+	@echo "Using configure.fallback:"
+	cp -p $< $@
+
+$(CONFIG_STATUS): Makefile phyml/configure
 	$(MAKE) clean
 	mkdir -p $(BUILDDIR)
 	cd $(BUILDDIR) && ../phyml/configure CPP='' --prefix=$(ARBHOME) --program-suffix=$(SUFFIX)
