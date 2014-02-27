@@ -632,6 +632,8 @@ relinfo:
 		@echo ' inc_minor     - increase minor version number (only possible in "trunk")'
 		@echo ' inc_major     - increase MAJOR version number (only possible in "trunk")'
 		@echo ''
+		@echo ' show_version  - show version tag'
+		@echo ''
 		@echo $(SEP)
 		@echo ''
 
@@ -1885,6 +1887,12 @@ do_version_update:
 	@echo Incrementing version information
 	$(MAKE) testsave
 	$(MAKE) genheaders # auto upgrades version early
+
+show_version:
+	$(MAKE) genheaders # updates version info
+	@echo "$(SEP) ARB version info"
+	@grep ARB_VERSION TEMPLATES/arb_build.h
+	@echo "$(SEP)"
 
 release_quick:
 	-rm arb.tgz arbsrc.tgz
