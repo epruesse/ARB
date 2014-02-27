@@ -1,0 +1,5 @@
+# libraries needed to link arb_phylo
+
+PHYLO/PHYLO.a
+
+
