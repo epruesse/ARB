@@ -32,7 +32,11 @@ phyml/configure : phyml/configure.fallback
 	@echo "Using configure.fallback:"
 	cp -p $< $@
 
-$(CONFIG_STATUS): Makefile phyml/configure
+phyml/config.h : phyml/config.h.fallback
+	@echo "Using config.h.fallback:"
+	cp -p $< $@
+
+$(CONFIG_STATUS): Makefile phyml/configure phyml/config.h
 	$(MAKE) clean
 	mkdir -p $(BUILDDIR)
 	cd $(BUILDDIR) && ../phyml/configure CPP='' --prefix=$(ARBHOME) --program-suffix=$(SUFFIX)
