@@ -76,7 +76,7 @@ sub getHost() {
     if ($@) { print "Warning: domain is unknown ($@)\n"; $domainname = undef; }
     if ((not defined $domainname) or ($domainname eq '(none)')) { $domainname = 'somewhere'; }
 
-    push @hosts, $hostnameout.'@'.$domainname;
+    push @hosts, $hostnameout.'.'.$domainname;
   }
 
   @hosts = sort { length($b) <=> length($a); } @hosts; # sort longest first
