@@ -1,0 +1,3 @@
+# libraries needed to link against SL/LOCATION/LOCATION.a
+
+lib/libARBDB.so

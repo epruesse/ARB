@@ -1,0 +1,3 @@
+# libraries needed to link against PROBE_COM/client.a
+
+PROBE_COM/common.a
