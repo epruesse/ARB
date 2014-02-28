@@ -125,7 +125,7 @@ if [ $BUILD == 1 ]; then
 
     if [ "$MODE" == "RELEASE" ]; then
         if [ $RELEASE_SOURCE == 1 ]; then
-            if [ "${TGTNAME}" == "ubuntu1004" ]; then
+            if [ "${TGTNAME}" == "ubuntu1004-amd64" ]; then
                 # pack source only in one build (svn version of slave and master must match!)
                 if [ "$FAKE" == "fake_build" ]; then
                     echo "Faked ${VERSION_ID}-source.tgz" > ${VERSION_ID}-source.tgz
