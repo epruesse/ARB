@@ -58,13 +58,16 @@ sub execAndGetFirstNonemptyLine($) {
 }
 
 sub getHost() {
-  my $host = $ENV{HOST};
-  my $hostname = $ENV{HOSTNAME};
-
+  my $arbbuildhost = $ENV{ARBBUILDHOST};
   my @hosts = ();
-  if (defined $host) { push @hosts, $host; }
-  if (defined $hostname) { push @hosts, $hostname; }
+  if (defined $arbbuildhost) { push @hosts, $arbbuildhost; }
+  else {
+    my $host = $ENV{HOST};
+    my $hostname = $ENV{HOSTNAME};
 
+    if (defined $host) { push @hosts, $host; }
+    if (defined $hostname) { push @hosts, $hostname; }
+  }
   if (scalar(@hosts)==0) {
     my $hostnameout = undef;
     eval { $hostnameout = execAndGetFirstNonemptyLine('hostname'); };
@@ -84,7 +87,8 @@ sub getHost() {
 }
 
 sub getUser() {
-  my $user = $ENV{USER};
+  my $user = $ENV{ARBBUILDUSER};
+  if (not defined $user) { $user = $ENV{USER}; }
   if (not defined $user) {
     eval { $user = execAndGetFirstNonemptyLine('whoami'); };
     if ($@) { print "Warning: user is unknown ($@)\n"; $user = undef; }
