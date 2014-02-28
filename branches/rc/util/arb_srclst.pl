@@ -223,6 +223,7 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/arb.*\.tgz$/o,
                                 qr/^\.\/bin\//o,
                                 qr/^\.\/GDE\/CORE\/functions.h$/o,
+                                qr/^\.\/GDE\/PHYML[^\/]+\/phyml\/(configure|config.h.in)$/o,
                                 qr/^\.\/lib\/ARB\.pm$/o,
                                 qr/^\.\/lib\/arb_tcp\.dat$/o,
                                 qr/^\.\/lib\/nas\/names.*\.dat$/o,
