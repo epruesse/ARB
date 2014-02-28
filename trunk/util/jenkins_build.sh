@@ -2,6 +2,8 @@
 set -x
 set -o errexit
 
+FAKE=${1:-}
+
 # set standard variables expected by ARB build
 export ARBHOME=`pwd`
 export PATH=$ARBHOME/bin:$PATH
@@ -43,7 +45,7 @@ case $MODE in
     ;;
   RELEASE)
     DEBUG=0
-    TARSUF="-user"
+    TARSUF=""
     UNIT_TESTS=0
     ;;
   *)
@@ -68,6 +70,11 @@ case $OSNAME in
     ;;
 esac
 
+if [ -z "${TGTNAME:-}" ]; then
+    echo "Error: unknown TGTNAME - build refused"
+    false
+fi
+    
 echo "DEBUG := $DEBUG" >> $CFG
 echo "UNIT_TESTS := $UNIT_TESTS" >> $CFG
 
@@ -89,23 +96,63 @@ fi
 
 # build, tar and test
 if [ $BUILD == 1 ]; then
-    make build
-    make tarfile_quick
+    if [ "$FAKE" == "fake_build" ]; then
+        echo "Faking build"
+        echo "Faked arb.tgz"     > arb.tgz
+        echo "Faked arb-dev.tgz" > arb-dev.tgz
+    else
+        make build
+        make tarfile_quick
+    fi
+
+    # jenkins archieves all files matching "**/arb*.tgz"
+    # jenkins publishes     files matching "**/arb*.tgz", but not "**/arb*dev*.tgz,**/arb*bin*.tgz"
+
+    RELEASE_SOURCE=0
+    if [ -n "${SVN_TAG:-}" ]; then
+        # tagged build
+        RELEASE_SOURCE=1
+        VERSION_ID=${SVN_TAG}${TARSUF}
+        # remove arb-prefixes (added below)
+        VERSION_ID="${VERSION_ID##arb[-_]}"
+    else
+        # normal build
+        VERSION_ID=r${SVN_REVISION}${TARSUF}
+    fi
+
+    VERSION_ID=arb-${VERSION_ID}
+    VERSION_ID_TARGET=${VERSION_ID}.${TGTNAME}
 
     if [ "$MODE" == "RELEASE" ]; then
-        # published on ftp:
-        mv arb.tgz arb-r${SVN_REVISION}${TARSUF}.${TGTNAME}.tgz
+        if [ $RELEASE_SOURCE == 1 ]; then
+            if [ "${TGTNAME}" == "ubuntu1004-amd64" ]; then
+                # pack source only in one build (svn version of slave and master must match!)
+                if [ "$FAKE" == "fake_build" ]; then
+                    echo "Faked ${VERSION_ID}-source.tgz" > ${VERSION_ID}-source.tgz
+                else
+                    make save
+                    # archived and published on ftp:
+                    cp --dereference arbsrc.tgz ${VERSION_ID}-source.tgz
+                    rm arbsrc*.tgz
+                fi
+            fi
+        fi
+
+        # archived and published on ftp:
+        mv arb.tgz ${VERSION_ID_TARGET}.tgz
     else
-        # not published on ftp (needed by SINA):
-        mv arb.tgz arb-r${SVN_REVISION}${TARSUF}-bin.${TGTNAME}.tgz
+        # only archived (needed by SINA):
+        mv arb.tgz ${VERSION_ID_TARGET}-bin.tgz
     fi
-    # not published on ftp (needed by SINA):
-    mv arb-dev.tgz arb-r${SVN_REVISION}${TARSUF}-dev.${TGTNAME}.tgz
+    # only archived (needed by SINA):
+    mv arb-dev.tgz ${VERSION_ID_TARGET}-dev.tgz
 
     make ut
 
     echo "-------------------- compiled-in version info:"
     (bin/arb_ntree --help || true)
+    echo "-------------------- existing tarballs:"
+    ls -al arb*.tgz
     echo "--------------------"
 else
     echo "Skipping this build."

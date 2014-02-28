@@ -251,7 +251,7 @@ sub file2hash($\%$) {
 sub hash2file(\%$) {
   my ($hash_r,$file) = @_;
   open(FILE,'>'.$file) or die "can't write '$file' (Reason: $!)";
-  foreach (keys %$hash_r) {
+  foreach (sort keys %$hash_r) {
     print FILE "$_=".$$hash_r{$_}."\n";
   }
   close(FILE);
