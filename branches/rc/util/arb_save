@@ -3,11 +3,10 @@
 NAME=`date '+arbsrc_%Y_%m_%d__%H_%M.tgz'`
 
 dump_revision() {
-    ./SOURCE_TOOLS/build_info.pl && \
-        grep ARB_SVN_REVISION ./TEMPLATES/svn_revision.h | \
-        perl -ne 'if (/ARB_SVN_REVISION\s+\"(.*)\"/) { $_=$1; s/:/_/; print $_; }'
+    (./SOURCE_TOOLS/build_info.pl 1>&2) && \
+      grep ARB_SVN_REVISION ./TEMPLATES/svn_revision.h | \
+      perl -ne 'if (/ARB_SVN_REVISION\s+\"(.*)\"/) { $_=$1; s/:/_/; print $_; }'
 }
-
 
 REVISION=`dump_revision`
 REVISION_DIR=arbsrc_$REVISION
