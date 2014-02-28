@@ -1,0 +1,11 @@
+# -*-Mode: Makefile;-*-
+#
+# --------------------------------------------------------------------------------
+# variables listed here are automatically exported to sub-makefiles
+# documentation for single variables can be found in ../SOURCE_TOOLS/parent_make.txt
+
+export RESTRICT_MODULE
+export RESTRICT_FUN
+export RESTRICT_COVERAGE
+export SORT_COVERAGE
+
