@@ -1,0 +1,45 @@
+MrBayes (custom)
+
+DESCRIPTION
+        MrBayes is a program for Bayesian inference and model choice across
+        a wide range of phylogenetic and evolutionary models. MrBayes uses
+        Markov chain Monte Carlo (MCMC) methods to estimate the posterior
+        distribution of model parameters.
+
+        http://mrbayes.sourceforge.net/manual.php 
+            
+
+PARAMETERS
+     
+    MrBayes command file
+
+        This option allows you to provide a custom MrBayes command file.
+        A command file may contain any command that is normally issued
+        inside the MrBayes shell, with the difference that each command line
+        is ended with a semi-colon.
+        
+        You can use the following minimal example as a starting point for your own
+        command files.
+            
+            begin mrbayes;
+                set autoclose=yes nowarn=yes; 
+                lset nst=6 rates=propinv; 
+                mcmc ngen=100000; 
+                sump; 
+                sumt Outputname=mrbayes_out Conformat=simple; 
+            end;
+            
+            
+        NOTES
+                
+            The consensus tree has to be named mrbayes_out. Otherwise ARB will not
+            be able to import it.
+            
+            It is not necessary to include any kind of data loading command.
+            The selected sequences will be loaded automatically.
+            
+
+        
+LICENSE
+        GNU GENERAL PUBLIC LICENSE
+        Version 2, June 1991

@@ -1,0 +1,188 @@
+Shell
+    filter remove_matches ^\s*#
+    extension bash
+    extension csh
+    extension ksh
+    extension sh
+    extension tcsh
+    script_exe bash
+    script_exe csh
+    script_exe ksh
+    script_exe sh
+    script_exe tcsh
+    3rd_gen_scale 3.81
+C
+    filter remove_matches ^\s*//
+    filter call_regexp_common C
+    extension c
+    extension ec
+    extension pgc
+    extension xs
+    3rd_gen_scale 0.77
+C++
+    filter remove_matches ^\s*//
+    filter call_regexp_common C
+    extension C
+    extension cc
+    extension cpp
+    extension cxx
+    extension pcc
+    3rd_gen_scale 1.51
+C/C++ Header
+    filter remove_matches ^\s*//
+    filter call_regexp_common C
+    extension H
+    extension h
+    extension hh
+    extension hpp
+    extension hxx
+    3rd_gen_scale 1.00
+CSS
+    filter call_regexp_common C
+    extension css
+    3rd_gen_scale 1.00
+DTD
+    filter remove_html_comments
+    filter call_regexp_common HTML
+    extension dtd
+    3rd_gen_scale 1.90
+Fortran 77
+    filter remove_f77_comments
+    extension F
+    extension F77
+    extension f
+    extension f77
+    extension pfo
+    3rd_gen_scale 0.75
+Fortran 90
+    filter remove_f77_comments
+    filter remove_f90_comments
+    extension F90
+    extension f90
+    3rd_gen_scale 1.00
+Fortran 95
+    filter remove_f77_comments
+    filter remove_f90_comments
+    extension F95
+    extension f95
+    3rd_gen_scale 1.13
+Haskell
+    filter remove_haskell_comments >filename<
+    extension hs
+    extension lhs
+    3rd_gen_scale 2.11
+Java
+    filter remove_matches ^\s*//
+    filter call_regexp_common C
+    extension java
+    3rd_gen_scale 1.36
+Javascript
+    filter remove_matches ^\s*//
+    filter call_regexp_common C
+    extension js
+    3rd_gen_scale 1.48
+Lisp
+    filter remove_matches ^\s*;
+    extension cl
+    extension el
+    extension jl
+    extension lsp
+    extension sc
+    extension scm
+    3rd_gen_scale 1.25
+Lua
+    filter remove_matches ^\s*\-\-
+    extension lua
+    script_exe lua
+    3rd_gen_scale 4.00
+NAnt scripts
+    filter remove_html_comments
+    filter call_regexp_common HTML
+    extension build
+    3rd_gen_scale 1.90
+Objective C
+    filter remove_matches ^\s*//
+    filter call_regexp_common C
+    3rd_gen_scale 2.96
+PHP
+    filter remove_matches ^\s*#
+    filter remove_matches ^\s*//
+    filter call_regexp_common C
+    extension php
+    extension php3
+    extension php4
+    extension php5
+    3rd_gen_scale 3.50
+Perl
+    filter remove_below ^__(END|DATA)__
+    filter remove_matches ^\s*#
+    filter remove_below_above ^=head1
+    extension PL
+    extension perl
+    extension pl
+    extension plh
+    extension plx
+    extension pm
+    extension amc
+    script_exe perl
+    script_exe perl5
+    3rd_gen_scale 4.00
+XML
+    filter remove_html_comments
+    filter call_regexp_common HTML
+    extension XML
+    extension xml
+    3rd_gen_scale 1.90
+XSLT
+    filter remove_html_comments
+    filter call_regexp_common HTML
+    extension XSL
+    extension XSLT
+    extension xsl
+    extension xslt
+    3rd_gen_scale 1.90
+make
+    filter remove_matches ^\s*#
+    extension Gnumakefile
+    extension Makefile
+    extension am
+    extension gnumakefile
+    extension makefile
+    filename Gnumakefile
+    filename Makefile
+    filename gnumakefile
+    filename makefile
+    filename export2sub
+    filename needs_libs
+    script_exe make
+    3rd_gen_scale 2.50
+sed
+    filter remove_matches ^\s*#
+    extension sed
+    script_exe sed
+    3rd_gen_scale 4.00
+yacc
+    filter call_regexp_common C
+    extension y
+    3rd_gen_scale 1.51
+AISC
+    filter remove_matches ^\s*#
+    extension pa
+    extension aisc
+    3rd_gen_scale 0.77
+GDE-Menu
+    filter remove_matches ^\s*#
+    extension menu
+    3rd_gen_scale 1.00
+ARB-Export-Filters
+    filter remove_matches ^\s*#
+    extension eft
+    3rd_gen_scale 1.00
+ARB-Import-Filters
+    filter remove_matches ^\s*#
+    extension ift
+    3rd_gen_scale 1.00
+ARB-GUI-Layout
+    filter remove_matches ^\?
+    extension fig
+    3rd_gen_scale 1.00
