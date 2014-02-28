@@ -111,6 +111,7 @@ sub tag_exists($) {
 }
 
 sub trunkURL()   { return $svn_info{ROOT}.'/trunk'; }
+sub currentURL() { return $svn_info{ROOT}.'/'.$svn_info{SUB}; }
 sub branchURL($) { my ($branch) = @_; return $svn_info{ROOT}.'/branches/'.$branch; }
 sub tagURL($)    { my ($tag)    = @_; return $svn_info{ROOT}.'/tags/'.$tag; }
 
@@ -124,11 +125,23 @@ sub expectSUB($) {
   }
 }
 
-sub expectTrunk() { expectSUB('trunk'); }
-sub expectBranch($) { my ($branch) = @_; expectSUB('branches/'.$branch); }
+sub denySUB($) {
+  my ($expected) = @_;
+  my $got = $svn_info{SUB};
+  defined $got || die "SUB undefined";
 
-sub perform($) {
-  my ($action) = @_;
+  if ($got eq $expected) {
+    die "Error: this is NOT possible in '$expected'";
+  }
+}
+
+
+sub expectTrunk()   { expectSUB('trunk'); }
+sub expectBranch($) { my ($branch) = @_; expectSUB('branches/'.$branch); }
+sub denyBranch($)   { my ($branch) = @_; denySUB  ('branches/'.$branch); }
+
+sub perform($$) {
+  my ($action,$arg) = @_;
   retrieve_svn_info();
 
   my @commands = ();
@@ -173,6 +186,22 @@ sub perform($) {
     }
     push @commands, "svn copy '".branchURL('stable').'@'.$svn_info{REVISION}."' '".tagURL($tag)."' -m \"[$action] release '$tag'\"";
   }
+  elsif ($action eq 'tag_custom') {
+    if (not defined $arg) {
+      die "Expected additional argument 'tag'";
+    }
+
+    denyBranch('rc');
+    denyBranch('stable');
+    $tag = $arg; # use given arg as tagname
+
+    if (($tag =~ /dev/oi) or ($tag =~ /rev/oi)) { die "Invalid tag '$tag'"; }
+    if (tag_exists($tag)) {
+      my $remove_cmd = "svn delete '".tagURL($tag)."' -m \"[$action] delete invalid tag '$tag'\"";
+      die "tag '$tag' already exists.\nTo remove that tag use\n$remove_cmd\n ";
+    }
+    push @commands, "svn copy '".currentURL().'@'.$svn_info{REVISION}."' '".tagURL($tag)."' -m \"[$action] '$tag'\"";
+  }
   else {
     die "Unknown action '$action'";
   }
@@ -199,12 +228,13 @@ sub show_usage($) {
   my ($err) = @_;
   warnya();
   print "\n";
-  print "Usage: release_tool.pl [action]\n";
+  print "Usage: release_tool.pl [action [arg]]\n";
   print "known 'action's:\n";
   print "    branch_rc1        branch a new release candidate from 'trunk'           (uses WC-revision!)\n";
   print "    branch_stable     branch a new release           from 'branches/rc'     (uses WC-revision!)\n";
   print "    tag_rc            tag rc                         in   'branches/rc'     (uses WC-revision!)\n";
   print "    tag_stable        tag release                    in   'branches/stable' (uses WC-revision!)\n";
+  print "    tag_custom tag    tag custom version             anywhere               (uses WC-revision!)\n";
   print "    \n";
   print "\n";
   warnya();
@@ -214,10 +244,11 @@ sub show_usage($) {
 
 sub main() {
   my $args = scalar(@ARGV);
-  if ($args != 1) {
+  if ($args < 1 or $args > 2) {
     show_usage(undef);
   }
   my $action = $ARGV[0];
-  perform($action);
+  my $arg    = $ARGV[1];
+  perform($action,$arg);
 }
 main();
