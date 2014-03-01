@@ -5,7 +5,7 @@ To install a precompiled ARB
 1. download the needed files from our homepage http://www.arb-home.de/
    and save them into a directory of your choice (i.e. ~/arb-install/ )
 
-   Files needed: 'arb.*.tgz' and 'arb_install.sh'
+   Files needed: 'arb-*.tgz' and 'arb_install.sh'
                  (see arb_README.txt for details on different versions)
 
 2. get root

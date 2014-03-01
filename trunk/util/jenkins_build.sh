@@ -136,6 +136,11 @@ if [ $BUILD == 1 ]; then
                     rm arbsrc*.tgz
                 fi
             fi
+            # move extra files into folder 'toftp' - contents are copied to ftp flatened
+            mkdir toftp
+            cp -p arb_README.txt toftp
+            cp -p arb_install.sh toftp
+            ls -al toftp
         fi
 
         # archived and published on ftp:
