@@ -124,9 +124,10 @@ if [ $BUILD == 1 ]; then
     VERSION_ID_TARGET=${VERSION_ID}.${TGTNAME}
 
     if [ "$MODE" == "RELEASE" ]; then
-        if [ $RELEASE_SOURCE == 1 ]; then
-            if [ "${TGTNAME}" == "ubuntu1004-amd64" ]; then
-                # pack source only in one build (svn version of slave and master must match!)
+        if [ "${TGTNAME}" == "ubuntu1004-amd64" ]; then
+            # this section is executed only once
+            if [ $RELEASE_SOURCE == 1 ]; then # only done for tagged builds
+                # pack source (svn version of slave and master have to match!)
                 if [ "$FAKE" == "fake_build" ]; then
                     echo "Faked ${VERSION_ID}-source.tgz" > ${VERSION_ID}-source.tgz
                 else
@@ -136,6 +137,11 @@ if [ $BUILD == 1 ]; then
                     rm arbsrc*.tgz
                 fi
             fi
+            # move extra files into folder 'toftp' - contents are copied to ftp flatened
+            mkdir toftp
+            cp -p arb_*.txt      toftp
+            cp -p arb_install.sh toftp
+            ls -al toftp
         fi
 
         # archived and published on ftp:
