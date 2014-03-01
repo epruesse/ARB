@@ -1,6 +1,6 @@
 ARB change log
 
-Major changes for next release:
+Major changes for arb-5.20 (just testing):
 
  - merge databases allows to
    - merge from an existing database into the database loaded in ARB_NT

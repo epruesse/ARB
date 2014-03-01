@@ -30,6 +30,9 @@ Overview:
         - change into trunk WC
         - svn update
         - make inc_minor or inc_major
+        - in ../../arb_CHANGES.txt
+          - add missing changes
+          - update version info
         - commit changes
 
 
@@ -39,6 +42,7 @@ Overview:
         - make sure the version number in trunk is already correct (see 1.)
           To show it call
                 make show_version
+        - make sure arb_CHANGES.txt is up-to-date (i.e. lists changes for version-to-release)
         - to make sure you are at HEAD call
                 svn update
         - to branch the rc1 call
@@ -52,8 +56,8 @@ Overview:
         - change into 'rc' WC
         - to increment rc number call
                 make inc_candi
-        - merge all bugfixes from trunk
-        - commit changes and let a jenkins build pass
+        - merge all bugfixes from trunk (or apply them in branch 'rc' and merge them back to trunk)
+        - commit changes and let a jenkins build pass (job 'ARB-rc'; builds automatically)
         - to make sure you are at HEAD call
                 svn update
         - call
@@ -77,7 +81,7 @@ Overview:
         - to increment the release patchlevel call
                 make inc_patch
         - merge all hotfixes from trunk (or apply them in branch 'stable' and merge them back to trunk)
-        - commit changes and let a jenkins build pass
+        - commit changes and let a jenkins build pass (job 'ARB-stable'; builds automatically)
         - to make sure you are at HEAD call
                 svn update
         - call
