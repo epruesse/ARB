@@ -150,14 +150,16 @@ sub perform($$) {
 
   if ($action eq 'branch_rc1') {
     expectTrunk();
+    push @commands, "# check version and changelog in trunk are set correctly; see SOURCE_TOOLS/release/release.HOWTO";
     if (branch_exists('rc')) {
       push @commands, "svn delete '".branchURL('rc')."' -m \"[$action] delete old branch\"";
     }
     push @commands, "svn copy '".trunkURL().'@'.$svn_info{REVISION}."' '".branchURL('rc')."' -m \"[$action] create rc1 for arb $version\"";
+    push @commands, "# let jenkins build job 'ARB-rc'";
     push @commands, "svn switch '".branchURL('rc')."'";
     push @commands, "SOURCE_TOOLS/release/release_tool.pl tag_rc";
     push @commands, "svn switch '".trunkURL()."'";
-    push @commands, "# make inc_minor # or # make inc_major # and commit";
+    push @commands, "# increment version in trunk; see SOURCE_TOOLS/release/release.HOWTO";
   }
   elsif ($action eq 'branch_stable') {
     expectBranch('rc');
@@ -165,6 +167,7 @@ sub perform($$) {
       push @commands, "svn delete '".branchURL('stable')."' -m \"[$action] delete old branch\"";
     }
     push @commands, "svn copy '".branchURL('rc').'@'.$svn_info{REVISION}."' '".branchURL('stable')."' -m \"[$action] arb $version\"";
+    push @commands, "# let jenkins build job 'ARB-stable'";
     push @commands, "svn switch '".branchURL('stable')."'";
     push @commands, "SOURCE_TOOLS/release/release_tool.pl tag_stable";
   }
@@ -206,9 +209,16 @@ sub perform($$) {
     die "Unknown action '$action'";
   }
 
+  if ($action =~ /tag/) {
+    push @commands, "# 'Schedule Release Build' in jenkins job 'ARB-tagged-builder' to build and release the tagged version";
+  }
+
   if (scalar(@commands)) {
-    print "-------------------- [Commands to execute]\n";
-    foreach (@commands) { print $_."\n"; }
+    print "-------------------- [Commands to execute for '$action']\n";
+    foreach (@commands) {
+      if ($_ =~ /^#\s/o) { $_ = $&.'[MANUALLY] '.$'; }
+      print $_."\n";
+    }
     print "--------------------\n";
   }
 
