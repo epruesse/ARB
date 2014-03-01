@@ -1,0 +1,4 @@
+# libraries needed to link against SL/TREEDISP/TREEDISP.a
+
+SL/AP_TREE/AP_TREE.a
+SL/NDS/NDS.a

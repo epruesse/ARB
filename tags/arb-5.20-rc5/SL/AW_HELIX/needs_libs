@@ -1,0 +1,4 @@
+# libraries needed to link against SL/AW_HELIX/AW_HELIX.a
+
+SL/HELIX/HELIX.a
+lib/libWINDOW.so

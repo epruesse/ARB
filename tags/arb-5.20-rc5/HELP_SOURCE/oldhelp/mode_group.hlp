@@ -1,0 +1,54 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	mode.hlp
+UP	sp_info.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		GROUP MODE
+
+OCCURRENCE	ARB_NT and ARB_PARSIMONY: <GROUP> button in the left column
+		F3 on the keyboard
+
+DESCRIPTION	A group is a subtree with a name assigned to its root node.
+		The 'GROUP MODE' allows display of subtrees (groups of species)
+		as triangles (radial tree) or rectangles (dendrogram).
+		You also can convert a subtree into a group.
+
+		Click on the <GROUP> button of the 'ARB_NT' window or
+			the 'F3' key on the keyboard to activate the 'GROUP
+			MODE'. In the latter case, the cursor has to be placed
+			within the tree display area.
+
+		Group species:
+
+			Move the cursor to that internal node of the displayed
+			tree (section) which defines the subtree and click on
+			the left mouse button. The subtree-defining node is that
+			located closest to the indicated root (open square)
+			root of the whole tree which directly or indirectly connects
+			all branches of the subtree.
+
+		Ungroup species:
+
+			Press the left mouse button while the cursor is over the triangle
+			of a group.
+
+		Transform a subtree into a group and assign a name to it:
+
+			Proceed as described above using the right mouse
+			button.
+
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
