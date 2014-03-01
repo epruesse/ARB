@@ -139,7 +139,7 @@ if [ $BUILD == 1 ]; then
             fi
             # move extra files into folder 'toftp' - contents are copied to ftp flatened
             mkdir toftp
-            cp -p arb_*.txt      toftp
+            cp -p arb_README.txt toftp
             cp -p arb_install.sh toftp
             ls -al toftp
         fi
