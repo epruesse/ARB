@@ -155,11 +155,11 @@ sub perform($$) {
       push @commands, "svn delete '".branchURL('rc')."' -m \"[$action] delete old branch\"";
     }
     push @commands, "svn copy '".trunkURL().'@'.$svn_info{REVISION}."' '".branchURL('rc')."' -m \"[$action] create rc1 for arb $version\"";
+    push @commands, "# increment version in trunk; see SOURCE_TOOLS/release/release.HOWTO";
     push @commands, "# let jenkins build job 'ARB-rc'";
     push @commands, "svn switch '".branchURL('rc')."'";
+    push @commands, "make show_version";
     push @commands, "SOURCE_TOOLS/release/release_tool.pl tag_rc";
-    push @commands, "svn switch '".trunkURL()."'";
-    push @commands, "# increment version in trunk; see SOURCE_TOOLS/release/release.HOWTO";
   }
   elsif ($action eq 'branch_stable') {
     expectBranch('rc');
@@ -169,6 +169,7 @@ sub perform($$) {
     push @commands, "svn copy '".branchURL('rc').'@'.$svn_info{REVISION}."' '".branchURL('stable')."' -m \"[$action] arb $version\"";
     push @commands, "# let jenkins build job 'ARB-stable'";
     push @commands, "svn switch '".branchURL('stable')."'";
+    push @commands, "make show_version";
     push @commands, "SOURCE_TOOLS/release/release_tool.pl tag_stable";
   }
   elsif ($action eq 'tag_rc') {
