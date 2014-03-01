@@ -561,6 +561,7 @@ void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
     AWT_graphic_tree *gtree = AWT_TREE(ntw);
     
     if (!gtree) return;
+    if (!gtree->displayed_root) return;
 
     GB_transaction ta(ntw->gb_main);
     gtree->check_update(ntw->gb_main);
