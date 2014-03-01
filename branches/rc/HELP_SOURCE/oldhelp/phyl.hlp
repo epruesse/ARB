@@ -1,0 +1,177 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Matrices, Masks, Profiles V1.0
+
+OCCURRENCE	ARB_NT/Tree/Dist Matrix V 1.0
+
+DESCRIPTION	This tool allows to calculate distance and similarity matrices
+		for the marked species. Conservation profiles can be established
+		and used as filters for column selection by other programs.
+
+		1. Selection of columns:
+
+		Select part of the alignment to analyze by typing first and last
+			column numbers after the 'start at column:' and 'stop at
+			column:' prompts, respectively, and press 'Return' on
+			the keyboard.
+
+		Select minimum and maximum similarities for the individual
+			columns to be included for similarity or distance matrix
+			calculation by typing the values (50 means the most
+			frequent base at a particular position is shared by at
+			least 50% of all marked sequences (species)) after the
+			'minimum similarity:' and 'maximum similarity:' prompts,
+			respectively, and press 'Return' on the keyboard.
+
+		Define whether alignment gaps and ambiguities within individual
+			marked sequences (species) should be taken into account:
+
+			Use the right mouse button to display the submenus
+			associated to the items below the 'markerline:' prompt
+			by pressing the respective buttons.
+
+				don't count: 
+					Calculate conservation from unambiguous
+					bases only
+
+				don't use column if maximal:
+					Exclude column if the respective symbol
+					is present in the majority of the marked
+					sequences.
+
+				exclude column:
+					Exclude column if the respective symbol
+					is present in any of the marked
+					sequences.
+
+				treat as ambiguous:
+					Take the respective symbol as an
+					unambiguous residue.
+
+		2. After selecting columns define how to treat ambiguities for
+			distance calculations:
+
+			Use the right mouse button to display the submenus
+			associated to the items below the 'distance matrix:'
+			prompt by pressing the respective buttons.
+
+				don't count:
+					The particular position is not
+					included for binary distance
+					calculations if the symbol is
+					present in one or both sequences.
+
+				use distance table:
+					the symbols are treated as unambiguous
+					residues
+
+		3. Calculate profiles and matrices:
+
+			Use the right mouse button to display the 'CALCULATE'
+			menu and select 'markerline' (profile) or 'distance
+			matrix' by releasing the mouse button while the cursor
+			is positioned on the respective menu button.
+
+		4. Display results:
+
+			Use the right mouse button to display the 'VIEW'
+			menu and select 'species', 'markerline' or 'distance
+			matrix' by releasing the mouse button while the cursor
+			is positioned on the respective menu button. The names,
+			the aligment of the marked sequences and the
+			conservation profile, or the distance matrix are shown
+			within the display area, respectively. 
+
+			The profile:
+
+			The fraction of sequences sharing most frequent residue
+			at a particular alignment position is shown as a number
+			to read bottom down. Alternatively, the profile can be
+			displayed as a curve by pressing the <toggle> button in
+			the left part of the window. It can be smoothed by
+			selecting a number from the 'smooth' menu (left part of
+			the window).
+
+			Editing the aligned sequences and profiles, a name can
+			be selected by moving the cursor to it and pressing the
+			left mouse button. Pressing the <reference> button, the
+			respective sequence is used as a filter superimposed to
+			profile. This allows to exclude further positions from
+			subsequent calculations which are not occupied by bases
+			in the reference.
+
+			Tha matrix:
+
+			Editing the matrix, mean values can be calculated for
+			groups of organisms displayed as triangles (radial tree)
+			or rectangles (dendrogram) in a tree stored in the
+			database. The grouping currently or most recently
+			displayed is used for selecting sequences for the
+			calculation of mean values. Select a tree by pressing
+			the <grouping> button in the left area of the window.
+
+		5. Save results:
+
+			To export distances and profiles (not graphs!!) to
+			ascii files, use the right mouse button to display the
+			'SAVE' menu and select the corresponding menu item by
+			releasing the mouse button while the cursor is
+			positioned on it.
+
+				uncoded mline:
+					The positional conservation is encoded
+					by a sequence of letters: A = 1%,
+					B = 5%, ...., Z = 100%.
+
+				bin mline:
+					Included and excluded columns are
+					indicated by 1 and 0, respectively.
+
+				% dif. matrix:
+					Dissimilarity values.
+
+				% sim. matrix:
+					Similarity values.
+
+				phyl/prot distmat:
+					Corrected distances according Jukes and
+					Cantor (nucleic acid sequences only).
+
+				pos. vari:
+					Number of different residues at the
+					particular alignment position.
+
+		6. Reconstruct a tree:
+
+			Press the <NEIGHBOR> button. The tree is reconstructed
+			using the neighbour joining method and is stored in the
+			database as 'tree_neighbour'.
+
+		7. Store profile in the database:
+
+			Press the <ARBSAVE> button to store any calculated
+			profile	0 / 1 encoded in the database (SAI). The profile
+			can be used as filter for other ARB tools.				
+			 
+NOTES		A new version of the tool is under development. 
+
+		It is recommended to calculate profiles here, to save them in
+		the database, and to reconstruct distance matrix trees using
+		'ARB_NT/Tree/Neighbour joining' in combination with the profile
+		as filter.
+
+EXAMPLES	None
+
+WARNINGS	Whenever text is typed to the window, press 'Return' on the
+		keyboard, to ensure that the information is recognized by the
+		program!!!
+
+BUGS		No bugs known
