@@ -33,6 +33,8 @@ rm -f $CFG
 
 TARSUF=""
 UNIT_TESTS=1
+DEBUG=0
+DEVELOPER="ANY"
 
 case $MODE in
   DEBUG)
@@ -40,12 +42,10 @@ case $MODE in
     TARSUF="-dbg"
     ;;
   NDEBUG)
-    DEBUG=0
     TARSUF="-ndbg"
     ;;
   RELEASE)
-    DEBUG=0
-    TARSUF=""
+    DEVELOPER="RELEASE"
     UNIT_TESTS=0
     ;;
   *)
@@ -77,9 +77,8 @@ fi
     
 echo "DEBUG := $DEBUG" >> $CFG
 echo "UNIT_TESTS := $UNIT_TESTS" >> $CFG
-
 echo "OPENGL := 0" >> $CFG
-echo "DEVELOPER := ANY" >> $CFG
+echo "DEVELOPER := $DEVELOPER" >> $CFG
 echo "DEBUG_GRAPHICS := 0" >> $CFG
 echo "PTPAN := 0" >> $CFG
 echo "ARB_64 := 1" >> $CFG
