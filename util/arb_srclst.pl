@@ -10,7 +10,7 @@ my $ignore_unknown = 0;
 # override checks below and save strictly as checked-in in SVN
 
 my @strictly_as_in_svn_when_matchesDir = (
-                                           qr/\/GDE\/MAFFT\/mafft-[0-9\.]+-with[out]*-extensions\/.*$/o,
+                                           qr/\/GDE\/MAFFT\/mafft-[0-9\.]+-with[out]*-extensions/o,
                                           );
 
 # ------------------------------------------------------------
