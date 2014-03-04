@@ -216,6 +216,25 @@ sub parseArray($) {
   return @array;
 }
 
+sub parentDir($) {
+  my ($dirOrFile) = @_;
+  if ($dirOrFile =~ /\/[^\/]+$/o) { return $`; }
+  return undef;
+}
+
+sub ensureDir($);
+sub ensureDir($) {
+  my ($dir) = @_;
+  if (defined $dir) {
+    if (not -d $dir) {
+      my $dparent = parentDir($dir);
+      ensureDir($dparent);
+      print "Creating directory '$dir'\n";
+      mkdir($dir) || die "Failed to create '$dir' (Reason: $!)";
+    }
+  }
+}
+
 sub main() {
   my @source = <STDIN>;
 
@@ -227,10 +246,7 @@ sub main() {
   my $outname = $ARGV[0];
 
   if ($outname =~ /\/[^\/]+$/o) {
-    my $dir = $`;
-    if (not -d $dir) {
-      mkdir($dir) || die "Failed to create directory '$dir' (Reason: $!)";
-    }
+    ensureDir(parentDir($outname));
   }
 
   # eliminate all comments (motif stumbles upon additional comments)
