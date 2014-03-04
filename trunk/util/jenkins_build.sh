@@ -2,7 +2,7 @@
 set -x
 set -o errexit
 
-FAKE=${1:-}
+ARG=${1:-}
 
 # set standard variables expected by ARB build
 export ARBHOME=`pwd`
@@ -95,7 +95,7 @@ fi
 
 # build, tar and test
 if [ $BUILD == 1 ]; then
-    if [ "$FAKE" == "fake_build" ]; then
+    if [ "$ARG" == "fake_build" ]; then
         echo "Faking build"
         echo "Faked arb.tgz"     > arb.tgz
         echo "Faked arb-dev.tgz" > arb-dev.tgz
@@ -124,13 +124,17 @@ if [ $BUILD == 1 ]; then
         if [ "${TGTNAME}" == "ubuntu1004-amd64" ]; then
             # perform things needed only once (pack source, copy README + install script):
             # 1. pack source (svn version of slave and master must match!)
-            if [ "$FAKE" == "fake_build" ]; then
+            if [ "$ARG" == "fake_build" ]; then
                 echo "Faked ${VERSION_ID}-source.tgz" > ${VERSION_ID}-source.tgz
             else
-                make save
-                # archived and published on ftp:
-                cp --dereference arbsrc.tgz ${VERSION_ID}-source.tgz
-                rm arbsrc*.tgz
+                if [ "$ARG" == "from_tarball" ]; then
+                    echo "Note: build from tarball - do not attempt to create a tarball"
+                else
+                    make save
+                    # archived and published on ftp:
+                    cp --dereference arbsrc.tgz ${VERSION_ID}-source.tgz
+                    rm arbsrc*.tgz
+                fi
             fi
             # 2. move extra files into folder 'toftp' - content is copied to release directory
             mkdir toftp
