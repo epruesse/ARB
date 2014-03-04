@@ -107,10 +107,8 @@ if [ $BUILD == 1 ]; then
     # jenkins archieves all files matching "**/arb*.tgz"
     # jenkins publishes     files matching "**/arb*.tgz", but not "**/arb*dev*.tgz,**/arb*bin*.tgz"
 
-    RELEASE_SOURCE=0
     if [ -n "${SVN_TAG:-}" ]; then
         # tagged build
-        RELEASE_SOURCE=1
         VERSION_ID=${SVN_TAG}${TARSUF}
         # remove arb-prefixes (added below)
         VERSION_ID="${VERSION_ID##arb[-_]}"
@@ -125,18 +123,16 @@ if [ $BUILD == 1 ]; then
     if [ "$MODE" == "RELEASE" ]; then
         if [ "${TGTNAME}" == "ubuntu1004-amd64" ]; then
             # perform things needed only once (pack source, copy README + install script):
-            if [ $RELEASE_SOURCE == 1 ]; then
-                # pack source (svn version of slave and master must match!)
-                if [ "$FAKE" == "fake_build" ]; then
-                    echo "Faked ${VERSION_ID}-source.tgz" > ${VERSION_ID}-source.tgz
-                else
-                    make save
-                    # archived and published on ftp:
-                    cp --dereference arbsrc.tgz ${VERSION_ID}-source.tgz
-                    rm arbsrc*.tgz
-                fi
+            # 1. pack source (svn version of slave and master must match!)
+            if [ "$FAKE" == "fake_build" ]; then
+                echo "Faked ${VERSION_ID}-source.tgz" > ${VERSION_ID}-source.tgz
+            else
+                make save
+                # archived and published on ftp:
+                cp --dereference arbsrc.tgz ${VERSION_ID}-source.tgz
+                rm arbsrc*.tgz
             fi
-            # move extra files into folder 'toftp' - content is copied to release directory
+            # 2. move extra files into folder 'toftp' - content is copied to release directory
             mkdir toftp
             cp -p arb_README.txt toftp
             cp -p arb_install.sh toftp
