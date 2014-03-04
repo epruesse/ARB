@@ -11,7 +11,7 @@
 # ============================================================= #
 
 # Reads xpm from STDIN.
-# Writes fixed xpm to STDOUT.
+# Writes fixed xpm to passed file (automatically creates target directories)
 #
 # Fixes done:
 # - eliminates odd x- and y-sizes by reducing or
@@ -219,6 +219,20 @@ sub parseArray($) {
 sub main() {
   my @source = <STDIN>;
 
+  my $args = scalar(@ARGV);
+  if ($args != 1) {
+    die "Usage: convert_xpm.pl output.xpm\n".
+      "Reads xpm from STDIN and writes result to 'output.xpm'\n";
+  }
+  my $outname = $ARGV[0];
+
+  if ($outname =~ /\/[^\/]+$/o) {
+    my $dir = $`;
+    if (not -d $dir) {
+      mkdir($dir) || die "Failed to create directory '$dir' (Reason: $!)";
+    }
+  }
+
   # eliminate all comments (motif stumbles upon additional comments)
   my @noComment = map {
     chomp;
@@ -244,15 +258,17 @@ sub main() {
   my @content = fixContent(parseArray($content));
 
   # print out modified .xpm
-  print "/* XPM */\n";
-  print "$prefix\n";
+  open(OUT,'>'.$outname) || die "Failed to write to '$outname' (Reason: $!)";
+  print OUT "/* XPM */\n";
+  print OUT "$prefix\n";
 
   my $lines = scalar(@content);
   for (my $i=0; $i<$lines; ++$i) {
-    print '"'.$content[$i].'"';
-    print ',' if ($i<($lines-1));
-    print "\n";
+    print OUT '"'.$content[$i].'"';
+    print OUT ',' if ($i<($lines-1));
+    print OUT "\n";
   }
-  print "$suffix\n";
+  print OUT "$suffix\n";
+  close(OUT);
 }
 main();
