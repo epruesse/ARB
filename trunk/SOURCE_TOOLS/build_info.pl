@@ -208,7 +208,7 @@ sub getBranchOrTagFromHeader($) {
   foreach (<HEADER>) {
     chomp;
     if (/^\#define\s+ARB_SVN_BRANCH\s+\"([^\"]+)\"/o) { $branch = $1; }
-    elsif (/^\#define\s+ARB_SVN_IS_TAG\s+([01])/o) { $is_tag = $1; }
+    elsif (/^\#define\s+ARB_SVN_BRANCH_IS_TAG\s+([01])/o) { $is_tag = $1; }
     elsif (/^\#define\s+ARB_SVN_REVISION\s+\"([^\"]+)\"/o) { $revision = $1; }
   }
   close(HEADER);
