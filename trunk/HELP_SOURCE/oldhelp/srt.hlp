@@ -32,7 +32,7 @@ SECTION SPECIAL CHARACTERS
 		'='                separates the search from the replace string
 		'\'                Escape symbol
 		'\\'               the '\' symbol itself
-		'|'                newline
+		'\n'               newline
 		'\t'               tabulator
 		'\:'               ':'
 		'\='               '='
