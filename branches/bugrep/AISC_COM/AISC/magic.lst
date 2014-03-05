@@ -1,0 +1,14 @@
+
+List of previously used magics
+------------------------------
+
+Note: Never reuse old magics! (MAGIC_NUMBER)
+
+PTSERVER: (see ../../PROBE_COM/PT.aisc@MAGIC_NUMBER)
+        0x615054 (used since [7986])
+        0x415054 (used since [7414])
+        0x471100 (used since [2])
+
+NAMESERVER: (see ../../NAMES_COM/names.aisc@MAGIC_NUMBER)
+        0x414e53 (used since [7414])
+        0x927289 (used since [2])
