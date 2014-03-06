@@ -1,0 +1,16 @@
+# -*-Mode: Makefile;-*-
+#
+# --------------------------------------------------------------------------------
+# variables listed here are automatically exported to sub-makefiles
+# documentation for single variables can be found in ../../SOURCE_TOOLS/parent_make.txt
+
+export AISC_SAVE
+export AUTODEPENDS
+export CLIENTCOMPILER
+export COMPILER
+export LINK_STATIC_LIB
+export MAIN_SOURCE
+export PRIVATE_SERVER_OBJECTS
+export POST_COMPILE
+
+
