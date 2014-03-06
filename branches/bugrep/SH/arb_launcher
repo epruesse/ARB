@@ -1,8 +1,10 @@
 #!/bin/bash
 
+set -u
+
 trace() {
     local MSG=$1
-    echo "[arb_launcher[${ARB_LAUNCHER:?}]: $1]"
+    echo "[arb_launcher[${ARB_LAUNCHER:-}]: $1]"
 }
 debug() {
     local MSG=$1
@@ -41,7 +43,7 @@ read_line() {
     echo $LINE
 }
 
-listen_pipe() {
+listen_pipe_unlogged() {
     local NAMED_PIPE=$1
     local RUNNING=1
     local STARTED=0
@@ -87,6 +89,95 @@ listen_pipe() {
     fi
 }
 
+wrapped_info() {
+    local TAG=$1; shift
+    local CMD=$1; shift
+    echo "--------------------"
+    echo "[$TAG start]"
+    bash -c "$CMD"
+    echo "[$TAG end]"
+}
+
+collect_system_information() {
+    echo "System information"
+    echo ""
+    echo "The information below has been collected by ARB."
+    echo "Please do not publish without being aware that it might contain personal information."
+    echo ""
+
+    local ARB_RELEVANT="| grep -i ARB"
+
+    wrapped_info "version info" "$ARBHOME/bin/arb_ntree --help"
+    wrapped_info "environment" "printenv $ARB_RELEVANT"
+    wrapped_info "OS info" "lsb_release -a"
+    wrapped_info "Kernel info" "uname -mrs ; uname -a ; cat /proc/version"
+    wrapped_info "glibc" "ls -l /lib/libc-*.so /lib/libc.so*"
+    wrapped_info "Disk info" "df -h"
+    wrapped_info "Memory info" "free -m ; cat /proc/meminfo"
+    wrapped_info "User limits" "ulimit -a"
+    wrapped_info "ARB processes" "ps aux $ARB_RELEVANT"
+    wrapped_info "KDE Desktop version" "konqueror --version"
+    wrapped_info "Gnome Desktop version" "gnome-panel --version"
+    wrapped_info "CPU info" "cat /proc/cpuinfo"
+    wrapped_info "X server information" "xdpyinfo"
+    # wrapped_info "X" "Y"
+}
+
+erase_old_logs() {
+    local LOGBASE=$1
+    if [ -d "$LOGBASE" ]; then
+        # remove files older than 7 days inside and below LOGBASE
+        local OLD=$(( 60 * 24 * 7 ))
+        find $LOGBASE -type f -cmin +$OLD -exec rm {} \;
+        # remove empty directories inside and below LOGBASE
+        find $LOGBASE -type d -depth -empty -mindepth 1 -exec rmdir {} \;
+    fi
+}
+
+listen_pipe() {
+    # this is just a wrapper around listen_pipe_unlogged.
+    # wrapper performs ARB session logging
+    local NAMED_PIPE=$1
+
+    local LOGBASE=$ARB_PROP/logs
+    local LOGDIRID=`date '+%Y%m%d_%H%M%S'`.$$
+    local LOGDIR=$LOGBASE/$LOGDIRID
+    
+    mkdir -p $LOGDIR
+
+    if [ -d "$LOGDIR" ]; then
+        local RUNLOG=$LOGDIR/run.log
+        local SYSLOG=$LOGDIR/sys.info
+
+        ( ( collect_system_information 2>&1 ) > $SYSLOG ; erase_old_logs $LOGBASE ) &
+        ( listen_pipe_unlogged $NAMED_PIPE ) 2>&1 | tee $RUNLOG
+
+        local TARBALLNAME=session.$LOGDIRID.tgz
+        ( cd $LOGBASE ; tar -zcvf $TARBALLNAME $LOGDIRID )
+        rm $RUNLOG $SYSLOG
+        rmdir $LOGDIR
+
+        local FULLTARBALL=$LOGBASE/$TARBALLNAME
+        echo "Session log was stored in $FULLTARBALL"
+
+        local LATESTLINK=~/ARB_last_session.tgz
+        if [ -h $LATESTLINK ]; then
+            rm $LATESTLINK
+        fi
+        if [ -e $LATESTLINK ]; then
+            echo "$LATESTLINK already exists and is no symlink"
+        else
+            (cd ~; ln -s $FULLTARBALL $LATESTLINK )
+            echo "(also accessible via $LATESTLINK)"
+        fi
+
+        true
+    else
+        echo "Error creating directory '$LOGDIR'"
+        false
+    fi
+}
+
 killtree() {
     local _pid=$1
     local _sig=${2:-TERM}
@@ -116,23 +207,12 @@ term_handler() {
     debug "killchilds done - exiting $$"
     exit
 }
-int_handler() {
-    echo ""
-    echo "Ctrl-C pressed - do you want to kill this ARB session and all child sessions? [n]"
-    read ANSWER
-    if [ "$ANSWER" = "y" ]; then
-        # term_handler
-        kill -TERM $$
-    else
-        echo "Continuing ARB session"
-    fi
-}
 
 create_pipe_reader() {
     local NAMED_PIPE=$1
     local PARENT_PID=$2
 
-    if [ -z "$ARB_LAUNCHER" ]; then
+    if [ -z "${ARB_LAUNCHER:-}" ]; then
         export ARB_LAUNCHER=0
     else
         export ARB_LAUNCHER=$(($ARB_LAUNCHER+1))
@@ -140,13 +220,14 @@ create_pipe_reader() {
 
     debug "Creating named pipe '$NAMED_PIPE'"
 
-    trap int_handler INT
+    # (i did not manage to recover from SIGINT w/o termination of listen_pipe)
+    # => disable SIGINT handler
+    trap '' INT
     trap "term_handler $NAMED_PIPE" TERM
     trap "rm -f $NAMED_PIPE" EXIT
 
     { mkfifo $NAMED_PIPE && listen_pipe $NAMED_PIPE ; } || \
       { echo "Error creating pipe '$NAMED_PIPE'" ; kill $PARENT_PID ; }
-
 
     debug "Pipe reader for '$NAMED_PIPE' terminates.."
     rm -f $NAMED_PIPE
