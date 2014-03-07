@@ -524,6 +524,8 @@ static void ptnd_first_check(PT_pdc *pdc) {
             }
         }
 
+        tprobe->apos = psg.abs_pos.get_most_used();
+
         if (tprobe->mishit > pdc->mishit)
         {
             destroy_PT_tprobes(tprobe);
