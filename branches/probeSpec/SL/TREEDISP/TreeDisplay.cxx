@@ -2300,7 +2300,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         set_line_attributes_for(at);
 
-        drawMatchFlag(at, 0, Pen.ypos() - scaled_branch_distance * 0.495, Pen.ypos() + height + scaled_branch_distance * 0.495);
+        drawMatchFlag(at, 0, s0.ypos(), s1.ypos());
 
         disp_device->set_grey_level(at->gr.gc, grey_level);
         disp_device->filled_area(at->gr.gc, 4, group, line_filter);
