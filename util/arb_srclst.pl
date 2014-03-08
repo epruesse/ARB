@@ -209,6 +209,7 @@ my @used_when_matchesFull = (
                              qr/^\.\/lib\/rna3d\/images\/.*\.png$/o,
                              qr/^\.\/lib\/sellists\/.*\.sellst$/o,
                              qr/^\.\/lib\/submit\//o,
+                             qr/^\.\/lib\/BUGS\//o,
                              qr/^\.\/util\/arb_.*$/o,
                              qr/^\.\/util\/config\..*$/o,
                              qr/\/GDE\/.*\/Makefile\.[^\/]+$/io,

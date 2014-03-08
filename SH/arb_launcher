@@ -1,8 +1,10 @@
 #!/bin/bash
 
+set -u
+
 trace() {
     local MSG=$1
-    echo "[arb_launcher[${ARB_LAUNCHER:?}]: $1]"
+    echo "[arb_launcher[${ARB_LAUNCHER:-}]: $1]"
 }
 debug() {
     local MSG=$1
@@ -21,12 +23,20 @@ send_to_launcher() {
 }
 
 pipe_command() {
-    local NAMED_PIPE=$1
-    local CMD=$2
+    local NAMED_PIPE=$1; shift
+    local CMD=$1; shift
+    local LOGDIR=$1; shift
 
     trace "Starting '$CMD'.."
-    $CMD
-    trace "'$CMD' has terminated"
+    local ERROR=0
+    $CMD || ERROR=1
+
+    if [ $ERROR == 1 ]; then
+        trace "'$CMD' has terminated with error"
+        touch $LOGDIR/crashed
+    else
+        trace "'$CMD' has terminated with success"
+    fi
 
     send_to_launcher $NAMED_PIPE 'cmd_terminated'
 }
@@ -41,8 +51,9 @@ read_line() {
     echo $LINE
 }
 
-listen_pipe() {
-    local NAMED_PIPE=$1
+listen_pipe_unlogged() {
+    local NAMED_PIPE=$1; shift
+    local LOGDIR=$1; shift
     local RUNNING=1
     local STARTED=0
     # RUNNING is set to 1 (otherwise listen_pipe would terminate instantly)
@@ -65,7 +76,7 @@ listen_pipe() {
                   if [[ "$LINE" == 'allow_termination' ]]; then
                       RUNNING=$(($RUNNING - 1))
                   else
-                      pipe_command $NAMED_PIPE "$LINE" &
+                      pipe_command $NAMED_PIPE "$LINE" $LOGDIR &
                       RUNNING=$(($RUNNING + 1))
                       STARTED=$(($STARTED + 1))
                       debug "RUNNING=$RUNNING"
@@ -84,6 +95,114 @@ listen_pipe() {
         fi
     else
         trace "Still have $RUNNING arb-processes - terminating nevertheless"
+    fi
+}
+
+wrapped_info() {
+    local TAG=$1; shift
+    local CMD=$1; shift
+    echo "--------------------"
+    echo "[$TAG start]"
+    bash -c "$CMD"
+    echo "[$TAG end]"
+}
+
+collect_system_information() {
+    echo "System information"
+    echo ""
+    echo "The information below has been collected by ARB."
+    echo "Please do not publish without being aware that it might contain personal information."
+    echo ""
+
+    local ARB_RELEVANT="| grep -i ARB"
+
+    wrapped_info "version info" "$ARBHOME/bin/arb_ntree --help"
+    wrapped_info "environment" "printenv $ARB_RELEVANT"
+    wrapped_info "OS info" "lsb_release -a"
+    wrapped_info "Kernel info" "uname -mrs ; uname -a ; cat /proc/version"
+    wrapped_info "glibc" "ls -l /lib/libc-*.so /lib/libc.so*"
+    wrapped_info "Disk info" "df -h"
+    wrapped_info "Memory info" "free -m ; cat /proc/meminfo"
+    wrapped_info "User limits" "ulimit -a"
+    wrapped_info "ARB processes" "ps aux $ARB_RELEVANT"
+    wrapped_info "KDE Desktop version" "konqueror --version"
+    wrapped_info "Gnome Desktop version" "gnome-panel --version"
+    wrapped_info "CPU info" "cat /proc/cpuinfo"
+    wrapped_info "X server information" "xdpyinfo"
+    # wrapped_info "X" "Y"
+}
+
+erase_old_logs() {
+    local LOGBASE=$1
+    if [ -d "$LOGBASE" ]; then
+        # remove files older than 7 days inside and below LOGBASE
+        local OLD=$(( 60 * 24 * 7 ))
+        find $LOGBASE -type f -cmin +$OLD -exec rm {} \;
+        # remove empty directories inside and below LOGBASE
+        find $LOGBASE -type d -depth -empty -mindepth 1 -exec rmdir {} \;
+    fi
+}
+
+listen_pipe() {
+    # this is just a wrapper around listen_pipe_unlogged.
+    # wrapper performs ARB session logging
+    local NAMED_PIPE=$1
+
+    local LOGBASE=$ARB_PROP/logs
+    local LOGDIRID=`date '+%Y%m%d_%H%M%S'`.$$
+    local LOGDIR=$LOGBASE/$LOGDIRID
+    local NTREE_CRASHED=0
+
+    mkdir -p $LOGDIR
+
+    if [ -d "$LOGDIR" ]; then
+        local RUNLOG=$LOGDIR/run.log
+        local SYSLOG=$LOGDIR/sys.info
+        local CRASHFLAG=$LOGDIR/crashed
+
+        ( ( collect_system_information 2>&1 ) > $SYSLOG ; erase_old_logs $LOGBASE ) &
+        ( listen_pipe_unlogged $NAMED_PIPE $LOGDIR ) 2>&1 | tee $RUNLOG
+
+        if [ -e $CRASHFLAG ]; then
+            # only detects crashes of arb_ntree
+            # (client are not started via arb_launcher and they usually crash when server exits)
+            NTREE_CRASHED=1
+        fi
+
+        local TARBALLNAME=session.$LOGDIRID.tgz
+        ( cd $LOGBASE ; tar -zcf $TARBALLNAME $LOGDIRID )
+        rm $RUNLOG $SYSLOG $CRASHFLAG
+        rmdir $LOGDIR
+
+        local FULLTARBALL=$LOGBASE/$TARBALLNAME
+        echo ""
+        echo "Session log has been stored in $FULLTARBALL"
+
+        local LATESTLINK=~/ARB_last_session.tgz
+        if [ -h $LATESTLINK ]; then
+            rm $LATESTLINK
+        fi
+        if [ -e $LATESTLINK ]; then
+            echo "$LATESTLINK already exists and is no symlink"
+        else
+            (cd ~; ln -s $FULLTARBALL $LATESTLINK )
+            echo "    and is also accessible via $LATESTLINK"
+        fi
+
+        if [ $NTREE_CRASHED == 1 ]; then
+            echo ""
+            echo "ARB crashed :-("
+            echo "To report this goto http://bugs.arb-home.de/wiki/BugReport"
+            echo "Please include the session log mentioned above"
+            echo ""
+            echo "[press ENTER]"
+            read A
+        fi
+
+        true
+    else
+        echo "Error creating directory '$LOGDIR'"
+        false
     fi
 }
 
@@ -116,23 +235,12 @@ term_handler() {
     debug "killchilds done - exiting $$"
     exit
 }
-int_handler() {
-    echo ""
-    echo "Ctrl-C pressed - do you want to kill this ARB session and all child sessions? [n]"
-    read ANSWER
-    if [ "$ANSWER" = "y" ]; then
-        # term_handler
-        kill -TERM $$
-    else
-        echo "Continuing ARB session"
-    fi
-}
 
 create_pipe_reader() {
     local NAMED_PIPE=$1
     local PARENT_PID=$2
 
-    if [ -z "$ARB_LAUNCHER" ]; then
+    if [ -z "${ARB_LAUNCHER:-}" ]; then
         export ARB_LAUNCHER=0
     else
         export ARB_LAUNCHER=$(($ARB_LAUNCHER+1))
@@ -140,13 +248,14 @@ create_pipe_reader() {
 
     debug "Creating named pipe '$NAMED_PIPE'"
 
-    trap int_handler INT
+    # (i did not manage to recover from SIGINT w/o termination of listen_pipe)
+    # => disable SIGINT handler
+    trap '' INT
     trap "term_handler $NAMED_PIPE" TERM
     trap "rm -f $NAMED_PIPE" EXIT
 
     { mkfifo $NAMED_PIPE && listen_pipe $NAMED_PIPE ; } || \
       { echo "Error creating pipe '$NAMED_PIPE'" ; kill $PARENT_PID ; }
-
 
     debug "Pipe reader for '$NAMED_PIPE' terminates.."
     rm -f $NAMED_PIPE
