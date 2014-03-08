@@ -155,22 +155,9 @@ void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_w
     va_end(parg);
 }
 
-#if !defined(DEVEL_RELEASE)
-#define TEST_CRASH
-#endif
-
-#if defined(TEST_CRASH)
-static void test_crash(AW_window *aw) {
-    GBK_terminatef("testing crash of %s", aw->get_root()->program_name);
-}
-#endif
-
 static void add_common_property_menu_entries(AW_window *aw) {
     aw->insert_menu_topic("enable_advices",   "Reactivate advices",   "R", "advice.hlp",    AWM_ALL, AW_reactivate_all_advices);
     aw->insert_menu_topic("enable_questions", "Reactivate questions", "q", "questions.hlp", AWM_ALL, AW_reactivate_all_questions);
-#if defined(TEST_CRASH)
-    aw->insert_menu_topic("lets_crash", GBS_global_string("Let %s crash", aw->get_root()->program_name), "c", NULL, AWM_ALL, test_crash);
-#endif
 }
 void AW_insert_common_property_menu_entries(AW_window_menu_modes *awmm) { add_common_property_menu_entries(awmm); }
 void AW_insert_common_property_menu_entries(AW_window_simple_menu *awsm) { add_common_property_menu_entries(awsm); }
