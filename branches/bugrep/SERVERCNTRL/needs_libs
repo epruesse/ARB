@@ -1,8 +1,0 @@
-# libraries needed to link against SERVERCNTRL/SERVERCNTRL.a
-
-lib/libARBDB.so
-
-# it does not matter which client.a is linked
-# (e.g. arb_ntree only links PROBE_COM/client.a, so we always use that one)
-PROBE_COM/client.a
-
