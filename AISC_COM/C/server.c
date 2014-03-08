@@ -217,9 +217,7 @@ __ATTR__NORETURN static void aisc_server_sigsegv(int sig) {
 
 static int pipe_broken;
 
-static void aisc_server_sigpipe(int)
-{
-    fputs("AISC server: pipe broken\n", stderr);
+static void aisc_server_sigpipe(int) {
     pipe_broken = 1;
 }
 
@@ -247,7 +245,10 @@ static int aisc_s_write(int socket, char *ptr, int size) {
     pipe_broken = 0;
     while (leftsize) {
         int writesize = write(socket, ptr, leftsize);
-        if (pipe_broken) return -1;
+        if (pipe_broken) {
+            fputs("AISC server: pipe broken\n", stderr);
+            return -1;
+        }
         if (writesize<0) return -1;
         ptr += writesize;
         leftsize -= writesize;
