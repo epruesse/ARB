@@ -140,6 +140,23 @@ sub expectTrunk()   { expectSUB('trunk'); }
 sub expectBranch($) { my ($branch) = @_; expectSUB('branches/'.$branch); }
 sub denyBranch($)   { my ($branch) = @_; denySUB  ('branches/'.$branch); }
 
+sub tag_remove_command($$) {
+  my ($tag,$action) = @_;
+  return "svn delete '".tagURL($tag)."' -m \"[$action] delete tag '$tag'\"";
+}
+sub branch_remove_command($$) {
+  my ($branch,$action) = @_;
+  return "svn delete '".branchURL($branch)."' -m \"[$action] delete branch '$branch'\"";
+}
+sub die_due_to_tag($$) {
+  my ($tag,$desc) = @_;
+  my $remove_cmd = tag_remove_command($tag,$desc);
+  die "tag '$tag' already exists.\nTo remove that tag use\n$remove_cmd\n ";
+}
+
+sub get_branches() { branch_exists('xxx'); return sort keys %known_branches; }
+sub get_tags() { tag_exists('xxx'); return sort keys %known_tags; }
+
 sub perform($$) {
   my ($action,$arg) = @_;
   retrieve_svn_info();
@@ -152,7 +169,7 @@ sub perform($$) {
     expectTrunk();
     push @commands, "# check version and changelog in trunk are set correctly; see SOURCE_TOOLS/release/release.HOWTO";
     if (branch_exists('rc')) {
-      push @commands, "svn delete '".branchURL('rc')."' -m \"[$action] delete old branch\"";
+      push @commands, branch_remove_command('rc', $action);
     }
     push @commands, "svn copy '".trunkURL().'@'.$svn_info{REVISION}."' '".branchURL('rc')."' -m \"[$action] create rc1 for arb $version\"";
     push @commands, "# increment version in trunk; see SOURCE_TOOLS/release/release.HOWTO";
@@ -164,7 +181,7 @@ sub perform($$) {
   elsif ($action eq 'branch_stable') {
     expectBranch('rc');
     if (branch_exists('stable')) {
-      push @commands, "svn delete '".branchURL('stable')."' -m \"[$action] delete old branch\"";
+      push @commands, branch_remove_command('stable', $action);
     }
     push @commands, "svn copy '".branchURL('rc').'@'.$svn_info{REVISION}."' '".branchURL('stable')."' -m \"[$action] arb $version\"";
     push @commands, "# let jenkins build job 'ARB-stable'";
@@ -175,19 +192,13 @@ sub perform($$) {
   elsif ($action eq 'tag_rc') {
     expectBranch('rc');
     if (($tag =~ /devel/oi) or ($tag =~ /rev/oi) or (not $tag =~ /^arb-/o)) { die "Invalid tag '$tag'"; }
-    if (tag_exists($tag)) {
-      my $remove_cmd = "svn delete '".tagURL($tag)."' -m \"[$action] delete invalid rc tag '$tag'\"";
-      die "tag '$tag' already exists.\nTo remove that tag use\n$remove_cmd\n ";
-    }
+    if (tag_exists($tag)) { die_due_to_tag($tag, 'invalid rc'); }
     push @commands, "svn copy '".branchURL('rc').'@'.$svn_info{REVISION}."' '".tagURL($tag)."' -m \"[$action] '$tag'\"";
   }
   elsif ($action eq 'tag_stable') {
     expectBranch('stable');
     if (($tag =~ /devel/oi) or ($tag =~ /rev/oi) or (not $tag =~ /^arb-/o)) { die "Invalid tag '$tag'"; }
-    if (tag_exists($tag)) {
-      my $remove_cmd = "svn delete '".tagURL($tag)."' -m \"[$action] delete invalid release tag '$tag'\"";
-      die "tag '$tag' already exists.\nTo remove that tag use\n$remove_cmd\n ";
-    }
+    if (tag_exists($tag)) { die_due_to_tag($tag, 'invalid release'); }
     push @commands, "svn copy '".branchURL('stable').'@'.$svn_info{REVISION}."' '".tagURL($tag)."' -m \"[$action] release '$tag'\"";
   }
   elsif ($action eq 'tag_custom') {
@@ -205,6 +216,14 @@ sub perform($$) {
       die "tag '$tag' already exists.\nTo remove that tag use\n$remove_cmd\n ";
     }
     push @commands, "svn copy '".currentURL().'@'.$svn_info{REVISION}."' '".tagURL($tag)."' -m \"[$action] '$tag'\"";
+  }
+  elsif ($action eq 'rm') {
+    if (not defined $arg) {
+      die "Expected additional argument 'action'";
+    }
+    my $rm_action = $arg;
+    print "To remove branches:\n"; foreach (get_branches()) { print branch_remove_command($_,$rm_action)."\n"; }
+    print "To remove tags:\n";     foreach (get_tags())     { print tag_remove_command($_,$rm_action)."\n"; }
   }
   else {
     die "Unknown action '$action'";
@@ -241,12 +260,15 @@ sub show_usage($) {
   print "\n";
   print "Usage: release_tool.pl [action [arg]]\n";
   print "known 'action's:\n";
-  print "    branch_rc1        branch a new release candidate from 'trunk'           (uses WC-revision!)\n";
-  print "    branch_stable     branch a new release           from 'branches/rc'     (uses WC-revision!)\n";
-  print "    tag_rc            tag rc                         in   'branches/rc'     (uses WC-revision!)\n";
-  print "    tag_stable        tag release                    in   'branches/stable' (uses WC-revision!)\n";
-  print "    tag_custom tag    tag custom version             anywhere               (uses WC-revision!)\n";
-  print "    \n";
+  print "\n";
+  print "    branch_rc1           branch a new release candidate from 'trunk'           (uses WC-revision!)\n";
+  print "    branch_stable        branch a new release           from 'branches/rc'     (uses WC-revision!)\n";
+  print "\n";
+  print "    tag_rc               tag rc                         in   'branches/rc'     (uses WC-revision!)\n";
+  print "    tag_stable           tag release                    in   'branches/stable' (uses WC-revision!)\n";
+  print "    tag_custom tag       tag custom version             anywhere               (uses WC-revision!)\n";
+  print "\n";
+  print "    rm action            helper to get rid of unwanted branches/tags\n";
   print "\n";
   warnya();
   if (defined $err) { print "\nError: $err\n"; }
