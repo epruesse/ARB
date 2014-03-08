@@ -167,12 +167,12 @@ sub perform($$) {
 
   if ($action eq 'branch_rc1') {
     expectTrunk();
-    push @commands, "# check version and changelog in trunk are set correctly; see SOURCE_TOOLS/release/release.HOWTO";
+    push @commands, "# check version and changelog in trunk are set correctly; see SOURCE_TOOLS/release/HOWTO.release";
     if (branch_exists('rc')) {
       push @commands, branch_remove_command('rc', $action);
     }
     push @commands, "svn copy '".trunkURL().'@'.$svn_info{REVISION}."' '".branchURL('rc')."' -m \"[$action] create rc1 for arb $version\"";
-    push @commands, "# increment version in trunk; see SOURCE_TOOLS/release/release.HOWTO";
+    push @commands, "# increment version in trunk; see SOURCE_TOOLS/release/HOWTO.release";
     push @commands, "# let jenkins build job 'ARB-rc'";
     push @commands, "svn switch '".branchURL('rc')."'";
     push @commands, "make show_version";
