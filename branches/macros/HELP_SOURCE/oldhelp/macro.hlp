@@ -26,7 +26,17 @@ DESCRIPTION	Macros are used to combine a set of menu-actions. They work like
 		before pressing	<RECORD>. You can also check the 'Run before?' toggle
 		to execute the existing macro before expanding it.
 
-		To execute an existing macro select a macro and press <EXECUTE>
+		To execute an existing macro select a macro and press <EXECUTE>.
+
+		To execute a macro once for
+
+		 * each marked species or
+		 * each species found by Search&Query
+
+		select the wanted species set and press <Execute with all>. 
+		Each species is marked AND selected before calling the macro, all other
+		species are unmarked. Original species marks are restored when the
+		loop ends.
 
 		Press <EDIT> to edit the selected macro.
 
@@ -60,7 +70,7 @@ SECTION What gets recorded?
 
 SECTION Calling submacros
 
-		Macros can call other macros. To do this simply select the macro you like to call
+		Macros can call other macros (see BUGS!). To do this simply select the macro you like to call
 		as submacro and press execute. That will be recorded like any other action.
 
 		Calling submacros is a good way to compose complex macros. 
@@ -79,6 +89,7 @@ EXAMPLES	You can find some examples in $ARBHOME/lib/macros (this directory is re
 
 WARNINGS	None
 
-BUGS		Only actions within the main application (ARB_NT) are recorded :-(
+BUGS		Nested macro execution is broken; it only works as expected if only one macro is called
+                and if that call is the last action in the calling macro; see http://bugs.arb-home.de/ticket/455
 
 

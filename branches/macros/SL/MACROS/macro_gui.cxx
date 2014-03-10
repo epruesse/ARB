@@ -32,6 +32,10 @@
 #define AWAR_MACRO_RECORDING_MACRO_TEXT AWAR_MACRO_BASE"/button_label"
 #define AWAR_MACRO_RECORDING_EXPAND     AWAR_MACRO_BASE"/expand"
 #define AWAR_MACRO_RECORDING_RUNB4      AWAR_MACRO_BASE"/runb4"
+#define AWAR_MACRO_WITHWHAT             AWAR_MACRO_BASE"/withwhat"
+
+#define MACRO_EXEC_WITH_MARKED "MARKED"
+#define MACRO_EXEC_WITH_FOUND  "FOUND"
 
 static void awt_delete_macro_cb(AW_window *aww) {
     AW_root *awr       = aww->get_root();
@@ -63,6 +67,25 @@ static void awt_exec_macro_cb(AW_window *aww) {
         aw_message(error);
         free(macroName); // only free in error-case (see macro_execution_finished)
     }
+}
+
+static void awt_exec_macro_with_cb(AW_window *aww) {
+    AW_root *awr       = aww->get_root();
+    char    *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
+
+    char *with_all_parametrized = NULL;
+    {
+        const char *with_all  = GB_path_in_ARBHOME("PERL_SCRIPTS/MACROS/with_all.pl");
+        const char *targets   = awr->awar(AWAR_MACRO_WITHWHAT)->read_char_pntr();
+        with_all_parametrized = GBS_global_string_copy("%s %s %s", with_all, targets, macroName);
+    }
+
+    GB_ERROR error = getMacroRecorder(awr)->execute(with_all_parametrized, macro_execution_finished, (AW_CL)macroName);
+    if (error) {
+        aw_message(error);
+        free(macroName); // only free in error-case (see macro_execution_finished)
+    }
+    free(with_all_parametrized);
 }
 
 inline void update_macro_record_button(AW_root *awr) {
@@ -112,6 +135,7 @@ static void macro_recording_changed_cb() {
 void awt_create_macro_variables(AW_root *aw_root) {
     AW_create_fileselection_awars(aw_root, AWAR_MACRO_BASE, ".", ".amc", "");
     aw_root->awar_string(AWAR_MACRO_RECORDING_MACRO_TEXT, "RECORD");
+    aw_root->awar_string(AWAR_MACRO_WITHWHAT, MACRO_EXEC_WITH_MARKED);
     aw_root->awar_int(AWAR_MACRO_RECORDING_EXPAND, 0);
     aw_root->awar_int(AWAR_MACRO_RECORDING_RUNB4, 0);
 
@@ -165,6 +189,15 @@ static void awt_popup_macro_window(AW_window *aww) {
 
         aws->at("delete"); aws->callback(awt_delete_macro_cb);
         aws->create_button("DELETE", "DELETE");
+
+        aws->at("execWith"); aws->callback(awt_exec_macro_with_cb);
+        aws->create_autosize_button("EXEC_WITH", "Execute with all");
+
+        aws->at("withWhat");
+        aws->create_option_menu(AWAR_MACRO_WITHWHAT);
+        aws->insert_default_option("marked", "m", MACRO_EXEC_WITH_MARKED);
+        aws->insert_option        ("found",  "f", MACRO_EXEC_WITH_FOUND);
+        aws->update_option_menu();
 
         AW_create_fileselection(aws, AWAR_MACRO_BASE, "", "ARBMACROHOME^ARBMACRO");
     }
