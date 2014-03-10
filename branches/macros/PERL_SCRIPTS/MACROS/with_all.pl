@@ -2,8 +2,9 @@
 use strict;
 use warnings;
 
-# This script adds all marked species to the currently selected tree using ARB_PARS.
-# Each species uses itself as filter.
+my $sleepAmount = 0; # try to increase (to a small amount of seconds) if you encounter problems
+
+# This script calls a macro with all marked/found species.
 
 BEGIN {
   if (not exists $ENV{'ARBHOME'}) { die "Environment variable \$ARBHOME has to be defined"; }
@@ -15,7 +16,6 @@ BEGIN {
 
 use ARB;
 use tools;
-
 
 sub selectSpecies($$) {
   my ($gb_main,$speciesName) = @_;
@@ -29,8 +29,6 @@ sub markSpecies($$$) {
   ARB::write_flag($gb_species, $mark);
   ARB::commit_transaction($gb_main);
 }
-
-my $sleepAmount = 1;
 
 sub exec_macro_with_species($$$$) {
   my ($gb_main,$gb_species,$speciesName,$macroName) = @_;
