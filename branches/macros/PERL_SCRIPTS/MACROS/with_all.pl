@@ -78,7 +78,8 @@ sub findMacroIn($$) {
 }
 sub findMacro($) {
   my ($name) = @_;
-  my $full = findMacroIn($name, ARB::getenvARBMACROHOME());
+  my $full = acceptExisting($name); # accept macro specified with full path
+  if (not defined $full) { $full = findMacroIn($name, ARB::getenvARBMACROHOME()); }
   if (not defined $full) { $full = findMacroIn($name, ARB::getenvARBMACRO()); }
   return $full;
 }
