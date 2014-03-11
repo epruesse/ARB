@@ -110,7 +110,7 @@ query_spec::query_spec(ItemSelector& selector_)
       expect_hit_in_ref_list(0),
       species_name(0),
       tree_name(0),
-      select_bit(GB_USERFLAG_QUERY), // @@@ could be hardcoded
+      select_bit(GB_USERFLAG_QUERY), // always == GB_USERFLAG_QUERY atm (nevertheless DO NOT hardcode)
       use_menu(0),
       ere_pos_fig(0),
       where_pos_fig(0),

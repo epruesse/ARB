@@ -238,7 +238,7 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main
         awtqs.gb_main             = gb_main;
         awtqs.species_name        = AWAR_SPECIES_NAME;
         awtqs.tree_name           = AWAR_TREE;
-        awtqs.select_bit          = 1;
+        awtqs.select_bit          = GB_USERFLAG_QUERY;
         awtqs.use_menu            = 1;
         awtqs.ere_pos_fig         = "ere3";
         awtqs.where_pos_fig       = "where3";
