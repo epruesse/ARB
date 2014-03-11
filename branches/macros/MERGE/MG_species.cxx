@@ -793,7 +793,7 @@ GB_ERROR MERGE_sequences_simple(AW_root *awr) {
 
                     if (!error) {
                         GB_write_flag(D_species, 1);          // mark species
-                        GB_write_usr_private(D_species, GB_USRREF_MAX); // put in (any) hitlist(s)
+                        GB_set_user_flag(D_species, GB_USERFLAG_QUERY); // put in search&query hitlist
                         error = GBT_write_string(D_species, "name", s_name);
                     }
                 }

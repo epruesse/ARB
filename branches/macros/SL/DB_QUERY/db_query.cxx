@@ -45,7 +45,7 @@ using namespace QUERY;
 inline void SET_QUERIED(GBDATA *gb_species, DbQuery *query, const char *hitInfo, size_t hitInfoLen = 0) {
     dbq_assert(hitInfo);
 
-    GB_write_usr_private(gb_species, query->select_bit | GB_read_usr_private(gb_species));
+    GB_set_user_flag(gb_species, query->select_bit);
 
     char *name = query->selector.generate_item_id(query->gb_main, gb_species);
     char *info;
@@ -70,7 +70,7 @@ inline void SET_QUERIED(GBDATA *gb_species, DbQuery *query, const char *hitInfo,
 }
 
 inline void CLEAR_QUERIED(GBDATA *gb_species, DbQuery *query) {
-    GB_write_usr_private(gb_species, (~query->select_bit) & GB_read_usr_private(gb_species));
+    GB_clear_user_flag(gb_species, query->select_bit);
 
     char *name   = query->selector.generate_item_id(query->gb_main, gb_species);
     long  toFree = GBS_write_hash(query->hit_description, name, 0); // delete hit info
@@ -110,7 +110,7 @@ query_spec::query_spec(ItemSelector& selector_)
       expect_hit_in_ref_list(0),
       species_name(0),
       tree_name(0),
-      select_bit(GB_USRREF_QUERY), // @@@ could be hardcoded
+      select_bit(GB_USERFLAG_QUERY), // @@@ could be hardcoded
       use_menu(0),
       ere_pos_fig(0),
       where_pos_fig(0),
@@ -136,7 +136,7 @@ query_spec::query_spec(ItemSelector& selector_)
 }
 
 bool query_spec::is_queried(GBDATA *gb_item) const {
-    return select_bit & GB_read_usr_private(gb_item);
+    return GB_user_flag(gb_item, select_bit);
 }
 
 bool QUERY::IS_QUERIED(GBDATA *gb_item, const DbQuery *query) {

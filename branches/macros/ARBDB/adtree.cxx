@@ -287,7 +287,7 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
 
             if (node_is_used) { // set id for used nodes
                 error = GBT_write_int(node->gb_node, "id", *startid);
-                if (!error) GB_write_usr_private(node->gb_node, 0);
+                if (!error) GB_clear_user_flag(node->gb_node, GB_USERFLAG_GHOSTNODE); // mark node as "used"
             }
             else {          // delete unused nodes
                 error = GB_delete(node->gb_node);
@@ -391,7 +391,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
             // mark all old style tree data for deletion
             GBDATA *gb_node;
             for (gb_node = GB_entry(gb_tree, "node"); gb_node; gb_node = GB_nextEntry(gb_node)) {
-                GB_write_usr_private(gb_node, 1); // used below
+                GB_set_user_flag(gb_node, GB_USERFLAG_GHOSTNODE); // mark as "possibly unused"
             }
 
             // build tree-string and save to DB
@@ -425,7 +425,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
                 {
                     GBDATA *gbd = GB_entry(gb_node, "id");
                     gb_node_next = GB_nextEntry(gb_node);
-                    if (!gbd || GB_read_usr_private(gb_node)) error = GB_delete(gb_node);
+                    if (!gbd || GB_user_flag(gb_node, GB_USERFLAG_GHOSTNODE)) error = GB_delete(gb_node);
                 }
             }
         }

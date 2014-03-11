@@ -2675,13 +2675,32 @@ GB_ERROR gb_resort_system_folder_to_top(GBCONTAINER *gb_main) {
 // ------------------------------
 //      private(?) user flags
 
-unsigned char GB_read_usr_private(GBDATA *gbd) {
-    return gbd->expect_container()->flags2.usr_ref;
+STATIC_ASSERT_ANNOTATED(((GB_USERFLAG_ANY+1)&GB_USERFLAG_ANY) == 0, "not all bits set in GB_USERFLAG_ANY");
+
+#if defined(ASSERTION_USED)
+inline bool legal_user_bitmask(unsigned char bitmask) {
+    return bitmask>0 && bitmask<=GB_USERFLAG_ANY;
+}
+#endif
+
+inline gb_flag_types2& get_user_flags(GBDATA *gbd) {
+    return gbd->expect_container()->flags2;
 }
 
-void GB_write_usr_private(GBDATA *gbd, unsigned char ref) {
-    gb_assert(ref<=GB_USRREF_MAX);
-    gbd->expect_container()->flags2.usr_ref = ref;
+bool GB_user_flag(GBDATA *gbd, unsigned char user_bit) {
+    gb_assert(legal_user_bitmask(user_bit));
+    return get_user_flags(gbd).user_bits & user_bit;
+}
+void GB_set_user_flag(GBDATA *gbd, unsigned char user_bit) {
+    gb_assert(legal_user_bitmask(user_bit));
+    gb_flag_types2& flags  = get_user_flags(gbd);
+    flags.user_bits       |= user_bit;
+}
+
+void GB_clear_user_flag(GBDATA *gbd, unsigned char user_bit) {
+    gb_assert(legal_user_bitmask(user_bit));
+    gb_flag_types2& flags  = get_user_flags(gbd);
+    flags.user_bits       &= (user_bit^GB_USERFLAG_ANY);
 }
 
 // ------------------------

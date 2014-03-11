@@ -77,7 +77,7 @@ struct gb_flag_types {                                                  // publi
 struct gb_flag_types2 {                                                 // private flags, abortable
     // uncritical section, undoable
     unsigned int last_updated : 8;
-    unsigned int usr_ref : 7;                                           // for user access
+    unsigned int user_bits : 7;                                         // user flags (see GB_USERFLAG_...)
     // critic section, do not update any below
     unsigned int folded_container : 1;
     unsigned int update_in_server : 1;                                  // already informed

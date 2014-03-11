@@ -49,8 +49,9 @@ struct ConstStrArray;
 // -------------------
 //      constants
 
-#define GB_USRREF_MAX   127 // maximum for gb_flag_types2::usr_ref
-#define GB_USRREF_QUERY 1   // bit used for search&query
+#define GB_USERFLAG_ANY       127  // maximum for gb_flag_types2::usr_ref
+#define GB_USERFLAG_QUERY     1    // bit used for search&query (used on species, genes, experiments)
+#define GB_USERFLAG_GHOSTNODE 1    // bit used by gbt_write_tree (only used on tree-nodes; so it does not clash with GB_USERFLAG_QUERY)
 
 // --------------
 //      enums
