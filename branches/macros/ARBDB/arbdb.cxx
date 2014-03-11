@@ -2675,11 +2675,12 @@ GB_ERROR gb_resort_system_folder_to_top(GBCONTAINER *gb_main) {
 // ------------------------------
 //      private(?) user flags
 
-long GB_read_usr_private(GBDATA *gbd) {
+unsigned char GB_read_usr_private(GBDATA *gbd) {
     return gbd->expect_container()->flags2.usr_ref;
 }
 
-void GB_write_usr_private(GBDATA *gbd, long ref) {
+void GB_write_usr_private(GBDATA *gbd, unsigned char ref) {
+    gb_assert(ref<=GB_USRREF_MAX);
     gbd->expect_container()->flags2.usr_ref = ref;
 }
 

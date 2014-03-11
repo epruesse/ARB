@@ -77,7 +77,7 @@ GB_ERROR   MG_export_fields(AW_root *aw_root, GBDATA *gb_src, GBDATA *gb_dst, GB
 #define AWAR_REMAP_SPECIES_LIST AWAR_MERGE_SAV "remap_species_list"
 #define AWAR_REMAP_ENABLE       AWAR_MERGE_SAV "remap_enable"
 
-#define IS_QUERIED_SPECIES(gb_species) (1 & GB_read_usr_private(gb_species))
+#define IS_QUERIED_SPECIES(gb_species) (GB_USRREF_QUERY & GB_read_usr_private(gb_species))
 int mg_count_queried(GBDATA *gb_main);
 
 const char *MG_left_AWAR_SPECIES_NAME();

@@ -46,6 +46,12 @@ struct CharPtrArray;
 struct StrArray;
 struct ConstStrArray;
 
+// -------------------
+//      constants
+
+#define GB_USRREF_MAX   127 // maximum for gb_flag_types2::usr_ref
+#define GB_USRREF_QUERY 1   // bit used for search&query
+
 // --------------
 //      enums
 
