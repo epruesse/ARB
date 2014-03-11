@@ -250,6 +250,8 @@ sub parse_log($\@) {
 
   if (not $seenSummary) { $dump_log = 1; }
 
+  $dump_log = 1; # @@@ temporarily dump all logs (to detect what's so slow on colab)
+
   if ($dump_log==1) {
     open(LOG,$log) || die "can't open '$log' (Reason: $!)";
     my $line;
