@@ -82,6 +82,7 @@ Major changes for arb-6.0:
    - macro recording works in ARB client applications (ARB_EDIT4, ARB_PARS, ARB_MERGE, ..)
    - arb_ntree can execute macro from command line
    - added "Never ask again" to modal question boxes (for better compatibility with macros)
+   - a macro can be called for all marked species (once for each)
  - ACI (some new commands, bugfixes)
  - updated/added external tools:
    - added FastTree (version 2.1.7)
