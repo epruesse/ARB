@@ -25,7 +25,9 @@
 
 #define ma_assert(bed) arb_assert(bed)
 
-#define AWAR_MACRO_RECORD_ID "macro_record"
+#define MACRO_RECORD_ID          "macro_record"
+#define MACRO_PLAYBACK_ID        "macro_playback"
+#define MACRO_PLAYBACK_MARKED_ID "macro_playback_with_marked"
 
 #define AWAR_MACRO_BASE "tmp/macro"
 
@@ -105,7 +107,7 @@ static void awt_start_macro_cb(AW_window *aww) {
         else {
             if (runb4) awt_exec_macro_cb(aww);
 
-            char *sac = GBS_global_string_copy("%s/%s", aww->window_defaults_name, AWAR_MACRO_RECORD_ID);
+            char *sac = GBS_global_string_copy("%s/%s", aww->window_defaults_name, MACRO_RECORD_ID);
             error = getMacroRecorder(awr)->start_recording(macroName, sac, expand);
             free(sac);
         }
@@ -170,13 +172,13 @@ static void awt_popup_macro_window(AW_window *aww) {
         aws->create_button("HELP", "HELP");
 
         aws->at("record"); aws->callback(awt_start_macro_cb);
-        aws->create_button(AWAR_MACRO_RECORD_ID, AWAR_MACRO_RECORDING_MACRO_TEXT);
+        aws->create_button(MACRO_RECORD_ID, AWAR_MACRO_RECORDING_MACRO_TEXT);
 
         aws->at("expand"); aws->create_toggle(AWAR_MACRO_RECORDING_EXPAND);
         aws->at("runb4");  aws->create_toggle(AWAR_MACRO_RECORDING_RUNB4);
 
         aws->at("exec"); aws->callback(awt_exec_macro_cb);
-        aws->create_button("EXECUTE", "EXECUTE");
+        aws->create_button(MACRO_PLAYBACK_ID, "EXECUTE");
 
         aws->at("edit"); aws->callback(awt_edit_macro_cb);
         aws->create_button("EDIT", "EDIT");
@@ -185,7 +187,7 @@ static void awt_popup_macro_window(AW_window *aww) {
         aws->create_button("DELETE", "DELETE");
 
         aws->at("execWith"); aws->callback(awt_exec_macro_with_cb);
-        aws->create_autosize_button("EXECUTE_WITH_MARKED", "Execute with each marked species");
+        aws->create_autosize_button(MACRO_PLAYBACK_MARKED_ID, "Execute with each marked species");
 
         AW_create_fileselection(aws, AWAR_MACRO_BASE, "", "ARBMACROHOME^ARBMACRO");
     }
