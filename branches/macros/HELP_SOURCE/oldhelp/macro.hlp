@@ -28,15 +28,11 @@ DESCRIPTION	Macros are used to combine a set of menu-actions. They work like
 
 		To execute an existing macro select a macro and press <EXECUTE>.
 
-		To execute a macro once for
-
-		 * each marked species or
-		 * each species found by Search&Query
-
-		select the wanted species set and press <Execute with all>. 
-		Each species is marked AND selected before calling the macro, all other
-		species are unmarked. Original species marks are restored when the
-		loop ends.
+		Press <Execute with each marked species> to execute the selected macro 
+		multiple times: once for each marked species. 
+		Before each call of the macro, one species will be marked AND selected - all 
+		other species will be unmarked.
+		Afterwards original species marks will be restored.
 
 		Press <EDIT> to edit the selected macro.
 

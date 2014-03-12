@@ -89,13 +89,13 @@ sub execMacroWith() {
   my $err = undef;
   {
     my $args = scalar(@ARGV);
-    if ($args != 2) {
-      die "Usage: with_all.pl which macro\n".
-        "Executes 'macro' with 'which'\n".
-          "(where 'which' is 'MARKED')\n ";
+    if ($args != 1) {
+      die "Usage: with_all_marked.pl macro\n".
+        "Executes 'macro' once for each marked species.\n".
+          "For each call to 'macro', exactly one species will be marked AND selected.\n ";
     }
 
-    my ($which,$macro) = @ARGV;
+    my ($macro) = @ARGV;
 
     {
       my $omacro = $macro;
@@ -103,22 +103,16 @@ sub execMacroWith() {
       if (not defined $macro) { die "Failed to detect macro '$omacro'\n "; }
     }
 
-    my $markAgain = 0;
+    my $restoreMarked = 1;
     my %collected = (); # key = name; value = GBDATA(species)
 
-    if ($which eq 'MARKED') {
-      collectMarked($gb_main,%collected);
-      $markAgain = 1;
-    }
-    else {
-      die "Error: Unknown value for 'which' ('$which')\n ";
-    }
+    collectMarked($gb_main,%collected);
 
     # perform loop with collected species:
     my @collected = keys %collected;
     my $count = scalar(@collected);
 
-    if ($count<1) { die "No $which species - nothing to do\n"; }
+    if ($count<1) { die "No marked species - nothing to do\n"; }
 
     eval {
       if ($count>0) {
@@ -135,7 +129,7 @@ sub execMacroWith() {
     $err = $@;
 
     # mark species again
-    if ($markAgain and ($count>0)) {
+    if ($restoreMarked and ($count>0)) {
       print "Restoring old marks..\n";
       dieOnError(ARB::begin_transaction($gb_main), 'begin_transaction');
       BIO::mark_all($gb_main, 0); # unmark all
