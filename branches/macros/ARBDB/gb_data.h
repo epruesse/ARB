@@ -74,7 +74,7 @@ struct gb_flag_types {                                                  // publi
     unsigned int saved_flags : 8;
 };
 
-struct gb_flag_types2 {                                                 // private flags, abortable
+struct gb_flag_types2 { // private flags (DB server and each client have their own copy!), abortable
     // uncritical section, undoable
     unsigned int last_updated : 8;
     unsigned int user_bits : 7;                                         // user flags (see GB_USERFLAG_...)
