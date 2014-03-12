@@ -165,7 +165,7 @@ __ATTR__USERESULT static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_ro
         }
     }
 
-    if (!error && autorun_macro) awt_execute_macro(aw_root, autorun_macro); // @@@ triggering execution here is ok, but its a bad place to pass 'autorun_macro'. Should be handled more generally
+    if (!error && autorun_macro) execute_macro(aw_root, autorun_macro); // @@@ triggering execution here is ok, but its a bad place to pass 'autorun_macro'. Should be handled more generally
 
     return error;
 }

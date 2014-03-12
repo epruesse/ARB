@@ -35,7 +35,7 @@
 #define AWAR_MACRO_RECORDING_EXPAND     AWAR_MACRO_BASE"/expand"
 #define AWAR_MACRO_RECORDING_RUNB4      AWAR_MACRO_BASE"/runb4"
 
-static void awt_delete_macro_cb(AW_window *aww) {
+static void delete_macro_cb(AW_window *aww) {
     AW_root *awr       = aww->get_root();
     char    *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
 
@@ -89,7 +89,7 @@ inline void update_macro_record_button(AW_root *awr) {
     awr->awar(AWAR_MACRO_RECORDING_MACRO_TEXT)->write_string(awr->is_tracking() ? "STOP" : "RECORD");
 }
 
-static void awt_start_macro_cb(AW_window *aww) {
+static void start_macro_cb(AW_window *aww) {
     AW_root  *awr   = aww->get_root();
     GB_ERROR  error = NULL;
 
@@ -119,7 +119,7 @@ static void awt_start_macro_cb(AW_window *aww) {
     if (error) aw_message(error);
 }
 
-static void awt_edit_macro_cb(AW_window *aww) {
+static void edit_macro_cb(AW_window *aww) {
     char *path = AW_get_selected_fullname(aww->get_root(), AWAR_MACRO_BASE);
     AW_edit(path);
     free(path);
@@ -129,7 +129,7 @@ static void macro_recording_changed_cb() {
     update_macro_record_button(AW_root::SINGLETON);
 }
 
-void awt_create_macro_variables(AW_root *aw_root) {
+static void create_macro_variables(AW_root *aw_root) {
     AW_create_fileselection_awars(aw_root, AWAR_MACRO_BASE, ".", ".amc", "");
     aw_root->awar_string(AWAR_MACRO_RECORDING_MACRO_TEXT, "RECORD");
     aw_root->awar_int(AWAR_MACRO_RECORDING_EXPAND, 0);
@@ -154,7 +154,7 @@ void awt_create_macro_variables(AW_root *aw_root) {
     update_macro_record_button(aw_root);
 }
 
-static void awt_popup_macro_window(AW_window *aww) {
+static void popup_macro_window(AW_window *aww) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         AW_root *aw_root = aww->get_root();
@@ -163,7 +163,7 @@ static void awt_popup_macro_window(AW_window *aww) {
         aws->init(aw_root, "MACROS", "MACROS");
         aws->load_xfig("macro_select.fig");
 
-        awt_create_macro_variables(aw_root);
+        create_macro_variables(aw_root);
         
         aws->at("close"); aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
@@ -171,7 +171,7 @@ static void awt_popup_macro_window(AW_window *aww) {
         aws->at("help"); aws->callback(makeHelpCallback("macro.hlp"));
         aws->create_button("HELP", "HELP");
 
-        aws->at("record"); aws->callback(awt_start_macro_cb);
+        aws->at("record"); aws->callback(start_macro_cb);
         aws->create_button(MACRO_RECORD_ID, AWAR_MACRO_RECORDING_MACRO_TEXT);
 
         aws->at("expand"); aws->create_toggle(AWAR_MACRO_RECORDING_EXPAND);
@@ -180,10 +180,10 @@ static void awt_popup_macro_window(AW_window *aww) {
         aws->at("exec"); aws->callback(awt_exec_macro_cb);
         aws->create_button(MACRO_PLAYBACK_ID, "EXECUTE");
 
-        aws->at("edit"); aws->callback(awt_edit_macro_cb);
+        aws->at("edit"); aws->callback(edit_macro_cb);
         aws->create_button("EDIT", "EDIT");
 
-        aws->at("delete"); aws->callback(awt_delete_macro_cb);
+        aws->at("delete"); aws->callback(delete_macro_cb);
         aws->create_button("DELETE", "DELETE");
 
         aws->at("execWith"); aws->callback(awt_exec_macro_with_cb);
@@ -197,7 +197,7 @@ static void awt_popup_macro_window(AW_window *aww) {
 void insert_macro_menu_entry(AW_window *awm, bool prepend_separator) {
     if (getMacroRecorder(awm->get_root())) {
         if (prepend_separator) awm->sep______________();
-        awm->insert_menu_topic("macros", "Macros ", "M", "macro.hlp", AWM_ALL, awt_popup_macro_window);
+        awm->insert_menu_topic("macros", "Macros ", "M", "macro.hlp", AWM_ALL, popup_macro_window);
     }
 }
 
@@ -207,7 +207,7 @@ inline char *find_macro_in(const char *dir, const char *macroname) {
     return full;
 }
 
-void awt_execute_macro(AW_root *root, const char *macroname) {
+void execute_macro(AW_root *root, const char *macroname) {
     char *fullname          = find_macro_in(GB_getenvARBMACROHOME(), macroname);
     if (!fullname) fullname = find_macro_in(GB_getenvARBMACRO(), macroname);
 
