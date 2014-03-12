@@ -80,18 +80,34 @@ RecordingMacro::RecordingMacro(const char *filename, const char *application_id_
     }
 }
 
+void RecordingMacro::write_as_perl_string(const char *value) const {
+    const char SQUOTE = '\'';
+    write(SQUOTE);
+    for (int i = 0; value[i]; ++i) {
+        char c = value[i];
+        if (c == SQUOTE) {
+            write('\\');
+            write(SQUOTE);
+        }
+        else {
+            write(c);
+        }
+    }
+    write(SQUOTE);
+}
+
 void RecordingMacro::write_action(const char *app_id, const char *action_name) {
     write("BIO::remote_action($gb_main");
-    write_quoted_param(app_id);
-    write(','); GBS_fwrite_string(action_name, out);
+    write(','); write_as_perl_string(app_id);
+    write(','); write_as_perl_string(action_name);
     write(");\n");
     flush();
 }
 void RecordingMacro::write_awar_change(const char *app_id, const char *awar_name, const char *content) {
     write("BIO::remote_awar($gb_main");
-    write_quoted_param(app_id);
-    write(','); GBS_fwrite_string(awar_name, out);
-    write(','); GBS_fwrite_string(content, out);
+    write(','); write_as_perl_string(app_id);
+    write(','); write_as_perl_string(awar_name);
+    write(','); write_as_perl_string(content);
     write(");\n");
     flush();
 }
