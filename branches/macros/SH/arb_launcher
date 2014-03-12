@@ -25,7 +25,7 @@ send_to_launcher() {
 pipe_command() {
     local NAMED_PIPE=$1; shift
     local CMD=$1; shift
-    local LOGDIR=$1; shift
+    local LOGDIR=${1:-}; shift # LOGDIR may be empty/undef -> dont signal crash
 
     trace "Starting '$CMD'.."
     local ERROR=0
@@ -33,7 +33,9 @@ pipe_command() {
 
     if [ $ERROR == 1 ]; then
         trace "'$CMD' has terminated with error"
-        touch $LOGDIR/crashed
+        if [ -n "$LOGDIR" ]; then
+            touch $LOGDIR/crashed
+        fi
     else
         trace "'$CMD' has terminated with success"
     fi
@@ -53,7 +55,7 @@ read_line() {
 
 listen_pipe_unlogged() {
     local NAMED_PIPE=$1; shift
-    local LOGDIR=$1; shift
+    local LOGDIR=${1:-}; shift # LOGDIR may be empty/undef -> dont log 
     local RUNNING=1
     local STARTED=0
     # RUNNING is set to 1 (otherwise listen_pipe would terminate instantly)
@@ -148,61 +150,67 @@ listen_pipe() {
     # wrapper performs ARB session logging
     local NAMED_PIPE=$1
 
-    local LOGBASE=$ARB_PROP/logs
-    local LOGDIRID=`date '+%Y%m%d_%H%M%S'`.$$
-    local LOGDIR=$LOGBASE/$LOGDIRID
-    local NTREE_CRASHED=0
+    if [ -z ${ARB_PROP:-} ]; then
+        # should never come here, if arb has been started via script 'arb'
+        # (e.g. happens when arb_ntree was started from debugger and then 'start second database' has been called)
+        listen_pipe_unlogged $NAMED_PIPE
+    else
+        local LOGBASE=$ARB_PROP/logs
+        local LOGDIRID=`date '+%Y%m%d_%H%M%S'`.$$
+        local LOGDIR=$LOGBASE/$LOGDIRID
+        local NTREE_CRASHED=0
 
-    mkdir -p $LOGDIR
+        mkdir -p $LOGDIR
 
-    if [ -d "$LOGDIR" ]; then
-        local RUNLOG=$LOGDIR/run.log
-        local SYSLOG=$LOGDIR/sys.info
-        local CRASHFLAG=$LOGDIR/crashed
+        if [ -d "$LOGDIR" ]; then
+            local RUNLOG=$LOGDIR/run.log
+            local SYSLOG=$LOGDIR/sys.info
+            local CRASHFLAG=$LOGDIR/crashed
 
-        ( ( collect_system_information 2>&1 ) > $SYSLOG ; erase_old_logs $LOGBASE ) &
-        ( listen_pipe_unlogged $NAMED_PIPE $LOGDIR ) 2>&1 | tee $RUNLOG
+            ( ( collect_system_information 2>&1 ) > $SYSLOG ; erase_old_logs $LOGBASE ) &
+            ( listen_pipe_unlogged $NAMED_PIPE $LOGDIR ) 2>&1 | tee $RUNLOG
 
-        if [ -e $CRASHFLAG ]; then
+            if [ -e $CRASHFLAG ]; then
             # only detects crashes of arb_ntree
             # (client are not started via arb_launcher and they usually crash when server exits)
-            NTREE_CRASHED=1
-        fi
+                NTREE_CRASHED=1
+            fi
 
-        local TARBALLNAME=session.$LOGDIRID.tgz
-        ( cd $LOGBASE ; tar -zcf $TARBALLNAME $LOGDIRID )
-        rm $RUNLOG $SYSLOG $CRASHFLAG
-        rmdir $LOGDIR
+            local TARBALLNAME=session.$LOGDIRID.tgz
+            ( cd $LOGBASE ; tar -zcf $TARBALLNAME $LOGDIRID )
+            rm -f $RUNLOG $SYSLOG $CRASHFLAG
+            rmdir $LOGDIR
 
-        local FULLTARBALL=$LOGBASE/$TARBALLNAME
-        echo ""
-        echo "Session log has been stored in $FULLTARBALL"
+            local FULLTARBALL=$LOGBASE/$TARBALLNAME
+            echo ""
+            echo "Session log has been stored in $FULLTARBALL"
 
-        local LATESTLINK=~/ARB_last_session.tgz
-        if [ -h $LATESTLINK ]; then
-            rm $LATESTLINK
-        fi
-        if [ -e $LATESTLINK ]; then
-            echo "$LATESTLINK already exists and is no symlink"
+            local LATESTLINK=~/ARB_last_session.tgz
+            if [ -h $LATESTLINK ]; then
+                rm $LATESTLINK
+            fi
+            if [ -e $LATESTLINK ]; then
+                echo "$LATESTLINK already exists and is no symlink"
+            else
+                (cd ~; ln -s $FULLTARBALL $LATESTLINK )
+                echo "    and is also accessible via $LATESTLINK"
+            fi
+
+            if [ $NTREE_CRASHED == 1 ]; then
+                echo ""
+                echo "ARB crashed :-("
+                echo "To report this goto http://bugs.arb-home.de/wiki/BugReport"
+                echo "Please include the session log mentioned above"
+                echo ""
+                echo "[press ENTER]"
+                read A
+            fi
+
+            true
         else
-            (cd ~; ln -s $FULLTARBALL $LATESTLINK )
-            echo "    and is also accessible via $LATESTLINK"
+            echo "Error creating directory '$LOGDIR'"
+            false
         fi
-
-        if [ $NTREE_CRASHED == 1 ]; then
-            echo ""
-            echo "ARB crashed :-("
-            echo "To report this goto http://bugs.arb-home.de/wiki/BugReport"
-            echo "Please include the session log mentioned above"
-            echo ""
-            echo "[press ENTER]"
-            read A
-        fi
-
-        true
-    else
-        echo "Error creating directory '$LOGDIR'"
-        false
     fi
 }
 
