@@ -46,7 +46,7 @@ my @reg_Weffpp = (
                   qr/\sshould\sbe\sinitialized\sin\sthe\smember\sinitialization\slist/,
                   qr/boost::icl::(insert|add)_iterator<ContainerT>.*should\sreturn/, # filter boost-iterator postfix operators warnings
                   qr/^\s\sbut\sdoes\snot\soverride/, # belongs to reg_Weffpp_copyable
-                  qr/^\s\sor\s'operator=/, # belongs to reg_Weffpp_copyable
+                  qr/^\s\sor\s\'operator=/, # belongs to reg_Weffpp_copyable
                  );
 
 my $filter_Weffpp_copyable = 0; # 1 = filter copy-ctor/op=-warning, 0 = check for Noncopyable and warn
@@ -198,6 +198,8 @@ sub store_shadow($\@) {
   $shadow_warning = $warn;
 }
 
+my $last_pushed_related = 0;
+
 sub push_loc_and_related($$\@\@) {
   my ($location_info,$message,$related_r,$out_r) = @_;
   if (defined $location_info) {
@@ -205,7 +207,17 @@ sub push_loc_and_related($$\@\@) {
     $location_info = undef;
   }
   push @$out_r, $message;
+  $last_pushed_related = scalar(@$related_r);
   foreach (@$related_r) { push @$out_r, $_; }
+}
+
+sub drop_last_pushed_relateds(\@) {
+  my ($out_r) = @_;
+  if ($last_pushed_related>0) {
+    my $before_related = scalar(@$out_r) - $last_pushed_related - 1;
+    $before_related>0 || die "impossible";
+    @$out_r = @$out_r[0 .. $before_related];
+  }
 }
 
 sub included_from_here($) {
@@ -243,7 +255,7 @@ sub parse_input(\@) {
   my $is_error          = 0;
   my $curr_out_r = \@warnout;
 
- LINE: while (defined($_=<>)) {
+ LINE: while (defined($_=<STDIN>)) {
     chomp;
     my $filter_current = 0;
 
@@ -311,7 +323,11 @@ sub parse_input(\@) {
         if ($did_show_previous==0) {
           $_ = suppress($_,@warnout);
         }
-        #else display normally
+        else {
+          if ($msg =~ /in\sexpansion\sof\smacro/o) {
+            drop_last_pushed_relateds(@$curr_out_r);
+          }
+        }
       }
     }
     elsif ($_ =~ $reg_location or $_ =~ $reg_location2) {
@@ -382,7 +398,7 @@ sub main() {
 
   eval {
     if ($pass_through==1) {
-      while (defined($_=<>)) { print $_; }
+      while (defined($_=<STDIN>)) { print $_; }
     }
     else {
       my @out = ();

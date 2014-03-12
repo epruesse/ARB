@@ -65,6 +65,24 @@ static void awt_exec_macro_cb(AW_window *aww) {
     }
 }
 
+static void awt_exec_macro_with_cb(AW_window *aww) {
+    AW_root *awr       = aww->get_root();
+    char    *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
+
+    char *with_all_parametrized = NULL;
+    {
+        const char *with_all_marked = GB_path_in_ARBHOME("PERL_SCRIPTS/MACROS/with_all_marked.pl");
+        with_all_parametrized       = GBS_global_string_copy("%s %s", with_all_marked, macroName);
+    }
+
+    GB_ERROR error = getMacroRecorder(awr)->execute(with_all_parametrized, macro_execution_finished, (AW_CL)macroName);
+    if (error) {
+        aw_message(error);
+        free(macroName); // only free in error-case (see macro_execution_finished)
+    }
+    free(with_all_parametrized);
+}
+
 inline void update_macro_record_button(AW_root *awr) {
     awr->awar(AWAR_MACRO_RECORDING_MACRO_TEXT)->write_string(awr->is_tracking() ? "STOP" : "RECORD");
 }
@@ -165,6 +183,9 @@ static void awt_popup_macro_window(AW_window *aww) {
 
         aws->at("delete"); aws->callback(awt_delete_macro_cb);
         aws->create_button("DELETE", "DELETE");
+
+        aws->at("execWith"); aws->callback(awt_exec_macro_with_cb);
+        aws->create_autosize_button("EXECUTE_WITH_MARKED", "Execute with each marked species");
 
         AW_create_fileselection(aws, AWAR_MACRO_BASE, "", "ARBMACROHOME^ARBMACRO");
     }
