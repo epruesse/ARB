@@ -10,6 +10,7 @@
 // ============================================================= //
 
 #include "macros.hxx"
+#include "macros_local.hxx"
 #include "trackers.hxx"
 
 #include <arbdb.h>
@@ -24,10 +25,6 @@
 #include <ad_cb.h>
 
 #define ma_assert(bed) arb_assert(bed)
-
-#define MACRO_RECORD_ID          "macro_record"
-#define MACRO_PLAYBACK_ID        "macro_playback"
-#define MACRO_PLAYBACK_MARKED_ID "macro_playback_with_marked"
 
 #define AWAR_MACRO_BASE "tmp/macro"
 
@@ -160,7 +157,7 @@ static void popup_macro_window(AW_window *aww) {
         AW_root *aw_root = aww->get_root();
 
         aws = new AW_window_simple;
-        aws->init(aw_root, "MACROS", "MACROS");
+        aws->init(aw_root, MACRO_WINDOW_ID, "MACROS");
         aws->load_xfig("macro_select.fig");
 
         create_macro_variables(aw_root);
@@ -177,14 +174,11 @@ static void popup_macro_window(AW_window *aww) {
         aws->at("expand"); aws->create_toggle(AWAR_MACRO_RECORDING_EXPAND);
         aws->at("runb4");  aws->create_toggle(AWAR_MACRO_RECORDING_RUNB4);
 
+        aws->at("edit");   aws->callback(edit_macro_cb);   aws->create_button("EDIT",   "EDIT");
+        aws->at("delete"); aws->callback(delete_macro_cb); aws->create_button("DELETE", "DELETE");
+
         aws->at("exec"); aws->callback(awt_exec_macro_cb);
         aws->create_button(MACRO_PLAYBACK_ID, "EXECUTE");
-
-        aws->at("edit"); aws->callback(edit_macro_cb);
-        aws->create_button("EDIT", "EDIT");
-
-        aws->at("delete"); aws->callback(delete_macro_cb);
-        aws->create_button("DELETE", "DELETE");
 
         aws->at("execWith"); aws->callback(awt_exec_macro_with_cb);
         aws->create_autosize_button(MACRO_PLAYBACK_MARKED_ID, "Execute with each marked species");
@@ -208,6 +202,8 @@ inline char *find_macro_in(const char *dir, const char *macroname) {
 }
 
 void execute_macro(AW_root *root, const char *macroname) {
+    // used to execute macro passed via CLI
+
     char *fullname          = find_macro_in(GB_getenvARBMACROHOME(), macroname);
     if (!fullname) fullname = find_macro_in(GB_getenvARBMACRO(), macroname);
 

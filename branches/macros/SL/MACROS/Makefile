@@ -66,6 +66,7 @@ dbserver.o: $(ARBHOME)/INCLUDE/test_global.h
 dbserver.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 macro_gui.o: macros.hxx
+macro_gui.o: macros_local.hxx
 macro_gui.o: trackers.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/ad_cb.h
 macro_gui.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
