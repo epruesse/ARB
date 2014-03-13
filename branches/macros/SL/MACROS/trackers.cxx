@@ -208,14 +208,14 @@ static void macro_terminated(GBDATA *gb_terminated, GB_CB_TYPE IF_ASSERTION_USED
 
 static void dont_announce_done(AW_root*, AW_CL) {}
 
-GB_ERROR MacroRecorder::execute(const char *file, AW_RCB1 execution_done_cb, AW_CL client_data) {
+GB_ERROR MacroRecorder::execute(const char *macroFile, MacroExecStyle style, AW_RCB1 execution_done_cb, AW_CL client_data) {
     GB_ERROR  error = NULL;
-    char     *path;
-    if (file[0] == '/') {
-        path = strdup(file);
+    char     *fullMacroFile;
+    if (macroFile[0] == '/') {
+        fullMacroFile = strdup(macroFile);
     }
     else {
-        path = GBS_global_string_copy("%s/%s", GB_getenvARBMACROHOME(), file);
+        fullMacroFile = GBS_global_string_copy("%s/%s", GB_getenvARBMACROHOME(), macroFile);
     }
 
     {
@@ -239,13 +239,31 @@ GB_ERROR MacroRecorder::execute(const char *file, AW_RCB1 execution_done_cb, AW_
         if (!execution_done_cb) execution_done_cb = dont_announce_done;
         ExecutingMacro::add(execution_done_cb, client_data);
 
-        const char *com = GBS_global_string("perl %s &", path);
+        char *perl_args = NULL;
+        switch (style) {
+            case MES_SIMPLE:
+                perl_args = strdup(fullMacroFile);
+                break;
+
+            case MES_WITH_EACH_MARKED: {
+                const char *with_all_marked = GB_path_in_ARBHOME("PERL_SCRIPTS/MACROS/with_all_marked.pl");
+                perl_args = GBS_global_string_copy("%s %s", with_all_marked, fullMacroFile);
+                break;
+            }
+        }
+        ma_assert(perl_args);
+
+        const char *com = GBS_global_string("perl %s &", perl_args);
         printf("[Action '%s']\n", com);
         if (system(com)) { // async(!) call to macro
             aw_message(GBS_global_string("Calling '%s' failed", com));
         }
-        free(path);
+
+        free(perl_args);
     }
+
+    free(fullMacroFile);
+
     return error;
 }
 

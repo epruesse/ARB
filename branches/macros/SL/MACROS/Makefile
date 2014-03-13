@@ -32,6 +32,7 @@ depend.init:
 
 dbserver.o: dbserver.hxx
 dbserver.o: macros.hxx
+dbserver.o: macros_local.hxx
 dbserver.o: trackers.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/ad_prot.h
 dbserver.o: $(ARBHOME)/INCLUDE/ad_remote.h
@@ -139,6 +140,7 @@ recmac.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 trackers.o: dbserver.hxx
 trackers.o: macros.hxx
+trackers.o: macros_local.hxx
 trackers.o: recmac.hxx
 trackers.o: trackers.hxx
 trackers.o: $(ARBHOME)/INCLUDE/ad_cb.h

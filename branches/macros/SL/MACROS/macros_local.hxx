@@ -17,6 +17,11 @@
 #define MACRO_PLAYBACK_ID        "macro_playback"
 #define MACRO_PLAYBACK_MARKED_ID "macro_playback_with_marked"
 
+enum MacroExecStyle {
+    MES_SIMPLE,
+    MES_WITH_EACH_MARKED,
+};
+
 #else
 #error macros_local.hxx included twice
 #endif // MACROS_LOCAL_HXX
