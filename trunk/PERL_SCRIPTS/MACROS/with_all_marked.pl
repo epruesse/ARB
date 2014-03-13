@@ -48,8 +48,8 @@ sub exec_macro_with_species($$$$) {
   selectSpecies($gb_main,'');
 }
 
-sub collectMarked($\%) {
-  my ($gb_main,$collection_r) = @_;
+sub collectMarked($\@\%) {
+  my ($gb_main,$name_r,$gbdata_r) = @_;
 
   dieOnError(ARB::begin_transaction($gb_main), 'begin_transaction');
 
@@ -58,7 +58,8 @@ sub collectMarked($\%) {
        $gb_species = BIO::next_marked_species($gb_species)) {
     my $species_name = BIO::read_string($gb_species, "name");
     $species_name || expectError('read_string');
-    $$collection_r{$species_name} = $gb_species;
+    push @$name_r, $species_name;
+    $$gbdata_r{$species_name} = $gb_species;
   }
 
   ARB::commit_transaction($gb_main);
@@ -104,22 +105,22 @@ sub execMacroWith() {
     }
 
     my $restoreMarked = 1;
-    my %collected = (); # key = name; value = GBDATA(species)
 
-    collectMarked($gb_main,%collected);
+    my %gb_species = (); # key = name; value = GBDATA(species)
+    my @names      = (); # contains names of %gb_species (in DB order)
+
+    collectMarked($gb_main,@names,%gb_species);
 
     # perform loop with collected species:
-    my @collected = keys %collected;
-    my $count = scalar(@collected);
-
+    my $count = scalar(@names);
     if ($count<1) { die "No marked species - nothing to do\n"; }
 
     eval {
       if ($count>0) {
         print "Executing '$macro' with $count species:\n";
         for (my $c=0; $c<$count; ++$c) {
-          my $species = $collected[$c];
-          my $gb_species = $collected{$species};
+          my $species = $names[$c];
+          my $gb_species = $gb_species{$species};
           print "- with '$species' ".($c+1)."/$count (".(int(($c+1)*10000/$count)/100)."%)\n";
           exec_macro_with_species($gb_main,$gb_species,$species,$macro);
         }
@@ -134,8 +135,8 @@ sub execMacroWith() {
       dieOnError(ARB::begin_transaction($gb_main), 'begin_transaction');
       BIO::mark_all($gb_main, 0); # unmark all
       for (my $c=0; $c<$count; ++$c) {
-        my $species = $collected[$c];
-        my $gb_species = $collected{$species};
+        my $species = $names[$c];
+        my $gb_species = $gb_species{$species};
         ARB::write_flag($gb_species, 1);
       }
       ARB::commit_transaction($gb_main);
