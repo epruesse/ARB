@@ -209,7 +209,7 @@ inline char *modifies_awar(const char *line, char *& app_id) {
 
 inline bool opens_macro_dialog(const char *line) {
     // return true, if the macro-command in 'line' opens the macro dialog
-    return strcmp(line, "BIO::remote_action($gb_main,\"ARB_NT\",\"macros\");") == 0;
+    return strcmp(line, "BIO::remote_action($gb_main,\'ARB_NT\',\'macros\');") == 0;
 }
 inline bool is_end_of_macro(const char *line) {
     // return true, if the macro-command in 'line' belongs to code at end (of any macro)
