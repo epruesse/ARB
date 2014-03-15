@@ -179,30 +179,17 @@ void insert_macro_menu_entry(AW_window *awm, bool prepend_separator) {
     }
 }
 
-inline char *find_macro_in(const char *dir, const char *macroname) {
-    char *full = GBS_global_string_copy("%s/%s.amc", dir, macroname);
-    if (!GB_is_readablefile(full)) freenull(full);
-    return full;
-}
-
 void execute_macro(AW_root *root, const char *macroname) {
     // used to execute macro passed via CLI
-
-    char *fullname          = find_macro_in(GB_getenvARBMACROHOME(), macroname);
-    if (!fullname) fullname = find_macro_in(GB_getenvARBMACRO(), macroname);
-
-    GB_ERROR error       = 0;
-    if (!fullname) error = "file not found";
-    else {
-        // @@@ allow macro playback from client (using server via AWAR)
+    GB_ERROR error = 0;
+    {
+        // @@@ allow macro playback from client? (using server via AWAR)
         MacroRecorder *recorder = getMacroRecorder(root);
         if (!recorder) error    = "macro playback only available in server";
-        else           error    = recorder->execute(fullname, MES_SIMPLE, NULL, 0);
+        else           error    = recorder->execute(macroname, MES_SIMPLE, NULL, 0);
     }
 
     if (error) {
         aw_message(GBS_global_string("Can't execute macro '%s' (Reason: %s)", macroname, error));
     }
-
-    free(fullname);
 }
