@@ -52,10 +52,10 @@ static void macro_execution_finished(AW_root *awr, AW_CL cl_macroName) {
     free(macroName);
 }
 
-static void exec_macro_cb(AW_window *aww, MacroExecStyle style) {
+static void exec_macro_cb(AW_window *aww, bool loop_marked) {
     AW_root  *awr       = aww->get_root();
     char     *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE); // @@@ instead use function returning plain name w/o dir
-    GB_ERROR  error     = getMacroRecorder(awr)->execute(macroName, style, macro_execution_finished, (AW_CL)macroName);
+    GB_ERROR  error     = getMacroRecorder(awr)->execute(macroName, loop_marked, macro_execution_finished, (AW_CL)macroName);
     if (error) {
         aw_message(error);
         free(macroName); // only free in error-case (see macro_execution_finished)
@@ -82,7 +82,7 @@ static void start_macro_cb(AW_window *aww) {
             error = "Please specify name of macro to record";
         }
         else {
-            if (runb4) exec_macro_cb(aww, MES_SIMPLE);
+            if (runb4) exec_macro_cb(aww, false);
 
             char *sac = GBS_global_string_copy("%s/%s", aww->window_defaults_name, MACRO_RECORD_ID);
             error = getMacroRecorder(awr)->start_recording(macroName, sac, expand);
@@ -158,11 +158,11 @@ static void popup_macro_window(AW_window *aww) {
         aws->at("delete"); aws->callback(delete_macro_cb); aws->create_button("DELETE", "DELETE");
 
         aws->at("exec");
-        aws->callback(makeWindowCallback(exec_macro_cb, MES_SIMPLE));
+        aws->callback(makeWindowCallback(exec_macro_cb, false));
         aws->create_button(MACRO_PLAYBACK_ID, "EXECUTE");
 
         aws->at("execWith");
-        aws->callback(makeWindowCallback(exec_macro_cb, MES_WITH_EACH_MARKED));
+        aws->callback(makeWindowCallback(exec_macro_cb, true));
         aws->create_autosize_button(MACRO_PLAYBACK_MARKED_ID, "Execute with each marked species");
 
         AW_create_fileselection(aws, AWAR_MACRO_BASE, "", "ARBMACROHOME^ARBMACRO");
@@ -184,7 +184,7 @@ void execute_macro(AW_root *root, const char *macroname) {
         // @@@ allow macro playback from client? (using server via AWAR)
         MacroRecorder *recorder = getMacroRecorder(root);
         if (!recorder) error    = "macro playback only available in server";
-        else           error    = recorder->execute(macroname, MES_SIMPLE, NULL, 0);
+        else           error    = recorder->execute(macroname, false, NULL, 0);
     }
 
     if (error) {

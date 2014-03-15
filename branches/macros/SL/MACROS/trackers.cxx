@@ -208,7 +208,7 @@ static void macro_terminated(GBDATA *gb_terminated, GB_CB_TYPE IF_ASSERTION_USED
 
 static void dont_announce_done(AW_root*, AW_CL) {}
 
-GB_ERROR MacroRecorder::execute(const char *macroFile, MacroExecStyle style, AW_RCB1 execution_done_cb, AW_CL client_data) {
+GB_ERROR MacroRecorder::execute(const char *macroFile, bool loop_marked, AW_RCB1 execution_done_cb, AW_CL client_data) {
     GB_ERROR  error = NULL;
     {
         GBDATA         *gb_main = get_gbmain();
@@ -231,7 +231,7 @@ GB_ERROR MacroRecorder::execute(const char *macroFile, MacroExecStyle style, AW_
         if (!execution_done_cb) execution_done_cb = dont_announce_done;
         ExecutingMacro::add(execution_done_cb, client_data);
 
-        error = GBT_macro_execute(macroFile, style == MES_WITH_EACH_MARKED, true);
+        error = GBT_macro_execute(macroFile, loop_marked, true);
     }
 
     return error;

@@ -110,23 +110,18 @@ void RecordingMacro::write_action(const char *app_id, const char *action_name) {
         static int  MACRO_START_LEN = strlen(MACRO_ACTION_START);
         const char *sub_action      = action_name+MACRO_START_LEN;
 
-        MacroExecStyle NO_STYLE = MacroExecStyle(-1);
-        MacroExecStyle style    = NO_STYLE;
+        int playbackType = 0;
+        if      (strcmp(sub_action, MACRO_PLAYBACK_ID)        == 0) playbackType = 1;
+        else if (strcmp(sub_action, MACRO_PLAYBACK_MARKED_ID) == 0) playbackType = 2;
 
-        if      (strcmp(sub_action, MACRO_PLAYBACK_ID)        == 0) style = MES_SIMPLE;
-        else if (strcmp(sub_action, MACRO_PLAYBACK_MARKED_ID) == 0) style = MES_WITH_EACH_MARKED;
-
-        if (style != NO_STYLE) {
+        if (playbackType) {
             char       *macroFullname = AW_get_selected_fullname(AW_root::SINGLETON, AWAR_MACRO_BASE);
             const char *macroName     = GBT_relativeMacroname(macroFullname); // points into macroFullname
 
             write("BIO::macro_execute(");
             write_as_perl_string(macroName); // use relative macro name (allows to share macros between users)
             write(", ");
-            switch (style) {
-                case MES_SIMPLE:           write('0'); break;
-                case MES_WITH_EACH_MARKED: write('1'); break;
-            }
+            write('0'+(playbackType-1));
             write(", 0);\n"); // never run asynchronously (otherwise (rest of) current and called macro will interfere)
             flush();
 

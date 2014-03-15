@@ -19,11 +19,6 @@
 
 #define AWAR_MACRO_BASE "tmp/macro"
 
-enum MacroExecStyle {
-    MES_SIMPLE,
-    MES_WITH_EACH_MARKED,
-};
-
 #else
 #error macros_local.hxx included twice
 #endif // MACROS_LOCAL_HXX
