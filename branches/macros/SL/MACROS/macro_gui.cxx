@@ -26,8 +26,6 @@
 
 #define ma_assert(bed) arb_assert(bed)
 
-#define AWAR_MACRO_BASE "tmp/macro"
-
 #define AWAR_MACRO_RECORDING_MACRO_TEXT AWAR_MACRO_BASE"/button_label"
 #define AWAR_MACRO_RECORDING_EXPAND     AWAR_MACRO_BASE"/expand"
 #define AWAR_MACRO_RECORDING_RUNB4      AWAR_MACRO_BASE"/runb4"

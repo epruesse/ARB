@@ -17,6 +17,8 @@
 #define MACRO_PLAYBACK_ID        "macro_playback"
 #define MACRO_PLAYBACK_MARKED_ID "macro_playback_with_marked"
 
+#define AWAR_MACRO_BASE "tmp/macro"
+
 enum MacroExecStyle {
     MES_SIMPLE,
     MES_WITH_EACH_MARKED,

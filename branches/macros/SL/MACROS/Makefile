@@ -104,6 +104,7 @@ macro_gui.o: $(ARBHOME)/INCLUDE/static_assert.h
 macro_gui.o: $(ARBHOME)/INCLUDE/test_global.h
 macro_gui.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+recmac.o: macros_local.hxx
 recmac.o: recmac.hxx
 recmac.o: $(ARBHOME)/INCLUDE/ad_prot.h
 recmac.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -114,6 +115,7 @@ recmac.o: $(ARBHOME)/INCLUDE/arb_diff.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_error.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_file.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_msg.h
+recmac.o: $(ARBHOME)/INCLUDE/arb_str.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_string.h
 recmac.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -123,7 +125,9 @@ recmac.o: $(ARBHOME)/INCLUDE/arbtools.h
 recmac.o: $(ARBHOME)/INCLUDE/attributes.h
 recmac.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+recmac.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+recmac.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 recmac.o: $(ARBHOME)/INCLUDE/cb.h
 recmac.o: $(ARBHOME)/INCLUDE/cb_base.h
 recmac.o: $(ARBHOME)/INCLUDE/cbtypes.h

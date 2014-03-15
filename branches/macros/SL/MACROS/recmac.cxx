@@ -10,6 +10,7 @@
 // ============================================================= //
 
 #include "recmac.hxx"
+#include "macros_local.hxx"
 
 #include <arbdbt.h>
 
@@ -17,10 +18,13 @@
 #include <arb_defs.h>
 #include <arb_diff.h>
 #include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 #include <FileContent.h>
 
 #include <cctype>
+#include <arb_str.h>
+#include <aw_file.hxx>
 
 void warn_unrecordable(const char *what) {
     aw_message(GBS_global_string("could not record %s", what));
@@ -97,10 +101,48 @@ void RecordingMacro::write_as_perl_string(const char *value) const {
 }
 
 void RecordingMacro::write_action(const char *app_id, const char *action_name) {
-    write("BIO::remote_action($gb_main");
-    write(','); write_as_perl_string(app_id);
-    write(','); write_as_perl_string(action_name);
-    write(");\n");
+    bool handled = false;
+
+    // Recording "macro-execution" as GUI-clicks caused multiple macros running asynchronously (see #455)
+    // Instead of recording GUI-clicks, macros are called directly:
+    static const char *MACRO_ACTION_START = MACRO_WINDOW_ID "/";
+    if (ARB_strBeginsWith(action_name, MACRO_ACTION_START)) {
+        static int  MACRO_START_LEN = strlen(MACRO_ACTION_START);
+        const char *sub_action      = action_name+MACRO_START_LEN;
+
+        MacroExecStyle NO_STYLE = MacroExecStyle(-1);
+        MacroExecStyle style    = NO_STYLE;
+
+        if      (strcmp(sub_action, MACRO_PLAYBACK_ID)        == 0) style = MES_SIMPLE;
+        else if (strcmp(sub_action, MACRO_PLAYBACK_MARKED_ID) == 0) style = MES_WITH_EACH_MARKED;
+
+        if (style != NO_STYLE) {
+            char       *macroFullname = AW_get_selected_fullname(AW_root::SINGLETON, AWAR_MACRO_BASE);
+            const char *macroName     = GBT_relativeMacroname(macroFullname); // points into macroFullname
+
+            write("BIO::macro_execute(");
+            write_as_perl_string(macroName); // use relative macro name (allows to share macros between users)
+            write(", ");
+            switch (style) {
+                case MES_SIMPLE:           write('0'); break;
+                case MES_WITH_EACH_MARKED: write('1'); break;
+            }
+            write(", 0);\n"); // never run asynchronously (otherwise (rest of) current and called macro will interfere)
+            flush();
+
+            free(macroFullname);
+
+            handled = true;
+        }
+    }
+
+    // otherwise "normal" operation (=trigger GUI element)
+    if (!handled) {
+        write("BIO::remote_action($gb_main");
+        write(','); write_as_perl_string(app_id);
+        write(','); write_as_perl_string(action_name);
+        write(");\n");
+    }
     flush();
 }
 void RecordingMacro::write_awar_change(const char *app_id, const char *awar_name, const char *content) {
