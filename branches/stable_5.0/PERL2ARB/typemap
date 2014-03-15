@@ -1,4 +1,0 @@
-TYPEMAP
-GBDATA * T_PTROBJ
-uint32_t T_U_LONG
-
