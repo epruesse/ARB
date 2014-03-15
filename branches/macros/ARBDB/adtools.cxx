@@ -911,10 +911,10 @@ GB_ERROR GBT_macro_execute(const char *macro_name, bool loop_marked, bool run_as
         char *perl_args = NULL;
         if (loop_marked) {
             const char *with_all_marked = GB_path_in_ARBHOME("PERL_SCRIPTS/MACROS/with_all_marked.pl");
-            perl_args = GBS_global_string_copy("%s %s", with_all_marked, fullMacro);
+            perl_args = GBS_global_string_copy("'%s' '%s'", with_all_marked, fullMacro);
         }
         else {
-            reassign(perl_args, fullMacro);
+            perl_args = GBS_global_string_copy("'%s'", fullMacro);
         }
 
         char *cmd = GBS_global_string_copy("perl %s %s", perl_args, run_async ? "&" : "");
