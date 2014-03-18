@@ -13,7 +13,7 @@ ifndef ARB
 # original compilation
 
 CC = gcc #cc
-CFLAGS = -O4 -fomit-frame-pointer -Wall -static
+CFLAGS = -O4 -fomit-frame-pointer -Wall
 # CFLAGS = -Wall
 # CFLAGS = -g -Wall
 # CFLAGS = -pg -Wall -fprofile-arcs -static

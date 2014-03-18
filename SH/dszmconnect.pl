@@ -20,7 +20,7 @@ use LWP::Simple;
 use HTTP::Request::Common qw(POST);
 use LWP::UserAgent;
 
-
+use File::Temp qw/ tempfile tempdir /;
 
 
 
@@ -51,9 +51,12 @@ Last modified: Mon Sep  8 14:25:42 CEST 2003
   </body>
 </html>";
 
+my $TMPOUT;
+my $template = 'arbdsmz_XXXXXX';
+(undef, $TMPOUT) = tempfile($template, OPEN => 0);
+$TMPOUT = $TMPOUT . ".html";
 
-
-open (OUTPUT , "> /tmp/arbdsmz.html") or die "cannot open input file /tmp/arbdsmz.html";
+open (OUTPUT , "> $TMPOUT") or die "cannot open temporary input file $TMPOUT";
 
 if (scalar(@ARGV) == 0)
   {print OUTPUT $errordocument;
@@ -86,7 +89,10 @@ print STDERR "Searching for '$item2'\n";
  $req_selection->content($selection_content);
 
  # Pass request to the user agent and get a response back
- my $res_selection = $ua_selection -> request($req_selection, '/tmp/arbdsmz.htm');
+ my $TMPUSEROUT;
+ (undef, $TMPUSEROUT) = tempfile($template, OPEN => 0);
+ $TMPUSEROUT = $TMPUSEROUT . ".htm";
+ my $res_selection = $ua_selection -> request($req_selection, $TMPUSEROUT);
 
 
 
@@ -95,7 +101,7 @@ print STDERR "Searching for '$item2'\n";
  else  {die "Bad luck this time, request failed\n";};
 
 
-open (INPUT , "< /tmp/arbdsmz.htm") or die "cannot open input file /tmp/arbdsmz.htm";
+open (INPUT , "< $TMPUSEROUT") or die "cannot open input file $TMPUSEROUT";
 
 
  my $htmlcontent;
@@ -111,7 +117,7 @@ $htmlcontent =~ s{HREF=[^"]}{HREF=http://www.dsmz.de/}igm; ##"
 
 print OUTPUT $htmlcontent ;
 
-#exec ('netscape', '/tmp/arbdsmz.html');
-print "file:///tmp/arbdsmz.html";
+#exec ('netscape', $TMPOUT);
+print "file://" . $TMPOUT;
 
 ##print "$htmlcontent\n";

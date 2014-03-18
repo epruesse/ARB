@@ -760,7 +760,7 @@ GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype)
     return GB_save_as(gb, path, savetype);
 }
 
-static GB_ERROR GB_create_parent_directory(const char *path) {
+GB_ERROR GB_create_parent_directory(const char *path) {
     GB_ERROR error = NULL;
     char *parent;
     GB_split_full_path(path, &parent, NULL, NULL, NULL);

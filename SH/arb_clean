@@ -24,13 +24,13 @@ witheach() {
 }
 
 allpidfiles() {
-    ls /tmp/arb_pids_${USER}_* 2>&1 | grep -v 'No such file'
+    ls ~/.arb_tmp/tmp/arb_pids_${USER}_* 2>&1 | grep -v 'No such file'
 }
 
 # ----------------------------------------
 
 session() {
-    local PIDFILE=/tmp/arb_pids_${USER}_${ARB_PID}
+    local PIDFILE=~/.arb_tmp/tmp/arb_pids_${USER}_${ARB_PID}
     if [ -f $PIDFILE ]; then
         echo $PIDFILE | witheach killandremove
     else
