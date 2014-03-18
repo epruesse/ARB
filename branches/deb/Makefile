@@ -168,6 +168,7 @@ endif
 
 shared_cflags :=# flags for shared lib compilation
 lflags :=# linker flags
+clflags :=# linker flags (when passed through gcc)
 extended_warnings :=# warning flags for C and C++-compiler
 extended_cpp_warnings :=# warning flags for C++-compiler only
 
@@ -178,7 +179,8 @@ ifeq ($(DEBUG),0)
 		cflags := -O3# compiler flags (C and C++)
 	else
 		cflags := -O4# compiler flags (C and C++)
-		lflags += -O99# linker flags
+		lflags += -O2# linker flags
+		clflags += -Wl,-O2# passthrough linker flags
 	endif
 endif
 
@@ -199,6 +201,7 @@ endif
 
 ifeq ($(DARWIN),0)
 	lflags += -g
+	clflags += -Wl,-g
 endif
 
 # control how much you get spammed
@@ -285,7 +288,6 @@ cross_lflags:=
 
 ifeq ($(ARB_64),1)
 	dflags += -DARB_64 #-fPIC 
-	lflags +=
 	shared_cflags += -fPIC
 
 	ifeq ($(BUILDHOST_64),1)
@@ -494,18 +496,19 @@ cxxflags += -std=gnu++0x
 endif
 
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
-LINK_EXECUTABLE := $(A_CXX) $(lflags) $(cdynamic) -o# link executable (c++)
+LINK_EXECUTABLE := $(A_CXX) $(clflags) $(cdynamic) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
 SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(A_CXX) $(lflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
+LINK_SHARED_LIB := $(A_CXX) $(clflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
 # delete variables unused below
 lflags:=
+clflags:=
 
 # other used tools
 MAKEDEPEND_PLAIN = makedepend
