@@ -68,7 +68,7 @@ SECTION What gets recorded?
 
 SECTION Calling submacros
 
-		Macros can call other macros (see BUGS!). To do this simply select the macro you like to call
+		Macros can call other macros. To do this simply select the macro you like to call
 		as submacro and press execute. That will be recorded like any other action.
 
 		Calling submacros is a good way to compose complex macros. 
@@ -87,7 +87,7 @@ EXAMPLES	You can find some examples in $ARBHOME/lib/macros (this directory is re
 
 WARNINGS	None
 
-BUGS		Nested macro execution is broken; it only works as expected if only one macro is called
-                and if that call is the last action in the calling macro; see http://bugs.arb-home.de/ticket/455
+BUGS		None
+
 
 
