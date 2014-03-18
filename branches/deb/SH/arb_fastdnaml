@@ -1,9 +1,11 @@
 #!/bin/sh
-tmp=`mktemp -t arb_fdnaml_XXXXXXXXXX`
+TMPDIR=~/.arb_tmp/tmp
+mkdir -p $TMPDIR
+tmp=$TMPDIR/arb_fdnaml_$$
 mv infile $tmp
 nice -19 $1 < $tmp &
 sig=$!
-/bin/echo "$sig $$ \c" >>/tmp/arb_pids_${USER}_${ARB_PID}
+/bin/echo "$sig $$ \c" >> $TMPDIR/arb_pids_${USER}_${ARB_PID}
 wait
 # echo $tmp not deleted for debugging purposes
 rm -f $tmp

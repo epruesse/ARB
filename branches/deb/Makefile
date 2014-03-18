@@ -2146,7 +2146,7 @@ run_tests: test_base clean_cov
 	$(MAKE) "ARB_PID=UT_$$$$" run_tests_faked_arbpid
 
 cleanup_faked_arbpids:
-	@-rm /tmp/arb_pids_${USER}_${ARB_PID}_*
+	@-rm ~/.arb_tmp/tmp/arb_pids_${USER}_${ARB_PID}_*
 
 cleanup_faked_arbpids_and_fail: cleanup_faked_arbpids
 	@false
