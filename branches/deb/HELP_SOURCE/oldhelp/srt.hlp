@@ -1,0 +1,121 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	reg.hlp
+
+TITLE	Search and Replace Tool (SRT)
+
+
+DESCRIPTION	The String Parser is used to search and replace substrings.
+
+
+OCCURRENCE      TREE/Species/Search:PARSE FIELD
+                TREE/Properties/NDS
+
+
+SECTION         SYNTAX
+
+        'search=replace'	means search all occurrences of 'search'
+				and replace it by 'replace'
+
+	Different search/replace commands can be separated by ':':
+
+        	'search1=replace1:search2=replace2: ... :searchn=replacen'
+
+SECTION SPECIAL CHARACTERS
+
+	Search && Replace string:
+
+		':'                separates two commands
+		'='                separates the search from the replace string
+		'\'                Escape symbol
+		'\\'               the '\' symbol itself
+		'\n'               newline
+		'\t'               tabulator
+		'\:'               ':'
+		'\='               '='
+		'\?'               '?'
+		'\*'               '*'
+
+	Search string:
+
+		'?'                single letter wildcard
+		'*'                multi letter wildcard
+
+	Replace string:
+
+		'?'                a reference to the corresponding single
+                                   letter wildcard in the search string
+                                   (if no digit or '(' follows).
+		'?n'               n = { 1,...,9 }
+                                   a reference to the n'th single letter wildcard
+                                   in the search string
+		'*'                a reference to the corresponding multi
+                                   letter wildcard in the search string
+                                   (no digit or '(' follows).
+		'*n'               n = { 1,...,9 }
+                                   a reference to the n'th multi letter wildcard
+                                   in the search string
+		'*(key)'           the value of a database field named <key>
+                                   if this field does not exits then the string ''
+		'*(key#mystring)'  the value of a database field named <key>
+                                   if this field does not exits then the string 'mystring'
+		'*(key\:nsrt)'     invokes the SRT recursively on the value of the
+                                   database field 'key'
+                                   NOTE: All ':' have to be 'escaped'
+		'*([key]|ACI)'     starts ACI (see LINK{aci.hlp})
+                                   on the value of '[key]' (which may be empty).
+
+
+EXAMPLES
+		'p?r=p?w'
+
+                        replaces all	par to paw
+                                        pbr to pbw
+                                        pcr to pcw ...
+
+		'p??r=p?2?1r'
+
+                        swaps the two letters between p and r
+
+		'a*=b*'
+
+                        replaces only the first 'a' by 'b'
+
+		'?* *=?. *2'
+
+                    Replaces the first word by its first letter + '.'
+
+		'\:=\n'
+
+                        replaces all ':' by <newline>
+
+		'*=* *(key1)'
+
+                     appends the database field <key1>.
+                     if <key1> does not exists append nothing
+
+		'*=* *(key1#no info)'
+
+				appends the database field <key1>
+				if <key1> does not exists append
+				'no info'
+
+		'*=*(key2\: =)'
+
+                            The value of 'key2' with all spaces removed
+
+		'*=*(key2|remove(.-))'
+
+				the value of the database entry 'key2',
+				but all '.' and '-' characters removed
+
+WARNINGS
+		Be careful when search or replace string contain
+		special characters (such as ':'). Avoid to write too
+		complicated commands.
+
+BUGS
+                None
