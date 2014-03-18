@@ -266,12 +266,6 @@ typedef  struct {
 
 void  exit();
 
-#if  ANSI || MALLOC_VOID
-   void *malloc();
-#else
-   char *malloc();
-#endif
-
 #define  Malloc(x)  malloc((unsigned) (x))       /* BSD */
 /* #define  Malloc(x)  malloc((size_t) (x)) */   /* System V */
 

@@ -1255,12 +1255,11 @@ GB_CSTR GB_path_in_arbprop(const char *relative_path) {
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right) {
     return GB_path_in_ARBLIB(GB_concat_path(relative_path_left, anypath_right));
 }
+GB_CSTR GB_path_in_arb_temp(const char *relative_path) {
+    return GB_path_in_HOME(GB_concat_path(".arb_tmp", relative_path));
+}
 
-#ifdef P_tmpdir
-#define GB_PATH_TMP P_tmpdir
-#else
-#define GB_PATH_TMP "/tmp"
-#endif
+#define GB_PATH_TMP GB_path_in_arb_temp("tmp") // = "~/.arb_tmp/tmp" (used wherever '/tmp' was used in the past)
 
 FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_fullname) {
     // fopens a tempfile
@@ -1273,31 +1272,37 @@ FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_full
     // - heap-copy of used filename in 'res_fullname' (if res_fullname != NULL)
     // (even if fopen failed)
 
-    GB_CSTR   file  = GB_concat_path(GB_PATH_TMP, filename);
-    bool      write = strpbrk(fmode, "wa") != 0;
-    GB_ERROR  error = 0;
+    char     *file  = strdup(GB_concat_path(GB_PATH_TMP, filename));
+    GB_ERROR  error = GB_create_parent_directory(file);
+    FILE     *fp    = NULL;
 
-    FILE *fp = fopen(file, fmode);
-    if (fp) {
-        // make file private
-        if (fchmod(fileno(fp), S_IRUSR|S_IWUSR) != 0) {
-            error = GB_IO_error("changing permissions of", file);
+    if (!error) {
+        bool write = strpbrk(fmode, "wa") != 0;
+
+        fp = fopen(file, fmode);
+        if (fp) {
+            // make file private
+            if (fchmod(fileno(fp), S_IRUSR|S_IWUSR) != 0) {
+                error = GB_IO_error("changing permissions of", file);
+            }
         }
-    }
-    else {
-        error = GB_IO_error(GBS_global_string("opening(%s) tempfile", write ? "write" : "read"), file);
-    }
+        else {
+            error = GB_IO_error(GBS_global_string("opening(%s) tempfile", write ? "write" : "read"), file);
+        }
 
-    if (res_fullname) {
-        *res_fullname = file ? strdup(file) : 0;
+        if (res_fullname) {
+            *res_fullname = file ? strdup(file) : 0;
+        }
     }
 
     if (error) {
         // don't care if anything fails here..
         if (fp) { fclose(fp); fp = 0; }
-        if (file) unlink(file); 
+        if (file) unlink(file);
         GB_export_error(error);
     }
+
+    free(file);
 
     return fp;
 }

@@ -85,7 +85,7 @@ ALLOWED_gcc_VERSIONS=\
 	      4.5.2 \
 	4.6.1 4.6.2 4.6.3 \
 	4.7.1 4.7.2 4.7.3 \
-	4.8.0 4.8.1 \
+	4.8.0 4.8.1 4.8.2 4.8.3 \
 
 # supported clang versions:
 ALLOWED_clang_VERSIONS=\
@@ -168,6 +168,7 @@ endif
 
 shared_cflags :=# flags for shared lib compilation
 lflags :=# linker flags
+clflags :=# linker flags (when passed through gcc)
 extended_warnings :=# warning flags for C and C++-compiler
 extended_cpp_warnings :=# warning flags for C++-compiler only
 
@@ -178,8 +179,14 @@ ifeq ($(DEBUG),0)
 		cflags := -O3# compiler flags (C and C++)
 	else
 		cflags := -O4# compiler flags (C and C++)
-		lflags += -O99# linker flags
+		lflags += -O2# linker flags
+		clflags += -Wl,-O2# passthrough linker flags
 	endif
+endif
+
+ifeq ($(DEBIAN),1)
+	lflags += -rpath=/usr/lib/arb/lib -z relro
+	clflags += -Wl,-rpath=/usr/lib/arb/lib -Wl,-z,relro
 endif
 
 ifeq ($(DEBUG),1)
@@ -199,6 +206,7 @@ endif
 
 ifeq ($(DARWIN),0)
 	lflags += -g
+	clflags += -Wl,-g
 endif
 
 # control how much you get spammed
@@ -285,7 +293,6 @@ cross_lflags:=
 
 ifeq ($(ARB_64),1)
 	dflags += -DARB_64 #-fPIC 
-	lflags +=
 	shared_cflags += -fPIC
 
 	ifeq ($(BUILDHOST_64),1)
@@ -378,7 +385,11 @@ endif
 ifeq ($(DARWIN),1)
 	XHOME:=$(PREFIX)
 else
+ ifeq ($(DEBIAN),1)
+	XHOME:=$(PREFIX)
+ else
 	XHOME:=/usr/X11R6
+ endif
 endif
 
 XINCLUDES:=-I$(XHOME)/include
@@ -482,6 +493,12 @@ endif
 cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
 cxxflags := $(extended_cpp_warnings)
 
+# add CFLAGS + CPPFLAGS from environment for DEBIAN build
+ifeq ($(DEBIAN),1)
+	cflags := $(CFLAGS) $(cflags)
+	cxxflags += $(CPPFLAGS)
+endif
+
 ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
 cxxflags += -std=gnu++11# see also TEMPLATES/cxxforward.h@USE_Cxx11
 else
@@ -494,18 +511,19 @@ cxxflags += -std=gnu++0x
 endif
 
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
-LINK_EXECUTABLE := $(A_CXX) $(lflags) $(cdynamic) -o# link executable (c++)
+LINK_EXECUTABLE := $(A_CXX) $(clflags) $(cdynamic) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
 SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(A_CXX) $(lflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
+LINK_SHARED_LIB := $(A_CXX) $(clflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
 # delete variables unused below
 lflags:=
+clflags:=
 
 # other used tools
 MAKEDEPEND_PLAIN = makedepend
@@ -2128,7 +2146,7 @@ run_tests: test_base clean_cov
 	$(MAKE) "ARB_PID=UT_$$$$" run_tests_faked_arbpid
 
 cleanup_faked_arbpids:
-	@-rm /tmp/arb_pids_${USER}_${ARB_PID}_*
+	@-rm ~/.arb_tmp/tmp/arb_pids_${USER}_${ARB_PID}_*
 
 cleanup_faked_arbpids_and_fail: cleanup_faked_arbpids
 	@false
