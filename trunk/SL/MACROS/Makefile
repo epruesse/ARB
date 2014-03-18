@@ -32,6 +32,7 @@ depend.init:
 
 dbserver.o: dbserver.hxx
 dbserver.o: macros.hxx
+dbserver.o: macros_local.hxx
 dbserver.o: trackers.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/ad_prot.h
 dbserver.o: $(ARBHOME)/INCLUDE/ad_remote.h
@@ -66,6 +67,7 @@ dbserver.o: $(ARBHOME)/INCLUDE/test_global.h
 dbserver.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 macro_gui.o: macros.hxx
+macro_gui.o: macros_local.hxx
 macro_gui.o: trackers.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/ad_cb.h
 macro_gui.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
@@ -102,6 +104,7 @@ macro_gui.o: $(ARBHOME)/INCLUDE/static_assert.h
 macro_gui.o: $(ARBHOME)/INCLUDE/test_global.h
 macro_gui.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+recmac.o: macros_local.hxx
 recmac.o: recmac.hxx
 recmac.o: $(ARBHOME)/INCLUDE/ad_prot.h
 recmac.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -112,6 +115,7 @@ recmac.o: $(ARBHOME)/INCLUDE/arb_diff.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_error.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_file.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_msg.h
+recmac.o: $(ARBHOME)/INCLUDE/arb_str.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_string.h
 recmac.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -121,7 +125,9 @@ recmac.o: $(ARBHOME)/INCLUDE/arbtools.h
 recmac.o: $(ARBHOME)/INCLUDE/attributes.h
 recmac.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+recmac.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 recmac.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+recmac.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 recmac.o: $(ARBHOME)/INCLUDE/cb.h
 recmac.o: $(ARBHOME)/INCLUDE/cb_base.h
 recmac.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -138,6 +144,7 @@ recmac.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 trackers.o: dbserver.hxx
 trackers.o: macros.hxx
+trackers.o: macros_local.hxx
 trackers.o: recmac.hxx
 trackers.o: trackers.hxx
 trackers.o: $(ARBHOME)/INCLUDE/ad_cb.h

@@ -10,6 +10,7 @@
 // ============================================================= //
 
 #include "macros.hxx"
+#include "macros_local.hxx"
 #include "trackers.hxx"
 
 #include <arbdb.h>
@@ -25,15 +26,11 @@
 
 #define ma_assert(bed) arb_assert(bed)
 
-#define AWAR_MACRO_RECORD_ID "macro_record"
-
-#define AWAR_MACRO_BASE "tmp/macro"
-
 #define AWAR_MACRO_RECORDING_MACRO_TEXT AWAR_MACRO_BASE"/button_label"
 #define AWAR_MACRO_RECORDING_EXPAND     AWAR_MACRO_BASE"/expand"
 #define AWAR_MACRO_RECORDING_RUNB4      AWAR_MACRO_BASE"/runb4"
 
-static void awt_delete_macro_cb(AW_window *aww) {
+static void delete_macro_cb(AW_window *aww) {
     AW_root *awr       = aww->get_root();
     char    *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
 
@@ -55,39 +52,21 @@ static void macro_execution_finished(AW_root *awr, AW_CL cl_macroName) {
     free(macroName);
 }
 
-static void awt_exec_macro_cb(AW_window *aww) {
+static void exec_macro_cb(AW_window *aww, bool loop_marked) {
     AW_root  *awr       = aww->get_root();
-    char     *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
-    GB_ERROR  error     = getMacroRecorder(awr)->execute(macroName, macro_execution_finished, (AW_CL)macroName);
+    char     *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE); // @@@ instead use function returning plain name w/o dir
+    GB_ERROR  error     = getMacroRecorder(awr)->execute(macroName, loop_marked, macro_execution_finished, (AW_CL)macroName);
     if (error) {
         aw_message(error);
         free(macroName); // only free in error-case (see macro_execution_finished)
     }
-}
-
-static void awt_exec_macro_with_cb(AW_window *aww) {
-    AW_root *awr       = aww->get_root();
-    char    *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
-
-    char *with_all_parametrized = NULL;
-    {
-        const char *with_all_marked = GB_path_in_ARBHOME("PERL_SCRIPTS/MACROS/with_all_marked.pl");
-        with_all_parametrized       = GBS_global_string_copy("%s %s", with_all_marked, macroName);
-    }
-
-    GB_ERROR error = getMacroRecorder(awr)->execute(with_all_parametrized, macro_execution_finished, (AW_CL)macroName);
-    if (error) {
-        aw_message(error);
-        free(macroName); // only free in error-case (see macro_execution_finished)
-    }
-    free(with_all_parametrized);
 }
 
 inline void update_macro_record_button(AW_root *awr) {
     awr->awar(AWAR_MACRO_RECORDING_MACRO_TEXT)->write_string(awr->is_tracking() ? "STOP" : "RECORD");
 }
 
-static void awt_start_macro_cb(AW_window *aww) {
+static void start_macro_cb(AW_window *aww) {
     AW_root  *awr   = aww->get_root();
     GB_ERROR  error = NULL;
 
@@ -103,9 +82,9 @@ static void awt_start_macro_cb(AW_window *aww) {
             error = "Please specify name of macro to record";
         }
         else {
-            if (runb4) awt_exec_macro_cb(aww);
+            if (runb4) exec_macro_cb(aww, false);
 
-            char *sac = GBS_global_string_copy("%s/%s", aww->window_defaults_name, AWAR_MACRO_RECORD_ID);
+            char *sac = GBS_global_string_copy("%s/%s", aww->window_defaults_name, MACRO_RECORD_ID);
             error = getMacroRecorder(awr)->start_recording(macroName, sac, expand);
             free(sac);
         }
@@ -117,7 +96,7 @@ static void awt_start_macro_cb(AW_window *aww) {
     if (error) aw_message(error);
 }
 
-static void awt_edit_macro_cb(AW_window *aww) {
+static void edit_macro_cb(AW_window *aww) {
     char *path = AW_get_selected_fullname(aww->get_root(), AWAR_MACRO_BASE);
     AW_edit(path);
     free(path);
@@ -127,7 +106,7 @@ static void macro_recording_changed_cb() {
     update_macro_record_button(AW_root::SINGLETON);
 }
 
-void awt_create_macro_variables(AW_root *aw_root) {
+static void create_macro_variables(AW_root *aw_root) {
     AW_create_fileselection_awars(aw_root, AWAR_MACRO_BASE, ".", ".amc", "");
     aw_root->awar_string(AWAR_MACRO_RECORDING_MACRO_TEXT, "RECORD");
     aw_root->awar_int(AWAR_MACRO_RECORDING_EXPAND, 0);
@@ -152,16 +131,16 @@ void awt_create_macro_variables(AW_root *aw_root) {
     update_macro_record_button(aw_root);
 }
 
-static void awt_popup_macro_window(AW_window *aww) {
+static void popup_macro_window(AW_window *aww) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         AW_root *aw_root = aww->get_root();
 
         aws = new AW_window_simple;
-        aws->init(aw_root, "MACROS", "MACROS");
+        aws->init(aw_root, MACRO_WINDOW_ID, "MACROS");
         aws->load_xfig("macro_select.fig");
 
-        awt_create_macro_variables(aw_root);
+        create_macro_variables(aw_root);
         
         aws->at("close"); aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
@@ -169,23 +148,22 @@ static void awt_popup_macro_window(AW_window *aww) {
         aws->at("help"); aws->callback(makeHelpCallback("macro.hlp"));
         aws->create_button("HELP", "HELP");
 
-        aws->at("record"); aws->callback(awt_start_macro_cb);
-        aws->create_button(AWAR_MACRO_RECORD_ID, AWAR_MACRO_RECORDING_MACRO_TEXT);
+        aws->at("record"); aws->callback(start_macro_cb);
+        aws->create_button(MACRO_RECORD_ID, AWAR_MACRO_RECORDING_MACRO_TEXT);
 
         aws->at("expand"); aws->create_toggle(AWAR_MACRO_RECORDING_EXPAND);
         aws->at("runb4");  aws->create_toggle(AWAR_MACRO_RECORDING_RUNB4);
 
-        aws->at("exec"); aws->callback(awt_exec_macro_cb);
-        aws->create_button("EXECUTE", "EXECUTE");
+        aws->at("edit");   aws->callback(edit_macro_cb);   aws->create_button("EDIT",   "EDIT");
+        aws->at("delete"); aws->callback(delete_macro_cb); aws->create_button("DELETE", "DELETE");
 
-        aws->at("edit"); aws->callback(awt_edit_macro_cb);
-        aws->create_button("EDIT", "EDIT");
+        aws->at("exec");
+        aws->callback(makeWindowCallback(exec_macro_cb, false));
+        aws->create_button(MACRO_PLAYBACK_ID, "EXECUTE");
 
-        aws->at("delete"); aws->callback(awt_delete_macro_cb);
-        aws->create_button("DELETE", "DELETE");
-
-        aws->at("execWith"); aws->callback(awt_exec_macro_with_cb);
-        aws->create_autosize_button("EXECUTE_WITH_MARKED", "Execute with each marked species");
+        aws->at("execWith");
+        aws->callback(makeWindowCallback(exec_macro_cb, true));
+        aws->create_autosize_button(MACRO_PLAYBACK_MARKED_ID, "Execute with each marked species");
 
         AW_create_fileselection(aws, AWAR_MACRO_BASE, "", "ARBMACROHOME^ARBMACRO");
     }
@@ -195,32 +173,21 @@ static void awt_popup_macro_window(AW_window *aww) {
 void insert_macro_menu_entry(AW_window *awm, bool prepend_separator) {
     if (getMacroRecorder(awm->get_root())) {
         if (prepend_separator) awm->sep______________();
-        awm->insert_menu_topic("macros", "Macros ", "M", "macro.hlp", AWM_ALL, awt_popup_macro_window);
+        awm->insert_menu_topic("macros", "Macros ", "M", "macro.hlp", AWM_ALL, popup_macro_window);
     }
 }
 
-inline char *find_macro_in(const char *dir, const char *macroname) {
-    char *full = GBS_global_string_copy("%s/%s.amc", dir, macroname);
-    if (!GB_is_readablefile(full)) freenull(full);
-    return full;
-}
-
-void awt_execute_macro(AW_root *root, const char *macroname) {
-    char *fullname          = find_macro_in(GB_getenvARBMACROHOME(), macroname);
-    if (!fullname) fullname = find_macro_in(GB_getenvARBMACRO(), macroname);
-
-    GB_ERROR error       = 0;
-    if (!fullname) error = "file not found";
-    else {
-        // @@@ allow macro playback from client (using server via AWAR)
+void execute_macro(AW_root *root, const char *macroname) {
+    // used to execute macro passed via CLI
+    GB_ERROR error = 0;
+    {
+        // @@@ allow macro playback from client? (using server via AWAR)
         MacroRecorder *recorder = getMacroRecorder(root);
         if (!recorder) error    = "macro playback only available in server";
-        else           error    = recorder->execute(fullname, NULL, 0);
+        else           error    = recorder->execute(macroname, false, NULL, 0);
     }
 
     if (error) {
         aw_message(GBS_global_string("Can't execute macro '%s' (Reason: %s)", macroname, error));
     }
-
-    free(fullname);
 }
