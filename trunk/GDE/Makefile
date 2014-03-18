@@ -28,7 +28,7 @@ ARCHS_NON_DEBIAN = \
 
 # --------------------------------------------------------------------------------
 
-ifdef DEBIAN
+ifeq ($(DEBIAN),1)
 ARCHS_DEPENDS = $(ARCHS_COMMON)
 else
 ARCHS_DEPENDS = $(ARCHS_COMMON) $(ARCHS_NON_DEBIAN)
