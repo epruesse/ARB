@@ -13,9 +13,6 @@ CC 		= gcc
 CFLAGS 	= -O3
 TARGET  = axml
 MAIN 	= $(EXE)
-#-xO5
-# -pg
-LDFLAGS = -lm
 
 # ----------------------------------------
 # compile for ARB:
@@ -23,17 +20,18 @@ else
 
 CC      = $(A_CC)
 TARGET 	= $(ARBHOME)/bin/axml
-LDFLAGS = -lm
 CFLAGS  = $(cflags)
 
 $(MAIN) : all
 
 endif
 
+# ----------------------------------------
+
 all : $(TARGET)
 
 $(TARGET) : $(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $< -lm
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<
