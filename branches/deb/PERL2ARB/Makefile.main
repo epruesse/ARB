@@ -18,7 +18,7 @@ HEADERS = \
 	$(ARBDB)/ad_prot.h \
 	$(ARBDB)/ad_t_prot.h \
 
-ifdef DARWIN
+ifeq ($(DARWIN),1)
 SO:=bundle
 else
 SO:=so

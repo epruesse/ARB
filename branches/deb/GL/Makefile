@@ -10,7 +10,7 @@ ARCHS_NON_DEBIAN = \
 
 # --------------------------------------------------------------------------------
 
-ifdef DEBIAN
+ifeq ($(DEBIAN),1)
 ARCHS = $(ARCHS_ALL) 
 else
 ARCHS = $(ARCHS_ALL) $(ARCHS_NON_DEBIAN)
