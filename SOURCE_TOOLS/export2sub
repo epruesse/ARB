@@ -14,8 +14,10 @@ export OPENGL
 export RNA3D_LIB 
 
 export MACH
-export DEBIAN
 export DARWIN
+export LINUX
+export DEBIAN
+export REDHAT
 
 export A_CC  CC_INCLUDES
 export A_CXX CXX_INCLUDES

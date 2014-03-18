@@ -28,7 +28,7 @@ CC     = $(A_CC)
 CFLAGS = $(cflags) -fomit-frame-pointer
 EXEC   = $(ARBHOME)/bin/phyml
 
-ifdef DARWIN
+ifeq ($(DARWIN),1)
 CFLAGS += -fPIC
 endif
 
