@@ -85,7 +85,7 @@ ALLOWED_gcc_VERSIONS=\
 	      4.5.2 \
 	4.6.1 4.6.2 4.6.3 \
 	4.7.1 4.7.2 4.7.3 \
-	4.8.0 4.8.1 \
+	4.8.0 4.8.1 4.8.2 4.8.3 \
 
 # supported clang versions:
 ALLOWED_clang_VERSIONS=\
@@ -182,6 +182,11 @@ ifeq ($(DEBUG),0)
 		lflags += -O2# linker flags
 		clflags += -Wl,-O2# passthrough linker flags
 	endif
+endif
+
+ifeq ($(DEBIAN),1)
+	lflags += -rpath=/usr/lib/arb/lib -z relro
+	clflags += -Wl,-rpath=/usr/lib/arb/lib -Wl,-z,relro
 endif
 
 ifeq ($(DEBUG),1)
@@ -380,7 +385,11 @@ endif
 ifeq ($(DARWIN),1)
 	XHOME:=$(PREFIX)
 else
+ ifeq ($(DEBIAN),1)
+	XHOME:=$(PREFIX)
+ else
 	XHOME:=/usr/X11R6
+ endif
 endif
 
 XINCLUDES:=-I$(XHOME)/include
@@ -483,6 +492,12 @@ endif
 
 cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
 cxxflags := $(extended_cpp_warnings)
+
+# add CFLAGS + CPPFLAGS from environment for DEBIAN build
+ifeq ($(DEBIAN),1)
+	cflags := $(CFLAGS) $(cflags)
+	cxxflags += $(CPPFLAGS)
+endif
 
 ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
 cxxflags += -std=gnu++11# see also TEMPLATES/cxxforward.h@USE_Cxx11
