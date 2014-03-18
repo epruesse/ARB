@@ -1,5 +1,5 @@
 #!/bin/sh
-tmp=/tmp/arb_fdnaml_${USER}_$$
+tmp=`mktemp -t arb_fdnaml_XXXXXXXXXX`
 mv infile $tmp
 nice -19 $1 < $tmp &
 sig=$!
