@@ -1,5 +1,0 @@
-# libraries needed to link against WINDOW/libWINDOW.so
-
-lib/libARBDB.so
-$(XLIBS)
-
