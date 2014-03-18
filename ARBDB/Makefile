@@ -1168,6 +1168,7 @@ adtools.o: gb_storage.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_error.h
+adtools.o: $(ARBHOME)/INCLUDE/arb_file.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_sort.h

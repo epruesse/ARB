@@ -37,7 +37,7 @@ sub exec_macro_with_species($$$$) {
   markSpecies($gb_main,$gb_species,1);
   selectSpecies($gb_main,$speciesName);
 
-  my $cmd = "perl $macroName";
+  my $cmd = "perl '$macroName'";
   system($cmd)==0 || die "Error: failed to execute '$cmd'";
 
   if ($sleepAmount>0) {

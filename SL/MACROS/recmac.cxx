@@ -10,6 +10,7 @@
 // ============================================================= //
 
 #include "recmac.hxx"
+#include "macros_local.hxx"
 
 #include <arbdbt.h>
 
@@ -17,10 +18,13 @@
 #include <arb_defs.h>
 #include <arb_diff.h>
 #include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 #include <FileContent.h>
 
 #include <cctype>
+#include <arb_str.h>
+#include <aw_file.hxx>
 
 void warn_unrecordable(const char *what) {
     aw_message(GBS_global_string("could not record %s", what));
@@ -80,18 +84,67 @@ RecordingMacro::RecordingMacro(const char *filename, const char *application_id_
     }
 }
 
+void RecordingMacro::write_as_perl_string(const char *value) const {
+    const char SQUOTE = '\'';
+    write(SQUOTE);
+    for (int i = 0; value[i]; ++i) {
+        char c = value[i];
+        if (c == SQUOTE) {
+            write('\\');
+            write(SQUOTE);
+        }
+        else {
+            write(c);
+        }
+    }
+    write(SQUOTE);
+}
+
 void RecordingMacro::write_action(const char *app_id, const char *action_name) {
-    write("BIO::remote_action($gb_main");
-    write_quoted_param(app_id);
-    write(','); GBS_fwrite_string(action_name, out);
-    write(");\n");
+    bool handled = false;
+
+    // Recording "macro-execution" as GUI-clicks caused multiple macros running asynchronously (see #455)
+    // Instead of recording GUI-clicks, macros are called directly:
+    static const char *MACRO_ACTION_START = MACRO_WINDOW_ID "/";
+    if (ARB_strBeginsWith(action_name, MACRO_ACTION_START)) {
+        static int  MACRO_START_LEN = strlen(MACRO_ACTION_START);
+        const char *sub_action      = action_name+MACRO_START_LEN;
+
+        int playbackType = 0;
+        if      (strcmp(sub_action, MACRO_PLAYBACK_ID)        == 0) playbackType = 1;
+        else if (strcmp(sub_action, MACRO_PLAYBACK_MARKED_ID) == 0) playbackType = 2;
+
+        if (playbackType) {
+            char       *macroFullname = AW_get_selected_fullname(AW_root::SINGLETON, AWAR_MACRO_BASE);
+            const char *macroName     = GBT_relativeMacroname(macroFullname); // points into macroFullname
+
+            write("BIO::macro_execute(");
+            write_as_perl_string(macroName); // use relative macro name (allows to share macros between users)
+            write(", ");
+            write('0'+(playbackType-1));
+            write(", 0);\n"); // never run asynchronously (otherwise (rest of) current and called macro will interfere)
+            flush();
+
+            free(macroFullname);
+
+            handled = true;
+        }
+    }
+
+    // otherwise "normal" operation (=trigger GUI element)
+    if (!handled) {
+        write("BIO::remote_action($gb_main");
+        write(','); write_as_perl_string(app_id);
+        write(','); write_as_perl_string(action_name);
+        write(");\n");
+    }
     flush();
 }
 void RecordingMacro::write_awar_change(const char *app_id, const char *awar_name, const char *content) {
     write("BIO::remote_awar($gb_main");
-    write_quoted_param(app_id);
-    write(','); GBS_fwrite_string(awar_name, out);
-    write(','); GBS_fwrite_string(content, out);
+    write(','); write_as_perl_string(app_id);
+    write(','); write_as_perl_string(awar_name);
+    write(','); write_as_perl_string(content);
     write(");\n");
     flush();
 }
@@ -193,7 +246,7 @@ inline char *modifies_awar(const char *line, char *& app_id) {
 
 inline bool opens_macro_dialog(const char *line) {
     // return true, if the macro-command in 'line' opens the macro dialog
-    return strcmp(line, "BIO::remote_action($gb_main,\"ARB_NT\",\"macros\");") == 0;
+    return strcmp(line, "BIO::remote_action($gb_main,\'ARB_NT\',\'macros\');") == 0;
 }
 inline bool is_end_of_macro(const char *line) {
     // return true, if the macro-command in 'line' belongs to code at end (of any macro)
