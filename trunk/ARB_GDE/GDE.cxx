@@ -188,7 +188,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
         aws->at("help");
         aws->callback((AW_CB2)GDE_showhelp_cb, (AW_CL)gmenuitem, 0);
-        aws->create_button("GDE_HELP", "HELP...", "H");
+        aws->create_button("GDE_HELP", "HELP", "H");
 
         aws->at("start");
         aws->callback((AW_CB2)GDE_startaction_cb, (AW_CL)gmenuitem, 0);
