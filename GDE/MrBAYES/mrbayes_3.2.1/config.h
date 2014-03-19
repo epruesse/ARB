@@ -31,7 +31,6 @@
 #define SSE_ENABLED 1
 #else
 #undef SSE_ENABLED
-#error 32bit-compilation detected
 #endif
 
 /* Define one of the UNIX, MAC or WINDOWS */
@@ -52,7 +51,6 @@
 #define _64BIT 1
 #else
 #undef _64BIT
-#error 32bit-compilation detected
 #endif
 
 
