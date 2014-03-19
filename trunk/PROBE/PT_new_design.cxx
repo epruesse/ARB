@@ -1222,7 +1222,7 @@ public:
 
     void dump(FILE *out) const {
         char *probe = readable_probe(cursor.sequence(), probelen, 'T');
-        fprintf(out, "probe='%s' probelen=%lu at=%lu gc=%lu\n", probe, probelen, at, gc);
+        fprintf(out, "probe='%s' probelen=%zu at=%zu gc=%zu\n", probe, probelen, at, gc);
         free(probe);
     }
 };

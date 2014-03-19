@@ -255,7 +255,7 @@ static void input_cb(AW_window *aww, MatrixDisplay *disp) {
                     size_t     idx    = size_t(clicked->cd2());
                     DI_MATRIX *matrix = disp->get_matrix();
                     if (idx >= matrix->nentries) {
-                        aw_message(GBS_global_string("Illegal idx %li [allowed: 0-%li]", idx, matrix->nentries));
+                        aw_message(GBS_global_string("Illegal idx %zi [allowed: 0-%zi]", idx, matrix->nentries));
                     }
                     else {
                         DI_ENTRY   *entry        = matrix->entries[idx];
