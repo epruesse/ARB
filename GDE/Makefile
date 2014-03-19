@@ -5,14 +5,14 @@ ARCHS_COMMON = \
 	AxML/AxML.dummy \
 	RAxML/RAxML.dummy \
 	PHYML/PHYML.dummy \
+	MrBAYES/MrBAYES.dummy \
 
 ARCHS_NO_DEPENDS = \
 	PHYML20130708/PHYML20130708.dummy \
 	MAFFT/MAFFT.dummy \
 	MUSCLE/MUSCLE.dummy \
 	PROBCONS/PROBCONS.dummy \
-	MrBAYES/MrBAYES.dummy \
-	FASTTREE/FASTTREE.dummy
+	FASTTREE/FASTTREE.dummy \
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
@@ -76,7 +76,7 @@ clean: $(ARCHS:.dummy=.clean)
 	@$(MAKE) -C $(@D) -r depends
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null || \
 		(echo "$(@D)/Makefile:666: Error: No dependencies in $(@D)/Makefile"; false) # check whether sub Makefile has dependencies
-	@../SOURCE_TOOLS/fix_depends.pl "(from GDE)" < $(@D)/Makefile > $(@D)/Makefile.2
+	@$(ARBHOME)/SOURCE_TOOLS/fix_depends.pl "(from GDE)" < $(@D)/Makefile > $(@D)/Makefile.2
 	@mv $(@D)/Makefile.old $(@D)/Makefile # restore old Makefile
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
