@@ -1554,10 +1554,12 @@ void TEST_format_insert_delete() {
     // originally it was used to test the function gbt_insert_delete, which is gone now.
     // now it tests AliFormatCommand, AliInsertCommand, AliDeleteCommand and AliCompositeCommand (but quite implicit).
 
+    const char *UNMODIFIED = NULL;
+
     TEST_FORMAT("xxx",   5, "xxx..");
     TEST_FORMAT(".x.",   5, ".x...");
     TEST_FORMAT(".x..",  5, ".x...");
-    TEST_FORMAT(".x...", 5, NULL); // NULL means "result == source"
+    TEST_FORMAT(".x...", 5, UNMODIFIED);
 
     TEST_FORMAT("xxx--", 3, "xxx");
     TEST_FORMAT("xxx..", 3, "xxx");
@@ -1565,11 +1567,11 @@ void TEST_format_insert_delete() {
     TEST_FORMAT_ERROR("xxx",   0, "You tried to delete 'x' at position 0  -> Operation aborted");
 
     // insert/delete in the middle
-    TEST_INSERT("abcde", 3, 0, NULL);
+    TEST_INSERT("abcde", 3, 0, UNMODIFIED);
     TEST_INSERT("abcde", 3, 1, "abc-de");
     TEST_INSERT("abcde", 3, 2, "abc--de");
 
-    TEST_DELETE("abcde",   3, 0, NULL);
+    TEST_DELETE("abcde",   3, 0, UNMODIFIED);
     TEST_DELETE("abc-de",  3, 1, "abcde");
     TEST_DELETE("abc--de", 3, 2, "abcde");
     TEST_DELETE_ERROR("abc-xde", 3, 2, "You tried to delete 'x' at position 4  -> Operation aborted");
