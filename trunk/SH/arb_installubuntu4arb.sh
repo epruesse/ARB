@@ -54,7 +54,9 @@ else
         elif [ "$2" == "compile_common" ]; then
             echo \
                 g++ \
+                libglib2.0-dev \
                 libmotif-dev \
+                libreadline-dev \
                 libtiff4-dev \
                 libx11-dev \
                 libxaw7-dev \
@@ -62,7 +64,6 @@ else
                 libxml2-utils \
                 libxpm-dev \
                 libxt-dev \
-                libreadline-dev \
                 lynx \
                 x11proto-print-dev \
                 xsltproc \
