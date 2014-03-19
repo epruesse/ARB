@@ -5,6 +5,7 @@
 # documentation for single variables can be found in ../SOURCE_TOOLS/parent_make.txt
 
 export ARBHOME
+export ARB_64
 
 export use_ARB_main
 export use_ARB_main_C
