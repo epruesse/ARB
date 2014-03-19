@@ -158,7 +158,6 @@ my @used_when_matchesFull = (
                              qr/\/CLUSTALW\/.*$/o,
                              qr/\/EISPACK\/rg\.html$/o,
                              qr/\/GDE\/.*\.html$/o,
-                             qr/\/GDEHELP\/DATA_FILES/o,
                              qr/\/GDEHELP\/FASTA/o,
                              qr/\/GDEHELP\/GDE.*/o,
                              qr/\/GDEHELP\/HELP_PLAIN/o,
