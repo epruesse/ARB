@@ -339,9 +339,13 @@ void TEST_neighbourjoining() {
 
 #define EXPECTED_MIN_IJ -0.372250
 #if defined(TEST_FORWARD_ORDER)
+#if defined(ARB_64)
                     TEST_EXPECT_MIN_IJ(nj, B, C, EXPECTED_MIN_IJ);
+#else // !defined(ARB_64)
+                    TEST_EXPECT_MIN_IJ(nj, A, D, EXPECTED_MIN_IJ); // @@@ similar to 64-bit w/o TEST_FORWARD_ORDER
+#endif
 #else // !defined(TEST_FORWARD_ORDER)
-                    TEST_EXPECT_MIN_IJ(nj, D, A, EXPECTED_MIN_IJ);
+                    TEST_EXPECT_MIN_IJ(nj, D, A, EXPECTED_MIN_IJ); // @@@ no differences between 32-/64-bit version w/o TEST_FORWARD_ORDER
 #endif
 #undef EXPECTED_MIN_IJ
                     break;
@@ -354,9 +358,16 @@ void TEST_neighbourjoining() {
 
         switch (test) {
 #if defined(TEST_FORWARD_ORDER)
+#if defined(ARB_64)
             case 1: TEST_EXPECT_NEWICK(nSIMPLE, tree, "(((A,B),C),D);"); break;
             case 2: TEST_EXPECT_NEWICK(nSIMPLE, tree, "((A,(B,C)),D);"); break;
+#else // !defined(ARB_64)
+                // @@@ 32bit version behaves different
+            case 1: TEST_EXPECT_NEWICK(nSIMPLE, tree, "(((A,B),D),C);"); break;
+            case 2: TEST_EXPECT_NEWICK(nSIMPLE, tree, "(((A,D),B),C);"); break; // similar to 64-bit w/o TEST_FORWARD_ORDER
+#endif
 #else // !defined(TEST_FORWARD_ORDER)
+                // @@@ no differences between 32-/64-bit version w/o TEST_FORWARD_ORDER
             case 1: TEST_EXPECT_NEWICK(nSIMPLE, tree, "(((D,C),A),B);"); break;
             case 2: TEST_EXPECT_NEWICK(nSIMPLE, tree, "(((D,A),B),C);"); break;
 #endif
