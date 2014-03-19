@@ -290,6 +290,7 @@ endif
 
 cross_cflags:=
 cross_lflags:=
+cross_clflags:=
 
 ifeq ($(ARB_64),1)
 	dflags += -DARB_64 #-fPIC 
@@ -299,14 +300,16 @@ ifeq ($(ARB_64),1)
 #		build 64-bit ARB version on 64-bit host
 		CROSS_LIB:=# empty = autodetect below
 		ifeq ($(DARWIN),1)
-			cross_cflags += -arch x86_64
-			cross_lflags += -arch x86_64
+			cross_cflags  += -arch x86_64
+			cross_lflags  += -arch x86_64
+			cross_clflags += -arch x86_64
 		endif
 	else
 #		build 64-bit ARB version on 32-bit host
 		CROSS_LIB:=/lib64
 		cross_cflags += -m64
 		cross_lflags += -m64 -m elf_x86_64
+		cross_clflags += -m64 -Wl,-m64,-m,elf_x86_64
 	endif
 else
 	ifeq ($(BUILDHOST_64),1)
@@ -314,14 +317,16 @@ else
 		CROSS_LIB:=# empty = autodetect below
 		cross_cflags += -m32
 		cross_lflags += -m32 -m elf_i386 
+		cross_clflags += -m32 -Wl,-m32,-m,elf_i386 
 	else
 #		build 32-bit ARB version on 32-bit host
 		CROSS_LIB:=/lib
 	endif
 endif
 
-cflags += $(cross_cflags)
-lflags += $(cross_lflags)
+cflags  += $(cross_cflags)
+lflags  += $(cross_lflags)
+clflags += $(cross_clflags)
 
 ifeq ('$(CROSS_LIB)','')
 # autodetect libdir
