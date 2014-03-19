@@ -1,0 +1,8 @@
+# libraries needed to link against GENOM/GENOM.a
+
+SL/DB_UI/DB_UI.a
+SL/LOCATION/LOCATION.a
+SL/NDS/NDS.a
+SL/TRANSLATE/TRANSLATE.a
+
+
