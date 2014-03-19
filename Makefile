@@ -473,12 +473,10 @@ endif
 #---------------------- include symbols?
 
 ifeq ($(TRACESYM),1)
-	ifeq ($(USE_CLANG),1)
-		cdynamic =
-		ldynamic =
-	else
-		cdynamic = -rdynamic -Wl,--export-dynamic
-		ldynamic = --export-dynamic
+	ifeq ($(USE_CLANG),0)
+		cflags  += -rdynamic
+		lflags  += --export-dynamic
+		clflags += -rdynamic -Wl,--export-dynamic
 	endif
 endif
 
@@ -495,7 +493,7 @@ endif
 #	(instead define variables above)
 # -------------------------------------------------------------------------
 
-cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
+cflags += -W -Wall $(dflags) $(extended_warnings)
 cxxflags := $(extended_cpp_warnings)
 
 # add CFLAGS + CPPFLAGS from environment for DEBIAN build
@@ -515,15 +513,15 @@ cxxflags += -std=gnu++0x
  endif
 endif
 
-LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
-LINK_EXECUTABLE := $(A_CXX) $(clflags) $(cdynamic) -o# link executable (c++)
+LINK_STATIC_LIB := ld $(lflags) -r -o# link static lib
+LINK_EXECUTABLE := $(A_CXX) $(clflags) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
 SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(A_CXX) $(clflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
+LINK_SHARED_LIB := $(A_CXX) $(clflags) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
 # delete variables unused below
