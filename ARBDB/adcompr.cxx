@@ -1020,7 +1020,7 @@ GB_CBUFFER gb_uncompress_data(GBDATA *gbd, GB_CBUFFER source, size_t size) {
     }
 
     if (!error && new_size != size) {
-        error = GBS_global_string("Wrong decompressed size (expected=%li, got=%li)", size, new_size);
+        error = GBS_global_string("Wrong decompressed size (expected=%zi, got=%zi)", size, new_size);
     }
 
     if (error) {
