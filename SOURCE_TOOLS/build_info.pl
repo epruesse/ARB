@@ -439,6 +439,28 @@ if ($always_show_revision==1) {
   $short_version = $long_version;
 }
 
+my $ARB_64 = $ENV{ARB_64};
+if (not defined $ARB_64) {
+  my $config_makefile = $ARBHOME.'/config.makefile';
+  if (open(CONFIG, '<'.$config_makefile)) {
+    $ARB_64 = 1; # default to 64 bit -- see ../Makefile@64bit
+    foreach (<CONFIG>) {
+      if (/^\s*ARB_64\s*:=\s*([01]).*/) {
+        $ARB_64 = $1;
+      }
+    }
+    close(CONFIG);
+  }
+  else {
+    die "Either environment variable ARB_64 has to be defined or $config_makefile has to exist!";
+  }
+}
+
+if (not $ARB_64) {
+  $short_version .= '-32bit';
+  $long_version  .= '-32bit';
+}
+
 my @arb_build = (
                  '#define ARB_VERSION            "'.$short_version.'"',
                  '#define ARB_VERSION_DETAILED   "'.$long_version.'"',
