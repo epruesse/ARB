@@ -23,7 +23,8 @@ SECTION Using the GDE menus
         programs when selected from a menu:
 
         Each step in this process is described in the file
-        $ARBHOME/GDEHELP/ARB_GDEmenus
+
+                $ARBHOME/lib/gde/arb.menu
 
         You may modify that file to include other external
         tools into the ARB interface.

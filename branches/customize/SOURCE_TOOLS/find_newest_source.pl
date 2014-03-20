@@ -60,7 +60,7 @@ if (defined $ARBHOME) {
   push @boring_fullmatches, qr/$ARBHOME\/AISC\/aisc$/;
   push @boring_fullmatches, qr/$ARBHOME\/AISC_MKPTPS\/aisc_mkpt$/;
   push @boring_fullmatches, qr/$ARBHOME\/.*\/GEN[CH]\//;
-  push @boring_fullmatches, qr/$ARBHOME\/GDEHELP\/(helpfiles\.lst|ARB_GDEmenus)$/;
+  push @boring_fullmatches, qr/$ARBHOME\/GDEHELP\/helpfiles\.lst$/;
 
   push @boring_dirs, $ARBHOME.'/PROBE_SERVER/bin';
   push @boring_dirs, $ARBHOME.'/PROBE_SET/bin';

@@ -27,7 +27,7 @@ static char *readableItemname(const GmenuItem& i) {
 
 __ATTR__NORETURN static void ItemError(const GmenuItem& i, const char *error) {
     char       *itemName = readableItemname(i);
-    const char *msg      = GBS_global_string("Invalid item '%s' in ARB_GDEmenus (Reason: %s)", itemName, error);
+    const char *msg      = GBS_global_string("Invalid item '%s' in arb.menu (Reason: %s)", itemName, error); // @@@ use currently processed filename here
     free(itemName);
     Error(msg);
 }
@@ -81,23 +81,21 @@ void ParseMenu() {
     char  tail[GBUFSIZ];
     char *resize;
 
-    /*  Open the menu configuration file "$ARBHOME/GDEHELP/ARB_GDEmenus"
-     *  First search the local directory, then the home directory.
-     */
+    // Open the menu configuration file "$ARBHOME/lib/gde/arb.menu"
     memset((char*)&menu[0], 0, sizeof(Gmenu)*GDEMAXMENU);
 
+    // @@@ use GB_path_in_ARBLIB
     const char *home = GB_getenvARBHOME();
-
     strcpy(temp, home);
-    strcat(temp, "/GDEHELP/ARB_GDEmenus");
+    strcat(temp, "/lib/gde/arb.menu");
 
     char *menufile = strdup(temp);
     int   linenr   = 1;
 
     FILE *file = fopen(menufile, "r");
-    if (file == NULL) Error("ARB_GDEmenus file not in the home, local, or $ARBHOME/GDEHELP directory");
+    if (file == NULL) Error(GBS_global_string("Fatal: File '%s' missing", menufile));
 
-    /*  Read the ARB_GDEmenus file, and assemble an internal representation
+    /*  Read the arb.menu file, and assemble an internal representation
      *  of the menu/menu-item hierarchy.
      */
 
@@ -484,7 +482,7 @@ void ParseMenu() {
 
     CheckItemConsistency();
 
-    gde_assert(num_menus>0); // if this fails, the file ARB_GDEmenus contained no menus (maybe file has zero size)
+    gde_assert(num_menus>0); // if this fails, the file arb.menu contained no menus (maybe file has zero size)
     return;
 }
 

@@ -1,5 +1,5 @@
 
-MENUS = ARB_GDEmenus
+MENUS_TGT = $(ARBHOME)/lib/gde/arb.menu
 MENUS_SRC = ARB_GDEmenus.source
 
 SED:=$(ARBHOME)/SH/arb_sed
@@ -25,19 +25,19 @@ CHECK_AS_EXPECTED =
 
 # ----------------------------------------
 
-all: $(MENUS) help $(CHECK_AS_EXPECTED)
+all: $(MENUS_TGT) help $(CHECK_AS_EXPECTED)
 
 MENUS/%.genmenu : genmenu.header
 
 MENUS/%.genmenu : MENUS/%.menu
 		( cat genmenu.header; $(SED) -e "s/^[ ]*//" ) < $< > $@
 
-MENUS_DIRTY=$(MENUS).dirty
+MENUS_DIRTY=ARB_GDEmenus.dirty
 
 $(MENUS_DIRTY) : $(MENUS_SRC) $(GENMENUS) Makefile $(PPP)
 	$(PPP) -IMENUS $(MENUS_SRC) >$@
 
-$(MENUS) : $(MENUS_DIRTY) $(CLEAN)
+$(MENUS_TGT) : $(MENUS_DIRTY) $(CLEAN)
 	-chmod a+w $@
 	$(CLEAN) <$(MENUS_DIRTY) >$@
 	rm $(MENUS_DIRTY)
@@ -45,11 +45,11 @@ $(MENUS) : $(MENUS_DIRTY) $(CLEAN)
 
 # ------------------------------------------------------------
 
-update_expected: $(MENUS)
-	cp $(MENUS) $(MENUS_EXPECTED)
+update_expected: $(MENUS_TGT)
+	cp $(MENUS_TGT) $(MENUS_EXPECTED)
 
-check_as_expected: $(MENUS) $(MENUS_EXPECTED)
-	diff --unified --ignore-space-change --ignore-blank-lines  $(MENUS_EXPECTED) $(MENUS) 
+check_as_expected: $(MENUS_TGT) $(MENUS_EXPECTED)
+	diff --unified --ignore-space-change --ignore-blank-lines  $(MENUS_EXPECTED) $(MENUS_TGT) 
 
 # ------------------------------------------------------------
 
@@ -63,15 +63,11 @@ $(HELPFILELIST): $(SUBMENUS) Makefile
 
 # ------------------------------------------------------------
 
-save:
-	rm -f arbgdemenus*.tar.gz
-	tar cvf - MENUS ARB_GDEmenus* |gzip >`date '+arbgdemnus_%d_%m_%y.tar.gz'`
-
 clean: $(HELPFILELIST)
 	@$(MAKE) -f Makefile.helpfiles \
 		"GENHELPDEST=$(GENHELPDEST)" \
 		"GENDOCDEST=$(GENDOCDEST)" \
 		"HELPFILELIST=$(HELPFILELIST)" \
 		clean
-	rm -f $(GENMENUS) $(MENUS) $(HELPFILELIST)
+	rm -f $(GENMENUS) $(MENUS_TGT) $(HELPFILELIST)
 

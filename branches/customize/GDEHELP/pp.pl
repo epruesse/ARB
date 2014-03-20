@@ -5,7 +5,7 @@
 #   Purpose   : a simple pseudo-C-preprocessor                 #
 #   Motivation:                                                #
 #     The C-preprocessor behaves different on different        #
-#     systems (e.g. clang, suse) for ARB_GDEmenus.             #
+#     systems (e.g. clang, suse) while creating "arb.menu".    #
 #     That resulted in various failures,                       #
 #     some detected at compile-time, others at run-time.       #
 #                                                              #
