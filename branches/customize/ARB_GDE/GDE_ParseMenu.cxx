@@ -1,6 +1,7 @@
 #include "GDE_proto.h"
 
 #include <aw_window.hxx>
+#include <FileBuffer.h>
 
 #include <cctype>
 
@@ -16,20 +17,6 @@
   Changed to fit into ARB by ARB development team.
 */
 
-
-static int getline(FILE *file, char *string)
-{
-    int c;
-    int i;
-    for (i=0; (c=getc(file))!='\n'; i++) {
-        if (c == EOF) break;
-        if (i >= GBUFSIZ -2) break;
-        string[i]=c;
-    }
-    string[i] = '\0';
-    if (i==0 && c==EOF) return (EOF);
-    else return (0);
-}
 
 inline bool only_whitespace(const char *line) {
     size_t white = strspn(line, " \t");
@@ -65,15 +52,18 @@ static void CheckItemConsistency() {
     }
 }
 
+static __ATTR__NORETURN void ParseError(const char *msg, const FileBuffer& file) {
+    // goes to header: __ATTR__NORETURN
+    fprintf(stderr, "\n%s:%li: ", file.getFilename().c_str(), file.getLineNumber());
+    Error(msg);
+}
 
-static void ParseMenus(FILE *file, const char *menufile) {
+static void ParseMenus(FileBuffer& in) {
     /*  Read the menu file and assemble an internal representation
      *  of the menu/menu-item hierarchy.
      */
 
     memset((char*)&menu[0], 0, sizeof(Gmenu)*GDEMAXMENU);
-
-    int linenr = 1;
 
     int curarg    = 0;
     int curinput  = 0;
@@ -86,14 +76,20 @@ static void ParseMenus(FILE *file, const char *menufile) {
     GfileFormat  *thisoutput = NULL;
 
     int  j;
-    char in_line[GBUFSIZ];
     char temp[GBUFSIZ];
     char head[GBUFSIZ];
     char tail[GBUFSIZ];
 
     char *resize;
 
-    for (; getline(file, in_line) != EOF; ++linenr) {
+    string lineStr;
+
+    while (in.getLine(lineStr)) {
+        // const char *in_line = lineStr.c_str(); // @@@ preferred, but parser modifies line :/
+        char in_line[GBUFSIZ];
+        gde_assert(lineStr.length()<GBUFSIZ);
+        strcpy(in_line, lineStr.c_str());
+
         if (in_line[0] == '#' || (in_line[0] && in_line[1] == '#')) {
             ; // skip line
         }
@@ -128,7 +124,7 @@ static void ParseMenus(FILE *file, const char *menufile) {
         }
         // item: chooses menu item to use
         else if (Find(in_line, "item:")) {
-            if (thismenu == NULL) ParseError("'item' used w/o 'menu'", menufile, linenr);
+            if (thismenu == NULL) ParseError("'item' used w/o 'menu'", in);
 
             curarg    = -1;
             curinput  = -1;
@@ -207,7 +203,7 @@ static void ParseMenus(FILE *file, const char *menufile) {
             if (strcmp("expert", temp) == 0) thisitem->active_mask = AWM_EXP;
         }
         else if (Find(in_line, "menumeta:")) {
-            if (thismenu == NULL) ParseError("'menumeta' used w/o 'menu' or 'lmenu'", menufile, linenr);
+            if (thismenu == NULL) ParseError("'menumeta' used w/o 'menu' or 'lmenu'", in);
             crop(in_line, head, temp);
             thismenu->meta = temp[0];
         }
@@ -266,12 +262,12 @@ static void ParseMenus(FILE *file, const char *menufile) {
                 else {
                     if (temp[arglen] != '(' || temp[strlen(temp)-1] != ')') {
                         sprintf(head, "Unknown argtype '%s' -- syntax: text(width) e.g. text(20)", temp);
-                        ParseError(head, menufile, linenr);
+                        ParseError(head, in);
                     }
                     thisarg->textwidth = atoi(temp+arglen+1);
                     if (thisarg->textwidth<1) {
                         sprintf(head, "Illegal textwidth specified in '%s'", temp);
-                        ParseError(head, menufile, linenr);
+                        ParseError(head, in);
                     }
                 }
             }
@@ -288,7 +284,7 @@ static void ParseMenus(FILE *file, const char *menufile) {
             else if (strcmp(temp, "weights")     == 0) thisarg->type = CHOICE_WEIGHTS;
             else {
                 sprintf(head, "Unknown argtype '%s'", temp);
-                ParseError(head, menufile, linenr);
+                ParseError(head, in);
             }
         }
         /* argtext: The default text value of the symbol.
@@ -393,7 +389,7 @@ static void ParseMenus(FILE *file, const char *menufile) {
             thisinput->typeinfo  = BASIC_TYPEINFO;
         }
         else if (Find(in_line, "informat:")) {
-            if (thisinput == NULL) ParseError("'informat' used w/o 'in'", menufile, linenr);
+            if (thisinput == NULL) ParseError("'informat' used w/o 'in'", in);
             crop(in_line, head, tail);
 
             if (Find(tail, "genbank")) thisinput->format        = GENBANK;
@@ -405,19 +401,19 @@ static void ParseMenus(FILE *file, const char *menufile) {
             else fprintf(stderr, "Warning, unknown file format %s\n", tail);
         }
         else if (Find(in_line, "insave:")) {
-            if (thisinput == NULL) ParseError("'insave' used w/o 'in'", menufile, linenr);
+            if (thisinput == NULL) ParseError("'insave' used w/o 'in'", in);
             thisinput->save = TRUE;
         }
         else if (Find(in_line, "intyped:")) {
-            if (thisinput == NULL) ParseError("'intyped' used w/o 'in'", menufile, linenr);
+            if (thisinput == NULL) ParseError("'intyped' used w/o 'in'", in);
             crop(in_line, head, tail);
 
             if (Find(tail, "detailed")) thisinput->typeinfo   = DETAILED_TYPEINFO;
             else if (Find(tail, "basic")) thisinput->typeinfo = BASIC_TYPEINFO;
-            else ParseError("Unknown value for 'intyped' (known: 'detailed', 'basic')", menufile, linenr);
+            else ParseError("Unknown value for 'intyped' (known: 'detailed', 'basic')", in);
         }
         else if (Find(in_line, "inselect:")) {
-            if (thisinput == NULL) ParseError("'inselect' used w/o 'in'", menufile, linenr);
+            if (thisinput == NULL) ParseError("'inselect' used w/o 'in'", in);
             crop(in_line, head, tail);
 
             if (Find(tail, "one")) thisinput->select         = SELECT_ONE;
@@ -425,7 +421,7 @@ static void ParseMenus(FILE *file, const char *menufile) {
             else if (Find(tail, "all")) thisinput->select    = ALL;
         }
         else if (Find(in_line, "inmask:")) {
-            if (thisinput == NULL) ParseError("'inmask' used w/o 'in'", menufile, linenr);
+            if (thisinput == NULL) ParseError("'inmask' used w/o 'in'", in);
             thisinput->maskable = TRUE;
         }
         // out: Output file description
@@ -447,7 +443,7 @@ static void ParseMenus(FILE *file, const char *menufile) {
             thisoutput->name      = NULL;
         }
         else if (Find(in_line, "outformat:")) {
-            if (thisoutput == NULL) ParseError("'outformat' used w/o 'out'", menufile, linenr);
+            if (thisoutput == NULL) ParseError("'outformat' used w/o 'out'", in);
             crop(in_line, head, tail);
 
             if (Find(tail, "genbank")) thisoutput->format        = GENBANK;
@@ -459,15 +455,15 @@ static void ParseMenus(FILE *file, const char *menufile) {
             else fprintf(stderr, "Warning, unknown file format %s\n", tail);
         }
         else if (Find(in_line, "outsave:")) {
-            if (thisoutput == NULL) ParseError("'outsave' used w/o 'out'", menufile, linenr);
+            if (thisoutput == NULL) ParseError("'outsave' used w/o 'out'", in);
             thisoutput->save = TRUE;
         }
         else if (Find(in_line, "outoverwrite:")) {
-            if (thisoutput == NULL) ParseError("'outoverwrite' used w/o 'out'", menufile, linenr);
+            if (thisoutput == NULL) ParseError("'outoverwrite' used w/o 'out'", in);
             thisoutput->overwrite = TRUE;
         }
         else {
-            ParseError(GBS_global_string("No known GDE-menu-command found (line='%s')", in_line), menufile, linenr);
+            ParseError(GBS_global_string("No known GDE-menu-command found (line='%s')", in_line), in);
         }
     }
 
@@ -480,13 +476,13 @@ void LoadMenus() {
     /*! Load the menu config file ("$ARBHOME/lib/gde/arb.menu")
      */
     char *menufile = nulldup(GB_path_in_ARBLIB("gde/arb.menu"));
-    FILE *file     = fopen(menufile, "r");
-    if (file == NULL) Error(GBS_global_string("Fatal: File '%s' missing", menufile));
+    FILE *file     = fopen(menufile, "r");       // closed by FileBuffer
 
-    ParseMenus(file, menufile);
+    if (!file) Error(GBS_global_string("Fatal: File '%s' missing", menufile));
 
+    FileBuffer in(menufile, file);
+    ParseMenus(in);
     free(menufile);
-    fclose(file);
 }
 
 
@@ -512,12 +508,6 @@ void Error(const char *msg) {
     fflush(stderr);
     gde_assert(0);
     exit(EXIT_FAILURE);
-}
-
-void ParseError(const char *msg, const char *filename, int linenr) {
-    // goes to header: __ATTR__NORETURN
-    fprintf(stderr, "\n%s:%i: ", filename, linenr);
-    Error(msg);
 }
 
 /*
