@@ -539,6 +539,6 @@ void GDE_create_var(AW_root              *aw_root,
 
     DataSet = (NA_Alignment *) Calloc(1, sizeof(NA_Alignment));
     DataSet->rel_offset = 0;
-    ParseMenu();
+    LoadMenus();
 }
 

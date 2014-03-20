@@ -4,6 +4,19 @@
 
 #include <cctype>
 
+/*
+  Copyright (c) 1989, University of Illinois board of trustees.  All rights
+  reserved.  Written by Steven Smith at the Center for Prokaryote Genome
+  Analysis.  Design and implementation guidance by Dr. Gary Olsen and Dr.
+  Carl Woese.
+
+  Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
+  All rights reserved.
+
+  Changed to fit into ARB by ARB development team.
+*/
+
+
 static int getline(FILE *file, char *string)
 {
     int c;
@@ -52,22 +65,16 @@ static void CheckItemConsistency() {
     }
 }
 
-/*
-  ParseMenus(): Read in the menu config file, and generate the internal
-  menu structures used by the window system.
 
-  Copyright (c) 1989, University of Illinois board of trustees.  All rights
-  reserved.  Written by Steven Smith at the Center for Prokaryote Genome
-  Analysis.  Design and implementation guidance by Dr. Gary Olsen and Dr.
-  Carl Woese.
+static void ParseMenus(FILE *file, const char *menufile) {
+    /*  Read the menu file and assemble an internal representation
+     *  of the menu/menu-item hierarchy.
+     */
 
-  Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
-  All rights reserved.
+    memset((char*)&menu[0], 0, sizeof(Gmenu)*GDEMAXMENU);
 
-  Changed to fit into ARB by ARB development team.
-*/
+    int linenr = 1;
 
-void ParseMenu() {
     int curarg    = 0;
     int curinput  = 0;
     int curoutput = 0;
@@ -78,28 +85,13 @@ void ParseMenu() {
     GfileFormat  *thisinput  = NULL;
     GfileFormat  *thisoutput = NULL;
 
-    int   j;
-    char  in_line[GBUFSIZ], temp[GBUFSIZ], head[GBUFSIZ];
-    char  tail[GBUFSIZ];
+    int  j;
+    char in_line[GBUFSIZ];
+    char temp[GBUFSIZ];
+    char head[GBUFSIZ];
+    char tail[GBUFSIZ];
+
     char *resize;
-
-    // Open the menu configuration file "$ARBHOME/lib/gde/arb.menu"
-    memset((char*)&menu[0], 0, sizeof(Gmenu)*GDEMAXMENU);
-
-    // @@@ use GB_path_in_ARBLIB
-    const char *home = GB_getenvARBHOME();
-    strcpy(temp, home);
-    strcat(temp, "/lib/gde/arb.menu");
-
-    char *menufile = strdup(temp);
-    int   linenr   = 1;
-
-    FILE *file = fopen(menufile, "r");
-    if (file == NULL) Error(GBS_global_string("Fatal: File '%s' missing", menufile));
-
-    /*  Read the arb.menu file, and assemble an internal representation
-     *  of the menu/menu-item hierarchy.
-     */
 
     for (; getline(file, in_line) != EOF; ++linenr) {
         if (in_line[0] == '#' || (in_line[0] && in_line[1] == '#')) {
@@ -479,15 +471,24 @@ void ParseMenu() {
         }
     }
 
-    free(menufile);
-
-    fclose(file);
-
     CheckItemConsistency();
 
     gde_assert(num_menus>0); // if this fails, the file arb.menu contained no menus (maybe file has zero size)
-    return;
 }
+
+void LoadMenus() {
+    /*! Load the menu config file ("$ARBHOME/lib/gde/arb.menu")
+     */
+    char *menufile = nulldup(GB_path_in_ARBLIB("gde/arb.menu"));
+    FILE *file     = fopen(menufile, "r");
+    if (file == NULL) Error(GBS_global_string("Fatal: File '%s' missing", menufile));
+
+    ParseMenus(file, menufile);
+
+    free(menufile);
+    fclose(file);
+}
+
 
 int Find(const char *target, const char *key) {
     // Search the target string for the given key
@@ -555,7 +556,7 @@ void crop(char *input, char *head, char *tail)
 
 void TEST_load_menu() {
     // very basic test: just detects failing assertions, crashes and errors
-    ParseMenu();
+    LoadMenus();
     // @@@ need to check loaded data
 }
 

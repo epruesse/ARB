@@ -51,7 +51,7 @@ void SeqNorm(NA_Sequence *seq);
 char *uniqueID(void);
 
 /* GDE_ParseMenu.cxx */
-void ParseMenu(void);
+void LoadMenus(void);
 int Find(const char *target, const char *key);
 int Find2(const char *target, const char *key);
 void Error(const char *msg) __ATTR__NORETURN;
