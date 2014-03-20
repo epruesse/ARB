@@ -25,7 +25,7 @@ CHECK_AS_EXPECTED =
 
 # ----------------------------------------
 
-all: $(MENUS_TGT) help $(CHECK_AS_EXPECTED)
+all: $(MENUS_TGT) help $(CHECK_AS_EXPECTED) rm_obsolete
 
 MENUS/%.genmenu : genmenu.header
 
@@ -62,6 +62,9 @@ $(HELPFILELIST): $(SUBMENUS) Makefile
 	grep -ih '^itemhelp:' $(SUBMENUS) | $(SED) -e 's/^itemhelp://' | sort | uniq > $@
 
 # ------------------------------------------------------------
+
+rm_obsolete:
+	@(test -f ARB_GDEmenus && rm -f ARB_GDEmenus) || true
 
 clean: $(HELPFILELIST)
 	@$(MAKE) -f Makefile.helpfiles \
