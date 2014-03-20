@@ -1,6 +1,8 @@
 #include "GDE_proto.h"
+
+#include <aw_window.hxx>
+
 #include <cctype>
-#include "aw_window.hxx"
 
 static int getline(FILE *file, char *string)
 {
@@ -158,6 +160,7 @@ void ParseMenu() {
             thisitem              = &(thismenu->item[curitem]);
             thisitem->label       = strdup(temp);
             thisitem->meta        = '\0';
+            thisitem->seqtype     = '-';
             thisitem->numinputs   = 0;
             thisitem->numoutputs  = 0;
             thisitem->numargs     = 0;
