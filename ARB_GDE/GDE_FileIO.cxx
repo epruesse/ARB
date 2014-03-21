@@ -295,6 +295,13 @@ static int FindType(char *name, int *dtype, int *ftype) {
     return result;
 }
 
+inline bool is_arb_db_name(const char *filename) {
+    const char *arb_suffix = ".arb";
+    const char *dotArb     = strstr(filename, arb_suffix);
+
+    return (dotArb && strcmp(dotArb, arb_suffix) == 0) || strchr(filename, ':');
+}
+
 void LoadData(char *filen) {
     /* LoadData():
      * Load a data set from the command line argument.
@@ -315,7 +322,7 @@ void LoadData(char *filen) {
     if (Find2(filen, "gde") != 0)
         strcpy(FileName, filen);
 
-    if (strstr(filen, ".arb") || strchr(filen, ':')) {  // ARBDB TYPE
+    if (is_arb_db_name(filen)) {  // ARBDB TYPE
         if (DataSet == NULL) {
             DataSet = (NA_Alignment *) Calloc(1,
                                               sizeof(NA_Alignment));
