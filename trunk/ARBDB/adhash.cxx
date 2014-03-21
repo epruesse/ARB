@@ -382,50 +382,6 @@ char *GBS_hashtab_2_string(const GB_HASH *hash) {
 }
 
 
-#if defined(UNIT_TESTS)
-static void GBS_string_2_hashtab(GB_HASH *hash, char *data) { // currently only used in unit tests below
-    // modifies data
-    char *p, *d, *dp;
-    int   c;
-    char *nextp;
-    char *str;
-    int   strlen;
-    long  val;
-
-    for (p = data; p;   p = nextp) {
-        strlen = 0;
-        for (dp = p; (c = *dp); dp++) {
-            if (c==':') {
-                if (dp[1] == ':') dp++;
-                else break;
-            }
-            strlen++;
-        }
-        if (*dp) {
-            nextp = strchr(dp, ' ');
-            if (nextp) nextp++;
-        }
-        else break;
-
-        str = (char *)GB_calloc(sizeof(char), strlen+1);
-        for (dp = p, d = str; (c = *dp);  dp++) {
-            if (c==':') {
-                if (dp[1] == ':') {
-                    *(d++) = c;
-                    dp++;
-                }
-                else break;
-            }
-            else {
-                *(d++) = c;
-            }
-        }
-        val = atoi(dp+1);
-        GBS_write_hash_no_strdup(hash, str, val);
-    }
-}
-#endif
-
 static gbs_hash_entry *find_hash_entry(const GB_HASH *hs, const char *key, size_t *index) {
     gbs_hash_entry *e;
     if (hs->case_sens == GB_IGNORE_CASE) {
@@ -596,116 +552,6 @@ void GBS_free_hash(GB_HASH *hs) {
     free(hs);
 }
 
-// determine hash quality
-
-struct gbs_hash_statistic_summary {
-    long   count;               // how many stats
-    long   min_size, max_size, sum_size;
-    long   min_nelem, max_nelem, sum_nelem;
-    long   min_collisions, max_collisions, sum_collisions;
-    double min_fill_ratio, max_fill_ratio, sum_fill_ratio;
-    double min_hash_quality, max_hash_quality, sum_hash_quality;
-
-    void init() {
-        count          = 0;
-        min_size       = min_nelem = min_collisions = LONG_MAX;
-        max_size       = max_nelem = max_collisions = LONG_MIN;
-        min_fill_ratio = min_hash_quality = DBL_MAX;
-        max_fill_ratio = max_hash_quality = DBL_MIN;
-
-        sum_size       = sum_nelem = sum_collisions = 0;
-        sum_fill_ratio = sum_hash_quality = 0.0;
-    }
-};
-
-class hash_statistic_manager : virtual Noncopyable {
-    GB_HASH *stat_hash;
-public:
-    hash_statistic_manager() : stat_hash(NULL) { }
-    ~hash_statistic_manager() {
-        if (stat_hash) GBS_free_hash(stat_hash);
-    }
-
-    gbs_hash_statistic_summary *get_stat_summary(const char *id) {
-        if (!stat_hash) stat_hash = GBS_create_dynaval_hash(10, GB_MIND_CASE, GBS_dynaval_free);
-
-        long found = GBS_read_hash(stat_hash, id);
-        if (!found) {
-            gbs_hash_statistic_summary *stat = (gbs_hash_statistic_summary*)GB_calloc(1, sizeof(*stat));
-            stat->init();
-            found = (long)stat;
-            GBS_write_hash(stat_hash, id, found);
-        }
-
-        return (gbs_hash_statistic_summary*)found;
-    }
-};
-
-static hash_statistic_manager hash_stat_man;
-
-static void addto_hash_statistic_summary(gbs_hash_statistic_summary *stat, long size, long nelem, long collisions, double fill_ratio, double hash_quality) {
-    stat->count++;
-
-    if (stat->min_size > size) stat->min_size = size;
-    if (stat->max_size < size) stat->max_size = size;
-
-    if (stat->min_nelem > nelem) stat->min_nelem = nelem;
-    if (stat->max_nelem < nelem) stat->max_nelem = nelem;
-
-    if (stat->min_collisions > collisions) stat->min_collisions = collisions;
-    if (stat->max_collisions < collisions) stat->max_collisions = collisions;
-
-    if (stat->min_fill_ratio > fill_ratio) stat->min_fill_ratio = fill_ratio;
-    if (stat->max_fill_ratio < fill_ratio) stat->max_fill_ratio = fill_ratio;
-
-    if (stat->min_hash_quality > hash_quality) stat->min_hash_quality = hash_quality;
-    if (stat->max_hash_quality < hash_quality) stat->max_hash_quality = hash_quality;
-
-    stat->sum_size         += size;
-    stat->sum_nelem        += nelem;
-    stat->sum_collisions   += collisions;
-    stat->sum_fill_ratio   += fill_ratio;
-    stat->sum_hash_quality += hash_quality;
-}
-
-void GBS_clear_hash_statistic_summary(const char *id) {
-    hash_stat_man.get_stat_summary(id)->init();
-}
-
-void GBS_print_hash_statistic_summary(const char *id) {
-    gbs_hash_statistic_summary *stat  = hash_stat_man.get_stat_summary(id);
-    long                        count = stat->count;
-    printf("Statistic summary for %li hashes of type '%s':\n", count, id);
-    printf("- size:          min = %6li ; max = %6li ; mean = %6.1f\n", stat->min_size, stat->max_size, (double)stat->sum_size/count);
-    printf("- nelem:         min = %6li ; max = %6li ; mean = %6.1f\n", stat->min_nelem, stat->max_nelem, (double)stat->sum_nelem/count);
-    printf("- fill_ratio:    min = %5.1f%% ; max = %5.1f%% ; mean = %5.1f%%\n", stat->min_fill_ratio*100.0, stat->max_fill_ratio*100.0, (double)stat->sum_fill_ratio/count*100.0);
-    printf("- collisions:    min = %6li ; max = %6li ; mean = %6.1f\n", stat->min_collisions, stat->max_collisions, (double)stat->sum_collisions/count);
-    printf("- hash_quality:  min = %5.1f%% ; max = %5.1f%% ; mean = %5.1f%%\n", stat->min_hash_quality*100.0, stat->max_hash_quality*100.0, (double)stat->sum_hash_quality/count*100.0);
-}
-
-void GBS_calc_hash_statistic(const GB_HASH *hs, const char *id, int print) {
-    long   queues     = 0;
-    long   collisions;
-    double fill_ratio = (double)hs->nelem/hs->size;
-    double hash_quality;
-
-    for (size_t i = 0; i < hs->size; i++) {
-        if (hs->entries[i]) queues++;
-    }
-    collisions = hs->nelem - queues;
-
-    hash_quality = (double)queues/hs->nelem; // no collisions means 100% quality
-
-    if (print != 0) {
-        printf("Statistic for hash '%s':\n", id);
-        printf("- size       = %zu\n", hs->size);
-        printf("- elements   = %zu (fill ratio = %4.1f%%)\n", hs->nelem, fill_ratio*100.0);
-        printf("- collisions = %li (hash quality = %4.1f%%)\n", collisions, hash_quality*100.0);
-    }
-
-    addto_hash_statistic_summary(hash_stat_man.get_stat_summary(id), hs->size, hs->nelem, collisions, fill_ratio, hash_quality);
-}
-
 void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data) {
     size_t hsize = hs->size;
     for (size_t i=0; i<hsize; i++) {
@@ -754,25 +600,6 @@ size_t GBS_hash_count_elems(const GB_HASH *hs) {
 
     return count;
 }
-
-#if defined(UNIT_TESTS)
-static size_t GBS_hash_count_value(GB_HASH *hs, long val) {
-    size_t hsize    = hs->size;
-    size_t count = 0;
-
-    gb_assert(val != 0); // counting zero values makes no sense (cause these are not stored in the hash)
-
-    for (size_t i = 0; i<hsize; ++i) {
-        for (gbs_hash_entry *e=hs->entries[i]; e; e=e->next) {
-            if (e->val == val) {
-                ++count;
-            }
-        }
-    }
-
-    return count;
-}
-#endif
 
 const char *GBS_hash_next_element_that(const GB_HASH *hs, const char *last_key, bool (*condition)(const char *key, long val, void *cd), void *cd) {
     /* Returns the key of the next element after 'last_key' matching 'condition' (i.e. where condition returns true).
@@ -909,12 +736,6 @@ long GBS_write_numhash(GB_NUMHASH *hs, long key, long val) {
     return oldval;
 }
 
-#if defined(UNIT_TESTS)
-static long GBS_numhash_count_elems(GB_NUMHASH *hs) {
-    return hs->nelem;
-}
-#endif
-
 static void GBS_erase_numhash(GB_NUMHASH *hs) {
     size_t hsize = hs->size;
 
@@ -941,6 +762,120 @@ void GBS_free_numhash(GB_NUMHASH *hs) {
 #ifdef UNIT_TESTS
 
 #include <test_unit.h>
+
+// determine hash quality
+
+struct gbs_hash_statistic_summary {
+    long   count;               // how many stats
+    long   min_size, max_size, sum_size;
+    long   min_nelem, max_nelem, sum_nelem;
+    long   min_collisions, max_collisions, sum_collisions;
+    double min_fill_ratio, max_fill_ratio, sum_fill_ratio;
+    double min_hash_quality, max_hash_quality, sum_hash_quality;
+
+    void init() {
+        count          = 0;
+        min_size       = min_nelem = min_collisions = LONG_MAX;
+        max_size       = max_nelem = max_collisions = LONG_MIN;
+        min_fill_ratio = min_hash_quality = DBL_MAX;
+        max_fill_ratio = max_hash_quality = DBL_MIN;
+
+        sum_size       = sum_nelem = sum_collisions = 0;
+        sum_fill_ratio = sum_hash_quality = 0.0;
+    }
+};
+
+class hash_statistic_manager : virtual Noncopyable {
+    GB_HASH *stat_hash;
+public:
+    hash_statistic_manager() : stat_hash(NULL) { }
+    ~hash_statistic_manager() {
+        if (stat_hash) GBS_free_hash(stat_hash);
+    }
+
+    gbs_hash_statistic_summary *get_stat_summary(const char *id) {
+        if (!stat_hash) stat_hash = GBS_create_dynaval_hash(10, GB_MIND_CASE, GBS_dynaval_free);
+
+        long found = GBS_read_hash(stat_hash, id);
+        if (!found) {
+            gbs_hash_statistic_summary *stat = (gbs_hash_statistic_summary*)GB_calloc(1, sizeof(*stat));
+            stat->init();
+            found = (long)stat;
+            GBS_write_hash(stat_hash, id, found);
+        }
+
+        return (gbs_hash_statistic_summary*)found;
+    }
+};
+
+static void addto_hash_statistic_summary(gbs_hash_statistic_summary *stat, long size, long nelem, long collisions, double fill_ratio, double hash_quality) {
+    stat->count++;
+
+    if (stat->min_size > size) stat->min_size = size;
+    if (stat->max_size < size) stat->max_size = size;
+
+    if (stat->min_nelem > nelem) stat->min_nelem = nelem;
+    if (stat->max_nelem < nelem) stat->max_nelem = nelem;
+
+    if (stat->min_collisions > collisions) stat->min_collisions = collisions;
+    if (stat->max_collisions < collisions) stat->max_collisions = collisions;
+
+    if (stat->min_fill_ratio > fill_ratio) stat->min_fill_ratio = fill_ratio;
+    if (stat->max_fill_ratio < fill_ratio) stat->max_fill_ratio = fill_ratio;
+
+    if (stat->min_hash_quality > hash_quality) stat->min_hash_quality = hash_quality;
+    if (stat->max_hash_quality < hash_quality) stat->max_hash_quality = hash_quality;
+
+    stat->sum_size         += size;
+    stat->sum_nelem        += nelem;
+    stat->sum_collisions   += collisions;
+    stat->sum_fill_ratio   += fill_ratio;
+    stat->sum_hash_quality += hash_quality;
+}
+
+static hash_statistic_manager hash_stat_man;
+
+static void test_clear_hash_statistic_summary(const char *id) {
+    hash_stat_man.get_stat_summary(id)->init();
+}
+
+static void test_print_hash_statistic_summary(const char *id) {
+    gbs_hash_statistic_summary *stat  = hash_stat_man.get_stat_summary(id);
+    long                        count = stat->count;
+    printf("Statistic summary for %li hashes of type '%s':\n", count, id);
+    printf("- size:          min = %6li ; max = %6li ; mean = %6.1f\n", stat->min_size, stat->max_size, (double)stat->sum_size/count);
+    printf("- nelem:         min = %6li ; max = %6li ; mean = %6.1f\n", stat->min_nelem, stat->max_nelem, (double)stat->sum_nelem/count);
+    printf("- fill_ratio:    min = %5.1f%% ; max = %5.1f%% ; mean = %5.1f%%\n", stat->min_fill_ratio*100.0, stat->max_fill_ratio*100.0, (double)stat->sum_fill_ratio/count*100.0);
+    printf("- collisions:    min = %6li ; max = %6li ; mean = %6.1f\n", stat->min_collisions, stat->max_collisions, (double)stat->sum_collisions/count);
+    printf("- hash_quality:  min = %5.1f%% ; max = %5.1f%% ; mean = %5.1f%%\n", stat->min_hash_quality*100.0, stat->max_hash_quality*100.0, (double)stat->sum_hash_quality/count*100.0);
+}
+
+static void test_calc_hash_statistic(const GB_HASH *hs, const char *id, int print) {
+    long   queues     = 0;
+    long   collisions;
+    double fill_ratio = (double)hs->nelem/hs->size;
+    double hash_quality;
+
+    for (size_t i = 0; i < hs->size; i++) {
+        if (hs->entries[i]) queues++;
+    }
+    collisions = hs->nelem - queues;
+
+    hash_quality = (double)queues/hs->nelem; // no collisions means 100% quality
+
+    if (print != 0) {
+        printf("Statistic for hash '%s':\n", id);
+        printf("- size       = %zu\n", hs->size);
+        printf("- elements   = %zu (fill ratio = %4.1f%%)\n", hs->nelem, fill_ratio*100.0);
+        printf("- collisions = %li (hash quality = %4.1f%%)\n", collisions, hash_quality*100.0);
+    }
+
+    addto_hash_statistic_summary(hash_stat_man.get_stat_summary(id), hs->size, hs->nelem, collisions, fill_ratio, hash_quality);
+}
+
+static long test_numhash_count_elems(GB_NUMHASH *hs) {
+    return hs->nelem;
+}
 
 static long insert_into_hash(const char *key, long val, void *cl_toHash) {
     GB_HASH *toHash = (GB_HASH*)cl_toHash;
@@ -1006,6 +941,23 @@ struct TestData : virtual Noncopyable {
 
 static TestData TEST;
 
+static size_t test_hash_count_value(GB_HASH *hs, long val) {
+    size_t hsize    = hs->size;
+    size_t count = 0;
+
+    gb_assert(val != 0); // counting zero values makes no sense (cause these are not stored in the hash)
+
+    for (size_t i = 0; i<hsize; ++i) {
+        for (gbs_hash_entry *e=hs->entries[i]; e; e=e->next) {
+            if (e->val == val) {
+                ++count;
+            }
+        }
+    }
+
+    return count;
+}
+
 void TEST_GBS_write_hash() {
     TEST.reset();
 
@@ -1036,8 +988,8 @@ void TEST_GBS_write_hash() {
             TEST_EXPECT_EQUAL(GBS_read_hash(hash, "FOO"), 2);
             TEST_EXPECT_ZERO(GBS_read_hash(hash, "Foo"));
             
-            TEST_EXPECT_EQUAL(GBS_hash_count_value(hash, 1), 2);
-            TEST_EXPECT_EQUAL(GBS_hash_count_value(hash, 2), 2);
+            TEST_EXPECT_EQUAL(test_hash_count_value(hash, 1), 2);
+            TEST_EXPECT_EQUAL(test_hash_count_value(hash, 2), 2);
         }
         else {
             TEST_EXPECT_EQUAL(GBS_hash_count_elems(hash), 2);
@@ -1046,8 +998,8 @@ void TEST_GBS_write_hash() {
             TEST_EXPECT_EQUAL(GBS_read_hash(hash, "FOO"), 2);
             TEST_EXPECT_EQUAL(GBS_read_hash(hash, "Foo"), 2);
 
-            TEST_EXPECT_ZERO(GBS_hash_count_value(hash, 1));
-            TEST_EXPECT_EQUAL(GBS_hash_count_value(hash, 2), 2);
+            TEST_EXPECT_ZERO(test_hash_count_value(hash, 1));
+            TEST_EXPECT_EQUAL(test_hash_count_value(hash, 2), 2);
         }
 
         if (case_sens) {
@@ -1080,6 +1032,48 @@ void TEST_GBS_incr_hash() {
     }
 }
 
+static void test_string_2_hashtab(GB_HASH *hash, char *data) {
+    // modifies data
+    char *p, *d, *dp;
+    int   c;
+    char *nextp;
+    char *str;
+    int   strlen;
+    long  val;
+
+    for (p = data; p;   p = nextp) {
+        strlen = 0;
+        for (dp = p; (c = *dp); dp++) {
+            if (c==':') {
+                if (dp[1] == ':') dp++;
+                else break;
+            }
+            strlen++;
+        }
+        if (*dp) {
+            nextp = strchr(dp, ' ');
+            if (nextp) nextp++;
+        }
+        else break;
+
+        str = (char *)GB_calloc(sizeof(char), strlen+1);
+        for (dp = p, d = str; (c = *dp);  dp++) {
+            if (c==':') {
+                if (dp[1] == ':') {
+                    *(d++) = c;
+                    dp++;
+                }
+                else break;
+            }
+            else {
+                *(d++) = c;
+            }
+        }
+        val = atoi(dp+1);
+        GBS_write_hash_no_strdup(hash, str, val);
+    }
+}
+
 void TEST_GBS_hashtab_2_string() {
     TEST.reset();
 
@@ -1100,7 +1094,7 @@ void TEST_GBS_hashtab_2_string() {
         TEST_REJECT_NULL(as_string);
 
         GB_HASH *hash2 = GBS_create_hash(1000, case_sens ? GB_MIND_CASE : GB_IGNORE_CASE);
-        GBS_string_2_hashtab(hash2, as_string); 
+        test_string_2_hashtab(hash2, as_string);
         TEST_EXPECT(hashes_are_equal(hash, hash2));
         TEST_EXPECT(hashes_are_equal(hash, hash2));
 
@@ -1167,7 +1161,7 @@ void TEST_numhash() {
             added++;
         }
 
-        TEST_EXPECT_EQUAL(GBS_numhash_count_elems(numhash), added);
+        TEST_EXPECT_EQUAL(test_numhash_count_elems(numhash), added);
 
         for (long key = LOW; key <= HIGH; key += STEP) {
             TEST_EXPECT_EQUAL(key2val(key, pass), GBS_read_numhash(numhash, key));
@@ -1181,8 +1175,8 @@ void TEST_numhash() {
         GBS_write_numhash(numhash2, key, GBS_read_numhash(numhash, key)); // copy numhash->numhash2
         GBS_write_numhash(numhash, key, (long)NULL);
     }
-    TEST_EXPECT_EQUAL(GBS_numhash_count_elems(numhash2), added);
-    TEST_EXPECT_ZERO(GBS_numhash_count_elems(numhash));
+    TEST_EXPECT_EQUAL(test_numhash_count_elems(numhash2), added);
+    TEST_EXPECT_ZERO(test_numhash_count_elems(numhash));
 
     GBS_free_numhash(numhash2);                     // free filled hash
     GBS_free_numhash(numhash);                      // free empty hash
@@ -1222,7 +1216,7 @@ void TEST_GBS_optimize_hash_and_stats() {
     const int SIZE = 10;
     const int FILL = 70;
 
-    GBS_clear_hash_statistic_summary("test");
+    test_clear_hash_statistic_summary("test");
     for (int pass = 1; pass <= 3; ++pass) {
         GB_HASH *hash = GBS_create_hash(SIZE, GB_MIND_CASE);
 
@@ -1253,11 +1247,11 @@ void TEST_GBS_optimize_hash_and_stats() {
                 break;
         }
 
-        GBS_calc_hash_statistic(hash, "test", 1);
+        test_calc_hash_statistic(hash, "test", 1);
         GBS_free_hash(hash);
     }
 
-    GBS_print_hash_statistic_summary("test");
+    test_print_hash_statistic_summary("test");
 }
 
 static bool has_value(const char *, long val, void *cd) { return val == (long)cd; }

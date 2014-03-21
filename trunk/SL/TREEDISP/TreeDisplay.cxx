@@ -1322,7 +1322,7 @@ public:
     }
 };
 
-AWT_graphic_event::ClickPreference preferredForCommand(AWT_COMMAND_MODE mode) {
+static AWT_graphic_event::ClickPreference preferredForCommand(AWT_COMMAND_MODE mode) {
     // return preferred click target for tree-display
     // (Note: not made this function a member of AWT_graphic_event,
     //  since modes are still reused in other ARB applications,

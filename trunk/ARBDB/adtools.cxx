@@ -835,7 +835,7 @@ inline char *find_macro_in(const char *dir, const char *macroname) {
     return full;
 }
 
-char *GBT_fullMacroname(const char *macro_name) {
+static char *fullMacroname(const char *macro_name) {
     /*! detect full path of 'macro_name'
      * @param macro_name full path or path relative to ARBMACRO or ARBMACROHOME
      * @return full path or NULL (in which case an error is exported)
@@ -882,7 +882,7 @@ inline const char *relative_inside(const char *dir, const char *fullpath) {
 
 const char *GBT_relativeMacroname(const char *macro_name) {
     /*! make macro_name relative if it is located in or below ARBMACROHOME or ARBMACRO.
-     * Inverse function of GBT_fullMacroname()
+     * Inverse function of fullMacroname()
      * @return pointer into macro_name (relative part) or macro_name itself (if macro is located somewhere else)
      */
 
@@ -903,7 +903,7 @@ GB_ERROR GBT_macro_execute(const char *macro_name, bool loop_marked, bool run_as
      */
 
     GB_ERROR  error     = NULL;
-    char     *fullMacro = GBT_fullMacroname(macro_name);
+    char     *fullMacro = fullMacroname(macro_name);
     if (!fullMacro) {
         error = GB_await_error();
     }
@@ -1176,7 +1176,7 @@ static arb_test::match_expectation macroFoundAs(const char *shortName, const cha
     expectation_group expected;
 
     {
-        char *found = GBT_fullMacroname(shortName);
+        char *found = fullMacroname(shortName);
         expected.add(that(found).is_equal_to(expectedFullName));
         if (found) {
             expected.add(that(GBT_relativeMacroname(found)).is_equal_to(expectedRelName));
