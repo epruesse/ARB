@@ -58,7 +58,7 @@ typedef std::vector<FeatureLinePtr> FeatureLines;
 class Importer : virtual Noncopyable {
 protected:
     DBwriter&         db_writer;
-    FileBuffer&       flatfile;
+    LineReader&       flatfile;
     MetaTagTranslator tagTranslator;
     FeatureLines      pushedFeatureLines; // pushed back feature lines
     stringVector      warnings;
@@ -82,7 +82,7 @@ protected:
     void show_warnings(const string& import_of_what);
 
 public:
-    Importer(FileBuffer& Flatfile, DBwriter& DB_writer, const MetaTag *meta_description);
+    Importer(LineReader& Flatfile, DBwriter& DB_writer, const MetaTag *meta_description);
     virtual ~Importer() {}
 
     void import();
@@ -96,7 +96,7 @@ class GenebankImporter : public Importer {
     void         parseSequence(const string& tag, const string& headerline);
 
 public:
-    GenebankImporter(FileBuffer& Flatfile, DBwriter& DB_writer);
+    GenebankImporter(LineReader& Flatfile, DBwriter& DB_writer);
     virtual ~GenebankImporter() OVERRIDE {}
 
 };
@@ -108,7 +108,7 @@ class EmblImporter : public Importer {
     void         parseSequence(const string& headerline);
 
 public:
-    EmblImporter(FileBuffer& Flatfile, DBwriter& DB_writer);
+    EmblImporter(LineReader& Flatfile, DBwriter& DB_writer);
     virtual ~EmblImporter() OVERRIDE {}
 };
 

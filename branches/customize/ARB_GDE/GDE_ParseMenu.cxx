@@ -52,13 +52,13 @@ static void CheckItemConsistency() {
     }
 }
 
-static __ATTR__NORETURN void ParseError(const char *msg, const FileBuffer& file) {
+static __ATTR__NORETURN void ParseError(const char *msg, const LineReader& file) {
     // goes to header: __ATTR__NORETURN
     fprintf(stderr, "\n%s:%li: ", file.getFilename().c_str(), file.getLineNumber());
     Error(msg);
 }
 
-static void ParseMenus(FileBuffer& in) {
+static void ParseMenus(LineReader& in) {
     /*  Read the menu file and assemble an internal representation
      *  of the menu/menu-item hierarchy.
      */

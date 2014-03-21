@@ -57,8 +57,8 @@ public:
 class InputFileError : public Error {
     string located_error;
 public:
-    InputFileError(FileBuffer& fileBuffer, string message)      : located_error(fileBuffer.lineError(message)) {}
-    InputFileError(FileBuffer& fileBuffer, const char *message) : located_error(fileBuffer.lineError(message)) {}
+    InputFileError(LineReader& fileBuffer, string message)      : located_error(fileBuffer.lineError(message)) {}
+    InputFileError(LineReader& fileBuffer, const char *message) : located_error(fileBuffer.lineError(message)) {}
     virtual ~InputFileError() OVERRIDE {}
 
     void print() const OVERRIDE {
@@ -257,7 +257,7 @@ class TypeMap {
 public:
     TypeMap() {}
 
-    void load(FileBuffer& typemap);
+    void load(LineReader& typemap);
     bool has_definition_for(const string& type_decl) const {
         return defined_types.find(type_decl) != defined_types.end();
     }
@@ -628,7 +628,7 @@ inline void trim(string& text) {
     }
 }
 
-void TypeMap::load(FileBuffer& typemap_reader) {
+void TypeMap::load(LineReader& typemap_reader) {
     string line;
     while (typemap_reader.getLine(line)) {
         if (line == "TYPEMAP") {
@@ -722,7 +722,7 @@ public:
         handcoded.rewind();
     }
 
-    void generate_all_xsubs(FileBuffer& prototype_reader);
+    void generate_all_xsubs(LineReader& prototype_reader);
 
     void print_xsubs(FILE *out) {
         arb.print_xsubs(out);
@@ -840,11 +840,11 @@ void xsubGenerator::generate_xsub(const Prototype& prototype) {
 #endif // TRACE
 }
 
-static void print_prototype_parse_error(FileBuffer& prototype_reader, const char *err, const char *prototype) {
+static void print_prototype_parse_error(LineReader& prototype_reader, const char *err, const char *prototype) {
     InputFileError(prototype_reader, GBS_global_string("%s (can't xsub '%s')", err, prototype)).print();
 }
 
-void xsubGenerator::generate_all_xsubs(FileBuffer& prototype_reader) {
+void xsubGenerator::generate_all_xsubs(LineReader& prototype_reader) {
     bool   error_occurred     = false;
     string line;
     int    open_brace_counter = 0;
