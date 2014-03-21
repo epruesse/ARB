@@ -32,46 +32,39 @@
 
 using std::string;
 
-const size_t BUFFERSIZE = 64*1024;
+class LineReader : virtual Noncopyable {
+    /*! may represent any source that can be read line by line
+     */
 
-class FileBuffer : virtual Noncopyable {
-private:
-    char buf[BUFFERSIZE];
-    size_t read; // chars in buf
-    size_t offset; // offset to next line
-
-    FILE *fp;
-
+    size_t  lineNumber; // current line number
     string *next_line;
+    bool   showFilename; // @@@ rename (not necessarily a file)
 
-    size_t lineNumber;                              // current line number
-    string filename;
-    bool   showFilename;
+    virtual bool getLine_intern(string& line) = 0;
 
-    void fillBuffer();
-
-    bool getLine_intern(string& line);
-
-public:
-    FileBuffer(const string& filename_, FILE *in) {
-        filename = filename_;
-        fp       = in;
-
-        showFilename = true;
-
-        fb_assert(fp);
-        read = BUFFERSIZE;
-        fillBuffer();
-
-        next_line  = 0;
+protected:
+    void reset() {
+        if (next_line) {
+            delete next_line;
+            next_line = NULL;
+        }
         lineNumber = 0;
     }
-    virtual ~FileBuffer() {
+
+public:
+    LineReader()
+        : lineNumber(0),
+          next_line(NULL),
+          showFilename(true)
+    {}
+    virtual ~LineReader() {
         delete next_line;
-        if (fp) fclose(fp);
     }
 
-    bool good() { return fp!=0; }
+    string lineError(const string& msg) const;
+    string lineError(const char *msg) const { return lineError(string(msg)); }
+
+    void showFilenameInLineError(bool show) { showFilename = show; } // @@@ rename (not necessarily a file)
 
     virtual bool getLine(string& line) {
         lineNumber++;
@@ -84,24 +77,16 @@ public:
         return getLine_intern(line);
     }
 
-    long getLineNumber() const { return lineNumber; }
-
     void backLine(const string& line) { // push line back
         fb_assert(next_line==0);
         next_line = new string(line);
         lineNumber--;
     }
 
-    void rewind();
-
-    const string& getFilename() const { return filename; }
-
-    void showFilenameInLineError(bool show) { showFilename = show; }
-    string lineError(const string& msg) const;
-    string lineError(const char *msg) const { return lineError(string(msg)); }
-
-    size_t getLineNumber() { return lineNumber; }
+    size_t getLineNumber() const { return lineNumber; }
     void setLineNumber(size_t line) { lineNumber = line; }
+
+    virtual const string& getFilename() const = 0; // @@@ rename (not necessarily a file)
 
     void copyTo(FILE *out) {
         string line;
@@ -110,6 +95,41 @@ public:
             fputc('\n', out);
         }
     }
+};
+
+const size_t BUFFERSIZE = 64*1024;
+
+class FileBuffer : public LineReader { // derived from Noncopyable
+    char buf[BUFFERSIZE];
+    size_t read; // chars in buf
+    size_t offset; // offset to next line
+
+    FILE *fp;
+
+    string filename;
+
+    void fillBuffer();
+
+    bool getLine_intern(string& line) OVERRIDE;
+
+public:
+    FileBuffer(const string& filename_, FILE *in) {
+        filename = filename_;
+        fp       = in;
+
+        fb_assert(fp);
+        read = BUFFERSIZE;
+        fillBuffer();
+    }
+    virtual ~FileBuffer() {
+        if (fp) fclose(fp);
+    }
+
+    bool good() { return fp!=0; }
+    void rewind();
+
+    const string& getFilename() const OVERRIDE { return filename; }
+
 };
 
 #else
