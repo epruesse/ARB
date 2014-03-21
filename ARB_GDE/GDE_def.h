@@ -50,9 +50,6 @@
 #define GDE         0x100
 #define GENBANK     0x101
 #define NA_FLAT     0x102
-#define COLORMASK   0x103
-#define STATUS_FILE 0x104
-#define ARBDB       0x105
 
 // Protection bits
 #define PROT_BASE_CHANGES  0x1                      // Allow base changes
