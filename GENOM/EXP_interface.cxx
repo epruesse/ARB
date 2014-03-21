@@ -167,7 +167,7 @@ static GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
     return gb_experiment;
 }
 
-void add_selected_experiment_changed_cb(AW_root *aw_root, const RootCallback& cb) {
+static void add_selected_experiment_changed_cb(AW_root *aw_root, const RootCallback& cb) {
     aw_root->awar(AWAR_EXPERIMENT_NAME)->add_callback(cb);
     ORGANISM_get_selector().add_selection_changed_cb(aw_root, cb);
 }
