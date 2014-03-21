@@ -2385,15 +2385,17 @@ static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
                             error = GB_write_as_string(gb_new, value);
                         }
                     }
-                    else {
+                    else { // if value is NULL -> delete field
                         if (!append) error = GB_delete(gb_new);
                     }
                 }
                 else {
-                    gb_new = GB_search(gb_item, key, (GB_TYPES)GB_read_int(gb_key_type));
+                    if (value) { // do not create field if value is NULL
+                        gb_new = GB_search(gb_item, key, (GB_TYPES)GB_read_int(gb_key_type));
 
-                    if (!gb_new) error = GB_await_error();
-                    else error         = GB_write_as_string(gb_new, value);
+                        if (!gb_new) error = GB_await_error();
+                        else error         = GB_write_as_string(gb_new, value);
+                    }
                 }
             }
         }
