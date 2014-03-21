@@ -181,8 +181,6 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     return (Action);
 }
 
-
-
 static long LMAX(long a, long b)
 {
     if (a>b) return a;
@@ -237,7 +235,6 @@ static char *ReplaceString(char *Action, const char *old, const char *news)
     }
     return (Action);
 }
-
 
 static void GDE_freesequ(NA_Sequence *sequ) {
     if (sequ) {
@@ -533,18 +530,8 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     }
 
     if (!stop) {
-        int select_mode = 0;
-        {
-            bool flag = false;
-            for (int j=0; j<current_item->numinputs; j++) {
-                if (current_item->input[j].format != STATUS_FILE) {
-                    flag = true;
-                }
-            }
-            if (flag && DataSet) select_mode = ALL;
-        }
-
-        int pid = getpid();
+        int select_mode = (DataSet && (current_item->numinputs>0)) ? ALL : 0;
+        int pid         = getpid();
 
         static int fileindx = 0;
         for (int j=0; j<current_item->numinputs; j++) {
@@ -555,11 +542,9 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             gfile.name = preCreateTempfile(buffer);
 
             switch (gfile.format) {
-                case COLORMASK:   WriteCMask  (DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case GENBANK:     WriteGen    (DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case NA_FLAT:     WriteNA_Flat(DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case STATUS_FILE: WriteStatus (DataSet, gfile.name);                 break;
-                case GDE:         WriteGDE    (DataSet, gfile.name, select_mode, gfile.maskable); break;
+                case GENBANK: WriteGen    (DataSet, gfile.name, select_mode, gfile.maskable); break;
+                case NA_FLAT: WriteNA_Flat(DataSet, gfile.name, select_mode, gfile.maskable); break;
+                case GDE:     WriteGDE    (DataSet, gfile.name, select_mode, gfile.maskable); break;
                 default: break;
             }
         }
@@ -597,8 +582,6 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
 
         long oldnumelements = DataSet->numelements;
 
-        BlockInput = false;
-
         for (int j=0; j<current_item->numoutputs; j++) {
             if (current_item->output[j].overwrite) {
                 if (current_item->output[j].format == GDE) OVERWRITE = true;
@@ -615,10 +598,8 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
                 case GDE:
                     LoadData(current_item->output[j].name);
                     break;
-                case COLORMASK:
-                    ReadCMask(current_item->output[j].name);
-                    break;
                 default:
+                    gde_assert(0);
                     break;
             }
             OVERWRITE = false;
