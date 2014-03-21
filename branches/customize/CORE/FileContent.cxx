@@ -57,7 +57,7 @@ GB_ERROR FileContent::save() {
 #include <test_unit.h>
 #endif
 
-arb_test::match_expectation arrays_equal(const StrArray& expected, const StrArray& got) {
+static arb_test::match_expectation arrays_equal(const StrArray& expected, const StrArray& got) {
     using namespace   arb_test;
     match_expectation same_size = that(expected.size()).is_equal_to(got.size());
     if (same_size.fulfilled()) {

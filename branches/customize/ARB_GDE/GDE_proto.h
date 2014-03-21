@@ -34,10 +34,7 @@ void Ascii2NA(char *buffer, int len, int matrix[16]);
 int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable);
 void Warning(const char *s);
 void InitNASeq(NA_Sequence *seq, int type);
-void ReadCMask(const char *filename);
-int WriteStatus(NA_Alignment *aln, char *filename);
 void NormalizeOffset(NA_Alignment *aln);
-int WriteCMask(NA_Alignment *aln, char *filename, int method, int maskable);
 
 /* GDE_Genbank.cxx */
 void ReadGen(char *filename, NA_Alignment *dataset);
@@ -45,9 +42,7 @@ int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable);
 void SetTime(void *b);
 
 /* GDE_HGLfile.cxx */
-void ReadGDE(char *filename, NA_Alignment *dataset);
 int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable);
-void SeqNorm(NA_Sequence *seq);
 char *uniqueID(void);
 
 /* GDE_ParseMenu.cxx */
@@ -63,7 +58,6 @@ void crop(char *input, char *head, char *tail);
 #include "GDE_extglob.h"
 #endif
 
-void ReadArbdb_plain(char *, NA_Alignment *dataset, int dummy_1x);
 int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo);
 int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo);
 int getelem(NA_Sequence *a, int b);

@@ -392,12 +392,8 @@ static void ParseMenus(FileBuffer& in) {
             if (thisinput == NULL) ParseError("'informat' used w/o 'in'", in);
             crop(in_line, head, tail);
 
-            if (Find(tail, "genbank")) thisinput->format        = GENBANK;
-            else if (Find(tail, "gde")) thisinput->format       = GDE;
-            else if (Find(tail, "na_flat")) thisinput->format   = NA_FLAT;
-            else if (Find(tail, "colormask")) thisinput->format = COLORMASK;
-            else if (Find(tail, "flat")) thisinput->format      = NA_FLAT;
-            else if (Find(tail, "status")) thisinput->format    = STATUS_FILE;
+            if (Find(tail, "genbank")) thisinput->format   = GENBANK;
+            else if (Find(tail, "flat")) thisinput->format = NA_FLAT;
             else fprintf(stderr, "Warning, unknown file format %s\n", tail);
         }
         else if (Find(in_line, "insave:")) {
@@ -446,12 +442,9 @@ static void ParseMenus(FileBuffer& in) {
             if (thisoutput == NULL) ParseError("'outformat' used w/o 'out'", in);
             crop(in_line, head, tail);
 
-            if (Find(tail, "genbank")) thisoutput->format        = GENBANK;
-            else if (Find(tail, "gde")) thisoutput->format       = GDE;
-            else if (Find(tail, "na_flat")) thisoutput->format   = NA_FLAT;
-            else if (Find(tail, "flat")) thisoutput->format      = NA_FLAT;
-            else if (Find(tail, "status")) thisoutput->format    = STATUS_FILE;
-            else if (Find(tail, "colormask")) thisoutput->format = COLORMASK;
+            if (Find(tail, "genbank")) thisoutput->format   = GENBANK;
+            else if (Find(tail, "gde")) thisoutput->format  = GDE;
+            else if (Find(tail, "flat")) thisoutput->format = NA_FLAT;
             else fprintf(stderr, "Warning, unknown file format %s\n", tail);
         }
         else if (Find(in_line, "outsave:")) {
@@ -500,7 +493,6 @@ int Find2(const char *target, const char *key) {
 }
 
 // --------------------------------------------------------------------------------
-
 
 void Error(const char *msg) {
     // goes to header: __ATTR__NORETURN

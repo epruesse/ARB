@@ -965,7 +965,7 @@ GB_ERROR link_to_tree(NamedNodes& named, GBT_TREE *node) {
     return error;
 }
 
-GBT_TREE *findNode(GBT_TREE *node, const char *name) {
+static GBT_TREE *findNode(GBT_TREE *node, const char *name) {
     if (node->is_leaf) {
         return strcmp(node->name, name) == 0 ? node : NULL;
     }

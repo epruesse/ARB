@@ -813,7 +813,7 @@ static const char *shortenLongString(const char *str, size_t wanted_len) {
     return result;
 }
 
-char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDATA *gbd, const char *default_tree_name) {
+static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDATA *gbd, const char *default_tree_name) {
     int trace = GB_get_ACISRT_trace();
 
     GB_MAIN_TYPE *Main    = GB_MAIN(gb_main);
@@ -1094,7 +1094,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         return result;
     }
 
-    return GBS_apply_ACI(gb_main, commands, str, gbd, default_tree_name);
+    return apply_ACI(gb_main, commands, str, gbd, default_tree_name);
 }
 
 // --------------------------------------------------------------------------------

@@ -34,7 +34,6 @@ void Regroup(NA_Alignment *alignment)
     return;
 }
 
-
 void ErrorOut5(int code, const char *string)
 {
     // Print error message, and die
@@ -52,11 +51,6 @@ char *Calloc(int count, int size)
     // More robust memory management routines
     char *temp;
     size *= count;
-#ifdef SeeAlloc
-    extern int TotalCalloc;
-    TotalCalloc += count*size;
-    fprintf(stderr, "Calloc %d %d\n", count*size, TotalCalloc);
-#endif
     temp = (char *)malloc(size);
     ErrorOut5(0 != temp, "Cannot allocate memory");
     memset(temp, 0, size);
@@ -66,11 +60,6 @@ char *Calloc(int count, int size)
 char *Realloc(char *block, int size)
 {
     char       *temp;
-#ifdef SeeAlloc
-    extern int  TotalRealloc;
-    TotalRealloc += size;
-    fprintf(stderr, "Realloc %d\n", TotalRealloc);
-#endif
     temp          = (char *)realloc(block, size);
     ErrorOut5(0   != temp, "Cannot change memory size");
 
@@ -89,7 +78,6 @@ void Cfree(char *block)
         Warning("Error in Cfree, NULL block");
     return;
 }
-
 
 static void ReadNA_Flat(char *filename, char *dataset) {
     size_t j;
@@ -219,17 +207,9 @@ static void LoadFile(char *filename, NA_Alignment *dataset, int type, int format
             ((NA_Alignment*)dataset)->format = GENBANK;
             break;
 
-        case ARBDB:
-            ReadArbdb_plain(filename, dataset, type);
-            ((NA_Alignment*)dataset)->format = ARBDB;
-            break;
-
         case GDE:
-            ReadGDE(filename, dataset);
-            ((NA_Alignment*)dataset)->format = GDE;
+            gde_assert(0); // @@@ should no longer occur
             break;
-        case COLORMASK:
-            ReadCMask(filename);
 
         default:
             break;
@@ -278,12 +258,6 @@ static int FindType(char *name, int *dtype, int *ftype) {
                             *ftype = GDE;
                             break;
                         }
-                        else if (Find(in_line, "start:"))
-                        {
-                            *dtype = NASEQ_ALIGN;
-                            *ftype = COLORMASK;
-                            break;
-                        }
                     }
                     result = 0;
                 }
@@ -309,31 +283,10 @@ void LoadData(char *filen) {
 
     FILE         *file;
     NA_Alignment *DataNaAln;
-    char          temp[1024];
 
     // Get file name, determine the file type, and away we go..
     if (Find2(filen, "gde") != 0)
         strcpy(FileName, filen);
-
-    if (strstr(filen, ".arb") || strchr(filen, ':')) {  // ARBDB TYPE
-        if (DataSet == NULL) {
-            DataSet = (NA_Alignment *) Calloc(1,
-                                              sizeof(NA_Alignment));
-            DataNaAln = (NA_Alignment *) DataSet;
-            DataSet->rel_offset = 0;
-        }
-        else {
-            DataNaAln = (NA_Alignment *) DataSet;
-        }
-        DataType = NASEQ_ALIGN;
-        FileFormat = ARBDB;
-        LoadFile(filen, DataNaAln,
-                 DataType, FileFormat);
-
-        sprintf(temp, "Remote ARBDB access (%s)", filen);
-        return;
-    }
-
 
     if ((file=fopen(filen, "r"))!=0)
     {
@@ -343,8 +296,7 @@ void LoadData(char *filen) {
             case NASEQ_ALIGN:
                 if (DataSet == NULL)
                 {
-                    DataSet = (NA_Alignment*)Calloc(1,
-                                                    sizeof(NA_Alignment));
+                    DataSet = (NA_Alignment*)Calloc(1, sizeof(NA_Alignment));
                     DataNaAln = (NA_Alignment*)DataSet;
                     DataSet->rel_offset = 0;
                 }
@@ -352,8 +304,7 @@ void LoadData(char *filen) {
                     DataNaAln = (NA_Alignment*)DataSet;
                 }
 
-                LoadFile(filen, DataNaAln,
-                         DataType, FileFormat);
+                LoadFile(filen, DataNaAln, DataType, FileFormat);
 
                 break;
             default:
@@ -362,10 +313,7 @@ void LoadData(char *filen) {
         }
         fclose(file);
     }
-    sprintf(temp, "Genetic Data Environment 2.2 (%s)", FileName);
-    return;
 }
-
 
 void AppendNA(NA_Base *buffer, int len, NA_Sequence *seq)
 {
@@ -552,7 +500,6 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
     return (0);
 }
 
-
 void Warning(const char *s) {
     aw_message(s);
 }
@@ -622,220 +569,6 @@ void InitNASeq(NA_Sequence *seq, int type) {
     return;
 }
 
-
-void ReadCMask(const char *filename)
-{
-
-    char in_line[GBUFSIZ];
-    char head[GBUFSIZ];
-    char curname[GBUFSIZ];
-    char temp[GBUFSIZ];
-    bool IGNORE_DASH = false;
-    int  offset;
-
-    NA_Alignment *aln;
-
-    size_t  j;
-    size_t  curlen = 0;
-    int    *colors = 0, jj, indx = 0;
-    FILE   *file;
-
-    if (DataSet == NULL) return;
-
-    aln = (NA_Alignment*)DataSet;
-
-    curname[0] = '\0';
-    file = fopen(filename, "r");
-    if (file == NULL)
-    {
-        Warning("GDE: File not found");
-        Warning(filename);
-        return;
-    }
-
-    for (; fgets(in_line, GBUFSIZ, file) != 0;)
-    {
-        if (Find(in_line, "offset:"))
-        {
-            crop(in_line, head, temp);
-            sscanf(temp, "%d", &(aln->cmask_offset));
-        }
-        else if (Find(in_line, "nodash:"))
-            IGNORE_DASH = true;
-        else if (Find(in_line, "dash:"))
-            IGNORE_DASH = true;
-        else if (Find(in_line, "name:"))
-        {
-            crop(in_line, head, curname);
-            curname[strlen(curname)-1] = '\0';
-            for (j=0; j<strlen(curname); j++)
-                if (curname[j] == '(')
-                    curname[j] = '\0';
-        }
-        else if (Find(in_line, "length:"))
-        {
-            crop(in_line, head, temp);
-            sscanf(temp, "%zu", &curlen);
-        }
-        else if (Find(in_line, "start:"))
-        {
-            indx = -1;
-            if (curlen == 0)
-            {
-                Warning("illegal format in colormask");
-                fclose(file);
-                return;
-            }
-            if (strlen(curname) != 0)
-            {
-                indx = -1;
-                for (j=0; j<aln->numelements; j++)
-                    if (Find(aln->element[j].short_name, curname)
-                       || Find(aln->element[j].id, curname))
-                    {
-                        if (aln->element[j].cmask != NULL)
-                            Cfree((char*)aln -> element[j].cmask);
-                        colors=(int*)Calloc(aln->element[j]
-                                            .seqmaxlen+1+aln->element[j].offset
-                                            , sizeof(int));
-                        aln->element[j].cmask = colors;
-                        indx = j;
-                        j = aln->numelements;
-                    }
-                if (indx == -1)
-                    colors=NULL;
-            }
-            else
-            {
-                if (aln->cmask != NULL) Cfree((char*)aln->cmask);
-                colors=(int*)Calloc(curlen, sizeof(int));
-                aln->cmask = colors;
-                aln->cmask_len = curlen;
-                for (j=0; j<curlen; j++)
-                    colors[j] = 12;
-            }
-
-            if (IGNORE_DASH && (indx != -1))
-            {
-                for (jj=0, j=0; (j<curlen) &&
-                        (jj<aln->element[indx].seqlen); j++, jj++)
-                {
-                    offset = aln->element[indx].offset;
-                    if (fgets(in_line, GBUFSIZ, file)==NULL)
-                    {
-                        Warning("illegal format in colormask");
-                        fclose(file);
-                        return;
-                    }
-                    /*  Fixed so that the keyword nodash causes the colormask to be mapped
-                     *  to the sequence, not the alignment.
-                     *
-                     *  The allocated space is equal the seqlen of the matched sequence.
-                     */
-                    if (aln->element[indx].tmatrix)
-                        for (; (getelem(&(aln->element[indx]), jj
-                                      +offset)
-                                ==(aln->element[indx].tmatrix['-'])
-                              || (getelem(&(aln->element[indx]), jj
-                                          +offset)
-                                  ==aln->element[indx].tmatrix['~']))
-                                && jj < aln->element[indx].seqlen;)
-                            colors[jj++] = 12;
-                    else
-                        for (; getelem(&(aln->element[indx]), jj
-                                     +offset)
-                                =='-' && jj < aln->element[indx].seqlen;)
-                            colors[jj++] = 12;
-
-                    sscanf(in_line, "%d", &(colors[jj]));
-                }
-            }
-            else if ((indx == -1) && (strlen(curname) != 0)) {
-                for (j=0; j<curlen; j++) {
-                    char *read = fgets(in_line, GBUFSIZ, file);
-                    if (!read) {
-                        Warning("Unexepected end of file");
-                        fclose(file);
-                        return;
-                    }
-                }
-            }
-            else
-                for (j=0; j<curlen; j++)
-                {
-                    if (fgets(in_line, GBUFSIZ, file)==NULL)
-                    {
-                        Warning("illegal format in colormask");
-                        fclose(file);
-                        return;
-                    }
-                    sscanf(in_line, "%d", &(colors[j]));
-                }
-            IGNORE_DASH = false;
-            curname[0] = '\0';
-        }
-
-    }
-    fclose(file);
-    return;
-}
-
-
-int WriteStatus(NA_Alignment *aln, char *filename) {
-    NA_Sequence *this_seq;
-    int j;
-    FILE *file;
-    filename=0;
-
-    if (DataSet == NULL)
-        return (1);
-
-    gde_assert(filename != NULL);
-    file = fopen(filename, "w");
-    if (file == NULL)
-    {
-        Warning("Cannot open status file.");
-        return (1);
-    }
-    fprintf(file, "File_format: %s\n", FileFormat==GENBANK ? "genbank" : "flat");
-
-    this_seq = &(aln->element[1]); // Nadd->cursor !?
-    if (this_seq->id[0]) fprintf(file, "sequence-ID %s\n", this_seq->id);
-    fprintf(file, "Column: %d\nPos:%d\n", 1, 1); // NAdd->cursor_x,NAdd->position
-    switch (this_seq->elementtype)
-    {
-        case DNA:
-        case RNA:
-            fprintf(file, "#%s\n",
-                    this_seq->short_name);
-            break;
-        case PROTEIN:
-            fprintf(file, "%%%s\n",
-                    this_seq->short_name);
-            break;
-        case MASK:
-            fprintf(file, "@%s\n",
-                    this_seq->short_name);
-            break;
-        case TEXT:
-            fprintf(file, "%c%s\n", '"',
-                    this_seq->short_name);
-            break;
-        default:
-            break;
-    }
-    if (this_seq->tmatrix)
-        for (j=0; j<this_seq->seqlen; j++)
-            putc(this_seq->tmatrix[getelem(this_seq, j)], file);
-    else
-        for (j=0; j<this_seq->seqlen; j++)
-            putc(getelem(this_seq, j), file);
-
-    fclose(file);
-    return (0);
-}
-
-
 void NormalizeOffset(NA_Alignment *aln)
 {
     size_t j;
@@ -860,106 +593,4 @@ void NormalizeOffset(NA_Alignment *aln)
         aln->rel_offset = 0;
 
     return;
-}
-
-int WriteCMask(NA_Alignment *aln, char *filename, int method, int maskable)
-{
-    size_t j;
-    int kk, mask = -1, k, offset;
-    char offset_str[100];
-    int *buf;
-    NA_Sequence *seqs;
-    FILE *file;
-    if (aln == NULL)
-        return (1);
-
-    if (aln->numelements == 0)
-        return (1);
-    seqs = aln->element;
-
-    file = fopen(filename, "w");
-    if (file == NULL)
-    {
-        Warning("Cannot open file for output");
-        return (1);
-    }
-    if (maskable && (method != SELECT_REGION))
-    {
-        for (j=0; j<aln->numelements; j++)
-            if (seqs[j].elementtype == MASK &&
-               seqs[j].selected)
-                mask = j;
-    }
-    for (j=0; j<aln->numelements; j++)
-    {
-        SeqNorm(&(seqs[j]));
-    }
-
-    for (j=0; j<aln->numelements; j++)
-    {
-        if (method != SELECT_REGION) {
-            offset = seqs[j].offset;
-        }
-        else {
-            for (offset=seqs[j].offset; aln->selection_mask[offset] == '0'; offset++) ;
-        }
-
-        if (offset+aln->rel_offset != 0) {
-            sprintf(offset_str, "(%d)", offset+aln->rel_offset);
-        }
-        else {
-            offset_str[0] = '\0';
-        }
-
-        if ((((int)j!=mask) && (seqs[j].selected) && method != SELECT_REGION)
-           || (method == SELECT_REGION && seqs[j].subselected)
-           || method == ALL)
-        {
-            fprintf(file, "%c%s%s\n",
-                    seqs[j].elementtype == DNA ? '#' :
-                    seqs[j].elementtype == RNA ? '#' :
-                    seqs[j].elementtype == PROTEIN ? '%' :
-                    seqs[j].elementtype == TEXT ? '"' :
-                    seqs[j].elementtype == MASK ? '@' : '"',
-                    seqs[j].short_name,
-                    (offset+aln->rel_offset  == 0) ? "" : offset_str);
-
-            if (seqs[j].cmask != NULL)
-            {
-
-                buf = (int*) Calloc(seqs[j].seqlen, sizeof(int));
-
-                if (mask == -1)
-                {
-                    for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
-                    {
-                        if (method == SELECT_REGION)
-                        {
-                            if (aln->selection_mask[kk+offset]=='1')
-                                buf[k++] = (getcmask(&(seqs[j]), kk+offset));
-                        }
-
-                        else
-                            buf[k++] = (getcmask(&(seqs[j]), kk+offset));
-                    }
-                }
-                else
-                {
-                    for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
-                        if (getelem(&(seqs[mask]), kk+offset) == '1')
-                            buf[k++] = (getcmask(&(seqs[j]), kk+offset));
-                    // @@@ Looks like k might be one behind?
-                }
-                fprintf(file, "name:%s\noffset:%d\nlength:%d\nstart:\n",
-                        seqs[j].short_name, seqs[j].offset, k);
-
-                for (kk = 0; kk < k; kk++)
-                    fprintf(file, "%d\n", buf[kk]);
-
-                Cfree((char*)buf);
-            }
-        }
-    }
-    fclose(file);
-    return (0);
 }

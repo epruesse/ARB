@@ -92,6 +92,33 @@ void ED4_calc_terminal_extentions() {
 #endif // DEBUG
 }
 
+static ARB_ERROR update_terminal_extension(ED4_base *this_object) {
+    if (this_object->is_terminal()) {
+        if (this_object->is_spacer_terminal()) {
+            if (this_object->parent->is_device_manager()) { // the rest is managed by reference links
+                ;
+                //      this_object->extension.size[HEIGHT] = TERMINALHEIGHT / 2;   // @@@ Zeilenabstand verringern hier?
+            }
+        }
+        else if (this_object->is_species_name_terminal()) {
+            this_object->extension.size[WIDTH] = MAXSPECIESWIDTH - BRACKETWIDTH * this_object->calc_group_depth();
+        }
+        else if (this_object->is_sequence_info_terminal()) {
+            this_object->extension.size[WIDTH] = MAXINFOWIDTH;
+        }
+        else if (this_object->is_line_terminal()) { // thought for line terminals which are direct children of the device manager
+            this_object->extension.size[WIDTH] =
+                TREETERMINALSIZE + MAXSPECIESWIDTH +
+                ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[WIDTH] +
+                ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[WIDTH];
+        }
+    }
+
+    this_object->request_resize();
+
+    return NULL;
+}
+
 void ED4_expose_recalculations() {
     ED4_ROOT->recalc_font_group();
     ED4_calc_terminal_extentions();
@@ -892,33 +919,6 @@ void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
     }
 
     ED4_ROOT->request_refresh_for_sequence_terminals();
-}
-
-ARB_ERROR update_terminal_extension(ED4_base *this_object) {
-    if (this_object->is_terminal()) {
-        if (this_object->is_spacer_terminal()) {
-            if (this_object->parent->is_device_manager()) { // the rest is managed by reference links
-                ;
-                //      this_object->extension.size[HEIGHT] = TERMINALHEIGHT / 2;   // @@@ Zeilenabstand verringern hier?
-            }
-        }
-        else if (this_object->is_species_name_terminal()) {
-            this_object->extension.size[WIDTH] = MAXSPECIESWIDTH - BRACKETWIDTH * this_object->calc_group_depth();
-        }
-        else if (this_object->is_sequence_info_terminal()) {
-            this_object->extension.size[WIDTH] = MAXINFOWIDTH;
-        }
-        else if (this_object->is_line_terminal()) { // thought for line terminals which are direct children of the device manager
-            this_object->extension.size[WIDTH] =
-                TREETERMINALSIZE + MAXSPECIESWIDTH +
-                ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[WIDTH] +
-                ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[WIDTH];
-        }
-    }
-
-    this_object->request_resize();
-
-    return NULL;
 }
 
 #define SIGNIFICANT_FIELD_CHARS 30 // length used to compare field contents (in createGroupFromSelected)
