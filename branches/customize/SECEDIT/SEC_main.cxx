@@ -14,7 +14,7 @@
 #include "SEC_drawn_pos.hxx"
 #include "SEC_toggle.hxx"
 
-#include <FileBuffer.h>
+#include <BufferedFileReader.h>
 
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
@@ -341,7 +341,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
             error = GB_export_errorf("Can't open file '%s'", filename);
         }
         else {
-            FileBuffer file(filename, in);
+            BufferedFileReader file(filename, in);
             error = expectContent(file, ASS_START);
 
             string structure;

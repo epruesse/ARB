@@ -12,7 +12,7 @@ Reader::Reader(const char *inf)
         if (!fp) {
             throw_errorf(1, "can't read input file '%s' (Reason: %s)", inf, strerror(errno));
         }
-        file = new FileBuffer(inf, fp);
+        file = new BufferedFileReader(inf, fp);
         file->showFilenameInLineError(true);
         read();
     }

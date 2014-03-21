@@ -1,8 +1,8 @@
 #ifndef READER_H
 #define READER_H
 
-#ifndef FILEBUFFER_H
-#include <FileBuffer.h>
+#ifndef BUFFEREDFILEREADER_H
+#include <BufferedFileReader.h>
 #endif
 #ifndef DEFS_H
 #include "defs.h"
@@ -19,11 +19,11 @@
 
 
 class Reader : virtual Noncopyable {
-    FILE       *fp;
-    FileBuffer *file;
-    char        linebuf[LINESIZE];
-    const char *curr;     // == NULL means "EOF reached"
-    bool        failure;
+    FILE               *fp;
+    BufferedFileReader *file;
+    char                linebuf[LINESIZE];
+    const char         *curr; // == NULL means "EOF reached"
+    bool                failure;
 
     void reset() {
         curr    = linebuf;

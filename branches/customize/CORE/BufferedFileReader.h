@@ -11,9 +11,8 @@
 // purpose.  It is provided "as is" without express or implied warranty.
 // --------------------------------------------------------------------------------
 
-
-#ifndef FILEBUFFER_H
-#define FILEBUFFER_H
+#ifndef BUFFEREDFILEREADER_H
+#define BUFFEREDFILEREADER_H
 
 #ifndef _GLIBCXX_CSTDIO
 #include <cstdio>
@@ -99,7 +98,7 @@ public:
 
 const size_t BUFFERSIZE = 64*1024;
 
-class FileBuffer : public LineReader { // derived from Noncopyable
+class BufferedFileReader : public LineReader { // derived from Noncopyable
     char buf[BUFFERSIZE];
     size_t read; // chars in buf
     size_t offset; // offset to next line
@@ -113,7 +112,7 @@ class FileBuffer : public LineReader { // derived from Noncopyable
     bool getLine_intern(string& line) OVERRIDE;
 
 public:
-    FileBuffer(const string& filename_, FILE *in) {
+    BufferedFileReader(const string& filename_, FILE *in) {
         filename = filename_;
         fp       = in;
 
@@ -121,7 +120,7 @@ public:
         read = BUFFERSIZE;
         fillBuffer();
     }
-    virtual ~FileBuffer() {
+    virtual ~BufferedFileReader() {
         if (fp) fclose(fp);
     }
 
@@ -133,5 +132,5 @@ public:
 };
 
 #else
-#error FileBuffer.h included twice
-#endif // FILEBUFFER_H
+#error BufferedFileReader.h included twice
+#endif // BUFFEREDFILEREADER_H

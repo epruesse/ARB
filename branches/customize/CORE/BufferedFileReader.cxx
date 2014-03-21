@@ -11,7 +11,7 @@
 // purpose.  It is provided "as is" without express or implied warranty.
 // --------------------------------------------------------------------------------
 
-#include "FileBuffer.h"
+#include "BufferedFileReader.h"
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
@@ -19,7 +19,7 @@
 
 using namespace std;
 
-void FileBuffer::fillBuffer()
+void BufferedFileReader::fillBuffer()
 {
     if (read==BUFFERSIZE) {
         read = fread(buf, sizeof(buf[0]), BUFFERSIZE, fp);
@@ -33,7 +33,7 @@ void FileBuffer::fillBuffer()
 static char eol[3] = "\n\r";
 static inline bool is_EOL(char c) { return c == eol[0] || c == eol[1]; }
 
-bool FileBuffer::getLine_intern(string& line)
+bool BufferedFileReader::getLine_intern(string& line)
 {
     if (offset==read) return false;
 
@@ -123,7 +123,7 @@ string LineReader::lineError(const string& msg) const {
     return &*buffer;
 }
 
-void FileBuffer::rewind() {
+void BufferedFileReader::rewind() {
     errno = 0;
     std::rewind(fp);
     fb_assert(errno == 0); // not handled yet

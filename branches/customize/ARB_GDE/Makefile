@@ -282,13 +282,13 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cb.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cb_base.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/dupstr.h
-GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/static_assert.h

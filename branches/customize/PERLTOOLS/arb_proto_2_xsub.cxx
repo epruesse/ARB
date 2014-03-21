@@ -11,7 +11,7 @@
 
 #include <arbdb.h>
 #include <arb_strbuf.h>
-#include <FileBuffer.h>
+#include <BufferedFileReader.h>
 
 #include <string>
 #include <vector>
@@ -69,7 +69,7 @@ public:
 
 // --------------------------------------------------------------------------------
 
-class CommentSkippingFileBuffer : public FileBuffer {
+class CommentSkippingFileBuffer : public BufferedFileReader {
     string open_comment;
     string close_comment;
     string eol_comment;
@@ -85,7 +85,7 @@ class CommentSkippingFileBuffer : public FileBuffer {
                 seen_end  = true;
             }
             else {
-                if (!FileBuffer::getLine(curr_line)) {
+                if (!BufferedFileReader::getLine(curr_line)) {
                     setLineNumber(comment_startLineNumber);
                     throw_error("end of file reached while skipping comment");
                 }
@@ -100,14 +100,14 @@ public:
                               const char    *openComment,
                               const char    *closeComment,
                               const char    *eolComment)
-        : FileBuffer(filename_, in)
+        : BufferedFileReader(filename_, in)
         , open_comment(openComment)
         , close_comment(closeComment)
         , eol_comment(eolComment)
     {}
 
     bool getLine(string& line) OVERRIDE {
-        if (FileBuffer::getLine(line)) {
+        if (BufferedFileReader::getLine(line)) {
             size_t open = line.find(open_comment);
             size_t eol  = line.find(eol_comment);
 
@@ -703,7 +703,7 @@ public:
         , bio("BIO", "P2AT")
     {}
 
-    void mark_handcoded_functions(FileBuffer& handcoded) {
+    void mark_handcoded_functions(BufferedFileReader& handcoded) {
         string line;
         while (handcoded.getLine(line)) {
             Package *package = NULL;
@@ -888,7 +888,7 @@ void xsubGenerator::generate_all_xsubs(LineReader& prototype_reader) {
     if (error_occurred) throw ProgramError("could not generate xsubs for all prototypes");
 }
 
-static void print_xs_default(FileBuffer& xs_default, const char *proto_filename, FILE *out) {
+static void print_xs_default(BufferedFileReader& xs_default, const char *proto_filename, FILE *out) {
     fprintf(out,
             "/* This file has been generated from\n"
             " *    %s and\n"
@@ -901,15 +901,15 @@ static void print_xs_default(FileBuffer& xs_default, const char *proto_filename,
     xs_default.rewind();
 }
 
-static FileBuffer *createFileBuffer(const char *filename) {
+static BufferedFileReader *createFileBuffer(const char *filename) {
     FILE *in = fopen(filename, "rt");
     if (!in) {
         GB_export_IO_error("reading", filename);
         throw ProgramError(GB_await_error());
     }
-    return new FileBuffer(filename, in);
+    return new BufferedFileReader(filename, in);
 }
-static FileBuffer *createCommentSkippingFileBuffer(const char *filename) {
+static BufferedFileReader *createCommentSkippingFileBuffer(const char *filename) {
     FILE *in = fopen(filename, "rt");
     if (!in) {
         GB_export_IO_error("reading", filename);
@@ -921,7 +921,7 @@ static FileBuffer *createCommentSkippingFileBuffer(const char *filename) {
 
 
 static void loadTypemap(const char *typemap_filename) {
-    SmartPtr<FileBuffer> typemap = createFileBuffer(typemap_filename);
+    SmartPtr<BufferedFileReader> typemap = createFileBuffer(typemap_filename);
     Type::globalTypemap.load(*typemap);
 }
 
@@ -949,11 +949,12 @@ int ARB_main(int argc, char **argv)
             loadTypemap(typemap_filename);
 
             // generate xsubs
-            SmartPtr<FileBuffer> xs_default = createFileBuffer(xs_default_name);
-            xsubGenerator        generator;
+            SmartPtr<BufferedFileReader> xs_default = createFileBuffer(xs_default_name);
+
+            xsubGenerator generator;
             generator.mark_handcoded_functions(*xs_default);
             {
-                SmartPtr<FileBuffer> prototypes = createCommentSkippingFileBuffer(proto_filename);
+                SmartPtr<BufferedFileReader> prototypes = createCommentSkippingFileBuffer(proto_filename);
                 generator.generate_all_xsubs(*prototypes);
             }
 

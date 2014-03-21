@@ -11,8 +11,8 @@
 #ifndef IMPORTER_H
 #define IMPORTER_H
 
-#ifndef FILEBUFFER_H
-#include "FileBuffer.h"
+#ifndef BUFFEREDFILEREADER_H
+#include <BufferedFileReader.h>
 #endif
 #ifndef SMARTPTR_H
 #include <smartptr.h>

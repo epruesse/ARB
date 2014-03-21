@@ -1,7 +1,7 @@
 #include "GDE_proto.h"
 
 #include <aw_window.hxx>
-#include <FileBuffer.h>
+#include <BufferedFileReader.h>
 
 #include <cctype>
 
@@ -473,7 +473,7 @@ void LoadMenus() {
 
     if (!file) Error(GBS_global_string("Fatal: File '%s' missing", menufile));
 
-    FileBuffer in(menufile, file);
+    BufferedFileReader in(menufile, file);
     ParseMenus(in);
     free(menufile);
 }
