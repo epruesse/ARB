@@ -30,7 +30,7 @@
 
 #include <list>
 #include "awt_modules.hxx"
-#include <FileBuffer.h>
+#include <BufferedFileReader.h>
 
 using namespace std;
 
@@ -779,7 +779,7 @@ GB_ERROR StorableSelectionList::load(const char *filemask, bool append) const {
             error = GB_IO_error("reading", fnames[f]);
         }
         else {
-            FileBuffer file(fnames[f], in);
+            BufferedFileReader file(fnames[f], in);
             string line;
             while (file.getLine(line)) {
                 if (!line.empty()) lines.put(string2heapcopy(line));

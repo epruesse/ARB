@@ -216,16 +216,16 @@ arb_string.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_unit.h
 
-FileBuffer.o: arb_assert.h
-FileBuffer.o: arb_core.h
-FileBuffer.o: FileBuffer.h
-FileBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
-FileBuffer.o: $(ARBHOME)/INCLUDE/attributes.h
-FileBuffer.o: $(ARBHOME)/INCLUDE/cxxforward.h
-FileBuffer.o: $(ARBHOME)/INCLUDE/dupstr.h
-FileBuffer.o: $(ARBHOME)/INCLUDE/gccver.h
-FileBuffer.o: $(ARBHOME)/INCLUDE/smartptr.h
-FileBuffer.o: $(ARBHOME)/INCLUDE/test_global.h
+BufferedFileReader.o: arb_assert.h
+BufferedFileReader.o: arb_core.h
+BufferedFileReader.o: BufferedFileReader.h
+BufferedFileReader.o: $(ARBHOME)/INCLUDE/arbtools.h
+BufferedFileReader.o: $(ARBHOME)/INCLUDE/attributes.h
+BufferedFileReader.o: $(ARBHOME)/INCLUDE/cxxforward.h
+BufferedFileReader.o: $(ARBHOME)/INCLUDE/dupstr.h
+BufferedFileReader.o: $(ARBHOME)/INCLUDE/gccver.h
+BufferedFileReader.o: $(ARBHOME)/INCLUDE/smartptr.h
+BufferedFileReader.o: $(ARBHOME)/INCLUDE/test_global.h
 
 FileContent.o: arb_assert.h
 FileContent.o: arb_core.h
@@ -233,7 +233,7 @@ FileContent.o: arb_file.h
 FileContent.o: arb_msg.h
 FileContent.o: arb_strarray.h
 FileContent.o: arb_string.h
-FileContent.o: FileBuffer.h
+FileContent.o: BufferedFileReader.h
 FileContent.o: FileContent.h
 FileContent.o: $(ARBHOME)/INCLUDE/arbtools.h
 FileContent.o: $(ARBHOME)/INCLUDE/attributes.h

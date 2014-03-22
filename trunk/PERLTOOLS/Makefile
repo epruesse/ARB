@@ -62,9 +62,9 @@ arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/dupstr.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/test_global.h

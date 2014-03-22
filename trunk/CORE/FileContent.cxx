@@ -10,7 +10,7 @@
 // ============================================================= //
 
 #include "FileContent.h"
-#include "FileBuffer.h"
+#include "BufferedFileReader.h"
 #include "arb_msg.h"
 #include "arb_string.h"
 #include "arb_file.h"
@@ -23,9 +23,9 @@ void FileContent::init() {
         error = GB_IO_error("loading", path);
     }
     else {
-        FileBuffer buf(path, fp);
-        string     line;
-        
+        BufferedFileReader buf(path, fp);
+
+        string line;
         while (buf.getLine(line)) {
             Lines.put(GB_strndup(line.c_str(), line.length()));
         }
