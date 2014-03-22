@@ -118,7 +118,7 @@ bool FeatureLine::reinterpret_as_continued_line() {
 
 // --------------------------------------------------------------------------------
 
-Importer::Importer(FileBuffer& Flatfile, DBwriter& DB_writer, const MetaTag *meta_description)
+Importer::Importer(LineReader& Flatfile, DBwriter& DB_writer, const MetaTag *meta_description)
     : db_writer(DB_writer), 
       flatfile(Flatfile), 
       tagTranslator(meta_description), 
@@ -334,7 +334,7 @@ static MetaTag embl_meta_description[] = {
 // --------------------------------------------------------------------------------
 
 
-GenebankImporter::GenebankImporter(FileBuffer& Flatfile, DBwriter& DB_writer)
+GenebankImporter::GenebankImporter(LineReader& Flatfile, DBwriter& DB_writer)
     : Importer(Flatfile, DB_writer, genebank_meta_description)
 {}
 
@@ -485,7 +485,7 @@ void GenebankImporter::import_section() {
 // --------------------------------------------------------------------------------
 
 
-EmblImporter::EmblImporter(FileBuffer& Flatfile, DBwriter& DB_writer)
+EmblImporter::EmblImporter(LineReader& Flatfile, DBwriter& DB_writer)
     : Importer(Flatfile, DB_writer, embl_meta_description)
 {}
 

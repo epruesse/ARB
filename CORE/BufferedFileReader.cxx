@@ -11,7 +11,7 @@
 // purpose.  It is provided "as is" without express or implied warranty.
 // --------------------------------------------------------------------------------
 
-#include "FileBuffer.h"
+#include "BufferedFileReader.h"
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
@@ -19,7 +19,7 @@
 
 using namespace std;
 
-void FileBuffer::fillBuffer()
+void BufferedFileReader::fillBuffer()
 {
     if (read==BUFFERSIZE) {
         read = fread(buf, sizeof(buf[0]), BUFFERSIZE, fp);
@@ -33,7 +33,7 @@ void FileBuffer::fillBuffer()
 static char eol[3] = "\n\r";
 static inline bool is_EOL(char c) { return c == eol[0] || c == eol[1]; }
 
-bool FileBuffer::getLine_intern(string& line)
+bool BufferedFileReader::getLine_intern(string& line)
 {
     if (offset==read) return false;
 
@@ -86,13 +86,15 @@ bool FileBuffer::getLine_intern(string& line)
     return true;
 }
 
-string FileBuffer::lineError(const string& msg) const {
+string LineReader::lineError(const string& msg) const {
     static SmartCharPtr buffer;
-    static size_t  allocated = 0;
+    static size_t       allocated = 0;
+
+    const string& source = getFilename();
 
     size_t len;
     if (showFilename) {
-        len = msg.length()+filename.length()+100;
+        len = msg.length()+source.length()+100;
     }
     else {
         len = msg.length()+100;
@@ -107,7 +109,7 @@ string FileBuffer::lineError(const string& msg) const {
 #if defined(ASSERTION_USED)
         int printed =
 #endif // ASSERTION_USED
-            sprintf(&*buffer, "%s:%zu: %s", filename.c_str(), lineNumber, msg.c_str());
+            sprintf(&*buffer, "%s:%zu: %s", source.c_str(), lineNumber, msg.c_str());
         fb_assert((size_t)printed < allocated);
     }
     else {
@@ -121,18 +123,13 @@ string FileBuffer::lineError(const string& msg) const {
     return &*buffer;
 }
 
-void FileBuffer::rewind() {
+void BufferedFileReader::rewind() {
     errno = 0;
     std::rewind(fp);
     fb_assert(errno == 0); // not handled yet
 
     read = BUFFERSIZE;
     fillBuffer();
-
-    if (next_line) {
-        delete next_line;
-        next_line = 0;
-    }
-    lineNumber = 0;
+    reset();
 }
 

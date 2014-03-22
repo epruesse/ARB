@@ -30,7 +30,7 @@ GB_ERROR GI_importGenomeFile(ImportSession& session, const char *file_name, cons
         FILE *in = fopen(file_name, "rb");
         if (!in) throw GBS_global_string("Can't read file '%s' (Reason: %s)", file_name, strerror(errno));
 
-        FileBuffer flatfile(file_name, in);
+        BufferedFileReader flatfile(file_name, in);
         flatfile.showFilenameInLineError(false);
 
         DBwriter db_writer(session, ali_name);

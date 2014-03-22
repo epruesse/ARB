@@ -255,7 +255,7 @@ symlink_file ../CORE/arb_sort.h INCLUDE/arb_sort.h &&
 symlink_file ../CORE/arb_strarray.h INCLUDE/arb_strarray.h &&
 symlink_file ../CORE/arb_strbuf.h INCLUDE/arb_strbuf.h &&
 symlink_file ../CORE/arb_string.h INCLUDE/arb_string.h &&
-symlink_file ../CORE/FileBuffer.h INCLUDE/FileBuffer.h &&
+symlink_file ../CORE/BufferedFileReader.h INCLUDE/BufferedFileReader.h &&
 symlink_file ../CORE/FileContent.h INCLUDE/FileContent.h &&
 symlink_file ../CORE/pos_range.h INCLUDE/pos_range.h &&
 symlink_file ../DIST/dist.hxx INCLUDE/dist.hxx &&

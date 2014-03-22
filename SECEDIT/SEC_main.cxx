@@ -14,7 +14,7 @@
 #include "SEC_drawn_pos.hxx"
 #include "SEC_toggle.hxx"
 
-#include <FileBuffer.h>
+#include <BufferedFileReader.h>
 
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
@@ -286,7 +286,7 @@ static void export_structure_to_file(AW_window *, AW_CL cl_db)
 inline GB_ERROR expectedError(const char *expected) {
     return GBS_global_string("expected '%s'", expected);
 }
-inline GB_ERROR expectContent(FileBuffer& file, const char *expected) {
+inline GB_ERROR expectContent(LineReader& file, const char *expected) {
     GB_ERROR error = 0;
     string   line;
     if (!file.getLine(line) || line != expected) {
@@ -295,7 +295,7 @@ inline GB_ERROR expectContent(FileBuffer& file, const char *expected) {
     return error;
 }
 
-static string scanToken(FileBuffer& file, string& rest, GB_ERROR& error) {
+static string scanToken(LineReader& file, string& rest, GB_ERROR& error) {
     string line;
     string token;
 
@@ -318,7 +318,7 @@ static string scanToken(FileBuffer& file, string& rest, GB_ERROR& error) {
     return token;
 }
 
-static GB_ERROR expectToken(FileBuffer& file, const char *token, string& content) {
+static GB_ERROR expectToken(LineReader& file, const char *token, string& content) {
     GB_ERROR error      = 0;
     string   foundToken = scanToken(file, content, error);
     if (foundToken != token) error = expectedError(token);
@@ -341,7 +341,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
             error = GB_export_errorf("Can't open file '%s'", filename);
         }
         else {
-            FileBuffer file(filename, in);
+            BufferedFileReader file(filename, in);
             error = expectContent(file, ASS_START);
 
             string structure;
