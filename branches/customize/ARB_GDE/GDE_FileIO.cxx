@@ -34,36 +34,22 @@ void Regroup(NA_Alignment *alignment)
     return;
 }
 
-void ErrorOut5(int code, const char *string)
-{
-    // Print error message, and die
-    if (code == 0)
-    {
-        fprintf(stderr, "Error:%s\n", string);
-        exit(1);
-    }
-    return;
+template <typename T>
+inline T* Terminate_If_OutOfMemory(T *allocated) {
+    if (!allocated) GBK_terminate("Out of memory");
+    return allocated;
 }
 
-
-char *Calloc(int count, int size)
-{
+char *Calloc(int count, int size) {
     // More robust memory management routines
-    char *temp;
     size *= count;
-    temp = (char *)malloc(size);
-    ErrorOut5(0 != temp, "Cannot allocate memory");
-    memset(temp, 0, size);
-    return (temp);
+    char *temp  = (char *)malloc(size);
+    memset(Terminate_If_OutOfMemory(temp), 0, size);
+    return temp;
 }
 
-char *Realloc(char *block, int size)
-{
-    char       *temp;
-    temp          = (char *)realloc(block, size);
-    ErrorOut5(0   != temp, "Cannot change memory size");
-
-    return (temp);
+char *Realloc(char *block, int size) {
+    return Terminate_If_OutOfMemory((char*)realloc(block, size));
 }
 
 void Cfree(char *block)
