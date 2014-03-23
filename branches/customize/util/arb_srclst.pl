@@ -27,7 +27,7 @@ my @skipped_directories = (
                            qr/\/HEADERLIBS\/[^\/]+/o,
                            qr/\/UNIT_TESTER\/logs$/o,
                            qr/\/UNIT_TESTER\/tests$/o,
-                           qr/\/UNIT_TESTER\/run\/fakehome$/o,
+                           qr/\/UNIT_TESTER\/run\/fakehome\/.arb_prop\/(macros|cfgSave)$/o,
                            qr/^\.\/ARB_SOURCE_DOC/o,
                            qr/^\.\/dep_graphs/o,
                            qr/^\.\/INCLUDE$/o,
