@@ -11,7 +11,7 @@
 #include "MultiFileReader.h"
 #include "arb_msg.h"
 
-const string& MultiFileReader::getFilename() const OVERRIDE {
+const string& MultiFileReader::getFilename() const {
     if (!reader) {
         arb_assert(0);
         static string nf = "no-file";
@@ -19,7 +19,7 @@ const string& MultiFileReader::getFilename() const OVERRIDE {
     }
     return reader->getFilename();
 }
-bool MultiFileReader::getLine_intern(string& line) OVERRIDE {
+bool MultiFileReader::getLine_intern(string& line) {
     bool gotLine = false;
     if (reader) {
         gotLine = reader->getLine(line);
