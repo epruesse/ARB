@@ -560,8 +560,15 @@ void crop(char *input, char *head, char *tail)
 
 void TEST_load_menu() {
     // very basic test: just detects failing assertions, crashes and errors
-    LoadMenus();
-    // @@@ need to check loaded data
+
+    gb_getenv_hook old = GB_install_getenv_hook(arb_test::fakeenv);
+    {
+        // ../UNIT_TESTER/run/fakehome/
+
+        LoadMenus();
+        // @@@ need to check loaded data
+    }
+    TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }
 
 #endif // UNIT_TESTS
