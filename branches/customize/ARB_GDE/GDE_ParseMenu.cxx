@@ -511,19 +511,10 @@ int Find2(const char *target, const char *key) {
 
 // --------------------------------------------------------------------------------
 
-void Error(const char *msg) {
-    // goes to header: __ATTR__NORETURN __ATTR__DEPRECATED("use throwError")
-    fprintf(stderr, "Error in ARB_GDE: %s\n", msg);
-    fflush(stderr);
-    gde_assert(0);
-    exit(EXIT_FAILURE);
-}
-
 void throwError(const char *msg) {
     // goes to header: __ATTR__NORETURN
     throw string(msg);
 }
-
 
 /*
   Crop():

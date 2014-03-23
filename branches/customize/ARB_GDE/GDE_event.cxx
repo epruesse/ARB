@@ -144,7 +144,8 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
                     skip = 2; // skip '!'
                 }
                 else {
-                    Error(GBS_global_string("Cannot access label of '%s'\n", symbol));
+                    aw_message(GBS_global_string("[ARB_GDE]: Cannot access label of '%s'\n", symbol));
+                    return NULL; // @@@ ignores ressources (should only occur during development)
                 }
             }
 
@@ -471,7 +472,7 @@ static char *preCreateTempfile(const char *name) {
     // exits in case of error
     char *fullname = GB_create_tempfile(name);
 
-    if (!fullname) Error(GBS_global_string("preCreateTempfile: %s", GB_await_error())); // exits
+    if (!fullname) aw_message(GBS_global_string("[ARB_GDE]: %s", GB_await_error()));
     return fullname;
 }
 
