@@ -153,8 +153,6 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
             int   newlen = strlen(Action)-skip-symLen+repLen+1;
             char *temp   = (char *)calloc(newlen, 1);
 
-            if (!temp) Error("ReplaceArgs():Error in calloc");
-
             strncat(temp, Action, i-skip);
             strncat(temp, replaceBy, repLen);
             strcat(temp, &(Action[i+symLen]));
@@ -202,8 +200,6 @@ static char *ReplaceFile(char *Action, GfileFormat file)
     {
         newlen = strlen(Action)-strlen(symbol) + strlen(method)+1;
         temp = (char *)calloc(newlen, 1);
-        if (temp == NULL)
-            Error("ReplaceFile():Error in calloc");
         strncat(temp, Action, i);
         strncat(temp, method, strlen(method));
         strcat(temp, &(Action[i+strlen(symbol)]));
@@ -226,8 +222,6 @@ static char *ReplaceString(char *Action, const char *old, const char *news)
     {
         newlen = strlen(Action)-strlen(symbol) + strlen(method)+1;
         temp = (char *)calloc(newlen, 1);
-        if (temp == NULL)
-            Error("ReplaceFile():Error in calloc");
         strncat(temp, Action, i);
         strncat(temp, method, strlen(method));
         strcat(temp, &(Action[i+strlen(symbol)]));
@@ -556,8 +550,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         }
 
         // Create the command line for external the function call
-        char *Action = (char*)strdup(current_item->method);
-        if (Action == NULL) Error("DO(): Error in duplicating method string");
+        char *Action = strdup(current_item->method);
 
         while (1) {
             char *oldAction = strdup(Action);

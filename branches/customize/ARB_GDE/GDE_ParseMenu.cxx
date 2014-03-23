@@ -28,11 +28,11 @@ static char *readableItemname(const GmenuItem& i) {
     return GBS_global_string_copy("%s/%s", i.parent_menu->label, i.label);
 }
 
-__ATTR__NORETURN static void ItemError(const GmenuItem& i, const char *error) {
+__ATTR__NORETURN static void throwItemError(const GmenuItem& i, const char *error) {
     char       *itemName = readableItemname(i);
     const char *msg      = GBS_global_string("Invalid item '%s' in arb.menu (Reason: %s)", itemName, error); // @@@ use currently processed filename here
     free(itemName);
-    Error(msg);
+    throwError(msg);
 }
 
 static void CheckItemConsistency() {
@@ -47,16 +47,15 @@ static void CheckItemConsistency() {
             if (I.seqtype != '-' && I.numinputs<1) {
                 // Such an item would create a window where alignment/species selection has no GUI-elements.
                 // Pressing 'GO' would result in failure or deadlock.
-                ItemError(I, "item defines seqtype ('seqtype:' != '-'), but is lacking input-specification ('in:')");
+                throwItemError(I, "item defines seqtype ('seqtype:' != '-'), but is lacking input-specification ('in:')");
             }
         }
     }
 }
 
-static __ATTR__NORETURN void ParseError(const char *msg, const LineReader& file) {
-    // goes to header: __ATTR__NORETURN
+static __ATTR__NORETURN void throwParseError(const char *msg, const LineReader& file) {
     fprintf(stderr, "\n%s:%li: ", file.getFilename().c_str(), file.getLineNumber());
-    Error(msg);
+    throwError(msg);
 }
 
 static void ParseMenus(LineReader& in) {
@@ -110,7 +109,6 @@ static void ParseMenus(LineReader& in) {
                 thismenu        = &menu[curmenu];
                 thismenu->label = (char*)calloc(strlen(temp)+1, sizeof(char));
 
-                if (thismenu->label == NULL) Error("Calloc");
                 (void)strcpy(thismenu->label, temp);
                 thismenu->numitems = 0;
                 thismenu->active_mask = AWM_ALL;
@@ -125,7 +123,7 @@ static void ParseMenus(LineReader& in) {
         }
         // item: chooses menu item to use
         else if (Find(in_line, "item:")) {
-            if (thismenu == NULL) ParseError("'item' used w/o 'menu'", in);
+            if (thismenu == NULL) throwParseError("'item' used w/o 'menu'", in);
 
             curarg    = -1;
             curinput  = -1;
@@ -143,7 +141,6 @@ static void ParseMenus(LineReader& in) {
                 resize = (char *)realloc((char *)thismenu->item, thismenu->numitems*sizeof(GmenuItem));
             }
 
-            if (resize == NULL) Error ("Calloc");
             thismenu->item = (GmenuItem*)resize;
 
             thisitem              = &(thismenu->item[curitem]);
@@ -163,7 +160,6 @@ static void ParseMenus(LineReader& in) {
         else if (Find(in_line, "itemmethod:")) {
             crop(in_line, head, temp);
             thisitem->method = (char*)calloc(strlen(temp)+1, sizeof(char));
-            if (thisitem->method == NULL) Error("Calloc");
 
             {
                 char *to = thisitem->method;
@@ -204,7 +200,7 @@ static void ParseMenus(LineReader& in) {
             if (strcmp("expert", temp) == 0) thisitem->active_mask = AWM_EXP;
         }
         else if (Find(in_line, "menumeta:")) {
-            if (thismenu == NULL) ParseError("'menumeta' used w/o 'menu' or 'lmenu'", in);
+            if (thismenu == NULL) throwParseError("'menumeta' used w/o 'menu' or 'lmenu'", in);
             crop(in_line, head, temp);
             thismenu->meta = temp[0];
         }
@@ -229,13 +225,11 @@ static void ParseMenus(LineReader& in) {
             if (curarg == 0) resize = (char*)calloc(1, sizeof(GmenuItemArg));
             else resize = (char *)realloc((char *)thisitem->arg, thisitem->numargs*sizeof(GmenuItemArg));
 
-            if (resize == NULL) Error("arg: Realloc");
             memset((char *)resize + (thisitem->numargs-1)*sizeof(GmenuItemArg), 0, sizeof(GmenuItemArg));
 
             (thisitem->arg) = (GmenuItemArg*)resize;
             thisarg         = &(thisitem->arg[curarg]);
             thisarg->symbol = (char*)calloc(strlen(temp)+1, sizeof(char));
-            if (thisarg->symbol == NULL) Error("Calloc");
             (void)strcpy(thisarg->symbol, temp);
 
             thisarg->optional   = FALSE;
@@ -263,12 +257,12 @@ static void ParseMenus(LineReader& in) {
                 else {
                     if (temp[arglen] != '(' || temp[strlen(temp)-1] != ')') {
                         sprintf(head, "Unknown argtype '%s' -- syntax: text(width) e.g. text(20)", temp);
-                        ParseError(head, in);
+                        throwParseError(head, in);
                     }
                     thisarg->textwidth = atoi(temp+arglen+1);
                     if (thisarg->textwidth<1) {
                         sprintf(head, "Illegal textwidth specified in '%s'", temp);
-                        ParseError(head, in);
+                        throwParseError(head, in);
                     }
                 }
             }
@@ -285,7 +279,7 @@ static void ParseMenus(LineReader& in) {
             else if (strcmp(temp, "weights")     == 0) thisarg->type = CHOICE_WEIGHTS;
             else {
                 sprintf(head, "Unknown argtype '%s'", temp);
-                ParseError(head, in);
+                throwParseError(head, in);
             }
         }
         /* argtext: The default text value of the symbol.
@@ -317,7 +311,6 @@ static void ParseMenus(LineReader& in) {
             int curchoice = thisarg->numchoices++;
             if (curchoice == 0) resize = (char*)calloc(1, sizeof(GargChoice));
             else                resize = (char*)realloc((char *)thisarg->choice, thisarg->numchoices*sizeof(GargChoice));
-            if (resize == NULL) Error("argchoice: Realloc");
 
             thisarg->choice = (GargChoice*)resize;
 
@@ -325,8 +318,6 @@ static void ParseMenus(LineReader& in) {
             (thisarg->choice[curchoice].method) = NULL;
             (thisarg->choice[curchoice].label)  = (char*)calloc(strlen(head)+1, sizeof(char));
             (thisarg->choice[curchoice].method) = (char*)calloc(strlen(tail)+1, sizeof(char));
-
-            if (thisarg->choice[curchoice].method == NULL || thisarg->choice[curchoice].label == NULL) Error("Calloc");
 
             (void)strcpy(thisarg->choice[curchoice].label, head);
             (void)strcpy(thisarg->choice[curchoice].method, tail);
@@ -347,7 +338,6 @@ static void ParseMenus(LineReader& in) {
         else if (Find(in_line, "argmethod:")) {
             crop(in_line, head, temp);
             thisarg->method = (char*)calloc(GBUFSIZ, strlen(temp));
-            if (thisarg->method == NULL) Error("Calloc");
             (void)strcpy(thisarg->method, tail);
         }
         // argvalue: default value for a slider
@@ -376,7 +366,6 @@ static void ParseMenus(LineReader& in) {
             curinput                 = (thisitem->numinputs)++;
             if (curinput == 0) resize = (char*)calloc(1, sizeof(GfileFormat));
             else resize              = (char *)realloc((char *)thisitem->input, (thisitem->numinputs)*sizeof(GfileFormat));
-            if (resize == NULL) Error("in: Realloc");
 
             thisitem->input      = (GfileFormat*)resize;
             thisinput            = &(thisitem->input)[curinput];
@@ -390,7 +379,7 @@ static void ParseMenus(LineReader& in) {
             thisinput->typeinfo  = BASIC_TYPEINFO;
         }
         else if (Find(in_line, "informat:")) {
-            if (thisinput == NULL) ParseError("'informat' used w/o 'in'", in);
+            if (thisinput == NULL) throwParseError("'informat' used w/o 'in'", in);
             crop(in_line, head, tail);
 
             if (Find(tail, "genbank")) thisinput->format   = GENBANK;
@@ -398,19 +387,19 @@ static void ParseMenus(LineReader& in) {
             else fprintf(stderr, "Warning, unknown file format %s\n", tail);
         }
         else if (Find(in_line, "insave:")) {
-            if (thisinput == NULL) ParseError("'insave' used w/o 'in'", in);
+            if (thisinput == NULL) throwParseError("'insave' used w/o 'in'", in);
             thisinput->save = TRUE;
         }
         else if (Find(in_line, "intyped:")) {
-            if (thisinput == NULL) ParseError("'intyped' used w/o 'in'", in);
+            if (thisinput == NULL) throwParseError("'intyped' used w/o 'in'", in);
             crop(in_line, head, tail);
 
             if (Find(tail, "detailed")) thisinput->typeinfo   = DETAILED_TYPEINFO;
             else if (Find(tail, "basic")) thisinput->typeinfo = BASIC_TYPEINFO;
-            else ParseError("Unknown value for 'intyped' (known: 'detailed', 'basic')", in);
+            else throwParseError("Unknown value for 'intyped' (known: 'detailed', 'basic')", in);
         }
         else if (Find(in_line, "inselect:")) {
-            if (thisinput == NULL) ParseError("'inselect' used w/o 'in'", in);
+            if (thisinput == NULL) throwParseError("'inselect' used w/o 'in'", in);
             crop(in_line, head, tail);
 
             if (Find(tail, "one")) thisinput->select         = SELECT_ONE;
@@ -418,7 +407,7 @@ static void ParseMenus(LineReader& in) {
             else if (Find(tail, "all")) thisinput->select    = ALL;
         }
         else if (Find(in_line, "inmask:")) {
-            if (thisinput == NULL) ParseError("'inmask' used w/o 'in'", in);
+            if (thisinput == NULL) throwParseError("'inmask' used w/o 'in'", in);
             thisinput->maskable = TRUE;
         }
         // out: Output file description
@@ -429,7 +418,6 @@ static void ParseMenus(LineReader& in) {
 
             if (curoutput == 0) resize = (char*)calloc(1, sizeof(GfileFormat));
             else resize               = (char *)realloc((char *)thisitem->output, (thisitem->numoutputs)*sizeof(GfileFormat));
-            if (resize == NULL) Error("out: Realloc");
 
             thisitem->output      = (GfileFormat*)resize;
             thisoutput            = &(thisitem->output)[curoutput];
@@ -440,7 +428,7 @@ static void ParseMenus(LineReader& in) {
             thisoutput->name      = NULL;
         }
         else if (Find(in_line, "outformat:")) {
-            if (thisoutput == NULL) ParseError("'outformat' used w/o 'out'", in);
+            if (thisoutput == NULL) throwParseError("'outformat' used w/o 'out'", in);
             crop(in_line, head, tail);
 
             if (Find(tail, "genbank")) thisoutput->format   = GENBANK;
@@ -449,15 +437,15 @@ static void ParseMenus(LineReader& in) {
             else fprintf(stderr, "Warning, unknown file format %s\n", tail);
         }
         else if (Find(in_line, "outsave:")) {
-            if (thisoutput == NULL) ParseError("'outsave' used w/o 'out'", in);
+            if (thisoutput == NULL) throwParseError("'outsave' used w/o 'out'", in);
             thisoutput->save = TRUE;
         }
         else if (Find(in_line, "outoverwrite:")) {
-            if (thisoutput == NULL) ParseError("'outoverwrite' used w/o 'out'", in);
+            if (thisoutput == NULL) throwParseError("'outoverwrite' used w/o 'out'", in);
             thisoutput->overwrite = TRUE;
         }
         else {
-            ParseError(GBS_global_string("No known GDE-menu-command found (line='%s')", in_line), in);
+            throwParseError(GBS_global_string("No known GDE-menu-command found (line='%s')", in_line), in);
         }
     }
 
@@ -493,7 +481,14 @@ void LoadMenus() {
     if (!error) {
         MultiFileReader menus(files);
         error = menus.get_error();
-        if (!error) ParseMenus(menus);
+        if (!error) {
+            try {
+                ParseMenus(menus);
+            }
+            catch (const string& err) {
+                error = GBS_static_string(err.c_str());
+            }
+        }
     }
 
     if (error) {
@@ -517,12 +512,18 @@ int Find2(const char *target, const char *key) {
 // --------------------------------------------------------------------------------
 
 void Error(const char *msg) {
-    // goes to header: __ATTR__NORETURN
+    // goes to header: __ATTR__NORETURN __ATTR__DEPRECATED("use throwError")
     fprintf(stderr, "Error in ARB_GDE: %s\n", msg);
     fflush(stderr);
     gde_assert(0);
     exit(EXIT_FAILURE);
 }
+
+void throwError(const char *msg) {
+    // goes to header: __ATTR__NORETURN
+    throw string(msg);
+}
+
 
 /*
   Crop():
