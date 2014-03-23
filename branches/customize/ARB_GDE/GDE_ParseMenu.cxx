@@ -563,7 +563,7 @@ void TEST_load_menu() {
 
     gb_getenv_hook old = GB_install_getenv_hook(arb_test::fakeenv);
     {
-        // ../UNIT_TESTER/run/fakehome/
+        // ../UNIT_TESTER/run/homefake/
 
         LoadMenus();
         // @@@ need to check loaded data
