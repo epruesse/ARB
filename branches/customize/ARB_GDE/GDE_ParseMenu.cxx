@@ -1,7 +1,8 @@
 #include "GDE_proto.h"
 
 #include <aw_window.hxx>
-#include <BufferedFileReader.h>
+#include <MultiFileReader.h>
+#include <arb_file.h>
 
 #include <cctype>
 
@@ -59,8 +60,8 @@ static __ATTR__NORETURN void ParseError(const char *msg, const LineReader& file)
 }
 
 static void ParseMenus(LineReader& in) {
-    /*  Read the menu file and assemble an internal representation
-     *  of the menu/menu-item hierarchy.
+    /*  parses menus via LineReader (contains ALL found menu-files) and
+     *  assemble an internal representation of the menu/menu-item hierarchy.
      */
 
     memset((char*)&menu[0], 0, sizeof(Gmenu)*GDEMAXMENU);
@@ -466,18 +467,39 @@ static void ParseMenus(LineReader& in) {
 }
 
 void LoadMenus() {
-    /*! Load the menu config file ("$ARBHOME/lib/gde/arb.menu")
+    /*! Load menu config files
+     *
+     * loads all '*.menu' from "$ARBHOME/lib/gde" and "$ARB_PROP/gde"
      */
-    char *menufile = nulldup(GB_path_in_ARBLIB("gde/arb.menu"));
-    FILE *file     = fopen(menufile, "r");       // closed by FileBuffer
 
-    if (!file) Error(GBS_global_string("Fatal: File '%s' missing", menufile));
+    GB_ERROR error = NULL;
+    StrArray files;
+    {
+        char *user_menu_dir = strdup(GB_path_in_arbprop("gde"));
 
-    BufferedFileReader in(menufile, file);
-    ParseMenus(in);
-    free(menufile);
+        if (!GB_is_directory(user_menu_dir)) {
+            error = GB_create_directory(user_menu_dir);
+        }
+        gde_assert(!GB_have_error());
+
+        GBS_read_dir(files, user_menu_dir, "/\\.menu$/");
+        GBS_read_dir(files, GB_path_in_ARBLIB("gde"), "/\\.menu$/");
+
+        if (GB_have_error()) error = GB_await_error();
+
+        free(user_menu_dir);
+    }
+
+    if (!error) {
+        MultiFileReader menus(files);
+        error = menus.get_error();
+        if (!error) ParseMenus(menus);
+    }
+
+    if (error) {
+        GBK_terminatef("Error while loading menus: %s", error);
+    }
 }
-
 
 int Find(const char *target, const char *key) {
     // Search the target string for the given key

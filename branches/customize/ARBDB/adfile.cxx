@@ -221,7 +221,7 @@ void GBS_read_dir(StrArray& names, const char *dir, const char *mask) {
      * Result are inserted into 'names' and 'names' is sorted alphanumerically.
      * Note: 'names' are not cleared, so several calls with the same StrArray get collected.
      *
-     * In case of error, result is empty and error is exported.
+     * In case of error, 'names' is empty and error is exported.
      *
      * Special case: If 'dir' is the name of a file, return an array with file as only element
      */
