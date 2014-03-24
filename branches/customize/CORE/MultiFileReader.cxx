@@ -13,8 +13,9 @@
 
 const string& MultiFileReader::getFilename() const {
     if (!reader) {
+        if (last_reader) return last_reader->getFilename();
         arb_assert(0);
-        static string nf = "no-file";
+        static string nf = "unknown-source";
         return nf;
     }
     return reader->getFilename();
@@ -40,8 +41,12 @@ FILE *MultiFileReader::open(int i) {
 
 void MultiFileReader::nextReader() {
     if (reader) {
-        delete reader;
-        reader = NULL;
+        if (last_reader) {
+            delete last_reader;
+            last_reader = NULL;
+        }
+        last_reader = reader;
+        reader      = NULL;
     }
     ++at;
     if (at<files.size()) {
@@ -55,6 +60,7 @@ void MultiFileReader::nextReader() {
 MultiFileReader::MultiFileReader(const CharPtrArray& files_)
     : files(files_),
       reader(NULL),
+      last_reader(NULL),
       error(NULL),
       at(-1)
 {
@@ -68,6 +74,7 @@ MultiFileReader::MultiFileReader(const CharPtrArray& files_)
 
 MultiFileReader::~MultiFileReader() {
     delete reader;
+    delete last_reader;
     delete error;
 }
 

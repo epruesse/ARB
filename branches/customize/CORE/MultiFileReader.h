@@ -21,6 +21,7 @@
 class MultiFileReader : public LineReader { // derived from Noncopyable
     const CharPtrArray&  files;
     BufferedFileReader  *reader;
+    BufferedFileReader  *last_reader;
 
     string *error;
     size_t  at;    // idx into 'files'
