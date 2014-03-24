@@ -1,5 +1,6 @@
 item:Phylip Distance Methods (Original Phylip, Interactive)
 itemmeta: I
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
             RUN_IN_WINDOW(($DPGM;\
                            mv -f outfile infile;\

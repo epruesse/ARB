@@ -185,7 +185,7 @@ static void ParseMenus(LineReader& in) {
                 thisitem              = &(thismenu->item[curitem]);
                 thisitem->label       = strdup(temp);
                 thisitem->meta        = '\0';
-                thisitem->seqtype     = '-';
+                thisitem->seqtype     = '-'; // no default sequence export
                 thisitem->numinputs   = 0;
                 thisitem->numoutputs  = 0;
                 thisitem->numargs     = 0;
