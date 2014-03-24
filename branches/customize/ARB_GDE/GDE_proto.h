@@ -49,7 +49,7 @@ GB_ERROR LoadMenus(void);
 int Find(const char *target, const char *key);
 int Find2(const char *target, const char *key);
 void throwError(const char *msg) __ATTR__NORETURN;
-void crop(char *input, char *head, char *tail);
+void splitEntry(const char *input, char *head, char *tail);
 
 /* GDE_arbdb_io.cxx */
 

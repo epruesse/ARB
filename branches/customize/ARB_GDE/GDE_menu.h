@@ -81,7 +81,7 @@ struct Gmenu {
     GmenuItem *item;            // menu items
     // ARB BEGIN
     char       meta;            // Meta character for menu
-    AW_active     active_mask;    // expert/novice
+    AW_active  active_mask;     // expert/novice
 };
 
 typedef unsigned char uchar;
