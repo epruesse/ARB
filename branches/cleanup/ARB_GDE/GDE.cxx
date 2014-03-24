@@ -432,10 +432,7 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
     // If 'menulabel' == NULL -> load all menus
     // Else                   -> load specified menu
     //
-    // If 'menuitemlabel' == NULL -> load complete menu(s)
-    // Else                       -> load only specific menu topic
-
-    const char *menuitemlabel = NULL; // @@@ eliminate as condition (was always called with NULL!)
+    // Always loads complete menu(s).
 
     gde_assert(db_access.gb_main); // forgot to call GDE_create_var() ?
 
@@ -462,15 +459,14 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
         long num_items = menu[nmenu].numitems;
         for (long nitem=0; nitem<num_items; nitem++) {
             GmenuItem *menuitem=&menu[nmenu].item[nitem];
-            if (!menuitemlabel || strcmp(menuitem->label, menuitemlabel) == 0) {
-                itemloaded = true;
-                gde_assert(!menuitem->help || ARB_strBeginsWith(menuitem->help, "agde_"));
-                hotkey[0] = menuitem->meta;
-                awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey,
-                                       menuitem->help, menuitem->active_mask,
-                                       AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)menuitem);
-            }
+            itemloaded = true;
+            gde_assert(!menuitem->help || ARB_strBeginsWith(menuitem->help, "agde_"));
+            hotkey[0] = menuitem->meta;
+            awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey,
+                                   menuitem->help, menuitem->active_mask,
+                                   AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)menuitem);
         }
+
         if (!menulabel) {
             awm->close_sub_menu();
         }
@@ -478,14 +474,6 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
 
     if (!menuloaded && menulabel) {
         fprintf(stderr, "GDE-Warning: Could not find requested menu '%s'\n", menulabel);
-    }
-    if (!itemloaded && menuitemlabel) {
-        if (menulabel) {
-            fprintf(stderr, "GDE-Warning: Could not find requested topic '%s' in menu '%s'\n", menuitemlabel, menulabel);
-        }
-        else {
-            fprintf(stderr, "GDE-Warning: Could not find requested topic '%s'\n", menuitemlabel);
-        }
     }
 }
 
