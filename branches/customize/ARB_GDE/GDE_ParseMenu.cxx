@@ -454,7 +454,7 @@ static void ParseMenus(LineReader& in) {
     gde_assert(num_menus>0); // if this fails, the file arb.menu contained no menus (maybe file has zero size)
 }
 
-void LoadMenus() {
+GB_ERROR LoadMenus() {
     /*! Load menu config files
      *
      * loads all '*.menu' from "$ARBHOME/lib/gde" and "$ARB_PROP/gde"
@@ -491,9 +491,8 @@ void LoadMenus() {
         }
     }
 
-    if (error) {
-        GBK_terminatef("Error while loading menus: %s", error);
-    }
+    if (error) error = GBS_global_string("Error while loading menus: %s", error);
+    return error;
 }
 
 int Find(const char *target, const char *key) {
@@ -557,7 +556,7 @@ void TEST_load_menu() {
     {
         // ../UNIT_TESTER/run/homefake/
 
-        LoadMenus();
+        TEST_EXPECT_NO_ERROR(LoadMenus());
 
         // basic check of loaded data (needs to be adapted if menus change):
         TEST_EXPECT_EQUAL(num_menus, 12);

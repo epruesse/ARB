@@ -19,8 +19,8 @@
 
 char *GDE_makeawarname(GmenuItem *gmenuitem, long i);
 char *GDE_maketmpawarname(GmenuItem *gmenuitem, long i);
-void GDE_load_menu(AW_window *awm, AW_active dummy_1x, const char *menulabel, const char *menuitemlabel);
-void GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data);
+void GDE_load_menu(AW_window *awm, AW_active dummy_1x, const char *menulabel);
+GB_ERROR GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data);
 
 /* GDE_FileIO.cxx */
 void Regroup(NA_Alignment *alignment);
@@ -45,7 +45,7 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable);
 char *uniqueID(void);
 
 /* GDE_ParseMenu.cxx */
-void LoadMenus(void);
+GB_ERROR LoadMenus(void);
 int Find(const char *target, const char *key);
 int Find2(const char *target, const char *key);
 void throwError(const char *msg) __ATTR__NORETURN;

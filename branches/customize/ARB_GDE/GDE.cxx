@@ -426,7 +426,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
 
 
-void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel, const char *menuitemlabel) {
+void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
     // Load GDE menu items.
     //
     // If 'menulabel' == NULL -> load all menus
@@ -434,6 +434,8 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel, co
     //
     // If 'menuitemlabel' == NULL -> load complete menu(s)
     // Else                       -> load only specific menu topic
+
+    const char *menuitemlabel = NULL; // @@@ eliminate as condition (was always called with NULL!)
 
     gde_assert(db_access.gb_main); // forgot to call GDE_create_var() ?
 
@@ -489,13 +491,7 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel, co
 
 struct gde_database_access db_access = { NULL, GDE_WINDOWTYPE_DEFAULT, 0, NULL};
 
-void GDE_create_var(AW_root              *aw_root,
-                    AW_default            aw_def,
-                    GBDATA               *gb_main,
-                    GDE_get_sequences_cb  get_sequences,
-                    gde_window_type       window_type,
-                    AW_CL                 client_data)
-{
+GB_ERROR GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data) {
     db_access.get_sequences = get_sequences;
     db_access.window_type   = window_type;
     db_access.client_data   = client_data;
@@ -539,6 +535,6 @@ void GDE_create_var(AW_root              *aw_root,
 
     DataSet = (NA_Alignment *) Calloc(1, sizeof(NA_Alignment));
     DataSet->rel_offset = 0;
-    LoadMenus();
+    return LoadMenus();
 }
 
