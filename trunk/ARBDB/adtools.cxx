@@ -1213,7 +1213,7 @@ void TEST_find_macros() {
 #define RESERVED_AMC RESERVED ".amc"
 
     // unlink test.amc in ARBMACROHOME (from previous run)
-    // ../UNIT_TESTER/run/fakehome/.arb_prop/macros
+    // ../UNIT_TESTER/run/homefake/.arb_prop/macros
     char *test_amc = strdup(GB_concat_path(GB_getenvARBMACROHOME(), TEST_AMC));
     char *res_amc  = strdup(GB_concat_path(GB_getenvARBMACROHOME(), RESERVED_AMC));
 
@@ -1233,7 +1233,7 @@ void TEST_find_macros() {
     // searching test.amc should fail now (macro exists in ARBMACROHOME and ARBMACRO)
     TEST_FULLMACRO_FAILS(TEST, "ambiguous macro name");
 
-    // check if it finds macros in ARBMACROHOME = ../UNIT_TESTER/run/fakehome/.arb_prop/macros
+    // check if it finds macros in ARBMACROHOME = ../UNIT_TESTER/run/homefake/.arb_prop/macros
     TEST_FULLMACRO_EQUALS(RESERVED, res_amc, RESERVED_AMC);
 
     free(res_amc);

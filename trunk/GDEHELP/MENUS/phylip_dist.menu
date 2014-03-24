@@ -1,5 +1,6 @@
 item:Phylip Distance Methods (Simple GUI Based Interface)
 itemmeta: G
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
             RUN_IN_WINDOW(($CORRECTION_PROT;$CORRECTION_DNA;$PROGRAM_SEL;\
                            $DPGM;\
@@ -58,6 +59,7 @@ insave:
 
 item:Phylip Distance Matrix
 itemmeta: M
+seqtype:*
 itemmethod: GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
             RUN_IN_WINDOW(( $PREEDIT  \
                             $DPGM ; \

@@ -19,12 +19,11 @@
 
 char *GDE_makeawarname(GmenuItem *gmenuitem, long i);
 char *GDE_maketmpawarname(GmenuItem *gmenuitem, long i);
-void GDE_load_menu(AW_window *awm, AW_active dummy_1x, const char *menulabel, const char *menuitemlabel);
-void GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data);
+void GDE_load_menu(AW_window *awm, AW_active dummy_1x, const char *menulabel);
+GB_ERROR GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data);
 
 /* GDE_FileIO.cxx */
 void Regroup(NA_Alignment *alignment);
-void ErrorOut5(int code, const char *string);
 char *Calloc(int count, int size);
 char *Realloc(char *block, int size);
 void Cfree(char *block);
@@ -37,7 +36,7 @@ void InitNASeq(NA_Sequence *seq, int type);
 void NormalizeOffset(NA_Alignment *aln);
 
 /* GDE_Genbank.cxx */
-void ReadGen(char *filename, NA_Alignment *dataset);
+GB_ERROR ReadGen(char *filename, NA_Alignment *dataset);
 int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable);
 void SetTime(void *b);
 
@@ -46,12 +45,11 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable);
 char *uniqueID(void);
 
 /* GDE_ParseMenu.cxx */
-void ParseMenu(void);
+GB_ERROR LoadMenus(void);
 int Find(const char *target, const char *key);
 int Find2(const char *target, const char *key);
-void Error(const char *msg) __ATTR__NORETURN;
-void ParseError(const char *msg, const char *filename, int linenr) __ATTR__NORETURN;
-void crop(char *input, char *head, char *tail);
+void throwError(const char *msg) __ATTR__NORETURN;
+void splitEntry(const char *input, char *head, char *tail);
 
 /* GDE_arbdb_io.cxx */
 

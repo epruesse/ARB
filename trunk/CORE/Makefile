@@ -243,6 +243,20 @@ FileContent.o: $(ARBHOME)/INCLUDE/gccver.h
 FileContent.o: $(ARBHOME)/INCLUDE/test_global.h
 FileContent.o: $(ARBHOME)/INCLUDE/test_unit.h
 
+MultiFileReader.o: arb_assert.h
+MultiFileReader.o: arb_core.h
+MultiFileReader.o: arb_msg.h
+MultiFileReader.o: arb_strarray.h
+MultiFileReader.o: BufferedFileReader.h
+MultiFileReader.o: MultiFileReader.h
+MultiFileReader.o: $(ARBHOME)/INCLUDE/arbtools.h
+MultiFileReader.o: $(ARBHOME)/INCLUDE/attributes.h
+MultiFileReader.o: $(ARBHOME)/INCLUDE/cxxforward.h
+MultiFileReader.o: $(ARBHOME)/INCLUDE/dupstr.h
+MultiFileReader.o: $(ARBHOME)/INCLUDE/gccver.h
+MultiFileReader.o: $(ARBHOME)/INCLUDE/test_global.h
+MultiFileReader.o: $(ARBHOME)/INCLUDE/test_unit.h
+
 pos_range.o: arb_assert.h
 pos_range.o: arb_core.h
 pos_range.o: arb_msg.h

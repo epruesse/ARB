@@ -1,5 +1,4 @@
 item: Start a slave ARB on a foreign host ...
-seqtype:-
 itemmeta: A
 itemmethod:RUN_IN_WINDOW((DISPLAY=$dis:0;export DISPLAY;arb_ntree :)) &
 

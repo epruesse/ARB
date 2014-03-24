@@ -34,36 +34,22 @@ void Regroup(NA_Alignment *alignment)
     return;
 }
 
-void ErrorOut5(int code, const char *string)
-{
-    // Print error message, and die
-    if (code == 0)
-    {
-        fprintf(stderr, "Error:%s\n", string);
-        exit(1);
-    }
-    return;
+template <typename T>
+inline T* Terminate_If_OutOfMemory(T *allocated) {
+    if (!allocated) GBK_terminate("Out of memory");
+    return allocated;
 }
 
-
-char *Calloc(int count, int size)
-{
+char *Calloc(int count, int size) {
     // More robust memory management routines
-    char *temp;
     size *= count;
-    temp = (char *)malloc(size);
-    ErrorOut5(0 != temp, "Cannot allocate memory");
-    memset(temp, 0, size);
-    return (temp);
+    char *temp  = (char *)malloc(size);
+    memset(Terminate_If_OutOfMemory(temp), 0, size);
+    return temp;
 }
 
-char *Realloc(char *block, int size)
-{
-    char       *temp;
-    temp          = (char *)realloc(block, size);
-    ErrorOut5(0   != temp, "Cannot change memory size");
-
-    return (temp);
+char *Realloc(char *block, int size) {
+    return Terminate_If_OutOfMemory((char*)realloc(block, size));
 }
 
 void Cfree(char *block)
@@ -187,9 +173,8 @@ static void ReadNA_Flat(char *filename, char *dataset) {
   All rights reserved.
 */
 
-static void LoadFile(char *filename, NA_Alignment *dataset, int type, int format)
-{
-
+static GB_ERROR LoadFile(char *filename, NA_Alignment *dataset, int type, int format) {
+    GB_ERROR error = NULL;
     if (DataType != type)
         fprintf(stderr, "Warning, datatypes do not match.\n");
     /*
@@ -203,7 +188,7 @@ static void LoadFile(char *filename, NA_Alignment *dataset, int type, int format
             break;
 
         case GENBANK:
-            ReadGen(filename, dataset);
+            error                            = ReadGen(filename, dataset);
             ((NA_Alignment*)dataset)->format = GENBANK;
             break;
 
@@ -214,7 +199,7 @@ static void LoadFile(char *filename, NA_Alignment *dataset, int type, int format
         default:
             break;
     }
-    return;
+    return error;
 }
 
 static int FindType(char *name, int *dtype, int *ftype) {
@@ -293,7 +278,7 @@ void LoadData(char *filen) {
         FindType(filen, &DataType, &FileFormat);
         switch (DataType)
         {
-            case NASEQ_ALIGN:
+            case NASEQ_ALIGN: {
                 if (DataSet == NULL)
                 {
                     DataSet = (NA_Alignment*)Calloc(1, sizeof(NA_Alignment));
@@ -304,9 +289,11 @@ void LoadData(char *filen) {
                     DataNaAln = (NA_Alignment*)DataSet;
                 }
 
-                LoadFile(filen, DataNaAln, DataType, FileFormat);
+                GB_ERROR error = LoadFile(filen, DataNaAln, DataType, FileFormat);
+                if (error) aw_message(error);
 
                 break;
+            }
             default:
                 aw_message(GBS_global_string("Internal error: unknown file type of file %s", filen));
                 break;
