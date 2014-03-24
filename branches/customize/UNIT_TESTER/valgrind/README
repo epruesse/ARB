@@ -1,9 +1,0 @@
-This directory contains
-
-        - flags indicating the valgrind-status of running unit-tests
-        - logfiles written by valgrind-processes
-
-see
-        ./arb_valgrind_logged
-        ../../TEMPLATES/ut_valgrinded.h
-
