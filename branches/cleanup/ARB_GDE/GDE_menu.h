@@ -21,7 +21,6 @@ struct GargChoice {
 };
 
 struct GmenuItemArg {
-    int         optional;       // is this optional?
     int         type;           // TEXT, SLIDER, CHOOSER, etc.
     int         ivalue;
     double      min;            // minimum range value

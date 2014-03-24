@@ -276,7 +276,6 @@ static void ParseMenus(LineReader& in) {
                 thisarg->symbol = (char*)calloc(strlen(temp)+1, sizeof(char));
                 (void)strcpy(thisarg->symbol, temp);
 
-                thisarg->optional   = FALSE;
                 thisarg->type       = 0;
                 thisarg->min        = 0.0;
                 thisarg->max        = 0.0;
@@ -385,11 +384,6 @@ static void ParseMenus(LineReader& in) {
                     (void)sscanf(temp, "%lf", &(thisarg->fvalue));
                     thisarg->ivalue = (int) thisarg->fvalue;
                 }
-            }
-            // argoptional: Flag specifying that an argument is optional
-            else if (strcmp(head, "argoptional") == 0) {
-                THROW_IF_NO_ARG();
-                thisarg->optional = TRUE;
             }
             else if (strcmp(head, "argmask") == 0) {
                 THROW_IF_NO_ARG();
