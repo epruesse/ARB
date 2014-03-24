@@ -185,6 +185,12 @@ static void ParseMenus(LineReader& in) {
                 thisitem->aws         = NULL; // no window opened yet
                 thisitem->active_mask = AWM_ALL;
 
+                for (int i = 0; i<curitem; ++i) {
+                    if (strcmp(thismenu->item[i].label, thisitem->label) == 0) {
+                        throwParseError(GBS_global_string("Duplicated item label '%s'", thisitem->label), in);
+                    }
+                }
+
                 thisarg = NULL;
             }
 
