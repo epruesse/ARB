@@ -1,6 +1,6 @@
 
 menu:Import
-menumeta:p
+menumeta:I
 
 item:Import sequences using Readseq (slow) ...
 seqtype:-
