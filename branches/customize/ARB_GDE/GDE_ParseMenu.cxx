@@ -75,6 +75,8 @@ static void CheckItemConsistency(const GmenuItem *item, const LineReader& file) 
 static void ParseMenus(LineReader& in) {
     /*  parses menus via LineReader (contains ALL found menu-files) and
      *  assemble an internal representation of the menu/menu-item hierarchy.
+     *
+     *  please document changes in ../HELP_SOURCE/oldhelp/gde_menus.hlp
      */
 
     memset((char*)&menu[0], 0, sizeof(Gmenu)*GDEMAXMENU);
