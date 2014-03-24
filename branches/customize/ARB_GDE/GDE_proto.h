@@ -36,7 +36,7 @@ void InitNASeq(NA_Sequence *seq, int type);
 void NormalizeOffset(NA_Alignment *aln);
 
 /* GDE_Genbank.cxx */
-void ReadGen(char *filename, NA_Alignment *dataset);
+GB_ERROR ReadGen(char *filename, NA_Alignment *dataset);
 int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable);
 void SetTime(void *b);
 

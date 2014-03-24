@@ -63,10 +63,11 @@ static void AsciiTime(void *b, char *asciitime)
 }
 // ENDARB
 
-void ReadGen(char *filename, NA_Alignment *dataset) {
-    FILE *file = fopen(filename, "r");
+GB_ERROR ReadGen(char *filename, NA_Alignment *dataset) {
+    GB_ERROR  error = NULL;
+    FILE     *file  = fopen(filename, "r");
     if (!file) {
-        aw_message(GB_IO_error("reading", filename));
+        error = GB_IO_error("reading", filename);
     }
     else {
         int     done         = FALSE;
@@ -168,7 +169,7 @@ void ReadGen(char *filename, NA_Alignment *dataset) {
                         {
                             buflen += GBUFSIZ;
                             buffer = Realloc((char*)buffer, sizeof(char)*buflen);
-                            for (int j=buflen-GBUFSIZ ; j<buflen; j++) buffer[j] = '\0';
+                            for (size_t j=buflen-GBUFSIZ ; j<buflen; j++) buffer[j] = '\0';
                         }
                         // Search for the fist column of data (whitespace-number-whitespace)data
                         if (start_col == -1)
@@ -188,7 +189,7 @@ void ReadGen(char *filename, NA_Alignment *dataset) {
                     {
                         AppendNA((NA_Base*)buffer, len, &(dataset->
                                                           element[curelem]));
-                        for (int j=0; j<len; j++) buffer[j] = '\0';
+                        for (size_t j=0; j<len; j++) buffer[j] = '\0';
                         len = 0;
                         done = TRUE;
                         dataset->element[curelem].comments = gencomments;
@@ -245,10 +246,11 @@ void ReadGen(char *filename, NA_Alignment *dataset) {
         Cfree(buffer);
         fclose(file);
     }
-    for (int j=0; j<dataset->numelements; j++) {
+    for (size_t j=0; j<dataset->numelements; j++) {
         dataset->maxlen = std::max(dataset->maxlen,
                                    dataset->element[j].seqlen+dataset->element[j].offset);
     }
+    return error;
 }
 
 int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)

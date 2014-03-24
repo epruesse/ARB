@@ -173,9 +173,8 @@ static void ReadNA_Flat(char *filename, char *dataset) {
   All rights reserved.
 */
 
-static void LoadFile(char *filename, NA_Alignment *dataset, int type, int format)
-{
-
+static GB_ERROR LoadFile(char *filename, NA_Alignment *dataset, int type, int format) {
+    GB_ERROR error = NULL;
     if (DataType != type)
         fprintf(stderr, "Warning, datatypes do not match.\n");
     /*
@@ -189,7 +188,7 @@ static void LoadFile(char *filename, NA_Alignment *dataset, int type, int format
             break;
 
         case GENBANK:
-            ReadGen(filename, dataset);
+            error                            = ReadGen(filename, dataset);
             ((NA_Alignment*)dataset)->format = GENBANK;
             break;
 
@@ -200,7 +199,7 @@ static void LoadFile(char *filename, NA_Alignment *dataset, int type, int format
         default:
             break;
     }
-    return;
+    return error;
 }
 
 static int FindType(char *name, int *dtype, int *ftype) {
@@ -279,7 +278,7 @@ void LoadData(char *filen) {
         FindType(filen, &DataType, &FileFormat);
         switch (DataType)
         {
-            case NASEQ_ALIGN:
+            case NASEQ_ALIGN: {
                 if (DataSet == NULL)
                 {
                     DataSet = (NA_Alignment*)Calloc(1, sizeof(NA_Alignment));
@@ -290,9 +289,11 @@ void LoadData(char *filen) {
                     DataNaAln = (NA_Alignment*)DataSet;
                 }
 
-                LoadFile(filen, DataNaAln, DataType, FileFormat);
+                GB_ERROR error = LoadFile(filen, DataNaAln, DataType, FileFormat);
+                if (error) aw_message(error);
 
                 break;
+            }
             default:
                 aw_message(GBS_global_string("Internal error: unknown file type of file %s", filen));
                 break;
