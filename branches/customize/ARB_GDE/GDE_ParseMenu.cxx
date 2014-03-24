@@ -558,7 +558,21 @@ void TEST_load_menu() {
         // ../UNIT_TESTER/run/homefake/
 
         LoadMenus();
-        // @@@ need to check loaded data
+
+        // basic check of loaded data (needs to be adapted if menus change):
+        TEST_EXPECT_EQUAL(num_menus, 12);
+
+        string menus;
+        string menuitems;
+        for (int m = 0; m<num_menus; ++m) {
+            menus = menus + menu[m].label + ";";
+            menuitems += GBS_global_string("%i;", menu[m].numitems);
+        }
+
+        TEST_EXPECT_EQUAL(menus,
+                          "Import;Export;Print;Align;User;SAI;Incremental phylogeny;Phylogeny Distance Matrix;"
+                          "Phylogeny max. parsimony;Phylogeny max. Likelyhood EXP;Phylogeny max. Likelyhood;Phylogeny (Other);");
+        TEST_EXPECT_EQUAL(menuitems, "3;1;1;11;1;1;1;3;2;1;7;5;");
     }
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }
