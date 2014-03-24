@@ -375,14 +375,6 @@ static void ParseMenus(LineReader& in) {
                 THROW_IF_NO_ARG();
                 (void)sscanf(temp, "%lf", &(thisarg->max));
             }
-            /* argmethod: Command line flag associated with this argument.
-             *            Replaces argument in itemmethod description.
-             */
-            else if (strcmp(head, "argmethod") == 0) {
-                THROW_IF_NO_ARG();
-                thisarg->method = (char*)calloc(GBUFSIZ, strlen(temp));
-                (void)strcpy(thisarg->method, tail);
-            }
             // argvalue: default value for a slider
             else if (strcmp(head, "argvalue") == 0) {
                 THROW_IF_NO_ARG();

@@ -32,7 +32,6 @@ struct GmenuItemArg {
     int         textwidth;      // text width used for input field
     char       *label;          // description of arg function
     char       *symbol;         // internal symbol table mapping
-    char       *method;         // commandline interpretation
     GargChoice *choice;         // choices
     // ARB BEGIN
     AW_active     active_mask;  // expert/novice
