@@ -30,7 +30,7 @@ static char *readableItemname(const GmenuItem& i) {
 
 __ATTR__NORETURN static void throwItemError(const GmenuItem& i, const char *error) {
     char       *itemName = readableItemname(i);
-    const char *msg      = GBS_global_string("Invalid item '%s' in arb.menu (Reason: %s)", itemName, error); // @@@ use currently processed filename here
+    const char *msg      = GBS_global_string("Invalid item '%s' defined in some .menu (Reason: %s)", itemName, error);
     free(itemName);
     throwError(msg);
 }
@@ -45,9 +45,18 @@ static void CheckItemConsistency() {
             const GmenuItem& I = M.item[i];
 
             if (I.seqtype != '-' && I.numinputs<1) {
-                // Such an item would create a window where alignment/species selection has no GUI-elements.
+                // Such an item would create a window where alignment/species selection is present,
+                // but no sequence export will take place.
+                // 
                 // Pressing 'GO' would result in failure or deadlock.
-                throwItemError(I, "item defines seqtype ('seqtype:' != '-'), but is lacking input-specification ('in:')");
+                throwItemError(I, "item defines seqtype ('seqtype:' <> '-'), but is lacking input-specification ('in:')");
+            }
+            if (I.seqtype == '-' && I.numinputs>0) {
+                // Such an item would create a window where alignment/species selection has no GUI-elements,
+                // but sequences are exported (generating a corrupt sequence file)
+                //
+                // Pressing 'GO' would result in failure or deadlock.
+                throwItemError(I, "item defines no seqtype ('seqtype:' = '-'), but defines input-specification ('in:')");
             }
         }
     }
