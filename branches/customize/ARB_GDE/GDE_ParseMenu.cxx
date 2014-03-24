@@ -100,7 +100,7 @@ static void ParseMenus(LineReader& in) {
         // menu: chooses menu to use
         else {
             splitEntry(in_line, head, temp);
-            if (strcmp(head, "menu") == 0 || strcmp(head, "lmenu") == 0) {
+            if (strcmp(head, "menu") == 0) {
                 int curmenu = -1;
                 for (j=0; j<num_menus; j++) {
                     if (Find(temp, menu[j].label)) curmenu=j;
@@ -195,7 +195,7 @@ static void ParseMenus(LineReader& in) {
                 if (strcmp("expert", temp) == 0) thisitem->active_mask = AWM_EXP;
             }
             else if (strcmp(head, "menumeta") == 0) {
-                if (thismenu == NULL) throwParseError("'menumeta' used w/o 'menu' or 'lmenu'", in);
+                if (thismenu == NULL) throwParseError("'menumeta' used w/o 'menu'", in);
                 thismenu->meta = temp[0];
             }
             // Sequence type restriction

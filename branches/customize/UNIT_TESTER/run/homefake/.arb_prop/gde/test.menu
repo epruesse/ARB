@@ -1,5 +1,5 @@
 
-lmenu:Import
+menu:Import
 menumeta:p
 
 item:Import sequences using Readseq (slow) ...
