@@ -270,18 +270,15 @@ int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
         return (1);
     }
 
-    if (maskable && method != SELECT_REGION)
+    if (maskable && true) // @@@ 
         for (j=0; j<aln->numelements; j++)
-            if (aln->element[j].elementtype == MASK &&
-               aln->element[j].selected)
+            if (false) // @@@ 
                 mask = j;
 
     for (j=0; j<aln->numelements; j++)
     {
         this_elem = &(aln->element[j]);
-        if ((aln->element[j].selected && (int)j!=mask && method != SELECT_REGION)
-            ||(aln->element[j].subselected && method == SELECT_REGION)
-            || (method == ALL))
+        if (false || (method == ALL)) // @@@ 
         {
             fprintf(file,
                     "LOCUS       %10s%8d bp    %4s  %10s   %2d%5s%4d\n",
@@ -313,7 +310,7 @@ int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
                 {
                     for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
                     {
-                        if (method == SELECT_REGION)
+                        if (false) // @@@ 
                         {
                             if (aln->selection_mask[k] == '1')
                             {
@@ -361,7 +358,7 @@ int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
                 {
                     for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
                     {
-                        if (method == SELECT_REGION)
+                        if (false) // @@@ 
                         {
                             if (aln->selection_mask[k] == '1')
                             {

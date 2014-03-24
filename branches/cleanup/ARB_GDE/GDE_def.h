@@ -64,10 +64,7 @@
 #define DESTROY       0x1
 #define LOAD          0x2
 #define SAVE          0x4
-#define SELECTED      0x8
 #define ALL           0x10
-#define SELECT_REGION 0x20
-#define SELECT_ONE    0x30
 
 // Sequence DISPLAY Types
 #define NASEQ_ALIGN 0x201
@@ -178,8 +175,6 @@ struct NA_Sequence {
     NA_Sequence *groupf;        // Group link forward
 
     int  *cmask;                // color mask
-    int   selected;             // Selection flag
-    int   subselected;          // Sub selection flag
     int   format;               // default file format
     int   elementtype;          // what type of data are being aligned
     char *baggage;              // unformatted comments

@@ -46,7 +46,6 @@ struct GfileFormat {
     int       save;             // how should file be saved
     int       format;           // what format is each field
     int       maskable;         // Can a write through mask be used?
-    int       select;           // what type of selection
     char     *symbol;           // internal symbol table mapping
     char     *name;             // file name
     TypeInfo  typeinfo;

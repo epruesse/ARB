@@ -403,7 +403,6 @@ static void ParseMenus(LineReader& in) {
                 thisinput->format   = 0;
                 thisinput->symbol   = strdup(temp);
                 thisinput->name     = NULL;
-                thisinput->select   = SELECTED;
                 thisinput->typeinfo = BASIC_TYPEINFO;
             }
             else if (strcmp(head, "informat") == 0) {
@@ -421,12 +420,6 @@ static void ParseMenus(LineReader& in) {
                 if (Find(temp, "detailed")) thisinput->typeinfo   = DETAILED_TYPEINFO;
                 else if (Find(temp, "basic")) thisinput->typeinfo = BASIC_TYPEINFO;
                 else throwParseError(GBS_global_string("Unknown value '%s' for 'intyped' (known: 'detailed', 'basic')", temp), in);
-            }
-            else if (strcmp(head, "inselect") == 0) {
-                THROW_IF_NO_INPUT();
-                if (Find(temp, "one")) thisinput->select         = SELECT_ONE;
-                else if (Find(temp, "region")) thisinput->select = SELECT_REGION;
-                else if (Find(temp, "all")) thisinput->select    = ALL;
             }
             else if (strcmp(head, "inmask") == 0) {
                 THROW_IF_NO_INPUT();

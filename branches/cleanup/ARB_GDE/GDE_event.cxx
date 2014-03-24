@@ -510,7 +510,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     }
 
     if (!stop) {
-        int select_mode = (DataSet && (current_item->numinputs>0)) ? ALL : 0;
+        int select_mode = (DataSet && (current_item->numinputs>0)) ? ALL : NONE; // @@@ select mode is ALL or NONE
         int pid         = getpid();
 
         static int fileindx = 0;

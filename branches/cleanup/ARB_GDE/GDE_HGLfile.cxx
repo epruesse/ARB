@@ -54,17 +54,14 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
         return (1);
     }
 
-    if (maskable && method != SELECT_REGION)
+    if (maskable && true) // @@@ 
         for (j=0; j<aln->numelements; j++)
-            if (aln->element[j].elementtype == MASK &&
-               aln->element[j].selected)
+            if (false) // @@@ 
                 mask = j;
 
     for (j=0; j<aln->numelements; j++)
     {
-        if ((aln->element[j].selected && (int)j!=mask && method!=SELECT_REGION)
-           || (method == ALL)
-           || (aln->element[j].subselected && method == SELECT_REGION))
+        if ((false) || (method == ALL)) // @@@ 
         {
             this_elem = &(aln->element[j]);
             fprintf(file, "{\n");
@@ -108,9 +105,9 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
                 fprintf(file, "creator           \"%s\"\n", this_elem->authority);
             if (this_elem->groupid)
                 fprintf(file, "group-ID          %zu\n", this_elem->groupid);
-            if (this_elem->offset+aln->rel_offset && method!=SELECT_REGION)
+            if (this_elem->offset+aln->rel_offset && true) // @@@ 
                 fprintf(file, "offset            %d\n", this_elem->offset+aln->rel_offset);
-            if (method == SELECT_REGION)
+            if (false) // @@@ 
             {
                 /* If selecting a region, the offset should be moved to the first
                  * non-'0' space in the mask.
@@ -186,7 +183,7 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
                     {
                         if (k%60 == 0)
                             putc('\n', file);
-                        if (method == SELECT_REGION)
+                        if (false) // @@@ 
                         {
                             if (aln->selection_mask[k] == '1')
                                 putc(this_elem->tmatrix[getelem(this_elem, k)],
@@ -221,7 +218,7 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
                     {
                         if (k%60 == 0)
                             putc('\n', file);
-                        if (method == SELECT_REGION)
+                        if (false) // @@@ 
                         {
                             if (aln->selection_mask[k] == '1')
                                 putc(getelem(this_elem, k), file);

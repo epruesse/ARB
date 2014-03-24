@@ -352,11 +352,10 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
         Warning("Cannot open file for output");
         return (1);
     }
-    if (maskable && (method != SELECT_REGION))
+    if (maskable && (true)) // @@@ 
     {
         for (j=0; j<aln->numelements; j++)
-            if (seqs[j].elementtype == MASK &&
-               seqs[j].selected)
+            if (false) // @@@ 
                 mask = j;
     }
     /* Removed by OLIVER
@@ -368,7 +367,7 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
 
     for (j=0; j<aln->numelements; j++)
     {
-        if (method != SELECT_REGION) {
+        if (true) { // @@@ 
             offset = seqs[j].offset;
         }
         else {
@@ -380,9 +379,7 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
         else
             offset_str[0] = '\0';
 
-        if ((((int)j!=mask) && (seqs[j].selected) && method != SELECT_REGION)
-           || (method == SELECT_REGION && seqs[j].subselected)
-           || method == ALL)
+        if (false || method == ALL) // @@@ 
         {
             fprintf(file, "%c%s%s\n",
                     seqs[j].elementtype == DNA ? '#' :
@@ -403,7 +400,7 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
                             fputs(buf, file);
                             putc('\n', file);
                         }
-                        if (method == SELECT_REGION)
+                        if (false) // @@@ 
                         {
                             if (aln->selection_mask[kk+offset]=='1')
                             {
@@ -448,7 +445,7 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
                             fputs(buf, file);
                             putc('\n', file);
                         }
-                        if (method == SELECT_REGION)
+                        if (false) // @@@ 
                         {
                             if (aln->selection_mask[kk+offset]=='1')
                             {
@@ -525,8 +522,6 @@ void InitNASeq(NA_Sequence *seq, int type) {
     seq->groupb = NULL;
     seq->groupf = NULL;
     seq->cmask = NULL;
-    seq->selected = 0;
-    seq->subselected = 0;
 
     switch (type)
     {
