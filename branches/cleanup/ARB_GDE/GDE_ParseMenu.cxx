@@ -396,16 +396,15 @@ static void ParseMenus(LineReader& in) {
                 if (curinput == 0) resize = (char*)calloc(1, sizeof(GfileFormat));
                 else resize               = (char *)realloc((char *)thisitem->input, (thisitem->numinputs)*sizeof(GfileFormat));
 
-                thisitem->input      = (GfileFormat*)resize;
-                thisinput            = &(thisitem->input)[curinput];
-                thisinput->save      = FALSE;
-                thisinput->overwrite = FALSE;
-                thisinput->maskable  = FALSE;
-                thisinput->format    = 0;
-                thisinput->symbol    = strdup(temp);
-                thisinput->name      = NULL;
-                thisinput->select    = SELECTED;
-                thisinput->typeinfo  = BASIC_TYPEINFO;
+                thisitem->input     = (GfileFormat*)resize;
+                thisinput           = &(thisitem->input)[curinput];
+                thisinput->save     = FALSE;
+                thisinput->maskable = FALSE;
+                thisinput->format   = 0;
+                thisinput->symbol   = strdup(temp);
+                thisinput->name     = NULL;
+                thisinput->select   = SELECTED;
+                thisinput->typeinfo = BASIC_TYPEINFO;
             }
             else if (strcmp(head, "informat") == 0) {
                 THROW_IF_NO_INPUT();
@@ -441,13 +440,12 @@ static void ParseMenus(LineReader& in) {
                 if (curoutput == 0) resize = (char*)calloc(1, sizeof(GfileFormat));
                 else resize               = (char *)realloc((char *)thisitem->output, (thisitem->numoutputs)*sizeof(GfileFormat));
 
-                thisitem->output      = (GfileFormat*)resize;
-                thisoutput            = &(thisitem->output)[curoutput];
-                thisoutput->save      = FALSE;
-                thisoutput->overwrite = FALSE;
-                thisoutput->format    = 0;
-                thisoutput->symbol    = strdup(temp);
-                thisoutput->name      = NULL;
+                thisitem->output   = (GfileFormat*)resize;
+                thisoutput         = &(thisitem->output)[curoutput];
+                thisoutput->save   = FALSE;
+                thisoutput->format = 0;
+                thisoutput->symbol = strdup(temp);
+                thisoutput->name   = NULL;
             }
             else if (strcmp(head, "outformat") == 0) {
                 THROW_IF_NO_OUTPUT();
@@ -459,10 +457,6 @@ static void ParseMenus(LineReader& in) {
             else if (strcmp(head, "outsave") == 0) {
                 THROW_IF_NO_OUTPUT();
                 thisoutput->save = TRUE;
-            }
-            else if (strcmp(head, "outoverwrite") == 0) {
-                THROW_IF_NO_OUTPUT();
-                thisoutput->overwrite = TRUE;
             }
             else {
                 throwParseError(GBS_global_string("No known GDE-menu-command found (line='%s')", in_line), in);

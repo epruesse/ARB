@@ -207,12 +207,6 @@ SECTION Using the GDE menus
                         Do not remove this file after reading.
                         This is useful for background tasks.
 
-            outoverwrite:
-
-                        Overwrite existing sequences in the current
-                        GDE window. Currently supported with
-                        "gde" format only.
-
 
         Here is a sample dialog box, and it's entry in the
         .GDEmenus file:

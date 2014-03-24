@@ -562,11 +562,6 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         long oldnumelements = DataSet->numelements;
 
         for (int j=0; j<current_item->numoutputs; j++) {
-            if (current_item->output[j].overwrite) {
-                if (current_item->output[j].format == GDE) OVERWRITE = true;
-                else Warning("Overwrite mode only available for GDE format");
-            }
-
             switch (current_item->output[j].format) {
                 /* The LoadData routine must be reworked so that
                  * OpenFileName uses it, and so I can remove the
@@ -581,7 +576,6 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
                     gde_assert(0);
                     break;
             }
-            OVERWRITE = false;
         }
         for (int j=0; j<current_item->numoutputs; j++) {
             if (!current_item->output[j].save) {

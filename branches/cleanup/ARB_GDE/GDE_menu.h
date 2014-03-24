@@ -44,7 +44,6 @@ enum TypeInfo {
 
 struct GfileFormat {
     int       save;             // how should file be saved
-    int       overwrite;        // how should file be loaded
     int       format;           // what format is each field
     int       maskable;         // Can a write through mask be used?
     int       select;           // what type of selection
