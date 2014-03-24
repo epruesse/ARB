@@ -253,11 +253,11 @@ GB_ERROR ReadGen(char *filename, NA_Alignment *dataset) {
     return error;
 }
 
-int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
+int WriteGen(NA_Alignment *aln, char *filename, int method)
 {
     int i;
     size_t j;
-    int k, mask = -1;
+    int k;
     FILE *file;
     NA_Sequence *this_elem;
     char c;
@@ -270,18 +270,10 @@ int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
         return (1);
     }
 
-    if (maskable && method != SELECT_REGION)
-        for (j=0; j<aln->numelements; j++)
-            if (aln->element[j].elementtype == MASK &&
-               aln->element[j].selected)
-                mask = j;
-
     for (j=0; j<aln->numelements; j++)
     {
         this_elem = &(aln->element[j]);
-        if ((aln->element[j].selected && (int)j!=mask && method != SELECT_REGION)
-            ||(aln->element[j].subselected && method == SELECT_REGION)
-            || (method == ALL))
+        if (method == ALL)
         {
             fprintf(file,
                     "LOCUS       %10s%8d bp    %4s  %10s   %2d%5s%4d\n",
@@ -309,95 +301,27 @@ int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
             fprintf(file, "ORIGIN");
             if (this_elem->tmatrix)
             {
-                if (mask == -1)
+                for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
                 {
-                    for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        if (method == SELECT_REGION)
-                        {
-                            if (aln->selection_mask[k] == '1')
-                            {
-                                if (i%60 == 0)
-                                    fprintf(file, "\n%9d", i+1);
-                                if (i%10 == 0)
-                                    fprintf(file, " ");
-                                fprintf(file, "%c", this_elem->tmatrix
-                                        [getelem(this_elem, k)]);
-                                i++;
-                            }
-                        }
-                        else
-                        {
-                            if (i%60 == 0)
-                                fprintf(file, "\n%9d", i+1);
-                            if (i%10 == 0)
-                                fprintf(file, " ");
-                            fprintf(file, "%c", this_elem->tmatrix
-                                    [getelem(this_elem, k)]);
-                            i++;
-                        }
-                    }
-                }
-                else
-                {
-                    for (k=0; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        c = (char)getelem(&(aln->element[mask]), k);
-                        if (c != '0' && c != '-')
-                        {
-                            if (k%60 == 0)
-                                fprintf(file, "\n%9d", k+1);
-                            if (k%10 == 0)
-                                fprintf(file, " ");
-                            fprintf(file, "%c", this_elem->tmatrix
-                                    [getelem(this_elem, k)]);
-                        }
-                    }
+                    if (i%60 == 0)
+                        fprintf(file, "\n%9d", i+1);
+                    if (i%10 == 0)
+                        fprintf(file, " ");
+                    fprintf(file, "%c", this_elem->tmatrix
+                            [getelem(this_elem, k)]);
+                    i++;
                 }
             }
             else
             {
-                if (mask == -1)
+                for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
                 {
-                    for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        if (method == SELECT_REGION)
-                        {
-                            if (aln->selection_mask[k] == '1')
-                            {
-                                if (i%60 == 0)
-                                    fprintf(file, "\n%9d", i+1);
-                                if (i%10 == 0)
-                                    fprintf(file, " ");
-                                fprintf(file, "%c", getelem(this_elem, k));
-                                i++;
-                            }
-                        }
-                        else
-                        {
-                            if (i%60 == 0)
-                                fprintf(file, "\n%9d", i+1);
-                            if (i%10 == 0)
-                                fprintf(file, " ");
-                            fprintf(file, "%c", getelem(this_elem, k));
-                            i++;
-                        }
-                    }
-                }
-                else
-                {
-                    for (k=0; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        c = (char)getelem(&(aln->element[mask]), k);
-                        if (c != '0' && c != '-')
-                        {
-                            if (k%60 == 0)
-                                fprintf(file, "\n%9d", k+1);
-                            if (k%10 == 0)
-                                fprintf(file, " ");
-                            fprintf(file, "%c", getelem(this_elem, k));
-                        }
-                    }
+                    if (i%60 == 0)
+                        fprintf(file, "\n%9d", i+1);
+                    if (i%10 == 0)
+                        fprintf(file, " ");
+                    fprintf(file, "%c", getelem(this_elem, k));
+                    i++;
                 }
             }
             fprintf(file, "\n//\n");

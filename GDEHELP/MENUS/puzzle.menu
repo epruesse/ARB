@@ -179,6 +179,5 @@ argchoice:Treetool:treetool outtree
 
 in:TmpInputFile
 informat:genbank
-inmask:
 insave:
 

@@ -42,15 +42,11 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     /*
      *  The basic idea is to replace all of the symbols in the method
      *  string with the values picked in the dialog box.  The method
-     *  is the general command line structure.  All arguments have three
-     *  parts, a label, a method, and a value.  The method never changes, and
-     *  is used to represent '-flag's for a given function.  Values are the
+     *  is the general command line structure.  All arguments have two
+     *  parts : a label and a value.  Values are the
      *  associated arguments that some flags require.  All symbols that
      *  require argvalue replacement should have a '$' infront of the symbol
      *  name in the itemmethod definition.
-     *
-     *  All symbols without the '$' were replaced by their argmethod.
-     *  ARB doesnt use argmethod in menus, replacement has been removed here (long ago).
      *
      *  If '$symbol' is prefixed by '!' ARB_GDE does a label replacement, i.e. insert
      *  the value visible in GUI. Only works for argchoice arguments!
@@ -59,28 +55,17 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
      *
      *  An example command line replacement would be:
      *
-     *       itemmethod=>        "lpr arg1 $arg1 $arg2"
+     *       itemmethod=>        "lpr -P $arg1 $arg2"
      *
      *       arglabel arg1=>     "To printer?"
-     *       argmethod arg1=>    "-P"
      *       argvalue arg1=>     "lw"
      *
      *       arglabel arg2=>     "File name?"
      *       argvalue arg2=>     "foobar"
-     *       argmethod arg2=>    ""
      *
      *   final command line:
      *
      *       lpr -P lw foobar
-     *
-     *   At this point, the chooser dialog type only supports the arglabel and
-     *   argmethod field.  So if an argument is of type chooser, and
-     *   its symbol is "this", then "$this" has no real meaning in the
-     *   itemmethod definition.  Its format in the .GDEmenu file is slighty
-     *   different as well.  A choice from a chooser field looks like:
-     *
-     *       argchoice:Argument_label:Argument_method
-     *
      *
      */
 
@@ -525,7 +510,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     }
 
     if (!stop) {
-        int select_mode = (DataSet && (current_item->numinputs>0)) ? ALL : 0;
+        int select_mode = (DataSet && (current_item->numinputs>0)) ? ALL : NONE;
         int pid         = getpid();
 
         static int fileindx = 0;
@@ -537,9 +522,9 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             gfile.name = preCreateTempfile(buffer);
 
             switch (gfile.format) {
-                case GENBANK: WriteGen    (DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case NA_FLAT: WriteNA_Flat(DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case GDE:     WriteGDE    (DataSet, gfile.name, select_mode, gfile.maskable); break;
+                case GENBANK: WriteGen    (DataSet, gfile.name, select_mode); break;
+                case NA_FLAT: WriteNA_Flat(DataSet, gfile.name, select_mode); break;
+                case GDE:     WriteGDE    (DataSet, gfile.name, select_mode); break;
                 default: break;
             }
         }
@@ -577,11 +562,6 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         long oldnumelements = DataSet->numelements;
 
         for (int j=0; j<current_item->numoutputs; j++) {
-            if (current_item->output[j].overwrite) {
-                if (current_item->output[j].format == GDE) OVERWRITE = true;
-                else Warning("Overwrite mode only available for GDE format");
-            }
-
             switch (current_item->output[j].format) {
                 /* The LoadData routine must be reworked so that
                  * OpenFileName uses it, and so I can remove the
@@ -596,7 +576,6 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
                     gde_assert(0);
                     break;
             }
-            OVERWRITE = false;
         }
         for (int j=0; j<current_item->numoutputs; j++) {
             if (!current_item->output[j].save) {

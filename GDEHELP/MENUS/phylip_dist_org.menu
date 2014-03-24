@@ -32,6 +32,5 @@ argchoice:AA      (protdist):protdist
 
 in:TmpInputFile
 informat:genbank
-inmask:sdfgdfg
 insave:
 

@@ -62,7 +62,6 @@ argchoice:Yes:1
 
 in:TmpInputFile
 informat:genbank
-inmask:
 insave:
 
 // --------------------------------------------------------------------------------
@@ -127,7 +126,6 @@ argchoice:Yes:1
 
 in:TmpInputFile
 informat:genbank
-inmask:
 insave:
 
 

@@ -103,11 +103,9 @@ static void ParseMenus(LineReader& in) {
     string lineStr;
 
     while (in.getLine(lineStr)) {
-        // const char *in_line = lineStr.c_str(); // @@@ preferred, but parser modifies line :/
-        char in_line[GBUFSIZ];
-        gde_assert(lineStr.length()<GBUFSIZ);
-        strcpy(in_line, lineStr.c_str());
+        gde_assert(lineStr.length()<GBUFSIZ); // otherwise buffer usage may fail
 
+        const char *in_line = lineStr.c_str();
         if (in_line[0] == '#' || (in_line[0] && in_line[1] == '#')) {
             ; // skip line
         }
@@ -276,7 +274,6 @@ static void ParseMenus(LineReader& in) {
                 thisarg->symbol = (char*)calloc(strlen(temp)+1, sizeof(char));
                 (void)strcpy(thisarg->symbol, temp);
 
-                thisarg->optional   = FALSE;
                 thisarg->type       = 0;
                 thisarg->min        = 0.0;
                 thisarg->max        = 0.0;
@@ -375,14 +372,6 @@ static void ParseMenus(LineReader& in) {
                 THROW_IF_NO_ARG();
                 (void)sscanf(temp, "%lf", &(thisarg->max));
             }
-            /* argmethod: Command line flag associated with this argument.
-             *            Replaces argument in itemmethod description.
-             */
-            else if (strcmp(head, "argmethod") == 0) {
-                THROW_IF_NO_ARG();
-                thisarg->method = (char*)calloc(GBUFSIZ, strlen(temp));
-                (void)strcpy(thisarg->method, tail);
-            }
             // argvalue: default value for a slider
             else if (strcmp(head, "argvalue") == 0) {
                 THROW_IF_NO_ARG();
@@ -393,11 +382,6 @@ static void ParseMenus(LineReader& in) {
                     (void)sscanf(temp, "%lf", &(thisarg->fvalue));
                     thisarg->ivalue = (int) thisarg->fvalue;
                 }
-            }
-            // argoptional: Flag specifying that an argument is optional
-            else if (strcmp(head, "argoptional") == 0) {
-                THROW_IF_NO_ARG();
-                thisarg->optional = TRUE;
             }
             else if (strcmp(head, "argmask") == 0) {
                 THROW_IF_NO_ARG();
@@ -410,16 +394,13 @@ static void ParseMenus(LineReader& in) {
                 if (curinput == 0) resize = (char*)calloc(1, sizeof(GfileFormat));
                 else resize               = (char *)realloc((char *)thisitem->input, (thisitem->numinputs)*sizeof(GfileFormat));
 
-                thisitem->input      = (GfileFormat*)resize;
-                thisinput            = &(thisitem->input)[curinput];
-                thisinput->save      = FALSE;
-                thisinput->overwrite = FALSE;
-                thisinput->maskable  = FALSE;
-                thisinput->format    = 0;
-                thisinput->symbol    = strdup(temp);
-                thisinput->name      = NULL;
-                thisinput->select    = SELECTED;
-                thisinput->typeinfo  = BASIC_TYPEINFO;
+                thisitem->input     = (GfileFormat*)resize;
+                thisinput           = &(thisitem->input)[curinput];
+                thisinput->save     = FALSE;
+                thisinput->format   = 0;
+                thisinput->symbol   = strdup(temp);
+                thisinput->name     = NULL;
+                thisinput->typeinfo = BASIC_TYPEINFO;
             }
             else if (strcmp(head, "informat") == 0) {
                 THROW_IF_NO_INPUT();
@@ -437,16 +418,6 @@ static void ParseMenus(LineReader& in) {
                 else if (Find(temp, "basic")) thisinput->typeinfo = BASIC_TYPEINFO;
                 else throwParseError(GBS_global_string("Unknown value '%s' for 'intyped' (known: 'detailed', 'basic')", temp), in);
             }
-            else if (strcmp(head, "inselect") == 0) {
-                THROW_IF_NO_INPUT();
-                if (Find(temp, "one")) thisinput->select         = SELECT_ONE;
-                else if (Find(temp, "region")) thisinput->select = SELECT_REGION;
-                else if (Find(temp, "all")) thisinput->select    = ALL;
-            }
-            else if (strcmp(head, "inmask") == 0) {
-                THROW_IF_NO_INPUT();
-                thisinput->maskable = TRUE;
-            }
             // out: Output file description
             else if (strcmp(head, "out") == 0) {
                 THROW_IF_NO_ITEM();
@@ -455,13 +426,12 @@ static void ParseMenus(LineReader& in) {
                 if (curoutput == 0) resize = (char*)calloc(1, sizeof(GfileFormat));
                 else resize               = (char *)realloc((char *)thisitem->output, (thisitem->numoutputs)*sizeof(GfileFormat));
 
-                thisitem->output      = (GfileFormat*)resize;
-                thisoutput            = &(thisitem->output)[curoutput];
-                thisoutput->save      = FALSE;
-                thisoutput->overwrite = FALSE;
-                thisoutput->format    = 0;
-                thisoutput->symbol    = strdup(temp);
-                thisoutput->name      = NULL;
+                thisitem->output   = (GfileFormat*)resize;
+                thisoutput         = &(thisitem->output)[curoutput];
+                thisoutput->save   = FALSE;
+                thisoutput->format = 0;
+                thisoutput->symbol = strdup(temp);
+                thisoutput->name   = NULL;
             }
             else if (strcmp(head, "outformat") == 0) {
                 THROW_IF_NO_OUTPUT();
@@ -473,10 +443,6 @@ static void ParseMenus(LineReader& in) {
             else if (strcmp(head, "outsave") == 0) {
                 THROW_IF_NO_OUTPUT();
                 thisoutput->save = TRUE;
-            }
-            else if (strcmp(head, "outoverwrite") == 0) {
-                THROW_IF_NO_OUTPUT();
-                thisoutput->overwrite = TRUE;
             }
             else {
                 throwParseError(GBS_global_string("No known GDE-menu-command found (line='%s')", in_line), in);

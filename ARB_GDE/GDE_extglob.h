@@ -29,7 +29,6 @@ extern Gmenu menu[GDEMAXMENU];
 extern int   num_menus;
 extern int   DataType;
 extern int   FileFormat;
-extern int   OVERWRITE;
 extern char  FileName[80];
 
 // Months of the year

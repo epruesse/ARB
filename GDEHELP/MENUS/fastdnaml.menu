@@ -33,6 +33,5 @@ argchoice:Treetool:treetool treefile
 
 in:TmpInputFile
 informat:genbank
-inmask:
 insave:
 

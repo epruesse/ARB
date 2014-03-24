@@ -12,7 +12,6 @@
 
 int  DataType;
 int  FileFormat;
-int  OVERWRITE    = FALSE;
 char FileName[80];
 
 // Months of the year

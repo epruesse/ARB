@@ -193,7 +193,7 @@ static GB_ERROR LoadFile(char *filename, NA_Alignment *dataset, int type, int fo
             break;
 
         case GDE:
-            gde_assert(0); // @@@ should no longer occur
+            gde_assert(0); // should no longer occur
             break;
 
         default:
@@ -333,10 +333,11 @@ void Ascii2NA(char *buffer, int len, int matrix[16]) {
     }
 }
 
-int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
+int WriteNA_Flat(NA_Alignment *aln, char *filename, int method)
 {
     size_t j;
-    int kk, mask = -1, k, offset;
+    int kk;
+    int k, offset;
     char offset_str[100], buf[100];
     NA_Sequence *seqs;
     FILE *file;
@@ -352,37 +353,17 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
         Warning("Cannot open file for output");
         return (1);
     }
-    if (maskable && (method != SELECT_REGION))
-    {
-        for (j=0; j<aln->numelements; j++)
-            if (seqs[j].elementtype == MASK &&
-               seqs[j].selected)
-                mask = j;
-    }
-    /* Removed by OLIVER
-       for(j=0;j<aln->numelements;j++)
-       {
-       SeqNorm(&(seqs[j]));
-       }
-    */
 
     for (j=0; j<aln->numelements; j++)
     {
-        if (method != SELECT_REGION) {
-            offset = seqs[j].offset;
-        }
-        else {
-            for (offset=seqs[j].offset; aln->selection_mask[offset] == '0'; offset++) ;
-        }
+        offset = seqs[j].offset;
 
         if (offset+aln->rel_offset != 0)
             sprintf(offset_str, "(%d)", offset+aln->rel_offset);
         else
             offset_str[0] = '\0';
 
-        if ((((int)j!=mask) && (seqs[j].selected) && method != SELECT_REGION)
-           || (method == SELECT_REGION && seqs[j].subselected)
-           || method == ALL)
+        if (method == ALL)
         {
             fprintf(file, "%c%s%s\n",
                     seqs[j].elementtype == DNA ? '#' :
@@ -394,89 +375,31 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
                     (offset+aln->rel_offset  == 0) ? "" : offset_str);
             if (seqs[j].tmatrix)
             {
-                if (mask == -1)
-                    for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
+                for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
+                {
+                    if ((k)%60 == 0 && k>0)
                     {
-                        if ((k)%60 == 0 && k>0)
-                        {
-                            buf[60] = '\0';
-                            fputs(buf, file);
-                            putc('\n', file);
-                        }
-                        if (method == SELECT_REGION)
-                        {
-                            if (aln->selection_mask[kk+offset]=='1')
-                            {
-                                buf[k%60] = ((char)seqs[j].tmatrix[
-                                                                  (int)getelem(&(seqs[j]), kk+offset)]);
-                                k++;
-                            }
-                        }
-                        else
-                        {
-                            buf[k%60] = ((char)seqs[j].tmatrix[
-                                                              (int)getelem(&(seqs[j]), kk+offset)]);
-                            k++;
-                        }
+                        buf[60] = '\0';
+                        fputs(buf, file);
+                        putc('\n', file);
                     }
-                else
-                    for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
-                    {
-                        if (getelem(&(seqs[mask]), kk+seqs[mask].offset) != '0'
-                           && (getelem(&(seqs[mask]), kk+seqs[mask].offset)
-                               != '-'))
-                        {
-                            if ((k++)%60 == 0 && k>1)
-                            {
-                                buf[60] = '\0';
-                                fputs(buf, file);
-                                putc('\n', file);
-                            }
-                            buf[k%60] = ((char)seqs[j].tmatrix
-                                         [getelem(&(seqs[j]), kk+offset)]);
-                        }
-                    }
+                    buf[k%60] = ((char)seqs[j].tmatrix[(int)getelem(&(seqs[j]), kk+offset)]);
+                    k++;
+                }
             }
             else
             {
-                if (mask == -1)
-                    for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
+                for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
+                {
+                    if ((k)%60 == 0 && k>0)
                     {
-                        if ((k)%60 == 0 && k>0)
-                        {
-                            buf[60] = '\0';
-                            fputs(buf, file);
-                            putc('\n', file);
-                        }
-                        if (method == SELECT_REGION)
-                        {
-                            if (aln->selection_mask[kk+offset]=='1')
-                            {
-                                buf[k%60] = (getelem(&(seqs[j]), kk+offset));
-                                k++;
-                            }
-                        }
-                        else
-                        {
-                            buf[k%60] = (getelem(&(seqs[j]), kk+offset));
-                            k++;
-                        }
+                        buf[60] = '\0';
+                        fputs(buf, file);
+                        putc('\n', file);
                     }
-                else
-                    for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
-                    {
-                        if (getelem(&(seqs[mask]), kk+offset) == '1')
-                        {
-                            if ((k++)%60 == 0 && k>1)
-                            {
-                                buf[60] = '\0';
-                                fputs(buf, file);
-                                putc('\n', file);
-                            }
-                            buf[k%60] = ((char)getelem(&(seqs[j]),
-                                                      kk+offset));
-                        }
-                    }
+                    buf[k%60] = (getelem(&(seqs[j]), kk+offset));
+                    k++;
+                }
             }
             buf[(k%60)>0 ? (k%60) : 60] = '\0';
             fputs(buf, file);
@@ -525,8 +448,6 @@ void InitNASeq(NA_Sequence *seq, int type) {
     seq->groupb = NULL;
     seq->groupf = NULL;
     seq->cmask = NULL;
-    seq->selected = 0;
-    seq->subselected = 0;
 
     switch (type)
     {
