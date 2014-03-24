@@ -30,18 +30,18 @@ void Cfree(char *block);
 void LoadData(char *filen);
 void AppendNA(NA_Base *buffer, int len, NA_Sequence *seq);
 void Ascii2NA(char *buffer, int len, int matrix[16]);
-int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable);
+int WriteNA_Flat(NA_Alignment *aln, char *filename, int method);
 void Warning(const char *s);
 void InitNASeq(NA_Sequence *seq, int type);
 void NormalizeOffset(NA_Alignment *aln);
 
 /* GDE_Genbank.cxx */
 GB_ERROR ReadGen(char *filename, NA_Alignment *dataset);
-int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable);
+int WriteGen(NA_Alignment *aln, char *filename, int method);
 void SetTime(void *b);
 
 /* GDE_HGLfile.cxx */
-int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable);
+int WriteGDE(NA_Alignment *aln, char *filename, int method);
 char *uniqueID(void);
 
 /* GDE_ParseMenu.cxx */

@@ -52,7 +52,6 @@ argchoice:Manual:                 PROTEXT=User;    PROFLAGS=""
 
 in:TmpInputFile
 informat:genbank
-inmask:
 insave:
 
 // --------------------------------------------------------------------------------
@@ -81,6 +80,5 @@ argchoice:Yes:arb_textedit infile ;
 
 in:TmpInputFile
 informat:genbank
-inmask:
 insave:
 

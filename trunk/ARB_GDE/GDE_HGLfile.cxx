@@ -37,11 +37,11 @@ static void RemoveQuotes(char *string)
 
 }
 
-int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
+int WriteGDE(NA_Alignment *aln, char *filename, int method)
 {
     int i;
     size_t j;
-    int k, mask = -1;
+    int k;
     FILE *file;
     NA_Sequence *this_elem;
 
@@ -54,17 +54,9 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
         return (1);
     }
 
-    if (maskable && method != SELECT_REGION)
-        for (j=0; j<aln->numelements; j++)
-            if (aln->element[j].elementtype == MASK &&
-               aln->element[j].selected)
-                mask = j;
-
     for (j=0; j<aln->numelements; j++)
     {
-        if ((aln->element[j].selected && (int)j!=mask && method!=SELECT_REGION)
-           || (method == ALL)
-           || (aln->element[j].subselected && method == SELECT_REGION))
+        if (method == ALL)
         {
             this_elem = &(aln->element[j]);
             fprintf(file, "{\n");
@@ -108,16 +100,9 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
                 fprintf(file, "creator           \"%s\"\n", this_elem->authority);
             if (this_elem->groupid)
                 fprintf(file, "group-ID          %zu\n", this_elem->groupid);
-            if (this_elem->offset+aln->rel_offset && method!=SELECT_REGION)
+            if (this_elem->offset+aln->rel_offset)
                 fprintf(file, "offset            %d\n", this_elem->offset+aln->rel_offset);
-            if (method == SELECT_REGION)
-            {
-                /* If selecting a region, the offset should be moved to the first
-                 * non-'0' space in the mask.
-                 */
-                for (k=this_elem->offset; k<aln->selection_mask_len && aln->selection_mask[k] == '0'; k++) ;
-                fprintf(file, "offset        %d\n", aln->rel_offset+k);
-            }
+
             if (this_elem->t_stamp.origin.mm != 0)
                 fprintf(file,
                         "creation-date      %2d/%2d/%2d %2d:%2d:%2d\n",
@@ -180,68 +165,20 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
             fprintf(file, "sequence  \"");
             if (this_elem->tmatrix)
             {
-                if (mask == -1)
+                for (k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
                 {
-                    for (k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        if (k%60 == 0)
-                            putc('\n', file);
-                        if (method == SELECT_REGION)
-                        {
-                            if (aln->selection_mask[k] == '1')
-                                putc(this_elem->tmatrix[getelem(this_elem, k)],
-                                     file);
-                        }
-                        else
-                            putc(this_elem->tmatrix[getelem(this_elem, k)],
-                                 file);
-                    }
-                }
-                else
-                {
-                    for (i=0, k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
-                        if (aln->element[mask].seqlen+this_elem->offset>k)
-                            if ((char)getelem(&(aln->element[mask]), k) != '0'
-                               && ((char)getelem(&(aln->element[mask]), k) != '-'))
-                            {
-                                if (i%60 == 0)
-                                    putc('\n', file);
-                                putc(this_elem->tmatrix[getelem(this_elem, k)],
-                                     file);
-                                i++;
-                            }
+                    if (k%60 == 0) putc('\n', file);
+                    putc(this_elem->tmatrix[getelem(this_elem, k)], file);
                 }
                 fprintf(file, "\"\n");
             }
             else
             {
-                if (mask == -1)
+                for (k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
                 {
-                    for (k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        if (k%60 == 0)
-                            putc('\n', file);
-                        if (method == SELECT_REGION)
-                        {
-                            if (aln->selection_mask[k] == '1')
-                                putc(getelem(this_elem, k), file);
-                        }
-                        else
-                            putc(getelem(this_elem, k), file);
-                    }
-                }
-                else
-                {
-                    for (i=0, k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
-                        if (((aln->element[mask].seqlen)+(aln->element[mask].
-                                                         offset)) > k)
-                            if ((char)getelem(&(aln->element[mask]), k) == '1')
-                            {
-                                if (i%60 == 0)
-                                    putc('\n', file);
-                                putc(getelem(this_elem, k), file);
-                                i++;
-                            }
+                    if (k%60 == 0)
+                        putc('\n', file);
+                    putc(getelem(this_elem, k), file);
                 }
                 fprintf(file, "\"\n");
             }

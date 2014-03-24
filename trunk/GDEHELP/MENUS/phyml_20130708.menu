@@ -146,6 +146,5 @@ argtext:
 
 in:TmpInputFile
 informat:genbank
-inmask:
 insave:
 

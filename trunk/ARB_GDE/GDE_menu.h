@@ -21,7 +21,6 @@ struct GargChoice {
 };
 
 struct GmenuItemArg {
-    int         optional;       // is this optional?
     int         type;           // TEXT, SLIDER, CHOOSER, etc.
     int         ivalue;
     double      min;            // minimum range value
@@ -32,7 +31,6 @@ struct GmenuItemArg {
     int         textwidth;      // text width used for input field
     char       *label;          // description of arg function
     char       *symbol;         // internal symbol table mapping
-    char       *method;         // commandline interpretation
     GargChoice *choice;         // choices
     // ARB BEGIN
     AW_active     active_mask;  // expert/novice
@@ -46,10 +44,7 @@ enum TypeInfo {
 
 struct GfileFormat {
     int       save;             // how should file be saved
-    int       overwrite;        // how should file be loaded
     int       format;           // what format is each field
-    int       maskable;         // Can a write through mask be used?
-    int       select;           // what type of selection
     char     *symbol;           // internal symbol table mapping
     char     *name;             // file name
     TypeInfo  typeinfo;
