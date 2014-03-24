@@ -257,7 +257,8 @@ int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
 {
     int i;
     size_t j;
-    int k, mask = -1;
+    int k;
+    const int mask = -1; // @@@ hardcode
     FILE *file;
     NA_Sequence *this_elem;
     char c;
@@ -270,15 +271,10 @@ int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
         return (1);
     }
 
-    if (maskable && true) // @@@ 
-        for (j=0; j<aln->numelements; j++)
-            if (false) // @@@ 
-                mask = j;
-
     for (j=0; j<aln->numelements; j++)
     {
         this_elem = &(aln->element[j]);
-        if (false || (method == ALL)) // @@@ 
+        if (method == ALL)
         {
             fprintf(file,
                     "LOCUS       %10s%8d bp    %4s  %10s   %2d%5s%4d\n",
@@ -310,29 +306,13 @@ int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
                 {
                     for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
                     {
-                        if (false) // @@@ 
-                        {
-                            if (aln->selection_mask[k] == '1')
-                            {
-                                if (i%60 == 0)
-                                    fprintf(file, "\n%9d", i+1);
-                                if (i%10 == 0)
-                                    fprintf(file, " ");
-                                fprintf(file, "%c", this_elem->tmatrix
-                                        [getelem(this_elem, k)]);
-                                i++;
-                            }
-                        }
-                        else
-                        {
-                            if (i%60 == 0)
-                                fprintf(file, "\n%9d", i+1);
-                            if (i%10 == 0)
-                                fprintf(file, " ");
-                            fprintf(file, "%c", this_elem->tmatrix
-                                    [getelem(this_elem, k)]);
-                            i++;
-                        }
+                        if (i%60 == 0)
+                            fprintf(file, "\n%9d", i+1);
+                        if (i%10 == 0)
+                            fprintf(file, " ");
+                        fprintf(file, "%c", this_elem->tmatrix
+                                [getelem(this_elem, k)]);
+                        i++;
                     }
                 }
                 else
@@ -358,27 +338,12 @@ int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
                 {
                     for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
                     {
-                        if (false) // @@@ 
-                        {
-                            if (aln->selection_mask[k] == '1')
-                            {
-                                if (i%60 == 0)
-                                    fprintf(file, "\n%9d", i+1);
-                                if (i%10 == 0)
-                                    fprintf(file, " ");
-                                fprintf(file, "%c", getelem(this_elem, k));
-                                i++;
-                            }
-                        }
-                        else
-                        {
-                            if (i%60 == 0)
-                                fprintf(file, "\n%9d", i+1);
-                            if (i%10 == 0)
-                                fprintf(file, " ");
-                            fprintf(file, "%c", getelem(this_elem, k));
-                            i++;
-                        }
+                        if (i%60 == 0)
+                            fprintf(file, "\n%9d", i+1);
+                        if (i%10 == 0)
+                            fprintf(file, " ");
+                        fprintf(file, "%c", getelem(this_elem, k));
+                        i++;
                     }
                 }
                 else

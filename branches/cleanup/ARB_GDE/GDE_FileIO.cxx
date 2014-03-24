@@ -336,7 +336,9 @@ void Ascii2NA(char *buffer, int len, int matrix[16]) {
 int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
 {
     size_t j;
-    int kk, mask = -1, k, offset;
+    int kk;
+    const int mask = -1; // @@@ hardcode
+    int k, offset;
     char offset_str[100], buf[100];
     NA_Sequence *seqs;
     FILE *file;
@@ -352,34 +354,17 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
         Warning("Cannot open file for output");
         return (1);
     }
-    if (maskable && (true)) // @@@ 
-    {
-        for (j=0; j<aln->numelements; j++)
-            if (false) // @@@ 
-                mask = j;
-    }
-    /* Removed by OLIVER
-       for(j=0;j<aln->numelements;j++)
-       {
-       SeqNorm(&(seqs[j]));
-       }
-    */
 
     for (j=0; j<aln->numelements; j++)
     {
-        if (true) { // @@@ 
-            offset = seqs[j].offset;
-        }
-        else {
-            for (offset=seqs[j].offset; aln->selection_mask[offset] == '0'; offset++) ;
-        }
+        offset = seqs[j].offset;
 
         if (offset+aln->rel_offset != 0)
             sprintf(offset_str, "(%d)", offset+aln->rel_offset);
         else
             offset_str[0] = '\0';
 
-        if (false || method == ALL) // @@@ 
+        if (method == ALL)
         {
             fprintf(file, "%c%s%s\n",
                     seqs[j].elementtype == DNA ? '#' :
@@ -400,21 +385,8 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
                             fputs(buf, file);
                             putc('\n', file);
                         }
-                        if (false) // @@@ 
-                        {
-                            if (aln->selection_mask[kk+offset]=='1')
-                            {
-                                buf[k%60] = ((char)seqs[j].tmatrix[
-                                                                  (int)getelem(&(seqs[j]), kk+offset)]);
-                                k++;
-                            }
-                        }
-                        else
-                        {
-                            buf[k%60] = ((char)seqs[j].tmatrix[
-                                                              (int)getelem(&(seqs[j]), kk+offset)]);
-                            k++;
-                        }
+                        buf[k%60] = ((char)seqs[j].tmatrix[(int)getelem(&(seqs[j]), kk+offset)]);
+                        k++;
                     }
                 else
                     for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
@@ -445,19 +417,8 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
                             fputs(buf, file);
                             putc('\n', file);
                         }
-                        if (false) // @@@ 
-                        {
-                            if (aln->selection_mask[kk+offset]=='1')
-                            {
-                                buf[k%60] = (getelem(&(seqs[j]), kk+offset));
-                                k++;
-                            }
-                        }
-                        else
-                        {
-                            buf[k%60] = (getelem(&(seqs[j]), kk+offset));
-                            k++;
-                        }
+                        buf[k%60] = (getelem(&(seqs[j]), kk+offset));
+                        k++;
                     }
                 else
                     for (k=0, kk=0; kk<seqs[j].seqlen; kk++)

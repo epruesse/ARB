@@ -41,7 +41,8 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
 {
     int i;
     size_t j;
-    int k, mask = -1;
+    int k;
+    const int mask = -1; // @@@ hardcode
     FILE *file;
     NA_Sequence *this_elem;
 
@@ -54,14 +55,9 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
         return (1);
     }
 
-    if (maskable && true) // @@@ 
-        for (j=0; j<aln->numelements; j++)
-            if (false) // @@@ 
-                mask = j;
-
     for (j=0; j<aln->numelements; j++)
     {
-        if ((false) || (method == ALL)) // @@@ 
+        if (method == ALL)
         {
             this_elem = &(aln->element[j]);
             fprintf(file, "{\n");
@@ -105,16 +101,9 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
                 fprintf(file, "creator           \"%s\"\n", this_elem->authority);
             if (this_elem->groupid)
                 fprintf(file, "group-ID          %zu\n", this_elem->groupid);
-            if (this_elem->offset+aln->rel_offset && true) // @@@ 
+            if (this_elem->offset+aln->rel_offset)
                 fprintf(file, "offset            %d\n", this_elem->offset+aln->rel_offset);
-            if (false) // @@@ 
-            {
-                /* If selecting a region, the offset should be moved to the first
-                 * non-'0' space in the mask.
-                 */
-                for (k=this_elem->offset; k<aln->selection_mask_len && aln->selection_mask[k] == '0'; k++) ;
-                fprintf(file, "offset        %d\n", aln->rel_offset+k);
-            }
+
             if (this_elem->t_stamp.origin.mm != 0)
                 fprintf(file,
                         "creation-date      %2d/%2d/%2d %2d:%2d:%2d\n",
@@ -181,17 +170,8 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
                 {
                     for (k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
                     {
-                        if (k%60 == 0)
-                            putc('\n', file);
-                        if (false) // @@@ 
-                        {
-                            if (aln->selection_mask[k] == '1')
-                                putc(this_elem->tmatrix[getelem(this_elem, k)],
-                                     file);
-                        }
-                        else
-                            putc(this_elem->tmatrix[getelem(this_elem, k)],
-                                 file);
+                        if (k%60 == 0) putc('\n', file);
+                        putc(this_elem->tmatrix[getelem(this_elem, k)], file);
                     }
                 }
                 else
@@ -218,13 +198,7 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
                     {
                         if (k%60 == 0)
                             putc('\n', file);
-                        if (false) // @@@ 
-                        {
-                            if (aln->selection_mask[k] == '1')
-                                putc(getelem(this_elem, k), file);
-                        }
-                        else
-                            putc(getelem(this_elem, k), file);
+                        putc(getelem(this_elem, k), file);
                     }
                 }
                 else
