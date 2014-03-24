@@ -1,5 +1,6 @@
 item:Export sequences to foreign format (Readseq) ...
 itemmeta: R
+seqtype:*
 itemmethod:arb_readseq TmpInputFile -pipe -all -form=$FORMAT > $OUTPUTFILE
 itemhelp:readseq.help
 

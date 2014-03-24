@@ -1,5 +1,6 @@
 item:DeSoete Tree fit
 itemmeta: S
+seqtype:*
 itemmethod: GOTO_LOCAL_DIR; \
             (RUN_IN_WINDOW((arb_readseq -a -f8 TmpInputFile >fasta.flat;\
                             count -t $CORR fasta.flat >count.out;\

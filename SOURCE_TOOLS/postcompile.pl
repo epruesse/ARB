@@ -215,7 +215,7 @@ sub drop_last_pushed_relateds(\@) {
   my ($out_r) = @_;
   if ($last_pushed_related>0) {
     my $before_related = scalar(@$out_r) - $last_pushed_related - 1;
-    $before_related>0 || die "impossible";
+    $before_related>=0 || die "impossible (out_r-elements=".scalar(@$out_r)."; last_pushed_related=$last_pushed_related)";
     @$out_r = @$out_r[0 .. $before_related];
   }
 }

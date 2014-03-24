@@ -70,7 +70,7 @@ public:
         if (next_line) {
             line = *next_line;
             delete next_line;
-            next_line = 0;
+            next_line = NULL;
             return true;
         }
         return getLine_intern(line);

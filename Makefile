@@ -617,7 +617,7 @@ first_target:
 		@echo 'Some often used sub targets (make all makes them all):'
 		@echo ''
 		@echo ' arb         - Just compile ARB (but none of the integrated tools)'
-		@echo ' menus       - create GDEHELP/ARB_GDEmenus from GDEHELP/ARB_GDEmenus.source'
+		@echo ' menus       - create lib/gde/arb.menu from GDEHELP/ARB_GDEmenus.source'
 		@echo ' perl        - Compile the PERL XSUBS into lib/ARB.so  and create links in lib to perl'
 		@echo ' binlink     - Create all links in the bin directory'
 		@echo ''

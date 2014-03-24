@@ -23,7 +23,8 @@ SECTION Using the GDE menus
         programs when selected from a menu:
 
         Each step in this process is described in the file
-        $ARBHOME/GDEHELP/ARB_GDEmenus
+
+                $ARBHOME/lib/gde/arb.menu
 
         You may modify that file to include other external
         tools into the ARB interface.
@@ -48,16 +49,27 @@ SECTION Using the GDE menus
         The keywords for phase one are:
 
                 menu:menu name      Name of current menu
+                menumeta:meta_key   Meta key equivalence (quick keys)
+                menumask:expert     Whole menu will be inaccessible in ARBs novice mode
+
                 item:item name      Name of current menu item
                 itemmeta:meta_key   Meta key equivalence (quick keys)
                 itemhelp:help_file  Help file (either full path, or in $ARBHOME/lib/help)
                 itemmethod:         Unix command
+                itemmask:expert     Whole menu will be inaccessible in ARBs novice mode
+
+                seqtype:TYPE
+                        Known TYPEs:
+                              'A' -> select amino acid sequences
+                              'N' -> select nucleotide sequences
+                              '*' -> select ANY sequences
+                              '-' (or whole entry missing) -> do not select sequences
 
         The itemmethod command is a bit more involved, it
         is the Unix command that will actually run the
         external program intended.
 
-        It is one line long, and can be up to 256 characters in
+        It is one line long, and can be up to 4096 characters in
         length. It can have embedded variable names (starting
         with a '$') that will be replaced with appropriate values
         later on.
@@ -107,7 +119,7 @@ SECTION Using the GDE menus
 
                         Used for sliders.
 
-            argvalue:default_value (integer)
+            argvalue:default_value
 
                         It is the numeric value associated with
                         sliders or the default choice in
@@ -128,6 +140,11 @@ SECTION Using the GDE menus
                         value is passed to the itemmethod
                         line.
 
+            argmask:expert
+
+                        Whole arg will be inaccessible in ARBs novice mode
+
+
         The keywords for phase three are as follows:
 
             in:input_file
@@ -142,6 +159,22 @@ SECTION Using the GDE menus
                         Write data to this file for input to
                         this function. Currently support
                         values are Genbank, and flat.
+
+            intyped:DETAILS
+
+                        Whether to save sequence type information.
+
+                        Known DETAILS:
+
+                              basic        default; plain sequences exported
+                              detailed     -> prefix sequence name by IDCHAR
+
+                        Known IDCHARs:
+
+                              '#'       RNA / DNA
+                              '%'       PROTEIN
+                              '@'       MASK (obsolete)
+                              '"'       TEXT or unknown
 
             inmask:
 
