@@ -28,44 +28,40 @@ static char *readableItemname(const GmenuItem& i) {
     return GBS_global_string_copy("%s/%s", i.parent_menu->label, i.label);
 }
 
-__ATTR__NORETURN static void throwItemError(const GmenuItem& i, const char *error) {
-    char       *itemName = readableItemname(i);
-    const char *msg      = GBS_global_string("Invalid item '%s' defined in some .menu (Reason: %s)", itemName, error);
-    free(itemName);
-    throwError(msg);
-}
-
-static void CheckItemConsistency() {
-    // (incomplete) consistency check.
-    // bailing out with ItemError() here, will make unit-test and arb-startup fail!
-
-    for (int m = 0; m<num_menus; ++m) {
-        const Gmenu& M = menu[m];
-        for (int i = 0; i<M.numitems; ++i) {
-            const GmenuItem& I = M.item[i];
-
-            if (I.seqtype != '-' && I.numinputs<1) {
-                // Such an item would create a window where alignment/species selection is present,
-                // but no sequence export will take place.
-                // 
-                // Pressing 'GO' would result in failure or deadlock.
-                throwItemError(I, "item defines seqtype ('seqtype:' <> '-'), but is lacking input-specification ('in:')");
-            }
-            if (I.seqtype == '-' && I.numinputs>0) {
-                // Such an item would create a window where alignment/species selection has no GUI-elements,
-                // but sequences are exported (generating a corrupt sequence file)
-                //
-                // Pressing 'GO' would result in failure or deadlock.
-                throwItemError(I, "item defines no seqtype ('seqtype:' = '-'), but defines input-specification ('in:')");
-            }
-        }
-    }
-}
-
 static __ATTR__NORETURN void throwParseError(const char *msg, const LineReader& file) {
     fprintf(stderr, "\n%s:%li: %s\n", file.getFilename().c_str(), file.getLineNumber(), msg);
     fflush(stderr);
     throwError(msg);
+}
+
+__ATTR__NORETURN static void throwItemError(const GmenuItem& i, const char *error, const LineReader& file) {
+    char       *itemName = readableItemname(i);
+    const char *msg      = GBS_global_string("[Above this line] Invalid item '%s' defined: %s", itemName, error);
+    free(itemName);
+    throwParseError(msg, file);
+}
+
+static void CheckItemConsistency(const GmenuItem *item, const LineReader& file) {
+    // (incomplete) consistency check.
+    // bailing out with ItemError() here, will make unit-test and arb-startup fail!
+
+    if (item) {
+        const GmenuItem& I = *item;
+        if (I.seqtype != '-' && I.numinputs<1) {
+            // Such an item would create a window where alignment/species selection is present,
+            // but no sequence export will take place.
+            // 
+            // Pressing 'GO' would result in failure or deadlock.
+            throwItemError(I, "item defines seqtype ('seqtype:' <> '-'), but is lacking input-specification ('in:')", file);
+        }
+        if (I.seqtype == '-' && I.numinputs>0) {
+            // Such an item would create a window where alignment/species selection has no GUI-elements,
+            // but sequences are exported (generating a corrupt sequence file)
+            //
+            // Pressing 'GO' would result in failure.
+            throwItemError(I, "item defines no seqtype ('seqtype:' = '-'), but defines input-specification ('in:')", file);
+        }
+    }
 }
 
 #define THROW_IF_NO(ptr,name) do { if (ptr == NULL) throwParseError(GBS_global_string("'%s' used w/o '" name "'", head), in); } while(0)
@@ -141,6 +137,8 @@ static void ParseMenus(LineReader& in) {
                 else {
                     thismenu = &menu[curmenu];
                 }
+
+                CheckItemConsistency(thisitem, in);
                 thisitem   = NULL;
                 thisarg    = NULL;
                 thisoutput = NULL;
@@ -164,6 +162,8 @@ static void ParseMenus(LineReader& in) {
             }
             // item: chooses menu item to use
             else if (strcmp(head, "item") == 0) {
+                CheckItemConsistency(thisitem, in);
+
                 THROW_IF_NO_MENU();
 
                 curarg    = -1;
@@ -482,7 +482,7 @@ static void ParseMenus(LineReader& in) {
         }
     }
 
-    CheckItemConsistency();
+    CheckItemConsistency(thisitem, in);
 
     gde_assert(num_menus>0); // if this fails, the file arb.menu contained no menus (maybe file has zero size)
 }
