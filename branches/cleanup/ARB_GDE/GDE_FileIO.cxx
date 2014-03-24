@@ -337,7 +337,6 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method)
 {
     size_t j;
     int kk;
-    const int mask = -1; // @@@ hardcode
     int k, offset;
     char offset_str[100], buf[100];
     NA_Sequence *seqs;
@@ -376,65 +375,31 @@ int WriteNA_Flat(NA_Alignment *aln, char *filename, int method)
                     (offset+aln->rel_offset  == 0) ? "" : offset_str);
             if (seqs[j].tmatrix)
             {
-                if (mask == -1)
-                    for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
+                for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
+                {
+                    if ((k)%60 == 0 && k>0)
                     {
-                        if ((k)%60 == 0 && k>0)
-                        {
-                            buf[60] = '\0';
-                            fputs(buf, file);
-                            putc('\n', file);
-                        }
-                        buf[k%60] = ((char)seqs[j].tmatrix[(int)getelem(&(seqs[j]), kk+offset)]);
-                        k++;
+                        buf[60] = '\0';
+                        fputs(buf, file);
+                        putc('\n', file);
                     }
-                else
-                    for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
-                    {
-                        if (getelem(&(seqs[mask]), kk+seqs[mask].offset) != '0'
-                           && (getelem(&(seqs[mask]), kk+seqs[mask].offset)
-                               != '-'))
-                        {
-                            if ((k++)%60 == 0 && k>1)
-                            {
-                                buf[60] = '\0';
-                                fputs(buf, file);
-                                putc('\n', file);
-                            }
-                            buf[k%60] = ((char)seqs[j].tmatrix
-                                         [getelem(&(seqs[j]), kk+offset)]);
-                        }
-                    }
+                    buf[k%60] = ((char)seqs[j].tmatrix[(int)getelem(&(seqs[j]), kk+offset)]);
+                    k++;
+                }
             }
             else
             {
-                if (mask == -1)
-                    for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
+                for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
+                {
+                    if ((k)%60 == 0 && k>0)
                     {
-                        if ((k)%60 == 0 && k>0)
-                        {
-                            buf[60] = '\0';
-                            fputs(buf, file);
-                            putc('\n', file);
-                        }
-                        buf[k%60] = (getelem(&(seqs[j]), kk+offset));
-                        k++;
+                        buf[60] = '\0';
+                        fputs(buf, file);
+                        putc('\n', file);
                     }
-                else
-                    for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
-                    {
-                        if (getelem(&(seqs[mask]), kk+offset) == '1')
-                        {
-                            if ((k++)%60 == 0 && k>1)
-                            {
-                                buf[60] = '\0';
-                                fputs(buf, file);
-                                putc('\n', file);
-                            }
-                            buf[k%60] = ((char)getelem(&(seqs[j]),
-                                                      kk+offset));
-                        }
-                    }
+                    buf[k%60] = (getelem(&(seqs[j]), kk+offset));
+                    k++;
+                }
             }
             buf[(k%60)>0 ? (k%60) : 60] = '\0';
             fputs(buf, file);

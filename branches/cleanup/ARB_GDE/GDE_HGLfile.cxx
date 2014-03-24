@@ -42,7 +42,6 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method)
     int i;
     size_t j;
     int k;
-    const int mask = -1; // @@@ hardcode
     FILE *file;
     NA_Sequence *this_elem;
 
@@ -166,53 +165,20 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method)
             fprintf(file, "sequence  \"");
             if (this_elem->tmatrix)
             {
-                if (mask == -1)
+                for (k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
                 {
-                    for (k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        if (k%60 == 0) putc('\n', file);
-                        putc(this_elem->tmatrix[getelem(this_elem, k)], file);
-                    }
-                }
-                else
-                {
-                    for (i=0, k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
-                        if (aln->element[mask].seqlen+this_elem->offset>k)
-                            if ((char)getelem(&(aln->element[mask]), k) != '0'
-                               && ((char)getelem(&(aln->element[mask]), k) != '-'))
-                            {
-                                if (i%60 == 0)
-                                    putc('\n', file);
-                                putc(this_elem->tmatrix[getelem(this_elem, k)],
-                                     file);
-                                i++;
-                            }
+                    if (k%60 == 0) putc('\n', file);
+                    putc(this_elem->tmatrix[getelem(this_elem, k)], file);
                 }
                 fprintf(file, "\"\n");
             }
             else
             {
-                if (mask == -1)
+                for (k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
                 {
-                    for (k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        if (k%60 == 0)
-                            putc('\n', file);
-                        putc(getelem(this_elem, k), file);
-                    }
-                }
-                else
-                {
-                    for (i=0, k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
-                        if (((aln->element[mask].seqlen)+(aln->element[mask].
-                                                         offset)) > k)
-                            if ((char)getelem(&(aln->element[mask]), k) == '1')
-                            {
-                                if (i%60 == 0)
-                                    putc('\n', file);
-                                putc(getelem(this_elem, k), file);
-                                i++;
-                            }
+                    if (k%60 == 0)
+                        putc('\n', file);
+                    putc(getelem(this_elem, k), file);
                 }
                 fprintf(file, "\"\n");
             }

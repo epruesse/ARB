@@ -258,7 +258,6 @@ int WriteGen(NA_Alignment *aln, char *filename, int method)
     int i;
     size_t j;
     int k;
-    const int mask = -1; // @@@ hardcode
     FILE *file;
     NA_Sequence *this_elem;
     char c;
@@ -302,64 +301,27 @@ int WriteGen(NA_Alignment *aln, char *filename, int method)
             fprintf(file, "ORIGIN");
             if (this_elem->tmatrix)
             {
-                if (mask == -1)
+                for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
                 {
-                    for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        if (i%60 == 0)
-                            fprintf(file, "\n%9d", i+1);
-                        if (i%10 == 0)
-                            fprintf(file, " ");
-                        fprintf(file, "%c", this_elem->tmatrix
-                                [getelem(this_elem, k)]);
-                        i++;
-                    }
-                }
-                else
-                {
-                    for (k=0; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        c = (char)getelem(&(aln->element[mask]), k);
-                        if (c != '0' && c != '-')
-                        {
-                            if (k%60 == 0)
-                                fprintf(file, "\n%9d", k+1);
-                            if (k%10 == 0)
-                                fprintf(file, " ");
-                            fprintf(file, "%c", this_elem->tmatrix
-                                    [getelem(this_elem, k)]);
-                        }
-                    }
+                    if (i%60 == 0)
+                        fprintf(file, "\n%9d", i+1);
+                    if (i%10 == 0)
+                        fprintf(file, " ");
+                    fprintf(file, "%c", this_elem->tmatrix
+                            [getelem(this_elem, k)]);
+                    i++;
                 }
             }
             else
             {
-                if (mask == -1)
+                for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
                 {
-                    for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        if (i%60 == 0)
-                            fprintf(file, "\n%9d", i+1);
-                        if (i%10 == 0)
-                            fprintf(file, " ");
-                        fprintf(file, "%c", getelem(this_elem, k));
-                        i++;
-                    }
-                }
-                else
-                {
-                    for (k=0; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        c = (char)getelem(&(aln->element[mask]), k);
-                        if (c != '0' && c != '-')
-                        {
-                            if (k%60 == 0)
-                                fprintf(file, "\n%9d", k+1);
-                            if (k%10 == 0)
-                                fprintf(file, " ");
-                            fprintf(file, "%c", getelem(this_elem, k));
-                        }
-                    }
+                    if (i%60 == 0)
+                        fprintf(file, "\n%9d", i+1);
+                    if (i%10 == 0)
+                        fprintf(file, " ");
+                    fprintf(file, "%c", getelem(this_elem, k));
+                    i++;
                 }
             }
             fprintf(file, "\n//\n");
