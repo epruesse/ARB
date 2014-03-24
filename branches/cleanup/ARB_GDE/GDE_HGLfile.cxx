@@ -37,7 +37,7 @@ static void RemoveQuotes(char *string)
 
 }
 
-int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable)
+int WriteGDE(NA_Alignment *aln, char *filename, int method)
 {
     int i;
     size_t j;

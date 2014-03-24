@@ -176,11 +176,6 @@ SECTION Using the GDE menus
                               '@'       MASK (obsolete)
                               '"'       TEXT or unknown
 
-            inmask:
-
-                        This data can be controlled by a
-                        selection mask.
-
             insave:
 
                         Do not remove this file after running

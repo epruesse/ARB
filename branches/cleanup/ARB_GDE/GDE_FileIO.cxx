@@ -333,7 +333,7 @@ void Ascii2NA(char *buffer, int len, int matrix[16]) {
     }
 }
 
-int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable)
+int WriteNA_Flat(NA_Alignment *aln, char *filename, int method)
 {
     size_t j;
     int kk;

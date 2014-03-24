@@ -399,7 +399,6 @@ static void ParseMenus(LineReader& in) {
                 thisitem->input     = (GfileFormat*)resize;
                 thisinput           = &(thisitem->input)[curinput];
                 thisinput->save     = FALSE;
-                thisinput->maskable = FALSE;
                 thisinput->format   = 0;
                 thisinput->symbol   = strdup(temp);
                 thisinput->name     = NULL;
@@ -420,10 +419,6 @@ static void ParseMenus(LineReader& in) {
                 if (Find(temp, "detailed")) thisinput->typeinfo   = DETAILED_TYPEINFO;
                 else if (Find(temp, "basic")) thisinput->typeinfo = BASIC_TYPEINFO;
                 else throwParseError(GBS_global_string("Unknown value '%s' for 'intyped' (known: 'detailed', 'basic')", temp), in);
-            }
-            else if (strcmp(head, "inmask") == 0) {
-                THROW_IF_NO_INPUT();
-                thisinput->maskable = TRUE;
             }
             // out: Output file description
             else if (strcmp(head, "out") == 0) {

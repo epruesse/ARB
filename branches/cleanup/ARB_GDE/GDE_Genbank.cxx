@@ -253,7 +253,7 @@ GB_ERROR ReadGen(char *filename, NA_Alignment *dataset) {
     return error;
 }
 
-int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
+int WriteGen(NA_Alignment *aln, char *filename, int method)
 {
     int i;
     size_t j;

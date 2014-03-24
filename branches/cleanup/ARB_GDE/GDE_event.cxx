@@ -522,9 +522,9 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             gfile.name = preCreateTempfile(buffer);
 
             switch (gfile.format) {
-                case GENBANK: WriteGen    (DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case NA_FLAT: WriteNA_Flat(DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case GDE:     WriteGDE    (DataSet, gfile.name, select_mode, gfile.maskable); break;
+                case GENBANK: WriteGen    (DataSet, gfile.name, select_mode); break;
+                case NA_FLAT: WriteNA_Flat(DataSet, gfile.name, select_mode); break;
+                case GDE:     WriteGDE    (DataSet, gfile.name, select_mode); break;
                 default: break;
             }
         }

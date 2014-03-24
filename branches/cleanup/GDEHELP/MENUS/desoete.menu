@@ -12,7 +12,6 @@ itemhelp:lsadt.help
 in:TmpInputFile
 informat:genbank
 insave:
-inmask:
 
 arg:CORR
 arglabel:Dist. correction?
