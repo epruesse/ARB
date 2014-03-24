@@ -103,11 +103,9 @@ static void ParseMenus(LineReader& in) {
     string lineStr;
 
     while (in.getLine(lineStr)) {
-        // const char *in_line = lineStr.c_str(); // @@@ preferred, but parser modifies line :/
-        char in_line[GBUFSIZ];
-        gde_assert(lineStr.length()<GBUFSIZ);
-        strcpy(in_line, lineStr.c_str());
+        gde_assert(lineStr.length()<GBUFSIZ); // otherwise buffer usage may fail
 
+        const char *in_line = lineStr.c_str();
         if (in_line[0] == '#' || (in_line[0] && in_line[1] == '#')) {
             ; // skip line
         }

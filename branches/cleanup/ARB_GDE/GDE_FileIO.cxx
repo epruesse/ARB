@@ -193,7 +193,7 @@ static GB_ERROR LoadFile(char *filename, NA_Alignment *dataset, int type, int fo
             break;
 
         case GDE:
-            gde_assert(0); // @@@ should no longer occur
+            gde_assert(0); // should no longer occur
             break;
 
         default:
