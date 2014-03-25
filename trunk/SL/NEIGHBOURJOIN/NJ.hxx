@@ -73,7 +73,7 @@ public:
     void     get_last_ij(long& i, long& j);
     AP_FLOAT get_dist(long i, long j);
 
-#if defined(UNIT_TESTS)
+#if defined(UNIT_TESTS) // UT_DIFF
     // test inspection
     AP_FLOAT get_net_divergence(long i) { return net_divergence[i]; }
 #endif

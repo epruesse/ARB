@@ -39,7 +39,7 @@ struct nameOrder {
         // Normally it is sufficient to have any order, as long as it is strict.
         // But for UNIT_TESTS we need a reproducable order, which does not
         // depend on memory layout of DB elements.
-#if defined(UNIT_TESTS)
+#if defined(UNIT_TESTS) // UT_DIFF
         return strcmp(name1, name2)<0; // slow, determined by species names
 #else
         return (name1-name2)<0;        // fast, but depends on memory layout (e.g. on MEMORY_TEST in gb_memory.h)

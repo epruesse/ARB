@@ -449,14 +449,14 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
 
     showhelp = (pargc <= 1);
 
-#ifdef UNIT_TESTS
+#ifdef UNIT_TESTS // UT_DIFF
     const int minServerID   = TEST_GENESERVER_ID;
 #else // !UNIT_TESTS
     const int minServerID   = 0;
 #endif
 
     P.SERVERID = getInt("serverid", 0, minServerID, 100, "Server Id, look into $ARBHOME/lib/arb_tcp.dat");
-#ifdef UNIT_TESTS
+#ifdef UNIT_TESTS // UT_DIFF
     if (P.SERVERID<0) { arb_assert(P.SERVERID == TEST_SERVER_ID || P.SERVERID == TEST_GENESERVER_ID); }
 #endif
 

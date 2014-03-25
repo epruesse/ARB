@@ -142,7 +142,7 @@ public:
     const AP_sequence *get_seq() const { return seq; }
     AP_sequence * set_seq(AP_sequence *sequence) {
         at_assert(!seq); // already set
-#ifndef UNIT_TESTS
+#ifndef UNIT_TESTS // UT_DIFF
         // unit tests are allowed to leave sequence undefined // @@@ better solution?
         at_assert(sequence);
 #endif

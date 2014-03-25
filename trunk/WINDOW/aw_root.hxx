@@ -136,7 +136,7 @@ public:
 
     // the real public section:
     AW_root(const char *propertyFile, const char *program, bool no_exit, UserActionTracker *user_tracker, int* argc, char*** argv);
-#if defined(UNIT_TESTS)
+#if defined(UNIT_TESTS) // UT_DIFF
     AW_root(const char *properties); // fake-root for unit-tests (allows access to awar-subsystem)
 #endif
     ~AW_root();
