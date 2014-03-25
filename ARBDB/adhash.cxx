@@ -1311,7 +1311,7 @@ void TEST_hash_specials() {
 #endif // ASSERTION_USED
 }
 
-#endif
+#endif // UNIT_TESTS
 
 
 

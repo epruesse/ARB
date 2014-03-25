@@ -539,4 +539,4 @@ void TEST_GBS_servertags() {
     TEST_EXPECT_EQUAL(GBS_nameserver_tag("test"), "ARB_NAME_SERVER_TEST");
 }
 
-#endif
+#endif // UNIT_TESTS

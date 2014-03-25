@@ -1016,4 +1016,4 @@ void TEST_remapping() {
                     "TGCAT", "T--GCA--T");          // solve by insertion (partial misalignment)
 }
 
-#endif
+#endif // UNIT_TESTS

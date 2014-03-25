@@ -1443,4 +1443,4 @@ void TEST_db_filenames() {
     TEST_EXPECT_EQUAL(gb_quicksaveName("nosuch", 1), "nosuch.a01");
 }
 
-#endif
+#endif // UNIT_TESTS
