@@ -1788,4 +1788,4 @@ void TEST_attribute_parser() {
     clear_found_attribute();
 }
 
-#endif
+#endif // UNIT_TESTS

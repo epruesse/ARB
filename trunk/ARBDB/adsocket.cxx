@@ -1701,5 +1701,5 @@ void TEST_some_paths() {
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }
 
-#endif
+#endif // UNIT_TESTS
 

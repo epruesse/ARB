@@ -3691,6 +3691,6 @@ void TEST_hierarchy_callbacks() {
     GB_close(gb_main);
 }
 
-#endif
+#endif // UNIT_TESTS
 
 

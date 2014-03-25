@@ -399,5 +399,5 @@ void TEST_servercntrl() {
     // TEST_EXPECT(0);
 }
 
-#endif
+#endif // UNIT_TESTS
 

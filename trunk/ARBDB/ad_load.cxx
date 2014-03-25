@@ -1739,4 +1739,4 @@ void TEST_GBDATA_size() {
 #endif
 }
 
-#endif
+#endif // UNIT_TESTS

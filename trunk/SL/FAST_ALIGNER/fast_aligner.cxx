@@ -3422,6 +3422,6 @@ void TEST_BASIC_UnalignedBases() {
 }
 
 
-#endif
+#endif // UNIT_TESTS
 
 

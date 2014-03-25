@@ -2419,4 +2419,4 @@ void TEST_SLOW_variable_defaults_in_server() {
     link = 0;
 }
 
-#endif
+#endif // UNIT_TESTS

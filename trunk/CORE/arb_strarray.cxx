@@ -341,5 +341,5 @@ void TEST_GBT_names_add() { // test after GBT_names_move (cause add depends on m
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a0*a*b*b2*c*d0*d");
 }
 
-#endif
+#endif // UNIT_TESTS
 

@@ -1231,5 +1231,5 @@ void TEST_date_stamping() {
     }
 }
 
-#endif
+#endif // UNIT_TESTS
 
