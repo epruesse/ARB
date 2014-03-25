@@ -32,7 +32,7 @@ void GB_set_verbose() {
 // ---------------------------------------------------
 //      helper code to read ascii file in portions
 
-#ifdef UNIT_TESTS
+#ifdef UNIT_TESTS // UT_DIFF
 #define READING_BUFFER_SIZE 100
 #else
 #define READING_BUFFER_SIZE (1024*32)

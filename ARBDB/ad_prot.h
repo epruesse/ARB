@@ -286,7 +286,7 @@ GB_ERROR GB_set_dictionary(GBDATA *gb_main, const char *key, const DictData *dd)
 char *GB_arbtcpdat_path(void);
 const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam);
 
-#ifdef UNIT_TESTS
+#ifdef UNIT_TESTS // UT_DIFF
 #define TEST_SERVER_ID (-666)
 #define TEST_GENESERVER_ID (-667)
 #endif

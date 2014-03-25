@@ -21,7 +21,7 @@
 
 #define rt_assert(cond) arb_assert(cond)
 
-#if defined(DEBUG) || defined(UNIT_TESTS)
+#if defined(DEBUG) || defined(UNIT_TESTS) // UT_DIFF
 #define PROVIDE_TREE_STRUCTURE_TESTS
 #endif
 #if defined(DEVEL_RALF) && defined(PROVIDE_TREE_STRUCTURE_TESTS)
@@ -305,7 +305,7 @@ public:
     void virtually_distribute_length(GBT_LEN len, RootedTree::LengthCollector& collect) const; // @@@ hm public :(
 private:
 
-#if defined(UNIT_TESTS)
+#if defined(UNIT_TESTS) // UT_DIFF
     friend void TEST_edges();
 #endif
 

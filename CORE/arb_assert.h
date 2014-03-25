@@ -212,7 +212,7 @@ inline void provoke_core_dump() {
 
 // ------------------------------------------------------------
 
-#ifdef UNIT_TESTS
+#ifdef UNIT_TESTS // UT_DIFF
 #ifndef TEST_GLOBAL_H
 #include <test_global.h> // overrides arb_assert()!
 #endif
