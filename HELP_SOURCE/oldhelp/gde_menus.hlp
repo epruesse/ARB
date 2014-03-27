@@ -3,15 +3,15 @@ UP      agde.hlp
 UP      glossary.hlp
 UP      save.hlp
 
-TITLE           GDE menus
+TITLE           Customizing GDE menus
 
 DESCRIPTION     ARB uses the GDE menus to plugin external tools 
 
                 This helpfile contains parts of the original GDE helpfile
-                and has been  slightly modified to fit to the way
+                and has been modified to fit to the way
                 GDE menus are used inside ARB.
 
-SECTION Using the GDE menus
+SECTION Description of GDE menus as used in ARB
 
         The GDE uses a menu description language to
         define what external programs it can call, and what
@@ -28,6 +28,13 @@ SECTION Using the GDE menus
 
         You may modify that file to include other external
         tools into the ARB interface.
+
+        Alternatively you can add files with suffix '.menu' either into
+        the global directory '$ARBHOME/lib/gde/' (menus defined there will
+        be available to all users) or into '~/.arb_prop/gde/' (menus defined
+        there will not be available to other users).
+
+SECTION GDE menus language
 
         The language used in this file describes three phases
         to an external function call. The first phase
