@@ -1443,4 +1443,94 @@ void TEST_db_filenames() {
     TEST_EXPECT_EQUAL(gb_quicksaveName("nosuch", 1), "nosuch.a01");
 }
 
+void TEST_quicksave_corruption() {
+    // see http://bugs.arb-home.de/ticket/499
+    const char *name1 = "corrupted.arb";
+    const char *name2 = "corrupted2.arb";
+
+    const char *INITIAL_VALUE = "initial value";
+    const char *CHANGED_VALUE = "changed";
+
+    GB_unlink(name1);
+    GB_unlink(name2);
+
+    GB_shell shell;
+
+    // create simple DB
+    {
+        GBDATA *gb_main = GB_open(name1, "cwr");
+        TEST_REJECT_NULL(gb_main);
+
+        {
+            GB_transaction ta(gb_main);
+            GBDATA *gb_entry = GB_create(gb_main, "sth", GB_STRING);
+            TEST_REJECT_NULL(gb_entry);
+            TEST_EXPECT_NO_ERROR(GB_write_string(gb_entry, INITIAL_VALUE));
+        }
+
+        TEST_EXPECT_NO_ERROR(GB_save(gb_main, NULL, "b"));
+        GB_close(gb_main);
+    }
+
+    // reopen DB, change the entry, quick save + full save with different name
+    {
+        GBDATA *gb_main = GB_open(name1, "wr");
+        TEST_REJECT_NULL(gb_main);
+
+        {
+            GB_transaction ta(gb_main);
+
+            GBDATA *gb_entry = GB_entry(gb_main, "sth");
+            TEST_REJECT_NULL(gb_entry);
+
+            const char *content = GB_read_char_pntr(gb_entry);
+            TEST_EXPECT_EQUAL(content, INITIAL_VALUE);
+
+            TEST_EXPECT_NO_ERROR(GB_write_string(gb_entry, CHANGED_VALUE));
+
+            content = GB_read_char_pntr(gb_entry);
+            TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
+        }
+
+        TEST_EXPECT_NO_ERROR(GB_save_quick(gb_main, name1));
+        TEST_EXPECT_NO_ERROR(GB_save(gb_main, name2, "b"));
+        GB_close(gb_main);
+    }
+
+    // reopen DB (loading quick-save)
+    {
+        GBDATA *gb_main = GB_open(name1, "r");
+        TEST_REJECT_NULL(gb_main);
+
+        {
+            GB_transaction ta(gb_main);
+
+            GBDATA *gb_entry = GB_entry(gb_main, "sth");
+            const char *content = GB_read_char_pntr(gb_entry);
+            TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
+        }
+
+        GB_close(gb_main);
+    }
+
+    // reopen DB (full-save)
+    {
+        GBDATA *gb_main = GB_open(name2, "r");
+        TEST_REJECT_NULL(gb_main);
+
+        {
+            GB_transaction ta(gb_main);
+
+            GBDATA *gb_entry = GB_entry(gb_main, "sth");
+            const char *content = GB_read_char_pntr(gb_entry);
+            TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
+        }
+
+        GB_close(gb_main);
+    }
+
+    GB_unlink(name1);
+    GB_unlink(name2);
+}
+
 #endif // UNIT_TESTS
