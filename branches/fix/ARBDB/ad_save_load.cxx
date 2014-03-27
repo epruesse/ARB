@@ -1456,7 +1456,7 @@ void TEST_quicksave_corruption() {
     const char *INITIAL_VALUE = "initial value";
     const char *CHANGED_VALUE = "changed";
 
-    for (int corruption = 0; corruption<=2; ++corruption) {
+    for (int corruption = 0; corruption<=3; ++corruption) {
         TEST_ANNOTATE(GBS_global_string("corruption level %i", corruption));
 
         GB_unlink(name[0]);
@@ -1510,7 +1510,23 @@ void TEST_quicksave_corruption() {
                         gb_entry = GB_create(gb_main, "sth", GB_STRING);
                         TEST_REJECT_NULL(gb_entry);
                         TEST_EXPECT_NO_ERROR(GB_write_string(gb_entry, INITIAL_VALUE));
+
+                        if (corruption>2) {
+                            // fill rest of string with zero bytes (similar to copying a truncated string into calloced memory)
+                            int len = strlen(CHANGED_VALUE);
+                            for (int i = 3; i<len; ++i) {
+                                illegal_access[i] = 0;
+                            }
+                        }
                     }
+
+// #define PERFORM_DELETE
+#ifdef PERFORM_DELETE
+                    // delete "other"
+                    GBDATA *gb_other = GB_entry(gb_main, "other");
+                    TEST_REJECT_NULL(gb_other);
+                    TEST_EXPECT_NO_ERROR(GB_delete(gb_other));
+#endif
                 }
             }
 
@@ -1529,8 +1545,14 @@ void TEST_quicksave_corruption() {
                 case 0:
                     TEST_REJECT_NULL(gb_main);
                     break;
-                case 1:
-                    if (full) {
+
+                case 1: {
+#if defined(PERFORM_DELETE)
+                    bool fails_if = !full;
+#else // !defined(PERFORM_DELETE)
+                    bool fails_if = full;
+#endif
+                    if (fails_if) {
                         TEST_EXPECT_NULL(gb_main);
                         TEST_EXPECT_CONTAINS(GB_await_error(), "database entry with unknown field quark");
                     }
@@ -1538,9 +1560,27 @@ void TEST_quicksave_corruption() {
                         TEST_REJECT_NULL(gb_main);
                     }
                     break;
+                }
+
                 case 2:
                     TEST_EXPECT_NULL(gb_main);
                     TEST_EXPECT_CONTAINS(GB_await_error(), "database entry with unknown field quark");
+                    break;
+
+                case 3:
+                    TEST_EXPECT_NULL(gb_main);
+                    if (full) {
+                        TEST_EXPECT_CONTAINS(GB_await_error(), "Unknown DB type 0");
+                    }
+                    else {
+                        // quick save files use DB type 0 as meta-command.
+                        // The next byte should be 1 (=delete), but here it is zero
+                        TEST_EXPECT_CONTAINS(GB_await_error(), "Unknown func=0");
+                    }
+                    break;
+
+                default:
+                    TEST_REJECT("unhandled corruption level");
                     break;
             }
 
