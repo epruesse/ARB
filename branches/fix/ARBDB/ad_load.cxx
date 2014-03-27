@@ -599,19 +599,24 @@ static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbc) {
 
 static long gb_recover_corrupt_file(GBCONTAINER *gbc, FILE *in, GB_ERROR recovery_reason, bool loading_quick_save) {
     // search pattern dx xx xx xx string 0
+    // returns 0 if recovery was able to resync
     static FILE *old_in = 0;
     static unsigned char *file = 0;
     static long size = 0;
     if (!GBCONTAINER_MAIN(gbc)->allow_corrupt_file_recovery) {
         if (!recovery_reason) { recovery_reason = GB_await_error(); }
+        char       *reason         = strdup(recovery_reason);
+        const char *located_reason = GBS_global_string("%s (inside '%s')", reason, GB_get_db_path(gbc));
+
         if (loading_quick_save) {
-            GB_export_error(recovery_reason);
+            GB_export_error(located_reason);
         }
         else {
             GB_export_errorf("%s\n"
                              "(parts of your database might be recoverable using 'arb_repair yourDB.arb newName.arb')\n",
-                             recovery_reason);
+                             located_reason);
         }
+        free(reason);
         return -1;
     }
     long pos = ftell(in);
@@ -714,8 +719,9 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
         GBQUARK key      = (GBQUARK)gb_get_number(in);
 
         if (key >= Main->keycnt || !Main->keys[key].key) {
-            GB_export_error("Inconsistent Database: Changing field identifier to 'main'");
-            key = 0;
+            const char *reason = GBS_global_string("database entry with unknown field quark %i", key);
+            if (gb_recover_corrupt_file(gbc_dest, in, reason, is_quicksave)) return -1;
+            continue;
         }
 
         DEBUG_DUMP_INDENTED(deep, GBS_global_string("key='%s' type2=%li", Main->keys[key].key, type2));

@@ -1517,25 +1517,34 @@ void TEST_quicksave_corruption() {
         for (int full = 0; full<2; ++full) {
             // reopen DB (full==0 -> load quick save; ==1 -> load full save)
             GBDATA *gb_main = GB_open(name[full], "r");
-            TEST_REJECT_NULL(gb_main);
 
-            {
-                GB_transaction ta(gb_main);
-
-                GBDATA     *gb_entry = GB_entry(gb_main, "sth");
-                const char *content  = GB_read_char_pntr(gb_entry);
-
-                switch (corruption) {
-                    case 0:
-                        TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
-                        break;
-                    case 1:
-                        TEST_EXPECT_EQUAL__BROKEN(content, "ch", "\x7\x8" "ch");
-                        break;
-                }
+            if (corruption == 2) {
+                TEST_EXPECT_NULL(gb_main);
+                TEST_EXPECT_CONTAINS(GB_await_error(), "database entry with unknown field quark");
+            }
+            else {
+                TEST_REJECT_NULL(gb_main);
             }
 
-            GB_close(gb_main);
+            if (gb_main) {
+                {
+                    GB_transaction ta(gb_main);
+
+                    GBDATA     *gb_entry = GB_entry(gb_main, "sth");
+                    const char *content  = GB_read_char_pntr(gb_entry);
+
+                    switch (corruption) {
+                        case 0:
+                            TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
+                            break;
+                        case 1:
+                            TEST_EXPECT_EQUAL__BROKEN(content, "ch", "\x7\x8" "ch");
+                            break;
+                    }
+                }
+
+                GB_close(gb_main);
+            }
             GB_unlink(name[full]);
         }
         GB_unlink(quickname);
