@@ -1445,6 +1445,8 @@ void TEST_db_filenames() {
 
 void TEST_quicksave_corruption() {
     // see http://bugs.arb-home.de/ticket/499
+    GB_shell shell;
+
     const char *name[] = {
         "corrupted.arb",
         "corrupted2.arb",
@@ -1454,68 +1456,84 @@ void TEST_quicksave_corruption() {
     const char *INITIAL_VALUE = "initial value";
     const char *CHANGED_VALUE = "changed";
 
-    GB_unlink(name[0]);
+    for (int corruption = 0; corruption<=1; ++corruption) {
+        TEST_ANNOTATE(GBS_global_string("corruption level %i", corruption));
+        
+        GB_unlink(name[0]);
 
-    GB_shell shell;
-
-    // create simple DB
-    {
-        GBDATA *gb_main = GB_open(name[0], "cwr");
-        TEST_REJECT_NULL(gb_main);
-
+        // create simple DB
         {
-            GB_transaction ta(gb_main);
-            GBDATA *gb_entry = GB_create(gb_main, "sth", GB_STRING);
-            TEST_REJECT_NULL(gb_entry);
-            TEST_EXPECT_NO_ERROR(GB_write_string(gb_entry, INITIAL_VALUE));
+            GBDATA *gb_main = GB_open(name[0], "cwr");
+            TEST_REJECT_NULL(gb_main);
+
+            {
+                GB_transaction ta(gb_main);
+                GBDATA *gb_entry = GB_create(gb_main, "sth", GB_STRING);
+                TEST_REJECT_NULL(gb_entry);
+                TEST_EXPECT_NO_ERROR(GB_write_string(gb_entry, INITIAL_VALUE));
+            }
+
+            TEST_EXPECT_NO_ERROR(GB_save(gb_main, NULL, "b"));
+            GB_close(gb_main);
         }
 
-        TEST_EXPECT_NO_ERROR(GB_save(gb_main, NULL, "b"));
-        GB_close(gb_main);
-    }
-
-    // reopen DB, change the entry, quick save + full save with different name
-    {
-        GBDATA *gb_main = GB_open(name[0], "wr");
-        TEST_REJECT_NULL(gb_main);
-
+        // reopen DB, change the entry, quick save + full save with different name
         {
-            GB_transaction ta(gb_main);
+            GBDATA *gb_main = GB_open(name[0], "wr");
+            TEST_REJECT_NULL(gb_main);
 
-            GBDATA *gb_entry = GB_entry(gb_main, "sth");
-            TEST_REJECT_NULL(gb_entry);
+            {
+                GB_transaction ta(gb_main);
 
-            const char *content = GB_read_char_pntr(gb_entry);
-            TEST_EXPECT_EQUAL(content, INITIAL_VALUE);
+                GBDATA *gb_entry = GB_entry(gb_main, "sth");
+                TEST_REJECT_NULL(gb_entry);
 
-            TEST_EXPECT_NO_ERROR(GB_write_string(gb_entry, CHANGED_VALUE));
+                const char *content = GB_read_char_pntr(gb_entry);
+                TEST_EXPECT_EQUAL(content, INITIAL_VALUE);
 
-            content = GB_read_char_pntr(gb_entry);
-            TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
+                TEST_EXPECT_NO_ERROR(GB_write_string(gb_entry, CHANGED_VALUE));
+
+                content = GB_read_char_pntr(gb_entry);
+                TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
+
+                // now corrupt the DB entry:
+                if (corruption>0) {
+                    char *illegal_access = (char*)content;
+                    illegal_access[2]    = 0;
+                }
+            }
+
+            TEST_EXPECT_NO_ERROR(GB_save_quick(gb_main, name[0]));
+            TEST_EXPECT_NO_ERROR(GB_save(gb_main, name[1], "b"));
+            GB_close(gb_main);
         }
 
-        TEST_EXPECT_NO_ERROR(GB_save_quick(gb_main, name[0]));
-        TEST_EXPECT_NO_ERROR(GB_save(gb_main, name[1], "b"));
-        GB_close(gb_main);
-    }
+        for (int full = 0; full<2; ++full) {
+            // reopen DB (full==0 -> load quick save; ==1 -> load full save)
+            GBDATA *gb_main = GB_open(name[full], "r");
+            TEST_REJECT_NULL(gb_main);
 
-    for (int full = 0; full<2; ++full) {
-        // reopen DB (full==0 -> load quick save; ==1 -> load full save)
-        GBDATA *gb_main = GB_open(name[full], "r");
-        TEST_REJECT_NULL(gb_main);
+            {
+                GB_transaction ta(gb_main);
 
-        {
-            GB_transaction ta(gb_main);
+                GBDATA     *gb_entry = GB_entry(gb_main, "sth");
+                const char *content  = GB_read_char_pntr(gb_entry);
 
-            GBDATA *gb_entry = GB_entry(gb_main, "sth");
-            const char *content = GB_read_char_pntr(gb_entry);
-            TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
+                switch (corruption) {
+                    case 0:
+                        TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
+                        break;
+                    case 1:
+                        TEST_EXPECT_EQUAL__BROKEN(content, "ch", "\x7\x8" "ch");
+                        break;
+                }
+            }
+
+            GB_close(gb_main);
+            GB_unlink(name[full]);
         }
-
-        GB_close(gb_main);
-        GB_unlink(name[full]);
+        GB_unlink(quickname);
     }
-    GB_unlink(quickname);
 }
 
 #endif // UNIT_TESTS
