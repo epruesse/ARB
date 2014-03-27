@@ -1456,9 +1456,9 @@ void TEST_quicksave_corruption() {
     const char *INITIAL_VALUE = "initial value";
     const char *CHANGED_VALUE = "changed";
 
-    for (int corruption = 0; corruption<=1; ++corruption) {
+    for (int corruption = 0; corruption<=2; ++corruption) {
         TEST_ANNOTATE(GBS_global_string("corruption level %i", corruption));
-        
+
         GB_unlink(name[0]);
 
         // create simple DB
@@ -1500,6 +1500,12 @@ void TEST_quicksave_corruption() {
                 if (corruption>0) {
                     char *illegal_access = (char*)content;
                     illegal_access[2]    = 0;
+
+                    if (corruption>1) {
+                        gb_entry = GB_create(gb_main, "sth", GB_STRING);
+                        TEST_REJECT_NULL(gb_entry);
+                        TEST_EXPECT_NO_ERROR(GB_write_string(gb_entry, INITIAL_VALUE));
+                    }
                 }
             }
 
