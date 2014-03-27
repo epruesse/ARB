@@ -1468,9 +1468,14 @@ void TEST_quicksave_corruption() {
 
             {
                 GB_transaction ta(gb_main);
+
                 GBDATA *gb_entry = GB_create(gb_main, "sth", GB_STRING);
                 TEST_REJECT_NULL(gb_entry);
                 TEST_EXPECT_NO_ERROR(GB_write_string(gb_entry, INITIAL_VALUE));
+
+                GBDATA *gb_other = GB_create(gb_main, "other", GB_INT);
+                TEST_REJECT_NULL(gb_other);
+                TEST_EXPECT_NO_ERROR(GB_write_int(gb_other, 4711));
             }
 
             TEST_EXPECT_NO_ERROR(GB_save(gb_main, NULL, "b"));
@@ -1515,15 +1520,28 @@ void TEST_quicksave_corruption() {
         }
 
         for (int full = 0; full<2; ++full) {
+            TEST_ANNOTATE(GBS_global_string("corruption level %i / full=%i", corruption, full));
+
             // reopen DB (full==0 -> load quick save; ==1 -> load full save)
             GBDATA *gb_main = GB_open(name[full], "r");
 
-            if (corruption == 2) {
-                TEST_EXPECT_NULL(gb_main);
-                TEST_EXPECT_CONTAINS(GB_await_error(), "database entry with unknown field quark");
-            }
-            else {
-                TEST_REJECT_NULL(gb_main);
+            switch (corruption) {
+                case 0:
+                    TEST_REJECT_NULL(gb_main);
+                    break;
+                case 1:
+                    if (full) {
+                        TEST_EXPECT_NULL(gb_main);
+                        TEST_EXPECT_CONTAINS(GB_await_error(), "database entry with unknown field quark");
+                    }
+                    else {
+                        TEST_REJECT_NULL(gb_main);
+                    }
+                    break;
+                case 2:
+                    TEST_EXPECT_NULL(gb_main);
+                    TEST_EXPECT_CONTAINS(GB_await_error(), "database entry with unknown field quark");
+                    break;
             }
 
             if (gb_main) {
