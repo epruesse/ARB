@@ -570,7 +570,16 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
         if (type == GB_STRING || type == GB_STRING_SHRT) {
             size = gbe->size();
             if (!gbe->flags.compressed_data && size < GBTUM_SHORT_STRING_SIZE) {
-                type = GB_STRING_SHRT;
+                const char *data = gbe->data();
+                size_t      len  = strlen(data); // w/o zero-byte!
+
+                if ((long)len == size) {
+                    type = GB_STRING_SHRT;
+                }
+                else {
+                    // string contains zero-byte inside data or misses trailing zero-byte
+                    type = GB_STRING; // fallback to safer type
+                }
             }
             else {
                 type = GB_STRING;
@@ -601,15 +610,10 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
 
     if (type == GB_STRING_SHRT) {
         const char *data = gbe->data();
-        size_t      len  = strlen(data); // w/o zero-byte!
+        gb_assert((long)strlen(data) == size);
 
-        if ((long)len == size) {
-            i = fwrite(data, len+1, 1, out);
-
-            return i <= 0 ? -1 : 0;
-        }
-        // string contains zero-byte inside data or misses trailing zero-byte
-        type = GB_STRING; // fallback to safer type
+        i = fwrite(data, size+1, 1, out);
+        return i <= 0 ? -1 : 0;
     }
 
     switch (type) {
@@ -1540,49 +1544,7 @@ void TEST_quicksave_corruption() {
 
             // reopen DB (full==0 -> load quick save; ==1 -> load full save)
             GBDATA *gb_main = GB_open(name[full], "r");
-
-            switch (corruption) {
-                case 0:
-                    TEST_REJECT_NULL(gb_main);
-                    break;
-
-                case 1: {
-#if defined(PERFORM_DELETE)
-                    bool fails_if = !full;
-#else // !defined(PERFORM_DELETE)
-                    bool fails_if = full;
-#endif
-                    if (fails_if) {
-                        TEST_EXPECT_NULL(gb_main);
-                        TEST_EXPECT_CONTAINS(GB_await_error(), "database entry with unknown field quark");
-                    }
-                    else {
-                        TEST_REJECT_NULL(gb_main);
-                    }
-                    break;
-                }
-
-                case 2:
-                    TEST_EXPECT_NULL(gb_main);
-                    TEST_EXPECT_CONTAINS(GB_await_error(), "database entry with unknown field quark");
-                    break;
-
-                case 3:
-                    TEST_EXPECT_NULL(gb_main);
-                    if (full) {
-                        TEST_EXPECT_CONTAINS(GB_await_error(), "Unknown DB type 0");
-                    }
-                    else {
-                        // quick save files use DB type 0 as meta-command.
-                        // The next byte should be 1 (=delete), but here it is zero
-                        TEST_EXPECT_CONTAINS(GB_await_error(), "Unknown func=0");
-                    }
-                    break;
-
-                default:
-                    TEST_REJECT("unhandled corruption level");
-                    break;
-            }
+            TEST_REJECT_NULL(gb_main);
 
             if (gb_main) {
                 {
@@ -1598,7 +1560,7 @@ void TEST_quicksave_corruption() {
                             TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
                             break;
                         default:
-                            TEST_EXPECT_EQUAL__BROKEN(content, "ch", "\x7\x8" "ch");
+                            TEST_EXPECT_EQUAL(content, "ch");
                             break;
                     }
 
