@@ -1445,20 +1445,22 @@ void TEST_db_filenames() {
 
 void TEST_quicksave_corruption() {
     // see http://bugs.arb-home.de/ticket/499
-    const char *name1 = "corrupted.arb";
-    const char *name2 = "corrupted2.arb";
+    const char *name[] = {
+        "corrupted.arb",
+        "corrupted2.arb",
+    };
+    const char *quickname = "corrupted.a00";
 
     const char *INITIAL_VALUE = "initial value";
     const char *CHANGED_VALUE = "changed";
 
-    GB_unlink(name1);
-    GB_unlink(name2);
+    GB_unlink(name[0]);
 
     GB_shell shell;
 
     // create simple DB
     {
-        GBDATA *gb_main = GB_open(name1, "cwr");
+        GBDATA *gb_main = GB_open(name[0], "cwr");
         TEST_REJECT_NULL(gb_main);
 
         {
@@ -1474,7 +1476,7 @@ void TEST_quicksave_corruption() {
 
     // reopen DB, change the entry, quick save + full save with different name
     {
-        GBDATA *gb_main = GB_open(name1, "wr");
+        GBDATA *gb_main = GB_open(name[0], "wr");
         TEST_REJECT_NULL(gb_main);
 
         {
@@ -1492,14 +1494,14 @@ void TEST_quicksave_corruption() {
             TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
         }
 
-        TEST_EXPECT_NO_ERROR(GB_save_quick(gb_main, name1));
-        TEST_EXPECT_NO_ERROR(GB_save(gb_main, name2, "b"));
+        TEST_EXPECT_NO_ERROR(GB_save_quick(gb_main, name[0]));
+        TEST_EXPECT_NO_ERROR(GB_save(gb_main, name[1], "b"));
         GB_close(gb_main);
     }
 
-    // reopen DB (loading quick-save)
-    {
-        GBDATA *gb_main = GB_open(name1, "r");
+    for (int full = 0; full<2; ++full) {
+        // reopen DB (full==0 -> load quick save; ==1 -> load full save)
+        GBDATA *gb_main = GB_open(name[full], "r");
         TEST_REJECT_NULL(gb_main);
 
         {
@@ -1511,26 +1513,9 @@ void TEST_quicksave_corruption() {
         }
 
         GB_close(gb_main);
+        GB_unlink(name[full]);
     }
-
-    // reopen DB (full-save)
-    {
-        GBDATA *gb_main = GB_open(name2, "r");
-        TEST_REJECT_NULL(gb_main);
-
-        {
-            GB_transaction ta(gb_main);
-
-            GBDATA *gb_entry = GB_entry(gb_main, "sth");
-            const char *content = GB_read_char_pntr(gb_entry);
-            TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
-        }
-
-        GB_close(gb_main);
-    }
-
-    GB_unlink(name1);
-    GB_unlink(name2);
+    GB_unlink(quickname);
 }
 
 #endif // UNIT_TESTS
