@@ -1588,16 +1588,46 @@ void TEST_quicksave_corruption() {
                 {
                     GB_transaction ta(gb_main);
 
-                    GBDATA     *gb_entry = GB_entry(gb_main, "sth");
-                    const char *content  = GB_read_char_pntr(gb_entry);
+                    GBDATA *gb_entry = GB_entry(gb_main, "sth");
+                    TEST_REJECT_NULL(gb_entry);
+
+                    const char *content = GB_read_char_pntr(gb_entry);
 
                     switch (corruption) {
                         case 0:
                             TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
                             break;
-                        case 1:
+                        default:
                             TEST_EXPECT_EQUAL__BROKEN(content, "ch", "\x7\x8" "ch");
                             break;
+                    }
+
+                    // check 2nd entry
+                    gb_entry = GB_nextEntry(gb_entry);
+                    if (corruption>1) {
+                        TEST_REJECT_NULL(gb_entry);
+
+                        content = GB_read_char_pntr(gb_entry);
+                        TEST_EXPECT_EQUAL(content, INITIAL_VALUE);
+                    }
+                    else {
+                        TEST_REJECT(gb_entry);
+                    }
+
+                    // check int entry
+                    GBDATA *gb_other = GB_entry(gb_main, "other");
+#if defined(PERFORM_DELETE)
+                    bool    deleted  = corruption>0;
+#else // !defined(PERFORM_DELETE)
+                    bool    deleted  = false;
+#endif
+
+                    if (deleted) {
+                        TEST_REJECT(gb_other);
+                    }
+                    else {
+                        TEST_REJECT_NULL(gb_other);
+                        TEST_EXPECT_EQUAL(GB_read_int(gb_other), 4711);
                     }
                 }
 
