@@ -1,0 +1,63 @@
+/*ARBDB ASCII*/
+window			%% (%
+	font			"7x13bold"
+	background		"#F0F0F0"
+	%) /*window*/
+
+key_mapping		%% (%
+	key_0			%% (%
+		source			"h"
+		dest			"C"
+		%) /*key_0*/
+
+	key_1			%% (%
+		source			"b"
+		dest			"A"
+		%) /*key_1*/
+
+	key_2			%% (%
+		source			"j"
+		dest			"G"
+		%) /*key_2*/
+
+	key_3			%% (%
+		source			"l"
+		dest			"U"
+		%) /*key_3*/
+
+	key_5			%% (%
+		source			"H"
+		dest			"c"
+		%) /*key_5*/
+
+	key_6			%% (%
+		source			"B"
+		dest			"a"
+		%) /*key_6*/
+
+	key_7			%% (%
+		source			"J"
+		dest			"g"
+		%) /*key_7*/
+
+	key_8			%% (%
+		source			"L"
+		dest			"u"
+		%) /*key_8*/
+
+	key_9			%% (%
+		source			"N"
+		dest			"n"
+		%) /*key_9*/
+
+	key_10			%% (%
+		source			"n"
+		dest			"N"
+		%) /*key_10*/
+
+	%) /*key_mapping*/
+
+gde			%% (%
+	compress		%i 1
+	%) /*gde*/
+

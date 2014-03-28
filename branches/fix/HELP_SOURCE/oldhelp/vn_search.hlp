@@ -1,0 +1,32 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	vn_import.hlp
+SUB	vn_suggest.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Search List of Valid Names Manually
+
+OCCURRENCE	ARB_NT/species/Valid Names/Search manually
+
+DESCRIPTION     Allow the user to select a appropriate valid name from the list
+                of available names manually. This is necessary because the automatic suggestion works
+                only for 100% identical entries. A preselection from the list of all
+                available names can be made by giving any number of initial characters.
+                A name selection in the list can then assigned to the current selected species
+                and is written to the fields Valid_Names/NameString, description type then is manually.
+
+
+NOTES		Subspecies are currently not taken into account.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
+
+
