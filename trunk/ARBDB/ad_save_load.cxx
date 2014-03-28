@@ -570,7 +570,16 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
         if (type == GB_STRING || type == GB_STRING_SHRT) {
             size = gbe->size();
             if (!gbe->flags.compressed_data && size < GBTUM_SHORT_STRING_SIZE) {
-                type = GB_STRING_SHRT;
+                const char *data = gbe->data();
+                size_t      len  = strlen(data); // w/o zero-byte!
+
+                if ((long)len == size) {
+                    type = GB_STRING_SHRT;
+                }
+                else {
+                    // string contains zero-byte inside data or misses trailing zero-byte
+                    type = GB_STRING; // fallback to safer type
+                }
             }
             else {
                 type = GB_STRING;
@@ -601,15 +610,10 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
 
     if (type == GB_STRING_SHRT) {
         const char *data = gbe->data();
-        size_t      len  = strlen(data); // w/o zero-byte!
+        gb_assert((long)strlen(data) == size);
 
-        if ((long)len == size) {
-            i = fwrite(data, len+1, 1, out);
-
-            return i <= 0 ? -1 : 0;
-        }
-        // string contains zero-byte inside data or misses trailing zero-byte
-        type = GB_STRING; // fallback to safer type
+        i = fwrite(data, size+1, 1, out);
+        return i <= 0 ? -1 : 0;
     }
 
     switch (type) {
@@ -1441,6 +1445,160 @@ void TEST_SLOW_quicksave_names() {
 void TEST_db_filenames() {
     TEST_EXPECT_EQUAL(gb_quicksaveName("nosuch.arb", 0), "nosuch.a00");
     TEST_EXPECT_EQUAL(gb_quicksaveName("nosuch", 1), "nosuch.a01");
+}
+
+void TEST_quicksave_corruption() {
+    // see http://bugs.arb-home.de/ticket/499
+    GB_shell shell;
+
+    const char *name[] = {
+        "corrupted.arb",
+        "corrupted2.arb",
+    };
+    const char *quickname = "corrupted.a00";
+
+    const char *INITIAL_VALUE = "initial value";
+    const char *CHANGED_VALUE = "changed";
+
+    for (int corruption = 0; corruption<=3; ++corruption) {
+        TEST_ANNOTATE(GBS_global_string("corruption level %i", corruption));
+
+        GB_unlink(name[0]);
+
+        // create simple DB
+        {
+            GBDATA *gb_main = GB_open(name[0], "cwr");
+            TEST_REJECT_NULL(gb_main);
+
+            {
+                GB_transaction ta(gb_main);
+
+                GBDATA *gb_entry = GB_create(gb_main, "sth", GB_STRING);
+                TEST_REJECT_NULL(gb_entry);
+                TEST_EXPECT_NO_ERROR(GB_write_string(gb_entry, INITIAL_VALUE));
+
+                GBDATA *gb_other = GB_create(gb_main, "other", GB_INT);
+                TEST_REJECT_NULL(gb_other);
+                TEST_EXPECT_NO_ERROR(GB_write_int(gb_other, 4711));
+            }
+
+            TEST_EXPECT_NO_ERROR(GB_save(gb_main, NULL, "b"));
+            GB_close(gb_main);
+        }
+
+        // reopen DB, change the entry, quick save + full save with different name
+        {
+            GBDATA *gb_main = GB_open(name[0], "wr");
+            TEST_REJECT_NULL(gb_main);
+
+            {
+                GB_transaction ta(gb_main);
+
+                GBDATA *gb_entry = GB_entry(gb_main, "sth");
+                TEST_REJECT_NULL(gb_entry);
+
+                const char *content = GB_read_char_pntr(gb_entry);
+                TEST_EXPECT_EQUAL(content, INITIAL_VALUE);
+
+                TEST_EXPECT_NO_ERROR(GB_write_string(gb_entry, CHANGED_VALUE));
+
+                content = GB_read_char_pntr(gb_entry);
+                TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
+
+                // now corrupt the DB entry:
+                if (corruption>0) {
+                    char *illegal_access = (char*)content;
+                    illegal_access[2]    = 0;
+
+                    if (corruption>1) {
+                        gb_entry = GB_create(gb_main, "sth", GB_STRING);
+                        TEST_REJECT_NULL(gb_entry);
+                        TEST_EXPECT_NO_ERROR(GB_write_string(gb_entry, INITIAL_VALUE));
+
+                        if (corruption>2) {
+                            // fill rest of string with zero bytes (similar to copying a truncated string into calloced memory)
+                            int len = strlen(CHANGED_VALUE);
+                            for (int i = 3; i<len; ++i) {
+                                illegal_access[i] = 0;
+                            }
+                        }
+                    }
+
+// #define PERFORM_DELETE
+#ifdef PERFORM_DELETE
+                    // delete "other"
+                    GBDATA *gb_other = GB_entry(gb_main, "other");
+                    TEST_REJECT_NULL(gb_other);
+                    TEST_EXPECT_NO_ERROR(GB_delete(gb_other));
+#endif
+                }
+            }
+
+            TEST_EXPECT_NO_ERROR(GB_save_quick(gb_main, name[0]));
+            TEST_EXPECT_NO_ERROR(GB_save(gb_main, name[1], "b"));
+            GB_close(gb_main);
+        }
+
+        for (int full = 0; full<2; ++full) {
+            TEST_ANNOTATE(GBS_global_string("corruption level %i / full=%i", corruption, full));
+
+            // reopen DB (full==0 -> load quick save; ==1 -> load full save)
+            GBDATA *gb_main = GB_open(name[full], "r");
+            TEST_REJECT_NULL(gb_main);
+
+            if (gb_main) {
+                {
+                    GB_transaction ta(gb_main);
+
+                    GBDATA *gb_entry = GB_entry(gb_main, "sth");
+                    TEST_REJECT_NULL(gb_entry);
+
+                    const char *content = GB_read_char_pntr(gb_entry);
+
+                    switch (corruption) {
+                        case 0:
+                            TEST_EXPECT_EQUAL(content, CHANGED_VALUE);
+                            break;
+                        default:
+                            TEST_EXPECT_EQUAL(content, "ch");
+                            break;
+                    }
+
+                    // check 2nd entry
+                    gb_entry = GB_nextEntry(gb_entry);
+                    if (corruption>1) {
+                        TEST_REJECT_NULL(gb_entry);
+
+                        content = GB_read_char_pntr(gb_entry);
+                        TEST_EXPECT_EQUAL(content, INITIAL_VALUE);
+                    }
+                    else {
+                        TEST_REJECT(gb_entry);
+                    }
+
+                    // check int entry
+                    GBDATA *gb_other = GB_entry(gb_main, "other");
+#if defined(PERFORM_DELETE)
+                    bool    deleted  = corruption>0;
+#else // !defined(PERFORM_DELETE)
+                    bool    deleted  = false;
+#endif
+
+                    if (deleted) {
+                        TEST_REJECT(gb_other);
+                    }
+                    else {
+                        TEST_REJECT_NULL(gb_other);
+                        TEST_EXPECT_EQUAL(GB_read_int(gb_other), 4711);
+                    }
+                }
+
+                GB_close(gb_main);
+            }
+            GB_unlink(name[full]);
+        }
+        GB_unlink(quickname);
+    }
 }
 
 #endif // UNIT_TESTS
