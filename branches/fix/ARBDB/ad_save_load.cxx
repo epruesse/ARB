@@ -1494,11 +1494,15 @@ void TEST_quicksave_corruption() {
 
     const char *quickname           = "corrupted.a00";
     const char *quickname_CORRUPTED = "corrupted_CORRUPTED.a00";
+    const char *quickname_unwanted  = "corrupted_CORRUPTED.a01";
 
     const char **name = name_NORMAL;
 
     const char *INITIAL_VALUE = "initial value";
     const char *CHANGED_VALUE = "changed";
+
+    GB_unlink("*~");
+    GB_unlink(quickname_unwanted);
 
     for (int corruption = 0; corruption<=3; ++corruption) {
         TEST_ANNOTATE(GBS_global_string("corruption level %i", corruption));
@@ -1653,6 +1657,13 @@ void TEST_quicksave_corruption() {
         }
         GB_unlink(quickname);
         GB_unlink(quickname_CORRUPTED);
+
+        if (corruption) {
+            TEST_REJECT__BROKEN(GB_is_regularfile(quickname_unwanted));
+        }
+        else {
+            TEST_REJECT(GB_is_regularfile(quickname_unwanted));
+        }
 
         name = name_NORMAL; // restart with normal names
     }
