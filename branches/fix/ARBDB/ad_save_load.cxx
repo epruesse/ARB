@@ -555,6 +555,8 @@ static int gb_is_writeable(gb_header_list *header, GBDATA *gbd, long version, lo
 
 static int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version, long diff_save, int is_root);
 
+static bool seen_corrupt_data = false;
+
 static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_save, long index_of_master_file) {
     int          i;
     GBCONTAINER *gbc  = 0;
@@ -578,7 +580,9 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
                 }
                 else {
                     // string contains zero-byte inside data or misses trailing zero-byte
-                    type = GB_STRING; // fallback to safer type
+                    type = GB_STRING;              // fallback to safer type
+
+                    seen_corrupt_data = true;
                 }
             }
             else {
@@ -707,6 +711,9 @@ static int gb_write_bin(FILE *out, GBCONTAINER *gbc, uint32_t version) {
     /* version 1 write master arb file
      * version 2 write slave arb file (aka quick save file)
      */
+
+    gb_assert(!seen_corrupt_data);
+
     int           diff_save = 0;
     GB_MAIN_TYPE *Main      = GBCONTAINER_MAIN(gbc);
 
@@ -872,6 +879,21 @@ GB_ERROR GB_MAIN_TYPE::check_saveable(const char *new_path, const char *flags) c
     return error;
 }
 
+static GB_ERROR protect_corruption_error(const char *savepath) {
+    GB_ERROR error = NULL;
+    gb_assert(seen_corrupt_data);
+    if (strstr(savepath, "CORRUPTED") == 0) {
+        error = "Severe error: Corrupted data detected during save\n"
+            "ARB did NOT save your database!\n"
+            "To force saving the corrupted data, add 'CORRUPTED' to the save name.\n";
+    }
+    else {
+        GB_warning("Warning: Saved corrupt database");
+    }
+    seen_corrupt_data = false;
+    return error;
+}
+
 GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
     GB_ERROR error = 0;
 
@@ -905,7 +927,8 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
                     GB_begin_transaction(root_container);
                 }
             }
-            security_level = 7;
+            security_level    = 7;
+            seen_corrupt_data = false;
 
             bool outOfOrderSave     = strchr(savetype, 'f');
             bool deleteQuickAllowed = !outOfOrderSave && !dump_to_stdout;
@@ -934,7 +957,11 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
                 transaction_level = org_transaction_level;
 
                 if (!dump_to_stdout) result |= fclose(out);
-                if (result != 0) error = GB_IO_error("writing", sec_path);
+                if (result != 0) error       = GB_IO_error("writing", sec_path);
+            }
+
+            if (!error && seen_corrupt_data) {
+                error = protect_corruption_error(as_path);
             }
 
             if (!error && !saveASCII) {
@@ -1165,7 +1192,8 @@ GB_ERROR GB_MAIN_TYPE::save_quick(const char *refpath) {
                     }
                 }
 
-                security_level = 7;
+                security_level    = 7;
+                seen_corrupt_data = false;
 
                 erg = gb_write_bin(out, root_container, 2);
 
@@ -1177,7 +1205,11 @@ GB_ERROR GB_MAIN_TYPE::save_quick(const char *refpath) {
 
             if (erg!=0) error = GBS_global_string("Cannot write to '%s'", sec_path);
             else {
-                error = GB_rename_file(sec_path, qck_path);
+                if (seen_corrupt_data) {
+                    gb_assert(!error);
+                    error = protect_corruption_error(qck_path);
+                }
+                if (!error) error = GB_rename_file(sec_path, qck_path);
                 if (!error) {
                     last_saved_transaction = GB_read_clock(root_container);
                     last_saved_time        = GB_time_of_day();
@@ -1448,14 +1480,22 @@ void TEST_db_filenames() {
 }
 
 void TEST_quicksave_corruption() {
-    // see http://bugs.arb-home.de/ticket/499
+    // see #499 and #501
     GB_shell shell;
 
-    const char *name[] = {
+    const char *name_NORMAL[] = {
         "corrupted.arb",
         "corrupted2.arb",
     };
-    const char *quickname = "corrupted.a00";
+    const char *name_CORRUPTED[] = {
+        "corrupted_CORRUPTED.arb",
+        "corrupted2_CORRUPTED.arb",
+    };
+
+    const char *quickname           = "corrupted.a00";
+    const char *quickname_CORRUPTED = "corrupted_CORRUPTED.a00";
+
+    const char **name = name_NORMAL;
 
     const char *INITIAL_VALUE = "initial value";
     const char *CHANGED_VALUE = "changed";
@@ -1534,8 +1574,21 @@ void TEST_quicksave_corruption() {
                 }
             }
 
-            TEST_EXPECT_NO_ERROR(GB_save_quick(gb_main, name[0]));
-            TEST_EXPECT_NO_ERROR(GB_save(gb_main, name[1], "b"));
+            GB_ERROR quick_error = GB_save_quick(gb_main, name[0]);
+            if (corruption) {
+                TEST_EXPECT_CONTAINS(quick_error, "Corrupted data detected during save");
+                quick_error = GB_save_quick_as(gb_main, name_CORRUPTED[0]); // save with special name (as user should do)
+            }
+            TEST_REJECT(quick_error);
+
+            GB_ERROR full_error = GB_save(gb_main, name[1], "b");
+            if (corruption) {
+                TEST_EXPECT_CONTAINS(full_error, "Corrupted data detected during save");
+                full_error  = GB_save(gb_main, name_CORRUPTED[1], "b"); // save with special name (as user should do)
+                name = name_CORRUPTED; // from now on use these names (for load and save)
+            }
+            TEST_REJECT(full_error);
+
             GB_close(gb_main);
         }
 
@@ -1595,9 +1648,13 @@ void TEST_quicksave_corruption() {
 
                 GB_close(gb_main);
             }
-            GB_unlink(name[full]);
+            GB_unlink(name_NORMAL[full]);
+            GB_unlink(name_CORRUPTED[full]);
         }
         GB_unlink(quickname);
+        GB_unlink(quickname_CORRUPTED);
+
+        name = name_NORMAL; // restart with normal names
     }
 }
 
