@@ -1134,7 +1134,7 @@ GB_ERROR GB_MAIN_TYPE::save_quick_as(const char *as_path) {
 
                     freedup(path, as_path);                      // Symlink created -> rename allowed
 
-                    qs.last_index = 0;            // Start with new quicks
+                    qs.last_index = -1; // Start with new quicks (next index will be 0)
                     error = save_quick(as_path);
                 }
                 free(full_path_of_source);
@@ -1176,7 +1176,7 @@ GB_ERROR GB_MAIN_TYPE::save_quick(const char *refpath) {
         GB_CSTR qck_path = gb_quicksaveName(path, qs.last_index);
         GB_CSTR sec_path = gb_overwriteName(qck_path);
 
-        FILE *out = fopen(sec_path, "w");
+        FILE *out       = fopen(sec_path, "w");
         if (!out) error = GBS_global_string("Cannot save file to '%s'", sec_path);
         else {
             long erg;
@@ -1210,13 +1210,16 @@ GB_ERROR GB_MAIN_TYPE::save_quick(const char *refpath) {
                     error = protect_corruption_error(qck_path);
                 }
                 if (!error) error = GB_rename_file(sec_path, qck_path);
-                if (!error) {
-                    last_saved_transaction = GB_read_clock(root_container);
-                    last_saved_time        = GB_time_of_day();
-
-                    error = deleteSuperfluousQuicksaves(this);
-                }
+                if (error) GB_unlink_or_warn(sec_path, NULL);
             }
+        }
+
+        if (error) qs.last_index--; // undo index increment
+        else {
+            last_saved_transaction = GB_read_clock(root_container);
+            last_saved_time        = GB_time_of_day();
+
+            error = deleteSuperfluousQuicksaves(this);
         }
     }
 
@@ -1479,7 +1482,7 @@ void TEST_db_filenames() {
     TEST_EXPECT_EQUAL(gb_quicksaveName("nosuch", 1), "nosuch.a01");
 }
 
-void TEST_quicksave_corruption() {
+void TEST_corruptedEntries_saveProtection() {
     // see #499 and #501
     GB_shell shell;
 
@@ -1579,16 +1582,20 @@ void TEST_quicksave_corruption() {
             }
 
             GB_ERROR quick_error = GB_save_quick(gb_main, name[0]);
+            TEST_REJECT(seen_corrupt_data);
             if (corruption) {
                 TEST_EXPECT_CONTAINS(quick_error, "Corrupted data detected during save");
                 quick_error = GB_save_quick_as(gb_main, name_CORRUPTED[0]); // save with special name (as user should do)
+                TEST_REJECT(seen_corrupt_data);
             }
             TEST_REJECT(quick_error);
 
             GB_ERROR full_error = GB_save(gb_main, name[1], "b");
+            TEST_REJECT(seen_corrupt_data);
             if (corruption) {
                 TEST_EXPECT_CONTAINS(full_error, "Corrupted data detected during save");
                 full_error  = GB_save(gb_main, name_CORRUPTED[1], "b"); // save with special name (as user should do)
+                TEST_REJECT(seen_corrupt_data);
                 name = name_CORRUPTED; // from now on use these names (for load and save)
             }
             TEST_REJECT(full_error);
@@ -1658,12 +1665,7 @@ void TEST_quicksave_corruption() {
         GB_unlink(quickname);
         GB_unlink(quickname_CORRUPTED);
 
-        if (corruption) {
-            TEST_REJECT__BROKEN(GB_is_regularfile(quickname_unwanted));
-        }
-        else {
-            TEST_REJECT(GB_is_regularfile(quickname_unwanted));
-        }
+        TEST_REJECT(GB_is_regularfile(quickname_unwanted));
 
         name = name_NORMAL; // restart with normal names
     }
