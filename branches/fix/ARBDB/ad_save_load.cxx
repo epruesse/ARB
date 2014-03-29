@@ -580,9 +580,13 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
                 }
                 else {
                     // string contains zero-byte inside data or misses trailing zero-byte
-                    type = GB_STRING;              // fallback to safer type
-
+                    type              = GB_STRING; // fallback to safer type
                     seen_corrupt_data = true;
+                    GB_warningf("Corrupted entry detected:\n"
+                                "entry: '%s'\n"
+                                "data:  '%s'",
+                                GB_get_db_path(gbe),
+                                data);
                 }
             }
             else {
