@@ -555,6 +555,8 @@ static int gb_is_writeable(gb_header_list *header, GBDATA *gbd, long version, lo
 
 static int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version, long diff_save, int is_root);
 
+static bool seen_corrupt_data = false;
+
 static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_save, long index_of_master_file) {
     int          i;
     GBCONTAINER *gbc  = 0;
@@ -578,7 +580,13 @@ static long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_sav
                 }
                 else {
                     // string contains zero-byte inside data or misses trailing zero-byte
-                    type = GB_STRING; // fallback to safer type
+                    type              = GB_STRING; // fallback to safer type
+                    seen_corrupt_data = true;
+                    GB_warningf("Corrupted entry detected:\n"
+                                "entry: '%s'\n"
+                                "data:  '%s'",
+                                GB_get_db_path(gbe),
+                                data);
                 }
             }
             else {
@@ -707,6 +715,9 @@ static int gb_write_bin(FILE *out, GBCONTAINER *gbc, uint32_t version) {
     /* version 1 write master arb file
      * version 2 write slave arb file (aka quick save file)
      */
+
+    gb_assert(!seen_corrupt_data);
+
     int           diff_save = 0;
     GB_MAIN_TYPE *Main      = GBCONTAINER_MAIN(gbc);
 
@@ -872,6 +883,36 @@ GB_ERROR GB_MAIN_TYPE::check_saveable(const char *new_path, const char *flags) c
     return error;
 }
 
+static GB_ERROR protect_corruption_error(const char *savepath) {
+    GB_ERROR error = NULL;
+    gb_assert(seen_corrupt_data);
+    if (strstr(savepath, "CORRUPTED") == 0) {
+        error = "Severe error: Corrupted data detected during save\n"
+            "ARB did NOT save your database!\n"
+            "Advices:\n"                                                    //|
+            "* If your previous (quick)save was not long ago, your savest\n"
+            "  option is to drop the changes since then, by reloading the not\n"
+            "  corrupted database and redo your changes. If you can reproduce\n"
+            "  the bug that corrupted the entries, please report it!\n"
+            "* If that is no option (because too much work would be lost)\n"
+            "  you can force saving the corrupted database by adding the text\n"
+            "  'CORRUPTED' to the database name. After doing that, do NOT\n"
+            "  quit ARB, instead try to find and fix all corrupted entries\n"
+            "  that were listed below. Manually enter their original values\n"
+            "  (in case you want to lookup or copy&paste some values, you may\n"
+            "   open the last saved version of this database using\n"
+            "   'Start second database').\n"
+            "  Saving the database again will show all remaining unfixed\n"
+            "  entries. If no more corrupted entries show up, you can safely\n"
+            "  continue to work with that database.";
+    }
+    else {
+        GB_warning("Warning: Saved corrupt database");
+    }
+    seen_corrupt_data = false;
+    return error;
+}
+
 GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
     GB_ERROR error = 0;
 
@@ -905,7 +946,8 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
                     GB_begin_transaction(root_container);
                 }
             }
-            security_level = 7;
+            security_level    = 7;
+            seen_corrupt_data = false;
 
             bool outOfOrderSave     = strchr(savetype, 'f');
             bool deleteQuickAllowed = !outOfOrderSave && !dump_to_stdout;
@@ -934,7 +976,11 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
                 transaction_level = org_transaction_level;
 
                 if (!dump_to_stdout) result |= fclose(out);
-                if (result != 0) error = GB_IO_error("writing", sec_path);
+                if (result != 0) error       = GB_IO_error("writing", sec_path);
+            }
+
+            if (!error && seen_corrupt_data) {
+                error = protect_corruption_error(as_path);
             }
 
             if (!error && !saveASCII) {
@@ -1107,7 +1153,7 @@ GB_ERROR GB_MAIN_TYPE::save_quick_as(const char *as_path) {
 
                     freedup(path, as_path);                      // Symlink created -> rename allowed
 
-                    qs.last_index = 0;            // Start with new quicks
+                    qs.last_index = -1; // Start with new quicks (next index will be 0)
                     error = save_quick(as_path);
                 }
                 free(full_path_of_source);
@@ -1149,7 +1195,7 @@ GB_ERROR GB_MAIN_TYPE::save_quick(const char *refpath) {
         GB_CSTR qck_path = gb_quicksaveName(path, qs.last_index);
         GB_CSTR sec_path = gb_overwriteName(qck_path);
 
-        FILE *out = fopen(sec_path, "w");
+        FILE *out       = fopen(sec_path, "w");
         if (!out) error = GBS_global_string("Cannot save file to '%s'", sec_path);
         else {
             long erg;
@@ -1165,7 +1211,8 @@ GB_ERROR GB_MAIN_TYPE::save_quick(const char *refpath) {
                     }
                 }
 
-                security_level = 7;
+                security_level    = 7;
+                seen_corrupt_data = false;
 
                 erg = gb_write_bin(out, root_container, 2);
 
@@ -1177,14 +1224,21 @@ GB_ERROR GB_MAIN_TYPE::save_quick(const char *refpath) {
 
             if (erg!=0) error = GBS_global_string("Cannot write to '%s'", sec_path);
             else {
-                error = GB_rename_file(sec_path, qck_path);
-                if (!error) {
-                    last_saved_transaction = GB_read_clock(root_container);
-                    last_saved_time        = GB_time_of_day();
-
-                    error = deleteSuperfluousQuicksaves(this);
+                if (seen_corrupt_data) {
+                    gb_assert(!error);
+                    error = protect_corruption_error(qck_path);
                 }
+                if (!error) error = GB_rename_file(sec_path, qck_path);
+                if (error) GB_unlink_or_warn(sec_path, NULL);
             }
+        }
+
+        if (error) qs.last_index--; // undo index increment
+        else {
+            last_saved_transaction = GB_read_clock(root_container);
+            last_saved_time        = GB_time_of_day();
+
+            error = deleteSuperfluousQuicksaves(this);
         }
     }
 
@@ -1447,18 +1501,30 @@ void TEST_db_filenames() {
     TEST_EXPECT_EQUAL(gb_quicksaveName("nosuch", 1), "nosuch.a01");
 }
 
-void TEST_quicksave_corruption() {
-    // see http://bugs.arb-home.de/ticket/499
+void TEST_corruptedEntries_saveProtection() {
+    // see #499 and #501
     GB_shell shell;
 
-    const char *name[] = {
+    const char *name_NORMAL[] = {
         "corrupted.arb",
         "corrupted2.arb",
     };
-    const char *quickname = "corrupted.a00";
+    const char *name_CORRUPTED[] = {
+        "corrupted_CORRUPTED.arb",
+        "corrupted2_CORRUPTED.arb",
+    };
+
+    const char *quickname           = "corrupted.a00";
+    const char *quickname_CORRUPTED = "corrupted_CORRUPTED.a00";
+    const char *quickname_unwanted  = "corrupted_CORRUPTED.a01";
+
+    const char **name = name_NORMAL;
 
     const char *INITIAL_VALUE = "initial value";
     const char *CHANGED_VALUE = "changed";
+
+    GB_unlink("*~");
+    GB_unlink(quickname_unwanted);
 
     for (int corruption = 0; corruption<=3; ++corruption) {
         TEST_ANNOTATE(GBS_global_string("corruption level %i", corruption));
@@ -1534,8 +1600,25 @@ void TEST_quicksave_corruption() {
                 }
             }
 
-            TEST_EXPECT_NO_ERROR(GB_save_quick(gb_main, name[0]));
-            TEST_EXPECT_NO_ERROR(GB_save(gb_main, name[1], "b"));
+            GB_ERROR quick_error = GB_save_quick(gb_main, name[0]);
+            TEST_REJECT(seen_corrupt_data);
+            if (corruption) {
+                TEST_EXPECT_CONTAINS(quick_error, "Corrupted data detected during save");
+                quick_error = GB_save_quick_as(gb_main, name_CORRUPTED[0]); // save with special name (as user should do)
+                TEST_REJECT(seen_corrupt_data);
+            }
+            TEST_REJECT(quick_error);
+
+            GB_ERROR full_error = GB_save(gb_main, name[1], "b");
+            TEST_REJECT(seen_corrupt_data);
+            if (corruption) {
+                TEST_EXPECT_CONTAINS(full_error, "Corrupted data detected during save");
+                full_error  = GB_save(gb_main, name_CORRUPTED[1], "b"); // save with special name (as user should do)
+                TEST_REJECT(seen_corrupt_data);
+                name = name_CORRUPTED; // from now on use these names (for load and save)
+            }
+            TEST_REJECT(full_error);
+
             GB_close(gb_main);
         }
 
@@ -1595,9 +1678,15 @@ void TEST_quicksave_corruption() {
 
                 GB_close(gb_main);
             }
-            GB_unlink(name[full]);
+            GB_unlink(name_NORMAL[full]);
+            GB_unlink(name_CORRUPTED[full]);
         }
         GB_unlink(quickname);
+        GB_unlink(quickname_CORRUPTED);
+
+        TEST_REJECT(GB_is_regularfile(quickname_unwanted));
+
+        name = name_NORMAL; // restart with normal names
     }
 }
 
