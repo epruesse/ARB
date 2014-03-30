@@ -900,7 +900,7 @@ static GB_ERROR protect_corruption_error(const char *savepath) {
             "  quit ARB, instead try to find and fix all corrupted entries\n"
             "  that were listed below. Manually enter their original values\n"
             "  (in case you want to lookup or copy&paste some values, you may\n"
-            "   open the last saved version of the this database using\n"
+            "   open the last saved version of this database using\n"
             "   'Start second database').\n"
             "  Saving the database again will show all remaining unfixed\n"
             "  entries. If no more corrupted entries show up, you can safely\n"
