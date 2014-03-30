@@ -889,7 +889,22 @@ static GB_ERROR protect_corruption_error(const char *savepath) {
     if (strstr(savepath, "CORRUPTED") == 0) {
         error = "Severe error: Corrupted data detected during save\n"
             "ARB did NOT save your database!\n"
-            "To force saving the corrupted data, add 'CORRUPTED' to the save name.\n";
+            "Advices:\n"                                                    //|
+            "* If your previous (quick)save was not long ago, your savest\n"
+            "  option is to drop the changes since then, by reloading the not\n"
+            "  corrupted database and redo your changes. If you can reproduce\n"
+            "  the bug that corrupted the entries, please report it!\n"
+            "* If that is no option (because too much work would be lost)\n"
+            "  you can force saving the corrupted database by adding the text\n"
+            "  'CORRUPTED' to the database name. After doing that, do NOT\n"
+            "  quit ARB, instead try to find and fix all corrupted entries\n"
+            "  that were listed below. Manually enter their original values\n"
+            "  (in case you want to lookup or copy&paste some values, you may\n"
+            "   open the last saved version of the this database using\n"
+            "   'Start second database').\n"
+            "  Saving the database again will show all remaining unfixed\n"
+            "  entries. If no more corrupted entries show up, you can safely\n"
+            "  continue to work with that database.";
     }
     else {
         GB_warning("Warning: Saved corrupt database");
