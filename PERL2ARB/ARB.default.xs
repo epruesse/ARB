@@ -19,6 +19,17 @@
 #include "adperl.h"
 #include "ARB_ext.c"
 
+/* the following section avoids
+ *     ARB.c:10268:5: error: declaration of 'Perl___notused' has a different language linkage
+ * on OSX / perl 5.16
+ */
+#undef dNOOP
+#ifdef __cplusplus
+#define dNOOP (void)0
+#else
+#define dNOOP extern int Perl___notused(void)
+#endif
+
 static GB_shell4perl perl_shell;
 
 /* --------------------------------------------------------------------------------
