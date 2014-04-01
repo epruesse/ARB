@@ -246,17 +246,21 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
 
             if (!error) {
                 if (!glservercntrl.link) { // couldn't start server
-                    error =
-                        "I got some problems to start your server:\n"
-                        "   Possible Reasons may be one or more of the following list:\n"
-                        "   - there is no database in $ARBHOME/lib/pts/*\n"
-                        "     update server <ARB_NTREE/Probes/PT_SERVER Admin/BUILD SERVER>\n"
-                        "   - you are not allowed to run 'ssh host pt_server ....&'\n"
-                        "     check file '/etc/hosts.equiv' (read man pages for help)\n"
-                        "   - the permissions of $ARBHOME/lib/pts/* do not allow read access\n"
-                        "   - the PT_SERVER host is not up\n"
-                        "   - the tcp_id is already used by another program\n"
-                        "     check $ARBHOME/lib/arb_tcp.dat and /etc/services\n";
+                    error =                                                            // |
+                        "ARB has problems to start a server! Possible reasons may be one\n"
+                        "or several of the following list:\n"
+                        "- the tcp_id (socket number) is already used by another program\n"
+                        "  (doesnt apply to user-specific PTSERVERs; check $ARBHOME/lib/arb_tcp.dat versus /etc/services)\n"
+                        "- the server exited with error or has crashed.\n"
+                        "  In case of PTSERVER, the failure might be caused by:\n"
+                        "  - missing database in $ARBHOME/lib/pts/* (solution: update ptserver database)\n"
+                        "  - wrong permissions of $ARBHOME/lib/pts/* (no read access)\n"
+                        "  If you recently installed a new arb version, arb will continue\n"
+                        "  to use your previous 'arb_tcp.dat', which might be out-of-date.\n"
+                        "  Backup and remove it, then restart ARB. If it works now,\n"
+                        "  compare your old 'arb_tcp.dat' with the new one for changes.\n"
+                        "- When using remote servers: login or network problems\n"
+                        ;
                 }
                 else {
                     aisc_close(glservercntrl.link, glservercntrl.com);
