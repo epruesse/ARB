@@ -152,7 +152,8 @@ struct File_selection {                            // for fileselection
 
     char *previous_filename;
 
-    bool show_dir;
+    DirDisplay dirdisp;
+
     bool leave_wildcards;
 };
 
@@ -372,7 +373,7 @@ static void fill_fileselection_cb(AW_root*, File_selection *cbs) {
 
     bool is_wildcard = strchr(name_only, '*');
 
-    if (cbs->show_dir) {
+    if (cbs->dirdisp == ANY_DIR) {
         if (is_wildcard) {
             if (cbs->leave_wildcards) {
                 cbs->filelist->insert((char *)GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);
@@ -428,15 +429,16 @@ static void fill_fileselection_cb(AW_root*, File_selection *cbs) {
 
     cbs->filelist->insert(GBS_global_string("! \' %s%s\'",
                                             DIR_show_hidden ? "Hide dot-" : "Show hidden ",
-                                            cbs->show_dir ? "files/dirs" : "files"),
+                                            cbs->dirdisp == ANY_DIR ? "files/dirs" : "files"),
                           GBS_global_string("%s?dot?", name));
 
+    bool insert_dirs = cbs->dirdisp == ANY_DIR && !DIR_subdirs_hidden;
     if (is_wildcard) {
         if (cbs->leave_wildcards) {
-            fill_fileselection_recursive(fulldir, strlen(fulldir)+1, name_only, false, cbs->show_dir && !DIR_subdirs_hidden, DIR_show_hidden, cbs->filelist);
+            fill_fileselection_recursive(fulldir, strlen(fulldir)+1, name_only, false, insert_dirs, DIR_show_hidden, cbs->filelist);
         }
         else {
-            if (cbs->show_dir) { // recursive wildcarded search
+            if (cbs->dirdisp == ANY_DIR) { // recursive wildcarded search
                 fill_fileselection_recursive(fulldir, strlen(fulldir)+1, name_only, true, false, DIR_show_hidden, cbs->filelist);
             }
             else {
@@ -448,7 +450,8 @@ static void fill_fileselection_cb(AW_root*, File_selection *cbs) {
     }
     else {
         char *mask = GBS_global_string_copy("*%s", filter);
-        fill_fileselection_recursive(fulldir, strlen(fulldir)+1, mask, false, cbs->show_dir && !DIR_subdirs_hidden, DIR_show_hidden, cbs->filelist);
+
+        fill_fileselection_recursive(fulldir, strlen(fulldir)+1, mask, false, insert_dirs, DIR_show_hidden, cbs->filelist);
         free(mask);
     }
 
@@ -602,7 +605,7 @@ static void fileselection_filename_changed_cb(AW_root*, File_selection *cbs) {
     free(fname);
 }
 
-#define SELBOX_AUTOREFRESH_FREQUENCY 3000 // refresh once a second
+#define SELBOX_AUTOREFRESH_FREQUENCY 3000 // refresh every XXX ms
 
 struct selbox_autorefresh_info {
     unsigned long            modtime;
@@ -648,7 +651,7 @@ static void selbox_install_autorefresh(File_selection *acbs) {
     autorefresh_info = install;
 }
 
-void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char *at_prefix, const  char *pwd, bool show_dir, bool allow_wildcards) {
+void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char *at_prefix, const  char *pwd, DirDisplay disp_dirs, bool allow_wildcards) {
     /*! Create a file selection box, this box needs 3 AWARS:
      *
      * 1. "$awar_prefix/filter"
@@ -690,7 +693,7 @@ void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char
         }
     }
 
-    acbs->show_dir          = show_dir;
+    acbs->dirdisp           = disp_dirs;
     acbs->def_name          = GBS_string_eval(awar_prefix, "*=*/file_name", 0);
     acbs->previous_filename = 0;
     acbs->leave_wildcards   = allow_wildcards;

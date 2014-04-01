@@ -942,7 +942,7 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storab
     aws->label("Append?");
     aws->create_toggle(awar_append);
 
-    AW_create_fileselection(aws, awar_base_name, "", "PWD", true, true);
+    AW_create_fileselection(aws, awar_base_name, "", "PWD", ANY_DIR, true);
 
     aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
