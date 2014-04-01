@@ -899,7 +899,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storab
     aws->insert_option        ("10000", "",  10000);
     aws->update_option_menu();
 
-    AW_create_fileselection(aws, awar_base);
+    AW_create_standard_fileselection(aws, awar_base);
 
     free(window_title);
     free(window_id);
@@ -1044,7 +1044,7 @@ AW_window *awt_create_load_box(AW_root     *aw_root,
     aws->callback(ok_cb);
     aws->create_button("GO", action);
 
-    AW_create_fileselection(aws, base_name);
+    AW_create_standard_fileselection(aws, base_name);
     free(base_name);
     free(what_key);
     aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);

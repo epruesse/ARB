@@ -88,7 +88,7 @@ static AW_window *AP_createConservationProfileWindow(AW_root *root) { // @@@ unu
     aws->at("help"); aws->callback(makeHelpCallback("conservProfile2Gnuplot.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    AW_create_fileselection(aws, AP_AWAR_CONSPRO);
+    AW_create_standard_fileselection(aws, AP_AWAR_CONSPRO);
 
     aws->at("baseFreqFlt");
     aws->create_button("SELECT_FILTER", AP_AWAR_BASE_FREQ_FILTER_NAME);

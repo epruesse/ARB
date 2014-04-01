@@ -104,7 +104,7 @@ static AW_window *MG_save_source_cb(AW_root *aw_root, const char *base_name) {
     aws->at("cancel");
     aws->create_button("CLOSE", "CANCEL", "C");
 
-    AW_create_fileselection(aws, base_name);
+    AW_create_standard_fileselection(aws, base_name);
 
     return (AW_window *)aws;
 }
@@ -141,7 +141,7 @@ static AW_window *MG_create_save_result_window(AW_root *aw_root, const char *bas
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    AW_create_fileselection(aws, base_name);
+    AW_create_standard_fileselection(aws, base_name);
 
     aws->at("user");
     aws->label("Type");

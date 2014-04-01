@@ -132,7 +132,7 @@ static AW_window *GDE_create_filename_browser_window(AW_root *aw_root, const cha
     aws->callback((AW_CB0) AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    AW_create_fileselection(aws, awar_prefix);
+    AW_create_standard_fileselection(aws, awar_prefix);
 
     return aws;
 }

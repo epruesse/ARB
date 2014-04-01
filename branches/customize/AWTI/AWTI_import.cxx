@@ -1204,7 +1204,7 @@ static void genom_flag_changed(AW_root *awr) {
     }
     else {
         AWTI_import_set_ali_and_type(awr, GENOM_ALIGNMENT, "dna", 0);
-        awr->awar_string(AWAR_FORM"/filter", ".fit"); // *hack* to hide normal import filters
+        awr->awar_string(AWAR_FORM"/filter", ".fit"); // *hack* to hide normal import filters // @@@ doesnt work?!
     }
 }
 
