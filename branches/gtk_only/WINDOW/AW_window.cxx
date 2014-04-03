@@ -29,9 +29,8 @@
 
 #include <string>
 #include <sstream>
-#ifndef ARBDB_H
-#include <arbdb.h>
-#endif
+// #include <arbdb.h>
+#include <arb_str.h>
 
 void AW_POPDOWN(AW_window *window){
     window->hide();
@@ -208,6 +207,11 @@ static char* aw_convert_mnemonic(const char* text, const char* mnemonic) {
     aw_return_val_if_fail(pos <= strlen(text), rval); // paranoia check
 
     if (pos == strlen(text)) { // mnemonic does not occur in text
+#if defined(DEVEL_RALF)
+#if defined(DEBUG)
+        aw_warn_if_fail_BREAKPOINT(0);
+#endif
+#endif
         rval[pos++] = ' ';
         rval[pos++] = '(';
         rval[pos++] = '_';
@@ -656,6 +660,246 @@ void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, 
     put_with_label(scrolled_entry);
 }
 
+// ----------------------------------------------------------------------
+// force-diff-sync 1284672342939 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
+// -------------------------
+//      Hotkey Checking
+
+#if defined(DEBUG)
+#define CHECK_DUPLICATED_MNEMONICS
+#endif
+
+#ifdef CHECK_DUPLICATED_MNEMONICS
+
+#define MAX_DEEP_TO_TEST       10
+#define MAX_MENU_ITEMS_TO_TEST 50
+
+static char *TD_menu_name = 0;
+static char  TD_mnemonics[MAX_DEEP_TO_TEST][MAX_MENU_ITEMS_TO_TEST];
+static int   TD_topics[MAX_DEEP_TO_TEST];
+
+struct SearchPossibilities : virtual Noncopyable {
+    char *menu_topic;
+    SearchPossibilities *next;
+
+    SearchPossibilities(const char* menu_topic_, SearchPossibilities *next_) {
+        menu_topic = strdup(menu_topic_);
+        next = next_;
+    }
+
+    ~SearchPossibilities() {
+        free(menu_topic);
+        delete next;
+    }
+};
+
+typedef SearchPossibilities *SearchPossibilitiesPtr;
+static SearchPossibilitiesPtr TD_poss[MAX_DEEP_TO_TEST] = { 0 };
+
+inline void addToPoss(int menu_deep, const char *topic_name) {
+    TD_poss[menu_deep] = new SearchPossibilities(topic_name, TD_poss[menu_deep]);
+}
+
+inline char oppositeCase(char c) {
+    return isupper(c) ? tolower(c) : toupper(c);
+}
+
+static void strcpy_overlapping(char *dest, char *src) {
+    int src_len = strlen(src);
+    memmove(dest, src, src_len+1);
+}
+
+static const char *possible_mnemonics(int menu_deep, const char *topic_name) {
+    static char *unused;
+    for (int fromTopic = 1; fromTopic>=0; --fromTopic) {
+        freedup(unused, fromTopic ? topic_name : "abcdefghijklmnopqrstuvwxyz");
+
+        for (int t = 0; unused[t]; ++t) {
+            bool remove = false;
+            if ((menu_deep == 0 && !isalpha(unused[t])) || !isalnum(unused[t])) { // remove useless chars
+                remove = true;
+            }
+            else {
+                char *dup = strchr(unused, unused[t]);
+                if (dup && (dup-unused)<t) { // remove duplicated chars
+                    remove = true;
+                }
+                else {
+                    dup = strchr(unused, oppositeCase(unused[t]));
+                    if (dup && (dup-unused)<t) { // char is duplicated with opposite case
+                        dup[0] = toupper(dup[0]); // prefer upper case
+                        remove = true;
+                    }
+                }
+            }
+            if (remove) {
+                strcpy_overlapping(unused+t, unused+t+1);
+                --t;
+            }
+        }
+
+        int topics = TD_topics[menu_deep];
+        for (int t = 0; t<topics; ++t) {
+            char c = TD_mnemonics[menu_deep][t]; // upper case!
+            char *u = strchr(unused, c);
+            if (u) strcpy_overlapping(u, u+1); // remove char
+            u = strchr(unused, tolower(c));
+            if (u) strcpy_overlapping(u, u+1); // remove char
+        }
+
+        if (unused[0]) {
+            if (!fromTopic) {
+                freeset(unused, GBS_global_string_copy("unused but not in topic: \"%s\"", unused));
+            }
+            break;
+        }
+    }
+    return unused;
+}
+
+static void printPossibilities(int menu_deep) {
+    SearchPossibilities *sp = TD_poss[menu_deep];
+    while (sp) {
+        const char *poss = possible_mnemonics(menu_deep, sp->menu_topic);
+        fprintf(stderr, "          - Possibilities for '%s': '%s'\n", sp->menu_topic, poss);
+
+        sp = sp->next;
+    }
+
+    delete TD_poss[menu_deep];
+    TD_poss[menu_deep] = 0;
+}
+
+static int menu_deep_check = 0;
+
+static void test_duplicate_mnemonics(int menu_deep, const char *topic_name, const char *mnemonic) {
+    if (mnemonic && mnemonic[0] != 0) {
+        if (mnemonic[1]) { // longer than 1 char -> wrong
+            fprintf(stderr, "Warning: Hotkey '%s' is too long; only 1 character allowed (%s|%s)\n", mnemonic, TD_menu_name, topic_name);
+        }
+
+        if (topic_name[0] == '#') { // graphical menu
+            if (mnemonic[0]) {
+                fprintf(stderr, "Warning: Hotkey '%s' is useless for graphical menu entry (%s|%s)\n", mnemonic, TD_menu_name, topic_name);
+            }
+        }
+        else if (!isalpha(mnemonic[0]) && menu_deep == 0) { // do not allow top-level numeric mnemonics
+            fprintf(stderr, "Warning: Invalid hotkey '%s' (non-alpha) for menu entry (%s|%s)\n", mnemonic, TD_menu_name, topic_name);
+            addToPoss(menu_deep, topic_name);
+        }
+        else if (!isalnum(mnemonic[0])) {
+            fprintf(stderr, "Warning: Invalid hotkey '%s' (non-alnum) for menu entry (%s|%s)\n", mnemonic, TD_menu_name, topic_name);
+            addToPoss(menu_deep, topic_name);
+        }
+        else {
+            char *TOPIC_NAME = ARB_strupper(strdup(topic_name));
+            char  hotkey     = toupper(mnemonic[0]); // store hotkeys case-less (case does not matter when pressing the hotkey)
+
+            if (strchr(TOPIC_NAME, hotkey)) {  // occurs in menu text
+                if (strchr(topic_name, mnemonic[0])) {
+                    int topics = TD_topics[menu_deep];
+                    int t;
+
+                    TD_mnemonics[menu_deep][topics] = hotkey;
+
+                    for (t=0; t<topics; t++) {
+                        if (TD_mnemonics[menu_deep][t]==hotkey) {
+                            fprintf(stderr, "Warning: Hotkey '%c' used twice (%s|%s)\n", hotkey, TD_menu_name, topic_name);
+                            addToPoss(menu_deep, topic_name);
+                            break;
+                        }
+                    }
+
+                    TD_topics[menu_deep] = topics+1;
+                }
+                else {
+                    fprintf(stderr, "Warning: Hotkey '%c' has wrong case, use '%c' (%s|%s)\n", mnemonic[0], hotkey == mnemonic[0] ? tolower(hotkey) : hotkey, TD_menu_name, topic_name);
+                    addToPoss(menu_deep, topic_name);
+                }
+            }
+            else {
+                fprintf(stderr, "Warning: Hotkey '%c' is useless; does not occur in text (%s|%s)\n", mnemonic[0], TD_menu_name, topic_name);
+                addToPoss(menu_deep, topic_name);
+            }
+            free(TOPIC_NAME);
+        }
+    }
+    else {
+        if (topic_name[0] != '#') { // not a graphical menu
+            fprintf(stderr, "Warning: Missing hotkey for (%s|%s)\n", TD_menu_name, topic_name);
+            addToPoss(menu_deep, topic_name);
+        }
+    }
+}
+
+static void open_test_duplicate_mnemonics(int menu_deep, const char *sub_menu_name, const char *mnemonic) {
+    aw_warn_if_fail_BREAKPOINT(menu_deep == menu_deep_check+1);
+    menu_deep_check = menu_deep;
+
+    int len = strlen(TD_menu_name)+1+strlen(sub_menu_name)+1;
+    char *buf = (char*)malloc(len);
+
+    memset(buf, 0, len);
+    sprintf(buf, "%s|%s", TD_menu_name, sub_menu_name);
+
+    test_duplicate_mnemonics(menu_deep-1, sub_menu_name, mnemonic);
+
+    freeset(TD_menu_name, buf);
+    TD_poss[menu_deep] = 0;
+}
+
+static void close_test_duplicate_mnemonics(int menu_deep) {
+    aw_warn_if_fail_BREAKPOINT(menu_deep == menu_deep_check);
+    menu_deep_check = menu_deep-1;
+
+    printPossibilities(menu_deep);
+    TD_topics[menu_deep] = 0;
+
+    aw_warn_if_fail_BREAKPOINT(TD_menu_name);
+    // otherwise no menu was opened
+
+    char *slash = strrchr(TD_menu_name, '|');
+    if (slash) {
+        slash[0] = 0;
+    }
+    else {
+        TD_menu_name[0] = 0;
+    }
+}
+
+static void init_duplicate_mnemonic() {
+    if (TD_menu_name) {
+        while (menu_deep_check>0) {
+            close_test_duplicate_mnemonics(menu_deep_check);
+        }
+    }
+    else {
+        freedup(TD_menu_name, "");
+
+        for (int i=0; i<MAX_DEEP_TO_TEST; i++) {
+            TD_topics[i] = 0;
+        }
+        aw_warn_if_fail_BREAKPOINT(menu_deep_check == 0);
+    }
+}
+
+static void exit_duplicate_mnemonic() {
+    while (menu_deep_check>=0) {
+        close_test_duplicate_mnemonics(menu_deep_check); // close all open menus (including top-menu)
+    }
+    aw_warn_if_fail_BREAKPOINT(TD_menu_name);
+    freenull(TD_menu_name);
+    aw_warn_if_fail_BREAKPOINT(menu_deep_check == -1);
+    menu_deep_check = 0;
+}
+#endif
+
+// ----------------------------------------------------------------------
+// force-diff-sync 9273192739 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
 void AW_window::create_menu(const char *name, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
     aw_return_if_fail(legal_mask(mask));
 
@@ -663,14 +907,36 @@ void AW_window::create_menu(const char *name, const char *mnemonic, AW_active ma
     while(prvt->menus.size() > 1) {
         close_sub_menu();
     }
-    
+
+#ifdef CHECK_DUPLICATED_MNEMONICS
+    init_duplicate_mnemonic();
+#endif
+
     insert_sub_menu(name, mnemonic, mask);
 }
 
 void AW_window::close_sub_menu(){
+#ifdef CHECK_DUPLICATED_MNEMONICS
+    close_test_duplicate_mnemonics(prvt->menus.size()-1);
+#endif
     aw_return_if_fail(prvt->menus.size() > 1);
     
     prvt->menus.pop();
+}
+
+void AW_window::all_menus_created() const { // this is called by AW_window::show() (i.e. after all menus have been created)
+#if defined(DEBUG)
+    if (prvt->menus.size()>0) { // window had menu
+        aw_warn_if_fail_BREAKPOINT(prvt->menus.size() == 1);
+
+#ifdef CHECK_DUPLICATED_MNEMONICS
+        // some unclosed sub-menus ?
+        if (menu_deep_check == 1) { // otherwise the window is just re-shown (already has been checked!)
+            exit_duplicate_mnemonic();
+        }
+#endif
+    }
+#endif // DEBUG
 }
 
 AW_selection_list *AW_window::create_option_menu(const char *var_name, 
@@ -929,6 +1195,9 @@ void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
     aw_return_if_fail(prvt->menus.size() > 0); //closed too many menus
     aw_return_if_fail(cmd != NULL);
 
+#ifdef CHECK_DUPLICATED_MNEMONICS
+    test_duplicate_mnemonics(prvt->menus.size(), labeli, mnemonic);
+#endif
     prvt->action_template.set_label(labeli); // fixme mnemonic
     if (helpText) help_text(helpText);
     sens_mask(mask);
@@ -954,6 +1223,9 @@ void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_act
     aw_return_if_fail(legal_mask(mask));
     aw_return_if_fail(prvt->menus.top());
   
+#ifdef CHECK_DUPLICATED_MNEMONICS
+    open_test_duplicate_mnemonics(prvt->menus.size(), labeli, mnemonic);
+#endif
   
     //create new menu item with attached submenu
     GtkWidget   *wlabel    = make_label(labeli, 0, mnemonic);
@@ -1484,12 +1756,18 @@ bool AW_window::is_shown() const{
 }
 
 void AW_window::show() {
-    if (is_shown()) return; 
+    if (is_shown()) return;
+
+    // The user might leave sub menus open. Close them before checking mnemonics
+    while(prvt->menus.size() > 1) {
+        close_sub_menu();
+    }
+    all_menus_created();
 
     switch (recalc_pos_at_show) {
-    case AW_KEEP_POS:
-        break;
-    case AW_REPOS_TO_CENTER:
+        case AW_KEEP_POS:
+            break;
+        case AW_REPOS_TO_CENTER:
         gtk_window_set_position(prvt->window, GTK_WIN_POS_CENTER);
         break;
     case AW_REPOS_TO_MOUSE_ONCE:
