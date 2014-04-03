@@ -702,7 +702,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
 
     scr->recalc_size();
 
-    awm->insert_help_topic("How to Visualize SAI`s ?", "H", "saiProbeHelp.hlp", AWM_ALL, makeHelpCallback("saiProbeHelp.hlp"));
+    awm->insert_help_topic("How to Visualize SAI`s ?", "V", "saiProbeHelp.hlp", AWM_ALL, makeHelpCallback("saiProbeHelp.hlp"));
 
     awm->create_menu("File", "F", AWM_ALL);
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);

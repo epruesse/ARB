@@ -610,7 +610,7 @@ void AW_help_popup(AW_window *, const char *help_file) {
 }
 
 void AW_insert_default_help_entries(AW_window *aww) {
-    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", "clickhelp", AWM_ALL, AW_help_entry_pressed);
+    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "q", "clickhelp", AWM_ALL, AW_help_entry_pressed);
 
     aww->insert_help_topic("How to use help", "H", "help.hlp", AWM_ALL, makeHelpCallback("help.hlp"));
     aww->insert_help_topic("ARB help",        "A", "arb.hlp",  AWM_ALL, makeHelpCallback("arb.hlp"));
