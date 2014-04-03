@@ -185,6 +185,13 @@ public:
 
         bind_callbacks();
     }
+
+    void fill();
+
+    void filename_changed();
+
+    const char *get_dir() const { return awr->awar(def_dir)->read_char_pntr(); }
+    GB_ULONG get_dir_modtime() const { return GB_time_of_file(get_dir()); }
 };
 
 static GB_CSTR get_suffix(GB_CSTR fullpath) { // returns pointer behind '.' of suffix (or NULL if no suffix found)
@@ -369,7 +376,11 @@ static void show_soft_link(AW_selection_list *filelist, const char *envar, Dupli
 }
 
 static void fill_fileselection_cb(AW_root*, File_selection *cbs) {
-    // @@@ move code into method(s) of File_selection
+    cbs->fill();
+}
+
+void File_selection::fill() {
+    File_selection *cbs = this; // @@@ elim
 
     AW_root *aw_root = cbs->awr;
     cbs->filelist->clear();
@@ -505,6 +516,12 @@ static void fileselection_filter_changed_cb(AW_root*) {
 }
 
 static void fileselection_filename_changed_cb(AW_root*, File_selection *cbs) {
+    cbs->filename_changed();
+}
+
+void File_selection::filename_changed() {
+    File_selection *cbs = this; // @@@ elim
+
     AW_root *aw_root = cbs->awr;
     char    *fname   = aw_root->awar(cbs->def_name)->read_string();
 
@@ -652,18 +669,11 @@ struct selbox_autorefresh_info {
 };
 static selbox_autorefresh_info *autorefresh_info = 0;
 
-static GB_ULONG get_dir_modtime(File_selection *acbs) {
-    char     *dir   = acbs->awr->awar(acbs->def_dir)->read_string();
-    GB_ULONG  mtime = GB_time_of_file(dir);
-    free(dir);
-    return mtime;
-}
-
 static unsigned autorefresh_selboxes(AW_root *) {
     selbox_autorefresh_info *check = autorefresh_info;
 
     while (check) {
-        GB_ULONG mtime = get_dir_modtime(check->acbs);
+        GB_ULONG mtime = check->acbs->get_dir_modtime();
         if (mtime != check->modtime) {
             check->modtime = mtime;
             check->acbs->awr->awar(check->acbs->def_dir)->touch(); // refresh
@@ -675,15 +685,15 @@ static unsigned autorefresh_selboxes(AW_root *) {
     return SELBOX_AUTOREFRESH_FREQUENCY;
 }
 
-static void selbox_install_autorefresh(File_selection *acbs) {
+static void selbox_install_autorefresh(AW_root *aw_root, File_selection *acbs) {
     if (!autorefresh_info) {    // when installing first selbox
-        acbs->awr->add_timed_callback(SELBOX_AUTOREFRESH_FREQUENCY, makeTimedCallback(autorefresh_selboxes));
+        aw_root->add_timed_callback(SELBOX_AUTOREFRESH_FREQUENCY, makeTimedCallback(autorefresh_selboxes));
     }
 
     selbox_autorefresh_info *install = new selbox_autorefresh_info;
 
     install->acbs    = acbs;
-    install->modtime = get_dir_modtime(acbs);
+    install->modtime = acbs->get_dir_modtime();
 
     install->next    = autorefresh_info;
     autorefresh_info = install;
@@ -737,7 +747,7 @@ void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char
     fill_fileselection_cb(0, acbs);
     fileselection_filename_changed_cb(0, acbs);    // this fixes the path name
 
-    selbox_install_autorefresh(acbs);
+    selbox_install_autorefresh(aw_root, acbs);
 }
 
 char *AW_get_selected_fullname(AW_root *awr, const char *awar_prefix) { // @@@ add flag to select whether wildcards are allowed
