@@ -210,7 +210,7 @@ public:
 
     void fill();
 
-    void filename_changed();
+    void filename_changed(bool post_filter_change_HACK);
 
     const char *get_dir() const { return awr->awar(def_dir)->read_char_pntr(); }
     GB_ULONG get_dir_modtime() const { return GB_time_of_file(get_dir()); }
@@ -524,9 +524,7 @@ void File_selection::fill() {
     free(filter);
 }
 
-static bool filter_has_changed = false; // @@@ move into File_selection
-
-void File_selection::filename_changed() {
+void File_selection::filename_changed(bool post_filter_change_HACK) {
     AW_root *aw_root = awr;
     char    *fname   = aw_root->awar(def_name)->read_string();
 
@@ -629,7 +627,7 @@ void File_selection::filename_changed() {
                         char *suffix = (char*)get_suffix(newName); // cast ok, since get_suffix points into newName
 
                         if (!suffix || strcmp(suffix, pfilter) != 0) {
-                            if (suffix && filter_has_changed) {
+                            if (suffix && post_filter_change_HACK) {
                                 if (suffix[-1] == '.') suffix[-1] = 0;
                             }
                             freeset(newName, set_suffix(newName, pfilter));
@@ -652,8 +650,6 @@ void File_selection::filename_changed() {
         }
     }
 
-    filter_has_changed = false;
-
     free(fname);
 }
 
@@ -661,23 +657,20 @@ static void fill_fileselection_cb(AW_root*, File_selection *cbs) {
     cbs->fill();
 }
 static void fileselection_filename_changed_cb(AW_root*, File_selection *cbs) {
-    cbs->filename_changed();
+    cbs->filename_changed(false);
 }
-static void fileselection_filter_changed_cb(AW_root*) {
-    filter_has_changed = true;
+static void fileselection_filter_changed_cb(AW_root*, File_selection *cbs) {
 #if defined(TRACE_FILEBOX)
     printf("fileselection_filter_changed_cb: marked as changed\n");
 #endif // TRACE_FILEBOX
+    cbs->fill();
+    cbs->filename_changed(true);
 }
 
 void File_selection::bind_callbacks() {
     awr->awar(def_name)  ->add_callback(makeRootCallback(fileselection_filename_changed_cb, this));
-    awr->awar(def_filter)->add_callback(makeRootCallback(fileselection_filename_changed_cb, this));
-
     awr->awar(def_dir)   ->add_callback(makeRootCallback(fill_fileselection_cb, this));
-    awr->awar(def_filter)->add_callback(makeRootCallback(fill_fileselection_cb, this));
-
-    awr->awar(def_filter)->add_callback(fileselection_filter_changed_cb);
+    awr->awar(def_filter)->add_callback(makeRootCallback(fileselection_filter_changed_cb, this));
 }
 
 #define SELBOX_AUTOREFRESH_FREQUENCY 3000 // refresh every XXX ms
