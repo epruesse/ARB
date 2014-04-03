@@ -155,6 +155,28 @@ struct File_selection {                            // for fileselection
     DirDisplay dirdisp;
 
     bool leave_wildcards;
+
+    File_selection(AW_root *aw_root, const char *pwd_, DirDisplay disp_dirs, bool allow_wildcards)
+        : awr(aw_root),
+          filelist(NULL),
+          def_name(NULL),
+          def_dir(NULL),
+          def_filter(NULL),
+          pwd(strdup(pwd_)),
+          pwdx(NULL),
+          previous_filename(NULL),
+          dirdisp(disp_dirs),
+          leave_wildcards(allow_wildcards)
+    {
+        {
+            char *multiple_dirs_in_pwd = strchr(pwd, '^');
+            if (multiple_dirs_in_pwd) {
+                multiple_dirs_in_pwd[0] = 0;
+                pwdx = multiple_dirs_in_pwd+1;
+            }
+        }
+
+    }
 };
 
 static GB_CSTR get_suffix(GB_CSTR fullpath) { // returns pointer behind '.' of suffix (or NULL if no suffix found)
@@ -651,7 +673,7 @@ static void selbox_install_autorefresh(File_selection *acbs) {
     autorefresh_info = install;
 }
 
-void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char *at_prefix, const  char *pwd, DirDisplay disp_dirs, bool allow_wildcards) {
+void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char *at_prefix, const char *pwd, DirDisplay disp_dirs, bool allow_wildcards) {
     /*! Create a file selection box, this box needs 3 AWARS:
      *
      * 1. "$awar_prefix/filter"
@@ -677,27 +699,9 @@ void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char
      */
 
     AW_root        *aw_root = aws->get_root();
-    File_selection *acbs    = new File_selection;
-    memset(acbs, 0, sizeof(*acbs));
+    File_selection *acbs    = new File_selection(aw_root, pwd, disp_dirs, allow_wildcards);
 
-    acbs->awr = aw_root;
-    acbs->pwd = strdup(pwd);
-    {
-        char *multiple_dirs_in_pwd = strchr(acbs->pwd, '^');
-        if (multiple_dirs_in_pwd) {
-            multiple_dirs_in_pwd[0] = 0;
-            acbs->pwdx = multiple_dirs_in_pwd+1;
-        }
-        else {
-            acbs->pwdx = 0;
-        }
-    }
-
-    acbs->dirdisp           = disp_dirs;
-    acbs->def_name          = GBS_string_eval(awar_prefix, "*=*/file_name", 0);
-    acbs->previous_filename = 0;
-    acbs->leave_wildcards   = allow_wildcards;
-
+    acbs->def_name = GBS_string_eval(awar_prefix, "*=*/file_name", 0);
     aw_root->awar(acbs->def_name)->add_callback(makeRootCallback(fileselection_filename_changed_cb, acbs));
 
     acbs->def_dir = GBS_string_eval(awar_prefix, "*=*/directory", 0);
