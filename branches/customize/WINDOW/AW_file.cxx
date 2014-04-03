@@ -139,12 +139,9 @@ void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
 #warning derive File_selection from AW_selection
 #endif
 
-class File_selection {                            // for fileselection
+class File_selection {
+    AW_root *awr;
 
-    void bind_callbacks();
-
-public:
-    AW_root           *awr;
     AW_selection_list *filelist;
 
     char *def_name;
@@ -159,6 +156,10 @@ public:
     DirDisplay dirdisp;
 
     bool leave_wildcards;
+
+    void bind_callbacks();
+
+public:
 
     File_selection(AW_root *aw_root, const char *awar_prefix, const char *pwd_, DirDisplay disp_dirs, bool allow_wildcards)
         : awr(aw_root),
@@ -186,12 +187,35 @@ public:
         bind_callbacks();
     }
 
+    void create_gui_elements(AW_window *aws, const char *at_prefix) {
+        aw_assert(!filelist);
+
+        char buffer[1024];
+        sprintf(buffer, "%sfilter", at_prefix);
+        if (aws->at_ifdef(buffer)) {
+            aws->at(buffer);
+            aws->create_input_field(def_filter, 5);
+        }
+
+        sprintf(buffer, "%sfile_name", at_prefix);
+        if (aws->at_ifdef(buffer)) {
+            aws->at(buffer);
+            aws->create_input_field(def_name, 20);
+        }
+
+        sprintf(buffer, "%sbox", at_prefix);
+        aws->at(buffer);
+        filelist = aws->create_selection_list(def_name, 2, 2);
+    }
+
     void fill();
 
     void filename_changed();
 
     const char *get_dir() const { return awr->awar(def_dir)->read_char_pntr(); }
     GB_ULONG get_dir_modtime() const { return GB_time_of_file(get_dir()); }
+
+    void trigger_refresh() { awr->awar(def_dir)->touch(); }
 };
 
 static GB_CSTR get_suffix(GB_CSTR fullpath) { // returns pointer behind '.' of suffix (or NULL if no suffix found)
@@ -676,7 +700,7 @@ static unsigned autorefresh_selboxes(AW_root *) {
         GB_ULONG mtime = check->acbs->get_dir_modtime();
         if (mtime != check->modtime) {
             check->modtime = mtime;
-            check->acbs->awr->awar(check->acbs->def_dir)->touch(); // refresh
+            check->acbs->trigger_refresh();
         }
         check = check->next;
     }
@@ -727,22 +751,7 @@ void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char
     AW_root        *aw_root = aws->get_root();
     File_selection *acbs    = new File_selection(aw_root, awar_prefix, pwd, disp_dirs, allow_wildcards);
 
-    char buffer[1024];
-    sprintf(buffer, "%sfilter", at_prefix);
-    if (aws->at_ifdef(buffer)) {
-        aws->at(buffer);
-        aws->create_input_field(acbs->def_filter, 5);
-    }
-
-    sprintf(buffer, "%sfile_name", at_prefix);
-    if (aws->at_ifdef(buffer)) {
-        aws->at(buffer);
-        aws->create_input_field(acbs->def_name, 20);
-    }
-
-    sprintf(buffer, "%sbox", at_prefix);
-    aws->at(buffer);
-    acbs->filelist = aws->create_selection_list(acbs->def_name, 2, 2);
+    acbs->create_gui_elements(aws, at_prefix);
 
     fill_fileselection_cb(0, acbs);
     fileselection_filename_changed_cb(0, acbs);    // this fixes the path name
