@@ -107,7 +107,7 @@ outformat:flat
 //-------------------------------------------------------------------
 
 item:Mafft
-itemmeta: F
+itemmeta: f
 itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/#/>HASH_/' <TmpInputFile | \
             arb_sed 's/%/>PERCENT_/' | \
@@ -201,7 +201,7 @@ insave:
 // --------------------------------------------------------------------------------
 
 item:ClustalW Profile Alignment
-itemmeta: P
+itemmeta: A
 itemmethod:(GOTO_LOCAL_DIR; \
             tr '"%//' '>' <TmpInputFile >clus_in; \
             RUN_IN_WINDOW((clustalw -output=PIR -profile1=clus_in -profile2=../clus_prf -align ; \

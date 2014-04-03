@@ -22,12 +22,13 @@
         item: PHYML-20130708 (DNA)
         seqtype: N
         itemmethod:PHYML_CALL(nt)
+        itemmeta: P
 #else
         item: PHYML-20130708 (Amino acids)
         seqtype: A
         itemmethod:PHYML_CALL(aa)
+        itemmeta: Y
 #endif
-itemmeta: D
 itemhelp:phyml-20130708.help
 
 // $INPUT_TREE_PARAM is either empty or contains -uinput_tree.in depending on the selection of the starting tree

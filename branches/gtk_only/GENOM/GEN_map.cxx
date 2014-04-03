@@ -1475,7 +1475,7 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool f
     awm->create_menu("Genome", "G", AWM_ALL);
     {
 #if defined(DEBUG)
-        awm->insert_menu_topic("debug_awars", "[DEBUG] Show main AWARs", "", "no.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_awar_debug_window, 0);
+        awm->insert_menu_topic("debug_awars", "[DEBUG] Show main AWARs", "A", "no.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_awar_debug_window, 0);
         awm->sep______________();
 #endif // DEBUG
 
@@ -1513,12 +1513,12 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool f
 
         if (!for_ARB_NTREE) {   // only in ARB_GENE_MAP:
             awm->sep______________();
-            GEN_insert_mark_submenu(awm, gb_main, "gene_mark_hidden",  "Mark hidden genes",  "", "gene_hide.hlp", GEN_MARK_HIDDEN);
-            GEN_insert_mark_submenu(awm, gb_main, "gene_mark_visible", "Mark visible genes", "", "gene_hide.hlp", GEN_MARK_VISIBLE);
+            GEN_insert_mark_submenu(awm, gb_main, "gene_mark_hidden",  "Mark hidden genes",  "h", "gene_hide.hlp", GEN_MARK_HIDDEN);
+            GEN_insert_mark_submenu(awm, gb_main, "gene_mark_visible", "Mark visible genes", "s", "gene_hide.hlp", GEN_MARK_VISIBLE);
 
             awm->sep______________();
-            GEN_insert_mark_submenu(awm, gb_main, "gene_unmark_hidden",  "Unmark hidden genes",  "", "gene_hide.hlp", GEN_UNMARK_HIDDEN);
-            GEN_insert_mark_submenu(awm, gb_main, "gene_unmark_visible", "Unmark visible genes", "", "gene_hide.hlp", GEN_UNMARK_VISIBLE);
+            GEN_insert_mark_submenu(awm, gb_main, "gene_unmark_hidden",  "Unmark hidden genes",  "d", "gene_hide.hlp", GEN_UNMARK_HIDDEN);
+            GEN_insert_mark_submenu(awm, gb_main, "gene_unmark_visible", "Unmark visible genes", "r", "gene_hide.hlp", GEN_UNMARK_VISIBLE);
         }
     }
 }
@@ -1531,9 +1531,9 @@ static void GEN_create_hide_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) 
         GEN_insert_hide_submenu(awm, gb_main, "gene_invhide_marked", "Invert-hide marked genes", "v", "gene_hide.hlp", GEN_INVERT_HIDE_MARKED);
 
         awm->sep______________();
-        GEN_insert_hide_submenu(awm, gb_main, "gene_hide_all",    "Hide all genes",        "", "gene_hide.hlp", GEN_HIDE_ALL);
-        GEN_insert_hide_submenu(awm, gb_main, "gene_unhide_all",  "Unhide all genes",      "", "gene_hide.hlp", GEN_UNHIDE_ALL);
-        GEN_insert_hide_submenu(awm, gb_main, "gene_invhide_all", "Invert-hide all genes", "", "gene_hide.hlp", GEN_INVERT_HIDE_ALL);
+        GEN_insert_hide_submenu(awm, gb_main, "gene_hide_all",    "Hide all genes",        "a", "gene_hide.hlp", GEN_HIDE_ALL);
+        GEN_insert_hide_submenu(awm, gb_main, "gene_unhide_all",  "Unhide all genes",      "l", "gene_hide.hlp", GEN_UNHIDE_ALL);
+        GEN_insert_hide_submenu(awm, gb_main, "gene_invhide_all", "Invert-hide all genes", "I", "gene_hide.hlp", GEN_INVERT_HIDE_ALL);
     }
 }
 
