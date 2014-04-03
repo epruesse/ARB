@@ -399,10 +399,6 @@ static void show_soft_link(AW_selection_list *filelist, const char *envar, Dupli
     }
 }
 
-static void fill_fileselection_cb(AW_root*, File_selection *cbs) {
-    cbs->fill();
-}
-
 void File_selection::fill() {
     AW_root *aw_root = awr;
     filelist->clear();
@@ -528,18 +524,7 @@ void File_selection::fill() {
     free(filter);
 }
 
-static bool filter_has_changed = false;
-
-static void fileselection_filter_changed_cb(AW_root*) {
-    filter_has_changed = true;
-#if defined(TRACE_FILEBOX)
-    printf("fileselection_filter_changed_cb: marked as changed\n");
-#endif // TRACE_FILEBOX
-}
-
-static void fileselection_filename_changed_cb(AW_root*, File_selection *cbs) {
-    cbs->filename_changed();
-}
+static bool filter_has_changed = false; // @@@ move into File_selection
 
 void File_selection::filename_changed() {
     AW_root *aw_root = awr;
@@ -672,12 +657,27 @@ void File_selection::filename_changed() {
     free(fname);
 }
 
+static void fill_fileselection_cb(AW_root*, File_selection *cbs) {
+    cbs->fill();
+}
+static void fileselection_filename_changed_cb(AW_root*, File_selection *cbs) {
+    cbs->filename_changed();
+}
+static void fileselection_filter_changed_cb(AW_root*) {
+    filter_has_changed = true;
+#if defined(TRACE_FILEBOX)
+    printf("fileselection_filter_changed_cb: marked as changed\n");
+#endif // TRACE_FILEBOX
+}
+
 void File_selection::bind_callbacks() {
     awr->awar(def_name)  ->add_callback(makeRootCallback(fileselection_filename_changed_cb, this));
-    awr->awar(def_dir)   ->add_callback(makeRootCallback(fill_fileselection_cb, this));
-    awr->awar(def_filter)->add_callback(fileselection_filter_changed_cb);
     awr->awar(def_filter)->add_callback(makeRootCallback(fileselection_filename_changed_cb, this));
+
+    awr->awar(def_dir)   ->add_callback(makeRootCallback(fill_fileselection_cb, this));
     awr->awar(def_filter)->add_callback(makeRootCallback(fill_fileselection_cb, this));
+
+    awr->awar(def_filter)->add_callback(fileselection_filter_changed_cb);
 }
 
 #define SELBOX_AUTOREFRESH_FREQUENCY 3000 // refresh every XXX ms
