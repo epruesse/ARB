@@ -130,7 +130,7 @@ insave:
 
 
 item:MrBayes (custom)
-itemmeta:B
+itemmeta:c
 itemmethod:(GOTO_LOCAL_DIR; \
             GEN_NEXUS(mrbayes_in) && \
             PREPARE_MRBAYES_INFILE(mrbayes_in) && \

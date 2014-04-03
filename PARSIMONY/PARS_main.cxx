@@ -982,7 +982,7 @@ static void TESTMENU_buildAndDumpChain(AW_window *, AWT_canvas *)
 
 static void init_TEST_menu(AW_window_menu_modes *awm, AWT_canvas *ntw)
 {
-    awm->create_menu("Test[debug]", "T", AWM_ALL);
+    awm->create_menu("Test[debug]", "g", AWM_ALL);
 
     awm->insert_menu_topic("mixtree",         "Mix tree",           "M", "", AWM_ALL, (AW_CB)TESTMENU_mixTree,           (AW_CL)ntw, 0);
     awm->insert_menu_topic("treestat",        "Tree statistics",    "s", "", AWM_ALL, (AW_CB)TESTMENU_treeStats,         (AW_CL)ntw, 0);
@@ -1204,7 +1204,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->insert_menu_topic("reset_physical_zoom", "Physical Zoom", "P", "rst_phys_zoom.hlp", AWM_ALL, makeWindowCallback(NT_reset_pzoom_cb, ntw));
     }
 
-    awm->create_menu("Properties", "r", AWM_ALL);
+    awm->create_menu("Properties", "P", AWM_ALL);
     {
         awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...", "C", "pars_props_data.hlp",  AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
         awm->insert_menu_topic("props_tree2", "Tree: Settings ...",         "T", "nt_tree_settings.hlp", AWM_ALL, PARS_create_tree_settings_window);
