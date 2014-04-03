@@ -139,7 +139,11 @@ void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
 #warning derive File_selection from AW_selection
 #endif
 
-struct File_selection {                            // for fileselection
+class File_selection {                            // for fileselection
+
+    void bind_callbacks();
+
+public:
     AW_root           *awr;
     AW_selection_list *filelist;
 
@@ -156,12 +160,9 @@ struct File_selection {                            // for fileselection
 
     bool leave_wildcards;
 
-    File_selection(AW_root *aw_root, const char *pwd_, DirDisplay disp_dirs, bool allow_wildcards)
+    File_selection(AW_root *aw_root, const char *awar_prefix, const char *pwd_, DirDisplay disp_dirs, bool allow_wildcards)
         : awr(aw_root),
           filelist(NULL),
-          def_name(NULL),
-          def_dir(NULL),
-          def_filter(NULL),
           pwd(strdup(pwd_)),
           pwdx(NULL),
           previous_filename(NULL),
@@ -176,6 +177,13 @@ struct File_selection {                            // for fileselection
             }
         }
 
+        def_name   = GBS_string_eval(awar_prefix, "*=*/file_name", 0);
+        def_dir    = GBS_string_eval(awar_prefix, "*=*/directory", 0);
+        def_filter = GBS_string_eval(awar_prefix, "*=*/filter", 0);
+
+        aw_assert(!GB_have_error());
+
+        bind_callbacks();
     }
 };
 
@@ -627,6 +635,14 @@ static void fileselection_filename_changed_cb(AW_root*, File_selection *cbs) {
     free(fname);
 }
 
+void File_selection::bind_callbacks() {
+    awr->awar(def_name)  ->add_callback(makeRootCallback(fileselection_filename_changed_cb, this));
+    awr->awar(def_dir)   ->add_callback(makeRootCallback(fill_fileselection_cb, this));
+    awr->awar(def_filter)->add_callback(fileselection_filter_changed_cb);
+    awr->awar(def_filter)->add_callback(makeRootCallback(fileselection_filename_changed_cb, this));
+    awr->awar(def_filter)->add_callback(makeRootCallback(fill_fileselection_cb, this));
+}
+
 #define SELBOX_AUTOREFRESH_FREQUENCY 3000 // refresh every XXX ms
 
 struct selbox_autorefresh_info {
@@ -699,18 +715,7 @@ void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char
      */
 
     AW_root        *aw_root = aws->get_root();
-    File_selection *acbs    = new File_selection(aw_root, pwd, disp_dirs, allow_wildcards);
-
-    acbs->def_name = GBS_string_eval(awar_prefix, "*=*/file_name", 0);
-    aw_root->awar(acbs->def_name)->add_callback(makeRootCallback(fileselection_filename_changed_cb, acbs));
-
-    acbs->def_dir = GBS_string_eval(awar_prefix, "*=*/directory", 0);
-    aw_root->awar(acbs->def_dir)->add_callback(makeRootCallback(fill_fileselection_cb, acbs));
-
-    acbs->def_filter = GBS_string_eval(awar_prefix, "*=*/filter", 0);
-    aw_root->awar(acbs->def_filter)->add_callback(fileselection_filter_changed_cb);
-    aw_root->awar(acbs->def_filter)->add_callback(makeRootCallback(fileselection_filename_changed_cb, acbs));
-    aw_root->awar(acbs->def_filter)->add_callback(makeRootCallback(fill_fileselection_cb, acbs));
+    File_selection *acbs    = new File_selection(aw_root, awar_prefix, pwd, disp_dirs, allow_wildcards);
 
     char buffer[1024];
     sprintf(buffer, "%sfilter", at_prefix);
@@ -825,4 +830,5 @@ void TEST_path_unfolding() {
 }
 
 #endif // UNIT_TESTS
+
 
