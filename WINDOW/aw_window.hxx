@@ -141,8 +141,8 @@ class AW_window : virtual Noncopyable {
 //    aw_hide_cb         hide_cb;
 //
 //    bool expose_callback_added;
-//
-//    void all_menus_created() const;
+
+    void all_menus_created() const;
 
     AW_awar *awar_posx, *awar_posy, *awar_width, *awar_height;
 protected:
@@ -171,7 +171,6 @@ protected:
     void init_window(const char *window_id, const char* window_name, 
                      int width, int height, bool resizable);
     
-
 public:
 
     // ************ This is not the public section *************
