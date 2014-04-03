@@ -139,6 +139,10 @@ void AW_window::message(char *title, int ms) {
     get_root()->add_timed_callback(ms, makeTimedCallback(timed_window_title_cb, old_title, this));
 }
 
+// ----------------------------------------------------------------------
+// force-diff-sync 1284672342939 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
 // -------------------------
 //      Hotkey Checking
 
@@ -370,6 +374,48 @@ static void exit_duplicate_mnemonic() {
     menu_deep_check = 0;
 }
 #endif
+
+// ----------------------------------------------------------------------
+// force-diff-sync 9273192739 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
+void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask) {
+    aw_assert(legal_mask(mask));
+    p_w->menu_deep = 0;
+#ifdef CHECK_DUPLICATED_MNEMONICS
+    init_duplicate_mnemonic();
+#endif
+#if defined(DUMP_MENU_LIST)
+    dumpCloseAllSubMenus();
+#endif // DUMP_MENU_LIST
+    insert_sub_menu(name, mnemonic, mask);
+}
+
+void AW_window::close_sub_menu() {
+#ifdef CHECK_DUPLICATED_MNEMONICS
+    close_test_duplicate_mnemonics(p_w->menu_deep);
+#endif
+#if defined(DUMP_MENU_LIST)
+    dumpCloseSubMenu();
+#endif // DUMP_MENU_LIST
+    if (p_w->menu_deep>0)
+        p_w->menu_deep--;
+}
+
+void AW_window::all_menus_created() const { // this is called by AW_window::show() (i.e. after all menus have been created)
+#if defined(DEBUG)
+    if (p_w->menu_deep>0) { // window had menu
+        aw_assert(p_w->menu_deep == 1);
+        
+#ifdef CHECK_DUPLICATED_MNEMONICS
+        // some unclosed sub-menus ?
+        if (menu_deep_check == 1) { // otherwise the window is just re-shown (already has been checked!)
+            exit_duplicate_mnemonic();
+        }
+#endif
+    }
+#endif // DEBUG
+}
 
 // ----------------------------------------------------------------------
 // force-diff-sync 2939128467234 (remove after merging back to trunk)
@@ -2559,45 +2605,6 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
 
     return p_w->number_of_modes;
 }
-
-void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask) {
-    aw_assert(legal_mask(mask));
-    p_w->menu_deep = 0;
-#ifdef CHECK_DUPLICATED_MNEMONICS
-    init_duplicate_mnemonic();
-#endif
-#if defined(DUMP_MENU_LIST)
-    dumpCloseAllSubMenus();
-#endif // DUMP_MENU_LIST
-    insert_sub_menu(name, mnemonic, mask);
-}
-
-void AW_window::close_sub_menu() {
-#ifdef CHECK_DUPLICATED_MNEMONICS
-    close_test_duplicate_mnemonics(p_w->menu_deep);
-#endif
-#if defined(DUMP_MENU_LIST)
-    dumpCloseSubMenu();
-#endif // DUMP_MENU_LIST
-    if (p_w->menu_deep>0)
-        p_w->menu_deep--;
-}
-
-void AW_window::all_menus_created() const { // this is called by AW_window::show() (i.e. after all menus have been created)
-#if defined(DEBUG)
-    if (p_w->menu_deep>0) { // window had menu
-        aw_assert(p_w->menu_deep == 1);
-        
-#ifdef CHECK_DUPLICATED_MNEMONICS
-        // some unclosed sub-menus ?
-        if (menu_deep_check == 1) { // otherwise the window is just re-shown (already has been checked!)
-            exit_duplicate_mnemonic();
-        }
-#endif
-    }
-#endif // DEBUG
-}
-
 
 AW_area_management::AW_area_management(AW_root *awr, Widget formi, Widget widget) {
     memset((char *)this, 0, sizeof(AW_area_management));
