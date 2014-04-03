@@ -1216,7 +1216,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     }
     awm->button_length(5);
 
-    awm->insert_help_topic("ARB_PARSIMONY help", "N", "arb_pars.hlp", AWM_ALL, makeHelpCallback("arb_pars.hlp"));
+    awm->insert_help_topic("ARB_PARSIMONY help", "P", "arb_pars.hlp", AWM_ALL, makeHelpCallback("arb_pars.hlp"));
 
     // ----------------------
     //      mode buttons

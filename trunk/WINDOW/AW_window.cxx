@@ -495,14 +495,18 @@ void AW_window::insert_help_topic(AW_label name,
     aw_assert(legal_mask(mask));
     Widget button;
 
+#ifdef CHECK_DUPLICATED_MNEMONICS
+    test_duplicate_mnemonics(p_w->menu_deep, name, mnemonic);
+#endif
+
     // create one help-sub-menu-point
     button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass,
-            p_w->help_pull_down,
-            RES_CONVERT(XmNlabelString, name),
-                                      RES_CONVERT(XmNmnemonic, mnemonic), NULL);
+                                     p_w->help_pull_down,
+                                     RES_CONVERT(XmNlabelString, name),
+                                     RES_CONVERT(XmNmnemonic, mnemonic), NULL);
     XtAddCallback(button, XmNactivateCallback,
-    (XtCallbackProc) AW_server_callback,
-    (XtPointer) new AW_cb(this, cb, helpText));
+                  (XtCallbackProc) AW_server_callback,
+                  (XtPointer) new AW_cb(this, cb, helpText));
 
     root->make_sensitive(button, mask);
 }
@@ -1660,7 +1664,7 @@ void AW_window::create_devices() {
 }
 
 void aw_insert_default_help_entries(AW_window *aww) {
-    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "P", 0, AWM_ALL, AW_help_entry_pressed);
+    aww->insert_help_topic("Click here and then on the questionable button/menu/...", "q", 0, AWM_ALL, AW_help_entry_pressed);
 
     aww->insert_help_topic("How to use help", "H", "help.hlp", AWM_ALL, makeHelpCallback("help.hlp"));
     aww->insert_help_topic("ARB help",        "A", "arb.hlp",  AWM_ALL, makeHelpCallback("arb.hlp"));
