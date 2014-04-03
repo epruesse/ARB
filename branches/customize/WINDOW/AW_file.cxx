@@ -404,15 +404,13 @@ static void fill_fileselection_cb(AW_root*, File_selection *cbs) {
 }
 
 void File_selection::fill() {
-    File_selection *cbs = this; // @@@ elim
+    AW_root *aw_root = awr;
+    filelist->clear();
 
-    AW_root *aw_root = cbs->awr;
-    cbs->filelist->clear();
-
-    char *diru    = aw_root->awar(cbs->def_dir)->read_string();
-    char *fulldir = AW_unfold_path(cbs->pwd, diru);
-    char *filter  = aw_root->awar(cbs->def_filter)->read_string();
-    char *name    = aw_root->awar(cbs->def_name)->read_string();
+    char *diru    = aw_root->awar(def_dir)->read_string();
+    char *fulldir = AW_unfold_path(pwd, diru);
+    char *filter  = aw_root->awar(def_filter)->read_string();
+    char *name    = aw_root->awar(def_name)->read_string();
 
 #if defined(TRACE_FILEBOX)
     printf("fill_fileselection_cb:\n"
@@ -438,77 +436,77 @@ void File_selection::fill() {
 
     bool is_wildcard = strchr(name_only, '*');
 
-    if (cbs->dirdisp == ANY_DIR) {
+    if (dirdisp == ANY_DIR) {
         if (is_wildcard) {
-            if (cbs->leave_wildcards) {
-                cbs->filelist->insert((char *)GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);
+            if (leave_wildcards) {
+                filelist->insert((char *)GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);
             }
             else {
-                cbs->filelist->insert((char *)GBS_global_string("  ALL '%s' in+below '%s'", name_only, fulldir), name);
+                filelist->insert((char *)GBS_global_string("  ALL '%s' in+below '%s'", name_only, fulldir), name);
             }
         }
         else {
-            cbs->filelist->insert((char *)GBS_global_string("  CONTENTS OF '%s'", fulldir), fulldir);
+            filelist->insert((char *)GBS_global_string("  CONTENTS OF '%s'", fulldir), fulldir);
         }
 
         if (filter[0] && !is_wildcard) {
-            cbs->filelist->insert(GBS_global_string("! \' Search for\'     (*%s)", filter), "*");
+            filelist->insert(GBS_global_string("! \' Search for\'     (*%s)", filter), "*");
         }
         if (strcmp("/", fulldir)) {
-            cbs->filelist->insert("! \'PARENT DIR       (..)\'", "..");
+            filelist->insert("! \'PARENT DIR       (..)\'", "..");
         }
         if (DIR_subdirs_hidden == 0) {
-            show_soft_link(cbs->filelist, cbs->pwd, unDup);
+            show_soft_link(filelist, pwd, unDup);
 
-            if (cbs->pwdx) {        // additional directories
-                char *start = cbs->pwdx;
+            if (pwdx) {        // additional directories
+                char *start = pwdx;
                 while (start) {
                     char *multiple = strchr(start, '^');
                     if (multiple) {
                         multiple[0] = 0;
-                        show_soft_link(cbs->filelist, start, unDup);
+                        show_soft_link(filelist, start, unDup);
                         multiple[0] = '^';
                         start       = multiple+1;
                     }
                     else {
-                        show_soft_link(cbs->filelist, start, unDup);
+                        show_soft_link(filelist, start, unDup);
                         start = 0;
                     }
                 }
             }
 
-            show_soft_link(cbs->filelist, "HOME", unDup);
-            show_soft_link(cbs->filelist, "PWD", unDup);
-            show_soft_link(cbs->filelist, "ARB_WORKDIR", unDup);
-            show_soft_link(cbs->filelist, "PT_SERVER_HOME", unDup);
+            show_soft_link(filelist, "HOME", unDup);
+            show_soft_link(filelist, "PWD", unDup);
+            show_soft_link(filelist, "ARB_WORKDIR", unDup);
+            show_soft_link(filelist, "PT_SERVER_HOME", unDup);
 
-            cbs->filelist->insert("! \' Sub-directories (shown)\'", GBS_global_string("%s?hide?", name));
+            filelist->insert("! \' Sub-directories (shown)\'", GBS_global_string("%s?hide?", name));
         }
         else {
-            cbs->filelist->insert("! \' Sub-directories (hidden)\'", GBS_global_string("%s?show?", name));
+            filelist->insert("! \' Sub-directories (hidden)\'", GBS_global_string("%s?show?", name));
         }
     }
 
-    cbs->filelist->insert(GBS_global_string("! \' Sort order\'     (%s)", DIR_sort_order_name[DIR_sort_order]),
-                          GBS_global_string("%s?sort?", name));
+    filelist->insert(GBS_global_string("! \' Sort order\'     (%s)", DIR_sort_order_name[DIR_sort_order]),
+                     GBS_global_string("%s?sort?", name));
 
-    cbs->filelist->insert(GBS_global_string("! \' %s%s\'",
-                                            DIR_show_hidden ? "Hide dot-" : "Show hidden ",
-                                            cbs->dirdisp == ANY_DIR ? "files/dirs" : "files"),
-                          GBS_global_string("%s?dot?", name));
+    filelist->insert(GBS_global_string("! \' %s%s\'",
+                                       DIR_show_hidden ? "Hide dot-" : "Show hidden ",
+                                       dirdisp == ANY_DIR ? "files/dirs" : "files"),
+                     GBS_global_string("%s?dot?", name));
 
-    bool insert_dirs = cbs->dirdisp == ANY_DIR && !DIR_subdirs_hidden;
+    bool insert_dirs = dirdisp == ANY_DIR && !DIR_subdirs_hidden;
     if (is_wildcard) {
-        if (cbs->leave_wildcards) {
-            fill_fileselection_recursive(fulldir, strlen(fulldir)+1, name_only, false, insert_dirs, DIR_show_hidden, cbs->filelist);
+        if (leave_wildcards) {
+            fill_fileselection_recursive(fulldir, strlen(fulldir)+1, name_only, false, insert_dirs, DIR_show_hidden, filelist);
         }
         else {
-            if (cbs->dirdisp == ANY_DIR) { // recursive wildcarded search
-                fill_fileselection_recursive(fulldir, strlen(fulldir)+1, name_only, true, false, DIR_show_hidden, cbs->filelist);
+            if (dirdisp == ANY_DIR) { // recursive wildcarded search
+                fill_fileselection_recursive(fulldir, strlen(fulldir)+1, name_only, true, false, DIR_show_hidden, filelist);
             }
             else {
                 char *mask = GBS_global_string_copy("%s*%s", name_only, filter);
-                fill_fileselection_recursive(fulldir, strlen(fulldir)+1, mask, false, false, DIR_show_hidden, cbs->filelist);
+                fill_fileselection_recursive(fulldir, strlen(fulldir)+1, mask, false, false, DIR_show_hidden, filelist);
                 free(mask);
             }
         }
@@ -516,13 +514,13 @@ void File_selection::fill() {
     else {
         char *mask = GBS_global_string_copy("*%s", filter);
 
-        fill_fileselection_recursive(fulldir, strlen(fulldir)+1, mask, false, insert_dirs, DIR_show_hidden, cbs->filelist);
+        fill_fileselection_recursive(fulldir, strlen(fulldir)+1, mask, false, insert_dirs, DIR_show_hidden, filelist);
         free(mask);
     }
 
-    cbs->filelist->insert_default("", "");
-    cbs->filelist->sort(false, true);
-    cbs->filelist->update();
+    filelist->insert_default("", "");
+    filelist->sort(false, true);
+    filelist->update();
 
     free(name);
     free(fulldir);
@@ -544,15 +542,13 @@ static void fileselection_filename_changed_cb(AW_root*, File_selection *cbs) {
 }
 
 void File_selection::filename_changed() {
-    File_selection *cbs = this; // @@@ elim
-
-    AW_root *aw_root = cbs->awr;
-    char    *fname   = aw_root->awar(cbs->def_name)->read_string();
+    AW_root *aw_root = awr;
+    char    *fname   = aw_root->awar(def_name)->read_string();
 
 #if defined(TRACE_FILEBOX)
     printf("fileselection_filename_changed_cb:\n"
            "- fname='%s'\n", fname);
-    printf("- cbs->previous_filename='%s'\n", cbs->previous_filename);
+    printf("- previous_filename='%s'\n", previous_filename);
 #endif // TRACE_FILEBOX
 
     if (fname[0]) {
@@ -571,13 +567,13 @@ void File_selection::filename_changed() {
             }
         }
         if (browser_command) {
-            aw_root->awar(cbs->def_name)->write_string(fname); // re-write w/o browser_command
+            aw_root->awar(def_name)->write_string(fname); // re-write w/o browser_command
             execute_browser_command(browser_command);
-            aw_root->awar(cbs->def_dir)->touch(); // force reinit
+            aw_root->awar(def_dir)->touch(); // force reinit
         }
 
         char *newName = 0;
-        char *dir     = aw_root->awar(cbs->def_dir)->read_string();
+        char *dir     = aw_root->awar(def_dir)->read_string();
 
         if (fname[0] == '/' || fname[0] == '~') {
             newName = strdup(GB_canonical_path(fname));
@@ -590,7 +586,7 @@ void File_selection::filename_changed() {
                 else {
                     char *fulldir = 0;
 
-                    if (dir[0] == '.') fulldir = AW_unfold_path(cbs->pwd, dir);
+                    if (dir[0] == '.') fulldir = AW_unfold_path(pwd, dir);
                     else fulldir               = strdup(dir);
 
                     newName = strdup(GB_concat_full_path(fulldir, fname));
@@ -598,49 +594,49 @@ void File_selection::filename_changed() {
                 }
             }
             else {
-                newName = AW_unfold_path(cbs->pwd, fname);
+                newName = AW_unfold_path(pwd, fname);
             }
         }
 
         if (newName) {
             if (AW_is_dir(newName)) {
-                aw_root->awar(cbs->def_name)->write_string("");
-                aw_root->awar(cbs->def_dir)->write_string(newName);
-                if (cbs->previous_filename) {
-                    const char *slash              = strrchr(cbs->previous_filename, '/');
-                    const char *name               = slash ? slash+1 : cbs->previous_filename;
+                aw_root->awar(def_name)->write_string("");
+                aw_root->awar(def_dir)->write_string(newName);
+                if (previous_filename) {
+                    const char *slash              = strrchr(previous_filename, '/');
+                    const char *name               = slash ? slash+1 : previous_filename;
                     const char *with_previous_name = GB_concat_full_path(newName, name);
 
                     if (!AW_is_dir(with_previous_name)) { // write as new name if not a directory
-                        aw_root->awar(cbs->def_name)->write_string(with_previous_name);
+                        aw_root->awar(def_name)->write_string(with_previous_name);
                     }
                     else {
-                        freenull(cbs->previous_filename);
-                        aw_root->awar(cbs->def_name)->write_string(newName);
+                        freenull(previous_filename);
+                        aw_root->awar(def_name)->write_string(newName);
                     }
 
-                    freeset(newName, aw_root->awar(cbs->def_name)->read_string());
+                    freeset(newName, aw_root->awar(def_name)->read_string());
                 }
                 else {
-                    aw_root->awar(cbs->def_name)->write_string("");
+                    aw_root->awar(def_name)->write_string("");
                 }
             }
             else {
                 char *lslash = strrchr(newName, '/');
                 if (lslash) {
                     if (lslash == newName) { // root directory
-                        aw_root->awar(cbs->def_dir)->write_string("/"); // write directory part
+                        aw_root->awar(def_dir)->write_string("/"); // write directory part
                     }
                     else {
                         lslash[0] = 0;
-                        aw_root->awar(cbs->def_dir)->write_string(newName); // write directory part
+                        aw_root->awar(def_dir)->write_string(newName); // write directory part
                         lslash[0] = '/';
                     }
                 }
 
                 // now check the correct suffix :
                 {
-                    char *filter = aw_root->awar(cbs->def_filter)->read_string();
+                    char *filter = aw_root->awar(def_filter)->read_string();
                     if (filter[0]) {
                         char *pfilter = strrchr(filter, '.');
                         pfilter       = pfilter ? pfilter+1 : filter;
@@ -658,16 +654,16 @@ void File_selection::filename_changed() {
                 }
 
                 if (strcmp(newName, fname) != 0) {
-                    aw_root->awar(cbs->def_name)->write_string(newName); // loops back if changed !!!
+                    aw_root->awar(def_name)->write_string(newName); // loops back if changed !!!
                 }
 
-                freeset(cbs->previous_filename, newName);
+                freeset(previous_filename, newName);
             }
         }
         free(dir);
 
         if (strchr(fname, '*')) { // wildcard -> search for suffix
-            aw_root->awar(cbs->def_dir)->touch(); // force reinit
+            aw_root->awar(def_dir)->touch(); // force reinit
         }
     }
 
