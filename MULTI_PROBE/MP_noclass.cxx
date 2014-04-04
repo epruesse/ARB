@@ -882,4 +882,4 @@ void TEST_MP_get_comment_and_probes() {
     free(probes_only);
 }
 
-#endif
+#endif // UNIT_TESTS

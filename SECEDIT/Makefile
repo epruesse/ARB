@@ -440,6 +440,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_main.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
 SEC_main.o: $(ARBHOME)/INCLUDE/cb.h
 SEC_main.o: $(ARBHOME)/INCLUDE/cb_base.h
 SEC_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -447,7 +448,6 @@ SEC_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SEC_main.o: $(ARBHOME)/INCLUDE/downcast.h
 SEC_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_main.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
-SEC_main.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 SEC_main.o: $(ARBHOME)/INCLUDE/gccver.h
 SEC_main.o: $(ARBHOME)/INCLUDE/mode_text.h
 SEC_main.o: $(ARBHOME)/INCLUDE/smartptr.h

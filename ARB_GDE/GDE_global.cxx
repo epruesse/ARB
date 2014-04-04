@@ -12,12 +12,6 @@
 
 int  DataType;
 int  FileFormat;
-int  OVERWRITE    = FALSE;
-int  BlockInput   = FALSE;
-#ifdef SeeAlloc
-int  TotalCalloc  = 0;
-int  TotalRealloc = 0;
-#endif
 char FileName[80];
 
 // Months of the year

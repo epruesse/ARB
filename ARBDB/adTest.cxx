@@ -206,7 +206,7 @@ static void dump_internal(GBDATA *gbd, int *lines_allowed) {
     }
 }
 
-NOT4PERL void GB_dump(GBDATA *gbd) {
+NOT4PERL void GB_dump(GBDATA *gbd) { // used for debugging
     int max_lines = 2500;
     dump_internal(gbd, &max_lines);
     if (max_lines <= 0) {
@@ -215,7 +215,7 @@ NOT4PERL void GB_dump(GBDATA *gbd) {
     }
 }
 
-NOT4PERL void GB_dump_no_limit(GBDATA *gbd) {
+NOT4PERL void GB_dump_no_limit(GBDATA *gbd) { // used for debugging
     dump_internal(gbd, 0);
 }
 

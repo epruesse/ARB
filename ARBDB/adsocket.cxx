@@ -868,7 +868,7 @@ bool GB_host_is_local(const char *hostname) {
         ARB_stricmp(hostname, arb_gethostname()) == 0;
 }
 
-GB_ULONG GB_get_physical_memory() {
+static GB_ULONG get_physical_memory() {
     // Returns the physical available memory size in k available for one process
     static GB_ULONG physical_memsize = 0;
     if (!physical_memsize) {
@@ -962,7 +962,7 @@ static GB_ULONG parse_env_mem_definition(const char *env_override, GB_ERROR& err
 
             case '%':
                 factor = num/100.0;
-                num    = GB_get_physical_memory();
+                num    = get_physical_memory();
                 break;
 
             default: valid = false; break;
@@ -1008,7 +1008,7 @@ GB_ULONG GB_get_usable_memory() {
             GB_informationf("Note: Setting envar ARB_MEMORY will override that restriction (percentage or absolute memsize)");
         }
         useable_memory = env_memory;
-        gb_assert(useable_memory>0 && useable_memory<GB_get_physical_memory());
+        gb_assert(useable_memory>0 && useable_memory<get_physical_memory());
     }
     return useable_memory;
 }
@@ -1489,7 +1489,7 @@ void TEST_gbcm_get_m_id() {
         free(arb_not_cano);                                             \
     } while (0)
 
-arb_test::match_expectation path_splits_into(const char *path, const char *Edir, const char *Enameext, const char *Ename, const char *Eext) {
+static arb_test::match_expectation path_splits_into(const char *path, const char *Edir, const char *Enameext, const char *Ename, const char *Eext) {
     using namespace arb_test;
     expectation_group expected;
 
@@ -1512,7 +1512,7 @@ arb_test::match_expectation path_splits_into(const char *path, const char *Edir,
 #define TEST_EXPECT_PATH_SPLITS_INTO(path,dir,nameext,name,ext)         TEST_EXPECTATION(path_splits_into(path,dir,nameext,name,ext))
 #define TEST_EXPECT_PATH_SPLITS_INTO__BROKEN(path,dir,nameext,name,ext) TEST_EXPECTATION__BROKEN(path_splits_into(path,dir,nameext,name,ext))
 
-arb_test::match_expectation path_splits_reversible(const char *path) {
+static arb_test::match_expectation path_splits_reversible(const char *path) {
     using namespace arb_test;
     expectation_group expected;
 
@@ -1687,19 +1687,19 @@ void TEST_GB_remove_on_exit() {
 void TEST_some_paths() {
     gb_getenv_hook old = GB_install_getenv_hook(arb_test::fakeenv);
     {
-        // ../UNIT_TESTER/run/fakehome
+        // ../UNIT_TESTER/run/homefake
 
-        TEST_EXPECT_CONTAINS__BROKEN(GB_getenvHOME(), "/UNIT_TESTER/run/fakehome"); // GB_getenvHOME() ignores the hook
+        TEST_EXPECT_CONTAINS__BROKEN(GB_getenvHOME(), "/UNIT_TESTER/run/homefake"); // GB_getenvHOME() ignores the hook
         // @@@ this is a general problem - unit tested code cannot use GB_getenvHOME() w/o problems
 
-        TEST_EXPECT_CONTAINS(GB_getenvARB_PROP(), "/UNIT_TESTER/run/fakehome/.arb_prop");
+        TEST_EXPECT_CONTAINS(GB_getenvARB_PROP(), "/UNIT_TESTER/run/homefake/.arb_prop");
         TEST_EXPECT_CONTAINS(GB_getenvARBMACRO(), "/lib/macros");
 
-        TEST_EXPECT_CONTAINS(GB_getenvARBCONFIG(),    "/UNIT_TESTER/run/fakehome/.arb_prop/cfgSave");
-        TEST_EXPECT_CONTAINS(GB_getenvARBMACROHOME(), "/UNIT_TESTER/run/fakehome/.arb_prop/macros");  // works in [11068]
+        TEST_EXPECT_CONTAINS(GB_getenvARBCONFIG(),    "/UNIT_TESTER/run/homefake/.arb_prop/cfgSave");
+        TEST_EXPECT_CONTAINS(GB_getenvARBMACROHOME(), "/UNIT_TESTER/run/homefake/.arb_prop/macros");  // works in [11068]
     }
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }
 
-#endif
+#endif // UNIT_TESTS
 

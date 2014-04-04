@@ -32,7 +32,7 @@ void GB_set_verbose() {
 // ---------------------------------------------------
 //      helper code to read ascii file in portions
 
-#ifdef UNIT_TESTS
+#ifdef UNIT_TESTS // UT_DIFF
 #define READING_BUFFER_SIZE 100
 #else
 #define READING_BUFFER_SIZE (1024*32)
@@ -597,18 +597,26 @@ static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbc) {
 // --------------------------
 //      Read binary files
 
-static long gb_recover_corrupt_file(GBCONTAINER *gbc, FILE *in, GB_ERROR recovery_reason) {
+static long gb_recover_corrupt_file(GBCONTAINER *gbc, FILE *in, GB_ERROR recovery_reason, bool loading_quick_save) {
     // search pattern dx xx xx xx string 0
+    // returns 0 if recovery was able to resync
     static FILE *old_in = 0;
     static unsigned char *file = 0;
     static long size = 0;
     if (!GBCONTAINER_MAIN(gbc)->allow_corrupt_file_recovery) {
         if (!recovery_reason) { recovery_reason = GB_await_error(); }
-        GB_export_errorf("Aborting recovery (because recovery mode is disabled)\n"
-                         "Error causing recovery: '%s'\n"
-                         "Part of data may be recovered using 'arb_repair yourDB.arb newName.arb'\n"
-                         "(Note: Recovery doesn't work if the error occurs while loading a quick save file)",
-                         recovery_reason);
+        char       *reason         = strdup(recovery_reason);
+        const char *located_reason = GBS_global_string("%s (inside '%s')", reason, GB_get_db_path(gbc));
+
+        if (loading_quick_save) {
+            GB_export_error(located_reason);
+        }
+        else {
+            GB_export_errorf("%s\n"
+                             "(parts of your database might be recoverable using 'arb_repair yourDB.arb newName.arb')\n",
+                             located_reason);
+        }
+        free(reason);
         return -1;
     }
     long pos = ftell(in);
@@ -660,6 +668,8 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
         nitems = 10000000; // read forever at highest level
     }
 
+    bool is_quicksave = version != 1;
+
     for (long item = 0; item<nitems; item++) {
         long type = getc(in);
         DEBUG_DUMP_INDENTED(deep, GBS_global_string("Item #%li/%li type=%02lx (filepos=%08lx)", item+1, nitems, type, ftell(in)-1));
@@ -675,7 +685,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
         if (!type) {
             int func;
             if (version == 1) { // master file
-                if (gb_recover_corrupt_file(gbc_dest, in, "Unknown DB type 0 (DB version=1)")) return -1;
+                if (gb_recover_corrupt_file(gbc_dest, in, "Unknown DB type 0 (DB version=1)", is_quicksave)) return -1;
                 continue;
             }
             func = getc(in);
@@ -698,7 +708,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                     break;
                 }
                 default:
-                    if (gb_recover_corrupt_file(gbc_dest, in, GBS_global_string("Unknown func=%i", func))) return -1;
+                    if (gb_recover_corrupt_file(gbc_dest, in, GBS_global_string("Unknown func=%i", func), is_quicksave)) return -1;
                     continue;
             }
             continue;
@@ -709,8 +719,9 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
         GBQUARK key      = (GBQUARK)gb_get_number(in);
 
         if (key >= Main->keycnt || !Main->keys[key].key) {
-            GB_export_error("Inconsistent Database: Changing field identifier to 'main'");
-            key = 0;
+            const char *reason = GBS_global_string("database entry with unknown field quark %i", key);
+            if (gb_recover_corrupt_file(gbc_dest, in, reason, is_quicksave)) return -1;
+            continue;
         }
 
         DEBUG_DUMP_INDENTED(deep, GBS_global_string("key='%s' type2=%li", Main->keys[key].key, type2));
@@ -850,7 +861,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
                 break;
             default:
                 gb_read_bin_error(in, gbd, "Unknown type");
-                if (gb_recover_corrupt_file(gbc_dest, in, NULL)) {
+                if (gb_recover_corrupt_file(gbc_dest, in, NULL, is_quicksave)) {
                     return GBCONTAINER_MAIN(gbc_dest)->allow_corrupt_file_recovery
                         ? 0                         // loading stopped
                         : -1;
@@ -1445,7 +1456,10 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                         }
                         else {
                             gbc   = 0;
-                            error = GB_await_error();
+                            error = GBS_global_string("Failed to load database '%s'\n"
+                                                      "Reason: %s",
+                                                      path,
+                                                      GB_await_error());
                         }
                     }
 
@@ -1477,7 +1491,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
 
                                 if (err) {
                                     err_msg = GBS_global_string("Loading failed (file corrupt?)\n"
-                                                                "[Fail-Reason: '%s']\n",
+                                                                "[Fail-Reason: '%s']",
                                                                 GB_await_error());
                                 }
                             }
@@ -1739,4 +1753,4 @@ void TEST_GBDATA_size() {
 #endif
 }
 
-#endif
+#endif // UNIT_TESTS

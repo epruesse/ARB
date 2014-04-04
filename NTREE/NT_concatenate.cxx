@@ -61,7 +61,7 @@ inline char *get_alitype_eval(AW_root *aw_root) {
     return GBS_global_string_copy("%s=", aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_char_pntr()); 
 }
 
-void alitype_changed_cb(AW_root *aw_root, AW_CL cl_db_sel) {
+static void alitype_changed_cb(AW_root *aw_root, AW_CL cl_db_sel) {
     AW_DB_selection *db_sel   = (AW_DB_selection*)cl_db_sel;
     char            *ali_type = get_alitype_eval(aw_root);
     awt_reconfigure_selection_list_on_alignments(db_sel, ali_type);

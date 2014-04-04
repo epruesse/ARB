@@ -313,10 +313,6 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
 
 }
 
-void ReadArbdb_plain(char */*filename*/, NA_Alignment *dataset, int /*type*/) {
-    ReadArbdb(dataset, true, NULL, COMPRESS_NONE, false, BASIC_TYPEINFO);
-}
-
 int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) {
     dataset->gb_main = db_access.gb_main;
 
@@ -347,8 +343,6 @@ int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress
 
     return 0;
 }
-
-
 
 int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) {
     dataset->gb_main = db_access.gb_main;

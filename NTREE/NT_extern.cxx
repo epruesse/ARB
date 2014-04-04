@@ -208,7 +208,10 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     create_trees_var(awr, def);
     DBUI::create_dbui_awars(awr, def);
     AP_create_consensus_var(awr, def);
-    GDE_create_var(awr, def, GLOBAL.gb_main);
+    {
+        GB_ERROR gde_err = GDE_create_var(awr, def, GLOBAL.gb_main, 0, GDE_WINDOWTYPE_DEFAULT, 0);
+        if (gde_err) GBK_terminatef("Fatal: %s", gde_err);
+    }
     NT_create_transpro_variables(awr, def);
     NT_create_resort_awars(awr, def);
     NT_create_trackAliChanges_Awars(awr, GLOBAL.gb_main);
@@ -1496,7 +1499,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->insert_sub_menu("GDE specials", "G", AWM_EXP);
             {
-                GDE_load_menu(awm, AWM_EXP, 0, 0);
+                GDE_load_menu(awm, AWM_EXP, NULL);
             }
             awm->close_sub_menu();
 

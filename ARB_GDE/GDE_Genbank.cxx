@@ -63,205 +63,201 @@ static void AsciiTime(void *b, char *asciitime)
 }
 // ENDARB
 
-void ReadGen(char *filename, NA_Alignment *dataset) {
-    int     done               = FALSE;
-    size_t  len                = 0;
-    size_t  j                  = 0;
-    int     IS_REALLY_AA = FALSE;
-    char    in_line[GBUFSIZ], c;
-    char   *buffer             = 0, *gencomments = NULL, fields[8][GBUFSIZ];
-    size_t  buflen             = 0;
-    int     genclen            = 0, curelem = 0, n = 0;
-    int     start_col          = -1;
+GB_ERROR ReadGen(char *filename, NA_Alignment *dataset) {
+    GB_ERROR  error = NULL;
+    FILE     *file  = fopen(filename, "r");
+    if (!file) {
+        error = GB_IO_error("reading", filename);
+    }
+    else {
+        int     done         = FALSE;
+        size_t  len          = 0;
+        int     IS_REALLY_AA = FALSE;
+        char    in_line[GBUFSIZ], c;
+        char   *buffer       = 0, *gencomments = NULL, fields[8][GBUFSIZ];
+        size_t  buflen       = 0;
+        int     genclen      = 0, curelem = 0, n = 0;
+        int     start_col    = -1;
 
-    NA_Sequence *this_elem = 0;
-    FILE *file;
+        NA_Sequence *this_elem = 0;
 
-    ErrorOut5(0 != (file = fopen(filename, "r")), "No such file");
-
-    for (; fgets(in_line, GBUFSIZ, file) != 0;)
-    {
-        if (in_line[strlen(in_line)-1] == '\n')
-            in_line[strlen(in_line)-1] = '\0';
-        if (Find(in_line, "LOCUS"))
+        for (; fgets(in_line, GBUFSIZ, file) != 0;)
         {
-            curelem = dataset->numelements++;
-            if (curelem == 0)
+            if (in_line[strlen(in_line)-1] == '\n')
+                in_line[strlen(in_line)-1] = '\0';
+            if (Find(in_line, "LOCUS"))
             {
-                dataset->element=(NA_Sequence*)
-                    Calloc(5, sizeof(NA_Sequence));
-                dataset->maxnumelements = 5;
-            }
-            else if (curelem==dataset->maxnumelements)
-            {
-                (dataset->maxnumelements) *= 2;
-                dataset->element = (NA_Sequence*)
-                    Realloc((char*)dataset->element,
-                            dataset->maxnumelements * sizeof(NA_Sequence));
-            }
-            this_elem = &(dataset->element[curelem]);
-            n = sscanf(in_line, "%s %s %s %s %s %s %s %s",
-                       fields[0], fields[1], fields[2], fields[3], fields[4],
-                       fields[5], fields[6], fields[7]);
-            if (IS_REALLY_AA)
-            {
-                InitNASeq(this_elem, PROTEIN);
-            }
-            else if (Find(in_line, "DNA"))
-            {
-                InitNASeq(this_elem, DNA);
-            }
-            else if (Find(in_line, "RNA"))
-            {
-                InitNASeq(this_elem, RNA);
-            }
-            else if (Find(in_line, "MASK"))
-            {
-                InitNASeq(this_elem, MASK);
-            }
-            else if (Find(in_line, "TEXT"))
-            {
-                InitNASeq(this_elem, TEXT);
-            }
-            else if (Find(in_line, "PROT"))
-            {
-                InitNASeq(this_elem, PROTEIN);
-            }
-            else
-                InitNASeq(this_elem, DNA);
-
-            strncpy_terminate(this_elem->short_name, fields[1], SIZE_SHORT_NAME);
-            AsciiTime(&(this_elem->t_stamp.origin), fields[n-1]);
-            this_elem->attr = DEFAULT_X_ATTR;
-
-            if (Find(in_line, "Circular"))
-                this_elem->attr |= IS_CIRCULAR;
-
-            gencomments = NULL;
-            genclen = 0;
-        }
-        else if (Find(in_line, "DEFINITION"))
-            strncpy_terminate(this_elem->description, in_line+12, SIZE_DESCRIPTION);
-
-        else if (Find(in_line, "AUTHOR"))
-            strncpy_terminate(this_elem->authority, in_line+12, SIZE_AUTHORITY);
-
-        else if (Find(in_line, "  ORGANISM"))
-            strncpy_terminate(this_elem->seq_name, in_line+12, SIZE_SEQ_NAME);
-
-        else if (Find(in_line, "ACCESSION"))
-            strncpy_terminate(this_elem->id, in_line+12, SIZE_ID); 
-
-        else if (Find(in_line, "ORIGIN"))
-        {
-            done = FALSE;
-            len = 0;
-            for (; done == FALSE && fgets(in_line, GBUFSIZ, file) != 0;)
-            {
-                if (in_line[0] != '/')
+                curelem = dataset->numelements++;
+                if (curelem == 0)
                 {
-                    if (buflen == 0)
-                    {
-                        buflen = GBUFSIZ;
-                        buffer = Calloc(sizeof(char), buflen);
-                    }
+                    dataset->element=(NA_Sequence*) Calloc(5, sizeof(NA_Sequence));
+                    dataset->maxnumelements = 5;
+                }
+                else if (curelem==dataset->maxnumelements)
+                {
+                    (dataset->maxnumelements) *= 2;
+                    dataset->element = (NA_Sequence*) Realloc((char*)dataset->element, dataset->maxnumelements * sizeof(NA_Sequence));
+                }
+                this_elem = &(dataset->element[curelem]);
+                n = sscanf(in_line, "%s %s %s %s %s %s %s %s",
+                           fields[0], fields[1], fields[2], fields[3], fields[4],
+                           fields[5], fields[6], fields[7]);
+                if (IS_REALLY_AA)
+                {
+                    InitNASeq(this_elem, PROTEIN);
+                }
+                else if (Find(in_line, "DNA"))
+                {
+                    InitNASeq(this_elem, DNA);
+                }
+                else if (Find(in_line, "RNA"))
+                {
+                    InitNASeq(this_elem, RNA);
+                }
+                else if (Find(in_line, "MASK"))
+                {
+                    InitNASeq(this_elem, MASK);
+                }
+                else if (Find(in_line, "TEXT"))
+                {
+                    InitNASeq(this_elem, TEXT);
+                }
+                else if (Find(in_line, "PROT"))
+                {
+                    InitNASeq(this_elem, PROTEIN);
+                }
+                else
+                    InitNASeq(this_elem, DNA);
 
-                    else if (len+strlen(in_line) >= buflen)
+                strncpy_terminate(this_elem->short_name, fields[1], SIZE_SHORT_NAME);
+                AsciiTime(&(this_elem->t_stamp.origin), fields[n-1]);
+                this_elem->attr = DEFAULT_X_ATTR;
+
+                if (Find(in_line, "Circular"))
+                    this_elem->attr |= IS_CIRCULAR;
+
+                gencomments = NULL;
+                genclen = 0;
+            }
+            else if (Find(in_line, "DEFINITION"))
+                strncpy_terminate(this_elem->description, in_line+12, SIZE_DESCRIPTION);
+
+            else if (Find(in_line, "AUTHOR"))
+                strncpy_terminate(this_elem->authority, in_line+12, SIZE_AUTHORITY);
+
+            else if (Find(in_line, "  ORGANISM"))
+                strncpy_terminate(this_elem->seq_name, in_line+12, SIZE_SEQ_NAME);
+
+            else if (Find(in_line, "ACCESSION"))
+                strncpy_terminate(this_elem->id, in_line+12, SIZE_ID);
+
+            else if (Find(in_line, "ORIGIN"))
+            {
+                done = FALSE;
+                len = 0;
+                for (; done == FALSE && fgets(in_line, GBUFSIZ, file) != 0;)
+                {
+                    if (in_line[0] != '/')
                     {
-                        buflen += GBUFSIZ;
-                        buffer = Realloc((char*)buffer, sizeof(char)*buflen);
-                        for (j=buflen-GBUFSIZ
-                                ; j<buflen; j++)
-                            buffer[j] = '\0';
-                    }
-                    // Search for the fist column of data (whitespace-number-whitespace)data
-                    if (start_col == -1)
-                    {
-                        for (start_col=0; in_line[start_col] == ' ' || in_line[start_col] == '\t'; start_col++) ;
-                        for (start_col++; strchr("1234567890", in_line[start_col]) != NULL; start_col++) ;
-                        for (start_col++; in_line[start_col] == ' ' || in_line[start_col] == '\t'; start_col++) ;
-                    }
-                    for (j=start_col; (c = in_line[j]) != '\0'; j++)
-                    {
-                        if ((c != '\n') && ((j-start_col + 1) % 11 != 0)) {
-                            buffer[len++] = c;
+                        if (buflen == 0)
+                        {
+                            buflen = GBUFSIZ;
+                            buffer = Calloc(sizeof(char), buflen);
+                        }
+
+                        else if (len+strlen(in_line) >= buflen)
+                        {
+                            buflen += GBUFSIZ;
+                            buffer = Realloc((char*)buffer, sizeof(char)*buflen);
+                            for (size_t j=buflen-GBUFSIZ ; j<buflen; j++) buffer[j] = '\0';
+                        }
+                        // Search for the fist column of data (whitespace-number-whitespace)data
+                        if (start_col == -1)
+                        {
+                            for (start_col=0; in_line[start_col] == ' ' || in_line[start_col] == '\t'; start_col++) ;
+                            for (start_col++; strchr("1234567890", in_line[start_col]) != NULL; start_col++) ;
+                            for (start_col++; in_line[start_col] == ' ' || in_line[start_col] == '\t'; start_col++) ;
+                        }
+                        for (int j=start_col; (c = in_line[j]) != '\0'; j++)
+                        {
+                            if ((c != '\n') && ((j-start_col + 1) % 11 != 0)) {
+                                buffer[len++] = c;
+                            }
                         }
                     }
+                    else
+                    {
+                        AppendNA((NA_Base*)buffer, len, &(dataset->
+                                                          element[curelem]));
+                        for (size_t j=0; j<len; j++) buffer[j] = '\0';
+                        len = 0;
+                        done = TRUE;
+                        dataset->element[curelem].comments = gencomments;
+                        dataset->element[curelem].comments_len= genclen - 1;
+                        dataset->element[curelem].comments_maxlen = genclen;
+
+                        gencomments = NULL;
+                        genclen = 0;
+                    }
+                }
+                /* Test if sequence should be converted by the translation table
+                 * If it looks like a protein...
+                 */
+                if (dataset->element[curelem].rmatrix &&
+                    IS_REALLY_AA == FALSE)
+                {
+                    IS_REALLY_AA = CheckType((char*)dataset->element[curelem].
+                                             sequence, dataset->element[curelem].seqlen);
+
+                    if (IS_REALLY_AA == FALSE)
+                        Ascii2NA((char*)dataset->element[curelem].sequence,
+                                 dataset->element[curelem].seqlen,
+                                 dataset->element[curelem].rmatrix);
+                    else {
+                        // Force the sequence to be AA
+                        dataset->element[curelem].elementtype = PROTEIN;
+                        dataset->element[curelem].rmatrix = NULL;
+                        dataset->element[curelem].tmatrix = NULL;
+                        dataset->element[curelem].col_lut = Default_PROColor_LKUP;
+                    }
+                }
+            }
+            else if (Find(in_line, "ZZZZZ"))
+            {
+                Cfree(gencomments);
+                genclen = 0;
+            }
+            else
+            {
+                if (gencomments == NULL)
+                {
+                    gencomments = strdup(in_line);
+                    genclen = strlen(gencomments)+1;
                 }
                 else
                 {
-                    AppendNA((NA_Base*)buffer, len, &(dataset->
-                                                    element[curelem]));
-                    for (j=0; j<len; j++)
-                        buffer[j] = '\0';
-                    len = 0;
-                    done = TRUE;
-                    dataset->element[curelem].comments
-                        = gencomments;
-                    dataset->element[curelem].comments_len=
-                        genclen - 1;
-                    dataset->element[curelem].
-                        comments_maxlen = genclen;
-
-                    gencomments = NULL;
-                    genclen = 0;
-                }
-            }
-            /* Test if sequence should be converted by the translation table
-             * If it looks like a protein...
-             */
-            if (dataset->element[curelem].rmatrix &&
-               IS_REALLY_AA == FALSE)
-            {
-                IS_REALLY_AA = CheckType((char*)dataset->element[curelem].
-                                         sequence, dataset->element[curelem].seqlen);
-
-                if (IS_REALLY_AA == FALSE)
-                    Ascii2NA((char*)dataset->element[curelem].sequence,
-                             dataset->element[curelem].seqlen,
-                             dataset->element[curelem].rmatrix);
-                else {
-                    // Force the sequence to be AA
-                    dataset->element[curelem].elementtype = PROTEIN;
-                    dataset->element[curelem].rmatrix = NULL;
-                    dataset->element[curelem].tmatrix = NULL;
-                    dataset->element[curelem].col_lut = Default_PROColor_LKUP;
+                    genclen += strlen(in_line)+1;
+                    gencomments = Realloc((char*)gencomments, genclen * sizeof(char));
+                    strncat(gencomments, in_line, GBUFSIZ);
+                    strncat(gencomments, "\n", GBUFSIZ);
                 }
             }
         }
-        else if (Find(in_line, "ZZZZZ"))
-        {
-            Cfree(gencomments);
-            genclen = 0;
-        }
-        else
-        {
-            if (gencomments == NULL)
-            {
-                gencomments = strdup(in_line);
-                genclen = strlen(gencomments)+1;
-            }
-            else
-            {
-                genclen += strlen(in_line)+1;
-                gencomments = Realloc((char*)gencomments, genclen * sizeof(char));
-                strncat(gencomments, in_line, GBUFSIZ);
-                strncat(gencomments, "\n", GBUFSIZ);
-            }
-        }
+        Cfree(buffer);
+        fclose(file);
     }
-    Cfree(buffer);
-    fclose(file);
-    for (j=0; j<dataset->numelements; j++)
+    for (size_t j=0; j<dataset->numelements; j++) {
         dataset->maxlen = std::max(dataset->maxlen,
                                    dataset->element[j].seqlen+dataset->element[j].offset);
+    }
+    return error;
 }
 
-int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
+int WriteGen(NA_Alignment *aln, char *filename, int method)
 {
     int i;
     size_t j;
-    int k, mask = -1;
+    int k;
     FILE *file;
     NA_Sequence *this_elem;
     char c;
@@ -274,18 +270,10 @@ int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
         return (1);
     }
 
-    if (maskable && method != SELECT_REGION)
-        for (j=0; j<aln->numelements; j++)
-            if (aln->element[j].elementtype == MASK &&
-               aln->element[j].selected)
-                mask = j;
-
     for (j=0; j<aln->numelements; j++)
     {
         this_elem = &(aln->element[j]);
-        if ((aln->element[j].selected && (int)j!=mask && method != SELECT_REGION)
-            ||(aln->element[j].subselected && method == SELECT_REGION)
-            || (method == ALL))
+        if (method == ALL)
         {
             fprintf(file,
                     "LOCUS       %10s%8d bp    %4s  %10s   %2d%5s%4d\n",
@@ -313,95 +301,27 @@ int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable)
             fprintf(file, "ORIGIN");
             if (this_elem->tmatrix)
             {
-                if (mask == -1)
+                for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
                 {
-                    for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        if (method == SELECT_REGION)
-                        {
-                            if (aln->selection_mask[k] == '1')
-                            {
-                                if (i%60 == 0)
-                                    fprintf(file, "\n%9d", i+1);
-                                if (i%10 == 0)
-                                    fprintf(file, " ");
-                                fprintf(file, "%c", this_elem->tmatrix
-                                        [getelem(this_elem, k)]);
-                                i++;
-                            }
-                        }
-                        else
-                        {
-                            if (i%60 == 0)
-                                fprintf(file, "\n%9d", i+1);
-                            if (i%10 == 0)
-                                fprintf(file, " ");
-                            fprintf(file, "%c", this_elem->tmatrix
-                                    [getelem(this_elem, k)]);
-                            i++;
-                        }
-                    }
-                }
-                else
-                {
-                    for (k=0; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        c = (char)getelem(&(aln->element[mask]), k);
-                        if (c != '0' && c != '-')
-                        {
-                            if (k%60 == 0)
-                                fprintf(file, "\n%9d", k+1);
-                            if (k%10 == 0)
-                                fprintf(file, " ");
-                            fprintf(file, "%c", this_elem->tmatrix
-                                    [getelem(this_elem, k)]);
-                        }
-                    }
+                    if (i%60 == 0)
+                        fprintf(file, "\n%9d", i+1);
+                    if (i%10 == 0)
+                        fprintf(file, " ");
+                    fprintf(file, "%c", this_elem->tmatrix
+                            [getelem(this_elem, k)]);
+                    i++;
                 }
             }
             else
             {
-                if (mask == -1)
+                for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
                 {
-                    for (i=0, k=0; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        if (method == SELECT_REGION)
-                        {
-                            if (aln->selection_mask[k] == '1')
-                            {
-                                if (i%60 == 0)
-                                    fprintf(file, "\n%9d", i+1);
-                                if (i%10 == 0)
-                                    fprintf(file, " ");
-                                fprintf(file, "%c", getelem(this_elem, k));
-                                i++;
-                            }
-                        }
-                        else
-                        {
-                            if (i%60 == 0)
-                                fprintf(file, "\n%9d", i+1);
-                            if (i%10 == 0)
-                                fprintf(file, " ");
-                            fprintf(file, "%c", getelem(this_elem, k));
-                            i++;
-                        }
-                    }
-                }
-                else
-                {
-                    for (k=0; k<this_elem->seqlen+this_elem->offset; k++)
-                    {
-                        c = (char)getelem(&(aln->element[mask]), k);
-                        if (c != '0' && c != '-')
-                        {
-                            if (k%60 == 0)
-                                fprintf(file, "\n%9d", k+1);
-                            if (k%10 == 0)
-                                fprintf(file, " ");
-                            fprintf(file, "%c", getelem(this_elem, k));
-                        }
-                    }
+                    if (i%60 == 0)
+                        fprintf(file, "\n%9d", i+1);
+                    if (i%10 == 0)
+                        fprintf(file, " ");
+                    fprintf(file, "%c", getelem(this_elem, k));
+                    i++;
                 }
             }
             fprintf(file, "\n//\n");

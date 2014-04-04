@@ -329,4 +329,4 @@ void TEST_nuc_groups() {
     }
 }
 
-#endif
+#endif // UNIT_TESTS

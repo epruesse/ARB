@@ -19,44 +19,37 @@
 
 char *GDE_makeawarname(GmenuItem *gmenuitem, long i);
 char *GDE_maketmpawarname(GmenuItem *gmenuitem, long i);
-void GDE_load_menu(AW_window *awm, AW_active dummy_1x, const char *menulabel, const char *menuitemlabel);
-void GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data);
+void GDE_load_menu(AW_window *awm, AW_active dummy_1x, const char *menulabel);
+GB_ERROR GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data);
 
 /* GDE_FileIO.cxx */
 void Regroup(NA_Alignment *alignment);
-void ErrorOut5(int code, const char *string);
 char *Calloc(int count, int size);
 char *Realloc(char *block, int size);
 void Cfree(char *block);
 void LoadData(char *filen);
 void AppendNA(NA_Base *buffer, int len, NA_Sequence *seq);
 void Ascii2NA(char *buffer, int len, int matrix[16]);
-int WriteNA_Flat(NA_Alignment *aln, char *filename, int method, int maskable);
+int WriteNA_Flat(NA_Alignment *aln, char *filename, int method);
 void Warning(const char *s);
 void InitNASeq(NA_Sequence *seq, int type);
-void ReadCMask(const char *filename);
-int WriteStatus(NA_Alignment *aln, char *filename);
 void NormalizeOffset(NA_Alignment *aln);
-int WriteCMask(NA_Alignment *aln, char *filename, int method, int maskable);
 
 /* GDE_Genbank.cxx */
-void ReadGen(char *filename, NA_Alignment *dataset);
-int WriteGen(NA_Alignment *aln, char *filename, int method, int maskable);
+GB_ERROR ReadGen(char *filename, NA_Alignment *dataset);
+int WriteGen(NA_Alignment *aln, char *filename, int method);
 void SetTime(void *b);
 
 /* GDE_HGLfile.cxx */
-void ReadGDE(char *filename, NA_Alignment *dataset);
-int WriteGDE(NA_Alignment *aln, char *filename, int method, int maskable);
-void SeqNorm(NA_Sequence *seq);
+int WriteGDE(NA_Alignment *aln, char *filename, int method);
 char *uniqueID(void);
 
 /* GDE_ParseMenu.cxx */
-void ParseMenu(void);
+GB_ERROR LoadMenus(void);
 int Find(const char *target, const char *key);
 int Find2(const char *target, const char *key);
-void Error(const char *msg) __ATTR__NORETURN;
-void ParseError(const char *msg, const char *filename, int linenr) __ATTR__NORETURN;
-void crop(char *input, char *head, char *tail);
+void throwError(const char *msg) __ATTR__NORETURN;
+void splitEntry(const char *input, char *head, char *tail);
 
 /* GDE_arbdb_io.cxx */
 
@@ -64,7 +57,6 @@ void crop(char *input, char *head, char *tail);
 #include "GDE_extglob.h"
 #endif
 
-void ReadArbdb_plain(char *, NA_Alignment *dataset, int dummy_1x);
 int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo);
 int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo);
 int getelem(NA_Sequence *a, int b);

@@ -126,9 +126,6 @@ long GBS_write_hash(GB_HASH *hs, const char *key, long val);
 long GBS_write_hash_no_strdup(GB_HASH *hs, char *key, long val);
 long GBS_incr_hash(GB_HASH *hs, const char *key);
 void GBS_free_hash(GB_HASH *hs);
-void GBS_clear_hash_statistic_summary(const char *id);
-void GBS_print_hash_statistic_summary(const char *id);
-void GBS_calc_hash_statistic(const GB_HASH *hs, const char *id, int print);
 void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data);
 void GBS_hash_do_const_loop(const GB_HASH *hs, gb_hash_const_loop_type func, void *client_data);
 size_t GBS_hash_count_elems(const GB_HASH *hs);
@@ -211,7 +208,6 @@ long GB_number_of_marked_subentries(GBDATA *gbd);
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring);
 GBDATA *GB_following_marked(GBDATA *gbd, const char *keystring, size_t skip_over);
 GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring);
-char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDATA *gbd, const char *default_tree_name);
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name);
 
 /* adsocket.cxx */
@@ -236,7 +232,6 @@ GB_CSTR GB_getenvHTMLDOCPATH(void);
 NOT4PERL gb_getenv_hook GB_install_getenv_hook(gb_getenv_hook hook);
 GB_CSTR GB_getenv(const char *env);
 bool GB_host_is_local(const char *hostname);
-GB_ULONG GB_get_physical_memory(void);
 GB_ULONG GB_get_usable_memory(void);
 GB_ERROR GB_xterm(void) __ATTR__USERESULT;
 GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT_TODO;
@@ -291,7 +286,7 @@ GB_ERROR GB_set_dictionary(GBDATA *gb_main, const char *key, const DictData *dd)
 char *GB_arbtcpdat_path(void);
 const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam);
 
-#ifdef UNIT_TESTS
+#ifdef UNIT_TESTS // UT_DIFF
 #define TEST_SERVER_ID (-666)
 #define TEST_GENESERVER_ID (-667)
 #endif

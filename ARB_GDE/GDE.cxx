@@ -387,14 +387,13 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
 
 
-void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel, const char *menuitemlabel) {
+void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
     // Load GDE menu items.
     //
     // If 'menulabel' == NULL -> load all menus
     // Else                   -> load specified menu
     //
-    // If 'menuitemlabel' == NULL -> load complete menu(s)
-    // Else                       -> load only specific menu topic
+    // Always loads complete menu(s).
 
     gde_assert(db_access.gb_main); // forgot to call GDE_create_var() ?
 
@@ -421,15 +420,14 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel, co
         long num_items = menu[nmenu].numitems;
         for (long nitem=0; nitem<num_items; nitem++) {
             GmenuItem *menuitem=&menu[nmenu].item[nitem];
-            if (!menuitemlabel || strcmp(menuitem->label, menuitemlabel) == 0) {
-                itemloaded = true;
-                gde_assert(!menuitem->help || ARB_strBeginsWith(menuitem->help, "agde_"));
-                hotkey[0] = menuitem->meta;
-                awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey,
-                                       menuitem->help, menuitem->active_mask,
-                                       AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)menuitem);
-            }
+            itemloaded = true;
+            gde_assert(!menuitem->help || ARB_strBeginsWith(menuitem->help, "agde_"));
+            hotkey[0] = menuitem->meta;
+            awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey,
+                                   menuitem->help, menuitem->active_mask,
+                                   AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)menuitem);
         }
+
         if (!menulabel) {
             awm->close_sub_menu();
         }
@@ -438,25 +436,11 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel, co
     if (!menuloaded && menulabel) {
         fprintf(stderr, "GDE-Warning: Could not find requested menu '%s'\n", menulabel);
     }
-    if (!itemloaded && menuitemlabel) {
-        if (menulabel) {
-            fprintf(stderr, "GDE-Warning: Could not find requested topic '%s' in menu '%s'\n", menuitemlabel, menulabel);
-        }
-        else {
-            fprintf(stderr, "GDE-Warning: Could not find requested topic '%s'\n", menuitemlabel);
-        }
-    }
 }
 
 struct gde_database_access db_access = { NULL, GDE_WINDOWTYPE_DEFAULT, 0, NULL};
 
-void GDE_create_var(AW_root              *aw_root,
-                    AW_default            aw_def,
-                    GBDATA               *gb_main,
-                    GDE_get_sequences_cb  get_sequences,
-                    gde_window_type       window_type,
-                    AW_CL                 client_data)
-{
+GB_ERROR GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data) {
     db_access.get_sequences = get_sequences;
     db_access.window_type   = window_type;
     db_access.client_data   = client_data;
@@ -500,6 +484,6 @@ void GDE_create_var(AW_root              *aw_root,
 
     DataSet = (NA_Alignment *) Calloc(1, sizeof(NA_Alignment));
     DataSet->rel_offset = 0;
-    ParseMenu();
+    return LoadMenus();
 }
 
