@@ -266,7 +266,7 @@ static int will_convert(int from) {
     return will;
 }
 
-void TEST_converter() {
+void TEST_SLOW_converter() {
     STATIC_ASSERT(FORMATNUM_COUNT == fcount);
 
     init_cap();
