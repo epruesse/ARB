@@ -452,7 +452,7 @@ void File_selection::fill() {
         }
 
         if (filter[0] && !is_wildcard) {
-            filelist->insert(GBS_global_string("! \' Search for\'     (*%s)", filter), "*");
+            filelist->insert(GBS_global_string("! \' Find all\'       (*%s)", filter), "*");
         }
         if (strcmp("/", fulldir)) {
             filelist->insert("! \'PARENT DIR       (..)\'", "..");
@@ -491,13 +491,8 @@ void File_selection::fill() {
 
     static const char *order_name[DIR_SORT_ORDERS] = { "alpha", "date", "size" };
 
-    filelist->insert(GBS_global_string("! \' Sort order\'     (%s)", order_name[sort_order]),
-                     GBS_global_string("%s?sort?", name));
-
-    filelist->insert(GBS_global_string("! \' %s%s\'",
-                                       show_hidden ? "Hide dot-" : "Show hidden ",
-                                       dirdisp == ANY_DIR ? "files/dirs" : "files"),
-                     GBS_global_string("%s?dot?", name));
+    filelist->insert(GBS_global_string("! \' Sort order\'     (%s)", order_name[sort_order]),              GBS_global_string("%s?sort?", name));
+    filelist->insert(GBS_global_string("! \' Hidden\'         (%s)", show_hidden ? "shown" : "not shown"), GBS_global_string("%s?dot?", name));
 
     bool insert_dirs = dirdisp == ANY_DIR && show_subdirs;
     if (is_wildcard) {
