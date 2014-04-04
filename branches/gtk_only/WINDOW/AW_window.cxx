@@ -1175,12 +1175,12 @@ void AW_window::insert_help_topic(const char *labeli,
     prvt->menus.pop();
 }
 
-void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
+void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
                                   const char *mnemonic, const char *helpText,
                                   AW_active mask, const WindowCallback& wcb) {
     aw_return_if_fail(legal_mask(mask));
     aw_return_if_fail(prvt->menus.size() > 0); //closed too many menus
-    aw_return_if_fail(cmd != NULL);
+    aw_return_if_fail(topic_id != NULL);
 
 #ifdef CHECK_DUPLICATED_MNEMONICS
     test_duplicate_mnemonics(prvt->menus.size(), labeli, mnemonic);
@@ -1189,7 +1189,7 @@ void AW_window::insert_menu_topic(const char *cmd, const char *labeli,
     if (helpText) help_text(helpText);
     sens_mask(mask);
     callback(wcb);
-    AW_action *act = action_register(cmd, false);
+    AW_action *act = action_register(topic_id, false);
 
     GtkWidget *wlabel    = make_label(labeli, 0, mnemonic);
     GtkWidget *alignment = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f);
