@@ -453,5 +453,5 @@ void TEST_SLOW_PT_FamilyFinder() {
     GB_close(gb_main);
 }
 
-#endif
+#endif // UNIT_TESTS
 

@@ -5,8 +5,8 @@ set -e
 rm -f arb.tgz arb-dev.tgz
 
 tar -czf arb.tgz -T <(
-  find demo.arb arb_install.sh arb_*.txt GDEHELP/ARB_GDEmenus
-  find bin lib PERL_SCRIPTS SH GDEHELP/DATA_FILES \
+  find demo.arb arb_install.sh arb_*.txt
+  find bin lib PERL_SCRIPTS SH \
      ! -type d \
      ! -path \*/pts/\* \
      ! -path \*/.svn/\* \

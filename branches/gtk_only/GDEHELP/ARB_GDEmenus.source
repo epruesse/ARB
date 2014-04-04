@@ -29,15 +29,15 @@
 
 #include <warning.genmenu>
 
-lmenu:Export
+menu:Export
 menumeta: E
 #include <export.genmenu>
 
-lmenu:Print
+menu:Print
 menumeta: r
 #include <pretty_print.genmenu>
 
-lmenu:Import
+menu:Import
 menumeta:I
 #include <import.genmenu>
 

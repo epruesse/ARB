@@ -407,7 +407,7 @@ struct ConsensusBuildParams {
         upper       = awr->awar(ED4_AWAR_CONSENSUS_UPPER)->read_int();
         lower       = awr->awar(ED4_AWAR_CONSENSUS_LOWER)->read_int();
     }
-#if defined(UNIT_TESTS)
+#if defined(UNIT_TESTS) // UT_DIFF
     ConsensusBuildParams() {
         // uses awar defaults
         countgaps   = 1;

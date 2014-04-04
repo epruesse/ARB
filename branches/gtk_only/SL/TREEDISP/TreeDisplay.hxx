@@ -259,7 +259,7 @@ public:
     void show_ruler(AW_device *device, int gc);
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
 
-#if defined(UNIT_TESTS)
+#if defined(UNIT_TESTS) // UT_DIFF
     friend class fake_AWT_graphic_tree;
 #endif
 };

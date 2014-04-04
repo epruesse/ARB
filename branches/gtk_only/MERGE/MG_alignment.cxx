@@ -70,7 +70,7 @@ void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def) {
     }
 }
 
-void MG_copy_and_check_alignments_ignoreResult() { MG_copy_and_check_alignments(); }
+static void copy_and_check_alignments_ignoreResult() { MG_copy_and_check_alignments(); }
 int MG_copy_and_check_alignments() {
     // returns 0 if alignments are ok for merging.
     // otherwise an error message is shown in message box.
@@ -343,7 +343,7 @@ AW_window *MG_create_merge_alignment_window(AW_root *awr) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("check");
-    aws->callback(makeWindowCallback(MG_copy_and_check_alignments_ignoreResult));
+    aws->callback(makeWindowCallback(copy_and_check_alignments_ignoreResult));
     aws->create_button("CHECK", "Check");
 
     aws->at("ali1");

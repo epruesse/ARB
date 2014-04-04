@@ -373,7 +373,7 @@ inline void g_b_put_number2(int i, unsigned char*& s) {
 #include <test_unit.h>
 #endif
 
-arb_test::match_expectation put_read_num_using_bytes(int num_written, int bytes_expected, unsigned char *buffer_expected = NULL) {
+static arb_test::match_expectation put_read_num_using_bytes(int num_written, int bytes_expected, unsigned char *buffer_expected = NULL) {
     const int     BUFSIZE = 6;
     unsigned char buffer[BUFSIZE];
 

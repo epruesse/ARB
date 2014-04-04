@@ -14,7 +14,9 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
-
+#ifndef ARB_CORE_H
+#include <arb_core.h>
+#endif
 
 typedef unsigned char uchar;
 enum gde_window_type {
@@ -29,14 +31,8 @@ typedef char *(*GDE_get_sequences_cb)(AW_CL     cd,
                                       long     &numberspecies,
                                       long     &maxalignlen);
 
-void GDE_create_var(AW_root              *aw_root,
-                    AW_default            aw_def,
-                    GBDATA               *gb_main,
-                    GDE_get_sequences_cb  get_sequences = 0,
-                    gde_window_type       wt            = GDE_WINDOWTYPE_DEFAULT,
-                    AW_CL                 client_data   = 0);
-
-void GDE_load_menu(AW_window *awm, AW_active, const char *menulabel=0, const char *menuitemlabel=0);
+GB_ERROR GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data);
+void GDE_load_menu(AW_window *awm, AW_active, const char *menulabel);
 
 #else
 #error gde.hxx included twice

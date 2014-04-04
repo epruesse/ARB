@@ -304,7 +304,7 @@ const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam) 
     return result;
 }
 
-// AISC_MKPT_PROMOTE:#ifdef UNIT_TESTS
+// AISC_MKPT_PROMOTE:#ifdef UNIT_TESTS // UT_DIFF
 // AISC_MKPT_PROMOTE:#define TEST_SERVER_ID (-666)
 // AISC_MKPT_PROMOTE:#define TEST_GENESERVER_ID (-667)
 // AISC_MKPT_PROMOTE:#endif
@@ -319,7 +319,7 @@ const char *GBS_nameserver_tag(const char *add_field) {
 }
 
 const char *GBS_ptserver_tag(int id) {
-#ifdef UNIT_TESTS
+#ifdef UNIT_TESTS // UT_DIFF
     if (id == TEST_SERVER_ID) return "ARB_TEST_PT_SERVER";
     if (id == TEST_GENESERVER_ID) return "ARB_TEST_PT_SERVER_GENE";
 #endif // UNIT_TESTS
@@ -539,4 +539,4 @@ void TEST_GBS_servertags() {
     TEST_EXPECT_EQUAL(GBS_nameserver_tag("test"), "ARB_NAME_SERVER_TEST");
 }
 
-#endif
+#endif // UNIT_TESTS

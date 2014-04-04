@@ -1,5 +1,6 @@
 item:FastTree2 (nucleotide)
 itemmeta:F
+seqtype:N
 itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/#/>/' <TmpInputFile | \
             arb_sed 's/%/>/' | \
@@ -47,6 +48,7 @@ insave:
 
 item:MrBayes
 itemmeta:B
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR; \
             GEN_NEXUS(mrbayes_in) && \
             PREPARE_MRBAYES_INFILE(mrbayes_in) && \
@@ -131,6 +133,7 @@ insave:
 
 item:MrBayes (custom)
 itemmeta:c
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR; \
             GEN_NEXUS(mrbayes_in) && \
             PREPARE_MRBAYES_INFILE(mrbayes_in) && \
@@ -162,6 +165,7 @@ insave:
 
 item:TREEPUZZLE ...
 itemmeta: T
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR; GEN_PHYLIP(infile) && \
             RUN_IN_WINDOW(((puzzle || STOP_ON_FAILURE(puzzle)) && $DISPLAY_FUNC));\
             RM_LOCAL_FILES(TmpInputFile outdist) )&
@@ -175,6 +179,5 @@ argchoice:Treetool:treetool outtree
 
 in:TmpInputFile
 informat:genbank
-inmask:
 insave:
 

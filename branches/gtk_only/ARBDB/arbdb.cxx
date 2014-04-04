@@ -2494,7 +2494,7 @@ GB_ERROR GB_MAIN_TYPE::add_hierarchy_cb(GBDATA *gb_representative, const TypedDa
     return NULL;
 }
 
-GB_ERROR GB_add_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
+GB_ERROR GB_add_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) { // @@@ needed to impl #418
     /*! bind callback to ALL entries which are at the same DB-hierarchy as 'gbd'.
      *
      * Hierarchy callbacks are triggered before normal callbacks (added by GB_add_callback or GB_ensure_callback).
@@ -3691,6 +3691,6 @@ void TEST_hierarchy_callbacks() {
     GB_close(gb_main);
 }
 
-#endif
+#endif // UNIT_TESTS
 
 

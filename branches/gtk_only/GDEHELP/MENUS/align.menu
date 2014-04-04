@@ -1,5 +1,6 @@
 item:ProbCons
 itemmeta: P
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/#/>HASH_/' <TmpInputFile | \
             arb_sed 's/%/>PERCENT_/' | \
@@ -47,6 +48,7 @@ outformat:flat
 
 item:Muscle
 itemmeta: M
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/#/>HASH_/' <TmpInputFile | \
             arb_sed 's/%/>PERCENT_/' | \
@@ -108,6 +110,7 @@ outformat:flat
 
 item:Mafft
 itemmeta: f
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR; \
             arb_sed 's/#/>HASH_/' <TmpInputFile | \
             arb_sed 's/%/>PERCENT_/' | \
@@ -170,6 +173,7 @@ outformat:flat
 
 item:ClustalW automatic
 itemmeta: W
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR; \
             tr '"%//' '>' <TmpInputFile >clus_in; \
             RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align ; \
@@ -190,6 +194,7 @@ outformat:flat
 
 item:Create ClustalW Profile 2
 itemmeta: C
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR ; tr '"%//' '>' <TmpInputFile >../clus_prf ; RM_LOCAL_FILES(TmpInputFile))
 
 itemhelp:clustalw.help
@@ -202,6 +207,7 @@ insave:
 
 item:ClustalW Profile Alignment
 itemmeta: A
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR; \
             tr '"%//' '>' <TmpInputFile >clus_in; \
             RUN_IN_WINDOW((clustalw -output=PIR -profile1=clus_in -profile2=../clus_prf -align ; \
@@ -618,6 +624,7 @@ outformat:flat
 
 item:Assemble Contigs
 itemmeta: g
+seqtype:*
 itemmethod: ( GOTO_LOCAL_DIR; \
               tr '"%//' '>' <TmpInputFile > tr.out; \
               CAP2 tr.out $OVERLAP $PMATCH >  TmpOutputFile; \

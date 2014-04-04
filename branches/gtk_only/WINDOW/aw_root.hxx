@@ -119,7 +119,7 @@ public:
      */
     AW_root(const char *properties, const char *program, bool NoExit, UserActionTracker *user_tracker,
             int *argc, char **argv[]);
-#if defined(UNIT_TESTS)
+#if defined(UNIT_TESTS) // UT_DIFF
     AW_root(const char *properties); // fake-root for unit-tests (allows access to awar-subsystem)
 #endif
     ~AW_root();

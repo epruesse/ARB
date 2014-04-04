@@ -911,20 +911,6 @@ static GB_ERROR sort_tree_by_other_tree(GBDATA *gb_main, RootedTree *tree, const
     return error;
 }
 
-static GB_ERROR sort_tree_by_other_tree(GBDATA *gb_main, const char *tree, const char *other_tree) {
-    GB_ERROR       error = NULL;
-    GB_transaction ta(gb_main);
-    SizeAwareTree *Tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree, *new TreeRoot(new SizeAwareNodeFactory, true)));
-    if (!Tree) error = GB_await_error();
-    else {
-        Tree->compute_tree();
-        error             = sort_tree_by_other_tree(gb_main, Tree, other_tree);
-        if (!error) error = GBT_write_tree(gb_main, tree, Tree);
-    }
-    delete Tree;
-    return error;
-}
-
 static bool sort_dtree_by_other_tree_cb(RootedTree *tree, GB_ERROR& error) {
     const char *other_tree = TreeAdmin::source_tree_awar(AW_root::SINGLETON)->read_char_pntr();
     error = sort_tree_by_other_tree(GLOBAL.gb_main, tree, other_tree);
@@ -1019,6 +1005,20 @@ AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw)
 #include <test_unit.h>
 #endif
 
+static GB_ERROR sort_namedtree_by_other_tree(GBDATA *gb_main, const char *tree, const char *other_tree) {
+    GB_ERROR       error = NULL;
+    GB_transaction ta(gb_main);
+    SizeAwareTree *Tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree, *new TreeRoot(new SizeAwareNodeFactory, true)));
+    if (!Tree) error = GB_await_error();
+    else {
+        Tree->compute_tree();
+        error             = sort_tree_by_other_tree(gb_main, Tree, other_tree);
+        if (!error) error = GBT_write_tree(gb_main, tree, Tree);
+    }
+    delete Tree;
+    return error;
+}
+
 void TEST_sort_tree_by_other_tree() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("TEST_trees.arb", "rw");
@@ -1061,9 +1061,9 @@ void TEST_sort_tree_by_other_tree() {
     }
 
 
-    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_center")); TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_center);
-    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_sorted_bottom")); TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_bottom);
-    TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_work", "tree_test"));          TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_test);
+    TEST_EXPECT_NO_ERROR(sort_namedtree_by_other_tree(gb_main, "tree_work", "tree_sorted_center")); TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_center);
+    TEST_EXPECT_NO_ERROR(sort_namedtree_by_other_tree(gb_main, "tree_work", "tree_sorted_bottom")); TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_bottom);
+    TEST_EXPECT_NO_ERROR(sort_namedtree_by_other_tree(gb_main, "tree_work", "tree_test"));          TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_test);
 
     GB_close(gb_main);
 }
@@ -1107,7 +1107,7 @@ void TEST_move_node_info() {
         // @@@ when we have a function to set the root according to another tree (#449),
         // use that function here. sorting tree after that, should again result in 'org_topo'!
 
-        TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_removal", "tree_removal_copy"));
+        TEST_EXPECT_NO_ERROR(sort_namedtree_by_other_tree(gb_main, "tree_removal", "tree_removal_copy"));
         TEST_EXPECT_SAVED_NEWICK(nGROUP, gb_main, "tree_removal", sorted_topo1);
     }
 
@@ -1121,7 +1121,7 @@ void TEST_move_node_info() {
         // @@@ when we have a function to set the root according to another tree (#449),
         // use that function here. sorting tree after that, should again result in 'org_topo'!
 
-        TEST_EXPECT_NO_ERROR(sort_tree_by_other_tree(gb_main, "tree_removal", "tree_removal_copy"));
+        TEST_EXPECT_NO_ERROR(sort_namedtree_by_other_tree(gb_main, "tree_removal", "tree_removal_copy"));
         TEST_EXPECT_SAVED_NEWICK(nGROUP, gb_main, "tree_removal", sorted_topo2);
     }
 

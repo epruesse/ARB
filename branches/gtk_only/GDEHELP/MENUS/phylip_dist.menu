@@ -1,5 +1,6 @@
 item:Phylip Distance Methods (Simple GUI Based Interface)
 itemmeta: G
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
             RUN_IN_WINDOW(($CORRECTION_PROT;$CORRECTION_DNA;$PROGRAM_SEL;\
                            $DPGM;\
@@ -51,13 +52,13 @@ argchoice:Manual:                 PROTEXT=User;    PROFLAGS=""
 
 in:TmpInputFile
 informat:genbank
-inmask:
 insave:
 
 // --------------------------------------------------------------------------------
 
 item:Phylip Distance Matrix
 itemmeta: M
+seqtype:*
 itemmethod: GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
             RUN_IN_WINDOW(( $PREEDIT  \
                             $DPGM ; \
@@ -79,6 +80,5 @@ argchoice:Yes:arb_textedit infile ;
 
 in:TmpInputFile
 informat:genbank
-inmask:
 insave:
 

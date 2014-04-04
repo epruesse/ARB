@@ -1,5 +1,4 @@
 item:Import sequences using Readseq (slow) ...
-seqtype:-
 itemmeta: R
 itemmethod:arb_readseq $INPUTFILE -a -f2 > TmpOutputFile
 itemhelp:readseq.help
@@ -14,7 +13,6 @@ outformat:genbank
 
 
 item:Import fields from calc-sheet
-seqtype:-
 itemmeta: c
 itemmethod:( \
         import_from_table.pl "$FROMFILE" \

@@ -62,8 +62,8 @@ public:
     Format type() const { return type_; }
 };
 
-#ifndef FILEBUFFER_H
-#include <FileBuffer.h>
+#ifndef BUFFEREDFILEREADER_H
+#include <BufferedFileReader.h>
 #endif
 #ifndef PROTOTYPES_H
 #include "prototypes.h"

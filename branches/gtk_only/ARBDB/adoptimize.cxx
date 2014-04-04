@@ -493,7 +493,7 @@ static int searchWord(GB_DICTIONARY *dict, cu_str source, long size, unsigned lo
 }
 
 #ifdef DEBUG
-int look(GB_DICTIONARY *dict, GB_CSTR source) {
+int lookup_DICTIONARY(GB_DICTIONARY *dict, GB_CSTR source) { // used for debugging
     unsigned long wordIndex;
     int           wordLen;
     int           wordFound = searchWord(dict, (cu_str)source, strlen(source), &wordIndex, &wordLen);

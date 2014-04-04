@@ -2325,8 +2325,6 @@ void ED4_request_relayout();
 void ED4_request_full_refresh();
 void ED4_request_full_instant_refresh();
 
-ARB_ERROR   update_terminal_extension(ED4_base *this_object);
-
 AW_window   *ED4_start_editor_on_old_configuration  (AW_root *awr);
 void        ED4_restart_editor          (AW_window *aww, AW_CL, AW_CL);
 void        ED4_save_configuration          (AW_window *aww, AW_CL close_flag);

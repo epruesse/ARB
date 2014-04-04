@@ -106,6 +106,15 @@ How to use ARB unit testing
       Tests from each unit (aka library) run consecutive.
       Tests of different units are executed asynchronously.
 
+   Code differences when compiled with UNIT_TESTS=1
+
+      Some unit tests require differences in production code, e.g.
+      - to inspect class internals
+      - to provoke special conditions (e.g. reduce some buffer size to simulate big
+        amount of processed data)
+
+      Such differences should be marked with a comment containing 'UT_DIFF'.
+
 
 3. Valgrinding test code
 

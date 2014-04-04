@@ -24,9 +24,9 @@
 // -> DB loads w/o delay, cause it's mmap'ped into memory
 #endif
 
-#if defined(UNIT_TESTS)
+#if defined(UNIT_TESTS) // UT_DIFF
 #undef MEMORY_TEST
-#define MEMORY_TEST 0 // test mmapped-DB version in unittests (recommended setting)
+#define MEMORY_TEST 0 // test mmapped-DB version in unittests (recommended setting; same as in RELEASE)
 // #define MEMORY_TEST 1 // test DEBUG DB version in unittests
 #endif
 

@@ -189,7 +189,7 @@ void gb_destroy_indices(GBCONTAINER *gbc) {
 
 #if defined(DEBUG)
 
-NOT4PERL void GB_dump_indices(GBDATA *gbd) {
+NOT4PERL void GB_dump_indices(GBDATA *gbd) { // used for debugging
     // dump indices of container
 
     char *db_path = strdup(GB_get_db_path(gbd));

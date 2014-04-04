@@ -633,13 +633,13 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cb_base.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/items.h

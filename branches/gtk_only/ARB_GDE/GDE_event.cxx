@@ -42,15 +42,11 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     /*
      *  The basic idea is to replace all of the symbols in the method
      *  string with the values picked in the dialog box.  The method
-     *  is the general command line structure.  All arguments have three
-     *  parts, a label, a method, and a value.  The method never changes, and
-     *  is used to represent '-flag's for a given function.  Values are the
+     *  is the general command line structure.  All arguments have two
+     *  parts : a label and a value.  Values are the
      *  associated arguments that some flags require.  All symbols that
      *  require argvalue replacement should have a '$' infront of the symbol
      *  name in the itemmethod definition.
-     *
-     *  All symbols without the '$' were replaced by their argmethod.
-     *  ARB doesnt use argmethod in menus, replacement has been removed here (long ago).
      *
      *  If '$symbol' is prefixed by '!' ARB_GDE does a label replacement, i.e. insert
      *  the value visible in GUI. Only works for argchoice arguments!
@@ -59,28 +55,17 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
      *
      *  An example command line replacement would be:
      *
-     *       itemmethod=>        "lpr arg1 $arg1 $arg2"
+     *       itemmethod=>        "lpr -P $arg1 $arg2"
      *
      *       arglabel arg1=>     "To printer?"
-     *       argmethod arg1=>    "-P"
      *       argvalue arg1=>     "lw"
      *
      *       arglabel arg2=>     "File name?"
      *       argvalue arg2=>     "foobar"
-     *       argmethod arg2=>    ""
      *
      *   final command line:
      *
      *       lpr -P lw foobar
-     *
-     *   At this point, the chooser dialog type only supports the arglabel and
-     *   argmethod field.  So if an argument is of type chooser, and
-     *   its symbol is "this", then "$this" has no real meaning in the
-     *   itemmethod definition.  Its format in the .GDEmenu file is slighty
-     *   different as well.  A choice from a chooser field looks like:
-     *
-     *       argchoice:Argument_label:Argument_method
-     *
      *
      */
 
@@ -144,7 +129,8 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
                     skip = 2; // skip '!'
                 }
                 else {
-                    Error(GBS_global_string("Cannot access label of '%s'\n", symbol));
+                    aw_message(GBS_global_string("[ARB_GDE]: Cannot access label of '%s'\n", symbol));
+                    return NULL; // @@@ ignores ressources (should only occur during development)
                 }
             }
 
@@ -152,8 +138,6 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
             int   symLen = strlen(symbol);
             int   newlen = strlen(Action)-skip-symLen+repLen+1;
             char *temp   = (char *)calloc(newlen, 1);
-
-            if (!temp) Error("ReplaceArgs():Error in calloc");
 
             strncat(temp, Action, i-skip);
             strncat(temp, replaceBy, repLen);
@@ -181,8 +165,6 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     return (Action);
 }
 
-
-
 static long LMAX(long a, long b)
 {
     if (a>b) return a;
@@ -204,8 +186,6 @@ static char *ReplaceFile(char *Action, GfileFormat file)
     {
         newlen = strlen(Action)-strlen(symbol) + strlen(method)+1;
         temp = (char *)calloc(newlen, 1);
-        if (temp == NULL)
-            Error("ReplaceFile():Error in calloc");
         strncat(temp, Action, i);
         strncat(temp, method, strlen(method));
         strcat(temp, &(Action[i+strlen(symbol)]));
@@ -228,8 +208,6 @@ static char *ReplaceString(char *Action, const char *old, const char *news)
     {
         newlen = strlen(Action)-strlen(symbol) + strlen(method)+1;
         temp = (char *)calloc(newlen, 1);
-        if (temp == NULL)
-            Error("ReplaceFile():Error in calloc");
         strncat(temp, Action, i);
         strncat(temp, method, strlen(method));
         strcat(temp, &(Action[i+strlen(symbol)]));
@@ -237,7 +215,6 @@ static char *ReplaceString(char *Action, const char *old, const char *news)
     }
     return (Action);
 }
-
 
 static void GDE_freesequ(NA_Sequence *sequ) {
     if (sequ) {
@@ -480,7 +457,7 @@ static char *preCreateTempfile(const char *name) {
     // exits in case of error
     char *fullname = GB_create_tempfile(name);
 
-    if (!fullname) Error(GBS_global_string("preCreateTempfile: %s", GB_await_error())); // exits
+    if (!fullname) aw_message(GBS_global_string("[ARB_GDE]: %s", GB_await_error()));
     return fullname;
 }
 
@@ -533,18 +510,8 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     }
 
     if (!stop) {
-        int select_mode = 0;
-        {
-            bool flag = false;
-            for (int j=0; j<current_item->numinputs; j++) {
-                if (current_item->input[j].format != STATUS_FILE) {
-                    flag = true;
-                }
-            }
-            if (flag && DataSet) select_mode = ALL;
-        }
-
-        int pid = getpid();
+        int select_mode = (DataSet && (current_item->numinputs>0)) ? ALL : NONE;
+        int pid         = getpid();
 
         static int fileindx = 0;
         for (int j=0; j<current_item->numinputs; j++) {
@@ -555,11 +522,9 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             gfile.name = preCreateTempfile(buffer);
 
             switch (gfile.format) {
-                case COLORMASK:   WriteCMask  (DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case GENBANK:     WriteGen    (DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case NA_FLAT:     WriteNA_Flat(DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case STATUS_FILE: WriteStatus (DataSet, gfile.name);                 break;
-                case GDE:         WriteGDE    (DataSet, gfile.name, select_mode, gfile.maskable); break;
+                case GENBANK: WriteGen    (DataSet, gfile.name, select_mode); break;
+                case NA_FLAT: WriteNA_Flat(DataSet, gfile.name, select_mode); break;
+                case GDE:     WriteGDE    (DataSet, gfile.name, select_mode); break;
                 default: break;
             }
         }
@@ -571,8 +536,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         }
 
         // Create the command line for external the function call
-        char *Action = (char*)strdup(current_item->method);
-        if (Action == NULL) Error("DO(): Error in duplicating method string");
+        char *Action = strdup(current_item->method);
 
         while (1) {
             char *oldAction = strdup(Action);
@@ -597,14 +561,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
 
         long oldnumelements = DataSet->numelements;
 
-        BlockInput = false;
-
         for (int j=0; j<current_item->numoutputs; j++) {
-            if (current_item->output[j].overwrite) {
-                if (current_item->output[j].format == GDE) OVERWRITE = true;
-                else Warning("Overwrite mode only available for GDE format");
-            }
-
             switch (current_item->output[j].format) {
                 /* The LoadData routine must be reworked so that
                  * OpenFileName uses it, and so I can remove the
@@ -615,13 +572,10 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
                 case GDE:
                     LoadData(current_item->output[j].name);
                     break;
-                case COLORMASK:
-                    ReadCMask(current_item->output[j].name);
-                    break;
                 default:
+                    gde_assert(0);
                     break;
             }
-            OVERWRITE = false;
         }
         for (int j=0; j<current_item->numoutputs; j++) {
             if (!current_item->output[j].save) {
