@@ -468,7 +468,7 @@ AW_device_size *AW_window::get_size_device(AW_area area) {
 }
 
 
-void AW_window::insert_help_topic(AW_label name,
+void AW_window::insert_help_topic(const char *labeli, 
                                   const char *mnemonic, const char *helpText,
                                   AW_active mask, const WindowCallback& cb) {
     aw_assert(legal_mask(mask));
@@ -478,14 +478,14 @@ void AW_window::insert_help_topic(AW_label name,
     if (!current_mscope) init_duplicate_mnemonic(window_name);
     MnemonicScope *tmp = current_mscope;
     current_mscope     = help_mscope;
-    test_duplicate_mnemonics(p_w->menu_deep, name, mnemonic);
+    test_duplicate_mnemonics(p_w->menu_deep, labeli, mnemonic);
     current_mscope     = tmp;
 #endif
 
     // create one help-sub-menu-point
     button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass,
                                      p_w->help_pull_down,
-                                     RES_CONVERT(XmNlabelString, name),
+                                     RES_CONVERT(XmNlabelString, labeli),
                                      RES_CONVERT(XmNmnemonic, mnemonic), NULL);
     XtAddCallback(button, XmNactivateCallback,
                   (XtCallbackProc) AW_server_callback,
@@ -494,7 +494,7 @@ void AW_window::insert_help_topic(AW_label name,
     root->make_sensitive(button, mask);
 }
 
-void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
+void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
                                   const char *mnemonic, const char *helpText,
                                   AW_active mask, const WindowCallback& cb) {
     aw_assert(legal_mask(mask));
@@ -506,26 +506,26 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
     dumpMenuEntry(name);
 #endif // DUMP_MENU_LIST
 #ifdef CHECK_DUPLICATED_MNEMONICS
-    test_duplicate_mnemonics(p_w->menu_deep, name, mnemonic);
+    test_duplicate_mnemonics(p_w->menu_deep, labeli, mnemonic);
 #endif
-    if (mnemonic && *mnemonic && strchr(name, mnemonic[0])) {
+    if (mnemonic && *mnemonic && strchr(labeli, mnemonic[0])) {
         // create one sub-menu-point
         button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass,
-                p_w->menu_bar[p_w->menu_deep],
-                RES_LABEL_CONVERT(name),
-                                          RES_CONVERT(XmNmnemonic, mnemonic),
-                                          XmNbackground, _at->background_color, NULL);
+                                         p_w->menu_bar[p_w->menu_deep],
+                                         RES_LABEL_CONVERT(labeli),
+                                         RES_CONVERT(XmNmnemonic, mnemonic),
+                                         XmNbackground, _at->background_color, NULL);
     }
     else {
         button = XtVaCreateManagedWidget("",
-        xmPushButtonWidgetClass,
-        p_w->menu_bar[p_w->menu_deep],
-        RES_LABEL_CONVERT(name),
-        XmNbackground, _at->background_color,
-        NULL);
+                                         xmPushButtonWidgetClass,
+                                         p_w->menu_bar[p_w->menu_deep],
+                                         RES_LABEL_CONVERT(labeli),
+                                         XmNbackground, _at->background_color,
+                                         NULL);
     }
 
-    AW_label_in_awar_list(this, button, name);
+    AW_label_in_awar_list(this, button, labeli);
     AW_cb *cbs = new AW_cb(this, cb, helpText);
     XtAddCallback(button, XmNactivateCallback,
                   (XtCallbackProc) AW_server_callback,
@@ -545,7 +545,7 @@ void AW_window::insert_menu_topic(const char *topic_id, AW_label name,
 // force-diff-sync 824638723647 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask){
+void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_active mask){
     aw_assert(legal_mask(mask));
     Widget shell, Label;
 
@@ -557,44 +557,44 @@ void AW_window::insert_sub_menu(AW_label name, const char *mnemonic, AW_active m
     dumpOpenSubMenu(name);
 #endif // DUMP_MENU_LIST
 #ifdef CHECK_DUPLICATED_MNEMONICS
-    open_test_duplicate_mnemonics(p_w->menu_deep+1, name, mnemonic);
+    open_test_duplicate_mnemonics(p_w->menu_deep+1, labeli, mnemonic);
 #endif
 
     // create shell for Pull-Down
     shell = XtVaCreatePopupShell("menu_shell", xmMenuShellWidgetClass,
-            p_w->menu_bar[p_w->menu_deep],
-            XmNwidth, 1,
-            XmNheight, 1,
-            XmNallowShellResize, true,
-            XmNoverrideRedirect, true,
-            NULL);
+                                 p_w->menu_bar[p_w->menu_deep],
+                                 XmNwidth, 1,
+                                 XmNheight, 1,
+                                 XmNallowShellResize, true,
+                                 XmNoverrideRedirect, true,
+                                 NULL);
 
     // create row column in Pull-Down shell
 
     p_w->menu_bar[p_w->menu_deep+1] = XtVaCreateWidget("menu_row_column",
-            xmRowColumnWidgetClass, shell,
-            XmNrowColumnType, XmMENU_PULLDOWN,
-            XmNtearOffModel, XmTEAR_OFF_ENABLED,
-            NULL);
+                                                       xmRowColumnWidgetClass, shell,
+                                                       XmNrowColumnType, XmMENU_PULLDOWN,
+                                                       XmNtearOffModel, XmTEAR_OFF_ENABLED,
+                                                       NULL);
 
     // create label in menu bar
-    if (mnemonic && *mnemonic && strchr(name, mnemonic[0])) {
+    if (mnemonic && *mnemonic && strchr(labeli, mnemonic[0])) {
         // if mnemonic is "" -> Cannot convert string "" to type KeySym
         Label = XtVaCreateManagedWidget("menu1_top_b1",
-                xmCascadeButtonWidgetClass, p_w->menu_bar[p_w->menu_deep],
-                RES_CONVERT(XmNlabelString, name),
-                                         RES_CONVERT(XmNmnemonic, mnemonic),
-                                         XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
-                                         XmNbackground, _at->background_color, NULL);
+                                        xmCascadeButtonWidgetClass, p_w->menu_bar[p_w->menu_deep],
+                                        RES_CONVERT(XmNlabelString, labeli),
+                                        RES_CONVERT(XmNmnemonic, mnemonic),
+                                        XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
+                                        XmNbackground, _at->background_color, NULL);
     }
     else {
         Label = XtVaCreateManagedWidget("menu1_top_b1",
-        xmCascadeButtonWidgetClass,
-        p_w->menu_bar[p_w->menu_deep],
-        RES_CONVERT(XmNlabelString, name),
-        XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
-        XmNbackground, _at->background_color,
-        NULL);
+                                        xmCascadeButtonWidgetClass,
+                                        p_w->menu_bar[p_w->menu_deep],
+                                        RES_CONVERT(XmNlabelString, labeli),
+                                        XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
+                                        XmNbackground, _at->background_color,
+                                        NULL);
     }
 
     if (p_w->menu_deep < AW_MAX_MENU_DEEP-1) p_w->menu_deep++;
