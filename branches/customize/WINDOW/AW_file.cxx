@@ -135,11 +135,15 @@ void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
     delete [] awar_name;
 }
 
-#if defined(WARN_TODO)
-#warning derive File_selection from AW_selection
-#endif
+enum DirSortOrder {
+    SORT_ALPHA,
+    SORT_DATE,
+    SORT_SIZE,
 
-class File_selection {
+    DIR_SORT_ORDERS // order count
+};
+
+class File_selection { // @@@ derive from AW_selection?
     AW_root *awr;
 
     AW_selection_list *filelist;
@@ -157,7 +161,14 @@ class File_selection {
 
     bool leave_wildcards;
 
+    bool show_subdirs;  // show or hide subdirs
+    bool show_hidden;   // show or hide files/directories starting with '.'
+
+    DirSortOrder sort_order;
+
     void bind_callbacks();
+    void execute_browser_command(const char *browser_command);
+    void fill_recursive(const char *fulldir, int skipleft, const char *mask, bool recurse, bool showdir);
 
 public:
 
@@ -168,7 +179,10 @@ public:
           pwdx(NULL),
           previous_filename(NULL),
           dirdisp(disp_dirs),
-          leave_wildcards(allow_wildcards)
+          leave_wildcards(allow_wildcards),
+          show_subdirs(true),
+          show_hidden(false),
+          sort_order(SORT_ALPHA)
     {
         {
             char *multiple_dirs_in_pwd = strchr(pwd, '^');
@@ -272,34 +286,25 @@ inline bool AW_is_dir(const char *path) { return GB_is_directory(valid_path(path
 inline bool AW_is_file(const char *path) { return GB_is_regularfile(valid_path(path)); }
 inline bool AW_is_link(const char *path) { return GB_is_link(valid_path(path)); }
 
-
-#define DIR_SORT_ORDERS 3
-static const char *DIR_sort_order_name[DIR_SORT_ORDERS] = { "alpha", "date", "size" };
-static int DIR_sort_order     = 0; // 0 = alpha; 1 = date; 2 = size;
-static int DIR_subdirs_hidden = 0; // 1 -> hide sub-directories (by user-request)
-static int DIR_show_hidden    = 0; // 1 -> show hidden (i.e. files/directories starting with '.')
-
-static void execute_browser_command(const char *browser_command) {
+void File_selection::execute_browser_command(const char *browser_command) {
     if (strcmp(browser_command, "sort") == 0) {
-        DIR_sort_order = (DIR_sort_order+1)%DIR_SORT_ORDERS;
+        sort_order = DirSortOrder((sort_order+1)%DIR_SORT_ORDERS);
     }
     else if (strcmp(browser_command, "hide") == 0) {
-        DIR_subdirs_hidden = 1;
+        show_subdirs = false;
     }
     else if (strcmp(browser_command, "show") == 0) {
-        DIR_subdirs_hidden = 0;
+        show_subdirs = true;
     }
     else if (strcmp(browser_command, "dot") == 0) {
-        DIR_show_hidden ^= 1;
+        show_hidden = !show_hidden;
     }
     else {
         aw_message(GBS_global_string("Unknown browser command '%s'", browser_command));
     }
 }
 
-static void fill_fileselection_recursive(const char *fulldir, int skipleft, const char *mask, bool recurse, bool showdir, bool show_dots, AW_selection_list *filelist) {
-    // see fill_fileselection_cb for meaning of 'sort_order'
-
+void File_selection::fill_recursive(const char *fulldir, int skipleft, const char *mask, bool recurse, bool showdir) {
     DIR *dirp = opendir(fulldir);
 
 #if defined(TRACE_FILEBOX)
@@ -321,18 +326,18 @@ static void fill_fileselection_recursive(const char *fulldir, int skipleft, cons
         else fullname                 = strdup(GB_canonical_path(entry));
 
         if (AW_is_dir(fullname)) {
-            if (!(entry[0] == '.' && (!DIR_show_hidden || entry[1] == 0 || (entry[1] == '.' && entry[2] == 0)))) { // skip "." and ".." and dotdirs if requested
+            if (!(entry[0] == '.' && (!show_hidden || entry[1] == 0 || (entry[1] == '.' && entry[2] == 0)))) { // skip "." and ".." and dotdirs if requested
                 if (showdir) {
                     filelist->insert(GBS_global_string("D %-18s(%s)", entry, fullname), fullname);
                 }
                 if (recurse && !AW_is_link(nontruepath)) { // don't follow links
-                    fill_fileselection_recursive(nontruepath, skipleft, mask, recurse, showdir, show_dots, filelist);
+                    fill_recursive(nontruepath, skipleft, mask, recurse, showdir);
                 }
             }
         }
         else {
             if (GBS_string_matches(entry, mask, GB_IGNORE_CASE)) { // entry matches mask
-                if ((entry[0] != '.' || DIR_show_hidden) && AW_is_file(fullname)) { // regular existing file
+                if ((entry[0] != '.' || show_hidden) && AW_is_file(fullname)) { // regular existing file
                     struct stat stt;
 
                     stat(fullname, &stt);
@@ -345,16 +350,17 @@ static void fill_fileselection_recursive(const char *fulldir, int skipleft, cons
                     char typechar = AW_is_link(nontruepath) ? 'L' : 'F';
 
                     const char *sel_entry = 0;
-                    switch (DIR_sort_order) {
-                        case 0: // alpha
+                    switch (sort_order) {
+                        case SORT_ALPHA:
                             sel_entry = GBS_global_string("%c %-30s  %6lik  %s", typechar, nontruepath+skipleft, ksize, atime);
                             break;
-                        case 1: // date
+                        case SORT_DATE:
                             sel_entry = GBS_global_string("%c %s  %6lik  %s", typechar, atime, ksize, nontruepath+skipleft);
                             break;
-                        case 2: // size
+                        case SORT_SIZE:
                             sel_entry = GBS_global_string("%c %6lik  %s  %s", typechar, ksize, atime, nontruepath+skipleft);
                             break;
+                        case DIR_SORT_ORDERS: break;
                     }
 
                     filelist->insert(sel_entry, nontruepath);
@@ -451,7 +457,7 @@ void File_selection::fill() {
         if (strcmp("/", fulldir)) {
             filelist->insert("! \'PARENT DIR       (..)\'", "..");
         }
-        if (DIR_subdirs_hidden == 0) {
+        if (show_subdirs) {
             show_soft_link(filelist, pwd, unDup);
 
             if (pwdx) {        // additional directories
@@ -483,26 +489,28 @@ void File_selection::fill() {
         }
     }
 
-    filelist->insert(GBS_global_string("! \' Sort order\'     (%s)", DIR_sort_order_name[DIR_sort_order]),
+    static const char *order_name[DIR_SORT_ORDERS] = { "alpha", "date", "size" };
+
+    filelist->insert(GBS_global_string("! \' Sort order\'     (%s)", order_name[sort_order]),
                      GBS_global_string("%s?sort?", name));
 
     filelist->insert(GBS_global_string("! \' %s%s\'",
-                                       DIR_show_hidden ? "Hide dot-" : "Show hidden ",
+                                       show_hidden ? "Hide dot-" : "Show hidden ",
                                        dirdisp == ANY_DIR ? "files/dirs" : "files"),
                      GBS_global_string("%s?dot?", name));
 
-    bool insert_dirs = dirdisp == ANY_DIR && !DIR_subdirs_hidden;
+    bool insert_dirs = dirdisp == ANY_DIR && show_subdirs;
     if (is_wildcard) {
         if (leave_wildcards) {
-            fill_fileselection_recursive(fulldir, strlen(fulldir)+1, name_only, false, insert_dirs, DIR_show_hidden, filelist);
+            fill_recursive(fulldir, strlen(fulldir)+1, name_only, false, insert_dirs);
         }
         else {
             if (dirdisp == ANY_DIR) { // recursive wildcarded search
-                fill_fileselection_recursive(fulldir, strlen(fulldir)+1, name_only, true, false, DIR_show_hidden, filelist);
+                fill_recursive(fulldir, strlen(fulldir)+1, name_only, true, false);
             }
             else {
                 char *mask = GBS_global_string_copy("%s*%s", name_only, filter);
-                fill_fileselection_recursive(fulldir, strlen(fulldir)+1, mask, false, false, DIR_show_hidden, filelist);
+                fill_recursive(fulldir, strlen(fulldir)+1, mask, false, false);
                 free(mask);
             }
         }
@@ -510,7 +518,7 @@ void File_selection::fill() {
     else {
         char *mask = GBS_global_string_copy("*%s", filter);
 
-        fill_fileselection_recursive(fulldir, strlen(fulldir)+1, mask, false, insert_dirs, DIR_show_hidden, filelist);
+        fill_recursive(fulldir, strlen(fulldir)+1, mask, false, insert_dirs);
         free(mask);
     }
 
@@ -552,7 +560,7 @@ void File_selection::filename_changed(bool post_filter_change_HACK) {
         if (browser_command) {
             aw_root->awar(def_name)->write_string(fname); // re-write w/o browser_command
             execute_browser_command(browser_command);
-            aw_root->awar(def_dir)->touch(); // force reinit
+            trigger_refresh();
         }
 
         char *newName = 0;
@@ -646,7 +654,7 @@ void File_selection::filename_changed(bool post_filter_change_HACK) {
         free(dir);
 
         if (strchr(fname, '*')) { // wildcard -> search for suffix
-            aw_root->awar(def_dir)->touch(); // force reinit
+            trigger_refresh();
         }
     }
 
