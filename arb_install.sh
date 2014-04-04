@@ -92,18 +92,18 @@ fi
 cwd=`pwd`
 
 if [ ! -f arb.tgz ]; then
-    if [ -e arb.[36][24].*.tgz ]; then
-        # link any arb.32.*.tgz or arb.64.*.tgz to arb.tgz
-        ln -s arb.[36][24].*.tgz arb.tgz
-        ls -al arb.tgz arb.[36][24].*.tgz 
+    if [ -e arb-*.tgz ]; then
+        # link any arb-*.tgz to arb.tgz
+        ln -s arb-*.tgz arb.tgz
+        ls -al arb.tgz arb-*.tgz
         if [ ! -L arb.tgz ]; then
-            err "Failed to link any arb-tarball to arb.tgz (maybe there are multiple arb.32/64*.tgz in this directory)"
+            err "Failed to link any arb-tarball to arb.tgz (maybe there are multiple arb-*.tgz in this directory)"
         fi
     else
-        err "Expected arb.32.*.tgz or arb.64.*.tgz in current directory."
+        err "Expected exactly one arb-*.tgz in current directory."
     fi
 else
-    ls -al arb.tgz arb.[36][24].*.tgz 
+    ls -al arb.tgz arb-*.tgz
 fi
 
 if [ ! -f arb.tgz ]; then

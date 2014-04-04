@@ -1476,7 +1476,7 @@ AW_window *DBUI::create_species_query_window(AW_root *aw_root, GBDATA *gb_main) 
         awtqs.gb_main             = gb_main;
         awtqs.species_name        = AWAR_SPECIES_NAME;
         awtqs.tree_name           = AWAR_TREE;
-        awtqs.select_bit          = 1;
+        awtqs.select_bit          = GB_USERFLAG_QUERY;
         awtqs.use_menu            = 1;
         awtqs.ere_pos_fig         = "ere2";
         awtqs.by_pos_fig          = "by2";

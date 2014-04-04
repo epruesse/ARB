@@ -993,6 +993,10 @@ static GB_ERROR init(NamedNodes& node, GBT_TREE *tree, const DI_ENTRY*const*cons
             }
             else {
                 di_assert(node[entries[n]->name] == findNode(tree, entries[n]->name));
+                if (!node[entries[n]->name]) {
+                    ++missing;
+                    exampleName = entries[n]->name;
+                }
             }
         }
 

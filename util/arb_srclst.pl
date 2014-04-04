@@ -10,7 +10,7 @@ my $ignore_unknown = 0;
 # override checks below and save strictly as checked-in in SVN
 
 my @strictly_as_in_svn_when_matchesDir = (
-                                           qr/\/GDE\/MAFFT\/mafft-[0-9\.]+-with[out]*-extensions\/.*$/o,
+                                           qr/\/GDE\/MAFFT\/mafft-[0-9\.]+-with[out]*-extensions/o,
                                           );
 
 # ------------------------------------------------------------
@@ -210,6 +210,7 @@ my @used_when_matchesFull = (
                              qr/^\.\/lib\/rna3d\/images\/.*\.png$/o,
                              qr/^\.\/lib\/sellists\/.*\.sellst$/o,
                              qr/^\.\/lib\/submit\//o,
+                             qr/^\.\/lib\/BUGS\//o,
                              qr/^\.\/util\/arb_.*$/o,
                              qr/^\.\/util\/config\..*$/o,
                              qr/\/GDE\/.*\/Makefile\.[^\/]+$/io,
@@ -224,6 +225,7 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/arb.*\.tgz$/o,
                                 qr/^\.\/bin\//o,
                                 qr/^\.\/GDE\/CORE\/functions.h$/o,
+                                qr/^\.\/GDE\/PHYML[^\/]+\/phyml\/(configure|config.h.in)$/o,
                                 qr/^\.\/lib\/ARB\.pm$/o,
                                 qr/^\.\/lib\/arb_tcp\.dat$/o,
                                 qr/^\.\/lib\/nas\/names.*\.dat$/o,

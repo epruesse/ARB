@@ -1682,6 +1682,8 @@ void TEST_GB_remove_on_exit() {
 void TEST_some_paths() {
     gb_getenv_hook old = GB_install_getenv_hook(arb_test::fakeenv);
     {
+        // ../UNIT_TESTER/run/fakehome
+
         TEST_EXPECT_CONTAINS__BROKEN(GB_getenvHOME(), "/UNIT_TESTER/run/fakehome"); // GB_getenvHOME() ignores the hook
         // @@@ this is a general problem - unit tested code cannot use GB_getenvHOME() w/o problems
 

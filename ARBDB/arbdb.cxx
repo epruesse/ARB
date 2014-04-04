@@ -24,6 +24,9 @@
 #include "gb_index.h"
 #include <arb_strarray.h>
 
+#include <glib.h>
+#include <glib/gprintf.h>
+
 gb_local_data *gb_local = 0;
 
 #define INIT_TYPE_NAME(t) GB_TYPES_name[t] = #t
@@ -167,8 +170,12 @@ static GB_ERROR GB_safe_atof(const char *str, double *res) {
 
 double GB_atof(const char *str) {
     // convert ASCII to double
-    double res = 0;
-    ASSERT_NO_ERROR(GB_safe_atof(str, &res)); // expected double in 'str'- better use GB_safe_atof()
+    double   res = 0;
+    GB_ERROR err = GB_safe_atof(str, &res);
+    if (err) {
+        // expected double in 'str'- better use GB_safe_atof()
+        GBK_terminatef("GB_safe_atof(\"%s\", ..) returns error: %s", str, err);
+    }
     return res;
 }
 
@@ -2668,12 +2675,32 @@ GB_ERROR gb_resort_system_folder_to_top(GBCONTAINER *gb_main) {
 // ------------------------------
 //      private(?) user flags
 
-long GB_read_usr_private(GBDATA *gbd) {
-    return gbd->expect_container()->flags2.usr_ref;
+STATIC_ASSERT_ANNOTATED(((GB_USERFLAG_ANY+1)&GB_USERFLAG_ANY) == 0, "not all bits set in GB_USERFLAG_ANY");
+
+#if defined(ASSERTION_USED)
+inline bool legal_user_bitmask(unsigned char bitmask) {
+    return bitmask>0 && bitmask<=GB_USERFLAG_ANY;
+}
+#endif
+
+inline gb_flag_types2& get_user_flags(GBDATA *gbd) {
+    return gbd->expect_container()->flags2;
 }
 
-void GB_write_usr_private(GBDATA *gbd, long ref) {
-    gbd->expect_container()->flags2.usr_ref = ref;
+bool GB_user_flag(GBDATA *gbd, unsigned char user_bit) {
+    gb_assert(legal_user_bitmask(user_bit));
+    return get_user_flags(gbd).user_bits & user_bit;
+}
+void GB_set_user_flag(GBDATA *gbd, unsigned char user_bit) {
+    gb_assert(legal_user_bitmask(user_bit));
+    gb_flag_types2& flags  = get_user_flags(gbd);
+    flags.user_bits       |= user_bit;
+}
+
+void GB_clear_user_flag(GBDATA *gbd, unsigned char user_bit) {
+    gb_assert(legal_user_bitmask(user_bit));
+    gb_flag_types2& flags  = get_user_flags(gbd);
+    flags.user_bits       &= (user_bit^GB_USERFLAG_ANY);
 }
 
 // ------------------------
@@ -2815,6 +2842,28 @@ long GB_number_of_subentries(GBDATA *gbd) {
 #ifdef UNIT_TESTS
 
 #include <test_unit.h>
+#include <locale.h>
+
+void TEST_GB_atof() {
+    // startup of ARB (gtk_only@11651) is failing on ubuntu 13.10 (in GBT_read_tree)
+    // (failed with "Error: 'GB_safe_atof("0.0810811", ..) returns error: cannot convert '0.0810811' to double'")
+    // Reason: LANG[UAGE] or LC_NUMERIC set to "de_DE..."
+    //
+    // Notes:
+    // * gtk apparently calls 'setlocale(LC_ALL, "");', motif doesnt
+
+    TEST_EXPECT_SIMILAR(GB_atof("0.031"), 0.031, 0.0001); // @@@ make this fail, then fix it
+}
+
+void TEST_999_strtod_replacement() {
+    // caution: if it fails -> locale is not reset (therefore call with low priority 999)
+    const char *old = setlocale(LC_NUMERIC, "de_DE.UTF-8");
+    {
+        // TEST_EXPECT_SIMILAR__BROKEN(strtod("0.031", NULL), 0.031, 0.0001);
+        TEST_EXPECT_SIMILAR(g_ascii_strtod("0.031", NULL), 0.031, 0.0001);
+    }
+    setlocale(LC_NUMERIC, old);
+}
 
 static void test_another_shell() { delete new GB_shell; }
 static void test_opendb() { GB_close(GB_open("no.arb", "c")); }

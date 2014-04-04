@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
+#include "../SOURCE_TOOLS/arb_main.h"
 
 #define env_assert(cond) arb_assert(cond)
 
@@ -647,6 +648,8 @@ static const char *known_modes(char separator) {
 
 
 int main(int argc, char* argv[]) {
+    start_of_main();
+
     Error error;
     bool  showUsage = true;
 

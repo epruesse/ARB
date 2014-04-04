@@ -81,7 +81,7 @@ else
     # generate tree file
     TREEPARAMS=
     HAVEINPUTTREE=0
-    if [ "$TREE" != "????" -a ! -z "$TREE" ]; then
+    if [ "$TREE" != "tree_?????" -a ! -z "$TREE" ]; then # has to match ../TEMPLATES/arb_global_defs.h@NO_TREE_SELECTED
         CMD="arb_export_tree $TREE"
         echo "$CMD"
         echo `$CMD > treefile.in`

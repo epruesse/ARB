@@ -6,12 +6,7 @@ System Requirements
 ------------------- 
 
 
-        ARB is currently developed on Linux PCs only.
-
-        Compiling ARB using the gcc compiler (4.x series)
-        as well works on Mac OSX and Sun OS - but we do not publish or support
-        these versions.
-
+        ARB is currently developed for Linux and OSX.
 
         Hardware Requirements (Linux):
 
@@ -29,43 +24,56 @@ Files needed to install ARB
 
         File                    
 
-        'arb_install.sh'        // install script
-        'arb.*.tgz'             // ARB program
+                'arb_install.sh'        // install script
+                'arb-*.tgz'             // ARB program
 
 
         Available ARB versions:
 
-        'arb.32.*.tgz'          // 32 bit versions
-        'arb.64.*.tgz'          // 64 bit versions
+                arb-*.centos5-amd64.tgz
+                arb-*.centos6-amd64.tgz
+                arb-*.ubuntu1004-amd64.tgz
+                arb-*.ubuntu1204-amd64.tgz
+                arb-*.ubuntu1304-amd64.tgz
+                arb-*.osx.tgz
 
-        'arb.*.OPENGL.tgz'      // OPENGL version (contains RNA3D, a 3D-molecule-viewer)
+        You need exactly ONE of the available 'arb-*.tgz'!
 
+        Notes:
 
-        Choose a 32-bit-version, if your system is 32-bit,
-        choose a 64-bit-version, if your system is 64-bit.
+        * all versions are 64bit versions
+          (if you really need a 32bit version, see http://download.arb-home.de/release/arb_5.5/)
 
-        You need only ONE of the available 'arb.*.tgz'!
+        * all versions are compile without OPENGL
+          (if you rely on OPENGL features, either stick with arb_5.5 or compile arb from source)
+
+        * OSX version is available as arb-*.osx.tgz
+          and via MacPorts (see arb_OS_X_MacPorts.txt included inside arb-*.osx.tgz)
 
 
 Install/Update ARB
 ------------------
 
-        ARB consists of more than 1200 files which are installed into a single
+        ARB consists of more than 1400 files which are installed into a single
         directory. Creating this directory, copying all data into it, and setting
         the permissions correctly is done by the installation script
 
                 'arb_install.sh'
 
-        Goto the directory, where the files
+        Open a terminal, change to the directory where you have saved the
+        files needed for installation:
 
                 'arb_install.sh'                // install script
                 'arb_README.txt'                // this file
-                'arb.*.tgz'                     // your chosen ARB version
+                'arb-*.tgz'                     // your chosen ARB version
 
 
-        are located and type
+        and type
 
                 '/bin/sh arb_install.sh'
+
+        (to install arb for all users call the script as root or via sudo)
+
 
         Answer all questions asked by the script.
 
@@ -83,7 +91,7 @@ Install/Update ARB
                 to the ARB installation directory
                 Append   $ARBHOME/bin   to your PATH
 
-        reread it,      (logout+login )
+        reread it,      (logout+login)
 
         goto a directory with a demo database 'eg demo.arb'
         and start 'ARB' with

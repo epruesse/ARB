@@ -25,6 +25,7 @@ export POST_COMPILE
 
 export LD_LIBRARY_PATH LIBPATH SYSLIBS
 export GTKLIBS
+export ARB_GLIB_LIBS
 export GL_LIBS_SYS GL_PNGLIBS_SYS
 export TIFFLIBS
 export EXECLIBS
@@ -45,3 +46,6 @@ export SHOWTODO
 export CLANG_STATIC_CHECKER
 export CCC_ANALYZER_CPLUSPLUS
 
+# jenkins related
+export SVN_URL
+export SVN_REVISION
