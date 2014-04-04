@@ -395,21 +395,23 @@ inline const char *get_awar_name(const char *awar_base_name, const char *entry) 
 }
 
 static void filename_changed_cb(AW_root *awr, const char *awar_base_name) {
-    AW_awar *name_awar     = awr->awar(get_awar_name(awar_base_name, "name"));
     AW_awar *filename_awar = awr->awar(get_awar_name(awar_base_name, "file_name"));
 
     char *name;
     char *suffix;
     GB_split_full_path(filename_awar->read_char_pntr(), NULL, NULL, &name, &suffix);
 
-    const char *shown_name;
-    if (strcmp(name, ":") == 0 && !suffix) {
-        shown_name = ": (DB loaded in ARB_NT)";
+    if (name) {
+        AW_awar    *name_awar = awr->awar(get_awar_name(awar_base_name, "name"));
+        const char *shown_name;
+        if (strcmp(name, ":") == 0 && !suffix) {
+            shown_name = ": (DB loaded in ARB_NT)";
+        }
+        else {
+            shown_name = GB_append_suffix(name, suffix);
+        }
+        name_awar->write_string(shown_name);
     }
-    else {
-        shown_name = GB_append_suffix(name, suffix);
-    }
-    name_awar->write_string(shown_name);
 
     free(name);
     free(suffix);

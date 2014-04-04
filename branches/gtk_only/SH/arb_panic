@@ -12,8 +12,9 @@ err () {
     exit 1
 }
 
-
-chooser="/tmp/arb_pids_${USER}_*"
+TMPDIR=~/.arb_tmp/tmp
+mkdir -p $TMPDIR
+chooser="$TMPDIR/arb_pids_${USER}_*"
 
 separator PANIC
 echo "  This Module tries to save a running database"
@@ -29,7 +30,7 @@ separator
 echo "Please choose one line and enter the rightmost number"
 
 read ARB_PID
-if [ ! -f /tmp/arb_pids_${USER}_${ARB_PID} ]; then
+if [ ! -f $TMPDIR/arb_pids_${USER}_${ARB_PID} ]; then
     err "Incorrect Choice"
 fi
 
@@ -37,11 +38,11 @@ separator
 echo "Please enter full path (to save DB):"
 read FILE
 
-panicfile="/tmp/arb_panic_${USER}_${ARB_PID}"
+panicfile="$TMPDIR/arb_panic_${USER}_${ARB_PID}"
 rm -f $panicfile
 echo "$FILE" >$panicfile
 ok=false
-for i in `cat /tmp/arb_pids_${USER}_${ARB_PID}`; do
+for i in `cat $TMPDIR/arb_pids_${USER}_${ARB_PID}`; do
     echo "[Sending SIGHUP to pid $i]"
     if kill -HUP $i 2>/dev/null; then
         ok=true

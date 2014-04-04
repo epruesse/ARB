@@ -5,6 +5,7 @@
 # documentation for single variables can be found in ../SOURCE_TOOLS/parent_make.txt
 
 export ARBHOME
+export ARB_64
 
 export use_ARB_main
 export use_ARB_main_C
@@ -14,8 +15,10 @@ export OPENGL
 export RNA3D_LIB 
 
 export MACH
-export DEBIAN
 export DARWIN
+export LINUX
+export DEBIAN
+export REDHAT
 
 export A_CC  CC_INCLUDES
 export A_CXX CXX_INCLUDES
