@@ -144,7 +144,7 @@ static AW_window *create_nds_export_window(AW_root *root) {
     aws->insert_option        ("Comma separated", "C", NDS_OUTPUT_COMMA_SEPARATED);
     aws->update_option_menu();
 
-    AW_create_fileselection(aws, AWAR_EXPORT_NDS);
+    AW_create_standard_fileselection(aws, AWAR_EXPORT_NDS);
 
     return aws;
 }
@@ -414,7 +414,7 @@ static AW_window *NT_create_save_quick_as_window(AW_root *aw_root, const char *b
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
-        AW_create_fileselection(aws, base_name);
+        AW_create_standard_fileselection(aws, base_name);
 
         aws->at("comment");
         aws->create_text_field(AWAR_DB_COMMENT);
@@ -504,7 +504,7 @@ static AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    AW_create_fileselection(aws, base_name);
+    AW_create_standard_fileselection(aws, base_name);
 
     aws->at("type");
     aws->label("Type ");

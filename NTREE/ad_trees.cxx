@@ -279,7 +279,7 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->insert_option("ARB_XML TREE FORMAT",                  "X", AD_TREE_EXPORT_FORMAT_XML);
     aws->update_option_menu();
 
-    AW_create_fileselection(aws, AWAR_TREE_EXPORT_FILEBASE);
+    AW_create_standard_fileselection(aws, AWAR_TREE_EXPORT_FILEBASE);
 
     aws->at("user2");
     aws->auto_space(10, 10);
@@ -433,7 +433,7 @@ static AW_window *create_tree_import_window(AW_root *root)
     aws->label("Tree name");
     aws->create_input_field(AWAR_TREE_IMPORT "/tree_name", 15);
 
-    AW_create_fileselection(aws, AWAR_TREE_IMPORT "");
+    AW_create_standard_fileselection(aws, AWAR_TREE_IMPORT);
 
     aws->at("save2");
     aws->callback(tree_load_cb);
