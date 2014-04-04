@@ -291,7 +291,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
         awm->sep______________();
         awm->insert_menu_topic("save_props", "Save properties (ntree.arb)", "p", "savedef.hlp", AWM_ALL, AW_save_properties);
 
-        awm->insert_help_topic("ARB_MERGE help", "h", "arb_merge.hlp", AWM_ALL, makeHelpCallback("arb_merge.hlp"));
+        awm->insert_help_topic("ARB_MERGE help", "M", "arb_merge.hlp", AWM_ALL, makeHelpCallback("arb_merge.hlp"));
 
 
         // display involved databases

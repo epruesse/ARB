@@ -432,10 +432,10 @@ public:
     void sep______________(); // insert a separator
     void close_sub_menu();
 
-    void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, const WindowCallback& cb);
-    void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_help_topic(name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
-    void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
-        insert_help_topic(name, mnemonic, help_text_, mask, makeWindowCallback(f, cd1, cd2));
+    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, const WindowCallback& cb);
+    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, AW_CB0 cb) { insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(cb)); }
+    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
+        insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(f, cd1, cd2));
     }
 
     // ************** Create modes on the left side ******************
