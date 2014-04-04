@@ -165,7 +165,7 @@ static void popup_macro_window(AW_window *aww) {
         aws->callback(makeWindowCallback(exec_macro_cb, true));
         aws->create_autosize_button(MACRO_PLAYBACK_MARKED_ID, "Execute with each marked species");
 
-        AW_create_fileselection(aws, AWAR_MACRO_BASE, "", "ARBMACROHOME^ARBMACRO");
+        AW_create_fileselection(aws, AWAR_MACRO_BASE, "", "ARBMACROHOME^ARBMACRO", ANY_DIR, false);
     }
     aws->activate();
 }

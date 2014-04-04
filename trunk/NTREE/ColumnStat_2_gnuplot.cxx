@@ -591,7 +591,7 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     aws->at("help"); aws->callback(makeHelpCallback("csp_2_gnuplot.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    AW_create_fileselection(aws, AWAR_CS2GP);
+    AW_create_standard_fileselection(aws, AWAR_CS2GP);
 
     aws->at("csp");
     COLSTAT_create_selection_list(aws, column_stat);

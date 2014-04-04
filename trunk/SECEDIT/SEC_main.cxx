@@ -424,7 +424,7 @@ static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_int
     aws->callback(makeHelpCallback("sec_imexport.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    AW_create_fileselection(aws, AWAR_SECEDIT_SAVEDIR);
+    AW_create_standard_fileselection(aws, AWAR_SECEDIT_SAVEDIR);
 
     aws->at("save");
     if (export_to_file) {

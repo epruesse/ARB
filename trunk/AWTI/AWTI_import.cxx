@@ -1204,7 +1204,7 @@ static void genom_flag_changed(AW_root *awr) {
     }
     else {
         AWTI_import_set_ali_and_type(awr, GENOM_ALIGNMENT, "dna", 0);
-        awr->awar_string(AWAR_FORM"/filter", ".fit"); // *hack* to hide normal import filters
+        awr->awar_string(AWAR_FORM"/filter", ".fit"); // *hack* to hide normal import filters // @@@ doesnt work?!
     }
 }
 
@@ -1293,8 +1293,8 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
         aws->callback(makeHelpCallback("arb_import.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
-        AW_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD", true, true); // select import filename
-        AW_create_fileselection(aws, AWAR_FORM, "", "ARBHOME", false, false); // select import filter
+        AW_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD",     ANY_DIR, true);  // select import filename
+        AW_create_fileselection(aws, AWAR_FORM,      "",     "ARBHOME", NO_DIR,  false); // select import filter
 
         aws->at("auto");
         aws->callback(detect_input_format_cb);
