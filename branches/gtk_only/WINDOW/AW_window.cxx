@@ -840,7 +840,7 @@ void MnemonicScope::add(const char *topic_name, const char *mnemonic) {
     }
 }
 
-static void open_test_duplicate_mnemonics(int , const char *sub_menu_name, const char *mnemonic) {
+static void open_test_duplicate_mnemonics(const char *sub_menu_name, const char *mnemonic) {
     aw_warn_if_fail_BREAKPOINT(current_mscope);
     current_mscope->add(sub_menu_name, mnemonic);
 
@@ -848,7 +848,7 @@ static void open_test_duplicate_mnemonics(int , const char *sub_menu_name, const
     current_mscope             = new MnemonicScope(sub_menu_name, prev);
 }
 
-static void close_test_duplicate_mnemonics(int ) {
+static void close_test_duplicate_mnemonics() {
     MnemonicScope *prev = current_mscope->get_parent();
     delete current_mscope;
     current_mscope = prev;
@@ -861,19 +861,19 @@ static void init_duplicate_mnemonic(const char *window_name) {
     }
     else {
         while (current_mscope->get_parent()) {
-            close_test_duplicate_mnemonics(0);
+            close_test_duplicate_mnemonics();
         }
     }
 }
 
-static void test_duplicate_mnemonics(int , const char *topic_name, const char *mnemonic) {
+static void test_duplicate_mnemonics(const char *topic_name, const char *mnemonic) {
     aw_assert(current_mscope);
     current_mscope->add(topic_name, mnemonic);
 }
 
 static void exit_duplicate_mnemonic() {
     delete help_mscope; help_mscope = NULL;
-    while (current_mscope) close_test_duplicate_mnemonics(0);
+    while (current_mscope) close_test_duplicate_mnemonics();
 }
 
 
@@ -900,7 +900,7 @@ void AW_window::create_menu(const char *name, const char *mnemonic, AW_active ma
 
 void AW_window::close_sub_menu(){
 #ifdef CHECK_DUPLICATED_MNEMONICS
-    close_test_duplicate_mnemonics(prvt->menus.size()-1);
+    close_test_duplicate_mnemonics();
 #endif
     aw_return_if_fail(prvt->menus.size() > 1);
     
@@ -1166,7 +1166,7 @@ void AW_window::insert_help_topic(const char *labeli,
     if (!current_mscope) init_duplicate_mnemonic(window_name);
     MnemonicScope *tmp = current_mscope;
     current_mscope     = help_mscope;
-    test_duplicate_mnemonics(0, labeli, mnemonic);
+    test_duplicate_mnemonics(labeli, mnemonic);
     current_mscope     = tmp;
 #endif
 
@@ -1183,7 +1183,7 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
     aw_return_if_fail(topic_id != NULL);
 
 #ifdef CHECK_DUPLICATED_MNEMONICS
-    test_duplicate_mnemonics(prvt->menus.size(), labeli, mnemonic);
+    test_duplicate_mnemonics(labeli, mnemonic);
 #endif
     prvt->action_template.set_label(labeli); // fixme mnemonic
     if (helpText) help_text(helpText);
@@ -1211,7 +1211,7 @@ void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_act
     aw_return_if_fail(prvt->menus.top());
   
 #ifdef CHECK_DUPLICATED_MNEMONICS
-    open_test_duplicate_mnemonics(prvt->menus.size(), labeli, mnemonic);
+    open_test_duplicate_mnemonics(labeli, mnemonic);
 #endif
   
     //create new menu item with attached submenu
