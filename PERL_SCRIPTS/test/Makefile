@@ -1,7 +1,7 @@
 
 LIBDIR := $(ARBHOME)/lib
 
-ifdef DARWIN
+ifeq ($(DARWIN),1)
 SO:=bundle
 else
 SO:=so

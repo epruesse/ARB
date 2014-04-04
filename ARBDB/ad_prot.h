@@ -79,6 +79,7 @@ GB_ERROR GBT_check_arb_file(const char *name) __ATTR__USERESULT;
 /* ad_save_load.cxx */
 GB_CSTR GB_mapfile(GBDATA *gb_main);
 GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype);
+GB_ERROR GB_create_parent_directory(const char *path);
 GB_ERROR GB_create_directory(const char *path);
 GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype);
 GB_ERROR GB_save_as(GBDATA *gbd, const char *path, const char *savetype);
@@ -250,6 +251,7 @@ GB_CSTR GB_path_in_ARBLIB(const char *relative_path);
 GB_CSTR GB_path_in_HOME(const char *relative_path);
 GB_CSTR GB_path_in_arbprop(const char *relative_path);
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right);
+GB_CSTR GB_path_in_arb_temp(const char *relative_path);
 FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_fullname);
 char *GB_create_tempfile(const char *name);
 char *GB_unique_filename(const char *name_prefix, const char *suffix);

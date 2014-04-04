@@ -41,6 +41,23 @@
 # Read configuration 
 include config.makefile
 
+# set defaults for variables commented out in config.makefile:
+ifndef DARWIN
+	DARWIN:=0
+endif
+ifndef LINUX
+	LINUX:=0
+endif
+ifndef DEBIAN
+	DEBIAN:=0
+endif
+ifndef REDHAT
+	REDHAT:=0
+endif
+ifndef ARB_64
+	ARB_64=1#default to 64bit
+endif
+
 # compiler settings:
 A_CC:=$(CC)# compile C
 A_CXX:=$(CXX)# compile C++
@@ -68,7 +85,7 @@ ALLOWED_gcc_VERSIONS=\
 	      4.5.2 \
 	4.6.1 4.6.2 4.6.3 \
 	4.7.1 4.7.2 4.7.3 \
-	4.8.0 4.8.1 \
+	4.8.0 4.8.1 4.8.2 4.8.3 \
 
 # supported clang versions:
 ALLOWED_clang_VERSIONS=\
@@ -133,7 +150,7 @@ endif
 
 #---------------------- define special directories for non standard builds
 
-ifdef DARWIN
+ifeq ($(DARWIN),1)
 	OSX_FW:=/System/Library/Frameworks
 	OSX_FW_OPENGL:=$(OSX_FW)/OpenGL.framework/Versions/A/Libraries
 	OSX_FW_GLUT:=$(OSX_FW)/GLUT.framework/Versions/A/Libraries
@@ -142,7 +159,7 @@ endif
 
 #----------------------
 
-ifdef DARWIN
+ifeq ($(DARWIN),1)
 	LINK_STATIC=1# link static
 else
 	LINK_STATIC=0# link dynamically
@@ -151,18 +168,25 @@ endif
 
 shared_cflags :=# flags for shared lib compilation
 lflags :=# linker flags
+clflags :=# linker flags (when passed through gcc)
 extended_warnings :=# warning flags for C and C++-compiler
 extended_cpp_warnings :=# warning flags for C++-compiler only
 
 
 ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
-	ifdef USE_CLANG
+	ifeq ($(USE_CLANG),1)
 		cflags := -O3# compiler flags (C and C++)
 	else
 		cflags := -O4# compiler flags (C and C++)
-		lflags += -O99# linker flags
+		lflags += -O2# linker flags
+		clflags += -Wl,-O2# passthrough linker flags
 	endif
+endif
+
+ifeq ($(DEBIAN),1)
+	lflags += -rpath=/usr/lib/arb/lib -z relro
+	clflags += -Wl,-rpath=/usr/lib/arb/lib -Wl,-z,relro
 endif
 
 ifeq ($(DEBUG),1)
@@ -180,8 +204,9 @@ endif
 #	cflags := -O0  $(gdb_common) -gstabs  # using stabs (same here IIRC)
 #	cflags := -O2 $(gdb_common) # use this for callgrind (force inlining)
 
-ifndef DARWIN
+ifeq ($(DARWIN),0)
 	lflags += -g
+	clflags += -Wl,-g
 endif
 
 # control how much you get spammed
@@ -243,9 +268,7 @@ endif
 #---------------------- developer
 
 ifneq ($(DEVELOPER),ANY) # ANY=default setting (skip all developer specific code)
- ifdef dflags
 	dflags += -DDEVEL_$(DEVELOPER)# activate developer/release specific code
- endif
 endif
 
 ifndef SHOWTODO
@@ -261,33 +284,32 @@ endif
 
 #---------------------- 32 or 64 bit
 
-ifndef ARB_64
-	ARB_64=0#default to 32bit
-endif
 ifndef BUILDHOST_64
 	BUILDHOST_64:=$(ARB_64)# assume build host is same as version (see config.makefile)
 endif
 
 cross_cflags:=
 cross_lflags:=
+cross_clflags:=
 
 ifeq ($(ARB_64),1)
 	dflags += -DARB_64 #-fPIC 
-	lflags +=
 	shared_cflags += -fPIC
 
 	ifeq ($(BUILDHOST_64),1)
 #		build 64-bit ARB version on 64-bit host
 		CROSS_LIB:=# empty = autodetect below
-		ifdef DARWIN
-			cross_cflags += -arch x86_64
-			cross_lflags += -arch x86_64
+		ifeq ($(DARWIN),1)
+			cross_cflags  += -arch x86_64
+			cross_lflags  += -arch x86_64
+			cross_clflags += -arch x86_64
 		endif
 	else
 #		build 64-bit ARB version on 32-bit host
 		CROSS_LIB:=/lib64
 		cross_cflags += -m64
 		cross_lflags += -m64 -m elf_x86_64
+		cross_clflags += -m64 -Wl,-m64,-m,elf_x86_64
 	endif
 else
 	ifeq ($(BUILDHOST_64),1)
@@ -295,14 +317,16 @@ else
 		CROSS_LIB:=# empty = autodetect below
 		cross_cflags += -m32
 		cross_lflags += -m32 -m elf_i386 
+		cross_clflags += -m32 -Wl,-m32,-m,elf_i386 
 	else
 #		build 32-bit ARB version on 32-bit host
 		CROSS_LIB:=/lib
 	endif
 endif
 
-cflags += $(cross_cflags)
-lflags += $(cross_lflags)
+cflags  += $(cross_cflags)
+lflags  += $(cross_lflags)
+clflags += $(cross_clflags)
 
 ifeq ('$(CROSS_LIB)','')
 # autodetect libdir
@@ -343,7 +367,7 @@ endif
 
 dflags += -D$(MACH) # define machine
 
-ifdef DARWIN
+ifeq ($(DARWIN),1)
 	shared_cflags += -fno-common
 else
 	dflags +=  $(shell getconf LFS_CFLAGS)
@@ -394,7 +418,7 @@ ifeq ($(OPENGL),1)
 	GL_LIB_SYS := -lGL -lGLU
 	GL_LIB_ARB := -L$(ARBHOME)/GL/glAW -lglAW
 
-        ifdef DEBIAN
+        ifeq ($(DARWIN),1)
 	        GL_LIB_SYS += -lpthread
         endif
 
@@ -402,7 +426,7 @@ ifeq ($(OPENGL),1)
         GL_PNGLIBS_SYS := -lpng
 
         GLEWLIB := -lGLEW -lGLw
-	ifdef DARWIN
+	ifeq ($(DARWIN),1)
 		GLUTLIB := -glut
 	else
 		GLUTLIB := -lglut
@@ -442,7 +466,7 @@ ARB_GLIB_LIBS:=$(strip    $(shell pkg-config --libs   $(ARB_NEEDED_GLIB)))
 
 SYSLIBS:=
 
-ifdef DARWIN
+ifeq ($(DARWIN),1)
 	SYSLIBS += -lstdc++
 else
 	SYSLIBS += -lm $(ARB_GLIB_LIBS)
@@ -451,7 +475,7 @@ endif
 #---------------------- include symbols?
 
 ifeq ($(TRACESYM),1)
-	ifdef USE_CLANG
+	ifeq ($(USE_CLANG),1)
 		cdynamic =
 		ldynamic =
 	else
@@ -462,7 +486,7 @@ endif
 
 #---------------------- system dependent commands
 
-ifdef DARWIN
+ifeq ($(DARWIN),1)
 	TIME:=gtime
 else
 	TIME:=/usr/bin/time
@@ -476,6 +500,12 @@ endif
 cflags += -W -Wall $(dflags) $(extended_warnings) $(cdynamic)
 cxxflags := $(extended_cpp_warnings)
 
+# add CFLAGS + CPPFLAGS from environment for DEBIAN build
+ifeq ($(DEBIAN),1)
+	cflags := $(CFLAGS) $(cflags)
+	cxxflags += $(CPPFLAGS)
+endif
+
 ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
 cxxflags += -std=gnu++11# see also TEMPLATES/cxxforward.h@USE_Cxx11
 else
@@ -488,18 +518,19 @@ cxxflags += -std=gnu++0x
 endif
 
 LINK_STATIC_LIB := ld $(lflags) $(ldynamic) -r -o# link static lib
-LINK_EXECUTABLE := $(A_CXX) $(lflags) $(cdynamic) -o# link executable (c++)
+LINK_EXECUTABLE := $(A_CXX) $(clflags) $(cdynamic) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
 SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(A_CXX) $(lflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
+LINK_SHARED_LIB := $(A_CXX) $(clflags) $(cdynamic) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
 # delete variables unused below
 lflags:=
+clflags:=
 
 # other used tools
 MAKEDEPEND_PLAIN = makedepend
@@ -516,7 +547,7 @@ ARBDB_LIB=-lARBDB $(CORE_LIB)
 LIBS = $(ARBDB_LIB) $(SYSLIBS)
 
 GUI_LIBS_PREFIX:=
-ifdef DARWIN
+ifeq ($(DARWIN),1)
 #       this seem to be added at wrong place, since opengl is only needed to link EDIT4 
         GUI_LIBS_PREFIX:=-framework GLUT -framework OpenGL
 endif
@@ -2116,7 +2147,7 @@ run_tests: test_base clean_cov
 	$(MAKE) "ARB_PID=UT_$$$$" run_tests_faked_arbpid
 
 cleanup_faked_arbpids:
-	@-rm /tmp/arb_pids_${USER}_${ARB_PID}_*
+	@-rm ~/.arb_tmp/tmp/arb_pids_${USER}_${ARB_PID}_*
 
 cleanup_faked_arbpids_and_fail: cleanup_faked_arbpids
 	@false

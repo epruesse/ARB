@@ -1110,7 +1110,7 @@ void TEST_chains() {
 
         TEST_EXPECT_NO_ERROR(error.deliver());
         TEST_EXPECTATION(all().of(that(root_pos).is_equal_to(74), that(pos).is_equal_to(79)));
-        TEST_EXPECT_EQUAL(root, NULL); // nulled by PTD_save_upper_tree
+        TEST_EXPECT_NULL(root); // nulled by PTD_save_upper_tree
 
         fclose(out);
     }

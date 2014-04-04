@@ -162,7 +162,7 @@ $(HLP_DEST)/%.pdf.gz : $(HLP_SOURCE)/%.pdf.gz
 # --------------------------------------------------------------------------------
 
 delzerohtml:
-		-find $(HTML_LOCATION) -name "*.html" -size -1 -exec rm {} \;
+		-if [ -d $(HTML_LOCATION) ] ; then find $(HTML_LOCATION) -name "*.html" -size -1 -exec rm {} \; ; fi
 
 date :
 	$(MAKE) date.xsl.tmp

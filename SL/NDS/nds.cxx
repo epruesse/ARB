@@ -648,6 +648,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
                             }
                             case GB_STRING:
                                 field_output = GB_read_char_pntr(gbe);
+                                if (!field_output) field_output="<read error>";
                                 break;
 
                             default: {
