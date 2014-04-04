@@ -793,7 +793,7 @@ GB_ERROR MERGE_sequences_simple(AW_root *awr) {
 
                     if (!error) {
                         GB_write_flag(D_species, 1);          // mark species
-                        GB_write_usr_private(D_species, 255); // put in hitlist
+                        GB_set_user_flag(D_species, GB_USERFLAG_QUERY); // put in search&query hitlist
                         error = GBT_write_string(D_species, "name", s_name);
                     }
                 }
@@ -904,7 +904,7 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
         awtqs.expect_hit_in_ref_list = false;
         awtqs.species_name           = AWAR_SPECIES_SRC;
         awtqs.tree_name              = 0;               // no selected tree here -> can't use tree related ACI commands without specifying a tree
-        awtqs.select_bit             = 1;
+        awtqs.select_bit             = GB_USERFLAG_QUERY;
         awtqs.ere_pos_fig            = "ere1";
         awtqs.by_pos_fig             = "by1";
         awtqs.qbox_pos_fig           = "qbox1";
@@ -937,7 +937,7 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
         awtqs.gb_ref                 = GLOBAL_gb_src;
         awtqs.expect_hit_in_ref_list = true;
         awtqs.species_name           = AWAR_SPECIES_DST;
-        awtqs.select_bit             = 1;
+        awtqs.select_bit             = GB_USERFLAG_QUERY;
         awtqs.ere_pos_fig            = "ere2";
         awtqs.by_pos_fig             = "by2";
         awtqs.qbox_pos_fig           = "qbox2";

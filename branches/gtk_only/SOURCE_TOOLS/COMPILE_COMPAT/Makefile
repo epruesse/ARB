@@ -6,19 +6,20 @@
 # for variables passed from parent makefile see ../parent_make.txt
 
 .SUFFIXES: .o .cxx .depend
+.PHONY: binaries clean depends depends.init
 
 OBJECTS = c0x.o nostd.o
 
-OLD_BIN=$(subst .o,,$(OBJECTS))
-# OLD_BIN and clean_old can be removed (later)
+BINARIES = $(addprefix bin/,$(subst .o,,$(OBJECTS)))
 
-BINARIES = $(addprefix bin/,$(OLD_BIN))
+LIB_ARBDB := $(LIBPATH) $(ARBDB_LIB) $(ARB_GLIB_LIBS)
 
-LIB_ARBDB := $(LIBPATH) $(ARBDB_LIB)
+LIBDIR=../../lib
+LIB_DEPENDS := $(LIBDIR)/libARBDB.$(SHARED_LIB_SUFFIX) $(LIBDIR)/libCORE.$(SHARED_LIB_SUFFIX)
 
-$(MAIN): bin
+$(MAIN): binaries
 
-bin: clean_old
+binaries:
 	mkdir -p bin
 	$(MAKE) $(BINARIES)
 
@@ -34,10 +35,9 @@ nostd.o: nostd.cxx Makefile
 bin/% : %.o
 	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB)
 
-clean_old:
-	rm -f $(OLD_BIN)
+$(OBJECTS) : $(LIB_DEPENDS)
 
-clean: clean_old
+clean:
 	rm -f $(BINARIES) $(OBJECTS)
 
 DEPENDS = $(OBJECTS:.o=.depend)

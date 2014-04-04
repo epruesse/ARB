@@ -30,7 +30,7 @@ $(MAIN): $(TESTER_OBJECTS) test_environment
 $(ALL_OBJECTS): Makefile.setup.local Makefile
 
 test_environment: $(ALL_OBJECTS) $(TEST_ENVIRONMENT_LIBS)
-	$(LINK_EXECUTABLE) test_environment $(ALL_OBJECTS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS) $(EXECLIBS)
+	$(LINK_EXECUTABLE) test_environment $(ALL_OBJECTS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS) $(ARB_GLIB_LIBS) $(EXECLIBS)
 
 .cxx.o:
 	$(A_CXX) $(cflags) $(cxxflags) $(LOCAL_DEFINES) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CXX_INCLUDES) $(POST_COMPILE)
@@ -58,6 +58,7 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
+TestEnvironment.o: ../SOURCE_TOOLS/arb_main.h
 TestEnvironment.o: test_global.h
 TestEnvironment.o: test_unit.h
 TestEnvironment.o: UnitTester.hxx
@@ -87,6 +88,7 @@ TestEnvironment.o: $(ARBHOME)/INCLUDE/PT_com.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/servercntrl.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+UnitTester.o: ../SOURCE_TOOLS/arb_main.h
 UnitTester.o: test_global.h
 UnitTester.o: test_unit.h
 UnitTester.o: UnitTester.hxx

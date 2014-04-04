@@ -8,15 +8,25 @@ export CC = gcc
 
 #disable makeflags
 MAKEFLAGS=
+MAFFTDIR=mafft-7.055-with-extensions
+SCRIPTDIR=$(MAFFTDIR)/scripts
+BINDIR=$(MAFFTDIR)/binaries
 
 # ARBs standard target
-$(MAIN) : mafft.stamp
+$(MAIN) : $(SCRIPTDIR) $(BINDIR)
+	$(MAKE) mafft.stamp
+
+$(SCRIPTDIR):
+	mkdir -p $@
+
+$(BINDIR):
+	mkdir -p $@
 
 clean_core:
-	+cd mafft-7.055-with-extensions/core && make clean
+	+cd $(MAFFTDIR)/core && make clean
 
 clean_extensions:
-	+cd mafft-7.055-with-extensions/extensions && make clean
+	+cd $(MAFFTDIR)/extensions && make clean
 
 clean_here:
 	rm -rf $(ARBHOME)/lib/mafft
@@ -26,10 +36,10 @@ clean_here:
 clean: clean_core clean_extensions clean_here
 
 make_core:
-	+cd mafft-7.055-with-extensions/core && make && make install
+	+cd $(MAFFTDIR)/core && make && make install
 
 make_extensions:
-	+cd mafft-7.055-with-extensions/extensions && make && make install
+	+cd $(MAFFTDIR)/extensions && make && make install
 
 mafft.stamp: make_core make_extensions
 	touch mafft.stamp

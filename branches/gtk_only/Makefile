@@ -431,6 +431,13 @@ GL_LIBS:=$(GL_LIBS_ARB) $(GL_LIBS_SYS)
 
 TIFFLIBS := -ltiff
 
+#---------------------- glib:
+
+ARB_NEEDED_GLIB=glib-2.0
+
+ARB_GLIB_INCLUDE:=$(strip $(shell pkg-config --cflags $(ARB_NEEDED_GLIB)))
+ARB_GLIB_LIBS:=$(strip    $(shell pkg-config --libs   $(ARB_NEEDED_GLIB)))
+
 #---------------------- basic libs:
 
 SYSLIBS:=
@@ -438,7 +445,7 @@ SYSLIBS:=
 ifdef DARWIN
 	SYSLIBS += -lstdc++
 else
-	SYSLIBS += -lm
+	SYSLIBS += -lm $(ARB_GLIB_LIBS)
 endif
 
 #---------------------- include symbols?
@@ -522,7 +529,7 @@ LIBPATH = -L$(ARBHOME)/lib
 DEST_LIB = lib
 DEST_BIN = bin
 
-CC_INCLUDES  := -I. -I$(ARBHOME)/INCLUDE
+CC_INCLUDES  := -I. -I$(ARBHOME)/INCLUDE $(ARB_GLIB_INCLUDE)
 CXX_INCLUDES := $(CC_INCLUDES)
 MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
@@ -602,8 +609,7 @@ endif
 		@echo ''
 		@echo 'Internal maintenance:'
 		@echo ''
-		@echo ' rel_minor   - build a release (increases minor version number)'
-		@echo ' rel_major   - build a release (increases MAJOR version number)'
+		@echo ' relinfo     - show help on release targets'
 		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE ("savetest" to check filelist)'
 		@echo ' patch       - save svn diff to patchfile'
@@ -622,6 +628,20 @@ endif
 		@echo $(SEP)
 		@echo ''
 
+relinfo:
+		@echo ''
+		@echo $(SEP)
+		@echo 'Release targets:'
+		@echo ''
+		@echo ' inc_candi     - increase RC candidate-number  (only possible in "rc" branch, not needed for RC1)'
+		@echo ' inc_patch     - increase release patchlevel   (only possible in "stable" branch)'
+		@echo ' inc_minor     - increase minor version number (only possible in "trunk")'
+		@echo ' inc_major     - increase MAJOR version number (only possible in "trunk")'
+		@echo ''
+		@echo ' show_version  - show version tag'
+		@echo ''
+		@echo $(SEP)
+		@echo ''
 
 # auto-generate config.makefile:
 
@@ -903,7 +923,7 @@ ARCHS_NTREE = \
 		XML/XML.a \
 
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) link_awt
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
@@ -940,7 +960,7 @@ endif
 LIBS_EDIT4 := $(GL_LIBS)
 
 $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) link_awt 
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS) && \
@@ -969,7 +989,7 @@ ARCHS_WETC = \
 		XML/XML.a \
 
 $(WETC): $(ARCHS_WETC:.a=.dummy) link_awt
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) && \
@@ -994,7 +1014,7 @@ ARCHS_DIST = \
 		XML/XML.a \
 
 $(DIST): $(ARCHS_DIST:.a=.dummy) link_awt
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
@@ -1018,7 +1038,7 @@ ARCHS_PARSIMONY = \
 		XML/XML.a \
 
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) link_awt
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS) && \
@@ -1031,7 +1051,7 @@ ARCHS_CONVERT_ALN =	\
 		CONVERTALN/CONVERTALN.a \
 
 $(CONVERT_ALN) : $(ARCHS_CONVERT_ALN:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_CONVERT_ALN) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_CONVERT_ALN) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(EXECLIBS)"; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(EXECLIBS) && \
@@ -1045,7 +1065,7 @@ ARCHS_TREEGEN =	\
 		TREEGEN/TREEGEN.a \
 
 $(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy)
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_TREEGEN) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_TREEGEN) $(use_ARB_main_C) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS) && \
@@ -1060,7 +1080,7 @@ ARCHS_NALIGNER = \
 		SL/HELIX/HELIX.a \
 
 $(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NALIGNER) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NALIGNER) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS) && \
@@ -1078,7 +1098,7 @@ ARCHS_PHYLO = \
 		XML/XML.a \
 
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) link_awt
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PHYLO) $(GUI_LIBS) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PHYLO) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS) && \
@@ -1096,7 +1116,7 @@ ARCHS_DBSERVER = \
 		SERVERCNTRL/SERVERCNTRL.a \
 
 $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS) && \
@@ -1119,7 +1139,7 @@ ARCHS_PROBE_DEPEND = \
 		$(ARCHS_PT_SERVER) \
 
 $(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db 
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) config.makefile || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) config.makefile $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS) && \
@@ -1133,7 +1153,7 @@ ARCHS_NAMES = \
 		SERVERCNTRL/SERVERCNTRL.a \
 
 $(NAMES): $(ARCHS_NAMES:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS) && \
@@ -1198,6 +1218,7 @@ AWT/AWT.dummy:       target_is_missing_lib_prefix
 WINDOW/WINDOW.dummy: target_is_missing_lib_prefix
 
 # rule to generate main target (normally a library):
+# @@@ check effect of setting LANG=C below
 %.dummy:
 	@( export ID=$$$$; LANG=C; \
 	(( \
@@ -1852,23 +1873,32 @@ save_test: rmbak
 save_test_no_error:
 	@-$(MAKE) save_test
 
-rel_minor:
+inc_candi:
+	touch SOURCE_TOOLS/inc_candi.stamp
+	$(MAKE) do_version_update
+
+inc_patch:
+	touch SOURCE_TOOLS/inc_patch.stamp
+	$(MAKE) do_version_update
+
+inc_minor:
 	touch SOURCE_TOOLS/inc_minor.stamp
-	$(MAKE) do_release
+	$(MAKE) do_version_update
 
-rel_major:
+inc_major:
 	touch SOURCE_TOOLS/inc_major.stamp
-	$(MAKE) do_release
+	$(MAKE) do_version_update
 
-do_release: 
-	@echo Building release
-	@echo PATH=$(PATH)
-	@echo ARBHOME=$(ARBHOME)
-	-rm arb.tgz arbsrc.tgz
+do_version_update: 
+	@echo Incrementing version information
 	$(MAKE) testsave
 	$(MAKE) genheaders # auto upgrades version early
-	$(MAKE) tarfile 
-	$(MAKE) sourcetarfile
+
+show_version:
+	$(MAKE) genheaders # updates version info
+	@echo "$(SEP) ARB version info"
+	@grep ARB_VERSION TEMPLATES/arb_build.h
+	@echo "$(SEP)"
 
 release_quick:
 	-rm arb.tgz arbsrc.tgz

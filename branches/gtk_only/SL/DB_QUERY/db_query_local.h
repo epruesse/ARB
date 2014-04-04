@@ -91,7 +91,7 @@ namespace QUERY {
         }
 
         bool is_queried(GBDATA *gb_item) const {
-            return select_bit & GB_read_usr_private(gb_item);
+            return GB_user_flag(gb_item, select_bit);
         }
 
         const char *get_tree_name() const;

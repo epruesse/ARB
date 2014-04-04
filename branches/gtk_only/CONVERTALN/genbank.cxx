@@ -260,8 +260,13 @@ static void genbank_origin(Seq& seq, Reader& reader) {
 void GenbankParser::parse_keyed_section(const char *key) {
     if (str_equal(key, "LOCUS")) {
         genbank_one_entry_in(gbk.locus, reader);
-        if (!gbk.locus_contains_date())
-            warning(14, "LOCUS data might be incomplete");
+        if (!gbk.locus_contains_date()) {
+            static bool alreadyWarned = false;
+            if (!alreadyWarned) {
+                warning(14, "LOCUS data might be incomplete (no date seen)");
+                alreadyWarned = true;
+            }
+        }
     }
     else if (str_equal(key, "DEFINITION")) {
         genbank_one_entry_in(gbk.definition, reader);

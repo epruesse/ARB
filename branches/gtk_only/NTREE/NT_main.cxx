@@ -154,6 +154,8 @@ static GB_ERROR nt_check_database_consistency() {
 }
 
 __ATTR__USERESULT static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, const char *autorun_macro) {
+    AWT_initTreeAwarRegistry(GLOBAL.gb_main);
+
     GB_ERROR error = configure_macro_recording(aw_root, "ARB_NT", GLOBAL.gb_main); // @@@ problematic if called from startup-importer
     if (!error) {
         nt_create_main_window(aw_root);
@@ -163,7 +165,7 @@ __ATTR__USERESULT static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_ro
         }
     }
 
-    if (!error && autorun_macro) awt_execute_macro(aw_root, autorun_macro); // @@@ triggering execution here is ok, but its a bad place to pass 'autorun_macro'. Should be handled more generally
+    if (!error && autorun_macro) execute_macro(aw_root, autorun_macro); // @@@ triggering execution here is ok, but its a bad place to pass 'autorun_macro'. Should be handled more generally
 
     return error;
 }
@@ -178,8 +180,6 @@ static ARB_ERROR load_and_startup_main_window(AW_root *aw_root, const char *auto
     }
     else {
         aw_root->awar(AWAR_DB_PATH)->write_string(db_server);
-
-        AWT_initTreeAwarRegistry(GLOBAL.gb_main);
 
 #define MAXNAMELEN 35
         int len = strlen(db_server);
@@ -378,12 +378,10 @@ public:
     void print_help(FILE *out) const {
         fprintf(out,
                 "\n"
-                "arb_ntree version " ARB_VERSION "\n"
+                "arb_ntree version " ARB_VERSION_DETAILED "\n"
                 "(C) 1993-" ARB_BUILD_YEAR " Lehrstuhl fuer Mikrobiologie - TU Muenchen\n"
                 "http://www.arb-home.de/\n"
-#if defined(SHOW_WHERE_BUILD)
                 "(version build by: " ARB_BUILD_USER "@" ARB_BUILD_HOST ")\n"
-#endif // SHOW_WHERE_BUILD
                 "\n"
                 "Possible usage:\n"
                 "  arb_ntree               => start ARB (intro)\n"
@@ -926,6 +924,19 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
 }
 
 int ARB_main(int argc, char *argv[]) {
+    {
+        // i really dont want 'arb_ntree --help' to startup the GUI
+        // hack: parse CL twice
+        NtreeCommandLine cl(argc, argv);
+        bool             cl_ok = !cl.parse().deliver();
+        if (cl_ok) {
+            if (cl.wants_help()) {
+                cl.print_help(stderr);
+                return EXIT_SUCCESS;
+            }
+        }
+    }
+
     aw_initstatus();
     GB_set_verbose();
 

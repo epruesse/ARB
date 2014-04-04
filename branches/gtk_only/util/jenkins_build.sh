@@ -2,6 +2,8 @@
 set -x
 set -o errexit
 
+ARG=${1:-}
+
 # set standard variables expected by ARB build
 export ARBHOME=`pwd`
 export PATH=$ARBHOME/bin:$PATH
@@ -31,6 +33,8 @@ rm -f $CFG
 
 TARSUF=""
 UNIT_TESTS=1
+DEBUG=0
+DEVELOPER="ANY"
 
 case $MODE in
   DEBUG)
@@ -38,12 +42,10 @@ case $MODE in
     TARSUF="-dbg"
     ;;
   NDEBUG)
-    DEBUG=0
     TARSUF="-ndbg"
     ;;
   RELEASE)
-    DEBUG=0
-    TARSUF="-user"
+    DEVELOPER="RELEASE"
     UNIT_TESTS=0
     ;;
   *)
@@ -68,12 +70,17 @@ case $OSNAME in
     ;;
 esac
 
+if [ -z "${TGTNAME:-}" ]; then
+    echo "Error: unknown TGTNAME - build refused"
+    false
+fi
+
 echo "DEBUG := $DEBUG" >> $CFG
 echo "UNIT_TESTS := $UNIT_TESTS" >> $CFG
 echo "GTK := 2" >> config.makefile
 
 echo "OPENGL := 0" >> $CFG
-echo "DEVELOPER := ANY" >> $CFG
+echo "DEVELOPER := $DEVELOPER" >> $CFG
 echo "DEBUG_GRAPHICS := 0" >> $CFG
 echo "PTPAN := 0" >> $CFG
 echo "ARB_64 := 1" >> $CFG
@@ -90,17 +97,70 @@ fi
 
 # build, tar and test
 if [ $BUILD == 1 ]; then
-    make build
-    make tarfile_quick
+    if [ "$ARG" == "fake_build" ]; then
+        echo "Faking build"
+        echo "Faked arb.tgz"     > arb.tgz
+        echo "Faked arb-dev.tgz" > arb-dev.tgz
+    else
+        make build
+        make tarfile_quick
+    fi
+
+    # jenkins archieves all files matching "**/arb*.tgz"
+    # jenkins publishes     files matching "**/arb*.tgz", but not "**/arb*dev*.tgz,**/arb*bin*.tgz"
+
+    if [ -n "${SVN_TAG:-}" ]; then
+        # tagged build
+        VERSION_ID=${SVN_TAG}${TARSUF}
+        # remove arb-prefixes (added below)
+        VERSION_ID="${VERSION_ID##arb[-_]}"
+    else
+        # normal build
+        VERSION_ID=r${SVN_REVISION}${TARSUF}
+    fi
+
+    VERSION_ID=arb-${VERSION_ID}
+    VERSION_ID_TARGET=${VERSION_ID}.${TGTNAME}
 
     if [ "$MODE" == "RELEASE" ]; then
-        mv arb.tgz     arb-r${SVN_REVISION}${TARSUF}.${TGTNAME}.tgz
+        if [ "${TGTNAME}" == "ubuntu1004-amd64" ]; then
+            # perform things needed only once (pack source, copy README + install script):
+            # 1. pack source (svn version of slave and master must match!)
+            if [ "$ARG" == "fake_build" ]; then
+                echo "Faked ${VERSION_ID}-source.tgz" > ${VERSION_ID}-source.tgz
+            else
+                if [ "$ARG" == "from_tarball" ]; then
+                    echo "Note: build from tarball - do not attempt to create a tarball"
+                else
+                    make save
+                    # archived and published on ftp:
+                    cp --dereference arbsrc.tgz ${VERSION_ID}-source.tgz
+                    rm arbsrc*.tgz
+                fi
+            fi
+            # 2. move extra files into folder 'toftp' - content is copied to release directory
+            mkdir toftp
+            cp -p arb_README.txt toftp
+            cp -p arb_install.sh toftp
+            ls -al toftp
+        fi
+
+        # archived and published on ftp:
+        mv arb.tgz ${VERSION_ID_TARGET}.tgz
     else
-        rm arb.tgz
+        # only archived (needed by SINA):
+        mv arb.tgz ${VERSION_ID_TARGET}-bin.tgz
     fi
-    mv arb-dev.tgz arb-r${SVN_REVISION}${TARSUF}-dev.${TGTNAME}.tgz
+    # only archived (needed by SINA):
+    mv arb-dev.tgz ${VERSION_ID_TARGET}-dev.tgz
 
     make ut
+
+    echo "-------------------- compiled-in version info:"
+    (bin/arb_ntree --help || true)
+    echo "-------------------- existing tarballs:"
+    ls -al arb*.tgz
+    echo "--------------------"
 else
     echo "Skipping this build."
     # @@@ maybe need to fake unit-test-result here
