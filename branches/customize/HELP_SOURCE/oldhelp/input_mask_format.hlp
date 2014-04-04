@@ -1,0 +1,163 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	input_mask.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	aci.hlp
+SUB	srt.hlp
+SUB	reg.hlp
+
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		User mask syntax description
+
+OCCURRENCE	In all user mask files.
+
+DESCRIPTION
+
+        This document describes the syntax of user masks (*.mask files)
+
+            <mask-file>         ::= <id-line>
+                                    [<parameter-line>]+
+                                    '@MASK_BEGIN'
+                                    [<mask-layout-line>]+
+                                    '@MASK_END'
+
+            <id-line>           ::= 'ARB-Input-Mask'<cr>
+
+            <parameter-line>    ::= '@'<parameter-name>'='<value><cr>
+            <parameter-name>    ::= name of the parameter (i.e. 'ITEMTYPE')
+            <value>             ::= the value of the parameter (depends on parameter)
+
+            <mask-layout-line>  ::= <widget>[','<widget>]*
+            <widget>            ::= <widget-name>'('<widget-parameters>')'
+            <widget-name>       ::= name of the widget (i.e. 'EDIT')
+            <widget-parameters> ::= <widget-parameter>[','<widget-parameter>]*
+
+            <widget-parameter>  ::= <numeric-parameter> | <text-parameter>
+            <numeric-parameter> ::= [0-9]+
+            <text-parameter>    ::= "text"
+
+            <cr>                ::= a newline character
+
+
+        Parameter lines:
+
+            <parameter-name>        mandatory?  allowed <value>s
+            ----------------------------------------------------------------------------------
+            ITEMTYPE                yes         'Species', 'Organism', 'Gene' or 'Experiment'
+
+            TITLE                   no          the title of the window
+
+            X_SPACING               no          x-spacing between mask elements (default: 5)
+            Y_SPACING               no          y-spacing --------- " --------- (default: 3)
+
+            EDIT                    no          0|1 (1 => show edit/reload buttons)
+
+        Known Widgets:
+
+            Format of the following descriptions:
+
+                   <widget> "description"
+                   description of <widget-parameters>
+
+
+            TEXT(text) "prints text to window"
+
+                <text>         mandatory; Text appearing
+
+            NEW_SECTION() "starts a new section"
+
+            TEXTFIELD(label,db-path,width) "a text input field"
+
+                <label>        mandatory; Label appearing in front of input-field
+                <db-path>      mandatory; path-name of the database entry (i.e. 'full_name' or 'ali_23s/data')
+                <width>        mandatory; width of input field (1..n)
+
+            NUMFIELD(label,db-path,width[,[min],[max]]) "a numeric input field" Note: all in [ ] is optional
+
+                <label>        mandatory; <like above>
+                <db-path>      mandatory; <like above>
+                <width>        mandatory; width of input field (1..n)
+                <min>          optional; minimum (leave empty for no minimum)
+                <max>          optional if <min>; maximum (leave empty for no maximum)
+
+            CHECKBOX(label,db-path,checked) "a checkbox"
+
+                <label>        mandatory; <like above>
+                <db-path>      mandatory; <like above>
+                <checked>      mandatory; 0 or 1 (value is used if database entry is missing)
+
+            RADIO(label,db-path,default,orientation[,radio-def]+) "a radio button field" Note: [ ]+ means: must occur once, may occur repeated
+
+                <label>        mandatory; <like above>
+                <db-path>      mandatory; <like above>
+                <default>      mandatory; 1 .. n (which radio button is active if database entry is missing)
+                <orientation>  mandatory; H,V,X,Y (horizontal or vertical)
+
+                <radio-def> ::= <text>,<db-value>
+                                or
+                                <text>,'ALLOW_EDIT',<width>,<db-value>
+
+                                <text>        mandatory; text showing up in window
+                                <db-value>    mandatory; text used as database content
+
+            OPENMASK(button-label,mask-name) "a button opening another mask"
+
+                <button-label> mandatory; Label appearing on button
+                <mask-name>    mandatory; User-Mask to activate
+
+            CHANGEMASK(button-label,mask-name) "same as OPENMASK but closes current mask"
+
+            WWW(button-label,url-srt) "a button to open an URL in the web-browser"
+
+                <button-label> mandatory; Label appearing on button
+                <url-srt>      mandatory; ACI/SRT expression which creates an URL (script runs on current item)
+
+            ID(id) "assign an identifier to the last element"
+
+                <id>           mandatory; a unique identifier
+
+            GLOBAL(id,default) "declare a global variable (visible in ALL masks)"
+
+                <id>           mandatory; a unique identifier
+                <default>      mandatory; default value for variable
+
+            LOCAL(id,default) "declare a local variable (only visible in CURRENT masks)"
+
+                <id>           mandatory; a unique identifier
+                <default>      mandatory; default value for variable
+
+            SCRIPT(id,aci)     "declare a script"
+
+                <id>           mandatory; a unique identifier
+                <aci>          mandatory; the script itself (" has to be written as \")
+
+            SHOW(label,idref,width) "display/edit a variable or script"
+
+                <label>        mandatory; Label appearing in front of input-field
+                <idref>        mandatory; name of an existing identifier
+                <width>        mandatory; width of display textfield
+
+            ASSIGN(dest,source,button-label) "a button to assign value of 'source' to 'dest'"
+
+                <dest>         mandatory; ID of destination (may be a variable, a named field, etc.)
+                <source>       mandatory; ID of source (variable, named field, script, etc.)
+                <button-label> mandatory; text appearing on button
+
+
+        Examples for Widgets:
+
+            TEXTFIELD(   "Name   ",  "full_name" , 50  )
+            TEXT("Publication:")
+            TEXTFIELD(   "Author ",  "author" ,  40  )    ID(AUTHOR)
+            TEXTFIELD(   "Title  ",  "title" ,  40  )
+            TEXTFIELD(   "Journal",  "journal" ,  30  )
+
+            TEXTFIELD(   "Remark ",  "remark2" ,  50  )
+
+            CHECKBOX(   "Checked ",  "checked" ,  0  ) TEXTFIELD("by","checked_by",8)
+
+
