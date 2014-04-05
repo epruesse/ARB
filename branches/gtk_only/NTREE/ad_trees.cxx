@@ -279,7 +279,7 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->insert_option("ARB_XML TREE FORMAT",                  "X", AD_TREE_EXPORT_FORMAT_XML);
     aws->update_option_menu();
 
-    AW_create_fileselection(aws, AWAR_TREE_EXPORT_FILEBASE);
+    AW_create_standard_fileselection(aws, AWAR_TREE_EXPORT_FILEBASE);
 
     aws->at("user2");
     aws->auto_space(10, 10);
@@ -433,7 +433,7 @@ static AW_window *create_tree_import_window(AW_root *root)
     aws->label("Tree name");
     aws->create_input_field(AWAR_TREE_IMPORT "/tree_name", 15);
 
-    AW_create_fileselection(aws, AWAR_TREE_IMPORT "");
+    AW_create_standard_fileselection(aws, AWAR_TREE_IMPORT);
 
     aws->at("save2");
     aws->callback(tree_load_cb);
@@ -1087,6 +1087,8 @@ void TEST_move_node_info() {
 
     const char *compared_topo = "(((((((CloInnoc,(CloTyrob,(CloTyro2,(CloTyro3,CloTyro4)))),CloBifer),(CloCarni,CurCitre)'# 2')'# 2',(CytAquat,(CelBiazo,(CorGluta,(CorAquat,Zombie2)'# 1')'# 1')'# 1')'# 1')'# 1',CloPaste),Zombie1),(CloButy2,CloButyr));";
 
+    const char *LOG = "move_node_info.log";
+
     // create copy of 'tree_removal'
     {
         GB_transaction  ta(gb_main);
@@ -1099,7 +1101,7 @@ void TEST_move_node_info() {
 
     // move node info
     {
-        TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_test", "tree_removal", "move_node_info.log", TREE_INFO_COPY, false));
+        TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_test", "tree_removal", LOG, TREE_INFO_COPY, false));
 
         TEST_EXPECT_SAVED_NEWICK__BROKEN(nSIMPLE, gb_main, "tree_removal", org_topo); // @@@ moving node info modifies topology (might be necessary to insert groups)
         TEST_EXPECT_SAVED_NEWICK(nGROUP, gb_main, "tree_removal", unwanted_topo1);
@@ -1113,7 +1115,7 @@ void TEST_move_node_info() {
 
     // add node info
     {
-        TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_tree2", "tree_removal", "move_node_info.log", TREE_INFO_ADD, false));
+        TEST_EXPECT_NO_ERROR(AWT_move_info(gb_main, "tree_tree2", "tree_removal", LOG, TREE_INFO_ADD, false));
 
         TEST_EXPECT_SAVED_NEWICK__BROKEN(nSIMPLE, gb_main, "tree_removal", org_topo); // @@@ moving node info modifies topology (might be necessary to insert groups)
         TEST_EXPECT_SAVED_NEWICK(nGROUP, gb_main, "tree_removal", unwanted_topo2);
@@ -1131,6 +1133,7 @@ void TEST_move_node_info() {
         TEST_EXPECT_SAVED_NEWICK(nREMARK, gb_main, "tree_removal", compared_topo);
     }
 
+    GB_unlink(LOG);
     GB_close(gb_main);
 }
 

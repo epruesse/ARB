@@ -169,9 +169,8 @@ AW_window *create_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
     aws->callback(makeHelpCallback("arb_export.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    AW_create_fileselection(aws, AWAR_EXPORT_FILE, "f");
-
-    AW_create_fileselection(aws, AWAR_EXPORT_FORM, "", "ARBHOME", false);
+    AW_create_fileselection(aws, AWAR_EXPORT_FILE, "f", "PWD",     ANY_DIR, false);
+    AW_create_fileselection(aws, AWAR_EXPORT_FORM, "",  "ARBHOME", NO_DIR,  false); // select export filter
 
     aws->get_root()->awar(AWAR_EXPORT_FORM"/file_name")->add_callback(export_form_changed_cb);
 

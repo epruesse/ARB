@@ -1693,7 +1693,7 @@ static AW_window *loadsave_search_parameters(AW_root *root, const LoadSaveSearch
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    AW_create_fileselection(aws, ED4_SEARCH_SAVE_BASE);
+    AW_create_standard_fileselection(aws, ED4_SEARCH_SAVE_BASE);
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("cancel");

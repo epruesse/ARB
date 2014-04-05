@@ -228,6 +228,7 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/lib\/arb_tcp\.dat$/o,
                                 qr/^\.\/lib\/gde\/.*\.menu$/o,
                                 qr/^\.\/lib\/nas\/names.*\.dat$/o,
+                                qr/^\.\/lib\/macros\/\.checks\/.*\.ids$/o,
                                 qr/^\.\/lib\/motifHack\/pixmaps\/.*$/o,
                                 qr/^\.\/PERL2ARB\/.*\.h$/o,
                                 qr/^\.\/PERL2ARB\/ARB\.bs$/o,

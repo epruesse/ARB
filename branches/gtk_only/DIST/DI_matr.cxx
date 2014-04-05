@@ -1302,7 +1302,7 @@ AW_window *DI_create_save_matrix_window(AW_root *aw_root, save_matrix_params *sa
         aws->insert_option("Tabbed (using NDS)", "R", DI_SAVE_TABBED);
         aws->update_option_menu();
 
-        AW_create_fileselection(aws, save_params->awar_base);
+        AW_create_standard_fileselection(aws, save_params->awar_base);
 
         aws->at("save2");
         aws->callback(makeWindowCallback(di_save_matrix_cb));

@@ -1501,7 +1501,7 @@ void TEST_db_filenames() {
     TEST_EXPECT_EQUAL(gb_quicksaveName("nosuch", 1), "nosuch.a01");
 }
 
-void TEST_corruptedEntries_saveProtection() {
+void TEST_SLOW_corruptedEntries_saveProtection() {
     // see #499 and #501
     GB_shell shell;
 
