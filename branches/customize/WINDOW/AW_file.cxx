@@ -179,11 +179,10 @@ class File_selection { // @@@ derive from AW_selection?
     char *pwd;
     char *pwdx;                                     // additional directories
 
-    char *previous_filename;
-
     DirDisplay dirdisp;
 
     bool leave_wildcards;
+    bool filled_by_wildcard; // last fill done with wildcard?
 
     bool show_subdirs;  // show or hide subdirs
     bool show_hidden;   // show or hide files/directories starting with '.'
@@ -203,9 +202,9 @@ public:
           filelist(NULL),
           pwd(strdup(pwd_)),
           pwdx(NULL),
-          previous_filename(NULL),
           dirdisp(disp_dirs),
           leave_wildcards(allow_wildcards),
+          filled_by_wildcard(false),
           show_subdirs(true),
           show_hidden(false),
           sort_order(SORT_ALPHA),
@@ -468,10 +467,10 @@ void File_selection::fill() {
     DuplicateLinkFilter  unDup;
     unDup.register_directory(fulldir);
 
-    bool is_wildcard = strchr(name_only, '*');
+    filled_by_wildcard = strchr(name_only, '*');
 
     if (dirdisp == ANY_DIR) {
-        if (is_wildcard) {
+        if (filled_by_wildcard) {
             if (leave_wildcards) {
                 filelist->insert(GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);
             }
@@ -529,7 +528,7 @@ void File_selection::fill() {
     bool insert_dirs = dirdisp == ANY_DIR && show_subdirs;
 
     searchTime.reset(); // limits time spent in fill_recursive
-    if (is_wildcard) {
+    if (filled_by_wildcard) {
         if (leave_wildcards) {
             fill_recursive(fulldir, strlen(fulldir)+1, name_only, false, insert_dirs);
         }
@@ -559,6 +558,10 @@ void File_selection::fill() {
     filelist->sort(false, true);
     filelist->update();
 
+    if (filled_by_wildcard && !leave_wildcards) { // avoid returning wildcarded filename (if !leave_wildcards)
+        aw_root->awar(def_name)->write_string("");
+    }
+
     free(name);
     free(fulldir);
     free(diru);
@@ -571,8 +574,7 @@ void File_selection::filename_changed(bool post_filter_change_HACK) {
 
 #if defined(TRACE_FILEBOX)
     printf("fileselection_filename_changed_cb:\n"
-           "- fname='%s'\n", fname);
-    printf("- previous_filename='%s'\n", previous_filename);
+           "- fname   ='%s'\n", fname);
 #endif // TRACE_FILEBOX
 
     if (fname[0]) {
@@ -595,117 +597,123 @@ void File_selection::filename_changed(bool post_filter_change_HACK) {
             execute_browser_command(browser_command);
             trigger_refresh();
         }
-
-        char *newName = 0;
-        char *dir     = aw_root->awar(def_dir)->read_string();
-
-        if (fname[0] == '/' || fname[0] == '~') {
-            newName = strdup(GB_canonical_path(fname));
-        }
         else {
-            if (dir[0]) {
-                if (dir[0] == '/') {
-                    newName = strdup(GB_concat_full_path(dir, fname));
-                }
-                else {
-                    char *fulldir = 0;
 
-                    if (dir[0] == '.') fulldir = AW_unfold_path(pwd, dir);
-                    else fulldir               = strdup(dir);
+            char *newName = 0;
+            char *dir     = aw_root->awar(def_dir)->read_string();
 
-                    newName = strdup(GB_concat_full_path(fulldir, fname));
-                    free(fulldir);
-                }
+#if defined(TRACE_FILEBOX)
+            printf("- dir     ='%s'\n", dir);
+#endif // TRACE_FILEBOX
+
+            if (fname[0] == '/' || fname[0] == '~') {
+                newName = strdup(GB_canonical_path(fname));
             }
             else {
-                newName = AW_unfold_path(pwd, fname);
-            }
-        }
-
-        if (newName) {
-            if (AW_is_dir(newName)) {
-                aw_root->awar(def_name)->write_string("");
-                aw_root->awar(def_dir)->write_string(newName);
-                if (previous_filename) {
-                    const char *slash              = strrchr(previous_filename, '/');
-                    const char *name               = slash ? slash+1 : previous_filename;
-                    const char *with_previous_name = GB_concat_full_path(newName, name);
-
-                    if (!AW_is_dir(with_previous_name)) { // write as new name if not a directory
-                        aw_root->awar(def_name)->write_string(with_previous_name);
+                if (dir[0]) {
+                    if (dir[0] == '/') {
+                        newName = strdup(GB_concat_full_path(dir, fname));
                     }
                     else {
-                        freenull(previous_filename);
-                        aw_root->awar(def_name)->write_string(newName);
-                    }
+                        char *fulldir = 0;
 
-                    freeset(newName, aw_root->awar(def_name)->read_string());
+                        if (dir[0] == '.') fulldir = AW_unfold_path(pwd, dir);
+                        else fulldir               = strdup(dir);
+
+                        newName = strdup(GB_concat_full_path(fulldir, fname));
+                        free(fulldir);
+                    }
                 }
                 else {
-                aw_root->awar(def_name)->write_string("");
-            }
-            }
-            else {
-                char *lslash = strrchr(newName, '/');
-                if (lslash) {
-                    if (lslash == newName) { // root directory
-                        aw_root->awar(def_dir)->write_string("/"); // write directory part
-                    }
-                    else {
-                        lslash[0] = 0;
-                        aw_root->awar(def_dir)->write_string(newName); // write directory part
-                        lslash[0] = '/';
-                    }
+                    newName = AW_unfold_path(pwd, fname);
                 }
+            }
 
-                // now check the correct suffix :
-                {
-                    char *filter = aw_root->awar(def_filter)->read_string();
-                    if (filter[0]) {
-                        char *pfilter = strrchr(filter, '.');
-                        pfilter       = pfilter ? pfilter+1 : filter;
+            if (newName) {
+#if defined(TRACE_FILEBOX)
+                printf("- newName ='%s'\n", newName);
+#endif // TRACE_FILEBOX
 
-                        char *suffix = (char*)get_suffix(newName); // cast ok, since get_suffix points into newName
-
-                        if (!suffix || strcmp(suffix, pfilter) != 0) {
-                            if (suffix && post_filter_change_HACK) {
-                                if (suffix[-1] == '.') suffix[-1] = 0;
-                            }
-                            freeset(newName, set_suffix(newName, pfilter));
+                if (AW_is_dir(newName)) {
+                    aw_root->awar(def_name)->write_string("");
+                    aw_root->awar(def_dir)->write_string(newName);
+                    aw_root->awar(def_name)->write_string("");
+                }
+                else {
+                    char *lslash = strrchr(newName, '/');
+                    if (lslash) {
+                        if (lslash == newName) { // root directory
+                            aw_root->awar(def_dir)->write_string("/"); // write directory part
+                        }
+                        else {
+                            lslash[0] = 0;
+                            aw_root->awar(def_dir)->write_string(newName); // write directory part
+                            lslash[0] = '/';
                         }
                     }
-                    free(filter);
-                }
 
-                if (strcmp(newName, fname) != 0) {
-                    aw_root->awar(def_name)->write_string(newName); // loops back if changed !!!
-                }
+                    // now check the correct suffix :
+                    {
+                        char *filter = aw_root->awar(def_filter)->read_string();
+                        if (filter[0]) {
+                            char *pfilter = strrchr(filter, '.');
+                            pfilter       = pfilter ? pfilter+1 : filter;
 
-                freeset(previous_filename, newName);
+                            char *suffix = (char*)get_suffix(newName); // cast ok, since get_suffix points into newName
+
+                            if (!suffix || strcmp(suffix, pfilter) != 0) {
+                                if (suffix && post_filter_change_HACK) {
+                                    if (suffix[-1] == '.') suffix[-1] = 0;
+                                }
+                                freeset(newName, set_suffix(newName, pfilter));
+                            }
+                        }
+                        free(filter);
+                    }
+
+                    if (strcmp(newName, fname) != 0) {
+                        aw_root->awar(def_name)->write_string(newName); // loops back if changed !!!
+                    }
+                }
             }
-        }
-        free(dir);
+            free(dir);
 
-        if (strchr(fname, '*')) { // wildcard -> search for suffix
-            trigger_refresh();
+            if (strchr(fname, '*')) { // wildcard -> search for suffix
+                trigger_refresh();
+            }
         }
     }
 
     free(fname);
 }
 
+static bool avoid_multi_refresh = false;
+
 static void fill_fileselection_cb(AW_root*, File_selection *cbs) {
-    cbs->fill();
+    if (!avoid_multi_refresh) {
+        LocallyModify<bool> flag(avoid_multi_refresh, true);
+        cbs->fill();
+    }
 }
 static void fileselection_filename_changed_cb(AW_root*, File_selection *cbs) {
-    cbs->filename_changed(false);
+    if (!avoid_multi_refresh) {
+        LocallyModify<bool> flag(avoid_multi_refresh, true);
+        cbs->filename_changed(false);
+        cbs->fill();
+    }
+    else {
+        cbs->filename_changed(false);
+    }
 }
 static void fileselection_filter_changed_cb(AW_root*, File_selection *cbs) {
-#if defined(TRACE_FILEBOX)
-    printf("fileselection_filter_changed_cb: marked as changed\n");
-#endif // TRACE_FILEBOX
-    cbs->fill();
-    cbs->filename_changed(true);
+    if (!avoid_multi_refresh) {
+        LocallyModify<bool> flag(avoid_multi_refresh, true);
+        cbs->filename_changed(true);
+        cbs->fill();
+    }
+    else {
+        cbs->filename_changed(true);
+    }
 }
 
 void File_selection::bind_callbacks() {
