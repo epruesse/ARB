@@ -57,6 +57,7 @@ public:
     void set_displayed(const char *displayed_) { freeset(displayed, copy_string_for_display(displayed_)); }
 };
 
+typedef int (*sellist_cmp_fun)(const char *disp1, const char *disp2);
 
 class AW_selection_list : virtual Noncopyable {
     AW_awar      *awar;
@@ -121,10 +122,11 @@ public:
     void init_from_array(const CharPtrArray& entries, const char *defaultEntry);
     
     void update();
-    void refresh(); 
+    void refresh();
 
     void sort(bool backward, bool case_sensitive); // uses displayed value!
-    
+    void sortCustom(sellist_cmp_fun cmp);          // uses displayed value!
+
        
     /**If the awar value changes a corresponding entry is selected.
        If no entry matches the awar value the default entry is selected.
