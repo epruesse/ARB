@@ -11,14 +11,18 @@
 #include "aw_file.hxx"
 #include "aw_awar.hxx"
 #include "aw_root.hxx"
-#include <arbdbt.h>
-#include <arb_file.h>
 #include "aw_select.hxx"
-#include <arb_strbuf.h>
 #include "aw_msg.hxx"
 #include "aw_question.hxx"
-#include <dirent.h>
+
+#include <arbdbt.h>
+#include <arb_file.h>
+#include <arb_strbuf.h>
+#include <arb_misc.h>
+#include <arb_str.h>
+
 #include <sys/stat.h>
+#include <dirent.h>
 #include <set>
 #include <string>
 
@@ -191,9 +195,13 @@ class File_selection { // @@@ derive from AW_selection?
 
     LimitedTime searchTime;
 
+    int shown_name_len;
+
     void bind_callbacks();
     void execute_browser_command(const char *browser_command);
     void fill_recursive(const char *fulldir, int skipleft, const char *mask, bool recurse, bool showdir);
+
+    void format_columns();
 
 public:
 
@@ -333,6 +341,50 @@ void File_selection::execute_browser_command(const char *browser_command) {
     }
 }
 
+inline int entryType(const char *entry) {
+    const char *typechar = "DFL";
+    for (int i = 0; typechar[i]; ++i) {
+        if (entry[0] == typechar[i]) return i;
+    }
+    return -1;
+}
+
+void File_selection::format_columns() {
+    const int FORMATTED_TYPES = 3;
+
+    int maxlen[FORMATTED_TYPES] = { 17, 17, 17 };
+
+    for (int pass = 1; pass<=2; ++pass) {
+        AW_selection_list_iterator entry(filelist);
+        while (entry) {
+            const char *disp = entry.get_displayed();
+            int         type = entryType(disp);
+
+            if (type>=0) {
+                const char *q1 = strchr(disp, '?');
+                if (q1) {
+                    const char *q2 = strchr(q1+1, '?');
+                    if (q2) {
+                        int len = q2-q1-1;
+                        if (pass == 1) {
+                            if (maxlen[type]<len) maxlen[type] = len;
+                        }
+                        else {
+                            GBS_strstruct buf(200);
+                            buf.ncat(disp, q1-disp);
+                            buf.ncat(q1+1, len);
+                            buf.nput(' ', maxlen[type]-len);
+                            buf.cat(q2+1);
+                            entry.set_displayed(buf.get_data());
+                        }
+                    }
+                }
+            }
+            ++entry;
+        }
+    }
+}
+
 void File_selection::fill_recursive(const char *fulldir, int skipleft, const char *mask, bool recurse, bool showdir) {
     DIR *dirp = opendir(fulldir);
 
@@ -357,7 +409,7 @@ void File_selection::fill_recursive(const char *fulldir, int skipleft, const cha
         if (AW_is_dir(fullname)) {
             if (!(entry[0] == '.' && (!show_hidden || entry[1] == 0 || (entry[1] == '.' && entry[2] == 0)))) { // skip "." and ".." and dotdirs if requested
                 if (showdir) {
-                    filelist->insert(GBS_global_string("D %-18s(%s)", entry, fullname), fullname);
+                    filelist->insert(GBS_global_string("D ?%s? (%s)", entry, fullname), fullname); // '?' used in format_columns()
                 }
                 if (recurse && !AW_is_link(nontruepath)) { // don't follow links
                     if (searchTime.available()) {
@@ -377,24 +429,25 @@ void File_selection::fill_recursive(const char *fulldir, int skipleft, const cha
                     struct tm *tms = localtime(&stt.st_mtime);
                     strftime(atime, 255, "%Y/%m/%d %k:%M", tms);
 
-                    long ksize    = (stt.st_size+512)/1024;
-                    char typechar = AW_is_link(nontruepath) ? 'L' : 'F';
+                    char *size     = strdup(GBS_readable_size(stt.st_size, "b"));
+                    char  typechar = AW_is_link(nontruepath) ? 'L' : 'F';
 
                     const char *sel_entry = 0;
                     switch (sort_order) {
                         case SORT_ALPHA:
-                            sel_entry = GBS_global_string("%c %-30s  %6lik  %s", typechar, nontruepath+skipleft, ksize, atime);
+                            sel_entry = GBS_global_string("%c ?%s?  %7s  %s", typechar, nontruepath+skipleft, size, atime); // '?' used in format_columns()
                             break;
                         case SORT_DATE:
-                            sel_entry = GBS_global_string("%c %s  %6lik  %s", typechar, atime, ksize, nontruepath+skipleft);
+                            sel_entry = GBS_global_string("%c %s  %7s  %s", typechar, atime, size, nontruepath+skipleft);
                             break;
                         case SORT_SIZE:
-                            sel_entry = GBS_global_string("%c %6lik  %s  %s", typechar, ksize, atime, nontruepath+skipleft);
+                            sel_entry = GBS_global_string("%c %7s  %s  %s", typechar, size, atime, nontruepath+skipleft);
                             break;
                         case DIR_SORT_ORDERS: break;
                     }
 
                     filelist->insert(sel_entry, nontruepath);
+                    free(size);
                 }
             }
         }
@@ -434,6 +487,32 @@ static void show_soft_link(AW_selection_list *filelist, const char *envar, Dupli
             filelist->insert(entry, expanded_dir);
         }
     }
+}
+
+inline bool fileOrLink(const char *d) { return d[0] == 'F' || d[0] == 'L'; }
+inline const char *gotounit(const char *d) {
+    ++d;
+    while (d[0] == ' ') ++d;
+    while (d[0] != ' ') ++d;
+    while (d[0] == ' ') ++d;
+    return d;
+}
+static int cmpBySize(const char *disp1, const char *disp2) {
+    if (fileOrLink(disp1) && fileOrLink(disp2)) {
+        const char *u1 = gotounit(disp1);
+        const char *u2 = gotounit(disp2);
+
+        if (u1[0] != u2[0]) { // diff units
+            static const char *units = "bkMGTPEZY"; // see also ../CORE/arb_misc.cxx@Tera
+
+            const char *p1 = strchr(units, u1[0]);
+            const char *p2 = strchr(units, u2[0]);
+            if (p1 != p2) {
+                return p1-p2;
+            }
+        }
+    }
+    return ARB_stricmp(disp1, disp2);
 }
 
 void File_selection::fill() {
@@ -481,12 +560,12 @@ void File_selection::fill() {
         else {
             filelist->insert(GBS_global_string("  CONTENTS OF '%s'", fulldir), fulldir);
             if (filter[0]) {
-                filelist->insert(GBS_global_string("! \' Find all\'       (*%s)", filter), "*");
+                filelist->insert(GBS_global_string("!  Find all         (*%s)", filter), "*");
             }
         }
 
         if (strcmp("/", fulldir)) {
-            filelist->insert("! \'PARENT DIR       (..)\'", "..");
+            filelist->insert("! \'PARENT DIR\'      (..)", "..");
         }
         if (show_subdirs) {
             show_soft_link(filelist, pwd, unDup);
@@ -513,17 +592,17 @@ void File_selection::fill() {
             show_soft_link(filelist, "ARB_WORKDIR", unDup);
             show_soft_link(filelist, "PT_SERVER_HOME", unDup);
 
-            filelist->insert("! \' Sub-directories (shown)\'", GBS_global_string("%s?hide?", name));
+            filelist->insert("!  Sub-directories  (shown)", GBS_global_string("%s?hide?", name));
         }
         else {
-            filelist->insert("! \' Sub-directories (hidden)\'", GBS_global_string("%s?show?", name));
+            filelist->insert("!  Sub-directories  (hidden)", GBS_global_string("%s?show?", name));
         }
     }
 
     static const char *order_name[DIR_SORT_ORDERS] = { "alpha", "date", "size" };
 
-    filelist->insert(GBS_global_string("! \' Sort order\'     (%s)", order_name[sort_order]),              GBS_global_string("%s?sort?", name));
-    filelist->insert(GBS_global_string("! \' Hidden\'         (%s)", show_hidden ? "shown" : "not shown"), GBS_global_string("%s?dot?", name));
+    filelist->insert(GBS_global_string("!  Sort order       (%s)", order_name[sort_order]),              GBS_global_string("%s?sort?", name));
+    filelist->insert(GBS_global_string("!  Hidden           (%s)", show_hidden ? "shown" : "not shown"), GBS_global_string("%s?dot?", name));
 
     bool insert_dirs = dirdisp == ANY_DIR && show_subdirs;
 
@@ -551,11 +630,17 @@ void File_selection::fill() {
     }
 
     if (!searchTime.finished_in_time()) {
-        filelist->insert(GBS_global_string("! \' Find aborted\'   (after %.1fs; click to search longer)", searchTime.allowed_duration()), GBS_global_string("%s?inctime?", name));
+        filelist->insert(GBS_global_string("!  Find aborted    (after %.1fs; click to search longer)", searchTime.allowed_duration()), GBS_global_string("%s?inctime?", name));
     }
 
     filelist->insert_default("", "");
-    filelist->sort(false, true);
+    if (sort_order == SORT_SIZE) {
+        filelist->sortCustom(cmpBySize);
+    }
+    else {
+        filelist->sort(false, false);
+    }
+    format_columns();
     filelist->update();
 
     if (filled_by_wildcard && !leave_wildcards) { // avoid returning wildcarded filename (if !leave_wildcards)
