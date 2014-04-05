@@ -286,7 +286,7 @@ static AW_window *nt_create_intro_window(AW_root *awr) {
     aws->callback(makeHelpCallback("arb_intro.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    AW_create_fileselection(aws, "tmp/nt/arbdb");
+    AW_create_standard_fileselection(aws, "tmp/nt/arbdb");
 
     aws->button_length(0);
 
