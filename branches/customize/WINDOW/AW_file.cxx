@@ -39,9 +39,6 @@ static GB_CSTR expand_symbolic_directories(const char *pwd_envar) {
     if (strcmp(pwd_envar, "PWD") == 0) {
         res = GB_getcwd();
     }
-    else if (strcmp(pwd_envar, "PT_SERVER_HOME") == 0) {
-        res = GB_path_in_ARBLIB("pts");
-    }
     else {
         res = NULL;
     }
@@ -590,7 +587,6 @@ void File_selection::fill() {
             show_soft_link(filelist, "HOME", unDup);
             show_soft_link(filelist, "PWD", unDup);
             show_soft_link(filelist, "ARB_WORKDIR", unDup);
-            show_soft_link(filelist, "PT_SERVER_HOME", unDup);
 
             filelist->insert("!  Sub-directories  (shown)", GBS_global_string("%s?hide?", name));
         }
@@ -946,7 +942,6 @@ void TEST_path_unfolding() {
         gb_getenv_hook old = GB_install_getenv_hook(expand_symbolic_directories);
 
         TEST_EXPECT_EQUAL(GB_getenv("PWD"), currDir);
-        TEST_EXPECT_EQUAL_DUPPED(strdup(GB_getenv("PT_SERVER_HOME")), strdup(GB_path_in_ARBLIB("pts"))); // need to dup here - otherwise temp buffers get overwritten
         TEST_EXPECT_EQUAL(GB_getenv("ARBHOME"), GB_getenvARBHOME());
         TEST_EXPECT_NULL(GB_getenv("ARB_NONEXISTING_ENVAR"));
 
@@ -955,19 +950,6 @@ void TEST_path_unfolding() {
 
     TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("PWD", "/bin"),                strdup("/bin"));
     TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"),            strdup(GB_path_in_ARBHOME("UNIT_TESTER/tests")));
-    {
-        // test fails if
-        char *pts_path_in_arblib = strdup(GB_path_in_ARBLIB("pts"));
-        char *pts_unfold_path    = AW_unfold_path("PT_SERVER_HOME", ".");
-        if (GB_is_directory(pts_path_in_arblib)) {
-            TEST_EXPECT_EQUAL(pts_path_in_arblib, pts_unfold_path);
-        }
-        else {
-            TEST_EXPECT_EQUAL__BROKEN(pts_path_in_arblib, pts_unfold_path, "???"); // fails if directory does not exist
-        }
-        free(pts_unfold_path);
-        free(pts_path_in_arblib);
-    }
     TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("ARB_NONEXISTING_ENVAR", "."), strdup(currDir));
 }
 
