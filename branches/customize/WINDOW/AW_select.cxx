@@ -22,23 +22,6 @@
 
 #include <Xm/List.h>
 
-static int AW_sort_AW_select_table_struct(const void *t1, const void *t2, void *) {
-    return strcmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
-                  static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
-}
-static int AW_sort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
-    return strcmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
-                  static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
-}
-static int AW_isort_AW_select_table_struct(const void *t1, const void *t2, void *) {
-    return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
-                       static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
-}
-static int AW_isort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
-    return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
-                       static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
-}
-
 // --------------------------
 //      AW_selection_list
 
@@ -499,7 +482,15 @@ size_t AW_selection_list::size() {
     return count;
 }
 
-void AW_selection_list::sort(bool backward, bool case_sensitive) {
+static int sel_sort_backward(const char *d1, const char *d2) { return strcmp(d2, d1); }
+static int sel_isort_backward(const char *d1, const char *d2) { return ARB_stricmp(d2, d1); }
+static int gb_compare_function__2__sellist_cmp_fun(const void *t1, const void *t2, void *v_selcmp) {
+    sellist_cmp_fun selcmp = (sellist_cmp_fun)v_selcmp;
+    return selcmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
+                  static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
+}
+
+void AW_selection_list::sortCustom(sellist_cmp_fun cmp) {
     size_t count = size();
     if (count) {
         AW_selection_list_entry **tables = new AW_selection_list_entry *[count];
@@ -508,17 +499,7 @@ void AW_selection_list::sort(bool backward, bool case_sensitive) {
             tables[count++] = lt;
         }
 
-        gb_compare_function comparator;
-        if (backward) {
-            if (case_sensitive) comparator = AW_sort_AW_select_table_struct_backward;
-            else comparator                = AW_isort_AW_select_table_struct_backward;
-        }
-        else {
-            if (case_sensitive) comparator = AW_sort_AW_select_table_struct;
-            else comparator                = AW_isort_AW_select_table_struct;
-        }
-
-        GB_sort((void**)tables, 0, count, comparator, 0);
+        GB_sort((void**)tables, 0, count, gb_compare_function__2__sellist_cmp_fun, (void*)cmp);
 
         size_t i;
         for (i=0; i<count-1; i++) {
@@ -530,6 +511,19 @@ void AW_selection_list::sort(bool backward, bool case_sensitive) {
 
         delete [] tables;
     }
+}
+
+void AW_selection_list::sort(bool backward, bool case_sensitive) {
+    sellist_cmp_fun cmp;
+    if (backward) {
+        if (case_sensitive) cmp = sel_sort_backward;
+        else cmp                = sel_isort_backward;
+    }
+    else {
+        if (case_sensitive) cmp = strcmp;
+        else cmp                = ARB_stricmp;
+    }
+    sortCustom(cmp);
 }
 
 void AW_selection_list::to_array(StrArray& array, bool values) {
@@ -603,7 +597,6 @@ void AW_selection_list::selectAll() {
 void AW_selection_list::deselectAll() {
     XmListDeselectAllItems(select_list_widget);
 }
-
 
 // -------------------------
 //      AW_DB_selection
