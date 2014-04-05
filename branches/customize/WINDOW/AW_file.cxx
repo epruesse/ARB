@@ -143,6 +143,30 @@ enum DirSortOrder {
     DIR_SORT_ORDERS // order count
 };
 
+class LimitedTime {
+    double       max_duration;
+    time_t       start;
+    mutable bool aborted;
+
+public:
+    LimitedTime(double max_duration_seconds) : max_duration(max_duration_seconds) { reset(); }
+    void reset() {
+        time(&start);
+        aborted = false;
+    }
+    double allowed_duration() const { return max_duration; }
+    bool finished_in_time() const { return !aborted; }
+    bool available() const {
+        if (!aborted) {
+            time_t now;
+            time(&now);
+            aborted = difftime(now, start) > max_duration;
+        }
+        return !aborted;
+    }
+    void increase() { max_duration *= 2.5; }
+};
+
 class File_selection { // @@@ derive from AW_selection?
     AW_root *awr;
 
@@ -166,6 +190,8 @@ class File_selection { // @@@ derive from AW_selection?
 
     DirSortOrder sort_order;
 
+    LimitedTime searchTime;
+
     void bind_callbacks();
     void execute_browser_command(const char *browser_command);
     void fill_recursive(const char *fulldir, int skipleft, const char *mask, bool recurse, bool showdir);
@@ -182,7 +208,8 @@ public:
           leave_wildcards(allow_wildcards),
           show_subdirs(true),
           show_hidden(false),
-          sort_order(SORT_ALPHA)
+          sort_order(SORT_ALPHA),
+          searchTime(1.3)
     {
         {
             char *multiple_dirs_in_pwd = strchr(pwd, '^');
@@ -299,6 +326,9 @@ void File_selection::execute_browser_command(const char *browser_command) {
     else if (strcmp(browser_command, "dot") == 0) {
         show_hidden = !show_hidden;
     }
+    else if (strcmp(browser_command, "inctime") == 0) {
+        searchTime.increase();
+    }
     else {
         aw_message(GBS_global_string("Unknown browser command '%s'", browser_command));
     }
@@ -331,7 +361,9 @@ void File_selection::fill_recursive(const char *fulldir, int skipleft, const cha
                     filelist->insert(GBS_global_string("D %-18s(%s)", entry, fullname), fullname);
                 }
                 if (recurse && !AW_is_link(nontruepath)) { // don't follow links
-                    fill_recursive(nontruepath, skipleft, mask, recurse, showdir);
+                    if (searchTime.available()) {
+                        fill_recursive(nontruepath, skipleft, mask, recurse, showdir);
+                    }
                 }
             }
         }
@@ -441,19 +473,19 @@ void File_selection::fill() {
     if (dirdisp == ANY_DIR) {
         if (is_wildcard) {
             if (leave_wildcards) {
-                filelist->insert((char *)GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);
+                filelist->insert(GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);
             }
             else {
-                filelist->insert((char *)GBS_global_string("  ALL '%s' in+below '%s'", name_only, fulldir), name);
+                filelist->insert(GBS_global_string("  ALL '%s' in+below '%s'", name_only, fulldir), name);
             }
         }
         else {
-            filelist->insert((char *)GBS_global_string("  CONTENTS OF '%s'", fulldir), fulldir);
+            filelist->insert(GBS_global_string("  CONTENTS OF '%s'", fulldir), fulldir);
+            if (filter[0]) {
+                filelist->insert(GBS_global_string("! \' Find all\'       (*%s)", filter), "*");
+            }
         }
 
-        if (filter[0] && !is_wildcard) {
-            filelist->insert(GBS_global_string("! \' Find all\'       (*%s)", filter), "*");
-        }
         if (strcmp("/", fulldir)) {
             filelist->insert("! \'PARENT DIR       (..)\'", "..");
         }
@@ -495,6 +527,8 @@ void File_selection::fill() {
     filelist->insert(GBS_global_string("! \' Hidden\'         (%s)", show_hidden ? "shown" : "not shown"), GBS_global_string("%s?dot?", name));
 
     bool insert_dirs = dirdisp == ANY_DIR && show_subdirs;
+
+    searchTime.reset(); // limits time spent in fill_recursive
     if (is_wildcard) {
         if (leave_wildcards) {
             fill_recursive(fulldir, strlen(fulldir)+1, name_only, false, insert_dirs);
@@ -515,6 +549,10 @@ void File_selection::fill() {
 
         fill_recursive(fulldir, strlen(fulldir)+1, mask, false, insert_dirs);
         free(mask);
+    }
+
+    if (!searchTime.finished_in_time()) {
+        filelist->insert(GBS_global_string("! \' Find aborted\'   (after %.1fs; click to search longer)", searchTime.allowed_duration()), GBS_global_string("%s?inctime?", name));
     }
 
     filelist->insert_default("", "");
@@ -604,8 +642,8 @@ void File_selection::filename_changed(bool post_filter_change_HACK) {
                     freeset(newName, aw_root->awar(def_name)->read_string());
                 }
                 else {
-                    aw_root->awar(def_name)->write_string("");
-                }
+                aw_root->awar(def_name)->write_string("");
+            }
             }
             else {
                 char *lslash = strrchr(newName, '/');
