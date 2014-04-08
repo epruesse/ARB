@@ -16,6 +16,8 @@ OCCURRENCE	ARB_IMPORT
 
 DESCRIPTION
 
+	See NOTES in LINK{arb_import.hlp} for HOWTO reactivate disabled import filters.
+
 	The three filters 'dssp_all.ift', 'dssp_2nd_struct.ift' and 'dssp_sequence.ift'
 	import protein secondary structure information and/or amino acid sequences
 	from DSSP files. In addition, some of the associated information is extracted,

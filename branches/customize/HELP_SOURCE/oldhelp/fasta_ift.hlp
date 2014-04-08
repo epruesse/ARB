@@ -21,5 +21,10 @@ DESCRIPTION     The fasta format is the most simple format available.
                 >second_species_ID
                 acgtuacgacgcaacg
 
-NOTES           The fasta format is relatively fool prove.
+SECTION		Provided import filters:
+		* fasta.ift (removes gaps)
+		* fasta_wgap.ift (like fasta.ift, but does NOT remove gaps)
+		* fasta_wacc_wgap.ift (experimental filter; imports ARB_GENE-acc's)
+
+NOTES           None
 

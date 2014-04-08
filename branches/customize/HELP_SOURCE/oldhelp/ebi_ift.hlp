@@ -8,12 +8,18 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		NOTES:   ebi
+TITLE		NOTES:   ebi / genbank
 
 OCCURRENCE	ARB_IMPORT
 
-DESCRIPTION	A well designed import filter for files from EBI
+DESCRIPTION	Two import filters for files from EBI:
+		* ebi_multi.ift
+		* ebi_silva.ift
+		
+		Two import filters for files from EBI:
+		* genbank_multi.ift
+		* genbank_silva.ift		
 
-NOTES		ebiwl is a special version of the ebi input format reader:
-		It reads all (!!!) comments. This may be a lot of data and
-		is normally not needed by simple users.
+		@@@ TODO: document differences
+
+NOTES		None
