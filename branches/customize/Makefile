@@ -70,6 +70,10 @@ ifeq ($(LD_LIBRARY_PATH),'')
 LD_LIBRARY_PATH:=${ARBHOME}/lib
 endif
 
+ifeq ($(DARWIN),1)
+LD_LIBRARY_PATH:=${ARBHOME}/lib
+endif
+
 FORCEMASK = umask 002
 NODIR=--no-print-directory
 
@@ -796,6 +800,7 @@ force_tab_check:
 
 check_setup: check_ENVIRONMENT check_DEBUG check_ARB_64 check_DEVELOPER check_GCC_VERSION 
 		@echo Your setup seems to be ok.
+		@echo LD_LIBRARY_PATH is $(LD_LIBRARY_PATH)
 
 checks: check_setup check_tabs
 	@rm -f SOURCE_TOOLS/postcompile.sav
