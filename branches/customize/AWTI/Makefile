@@ -42,6 +42,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/arb_file.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_str.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb_base.h

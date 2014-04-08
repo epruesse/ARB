@@ -22,7 +22,7 @@ char *AW_extract_directory(const char *path);
 // -----------------------------
 //      file selection boxes
 
-enum DirDisplay { NO_DIR, ANY_DIR };
+enum DirDisplay { MULTI_DIRS, ANY_DIR };
 
 void AW_create_fileselection_awars(AW_root *awr, const char *awar_base, const char *directory, const char *filter, const char *file_name);
 

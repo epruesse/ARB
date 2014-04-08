@@ -1269,8 +1269,15 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
 
     importer->doExit = do_exit; // change/set behavior of CLOSE button
 
-    AW_create_fileselection_awars(awr, AWAR_FILE_BASE, ".",                         "",     defname);
-    AW_create_fileselection_awars(awr, AWAR_FORM,      GB_path_in_ARBLIB("import"), ".ift", "*");
+    {
+        GBS_strstruct path(500);
+        path.cat(GB_path_in_arbprop("filter"));
+        path.put(':');
+        path.cat(GB_path_in_ARBLIB("import"));
+
+        AW_create_fileselection_awars(awr, AWAR_FILE_BASE, ".",             "",     defname);
+        AW_create_fileselection_awars(awr, AWAR_FORM,      path.get_data(), ".ift", "*");
+    }
 
     awr->awar_string(AWAR_ALI, "dummy"); // these defaults are never used
     awr->awar_string(AWAR_ALI_TYPE, "dummy"); // they are overwritten by AWTI_import_set_ali_and_type
@@ -1293,8 +1300,8 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
         aws->callback(makeHelpCallback("arb_import.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
-        AW_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD",     ANY_DIR, true);  // select import filename
-        AW_create_fileselection(aws, AWAR_FORM,      "",     "ARBHOME", NO_DIR,  false); // select import filter
+        AW_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD",     ANY_DIR,    true);  // select import filename
+        AW_create_fileselection(aws, AWAR_FORM,      "",     "ARBHOME", MULTI_DIRS, false); // select import filter
 
         aws->at("auto");
         aws->callback(detect_input_format_cb);
