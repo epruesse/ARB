@@ -23,14 +23,14 @@
 #include <GenomeImport.h>
 #include <GEN.hxx>
 #include <adGene.h>
-
 #include <arb_progress.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
+#include <arb_str.h>
+#include <macros.hxx>
 
 #include <climits>
 #include <unistd.h>
-#include <macros.hxx>
 
 using namespace std;
 
@@ -265,10 +265,19 @@ import_format::~import_format() {
 }
 
 
+static int cmp_ift(const void *p0, const void *p1, void *) {
+    return ARB_stricmp((const char *)p0, (const char *)p1);
+}
 
 void ArbImporter::detect_format(AW_root *root) {
     StrArray files;
-    GBS_read_dir(files, GB_path_in_ARBLIB("import"), "*.ift");
+    {
+        AW_awar       *awar_dirs = root->awar(AWAR_FORM"/directory");
+        ConstStrArray  dirs;
+        GBT_split_string(dirs, awar_dirs->read_char_pntr(), ":", true);
+        for (unsigned i = 0; i<dirs.size(); ++i) GBS_read_dir(files, dirs[i], "*.ift");
+    }
+    files.sort(cmp_ift, NULL);
 
     char     buffer[AWTI_IMPORT_CHECK_BUFFER_SIZE+10];
     GB_ERROR error = 0;
