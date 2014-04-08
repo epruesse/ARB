@@ -151,7 +151,7 @@ static AW_window *create_nds_export_window(AW_root *root) {
 
 static void create_export_nds_awars(AW_root *awr, AW_default def)
 {
-    AW_create_fileselection_awars(awr, AWAR_EXPORT_NDS, "", ".nds", "export.nds", false);
+    AW_create_fileselection_awars(awr, AWAR_EXPORT_NDS, "", ".nds", "export.nds", true);
     awr->awar_int(AWAR_EXPORT_NDS_SEPARATOR, NDS_OUTPUT_SPACE_PADDED, def);
 }
 

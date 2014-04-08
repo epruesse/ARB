@@ -73,7 +73,7 @@ static AW_window *AP_createConservationProfileWindow(AW_root *root) { // @@@ unu
     root->awar_string(AP_AWAR_CONSPRO_SMOOTH_GNUPLOT);
     root->awar_string(AP_AWAR_BASE_FREQ_FILTER_NAME);
 
-    AW_create_fileselection_awars(root, AP_AWAR_CONSPRO, "", ".gnu", "noname.gnu", false);
+    AW_create_fileselection_awars(root, AP_AWAR_CONSPRO, "", ".gnu", "noname.gnu", true);
 
     root->awar_string(AP_AWAR_CONSPRO_GNUPLOT_LEGEND);
     root->awar_int(AP_AWAR_CONSPRO_GNUPLOT_DISP_POS);

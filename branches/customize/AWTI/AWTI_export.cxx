@@ -73,7 +73,7 @@ static void export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_cr
 
 static void create_export_awars(AW_root *awr, AW_default def) {
     AW_create_fileselection_awars(awr, AWAR_EXPORT_FORM, GB_path_in_ARBLIB("export"), ".eft", "*",      true);
-    AW_create_fileselection_awars(awr, AWAR_EXPORT_FILE, "",                          "",     "noname", false);
+    AW_create_fileselection_awars(awr, AWAR_EXPORT_FILE, "",                          "",     "noname", true);
 
     awr->awar_string(AWAR_EXPORT_ALI, "16s", def);
     awr->awar_int(AWAR_EXPORT_MULTIPLE_FILES, 0, def);
