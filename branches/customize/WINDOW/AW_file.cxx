@@ -68,16 +68,14 @@ char *AW_extract_directory(const char *path) {
 // -----------------------------
 //      file selection boxes
 
-void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
-                                   const char *directory, const char *filter, const char *file_name,
-                                   AW_default default_file, bool resetValues)
-{
-    int   base_len  = strlen(awar_base);
-    bool  has_slash = awar_base[base_len-1] == '/';
-    char *awar_name = new char[base_len+30]; // use private buffer, because caller will most likely use GBS_global_string for arguments
+void AW_create_fileselection_awars(AW_root *awr, const char *awar_base, const char *directory, const char *filter, const char *file_name, bool resetValues) {
+    int        base_len     = strlen(awar_base);
+    bool       has_slash    = awar_base[base_len-1] == '/';
+    char      *awar_name    = new char[base_len+30]; // use private buffer, because caller will most likely use GBS_global_string for arguments
+    AW_default default_file = AW_ROOT_DEFAULT;
 
     sprintf(awar_name, "%s%s", awar_base, "/directory"+int(has_slash));
-    AW_awar *awar_dir = awr->awar_string(awar_name, directory, default_file);
+    AW_awar    *awar_dir     = awr->awar_string(awar_name, directory, default_file);
 
     sprintf(awar_name, "%s%s", awar_base, "/filter"   + int(has_slash));
     AW_awar *awar_filter = awr->awar_string(awar_name, filter, default_file);

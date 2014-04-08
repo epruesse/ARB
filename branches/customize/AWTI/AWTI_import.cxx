@@ -1269,8 +1269,8 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
 
     importer->doExit = do_exit; // change/set behavior of CLOSE button
 
-    AW_create_fileselection_awars(awr, AWAR_FILE_BASE, ".", "", defname);
-    AW_create_fileselection_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import"), ".ift", "*");
+    AW_create_fileselection_awars(awr, AWAR_FILE_BASE, ".",                         "",     defname, false);
+    AW_create_fileselection_awars(awr, AWAR_FORM,      GB_path_in_ARBLIB("import"), ".ift", "*",     false);
 
     awr->awar_string(AWAR_ALI, "dummy"); // these defaults are never used
     awr->awar_string(AWAR_ALI_TYPE, "dummy"); // they are overwritten by AWTI_import_set_ali_and_type

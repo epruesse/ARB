@@ -107,7 +107,7 @@ static void macro_recording_changed_cb() {
 }
 
 static void create_macro_variables(AW_root *aw_root) {
-    AW_create_fileselection_awars(aw_root, AWAR_MACRO_BASE, ".", ".amc", "");
+    AW_create_fileselection_awars(aw_root, AWAR_MACRO_BASE, ".", ".amc", "", false);
     aw_root->awar_string(AWAR_MACRO_RECORDING_MACRO_TEXT, "RECORD");
     aw_root->awar_int(AWAR_MACRO_RECORDING_EXPAND, 0);
     aw_root->awar_int(AWAR_MACRO_RECORDING_RUNB4, 0);

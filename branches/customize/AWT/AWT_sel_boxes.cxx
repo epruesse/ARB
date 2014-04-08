@@ -863,7 +863,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storab
     char *awar_line_anz = get_shared_sellist_awar_name(typedsellist, "line_anz");
     {
         char *def_name = GBS_string_2_key(typedsellist.whats_contained());
-        AW_create_fileselection_awars(aw_root, awar_base, ".", storabsellist->get_filter(), def_name);
+        AW_create_fileselection_awars(aw_root, awar_base, ".", storabsellist->get_filter(), def_name, false);
         free(def_name);
         aw_root->awar_int(awar_line_anz, 0, AW_ROOT_DEFAULT);
     }
@@ -918,7 +918,7 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storab
     char *awar_base_name = get_shared_sellist_awar_base(typedsellist);
     char *awar_append    = get_shared_sellist_awar_name(typedsellist, "append");
 
-    AW_create_fileselection_awars(aw_root, awar_base_name, ".", storabsellist->get_filter(), "");
+    AW_create_fileselection_awars(aw_root, awar_base_name, ".", storabsellist->get_filter(), "", false);
     aw_root->awar_int(awar_append, 1); // append is default ( = old behavior)
 
     AW_window_simple *aws = new AW_window_simple;
@@ -1009,7 +1009,7 @@ AW_window *awt_create_load_box(AW_root     *aw_root,
     char *what_key  = GBS_string_2_key(what);
     char *base_name = GBS_global_string_copy("tmp/load_box_%s", what_key);
 
-    AW_create_fileselection_awars(aw_root, base_name, default_directory, file_extension, "");
+    AW_create_fileselection_awars(aw_root, base_name, default_directory, file_extension, "", false);
 
     if (set_file_name_awar) {
         *set_file_name_awar = GBS_global_string_copy("%s/file_name", base_name);

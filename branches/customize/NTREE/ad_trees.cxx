@@ -176,7 +176,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int   (AWAR_TREE_SECURITY, 0, aw_def);
     aw_root->awar_string(AWAR_TREE_REM,      0, aw_def);
 
-    AW_create_fileselection_awars(aw_root, AWAR_TREE_EXPORT_FILEBASE, "", ".tree", "treefile", aw_def);
+    AW_create_fileselection_awars(aw_root, AWAR_TREE_EXPORT_FILEBASE, "", ".tree", "treefile", false);
     aw_root->awar_int(AWAR_TREE_EXPORT_FORMAT, AD_TREE_EXPORT_FORMAT_NEWICK, aw_def)-> add_callback(update_filter_cb);
     aw_root->awar_int(AWAR_TREE_EXPORT_NDS,  AD_TREE_EXPORT_NODE_SPECIES_NAME, aw_def)-> add_callback(update_filter_cb);
 
@@ -187,7 +187,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_TREE_EXPORT_QUOTEMODE, TREE_SINGLE_QUOTES, aw_def); // old default behavior
     aw_root->awar_int(AWAR_TREE_EXPORT_REPLACE, 0, aw_def); // old default behavior
 
-    AW_create_fileselection_awars(aw_root, AWAR_TREE_IMPORT, "", ".tree", "treefile", aw_def);
+    AW_create_fileselection_awars(aw_root, AWAR_TREE_IMPORT, "", ".tree", "treefile", false);
 
     aw_root->awar_string(AWAR_TREE_IMPORT "/tree_name", "tree_",    aw_def)->set_srt(GBT_TREE_AWAR_SRT);
 
