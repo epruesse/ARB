@@ -22,9 +22,10 @@
 #include <arbdbt.h>
 #include <arb_str.h>
 #include <arb_file.h>
+#include <arb_strbuf.h>
 
 #define AWAR_EXPORT_FILE           "tmp/export_db/file"
-#define AWAR_EXPORT_FORM           "export/form"
+#define AWAR_EXPORT_FORM           "tmp/export/form"
 #define AWAR_EXPORT_ALI            "tmp/export/alignment"
 #define AWAR_EXPORT_MULTIPLE_FILES "tmp/export/multiple_files"
 #define AWAR_EXPORT_MARKED         "export/marked"
@@ -72,8 +73,15 @@ static void export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_cr
 }
 
 static void create_export_awars(AW_root *awr, AW_default def) {
-    AW_create_fileselection_awars(awr, AWAR_EXPORT_FORM, GB_path_in_ARBLIB("export"), ".eft", "*", AW_ROOT_DEFAULT, true);
-    AW_create_fileselection_awars(awr, AWAR_EXPORT_FILE, "", "", "noname");
+    {
+        GBS_strstruct path(500);
+        path.cat(GB_path_in_arbprop("filter"));
+        path.put(':');
+        path.cat(GB_path_in_ARBLIB("export"));
+
+        AW_create_fileselection_awars(awr, AWAR_EXPORT_FORM, path.get_data(), ".eft", "*");
+        AW_create_fileselection_awars(awr, AWAR_EXPORT_FILE, "",              "",     "noname");
+    }
 
     awr->awar_string(AWAR_EXPORT_ALI, "16s", def);
     awr->awar_int(AWAR_EXPORT_MULTIPLE_FILES, 0, def);
@@ -169,8 +177,8 @@ AW_window *create_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
     aws->callback(makeHelpCallback("arb_export.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    AW_create_fileselection(aws, AWAR_EXPORT_FILE, "f", "PWD",     ANY_DIR, false);
-    AW_create_fileselection(aws, AWAR_EXPORT_FORM, "",  "ARBHOME", NO_DIR,  false); // select export filter
+    AW_create_fileselection(aws, AWAR_EXPORT_FILE, "f", "PWD",     ANY_DIR,    false); // select export filename
+    AW_create_fileselection(aws, AWAR_EXPORT_FORM, "",  "ARBHOME", MULTI_DIRS, false); // select export filter
 
     aws->get_root()->awar(AWAR_EXPORT_FORM"/file_name")->add_callback(export_form_changed_cb);
 

@@ -338,6 +338,7 @@ AW_file.o: $(ARBHOME)/INCLUDE/arb_file.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_misc.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_str.h
+AW_file.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_file.o: $(ARBHOME)/INCLUDE/arbdb.h
