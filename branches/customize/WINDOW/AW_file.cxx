@@ -68,7 +68,7 @@ char *AW_extract_directory(const char *path) {
 // -----------------------------
 //      file selection boxes
 
-void AW_create_fileselection_awars(AW_root *awr, const char *awar_base, const char *directory, const char *filter, const char *file_name, bool resetValues) {
+void AW_create_fileselection_awars(AW_root *awr, const char *awar_base, const char *directory, const char *filter, const char *file_name) {
     int        base_len     = strlen(awar_base);
     bool       has_slash    = awar_base[base_len-1] == '/';
     char      *awar_name    = new char[base_len+30]; // use private buffer, because caller will most likely use GBS_global_string for arguments
@@ -84,49 +84,11 @@ void AW_create_fileselection_awars(AW_root *awr, const char *awar_base, const ch
     AW_awar *awar_filename = awr->awar_string(awar_name, file_name, default_file);
 
     bool is_tmp_awar = strncmp(awar_base, "tmp/", 4) == 0;
-    if (is_tmp_awar) {
-        aw_assert(resetValues); // they DO in fact reset their values (when arb is restarted)
-        resetValues = true;
-    }
+    aw_assert(is_tmp_awar); // you need to use a temp awar for file selections
 
-    if (resetValues) {
-        awar_dir->write_string(directory);
-        awar_filter->write_string(filter);
-        awar_filename->write_string(file_name);
-    }
-    else {
-        char *stored_directory = awar_dir->read_string();
-#if defined(DEBUG)
-        if (strncmp(awar_base, "tmp/", 4) == 0) { // non-saved awar
-            if (directory[0] != 0) { // accept empty dir (means : use current ? )
-                aw_assert(GB_is_directory(directory)); // default directory does not exist
-            }
-        }
-#endif // DEBUG
-
-        if (strcmp(stored_directory, directory) != 0) { // does not have default value
-#if defined(DEBUG)
-            const char *arbhome    = GB_getenvARBHOME();
-            int         arbhomelen = strlen(arbhome);
-
-            if (strncmp(directory, arbhome, arbhomelen) == 0) { // default points into $ARBHOME
-                aw_assert(resetValues); // should be called with resetValues == true
-                // otherwise it's possible, that locations from previously installed ARB versions are used
-            }
-#endif // DEBUG
-
-            if (!GB_is_directory(stored_directory)) {
-                awar_dir->write_string(directory);
-                fprintf(stderr,
-                        "Warning: Replaced reference to non-existing directory '%s'\n"
-                        "         by '%s'\n"
-                        "         (Save properties to make this change permanent)\n",
-                        stored_directory, directory);
-            }
-        }
-
-        free(stored_directory);
-    }
+    awar_dir->write_string(directory);
+    awar_filter->write_string(filter);
+    awar_filename->write_string(file_name);
 
     char *dir = awar_dir->read_string();
     if (dir[0] && !GB_is_directory(dir)) {

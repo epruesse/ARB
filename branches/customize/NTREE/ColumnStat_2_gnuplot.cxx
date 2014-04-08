@@ -583,7 +583,7 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     root->awar_string(AWAR_CS2GP_FILTER_ALIGNMENT);
     root->awar(AWAR_CS2GP_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);  // use current alignment for filter
 
-    AW_create_fileselection_awars(root, AWAR_CS2GP, "", ".gc_gnu", "noname.gc_gnu", true);
+    AW_create_fileselection_awars(root, AWAR_CS2GP, "", ".gc_gnu", "noname.gc_gnu");
 
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");

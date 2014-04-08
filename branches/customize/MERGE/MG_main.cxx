@@ -416,7 +416,7 @@ static void filename_changed_cb(AW_root *awr, const char *awar_base_name) {
 }
 
 static void create_fileselection_and_name_awars(AW_root *awr, AW_default aw_def, const char *awar_base_name, const char *filename) {
-    AW_create_fileselection_awars(awr, awar_base_name, "", ".arb", filename, true);
+    AW_create_fileselection_awars(awr, awar_base_name, "", ".arb", filename);
 
     awr->awar_string(get_awar_name(awar_base_name, "name"), "", aw_def); // create awar to display DB-names w/o path
     AW_awar *filename_awar = awr->awar(get_awar_name(awar_base_name, "file_name")); // defined by AW_create_fileselection_awars above

@@ -809,7 +809,7 @@ void ED4_create_search_awars(AW_root *root)
     // awars to save/load search parameters:
     {
         char *dir = strdup(GB_path_in_arbprop("search_settings"));
-        AW_create_fileselection_awars(root, ED4_SEARCH_SAVE_BASE, dir, ".asp", "noname.asp", true);
+        AW_create_fileselection_awars(root, ED4_SEARCH_SAVE_BASE, dir, ".asp", "noname.asp");
         root->awar(ED4_SEARCH_SAVE_BASE"/directory")->write_string(dir);
         free(dir);
     }

@@ -372,7 +372,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *base_awar = GDE_maketmpawarname(gmenuitem, i);
                 char *name_awar = GBS_global_string_copy("%s/file_name", base_awar);
 
-                AW_create_fileselection_awars(aw_root, base_awar, "", itemarg.textvalue, "", true);
+                AW_create_fileselection_awars(aw_root, base_awar, "", itemarg.textvalue, "");
 
                 aws->label(itemarg.label);
                 aws->sens_mask(itemarg.active_mask);

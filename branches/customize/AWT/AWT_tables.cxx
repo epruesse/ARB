@@ -503,8 +503,8 @@ static void create_tables_var(GBDATA *gb_main, AW_root *aw_root) {
     aw_root->awar_string(AWAR_TABLE_DEST);
     aw_root->awar_string(AWAR_TABLE_REM, "no rem");
 
-    AW_create_fileselection_awars(aw_root, AWAR_TABLE_EXPORT, "", "table", "tablefile", true);
-    AW_create_fileselection_awars(aw_root, AWAR_TABLE_IMPORT, "", "table", "tablefile", true);
+    AW_create_fileselection_awars(aw_root, AWAR_TABLE_EXPORT, "", "table", "tablefile");
+    AW_create_fileselection_awars(aw_root, AWAR_TABLE_IMPORT, "", "table", "tablefile");
 
     aw_root->awar_string(AWAR_TABLE_IMPORT "/table_name", "table_");
 

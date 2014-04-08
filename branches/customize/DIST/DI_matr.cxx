@@ -217,7 +217,7 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
 
     aw_root->awar(AWAR_DIST_FILTER_ALIGNMENT)->map(AWAR_DIST_ALIGNMENT);
 
-    AW_create_fileselection_awars(aw_root, AWAR_DIST_SAVE_MATRIX_BASE, ".", "", "infile", true);
+    AW_create_fileselection_awars(aw_root, AWAR_DIST_SAVE_MATRIX_BASE, ".", "", "infile");
     aw_root->awar_int(AWAR_DIST_SAVE_MATRIX_TYPE, 0, def);
 
     enum treetype { CURR, SORT, COMPRESS, TREEAWARCOUNT };
