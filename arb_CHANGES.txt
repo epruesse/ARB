@@ -83,6 +83,10 @@ Major changes for arb-6.0:
    - arb_ntree can execute macro from command line
    - added "Never ask again" to modal question boxes (for better compatibility with macros)
    - a macro can be called for all marked species (once for each)
+   - macros can be nested (i.e. can call other macros)
+ - support for user-specific customization:
+   - of GDE menus (in ~/.arb_prop/gde)
+   - of import/export filters (in ~/.arb_prop/filter)
  - ACI (some new commands, bugfixes)
  - updated/added external tools:
    - added FastTree (version 2.1.7)
