@@ -1,0 +1,68 @@
+[Tue Dec 24 10:57:18 2013: ARB consensus tree build from 1 trees:
+ - consense/1/bootstrapped_1.tree
+Tue Dec 24 10:57:18 2013: tree_consense1_single saved to consense/1/consense1_single.tree
+]
+(
+  (
+    CloProte:0.04424,
+    (
+      CloTyrob:0.04432,
+      (
+        (
+          CloTetan:0.03360,
+          (
+            CloColla:0.03223,
+            CloSardi:0.02828
+          ):0.00816
+        ):0.00282,
+        (
+          CloCellu:0.03223,
+          (
+            CloPerfr:0.02995,
+            (
+              CloParap:0.02518,
+              (
+                CloBotul:0.01776,
+                CloCorin:0.02067
+              ):0.01240
+            ):0.00175
+          ):0.01270
+        ):0.00361
+      ):0.00522
+    ):0.00692
+  ):0.02688,
+  (
+    (
+      CrnAlter:0.04598,
+      (
+        LccL2279:0.05873,
+        StcSaliv:0.05190
+      ):0.01590
+    ):0.00462,
+    (
+      (
+        BclGlob2:0.04020,
+        (
+          StaAureu:0.00766,
+          (
+            StaHaemo:0.00491,
+            StaHomin:0.00434
+          ):0.00343
+        ):0.04354
+      ):0.01165,
+      (
+        LcbA1923:0.05341,
+        (
+          (
+            LcbFruct:0.02150,
+            LcbSanfr:0.03225
+          ):0.01134,
+          (
+            LcbPont2:0.01442,
+            LcbReu40:0.01407
+          ):0.03915
+        ):0.00558
+      ):0.01874
+    ):0.00549
+  ):0.02688
+);
