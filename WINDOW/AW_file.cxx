@@ -84,8 +84,10 @@ void AW_create_fileselection_awars(AW_root *awr, const char *awar_base, const ch
     sprintf(awar_name, "%s%s", awar_base, "/file_name"+int(has_slash));
     AW_awar *awar_filename = awr->awar_string(awar_name, file_name, default_file);
 
-    bool is_tmp_awar = strncmp(awar_base, "tmp/", 4) == 0;
+#if defined(ASSERTION_USED)
+    bool is_tmp_awar = strncmp(awar_base, "tmp/", 4) == 0 || strncmp(awar_base, "/tmp/", 5) == 0;
     aw_assert(is_tmp_awar); // you need to use a temp awar for file selections
+#endif
 
     awar_dir->write_string(directories);
     awar_filter->write_string(filter);
