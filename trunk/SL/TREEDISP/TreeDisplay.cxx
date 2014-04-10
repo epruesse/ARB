@@ -454,7 +454,7 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
     GB_ERROR error = NULL;
     if (!at->name) {
         char *gname = aw_input("Enter Name of Group");
-        if (gname) {
+        if (gname && gname[0]) {
             GBDATA         *gb_tree  = tree_static->get_gb_tree();
             GBDATA         *gb_mainT = GB_get_root(gb_tree);
             GB_transaction  ta(gb_mainT);
