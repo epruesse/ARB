@@ -1716,33 +1716,45 @@ void AWT_graphic_tree::unload() {
 GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_database */, AW_CL /* cl_insert_delete_cbs */) {
     GB_ERROR error = 0;
 
-    if (name[0] == 0 || strcmp(name, NO_TREE_SELECTED) == 0) {
-        unload();
-        zombies    = 0;
-        duplicates = 0;
-    }
-    else {
-        {
-            char *name_dup = strdup(name); // name might be freed by unload()
-            unload();
-            error = tree_static->loadFromDB(name_dup);
-            free(name_dup);
-        }
-
-        if (!error && link_to_database) {
-            error = tree_static->linkToDB(&zombies, &duplicates);
-        }
-
-        if (error) {
-            delete tree_static->get_root_node();
+    if (!name) { // happens in error-case (called by AWT_graphic::postevent_handler to load previous state)
+        if (tree_static) {
+            name = tree_static->get_tree_name();
+            td_assert(name);
         }
         else {
-            displayed_root = get_root_node();
+            error = "Please select a tree (name lost)";
+        }
+    }
 
-            get_root_node()->compute_tree();
+    if (!error) {
+        if (name[0] == 0 || strcmp(name, NO_TREE_SELECTED) == 0) {
+            unload();
+            zombies    = 0;
+            duplicates = 0;
+        }
+        else {
+            {
+                char *name_dup = strdup(name); // name might be freed by unload()
+                unload();
+                error = tree_static->loadFromDB(name_dup);
+                free(name_dup);
+            }
 
-            tree_static->set_root_changed_callback(AWT_graphic_tree_root_changed, this);
-            tree_static->set_node_deleted_callback(AWT_graphic_tree_node_deleted, this);
+            if (!error && link_to_database) {
+                error = tree_static->linkToDB(&zombies, &duplicates);
+            }
+
+            if (error) {
+                delete tree_static->get_root_node();
+            }
+            else {
+                displayed_root = get_root_node();
+
+                get_root_node()->compute_tree();
+
+                tree_static->set_root_changed_callback(AWT_graphic_tree_root_changed, this);
+                tree_static->set_node_deleted_callback(AWT_graphic_tree_node_deleted, this);
+            }
         }
     }
 
