@@ -153,19 +153,19 @@ extern "C" gboolean aw_handle_key_event(GtkWidget *, GdkEventKey *event, gpointe
     aww->event.keycode     = (AW_key_code) event->keyval;
     aww->event.keymodifier = (AW_key_mod) (event->state & modifiers); // &modifiers filters NumLock and CapsLock
 
-    gchar* str = gdk_keyval_name(event->keyval);
-    if (strlen(str) == 1) {
-        aww->event.character = str[0];
-        aww->event.keycode = AW_KEY_ASCII;
+    guint32 ucode = gdk_keyval_to_unicode(event->keyval);
+    if (ucode>=' ' && ucode<=127) { // real ascii
+        aww->event.character = ucode;
+        aww->event.keycode   = AW_KEY_ASCII;
 
-        if (aww->event.keymodifier & GDK_CONTROL_MASK) {
+        if ((aww->event.keymodifier & GDK_CONTROL_MASK) && (ucode>='a' && ucode<='z')) {
             // Workaround for Motif reporting ctrl-a as 1, ctrl-b as 2, ...
             // FIXME: This should be fixed after the merge in client code
             // @@@ED4_edit_string.cxx:699
             aww->event.character -= 'a' - 1;
         }
     }
- 
+
     area->input.emit();
     DUMP_EVENT("input/key");
     return true;
