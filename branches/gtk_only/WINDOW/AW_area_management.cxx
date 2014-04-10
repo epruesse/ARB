@@ -165,6 +165,12 @@ extern "C" gboolean aw_handle_key_event(GtkWidget *, GdkEventKey *event, gpointe
             aww->event.character -= 'a' - 1;
         }
     }
+    else if (event->is_modifier) {
+        // Workaround for Motif reporting modifier press/release as keycode == 0
+        // Not doing so caused misbehavior decribed in http://bugs.arb-home.de/ticket/427#comment:4
+        // @@@ should be fixed aftermerge (either not pass modifier events at all or fix all clients)
+        aww->event.keycode = AW_KEY_NONE;
+    }
 
     area->input.emit();
     DUMP_EVENT("input/key");
