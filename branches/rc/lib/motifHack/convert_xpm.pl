@@ -230,7 +230,10 @@ sub ensureDir($) {
       my $dparent = parentDir($dir);
       ensureDir($dparent);
       print "Creating directory '$dir'\n";
-      mkdir($dir) || die "Failed to create '$dir' (Reason: $!)";
+      if (not mkdir($dir)) {
+        my $reason = $!;
+        -d $dir || die "Failed to create '$dir' (Reason: $reason)";
+      }
     }
   }
 }
