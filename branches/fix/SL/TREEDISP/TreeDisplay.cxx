@@ -250,7 +250,7 @@ void AWT_graphic_tree::detect_group_state(AP_tree *at, AWT_graphic_tree_group_st
         return;                 // leafs never get grouped
     }
 
-    if (at->gb_node) {          // i am a group
+    if (at->is_named_group()) {
         AWT_graphic_tree_group_state sub_state;
         if (at->leftson != skip_this_son) detect_group_state(at->get_leftson(), &sub_state, skip_this_son);
         if (at->rightson != skip_this_son) detect_group_state(at->get_rightson(), &sub_state, skip_this_son);
@@ -734,7 +734,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                       do_parent :
                         at  = at->get_father();
                         while (at) {
-                            if (at->gb_node) break;
+                            if (at->is_named_group()) break;
                             at = at->get_father();
                         }
 
