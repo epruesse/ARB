@@ -419,23 +419,25 @@ void AWT_graphic_tree::toggle_group(AP_tree * at) {
             const char *msg = GBS_global_string("What to do with group '%s'?", gname);
 
             switch (aw_question(NULL, msg, "Rename,Destroy,Cancel")) {
-                case 0: {                                                    // rename
+                case 0: { // rename
                     char *new_gname = aw_input("Rename group", "Change group name:", at->name);
                     if (new_gname) {
                         freeset(at->name, new_gname);
                         error = GBT_write_string(at->gb_node, "group_name", new_gname);
+                        exports.save = !error;
                     }
                     break;
                 }
 
-                case 1:                                      // destroy
+                case 1: // destroy
                     at->gr.grouped = 0;
                     at->name       = 0;
-                    error          = GB_delete(at->gb_node);
+                    error          = GB_delete(at->gb_node); // ODD: expecting this to also destroy linewidth, rot and spread - but it doesn't!
                     at->gb_node    = 0;
+                    exports.save = !error; // ODD: even when commenting out this line info is not deleted
                     break;
 
-                case 2:         // cancel
+                case 2: // cancel
                     break;
             }
 
@@ -483,6 +485,7 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
         }
     }
     else if (!at->gb_node) {
+        td_assert(0); // please note here if this else-branch is ever reached (and if: how!)
         at->gb_node = GB_create_container(tree_static->get_gb_tree(), "node");
 
         if (!at->gb_node) error = GB_await_error();
@@ -1544,7 +1547,6 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                     case AW_BUTTON_RIGHT:
                         if (gb_tree) {
                             toggle_group(clicked.node());
-                            exports.save = 1;
                         }
                         break;
                     default: td_assert(0); break;
