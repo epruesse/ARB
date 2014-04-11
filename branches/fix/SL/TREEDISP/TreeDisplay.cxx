@@ -205,41 +205,14 @@ struct AWT_graphic_tree_group_state {
     bool all_terminal_closed() const { return opened_terminal == 0 && closed_terminal == closed; }
     bool all_marked_opened() const { return marked_in_groups > 0 && closed_with_marked == 0; }
 
-    int next_expand_mode() const {
-        if (closed_with_marked) return 1; // expand marked
-        return 4; // expand all
+    CollapseMode next_expand_mode() const {
+        if (closed_with_marked) return EXPAND_MARKED;
+        return EXPAND_ALL;
     }
 
-    int next_collapse_mode() const {
-        if (all_terminal_closed()) return 0; // collapse all
-        return 2; // group terminal
-    }
-
-    int next_group_mode() const {
-        if (all_terminal_closed()) {
-            if (marked_in_groups && !all_marked_opened()) return 1; // all but marked
-            return 4; // expand all
-        }
-        if (all_marked_opened()) {
-            if (all_opened()) return 0; // collapse all
-            return 4;           // expand all
-        }
-        if (all_opened()) return 0; // collapse all
-        if (!all_closed()) return 0; // collapse all
-
-        if (!all_terminal_closed()) return 2; // group terminal
-        if (marked_in_groups) return 1; // all but marked
-        return 4; // expand all
-    }
-
-    void dump() {
-        printf("closed=%i               opened=%i\n", closed, opened);
-        printf("closed_terminal=%i      opened_terminal=%i\n", closed_terminal, opened_terminal);
-        printf("closed_with_marked=%i   opened_with_marked=%i\n", closed_with_marked, opened_with_marked);
-        printf("marked_in_groups=%i     marked_outside_groups=%i\n", marked_in_groups, marked_outside_groups);
-
-        printf("all_opened=%i all_closed=%i all_terminal_closed=%i all_marked_opened=%i\n",
-               all_opened(), all_closed(), all_terminal_closed(), all_marked_opened());
+    CollapseMode next_collapse_mode() const {
+        if (all_terminal_closed()) return COLLAPSE_ALL;
+        return COLLAPSE_TERMINAL;
     }
 };
 
@@ -282,7 +255,7 @@ void AWT_graphic_tree::detect_group_state(AP_tree *at, AWT_graphic_tree_group_st
     }
 }
 
-void AWT_graphic_tree::group_rest_tree(AP_tree *at, int mode, int color_group) {
+void AWT_graphic_tree::group_rest_tree(AP_tree *at, CollapseMode mode, int color_group) {
     if (at) {
         AP_tree *pa = at->get_father();
         if (pa) {
@@ -292,58 +265,44 @@ void AWT_graphic_tree::group_rest_tree(AP_tree *at, int mode, int color_group) {
     }
 }
 
-int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)    // run on father !!!
-{
-    /*
-      mode      does group
+bool AWT_graphic_tree::group_tree(AP_tree *at, CollapseMode mode, int color_group) {
+    /*! collapse/expand subtree according to mode and color_group
+     * Run on father! (why?)
+     * @return true if subtree shall expand
+     */
 
-      0         all
-      1         all but marked
-      2         all but groups with subgroups
-      4         none (ungroups all)
-      8         all but color_group
-
-    */
-
-    if (!at) return 1;
+    if (!at) return true;
 
     GB_transaction ta(tree_static->get_gb_main());
 
+    bool expand_me = false;
     if (at->is_leaf) {
-        int ungroup_me = 0;
-
-        if (mode & 4) ungroup_me = 1;
-        if (at->gb_node) { // not a zombie
-            if (!ungroup_me && (mode & 1)) { // do not group marked
-                if (GB_read_flag(at->gb_node)) { // i am a marked species
-                    ungroup_me = 1;
-                }
+        if (mode & EXPAND_ALL) expand_me = true;
+        if (at->gb_node) { // ignore zombies
+            if (!expand_me && (mode & EXPAND_MARKED)) { // do not group marked
+                if (GB_read_flag(at->gb_node)) expand_me = true;
             }
-            if (!ungroup_me && (mode & 8)) { // do not group one color_group
+            if (!expand_me && (mode & EXPAND_COLOR)) { // do not group specified color_group
                 int my_color_group = AW_find_color_group(at->gb_node, true);
-                if (my_color_group == color_group) { // i am of that color group
-                    ungroup_me = 1;
-                }
+                if (my_color_group == color_group) expand_me = true;
             }
         }
-
-        return ungroup_me;
     }
+    else {
+        expand_me = group_tree(at->get_leftson (), mode, color_group);
+        expand_me = group_tree(at->get_rightson(), mode, color_group) || expand_me;
 
-    int flag  = group_tree(at->get_leftson(), mode, color_group);
-    flag     += group_tree(at->get_rightson(), mode, color_group);
+        at->gr.grouped = 0;
 
-    at->gr.grouped = 0;
-
-    if (!flag) { // no son requests to be shown
-        if (at->is_named_group()) {
-            at->gr.grouped     = 1;
-            if (mode & 2) flag = 1; // do not group non-terminal groups
+        if (!expand_me) { // no son requests to be expanded
+            if (at->is_named_group()) {
+                at->gr.grouped = 1; // group me
+                if (mode & COLLAPSE_TERMINAL) expand_me = true; // do not group non-terminal groups
+            }
         }
+        if (!at->father) get_root_node()->compute_tree();
     }
-    if (!at->father) get_root_node()->compute_tree();
-
-    return flag;
+    return expand_me;
 }
 
 void AWT_graphic_tree::reorder_tree(TreeOrder mode) {
@@ -731,7 +690,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                     }
 
                     if (at) {
-                        int next_group_mode;
+                        CollapseMode next_group_mode;
 
                         if (event.key_char() == 'x') {  // expand
                             next_group_mode = state.next_expand_mode();
@@ -756,7 +715,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                     AWT_graphic_tree_group_state state;
                     detect_group_state(root_node, &state, pointed.node());
 
-                    int next_group_mode;
+                    CollapseMode next_group_mode;
                     if (event.key_char() == 'X') {  // expand
                         next_group_mode = state.next_expand_mode();
                     }
