@@ -250,7 +250,7 @@ void AWT_graphic_tree::detect_group_state(AP_tree *at, AWT_graphic_tree_group_st
         return;                 // leafs never get grouped
     }
 
-    if (at->gb_node) {          // i am a group
+    if (at->is_named_group()) {
         AWT_graphic_tree_group_state sub_state;
         if (at->leftson != skip_this_son) detect_group_state(at->get_leftson(), &sub_state, skip_this_son);
         if (at->rightson != skip_this_son) detect_group_state(at->get_rightson(), &sub_state, skip_this_son);
@@ -413,7 +413,7 @@ static void AWT_graphic_tree_node_deleted(void *cd, AP_tree *del) {
 void AWT_graphic_tree::toggle_group(AP_tree * at) {
     GB_ERROR error = NULL;
 
-    if (at->gb_node) {                                            // existing group
+    if (at->is_named_group()) { // existing group
         char *gname = GBT_read_string(at->gb_node, "group_name");
         if (gname) {
             const char *msg = GBS_global_string("What to do with group '%s'?", gname);
@@ -459,13 +459,23 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
             GBDATA         *gb_mainT = GB_get_root(gb_tree);
             GB_transaction  ta(gb_mainT);
 
-            if (!at->gb_node) {
-                at->gb_node   = GB_create_container(gb_tree, "node");
+            if (at->gb_node) { // already have existing node info (e.g. for linewidth)
+                GBDATA *gb_node     = GB_create_container(gb_tree, "node");
+                if (!gb_node) error = GB_await_error();
+                else    error       = GB_copy(gb_node, at->gb_node);     // copy existing node
+
+                if (!error) error       = GBT_write_int(gb_node, "id", 0);
+                if (!error) error       = GB_delete(at->gb_node);
+                if (!error) at->gb_node = gb_node;
+
+                exports.save = !error;
+            }
+            else {
+                at->gb_node             = GB_create_container(gb_tree, "node");
                 if (!at->gb_node) error = GB_await_error();
-                else {
-                    error = GBT_write_int(at->gb_node, "id", 0);
-                    exports.save = !error;
-                }
+                else error              = GBT_write_int(at->gb_node, "id", 0);
+
+                exports.save = !error;
             }
 
             if (!error) {
@@ -724,7 +734,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                       do_parent :
                         at  = at->get_father();
                         while (at) {
-                            if (at->gb_node) break;
+                            if (at->is_named_group()) break;
                             at = at->get_father();
                         }
 
