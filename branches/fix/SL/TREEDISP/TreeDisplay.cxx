@@ -459,13 +459,23 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
             GBDATA         *gb_mainT = GB_get_root(gb_tree);
             GB_transaction  ta(gb_mainT);
 
-            if (!at->gb_node) {
-                at->gb_node   = GB_create_container(gb_tree, "node");
+            if (at->gb_node) { // already have existing node info (e.g. for linewidth)
+                GBDATA *gb_node     = GB_create_container(gb_tree, "node");
+                if (!gb_node) error = GB_await_error();
+                else    error       = GB_copy(gb_node, at->gb_node);     // copy existing node
+
+                if (!error) error       = GBT_write_int(gb_node, "id", 0);
+                if (!error) error       = GB_delete(at->gb_node);
+                if (!error) at->gb_node = gb_node;
+
+                exports.save = !error;
+            }
+            else {
+                at->gb_node             = GB_create_container(gb_tree, "node");
                 if (!at->gb_node) error = GB_await_error();
-                else {
-                    error = GBT_write_int(at->gb_node, "id", 0);
-                    exports.save = !error;
-                }
+                else error              = GBT_write_int(at->gb_node, "id", 0);
+
+                exports.save = !error;
             }
 
             if (!error) {
