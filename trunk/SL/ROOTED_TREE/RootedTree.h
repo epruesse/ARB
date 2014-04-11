@@ -167,7 +167,13 @@ public:
         return const_cast<const RootedTree*>(const_cast<RootedTree*>(this)->get_brother());
     }
 
-    const char *group_name() const { return gb_node && name ? name : NULL; }
+    bool is_named_group() const {
+        rt_assert(!is_leaf); // checking whether a leaf is a group
+        return gb_node && name;
+    }
+    const char *get_group_name() const {
+        return is_named_group() ? name : NULL;
+    }
 
     virtual void swap_sons() {
         rt_assert(!is_leaf); // @@@ if never fails -> remove condition below 
