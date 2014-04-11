@@ -523,7 +523,7 @@ class HasntCurrentClusterPrefix : public ARB_tree_predicate {
 public:
     HasntCurrentClusterPrefix(const GroupBuilder& builder_) : builder(builder_) {}
     bool selects(const ARB_seqtree& tree) const OVERRIDE {
-        const char *groupname        = tree.group_name();
+        const char *groupname        = tree.get_group_name();
         bool        hasClusterPrefix = groupname && builder.matches_current_prefix(groupname);
         return !hasClusterPrefix;
     }
