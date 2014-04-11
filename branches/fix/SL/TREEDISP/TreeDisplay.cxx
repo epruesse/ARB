@@ -336,14 +336,9 @@ int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)    // r
     at->gr.grouped = 0;
 
     if (!flag) { // no son requests to be shown
-        if (at->gb_node) { // i am a group
-            GBDATA *gn = GB_entry(at->gb_node, "group_name");
-            if (gn) {
-                if (strlen(GB_read_char_pntr(gn))>0) { // and I have a name
-                    at->gr.grouped     = 1;
-                    if (mode & 2) flag = 1; // do not group non-terminal groups
-                }
-            }
+        if (at->is_named_group()) {
+            at->gr.grouped     = 1;
+            if (mode & 2) flag = 1; // do not group non-terminal groups
         }
     }
     if (!at->father) get_root_node()->compute_tree();
@@ -414,34 +409,29 @@ void AWT_graphic_tree::toggle_group(AP_tree * at) {
     GB_ERROR error = NULL;
 
     if (at->is_named_group()) { // existing group
-        char *gname = GBT_read_string(at->gb_node, "group_name");
-        if (gname) {
-            const char *msg = GBS_global_string("What to do with group '%s'?", gname);
+        const char *msg = GBS_global_string("What to do with group '%s'?", at->name);
 
-            switch (aw_question(NULL, msg, "Rename,Destroy,Cancel")) {
-                case 0: { // rename
-                    char *new_gname = aw_input("Rename group", "Change group name:", at->name);
-                    if (new_gname) {
-                        freeset(at->name, new_gname);
-                        error = GBT_write_string(at->gb_node, "group_name", new_gname);
-                        exports.save = !error;
-                    }
-                    break;
+        switch (aw_question(NULL, msg, "Rename,Destroy,Cancel")) {
+            case 0: { // rename
+                char *new_gname = aw_input("Rename group", "Change group name:", at->name);
+                if (new_gname) {
+                    freeset(at->name, new_gname);
+                    error = GBT_write_string(at->gb_node, "group_name", new_gname);
+                    exports.save = !error;
                 }
-
-                case 1: // destroy
-                    at->gr.grouped = 0;
-                    at->name       = 0;
-                    error          = GB_delete(at->gb_node); // ODD: expecting this to also destroy linewidth, rot and spread - but it doesn't!
-                    at->gb_node    = 0;
-                    exports.save = !error; // ODD: even when commenting out this line info is not deleted
-                    break;
-
-                case 2: // cancel
-                    break;
+                break;
             }
 
-            free(gname);
+            case 1: // destroy
+                at->gr.grouped = 0;
+                at->name       = 0;
+                error          = GB_delete(at->gb_node); // ODD: expecting this to also destroy linewidth, rot and spread - but it doesn't!
+                at->gb_node    = 0;
+                exports.save = !error; // ODD: even when commenting out this line info is not deleted
+                break;
+
+            case 2: // cancel
+                break;
         }
     }
     else {
