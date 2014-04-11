@@ -2139,12 +2139,12 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
     set_line_attributes_for(at);
     draw_branch_line(at->gr.gc, Position(x_root, y_root), Position(x_center, y_center), line_filter);
 
-    // draw mark box
-    if (at->gb_node && GB_read_flag(at->gb_node)) {
-        filled_box(at->gr.gc, Position(x_center, y_center), NT_BOX_WIDTH);
-    }
-
     if (at->is_leaf) {
+        // draw mark box
+        if (at->gb_node && GB_read_flag(at->gb_node)) {
+            filled_box(at->gr.gc, Position(x_center, y_center), NT_BOX_WIDTH);
+        }
+
         if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
             if (at->hasName(species_name)) cursor = Position(x_center, y_center);
             scale_text_koordinaten(disp_device, at->gr.gc, x_center, y_center, tree_orientation, 0);
