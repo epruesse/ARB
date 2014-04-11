@@ -30,4 +30,6 @@ BIO::remote_action($gb_main,'ARB_NT','SELECT_LIST_ENTRY/CLOSE');
 BIO::remote_awar($gb_main,'ARB_NT','tmp/dbquery_spec/query_0','*');
 BIO::remote_action($gb_main,'ARB_NT','SPECIES_QUERY/SEARCH_spec');
 # recording stopped @ Fri Apr 11 15:50:51 2014
+# recording resumed @ Fri Apr 11 16:07:50 2014
+# recording stopped @ Fri Apr 11 16:07:50 2014
 ARB::close($gb_main);
