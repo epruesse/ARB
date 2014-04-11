@@ -413,7 +413,7 @@ static void AWT_graphic_tree_node_deleted(void *cd, AP_tree *del) {
 void AWT_graphic_tree::toggle_group(AP_tree * at) {
     GB_ERROR error = NULL;
 
-    if (at->gb_node) {                                            // existing group
+    if (at->is_named_group()) { // existing group
         char *gname = GBT_read_string(at->gb_node, "group_name");
         if (gname) {
             const char *msg = GBS_global_string("What to do with group '%s'?", gname);
