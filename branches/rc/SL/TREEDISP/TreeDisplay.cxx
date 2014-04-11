@@ -250,7 +250,7 @@ void AWT_graphic_tree::detect_group_state(AP_tree *at, AWT_graphic_tree_group_st
         return;                 // leafs never get grouped
     }
 
-    if (at->gb_node) {          // i am a group
+    if (at->is_named_group()) {
         AWT_graphic_tree_group_state sub_state;
         if (at->leftson != skip_this_son) detect_group_state(at->get_leftson(), &sub_state, skip_this_son);
         if (at->rightson != skip_this_son) detect_group_state(at->get_rightson(), &sub_state, skip_this_son);
@@ -413,7 +413,7 @@ static void AWT_graphic_tree_node_deleted(void *cd, AP_tree *del) {
 void AWT_graphic_tree::toggle_group(AP_tree * at) {
     GB_ERROR error = NULL;
 
-    if (at->gb_node) {                                            // existing group
+    if (at->is_named_group()) { // existing group
         char *gname = GBT_read_string(at->gb_node, "group_name");
         if (gname) {
             const char *msg = GBS_global_string("What to do with group '%s'?", gname);
@@ -459,13 +459,23 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
             GBDATA         *gb_mainT = GB_get_root(gb_tree);
             GB_transaction  ta(gb_mainT);
 
-            if (!at->gb_node) {
-                at->gb_node   = GB_create_container(gb_tree, "node");
+            if (at->gb_node) { // already have existing node info (e.g. for linewidth)
+                GBDATA *gb_node     = GB_create_container(gb_tree, "node");
+                if (!gb_node) error = GB_await_error();
+                else    error       = GB_copy(gb_node, at->gb_node);     // copy existing node
+
+                if (!error) error       = GBT_write_int(gb_node, "id", 0);
+                if (!error) error       = GB_delete(at->gb_node);
+                if (!error) at->gb_node = gb_node;
+
+                exports.save = !error;
+            }
+            else {
+                at->gb_node             = GB_create_container(gb_tree, "node");
                 if (!at->gb_node) error = GB_await_error();
-                else {
-                    error = GBT_write_int(at->gb_node, "id", 0);
-                    exports.save = !error;
-                }
+                else error              = GBT_write_int(at->gb_node, "id", 0);
+
+                exports.save = !error;
             }
 
             if (!error) {
@@ -724,7 +734,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                       do_parent :
                         at  = at->get_father();
                         while (at) {
-                            if (at->gb_node) break;
+                            if (at->is_named_group()) break;
                             at = at->get_father();
                         }
 
@@ -1716,33 +1726,45 @@ void AWT_graphic_tree::unload() {
 GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_database */, AW_CL /* cl_insert_delete_cbs */) {
     GB_ERROR error = 0;
 
-    if (name[0] == 0 || strcmp(name, NO_TREE_SELECTED) == 0) {
-        unload();
-        zombies    = 0;
-        duplicates = 0;
-    }
-    else {
-        {
-            char *name_dup = strdup(name); // name might be freed by unload()
-            unload();
-            error = tree_static->loadFromDB(name_dup);
-            free(name_dup);
-        }
-
-        if (!error && link_to_database) {
-            error = tree_static->linkToDB(&zombies, &duplicates);
-        }
-
-        if (error) {
-            delete tree_static->get_root_node();
+    if (!name) { // happens in error-case (called by AWT_graphic::postevent_handler to load previous state)
+        if (tree_static) {
+            name = tree_static->get_tree_name();
+            td_assert(name);
         }
         else {
-            displayed_root = get_root_node();
+            error = "Please select a tree (name lost)";
+        }
+    }
 
-            get_root_node()->compute_tree();
+    if (!error) {
+        if (name[0] == 0 || strcmp(name, NO_TREE_SELECTED) == 0) {
+            unload();
+            zombies    = 0;
+            duplicates = 0;
+        }
+        else {
+            {
+                char *name_dup = strdup(name); // name might be freed by unload()
+                unload();
+                error = tree_static->loadFromDB(name_dup);
+                free(name_dup);
+            }
 
-            tree_static->set_root_changed_callback(AWT_graphic_tree_root_changed, this);
-            tree_static->set_node_deleted_callback(AWT_graphic_tree_node_deleted, this);
+            if (!error && link_to_database) {
+                error = tree_static->linkToDB(&zombies, &duplicates);
+            }
+
+            if (error) {
+                delete tree_static->get_root_node();
+            }
+            else {
+                displayed_root = get_root_node();
+
+                get_root_node()->compute_tree();
+
+                tree_static->set_root_changed_callback(AWT_graphic_tree_root_changed, this);
+                tree_static->set_node_deleted_callback(AWT_graphic_tree_node_deleted, this);
+            }
         }
     }
 
