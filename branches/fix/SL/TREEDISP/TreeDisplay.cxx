@@ -459,32 +459,25 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
             GBDATA         *gb_mainT = GB_get_root(gb_tree);
             GB_transaction  ta(gb_mainT);
 
-            if (at->gb_node) { // already have existing node info (e.g. for linewidth)
-                GBDATA *gb_node     = GB_create_container(gb_tree, "node");
-                if (!gb_node) error = GB_await_error();
-                else    error       = GB_copy(gb_node, at->gb_node);     // copy existing node
+            GBDATA *gb_node     = GB_create_container(gb_tree, "node");
+            if (!gb_node) error = GB_await_error();
 
-                if (!error) error       = GBT_write_int(gb_node, "id", 0);
-                if (!error) error       = GB_delete(at->gb_node);
-                if (!error) at->gb_node = gb_node;
-
-                exports.save = !error;
+            if (at->gb_node) {                                     // already have existing node info (e.g. for linewidth)
+                if (!error) error = GB_copy(gb_node, at->gb_node); // copy existing node and ..
+                if (!error) error = GB_delete(at->gb_node);        // .. delete old one (to trigger invalidation of taxonomy-cache)
             }
-            else {
-                at->gb_node             = GB_create_container(gb_tree, "node");
-                if (!at->gb_node) error = GB_await_error();
-                else error              = GBT_write_int(at->gb_node, "id", 0);
 
-                exports.save = !error;
-            }
+            if (!error) error = GBT_write_int(gb_node, "id", 0); // force re-creation of node-id
 
             if (!error) {
-                GBDATA *gb_name     = GB_search(at->gb_node, "group_name", GB_STRING);
+                GBDATA *gb_name     = GB_search(gb_node, "group_name", GB_STRING);
                 if (!gb_name) error = GB_await_error();
-                else {
-                    error = GBT_write_group_name(gb_name, gname);
-                    if (!error) at->name = gname;
-                }
+                else    error       = GBT_write_group_name(gb_name, gname);
+            }
+            exports.save = !error;
+            if (!error) {
+                at->gb_node = gb_node;
+                at->name    = gname;
             }
             error = ta.close(error);
         }
