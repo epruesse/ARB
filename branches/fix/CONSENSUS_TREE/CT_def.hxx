@@ -19,12 +19,6 @@
 // #define DUMP_PART_INSERTION
 #endif // DEBUG
 
-inline int double_cmp(const double d1, const double d2) {
-    /*! returns <0 if d1<d2, >0 if d1>d2 (i.e. this function behaves like strcmp) */
-    double d = d1-d2;
-    return d<0 ? -1 : (d>0 ? 1 : 0);
-}
-
 #else
 #error CT_def.hxx included twice
 #endif // CT_DEF_HXX
