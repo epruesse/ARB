@@ -1028,6 +1028,8 @@ void TEST_sort_tree_by_other_tree() {
     const char *topo_center = "(((CloPaste:0.179,((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010):0.131,((CloInnoc:0.371,((CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017,CloTyrob:0.009):0.274):0.057,CloBifer:0.388):0.124):0.081,((CelBiazo:0.059,((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053):0.207,CytAquat:0.711):0.081);";
     const char *topo_bottom = "((CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207):0.081,((CloPaste:0.179,(CloCarni:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.010):0.131,(CloBifer:0.388,(CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.057):0.124):0.081);";
 
+    const char *topo_vs_nj_bs = "(((((CloButyr:0.000,CloButy2:0.009):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131,(CloBifer:0.388,(CloInnoc:0.371,((CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017,CloTyrob:0.009):0.274):0.057):0.124):0.081,((CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207,CytAquat:0.711):0.081);";
+
     TEST_EXPECT_DIFFERENT(topo_test,   topo_center);
     TEST_EXPECT_DIFFERENT(topo_test,   topo_bottom);
     TEST_EXPECT_DIFFERENT(topo_center, topo_bottom);
@@ -1064,7 +1066,10 @@ void TEST_sort_tree_by_other_tree() {
     TEST_EXPECT_NO_ERROR(sort_namedtree_by_other_tree(gb_main, "tree_work", "tree_sorted_center")); TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_center);
     TEST_EXPECT_NO_ERROR(sort_namedtree_by_other_tree(gb_main, "tree_work", "tree_sorted_bottom")); TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_bottom);
     TEST_EXPECT_NO_ERROR(sort_namedtree_by_other_tree(gb_main, "tree_work", "tree_test"));          TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_test);
+    TEST_EXPECT_NO_ERROR(sort_namedtree_by_other_tree(gb_main, "tree_work", "tree_nj_bs"));         TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_vs_nj_bs);
 
+    // TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, "TEST_trees_save.arb", "b")); // test-save db to examine tree (do not commit)
+    
     GB_close(gb_main);
 }
 
