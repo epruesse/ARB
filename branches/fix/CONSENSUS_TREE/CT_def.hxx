@@ -19,9 +19,9 @@
 // #define DUMP_PART_INSERTION
 #endif // DEBUG
 
-inline int NEGATED_double_cmp(double d1, const double d2) {
-    /*! returns <0 if d1>d2, >0 if d1<d2 (i.e. this function behaves wrong compared to strcmp) */
-    double d = d2-d1;
+inline int double_cmp(const double d1, const double d2) {
+    /*! returns <0 if d1<d2, >0 if d1>d2 (i.e. this function behaves like strcmp) */
+    double d = d1-d2;
     return d<0 ? -1 : (d>0 ? 1 : 0);
 }
 
