@@ -310,7 +310,7 @@ int PART::insertionOrder_cmp(const PART *other) const {
     int cmp = is_leaf_edge() - other->is_leaf_edge();
 
     if (!cmp) {
-        cmp = double_cmp(other->weight, weight); // insert bigger weight first // @@@ REVIEW
+        cmp = -double_cmp(weight, other->weight); // insert bigger weight first
         if (!cmp) {
             int centerdist1 = distance_to_tree_center();
             int centerdist2 = other->distance_to_tree_center();
@@ -318,7 +318,9 @@ int PART::insertionOrder_cmp(const PART *other) const {
             cmp = centerdist1-centerdist2; // insert central edges first
 
             if (!cmp) {
-                cmp = double_cmp(get_len(), other->get_len()); // insert bigger len first // @@@ REVIEW
+                cmp = -double_cmp(get_len(), other->get_len()); // NOW REALLY insert bigger len first
+                                                                // (change affected test results: increased in-tree-distance,
+                                                                // but reduced parsimony value of result-trees)
                 if (!cmp) {
                     cmp = id - other->id; // strict by definition
                     arb_assert(cmp);

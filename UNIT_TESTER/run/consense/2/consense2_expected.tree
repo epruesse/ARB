@@ -1,9 +1,9 @@
-[Tue Dec 24 10:57:18 2013: ARB consensus tree build from 4 trees:
+[Sun Apr 13 13:55:19 2014: ARB consensus tree build from 4 trees:
  - consense/2/bootstrapped_1.tree
  - consense/2/bootstrapped_2.tree
  - consense/2/bootstrapped_3.tree
  - consense/2/bootstrapped_4.tree
-Tue Dec 24 10:57:18 2013: tree_consense2 saved to consense/2/consense2.tree
+Sun Apr 13 13:55:19 2014: tree_consense2 saved to consense/2/consense2.tree
 ]
 (
   (
@@ -16,9 +16,9 @@ Tue Dec 24 10:57:18 2013: tree_consense2 saved to consense/2/consense2.tree
           (
             MeiSpeci:0.02923,
             (
-              MeiTimid:0.04955,
+              MeiChlia:0.06262,
               (
-                MeiChlia:0.06262,
+                MeiTimid:0.04955,
                 (
                   MeiCerbe:0.01585,
                   (
@@ -26,7 +26,7 @@ Tue Dec 24 10:57:18 2013: tree_consense2 saved to consense/2/consense2.tree
                     MeiTaiwa:0.01520
                   )50:0.03496
                 )75:0.04134
-              )25:0.00822
+              )25:0.01140
             )50:0.01026
           )50:0.01889
         )75:0.03430,
@@ -36,29 +36,29 @@ Tue Dec 24 10:57:18 2013: tree_consense2 saved to consense/2/consense2.tree
             OctProfu:0.00329
           ):0.05151,
           (
-            ThuTherm:0.02094,
+            MrtHydro:0.04103,
             (
               ThuOshim:0.03043,
               (
                 (
-                  MrtHydro:0.04103,
-                  ThuSpeci:0.02256
-                )25:0.00785,
+                  ThuAntra:0.01509,
+                  ThuScoto:0.00469
+                )75:0.03018,
                 (
+                  ThuTherm:0.02094,
                   (
-                    ThuAntra:0.01509,
-                    ThuScoto:0.00469
-                  )75:0.03018,
-                  (
-                    ThuSpec2:0.00939,
+                    ThuSpeci:0.02256,
                     (
-                      ThuAquat:0.01284,
-                      ThuIgnit:0.00478
-                    )75:0.01871
-                  )50:0.00669
-                )25:0.00439
-              )25:0.02096
-            )25:0.00522
+                      ThuSpec2:0.00939,
+                      (
+                        ThuAquat:0.01284,
+                        ThuIgnit:0.00478
+                      )75:0.01871
+                    )50:0.00669
+                  )25:0.01662
+                )25:0.02063
+              )25:0.02373
+            )25:0.02847
           )25:0.02400
         )50:0.00890
       )25:0.01246
@@ -91,7 +91,7 @@ Tue Dec 24 10:57:18 2013: tree_consense2 saved to consense/2/consense2.tree
         (
           DeiRadio:0.03033,
           (
-            DeiIndic:0.00547,
+            DeiSpec2:0.04615,
             (
               (
                 (
@@ -99,44 +99,44 @@ Tue Dec 24 10:57:18 2013: tree_consense2 saved to consense/2/consense2.tree
                   DeiXinji:0.03104
                 ):0.00000,
                 (
-                  DeiSpec2:0.04615,
-                  (
-                    DeiAqua3:0.00764,
-                    DeiAquat:0.00620
-                  )50:0.01128
-                ):0.00000
-              ):0.00000,
-              (
-                (
-                  (
-                    DeiGeoth:0.04121,
-                    (
-                      DeiApach:0.02609,
-                      DeiSpeci:0.03545
-                    )50:0.02822
-                  )25:0.05094,
-                  (
-                    DeiAlpin:0.06461,
-                    (
-                      DncBacte:0.03638,
-                      (
-                        DeiClaud:0.01479,
-                        (
-                          DeiAltit:0.00197,
-                          DeiRadi2:0.01454
-                        )50:0.01230
-                      )25:0.00660
-                    )75:0.04297
-                  )25:0.01574
-                ):0.00000,
-                (
+                  DeiIndic:0.00547,
                   (
                     DeiRadi3:0.03219,
                     (
                       DeiPisci:0.00907,
                       DeiProte:0.01582
                     )75:0.02836
-                  )50:0.07139,
+                  )50:0.07139
+                ):0.00000
+              ):0.00000,
+              (
+                (
+                  (
+                    DeiAqua3:0.00764,
+                    DeiAquat:0.00620
+                  )50:0.01128,
+                  (
+                    DeiGeoth:0.04121,
+                    (
+                      DeiApach:0.02609,
+                      DeiSpeci:0.03545
+                    )50:0.02822
+                  )25:0.05094
+                ):0.00000,
+                (
+                  (
+                    DeiAlpin:0.06461,
+                    (
+                      DncBacte:0.03638,
+                      (
+                        DeiAltit:0.00197,
+                        (
+                          DeiClaud:0.01479,
+                          DeiRadi2:0.01454
+                        )50:0.01864
+                      )25:0.00660
+                    )75:0.04297
+                  )25:0.01574,
                   (
                     (
                       DeiMurra:0.03125,
