@@ -1,8 +1,8 @@
-[Tue Dec 24 10:57:18 2013: ARB consensus tree build from 3 trees:
+[Sun Apr 13 13:55:19 2014: ARB consensus tree build from 3 trees:
  - consense/3/bootstrapped_1.tree
  - consense/3/bootstrapped_2.tree
  - consense/3/bootstrapped_3.tree
-Tue Dec 24 10:57:18 2013: tree_consense3 saved to consense/3/consense3.tree
+Sun Apr 13 13:55:19 2014: tree_consense3 saved to consense/3/consense3.tree
 ]
 (
   (
@@ -301,71 +301,71 @@ Tue Dec 24 10:57:18 2013: tree_consense3 saved to consense/3/consense3.tree
                                     (
                                       Unc03dtr:0.00135,
                                       (
-                                        OcdSpe10:-0.00001,
+                                        OcdSpe11:-0.00013,
                                         (
-                                          OcdSpe15:-0.00000,
                                           (
-                                            OcdSpe13:0.00000,
+                                            AticSea9:-0.00027,
                                             (
-                                              OcdSpe12:-0.00001,
+                                              AticSe10:-0.00022,
                                               (
-                                                AticSe29:-0.00010,
+                                                OcdSpec9:0.00233,
+                                                Unc03nea:-0.00116
+                                              ):0.00067
+                                            )33:0.00026
+                                          )33:0.00005,
+                                          (
+                                            OcdSpec2:-0.00024,
+                                            (
+                                              AticSea6:0.00035,
+                                              (
+                                                OcdSpeci:-0.00030,
                                                 (
-                                                  OcdSpe11:-0.00013,
+                                                  AticSea7:-0.00012,
                                                   (
-                                                    AticSe36:-0.00000,
+                                                    OcdSpec3:-0.00023,
                                                     (
-                                                      AticSe32:-0.00000,
+                                                      AticSe15:-0.00005,
                                                       (
                                                         OcdSpec5:-0.00000,
                                                         (
-                                                          OcdSpec3:-0.00023,
+                                                          OcdSpe15:-0.00000,
                                                           (
+                                                            OcdSpe13:0.00000,
                                                             (
-                                                              AticSea7:-0.00012,
+                                                              AticSe36:-0.00000,
                                                               (
-                                                                AticSe15:-0.00005,
                                                                 (
-                                                                  AticSe25:-0.00010,
-                                                                  (
-                                                                    AticSe33:0.00017,
-                                                                    (
-                                                                      AticSe28:0.00074,
-                                                                      AticSe30:0.00178
-                                                                    )33:0.00007
-                                                                  )67:0.00013
-                                                                )33:0.00009
-                                                              )33:0.00006
-                                                            )33:0.00003,
-                                                            (
-                                                              AticSe10:-0.00022,
-                                                              (
-                                                                AticSea9:-0.00027,
+                                                                  AticSe32:-0.00000,
+                                                                  OcdSpe10:-0.00001
+                                                                ):0.00000,
                                                                 (
-                                                                  AticSea6:0.00035,
+                                                                  OcdSpe12:-0.00001,
                                                                   (
-                                                                    OcdSpec2:-0.00024,
+                                                                    AticSe25:-0.00010,
                                                                     (
-                                                                      OcdSpeci:-0.00030,
+                                                                      AticSe29:-0.00010,
                                                                       (
-                                                                        OcdSpec9:0.00233,
-                                                                        Unc03nea:-0.00116
-                                                                      ):0.00067
-                                                                    )33:0.00039
-                                                                  )33:0.00021
-                                                                )33:0.00010
-                                                              )33:0.00006
-                                                            )33:0.00002
-                                                          )33:0.00002
-                                                        )33:0.00003
-                                                      )33:0.00001
+                                                                        AticSe30:0.00178,
+                                                                        (
+                                                                          AticSe28:0.00074,
+                                                                          AticSe33:0.00017
+                                                                        )33:0.00015
+                                                                      )67:0.00013
+                                                                    )33:0.00014
+                                                                  )33:0.00008
+                                                                ):0.00000
+                                                              ):0.00000
+                                                            )33:0.00000
+                                                          )33:0.00000
+                                                        )33:0.00000
+                                                      )33:0.00000
                                                     )33:0.00001
-                                                  )33:0.00000
-                                                )33:0.00071
-                                              )33:0.00002
-                                            )33:0.00003
-                                          )33:0.00000
-                                        )33:0.00003
+                                                  ):0.00000
+                                                )33:0.00001
+                                              )33:0.00006
+                                            )33:0.00009
+                                          )33:0.00005
+                                        )33:0.00019
                                       ):0.00013
                                     ):0.00155
                                   )67:0.00076
