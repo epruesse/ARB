@@ -283,17 +283,17 @@ void TEST_consensus_tree_1_single() {
 }
 
 void TEST_consensus_tree_2() {
-    TEST_EXPECTATION(build_expected_consensus_tree(2, "bootstrapped", 1, 4, 2.5, "consense2", 59, 2.789272));
+    TEST_EXPECTATION(build_expected_consensus_tree(2, "bootstrapped", 1, 4, 2.5, "consense2", 59, 2.849827));
     // ../UNIT_TESTER/run/consense/2/consense2.tree
 }
 
 void TEST_consensus_tree_3() {
-    TEST_EXPECTATION(build_expected_consensus_tree(3, "bootstrapped", 1, 3, 137.772, "consense3", 128, 2.171485));
+    TEST_EXPECTATION(build_expected_consensus_tree(3, "bootstrapped", 1, 3, 137.772, "consense3", 128, 2.170685));
     // ../UNIT_TESTER/run/consense/3/consense3.tree
 }
 
 void TEST_consensus_tree_from_disjunct_trees() {
-    TEST_EXPECTATION(build_expected_consensus_tree(4, "disjunct", 1, 2, 137.772, "disjunct_merged", 15, 2.007980));
+    TEST_EXPECTATION(build_expected_consensus_tree(4, "disjunct", 1, 2, 137.772, "disjunct_merged", 15, 2.034290));
     // ../UNIT_TESTER/run/consense/4/disjunct_merged.tree
 }
 
@@ -301,13 +301,13 @@ void TEST_consensus_tree_from_partly_overlapping_trees() {
     // tree_disjunct_3 contains 7 species
     // (3 from upper subtree (tree_disjunct_1) and 4 from lower subtree (tree_disjunct_2))
 
-    TEST_EXPECTATION(build_expected_consensus_tree(4, "disjunct", 1, 3, 137.772, "overlap_merged", 15, 2.577895));
+    TEST_EXPECTATION(build_expected_consensus_tree(4, "disjunct", 1, 3, 137.772, "overlap_merged", 15, 2.596455));
     // ../UNIT_TESTER/run/consense/4/overlap_merged.tree
 }
 
 void TEST_consensus_tree_from_minimal_overlapping_trees() {
     // tree_disjunct_0 only contains 2 species (1 from upper and 1 from lower subtree).
-    TEST_EXPECTATION(build_expected_consensus_tree(4, "disjunct", 0, 2, 137.772, "overlap_mini_merged", 15, 2.724435));
+    TEST_EXPECTATION(build_expected_consensus_tree(4, "disjunct", 0, 2, 137.772, "overlap_mini_merged", 15, 2.750745));
     // ../UNIT_TESTER/run/consense/4/overlap_mini_merged.tree
 }
 
@@ -321,7 +321,7 @@ void TEST_consensus_tree_from_trees_overlapping_by_twothirds() {
     // These 3 trees where copied from an existing tree.
     // From each copy one third of all species has been removed
     // (removed sets were disjunct)
-    TEST_EXPECTATION(build_expected_consensus_tree(6, "overlap_two_thirds", 1, 3, 19.2, "overlap_twothirds_merged", 15, 3.585280));
+    TEST_EXPECTATION(build_expected_consensus_tree(6, "overlap_two_thirds", 1, 3, 19.2, "overlap_twothirds_merged", 15, 3.561680));
     // ../UNIT_TESTER/run/consense/6/overlap_twothirds_merged.tree
 }
 
