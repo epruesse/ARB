@@ -842,20 +842,24 @@ class PosInfo {
 
     double relpos_sum; // sum of all involved relative positions
     size_t count;      // amount of positions involved
-public:
 
     PosInfo() : relpos_sum(0), count(0) {} // = no position
+public:
 
-    PosInfo(double relpos_sum_, size_t count_)
+    static PosInfo unknown() { return PosInfo(); }
+
+    explicit PosInfo(double relpos_sum_) // create leaf-info
         : relpos_sum(relpos_sum_),
-          count(count_)
+          count(1)
     {}
     PosInfo(const PosInfo& p1, const PosInfo& p2)
         : relpos_sum(p1.relpos_sum + p2.relpos_sum),
           count(p1.count + p2.count)
     {}
+
+    bool is_known() const { return count; }
     double value() const {
-        if (!count) return 0.5; // @@@ old unwanted behavior
+        nt_assert(is_known());
         return relpos_sum / count;
     }
     int compare(const PosInfo &right) const {
@@ -868,19 +872,29 @@ class CombinedPosInfo {
     // provides compare operations for SortByTopo
 
     PosInfo source; // in source tree ("ordering tree")
-    // PosInfo target; // in target tree ("modified tree")
+    PosInfo target; // in target tree ("modified tree")
+
 public:
 
-    CombinedPosInfo(const PosInfo& p) : source(p) {}
-    CombinedPosInfo(const CombinedPosInfo& c1, const CombinedPosInfo& c2) : source(c1.source, c2.source) {}
+    CombinedPosInfo(const PosInfo& s, const PosInfo& t)
+        : source(s),
+          target(t)
+    {
+        nt_assert(target.is_known());
+    }
+    CombinedPosInfo(const CombinedPosInfo& c1, const CombinedPosInfo& c2)
+        : source(c1.source, c2.source),
+          target(c1.target, c2.target)
+    {}
 
     int compare(const CombinedPosInfo &right) const {
         // result similar to strcmp(this, right)
+        if (!source.is_known() || !right.source.is_known()) {
+            // one subtree is completely unknown in source-tree
+            // => keep target-tree order
+            return target.compare(right.target);
+        }
         return source.compare(right.source);
-    }
-
-    double value() const { // @@@ does this make sense?
-        return source.value();
     }
 };
 
@@ -902,28 +916,30 @@ class SpeciesPosition {
         }
     }
 public:
-    SpeciesPosition(const GBT_TREE *tree) {
+    explicit SpeciesPosition(const GBT_TREE *tree) {
         fillFromTree(tree);
     }
 
-    PosInfo get_pos(const char *name) const {
+    PosInfo relative(const char *name) const {
         /*! returns PosInfo of species 'name' inside tree.
          */
         PosMap::const_iterator found = spos.find(name);
-        return (found == spos.end()) ? PosInfo() : PosInfo(found->second/double(spos.size()-1), 1);
+        return (found == spos.end()) ? PosInfo::unknown() : PosInfo(found->second/double(spos.size()-1));
     }
 };
 
 
-class SortByTopo {
-    SpeciesPosition source_pos; // in ordering topology
+class SortByTopo : virtual Noncopyable {
+    SpeciesPosition        source_pos; // in ordering topology
+    const SpeciesPosition *target_pos; // in target topology (used where source_pos does not provide order)
 
     CombinedPosInfo reorder_subtree_rec(RootedTree *node) { // similar to ../SL/ROOTED_TREE/RootedTree.cxx@reorder_subtree
         static const char *smallest_leafname; // has to be set to the alphabetically smallest name (when function exits)
 
         if (node->is_leaf) {
             smallest_leafname = node->name;
-            return relativePos(smallest_leafname);
+            return CombinedPosInfo(source_pos.relative(node->name),
+                                   target_pos->relative(node->name));
         }
 
         CombinedPosInfo  leftInfo       = reorder_subtree_rec(node->get_leftson());
@@ -945,14 +961,19 @@ class SortByTopo {
     }
 public:
 
-    SortByTopo(const GBT_TREE *by) : source_pos(by) {}
+    SortByTopo(const GBT_TREE *by)
+        : source_pos(by),
+          target_pos(NULL)
+    {}
 
-    CombinedPosInfo relativePos(const char *name) { // @@@ rename
-        return CombinedPosInfo(source_pos.get_pos(name));
-    }
+#if defined(UNIT_TESTS)
+    PosInfo sourcePos(const char *name) { return source_pos.relative(name); }
+#endif
 
-    void reorder_subtree(RootedTree *node) {
-        reorder_subtree_rec(node);
+    void reorder_subtree(RootedTree *tree) {
+        SpeciesPosition tpos(tree);
+        LocallyModify<const SpeciesPosition*> provide(target_pos, &tpos);
+        reorder_subtree_rec(tree);
     }
 };
 
@@ -1087,7 +1108,7 @@ void TEST_sort_tree_by_other_tree() {
     const char *topo_center = "(((CloPaste:0.179,((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010):0.131,((CloInnoc:0.371,((CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017,CloTyrob:0.009):0.274):0.057,CloBifer:0.388):0.124):0.081,((CelBiazo:0.059,((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053):0.207,CytAquat:0.711):0.081);";
     const char *topo_bottom = "((CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207):0.081,((CloPaste:0.179,(CloCarni:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.010):0.131,(CloBifer:0.388,(CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.057):0.124):0.081);";
 
-    const char *topo_vs_nj_bs = "(((((CloButyr:0.000,CloButy2:0.009):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131,(CloBifer:0.388,(CloInnoc:0.371,((CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017,CloTyrob:0.009):0.274):0.057):0.124):0.081,((CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207,CytAquat:0.711):0.081);";
+    const char *topo_vs_nj_bs = "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,(((CloButyr:0.000,CloButy2:0.009):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,(((CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
 
     TEST_EXPECT_DIFFERENT(topo_test,   topo_center);
     TEST_EXPECT_DIFFERENT(topo_test,   topo_bottom);
@@ -1108,14 +1129,14 @@ void TEST_sort_tree_by_other_tree() {
             SortByTopo   sbt(tree);
             const double EPSILON = 0.0001;
 
-            TEST_EXPECT_SIMILAR(sbt.relativePos("CytAquat").value(), 0.0, EPSILON); // leftmost species (in topo_bottom)
-            TEST_EXPECT_SIMILAR(sbt.relativePos("CloTyro4").value(), 1.0, EPSILON); // rightmost species
+            TEST_EXPECT_SIMILAR(sbt.sourcePos("CytAquat").value(), 0.0, EPSILON); // leftmost species (in topo_bottom)
+            TEST_EXPECT_SIMILAR(sbt.sourcePos("CloTyro4").value(), 1.0, EPSILON); // rightmost species
 
-            TEST_EXPECT_SIMILAR(sbt.relativePos("CurCitre").value(), 0.2857, EPSILON); // (5 of 15)
-            TEST_EXPECT_SIMILAR(sbt.relativePos("CloButy2").value(), 0.5,    EPSILON); // center species (8 of 15)
-            TEST_EXPECT_SIMILAR(sbt.relativePos("CloTyrob").value(), 0.7857, EPSILON); // (12 of 15)
+            TEST_EXPECT_SIMILAR(sbt.sourcePos("CurCitre").value(), 0.2857, EPSILON); // (5 of 15)
+            TEST_EXPECT_SIMILAR(sbt.sourcePos("CloButy2").value(), 0.5,    EPSILON); // center species (8 of 15)
+            TEST_EXPECT_SIMILAR(sbt.sourcePos("CloTyrob").value(), 0.7857, EPSILON); // (12 of 15)
 
-            TEST_EXPECT_SIMILAR__BROKEN(sbt.relativePos("Un-Known").value(), -1.0, EPSILON); // unknown species
+            TEST_REJECT(sbt.sourcePos("Un-Known").is_known()); // unknown species
         }
 
         tree->reorder_tree(BIG_BRANCHES_TO_EDGE); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_work", tree));
