@@ -1,0 +1,5 @@
+# libraries needed to link against SL/DB_UI/DB_UI.a
+
+SL/DB_SCANNER/DB_SCANNER.a
+SL/DB_QUERY/DB_QUERY.a
+AWTC/AWTC.a
