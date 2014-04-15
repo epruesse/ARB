@@ -1013,6 +1013,7 @@ static void path_changed_cb(AW_root *aw_root) {
             }
 
             if (found) {
+                LocallyModify<bool> flag2(inside_path_change, true);
                 add_to_history(aw_root, goto_child ? GBS_global_string("%s/%s", path, goto_child) : path);
                 GBDATA *father = GB_get_father(found);
                 track_node(father ? father : found);
