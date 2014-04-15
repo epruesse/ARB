@@ -1133,6 +1133,10 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const We
         }
         free(load_what);
     }
+    else {
+        GB_pop_transaction(GLOBAL_gb_main);
+    }
+
     free(cancel);
     delete aliview;
 
