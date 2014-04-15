@@ -535,7 +535,7 @@ void AWT_sai_selection::fill() {
     }
     sel->sort(false, false);
 
-    sel->insert_default(DISPLAY_NONE, "none");
+    sel->insert_default(DISPLAY_NONE, "");
     sel->update();
 }
 
