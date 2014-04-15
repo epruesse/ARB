@@ -557,13 +557,18 @@ static char *get_container_description(GBDATA *gbd) {
 
 static char *get_dbentry_content(GBDATA *gbd, GB_TYPES type, bool shorten_repeats, const MemDump& dump) {
     awt_assert(type != GB_DB);
-    
-    char *content = NULL;
-    if (!dump.wrapped()) content = GB_read_as_string(gbd);
-    if (!content) { // use dumper
-        long      size = GB_read_count(gbd);
-        const int plen = 30;
 
+    char *content = NULL;
+    if (!dump.wrapped()) content = GB_read_as_string(gbd); // @@@
+    if (!content) { // use dumper
+        long        size;
+        if (type == GB_POINTER) {
+            size = sizeof(GBDATA*);
+        }
+        else {
+            size = GB_read_count(gbd);
+        }
+        const int plen = 30;
         GBS_strstruct buf(dump.mem_needed_for_dump(size)+plen);
 
         if (!dump.wrapped()) buf.nprintf(plen, "<%li bytes>: ", size);

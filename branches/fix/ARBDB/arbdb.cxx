@@ -56,8 +56,16 @@ static const char *GB_TYPES_2_name(GB_TYPES type) {
 
     const char *name = NULL;
     if (type >= 0 && type<GB_TYPE_MAX) name = GB_TYPES_name[type];
-    if (!name) name = GBS_global_string("invalid-type-%i", type);
+    if (!name) {
+        static char *unknownType = 0;
+        freeset(unknownType, GBS_global_string_copy("<invalid-type=%i>", type));
+        name = unknownType;
+    }
     return name;
+}
+
+const char *GB_get_type_name(GBDATA *gbd) {
+    return GB_TYPES_2_name(gbd->type());
 }
 
 inline GB_ERROR gb_transactable_type(GB_TYPES type, GBDATA *gbd) {
@@ -852,14 +860,15 @@ void GB_SizeInfo::collect(GBDATA *gbd) {
 
         long size;
         switch (gbd->type()) {
-            case GB_INT:    size = sizeof(int); break;
-            case GB_FLOAT:  size = sizeof(float); break;
-            case GB_BYTE:   size = sizeof(char); break;
-            case GB_STRING: size = GB_read_count(gbd); break; // accept 0 sized data for strings
+            case GB_INT:     size = sizeof(int); break;
+            case GB_FLOAT:   size = sizeof(float); break;
+            case GB_BYTE:    size = sizeof(char); break;
+            case GB_POINTER: size = sizeof(GBDATA*); break;
+            case GB_STRING:  size = GB_read_count(gbd); break; // accept 0 sized data for strings
 
             default:
                 size = GB_read_count(gbd);
-                // gb_assert(size>0);                            // terminal w/o data - really?
+                gb_assert(size>0);                            // terminal w/o data - really?
                 break;
         }
         data += size;
