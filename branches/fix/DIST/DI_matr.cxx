@@ -1066,71 +1066,73 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const We
         return "Error";
     }
     arb_progress progress("Calculating matrix");
-    
+
     char *cancel = aw_root->awar(AWAR_DIST_CANCEL_CHARS)->read_string();
 
-    AliView *aliview = weighted_filter->create_aliview(use);
-    if (bootstrap_flag) aliview->get_filter()->enable_bootstrap();
+    GB_ERROR  error   = NULL;
+    AliView  *aliview = weighted_filter->create_aliview(use, error);
 
-    char *load_what      = aw_root->awar(AWAR_DIST_WHICH_SPECIES)->read_string();
-    char *sort_tree_name = aw_root->awar(AWAR_DIST_TREE_SORT_NAME)->read_string();
+    if (!error) {
+        if (bootstrap_flag) aliview->get_filter()->enable_bootstrap();
 
-    LoadWhat all_flag = (strcmp(load_what, "all") == 0) ? DI_LOAD_ALL : DI_LOAD_MARKED;
-    GB_ERROR error    = 0;
-    {
-        DI_MATRIX *phm   = new DI_MATRIX(*aliview, aw_root);
-        phm->matrix_type = DI_MATRIX_FULL;
+        char *load_what      = aw_root->awar(AWAR_DIST_WHICH_SPECIES)->read_string();
+        char *sort_tree_name = aw_root->awar(AWAR_DIST_TREE_SORT_NAME)->read_string();
 
-        static SmartCharPtr          last_sort_tree_name;
-        static SmartPtr<MatrixOrder> last_order;
+        LoadWhat all_flag = (strcmp(load_what, "all") == 0) ? DI_LOAD_ALL : DI_LOAD_MARKED;
+        {
+            DI_MATRIX *phm   = new DI_MATRIX(*aliview, aw_root);
+            phm->matrix_type = DI_MATRIX_FULL;
 
-        if (last_sort_tree_name.isNull() || !sort_tree_name || strcmp(&*last_sort_tree_name, sort_tree_name) != 0) {
-            last_sort_tree_name = nulldup(sort_tree_name);
-            last_order = new MatrixOrder(GLOBAL_gb_main, sort_tree_name);
-        }
-        di_assert(last_order.isSet());
-        error = phm->load(all_flag, *last_order, show_warnings, NULL);
+            static SmartCharPtr          last_sort_tree_name;
+            static SmartPtr<MatrixOrder> last_order;
 
-        free(sort_tree_name);
-        GB_pop_transaction(GLOBAL_gb_main);
-
-        bool aborted = false;
-        if (!error) {
-            if (progress.aborted()) {
-                phm->unload();
-                error   = "Aborted by user";
-                aborted = true;
+            if (last_sort_tree_name.isNull() || !sort_tree_name || strcmp(&*last_sort_tree_name, sort_tree_name) != 0) {
+                last_sort_tree_name = nulldup(sort_tree_name);
+                last_order = new MatrixOrder(GLOBAL_gb_main, sort_tree_name);
             }
-            else {
-                DI_TRANSFORMATION trans = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
+            di_assert(last_order.isSet());
+            error = phm->load(all_flag, *last_order, show_warnings, NULL);
 
-                if (trans == DI_TRANSFORMATION_FROM_TREE) {
-                    const char *treename = aw_root->awar(AWAR_DIST_TREE_CURR_NAME)->read_char_pntr();
-                    error                = phm->extract_from_tree(treename, &aborted);
+            free(sort_tree_name);
+            GB_pop_transaction(GLOBAL_gb_main);
+
+            bool aborted = false;
+            if (!error) {
+                if (progress.aborted()) {
+                    phm->unload();
+                    error   = "Aborted by user";
+                    aborted = true;
                 }
                 else {
-                    if (phm->is_AA) error = phm->calculate_pro(trans, &aborted);
-                    else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted);
+                    DI_TRANSFORMATION trans = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
+
+                    if (trans == DI_TRANSFORMATION_FROM_TREE) {
+                        const char *treename = aw_root->awar(AWAR_DIST_TREE_CURR_NAME)->read_char_pntr();
+                        error                = phm->extract_from_tree(treename, &aborted);
+                    }
+                    else {
+                        if (phm->is_AA) error = phm->calculate_pro(trans, &aborted);
+                        else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted);
+                    }
                 }
             }
-        }
 
-        if (aborted) {
-            di_assert(error);
-            if (aborted_flag) *aborted_flag = true;
+            if (aborted) {
+                di_assert(error);
+                if (aborted_flag) *aborted_flag = true;
+            }
+            if (error) {
+                delete phm;
+                GLOBAL_MATRIX.forget();
+            }
+            else {
+                GLOBAL_MATRIX.replaceBy(phm);
+                tree_needs_recalc_cb();
+                need_recalc.matrix = false;
+            }
         }
-        if (error) {
-            delete phm;
-            GLOBAL_MATRIX.forget();
-        }
-        else {
-            GLOBAL_MATRIX.replaceBy(phm);
-            tree_needs_recalc_cb();
-            need_recalc.matrix = false;
-        }
+        free(load_what);
     }
-    free(load_what);
-
     free(cancel);
     delete aliview;
 
@@ -1169,7 +1171,7 @@ static void di_mark_by_distance(AW_window *aww, WeightedFilter *weighted_filter)
                 char              *use     = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
                 char              *cancel  = aw_root->awar(AWAR_DIST_CANCEL_CHARS)->read_string();
                 DI_TRANSFORMATION  trans   = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
-                AliView           *aliview = weighted_filter->create_aliview(use);
+                AliView           *aliview = weighted_filter->create_aliview(use, error);
 
                 if (!error) {
                     DI_MATRIX *prev_global = GLOBAL_MATRIX.swap(NULL);

@@ -128,7 +128,7 @@ GB_ERROR ColumnStat::calculate(AP_filter *filter) {
         }
         if (!error) {
             gb_freqs = GB_entry(gb_ali, "FREQUENCIES");
-            if (!gb_ali) error = GBS_global_string("Column statistic '%s' is invalid\n(has no FREQUENCIES)", sai_name);
+            if (!gb_freqs) error = GBS_global_string("Column statistic '%s' is invalid (has no FREQUENCIES)", sai_name);
         }
 
         if (!error) {
@@ -194,70 +194,82 @@ GB_ERROR ColumnStat::calculate(AP_filter *filter) {
                 free(key);
             }
 
-            GB_UINT4 *minmut = 0;
-            GBDATA *gb_minmut = GB_entry(gb_freqs, "TRANSITIONS");
-            if (gb_minmut) minmut = GB_read_ints(gb_minmut);
+            GB_UINT4 *minmut      = 0;
+            GB_UINT4 *transver    = 0;
+            GBDATA   *gb_minmut   = GB_entry(gb_freqs, "TRANSITIONS");
+            GBDATA   *gb_transver = GB_entry(gb_freqs, "TRANSVERSIONS");
 
-            GB_UINT4 *transver = 0;
-            GBDATA *gb_transver = GB_entry(gb_freqs, "TRANSVERSIONS");
-            if (gb_transver) transver = GB_read_ints(gb_transver);
-            unsigned long max_freq_sum = 0;
-            for (wf = 0; wf<256; wf++) {    // ********* calculate sum of mutations
-                if (!freqi[wf]) continue;   // ********* calculate nbases for each col.
-                for (j=i=0; i<alignment_length; i++) {
-                    if (filter && !filter->use_position(i)) continue;
-                    freq_sum[j] += freqi[wf][i];
-                    mut_sum[j] = minmut[i];
-                    j++;
-                }
+            if (!gb_minmut)   error = GBS_global_string("Column statistic '%s' is invalid (has no FREQUENCIES/TRANSITIONS)", sai_name);
+            if (!gb_transver) error = GBS_global_string("Column statistic '%s' is invalid (has no FREQUENCIES/TRANSVERSIONS)", sai_name);
+
+            if (gb_minmut) {
+                minmut = GB_read_ints(gb_minmut);
+                if (!minmut) error = GBS_global_string("Column statistic '%s' is invalid (error reading FREQUENCIES/TRANSITIONS: %s)", sai_name, GB_await_error());
             }
-            for (i=0; i<seq_len; i++)
-                if (freq_sum[i] > max_freq_sum)
-                    max_freq_sum = freq_sum[i];
-            unsigned long min_freq_sum = DIST_MIN_SEQ(max_freq_sum);
+            if (gb_transver) {
+                transver = GB_read_ints(gb_transver);
+                if (!transver) error = GBS_global_string("Column statistic '%s' is invalid (error reading FREQUENCIES/TRANSVERSIONS: %s)", sai_name, GB_await_error());
+            }
 
-            for (wf = 0; wf<256; wf++) {
-                if (!freqi[wf]) continue;
-                frequency[wf] = new float[seq_len];
-                for (j=i=0; i<alignment_length; i++) {
+            if (!error) {
+                unsigned long max_freq_sum = 0;
+                for (wf = 0; wf<256; wf++) {    // ********* calculate sum of mutations
+                    if (!freqi[wf]) continue;   // ********* calculate nbases for each col.
+                    for (j=i=0; i<alignment_length; i++) {
+                        if (filter && !filter->use_position(i)) continue;
+                        freq_sum[j] += freqi[wf][i];
+                        mut_sum[j] = minmut[i];
+                        j++;
+                    }
+                }
+                for (i=0; i<seq_len; i++)
+                    if (freq_sum[i] > max_freq_sum)
+                        max_freq_sum = freq_sum[i];
+                unsigned long min_freq_sum = DIST_MIN_SEQ(max_freq_sum);
+
+                for (wf = 0; wf<256; wf++) {
+                    if (!freqi[wf]) continue;
+                    frequency[wf] = new float[seq_len];
+                    for (j=i=0; i<alignment_length; i++) {
+                        if (filter && !filter->use_position(i)) continue;
+                        if (freq_sum[j] > min_freq_sum) {
+                            frequency[wf][j] = freqi[wf][i]/(float)freq_sum[j];
+                        }
+                        else {
+                            frequency[wf][j] = 0;
+                            weights[j] = 0;
+                        }
+                        j++;
+                    }
+                }
+
+                for (j=i=0; i<alignment_length; i++) { // ******* calculate rates
                     if (filter && !filter->use_position(i)) continue;
-                    if (freq_sum[j] > min_freq_sum) {
-                        frequency[wf][j] = freqi[wf][i]/(float)freq_sum[j];
+                    if (!weights[j]) {
+                        rates[j] = 1.0;
+                        ttratio[j] = 0.5;
+                        j++;
+                        continue;
+                    }
+                    rates[j] = (mut_sum[j] / (float)freq_sum[j]);
+                    if (transver[i] > 0) {
+                        ttratio[j] = (minmut[i] - transver[i]) / (float)transver[i];
                     }
                     else {
-                        frequency[wf][j] = 0;
-                        weights[j] = 0;
+                        ttratio[j] = 2.0;
                     }
+                    if (ttratio[j] < 0.05) ttratio[j] = 0.05;
+                    if (ttratio[j] > 5.0) ttratio[j] = 5.0;
                     j++;
                 }
+
+                // ****** normalize rates
+
+                double sum_rates = 0;
+                for (i=0; i<seq_len; i++) sum_rates += rates[i];
+                sum_rates /= seq_len;
+                for (i=0; i<seq_len; i++) rates[i] /= sum_rates;
             }
-
-            for (j=i=0; i<alignment_length; i++) { // ******* calculate rates
-                if (filter && !filter->use_position(i)) continue;
-                if (!weights[j]) {
-                    rates[j] = 1.0;
-                    ttratio[j] = 0.5;
-                    j++;
-                    continue;
-                }
-                rates[j] = (mut_sum[j] / (float)freq_sum[j]);
-                if (transver[i] > 0) {
-                    ttratio[j] = (minmut[i] - transver[i]) / (float)transver[i];
-                }
-                else {
-                    ttratio[j] = 2.0;
-                }
-                if (ttratio[j] < 0.05) ttratio[j] = 0.05;
-                if (ttratio[j] > 5.0) ttratio[j] = 5.0;
-                j++;
-            }
-
-            // ****** normalize rates
-
-            double sum_rates                   = 0;
-            for (i=0; i<seq_len; i++) sum_rates += rates[i];
-            sum_rates                         /= seq_len;
-            for (i=0; i<seq_len; i++) rates[i] /= sum_rates;
 
             free(transver);
             free(minmut);
