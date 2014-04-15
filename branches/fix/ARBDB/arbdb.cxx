@@ -859,7 +859,7 @@ void GB_SizeInfo::collect(GBDATA *gbd) {
 
             default:
                 size = GB_read_count(gbd);
-                gb_assert(size>0);                            // terminal w/o data - really?
+                // gb_assert(size>0);                            // terminal w/o data - really?
                 break;
         }
         data += size;
