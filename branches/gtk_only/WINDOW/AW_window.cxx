@@ -207,21 +207,20 @@ static char* aw_convert_mnemonic(const char* text, const char* mnemonic) {
     size_t pos = strcspn(text, mnemonic);
     aw_return_val_if_fail(pos <= strlen(text), rval); // paranoia check
 
-    if (pos == strlen(text)) { // mnemonic does not occur in text
+    bool text_contains_mnemonic = (pos != strlen(text));
 #if defined(DEVEL_RALF)
-#if defined(DEBUG)
-        aw_warn_if_fail_BREAKPOINT(0);
+    aw_warn_if_fail(text_contains_mnemonic);
 #endif
-#endif
+    if (text_contains_mnemonic) {
+        rval[pos]='_';
+        strcpy(rval + pos + 1, text + pos);
+    } else {
         rval[pos++] = ' ';
         rval[pos++] = '(';
         rval[pos++] = '_';
         rval[pos++] = mnemonic[0];
         rval[pos++] = ')';
         rval[pos++] = '\0';
-    } else {
-        rval[pos]='_';
-        strcpy(rval + pos + 1, text + pos);
     }
 
     return rval;
