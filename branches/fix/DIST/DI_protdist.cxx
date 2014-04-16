@@ -676,7 +676,7 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
     arb_progress progress("Calculating distances", matrix_halfsize(spp, false));
     GB_ERROR     error = NULL;
 
-    for (i = 0; i < spp; i++) {
+    for (i = 0; i < spp && !error; i++) {
         matrix->set(i, i, 0.0);
         {
             // move all unknown characters to del
