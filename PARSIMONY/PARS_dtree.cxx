@@ -43,8 +43,9 @@ static AliView *pars_generate_aliview(WeightedFilter *pars_weighted_filter) {
         GB_transaction ta(gb_main);
         ali_name = GBT_read_string(gb_main, AWAR_ALIGNMENT);
     }
-    AliView *aliview = pars_weighted_filter->create_aliview(ali_name);
-    if (!aliview) aw_popup_exit(GB_await_error());
+    GB_ERROR  error   = NULL;
+    AliView  *aliview = pars_weighted_filter->create_aliview(ali_name, error);
+    if (!aliview) aw_popup_exit(error);
     free(ali_name);
     return aliview;
 }

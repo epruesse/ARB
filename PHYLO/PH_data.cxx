@@ -125,7 +125,7 @@ void PHDATA::print() {
 
 
 GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */, PH_TRANSFORMATION /* transformation */) {
-    if (nentries<=1) return "There are no species selected";
+    if (nentries<=1) return "There are not enough species selected";
 
     matrix = new AP_smatrix(nentries);
 
@@ -139,7 +139,7 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
 
     if (!PHDATA::ROOT) return "nothing loaded yet";
 
-    arb_progress progress("Calculating matrix", (nentries*(nentries+1))/2);
+    arb_progress progress("Calculating matrix", matrix_halfsize(nentries, false));
 
     aw_root = PH_used_windows::windowList->phylo_main_window->get_root();
     if (bases_used) {

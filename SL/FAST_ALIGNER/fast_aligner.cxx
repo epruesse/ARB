@@ -131,7 +131,7 @@ struct SearchRelativeParams : virtual Noncopyable {
 #define FA_AWAR_NEXT_RELATIVES      FA_AWAR_ROOT "next_relatives"
 #define FA_AWAR_RELATIVE_RANGE      FA_AWAR_ROOT "relrange"
 #define FA_AWAR_PT_SERVER_ALIGNMENT "tmp/" FA_AWAR_ROOT "relative_ali"
-#define FA_AWAR_SAI_RANGE_NAME      FA_AWAR_ROOT "sai/name"
+#define FA_AWAR_SAI_RANGE_NAME      FA_AWAR_ROOT "sai/sainame"
 #define FA_AWAR_SAI_RANGE_CHARS     FA_AWAR_ROOT "sai/chars"
 
 #define FA_AWAR_ISLAND_HOPPING_ROOT  "island_hopping/"

@@ -43,8 +43,8 @@ public:
 
     // factory functions
     AP_filter *create_filter() const;
-    AP_weights *create_weights(const AP_filter *filter) const;
-    AliView *create_aliview(const char *aliname) const;
+    AP_weights *create_weights(const AP_filter *filter, GB_ERROR& error) const;
+    AliView *create_aliview(const char *aliname, GB_ERROR& error) const;
 };
 
 
