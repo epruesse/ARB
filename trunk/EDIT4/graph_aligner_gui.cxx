@@ -84,7 +84,7 @@ void create_sina_variables(AW_root *root, AW_default db1) {
     root->awar_string(GA_AWAR_CMD, "sina", db1);
     root->awar_int(GA_AWAR_TGT, 2, db1);
     root->awar_int(AWAR_PT_SERVER, 0, db1);
-    root->awar_string(GA_AWAR_SAI, "none", db1);
+    root->awar_string(GA_AWAR_SAI, "", db1);
     root->awar_int(GA_AWAR_PROTECTION, 0, db1);
     root->awar_string(GA_AWAR_LOGLEVEL, "3", db1); // @@@ change to int?
     root->awar_int(GA_AWAR_TURN_CHECK, 1, db1);
@@ -161,6 +161,12 @@ AW_active sina_mask(AW_root *root) {
 
 inline const char *stream2static(const std::stringstream& str) {
     return GBS_static_string(str.str().c_str());
+}
+
+inline const char *empty_as_none(const char *sainame) {
+    // see http://bugs.arb-home.de/ticket/519
+    if (sainame && !sainame[0]) sainame = "none";
+    return sainame;
 }
 
 static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
@@ -269,7 +275,7 @@ static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
                     GBS_strcat(cl, " --ptport ");      GBS_strcat(cl,   pt_server);
                     GBS_strcat(cl, " --turn ");        GBS_strcat(cl,   root->awar(GA_AWAR_TURN_CHECK)->read_int() ? "all" : "none");
                     GBS_strcat(cl, " --overhang ");    GBS_strcat(cl,   root->awar(GA_AWAR_OVERHANG)->read_char_pntr());
-                    GBS_strcat(cl, " --filter ");      GBS_strcat(cl,   root->awar(GA_AWAR_SAI)->read_char_pntr());
+                    GBS_strcat(cl, " --filter ");      GBS_strcat(cl,   empty_as_none(root->awar(GA_AWAR_SAI)->read_char_pntr()));
                     GBS_strcat(cl, " --fs-min ");      GBS_intcat(cl,   root->awar(GA_AWAR_FS_MIN)->read_int());
                     GBS_strcat(cl, " --fs-msc ");      GBS_floatcat(cl, root->awar(GA_AWAR_FS_MSC)->read_float());
                     GBS_strcat(cl, " --fs-max ");      GBS_intcat(cl,   root->awar(GA_AWAR_FS_MAX)->read_int());

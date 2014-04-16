@@ -117,11 +117,13 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 GUI_aliview.o: awt_filter.hxx
 GUI_aliview.o: ColumnStat.hxx
+GUI_aliview.o: ga_local.h
 GUI_aliview.o: gui_aliview.hxx
 GUI_aliview.o: $(ARBHOME)/INCLUDE/AliView.hxx
 GUI_aliview.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_core.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbtools.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/attributes.h
