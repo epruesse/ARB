@@ -537,7 +537,7 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI
         return "Not enough species selected to calculate rates";
     }
 
-    arb_progress progress("rates", (nentries*(nentries+1))/2);
+    arb_progress progress("rates", matrix_halfsize(nentries, false));
     GB_ERROR     error = NULL;
 
     long s_len = aliview->get_length();
@@ -616,7 +616,7 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path) {
 
                 for (pos = 0; pos<MAXDISTDEBUG; pos++) distdebug[pos] = 0.0;
 
-                arb_progress dist_progress("distance", (nentries*(nentries+1))/2);
+                arb_progress dist_progress("distance", matrix_halfsize(nentries, false));
                 for (size_t row = 0; row<nentries && !error; row++) {
                     fprintf (out, "\n%s  ", entries[row]->name);
 
@@ -765,7 +765,7 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
         default:    break;
     };
 
-    arb_progress progress("Calculating distance matrix", (nentries*(nentries+1))/2);
+    arb_progress progress("Calculating distance matrix", matrix_halfsize(nentries, true));
     GB_ERROR     error = NULL;
     for (size_t row = 0; row<nentries && !error; row++) {
         for (size_t col=0; col<=row && !error; col++) {
@@ -1018,8 +1018,7 @@ GB_ERROR DI_MATRIX::extract_from_tree(const char *treename, bool *aborted_flag) 
         }
         if (!tree) error = GB_await_error();
         else {
-            size_t       matrix_steps = (nentries*(nentries+1))/2;
-            arb_progress progress("Extracting distances from tree", matrix_steps);
+            arb_progress progress("Extracting distances from tree", matrix_halfsize(nentries, true));
             NamedNodes   node;
 
             error  = init(node, tree, entries, nentries);

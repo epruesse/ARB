@@ -673,7 +673,7 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
     double tt = 0;
     int    pos;
 
-    arb_progress progress("Calculating distances", (spp*(spp+1))/2);
+    arb_progress progress("Calculating distances", matrix_halfsize(spp, false));
     GB_ERROR     error = NULL;
 
     for (i = 0; i < spp; i++) {
