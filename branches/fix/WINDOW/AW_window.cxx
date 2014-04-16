@@ -1698,15 +1698,17 @@ const char *aw_str_2_label(const char *str, AW_window *aww) {
 void AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str) {
     AW_awar *is_awar = aww->get_root()->label_is_awar(str);
     if (is_awar) {
-        char *var_value = is_awar->read_as_string();
-        if (var_value) {
-            aww->update_label(widget, var_value);
-        }
-        else {
+        char *display = is_awar->read_as_string();
+
+        if (!display) {
             aw_assert(0); // awar not found
-            aww->update_label(widget, str);
+            freeset(display, GBS_global_string_copy("<undef AWAR: %s>", str));
         }
-        free(var_value);
+        if (!display[0]) freeset(display, strdup(" ")); // empty string causes wrong-sized buttons
+
+        aww->update_label(widget, display);
+        free(display);
+
         is_awar->tie_widget(0, widget, AW_WIDGET_LABEL_FIELD, aww);
     }
 }
