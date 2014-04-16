@@ -689,7 +689,7 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
             }
         }
 
-        for (j = 0; j < i;  j++) {
+        for (j = 0; j < i && !error;  j++) {
             if (whichcat > KIMURA) {
                 if (whichcat == PAM)
                     tt = 10.0;
