@@ -21,7 +21,7 @@
 #define ap_assert(cond) arb_assert(cond)
 
 inline CONSTEXPR_RETURN int matrix_halfsize(int entries, bool inclusive_diagonal) {
-    return inclusive_diagonal ? entries*(entries+1)/2 : matrix_halfsize(entries-1, false);
+    return inclusive_diagonal ? entries*(entries+1)/2 : (entries-1)*entries/2;
 }
 
 typedef double AP_FLOAT;
