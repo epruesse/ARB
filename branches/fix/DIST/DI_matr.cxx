@@ -439,7 +439,7 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
                 }
             }
             if (species_not_in_sort_tree) {
-                aw_message(GBS_global_string("%i of the affected species are not in sort-tree", species_not_in_sort_tree));
+                aw_message(GBS_global_string("Warning: %i of the affected species are not in sort-tree", species_not_in_sort_tree));
             }
         }
     }
@@ -447,7 +447,7 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
         if (show_warnings) {
             static bool shown = false;
             if (!shown) { // showing once is enough
-                aw_message("No valid tree given to sort matrix (using default database order)");
+                aw_message("Warning: No valid tree given to sort matrix (using default database order)");
                 shown = true;
             }
         }
@@ -459,7 +459,9 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
         if (!entries) return "out of memory";
     }
 
-    for (size_t i = 0; i<no_of_species; ++i) {
+    GB_ERROR     error = NULL;
+    arb_progress progress("Preparing sequence data", no_of_species);
+    for (size_t i = 0; i<no_of_species && !error; ++i) {
         DI_ENTRY *phentry = new DI_ENTRY(species_to_load[i]->gbd, this);
         if (phentry->sequence) {    // a species found
             arb_assert(nentries<entries_mem_size);
@@ -470,9 +472,11 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
         }
         delete species_to_load[i];
         species_to_load[i] = NULL;
+
+        progress.inc_and_check_user_abort(error);
     }
 
-    return NULL;
+    return error;
 }
 
 void DI_MATRIX::clear(DI_MUT_MATR &hits)
@@ -1733,8 +1737,8 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     // filter & weights
 
-    AW_awar *awar_dist_alignment = aws->get_root()->awar_string(AWAR_DIST_ALIGNMENT);
-    WeightedFilter *weighted_filter =               // do NOT free (bound to callbacks)
+    AW_awar *awar_dist_alignment    = aws->get_root()->awar_string(AWAR_DIST_ALIGNMENT);
+    WeightedFilter *weighted_filter = // do NOT free (bound to callbacks)
         new WeightedFilter(GLOBAL_gb_main, aws->get_root(), AWAR_DIST_FILTER_NAME, AWAR_DIST_COLUMN_STAT_NAME, awar_dist_alignment);
 
     aws->at("filter_select");
