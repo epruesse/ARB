@@ -14,7 +14,7 @@
 
 #define AWAR_DIST_PREFIX             "dist/"
 #define AWAR_DIST_FILTER_PREFIX      AWAR_DIST_PREFIX "filter/"
-#define AWAR_DIST_COLUMN_STAT_PREFIX AWAR_DIST_PREFIX "col_stat/"
+#define AWAR_DIST_COLUMN_STAT_PREFIX AWAR_DIST_PREFIX "colstat/"
 #define AWAR_DIST_TREE_PREFIX        AWAR_DIST_PREFIX "tree/"
 
 #define AWAR_DIST_WHICH_SPECIES AWAR_DIST_PREFIX "which_species"

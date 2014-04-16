@@ -60,7 +60,7 @@ ColumnStat::ColumnStat(GBDATA *gb_maini, AW_root *awri, const char *awar_templat
 
     ga_assert(strcmp(awar_name, awar_alignment) != 0); // awar_template must end with (or contain) "/name"
 
-    awr->awar_string(awar_name, "NONE");
+    awr->awar_string(awar_name, "");
     awr->awar_string(awar_alignment)->map(awar_used_alignment);
     awr->awar_int(awar_smooth);
     awr->awar_int(awar_enable_helix, 1);
