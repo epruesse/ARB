@@ -673,10 +673,10 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
     double tt = 0;
     int    pos;
 
-    arb_progress progress("Calculating distances", (spp*(spp+1))/2);
+    arb_progress progress("Calculating distances", matrix_halfsize(spp, false));
     GB_ERROR     error = NULL;
 
-    for (i = 0; i < spp; i++) {
+    for (i = 0; i < spp && !error; i++) {
         matrix->set(i, i, 0.0);
         {
             // move all unknown characters to del
@@ -689,7 +689,7 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
             }
         }
 
-        for (j = 0; j < i;  j++) {
+        for (j = 0; j < i && !error;  j++) {
             if (whichcat > KIMURA) {
                 if (whichcat == PAM)
                     tt = 10.0;
@@ -719,7 +719,7 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
                         if (curv < 0.0) {
                             tt -= slope / curv;
                             if (tt > 10000.0) {
-                                aw_message(GB_export_errorf("INFINITE DISTANCE BETWEEN SPECIES %ld AND %ld; -1.0 WAS WRITTEN\n", i, j));
+                                aw_message(GBS_global_string("Warning: infinite distance between species '%s' and '%s'\n", entries[i]->name, entries[j]->name));
                                 tt = -1.0 / fracchange;
                                 break;
                             }
@@ -769,7 +769,7 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
                                 double rel = 1 - (double) m / n;
                                 double drel = 1.0 - rel - 0.2 * rel * rel;
                                 if (drel < 0.0) {
-                                    aw_message(GB_export_errorf("DISTANCE BETWEEN SEQUENCES %3ld AND %3ld IS TOO LARGE FOR KIMURA FORMULA", i, j));
+                                    aw_message(GBS_global_string("Warning: distance between sequences '%s' and '%s' is too large for kimura formula", entries[i]->name, entries[j]->name));
                                     tt = -1.0;
                                 }
                                 else {

@@ -513,54 +513,58 @@ GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
             {
                 AliView *aliview;
                 if (weighted_filter) {
-                    aliview = weighted_filter->create_aliview(alignment_name);
+                    aliview = weighted_filter->create_aliview(alignment_name, error);
                 }
                 else {
                     AP_filter  filter(ali_len);     // unfiltered
                     AP_weights weights(&filter);
                     aliview = new AliView(gb_main, filter, weights, alignment_name);
                 }
-                MostLikelySeq *seq_templ = new MostLikelySeq(aliview, this); // @@@ error: never freed! (should be freed when freeing tree_root!)
 
-                tree_root = new AP_tree_root(aliview, new AP_TreeNodeFactory, seq_templ, false);
-                // do not delete 'aliview' or 'seq_templ' (they belong to 'tree_root' now)
-            }
-
-            tree_root->loadFromDB(tree_name);       // tree is not linked!
-
-            {
-                size_t species_in_tree = count_species_in_tree();
-                hash_2_ap_tree         = GBS_create_hash(species_in_tree, GB_MIND_CASE);
-            }
-
-            // delete species from tree:
-            if (species_names) {                    // keep names
-                tree_root->remove_leafs(AWT_REMOVE_ZOMBIES);
-
-                error = tree_size_ok(tree_root);
                 if (!error) {
-                    char *l, *n;
-                    keep_species_hash = GBS_create_hash(GBT_get_species_count(gb_main), GB_MIND_CASE);
-                    for (l = (char *) species_names; l; l = n) {
-                        n = strchr(l, 1);
-                        if (n) *n = 0;
-                        GBS_write_hash(keep_species_hash, l, 1);
-                        if (n) *(n++) = 1;
-                    }
-
-                    insert_tree_into_hash_rek(tree_root->get_root_node());
-                    GBS_hash_do_loop(hash_2_ap_tree, delete_species, this);
-                    GBS_free_hash(keep_species_hash);
-                    keep_species_hash = 0;
-                    GBT_link_tree(tree_root->get_root_node(), gb_main, true, 0, 0);
+                    MostLikelySeq *seq_templ = new MostLikelySeq(aliview, this); // @@@ error: never freed! (should be freed when freeing tree_root!)
+                    tree_root = new AP_tree_root(aliview, new AP_TreeNodeFactory, seq_templ, false);
+                    // do not delete 'aliview' or 'seq_templ' (they belong to 'tree_root' now)
                 }
             }
-            else {                                  // keep marked/all
-                GBT_link_tree(tree_root->get_root_node(), gb_main, true, 0, 0);
-                tree_root->remove_leafs(marked_only ? AWT_KEEP_MARKED : AWT_REMOVE_ZOMBIES);
 
-                error = tree_size_ok(tree_root);
-                if (!error) insert_tree_into_hash_rek(tree_root->get_root_node());
+            if (!error) {
+                tree_root->loadFromDB(tree_name);       // tree is not linked!
+
+                {
+                    size_t species_in_tree = count_species_in_tree();
+                    hash_2_ap_tree         = GBS_create_hash(species_in_tree, GB_MIND_CASE);
+                }
+
+                // delete species from tree:
+                if (species_names) {                    // keep names
+                    tree_root->remove_leafs(AWT_REMOVE_ZOMBIES);
+
+                    error = tree_size_ok(tree_root);
+                    if (!error) {
+                        char *l, *n;
+                        keep_species_hash = GBS_create_hash(GBT_get_species_count(gb_main), GB_MIND_CASE);
+                        for (l = (char *) species_names; l; l = n) {
+                            n = strchr(l, 1);
+                            if (n) *n = 0;
+                            GBS_write_hash(keep_species_hash, l, 1);
+                            if (n) *(n++) = 1;
+                        }
+
+                        insert_tree_into_hash_rek(tree_root->get_root_node());
+                        GBS_hash_do_loop(hash_2_ap_tree, delete_species, this);
+                        GBS_free_hash(keep_species_hash);
+                        keep_species_hash = 0;
+                        GBT_link_tree(tree_root->get_root_node(), gb_main, true, 0, 0);
+                    }
+                }
+                else {                                  // keep marked/all
+                    GBT_link_tree(tree_root->get_root_node(), gb_main, true, 0, 0);
+                    tree_root->remove_leafs(marked_only ? AWT_KEEP_MARKED : AWT_REMOVE_ZOMBIES);
+
+                    error = tree_size_ok(tree_root);
+                    if (!error) insert_tree_into_hash_rek(tree_root->get_root_node());
+                }
             }
 
             if (!error) {

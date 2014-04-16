@@ -67,7 +67,7 @@ public:
     ColumnStat(GBDATA *gb_main, AW_root *awr, const char *awar_template, AW_awar *awar_used_alignment);
     ~ColumnStat();
 
-    GB_ERROR calculate(AP_filter *filter);
+    __ATTR__USERESULT GB_ERROR calculate(AP_filter *filter);
     void     forget();
 
     GBDATA *get_gb_main() const { return gb_main; }

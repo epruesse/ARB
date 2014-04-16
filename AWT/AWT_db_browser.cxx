@@ -560,13 +560,18 @@ static char *get_container_description(GBDATA *gbd) {
 
 static char *get_dbentry_content(GBDATA *gbd, GB_TYPES type, bool shorten_repeats, const MemDump& dump) {
     awt_assert(type != GB_DB);
-    
-    char *content = NULL;
-    if (!dump.wrapped()) content = GB_read_as_string(gbd);
-    if (!content) { // use dumper
-        long      size = GB_read_count(gbd);
-        const int plen = 30;
 
+    char *content = NULL;
+    if (!dump.wrapped()) content = GB_read_as_string(gbd); // @@@
+    if (!content) { // use dumper
+        long        size;
+        if (type == GB_POINTER) {
+            size = sizeof(GBDATA*);
+        }
+        else {
+            size = GB_read_count(gbd);
+        }
+        const int plen = 30;
         GBS_strstruct buf(dump.mem_needed_for_dump(size)+plen);
 
         if (!dump.wrapped()) buf.nprintf(plen, "<%li bytes>: ", size);
@@ -1016,6 +1021,7 @@ static void path_changed_cb(AW_root *aw_root) {
             }
 
             if (found) {
+                LocallyModify<bool> flag2(inside_path_change, true);
                 add_to_history(aw_root, goto_child ? GBS_global_string("%s/%s", path, goto_child) : path);
                 GBDATA *father = GB_get_father(found);
                 track_node(father ? father : found);

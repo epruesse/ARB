@@ -10,31 +10,6 @@
 
 #include "gb_key.h"
 
-const char *GB_get_type_name(GBDATA *gbd) {
-    const char *type_name;
-
-    switch (gbd->type()) {
-        case GB_INT:    { type_name = "GB_INT"; break; }
-        case GB_FLOAT:  { type_name = "GB_FLOAT"; break; }
-        case GB_BYTE:   { type_name = "GB_BYTE"; break; }
-        case GB_STRING: { type_name = "GB_STRING"; break; }
-        case GB_LINK:   { type_name = "GB_LINK"; break; }
-        case GB_BITS:   { type_name = "GB_BITS"; break; }
-        case GB_BYTES:  { type_name = "GB_BYTES"; break; }
-        case GB_INTS:   { type_name = "GB_INTS"; break; }
-        case GB_FLOATS: { type_name = "GB_FLOATS"; break; }
-        case GB_DB:     { type_name = "GB_DB"; break; }
-        default: {
-            static char *unknownType = 0;
-            freeset(unknownType, GBS_global_string_copy("<unknown GB_TYPES=%i>", gbd->type()));
-            type_name = unknownType;
-            break;
-        }
-    }
-
-    return type_name;
-}
-
 const char *GB_get_db_path(GBDATA *gbd) {
     GBDATA *gb_father = GB_FATHER(gbd);
 
