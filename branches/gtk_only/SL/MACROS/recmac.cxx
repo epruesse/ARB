@@ -194,14 +194,24 @@ GB_ERROR RecordingMacro::stop() {
 // -------------------------
 //      post processing
 
+inline const char *closing_quote(const char *str, char qchar) {
+    const char *found = strchr(str, qchar);
+    if (found>str) {
+        if (found[-1] == '\\') { // escaped -> search behind
+            return closing_quote(found+1, qchar);
+        }
+    }
+    return found;
+}
+
 inline char *parse_quoted_string(const char *& line) {
     // read '"string"' from start of line.
     // return 'string'.
     // skips spaces.
 
     while (isspace(line[0])) ++line;
-    if (line[0] == '\"') {
-        const char *other_quote = strchr(line+1, '\"');
+    if (line[0] == '\"' || line[0] == '\'') {
+        const char *other_quote = closing_quote(line+1, line[0]);
         if (other_quote) {
             char *str = GB_strpartdup(line+1, other_quote-1);
             line      = other_quote+1;
@@ -354,6 +364,7 @@ void TEST_parse() {
 #define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_EXPECT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
 
 void TEST_post_process() {
+    // ../../UNIT_TESTER/run/general
     const char *source   = "general/pp.amc";
     const char *dest     = "general/pp_out.amc";
     const char *expected = "general/pp_exp.amc";

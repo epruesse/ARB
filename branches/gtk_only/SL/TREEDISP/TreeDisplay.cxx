@@ -205,41 +205,14 @@ struct AWT_graphic_tree_group_state {
     bool all_terminal_closed() const { return opened_terminal == 0 && closed_terminal == closed; }
     bool all_marked_opened() const { return marked_in_groups > 0 && closed_with_marked == 0; }
 
-    int next_expand_mode() const {
-        if (closed_with_marked) return 1; // expand marked
-        return 4; // expand all
+    CollapseMode next_expand_mode() const {
+        if (closed_with_marked) return EXPAND_MARKED;
+        return EXPAND_ALL;
     }
 
-    int next_collapse_mode() const {
-        if (all_terminal_closed()) return 0; // collapse all
-        return 2; // group terminal
-    }
-
-    int next_group_mode() const {
-        if (all_terminal_closed()) {
-            if (marked_in_groups && !all_marked_opened()) return 1; // all but marked
-            return 4; // expand all
-        }
-        if (all_marked_opened()) {
-            if (all_opened()) return 0; // collapse all
-            return 4;           // expand all
-        }
-        if (all_opened()) return 0; // collapse all
-        if (!all_closed()) return 0; // collapse all
-
-        if (!all_terminal_closed()) return 2; // group terminal
-        if (marked_in_groups) return 1; // all but marked
-        return 4; // expand all
-    }
-
-    void dump() {
-        printf("closed=%i               opened=%i\n", closed, opened);
-        printf("closed_terminal=%i      opened_terminal=%i\n", closed_terminal, opened_terminal);
-        printf("closed_with_marked=%i   opened_with_marked=%i\n", closed_with_marked, opened_with_marked);
-        printf("marked_in_groups=%i     marked_outside_groups=%i\n", marked_in_groups, marked_outside_groups);
-
-        printf("all_opened=%i all_closed=%i all_terminal_closed=%i all_marked_opened=%i\n",
-               all_opened(), all_closed(), all_terminal_closed(), all_marked_opened());
+    CollapseMode next_collapse_mode() const {
+        if (all_terminal_closed()) return COLLAPSE_ALL;
+        return COLLAPSE_TERMINAL;
     }
 };
 
@@ -250,7 +223,7 @@ void AWT_graphic_tree::detect_group_state(AP_tree *at, AWT_graphic_tree_group_st
         return;                 // leafs never get grouped
     }
 
-    if (at->gb_node) {          // i am a group
+    if (at->is_named_group()) {
         AWT_graphic_tree_group_state sub_state;
         if (at->leftson != skip_this_son) detect_group_state(at->get_leftson(), &sub_state, skip_this_son);
         if (at->rightson != skip_this_son) detect_group_state(at->get_rightson(), &sub_state, skip_this_son);
@@ -282,7 +255,7 @@ void AWT_graphic_tree::detect_group_state(AP_tree *at, AWT_graphic_tree_group_st
     }
 }
 
-void AWT_graphic_tree::group_rest_tree(AP_tree *at, int mode, int color_group) {
+void AWT_graphic_tree::group_rest_tree(AP_tree *at, CollapseMode mode, int color_group) {
     if (at) {
         AP_tree *pa = at->get_father();
         if (pa) {
@@ -292,63 +265,44 @@ void AWT_graphic_tree::group_rest_tree(AP_tree *at, int mode, int color_group) {
     }
 }
 
-int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)    // run on father !!!
-{
-    /*
-      mode      does group
+bool AWT_graphic_tree::group_tree(AP_tree *at, CollapseMode mode, int color_group) {
+    /*! collapse/expand subtree according to mode and color_group
+     * Run on father! (why?)
+     * @return true if subtree shall expand
+     */
 
-      0         all
-      1         all but marked
-      2         all but groups with subgroups
-      4         none (ungroups all)
-      8         all but color_group
-
-    */
-
-    if (!at) return 1;
+    if (!at) return true;
 
     GB_transaction ta(tree_static->get_gb_main());
 
+    bool expand_me = false;
     if (at->is_leaf) {
-        int ungroup_me = 0;
-
-        if (mode & 4) ungroup_me = 1;
-        if (at->gb_node) { // not a zombie
-            if (!ungroup_me && (mode & 1)) { // do not group marked
-                if (GB_read_flag(at->gb_node)) { // i am a marked species
-                    ungroup_me = 1;
-                }
+        if (mode & EXPAND_ALL) expand_me = true;
+        if (at->gb_node) { // ignore zombies
+            if (!expand_me && (mode & EXPAND_MARKED)) { // do not group marked
+                if (GB_read_flag(at->gb_node)) expand_me = true;
             }
-            if (!ungroup_me && (mode & 8)) { // do not group one color_group
+            if (!expand_me && (mode & EXPAND_COLOR)) { // do not group specified color_group
                 int my_color_group = AW_find_color_group(at->gb_node, true);
-                if (my_color_group == color_group) { // i am of that color group
-                    ungroup_me = 1;
-                }
-            }
-        }
-
-        return ungroup_me;
-    }
-
-    int flag  = group_tree(at->get_leftson(), mode, color_group);
-    flag     += group_tree(at->get_rightson(), mode, color_group);
-
-    at->gr.grouped = 0;
-
-    if (!flag) { // no son requests to be shown
-        if (at->gb_node) { // i am a group
-            GBDATA *gn = GB_entry(at->gb_node, "group_name");
-            if (gn) {
-                if (strlen(GB_read_char_pntr(gn))>0) { // and I have a name
-                    at->gr.grouped     = 1;
-                    if (mode & 2) flag = 1; // do not group non-terminal groups
-                }
+                if (my_color_group == color_group) expand_me = true;
             }
         }
     }
-    if (!at->father) get_root_node()->compute_tree();
+    else {
+        expand_me = group_tree(at->get_leftson (), mode, color_group);
+        expand_me = group_tree(at->get_rightson(), mode, color_group) || expand_me;
 
-    return flag;
+        at->gr.grouped = 0;
+
+        if (!expand_me) { // no son requests to be expanded
+            if (at->is_named_group()) {
+                at->gr.grouped = 1; // group me
+                if (mode & COLLAPSE_TERMINAL) expand_me = true; // do not group non-terminal groups
+            }
+        }
+        if (!at->father) get_root_node()->compute_tree();
+    }
+    return expand_me;
 }
 
 void AWT_graphic_tree::reorder_tree(TreeOrder mode) {
@@ -413,33 +367,30 @@ static void AWT_graphic_tree_node_deleted(void *cd, AP_tree *del) {
 void AWT_graphic_tree::toggle_group(AP_tree * at) {
     GB_ERROR error = NULL;
 
-    if (at->gb_node) {                                            // existing group
-        char *gname = GBT_read_string(at->gb_node, "group_name");
-        if (gname) {
-            const char *msg = GBS_global_string("What to do with group '%s'?", gname);
+    if (at->is_named_group()) { // existing group
+        const char *msg = GBS_global_string("What to do with group '%s'?", at->name);
 
-            switch (aw_question(NULL, msg, "Rename,Destroy,Cancel")) {
-                case 0: {                                                    // rename
-                    char *new_gname = aw_input("Rename group", "Change group name:", at->name);
-                    if (new_gname) {
-                        freeset(at->name, new_gname);
-                        error = GBT_write_string(at->gb_node, "group_name", new_gname);
-                    }
-                    break;
+        switch (aw_question(NULL, msg, "Rename,Destroy,Cancel")) {
+            case 0: { // rename
+                char *new_gname = aw_input("Rename group", "Change group name:", at->name);
+                if (new_gname) {
+                    freeset(at->name, new_gname);
+                    error = GBT_write_string(at->gb_node, "group_name", new_gname);
+                    exports.save = !error;
                 }
-
-                case 1:                                      // destroy
-                    at->gr.grouped = 0;
-                    at->name       = 0;
-                    error          = GB_delete(at->gb_node);
-                    at->gb_node    = 0;
-                    break;
-
-                case 2:         // cancel
-                    break;
+                break;
             }
 
-            free(gname);
+            case 1: // destroy
+                at->gr.grouped = 0;
+                at->name       = 0;
+                error          = GB_delete(at->gb_node); // ODD: expecting this to also destroy linewidth, rot and spread - but it doesn't!
+                at->gb_node    = 0;
+                exports.save = !error; // ODD: even when commenting out this line info is not deleted
+                break;
+
+            case 2: // cancel
+                break;
         }
     }
     else {
@@ -454,32 +405,36 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
     GB_ERROR error = NULL;
     if (!at->name) {
         char *gname = aw_input("Enter Name of Group");
-        if (gname) {
+        if (gname && gname[0]) {
             GBDATA         *gb_tree  = tree_static->get_gb_tree();
             GBDATA         *gb_mainT = GB_get_root(gb_tree);
             GB_transaction  ta(gb_mainT);
 
-            if (!at->gb_node) {
-                at->gb_node   = GB_create_container(gb_tree, "node");
-                if (!at->gb_node) error = GB_await_error();
-                else {
-                    error = GBT_write_int(at->gb_node, "id", 0);
-                    exports.save = !error;
-                }
+            GBDATA *gb_node     = GB_create_container(gb_tree, "node");
+            if (!gb_node) error = GB_await_error();
+
+            if (at->gb_node) {                                     // already have existing node info (e.g. for linewidth)
+                if (!error) error = GB_copy(gb_node, at->gb_node); // copy existing node and ..
+                if (!error) error = GB_delete(at->gb_node);        // .. delete old one (to trigger invalidation of taxonomy-cache)
             }
 
+            if (!error) error = GBT_write_int(gb_node, "id", 0); // force re-creation of node-id
+
             if (!error) {
-                GBDATA *gb_name     = GB_search(at->gb_node, "group_name", GB_STRING);
+                GBDATA *gb_name     = GB_search(gb_node, "group_name", GB_STRING);
                 if (!gb_name) error = GB_await_error();
-                else {
-                    error = GBT_write_group_name(gb_name, gname);
-                    if (!error) at->name = gname;
-                }
+                else    error       = GBT_write_group_name(gb_name, gname);
+            }
+            exports.save = !error;
+            if (!error) {
+                at->gb_node = gb_node;
+                at->name    = gname;
             }
             error = ta.close(error);
         }
     }
     else if (!at->gb_node) {
+        td_assert(0); // please note here if this else-branch is ever reached (and if: how!)
         at->gb_node = GB_create_container(tree_static->get_gb_tree(), "node");
 
         if (!at->gb_node) error = GB_await_error();
@@ -724,7 +679,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                       do_parent :
                         at  = at->get_father();
                         while (at) {
-                            if (at->gb_node) break;
+                            if (at->is_named_group()) break;
                             at = at->get_father();
                         }
 
@@ -735,7 +690,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                     }
 
                     if (at) {
-                        int next_group_mode;
+                        CollapseMode next_group_mode;
 
                         if (event.key_char() == 'x') {  // expand
                             next_group_mode = state.next_expand_mode();
@@ -760,7 +715,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                     AWT_graphic_tree_group_state state;
                     detect_group_state(root_node, &state, pointed.node());
 
-                    int next_group_mode;
+                    CollapseMode next_group_mode;
                     if (event.key_char() == 'X') {  // expand
                         next_group_mode = state.next_expand_mode();
                     }
@@ -1541,7 +1496,6 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                     case AW_BUTTON_RIGHT:
                         if (gb_tree) {
                             toggle_group(clicked.node());
-                            exports.save = 1;
                         }
                         break;
                     default: td_assert(0); break;
@@ -1716,33 +1670,45 @@ void AWT_graphic_tree::unload() {
 GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_database */, AW_CL /* cl_insert_delete_cbs */) {
     GB_ERROR error = 0;
 
-    if (name[0] == 0 || strcmp(name, NO_TREE_SELECTED) == 0) {
-        unload();
-        zombies    = 0;
-        duplicates = 0;
-    }
-    else {
-        {
-            char *name_dup = strdup(name); // name might be freed by unload()
-            unload();
-            error = tree_static->loadFromDB(name_dup);
-            free(name_dup);
-        }
-
-        if (!error && link_to_database) {
-            error = tree_static->linkToDB(&zombies, &duplicates);
-        }
-
-        if (error) {
-            delete tree_static->get_root_node();
+    if (!name) { // happens in error-case (called by AWT_graphic::postevent_handler to load previous state)
+        if (tree_static) {
+            name = tree_static->get_tree_name();
+            td_assert(name);
         }
         else {
-            displayed_root = get_root_node();
+            error = "Please select a tree (name lost)";
+        }
+    }
 
-            get_root_node()->compute_tree();
+    if (!error) {
+        if (name[0] == 0 || strcmp(name, NO_TREE_SELECTED) == 0) {
+            unload();
+            zombies    = 0;
+            duplicates = 0;
+        }
+        else {
+            {
+                char *name_dup = strdup(name); // name might be freed by unload()
+                unload();
+                error = tree_static->loadFromDB(name_dup);
+                free(name_dup);
+            }
 
-            tree_static->set_root_changed_callback(AWT_graphic_tree_root_changed, this);
-            tree_static->set_node_deleted_callback(AWT_graphic_tree_node_deleted, this);
+            if (!error && link_to_database) {
+                error = tree_static->linkToDB(&zombies, &duplicates);
+            }
+
+            if (error) {
+                delete tree_static->get_root_node();
+            }
+            else {
+                displayed_root = get_root_node();
+
+                get_root_node()->compute_tree();
+
+                tree_static->set_root_changed_callback(AWT_graphic_tree_root_changed, this);
+                tree_static->set_node_deleted_callback(AWT_graphic_tree_node_deleted, this);
+            }
         }
     }
 
@@ -2122,12 +2088,12 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
     set_line_attributes_for(at);
     draw_branch_line(at->gr.gc, Position(x_root, y_root), Position(x_center, y_center), line_filter);
 
-    // draw mark box
-    if (at->gb_node && GB_read_flag(at->gb_node)) {
-        filled_box(at->gr.gc, Position(x_center, y_center), NT_BOX_WIDTH);
-    }
-
     if (at->is_leaf) {
+        // draw mark box
+        if (at->gb_node && GB_read_flag(at->gb_node)) {
+            filled_box(at->gr.gc, Position(x_center, y_center), NT_BOX_WIDTH);
+        }
+
         if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
             if (at->hasName(species_name)) cursor = Position(x_center, y_center);
             scale_text_koordinaten(disp_device, at->gr.gc, x_center, y_center, tree_orientation, 0);

@@ -260,7 +260,6 @@ int WriteGen(NA_Alignment *aln, char *filename, int method)
     int k;
     FILE *file;
     NA_Sequence *this_elem;
-    char c;
     if (aln == NULL) return (1);
 
     file = fopen(filename, "w");

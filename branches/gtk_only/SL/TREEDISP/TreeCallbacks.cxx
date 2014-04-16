@@ -339,7 +339,7 @@ static void save_changed_tree(AWT_canvas *ntw) {
 // ----------------------------------------
 //      Automated collapse/expand tree
 
-static void group_and_save_tree(AWT_canvas *ntw, int mode, int color_group) {
+static void group_and_save_tree(AWT_canvas *ntw, CollapseMode mode, int color_group) {
     GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
@@ -347,12 +347,12 @@ static void group_and_save_tree(AWT_canvas *ntw, int mode, int color_group) {
     save_changed_tree(ntw);
 }
 
-void NT_group_tree_cb      (UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, 0, 0); }
-void NT_group_not_marked_cb(UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, 1, 0); }
-void NT_group_terminal_cb  (UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, 2, 0); }
-void NT_ungroup_all_cb     (UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, 4, 0); }
+void NT_group_tree_cb      (UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, COLLAPSE_ALL,      0); }
+void NT_group_not_marked_cb(UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, EXPAND_MARKED,     0); }
+void NT_group_terminal_cb  (UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, COLLAPSE_TERMINAL, 0); }
+void NT_ungroup_all_cb     (UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, EXPAND_ALL,        0); }
 
-static void NT_group_not_color_cb(UNFIXED, AWT_canvas *ntw, int colornum) { group_and_save_tree(ntw, 8, colornum); }
+static void NT_group_not_color_cb(UNFIXED, AWT_canvas *ntw, int colornum) { group_and_save_tree(ntw, EXPAND_COLOR, colornum); }
 
 void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas) {
 #define MAXLABEL 30
