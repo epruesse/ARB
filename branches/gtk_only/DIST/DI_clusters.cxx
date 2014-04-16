@@ -145,29 +145,33 @@ static void calculate_clusters(AW_window *aww) {
 
         {
             char    *use     = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
-            AliView *aliview = global_data->weighted_filter.create_aliview(use);
+            AliView *aliview = global_data->weighted_filter.create_aliview(use, error);
 
-            AP_sequence *seq = GBT_is_alignment_protein(gb_main, use)
-                ? (AP_sequence*)new AP_sequence_protein(aliview)
-                : new AP_sequence_parsimony(aliview);
+            if (aliview) {
+                AP_sequence *seq = GBT_is_alignment_protein(gb_main, use)
+                    ? (AP_sequence*)new AP_sequence_protein(aliview)
+                    : new AP_sequence_parsimony(aliview);
 
-            AP_FLOAT maxDistance    = aw_root->awar(AWAR_CLUSTER_MAXDIST)->read_float();
-            unsigned minClusterSize = aw_root->awar(AWAR_CLUSTER_MINSIZE)->read_int();
+                AP_FLOAT maxDistance    = aw_root->awar(AWAR_CLUSTER_MAXDIST)->read_float();
+                unsigned minClusterSize = aw_root->awar(AWAR_CLUSTER_MINSIZE)->read_int();
 
-            tree = new ClusterTreeRoot(aliview, seq, maxDistance/100, minClusterSize);
+                tree = new ClusterTreeRoot(aliview, seq, maxDistance/100, minClusterSize);
 
-            delete seq;
+                delete seq;
+            }
             free(use);
         }
 
-        progress.subtitle("Loading tree");
-        {
-            char *tree_name = aw_root->awar(AWAR_DIST_TREE_CURR_NAME)->read_string();
-            error           = tree->loadFromDB(tree_name);
-            free(tree_name);
-        }
+        if (!error) {
+            progress.subtitle("Loading tree");
+            {
+                char *tree_name = aw_root->awar(AWAR_DIST_TREE_CURR_NAME)->read_string();
+                error           = tree->loadFromDB(tree_name);
+                free(tree_name);
+            }
 
-        if (!error) error = tree->linkToDB(0, 0);
+            if (!error) error = tree->linkToDB(0, 0);
+        }
     }
 
     if (!error) {
