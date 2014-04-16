@@ -111,6 +111,14 @@ struct AWT_command_data {
     virtual ~AWT_command_data() {}
 };
 
+enum CollapseMode {
+    COLLAPSE_ALL      = 0,
+    EXPAND_MARKED     = 1, // do not collapse groups containing marked species
+    COLLAPSE_TERMINAL = 2, // do not collapse groups with subgroups
+    EXPAND_ALL        = 4,
+    EXPAND_COLOR      = 8, // do not collapse groups containing species with color == parameter 'color_group'
+};
+
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
     AW::Position  cursor;
@@ -244,8 +252,8 @@ public:
 
     void detect_group_state(AP_tree *at, AWT_graphic_tree_group_state *state, AP_tree *skip_this_son);
 
-    int      group_tree(AP_tree *at, int mode, int color_group);
-    void     group_rest_tree(AP_tree *at, int mode, int color_group);
+    bool     group_tree(AP_tree *at, CollapseMode mode, int color_group);
+    void     group_rest_tree(AP_tree *at, CollapseMode mode, int color_group);
     void     reorder_tree(TreeOrder mode);
     GB_ERROR create_group(AP_tree * at) __ATTR__USERESULT;
     void     toggle_group(AP_tree * at);

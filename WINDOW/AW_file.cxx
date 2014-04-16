@@ -23,6 +23,7 @@
 #include <arb_strbuf.h>
 #include <arb_misc.h>
 #include <arb_str.h>
+#include <arb_strarray.h>
 
 #include <sys/stat.h>
 #include <dirent.h>
@@ -41,9 +42,6 @@ static GB_CSTR expand_symbolic_directories(const char *pwd_envar) {
 
     if (strcmp(pwd_envar, "PWD") == 0) {
         res = GB_getcwd();
-    }
-    else if (strcmp(pwd_envar, "PT_SERVER_HOME") == 0) {
-        res = GB_path_in_ARBLIB("pts");
     }
     else {
         res = NULL;
@@ -74,16 +72,14 @@ char *AW_extract_directory(const char *path) {
 // -----------------------------
 //      file selection boxes
 
-void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
-                                   const char *directory, const char *filter, const char *file_name,
-                                   AW_default default_file, bool resetValues)
-{
-    int   base_len  = strlen(awar_base);
-    bool  has_slash = awar_base[base_len-1] == '/';
-    char *awar_name = new char[base_len+30]; // use private buffer, because caller will most likely use GBS_global_string for arguments
+void AW_create_fileselection_awars(AW_root *awr, const char *awar_base, const char *directories, const char *filter, const char *file_name) {
+    int        base_len     = strlen(awar_base);
+    bool       has_slash    = awar_base[base_len-1] == '/';
+    char      *awar_name    = new char[base_len+30]; // use private buffer, because caller will most likely use GBS_global_string for arguments
+    AW_default default_file = AW_ROOT_DEFAULT;
 
     sprintf(awar_name, "%s%s", awar_base, "/directory"+int(has_slash));
-    AW_awar *awar_dir = awr->awar_string(awar_name, directory, default_file);
+    AW_awar *awar_dir = awr->awar_string(awar_name, directories, default_file);
 
     sprintf(awar_name, "%s%s", awar_base, "/filter"   + int(has_slash));
     AW_awar *awar_filter = awr->awar_string(awar_name, filter, default_file);
@@ -91,53 +87,27 @@ void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
     sprintf(awar_name, "%s%s", awar_base, "/file_name"+int(has_slash));
     AW_awar *awar_filename = awr->awar_string(awar_name, file_name, default_file);
 
-    if (resetValues) {
-        awar_dir->write_string(directory);
-        awar_filter->write_string(filter);
-        awar_filename->write_string(file_name);
-    }
-    else {
-        char *stored_directory = awar_dir->read_string();
-#if defined(DEBUG)
-        if (strncmp(awar_base, "tmp/", 4) == 0) { // non-saved awar
-            if (directory[0] != 0) { // accept empty dir (means : use current ? )
-                aw_assert(GB_is_directory(directory)); // default directory does not exist
+#if defined(ASSERTION_USED)
+    bool is_tmp_awar = strncmp(awar_base, "tmp/", 4) == 0 || strncmp(awar_base, "/tmp/", 5) == 0;
+    aw_assert(is_tmp_awar); // you need to use a temp awar for file selections
+#endif
+
+    awar_dir->write_string(directories);
+    awar_filter->write_string(filter);
+    awar_filename->write_string(file_name);
+
+    // create all (default) directories
+    {
+        ConstStrArray dirs;
+        GBT_split_string(dirs, directories, ":", true);
+        for (unsigned i = 0; i<dirs.size(); ++i) {
+            if (!GB_is_directory(dirs[i])) {
+                fprintf(stderr, "Creating directory '%s'\n", dirs[i]);
+                GB_ERROR error = GB_create_directory(dirs[i]);
+                if (error) aw_message(GBS_global_string("Failed to create directory '%s' (Reason: %s)", dirs[i], error));
             }
         }
-#endif // DEBUG
-
-        if (strcmp(stored_directory, directory) != 0) { // does not have default value
-#if defined(DEBUG)
-            const char *arbhome    = GB_getenvARBHOME();
-            int         arbhomelen = strlen(arbhome);
-
-            if (strncmp(directory, arbhome, arbhomelen) == 0) { // default points into $ARBHOME
-                aw_assert(resetValues); // should be called with resetValues == true
-                // otherwise it's possible, that locations from previously installed ARB versions are used
-            }
-#endif // DEBUG
-
-            if (!GB_is_directory(stored_directory)) {
-                awar_dir->write_string(directory);
-                fprintf(stderr,
-                        "Warning: Replaced reference to non-existing directory '%s'\n"
-                        "         by '%s'\n"
-                        "         (Save properties to make this change permanent)\n",
-                        stored_directory, directory);
-            }
-        }
-
-        free(stored_directory);
     }
-
-    char *dir = awar_dir->read_string();
-    if (dir[0] && !GB_is_directory(dir)) {
-        if (aw_ask_sure("create_directory", GBS_global_string("Directory '%s' does not exist. Create?", dir))) {
-            GB_ERROR error = GB_create_directory(dir);
-            if (error) aw_message(GBS_global_string("Failed to create directory '%s' (Reason: %s)", dir, error));
-        }
-    }
-    free(dir);
 
     delete [] awar_name;
 }
@@ -268,8 +238,16 @@ public:
 
     void filename_changed(bool post_filter_change_HACK);
 
-    const char *get_dir() const { return awr->awar(def_dir)->read_char_pntr(); }
-    GB_ULONG get_dir_modtime() const { return GB_time_of_file(get_dir()); }
+    GB_ULONG get_newest_dir_modtime() const {
+        ConstStrArray dirs;
+        GBT_split_string(dirs, awr->awar(def_dir)->read_char_pntr(), ":", true);
+        unsigned long maxtof = 0;
+        for (unsigned i = 0; i<dirs.size(); ++i) {
+            unsigned long tof = GB_time_of_file(dirs[i]);
+            if (tof>maxtof) maxtof = tof;
+        }
+        return maxtof;
+    }
 
     void trigger_refresh() { awr->awar(def_dir)->touch(); }
 };
@@ -527,18 +505,8 @@ void File_selection::fill() {
     AW_root *aw_root = awr;
     filelist->clear();
 
-    char *diru    = aw_root->awar(def_dir)->read_string();
-    char *fulldir = AW_unfold_path(pwd, diru);
     char *filter  = aw_root->awar(def_filter)->read_string();
     char *name    = aw_root->awar(def_name)->read_string();
-
-#if defined(TRACE_FILEBOX)
-    printf("fill_fileselection_cb:\n"
-           "- diru   ='%s'\n"
-           "- fulldir='%s'\n"
-           "- filter ='%s'\n"
-           "- name   ='%s'\n",  diru, fulldir, filter, name);
-#endif // TRACE_FILEBOX
 
     const char *name_only = 0;
     {
@@ -546,17 +514,36 @@ void File_selection::fill() {
         name_only   = slash ? slash+1 : name;
     }
 
-    if (name[0] == '/' && AW_is_dir(name)) {
-        freedup(fulldir, name);
-        name_only = "";
+    StrArray dirs;
+    {
+        char *diru = aw_root->awar(def_dir)->read_string();
+        if (dirdisp == MULTI_DIRS) {
+            ConstStrArray cdirs;
+            GBT_split_string(cdirs, diru, ":", true);
+            for (unsigned i = 0; i<cdirs.size(); ++i) dirs.put(strdup(cdirs[i]));
+        }
+        else {
+            if (name[0] == '/' && AW_is_dir(name)) {
+                dirs.put(strdup(name));
+                name_only = "";
+            }
+            else {
+                char *fulldir = AW_unfold_path(pwd, diru);
+                dirs.put(fulldir);
+            }
+        }
+        free(diru);
     }
-
-    DuplicateLinkFilter  unDup;
-    unDup.register_directory(fulldir);
 
     filled_by_wildcard = strchr(name_only, '*');
 
     if (dirdisp == ANY_DIR) {
+        aw_assert(dirs.size() == 1);
+        const char *fulldir    = dirs[0];
+
+        DuplicateLinkFilter unDup;
+        unDup.register_directory(fulldir);
+
         if (filled_by_wildcard) {
             if (leave_wildcards) {
                 filelist->insert(GBS_global_string("  ALL '%s' in '%s'", name_only, fulldir), name);
@@ -598,43 +585,48 @@ void File_selection::fill() {
             show_soft_link(filelist, "HOME", unDup);
             show_soft_link(filelist, "PWD", unDup);
             show_soft_link(filelist, "ARB_WORKDIR", unDup);
-            show_soft_link(filelist, "PT_SERVER_HOME", unDup);
 
             filelist->insert("!  Sub-directories  (shown)", GBS_global_string("%s?hide?", name));
         }
         else {
             filelist->insert("!  Sub-directories  (hidden)", GBS_global_string("%s?show?", name));
         }
+        filelist->insert(GBS_global_string("!  Hidden           (%s)", show_hidden ? "shown" : "not shown"), GBS_global_string("%s?dot?", name));
+    }
+    else {
+        aw_assert(dirdisp == MULTI_DIRS);
     }
 
     static const char *order_name[DIR_SORT_ORDERS] = { "alpha", "date", "size" };
 
-    filelist->insert(GBS_global_string("!  Sort order       (%s)", order_name[sort_order]),              GBS_global_string("%s?sort?", name));
-    filelist->insert(GBS_global_string("!  Hidden           (%s)", show_hidden ? "shown" : "not shown"), GBS_global_string("%s?dot?", name));
+    filelist->insert(GBS_global_string("!  Sort order       (%s)", order_name[sort_order]), GBS_global_string("%s?sort?", name));
 
     bool insert_dirs = dirdisp == ANY_DIR && show_subdirs;
 
     searchTime.reset(); // limits time spent in fill_recursive
-    if (filled_by_wildcard) {
-        if (leave_wildcards) {
-            fill_recursive(fulldir, strlen(fulldir)+1, name_only, false, insert_dirs);
-        }
-        else {
-            if (dirdisp == ANY_DIR) { // recursive wildcarded search
-                fill_recursive(fulldir, strlen(fulldir)+1, name_only, true, false);
+    for (unsigned i = 0; i<dirs.size(); ++i) {
+        const char *fulldir = dirs[i];
+        if (filled_by_wildcard) {
+            if (leave_wildcards) {
+                fill_recursive(fulldir, strlen(fulldir)+1, name_only, false, insert_dirs);
             }
             else {
-                char *mask = GBS_global_string_copy("%s*%s", name_only, filter);
-                fill_recursive(fulldir, strlen(fulldir)+1, mask, false, false);
-                free(mask);
+                if (dirdisp == ANY_DIR) { // recursive wildcarded search
+                    fill_recursive(fulldir, strlen(fulldir)+1, name_only, true, false);
+                }
+                else {
+                    char *mask = GBS_global_string_copy("%s*%s", name_only, filter);
+                    fill_recursive(fulldir, strlen(fulldir)+1, mask, false, false);
+                    free(mask);
+                }
             }
         }
-    }
-    else {
-        char *mask = GBS_global_string_copy("*%s", filter);
+        else {
+            char *mask = GBS_global_string_copy("*%s", filter);
 
-        fill_recursive(fulldir, strlen(fulldir)+1, mask, false, insert_dirs);
-        free(mask);
+            fill_recursive(fulldir, strlen(fulldir)+1, mask, false, insert_dirs);
+            free(mask);
+        }
     }
 
     if (!searchTime.finished_in_time()) {
@@ -656,8 +648,6 @@ void File_selection::fill() {
     }
 
     free(name);
-    free(fulldir);
-    free(diru);
     free(filter);
 }
 
@@ -690,8 +680,7 @@ void File_selection::filename_changed(bool post_filter_change_HACK) {
             execute_browser_command(browser_command);
             trigger_refresh();
         }
-        else {
-
+        else if (dirdisp != MULTI_DIRS) {
             char *newName = 0;
             char *dir     = aw_root->awar(def_dir)->read_string();
 
@@ -729,6 +718,7 @@ void File_selection::filename_changed(bool post_filter_change_HACK) {
 
                 if (AW_is_dir(newName)) {
                     aw_root->awar(def_name)->write_string("");
+                    aw_assert(dirdisp != MULTI_DIRS); // overwriting content unwanted if displaying MULTI_DIRS
                     aw_root->awar(def_dir)->write_string(newName);
                     aw_root->awar(def_name)->write_string("");
                 }
@@ -736,10 +726,12 @@ void File_selection::filename_changed(bool post_filter_change_HACK) {
                     char *lslash = strrchr(newName, '/');
                     if (lslash) {
                         if (lslash == newName) { // root directory
+                            aw_assert(dirdisp != MULTI_DIRS); // overwriting content unwanted if displaying MULTI_DIRS
                             aw_root->awar(def_dir)->write_string("/"); // write directory part
                         }
                         else {
                             lslash[0] = 0;
+                            aw_assert(dirdisp != MULTI_DIRS); // overwriting content unwanted if displaying MULTI_DIRS
                             aw_root->awar(def_dir)->write_string(newName); // write directory part
                             lslash[0] = '/';
                         }
@@ -828,7 +820,7 @@ static unsigned autorefresh_selboxes(AW_root *) {
     selbox_autorefresh_info *check = autorefresh_info;
 
     while (check) {
-        GB_ULONG mtime = check->acbs->get_dir_modtime();
+        GB_ULONG mtime = check->acbs->get_newest_dir_modtime();
         if (mtime != check->modtime) {
             check->modtime = mtime;
             check->acbs->trigger_refresh();
@@ -848,7 +840,7 @@ static void selbox_install_autorefresh(AW_root *aw_root, File_selection *acbs) {
     selbox_autorefresh_info *install = new selbox_autorefresh_info;
 
     install->acbs    = acbs;
-    install->modtime = acbs->get_dir_modtime();
+    install->modtime = acbs->get_newest_dir_modtime();
 
     install->next    = autorefresh_info;
     autorefresh_info = install;
@@ -872,8 +864,8 @@ void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char
      * 2. "$at_prefix""box"
      * 3. "$at_prefix""file_name"
      * 
-     * if show_dir== true, then show directories and files
-     * else only files
+     * if disp_dirs == ANY_DIR, then show directories and files
+     * if disp_dirs == MULTI_DIRS, then only show files, but from multiple directories
      * 
      * pwd is the name of a 'shell environment variable' which indicates the base directory
      * (e.g. 'PWD' or 'ARBHOME')
@@ -954,7 +946,6 @@ void TEST_path_unfolding() {
         gb_getenv_hook old = GB_install_getenv_hook(expand_symbolic_directories);
 
         TEST_EXPECT_EQUAL(GB_getenv("PWD"), currDir);
-        TEST_EXPECT_EQUAL_DUPPED(strdup(GB_getenv("PT_SERVER_HOME")), strdup(GB_path_in_ARBLIB("pts"))); // need to dup here - otherwise temp buffers get overwritten
         TEST_EXPECT_EQUAL(GB_getenv("ARBHOME"), GB_getenvARBHOME());
         TEST_EXPECT_NULL(GB_getenv("ARB_NONEXISTING_ENVAR"));
 
@@ -963,19 +954,6 @@ void TEST_path_unfolding() {
 
     TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("PWD", "/bin"),                strdup("/bin"));
     TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"),            strdup(GB_path_in_ARBHOME("UNIT_TESTER/tests")));
-    {
-        // test fails if
-        char *pts_path_in_arblib = strdup(GB_path_in_ARBLIB("pts"));
-        char *pts_unfold_path    = AW_unfold_path("PT_SERVER_HOME", ".");
-        if (GB_is_directory(pts_path_in_arblib)) {
-            TEST_EXPECT_EQUAL(pts_path_in_arblib, pts_unfold_path);
-        }
-        else {
-            TEST_EXPECT_EQUAL__BROKEN(pts_path_in_arblib, pts_unfold_path, "???"); // fails if directory does not exist
-        }
-        free(pts_unfold_path);
-        free(pts_path_in_arblib);
-    }
     TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("ARB_NONEXISTING_ENVAR", "."), strdup(currDir));
 }
 

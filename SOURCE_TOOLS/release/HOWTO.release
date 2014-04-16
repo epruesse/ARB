@@ -14,7 +14,12 @@ Overview:
 
 1. 'trunk' versioning
 
+        To check trunk version look into ../version_info
+        or call
+                make show_version
+
         'trunk' shall always contain the release version number planned for the NEXT release.
+
         Example1:
                 last release was arb-5.5
                 trunk should already contain arb-5.6 (or arb-6.0, whatever is planned)

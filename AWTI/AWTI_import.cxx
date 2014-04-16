@@ -23,14 +23,14 @@
 #include <GenomeImport.h>
 #include <GEN.hxx>
 #include <adGene.h>
-
 #include <arb_progress.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
+#include <arb_str.h>
+#include <macros.hxx>
 
 #include <climits>
 #include <unistd.h>
-#include <macros.hxx>
 
 using namespace std;
 
@@ -265,10 +265,19 @@ import_format::~import_format() {
 }
 
 
+static int cmp_ift(const void *p0, const void *p1, void *) {
+    return ARB_stricmp((const char *)p0, (const char *)p1);
+}
 
 void ArbImporter::detect_format(AW_root *root) {
     StrArray files;
-    GBS_read_dir(files, GB_path_in_ARBLIB("import"), "*.ift");
+    {
+        AW_awar       *awar_dirs = root->awar(AWAR_FORM"/directory");
+        ConstStrArray  dirs;
+        GBT_split_string(dirs, awar_dirs->read_char_pntr(), ":", true);
+        for (unsigned i = 0; i<dirs.size(); ++i) GBS_read_dir(files, dirs[i], "*.ift");
+    }
+    files.sort(cmp_ift, NULL);
 
     char     buffer[AWTI_IMPORT_CHECK_BUFFER_SIZE+10];
     GB_ERROR error = 0;
@@ -1269,8 +1278,15 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
 
     importer->doExit = do_exit; // change/set behavior of CLOSE button
 
-    AW_create_fileselection_awars(awr, AWAR_FILE_BASE, ".", "", defname);
-    AW_create_fileselection_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import"), ".ift", "*");
+    {
+        GBS_strstruct path(500);
+        path.cat(GB_path_in_arbprop("filter"));
+        path.put(':');
+        path.cat(GB_path_in_ARBLIB("import"));
+
+        AW_create_fileselection_awars(awr, AWAR_FILE_BASE, ".",             "",     defname);
+        AW_create_fileselection_awars(awr, AWAR_FORM,      path.get_data(), ".ift", "*");
+    }
 
     awr->awar_string(AWAR_ALI, "dummy"); // these defaults are never used
     awr->awar_string(AWAR_ALI_TYPE, "dummy"); // they are overwritten by AWTI_import_set_ali_and_type
@@ -1294,8 +1310,8 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
         aws->callback(makeHelpCallback("arb_import.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
-        AW_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD",     ANY_DIR, true);  // select import filename
-        AW_create_fileselection(aws, AWAR_FORM,      "",     "ARBHOME", NO_DIR,  false); // select import filter
+        AW_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD",     ANY_DIR,    true);  // select import filename
+        AW_create_fileselection(aws, AWAR_FORM,      "",     "ARBHOME", MULTI_DIRS, false); // select import filter
 
         aws->at("auto");
         aws->callback(detect_input_format_cb);

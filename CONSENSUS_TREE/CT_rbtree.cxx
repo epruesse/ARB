@@ -29,7 +29,8 @@ static int GBT_TREE_order(const GBT_TREE *t1, const GBT_TREE *t2) {
         GBT_LEN l1 = t1->leftlen+t1->rightlen;
         GBT_LEN l2 = t2->leftlen+t2->rightlen;
 
-        cmp = double_cmp(l1, l2); // insert smaller len first
+        cmp = double_cmp(l1, l2); // NOW REALLY insert smaller len first
+                                  // (change had no effect on test results)
         if (!cmp) {
             if (t1->is_leaf) {
                 cmp = strcmp(t1->name, t2->name);
@@ -60,7 +61,8 @@ static int RB_INFO_order(const void *v1, const void *v2, void *) {
     int cmp = i1->percent - i2->percent; // insert more probable branches first
 
     if (!cmp) {
-        cmp = double_cmp(i1->len, i2->len); // insert smaller len first
+        cmp = double_cmp(i1->len, i2->len); // NOW REALLY insert smaller len first
+                                            // (change slightly affected test results in "weak" tree-parts)
         if (!cmp) {
             cmp = GBT_TREE_order(i1->node, i2->node);
         }

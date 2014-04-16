@@ -8,13 +8,20 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		NOTES:   ae2 
+TITLE		Mark duplicates in tree
 
-OCCURRENCE	ARB_IMPORT
+OCCURRENCE	ARB_NT/Tree/Mark duplicates
 
-DESCRIPTION	This format allows to read old ae2 files into arb.
+DESCRIPTION     Checks selected tree for duplicate leafs. 
 
-NOTES		Uses the program 'convert_aln' written by RDP to convert to
-		rdp format, than ARB reads it's output (ad rdp file).
+		Duplicated species will be marked - all other unmarked.
 
-		There is no ae2 output.	
+		If duplicated zombies are found, a warning is shown.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

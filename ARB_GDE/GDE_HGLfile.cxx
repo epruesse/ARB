@@ -37,28 +37,22 @@ static void RemoveQuotes(char *string)
 
 }
 
-int WriteGDE(NA_Alignment *aln, char *filename, int method)
-{
-    int i;
-    size_t j;
-    int k;
-    FILE *file;
-    NA_Sequence *this_elem;
-
+int WriteGDE(NA_Alignment *aln, char *filename, int method) {
     if (aln == NULL) return (1);
 
-    file = fopen(filename, "w");
+    FILE *file = fopen(filename, "w");
     if (file == NULL)
     {
         Warning("Cannot open file for output");
         return (1);
     }
 
-    for (j=0; j<aln->numelements; j++)
+    for (size_t j=0; j<aln->numelements; j++)
     {
         if (method == ALL)
         {
-            this_elem = &(aln->element[j]);
+            NA_Sequence *this_elem = &(aln->element[j]);
+            // @@@ code below should be in method of NA_Sequence (far too many 'this_elem->')
             fprintf(file, "{\n");
             if (this_elem->short_name[0])
                 fprintf(file, "name      \"%s\"\n", this_elem->short_name);
@@ -165,7 +159,7 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method)
             fprintf(file, "sequence  \"");
             if (this_elem->tmatrix)
             {
-                for (k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
+                for (int k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
                 {
                     if (k%60 == 0) putc('\n', file);
                     putc(this_elem->tmatrix[getelem(this_elem, k)], file);
@@ -174,7 +168,7 @@ int WriteGDE(NA_Alignment *aln, char *filename, int method)
             }
             else
             {
-                for (k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
+                for (int k=this_elem->offset; k<this_elem->seqlen+this_elem->offset; k++)
                 {
                     if (k%60 == 0)
                         putc('\n', file);

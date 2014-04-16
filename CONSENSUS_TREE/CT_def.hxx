@@ -19,11 +19,6 @@
 // #define DUMP_PART_INSERTION
 #endif // DEBUG
 
-inline int double_cmp(double d1, const double d2) {
-    double d = d2-d1;
-    return d<0 ? -1 : (d>0 ? 1 : 0);
-}
-
 #else
 #error CT_def.hxx included twice
 #endif // CT_DEF_HXX
