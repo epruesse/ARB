@@ -117,11 +117,13 @@ public:
     }
 
     void dump_to(GBS_strstruct& buf, const char *mem, size_t size) const {
-        if (wrapped()) dump_wrapped(buf, mem, size);
-        else { // one-line dump
-            MemDump mod(*this);
-            mod.width = size;
-            mod.dump_wrapped(buf, mem, size);
+        if (size) {
+            if (wrapped()) dump_wrapped(buf, mem, size);
+            else { // one-line dump
+                MemDump mod(*this);
+                mod.width = size;
+                mod.dump_wrapped(buf, mem, size);
+            }
         }
     }
 };
