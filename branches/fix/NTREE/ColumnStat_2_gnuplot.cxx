@@ -349,14 +349,20 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
         char *alignment_name   = aww->get_root()->awar(AWAR_CS2GP_FILTER_ALIGNMENT)->read_string();
         long  alignment_length = GBT_get_alignment_len(GLOBAL.gb_main, alignment_name);
 
-        AP_filter filter(filterstring, "0", alignment_length);
+        if (alignment_length<0) {
+            GB_clear_error();
+            error = "Please select a valid alignment";
+        }
+        else {
+            AP_filter filter(filterstring, "0", alignment_length);
 
-        free(alignment_name);
-        free(filterstring);
+            free(alignment_name);
+            free(filterstring);
 
-        error = column_stat->calculate(&filter);
+            error = column_stat->calculate(&filter);
 
-        if (!error && !column_stat->get_length()) error = "Please select column statistic";
+            if (!error && !column_stat->get_length()) error = "Please select column statistic";
+        }
     }
 
     if (!error) {
