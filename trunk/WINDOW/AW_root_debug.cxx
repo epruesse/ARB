@@ -85,6 +85,8 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "CPR_MAIN/HELP",                                              2);
     GBS_write_hash(dontCallHash, "GDE__User__Start_a_slave_ARB_on_a_foreign_host_/GO",         2);
     GBS_write_hash(dontCallHash, "HELP/BROWSE",                                                2);
+    GBS_write_hash(dontCallHash, "mailing_list",                                               2);
+    GBS_write_hash(dontCallHash, "bug_report",                                                 2);
     GBS_write_hash(dontCallHash, "HELP/EDIT",                                                  2);
     GBS_write_hash(dontCallHash, "MACROS/EDIT",                                                2);
     GBS_write_hash(dontCallHash, "MACROS/EXECUTE",                                             2);
