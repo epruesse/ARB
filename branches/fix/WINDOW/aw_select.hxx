@@ -143,6 +143,7 @@ public:
     AW_selection_list_iterator(AW_selection_list *sellist, int index)
         : entry(sellist->list_table)
     {
+        aw_assert(index>=0);
         forward(index);
     }
 
