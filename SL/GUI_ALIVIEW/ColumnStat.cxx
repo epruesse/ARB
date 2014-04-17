@@ -327,21 +327,24 @@ void ColumnStat::print() {
 static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
     // return NULL for non-columnstat SAIs
     ColumnStat *column_stat = (ColumnStat*)cl_column_stat;
-    GBDATA     *gb_type     = GB_search(gb_extended, column_stat->get_type_path(), GB_FIND);
-    char       *result      = NULL;
 
-    if (gb_type) {
-        const char *type = GB_read_char_pntr(gb_type);
+    char *result = NULL;
+    if (column_stat->has_valid_alignment()) {
+        GBDATA *gb_type = GB_search(gb_extended, column_stat->get_type_path(), GB_FIND);
 
-        if (GBS_string_matches(type, "PV?:*", GB_MIND_CASE)) {
-            GBS_strstruct *strstruct = GBS_stropen(100);
+        if (gb_type) {
+            const char *type = GB_read_char_pntr(gb_type);
 
-            GBS_strcat(strstruct, GBT_read_name(gb_extended));
-            GBS_strcat(strstruct, ":      <");
-            GBS_strcat(strstruct, type);
-            GBS_strcat(strstruct, ">");
+            if (GBS_string_matches(type, "PV?:*", GB_MIND_CASE)) {
+                GBS_strstruct *strstruct = GBS_stropen(100);
 
-            result = GBS_strclose(strstruct);
+                GBS_strcat(strstruct, GBT_read_name(gb_extended));
+                GBS_strcat(strstruct, ":      <");
+                GBS_strcat(strstruct, type);
+                GBS_strcat(strstruct, ">");
+
+                result = GBS_strclose(strstruct);
+            }
         }
     }
     return result;
