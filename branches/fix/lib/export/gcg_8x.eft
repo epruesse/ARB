@@ -1,0 +1,23 @@
+SUFFIX seq
+BEGIN
+GCG 8.x sequence format
+
+Exported from ARB database
+
+Full name: *(full_name)
+Accession: *(acc|extract_words("0123456789",4.0))
+Date     : *(date|  srt("..=_")|crop(" ")|format(firsttab=0;tab=11;width=70;"nl= ";"forcenl=|\n"))
+Author   : *(author|srt("..=_")|crop(" ")|format(firsttab=0;tab=11;width=70;"nl= ";"forcenl=|\n"))
+Title    : *(title| srt("..=_")|crop(" ")|format(firsttab=0;tab=11;width=70;"nl= ";"forcenl=|\n"))
+Strain   : *(strain|srt("..=_")|crop(" ")|format(firsttab=0;tab=11;width=70;"nl= ";"forcenl=|\n"))
+
+SeqType  : *(|sequence_type)
+BasePos  : *(|export_sequence|len(.-))
+Length   : *(|export_sequence|len)
+
+.. = end of GCG header
+
+*(|export_sequence|format_sequence(firsttab=10;tab=10;width=50;numleft;gap=10))
+
+//
+
