@@ -318,7 +318,10 @@ static void track_ali_change_cb(GBDATA *gb_ali) {
     GB_alignment_type  alitype = GBT_get_alignment_type(gb_main, aliname);
     GB_ERROR           error   = GBT_determine_T_or_U(alitype, &T_or_U_for_load, "reverse-complement");
 
-    if (error) aw_message(error);
+    if (error) {
+        if (GB_have_error()) aw_message(GB_await_error());
+        aw_message(error);
+    }
     free(aliname);
 }
 
