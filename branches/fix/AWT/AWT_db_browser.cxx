@@ -430,7 +430,7 @@ static void toggle_tmp_cb(AW_window *aww) {
         }
     }
 
-    if (!done) {
+    if (!done && !is_dbbrowser_pseudo_path(path)) {
         char *path_in_tmp = GBS_global_string_copy("/tmp%s", path);
 
         char *lslash = strrchr(path_in_tmp, '/');
