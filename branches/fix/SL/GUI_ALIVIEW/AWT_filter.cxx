@@ -405,7 +405,10 @@ AP_filter *awt_get_filter(adfiltercbstruct *acbs) {
             free(use);
         }
 
-        if (len != -1) { // have alignment
+        if (len == -1) { // no alignment -> uses dummy filter
+            GB_clear_error();
+        }
+        else { // have alignment
             filter  = new AP_filter(filter_string, "0", len);
             int sim = acbs->awr->awar(acbs->def_simplify)->read_int();
             filter->enable_simplify((AWT_FILTER_SIMPLIFY)sim);

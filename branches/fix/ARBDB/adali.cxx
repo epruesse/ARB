@@ -701,6 +701,7 @@ GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname) {
 }
 
 char *GBT_get_default_alignment(GBDATA *gb_main) {
+    gb_assert(!GB_have_error()); // illegal to enter this function when an error is exported!
     return GBT_read_string(gb_main, "presets/use");
 }
 

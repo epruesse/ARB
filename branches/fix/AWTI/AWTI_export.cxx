@@ -36,7 +36,11 @@
 #define AWAR_EXPORT_FILTER_ALI     AWAR_EXPORT_FILTER_PREFIX "/alignment"
 #define AWAR_EXPORT_CUTSTOP        "export/cutstop"
 
+#define awti_assert(cond) arb_assert(cond)
+
 static void export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_create_select_filter) {
+    awti_assert(!GB_have_error());
+
     GBDATA           *gb_main = (GBDATA*)cl_gb_main;
     GB_transaction    ta(gb_main);
     adfiltercbstruct *acbs    = (adfiltercbstruct*)res_from_awt_create_select_filter;
