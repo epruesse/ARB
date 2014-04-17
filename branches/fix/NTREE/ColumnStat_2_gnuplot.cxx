@@ -569,12 +569,14 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
 }
 
 static void colstat_ali_changed_cb(AW_root *root) {
-    long smooth_max = GBT_get_alignment_len(GLOBAL.gb_main, root->awar(AWAR_CS2GP_FILTER_ALIGNMENT)->read_char_pntr());
-    if (smooth_max<0) { // ali not found
-        GB_clear_error();
-        smooth_max = 1; // min=max -> do not limit
+    if (GLOBAL.gb_main) {
+        long smooth_max = GBT_get_alignment_len(GLOBAL.gb_main, root->awar(AWAR_CS2GP_FILTER_ALIGNMENT)->read_char_pntr());
+        if (smooth_max<0) { // ali not found
+            GB_clear_error();
+            smooth_max = 1; // min=max -> do not limit
+        }
+        root->awar(AWAR_CS2GP_SMOOTH_VALUES)->set_minmax(1, smooth_max);
     }
-    root->awar(AWAR_CS2GP_SMOOTH_VALUES)->set_minmax(1, smooth_max);
 }
 
 AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
