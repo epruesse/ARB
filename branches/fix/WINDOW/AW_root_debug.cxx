@@ -107,6 +107,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/REMOVE_SUPERFLUOUS_ENTRIES_IN_NAMES_FILE", 2);
     GBS_write_hash(dontCallHash, "PRINT_CANVAS/PRINT",                                         2);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CREATE_TEMPLATE",                            2);
+    GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/EDIT_LOG",                                   2);
     GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/CREATE_TEMPLATE",                          2);
     GBS_write_hash(dontCallHash, "SELECT_CONFIGURATION/START",                                 2);
     GBS_write_hash(dontCallHash, "EXPORT_TREE_AS_XFIG/START_XFIG",                             2);
@@ -114,10 +115,13 @@ static void build_dontCallHash() {
 #endif
 
     // avoid saving
-    GBS_write_hash(dontCallHash, "save_changes", 3);
-    GBS_write_hash(dontCallHash, "save_props",   3);
-
-    GBS_write_hash(dontCallHash, "save_DB1", 3);
+    GBS_write_hash(dontCallHash, "save_changes",         3);
+    GBS_write_hash(dontCallHash, "save_props",           3);
+    GBS_write_hash(dontCallHash, "save_DB1",             3);
+    GBS_write_hash(dontCallHash, "SAVE_DB/SAVE",         3);
+    GBS_write_hash(dontCallHash, "ARB_NT/SAVE",          3);
+    GBS_write_hash(dontCallHash, "ARB_NT/SAVE_AS",       3);
+    GBS_write_hash(dontCallHash, "ARB_NT/QUICK_SAVE_AS", 3);
 
     // avoid confusion by recording, executing or deleting macros
     GBS_write_hash(dontCallHash, "MACROS/DELETE",       1);
@@ -139,6 +143,9 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "LOAD_OLD_CONFIGURATION/LOAD",    4);
 #endif
 
+    // do not open 2nd ARB_NT window (to buggy)
+    GBS_write_hash(dontCallHash, "new_window", 4);
+
 #if 1
 #if defined(WARN_TODO)
 #warning test callbacks asking questions again later
@@ -153,14 +160,20 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/KILL_SERVER",                          5);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/UPDATE_SERVER",                        5);
     GBS_write_hash(dontCallHash, "REALIGN_DNA/REALIGN",                                  5);
-    GBS_write_hash(dontCallHash, "SPECIES_QUERY/DELETE_LISTED",                          5);
+    // GBS_write_hash(dontCallHash, "SPECIES_QUERY/DELETE_LISTED",                          5);
+    GBS_write_hash(dontCallHash, "SPECIES_QUERY/DELETE_LISTED_spec",                     5);
     GBS_write_hash(dontCallHash, "SPECIES_QUERY/SAVELOAD_CONFIG_spec",                   5);
     GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/RENAME",                            5);
     GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/STORE_0",                           5);
     GBS_write_hash(dontCallHash, "del_marked",                                           5);
     GBS_write_hash(dontCallHash, "create_group",                                         5);
     GBS_write_hash(dontCallHash, "dcs_threshold",                                        5);
+    GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/DELETE_OLD_NAMES_FILE",              5);
 #endif
+
+    // don't call some close-callbacks
+    // (needed when they perform cleanup that makes other callbacks from the same window fail)
+    GBS_write_hash(dontCallHash, "ARB_IMPORT/CLOSE", 6);
 
     GB_HASH *autodontCallHash = GBS_create_hash(100, GB_MIND_CASE);
     GBS_hash_do_loop(dontCallHash, auto_dontcall1, autodontCallHash);
