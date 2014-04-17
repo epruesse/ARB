@@ -848,6 +848,9 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
                 for (si=0; si<mastercount; si++) free(masters[si]);
                 free(masters);
             }
+            else {
+                tree_progress.done();
+            }
         }
     }
 
