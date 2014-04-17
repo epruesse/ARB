@@ -564,6 +564,7 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
 
     if (ali_len<0) {
         warning = GBS_global_string("Skipping alignment '%s' (not a valid alignment; len=%li).", ali_name, ali_len);
+        GB_clear_error();
     }
     else {
         int leafcount = g_b_count_leafs(tree);
