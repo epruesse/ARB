@@ -200,6 +200,7 @@ void AWT_create_db_browser_awars(AW_root *aw_root, AW_default aw_def) {
 }
 
 static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create) { // @@@  this may be moved to ARBDB-sources
+    awt_assert(!GB_have_error());
     if (str) {
         if (str[0] == '/' && str[1] == 0) { // root
             return GB_get_root(gbd);
@@ -283,6 +284,7 @@ static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create)
         }
         // no brackets -> normal search
     }
+    awt_assert(!GB_have_error());
     return GB_search(gbd, str, create); // do normal search
 }
 
@@ -586,6 +588,7 @@ static char *get_dbentry_content(GBDATA *gbd, GB_TYPES type, bool shorten_repeat
 }
 
 static void update_browser_selection_list(AW_root *aw_root, AW_selection_list *id) {
+    awt_assert(!GB_have_error());
     DB_browser *browser = get_the_browser();
     char       *path    = aw_root->awar(AWAR_DBB_PATH)->read_string();
     bool        is_root;
@@ -618,6 +621,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_selection_list *i
             free(history);
         }
         else {
+            if (GB_have_error()) id->insert(GBS_global_string("Error: %s", GB_await_error()), "");
             id->insert("No such node!", "");
             id->insert("-> goto valid node", BROWSE_CMD_GOTO_VALID_NODE);
         }
@@ -716,6 +720,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_selection_list *i
     id->update();
 
     free(path);
+    awt_assert(!GB_have_error());
 }
 
 static void order_changed_cb(AW_root *aw_root) {
@@ -996,6 +1001,7 @@ static void child_changed_cb(AW_root *aw_root) {
 static void path_changed_cb(AW_root *aw_root) {
     static bool avoid_recursion = false;
     if (!avoid_recursion) {
+        awt_assert(!GB_have_error());
         LocallyModify<bool> flag(avoid_recursion, true);
 
         DB_browser *browser    = get_the_browser();
@@ -1026,6 +1032,9 @@ static void path_changed_cb(AW_root *aw_root) {
             else if (is_dbbrowser_pseudo_path(path)) {
                 GB_clear_error(); // ignore error about invalid key
             }
+            else if (GB_have_error()) {
+                aw_message(GB_await_error());
+            }
             browser->set_path(path);
             free(path);
         }
@@ -1034,6 +1043,7 @@ static void path_changed_cb(AW_root *aw_root) {
 
         LocallyModify<bool> flag2(inside_path_change, true);
         aw_root->awar(AWAR_DBB_BROWSE)->rewrite_string(goto_child ? goto_child : "");
+        awt_assert(!GB_have_error());
     }
 }
 static void db_changed_cb(AW_root *aw_root) {
