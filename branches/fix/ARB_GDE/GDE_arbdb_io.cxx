@@ -47,10 +47,16 @@ static void AppendNA_and_free(NA_Sequence *this_elem, uchar *& sequfilt) {
     freenull(sequfilt);
 }
 
-static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned char **the_names,
-                           unsigned char **the_sequences, unsigned long numberspecies,
-                           unsigned long maxalignlen, const AP_filter *filter, GapCompression compress,
-                           bool cutoff_stop_codon, TypeInfo typeinfo)
+__ATTR__USERESULT static int InsertDatainGDE(NA_Alignment     *dataset,
+                                             GBDATA          **the_species,
+                                             unsigned char   **the_names,
+                                             unsigned char   **the_sequences,
+                                             unsigned long     numberspecies,
+                                             unsigned long     maxalignlen,
+                                             const AP_filter  *filter,
+                                             GapCompression    compress,
+                                             bool              cutoff_stop_codon,
+                                             TypeInfo          typeinfo)
 {
     GBDATA      *gb_species;
     NA_Sequence *this_elem;
@@ -322,16 +328,18 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
 }
 
 int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) {
+    // goes to header: __ATTR__USERESULT
     dataset->gb_main = db_access.gb_main;
 
     GBDATA **the_species;
+    uchar  **the_names;
+    uchar  **the_sequences;
     long     maxalignlen;
     long     numberspecies = 0;
-    uchar  **the_sequences;
-    uchar  **the_names;
-    char    *error         = db_access.get_sequences(db_access.client_data,
-                                                     the_species, the_names, the_sequences,
-                                                     numberspecies, maxalignlen);
+
+    char *error = db_access.get_sequences(db_access.client_data,
+                                          the_species, the_names, the_sequences,
+                                          numberspecies, maxalignlen);
 
     gde_assert(contradicted(the_species, the_names));
 
@@ -340,19 +348,19 @@ int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress
         return 1;
     }
 
-    InsertDatainGDE(dataset, 0, the_names, (unsigned char **)the_sequences, numberspecies, maxalignlen, filter, compress, cutoff_stop_codon, typeinfo);
-    long i;
-    for (i=0; i<numberspecies; i++) {
+    int res = InsertDatainGDE(dataset, 0, the_names, (unsigned char **)the_sequences, numberspecies, maxalignlen, filter, compress, cutoff_stop_codon, typeinfo);
+    for (long i=0; i<numberspecies; i++) {
         delete the_sequences[i];
     }
     delete the_sequences;
     if (the_species) delete the_species;
     else delete the_names;
 
-    return 0;
+    return res;
 }
 
 int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) {
+    // goes to header: __ATTR__USERESULT
     dataset->gb_main = db_access.gb_main;
 
     // Alignment choosen ?
@@ -394,12 +402,10 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
         else gb_species        = GBT_next_species(gb_species);
     }
 
-    long maxalignlen = GBT_get_alignment_len(db_access.gb_main, dataset->alignment_name);
-
+    long   maxalignlen   = GBT_get_alignment_len(db_access.gb_main, dataset->alignment_name);
     char **the_sequences = (char**)calloc((unsigned int)numberspecies+1, sizeof(char*));
 
-    long i;
-    for (i=0; the_species[i]; i++) {
+    for (long i=0; the_species[i]; i++) {
         the_sequences[i] = (char *)malloc((size_t)maxalignlen+1);
         the_sequences[i][maxalignlen] = 0;
         memset(the_sequences[i], '.', (size_t)maxalignlen);
@@ -408,14 +414,15 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
         if (size > maxalignlen) size = (int)maxalignlen;
         strncpy_terminate(the_sequences[i], data, size+1);
     }
-    InsertDatainGDE(dataset, the_species, 0, (unsigned char **)the_sequences, numberspecies, maxalignlen, filter, compress, cutoff_stop_codon, typeinfo);
-    for (i=0; i<numberspecies; i++) {
+
+    int res = InsertDatainGDE(dataset, the_species, 0, (unsigned char **)the_sequences, numberspecies, maxalignlen, filter, compress, cutoff_stop_codon, typeinfo);
+    for (long i=0; i<numberspecies; i++) {
         free(the_sequences[i]);
     }
     free(the_sequences);
     free(the_species);
 
-    return 0;
+    return res;
 }
 
 int getelem(NA_Sequence *a, int b) {
