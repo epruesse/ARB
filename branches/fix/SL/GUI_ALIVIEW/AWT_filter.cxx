@@ -390,6 +390,9 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, adfiltercbstruct *acbs
 }
 
 AP_filter *awt_get_filter(adfiltercbstruct *acbs) {
+    /*! create a filter from settings made in filter-definition window.
+     *  always returns a filter, use awt_invalid_filter() to check for validity
+     */
     AP_filter *filter = NULL;
 
     if (acbs) {
@@ -418,8 +421,12 @@ AP_filter *awt_get_filter(adfiltercbstruct *acbs) {
         GB_pop_transaction(acbs->gb_main);
     }
 
-    if (!filter) filter = new AP_filter("", "0", 10); // dummy filter
+    if (!filter) filter = new AP_filter(0); // empty dummy filter
     return filter;
+}
+
+GB_ERROR awt_invalid_filter(AP_filter *filter) {
+    return filter->is_invalid();
 }
 
 void awt_destroy_filter(AP_filter *filter) {

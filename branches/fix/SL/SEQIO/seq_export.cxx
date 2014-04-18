@@ -700,14 +700,11 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
 {
     sio_assert(!GB_have_error());
 
-    esd = new export_sequence_data(gb_main, marked_only, filter, cut_stop_codon, compress);
+    GB_ERROR error = filter->is_invalid();
+    if (!error) {
+        esd = new export_sequence_data(gb_main, marked_only, filter, cut_stop_codon, compress);
+        sio_assert(esd->getAliLen()>0);
 
-    GB_ERROR error = NULL;
-    if (esd->getAliLen()<0) {
-        error = "Please select a valid alignment";
-        GB_clear_error();
-    }
-    else {
         GB_set_export_sequence_hook(exported_sequence);
 
         error = esd->detectVerticalGaps();
@@ -718,7 +715,7 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
         GB_set_export_sequence_hook(0);
     }
     delete esd;
-    esd   = 0;
+    esd = 0;
 
     sio_assert(!GB_have_error());
     return error;
