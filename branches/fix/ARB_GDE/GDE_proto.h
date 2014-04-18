@@ -57,8 +57,8 @@ void splitEntry(const char *input, char *head, char *tail);
 #include "GDE_extglob.h"
 #endif
 
-int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo);
-int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo);
+int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) __ATTR__USERESULT;
+int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) __ATTR__USERESULT;
 int getelem(NA_Sequence *a, int b);
 void putelem(NA_Sequence *a, int b, NA_Base c);
 
