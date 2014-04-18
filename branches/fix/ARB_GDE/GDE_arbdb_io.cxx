@@ -70,237 +70,245 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
         }
     }
 
-    size_t *seqlen=(size_t *)calloc((unsigned int)numberspecies, sizeof(size_t));
-    // sequences may have different length
-    {
-        unsigned long i;
-        for (i=0; i<numberspecies; i++) {
-            seqlen[i] = strlen((char *)the_sequences[i]);
-        }
-    }
-
-    if (cutoff_stop_codon) {
-        unsigned long i;
-        fputs("[CUTTING STOP CODONS]\n", stdout);
-        for (i=0; i<numberspecies; i++) {
-            uchar *seq        = the_sequences[i];
-            uchar *stop_codon = (uchar*)strchr((char*)seq, '*');
-            if (stop_codon) {
-                long pos     = stop_codon-seq;
-                long restlen = maxalignlen-pos;
-                memset(stop_codon, '.', restlen);
-            }
-        }
-    }
-
-    // store (compressed) sequence data in array:
-    uchar             **sequfilt = (uchar**)calloc((unsigned int)numberspecies+1, sizeof(uchar*));
-    GB_alignment_type   alitype  = GBT_get_alignment_type(dataset->gb_main, dataset->alignment_name);
-
-    if (compress==COMPRESS_ALL) { // compress all gaps and filter positions
-        long          len = filter->get_filtered_length();
-        unsigned long i;
-
-        for (i=0; i<numberspecies; i++) {
-            sequfilt[i]   = (uchar*)calloc((unsigned int)len+1, sizeof(uchar));
-            long newcount = 0;
-            for (unsigned long col=0; (col<maxalignlen); col++) {
-                char c = the_sequences[i][col];
-                if (!c) break;
-                if ((filter->use_position(col)) && (c!='-') && (c!='.')) {
-                    sequfilt[i][newcount++] = c;
-                }
-            }
-        }
-    }
-    else {
-        if (compress==COMPRESS_VERTICAL_GAPS || // compress vertical gaps (and '.')
-            compress == COMPRESS_NONINFO_COLUMNS) // and additionally all columns containing no info (only N or X)
-        {
-            size_t i;
-            bool   isInfo[256];
-
-            for (i=0; i<256; i++) isInfo[i] = true;
-            isInfo[UINT('-')] = false;
-            isInfo[UINT('.')] = false;
-            if (compress == COMPRESS_NONINFO_COLUMNS) {
-                switch (alitype) {
-                    case GB_AT_RNA:
-                    case GB_AT_DNA:
-                        isInfo[UINT('N')] = false;
-                        isInfo[UINT('n')] = false;
-                        break;
-                    case GB_AT_AA:
-                        isInfo[UINT('X')] = false;
-                        isInfo[UINT('x')] = false;
-                        break;
-                    default:
-                        gde_assert(0);
-                        break;
-                }
-            }
-
-            bool  modified     = false;
-            char *filterString = filter->to_string();
-
-            for (i=0; i<maxalignlen; i++) {
-                if (filter->use_position(i)) {
-                    bool wantColumn = false;
-
-                    for (size_t n=0; n<numberspecies; n++) {
-                        if (i < seqlen[n]) {
-                            if (isInfo[UINT(the_sequences[n][i])]) {
-                                wantColumn = true; // have info -> take column
-                                break;
-                            }
-                        }
-                    }
-                    if (!wantColumn) {
-                        filterString[i] = '0';
-                        modified        = true;
-                    }
-                }
-            }
-
-            if (modified) {
-                size_t len = filter->get_length();
-
-                delete allocatedFilter;
-                filter = allocatedFilter = new AP_filter(filterString, NULL, len);
-            }
-
-            free(filterString);
-        }
-
-        long   len = filter->get_filtered_length();
-        size_t i;
-
-        for (i=0; i<numberspecies; i++) {
-            int  c;
-            long newcount = 0;
-
-            sequfilt[i]      = (uchar*)malloc((unsigned int)len+1);
-            sequfilt[i][len] = 0;
-            memset(sequfilt[i], '.', len); // Generate empty sequences
-
-            const uchar *simplify = filter->get_simplify_table();
-            for (size_t col=0; (col<maxalignlen) && (c=the_sequences[i][col]); col++) {
-                if (filter->use_position(col)) {
-                    sequfilt[i][newcount++] = simplify[c];
-                }
-            }
-        }
-    }
-
-    {
-        GB_transaction  ta(db_access.gb_main);
-        char           *str   = filter->to_string();
-        GB_ERROR        error = GBT_write_string(db_access.gb_main, AWAR_GDE_EXPORT_FILTER, str);
-        free(str);
-
-        if (error) aw_message(error);
-    }
-
-    free(seqlen);
-
-    long number    = 0;
-    int  curelem;
-    int  bad_names = 0;
-
-    int elementtype      = TEXT;
-    int elementtype_init = RNA;
-    switch (typeinfo) {
-        case UNKNOWN_TYPEINFO: gde_assert(0);
-        case BASIC_TYPEINFO: break;
-
-        case DETAILED_TYPEINFO:
-            switch (alitype) {
-                case GB_AT_RNA: elementtype = RNA; break;
-                case GB_AT_DNA: elementtype = DNA; break;
-                case GB_AT_AA:  elementtype = PROTEIN; break;
-                default : gde_assert(0); break;
-            }
-
-            gde_assert(elementtype != TEXT);
-            elementtype_init = elementtype;
-            break;
-    }
-
-    arb_progress progress("Read data from DB", numberspecies);
-    GB_ERROR     error = 0;
-    if (the_species) {
-        for (gb_species = the_species[number]; gb_species && !error; gb_species = the_species[++number]) {
-            curelem   = Arbdb_get_curelem(dataset);
-            this_elem = &(dataset->element[curelem]);
-
-            InitNASeq(this_elem, elementtype_init);
-            this_elem->gb_species = gb_species;
-
-#define GET_FIELD_CONTENT(fieldname,buffer,bufsize) do {                \
-                gbd = GB_entry(gb_species, fieldname);                  \
-                if (gbd) {                                              \
-                    const char *val = GB_read_char_pntr(gbd);           \
-                    strncpy_terminate(buffer, val, bufsize);            \
-                }                                                       \
-                else buffer[0] = 0;                                     \
-            } while(0)
-
-            GBDATA *gbd;
-            GET_FIELD_CONTENT("name",      this_elem->short_name, SIZE_SHORT_NAME);
-            GET_FIELD_CONTENT("author",    this_elem->authority,  SIZE_AUTHORITY);
-            GET_FIELD_CONTENT("full_name", this_elem->seq_name,   SIZE_SEQ_NAME);
-            GET_FIELD_CONTENT("acc",       this_elem->id,         SIZE_ID);
-
-            this_elem->elementtype = elementtype;
-
-            if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
-            AppendNA_and_free(this_elem, sequfilt[number]);
-            set_constant_fields(this_elem);
-            progress.inc_and_check_user_abort(error);
-        }
-    }
-    else {      // use the_names
-        unsigned char *species_name;
-
-        for (species_name=the_names[number]; species_name && !error; species_name=the_names[++number]) {
-            curelem   = Arbdb_get_curelem(dataset);
-            this_elem = &(dataset->element[curelem]);
-
-            InitNASeq(this_elem, elementtype_init);
-            this_elem->gb_species = 0;
-
-            strncpy(this_elem->short_name, (char*)species_name, SIZE_SHORT_NAME);
-            this_elem->authority[0] = 0;
-            this_elem->seq_name[0]  = 0;
-            this_elem->id[0]        = 0;
-            this_elem->elementtype  = elementtype;
-
-            if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
-            AppendNA_and_free(this_elem, sequfilt[number]);
-            set_constant_fields(this_elem);
-            progress.inc_and_check_user_abort(error);
-        }
-    }
-
+    GB_ERROR error = filter->is_invalid();
     if (!error) {
-        if (bad_names) {
-            aw_message(GBS_global_string("Problematic names found: %i\n"
-                                         "External program call may fail or produce invalid results.\n"
-                                         "You might want to use 'Species/Synchronize IDs' and read the associated help.",
-                                         bad_names));
-        }
-
+        size_t *seqlen=(size_t *)calloc((unsigned int)numberspecies, sizeof(size_t));
+        // sequences may have different length
         {
             unsigned long i;
-            for (i=0; i<dataset->numelements; i++) {
-                dataset->maxlen = std::max(dataset->maxlen,
-                                           dataset->element[i].seqlen+dataset->element[i].offset);
+            for (i=0; i<numberspecies; i++) {
+                seqlen[i] = strlen((char *)the_sequences[i]);
             }
-            for (i=0; i<numberspecies; i++)
+        }
+
+        if (cutoff_stop_codon) {
+            unsigned long i;
+            fputs("[CUTTING STOP CODONS]\n", stdout);
+            for (i=0; i<numberspecies; i++) {
+                uchar *seq        = the_sequences[i];
+                uchar *stop_codon = (uchar*)strchr((char*)seq, '*');
+                if (stop_codon) {
+                    long pos     = stop_codon-seq;
+                    long restlen = maxalignlen-pos;
+                    memset(stop_codon, '.', restlen);
+                }
+            }
+        }
+
+        // store (compressed) sequence data in array:
+        uchar             **sequfilt = (uchar**)calloc((unsigned int)numberspecies+1, sizeof(uchar*));
+        GB_alignment_type   alitype  = GBT_get_alignment_type(dataset->gb_main, dataset->alignment_name);
+
+        if (compress==COMPRESS_ALL) { // compress all gaps and filter positions
+            long          len = filter->get_filtered_length();
+            unsigned long i;
+
+            for (i=0; i<numberspecies; i++) {
+                sequfilt[i]   = (uchar*)calloc((unsigned int)len+1, sizeof(uchar));
+                long newcount = 0;
+                for (unsigned long col=0; (col<maxalignlen); col++) {
+                    char c = the_sequences[i][col];
+                    if (!c) break;
+                    if ((filter->use_position(col)) && (c!='-') && (c!='.')) {
+                        sequfilt[i][newcount++] = c;
+                    }
+                }
+            }
+        }
+        else {
+            if (compress==COMPRESS_VERTICAL_GAPS || // compress vertical gaps (and '.')
+                compress == COMPRESS_NONINFO_COLUMNS) // and additionally all columns containing no info (only N or X)
             {
-                delete sequfilt[i];
+                size_t i;
+                bool   isInfo[256];
+
+                for (i=0; i<256; i++) isInfo[i] = true;
+                isInfo[UINT('-')] = false;
+                isInfo[UINT('.')] = false;
+                if (compress == COMPRESS_NONINFO_COLUMNS) {
+                    switch (alitype) {
+                        case GB_AT_RNA:
+                        case GB_AT_DNA:
+                            isInfo[UINT('N')] = false;
+                            isInfo[UINT('n')] = false;
+                            break;
+                        case GB_AT_AA:
+                            isInfo[UINT('X')] = false;
+                            isInfo[UINT('x')] = false;
+                            break;
+                        default:
+                            gde_assert(0);
+                            break;
+                    }
+                }
+
+                bool  modified     = false;
+                char *filterString = filter->to_string();
+
+                for (i=0; i<maxalignlen; i++) {
+                    if (filter->use_position(i)) {
+                        bool wantColumn = false;
+
+                        for (size_t n=0; n<numberspecies; n++) {
+                            if (i < seqlen[n]) {
+                                if (isInfo[UINT(the_sequences[n][i])]) {
+                                    wantColumn = true; // have info -> take column
+                                    break;
+                                }
+                            }
+                        }
+                        if (!wantColumn) {
+                            filterString[i] = '0';
+                            modified        = true;
+                        }
+                    }
+                }
+
+                if (modified) {
+                    size_t len = filter->get_length();
+
+                    delete allocatedFilter;
+                    filter = allocatedFilter = new AP_filter(filterString, NULL, len);
+                }
+
+                free(filterString);
             }
-            free(sequfilt);
+
+            if (!error) error = filter->is_invalid();
+
+            if (!error) {
+                long   len = filter->get_filtered_length();
+                size_t i;
+
+                for (i=0; i<numberspecies; i++) {
+                    int  c;
+                    long newcount = 0;
+
+                    sequfilt[i]      = (uchar*)malloc((unsigned int)len+1);
+                    sequfilt[i][len] = 0;
+                    memset(sequfilt[i], '.', len); // Generate empty sequences
+
+                    const uchar *simplify = filter->get_simplify_table();
+                    for (size_t col=0; (col<maxalignlen) && (c=the_sequences[i][col]); col++) {
+                        if (filter->use_position(col)) {
+                            sequfilt[i][newcount++] = simplify[c];
+                        }
+                    }
+                }
+            }
+        }
+        free(seqlen);
+
+        if (!error) {
+            GB_transaction ta(db_access.gb_main);
+
+            char *str = filter->to_string();
+            error     = GBT_write_string(db_access.gb_main, AWAR_GDE_EXPORT_FILTER, str);
+            free(str);
+        }
+
+        if (!error) {
+            long number    = 0;
+            int  curelem;
+            int  bad_names = 0;
+
+            int elementtype      = TEXT;
+            int elementtype_init = RNA;
+            switch (typeinfo) {
+                case UNKNOWN_TYPEINFO: gde_assert(0);
+                case BASIC_TYPEINFO: break;
+
+                case DETAILED_TYPEINFO:
+                    switch (alitype) {
+                        case GB_AT_RNA: elementtype = RNA; break;
+                        case GB_AT_DNA: elementtype = DNA; break;
+                        case GB_AT_AA:  elementtype = PROTEIN; break;
+                        default : gde_assert(0); break;
+                    }
+
+                    gde_assert(elementtype != TEXT);
+                    elementtype_init = elementtype;
+                    break;
+            }
+
+            if (!error) {
+                arb_progress progress("Read data from DB", numberspecies);
+                if (the_species) {
+                    for (gb_species = the_species[number]; gb_species && !error; gb_species = the_species[++number]) {
+                        curelem   = Arbdb_get_curelem(dataset);
+                        this_elem = &(dataset->element[curelem]);
+
+                        InitNASeq(this_elem, elementtype_init);
+                        this_elem->gb_species = gb_species;
+
+#define GET_FIELD_CONTENT(fieldname,buffer,bufsize) do {                        \
+                            gbd = GB_entry(gb_species, fieldname);              \
+                            if (gbd) {                                          \
+                                const char *val = GB_read_char_pntr(gbd);       \
+                                strncpy_terminate(buffer, val, bufsize);        \
+                            }                                                   \
+                            else buffer[0] = 0;                                 \
+                        } while(0)
+
+                        GBDATA *gbd;
+                        GET_FIELD_CONTENT("name",      this_elem->short_name, SIZE_SHORT_NAME);
+                        GET_FIELD_CONTENT("author",    this_elem->authority,  SIZE_AUTHORITY);
+                        GET_FIELD_CONTENT("full_name", this_elem->seq_name,   SIZE_SEQ_NAME);
+                        GET_FIELD_CONTENT("acc",       this_elem->id,         SIZE_ID);
+
+                        this_elem->elementtype = elementtype;
+
+                        if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
+                        AppendNA_and_free(this_elem, sequfilt[number]);
+                        set_constant_fields(this_elem);
+                        progress.inc_and_check_user_abort(error);
+                    }
+                }
+                else {      // use the_names
+                    unsigned char *species_name;
+
+                    for (species_name=the_names[number]; species_name && !error; species_name=the_names[++number]) {
+                        curelem   = Arbdb_get_curelem(dataset);
+                        this_elem = &(dataset->element[curelem]);
+
+                        InitNASeq(this_elem, elementtype_init);
+                        this_elem->gb_species = 0;
+
+                        strncpy(this_elem->short_name, (char*)species_name, SIZE_SHORT_NAME);
+                        this_elem->authority[0] = 0;
+                        this_elem->seq_name[0]  = 0;
+                        this_elem->id[0]        = 0;
+                        this_elem->elementtype  = elementtype;
+
+                        if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
+                        AppendNA_and_free(this_elem, sequfilt[number]);
+                        set_constant_fields(this_elem);
+                        progress.inc_and_check_user_abort(error);
+                    }
+                }
+            }
+
+            if (!error) {
+                if (bad_names) {
+                    aw_message(GBS_global_string("Problematic names found: %i\n"
+                                                 "External program call may fail or produce invalid results.\n"
+                                                 "You might want to use 'Species/Synchronize IDs' and read the associated help.",
+                                                 bad_names));
+                }
+
+                {
+                    unsigned long i;
+                    for (i=0; i<dataset->numelements; i++) {
+                        dataset->maxlen = std::max(dataset->maxlen,
+                                                   dataset->element[i].seqlen+dataset->element[i].offset);
+                    }
+                    for (i=0; i<numberspecies; i++)
+                    {
+                        delete sequfilt[i];
+                    }
+                    free(sequfilt);
+                }
+            }
         }
     }
 
