@@ -25,12 +25,20 @@
 //  Base class for classes that may not be copied, neither via copy
 //  constructor or assignment operator.
 
+#ifdef Cxx11
+struct Noncopyable {
+    Noncopyable(const Noncopyable& other) = delete;
+    Noncopyable& operator= (const Noncopyable&) = delete;
+    Noncopyable() {}
+};
+#else
 class Noncopyable {
     Noncopyable(const Noncopyable&);
-    Noncopyable& operator=(const Noncopyable&);
+    Noncopyable& operator = (const Noncopyable&);
 public:
     Noncopyable() {}
 };
+#endif
 
 
 // helper macros to make inplace-reconstruction less obfuscated
