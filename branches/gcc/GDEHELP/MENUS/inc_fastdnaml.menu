@@ -1,0 +1,36 @@
+item:AxML + FastdnaML (max 500 Species) ...
+seqtype: N
+itemmeta: M
+itemmethod:(/bin/rm -f outfile infile treefile ;\
+            arb_export_rates --arb-notify "$RATES" "Y 1" "Q" "R" "G 0 0" "T 2.0" | GEN_FASTDNAML(infile) && \
+            ( arb_export_tree $TREE || STOP_ON_FAILURE(arb_export_tree '$TREE')) >>infile && \
+            RUN_IN_WINDOW((time arb_fastdnaml $PROGRAM && $DISPLAY_FUNC));\
+            /bin/rm -f TmpInputFile )&
+itemhelp:dnaml.help
+
+arg:RATES
+argtype:weights
+arglabel:Select a Weighting Mask
+argchoice:POS_VAR_BY_PARS
+
+arg:TREE
+argtype:tree
+arglabel:Base Tree
+argchoice:
+
+arg:PROGRAM
+argtype:choice_menu
+arglabel:Select program to use
+argchoice:AxML:axml
+argchoice:FastdnaML:fastdnaml
+
+arg:DISPLAY_FUNC
+argtype:choice_menu
+arglabel:What to do with the tree?
+argchoice:ARB ('tree_fml_//'):arb_read_tree tree_fml_$$ treefile "PRG=$PROGRAM BASETREE=$TREE FILTER=$FILTER RATE=$RATES PKG=olsen/felsenstein"
+argchoice:Treetool:treetool treefile
+
+
+in:TmpInputFile
+informat:genbank
+insave:
