@@ -804,7 +804,7 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
  */
 
 static void CON_calc_max_freq_cb(AW_window *aw) {
-
+    arb_assert(!GB_have_error());
     AW_root *awr=aw->get_root();
     long maxalignlen, i;
     int *statistic[MAX_AMINOS+1];
@@ -820,9 +820,11 @@ static void CON_calc_max_freq_cb(AW_window *aw) {
     no_gaps     = awr->awar(AWAR_MAX_FREQ_NO_GAPS)->read_int();
 
     if (maxalignlen<=0) {
+        GB_clear_error();
         GB_pop_transaction(GLOBAL.gb_main);
         aw_message("alignment doesn't exist!");
         delete align;
+        arb_assert(!GB_have_error());
         return;
     }
     isamino = GBT_is_alignment_protein(GLOBAL.gb_main, align);
@@ -882,6 +884,7 @@ static void CON_calc_max_freq_cb(AW_window *aw) {
     CON_cleartables(statistic, isamino);
     free(align);
     if (error) aw_message(error);
+    arb_assert(!GB_have_error());
 }
 
 AW_window *AP_create_max_freq_window(AW_root *aw_root) {
