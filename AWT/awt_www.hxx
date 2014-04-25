@@ -22,7 +22,7 @@ void       awt_create_aww_vars(AW_root *aw_root, AW_default aw_def);
 GB_ERROR   awt_openURL_by_gbd(AW_root *aw_root, GBDATA *gb_main, GBDATA *gbd, const char *name);
 GB_ERROR   awt_open_ACISRT_URL_by_gbd(AW_root *aw_root, GBDATA *gb_main, GBDATA *gbd, const char *name, const char *url_srt);
 
-void AWT_openURL_cb(AW_window *aww, AW_CL cl_url);
+void AWT_openURL(AW_window *aww, const char *url);
 
 #else
 #error awt_www.hxx included twice

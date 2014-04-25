@@ -621,11 +621,10 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *scr, const char *xfig_name, bool add_
 
 // --------------------------------------------------------------------------------
 
-static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_canvas) {
-    AWT_canvas *scr  = (AWT_canvas*)cl_canvas;
-    AW_root    *awr  = aww->get_root();
-    char       *xfig = AW_get_selected_fullname(awr, AWAR_CANIO_FILE_BASE);
-    
+static void canvas_to_xfig_and_run_xfig(AW_window *aww, AWT_canvas *scr) {
+    AW_root *awr  = aww->get_root();
+    char    *xfig = AW_get_selected_fullname(awr, AWAR_CANIO_FILE_BASE);
+
     GB_ERROR error = NULL;
     if (xfig[0] == 0) {
         error = "Please enter a file name";
@@ -760,7 +759,7 @@ static void canvas_to_printer(AW_window *aww, AW_CL cl_canvas) {
 
 // --------------------------------------------------------------------------------
 
-void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
+void AWT_popup_tree_export_window(AW_window *parent_win, AWT_canvas *scr) {
     static AW_window_simple *aws = 0;
 
     AW_root *awr = parent_win->get_root();
@@ -800,14 +799,14 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
         aws->label("Export colors");
         aws->create_toggle(AWAR_CANIO_COLOR);
 
-        aws->at("xfig"); aws->callback(canvas_to_xfig_and_run_xfig, cl_canvas);
+        aws->at("xfig"); aws->callback(makeWindowCallback(canvas_to_xfig_and_run_xfig, scr));
         aws->create_autosize_button("START_XFIG", "EXPORT to XFIG", "X");
     }
 
     aws->activate();
 }
 
-void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
+void AWT_popup_sec_export_window(AW_window *parent_win, AWT_canvas *scr) {
     static AW_window_simple *aws = 0;
 
     AW_root *awr = parent_win->get_root();
@@ -839,7 +838,7 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
         aws->label("Export colors");
         aws->create_toggle(AWAR_CANIO_COLOR);
 
-        aws->at("xfig"); aws->callback(canvas_to_xfig_and_run_xfig, cl_canvas);
+        aws->at("xfig"); aws->callback(makeWindowCallback(canvas_to_xfig_and_run_xfig, scr));
         aws->create_autosize_button("START_XFIG", "EXPORT to XFIG", "X");
     }
 
@@ -861,9 +860,8 @@ static void fit_pages_cb(AW_window *aww, AW_CL cl_pages) {
     fit_pages(awr, wanted_pages, true);
 }
 
-void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
+void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
     AW_root                 *awr = parent_win->get_root();
-    AWT_canvas              *scr = (AWT_canvas*)cl_canvas;
     static AW_window_simple *aws = 0;
 
     create_print_awars(awr, scr);
