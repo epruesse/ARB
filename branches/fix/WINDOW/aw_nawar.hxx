@@ -20,6 +20,9 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#ifndef ARB_MSG_H
+#include <arb_msg.h>
+#endif
 
 class AW_root_cblist : virtual Noncopyable {
     RootCallback    callback;
@@ -44,9 +47,12 @@ class AW_root_cblist : virtual Noncopyable {
 
     void call(AW_root *root) {          // runs the whole list in FIFO order
         if (next) next->call(root);
+
+        arb_assert(!GB_have_error());
         callback(root);
+        arb_assert(!GB_have_error());
     }
-    
+
 public:
 
     static void add(AW_root_cblist*& listhead, const RootCallback& cb) {
