@@ -21,6 +21,9 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
 
 
 enum awt_item_type {
@@ -54,8 +57,8 @@ public:
     awt_item_type get_item_type() const { return my_type; }
 
     // add/remove callbacks to awars (i.e. to AWAR_SPECIES_NAME)
-    void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const;
-    void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const;
+    void add_awar_callbacks(AW_root *root, const RootCallback& cb) const;
+    void remove_awar_callbacks(AW_root *root, const RootCallback& cb) const;
 
     // returns the current item
     virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const = 0;

@@ -1004,8 +1004,7 @@ typedef SmartPtr<awt_input_mask>        awt_input_mask_ptr;
 typedef map<string, awt_input_mask_ptr> InputMaskList; // contains all active masks
 static InputMaskList                    input_mask_list;
 
-static void awt_input_mask_awar_changed_cb(AW_root * /* root */, AW_CL cl_mask) {
-    awt_input_mask *mask = (awt_input_mask*)(cl_mask);
+static void awt_input_mask_awar_changed_cb(AW_root*, awt_input_mask *mask) {
     mask->relink();
 }
 static void link_mask_to_database(awt_input_mask_ptr mask) {
@@ -1013,15 +1012,15 @@ static void link_mask_to_database(awt_input_mask_ptr mask) {
     const awt_item_type_selector *sel    = global.get_selector();
     AW_root                      *root   = global.get_root();
 
-    sel->add_awar_callbacks(root, awt_input_mask_awar_changed_cb, (AW_CL)(&*mask));
-    awt_input_mask_awar_changed_cb(root, (AW_CL)(&*mask));
+    sel->add_awar_callbacks(root, makeRootCallback(awt_input_mask_awar_changed_cb, &*mask));
+    awt_input_mask_awar_changed_cb(root, &*mask);
 }
 static void unlink_mask_from_database(awt_input_mask_ptr mask) {
     awt_input_mask_global&        global = mask->mask_global();
     const awt_item_type_selector *sel    = global.get_selector();
     AW_root                      *root   = global.get_root();
 
-    sel->remove_awar_callbacks(root, awt_input_mask_awar_changed_cb, (AW_CL)(&*mask));
+    sel->remove_awar_callbacks(root, makeRootCallback(awt_input_mask_awar_changed_cb, &*mask));
 }
 
 inline bool isInternalMaskName(const string& s) {
@@ -2490,10 +2489,10 @@ void AWT_destroy_input_masks() {
 }
 
 
-void awt_item_type_selector::add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const {
-    root->awar(get_self_awar())->add_callback(f, cl_mask);
+void awt_item_type_selector::add_awar_callbacks(AW_root *root, const RootCallback& cb) const {
+    root->awar(get_self_awar())->add_callback(cb);
 }
 
-void awt_item_type_selector::remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const {
-    root->awar(get_self_awar())->remove_callback(f, cl_mask);
+void awt_item_type_selector::remove_awar_callbacks(AW_root *root, const RootCallback& cb) const {
+    root->awar(get_self_awar())->remove_callback(cb);
 }
