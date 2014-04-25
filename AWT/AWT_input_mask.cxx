@@ -2489,3 +2489,11 @@ void AWT_destroy_input_masks() {
     input_mask_list.clear();
 }
 
+
+void awt_item_type_selector::add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const {
+    root->awar(get_self_awar())->add_callback(f, cl_mask);
+}
+
+void awt_item_type_selector::remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const {
+    root->awar(get_self_awar())->remove_callback(f, cl_mask);
+}
