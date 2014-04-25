@@ -100,7 +100,7 @@ void SAI_graphic::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_cli
     aw_message("INFO MESSAGE");
 }
 
-static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
+static void colorDefChanged_callback(AW_root *awr, int awarNo) {
     if (!in_colorDefChanged_callback) {
         LocallyModify<bool> flag(in_colorDefChanged_callback, true);
         unsigned char charUsed[256]; memset(charUsed, 255, 256);
@@ -112,7 +112,6 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
                 }
                 free(awarString_next);
             }
-            int   awarNo     = (int)cl_awarNo;
             char *awarString = awr->awar_string(getAwarName(awarNo))->read_string();
 
             for (int c = 0; awarString[c]; ++c) {
@@ -141,9 +140,8 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
     awr->awar(AWAR_SPV_DISP_SAI)->touch(); // refreshes the display
 }
 
-static void refreshCanvas(AW_root */*awr*/, AW_CL cl_canvas) {
+static void refreshCanvas(AW_root*, AWT_canvas *scr) {
     // repaints the canvas
-    AWT_canvas *scr = (AWT_canvas*)cl_canvas;
     scr->refresh();
 }
 
@@ -153,18 +151,20 @@ static void createSaiProbeAwars(AW_root *aw_root) {
 
     for (int i = 0; i < 10; i++) {  // initializing 10 color definition string AWARS
        AW_awar *def_awar = aw_root->awar_string(getAwarName(i), "", AW_ROOT_DEFAULT);
-       def_awar->add_callback(colorDefChanged_callback, (AW_CL)i);
+       def_awar->add_callback(makeRootCallback(colorDefChanged_callback, i));
     }
 }
 
 static void addCallBacks(AW_root *awr, AWT_canvas *scr) {
-    // adding callbacks to the awars to refresh the display if received any changes
-    awr->awar(AWAR_SPV_DISP_SAI)      ->add_callback(refreshCanvas, (AW_CL)scr);
-    awr->awar(AWAR_SPV_SAI_2_PROBE)   ->add_callback(refreshCanvas, (AW_CL)scr);
-    awr->awar(AWAR_SPV_DB_FIELD_NAME) ->add_callback(refreshCanvas, (AW_CL)scr);
-    awr->awar(AWAR_SPV_DB_FIELD_WIDTH)->add_callback(refreshCanvas, (AW_CL)scr);
-    awr->awar(AWAR_SPV_SELECTED_PROBE)->add_callback(refreshCanvas, (AW_CL)scr);
-    awr->awar(AWAR_SPV_ACI_COMMAND)   ->add_callback(refreshCanvas, (AW_CL)scr);
+    // add callbacks to the awars (refresh display on change)
+    RootCallback refresh_cb = makeRootCallback(refreshCanvas, scr);
+
+    awr->awar(AWAR_SPV_DISP_SAI)      ->add_callback(refresh_cb);
+    awr->awar(AWAR_SPV_SAI_2_PROBE)   ->add_callback(refresh_cb);
+    awr->awar(AWAR_SPV_DB_FIELD_NAME) ->add_callback(refresh_cb);
+    awr->awar(AWAR_SPV_DB_FIELD_WIDTH)->add_callback(refresh_cb);
+    awr->awar(AWAR_SPV_SELECTED_PROBE)->add_callback(refresh_cb);
+    awr->awar(AWAR_SPV_ACI_COMMAND)   ->add_callback(refresh_cb);
 }
 
 static const char *translateSAItoColors(AW_root *awr, GBDATA *gb_main, int start, int end, int speciesNo) {
@@ -705,12 +705,12 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
     awm->insert_help_topic("How to Visualize SAI`s ?", "V", "saiProbeHelp.hlp", AWM_ALL, makeHelpCallback("saiProbeHelp.hlp"));
 
     awm->create_menu("File", "F", AWM_ALL);
-    awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
+    awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, AW_POPDOWN);
 
     awm->create_menu("Properties", "P", AWM_ALL);
-    awm->insert_menu_topic("selectDispField", "Select Display Field",      "F", "displayField.hlp", AWM_ALL, AW_POPUP, AW_CL(createDisplayField_window), AW_CL(gb_main));
-    awm->insert_menu_topic("selectSAI",       "Select SAI",                "S", NULL,               AWM_ALL, awt_popup_sai_selection_list, AW_CL(AWAR_SPV_SAI_2_PROBE), AW_CL(gb_main));
-    awm->insert_menu_topic("clrTransTable",   "Define Color Translations", "D", NULL,               AWM_ALL, AW_POPUP, AW_CL(create_colorTranslationTable_window), 0);
+    awm->insert_menu_topic("selectDispField", "Select Display Field",      "F", "displayField.hlp", AWM_ALL, makeCreateWindowCallback(createDisplayField_window, gb_main));
+    awm->insert_menu_topic("selectSAI",       "Select SAI",                "S", NULL,               AWM_ALL, makeWindowCallback(awt_popup_sai_selection_list, AWAR_SPV_SAI_2_PROBE, gb_main));
+    awm->insert_menu_topic("clrTransTable",   "Define Color Translations", "D", NULL,               AWM_ALL, create_colorTranslationTable_window);
     awm->insert_menu_topic("SetColors",       "Set Colors and Fonts",      "t", "setColors.hlp",    AWM_ALL, makeCreateWindowCallback(createSaiColorWindow, scr->gc_manager));
 
     addCallBacks(awr, scr);

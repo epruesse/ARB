@@ -185,13 +185,12 @@ static char *correct_key_name(const char *name) {
 // ---------------------------------
 //      AWT_start_config_manager
 
-static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
-{
-    AWT_configuration *config           = (AWT_configuration*)cl_config;
-    string             existing_configs = config->get_awar_value("existing");
+static void AWT_start_config_manager(AW_window *aww, AWT_configuration *config) {
+    string existing_configs = config->get_awar_value("existing");
     config->get_awar_value("current"); // create!
-    bool               reopen           = false;
-    char              *title            = GBS_global_string_copy("Configurations for '%s'", aww->window_name);
+
+    bool  reopen = false;
+    char *title  = GBS_global_string_copy("Configurations for '%s'", aww->window_name);
 
     const char *buttons = "\nRESTORE,STORE,DELETE,LOAD,SAVE,\nCLOSE,HELP";
     enum Answer { CM_RESTORE, CM_STORE, CM_DELETE, CM_LOAD, CM_SAVE, CM_CLOSE, CM_HELP };
@@ -290,7 +289,7 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
         aw_message(error);
         reopen = true;
     }
-    if (reopen) AWT_start_config_manager(aww, cl_config);
+    if (reopen) AWT_start_config_manager(aww, config);
 }
 
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store_cb,
@@ -300,7 +299,7 @@ void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const c
     // config will not be freed!!!
 
     aww->button_length(0); // -> autodetect size by size of graphic
-    aww->callback(AWT_start_config_manager, (AW_CL)config);
+    aww->callback(makeWindowCallback(AWT_start_config_manager, config));
     aww->create_button(macro_id ? macro_id : "SAVELOAD_CONFIG", "#conf_save.xpm");
 }
 

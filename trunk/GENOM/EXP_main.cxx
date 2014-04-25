@@ -91,18 +91,16 @@ struct EXP_item_type_species_selector : public awt_item_type_selector {
 
 static EXP_item_type_species_selector item_type_experiment;
 
-static void EXP_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL cl_gb_main) {
-    int                              id         = int(cl_id);
+static void EXP_open_mask_window(AW_window *aww, int id, GBDATA *gb_main) {
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
     exp_assert(descriptor);
     if (descriptor) {
-        GBDATA *gb_main = (GBDATA*)cl_gb_main;
         AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_experiment, descriptor->get_internal_maskname(), descriptor->is_local_mask());
     }
 }
 
 static void EXP_create_mask_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) {
-    AWT_create_mask_submenu(awm, AWT_IT_EXPERIMENT, EXP_open_mask_window, (AW_CL)gb_main);
+    AWT_create_mask_submenu(awm, AWT_IT_EXPERIMENT, EXP_open_mask_window, gb_main);
 }
 
 static AW_window *create_colorize_experiments_window(AW_root *aw_root, AW_CL cl_gb_main) {

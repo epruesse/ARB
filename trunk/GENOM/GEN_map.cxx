@@ -1400,18 +1400,16 @@ struct GEN_item_type_species_selector : public awt_item_type_selector {
 
 static GEN_item_type_species_selector item_type_gene;
 
-static void GEN_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL cl_gb_main) {
-    int                              id         = int(cl_id);
+static void GEN_open_mask_window(AW_window *aww, int id, GBDATA *gb_main) {
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
     gen_assert(descriptor);
     if (descriptor) {
-        GBDATA *gb_main = (GBDATA*)cl_gb_main;
         AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_gene, descriptor->get_internal_maskname(), descriptor->is_local_mask());
     }
 }
 
 static void GEN_create_mask_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) {
-    AWT_create_mask_submenu(awm, AWT_IT_GENE, GEN_open_mask_window, (AW_CL)gb_main);
+    AWT_create_mask_submenu(awm, AWT_IT_GENE, GEN_open_mask_window, gb_main);
 }
 
 static AW_window *create_colorize_genes_window(AW_root *aw_root, AW_CL cl_gb_main) {
