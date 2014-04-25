@@ -15,13 +15,14 @@
 #include <aw_question.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
+#include <aw_awar_defs.hxx>
 #include <arbdbt.h>
 
 
 static void alignment_vars_callback(AW_root *aw_root)
 {
     GB_push_transaction(GLOBAL.gb_main);
-    char    *use = aw_root->awar("presets/use")->read_string();
+    char    *use = aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
     GBDATA *ali_cont = GBT_get_alignment(GLOBAL.gb_main, use);
     if (!ali_cont) {
         GB_clear_error();
@@ -54,13 +55,12 @@ static void alignment_vars_callback(AW_root *aw_root)
     free(use);
 }
 
-void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def)
-{
-    aw_root->awar_string("presets/use", "",     aw_def);
+void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def) {
+    AW_awar *awar_def_ali = aw_root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", aw_def);
     GB_push_transaction(GLOBAL.gb_main);
 
-    GBDATA *use = GB_search(GLOBAL.gb_main, "presets/use", GB_STRING);
-    aw_root->awar("presets/use")->map(use);
+    GBDATA *use = GB_search(GLOBAL.gb_main, AWAR_DEFAULT_ALIGNMENT, GB_STRING);
+    awar_def_ali->map(use);
 
     aw_root->awar_string("presets/alignment_name", "",   aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
     aw_root->awar_string("presets/alignment_dest", "",   aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
@@ -72,14 +72,14 @@ void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_int("presets/auto_format", 0, aw_def);
     aw_root->awar_int("presets/security", 0, aw_def);
 
-    aw_root->awar("presets/use")->add_callback(alignment_vars_callback);
+    awar_def_ali->add_callback(alignment_vars_callback);
     alignment_vars_callback(aw_root);
     GB_pop_transaction(GLOBAL.gb_main);
 }
 
 static void ad_al_delete_cb(AW_window *aww) {
     if (aw_ask_sure("delete_ali_data", "Are you sure to delete all data belonging to this alignment")) {
-        char           *source = aww->get_root()->awar("presets/use")->read_string();
+        char           *source = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
         GB_transaction  ta(GLOBAL.gb_main);
         GB_ERROR        error  = GBT_rename_alignment(GLOBAL.gb_main, source, 0, 0, 1);
 
@@ -94,7 +94,7 @@ static void ad_al_delete_cb(AW_window *aww) {
 
 static void ed_al_check_auto_format(AW_window *aww) {
     AW_root *awr = aww->get_root();
-    char    *use = awr->awar("presets/use")->read_string();
+    char    *use = awr->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
     if (strcmp(use, "ali_genom") == 0) {
         awr->awar("presets/auto_format")->write_int(2); // ali_genom is always forced to "skip"
     }
@@ -103,7 +103,7 @@ static void ed_al_check_auto_format(AW_window *aww) {
 static void ed_al_check_len_cb(AW_window *aww)
 {
     char *error = 0;
-    char *use = aww->get_root()->awar("presets/use")->read_string();
+    char *use = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
     GB_begin_transaction(GLOBAL.gb_main);
     if (!error) error = (char *)GBT_check_data(GLOBAL.gb_main, use);
     GB_commit_transaction(GLOBAL.gb_main);
@@ -112,7 +112,7 @@ static void ed_al_check_len_cb(AW_window *aww)
 }
 
 static void ed_al_align_cb(AW_window *aww) {
-    char     *use = aww->get_root()->awar("presets/use")->read_string();
+    char     *use = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
     GB_begin_transaction(GLOBAL.gb_main);
     GB_ERROR  err = ARB_format_alignment(GLOBAL.gb_main, use);
     GB_commit_transaction(GLOBAL.gb_main);
@@ -122,7 +122,7 @@ static void ed_al_align_cb(AW_window *aww) {
 }
 
 static void aa_copy_delete_rename(AW_window *aww, AW_CL copy, AW_CL dele) {
-    char *source = aww->get_root()->awar("presets/use")->read_string();
+    char *source = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
     char *dest   = aww->get_root()->awar("presets/alignment_dest")->read_string();
 
     GB_ERROR error    = GB_begin_transaction(GLOBAL.gb_main);
@@ -273,7 +273,7 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown) {
     aws->create_button("FORMAT", "FORMAT", "F");
 
     aws->at("list");
-    awt_create_selection_list_on_alignments(GLOBAL.gb_main, (AW_window *)aws, "presets/use", "*=");
+    awt_create_selection_list_on_alignments(GLOBAL.gb_main, aws, AWAR_DEFAULT_ALIGNMENT, "*=");
 
     aws->at("aligned");
     aws->create_option_menu("presets/aligned");

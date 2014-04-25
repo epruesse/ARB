@@ -95,7 +95,7 @@ static void create_export_awars(AW_root *awr, AW_default def) {
     awr->awar_string(AWAR_EXPORT_FILTER_NAME, "none", def); // no default filter
     awr->awar_string(AWAR_EXPORT_FILTER_FILTER, "", def);
     AW_awar *awar_ali = awr->awar_string(AWAR_EXPORT_FILTER_ALI, "", def);
-    awar_ali->map("presets/use"); // map to default alignment
+    awar_ali->map(AWAR_DEFAULT_ALIGNMENT);
 
     awr->awar_int(AWAR_EXPORT_CUTSTOP, 0, def); // don't cut stop-codon
 }

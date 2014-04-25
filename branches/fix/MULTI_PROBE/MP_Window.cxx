@@ -325,11 +325,11 @@ static void track_ali_change_cb(GBDATA *gb_ali) {
     free(aliname);
 }
 
-static void install_track_ali_type_callback(GBDATA *gb_main) {
+static void install_track_ali_type_callback(GBDATA *gb_main) { // @@@ instead bind directly to AWAR_DEFAULT_ALIGNMENT (provide a general function for that)
     GB_transaction ta(gb_main);
     GB_ERROR       error = NULL;
 
-    GBDATA *gb_ali = GB_search(gb_main, "presets/use", GB_FIND);
+    GBDATA *gb_ali = GB_search(gb_main, AWAR_DEFAULT_ALIGNMENT, GB_FIND);
     if (!gb_ali) {
         error = GB_await_error();
     }

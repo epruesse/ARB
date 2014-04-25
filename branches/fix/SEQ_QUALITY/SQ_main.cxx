@@ -61,7 +61,7 @@ void SQ_create_awars(AW_root * aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_FILTER_NAME, "none", aw_def);
     aw_root->awar_string(AWAR_FILTER_FILTER, "", aw_def);
     AW_awar *awar_ali = aw_root->awar_string(AWAR_FILTER_ALI, "", aw_def);
-    awar_ali->map("presets/use");
+    awar_ali->map(AWAR_DEFAULT_ALIGNMENT);
 }
 
 // --------------------------------------------------------------------------------
