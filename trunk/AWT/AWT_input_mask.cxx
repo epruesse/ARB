@@ -202,15 +202,15 @@ awt_mask_awar_item::awt_mask_awar_item(awt_input_mask_global& global_, const str
     printf("awarName='%s'\n", awarName.c_str());
 #endif // DEBUG
     mask_global().get_root()->awar_string(awarName.c_str(), default_value.c_str()); // create the awar
-    add_awar_callbacks();
+    add_awarItem_callbacks();
 }
 
-void awt_mask_awar_item::add_awar_callbacks() {
+void awt_mask_awar_item::add_awarItem_callbacks() {
     AW_awar *var = awar();
     awt_assert(var);
     if (var) var->add_callback(makeRootCallback(awar_changed_cb, this));
 }
-void awt_mask_awar_item::remove_awar_callbacks() {
+void awt_mask_awar_item::remove_awarItem_callbacks() {
     AW_awar *var = awar();
     awt_assert(var);
     if (var) var->remove_callback(makeRootCallback(awar_changed_cb, this));
@@ -291,7 +291,7 @@ GB_ERROR awt_script_viewport::link_to(GBDATA *gb_new_item)
     GB_ERROR       error = 0;
     GB_transaction ta(mask_global().get_gb_main());
 
-    remove_awar_callbacks();    // unbind awar callbacks temporarily
+    remove_awarItem_callbacks();    // unbind awar callbacks temporarily
 
     if (item()) {
         remove_db_callbacks(); // ignore result (if handled db-entry was deleted, it returns an error)
@@ -304,7 +304,7 @@ GB_ERROR awt_script_viewport::link_to(GBDATA *gb_new_item)
         error = add_db_callbacks();
     }
 
-    add_awar_callbacks();       // rebind awar callbacks
+    add_awarItem_callbacks();       // rebind awar callbacks
 
     return error;
 }
@@ -357,7 +357,7 @@ GB_ERROR awt_input_handler::link_to(GBDATA *gb_new_item) {
     GB_ERROR       error = 0;
     GB_transaction ta(mask_global().get_gb_main());
 
-    remove_awar_callbacks(); // unbind awar callbacks temporarily
+    remove_awarItem_callbacks(); // unbind awar callbacks temporarily
 
     if (item()) {
         remove_db_callbacks();  // ignore result (if handled db-entry was deleted, it returns an error)
@@ -381,7 +381,7 @@ GB_ERROR awt_input_handler::link_to(GBDATA *gb_new_item) {
         error = add_db_callbacks();
     }
 
-    add_awar_callbacks(); // rebind awar callbacks
+    add_awarItem_callbacks(); // rebind awar callbacks
 
     return error;
 }
@@ -1332,7 +1332,7 @@ GB_ERROR awt_marked_checkbox::link_to(GBDATA *gb_new_item) { // link to a new it
     GB_ERROR       error = 0;
     GB_transaction ta(mask_global().get_gb_main());
 
-    remove_awar_callbacks();    // unbind awar callbacks temporarily
+    remove_awarItem_callbacks();    // unbind awar callbacks temporarily
 
     if (item()) {
         remove_db_callbacks(); // ignore result (if handled db-entry was deleted, it returns an error)
@@ -1345,7 +1345,7 @@ GB_ERROR awt_marked_checkbox::link_to(GBDATA *gb_new_item) { // link to a new it
         error = add_db_callbacks();
     }
 
-    add_awar_callbacks();       // rebind awar callbacks
+    add_awarItem_callbacks();       // rebind awar callbacks
     return error;
 }
 
