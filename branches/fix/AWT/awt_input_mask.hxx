@@ -21,6 +21,9 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
 
 
 enum awt_item_type {
@@ -54,8 +57,8 @@ public:
     awt_item_type get_item_type() const { return my_type; }
 
     // add/remove callbacks to awars (i.e. to AWAR_SPECIES_NAME)
-    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const = 0;
-    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const = 0;
+    void add_awar_callbacks(AW_root *root, const RootCallback& cb) const;
+    void remove_awar_callbacks(AW_root *root, const RootCallback& cb) const;
 
     // returns the current item
     virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const = 0;
@@ -70,10 +73,10 @@ public:
     virtual size_t get_self_awar_content_length() const = 0;
 };
 
-typedef void (*AWT_OpenMaskWindowCallback)(AW_window* aww, AW_CL cl_id, AW_CL cl_user);
+typedef void (*AWT_OpenMaskWindowCallback)(AW_window* aww, int id, GBDATA *gb_main);
 
 awt_item_type AWT_getItemType(const std::string& itemtype_name);
-void          AWT_create_mask_submenu(class AW_window_menu_modes *awm, awt_item_type wanted_item_type, AWT_OpenMaskWindowCallback open_mask_window_cb, AW_CL cl_user);
+void          AWT_create_mask_submenu(class AW_window_menu_modes *awm, awt_item_type wanted_item_type, AWT_OpenMaskWindowCallback open_mask_window_cb, GBDATA *gb_main);
 void          AWT_destroy_input_masks();
 
 #else

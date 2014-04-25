@@ -156,10 +156,9 @@ static void awt_openDefaultURL_on_species(AW_window *aww, GBDATA *gb_main) {
     delete selected_species;
 }
 
-static void awt_www_select_change(AW_window *aww, AW_CL selected) {
-    int i;
+static void awt_www_select_change(AW_window *aww, int selected) {
     AW_root *aw_root = aww->get_root();
-    for (i=0; i<WWW_COUNT; i++) {
+    for (int i=0; i<WWW_COUNT; i++) {
         const char *awar_name = GBS_global_string(AWAR_WWW_SELECT_TEMPLATE, i);
         aw_root->awar(awar_name)->write_int((i==selected) ? 1 : 0);
     }
@@ -224,7 +223,7 @@ AW_window *AWT_create_www_window(AW_root *aw_root, GBDATA *gb_main) {
     for (i=0; i<WWW_COUNT; i++) {
         char buf[256];
         sprintf(buf, AWAR_WWW_SELECT_TEMPLATE, i);
-        aws->callback(awt_www_select_change, i);
+        aws->callback(makeWindowCallback(awt_www_select_change, i));
         aws->create_toggle(buf);
 
         sprintf(buf, AWAR_WWW_DESC_TEMPLATE, i);
@@ -256,11 +255,10 @@ AW_window *AWT_create_www_window(AW_root *aw_root, GBDATA *gb_main) {
     AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "www", www_store_config, www_restore_config, 0, 0);
 
     awt_www_select_change(aws, aw_root->awar(AWAR_WWW_SELECT)->read_int());
-    return (AW_window *)aws;
+    return aws;
 }
 
-void AWT_openURL_cb(AW_window *aww, AW_CL cl_url) {
-    const char *url = (const char*)cl_url;
+void AWT_openURL(AW_window *aww, const char *url) {
     AW_openURL(aww->get_root(), url);
 }
 

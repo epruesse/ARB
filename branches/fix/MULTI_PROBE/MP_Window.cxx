@@ -66,13 +66,13 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
         const StorableSelectionList *storable_probes_list = new StorableSelectionList(TypedSelectionList("mpr", result_probes_list, "multiprobes", "multi_probes"));
 
         result_window->at("buttons");
-        result_window->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_probes_list);
+        result_window->callback(makeCreateWindowCallback(create_load_box_for_selection_lists, storable_probes_list));
         result_window->create_button("LOAD_RPL", "LOAD");
 
-        result_window->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_probes_list);
+        result_window->callback(makeCreateWindowCallback(create_save_box_for_selection_lists, storable_probes_list));
         result_window->create_button("SAVE_RPL", "SAVE");
 
-        result_window->callback(awt_clear_selection_list_cb, (AW_CL)result_probes_list);
+        result_window->callback(makeWindowCallback(awt_clear_selection_list_cb, result_probes_list));
         result_window->create_button("CLEAR", "CLEAR");
 
         result_window->callback(MP_delete_selected, AW_CL(result_probes_list));
@@ -431,13 +431,13 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
         aws->at(rightSide ? "RightButtons" : "LeftButtons");
 
-        aws->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storableList);
+        aws->callback(makeCreateWindowCallback(create_load_box_for_selection_lists, storableList));
         aws->create_button(GBS_global_string("LOAD_%s", id_suffix), "LOAD");
 
-        aws->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storableList);
+        aws->callback(makeCreateWindowCallback(create_save_box_for_selection_lists, storableList));
         aws->create_button(GBS_global_string("SAVE_%s", id_suffix), "SAVE");
 
-        aws->callback(awt_clear_selection_list_cb, (AW_CL)sellist);
+        aws->callback(makeWindowCallback(awt_clear_selection_list_cb, sellist));
         aws->create_button(GBS_global_string("CLEAR_%s", id_suffix), "CLEAR");
 
         aws->callback(MP_delete_selected, (AW_CL)sellist);
