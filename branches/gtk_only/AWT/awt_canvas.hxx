@@ -339,9 +339,9 @@ inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {
 void AWT_expose_cb(UNFIXED, AWT_canvas *scr);
 void AWT_resize_cb(UNFIXED, AWT_canvas *scr);
 
-void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL);
-void AWT_popup_sec_export_window (AW_window *parent_win, AW_CL cl_canvas, AW_CL);
-void AWT_popup_print_window      (AW_window *parent_win, AW_CL cl_canvas, AW_CL);
+void AWT_popup_tree_export_window(AW_window *parent_win, AWT_canvas *scr);
+void AWT_popup_sec_export_window (AW_window *parent_win, AWT_canvas *scr);
+void AWT_popup_print_window      (AW_window *parent_win, AWT_canvas *scr);
 
 
 #endif

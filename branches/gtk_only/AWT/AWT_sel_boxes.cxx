@@ -258,10 +258,9 @@ static char *readable_pt_servername(int index, int maxlength) {
     return fullname;
 }
 
-static void update_ptserver_button(AW_root *aw_root, AW_CL cl_varname) {
-    const char *varname              = (const char *)cl_varname;
-    char       *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
-    char       *readable_name        = readable_pt_servername(aw_root->awar(varname)->read_int(), PT_SERVERNAME_LENGTH);
+static void update_ptserver_button(AW_root *aw_root, const char *varname) {
+    char *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
+    char *readable_name        = readable_pt_servername(aw_root->awar(varname)->read_int(), PT_SERVERNAME_LENGTH);
 
     aw_root->awar(awar_buttontext_name)->write_string(readable_name);
 
@@ -269,7 +268,7 @@ static void update_ptserver_button(AW_root *aw_root, AW_CL cl_varname) {
     free(awar_buttontext_name);
 }
 
-static AW_window *awt_popup_selection_list_on_pt_servers(AW_root *aw_root, const char *varname) {
+static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, const char *varname) {
     AW_window_simple *aw_popup = new AW_window_simple;
 
     aw_popup->init(aw_root, "SELECT_PT_SERVER", "Select a PT-Server");
@@ -312,18 +311,18 @@ void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname
             aw_root->awar(varname)->write_int(ptserver_index);
         }
 
-        char  *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
-        AW_CL  cl_varname    = (AW_CL)strdup(varname); // make copy of awar_name for callbacks
+        char        *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
+        char *const  varnameDup    = strdup(varname);
 
         awt_assert(!GB_have_error());
 
         aw_root->awar_string(awar_buttontext_name, readable_name, AW_ROOT_DEFAULT);
-        aw_root->awar(varname)->add_callback(update_ptserver_button, cl_varname);
+        aw_root->awar(varname)->add_callback(makeRootCallback(update_ptserver_button, varnameDup));
 
         int old_button_length = aws->get_button_length();
 
         aws->button_length(PT_SERVERNAME_LENGTH+1);
-        aws->callback(AW_POPUP, (AW_CL)awt_popup_selection_list_on_pt_servers, cl_varname);
+        aws->callback(makeCreateWindowCallback(create_selection_list_on_pt_servers_window, varnameDup));
         aws->create_button("CURR_PT_SERVER", awar_buttontext_name);
 
         aws->button_length(old_button_length);
@@ -574,10 +573,9 @@ AWT_sai_selection *SAI_selection_list_spec::create_list(AW_window *aws) const {
     return saisel;
 }
 
-void awt_popup_filtered_sai_selection_list(AW_root *aw_root, AW_CL cl_sellist_spec) {
-    const SAI_selection_list_spec *spec      = (const SAI_selection_list_spec*)cl_sellist_spec;
-    const char                    *awar_name = spec->get_awar_name();
-    
+static void popup_filtered_sai_selection_list(AW_root *aw_root, const SAI_selection_list_spec *spec) {
+    const char *awar_name = spec->get_awar_name();
+
     static GB_HASH *SAI_window_hash       = 0;
     if (!SAI_window_hash) SAI_window_hash = GBS_create_hash(10, GB_MIND_CASE);
 
@@ -603,20 +601,13 @@ void awt_popup_filtered_sai_selection_list(AW_root *aw_root, AW_CL cl_sellist_sp
 
     aws->activate();
 }
-void awt_popup_filtered_sai_selection_list(AW_window *aww, AW_CL cl_sellist_spec) {
-    awt_popup_filtered_sai_selection_list(aww->get_root(), cl_sellist_spec);
+static void popup_filtered_sai_selection_list(AW_window *aww, const SAI_selection_list_spec *spec) {
+    popup_filtered_sai_selection_list(aww->get_root(), spec);
 }
 
-void awt_popup_sai_selection_list(AW_root *aw_root, AW_CL cl_awar_name, AW_CL cl_gb_main) {
-    const char *awar_name = reinterpret_cast<const char *>(cl_awar_name);
-    GBDATA *gb_main = reinterpret_cast<GBDATA *>(cl_gb_main);
-
+void awt_popup_sai_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main) {
     SAI_selection_list_spec spec(awar_name, gb_main);
-    awt_popup_filtered_sai_selection_list(aw_root, AW_CL(&spec));
-}
-
-void awt_popup_sai_selection_list(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main) {
-    awt_popup_sai_selection_list(aww->get_root(), cl_awar_name, cl_gb_main);
+    popup_filtered_sai_selection_list(aww, &spec);
 }
 
 AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
@@ -633,7 +624,7 @@ AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *
 void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
     SAI_selection_list_spec *spec = new SAI_selection_list_spec(varname, gb_main);
     spec->define_filter(filter_poc, filter_cd);
-    aws->callback(awt_popup_filtered_sai_selection_list, AW_CL(spec));
+    aws->callback(makeWindowCallback(popup_filtered_sai_selection_list, spec));
     aws->create_button("SELECT_SAI", varname);
 }
 
@@ -829,9 +820,8 @@ GB_ERROR StorableSelectionList::load(const char *filemask, bool append) const {
     return error;
 }
 
-static void save_list_cb(AW_window *aww, AW_CL cl_storabsellist) {
-    const StorableSelectionList *storabsellist = (const StorableSelectionList*)cl_storabsellist;
-    const TypedSelectionList&    typedsellist  = storabsellist->get_typedsellist();
+static void save_list_cb(AW_window *aww, const StorableSelectionList *storabsellist) {
+    const TypedSelectionList& typedsellist = storabsellist->get_typedsellist();
 
     char    *awar_prefix = get_shared_sellist_awar_base(typedsellist);
     char    *bline_anz   = get_shared_sellist_awar_name(typedsellist, "line_anz");
@@ -849,9 +839,8 @@ static void save_list_cb(AW_window *aww, AW_CL cl_storabsellist) {
     free(awar_prefix);
 }
 
-static void load_list_cb(AW_window *aww, AW_CL cl_storabsellist) {
-    const StorableSelectionList *storabsellist = (const StorableSelectionList*)cl_storabsellist;
-    const TypedSelectionList&    typedsellist  = storabsellist->get_typedsellist();
+static void load_list_cb(AW_window *aww, const StorableSelectionList *storabsellist) {
+    const TypedSelectionList& typedsellist = storabsellist->get_typedsellist();
 
     AW_root  *aw_root     = aww->get_root();
     char     *awar_prefix = get_shared_sellist_awar_base(typedsellist);
@@ -867,9 +856,8 @@ static void load_list_cb(AW_window *aww, AW_CL cl_storabsellist) {
     free(awar_prefix);
 }
 
-AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storabsellist) {
-    const StorableSelectionList *storabsellist = (const StorableSelectionList*)cl_storabsellist;
-    const TypedSelectionList&    typedsellist  = storabsellist->get_typedsellist();
+AW_window *create_save_box_for_selection_lists(AW_root *aw_root, const StorableSelectionList *storabsellist) {
+    const TypedSelectionList& typedsellist = storabsellist->get_typedsellist();
 
     char *awar_base     = get_shared_sellist_awar_base(typedsellist);
     char *awar_line_anz = get_shared_sellist_awar_name(typedsellist, "line_anz");
@@ -896,7 +884,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storab
 
     aws->at("save");
     aws->highlight();
-    aws->callback(save_list_cb, cl_storabsellist); 
+    aws->callback(makeWindowCallback(save_list_cb, storabsellist));
     aws->create_button("SAVE", "SAVE", "S");
 
     aws->at("nlines");
@@ -923,9 +911,8 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storab
     return aws;
 }
 
-AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storabsellist) {
-    const StorableSelectionList *storabsellist = (const StorableSelectionList*)cl_storabsellist;
-    const TypedSelectionList&    typedsellist  = storabsellist->get_typedsellist();
+AW_window *create_load_box_for_selection_lists(AW_root *aw_root, const StorableSelectionList *storabsellist) {
+    const TypedSelectionList& typedsellist = storabsellist->get_typedsellist();
 
     char *awar_base_name = get_shared_sellist_awar_base(typedsellist);
     char *awar_append    = get_shared_sellist_awar_name(typedsellist, "append");
@@ -947,7 +934,7 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storab
 
     aws->at("load");
     aws->highlight();
-    aws->callback(load_list_cb, cl_storabsellist);
+    aws->callback(makeWindowCallback(load_list_cb, storabsellist));
     aws->create_button("LOAD", "LOAD", "L");
 
     aws->at("append");
@@ -966,16 +953,13 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storab
     return aws;
 }
 
-void awt_clear_selection_list_cb(AW_window *, AW_CL cl_sellist) {
-    AW_selection_list *sellist = (AW_selection_list*)cl_sellist;
+void awt_clear_selection_list_cb(AW_window *, AW_selection_list *sellist) {
     sellist->clear();
     sellist->insert_default("", "");
     sellist->update();
 }
 
-void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL cl_typedsellst) {
-    const TypedSelectionList *typedsellist = (const TypedSelectionList*)cl_typedsellst;
-    
+void create_print_box_for_selection_lists(AW_window *aw_window, const TypedSelectionList *typedsellist) {
     char *data = typedsellist->get_sellist()->get_content_as_string(0);
     AWT_create_ascii_print_window(aw_window->get_root(), data, typedsellist->whats_contained());
     free(data);

@@ -1369,12 +1369,6 @@ struct GEN_item_type_species_selector : public awt_item_type_selector {
     virtual size_t get_self_awar_content_length() const OVERRIDE {
         return 12 + 1 + 40; // species-name+'/'+gene_name
     }
-    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // add callbacks to awars
-        root->awar(get_self_awar())->add_callback(f, cl_mask);
-    }
-    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE {
-        root->awar(get_self_awar())->remove_callback(f, cl_mask);
-    }
     virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
         char   *species_name = root->awar(AWAR_ORGANISM_NAME)->read_string();
         char   *gene_name   = root->awar(AWAR_GENE_NAME)->read_string();
@@ -1400,18 +1394,16 @@ struct GEN_item_type_species_selector : public awt_item_type_selector {
 
 static GEN_item_type_species_selector item_type_gene;
 
-static void GEN_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL cl_gb_main) {
-    int                              id         = int(cl_id);
+static void GEN_open_mask_window(AW_window *aww, int id, GBDATA *gb_main) {
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
     gen_assert(descriptor);
     if (descriptor) {
-        GBDATA *gb_main = (GBDATA*)cl_gb_main;
         AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_gene, descriptor->get_internal_maskname(), descriptor->is_local_mask());
     }
 }
 
 static void GEN_create_mask_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) {
-    AWT_create_mask_submenu(awm, AWT_IT_GENE, GEN_open_mask_window, (AW_CL)gb_main);
+    AWT_create_mask_submenu(awm, AWT_IT_GENE, GEN_open_mask_window, gb_main);
 }
 
 static AW_window *create_colorize_genes_window(AW_root *aw_root, AW_CL cl_gb_main) {

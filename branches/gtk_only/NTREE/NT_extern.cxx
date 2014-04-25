@@ -777,12 +777,6 @@ struct nt_item_type_species_selector : public awt_item_type_selector {
     virtual size_t get_self_awar_content_length() const OVERRIDE {
         return 12; // should be enough for "nnaammee.999"
     }
-    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // add callbacks to awars
-        root->awar(get_self_awar())->add_callback(f, cl_mask);
-    }
-    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // remove callbacks to awars
-        root->awar(get_self_awar())->remove_callback(f, cl_mask);
-    }
     virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
         char           *species_name = root->awar(get_self_awar())->read_string();
         GBDATA         *gb_species   = 0;
@@ -802,15 +796,14 @@ struct nt_item_type_species_selector : public awt_item_type_selector {
 
 static nt_item_type_species_selector item_type_species;
 
-static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
-    int                              id         = int(cl_id);
+static void NT_open_mask_window(AW_window *aww, int id, GBDATA *gb_main) {
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
     nt_assert(descriptor);
-    if (descriptor) AWT_initialize_input_mask(aww->get_root(), GLOBAL.gb_main, &item_type_species, descriptor->get_internal_maskname(), descriptor->is_local_mask());
+    if (descriptor) AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_species, descriptor->get_internal_maskname(), descriptor->is_local_mask());
 }
 
 static void NT_create_mask_submenu(AW_window_menu_modes *awm) {
-    AWT_create_mask_submenu(awm, AWT_IT_SPECIES, NT_open_mask_window, 0);
+    AWT_create_mask_submenu(awm, AWT_IT_SPECIES, NT_open_mask_window, GLOBAL.gb_main);
 }
 static AW_window *create_colorize_species_window(AW_root *aw_root) {
     return QUERY::create_colorize_items_window(aw_root, GLOBAL.gb_main, SPECIES_get_selector());
@@ -1173,9 +1166,9 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->insert_sub_menu("VersionInfo/Bugreport/MailingList", "V");
             {
-                awm->insert_menu_topic("version_info", "Version info (" ARB_VERSION_DETAILED ")", "V", "version.hlp", AWM_ALL, makeHelpCallback           ("version.hlp"));
-                awm->insert_menu_topic("bug_report",   "Report bug",                              "b", NULL,          AWM_ALL, AWT_openURL_cb,       AW_CL("http://bugs.arb-home.de/wiki/BugReport"));
-                awm->insert_menu_topic("mailing_list", "Mailing list",                            "M", NULL,          AWM_ALL, AWT_openURL_cb,       AW_CL("http://bugs.arb-home.de/wiki/ArbMailingList"));
+                awm->insert_menu_topic("version_info", "Version info (" ARB_VERSION_DETAILED ")", "V", "version.hlp", AWM_ALL, makeHelpCallback  ("version.hlp"));
+                awm->insert_menu_topic("bug_report",   "Report bug",                              "b", NULL,          AWM_ALL, makeWindowCallback(AWT_openURL, "http://bugs.arb-home.de/wiki/BugReport"));
+                awm->insert_menu_topic("mailing_list", "Mailing list",                            "M", NULL,          AWM_ALL, makeWindowCallback(AWT_openURL, "http://bugs.arb-home.de/wiki/ArbMailingList"));
             }
             awm->close_sub_menu();
 #if 0
@@ -1464,8 +1457,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
         awm->sep______________();
 
         if (!clone) {
-            awm->insert_menu_topic("print_tree",  "Print tree",          "P", "tree2prt.hlp",  AWM_ALL, AWT_popup_print_window,       (AW_CL)ntw, 0);
-            awm->insert_menu_topic("tree_2_xfig", "Export tree to XFIG", "X", "tree2file.hlp", AWM_ALL, AWT_popup_tree_export_window, (AW_CL)ntw, 0);
+            awm->insert_menu_topic("print_tree",  "Print tree",          "P", "tree2prt.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_print_window, ntw));
+            awm->insert_menu_topic("tree_2_xfig", "Export tree to XFIG", "X", "tree2file.hlp", AWM_ALL, makeWindowCallback(AWT_popup_tree_export_window, ntw));
             awm->sep______________();
         }
 
