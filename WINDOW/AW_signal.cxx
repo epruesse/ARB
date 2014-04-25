@@ -1,6 +1,7 @@
 #include "aw_signal.hxx"
 #include "aw_assert.hxx"
 #include "aw_root.hxx"
+#include <arb_msg.h>
 
 #include <functional> // required by osx
 #include <algorithm>
@@ -104,11 +105,13 @@ struct RootCallbackSlot : public Slot {
     }
     
     Slot* clone() const OVERRIDE { 
-        return new RootCallbackSlot(*this); 
+        return new RootCallbackSlot(*this);
     }
 
     void emit() OVERRIDE {
+        aw_assert(!GB_have_error());
         cb(AW_root::SINGLETON);
+        aw_assert(!GB_have_error());
     }
 };
 
