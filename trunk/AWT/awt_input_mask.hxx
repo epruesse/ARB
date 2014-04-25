@@ -54,8 +54,8 @@ public:
     awt_item_type get_item_type() const { return my_type; }
 
     // add/remove callbacks to awars (i.e. to AWAR_SPECIES_NAME)
-    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const = 0;
-    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const = 0;
+    void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const;
+    void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const;
 
     // returns the current item
     virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const = 0;

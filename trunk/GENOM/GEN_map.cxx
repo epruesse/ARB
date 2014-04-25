@@ -1369,12 +1369,6 @@ struct GEN_item_type_species_selector : public awt_item_type_selector {
     virtual size_t get_self_awar_content_length() const OVERRIDE {
         return 12 + 1 + 40; // species-name+'/'+gene_name
     }
-    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // add callbacks to awars
-        root->awar(get_self_awar())->add_callback(f, cl_mask);
-    }
-    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE {
-        root->awar(get_self_awar())->remove_callback(f, cl_mask);
-    }
     virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
         char   *species_name = root->awar(AWAR_ORGANISM_NAME)->read_string();
         char   *gene_name   = root->awar(AWAR_GENE_NAME)->read_string();
