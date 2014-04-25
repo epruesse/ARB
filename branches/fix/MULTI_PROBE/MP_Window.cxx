@@ -183,6 +183,8 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
                 isSavedFormat = false;
             }
             else {
+                char T_or_U = T_or_U_for_load ? T_or_U_for_load : 'U';
+
                 std::string sep = reg_saved.subexpr_match(2)->extract(line[i]);
 
                 int quality   = atoi(reg_saved.subexpr_match(1)->extract(line[i]).c_str());
@@ -195,9 +197,7 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
                     size_t  plen   = probe.length();
                     char   *dprobe = GB_strndup(probe.c_str(), plen);
 
-                    mp_assert(T_or_U_for_load);
-
-                    GBT_reverseComplementNucSequence(dprobe, plen, T_or_U_for_load);
+                    GBT_reverseComplementNucSequence(dprobe, plen, T_or_U);
                     probe = dprobe;
                     free(dprobe);
                 }
@@ -311,36 +311,15 @@ void MP_Window::build_pt_server_list() {
     aws->update_option_menu();
 }
 
-static void track_ali_change_cb(GBDATA *gb_ali) {
-    GB_transaction     ta(gb_ali);
-    GBDATA            *gb_main = GB_get_root(gb_ali);
+static void track_ali_change_cb(AW_root *root, GBDATA *gb_main) {
+    GB_transaction     ta(gb_main);
     char              *aliname = GBT_get_default_alignment(gb_main);
     GB_alignment_type  alitype = GBT_get_alignment_type(gb_main, aliname);
-    GB_ERROR           error   = GBT_determine_T_or_U(alitype, &T_or_U_for_load, "reverse-complement");
 
-    if (error) {
-        if (GB_have_error()) aw_message(GB_await_error());
-        aw_message(error);
-    }
+    GBT_determine_T_or_U(alitype, &T_or_U_for_load, "reverse-complement"); // T_or_U_for_load is set to 0 in error-case
+    GB_clear_error();
+
     free(aliname);
-}
-
-static void install_track_ali_type_callback(GBDATA *gb_main) { // @@@ instead bind directly to AWAR_DEFAULT_ALIGNMENT (provide a general function for that)
-    GB_transaction ta(gb_main);
-    GB_ERROR       error = NULL;
-
-    GBDATA *gb_ali = GB_search(gb_main, AWAR_DEFAULT_ALIGNMENT, GB_FIND);
-    if (!gb_ali) {
-        error = GB_await_error();
-    }
-    else {
-        error = GB_add_callback(gb_ali, GB_CB_CHANGED, makeDatabaseCallback(track_ali_change_cb));
-        track_ali_change_cb(gb_ali);
-    }
-
-    if (error) {
-        aw_message(GBS_global_string("Cannot install ali-callback (Reason: %s)", error));
-    }
 }
 
 static void MP_collect_probes(AW_window*, awt_collect_mode mode, AW_CL) {
@@ -388,8 +367,9 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     initialized             = true;
 #endif
 
-    install_track_ali_type_callback(gb_main);
-    
+    aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->add_callback(makeRootCallback(track_ali_change_cb, gb_main));
+    track_ali_change_cb(aw_root, gb_main);
+
     result_window = NULL;
 
     aws = new AW_window_simple;
