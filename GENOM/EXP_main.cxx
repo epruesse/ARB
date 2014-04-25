@@ -60,12 +60,6 @@ struct EXP_item_type_species_selector : public awt_item_type_selector {
     virtual size_t get_self_awar_content_length() const OVERRIDE {
         return 12 + 1 + 40; // species-name+'/'+experiment_name
     }
-    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // add callbacks to awars
-        root->awar(get_self_awar())->add_callback(f, cl_mask);
-    }
-    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // add callbacks to awars
-        root->awar(get_self_awar())->remove_callback(f, cl_mask);
-    }
     virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
         char   *species_name    = root->awar(AWAR_ORGANISM_NAME)->read_string();
         char   *experiment_name = root->awar(AWAR_EXPERIMENT_NAME)->read_string();
@@ -91,18 +85,16 @@ struct EXP_item_type_species_selector : public awt_item_type_selector {
 
 static EXP_item_type_species_selector item_type_experiment;
 
-static void EXP_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL cl_gb_main) {
-    int                              id         = int(cl_id);
+static void EXP_open_mask_window(AW_window *aww, int id, GBDATA *gb_main) {
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
     exp_assert(descriptor);
     if (descriptor) {
-        GBDATA *gb_main = (GBDATA*)cl_gb_main;
         AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_experiment, descriptor->get_internal_maskname(), descriptor->is_local_mask());
     }
 }
 
 static void EXP_create_mask_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) {
-    AWT_create_mask_submenu(awm, AWT_IT_EXPERIMENT, EXP_open_mask_window, (AW_CL)gb_main);
+    AWT_create_mask_submenu(awm, AWT_IT_EXPERIMENT, EXP_open_mask_window, gb_main);
 }
 
 static AW_window *create_colorize_experiments_window(AW_root *aw_root, AW_CL cl_gb_main) {

@@ -28,8 +28,6 @@
 
 // ------------------------------------------------------------
 
-void awt_set_string(AW_window *aws, AW_CL varname, AW_CL value);    // set an awar
-
 void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, const char *title=0);
 void AWT_show_file(AW_root *awr, const char *filename);
 

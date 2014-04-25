@@ -42,7 +42,7 @@ my $reg_shadow_location = qr/^shadowed\s/;
 my $filter_Weffpp = 1;
 my @reg_Weffpp = (
                   qr/only\sdefines\sprivate\sconstructors\sand\shas\sno\sfriends/, # unwanted warning about singleton-class where the only instance exists as a static member of itself
-                  qr/^base\sclass\s.*has\sa\snon-virtual\sdestructor/,
+                  qr/^base\sclass\s.*has\s*(a|accessible)\snon-virtual\sdestructor/,
                   qr/\sshould\sbe\sinitialized\sin\sthe\smember\sinitialization\slist/,
                   qr/boost::icl::(insert|add)_iterator<ContainerT>.*should\sreturn/, # filter boost-iterator postfix operators warnings
                   qr/^\s\sbut\sdoes\snot\soverride/, # belongs to reg_Weffpp_copyable
