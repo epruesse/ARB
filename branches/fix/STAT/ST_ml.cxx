@@ -475,8 +475,13 @@ void ST_ML::cleanup() {
         MostLikelySeq::tmp_out = NULL;
     }
 
-    delete tree_root;               tree_root = NULL;
-    GBS_free_hash(hash_2_ap_tree);  hash_2_ap_tree = NULL;
+    delete tree_root;
+    tree_root = NULL;
+
+    if (hash_2_ap_tree) {
+        GBS_free_hash(hash_2_ap_tree);
+        hash_2_ap_tree = NULL;
+    }
 
     is_initialized = false;
 }
