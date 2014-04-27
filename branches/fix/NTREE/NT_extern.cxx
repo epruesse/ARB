@@ -1292,7 +1292,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
             awm->sep______________();
 
             awm->insert_menu_topic("seq_quality",   "Check Sequence Quality", "Q", "seq_quality.hlp",   AWM_EXP, makeCreateWindowCallback(SQ_create_seq_quality_window, GLOBAL.gb_main));
-            awm->insert_menu_topic("chimera_check", "Chimera Check",          "m", "check_quality.hlp", AWM_EXP, makeCreateWindowCallback(STAT_create_quality_check_window, GLOBAL.gb_main));
+            awm->insert_menu_topic("chimera_check", "Chimera Check",          "m", "chimera_check.hlp", AWM_EXP, makeCreateWindowCallback(STAT_create_chimera_check_window, GLOBAL.gb_main));
 
             awm->sep______________();
 
