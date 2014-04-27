@@ -180,6 +180,9 @@ public:
         }
         return !head;
     }
+    static void drop() {
+        if (head) head->destroy();
+    }
 };
 
 ExecutingMacro *ExecutingMacro::head = NULL;
@@ -232,6 +235,7 @@ GB_ERROR MacroRecorder::execute(const char *macroFile, bool loop_marked, AW_RCB1
         ExecutingMacro::add(execution_done_cb, client_data);
 
         error = GBT_macro_execute(macroFile, loop_marked, true);
+        if (error) ExecutingMacro::drop(); // avoid double free
     }
 
     return error;
