@@ -732,6 +732,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
