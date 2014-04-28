@@ -141,6 +141,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "rna3d",                          4);
     GBS_write_hash(dontCallHash, "reload_config",                  4);
     GBS_write_hash(dontCallHash, "LOAD_OLD_CONFIGURATION/LOAD",    4);
+    GBS_write_hash(dontCallHash, "table_admin",                    4); // disabled in userland atm
 #endif
 
     // do not open 2nd ARB_NT window (to buggy)
@@ -342,7 +343,7 @@ size_t AW_root::callallcallbacks(int mode) {
                 }
                 else {
                     if (pass == 1) {
-                        fprintf(stderr, "Delayed callback %zu/%zu (%s)", curr, count, remote_command);
+                        fprintf(stderr, "Delayed callback %zu/%zu (%s)\n", curr, count, remote_command);
                     }
                 }
 
