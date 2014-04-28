@@ -895,7 +895,10 @@ static void _aw_awar_on_notify(GObject* obj, GParamSpec *pspec, awar_gparam_bind
     // FIXME: somehow the UserActionTracker in AW_ROOT needs to be informed:
     // if root->is_tracking(), call root->track_awar_change(awar) after
     // setting the value, but before running other callbacks.
-    // Note: AWAR changes should only be written
+    // Notes:
+    // * AWAR changes should only be "tracked" if the value was changed
+    //   and the change was directly triggered by the user.
+    // * track_awar_change has to be called outside any database TA!
 
     g_value_unset(&gval);
 }
