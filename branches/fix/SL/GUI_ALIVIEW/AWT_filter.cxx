@@ -11,8 +11,8 @@
 #include <ad_cb.h>
 
 //! recalc filter
-static void awt_create_select_filter_window_aw_cb(UNFIXED, adfiltercbstruct *cbs)
-{       // update the variables
+static void awt_create_select_filter_window_aw_cb(UNFIXED, adfiltercbstruct *cbs) {
+    // update the variables
     AW_root *aw_root = cbs->awr;
     GB_push_transaction(cbs->gb_main);
     char *target = aw_root->awar(cbs->def_subname)->read_string();
@@ -34,6 +34,9 @@ static void awt_create_select_filter_window_aw_cb(UNFIXED, adfiltercbstruct *cbs
             GBDATA *gb_ali = GB_search(gb_species, use, GB_FIND);
             if (gb_ali) {
                 gbd = GB_search(gb_ali, target, GB_FIND);
+            }
+            else {
+                GB_clear_error();
             }
         }
     }

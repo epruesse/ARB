@@ -1008,25 +1008,33 @@ static GB_ERROR pars_check_size(AW_root *awr, GB_ERROR& warning) {
     }
     else {
         char *ali_name = awr->awar(AWAR_ALIGNMENT)->read_string();
-        ali_len = GBT_get_alignment_len(GLOBAL_gb_main, ali_name);
-        delete ali_name;
+        ali_len        = GBT_get_alignment_len(GLOBAL_gb_main, ali_name);
+        if (ali_len<=0) {
+            error = "Please select a valid alignment";
+            GB_clear_error();
+        }
+        free(ali_name);
     }
 
-    long tree_size = GBT_size_of_tree(GLOBAL_gb_main, tree_name);
-    if (tree_size == -1) {
-        error = "Please select an existing tree";
-    }
-    else {
-        unsigned long expected_memuse = (ali_len * tree_size * 4 / 1000);
-        if (expected_memuse > GB_get_usable_memory()) {
-            warning = GBS_global_string("Estimated memory usage (%s) exceeds physical memory (will swap)\n"
-                                         "(did you specify a filter?)",
-                                        GBS_readable_size(expected_memuse, "b"));
+    if (!error) {
+        long tree_size = GBT_size_of_tree(GLOBAL_gb_main, tree_name);
+        if (tree_size == -1) {
+            error = "Please select an existing tree";
+        }
+        else {
+            unsigned long expected_memuse = (ali_len * tree_size * 4 / 1024);
+            if (expected_memuse > GB_get_usable_memory()) {
+                warning = GBS_global_string("Estimated memory usage (%s) exceeds physical memory (will swap)\n"
+                                            "(did you specify a filter?)",
+                                            GBS_readable_size(expected_memuse, "b"));
+            }
         }
     }
+
     free(filter);
     free(tree_name);
 
+    ap_assert(!GB_have_error());
     return error;
 }
 
