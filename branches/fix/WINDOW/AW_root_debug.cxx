@@ -77,6 +77,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "NEIGHBOUR_JOINING/CLOSE",     1);
     GBS_write_hash(dontCallHash, "MERGE_SELECT_DATABASES/QUIT", 1);
     GBS_write_hash(dontCallHash, "quitnstart",                  1);
+    GBS_write_hash(dontCallHash, "PARS_PROPS/ABORT",            1);
 
     // avoid start of some external programs:
 #if 1
