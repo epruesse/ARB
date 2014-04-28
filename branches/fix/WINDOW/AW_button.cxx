@@ -76,9 +76,17 @@ static void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_updat
     vui->change_from_widget(call_data);
 }
 
-static void track_awar_change_cb(GBDATA*, AW_awar *awar, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
+struct TrackedAwarChange {
+    AW_awar *awar;
+    bool     changed;
+
+    TrackedAwarChange(AW_awar *awar_) : awar(awar_), changed(false) {}
+};
+
+static void track_awar_change_cb(GBDATA *IF_ASSERTION_USED(gbd), TrackedAwarChange *tac, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
     aw_assert(cb_type == GB_CB_CHANGED);
-    awar->root->track_awar_change(awar);
+    aw_assert(tac->awar->gb_var == gbd);
+    tac->changed = true;
 }
 
 void VarUpdateInfo::change_from_widget(XtPointer call_data) {
@@ -91,10 +99,11 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
         root->changer_of_variable = widget;
     }
 
+    TrackedAwarChange tac(awar);
     if (root->is_tracking()) {
         // add a callback which writes macro-code (BEFORE any other callback happens; last added, first calledback)
         GB_transaction ta(awar->gb_var);
-        GB_add_callback(awar->gb_var, GB_CB_CHANGED, makeDatabaseCallback(track_awar_change_cb, awar));
+        GB_add_callback(awar->gb_var, GB_CB_CHANGED, makeDatabaseCallback(track_awar_change_cb, &tac));
     }
 
     bool run_cb = true;
@@ -152,8 +161,13 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
     }
 
     if (root->is_tracking()) {
-        GB_transaction ta(awar->gb_var);
-        GB_remove_callback(awar->gb_var, GB_CB_CHANGED, makeDatabaseCallback(track_awar_change_cb, awar));
+        {
+            GB_transaction ta(awar->gb_var);
+            GB_remove_callback(awar->gb_var, GB_CB_CHANGED, makeDatabaseCallback(track_awar_change_cb, &tac));
+        }
+        if (tac.changed) {
+            root->track_awar_change(awar);
+        }
     }
 
     if (error) {
