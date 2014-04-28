@@ -1546,6 +1546,7 @@ static void di_autodetect_callback(AW_window *aww) {
     if (ali_len<=0) {
         GB_pop_transaction(GLOBAL_gb_main);
         error = "Please select a valid alignment";
+        GB_clear_error();
     }
     else {
         arb_progress progress("Analyzing data");
