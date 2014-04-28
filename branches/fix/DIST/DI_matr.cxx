@@ -1053,7 +1053,6 @@ GB_ERROR DI_MATRIX::extract_from_tree(const char *treename, bool *aborted_flag) 
 
 __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const WeightedFilter *weighted_filter, bool bootstrap_flag, bool show_warnings, bool *aborted_flag) {
     // sets 'aborted_flag' to true, if it is non-NULL and the calculation has been aborted
-
     GB_ERROR error = NULL;
 
     if (GLOBAL_MATRIX.exists()) {
@@ -1067,6 +1066,7 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const We
 
         if (ali_len<=0) {
             error = "Please select a valid alignment";
+            GB_clear_error();
         }
         else {
             arb_progress  progress("Calculating matrix");
@@ -1139,6 +1139,8 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const We
             delete aliview;
         }
         free(use);
+
+        di_assert(contradicted(error, GLOBAL_MATRIX.exists()));
     }
     return error;
 }
@@ -1250,6 +1252,9 @@ static void di_calculate_full_matrix_cb(AW_window *aww, const WeightedFilter *we
 static GB_ERROR di_recalc_matrix() {
     // recalculate matrix
     last_matrix_calculation_error = NULL;
+    if (need_recalc.matrix && GLOBAL_MATRIX.exists()) {
+        GLOBAL_MATRIX.forget();
+    }
     di_assert(recalculate_matrix_cb.isSet());
     (*recalculate_matrix_cb)();
     return last_matrix_calculation_error;
