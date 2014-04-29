@@ -220,9 +220,22 @@ inline void sortOldestFirst(AP_tree_edge **e1, AP_tree_edge **e2, AP_tree_edge *
     sortOldestFirst(e1, e2);
 }
 
+void AP_tree_nlen::initial_insert(AP_tree_nlen *newBrother, AP_tree_root *troot) {
+    // construct initial tree from 'this' and 'newBrother'
+    // (both have to be leafs)
+
+    ap_assert(newBrother);
+    ap_assert(is_leaf);
+    ap_assert(newBrother->is_leaf);
+
+    AP_tree::initial_insert(newBrother, troot);
+    new AP_tree_edge(newBrother, this); // build the root edge
+
+    ASSERT_VALID_TREE(this->get_father());
+}
 
 void AP_tree_nlen::insert(AP_tree_nlen *newBrother) {
-    //  inserts a node at the father-edge of new_brother
+    //  inserts 'this' (a new node) at the father-edge of 'newBrother'
     ap_assert(newBrother);
 
     ASSERT_VALID_TREE(this);
@@ -251,26 +264,22 @@ void AP_tree_nlen::insert(AP_tree_nlen *newBrother) {
 
         ASSERT_VALID_TREE(get_father()->get_father());
     }
-    else {                                          // insert at root
-        if (newBrother->is_leaf) {                  // tree contains exactly one species (only legal during insert)
-            AP_tree::insert(newBrother);
-            new AP_tree_edge(newBrother, this);    // build the root edge
-        }
-        else {
-            AP_tree_nlen *lson = newBrother->get_leftson();
-            AP_tree_nlen *rson = newBrother->get_rightson();
+    else { // insert at root
+        ap_assert(!newBrother->is_leaf); // either swap 'this' and 'newBrother' or use initial_insert() to construct the initial tree
 
-            ap_main->push_node(lson, STRUCTURE);
-            ap_main->push_node(rson, STRUCTURE);
+        AP_tree_nlen *lson = newBrother->get_leftson();
+        AP_tree_nlen *rson = newBrother->get_rightson();
 
-            AP_tree_edge *oldEdge = lson->edgeTo(rson)->unlink();
+        ap_main->push_node(lson, STRUCTURE);
+        ap_main->push_node(rson, STRUCTURE);
 
-            AP_tree::insert(newBrother);
+        AP_tree_edge *oldEdge = lson->edgeTo(rson)->unlink();
 
-            oldEdge->relink(this, newBrother);
-            new AP_tree_edge(newBrother, rson);
-            new AP_tree_edge(newBrother, lson);
-        }
+        AP_tree::insert(newBrother);
+
+        oldEdge->relink(this, newBrother);
+        new AP_tree_edge(newBrother, rson);
+        new AP_tree_edge(newBrother, lson);
 
         ASSERT_VALID_TREE(get_father());
     }
