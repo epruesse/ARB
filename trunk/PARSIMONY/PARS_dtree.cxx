@@ -665,6 +665,52 @@ void TEST_calc_bootstraps() {
     }
 }
 
+void TEST_tree_remove_add_all() {
+    // reproduces crash as described in #527
+    PARSIMONY_testenv env("TEST_trees.arb", "ali_5s");
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_nj"));
+
+    const int     LEAFS     = 6;
+    AP_tree_nlen *leaf[LEAFS];
+    const char *name[LEAFS] = {
+        "CloButy2",
+        "CloButyr",
+        "CytAquat",
+        "CorAquat",
+        "CurCitre",
+        "CorGluta",
+    };
+
+    AP_tree_nlen *root = env.tree_root();
+    TEST_REJECT_NULL(root);
+
+    for (int i = 0; i<LEAFS; ++i) {
+        leaf[i] = root->findLeafNamed(name[i]);
+        TEST_REJECT_NULL(leaf[i]);
+    }
+
+    AP_tree_edge::initialize(root);   // builds edges
+    TEST_EXPECT_EQUAL(root, rootNode()); // need tree-access via global 'ap_main' (too much code is based on that)
+
+    AP_tree_root *troot = leaf[0]->get_tree_root();
+    TEST_REJECT_NULL(troot);
+
+    // Note: following loop leaks father nodes and edges
+    for (int i = 0; i<LEAFS-1; ++i) { // removing the second to last leaf, "removes" both remaining leafs
+        TEST_ASSERT_VALID_TREE(root);
+        leaf[i]->remove();
+        TEST_ASSERT_VALID_TREE(leaf[i]);
+    }
+    leaf[LEAFS-1]->father = NULL; // correct final leaf (not removed regularily)
+
+    leaf[0]->initial_insert(leaf[1], troot);
+    for (int i = 2; i<LEAFS; ++i) {
+        TEST_ASSERT_VALID_TREE(leaf[i-1]);
+        TEST_ASSERT_VALID_TREE(leaf[i]);
+        leaf[i]->insert(leaf[i-1]);
+    }
+}
+
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
