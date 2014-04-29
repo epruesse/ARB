@@ -370,6 +370,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick) {
 
         if (!quick) {
             rootEdge()->nni_rek(-1, false, AP_BL_NNI_ONLY, NULL);
+            ++isits.get_progress();
         }
 
         if (rootNode()) {
