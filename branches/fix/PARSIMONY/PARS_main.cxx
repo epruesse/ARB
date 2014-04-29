@@ -366,6 +366,13 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick) {
         GB_begin_transaction(GLOBAL_gb_main);
         GBS_hash_do_loop(hash, transform_gbd_to_leaf, NULL);
         GB_commit_transaction(GLOBAL_gb_main);
+
+        {
+            int skipped = max_species - GBS_hash_count_elems(hash);
+            aw_message(GBS_global_string("Skipped %i species (no data?)", skipped));
+            isits.get_progress().inc_by(skipped);
+        }
+
         GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
 
         if (!quick) {
