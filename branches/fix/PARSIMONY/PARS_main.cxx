@@ -940,20 +940,25 @@ static void TESTMENU_treeStats(AW_window *, AWT_canvas *) {
     ARB_tree_info tinfo;
     AP_tree_nlen *root = rootNode();
 
-    {
-        GB_transaction ta(root->get_tree_root()->get_gb_main());
-        root->calcTreeInfo(tinfo);
+    if (root) {
+        {
+            GB_transaction ta(root->get_tree_root()->get_gb_main());
+            root->calcTreeInfo(tinfo);
+        }
+
+        puts("Tree stats:");
+
+        printf("nodes      =%6zu\n", tinfo.nodes());
+        printf(" inner     =%6zu\n", tinfo.innerNodes);
+        printf("  groups   =%6zu\n", tinfo.groups);
+        printf(" leafs     =%6zu\n", tinfo.leafs);
+        printf("  unlinked =%6zu (zombies?)\n", tinfo.unlinked);
+        printf("  linked   =%6zu\n", tinfo.linked());
+        printf("   marked  =%6zu\n", tinfo.marked);
     }
-
-    puts("Tree stats:");
-
-    printf("nodes      =%6zu\n", tinfo.nodes());
-    printf(" inner     =%6zu\n", tinfo.innerNodes);
-    printf("  groups   =%6zu\n", tinfo.groups);
-    printf(" leafs     =%6zu\n", tinfo.leafs);
-    printf("  unlinked =%6zu (zombies?)\n", tinfo.unlinked);
-    printf("  linked   =%6zu\n", tinfo.linked());
-    printf("   marked  =%6zu\n", tinfo.marked);
+    else {
+        puts("No tree");
+    }
 }
 
 static void TESTMENU_mixTree(AW_window *, AWT_canvas *ntw)
