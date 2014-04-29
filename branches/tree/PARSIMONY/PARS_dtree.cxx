@@ -692,14 +692,21 @@ void TEST_tree_remove_add_all() {
     AP_tree_edge::initialize(root);   // builds edges
     TEST_EXPECT_EQUAL(root, rootNode()); // need tree-access via global 'ap_main' (too much code is based on that)
 
+    AP_tree_root *troot = leaf[0]->get_tree_root();
+    TEST_REJECT_NULL(troot);
+
     // Note: following loop leaks father nodes and edges
     for (int i = 0; i<LEAFS-1; ++i) { // removing the second to last leaf, "removes" both remaining leafs
         TEST_ASSERT_VALID_TREE(root);
         leaf[i]->remove();
         TEST_ASSERT_VALID_TREE(leaf[i]);
     }
+    leaf[LEAFS-1]->father = NULL; // correct final leaf (not removed regularily)
 
-    for (int i = 1; i<LEAFS; ++i) {
+    leaf[0]->initial_insert(leaf[1], troot);
+    for (int i = 2; i<LEAFS; ++i) {
+        TEST_ASSERT_VALID_TREE(leaf[i-1]);
+        TEST_ASSERT_VALID_TREE(leaf[i]);
         leaf[i]->insert(leaf[i-1]);
     }
 }

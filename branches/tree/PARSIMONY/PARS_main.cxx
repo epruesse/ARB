@@ -186,12 +186,11 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
         }
         else {                                      // 2nd leaf -> create initial tree
             AP_tree_root *troot = ap_main->get_tree_root()->tree_static;
-            leaf->insert(last_inserted);
-            last_inserted       = NULL;
 
-            AP_tree *initial_tree = leaf->get_father();
-            troot->change_root(NULL, initial_tree);
+            leaf->initial_insert(last_inserted, troot);
+            last_inserted = NULL;
 
+            ap_assert(troot->get_root_node() == leaf->get_father());
             ASSERT_VALID_TREE(troot->get_root_node());
         }
     }

@@ -295,6 +295,7 @@ public:
     void uncolorize() { compute_tree(); }
 
     virtual void insert(AP_tree *new_brother);
+    virtual void initial_insert(AP_tree *new_brother, AP_tree_root *troot);
     virtual void remove();                          // remove this+father (but do not delete)
     virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
 

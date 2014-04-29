@@ -158,6 +158,33 @@ void AP_tree::clear_branch_flags() {
     }
 }
 
+void AP_tree::initial_insert(AP_tree *new_brother, AP_tree_root *troot) {
+    ap_assert(troot);
+    ap_assert(is_leaf);
+    ap_assert(new_brother->is_leaf);
+    ap_assert(!troot->get_root_node());
+
+    ASSERT_VALID_TREE(this);
+    ASSERT_VALID_TREE(new_brother);
+
+    AP_tree *new_root = DOWNCAST(AP_tree*, troot->makeNode());
+
+    new_root->leftson  = this;
+    new_root->rightson = new_brother;
+    new_root->father   = NULL;
+
+    father              = new_root;
+    new_brother->father = new_root;
+
+    new_root->leftlen  = 0.5;
+    new_root->rightlen = 0.5;
+
+    troot->change_root(NULL, new_root);
+
+    set_tree_root(troot);
+    new_brother->set_tree_root(troot);
+}
+
 void AP_tree::insert(AP_tree *new_brother) {
     ASSERT_VALID_TREE(this);
     ASSERT_VALID_TREE(new_brother);
@@ -188,16 +215,13 @@ void AP_tree::insert(AP_tree *new_brother) {
     new_brother->father = new_tree;
 
     AP_tree_root *troot = new_brother->get_tree_root();
-    if (troot) {
-        if (!new_tree->father) troot->change_root(new_brother, new_tree);
-        else new_tree->set_tree_root(troot);
-        set_tree_root(troot);
+    ap_assert(troot); // Note: initial_insert() has to be used to build initial tree
 
-        ASSERT_VALID_TREE(troot->get_root_node());
-    }
-    else { // loose nodes (not in a tree)
-        ASSERT_VALID_TREE(new_tree);
-    }
+    if (!new_tree->father) troot->change_root(new_brother, new_tree);
+    else new_tree->set_tree_root(troot);
+    set_tree_root(troot);
+
+    ASSERT_VALID_TREE(troot->get_root_node());
 }
 
 void AP_tree_root::change_root(RootedTree *oldroot, RootedTree *newroot) {
