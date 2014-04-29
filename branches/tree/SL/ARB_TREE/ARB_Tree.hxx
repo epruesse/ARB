@@ -51,6 +51,12 @@ protected:
         at_assert(tree_name);
         gb_tree = gbTree;
     }
+    void set_gb_tree_and_name(GBDATA *gbTree, const char *name) {
+        at_assert(!gb_tree);
+        at_assert(!tree_name);
+        gb_tree   = gbTree;
+        tree_name = strdup(name);
+    }
 
 public:
     ARB_seqtree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seqTempl, bool add_delete_callbacks);

@@ -87,6 +87,7 @@ AP_tree_root::AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, 
       root_changed_cb(NULL), root_changed_cd(NULL),
       node_deleted_cb(NULL), node_deleted_cd(NULL),
       gb_tree_gone(NULL),
+      gone_tree_name(NULL),
       tree_timer(0),
       species_timer(0),
       table_timer(0),
@@ -101,6 +102,7 @@ AP_tree_root::AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, 
 
 AP_tree_root::~AP_tree_root() {
     delete get_root_node();
+    free(gone_tree_name);
     ap_assert(!get_root_node());
 }
 
@@ -619,7 +621,30 @@ GB_ERROR AP_tree_root::saveToDB() {
     else {
         ap_assert(!gb_tree_gone);      // should have been handled by caller (e.g. in AWT_graphic_tree::save)
     }
-    if (!error) error = ARB_seqtree_root::saveToDB();
+    if (!error) {
+        if (!get_gb_tree() && gone_tree_name) { // tree was deleted before
+            GBDATA *gb_tree_exists = GBT_find_tree(get_gb_main(), gone_tree_name);
+            if (gb_tree_exists) {
+                error = "tree already exists";
+            }
+            else {
+                error = GBT_write_tree(get_gb_main(), gone_tree_name, get_root_node());
+                if (!error) {
+                    gb_tree_exists = GBT_find_tree(get_gb_main(), gone_tree_name);
+                    ap_assert(gb_tree_exists);
+                    if (gb_tree_exists) {
+                        set_gb_tree_and_name(GBT_find_tree(get_gb_main(), gone_tree_name), gone_tree_name);
+                        aw_message(GBS_global_string("Recreated previously deleted '%s'", gone_tree_name));
+                        freenull(gone_tree_name);
+                    }
+                }
+            }
+
+            if (error) aw_message(GBS_global_string("Failed to recreate '%s' (Reason: %s)", gone_tree_name, error));
+        }
+
+        if (!error) error = ARB_seqtree_root::saveToDB();
+    }
     if (!error) update_timers();
 
     return GB_end_transaction(get_gb_main(), error);

@@ -1722,6 +1722,9 @@ GB_ERROR AWT_graphic_tree::save(GBDATA * /* dummy */, const char * /* name */, A
     }
     else if (tree_static && tree_static->get_tree_name()) {
         if (tree_static->gb_tree_gone) {
+            td_assert(!tree_static->gone_tree_name);
+            tree_static->gone_tree_name = strdup(tree_static->get_tree_name());
+
             GB_transaction ta(gb_main);
             error = GB_delete(tree_static->gb_tree_gone);
             error = ta.close(error);
