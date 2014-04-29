@@ -99,6 +99,8 @@ public:
 
     // tree reconstruction methods:
     void insert(AP_tree_nlen *new_brother);
+    void initial_insert(AP_tree_nlen *new_brother, AP_tree_root *troot);
+
     void remove() OVERRIDE;
     void swap_sons() OVERRIDE;
     void swap_assymetric(AP_TREE_SIDE mode) OVERRIDE;
@@ -107,6 +109,7 @@ public:
 
     // overload virtual methods from AP_tree:
     void insert(AP_tree *new_brother) OVERRIDE { insert(DOWNCAST(AP_tree_nlen*, new_brother)); }
+    void initial_insert(AP_tree *new_brother, AP_tree_root *troot) OVERRIDE { initial_insert(DOWNCAST(AP_tree_nlen*, new_brother), troot); }
     void moveNextTo(AP_tree *node, AP_FLOAT rel_pos) OVERRIDE { moveNextTo(DOWNCAST(AP_tree_nlen*, node), rel_pos); }
 
     // tree optimization methods:
