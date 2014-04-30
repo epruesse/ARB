@@ -36,7 +36,11 @@
 #define AWAR_EXPORT_FILTER_ALI     AWAR_EXPORT_FILTER_PREFIX "/alignment"
 #define AWAR_EXPORT_CUTSTOP        "export/cutstop"
 
+#define awti_assert(cond) arb_assert(cond)
+
 static void export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_create_select_filter) {
+    awti_assert(!GB_have_error());
+
     GBDATA           *gb_main = (GBDATA*)cl_gb_main;
     GB_transaction    ta(gb_main);
     adfiltercbstruct *acbs    = (adfiltercbstruct*)res_from_awt_create_select_filter;
@@ -91,7 +95,7 @@ static void create_export_awars(AW_root *awr, AW_default def) {
     awr->awar_string(AWAR_EXPORT_FILTER_NAME, "none", def); // no default filter
     awr->awar_string(AWAR_EXPORT_FILTER_FILTER, "", def);
     AW_awar *awar_ali = awr->awar_string(AWAR_EXPORT_FILTER_ALI, "", def);
-    awar_ali->map("presets/use"); // map to default alignment
+    awar_ali->map(AWAR_DEFAULT_ALIGNMENT);
 
     awr->awar_int(AWAR_EXPORT_CUTSTOP, 0, def); // don't cut stop-codon
 }

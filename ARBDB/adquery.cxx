@@ -586,6 +586,8 @@ GBDATA *GB_searchOrCreate_string(GBDATA *gb_container, const char *fieldpath, co
 }
 
 GBDATA *GB_searchOrCreate_int(GBDATA *gb_container, const char *fieldpath, long default_value) {
+    gb_assert(!GB_have_error()); // illegal to enter this function when an error is exported!
+
     GBDATA *gb_int = GB_search(gb_container, fieldpath, GB_FIND);
     if (!gb_int) {
         gb_int = GB_search(gb_container, fieldpath, GB_INT);
@@ -606,6 +608,8 @@ GBDATA *GB_searchOrCreate_int(GBDATA *gb_container, const char *fieldpath, long 
 }
 
 GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, double default_value) {
+    gb_assert(!GB_have_error()); // illegal to enter this function when an error is exported!
+
     GBDATA *gb_float = GB_search(gb_container, fieldpath, GB_FIND);
     if (!gb_float) {
         gb_float = GB_search(gb_container, fieldpath, GB_FLOAT);

@@ -1349,131 +1349,132 @@ inline void my_strupr(char *s) {
     }
 }
 
-static GB_alignment_type ali_used_for_resolvement = GB_AT_UNKNOWN;
-
-static void resolve_IUPAC_target_string(AW_root *root, AW_selection_list *selection_id) {
+static void resolve_IUPAC_target_string(AW_root *root, AW_selection_list *selection_id, GBDATA *gb_main) {
     selection_id->clear();
 
-    if (ali_used_for_resolvement != GB_AT_RNA && ali_used_for_resolvement!=GB_AT_DNA) {
-        selection_id->insert_default("Wrong alignment type!", "");
-        selection_id->update();
-        return;
+    GB_alignment_type ali_type = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
+
+    GB_ERROR err = 0;
+    if (ali_type != GB_AT_RNA && ali_type!=GB_AT_DNA) {
+        err = "Wrong alignment type";
+        GB_clear_error();
     }
+    else {
+        int   index   = ali_type==GB_AT_RNA ? 1 : 0;
+        char *istring = root->awar(AWAR_ITARGET_STRING)->read_string();
 
-    int       index   = ali_used_for_resolvement==GB_AT_RNA ? 1 : 0;
-    char     *istring = root->awar(AWAR_ITARGET_STRING)->read_string();
-    GB_ERROR  err     = 0;
+        if (istring && istring[0]) { // contains sth?
+            my_strupr(istring);
 
-    if (istring && istring[0]) { // contains sth?
-        my_strupr(istring);
+            int bases_to_resolve = 0;
+            char *istr = istring;
+            int istring_length = strlen(istring);
 
-        int bases_to_resolve = 0;
-        char *istr = istring;
-        int istring_length = strlen(istring);
+            for (;;) {
+                char i = *istr++;
+                if (!i) break;
+                if (i=='?') continue; // ignore '?'
 
-        for (;;) {
-            char i = *istr++;
-            if (!i) break;
-            if (i=='?') continue; // ignore '?'
+                int idx = i-'A';
+                if (idx<0 || idx>=26 || iupac::nuc_group[idx][index].members==0) {
+                    err = GBS_global_string("Illegal character '%c' in IUPAC-String", i);
+                    break;
+                }
 
-            int idx = i-'A';
-            if (idx<0 || idx>=26 || iupac::nuc_group[idx][index].members==0) {
-                err = GB_export_errorf("Illegal character '%c' in IUPAC-String", i);
-                break;
-            }
-
-            if (iupac::nuc_group[idx][index].count>1) {
-                bases_to_resolve++;
-            }
-        }
-
-        if (!err) {
-            int *offsets_to_resolve = new int[bases_to_resolve];
-            int resolutions = 1;
-            {
-                istr = istring;
-                int offset = 0;
-                int offset_count = 0;
-                for (;;) {
-                    char i = *istr++;
-                    if (!i) break;
-
-                    if (i!='?') {
-                        int idx = iupac::to_index(i);
-                        pd_assert(iupac::nuc_group[idx][index].members);
-
-                        if (iupac::nuc_group[idx][index].count>1) {
-                            offsets_to_resolve[offset_count++] = offset; // store string offsets of non-unique base-codes
-                            resolutions *= iupac::nuc_group[idx][index].count; // calc # of resolutions 
-                        }
-                    }
-                    offset++;
+                if (iupac::nuc_group[idx][index].count>1) {
+                    bases_to_resolve++;
                 }
             }
 
-            { 
-                int *resolution_idx = new int[bases_to_resolve];
-                int *resolution_max_idx = new int[bases_to_resolve];
+            if (!err) {
+                int *offsets_to_resolve = new int[bases_to_resolve];
+                int resolutions = 1;
                 {
-                    int i;
-                    for (i=0; i<bases_to_resolve; i++) {
-                        resolution_idx[i] = 0;
-                        int idx = iupac::to_index(istring[offsets_to_resolve[i]]);
-                        resolution_max_idx[i] = iupac::nuc_group[idx][index].count-1;
-                    }
-                }
+                    istr = istring;
+                    int offset = 0;
+                    int offset_count = 0;
+                    for (;;) {
+                        char i = *istr++;
+                        if (!i) break;
 
-                char *buffer = new char[istring_length+1];
-                int not_last = resolutions-1;
+                        if (i!='?') {
+                            int idx = iupac::to_index(i);
+                            pd_assert(iupac::nuc_group[idx][index].members);
 
-                for (;;) {
-                    // create string according to resolution_idx[]:
-                    int i;
-
-                    memcpy(buffer, istring, istring_length+1);
-                    for (i=0; i<bases_to_resolve; i++) {
-                        int off = offsets_to_resolve[i];
-                        int idx = iupac::to_index(istring[off]);
-
-                        pd_assert(iupac::nuc_group[idx][index].members);
-                        buffer[off] = iupac::nuc_group[idx][index].members[resolution_idx[i]];
-                    }
-
-                    selection_id->insert(buffer, buffer);
-                    not_last--;
-
-                    // permute indices:
-                    int nidx = bases_to_resolve-1;
-                    int done = 0;
-                    while (!done && nidx>=0) {
-                        if (resolution_idx[nidx]<resolution_max_idx[nidx]) {
-                            resolution_idx[nidx]++;
-                            done = 1;
-                            break;
+                            if (iupac::nuc_group[idx][index].count>1) {
+                                offsets_to_resolve[offset_count++] = offset; // store string offsets of non-unique base-codes
+                                resolutions *= iupac::nuc_group[idx][index].count; // calc # of resolutions
+                            }
                         }
-                        nidx--;
+                        offset++;
                     }
-                    if (!done) break; // we did all permutations!
-
-                    nidx++; // do not touch latest incremented index
-                    while (nidx<bases_to_resolve) resolution_idx[nidx++] = 0; // zero all other indices
                 }
 
-                delete [] buffer;
-                delete [] resolution_max_idx;
-                delete [] resolution_idx;
+                {
+                    int *resolution_idx = new int[bases_to_resolve];
+                    int *resolution_max_idx = new int[bases_to_resolve];
+                    {
+                        int i;
+                        for (i=0; i<bases_to_resolve; i++) {
+                            resolution_idx[i] = 0;
+                            int idx = iupac::to_index(istring[offsets_to_resolve[i]]);
+                            resolution_max_idx[i] = iupac::nuc_group[idx][index].count-1;
+                        }
+                    }
 
-                selection_id->insert_default("", "");
-                selection_id->update();
+                    char *buffer = new char[istring_length+1];
+                    int not_last = resolutions-1;
+
+                    for (;;) {
+                        // create string according to resolution_idx[]:
+                        int i;
+
+                        memcpy(buffer, istring, istring_length+1);
+                        for (i=0; i<bases_to_resolve; i++) {
+                            int off = offsets_to_resolve[i];
+                            int idx = iupac::to_index(istring[off]);
+
+                            pd_assert(iupac::nuc_group[idx][index].members);
+                            buffer[off] = iupac::nuc_group[idx][index].members[resolution_idx[i]];
+                        }
+
+                        selection_id->insert(buffer, buffer);
+                        not_last--;
+
+                        // permute indices:
+                        int nidx = bases_to_resolve-1;
+                        int done = 0;
+                        while (!done && nidx>=0) {
+                            if (resolution_idx[nidx]<resolution_max_idx[nidx]) {
+                                resolution_idx[nidx]++;
+                                done = 1;
+                                break;
+                            }
+                            nidx--;
+                        }
+                        if (!done) break; // we did all permutations!
+
+                        nidx++; // do not touch latest incremented index
+                        while (nidx<bases_to_resolve) resolution_idx[nidx++] = 0; // zero all other indices
+                    }
+
+                    delete [] buffer;
+                    delete [] resolution_max_idx;
+                    delete [] resolution_idx;
+
+                    pd_assert(!err);
+                    selection_id->insert_default("", "");
+                }
+
+                delete [] offsets_to_resolve;
             }
-
-            delete [] offsets_to_resolve;
+        }
+        else { // empty input
+            selection_id->insert_default("", "");
         }
     }
-
-    if (err) {
-        aw_message(err);
-    }
+    if (err) selection_id->insert_default(err, "");
+    selection_id->update();
 }
 
 enum ModMode { TS_MOD_CLEAR, TS_MOD_REV_COMPL, TS_MOD_COMPL };
@@ -1487,7 +1488,10 @@ static void modify_target_string(AW_window *aww, GBDATA *gb_main, ModMode mod_mo
     else {
         GB_transaction    ta(gb_main);
         GB_alignment_type ali_type = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
-        if (mod_mode == TS_MOD_REV_COMPL) {
+        if (ali_type == GB_AT_UNKNOWN) {
+            error = GB_await_error();
+        }
+        else if (mod_mode == TS_MOD_REV_COMPL) {
             char T_or_U;
             error = GBT_determine_T_or_U(ali_type, &T_or_U, "reverse-complement");
             if (!error) GBT_reverseComplementNucSequence(target_string, strlen(target_string), T_or_U);
@@ -1526,12 +1530,10 @@ static AW_window *create_IUPAC_resolve_window(AW_root *root, GBDATA *gb_main) {
     aws->at("istring");
     aws->create_input_field(AWAR_ITARGET_STRING, 32);
 
-    // automatically resolve AWAR_ITARGET_STRING:
-    {
-        GB_transaction ta(gb_main);
-        ali_used_for_resolvement = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
-    }
-    root->awar(AWAR_ITARGET_STRING)->add_callback(makeRootCallback(resolve_IUPAC_target_string, iselection_id));
+    // add callback for automatic decomposition of AWAR_ITARGET_STRING:
+    RootCallback upd_cb = makeRootCallback(resolve_IUPAC_target_string, iselection_id, gb_main);
+    root->awar(AWAR_ITARGET_STRING)->add_callback(upd_cb);
+    root->awar(AWAR_DEFAULT_ALIGNMENT)->add_callback(upd_cb);
 
     aws->callback(makeWindowCallback(probe_match_all_event, iselection_id, gb_main));
     aws->at("match_all");

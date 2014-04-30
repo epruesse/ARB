@@ -53,6 +53,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_ali.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+ad_ali.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -731,6 +732,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx

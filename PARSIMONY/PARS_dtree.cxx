@@ -430,9 +430,11 @@ public:
         GB_transaction ta(GLOBAL_gb_main);
         size_t aliLength = GBT_get_alignment_len(GLOBAL_gb_main, aliName);
 
-        AP_filter  filter(aliLength);
-        AP_weights weights(&filter);
-        agt->init(new AliView(GLOBAL_gb_main, filter, weights, aliName));
+        AP_filter filter(aliLength);
+        if (!filter.is_invalid()) {
+            AP_weights weights(&filter);
+            agt->init(new AliView(GLOBAL_gb_main, filter, weights, aliName));
+        }
     }
     ~PARSIMONY_testenv() {
         TEST_EXPECT_EQUAL(ap_main, &apMain);

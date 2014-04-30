@@ -134,11 +134,13 @@ GB_ERROR ARB_seqtree_root::linkToDB(int *zombies, int *duplicates) {
     GB_ERROR error = 0;
     if (!isLinkedToDB) {
         error = GBT_link_tree(get_root_node(), get_gb_main(), false, zombies, duplicates);
-        if (!error && addDeleteCallbacks) error = get_root_node()->add_delete_cb_rec(arb_tree_species_deleted_cb);
-        if (!error) {
-            if (ali->has_data() && seqTemplate) get_root_node()->preloadLeafSequences();
-            isLinkedToDB = true;
+        if (!error && addDeleteCallbacks) {
+            error = get_root_node()->add_delete_cb_rec(arb_tree_species_deleted_cb);
         }
+        if (!error && ali->has_data() && seqTemplate) {
+            error = get_root_node()->preloadLeafSequences();
+        }
+        if (!error) isLinkedToDB = true;
     }
     return error;
 }
@@ -228,17 +230,19 @@ void ARB_seqtree::remove_delete_cb_rec(ARB_tree_node_del_cb cb) {
 
 }
 
-void ARB_seqtree::preloadLeafSequences() {
+GB_ERROR ARB_seqtree::preloadLeafSequences() {
+    GB_ERROR error;
     if (is_leaf) {
         if (gb_node) {
-            seq = get_tree_root()->get_seqTemplate()->dup();
-            seq->bind_to_species(gb_node); // does not load sequences yet
+            seq   = get_tree_root()->get_seqTemplate()->dup();
+            error = seq->bind_to_species(gb_node); // does not load sequences yet
         }
     }
     else {
-        get_leftson()->preloadLeafSequences();
-        get_rightson()->preloadLeafSequences();
+        error             = get_leftson()->preloadLeafSequences();
+        if (!error) error = get_rightson()->preloadLeafSequences();
     }
+    return error;
 }
 
 void ARB_seqtree::unloadSequences() {

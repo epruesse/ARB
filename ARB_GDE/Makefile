@@ -65,6 +65,7 @@ GDE.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

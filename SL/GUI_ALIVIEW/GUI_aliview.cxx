@@ -68,14 +68,18 @@ AliView *WeightedFilter::create_aliview(const char *aliname, GB_ERROR& error) co
     ga_assert(error == NULL);
     ga_assert(!GB_have_error());
 
-    AP_filter  *filter  = create_filter();
-    AP_weights *weights = create_weights(filter, error);
+    AliView *aliview = NULL;
+    {
+        AP_filter *filter = create_filter();
+        error             = filter->is_invalid();
 
-    AliView *aliview = error ? NULL : new AliView(adfilter->gb_main, *filter, *weights, aliname);
-
-    delete weights;
-    delete filter;
-
+        if (!error) {
+            AP_weights *weights = create_weights(filter, error);
+            aliview = error ? NULL : new AliView(adfilter->gb_main, *filter, *weights, aliname);
+            delete weights;
+        }
+        delete filter;
+    }
     ga_assert(contradicted(error, aliview));
     ga_assert(!GB_have_error()); // @@@ should be returned via 'error'
     return aliview;

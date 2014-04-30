@@ -934,10 +934,10 @@ static void swap_clusters(AW_window *aww) {
 #warning "implement save/load clusters"
 #endif
 static void save_clusters(AW_window *) {
-    cl_assert(0); // not impl
+    aw_message("save_clusters not implemented");
 }
 static void load_clusters(AW_window *) {
-    cl_assert(0); // not impl
+    aw_message("load_clusters not implemented");
 }
 
 // ---------------------------------

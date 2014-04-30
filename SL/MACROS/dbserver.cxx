@@ -67,6 +67,8 @@ struct db_interrupt_data : virtual Noncopyable {
 };
 
 __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, const db_interrupt_data& dib) { // @@@ split into several functions
+    arb_assert(!GB_have_error());
+
     GB_ERROR  error   = 0;
     GBDATA   *gb_main = dib.gb_main;
 
@@ -180,18 +182,21 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
                 aw_message_if(error);
             }
             GB_pop_transaction(gb_main); // @@@ end required/possible here?
+            arb_assert(!GB_have_error()); // error exported by some callback? (unwanted)
 
             if (action[0]) {
                 AW_cb *cbs = aw_root->search_remote_command(action);
 
                 if (cbs) {
                     IF_DUMP_ACTION(printf("remote command (%s) found, running callback\n", action));
+                    arb_assert(!GB_have_error());
                     cbs->run_callbacks();
+                    arb_assert(!GB_have_error()); // error exported by callback (unwanted)
                     GBT_write_string(gb_main, remote.result(), "");
                 }
                 else {
                     IF_DUMP_ACTION(printf("remote command (%s) is unknown\n", action));
-                    aw_message(GB_export_errorf("Unknown action '%s' in macro", action));
+                    aw_message(GBS_global_string("Unknown action '%s' in macro", action));
                     GBT_write_string(gb_main, remote.result(), GB_await_error());
                 }
                 GBT_write_string(gb_main, remote.action(), ""); // tell perl-client call has completed (remote_action)
@@ -203,18 +208,22 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
         }
     }
 
+    arb_assert(!GB_have_error());
     if (error) fprintf(stderr, "Error in check_for_remote_command: %s\n", error);
     return error;
 }
 
 inline bool remote_command_handler(AW_root *awr, const db_interrupt_data& dib) {
     // returns false in case of errors
+    arb_assert(!GB_have_error());
+
+    bool     ok    = true;
     GB_ERROR error = check_for_remote_command(awr, dib);
     if (error) {
         aw_message(error);
-        return false;
+        ok = false;
     }
-    return true;
+    return ok;
 }
 
 static unsigned serve_db_interrupt(AW_root *awr, db_interrupt_data *dib) { // server
