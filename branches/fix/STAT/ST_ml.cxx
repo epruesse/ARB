@@ -516,15 +516,21 @@ GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
         }
         else {
             {
-                AliView *aliview;
+                AliView *aliview = NULL;
                 if (weighted_filter) {
                     aliview = weighted_filter->create_aliview(alignment_name, error);
                 }
                 else {
-                    AP_filter  filter(ali_len);     // unfiltered
-                    AP_weights weights(&filter);
-                    aliview = new AliView(gb_main, filter, weights, alignment_name);
+                    AP_filter filter(ali_len);      // unfiltered
+
+                    error = filter.is_invalid();
+                    if (!error) {
+                        AP_weights weights(&filter);
+                        aliview = new AliView(gb_main, filter, weights, alignment_name);
+                    }
                 }
+
+                st_assert(contradicted(aliview, error));
 
                 if (!error) {
                     MostLikelySeq *seq_templ = new MostLikelySeq(aliview, this); // @@@ error: never freed! (should be freed when freeing tree_root!)
