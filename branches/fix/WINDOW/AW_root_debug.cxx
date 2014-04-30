@@ -81,48 +81,54 @@ static void build_dontCallHash() {
 
     // avoid start of some external programs:
 #if 1
-    GBS_write_hash(dontCallHash, "ARB_NT/EDIT_SEQUENCES",                                      2);
-    GBS_write_hash(dontCallHash, "merge_from",                                                 2);
-    GBS_write_hash(dontCallHash, "CPR_MAIN/HELP",                                              2);
     GBS_write_hash(dontCallHash, "GDE__User__Start_a_slave_ARB_on_a_foreign_host_/GO",         2);
-    GBS_write_hash(dontCallHash, "HELP/BROWSE",                                                2);
-    GBS_write_hash(dontCallHash, "mailing_list",                                               2);
-    GBS_write_hash(dontCallHash, "bug_report",                                                 2);
-    GBS_write_hash(dontCallHash, "HELP/EDIT",                                                  2);
-    GBS_write_hash(dontCallHash, "MACROS/EDIT",                                                2);
-    GBS_write_hash(dontCallHash, "MACROS/EXECUTE",                                             2);
-    GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/EDIT_NAMES_FILE",                          2);
-    GBS_write_hash(dontCallHash, "arb_dist",                                                   2);
-    GBS_write_hash(dontCallHash, "arb_pars",                                                   2);
-    GBS_write_hash(dontCallHash, "arb_pars_quick",                                             2);
-    GBS_write_hash(dontCallHash, "arb_phyl",                                                   2);
-    GBS_write_hash(dontCallHash, "count_different_chars",                                      2);
-    GBS_write_hash(dontCallHash, "corr_mutat_analysis",                                        2);
-    GBS_write_hash(dontCallHash, "export_to_ARB",                                              2);
-    GBS_write_hash(dontCallHash, "new2_arb_edit4",                                             2);
-    GBS_write_hash(dontCallHash, "new_arb_edit4",                                              2);
-    GBS_write_hash(dontCallHash, "primer_design",                                              2);
-    GBS_write_hash(dontCallHash, "xterm",                                                      2);
-    GBS_write_hash(dontCallHash, "SUBMIT_REG/SEND",                                            2);
-    GBS_write_hash(dontCallHash, "SUBMIT_BUG/SEND",                                            2);
     GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/REMOVE_SUPERFLUOUS_ENTRIES_IN_NAMES_FILE", 2);
-    GBS_write_hash(dontCallHash, "PRINT_CANVAS/PRINT",                                         2);
-    GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CREATE_TEMPLATE",                            2);
-    GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/EDIT_LOG",                                   2);
-    GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/CREATE_TEMPLATE",                          2);
-    GBS_write_hash(dontCallHash, "SELECT_CONFIGURATION/START",                                 2);
-    GBS_write_hash(dontCallHash, "EXPORT_TREE_AS_XFIG/START_XFIG",                             2);
-    GBS_write_hash(dontCallHash, "EXPORT_NDS_OF_MARKED/PRINT",                                 2);
+    GBS_write_hash(dontCallHash, "GDE__Print__Pretty_print_sequences_slow_/GO",                2);
+
+    GBS_write_hash(dontCallHash, "ARB_NT/EDIT_SEQUENCES",             2);
+    GBS_write_hash(dontCallHash, "merge_from",                        2);
+    GBS_write_hash(dontCallHash, "CPR_MAIN/HELP",                     2);
+    GBS_write_hash(dontCallHash, "HELP/BROWSE",                       2);
+    GBS_write_hash(dontCallHash, "mailing_list",                      2);
+    GBS_write_hash(dontCallHash, "bug_report",                        2);
+    GBS_write_hash(dontCallHash, "HELP/EDIT",                         2);
+    GBS_write_hash(dontCallHash, "MACROS/EDIT",                       2);
+    GBS_write_hash(dontCallHash, "MACROS/EXECUTE",                    2);
+    GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/EDIT_NAMES_FILE", 2);
+    GBS_write_hash(dontCallHash, "arb_dist",                          2);
+    GBS_write_hash(dontCallHash, "arb_pars",                          2);
+    GBS_write_hash(dontCallHash, "arb_pars_quick",                    2);
+    GBS_write_hash(dontCallHash, "arb_phyl",                          2);
+    GBS_write_hash(dontCallHash, "count_different_chars",             2);
+    GBS_write_hash(dontCallHash, "corr_mutat_analysis",               2);
+    GBS_write_hash(dontCallHash, "export_to_ARB",                     2);
+    GBS_write_hash(dontCallHash, "new2_arb_edit4",                    2);
+    GBS_write_hash(dontCallHash, "new_arb_edit4",                     2);
+    GBS_write_hash(dontCallHash, "primer_design",                     2);
+    GBS_write_hash(dontCallHash, "xterm",                             2);
+    GBS_write_hash(dontCallHash, "SUBMIT_REG/SEND",                   2);
+    GBS_write_hash(dontCallHash, "SUBMIT_BUG/SEND",                   2);
+    GBS_write_hash(dontCallHash, "PRINT_CANVAS/PRINT",                2);
+    GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CREATE_TEMPLATE",   2);
+    GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/EDIT_LOG",          2);
+    GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/CREATE_TEMPLATE", 2);
+    GBS_write_hash(dontCallHash, "SELECT_CONFIGURATION/START",        2);
+    GBS_write_hash(dontCallHash, "EXPORT_TREE_AS_XFIG/START_XFIG",    2);
+    GBS_write_hash(dontCallHash, "EXPORT_NDS_OF_MARKED/PRINT",        2);
+    GBS_write_hash(dontCallHash, "ALIGNER_V2/GO",                     2);
+    GBS_write_hash(dontCallHash, "SINA/Start",                        2);
 #endif
 
     // avoid saving
-    GBS_write_hash(dontCallHash, "save_changes",         3);
-    GBS_write_hash(dontCallHash, "save_props",           3);
-    GBS_write_hash(dontCallHash, "save_DB1",             3);
-    GBS_write_hash(dontCallHash, "SAVE_DB/SAVE",         3);
-    GBS_write_hash(dontCallHash, "ARB_NT/SAVE",          3);
-    GBS_write_hash(dontCallHash, "ARB_NT/SAVE_AS",       3);
-    GBS_write_hash(dontCallHash, "ARB_NT/QUICK_SAVE_AS", 3);
+    GBS_write_hash(dontCallHash, "save_changes",           3);
+    GBS_write_hash(dontCallHash, "save_props",             3);
+    GBS_write_hash(dontCallHash, "save_alitype_props",     3);
+    GBS_write_hash(dontCallHash, "save_alispecific_props", 3);
+    GBS_write_hash(dontCallHash, "save_DB1",               3);
+    GBS_write_hash(dontCallHash, "SAVE_DB/SAVE",           3);
+    GBS_write_hash(dontCallHash, "ARB_NT/SAVE",            3);
+    GBS_write_hash(dontCallHash, "ARB_NT/SAVE_AS",         3);
+    GBS_write_hash(dontCallHash, "ARB_NT/QUICK_SAVE_AS",   3);
 
     // avoid confusion by recording, executing or deleting macros
     GBS_write_hash(dontCallHash, "MACROS/DELETE",       1);
@@ -145,6 +151,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "table_admin",                    4); // disabled in userland atm
     GBS_write_hash(dontCallHash, "PARS_PROPS/GO",                  4); // has already been executed (designed to run only once)
     GBS_write_hash(dontCallHash, "ARB_PARSIMONY/POP",              4); // pop does not work correctly in all cases (see #528)
+    GBS_write_hash(dontCallHash, "new_win",                        4); // 2nd editor window (blocked by #429)
 #endif
 
     // do not open 2nd ARB_NT window (to buggy)
@@ -173,6 +180,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "create_group",                                         5);
     GBS_write_hash(dontCallHash, "dcs_threshold",                                        5);
     GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/DELETE_OLD_NAMES_FILE",              5);
+    GBS_write_hash(dontCallHash, "detail_col_stat",                                      5);
 #endif
 
     // don't call some close-callbacks
