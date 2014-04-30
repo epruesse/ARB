@@ -190,7 +190,7 @@ public:
     AW_selection_list_iterator(AW_selection_list *sellist, int index)
         : entry(sellist->list_table)
     {
-        aw_return_if_fail(index >= 0);
+        aw_assert(index>=0);
         forward(index);
     }
 

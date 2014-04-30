@@ -701,11 +701,12 @@ GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname) {
 }
 
 char *GBT_get_default_alignment(GBDATA *gb_main) {
-    return GBT_read_string(gb_main, "presets/use");
+    gb_assert(!GB_have_error()); // illegal to enter this function when an error is exported!
+    return GBT_read_string(gb_main, GB_DEFAULT_ALIGNMENT);
 }
 
 GB_ERROR GBT_set_default_alignment(GBDATA *gb_main, const char *alignment_name) {
-    return GBT_write_string(gb_main, "presets/use", alignment_name);
+    return GBT_write_string(gb_main, GB_DEFAULT_ALIGNMENT, alignment_name);
 }
 
 GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {

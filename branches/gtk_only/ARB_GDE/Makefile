@@ -70,6 +70,7 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx

@@ -1288,8 +1288,7 @@ GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, size_t bytes_size, size_t sto
     return 0;
 }
 
-GB_ERROR GB_write_string(GBDATA *gbd, const char *s)
-{
+GB_ERROR GB_write_string(GBDATA *gbd, const char *s) {
     GBENTRY *gbe = gbd->as_entry();
     GB_TEST_WRITE(gbe, GB_STRING, "GB_write_string");
     GB_TEST_NON_BUFFER(s, "GB_write_string");        // compress would destroy the other buffer

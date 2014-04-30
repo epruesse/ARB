@@ -2387,6 +2387,8 @@ extern "C" {
 struct AlignDataAccess;
 void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 
+void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman);
+
 #else
 #error ed4_class included twice
 #endif

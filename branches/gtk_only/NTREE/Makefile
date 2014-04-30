@@ -58,6 +58,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+ad_ali.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -1111,6 +1112,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx

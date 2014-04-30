@@ -358,14 +358,6 @@ static void ED4_with_whole_block(const ED4_block_operator& block_operator) {
         for (CursorPositions::iterator ab = at_base.begin(); ab != at_base.end(); ++ab) {
             ED4_window *win = ab->first;
             win->cursor.jump_base_pos(ab->second, ED4_JUMP_KEEP_VISIBLE); // restore cursor at same base
-            
-#if defined(DEBUG)
-            ED4_cursor& cursor = win->cursor;
-            if (cursor.owner_of_cursor) {
-                int bp_now = cursor.get_base_position();
-                e4_assert(bp_now == ab->second); // @@@ restore cursor does not work properly with 2 windows
-            }
-#endif
         }
     }
 }

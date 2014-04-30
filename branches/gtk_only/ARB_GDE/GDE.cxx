@@ -6,6 +6,7 @@
 #include <aw_awar.hxx>
 #include <aw_file.hxx>
 #include <aw_root.hxx>
+#include <aw_awar_defs.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
 
@@ -468,7 +469,7 @@ GB_ERROR GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GD
             break;
     }
 
-    aw_root->awar_string("presets/use",             "", db_access.gb_main);
+    aw_root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", db_access.gb_main);
     
     aw_root->awar_string(AWAR_GDE_FILTER_NAME,      "", aw_def);
     aw_root->awar_string(AWAR_GDE_FILTER_FILTER,    "", aw_def);
@@ -479,8 +480,8 @@ GB_ERROR GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GD
 
     aw_root->awar_int(AWAR_GDE_COMPRESSION, COMPRESS_NONINFO_COLUMNS, aw_def);
 
-    aw_root->awar(AWAR_GDE_ALIGNMENT)->map("presets/use");
-    aw_root->awar(AWAR_GDE_FILTER_ALIGNMENT)->map("presets/use");
+    aw_root->awar(AWAR_GDE_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
+    aw_root->awar(AWAR_GDE_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
 
     DataSet = (NA_Alignment *) Calloc(1, sizeof(NA_Alignment));
     DataSet->rel_offset = 0;
