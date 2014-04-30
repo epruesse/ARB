@@ -61,7 +61,7 @@ void SQ_create_awars(AW_root * aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_FILTER_NAME, "none", aw_def);
     aw_root->awar_string(AWAR_FILTER_FILTER, "", aw_def);
     AW_awar *awar_ali = aw_root->awar_string(AWAR_FILTER_ALI, "", aw_def);
-    awar_ali->map("presets/use");
+    awar_ali->map(AWAR_DEFAULT_ALIGNMENT);
 }
 
 // --------------------------------------------------------------------------------
@@ -122,6 +122,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
 
         // Load and use Sequence-Filter
         AP_filter *filter = awt_get_filter((adfiltercbstruct*)res_from_awt_create_select_filter);
+        error             = awt_invalid_filter(filter);
 
         /*
           SQ_evaluate() generates the final estimation for the quality of an alignment.
@@ -131,62 +132,64 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
           for the final result.
         */
 
-        if (tree == 0) {
-            if (reevaluate) {
-                SQ_mark_species(gb_main, mark_below, marked_only);
-            }
-            else {
-                arb_progress  progress(GBT_get_species_count(gb_main)*2);
-                SQ_GroupData *globalData = new SQ_GroupData_RNA;
+        if (!error) {
+            if (tree == 0) {
+                if (reevaluate) {
+                    SQ_mark_species(gb_main, mark_below, marked_only);
+                }
+                else {
+                    arb_progress  progress(GBT_get_species_count(gb_main)*2);
+                    SQ_GroupData *globalData = new SQ_GroupData_RNA;
 
-                progress.subtitle("pass1");
-                error = SQ_pass1_no_tree(globalData, gb_main, filter, progress);
-                if (!error) {
-                    progress.subtitle("pass2");
-                    error = SQ_pass2_no_tree(globalData, gb_main, filter, progress);
+                    progress.subtitle("pass1");
+                    error = SQ_pass1_no_tree(globalData, gb_main, filter, progress);
                     if (!error) {
-                        error = SQ_evaluate(gb_main, weights, marked_only);
-                        if (mark_flag && !error) {
-                            SQ_mark_species(gb_main, mark_below, marked_only);
+                        progress.subtitle("pass2");
+                        error = SQ_pass2_no_tree(globalData, gb_main, filter, progress);
+                        if (!error) {
+                            error = SQ_evaluate(gb_main, weights, marked_only);
+                            if (mark_flag && !error) {
+                                SQ_mark_species(gb_main, mark_below, marked_only);
+                            }
                         }
                     }
+                    if (error) progress.done();
+                    delete globalData;
                 }
-                if (error) progress.done();
-                delete globalData;
-            }
-        }
-        else {
-            SQ_TREE_ERROR check = SQ_check_tree_structure(tree);
-            if (check != NONE) {
-                switch (check) {
-                    case ZOMBIE:
-                        error = "Found one or more zombies in the tree.\n"
-                            "Please remove them or use another tree before running the quality check tool.";
-                        break;
-                    case MISSING_NODE:
-                        error = "Missing node(s) or unusable tree structure.\n"
-                            "Please fix the tree before running the quality check tool.";
-                        break;
-                    default:
-                        error = "An error occurred while traversing the tree.\n"
-                            "Please fix the tree before running the quality check tool.";
-                        break;
-                }
-            }
-            else if (reevaluate) {
-                SQ_mark_species(gb_main, mark_below, marked_only);
             }
             else {
-                arb_progress progress(SQ_count_nodes(tree)*2);
-                SQ_GroupData *globalData = new SQ_GroupData_RNA;
+                SQ_TREE_ERROR check = SQ_check_tree_structure(tree);
+                if (check != NONE) {
+                    switch (check) {
+                        case ZOMBIE:
+                            error = "Found one or more zombies in the tree.\n"
+                                "Please remove them or use another tree before running the quality check tool.";
+                            break;
+                        case MISSING_NODE:
+                            error = "Missing node(s) or unusable tree structure.\n"
+                                "Please fix the tree before running the quality check tool.";
+                            break;
+                        default:
+                            error = "An error occurred while traversing the tree.\n"
+                                "Please fix the tree before running the quality check tool.";
+                            break;
+                    }
+                }
+                else if (reevaluate) {
+                    SQ_mark_species(gb_main, mark_below, marked_only);
+                }
+                else {
+                    arb_progress progress(SQ_count_nodes(tree)*2);
+                    SQ_GroupData *globalData = new SQ_GroupData_RNA;
 
-                progress.subtitle("pass1");
-                SQ_calc_and_apply_group_data(tree, gb_main, globalData, filter, progress);
-                progress.subtitle("pass2");
-                SQ_calc_and_apply_group_data2(tree, gb_main, globalData, filter, progress);
-                SQ_evaluate(gb_main, weights, marked_only);
-                if (mark_flag) SQ_mark_species(gb_main, mark_below, marked_only);
-                delete globalData;
+                    progress.subtitle("pass1");
+                    SQ_calc_and_apply_group_data(tree, gb_main, globalData, filter, progress);
+                    progress.subtitle("pass2");
+                    SQ_calc_and_apply_group_data2(tree, gb_main, globalData, filter, progress);
+                    SQ_evaluate(gb_main, weights, marked_only);
+                    if (mark_flag) SQ_mark_species(gb_main, mark_below, marked_only);
+                    delete globalData;
+                }
             }
         }
         awt_destroy_filter(filter);

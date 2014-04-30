@@ -1038,7 +1038,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
         aws->create_button("COLORMAPS", "#colorMaps.xpm");
 
         aws->at("colors");
-        aws->callback(makeCreateWindowCallback(AW_create_gc_window, ED4_ROOT->gc_manager));
+        aws->callback(makeWindowCallback(ED4_popup_gc_window, ED4_ROOT->gc_manager));
         aws->button_length(0);
         aws->create_button("COLORS", "#colors.xpm");
 

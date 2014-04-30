@@ -185,7 +185,11 @@ void AW_selection_list::clear(bool clear_default) {
 }
 
 bool AW_selection_list::default_is_selected() const {
-    return strcmp(get_selected_value(), get_default_value()) == 0;
+    const char *sel = get_selected_value();
+    if (!sel) return true; // handle "nothing" like default (@@@ should be impossible in gtk port)
+
+    const char *def = get_default_value();
+    return def && (strcmp(sel, def) == 0);
 }
 
 const char *AW_selection_list::get_selected_value() const {

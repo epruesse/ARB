@@ -2517,18 +2517,18 @@ static AW_window *create_island_hopping_window(AW_root *root, AW_CL) {
         aws->button_length(1);
 
         int dummy;
-        aws->at("h_a"); aws->get_at_position(&xpos[0], &dummy); aws->create_button("A", "A");
-        aws->at("h_c"); aws->get_at_position(&xpos[1], &dummy); aws->create_button("C", "C");
-        aws->at("h_g"); aws->get_at_position(&xpos[2], &dummy); aws->create_button("G", "G");
-        aws->at("h_t"); aws->get_at_position(&xpos[3], &dummy); aws->create_button("T", "T");
+        aws->at("h_a"); aws->get_at_position(&xpos[0], &dummy); aws->create_button(NULL, "A");
+        aws->at("h_c"); aws->get_at_position(&xpos[1], &dummy); aws->create_button(NULL, "C");
+        aws->at("h_g"); aws->get_at_position(&xpos[2], &dummy); aws->create_button(NULL, "G");
+        aws->at("h_t"); aws->get_at_position(&xpos[3], &dummy); aws->create_button(NULL, "T");
 
-        aws->at("v_a"); aws->get_at_position(&dummy, &ypos[0]); aws->create_button("A", "A");
-        aws->at("v_c"); aws->get_at_position(&dummy, &ypos[1]); aws->create_button("C", "C");
-        aws->at("v_g"); aws->get_at_position(&dummy, &ypos[2]); aws->create_button("G", "G");
-        aws->at("v_t"); aws->get_at_position(&dummy, &ypos[3]); aws->create_button("T", "T");
+        aws->at("v_a"); aws->get_at_position(&dummy, &ypos[0]); aws->create_button(NULL, "A");
+        aws->at("v_c"); aws->get_at_position(&dummy, &ypos[1]); aws->create_button(NULL, "C");
+        aws->at("v_g"); aws->get_at_position(&dummy, &ypos[2]); aws->create_button(NULL, "G");
+        aws->at("v_t"); aws->get_at_position(&dummy, &ypos[3]); aws->create_button(NULL, "T");
     }
 
-    aws->at("subst"); aws->create_button("subst_para", "Substitution rate parameters:");
+    aws->at("subst"); aws->create_button(NULL, "Substitution rate parameters:");
 
 #define XOFF -25
 #define YOFF 0

@@ -10,16 +10,20 @@
 
 #include "NT_local.h"
 
-#include <awt.hxx>
 #include <dbui.h>
 #include <GEN.hxx>
-#include <awti_import.hxx>
-#include <awt_canvas.hxx>
 #include <mg_merge.hxx>
+#include <macros.hxx>
+
+#include <awti_import.hxx>
+#include <awt.hxx>
+#include <awt_canvas.hxx>
+
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
+#include <aw_msg.hxx>
+
 #include <arbdbt.h>
-#include <macros.hxx>
 
 static void nt_seq_load_cb(AW_root *awr) {
     GLOBAL_gb_dst     = GLOBAL.gb_main;
@@ -69,8 +73,11 @@ void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
 
     {
         GB_transaction ta(GLOBAL.gb_main);
+
         char *ali_name = GBT_get_default_alignment(GLOBAL.gb_main);
         char *ali_type = GBT_get_alignment_type_string(GLOBAL.gb_main, ali_name);
+
+        if (!ali_type) aw_message(GB_await_error());
 
         AWTI_import_set_ali_and_type(awr, ali_name, ali_type, GLOBAL.gb_main);
 

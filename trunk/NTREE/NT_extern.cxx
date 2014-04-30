@@ -697,12 +697,15 @@ static void NT_primer_cb() {
 }
 
 static void NT_mark_duplicates(UNFIXED, AWT_canvas *ntw) {
-    GB_transaction ta(ntw->gb_main);
-    NT_mark_all_cb(NULL, ntw, 0);
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-    tree_root->mark_duplicates();
-    tree_root->compute_tree();
-    ntw->refresh();
+    if (tree_root) {
+        GB_transaction ta(ntw->gb_main);
+        NT_mark_all_cb(NULL, ntw, 0);
+
+        tree_root->mark_duplicates();
+        tree_root->compute_tree();
+        ntw->refresh();
+    }
 }
 
 static void NT_justify_branch_lenghs(UNFIXED, AWT_canvas *ntw) {

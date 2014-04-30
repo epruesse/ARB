@@ -1012,16 +1012,41 @@ void ED4_cursor::jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type) {
     else {
         ShowCursor(cursor_diff*length_of_char, ED4_C_LEFT, abs(cursor_diff));
     }
+#if defined(ASSERTION_USED)
+    {
+        int sp = get_screen_pos();
+        e4_assert(sp == screen_pos);
+    }
+#endif
 }
 
 void ED4_cursor::jump_sequence_pos(int seq_pos, ED4_CursorJumpType jump_type) {
     int screen_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen(seq_pos);
     jump_screen_pos(screen_pos, jump_type);
+    if (owner_of_cursor) {
+        int res_seq_pos = get_sequence_pos();
+        if (res_seq_pos != seq_pos) { // failed -> retry
+            int screen_pos2 = ED4_ROOT->root_group_man->remap()->sequence_to_screen(seq_pos);
+            e4_assert(screen_pos2 != screen_pos);
+            if (screen_pos2 != screen_pos) {
+                jump_screen_pos(screen_pos2, jump_type);
+                res_seq_pos = get_sequence_pos();
+            }
+            e4_assert(res_seq_pos == seq_pos);
+        }
+    }
 }
 
 void ED4_cursor::jump_base_pos(int base_pos, ED4_CursorJumpType jump_type) {
     int seq_pos = base2sequence_position(base_pos);
     jump_sequence_pos(seq_pos, jump_type);
+
+#if defined(ASSERTION_USED)
+    if (owner_of_cursor) {
+        int bp = get_base_position();
+        e4_assert(bp == base_pos);
+    }
+#endif
 }
 
 class has_base_at : public ED4_TerminalPredicate {

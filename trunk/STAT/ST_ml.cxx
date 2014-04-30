@@ -475,8 +475,13 @@ void ST_ML::cleanup() {
         MostLikelySeq::tmp_out = NULL;
     }
 
-    delete tree_root;               tree_root = NULL;
-    GBS_free_hash(hash_2_ap_tree);  hash_2_ap_tree = NULL;
+    delete tree_root;
+    tree_root = NULL;
+
+    if (hash_2_ap_tree) {
+        GBS_free_hash(hash_2_ap_tree);
+        hash_2_ap_tree = NULL;
+    }
 
     is_initialized = false;
 }
@@ -511,15 +516,21 @@ GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
         }
         else {
             {
-                AliView *aliview;
+                AliView *aliview = NULL;
                 if (weighted_filter) {
                     aliview = weighted_filter->create_aliview(alignment_name, error);
                 }
                 else {
-                    AP_filter  filter(ali_len);     // unfiltered
-                    AP_weights weights(&filter);
-                    aliview = new AliView(gb_main, filter, weights, alignment_name);
+                    AP_filter filter(ali_len);      // unfiltered
+
+                    error = filter.is_invalid();
+                    if (!error) {
+                        AP_weights weights(&filter);
+                        aliview = new AliView(gb_main, filter, weights, alignment_name);
+                    }
                 }
+
+                st_assert(contradicted(aliview, error));
 
                 if (!error) {
                     MostLikelySeq *seq_templ = new MostLikelySeq(aliview, this); // @@@ error: never freed! (should be freed when freeing tree_root!)
@@ -531,39 +542,44 @@ GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
             if (!error) {
                 tree_root->loadFromDB(tree_name);       // tree is not linked!
 
-                {
-                    size_t species_in_tree = count_species_in_tree();
-                    hash_2_ap_tree         = GBS_create_hash(species_in_tree, GB_MIND_CASE);
+                if (!tree_root->get_root_node()) { // no tree
+                    error = GBS_global_string("Failed to load tree '%s'", tree_name);
                 }
-
-                // delete species from tree:
-                if (species_names) {                    // keep names
-                    tree_root->remove_leafs(AWT_REMOVE_ZOMBIES);
-
-                    error = tree_size_ok(tree_root);
-                    if (!error) {
-                        char *l, *n;
-                        keep_species_hash = GBS_create_hash(GBT_get_species_count(gb_main), GB_MIND_CASE);
-                        for (l = (char *) species_names; l; l = n) {
-                            n = strchr(l, 1);
-                            if (n) *n = 0;
-                            GBS_write_hash(keep_species_hash, l, 1);
-                            if (n) *(n++) = 1;
-                        }
-
-                        insert_tree_into_hash_rek(tree_root->get_root_node());
-                        GBS_hash_do_loop(hash_2_ap_tree, delete_species, this);
-                        GBS_free_hash(keep_species_hash);
-                        keep_species_hash = 0;
-                        GBT_link_tree(tree_root->get_root_node(), gb_main, true, 0, 0);
+                else {
+                    {
+                        size_t species_in_tree = count_species_in_tree();
+                        hash_2_ap_tree         = GBS_create_hash(species_in_tree, GB_MIND_CASE);
                     }
-                }
-                else {                                  // keep marked/all
-                    GBT_link_tree(tree_root->get_root_node(), gb_main, true, 0, 0);
-                    tree_root->remove_leafs(marked_only ? AWT_KEEP_MARKED : AWT_REMOVE_ZOMBIES);
 
-                    error = tree_size_ok(tree_root);
-                    if (!error) insert_tree_into_hash_rek(tree_root->get_root_node());
+                    // delete species from tree:
+                    if (species_names) {                    // keep names
+                        tree_root->remove_leafs(AWT_REMOVE_ZOMBIES);
+
+                        error = tree_size_ok(tree_root);
+                        if (!error) {
+                            char *l, *n;
+                            keep_species_hash = GBS_create_hash(GBT_get_species_count(gb_main), GB_MIND_CASE);
+                            for (l = (char *) species_names; l; l = n) {
+                                n = strchr(l, 1);
+                                if (n) *n = 0;
+                                GBS_write_hash(keep_species_hash, l, 1);
+                                if (n) *(n++) = 1;
+                            }
+
+                            insert_tree_into_hash_rek(tree_root->get_root_node());
+                            GBS_hash_do_loop(hash_2_ap_tree, delete_species, this);
+                            GBS_free_hash(keep_species_hash);
+                            keep_species_hash = 0;
+                            GBT_link_tree(tree_root->get_root_node(), gb_main, true, 0, 0);
+                        }
+                    }
+                    else {                                  // keep marked/all
+                        GBT_link_tree(tree_root->get_root_node(), gb_main, true, 0, 0);
+                        tree_root->remove_leafs(marked_only ? AWT_KEEP_MARKED : AWT_REMOVE_ZOMBIES);
+
+                        error = tree_size_ok(tree_root);
+                        if (!error) insert_tree_into_hash_rek(tree_root->get_root_node());
+                    }
                 }
             }
 

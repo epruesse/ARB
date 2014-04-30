@@ -366,6 +366,13 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick) {
         GB_begin_transaction(GLOBAL_gb_main);
         GBS_hash_do_loop(hash, transform_gbd_to_leaf, NULL);
         GB_commit_transaction(GLOBAL_gb_main);
+
+        {
+            int skipped = max_species - GBS_hash_count_elems(hash);
+            aw_message(GBS_global_string("Skipped %i species (no data?)", skipped));
+            isits.get_progress().inc_by(skipped);
+        }
+
         GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
 
         if (!quick) {
@@ -933,20 +940,25 @@ static void TESTMENU_treeStats(AW_window *, AWT_canvas *) {
     ARB_tree_info tinfo;
     AP_tree_nlen *root = rootNode();
 
-    {
-        GB_transaction ta(root->get_tree_root()->get_gb_main());
-        root->calcTreeInfo(tinfo);
+    if (root) {
+        {
+            GB_transaction ta(root->get_tree_root()->get_gb_main());
+            root->calcTreeInfo(tinfo);
+        }
+
+        puts("Tree stats:");
+
+        printf("nodes      =%6zu\n", tinfo.nodes());
+        printf(" inner     =%6zu\n", tinfo.innerNodes);
+        printf("  groups   =%6zu\n", tinfo.groups);
+        printf(" leafs     =%6zu\n", tinfo.leafs);
+        printf("  unlinked =%6zu (zombies?)\n", tinfo.unlinked);
+        printf("  linked   =%6zu\n", tinfo.linked());
+        printf("   marked  =%6zu\n", tinfo.marked);
     }
-
-    puts("Tree stats:");
-
-    printf("nodes      =%6zu\n", tinfo.nodes());
-    printf(" inner     =%6zu\n", tinfo.innerNodes);
-    printf("  groups   =%6zu\n", tinfo.groups);
-    printf(" leafs     =%6zu\n", tinfo.leafs);
-    printf("  unlinked =%6zu (zombies?)\n", tinfo.unlinked);
-    printf("  linked   =%6zu\n", tinfo.linked());
-    printf("   marked  =%6zu\n", tinfo.marked);
+    else {
+        puts("No tree");
+    }
 }
 
 static void TESTMENU_mixTree(AW_window *, AWT_canvas *ntw)
@@ -1008,25 +1020,33 @@ static GB_ERROR pars_check_size(AW_root *awr, GB_ERROR& warning) {
     }
     else {
         char *ali_name = awr->awar(AWAR_ALIGNMENT)->read_string();
-        ali_len = GBT_get_alignment_len(GLOBAL_gb_main, ali_name);
-        delete ali_name;
+        ali_len        = GBT_get_alignment_len(GLOBAL_gb_main, ali_name);
+        if (ali_len<=0) {
+            error = "Please select a valid alignment";
+            GB_clear_error();
+        }
+        free(ali_name);
     }
 
-    long tree_size = GBT_size_of_tree(GLOBAL_gb_main, tree_name);
-    if (tree_size == -1) {
-        error = "Please select an existing tree";
-    }
-    else {
-        unsigned long expected_memuse = (ali_len * tree_size * 4 / 1000);
-        if (expected_memuse > GB_get_usable_memory()) {
-            warning = GBS_global_string("Estimated memory usage (%s) exceeds physical memory (will swap)\n"
-                                         "(did you specify a filter?)",
-                                        GBS_readable_size(expected_memuse, "b"));
+    if (!error) {
+        long tree_size = GBT_size_of_tree(GLOBAL_gb_main, tree_name);
+        if (tree_size == -1) {
+            error = "Please select an existing tree";
+        }
+        else {
+            unsigned long expected_memuse = (ali_len * tree_size * 4 / 1024);
+            if (expected_memuse > GB_get_usable_memory()) {
+                warning = GBS_global_string("Estimated memory usage (%s) exceeds physical memory (will swap)\n"
+                                            "(did you specify a filter?)",
+                                            GBS_readable_size(expected_memuse, "b"));
+            }
         }
     }
+
     free(filter);
     free(tree_name);
 
+    ap_assert(!GB_have_error());
     return error;
 }
 
@@ -1081,7 +1101,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         arb_progress progress("loading tree");
         NT_reload_tree_event(awr, ntw, 0);             // load tree (but do not expose - first zombies need to be removed)
         if (!global_tree()->get_root_node()) {
-            error = "I cannot load the selected tree";
+            error = "Failed to load the selected tree";
         }
         else {
             AP_tree_edge::initialize(rootNode());   // builds edges
