@@ -26,6 +26,7 @@ void AliView::create_real_view(const AP_filter *filter_, const AP_weights *weigh
     aliname = strdup(aliname_);
 
     av_assert(filter->get_filtered_length() == weights->length());
+    av_assert(filter->was_checked_for_validity());
 }
 
 

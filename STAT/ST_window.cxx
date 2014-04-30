@@ -178,12 +178,12 @@ static void st_remove_entries(AW_window */*aww*/) {
     // @@@ shall remove created all entries (from current alignment)
 }
 
-AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
+AW_window *STAT_create_chimera_check_window(AW_root *root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(root, "SEQUENCE_QUALITY_CHECK", "Check quality of marked sequences");
-        aws->load_xfig("check_quality.fig");
+        aws->init(root, "CHIMERA_CHECK", "Chimera Check of marked sequences");
+        aws->load_xfig("chimera_check.fig");
 
         STAT_create_awars(root, gb_main);
 
@@ -191,7 +191,7 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(makeHelpCallback("check_quality.hlp"));
+        aws->callback(makeHelpCallback("chimera_check.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 

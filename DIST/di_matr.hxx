@@ -114,7 +114,7 @@ class MatrixOrder : virtual Noncopyable {
 
 public:
     MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name);
-    ~MatrixOrder() { GBS_free_hash(name2pos); }
+    ~MatrixOrder() { if (name2pos) GBS_free_hash(name2pos); }
 
     bool defined() const { return leafs; }
     int get_size() const { return leafs; }

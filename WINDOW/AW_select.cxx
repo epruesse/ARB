@@ -220,8 +220,15 @@ void AW_selection_list::clear() {
 }
 
 bool AW_selection_list::default_is_selected() const {
-    const char *defVal = get_default_value();
-    return defVal && ARB_strNULLcmp(get_selected_value(), defVal) == 0;
+    const char *sel = get_selected_value();
+    if (!sel) {
+        // (case should be impossible in gtk port)
+        aw_warn_if_reached();
+        return true; // handle "nothing" like default
+    }
+
+    const char *def = get_default_value();
+    return def && (strcmp(sel, def) == 0);
 }
 
 const char *AW_selection_list::get_selected_value() const {

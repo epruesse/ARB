@@ -11,8 +11,8 @@
 #include <ad_cb.h>
 
 //! recalc filter
-static void awt_create_select_filter_window_aw_cb(UNFIXED, adfiltercbstruct *cbs)
-{       // update the variables
+static void awt_create_select_filter_window_aw_cb(UNFIXED, adfiltercbstruct *cbs) {
+    // update the variables
     AW_root *aw_root = cbs->awr;
     GB_push_transaction(cbs->gb_main);
     char *target = aw_root->awar(cbs->def_subname)->read_string();
@@ -34,6 +34,9 @@ static void awt_create_select_filter_window_aw_cb(UNFIXED, adfiltercbstruct *cbs
             GBDATA *gb_ali = GB_search(gb_species, use, GB_FIND);
             if (gb_ali) {
                 gbd = GB_search(gb_ali, target, GB_FIND);
+            }
+            else {
+                GB_clear_error();
             }
         }
     }
@@ -390,6 +393,9 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, adfiltercbstruct *acbs
 }
 
 AP_filter *awt_get_filter(adfiltercbstruct *acbs) {
+    /*! create a filter from settings made in filter-definition window.
+     *  always returns a filter, use awt_invalid_filter() to check for validity
+     */
     AP_filter *filter = NULL;
 
     if (acbs) {
@@ -405,7 +411,10 @@ AP_filter *awt_get_filter(adfiltercbstruct *acbs) {
             free(use);
         }
 
-        if (len != -1) { // have alignment
+        if (len == -1) { // no alignment -> uses dummy filter
+            GB_clear_error();
+        }
+        else { // have alignment
             filter  = new AP_filter(filter_string, "0", len);
             int sim = acbs->awr->awar(acbs->def_simplify)->read_int();
             filter->enable_simplify((AWT_FILTER_SIMPLIFY)sim);
@@ -415,8 +424,12 @@ AP_filter *awt_get_filter(adfiltercbstruct *acbs) {
         GB_pop_transaction(acbs->gb_main);
     }
 
-    if (!filter) filter = new AP_filter("", "0", 10); // dummy filter
+    if (!filter) filter = new AP_filter(0); // empty dummy filter
     return filter;
+}
+
+GB_ERROR awt_invalid_filter(AP_filter *filter) {
+    return filter->is_invalid();
 }
 
 void awt_destroy_filter(AP_filter *filter) {

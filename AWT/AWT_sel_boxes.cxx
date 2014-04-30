@@ -773,6 +773,9 @@ GB_ERROR StorableSelectionList::load(const char *filemask, bool append) const {
     }
     else {
         GBS_read_dir(fnames, filemask, NULL);
+        if (fnames.empty() && GB_have_error()) {
+            error = GB_await_error();
+        }
     }
 
     StrArray lines;

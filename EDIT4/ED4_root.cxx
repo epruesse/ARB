@@ -45,6 +45,7 @@
 #include <macros.hxx>
 
 #include <cctype>
+#include <map>
 
 AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL);
 
@@ -1302,12 +1303,21 @@ static void ED4_save_properties(AW_window *aw, AW_CL cl_mode, AW_CL) {
     AW_save_specific_properties(aw, ED4_propertyName(mode));
 }
 
-static AW_window *ED4_create_gc_window(AW_root *aw_root, AW_gc_manager id) {
-    static AW_window *gc_win = 0;
-    if (!gc_win) {
-        gc_win = AW_create_gc_window(aw_root, id);
+void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman) {
+    typedef std::map<AW_gc_manager, AW_window*> gcwin;
+    static gcwin win;
+
+    gcwin::iterator found = win.find(gcman);
+
+    AW_window *aww = NULL;
+    if (found == win.end()) {
+        aww        = AW_create_gc_window(awp->get_root(), gcman);
+        win[gcman] = aww;
     }
-    return gc_win;
+    else {
+        aww = win[gcman];
+    }
+    aww->activate();
 }
 
 static void refresh_on_gc_change_cb() {
@@ -1588,7 +1598,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("props_consensus", "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, ED4_create_consensus_definition_window);
     awmm->sep______________();
 
-    awmm->insert_menu_topic("props_data",       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, AW_POPUP, (AW_CL)ED4_create_gc_window,     (AW_CL)first_gc_manager);
+    awmm->insert_menu_topic("props_data",       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, makeWindowCallback(ED4_popup_gc_window, first_gc_manager));
     awmm->insert_menu_topic("props_seq_colors", "Sequence color mapping", "S", "sequence_colors.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)sequence_colors);
 
     awmm->sep______________();

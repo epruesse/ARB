@@ -13,7 +13,7 @@
 
 /* Input: SAI name from CL
  *        fastdnaml-args from CL
- *        ALINAME:  AWAR "presets/use"
+ *        ALINAME:  AWAR_DEFAULT_ALIGNMENT
  *        FILTER:   AWAR_GDE_EXPORT_FILTER
  *
  * Output:
