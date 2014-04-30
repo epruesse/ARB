@@ -662,35 +662,34 @@ static void reverseColorTranslationTable(AW_window *aww) {
 
 static AW_window *create_editColorTranslationTable_window(AW_root *aw_root) { // creates edit color translation table window
     static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "EDIT_CTT", "Color Translation Table");
+        aws->load_xfig("saiColorRange.fig");
 
-    aws = new AW_window_simple;
-    aws->init(aw_root, "EDIT_CTT", "Color Translation Table");
-    aws->load_xfig("saiColorRange.fig");
+        char at_name[] = "rangex";
+        char *dig      = strchr(at_name, 0)-1;
 
-    char at_name[] = "rangex";
-    char *dig      = strchr(at_name, 0)-1;
+        for (int i = 0; i<AWAR_SAI_CLR_COUNT; ++i) {
+            dig[0] = '0'+i;
+            aws->at(at_name);
+            aws->create_input_field(getAwarName(i), 20);
+        }
 
-    for (int i = 0; i<AWAR_SAI_CLR_COUNT; ++i) {
-        dig[0] = '0'+i;
-        aws->at(at_name);
-        aws->create_input_field(getAwarName(i), 20);
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->at("reverse");
+        aws->callback(reverseColorTranslationTable);
+        aws->create_button("REVERSE", "Reverse", "R");
+
+        aws->at("colors");
+        aws->callback(makeWindowCallback(ED4_popup_gc_window, ED4_ROOT->gc_manager));
+        aws->button_length(0);
+        aws->create_button("COLORS", "#colors.xpm");
     }
-
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->at("reverse");
-    aws->callback(reverseColorTranslationTable);
-    aws->create_button("REVERSE", "Reverse", "R");
-
-    aws->at("colors");
-    aws->callback(makeCreateWindowCallback(AW_create_gc_window, ED4_ROOT->gc_manager));
-    aws->button_length(0);
-    aws->create_button("COLORS", "#colors.xpm");
-
-    return (AW_window *)aws;
+    return aws;
 }
 
 AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
