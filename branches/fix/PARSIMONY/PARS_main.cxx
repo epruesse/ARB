@@ -1101,7 +1101,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         arb_progress progress("loading tree");
         NT_reload_tree_event(awr, ntw, 0);             // load tree (but do not expose - first zombies need to be removed)
         if (!global_tree()->get_root_node()) {
-            error = "I cannot load the selected tree";
+            error = "Failed to load the selected tree";
         }
         else {
             AP_tree_edge::initialize(rootNode());   // builds edges

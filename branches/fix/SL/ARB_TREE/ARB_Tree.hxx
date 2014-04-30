@@ -116,7 +116,7 @@ class ARB_seqtree : public RootedTree { // derived from Noncopyable
     //      functions
 
     void unloadSequences();
-    void preloadLeafSequences();
+    GB_ERROR preloadLeafSequences();
 
     GB_ERROR add_delete_cb_rec(ARB_tree_node_del_cb cb) __ATTR__USERESULT;
     void remove_delete_cb_rec(ARB_tree_node_del_cb cb);
