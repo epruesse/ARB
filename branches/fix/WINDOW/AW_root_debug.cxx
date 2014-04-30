@@ -130,6 +130,16 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "ARB_NT/SAVE_AS",         3);
     GBS_write_hash(dontCallHash, "ARB_NT/QUICK_SAVE_AS",   3);
 
+    GBS_write_hash(dontCallHash, "User1_search_1/SAVE",            3);
+    GBS_write_hash(dontCallHash, "User2_search_1/SAVE",            3);
+    GBS_write_hash(dontCallHash, "Probe_search_1/SAVE",            3);
+    GBS_write_hash(dontCallHash, "Primer_local_search_1/SAVE",     3);
+    GBS_write_hash(dontCallHash, "Primer_region_search_1/SAVE",    3);
+    GBS_write_hash(dontCallHash, "Primer_global_search_1/SAVE",    3);
+    GBS_write_hash(dontCallHash, "Signature_local_search_1/SAVE",  3);
+    GBS_write_hash(dontCallHash, "Signature_region_search_1/SAVE", 3);
+    GBS_write_hash(dontCallHash, "Signature_global_search_1/SAVE", 3);
+
     // avoid confusion by recording, executing or deleting macros
     GBS_write_hash(dontCallHash, "MACROS/DELETE",       1);
     GBS_write_hash(dontCallHash, "MACROS/EDIT",         1);
