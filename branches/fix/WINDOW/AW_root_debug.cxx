@@ -144,6 +144,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "LOAD_OLD_CONFIGURATION/LOAD",    4);
     GBS_write_hash(dontCallHash, "table_admin",                    4); // disabled in userland atm
     GBS_write_hash(dontCallHash, "PARS_PROPS/GO",                  4); // has already been executed (designed to run only once)
+    GBS_write_hash(dontCallHash, "ARB_PARSIMONY/POP",              4); // pop does not work correctly in all cases (see #528)
 #endif
 
     // do not open 2nd ARB_NT window (to buggy)
