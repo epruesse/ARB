@@ -68,6 +68,7 @@ static void build_dontCallHash() {
 
     atexit(forget_dontCallHash);
 
+    // avoid program termination/restart/etc.
     GBS_write_hash(dontCallHash, "ARB_NT/QUIT",                 1);
     GBS_write_hash(dontCallHash, "quit",                        1);
     GBS_write_hash(dontCallHash, "new_arb",                     1);
@@ -78,6 +79,8 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "MERGE_SELECT_DATABASES/QUIT", 1);
     GBS_write_hash(dontCallHash, "quitnstart",                  1);
     GBS_write_hash(dontCallHash, "PARS_PROPS/ABORT",            1);
+    GBS_write_hash(dontCallHash, "ARB_PHYLO/QUIT",              1);
+    GBS_write_hash(dontCallHash, "SELECT_ALIGNMENT/ABORT",      1);
 
     // avoid start of some external programs:
 #if 1
