@@ -206,6 +206,19 @@ static void build_dontCallHash() {
     GBS_free_hash(autodontCallHash);
 }
 
+class StringVectorArray : public ConstStrArray {
+    CallbackArray array;
+public:
+    StringVectorArray(const CallbackArray& a)
+        : array(a)
+    {
+        reserve(a.size());
+        for (CallbackArray::iterator id = array.begin(); id != array.end(); ++id) {
+            put(id->c_str());
+        }
+    }
+};
+
 inline bool exclude_key(const char *key) {
     if (strncmp(key, "FILTER_SELECT_", 14) == 0) {
         if (strstr(key, "/2filter/2filter/2filter/") != 0) {
@@ -216,6 +229,12 @@ inline bool exclude_key(const char *key) {
         if (strstr(key, "SAVELOAD_CONFIG") != 0) return true;
     }
     return false;
+}
+
+inline bool is_wanted_callback(const char *key) {
+    return
+        GBS_read_hash(alreadyCalledHash, key) == 0 && // dont call twice
+        !exclude_key(key); // skip some problematic  callbacks
 }
 
 struct action_address_compare {
@@ -230,28 +249,23 @@ struct action_address_compare {
     }
 };
 
-class StringVectorArray : public ConstStrArray {
-    CallbackArray array;
-public:
-    StringVectorArray(const CallbackArray& a)
-        : array(a)
-    {
-        reserve(a.size());
-        for (CallbackArray::iterator id = array.begin(); id != array.end(); ++id) {
-            put(id->c_str());
-        }
-    }
-};
+// ------------------------
+//      get_action_ids
 
 ConstStrArray *AW_root::pimpl::get_action_ids() {
     if (!dontCallHash) build_dontCallHash();
     CallbackArray callbacks;
     for (action_hash_t::const_iterator cbi = action_hash.begin(); cbi != action_hash.end(); ++cbi) {
-        callbacks.push_back(cbi->first);
+        if (is_wanted_callback(cbi->first.c_str())) {
+            callbacks.push_back(cbi->first);
+        }
     }
     sort(callbacks.begin(), callbacks.end());
     return new StringVectorArray(callbacks);
 }
+
+// --------------------------
+//      callallcallbacks
 
 size_t AW_root::pimpl::callallcallbacks(int mode) {
     // mode == -2 -> mark all as called
@@ -289,7 +303,9 @@ size_t AW_root::pimpl::callallcallbacks(int mode) {
     else {
         CallbackArray callbacks;
         for (action_hash_t::const_iterator cbi = action_hash.begin(); cbi != action_hash.end(); ++cbi) {
-            callbacks.push_back(cbi->first);
+            if (is_wanted_callback(cbi->first.c_str())) {
+                callbacks.push_back(cbi->first);
+            }
         }
 
         switch (mode) {
@@ -340,6 +356,7 @@ size_t AW_root::pimpl::callallcallbacks(int mode) {
                     if (mode != -2) { // -2 means "only mark as called"
                         AW_action *cbs    = action_hash[remote_command];
                         bool       skipcb = remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command);
+
 
                         if (skipcb) {
                             fprintf(stderr, "Skipped callback %zu/%zu (%s)\n", curr, count, remote_command);
