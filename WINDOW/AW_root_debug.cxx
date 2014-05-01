@@ -302,6 +302,7 @@ size_t AW_root::pimpl::callallcallbacks(int mode) {
                 sort(callbacks.begin(), callbacks.end(), action_address_compare(action_hash));
                 break;
             case -2:
+                aw_message("Marking all callbacks as \"called\"");
             case 4:
                 break;
             default:
@@ -377,6 +378,8 @@ size_t AW_root::pimpl::callallcallbacks(int mode) {
 
             if (pass == 1) fprintf(stderr, "Executing delayed callbacks:\n");
         }
+
+        aw_message(GBS_global_string("%zu callbacks are marked as called now", GBS_hash_count_elems(alreadyCalledHash)));
     }
 
     return callCount;
