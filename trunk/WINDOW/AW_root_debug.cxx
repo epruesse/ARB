@@ -24,6 +24,7 @@
 #include <algorithm>
 
 // do includes above (otherwise depends depend on DEBUG)
+
 #if defined(DEBUG)
 // --------------------------------------------------------------------------------
 
@@ -206,38 +207,6 @@ static void build_dontCallHash() {
     GBS_free_hash(autodontCallHash);
 }
 
-inline bool exclude_key(const char *key) {
-    if (strncmp(key, "FILTER_SELECT_", 14) == 0) {
-        if (strstr(key, "/2filter/2filter/2filter/") != 0) {
-            return true;
-        }
-    }
-    else {
-        if (strstr(key, "SAVELOAD_CONFIG") != 0) return true;
-    }
-    return false;
-}
-
-static long collect_callbacks(const char *key, long value, void *cl_callbacks) {
-    if (GBS_read_hash(alreadyCalledHash, key) == 0) { // don't call twice
-        if (!exclude_key(key)) {
-            CallbackArray *callbacks = reinterpret_cast<CallbackArray*>(cl_callbacks);
-            callbacks->push_back(string(key));
-        }
-    }
-    return value;
-}
-
-static int sortedByCallbackLocation(const char *k0, long v0, const char *k1, long v1) {
-    AW_cb *cbs0 = reinterpret_cast<AW_cb*>(v0);
-    AW_cb *cbs1 = reinterpret_cast<AW_cb*>(v1);
-
-    int cmp       = cbs0->compare(*cbs1);
-    if (!cmp) cmp = strcmp(k0, k1);
-
-    return cmp;
-}
-
 class StringVectorArray : public ConstStrArray {
     CallbackArray array;
 public:
@@ -251,12 +220,54 @@ public:
     }
 };
 
+inline bool exclude_key(const char *key) {
+    if (strncmp(key, "FILTER_SELECT_", 14) == 0) {
+        if (strstr(key, "/2filter/2filter/2filter/") != 0) {
+            return true;
+        }
+    }
+    else {
+        if (strstr(key, "SAVELOAD_CONFIG") != 0) return true;
+    }
+    return false;
+}
+
+inline bool is_wanted_callback(const char *key) {
+    return
+        GBS_read_hash(alreadyCalledHash, key) == 0 && // dont call twice
+        !exclude_key(key); // skip some problematic  callbacks
+}
+
+static int sortedByCallbackLocation(const char *k0, long v0, const char *k1, long v1) {
+    AW_cb *cbs0 = reinterpret_cast<AW_cb*>(v0);
+    AW_cb *cbs1 = reinterpret_cast<AW_cb*>(v1);
+
+    int cmp       = cbs0->compare(*cbs1);
+    if (!cmp) cmp = strcmp(k0, k1);
+
+    return cmp;
+}
+
+// ------------------------
+//      get_action_ids
+
+static long add_wanted_callbacks(const char *key, long value, void *cl_callbacks) {
+    if (is_wanted_callback(key)) {
+        CallbackArray *callbacks = reinterpret_cast<CallbackArray*>(cl_callbacks);
+        callbacks->push_back(string(key));
+    }
+    return value;
+}
+
 ConstStrArray *AW_root::get_action_ids() {
     if (!dontCallHash) build_dontCallHash();
     CallbackArray callbacks;
-    GBS_hash_do_sorted_loop(prvt->action_hash, collect_callbacks, GBS_HCF_sortedByKey, &callbacks);
+    GBS_hash_do_sorted_loop(prvt->action_hash, add_wanted_callbacks, GBS_HCF_sortedByKey, &callbacks);
     return new StringVectorArray(callbacks);
 }
+
+// --------------------------
+//      callallcallbacks
 
 size_t AW_root::callallcallbacks(int mode) {
     // mode == -2 -> mark all as called
@@ -296,16 +307,16 @@ size_t AW_root::callallcallbacks(int mode) {
         switch (mode) {
             case 0:
             case 1:
-                GBS_hash_do_sorted_loop(prvt->action_hash, collect_callbacks, GBS_HCF_sortedByKey, &callbacks);
+                GBS_hash_do_sorted_loop(prvt->action_hash, add_wanted_callbacks, GBS_HCF_sortedByKey, &callbacks);
                 break;
             case 2:
             case 3:
-                GBS_hash_do_sorted_loop(prvt->action_hash, collect_callbacks, sortedByCallbackLocation, &callbacks);
+                GBS_hash_do_sorted_loop(prvt->action_hash, add_wanted_callbacks, sortedByCallbackLocation, &callbacks);
                 break;
             case -2:
                 aw_message("Marking all callbacks as \"called\"");
             case 4:
-                GBS_hash_do_loop(prvt->action_hash, collect_callbacks, &callbacks);
+                GBS_hash_do_loop(prvt->action_hash, add_wanted_callbacks, &callbacks);
                 break;
             default:
                 aw_assert(0);
@@ -339,11 +350,13 @@ size_t AW_root::callallcallbacks(int mode) {
                     GBS_write_hash(alreadyCalledHash, remote_command, 1); // don't call twice
 
                     if (mode != -2) { // -2 means "only mark as called"
-                        AW_cb *cbs = (AW_cb *)GBS_read_hash(prvt->action_hash, remote_command);
-                        bool skipcb = remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command);
+                        AW_cb *cbs    = (AW_cb *)GBS_read_hash(prvt->action_hash, remote_command);
+                        bool   skipcb = remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command);
+
                         if (!skipcb) {
                             if (cbs->contains(AW_CB(AW_help_entry_pressed))) skipcb = true;
                         }
+
                         if (skipcb) {
                             fprintf(stderr, "Skipped callback %zu/%zu (%s)\n", curr, count, remote_command);
                         }
