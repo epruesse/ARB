@@ -303,6 +303,7 @@ size_t AW_root::callallcallbacks(int mode) {
                 GBS_hash_do_sorted_loop(prvt->action_hash, collect_callbacks, sortedByCallbackLocation, &callbacks);
                 break;
             case -2:
+                aw_message("Marking all callbacks as \"called\"");
             case 4:
                 GBS_hash_do_loop(prvt->action_hash, collect_callbacks, &callbacks);
                 break;
@@ -376,6 +377,8 @@ size_t AW_root::callallcallbacks(int mode) {
 
             if (pass == 1) fprintf(stderr, "Executing delayed callbacks:\n");
         }
+
+        aw_message(GBS_global_string("%zu callbacks are marked as called now", GBS_hash_count_elems(alreadyCalledHash)));
     }
 
     return callCount;
