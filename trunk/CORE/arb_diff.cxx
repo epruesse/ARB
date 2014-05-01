@@ -28,24 +28,30 @@
 #define MAX_REGS 13
 
 class difflineMode : virtual Noncopyable {
-    int               mode;
-    GBS_regex        *reg[MAX_REGS];
-    const char       *replace[MAX_REGS];
-    int               count;
-    mutable GB_ERROR  error;
+    int mode;
+
+    GBS_regex  *reg[MAX_REGS];
+    bool        wordsOnly[MAX_REGS]; // only match if regexpr hits a word
+    const char *replace[MAX_REGS];
+
+    int              count;
+    mutable GB_ERROR error;
 
     static bool is_may;
 
-    void add(const char *regEx, GB_CASE case_flag, const char *replacement) {
+    void add(bool onlyWords, const char *regEx, GB_CASE case_flag, const char *replacement) {
         if (!error) {
             arb_assert(count<MAX_REGS);
             reg[count] = GBS_compile_regexpr(regEx, case_flag, &error);
             if (!error) {
-                replace[count] = replacement;
+                replace[count]   = replacement;
+                wordsOnly[count] = onlyWords;
                 count++;
             }
         }
     }
+
+    static bool is_word_char(char c) { return isalnum(c) || c == '_'; } // matches posix word def
 
 public:
     difflineMode(int mode_)
@@ -57,29 +63,29 @@ public:
         switch (mode) {
             case 0: break;
             case 1:  {
-                add("[0-9]{2}:[0-9]{2}:[0-9]{2}", GB_MIND_CASE, "<TIME>");
-                add("(Mon|Tue|Wed|Thu|Fri|Sat|Sun)", GB_IGNORE_CASE, "<DOW>");
+                add(false, "[0-9]{2}:[0-9]{2}:[0-9]{2}", GB_MIND_CASE, "<TIME>");
+                add(true, "(Mon|Tue|Wed|Thu|Fri|Sat|Sun)", GB_IGNORE_CASE, "<DOW>");
 
-                add("(January|February|March|April|May|June|July|August|September|October|November|December)", GB_IGNORE_CASE, "<Month>");
-                add("(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)", GB_IGNORE_CASE, "<MON>");
+                add(true, "(January|February|March|April|May|June|July|August|September|October|November|December)", GB_IGNORE_CASE, "<Month>");
+                add(true, "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)", GB_IGNORE_CASE, "<MON>");
 
-                add("<MON>[ -][0-9]{4}",   GB_IGNORE_CASE, "<MON> <YEAR>");
-                add("<Month>[ -][0-9]{4}", GB_IGNORE_CASE, "<Month> <YEAR>");
+                add(false, "<MON>[ -][0-9]{4}",   GB_IGNORE_CASE, "<MON> <YEAR>");
+                add(false, "<Month>[ -][0-9]{4}", GB_IGNORE_CASE, "<Month> <YEAR>");
 
-                add("<TIME>[ -][0-9]{4}",  GB_IGNORE_CASE, "<TIME> <YEAR>");
+                add(false, "<TIME>[ -][0-9]{4}",  GB_IGNORE_CASE, "<TIME> <YEAR>");
 
-                add("<MON>[ -][0-9 ]?[0-9]",   GB_IGNORE_CASE, "<MON> <DAY>");
-                add("<Month>[ -][0-9 ]?[0-9]", GB_IGNORE_CASE, "<Month> <DAY>");
+                add(false, "<MON>[ -][0-9 ]?[0-9]",   GB_IGNORE_CASE, "<MON> <DAY>");
+                add(false, "<Month>[ -][0-9 ]?[0-9]", GB_IGNORE_CASE, "<Month> <DAY>");
 
-                add("[0-9]{2}[ -\\.]+<MON>",   GB_IGNORE_CASE, "<DAY> <MON>");
-                add("[0-9]{2}[ -\\.]+<Month>", GB_IGNORE_CASE, "<DAY> <Month>");
+                add(false, "[0-9]{2}[ -\\.]+<MON>",   GB_IGNORE_CASE, "<DAY> <MON>");
+                add(false, "[0-9]{2}[ -\\.]+<Month>", GB_IGNORE_CASE, "<DAY> <Month>");
 
-                add("<DAY>, [0-9]{4}", GB_IGNORE_CASE, "<DAY> <YEAR>");
+                add(false, "<DAY>, [0-9]{4}", GB_IGNORE_CASE, "<DAY> <YEAR>");
 
                 if (is_may) {
                     // 'May' does not differ between short/long monthname
                     // -> use less accurate tests in May
-                    add("<Month>", GB_MIND_CASE, "<MON>");
+                    add(false, "<Month>", GB_MIND_CASE, "<MON>");
                 }
 
                 break;
@@ -106,7 +112,14 @@ public:
                 char       *prefix = GB_strpartdup(str, matched-1);
                 const char *suffix = matched+matchlen;
 
-                freeset(str, GBS_global_string_copy("%s%s%s", prefix, replace[i], suffix));
+                bool do_repl = true;
+                if (wordsOnly[i]) {
+                    if      (prefix[0] != 0 && is_word_char(matched[-1])) do_repl = false;
+                    else if (suffix[0] != 0 && is_word_char(suffix[0]))   do_repl = false;
+                }
+
+                if (do_repl) freeset(str, GBS_global_string_copy("%s%s%s", prefix, replace[i], suffix));
+
                 free(prefix);
             }
         }
