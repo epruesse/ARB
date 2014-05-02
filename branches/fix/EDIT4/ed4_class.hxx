@@ -25,8 +25,8 @@
 #ifndef ED4_SEARCH_HXX
 #include "ed4_search.hxx"
 #endif
-#ifndef _GLIBCXX_SET
-#include <set>
+#ifndef _GLIBCXX_LIST
+#include <list>
 #endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
@@ -1897,16 +1897,17 @@ public:
     ED4_species_manager_cb_data(ED4_species_manager_cb cb_, AW_CL cd_) : cb(cb_), cd(cd_) {}
 
     void call(ED4_species_manager *man) const { cb(man, cd); }
-    bool operator<(const ED4_species_manager_cb_data& other) const {
-        return (char*)cb < (char*)other.cb &&
-            (char*)cd < (char*)other.cd;
+    bool operator == (const ED4_species_manager_cb_data& other) const {
+        return
+            (char*)cb == (char*)other.cb &&
+            (char*)cd == (char*)other.cd;
     }
 };
 
 class ED4_species_manager : public ED4_manager {
     E4B_AVOID_UNNEEDED_CASTS(species_manager);
     
-    std::set<ED4_species_manager_cb_data> callbacks;
+    std::list<ED4_species_manager_cb_data> callbacks;
 
     ED4_species_type type;
     bool selected;
