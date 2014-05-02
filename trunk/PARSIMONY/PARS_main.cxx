@@ -369,8 +369,10 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick) {
 
         {
             int skipped = max_species - GBS_hash_count_elems(hash);
-            aw_message(GBS_global_string("Skipped %i species (no data?)", skipped));
-            isits.get_progress().inc_by(skipped);
+            if (skipped) {
+                aw_message(GBS_global_string("Skipped %i species (no data?)", skipped));
+                isits.get_progress().inc_by(skipped);
+            }
         }
 
         GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
