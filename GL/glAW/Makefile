@@ -38,7 +38,6 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from GL)
 
-AW_window_ogl.o: /usr/lib/glib-2.0/include/glibconfig.h
 AW_window_ogl.o: aw_window_ogl.hxx
 AW_window_ogl.o: GLwDrawA.h
 AW_window_ogl.o: GLwMDrawA.h

@@ -56,10 +56,20 @@
     } while(0)
 # endif
 
-# define TRIGGER_ASSERTION(backtrace)           \
-    do {                                        \
-        SET_ASSERTION_FAILED_FLAG();            \
-        ARB_SIGSEGV(backtrace);                 \
+#define SEGV_INSIDE_TEST_STOP_OTHERWISE(backtrace)              \
+    do {                                                        \
+        if (RUNNING_TEST()) {                                   \
+            ARB_SIGSEGV(backtrace);                             \
+        }                                                       \
+        else {                                                  \
+            ARB_STOP(backtrace);                                \
+        }                                                       \
+    } while(0)
+
+# define TRIGGER_ASSERTION(backtrace)                           \
+    do {                                                        \
+        SET_ASSERTION_FAILED_FLAG();                            \
+        SEGV_INSIDE_TEST_STOP_OTHERWISE(backtrace);             \
     } while(0)
 
 namespace arb_test {
