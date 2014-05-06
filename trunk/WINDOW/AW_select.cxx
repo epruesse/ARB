@@ -367,7 +367,7 @@ void AW_selection_list::insert_default(const char *displayed, const char *value)
         selection_type_mismatch("string");
         return;
     }
-    if (default_select) delete default_select;
+    if (default_select) delete_default();
     default_select = new AW_selection_list_entry(displayed, value);
 }
 
@@ -391,9 +391,7 @@ void AW_selection_list::insert_default(const char *displayed, int32_t value) {
         selection_type_mismatch("int");
         return;
     }
-    if (default_select) {
-        delete default_select;
-    }
+    if (default_select) delete_default();
     default_select = new AW_selection_list_entry(displayed, value);
 }
 
@@ -418,7 +416,7 @@ void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
         selection_type_mismatch("pointer");
         return;
     }
-    if (default_select) delete default_select;
+    if (default_select) delete_default();
     default_select = new AW_selection_list_entry(displayed, pointer);
 }
 
