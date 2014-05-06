@@ -1466,46 +1466,35 @@ ED4_returncode ED4_cursor::show_clicked_cursor(AW_pos click_xpos, ED4_terminal *
    ED4_base_position
    -------------------------------------------------------------------------------- */
 
-ED4_base_position::ED4_base_position()
-    : calced4term(0)
-{
-}
-
-ED4_base_position::~ED4_base_position() {
-    invalidate();
-}
-
 static void ed4_bp_sequence_changed_cb(ED4_species_manager *, AW_CL cl_base_pos) {
     ED4_base_position *base_pos = (ED4_base_position*)cl_base_pos;
     base_pos->invalidate();
 }
 
-void ED4_base_position::invalidate() {
+void ED4_base_position::remove_changed_cb() {
     if (calced4term) {
         ED4_species_manager *species_manager = calced4term->get_parent(ED4_L_SPECIES)->to_species_manager();
-        species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this); // @@@ removes cb called later -> ED4_base.cxx@INVALID_CB_HANDLING 
+        species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
 
-        calced4term = 0;
+        calced4term = NULL;
     }
 }
 
 static bool is_gap(char c) { return ED4_is_align_character[safeCharIndex(c)]; }
 static bool is_consensus_gap(char c) { return ED4_is_align_character[safeCharIndex(c)] || c == '='; }
 
-void ED4_base_position::calc4term(const ED4_terminal *base)
-{
+void ED4_base_position::calc4term(const ED4_terminal *base) {
     e4_assert(base);
 
     ED4_species_manager *species_manager = base->get_parent(ED4_L_SPECIES)->to_species_manager();
-    int                  len;
-    char                *seq;
 
-    if (calced4term) {
-        ED4_species_manager *prev_species_manager = calced4term->get_parent(ED4_L_SPECIES)->to_species_manager();
-        prev_species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
+    int   len;
+    char *seq;
+
+    if (base != calced4term) { // terminal changes => rebind callback to new manager
+        remove_changed_cb();
+        species_manager->add_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
     }
-
-    species_manager->add_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
 
     bool (*isGap_fun)(char);
     if (species_manager->is_consensus_manager()) {
