@@ -25,8 +25,8 @@
 #ifndef ED4_SEARCH_HXX
 #include "ed4_search.hxx"
 #endif
-#ifndef _GLIBCXX_SET
-#include <set>
+#ifndef _GLIBCXX_LIST
+#include <list>
 #endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
@@ -577,20 +577,37 @@ public:
 };
 
 class ED4_base_position : private BasePosition { // derived from a Noncopyable
-    const ED4_terminal *calced4term;
+    const ED4_terminal *calced4term; // if calced4term!=NULL => callback is bound to its species manager
+    bool needUpdate;
 
     void calc4term(const ED4_terminal *term);
-    void set_term(const ED4_terminal *term) { if (calced4term != term) calc4term(term); }
+    void set_term(const ED4_terminal *term) {
+        if (calced4term != term || needUpdate) {
+            calc4term(term);
+        }
+    }
+    void remove_changed_cb();
 
 public:
 
-    ED4_base_position();
-    ~ED4_base_position();
+    ED4_base_position()
+        : calced4term(NULL),
+          needUpdate(true)
+    {}
 
-    void invalidate();
+    ~ED4_base_position() {
+        remove_changed_cb();
+    }
+
+    void invalidate() {
+        needUpdate = true;
+    }
 
     void announce_deletion(const ED4_terminal *term) {
-        if (term == calced4term) invalidate();
+        if (term == calced4term) {
+            invalidate();
+            remove_changed_cb();
+        }
         e4_assert(calced4term != term);
     }
 
@@ -1897,16 +1914,17 @@ public:
     ED4_species_manager_cb_data(ED4_species_manager_cb cb_, AW_CL cd_) : cb(cb_), cd(cd_) {}
 
     void call(ED4_species_manager *man) const { cb(man, cd); }
-    bool operator<(const ED4_species_manager_cb_data& other) const {
-        return (char*)cb < (char*)other.cb &&
-            (char*)cd < (char*)other.cd;
+    bool operator == (const ED4_species_manager_cb_data& other) const {
+        return
+            (char*)cb == (char*)other.cb &&
+            (char*)cd == (char*)other.cd;
     }
 };
 
 class ED4_species_manager : public ED4_manager {
     E4B_AVOID_UNNEEDED_CASTS(species_manager);
     
-    std::set<ED4_species_manager_cb_data> callbacks;
+    std::list<ED4_species_manager_cb_data> callbacks;
 
     ED4_species_type type;
     bool selected;
@@ -2392,5 +2410,4 @@ void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman);
 #else
 #error ed4_class included twice
 #endif
-
 
