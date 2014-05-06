@@ -201,19 +201,21 @@ void AW_selection_list::refresh() {
 }
 
 void AW_selection::refresh() {
-    sellist->clear();
+    get_sellist()->clear();
     fill();
-    sellist->update();
+    get_sellist()->update();
 }
 
 void AW_selection_list::clear() {
+    /** Remove all items from the list. Default item is removed as well.*/
     while (list_table) {
         AW_selection_list_entry *nextEntry = list_table->next;
         delete list_table;
         list_table = nextEntry;
     }
-    list_table = NULL;
+    list_table         = NULL;
     last_of_list_table = NULL;
+
     default_select = NULL;
 
     gtk_list_store_clear(GTK_LIST_STORE(model));
@@ -375,7 +377,8 @@ void AW_selection_list::append_to_liststore(AW_selection_list_entry* entry)
 }
 
 void AW_selection_list::delete_default() {
-    if(default_select) {
+    /** Removes the default entry from the list*/
+    if (default_select) {
         delete_value(get_default_value());
         default_select = NULL;
     }

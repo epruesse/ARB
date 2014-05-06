@@ -160,11 +160,8 @@ public:
 
     void delete_element_at(int index);
     void delete_value(const char *value);
-    /**Removes the default entry from the list*/
     void delete_default();
-    
-    /**Remove all items from the list. Default item is removed as well.*/
-    void clear(); 
+    void clear();
 
     /**moves content to another selection list.
      * @note default value is not moved.
