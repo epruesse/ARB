@@ -169,19 +169,17 @@ void AW_selection::refresh() {
     get_sellist()->update();
 }
 
-void AW_selection_list::clear(bool clear_default) {
+void AW_selection_list::clear() {
+    /** Remove all items from the list. Default item is removed as well.*/
     while (list_table) {
         AW_selection_list_entry *nextEntry = list_table->next;
         delete list_table;
         list_table = nextEntry;
     }
-    list_table = NULL;
+    list_table         = NULL;
     last_of_list_table = NULL;
 
-    if (clear_default && default_select) {
-        delete default_select;
-        default_select = NULL;
-    }
+    delete_default();
 }
 
 bool AW_selection_list::default_is_selected() const {
@@ -209,13 +207,18 @@ const char *AW_selection_list::get_selected_value() const {
     return found ? found->value.get_string() : NULL;
 }
 
-AW_selection_list_entry *AW_selection_list::get_entry_at(int index) {
+AW_selection_list_entry *AW_selection_list::get_entry_at(int index) const {
     AW_selection_list_entry *entry = list_table;
     while (index && entry) {
         entry = entry->next;
         index--;
     }
     return entry;
+}
+
+
+void AW_selection_list::select_default() {
+    set_awar_value(get_default_value());
 }
 
 void AW_selection_list::delete_element_at(const int index) {
@@ -351,6 +354,13 @@ void AW_selection_list::insert(const char *displayed, const char *value) {
     }
 }
 
+void AW_selection_list::delete_default() {
+    /** Removes the default entry from the list*/
+    if (default_select) {
+        delete default_select;
+        default_select = NULL;
+    }
+}
 
 void AW_selection_list::insert_default(const char *displayed, const char *value) {
     if (variable_type != AW_STRING) {
@@ -431,7 +441,7 @@ void AW_selection_list::move_content_to(AW_selection_list *target_list) {
         entry = entry->next;
     }
 
-    clear(false);
+    clear();
 }
 
 void AW_selection_list::move_selection(int offset) {

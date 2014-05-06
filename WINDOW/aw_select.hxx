@@ -58,7 +58,7 @@ public:
 typedef int (*sellist_cmp_fun)(const char *disp1, const char *disp2);
 
 class AW_selection_list {
-    AW_selection_list_entry *get_entry_at(int index);
+    AW_selection_list_entry *get_entry_at(int index) const;
     
 public:
     AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
@@ -103,9 +103,9 @@ public:
     const char *get_default_value() const;
     const char *get_default_display() const;
 
-    void select_default() { set_awar_value(get_default_value()); }
+    void select_default();
 
-    const char *get_selected_value() const; // may differ from get_awar_value() if default is selected (returns value passed to insert_default_selection)
+    const char *get_selected_value() const; // may differ from get_awar_value() if default is selected (returns value passed to insert_default)
 
     int get_index_of(const char *searched_value);
     int get_index_of_displayed(const char *displayed);
@@ -120,7 +120,8 @@ public:
 
     void delete_element_at(int index);
     void delete_value(const char *value);
-    void clear(bool clear_default = true); 
+    void delete_default();
+    void clear();
 
     void move_content_to(AW_selection_list *target_list);
 
