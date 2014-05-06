@@ -62,7 +62,7 @@ sub add_dependency(\@$$) {
   $depends_on = fix_name($depends_on);
 
   # skip outside dependencies
-  if (not $depends_on =~ m@/usr/include/@) {
+  if (not $depends_on =~ m@/usr/(include|lib)/@) {
     push @$depends_r, "$file: $depends_on";
   }
 }
@@ -71,7 +71,7 @@ sub read_input_stream(\@) {
   my ($depends_r) = @_;
   my $makedependlineseen = 0;
 
-  foreach (<>) {
+  foreach (<STDIN>) {
     if ($makedependlineseen==0) { # simply forward lines until 'DO NOT DELETE'
       print "$_";
       if (/^\# DO NOT DELETE/) { $makedependlineseen = 1; }
