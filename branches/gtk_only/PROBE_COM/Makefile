@@ -12,7 +12,7 @@ PUBLIC_SOURCES := $(wildcard C/*.c) $(wildcard C/*.h)
 AISC_SAVE := NO
 
 # C++ Compiler
-COMPILER := $(A_CXX) -x c++ $(cflags) $(cxxflags) -I$(ARBHOME)/INCLUDE
+COMPILER := $(A_CXX) -x c++ $(cflags) $(cxxflags) $(CXX_INCLUDES)
 CLIENTCOMPILER := $(COMPILER)
 
 # AISC dependencies
