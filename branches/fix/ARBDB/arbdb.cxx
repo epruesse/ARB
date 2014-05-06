@@ -784,11 +784,27 @@ long GB_read_memuse(GBDATA *gbd) {
 
 #if defined(DEBUG)
 
-#define STD_LIST_NODE_NAME _List_node
+#define MIN_CBLISTNODE_SIZE 48 // minimum (found) callbacklist-elementsize
+
+#if defined(DARWIN)
+
+#define CBLISTNODE_SIZE MIN_CBLISTNODE_SIZE // assume known minimum (doesnt really matter; only used in db-browser)
+
+#else // linux:
+
+typedef std::_List_node<gb_callback_list::cbtype> CBLISTNODE_TYPE;
+const size_t CBLISTNODE_SIZE = sizeof(CBLISTNODE_TYPE);
+
+#if defined(ARB_64)
+// ignore smaller 32-bit implementations
+STATIC_ASSERT_ANNOTATED(MIN_CBLISTNODE_SIZE<=CBLISTNODE_SIZE, "MIN_CBLISTNODE_SIZE too big (smaller implementation detected)");
+#endif
+
+#endif
 
 inline long calc_size(gb_callback_list *gbcbl) {
     return gbcbl
-        ? sizeof(*gbcbl) + gbcbl->callbacks.size()* sizeof(std::STD_LIST_NODE_NAME<gb_callback_list::cbtype>)
+        ? sizeof(*gbcbl) + gbcbl->callbacks.size()* CBLISTNODE_SIZE
         : 0;
 }
 inline long calc_size(gb_transaction_save *gbts) {

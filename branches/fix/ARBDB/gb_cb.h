@@ -60,7 +60,7 @@ public:
 template<typename CB>
 struct CallbackList {
     typedef CB                                cbtype;
-    typedef typename std::list<cbtype>        listtype;
+    typedef typename std::list<cbtype>        listtype; // (when you change container, see also arbdb.cxx@CBLISTNODE_TYPE)
     typedef typename listtype::iterator       itertype;
     typedef typename listtype::const_iterator const_itertype;
 
