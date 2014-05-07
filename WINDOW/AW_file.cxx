@@ -633,7 +633,6 @@ void File_selection::fill() {
         filelist->insert(GBS_global_string("!  Find aborted    (after %.1fs; click to search longer)", searchTime.allowed_duration()), GBS_global_string("%s?inctime?", name));
     }
 
-    filelist->insert_default("", "");
     if (sort_order == SORT_SIZE) {
         filelist->sortCustom(cmpBySize);
     }
@@ -641,6 +640,7 @@ void File_selection::fill() {
         filelist->sort(false, false);
     }
     format_columns();
+    filelist->insert_default("", "");
     filelist->update();
 
     if (filled_by_wildcard && !leave_wildcards) { // avoid returning wildcarded filename (if !leave_wildcards)

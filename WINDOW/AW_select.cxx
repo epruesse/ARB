@@ -513,6 +513,8 @@ static int gb_compare_function__2__sellist_cmp_fun(const void *t1, const void *t
 }
 
 void AW_selection_list::sortCustom(sellist_cmp_fun cmp) {
+    // WARNING: function behaves different in motif and gtk:
+    // gtk also sorts default-element, motif always places default-element @ bottom
     size_t count = size();
     if (count) {
         AW_selection_list_entry **tables = new AW_selection_list_entry *[count];
@@ -536,6 +538,8 @@ void AW_selection_list::sortCustom(sellist_cmp_fun cmp) {
 }
 
 void AW_selection_list::sort(bool backward, bool case_sensitive) {
+    // WARNING: function behaves different in motif and gtk:
+    // gtk also sorts default-element, motif always places default-element @ bottom
     sellist_cmp_fun cmp;
     if (backward) {
         if (case_sensitive) cmp = sel_sort_backward;
