@@ -11,8 +11,6 @@
 #include <arb_assert.h>
 #endif
 
-#include <glib.h>
-
 // we use the glib warning / logging system. so these
 // are just a couple of defines to rename the calls
 
@@ -37,4 +35,9 @@
 #define aw_warn_if_fail_BREAKPOINT(cond)           do { bool c = (cond); if (!c) AW_BREAKPOINT(); aw_warn_if_fail(c); } while(0)
 #endif
 
-#define aw_assert(cond) aw_warn_if_fail(cond)
+#define aw_assert(cond) arb_assert(cond)
+
+// if an assertion is known to be failing (atm), please replace it by one of the following macros:
+#define aw_assert_violated_sometimes(cond) aw_warn_if_fail(cond)
+#define aw_assert_violated_always(cond)    do { aw_warn_if_fail(cond); arb_assert(!(cond)); } while(0)
+
