@@ -495,7 +495,7 @@ void NT_multifurcate_tree(AWT_canvas *ntw, const RootedTree::multifurc_limits& b
     RootedTree *tree = AWT_TREE(ntw)->get_root_node();
     if (tree) {
         tree->multifurcate_whole_tree(below);
-    save_changed_tree(ntw);
+        save_changed_tree(ntw);
     }
 }
 
