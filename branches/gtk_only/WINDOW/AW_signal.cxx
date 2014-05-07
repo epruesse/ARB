@@ -183,7 +183,7 @@ AW_signal& AW_signal::operator+=(const AW_signal& o) {
 /** Destructor */
 AW_signal::~AW_signal() {
     // probably not a good idea to die while in emit()
-    aw_assert(prvt->in_emit == 0); 
+    aw_assert_violated_sometimes(prvt->in_emit == 0);
 
     // remove downstream signals
     clear();
