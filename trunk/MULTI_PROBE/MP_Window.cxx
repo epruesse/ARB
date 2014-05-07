@@ -75,7 +75,7 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
         result_window->callback(makeWindowCallback(awt_clear_selection_list_cb, result_probes_list));
         result_window->create_button("CLEAR", "CLEAR");
 
-        result_window->callback(MP_delete_selected, AW_CL(result_probes_list));
+        result_window->callback(makeWindowCallback(MP_delete_selected, result_probes_list));
         result_window->create_button("DELETE", "DELETE");
 
         // change comment :
@@ -311,7 +311,7 @@ void MP_Window::build_pt_server_list() {
     aws->update_option_menu();
 }
 
-static void track_ali_change_cb(AW_root *root, GBDATA *gb_main) {
+static void track_ali_change_cb(AW_root*, GBDATA *gb_main) {
     GB_transaction     ta(gb_main);
     char              *aliname = GBT_get_default_alignment(gb_main);
     GB_alignment_type  alitype = GBT_get_alignment_type(gb_main, aliname);
@@ -329,7 +329,7 @@ static void MP_collect_probes(AW_window*, awt_collect_mode mode, AW_CL) {
                 int                        idx = probelist->get_index_of_selected();
                 AW_selection_list_iterator sel(probelist, idx);
                 selected_list->insert(sel.get_displayed(), sel.get_value());
-                MP_delete_selected(NULL, AW_CL(probelist));
+                MP_delete_selected(NULL, probelist);
             }
             break;
 
@@ -338,7 +338,7 @@ static void MP_collect_probes(AW_window*, awt_collect_mode mode, AW_CL) {
                 int                        idx = selected_list->get_index_of_selected();
                 AW_selection_list_iterator sel(selected_list, idx);
                 probelist->insert(sel.get_displayed(), sel.get_value());
-                MP_delete_selected(NULL, AW_CL(selected_list));
+                MP_delete_selected(NULL, selected_list);
             }
             break;
             
@@ -420,7 +420,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
         aws->callback(makeWindowCallback(awt_clear_selection_list_cb, sellist));
         aws->create_button(GBS_global_string("CLEAR_%s", id_suffix), "CLEAR");
 
-        aws->callback(MP_delete_selected, (AW_CL)sellist);
+        aws->callback(makeWindowCallback(MP_delete_selected, sellist));
         aws->create_button(GBS_global_string("DELETE_%s", id_suffix), "DELETE");
     }
 
