@@ -422,12 +422,22 @@ void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
 
 
 void AW_selection_list::move_content_to(AW_selection_list *target_list) {
-    // @@@ instead of COPYING, it could simply move the entries (may cause problems with iterator)
+    //! move all entries (despite default entry) to another AW_selection_list
 
-    AW_selection_list_entry *entry = list_table;
-    while (entry) {
-        if(entry != default_select) {//default selection should not be coied over
-        
+    if (default_select) {
+        char *defDisp = strdup(default_select->get_displayed());
+        char *defVal  = strdup(default_select->value.get_string());
+
+        delete_default();
+        move_content_to(target_list);
+        insert_default(defDisp, defVal);
+
+        free(defVal);
+        free(defDisp);
+    }
+    else {
+        AW_selection_list_entry *entry = list_table;
+        while (entry) {
             if (!target_list->list_table) {
                 target_list->last_of_list_table = target_list->list_table = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
             }
@@ -436,11 +446,10 @@ void AW_selection_list::move_content_to(AW_selection_list *target_list) {
                 target_list->last_of_list_table = target_list->last_of_list_table->next;
                 target_list->last_of_list_table->next = NULL;
             }
+            entry = entry->next;
         }
-        entry = entry->next;
+        clear();
     }
-
-    clear();
 }
 
 void AW_selection_list::move_selection(int offset) {
