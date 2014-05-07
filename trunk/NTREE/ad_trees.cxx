@@ -771,19 +771,21 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
                     }
                 }
 
-                size_t    species_count;
-                GBT_TREE *cons_tree = tree_builder.get(species_count, error); // triggers 2 implicit progress increments
+                if (!error) {
+                    size_t    species_count;
+                    GBT_TREE *cons_tree = tree_builder.get(species_count, error); // triggers 2 implicit progress increments
 
-                if (!error && progress.aborted()) {
-                    error = "user abort";
-                }
+                    if (!error && progress.aborted()) {
+                        error = "user abort";
+                    }
 
-                nt_assert(contradicted(cons_tree, error));
-                if (cons_tree) {
-                    char *comment = tree_builder.get_remark();
-                    error         = GBT_write_tree_with_remark(gb_main, cons_tree_name, cons_tree, comment);
-                    free(comment);
-                    delete cons_tree;
+                    nt_assert(contradicted(cons_tree, error));
+                    if (cons_tree) {
+                        char *comment = tree_builder.get_remark();
+                        error         = GBT_write_tree_with_remark(gb_main, cons_tree_name, cons_tree, comment);
+                        free(comment);
+                        delete cons_tree;
+                    }
                 }
                 if (error) progress.done();
             }
