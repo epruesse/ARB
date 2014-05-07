@@ -757,10 +757,12 @@ void MP_normal_colors_in_tree(AW_window */*aww*/) {
 }
 
 void MP_delete_selected(UNFIXED, AW_selection_list *sellist) {
-    int idx = sellist->get_index_of_selected();
-    sellist->delete_element_at(idx);
-    sellist->select_element_at(idx);
-    sellist->update();
+    if (!sellist->default_is_selected()) {
+        int idx = sellist->get_index_of_selected();
+        sellist->delete_element_at(idx);
+        sellist->select_element_at(idx);
+        sellist->update();
+    }
 }
 
 
