@@ -190,8 +190,8 @@ void AW_selection_list::refresh() {
             gtk_tree_selection_select_iter(selection, &iter);
         }
     }
-    else if(NULL != default_select) {//the awar value does not match any entry, not even the default entry, we set the default entry anyway
-        if(select_default_on_unknown_awar_value) {
+    else if (default_select) { // the awar value does not match any entry, not even the default entry, we set the default entry anyway
+        if (select_default_on_unknown_awar_value) {
             select_default();
         }
     }
@@ -267,11 +267,14 @@ void AW_selection_list::delete_element_at(const int index) {
         prev = get_entry_at(index-1);
         aw_return_if_fail(prev);
     }
-    
-    if (index == selected_index) select_default();
 
     AW_selection_list_entry *toDel = prev ? prev->next : list_table;
-    aw_assert(toDel != default_select);
+    if (toDel == default_select) {
+        default_select = NULL;
+    }
+    else {
+        if (index == selected_index) select_default();
+    }
 
     (prev ? prev->next : list_table) = toDel->next;
     delete toDel;
@@ -379,8 +382,8 @@ void AW_selection_list::append_to_liststore(AW_selection_list_entry* entry)
 void AW_selection_list::delete_default() {
     /** Removes the default entry from the list*/
     if (default_select) {
-        delete_value(get_default_value());
-        default_select = NULL;
+        delete_value(get_default_value()); // @@@ wrong if another (preceding) entry has same value as default_select
+        aw_assert(default_select == NULL);
     }
 }
 
