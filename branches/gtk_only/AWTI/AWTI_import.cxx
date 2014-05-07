@@ -1322,9 +1322,9 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
 
         aws->at("type");
         aws->create_option_menu(AWAR_ALI_TYPE);
-        aws->insert_option("dna", "d", "dna");
-        aws->insert_option("rna", "r", "rna");
-        aws->insert_option("protein", "p", "ami");
+        aws->insert_option        ("dna",     "d", "dna");
+        aws->insert_default_option("rna",     "r", "rna");
+        aws->insert_option        ("protein", "p", "ami");
         aws->update_option_menu();
 
         aws->at("protect");

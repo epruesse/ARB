@@ -491,8 +491,12 @@ void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths
 void NT_multifurcate_tree(AWT_canvas *ntw, const RootedTree::multifurc_limits& below) {
     GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->get_root_node()->multifurcate_whole_tree(below);
+
+    RootedTree *tree = AWT_TREE(ntw)->get_root_node();
+    if (tree) {
+        tree->multifurcate_whole_tree(below);
     save_changed_tree(ntw);
+    }
 }
 
 void NT_move_boot_branch(UNFIXED, AWT_canvas *ntw, int direction) { // copy branchlengths to bootstraps (or vice versa)
