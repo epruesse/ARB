@@ -21,6 +21,10 @@
 #include "aw_assert.hxx"
 #include <arbdbt.h>
 
+CONSTEXPR_RETURN inline bool valid_color_group(int color_group) {
+    return color_group>0 && color_group<=AW_COLOR_GROUPS;
+}
+
 static const char* _gc_awar_name(const char* tpl, const char* window, const char* colname) {
     char*       key = GBS_string_2_key(colname);
     const char* res = GBS_global_string(tpl, window, key);
@@ -34,7 +38,7 @@ static const char* _font_awarname(const char* window, const char* colname) {
     return _gc_awar_name("GCS/%s/MANAGE_GCS/%s/fontname", window, colname);
 }
 static const char* _colorgroupname_awarname(int color_group) {
-    if (color_group < 0 || color_group > AW_COLOR_GROUPS) return NULL;
+    if (!valid_color_group(color_group)) return NULL;
     return GBS_global_string(AWAR_COLOR_GROUPS_PREFIX "/name%i", color_group);
 }
 static const char* _colorgroup_name(int color_group) {
@@ -384,11 +388,12 @@ void AW_init_color_group_defaults(const char *for_program) {
     }
 }
 
-/**
- * Set active color group
- */
 GB_ERROR AW_set_color_group(GBDATA *gbd, long color_group) {
-    aw_assert(color_group > 0 && color_group < AW_COLOR_GROUPS);
+    /*! Set or clear active color group of item (species, gene, ..)
+     * @param gbd the db item
+     * @param color_group (0 = clear color group; 1..AW_COLOR_GROUPS = set color group)
+     */
+    aw_assert(valid_color_group(color_group) || color_group == 0);
     return GBT_write_int(gbd, AW_COLOR_GROUP_ENTRY, color_group);
 }
 
@@ -421,7 +426,7 @@ void fake_AW_init_color_groups() {
 #endif
 
 char *AW_get_color_group_name(AW_root *awr, int color_group) {
-    aw_assert(color_group>0 && color_group <= AW_COLOR_GROUPS);
+    aw_assert(valid_color_group(color_group));
     return awr->awar(_colorgroupname_awarname(color_group))->read_string();
 }
 
