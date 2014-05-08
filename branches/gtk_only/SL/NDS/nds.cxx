@@ -658,6 +658,11 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
                             }
                         }
                     }
+                    else {
+                        if (GB_have_error()) {
+                            field_output = GB_await_error();
+                        }
+                    }
                 }
                 str = strdup(field_output);
             }

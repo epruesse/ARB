@@ -1679,46 +1679,54 @@ static void modify_fields_of_queried_cb(AW_window*, DbQuery *query) {
                 {
                     if (IS_QUERIED(gb_item, query)) {
                         GBDATA *gb_new = GB_search(gb_item, key, GB_FIND);
-                        char   *str    = gb_new ? GB_read_as_string(gb_new) : strdup("");
-                        char   *parsed = 0;
 
-                        if (double_pars) {
-                            char *com2 = GB_command_interpreter(query->gb_main, str, command, gb_item, query->get_tree_name());
-                            if (com2) {
-                                if (tag) parsed = GBS_string_eval_tagged_string(query->gb_main, "", deftag, tag, 0, com2, gb_item);
-                                else parsed     = GB_command_interpreter       (query->gb_main, "", com2, gb_item, query->get_tree_name());
-                            }
-                            free(com2);
+                        if (!gb_new && GB_have_error()) {
+                            error = GB_await_error();
                         }
                         else {
-                            if (tag) parsed = GBS_string_eval_tagged_string(query->gb_main, str, deftag, tag, 0, command, gb_item);
-                            else parsed     = GB_command_interpreter       (query->gb_main, str, command, gb_item, query->get_tree_name());
-                        }
+                            char *str    = gb_new ? GB_read_as_string(gb_new) : strdup("");
+                            char *parsed = 0;
 
-                        if (!parsed) error = GB_await_error();
-                        else {
-                            if (strcmp(parsed, str) != 0) { // any change?
-                                if (gb_new && parsed[0] == 0) { // empty result -> delete field
-                                    error = GB_delete(gb_new);
+                            if (double_pars) {
+                                char *com2 = GB_command_interpreter(query->gb_main, str, command, gb_item, query->get_tree_name());
+                                if (com2) {
+                                    if (tag) parsed = GBS_string_eval_tagged_string(query->gb_main, "", deftag, tag, 0, com2, gb_item);
+                                    else parsed     = GB_command_interpreter       (query->gb_main, "", com2, gb_item, query->get_tree_name());
                                 }
-                                else {
-                                    if (!gb_new) {
-                                        gb_new = GB_search(gb_item, key, (GB_TYPES)GB_read_int(gb_key_type));
-                                        if (!gb_new) error = GB_await_error();
+                                free(com2);
+                            }
+                            else {
+                                if (tag) parsed = GBS_string_eval_tagged_string(query->gb_main, str, deftag, tag, 0, command, gb_item);
+                                else parsed     = GB_command_interpreter       (query->gb_main, str, command, gb_item, query->get_tree_name());
+                            }
+
+                            if (!parsed) error = GB_await_error();
+                            else {
+                                if (strcmp(parsed, str) != 0) { // any change?
+                                    if (gb_new && parsed[0] == 0) { // empty result -> delete field
+                                        error = GB_delete(gb_new);
                                     }
-                                    if (!error) error = GB_write_as_string(gb_new, parsed);
+                                    else {
+                                        if (!gb_new) {
+                                            gb_new = GB_search(gb_item, key, (GB_TYPES)GB_read_int(gb_key_type));
+                                            if (!gb_new) error = GB_await_error();
+                                        }
+                                        if (!error) error = GB_write_as_string(gb_new, parsed);
+                                    }
                                 }
+                                free(parsed);
                             }
-                            free(parsed);
+                            free(str);
+                            progress.inc_and_check_user_abort(error);
                         }
-                        free(str);
-                        progress.inc_and_check_user_abort(error);
                     }
                 }
             }
 
             delete tag;
             free(deftag);
+
+            if (error) progress.done();
         }
 
         error = GB_end_transaction(query->gb_main, error);
