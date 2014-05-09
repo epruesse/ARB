@@ -615,7 +615,7 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     COLSTAT_create_selection_list(aws, column_stat);
 
     aws->at("what");
-    AW_selection_list *plotTypeList = aws->create_selection_list(AWAR_CS2GP_SUFFIX);
+    AW_selection_list *plotTypeList = aws->create_selection_list(AWAR_CS2GP_SUFFIX, true);
     for (int pt = 0; pt<PT_PLOT_TYPES; ++pt) {
         plotTypeList->insert(plotTypeDescription[pt], plotTypeName[pt]);
     }

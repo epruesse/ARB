@@ -302,7 +302,7 @@ void AWT_popup_select_srtaci_window(AW_window *aww, const char *acisrt_awarname)
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("box");
-        AW_selection_list *programs = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE);
+        AW_selection_list *programs = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE, true);
         GB_ERROR error;
         {
             StorableSelectionList storable_sellist(TypedSelectionList("sellst", programs, "SRT/ACI scripts", "srt_aci"));

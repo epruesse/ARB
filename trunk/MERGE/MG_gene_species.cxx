@@ -583,7 +583,7 @@ AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
     aws->create_text_field(AWAR_MERGE_GENE_SPECIES_EXAMPLE, 40, 3);
 
     aws->at("fields");
-    AW_selection_list *geneSpecFieldList = aws->create_selection_list(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD, 10, 30);
+    AW_selection_list *geneSpecFieldList = aws->create_selection_list(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD, 10, 30, true);
 
     MG_update_selection_list_on_field_transfers(aw_root, geneSpecFieldList);
 

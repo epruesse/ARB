@@ -1033,7 +1033,7 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, WeightedFilter *
         //      clusterlist
 
         aws->at("cluster_list");
-        global_data->clusterList = aws->create_selection_list(AWAR_CLUSTER_SELECTED);
+        global_data->clusterList = aws->create_selection_list(AWAR_CLUSTER_SELECTED, true);
         update_cluster_sellist();
 
         aw_root->awar(AWAR_CLUSTER_SELECTED)->add_callback(select_cluster_cb);
