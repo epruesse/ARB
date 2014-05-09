@@ -548,10 +548,10 @@ void awt_selection_list_on_sai_update_cb(UNFIXED, AWT_sai_selection *saisel) {
     saisel->refresh();
 }
 
-AWT_sai_selection *SAI_selection_list_spec::create_list(AW_window *aws) const {
+AWT_sai_selection *SAI_selection_list_spec::create_list(AW_window *aws, bool fallback2default) const {
     GB_transaction ta(gb_main);
 
-    AW_selection_list *sellist     = aws->create_selection_list(awar_name, 40, 4, true);
+    AW_selection_list *sellist     = aws->create_selection_list(awar_name, 40, 4, fallback2default);
     GBDATA            *gb_sai_data = GBT_get_SAI_data(gb_main);
     AWT_sai_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
 
@@ -576,7 +576,7 @@ static void popup_filtered_sai_selection_list(AW_root *aw_root, const SAI_select
 
         aws->at("selection");
         aws->callback((AW_CB0)AW_POPDOWN);
-        spec->create_list(aws);
+        spec->create_list(aws, true);
 
         aws->at("button");
         aws->callback(AW_POPDOWN);
@@ -598,7 +598,7 @@ void awt_popup_sai_selection_list(AW_window *aww, const char *awar_name, GBDATA 
     popup_filtered_sai_selection_list(aww, &spec);
 }
 
-AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
+AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
     /* Selection list for SAIs
      *
      * if filter_proc is set then show only those items on which
@@ -606,7 +606,7 @@ AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *
      */
     SAI_selection_list_spec spec(varname, gb_main);
     spec.define_filter(filter_poc, filter_cd);
-    return spec.create_list(aws);
+    return spec.create_list(aws, fallback2default);
 }
 
 void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
