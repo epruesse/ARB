@@ -1344,7 +1344,7 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
         aws->create_button(0, AWAR_NN_SELECTED_HIT_COUNT, 0, "+");
 
         aws->at("hits");
-        AW_selection_list *resultList = aws->create_selection_list(AWAR_SPECIES_NAME);
+        AW_selection_list *resultList = aws->create_selection_list(AWAR_SPECIES_NAME, true);
         NN_GLOBAL.set_result_list(resultList);
         resultList->insert_default("No hits found", "");
         resultList->update();

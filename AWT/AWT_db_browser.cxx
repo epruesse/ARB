@@ -1127,7 +1127,7 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->label("Rec.size"); aws->create_toggle(AWAR_DBB_RECSIZE);
 
         aws->at("browse");
-        browse_list = aws->create_selection_list(AWAR_DBB_BROWSE);
+        browse_list = aws->create_selection_list(AWAR_DBB_BROWSE, true);
         update_browser_selection_list(aw_root, browse_list);
 
         aws->at("infoopt");

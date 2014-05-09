@@ -84,7 +84,7 @@ AW_DB_selection *awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_win
         GB_transaction ta(gb_main);
         gb_presets = GBT_get_presets(gb_main);
     }
-    AW_selection_list       *sellist = aws->create_selection_list(varname, 20, 3);
+    AW_selection_list       *sellist = aws->create_selection_list(varname, 20, 3, true);
     AWT_alignment_selection *alisel  = new AWT_alignment_selection(sellist, gb_presets, ali_type_match);
     alisel->refresh(); // belongs to window now
     return alisel;
@@ -139,7 +139,7 @@ AW_DB_selection *awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *
         GB_transaction ta(gb_main);
         gb_tree_data = GBT_get_tree_data(gb_main);
     }
-    AW_selection_list  *sellist = aws->create_selection_list(varname, 40, 4);
+    AW_selection_list  *sellist = aws->create_selection_list(varname, 40, 4, true);
     AWT_tree_selection *treesel = new AWT_tree_selection(sellist, gb_tree_data); // owned by nobody
     treesel->refresh();
     return treesel;
@@ -276,7 +276,7 @@ static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, c
 
     aw_popup->at_newline();
     aw_popup->callback((AW_CB0)AW_POPDOWN);
-    AW_selection_list *sellist = aw_popup->create_selection_list(varname, PT_SERVERNAME_SELLIST_WIDTH, 20);
+    AW_selection_list *sellist = aw_popup->create_selection_list(varname, PT_SERVERNAME_SELLIST_WIDTH, 20, true);
 
     aw_popup->at_newline();
     aw_popup->callback((AW_CB0)AW_POPDOWN);
@@ -332,7 +332,7 @@ void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname
 #endif
     }
     else {
-        (new AWT_ptserver_selection(aws->create_selection_list(varname)))->refresh();
+        (new AWT_ptserver_selection(aws->create_selection_list(varname, true)))->refresh();
     }
 }
 
@@ -379,7 +379,7 @@ void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const 
     struct awt_sel_list_for_tables *cbs;
     GB_push_transaction(gb_main);
 
-    id = aws->create_selection_list(varname, 40, 8);
+    id = aws->create_selection_list(varname, 40, 8, true);
     cbs = new awt_sel_list_for_tables;
     cbs->aws = aws;
     cbs->gb_main = gb_main;
@@ -422,7 +422,7 @@ void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, 
     struct awt_sel_list_for_tables *cbs;
     GB_push_transaction(gb_main);
 
-    id = aws->create_selection_list(varname, 40, 8);
+    id = aws->create_selection_list(varname, 40, 8, true);
     cbs = new awt_sel_list_for_tables;
     cbs->aws = aws;
     cbs->gb_main = gb_main;
@@ -463,7 +463,7 @@ void awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws
         GB_transaction ta(gb_main);
         gb_configuration_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
     }
-    AW_selection_list *sellist = aws->create_selection_list(varname, 40, 15);
+    AW_selection_list *sellist = aws->create_selection_list(varname, 40, 15, true);
     (new AWT_configuration_selection(sellist, gb_configuration_data))->refresh();
 }
 
@@ -563,7 +563,7 @@ void awt_selection_list_on_sai_update_cb(UNFIXED, AWT_sai_selection *saisel) {
 AWT_sai_selection *SAI_selection_list_spec::create_list(AW_window *aws) const {
     GB_transaction ta(gb_main);
 
-    AW_selection_list *sellist     = aws->create_selection_list(awar_name, 40, 4);
+    AW_selection_list *sellist     = aws->create_selection_list(awar_name, 40, 4, true);
     GBDATA            *gb_sai_data = GBT_get_SAI_data(gb_main);
     AWT_sai_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
 
@@ -1073,7 +1073,7 @@ class AW_subset_selection : public AW_selection {
 
         aw_root->awar_string(awar_name);
 
-        AW_selection_list *sub_sellist = aww->create_selection_list(awar_name);
+        AW_selection_list *sub_sellist = aww->create_selection_list(awar_name, true);
         finish_fill_box(&parent_sellist, sub_sellist);
 
         free(awar_name);

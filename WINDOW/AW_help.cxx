@@ -565,13 +565,13 @@ void AW_help_popup(AW_window *, const char *help_file) {
 
 
         aws->at("super");
-        HELP.uplinks = aws->create_selection_list(AWAR_HELPFILE, 3, 3);
+        HELP.uplinks = aws->create_selection_list(AWAR_HELPFILE, false);
         HELP.uplinks->insert_default("   ", "");
         HELP.uplinks->select_default_on_awar_mismatch(false);
         HELP.uplinks->update();
 
         aws->at("sub");
-        HELP.links = aws->create_selection_list(AWAR_HELPFILE, 3, 3);
+        HELP.links = aws->create_selection_list(AWAR_HELPFILE, false);
         HELP.links->insert_default("   ", "");
         HELP.links->select_default_on_awar_mismatch(false);
         HELP.links->update();

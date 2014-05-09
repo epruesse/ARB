@@ -132,7 +132,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
             aw_popup->at_newline();
 
             aw_popup->callback((AW_CB0)AW_POPDOWN);
-            sellist = aw_popup->create_selection_list(varname, columns, visible_rows);
+            sellist = aw_popup->create_selection_list(varname, columns, visible_rows, true);
 
             aw_popup->at_newline();
             aw_popup->callback((AW_CB0)AW_POPDOWN);
@@ -152,7 +152,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
 
     }
     else { // otherwise just insert the selection list at point
-        sellist = aws->create_selection_list(varname, columns, visible_rows);
+        sellist = aws->create_selection_list(varname, columns, visible_rows, true);
     }
 
     if (rescan_xfig_label) {
