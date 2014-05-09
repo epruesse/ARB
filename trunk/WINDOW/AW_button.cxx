@@ -1146,7 +1146,9 @@ static void scroll_sellist(Widget scrolledList, bool upwards) {
 static void scroll_sellist_up(Widget scrolledList, XEvent*, String*, Cardinal*) { scroll_sellist(scrolledList, true); }
 static void scroll_sellist_dn(Widget scrolledList, XEvent*, String*, Cardinal*) { scroll_sellist(scrolledList, false); }
 
-AW_selection_list* AW_window::create_selection_list(const char *var_name, int columns, int rows) {
+AW_selection_list* AW_window::create_selection_list(const char *var_name, int columns, int rows, bool /*fallback2default*/) {
+    // Note: fallback2default has no meaning in motif-version (always acts like 'false', i.e. never does fallback)
+
     Widget         scrolledWindowList; // @@@ fix locals
     Widget         scrolledList;
     VarUpdateInfo *vui;
