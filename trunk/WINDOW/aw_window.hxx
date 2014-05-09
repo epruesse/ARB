@@ -626,7 +626,8 @@ public:
 
     // ***** selection list is a redefinable scrolled list of items
 
-    AW_selection_list *create_selection_list(const char *awar_name, int columns = 4, int rows = 4);
+    AW_selection_list *create_selection_list(const char *awar_name, int columns, int rows);
+    AW_selection_list *create_selection_list(const char *awar_name) { return create_selection_list(awar_name, 4, 4); }
 };
 
 
