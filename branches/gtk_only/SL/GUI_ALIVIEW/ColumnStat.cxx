@@ -352,7 +352,7 @@ static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
 
 void ColumnStat::create_sai_selection_list(AW_window *aww) {
     GB_transaction ta(gb_main);
-    sai_sel_box_id = awt_create_selection_list_on_sai(gb_main, aww, awar_name, filter_columnstat_SAIs, (AW_CL)this);
+    sai_sel_box_id = awt_create_selection_list_on_sai(gb_main, aww, awar_name, true, filter_columnstat_SAIs, (AW_CL)this);
 }
 
 void COLSTAT_create_selection_list(AW_window *aws, ColumnStat *column_stat) {
