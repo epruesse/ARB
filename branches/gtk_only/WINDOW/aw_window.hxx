@@ -535,8 +535,8 @@ public:
 
     // ***** selection list is a redefinable scrolled list of items
 
-    AW_selection_list *create_selection_list(const char *awar_name, int columns, int rows);
-    AW_selection_list *create_selection_list(const char *awar_name) { return create_selection_list(awar_name, 4, 4); }
+    AW_selection_list *create_selection_list(const char *awar_name, int columns, int rows, bool fallback2default);
+    AW_selection_list *create_selection_list(const char *awar_name, bool fallback2default) { return create_selection_list(awar_name, 4, 4, fallback2default); }
 
     // gtk ready made buttons
     void create_font_button(const char *awar_name, const char *label);

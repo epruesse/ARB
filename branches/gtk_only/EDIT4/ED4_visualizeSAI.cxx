@@ -492,7 +492,7 @@ static void deleteColorTranslationTable(AW_window *aws) {
 
 static AW_selection_list *buildClrTransTabNamesList(AW_window *aws) {
     AW_root           *awr            = aws->get_root();
-    AW_selection_list *colorTransList = aws->create_selection_list(AWAR_SAI_CLR_TRANS_TABLE);
+    AW_selection_list *colorTransList = aws->create_selection_list(AWAR_SAI_CLR_TRANS_TABLE, true);
 
     update_ClrTransTabNamesList_cb(awr, (AW_CL)colorTransList);
 

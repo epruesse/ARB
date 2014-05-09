@@ -226,7 +226,7 @@ public:
 
         sprintf(buffer, "%sbox", at_prefix);
         aws->at(buffer);
-        filelist = aws->create_selection_list(def_name, 2, 2);
+        filelist = aws->create_selection_list(def_name, false);
 
         //the selection list is bound to the same awar as the input field
         //therefore the file list should not select the default entry if it cannot find a match

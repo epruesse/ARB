@@ -982,8 +982,8 @@ void AW_window::clear_option_menu(AW_selection_list *sel) {
     sel->clear();
 }
 
-AW_selection_list* AW_window::create_selection_list(const char *var_name, int columns, int rows) {
-    AW_awar* awar = get_root()->awar_no_error(var_name);
+AW_selection_list* AW_window::create_selection_list(const char *awar_name, int columns, int rows, bool fallback2default) {
+    AW_awar* awar = get_root()->awar_no_error(awar_name);
     aw_return_val_if_fail(awar, NULL);
     aw_warn_if_fail(!_at.label_for_inputfield); // labels have no effect for selection lists
 
