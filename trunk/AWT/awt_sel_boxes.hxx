@@ -80,7 +80,7 @@ public:
 
     const char *get_awar_name() const { return awar_name; }
 
-    AWT_sai_selection *create_list(AW_window *aws) const;
+    AWT_sai_selection *create_list(AW_window *aws, bool fallback2default) const;
 };
 
 // -----------------------------------------
@@ -98,7 +98,7 @@ void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const 
 void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *tablename, const char *varname);
 AW_window *AWT_create_tables_admin_window(AW_root *aw_root, GBDATA *gb_main);
 
-AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
+AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
 void awt_selection_list_on_sai_update_cb(UNFIXED, AWT_sai_selection *cbsid);
 void awt_popup_sai_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main);
 void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
