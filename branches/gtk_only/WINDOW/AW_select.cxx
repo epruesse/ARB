@@ -46,17 +46,17 @@ static bool aw_selection_list_row_activated(GtkTreeView       *tree_view,
     return true; // correct?
 }
 
-AW_selection_list::AW_selection_list(AW_awar* awar_) 
+AW_selection_list::AW_selection_list(AW_awar *awar_, bool fallback2default) 
     : awar(awar_),
       model(GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING))),
       widget(NULL),
       change_cb_id(0),
       activate_cb_id(0),
       selected_index(0),
+      select_default_on_unknown_awar_value(fallback2default),
       list_table(NULL),
       last_of_list_table(NULL),
-      default_select(NULL),
-      select_default_on_unknown_awar_value(true)
+      default_select(NULL)
 {
     aw_assert(NULL != awar);
     awar->add_callback(makeRootCallback(aw_selection_list_awar_changed, this));
@@ -77,10 +77,6 @@ AW_selection_list::~AW_selection_list() {
     if (activate_cb_id) {
         g_signal_handler_disconnect(G_OBJECT(widget), activate_cb_id);
     }
-}
-
-void AW_selection_list::select_default_on_awar_mismatch(bool value) {
-    select_default_on_unknown_awar_value = value;
 }
 
 void AW_selection_list::bind_widget(GtkWidget *widget_) {

@@ -926,7 +926,7 @@ AW_selection_list *AW_window::create_option_menu(const char *var_name,
     if (tmp_label) this->label(tmp_label);
 
     GtkWidget *combo_box = gtk_combo_box_new();
-    AW_selection_list *slist = new AW_selection_list(awar);
+    AW_selection_list *slist = new AW_selection_list(awar, true);
     slist->bind_widget(combo_box);
 
     prvt->combo_box = combo_box;
@@ -1001,7 +1001,7 @@ AW_selection_list* AW_window::create_selection_list(const char *awar_name, int c
         gtk_widget_set_size_request(scrolled_win, char_width * columns, char_height * rows);
     }
 
-    AW_selection_list *slist = new AW_selection_list(awar);
+    AW_selection_list *slist = new AW_selection_list(awar, fallback2default);
     slist->bind_widget(tree);
 
     awar->dclicked += prvt->action_template.dclicked;

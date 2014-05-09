@@ -107,7 +107,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     dialog.set_title(title);
     dialog.set_message(prompt);
     dialog.create_input_field(awar_string);
-    AW_selection_list *slist = dialog.create_selection_list(awar_string);
+    AW_selection_list *slist = dialog.create_selection_list(awar_string, false);
     dialog.create_buttons(buttons_);
     
     slist->clear();
