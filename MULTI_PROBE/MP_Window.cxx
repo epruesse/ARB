@@ -59,7 +59,7 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
 
         result_window->at("box");
         result_window->callback(MP_result_chosen);
-        result_probes_list = result_window->create_selection_list(MP_AWAR_RESULTPROBES);
+        result_probes_list = result_window->create_selection_list(MP_AWAR_RESULTPROBES, true);
         result_probes_list->set_file_suffix("mpr");
         result_probes_list->insert_default("", "");
 
@@ -387,13 +387,13 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     aws->button_length(7);
     aws->at("Selectedprobes");
     aws->callback(MP_selected_chosen);
-    selected_list = aws->create_selection_list(MP_AWAR_SELECTEDPROBES, max_seq_col, max_seq_hgt);
+    selected_list = aws->create_selection_list(MP_AWAR_SELECTEDPROBES, max_seq_col, max_seq_hgt, true);
     const StorableSelectionList *storable_selected_list = new StorableSelectionList(TypedSelectionList("prb", selected_list, "probes", "selected_probes"), mp_list2file, mp_file2list);
 
     selected_list->insert_default("", "");
 
     aws->at("Probelist");
-    probelist = aws->create_selection_list(MP_AWAR_PROBELIST);
+    probelist = aws->create_selection_list(MP_AWAR_PROBELIST, true);
     const StorableSelectionList *storable_probelist = new StorableSelectionList(TypedSelectionList("prb", probelist, "probes", "all_probes"), mp_list2file, mp_file2list);
     probelist->insert_default("", "");
 

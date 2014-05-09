@@ -353,7 +353,7 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
 
     aws->at(box_pos_fig);
 
-    cbs->fields      = aws->create_selection_list(cbs->awarname_current_item, 20, 10);
+    cbs->fields      = aws->create_selection_list(cbs->awarname_current_item, 20, 10, true);
     cbs->aws         = aws;
     cbs->awr         = aw_root;
     cbs->gb_main     = gb_main;
