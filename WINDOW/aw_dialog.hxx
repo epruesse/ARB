@@ -8,10 +8,6 @@ private:
     struct Pimpl;
     Pimpl *prvt;
     
-    /**Disables the default selection of the selection list of both the selection list
-       and the input field use the same awar.*/
-    void disable_default_selection_if_same_awars();
-    
 public:
     AW_dialog();
     ~AW_dialog();
@@ -22,7 +18,7 @@ public:
     void create_buttons(const char* buttons);
     void create_input_field(AW_awar*);
     void create_toggle(AW_awar*, const char *label);
-    AW_selection_list* create_selection_list(AW_awar*);
+    AW_selection_list* create_selection_list(AW_awar *awar, bool fallback2default);
 
     int get_result();
 };

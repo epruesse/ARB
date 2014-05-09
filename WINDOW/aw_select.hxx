@@ -60,16 +60,16 @@ public:
 typedef int (*sellist_cmp_fun)(const char *disp1, const char *disp2);
 
 class AW_selection_list : virtual Noncopyable {
-    AW_awar      *awar;
-    GtkTreeModel *model;
-    GtkWidget    *widget;
-    unsigned long change_cb_id;
-    unsigned long activate_cb_id;
-    int           selected_index;
-    bool select_default_on_unknown_awar_value; /**< If true the default value is selected if no entry that matches the awars value can be found*/
-    
+    AW_awar       *awar;
+    GtkTreeModel  *model;
+    GtkWidget     *widget;
+    unsigned long  change_cb_id;
+    unsigned long  activate_cb_id;
+    int            selected_index;
+    bool           select_default_on_unknown_awar_value; /**< If true the default value is selected if no entry that matches the awars value can be found*/
+
     /**
-     * @return NULL if there is no entry at this index 
+     * @return NULL if there is no entry at this index
      */
     AW_selection_list_entry *get_entry_at(int index) const;
     
@@ -93,7 +93,7 @@ public:
     void double_clicked();
 
     /**the value of the selected item will be written to the awar*/
-    AW_selection_list(AW_awar*);
+    AW_selection_list(AW_awar *awar_, bool fallback2default);
     ~AW_selection_list();
 
     void bind_widget(GtkWidget*);
@@ -127,13 +127,6 @@ public:
     void sort(bool backward, bool case_sensitive); // uses displayed value!
     void sortCustom(sellist_cmp_fun cmp);          // uses displayed value!
 
-       
-    /**If the awar value changes a corresponding entry is selected.
-       If no entry matches the awar value the default entry is selected.
-       In that case the awar is changed to the default value as well. However in rare cases
-       this behavior causes bugs. This flag can be used disable the default selection in case of an awar mismatch*/
-    void select_default_on_awar_mismatch(bool value);
-    
     // ---------------------------------------------------
     // the following functions work for string awars only:
 

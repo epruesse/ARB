@@ -227,11 +227,6 @@ public:
         sprintf(buffer, "%sbox", at_prefix);
         aws->at(buffer);
         filelist = aws->create_selection_list(def_name, false);
-
-        //the selection list is bound to the same awar as the input field
-        //therefore the file list should not select the default entry if it cannot find a match
-        //for the content of the awar (otherwise it would reset the awar every time the user types)
-        filelist->select_default_on_awar_mismatch(false);
     }
 
     void fill();

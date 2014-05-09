@@ -86,21 +86,6 @@ void AW_dialog::create_buttons(const char* buttons_) {
     free(buttons);
 }
 
-void AW_dialog::disable_default_selection_if_same_awars() {
-    /* If both the selection list and the input field point to the same awar
-       we have to disable the default selection of the selection list.
-       Otherwise the list will overwrite all changes made by the input field
-       immediately */
-    
-    if(prvt->slist && prvt->selection_awar && prvt->input_awar &&
-       strcmp(prvt->selection_awar->awar_name, prvt->input_awar->awar_name) == 0) {
-        //if input field and selection list point to the same awar we have to
-        //disable the default selection feature of the selection list to avoid
-        //a bug
-        prvt->slist->select_default_on_awar_mismatch(false);
-    } 
-}
-
 void AW_dialog::create_input_field(AW_awar* awar) {
     aw_return_if_fail(awar);
     
@@ -110,7 +95,6 @@ void AW_dialog::create_input_field(AW_awar* awar) {
     GtkWidget* content = gtk_dialog_get_content_area(prvt->dialog);
     gtk_box_pack_start(GTK_BOX(content), GTK_WIDGET(entry), false, false, 7);
     prvt->input_awar = awar;
-    disable_default_selection_if_same_awars();    
 }
 
 void AW_dialog::create_toggle(AW_awar* awar, const char *label) {
@@ -121,7 +105,7 @@ void AW_dialog::create_toggle(AW_awar* awar, const char *label) {
     gtk_container_add(GTK_CONTAINER(content), toggle);
 }
 
-AW_selection_list* AW_dialog::create_selection_list(AW_awar* awar) {
+AW_selection_list* AW_dialog::create_selection_list(AW_awar *awar, bool fallback2default) {
     GtkWidget *tree = gtk_tree_view_new();
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
     
@@ -132,10 +116,9 @@ AW_selection_list* AW_dialog::create_selection_list(AW_awar* awar) {
     GtkWidget* content = gtk_dialog_get_content_area(prvt->dialog);
     gtk_container_add(GTK_CONTAINER(content), scrolled_win);
 
-    prvt->slist = new AW_selection_list(awar);
+    prvt->slist = new AW_selection_list(awar, fallback2default);
     prvt->slist->bind_widget(tree);
     prvt->selection_awar = awar;
-    disable_default_selection_if_same_awars();    
     return prvt->slist;
 }
 
