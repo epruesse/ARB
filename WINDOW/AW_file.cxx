@@ -223,7 +223,7 @@ public:
 
         sprintf(buffer, "%sbox", at_prefix);
         aws->at(buffer);
-        filelist = aws->create_selection_list(def_name, 2, 2);
+        filelist = aws->create_selection_list(def_name, false);
     }
 
     void fill();
