@@ -59,6 +59,7 @@ public:
 Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main,
                                                          AW_window      *aws,
                                                          const char     *varname,
+                                                         bool            fallback2default,
                                                          long            type_filter,
                                                          const char     *scan_xfig_label,
                                                          const char     *rescan_xfig_label,
