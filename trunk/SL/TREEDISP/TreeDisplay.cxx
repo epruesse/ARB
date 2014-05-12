@@ -1687,6 +1687,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_
             duplicates = 0;
         }
         else {
+            freenull(tree_static->gone_tree_name);
             {
                 char *name_dup = strdup(name); // name might be freed by unload()
                 unload();
