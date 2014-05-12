@@ -59,13 +59,14 @@ typedef int (*sellist_cmp_fun)(const char *disp1, const char *disp2);
 
 class AW_selection_list {
     AW_selection_list_entry *get_entry_at(int index) const;
-    
-public:
-    AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
 
     char             *variable_name;
     AW_VARIABLE_TYPE  variable_type;
-    Widget            select_list_widget;
+
+public:
+    AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
+
+    Widget select_list_widget;
 
     AW_selection_list_entry *list_table;
     AW_selection_list_entry *last_of_list_table;
@@ -73,6 +74,9 @@ public:
     AW_selection_list      *next;
 
     // ******************** real public ***************
+
+    const char *get_awar_name() const { return variable_name; }
+    AW_VARIABLE_TYPE get_awar_type() const { return variable_type; }
     
     void selectAll();
     void deselectAll();
