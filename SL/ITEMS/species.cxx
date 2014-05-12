@@ -135,11 +135,7 @@ void popup_select_species_field_window(AW_window *aww, const char *awar_name, GB
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        create_selection_list_on_itemfields(gb_main,
-                                            aws,
-                                            AWAR_KEY_SELECT,
-                                            FIELD_FILTER_NDS,
-                                            "scandb", "rescandb", SPECIES_get_selector(), 20, 10);
+        create_selection_list_on_itemfields(gb_main, aws, AWAR_KEY_SELECT, FIELD_FILTER_NDS, "scandb", "rescandb", SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
         aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
         common_awar->add_callback(makeRootCallback(popdown_select_species_field_window, static_cast<AW_window*>(aws)));
