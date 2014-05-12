@@ -294,7 +294,7 @@ static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, c
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
     if (popup) {
 #ifdef ARB_GTK
-        (new AWT_ptserver_selection(aws->create_option_menu(varname)))->refresh();
+        (new AWT_ptserver_selection(aws->create_option_menu(varname, true)))->refresh();
 
         int old_button_length = aws->get_button_length();
         aws->button_length(PT_SERVERNAME_LENGTH+1);
@@ -891,7 +891,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root, const StorableS
     aws->create_button("SAVE", "SAVE", "S");
 
     aws->at("nlines");
-    aws->create_option_menu(awar_line_anz);
+    aws->create_option_menu(awar_line_anz, true);
     aws->insert_default_option("all",   "a", 0);
     aws->insert_option        ("10",    "",  10);
     aws->insert_option        ("50",    "",  50);

@@ -618,7 +618,7 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, AW_CL cl_bound_item
         aws->create_button("SORT", "Sort by");
 
         aws->at("sorttype");
-        aws->create_option_menu(AWAR_FIELD_REORDER_ORDER);
+        aws->create_option_menu(AWAR_FIELD_REORDER_ORDER, true);
         aws->insert_option("name",      "a", ORDER_ALPHA);
         aws->insert_option("type",      "t", ORDER_TYPE);
         aws->insert_option("frequency", "f", ORDER_FREQ);
@@ -1267,7 +1267,7 @@ static void create_common_next_neighbour_fields(AW_window *aws) {
     aws->create_input_field(AWAR_NN_RANGE_END,   6);
     
     aws->at("compl");
-    aws->create_option_menu(AWAR_NN_COMPLEMENT);
+    aws->create_option_menu(AWAR_NN_COMPLEMENT, true);
     aws->insert_default_option("forward",            "", FF_FORWARD);
     aws->insert_option        ("reverse",            "", FF_REVERSE);
     aws->insert_option        ("complement",         "", FF_COMPLEMENT);

@@ -251,7 +251,7 @@ namespace RefEntries {
 
         aws->at_newline();
         aws->label(GBS_global_string("%s to examine", items_name));
-        aws->create_option_menu(AWAR_MARKBYREF_ALL);
+        aws->create_option_menu(AWAR_MARKBYREF_ALL, true);
         aws->insert_option("Marked", "M", 0);
         aws->insert_option("All",    "A", 1);
         aws->update_option_menu();

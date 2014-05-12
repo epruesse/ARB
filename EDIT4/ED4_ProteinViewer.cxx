@@ -995,7 +995,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
     {
         aw_root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, GLOBAL_gb_main);
         aws->at("table");
-        aws->create_option_menu(AWAR_PROTEIN_TYPE);
+        aws->create_option_menu(AWAR_PROTEIN_TYPE, true);
         for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
             aws->insert_option(AWT_get_codon_code_name(code_nr), "", code_nr);
         }

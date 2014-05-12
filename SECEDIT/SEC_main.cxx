@@ -603,7 +603,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
     aws->at("bonds");
     aws->label("Display bonds");
-    aws->create_option_menu(AWAR_SECEDIT_SHOW_BONDS);
+    aws->create_option_menu(AWAR_SECEDIT_SHOW_BONDS, true);
     aws->insert_option("None",       "n", SHOW_NO_BONDS);
     aws->insert_option("Helix",      "h", SHOW_HELIX_BONDS);
     aws->insert_option("+Non-helix", "o", SHOW_NHELIX_BONDS);
@@ -621,7 +621,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
     aws->at("cursor");
     aws->label("Annotate cursor            :");
-    aws->create_option_menu(AWAR_SECEDIT_SHOW_CURPOS);
+    aws->create_option_menu(AWAR_SECEDIT_SHOW_CURPOS, true);
     aws->insert_option("None",     "n", SHOW_NO_CURPOS);
     aws->insert_option("Absolute", "a", SHOW_ABS_CURPOS);
     aws->insert_option("Ecoli",    "e", SHOW_ECOLI_CURPOS);

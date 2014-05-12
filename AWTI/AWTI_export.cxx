@@ -187,13 +187,13 @@ AW_window *create_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
     aws->get_root()->awar(AWAR_EXPORT_FORM"/file_name")->add_callback(export_form_changed_cb);
 
     aws->at("allmarked");
-    aws->create_option_menu(AWAR_EXPORT_MARKED);
+    aws->create_option_menu(AWAR_EXPORT_MARKED, true);
     aws->insert_option("all", "a", 0);
     aws->insert_option("marked", "m", 1);
     aws->update_option_menu();
 
     aws->at("compress");
-    aws->create_option_menu(AWAR_EXPORT_COMPRESS);
+    aws->create_option_menu(AWAR_EXPORT_COMPRESS, true);
     aws->insert_option("no", "n", 0);
     aws->insert_option("vertical gaps", "v", 1);
     aws->insert_option("all gaps", "a", 2);

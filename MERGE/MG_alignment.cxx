@@ -295,7 +295,7 @@ static AW_window *MG_create_alignment_window(AW_root *root, int db_nr) {
     aws->create_button("COPY", "COPY", "C");
 
     aws->at("aligned");
-    aws->create_option_menu(AWAR_ALIGNED(db_nr));
+    aws->create_option_menu(AWAR_ALIGNED(db_nr), true);
     aws->insert_option("justified", "j", 1);
     aws->insert_default_option("not justified", "n", 0);
     aws->update_option_menu();
@@ -304,7 +304,7 @@ static AW_window *MG_create_alignment_window(AW_root *root, int db_nr) {
     aws->create_input_field(AWAR_ALI_LEN(db_nr), 8);
 
     aws->at("type");
-    aws->create_option_menu(AWAR_ALI_TYPE(db_nr));
+    aws->create_option_menu(AWAR_ALI_TYPE(db_nr), true);
     aws->insert_option("dna", "d", "dna");
     aws->insert_option("rna", "r", "rna");
     aws->insert_option("pro", "p", "ami");
@@ -313,7 +313,7 @@ static AW_window *MG_create_alignment_window(AW_root *root, int db_nr) {
 
     aws->at("security");
     aws->callback(makeWindowCallback(MG_ed_al_check_len_cb, db_nr));
-    aws->create_option_menu(AWAR_SECURITY(db_nr));
+    aws->create_option_menu(AWAR_SECURITY(db_nr), true);
     aws->insert_option("0", "0", 0);
     aws->insert_option("1", "1", 1);
     aws->insert_option("2", "2", 2);
