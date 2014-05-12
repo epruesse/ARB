@@ -2113,7 +2113,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
 
         dbq_assert(csd->colorsets == 0);
         aws->at("list");
-        csd->colorsets = aws->create_selection_list(AWAR_COLOR_LOADSAVE_NAME, 0, 0, true);
+        csd->colorsets = aws->create_selection_list(AWAR_COLOR_LOADSAVE_NAME, 0, 0, false);
 
         update_colorset_selection_list(csd);
 
