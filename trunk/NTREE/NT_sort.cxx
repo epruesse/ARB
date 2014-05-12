@@ -189,9 +189,9 @@ AW_window *NT_create_resort_window(AW_root *awr) {
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT1, NT_RESORT_FILTER, "key1", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
-    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT2, NT_RESORT_FILTER, "key2", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
-    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT3, NT_RESORT_FILTER, "key3", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT1, true, NT_RESORT_FILTER, "key1", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT2, true, NT_RESORT_FILTER, "key2", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT3, true, NT_RESORT_FILTER, "key3", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
 
     aws->at("rev1"); aws->label("Reverse"); aws->create_toggle(AWAR_TREE_REV1);
     aws->at("rev2"); aws->label("Reverse"); aws->create_toggle(AWAR_TREE_REV2);
