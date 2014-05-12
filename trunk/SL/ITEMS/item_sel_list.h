@@ -65,8 +65,8 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
                                                          ItemSelector&   selector,
                                                          size_t          columns,
                                                          size_t          visible_rows,
-                                                         SelectedFields  field_filter       = SF_STANDARD,
-                                                         const char     *popup_button_label = NULL);
+                                                         SelectedFields  field_filter,
+                                                         const char     *popup_button_label);
 
 
 enum RescanMode {
