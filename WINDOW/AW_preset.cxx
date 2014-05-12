@@ -423,7 +423,7 @@ static void AW_preset_create_font_chooser(AW_window *aws, const char *awar, cons
     if (message_reload) aws->get_root()->awar(awar)->add_callback(aw_message_reload);
 
     aws->label(label);
-    aws->create_option_menu(awar);
+    aws->create_option_menu(awar, true);
     aws->insert_option        ("5x8",   "5", "5x8");
     aws->insert_option        ("6x10",   "6", "6x10");
     aws->insert_option        ("7x13",   "7", "7x13");
@@ -904,7 +904,7 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
 
                 aws->label_length(5);
                 aws->label("Font");
-                aws->create_option_menu(awar_name);
+                aws->create_option_menu(awar_name, true);
                 {
                     int font_nr;
                     const char *font_string;
@@ -922,7 +922,7 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
                 aws->label_length(5);
 
                 aws->label("size");
-                AW_option_menu_struct *oms = aws->create_option_menu(awar_name);
+                AW_option_menu_struct *oms = aws->create_option_menu(awar_name, true);
                 gcmgr->set_font_size_handle(oms);
 
                 AW_MGC_awar_cb_struct *acs = gcmgr->get_font_change_parameter();
