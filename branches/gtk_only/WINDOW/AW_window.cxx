@@ -917,13 +917,9 @@ void AW_window::all_menus_created() const { // this is called by AW_window::show
 #endif // DEBUG
 }
 
-AW_selection_list *AW_window::create_option_menu(const char *var_name, 
-                                                 const char *tmp_label, 
-                                                 const char *){
+AW_selection_list *AW_window::create_option_menu(const char *var_name){
     AW_awar* awar = get_root()->awar_no_error(var_name);
     aw_return_val_if_fail(awar, NULL);
-
-    if (tmp_label) this->label(tmp_label);
 
     GtkWidget *combo_box = gtk_combo_box_new();
     AW_selection_list *slist = new AW_selection_list(awar, true);
