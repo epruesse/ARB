@@ -141,38 +141,34 @@ static void species_rename_join(AW_window *aww) {
 
 AW_window *NT_create_species_join_window(AW_root *root) {
     static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
+    if (!aws) {
+        root->awar_string(AWAR_SPECIES_JOIN_FIELD, "name", AW_ROOT_DEFAULT);
+        root->awar_string(AWAR_SPECIES_JOIN_SEP, "#", AW_ROOT_DEFAULT);
+        root->awar_string(AWAR_SPECIES_JOIN_SEP2, "#", AW_ROOT_DEFAULT);
 
-    root->awar_string(AWAR_SPECIES_JOIN_FIELD, "name", AW_ROOT_DEFAULT);
-    root->awar_string(AWAR_SPECIES_JOIN_SEP, "#", AW_ROOT_DEFAULT);
-    root->awar_string(AWAR_SPECIES_JOIN_SEP2, "#", AW_ROOT_DEFAULT);
+        aws = new AW_window_simple;
+        aws->init(root, "JOIN_SPECIES", "JOIN SPECIES");
+        aws->load_xfig("join_species.fig");
 
-    aws = new AW_window_simple;
-    aws->init(root, "JOIN_SPECIES", "JOIN SPECIES");
-    aws->load_xfig("join_species.fig");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->at("help"); aws->callback(makeHelpCallback("species_join.hlp"));
+        aws->create_button("HELP", "HELP", "H");
 
-    aws->at("help"); aws->callback(makeHelpCallback("species_join.hlp"));
-    aws->create_button("HELP", "HELP", "H");
+        aws->at("sym");
+        aws->create_input_field(AWAR_SPECIES_JOIN_SEP);
 
-    aws->at("sym");
-    aws->create_input_field(AWAR_SPECIES_JOIN_SEP);
+        aws->at("symseq");
+        aws->create_input_field(AWAR_SPECIES_JOIN_SEP2);
 
-    aws->at("symseq");
-    aws->create_input_field(AWAR_SPECIES_JOIN_SEP2);
+        aws->at("go");
+        aws->callback(species_rename_join);
+        aws->help_text("species_join.hlp");
+        aws->create_button("GO", "GO", "G");
 
-    aws->at("go");
-    aws->callback(species_rename_join);
-    aws->help_text("species_join.hlp");
-    aws->create_button("GO", "GO", "G");
-
-    create_selection_list_on_itemfields(GLOBAL.gb_main,
-                                            aws, AWAR_SPECIES_JOIN_FIELD,
-                                            FIELD_FILTER_NDS,
-                                            "field", 0, SPECIES_get_selector(), 20, 10);
-
-    return (AW_window *)aws;
+        create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_SPECIES_JOIN_FIELD, true, FIELD_FILTER_NDS, "field", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    }
+    return aws;
 }

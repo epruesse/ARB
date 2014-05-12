@@ -607,8 +607,8 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, AW_CL cl_bound_item
         aws->at("help");
         aws->create_button("HELP", "Help", "H");
 
-        Itemfield_Selection *sel1 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_SOURCE, FIELD_FILTER_NDS, "source", 0, selector, 20, 10);
-        Itemfield_Selection *sel2 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_DEST,   FIELD_FILTER_NDS, "dest",   0, selector, 20, 10);
+        Itemfield_Selection *sel1 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_SOURCE, true, FIELD_FILTER_NDS, "source", 0, selector, 20, 10, SF_STANDARD, NULL);
+        Itemfield_Selection *sel2 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_DEST,   true, FIELD_FILTER_NDS, "dest",   0, selector, 20, 10, SF_STANDARD, NULL);
 
         aws->button_length(8);
 
@@ -739,12 +739,7 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, AW_CL cl_bound_item_s
         aws->at("help"); aws->callback(makeHelpCallback("spaf_delete.hlp"));
         aws->create_button("HELP", "Help", "H");
 
-        Itemfield_Selection *item_sel =
-            create_selection_list_on_itemfields(bound_selector->gb_main,
-                                                    aws, AWAR_FIELD_DELETE,
-                                                    -1,
-                                                    "source", 0, selector, 20, 10,
-                                                    SF_HIDDEN);
+        Itemfield_Selection *item_sel = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_DELETE, true, -1, "source", 0, selector, 20, 10, SF_HIDDEN, NULL);
 
         aws->button_length(13);
         aws->at("hide");
@@ -881,15 +876,7 @@ static AW_window *create_field_convert_window(AW_root *root, AW_CL cl_bound_item
     aws->create_button("HELP", "Help", "H");
 
     aws->callback(field_convert_update_typesel_cb, cl_bound_item_selector);
-    create_selection_list_on_itemfields(bound_selector->gb_main,
-                                            aws,
-                                            AWAR_FIELD_CONVERT_SOURCE, // AWAR containing selection
-                                            -1,                        // type filter
-                                            "source",                  // selector xfig position
-                                            0,                         // rescan button xfig position
-                                            selector,
-                                            40, 20,                    // selector w,h
-                                            SF_HIDDEN);
+    create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_CONVERT_SOURCE, true, -1, "source", 0, selector, 40, 20, SF_HIDDEN, NULL);
 
     aws->at("typesel");
     aws->create_toggle_field(AWAR_FIELD_CONVERT_TYPE, NULL, "F");
@@ -1308,10 +1295,7 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, AW_CL c
         aws->create_toggle(AWAR_NN_LISTED_SCORED_ENTRIES);
         
         aws->at("field");
-        create_selection_list_on_itemfields(query_get_gb_main((DbQuery*)cl_query),
-                                                aws, AWAR_NN_LISTED_DEST_FIELD,
-                                                (1<<GB_INT) | (1<<GB_STRING), "field", 0,
-                                                SPECIES_get_selector(), 20, 10);
+        create_selection_list_on_itemfields(query_get_gb_main((DbQuery*)cl_query), aws, AWAR_NN_LISTED_DEST_FIELD, true, (1<<GB_INT) | (1<<GB_STRING), "field", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
 
         aws->at("go");
         aws->callback(awtc_nn_search_all_listed);

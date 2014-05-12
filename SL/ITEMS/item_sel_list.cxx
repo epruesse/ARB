@@ -85,6 +85,7 @@ void Itemfield_Selection::fill() {
 Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main,
                                                          AW_window      *aws,
                                                          const char     *varname,
+                                                         bool            fallback2default,
                                                          long            type_filter,
                                                          const char     *scan_xfig_label,
                                                          const char     *rescan_xfig_label,
@@ -92,10 +93,11 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
                                                          size_t          columns,
                                                          size_t          visible_rows,
                                                          SelectedFields  field_filter,
-                                                         const char     *popup_button_id) // @@@ button id is not needed - only causes xtra macro command 
+                                                         const char     *popup_button_id) // @@@ button id is not needed - only causes xtra macro command
 {
     /* show fields of a item (e.g. species, SAI, gene)
      * 'varname'                is the awar set by the selection list
+     * 'fallback2default'       whether awar value shall be reset to default (see create_option_menu/create_selection_list)
      * 'type_filter'            is a bitstring which controls what types are shown in the selection list
      *                          (e.g '1<<GB_INT || 1 <<GB_STRING' enables ints and strings)
      * 'scan_xfig_label'        is the position of the selection box (or selection button)
@@ -120,7 +122,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
     if (popup_button_id) {
 #ifdef ARB_GTK
         aws->button_length(columns);
-        sellist = aws->create_option_menu(varname, true);
+        sellist = aws->create_option_menu(varname, fallback2default);
 #else
         // create HIDDEN popup window containing the selection list
         AW_window *win_for_sellist = aws;
@@ -132,7 +134,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
             aw_popup->at_newline();
 
             aw_popup->callback((AW_CB0)AW_POPDOWN);
-            sellist = aw_popup->create_selection_list(varname, columns, visible_rows, true);
+            sellist = aw_popup->create_selection_list(varname, columns, visible_rows, fallback2default);
 
             aw_popup->at_newline();
             aw_popup->callback((AW_CB0)AW_POPDOWN);
@@ -152,7 +154,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
 
     }
     else { // otherwise just insert the selection list at point
-        sellist = aws->create_selection_list(varname, columns, visible_rows, true);
+        sellist = aws->create_selection_list(varname, columns, visible_rows, fallback2default);
     }
 
     if (rescan_xfig_label) {
