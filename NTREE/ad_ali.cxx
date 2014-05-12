@@ -276,7 +276,7 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown) {
     awt_create_selection_list_on_alignments(GLOBAL.gb_main, aws, AWAR_DEFAULT_ALIGNMENT, "*=");
 
     aws->at("aligned");
-    aws->create_option_menu("presets/aligned");
+    aws->create_option_menu("presets/aligned", true);
     aws->callback(ed_al_check_len_cb);
     aws->insert_default_option("not formatted", "n", 0);
     aws->callback(ed_al_align_cb);
@@ -284,7 +284,7 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown) {
     aws->update_option_menu();
 
     aws->at("auto_format");
-    aws->create_option_menu("presets/auto_format");
+    aws->create_option_menu("presets/auto_format", true);
     aws->callback(ed_al_check_auto_format);
     aws->insert_default_option("ask", "a", 0);
     aws->callback(ed_al_check_auto_format);
@@ -297,7 +297,7 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown) {
     aws->create_input_field("presets/alignment_len", 7);
 
     aws->at("type");
-    aws->create_option_menu("presets/alignment_type");
+    aws->create_option_menu("presets/alignment_type", true);
     aws->insert_option("dna", "d", "dna");
     aws->insert_option("rna", "r", "rna");
     aws->insert_option("pro", "p", "ami");
@@ -305,7 +305,7 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown) {
     aws->update_option_menu();
 
     aws->at("security");
-    aws->create_option_menu("presets/security");
+    aws->create_option_menu("presets/security", true);
     aws->callback(ed_al_check_len_cb);
     aws->insert_option("0", "0", 0);
     aws->callback(ed_al_check_len_cb);

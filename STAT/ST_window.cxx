@@ -198,7 +198,7 @@ AW_window *STAT_create_chimera_check_window(AW_root *root, GBDATA *gb_main) {
 
         aws->at("which");
         {
-            aws->create_option_menu(ST_ML_AWAR_CQ_MARKED_ONLY);
+            aws->create_option_menu(ST_ML_AWAR_CQ_MARKED_ONLY, true);
             aws->insert_option("All in tree", "t", 0);
             aws->insert_option("Only marked and in tree", "m", 1);
             aws->update_option_menu();
@@ -228,7 +228,7 @@ AW_window *STAT_create_chimera_check_window(AW_root *root, GBDATA *gb_main) {
 
         aws->at("report");
         {
-            aws->create_option_menu(ST_ML_AWAR_CQ_REPORT);
+            aws->create_option_menu(ST_ML_AWAR_CQ_REPORT, true);
             aws->insert_option("No", "N", 0);
             aws->insert_option("to temporary entry", "t", 1);
             aws->insert_option("to permanent entry", "p", 2);

@@ -2212,7 +2212,7 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
     {
         int color_group;
 
-        aws->create_option_menu(AWAR_COLORIZE);
+        aws->create_option_menu(AWAR_COLORIZE, true);
         aws->insert_default_option(color_group_name(0), "none", 0);
         for (color_group = 1; color_group <= AW_COLOR_GROUPS; ++color_group) {
             aws->insert_option(color_group_name(color_group), "", color_group);
@@ -2682,7 +2682,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         for (int key = QUERY_SEARCHES-1;  key >= 0; --key) {
             if (key) {
                 aws->at(xpos, ypos+key*KEY_Y_OFFSET);
-                aws->create_option_menu(query->awar_operator[key]);
+                aws->create_option_menu(query->awar_operator[key], true);
                 aws->insert_option("and", "", "and");
                 aws->insert_option("or", "", "or");
                 aws->insert_option("ign", "", "ign");
@@ -2774,7 +2774,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     }
     if (awtqs->do_refresh_pos_fig) {
         aws->at(awtqs->do_refresh_pos_fig);
-        aws->create_option_menu(query->awar_sort);
+        aws->create_option_menu(query->awar_sort, true);
         aws->insert_default_option("unsorted",  "u", QUERY_SORT_NONE);
         aws->insert_option        ("by value",  "v", QUERY_SORT_BY_1STFIELD_CONTENT);
         aws->insert_option        ("by id",     "n", QUERY_SORT_BY_ID);

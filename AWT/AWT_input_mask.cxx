@@ -2323,7 +2323,7 @@ static void create_new_input_mask(AW_window *aww, awt_item_type item_type) { // 
         aws->at_newline();
 
         aws->label("Item type");
-        aws->create_option_menu(AWAR_INPUT_MASK_ITEM);
+        aws->create_option_menu(AWAR_INPUT_MASK_ITEM, true);
         for (int i = AWT_IT_UNKNOWN+1; i<AWT_IT_TYPES; ++i) {
             aws->insert_option(awt_itemtype_names[i], "", awt_itemtype_names[i]);
         }

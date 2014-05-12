@@ -145,7 +145,7 @@ static AW_window *MG_create_save_result_window(AW_root *aw_root, const char *bas
 
     aws->at("user");
     aws->label("Type");
-    aws->create_option_menu(AWAR_DB_DST"/type");
+    aws->create_option_menu(AWAR_DB_DST"/type", true);
     aws->insert_option("Binary", "B", "b");
     aws->insert_option("Bin (with FastLoad File)", "f", "bm");
     aws->update_option_menu();

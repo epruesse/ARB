@@ -1762,7 +1762,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->button_length(0);
 
     awmm->at("protect");
-    awmm->create_option_menu(AWAR_EDIT_SECURITY_LEVEL);
+    awmm->create_option_menu(AWAR_EDIT_SECURITY_LEVEL, true);
     awmm->insert_option("0", 0, 0);
     awmm->insert_option("1", 0, 1);
     awmm->insert_option("2", 0, 2);

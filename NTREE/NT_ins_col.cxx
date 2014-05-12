@@ -254,7 +254,7 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, GBDATA *gb_main) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("select");
-        aws->create_option_menu(AWAR_INSDEL_RANGE);
+        aws->create_option_menu(AWAR_INSDEL_RANGE, true);
         aws->insert_option("ranges",  "r", RANGES);
         aws->insert_option("columns", "c", SINGLE_COLUMNS);
         aws->update_option_menu();
@@ -265,7 +265,7 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, GBDATA *gb_main) {
         awt_create_SAI_selection_button(gb_main, aws, AWAR_INSDEL_SAI);
 
         aws->at("contains");
-        aws->create_option_menu(AWAR_INSDEL_CONTAINS);
+        aws->create_option_menu(AWAR_INSDEL_CONTAINS, true);
         aws->insert_option("contains",        "c", CONTAINS);
         aws->insert_option("doesn't contain", "d", DOESNT_CONTAIN);
         aws->update_option_menu();
@@ -295,7 +295,7 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, GBDATA *gb_main) {
         aws->create_input_field(AWAR_INSDEL_AMOUNT, 7);
 
         aws->at("direction");
-        aws->create_option_menu(AWAR_INSDEL_DIRECTION);
+        aws->create_option_menu(AWAR_INSDEL_DIRECTION, true);
         aws->insert_option("in front of", "f", INFRONTOF);
         aws->insert_option("behind",      "b", BEHIND);
         aws->update_option_menu();

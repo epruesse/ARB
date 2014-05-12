@@ -257,7 +257,7 @@ AW_window *MG_create_merge_trees_window(AW_root *awr) {
     aws->create_autosize_button("TRANSFER_TREE", "Transfer");
 
     aws->at("xfer_what");
-    aws->create_option_menu(AWAR_TREE_XFER_WHAT);
+    aws->create_option_menu(AWAR_TREE_XFER_WHAT, true);
     aws->insert_default_option("selected tree",  "s", XFER_SELECTED);
     aws->insert_option        ("all trees",      "a", XFER_ALL);
     aws->insert_option        ("missing trees",  "m", XFER_MISSING);

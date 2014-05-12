@@ -377,7 +377,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     aws->at_newline();
     aws->label_length(0);
     aws->label("Overhang placement");
-    aws->create_option_menu(GA_AWAR_OVERHANG);
+    aws->create_option_menu(GA_AWAR_OVERHANG, true);
     aws->insert_option("keep attached", 0, "attach");
     aws->insert_option("move to edge", 0, "edge");
     aws->insert_option("remove", 0, "remove");
@@ -385,7 +385,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
 
     aws->at_newline();
     aws->label("Handling of unmappable insertions");
-    aws->create_option_menu(GA_AWAR_INSERT);
+    aws->create_option_menu(GA_AWAR_INSERT, true);
     aws->insert_option("Shift surrounding bases", 0, "shift");
     aws->insert_option("Forbid during DP alignment", 0, "forbid");
     aws->insert_option("Delete bases", 0, "remove");
@@ -393,7 +393,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
 
     aws->at_newline();
     aws->label("Character Case");
-    aws->create_option_menu(GA_AWAR_LOWERCASE);
+    aws->create_option_menu(GA_AWAR_LOWERCASE, true);
     aws->insert_option("Do not modify", 0, "original");
     aws->insert_option("Show unaligned bases as lower case", 0, "unaligned");
     aws->insert_option("Uppercase all", 0, "none");
@@ -496,7 +496,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
 
     aws->label_length(17);
     aws->label("Protection Level");
-    aws->create_option_menu(GA_AWAR_PROTECTION);
+    aws->create_option_menu(GA_AWAR_PROTECTION, true);
     aws->insert_option("0", 0, 0);
     aws->insert_option("1", 0, 1);
     aws->insert_option("2", 0, 2);
