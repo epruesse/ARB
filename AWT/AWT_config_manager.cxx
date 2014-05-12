@@ -468,12 +468,14 @@ char *AWT_config::config_string() const {
     return strdup(result.c_str());
 }
 GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW_root *root) const {
-    GB_ERROR        error = 0;
-#ifdef ARB_GTK
+    GB_ERROR       error = 0;
     GB_transaction ta(AW_ROOT_DEFAULT);
-#else
-    GB_transaction *ta    = 0;
-#endif
+    // Notes:
+    // * Opening a TA on AW_ROOT_DEFAULT has no effect, as awar-DB is TA-free and each
+    //   awar-change opens a TA anyway.
+    // * Motif version did open TA on awar->gb_var (in 1st loop), which would make a
+    //   difference IF the 1st awar is bound to main-DB. At best old behavior was obscure.
+
     awt_assert(!parse_error);
     for (config_map::iterator e = mapping->begin(); !error && e != mapping->end(); ++e) {
         const string& config_name(e->first);
@@ -486,17 +488,9 @@ GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW
         else {
             const string&  awar_name(found->second);
             AW_awar       *awar = root->awar(awar_name.c_str());
-#ifndef ARB_GTK
-            if (!ta) {
-                ta = new GB_transaction((GBDATA*)awar->gb_var); // do all awar changes in 1 transaction
-            }
-#endif
             awar->write_as_string(value.c_str());
         }
     }
-#ifndef ARB_GTK
-    if (ta) delete ta; // close transaction
-#endif
     return error;
 }
 
