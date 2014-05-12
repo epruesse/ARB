@@ -2115,7 +2115,8 @@ AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode) {
         aws->create_toggle(ED4_AWAR_CREATE_FROM_CONS_ALL_UPPER);
 
         aws->at("data");
-        aws->create_option_menu(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE, "Other fields");
+        aws->label("Other fields");
+        aws->create_option_menu(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE);
         aws->insert_default_option("Merge from all in group", "", 0);
         aws->insert_option("Copy from current species", "", 1);
         aws->update_option_menu();

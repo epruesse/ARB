@@ -376,21 +376,24 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
 
     aws->at_newline();
     aws->label_length(0);
-    aws->create_option_menu(GA_AWAR_OVERHANG, "Overhang placement");
+    aws->label("Overhang placement");
+    aws->create_option_menu(GA_AWAR_OVERHANG);
     aws->insert_option("keep attached", 0, "attach");
     aws->insert_option("move to edge", 0, "edge");
     aws->insert_option("remove", 0, "remove");
     aws->update_option_menu();
 
     aws->at_newline();
-    aws->create_option_menu(GA_AWAR_INSERT, "Handling of unmappable insertions", "I");
+    aws->label("Handling of unmappable insertions");
+    aws->create_option_menu(GA_AWAR_INSERT);
     aws->insert_option("Shift surrounding bases", 0, "shift");
     aws->insert_option("Forbid during DP alignment", 0, "forbid");
     aws->insert_option("Delete bases", 0, "remove");
     aws->update_option_menu();
 
     aws->at_newline();
-    aws->create_option_menu(GA_AWAR_LOWERCASE, "Character Case","C");
+    aws->label("Character Case");
+    aws->create_option_menu(GA_AWAR_LOWERCASE);
     aws->insert_option("Do not modify", 0, "original");
     aws->insert_option("Show unaligned bases as lower case", 0, "unaligned");
     aws->insert_option("Uppercase all", 0, "none");
@@ -492,7 +495,8 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     aws->at_shift(0, hgap);
 
     aws->label_length(17);
-    aws->create_option_menu(GA_AWAR_PROTECTION, "Protection Level", "P");
+    aws->label("Protection Level");
+    aws->create_option_menu(GA_AWAR_PROTECTION);
     aws->insert_option("0", 0, 0);
     aws->insert_option("1", 0, 1);
     aws->insert_option("2", 0, 2);
@@ -503,7 +507,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     aws->update_option_menu();
 
     /*
-    aws->at_newline();
+      aws->at_newline();
     aws->create_option_menu(GA_AWAR_LOGLEVEL, "Logging level", "L");
     aws->insert_option("silent", 0, "1");
     aws->insert_option("quiet", 0, "2");

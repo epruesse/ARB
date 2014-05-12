@@ -1267,7 +1267,7 @@ static void create_common_next_neighbour_fields(AW_window *aws) {
     aws->create_input_field(AWAR_NN_RANGE_END,   6);
     
     aws->at("compl");
-    aws->create_option_menu(AWAR_NN_COMPLEMENT, 0, 0);
+    aws->create_option_menu(AWAR_NN_COMPLEMENT);
     aws->insert_default_option("forward",            "", FF_FORWARD);
     aws->insert_option        ("reverse",            "", FF_REVERSE);
     aws->insert_option        ("complement",         "", FF_COMPLEMENT);

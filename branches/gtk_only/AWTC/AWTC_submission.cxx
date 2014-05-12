@@ -261,7 +261,8 @@ AW_window *AWTC_create_submission_window(AW_root *root, GBDATA *gb_main) {
         GBS_read_dir(submits, GB_path_in_ARBLIB("submit"), NULL);
 
         if (!submits.empty()) {
-            aws->create_option_menu("submission/source", "Select a Form", "s");
+            aws->label("Select a Form");
+            aws->create_option_menu("submission/source");
             for (int i = 0; submits[i]; ++i) {
                 aws->insert_option(submits[i], "", submits[i]);
             }
