@@ -476,8 +476,8 @@ public:
 
 
     // ***** option_menu is a menu where only one selection is visible at a time
-    AW_selection_list* create_option_menu(const char *awar_name);
-    void clear_option_menu(AW_selection_list *list);  // used to redefine available options
+    AW_selection_list* create_option_menu(const char *awar_name, bool fallback2default = true);
+    void               clear_option_menu(AW_selection_list *list); // used to redefine available options
 
     /**If set to true the window is not destroyed on close. instead it is hidden.*/
     void set_hide_on_close(bool value);

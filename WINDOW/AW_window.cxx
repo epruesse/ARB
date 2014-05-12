@@ -917,12 +917,12 @@ void AW_window::all_menus_created() const { // this is called by AW_window::show
 #endif // DEBUG
 }
 
-AW_selection_list *AW_window::create_option_menu(const char *var_name){
-    AW_awar* awar = get_root()->awar_no_error(var_name);
+AW_selection_list *AW_window::create_option_menu(const char *awar_name, bool fallback2default){
+    AW_awar* awar = get_root()->awar_no_error(awar_name);
     aw_return_val_if_fail(awar, NULL);
 
     GtkWidget *combo_box = gtk_combo_box_new();
-    AW_selection_list *slist = new AW_selection_list(awar, true);
+    AW_selection_list *slist = new AW_selection_list(awar, fallback2default);
     slist->bind_widget(combo_box);
 
     prvt->combo_box = combo_box;
