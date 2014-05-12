@@ -1148,6 +1148,7 @@ static void scroll_sellist_dn(Widget scrolledList, XEvent*, String*, Cardinal*) 
 
 AW_selection_list* AW_window::create_selection_list(const char *var_name, int columns, int rows, bool /*fallback2default*/) {
     // Note: fallback2default has no meaning in motif-version (always acts like 'false', i.e. never does fallback)
+    // see also .@create_option_menu
 
     Widget         scrolledWindowList; // @@@ fix locals
     Widget         scrolledList;
@@ -1305,11 +1306,14 @@ __ATTR__NORETURN inline void toggle_type_mismatch(const char *triedType) { type_
 // ----------------------
 //      Options-Menu
 
-AW_option_menu_struct *AW_window::create_option_menu(const char *var_name) {
+AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name, bool /*fallback2default*/) {
+    // Note: fallback2default has no meaning in motif-version (always acts like 'false', i.e. never does fallback)
+    // see also .@create_selection_list
+
     Widget optionMenu_shell;
     Widget optionMenu;
     Widget optionMenu1;
-    int x_for_position_of_menu;
+    int    x_for_position_of_menu;
 
     const char *tmp_label = _at->label_for_inputfield;
     if (tmp_label && !tmp_label[0]) {
@@ -1386,11 +1390,11 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *var_name) {
 
     get_root()->number_of_option_menus++;
 
-    AW_awar *vs = root->awar(var_name);
+    AW_awar *vs = root->awar(awar_name);
     {
         AW_option_menu_struct *next =
             new AW_option_menu_struct(get_root()->number_of_option_menus,
-                                      var_name,
+                                      awar_name,
                                       vs->variable_type,
                                       optionMenu1,
                                       optionMenu,
