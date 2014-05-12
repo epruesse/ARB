@@ -191,6 +191,7 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_at.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx

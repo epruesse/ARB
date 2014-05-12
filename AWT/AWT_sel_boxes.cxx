@@ -1064,9 +1064,9 @@ class AW_subset_selection : public AW_selection {
     }
 
     static AW_selection_list *create_box(AW_window *aww, AW_selection_list& parent_sellist) {
-        const char *parent_awar_name = parent_sellist.get_awar()->get_name();
+        const char *parent_awar_name = parent_sellist.get_awar_name();
         awt_assert(parent_awar_name[0] != '/');
-        awt_assert(parent_sellist.get_awar()->get_type() == GB_STRING); // only impl for strings
+        awt_assert(parent_sellist.get_awar_type() == GB_STRING); // only impl for strings
 
         AW_root *aw_root   = aww->get_root();
         char    *awar_name = GBS_global_string_copy("tmp/subsel/%s", parent_awar_name);
