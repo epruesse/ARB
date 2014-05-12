@@ -76,7 +76,9 @@ public:
     // ******************** real public ***************
 
     const char *get_awar_name() const { return variable_name; }
-    AW_VARIABLE_TYPE get_awar_type() const { return variable_type; }
+#if defined(ASSERTION_USED)
+    GB_TYPES get_awar_type() const { return GB_TYPES(variable_type); }
+#endif
     
     void selectAll();
     void deselectAll();
