@@ -491,8 +491,8 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
 
                 aws->button_length(0);
 
-                FieldSelectionParam *fsp = new FieldSelectionParam(gb_main, awar_name, true); // awar_name belongs to fsp now
-                aws->callback(makeWindowCallback(popup_select_species_field_window, fsp));    // fsp belongs to callback now
+                FieldSelectionParam *fsp = new FieldSelectionParam(gb_main, awar_name, false); // awar_name belongs to fsp now
+                aws->callback(makeWindowCallback(popup_select_species_field_window, fsp));     // fsp belongs to callback now
                 aws->get_at_position(&fieldselectx, &dummy);
 
                 char *button_id = GBS_global_string_copy("SELECT_NDS_%i", i+1);
