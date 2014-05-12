@@ -2702,7 +2702,8 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     // Protection
 
     aws->at("protection");
-    aws->create_option_menu(FA_AWAR_PROTECTION, "Protection");
+    aws->label("Protection");
+    aws->create_option_menu(FA_AWAR_PROTECTION);
     aws->insert_default_option("0", 0, 0);
     aws->insert_option("1", 0, 1);
     aws->insert_option("2", 0, 2);
@@ -2715,7 +2716,8 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     // MirrorCheck
 
     aws->at("mirror");
-    aws->create_option_menu(FA_AWAR_MIRROR, "Turn check");
+    aws->label("Turn check");
+    aws->create_option_menu(FA_AWAR_MIRROR);
     aws->insert_option        ("Never turn sequence",         "", FA_TURN_NEVER);
     aws->insert_default_option("User acknowledgment ",        "", FA_TURN_INTERACTIVE);
     aws->insert_option        ("Automatically turn sequence", "", FA_TURN_ALWAYS);
@@ -2724,7 +2726,8 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     // Report
 
     aws->at("insert");
-    aws->create_option_menu(FA_AWAR_REPORT, "Report");
+    aws->label("Report");
+    aws->create_option_menu(FA_AWAR_REPORT);
     aws->insert_option        ("No report",                   "", FA_NO_REPORT);
     aws->sens_mask(AWM_EXP);
     aws->insert_default_option("Report to temporary entries", "", FA_TEMP_REPORT);
@@ -2739,7 +2742,8 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->create_toggle(FA_AWAR_CONTINUE_ON_ERROR);
 
     aws->at("on_failure");
-    aws->create_option_menu(FA_AWAR_ACTION_ON_ERROR, "On failure");
+    aws->label("On failure");
+    aws->create_option_menu(FA_AWAR_ACTION_ON_ERROR);
     aws->insert_default_option("do nothing",   "", FA_NO_ACTION);
     aws->insert_option        ("mark failed",  "", FA_MARK_FAILED);
     aws->insert_option        ("mark aligned", "", FA_MARK_ALIGNED);
