@@ -556,7 +556,11 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *scr, const char *xfig_name, bool add_
 
     device->reset();
     device->set_color_mode(use_color);
+#ifdef ARB_GTK
+    GB_ERROR error = NULL;
+#else
     GB_ERROR error = device->open(xfig_name);
+#endif
 
     if (!error) {
         Rectangle drawsize = get_drawsize(scr, draw_all);
@@ -588,6 +592,10 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *scr, const char *xfig_name, bool add_
         if (!draw_all) filter |= AW_PRINTER_CLIP;
 
         device->set_filter(filter);
+#ifdef ARB_GTK
+        error = device->open(xfig_name);
+        if (error) return error;
+#endif     
         scr->gfx->show(device);
 
         if (add_invisibles) {
@@ -633,7 +641,11 @@ static void canvas_to_xfig_and_run_xfig(AW_window *aww, AWT_canvas *scr) {
         error = canvas_to_xfig(scr, xfig, true, 0.0);
         if (!error) {
             awr->awar(AWAR_CANIO_FILE_DIR)->touch(); // reload dir to show created xfig
+#if defined(ARB_GTK)
+            error = GBK_system(GBS_global_string("evince %s &", xfig));
+#else
             error = GBK_system(GBS_global_string("xfig %s &", xfig));
+#endif
         }
     }
     if (error) aw_message(error);
@@ -764,7 +776,11 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AWT_canvas *scr) {
 
     AW_root *awr = parent_win->get_root();
     create_export_awars(awr);
+#if defined(ARB_GTK)
+    resetFiletype(awr, "pdf", "print.pdf");
+#else
     resetFiletype(awr, "fig", "print.fig");
+#endif
 
     if (!aws) {
         aws = new AW_window_simple;

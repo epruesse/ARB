@@ -47,7 +47,7 @@ public:
         , ali_type_match(nulldup(ali_type_match_))
     {}
     
-    void fill() {
+    void fill() OVERRIDE {
         GBDATA         *gb_presets = get_gbd();
         GB_transaction  ta(gb_presets);
 
@@ -103,7 +103,7 @@ struct AWT_tree_selection: public AW_DB_selection {
         : AW_DB_selection(sellist_, gb_tree_data)
     {}
 
-    void fill() {
+    void fill() OVERRIDE {
         GBDATA         *gb_main = get_gb_main();
         GB_transaction  ta(gb_main);
 
@@ -160,7 +160,7 @@ class AWT_ptserver_selection : public AW_selection {
 public:
     AWT_ptserver_selection(AW_selection_list *sellist_);
 
-    void fill();
+    void fill() OVERRIDE;
 
     static void refresh_all();
 };
@@ -234,6 +234,7 @@ void awt_edit_arbtcpdat_cb(AW_window *aww, GBDATA *gb_main) {
     free(filename);
 }
 
+#if !defined(ARB_GTK)
 static char *readable_pt_servername(int index, int maxlength) {
     char *fullname = GBS_ptserver_id_to_choice(index, 0);
     if (!fullname) {
@@ -288,9 +289,19 @@ static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, c
 
     return aw_popup;
 }
+#endif // ARB_GTK
 
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
     if (popup) {
+#ifdef ARB_GTK
+        (new AWT_ptserver_selection(aws->create_option_menu(varname)))->refresh();
+
+        int old_button_length = aws->get_button_length();
+        aws->button_length(PT_SERVERNAME_LENGTH+1);
+        aws->update_option_menu();
+        aws->button_length(old_button_length);
+#else
+
         AW_root *aw_root              = aws->get_root();
         char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
         int      ptserver_index       = aw_root->awar(varname)->read_int();
@@ -318,6 +329,7 @@ void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname
 
         free(readable_name);
         free(awar_buttontext_name);
+#endif
     }
     else {
         (new AWT_ptserver_selection(aws->create_selection_list(varname, true)))->refresh();
@@ -434,7 +446,7 @@ struct AWT_configuration_selection : public AW_DB_selection {
         : AW_DB_selection(sellist_, gb_configuration_data)
     {}
 
-    void fill() {
+    void fill() OVERRIDE {
         ConstStrArray config;
         GBT_get_configuration_names(config, get_gb_main());
 
@@ -495,7 +507,7 @@ public:
           filter_cd(filter_cd_)
     {}
 
-    void fill();
+    void fill() OVERRIDE;
 };
 
 void AWT_sai_selection::fill() {
@@ -1018,7 +1030,9 @@ AW_window *awt_create_load_box(AW_root     *aw_root,
     else {
         aws->create_button("CLOSE", "CLOSE", "C");
     }
-    // @@@ gtk: set_close_action
+#if defined(ARB_GTK)
+    aws->set_close_action("CLOSE");
+#endif
 
 #if 0
     // @@@ allow to pass helpfile
@@ -1084,7 +1098,7 @@ public:
         get_sellist()->to_array(subset, true);
     }
 
-    void fill() { awt_assert(0); } // unused
+    void fill() OVERRIDE { awt_assert(0); } // unused
 
     void collect_subset_cb(awt_collect_mode what) {
         AW_selection_list *subset_list = get_sellist();

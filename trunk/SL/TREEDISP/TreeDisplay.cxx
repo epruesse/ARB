@@ -2621,7 +2621,8 @@ void AWT_graphic_tree::show(AW_device *device) {
                 break;
 
             case AP_LIST_SIMPLE:    // simple list of names (used at startup only)
-                show_nds_list(gb_main, false);
+                // don't see why we need to draw ANY tree at startup -> disabled
+                // show_nds_list(gb_main, false);
                 break;
         }
         if (are_distinct(Origin, cursor)) empty_box(AWT_GC_CURSOR, cursor, NT_SELECTED_WIDTH);
@@ -2934,6 +2935,5 @@ void TEST_treeDisplay() {
 
     GB_close(gb_main);
 }
-
 
 #endif // UNIT_TESTS
