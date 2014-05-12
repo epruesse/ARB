@@ -201,7 +201,7 @@ static void popup_probe_design_result_window(AW_window *aww, GBDATA *gb_main) {
         PD.win->create_button("HELP", "HELP", "H");
 
         PD.win->at("result");
-        PD.resultList = PD.win->create_selection_list(AWAR_TARGET_STRING, 40, 5, true);
+        PD.resultList = PD.win->create_selection_list(AWAR_TARGET_STRING, 40, 5, false);
         const StorableSelectionList *storable_result_list = new StorableSelectionList(TypedSelectionList("prb", PD.resultList, "designed probes", "designed")); // @@@ make member of PD ? 
 
         PD.resultList->clear();
