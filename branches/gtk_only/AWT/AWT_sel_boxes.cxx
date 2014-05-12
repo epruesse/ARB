@@ -289,7 +289,7 @@ static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, c
 
     return aw_popup;
 }
-#endif
+#endif // ARB_GTK
 
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
     if (popup) {
@@ -1030,7 +1030,9 @@ AW_window *awt_create_load_box(AW_root     *aw_root,
     else {
         aws->create_button("CLOSE", "CLOSE", "C");
     }
+#if defined(ARB_GTK)
     aws->set_close_action("CLOSE");
+#endif
 
 #if 0
     // @@@ allow to pass helpfile

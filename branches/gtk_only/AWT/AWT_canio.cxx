@@ -641,7 +641,11 @@ static void canvas_to_xfig_and_run_xfig(AW_window *aww, AWT_canvas *scr) {
         error = canvas_to_xfig(scr, xfig, true, 0.0);
         if (!error) {
             awr->awar(AWAR_CANIO_FILE_DIR)->touch(); // reload dir to show created xfig
+#if defined(ARB_GTK)
             error = GBK_system(GBS_global_string("evince %s &", xfig));
+#else
+            error = GBK_system(GBS_global_string("xfig %s &", xfig));
+#endif
         }
     }
     if (error) aw_message(error);
@@ -772,7 +776,11 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AWT_canvas *scr) {
 
     AW_root *awr = parent_win->get_root();
     create_export_awars(awr);
+#if defined(ARB_GTK)
     resetFiletype(awr, "pdf", "print.pdf");
+#else
+    resetFiletype(awr, "fig", "print.fig");
+#endif
 
     if (!aws) {
         aws = new AW_window_simple;
