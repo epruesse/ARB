@@ -583,8 +583,8 @@ public:
 
 
     // ***** option_menu is a menu where only one selection is visible at a time
-    AW_option_menu_struct *create_option_menu(const char *awar_name, bool fallback2default = true);
-    void                   clear_option_menu(AW_option_menu_struct *oms); // used to redefine available options
+    AW_option_menu_struct *create_option_menu(const char *awar_name, bool fallback2default);
+    void clear_option_menu(AW_option_menu_struct *oms);  // used to redefine available options
 
 private:
     void insert_option_internal(AW_label choice_label, const char *mnemonic, const char *var_value,  const char *name_of_color, bool default_option);
