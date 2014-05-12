@@ -59,14 +59,15 @@ public:
 Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main,
                                                          AW_window      *aws,
                                                          const char     *varname,
+                                                         bool            fallback2default,
                                                          long            type_filter,
                                                          const char     *scan_xfig_label,
                                                          const char     *rescan_xfig_label,
                                                          ItemSelector&   selector,
                                                          size_t          columns,
                                                          size_t          visible_rows,
-                                                         SelectedFields  field_filter       = SF_STANDARD,
-                                                         const char     *popup_button_label = NULL);
+                                                         SelectedFields  field_filter,
+                                                         const char     *popup_button_label);
 
 
 enum RescanMode {
