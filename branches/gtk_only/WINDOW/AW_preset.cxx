@@ -435,7 +435,7 @@ void _AW_gc_manager::create_gc_buttons(AW_window *aww) {
     aww->label_length(23);
 
     aww->label("Anti-Aliasing");
-    aww->create_option_menu(_aa_awar_name(gc_base_name));
+    aww->create_option_menu(_aa_awar_name(gc_base_name), true);
     aww->insert_option("System Default", "", AW_AA_DEFAULT);
     aww->insert_option("Disabled", "", AW_AA_NONE);
     aww->insert_option("Greyscale", "", AW_AA_GRAY);
