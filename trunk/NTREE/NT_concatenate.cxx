@@ -731,7 +731,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     AW_selection    *sel_alis = awt_create_subset_selection_list(aws, all_alis->get_sellist(), "concatAligns", "collect", "sort");
 
     aws->at("type");
-    aws->create_option_menu(AWAR_CON_SEQUENCE_TYPE);
+    aws->create_option_menu(AWAR_CON_SEQUENCE_TYPE, true);
     aws->insert_option("DNA", "d", "dna");
     aws->insert_option("RNA", "r", "rna");
     aws->insert_default_option("PROTEIN", "p", "ami");

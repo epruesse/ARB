@@ -1056,7 +1056,7 @@ static void db_changed_cb(AW_root *aw_root) {
 }
 
 void DB_browser::update_DB_selector() {
-    if (!oms) oms = aww->create_option_menu(AWAR_DBB_DB);
+    if (!oms) oms = aww->create_option_menu(AWAR_DBB_DB, true);
     else aww->clear_option_menu(oms);
 
     int idx = 0;
@@ -1103,7 +1103,7 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         update_DB_selector();
 
         aws->at("order");
-        aws->create_option_menu(AWAR_DBB_ORDER);
+        aws->create_option_menu(AWAR_DBB_ORDER, true);
         for (int idx = 0; idx<SORT_COUNT; ++idx) {
             aws->insert_option(sort_order_name[idx], "", idx);
         }

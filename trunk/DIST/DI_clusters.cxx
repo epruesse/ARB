@@ -819,7 +819,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
         aws->at_newline();
 
         aws->label("For");
-        aws->create_option_menu(AWAR_CLUSTER_GROUP_WHAT);
+        aws->create_option_menu(AWAR_CLUSTER_GROUP_WHAT, true);
         aws->insert_option        ("selected cluster", "s", GROUP_SELECTED);
         aws->insert_default_option("listed clusters",  "l", GROUP_LISTED);
         aws->update_option_menu();
@@ -832,7 +832,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
         aws->at_newline();
 
         aws->label("-> if no matching subtree found");
-        aws->create_option_menu(AWAR_CLUSTER_GROUP_NOTFOUND);
+        aws->create_option_menu(AWAR_CLUSTER_GROUP_NOTFOUND, true);
         aws->insert_default_option("abort",          "a", NOTFOUND_ABORT);
         aws->insert_option        ("warn",           "w", NOTFOUND_WARN);
         aws->insert_option        ("ignore",         "i", NOTFOUND_IGNORE);
@@ -844,7 +844,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
         aws->create_autosize_button("CREATE_GROUPS", "create groups!");
 
         aws->label("If group exists");
-        aws->create_option_menu(AWAR_CLUSTER_GROUP_EXISTING);
+        aws->create_option_menu(AWAR_CLUSTER_GROUP_EXISTING, true);
         aws->insert_default_option("abort",                "a", EXISTING_GROUP_ABORT);
         aws->insert_option        ("skip",                 "s", EXISTING_GROUP_SKIP);
         aws->insert_option        ("overwrite (caution!)", "o", EXISTING_GROUP_OVERWRITE);
@@ -1005,7 +1005,7 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, WeightedFilter *
         aws->at("group"); aws->callback(popup_group_clusters_window); aws->create_button("GROUP", "Cluster groups..");
 
         aws->at("sort");
-        aws->create_option_menu(AWAR_CLUSTER_ORDER);
+        aws->create_option_menu(AWAR_CLUSTER_ORDER, true);
         aws->insert_default_option("by mean distance",  "d", SORT_BY_MEANDIST);
         aws->insert_option        ("by min bases used", "b", SORT_BY_MIN_BASES);
         aws->insert_option        ("by size",           "s", SORT_BY_CLUSTERSIZE);

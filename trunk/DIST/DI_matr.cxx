@@ -1306,7 +1306,7 @@ AW_window *DI_create_save_matrix_window(AW_root *aw_root, save_matrix_params *sa
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("user");
-        aws->create_option_menu(AWAR_DIST_SAVE_MATRIX_TYPE);
+        aws->create_option_menu(AWAR_DIST_SAVE_MATRIX_TYPE, true);
         aws->insert_default_option("Phylip Format (Lower Triangular Matrix)", "P", DI_SAVE_PHYLIP_COMP);
         aws->insert_option("Readable (using NDS)", "R", DI_SAVE_READABLE);
         aws->insert_option("Tabbed (using NDS)", "R", DI_SAVE_TABBED);
@@ -1740,7 +1740,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     //      left side
 
     aws->at("which_species");
-    aws->create_option_menu(AWAR_DIST_WHICH_SPECIES);
+    aws->create_option_menu(AWAR_DIST_WHICH_SPECIES, true);
     aws->insert_option("all", "a", "all");
     aws->insert_default_option("marked",   "m", "marked");
     aws->update_option_menu();
@@ -1779,7 +1779,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->create_toggle(AWAR_DIST_MATRIX_DNA_ENABLED);
 
     aws->at("which_correction");
-    aws->create_option_menu(AWAR_DIST_CORR_TRANS);
+    aws->create_option_menu(AWAR_DIST_CORR_TRANS, true);
     aws->insert_option("none",                    "n", (int)DI_TRANSFORMATION_NONE);
     aws->insert_option("similarity",              "n", (int)DI_TRANSFORMATION_SIMILARITY);
     aws->insert_option("jukes-cantor (dna)",      "c", (int)DI_TRANSFORMATION_JUKES_CANTOR);

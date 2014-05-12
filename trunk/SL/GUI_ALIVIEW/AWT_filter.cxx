@@ -373,7 +373,7 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, adfiltercbstruct *acbs
         aws->create_input_field(acbs->def_max, 4);
 
         aws->at("simplify");
-        aws->create_option_menu(acbs->def_simplify);
+        aws->create_option_menu(acbs->def_simplify, true);
         aws->insert_option("ORIGINAL DATA", "O", 0);
         aws->sens_mask(AWM_EXP);
         aws->insert_option("TRANSVERSIONS ONLY", "T", 1);
