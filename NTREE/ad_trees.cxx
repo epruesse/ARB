@@ -273,7 +273,7 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("user");
-    aws->create_option_menu(AWAR_TREE_EXPORT_FORMAT, 0, 0);
+    aws->create_option_menu(AWAR_TREE_EXPORT_FORMAT);
     aws->insert_option("NEWICK TREE FORMAT",                   "N", AD_TREE_EXPORT_FORMAT_NEWICK);
     aws->insert_option("NEWICK TREE FORMAT (pretty, but big)", "P", AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY);
     aws->insert_option("ARB_XML TREE FORMAT",                  "X", AD_TREE_EXPORT_FORMAT_XML);
@@ -294,8 +294,9 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->at_newline(); aws->label("Save group names"); aws->create_toggle(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES);
     aws->at_newline(); aws->label("Hide folded groups (XML only)"); aws->create_toggle(AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS);
 
-    aws->at_newline(); aws->label("Name quoting (Newick only)");
-    aws->create_option_menu(AWAR_TREE_EXPORT_QUOTEMODE, 0, 0);
+    aws->at_newline();
+    aws->label("Name quoting (Newick only)");
+    aws->create_option_menu(AWAR_TREE_EXPORT_QUOTEMODE);
     aws->insert_option("none",            "n", TREE_DISALLOW_QUOTES);
     aws->insert_option("single",          "s", TREE_SINGLE_QUOTES);
     aws->insert_option("double",          "d", TREE_DOUBLE_QUOTES);

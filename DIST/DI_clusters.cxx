@@ -818,7 +818,8 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->at_newline();
 
-        aws->create_option_menu(AWAR_CLUSTER_GROUP_WHAT, "For", "F");
+        aws->label("For");
+        aws->create_option_menu(AWAR_CLUSTER_GROUP_WHAT);
         aws->insert_option        ("selected cluster", "s", GROUP_SELECTED);
         aws->insert_default_option("listed clusters",  "l", GROUP_LISTED);
         aws->update_option_menu();
@@ -830,7 +831,8 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->at_newline();
 
-        aws->create_option_menu(AWAR_CLUSTER_GROUP_NOTFOUND, "-> if no matching subtree found", "n");
+        aws->label("-> if no matching subtree found");
+        aws->create_option_menu(AWAR_CLUSTER_GROUP_NOTFOUND);
         aws->insert_default_option("abort",          "a", NOTFOUND_ABORT);
         aws->insert_option        ("warn",           "w", NOTFOUND_WARN);
         aws->insert_option        ("ignore",         "i", NOTFOUND_IGNORE);
@@ -841,7 +843,8 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
         aws->callback(makeWindowCallback(group_clusters, GROUP_CREATE));
         aws->create_autosize_button("CREATE_GROUPS", "create groups!");
 
-        aws->create_option_menu(AWAR_CLUSTER_GROUP_EXISTING, "If group exists", "x");
+        aws->label("If group exists");
+        aws->create_option_menu(AWAR_CLUSTER_GROUP_EXISTING);
         aws->insert_default_option("abort",                "a", EXISTING_GROUP_ABORT);
         aws->insert_option        ("skip",                 "s", EXISTING_GROUP_SKIP);
         aws->insert_option        ("overwrite (caution!)", "o", EXISTING_GROUP_OVERWRITE);
