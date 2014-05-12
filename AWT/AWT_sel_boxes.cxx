@@ -294,7 +294,7 @@ static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, c
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
     if (popup) {
 #ifdef ARB_GTK
-        (new AWT_ptserver_selection(aws->create_option_menu(varname, NULL, NULL)))->refresh();
+        (new AWT_ptserver_selection(aws->create_option_menu(varname)))->refresh();
 
         int old_button_length = aws->get_button_length();
         aws->button_length(PT_SERVERNAME_LENGTH+1);
