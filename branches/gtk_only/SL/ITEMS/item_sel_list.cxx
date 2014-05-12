@@ -120,7 +120,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
     if (popup_button_id) {
 #ifdef ARB_GTK
         aws->button_length(columns);
-        sellist = aws->create_option_menu(varname);
+        sellist = aws->create_option_menu(varname, true);
 #else
         // create HIDDEN popup window containing the selection list
         AW_window *win_for_sellist = aws;

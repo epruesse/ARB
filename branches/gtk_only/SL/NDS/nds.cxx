@@ -450,7 +450,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("page");
-        aws->create_option_menu(AWAR_NDS_PAGE);
+        aws->create_option_menu(AWAR_NDS_PAGE, true);
         for (int p = 0; p < NDS_PAGES; p++) {
             const char *text = GBS_global_string("Entries %i - %i", p*NDS_PER_PAGE+1, (p+1)*NDS_PER_PAGE);
             aws->insert_option(text, "", p);

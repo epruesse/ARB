@@ -138,7 +138,7 @@ static AW_window *create_nds_export_window(AW_root *root) {
 
     aws->at("toggle1");
     aws->label("Column output");
-    aws->create_option_menu(AWAR_EXPORT_NDS_SEPARATOR);
+    aws->create_option_menu(AWAR_EXPORT_NDS_SEPARATOR, true);
     aws->insert_default_option("Space padded",    "S", NDS_OUTPUT_SPACE_PADDED);
     aws->insert_option        ("TAB separated",   "T", NDS_OUTPUT_TAB_SEPARATED);
     aws->insert_option        ("Comma separated", "C", NDS_OUTPUT_COMMA_SEPARATED);
@@ -507,7 +507,7 @@ static AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
 
     aws->at("type");
     aws->label("Type ");
-    aws->create_option_menu(AWAR_DB_TYPE);
+    aws->create_option_menu(AWAR_DB_TYPE, true);
     aws->insert_option("Binary", "B", "b");
     aws->insert_option("Bin (with FastLoad File)", "f", "bm");
     aws->insert_default_option("Ascii", "A", "a");
@@ -1680,7 +1680,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     awm->create_button(NULL, "#protect.xpm");
 
     awm->at(protectx, second_liney+2);
-    awm->create_option_menu(AWAR_SECURITY_LEVEL);
+    awm->create_option_menu(AWAR_SECURITY_LEVEL, true);
     awm->insert_option("0", 0, 0);
     awm->insert_option("1", 0, 1);
     awm->insert_option("2", 0, 2);

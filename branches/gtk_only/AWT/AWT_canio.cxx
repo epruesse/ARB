@@ -845,7 +845,7 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AWT_canvas *scr) {
 
         aws->at("what");
         aws->label("Clip Options");
-        aws->create_option_menu(AWAR_CANIO_CLIP);
+        aws->create_option_menu(AWAR_CANIO_CLIP, true);
         aws->insert_option("Export screen only", "s", 0);
         aws->insert_default_option("Export complete structure", "c", 1);
         aws->update_option_menu();
@@ -949,7 +949,7 @@ void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
         aws->at("psizey"); aws->create_input_field(AWAR_CANIO_PAPER_SY, 5);
 
         aws->at("paper");
-        aws->create_option_menu(AWAR_CANIO_PAPER);
+        aws->create_option_menu(AWAR_CANIO_PAPER, true);
         aws->insert_default_option(knownPaperFormat[0].get_description(), "", 0);
         for (int f = 1; f<int(ARRAY_ELEMS(knownPaperFormat)); ++f) {
             const PaperFormat& format = knownPaperFormat[f];

@@ -262,7 +262,7 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
 
     root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, GLOBAL.gb_main);
     aws->at("table");
-    aws->create_option_menu(AWAR_PROTEIN_TYPE);
+    aws->create_option_menu(AWAR_PROTEIN_TYPE, true);
     for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
         aws->insert_option(AWT_get_codon_code_name(code_nr), "", code_nr);
     }
@@ -275,7 +275,7 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     aws->update_toggle_field();
 
     aws->at("pos");
-    aws->create_option_menu(AWAR_TRANSPRO_POS);
+    aws->create_option_menu(AWAR_TRANSPRO_POS, true);
     for (int p = 1; p <= 3; ++p) {
         char label[2] = { char(p+'0'), 0 };
         aws->insert_option(label, label, bio2info(p));

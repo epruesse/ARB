@@ -273,7 +273,7 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("user");
-    aws->create_option_menu(AWAR_TREE_EXPORT_FORMAT);
+    aws->create_option_menu(AWAR_TREE_EXPORT_FORMAT, true);
     aws->insert_option("NEWICK TREE FORMAT",                   "N", AD_TREE_EXPORT_FORMAT_NEWICK);
     aws->insert_option("NEWICK TREE FORMAT (pretty, but big)", "P", AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY);
     aws->insert_option("ARB_XML TREE FORMAT",                  "X", AD_TREE_EXPORT_FORMAT_XML);
@@ -296,7 +296,7 @@ static AW_window *create_tree_export_window(AW_root *root)
 
     aws->at_newline();
     aws->label("Name quoting (Newick only)");
-    aws->create_option_menu(AWAR_TREE_EXPORT_QUOTEMODE);
+    aws->create_option_menu(AWAR_TREE_EXPORT_QUOTEMODE, true);
     aws->insert_option("none",            "n", TREE_DISALLOW_QUOTES);
     aws->insert_option("single",          "s", TREE_SINGLE_QUOTES);
     aws->insert_option("double",          "d", TREE_DOUBLE_QUOTES);
@@ -425,7 +425,7 @@ static AW_window *create_tree_import_window(AW_root *root)
 
     aws->at("format");
     aws->label("Tree Format");
-    aws->create_option_menu(AWAR_TREE_IMPORT "/filter");
+    aws->create_option_menu(AWAR_TREE_IMPORT "/filter", true);
     aws->insert_default_option("Newick", "t", "tree");
     aws->insert_option("XML", "x", "xml");
     aws->update_option_menu();
@@ -671,7 +671,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->create_button(0, AWAR_TREE_NAME, 0, "+");
 
         aws->at("security");
-        aws->create_option_menu(AWAR_TREE_SECURITY);
+        aws->create_option_menu(AWAR_TREE_SECURITY, true);
         aws->insert_option("0", "0", 0);
         aws->insert_option("1", "1", 1);
         aws->insert_option("2", "2", 2);
