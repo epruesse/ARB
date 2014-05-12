@@ -76,7 +76,19 @@ struct MutableItemSelector { // @@@ remove AW_root arguments!
 
 #define AWAR_KEY_SELECT "tmp/viewkeys/key_select"
 
-void popup_select_species_field_window(AW_window *aww, const char *awar_name, GBDATA *gb_main);
+struct FieldSelectionParam {
+    GBDATA     *gb_main;
+    const char *awar_name;
+    bool        fallback2default;
+
+    FieldSelectionParam(GBDATA *gb_main_, const char *awar_name_, bool fallback2default_)
+        : gb_main(gb_main_),
+          awar_name(awar_name_),
+          fallback2default(fallback2default_)
+    {}
+};
+
+void popup_select_species_field_window(AW_window *aww, FieldSelectionParam *fsp);
 
 struct MutableBoundItemSel {
     GBDATA        *gb_main;
