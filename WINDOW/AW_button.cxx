@@ -1305,13 +1305,13 @@ __ATTR__NORETURN inline void toggle_type_mismatch(const char *triedType) { type_
 // ----------------------
 //      Options-Menu
 
-AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_label tmp_label, const char *mnemonic) {
+AW_option_menu_struct *AW_window::create_option_menu(const char *var_name) {
     Widget optionMenu_shell;
     Widget optionMenu;
     Widget optionMenu1;
     int x_for_position_of_menu;
 
-    if (_at->label_for_inputfield) tmp_label = _at->label_for_inputfield;
+    const char *tmp_label = _at->label_for_inputfield;
     if (tmp_label && !tmp_label[0]) {
         aw_assert(0); // do not specify empty labels (causes misalignment)
         tmp_label = NULL;
@@ -1360,10 +1360,6 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_la
                                                       RES_CONVERT(XmNlabelString, help_label),
                                                       NULL);
                 free(help_label);
-            }
-
-            if (mnemonic && mnemonic[0] && strchr(tmp_label, mnemonic[0])) {
-                XtVaSetValues(optionMenu1, RES_CONVERT(XmNmnemonic, mnemonic), NULL);
             }
         }
         else {

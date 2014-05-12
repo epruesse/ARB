@@ -583,7 +583,7 @@ public:
 
 
     // ***** option_menu is a menu where only one selection is visible at a time
-    AW_option_menu_struct *create_option_menu(const char *awar_name, AW_label label=0, const char *mnemonic=0);
+    AW_option_menu_struct *create_option_menu(const char *awar_name);
     void clear_option_menu(AW_option_menu_struct *oms);  // used to redefine available options
 
 private:
