@@ -50,6 +50,7 @@ changekey.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_at.hxx
+changekey.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -109,6 +110,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_at.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx

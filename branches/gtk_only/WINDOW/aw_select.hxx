@@ -17,6 +17,9 @@
 #ifndef AW_SCALAR_HXX
 #include "aw_scalar.hxx"
 #endif
+#ifndef AW_AWAR_HXX
+#include "aw_awar.hxx"
+#endif
 
 #include "aw_gtk_forward_declarations.hxx"
 #include <typeinfo>
@@ -104,7 +107,11 @@ public:
     
     // ******************** real public ***************
 
-    AW_awar* get_awar() { return awar; }
+    const char *get_awar_name() const { return awar->get_name(); }
+#if defined(ASSERTION_USED)
+    GB_TYPES get_awar_type() const { return awar->get_type(); }
+#endif
+
     void selectAll();
     void deselectAll();
 
