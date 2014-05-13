@@ -366,8 +366,7 @@ size_t AW_root::pimpl::callallcallbacks(int mode) {
 
                             GB_clear_error();
 
-                            cbs->clicked.emit();
-                            cbs->dclicked.emit();
+                            cbs->user_clicked(NULL);
 
                             callCount++;
                             //process_pending_events();
