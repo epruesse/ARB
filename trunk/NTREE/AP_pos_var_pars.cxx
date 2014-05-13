@@ -376,7 +376,7 @@ AW_window *AP_create_pos_var_pars_window(AW_root *root) {
     awt_create_selection_list_on_sai(GLOBAL.gb_main, aws, AWAR_PVP_SAI, false);
 
     aws->at("trees");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_PVP_TREE);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_PVP_TREE, true);
 
     aws->at("go");
     aws->highlight();

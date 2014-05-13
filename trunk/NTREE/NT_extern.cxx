@@ -473,7 +473,7 @@ static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     aws->load_xfig("optimize.fig");
 
     aws->at("trees");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, "tmp/nt/arbdb/optimize_tree_name");
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, "tmp/nt/arbdb/optimize_tree_name", true);
 
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
