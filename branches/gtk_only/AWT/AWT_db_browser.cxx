@@ -1242,7 +1242,12 @@ AW_root *AWT_create_root(const char *properties, const char *program, UserAction
 }
 
 void AWT_install_cb_guards() {
-    // deprecated
+    // not deprecated, just not implemented @@@
+    //
+    // when you take a look at what the cb-guards do (in motif version),
+    // you'll see they assert special pre-/postconditions, namely the absence
+    // of exported errors.
+    // The need to check for them, cannot deprecate before #217 is fixed. 
 }
 void AWT_install_postcb_cb(AW_postcb_cb postcb_cb) {
     AW_action::set_AW_postcb_cb(postcb_cb);
