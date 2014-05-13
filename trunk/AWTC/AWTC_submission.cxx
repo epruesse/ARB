@@ -64,7 +64,7 @@ static AW_window *create_calltexe_window(AW_root *root, const char *varname) {
     aws->callback(makeWindowCallback(ed_calltexe_event, varname));
     aws->create_button("EDIT", "EDIT", "E");
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 static void ed_submit_info_event_rm(char *string)
@@ -257,7 +257,7 @@ AW_window *AWTC_create_submission_window(AW_root *root, GBDATA *gb_main) {
 
         if (!submits.empty()) {
             aws->label("Select a Form");
-            aws->create_option_menu(AWAR_SUBMIT_SOURCE, true);
+            aws->create_option_menu(AWAR_SUBMIT_SOURCE, false);
             for (int i = 0; submits[i]; ++i) {
                 aws->insert_option(submits[i], "", submits[i]);
             }
