@@ -1078,16 +1078,20 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
                             error = "You have to use a string type field";
                         }
                     }
+                    else {
+                        if (GB_have_error()) error = GB_await_error();
+                    }
                 }
                 list_elem = list_elem->next();
             }
         }
 
         if (!foundSpecies) {
+            e4_assert(!error);
             error = "Please select some species in order to insert them into new groups";
         }
         else if (!foundField) {
-            error = GBS_global_string("Field not found: '%s'", field_name);
+            error = GBS_global_string("Field not found: '%s'%s", field_name, error ? GBS_global_string(" (Reason: %s)", error) : "");
         }
 
         free(doneContents);
