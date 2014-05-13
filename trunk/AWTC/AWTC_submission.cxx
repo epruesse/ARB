@@ -20,26 +20,23 @@
 
 #define awtc_assert(bed) arb_assert(bed)
 
+#define AWAR_SUBMIT_PARSER "tmp/submission/parser"
+#define AWAR_SUBMIT_PARSED "tmp/submission/parsed"
 
-#define AWAR_PARSER "tmp/submission/parser"
-#define AWAR_PARSED "tmp/submission/parsed"
+#define AWAR_SUBMIT_SOURCE "submission/source"
+#define AWAR_SUBMIT_FILE   "submission/file"
+#define AWAR_SUBMIT_PRIVAT "submission/privat"
 
-void AWTC_create_submission_variables(AW_root *root, AW_default db1)
-{
-    root->awar_string("submission/source", "",       db1);
-    root->awar_string(AWAR_PARSER, "press READ INFO",       db1);
-    root->awar_string(AWAR_PARSED, "",       db1);
-    root->awar_string("submission/file", "",       db1);
-    root->awar_string("submission/privat", "$(ADDRESS,    db1)=TUM Munich:\n");
+void AWTC_create_submission_variables(AW_root *root, AW_default db1) {
+    root->awar_string(AWAR_SUBMIT_SOURCE, "",                         db1);
+    root->awar_string(AWAR_SUBMIT_PARSER, "press READ INFO",          db1);
+    root->awar_string(AWAR_SUBMIT_PARSED, "",                         db1);
+    root->awar_string(AWAR_SUBMIT_FILE,   "",                         db1);
+    root->awar_string(AWAR_SUBMIT_PRIVAT, "$(ADDRESS)=TUM Munich:\n", db1);
 }
 
-static void ed_calltexe_event(AW_window *aww, char *varname)
-{
-    AW_root *aw_root = aww->get_root();
-    char    *file;
-    file = aw_root->awar(varname)->read_string();
-    AW_edit(file);
-    free(file);
+static void ed_calltexe_event(AW_window *aww, char *varname) {
+    AW_edit(aww->get_root()->awar(varname)->read_char_pntr());
 }
 
 static AW_window *create_calltexe_window(AW_root *root, char *varname) {
@@ -139,7 +136,7 @@ static void ed_submit_info_event(AW_window *aww, AW_CL cl_gbmain) {
     }
 
     char *parser = GBS_strclose(strstruct);
-    aw_root->awar(AWAR_PARSER)->write_string(parser);
+    aw_root->awar(AWAR_SUBMIT_PARSER)->write_string(parser);
 
     free(parser);
     free(species_name);
@@ -165,7 +162,7 @@ static void ed_save_var_to_file(AW_window *aww, char *data_var, char *file_var) 
 static void ed_submit_parse_event(AW_window *aww)
 {
     AW_root *aw_root = aww->get_root();
-    char *parser = aw_root->awar(AWAR_PARSER)->read_string();
+    char *parser = aw_root->awar(AWAR_SUBMIT_PARSER)->read_string();
     char    *dest;
     char    *dest2;
     char    *privat;
@@ -179,7 +176,7 @@ static void ed_submit_parse_event(AW_window *aww)
         *(d++) = c;
     }
     *d = 0;
-    char *sub_file = aw_root->awar("submission/source")->read_string();
+    char *sub_file = aw_root->awar(AWAR_SUBMIT_SOURCE)->read_string();
     char *source = GB_read_file(sub_file);
     if (source) {
         dest = GBS_string_eval(source, parser, 0);
@@ -191,7 +188,7 @@ static void ed_submit_parse_event(AW_window *aww)
 
     awtc_assert(dest); // should contain partly filled form or error message
 
-    privat = aw_root->awar("submission/privat")->read_string();
+    privat = aw_root->awar(AWAR_SUBMIT_PRIVAT)->read_string();
     for (d = p = privat; *p; p++) {
         if ((c=*p)==':') {
             if (p[1] == '\n') p++; // skip newline
@@ -203,7 +200,7 @@ static void ed_submit_parse_event(AW_window *aww)
     dest2             = GBS_string_eval(dest, privat, 0);
     if (!dest2) dest2 = strdup(GB_await_error());
 
-    aw_root->awar(AWAR_PARSED)->write_string(dest2);
+    aw_root->awar(AWAR_SUBMIT_PARSED)->write_string(dest2);
 
     free(dest);
     free(dest2);
@@ -220,7 +217,7 @@ static void ed_submit_gen_event(AW_window *aww)
     char *name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
     sprintf(buffer, "%s.submit", name);
     free(name);
-    aw_root->awar("submission/file")->write_string(buffer);
+    aw_root->awar(AWAR_SUBMIT_FILE)->write_string(buffer);
 }
 
 
@@ -243,13 +240,13 @@ AW_window *AWTC_create_submission_window(AW_root *root, GBDATA *gb_main) {
     aws->button_length(15);
 
     aws->at("privat");
-    aws->create_text_field("submission/privat", 80, 5);
+    aws->create_text_field(AWAR_SUBMIT_PRIVAT, 80, 5);
 
     aws->at("parsed_info");
-    aws->create_text_field(AWAR_PARSER, 80, 6);
+    aws->create_text_field(AWAR_SUBMIT_PARSER, 80, 6);
 
     aws->at("parsed");
-    aws->create_text_field(AWAR_PARSED, 80, 13);
+    aws->create_text_field(AWAR_SUBMIT_PARSED, 80, 13);
 
     aws->at("species");
     aws->label("Species Name:");
@@ -262,7 +259,7 @@ AW_window *AWTC_create_submission_window(AW_root *root, GBDATA *gb_main) {
 
         if (!submits.empty()) {
             aws->label("Select a Form");
-            aws->create_option_menu("submission/source", true);
+            aws->create_option_menu(AWAR_SUBMIT_SOURCE, true);
             for (int i = 0; submits[i]; ++i) {
                 aws->insert_option(submits[i], "", submits[i]);
             }
@@ -278,7 +275,7 @@ AW_window *AWTC_create_submission_window(AW_root *root, GBDATA *gb_main) {
 
     aws->at("file");
     aws->label("or enter");
-    aws->create_input_field("submission/file", 30);
+    aws->create_input_field(AWAR_SUBMIT_FILE, 30);
 
     aws->at("info");
     aws->callback(ed_submit_info_event, (AW_CL)gb_main);
@@ -289,16 +286,16 @@ AW_window *AWTC_create_submission_window(AW_root *root, GBDATA *gb_main) {
     aws->create_button("FILL_OUT_FORM", "FILL THE FORM", "F");
 
     aws->at("write");
-    aws->callback((AW_CB)ed_save_var_to_file, (AW_CL)AWAR_PARSED, (AW_CL)"submission/file");
+    aws->callback((AW_CB)ed_save_var_to_file, (AW_CL)AWAR_SUBMIT_PARSED, (AW_CL)AWAR_SUBMIT_FILE);
     aws->create_button("SAVE", "SAVE TO FILE", "S");
 
     aws->button_length(20);
     aws->at("edit");
-    aws->callback(AW_POPUP, (AW_CL)create_calltexe_window, (AW_CL)"submission/source");
+    aws->callback(AW_POPUP, (AW_CL)create_calltexe_window, (AW_CL)AWAR_SUBMIT_SOURCE);
     aws->create_button("EDIT_FORM", "EDIT FORM", "R");
 
     aws->at("editresult");
-    aws->callback(AW_POPUP, (AW_CL)create_calltexe_window, (AW_CL)"submission/file");
+    aws->callback(AW_POPUP, (AW_CL)create_calltexe_window, (AW_CL)AWAR_SUBMIT_FILE);
     aws->create_button("EDIT_SAVED", "EDIT SAVED", "S");
 
     aws->at("privatlabel");
