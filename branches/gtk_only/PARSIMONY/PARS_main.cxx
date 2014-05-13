@@ -1394,7 +1394,7 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_ALIGNMENT, "*=");
 
     aws->at("tree");
-    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *)aws, AWAR_TREE);
+    awt_create_selection_list_on_trees(GLOBAL_gb_main, aws, AWAR_TREE, true);
 
     aws->callback(makeWindowCallback(pars_start_cb, weighted_filter, cmds));
     aws->at("go");

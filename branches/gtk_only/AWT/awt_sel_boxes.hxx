@@ -89,7 +89,7 @@ public:
 AW_DB_selection *awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match);
 void awt_reconfigure_selection_list_on_alignments(AW_DB_selection *alisel, const char *ali_type_match);
 
-AW_DB_selection *awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname);
+AW_DB_selection *awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
 
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup);
 void awt_edit_arbtcpdat_cb(AW_window *aww, GBDATA *gb_main);
