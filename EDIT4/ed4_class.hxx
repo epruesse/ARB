@@ -1601,7 +1601,10 @@ public:
     AW_font_group font_group;
 
     void announce_useraction_in(AW_window *aww);
-    ED4_window *get_most_recently_used_window() const { return most_recently_used_window; }
+    ED4_window *get_most_recently_used_window() const {
+        e4_assert(most_recently_used_window);
+        return most_recently_used_window;
+    }
 
     inline ED4_device_manager *get_device_manager();
 
