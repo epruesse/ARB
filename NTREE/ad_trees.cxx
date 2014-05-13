@@ -522,7 +522,7 @@ static AW_window_simple *create_select_two_trees_window(AW_root *root, const cha
     aws->at("tree1");
     awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name, true);
     aws->at("tree2");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::dest_tree_awar(root)->awar_name, true);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::dest_tree_awar(root)->awar_name, false);
 
     AW_awar *awar_displayed_tree = root->awar(AWAR_TREE_NAME);
 
