@@ -74,7 +74,7 @@ AW_window *NT_create_select_tree_window(AW_root *awr, const char *awar_tree) {
         aws->load_xfig("select_simple.fig");
 
         aws->at("selection");
-        awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, awar_tree);
+        awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, awar_tree, true);
 
         aws->auto_space(5, 5);
         aws->button_length(6);
