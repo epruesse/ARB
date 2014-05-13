@@ -82,7 +82,10 @@ void AW_action::set_AW_postcb_cb(AW_postcb_cb cb) {
 
 /** 
  * Triggers the action
- * This is called when the user clicks on a connected widget.
+ * This is called
+ * - when the user clicks on a connected widget,
+ * - from AW_root::pimpl::callallcallbacks and
+ * - from check_for_remote_command()
  */
 void AW_action::user_clicked(GtkWidget*) {
     AW_root *root = AW_root::SINGLETON;
@@ -109,7 +112,7 @@ void AW_action::user_clicked(GtkWidget*) {
     root->set_cursor(WAIT_CURSOR);
 
     clicked.emit();
-    
+
     if (GB_have_error()) {
         GB_ERROR error = GB_await_error();
         aw_message(GBS_global_string("Warning: error while executing action %s\n"

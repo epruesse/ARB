@@ -191,7 +191,7 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
                 if (act) {
                     IF_DUMP_ACTION(printf("remote command (%s) found, running callback\n", action));
                     arb_assert(!GB_have_error());
-                    act->clicked.emit();
+                    act->user_clicked(NULL);
                     arb_assert(!GB_have_error()); // error exported by callback (unwanted)
                     GBT_write_string(gb_main, remote.result(), "");
                 }
