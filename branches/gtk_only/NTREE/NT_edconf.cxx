@@ -18,6 +18,7 @@
 #include <ad_config.h>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <arb_global_defs.h>
 
 static void init_config_awars(AW_root *root) {
     root->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);
@@ -358,91 +359,96 @@ static void nt_extract_configuration(AW_window *aww, extractType ext_type) {
     GB_transaction  ta(GLOBAL.gb_main);
     AW_root        *aw_root = aww->get_root();
     char           *cn      = aw_root->awar(AWAR_CONFIGURATION)->read_string();
-    
-    GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, cn);
-    if (!gb_configuration) {
-        aw_message(GBS_global_string("Configuration '%s' not found in the database", cn));
+
+    if (strcmp(cn, NO_CONFIG_SELECTED) == 0) {
+        aw_message("Please select a configuration");
     }
     else {
-        GBDATA *gb_middle_area  = GB_search(gb_configuration, "middle_area", GB_STRING);
-        char   *md              = 0;
-        size_t  unknown_species = 0;
-        bool    refresh         = false;
+        GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, cn);
+        if (!gb_configuration) {
+            aw_message(GBS_global_string("Configuration '%s' not found in the database", cn));
+        }
+        else {
+            GBDATA *gb_middle_area  = GB_search(gb_configuration, "middle_area", GB_STRING);
+            char   *md              = 0;
+            size_t  unknown_species = 0;
+            bool    refresh         = false;
 
-        if (gb_middle_area) {
-            GB_HASH *was_marked = NULL; // only used for CONF_COMBINE
+            if (gb_middle_area) {
+                GB_HASH *was_marked = NULL; // only used for CONF_COMBINE
 
-            switch (ext_type) {
-                case CONF_EXTRACT:
-                    GBT_mark_all(GLOBAL.gb_main, 0); // unmark all for extract
-                    refresh = true;
-                    break;
-                case CONF_COMBINE: {
-                    // store all marked species in hash and unmark them
-                    was_marked = GBS_create_hash(GBT_get_species_count(GLOBAL.gb_main), GB_IGNORE_CASE);
-                    for (GBDATA *gbd = GBT_first_marked_species(GLOBAL.gb_main); gbd; gbd = GBT_next_marked_species(gbd)) {
-                        int marked = GB_read_flag(gbd);
-                        if (marked) {
-                            GBS_write_hash(was_marked, GBT_read_name(gbd), 1);
-                            GB_write_flag(gbd, 0);
+                switch (ext_type) {
+                    case CONF_EXTRACT:
+                        GBT_mark_all(GLOBAL.gb_main, 0); // unmark all for extract
+                        refresh = true;
+                        break;
+                    case CONF_COMBINE: {
+                        // store all marked species in hash and unmark them
+                        was_marked = GBS_create_hash(GBT_get_species_count(GLOBAL.gb_main), GB_IGNORE_CASE);
+                        for (GBDATA *gbd = GBT_first_marked_species(GLOBAL.gb_main); gbd; gbd = GBT_next_marked_species(gbd)) {
+                            int marked = GB_read_flag(gbd);
+                            if (marked) {
+                                GBS_write_hash(was_marked, GBT_read_name(gbd), 1);
+                                GB_write_flag(gbd, 0);
+                            }
                         }
+
+                        refresh = refresh || GBS_hash_count_elems(was_marked);
+                        break;
                     }
-
-                    refresh = refresh || GBS_hash_count_elems(was_marked);
-                    break;
+                    default:
+                        break;
                 }
-                default:
-                    break;
-            }
 
-            md = GB_read_string(gb_middle_area);
-            if (md) {
-                char *p;
-                char tokens[2];
-                tokens[0] = 1;
-                tokens[1] = 0;
-                for (p = strtok(md, tokens); p; p = strtok(NULL, tokens)) {
-                    if (p[0] == 'L') {
-                        const char *species_name = p+1;
-                        GBDATA     *gb_species   = GBT_find_species(GLOBAL.gb_main, species_name);
+                md = GB_read_string(gb_middle_area);
+                if (md) {
+                    char *p;
+                    char tokens[2];
+                    tokens[0] = 1;
+                    tokens[1] = 0;
+                    for (p = strtok(md, tokens); p; p = strtok(NULL, tokens)) {
+                        if (p[0] == 'L') {
+                            const char *species_name = p+1;
+                            GBDATA     *gb_species   = GBT_find_species(GLOBAL.gb_main, species_name);
 
-                        if (gb_species) {
-                            int oldmark = GB_read_flag(gb_species);
-                            int newmark = oldmark;
-                            switch (ext_type) {
-                                case CONF_EXTRACT:
-                                case CONF_MARK:     newmark = 1; break;
-                                case CONF_UNMARK:   newmark = 0; break;
-                                case CONF_INVERT:   newmark = !oldmark; break;
-                                case CONF_COMBINE: {
-                                    nt_assert(!oldmark); // should have been unmarked above
-                                    newmark = GBS_read_hash(was_marked, species_name); // mark if was_marked
-                                    break;
+                            if (gb_species) {
+                                int oldmark = GB_read_flag(gb_species);
+                                int newmark = oldmark;
+                                switch (ext_type) {
+                                    case CONF_EXTRACT:
+                                    case CONF_MARK:     newmark = 1; break;
+                                    case CONF_UNMARK:   newmark = 0; break;
+                                    case CONF_INVERT:   newmark = !oldmark; break;
+                                    case CONF_COMBINE: {
+                                        nt_assert(!oldmark); // should have been unmarked above
+                                        newmark = GBS_read_hash(was_marked, species_name); // mark if was_marked
+                                        break;
+                                    }
+                                    default: nt_assert(0); break;
                                 }
-                                default: nt_assert(0); break;
+                                if (newmark != oldmark) {
+                                    GB_write_flag(gb_species, newmark);
+                                    refresh = true;
+                                }
                             }
-                            if (newmark != oldmark) {
-                                GB_write_flag(gb_species, newmark);
-                                refresh = true;
+                            else {
+                                unknown_species++;
                             }
-                        }
-                        else {
-                            unknown_species++;
                         }
                     }
                 }
+
+                if (was_marked) GBS_free_hash(was_marked);
             }
 
-            if (was_marked) GBS_free_hash(was_marked);
+            if (unknown_species>0) {
+                aw_message(GBS_global_string("configuration '%s' contains %zu unknown species", cn, unknown_species));
+            }
+
+            if (refresh) aw_root->awar(AWAR_TREE_REFRESH)->touch();
+
+            free(md);
         }
-
-        if (unknown_species>0) {
-            aw_message(GBS_global_string("configuration '%s' contains %zu unknown species", cn, unknown_species));
-        }
-
-        if (refresh) aw_root->awar(AWAR_TREE_REFRESH)->touch();
-
-        free(md);
     }
     free(cn);
 }
@@ -469,7 +475,7 @@ static GB_ERROR nt_create_configuration(AW_window *, GBT_TREE *tree, const char 
         free(existing_configs);
     }
 
-    if (!conf_name) error = "no config name";
+    if (!conf_name || !conf_name[0]) error = "no config name given";
     else {
         if (use_species_aside==-1) {
             static int last_used_species_aside = 3;
@@ -651,23 +657,25 @@ static void nt_start_editor_on_configuration(AW_window *aww) {
 
 AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
-    awr->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);
-    aws = new AW_window_simple;
-    aws->init(awr, "SELECT_CONFIGURATION", "SELECT A CONFIGURATION");
-    aws->at(10, 10);
-    aws->auto_space(0, 0);
-    awt_create_selection_list_on_configurations(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, true);
-    aws->at_newline();
+    if (!aws) {
+        init_config_awars(awr);
 
-    aws->callback((AW_CB0)nt_start_editor_on_configuration);
-    aws->create_button("START", "START");
+        aws = new AW_window_simple;
+        aws->init(awr, "SELECT_CONFIGURATION", "SELECT A CONFIGURATION");
+        aws->at(10, 10);
+        aws->auto_space(0, 0);
+        awt_create_selection_list_on_configurations(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, true);
+        aws->at_newline();
 
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback((AW_CB0)nt_start_editor_on_configuration);
+        aws->create_button("START", "START");
 
-    aws->window_fit();
-    return (AW_window *)aws;
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->window_fit();
+    }
+    return aws;
 }
 
 void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL cl_ntw) {

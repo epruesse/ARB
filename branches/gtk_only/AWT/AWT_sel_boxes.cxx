@@ -453,7 +453,7 @@ struct AWT_configuration_selection : public AW_DB_selection {
         if (!config.empty()) {
             for (int c = 0; config[c]; c++) insert(config[c], config[c]);
         }
-        insert_default(DISPLAY_NONE, "????");
+        insert_default(DISPLAY_NONE, NO_CONFIG_SELECTED);
     }
 };
 

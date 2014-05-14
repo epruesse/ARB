@@ -14,6 +14,7 @@
 #include "item_sel_list.h"
 
 #include <arbdbt.h>
+#include <arb_global_defs.h>
 
 #if !defined(ARB_GTK)
 static AW_window *existing_window_creator(AW_root*, AW_window *aw_existing) {
@@ -78,7 +79,7 @@ void Itemfield_Selection::fill() {
             }
         }
     }
-    insert_default("????", "----");
+    insert_default("<no field>", NO_FIELD_SELECTED);
 }
 
 
