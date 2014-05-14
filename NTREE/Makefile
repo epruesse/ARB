@@ -596,6 +596,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_msg.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_string.h
