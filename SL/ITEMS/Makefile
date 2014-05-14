@@ -99,6 +99,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/arb_assert.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_core.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_defs.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_error.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_msg.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_string.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arbdb.h
