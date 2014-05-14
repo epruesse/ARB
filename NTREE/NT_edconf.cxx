@@ -651,23 +651,25 @@ static void nt_start_editor_on_configuration(AW_window *aww) {
 
 AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
-    awr->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);
-    aws = new AW_window_simple;
-    aws->init(awr, "SELECT_CONFIGURATION", "SELECT A CONFIGURATION");
-    aws->at(10, 10);
-    aws->auto_space(0, 0);
-    awt_create_selection_list_on_configurations(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, true);
-    aws->at_newline();
+    if (!aws) {
+        init_config_awars(awr);
 
-    aws->callback((AW_CB0)nt_start_editor_on_configuration);
-    aws->create_button("START", "START");
+        aws = new AW_window_simple;
+        aws->init(awr, "SELECT_CONFIGURATION", "SELECT A CONFIGURATION");
+        aws->at(10, 10);
+        aws->auto_space(0, 0);
+        awt_create_selection_list_on_configurations(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, true);
+        aws->at_newline();
 
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback((AW_CB0)nt_start_editor_on_configuration);
+        aws->create_button("START", "START");
 
-    aws->window_fit();
-    return (AW_window *)aws;
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->window_fit();
+    }
+    return aws;
 }
 
 void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL cl_ntw) {
