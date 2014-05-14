@@ -1101,9 +1101,9 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
-static void group_species2_cb(AW_window*, AW_CL cl_use_as_main_window, AW_CL cl_window_to_hide) {
-    group_species(1, (AW_window*)cl_use_as_main_window);
-    ((AW_window*)cl_window_to_hide)->hide();
+static void group_species2_cb(AW_window*, AW_window *use_as_main_window, AW_window *window_to_hide) {
+    group_species(1, use_as_main_window);
+    window_to_hide->hide();
 }
 
 static AW_window *create_group_species_by_field_window(AW_root *aw_root, AW_window *use_as_main_window) {
@@ -1114,7 +1114,7 @@ static AW_window *create_group_species_by_field_window(AW_root *aw_root, AW_wind
 
     aws->button_length(20);
     aws->at("doit");
-    aws->callback(group_species2_cb, (AW_CL)use_as_main_window, (AW_CL)aws);
+    aws->callback(makeWindowCallback(group_species2_cb, use_as_main_window, static_cast<AW_window*>(aws)));
     aws->create_button("USE_FIELD", "Use selected field", "");
 
     aws->button_length(10);
@@ -1451,9 +1451,8 @@ AW_window *ED4_create_level_1_options_window(AW_root *root) {
     return aws;
 }
 
-// Open window to show IUPAC tables
-static AW_window * CON_showgroupswin_cb(AW_root *aw_root)
-{
+static AW_window *CON_create_groupswin_cb(AW_root *aw_root) {
+    // Create window showing IUPAC tables
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SHOW_IUPAC", "Show IUPAC");
     aws->load_xfig("consensus/groups.fig");
@@ -1484,7 +1483,8 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->button_length(10);
-        aws->at("showgroups"); aws->callback(AW_POPUP, (AW_CL)CON_showgroupswin_cb, 0);
+        aws->at("showgroups");
+        aws->callback(CON_create_groupswin_cb);
         aws->create_button("SHOW_IUPAC", "show\nIUPAC...", "s");
 
         aws->at("countgaps");
@@ -1519,21 +1519,20 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
     return aws;
 }
 
-void ED4_create_consensus_awars(AW_root *aw_root)
-{
+void ED4_create_consensus_awars(AW_root *aw_root) {
     GB_transaction ta(GLOBAL_gb_main);
 
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_COUNTGAPS, 1)->add_callback(ED4_consensus_definition_changed, 0, 0);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_GAPBOUND, 60)->add_callback(ED4_consensus_definition_changed, 0, 0);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_GROUP, 1)->add_callback(ED4_consensus_definition_changed, 0, 0);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_CONSIDBOUND, 30)->add_callback(ED4_consensus_definition_changed, 0, 0);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_UPPER, 95)->add_callback(ED4_consensus_definition_changed, 0, 0);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_LOWER, 70)->add_callback(ED4_consensus_definition_changed, 0, 0);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_COUNTGAPS,   1) ->add_callback(ED4_consensus_definition_changed);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_GAPBOUND,    60)->add_callback(ED4_consensus_definition_changed);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_GROUP,       1) ->add_callback(ED4_consensus_definition_changed);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_CONSIDBOUND, 30)->add_callback(ED4_consensus_definition_changed);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_UPPER,       95)->add_callback(ED4_consensus_definition_changed);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_LOWER,       70)->add_callback(ED4_consensus_definition_changed);
 
     AW_awar *cons_show = aw_root->awar_int(ED4_AWAR_CONSENSUS_SHOW, 1);
 
     cons_show->write_int(1);
-    cons_show->add_callback(ED4_consensus_display_changed, 0, 0);
+    cons_show->add_callback(ED4_consensus_display_changed);
 }
 
 void ED4_restart_editor(AW_window *aww, AW_CL, AW_CL)
@@ -1550,7 +1549,7 @@ AW_window *ED4_start_editor_on_old_configuration(AW_root *awr)
     aws->init(awr, "LOAD_OLD_CONFIGURATION", "SELECT A CONFIGURATION");
     aws->at(10, 10);
     aws->auto_space(0, 0);
-    awt_create_selection_list_on_configurations(GLOBAL_gb_main, (AW_window *)aws, AWAR_EDIT_CONFIGURATION);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, true);
     aws->at_newline();
 
     aws->callback((AW_CB0)ED4_start_editor_on_configuration);
@@ -1563,9 +1562,9 @@ AW_window *ED4_start_editor_on_old_configuration(AW_root *awr)
     return (AW_window *)aws;
 }
 
-void ED4_save_configuration(AW_window *aww, AW_CL close_flag) {
+void ED4_save_configuration(AW_window *aww, bool hide_aww) {
     char *cn = aww->get_root()->awar(AWAR_EDIT_CONFIGURATION)->read_string();
-    if (close_flag) aww->hide();
+    if (hide_aww) aww->hide();
 
     ED4_ROOT->database->generate_config_string(cn);
 
@@ -1591,10 +1590,10 @@ AW_window *ED4_save_configuration_as_open_window(AW_root *awr) {
     aws->create_input_field(AWAR_EDIT_CONFIGURATION);
 
     aws->at("confs");
-    awt_create_selection_list_on_configurations(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, true);
 
     aws->at("go");
-    aws->callback(ED4_save_configuration, 1);
+    aws->callback(makeWindowCallback(ED4_save_configuration, true));
     aws->create_button("SAVE", "SAVE");
 
     return aws;
@@ -1710,13 +1709,8 @@ inline bool nameIsUnique(const char *short_name, GBDATA *gb_species_data) {
     return GBT_find_species_rel_species_data(gb_species_data, short_name)==0;
 }
 
-static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
-    // creation_mode == 0 -> create new species
-    //                  1 -> create new species from group consensus
-    //                  2 -> copy current species
 
-    enum e_creation_mode { CREATE_NEW_SPECIES, CREATE_FROM_CONSENSUS, COPY_SPECIES } creation_mode = (enum e_creation_mode)(cl_creation_mode);
-
+static void create_new_species(AW_window *, SpeciesCreationMode creation_mode) {
     char      *new_species_full_name = ED4_ROOT->aw_root->awar(ED4_AWAR_SPECIES_TO_CREATE)->read_string(); // this contains the full_name now!
     ARB_ERROR  error                 = 0;
 
@@ -2065,22 +2059,17 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
     free(new_species_full_name);
 }
 
-AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode) {
-    // creation_mode == 0 -> create new species
-    //                  1 -> create new species from group consensus
-    //                  2 -> copy current species
-
-    int creation_mode = int(cl_creation_mode);
-    e4_assert(creation_mode >= 0 && creation_mode <= 2);
+AW_window *ED4_create_new_seq_window(AW_root *root, SpeciesCreationMode creation_mode) {
+    e4_assert(valid(creation_mode));
 
     AW_window_simple *aws = new AW_window_simple;
     switch (creation_mode) {
-        case 0: aws->init(root, "create_species",                "Create species"); break;
-        case 1: aws->init(root, "create_species_from_consensus", "Create species from consensus"); break;
-        case 2: aws->init(root, "copy_species",                  "Copy current species"); break;
+        case CREATE_NEW_SPECIES:    aws->init(root, "create_species",                "Create species");                break;
+        case CREATE_FROM_CONSENSUS: aws->init(root, "create_species_from_consensus", "Create species from consensus"); break;
+        case COPY_SPECIES:          aws->init(root, "copy_species",                  "Copy current species");          break;
     }
     
-    if (creation_mode==1) { // create from consensus
+    if (creation_mode==CREATE_FROM_CONSENSUS) {
         aws->load_xfig("edit4/create_seq_fc.fig");
     }
     else {
@@ -2098,10 +2087,10 @@ AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode) {
     aws->create_input_field(ED4_AWAR_SPECIES_TO_CREATE, 30);
 
     aws->at("ok");
-    aws->callback(create_new_species, cl_creation_mode);
+    aws->callback(makeWindowCallback(create_new_species, creation_mode));
     aws->create_button("GO", "GO", "g");
 
-    if (creation_mode==1) { // create from consensus
+    if (creation_mode==CREATE_FROM_CONSENSUS) {
         aws->at("replace_equal");
         aws->label("Replace '=' by ");
         aws->create_input_field(ED4_AWAR_CREATE_FROM_CONS_REPL_EQUAL, 1);
@@ -2126,6 +2115,6 @@ AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode) {
         aws->update_option_menu();
     }
 
-    return (AW_window *)aws;
+    return aws;
 }
 

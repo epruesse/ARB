@@ -457,13 +457,13 @@ struct AWT_configuration_selection : public AW_DB_selection {
     }
 };
 
-void awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname) {
+void awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
     GBDATA *gb_configuration_data;
     {
         GB_transaction ta(gb_main);
         gb_configuration_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
     }
-    AW_selection_list *sellist = aws->create_selection_list(varname, 40, 15, true);
+    AW_selection_list *sellist = aws->create_selection_list(varname, 40, 15, fallback2default);
     (new AWT_configuration_selection(sellist, gb_configuration_data))->refresh();
 }
 

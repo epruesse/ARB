@@ -2346,10 +2346,10 @@ void ED4_request_relayout();
 void ED4_request_full_refresh();
 void ED4_request_full_instant_refresh();
 
-AW_window   *ED4_start_editor_on_old_configuration  (AW_root *awr);
-void        ED4_restart_editor          (AW_window *aww, AW_CL, AW_CL);
-void        ED4_save_configuration          (AW_window *aww, AW_CL close_flag);
-AW_window   *ED4_save_configuration_as_open_window  (AW_root *awr);
+AW_window *ED4_start_editor_on_old_configuration  (AW_root *awr);
+void       ED4_restart_editor          (AW_window *aww, AW_CL, AW_CL);
+void       ED4_save_configuration(AW_window *aww, bool hide_aww);
+AW_window *ED4_save_configuration_as_open_window  (AW_root *awr);
 
 void        ED4_set_iupac           (AW_window *aww, char *awar_name, bool callback_flag);
 void        ED4_set_helixnr         (AW_window *aww, char *awar_name, bool callback_flag);
@@ -2373,15 +2373,25 @@ void        ED4_set_reference_species   (AW_window *aww, AW_CL cd1, AW_CL cd2);
 
 void        ED4_new_editor_window       (AW_window *aww);
 
-AW_window  *ED4_create_consensus_definition_window (AW_root *root);
-void        ED4_create_consensus_awars      (AW_root *aw_root);
-void        ED4_consensus_definition_changed    (AW_root*, AW_CL, AW_CL);
-void        ED4_consensus_display_changed       (AW_root*, AW_CL, AW_CL);
+AW_window  *ED4_create_consensus_definition_window(AW_root *root);
+void        ED4_create_consensus_awars(AW_root *aw_root);
+void        ED4_consensus_definition_changed(AW_root*);
+void        ED4_consensus_display_changed(AW_root *root);
 
 AW_window   *ED4_create_level_1_options_window  (AW_root *root);
 void        ED4_compression_toggle_changed_cb   (AW_root *root, AW_CL cd1, AW_CL cd2);
 
-AW_window   *ED4_create_new_seq_window      (AW_root *root, AW_CL cl_creation_mode);
+enum SpeciesCreationMode {
+    CREATE_NEW_SPECIES,
+    CREATE_FROM_CONSENSUS, // create new species from group consensus (of surrounding group)
+    COPY_SPECIES,          // copy current species
+};
+
+#if defined(ASSERTION_USED)
+CONSTEXPR_RETURN inline bool valid(SpeciesCreationMode m) { return m>=CREATE_NEW_SPECIES && m<=COPY_SPECIES; }
+#endif
+
+AW_window *ED4_create_new_seq_window(AW_root *root, SpeciesCreationMode creation_mode);
 
 void ED4_jump_to_current_species     (AW_window *, AW_CL);
 void ED4_get_and_jump_to_current      (AW_window *, AW_CL);

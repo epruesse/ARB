@@ -172,10 +172,10 @@ AW_window *MG_create_merge_configs_window(AW_root *awr) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("configs1");
-    awt_create_selection_list_on_configurations(GLOBAL_gb_src, aws, AWAR_CONFIG_NAME_SRC);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_src, aws, AWAR_CONFIG_NAME_SRC, true);
 
     aws->at("configs2");
-    awt_create_selection_list_on_configurations(GLOBAL_gb_dst, aws, AWAR_CONFIG_NAME_DST);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_dst, aws, AWAR_CONFIG_NAME_DST, true);
 
     aws->at("delete1");
     aws->callback(makeWindowCallback(MG_config_delete_cb, 1));

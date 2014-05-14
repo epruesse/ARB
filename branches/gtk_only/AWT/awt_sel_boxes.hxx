@@ -103,7 +103,7 @@ void awt_selection_list_on_sai_update_cb(UNFIXED, AWT_sai_selection *cbsid);
 void awt_popup_sai_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main);
 void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
 
-void  awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname);
+void  awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
 char *awt_create_string_on_configurations(GBDATA *gb_main);
 
 // -------------------------------
