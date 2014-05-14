@@ -354,8 +354,8 @@ enum extractType {
     CONF_COMBINE // logical AND
 };
 
-static void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType) {
-    GB_transaction  ta(GLOBAL.gb_main);         // open close transaction
+static void nt_extract_configuration(AW_window *aww, extractType ext_type) {
+    GB_transaction  ta(GLOBAL.gb_main);
     AW_root        *aw_root = aww->get_root();
     char           *cn      = aw_root->awar(AWAR_CONFIGURATION)->read_string();
     
@@ -370,9 +370,7 @@ static void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType) {
         bool    refresh         = false;
 
         if (gb_middle_area) {
-            extractType ext_type = extractType(cl_extractType);
-
-            GB_HASH *was_marked = NULL;             // only used for CONF_COMBINE
+            GB_HASH *was_marked = NULL; // only used for CONF_COMBINE
 
             switch (ext_type) {
                 case CONF_EXTRACT:
@@ -538,8 +536,8 @@ static GB_ERROR nt_create_configuration(AW_window *, GBT_TREE *tree, const char 
     return error;
 }
 
-static void nt_store_configuration(AW_window *, AW_CL cl_ntw) {
-    GB_ERROR err = nt_create_configuration(0, nt_get_tree_root_of_canvas((AWT_canvas*)cl_ntw), 0, 0);
+static void nt_store_configuration(AW_window*, AWT_canvas *ntw) {
+    GB_ERROR err = nt_create_configuration(0, nt_get_tree_root_of_canvas(ntw), 0, 0);
     aw_message_if(err);
 }
 
@@ -596,27 +594,27 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         awt_create_selection_list_on_configurations(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, true);
 
         aws->at("store");
-        aws->callback(nt_store_configuration, (AW_CL)ntw);
+        aws->callback(makeWindowCallback(nt_store_configuration, ntw));
         aws->create_button(GBS_global_string("STORE_%i", ntw_id), "STORE", "S");
 
         aws->at("extract");
-        aws->callback(nt_extract_configuration, CONF_EXTRACT);
+        aws->callback(makeWindowCallback(nt_extract_configuration, CONF_EXTRACT));
         aws->create_button("EXTRACT", "EXTRACT", "E");
 
         aws->at("mark");
-        aws->callback(nt_extract_configuration, CONF_MARK);
+        aws->callback(makeWindowCallback(nt_extract_configuration, CONF_MARK));
         aws->create_button("MARK", "MARK", "M");
 
         aws->at("unmark");
-        aws->callback(nt_extract_configuration, CONF_UNMARK);
+        aws->callback(makeWindowCallback(nt_extract_configuration, CONF_UNMARK));
         aws->create_button("UNMARK", "UNMARK", "U");
 
         aws->at("invert");
-        aws->callback(nt_extract_configuration, CONF_INVERT);
+        aws->callback(makeWindowCallback(nt_extract_configuration, CONF_INVERT));
         aws->create_button("INVERT", "INVERT", "I");
 
         aws->at("combine");
-        aws->callback(nt_extract_configuration, CONF_COMBINE);
+        aws->callback(makeWindowCallback(nt_extract_configuration, CONF_COMBINE));
         aws->create_button("COMBINE", "COMBINE", "C");
 
         aws->at("delete");
