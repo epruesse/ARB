@@ -86,8 +86,8 @@ int aw_string_selection_button() {
  * @param  prompt         A prompt shown above the input field.
  * @param  default_input  A default string shown in the input field (or NULL)
  * @param  value_liist    A semi-colon separated list of defaults (or NULL)
- * @param  buttons        A comma separated list of buttons. Answer can be retrieved
- *                        with aw_string_selection_button()
+ * @param  buttons        A comma separated list of buttons (default is "Ok,Cancel").
+ *                        Answer can be retrieved with aw_string_selection_button()
  * @param  check_fun      A function to correct the input.
  * @return The string.
  */
@@ -108,7 +108,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     dialog.set_message(prompt);
     dialog.create_input_field(awar_string);
     AW_selection_list *slist = dialog.create_selection_list(awar_string, false);
-    dialog.create_buttons(buttons_);
+    dialog.create_buttons(buttons_ ? buttons_ : "Ok,Cancel");
     
     slist->clear();
     if (value_list) {
