@@ -327,8 +327,7 @@ char *aw_input2awar(const char *prompt, const char *awar_name) {
 }
 
 
-char *aw_string_selection(const char *title, const char *prompt, const char *default_input,
-                          const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
+char *aw_string_selection(const char *title, const char *prompt, const char *default_input, const char *value_list, const char *buttons) {
     // A modal input window. A String may be entered by hand or selected from value_list
     //
     //      title           window title
@@ -337,7 +336,6 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     //      value_list      Existing selections (separated by ';') or NULL if no selection exists
     //      buttons         String containing answer button names separated by ',' (default is "Ok,-Abort")
     //                      Use aw_string_selected_button() to detect which has been pressed.
-    //      check_fun       function to correct input (or NULL for no check). The function may return NULL to indicate no correction
     //
     // returns the value of the inputfield
 
@@ -423,19 +421,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
             root->process_events();
 
             char *this_input = root->awar(AW_INPUT_AWAR)->read_string();
-            if (strcmp(this_input, last_input) != 0) {
-                if (check_fun) {
-                    char *corrected_input = check_fun(this_input);
-                    if (corrected_input) {
-                        if (strcmp(corrected_input, this_input) != 0) {
-                            root->awar(AW_INPUT_AWAR)->write_string(corrected_input);
-                        }
-                        free(corrected_input);
-                    }
-                }
-                reassign(last_input, this_input);
-            }
-            free(this_input);
+            reassign(last_input, this_input);
 
             if (!aw_msg->is_shown()) { // somebody hided/closed the window
                 input_cb(aw_msg, -1); // CANCEL
@@ -450,17 +436,20 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     return aw_input_cb_result;
 }
 
-char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name, const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
+char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name, const char *value_list, const char *buttons) {
     // params see aw_string_selection
-    // default_value is taken from and result is written back to awar 'awar_name'
+    // 
+    // default for string is taken from awar 'awar_name'.
+    // result is written back to awar.
+    // if abort button is pressed, old value is written back to awar.
 
-    AW_root *aw_root       = AW_root::SINGLETON;
-    AW_awar *awar          = aw_root->awar(awar_name);
-    char    *default_value = awar->read_string();
-    char    *result        = aw_string_selection(title, prompt, default_value, value_list, buttons, check_fun);
+    AW_root *aw_root   = AW_root::SINGLETON;
+    AW_awar *awar      = aw_root->awar(awar_name);
+    char    *old_value = awar->read_string();
+    char    *result    = aw_string_selection(title, prompt, old_value, value_list, buttons);
 
-    awar->write_string(result);
-    free(default_value);
+    awar->write_string(result ? result : old_value);
+    free(old_value);
 
     return result;
 }

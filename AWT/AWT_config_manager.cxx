@@ -186,10 +186,8 @@ static void AWT_start_config_manager(AW_window *aww, AWT_configuration *config) 
     const char *buttons = "\nRESTORE,STORE,DELETE,LOAD,SAVE,-\nCLOSE,HELP";
     enum Answer { CM_RESTORE, CM_STORE, CM_DELETE, CM_LOAD, CM_SAVE, CM_none, CM_HELP };
 
-    char   *cfgName = aw_string_selection2awar(title, "Enter a new or select an existing config",
-                                               config->get_awar_name("current").c_str(), existing_configs.c_str(),
-                                              buttons, correct_key_name);
-    Answer  button = (Answer)aw_string_selection_button();
+    char   *cfgName = aw_string_selection2awar(title, "Enter a new or select an existing config", config->get_awar_name("current").c_str(), existing_configs.c_str(), buttons);
+    Answer  button  = (Answer)aw_string_selection_button();
 
     GB_ERROR error = NULL;
     if (button >= CM_RESTORE && button <= CM_SAVE) {
@@ -199,74 +197,82 @@ static void AWT_start_config_manager(AW_window *aww, AWT_configuration *config) 
     }
 
     if (!error && button>=0) {
-        string  awar_name = config_prefix+cfgName;
-        char   *filename  = 0;
-        bool    loading   = false;
+        if (button == CM_HELP) {
+            AW_help_popup(aww, "configurations.hlp");
+        }
+        else {
+            freeset(cfgName, correct_key_name(cfgName));
 
-        awt_assert(GB_check_key(awar_name.c_str()) == NULL);
+            string  awar_name = config_prefix+cfgName;
+            char   *filename  = 0;
+            bool    loading   = false;
 
-        reopen = true;
+            awt_assert(GB_check_key(awar_name.c_str()) == NULL);
 
-        switch (button) {
-            case CM_LOAD: {
-                char *loadMask = GBS_global_string_copy("%s_*", config->get_id());
-                filename       = aw_file_selection("Load config from file", "$(ARBCONFIG)", loadMask, ".arbcfg");
-                free(loadMask);
-                if (!filename) break;
+            reopen = true;
 
-                error = config->Load(filename, awar_name);
-                if (error) break;
+            switch (button) {
+                case CM_LOAD: {
+                    char *loadMask = GBS_global_string_copy("%s_*", config->get_id());
+                    filename       = aw_file_selection("Load config from file", "$(ARBCONFIG)", loadMask, ".arbcfg");
+                    free(loadMask);
+                    if (!filename) break;
 
-                loading = true;
-                // fall-through
-            }
+                    error = config->Load(filename, awar_name);
+                    if (error) break;
 
-            case CM_RESTORE:
-                error = config->Restore(config->get_awar_value(awar_name));
-                if (!error) {
+                    loading = true;
+                    // fall-through
+                }
+
+                case CM_RESTORE:
+                    error = config->Restore(config->get_awar_value(awar_name));
+                    if (!error) {
+                        config->set_awar_value("current", cfgName);
+                        if (loading) goto AUTOSTORE;
+                        reopen = false;
+                    }
+                    break;
+
+                case CM_SAVE: {
+                    char *saveAs = GBS_global_string_copy("%s_%s", config->get_id(), cfgName);
+                    filename     = aw_file_selection("Save config to file", "$(ARBCONFIG)", saveAs, ".arbcfg");
+                    free(saveAs);
+                    if (!filename) break;
+                    // fall-through
+                }
+                case CM_STORE: {
+                      AUTOSTORE :
+                    remove_from_configs(cfgName, existing_configs); // remove existing config
+
+                    if (existing_configs.length()) existing_configs = string(cfgName)+';'+existing_configs;
+                    else existing_configs                           = cfgName;
+
+                    {
+                        char *config_string = config->Store();
+                        config->set_awar_value(awar_name, config_string);
+                        free(config_string);
+                    }
                     config->set_awar_value("current", cfgName);
-                    if (loading) goto AUTOSTORE;
-                    reopen = false;
+                    config->set_awar_value("existing", existing_configs);
+
+                    if (filename && !loading) error = config->Save(filename, awar_name); // CM_SAVE
+                    break;
                 }
-                break;
 
-            case CM_SAVE: {
-                char *saveAs = GBS_global_string_copy("%s_%s", config->get_id(), cfgName);
-                filename     = aw_file_selection("Save config to file", "$(ARBCONFIG)", saveAs, ".arbcfg");
-                free(saveAs);
-                if (!filename) break;
-                // fall-through
+                case CM_DELETE:
+                    remove_from_configs(cfgName, existing_configs); // remove existing config
+                    config->set_awar_value("current", "");
+                    config->set_awar_value("existing", existing_configs);
+
+                    // @@@ config is not really deleted from properties
+                    break;
+
+                case CM_HELP:
+                case CM_none:
+                    awt_assert(0); // should not come here
+                    break;
             }
-            case CM_STORE: {
-                AUTOSTORE :
-                remove_from_configs(cfgName, existing_configs); // remove existing config
-
-                if (existing_configs.length()) existing_configs = string(cfgName)+';'+existing_configs;
-                else existing_configs                           = cfgName;
-
-                {
-                    char *config_string = config->Store();
-                    config->set_awar_value(awar_name, config_string);
-                    free(config_string);
-                }
-                config->set_awar_value("current", cfgName);
-                config->set_awar_value("existing", existing_configs);
-
-                if (filename && !loading) error = config->Save(filename, awar_name); // CM_SAVE
-                break;
-            }
-
-            case CM_DELETE:
-                remove_from_configs(cfgName, existing_configs); // remove existing config
-                config->set_awar_value("current", "");
-                config->set_awar_value("existing", existing_configs);
-
-                // @@@ config is not really deleted from properties
-                break;
-
-            case CM_HELP:
-                AW_help_popup(aww, "configurations.hlp");
-                break;
         }
     }
 
