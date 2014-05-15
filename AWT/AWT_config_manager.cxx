@@ -20,6 +20,7 @@
 #include <aw_question.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
+#include <arb_strarray.h>
 
 #include <map>
 #include <string>
@@ -148,29 +149,19 @@ GB_ERROR AWT_configuration::Load(const char* filename, const string& awar_name) 
 }
 
 void remove_from_configs(const string& config, string& existing_configs) {
-    size_t start = -1U;
-    printf("erasing '%s' from '%s'\n", config.c_str(), existing_configs.c_str());
+    ConstStrArray cfgs;
+    GBT_split_string(cfgs, existing_configs.c_str(), ';');
 
-    while (1) {
-        start = existing_configs.find(config, start+1);
-        if (start == string::npos) break; // not found
-        if (start == 0 || existing_configs[start-1] == ';') { // config starts with string
-            size_t stop = start+config.length();
-            if (stop != existing_configs.length()) {
-                if (stop>existing_configs.length()) break; // not found
-                if (existing_configs[stop] != ';') continue; // name continues
-            }
-            existing_configs.erase(start, stop-start+1);
-            if (existing_configs[existing_configs.length()-1] == ';') {
-                existing_configs.erase(existing_configs.length()-1);
-            }
-            remove_from_configs(config, existing_configs);
-            break;
+    ConstStrArray remaining;
+    for (int i = 0; cfgs[i]; ++i) {
+        if (strcmp(cfgs[i], config.c_str()) != 0) {
+            remaining.put(cfgs[i]);
         }
     }
-#if defined(DEBUG)
-    printf("result: '%s'\n", existing_configs.c_str());
-#endif // DEBUG
+
+    char *rest       = GBT_join_names(remaining, ';');
+    existing_configs = rest;
+    free(rest);
 }
 
 static string config_prefix = "cfg_";
@@ -192,11 +183,11 @@ static void AWT_start_config_manager(AW_window *aww, AWT_configuration *config) 
     bool  reopen = false;
     char *title  = GBS_global_string_copy("Configurations for '%s'", aww->window_name);
 
-    const char *buttons = "\nRESTORE,STORE,DELETE,LOAD,SAVE,\nCLOSE,HELP";
-    enum Answer { CM_RESTORE, CM_STORE, CM_DELETE, CM_LOAD, CM_SAVE, CM_CLOSE, CM_HELP };
+    const char *buttons = "\nRESTORE,STORE,DELETE,LOAD,SAVE,-\nCLOSE,HELP";
+    enum Answer { CM_RESTORE, CM_STORE, CM_DELETE, CM_LOAD, CM_SAVE, CM_none, CM_HELP };
 
     char   *cfgName = aw_string_selection2awar(title, "Enter a new or select an existing config",
-                                              config->get_awar_name("current").c_str(), existing_configs.c_str(),
+                                               config->get_awar_name("current").c_str(), existing_configs.c_str(),
                                               buttons, correct_key_name);
     Answer  button = (Answer)aw_string_selection_button();
 
@@ -207,7 +198,7 @@ static void AWT_start_config_manager(AW_window *aww, AWT_configuration *config) 
         }
     }
 
-    if (!error) {
+    if (!error && button>=0) {
         string  awar_name = config_prefix+cfgName;
         char   *filename  = 0;
         bool    loading   = false;
@@ -275,9 +266,6 @@ static void AWT_start_config_manager(AW_window *aww, AWT_configuration *config) 
 
             case CM_HELP:
                 AW_help_popup(aww, "configurations.hlp");
-                break;
-            case CM_CLOSE:
-                reopen = false;
                 break;
         }
     }
