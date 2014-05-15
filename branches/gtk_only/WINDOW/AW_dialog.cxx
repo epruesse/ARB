@@ -9,18 +9,29 @@
 struct AW_dialog::Pimpl {
     GtkDialog *dialog;
     GtkLabel  *label;
+
     AW_selection_list *slist;
+
     int result;
     int exit_button;
+    int abort_button;
+
     AW_awar* selection_awar;
     AW_awar* input_awar;
-    Pimpl() 
-        : dialog(NULL), label(NULL), slist(NULL), result(0), exit_button(-1),
-          selection_awar(NULL), input_awar(NULL)
+
+    Pimpl()
+        : dialog(NULL),
+          label(NULL),
+          slist(NULL),
+          result(-1),
+          exit_button(-1),
+          abort_button(-1),
+          selection_awar(NULL),
+          input_awar(NULL)
     {}
 };
-    
-AW_dialog::AW_dialog() 
+
+AW_dialog::AW_dialog()
   : prvt(new Pimpl)
 {
     prvt->dialog = GTK_DIALOG(gtk_dialog_new());
@@ -43,6 +54,9 @@ void AW_dialog::run() {
     
     if (prvt->result == prvt->exit_button) {
         exit(EXIT_FAILURE);
+    }
+    if (prvt->result == prvt->abort_button && prvt->abort_button>=0) {
+        prvt->result = -1;
     }
 }
 
@@ -67,13 +81,20 @@ void AW_dialog::set_message(const char* text) {
 }
 
 void AW_dialog::create_buttons(const char* buttons_) {
-    aw_return_if_fail(buttons_ != NULL);
+    aw_assert(buttons_);
 
     // create buttons from descriptor string
     int   num_buttons = 0;
-    char *buttons = strdup(buttons_);
-    char *saveptr, *button = strtok_r(buttons, ",", &saveptr);
+    char *buttons     = strdup(buttons_);
+    char *saveptr;
+    char *button      = strtok_r(buttons, ",", &saveptr);
+
     do {
+        if (button[0] == '-') { // abort button
+            aw_assert(prvt->abort_button<0); // only one abort button is allowed
+            prvt->abort_button = num_buttons;
+            button++;
+        }
         if (button[0] == '^' || button[0] == '\n') {
             // not sure how to do this
             button++;
@@ -82,7 +103,9 @@ void AW_dialog::create_buttons(const char* buttons_) {
             prvt->exit_button = num_buttons;
         }
         gtk_dialog_add_button(prvt->dialog, button, num_buttons++);
-    } while ( (button = strtok_r(NULL, ",", &saveptr)) );
+    }
+    while ( (button = strtok_r(NULL, ",", &saveptr)) );
+
     free(buttons);
 }
 

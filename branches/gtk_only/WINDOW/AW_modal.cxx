@@ -31,7 +31,7 @@
 
 using namespace std;
 
-const char *awar_button_name = "tmp/input/button";
+const char *awar_button_name = "tmp/input/button"; // @@@ eliminate this awar (a module-global int-variable serves better)
 const char *awar_string_name = "tmp/input/string";
 
 /** 
@@ -64,14 +64,12 @@ char *aw_input2awar(const char *prompt, const char *awar_name, const char *title
     dialog.set_title(title);
     dialog.set_message(prompt);
     dialog.create_input_field(awar_string);
-    dialog.create_buttons("Cancel,Ok");
+    dialog.create_buttons("Ok,-Abort");
 
     dialog.run();
 
-    if (dialog.get_result()>0) {
-        return awar_string->read_string();
-    }
-    return NULL;
+    bool ok_pressed = dialog.get_result() == 0;
+    return ok_pressed ? awar_string->read_string() : NULL;
 }
 
 int aw_string_selection_button() {
@@ -108,7 +106,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     dialog.set_message(prompt);
     dialog.create_input_field(awar_string);
     AW_selection_list *slist = dialog.create_selection_list(awar_string, false);
-    dialog.create_buttons(buttons_ ? buttons_ : "Ok,Cancel");
+    dialog.create_buttons(buttons_ ? buttons_ : "Ok,-Abort");
     
     slist->clear();
     if (value_list) {
@@ -125,9 +123,10 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
 
     dialog.run();
 
-    awar_button->write_int(dialog.get_result());
+    int buttonNr = dialog.get_result();
+    awar_button->write_int(buttonNr);
 
-    return awar_string->read_string();
+    return buttonNr>=0 ? awar_string->read_string() : NULL;
 
     /*
     char *this_input = root->awar(AW_INPUT_AWAR)->read_string();

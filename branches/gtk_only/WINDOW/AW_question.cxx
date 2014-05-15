@@ -28,18 +28,14 @@ using namespace std;
  * @param  buttons  Comma separated list of button names. A button named starting
  *                  with "^" will begin a new row of buttons. A button named "EXIT"
  *                  will cause abnormal (EXIT_FAILURE) termination of program.
- *                  If NULL, a single "OK" Button will be displayed.
+ *                  If NULL, a single "Ok" Button will be displayed.
  * @param  sameSize Make all buttons have the same size.
  * @param  helpfile Adds a "HELP" button. May be NULL.
  * @return the index of the selected answer
  */
-int aw_question(const char *unique_id, const char *question, const char *buttons, 
-                bool sameSize, const char *helpfile) {
-    aw_return_val_if_fail(buttons != NULL, 0);
-
-    if (!question) {
-        question = "No question?! Please report this as a bug.";
-    }
+int aw_question(const char *unique_id, const char *question, const char *buttons, bool sameSize, const char *helpfile) {
+    if (!buttons)  buttons  = "Ok";
+    if (!question) question = "No question?! Please report this as a bug.";
 
     AW_dialog dialog;
     dialog.set_message(question);
