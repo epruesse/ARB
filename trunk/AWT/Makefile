@@ -172,6 +172,7 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arbdb_base.h
