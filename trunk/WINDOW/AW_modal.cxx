@@ -310,23 +310,6 @@ char *aw_input(const char *prompt, const char *default_input) {
     return aw_input("Enter string", prompt, default_input);
 }
 
-static char *aw_input2awar(const char *title, const char *prompt, const char *awar_name) {
-    AW_root *aw_root       = AW_root::SINGLETON;
-    AW_awar *awar          = aw_root->awar(awar_name);
-    char    *default_value = awar->read_string();
-    char    *result        = aw_input(title, prompt, default_value);
-
-    awar->write_string(result);
-    free(default_value);
-
-    return result;
-}
-
-char *aw_input2awar(const char *prompt, const char *awar_name) {
-    return aw_input2awar("Enter string", prompt, awar_name);
-}
-
-
 char *aw_string_selection(const char *title, const char *prompt, const char *default_input, const char *value_list, const char *buttons) {
     // A modal input window. A String may be entered by hand or selected from value_list
     //
