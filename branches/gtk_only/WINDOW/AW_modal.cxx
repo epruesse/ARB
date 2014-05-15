@@ -34,6 +34,23 @@ using namespace std;
 const char *awar_button_name = "tmp/input/button"; // @@@ eliminate this awar (a module-global int-variable serves better)
 const char *awar_string_name = "tmp/input/string";
 
+static char *input2awar(const char *prompt, const char *awar_name, const char *title) {
+    AW_awar *awar_string = AW_root::SINGLETON->awar_string(awar_name);
+    aw_return_val_if_fail(awar_string != NULL, NULL);
+
+    AW_dialog dialog;
+    dialog.set_title(title);
+    dialog.set_message(prompt);
+    dialog.create_input_field(awar_string);
+    dialog.create_buttons("Ok,-Abort");
+
+    dialog.run();
+
+    bool ok_pressed = dialog.get_result() == 0;
+    return ok_pressed ? awar_string->read_string() : NULL;
+}
+
+
 /** 
  * Pop up a modal window asking the user for a string.
  * @param title          The window title.
@@ -48,28 +65,11 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
     AW_awar *awar_string = AW_root::SINGLETON->awar_string(awar_string_name);
     awar_string->write_string(default_input);
 
-    return aw_input2awar(prompt, awar_string_name, title);
-    
+    return input2awar(prompt, awar_string_name, title);
 }
 
 char *aw_input(const char *prompt, const char *default_input) {
     return aw_input("Enter string", prompt, default_input);
-}
-
-char *aw_input2awar(const char *prompt, const char *awar_name, const char *title) {
-    AW_awar *awar_string = AW_root::SINGLETON->awar_string(awar_name);
-    aw_return_val_if_fail(awar_string != NULL, NULL);
-
-    AW_dialog dialog;
-    dialog.set_title(title);
-    dialog.set_message(prompt);
-    dialog.create_input_field(awar_string);
-    dialog.create_buttons("Ok,-Abort");
-
-    dialog.run();
-
-    bool ok_pressed = dialog.get_result() == 0;
-    return ok_pressed ? awar_string->read_string() : NULL;
 }
 
 int aw_string_selection_button() {
