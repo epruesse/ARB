@@ -471,7 +471,7 @@ static GB_ERROR nt_create_configuration(AW_window *, GBT_TREE *tree, const char 
 
     if (!conf_name) {
         char *existing_configs = awt_create_string_on_configurations(GLOBAL.gb_main);
-        conf_name              = to_free = aw_string_selection2awar("CREATE CONFIGURATION", "Enter name of configuration:", AWAR_CONFIGURATION, existing_configs, 0, 0);
+        conf_name              = to_free = aw_string_selection2awar("CREATE CONFIGURATION", "Enter name of configuration:", AWAR_CONFIGURATION, existing_configs, NULL);
         free(existing_configs);
     }
 

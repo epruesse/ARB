@@ -86,11 +86,9 @@ int aw_string_selection_button() {
  * @param  value_liist    A semi-colon separated list of defaults (or NULL)
  * @param  buttons        A comma separated list of buttons (default is "Ok,Cancel").
  *                        Answer can be retrieved with aw_string_selection_button()
- * @param  check_fun      A function to correct the input.
  * @return The string.
  */
-char *aw_string_selection(const char *title, const char *prompt, const char *default_input, 
-                          const char *value_list, const char *buttons_, char *(*check_fun)(const char*)) {
+char *aw_string_selection(const char *title, const char *prompt, const char *default_input, const char *value_list, const char *buttons) {
     aw_return_val_if_fail(title, NULL);
     aw_return_val_if_fail(prompt, NULL);
 
@@ -106,7 +104,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     dialog.set_message(prompt);
     dialog.create_input_field(awar_string);
     AW_selection_list *slist = dialog.create_selection_list(awar_string, false);
-    dialog.create_buttons(buttons_ ? buttons_ : "Ok,-Abort");
+    dialog.create_buttons(buttons ? buttons : "Ok,-Abort");
     
     slist->clear();
     if (value_list) {
@@ -146,17 +144,20 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     */
 }
 
-char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name, const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
+char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name, const char *value_list, const char *buttons) {
     // params see aw_string_selection
-    // default_value is taken from and result is written back to awar 'awar_name'
+    //
+    // default for string is taken from awar 'awar_name'.
+    // result is written back to awar.
+    // if abort button is pressed, old value is written back to awar.
 
-    AW_root *aw_root       = AW_root::SINGLETON;
-    AW_awar *awar          = aw_root->awar(awar_name);
-    char    *default_value = awar->read_string();
-    char    *result        = aw_string_selection(title, prompt, default_value, value_list, buttons, check_fun);
+    AW_root *aw_root   = AW_root::SINGLETON;
+    AW_awar *awar      = aw_root->awar(awar_name);
+    char    *old_value = awar->read_string();
+    char    *result    = aw_string_selection(title, prompt, old_value, value_list, buttons);
 
-    awar->write_string(result);
-    free(default_value);
+    awar->write_string(result ? result : old_value);
+    free(old_value);
 
     return result;
 }
