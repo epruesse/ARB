@@ -267,7 +267,7 @@ static void assign_SAI_to_group(AW_window *aww) {
             {
                 char *existingGroups = getExistingSAIgroups();
                 if (existingGroups) {
-                    new_group = aw_string_selection("Assign SAI to group", "Enter group name:", group, existingGroups, NULL, NULL);
+                    new_group = aw_string_selection("Assign SAI to group", "Enter group name:", group, existingGroups, NULL);
                     free(existingGroups);
                 }
                 else {
