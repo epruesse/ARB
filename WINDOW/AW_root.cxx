@@ -291,15 +291,15 @@ AW_root::AW_root(const char *propertyFile)
 AW_root::~AW_root() {
     delete tracker; tracker = NULL;
 
-    // delete awars
-    for (awar_hash_t::iterator it = prvt->awar_hash.begin();
-         it != prvt->awar_hash.end(); ++it) {
-        delete it->second;
-    }
-
     // delete actions
     for (action_hash_t::iterator it = prvt->action_hash.begin();
          it != prvt->action_hash.end(); ++it) {
+        delete it->second;
+    }
+
+    // delete awars
+    for (awar_hash_t::iterator it = prvt->awar_hash.begin();
+         it != prvt->awar_hash.end(); ++it) {
         delete it->second;
     }
 
