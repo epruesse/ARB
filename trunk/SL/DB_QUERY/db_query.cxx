@@ -2290,7 +2290,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
 
     aws->at("double");  aws->create_toggle(query->awar_double_pars);
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, true, FIELD_FILTER_PARS, "field", 0, query->selector, 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, false, FIELD_FILTER_PARS, "field", 0, query->selector, 20, 10, SF_STANDARD, NULL);
 
     aws->at("go");
     aws->callback(makeWindowCallback(modify_fields_of_queried_cb, query));
