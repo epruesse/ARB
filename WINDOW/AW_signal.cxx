@@ -118,23 +118,29 @@ struct RootCallbackSlot : public Slot {
 struct AW_signal::Pimpl {
     std::list<Slot*> slots;
     bool enabled;            // false -> no signal propagation
-    int in_emit;            // we're in emit! don't delete from slots!
+    int in_emit;             // we're in emit! don't delete from slots!
+    bool deferred_destroy;   // destroy self after emit
     AW_window* last_window;
-    Pimpl() : enabled(true), in_emit(0) {}
+    Pimpl() : enabled(true), in_emit(0), deferred_destroy(0) {}
+
+    void clean_slots();
+    void clear();
+    void destroy();
+    void emit();
 };
 
 /** 
  * Remove Slots that where marked for deletion safely
  */
-void AW_signal::clean_slots() {
+void AW_signal::Pimpl::clean_slots() {
     //  Only modify Slot-List if we're not in emit():
-    if (prvt->in_emit > 0) return;
+    if (in_emit > 0) return;
     
-    std::list<Slot*>::iterator it = prvt->slots.begin();
-    while (it != prvt->slots.end()) {
+    std::list<Slot*>::iterator it = slots.begin();
+    while (it != slots.end()) {
         if ((*it)->deleted) {
             delete *it;
-            it = prvt->slots.erase(it);
+            it = slots.erase(it);
         } 
         else {
             ++it;
@@ -142,6 +148,36 @@ void AW_signal::clean_slots() {
     }
 }
 
+/** Disconnects all callbacks from signal */
+void AW_signal::clear() {
+    if (prvt) prvt->clear();
+}
+
+void AW_signal::Pimpl::clear() {
+    // mark slots for deletion
+    for (std::list<Slot*>::iterator it = slots.begin();
+         it != slots.end(); ++it) {
+        (*it)->deleted = true;
+    }
+    
+    // remove slots
+    clean_slots();
+}
+
+
+/**
+ * Destroy signal if not in emit, otherwise set flag to trigger
+ * destruction once emit has exited.
+ */
+void AW_signal::Pimpl::destroy() {
+    if (in_emit) {
+        deferred_destroy = true;
+    }
+    else {
+        clear();
+        delete this;
+    }
+}
      
 /** Default Constructor */
 AW_signal::AW_signal() 
@@ -182,14 +218,9 @@ AW_signal& AW_signal::operator+=(const AW_signal& o) {
 
 /** Destructor */
 AW_signal::~AW_signal() {
-    // probably not a good idea to die while in emit()
-    aw_assert_violated_sometimes(prvt->in_emit == 0);
-
-    // remove downstream signals
-    clear();
-
-    // remove list (upstream is handled by destructors)
-    delete prvt;
+    // tell Pimpl to self destruct, derred if necessary
+    prvt->destroy();
+    prvt = NULL;
 }
 
 /**
@@ -278,7 +309,7 @@ void AW_signal::disconnect(const RootCallback& rcb) {
     }
     
     // remove and free if possible
-    clean_slots();
+    prvt->clean_slots();
 }
 
 /** Disconnects the Signal from the supplied RCB */
@@ -294,52 +325,51 @@ void AW_signal::disconnect(const WindowCallback& wcb, AW_window* aww) {
     }
     
     // remove and free if possible
-    clean_slots();
+    prvt->clean_slots();
 }
 
 
 
 /** Emits the signal (i.e. runs all connected callbacks) */
 void AW_signal::emit() {
-    if (!prvt->enabled) return;
+    if (prvt) prvt->emit();
+}
 
-    prvt->in_emit++;
+// internal implementation
+void AW_signal::Pimpl::emit() {
+    if (!enabled) return;
+
+    in_emit++;
 
     // guard against emission loops
-    aw_return_if_fail(prvt->in_emit < MAX_EMIT_RECURSION);
+    aw_return_if_fail(in_emit < MAX_EMIT_RECURSION);
 
-    for (std::list<Slot*>::iterator it = prvt->slots.begin();
-         it != prvt->slots.end(); ++it) {
-        
+    for (std::list<Slot*>::iterator it = slots.begin(); it != slots.end(); ++it) {
         // skip slots marked as deleted
         if ((*it)->deleted) continue;
 
         (*it)->emit();
         
         // remember last touched window
-        if ((*it)->get_window()) 
-            prvt->last_window = (*it)->get_window();
+        if ((*it)->get_window()) {
+            last_window = (*it)->get_window();
+        }
     }
 
-    prvt->in_emit--;
+    in_emit--;
 
     // cleanup slots removed during signal emission
     clean_slots();
+
+    // trigger self destruct if our AW_signal was deleted in the mean time
+    if (deferred_destroy) destroy();
 }
 
 AW_window* AW_signal::get_last_window() const {
     return prvt->last_window;
 }
 
-/** Disconnects all callbacks from signal */
-void AW_signal::clear() {
-    for (std::list<Slot*>::iterator it = prvt->slots.begin();
-         it != prvt->slots.end(); ++it) {
-        (*it)->deleted = true;
-    }
-    
-    clean_slots();
-}
+
 
 
 #ifdef UNIT_TESTS
@@ -525,7 +555,20 @@ void TEST_AW_signal_self_remove() {
     TEST_EXPECT_EQUAL(sig.size(), 0);
     TEST_EXPECT_EQUAL(rcb_self_remove_count, 1);
     TEST_EXPECT_EQUAL(wcb_self_remove_count, 1);
+}
 
+int rcb_self_destroy_count = 0;
+
+static void rcb_self_destroy(AW_root*, AW_signal *sig) {
+    rcb_self_destroy_count ++;
+    delete sig;
+}
+
+void TEST_AW_signal_self_destroy() {
+    AW_signal *sig = new AW_signal();
+    sig->connect(makeRootCallback(rcb_self_destroy, sig));
+    sig->emit();
+    TEST_EXPECT_EQUAL(rcb_self_destroy_count, 1);
 }
 
 #endif

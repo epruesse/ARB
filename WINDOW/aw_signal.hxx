@@ -21,7 +21,6 @@ private:
     struct Pimpl;
     Pimpl *prvt;
 
-    void clean_slots();
 public:
     AW_signal();
     virtual ~AW_signal();
