@@ -610,6 +610,9 @@ public:
         }
         e4_assert(calced4term != term);
     }
+    void prepare_shutdown() {
+        if (calced4term) announce_deletion(calced4term);
+    }
 
     int get_base_position(const ED4_terminal *base, int sequence_position);
     int get_sequence_position(const ED4_terminal *base, int base_position);
@@ -694,7 +697,7 @@ public:
 
     int get_base_position() const { return sequence2base_position(get_sequence_pos()); }
 
-    void invalidate_base_position() { base_position.invalidate(); }
+    void prepare_shutdown() { base_position.prepare_shutdown(); }
 
     void jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type);
     void jump_sequence_pos(int sequence_pos, ED4_CursorJumpType jump_type);
