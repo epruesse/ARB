@@ -2724,7 +2724,9 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         for (int key = 0; key<QUERY_SEARCHES; ++key) {
             aws->at(xpos_calc[2], ypos+key*KEY_Y_OFFSET);
             aws->restore_at_size_and_attach(&at_size);
+#if !defined(ARB_GTK)
             aws->d_callback(makeWindowCallback(perform_query_cb, query, EXT_QUERY_NONE)); // enable ENTER in searchfield to start search
+#endif
             aws->create_input_field(query->awar_queries[key], 12);
         }
     }
@@ -2767,6 +2769,9 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         aws->at(awtqs->do_query_pos_fig);
         aws->callback(makeWindowCallback(perform_query_cb, query, EXT_QUERY_NONE));
         char *macro_id = GBS_global_string_copy("SEARCH_%s", query_id);
+#if defined(ARB_GTK)
+        aws->highlight();
+#endif
         aws->create_button(macro_id, "Search");
         free(macro_id);
     }
