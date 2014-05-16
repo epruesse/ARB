@@ -245,8 +245,14 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
     aw_return_if_fail(AW_root::SINGLETON == NULL);  // only one instance allowed
     
     AW_root::SINGLETON = this;
+    atexit(destroy_AW_root); // do not call this before opening properties DB!
     
-    gtk_init(argc, argv);
+    if (!gtk_init_check(argc, argv)) {
+        // Initialising windowing system failed
+        fprintf(stderr, "Failed to initialize windowing system. "
+                "If using SSH, make sure X11 forwarding is enabled.\n");
+        exit(1);
+    }
 
     // add our own icon path to the gtk theme search path
     gtk_icon_theme_prepend_search_path(gtk_icon_theme_get_default(),
@@ -264,7 +270,6 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
                       aw_log_handler, 
                       NULL);
     
-    atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
 
 #if defined(UNIT_TESTS)
