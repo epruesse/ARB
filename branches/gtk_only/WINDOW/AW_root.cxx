@@ -254,6 +254,10 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
         exit(1);
     }
 
+    // gtk_init_check calls setlocale(LC_ALL, "")    
+    // -> force locale to be C. ARB internals need the decimal separator to be '.'
+    setlocale(LC_ALL,  "C");
+
     // add our own icon path to the gtk theme search path
     gtk_icon_theme_prepend_search_path(gtk_icon_theme_get_default(),
                                        GB_path_in_ARBLIB("pixmaps/icons"));
