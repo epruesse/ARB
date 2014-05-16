@@ -1003,7 +1003,7 @@ AW_window *ED4_create_modsai_window(AW_root *root) {
     aws->create_button("go", "GO");
 
     aws->at("box");
-    AW_selection_list *sellist = aws->create_selection_list(AWAR_MOD_SAI_SCRIPT, true);
+    AW_selection_list *sellist = aws->create_selection_list(AWAR_MOD_SAI_SCRIPT, false);
     GB_ERROR error;
     {
         StorableSelectionList storable_sellist(TypedSelectionList("sellst", sellist, "SRT/ACI scripts", "srt_aci"));
