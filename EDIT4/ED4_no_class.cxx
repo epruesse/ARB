@@ -801,7 +801,7 @@ void ED4_exit() {
 
     while (ed4w) {
         ed4w->aww->hide();
-        ed4w->cursor.invalidate_base_position();
+        ed4w->cursor.prepare_shutdown(); // removes any callbacks
         ed4w = ed4w->next;
     }
 
