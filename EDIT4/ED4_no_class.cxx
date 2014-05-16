@@ -1549,7 +1549,7 @@ AW_window *ED4_start_editor_on_old_configuration(AW_root *awr)
     aws->init(awr, "LOAD_OLD_CONFIGURATION", "SELECT A CONFIGURATION");
     aws->at(10, 10);
     aws->auto_space(0, 0);
-    awt_create_selection_list_on_configurations(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, true);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, false);
     aws->at_newline();
 
     aws->callback((AW_CB0)ED4_start_editor_on_configuration);
@@ -1590,7 +1590,7 @@ AW_window *ED4_save_configuration_as_open_window(AW_root *awr) {
     aws->create_input_field(AWAR_EDIT_CONFIGURATION);
 
     aws->at("confs");
-    awt_create_selection_list_on_configurations(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, true);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, false);
 
     aws->at("go");
     aws->callback(makeWindowCallback(ED4_save_configuration, true));
