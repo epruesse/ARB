@@ -419,7 +419,7 @@ static unsigned aw_status_timer_event(AW_root *awr)
                 char buf[255];
                 sprintf(buf, "kill -9 %i", aw_stg.pid);
                 aw_message_if(GBK_system(buf));
-                exit(0);
+                exit(EXIT_SUCCESS);
             }
             case 2: {
                 char *title    = awr->awar(AWAR_STATUS_TITLE)->read_string();
@@ -781,15 +781,9 @@ void aw_initstatus() {
     aw_assert(GB_open_DBs() == 0);                  // aw_initstatus has to be called before opening the first ARB-DB
 
     int error = pipe(aw_stg.fd_to);
-    if (error) {
-        printf("Cannot create socketpair\n");
-        exit(-1);
-    }
+    if (error) GBK_terminate("Cannot create socketpair [1]");
     error = pipe(aw_stg.fd_from);
-    if (error) {
-        printf("Cannot create socketpair\n");
-        exit(-1);
-    }
+    if (error) GBK_terminate("Cannot create socketpair [2]");
 
     aw_stg.pid = getpid();
     GB_install_pid(1);

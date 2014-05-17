@@ -1728,7 +1728,7 @@ static void aw_window_destroy_cb(Widget,  AW_window *aww, XmAnyCallbackStruct *)
 #ifdef NDEBUG
         if (!aw_ask_sure("quit_by_X", "Are you sure to quit?")) return;
 #endif
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
     aww->hide();
 }
