@@ -1,5 +1,23 @@
 ARB change log
 
+Fixes for arb-6.0-rc2:
+
+ - EDIT4 crashed on OSX Mavericks (when shifting bases,..) 
+ - groups (tree)
+   - entering long names no longer crashes ARB
+   - empty names no longer accepted
+   - 'create group' now works if line-width of branch/subtree has been increased
+   - tree folding keys again work as they should (x c X C) 
+ - macro recording
+   - again eliminates consecutive changes to same awar
+   - fix recording of main-DB-awars
+ - consensus tree generation (improved insertion order)
+ - sort by topology (now works well for big vs. small topology)
+ - remove+add all crashed arb_parsimony
+ - creating an SAI called 'none' resulted in weird behavior
+ - when no alignment/tree is selected ARB crashed or behaved strange (many fixes)
+ - help added for 'Mark duplicates' and 'Chimera check'
+
 Major changes for arb-6.0:
 
  - merge databases allows to
