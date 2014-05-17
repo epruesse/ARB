@@ -403,9 +403,7 @@ void di_protdist::transition()
     if (xi <= 0.0 && xi >= -epsilon)
         xi = 0.0;
     if (xi < 0.0) {
-        printf("THIS TRANSITION-TRANSVERSION RATIO IS IMPOSSIBLE WITH");
-        printf(" THESE BASE FREQUENCIES\n");
-        exit(-1);
+        GBK_terminate("This transition-transversion ratio is impossible with these base frequencies"); // @@@ should be handled better
     }
 }
 
