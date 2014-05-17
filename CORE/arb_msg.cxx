@@ -424,7 +424,7 @@ void GBK_terminate(const char *error) { // goes to header __ATTR__NORETURN
 
     fflush(stderr);
     ARB_SIGSEGV(0); // GBK_terminate shall not be called, fix reason for call (this will crash in RELEASE version)
-    exit(EXIT_FAILURE);
+    exit(ARB_CRASH_CODE(0)); // should not be reached..just ensure ARB really terminates if somebody changes ARB_SIGSEGV
 }
 
 void GBK_terminatef(const char *templat, ...) {
