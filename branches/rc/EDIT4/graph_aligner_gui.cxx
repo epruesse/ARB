@@ -84,7 +84,7 @@ void create_sina_variables(AW_root *root, AW_default db1) {
     root->awar_string(GA_AWAR_CMD, "sina", db1);
     root->awar_int(GA_AWAR_TGT, 2, db1);
     root->awar_int(AWAR_PT_SERVER, 0, db1);
-    root->awar_string(GA_AWAR_SAI, "none", db1);
+    root->awar_string(GA_AWAR_SAI, "", db1);
     root->awar_int(GA_AWAR_PROTECTION, 0, db1);
     root->awar_string(GA_AWAR_LOGLEVEL, "3", db1); // @@@ change to int?
     root->awar_int(GA_AWAR_TURN_CHECK, 1, db1);
@@ -161,6 +161,12 @@ AW_active sina_mask(AW_root *root) {
 
 inline const char *stream2static(const std::stringstream& str) {
     return GBS_static_string(str.str().c_str());
+}
+
+inline const char *empty_as_none(const char *sainame) {
+    // see http://bugs.arb-home.de/ticket/519
+    if (sainame && !sainame[0]) sainame = "none";
+    return sainame;
 }
 
 static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
@@ -269,7 +275,7 @@ static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
                     GBS_strcat(cl, " --ptport ");      GBS_strcat(cl,   pt_server);
                     GBS_strcat(cl, " --turn ");        GBS_strcat(cl,   root->awar(GA_AWAR_TURN_CHECK)->read_int() ? "all" : "none");
                     GBS_strcat(cl, " --overhang ");    GBS_strcat(cl,   root->awar(GA_AWAR_OVERHANG)->read_char_pntr());
-                    GBS_strcat(cl, " --filter ");      GBS_strcat(cl,   root->awar(GA_AWAR_SAI)->read_char_pntr());
+                    GBS_strcat(cl, " --filter ");      GBS_strcat(cl,   empty_as_none(root->awar(GA_AWAR_SAI)->read_char_pntr()));
                     GBS_strcat(cl, " --fs-min ");      GBS_intcat(cl,   root->awar(GA_AWAR_FS_MIN)->read_int());
                     GBS_strcat(cl, " --fs-msc ");      GBS_floatcat(cl, root->awar(GA_AWAR_FS_MSC)->read_float());
                     GBS_strcat(cl, " --fs-max ");      GBS_intcat(cl,   root->awar(GA_AWAR_FS_MAX)->read_int());
@@ -370,21 +376,24 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
 
     aws->at_newline();
     aws->label_length(0);
-    aws->create_option_menu(GA_AWAR_OVERHANG, "Overhang placement");
+    aws->label("Overhang placement");
+    aws->create_option_menu(GA_AWAR_OVERHANG, true);
     aws->insert_option("keep attached", 0, "attach");
     aws->insert_option("move to edge", 0, "edge");
     aws->insert_option("remove", 0, "remove");
     aws->update_option_menu();
 
     aws->at_newline();
-    aws->create_option_menu(GA_AWAR_INSERT, "Handling of unmappable insertions", "I");
+    aws->label("Handling of unmappable insertions");
+    aws->create_option_menu(GA_AWAR_INSERT, true);
     aws->insert_option("Shift surrounding bases", 0, "shift");
     aws->insert_option("Forbid during DP alignment", 0, "forbid");
     aws->insert_option("Delete bases", 0, "remove");
     aws->update_option_menu();
 
     aws->at_newline();
-    aws->create_option_menu(GA_AWAR_LOWERCASE, "Character Case","C");
+    aws->label("Character Case");
+    aws->create_option_menu(GA_AWAR_LOWERCASE, true);
     aws->insert_option("Do not modify", 0, "original");
     aws->insert_option("Show unaligned bases as lower case", 0, "unaligned");
     aws->insert_option("Uppercase all", 0, "none");
@@ -486,7 +495,8 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     aws->at_shift(0, hgap);
 
     aws->label_length(17);
-    aws->create_option_menu(GA_AWAR_PROTECTION, "Protection Level", "P");
+    aws->label("Protection Level");
+    aws->create_option_menu(GA_AWAR_PROTECTION, true);
     aws->insert_option("0", 0, 0);
     aws->insert_option("1", 0, 1);
     aws->insert_option("2", 0, 2);
@@ -497,7 +507,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     aws->update_option_menu();
 
     /*
-    aws->at_newline();
+      aws->at_newline();
     aws->create_option_menu(GA_AWAR_LOGLEVEL, "Logging level", "L");
     aws->insert_option("silent", 0, "1");
     aws->insert_option("quiet", 0, "2");

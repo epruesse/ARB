@@ -48,22 +48,18 @@ static void ed_rehash_mapping(AW_root *awr, ed_key *ek) {
     ek->rehash_mapping(awr);
 }
 
-void ed_key::create_awars(AW_root *awr)
-{
-    char source[256];
-    char dest[256];
-    int i;
-    for (i=0; i<MAX_MAPPED_KEYS; i++) {
-        sprintf(source, "key_mapping/key_%i/source", i);
-        sprintf(dest, "key_mapping/key_%i/dest", i);
-        awr->awar_string(source, "", AW_ROOT_DEFAULT);
-        awr->awar(source)->add_callback((AW_RCB1)ed_rehash_mapping, (AW_CL)this);
-        awr->awar_string(dest, "", AW_ROOT_DEFAULT);
-        awr->awar(dest)->add_callback((AW_RCB1)ed_rehash_mapping, (AW_CL)this);
+void ed_key::create_awars(AW_root *awr) {
+    RootCallback rehash_mapping_cb = makeRootCallback(ed_rehash_mapping, this);
+
+    for (int i=0; i<MAX_MAPPED_KEYS; i++) {
+        char source[256]; sprintf(source, "key_mapping/key_%i/source", i);
+        char dest[256];   sprintf(dest,   "key_mapping/key_%i/dest",   i);
+        awr->awar_string(source, "", AW_ROOT_DEFAULT); awr->awar(source)->add_callback(rehash_mapping_cb);
+        awr->awar_string(dest,   "", AW_ROOT_DEFAULT); awr->awar(dest)  ->add_callback(rehash_mapping_cb);
     }
     awr->awar_int("key_mapping/enable", 1, AW_ROOT_DEFAULT);
-    awr->awar("key_mapping/enable")->add_callback((AW_RCB1)ed_rehash_mapping, (AW_CL)this);
-    ed_rehash_mapping(awr, this);
+    awr->awar("key_mapping/enable")->add_callback(rehash_mapping_cb);
+    rehash_mapping(awr);
 }
 
 AW_window *create_key_map_window(AW_root *root)

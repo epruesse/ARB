@@ -31,15 +31,15 @@
 // --------------------------------------------------------------------------------
 
 #define AWAR_SAI_CLR_TAB              "saicolors/"
-#define AWAR_SAI_VISUALIZED           AWAR_SAI_CLR_TAB "select"             // current visualized SAI
-#define AWAR_SAI_CLR_DEF              AWAR_SAI_CLR_TAB "clr_trans_tab/"     // container for definitions
-#define AWAR_SAI_ENABLE               AWAR_SAI_CLR_TAB "enable"             // global enable of visualization
-#define AWAR_SAI_ALL_SPECIES          AWAR_SAI_CLR_TAB "all_species"        // 1 = all / 0 = marked
-#define AWAR_SAI_AUTO_SELECT          AWAR_SAI_CLR_TAB "auto_select"        // 1 = auto select / 0 = manual select
-#define AWAR_SAI_CLR_TRANS_TABLE      AWAR_SAI_CLR_TAB "clr_trans_table"    // current translation table
+#define AWAR_SAI_VISUALIZED           AWAR_SAI_CLR_TAB "current"             // current visualized SAI
+#define AWAR_SAI_CLR_DEF              AWAR_SAI_CLR_TAB "clr_trans_tab/"      // container for definitions
+#define AWAR_SAI_ENABLE               AWAR_SAI_CLR_TAB "enable"              // global enable of visualization
+#define AWAR_SAI_ALL_SPECIES          AWAR_SAI_CLR_TAB "all_species"         // 1 = all / 0 = marked
+#define AWAR_SAI_AUTO_SELECT          AWAR_SAI_CLR_TAB "auto_select"         // 1 = auto select / 0 = manual select
+#define AWAR_SAI_CLR_TRANS_TABLE      AWAR_SAI_CLR_TAB "clr_trans_table"     // current translation table
 #define AWAR_SAI_CLR_TRANS_TAB_NAMES  AWAR_SAI_CLR_TAB "clr_trans_tab_names" // ;-separated list of existing translation tables
-#define AWAR_SAI_CLR_TRANS_TAB_REL    AWAR_SAI_CLR_TAB "sai_relation/"      // container to store trans tables for each SAI
-#define AWAR_SAI_CLR_DEFAULTS_CREATED AWAR_SAI_CLR_TAB "defaults_created"   // whether defaults have been created (create only once)
+#define AWAR_SAI_CLR_TRANS_TAB_REL    AWAR_SAI_CLR_TAB "sai_relation/"       // container to store trans tables for each SAI
+#define AWAR_SAI_CLR_DEFAULTS_CREATED AWAR_SAI_CLR_TAB "defaults_created"    // whether defaults have been created (create only once)
 
 #define AWAR_SAI_CLR_TRANS_TAB_NEW_NAME "tmp/sai/clr_trans_tab_new_name" // textfield to enter translation table name
 #define AWAR_SAI_CLR                    "tmp/sai/color_0" // the definition of the current translation table (number runs from 0 to 9)
@@ -462,40 +462,37 @@ static void createCopyClrTransTable(AW_window *aws, AW_CL cl_mode) {
 }
 
 static void deleteColorTranslationTable(AW_window *aws) {
-    bool delete_table = aw_ask_sure("del_color_table", "Are you sure you want to delete the selected COLOR TRANSLATION TABLE?");
-    if (delete_table) {
-        AW_root *aw_root = aws->get_root();
-        char *clrTabName = aw_root->awar_string(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
+    AW_root *aw_root = aws->get_root();
+    char *clrTabName = aw_root->awar_string(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
 
-        if (clrTabName[0]) {
-            AW_awar       *awar_tabNames    = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
-            char          *clrTransTabNames = awar_tabNames->read_string();
-            GBS_strstruct *newTransTabName  = GBS_stropen(strlen(clrTransTabNames));
+    if (clrTabName[0]) {
+        AW_awar       *awar_tabNames    = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
+        char          *clrTransTabNames = awar_tabNames->read_string();
+        GBS_strstruct *newTransTabName  = GBS_stropen(strlen(clrTransTabNames));
 
-            for (const char *tok = strtok(clrTransTabNames, "\n"); tok; tok = strtok(0, "\n")) {
-                if (strcmp(clrTabName, tok) != 0) { // merge all not to delete
-                    GBS_strcat(newTransTabName, tok);
-                    GBS_strcat(newTransTabName, "\n");
-                }
+        for (const char *tok = strtok(clrTransTabNames, "\n"); tok; tok = strtok(0, "\n")) {
+            if (strcmp(clrTabName, tok) != 0) { // merge all not to delete
+                GBS_strcat(newTransTabName, tok);
+                GBS_strcat(newTransTabName, "\n");
             }
-
-            aw_root->awar_string(getClrDefAwar(clrTabName))->write_string("");
-            char *new_name = GBS_strclose(newTransTabName);
-            awar_tabNames->write_string(new_name); // updates selection list
-            free(new_name);
-
-            free(clrTransTabNames);
         }
-        else {
-            aw_message("Selected Color Translation Table is not VALID and cannot be DELETED!");
-        }
-        free(clrTabName);
+
+        aw_root->awar_string(getClrDefAwar(clrTabName))->write_string("");
+        char *new_name = GBS_strclose(newTransTabName);
+        awar_tabNames->write_string(new_name); // updates selection list
+        free(new_name);
+
+        free(clrTransTabNames);
     }
+    else {
+        aw_message("Selected Color Translation Table is not VALID and cannot be DELETED!");
+    }
+    free(clrTabName);
 }
 
 static AW_selection_list *buildClrTransTabNamesList(AW_window *aws) {
     AW_root           *awr            = aws->get_root();
-    AW_selection_list *colorTransList = aws->create_selection_list(AWAR_SAI_CLR_TRANS_TABLE);
+    AW_selection_list *colorTransList = aws->create_selection_list(AWAR_SAI_CLR_TRANS_TABLE, true);
 
     update_ClrTransTabNamesList_cb(awr, (AW_CL)colorTransList);
 
@@ -665,35 +662,34 @@ static void reverseColorTranslationTable(AW_window *aww) {
 
 static AW_window *create_editColorTranslationTable_window(AW_root *aw_root) { // creates edit color translation table window
     static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "EDIT_CTT", "Color Translation Table");
+        aws->load_xfig("saiColorRange.fig");
 
-    aws = new AW_window_simple;
-    aws->init(aw_root, "EDIT_CTT", "Color Translation Table");
-    aws->load_xfig("saiColorRange.fig");
+        char at_name[] = "rangex";
+        char *dig      = strchr(at_name, 0)-1;
 
-    char at_name[] = "rangex";
-    char *dig      = strchr(at_name, 0)-1;
+        for (int i = 0; i<AWAR_SAI_CLR_COUNT; ++i) {
+            dig[0] = '0'+i;
+            aws->at(at_name);
+            aws->create_input_field(getAwarName(i), 20);
+        }
 
-    for (int i = 0; i<AWAR_SAI_CLR_COUNT; ++i) {
-        dig[0] = '0'+i;
-        aws->at(at_name);
-        aws->create_input_field(getAwarName(i), 20);
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->at("reverse");
+        aws->callback(reverseColorTranslationTable);
+        aws->create_button("REVERSE", "Reverse", "R");
+
+        aws->at("colors");
+        aws->callback(makeWindowCallback(ED4_popup_gc_window, ED4_ROOT->gc_manager));
+        aws->button_length(0);
+        aws->create_button("COLORS", "#colors.xpm");
     }
-
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->at("reverse");
-    aws->callback(reverseColorTranslationTable);
-    aws->create_button("REVERSE", "Reverse", "R");
-
-    aws->at("colors");
-    aws->callback(makeCreateWindowCallback(AW_create_gc_window, ED4_ROOT->gc_manager));
-    aws->button_length(0);
-    aws->create_button("COLORS", "#colors.xpm");
-
-    return (AW_window *)aws;
+    return aws;
 }
 
 AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {

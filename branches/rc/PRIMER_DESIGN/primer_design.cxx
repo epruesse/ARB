@@ -103,7 +103,7 @@ static void create_primer_design_result_window(AW_window *aww) {
         pdrw->create_button("HELP", "HELP", "H");
 
         pdrw->at("result");
-        resultList = pdrw->create_selection_list(AWAR_PRIMER_TARGET_STRING, 40, 5);
+        resultList = pdrw->create_selection_list(AWAR_PRIMER_TARGET_STRING, 40, 5, true);
 
         const StorableSelectionList *storable_primer_list = new StorableSelectionList(TypedSelectionList("prim", resultList, "primers", "primer")); // never freed
 
@@ -112,16 +112,16 @@ static void create_primer_design_result_window(AW_window *aww) {
         pdrw->callback((AW_CB0)AW_POPDOWN);
         pdrw->create_button("CLOSE", "CLOSE", "C");
 
-        pdrw->callback(awt_clear_selection_list_cb, (AW_CL)resultList);
+        pdrw->callback(makeWindowCallback(awt_clear_selection_list_cb, resultList));
         pdrw->create_button("CLEAR", "CLEAR", "R");
         
-        pdrw->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_primer_list);
+        pdrw->callback(makeCreateWindowCallback(create_load_box_for_selection_lists, storable_primer_list));
         pdrw->create_button("LOAD", "LOAD", "L");
 
-        pdrw->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_primer_list);
+        pdrw->callback(makeCreateWindowCallback(create_save_box_for_selection_lists, storable_primer_list));
         pdrw->create_button("SAVE", "SAVE", "S");
 
-        pdrw->callback(create_print_box_for_selection_lists, (AW_CL)&storable_primer_list->get_typedsellist());
+        pdrw->callback(makeWindowCallback(create_print_box_for_selection_lists, &storable_primer_list->get_typedsellist()));
         pdrw->create_button("PRINT", "PRINT", "P");
     }
 

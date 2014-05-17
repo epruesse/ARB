@@ -583,7 +583,7 @@ public:
 
 
     // ***** option_menu is a menu where only one selection is visible at a time
-    AW_option_menu_struct *create_option_menu(const char *awar_name, AW_label label=0, const char *mnemonic=0);
+    AW_option_menu_struct *create_option_menu(const char *awar_name, bool fallback2default);
     void clear_option_menu(AW_option_menu_struct *oms);  // used to redefine available options
 
 private:
@@ -626,7 +626,8 @@ public:
 
     // ***** selection list is a redefinable scrolled list of items
 
-    AW_selection_list *create_selection_list(const char *awar_name, int columns = 4, int rows = 4);
+    AW_selection_list *create_selection_list(const char *awar_name, int columns, int rows, bool fallback2default);
+    AW_selection_list *create_selection_list(const char *awar_name, bool fallback2default) { return create_selection_list(awar_name, 4, 4, fallback2default); }
 };
 
 

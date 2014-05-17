@@ -45,6 +45,10 @@ class AP_filter {
 
     size_t *filterpos_2_seqpos;                     // filterpos -> sequencepos
 
+#if defined(ASSERTION_USED)
+    mutable bool checked_for_validity;
+#endif
+
     void calc_filterpos_2_seqpos();
 
     void init(size_t size);
@@ -70,6 +74,7 @@ public:
     size_t get_length() const { return filter_len; }
 
     bool use_position(size_t pos) const {           // returns true if filter is set for position 'pos'
+        af_assert(checked_for_validity);
         af_assert(pos<filter_len);
         return filter_mask[pos];
     }
@@ -104,6 +109,23 @@ public:
     char *to_string() const;                        // convert to 0/1 string
 
     char *blowup_string(char *filtered_string, char insert) const;
+
+    GB_ERROR is_invalid() const {
+        /*! returns error
+         * - if filter is based on an empty alignment (i.e. no alignment is selected)
+         * - if all positions are filtered out (i.e. filtered sequences will be empty)
+         */
+
+#if defined(ASSERTION_USED)
+        checked_for_validity = true;
+#endif
+        if (get_filtered_length()) return NULL;
+        if (get_length()) return "Sequence completely filtered out (no columns left)";
+        return "No alignment selected";
+    }
+#if defined(ASSERTION_USED)
+    bool was_checked_for_validity() const { return checked_for_validity; }
+#endif
 };
 
 

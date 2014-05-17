@@ -31,7 +31,6 @@
 #define AWAR_DIST_MIN_DIST    AWAR_DIST_DIST_PREFIX "lower"
 #define AWAR_DIST_MAX_DIST    AWAR_DIST_DIST_PREFIX "upper"
 
-
 enum DI_TRANSFORMATION {
     DI_TRANSFORMATION_NONE,
     DI_TRANSFORMATION_SIMILARITY,
@@ -115,7 +114,7 @@ class MatrixOrder : virtual Noncopyable {
 
 public:
     MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name);
-    ~MatrixOrder() { GBS_free_hash(name2pos); }
+    ~MatrixOrder() { if (name2pos) GBS_free_hash(name2pos); }
 
     bool defined() const { return leafs; }
     int get_size() const { return leafs; }

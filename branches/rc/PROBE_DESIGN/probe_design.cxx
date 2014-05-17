@@ -123,13 +123,13 @@ struct AutoMatchSettings {
 
 static AutoMatchSettings auto_match_cb_settings;
 
-static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam); // prototype
+static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param); // prototype
 
 static void auto_match_cb(AW_root *root) {
     if (!auto_match_cb_settings.disable) {
         char *ts = root->awar(AWAR_TARGET_STRING)->read_string();
         if (strlen(ts) > 0) {
-            probe_match_event(auto_match_cb_settings.aww, (AW_CL)auto_match_cb_settings.event_param);
+            probe_match_event(auto_match_cb_settings.aww, auto_match_cb_settings.event_param);
         }
         free(ts);
     }
@@ -201,7 +201,7 @@ static void popup_probe_design_result_window(AW_window *aww, GBDATA *gb_main) {
         PD.win->create_button("HELP", "HELP", "H");
 
         PD.win->at("result");
-        PD.resultList = PD.win->create_selection_list(AWAR_TARGET_STRING, 40, 5);
+        PD.resultList = PD.win->create_selection_list(AWAR_TARGET_STRING, 40, 5, false);
         const StorableSelectionList *storable_result_list = new StorableSelectionList(TypedSelectionList("prb", PD.resultList, "designed probes", "designed")); // @@@ make member of PD ? 
 
         PD.resultList->clear();
@@ -212,16 +212,16 @@ static void popup_probe_design_result_window(AW_window *aww, GBDATA *gb_main) {
         PD.win->callback((AW_CB0)AW_POPDOWN);
         PD.win->create_button("CLOSE", "CLOSE", "C");
 
-        PD.win->callback(awt_clear_selection_list_cb, (AW_CL)PD.resultList);
+        PD.win->callback(makeWindowCallback(awt_clear_selection_list_cb, PD.resultList));
         PD.win->create_button("CLEAR", "CLEAR", "R");
         
-        PD.win->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_result_list);
+        PD.win->callback(makeCreateWindowCallback(create_load_box_for_selection_lists, storable_result_list));
         PD.win->create_button("LOAD", "LOAD", "L");
 
-        PD.win->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_result_list);
+        PD.win->callback(makeCreateWindowCallback(create_save_box_for_selection_lists, storable_result_list));
         PD.win->create_button("SAVE", "SAVE", "S");
 
-        PD.win->callback(create_print_box_for_selection_lists, (AW_CL)&storable_result_list->get_typedsellist());
+        PD.win->callback(makeWindowCallback(create_print_box_for_selection_lists, &storable_result_list->get_typedsellist()));
         PD.win->create_button("PRINT", "PRINT", "P");
 
         PD.win->callback(makeWindowCallback(popup_match_window_cb, gb_main));
@@ -668,16 +668,15 @@ static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
 
 static bool allow_probe_match_event = true;
 
-static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
+static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param) {
     if (allow_probe_match_event) {
-        ProbeMatchEventParam *event_param  = (ProbeMatchEventParam*)cl_ProbeMatchEventParam;
-        AW_selection_list    *selection_id = event_param ? event_param->selection_id : NULL;
-        int                  *counter      = event_param ? event_param->counter : NULL;
-        GBDATA               *gb_main      = event_param ? event_param->gb_main : NULL;
-        AW_root              *root         = aww->get_root();
-        int                   show_status  = 0;
-        int                   extras       = 1;     // mark species and write to temp fields
-        GB_ERROR              error        = 0;
+        AW_selection_list *selection_id = event_param ? event_param->selection_id : NULL;
+        int               *counter      = event_param ? event_param->counter : NULL;
+        GBDATA            *gb_main      = event_param ? event_param->gb_main : NULL;
+        AW_root           *root         = aww->get_root();
+        int                show_status  = 0;
+        int                extras       = 1;        // mark species and write to temp fields
+        GB_ERROR           error        = 0;
 
         if (!gb_main) { error = "Please open probe match window once to enable auto-match"; }
 
@@ -1033,15 +1032,14 @@ static void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
     return;
 }
 
-static void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id, AW_CL cl_gb_main) {
+static void probe_match_all_event(AW_window *aww, AW_selection_list *iselection_id, GBDATA *gb_main) {
     auto_match_cb_settings.disable = true;
 
-    AW_selection_list *iselection_id = (AW_selection_list*)cl_iselection_id;
-    AW_root           *root          = aww->get_root();
-    char              *target_string = root->awar(AWAR_TARGET_STRING)->read_string();
+    AW_root *root          = aww->get_root();
+    char    *target_string = root->awar(AWAR_TARGET_STRING)->read_string();
 
     AW_selection_list_iterator selentry(iselection_id);
-    
+
     arb_progress progress("Matching all resolved strings", iselection_id->size());
 
     bool got_result = false;
@@ -1049,8 +1047,8 @@ static void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id, AW_CL 
         const char *entry = selentry.get_value();
         root->awar(AWAR_TARGET_STRING)->write_string(entry); // probe match
         int counter = -1;
-        ProbeMatchEventParam match_event((GBDATA*)cl_gb_main, &counter);
-        probe_match_event(aww, (AW_CL)&match_event);
+        ProbeMatchEventParam match_event(gb_main, &counter);
+        probe_match_event(aww, &match_event);
         if (counter==-1) break;
 
         {
@@ -1103,7 +1101,7 @@ static void selected_match_changed_cb(AW_root *root) {
     free(selected_match);
 }
 
-static void probelength_changed_cb(AW_root *root, AW_CL min_changed) {
+static void probelength_changed_cb(AW_root *root, bool min_changed) {
     AW_awar *awar_minl = root->awar(AWAR_PD_DESIGN_MIN_LENGTH);
     AW_awar *awar_maxl = root->awar(AWAR_PD_DESIGN_MAX_LENGTH);
 
@@ -1149,8 +1147,8 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_float(AWAR_PD_DESIGN_MINTARGETS, 50.0, props)->set_minmax(0, 100);
 
     AW_awar *awar_min_len = root->awar_int(AWAR_PD_DESIGN_MIN_LENGTH, 18, props);
-    awar_min_len->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(probelength_changed_cb, 1);
-    root->awar_int(AWAR_PD_DESIGN_MAX_LENGTH, awar_min_len->read_int(), props)->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(probelength_changed_cb, 0);
+    awar_min_len->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(makeRootCallback(probelength_changed_cb, true));
+    root->awar_int(AWAR_PD_DESIGN_MAX_LENGTH, awar_min_len->read_int(), props)->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(makeRootCallback(probelength_changed_cb, false));
 
     root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     30.0,   props)->set_minmax(0, 1000);
     root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  props)->set_minmax(0, 1000);
@@ -1191,7 +1189,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_string(AWAR_SPV_SELECTED_PROBE, "",     db); // For highlighting the selected PROBE
 }
 
-static AW_window *create_probe_expert_window(AW_root *root, AW_CL for_design) {
+static AW_window *create_probe_expert_window(AW_root *root, bool for_design) {
     AW_window_simple *aws = new AW_window_simple;
     if (for_design) {
         aws->init(root, "PD_exp", "Probe Design (Expert)");
@@ -1306,7 +1304,7 @@ AW_window *create_probe_design_window(AW_root *root, GBDATA *gb_main) {
     aws->at("result");
     aws->create_button("RESULT", "RESULT", "S");
 
-    aws->callback(AW_POPUP, (AW_CL)create_probe_expert_window, (AW_CL)1);
+    aws->callback(makeCreateWindowCallback(create_probe_expert_window, true));
     aws->at("expert");
     aws->create_button("EXPERT", "EXPERT", "S");
 
@@ -1351,151 +1349,149 @@ inline void my_strupr(char *s) {
     }
 }
 
-static GB_alignment_type ali_used_for_resolvement = GB_AT_UNKNOWN;
-
-static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid) {
-    AW_window         *aww          = (AW_window*)cl_aww;
-    AW_selection_list *selection_id = (AW_selection_list*)cl_selid;
-
+static void resolve_IUPAC_target_string(AW_root *root, AW_selection_list *selection_id, GBDATA *gb_main) {
     selection_id->clear();
 
-    if (ali_used_for_resolvement != GB_AT_RNA && ali_used_for_resolvement!=GB_AT_DNA) {
-        selection_id->insert_default("Wrong alignment type!", "");
-        selection_id->update();
-        return;
+    GB_alignment_type ali_type = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
+
+    GB_ERROR err = 0;
+    if (ali_type != GB_AT_RNA && ali_type!=GB_AT_DNA) {
+        err = "Wrong alignment type";
+        GB_clear_error();
     }
+    else {
+        int   index   = ali_type==GB_AT_RNA ? 1 : 0;
+        char *istring = root->awar(AWAR_ITARGET_STRING)->read_string();
 
-    int       index   = ali_used_for_resolvement==GB_AT_RNA ? 1 : 0;
-    AW_root  *root    = aww->get_root();
-    char     *istring = root->awar(AWAR_ITARGET_STRING)->read_string();
-    GB_ERROR  err     = 0;
+        if (istring && istring[0]) { // contains sth?
+            my_strupr(istring);
 
-    if (istring && istring[0]) { // contains sth?
-        my_strupr(istring);
+            int bases_to_resolve = 0;
+            char *istr = istring;
+            int istring_length = strlen(istring);
 
-        int bases_to_resolve = 0;
-        char *istr = istring;
-        int istring_length = strlen(istring);
+            for (;;) {
+                char i = *istr++;
+                if (!i) break;
+                if (i=='?') continue; // ignore '?'
 
-        for (;;) {
-            char i = *istr++;
-            if (!i) break;
-            if (i=='?') continue; // ignore '?'
+                int idx = i-'A';
+                if (idx<0 || idx>=26 || iupac::nuc_group[idx][index].members==0) {
+                    err = GBS_global_string("Illegal character '%c' in IUPAC-String", i);
+                    break;
+                }
 
-            int idx = i-'A';
-            if (idx<0 || idx>=26 || iupac::nuc_group[idx][index].members==0) {
-                err = GB_export_errorf("Illegal character '%c' in IUPAC-String", i);
-                break;
-            }
-
-            if (iupac::nuc_group[idx][index].count>1) {
-                bases_to_resolve++;
-            }
-        }
-
-        if (!err) {
-            int *offsets_to_resolve = new int[bases_to_resolve];
-            int resolutions = 1;
-            {
-                istr = istring;
-                int offset = 0;
-                int offset_count = 0;
-                for (;;) {
-                    char i = *istr++;
-                    if (!i) break;
-
-                    if (i!='?') {
-                        int idx = iupac::to_index(i);
-                        pd_assert(iupac::nuc_group[idx][index].members);
-
-                        if (iupac::nuc_group[idx][index].count>1) {
-                            offsets_to_resolve[offset_count++] = offset; // store string offsets of non-unique base-codes
-                            resolutions *= iupac::nuc_group[idx][index].count; // calc # of resolutions 
-                        }
-                    }
-                    offset++;
+                if (iupac::nuc_group[idx][index].count>1) {
+                    bases_to_resolve++;
                 }
             }
 
-            { 
-                int *resolution_idx = new int[bases_to_resolve];
-                int *resolution_max_idx = new int[bases_to_resolve];
+            if (!err) {
+                int *offsets_to_resolve = new int[bases_to_resolve];
+                int resolutions = 1;
                 {
-                    int i;
-                    for (i=0; i<bases_to_resolve; i++) {
-                        resolution_idx[i] = 0;
-                        int idx = iupac::to_index(istring[offsets_to_resolve[i]]);
-                        resolution_max_idx[i] = iupac::nuc_group[idx][index].count-1;
-                    }
-                }
+                    istr = istring;
+                    int offset = 0;
+                    int offset_count = 0;
+                    for (;;) {
+                        char i = *istr++;
+                        if (!i) break;
 
-                char *buffer = new char[istring_length+1];
-                int not_last = resolutions-1;
+                        if (i!='?') {
+                            int idx = iupac::to_index(i);
+                            pd_assert(iupac::nuc_group[idx][index].members);
 
-                for (;;) {
-                    // create string according to resolution_idx[]:
-                    int i;
-
-                    memcpy(buffer, istring, istring_length+1);
-                    for (i=0; i<bases_to_resolve; i++) {
-                        int off = offsets_to_resolve[i];
-                        int idx = iupac::to_index(istring[off]);
-
-                        pd_assert(iupac::nuc_group[idx][index].members);
-                        buffer[off] = iupac::nuc_group[idx][index].members[resolution_idx[i]];
-                    }
-
-                    selection_id->insert(buffer, buffer);
-                    not_last--;
-
-                    // permute indices:
-                    int nidx = bases_to_resolve-1;
-                    int done = 0;
-                    while (!done && nidx>=0) {
-                        if (resolution_idx[nidx]<resolution_max_idx[nidx]) {
-                            resolution_idx[nidx]++;
-                            done = 1;
-                            break;
+                            if (iupac::nuc_group[idx][index].count>1) {
+                                offsets_to_resolve[offset_count++] = offset; // store string offsets of non-unique base-codes
+                                resolutions *= iupac::nuc_group[idx][index].count; // calc # of resolutions
+                            }
                         }
-                        nidx--;
+                        offset++;
                     }
-                    if (!done) break; // we did all permutations!
-
-                    nidx++; // do not touch latest incremented index
-                    while (nidx<bases_to_resolve) resolution_idx[nidx++] = 0; // zero all other indices
                 }
 
-                delete [] buffer;
-                delete [] resolution_max_idx;
-                delete [] resolution_idx;
+                {
+                    int *resolution_idx = new int[bases_to_resolve];
+                    int *resolution_max_idx = new int[bases_to_resolve];
+                    {
+                        int i;
+                        for (i=0; i<bases_to_resolve; i++) {
+                            resolution_idx[i] = 0;
+                            int idx = iupac::to_index(istring[offsets_to_resolve[i]]);
+                            resolution_max_idx[i] = iupac::nuc_group[idx][index].count-1;
+                        }
+                    }
 
-                selection_id->insert_default("", "");
-                selection_id->update();
+                    char *buffer = new char[istring_length+1];
+                    int not_last = resolutions-1;
+
+                    for (;;) {
+                        // create string according to resolution_idx[]:
+                        int i;
+
+                        memcpy(buffer, istring, istring_length+1);
+                        for (i=0; i<bases_to_resolve; i++) {
+                            int off = offsets_to_resolve[i];
+                            int idx = iupac::to_index(istring[off]);
+
+                            pd_assert(iupac::nuc_group[idx][index].members);
+                            buffer[off] = iupac::nuc_group[idx][index].members[resolution_idx[i]];
+                        }
+
+                        selection_id->insert(buffer, buffer);
+                        not_last--;
+
+                        // permute indices:
+                        int nidx = bases_to_resolve-1;
+                        int done = 0;
+                        while (!done && nidx>=0) {
+                            if (resolution_idx[nidx]<resolution_max_idx[nidx]) {
+                                resolution_idx[nidx]++;
+                                done = 1;
+                                break;
+                            }
+                            nidx--;
+                        }
+                        if (!done) break; // we did all permutations!
+
+                        nidx++; // do not touch latest incremented index
+                        while (nidx<bases_to_resolve) resolution_idx[nidx++] = 0; // zero all other indices
+                    }
+
+                    delete [] buffer;
+                    delete [] resolution_max_idx;
+                    delete [] resolution_idx;
+
+                    pd_assert(!err);
+                    selection_id->insert_default("", "");
+                }
+
+                delete [] offsets_to_resolve;
             }
-
-            delete [] offsets_to_resolve;
+        }
+        else { // empty input
+            selection_id->insert_default("", "");
         }
     }
-
-    if (err) {
-        aw_message(err);
-    }
+    if (err) selection_id->insert_default(err, "");
+    selection_id->update();
 }
 
 enum ModMode { TS_MOD_CLEAR, TS_MOD_REV_COMPL, TS_MOD_COMPL };
 
-static void modify_target_string(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_mod_mode) {
-    ModMode   mod_mode      = ModMode(cl_mod_mode);
+static void modify_target_string(AW_window *aww, GBDATA *gb_main, ModMode mod_mode) {
     AW_root  *root          = aww->get_root();
     char     *target_string = root->awar(AWAR_TARGET_STRING)->read_string();
     GB_ERROR  error         = 0;
 
     if (mod_mode == TS_MOD_CLEAR) target_string[0] = 0;
     else {
-        GBDATA            *gb_main  = (GBDATA*)cl_gb_main;
-        GB_transaction     ta(gb_main);
-        GB_alignment_type  ali_type = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
-        if (mod_mode == TS_MOD_REV_COMPL) {
+        GB_transaction    ta(gb_main);
+        GB_alignment_type ali_type = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
+        if (ali_type == GB_AT_UNKNOWN) {
+            error = GB_await_error();
+        }
+        else if (mod_mode == TS_MOD_REV_COMPL) {
             char T_or_U;
             error = GBT_determine_T_or_U(ali_type, &T_or_U, "reverse-complement");
             if (!error) GBT_reverseComplementNucSequence(target_string, strlen(target_string), T_or_U);
@@ -1512,9 +1508,8 @@ static void modify_target_string(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_mod_
     free(target_string);
 }
 
-static AW_window *create_IUPAC_resolve_window(AW_root *root, AW_CL cl_gb_main) {
-    GBDATA           *gb_main = (GBDATA*)cl_gb_main;
-    AW_window_simple *aws     = new AW_window_simple;
+static AW_window *create_IUPAC_resolve_window(AW_root *root, GBDATA *gb_main) {
+    AW_window_simple *aws = new AW_window_simple;
 
     aws->init(root, "PROBE_MATCH_RESOLVE_IUPAC", "Resolve IUPAC for Probe Match");
     aws->load_xfig("pd_match_iupac.fig");
@@ -1529,31 +1524,28 @@ static AW_window *create_IUPAC_resolve_window(AW_root *root, AW_CL cl_gb_main) {
 
     AW_selection_list *iselection_id;
     aws->at("iresult");
-    iselection_id = aws->create_selection_list(AWAR_PD_MATCH_RESOLVE, 32, 15);
+    iselection_id = aws->create_selection_list(AWAR_PD_MATCH_RESOLVE, 32, 15, true);
     iselection_id->insert_default("---empty---", "");
 
     aws->at("istring");
     aws->create_input_field(AWAR_ITARGET_STRING, 32);
 
+    // add callback for automatic decomposition of AWAR_ITARGET_STRING:
+    RootCallback upd_cb = makeRootCallback(resolve_IUPAC_target_string, iselection_id, gb_main);
+    root->awar(AWAR_ITARGET_STRING)->add_callback(upd_cb);
+    root->awar(AWAR_DEFAULT_ALIGNMENT)->add_callback(upd_cb);
 
-    // automatically resolve AWAR_ITARGET_STRING:
-    {
-        GB_transaction ta(gb_main);
-        ali_used_for_resolvement = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
-    }
-    root->awar(AWAR_ITARGET_STRING)->add_callback(resolve_IUPAC_target_string, AW_CL(aws), AW_CL(iselection_id));
-
-    aws->callback(probe_match_all_event, (AW_CL)iselection_id, (AW_CL)gb_main);
+    aws->callback(makeWindowCallback(probe_match_all_event, iselection_id, gb_main));
     aws->at("match_all");
     aws->create_button("MATCH_ALL", "MATCH ALL", "A");
 
     return aws;
 }
 
-static void popupSaiProbeMatchWindow(AW_window *aw, AW_CL cl_gb_main) {
+static void popupSaiProbeMatchWindow(AW_window *aw, GBDATA *gb_main) {
     static AW_window *aw_saiProbeMatch = 0;
 
-    if (!aw_saiProbeMatch) aw_saiProbeMatch = createSaiProbeMatchWindow(aw->get_root(), (GBDATA*)cl_gb_main);
+    if (!aw_saiProbeMatch) aw_saiProbeMatch = createSaiProbeMatchWindow(aw->get_root(), gb_main);
     if (g_spd) transferProbeData(g_spd); // transferring probe data to saiProbeMatch function
 
     aw_saiProbeMatch->activate();
@@ -1581,19 +1573,19 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
 
         AW_selection_list *selection_id;
         aws->at("result");
-        selection_id = aws->create_selection_list(AWAR_PD_SELECTED_MATCH, 110, 15);
+        selection_id = aws->create_selection_list(AWAR_PD_SELECTED_MATCH, 110, 15, true);
         selection_id->insert_default("****** No results yet *******", "");  // if list is empty -> crashed if new species was selected in ARB_EDIT4
 
         TypedSelectionList *typed_selection = new TypedSelectionList("match", selection_id, "probe match", "probe_match");
         aws->at("print");
-        aws->callback(create_print_box_for_selection_lists, (AW_CL)typed_selection);
+        aws->callback(makeWindowCallback(create_print_box_for_selection_lists, typed_selection));
         aws->create_button("PRINT", "PRINT", "P");
 
         aws->at("matchSai");
-        aws->callback(popupSaiProbeMatchWindow, (AW_CL)gb_main);
+        aws->callback(makeWindowCallback(popupSaiProbeMatchWindow, gb_main));
         aws->create_button("MATCH_SAI", "Match SAI", "S");
 
-        aws->callback(AW_POPUP, (AW_CL)create_probe_expert_window, (AW_CL)0);
+        aws->callback(makeCreateWindowCallback(create_probe_expert_window, false));
         aws->at("expert");
         aws->create_button("EXPERT", "EXPERT", "X");
 
@@ -1621,7 +1613,7 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
         aws->button_length(9);
 
         ProbeMatchEventParam *event_param = new ProbeMatchEventParam(gb_main, selection_id);
-        aws->callback(probe_match_event, (AW_CL)event_param);
+        aws->callback(makeWindowCallback(probe_match_event, event_param));
         aws->at("match");
         aws->create_button("MATCH", "MATCH", "D");
 
@@ -1630,19 +1622,19 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
         aws->create_toggle(AWAR_PD_MATCH_AUTOMATCH);
         enable_auto_match_cb(root, aws, event_param);
 
-        aws->callback(modify_target_string, (AW_CL)gb_main, (AW_CL)TS_MOD_CLEAR);
+        aws->callback(makeWindowCallback(modify_target_string, gb_main, TS_MOD_CLEAR));
         aws->at("clear");
         aws->create_button("CLEAR", "Clear", "0");
 
-        aws->callback(modify_target_string, (AW_CL)gb_main, (AW_CL)TS_MOD_REV_COMPL);
+        aws->callback(makeWindowCallback(modify_target_string, gb_main, TS_MOD_REV_COMPL));
         aws->at("revcompl");
         aws->create_button("REVCOMPL", "RevCompl", "R");
 
-        aws->callback(modify_target_string, (AW_CL)gb_main, (AW_CL)TS_MOD_COMPL);
+        aws->callback(makeWindowCallback(modify_target_string, gb_main, TS_MOD_COMPL));
         aws->at("compl");
         aws->create_button("COMPL", "Compl", "C");
 
-        aws->callback(AW_POPUP, (AW_CL)create_IUPAC_resolve_window, (AW_CL)gb_main);
+        aws->callback(makeCreateWindowCallback(create_IUPAC_resolve_window, gb_main));
         aws->at("iupac");
         aws->create_button("IUPAC", "IUPAC", "I");
     }
@@ -1656,7 +1648,7 @@ static void pd_start_pt_server(AW_window *aww) {
     if (error) aw_message(error);
 }
 
-static void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
+static void pd_kill_pt_server(AW_window *aww, bool kill_all)
 {
     if (aw_ask_sure("kill_ptserver",
                     GBS_global_string("Are you sure to stop %s", kill_all ? "all servers" : "that server"))) {
@@ -1719,10 +1711,9 @@ static void pd_query_pt_server(AW_window *aww) {
     free(sys);
 }
 
-static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
-    GBDATA   *gb_main = (GBDATA*)cl_gb_main;
-    AW_root  *awr     = aww->get_root();
-    GB_ERROR  error   = 0;
+static void pd_export_pt_server(AW_window *aww, GBDATA *gb_main) {
+    AW_root  *awr   = aww->get_root();
+    GB_ERROR  error = 0;
 
     bool create_gene_server = awr->awar(AWAR_PROBE_CREATE_GENE_SERVER)->read_int();
     {
@@ -1849,7 +1840,7 @@ AW_window *create_probe_admin_window(AW_root *root, GBDATA *gb_main) {
     aws->create_button("START_SERVER", "Start server");
 
     aws->at("kill");
-    aws->callback(pd_kill_pt_server, 0);
+    aws->callback(makeWindowCallback(pd_kill_pt_server, false));
     aws->create_button("KILL_SERVER", "Stop server");
 
     aws->at("query");
@@ -1857,7 +1848,7 @@ AW_window *create_probe_admin_window(AW_root *root, GBDATA *gb_main) {
     aws->create_button("CHECK_SERVER", "Check server");
 
     aws->at("kill_all");
-    aws->callback(pd_kill_pt_server, 1);
+    aws->callback(makeWindowCallback(pd_kill_pt_server, true));
     aws->create_button("KILL_ALL_SERVERS", "Stop all servers");
 
     aws->at("edit");
@@ -1869,7 +1860,7 @@ AW_window *create_probe_admin_window(AW_root *root, GBDATA *gb_main) {
     aws->create_button("EDIT_LOG", "View logfile");
 
     aws->at("export");
-    aws->callback(pd_export_pt_server, (AW_CL)gb_main);
+    aws->callback(makeWindowCallback(pd_export_pt_server, gb_main));
     aws->create_button("UPDATE_SERVER", "Build server");
 
     if (is_genom_db) {
@@ -1898,17 +1889,15 @@ static struct pg_global_struct {
 } pg_global;
 
 
-static void pg_result_selected(AW_window * /* aww */, AW_CL cl_gb_main) {
-
+static void pg_result_selected(AW_window*, GBDATA *gb_main) {
     AW_root *aw_root = pg_global.aw_root;
     long position = aw_root->awar(AWAR_PG_SELECTED_RESULT)->read_int();
 
     if (position) { // ignore headline
         long i = 1;
 
-        GBDATA         *gb_main = (GBDATA*)cl_gb_main;
-        GB_transaction  ta1(pg_global.pg_main);
-        GB_transaction  ta2(gb_main);
+        GB_transaction ta1(pg_global.pg_main);
+        GB_transaction ta2(gb_main);
 
         GBT_mark_all(gb_main, 0); // unmark all species
 
@@ -1965,8 +1954,8 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
 
     if (selList==0) {
         aws->at("box");
-        aws->callback(pg_result_selected, (AW_CL)gb_main);
-        selList = pg_global.selList = aws->create_selection_list(AWAR_PG_SELECTED_RESULT, 2, 2);
+        aws->callback(makeWindowCallback(pg_result_selected, gb_main));
+        selList = pg_global.selList = aws->create_selection_list(AWAR_PG_SELECTED_RESULT, 2, 2, true);
     }
     else {
         selList->clear();

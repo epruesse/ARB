@@ -45,6 +45,7 @@
 #include <macros.hxx>
 
 #include <cctype>
+#include <map>
 
 AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL);
 
@@ -1302,12 +1303,21 @@ static void ED4_save_properties(AW_window *aw, AW_CL cl_mode, AW_CL) {
     AW_save_specific_properties(aw, ED4_propertyName(mode));
 }
 
-static AW_window *ED4_create_gc_window(AW_root *aw_root, AW_gc_manager id) {
-    static AW_window *gc_win = 0;
-    if (!gc_win) {
-        gc_win = AW_create_gc_window(aw_root, id);
+void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman) {
+    typedef std::map<AW_gc_manager, AW_window*> gcwin;
+    static gcwin win;
+
+    gcwin::iterator found = win.find(gcman);
+
+    AW_window *aww = NULL;
+    if (found == win.end()) {
+        aww        = AW_create_gc_window(awp->get_root(), gcman);
+        win[gcman] = aww;
     }
-    return gc_win;
+    else {
+        aww = win[gcman];
+    }
+    aww->activate();
 }
 
 static void refresh_on_gc_change_cb() {
@@ -1409,7 +1419,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->create_menu("File", "F", AWM_ALL);
 
     awmm->insert_menu_topic("new_win",        "New Editor Window",     "W", 0, AWM_ALL, ED4_new_editor_window);
-    awmm->insert_menu_topic("save_config",    "Save Configuration",    "S", 0, AWM_ALL, (AW_CB)ED4_save_configuration, (AW_CL) 0,                                     (int)0);
+    awmm->insert_menu_topic("save_config",    "Save Configuration",    "S", 0, AWM_ALL, makeWindowCallback(ED4_save_configuration, false));
     awmm->insert_menu_topic("save_config_as", "Save Configuration As", "A", 0, AWM_ALL, AW_POPUP,                      (AW_CL) ED4_save_configuration_as_open_window, (int)0);
     awmm->sep______________();
     awmm->insert_menu_topic("load_config",   "Load Configuration",   "L", 0, AWM_ALL, AW_POPUP,           (AW_CL)ED4_start_editor_on_old_configuration, 0);
@@ -1426,9 +1436,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     //      Create
 
     awmm->create_menu("Create", "C", AWM_ALL);
-    awmm->insert_menu_topic("create_species",                "Create new species",                "n", 0, AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)0);
-    awmm->insert_menu_topic("create_species_from_consensus", "Create new species from consensus", "u", 0, AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)1);
-    awmm->insert_menu_topic("copy_species",                  "Copy current species",              "C", 0, AWM_ALL, AW_POPUP, (AW_CL)ED4_create_new_seq_window, (int)2);
+    awmm->insert_menu_topic("create_species",                "Create new species",                "n", 0, AWM_ALL, makeCreateWindowCallback(ED4_create_new_seq_window, CREATE_NEW_SPECIES));
+    awmm->insert_menu_topic("create_species_from_consensus", "Create new species from consensus", "u", 0, AWM_ALL, makeCreateWindowCallback(ED4_create_new_seq_window, CREATE_FROM_CONSENSUS));
+    awmm->insert_menu_topic("copy_species",                  "Copy current species",              "C", 0, AWM_ALL, makeCreateWindowCallback(ED4_create_new_seq_window, COPY_SPECIES));
     awmm->sep______________();
     awmm->insert_menu_topic("create_group",           "Create new Group",              "G", 0, AWM_ALL, group_species_cb, 0, 0);
     awmm->insert_menu_topic("create_groups_by_field", "Create new groups using Field", "F", 0, AWM_ALL, group_species_cb, 1, 0);
@@ -1589,7 +1599,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("props_consensus", "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, ED4_create_consensus_definition_window);
     awmm->sep______________();
 
-    awmm->insert_menu_topic("props_data",       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, AW_POPUP, (AW_CL)ED4_create_gc_window,     (AW_CL)first_gc_manager);
+    awmm->insert_menu_topic("props_data",       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, makeWindowCallback(ED4_popup_gc_window, first_gc_manager));
     awmm->insert_menu_topic("props_seq_colors", "Sequence color mapping", "S", "sequence_colors.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)sequence_colors);
 
     awmm->sep______________();
@@ -1752,7 +1762,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->button_length(0);
 
     awmm->at("protect");
-    awmm->create_option_menu(AWAR_EDIT_SECURITY_LEVEL);
+    awmm->create_option_menu(AWAR_EDIT_SECURITY_LEVEL, true);
     awmm->insert_option("0", 0, 0);
     awmm->insert_option("1", 0, 1);
     awmm->insert_option("2", 0, 2);

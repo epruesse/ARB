@@ -396,7 +396,7 @@ static void ED4_resize_cb(AW_window *aww) {
 }
 
 
-ED4_window *ED4_window::insert_window(AW_window *new_aww) {
+ED4_window *ED4_window::insert_window(AW_window_menu_modes *new_aww) {
     ED4_window *last, *temp;
 
     temp = ED4_ROOT->first_window;          // append at end of window list
@@ -429,7 +429,7 @@ ED4_window *ED4_window::insert_window(AW_window *new_aww) {
     return temp;
 }
 
-ED4_window::ED4_window(AW_window *window)
+ED4_window::ED4_window(AW_window_menu_modes *window)
     : aww(window),
       next(NULL),
       slider_pos_horizontal(0),

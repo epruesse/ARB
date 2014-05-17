@@ -145,29 +145,33 @@ static void calculate_clusters(AW_window *aww) {
 
         {
             char    *use     = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
-            AliView *aliview = global_data->weighted_filter.create_aliview(use);
+            AliView *aliview = global_data->weighted_filter.create_aliview(use, error);
 
-            AP_sequence *seq = GBT_is_alignment_protein(gb_main, use)
-                ? (AP_sequence*)new AP_sequence_protein(aliview)
-                : new AP_sequence_parsimony(aliview);
+            if (aliview) {
+                AP_sequence *seq = GBT_is_alignment_protein(gb_main, use)
+                    ? (AP_sequence*)new AP_sequence_protein(aliview)
+                    : new AP_sequence_parsimony(aliview);
 
-            AP_FLOAT maxDistance    = aw_root->awar(AWAR_CLUSTER_MAXDIST)->read_float();
-            unsigned minClusterSize = aw_root->awar(AWAR_CLUSTER_MINSIZE)->read_int();
+                AP_FLOAT maxDistance    = aw_root->awar(AWAR_CLUSTER_MAXDIST)->read_float();
+                unsigned minClusterSize = aw_root->awar(AWAR_CLUSTER_MINSIZE)->read_int();
 
-            tree = new ClusterTreeRoot(aliview, seq, maxDistance/100, minClusterSize);
+                tree = new ClusterTreeRoot(aliview, seq, maxDistance/100, minClusterSize);
 
-            delete seq;
+                delete seq;
+            }
             free(use);
         }
 
-        progress.subtitle("Loading tree");
-        {
-            char *tree_name = aw_root->awar(AWAR_DIST_TREE_CURR_NAME)->read_string();
-            error           = tree->loadFromDB(tree_name);
-            free(tree_name);
-        }
+        if (!error) {
+            progress.subtitle("Loading tree");
+            {
+                char *tree_name = aw_root->awar(AWAR_DIST_TREE_CURR_NAME)->read_string();
+                error           = tree->loadFromDB(tree_name);
+                free(tree_name);
+            }
 
-        if (!error) error = tree->linkToDB(0, 0);
+            if (!error) error = tree->linkToDB(0, 0);
+        }
     }
 
     if (!error) {
@@ -814,7 +818,8 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->at_newline();
 
-        aws->create_option_menu(AWAR_CLUSTER_GROUP_WHAT, "For", "F");
+        aws->label("For");
+        aws->create_option_menu(AWAR_CLUSTER_GROUP_WHAT, true);
         aws->insert_option        ("selected cluster", "s", GROUP_SELECTED);
         aws->insert_default_option("listed clusters",  "l", GROUP_LISTED);
         aws->update_option_menu();
@@ -826,7 +831,8 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->at_newline();
 
-        aws->create_option_menu(AWAR_CLUSTER_GROUP_NOTFOUND, "-> if no matching subtree found", "n");
+        aws->label("-> if no matching subtree found");
+        aws->create_option_menu(AWAR_CLUSTER_GROUP_NOTFOUND, true);
         aws->insert_default_option("abort",          "a", NOTFOUND_ABORT);
         aws->insert_option        ("warn",           "w", NOTFOUND_WARN);
         aws->insert_option        ("ignore",         "i", NOTFOUND_IGNORE);
@@ -837,7 +843,8 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
         aws->callback(makeWindowCallback(group_clusters, GROUP_CREATE));
         aws->create_autosize_button("CREATE_GROUPS", "create groups!");
 
-        aws->create_option_menu(AWAR_CLUSTER_GROUP_EXISTING, "If group exists", "x");
+        aws->label("If group exists");
+        aws->create_option_menu(AWAR_CLUSTER_GROUP_EXISTING, true);
         aws->insert_default_option("abort",                "a", EXISTING_GROUP_ABORT);
         aws->insert_option        ("skip",                 "s", EXISTING_GROUP_SKIP);
         aws->insert_option        ("overwrite (caution!)", "o", EXISTING_GROUP_OVERWRITE);
@@ -930,10 +937,10 @@ static void swap_clusters(AW_window *aww) {
 #warning "implement save/load clusters"
 #endif
 static void save_clusters(AW_window *) {
-    cl_assert(0); // not impl
+    aw_message("save_clusters not implemented");
 }
 static void load_clusters(AW_window *) {
-    cl_assert(0); // not impl
+    aw_message("load_clusters not implemented");
 }
 
 // ---------------------------------
@@ -998,7 +1005,7 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, WeightedFilter *
         aws->at("group"); aws->callback(popup_group_clusters_window); aws->create_button("GROUP", "Cluster groups..");
 
         aws->at("sort");
-        aws->create_option_menu(AWAR_CLUSTER_ORDER);
+        aws->create_option_menu(AWAR_CLUSTER_ORDER, true);
         aws->insert_default_option("by mean distance",  "d", SORT_BY_MEANDIST);
         aws->insert_option        ("by min bases used", "b", SORT_BY_MIN_BASES);
         aws->insert_option        ("by size",           "s", SORT_BY_CLUSTERSIZE);
@@ -1029,7 +1036,7 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, WeightedFilter *
         //      clusterlist
 
         aws->at("cluster_list");
-        global_data->clusterList = aws->create_selection_list(AWAR_CLUSTER_SELECTED);
+        global_data->clusterList = aws->create_selection_list(AWAR_CLUSTER_SELECTED, true);
         update_cluster_sellist();
 
         aw_root->awar(AWAR_CLUSTER_SELECTED)->add_callback(select_cluster_cb);

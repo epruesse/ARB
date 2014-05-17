@@ -329,7 +329,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, const char *tree_name, const TREE_no
     GB_ERROR  error  = 0;
     FILE     *output = fopen(path, "w");
 
-    if (!output) error = GB_export_errorf("file '%s' could not be opened for writing", path);
+    if (!output) error = GBS_global_string("file '%s' could not be opened for writing", path);
     else {
         GB_transaction ta(gb_main);
 

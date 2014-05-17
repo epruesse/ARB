@@ -84,8 +84,10 @@ void AW_create_fileselection_awars(AW_root *awr, const char *awar_base, const ch
     sprintf(awar_name, "%s%s", awar_base, "/file_name"+int(has_slash));
     AW_awar *awar_filename = awr->awar_string(awar_name, file_name, default_file);
 
-    bool is_tmp_awar = strncmp(awar_base, "tmp/", 4) == 0;
+#if defined(ASSERTION_USED)
+    bool is_tmp_awar = strncmp(awar_base, "tmp/", 4) == 0 || strncmp(awar_base, "/tmp/", 5) == 0;
     aw_assert(is_tmp_awar); // you need to use a temp awar for file selections
+#endif
 
     awar_dir->write_string(directories);
     awar_filter->write_string(filter);
@@ -221,7 +223,7 @@ public:
 
         sprintf(buffer, "%sbox", at_prefix);
         aws->at(buffer);
-        filelist = aws->create_selection_list(def_name, 2, 2);
+        filelist = aws->create_selection_list(def_name, false);
     }
 
     void fill();
@@ -623,7 +625,6 @@ void File_selection::fill() {
         filelist->insert(GBS_global_string("!  Find aborted    (after %.1fs; click to search longer)", searchTime.allowed_duration()), GBS_global_string("%s?inctime?", name));
     }
 
-    filelist->insert_default("", "");
     if (sort_order == SORT_SIZE) {
         filelist->sortCustom(cmpBySize);
     }
@@ -631,6 +632,7 @@ void File_selection::fill() {
         filelist->sort(false, false);
     }
     format_columns();
+    filelist->insert_default("", "");
     filelist->update();
 
     if (filled_by_wildcard && !leave_wildcards) { // avoid returning wildcarded filename (if !leave_wildcards)

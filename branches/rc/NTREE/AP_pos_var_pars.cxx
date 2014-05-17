@@ -298,35 +298,36 @@ GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
 static void AP_calc_pos_var_pars(AW_window *aww) {
     AW_root        *root  = aww->get_root();
     GB_transaction  ta(GLOBAL.gb_main);
-    char           *tree_name;
-    GB_ERROR        error = 0;
+    GB_ERROR        error = NULL;
 
-    arb_progress progress("Calculating positional variability");
-    progress.subtitle("Loading Tree");
+    char *ali_name = GBT_get_default_alignment(GLOBAL.gb_main);
+    long  ali_len  = GBT_get_alignment_len(GLOBAL.gb_main, ali_name);
 
-    // get tree
-    GBT_TREE *tree;
-    {
-        tree_name = root->awar(AWAR_PVP_TREE)->read_string();
-        tree = GBT_read_tree(GLOBAL.gb_main, tree_name, GBT_TREE_NodeFactory());
-        if (!tree) {
-            error = GB_await_error();
-        }
-        else {
-            GBT_link_tree(tree, GLOBAL.gb_main, true, 0, 0);
-        }
+    if (ali_len <= 0) {
+        error = "Please select a valid alignment";
+        GB_clear_error();
     }
+    else {
+        arb_progress progress("Calculating positional variability");
+        progress.subtitle("Loading Tree");
 
-    if (!error) {
-        progress.subtitle("Counting mutations");
-
-        char *ali_name = GBT_get_default_alignment(GLOBAL.gb_main);
-        long  ali_len  = GBT_get_alignment_len(GLOBAL.gb_main, ali_name);
-
-        if (ali_len <= 0) {
-            error = "Please select a valid alignment";
+        // get tree
+        GBT_TREE *tree;
+        char     *tree_name;
+        {
+            tree_name = root->awar(AWAR_PVP_TREE)->read_string();
+            tree = GBT_read_tree(GLOBAL.gb_main, tree_name, GBT_TREE_NodeFactory());
+            if (!tree) {
+                error = GB_await_error();
+            }
+            else {
+                GBT_link_tree(tree, GLOBAL.gb_main, true, 0, 0);
+            }
         }
-        else {
+
+        if (!error) {
+            progress.subtitle("Counting mutations");
+
             GB_alignment_type  at       = GBT_get_alignment_type(GLOBAL.gb_main, ali_name);
             int                isdna    = at==GB_AT_DNA || at==GB_AT_RNA;
             char              *sai_name = root->awar(AWAR_PVP_SAI)->read_string();
@@ -338,14 +339,13 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
 
             free(sai_name);
         }
-        free(ali_name);
-    }
 
-    delete tree;
-    free(tree_name);
+        delete tree;
+        free(tree_name);
+    }
+    free(ali_name);
 
     if (error) aw_message(error);
-    return;
 }
 
 AW_window *AP_create_pos_var_pars_window(AW_root *root) {
@@ -373,10 +373,10 @@ AW_window *AP_create_pos_var_pars_window(AW_root *root) {
     aws->create_input_field(AWAR_PVP_SAI);
 
     aws->at("box");
-    awt_create_selection_list_on_sai(GLOBAL.gb_main, aws, AWAR_PVP_SAI);
+    awt_create_selection_list_on_sai(GLOBAL.gb_main, aws, AWAR_PVP_SAI, false);
 
     aws->at("trees");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_PVP_TREE);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_PVP_TREE, true);
 
     aws->at("go");
     aws->highlight();

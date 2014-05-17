@@ -406,7 +406,7 @@ static AW_window *PH_save_markerline(AW_root *root, PH_root *ph_root, int multi_
     aws->create_input_field(AWAR_PHYLO_MARKERLINENAME);
 
     aws->at("box");
-    awt_create_selection_list_on_sai(ph_root->get_gb_main(), aws, AWAR_PHYLO_MARKERLINENAME);
+    awt_create_selection_list_on_sai(ph_root->get_gb_main(), aws, AWAR_PHYLO_MARKERLINENAME, false);
 
     aws->at("save");
     if (multi_line) aws->callback(makeWindowCallback(PH_save_ml_multiline_cb, ph_root));

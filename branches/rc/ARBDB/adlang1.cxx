@@ -1363,6 +1363,11 @@ static GBT_ITEM_TYPE identify_gb_item(GBDATA *gb_item) {
 // --------------------------------------------------------------------------------
 // taxonomy caching
 
+#if defined(DEBUG)
+// #define DUMP_TAXONOMY_CACHING
+#endif
+
+
 #define GROUP_COUNT_CHARS 6                         // characters in taxonomy-key reserved for group-counter (hex number)
 #define BITS_PER_HEXCHAR  4
 #define MAX_GROUPS        (1 << (GROUP_COUNT_CHARS*BITS_PER_HEXCHAR)) // resulting number of groups
@@ -1433,9 +1438,9 @@ static const char *tree_of_cached_taxonomy(cached_taxonomy *ct) {
      * searching for tree name does not work, because the tree possibly already was deleted
      */
     const char *tree = GBS_hash_next_element_that(cached_taxonomies, NULL, is_cached_taxonomy, ct);
-#if defined(DEBUG) & 0
+#ifdef DUMP_TAXONOMY_CACHING
     if (tree) printf("tree_of_cached_taxonomy: tree='%s' ct->tree_name='%s'\n", tree, ct->tree_name);
-#endif // DEBUG
+#endif // DUMP_TAXONOMY_CACHING
     return tree;
 }
 
@@ -1449,17 +1454,17 @@ static void flush_taxonomy_cb(GBDATA *gbd, cached_taxonomy *ct) {
     const char *found = tree_of_cached_taxonomy(ct);
 
     if (found) {
-#if defined(DEBUG) && 0
+#ifdef DUMP_TAXONOMY_CACHING
         fprintf(stderr, "Deleting cached taxonomy ct=%p (tree='%s')\n", ct, found);
-#endif // DEBUG
+#endif // DUMP_TAXONOMY_CACHING
         GBS_write_hash(cached_taxonomies, found, 0); // delete cached taxonomy from hash
         free_cached_taxonomy(ct);
     }
-#if defined(DEBUG) && 0
+#ifdef DUMP_TAXONOMY_CACHING
     else {
         fprintf(stderr, "No tree found for cached_taxonomies ct=%p (already deleted?)\n", ct);
     }
-#endif // DEBUG
+#endif // DUMP_TAXONOMY_CACHING
 
     if (!GB_inside_callback(gbd, GB_CB_DELETE)) {
         GB_remove_all_callbacks_to(gbd, GB_CB_CHANGED_OR_DELETED, (GB_CB)flush_taxonomy_cb);
@@ -1485,9 +1490,9 @@ static void flush_taxonomy_cb(GBDATA *gbd, cached_taxonomy *ct) {
 
 static void flush_taxonomy_if_new_group_cb(GBDATA *gb_tree, cached_taxonomy *ct) {
     // detects the creation of new groups and call flush_taxonomy_cb() manually
-#if defined(DEBUG) & 0
+#ifdef DUMP_TAXONOMY_CACHING
     fputs("flush_taxonomy_if_new_group_cb() has been called\n", stderr);
-#endif // DEBUG
+#endif // DUMP_TAXONOMY_CACHING
 
     const char *tree_name = tree_of_cached_taxonomy(ct);
     if (tree_name) {
@@ -1503,21 +1508,21 @@ static void flush_taxonomy_if_new_group_cb(GBDATA *gb_tree, cached_taxonomy *ct)
             }
         }
 
-#if defined(DEBUG) & 0
+#ifdef DUMP_TAXONOMY_CACHING
         fprintf(stderr, "cached_groups=%i  counted_groups=%i\n", ct->groups, groups);
-#endif // DEBUG
+#endif // DUMP_TAXONOMY_CACHING
         if (groups != ct->groups) {
-#if defined(DEBUG) & 0
+#ifdef DUMP_TAXONOMY_CACHING
             fprintf(stderr, "Number of groups changed -> invoking flush_taxonomy_cb() manually\n");
-#endif // DEBUG
+#endif // DUMP_TAXONOMY_CACHING
             flush_taxonomy_cb(gb_tree, ct);
         }
     }
-#if defined(DEBUG) & 0
+#ifdef DUMP_TAXONOMY_CACHING
     else {
         fprintf(stderr, "cached taxonomy no longer valid.\n");
     }
-#endif // DEBUG
+#endif // DUMP_TAXONOMY_CACHING
 }
 
 static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_name, GB_ERROR *error) {
@@ -1575,9 +1580,9 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
                         }
                     }
                 }
-#if defined(DEBUG)
+#ifdef DUMP_TAXONOMY_CACHING
                 fprintf(stderr, "Created taxonomy hash for '%s' (ct=%p)\n", tree_name, ct);
-#endif // DEBUG
+#endif // DUMP_TAXONOMY_CACHING
             }
         }
 

@@ -603,7 +603,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
     aws->at("bonds");
     aws->label("Display bonds");
-    aws->create_option_menu(AWAR_SECEDIT_SHOW_BONDS);
+    aws->create_option_menu(AWAR_SECEDIT_SHOW_BONDS, true);
     aws->insert_option("None",       "n", SHOW_NO_BONDS);
     aws->insert_option("Helix",      "h", SHOW_HELIX_BONDS);
     aws->insert_option("+Non-helix", "o", SHOW_NHELIX_BONDS);
@@ -621,7 +621,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
     aws->at("cursor");
     aws->label("Annotate cursor            :");
-    aws->create_option_menu(AWAR_SECEDIT_SHOW_CURPOS);
+    aws->create_option_menu(AWAR_SECEDIT_SHOW_CURPOS, true);
     aws->insert_option("None",     "n", SHOW_NO_CURPOS);
     aws->insert_option("Absolute", "a", SHOW_ABS_CURPOS);
     aws->insert_option("Ecoli",    "e", SHOW_ECOLI_CURPOS);
@@ -711,8 +711,8 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->insert_menu_topic("secedit_import", "Load structure", "L", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)db);
     awm->insert_menu_topic("secedit_export", "Save structure", "S", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)db);
     awm->sep______________();
-    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG", "X", "sec_layout.hlp",  AWM_ALL, AWT_popup_sec_export_window, (AW_CL)scr, 0);
-    awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "secedit2prt.hlp", AWM_ALL, AWT_popup_print_window,      (AW_CL)scr, 0);
+    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG", "X", "sec_layout.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_sec_export_window, scr));
+    awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "secedit2prt.hlp", AWM_ALL, makeWindowCallback(AWT_popup_print_window, scr));
     awm->sep______________();
 
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);

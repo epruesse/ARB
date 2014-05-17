@@ -1679,46 +1679,54 @@ static void modify_fields_of_queried_cb(AW_window*, DbQuery *query) {
                 {
                     if (IS_QUERIED(gb_item, query)) {
                         GBDATA *gb_new = GB_search(gb_item, key, GB_FIND);
-                        char   *str    = gb_new ? GB_read_as_string(gb_new) : strdup("");
-                        char   *parsed = 0;
 
-                        if (double_pars) {
-                            char *com2 = GB_command_interpreter(query->gb_main, str, command, gb_item, query->get_tree_name());
-                            if (com2) {
-                                if (tag) parsed = GBS_string_eval_tagged_string(query->gb_main, "", deftag, tag, 0, com2, gb_item);
-                                else parsed     = GB_command_interpreter       (query->gb_main, "", com2, gb_item, query->get_tree_name());
-                            }
-                            free(com2);
+                        if (!gb_new && GB_have_error()) {
+                            error = GB_await_error();
                         }
                         else {
-                            if (tag) parsed = GBS_string_eval_tagged_string(query->gb_main, str, deftag, tag, 0, command, gb_item);
-                            else parsed     = GB_command_interpreter       (query->gb_main, str, command, gb_item, query->get_tree_name());
-                        }
+                            char *str    = gb_new ? GB_read_as_string(gb_new) : strdup("");
+                            char *parsed = 0;
 
-                        if (!parsed) error = GB_await_error();
-                        else {
-                            if (strcmp(parsed, str) != 0) { // any change?
-                                if (gb_new && parsed[0] == 0) { // empty result -> delete field
-                                    error = GB_delete(gb_new);
+                            if (double_pars) {
+                                char *com2 = GB_command_interpreter(query->gb_main, str, command, gb_item, query->get_tree_name());
+                                if (com2) {
+                                    if (tag) parsed = GBS_string_eval_tagged_string(query->gb_main, "", deftag, tag, 0, com2, gb_item);
+                                    else parsed     = GB_command_interpreter       (query->gb_main, "", com2, gb_item, query->get_tree_name());
                                 }
-                                else {
-                                    if (!gb_new) {
-                                        gb_new = GB_search(gb_item, key, (GB_TYPES)GB_read_int(gb_key_type));
-                                        if (!gb_new) error = GB_await_error();
+                                free(com2);
+                            }
+                            else {
+                                if (tag) parsed = GBS_string_eval_tagged_string(query->gb_main, str, deftag, tag, 0, command, gb_item);
+                                else parsed     = GB_command_interpreter       (query->gb_main, str, command, gb_item, query->get_tree_name());
+                            }
+
+                            if (!parsed) error = GB_await_error();
+                            else {
+                                if (strcmp(parsed, str) != 0) { // any change?
+                                    if (gb_new && parsed[0] == 0) { // empty result -> delete field
+                                        error = GB_delete(gb_new);
                                     }
-                                    if (!error) error = GB_write_as_string(gb_new, parsed);
+                                    else {
+                                        if (!gb_new) {
+                                            gb_new = GB_search(gb_item, key, (GB_TYPES)GB_read_int(gb_key_type));
+                                            if (!gb_new) error = GB_await_error();
+                                        }
+                                        if (!error) error = GB_write_as_string(gb_new, parsed);
+                                    }
                                 }
+                                free(parsed);
                             }
-                            free(parsed);
+                            free(str);
+                            progress.inc_and_check_user_abort(error);
                         }
-                        free(str);
-                        progress.inc_and_check_user_abort(error);
                     }
                 }
             }
 
             delete tag;
             free(deftag);
+
+            if (error) progress.done();
         }
 
         error = GB_end_transaction(query->gb_main, error);
@@ -2105,7 +2113,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
 
         dbq_assert(csd->colorsets == 0);
         aws->at("list");
-        csd->colorsets = aws->create_selection_list(AWAR_COLOR_LOADSAVE_NAME, 0, 0);
+        csd->colorsets = aws->create_selection_list(AWAR_COLOR_LOADSAVE_NAME, 0, 0, false);
 
         update_colorset_selection_list(csd);
 
@@ -2204,7 +2212,7 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
     {
         int color_group;
 
-        aws->create_option_menu(AWAR_COLORIZE);
+        aws->create_option_menu(AWAR_COLORIZE, true);
         aws->insert_default_option(color_group_name(0), "none", 0);
         for (color_group = 1; color_group <= AW_COLOR_GROUPS; ++color_group) {
             aws->insert_option(color_group_name(color_group), "", color_group);
@@ -2282,7 +2290,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
 
     aws->at("double");  aws->create_toggle(query->awar_double_pars);
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, FIELD_FILTER_PARS, "field", 0, query->selector, 20, 10);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, false, FIELD_FILTER_PARS, "field", 0, query->selector, 20, 10, SF_STANDARD, NULL);
 
     aws->at("go");
     aws->callback(makeWindowCallback(modify_fields_of_queried_cb, query));
@@ -2292,7 +2300,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     aws->create_text_field(query->awar_parsvalue);
 
     aws->at("pre");
-    AW_selection_list *programs = aws->create_selection_list(query->awar_parspredefined);
+    AW_selection_list *programs = aws->create_selection_list(query->awar_parspredefined, true);
 
     const char *sellst = NULL;
     switch (query->selector.type) {
@@ -2420,7 +2428,7 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query) {
     aws->callback(makeHelpCallback("write_field_list.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, FIELD_FILTER_NDS, "box", 0, query->selector, 20, 10);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, FIELD_FILTER_NDS, "box", 0, query->selector, 20, 10, SF_STANDARD, NULL);
     aws->at("create");
     aws->callback(makeWindowCallback(set_field_of_queried_cb, query, false));
     aws->create_button("SET_SINGLE_FIELD_OF_LISTED", "WRITE");
@@ -2498,7 +2506,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     aws->insert_toggle("5 ", "5", 5);
     aws->insert_toggle("6 the truth", "5", 6);
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, FIELD_FILTER_NDS, "list", 0, query->selector, 20, 10);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, FIELD_FILTER_NDS, "list", 0, query->selector, 20, 10, SF_STANDARD, NULL);
 
     aws->at("go");
     aws->callback(makeWindowCallback(set_protection_of_queried_cb, query));
@@ -2674,7 +2682,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         for (int key = QUERY_SEARCHES-1;  key >= 0; --key) {
             if (key) {
                 aws->at(xpos, ypos+key*KEY_Y_OFFSET);
-                aws->create_option_menu(query->awar_operator[key]);
+                aws->create_option_menu(query->awar_operator[key], true);
                 aws->insert_option("and", "", "and");
                 aws->insert_option("or", "", "or");
                 aws->insert_option("ign", "", "ign");
@@ -2688,9 +2696,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
 
             {
                 char *button_id = GBS_global_string_copy("field_sel_%s_%i", query_id, key);
-                create_selection_list_on_itemfields(gb_main, aws, query->awar_keys[key], FIELD_FILTER_NDS,
-                                                        0, awtqs->rescan_pos_fig,
-                                                        awtqs->get_queried_itemtype(), 22, 20, SF_PSEUDO, button_id);
+                create_selection_list_on_itemfields(gb_main, aws, query->awar_keys[key], true, FIELD_FILTER_NDS, 0, awtqs->rescan_pos_fig, awtqs->get_queried_itemtype(), 22, 20, SF_PSEUDO, button_id);
                 free(button_id);
             }
 
@@ -2718,7 +2724,9 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         for (int key = 0; key<QUERY_SEARCHES; ++key) {
             aws->at(xpos_calc[2], ypos+key*KEY_Y_OFFSET);
             aws->restore_at_size_and_attach(&at_size);
+#if !defined(ARB_GTK)
             aws->d_callback(makeWindowCallback(perform_query_cb, query, EXT_QUERY_NONE)); // enable ENTER in searchfield to start search
+#endif
             aws->create_input_field(query->awar_queries[key], 12);
         }
     }
@@ -2734,7 +2742,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             char    *this_awar_name = GBS_global_string_copy("tmp/dbquery_%s/select", query_id); // do not free this, cause it's passed to new_selection_made_cb
             AW_awar *awar           = aw_root->awar_string(this_awar_name, "", AW_ROOT_DEFAULT);
 
-            query->hitlist = aws->create_selection_list(this_awar_name, 5, 5);
+            query->hitlist = aws->create_selection_list(this_awar_name, 5, 5, true);
             awar->add_callback(makeRootCallback(new_selection_made_cb, this_awar_name, query));
         }
         query->hitlist->insert_default("end of list", "");
@@ -2761,12 +2769,15 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         aws->at(awtqs->do_query_pos_fig);
         aws->callback(makeWindowCallback(perform_query_cb, query, EXT_QUERY_NONE));
         char *macro_id = GBS_global_string_copy("SEARCH_%s", query_id);
+#if defined(ARB_GTK)
+        aws->highlight();
+#endif
         aws->create_button(macro_id, "Search");
         free(macro_id);
     }
     if (awtqs->do_refresh_pos_fig) {
         aws->at(awtqs->do_refresh_pos_fig);
-        aws->create_option_menu(query->awar_sort);
+        aws->create_option_menu(query->awar_sort, true);
         aws->insert_default_option("unsorted",  "u", QUERY_SORT_NONE);
         aws->insert_option        ("by value",  "v", QUERY_SORT_BY_1STFIELD_CONTENT);
         aws->insert_option        ("by id",     "n", QUERY_SORT_BY_ID);

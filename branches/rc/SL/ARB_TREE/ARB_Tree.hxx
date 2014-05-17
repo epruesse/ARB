@@ -51,6 +51,12 @@ protected:
         at_assert(tree_name);
         gb_tree = gbTree;
     }
+    void set_gb_tree_and_name(GBDATA *gbTree, const char *name) {
+        at_assert(!gb_tree);
+        at_assert(!tree_name);
+        gb_tree   = gbTree;
+        tree_name = strdup(name);
+    }
 
 public:
     ARB_seqtree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seqTempl, bool add_delete_callbacks);
@@ -110,7 +116,7 @@ class ARB_seqtree : public RootedTree { // derived from Noncopyable
     //      functions
 
     void unloadSequences();
-    void preloadLeafSequences();
+    GB_ERROR preloadLeafSequences();
 
     GB_ERROR add_delete_cb_rec(ARB_tree_node_del_cb cb) __ATTR__USERESULT;
     void remove_delete_cb_rec(ARB_tree_node_del_cb cb);

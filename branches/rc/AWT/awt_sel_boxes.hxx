@@ -80,7 +80,7 @@ public:
 
     const char *get_awar_name() const { return awar_name; }
 
-    AWT_sai_selection *create_list(AW_window *aws) const;
+    AWT_sai_selection *create_list(AW_window *aws, bool fallback2default) const;
 };
 
 // -----------------------------------------
@@ -89,7 +89,7 @@ public:
 AW_DB_selection *awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match);
 void awt_reconfigure_selection_list_on_alignments(AW_DB_selection *alisel, const char *ali_type_match);
 
-AW_DB_selection *awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname);
+AW_DB_selection *awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
 
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup);
 void awt_edit_arbtcpdat_cb(AW_window *aww, GBDATA *gb_main);
@@ -98,15 +98,12 @@ void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const 
 void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *tablename, const char *varname);
 AW_window *AWT_create_tables_admin_window(AW_root *aw_root, GBDATA *gb_main);
 
-AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
+AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
 void awt_selection_list_on_sai_update_cb(UNFIXED, AWT_sai_selection *cbsid);
-void awt_popup_sai_selection_list(AW_root *aw_root, AW_CL cl_awar_name, AW_CL cl_gb_main);
-void awt_popup_sai_selection_list(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main);
-void awt_popup_filtered_sai_selection_list(AW_root *aw_root, AW_CL cl_sai_sellist_spec);
-void awt_popup_filtered_sai_selection_list(AW_window *aww, AW_CL cl_sai_sellist_spec);
+void awt_popup_sai_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main);
 void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
 
-void  awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname);
+void  awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
 char *awt_create_string_on_configurations(GBDATA *gb_main);
 
 // -------------------------------
@@ -152,12 +149,12 @@ public:
     GB_ERROR load(const char *filemask, bool append) const;
 };
 
-AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storabsellist);
-AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL cl_storabsellist);
+AW_window *create_save_box_for_selection_lists(AW_root *aw_root, const StorableSelectionList *storabsellist);
+AW_window *create_load_box_for_selection_lists(AW_root *aw_root, const StorableSelectionList *storabsellist);
 
-void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL cl_typedsellst);
+void create_print_box_for_selection_lists(AW_window *aw_window, const TypedSelectionList *typedsellist);
 
-void awt_clear_selection_list_cb(AW_window *aww, AW_CL cl_sellist);
+void awt_clear_selection_list_cb(AW_window *, AW_selection_list *sellist);
 
 #else
 #error awt_sel_boxes.hxx included twice

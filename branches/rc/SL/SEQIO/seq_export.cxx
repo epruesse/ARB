@@ -181,7 +181,7 @@ class export_sequence_data : virtual Noncopyable {
     bool                 cut_stop_codon;
     int                  compress; // 0 = no;1 = vertical gaps; 2 = all gaps;
 
-    size_t  max_ali_len;                            // length of alignment
+    long    max_ali_len;                            // length of alignment
     size_t *export_column;                          // list of exported seq data positions
     size_t  columns;                                // how many columns get exported
 
@@ -222,8 +222,8 @@ public:
             find_next  = GBT_next_species;
         }
 
-        if (filter->get_length() < max_ali_len) {
-            GB_warningf("Warning: Your filter is shorter than the alignment (%zu<%zu)",
+        if (max_ali_len>=0 && filter->get_length() < size_t(max_ali_len)) {
+            GB_warningf("Warning: Your filter is shorter than the alignment (%zu<%li)",
                         filter->get_length(), max_ali_len);
             max_ali_len = filter->get_length();
         }
@@ -237,6 +237,7 @@ public:
     }
 
     const char *getAlignment() const { return ali; }
+    long getAliLen() const { return max_ali_len; }
 
     void set_single_mode(GBDATA *gb_species) { single_species = gb_species; }
     bool in_single_mode() const { return single_species; }
@@ -697,18 +698,26 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
                                 const char *formname, const char *outname, int multiple,
                                 char **real_outname)
 {
-    esd = new export_sequence_data(gb_main, marked_only, filter, cut_stop_codon, compress);
-    GB_set_export_sequence_hook(exported_sequence);
+    sio_assert(!GB_have_error());
 
-    GB_ERROR error = esd->detectVerticalGaps();
+    GB_ERROR error = filter->is_invalid();
     if (!error) {
-        error = export_format_multiple(dbname, formname, outname, multiple, real_outname);
+        esd = new export_sequence_data(gb_main, marked_only, filter, cut_stop_codon, compress);
+        sio_assert(esd->getAliLen()>0);
+
+        GB_set_export_sequence_hook(exported_sequence);
+
+        error = esd->detectVerticalGaps();
+        if (!error) {
+            error = export_format_multiple(dbname, formname, outname, multiple, real_outname);
+        }
+
+        GB_set_export_sequence_hook(0);
     }
-
-    GB_set_export_sequence_hook(0);
     delete esd;
-    esd   = 0;
+    esd = 0;
 
+    sio_assert(!GB_have_error());
     return error;
 }
 

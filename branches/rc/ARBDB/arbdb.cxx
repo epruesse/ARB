@@ -56,8 +56,16 @@ static const char *GB_TYPES_2_name(GB_TYPES type) {
 
     const char *name = NULL;
     if (type >= 0 && type<GB_TYPE_MAX) name = GB_TYPES_name[type];
-    if (!name) name = GBS_global_string("invalid-type-%i", type);
+    if (!name) {
+        static char *unknownType = 0;
+        freeset(unknownType, GBS_global_string_copy("<invalid-type=%i>", type));
+        name = unknownType;
+    }
     return name;
+}
+
+const char *GB_get_type_name(GBDATA *gbd) {
+    return GB_TYPES_2_name(gbd->type());
 }
 
 inline GB_ERROR gb_transactable_type(GB_TYPES type, GBDATA *gbd) {
@@ -776,11 +784,27 @@ long GB_read_memuse(GBDATA *gbd) {
 
 #if defined(DEBUG)
 
-#define STD_LIST_NODE_NAME _List_node
+#define MIN_CBLISTNODE_SIZE 48 // minimum (found) callbacklist-elementsize
+
+#if defined(DARWIN)
+
+#define CBLISTNODE_SIZE MIN_CBLISTNODE_SIZE // assume known minimum (doesnt really matter; only used in db-browser)
+
+#else // linux:
+
+typedef std::_List_node<gb_callback_list::cbtype> CBLISTNODE_TYPE;
+const size_t CBLISTNODE_SIZE = sizeof(CBLISTNODE_TYPE);
+
+#if defined(ARB_64)
+// ignore smaller 32-bit implementations
+STATIC_ASSERT_ANNOTATED(MIN_CBLISTNODE_SIZE<=CBLISTNODE_SIZE, "MIN_CBLISTNODE_SIZE too big (smaller implementation detected)");
+#endif
+
+#endif
 
 inline long calc_size(gb_callback_list *gbcbl) {
     return gbcbl
-        ? sizeof(*gbcbl) + gbcbl->callbacks.size()* sizeof(std::STD_LIST_NODE_NAME<gb_callback_list::cbtype>)
+        ? sizeof(*gbcbl) + gbcbl->callbacks.size()* CBLISTNODE_SIZE
         : 0;
 }
 inline long calc_size(gb_transaction_save *gbts) {
@@ -852,10 +876,11 @@ void GB_SizeInfo::collect(GBDATA *gbd) {
 
         long size;
         switch (gbd->type()) {
-            case GB_INT:    size = sizeof(int); break;
-            case GB_FLOAT:  size = sizeof(float); break;
-            case GB_BYTE:   size = sizeof(char); break;
-            case GB_STRING: size = GB_read_count(gbd); break; // accept 0 sized data for strings
+            case GB_INT:     size = sizeof(int); break;
+            case GB_FLOAT:   size = sizeof(float); break;
+            case GB_BYTE:    size = sizeof(char); break;
+            case GB_POINTER: size = sizeof(GBDATA*); break;
+            case GB_STRING:  size = GB_read_count(gbd); break; // accept 0 sized data for strings
 
             default:
                 size = GB_read_count(gbd);
@@ -1279,8 +1304,7 @@ GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, size_t bytes_size, size_t sto
     return 0;
 }
 
-GB_ERROR GB_write_string(GBDATA *gbd, const char *s)
-{
+GB_ERROR GB_write_string(GBDATA *gbd, const char *s) {
     GBENTRY *gbe = gbd->as_entry();
     GB_TEST_WRITE(gbe, GB_STRING, "GB_write_string");
     GB_TEST_NON_BUFFER(s, "GB_write_string");        // compress would destroy the other buffer

@@ -302,7 +302,7 @@ void AWT_popup_select_srtaci_window(AW_window *aww, const char *acisrt_awarname)
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("box");
-        AW_selection_list *programs = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE);
+        AW_selection_list *programs = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE, true);
         GB_ERROR error;
         {
             StorableSelectionList storable_sellist(TypedSelectionList("sellst", programs, "SRT/ACI scripts", "srt_aci"));
@@ -450,7 +450,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("page");
-        aws->create_option_menu(AWAR_NDS_PAGE);
+        aws->create_option_menu(AWAR_NDS_PAGE, true);
         for (int p = 0; p < NDS_PAGES; p++) {
             const char *text = GBS_global_string("Entries %i - %i", p*NDS_PER_PAGE+1, (p+1)*NDS_PER_PAGE);
             aws->insert_option(text, "", p);
@@ -490,7 +490,9 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
                 aws->create_input_field(awar_name, 15);
 
                 aws->button_length(0);
-                aws->callback(makeWindowCallback(popup_select_species_field_window, awar_name, gb_main)); // awar_name belongs to cbs now
+
+                FieldSelectionParam *fsp = new FieldSelectionParam(gb_main, awar_name, false); // awar_name belongs to fsp now
+                aws->callback(makeWindowCallback(popup_select_species_field_window, fsp));     // fsp belongs to callback now
                 aws->get_at_position(&fieldselectx, &dummy);
 
                 char *button_id = GBS_global_string_copy("SELECT_NDS_%i", i+1);
@@ -656,6 +658,11 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
                                 field_output    = GBS_static_string(as_string);
                                 free(as_string);
                             }
+                        }
+                    }
+                    else {
+                        if (GB_have_error()) {
+                            field_output = GB_await_error();
                         }
                     }
                 }

@@ -243,6 +243,8 @@ public:
     void inc() { used->inc(); } // increment progress
     const arb_progress& operator++() { inc(); return *this; } // ++progress
 
+    void inc_by(int count) { arb_assert(count>0); while (count--) inc(); }
+
     void sub_progress_skipped() { used->child_terminated(); }
 
     void done() { used->done(); } // set "done" (aka 100%). Useful when exiting some loop early

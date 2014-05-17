@@ -23,6 +23,9 @@ void AP_filter::init(size_t size) {
     simplify[0]        = 0; // silence cppcheck-warning
     bootstrap          = NULL;
     filterpos_2_seqpos = NULL;
+#if defined(ASSERTION_USED)
+    checked_for_validity = false;
+#endif
 }
 
 
@@ -49,6 +52,9 @@ AP_filter::AP_filter(const AP_filter& other)
         filterpos_2_seqpos = new size_t[real_len];
         memcpy(filterpos_2_seqpos, other.filterpos_2_seqpos, real_len*sizeof(*filterpos_2_seqpos));
     }
+#if defined(ASSERTION_USED)
+    checked_for_validity = other.checked_for_validity;
+#endif
 }
 
 AP_filter::~AP_filter() {
@@ -93,6 +99,8 @@ void AP_filter::make_permeable(size_t size) {
 }
 
 char *AP_filter::to_string() const {
+    af_assert(checked_for_validity);
+
     char *data = (char*)malloc(filter_len+1);
 
     for (size_t i=0; i<filter_len; ++i) {
@@ -137,6 +145,9 @@ void AP_filter::enable_simplify(AWT_FILTER_SIMPLIFY type) {
 }
 
 void AP_filter::calc_filterpos_2_seqpos() {
+    af_assert(checked_for_validity);
+    af_assert(real_len>0);
+
     delete [] filterpos_2_seqpos;
     filterpos_2_seqpos = new size_t[real_len];
     size_t i, j;
@@ -148,6 +159,9 @@ void AP_filter::calc_filterpos_2_seqpos() {
 }
 
 void AP_filter::enable_bootstrap() {
+    af_assert(checked_for_validity);
+    af_assert(real_len>0);
+
     delete [] bootstrap;
     bootstrap = new size_t[real_len];
 
@@ -164,6 +178,7 @@ char *AP_filter::blowup_string(char *filtered_string, char fillChar) const {
     /*! blow up 'filtered_string' to unfiltered length
      * by inserting 'fillChar' at filtered positions
      */
+    af_assert(checked_for_validity);
 
     char   *blownup = (char*)malloc(filter_len+1);
     size_t  f       = 0;

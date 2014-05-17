@@ -11,16 +11,17 @@
 #ifndef MP_EXTERNS_HXX
 #define MP_EXTERNS_HXX
 
-class AW_window;
-class AW_root;
-class arb_progress;
+#ifndef CB_H
+#include <cb.h>
+#endif
 
-typedef long AW_CL;             // generic client data type (void *)
+class AW_selection_list;
+class arb_progress;
 
 void MP_show_probes_in_tree(AW_window *aww);
 void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_result_probes_list);
 void MP_popup_result_window(AW_window *aww);
-void MP_delete_selected(AW_window*, AW_CL cl_sellist);
+void MP_delete_selected(UNFIXED, AW_selection_list *sellist);
 void MP_result_chosen(AW_window *aww);
 void MP_close_main(AW_window *aww);
 void MP_group_all_except_marked(AW_window *aww);

@@ -15,7 +15,22 @@ OCCURRENCE	ARB_NT/Tree/Beautify tree/By other tree
 DESCRIPTION     Works similar to LINK{resorttree.hlp}, but here branches are rearranged 
 		according to the mean position of their leafs in another given tree.
 
-NOTES		None
+		Select the tree you want to use as reference for ordering,
+		then click 'Sort according to source tree' to apply the order to 
+		the currently displayed tree (target tree).
+
+NOTES		This also works fine when the source tree DOES NOT contain all species 
+		of the target tree. Wherever the source tree does not define any ordering, 
+		the order of the target tree is kept.
+
+		This function is e.g. useful after you have added some species to a (copy of a) 
+		tree and then have optimized the tree: now you may want to sort the copied tree 
+		according to the original tree. That reduces the unwanted re-ordering caused by
+		tree-optimization, without affecting the topology.
+
+		If you call the function several times with different source trees, the last 
+		call will be most dominant. Ordering effects of foregoing calls will 
+		remain in tree-regions uncovered by source-trees used in subsequent calls.		
 
 EXAMPLES	None
 

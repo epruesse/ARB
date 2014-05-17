@@ -226,10 +226,10 @@ AW_window *MG_create_merge_trees_window(AW_root *awr) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("trees1");
-    awt_create_selection_list_on_trees(GLOBAL_gb_src, (AW_window *)aws, AWAR_TREE_NAME_SRC);
+    awt_create_selection_list_on_trees(GLOBAL_gb_src, aws, AWAR_TREE_NAME_SRC, true);
 
     aws->at("trees2");
-    awt_create_selection_list_on_trees(GLOBAL_gb_dst, (AW_window *)aws, AWAR_TREE_NAME_DST);
+    awt_create_selection_list_on_trees(GLOBAL_gb_dst, aws, AWAR_TREE_NAME_DST, true);
 
     static TreeAdmin::Spec src_spec(GLOBAL_gb_src, AWAR_TREE_NAME_SRC);
     static TreeAdmin::Spec dst_spec(GLOBAL_gb_dst,  AWAR_TREE_NAME_DST);
@@ -257,7 +257,7 @@ AW_window *MG_create_merge_trees_window(AW_root *awr) {
     aws->create_autosize_button("TRANSFER_TREE", "Transfer");
 
     aws->at("xfer_what");
-    aws->create_option_menu(AWAR_TREE_XFER_WHAT);
+    aws->create_option_menu(AWAR_TREE_XFER_WHAT, true);
     aws->insert_default_option("selected tree",  "s", XFER_SELECTED);
     aws->insert_option        ("all trees",      "a", XFER_ALL);
     aws->insert_option        ("missing trees",  "m", XFER_MISSING);

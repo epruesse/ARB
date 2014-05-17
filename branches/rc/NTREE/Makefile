@@ -53,6 +53,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_ali.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+ad_ali.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -595,6 +596,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_msg.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -731,6 +733,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx

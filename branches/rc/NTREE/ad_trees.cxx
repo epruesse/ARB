@@ -273,7 +273,7 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("user");
-    aws->create_option_menu(AWAR_TREE_EXPORT_FORMAT, 0, 0);
+    aws->create_option_menu(AWAR_TREE_EXPORT_FORMAT, true);
     aws->insert_option("NEWICK TREE FORMAT",                   "N", AD_TREE_EXPORT_FORMAT_NEWICK);
     aws->insert_option("NEWICK TREE FORMAT (pretty, but big)", "P", AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY);
     aws->insert_option("ARB_XML TREE FORMAT",                  "X", AD_TREE_EXPORT_FORMAT_XML);
@@ -294,8 +294,9 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->at_newline(); aws->label("Save group names"); aws->create_toggle(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES);
     aws->at_newline(); aws->label("Hide folded groups (XML only)"); aws->create_toggle(AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS);
 
-    aws->at_newline(); aws->label("Name quoting (Newick only)");
-    aws->create_option_menu(AWAR_TREE_EXPORT_QUOTEMODE, 0, 0);
+    aws->at_newline();
+    aws->label("Name quoting (Newick only)");
+    aws->create_option_menu(AWAR_TREE_EXPORT_QUOTEMODE, true);
     aws->insert_option("none",            "n", TREE_DISALLOW_QUOTES);
     aws->insert_option("single",          "s", TREE_SINGLE_QUOTES);
     aws->insert_option("double",          "d", TREE_DOUBLE_QUOTES);
@@ -424,7 +425,7 @@ static AW_window *create_tree_import_window(AW_root *root)
 
     aws->at("format");
     aws->label("Tree Format");
-    aws->create_option_menu(AWAR_TREE_IMPORT "/filter");
+    aws->create_option_menu(AWAR_TREE_IMPORT "/filter", false);
     aws->insert_default_option("Newick", "t", "tree");
     aws->insert_option("XML", "x", "xml");
     aws->update_option_menu();
@@ -519,9 +520,9 @@ static AW_window_simple *create_select_two_trees_window(AW_root *root, const cha
     aws->create_button("HELP", "Help", "H");
 
     aws->at("tree1");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name, true);
     aws->at("tree2");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::dest_tree_awar(root)->awar_name);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::dest_tree_awar(root)->awar_name, false);
 
     AW_awar *awar_displayed_tree = root->awar(AWAR_TREE_NAME);
 
@@ -559,7 +560,7 @@ static AW_window_simple *create_select_other_tree_window(AW_root *root, const ch
     AW_awar *awar_displayed_tree = root->awar(displayed_tree_awarname);
 
     aws->at("tree");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name, true);
 
     aws->at("select");
     aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::source_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED", "Use");
@@ -670,7 +671,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->create_button(0, AWAR_TREE_NAME, 0, "+");
 
         aws->at("security");
-        aws->create_option_menu(AWAR_TREE_SECURITY);
+        aws->create_option_menu(AWAR_TREE_SECURITY, true);
         aws->insert_option("0", "0", 0);
         aws->insert_option("1", "1", 1);
         aws->insert_option("2", "2", 2);
@@ -721,7 +722,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->button_length(0);
 
         aws->at("list");
-        awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_TREE_NAME);
+        awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_TREE_NAME, true);
 
         aws->at("sort");
         awt_create_order_buttons(aws, reorder_trees_cb, 0);
@@ -771,19 +772,21 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
                     }
                 }
 
-                size_t    species_count;
-                GBT_TREE *cons_tree = tree_builder.get(species_count, error); // triggers 2 implicit progress increments
+                if (!error) {
+                    size_t    species_count;
+                    GBT_TREE *cons_tree = tree_builder.get(species_count, error); // triggers 2 implicit progress increments
 
-                if (!error && progress.aborted()) {
-                    error = "user abort";
-                }
+                    if (!error && progress.aborted()) {
+                        error = "user abort";
+                    }
 
-                arb_assert(contradicted(cons_tree, error));
-                if (cons_tree) {
-                    char *comment = tree_builder.get_remark();
-                    error         = GBT_write_tree_with_remark(gb_main, cons_tree_name, cons_tree, comment);
-                    free(comment);
-                    delete cons_tree;
+                    nt_assert(contradicted(cons_tree, error));
+                    if (cons_tree) {
+                        char *comment = tree_builder.get_remark();
+                        error         = GBT_write_tree_with_remark(gb_main, cons_tree_name, cons_tree, comment);
+                        free(comment);
+                        delete cons_tree;
+                    }
                 }
                 if (error) progress.done();
             }
@@ -821,7 +824,7 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("list");
-        AW_DB_selection *all_trees      = awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_TREE_CONSENSE_SELECTED);
+        AW_DB_selection *all_trees      = awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_TREE_CONSENSE_SELECTED, true);
         AW_selection    *selected_trees = awt_create_subset_selection_list(aws, all_trees->get_sellist(), "selected", "add", "sort");
 
         aws->at("name");
@@ -837,63 +840,143 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
     return aws;
 }
 
+class PosInfo {
+    // describes relative position of a given subtree in a tree
 
-class SortByTopo {
-    typedef std::map<std::string, unsigned> SpeciesPosition;
+    double relpos_sum; // sum of all involved relative positions
+    size_t count;      // amount of positions involved
 
-    SpeciesPosition spos;
-    unsigned        maxSpec;
+    PosInfo() : relpos_sum(0), count(0) {} // = no position
+public:
 
-    unsigned storeSpeciesPosition(const GBT_TREE *node, unsigned specLeftOf) {
-        if (node->is_leaf) {
-            spos[node->name] = specLeftOf;
-            return 1;
-        }
-        unsigned leftsize  = storeSpeciesPosition(node->get_leftson(), specLeftOf);
-        return storeSpeciesPosition(node->get_rightson(), specLeftOf+leftsize) + leftsize;
+    static PosInfo unknown() { return PosInfo(); }
+
+    explicit PosInfo(double relpos_sum_) // create leaf-info
+        : relpos_sum(relpos_sum_),
+          count(1)
+    {}
+    PosInfo(const PosInfo& p1, const PosInfo& p2)
+        : relpos_sum(p1.relpos_sum + p2.relpos_sum),
+          count(p1.count + p2.count)
+    {}
+
+    bool is_known() const { return count; }
+    double value() const {
+        nt_assert(is_known());
+        return relpos_sum / count;
     }
+    int compare(const PosInfo &right) const {
+        return double_cmp(value(), right.value());
+    }
+};
+
+class CombinedPosInfo {
+    // combines relative positions of a subtree in 2 trees (source- and target-tree).
+    // provides compare operations for SortByTopo
+
+    PosInfo source; // in source tree ("ordering tree")
+    PosInfo target; // in target tree ("modified tree")
 
 public:
 
-    SortByTopo(const GBT_TREE *by) {
-        maxSpec = storeSpeciesPosition(by, 0);
+    CombinedPosInfo(const PosInfo& s, const PosInfo& t)
+        : source(s),
+          target(t)
+    {
+        nt_assert(target.is_known());
+    }
+    CombinedPosInfo(const CombinedPosInfo& c1, const CombinedPosInfo& c2)
+        : source(c1.source, c2.source),
+          target(c1.target, c2.target)
+    {}
+
+    int compare(const CombinedPosInfo &right) const {
+        // result similar to strcmp(this, right)
+        if (!source.is_known() || !right.source.is_known()) {
+            // one subtree is completely unknown in source-tree
+            // => keep target-tree order
+            return target.compare(right.target);
+        }
+        return source.compare(right.source);
+    }
+};
+
+
+class SpeciesPosition {
+    // provides relative position of species inside a tree
+
+    typedef std::map<std::string, unsigned> PosMap;
+    PosMap spos;
+
+    void fillFromTree(const GBT_TREE *node) {
+        if (node->is_leaf) {
+            size_t pos       = spos.size();
+            spos[node->name] = pos;
+        }
+        else {
+            fillFromTree(node->get_leftson());
+            fillFromTree(node->get_rightson());
+        }
+    }
+public:
+    explicit SpeciesPosition(const GBT_TREE *tree) {
+        fillFromTree(tree);
     }
 
-    double relativePos(const char *name) {
-        SpeciesPosition::iterator found = spos.find(name);
-        double res = (found == spos.end()) ? 0.5 : (found->second/double(maxSpec-1));
-        arb_assert(res>=0.0 && res<=1.0);
-        return res;
+    PosInfo relative(const char *name) const {
+        /*! returns PosInfo of species 'name' inside tree.
+         */
+        PosMap::const_iterator found = spos.find(name);
+        return (found == spos.end()) ? PosInfo::unknown() : PosInfo(found->second/double(spos.size()-1));
     }
+};
 
-    double reorder_subtree(RootedTree *node) { // similar to ../SL/ROOTED_TREE/RootedTree.cxx@reorder_subtree
+
+class SortByTopo : virtual Noncopyable {
+    SpeciesPosition        source_pos; // in ordering topology
+    const SpeciesPosition *target_pos; // in target topology (used where source_pos does not provide order)
+
+    CombinedPosInfo reorder_subtree_rec(RootedTree *node) { // similar to ../SL/ROOTED_TREE/RootedTree.cxx@reorder_subtree
         static const char *smallest_leafname; // has to be set to the alphabetically smallest name (when function exits)
 
         if (node->is_leaf) {
             smallest_leafname = node->name;
-            return relativePos(smallest_leafname);
+            return CombinedPosInfo(source_pos.relative(node->name),
+                                   target_pos->relative(node->name));
         }
 
-        double      leftRelSum              = reorder_subtree(node->get_leftson());
-        const char *smallest_leafname_left  = smallest_leafname;
-        double      rightRelSum             = reorder_subtree(node->get_rightson());
-        const char *smallest_leafname_right = smallest_leafname;
+        CombinedPosInfo  leftInfo       = reorder_subtree_rec(node->get_leftson());
+        const char      *smallest_left  = smallest_leafname;
+        CombinedPosInfo  rightInfo      = reorder_subtree_rec(node->get_rightson());
+        const char      *smallest_right = smallest_leafname;
 
-        bool left_leafname_bigger = strcmp(smallest_leafname_left, smallest_leafname_right)>0;
+        bool left_leafname_bigger = strcmp(smallest_left, smallest_right)>0;
+        smallest_leafname         = left_leafname_bigger ? smallest_right : smallest_left;
+
         {
-            double leftRelPos  = leftRelSum  / node->get_leftson() ->get_leaf_count();
-            double rightRelPos = rightRelSum / node->get_rightson()->get_leaf_count();
-
-            if (leftRelPos>=rightRelPos) {
-                if (leftRelPos>rightRelPos || left_leafname_bigger) { // equal -> use leafname
-                    node->swap_sons();
-                }
+            int cmp = leftInfo.compare(rightInfo);
+            if (cmp>0 || (cmp == 0 && left_leafname_bigger)) {
+                node->swap_sons();
             }
         }
 
-        smallest_leafname = left_leafname_bigger ? smallest_leafname_right : smallest_leafname_left;
+        return CombinedPosInfo(leftInfo, rightInfo);
+    }
+public:
 
-        return leftRelSum+rightRelSum;
+    SortByTopo(const GBT_TREE *by)
+        : source_pos(by),
+          target_pos(NULL)
+    {}
+
+#if defined(UNIT_TESTS)
+    PosInfo sourcePos(const char *name) { return source_pos.relative(name); }
+#endif
+
+    void reorder_subtree(RootedTree *tree) {
+        SpeciesPosition tpos(tree);
+        LocallyModify<const SpeciesPosition*> provide(target_pos, &tpos);
+        reorder_subtree_rec(tree);
     }
 };
 
@@ -1028,6 +1111,8 @@ void TEST_sort_tree_by_other_tree() {
     const char *topo_center = "(((CloPaste:0.179,((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010):0.131,((CloInnoc:0.371,((CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017,CloTyrob:0.009):0.274):0.057,CloBifer:0.388):0.124):0.081,((CelBiazo:0.059,((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053):0.207,CytAquat:0.711):0.081);";
     const char *topo_bottom = "((CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053):0.207):0.081,((CloPaste:0.179,(CloCarni:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.010):0.131,(CloBifer:0.388,(CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.057):0.124):0.081);";
 
+    const char *topo_vs_nj_bs = "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,(((CloButyr:0.000,CloButy2:0.009):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,(((CorGluta:0.522,(CorAquat:0.084,CurCitre:0.058):0.103):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
+
     TEST_EXPECT_DIFFERENT(topo_test,   topo_center);
     TEST_EXPECT_DIFFERENT(topo_test,   topo_bottom);
     TEST_EXPECT_DIFFERENT(topo_center, topo_bottom);
@@ -1047,12 +1132,14 @@ void TEST_sort_tree_by_other_tree() {
             SortByTopo   sbt(tree);
             const double EPSILON = 0.0001;
 
-            TEST_EXPECT_SIMILAR(sbt.relativePos("CytAquat"), 0.0, EPSILON); // leftmost species (in topo_bottom)
-            TEST_EXPECT_SIMILAR(sbt.relativePos("CloTyro4"), 1.0, EPSILON); // rightmost species
+            TEST_EXPECT_SIMILAR(sbt.sourcePos("CytAquat").value(), 0.0, EPSILON); // leftmost species (in topo_bottom)
+            TEST_EXPECT_SIMILAR(sbt.sourcePos("CloTyro4").value(), 1.0, EPSILON); // rightmost species
 
-            TEST_EXPECT_SIMILAR(sbt.relativePos("CurCitre"), 0.2857, EPSILON); // (5 of 15)
-            TEST_EXPECT_SIMILAR(sbt.relativePos("CloButy2"), 0.5,    EPSILON); // center species (8 of 15)
-            TEST_EXPECT_SIMILAR(sbt.relativePos("CloTyrob"), 0.7857, EPSILON); // (12 of 15)
+            TEST_EXPECT_SIMILAR(sbt.sourcePos("CurCitre").value(), 0.2857, EPSILON); // (5 of 15)
+            TEST_EXPECT_SIMILAR(sbt.sourcePos("CloButy2").value(), 0.5,    EPSILON); // center species (8 of 15)
+            TEST_EXPECT_SIMILAR(sbt.sourcePos("CloTyrob").value(), 0.7857, EPSILON); // (12 of 15)
+
+            TEST_REJECT(sbt.sourcePos("Un-Known").is_known()); // unknown species
         }
 
         tree->reorder_tree(BIG_BRANCHES_TO_EDGE); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_work", tree));
@@ -1064,6 +1151,9 @@ void TEST_sort_tree_by_other_tree() {
     TEST_EXPECT_NO_ERROR(sort_namedtree_by_other_tree(gb_main, "tree_work", "tree_sorted_center")); TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_center);
     TEST_EXPECT_NO_ERROR(sort_namedtree_by_other_tree(gb_main, "tree_work", "tree_sorted_bottom")); TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_bottom);
     TEST_EXPECT_NO_ERROR(sort_namedtree_by_other_tree(gb_main, "tree_work", "tree_test"));          TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_test);
+    TEST_EXPECT_NO_ERROR(sort_namedtree_by_other_tree(gb_main, "tree_work", "tree_nj_bs"));         TEST_EXPECT_SAVED_NEWICK(nLENGTH, gb_main, "tree_work", topo_vs_nj_bs);
+
+    // TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, "TEST_trees_save.arb", "b")); // test-save db to examine tree (do not commit)
 
     GB_close(gb_main);
 }

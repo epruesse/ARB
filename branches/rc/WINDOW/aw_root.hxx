@@ -37,10 +37,8 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
 char *aw_input(const char *prompt, const char *default_input);
 inline char *aw_input(const char *prompt) { return aw_input(prompt, NULL); }
 
-char *aw_input2awar(const char *prompt, const char *awar_value);
-
-char *aw_string_selection     (const char *title, const char *prompt, const char *default_value, const char *value_list, const char *buttons, char *(*check_fun)(const char*));
-char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name,     const char *value_list, const char *buttons, char *(*check_fun)(const char*));
+char *aw_string_selection     (const char *title, const char *prompt, const char *default_value, const char *value_list, const char *buttons);
+char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name,     const char *value_list, const char *buttons);
 
 int aw_string_selection_button();   // returns index of last selected button (destroyed by aw_string_selection and aw_input)
 

@@ -434,7 +434,8 @@ AW_window *PH_create_filter_window(AW_root *aw_root)
     aws->create_input_field(AWAR_PHYLO_FILTER_MAXHOM, 3);
 
     aws->at("point_opts");
-    aws->create_option_menu(AWAR_PHYLO_FILTER_POINT, "'.'", "0");
+    aws->label("'.'");
+    aws->create_option_menu(AWAR_PHYLO_FILTER_POINT, true);
     aws->insert_option(filter_text[DONT_COUNT],           "0", DONT_COUNT);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_MAX],   "0", SKIP_COLUMN_IF_MAX);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_OCCUR], "0", SKIP_COLUMN_IF_OCCUR);
@@ -442,7 +443,8 @@ AW_window *PH_create_filter_window(AW_root *aw_root)
     aws->update_option_menu();
 
     aws->at("minus_opts");
-    aws->create_option_menu(AWAR_PHYLO_FILTER_MINUS, "'-'", "0");
+    aws->label("'-'");
+    aws->create_option_menu(AWAR_PHYLO_FILTER_MINUS, true);
     aws->insert_option(filter_text[DONT_COUNT],           "0", DONT_COUNT);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_MAX],   "0", SKIP_COLUMN_IF_MAX);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_OCCUR], "0", SKIP_COLUMN_IF_OCCUR);
@@ -450,7 +452,8 @@ AW_window *PH_create_filter_window(AW_root *aw_root)
     aws->update_option_menu();
 
     aws->at("rest_opts");
-    aws->create_option_menu(AWAR_PHYLO_FILTER_REST, "ambiguity codes", "0");
+    aws->label("ambiguity codes");
+    aws->create_option_menu(AWAR_PHYLO_FILTER_REST, true);
     aws->insert_option(filter_text[DONT_COUNT],           "0", DONT_COUNT);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_MAX],   "0", SKIP_COLUMN_IF_MAX);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_OCCUR], "0", SKIP_COLUMN_IF_OCCUR);
@@ -459,7 +462,8 @@ AW_window *PH_create_filter_window(AW_root *aw_root)
     aws->update_option_menu();
 
     aws->at("lower_opts");
-    aws->create_option_menu(AWAR_PHYLO_FILTER_LOWER, "lowercase chars", "0");
+    aws->label("lowercase chars");
+    aws->create_option_menu(AWAR_PHYLO_FILTER_LOWER, true);
     aws->insert_option(filter_text[DONT_COUNT],           "0", DONT_COUNT);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_MAX],   "0", SKIP_COLUMN_IF_MAX);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_OCCUR], "0", SKIP_COLUMN_IF_OCCUR);

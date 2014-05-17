@@ -25,8 +25,8 @@
 #ifndef ED4_SEARCH_HXX
 #include "ed4_search.hxx"
 #endif
-#ifndef _GLIBCXX_SET
-#include <set>
+#ifndef _GLIBCXX_LIST
+#include <list>
 #endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
@@ -577,21 +577,41 @@ public:
 };
 
 class ED4_base_position : private BasePosition { // derived from a Noncopyable
-    const ED4_terminal *calced4term;
+    const ED4_terminal *calced4term; // if calced4term!=NULL => callback is bound to its species manager
+    bool needUpdate;
 
     void calc4term(const ED4_terminal *term);
-    void set_term(const ED4_terminal *term) { if (calced4term != term) calc4term(term); }
+    void set_term(const ED4_terminal *term) {
+        if (calced4term != term || needUpdate) {
+            calc4term(term);
+        }
+    }
+    void remove_changed_cb();
 
 public:
 
-    ED4_base_position();
-    ~ED4_base_position();
+    ED4_base_position()
+        : calced4term(NULL),
+          needUpdate(true)
+    {}
 
-    void invalidate();
+    ~ED4_base_position() {
+        remove_changed_cb();
+    }
+
+    void invalidate() {
+        needUpdate = true;
+    }
 
     void announce_deletion(const ED4_terminal *term) {
-        if (term == calced4term) invalidate();
+        if (term == calced4term) {
+            invalidate();
+            remove_changed_cb();
+        }
         e4_assert(calced4term != term);
+    }
+    void prepare_shutdown() {
+        if (calced4term) announce_deletion(calced4term);
     }
 
     int get_base_position(const ED4_terminal *base, int sequence_position);
@@ -677,7 +697,7 @@ public:
 
     int get_base_position() const { return sequence2base_position(get_sequence_pos()); }
 
-    void invalidate_base_position() { base_position.invalidate(); }
+    void prepare_shutdown() { base_position.prepare_shutdown(); }
 
     void jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type);
     void jump_sequence_pos(int sequence_pos, ED4_CursorJumpType jump_type);
@@ -709,7 +729,7 @@ class ED4_window : public ED4_foldable, virtual ED4_WinContextFree { // derived 
     void set_scrollbar_indents();
 
 public:
-    AW_window              *aww;   // Points to Window
+    AW_window_menu_modes   *aww;   // Points to Window
     ED4_window             *next;
     int                     slider_pos_horizontal;
     int                     slider_pos_vertical;
@@ -729,7 +749,7 @@ public:
     ED4_cursor cursor;
 
     // ED4_window controlling functions
-    static ED4_window *insert_window(AW_window *new_aww); // append to window list
+    static ED4_window *insert_window(AW_window_menu_modes *new_aww); // append to window list
 
     void        delete_window(ED4_window *window);  // delete from window list
     void        reset_all_for_new_config(); // reset structures for loading new config
@@ -756,12 +776,12 @@ public:
         if (!inSync) {
             fputs("scrollbars not in sync with scrolled_rect:\n", stderr);
 #if defined(ARB_GTK)
-            fprintf(stderr, "    aww->slider_pos_vertical  =%zu scrolled_rect->top_dim() =%f\n", aww->slider_pos_vertical, scrolled_rect.top_dim());
-            fprintf(stderr, "    aww->slider_pos_horizontal=%zu scrolled_rect->left_dim()=%f\n", aww->slider_pos_horizontal, scrolled_rect.left_dim());
-#else // !defined(ARB_GTK)
-            fprintf(stderr, "    aww->slider_pos_vertical  =%i scrolled_rect->top_dim() =%f\n", aww->slider_pos_vertical, scrolled_rect.top_dim());
-            fprintf(stderr, "    aww->slider_pos_horizontal=%i scrolled_rect->left_dim()=%f\n", aww->slider_pos_horizontal, scrolled_rect.left_dim());
+#define POSTYPE "%zu"
+#else
+#define POSTYPE "%i"
 #endif
+            fprintf(stderr, "    aww->slider_pos_vertical  =" POSTYPE " scrolled_rect->top_dim() =%f\n", aww->slider_pos_vertical,   scrolled_rect.top_dim());
+            fprintf(stderr, "    aww->slider_pos_horizontal=" POSTYPE " scrolled_rect->left_dim()=%f\n", aww->slider_pos_horizontal, scrolled_rect.left_dim());
         }
 #endif
 
@@ -778,7 +798,7 @@ public:
 
     AW_device *get_device() const { return aww->get_device(AW_MIDDLE_AREA); }
 
-    ED4_window(AW_window *window);
+    ED4_window(AW_window_menu_modes *window);
     ~ED4_window();
 };
 
@@ -1584,7 +1604,10 @@ public:
     AW_font_group font_group;
 
     void announce_useraction_in(AW_window *aww);
-    ED4_window *get_most_recently_used_window() const { return most_recently_used_window; }
+    ED4_window *get_most_recently_used_window() const {
+        e4_assert(most_recently_used_window);
+        return most_recently_used_window;
+    }
 
     inline ED4_device_manager *get_device_manager();
 
@@ -1897,16 +1920,17 @@ public:
     ED4_species_manager_cb_data(ED4_species_manager_cb cb_, AW_CL cd_) : cb(cb_), cd(cd_) {}
 
     void call(ED4_species_manager *man) const { cb(man, cd); }
-    bool operator<(const ED4_species_manager_cb_data& other) const {
-        return (char*)cb < (char*)other.cb &&
-            (char*)cd < (char*)other.cd;
+    bool operator == (const ED4_species_manager_cb_data& other) const {
+        return
+            (char*)cb == (char*)other.cb &&
+            (char*)cd == (char*)other.cd;
     }
 };
 
 class ED4_species_manager : public ED4_manager {
     E4B_AVOID_UNNEEDED_CASTS(species_manager);
     
-    std::set<ED4_species_manager_cb_data> callbacks;
+    std::list<ED4_species_manager_cb_data> callbacks;
 
     ED4_species_type type;
     bool selected;
@@ -2325,10 +2349,10 @@ void ED4_request_relayout();
 void ED4_request_full_refresh();
 void ED4_request_full_instant_refresh();
 
-AW_window   *ED4_start_editor_on_old_configuration  (AW_root *awr);
-void        ED4_restart_editor          (AW_window *aww, AW_CL, AW_CL);
-void        ED4_save_configuration          (AW_window *aww, AW_CL close_flag);
-AW_window   *ED4_save_configuration_as_open_window  (AW_root *awr);
+AW_window *ED4_start_editor_on_old_configuration  (AW_root *awr);
+void       ED4_restart_editor          (AW_window *aww, AW_CL, AW_CL);
+void       ED4_save_configuration(AW_window *aww, bool hide_aww);
+AW_window *ED4_save_configuration_as_open_window  (AW_root *awr);
 
 void        ED4_set_iupac           (AW_window *aww, char *awar_name, bool callback_flag);
 void        ED4_set_helixnr         (AW_window *aww, char *awar_name, bool callback_flag);
@@ -2352,15 +2376,25 @@ void        ED4_set_reference_species   (AW_window *aww, AW_CL cd1, AW_CL cd2);
 
 void        ED4_new_editor_window       (AW_window *aww);
 
-AW_window  *ED4_create_consensus_definition_window (AW_root *root);
-void        ED4_create_consensus_awars      (AW_root *aw_root);
-void        ED4_consensus_definition_changed    (AW_root*, AW_CL, AW_CL);
-void        ED4_consensus_display_changed       (AW_root*, AW_CL, AW_CL);
+AW_window  *ED4_create_consensus_definition_window(AW_root *root);
+void        ED4_create_consensus_awars(AW_root *aw_root);
+void        ED4_consensus_definition_changed(AW_root*);
+void        ED4_consensus_display_changed(AW_root *root);
 
 AW_window   *ED4_create_level_1_options_window  (AW_root *root);
 void        ED4_compression_toggle_changed_cb   (AW_root *root, AW_CL cd1, AW_CL cd2);
 
-AW_window   *ED4_create_new_seq_window      (AW_root *root, AW_CL cl_creation_mode);
+enum SpeciesCreationMode {
+    CREATE_NEW_SPECIES,
+    CREATE_FROM_CONSENSUS, // create new species from group consensus (of surrounding group)
+    COPY_SPECIES,          // copy current species
+};
+
+#if defined(ASSERTION_USED)
+CONSTEXPR_RETURN inline bool valid(SpeciesCreationMode m) { return m>=CREATE_NEW_SPECIES && m<=COPY_SPECIES; }
+#endif
+
+AW_window *ED4_create_new_seq_window(AW_root *root, SpeciesCreationMode creation_mode);
 
 void ED4_jump_to_current_species     (AW_window *, AW_CL);
 void ED4_get_and_jump_to_current      (AW_window *, AW_CL);
@@ -2387,8 +2421,9 @@ extern "C" {
 struct AlignDataAccess;
 void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 
+void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman);
+
 #else
 #error ed4_class included twice
 #endif
-
 

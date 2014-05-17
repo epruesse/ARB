@@ -58,14 +58,15 @@ public:
 typedef int (*sellist_cmp_fun)(const char *disp1, const char *disp2);
 
 class AW_selection_list {
-    AW_selection_list_entry *get_entry_at(int index);
-    
-public:
-    AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
+    AW_selection_list_entry *get_entry_at(int index) const;
 
     char             *variable_name;
     AW_VARIABLE_TYPE  variable_type;
-    Widget            select_list_widget;
+
+public:
+    AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
+
+    Widget select_list_widget;
 
     AW_selection_list_entry *list_table;
     AW_selection_list_entry *last_of_list_table;
@@ -73,6 +74,11 @@ public:
     AW_selection_list      *next;
 
     // ******************** real public ***************
+
+    const char *get_awar_name() const { return variable_name; }
+#if defined(ASSERTION_USED)
+    GB_TYPES get_awar_type() const { return GB_TYPES(variable_type); }
+#endif
     
     void selectAll();
     void deselectAll();
@@ -103,9 +109,9 @@ public:
     const char *get_default_value() const;
     const char *get_default_display() const;
 
-    void select_default() { set_awar_value(get_default_value()); }
+    void select_default();
 
-    const char *get_selected_value() const; // may differ from get_awar_value() if default is selected (returns value passed to insert_default_selection)
+    const char *get_selected_value() const; // may differ from get_awar_value() if default is selected (returns value passed to insert_default)
 
     int get_index_of(const char *searched_value);
     int get_index_of_displayed(const char *displayed);
@@ -120,7 +126,8 @@ public:
 
     void delete_element_at(int index);
     void delete_value(const char *value);
-    void clear(bool clear_default = true); 
+    void delete_default();
+    void clear();
 
     void move_content_to(AW_selection_list *target_list);
 
@@ -143,6 +150,7 @@ public:
     AW_selection_list_iterator(AW_selection_list *sellist, int index)
         : entry(sellist->list_table)
     {
+        aw_assert(index>=0);
         forward(index);
     }
 

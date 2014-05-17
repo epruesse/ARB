@@ -169,23 +169,25 @@ void AW_selection::refresh() {
     get_sellist()->update();
 }
 
-void AW_selection_list::clear(bool clear_default) {
+void AW_selection_list::clear() {
+    /** Remove all items from the list. Default item is removed as well.*/
     while (list_table) {
         AW_selection_list_entry *nextEntry = list_table->next;
         delete list_table;
         list_table = nextEntry;
     }
-    list_table = NULL;
+    list_table         = NULL;
     last_of_list_table = NULL;
 
-    if (clear_default && default_select) {
-        delete default_select;
-        default_select = NULL;
-    }
+    delete_default();
 }
 
 bool AW_selection_list::default_is_selected() const {
-    return strcmp(get_selected_value(), get_default_value()) == 0;
+    const char *sel = get_selected_value();
+    if (!sel) return true; // handle "nothing" like default (@@@ should be impossible in gtk port)
+
+    const char *def = get_default_value();
+    return def && (strcmp(sel, def) == 0);
 }
 
 const char *AW_selection_list::get_selected_value() const {
@@ -205,13 +207,18 @@ const char *AW_selection_list::get_selected_value() const {
     return found ? found->value.get_string() : NULL;
 }
 
-AW_selection_list_entry *AW_selection_list::get_entry_at(int index) {
+AW_selection_list_entry *AW_selection_list::get_entry_at(int index) const {
     AW_selection_list_entry *entry = list_table;
     while (index && entry) {
         entry = entry->next;
         index--;
     }
     return entry;
+}
+
+
+void AW_selection_list::select_default() {
+    set_awar_value(get_default_value());
 }
 
 void AW_selection_list::delete_element_at(const int index) {
@@ -347,13 +354,20 @@ void AW_selection_list::insert(const char *displayed, const char *value) {
     }
 }
 
+void AW_selection_list::delete_default() {
+    /** Removes the default entry from the list*/
+    if (default_select) {
+        delete default_select;
+        default_select = NULL;
+    }
+}
 
 void AW_selection_list::insert_default(const char *displayed, const char *value) {
     if (variable_type != AW_STRING) {
         selection_type_mismatch("string");
         return;
     }
-    if (default_select) delete default_select;
+    if (default_select) delete_default();
     default_select = new AW_selection_list_entry(displayed, value);
 }
 
@@ -377,9 +391,7 @@ void AW_selection_list::insert_default(const char *displayed, int32_t value) {
         selection_type_mismatch("int");
         return;
     }
-    if (default_select) {
-        delete default_select;
-    }
+    if (default_select) delete_default();
     default_select = new AW_selection_list_entry(displayed, value);
 }
 
@@ -404,30 +416,40 @@ void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
         selection_type_mismatch("pointer");
         return;
     }
-    if (default_select) delete default_select;
+    if (default_select) delete_default();
     default_select = new AW_selection_list_entry(displayed, pointer);
 }
 
 
 void AW_selection_list::move_content_to(AW_selection_list *target_list) {
-    // @@@ instead of COPYING, it could simply move the entries (may cause problems with iterator)
+    //! move all entries (despite default entry) to another AW_selection_list
 
-    AW_selection_list_entry *entry = list_table;
-    while (entry) {
-        aw_assert(default_select != entry); // should not be possible
+    if (default_select) {
+        char *defDisp = strdup(default_select->get_displayed());
+        char *defVal  = strdup(default_select->value.get_string());
 
-        if (!target_list->list_table) {
-            target_list->last_of_list_table = target_list->list_table = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
-        }
-        else {
-            target_list->last_of_list_table->next = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
-            target_list->last_of_list_table = target_list->last_of_list_table->next;
-            target_list->last_of_list_table->next = NULL;
-        }
-        entry = entry->next;
+        delete_default();
+        move_content_to(target_list);
+        insert_default(defDisp, defVal);
+
+        free(defVal);
+        free(defDisp);
     }
-
-    clear(false);
+    else {
+        AW_selection_list_entry *entry = list_table;
+        while (entry) {
+            if (!target_list->list_table) {
+                target_list->last_of_list_table = target_list->list_table = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
+            }
+            else {
+                target_list->last_of_list_table->next = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
+                target_list->last_of_list_table = target_list->last_of_list_table->next;
+                target_list->last_of_list_table->next = NULL;
+            }
+            entry = entry->next;
+        }
+        clear();
+    }
 }
 
 void AW_selection_list::move_selection(int offset) {
@@ -491,6 +513,8 @@ static int gb_compare_function__2__sellist_cmp_fun(const void *t1, const void *t
 }
 
 void AW_selection_list::sortCustom(sellist_cmp_fun cmp) {
+    // WARNING: function behaves different in motif and gtk:
+    // gtk also sorts default-element, motif always places default-element @ bottom
     size_t count = size();
     if (count) {
         AW_selection_list_entry **tables = new AW_selection_list_entry *[count];
@@ -514,6 +538,8 @@ void AW_selection_list::sortCustom(sellist_cmp_fun cmp) {
 }
 
 void AW_selection_list::sort(bool backward, bool case_sensitive) {
+    // WARNING: function behaves different in motif and gtk:
+    // gtk also sorts default-element, motif always places default-element @ bottom
     sellist_cmp_fun cmp;
     if (backward) {
         if (case_sensitive) cmp = sel_sort_backward;

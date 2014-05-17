@@ -70,7 +70,9 @@
 
 // assert that raises SIGSEGV (recommended for DEBUG version!)
 // # define ASSERT_CRASH
-# define ASSERT_BACKTRACE_AND_CRASH
+// # define ASSERT_BACKTRACE_AND_CRASH
+// # define ASSERT_STOP
+# define ASSERT_BACKTRACE_AND_STOP
 // test if a bug has to do with assertion code
 // # define ASSERT_NONE
 
@@ -108,11 +110,13 @@ inline void provoke_core_dump() {
 
 #if defined(SIMPLE_ARB_ASSERT)
 
-// code here is independent from CORE library
+// code here is independent from CORE library and glib
 
-#define ARB_SIGSEGV(backtrace) do {                             \
-        provoke_core_dump();                                    \
+#define ARB_SIGSEGV(backtrace) do {     \
+        provoke_core_dump();            \
     } while (0)
+
+#define ARB_STOP(backtrace) ARB_SIGSEGV(backtrace)
 
 #ifndef ASSERT_NONE
 # define arb_assert(cond)                                               \
@@ -128,7 +132,7 @@ inline void provoke_core_dump() {
 
 // ------------------------------------------------------------
 
-#else
+#else // !SIMPLE_ARB_ASSERT
 
 /* Provoke a SIGSEGV (which will stop the debugger or terminated the application)
  * Do backtrace manually here and uninstall SIGSEGV-handler
@@ -138,6 +142,11 @@ inline void provoke_core_dump() {
 #ifndef ARB_CORE_H
 #include <arb_core.h>
 #endif
+#ifndef __G_LIB_H__
+#include <glib.h>
+#endif
+
+#define stop_in_debugger() G_BREAKPOINT()
 
 #define ARB_SIGSEGV(backtrace) do {                             \
         if (backtrace) GBK_dump_backtrace(NULL, "ARB_SIGSEGV"); \
@@ -145,10 +154,20 @@ inline void provoke_core_dump() {
         provoke_core_dump();                                    \
     } while (0)
 
+#define ARB_STOP(backtrace)                                     \
+    do {                                                        \
+        if (backtrace) GBK_dump_backtrace(NULL, "ARB_STOP");    \
+        stop_in_debugger();                                     \
+    } while(0)
 
-# define arb_assert_crash(cond)                 \
-    do {                                        \
-        if (!(cond)) ARB_SIGSEGV(0);            \
+# define arb_assert_crash(cond)         \
+    do {                                \
+        if (!(cond)) ARB_SIGSEGV(0);    \
+    } while (0)
+
+# define arb_assert_stop(cond)          \
+    do {                                \
+        if (!(cond)) ARB_STOP(0);       \
     } while (0)
 
 # define arb_assert_backtrace_and_crash(cond)                           \
@@ -160,14 +179,27 @@ inline void provoke_core_dump() {
         }                                                               \
     } while (0)
 
+# define arb_assert_backtrace_and_stop(cond)                            \
+    do {                                                                \
+        if (!(cond)) {                                                  \
+            fputs(GBK_assert_msg(#cond, __FILE__, __LINE__), stderr);   \
+            fflush(stderr);                                             \
+            ARB_STOP(1);                                                \
+        }                                                               \
+    } while (0)
+
 #ifdef ASSERT_CRASH
 # define arb_assert(cond) arb_assert_crash(cond)
 #endif
-
+#ifdef ASSERT_STOP
+# define arb_assert(cond) arb_assert_stop(cond)
+#endif
 #ifdef ASSERT_BACKTRACE_AND_CRASH
 # define arb_assert(cond) arb_assert_backtrace_and_crash(cond)
 #endif
-
+#ifdef ASSERT_BACKTRACE_AND_STOP
+# define arb_assert(cond) arb_assert_backtrace_and_stop(cond)
+#endif
 #ifdef ASSERT_ERROR
 # define arb_assert(cond) assert_or_exit(cond)
 #endif
@@ -193,6 +225,8 @@ inline void provoke_core_dump() {
 
 #undef ASSERT_CRASH
 #undef ASSERT_BACKTRACE_AND_CRASH
+#undef ASSERT_STOP
+#undef ASSERT_BACKTRACE_AND_STOP
 #undef ASSERT_ERROR
 #undef ASSERT_PRINT
 #undef ASSERT_NONE

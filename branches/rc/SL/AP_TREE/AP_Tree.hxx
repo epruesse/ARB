@@ -120,7 +120,9 @@ class AP_tree_root : public ARB_seqtree_root { // derived from a Noncopyable
     GBDATA *gb_species_data;                        // @@@ needed ?
 
 public:
-    GBDATA   *gb_tree_gone;                         // if all leafs have been removed by tree operations, remember 'ARB_seqtree_root::gb_tree' here (see change_root)
+    GBDATA *gb_tree_gone; // if all leafs have been removed by tree operations, remember 'ARB_seqtree_root::gb_tree' here (see change_root)
+    char   *gone_tree_name; // set to old tree name when gb_tree_gone gets deleted (used for auto-recreation)
+
     GBDATA   *gb_table_data;
     long      tree_timer;
     long      species_timer;
@@ -295,6 +297,7 @@ public:
     void uncolorize() { compute_tree(); }
 
     virtual void insert(AP_tree *new_brother);
+    virtual void initial_insert(AP_tree *new_brother, AP_tree_root *troot);
     virtual void remove();                          // remove this+father (but do not delete)
     virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
 

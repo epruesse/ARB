@@ -63,7 +63,6 @@ GBDATA *GEN_next_marked_organism(GBDATA *gb_organism);
 char *GEN_global_gene_identifier(GBDATA *gb_gene, GBDATA *gb_organism);
 
 /* adTest.cxx */
-const char *GB_get_type_name(GBDATA *gbd);
 const char *GB_get_db_path(GBDATA *gbd);
 void GB_dump_db_path(GBDATA *gbd);
 NOT4PERL void GB_dump(GBDATA *gbd);
@@ -300,6 +299,7 @@ void GBS_add_ptserver_logentry(const char *entry);
 char *GBS_ptserver_id_to_choice(int i, int showBuild);
 
 /* arbdb.cxx */
+const char *GB_get_type_name(GBDATA *gbd);
 double GB_atof(const char *str);
 GB_BUFFER GB_give_buffer(size_t size);
 GB_BUFFER GB_increase_buffer(size_t size);

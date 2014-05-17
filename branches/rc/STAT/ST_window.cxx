@@ -176,12 +176,12 @@ static void st_remove_entries(AW_window */*aww*/) {
     // @@@ shall remove created all entries (from current alignment)
 }
 
-AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
+AW_window *STAT_create_chimera_check_window(AW_root *root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(root, "SEQUENCE_QUALITY_CHECK", "Check quality of marked sequences");
-        aws->load_xfig("check_quality.fig");
+        aws->init(root, "CHIMERA_CHECK", "Chimera Check of marked sequences");
+        aws->load_xfig("chimera_check.fig");
 
         STAT_create_awars(root, gb_main);
 
@@ -189,7 +189,7 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(makeHelpCallback("check_quality.hlp"));
+        aws->callback(makeHelpCallback("chimera_check.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -198,7 +198,7 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
 
         aws->at("which");
         {
-            aws->create_option_menu(ST_ML_AWAR_CQ_MARKED_ONLY);
+            aws->create_option_menu(ST_ML_AWAR_CQ_MARKED_ONLY, true);
             aws->insert_option("All in tree", "t", 0);
             aws->insert_option("Only marked and in tree", "m", 1);
             aws->update_option_menu();
@@ -216,19 +216,11 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
         aws->at("sb");
         aws->create_input_field(ST_ML_AWAR_CQ_BUCKET_SIZE);
 
-        create_selection_list_on_itemfields(gb_main, aws,
-                                                ST_ML_AWAR_CQ_DEST_FIELD,
-                                                1 << GB_STRING,
-                                                "dest",
-                                                0,
-                                                SPECIES_get_selector(),
-                                                20, 10,
-                                                SF_STANDARD,
-                                                "SELECT_REPORT_FIELD");
+        create_selection_list_on_itemfields(gb_main, aws, ST_ML_AWAR_CQ_DEST_FIELD, true, 1 << GB_STRING, "dest", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, "SELECT_REPORT_FIELD");
 
         aws->at("report");
         {
-            aws->create_option_menu(ST_ML_AWAR_CQ_REPORT);
+            aws->create_option_menu(ST_ML_AWAR_CQ_REPORT, true);
             aws->insert_option("No", "N", 0);
             aws->insert_option("to temporary entry", "t", 1);
             aws->insert_option("to permanent entry", "p", 2);

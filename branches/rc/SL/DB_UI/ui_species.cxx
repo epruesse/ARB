@@ -607,8 +607,8 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, AW_CL cl_bound_item
         aws->at("help");
         aws->create_button("HELP", "Help", "H");
 
-        Itemfield_Selection *sel1 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_SOURCE, FIELD_FILTER_NDS, "source", 0, selector, 20, 10);
-        Itemfield_Selection *sel2 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_DEST,   FIELD_FILTER_NDS, "dest",   0, selector, 20, 10);
+        Itemfield_Selection *sel1 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_SOURCE, true, FIELD_FILTER_NDS, "source", 0, selector, 20, 10, SF_STANDARD, NULL);
+        Itemfield_Selection *sel2 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_DEST,   true, FIELD_FILTER_NDS, "dest",   0, selector, 20, 10, SF_STANDARD, NULL);
 
         aws->button_length(8);
 
@@ -618,7 +618,7 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, AW_CL cl_bound_item
         aws->create_button("SORT", "Sort by");
 
         aws->at("sorttype");
-        aws->create_option_menu(AWAR_FIELD_REORDER_ORDER);
+        aws->create_option_menu(AWAR_FIELD_REORDER_ORDER, true);
         aws->insert_option("name",      "a", ORDER_ALPHA);
         aws->insert_option("type",      "t", ORDER_TYPE);
         aws->insert_option("frequency", "f", ORDER_FREQ);
@@ -739,12 +739,7 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, AW_CL cl_bound_item_s
         aws->at("help"); aws->callback(makeHelpCallback("spaf_delete.hlp"));
         aws->create_button("HELP", "Help", "H");
 
-        Itemfield_Selection *item_sel =
-            create_selection_list_on_itemfields(bound_selector->gb_main,
-                                                    aws, AWAR_FIELD_DELETE,
-                                                    -1,
-                                                    "source", 0, selector, 20, 10,
-                                                    SF_HIDDEN);
+        Itemfield_Selection *item_sel = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_DELETE, true, -1, "source", 0, selector, 20, 10, SF_HIDDEN, NULL);
 
         aws->button_length(13);
         aws->at("hide");
@@ -881,15 +876,7 @@ static AW_window *create_field_convert_window(AW_root *root, AW_CL cl_bound_item
     aws->create_button("HELP", "Help", "H");
 
     aws->callback(field_convert_update_typesel_cb, cl_bound_item_selector);
-    create_selection_list_on_itemfields(bound_selector->gb_main,
-                                            aws,
-                                            AWAR_FIELD_CONVERT_SOURCE, // AWAR containing selection
-                                            -1,                        // type filter
-                                            "source",                  // selector xfig position
-                                            0,                         // rescan button xfig position
-                                            selector,
-                                            40, 20,                    // selector w,h
-                                            SF_HIDDEN);
+    create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_CONVERT_SOURCE, true, -1, "source", 0, selector, 40, 20, SF_HIDDEN, NULL);
 
     aws->at("typesel");
     aws->create_toggle_field(AWAR_FIELD_CONVERT_TYPE, NULL, "F");
@@ -1267,7 +1254,7 @@ static void create_common_next_neighbour_fields(AW_window *aws) {
     aws->create_input_field(AWAR_NN_RANGE_END,   6);
     
     aws->at("compl");
-    aws->create_option_menu(AWAR_NN_COMPLEMENT, 0, 0);
+    aws->create_option_menu(AWAR_NN_COMPLEMENT, true);
     aws->insert_default_option("forward",            "", FF_FORWARD);
     aws->insert_option        ("reverse",            "", FF_REVERSE);
     aws->insert_option        ("complement",         "", FF_COMPLEMENT);
@@ -1308,10 +1295,7 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, AW_CL c
         aws->create_toggle(AWAR_NN_LISTED_SCORED_ENTRIES);
         
         aws->at("field");
-        create_selection_list_on_itemfields(query_get_gb_main((DbQuery*)cl_query),
-                                                aws, AWAR_NN_LISTED_DEST_FIELD,
-                                                (1<<GB_INT) | (1<<GB_STRING), "field", 0,
-                                                SPECIES_get_selector(), 20, 10);
+        create_selection_list_on_itemfields(query_get_gb_main((DbQuery*)cl_query), aws, AWAR_NN_LISTED_DEST_FIELD, true, (1<<GB_INT) | (1<<GB_STRING), "field", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
 
         aws->at("go");
         aws->callback(awtc_nn_search_all_listed);
@@ -1344,7 +1328,7 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
         aws->create_button(0, AWAR_NN_SELECTED_HIT_COUNT, 0, "+");
 
         aws->at("hits");
-        AW_selection_list *resultList = aws->create_selection_list(AWAR_SPECIES_NAME);
+        AW_selection_list *resultList = aws->create_selection_list(AWAR_SPECIES_NAME, false);
         NN_GLOBAL.set_result_list(resultList);
         resultList->insert_default("No hits found", "");
         resultList->update();

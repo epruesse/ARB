@@ -745,21 +745,24 @@ void MP_normal_colors_in_tree(AW_window */*aww*/) {
     AWT_canvas  *scr = mp_main->get_canvas();
     GB_transaction ta(scr->gb_main);
 
-    AWT_TREE(scr)->get_root_node()->uncolorize();
-
-    if (scr->gb_main)
-        scr->gfx->update(scr->gb_main);
-
-    scr->refresh();
+    AWT_graphic_tree *tree = AWT_TREE(scr);
+    if (tree) {
+        AP_tree *root = tree->get_root_node();
+        if (root) {
+            root->uncolorize();
+            if (scr->gb_main) scr->gfx->update(scr->gb_main);
+            scr->refresh();
+        }
+    }
 }
 
-void MP_delete_selected(AW_window*, AW_CL cl_sellist) {
-    AW_selection_list *sellist = (AW_selection_list*)cl_sellist;
-
-    int idx = sellist->get_index_of_selected();
-    sellist->delete_element_at(idx);
-    sellist->select_element_at(idx);
-    sellist->update();
+void MP_delete_selected(UNFIXED, AW_selection_list *sellist) {
+    if (!sellist->default_is_selected()) {
+        int idx = sellist->get_index_of_selected();
+        sellist->delete_element_at(idx);
+        sellist->select_element_at(idx);
+        sellist->update();
+    }
 }
 
 

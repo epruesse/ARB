@@ -27,6 +27,8 @@
 #define GB_SYSTEM_FOLDER   "__SYSTEM__"
 #define GB_SYSTEM_KEY_DATA "@key_data"
 
+#define GB_DEFAULT_ALIGNMENT "presets/use" // has to match ../WINDOW/aw_awar_defs.hxx@AWAR_DEFAULT_ALIGNMENT
+
 // ---------------------
 //      simple types
 
