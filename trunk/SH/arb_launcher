@@ -28,16 +28,15 @@ pipe_command() {
     local LOGDIR=${1:-}; shift # LOGDIR may be empty/undef -> dont signal crash
 
     trace "Starting '$CMD'.."
-    local ERROR=0
-    $CMD || ERROR=1
-
-    if [ $ERROR == 1 ]; then
-        trace "'$CMD' has terminated with error"
-        if [ -n "$LOGDIR" ]; then
+    $CMD
+    local EXITCODE=${PIPESTATUS[0]}
+    if [ $EXITCODE == 0 ]; then
+        trace "'$CMD' has terminated with success"
+    else
+        trace "'$CMD' has terminated with error $EXITCODE"
+        if [ -n "$LOGDIR" -a $EXITCODE -ne 1 ]; then
             touch $LOGDIR/crashed
         fi
-    else
-        trace "'$CMD' has terminated with success"
     fi
 
     send_to_launcher $NAMED_PIPE 'cmd_terminated'
