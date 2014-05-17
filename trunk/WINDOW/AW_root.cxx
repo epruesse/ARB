@@ -283,7 +283,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 
     if (p_r->display == NULL) {
         printf("cannot open display\n");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
     {
         GBDATA *gbd = (GBDATA*)application_database;
@@ -291,7 +291,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
         if (!(fontstruct = XLoadQueryFont(p_r->display, font))) {
             if (!(fontstruct = XLoadQueryFont(p_r->display, "fixed"))) {
                 printf("can not load font\n");
-                exit(-1);
+                exit(EXIT_FAILURE);
             }
         }
     }
@@ -397,7 +397,7 @@ void AW_root::create_colormap() {
 void AW_root::window_hide(AW_window *aww) {
     active_windows--;
     if (active_windows<0) {
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
     if (current_modal_window == aww) {
         current_modal_window = NULL;
