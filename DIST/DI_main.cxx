@@ -54,7 +54,7 @@ int ARB_main(int argc, char *argv[]) {
                 "Usage: arb_dist\n"
                 "Is called from ARB.\n"
                 );
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     GB_ERROR error = NULL;
