@@ -820,7 +820,7 @@ void ED4_exit() {
 #endif // DEBUG
     GB_close(gb_main);
 
-    ::exit(0);
+    ::exit(EXIT_SUCCESS);
 }
 
 void ED4_quit_editor(AW_window *aww) {
