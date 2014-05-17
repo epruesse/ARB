@@ -841,13 +841,9 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
     data.parsValue[2] = pars_three;
 
 
-    if (dumpNNI)
-    {
-        if (dumpNNI==2)
-        {
-            fprintf(stderr, "Fatal! NNI called between optimize and statistics!\n");
-            exit(1);
-        }
+    if (dumpNNI) {
+        if (dumpNNI==2) GBK_terminate("NNI called between optimize and statistics");
+
         AP_tree_nlen *node0 = this->node[0];
         AP_tree_nlen *node1 = this->node[1];
         if (node0->gr.leaf_sum > node1->gr.leaf_sum) { // node0 is final son

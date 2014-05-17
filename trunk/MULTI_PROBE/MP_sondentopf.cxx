@@ -96,22 +96,18 @@ Sonde* ST_Container::get_cached_sonde(char* name)
 */
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden SONDENTOPF ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sondentopf::Sondentopf(MO_Liste *BL, MO_Liste *AL)
-{
-    Listenliste = new List<void*>;
-    if (!BL) {
-        aw_message("List of species is empty. Terminating program");
-        exit(333);
-    }
-    color_hash  = GBS_create_hash(BL->get_laenge()*1.25+1, GB_IGNORE_CASE);
-    if (!AL) {
-        aw_message("List of marked species is empty. Terminating program");
-        exit(334);
-    }
-    BaktList = BL;
-    Auswahllist = AL;
-    Listenliste->insert_as_last((void**) new List<Sonde>);
+Sondentopf::Sondentopf(MO_Liste *BL, MO_Liste *AL) {
+    // @@@ use assertions here?
+    if (!BL) GBK_terminate("List of species is empty");
+    if (!AL) GBK_terminate("List of marked species is empty");
 
+    Listenliste = new List<void*>;
+    color_hash = GBS_create_hash(BL->get_laenge()*1.25+1, GB_IGNORE_CASE);
+
+    BaktList    = BL;
+    Auswahllist = AL;
+    
+    Listenliste->insert_as_last((void**) new List<Sonde>);
 }
 
 
@@ -144,19 +140,15 @@ Sondentopf::~Sondentopf()
 
 
 
-void Sondentopf::put_Sonde(char *name, int allowed_mis, double outside_mis)
-{
-    positiontype    pos;
-    ST_Container    *stc = mp_main->get_stc();
-    List<Sonde>     *Sondenliste = LIST(Listenliste->get_first());
-    Sonde       *s;
-    int i=0;
+void Sondentopf::put_Sonde(char *name, int allowed_mis, double outside_mis) {
+    if (!name) GBK_terminate("No name specified for species");
 
-    if (!name)
-    {
-        aw_message("No name specified for species. Abort.");
-        exit(111);
-    }
+    positiontype  pos;
+    ST_Container *stc         = mp_main->get_stc();
+    List<Sonde>  *Sondenliste = LIST(Listenliste->get_first());
+    Sonde        *s;
+    int           i           = 0;
+
     if (!Sondenliste)
     {
         Sondenliste = new List<Sonde>;
