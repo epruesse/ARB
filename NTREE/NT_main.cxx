@@ -35,6 +35,7 @@
 #include <awt_sel_boxes.hxx>
 #include <awt_TreeAwars.hxx>
 #include <macros.hxx>
+#include <signal.h>
 
 using namespace std;
 
