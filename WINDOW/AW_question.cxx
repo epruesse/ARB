@@ -37,8 +37,7 @@ int aw_question(const char *unique_id, const char *question, const char *buttons
     if (!buttons)  buttons  = "Ok";
     if (!question) question = "No question?! Please report this as a bug.";
 
-    AW_dialog dialog;
-    dialog.set_message(question);
+    AW_dialog dialog("Question box", question);
     dialog.create_buttons(buttons);
 
     // create no-repeat checkbox if we have a unique-id

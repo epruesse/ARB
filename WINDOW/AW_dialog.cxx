@@ -31,14 +31,17 @@ struct AW_dialog::Pimpl {
     {}
 };
 
-AW_dialog::AW_dialog()
-  : prvt(new Pimpl)
+AW_dialog::AW_dialog(const char *title, const char *prompt)
+    : prvt(new Pimpl)
 {
     prvt->dialog = GTK_DIALOG(gtk_dialog_new());
     gtk_window_set_position(GTK_WINDOW(prvt->dialog), GTK_WIN_POS_MOUSE);
     gtk_window_set_modal(GTK_WINDOW(prvt->dialog), true);
-    gtk_window_set_deletable(GTK_WINDOW(prvt->dialog), false); 
+    gtk_window_set_deletable(GTK_WINDOW(prvt->dialog), false);
     gtk_container_set_border_width(GTK_CONTAINER(prvt->dialog), 5); // @@@STYLE
+
+    set_title(title);
+    set_message(prompt);
 }
 
 AW_dialog::~AW_dialog() {
@@ -51,7 +54,7 @@ void AW_dialog::run() {
     gtk_widget_show_all(GTK_WIDGET(prvt->dialog));
     prvt->result = gtk_dialog_run(prvt->dialog);
     gtk_widget_hide(GTK_WIDGET(prvt->dialog));
-    
+
     if (prvt->result == prvt->exit_button) {
         exit(EXIT_FAILURE);
     }
@@ -61,13 +64,12 @@ void AW_dialog::run() {
 }
 
 void AW_dialog::set_title(const char* title) {
-    aw_return_if_fail(title != NULL);
-
+    aw_assert(title);
     gtk_window_set_title(GTK_WINDOW(prvt->dialog), title);
 }
 
 void AW_dialog::set_message(const char* text) {
-    aw_return_if_fail(text != NULL);
+    aw_assert(text);
 
     if (!prvt->label) {
         prvt->label = GTK_LABEL(gtk_label_new(text));
