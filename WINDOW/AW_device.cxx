@@ -282,6 +282,9 @@ static const AW_screen_area& get_universe() {
 }
 
 void AW_device::reset() {
+#if defined(SHOW_CLIP_STACK_CHANGES)
+    printf("reset deletes clip_scale_stack!\n");
+#endif // SHOW_CLIP_STACK_CHANGES
     while (clip_scale_stack) {
         pop_clip_scale();
     }
