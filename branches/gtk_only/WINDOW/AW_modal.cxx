@@ -38,9 +38,7 @@ static char *input2awar(const char *prompt, const char *awar_name, const char *t
     AW_awar *awar_string = AW_root::SINGLETON->awar_string(awar_name);
     aw_return_val_if_fail(awar_string != NULL, NULL);
 
-    AW_dialog dialog;
-    dialog.set_title(title);
-    dialog.set_message(prompt);
+    AW_dialog dialog(title, prompt);
     dialog.create_input_field(awar_string);
     dialog.create_buttons("Ok,-Abort");
 
@@ -99,9 +97,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
         awar_string->write_string(default_input);
     }
 
-    AW_dialog dialog;
-    dialog.set_title(title);
-    dialog.set_message(prompt);
+    AW_dialog dialog(title, prompt);
     dialog.create_input_field(awar_string);
     AW_selection_list *slist = dialog.create_selection_list(awar_string, false);
     dialog.create_buttons(buttons ? buttons : "Ok,-Abort");
