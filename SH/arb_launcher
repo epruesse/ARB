@@ -34,8 +34,12 @@ pipe_command() {
         trace "'$CMD' has terminated with success"
     else
         trace "'$CMD' has terminated with error $EXITCODE"
-        if [ -n "$LOGDIR" -a $EXITCODE -ne 1 ]; then
-            touch $LOGDIR/crashed
+        if [ -n "$LOGDIR" ]; then
+            if [ $EXITCODE = 1 ]; then
+                touch $LOGDIR/failed
+            else
+                touch $LOGDIR/crashed
+            fi
         fi
     fi
 
@@ -157,7 +161,7 @@ listen_pipe() {
         local LOGBASE=$ARB_PROP/logs
         local LOGDIRID=`date '+%Y%m%d_%H%M%S'`.$$
         local LOGDIR=$LOGBASE/$LOGDIRID
-        local NTREE_CRASHED=0
+        local NTREE_STATUS=
 
         mkdir -p $LOGDIR
 
@@ -165,19 +169,24 @@ listen_pipe() {
             local RUNLOG=$LOGDIR/run.log
             local SYSLOG=$LOGDIR/sys.info
             local CRASHFLAG=$LOGDIR/crashed
+            local FAILFLAG=$LOGDIR/failed
 
             ( ( collect_system_information 2>&1 ) > $SYSLOG ; erase_old_logs $LOGBASE ) &
             ( listen_pipe_unlogged $NAMED_PIPE $LOGDIR ) 2>&1 | tee $RUNLOG
 
             if [ -e $CRASHFLAG ]; then
-            # only detects crashes of arb_ntree
-            # (client are not started via arb_launcher and they usually crash when server exits)
-                NTREE_CRASHED=1
+                # only detects crashes of arb_ntree
+                # (clients are not started via arb_launcher and they usually crash when server exits)
+                NTREE_STATUS=crash
+            else
+                if [ -e $FAILFLAG ]; then
+                    NTREE_STATUS=fail
+                fi
             fi
 
             local TARBALLNAME=session.$LOGDIRID.tgz
             ( cd $LOGBASE ; tar -zcf $TARBALLNAME $LOGDIRID )
-            rm -f $RUNLOG $SYSLOG $CRASHFLAG
+            rm -f $RUNLOG $SYSLOG $CRASHFLAG $FAILFLAG
             rmdir $LOGDIR
 
             local FULLTARBALL=$LOGBASE/$TARBALLNAME
@@ -195,12 +204,16 @@ listen_pipe() {
                 echo "    and is also accessible via $LATESTLINK"
             fi
 
-            if [ $NTREE_CRASHED == 1 ]; then
+            if [ "$NTREE_STATUS" != "" ]; then
                 echo ""
-                echo "ARB crashed :-("
-                echo "To report this goto http://bugs.arb-home.de/wiki/BugReport"
-                echo "Please include the session log mentioned above"
-                echo ""
+                if [ $NTREE_STATUS = "crash" ]; then
+                    echo "ARB crashed :-("
+                    echo "To report this goto http://bugs.arb-home.de/wiki/BugReport"
+                    echo "Please include the session log mentioned above"
+                    echo ""
+                else
+                    echo "ARB terminated abnormally"
+                fi
                 echo "[press ENTER]"
                 read A
             fi
