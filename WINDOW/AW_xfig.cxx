@@ -465,7 +465,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height) {
         if (font_width>0 && font_height>0) { // react with fatal exit
             fputs(error, stderr);
             fprintf(stderr, "Cannot continue - terminating.\n");
-            exit(-1); // FATAL -> exit
+            exit(EXIT_FAILURE);
         }
 
         // special case (used by aw_read_xfigfont())
