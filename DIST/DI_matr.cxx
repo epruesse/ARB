@@ -1628,7 +1628,7 @@ __ATTR__NORETURN static void di_exit(AW_window *aww) {
         GB_close(GLOBAL_gb_main);
     }
     GLOBAL_MATRIX.set_changed_cb(NULL);
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 static void di_calculate_full_matrix_cb(AW_window *aww, const WeightedFilter *weighted_filter) {

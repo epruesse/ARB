@@ -1177,13 +1177,13 @@ Hs_struct *aisc_accept_calls(Hs_struct *hs)
                 free(si);
 #ifdef SERVER_TERMINATE_ON_CONNECTION_CLOSE
                 if (hs->nsoc == 0) { // no clients left
-                    if (hs->fork) exit(0); // child exits
+                    if (hs->fork) exit(EXIT_SUCCESS); // child exits
                     return hs; // parent exits
                 }
                 break;
 #else
                 // normal behavior
-                if (hs->nsoc == 0 && hs->fork) exit(0);
+                if (hs->nsoc == 0 && hs->fork) exit(EXIT_SUCCESS);
                 break;
 #endif
             }
