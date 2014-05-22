@@ -109,7 +109,7 @@ GBCM_ServerResult gbcm_write_flush(int socket) {
         if (gbcm_pipe_violation_flag || writesize<0) {
             if (gb_local->iamclient) {
                 fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
-                exit(-1);
+                exit(EXIT_SUCCESS);
             }
             fprintf(stderr, "writesize: %li ppid %i\n", writesize, getppid());
             return GBCM_SERVER_FAULT;
@@ -124,7 +124,7 @@ GBCM_ServerResult gbcm_write_flush(int socket) {
             if (gbcm_pipe_violation_flag || writesize<0) {
                 if ((int)getppid() <= 1) {
                     fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
-                    exit(-1);
+                    exit(EXIT_SUCCESS);
                 }
                 fprintf(stderr, "write error\n");
                 return GBCM_SERVER_FAULT;
@@ -713,7 +713,7 @@ GB_CSTR GB_getenvARBHOME() {
         if (!arbhome) {
             fprintf(stderr, "Fatal ERROR: Environment Variable ARBHOME not found !!!\n"
                     "   Please set 'ARBHOME' to the installation path of ARB\n");
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
         Arbhome = arbhome;
     }

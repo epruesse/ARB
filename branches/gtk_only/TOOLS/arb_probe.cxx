@@ -1741,7 +1741,16 @@ void TEST_SLOW_design_probe() {
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
 
-    // same as above (with probelen == 8)
+#if defined(ARB_64)
+#define RES_64
+#else // !defined(ARB_64)
+// results below differ for some(!) 32 bit arb versions (numeric issues?)
+// (e.g. u1004 behaves like 64bit version; u1204 doesnt)
+// #define RES_64 // uncomment for u1004
+#endif
+
+
+        // same as above (with probelen == 8)
     {
         const char *arguments[] = {
             "prgnamefake",
@@ -1771,12 +1780,11 @@ void TEST_SLOW_design_probe() {
             "CGGACGGG  8 A+ 2   69   20    1  87.5 30.0 CCCGUCCG |  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2\n"
             "GGACGGGC  8 A+ 4   70   20    1  87.5 30.0 GCCCGUCC |  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3\n"
             "GACGGGCC  8 A+ 5   71   20    1  87.5 30.0 GGCCCGUC |  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3\n"
-#if defined(ARB_64)
+#if defined(RES_64)
             "ACGGGCGC  8 B=98   86   13    1  87.5 30.0 GCGCCCGU |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  1\n"
             "CGGGCGCU  8 B+ 1   87   13    1  87.5 30.0 AGCGCCCG |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  1\n"
             "CAGCGGCG  8 C=63   58    8    1  87.5 30.0 CGCCGCUG |  2  2  2  2  2  2  2  6  6  6  6  6  6  6  8  8  8  8  8  8\n";
-#else // !defined(ARB_64)
-        // @@@ 32bit version differs (possibly numeric issues?)
+#else // !defined(RES_64)
             "ACGGGCGC  8 B=98   86   13    1  87.5 30.0 GCGCCCGU |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  2\n"
             "CGGGCGCU  8 B+ 1   87   13    1  87.5 30.0 AGCGCCCG |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  2\n"
             "CAGCGGCG  8 C=63   58    8    1  87.5 30.0 CGCCGCUG |  2  2  2  2  2  2  2  6  6  6  6  6  6  6  8  8  8  8  8 10\n";
@@ -1897,15 +1905,15 @@ void TEST_SLOW_design_probe() {
             "Max. nongroup hits 0 (lowest rejected nongroup hits: 2)\n"
             "Min. group hits    50%\n"
             "Target   le apos ecol qual grps   G+C temp    Probe | Decrease T by n*.3C -> probe matches n non group species\n"
-#if defined(ARB_64)
+#if defined(RES_64)
             "CGGCAGCG  8 A=28   23   20    1  87.5 30.0 CGCUGCCG | - - - - - - - - - - - - - - - - - - - -\n"
-#else // !defined(ARB_64)
+#else // !defined(RES_64)
             "CGGCAGCG  8 A=28   23   20    1  87.5 30.0 CGCUGCCG | - - - - - - - - - - - - - - - - - - - 3\n"
 #endif
             "UGGGCGGC  8 B=67   60    8    1  87.5 30.0 GCCGCCCA | - - - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1\n"
-#if defined(ARB_64)
+#if defined(RES_64)
             "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 4 4 4 4 4 4\n"
-#else // !defined(ARB_64)
+#else // !defined(RES_64)
             "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 4 4 4 4 4 5\n"
 #endif
             "GGGCGGCG  8 B+ 1   60    8    1 100.0 32.0 CGCCGCCC | - - - - - - - 3 3 3 3 3 3 3 3 3 3 3 3 3\n"

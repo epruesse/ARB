@@ -89,8 +89,8 @@ GB_ERROR Analyser::saveSAI(vector<size_t> clusters, double threshold) {
     GBDATA *gb_data = GBT_add_data(gb_sai, al_name, "data", GB_STRING);
     error = GB_write_string(gb_data, result.c_str());
     if (error) {
-        cout << "ERROR 2" << endl;
-        exit(1);
+        cout << "RNACMA-Error: " << error << "\n";
+        exit(EXIT_FAILURE);
     }
 
     GBDATA *gb_options = GBT_add_data(gb_sai, al_name, "_TYPE", GB_STRING);

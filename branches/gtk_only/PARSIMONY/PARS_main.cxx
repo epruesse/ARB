@@ -70,7 +70,7 @@ __ATTR__NORETURN static void pars_exit(AW_window *aww) {
     AWT_browser_forget_db(GLOBAL_gb_main);
 #endif // DEBUG
     GB_close(GLOBAL_gb_main);
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 static void AP_user_push_cb(AW_window *aww, AWT_canvas *) {

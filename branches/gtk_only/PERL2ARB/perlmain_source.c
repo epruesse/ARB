@@ -42,7 +42,7 @@ main(int argc, char **argv, char **env)
     if (!PL_do_undump) {
 	my_perl = perl_alloc();
 	if (!my_perl)
-	    exit(1);
+	    exit(EXIT_FAILURE);
 	perl_construct(my_perl);
 	PL_perl_destruct_level = 0;
     }
