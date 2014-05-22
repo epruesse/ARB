@@ -23,12 +23,14 @@
 
 #include <iostream>
 
-//#define DUMP_EVENTS
+#if defined(DEBUG)
+// #define DUMP_EVENTS
+#endif
 
 #if defined(DUMP_EVENTS)
 #  define DUMP_EVENT(type)                                              \
     printf("event %s: x=%4i y=%4i w=%4i h=%4i  "                        \
-           "b=%i m=%i(%s%s%s) k=%i(%c) n=%i\n",                         \
+           "b=%i m=%i(%s%s%s) k=%i(%c) n=%zu\n",                        \
            type, aww->event.x, aww->event.y, aww->event.width,          \
            aww->event.height, aww->event.button,                        \
            aww->event.keymodifier,                                      \
@@ -41,7 +43,7 @@
     
 #else
 #  define DUMP_EVENT(type)
-#endif // DEBUG
+#endif
 
 
 class AW_area_management::Pimpl : virtual Noncopyable {
