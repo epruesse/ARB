@@ -708,7 +708,6 @@ static string expandSetVariables(const SetVariables& variables, const string& so
 }
 
 GB_ERROR ArbImporter::read_data(char *ali_name, int security_write) {
-    char        num[6];
     char        text[100];
     static int  counter         = 0;
     GBDATA     *gb_species_data = GBT_get_species_data(gb_import_main);
@@ -747,7 +746,6 @@ GB_ERROR ArbImporter::read_data(char *ali_name, int security_write) {
         int max_line = never_warn ? INT_MAX : MAX_COMMENT_LINES;
 
         for (line=0; line<=max_line; line++) {
-            sprintf(num, "%i  ", line);
             if (line == max_line) {
                 const char *file = NULL;
                 if (filenames[current_file_idx]) file = filenames[current_file_idx];
