@@ -251,7 +251,7 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
         // Initialising windowing system failed
         fprintf(stderr, "Failed to initialize windowing system. "
                 "If using SSH, make sure X11 forwarding is enabled.\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     // gtk_init_check calls setlocale(LC_ALL, "")    
@@ -326,7 +326,7 @@ AW_root::~AW_root() {
 void AW_root::window_hide(AW_window *aww) {
     active_windows--;
     if (active_windows < 0) {
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
     if (current_modal_window == aww) {
         current_modal_window = NULL;
