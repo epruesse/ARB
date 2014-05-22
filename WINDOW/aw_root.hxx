@@ -104,7 +104,6 @@ public:
     GtkWidget     *changer_of_variable;
 
     bool           disable_callbacks;
-    AW_window     *current_modal_window;
     AW_window     *root_window;
 
     // keep track of open windows

@@ -238,7 +238,6 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
       value_changed(false),
       changer_of_variable(NULL),
       disable_callbacks(false),
-      current_modal_window(NULL),
       root_window(NULL)
 {
     // hmm. we should probably throw an exception here. 
@@ -287,7 +286,6 @@ AW_root::AW_root(const char *propertyFile)
       value_changed(false),
       changer_of_variable(NULL),
       disable_callbacks(false),
-      current_modal_window(NULL),
       root_window(NULL)
 {
     g_return_if_fail(AW_root::SINGLETON == NULL);
@@ -327,9 +325,6 @@ void AW_root::window_hide(AW_window *aww) {
     active_windows--;
     if (active_windows < 0) {
         exit(EXIT_SUCCESS);
-    }
-    if (current_modal_window == aww) {
-        current_modal_window = NULL;
     }
 }
 
