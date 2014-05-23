@@ -103,13 +103,35 @@ listen_pipe_unlogged() {
     fi
 }
 
+shared_library_dependencies() {
+    case `uname` in
+        Linux)
+            LIST_DYNLIBS="ldd"
+            BINARIES="bin/arb_ntree lib/libARBDB.so lib/libCORE.so lib/libWINDOW.so"
+            ;;
+        Darwin)
+            LIST_DYNLIBS="otool -L"
+            # Darwin ARB links internal stuff static
+            BINARIES="bin/arb_ntree"
+            ;;
+        *)
+            LIST_DYNLIBS="echo UNSUPPORTED_OS "
+            ;;
+    esac
+    for binary in $BINARIES; do
+        echo -e "Library dependencies for $ARBHOME/$binary:"
+        $LIST_DYNLIBS $ARBHOME/$binary
+    done    
+}
+
 wrapped_info() {
     local TAG=$1; shift
     local CMD=$1; shift
     echo "--------------------"
     echo "[$TAG start]"
-    bash -c "$CMD"
+    eval $CMD
     echo "[$TAG end]"
+    echo ""
 }
 
 collect_system_information() {
@@ -121,19 +143,19 @@ collect_system_information() {
 
     local ARB_RELEVANT="| grep -i ARB"
 
-    wrapped_info "version info" "$ARBHOME/bin/arb_ntree --help"
+    wrapped_info "version" "$ARBHOME/bin/arb_ntree --help"
     wrapped_info "environment" "printenv $ARB_RELEVANT"
-    wrapped_info "OS info" "lsb_release -a"
-    wrapped_info "Kernel info" "uname -mrs ; uname -a ; cat /proc/version"
-    wrapped_info "glibc" "ls -l /lib/libc-*.so /lib/libc.so*"
-    wrapped_info "Disk info" "df -h"
-    wrapped_info "Memory info" "free -m ; cat /proc/meminfo"
-    wrapped_info "User limits" "ulimit -a"
+    wrapped_info "OS" "lsb_release -a"
+    wrapped_info "kernel" "uname -mrs ; uname -a ; cat /proc/version"
+    wrapped_info "shared libraries" "shared_library_dependencies"
+    wrapped_info "disk" "df -h"
+    wrapped_info "memory" "free -m ; cat /proc/meminfo"
+    wrapped_info "user limits" "ulimit -a"
     wrapped_info "ARB processes" "ps aux $ARB_RELEVANT"
-    wrapped_info "KDE Desktop version" "konqueror --version"
-    wrapped_info "Gnome Desktop version" "gnome-panel --version"
-    wrapped_info "CPU info" "cat /proc/cpuinfo"
-    wrapped_info "X server information" "xdpyinfo"
+    wrapped_info "KDE desktop version" "konqueror --version"
+    wrapped_info "Gnome desktop version" "gnome-panel --version"
+    wrapped_info "CPU" "cat /proc/cpuinfo"
+    wrapped_info "X server" "xdpyinfo"
     # wrapped_info "X" "Y"
 }
 
@@ -365,3 +387,4 @@ launcher() {
 
 launcher "$@"
 debug "arb_launcher exits!"
+
