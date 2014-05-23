@@ -84,6 +84,7 @@ struct AWT_scaled_font_limits {
 };
 
 enum AD_MAP_VIEWER_TYPE {
+    ADMVT_NONE = 0,
     ADMVT_INFO,
     ADMVT_WWW,
     ADMVT_SELECT
