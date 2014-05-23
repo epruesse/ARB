@@ -237,7 +237,7 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
       program_name(strdup(program)),
       value_changed(false),
       changer_of_variable(NULL),
-      disable_callbacks(false),
+      delay_timer_callbacks(false),
       forbid_dialogs(false),
       root_window(NULL)
 {
@@ -286,7 +286,7 @@ AW_root::AW_root(const char *propertyFile)
       program_name(strdup("dummy")),
       value_changed(false),
       changer_of_variable(NULL),
-      disable_callbacks(false),
+      delay_timer_callbacks(false),
       forbid_dialogs(false),
       root_window(NULL)
 {
@@ -355,8 +355,8 @@ public:
         return cb(awr);
     }
     unsigned callOrDelayIfDisabled() {
-        return awr->disable_callbacks
-            ? 25 // delay by 25 ms
+        return awr->delay_timer_callbacks
+            ? 100 // delay by 100 ms
             : call();
     }
     void callAfter(unsigned ms, timer_callback tc) {

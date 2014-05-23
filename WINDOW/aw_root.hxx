@@ -103,8 +103,8 @@ public:
     bool           value_changed;
     GtkWidget     *changer_of_variable;
 
-    bool disable_callbacks;
-    bool forbid_dialogs;        // true = > forbid modul dialogs
+    bool delay_timer_callbacks; // true => delay timer callbacks
+    bool forbid_dialogs;        // true => forbid modul dialogs
 
     AW_window *root_window;
 
