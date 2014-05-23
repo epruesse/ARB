@@ -232,15 +232,16 @@ AW_root::AW_root(const char *properties, const char *program, bool NoExit, UserA
     : prvt(new pimpl),
       application_database(load_properties(properties)),
       no_exit(NoExit),
-      help_active(false),      tracker(user_tracker),
-      
+      help_active(false),
+      tracker(user_tracker),
       program_name(strdup(program)),
       value_changed(false),
       changer_of_variable(NULL),
       disable_callbacks(false),
+      forbid_dialogs(false),
       root_window(NULL)
 {
-    // hmm. we should probably throw an exception here. 
+    // hmm. we should probably throw an exception here.
     aw_return_if_fail(AW_root::SINGLETON == NULL);  // only one instance allowed
     
     AW_root::SINGLETON = this;
@@ -286,6 +287,7 @@ AW_root::AW_root(const char *propertyFile)
       value_changed(false),
       changer_of_variable(NULL),
       disable_callbacks(false),
+      forbid_dialogs(false),
       root_window(NULL)
 {
     g_return_if_fail(AW_root::SINGLETON == NULL);
@@ -349,12 +351,13 @@ public:
     }
 
     unsigned call() {
+        AW_dialog_disabled now;
         return cb(awr);
     }
     unsigned callOrDelayIfDisabled() {
         return awr->disable_callbacks
             ? 25 // delay by 25 ms
-            : cb(awr);
+            : call();
     }
     void callAfter(unsigned ms, timer_callback tc) {
         g_timeout_add(ms, tc, this);

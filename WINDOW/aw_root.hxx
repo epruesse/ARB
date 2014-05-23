@@ -103,8 +103,10 @@ public:
     bool           value_changed;
     GtkWidget     *changer_of_variable;
 
-    bool           disable_callbacks;
-    AW_window     *root_window;
+    bool disable_callbacks;
+    bool forbid_dialogs;        // true = > forbid modul dialogs
+
+    AW_window *root_window;
 
     // keep track of open windows
     void window_show();
@@ -201,6 +203,19 @@ public:
     size_t callallcallbacks(int mode);
     class ConstStrArray *get_action_ids();
 #endif // DEBUG
+};
+
+class AW_dialog_disabled {
+    bool old_state;
+public:
+    AW_dialog_disabled()
+        : old_state(AW_root::SINGLETON->forbid_dialogs)
+    {
+        AW_root::SINGLETON->forbid_dialogs = false;
+    }
+    ~AW_dialog_disabled() {
+        AW_root::SINGLETON->forbid_dialogs = old_state;
+    }
 };
 
 const char *AW_font_2_ascii(AW_font font_nr);

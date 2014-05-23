@@ -81,7 +81,7 @@ AW_common *AW_area_management::get_common() const {
     return prvt->common; 
 }
 
-static void aw_event_clear(AW_window* aww) {
+static void aw_event_clear(AW_window* aww) { // @@@ looks like an AW_event method
     aww->event.type        = AW_No_Event;
     aww->event.button      = AW_BUTTON_NONE;
     aww->event.x           = -1;
@@ -95,7 +95,9 @@ static void aw_event_clear(AW_window* aww) {
 
 extern "C" gboolean aw_handle_configure_event(GtkWidget *, GdkEventConfigure *event, gpointer self) {
     AW_area_management* area = (AW_area_management*) self;
-    AW_window* aww = area->prvt->aww;
+    AW_window*          aww  = area->prvt->aww;
+    AW_dialog_disabled  now;
+
     aw_event_clear(aww);
 
     aww->event.type   = (AW_event_type) event->type;
@@ -110,16 +112,19 @@ extern "C" gboolean aw_handle_configure_event(GtkWidget *, GdkEventConfigure *ev
     DUMP_EVENT("resize");
     return true; // event handled
 }
-    
+
 extern "C" gboolean aw_handle_expose_event(GtkWidget *, GdkEventExpose *event, gpointer self)  {
     AW_area_management* area = (AW_area_management*) self;
-    AW_window* aww = area->prvt->aww;
+    AW_window*          aww  = area->prvt->aww;
+    AW_dialog_disabled  now;
+
     aw_event_clear(aww);
-    aww->event.type        = (AW_event_type) event->type;
-    aww->event.x           = event->area.x;
-    aww->event.y           = event->area.y;
-    aww->event.width       = event->area.width;
-    aww->event.height      = event->area.height;
+
+    aww->event.type   = (AW_event_type) event->type;
+    aww->event.x      = event->area.x;
+    aww->event.y      = event->area.y;
+    aww->event.width  = event->area.width;
+    aww->event.height = event->area.height;
 
     area->prvt->screen_device->set_cr(0);
     area->expose.emit();
@@ -127,13 +132,13 @@ extern "C" gboolean aw_handle_expose_event(GtkWidget *, GdkEventExpose *event, g
     DUMP_EVENT("expose");
     return false;
 }
-   
+
 extern "C" gboolean aw_handle_button_event(GtkWidget *, GdkEventButton *event, gpointer self) {
     AW_area_management* area = (AW_area_management*) self;
-    AW_window* aww = area->prvt->aww;
-    aw_event_clear(aww);
+    AW_window*          aww  = area->prvt->aww;
 
-    aww->event.type        = (AW_event_type) event->type;    
+    aw_event_clear(aww);
+    aww->event.type        = (AW_event_type) event->type;
     aww->event.button      = (AW_MouseButton) event->button;
     aww->event.x           = event->x;
     aww->event.y           = event->y; 
@@ -146,10 +151,11 @@ extern "C" gboolean aw_handle_button_event(GtkWidget *, GdkEventButton *event, g
 
 extern "C" gboolean aw_handle_key_event(GtkWidget *, GdkEventKey *event, gpointer self) {
     AW_area_management* area = (AW_area_management*) self;
-    AW_window* aww = area->prvt->aww;
+    AW_window*          aww  = area->prvt->aww;
+
     aw_event_clear(aww);
 
-    unsigned modifiers = gtk_accelerator_get_default_mod_mask(); 
+    unsigned modifiers = gtk_accelerator_get_default_mod_mask();
     // see https://developer.gnome.org/gtk2/2.24/checklist-modifiers.html
     aww->event.type        = (AW_event_type) event->type;    
     aww->event.keycode     = (AW_key_code) event->keyval;
@@ -181,7 +187,9 @@ extern "C" gboolean aw_handle_key_event(GtkWidget *, GdkEventKey *event, gpointe
 
 extern "C" gboolean aw_handle_motion_event(GtkWidget *, GdkEventMotion *event, gpointer self) {
     AW_area_management* area = (AW_area_management*) self;
-    AW_window* aww = area->prvt->aww;
+    AW_window*          aww  = area->prvt->aww;
+    AW_dialog_disabled  now;
+
     aw_event_clear(aww);
 
     aww->event.type        = (AW_event_type) event->type;
@@ -209,7 +217,9 @@ extern "C" gboolean aw_handle_motion_event(GtkWidget *, GdkEventMotion *event, g
 
 extern "C" gboolean aw_handle_scroll_event(GtkWidget*, GdkEventScroll *event, gpointer self) {
     AW_area_management* area = (AW_area_management*) self;
-    AW_window* aww = area->prvt->aww;
+    AW_window*          aww  = area->prvt->aww;
+    AW_dialog_disabled  now;
+
     aw_event_clear(aww);
 
     aww->event.type        = AW_Mouse_Press;

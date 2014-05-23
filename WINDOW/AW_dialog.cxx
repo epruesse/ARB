@@ -51,6 +51,8 @@ AW_dialog::~AW_dialog() {
 }
 
 void AW_dialog::run() {
+    aw_assert(AW_root::SINGLETON->forbid_dialogs == false);
+
     gtk_widget_show_all(GTK_WIDGET(prvt->dialog));
     prvt->result = gtk_dialog_run(prvt->dialog);
     gtk_widget_hide(GTK_WIDGET(prvt->dialog));
@@ -61,6 +63,8 @@ void AW_dialog::run() {
     if (prvt->result == prvt->abort_button && prvt->abort_button>=0) {
         prvt->result = -1;
     }
+
+    aw_assert(AW_root::SINGLETON->forbid_dialogs == false);
 }
 
 void AW_dialog::set_title(const char* title) {
@@ -150,3 +154,4 @@ AW_selection_list* AW_dialog::create_selection_list(AW_awar *awar, bool fallback
 int AW_dialog::get_result() {
     return prvt->result;
 }
+
