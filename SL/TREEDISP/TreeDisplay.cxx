@@ -746,7 +746,7 @@ static bool command_on_GBDATA(GBDATA *gbd, const AWT_graphic_event& event, AD_ma
                 map_viewer_cb(gbd, ADMVT_WWW);
                 break;
                 
-            case AWT_MODE_MARK: 
+            case AWT_MODE_MARK: // see also .@OTHER_MODE_MARK_HANDLER
                 switch (event.button()) {
                     case AW_BUTTON_LEFT:
                         GB_write_flag(gbd, 1);
@@ -1299,7 +1299,6 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
     td_assert(event.button()!=AW_BUTTON_MIDDLE); // shall be handled by caller
 
     if (!tree_static) return;                      // no tree -> no commands
-    if (!tree_static->get_root_node()) return;     // no tree -> no commands
 
     if (event.type() == AW_Keyboard_Release) return;
     if (event.type() == AW_Keyboard_Press) return handle_key(device, event);
@@ -1316,6 +1315,8 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         return;
     }
 
+    if (!tree_static->get_root_node()) return; // no tree -> no commands
+    
     GBDATA          *gb_tree  = tree_static->get_gb_tree();
     const Position&  mousepos = event.position();
 
@@ -1530,7 +1531,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             }
             break;
 
-        case AWT_MODE_MARK:
+        case AWT_MODE_MARK: // see also .@OTHER_MODE_MARK_HANDLER
             if (event.type() == AW_Mouse_Press && clicked.node()) {
                 GB_transaction ta(tree_static->get_gb_main());
 
@@ -1562,7 +1563,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         // shall perform identically in tree- and list-modes
 
         case AWT_MODE_INFO:
-        case AWT_MODE_WWW: {
+        case AWT_MODE_WWW: { 
             if (clicked.node() && clicked.node()->gb_node) {
                 if (command_on_GBDATA(clicked.node()->gb_node, event, map_viewer_cb)) {
                     exports.refresh = 1;
