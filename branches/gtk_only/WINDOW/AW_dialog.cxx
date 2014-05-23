@@ -52,6 +52,7 @@ AW_dialog::~AW_dialog() {
 
 void AW_dialog::run() {
     aw_assert(AW_root::SINGLETON->forbid_dialogs == false);
+    LocallyModify<bool> flag(AW_root::SINGLETON->delay_timer_callbacks, true);
 
     gtk_widget_show_all(GTK_WIDGET(prvt->dialog));
     prvt->result = gtk_dialog_run(prvt->dialog);
