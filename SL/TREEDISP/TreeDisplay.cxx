@@ -739,18 +739,14 @@ static bool command_on_GBDATA(GBDATA *gbd, const AWT_graphic_event& event, AD_ma
     bool refresh = false;
 
     if (event.type() == AW_Mouse_Press && event.button() != AW_BUTTON_MIDDLE) {
-        bool select = false;
+        AD_MAP_VIEWER_TYPE selectType = ADMVT_NONE;
 
         switch (event.cmd()) {
-            case AWT_MODE_WWW:
-                map_viewer_cb(gbd, ADMVT_WWW);
-                break;
-                
             case AWT_MODE_MARK: // see also .@OTHER_MODE_MARK_HANDLER
                 switch (event.button()) {
                     case AW_BUTTON_LEFT:
                         GB_write_flag(gbd, 1);
-                        select  = true;
+                        selectType = ADMVT_SELECT;
                         break;
                     case AW_BUTTON_RIGHT:
                         GB_write_flag(gbd, 0);
@@ -761,16 +757,16 @@ static bool command_on_GBDATA(GBDATA *gbd, const AWT_graphic_event& event, AD_ma
                 refresh = true;
                 break;
 
-            default :
-                select = true;
-                break;
+            case AWT_MODE_WWW:  selectType = ADMVT_WWW;    break;
+            case AWT_MODE_INFO: selectType = ADMVT_INFO;   break;
+            default:            selectType = ADMVT_SELECT; break;
         }
 
-        if (select) {
-            map_viewer_cb(gbd, ADMVT_INFO);
+        if (selectType != ADMVT_NONE) {
+            map_viewer_cb(gbd, selectType);
+            refresh = true;
         }
     }
-
 
     return refresh;
 }
