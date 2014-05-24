@@ -462,6 +462,9 @@ void NT_remove_bootstrap(UNFIXED, AWT_canvas *ntw) { // delete all bootstrap val
         tree_root->compute_tree();
         save_changed_tree(ntw);
     }
+    else {
+        aw_message("Got no tree");
+    }
 }
 void NT_toggle_bootstrap100(UNFIXED, AWT_canvas *ntw) { // toggle 100% bootstrap values
     GB_transaction ta(ntw->gb_main);
@@ -473,6 +476,9 @@ void NT_toggle_bootstrap100(UNFIXED, AWT_canvas *ntw) { // toggle 100% bootstrap
         tree_root->toggle_bootstrap100();
         tree_root->compute_tree();
         save_changed_tree(ntw);
+    }
+    else {
+        aw_message("Got no tree");
     }
 }
 
@@ -486,6 +492,9 @@ void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths
         tree_root->compute_tree();
         save_changed_tree(ntw);
     }
+    else {
+        aw_message("Got no tree");
+    }
 }
 
 void NT_multifurcate_tree(AWT_canvas *ntw, const RootedTree::multifurc_limits& below) {
@@ -496,6 +505,9 @@ void NT_multifurcate_tree(AWT_canvas *ntw, const RootedTree::multifurc_limits& b
     if (tree) {
         tree->multifurcate_whole_tree(below);
         save_changed_tree(ntw);
+    }
+    else {
+        aw_message("Got no tree");
     }
 }
 
@@ -517,6 +529,9 @@ void NT_move_boot_branch(UNFIXED, AWT_canvas *ntw, int direction) { // copy bran
         AW_advice(adviceText, AW_ADVICE_TOGGLE_AND_HELP, 0, "tbl_boot2len.hlp");
         free(adviceText);
     }
+    else {
+        aw_message("Got no tree");
+    }
 }
 
 void NT_scale_tree(UNFIXED, AWT_canvas *ntw) { // scale branchlengths
@@ -530,6 +545,9 @@ void NT_scale_tree(UNFIXED, AWT_canvas *ntw) { // scale branchlengths
             tree_root->scale_branchlengths(factor);
             tree_root->compute_tree();
             save_changed_tree(ntw);
+        }
+        else {
+            aw_message("Got no tree");
         }
         free(answer);
     }
