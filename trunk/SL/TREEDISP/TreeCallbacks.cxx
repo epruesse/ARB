@@ -581,12 +581,9 @@ static bool make_node_visible(AWT_canvas *ntw, AP_tree *node) {
 void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
     AW_window        *aww   = ntw->aww;
     AWT_graphic_tree *gtree = AWT_TREE(ntw);
-    
-    if (!gtree) return;
-    if (!gtree->displayed_root) return;
 
     GB_transaction ta(ntw->gb_main);
-    gtree->check_update(ntw->gb_main);
+    if (gtree) gtree->check_update(ntw->gb_main);
 
     const char *name     = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_char_pntr();
     char       *msg      = NULL;
@@ -597,28 +594,30 @@ void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
         bool     is_tree = sort_is_tree_style(gtree->tree_sort);
 
         if (is_tree) {
-            found = gtree->displayed_root->findLeafNamed(name);
-            if (!found && gtree->is_logically_zoomed()) {
-                found = gtree->get_root_node()->findLeafNamed(name);
-                if (found) { // species is invisible because it is outside logically zoomed tree
-                    if (jumpType & AP_JUMP_UNFOLD_GROUPS) {
-                        gtree->displayed_root = common_ancestor(found, gtree->displayed_root);
-                        ntw->zoom_reset();
-                    }
-                    else {
-                        if (verboose) msg = GBS_global_string_copy("Species '%s' is outside logical zoomed subtree", name);
+            if (gtree && gtree->displayed_root) {
+                found = gtree->displayed_root->findLeafNamed(name);
+                if (!found && gtree->is_logically_zoomed()) {
+                    found = gtree->get_root_node()->findLeafNamed(name);
+                    if (found) { // species is invisible because it is outside logically zoomed tree
+                        if (jumpType & AP_JUMP_UNFOLD_GROUPS) {
+                            gtree->displayed_root = common_ancestor(found, gtree->displayed_root);
+                            ntw->zoom_reset();
+                        }
+                        else {
+                            if (verboose) msg = GBS_global_string_copy("Species '%s' is outside logical zoomed subtree", name);
 
+                            found = NULL;
+                        }
+                    }
+                }
+
+                if (found) {
+                    if (jumpType&AP_JUMP_UNFOLD_GROUPS) {
+                        if (!make_node_visible(ntw, found)) found = NULL;
+                    }
+                    else if (found->is_inside_folded_group()) {
                         found = NULL;
                     }
-                }
-            }
-
-            if (found) {
-                if (jumpType&AP_JUMP_UNFOLD_GROUPS) {
-                    if (!make_node_visible(ntw, found)) found = NULL;
-                }
-                else if (found->is_inside_folded_group()) {
-                    found = NULL;
                 }
             }
         }
