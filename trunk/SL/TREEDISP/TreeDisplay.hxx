@@ -23,6 +23,7 @@
 #define AWAR_DTREE_BASELINEWIDTH   "awt/dtree/baselinewidth"
 #define AWAR_DTREE_VERICAL_DIST    "awt/dtree/verticaldist"
 #define AWAR_DTREE_AUTO_JUMP       "awt/dtree/autojump"
+#define AWAR_DTREE_AUTO_JUMP_TREE  "awt/dtree/autojump_tree"
 #define AWAR_DTREE_SHOW_CIRCLE     "awt/dtree/show_circle"
 #define AWAR_DTREE_SHOW_BRACKETS   "awt/dtree/show_brackets"
 #define AWAR_DTREE_CIRCLE_ZOOM     "awt/dtree/circle_zoom"
@@ -54,13 +55,19 @@ enum AP_tree_display_type {
 };
 
 enum AP_tree_jump_type { // bit-values
-    AP_JUMP_UNFOLD_GROUPS     = 1,
-    AP_JUMP_CENTER_IF_VISIBLE = 2, // if already visible -> center (normally only done if IRS-mode or selected was invisible)
-    AP_JUMP_BE_VERBOOSE       = 4, // tell why nothing happened etc.
+    AP_JUMP_KEEP_VISIBLE  = 1,  // automatically make selected node visible (on changes)
+    AP_JUMP_UNFOLD_GROUPS = 2,  //
+    AP_JUMP_FORCE_VCENTER = 4,  // force vertical centering (even if visible)
+    AP_JUMP_ALLOW_HCENTER = 8,  // force horizontal centering (if vertically centered); only works together with AP_JUMP_FORCE_VCENTER
+    AP_JUMP_FORCE_HCENTER = 16, // force horizontal centering
+    AP_JUMP_BE_VERBOOSE   = 32, // tell why nothing happened etc.
 
     // convenience defs:
-    AP_JUMP_AUTO      = 0,
-    AP_JUMP_BY_BUTTON = AP_JUMP_UNFOLD_GROUPS|AP_JUMP_CENTER_IF_VISIBLE|AP_JUMP_BE_VERBOOSE,
+    AP_DONT_JUMP         = 0,
+    AP_JUMP_SMART_CENTER = AP_JUMP_FORCE_VCENTER|AP_JUMP_ALLOW_HCENTER,
+    AP_JUMP_FORCE_CENTER = AP_JUMP_FORCE_VCENTER|AP_JUMP_FORCE_HCENTER,
+
+    AP_JUMP_BY_BUTTON = AP_JUMP_SMART_CENTER|AP_JUMP_UNFOLD_GROUPS|AP_JUMP_BE_VERBOOSE,
 };
 
 inline bool sort_is_list_style(AP_tree_display_type sort) { return sort == AP_LIST_NDS || sort == AP_LIST_SIMPLE; }
@@ -364,6 +371,7 @@ public:
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
 bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri);
+void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name);
 
 #else
 #error TreeDisplay.hxx included twice
