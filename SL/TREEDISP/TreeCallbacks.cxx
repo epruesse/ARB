@@ -432,6 +432,7 @@ void NT_set_tree_style(UNFIXED, AWT_canvas *ntw, AP_tree_display_type type) {
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->set_tree_type(type, ntw);
     ntw->zoom_reset_and_refresh();
+    TREE_auto_jump_cb(NULL, ntw, true);
 }
 
 void NT_remove_leafs(UNFIXED, AWT_canvas *ntw, AWT_RemoveType mode) {
@@ -579,6 +580,8 @@ static bool make_node_visible(AWT_canvas *ntw, AP_tree *node) {
 }
 
 void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
+    if (jumpType == AP_DONT_JUMP) return;
+
     AW_window        *aww   = ntw->aww;
     AWT_graphic_tree *gtree = AWT_TREE(ntw);
 
@@ -623,8 +626,10 @@ void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
         }
 
         if (found || !is_tree) {
-            bool repeat   = gtree->tree_sort == AP_TREE_IRS;
-            bool do_jump  = true;
+            bool is_IRS  = gtree->tree_sort == AP_TREE_IRS;
+            bool repeat  = is_IRS;
+            bool do_jump = true;
+
             while (do_jump) {
                 do_jump = false;
 
@@ -643,23 +648,46 @@ void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
                     int scroll_x = 0;
                     int scroll_y = 0;
 
-                    if (S.xpos()<0.0) scroll_x      = (int)(S.xpos() - screen.r * .1);
-                    if (S.xpos()>screen.r) scroll_x = (int)(S.xpos() - screen.r * .5);
+                    bool do_vcenter = jumpType & AP_JUMP_FORCE_VCENTER;
+                    bool do_hcenter = jumpType & AP_JUMP_FORCE_HCENTER;
 
-                    if (gtree->tree_sort == AP_TREE_IRS) {
-                        // always scroll IRS tree
-                        // position a bit below vertical center
-                        scroll_y = (int) (S.ypos() - screen.b * .6);
-                    }
-                    else if (S.ypos()<0.0 || S.ypos()>screen.b) {
-                        scroll_y = (int) (S.ypos() - screen.b * .5);
+                    if (!do_vcenter) {
+                        if (is_IRS) {
+                            // attempt to center IRS tree vertically often fails (too complicated to predict)
+                            // => force into center-half of screen to reduce error rate
+                            int border = screen.b/10;
+                            do_vcenter = S.ypos()<border || S.ypos()>(screen.b-border);
+                        }
+                        else {
+                            do_vcenter = S.ypos()<0.0 || S.ypos()>screen.b; // center if outside viewport
+                        }
                     }
 
-                    if (jumpType & AP_JUMP_CENTER_IF_VISIBLE) {
-                        // additional JUMP button clicks -> center vertically, then horizontally
-                        if (!scroll_x && !scroll_y) {
-                            scroll_y                = (int) (S.ypos() - screen.b * .5);
-                            if (!scroll_y) scroll_x = (int) (S.xpos() - screen.r * (is_tree ? .5 : .02));
+                    if (do_vcenter) {
+                        scroll_y = (int)(S.ypos() - screen.b*(is_IRS ? .6 : .5)); // position a bit below vertical center for IRS tree
+
+                        if (!scroll_y && (jumpType & AP_JUMP_ALLOW_HCENTER)) { // allow horizontal centering if vertical has no effect
+                            do_hcenter = true;
+                        }
+                    }
+
+                    if (do_hcenter) {
+                        scroll_x = (int) (S.xpos() - screen.r * (is_tree ? .5 : .02));
+                    }
+                    else { // keep visible
+                        if (S.xpos()<0.0) {
+                            double relPos;
+                            switch (gtree->tree_sort) {
+                                case AP_TREE_NORMAL:
+                                case AP_TREE_IRS:      relPos = .1; break;
+                                case AP_TREE_RADIAL:   relPos = .5; break;
+                                case AP_LIST_NDS:
+                                case AP_LIST_SIMPLE:   relPos = .02; break;
+                            }
+                            scroll_x = (int)(S.xpos() - screen.r * relPos);
+                        }
+                        else if (S.xpos()>screen.r) {
+                            scroll_x = (int)(S.xpos() - screen.r * .5);
                         }
                     }
 
@@ -694,9 +722,20 @@ void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
     }
 }
 
-void TREE_auto_jump_cb(UNFIXED, AWT_canvas *ntw) {   // jump only if auto jump is set
-    if (ntw->aww->get_root()->awar(AWAR_DTREE_AUTO_JUMP)->read_int()) {
-        NT_jump_cb(NULL, ntw, AP_JUMP_AUTO);
+void TREE_auto_jump_cb(UNFIXED, AWT_canvas *ntw, bool tree_change) {
+    /*! jump to species when tree/treemode/species changes
+     * @param tree_change == true -> tree or treemode has changed; false -> species has changed
+     */
+
+    const char        *awar_name = tree_change ? AWAR_DTREE_AUTO_JUMP_TREE : AWAR_DTREE_AUTO_JUMP;
+    AP_tree_jump_type  jump_type = AP_tree_jump_type(ntw->aww->get_root()->awar(awar_name)->read_int());
+
+
+    if (jump_type == AP_DONT_JUMP) {
+        ntw->refresh();
+    }
+    else {
+        NT_jump_cb(NULL, ntw, jump_type);
     }
 }
 
@@ -746,6 +785,7 @@ void NT_reinit_treetype(UNFIXED, AWT_canvas *ntw) {
     AWT_graphic_tree *gt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     gt->set_tree_type(gt->tree_sort, ntw);
     AWT_resize_cb(NULL, ntw);
+    TREE_auto_jump_cb(NULL, ntw, true);
 }
 
 void NT_remove_species_in_tree_from_hash(AP_tree *tree, GB_HASH *hash) {
