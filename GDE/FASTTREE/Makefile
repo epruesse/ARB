@@ -3,7 +3,7 @@
 
 PROG  = FASTTREE
 
-CC ?= gcc
+CC=$(A_CC)
 
 #WFLAGS=-Wall
 WFLAGS=-w

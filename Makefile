@@ -59,12 +59,16 @@ ifndef ARB_64
 endif
 
 # compiler settings:
+ifneq ($(CC),use__A_CC__instead_of__CC)
+
 A_CC:=$(CC)# compile C
 A_CXX:=$(CXX)# compile C++
 
 # uncomment to ensure no submakefile uses CC and CXX directly
-#CC:=use__A_CC__instead_of__CC
-#CXX:=use__A_CXX__instead_of__CXX
+CC:=use__A_CC__instead_of__CC
+CXX:=use__A_CXX__instead_of__CXX
+
+endif
 
 ifeq ($(LD_LIBRARY_PATH),'')
 LD_LIBRARY_PATH:=${ARBHOME}/lib
