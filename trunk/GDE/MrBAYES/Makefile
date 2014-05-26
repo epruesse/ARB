@@ -10,12 +10,15 @@ LOCDEPS=$(FOLDER)/Makefile $(wildcard $(FOLDER)/*.c) $(wildcard $(FOLDER)/*.h)
 
 INSTBIN=$(ARBHOME)/bin/mb
 
+CC:=$(A_CC)
+CXX:=$(A_CXX)
+
 # ARBs standard target
 $(MAIN) : $(INSTBIN)
 
 clean :
 	rm -f $(INSTBIN)
-	cd $(FOLDER) && make clean
+	cd $(FOLDER) && $(MAKE) clean
 
 $(INSTBIN) : $(LOCBIN)
 	cp $(LOCBIN) $(INSTBIN)
