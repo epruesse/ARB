@@ -913,6 +913,8 @@ adRevCompl.o: $(ARBHOME)/INCLUDE/smartptr.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/static_assert.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/test_global.h
 
+adseqcompr.o: ad_cb.h
+adseqcompr.o: ad_cb_prot.h
 adseqcompr.o: ad_prot.h
 adseqcompr.o: ad_t_prot.h
 adseqcompr.o: arbdb.h

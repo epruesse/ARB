@@ -551,7 +551,7 @@ static GB_ERROR nt_best_partial_match_rek(list<PartialSequence>& partial, const 
     return error;
 }
 
-static void count_partial_and_full(const AP_tree_nlen *at, int *partial, int *full, int *zombies, int default_value, int define_if_undef) {
+static void count_partial_and_full(const AP_tree_nlen *at, int *partial, int *full, int *zombies, int default_value, bool define_if_undef) {
     if (at->is_leaf) {
         if (at->gb_node) {
             int is_partial = GBT_is_partial(at->gb_node, default_value, define_if_undef);
@@ -695,7 +695,7 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
 
                 if (brother->is_leaf) {
                     if (brother->gb_node) {
-                        is_partial = GBT_is_partial(brother->gb_node, 0, 1);
+                        is_partial = GBT_is_partial(brother->gb_node, 0, true);
 
                         if (is_partial) { // brother is partial sequence
                             target = brother; // insert as brother of brother
@@ -713,7 +713,7 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
                     int full_count    = 0;
                     int zombie_count  = 0;
 
-                    count_partial_and_full(brother, &partial_count, &full_count, &zombie_count, 0, 1);
+                    count_partial_and_full(brother, &partial_count, &full_count, &zombie_count, 0, true);
 
                     if (zombie_count) {
                         error = "There are zombies in your tree - please remove them";
@@ -869,40 +869,35 @@ static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static AW_window *PARS_create_tree_settings_window(AW_root *aw_root)
-{
+static AW_window *PARS_create_tree_settings_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "SAVE_DB", "SAVE ARB DB");
+        aws->load_xfig("awt/tree_settings.fig");
 
-    aws = new AW_window_simple;
-    aws->init(aw_root, "SAVE_DB", "SAVE ARB DB");
-    aws->load_xfig("awt/tree_settings.fig");
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->at("help"); aws->callback(makeHelpCallback("nt_tree_settings.hlp"));
+        aws->create_button("HELP", "HELP", "H");
 
-    aws->at("help"); aws->callback(makeHelpCallback("nt_tree_settings.hlp"));
-    aws->create_button("HELP", "HELP", "H");
+        aws->at("button");
+        aws->auto_space(10, 10);
+        aws->label_length(30);
 
-    aws->at("button");
-    aws->auto_space(10, 10);
-    aws->label_length(30);
+        aws->label("Base Line Width");
+        aws->create_input_field(AWAR_DTREE_BASELINEWIDTH, 4);
+        aws->at_newline();
 
-    aws->label("Base Line Width");
-    aws->create_input_field(AWAR_DTREE_BASELINEWIDTH, 4);
-    aws->at_newline();
+        aws->label("Relative vert. Dist");
+        aws->create_input_field(AWAR_DTREE_VERICAL_DIST, 4);
+        aws->at_newline();
 
-    aws->label("Relative vert. Dist");
-    aws->create_input_field(AWAR_DTREE_VERICAL_DIST, 4);
-    aws->at_newline();
-
-    aws->label("Auto Jump (list tree)");
-    aws->create_toggle(AWAR_DTREE_AUTO_JUMP);
-    aws->at_newline();
-
-
-    return (AW_window *)aws;
-
+        TREE_insert_jump_option_menu(aws, "On species change", AWAR_DTREE_AUTO_JUMP);
+        TREE_insert_jump_option_menu(aws, "On tree change",    AWAR_DTREE_AUTO_JUMP_TREE);
+    }
+    return aws;
 }
 
 // -----------------------
@@ -1357,6 +1352,8 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     aw_parent->hide(); // hide parent
     awm->show();
 
+    awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, false));
+
     AP_user_push_cb(aw_parent, ntw); // push initial tree
 }
 
@@ -1427,8 +1424,7 @@ static void create_parsimony_variables(AW_root *aw_root, AW_default db) {
     awt_create_dtree_awars(aw_root, db);
 }
 
-static void pars_create_all_awars(AW_root *awr, AW_default aw_def)
-{
+static void pars_create_all_awars(AW_root *awr, AW_default aw_def) {
     awr->awar_string(AWAR_SPECIES_NAME, "",     GLOBAL_gb_main);
     awr->awar_string(AWAR_FOOTER,       "",     aw_def);
     awr->awar_string(AWAR_FILTER_NAME,  "none", GLOBAL_gb_main);

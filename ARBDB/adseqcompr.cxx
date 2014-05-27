@@ -13,6 +13,7 @@
 #include <arb_file.h>
 #include <arb_misc.h>
 #include <arb_diff.h>
+#include "ad_cb.h"
 
 #include "gb_key.h"
 #include <climits>
@@ -997,15 +998,18 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss, size_t size, GB_ERR
     char *dest = 0;
 
     *error = 0;
-    if (!GB_FATHER(gbd)) {
-        *error = "Cannot uncompress this sequence: Sequence has no father";
+
+    GB_MAIN_TYPE *Main = gb_get_main_during_cb();
+    if (!Main && GB_FATHER(gbd)) Main = GB_MAIN(gbd);
+
+    if (!Main) {
+        *error = "Can not uncompress this sequence (neighter has father nor inside callback)";
     }
     else {
-        GB_MAIN_TYPE *Main    = GB_MAIN(gbd);
-        GBDATA       *gb_main = Main->gb_main();
-        char         *to_free = GB_check_out_buffer(ss); // Remove 'ss' from memory management, otherwise load_single_key_data() may destroy it
-        int           index;
-        GBQUARK       quark;
+        GBDATA  *gb_main = Main->gb_main();
+        char    *to_free = GB_check_out_buffer(ss);    // Remove 'ss' from memory management, otherwise load_single_key_data() may destroy it
+        int      index;
+        GBQUARK  quark;
 
         {
             const unsigned char *s = (const unsigned char *)ss;
