@@ -656,7 +656,7 @@ GBDATA *GBT_gen_accession_number(GBDATA *gb_species, const char *ali_name) {
 }
 
 
-int GBT_is_partial(GBDATA *gb_species, int default_value, int define_if_undef) {
+int GBT_is_partial(GBDATA *gb_species, int default_value, bool define_if_undef) {
     // checks whether a species has a partial or full sequence
     //
     // Note: partial sequences should not be used for tree calculations
