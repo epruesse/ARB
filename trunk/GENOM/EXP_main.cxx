@@ -116,7 +116,7 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, 
         EXP_create_mask_submenu(awm, gb_main);
 
         awm->sep______________();
-        awm->insert_menu_topic("experiment_colors",     "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL, AW_POPUP,  (AW_CL)create_colorize_experiments_window, (AW_CL)gb_main);
+        awm->insert_menu_topic("experiment_colors",     "Colors ...",           "C",    "colorize.hlp", AWM_ALL, AW_POPUP,  (AW_CL)create_colorize_experiments_window, (AW_CL)gb_main);
     }
     if (submenu) awm->close_sub_menu();
 }

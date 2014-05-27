@@ -2196,8 +2196,7 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    if (mode == COLORIZE_LISTED) aws->callback(makeHelpCallback("set_color_of_listed.hlp"));
-    else                                 aws->callback(makeHelpCallback("colorize.hlp"));
+    aws->callback(makeHelpCallback(mode == COLORIZE_LISTED ? "set_color_of_listed.hlp" : "colorize.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("colorize");
