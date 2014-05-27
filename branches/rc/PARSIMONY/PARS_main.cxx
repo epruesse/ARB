@@ -70,7 +70,7 @@ __ATTR__NORETURN static void pars_exit(AW_window *aww) {
     AWT_browser_forget_db(GLOBAL_gb_main);
 #endif // DEBUG
     GB_close(GLOBAL_gb_main);
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 static void AP_user_push_cb(AW_window *aww, AWT_canvas *) {
@@ -551,7 +551,7 @@ static GB_ERROR nt_best_partial_match_rek(list<PartialSequence>& partial, const 
     return error;
 }
 
-static void count_partial_and_full(const AP_tree_nlen *at, int *partial, int *full, int *zombies, int default_value, int define_if_undef) {
+static void count_partial_and_full(const AP_tree_nlen *at, int *partial, int *full, int *zombies, int default_value, bool define_if_undef) {
     if (at->is_leaf) {
         if (at->gb_node) {
             int is_partial = GBT_is_partial(at->gb_node, default_value, define_if_undef);
@@ -695,7 +695,7 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
 
                 if (brother->is_leaf) {
                     if (brother->gb_node) {
-                        is_partial = GBT_is_partial(brother->gb_node, 0, 1);
+                        is_partial = GBT_is_partial(brother->gb_node, 0, true);
 
                         if (is_partial) { // brother is partial sequence
                             target = brother; // insert as brother of brother
@@ -713,7 +713,7 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
                     int full_count    = 0;
                     int zombie_count  = 0;
 
-                    count_partial_and_full(brother, &partial_count, &full_count, &zombie_count, 0, 1);
+                    count_partial_and_full(brother, &partial_count, &full_count, &zombie_count, 0, true);
 
                     if (zombie_count) {
                         error = "There are zombies in your tree - please remove them";

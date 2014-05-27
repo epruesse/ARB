@@ -35,6 +35,7 @@
 #include <awt_sel_boxes.hxx>
 #include <awt_TreeAwars.hxx>
 #include <macros.hxx>
+#include <signal.h>
 
 using namespace std;
 
@@ -409,6 +410,17 @@ public:
             if (strcmp(opt, "help") == 0 || strcmp(opt, "h") == 0) { help_requested = true; }
             else if (strcmp(opt, "execute") == 0) { shift(); macro_name = *args; }
             else if (strcmp(opt, "import") == 0) { do_import = true; }
+
+            // bunch of test switches to provoke various ways to terminate (see also http://bugs.arb-home.de/ticket/538)
+            else if (strcmp(opt, "crash") == 0) { GBK_terminate("crash requested"); }
+            else if (strcmp(opt, "trap") == 0) { arb_assert(0); }
+            else if (strcmp(opt, "sighup") == 0) { raise(SIGHUP); }
+            else if (strcmp(opt, "sigsegv") == 0) { raise(SIGSEGV); }
+            else if (strcmp(opt, "sigterm") == 0) { raise(SIGTERM); }
+            else if (strcmp(opt, "fail") == 0) { exit(EXIT_FAILURE); }
+            else if (strcmp(opt, "exit") == 0) { exit(EXIT_SUCCESS); }
+            // end of test switches ----------------------------------------
+
             else error = GBS_global_string("Unknown switch '%s'", args[0]);
             shift();
         }

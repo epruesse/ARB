@@ -99,7 +99,7 @@ __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
         GB_close(gb_main);
     }
 
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 

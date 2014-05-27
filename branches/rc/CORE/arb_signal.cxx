@@ -42,7 +42,7 @@ __ATTR__NORETURN static void sigsegv_handler(int sig) {
         GBK_dump_backtrace(stderr, GBS_global_string("received signal %i", sig));
     }
     fprintf(stderr, "[Terminating with signal %i]\n", sig);
-    exit(EXIT_FAILURE);
+    exit(ARB_CRASH_CODE(sig));
 }
 
 void GBK_install_SIGSEGV_handler(bool dump_backtrace) {

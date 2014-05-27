@@ -25,8 +25,10 @@ AlignedSequenceLoader::AlignedSequenceLoader() {
     GBDATA *gb_main = runningDatabase();
 
     GB_ERROR error = GB_push_transaction(gb_main);
-    if (error)
-        exit(1);
+    if (error) {
+        cout << "RNACMA-Error: " << error << "\n";
+        exit(EXIT_FAILURE);
+    }
 
     seqs = new VecVecType(0);
 

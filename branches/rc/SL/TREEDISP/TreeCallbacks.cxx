@@ -89,7 +89,7 @@ static int species_has_alignment(GBDATA *gb_species, void *cd_use) {
 static int sequence_is_partial(GBDATA *gb_species, void *cd_partial) {
     long wanted  = (long)cd_partial;
     td_assert(wanted == 0 || wanted == 1);
-    int partial = GBT_is_partial(gb_species, 1-wanted, 0);
+    int partial = GBT_is_partial(gb_species, 0, false);
 
     return partial == wanted;
 }
@@ -273,29 +273,28 @@ static void insert_mark_topic(AW_window_menu_modes *awm, AW_active mask, const c
     free(entry);
 }
 
-static void insert_mark_topics(AW_window_menu_modes *awm, AW_active mask, AWT_canvas *ntw, int affect, const char *attrib)
-{
+static void insert_mark_topics(AW_window_menu_modes *awm, AW_active mask, AWT_canvas *ntw, int affect, const char *attrib) {
     td_assert(affect == (affect&MARK_MODE_UPPER_BITS)); // only bits 2 .. 4 are allowed
 
-    insert_mark_topic(awm, mask, attrib, "mark_all",    "Mark all %sSpecies%s",            "M", "sp_mrk_all.hlp",    makeWindowCallback(NT_mark_all_cb, ntw, 1+affect));
-    insert_mark_topic(awm, mask, attrib, "unmark_all",  "Unmark all %sSpecies%s",          "U", "sp_umrk_all.hlp",   makeWindowCallback(NT_mark_all_cb, ntw, 0+affect));
-    insert_mark_topic(awm, mask, attrib, "swap_marked", "Invert marks of all %sSpecies%s", "I", "sp_invert_mrk.hlp", makeWindowCallback(NT_mark_all_cb, ntw, 2+affect));
+    insert_mark_topic(awm, mask, attrib, "mark_all",    "Mark all %sSpecies%s",            "M", "sp_mark.hlp", makeWindowCallback(NT_mark_all_cb, ntw, 1+affect));
+    insert_mark_topic(awm, mask, attrib, "unmark_all",  "Unmark all %sSpecies%s",          "U", "sp_mark.hlp", makeWindowCallback(NT_mark_all_cb, ntw, 0+affect));
+    insert_mark_topic(awm, mask, attrib, "swap_marked", "Invert marks of all %sSpecies%s", "I", "sp_mark.hlp", makeWindowCallback(NT_mark_all_cb, ntw, 2+affect));
     awm->sep______________();
 
     char *label = create_mark_menu_entry(attrib, "%sSpecies%s in Tree");
 
     awm->insert_sub_menu(label, "T");
-    insert_mark_topic(awm, mask, attrib, "mark_tree",        "Mark %sSpecies%s in Tree",            "M", "sp_mrk_tree.hlp",   makeWindowCallback(mark_tree_cb, ntw, 1+affect));
-    insert_mark_topic(awm, mask, attrib, "unmark_tree",      "Unmark %sSpecies%s in Tree",          "U", "sp_umrk_tree.hlp",  makeWindowCallback(mark_tree_cb, ntw, 0+affect));
-    insert_mark_topic(awm, mask, attrib, "swap_marked_tree", "Invert marks of %sSpecies%s in Tree", "I", "sp_invert_mrk.hlp", makeWindowCallback(mark_tree_cb, ntw, 2+affect));
+    insert_mark_topic(awm, mask, attrib, "mark_tree",        "Mark %sSpecies%s in Tree",            "M", "sp_mark.hlp", makeWindowCallback(mark_tree_cb, ntw, 1+affect));
+    insert_mark_topic(awm, mask, attrib, "unmark_tree",      "Unmark %sSpecies%s in Tree",          "U", "sp_mark.hlp", makeWindowCallback(mark_tree_cb, ntw, 0+affect));
+    insert_mark_topic(awm, mask, attrib, "swap_marked_tree", "Invert marks of %sSpecies%s in Tree", "I", "sp_mark.hlp", makeWindowCallback(mark_tree_cb, ntw, 2+affect));
     awm->close_sub_menu();
 
     freeset(label, create_mark_menu_entry(attrib, "%sSpecies%s NOT in Tree"));
 
     awm->insert_sub_menu(label, "N");
-    insert_mark_topic(awm, mask, attrib, "mark_nontree",        "Mark %sSpecies%s NOT in Tree",            "M", "sp_mrk_tree.hlp",   makeWindowCallback(mark_nontree_cb, ntw, 1+affect));
-    insert_mark_topic(awm, mask, attrib, "unmark_nontree",      "Unmark %sSpecies%s NOT in Tree",          "U", "sp_umrk_tree.hlp",  makeWindowCallback(mark_nontree_cb, ntw, 0+affect));
-    insert_mark_topic(awm, mask, attrib, "swap_marked_nontree", "Invert marks of %sSpecies%s NOT in Tree", "I", "sp_invert_mrk.hlp", makeWindowCallback(mark_nontree_cb, ntw, 2+affect));
+    insert_mark_topic(awm, mask, attrib, "mark_nontree",        "Mark %sSpecies%s NOT in Tree",            "M", "sp_mark.hlp", makeWindowCallback(mark_nontree_cb, ntw, 1+affect));
+    insert_mark_topic(awm, mask, attrib, "unmark_nontree",      "Unmark %sSpecies%s NOT in Tree",          "U", "sp_mark.hlp", makeWindowCallback(mark_nontree_cb, ntw, 0+affect));
+    insert_mark_topic(awm, mask, attrib, "swap_marked_nontree", "Invert marks of %sSpecies%s NOT in Tree", "I", "sp_mark.hlp", makeWindowCallback(mark_nontree_cb, ntw, 2+affect));
     awm->close_sub_menu();
 
     free(label);
@@ -462,6 +461,9 @@ void NT_remove_bootstrap(UNFIXED, AWT_canvas *ntw) { // delete all bootstrap val
         tree_root->compute_tree();
         save_changed_tree(ntw);
     }
+    else {
+        aw_message("Got no tree");
+    }
 }
 void NT_toggle_bootstrap100(UNFIXED, AWT_canvas *ntw) { // toggle 100% bootstrap values
     GB_transaction ta(ntw->gb_main);
@@ -473,6 +475,9 @@ void NT_toggle_bootstrap100(UNFIXED, AWT_canvas *ntw) { // toggle 100% bootstrap
         tree_root->toggle_bootstrap100();
         tree_root->compute_tree();
         save_changed_tree(ntw);
+    }
+    else {
+        aw_message("Got no tree");
     }
 }
 
@@ -486,6 +491,9 @@ void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths
         tree_root->compute_tree();
         save_changed_tree(ntw);
     }
+    else {
+        aw_message("Got no tree");
+    }
 }
 
 void NT_multifurcate_tree(AWT_canvas *ntw, const RootedTree::multifurc_limits& below) {
@@ -496,6 +504,9 @@ void NT_multifurcate_tree(AWT_canvas *ntw, const RootedTree::multifurc_limits& b
     if (tree) {
         tree->multifurcate_whole_tree(below);
         save_changed_tree(ntw);
+    }
+    else {
+        aw_message("Got no tree");
     }
 }
 
@@ -517,6 +528,9 @@ void NT_move_boot_branch(UNFIXED, AWT_canvas *ntw, int direction) { // copy bran
         AW_advice(adviceText, AW_ADVICE_TOGGLE_AND_HELP, 0, "tbl_boot2len.hlp");
         free(adviceText);
     }
+    else {
+        aw_message("Got no tree");
+    }
 }
 
 void NT_scale_tree(UNFIXED, AWT_canvas *ntw) { // scale branchlengths
@@ -530,6 +544,9 @@ void NT_scale_tree(UNFIXED, AWT_canvas *ntw) { // scale branchlengths
             tree_root->scale_branchlengths(factor);
             tree_root->compute_tree();
             save_changed_tree(ntw);
+        }
+        else {
+            aw_message("Got no tree");
         }
         free(answer);
     }
@@ -563,12 +580,9 @@ static bool make_node_visible(AWT_canvas *ntw, AP_tree *node) {
 void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
     AW_window        *aww   = ntw->aww;
     AWT_graphic_tree *gtree = AWT_TREE(ntw);
-    
-    if (!gtree) return;
-    if (!gtree->displayed_root) return;
 
     GB_transaction ta(ntw->gb_main);
-    gtree->check_update(ntw->gb_main);
+    if (gtree) gtree->check_update(ntw->gb_main);
 
     const char *name     = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_char_pntr();
     char       *msg      = NULL;
@@ -579,28 +593,30 @@ void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
         bool     is_tree = sort_is_tree_style(gtree->tree_sort);
 
         if (is_tree) {
-            found = gtree->displayed_root->findLeafNamed(name);
-            if (!found && gtree->is_logically_zoomed()) {
-                found = gtree->get_root_node()->findLeafNamed(name);
-                if (found) { // species is invisible because it is outside logically zoomed tree
-                    if (jumpType & AP_JUMP_UNFOLD_GROUPS) {
-                        gtree->displayed_root = common_ancestor(found, gtree->displayed_root);
-                        ntw->zoom_reset();
-                    }
-                    else {
-                        if (verboose) msg = GBS_global_string_copy("Species '%s' is outside logical zoomed subtree", name);
+            if (gtree && gtree->displayed_root) {
+                found = gtree->displayed_root->findLeafNamed(name);
+                if (!found && gtree->is_logically_zoomed()) {
+                    found = gtree->get_root_node()->findLeafNamed(name);
+                    if (found) { // species is invisible because it is outside logically zoomed tree
+                        if (jumpType & AP_JUMP_UNFOLD_GROUPS) {
+                            gtree->displayed_root = common_ancestor(found, gtree->displayed_root);
+                            ntw->zoom_reset();
+                        }
+                        else {
+                            if (verboose) msg = GBS_global_string_copy("Species '%s' is outside logical zoomed subtree", name);
 
+                            found = NULL;
+                        }
+                    }
+                }
+
+                if (found) {
+                    if (jumpType&AP_JUMP_UNFOLD_GROUPS) {
+                        if (!make_node_visible(ntw, found)) found = NULL;
+                    }
+                    else if (found->is_inside_folded_group()) {
                         found = NULL;
                     }
-                }
-            }
-
-            if (found) {
-                if (jumpType&AP_JUMP_UNFOLD_GROUPS) {
-                    if (!make_node_visible(ntw, found)) found = NULL;
-                }
-                else if (found->is_inside_folded_group()) {
-                    found = NULL;
                 }
             }
         }

@@ -1433,7 +1433,7 @@ static void GEN_create_organism_submenu(AW_window_menu_modes *awm, GBDATA *gb_ma
         awm->sep______________();
         awm->insert_menu_topic("mark_organisms_with_marked_genes", "Mark organisms with marked Genes", "G", "organism_mark.hlp", AWM_ALL, mark_organisms_with_marked_genes, (AW_CL)gb_main, 0);
         awm->sep______________();
-        awm->insert_menu_topic("organism_colors",   "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL, AW_POPUP,  (AW_CL)create_colorize_organisms_window, (AW_CL)gb_main);
+        awm->insert_menu_topic("organism_colors",   "Colors ...",           "C",    "colorize.hlp", AWM_ALL, AW_POPUP,  (AW_CL)create_colorize_organisms_window, (AW_CL)gb_main);
     }
     if (submenu) awm->close_sub_menu();
 }
@@ -1493,7 +1493,7 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool f
         GEN_insert_mark_submenu(awm, gb_main, "gene_invert_marked", "Invert marked genes", "v", "gene_mark.hlp", GEN_INVERT_MARKED);
         GEN_insert_mark_submenu(awm, gb_main, "gene_count_marked",  "Count marked genes",  "C", "gene_mark.hlp", GEN_COUNT_MARKED);
 
-        awm->insert_menu_topic("gene_colors", "Colors ...", "l", "mark_colors.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_colorize_genes_window, (AW_CL)gb_main);
+        awm->insert_menu_topic("gene_colors", "Colors ...", "l", "colorize.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_colorize_genes_window, (AW_CL)gb_main);
 
         awm->sep______________();
 

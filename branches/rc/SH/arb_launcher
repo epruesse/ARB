@@ -28,16 +28,19 @@ pipe_command() {
     local LOGDIR=${1:-}; shift # LOGDIR may be empty/undef -> dont signal crash
 
     trace "Starting '$CMD'.."
-    local ERROR=0
-    $CMD || ERROR=1
-
-    if [ $ERROR == 1 ]; then
-        trace "'$CMD' has terminated with error"
-        if [ -n "$LOGDIR" ]; then
-            touch $LOGDIR/crashed
-        fi
-    else
+    $CMD
+    local EXITCODE=${PIPESTATUS[0]}
+    if [ $EXITCODE == 0 ]; then
         trace "'$CMD' has terminated with success"
+    else
+        trace "'$CMD' has terminated with error $EXITCODE"
+        if [ -n "$LOGDIR" ]; then
+            if [ $EXITCODE = 1 ]; then
+                touch $LOGDIR/failed
+            else
+                touch $LOGDIR/crashed
+            fi
+        fi
     fi
 
     send_to_launcher $NAMED_PIPE 'cmd_terminated'
@@ -100,13 +103,35 @@ listen_pipe_unlogged() {
     fi
 }
 
+shared_library_dependencies() {
+    case `uname` in
+        Linux)
+            LIST_DYNLIBS="ldd"
+            BINARIES="bin/arb_ntree lib/libARBDB.so lib/libCORE.so lib/libWINDOW.so"
+            ;;
+        Darwin)
+            LIST_DYNLIBS="otool -L"
+            # Darwin ARB links internal stuff static
+            BINARIES="bin/arb_ntree"
+            ;;
+        *)
+            LIST_DYNLIBS="echo UNSUPPORTED_OS "
+            ;;
+    esac
+    for binary in $BINARIES; do
+        echo -e "Library dependencies for $ARBHOME/$binary:"
+        $LIST_DYNLIBS $ARBHOME/$binary
+    done    
+}
+
 wrapped_info() {
     local TAG=$1; shift
     local CMD=$1; shift
     echo "--------------------"
     echo "[$TAG start]"
-    bash -c "$CMD"
+    eval $CMD
     echo "[$TAG end]"
+    echo ""
 }
 
 collect_system_information() {
@@ -118,19 +143,19 @@ collect_system_information() {
 
     local ARB_RELEVANT="| grep -i ARB"
 
-    wrapped_info "version info" "$ARBHOME/bin/arb_ntree --help"
+    wrapped_info "version" "$ARBHOME/bin/arb_ntree --help"
     wrapped_info "environment" "printenv $ARB_RELEVANT"
-    wrapped_info "OS info" "lsb_release -a"
-    wrapped_info "Kernel info" "uname -mrs ; uname -a ; cat /proc/version"
-    wrapped_info "glibc" "ls -l /lib/libc-*.so /lib/libc.so*"
-    wrapped_info "Disk info" "df -h"
-    wrapped_info "Memory info" "free -m ; cat /proc/meminfo"
-    wrapped_info "User limits" "ulimit -a"
+    wrapped_info "OS" "lsb_release -a"
+    wrapped_info "kernel" "uname -mrs ; uname -a ; cat /proc/version"
+    wrapped_info "shared libraries" "shared_library_dependencies"
+    wrapped_info "disk" "df -h"
+    wrapped_info "memory" "free -m ; cat /proc/meminfo"
+    wrapped_info "user limits" "ulimit -a"
     wrapped_info "ARB processes" "ps aux $ARB_RELEVANT"
-    wrapped_info "KDE Desktop version" "konqueror --version"
-    wrapped_info "Gnome Desktop version" "gnome-panel --version"
-    wrapped_info "CPU info" "cat /proc/cpuinfo"
-    wrapped_info "X server information" "xdpyinfo"
+    wrapped_info "KDE desktop version" "konqueror --version"
+    wrapped_info "Gnome desktop version" "gnome-panel --version"
+    wrapped_info "CPU" "cat /proc/cpuinfo"
+    wrapped_info "X server" "xdpyinfo"
     # wrapped_info "X" "Y"
 }
 
@@ -158,7 +183,7 @@ listen_pipe() {
         local LOGBASE=$ARB_PROP/logs
         local LOGDIRID=`date '+%Y%m%d_%H%M%S'`.$$
         local LOGDIR=$LOGBASE/$LOGDIRID
-        local NTREE_CRASHED=0
+        local NTREE_STATUS=
 
         mkdir -p $LOGDIR
 
@@ -166,19 +191,24 @@ listen_pipe() {
             local RUNLOG=$LOGDIR/run.log
             local SYSLOG=$LOGDIR/sys.info
             local CRASHFLAG=$LOGDIR/crashed
+            local FAILFLAG=$LOGDIR/failed
 
             ( ( collect_system_information 2>&1 ) > $SYSLOG ; erase_old_logs $LOGBASE ) &
             ( listen_pipe_unlogged $NAMED_PIPE $LOGDIR ) 2>&1 | tee $RUNLOG
 
             if [ -e $CRASHFLAG ]; then
-            # only detects crashes of arb_ntree
-            # (client are not started via arb_launcher and they usually crash when server exits)
-                NTREE_CRASHED=1
+                # only detects crashes of arb_ntree
+                # (clients are not started via arb_launcher and they usually crash when server exits)
+                NTREE_STATUS=crash
+            else
+                if [ -e $FAILFLAG ]; then
+                    NTREE_STATUS=fail
+                fi
             fi
 
             local TARBALLNAME=session.$LOGDIRID.tgz
             ( cd $LOGBASE ; tar -zcf $TARBALLNAME $LOGDIRID )
-            rm -f $RUNLOG $SYSLOG $CRASHFLAG
+            rm -f $RUNLOG $SYSLOG $CRASHFLAG $FAILFLAG
             rmdir $LOGDIR
 
             local FULLTARBALL=$LOGBASE/$TARBALLNAME
@@ -196,12 +226,16 @@ listen_pipe() {
                 echo "    and is also accessible via $LATESTLINK"
             fi
 
-            if [ $NTREE_CRASHED == 1 ]; then
+            if [ "$NTREE_STATUS" != "" ]; then
                 echo ""
-                echo "ARB crashed :-("
-                echo "To report this goto http://bugs.arb-home.de/wiki/BugReport"
-                echo "Please include the session log mentioned above"
-                echo ""
+                if [ $NTREE_STATUS = "crash" ]; then
+                    echo "ARB crashed :-("
+                    echo "To report this goto http://bugs.arb-home.de/wiki/BugReport"
+                    echo "Please include the session log mentioned above"
+                    echo ""
+                else
+                    echo "ARB terminated abnormally"
+                fi
                 echo "[press ENTER]"
                 read A
             fi
@@ -353,3 +387,4 @@ launcher() {
 
 launcher "$@"
 debug "arb_launcher exits!"
+
