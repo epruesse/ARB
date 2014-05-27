@@ -273,29 +273,28 @@ static void insert_mark_topic(AW_window_menu_modes *awm, AW_active mask, const c
     free(entry);
 }
 
-static void insert_mark_topics(AW_window_menu_modes *awm, AW_active mask, AWT_canvas *ntw, int affect, const char *attrib)
-{
+static void insert_mark_topics(AW_window_menu_modes *awm, AW_active mask, AWT_canvas *ntw, int affect, const char *attrib) {
     td_assert(affect == (affect&MARK_MODE_UPPER_BITS)); // only bits 2 .. 4 are allowed
 
-    insert_mark_topic(awm, mask, attrib, "mark_all",    "Mark all %sSpecies%s",            "M", "sp_mrk_all.hlp",    makeWindowCallback(NT_mark_all_cb, ntw, 1+affect));
-    insert_mark_topic(awm, mask, attrib, "unmark_all",  "Unmark all %sSpecies%s",          "U", "sp_umrk_all.hlp",   makeWindowCallback(NT_mark_all_cb, ntw, 0+affect));
-    insert_mark_topic(awm, mask, attrib, "swap_marked", "Invert marks of all %sSpecies%s", "I", "sp_invert_mrk.hlp", makeWindowCallback(NT_mark_all_cb, ntw, 2+affect));
+    insert_mark_topic(awm, mask, attrib, "mark_all",    "Mark all %sSpecies%s",            "M", "sp_mark.hlp", makeWindowCallback(NT_mark_all_cb, ntw, 1+affect));
+    insert_mark_topic(awm, mask, attrib, "unmark_all",  "Unmark all %sSpecies%s",          "U", "sp_mark.hlp", makeWindowCallback(NT_mark_all_cb, ntw, 0+affect));
+    insert_mark_topic(awm, mask, attrib, "swap_marked", "Invert marks of all %sSpecies%s", "I", "sp_mark.hlp", makeWindowCallback(NT_mark_all_cb, ntw, 2+affect));
     awm->sep______________();
 
     char *label = create_mark_menu_entry(attrib, "%sSpecies%s in Tree");
 
     awm->insert_sub_menu(label, "T");
-    insert_mark_topic(awm, mask, attrib, "mark_tree",        "Mark %sSpecies%s in Tree",            "M", "sp_mrk_tree.hlp",   makeWindowCallback(mark_tree_cb, ntw, 1+affect));
-    insert_mark_topic(awm, mask, attrib, "unmark_tree",      "Unmark %sSpecies%s in Tree",          "U", "sp_umrk_tree.hlp",  makeWindowCallback(mark_tree_cb, ntw, 0+affect));
-    insert_mark_topic(awm, mask, attrib, "swap_marked_tree", "Invert marks of %sSpecies%s in Tree", "I", "sp_invert_mrk.hlp", makeWindowCallback(mark_tree_cb, ntw, 2+affect));
+    insert_mark_topic(awm, mask, attrib, "mark_tree",        "Mark %sSpecies%s in Tree",            "M", "sp_mark.hlp", makeWindowCallback(mark_tree_cb, ntw, 1+affect));
+    insert_mark_topic(awm, mask, attrib, "unmark_tree",      "Unmark %sSpecies%s in Tree",          "U", "sp_mark.hlp", makeWindowCallback(mark_tree_cb, ntw, 0+affect));
+    insert_mark_topic(awm, mask, attrib, "swap_marked_tree", "Invert marks of %sSpecies%s in Tree", "I", "sp_mark.hlp", makeWindowCallback(mark_tree_cb, ntw, 2+affect));
     awm->close_sub_menu();
 
     freeset(label, create_mark_menu_entry(attrib, "%sSpecies%s NOT in Tree"));
 
     awm->insert_sub_menu(label, "N");
-    insert_mark_topic(awm, mask, attrib, "mark_nontree",        "Mark %sSpecies%s NOT in Tree",            "M", "sp_mrk_tree.hlp",   makeWindowCallback(mark_nontree_cb, ntw, 1+affect));
-    insert_mark_topic(awm, mask, attrib, "unmark_nontree",      "Unmark %sSpecies%s NOT in Tree",          "U", "sp_umrk_tree.hlp",  makeWindowCallback(mark_nontree_cb, ntw, 0+affect));
-    insert_mark_topic(awm, mask, attrib, "swap_marked_nontree", "Invert marks of %sSpecies%s NOT in Tree", "I", "sp_invert_mrk.hlp", makeWindowCallback(mark_nontree_cb, ntw, 2+affect));
+    insert_mark_topic(awm, mask, attrib, "mark_nontree",        "Mark %sSpecies%s NOT in Tree",            "M", "sp_mark.hlp", makeWindowCallback(mark_nontree_cb, ntw, 1+affect));
+    insert_mark_topic(awm, mask, attrib, "unmark_nontree",      "Unmark %sSpecies%s NOT in Tree",          "U", "sp_mark.hlp", makeWindowCallback(mark_nontree_cb, ntw, 0+affect));
+    insert_mark_topic(awm, mask, attrib, "swap_marked_nontree", "Invert marks of %sSpecies%s NOT in Tree", "I", "sp_mark.hlp", makeWindowCallback(mark_nontree_cb, ntw, 2+affect));
     awm->close_sub_menu();
 
     free(label);
