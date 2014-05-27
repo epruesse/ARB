@@ -739,18 +739,14 @@ static bool command_on_GBDATA(GBDATA *gbd, const AWT_graphic_event& event, AD_ma
     bool refresh = false;
 
     if (event.type() == AW_Mouse_Press && event.button() != AW_BUTTON_MIDDLE) {
-        bool select = false;
+        AD_MAP_VIEWER_TYPE selectType = ADMVT_NONE;
 
         switch (event.cmd()) {
-            case AWT_MODE_WWW:
-                map_viewer_cb(gbd, ADMVT_WWW);
-                break;
-                
-            case AWT_MODE_MARK: 
+            case AWT_MODE_MARK: // see also .@OTHER_MODE_MARK_HANDLER
                 switch (event.button()) {
                     case AW_BUTTON_LEFT:
                         GB_write_flag(gbd, 1);
-                        select  = true;
+                        selectType = ADMVT_SELECT;
                         break;
                     case AW_BUTTON_RIGHT:
                         GB_write_flag(gbd, 0);
@@ -761,16 +757,16 @@ static bool command_on_GBDATA(GBDATA *gbd, const AWT_graphic_event& event, AD_ma
                 refresh = true;
                 break;
 
-            default :
-                select = true;
-                break;
+            case AWT_MODE_WWW:  selectType = ADMVT_WWW;    break;
+            case AWT_MODE_INFO: selectType = ADMVT_INFO;   break;
+            default:            selectType = ADMVT_SELECT; break;
         }
 
-        if (select) {
-            map_viewer_cb(gbd, ADMVT_INFO);
+        if (selectType != ADMVT_NONE) {
+            map_viewer_cb(gbd, selectType);
+            refresh = true;
         }
     }
-
 
     return refresh;
 }
@@ -1299,7 +1295,6 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
     td_assert(event.button()!=AW_BUTTON_MIDDLE); // shall be handled by caller
 
     if (!tree_static) return;                      // no tree -> no commands
-    if (!tree_static->get_root_node()) return;     // no tree -> no commands
 
     if (event.type() == AW_Keyboard_Release) return;
     if (event.type() == AW_Keyboard_Press) return handle_key(device, event);
@@ -1316,6 +1311,8 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         return;
     }
 
+    if (!tree_static->get_root_node()) return; // no tree -> no commands
+    
     GBDATA          *gb_tree  = tree_static->get_gb_tree();
     const Position&  mousepos = event.position();
 
@@ -1530,7 +1527,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             }
             break;
 
-        case AWT_MODE_MARK:
+        case AWT_MODE_MARK: // see also .@OTHER_MODE_MARK_HANDLER
             if (event.type() == AW_Mouse_Press && clicked.node()) {
                 GB_transaction ta(tree_static->get_gb_main());
 
@@ -1562,7 +1559,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         // shall perform identically in tree- and list-modes
 
         case AWT_MODE_INFO:
-        case AWT_MODE_WWW: {
+        case AWT_MODE_WWW: { 
             if (clicked.node() && clicked.node()->gb_node) {
                 if (command_on_GBDATA(clicked.node()->gb_node, event, map_viewer_cb)) {
                     exports.refresh = 1;
@@ -2654,7 +2651,9 @@ AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer
 void awt_create_dtree_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int  (AWAR_DTREE_BASELINEWIDTH, 1)  ->set_minmax(1,    10);
     aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,  1.0)->set_minmax(0.01, 30);
-    aw_root->awar_int  (AWAR_DTREE_AUTO_JUMP,     1);
+
+    aw_root->awar_int(AWAR_DTREE_AUTO_JUMP,      AP_JUMP_KEEP_VISIBLE);
+    aw_root->awar_int(AWAR_DTREE_AUTO_JUMP_TREE, AP_JUMP_FORCE_VCENTER);
 
     aw_root->awar_int(AWAR_DTREE_SHOW_BRACKETS, 1);
     aw_root->awar_int(AWAR_DTREE_SHOW_CIRCLE,   0);
@@ -2670,6 +2669,17 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD,      300);
 
     aw_root->awar_int(AWAR_TREE_REFRESH, 0, db);
+}
+
+void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name) {
+    aws->label(label);
+    aws->create_option_menu(awar_name, true);
+    aws->insert_default_option("do nothing",        "n", AP_DONT_JUMP);
+    aws->insert_option        ("keep visible",      "k", AP_JUMP_KEEP_VISIBLE);
+    aws->insert_option        ("center vertically", "v", AP_JUMP_FORCE_VCENTER);
+    aws->insert_option        ("center",            "c", AP_JUMP_FORCE_CENTER);
+    aws->update_option_menu();
+    aws->at_newline();
 }
 
 // --------------------------------------------------------------------------------

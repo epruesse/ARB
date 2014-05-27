@@ -40,7 +40,7 @@ NOT4PERL GBDATA *GBT_add_data(GBDATA *species, const char *ali_name, const char 
 NOT4PERL GBDATA *GBT_create_sequence_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type, int security_write);
 GB_ERROR GBT_write_sequence(GBDATA *gb_data, const char *ali_name, long ali_len, const char *sequence);
 GBDATA *GBT_gen_accession_number(GBDATA *gb_species, const char *ali_name);
-int GBT_is_partial(GBDATA *gb_species, int default_value, int define_if_undef);
+int GBT_is_partial(GBDATA *gb_species, int default_value, bool define_if_undef);
 GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname);
 char *GBT_get_default_alignment(GBDATA *gb_main);
 GB_ERROR GBT_set_default_alignment(GBDATA *gb_main, const char *alignment_name);
