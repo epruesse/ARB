@@ -89,7 +89,7 @@ static int species_has_alignment(GBDATA *gb_species, void *cd_use) {
 static int sequence_is_partial(GBDATA *gb_species, void *cd_partial) {
     long wanted  = (long)cd_partial;
     td_assert(wanted == 0 || wanted == 1);
-    int partial = GBT_is_partial(gb_species, 1-wanted, false);
+    int partial = GBT_is_partial(gb_species, 0, false);
 
     return partial == wanted;
 }
