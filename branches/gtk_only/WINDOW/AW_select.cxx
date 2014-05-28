@@ -30,7 +30,6 @@
 static void aw_selection_list_awar_changed(AW_root*, AW_selection_list* slist) {
     slist->refresh();
 }
-
 static bool aw_selection_list_widget_changed(GtkWidget *widget, gpointer data) {
     AW_selection_list* slist = (AW_selection_list*) data;
     slist->update_from_widget();
@@ -607,12 +606,13 @@ char *AW_selection_list_entry::copy_string_for_display(const char *str) {
     return out;
 }
 
+// -------------------------
+//      AW_DB_selection
+
 static void AW_DB_selection_refresh_cb(GBDATA *, AW_DB_selection *selection) {
     selection->refresh();
 }
 
-//AW_DB_selection
-//TODO move to own file
 AW_DB_selection::AW_DB_selection(AW_selection_list *sellist_, GBDATA *gbd_)
     : AW_selection(sellist_)
     , gbd(gbd_)
@@ -627,7 +627,7 @@ AW_DB_selection::~AW_DB_selection() {
 }
 
 GBDATA *AW_DB_selection::get_gb_main() {
-    return GB_get_root(gbd); 
+    return GB_get_root(gbd);
 }
 
 
