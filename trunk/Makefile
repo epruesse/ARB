@@ -65,10 +65,12 @@ A_CC:=$(CC)# compile C
 A_CXX:=$(CXX)# compile C++
 
 # uncomment to ensure no submakefile uses CC and CXX directly
-CC:=use__A_CC__instead_of__CC
-CXX:=use__A_CXX__instead_of__CXX
+override CC:=use__A_CC__instead_of__CC
+override CXX:=use__A_CXX__instead_of__CXX
 
 endif
+
+export CC CXX A_CC A_CXX
 
 ifeq ($(LD_LIBRARY_PATH),'')
 LD_LIBRARY_PATH:=${ARBHOME}/lib
@@ -102,9 +104,9 @@ ALLOWED_clang_VERSIONS=\
 
 # ----------------------
 
-COMPILER_INFO=$(shell SOURCE_TOOLS/arb_compiler_version.pl $(A_CXX))
-COMPILER_NAME=$(word 1,$(COMPILER_INFO))
-COMPILER_VERSION=$(word 2,$(COMPILER_INFO))
+COMPILER_INFO:=$(shell SOURCE_TOOLS/arb_compiler_version.pl $(A_CXX))
+COMPILER_NAME:=$(word 1,$(COMPILER_INFO))
+COMPILER_VERSION:=$(word 2,$(COMPILER_INFO))
 
 USE_CLANG:=0
 ifneq ($(COMPILER_NAME),gcc)
