@@ -22,6 +22,8 @@
 
 #include <Xm/List.h>
 
+__ATTR__NORETURN inline void selection_type_mismatch(const char *triedType) { type_mismatch(triedType, "selection-list"); }
+
 // --------------------------
 //      AW_selection_list
 
@@ -184,7 +186,10 @@ void AW_selection_list::clear() {
 
 bool AW_selection_list::default_is_selected() const {
     const char *sel = get_selected_value();
-    if (!sel) return true; // handle "nothing" like default (@@@ should be impossible in gtk port)
+    if (!sel) {
+        // (case should be impossible in gtk port)
+        return true; // handle "nothing" like default
+    }
 
     const char *def = get_default_value();
     return def && (strcmp(sel, def) == 0);
@@ -248,7 +253,8 @@ void AW_selection_list::delete_value(const char *value) {
 }
 
 const char *AW_selection_list::get_awar_value() const {
-    return AW_root::SINGLETON->awar(variable_name)->read_char_pntr();
+    AW_awar *awar = AW_root::SINGLETON->awar(variable_name);
+    return awar->read_char_pntr();
 }
 
 char *AW_selection_list::get_content_as_string(long number_of_lines) {
@@ -292,21 +298,6 @@ int AW_selection_list::get_index_of_selected() {
     return get_index_of(awar_value);
 }
 
-int AW_selection_list::get_index_of_displayed(const char *displayed) {
-    /*! get index of an entry in the selection list
-     * @return 0..n-1 index of first element displaying displayed (or -1)
-     */
-    int                        element_index = 0;
-    AW_selection_list_iterator entry(this);
-
-    while (entry) {
-        if (strcmp(entry.get_displayed(), displayed) == 0) break;
-        ++element_index;
-    }
-
-    return element_index;
-}
-
 void AW_selection_list::init_from_array(const CharPtrArray& entries, const char *defaultEntry) {
     // update selection list with contents of NULL-terminated array 'entries'
     // 'defaultEntry' is used as default selection
@@ -335,8 +326,6 @@ void AW_selection_list::init_from_array(const CharPtrArray& entries, const char 
 
     free(defaultEntryCopy);
 }
-
-__ATTR__NORETURN inline void selection_type_mismatch(const char *triedType) { type_mismatch(triedType, "selection-list"); }
 
 void AW_selection_list::insert(const char *displayed, const char *value) {
     if (variable_type != AW_STRING) {
@@ -481,7 +470,8 @@ void AW_selection_list::select_element_at(int wanted_index) {
 }
 
 void AW_selection_list::set_awar_value(const char *new_value) {
-    AW_root::SINGLETON->awar(variable_name)->write_string(new_value);
+    AW_awar *awar = AW_root::SINGLETON->awar(variable_name);
+    awar->write_string(new_value);
 }
 
 void AW_selection_list::set_file_suffix(const char *suffix) {
@@ -554,7 +544,6 @@ void AW_selection_list::sort(bool backward, bool case_sensitive) {
 
 void AW_selection_list::to_array(StrArray& array, bool values) {
     /*! read contents of selection list into an array.
-     * @param array contents are stored here
      * @param values true->read values, false->read displayed strings
      * Use GBT_free_names() to free the result.
      *
@@ -609,21 +598,6 @@ char *AW_selection_list_entry::copy_string_for_display(const char *str) {
     return out;
 }
 
-void AW_selection_list::selectAll() {
-    int i;
-    AW_selection_list_entry *lt;
-    for (i=0, lt = list_table; lt; i++, lt = lt->next) {
-        XmListSelectPos(select_list_widget, i, False);
-    }
-    if (default_select) {
-        XmListSelectPos(select_list_widget, i, False);
-    }
-}
-
-void AW_selection_list::deselectAll() {
-    XmListDeselectAllItems(select_list_widget);
-}
-
 // -------------------------
 //      AW_DB_selection
 
@@ -642,5 +616,9 @@ AW_DB_selection::AW_DB_selection(AW_selection_list *sellist_, GBDATA *gbd_)
 AW_DB_selection::~AW_DB_selection() {
     GB_transaction ta(gbd);
     GB_remove_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(AW_DB_selection_refresh_cb, this));
+}
+
+GBDATA *AW_DB_selection::get_gb_main() {
+    return GB_get_root(gbd);
 }
 
