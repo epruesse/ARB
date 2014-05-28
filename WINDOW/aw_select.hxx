@@ -24,9 +24,12 @@
 
 // cppcheck-suppress noConstructor
 class AW_selection_list_entry : virtual Noncopyable {
-    static const size_t MAX_DISPLAY_LENGTH = 8192;
-    // 8192 -> no wrap-around in motif (gtk may handle different value)
-    // 100000 -> works in motif (no crash, but ugly because line wraps around - overwriting itself; also happens in gtk)
+#if defined(ARB_GTK)
+    static const size_t MAX_DISPLAY_LENGTH = 599000; // 599000 -> no wrap-around happens in gtk
+#else // !defined(ARB_GTK)
+    static const size_t MAX_DISPLAY_LENGTH = 8192; // 8192 -> no wrap-around happens in motif
+#endif
+    // 100000 -> works in motif (no crash, but ugly because line wraps around - overwriting itself; also happens in gtk, e.g. for len=600000)
     // setting it to 750000 crashes with "X Error BadLength" in motif (when a string with that length is displayed)
 
     char *displayed;
@@ -79,9 +82,6 @@ public:
 #if defined(ASSERTION_USED)
     GB_TYPES get_awar_type() const { return GB_TYPES(variable_type); }
 #endif
-    
-    void selectAll();
-    void deselectAll();
 
     size_t size();
 
@@ -114,7 +114,6 @@ public:
     const char *get_selected_value() const; // may differ from get_awar_value() if default is selected (returns value passed to insert_default)
 
     int get_index_of(const char *searched_value);
-    int get_index_of_displayed(const char *displayed);
     int get_index_of_selected();
 
     const char *get_value_at(int index);
@@ -202,10 +201,10 @@ class AW_DB_selection : public AW_selection { // derived from a Noncopyable
     GBDATA *gbd;                                    // root container of data displayed in selection list
 public:
     AW_DB_selection(AW_selection_list *sellist_, GBDATA *gbd_);
-    virtual ~AW_DB_selection();
+    virtual ~AW_DB_selection() OVERRIDE;
     
     GBDATA *get_gbd() { return gbd; }
-    GBDATA *get_gb_main() { return GB_get_root(gbd); }
+    GBDATA *get_gb_main();
 };
 
 
