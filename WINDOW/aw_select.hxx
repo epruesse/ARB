@@ -29,8 +29,11 @@ class StrArray;
 
 // cppcheck-suppress noConstructor
 class AW_selection_list_entry : virtual Noncopyable {
-    // static const size_t MAX_DISPLAY_LENGTH = 8192; // 8192 -> no wrap-around in motif
-    static const size_t MAX_DISPLAY_LENGTH    = 599000; // 599000 -> no wrap-around in gtk
+#if defined(ARB_GTK)
+    static const size_t MAX_DISPLAY_LENGTH = 599000; // 599000 -> no wrap-around happens in gtk
+#else // !defined(ARB_GTK)
+    static const size_t MAX_DISPLAY_LENGTH = 8192; // 8192 -> no wrap-around happens in motif
+#endif
     // 100000 -> works in motif (no crash, but ugly because line wraps around - overwriting itself; also happens in gtk, e.g. for len=600000)
     // setting it to 750000 crashes with "X Error BadLength" in motif (when a string with that length is displayed)
 
@@ -104,16 +107,13 @@ public:
     AW_selection_list_entry *list_table;
     AW_selection_list_entry *last_of_list_table;
     AW_selection_list_entry *default_select;
-    
+
     // ******************** real public ***************
 
     const char *get_awar_name() const { return awar->get_name(); }
 #if defined(ASSERTION_USED)
     GB_TYPES get_awar_type() const { return awar->get_type(); }
 #endif
-
-    void selectAll();
-    void deselectAll();
 
     size_t size();
 
@@ -148,7 +148,6 @@ public:
     const char *get_selected_value() const; // may differ from get_awar_value() if default is selected (returns value passed to insert_default)
 
     int get_index_of(const char *searched_value);
-    int get_index_of_displayed(const char *displayed);
     int get_index_of_selected();
 
     const char *get_value_at(int index);
@@ -163,9 +162,6 @@ public:
     void delete_default();
     void clear();
 
-    /**moves content to another selection list.
-     * @note default value is not moved.
-     **/
     void move_content_to(AW_selection_list *target_list);
 
     void to_array(StrArray& array, bool values);
@@ -245,5 +241,5 @@ public:
     GBDATA *get_gb_main();
 };
 
-    
+
 __ATTR__NORETURN inline void selection_type_mismatch(const char *triedType);
