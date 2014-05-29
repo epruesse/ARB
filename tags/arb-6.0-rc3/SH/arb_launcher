@@ -1,0 +1,390 @@
+#!/bin/bash
+
+set -u
+
+trace() {
+    local MSG=$1
+    echo "[arb_launcher[${ARB_LAUNCHER:-}]: $1]"
+}
+debug() {
+    local MSG=$1
+    # to debug uncomment next line:
+    # trace "DEBUG: $MSG"
+}
+
+send_to_launcher() {
+    local NAMED_PIPE=$1
+    local CMD=$2
+
+    debug "Sending '$CMD' to $NAMED_PIPE"
+    echo "$CMD" >$NAMED_PIPE
+    sleep 1
+    debug "send_to_launcher terminates"
+}
+
+pipe_command() {
+    local NAMED_PIPE=$1; shift
+    local CMD=$1; shift
+    local LOGDIR=${1:-}; shift # LOGDIR may be empty/undef -> dont signal crash
+
+    trace "Starting '$CMD'.."
+    $CMD
+    local EXITCODE=${PIPESTATUS[0]}
+    if [ $EXITCODE == 0 ]; then
+        trace "'$CMD' has terminated with success"
+    else
+        trace "'$CMD' has terminated with error $EXITCODE"
+        if [ -n "$LOGDIR" ]; then
+            if [ $EXITCODE = 1 ]; then
+                touch $LOGDIR/failed
+            else
+                touch $LOGDIR/crashed
+            fi
+        fi
+    fi
+
+    send_to_launcher $NAMED_PIPE 'cmd_terminated'
+}
+
+read_line() {
+    local NAMED_PIPE=$1
+    local LINE=""
+
+    if read ATTEMPT <$NAMED_PIPE; then
+        LINE=$ATTEMPT
+    fi
+    echo $LINE
+}
+
+listen_pipe_unlogged() {
+    local NAMED_PIPE=$1; shift
+    local LOGDIR=${1:-}; shift # LOGDIR may be empty/undef -> dont log 
+    local RUNNING=1
+    local STARTED=0
+    # RUNNING is set to 1 (otherwise listen_pipe would terminate instantly)
+
+    while (($RUNNING > 0))
+      do
+      LINE=`read_line $NAMED_PIPE 2>/dev/null`
+      if [[ ! -z "$LINE" ]]; then
+          debug "'$NAMED_PIPE' received '$LINE'"
+          if [[ "$LINE" == 'TERMINATE' ]]; then
+              trace "Received request to TERMINATE"
+              break;
+          else
+              if [[ "$LINE" == 'cmd_terminated' ]]; then
+                  RUNNING=$(($RUNNING - 1))
+                  if (($RUNNING>0)); then
+                      trace "Still have $RUNNING arb processes.."
+                  fi
+              else
+                  if [[ "$LINE" == 'allow_termination' ]]; then
+                      RUNNING=$(($RUNNING - 1))
+                  else
+                      pipe_command $NAMED_PIPE "$LINE" $LOGDIR &
+                      RUNNING=$(($RUNNING + 1))
+                      STARTED=$(($STARTED + 1))
+                      debug "RUNNING=$RUNNING"
+                      debug "STARTED=$STARTED"
+                  fi
+              fi
+          fi
+      fi
+    done
+
+    if (($RUNNING==0)); then
+        if (($STARTED>0)); then
+            trace "All launched processes terminated"
+        else
+            trace "Nothing was ever launched"
+        fi
+    else
+        trace "Still have $RUNNING arb-processes - terminating nevertheless"
+    fi
+}
+
+shared_library_dependencies() {
+    case `uname` in
+        Linux)
+            LIST_DYNLIBS="ldd"
+            BINARIES="bin/arb_ntree lib/libARBDB.so lib/libCORE.so lib/libWINDOW.so"
+            ;;
+        Darwin)
+            LIST_DYNLIBS="otool -L"
+            # Darwin ARB links internal stuff static
+            BINARIES="bin/arb_ntree"
+            ;;
+        *)
+            LIST_DYNLIBS="echo UNSUPPORTED_OS "
+            ;;
+    esac
+    for binary in $BINARIES; do
+        echo -e "Library dependencies for $ARBHOME/$binary:"
+        $LIST_DYNLIBS $ARBHOME/$binary
+    done    
+}
+
+wrapped_info() {
+    local TAG=$1; shift
+    local CMD=$1; shift
+    echo "--------------------"
+    echo "[$TAG start]"
+    eval $CMD
+    echo "[$TAG end]"
+    echo ""
+}
+
+collect_system_information() {
+    echo "System information"
+    echo ""
+    echo "The information below has been collected by ARB."
+    echo "Please do not publish without being aware that it might contain personal information."
+    echo ""
+
+    local ARB_RELEVANT="| grep -i ARB"
+
+    wrapped_info "version" "$ARBHOME/bin/arb_ntree --help"
+    wrapped_info "environment" "printenv $ARB_RELEVANT"
+    wrapped_info "OS" "lsb_release -a"
+    wrapped_info "kernel" "uname -mrs ; uname -a ; cat /proc/version"
+    wrapped_info "shared libraries" "shared_library_dependencies"
+    wrapped_info "disk" "df -h"
+    wrapped_info "memory" "free -m ; cat /proc/meminfo"
+    wrapped_info "user limits" "ulimit -a"
+    wrapped_info "ARB processes" "ps aux $ARB_RELEVANT"
+    wrapped_info "KDE desktop version" "konqueror --version"
+    wrapped_info "Gnome desktop version" "gnome-panel --version"
+    wrapped_info "CPU" "cat /proc/cpuinfo"
+    wrapped_info "X server" "xdpyinfo"
+    # wrapped_info "X" "Y"
+}
+
+erase_old_logs() {
+    local LOGBASE=$1
+    if [ -d "$LOGBASE" ]; then
+        # remove files older than 7 days inside and below LOGBASE
+        local OLD=$(( 60 * 24 * 7 ))
+        find $LOGBASE -type f -cmin +$OLD -exec rm {} \;
+        # remove empty directories inside and below LOGBASE
+        find $LOGBASE -type d -depth -empty -mindepth 1 -exec rmdir {} \;
+    fi
+}
+
+listen_pipe() {
+    # this is just a wrapper around listen_pipe_unlogged.
+    # wrapper performs ARB session logging
+    local NAMED_PIPE=$1
+
+    if [ -z ${ARB_PROP:-} ]; then
+        # should never come here, if arb has been started via script 'arb'
+        # (e.g. happens when arb_ntree was started from debugger and then 'start second database' has been called)
+        listen_pipe_unlogged $NAMED_PIPE
+    else
+        local LOGBASE=$ARB_PROP/logs
+        local LOGDIRID=`date '+%Y%m%d_%H%M%S'`.$$
+        local LOGDIR=$LOGBASE/$LOGDIRID
+        local NTREE_STATUS=
+
+        mkdir -p $LOGDIR
+
+        if [ -d "$LOGDIR" ]; then
+            local RUNLOG=$LOGDIR/run.log
+            local SYSLOG=$LOGDIR/sys.info
+            local CRASHFLAG=$LOGDIR/crashed
+            local FAILFLAG=$LOGDIR/failed
+
+            ( ( collect_system_information 2>&1 ) > $SYSLOG ; erase_old_logs $LOGBASE ) &
+            ( listen_pipe_unlogged $NAMED_PIPE $LOGDIR ) 2>&1 | tee $RUNLOG
+
+            if [ -e $CRASHFLAG ]; then
+                # only detects crashes of arb_ntree
+                # (clients are not started via arb_launcher and they usually crash when server exits)
+                NTREE_STATUS=crash
+            else
+                if [ -e $FAILFLAG ]; then
+                    NTREE_STATUS=fail
+                fi
+            fi
+
+            local TARBALLNAME=session.$LOGDIRID.tgz
+            ( cd $LOGBASE ; tar -zcf $TARBALLNAME $LOGDIRID )
+            rm -f $RUNLOG $SYSLOG $CRASHFLAG $FAILFLAG
+            rmdir $LOGDIR
+
+            local FULLTARBALL=$LOGBASE/$TARBALLNAME
+            echo ""
+            echo "Session log has been stored in $FULLTARBALL"
+
+            local LATESTLINK=~/ARB_last_session.tgz
+            if [ -h $LATESTLINK ]; then
+                rm $LATESTLINK
+            fi
+            if [ -e $LATESTLINK ]; then
+                echo "$LATESTLINK already exists and is no symlink"
+            else
+                (cd ~; ln -s $FULLTARBALL $LATESTLINK )
+                echo "    and is also accessible via $LATESTLINK"
+            fi
+
+            if [ "$NTREE_STATUS" != "" ]; then
+                echo ""
+                if [ $NTREE_STATUS = "crash" ]; then
+                    echo "ARB crashed :-("
+                    echo "To report this goto http://bugs.arb-home.de/wiki/BugReport"
+                    echo "Please include the session log mentioned above"
+                    echo ""
+                else
+                    echo "ARB terminated abnormally"
+                fi
+                echo "[press ENTER]"
+                read A
+            fi
+
+            true
+        else
+            echo "Error creating directory '$LOGDIR'"
+            false
+        fi
+    fi
+}
+
+killtree() {
+    local _pid=$1
+    local _sig=${2:-TERM}
+
+    debug "killtree pid=${_pid} with sig=${_sig} pid=$$"
+    kill -stop ${_pid} # stop quickly forking parent from producing childs
+    killchilds ${_pid} ${_sig}
+    kill ${_sig} ${_pid}
+}
+killchilds() {
+    local _pid=$1
+    local _sig=${2:-TERM}
+
+    debug "killchilds pid=${_pid} with sig=${_sig} pid=$$"
+    for _child in $(ps -o pid --no-headers --ppid ${_pid}); do
+        killtree ${_child} ${_sig}
+    done
+}
+
+term_handler() {
+    local NAMED_PIPE=$1
+
+    trace "Killing ARB session for ARB_PID=$ARB_PID"
+    arb_clean session
+    debug "arb_clean done - now killing process tree"
+    killchilds $$ -TERM
+    debug "killchilds done - exiting $$"
+    exit
+}
+
+create_pipe_reader() {
+    local NAMED_PIPE=$1
+    local PARENT_PID=$2
+
+    if [ -z "${ARB_LAUNCHER:-}" ]; then
+        export ARB_LAUNCHER=0
+    else
+        export ARB_LAUNCHER=$(($ARB_LAUNCHER+1))
+    fi
+
+    debug "Creating named pipe '$NAMED_PIPE'"
+
+    # (i did not manage to recover from SIGINT w/o termination of listen_pipe)
+    # => disable SIGINT handler
+    trap '' INT
+    trap "term_handler $NAMED_PIPE" TERM
+    trap "rm -f $NAMED_PIPE" EXIT
+
+    { mkfifo $NAMED_PIPE && listen_pipe $NAMED_PIPE ; } || \
+      { echo "Error creating pipe '$NAMED_PIPE'" ; kill $PARENT_PID ; }
+
+    debug "Pipe reader for '$NAMED_PIPE' terminates.."
+    rm -f $NAMED_PIPE
+}
+
+initial_send_to_launcher() {
+    local NAMED_PIPE=$1
+    local CMD=$2
+
+    send_to_launcher $NAMED_PIPE "$CMD"
+
+    # now allow pipe reader to terminate:
+    send_to_launcher $NAMED_PIPE "allow_termination"
+}
+
+wait_for_pipe() {
+    local NAMED_PIPE=$1
+
+    while [[ ! -p $NAMED_PIPE ]];
+      do
+      echo "Waiting for '$NAMED_PIPE'.."
+      sleep 1
+    done
+    debug "pipe is open"
+}
+
+get_pipe_name() {
+    local SOCKETDIR=$HOME/.arb_tmp/sockets
+    mkdir -p $SOCKETDIR
+    echo "$SOCKETDIR/arb_launcher.$ARB_PID"
+
+    # instead of the above code, use the following to test a pipe-creation failure:
+    # echo "/arb_launcher.$ARB_PID"
+}
+
+launcher() {
+    local ASYNC=0
+    if [ "$1" = "--async" ]; then
+        ASYNC=1
+        shift
+    fi
+    local CMD="$*"
+
+    if [ -z "$ARB_PID" ]; then
+        echo "Error: environment variable ARB_PID is unset. terminating.."
+        false
+    else
+        if [ -z "$1" ]; then
+            echo "Usage: arb_launcher \"shellcommand\""
+            echo ""
+            echo "          runs 'shellcommand'"
+            echo "          "
+            echo "          The initial call to arb_launcher will block until 'shellcommand' terminates."
+            echo ""
+            echo "          Subsequent calls will not block. They are started from the context of the"
+            echo "          initial call. The initial call will wait for all started commands."
+            echo ""
+            echo "       arb_launcher \"TERMINATE\""
+            echo ""
+            echo "          terminate the launcher without waiting for spawned commands."
+            echo ""
+        else
+            debug "Using ARB_PID '$ARB_PID'"
+            local NAMED_PIPE=$(get_pipe_name)
+            debug "Using NAMED_PIPE '$NAMED_PIPE'"
+
+            if [[ ! -p $NAMED_PIPE ]]; then
+                ( wait_for_pipe $NAMED_PIPE ; initial_send_to_launcher $NAMED_PIPE "$CMD" ) &
+                if (( $ASYNC==1 )); then
+                    create_pipe_reader $NAMED_PIPE $$ &
+                else
+                    create_pipe_reader $NAMED_PIPE $$
+                fi
+            else
+                debug "pipe already was open"
+                send_to_launcher $NAMED_PIPE "$CMD"
+            fi
+
+            # if pipe-reader was started from current process
+            # -> blocks until all launched processes have terminated
+            if (( $ASYNC==0 )); then
+                wait
+            fi
+        fi
+    fi
+}
+
+launcher "$@"
+debug "arb_launcher exits!"
+
