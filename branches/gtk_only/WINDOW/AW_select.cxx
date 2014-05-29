@@ -64,13 +64,20 @@ AW_selection_list::AW_selection_list(AW_awar *awar_, bool fallback2default)
       last_of_list_table(NULL),
       default_select(NULL)
 {
+#if defined(UNIT_TESTS)
+    if (RUNNING_TEST() && !awar) {
+        return; // accept AW_selection_list w/o awar from unittest
+    }
+#endif
     aw_assert(NULL != awar);
     awar->add_callback(makeRootCallback(aw_selection_list_awar_changed, this));
 }
 
 AW_selection_list::~AW_selection_list() {
     printf("destroying sellist\n");
-    awar->remove_callback(makeRootCallback(aw_selection_list_awar_changed, this));
+    if (awar) {
+        awar->remove_callback(makeRootCallback(aw_selection_list_awar_changed, this));
+    }
     if (change_cb_id) {
         GObject *obj;
         if (GTK_IS_TREE_VIEW(widget)) {
@@ -640,10 +647,11 @@ GBDATA *AW_DB_selection::get_gb_main() {
 
 template <class T>
 AW_selection_list_entry* AW_selection_list::insert_generic(const char* displayed, T value, GB_TYPES expectedType) {
-    if (awar->get_type() != expectedType) {
-    selection_type_mismatch(typeid(T).name()); //note: gcc mangles the name, however this error will only occur during development.
-    return NULL;
+    if (awar && awar->get_type() != expectedType) {
+        selection_type_mismatch(typeid(T).name()); //note: gcc mangles the name, however this error will only occur during development.
+        return NULL;
     }
+
     if (list_table) {
         last_of_list_table->next = new AW_selection_list_entry(displayed, value);
         last_of_list_table = last_of_list_table->next;
