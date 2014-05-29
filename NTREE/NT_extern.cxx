@@ -541,7 +541,6 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_BASELINEWIDTH,    "line_width" },
     { AWAR_DTREE_VERICAL_DIST,     "vert_dist" },
     { AWAR_DTREE_AUTO_JUMP,        "auto_jump" },
-    { AWAR_DTREE_AUTO_JUMP_TREE,   "auto_jump_tree" },
     { AWAR_DTREE_SHOW_CIRCLE,      "show_circle" },
     { AWAR_DTREE_SHOW_BRACKETS,    "show_brackets" },
     { AWAR_DTREE_USE_ELLIPSE,      "use_ellipse" },
@@ -566,72 +565,75 @@ static void tree_setting_restore_config(AW_window *aww, const char *stored_strin
 
 static AW_window *NT_create_tree_settings_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(aw_root, "TREE_PROPS", "TREE SETTINGS");
-        aws->load_xfig("awt/tree_settings.fig");
+    if (aws) return (AW_window *)aws;
 
-        aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+    aws = new AW_window_simple;
+    aws->init(aw_root, "TREE_PROPS", "TREE SETTINGS");
+    aws->load_xfig("awt/tree_settings.fig");
 
-        aws->at("help");
-        aws->callback(makeHelpCallback("nt_tree_settings.hlp"));
-        aws->create_button("HELP", "HELP", "H");
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("button");
-        aws->auto_space(10, 10);
-        aws->label_length(30);
+    aws->at("help");
+    aws->callback(makeHelpCallback("nt_tree_settings.hlp"));
+    aws->create_button("HELP", "HELP", "H");
 
-        aws->label("Base line width");
-        aws->create_input_field(AWAR_DTREE_BASELINEWIDTH, 4);
-        aws->at_newline();
+    aws->at("button");
+    aws->auto_space(10, 10);
+    aws->label_length(30);
 
-        aws->label("Relative vertical distance");
-        aws->create_input_field(AWAR_DTREE_VERICAL_DIST, 4);
-        aws->at_newline();
+    aws->label("Base line width");
+    aws->create_input_field(AWAR_DTREE_BASELINEWIDTH, 4);
+    aws->at_newline();
 
-        TREE_insert_jump_option_menu(aws, "On species change", AWAR_DTREE_AUTO_JUMP);
-        TREE_insert_jump_option_menu(aws, "On tree change",    AWAR_DTREE_AUTO_JUMP_TREE);
+    aws->label("Relative vertical distance");
+    aws->create_input_field(AWAR_DTREE_VERICAL_DIST, 4);
+    aws->at_newline();
 
-        aws->label("Show group brackets");
-        aws->create_toggle(AWAR_DTREE_SHOW_BRACKETS);
-        aws->at_newline();
+    aws->label("Auto jump");
+    aws->create_toggle(AWAR_DTREE_AUTO_JUMP);
+    aws->at_newline();
 
-        aws->label("Show bootstrap circles");
-        aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
-        aws->at_newline();
+    aws->label("Show group brackets");
+    aws->create_toggle(AWAR_DTREE_SHOW_BRACKETS);
+    aws->at_newline();
 
-        aws->label("Use ellipses");
-        aws->create_toggle(AWAR_DTREE_USE_ELLIPSE);
-        aws->at_newline();
+    aws->label("Show bootstrap circles");
+    aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
+    aws->at_newline();
 
-        aws->label("Bootstrap circle zoom factor");
-        aws->create_input_field(AWAR_DTREE_CIRCLE_ZOOM, 4);
-        aws->at_newline();
+    aws->label("Use ellipses");
+    aws->create_toggle(AWAR_DTREE_USE_ELLIPSE);
+    aws->at_newline();
 
-        aws->label("Boostrap radius limit");
-        aws->create_input_field(AWAR_DTREE_CIRCLE_MAX_SIZE, 4);
-        aws->at_newline();
+    aws->label("Bootstrap circle zoom factor");
+    aws->create_input_field(AWAR_DTREE_CIRCLE_ZOOM, 4);
+    aws->at_newline();
 
-        aws->label("Grey Level of Groups%");
-        aws->create_input_field(AWAR_DTREE_GREY_LEVEL, 4);
-        aws->at_newline();
+    aws->label("Boostrap radius limit");
+    aws->create_input_field(AWAR_DTREE_CIRCLE_MAX_SIZE, 4);
+    aws->at_newline();
 
-        aws->label("Text zoom/pad (dendro)");
-        aws->create_toggle(AWAR_DTREE_DENDRO_ZOOM_TEXT);
-        aws->create_input_field(AWAR_DTREE_DENDRO_XPAD, 4);
-        aws->at_newline();
+    aws->label("Grey Level of Groups%");
+    aws->create_input_field(AWAR_DTREE_GREY_LEVEL, 4);
+    aws->at_newline();
 
-        aws->label("Text zoom/pad (radial)");
-        aws->create_toggle(AWAR_DTREE_RADIAL_ZOOM_TEXT);
-        aws->create_input_field(AWAR_DTREE_RADIAL_XPAD, 4);
-        aws->at_newline();
+    aws->label("Text zoom/pad (dendro)");
+    aws->create_toggle(AWAR_DTREE_DENDRO_ZOOM_TEXT);
+    aws->create_input_field(AWAR_DTREE_DENDRO_XPAD, 4);
+    aws->at_newline();
 
-        aws->at("config");
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "tree_settings", tree_setting_store_config, tree_setting_restore_config, 0, 0);
-    }
-    return aws;
+    aws->label("Text zoom/pad (radial)");
+    aws->create_toggle(AWAR_DTREE_RADIAL_ZOOM_TEXT);
+    aws->create_input_field(AWAR_DTREE_RADIAL_XPAD, 4);
+    aws->at_newline();
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "tree_settings", tree_setting_store_config, tree_setting_restore_config, 0, 0);
+
+    return (AW_window *)aws;
+
 }
 
 enum streamSource { FROM_PIPE, FROM_FILE };
@@ -1079,8 +1081,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
         AWT_registerTreeAwarCallback(tree_awar, makeTreeAwarCallback(canvas_tree_awar_changed_cb, ntw), false);
     }
 
-    awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, false));
-    awr->awar(AWAR_TREE_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, true));
+    awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw));
 
     awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback(makeRootCallback(AWT_resize_cb, ntw));
 
