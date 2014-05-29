@@ -245,7 +245,7 @@ bool AW_selection_list::default_is_selected() const {
 const char *AW_selection_list::get_selected_value() const {
     if (selected_index == -1) return NULL;
     AW_selection_list_entry *entry = get_entry_at(selected_index);
-    
+
     if(entry){
         return entry->get_displayed();
     }
@@ -663,3 +663,132 @@ AW_selection_list_entry* AW_selection_list::insert_generic(const char* displayed
 
     return last_of_list_table;
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+#define TEST_LIST_CONTENT(list,values,expected) do {    \
+        StrArray a;                                     \
+        (list).to_array(a, values);                     \
+        char *str = GBT_join_names(a, ';');             \
+        TEST_EXPECT_EQUAL(str, expected);               \
+        free(str);                                      \
+    } while(0)
+
+#define TEST_GET_LIST_CONTENT(list,expected) do {       \
+        char *str = (list).get_content_as_string(10);   \
+        TEST_EXPECT_EQUAL(str, expected);               \
+        free(str);                                      \
+    } while(0)
+
+void TEST_selection_list_access() {
+#if defined(ARB_GTK)
+    AW_selection_list list1(NULL, false);
+    AW_selection_list list2(NULL, false);
+#else // !defined(ARB_GTK)
+    AW_selection_list list1("bla", GB_STRING, NULL);
+    AW_selection_list list2("alb", GB_STRING, NULL);
+#endif
+
+    list1.insert("First", "1st");
+    list1.insert_default("Second", "2nd");
+    list1.insert("Third", "3rd");
+
+    list2.insert("First", "1st");
+    list2.insert("Second", "2nd");
+    list2.insert("Third", "3rd");
+    list2.insert_default("Default", "");
+
+#if 0
+    TEST_EXPECT_EQUAL(list1.size(), 2);
+    TEST_EXPECT_EQUAL(list2.size(), 3);
+
+    TEST_EXPECT_EQUAL(list1.get_default_value(), "2nd");
+    TEST_EXPECT_EQUAL(list1.get_default_display(), "Second");
+
+    TEST_EXPECT_EQUAL(list1.get_index_of("1st"), 0);
+    TEST_EXPECT_EQUAL(list1.get_index_of("2nd"), -1); // default value is not indexed
+    TEST_EXPECT_EQUAL(list1.get_index_of("3rd"), 1);  // = second non-default entry
+
+    TEST_EXPECT_EQUAL(list2.get_index_of("1st"), 0);
+    TEST_EXPECT_EQUAL(list2.get_index_of("2nd"), 1);
+    TEST_EXPECT_EQUAL(list2.get_index_of("3rd"), 2);
+
+
+    TEST_EXPECT_EQUAL(list1.get_value_at(0), "1st");
+    TEST_EXPECT_EQUAL(list1.get_value_at(1), "3rd");
+    TEST_EXPECT_NULL(list1.get_value_at(2));
+
+    TEST_EXPECT_EQUAL(list2.get_value_at(0), "1st");
+    TEST_EXPECT_EQUAL(list2.get_value_at(1), "2nd");
+    TEST_EXPECT_EQUAL(list2.get_value_at(2), "3rd");
+    TEST_EXPECT_NULL(list2.get_value_at(3));
+
+    TEST_LIST_CONTENT(list1, false, "First;Third");
+    TEST_GET_LIST_CONTENT(list1,    "First\nThird\n");
+    TEST_LIST_CONTENT(list1, true,  "1st;3rd");
+    TEST_LIST_CONTENT(list2, false, "First;Second;Third");
+    TEST_GET_LIST_CONTENT(list2,    "First\nSecond\nThird\n");
+    TEST_LIST_CONTENT(list2, true,  "1st;2nd;3rd");
+
+    {
+        AW_selection_list_iterator iter1(&list1);
+        AW_selection_list_iterator iter2(&list2);
+
+        TEST_EXPECT(bool(iter1));
+        TEST_EXPECT(bool(iter2));
+
+        TEST_EXPECT_EQUAL(iter1.get_displayed(), "First");
+        TEST_EXPECT_EQUAL(iter2.get_displayed(), "First");
+
+        TEST_EXPECT_EQUAL(iter1.get_value(), "1st");
+        TEST_EXPECT_EQUAL(iter2.get_value(), "1st");
+
+        ++iter1;
+        ++iter2;
+
+        TEST_EXPECT(bool(iter1));
+        TEST_EXPECT(bool(iter2));
+
+        TEST_EXPECT_EQUAL(iter1.get_displayed(), "Third");
+        TEST_EXPECT_EQUAL(iter2.get_displayed(), "Second");
+
+        TEST_EXPECT_EQUAL(iter1.get_value(), "3rd");
+        TEST_EXPECT_EQUAL(iter2.get_value(), "2nd");
+
+        ++iter1;
+        ++iter2;
+
+        TEST_REJECT(bool(iter1));
+        TEST_EXPECT(bool(iter2));
+    }
+
+    {
+#if defined(ARB_GTK)
+        AW_selection_list copy1(NULL, false);
+        AW_selection_list copy2(NULL, false);
+#else // !defined(ARB_GTK)
+        AW_selection_list copy1("c1", GB_STRING, NULL);
+        AW_selection_list copy2("c2", GB_STRING, NULL);
+#endif
+
+        list1.move_content_to(&copy1);
+        list2.move_content_to(&copy2);
+
+        TEST_EXPECT_EQUAL(list1.size(), 0);
+        TEST_EXPECT_EQUAL(list2.size(), 0);
+
+        TEST_LIST_CONTENT(copy1, true, "1st;3rd");
+        TEST_LIST_CONTENT(copy2, true, "1st;2nd;3rd");
+    }
+#endif
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
+

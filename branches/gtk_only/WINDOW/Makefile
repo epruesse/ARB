@@ -1449,6 +1449,7 @@ AW_select.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_select.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_select.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_select.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_select.o: $(ARBHOME)/INCLUDE/test_unit.h
 AW_select.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_signal.o: aw_area_management.hxx
