@@ -20,6 +20,8 @@ export LINUX
 export DEBIAN
 export REDHAT
 
+export CC CXX
+
 export A_CC  CC_INCLUDES
 export A_CXX CXX_INCLUDES
 export cflags cxxflags shared_cflags

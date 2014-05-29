@@ -2,8 +2,8 @@
 
 .SUFFIXES: .o .cxx .depend
 
-CXX=$(wildcard *.cxx)
-OBJECTS=$(subst .cxx,.o,$(CXX))
+SOURCES=$(wildcard *.cxx)
+OBJECTS=$(subst .cxx,.o,$(SOURCES))
 
 LIB_SHARED=../lib/$(MAIN:.a=).$(SHARED_LIB_SUFFIX)
 

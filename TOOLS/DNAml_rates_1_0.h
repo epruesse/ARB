@@ -31,9 +31,10 @@
 #define unlikely  -1.0E300  // low likelihood for initialization
 #define decimal_point   '.'
 
-#define ABS(x)    (((x)< 0)  ? -(x) : (x))
-#define MIN(x, y) (((x)<(y)) ?  (x) : (y))
-#define MAX(x, y) (((x)>(y)) ?  (x) : (y))
+// the following macros are already defined in gmacros.h:
+// #define ABS(x)    (((x)< 0)  ? -(x) : (x))
+// #define MIN(x, y) (((x)<(y)) ?  (x) : (y))
+// #define MAX(x, y) (((x)>(y)) ?  (x) : (y))
 #define LOG(x)    (((x)> 0) ? log(x) : hang("log domain error"))
 #define nint(x)   ((int) ((x)>0 ? ((x)+0.5) : ((x)-0.5)))
 #define aint(x)   ((double) ((int) (x)))
