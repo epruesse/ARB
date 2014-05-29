@@ -74,6 +74,8 @@ class AW_selection_list : virtual Noncopyable {
     int            selected_index;
     bool           select_default_on_unknown_awar_value; /**< If true the default value is selected if no entry that matches the awars value can be found*/
 
+    GtkTreeModel *get_model(); // lazy eval
+
     /**
      * @return NULL if there is no entry at this index
      */

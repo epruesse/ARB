@@ -42,9 +42,19 @@ static bool aw_selection_list_row_activated(GtkTreeView*, GtkTreePath*, GtkTreeV
     return true; // correct?
 }
 
-AW_selection_list::AW_selection_list(AW_awar *awar_, bool fallback2default) 
+GtkTreeModel *AW_selection_list::get_model() {
+    if (!model) {
+#if defined(UNIT_TESTS)
+        aw_assert(!RUNNING_TEST());
+#endif
+        model = GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING));
+    }
+    return model;
+}
+
+AW_selection_list::AW_selection_list(AW_awar *awar_, bool fallback2default)
     : awar(awar_),
-      model(GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING))),
+      model(NULL),
       widget(NULL),
       change_cb_id(0),
       activate_cb_id(0),
@@ -83,7 +93,7 @@ void AW_selection_list::bind_widget(GtkWidget *widget_) {
 
     GtkCellLayout *cell_layout;
     if (GTK_IS_TREE_VIEW(widget)) {
-        gtk_tree_view_set_model(GTK_TREE_VIEW(widget), model);
+        gtk_tree_view_set_model(GTK_TREE_VIEW(widget), get_model());
         cell_layout = GTK_CELL_LAYOUT(gtk_tree_view_column_new());
         gtk_tree_view_append_column(GTK_TREE_VIEW(widget), GTK_TREE_VIEW_COLUMN(cell_layout));
         g_object_set(renderer, "family", "monospace", NULL);
@@ -100,7 +110,7 @@ void AW_selection_list::bind_widget(GtkWidget *widget_) {
                                           (gpointer) this);
         
     } else if (GTK_IS_COMBO_BOX(widget)) {
-        gtk_combo_box_set_model(GTK_COMBO_BOX(widget), model);
+        gtk_combo_box_set_model(GTK_COMBO_BOX(widget), get_model());
         cell_layout = GTK_CELL_LAYOUT(widget);
         //connect changed signal
         change_cb_id = g_signal_connect(G_OBJECT(widget), "changed", 
@@ -129,7 +139,7 @@ void AW_selection_list::update_from_widget() {
             return;
     }
 
-    GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
+    GtkTreePath *path = gtk_tree_model_get_path(get_model(), &iter);
     selected_index = gtk_tree_path_get_indices(path)[0];
     gtk_tree_path_free(path);
 
@@ -151,7 +161,7 @@ void AW_selection_list::update() {
     // update() will not set the connected awar to the default value
     // if it contains a value which is not associated with a list entry!
 
-    gtk_list_store_clear(GTK_LIST_STORE(model));
+    gtk_list_store_clear(GTK_LIST_STORE(get_model()));
     
     for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
         append_to_liststore(lt);
@@ -173,7 +183,7 @@ void AW_selection_list::refresh() {
     
     if (lt) {
         GtkTreeIter iter;
-        gtk_tree_model_iter_nth_child(model, &iter, NULL, i);
+        gtk_tree_model_iter_nth_child(get_model(), &iter, NULL, i);
 
         if (GTK_IS_COMBO_BOX(widget)) {
             gtk_combo_box_set_active_iter(GTK_COMBO_BOX(widget), &iter);
@@ -210,7 +220,7 @@ void AW_selection_list::clear() {
 
     default_select = NULL;
 
-    gtk_list_store_clear(GTK_LIST_STORE(model));
+    // gtk_list_store_clear(GTK_LIST_STORE(get_model()));
 }
 
 bool AW_selection_list::default_is_selected() const {
@@ -365,8 +375,8 @@ void AW_selection_list::append_to_liststore(AW_selection_list_entry* entry)
     aw_return_if_fail(NULL != entry);
 
     GtkTreeIter iter;
-    gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 
+    gtk_list_store_append(GTK_LIST_STORE(get_model()), &iter);
+    gtk_list_store_set(GTK_LIST_STORE(get_model()), &iter,
                        0, entry->get_displayed(), 
                        -1);    
 }
