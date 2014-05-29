@@ -679,10 +679,24 @@ AW_selection_list_entry* AW_selection_list::insert_generic(const char* displayed
         free(str);                                      \
     } while(0)
 
+#define TEST_LIST_CONTENT__BROKEN(list,values,expected,got) do {        \
+        StrArray a;                                                     \
+        (list).to_array(a, values);                                     \
+        char *str = GBT_join_names(a, ';');                             \
+        TEST_EXPECT_EQUAL__BROKEN(str, expected, got);                  \
+        free(str);                                                      \
+    } while(0)
+
 #define TEST_GET_LIST_CONTENT(list,expected) do {       \
         char *str = (list).get_content_as_string(10);   \
         TEST_EXPECT_EQUAL(str, expected);               \
         free(str);                                      \
+    } while(0)
+
+#define TEST_GET_LIST_CONTENT__BROKEN(list,expected, got) do {  \
+        char *str = (list).get_content_as_string(10);           \
+        TEST_EXPECT_EQUAL__BROKEN(str, expected, got);          \
+        free(str);                                              \
     } while(0)
 
 void TEST_selection_list_access() {
@@ -703,16 +717,15 @@ void TEST_selection_list_access() {
     list2.insert("Third", "3rd");
     list2.insert_default("Default", "");
 
-#if 0
-    TEST_EXPECT_EQUAL(list1.size(), 2);
-    TEST_EXPECT_EQUAL(list2.size(), 3);
+    TEST_EXPECT_EQUAL__BROKEN(list1.size(), 2, 3);
+    TEST_EXPECT_EQUAL__BROKEN(list2.size(), 3, 4);
 
     TEST_EXPECT_EQUAL(list1.get_default_value(), "2nd");
     TEST_EXPECT_EQUAL(list1.get_default_display(), "Second");
 
     TEST_EXPECT_EQUAL(list1.get_index_of("1st"), 0);
-    TEST_EXPECT_EQUAL(list1.get_index_of("2nd"), -1); // default value is not indexed
-    TEST_EXPECT_EQUAL(list1.get_index_of("3rd"), 1);  // = second non-default entry
+    TEST_EXPECT_EQUAL__BROKEN(list1.get_index_of("2nd"), -1, 1); // default value is not indexed
+    TEST_EXPECT_EQUAL__BROKEN(list1.get_index_of("3rd"), 1, 2);  // = second non-default entry
 
     TEST_EXPECT_EQUAL(list2.get_index_of("1st"), 0);
     TEST_EXPECT_EQUAL(list2.get_index_of("2nd"), 1);
@@ -720,20 +733,22 @@ void TEST_selection_list_access() {
 
 
     TEST_EXPECT_EQUAL(list1.get_value_at(0), "1st");
-    TEST_EXPECT_EQUAL(list1.get_value_at(1), "3rd");
-    TEST_EXPECT_NULL(list1.get_value_at(2));
+    TEST_EXPECT_EQUAL__BROKEN(list1.get_value_at(1), "3rd", "2nd");
+    // TEST_EXPECT_NULL(list1.get_value_at(2));
+    TEST_EXPECT_EQUAL__BROKEN(list1.get_value_at(2), NULL, "3rd");
 
     TEST_EXPECT_EQUAL(list2.get_value_at(0), "1st");
     TEST_EXPECT_EQUAL(list2.get_value_at(1), "2nd");
     TEST_EXPECT_EQUAL(list2.get_value_at(2), "3rd");
-    TEST_EXPECT_NULL(list2.get_value_at(3));
+    // TEST_EXPECT_NULL(list2.get_value_at(3));
+    TEST_EXPECT_EQUAL__BROKEN(list2.get_value_at(3), NULL, "");
 
-    TEST_LIST_CONTENT(list1, false, "First;Third");
-    TEST_GET_LIST_CONTENT(list1,    "First\nThird\n");
-    TEST_LIST_CONTENT(list1, true,  "1st;3rd");
-    TEST_LIST_CONTENT(list2, false, "First;Second;Third");
-    TEST_GET_LIST_CONTENT(list2,    "First\nSecond\nThird\n");
-    TEST_LIST_CONTENT(list2, true,  "1st;2nd;3rd");
+    TEST_LIST_CONTENT__BROKEN(list1, false, "First;Third",            "First;Second;Third");
+    TEST_GET_LIST_CONTENT__BROKEN(list1,    "First\nThird\n",         "First\nSecond\nThird\n");
+    TEST_LIST_CONTENT__BROKEN(list1, true,  "1st;3rd",                "1st;2nd;3rd");
+    TEST_LIST_CONTENT__BROKEN(list2, false, "First;Second;Third",     "First;Second;Third;Default");
+    TEST_GET_LIST_CONTENT__BROKEN(list2,    "First\nSecond\nThird\n", "First\nSecond\nThird\nDefault\n");
+    TEST_LIST_CONTENT__BROKEN(list2, true,  "1st;2nd;3rd",            "1st;2nd;3rd;"); // ;@end caused by empty default
 
     {
         AW_selection_list_iterator iter1(&list1);
@@ -754,16 +769,16 @@ void TEST_selection_list_access() {
         TEST_EXPECT(bool(iter1));
         TEST_EXPECT(bool(iter2));
 
-        TEST_EXPECT_EQUAL(iter1.get_displayed(), "Third");
+        TEST_EXPECT_EQUAL__BROKEN(iter1.get_displayed(), "Third", "Second");
         TEST_EXPECT_EQUAL(iter2.get_displayed(), "Second");
 
-        TEST_EXPECT_EQUAL(iter1.get_value(), "3rd");
+        TEST_EXPECT_EQUAL__BROKEN(iter1.get_value(), "3rd", "2nd");
         TEST_EXPECT_EQUAL(iter2.get_value(), "2nd");
 
         ++iter1;
         ++iter2;
 
-        TEST_REJECT(bool(iter1));
+        TEST_REJECT__BROKEN(bool(iter1));
         TEST_EXPECT(bool(iter2));
     }
 
@@ -779,13 +794,13 @@ void TEST_selection_list_access() {
         list1.move_content_to(&copy1);
         list2.move_content_to(&copy2);
 
-        TEST_EXPECT_EQUAL(list1.size(), 0);
-        TEST_EXPECT_EQUAL(list2.size(), 0);
+        TEST_EXPECT_EQUAL__BROKEN(list1.size(), 0, 1);
+        TEST_EXPECT_EQUAL__BROKEN(list2.size(), 0, 1);
 
         TEST_LIST_CONTENT(copy1, true, "1st;3rd");
         TEST_LIST_CONTENT(copy2, true, "1st;2nd;3rd");
     }
-#endif
+
 }
 
 #endif // UNIT_TESTS
