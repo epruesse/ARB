@@ -698,6 +698,7 @@ void TEST_tree_remove_add_all() {
     TEST_REJECT_NULL(troot);
 
     // Note: following loop leaks father nodes and edges
+    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_tree_remove_add_all
     for (int i = 0; i<LEAFS-1; ++i) { // removing the second to last leaf, "removes" both remaining leafs
         TEST_ASSERT_VALID_TREE(root);
         leaf[i]->remove();

@@ -2,3 +2,4 @@
 # This is a valgrind suppression file that should be used when using valgrind with arb-motif.
 # Suppressions common for gtk and motif version should go into arb.supp
 # 
+# see also arb_valgrind@demangle
