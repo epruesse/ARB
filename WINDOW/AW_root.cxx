@@ -323,7 +323,7 @@ AW_root::~AW_root() {
     AW_root::SINGLETON = NULL;
 }
 
-void AW_root::window_hide(AW_window *aww) {
+void AW_root::window_hide(AW_window *) {
     active_windows--;
     if (active_windows < 0) {
         exit(EXIT_SUCCESS);

@@ -30,17 +30,14 @@
 static void aw_selection_list_awar_changed(AW_root*, AW_selection_list* slist) {
     slist->refresh();
 }
-static bool aw_selection_list_widget_changed(GtkWidget *widget, gpointer data) {
-    AW_selection_list* slist = (AW_selection_list*) data;
+static bool aw_selection_list_widget_changed(GtkWidget*, gpointer data) {
+    AW_selection_list* slist = (AW_selection_list*)data;
     slist->update_from_widget();
     return true; // correct?
 }
 
-static bool aw_selection_list_row_activated(GtkTreeView       *tree_view,
-                                            GtkTreePath       *path,
-                                            GtkTreeViewColumn *column,
-                                            gpointer           data) {
-    AW_selection_list* slist = (AW_selection_list*) data;
+static bool aw_selection_list_row_activated(GtkTreeView*, GtkTreePath*, GtkTreeViewColumn*, gpointer data) {
+    AW_selection_list* slist = (AW_selection_list*)data;
     slist->double_clicked();
     return true; // correct?
 }
