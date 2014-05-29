@@ -5,4 +5,33 @@
 # - motif specific errors should go into arb_motif.supp
 # - gtk   specific errors should go into arb_gtk.supp
 #
+# see also arb_valgrind@demangle
+
+{
+   Suppress leaking of edges in TEST_tree_remove_add_all
+   Memcheck:Leak
+   fun:_Znwm
+   ...
+   fun:_ZN12AP_tree_edge10initializeEP12AP_tree_nlen
+#   fun:_ZL13buildSonEdgesP12AP_tree_nlen
+   ...
+   fun:_Z24TEST_tree_remove_add_allv
+}
+{
+   Suppress leaking of edges in TEST_tree_remove_add_all
+   Memcheck:Leak
+   fun:_Znwm
+   ...
+   fun:_ZN12AP_tree_nlen*insertEPS_*
+   fun:_Z24TEST_tree_remove_add_allv
+}
+{
+   Suppress leaking of node in TEST_tree_remove_add_all
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNK22AP_TreeNlenNodeFactory8makeNodeEP8TreeRoot
+   ...
+   fun:_Z24TEST_tree_remove_add_allv
+}
+
 
