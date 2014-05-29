@@ -60,7 +60,7 @@ public:
 
 typedef int (*sellist_cmp_fun)(const char *disp1, const char *disp2);
 
-class AW_selection_list {
+class AW_selection_list : virtual Noncopyable {
     AW_selection_list_entry *get_entry_at(int index) const;
 
     char             *variable_name;
@@ -68,6 +68,7 @@ class AW_selection_list {
 
 public:
     AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
+    ~AW_selection_list();
 
     Widget select_list_widget;
 
