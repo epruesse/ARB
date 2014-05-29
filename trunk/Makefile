@@ -792,6 +792,11 @@ check_TOOLS:
 
 
 check_ENVIRONMENT : check_PATH check_TOOLS
+		@echo "-------------------- Environment [start]"
+		@echo "ARBHOME='$(ARBHOME)'"
+		@echo "PATH='$(PATH)'"
+		@echo "LD_LIBRARY_PATH='$(LD_LIBRARY_PATH)'"
+		@echo "-------------------- Environment [end]"
 
 check_tabs: check_setup
 ifeq ($(DEBUG),1)
@@ -807,7 +812,6 @@ force_tab_check:
 
 check_setup: check_ENVIRONMENT check_DEBUG check_ARB_64 check_DEVELOPER check_GCC_VERSION 
 		@echo Your setup seems to be ok.
-		@echo LD_LIBRARY_PATH is $(LD_LIBRARY_PATH)
 
 checks: check_setup check_tabs
 	@rm -f SOURCE_TOOLS/postcompile.sav
