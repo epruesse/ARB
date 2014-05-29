@@ -11,6 +11,9 @@ CONFIG_STATUS    = $(BUILDDIR)/config.status
 # automatically remove now obsolete file (@@@ remove this code after some time)
 OBSOLETE_STAMP   = phyml.stamp
 
+CC=$(A_CC)
+CXX=$(A_CXX)
+
 # ARBs standard target:
 $(MAIN) : $(INSTALLED_BINARY)
 	rm -f $(OBSOLETE_STAMP)
