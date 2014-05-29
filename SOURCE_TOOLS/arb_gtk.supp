@@ -1,0 +1,12 @@
+#
+# This is a valgrind suppression file that should be used when using valgrind with arb-gtk.
+# Suppressions common for gtk and motif version should go into arb.supp
+# 
+
+{
+   Suppress leaking in getdelim (happens once per process in libselinux startup code)
+   Memcheck:Leak
+   fun:malloc
+   fun:getdelim
+}
+

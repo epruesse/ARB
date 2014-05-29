@@ -1,0 +1,8 @@
+#
+# This is a valgrind suppression file that should be used when using valgrind with arb.
+#
+# Contains common errors
+# - motif specific errors should go into arb_motif.supp
+# - gtk   specific errors should go into arb_gtk.supp
+#
+
