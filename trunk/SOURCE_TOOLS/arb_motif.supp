@@ -2,4 +2,251 @@
 # This is a valgrind suppression file that should be used when using valgrind with arb-motif.
 # Suppressions common for gtk and motif version should go into arb.supp
 # 
-# see also arb_valgrind@demangle
+# see also arb_valgrind@suppressions
+# 
+# suppressed many leaks in arb/motif-code
+
+{
+   arb/motif: broken icon-load
+   Memcheck:Addr8
+   obj:/usr/lib/libXm.so.3.0.2
+   ...
+   fun:_XmxpmParseDataAndCreate
+   ...
+   fun:_XmGetScaledPixmap
+   ...
+}
+
+{
+   arb/motif: broken _XmEntryTextGet
+   Memcheck:Addr8
+   fun:_XmEntryTextGet
+   ...
+   fun:XtAppMainLoop
+   ...
+}
+
+
+{
+   arb: leaks XInitExtension
+   Memcheck:Leak
+   fun:*alloc
+   fun:XInitExtension
+   ...
+}
+
+{
+   arb: leaks _XtCreateWidget
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:_XtCreateWidget
+   ...
+}
+
+{
+   arb: leaks XmRenderTableCopy
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XmRenderTableCopy
+   ...
+}
+
+{
+   arb: leaks XtRealizeWidget
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XtRealizeWidget
+   ...
+}
+
+{
+   arb: leaks XmFontListEntryLoad
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XmFontListEntryLoad
+   ...
+}
+
+{
+   arb: leaks XtParseTranslationTable
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XtParseTranslationTable
+   ...
+}
+
+{
+   arb: leaks _XtCreatePopupShell
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:_XtCreatePopupShell
+   ...
+}
+{
+   arb: leaks XtOpenDisplay
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XtOpenDisplay
+   ...
+}
+
+{
+   arb: leaks XtAppCreateShell
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XtAppCreateShell
+   ...
+}
+
+{
+   arb: leaks XtVaSetValues
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XtVaSetValues
+   ...
+}
+
+{
+   arb: leaks XtDispatchEvent
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XtDispatchEvent
+   ...
+}
+
+{
+   arb: leaks XmAddProtocolCallback
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XmAddProtocolCallback
+   ...
+}
+
+{
+   arb: leaks XtAddCallback
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XtAddCallback
+   ...
+}
+
+{
+   arb: leaks _XmGetScaledPixmap
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:_XmGetScaledPixmap
+   ...
+}
+
+{
+   arb: leaks XtConfigureWidget
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XtConfigureWidget
+   ...
+}
+
+{
+   arb: leaks XtAddEventHandler
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XtAddEventHandler
+   ...
+}
+
+{
+   arb: leaks _XtInstallTranslations
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:_XtInstallTranslations
+   ...
+}
+
+{
+   arb: leaks XmFontListCreate
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XmFontListCreate
+   ...
+}
+
+{
+   arb: leaks _XmSetDragReceiverInfo
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:_XmSetDragReceiverInfo
+   ...
+}
+
+{
+   arb: leaks XLoadQueryFont
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XLoadQueryFont
+   ...
+}
+
+{
+   arb: leaks XAllocColor
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XAllocColor
+   ...
+}
+
+{
+   arb: leaks XQueryColor
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XQueryColor
+   ...
+}
+
+{
+   arb: leaks XGetGeometry
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XGetGeometry
+   ...
+}
+
+{
+   arb: leaks XtVaCreateManagedWidget
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XtVaCreateManagedWidget
+   ...
+}
+
+{
+   arb: leaks XEventsQueued
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:XEventsQueued
+   ...
+}
+
