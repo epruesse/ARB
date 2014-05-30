@@ -282,14 +282,23 @@ static void result_sort_order_changed_cb(AW_root *aw_root, DbQuery *query) {
     DbQuery_update_list(query);
 }
 
-struct hits_sort_params {
-    DbQuery                *query;
-    char                   *first_key;
+struct hits_sort_params : virtual Noncopyable {
+    DbQuery            *query;
+    char               *first_key;
     QUERY_RESULT_ORDER  order[MAX_CRITERIA];
+
+    hits_sort_params(DbQuery *q, const char *fk)
+        : query(q),
+          first_key(strdup(fk))
+    {}
+
+    ~hits_sort_params() {
+        free(first_key);
+    }
 };
 
 static int compare_hits(const void *cl_item1, const void *cl_item2, void *cl_param) {
-    hits_sort_params *param = static_cast<hits_sort_params*>(cl_param);
+    const hits_sort_params *param = static_cast<const hits_sort_params*>(cl_param);
 
     GBDATA *gb_item1 = (GBDATA*)cl_item1;
     GBDATA *gb_item2 = (GBDATA*)cl_item2;
@@ -416,8 +425,7 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
 
     // sort hits
 
-    hits_sort_params param = { query, NULL, {} };
-    param.first_key = aww->get_root()->awar(query->awar_keys[0])->read_string();
+    hits_sort_params param(query, aww->get_root()->awar(query->awar_keys[0])->read_char_pntr());
 
     bool is_pseudo  = is_pseudo_key(param.first_key);
     bool show_value = !is_pseudo; // cannot refer to key-value of pseudo key
