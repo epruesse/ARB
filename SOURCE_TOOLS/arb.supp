@@ -5,7 +5,7 @@
 # - motif specific errors should go into arb_motif.supp
 # - gtk   specific errors should go into arb_gtk.supp
 #
-# see also arb_valgrind@demangle
+# see also arb_valgrind@suppressions
 
 {
    Suppress leaking of edges in TEST_tree_remove_add_all

@@ -173,7 +173,7 @@ else
         VG_OPTS="$VG_OPTS --suppressions=${ARBHOME}/SOURCE_TOOLS/arb_motif.supp"  # arb-motif specific
         # VG_OPTS="$VG_OPTS --suppressions=${ARBHOME}/SOURCE_TOOLS/arb_gtk.supp"    # arb-gtk specific
 
-        # VG_OPTS="$VG_OPTS --demangle=no"    # uncomment to find mangled names
+        VG_OPTS="$VG_OPTS --gen-suppressions=all" # automatically generate suppressions
 
         VG_CMD="valgrind $QUIET $TOOL -v $VG_OPTS --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $ATTACH"
         echo "VG_CMD='$VG_CMD $@'"
