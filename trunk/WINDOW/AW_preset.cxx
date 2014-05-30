@@ -906,15 +906,24 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
                 aws->label("Font");
                 aws->create_option_menu(awar_name, true);
                 {
-                    int font_nr;
+                    int         font_nr;
                     const char *font_string;
+                    int         fonts_inserted = 0;
 
                     for (font_nr = 0; ; font_nr++) {
-                        font_string = AW_font_2_ascii((AW_font) font_nr);
-                        if (!font_string) break;
-                        if (gcp.fixed_fonts_only && AW_font_2_xfig((AW_font) font_nr) >= 0) continue;
-                        aws->insert_option(font_string, 0, (int) font_nr);
+                        font_string = AW_font_2_ascii((AW_font)font_nr);
+                        if (!font_string) {
+                            fprintf(stderr, "[Font detection: tried=%i, found=%i]\n", int(font_nr), fonts_inserted);
+                            break;
+                        }
+
+                        // continue; // simulate "no font found"
+
+                        if (gcp.fixed_fonts_only && AW_font_2_xfig((AW_font)font_nr) >= 0) continue;
+                        aws->insert_option(font_string, 0, (int)font_nr);
+                        ++fonts_inserted;
                     }
+                    if (!fonts_inserted) aws->insert_option("No suitable fonts detected", 0, 0);
                     aws->update_option_menu();
                 }
 
