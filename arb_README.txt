@@ -50,6 +50,9 @@ Files needed to install ARB
         * OSX version is available as arb-*.osx.tgz
           and via MacPorts (see arb_OS_X_MacPorts.txt included inside arb-*.osx.tgz)
 
+        * debian users should either use the arb package in 'non-free' or
+          install one of the centos versions (see also arb_INSTALL.txt)
+
 
 Install/Update ARB
 ------------------

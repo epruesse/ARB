@@ -19,7 +19,14 @@ To install a precompiled ARB
   * the package-install-script for ubuntu:              SH/arb_installubuntu4arb.sh
 
 --------------------------------------------------------------------------------
-4b. Otherwise use your package manager to install the
+4b. If you're using debian please install one of the centos versions
+
+You may also want to use 
+  * the package-install-script for ubuntu:              SH/arb_installubuntu4arb.sh
+(Note: add 'contrib non-free' behind 'main' in /etc/apt/sources.list)
+
+--------------------------------------------------------------------------------
+4c. Otherwise use your package manager to install the
     software that is needed to run ARB:
 
 - (open)motif
