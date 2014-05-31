@@ -87,6 +87,10 @@ void AW_window::replacer(AW_window *caller, CreateWindowCallback *windowMaker) {
         caller->hide();
     }
 }
+void AW_window::destroyCreateWindowCallback(CreateWindowCallback *windowMaker) {
+    delete windowMaker;
+}
+
 
 void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) { // @@@ obsolete (when #432 is done)
     typedef AW_window* (*popup_cb_t)(AW_root*, AW_CL);

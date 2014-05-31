@@ -181,6 +181,11 @@ public:
           const char            *help_texti = 0,
           AW_cb                 *next       = 0);
 
+    ~AW_cb() {
+        delete next; next = NULL;
+        free(id);
+    }
+
     void run_callbacks();                           // runs the whole list
     bool contains(AW_CB g);                         // test if contained in list
     bool is_equal(const AW_cb& other) const;
@@ -546,12 +551,13 @@ public:
 private:
     static void popper(AW_window *, CreateWindowCallback *windowMaker);
     static void replacer(AW_window *aww, CreateWindowCallback *windowMaker);
+    static void destroyCreateWindowCallback(CreateWindowCallback *windowMaker);
 public:
     static WindowCallback makeWindowPopper(const CreateWindowCallback& cwcb) {
-        return makeWindowCallback(popper, new CreateWindowCallback(cwcb));
+        return makeWindowCallback(popper, destroyCreateWindowCallback, new CreateWindowCallback(cwcb));
     }
     static WindowCallback makeWindowReplacer(const CreateWindowCallback& cwcb) {
-        return makeWindowCallback(replacer, new CreateWindowCallback(cwcb));
+        return makeWindowCallback(replacer, destroyCreateWindowCallback, new CreateWindowCallback(cwcb));
     }
 
     // normal callbacks
