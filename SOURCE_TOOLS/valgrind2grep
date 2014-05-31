@@ -35,18 +35,13 @@ sub check_ignore_internal($\$$) {
     if ($reason =~ 'loss record') { # memory leaks
       if ($reason =~ 'still reachable' or $reason =~ 'possibly lost') { # reachable memory leaks
         # things broken in ARB motif (wontfix; remove these exclusions after gtk merge)
-        if ($text =~ /\b(aw_create_shell)\b/) { $$ignore_r = $&; return; } # 03/12/2013
-        if ($text =~ /\b(AW_window::(load_xfig|insert_option_internal))\b/) { $$ignore_r = $&; return; } # 04/12/2013
         if ($text =~ /\b(gbmGetMemImpl)\b/) { $$ignore_r = $&; return; } # 04/12/2013 -- not all blocks of internal mem.management were freed (set MEMORY_TEST 1 in gb_memory.h to find leakers)
         ;
       }
       elsif ($reason =~ 'definitely lost') { # unreachable memory leaks
         if ($text =~ /\b(awt_create_selection_list_on_(trees|alignments))\b/) { $$ignore_r = $&; return; } # 03/12/2013
-        if ($text =~ /\b(AW_window::(create_toggle|create_option_menu))\b/) { $$ignore_r = $&; return; } # 03/12/2013
-        if ($text =~ /\b(AW_root::create_colormap)\b/) { $$ignore_r = $&; return; } # 03/12/2013
         ;
       }
-      if ($text =~ /\b(AW_manage_GC)\b/) { $$ignore_r = $&; return; } # 04/12/2013
     }
     elsif ($reason =~ 'file descriptor') { # open file descriptors
       if ($text =~ /\b(aw_initstatus)\b/) { $$ignore_r = $&; return; } # 03/12/2013
