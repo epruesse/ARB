@@ -7,6 +7,14 @@
 # suppressed many leaks in arb/motif-code
 
 {
+   arb: leaks loaded xfig-data with AW_window
+   Memcheck:Leak
+   ...
+   fun:_ZN9AW_window9load_xfigEPKcb
+   ...
+}
+
+{
    arb: leaks most recent 'at' in each window
    Memcheck:Leak
    fun:*alloc
@@ -49,7 +57,6 @@
    fun:_ZN9AW_window18create_input_fieldEPKci
    ...
 }
-
 {
    arb: leaks VarUpdateInfo in create_toggle
    Memcheck:Leak
@@ -57,6 +64,14 @@
    fun:_ZN9AW_window13create_toggleEPKcP14aw_toggle_data
    ...
 }
+{
+   arb: leaks VarUpdateInfo in insert_option_internal
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN9AW_window22insert_option_internalEPKcS1_iS1_b
+   ...
+}
+
 
 {
    arb: leaks AW_common_Xm in create_devices
@@ -67,13 +82,34 @@
 }
 
 {
+   arb: leaks AW_option_menu_struct in create_option_menu
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN9AW_window18create_option_menuEPKcb
+   ...
+}
+{
    arb: leaks AW_toggle_field_struct in create_toggle_field
    Memcheck:Leak
    fun:_Znwm
    fun:_ZN9AW_window19create_toggle_fieldEPKci
    ...
 }
+{
+   arb: leaks aw_toggle_data
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN9AW_window13create_toggleEPKcS1_S1_i
+   ...
+}
 
+{
+   arb: leaks AW_gc_manager
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_Z12AW_manage_GCP9AW_windowPKcP9AW_deviceii11AW_GCM_AREARK12Callback_FVVIvS0_EbS2_z
+   ...
+}
 
 {
    arb/motif: broken icon-load
