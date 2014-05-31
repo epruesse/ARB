@@ -1165,6 +1165,7 @@ AW_root_Motif::AW_root_Motif() {
 AW_root_Motif::~AW_root_Motif() {
     GBS_free_hash(action_hash);
     XmFontListFree(fontlist);
+    free(color_table);
 }
 
 void AW_root_Motif::set_cursor(Display *d, Window w, Cursor c) {
