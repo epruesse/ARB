@@ -102,6 +102,10 @@ if [ $BUILD == 1 ]; then
         echo "Faked arb.tgz"     > arb.tgz
         echo "Faked arb-dev.tgz" > arb-dev.tgz
     else
+        if [ "$ARG" == "from_tarball" ]; then
+            echo "Test clean before make (tarball build)"
+            make clean
+        fi
         make build
         make tarfile_quick
     fi
