@@ -5,9 +5,96 @@
 # see also arb_valgrind@suppressions
 
 {
+   arb: leaks many layout_cache
+   Memcheck:Leak
+   fun:_Znwm
+   ...
+   fun:_ZN12layout_cacheC1Em
+}
+
+{
    Suppress leaking in getdelim (happens once per process in libselinux startup code)
    Memcheck:Leak
    fun:malloc
    fun:getdelim
+}
+
+{
+   arb: leaks all kinds of gtk-ressources (g_*alloc*) 
+   Memcheck:Leak
+   ...
+   fun:g_*alloc*
+   ...
+}
+
+{
+   arb: leaks in gdk_pixbuf_new 
+   Memcheck:Leak
+   fun:malloc
+   fun:gdk_pixbuf_new
+   ...
+}
+
+{
+   arb: leaks all kinds of allocations done via pango
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:*pango*
+   ...
+}
+
+{
+   arb: leaks all kinds of allocations done via cairo
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:*cairo*
+   ...
+}
+
+{
+   arb: leaks all kinds of allocations done via libpangoft
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   obj:*libpangoft*
+   ...
+}
+
+
+{
+   gtk: gtk_init_check leaks (memalign)
+   Memcheck:Leak
+   fun:memalign
+   ...
+   fun:gtk_init_check
+   ...
+}
+{
+   gtk: gtk_init_check leaks (*alloc)
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:gtk_init_check
+   ...
+}
+
+{
+   gtk: g_module_open leaks (*alloc)
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:g_module_open
+   ...
+}
+
+{
+   gtk: gtk_icon_theme_has_icon leaks (memalign)
+   Memcheck:Leak
+   fun:memalign
+   ...
+   fun:gtk_icon_theme_has_icon
+   ...
 }
 
