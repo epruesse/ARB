@@ -33,6 +33,7 @@
 #include <awt_sel_boxes.hxx>
 #include <rootAsWin.h>
 #include <ad_cb.h>
+#include <Keeper.h>
 
 using namespace std;
 using namespace QUERY;
@@ -41,6 +42,10 @@ using namespace QUERY;
 #define MAX_SHOWN_DATA_SIZE 500
 
 #define AWAR_COLORIZE "tmp/dbquery_all/colorize"
+
+static void free_hit_description(long info) {
+    free(reinterpret_cast<char*>(info));
+}
 
 inline void SET_QUERIED(GBDATA *gb_species, DbQuery *query, const char *hitInfo, size_t hitInfoLen = 0) {
     dbq_assert(hitInfo);
@@ -2572,11 +2577,64 @@ const char *DbQuery::get_tree_name() const {
         return aws->get_root()->awar(awar_tree_name)->read_char_pntr();
 }
 
+DbQuery::~DbQuery() {
+    for (int s = 0; s<QUERY_SEARCHES; ++s) {
+        delete fieldsel[s];
+        free(awar_keys[s]);
+        free(awar_queries[s]);
+        free(awar_not[s]);
+        free(awar_operator[s]);
+    }
+
+    free(species_name);
+
+    free(awar_setkey);
+    free(awar_setprotection);
+    free(awar_setvalue);
+
+    free(awar_parskey);
+    free(awar_parsvalue);
+    free(awar_parspredefined);
+
+    free(awar_ere);
+    free(awar_where);
+    free(awar_by);
+    free(awar_use_tag);
+    free(awar_double_pars);
+    free(awar_deftag);
+    free(awar_tag);
+    free(awar_count);
+    free(awar_sort);
+
+    GBS_free_hash(hit_description);
+}
+
+// ----------------------------------------
+// store query data until DB close
+
+typedef Keeper<DbQuery*> QueryKeeper;
+template<> void Keeper<DbQuery*>::destroy(DbQuery *q) { delete q; }
+static SmartPtr<QueryKeeper> queryKeeper;
+static void destroyKeptQueries(GBDATA*, void*) {
+    queryKeeper.SetNull();
+}
+static void keepQuery(GBDATA *gbmain, DbQuery *q) {
+    if (queryKeeper.isNull()) {
+        queryKeeper = new QueryKeeper;
+        GB_atclose(gbmain, destroyKeptQueries, NULL);
+    }
+    queryKeeper->keep(q);
+}
+
+// ----------------------------------------
+
 DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *query_id) {
     char     buffer[256];
     AW_root *aw_root = aws->get_root();
     GBDATA  *gb_main = awtqs->gb_main;
     DbQuery *query   = new DbQuery(awtqs->get_queried_itemtype());
+
+    keepQuery(gb_main, query); // transfers ownership of query
 
     // @@@ set all the things below via ctor!
     // @@@ create a copyable object containing everything query_spec and DbQuery have in common -> pass that object to DbQuery-ctor
@@ -2587,8 +2645,9 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     query->expect_hit_in_ref_list = awtqs->expect_hit_in_ref_list;
     query->select_bit             = awtqs->select_bit;
     query->species_name           = strdup(awtqs->species_name);
+
     query->set_tree_awar_name(awtqs->tree_name);
-    query->hit_description = GBS_create_hash(query_count_items(query, QUERY_ALL_ITEMS, QUERY_GENERATE), GB_IGNORE_CASE);
+    query->hit_description = GBS_create_dynaval_hash(query_count_items(query, QUERY_ALL_ITEMS, QUERY_GENERATE), GB_IGNORE_CASE, free_hit_description);
 
     GB_push_transaction(gb_main);
 
@@ -2615,6 +2674,8 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             sprintf(buffer, "tmp/dbquery_%s/operator_%i", query_id, key_id);
             query->awar_operator[key_id] = strdup(buffer);
             aw_root->awar_string(query->awar_operator[key_id], "ign", AW_ROOT_DEFAULT);
+
+            query->fieldsel[key_id] = NULL;
         }
         aw_root->awar(query->awar_keys[0])->add_callback(makeRootCallback(first_searchkey_changed_cb, query));
     }
@@ -2702,8 +2763,8 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             aws->restore_at_size_and_attach(&at_size);
 
             {
-                char *button_id = GBS_global_string_copy("field_sel_%s_%i", query_id, key);
-                create_selection_list_on_itemfields(gb_main, aws, query->awar_keys[key], true, FIELD_FILTER_NDS, 0, awtqs->rescan_pos_fig, awtqs->get_queried_itemtype(), 22, 20, SF_PSEUDO, button_id);
+                char *button_id      = GBS_global_string_copy("field_sel_%s_%i", query_id, key);
+                query->fieldsel[key] = create_selection_list_on_itemfields(gb_main, aws, query->awar_keys[key], true, FIELD_FILTER_NDS, 0, awtqs->rescan_pos_fig, awtqs->get_queried_itemtype(), 22, 20, SF_PSEUDO, button_id);
                 free(button_id);
             }
 
