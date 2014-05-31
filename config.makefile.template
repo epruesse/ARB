@@ -14,7 +14,7 @@ STABS := 0# force stabs format?
 TRACESYM := 1# insert symbols for meaningful backtraces into executables 
 
 # Include features using OPENGL? 
-OPENGL := 1
+OPENGL := 0
 
 # GTK version to use (2 or 3)
 GTK := 2

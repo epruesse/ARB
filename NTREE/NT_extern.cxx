@@ -1027,15 +1027,15 @@ static void canvas_tree_awar_changed_cb(AW_awar *, bool, AWT_canvas *ntw) {
 static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     GB_push_transaction(GLOBAL.gb_main);
 
-    char  window_title[256];
-    char * const awar_tree = (char *)GB_calloc(sizeof(char), strlen(AWAR_TREE) + 10);          // do not free this
+    char        window_title[256];
+    const char *awar_tree = NULL;
 
     if (clone) {
-        sprintf(awar_tree, AWAR_TREE "_%i", clone);
+        awar_tree = GB_keep_string(GBS_global_string_copy(AWAR_TREE "_%i", clone));
         sprintf(window_title, "ARB_NT_%i", clone);
     }
     else {
-        sprintf(awar_tree, AWAR_TREE);
+        awar_tree = AWAR_TREE;
         sprintf(window_title, "ARB_NT");
     }
     AW_window_menu_modes *awm = new AW_window_menu_modes;

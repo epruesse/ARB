@@ -44,11 +44,14 @@ Files needed to install ARB
         * all versions are 64bit versions
           (if you really need a 32bit version, see http://download.arb-home.de/release/arb_5.5/)
 
-        * all versions are compile without OPENGL
+        * all versions are compiled without OPENGL
           (if you rely on OPENGL features, either stick with arb_5.5 or compile arb from source)
 
         * OSX version is available as arb-*.osx.tgz
           and via MacPorts (see arb_OS_X_MacPorts.txt included inside arb-*.osx.tgz)
+
+        * debian users should either use the arb package in 'non-free' or
+          install one of the centos versions (see also arb_INSTALL.txt)
 
 
 Install/Update ARB
@@ -97,6 +100,12 @@ Install/Update ARB
         and start 'ARB' with
 
                         'arb'
+
+Compile ARB from source
+-----------------------
+
+        * See arb_INSTALL.txt for information about how to compile
+          arb from source.
 
 
 Additional information

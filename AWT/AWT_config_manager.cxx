@@ -286,14 +286,15 @@ static void AWT_start_config_manager(AW_window *aww, AWT_configuration *config) 
     if (reopen) AWT_start_config_manager(aww, config);
 }
 
+static void destroy_AWT_configuration(AWT_configuration *c) { delete c; }
+
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store_cb,
                                AWT_load_config_from_string load_cb, AW_CL cl1, AW_CL cl2, const char *macro_id)
 {
-    AWT_configuration *config = new AWT_configuration(aww, default_file_, id, store_cb, load_cb, cl1, cl2);
-    // config will not be freed!!!
+    AWT_configuration * const config = new AWT_configuration(aww, default_file_, id, store_cb, load_cb, cl1, cl2);
 
     aww->button_length(0); // -> autodetect size by size of graphic
-    aww->callback(makeWindowCallback(AWT_start_config_manager, config));
+    aww->callback(makeWindowCallback(AWT_start_config_manager, destroy_AWT_configuration, config));
     aww->create_button(macro_id ? macro_id : "SAVELOAD_CONFIG", "#conf_save.xpm");
 }
 
