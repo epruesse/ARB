@@ -7,6 +7,75 @@
 # suppressed many leaks in arb/motif-code
 
 {
+   arb: leaks most recent 'at' in each window
+   Memcheck:Leak
+   fun:*alloc
+   fun:strdup
+   fun:_ZN9AW_window9help_textEPKc
+   ...
+}
+
+{
+   arb: leaks all callbacks not in action hash
+   Memcheck:Leak
+   fun:_Znwm
+   ...
+   fun:*makeWindowCallback*
+   ...
+}
+
+{
+   arb: leaks all resize callbacks
+   # should be destroyed together with AW_window (which is never destroyed)
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN18AW_area_management19set_resize_callbackEP9AW_windowRK12Callback_FVVIvS1_E
+   ...
+}
+
+{
+   arb: leaks all expose callbacks
+   # should be destroyed together with AW_window (which is never destroyed)
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN18AW_area_management19set_expose_callbackEP9AW_windowRK12Callback_FVVIvS1_E
+   ...
+}
+
+{
+   arb: leaks VarUpdateInfo in create_input_field
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN9AW_window18create_input_fieldEPKci
+   ...
+}
+
+{
+   arb: leaks VarUpdateInfo in create_toggle
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN9AW_window13create_toggleEPKcP14aw_toggle_data
+   ...
+}
+
+{
+   arb: leaks AW_common_Xm in create_devices
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN18AW_area_management14create_devicesEP9AW_window7AW_area
+   ...
+}
+
+{
+   arb: leaks AW_toggle_field_struct in create_toggle_field
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN9AW_window19create_toggle_fieldEPKci
+   ...
+}
+
+
+{
    arb/motif: broken icon-load
    Memcheck:Addr8
    obj:/usr/lib/libXm.so.3.0.2
