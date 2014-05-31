@@ -8,7 +8,7 @@
 # see also arb_valgrind@suppressions
 
 {
-   Suppress leaking of edges in TEST_tree_remove_add_all
+   arb: TEST_tree_remove_add_all leaks edges
    Memcheck:Leak
    fun:_Znwm
    ...
@@ -18,7 +18,7 @@
    fun:_Z24TEST_tree_remove_add_allv
 }
 {
-   Suppress leaking of edges in TEST_tree_remove_add_all
+   arb: TEST_tree_remove_add_all leaks edges
    Memcheck:Leak
    fun:_Znwm
    ...
@@ -26,7 +26,7 @@
    fun:_Z24TEST_tree_remove_add_allv
 }
 {
-   Suppress leaking of node in TEST_tree_remove_add_all
+   arb: TEST_tree_remove_add_all leaks nodes
    Memcheck:Leak
    fun:_Znwm
    fun:_ZNK22AP_TreeNlenNodeFactory8makeNodeEP8TreeRoot
