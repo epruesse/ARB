@@ -243,8 +243,13 @@ static arb_handlers aw_handlers = {
     aw_message_and_dump_stderr,
     aw_message,
     dump_stdout,
-    AW_status_impl, 
+    AW_status_impl,
 };
+
+static void free_action(long action) {
+    AW_cb *cb = (AW_cb*)action;
+    delete cb;
+}
 
 void AW_root::init_root(const char *programname, bool no_exit) {
     // initialize ARB X application
@@ -253,7 +258,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     const int    MAX_FALLBACKS = 30;
     char        *fallback_resources[MAX_FALLBACKS];
 
-    prvt->action_hash = GBS_create_hash(1000, GB_MIND_CASE);
+    prvt->action_hash = GBS_create_dynaval_hash(1000, GB_MIND_CASE, free_action); // actions are added via define_remote_command()
 
     p_r-> no_exit = no_exit;
     program_name  = strdup(programname);
