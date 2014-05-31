@@ -18,7 +18,7 @@
 
 #include <ctime>
 #include <sys/time.h>
-#include <list>
+#include <Keeper.h>
 
 char *GB_strduplen(const char *p, unsigned len) {
     // fast replacement for strdup, if len is known
@@ -94,30 +94,12 @@ const char *GB_date_string() {
 
 // --------------------------------------------------------------------------------
 
-class Heap {
-    typedef std::list<char*> heaplist;
-    heaplist elems;
-
-public:
-    Heap() {}
-    ~Heap() {
-        for (heaplist::iterator i = elems.begin(); i != elems.end(); ++i) {
-            free(*i);
-        }
-    }
-    void keep(char *str) {
-        elems.push_back(str);
-    }
-};
-
-static Heap heap;
-
 const char *GB_keep_string(char *str) {
     /*! keep an allocated string until program termination
      * useful to avoid valgrind reporting leaks e.g for callback parameters
      */
-
-    heap.keep(str);
+    static Keeper<char*> stringKeeper;
+    stringKeeper.keep(str);
     return str;
 }
 
