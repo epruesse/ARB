@@ -1785,11 +1785,14 @@ static const char *existingPixmap(const char *icon_relpath, const char *name) {
     return icon_fullname;
 }
 
-static Pixmap getIcon(Screen *screen, const char *iconName, Pixel foreground, Pixel background) {
-    static GB_HASH *icon_hash = 0;
-    if (!icon_hash) icon_hash = GBS_create_hash(100, GB_MIND_CASE);
 
-    Pixmap pixmap = GBS_read_hash(icon_hash, iconName);
+static Pixmap getIcon(Screen *screen, const char *iconName, Pixel foreground, Pixel background) {
+    static SmartCustomPtr(GB_HASH, GBS_free_hash) icon_hash;
+    if (icon_hash.isNull()) {
+        icon_hash = GBS_create_hash(100, GB_MIND_CASE);
+    }
+
+    Pixmap pixmap = GBS_read_hash(&*icon_hash, iconName);
 
     if (!pixmap && iconName) {
         const char *iconFile = existingPixmap("icons", iconName);
@@ -1797,7 +1800,7 @@ static Pixmap getIcon(Screen *screen, const char *iconName, Pixel foreground, Pi
         if (iconFile) {
             char *ico = strdup(iconFile);
             pixmap    = XmGetPixmap(screen, ico, foreground, background);
-            GBS_write_hash(icon_hash, iconName, pixmap);
+            GBS_write_hash(&*icon_hash, iconName, pixmap);
             free(ico);
         }
     }
