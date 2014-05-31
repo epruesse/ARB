@@ -7,14 +7,6 @@
 # suppressed many leaks in arb/motif-code
 
 {
-   arb: leaks loaded xfig-data with AW_window
-   Memcheck:Leak
-   ...
-   fun:_ZN9AW_window9load_xfigEPKcb
-   ...
-}
-
-{
    arb: leaks most recent 'at' in each window
    Memcheck:Leak
    fun:*alloc
