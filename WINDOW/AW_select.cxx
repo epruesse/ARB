@@ -90,6 +90,7 @@ AW_selection_list::~AW_selection_list() {
     if (activate_cb_id) {
         g_signal_handler_disconnect(G_OBJECT(widget), activate_cb_id);
     }
+    clear();
 }
 
 void AW_selection_list::bind_widget(GtkWidget *widget_) {
@@ -800,7 +801,6 @@ void TEST_selection_list_access() {
         TEST_LIST_CONTENT(copy1, true, "1st;3rd");
         TEST_LIST_CONTENT(copy2, true, "1st;2nd;3rd");
     }
-
 }
 
 #endif // UNIT_TESTS
