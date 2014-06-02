@@ -103,6 +103,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     dialog.create_buttons(buttons ? buttons : "Ok,-Abort");
     
     slist->clear();
+    slist->insert_default("<new>", "");
     if (value_list) {
         char *values = strdup(value_list);
         char *word;
@@ -112,7 +113,6 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
         }
         free(values);
     }
-    slist->insert_default("<new>", "");
     slist->update();
 
     dialog.run();
