@@ -42,6 +42,9 @@ struct WindowCallbackSlot : public Slot {
 
     WindowCallbackSlot(const WindowCallback& wcb, AW_window* w)
         : cb(wcb), aww(w) {}
+    WindowCallbackSlot(const WindowCallbackSlot& other)
+        : cb(other.cb), aww(other.aww) {}
+    DECLARE_ASSIGNMENT_OPERATOR(WindowCallbackSlot);
     ~WindowCallbackSlot() {}
 
     int slot_type() const OVERRIDE {
@@ -115,7 +118,7 @@ struct RootCallbackSlot : public Slot {
     }
 };
 
-struct AW_signal::Pimpl {
+struct AW_signal::Pimpl : virtual Noncopyable {
     std::list<Slot*> slots;
     bool enabled;            // false -> no signal propagation
     int in_emit;             // we're in emit! don't delete from slots!
