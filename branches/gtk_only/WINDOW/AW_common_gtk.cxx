@@ -52,7 +52,7 @@ cairo_antialias_t make_cairo_antialias(AW_antialias aa) {
 
 
 /* primitive implementation ahead */
-struct layout_cache {
+struct layout_cache : virtual Noncopyable {
     typedef std::vector<PangoLayout*> layout_vec;
     layout_vec content;
     layout_vec::iterator cur;
@@ -122,7 +122,7 @@ struct layout_cache {
 };
 
 
-struct AW_common_gtk::Pimpl {
+struct AW_common_gtk::Pimpl : virtual ::Noncopyable {
     GtkWidget  *window;
     AW_window  *aww;
     AW_area    area;
@@ -211,7 +211,7 @@ void AW_common_gtk::update_cr(cairo_t* cr, int gc, bool use_grey) {
 
 const int ASCII_CHAR_COUNT = AW_FONTINFO_CHAR_ASCII_MAX - AW_FONTINFO_CHAR_ASCII_MIN;
 
-struct AW_GC_gtk::Pimpl {
+struct AW_GC_gtk::Pimpl : virtual ::Noncopyable {
     layout_cache                cache;
     PangoGlyphInfo              ascii_glyphs[ASCII_CHAR_COUNT + 1];
     cairo_scaled_font_t        *scaled_font;
