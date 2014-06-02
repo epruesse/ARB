@@ -30,10 +30,12 @@ using namespace std;
  *                  will cause abnormal (EXIT_FAILURE) termination of program.
  *                  If NULL, a single "Ok" Button will be displayed.
  * @param  sameSize Make all buttons have the same size.
- * @param  helpfile Adds a "HELP" button. May be NULL.
+ * @param  helpfile Adds a "HELP" button. May be NULL. (currently ignored)
  * @return the index of the selected answer
  */
 int aw_question(const char *unique_id, const char *question, const char *buttons, bool sameSize, const char *helpfile) {
+    // @@@ TODO: add help button
+
     if (!buttons)  buttons  = "Ok";
     if (!question) question = "No question?! Please report this as a bug.";
 
