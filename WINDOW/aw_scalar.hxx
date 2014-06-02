@@ -76,5 +76,8 @@ public:
     }
     bool operator != (const AW_scalar& other) const { return !(*this == other); }
 
-    bool operator == (AW_awar*& awar) const;   
+    bool operator == (const AW_awar* const & awar) const;
+    bool operator == (AW_awar*& awar) const {
+        return operator == (const_cast<const AW_awar*&>(awar));
+    }
 };
