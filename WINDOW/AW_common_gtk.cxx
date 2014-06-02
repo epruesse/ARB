@@ -103,7 +103,7 @@ struct layout_cache : virtual Noncopyable {
         for (layout_vec::iterator it = content.begin(); 
              it != content.end(); ++it) {
             if (!*it) continue;
-            if (size != -1 && size != strlen(text)) continue;
+            if (size != -1 && size != (int)strlen(text)) continue;
             if (!strcmp(pango_layout_get_text(*it), text)) {
                 return *it;
             }
@@ -377,12 +377,13 @@ void AW_GC_gtk::make_glyph_string(cairo_glyph_t **gstr, int *glen,
 
 
 int AW_GC_gtk::get_actual_string_size(const char* str) const {
-    
+    aw_warn_if_reached();
+    return -666;
     /*
-    PangoLayout *pl = get_pl(str, -1); // update with string if necessary
-   
-    int w, h;
-    pango_layout_get_pixel_size (pl, &w, &h);
+      PangoLayout *pl = get_pl(str, -1); // update with string if necessary
+
+      int w, h;
+      pango_layout_get_pixel_size (pl, &w, &h);
     return w;
     */
 }
