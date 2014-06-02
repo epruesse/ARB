@@ -109,6 +109,11 @@ public:
 #if defined(ASSERTION_USED)
     GB_TYPES get_awar_type() const { return awar->get_type(); }
 #endif
+#if defined(UNIT_TESTS)
+    const char *peek_displayed(int index) const {
+        return get_entry_at(index, true)->get_displayed();
+    }
+#endif
 
     size_t size() const;
 

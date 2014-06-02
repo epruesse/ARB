@@ -749,6 +749,20 @@ void TEST_selection_list_access() {
     TEST_EXPECT_EQUAL(list2.get_index_of("3rd"), 2);
 
 
+    TEST_EXPECT_EQUAL(list0.peek_displayed(0), "Second");
+    TEST_EXPECT_EQUAL(list0.peek_displayed(1), "Third");
+    TEST_EXPECT_EQUAL(list0.peek_displayed(2), "First"); // default
+
+    TEST_EXPECT_EQUAL(list1.peek_displayed(0), "First");
+    TEST_EXPECT_EQUAL(list1.peek_displayed(1), "Third");
+    TEST_EXPECT_EQUAL(list1.peek_displayed(2), "Second"); // default
+
+    TEST_EXPECT_EQUAL(list2.peek_displayed(0), "First");
+    TEST_EXPECT_EQUAL(list2.peek_displayed(1), "Second");
+    TEST_EXPECT_EQUAL(list2.peek_displayed(2), "Third");
+    TEST_EXPECT_EQUAL(list2.peek_displayed(3), "Default"); // default
+
+
     TEST_EXPECT_EQUAL(list0.get_value_at(0), "2nd");
     TEST_EXPECT_EQUAL(list0.get_value_at(1), "3rd");
     TEST_EXPECT_NULL(list0.get_value_at(2));
