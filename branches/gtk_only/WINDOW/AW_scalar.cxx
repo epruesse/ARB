@@ -37,10 +37,10 @@ GB_ERROR AW_scalar::write_to(class AW_awar *awar) {
 
 bool AW_scalar::operator == (AW_awar*& awar) const {
     switch (type) {
-    case GB_INT:     return value.i == awar->read_int();
-    case GB_FLOAT:   return fabs(value.f - awar->read_float()) < 0.000001;
-    case GB_STRING:  return strcmp(value.s, awar->read_char_pntr()) == 0;
-    case GB_POINTER: return value.p == awar->read_pointer();
-    default: aw_assert(false); return false;
+        case GB_INT:     return value.i == awar->read_int();
+        case GB_FLOAT:   return fabs(value.f - awar->read_float()) < 0.000001;
+        case GB_STRING:  return strcmp(value.s, awar->read_char_pntr()) == 0;
+        case GB_POINTER: return value.p == awar->read_pointer();
+        default: aw_assert(false); return false;
     }
 }
