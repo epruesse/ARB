@@ -86,6 +86,12 @@ class AW_selection_list : virtual Noncopyable {
     AW_selection_list_entry *append(AW_selection_list_entry *new_entry);
     void replace_default(AW_selection_list_entry *new_default);
 
+    AW_selection_list_entry *list_table;
+    AW_selection_list_entry *last_of_list_table;
+    AW_selection_list_entry *default_select;
+
+    friend class AW_selection_list_iterator;
+
 public:
     void update_from_widget();  // called from internal callback
     void double_clicked();
@@ -96,9 +102,6 @@ public:
 
     void bind_widget(GtkWidget*);
 
-    AW_selection_list_entry *list_table;
-    AW_selection_list_entry *last_of_list_table;
-    AW_selection_list_entry *default_select;
 
     // ******************** real public ***************
 
