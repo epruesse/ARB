@@ -88,15 +88,15 @@ public:
     virtual float    get_max() const OVERRIDE;
     virtual AW_awar *set_srt(const char *srt) OVERRIDE;
 
-    virtual bool        has_default_value() OVERRIDE = 0;
-    virtual char       *read_string() OVERRIDE;
-    virtual const char *read_char_pntr() OVERRIDE;
-    virtual char       *read_as_string() OVERRIDE;
-    virtual long        read_int() OVERRIDE;
-    virtual double      read_float() OVERRIDE;
-    virtual double      read_as_float() OVERRIDE;
-    virtual GBDATA     *read_pointer() OVERRIDE;
-    virtual bool        read_as_bool() OVERRIDE;
+    virtual bool        has_default_value() const OVERRIDE = 0;
+    virtual char       *read_string() const OVERRIDE;
+    virtual const char *read_char_pntr() const OVERRIDE;
+    virtual char       *read_as_string() const OVERRIDE;
+    virtual long        read_int() const OVERRIDE;
+    virtual double      read_float() const OVERRIDE;
+    virtual double      read_as_float() const OVERRIDE;
+    virtual GBDATA     *read_pointer() const OVERRIDE;
+    virtual bool        read_as_bool() const OVERRIDE;
 
     virtual GB_ERROR write_string(const char *aw_string, bool touch = false) OVERRIDE;
     virtual GB_ERROR write_as_string(const char *aw_string, bool touch = false) OVERRIDE;
@@ -137,11 +137,11 @@ public:
     GB_ERROR  write_float(double para, bool touch=false) OVERRIDE;
     GB_ERROR  write_as_bool(bool b, bool touch=false) OVERRIDE;
 
-    bool      has_default_value() OVERRIDE;
-    long      read_int() OVERRIDE;
-    char*     read_as_string() OVERRIDE;
-    double    read_as_float() OVERRIDE { return read_int(); };
-    bool      read_as_bool() OVERRIDE;
+    bool      has_default_value() const OVERRIDE;
+    long      read_int() const OVERRIDE;
+    char*     read_as_string() const OVERRIDE;
+    double    read_as_float() const OVERRIDE { return read_int(); };
+    bool      read_as_bool() const OVERRIDE;
     AW_awar*  add_target_var(long *pint) OVERRIDE;
     GB_ERROR  toggle_toggle() OVERRIDE;
 };
@@ -153,7 +153,7 @@ class AW_awar_float : public AW_awar_impl {
     double value;
     std::vector<float*> target_variables;
     void     remove_all_target_vars() OVERRIDE;
-    bool      has_default_value() OVERRIDE;
+    bool      has_default_value() const OVERRIDE;
 public:
     AW_awar_float(const char *var_name, double var_value, AW_default default_file, AW_root *root);
     ~AW_awar_float();
@@ -168,10 +168,10 @@ public:
     GB_ERROR    write_as_string(const char* para, bool touch=false) OVERRIDE;
     GB_ERROR    write_float(double para, bool touch=false) OVERRIDE;
     GB_ERROR    write_as_bool(bool b, bool touch=false) OVERRIDE;
-    double      read_float() OVERRIDE;
-    double      read_as_float() OVERRIDE { return read_float(); }
-    char*       read_as_string() OVERRIDE;
-    bool        read_as_bool() OVERRIDE;
+    double      read_float() const OVERRIDE;
+    double      read_as_float() const OVERRIDE { return read_float(); }
+    char*       read_as_string() const OVERRIDE;
+    bool        read_as_bool() const OVERRIDE;
     AW_awar*    add_target_var(float *pfloat) OVERRIDE;
     GB_ERROR    toggle_toggle() OVERRIDE;
 };
@@ -182,7 +182,7 @@ class AW_awar_string : public AW_awar_impl, virtual Noncopyable {
     char* value;
     std::vector<char**> target_variables;
     void     remove_all_target_vars() OVERRIDE;
-    bool      has_default_value() OVERRIDE;
+    bool      has_default_value() const OVERRIDE;
 public:
     AW_awar_string(const char *var_name, const char* var_value, AW_default default_file, AW_root *root);
     ~AW_awar_string();
@@ -194,10 +194,10 @@ public:
     GB_ERROR    write_as_string(const char* para, bool touch=false) OVERRIDE;
     GB_ERROR    write_string(const char* para, bool touch=false) OVERRIDE;
     GB_ERROR    write_as_bool(bool b, bool touch=false) OVERRIDE;
-    char*       read_string() OVERRIDE;
-    const char* read_char_pntr() OVERRIDE;
-    char*       read_as_string() OVERRIDE;
-    bool        read_as_bool() OVERRIDE;
+    char*       read_string() const OVERRIDE;
+    const char* read_char_pntr() const OVERRIDE;
+    char*       read_as_string() const OVERRIDE;
+    bool        read_as_bool() const OVERRIDE;
     AW_awar*    add_target_var(char **ppchr) OVERRIDE;
     GB_ERROR    toggle_toggle() OVERRIDE;
 };
@@ -206,7 +206,7 @@ class AW_awar_pointer : public AW_awar_impl, virtual Noncopyable {
     void *default_value;
     void *value;
     void     remove_all_target_vars() OVERRIDE;
-    bool      has_default_value() OVERRIDE;
+    bool      has_default_value() const OVERRIDE;
 public:
     AW_awar_pointer(const char *var_name, void* var_value, AW_default default_file, AW_root *root);
     ~AW_awar_pointer();
@@ -214,5 +214,5 @@ public:
     const char* get_type_name() const { return "AW_awar_pointer"; }
     void        do_update() OVERRIDE;
     GB_ERROR    write_pointer(GBDATA* para, bool touch=false) OVERRIDE;
-    GBDATA*     read_pointer() OVERRIDE;
+    GBDATA*     read_pointer() const OVERRIDE;
 };
