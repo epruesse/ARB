@@ -81,21 +81,14 @@ class AW_selection_list : virtual Noncopyable {
      */
     AW_selection_list_entry *get_entry_at(int index) const;
     
-    /**
-     * Appends the specified entry to the list store
-     */
     void append_to_liststore(AW_selection_list_entry* entry);
-    
-    /**
-     * Inserts a value into this selection list.
-     * @param displayed The value that should be displayed
-     * @param value The actual value
-     * @param expectedType The type of this variable. This is only used for type checking hence the name 'expectedType'
-     * @return The newly added list entry. NULL in case of error.
-     */
+
     template <class T>
-    AW_selection_list_entry* insert_generic(const char* displayed, T value, GB_TYPES expectedType);
-    
+    AW_selection_list_entry* make_entry(const char* displayed, T value, GB_TYPES expectedType);
+
+    AW_selection_list_entry *append(AW_selection_list_entry *new_entry);
+    void replace_default(AW_selection_list_entry *new_default);
+
 public:
     void update_from_widget();  // called from internal callback
     void double_clicked();
@@ -117,7 +110,7 @@ public:
     GB_TYPES get_awar_type() const { return awar->get_type(); }
 #endif
 
-    size_t size();
+    size_t size() const;
 
     void insert(const char *displayed, const char *value);
     void insert_default(const char *displayed, const char *value);
