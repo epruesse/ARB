@@ -651,8 +651,19 @@ GBDATA *AW_DB_selection::get_gb_main() {
     } while(0)
 
 void TEST_selection_list_access() {
+#if defined(ARB_GTK)
+    AW_selection_list list0(NULL, false);
+    AW_selection_list list1(NULL, false);
+    AW_selection_list list2(NULL, false);
+#else // !defined(ARB_GTK)
+    AW_selection_list list0("bla", GB_STRING, NULL);
     AW_selection_list list1("bla", GB_STRING, NULL);
     AW_selection_list list2("alb", GB_STRING, NULL);
+#endif
+
+    list0.insert_default("First", "1st");
+    list0.insert("Second", "2nd");
+    list0.insert("Third", "3rd");
 
     list1.insert("First", "1st");
     list1.insert_default("Second", "2nd");
@@ -663,11 +674,16 @@ void TEST_selection_list_access() {
     list2.insert("Third", "3rd");
     list2.insert_default("Default", "");
 
+    TEST_EXPECT_EQUAL(list0.size(), 2);
     TEST_EXPECT_EQUAL(list1.size(), 2);
     TEST_EXPECT_EQUAL(list2.size(), 3);
 
     TEST_EXPECT_EQUAL(list1.get_default_value(), "2nd");
     TEST_EXPECT_EQUAL(list1.get_default_display(), "Second");
+
+    TEST_EXPECT_EQUAL(list0.get_index_of("1st"), -1); // default value is not indexed
+    TEST_EXPECT_EQUAL(list0.get_index_of("2nd"), 0);
+    TEST_EXPECT_EQUAL(list0.get_index_of("3rd"), 1);  // = second non-default entry
 
     TEST_EXPECT_EQUAL(list1.get_index_of("1st"), 0);
     TEST_EXPECT_EQUAL(list1.get_index_of("2nd"), -1); // default value is not indexed
@@ -678,6 +694,10 @@ void TEST_selection_list_access() {
     TEST_EXPECT_EQUAL(list2.get_index_of("3rd"), 2);
 
 
+    TEST_EXPECT_EQUAL(list0.get_value_at(0), "2nd");
+    TEST_EXPECT_EQUAL(list0.get_value_at(1), "3rd");
+    TEST_EXPECT_NULL(list0.get_value_at(2));
+
     TEST_EXPECT_EQUAL(list1.get_value_at(0), "1st");
     TEST_EXPECT_EQUAL(list1.get_value_at(1), "3rd");
     TEST_EXPECT_NULL(list1.get_value_at(2));
@@ -687,12 +707,13 @@ void TEST_selection_list_access() {
     TEST_EXPECT_EQUAL(list2.get_value_at(2), "3rd");
     TEST_EXPECT_NULL(list2.get_value_at(3));
 
+    TEST_LIST_CONTENT(list1, true,  "1st;3rd");
     TEST_LIST_CONTENT(list1, false, "First;Third");
     TEST_GET_LIST_CONTENT(list1,    "First\nThird\n");
-    TEST_LIST_CONTENT(list1, true,  "1st;3rd");
+
+    TEST_LIST_CONTENT(list2, true,  "1st;2nd;3rd");
     TEST_LIST_CONTENT(list2, false, "First;Second;Third");
     TEST_GET_LIST_CONTENT(list2,    "First\nSecond\nThird\n");
-    TEST_LIST_CONTENT(list2, true,  "1st;2nd;3rd");
 
     {
         AW_selection_list_iterator iter1(&list1);
@@ -727,8 +748,16 @@ void TEST_selection_list_access() {
     }
 
     {
-        AW_selection_list copy1("c1", GB_STRING, NULL); list1.move_content_to(&copy1);
-        AW_selection_list copy2("c2", GB_STRING, NULL); list2.move_content_to(&copy2);
+#if defined(ARB_GTK)
+        AW_selection_list copy1(NULL, false);
+        AW_selection_list copy2(NULL, false);
+#else // !defined(ARB_GTK)
+        AW_selection_list copy1("c1", GB_STRING, NULL);
+        AW_selection_list copy2("c2", GB_STRING, NULL);
+#endif
+
+        list1.move_content_to(&copy1);
+        list2.move_content_to(&copy2);
 
         TEST_EXPECT_EQUAL(list1.size(), 0);
         TEST_EXPECT_EQUAL(list2.size(), 0);
@@ -736,7 +765,6 @@ void TEST_selection_list_access() {
         TEST_LIST_CONTENT(copy1, true, "1st;3rd");
         TEST_LIST_CONTENT(copy2, true, "1st;2nd;3rd");
     }
-
 }
 
 #endif // UNIT_TESTS
