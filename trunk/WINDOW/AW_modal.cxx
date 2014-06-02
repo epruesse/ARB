@@ -378,6 +378,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     // update the selection box :
     aw_assert(sel);
     sel->clear();
+    sel->insert_default("<new>", "");
     if (value_list) {
         char *values = strdup(value_list);
         char *word;
@@ -387,7 +388,6 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
         }
         free(values);
     }
-    sel->insert_default("<new>", "");
     sel->update();
 
     // do modal loop :
