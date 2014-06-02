@@ -374,12 +374,13 @@ void AW_selection_list::init_from_array(const CharPtrArray& entries, const char 
 void AW_selection_list::insert(const char *displayed, const char *value) {
     aw_return_if_fail(displayed);
     aw_return_if_fail(value);
-    AW_selection_list_entry* entry = insert_generic(displayed, value, GB_STRING);
-    aw_assert(NULL != entry);
+    append(make_entry(displayed, value, GB_STRING));
 }
 
-void AW_selection_list::append_to_liststore(AW_selection_list_entry* entry)
-{
+void AW_selection_list::append_to_liststore(AW_selection_list_entry* entry) {
+    /*!
+     * Appends the specified entry to the list store
+     */
     aw_return_if_fail(NULL != entry);
 
     GtkTreeIter iter;
@@ -397,40 +398,38 @@ void AW_selection_list::delete_default() {
     }
 }
 
-void AW_selection_list::insert_default(const char *displayed, const char *value) {
+void AW_selection_list::replace_default(AW_selection_list_entry *new_default) {
     if (default_select) delete_default();
-    default_select = insert_generic(displayed, value, GB_STRING);
+    default_select = append(new_default);
+}
+
+void AW_selection_list::insert_default(const char *displayed, const char *value) {
+    replace_default(make_entry(displayed, value, GB_STRING));
 }
 
 void AW_selection_list::insert(const char *displayed, int32_t value) {
-    AW_selection_list_entry* entry = insert_generic(displayed, value, GB_INT);
-    aw_assert(NULL != entry);
+    append(make_entry(displayed, value, GB_INT));
 }
 
 void AW_selection_list::insert_default(const char *displayed, int32_t value) {
-    if (default_select) delete_default();
-    default_select = insert_generic(displayed, value, GB_INT);
+    replace_default(make_entry(displayed, value, GB_INT));
 }
 
 void AW_selection_list::insert(const char *displayed, double value) {
-    AW_selection_list_entry* entry = insert_generic(displayed, value, GB_FLOAT);
-    aw_assert(NULL != entry);
+    append(make_entry(displayed, value, GB_FLOAT));
 }
 
 void AW_selection_list::insert_default(const char *displayed, double value) {
-    if (default_select) delete_default();
-    default_select = insert_generic(displayed, value, GB_FLOAT);
+    replace_default(make_entry(displayed, value, GB_FLOAT));
 }
 
 
 void AW_selection_list::insert(const char *displayed, GBDATA *pointer) {
-    AW_selection_list_entry* entry = insert_generic(displayed, pointer, GB_POINTER);
-    aw_assert(NULL != entry);
+    append(make_entry(displayed, pointer, GB_POINTER));
 }
 
 void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
-    if (default_select) delete_default();
-    default_select = insert_generic(displayed, pointer, GB_POINTER);
+    replace_default(make_entry(displayed, pointer, GB_POINTER));
 }
 
 
@@ -451,14 +450,7 @@ void AW_selection_list::move_content_to(AW_selection_list *target_list) {
     else {
         AW_selection_list_entry *entry = list_table;
         while (entry) {
-            if (!target_list->list_table) {
-                target_list->last_of_list_table = target_list->list_table = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
-            }
-            else {
-                target_list->last_of_list_table->next = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
-                target_list->last_of_list_table = target_list->last_of_list_table->next;
-                target_list->last_of_list_table->next = NULL;
-            }
+            target_list->insert(entry->get_displayed(), entry->value.get_string());
             entry = entry->next;
         }
         clear();
@@ -506,7 +498,7 @@ void AW_selection_list::set_file_suffix(const char *suffix) {
     aw_root->awar_string(filter, suffix);
 }
 
-size_t AW_selection_list::size() {
+size_t AW_selection_list::size() const {
     AW_selection_list_entry *lt    = list_table;
     size_t                  count = 0;
 
@@ -645,24 +637,36 @@ GBDATA *AW_DB_selection::get_gb_main() {
     return GB_get_root(gbd);
 }
 
-
-template <class T>
-AW_selection_list_entry* AW_selection_list::insert_generic(const char* displayed, T value, GB_TYPES expectedType) {
-    if (awar && awar->get_type() != expectedType) {
-        selection_type_mismatch(typeid(T).name()); //note: gcc mangles the name, however this error will only occur during development.
-        return NULL;
-    }
-
+AW_selection_list_entry *AW_selection_list::append(AW_selection_list_entry *new_entry) {
+    /*!
+     * append an entry to list (create it with make_entry)
+     */
     if (list_table) {
-        last_of_list_table->next = new AW_selection_list_entry(displayed, value);
+        last_of_list_table->next = new_entry;
         last_of_list_table = last_of_list_table->next;
         last_of_list_table->next = NULL;
     }
     else {
-        last_of_list_table = list_table = new AW_selection_list_entry(displayed, value);
+        last_of_list_table = list_table = new_entry;
     }
 
     return last_of_list_table;
+}
+
+template <class T>
+AW_selection_list_entry* AW_selection_list::make_entry(const char* displayed, T value, GB_TYPES expectedType) {
+    /*!
+     * Create a selection list entry from a value
+     * @param displayed The value that should be displayed
+     * @param value The actual value
+     * @param expectedType The type of this variable (only used for type checking)
+     * @return A new list entry. NULL in case of error.
+     */
+    if (awar && awar->get_type() != expectedType) {
+        selection_type_mismatch(typeid(T).name()); //note: gcc mangles the name, however this error will only occur during development.
+        return NULL; // never reached
+    }
+    return new AW_selection_list_entry(displayed, value);
 }
 
 // --------------------------------------------------------------------------------
