@@ -69,31 +69,31 @@ GB_ERROR AW_awar_impl::write_pointer(GBDATA *, bool) {
     GBK_terminatef("AWAR read access failure. Called %s on awar %s of type %s", \
                 __PRETTY_FUNCTION__, get_name(), get_type_name())
 
-const char *AW_awar_impl::read_char_pntr() {
+const char *AW_awar_impl::read_char_pntr() const {
     AWAR_READ_ACCESS_FAILED;
     return NULL; //is never reached, only exists to avoid compiler warning
 }
-double AW_awar_impl::read_float() {
+double AW_awar_impl::read_float() const {
     AWAR_READ_ACCESS_FAILED;
     return 0.0f;//is never reached, only exists to avoid compiler warning
 }
-double AW_awar_impl::read_as_float() {
+double AW_awar_impl::read_as_float() const {
     AWAR_READ_ACCESS_FAILED;
     return 0.0f; //is never reached, only exists to avoid compiler warning
 }
- bool AW_awar_impl::read_as_bool() {
+ bool AW_awar_impl::read_as_bool() const {
     AWAR_READ_ACCESS_FAILED;
     return false; //is never reached, only exists to avoid compiler warning
 }
-long AW_awar_impl::read_int() {
+long AW_awar_impl::read_int() const {
     AWAR_READ_ACCESS_FAILED;
     return 0;//is never reached, only exists to avoid compiler warning
 }
-GBDATA *AW_awar_impl::read_pointer() {
+GBDATA *AW_awar_impl::read_pointer() const {
     AWAR_READ_ACCESS_FAILED;
     return NULL; //is never reached, only exists to avoid compiler warning
 }
-char *AW_awar_impl::read_string() {
+char *AW_awar_impl::read_string() const {
     AWAR_READ_ACCESS_FAILED;
     return NULL; //is never reached, only exists to avoid compiler warning
 }
@@ -292,17 +292,17 @@ GB_ERROR AW_awar_int::write_as_string(const char *para, bool do_touch) {
     return write_int(atol(para), do_touch);
 }
 
-bool AW_awar_int::has_default_value() {
+bool AW_awar_int::has_default_value() const {
     return read_int() == default_value;
 }
 
-long AW_awar_int::read_int() {
+long AW_awar_int::read_int() const {
     if (!gb_var) return 0;
     GB_transaction ta(gb_var);
     return (long)GB_read_int(gb_var);
 }
 
-char *AW_awar_int::read_as_string() {
+char *AW_awar_int::read_as_string() const {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
@@ -322,7 +322,7 @@ GB_ERROR AW_awar_int::toggle_toggle() {
     return write_int(read_int() ? 0 : 1);
 }
 
-bool AW_awar_int::read_as_bool() {
+bool AW_awar_int::read_as_bool() const {
     return read_int() != 0;
 }
 
@@ -411,17 +411,17 @@ GB_ERROR AW_awar_float::write_as_string(const char *para, bool do_touch) {
     return write_float(atof(para),do_touch);
 }
 
-bool AW_awar_float::has_default_value() {
+bool AW_awar_float::has_default_value() const {
     return read_float() == default_value;
 }
 
-double AW_awar_float::read_float() {
+double AW_awar_float::read_float() const {
     if (!gb_var) return 0.0;
     GB_transaction ta(gb_var);
     return GB_read_float(gb_var);
 }
 
-char *AW_awar_float::read_as_string() {
+char *AW_awar_float::read_as_string() const {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
@@ -442,7 +442,7 @@ GB_ERROR AW_awar_float::toggle_toggle() {
     return write_float((read_float() != 0.0) ? 0.0 : 1.0);
 }
 
-bool AW_awar_float::read_as_bool() {
+bool AW_awar_float::read_as_bool() const {
     return read_float() != 0.0;
 }
 
@@ -520,23 +520,23 @@ GB_ERROR AW_awar_string::write_string(const char *para, bool do_touch) {
     return error;
 }
 
-bool AW_awar_string::has_default_value() { 
+bool AW_awar_string::has_default_value() const { 
     return 0 == ARB_strNULLcmp(default_value, read_char_pntr()); 
 }
 
-char *AW_awar_string::read_string() {
+char *AW_awar_string::read_string() const {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_string(gb_var);
 }
 
-const char *AW_awar_string::read_char_pntr() {
+const char *AW_awar_string::read_char_pntr() const {
     if (!gb_var) return "";
     GB_transaction ta(gb_var);
     return GB_read_char_pntr(gb_var);
 }
 
-char *AW_awar_string::read_as_string() {
+char *AW_awar_string::read_as_string() const {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_string(gb_var);
@@ -559,7 +559,7 @@ GB_ERROR AW_awar_string::toggle_toggle() {
     return err;
 }
 
-bool AW_awar_string::read_as_bool() {
+bool AW_awar_string::read_as_bool() const {
     return strcasecmp("yes", read_char_pntr()) == 0;
 }
 
@@ -602,11 +602,11 @@ GB_ERROR AW_awar_pointer::write_pointer(GBDATA *para, bool do_touch) {
     return error;
 }
 
-bool AW_awar_pointer::has_default_value() {
+bool AW_awar_pointer::has_default_value() const {
     return default_value == (void*)read_pointer(); 
 }
 
-GBDATA *AW_awar_pointer::read_pointer() {
+GBDATA *AW_awar_pointer::read_pointer() const {
     if (!gb_var) return NULL;
     GB_transaction ta(gb_var);
     return GB_read_pointer(gb_var);
@@ -627,7 +627,7 @@ AW_awar_impl::~AW_awar_impl() {
     free(awar_name);
 }
 
-char *AW_awar_impl::read_as_string() {
+char *AW_awar_impl::read_as_string() const {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);

@@ -127,19 +127,20 @@ public:
     virtual AW_awar *unmap()                = 0; // map to original address
 
     // read access
-    virtual bool        has_default_value() = 0;
-    virtual char       *read_string() = 0;
-    virtual const char *read_char_pntr() = 0;
-    virtual char       *read_as_string() = 0;
-    virtual long        read_int() = 0;
-    virtual double      read_float() = 0;
-    virtual double      read_as_float() = 0;
-    virtual GBDATA     *read_pointer() = 0;
-    virtual bool        read_as_bool() = 0;
-    void get(char **p_string)  { freeset(*p_string, read_string()); } // deletes existing targets !!!
-    void get(long *p_int)      { *p_int = (long)read_int(); }
-    void get(double *p_double) { *p_double = read_float(); }
-    void get(float *p_float)   { *p_float = read_float(); }
+    virtual bool        has_default_value() const = 0;
+    virtual char       *read_string() const       = 0;
+    virtual const char *read_char_pntr() const    = 0;
+    virtual char       *read_as_string() const    = 0;
+    virtual long        read_int() const          = 0;
+    virtual double      read_float() const        = 0;
+    virtual double      read_as_float() const     = 0;
+    virtual GBDATA     *read_pointer() const      = 0;
+    virtual bool        read_as_bool() const      = 0;
+
+    void get(char **p_string) const { freeset(*p_string, read_string()); } // deletes existing targets !!!
+    void get(long *p_int) const { *p_int = (long)read_int(); }
+    void get(double *p_double) const { *p_double = read_float(); }
+    void get(float *p_float) const { *p_float = read_float(); }
 
     // write access
     virtual GB_ERROR write_string(const char *aw_string, bool touch = false) = 0;
