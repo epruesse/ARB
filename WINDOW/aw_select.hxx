@@ -76,10 +76,7 @@ class AW_selection_list : virtual Noncopyable {
 
     GtkTreeModel *get_model(); // lazy eval
 
-    /**
-     * @return NULL if there is no entry at this index
-     */
-    AW_selection_list_entry *get_entry_at(int index) const;
+    AW_selection_list_entry *get_entry_at(int index, bool gtk_index) const;
     
     void append_to_liststore(AW_selection_list_entry* entry);
 

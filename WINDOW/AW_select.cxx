@@ -151,12 +151,12 @@ void AW_selection_list::update_from_widget() {
     selected_index = gtk_tree_path_get_indices(path)[0];
     gtk_tree_path_free(path);
 
-    if (!get_entry_at(selected_index)) {
+    if (!get_entry_at(selected_index, true)) {
         if (!default_select) GBK_terminate("no default specified for selection list");
         default_select->value.write_to(awar);
     }
     else {
-        get_entry_at(selected_index)->value.write_to(awar);
+        get_entry_at(selected_index, true)->value.write_to(awar);
     }
 }
 
@@ -170,9 +170,13 @@ void AW_selection_list::update() {
     // if it contains a value which is not associated with a list entry!
 
     gtk_list_store_clear(GTK_LIST_STORE(get_model()));
-    
+
     for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
         append_to_liststore(lt);
+    }
+
+    if (default_select) {
+        append_to_liststore(default_select);
     }
 
     refresh();
@@ -188,7 +192,12 @@ void AW_selection_list::refresh() {
     for (lt = list_table; lt; lt = lt->next, i++) {
         if (lt->value == awar) break;
     }
-    
+
+    if (!lt && default_select && default_select->value == awar) {
+        lt = default_select;
+        // default_select is currently always last element (i already has the corresponding value)
+    }
+
     if (lt) {
         GtkTreeIter iter;
         gtk_tree_model_iter_nth_child(get_model(), &iter, NULL, i);
@@ -226,39 +235,39 @@ void AW_selection_list::clear() {
     list_table         = NULL;
     last_of_list_table = NULL;
 
-    default_select = NULL;
-
-    // gtk_list_store_clear(GTK_LIST_STORE(get_model()));
+    delete_default();
 }
 
 bool AW_selection_list::default_is_selected() const {
-    const char *sel = get_selected_value();
-    if (!sel) {
-        // (case should be impossible in gtk port)
-        aw_warn_if_reached();
-        return true; // handle "nothing" like default
-    }
-
-    const char *def = get_default_value();
-    return def && (strcmp(sel, def) == 0);
+    return default_select && selected_index >= size();
 }
 
 const char *AW_selection_list::get_selected_value() const {
-    if (selected_index == -1) return NULL;
-    AW_selection_list_entry *entry = get_entry_at(selected_index);
+    aw_assert(get_awar_type() == GB_STRING);
 
-    if(entry){
-        return entry->get_displayed();
-    }
-    return NULL;
+    if (selected_index == -1) return NULL;
+
+    AW_selection_list_entry *entry = get_entry_at(selected_index, true);
+    return entry ? entry->value.get_string() : NULL;
 }
 
-AW_selection_list_entry *AW_selection_list::get_entry_at(int index) const {
+AW_selection_list_entry *AW_selection_list::get_entry_at(int index, bool gtk_index) const {
+    /*!
+     * @param index [0 .. size()-1] if gtk_index == false; otherwise [0 .. size()]
+     * @param gtk_index==true -> also return default_select (currently for index==size())
+     * @return NULL if there is no entry at this index
+     */
+
     AW_selection_list_entry *entry = list_table;
     while (index && entry) {
         entry = entry->next;
         index--;
     }
+
+    if (gtk_index && !entry && index == 0) {
+        entry = default_select;
+    }
+
     return entry;
 }
 
@@ -274,25 +283,33 @@ void AW_selection_list::delete_element_at(const int index) {
     
     AW_selection_list_entry *prev = NULL;
     if (index>0) {
-        prev = get_entry_at(index-1);
+        prev = get_entry_at(index-1, false);
         aw_return_if_fail(prev);
     }
 
     AW_selection_list_entry *toDel = prev ? prev->next : list_table;
-    if (toDel == default_select) {
-        default_select = NULL;
-    }
-    else {
+    if (toDel) {
+        aw_assert(toDel != default_select);
+
         if (index == selected_index) select_default();
+        // @@@ otherwise correct selected_index!?
+
+        (prev ? prev->next : list_table) = toDel->next;
+        delete toDel;
+
+        if (last_of_list_table == toDel) last_of_list_table = prev;
     }
-
-    (prev ? prev->next : list_table) = toDel->next;
-    delete toDel;
-
-    if (last_of_list_table == toDel) last_of_list_table = prev;
 }
 
 void AW_selection_list::delete_value(const char *value) {
+    aw_assert(get_awar_type() == GB_STRING); // only works for GB_STRING awars
+
+#if defined(ASSERTION_USED)
+    const char *defval = get_default_value();
+
+    aw_assert(!defval || strcmp(defval, value) != 0); // does NOT work for default-selection
+#endif
+
     int index = get_index_of(value);
     delete_element_at(index);
 }
@@ -349,7 +366,9 @@ void AW_selection_list::init_from_array(const CharPtrArray& entries, const char 
     // Note: This works only with selection lists bound to GB_STRING awars.
 
     aw_assert(defaultEntry);
-    char *defaultEntryCopy = strdup(defaultEntry); // use a copy (just in case defaultEntry point to a value free'd by clear_selection_list())
+    aw_assert(get_awar_type() == GB_STRING);
+
+    char *defaultEntryCopy = strdup(defaultEntry);     // use a copy (just in case defaultEntry point to a value free'd by clear_selection_list())
     bool  defInserted      = false;
 
     clear();
@@ -393,14 +412,14 @@ void AW_selection_list::append_to_liststore(AW_selection_list_entry* entry) {
 void AW_selection_list::delete_default() {
     /** Removes the default entry from the list*/
     if (default_select) {
-        delete_value(get_default_value()); // @@@ wrong if another (preceding) entry has same value as default_select
-        aw_assert(default_select == NULL);
+        delete default_select;
+        default_select = NULL;
     }
 }
 
 void AW_selection_list::replace_default(AW_selection_list_entry *new_default) {
     if (default_select) delete_default();
-    default_select = append(new_default);
+    default_select = new_default;
 }
 
 void AW_selection_list::insert_default(const char *displayed, const char *value) {
@@ -470,7 +489,7 @@ void AW_selection_list::move_selection(int offset) {
 const char *AW_selection_list::get_value_at(int index) {
     // get value of the entry at position 'index' [0..n-1] of the 'selection_list'
     // returns NULL if index is out of bounds
-    AW_selection_list_entry *entry = get_entry_at(index);
+    AW_selection_list_entry *entry = get_entry_at(index, false);
     return entry ? entry->value.get_string() : NULL;
 }
 
@@ -518,8 +537,6 @@ static int gb_compare_function__2__sellist_cmp_fun(const void *t1, const void *t
 }
 
 void AW_selection_list::sortCustom(sellist_cmp_fun cmp) {
-    // WARNING: function behaves different in motif and gtk:
-    // gtk also sorts default-element, motif always places default-element @ bottom
     size_t count = size();
     if (count) {
         AW_selection_list_entry **tables = new AW_selection_list_entry *[count];
@@ -543,8 +560,6 @@ void AW_selection_list::sortCustom(sellist_cmp_fun cmp) {
 }
 
 void AW_selection_list::sort(bool backward, bool case_sensitive) {
-    // WARNING: function behaves different in motif and gtk:
-    // gtk also sorts default-element, motif always places default-element @ bottom
     sellist_cmp_fun cmp;
     if (backward) {
         if (case_sensitive) cmp = sel_sort_backward;
@@ -684,24 +699,10 @@ AW_selection_list_entry* AW_selection_list::make_entry(const char* displayed, T 
         free(str);                                      \
     } while(0)
 
-#define TEST_LIST_CONTENT__BROKEN(list,values,expected,got) do {        \
-        StrArray a;                                                     \
-        (list).to_array(a, values);                                     \
-        char *str = GBT_join_names(a, ';');                             \
-        TEST_EXPECT_EQUAL__BROKEN(str, expected, got);                  \
-        free(str);                                                      \
-    } while(0)
-
 #define TEST_GET_LIST_CONTENT(list,expected) do {       \
         char *str = (list).get_content_as_string(10);   \
         TEST_EXPECT_EQUAL(str, expected);               \
         free(str);                                      \
-    } while(0)
-
-#define TEST_GET_LIST_CONTENT__BROKEN(list,expected, got) do {  \
-        char *str = (list).get_content_as_string(10);           \
-        TEST_EXPECT_EQUAL__BROKEN(str, expected, got);          \
-        free(str);                                              \
     } while(0)
 
 void TEST_selection_list_access() {
@@ -722,15 +723,15 @@ void TEST_selection_list_access() {
     list2.insert("Third", "3rd");
     list2.insert_default("Default", "");
 
-    TEST_EXPECT_EQUAL__BROKEN(list1.size(), 2, 3);
-    TEST_EXPECT_EQUAL__BROKEN(list2.size(), 3, 4);
+    TEST_EXPECT_EQUAL(list1.size(), 2);
+    TEST_EXPECT_EQUAL(list2.size(), 3);
 
     TEST_EXPECT_EQUAL(list1.get_default_value(), "2nd");
     TEST_EXPECT_EQUAL(list1.get_default_display(), "Second");
 
     TEST_EXPECT_EQUAL(list1.get_index_of("1st"), 0);
-    TEST_EXPECT_EQUAL__BROKEN(list1.get_index_of("2nd"), -1, 1); // default value is not indexed
-    TEST_EXPECT_EQUAL__BROKEN(list1.get_index_of("3rd"), 1, 2);  // = second non-default entry
+    TEST_EXPECT_EQUAL(list1.get_index_of("2nd"), -1); // default value is not indexed
+    TEST_EXPECT_EQUAL(list1.get_index_of("3rd"), 1);  // = second non-default entry
 
     TEST_EXPECT_EQUAL(list2.get_index_of("1st"), 0);
     TEST_EXPECT_EQUAL(list2.get_index_of("2nd"), 1);
@@ -738,22 +739,20 @@ void TEST_selection_list_access() {
 
 
     TEST_EXPECT_EQUAL(list1.get_value_at(0), "1st");
-    TEST_EXPECT_EQUAL__BROKEN(list1.get_value_at(1), "3rd", "2nd");
-    // TEST_EXPECT_NULL(list1.get_value_at(2));
-    TEST_EXPECT_EQUAL__BROKEN(list1.get_value_at(2), NULL, "3rd");
+    TEST_EXPECT_EQUAL(list1.get_value_at(1), "3rd");
+    TEST_EXPECT_NULL(list1.get_value_at(2));
 
     TEST_EXPECT_EQUAL(list2.get_value_at(0), "1st");
     TEST_EXPECT_EQUAL(list2.get_value_at(1), "2nd");
     TEST_EXPECT_EQUAL(list2.get_value_at(2), "3rd");
-    // TEST_EXPECT_NULL(list2.get_value_at(3));
-    TEST_EXPECT_EQUAL__BROKEN(list2.get_value_at(3), NULL, "");
+    TEST_EXPECT_NULL(list2.get_value_at(3));
 
-    TEST_LIST_CONTENT__BROKEN(list1, false, "First;Third",            "First;Second;Third");
-    TEST_GET_LIST_CONTENT__BROKEN(list1,    "First\nThird\n",         "First\nSecond\nThird\n");
-    TEST_LIST_CONTENT__BROKEN(list1, true,  "1st;3rd",                "1st;2nd;3rd");
-    TEST_LIST_CONTENT__BROKEN(list2, false, "First;Second;Third",     "First;Second;Third;Default");
-    TEST_GET_LIST_CONTENT__BROKEN(list2,    "First\nSecond\nThird\n", "First\nSecond\nThird\nDefault\n");
-    TEST_LIST_CONTENT__BROKEN(list2, true,  "1st;2nd;3rd",            "1st;2nd;3rd;"); // ;@end caused by empty default
+    TEST_LIST_CONTENT(list1, false, "First;Third");
+    TEST_GET_LIST_CONTENT(list1,    "First\nThird\n");
+    TEST_LIST_CONTENT(list1, true,  "1st;3rd");
+    TEST_LIST_CONTENT(list2, false, "First;Second;Third");
+    TEST_GET_LIST_CONTENT(list2,    "First\nSecond\nThird\n");
+    TEST_LIST_CONTENT(list2, true,  "1st;2nd;3rd");
 
     {
         AW_selection_list_iterator iter1(&list1);
@@ -774,16 +773,16 @@ void TEST_selection_list_access() {
         TEST_EXPECT(bool(iter1));
         TEST_EXPECT(bool(iter2));
 
-        TEST_EXPECT_EQUAL__BROKEN(iter1.get_displayed(), "Third", "Second");
+        TEST_EXPECT_EQUAL(iter1.get_displayed(), "Third");
         TEST_EXPECT_EQUAL(iter2.get_displayed(), "Second");
 
-        TEST_EXPECT_EQUAL__BROKEN(iter1.get_value(), "3rd", "2nd");
+        TEST_EXPECT_EQUAL(iter1.get_value(), "3rd");
         TEST_EXPECT_EQUAL(iter2.get_value(), "2nd");
 
         ++iter1;
         ++iter2;
 
-        TEST_REJECT__BROKEN(bool(iter1));
+        TEST_REJECT(bool(iter1));
         TEST_EXPECT(bool(iter2));
     }
 
@@ -799,8 +798,8 @@ void TEST_selection_list_access() {
         list1.move_content_to(&copy1);
         list2.move_content_to(&copy2);
 
-        TEST_EXPECT_EQUAL__BROKEN(list1.size(), 0, 1);
-        TEST_EXPECT_EQUAL__BROKEN(list2.size(), 0, 1);
+        TEST_EXPECT_EQUAL(list1.size(), 0);
+        TEST_EXPECT_EQUAL(list2.size(), 0);
 
         TEST_LIST_CONTENT(copy1, true, "1st;3rd");
         TEST_LIST_CONTENT(copy2, true, "1st;2nd;3rd");
