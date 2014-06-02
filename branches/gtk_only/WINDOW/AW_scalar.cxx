@@ -35,7 +35,7 @@ GB_ERROR AW_scalar::write_to(class AW_awar *awar) {
     return error;
 }
 
-bool AW_scalar::operator == (AW_awar*& awar) const {
+bool AW_scalar::operator == (const AW_awar*const& awar) const {
     switch (type) {
         case GB_INT:     return value.i == awar->read_int();
         case GB_FLOAT:   return fabs(value.f - awar->read_float()) < 0.000001;
