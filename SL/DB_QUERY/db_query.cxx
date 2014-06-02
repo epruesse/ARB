@@ -1891,6 +1891,7 @@ static void update_colorset_selection_list(const color_save_data *csd) {
     csd->colorsets->clear();
     GBDATA *gb_item_root = get_colorset_root(csd);
 
+    csd->colorsets->insert_default("<new colorset>", "");
     for (GBDATA *gb_colorset = GB_entry(gb_item_root, "colorset");
          gb_colorset;
          gb_colorset = GB_nextEntry(gb_colorset))
@@ -1898,7 +1899,6 @@ static void update_colorset_selection_list(const color_save_data *csd) {
         const char *name = GBT_read_name(gb_colorset);
         csd->colorsets->insert(name, name);
     }
-    csd->colorsets->insert_default("<new colorset>", "");
     csd->colorsets->update();
 }
 
