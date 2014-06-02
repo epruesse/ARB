@@ -8,6 +8,14 @@
 # see also arb_valgrind@suppressions
 
 {
+   arb: leaks loaded xfig-data with AW_window
+   Memcheck:Leak
+   ...
+   fun:_ZN9AW_window9load_xfigEPKcb
+   ...
+}
+
+{
    arb: TEST_tree_remove_add_all leaks edges
    Memcheck:Leak
    fun:_Znwm
