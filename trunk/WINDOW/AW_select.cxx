@@ -305,33 +305,43 @@ int AW_selection_list::get_index_of_selected() {
     return get_index_of(awar_value);
 }
 
-void AW_selection_list::init_from_array(const CharPtrArray& entries, const char *defaultEntry) {
+void AW_selection_list::init_from_array(const CharPtrArray& entries, const char *default_displayed, const char *default_value) {
     // update selection list with contents of NULL-terminated array 'entries'
-    // 'defaultEntry' is used as default selection
+    //
+    // 'default_displayed' and 'default_value' are used as default selection.
+    // To position the default selection, add 'default_value' to 'entries' as well.
+    //
     // awar value will be changed to 'defaultEntry' if it does not match any other entry
+    //
     // Note: This works only with selection lists bound to AW_STRING awars.
 
-    aw_assert(defaultEntry);
-    char *defaultEntryCopy = strdup(defaultEntry); // use a copy (just in case defaultEntry point to a value free'd by clear_selection_list())
-    bool  defInserted      = false;
+    aw_assert(default_displayed);
+    aw_assert(default_value);
+
+    // use copies (just in case default_* points to a value free'd by clear())
+    char *defaultDispCopy  = strdup(default_displayed);
+    char *defaultValueCopy = strdup(default_value);
+
+    bool defInserted = false;
 
     clear();
     for (int i = 0; entries[i]; ++i) {
-        if (!defInserted && strcmp(entries[i], defaultEntryCopy) == 0) {
-            insert_default(defaultEntryCopy, defaultEntryCopy);
+        if (!defInserted && strcmp(entries[i], defaultValueCopy) == 0) {
+            insert_default(defaultDispCopy, defaultValueCopy);
             defInserted = true;
         }
         else {
             insert(entries[i], entries[i]);
         }
     }
-    if (!defInserted) insert_default(defaultEntryCopy, defaultEntryCopy);
+    if (!defInserted) insert_default(defaultDispCopy, defaultValueCopy);
     update();
 
     const char *selected = get_selected_value();
     if (selected) set_awar_value(selected);
 
-    free(defaultEntryCopy);
+    free(defaultValueCopy);
+    free(defaultDispCopy);
 }
 
 void AW_selection_list::insert(const char *displayed, const char *value) {
