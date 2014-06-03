@@ -671,30 +671,6 @@ char *AW_selection_list_entry::copy_string_for_display(const char *str) {
     return out;
 }
 
-// -------------------------
-//      AW_DB_selection
-
-static void AW_DB_selection_refresh_cb(GBDATA *, AW_DB_selection *selection) {
-    selection->refresh();
-}
-
-AW_DB_selection::AW_DB_selection(AW_selection_list *sellist_, GBDATA *gbd_)
-    : AW_selection(sellist_)
-    , gbd(gbd_)
-{
-    GB_transaction ta(gbd);
-    GB_add_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(AW_DB_selection_refresh_cb, this));
-}
-
-AW_DB_selection::~AW_DB_selection() {
-    GB_transaction ta(gbd);
-    GB_remove_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(AW_DB_selection_refresh_cb, this));
-}
-
-GBDATA *AW_DB_selection::get_gb_main() {
-    return GB_get_root(gbd);
-}
-
 AW_selection_list_entry *AW_selection_list::append(AW_selection_list_entry *new_entry) {
     /*!
      * append an entry to list (create it with make_entry)
@@ -732,7 +708,29 @@ AW_selection_list_entry* AW_selection_list::make_entry(const char* displayed, T 
     return new AW_selection_list_entry(displayed, value);
 }
 
+// -------------------------
+//      AW_DB_selection
 
+static void AW_DB_selection_refresh_cb(GBDATA *, AW_DB_selection *selection) {
+    selection->refresh();
+}
+
+AW_DB_selection::AW_DB_selection(AW_selection_list *sellist_, GBDATA *gbd_)
+    : AW_selection(sellist_)
+    , gbd(gbd_)
+{
+    GB_transaction ta(gbd);
+    GB_add_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(AW_DB_selection_refresh_cb, this));
+}
+
+AW_DB_selection::~AW_DB_selection() {
+    GB_transaction ta(gbd);
+    GB_remove_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(AW_DB_selection_refresh_cb, this));
+}
+
+GBDATA *AW_DB_selection::get_gb_main() {
+    return GB_get_root(gbd);
+}
 
 
 // --------------------------------------------------------------------------------
