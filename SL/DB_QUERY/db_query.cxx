@@ -69,17 +69,15 @@ inline void SET_QUERIED(GBDATA *gb_species, DbQuery *query, const char *hitInfo,
         info = strdup(hitInfo);
     }
 
-    long  toFree = GBS_write_hash(query->hit_description, name, reinterpret_cast<long>(info));
-    if (toFree) free(reinterpret_cast<char*>(toFree)); // free old value (from hash)
+    GBS_write_hash(query->hit_description, name, reinterpret_cast<long>(info)); // overwrite hit info (also deallocates) 
     free(name);
 }
 
 inline void CLEAR_QUERIED(GBDATA *gb_species, DbQuery *query) {
     GB_clear_user_flag(gb_species, query->select_bit);
 
-    char *name   = query->selector.generate_item_id(query->gb_main, gb_species);
-    long  toFree = GBS_write_hash(query->hit_description, name, 0); // delete hit info
-    if (toFree) free(reinterpret_cast<char*>(toFree));
+    char *name = query->selector.generate_item_id(query->gb_main, gb_species);
+    GBS_write_hash(query->hit_description, name, 0); // delete hit info (also deallocates)
     free(name);
 }
 
