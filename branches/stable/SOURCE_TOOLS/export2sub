@@ -1,0 +1,56 @@
+# -*-Mode: Makefile;-*-
+#
+# --------------------------------------------------------------------------------
+# variables listed here are automatically exported to sub-makefiles
+# documentation for single variables can be found in ../SOURCE_TOOLS/parent_make.txt
+
+export ARBHOME
+export ARB_64
+
+export use_ARB_main
+export use_ARB_main_C
+
+export DEBUG
+export OPENGL 
+export RNA3D_LIB 
+
+export MACH
+export DARWIN
+export LINUX
+export DEBIAN
+export REDHAT
+
+export CC CXX
+
+export A_CC  CC_INCLUDES
+export A_CXX CXX_INCLUDES
+export cflags cxxflags shared_cflags
+
+export POST_COMPILE
+
+export LD_LIBRARY_PATH LIBPATH SYSLIBS
+export XLIBS #XHOME
+export ARB_GLIB_LIBS
+export GL_LIBS_SYS GL_PNGLIBS_SYS
+export TIFFLIBS
+export EXECLIBS
+export LINK_STATIC LINK_EXECUTABLE LINK_STATIC_LIB LINK_SHARED_LIB SHARED_LIB_SUFFIX
+export ARCHS_PT_SERVER_LINK
+
+export MAKEDEPENDFLAGS MAKEDEPEND
+
+export SEP
+export NODIR
+
+export CORE_LIB
+export ARBDB_LIB
+export UNIT_TESTS
+export SHOWTODO
+
+# support for clang static checker
+export CLANG_STATIC_CHECKER
+export CCC_ANALYZER_CPLUSPLUS
+
+# jenkins related
+export SVN_URL
+export SVN_REVISION
