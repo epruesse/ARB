@@ -1171,7 +1171,7 @@ public:
                 }
                 if (old_pos != new_pos) {
                     GBT_names_move(listContent, old_pos, new_pos);
-                    subset_list->init_from_array(listContent, subset_list->get_default_display(), subset_list->get_default_value());
+                    subset_list->init_from_array(listContent, subset_list->get_default_value());
                 }
             }
         }

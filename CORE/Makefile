@@ -213,7 +213,6 @@ arb_string.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_string.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_string.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_string.o: $(ARBHOME)/INCLUDE/gccver.h
-arb_string.o: $(ARBHOME)/INCLUDE/Keeper.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_unit.h
 
