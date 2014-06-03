@@ -1,0 +1,205 @@
+#!/bin/bash 
+
+if [ -z $1 ] ; then
+    echo ''
+    echo 'Usage: arb_valgrind [options] <arb_program> <arguments>'
+    echo ''
+    echo '    runs valgrind (versions 3.x) on <arb_program> piping results through a filter'
+    echo '    so that the output can be used as emacs error messages'
+    echo ''
+    echo '    options:'
+    echo ''
+    echo '    -m             use massif (default uses memcheck)'
+    echo '    -c <callers>   show <callers> stackframes (default: none)'
+    echo '                   [in fact they are always shown, but not marked as errors]'
+    echo '    -f <filter>    regexpr to filter the reason (default: all)'
+    echo '    -l [-r]        turn on leak-checking (-r for reachable blocks)'
+    echo '    -A             show known boring errors (most Xt/Motif-related)'
+    echo '    -q             quiet'
+    echo '    -L <file>      log stdout to <file> (does not work with -D)'
+    echo '    -E <file>      log stderr to <file> (does not work with -D)'
+    echo '                   Default is to collect output and print in after valgrind terminates'
+    echo '    -D             run gdb on error'
+    echo '    -e             return exitcode 1 on valgrind-errors'
+    echo ''
+    echo ''
+    echo 'Usage: arb_valgrind update'
+    echo ''
+    echo '    Updates the source file list which is needed to create correct file refs.'
+    echo '    Called automatically by normal use if list is missing.'
+    echo '    Call if files are not highlighted as errors (i.e if you have new files).'
+    echo ''
+    echo 'Environment:'
+    echo ''
+    echo '      $ARBHOME     a directory which has to contain a subdirectory SOURCE_TOOLS.'
+    echo '                   SOURCE_TOOLS has to contain valgrind2grep and has to be writeable for the user'
+    echo ''
+    echo '      $ARB_VALGRIND_SOURCE_ROOT       down from here the script scans for sources'
+    echo '                                      (defaults to $ARBHOME if empty)'
+    echo ''
+    echo 'Note: I use this from inside emacs as follows:'
+    echo '          M-x compile'
+    echo '      with:'
+    echo '          (cd $ARBHOME;make nt) && arb_valgrind -l arb_ntree ~/ARB/demo.arb'
+    echo ''
+    echo 'There are scripts for older valgrind versions: '
+    ls -al $ARBHOME/SOURCE_TOOLS/arb_valgrind_*
+    echo ''
+
+else
+    if [ -z $ARB_VALGRIND_SOURCE_ROOT ] ; then
+        ARB_VALGRIND_SOURCE_ROOT=$ARBHOME
+    fi
+
+    DIR=$ARBHOME/SOURCE_TOOLS
+    LIST=$DIR/valgrind2grep.lst
+
+    UPDATE=0
+    RUN=0
+    CALLERS=0
+    SUPPX='--suppress-common'
+    FILTER='.*'
+    LEAK_CHECK=''
+    TOOL='--tool=memcheck'
+    ATTACH=''
+    QUIET=''
+    LOG_STDOUT=''
+    LOG_STDERR=''
+    ERROR_EXITCODE=''
+
+    if [ ! -f $LIST ] ; then
+        UPDATE=1
+    fi
+    if [ $1 = "update" ] ; then
+        UPDATE=1
+    else
+        RUN=1
+        SCAN_ARGS=1
+
+        while [ $SCAN_ARGS = 1 ] ; do
+            SCAN_ARGS=0
+            if [ "$1" = "-m" ] ; then
+                TOOL='--tool=massif'
+                shift 1
+                SCAN_ARGS=1
+            fi
+            if [ "$1" = "-c" ] ; then
+                CALLERS=$2
+                shift 2
+                SCAN_ARGS=1
+            fi
+            if [ "$1" = "-f" ] ; then
+                FILTER=$2
+                shift 2
+                SCAN_ARGS=1
+            fi
+            if [ "$1" = "-l" ] ; then
+                LEAK_CHECK="$LEAK_CHECK --leak-check=yes"
+                # LEAK_CHECK="$LEAK_CHECK --leak-resolution=high"
+                LEAK_CHECK="$LEAK_CHECK --leak-resolution=med"
+                shift 1
+                SCAN_ARGS=1
+            fi
+            if [ "$1" = "-r" ] ; then
+                LEAK_CHECK="$LEAK_CHECK --show-reachable=yes"
+                shift 1
+                SCAN_ARGS=1
+            fi
+            if [ "$1" = "-A" ] ; then
+                SUPPX=''
+                shift 1
+                SCAN_ARGS=1
+            fi
+            if [ "$1" = "-q" ] ; then
+                QUIET='--quiet'
+                shift 1
+                SCAN_ARGS=1
+            fi
+            if [ "$1" = "-D" ] ; then
+                ATTACH='--db-attach=yes'
+                shift 1
+                SCAN_ARGS=1
+            fi
+            if [ "$1" = "-L" ] ; then
+                LOG_STDOUT=$2
+                shift 2
+                SCAN_ARGS=1
+            fi
+            if [ "$1" = "-E" ] ; then
+                LOG_STDERR=$2
+                shift 2
+                SCAN_ARGS=1
+            fi
+            if [ "$1" = "-e" ] ; then
+                ERROR_EXITCODE='--error-exitcode=123'
+                shift 1
+                SCAN_ARGS=1
+            fi
+        done
+    fi
+
+
+    if [ "X$LEAK_CHECK" = "X" ] ; then
+        LEAK_CHECK="--leak-check=no"
+    fi
+
+    if [ $UPDATE = 1 ] ; then
+        echo "Creating list of source files starting in $ARB_VALGRIND_SOURCE_ROOT ..."
+        find $ARB_VALGRIND_SOURCE_ROOT \! -path "*\{arch\}*" -a \
+                                        \(      -name "*.[ch]" -o \
+                                                -name "*.[ch]xx" -o \
+                                                -name "*.[ch]pp" -o \
+                                                -name "*.cc" -o \
+                                                -name "*.hh" \) \
+                > $LIST
+        echo 'done.'
+    fi
+    EXITCODE=0
+    if [ $RUN = 1 ] ; then
+        echo "Running valgrind on '$*' ..."
+        echo "CALLERS='$CALLERS'"
+        echo "FILTER ='$FILTER'"
+        VG_CALLERS=$[$CALLERS+5]
+        VG_OPTS=""
+        VG_OPTS="$VG_OPTS --error-limit=yes"
+        VG_OPTS="$VG_OPTS $ERROR_EXITCODE"
+        # VG_OPTS="$VG_OPTS --track-origins=yes" # ulalala ... eats MUUUUCH memory 
+        VG_OPTS="$VG_OPTS --track-fds=yes" # track filedescriptors open on exit
+        VG_OPTS="$VG_OPTS --show-below-main=yes" # valgrind below main (e.g. in static initialization)
+        VG_CMD="valgrind $QUIET $TOOL -v $VG_OPTS --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $ATTACH"
+        echo "VG_CMD='$VG_CMD $@'"
+        if [ "$ATTACH" = "" ]; then
+            POSTDUMP_STDOUT=0
+            POSTDUMP_STDERR=0
+            if [ -z "$LOG_STDOUT" ]; then
+                LOG_STDOUT=/tmp/arb_valgrind_$USER_$$.stdout
+                POSTDUMP_STDOUT=1
+            fi
+            if [ -z "$LOG_STDERR" ]; then
+                LOG_STDERR=/tmp/arb_valgrind_$USER_$$.stderr
+                POSTDUMP_STDERR=1
+            fi
+            $VG_CMD --log-fd=3 "$@" 3>&1 >$LOG_STDOUT 2>$LOG_STDERR | $DIR/valgrind2grep $CALLERS "$FILTER" $SUPPX
+            EXITCODE=${PIPESTATUS[0]}
+
+            if [ "$POSTDUMP_STDOUT" = "1" ]; then
+                echo "-------------------- [stdout of '$@' ]"
+                cat $LOG_STDOUT
+                rm $LOG_STDOUT
+            fi
+            if [ "$POSTDUMP_STDERR" = "1" ]; then
+                echo "-------------------- [stderr of '$@' ]"
+                cat $LOG_STDERR
+                rm $LOG_STDERR
+            fi
+            if [ "$POSTDUMP_STDOUT" = "1" -o "$POSTDUMP_STDERR" = "1" ]; then
+                echo "-------------------- [end of output]"
+            fi
+        else
+            $VG_CMD "$@"
+            EXITCODE=$?
+        fi
+        echo "valgrind done (exitcode=$EXITCODE)"
+    fi
+    exit $EXITCODE
+fi
