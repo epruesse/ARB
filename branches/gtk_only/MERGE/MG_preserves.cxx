@@ -57,7 +57,7 @@ static void init_alignments(preserve_para *para) {
     // initialize the alignment selection list
     ConstStrArray ali_names;
     get_global_alignments(ali_names);
-    para->alignmentList->init_from_array(ali_names, "All");
+    para->alignmentList->init_from_array(ali_names, "All", "All");
 }
 
 static void clear_candidates(preserve_para *para) {
@@ -301,7 +301,7 @@ static char *get_selected_reference(AW_root *aw_root) {
 static void refresh_reference_list_cb(AW_root *aw_root, preserve_para *para) {
     ConstStrArray  refs;
     read_references(refs, aw_root);
-    para->usedRefsList->init_from_array(refs, "");
+    para->usedRefsList->init_from_array(refs, "", "");
 }
 
 static void add_selected_cb(AW_window *aww, preserve_para *para) {
