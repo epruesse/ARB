@@ -2515,6 +2515,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     aws->insert_toggle("4 normal", "4", 4);
     aws->insert_toggle("5 ", "5", 5);
     aws->insert_toggle("6 the truth", "5", 6);
+    aws->update_toggle_field();
 
     create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, FIELD_FILTER_NDS, "list", 0, query->selector, 20, 10, SF_STANDARD, NULL);
 
