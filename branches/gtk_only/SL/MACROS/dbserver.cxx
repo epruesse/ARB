@@ -197,8 +197,10 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
                 }
                 else {
                     IF_DUMP_ACTION(printf("remote command (%s) is unknown\n", action));
-                    aw_message(GBS_global_string("Unknown action '%s' in macro", action));
-                    GBT_write_string(gb_main, remote.result(), GB_await_error());
+                    char *error = GBS_global_string_copy("Error: Unknown action '%s' in macro", action);
+                    aw_message(error);
+                    GBT_write_string(gb_main, remote.result(), error);
+                    free(error);
                 }
                 GBT_write_string(gb_main, remote.action(), ""); // tell perl-client call has completed (remote_action)
             }
