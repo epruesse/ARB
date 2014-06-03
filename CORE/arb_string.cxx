@@ -18,7 +18,6 @@
 
 #include <ctime>
 #include <sys/time.h>
-#include <Keeper.h>
 
 char *GB_strduplen(const char *p, unsigned len) {
     // fast replacement for strdup, if len is known
@@ -90,17 +89,6 @@ const char *GB_date_string() {
     cr[0]          = 0;         // cut of \n
 
     return readable;
-}
-
-// --------------------------------------------------------------------------------
-
-const char *GB_keep_string(char *str) {
-    /*! keep an allocated string until program termination
-     * useful to avoid valgrind reporting leaks e.g for callback parameters
-     */
-    static Keeper<char*> stringKeeper;
-    stringKeeper.keep(str);
-    return str;
 }
 
 

@@ -31,6 +31,9 @@
 #include <cerrno>
 #include <map>
 
+static int result_counter      = 0;
+static int ignore_more_results = false;
+
 const char *ED4_SearchPositionTypeId[SEARCH_PATTERNS+1] =
 {
     "User1", "User2",
@@ -599,7 +602,7 @@ void SearchTree::findMatches(const char *seq, int len, reportMatch report)
             SearchTreeNode::set_report(report, uni2real);
             SearchTreeNode::set_mismatches(sett->get_min_mismatches(), sett->get_max_mismatches());
 
-            for (off=0; off<new_len; off++, useq++) {
+            for (off=0; off<new_len && !ignore_more_results; off++, useq++) {
                 SearchTreeNode::set_start_offset(off);
                 root->findMatches(off, useq, new_len-off, 0, mismatch_list);
             }
@@ -669,6 +672,9 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
 {
     ED4_SearchPositionType type = ED4_SearchPositionType(cl_type);
     enum search_params_changed_action action = (enum search_params_changed_action)cl_action;
+
+    result_counter      = 0;
+    ignore_more_results = false;
 
     // check awar values
 
@@ -974,8 +980,24 @@ static void reportSearchPosition(int start, int end, GB_CSTR comment, int mismat
 // --------------------------------------------------------------------------------
 
 void ED4_SearchResults::addSearchPosition(ED4_SearchPosition *pos) {
+    static int max_allowed_results = 100000;
+
+    if (ignore_more_results) return;
+
     if (is_array()) {
         to_list();
+    }
+
+    ++result_counter;
+    if (result_counter >= max_allowed_results) {
+        if (aw_question("many_search_results", 
+                        GBS_global_string("More than %i results found!", result_counter), "Allow more,That's enough") == 0) {
+            max_allowed_results = max_allowed_results*2;
+        }
+        else {
+            ignore_more_results = true;
+            return;
+        }
     }
 
     if (first) {
