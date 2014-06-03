@@ -62,8 +62,16 @@ AW_selection_list::AW_selection_list(AW_awar *awar_, bool fallback2default)
       select_default_on_unknown_awar_value(fallback2default),
       list_table(NULL),
       last_of_list_table(NULL),
-      default_select(NULL)
+      default_select(NULL),
+      auto_append_to_default(true)
 {
+    /*! create a selection list
+     * @param awar_ Selection list will be bound to this awar.
+     * @param fallback2default if true, the awar will reset to the default value whenever its content doesn't match any other entry.
+     *
+     * Note: use fallback2default == false, if the awar is also bound to another
+     *       widget (esp. to input fields) or might somehow change to some custom value.
+     */
 #if defined(UNIT_TESTS)
     if (RUNNING_TEST() && !awar) {
         return; // accept AW_selection_list w/o awar from unittest
@@ -171,51 +179,62 @@ void AW_selection_list::update() {
 
     gtk_list_store_clear(GTK_LIST_STORE(get_model()));
 
+    bool default_added = false;
     for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
+        if (lt->follows(default_select)) {
+            append_to_liststore(default_select);
+            default_added = true;
+        }
         append_to_liststore(lt);
     }
 
-    if (default_select) {
+    if (default_select && !default_added) {
         append_to_liststore(default_select);
     }
 
+    auto_append_to_default = false; // further updates will not insert behind (terminal) default_select
     refresh();
 }
 
 void AW_selection_list::refresh() {
     aw_return_if_fail(widget != NULL);
-    // select the item that matches the awars value
-
-    AW_selection_list_entry *lt;
 
     int i = 0;
-    for (lt = list_table; lt; lt = lt->next, i++) {
-        if (lt->value == awar) break;
+    {   // detect index in gtk-widget matching the awar value
+        AW_selection_list_entry *lt;
+        for (lt = list_table; lt; lt = lt->next, ++i) {
+            if (lt->follows(default_select)) {
+                if (default_select->value == awar) break;
+                ++i;
+            }
+            if (lt->value == awar) break;
+        }
+        if (!lt) i = -1;
     }
 
-    if (!lt && default_select && default_select->value == awar) {
-        lt = default_select;
-        // default_select is currently always last element (i already has the corresponding value)
+    if (i == -1) {
+        if (default_select) { // the awar value does not match any entry, not even the default entry
+            if (select_default_on_unknown_awar_value) { // optional fallback to default value
+                select_default();
+            }
+        }
+        else {
+            GBK_terminatef("Selection list '%s' has no default selection", awar->get_name());
+        }
     }
+    else {
+        aw_assert(i>=0);
 
-    if (lt) {
         GtkTreeIter iter;
         gtk_tree_model_iter_nth_child(get_model(), &iter, NULL, i);
 
         if (GTK_IS_COMBO_BOX(widget)) {
             gtk_combo_box_set_active_iter(GTK_COMBO_BOX(widget), &iter);
-        } else {
+        }
+        else {
             GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
             gtk_tree_selection_select_iter(selection, &iter);
         }
-    }
-    else if (default_select) { // the awar value does not match any entry, not even the default entry, we set the default entry anyway
-        if (select_default_on_unknown_awar_value) {
-            select_default();
-        }
-    }
-    else {
-        GBK_terminatef("Selection list '%s' has no default selection", awar->get_name());
     }
 }
 
@@ -236,10 +255,11 @@ void AW_selection_list::clear() {
     last_of_list_table = NULL;
 
     delete_default();
+    auto_append_to_default = true;
 }
 
 bool AW_selection_list::default_is_selected() const {
-    return default_select && selected_index >= size();
+    return default_select->value == awar;
 }
 
 const char *AW_selection_list::get_selected_value() const {
@@ -254,18 +274,33 @@ const char *AW_selection_list::get_selected_value() const {
 AW_selection_list_entry *AW_selection_list::get_entry_at(int index, bool gtk_index) const {
     /*!
      * @param index [0 .. size()-1] if gtk_index == false; otherwise [0 .. size()]
-     * @param gtk_index==true -> also return default_select (currently for index==size())
+     * @param gtk_index==true -> also return default_select
      * @return NULL if there is no entry at this index
      */
 
     AW_selection_list_entry *entry = list_table;
-    while (index && entry) {
-        entry = entry->next;
-        index--;
+    if (gtk_index && default_select) {
+        int i = 0;
+        for (; entry; ++i) {
+            if (entry->follows(default_select)) {
+                if (i == index) {
+                    entry = default_select;
+                    break;
+                }
+                ++i;
+            }
+            if (i == index) break;
+            entry = entry->next;
+        }
+        if (!entry && default_select->next == NULL) {
+            if (i == index) entry = default_select;
+        }
     }
-
-    if (gtk_index && !entry && index == 0) {
-        entry = default_select;
+    else {
+        while (index && entry) {
+            entry = entry->next;
+            index--;
+        }
     }
 
     return entry;
@@ -292,7 +327,12 @@ void AW_selection_list::delete_element_at(const int index) {
         aw_assert(toDel != default_select);
 
         if (index == selected_index) select_default();
-        // @@@ otherwise correct selected_index!?
+        if (index<selected_index) --selected_index;
+
+        // correct successor of default_select
+        if (default_select->next == toDel) {
+            default_select->next = toDel->next;
+        }
 
         (prev ? prev->next : list_table) = toDel->next;
         delete toDel;
@@ -372,6 +412,7 @@ void AW_selection_list::init_from_array(const CharPtrArray& entries, const char 
     bool  defInserted      = false;
 
     clear();
+
     for (int i = 0; entries[i]; ++i) {
         if (!defInserted && strcmp(entries[i], defaultEntryCopy) == 0) {
             insert_default(defaultEntryCopy, defaultEntryCopy);
@@ -419,7 +460,9 @@ void AW_selection_list::delete_default() {
 
 void AW_selection_list::replace_default(AW_selection_list_entry *new_default) {
     if (default_select) delete_default();
+    aw_assert(!new_default->next);
     default_select = new_default;
+    aw_assert(default_select->next == NULL);
 }
 
 void AW_selection_list::insert_default(const char *displayed, const char *value) {
@@ -665,6 +708,11 @@ AW_selection_list_entry *AW_selection_list::append(AW_selection_list_entry *new_
         last_of_list_table = list_table = new_entry;
     }
 
+    if (auto_append_to_default && default_select && !default_select->next) {
+        // remember that 'new_entry' is inserted as successor of default entry
+        default_select->next = new_entry;
+    }
+
     return last_of_list_table;
 }
 
@@ -683,6 +731,9 @@ AW_selection_list_entry* AW_selection_list::make_entry(const char* displayed, T 
     }
     return new AW_selection_list_entry(displayed, value);
 }
+
+
+
 
 // --------------------------------------------------------------------------------
 
@@ -748,14 +799,13 @@ void TEST_selection_list_access() {
     TEST_EXPECT_EQUAL(list2.get_index_of("2nd"), 1);
     TEST_EXPECT_EQUAL(list2.get_index_of("3rd"), 2);
 
-
-    TEST_EXPECT_EQUAL(list0.peek_displayed(0), "Second");
-    TEST_EXPECT_EQUAL(list0.peek_displayed(1), "Third");
-    TEST_EXPECT_EQUAL(list0.peek_displayed(2), "First"); // default
+    TEST_EXPECT_EQUAL(list0.peek_displayed(0), "First"); // default
+    TEST_EXPECT_EQUAL(list0.peek_displayed(1), "Second");
+    TEST_EXPECT_EQUAL(list0.peek_displayed(2), "Third");
 
     TEST_EXPECT_EQUAL(list1.peek_displayed(0), "First");
-    TEST_EXPECT_EQUAL(list1.peek_displayed(1), "Third");
-    TEST_EXPECT_EQUAL(list1.peek_displayed(2), "Second"); // default
+    TEST_EXPECT_EQUAL(list1.peek_displayed(1), "Second"); // default
+    TEST_EXPECT_EQUAL(list1.peek_displayed(2), "Third");
 
     TEST_EXPECT_EQUAL(list2.peek_displayed(0), "First");
     TEST_EXPECT_EQUAL(list2.peek_displayed(1), "Second");

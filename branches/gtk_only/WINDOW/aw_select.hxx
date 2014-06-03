@@ -61,6 +61,10 @@ public:
 
     const char *get_displayed() const { return displayed; } // may differ from string passed to set_displayed() if the string was longer than MAX_DISPLAY_LENGTH
     void set_displayed(const char *displayed_) { freeset(displayed, copy_string_for_display(displayed_)); }
+
+    bool follows(const AW_selection_list_entry *other) const {
+        return other ? other->next == this : false;
+    }
 };
 
 typedef int (*sellist_cmp_fun)(const char *disp1, const char *disp2);
@@ -86,9 +90,17 @@ class AW_selection_list : virtual Noncopyable {
     AW_selection_list_entry *append(AW_selection_list_entry *new_entry);
     void replace_default(AW_selection_list_entry *new_default);
 
+    // list of non-default entries
     AW_selection_list_entry *list_table;
     AW_selection_list_entry *last_of_list_table;
+
+    // default entry
+    // Note: default_select->next may point to an entry stored in 'list_table',
+    // in which case the default-entry will be displayed before that entry.
+    // When default_select->next is NULL, the default entry will be the last entry.
     AW_selection_list_entry *default_select;
+    bool auto_append_to_default; // true => inserting normal elements after default respects order
+                                 // (is true till next update: initially and after clear())
 
     friend class AW_selection_list_iterator;
 
@@ -96,7 +108,6 @@ public:
     void update_from_widget();  // called from internal callback
     void double_clicked();
 
-    /**the value of the selected item will be written to the awar*/
     AW_selection_list(AW_awar *awar_, bool fallback2default);
     ~AW_selection_list();
 
