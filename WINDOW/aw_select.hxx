@@ -137,7 +137,7 @@ public:
     void insert(const char *displayed, GBDATA *pointer);
     void insert_default(const char *displayed, GBDATA *pointer);
 
-    void init_from_array(const CharPtrArray& entries, const char *defaultEntry);
+    void init_from_array(const CharPtrArray& entries, const char *default_displayed, const char *default_value);
     
     void update();
     void refresh();
