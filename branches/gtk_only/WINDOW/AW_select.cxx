@@ -768,7 +768,7 @@ void TEST_selection_list_access() {
     AW_selection_list list0(NULL, false);
     AW_selection_list list1(NULL, false);
     AW_selection_list list2(NULL, false);
-#else // !defined(ARB_GTK)
+#else // ARB_MOTIF
     AW_selection_list list0("bla", GB_STRING, NULL);
     AW_selection_list list1("bla", GB_STRING, NULL);
     AW_selection_list list2("alb", GB_STRING, NULL);
@@ -877,7 +877,7 @@ void TEST_selection_list_access() {
 #if defined(ARB_GTK)
         AW_selection_list copy1(NULL, false);
         AW_selection_list copy2(NULL, false);
-#else // !defined(ARB_GTK)
+#else // ARB_MOTIF
         AW_selection_list copy1("c1", GB_STRING, NULL);
         AW_selection_list copy2("c2", GB_STRING, NULL);
 #endif

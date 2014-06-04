@@ -27,6 +27,16 @@
 #include "aw_device_click.hxx"
 #include "aw_device_size.hxx"
 
+#if defined(ARB_GTK)
+# if defined(ARB_MOTIF)
+#  error ARB_GTK and ARB_MOTIF cannot both be defined
+# endif
+#else // !defined(ARB_GTK)
+# if !defined(ARB_MOTIF)
+#  error Either ARB_GTK or ARB_MOTIF has to be defined
+# endif
+#endif
+
 // aw modal calls
 
 // Read a string from the user :
