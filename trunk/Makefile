@@ -419,6 +419,8 @@ else
 	XLIBS:=-L$(XHOME)/$(CROSS_LIB) -lXm -lXpm -lXt -lXext -lX11
 endif
 
+dflags += -DARB_MOTIF
+
 #---------------------- open GL
 
 ifeq ($(OPENGL),1) 
