@@ -1909,6 +1909,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     AWT_check_action_ids(awmm->get_root(), "");
 #endif
 
+    announce_useraction_in(awmm);
+
     return (ED4_R_OK);
 }
 
