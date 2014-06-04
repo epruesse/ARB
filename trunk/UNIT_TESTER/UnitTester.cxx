@@ -41,6 +41,13 @@
 
 #define ut_assert(cond) arb_assert(cond)
 
+#define ESC_BOLD       "\033[1m"
+#define ESC_RED        "\033[31m"
+#define ESC_GREEN      "\033[32m"
+#define ESC_YELLOW     "\033[33m"
+#define ESC_RESET_COL  "\033[39m"
+#define ESC_RESET_ALL  "\033[0m"
+
 using namespace std;
 
 // --------------------------------------------------------------------------------
@@ -84,10 +91,12 @@ __ATTR__FORMAT(1) static void trace(const char *format, ...) {
     fflush(stdout);
     fflush(stderr);
 
+    fputs(ESC_BOLD, stderr);
     fputs(TRACE_PREFIX, stderr);
     va_start(parg, format);
     vfprintf(stderr, format, parg);
     va_end(parg);
+    fputs(ESC_RESET_ALL, stderr);
     fputc('\n', stderr);
     fflush(stderr);
 }
@@ -95,13 +104,13 @@ __ATTR__FORMAT(1) static void trace(const char *format, ...) {
 // --------------------------------------------------------------------------------
 
 static const char *readable_result[] = {
-    "OK",
-    "TRAPPED",
-    "VIOLATED",
-    "INTERRUPTED",
-    "THREW",
-    "INVALID",
-    "{unknown}",
+    ESC_GREEN "OK"           ESC_RESET_COL,
+    ESC_RED   "TRAPPED"      ESC_RESET_COL,
+    ESC_RED   "VIOLATED"     ESC_RESET_COL,
+    ESC_RED   "INTERRUPTED"  ESC_RESET_COL,
+    ESC_RED   "THREW"        ESC_RESET_COL,
+    ESC_RED   "INVALID"      ESC_RESET_COL,
+    ESC_RED   "{unknown}"    ESC_RESET_COL,
 };
 
 // --------------------------------------------------------------------------------
@@ -126,22 +135,22 @@ __ATTR__NORETURN static void UNITTEST_sigsegv_handler(int sig) {
                 
                 arb_test::GlobalTestData& test_data = arb_test::test_data();
                 if (!test_data.assertion_failed) { // not caused by assertion
-                    backtrace_cause = "Catched SIGSEGV not caused by assertion";
+                    backtrace_cause = "Caught SIGSEGV not caused by assertion";
                 }
                 break;
             }
             case SIGINT:
                 trap_code = TRAP_INT;
-                backtrace_cause = "Catched SIGINT (deadlock in test function?)";
+                backtrace_cause = "Caught SIGINT (deadlock in test function?)";
                 break;
 
             case SIGTERM:
                 trap_code = TRAP_TERM;
                 if (terminate_was_called) {
-                    backtrace_cause = "Catched SIGTERM, cause std::terminate() has been called in test-code (might be an invalid throw)";
+                    backtrace_cause = "Caught SIGTERM, cause std::terminate() has been called in test-code (might be an invalid throw)";
                 }
                 else {
-                    backtrace_cause = "Catched SIGTERM (deadlock in uninterruptable test function?)";
+                    backtrace_cause = "Caught SIGTERM (deadlock in uninterruptable test function?)";
                 }
                 break;
 
