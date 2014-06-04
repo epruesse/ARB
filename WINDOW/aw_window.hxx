@@ -20,6 +20,16 @@
 #include <cb.h>
 #endif
 
+#if defined(ARB_GTK)
+# if defined(ARB_MOTIF)
+#  error ARB_GTK and ARB_MOTIF cannot both be defined
+# endif
+#else // !defined(ARB_GTK)
+# if !defined(ARB_MOTIF)
+#  error Either ARB_GTK or ARB_MOTIF has to be defined
+# endif
+#endif
+
 class AW_window;
 class AW_device;
 class AW_device_click;
