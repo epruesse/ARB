@@ -477,10 +477,10 @@ public:
     }
 
     void hide_drag_indicator(AW_device *device, int drag_gc) const {
-#ifndef ARB_GTK
+#ifdef ARB_MOTIF
         // hide by XOR-drawing only works in motif
         draw_drag_indicator(device, drag_gc);
-#else
+#else // ARB_GTK
         exports.refresh = 1;
 #endif
     }

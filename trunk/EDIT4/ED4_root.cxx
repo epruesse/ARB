@@ -1594,7 +1594,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->create_menu("Properties", "P", AWM_ALL);
 
-#ifndef ARB_GTK
+#ifdef ARB_MOTIF
     awmm->insert_menu_topic("props_frame", "Frame Settings ", "F", 0, AWM_ALL, AW_preset_window);
 #endif
 

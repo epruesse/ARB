@@ -234,7 +234,7 @@ void awt_edit_arbtcpdat_cb(AW_window *aww, GBDATA *gb_main) {
     free(filename);
 }
 
-#if !defined(ARB_GTK)
+#if defined(ARB_MOTIF)
 static char *readable_pt_servername(int index, int maxlength) {
     char *fullname = GBS_ptserver_id_to_choice(index, 0);
     if (!fullname) {
@@ -289,7 +289,7 @@ static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, c
 
     return aw_popup;
 }
-#endif // ARB_GTK
+#endif // ARB_MOTIF
 
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
     if (popup) {
@@ -300,7 +300,7 @@ void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname
         aws->button_length(PT_SERVERNAME_LENGTH+1);
         aws->update_option_menu();
         aws->button_length(old_button_length);
-#else
+#else // ARB_MOTIF
 
         AW_root *aw_root              = aws->get_root();
         char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
