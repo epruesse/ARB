@@ -1094,8 +1094,15 @@ void AW_window::update_toggle_field() {
     gtk_widget_show_all(prvt->toggle_field);
     GtkAlignment* align = GTK_ALIGNMENT(gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f));
     put_with_label(prvt->toggle_field, align);
-    prvt->radio_last = NULL; // end of radio group
-    prvt->toggle_field = NULL;
+
+    // select the toggle associated with current awar value:
+    AW_awar* awar = get_root()->awar_no_error(prvt->toggle_field_awar_name);
+    aw_assert(awar);
+    if (awar) awar->update_choices();
+
+    prvt->radio_last             = NULL; // end of radio group
+    prvt->toggle_field           = NULL;
+    prvt->toggle_field_awar_name = NULL;
 }
 // END TOGGLE FIELD STUFF
 
