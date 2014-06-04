@@ -89,9 +89,11 @@ public:
                             AW_awar_gvalue_mapper* mapper=NULL) = 0;
     virtual void unbind(GObject* obj) = 0;
 
-    virtual AW_choice* add_choice(AW_action&, int,        bool) = 0;
+    virtual AW_choice* add_choice(AW_action&, int,        bool)  = 0;
     virtual AW_choice* add_choice(AW_action&, double,      bool) = 0;
     virtual AW_choice* add_choice(AW_action&, const char*, bool) = 0;
+
+    virtual void update_choices() = 0;
 
     // add/remove callbacks
     virtual AW_awar *add_callback(const RootCallback& cb)    = 0;

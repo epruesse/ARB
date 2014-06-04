@@ -70,7 +70,8 @@ public:
     void unlink_from_DB(GBDATA*);
     void set_temp_if_is_default(GBDATA *);
 
-    void     update() OVERRIDE;
+    void update() OVERRIDE;
+    void update_choices() OVERRIDE { choices.update(); }
 
     virtual AW_choice *add_choice(AW_action&, int,         bool) OVERRIDE;
     virtual AW_choice *add_choice(AW_action&, double,      bool) OVERRIDE;
