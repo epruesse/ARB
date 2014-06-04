@@ -1216,8 +1216,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->insert_sub_menu("Sort Species",         "s");
             {
-                awm->insert_menu_topic("sort_by_field", "According to Database Entries", "D", "sp_sort_fld.hlp",  AWM_ALL, NT_create_resort_window);
-                awm->insert_menu_topic("sort_by_tree",  "According to Phylogeny",        "P", "sp_sort_phyl.hlp", AWM_ALL, NT_resort_data_by_phylogeny, (AW_CL)ntw,                    0);
+                awm->insert_menu_topic("$sort_by_field", "According to Database Entries", "D", "sp_sort_fld.hlp",  AWM_ALL, NT_create_resort_window);
+                awm->insert_menu_topic("$sort_by_tree",  "According to Phylogeny",        "P", "sp_sort_phyl.hlp", AWM_ALL, NT_resort_data_by_phylogeny, (AW_CL)ntw, 0);
             }
             awm->close_sub_menu();
 
