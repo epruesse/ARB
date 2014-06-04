@@ -26,7 +26,7 @@
 class AW_selection_list_entry : virtual Noncopyable {
 #if defined(ARB_GTK)
     static const size_t MAX_DISPLAY_LENGTH = 599000; // 599000 -> no wrap-around happens in gtk
-#else // !defined(ARB_GTK)
+#else // ARB_MOTIF
     static const size_t MAX_DISPLAY_LENGTH = 8192; // 8192 -> no wrap-around happens in motif
 #endif
     // 100000 -> works in motif (no crash, but ugly because line wraps around - overwriting itself; also happens in gtk, e.g. for len=600000)
