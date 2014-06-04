@@ -16,7 +16,7 @@
 #include <arbdbt.h>
 #include <arb_global_defs.h>
 
-#if !defined(ARB_GTK)
+#if defined(ARB_MOTIF)
 static AW_window *existing_window_creator(AW_root*, AW_window *aw_existing) {
     return aw_existing;
 }
@@ -124,7 +124,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
 #ifdef ARB_GTK
         aws->button_length(columns);
         sellist = aws->create_option_menu(varname, fallback2default);
-#else
+#else // ARB_MOTIF
         // create HIDDEN popup window containing the selection list
         AW_window *win_for_sellist = aws;
         {
