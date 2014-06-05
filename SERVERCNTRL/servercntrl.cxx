@@ -184,12 +184,14 @@ static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, const char *tcp_id,
 }
 
 GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
+    arb_assert(!GB_have_error());
+
     GB_ERROR    error       = 0;
     const char *tcp_id      = GBS_read_arb_tcp(arb_tcp_env);
     const char *arb_tcp_dat = "$(ARBHOME)/lib/arb_tcp.dat";
 
     if (!tcp_id) {
-        error = GBS_global_string("Entry '%s' not found in %s", arb_tcp_env, arb_tcp_dat);
+        error = GBS_global_string("Entry '%s' not found in %s (%s)", arb_tcp_env, arb_tcp_dat, GB_await_error());
     }
     else {
         const char *file = GBS_scan_arb_tcp_param(tcp_id, "-d"); // find parameter behind '-d'
@@ -270,6 +272,7 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
         }
     }
 
+    arb_assert(!GB_have_error());
     return error;
 }
 
