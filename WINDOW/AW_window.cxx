@@ -1539,7 +1539,7 @@ void AW_window::window_fit() {
 AW_window::AW_window() 
   : recalc_size_at_show(AW_KEEP_SIZE),
     recalc_pos_at_show(AW_KEEP_POS),
-    prvt(new AW_window::AW_window_gtk()),
+    prvt(NULL),
     _at(this),
     xfig_data(NULL),
     event(),
@@ -1554,9 +1554,7 @@ AW_window::AW_window()
 {
     aw_assert(AW_root::SINGLETON); // must have AW_root
   
-    //    reset_scrolled_picture_size();
-    
-    prvt = new AW_window::AW_window_gtk();
+    prvt = new AW_window_gtk();
 
     // AW Windows are never destroyed
     set_hide_on_close(true);

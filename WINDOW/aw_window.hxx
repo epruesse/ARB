@@ -57,6 +57,7 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
 class AW_window;
 class AW_xfig;
 class AW_device;
+class AW_window_gtk;
 struct AW_screen_area;
 struct GB_HASH;
 
@@ -154,7 +155,6 @@ class AW_window : virtual Noncopyable {
 
     AW_awar *awar_posx, *awar_posy, *awar_width, *awar_height;
 protected:
-    class AW_window_gtk;
     AW_window_gtk* prvt; /*< Contains all gtk dependent attributes */
   
     /* put a widget into prvt->fixedArea according to _at.

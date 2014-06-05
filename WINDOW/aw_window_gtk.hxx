@@ -9,7 +9,7 @@
  * This class hides all private or gtk dependent attributes.
  * This is done to avoid gtk includes in the header file.
  */
-class AW_window::AW_window_gtk  {
+class AW_window_gtk  {
     AW_window_gtk(const AW_window_gtk&);
     AW_window_gtk& operator=(const AW_window_gtk&);
 public:
@@ -116,6 +116,11 @@ public:
      * default constructor
      */
     AW_window_gtk();
+
+    /**
+     * destructor
+     */
+    ~AW_window_gtk();
 
     /**
      * show window

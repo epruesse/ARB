@@ -15,6 +15,7 @@ private:
  
     friend class AW_root;
     friend class AW_window;
+    friend class AW_window_gtk;
     friend class AW_window_menu_modes;
 protected:
     AW_action();
