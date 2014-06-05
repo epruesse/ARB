@@ -180,7 +180,7 @@ sub parse_log($\@) {
 
   while ($_ = <LOG>) {
     chomp;
-    if (/UnitTester:/) {
+    if (/^UnitTester:/) {
       my $rest = $';
       if ($rest =~ /^\s+\*\s+([A-Za-z0-9_]+)\s+=\s+([A-Z]*)/o) {
         my ($testname,$result) = ($1,$2);
