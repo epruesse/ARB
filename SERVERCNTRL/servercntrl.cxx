@@ -92,7 +92,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
     GB_ERROR    error = 0;
 
     if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
-        error = GB_export_errorf("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
+        error = GB_await_error();
     }
     else {
         const char *server       = strchr(tcp_id, 0) + 1;
@@ -281,7 +281,7 @@ GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env) {
     GB_ERROR    error = 0;
 
     if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
-        error = GB_export_errorf("Missing line '%s' in $(ARBHOME)/lib/arb_tcp.dat:", arb_tcp_env);
+        error = GB_await_error();
     }
     else {
         const char *server = strchr(tcp_id, 0)+1;
