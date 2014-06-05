@@ -197,6 +197,8 @@ public:
     }
 
     GB_ERROR connect(GBDATA *gb_main) {
+        aw_assert(!GB_have_error());
+
         arb_progress::show_comment("Connecting to name server");
 
         GB_ERROR err = 0;
@@ -255,6 +257,7 @@ public:
                 err = reconnect(gb_main);
             }
         }
+        aw_assert(!GB_have_error());
         return err;
     }
 
@@ -299,8 +302,7 @@ PersistentNameServerConnection::~PersistentNameServerConnection() {
 // --------------------------------------------------------------------------------
 
 GB_ERROR AW_test_nameserver(GBDATA *gb_main) {
-    GB_ERROR err = name_server.connect(gb_main);
-    return err;
+    return name_server.connect(gb_main);
 }
 
 // --------------------------------------------------------------------------------
