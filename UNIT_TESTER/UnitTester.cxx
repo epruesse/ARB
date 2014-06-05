@@ -41,12 +41,20 @@
 
 #define ut_assert(cond) arb_assert(cond)
 
-#define ESC_BOLD       "\033[1m"
-#define ESC_RED        "\033[31m"
-#define ESC_GREEN      "\033[32m"
-#define ESC_YELLOW     "\033[33m"
-#define ESC_RESET_COL  "\033[39m"
-#define ESC_RESET_ALL  "\033[0m"
+#if defined(DEVEL_ELMAR)
+#define COLORED_MESSAGES
+#endif
+
+#ifdef COLORED_MESSAGES
+
+#define ESC_BOLD      "\033[1m"
+#define ESC_RED       "\033[31m"
+#define ESC_GREEN     "\033[32m"
+#define ESC_YELLOW    "\033[33m"
+#define ESC_RESET_COL "\033[39m"
+#define ESC_RESET_ALL "\033[0m"
+
+#endif
 
 using namespace std;
 
@@ -91,18 +99,23 @@ __ATTR__FORMAT(1) static void trace(const char *format, ...) {
     fflush(stdout);
     fflush(stderr);
 
+#if defined(COLORED_MESSAGES)
     fputs(ESC_BOLD, stderr);
+#endif
     fputs(TRACE_PREFIX, stderr);
     va_start(parg, format);
     vfprintf(stderr, format, parg);
     va_end(parg);
+#if defined(COLORED_MESSAGES)
     fputs(ESC_RESET_ALL, stderr);
+#endif
     fputc('\n', stderr);
     fflush(stderr);
 }
 
 // --------------------------------------------------------------------------------
 
+#ifdef COLORED_MESSAGES
 static const char *readable_result[] = {
     ESC_GREEN "OK"           ESC_RESET_COL,
     ESC_RED   "TRAPPED"      ESC_RESET_COL,
@@ -112,6 +125,17 @@ static const char *readable_result[] = {
     ESC_RED   "INVALID"      ESC_RESET_COL,
     ESC_RED   "{unknown}"    ESC_RESET_COL,
 };
+#else
+static const char *readable_result[] = {
+    "OK"           ,
+    "TRAPPED"      ,
+    "VIOLATED"     ,
+    "INTERRUPTED"  ,
+    "THREW"        ,
+    "INVALID"      ,
+    "{unknown}"    ,
+};
+#endif
 
 // --------------------------------------------------------------------------------
 
