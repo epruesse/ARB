@@ -31,6 +31,8 @@
 #define AWAR_ALI_DST AWAR_MERGE_TMP_DST "alignment_name"
 
 static void MG_alignment_vars_callback(AW_root *aw_root, int db_nr) {
+    mg_assert(!GB_have_error());
+
     GBDATA         *gb_main = get_gb_main(db_nr);
     GB_transaction  ta(gb_main);
 
@@ -56,6 +58,8 @@ static void MG_alignment_vars_callback(AW_root *aw_root, int db_nr) {
 
     }
     free(use);
+
+    mg_assert(!GB_have_error());
 }
 
 
