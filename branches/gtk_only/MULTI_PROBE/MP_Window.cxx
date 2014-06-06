@@ -289,9 +289,6 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
 }
 
 void MP_Window::build_pt_server_list() {
-    int     i;
-    char    *choice;
-
 #if defined(WARN_TODO)
 #warning why option_menu ? better use selection list ( awt_create_selection_list_on_pt_servers )
 #endif
@@ -300,12 +297,23 @@ void MP_Window::build_pt_server_list() {
     aws->callback(MP_cache_sonden);
     aws->create_option_menu(MP_AWAR_PTSERVER, true);
 
-    for (i=0; ; i++) {
-        choice = GBS_ptserver_id_to_choice(i, 1);
-        if (! choice) break;
+    for (int i=0; ; i++) {
+        char *choice = GBS_ptserver_id_to_choice(i, 1);
+        if (choice) {
+            aws->insert_option(choice, "", i);
+            delete choice;
+            choice = NULL;
+        }
+        else {
+            if (GB_have_error()) {
+                aws->insert_option("<error>", "", i);
+                GB_clear_error();
+            }
+            else {
+                break;
+            }
+        }
 
-        aws->insert_option(choice, "", i);
-        delete choice;
     }
 
     aws->update_option_menu();

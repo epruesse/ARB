@@ -96,12 +96,17 @@ static int init_local_com_struct() {
 }
 
 static const char *AP_probe_pt_look_for_server(ARB_ERROR& error) {
+    // DRY vs  ../MULTI_PROBE/MP_noclass.cxx@MP_probe_pt_look_for_server
+    // DRY vs  ../PROBE_DESIGN/probe_design.cxx@PD_probe_pt_look_for_server
     const char *server_tag = GBS_ptserver_tag(P.SERVERID);
-
     error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
-    if (error) return NULL;
-    
-    return GBS_read_arb_tcp(server_tag);
+
+    const char *result = NULL;
+    if (!error) {
+        result = GBS_read_arb_tcp(server_tag);
+        if (!result) error = GB_await_error();
+    }
+    return result;
 }
 
 class PTserverConnection {
