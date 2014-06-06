@@ -1858,7 +1858,8 @@ relocated: links
 	$(MAKE) build
 
 # -----------------------------------
-# some stress tests:
+# some stress tests
+# (helpful to reveal race conditions with -j)
 
 rebuild4ever: rebuild
 	$(MAKE) rebuild4ever
@@ -1877,6 +1878,9 @@ perl4ever: clean
 	$(MAKE) perl
 	$(MAKE) perl4ever
 
+help4ever: clean
+	$(MAKE) help
+	$(MAKE) help4ever
 
 # -----------------------------------
 
