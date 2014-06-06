@@ -241,7 +241,8 @@ static void first_searchkey_changed_cb(AW_root *, DbQuery *query) {
     QUERY_RESULT_ORDER order[MAX_CRITERIA];
     split_sort_mask(query->sort_mask, order);
 
-    if (find_display_determining_sort_order(order) != QUERY_SORT_BY_HIT_DESCRIPTION) { // do we display values?
+    QUERY_RESULT_ORDER usedOrder = find_display_determining_sort_order(order);
+    if (usedOrder != QUERY_SORT_BY_HIT_DESCRIPTION && usedOrder != QUERY_SORT_NONE) { // do we display values?
         DbQuery_update_list(query);
     }
 }
@@ -400,6 +401,7 @@ inline bool is_pseudo_key(const char *key) {
 void QUERY::DbQuery_update_list(DbQuery *query) {
     GB_push_transaction(query->gb_main);
 
+    dbq_assert(query->hitlist);
     query->hitlist->clear();
 
     AW_window     *aww      = query->aws;

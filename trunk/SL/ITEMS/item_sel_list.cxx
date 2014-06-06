@@ -37,7 +37,11 @@ Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
 
 void Itemfield_Selection::fill() {
     if (field_filter & SF_PSEUDO) {
+#if defined(ARB_GTK)
+        insert_default(PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
+#else // ARB_MOTIF
         insert(PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
+#endif
         insert(PSEUDO_FIELD_ALL_FIELDS, PSEUDO_FIELD_ALL_FIELDS);
     }
 
@@ -79,7 +83,10 @@ void Itemfield_Selection::fill() {
             }
         }
     }
-    insert_default("<no field>", NO_FIELD_SELECTED);
+
+    if (!get_sellist()->get_default_value()) {
+        insert_default("<no field>", NO_FIELD_SELECTED);
+    }
 }
 
 
