@@ -199,20 +199,34 @@ void AW_selection_list::update() {
 void AW_selection_list::refresh() {
     aw_return_if_fail(widget != NULL);
 
+    const int NO_ENTRY_MATCHED_AWAR_VALUE = -1;
+
     int i = 0;
     {   // detect index in gtk-widget matching the awar value
         AW_selection_list_entry *lt;
         for (lt = list_table; lt; lt = lt->next, ++i) {
             if (lt->follows(default_select)) {
-                if (default_select->value == awar) break;
+                if (default_select->value == awar) {
+                    lt = default_select;
+                    break;
+                }
                 ++i;
             }
             if (lt->value == awar) break;
         }
-        if (!lt) i = -1;
+        if (!lt) {
+            if (default_select && default_select->value == awar) {
+                // if awar matches default and lt == NULL
+                // => default_select is bottom element
+                // => i has already correct value
+            }
+            else {
+                i = NO_ENTRY_MATCHED_AWAR_VALUE;
+            }
+        }
     }
 
-    if (i == -1) {
+    if (i == NO_ENTRY_MATCHED_AWAR_VALUE) {
         if (default_select) { // the awar value does not match any entry, not even the default entry
             if (select_default_on_unknown_awar_value) { // optional fallback to default value
                 select_default();
