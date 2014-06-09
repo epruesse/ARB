@@ -1,12 +1,16 @@
-.SUFFIXES: .o .a .cxx .depend
+.SUFFIXES: .o .a .cxx .depend .stamp
 
-OBJECTS= $(subst .cxx,.o,$(wildcard *.cxx))
+SOURCES=$(wildcard *.cxx)
+HEADERS=$(wildcard *.h)
+OBJECTS= $(subst .cxx,.o,$(SOURCES))
+ERROR_CHECKER=./show_error_list.pl
 
-$(MAIN): $(OBJECTS) check_error_codes
+$(MAIN): $(OBJECTS) check_error_codes.stamp
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
-check_error_codes:
-	@./show_error_list.pl -check
+check_error_codes.stamp: $(ERROR_CHECKER) $(SOURCES) $(HEADERS)
+	@$(ERROR_CHECKER) -check
+	@touch $@
 
 .cxx.o:
 	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
@@ -16,7 +20,7 @@ proto:
 	../SOURCE_TOOLS/mv_if_diff prototypes.h.tmp prototypes.h
 
 clean:
-	rm -f *.o $(BINARY)
+	rm -f *.o $(BINARY) *.stamp
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
