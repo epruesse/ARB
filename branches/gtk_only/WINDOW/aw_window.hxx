@@ -195,12 +195,9 @@ public:
     class AW_awar *window_local_awar(const char *localname, bool tmp = true);
     void           create_window_variables();
 
-    void recalc_pos_atShow(AW_PosRecalc pr);
-
+    void         recalc_pos_atShow(AW_PosRecalc pr);
+    void         recalc_size_atShow(enum AW_SizeRecalc sr);
     AW_PosRecalc get_recalc_pos_atShow() const;
-
-    void recalc_size_atShow(enum AW_SizeRecalc sr);
-
    
     void allow_delete_window(bool allow_close);
     void on_hide(AW_CB0 call_on_hide);
@@ -212,18 +209,9 @@ public:
 
     void set_window_title_intern(char *title);
 
-    void update_label(GtkWidget* widget, const char *var_value);
-    void update_toggle(GtkWidget *widget, const char *var, AW_CL /*cd_toggle_data*/);
-    void update_progress_bar(GtkWidget* progressBar, const double var_value);
-
-    void  create_invisible(int columns);
-    void *_create_option_entry(GB_TYPES type, const char *name, const char *mnemonic, const char *name_of_color);
-    void  unset_at_commands();
-
+    // special for EDIT4 
     void _get_area_size(AW_area area, AW_screen_area *square);
     
-    int label_widget(void *wgt, const char *str, char *mnemonic=0, int width = 0, int alignment = 0);
-
     // ------------------------------
     //      The read only section
 
@@ -238,9 +226,6 @@ public:
     AW_screen_area *picture;                 //! size of scrollable
 
     int main_drag_gc;
-
-
-    // picture size
 
     // --------------------------------
     //      The real public section
@@ -436,6 +421,7 @@ public:
     void at_attach(bool attach_x, bool attach_y); // attach to X, Y or both
     void at_set_to(bool attach_x, bool attach_y, int xoff, int yoff); // set "to:XY:id" manually
     void at_unset_to();         // unset "to:id" manually
+    void unset_at_commands();
     void at_set_min_size(int xmin, int ymin); // define minimum window size
 
     void store_at_size_and_attach(AW_at_size *at_size);   // get size of at-element

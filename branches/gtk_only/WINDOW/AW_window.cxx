@@ -266,11 +266,6 @@ GtkWidget* AW_window::make_label(const char* label_text, short label_len, const 
     return widget;
 }
 
-void AW_window::update_label(GtkWidget* widget, const char* newlabel) {
-    g_object_set(G_OBJECT(widget), "label", newlabel, NULL);
-}
-
-
 void AW_window::put_with_label(GtkWidget* widget) {
     //label will not absorb any free space and will be centered
     GtkAlignment *align = GTK_ALIGNMENT(gtk_alignment_new(0.5f, 0.5f, 0.0f, 0.0f));
