@@ -118,7 +118,7 @@ $(SYMLIST) : $(FULLLIB) Makefile makedirs show_test_header $(MAKESYMLIST)
 
 $(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) Makefile.test Makefile.setup.local
 	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $(RESTRICT_FUN) $< $@.tmp $(WARN_LEVEL)
-	mv_if_diff $@.tmp $@
+	../SOURCE_TOOLS/mv_if_diff $@.tmp $@
 
 $(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
 	$(A_CXX) $(cflags) $(cxxflags) -c $< -o $@ -I. $(POST_COMPILE) 
