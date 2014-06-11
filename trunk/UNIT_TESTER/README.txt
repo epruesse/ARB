@@ -161,17 +161,45 @@ How to use ARB unit testing
 
    (see also showCoverageForAll in gcov2msg.pl)
 
-5. Running only some tests
+5. Define which tests shall run
 
-   Set 'RESTRICT=expr' to '.' to run all tests.
+   [look into Makefile.setup.local for examples]
 
-   Set it to sth else to run only tests for matching source files.
-   This is helpful if you'd like to check test-coverage.
+   a. Restrict tests to one or several libraries:
 
-   Set 'RESTRICT_LIB=lib1:lib2' to test only a few libs.
+      Set 'RESTRICT_LIB=lib1[:libN]*' to run only tests defined in the
+      specified libraries.
 
+      Set 'RESTRICT_LIB=' to test all libraries.
 
-   Slow tests ('TEST_SLOW_...'; see above) will only run every 15 minutes.
+   b. Restrict tests to specific modules:
+
+      Set "RESTRICT_MODULE='regexpr'" to run only tests located in
+      matching modules. Use '.' for all modules.
+
+   c. Restrict tests by name:
+
+      Set "RESTRICT_FUN='regexpr'" to run only tests whose function-name
+      matches the regexpr. Use '.' for all tests.
+
+   d. Restrict test frequency:
+
+      Set 'SKIP_SLOW=min' to restrict frequency of "slow tests". Slow tests
+      are all tests named 'TEST_SLOW_.*'. These tests will not run more often
+      than the specified amount of minutes.
+      Set 'SKIP_SLOW=0' to always run all tests (default).
+
+   e. Run unchanged tests:
+
+      By default only changed unit-tests will run. Set 'ONLY_CHANGED_TESTS=0'
+      to force testing unchanged code.
+
+      Tests will re-run if ..
+      - the test code was changed,
+      - any needed library was changed or if
+      - Makefile.setup.local or anything in the UnitTester itself was changed.
+
+      Calling 'make clean' in $ARBHOME will also force all tests to re-run.
 
 
 6. Global test environments
