@@ -1969,7 +1969,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
 
     if (selList==0) {
         aws->at("box");
-        aws->callback(makeWindowCallback(pg_result_selected, gb_main));
+        aws->callback(makeWindowCallback(pg_result_selected, gb_main)); // @@@ used as SELLIST_CLICK_CB (see #559)
         selList = pg_global.selList = aws->create_selection_list(AWAR_PG_SELECTED_RESULT, 2, 2, true);
     }
     else {
