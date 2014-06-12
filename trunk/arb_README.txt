@@ -41,7 +41,7 @@ Installation from Pre-Compiled Binaries:
 ----------------------------------------
 
   1) Download "arb_install.sh" and the arb-*.tgz matching your distribution
-     from http://download.arb-home.de/build/arb-6.0/
+     from http://download.arb-home.de/release/arb-6.0/
 
      Files:
      arb-6.0.centos5-amd64.tgz
