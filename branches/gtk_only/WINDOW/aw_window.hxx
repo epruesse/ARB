@@ -66,15 +66,6 @@ struct GB_HASH;
 #define AW_MESSAGE_TIME 2000
 #define AW_HEADER_MAIN
 
-// ======= Used in Tune background function =================================
-#define TUNE_BUTTON    8
-#define TUNE_INPUT     (-TUNE_BUTTON)
-#define TUNE_SUBMENU   0
-#define TUNE_MENUTOPIC (-12)
-#define TUNE_BRIGHT    (256+30)
-#define TUNE_DARK      (-TUNE_BRIGHT)
-// ==========================================================================
-
 #ifndef AW_AT_HXX
 class AW_at;
 #endif
