@@ -2802,9 +2802,6 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
 
     if (awtqs->result_pos_fig) {
         aws->at(awtqs->result_pos_fig);
-        if (awtqs->popup_info_window) {
-            aws->callback(RootAsWindowCallback::simple(awtqs->popup_info_window, query->gb_main));
-        }
         aws->d_callback(makeWindowCallback(toggle_flag_cb, query));
 
         {
@@ -2817,10 +2814,20 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         query->hitlist->insert_default("end of list", "");
         query->hitlist->update();
     }
+
     if (awtqs->count_pos_fig) {
+        aws->button_length(13);
         aws->at(awtqs->count_pos_fig);
         aws->label("Hits:");
         aws->create_button(0, query->awar_count, 0, "+");
+
+        if (awtqs->popup_info_window) {
+            aws->callback(RootAsWindowCallback::simple(awtqs->popup_info_window, query->gb_main));
+            aws->create_button("popinfo", "Info");
+        }
+    }
+    else {
+        dbq_assert(!awtqs->popup_info_window); // dont know where to display
     }
 
     if (awtqs->config_pos_fig) {
@@ -2834,6 +2841,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     }
 
     aws->button_length(18);
+
     if (awtqs->do_query_pos_fig) {
         aws->at(awtqs->do_query_pos_fig);
         aws->callback(makeWindowCallback(perform_query_cb, query, EXT_QUERY_NONE));

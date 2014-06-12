@@ -275,7 +275,7 @@ static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, c
     aw_popup->auto_space(10, 10);
 
     aw_popup->at_newline();
-    aw_popup->callback((AW_CB0)AW_POPDOWN);
+    aw_popup->callback((AW_CB0)AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
     AW_selection_list *sellist = aw_popup->create_selection_list(varname, PT_SERVERNAME_SELLIST_WIDTH, 20, true);
 
     aw_popup->at_newline();
