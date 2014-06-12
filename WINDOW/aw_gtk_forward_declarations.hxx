@@ -10,6 +10,7 @@
 #pragma once
 typedef struct _GObject           GObject;
 typedef struct _GtkWidget         GtkWidget;
+typedef struct _GtkContainer      GtkContainer;
 typedef struct _GtkMenuBar        GtkMenuBar;
 typedef struct _GtkTreeView       GtkTreeView;
 typedef struct _GtkListStore      GtkListStore;
