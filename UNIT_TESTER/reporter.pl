@@ -210,7 +210,12 @@ sub parse_log($\@) {
       }
 
       if (/tests=([0-9]+)/)   { $tests_this += $1; $seenSummary=1; }
-      if (/skipped=([0-9]+)/) { $skipped_this += $1; $dump_log = 1; }
+      if (/skipped=([0-9]+)/) {
+        $skipped_this += $1;
+        if (shall_run_slow()) {
+          $dump_log = 1; # @@@ TODO: should dump log only if warnings are enabled
+        }
+      }
 
       if (/passed=([0-9]+)/)  { $passed += $1; }
       if (/passed=ALL/)       { $passedALL = 1; }
@@ -249,8 +254,6 @@ sub parse_log($\@) {
   }
 
   if (not $seenSummary) { $dump_log = 1; }
-
-  $dump_log = 1; # @@@ temporarily dump all logs (to detect what's so slow on colab)
 
   if ($dump_log==1) {
     open(LOG,$log) || die "can't open '$log' (Reason: $!)";
