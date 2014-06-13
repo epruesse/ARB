@@ -1110,20 +1110,22 @@ namespace arb_test {
 
 const bool DOES_SEGFAULT       = true;
 const bool DOESNT_SEGFAULT     = false;
+const bool CALL_WILL_SEGFAULT  = true;
+const bool CALL_WONT_SEGFAULT  = false;
 const bool FAILS_ASSERTION     = true;
 const bool FULFILLS_ASSERTIONS = false;
 
 #  ifdef ASSERTION_USED
-inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expect_assert_fail, bool expectation_untestable_under_valgrind) {
+inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expect_assert_fail, bool call_would_SEGV) {
     using namespace arb_test;
 
     bool& assertion_failed = test_data().assertion_failed;
     bool  old_state        = assertion_failed;
 
     expectation_group expected;
-    if (GBK_running_on_valgrind()) {
-        // GBK_raises_SIGSEGV(cb); // just call
-        expected.add(that(expectation_untestable_under_valgrind).is_equal_to(true));
+    if (call_would_SEGV && GBK_running_on_valgrind()) {
+        // don't provoke a SEGV when valgrinding
+        expected.add(that(call_would_SEGV).is_equal_to(expect_SEGV));
     }
     else {
         expected.add(that(GBK_raises_SIGSEGV(cb)).is_equal_to(expect_SEGV));
@@ -1134,36 +1136,50 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
     return all().ofgroup(expected);
 }
 #  else
-inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expectation_untestable_under_valgrind) {
+inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool call_would_SEGV) {
     using namespace arb_test;
-    if (GBK_running_on_valgrind()) {
-        return that(expectation_untestable_under_valgrind).is_equal_to(true);
+    if (call_would_SEGV && GBK_running_on_valgrind()) {
+        // don't provoke a SEGV when valgrinding
+        return that(call_would_SEGV).is_equal_to(expect_SEGV);
     }
     return that(GBK_raises_SIGSEGV(cb)).is_equal_to(expect_SEGV);
 }
 #  endif
 # endif
 
+// Note: Please toggle all permutations of
+//       * ../ARBDB/adstring.cxx@TEST_TEST_MACROS
+//       * Makefile.local.setup@VALGRIND
+//       * and DEBUG/NDEBUG mode in ../config.makefile@DEBUG
+//       and run tests in adstring.cxx whenever you change the macros below!
+//
+// Note for callers:
+//
+//   These tests will normally not fail under valgrind. If CALL_WILL_SEGFAULT,
+//   then the 'cb' will not be called (to avoid valgrind fails).
+//   Should be no problem, because normally valgrinded unittests run
+//   ADDITIONALLY to not-valgrinded unittests (where tests WILL fail in case).
+
 # ifdef ASSERTION_USED
 
-#  define TEST_EXPECT_NO_SEGFAULT(cb)                    TEST_EXPECTATION(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
-#  define TEST_EXPECT_NO_SEGFAULT__WANTED(cb)            TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
-#  define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, true))
-#  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, false))
+#  define TEST_EXPECT_NO_SEGFAULT(cb)                    TEST_EXPECTATION(expect_callback(cb,         DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, CALL_WONT_SEGFAULT))
+#  define TEST_EXPECT_NO_SEGFAULT__WANTED(cb)            TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, CALL_WILL_SEGFAULT))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECTATION(expect_callback(cb,         DOES_SEGFAULT,   FAILS_ASSERTION,     CALL_WILL_SEGFAULT))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT,   FAILS_ASSERTION,     CALL_WONT_SEGFAULT))
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECT_NO_SEGFAULT__WANTED(cb)
-#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, true))
-#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, false))
+#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb,         DOES_SEGFAULT,   FULFILLS_ASSERTIONS, CALL_WILL_SEGFAULT))
+#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT,   FULFILLS_ASSERTIONS, CALL_WONT_SEGFAULT))
 #  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT_NO_SEGFAULT__WANTED(cb)
 
 # else // ENABLE_CRASH_TESTS but no ASSERTION_USED (test segfaults in NDEBUG mode)
 
-#  define TEST_EXPECT_NO_SEGFAULT(cb)                    TEST_EXPECTATION(expect_callback(cb, DOESNT_SEGFAULT, false))
-#  define TEST_EXPECT_NO_SEGFAULT__WANTED(cb)            TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, false))
+#  define TEST_EXPECT_NO_SEGFAULT(cb)                    TEST_EXPECTATION(expect_callback(cb,         DOESNT_SEGFAULT, CALL_WONT_SEGFAULT))
+#  define TEST_EXPECT_NO_SEGFAULT__WANTED(cb)            TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, CALL_WILL_SEGFAULT))
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb)
-#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, true))
-#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, false))
+#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb,         DOES_SEGFAULT,   CALL_WILL_SEGFAULT))
+#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT,   CALL_WONT_SEGFAULT))
 #  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT_NO_SEGFAULT__WANTED(cb)
 
 # endif
