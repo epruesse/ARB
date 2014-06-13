@@ -84,6 +84,7 @@ AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/test_unit.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 iupac.o: iupac.h

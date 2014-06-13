@@ -460,3 +460,31 @@ AWT_translator *AWT_get_user_translator(GBDATA *gb_main) {
     return AWT_get_translator(AWT_default_protein_type(gb_main));
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static int test_code_nr = -1;
+static void translator_instance() {
+    AWT_translator instance(test_code_nr);
+}
+
+void TEST_translator_instantiation() {
+    for (int i = 0; i<AWT_CODON_TABLES; ++i) {
+        TEST_ANNOTATE(GBS_global_string("i=%i", i));
+        test_code_nr = i;
+        if (i == 5 || i == 6 || i == 11 || i == 14) {
+            TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(translator_instance);
+        }
+        else {
+            TEST_EXPECT_NO_SEGFAULT(translator_instance);
+        }
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
