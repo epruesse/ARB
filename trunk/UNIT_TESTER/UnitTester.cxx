@@ -513,7 +513,7 @@ bool SimpleTester::perform(size_t which) {
     bool       marked_as_slow = strlen(test.name) >= 10 && memcmp(test.name, "TEST_SLOW_", 10) == 0;
     const long abort_after_ms = marked_as_slow ? MAX_EXEC_MS_SLOW : MAX_EXEC_MS_NORMAL;
 
-#if defined(DEVEL_RALF)
+#if 1
     bool invalid = test.location == NULL;
 #else // !defined(DEVEL_RALF)
     bool invalid = false;
