@@ -1146,26 +1146,32 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 
 # ifdef ASSERTION_USED
 
+#  define TEST_EXPECT_NO_SEGFAULT(cb)                    TEST_EXPECTATION(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
+#  define TEST_EXPECT_NO_SEGFAULT__WANTED(cb)            TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, true))
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, false))
-#  define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
-#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, true)) 
-#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, false)) 
-#  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECT_NO_SEGFAULT__WANTED(cb)
+#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, true))
+#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, false))
+#  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT_NO_SEGFAULT__WANTED(cb)
 
 # else // ENABLE_CRASH_TESTS but no ASSERTION_USED (test segfaults in NDEBUG mode)
 
+#  define TEST_EXPECT_NO_SEGFAULT(cb)                    TEST_EXPECTATION(expect_callback(cb, DOESNT_SEGFAULT, false))
+#  define TEST_EXPECT_NO_SEGFAULT__WANTED(cb)            TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, false))
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb)
-#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, true)) 
-#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, false)) 
-#  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, false))
+#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, true))
+#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, false))
+#  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT_NO_SEGFAULT__WANTED(cb)
 
 # endif
 
 #else // not ENABLE_CRASH_TESTS (i.e. skip these tests completely)
 
+# define TEST_EXPECT_NO_SEGFAULT(cb)
+# define TEST_EXPECT_NO_SEGFAULT__WANTED(cb)
 # define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)
 # define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)
 # define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb)
