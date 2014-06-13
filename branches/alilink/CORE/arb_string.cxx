@@ -421,6 +421,7 @@ void TEST_less_equal() {
     TEST_EXPECT_LESS(x, y);
     TEST_EXPECT_IN_RANGE(y, x, z);
 }
+TEST_PUBLISH(TEST_less_equal);
 
 #endif // UNIT_TESTS
 

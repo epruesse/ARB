@@ -1224,6 +1224,7 @@ void TEST_date_stamping() {
         free(dated);
     }
 }
+TEST_PUBLISH(TEST_date_stamping);
 
 #endif // UNIT_TESTS
 
