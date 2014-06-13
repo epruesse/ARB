@@ -340,6 +340,7 @@ void TEST_GBT_names_add() { // test after GBT_names_move (cause add depends on m
     GBT_names_add(names, 5, "d0");                  // insert before last
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a0*a*b*b2*c*d0*d");
 }
+TEST_PUBLISH(TEST_GBT_names_add);
 
 #endif // UNIT_TESTS
 

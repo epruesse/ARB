@@ -776,6 +776,7 @@ void TEST_selection_list_access() {
         TEST_LIST_CONTENT(copy2, true, "1st;2nd;3rd");
     }
 }
+TEST_PUBLISH(TEST_selection_list_access);
 
 #endif // UNIT_TESTS
 
