@@ -263,6 +263,7 @@ void TEST_range_containment() {
     TEST_REJECT(part.contains(from30));
     TEST_EXPECT(part.contains(part));
 }
+TEST_PUBLISH(TEST_range_containment);
 
 #endif // UNIT_TESTS
 

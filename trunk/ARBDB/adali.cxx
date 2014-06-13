@@ -980,5 +980,6 @@ void TEST_alignment() {
 
     GB_close(gb_main);
 }
+TEST_PUBLISH(TEST_alignment);
 
 #endif // UNIT_TESTS

@@ -709,6 +709,7 @@ void TEST_AW_root_cblist() {
     AW_root_cblist::clear(cb_list);
     TEST_EXPECT_CBS_CALLED(cb_list, 0, 0); // list clear - nothing should be called
 }
+TEST_PUBLISH(TEST_AW_root_cblist);
 
 #endif // UNIT_TESTS
 
