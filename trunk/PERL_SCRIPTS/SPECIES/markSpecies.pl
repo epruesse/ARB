@@ -109,6 +109,7 @@ sub buildMarklist($\%) {
 
   %$marklist_r = map {
     chomp;
+    s/\r+$//;
     $_ => 1;
   } @lines;
 }
