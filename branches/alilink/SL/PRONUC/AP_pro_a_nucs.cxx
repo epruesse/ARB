@@ -153,7 +153,7 @@ static int codon_defined_in(const char *codon, const char *codons) {
 // must be compatible with DIST/PH_protdist.cxx !!
 // except that this table has an 's' insertion !!!
 
-#define T2I_ENTRIES_MAX 190
+#define T2I_ENTRIES_MAX 196 // maximum number of generated translations (by code number 11)
 
 AWT_translator::AWT_translator(int arb_protein_code_nr) :
     distance_meter(0),
@@ -476,12 +476,7 @@ void TEST_translator_instantiation() {
     for (int i = 0; i<AWT_CODON_TABLES; ++i) {
         TEST_ANNOTATE(GBS_global_string("i=%i", i));
         test_code_nr = i;
-        if (i == 5 || i == 6 || i == 11 || i == 14) {
-            TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(translator_instance);
-        }
-        else {
-            TEST_EXPECT_NO_SEGFAULT(translator_instance);
-        }
+        TEST_EXPECT_NO_SEGFAULT(translator_instance);
     }
 }
 
