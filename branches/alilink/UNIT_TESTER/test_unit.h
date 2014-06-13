@@ -1359,6 +1359,14 @@ namespace arb_test {
 // cleanup is done (by Makefile.suite) after all unit tests have been run
 
 // --------------------------------------------------------------------------------
+// Some functions do not export information about their source location.
+// Fix that problem by writing
+//     TEST_PUBLISH(TEST_something)
+// just behind the function TEST_something.
+
+#define TEST_PUBLISH(testfunction) void publish##testfunction() { testfunction(); }
+
+// --------------------------------------------------------------------------------
 
 #else
 #error test_unit.h included twice
