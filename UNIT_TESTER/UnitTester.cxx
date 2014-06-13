@@ -367,7 +367,7 @@ __ATTR__NORETURN static void deadlockguard(long max_allowed_duration_ms, bool de
         max_allowed_duration_ms += additional;
     }
 
-    const long aBIT = 50*1000; // �s
+    const useconds_t aBIT = 50*1000; // 50 microseconds
 
     fprintf(stderr,
             "[deadlockguard woke up after %li ms]\n"
@@ -513,9 +513,15 @@ bool SimpleTester::perform(size_t which) {
     bool       marked_as_slow = strlen(test.name) >= 10 && memcmp(test.name, "TEST_SLOW_", 10) == 0;
     const long abort_after_ms = marked_as_slow ? MAX_EXEC_MS_SLOW : MAX_EXEC_MS_NORMAL;
 
+#if defined(DEVEL_RALF) && 0
+    bool invalid = test.location == NULL;
+#else // !defined(DEVEL_RALF)
+    bool invalid = false;
+#endif
+
     long           duration_usec;
-    UnitTestResult result           = execute_guarded(fun, &duration_usec, abort_after_ms, true); // <--- call test
-    double         duration_ms_this = duration_usec/1000.0;
+    UnitTestResult result           = invalid ? TEST_INVALID : execute_guarded(fun, &duration_usec, abort_after_ms, true); // <--- call test
+    double         duration_ms_this = invalid ? 0.0 : duration_usec/1000.0;
 
     duration_ms += duration_ms_this;
 
