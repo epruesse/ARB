@@ -1015,8 +1015,7 @@ void TEST_GB_undo__basic() {
     TEST_EXPECT_EQUAL( gbd_counter->get_deletes(), 0);
     TEST_EXPECT_EQUAL( GB_read_pntr(GB_find(main, "test", SEARCH_CHILD)), str);
 
-
-
+    delete gbd_counter;
 
     // test undo delete short string
     GB_begin_transaction(main);
