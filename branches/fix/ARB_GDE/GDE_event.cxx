@@ -18,7 +18,6 @@
 
 using namespace std;
 
-#define DEFAULT_COLOR 8
 extern adfiltercbstruct *agde_filter;
 
 /*
