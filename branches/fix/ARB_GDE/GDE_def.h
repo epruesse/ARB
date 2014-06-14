@@ -21,11 +21,6 @@
 #define UP    0
 #define DOWN  1
 
-#ifndef TRUE
-#define TRUE  1
-#define FALSE 0
-#endif
-
 #define GBUFSIZ                   4096
 #define MAX_NA_DISPLAY_WIDTH      1024
 #define MAX_NA_DISPLAY_HEIGHT     1024

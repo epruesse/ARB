@@ -43,7 +43,7 @@ enum TypeInfo {
 };
 
 struct GfileFormat {
-    int       save;             // how should file be saved
+    bool      save;             // whether file should be saved
     int       format;           // what format is each field
     char     *symbol;           // internal symbol table mapping
     char     *name;             // file name

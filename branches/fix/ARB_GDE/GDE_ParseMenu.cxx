@@ -396,7 +396,7 @@ static void ParseMenus(LineReader& in) {
 
                 thisitem->input     = (GfileFormat*)resize;
                 thisinput           = &(thisitem->input)[curinput];
-                thisinput->save     = FALSE;
+                thisinput->save     = false;
                 thisinput->format   = 0;
                 thisinput->symbol   = strdup(temp);
                 thisinput->name     = NULL;
@@ -410,7 +410,7 @@ static void ParseMenus(LineReader& in) {
             }
             else if (strcmp(head, "insave") == 0) {
                 THROW_IF_NO_INPUT();
-                thisinput->save = TRUE;
+                thisinput->save = true;
             }
             else if (strcmp(head, "intyped") == 0) {
                 THROW_IF_NO_INPUT();
@@ -428,7 +428,7 @@ static void ParseMenus(LineReader& in) {
 
                 thisitem->output   = (GfileFormat*)resize;
                 thisoutput         = &(thisitem->output)[curoutput];
-                thisoutput->save   = FALSE;
+                thisoutput->save   = false;
                 thisoutput->format = 0;
                 thisoutput->symbol = strdup(temp);
                 thisoutput->name   = NULL;
@@ -442,7 +442,7 @@ static void ParseMenus(LineReader& in) {
             }
             else if (strcmp(head, "outsave") == 0) {
                 THROW_IF_NO_OUTPUT();
-                thisoutput->save = TRUE;
+                thisoutput->save = true;
             }
             else {
                 throwParseError(GBS_global_string("No known GDE-menu-command found (line='%s')", in_line), in);
@@ -496,9 +496,9 @@ GB_ERROR LoadMenus() {
     return error;
 }
 
-int Find(const char *target, const char *key) {
+bool Find(const char *target, const char *key) {
     // Search the target string for the given key
-    return strstr(target, key) ? TRUE : FALSE;
+    return strstr(target, key) ? true : false;
 }
 
 int Find2(const char *target, const char *key) {
