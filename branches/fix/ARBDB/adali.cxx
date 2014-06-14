@@ -975,6 +975,16 @@ void TEST_alignment() {
             }
         }
 
+        // document broken behavior of GBT_get_alignment when no aliname specified:
+        {
+            GBDATA *gb_alignment = GBT_get_alignment(gb_main, NULL);
+            TEST_EXPECT_NULL__BROKEN(gb_alignment, gb_alignment); // @@@ fix
+
+            // just show what ali is returned (remove this section later)
+            GBDATA *gb_name = GB_entry(gb_alignment, "alignment_name");
+            TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_name), "ali_tuf_pro");
+        }
+
         free(def_ali_name);
     }
 
