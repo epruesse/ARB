@@ -28,13 +28,17 @@ static char *readableItemname(const GmenuItem& i) {
     return GBS_global_string_copy("%s/%s", i.parent_menu->label, i.label);
 }
 
+inline __ATTR__NORETURN void throwError(const char *msg) {
+    throw string(msg);
+}
+
 static __ATTR__NORETURN void throwParseError(const char *msg, const LineReader& file) {
     fprintf(stderr, "\n%s:%li: %s\n", file.getFilename().c_str(), file.getLineNumber(), msg);
     fflush(stderr);
     throwError(msg);
 }
 
-__ATTR__NORETURN static void throwItemError(const GmenuItem& i, const char *error, const LineReader& file) {
+static __ATTR__NORETURN void throwItemError(const GmenuItem& i, const char *error, const LineReader& file) {
     char       *itemName = readableItemname(i);
     const char *msg      = GBS_global_string("[Above this line] Invalid item '%s' defined: %s", itemName, error);
     free(itemName);
@@ -510,11 +514,6 @@ int Find2(const char *target, const char *key) {
 }
 
 // --------------------------------------------------------------------------------
-
-void throwError(const char *msg) {
-    // goes to header: __ATTR__NORETURN
-    throw string(msg);
-}
 
 inline void trim(char *str) {
     int s = 0;

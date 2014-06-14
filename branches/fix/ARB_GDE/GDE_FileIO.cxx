@@ -3,8 +3,7 @@
 #include <aw_msg.hxx>
 #include <algorithm>
 
-void Regroup(NA_Alignment *alignment)
-{
+static void Regroup(NA_Alignment *alignment) {
     size_t j;
     size_t group;
     int last;
