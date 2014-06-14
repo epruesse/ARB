@@ -239,6 +239,9 @@ static void GDE_freeali(NA_Alignment *dataset) {
 }
 
 static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelements) {
+    if (dataset->numelements == oldnumelements) return;
+    gde_assert(dataset->numelements > oldnumelements); // otherwise this is a noop
+
     GBDATA   *gb_main = db_access.gb_main;
     GB_ERROR  error   = GB_begin_transaction(gb_main);
 
@@ -253,6 +256,7 @@ static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelem
         else {
             align       = defaultAlign;
             maxalignlen = GBT_get_alignment_len(gb_main, align);
+            if (maxalignlen<0) error = GB_await_error();
         }
     }
 
@@ -415,6 +419,8 @@ static char *preCreateTempfile(const char *name) {
 }
 
 void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
+    gde_assert(!GB_have_error());
+
     AW_root   *aw_root      = aw->get_root();
     GmenuItem *current_item = gmenuitem;
 
@@ -568,5 +574,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     GDE_freeali(DataSet);
     freeset(DataSet, (NA_Alignment *)Calloc(1, sizeof(NA_Alignment)));
     DataSet->rel_offset = 0;
+
+    gde_assert(!GB_have_error());
 }
 
