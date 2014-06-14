@@ -50,8 +50,6 @@ struct GfileFormat {
     TypeInfo  typeinfo;
 };
 
-class AW_window;
-
 struct GmenuItem {
     int           numargs;        // number of agruments to cmnd
     int           numoutputs;     // number of outputs from cmnd
@@ -78,8 +76,6 @@ struct Gmenu {
     char       meta;            // Meta character for menu
     AW_active  active_mask;     // expert/novice
 };
-
-typedef unsigned char uchar;
 
 extern struct gde_database_access {
     GDE_get_sequences_cb  get_sequences;

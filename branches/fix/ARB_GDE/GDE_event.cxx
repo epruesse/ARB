@@ -223,7 +223,6 @@ static void GDE_freeali(NA_Alignment *dataset) {
         GDE_free((void**)&dataset->id);
         GDE_free((void**)&dataset->description);
         GDE_free((void**)&dataset->authority);
-        GDE_free((void**)&dataset->selection_mask);
         GDE_free((void**)&dataset->alignment_name);
 
         for (unsigned long i=0; i<dataset->numelements; i++) {
