@@ -165,12 +165,6 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     return (Action);
 }
 
-static long LMAX(long a, long b)
-{
-    if (a>b) return a;
-    return b;
-}
-
 static void GDE_free(void **p) {
     freenull(*p);
 }
@@ -238,7 +232,7 @@ static void GDE_freeali(NA_Alignment *dataset) {
     }
 }
 
-static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelements) {
+static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumelements) {
     if (dataset->numelements == oldnumelements) return;
     gde_assert(dataset->numelements > oldnumelements); // otherwise this is a noop
 
@@ -536,7 +530,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         aw_message_if(GBK_system(Action));
         free(Action);
 
-        long oldnumelements = DataSet->numelements;
+        size_t oldnumelements = DataSet->numelements;
 
         for (int j=0; j<current_item->numoutputs; j++) {
             switch (current_item->output[j].format) {
