@@ -474,7 +474,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     GapCompression compress = static_cast<GapCompression>(aw_root->awar(AWAR_GDE_COMPRESSION)->read_int());
     arb_progress   progress(current_item->label);
 
-    {
+    if (gmenuitem->seqtype != '-') {
         GB_ERROR error = awt_invalid_filter(filter2);
         if (error) {
             aw_message(error);
