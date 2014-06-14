@@ -462,27 +462,17 @@ static char *preCreateTempfile(const char *name) {
 }
 
 void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
-    AW_root   *aw_root           = aw->get_root();
-    AP_filter *filter2           = awt_get_filter(agde_filter);
-    char      *filter_name       = 0;      // aw_root->awar(AWAR_GDE_FILTER_NAME)->read_string()
-    char      *alignment_name    = strdup("ali_unknown");
-    bool       marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);
-    long       cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
-    GmenuItem *current_item      = gmenuitem;
-    int        stop              = 0;
+    AW_root   *aw_root      = aw->get_root();
+    GmenuItem *current_item = gmenuitem;
 
     GapCompression compress = static_cast<GapCompression>(aw_root->awar(AWAR_GDE_COMPRESSION)->read_int());
     arb_progress   progress(current_item->label);
 
-    if (gmenuitem->seqtype != '-') {
-        GB_ERROR error = awt_invalid_filter(filter2);
-        if (error) {
-            aw_message(error);
-            stop = 1;
-        }
-    }
 
-    if (!stop && current_item->numinputs>0) {
+    char *alignment_name = NULL;
+    int   stop           = 0;
+
+    if (current_item->numinputs>0) {
         TypeInfo typeinfo = UNKNOWN_TYPEINFO;
         {
             for (int j=0; j<current_item->numinputs; j++) {
@@ -496,19 +486,36 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         gde_assert(typeinfo != UNKNOWN_TYPEINFO);
 
         if (!stop) {
-            DataSet->gb_main = db_access.gb_main;
-            GB_begin_transaction(DataSet->gb_main);
-            freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
-            freedup(alignment_name, DataSet->alignment_name);
+            AP_filter *filter2 = awt_get_filter(agde_filter);
+            gde_assert(gmenuitem->seqtype != '-'); // inputs w/o seqtype? impossible!
+            {
+                GB_ERROR error = awt_invalid_filter(filter2);
+                if (error) {
+                    aw_message(error);
+                    stop = 1;
+                }
+            }
 
-            progress.subtitle("reading database");
-            if (db_access.get_sequences) {
-                stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon, typeinfo);
+            if (!stop) {
+                DataSet->gb_main = db_access.gb_main;
+                GB_begin_transaction(DataSet->gb_main);
+                freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
+                freedup(alignment_name, DataSet->alignment_name);
+
+                progress.subtitle("reading database");
+
+                long cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
+                bool marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);
+
+                if (db_access.get_sequences) {
+                    stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon, typeinfo);
+                }
+                else {
+                    stop = ReadArbdb(DataSet, marked, filter2, compress, cutoff_stop_codon, typeinfo);
+                }
+                GB_commit_transaction(DataSet->gb_main);
             }
-            else {
-                stop = ReadArbdb(DataSet, marked, filter2, compress, cutoff_stop_codon, typeinfo);
-            }
-            GB_commit_transaction(DataSet->gb_main);
+            delete filter2;
         }
 
         if (!stop && DataSet->numelements==0) {
@@ -559,8 +566,11 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         for(int j=0; j<current_item->numinputs;  j++) Action = ReplaceFile(Action, current_item->input[j]);
         for(int j=0; j<current_item->numoutputs; j++) Action = ReplaceFile(Action, current_item->output[j]);
 
-        filter_name = AWT_get_combined_filter_name(aw_root, "gde");
-        Action = ReplaceString(Action, "$FILTER", filter_name);
+        if (Find(Action, "$FILTER") == TRUE) {
+            char *filter_name = AWT_get_combined_filter_name(aw_root, "gde");
+            Action            = ReplaceString(Action, "$FILTER", filter_name);
+            free(filter_name);
+        }
 
         // call and go...
         progress.subtitle("calling external program");
@@ -601,8 +611,6 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     }
 
     free(alignment_name);
-    delete filter2;
-    free(filter_name);
 
     GDE_freeali(DataSet);
     freeset(DataSet, (NA_Alignment *)Calloc(1, sizeof(NA_Alignment)));
