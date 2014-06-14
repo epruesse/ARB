@@ -174,7 +174,6 @@ struct NA_Sequence {
     NA_Sequence *groupb;        // Group link backward
     NA_Sequence *groupf;        // Group link forward
 
-    int  *cmask;                // color mask
     int   format;               // default file format
     int   elementtype;          // what type of data are being aligned
     char *baggage;              // unformatted comments
@@ -189,9 +188,6 @@ struct NA_Alignment {
     char         *id;           // Alignment ID
     char         *description;  // Description of the alignment
     char         *authority;    // Who generated the alignment
-    int          *cmask;        // color mask
-    int           cmask_offset; // color mask offset
-    int           cmask_len;    // color mask length
     int           ref;          // reference sequence
     size_t        numelements;  // number of data elements
     int           maxnumelements; // maximum number of data elements

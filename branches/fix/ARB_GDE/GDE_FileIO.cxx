@@ -447,7 +447,6 @@ void InitNASeq(NA_Sequence *seq, int type) {
     seq->groupid = 0;
     seq->groupb = NULL;
     seq->groupf = NULL;
-    seq->cmask = NULL;
 
     switch (type)
     {

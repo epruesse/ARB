@@ -219,7 +219,6 @@ static char *ReplaceString(char *Action, const char *old, const char *news)
 static void GDE_freesequ(NA_Sequence *sequ) {
     if (sequ) {
         GDE_free((void**)&sequ->comments);
-        GDE_free((void**)&sequ->cmask);
         GDE_free((void**)&sequ->baggage);
         GDE_free((void**)&sequ->sequence);
     }
@@ -230,7 +229,6 @@ static void GDE_freeali(NA_Alignment *dataset) {
         GDE_free((void**)&dataset->id);
         GDE_free((void**)&dataset->description);
         GDE_free((void**)&dataset->authority);
-        GDE_free((void**)&dataset->cmask);
         GDE_free((void**)&dataset->selection_mask);
         GDE_free((void**)&dataset->alignment_name);
 
@@ -399,51 +397,6 @@ static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelem
         }
         free(savename);
         progress.inc_and_check_user_abort(error);
-    }
-
-    // colormasks
-    for (i = 0; !error && i < dataset->numelements; i++) {
-        NA_Sequence *sequ = &(dataset->element[i]);
-
-        if (sequ->cmask) {
-            maxalignlen     = LMAX(maxalignlen, sequ->seqlen);
-            char *resstring = (char *)calloc((unsigned int)maxalignlen + 1, sizeof(char));
-            char *dummy     = resstring;
-
-            for (long j = 0; j < maxalignlen - sequ->seqlen; j++) *resstring++ = DEFAULT_COLOR;
-            for (long k = 0; k < sequ->seqlen; k++)               *resstring++ = (char)sequ->cmask[i];
-            *resstring = '\0';
-
-            GBDATA *gb_ali     = GB_search(sequ->gb_species, align, GB_CREATE_CONTAINER);
-            if (!gb_ali) error = GB_await_error();
-            else {
-                GBDATA *gb_color     = GB_search(gb_ali, "colmask", GB_BYTES);
-                if (!gb_color) error = GB_await_error();
-                else    error        = GB_write_bytes(gb_color, dummy, maxalignlen);
-            }
-            free(dummy);
-        }
-    }
-
-    if (!error && dataset->cmask) {
-        maxalignlen     = LMAX(maxalignlen, dataset->cmask_len);
-        char *resstring = (char *)calloc((unsigned int)maxalignlen + 1, sizeof(char));
-        char *dummy     = resstring;
-        long  k;
-
-        for (k = 0; k < maxalignlen - dataset->cmask_len; k++) *resstring++ = DEFAULT_COLOR;
-        for (k = 0; k < dataset->cmask_len; k++)               *resstring++ = (char)dataset->cmask[k];
-        *resstring = '\0';
-
-        GBDATA *gb_extended     = GBT_find_or_create_SAI(db_access.gb_main, "COLMASK");
-        if (!gb_extended) error = GB_await_error();
-        else {
-            GBDATA *gb_color     = GBT_add_data(gb_extended, align, "colmask", GB_BYTES);
-            if (!gb_color) error = GB_await_error();
-            else    error        = GB_write_bytes(gb_color, dummy, maxalignlen);
-        }
-
-        free(dummy);
     }
 
     progress.done();
