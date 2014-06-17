@@ -81,7 +81,7 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
             MacroRecorder     *macroRecorder = dynamic_cast<MacroRecorder*>(tracker);
 
             error               = macroRecorder->handle_tracked_client_action(client_action);
-            GB_ERROR trig_error = GBT_write_string(gb_main, MACRO_TRIGGER_TRACKED, "");                            // tell client that action has been recorded
+            GB_ERROR trig_error = GBT_write_string(gb_main, MACRO_TRIGGER_TRACKED, ""); // tell client that action has been recorded
             if (!error) error   = trig_error;
         }
         free(client_action);
@@ -166,14 +166,18 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
                         GBT_write_string(gb_main, remote.action(), "");
                     }
                     else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
+                        GB_set_remote_action(gb_main, true);
                         aw_root->awar(tmp_awar)->touch();
+                        GB_set_remote_action(gb_main, false);
                         IF_DUMP_ACTION(printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", tmp_awar));
                         action[0] = 0; // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
                         GBT_write_string(gb_main, remote.action(), "");
                     }
                     else {
                         IF_DUMP_ACTION(printf("remote command (write awar) awar='%s' value='%s'\n", tmp_awar, value));
+                        GB_set_remote_action(gb_main, true);
                         error = aw_root->awar(tmp_awar)->write_as_string(value);
+                        GB_set_remote_action(gb_main, false);
                     }
                 }
                 GBT_write_string(gb_main, remote.result(), error ? error : "");
@@ -190,7 +194,9 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
                 if (cbs) {
                     IF_DUMP_ACTION(printf("remote command (%s) found, running callback\n", action));
                     arb_assert(!GB_have_error());
+                    GB_set_remote_action(gb_main, true);
                     cbs->run_callbacks();
+                    GB_set_remote_action(gb_main, false);
                     arb_assert(!GB_have_error()); // error exported by callback (unwanted)
                     GBT_write_string(gb_main, remote.result(), "");
                 }
