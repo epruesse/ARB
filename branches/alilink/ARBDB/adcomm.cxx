@@ -88,13 +88,15 @@ static void g_bcms_delete_Socinf(Socinf *THIS) {
 }
 
 struct gb_server_data {
-    int                hso;
-    char              *unix_name;
-    Socinf            *soci;
-    long               nsoc;
-    long               timeout;
-    GBDATA            *gb_main;
-    int                wait_for_new_request;
+    int     hso;
+    char   *unix_name;
+    Socinf *soci;
+    long    nsoc;
+    long    timeout;
+    GBDATA *gb_main;
+    int     wait_for_new_request;
+    bool    inside_remote_action;
+
     gbcms_delete_list *del_first; // All deleted items, that are yet unknown to at least one client
     gbcms_delete_list *del_last;
 };
@@ -1582,6 +1584,33 @@ GB_ERROR gbcms_add_to_delete_list(GBDATA *gbd) {
         }
     }
     return 0;
+}
+
+void GB_set_remote_action(GBDATA *gbd, bool in_action) {
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+
+    gb_assert(Main->is_server()); // GB_set_remote_action not allowed from clients
+    if (Main->is_server()) {
+        gb_server_data *hs = Main->server_data;
+        gb_assert(hs); // have no server data (program logic error)
+        if (hs) {
+            gb_assert(hs->inside_remote_action != in_action);
+            hs->inside_remote_action = in_action;
+        }
+    }
+}
+bool GB_inside_remote_action(GBDATA *gbd) {
+    GB_MAIN_TYPE *Main   = GB_MAIN(gbd);
+    bool          inside = false;
+
+    gb_assert(Main->is_server()); // GB_inside_remote_action not allowed from clients
+    if (Main->is_server()) {
+        gb_server_data *hs = Main->server_data;
+        if (hs) {
+            inside = hs->inside_remote_action;
+        }
+    }
+    return inside;
 }
 
 long GB_read_clients(GBDATA *gbd) {

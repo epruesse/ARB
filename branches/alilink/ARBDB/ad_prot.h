@@ -97,6 +97,8 @@ char *GB_set_cache_size(GBDATA *gbd, size_t size);
 GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main);
 void GBCMS_shutdown(GBDATA *gbd);
 bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time);
+void GB_set_remote_action(GBDATA *gbd, bool in_action);
+bool GB_inside_remote_action(GBDATA *gbd);
 long GB_read_clients(GBDATA *gbd);
 bool GB_is_server(GBDATA *gbd);
 GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs);

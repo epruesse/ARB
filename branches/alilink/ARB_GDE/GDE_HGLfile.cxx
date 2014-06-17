@@ -1,6 +1,4 @@
 #include "GDE_extglob.h"
-#include <ctime>
-#include <algorithm>
 
 static void StripSpecial(char *string) {
     int j, len;
