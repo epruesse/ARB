@@ -1010,14 +1010,12 @@ const char *GBS_funptr2readable(void *funptr, bool stripARBHOME) {
 
 #ifdef ENABLE_CRASH_TESTS
 static void provokesegv() { *(volatile int *)0 = 0; }
-# if defined(TEST_TEST_MACROS)
 static void dont_provokesegv() {}
-# endif
 # if defined(ASSERTION_USED)
 static void failassertion() { gb_assert(0); }
 #  if defined(TEST_TEST_MACROS)
 static void dont_failassertion() {}
-# endif
+#  endif
 static void provokesegv_does_not_fail_assertion() {
     // provokesegv does not raise assertion
     // -> the following assertion fails
@@ -1027,6 +1025,9 @@ static void provokesegv_does_not_fail_assertion() {
 #endif
 
 void TEST_signal_tests() {
+    // check whether we can test that no SEGV or assertion failure happened
+    TEST_EXPECT_NO_SEGFAULT(dont_provokesegv);
+
     // check whether we can test for SEGV and assertion failures
     TEST_EXPECT_SEGFAULT(provokesegv);
     TEST_EXPECT_CODE_ASSERTION_FAILS(failassertion);
@@ -1038,28 +1039,21 @@ void TEST_signal_tests() {
     // test whether SEGV can be distinguished from assertion
     TEST_EXPECT_CODE_ASSERTION_FAILS(provokesegv_does_not_fail_assertion);
 
-    // following section is disabled since it would spam wanted warnings
+    // The following section is disabled, because it will
+    // provoke test warnings (to test these warnings).
     // (enable it when changing any of these TEST_..-macros used here)
 #if defined(TEST_TEST_MACROS)
+    TEST_EXPECT_NO_SEGFAULT__WANTED(provokesegv);
+
     TEST_EXPECT_SEGFAULT__WANTED(dont_provokesegv);
     TEST_EXPECT_SEGFAULT__UNWANTED(provokesegv);
+#if defined(ASSERTION_USED)
     TEST_EXPECT_SEGFAULT__UNWANTED(failassertion);
+#endif
 
     TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
     TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
     TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
-#endif
-
-    // following section is disabled since it would spam wanted warnings
-    // (enable it when changing any of these TEST_..-macros used here)
-#if 0
-    TEST_ASSERT_SEGFAULT__WANTED(dont_provokesegv);
-    TEST_ASSERT_SEGFAULT__UNWANTED(provokesegv);
-    TEST_ASSERT_SEGFAULT__UNWANTED(failassertion);
-
-    TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
-    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
-    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
 #endif
 }
 
@@ -1230,6 +1224,7 @@ void TEST_date_stamping() {
         free(dated);
     }
 }
+TEST_PUBLISH(TEST_date_stamping);
 
 #endif // UNIT_TESTS
 

@@ -1241,6 +1241,6 @@ void TEST_find_macros() {
 
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }
-
+TEST_PUBLISH(TEST_find_macros);
 
 #endif // UNIT_TESTS

@@ -8,8 +8,6 @@
 //                                                                  //
 // ================================================================ //
 
-#include "GDE_extglob.h"
-
 int  DataType;
 int  FileFormat;
 char FileName[80];
