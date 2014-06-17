@@ -189,21 +189,29 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
             arb_assert(!GB_have_error()); // error exported by some callback? (unwanted)
 
             if (action[0]) {
-                AW_cb *cbs = aw_root->search_remote_command(action);
+#if defined(ARB_GTK)
+                AW_action* act = aw_root->action_try(action);
+#else // ARB_MOTIF
+                AW_cb *act = aw_root->search_remote_command(action);
+#endif
 
-                if (cbs) {
+                if (act) {
                     IF_DUMP_ACTION(printf("remote command (%s) found, running callback\n", action));
                     arb_assert(!GB_have_error());
                     GB_set_remote_action(gb_main, true);
-                    cbs->run_callbacks();
+#if defined(ARB_GTK)
+                    act->user_clicked(NULL);
+#else // ARB_MOTIF
+                    act->run_callbacks();
+#endif
                     GB_set_remote_action(gb_main, false);
                     arb_assert(!GB_have_error()); // error exported by callback (unwanted)
                     GBT_write_string(gb_main, remote.result(), "");
                 }
                 else {
                     IF_DUMP_ACTION(printf("remote command (%s) is unknown\n", action));
-                    aw_message(GBS_global_string("Unknown action '%s' in macro", action));
-                    GBT_write_string(gb_main, remote.result(), GB_await_error());
+                    error = GBS_global_string("Unknown action '%s' in macro", action);
+                    GBT_write_string(gb_main, remote.result(), error);
                 }
                 GBT_write_string(gb_main, remote.action(), ""); // tell perl-client call has completed (remote_action)
             }
