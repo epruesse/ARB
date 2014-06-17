@@ -269,5 +269,6 @@ void TEST_another_AW_root() {
     GB_shell  shell;
     AW_root("min_ascii.arb");
 }
+TEST_PUBLISH(TEST_another_AW_root);
 
 #endif // UNIT_TESTS

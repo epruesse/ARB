@@ -18,7 +18,6 @@
 
 using namespace std;
 
-#define DEFAULT_COLOR 8
 extern adfiltercbstruct *agde_filter;
 
 /*
@@ -165,12 +164,6 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     return (Action);
 }
 
-static long LMAX(long a, long b)
-{
-    if (a>b) return a;
-    return b;
-}
-
 static void GDE_free(void **p) {
     freenull(*p);
 }
@@ -219,7 +212,6 @@ static char *ReplaceString(char *Action, const char *old, const char *news)
 static void GDE_freesequ(NA_Sequence *sequ) {
     if (sequ) {
         GDE_free((void**)&sequ->comments);
-        GDE_free((void**)&sequ->cmask);
         GDE_free((void**)&sequ->baggage);
         GDE_free((void**)&sequ->sequence);
     }
@@ -230,8 +222,6 @@ static void GDE_freeali(NA_Alignment *dataset) {
         GDE_free((void**)&dataset->id);
         GDE_free((void**)&dataset->description);
         GDE_free((void**)&dataset->authority);
-        GDE_free((void**)&dataset->cmask);
-        GDE_free((void**)&dataset->selection_mask);
         GDE_free((void**)&dataset->alignment_name);
 
         for (unsigned long i=0; i<dataset->numelements; i++) {
@@ -240,7 +230,10 @@ static void GDE_freeali(NA_Alignment *dataset) {
     }
 }
 
-static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelements) {
+static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumelements) {
+    if (dataset->numelements == oldnumelements) return;
+    gde_assert(dataset->numelements > oldnumelements); // otherwise this is a noop
+
     GBDATA   *gb_main = db_access.gb_main;
     GB_ERROR  error   = GB_begin_transaction(gb_main);
 
@@ -255,6 +248,7 @@ static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelem
         else {
             align       = defaultAlign;
             maxalignlen = GBT_get_alignment_len(gb_main, align);
+            if (maxalignlen<0) error = GB_await_error();
         }
     }
 
@@ -401,51 +395,6 @@ static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelem
         progress.inc_and_check_user_abort(error);
     }
 
-    // colormasks
-    for (i = 0; !error && i < dataset->numelements; i++) {
-        NA_Sequence *sequ = &(dataset->element[i]);
-
-        if (sequ->cmask) {
-            maxalignlen     = LMAX(maxalignlen, sequ->seqlen);
-            char *resstring = (char *)calloc((unsigned int)maxalignlen + 1, sizeof(char));
-            char *dummy     = resstring;
-
-            for (long j = 0; j < maxalignlen - sequ->seqlen; j++) *resstring++ = DEFAULT_COLOR;
-            for (long k = 0; k < sequ->seqlen; k++)               *resstring++ = (char)sequ->cmask[i];
-            *resstring = '\0';
-
-            GBDATA *gb_ali     = GB_search(sequ->gb_species, align, GB_CREATE_CONTAINER);
-            if (!gb_ali) error = GB_await_error();
-            else {
-                GBDATA *gb_color     = GB_search(gb_ali, "colmask", GB_BYTES);
-                if (!gb_color) error = GB_await_error();
-                else    error        = GB_write_bytes(gb_color, dummy, maxalignlen);
-            }
-            free(dummy);
-        }
-    }
-
-    if (!error && dataset->cmask) {
-        maxalignlen     = LMAX(maxalignlen, dataset->cmask_len);
-        char *resstring = (char *)calloc((unsigned int)maxalignlen + 1, sizeof(char));
-        char *dummy     = resstring;
-        long  k;
-
-        for (k = 0; k < maxalignlen - dataset->cmask_len; k++) *resstring++ = DEFAULT_COLOR;
-        for (k = 0; k < dataset->cmask_len; k++)               *resstring++ = (char)dataset->cmask[k];
-        *resstring = '\0';
-
-        GBDATA *gb_extended     = GBT_find_or_create_SAI(db_access.gb_main, "COLMASK");
-        if (!gb_extended) error = GB_await_error();
-        else {
-            GBDATA *gb_color     = GBT_add_data(gb_extended, align, "colmask", GB_BYTES);
-            if (!gb_color) error = GB_await_error();
-            else    error        = GB_write_bytes(gb_color, dummy, maxalignlen);
-        }
-
-        free(dummy);
-    }
-
     progress.done();
 
     GB_end_transaction_show_error(db_access.gb_main, error, aw_message);
@@ -462,27 +411,19 @@ static char *preCreateTempfile(const char *name) {
 }
 
 void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
-    AW_root   *aw_root           = aw->get_root();
-    AP_filter *filter2           = awt_get_filter(agde_filter);
-    char      *filter_name       = 0;      // aw_root->awar(AWAR_GDE_FILTER_NAME)->read_string()
-    char      *alignment_name    = strdup("ali_unknown");
-    bool       marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);
-    long       cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
-    GmenuItem *current_item      = gmenuitem;
-    int        stop              = 0;
+    gde_assert(!GB_have_error());
+
+    AW_root   *aw_root      = aw->get_root();
+    GmenuItem *current_item = gmenuitem;
 
     GapCompression compress = static_cast<GapCompression>(aw_root->awar(AWAR_GDE_COMPRESSION)->read_int());
     arb_progress   progress(current_item->label);
 
-    {
-        GB_ERROR error = awt_invalid_filter(filter2);
-        if (error) {
-            aw_message(error);
-            stop = 1;
-        }
-    }
 
-    if (!stop && current_item->numinputs>0) {
+    char *alignment_name = NULL;
+    int   stop           = 0;
+
+    if (current_item->numinputs>0) {
         TypeInfo typeinfo = UNKNOWN_TYPEINFO;
         {
             for (int j=0; j<current_item->numinputs; j++) {
@@ -496,19 +437,36 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         gde_assert(typeinfo != UNKNOWN_TYPEINFO);
 
         if (!stop) {
-            DataSet->gb_main = db_access.gb_main;
-            GB_begin_transaction(DataSet->gb_main);
-            freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
-            freedup(alignment_name, DataSet->alignment_name);
+            AP_filter *filter2 = awt_get_filter(agde_filter);
+            gde_assert(gmenuitem->seqtype != '-'); // inputs w/o seqtype? impossible!
+            {
+                GB_ERROR error = awt_invalid_filter(filter2);
+                if (error) {
+                    aw_message(error);
+                    stop = 1;
+                }
+            }
 
-            progress.subtitle("reading database");
-            if (db_access.get_sequences) {
-                stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon, typeinfo);
+            if (!stop) {
+                DataSet->gb_main = db_access.gb_main;
+                GB_begin_transaction(DataSet->gb_main);
+                freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
+                freedup(alignment_name, DataSet->alignment_name);
+
+                progress.subtitle("reading database");
+
+                long cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
+                bool marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);
+
+                if (db_access.get_sequences) {
+                    stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon, typeinfo);
+                }
+                else {
+                    stop = ReadArbdb(DataSet, marked, filter2, compress, cutoff_stop_codon, typeinfo);
+                }
+                GB_commit_transaction(DataSet->gb_main);
             }
-            else {
-                stop = ReadArbdb(DataSet, marked, filter2, compress, cutoff_stop_codon, typeinfo);
-            }
-            GB_commit_transaction(DataSet->gb_main);
+            delete filter2;
         }
 
         if (!stop && DataSet->numelements==0) {
@@ -559,15 +517,18 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         for(int j=0; j<current_item->numinputs;  j++) Action = ReplaceFile(Action, current_item->input[j]);
         for(int j=0; j<current_item->numoutputs; j++) Action = ReplaceFile(Action, current_item->output[j]);
 
-        filter_name = AWT_get_combined_filter_name(aw_root, "gde");
-        Action = ReplaceString(Action, "$FILTER", filter_name);
+        if (Find(Action, "$FILTER") == true) {
+            char *filter_name = AWT_get_combined_filter_name(aw_root, "gde");
+            Action            = ReplaceString(Action, "$FILTER", filter_name);
+            free(filter_name);
+        }
 
         // call and go...
         progress.subtitle("calling external program");
         aw_message_if(GBK_system(Action));
         free(Action);
 
-        long oldnumelements = DataSet->numelements;
+        size_t oldnumelements = DataSet->numelements;
 
         for (int j=0; j<current_item->numoutputs; j++) {
             switch (current_item->output[j].format) {
@@ -601,11 +562,11 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     }
 
     free(alignment_name);
-    delete filter2;
-    free(filter_name);
 
     GDE_freeali(DataSet);
     freeset(DataSet, (NA_Alignment *)Calloc(1, sizeof(NA_Alignment)));
     DataSet->rel_offset = 0;
+
+    gde_assert(!GB_have_error());
 }
 

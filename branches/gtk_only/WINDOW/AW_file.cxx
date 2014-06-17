@@ -951,6 +951,7 @@ void TEST_path_unfolding() {
     TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"),            strdup(GB_path_in_ARBHOME("UNIT_TESTER/tests")));
     TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("ARB_NONEXISTING_ENVAR", "."), strdup(currDir));
 }
+TEST_PUBLISH(TEST_path_unfolding);
 
 #endif // UNIT_TESTS
 

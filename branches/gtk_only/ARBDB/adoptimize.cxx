@@ -2672,6 +2672,7 @@ void TEST_SLOW_optimize() {
 
     TEST_EXPECT_NO_ERROR(GBK_system(GBS_global_string("rm %s %s %s %s", target_ascii, nonopti, optimized, reoptimized)));
 }
+TEST_PUBLISH(TEST_SLOW_optimize);
 
 #endif // UNIT_TESTS
 
