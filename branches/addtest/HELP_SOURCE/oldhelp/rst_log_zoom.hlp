@@ -1,0 +1,30 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	mode.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Reset Logical Zoom
+
+OCCURRENCE	ARB_NT/ETC/Reset Logical Zoom
+			
+
+DESCRIPTION	Displays the full tree. 
+
+		To display the full tree choose the 'Reset Logical Zoom'
+		item from the 'ETC' menu of the 'ARB_NT' window.
+
+NOTES		To display subtrees (logical zoom) activate the 'LOGICAL
+		ZOOM MODE' by clicking on the <Zoom> button of the 'ARB_NT'
+		window or pressing the 'F5' key on the keyboard. In the latter
+		case, the cursor has to be placed within the tree display area.
+	
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
