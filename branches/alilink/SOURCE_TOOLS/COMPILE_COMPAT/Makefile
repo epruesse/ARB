@@ -33,7 +33,7 @@ nostd.o: nostd.cxx Makefile
 	$(A_CXX) $(cflags) $(cxxflags_nostd) -c $< $(CXX_INCLUDES) -o $@ $(POST_COMPILE)
 
 bin/% : %.o
-	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB)
+	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB) $(EXECLIBS)
 
 $(OBJECTS) : $(LIB_DEPENDS)
 
