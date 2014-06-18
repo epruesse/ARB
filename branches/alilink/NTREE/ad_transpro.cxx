@@ -334,51 +334,37 @@ static int synchronizeCodons(const char *proteins, const char *dna, int minCatch
 // SYNC_LENGTH is the # of codons which will be synchronized (ahead!)
 // before deciding "X was realigned correctly"
 
-static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali_dest, long& neededLength) {
-    /*! realigns DNA alignment of marked sequences according to their protein alignment
-     * @param ali_source protein source alignment
-     * @param ali_dest modified DNA alignment
-     * @param neededLength result: minimum alignment length needed in ali_dest
-     */
-    AP_initialize_codon_tables();
+class Realigner {
+    const char *ali_source;
+    const char *ali_dest;
 
-    GBDATA *gb_source = GBT_get_alignment(gb_main, ali_source); if (!gb_source) return "Please select a valid source alignment";
-    GBDATA *gb_dest   = GBT_get_alignment(gb_main, ali_dest);   if (!gb_dest)   return "Please select a valid destination alignment";
+    long ali_len;                   // of ali_dest
+    long max_wanted_ali_len;        // in ali_dest
 
-    if (GBT_get_alignment_type(gb_main, ali_source) != GB_AT_AA)  return "Invalid source alignment type";
-    if (GBT_get_alignment_type(gb_main, ali_dest)   != GB_AT_DNA) return "Invalid destination alignment type";
+    const char *fail_reason;
 
-    long     ali_len            = GBT_get_alignment_len(gb_main, ali_dest);
-    long     max_wanted_ali_len = 0;
-    GB_ERROR error              = 0;
-
-    long no_of_marked_species    = GBT_count_marked_species(gb_main);
-    long no_of_realigned_species = 0;
-
-    arb_progress progress("Re-aligner", no_of_marked_species);
-    progress.auto_subtitles("Re-aligning species");
-
-    int ignore_fail_pos = 0;
-
-    for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
-         !error && gb_species;
-         gb_species = GBT_next_marked_species(gb_species))
+public:
+    Realigner(const char *ali_source_, const char *ali_dest_, long ali_len_)
+        : ali_source(ali_source_),
+          ali_dest(ali_dest_),
+          ali_len(ali_len_),
+          max_wanted_ali_len(0)
     {
-        gb_source              = GB_entry(gb_species, ali_source); if (!gb_source)      continue;
-        GBDATA *gb_source_data = GB_entry(gb_source,  "data");     if (!gb_source_data) continue;
-        gb_dest                = GB_entry(gb_species, ali_dest);   if (!gb_dest)        continue;
-        GBDATA *gb_dest_data   = GB_entry(gb_dest,    "data");     if (!gb_dest_data)   continue;
+        clear_failure();
+    }
 
-        char *source = GB_read_string(gb_source_data); if (!source) { GB_print_error(); continue; }
-        char *dest   = GB_read_string(gb_dest_data);   if (!dest)   { GB_print_error(); continue; }
+    long get_max_wanted_ali_len() const { return max_wanted_ali_len; }
 
-        long source_len = GB_read_string_count(gb_source_data);
-        long dest_len = GB_read_string_count(gb_dest_data);
+    void set_failure(const char *reason) { fail_reason = reason; }
+    void clear_failure() { fail_reason = NULL; }
 
+    const char *failure() const { return fail_reason; }
+
+    char *realign_seq(AWT_allowedCode& allowed_code, const char *source, long source_len, const char *dest, long dest_len) {
         // compress destination DNA (=remove align-characters):
         char *compressed_dest = (char*)malloc(dest_len+1);
         {
-            char *f = dest;
+            const char *f = dest;
             char *t = compressed_dest;
 
             while (1) {
@@ -389,39 +375,21 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
             *t = 0;
         }
 
-        int failed = 0;
-        const char *fail_reason = 0;
+        long  wanted_ali_len  = source_len*3L;
+        char *buffer          = (char*)malloc(ali_len+1);
+        bool  ignore_fail_pos = false;
 
-        long  wanted_ali_len = source_len*3L;
-        char *buffer         = (char*)malloc(ali_len+1);
         if (ali_len<wanted_ali_len) {
-            failed          = 1;
             fail_reason     = GBS_global_string("Alignment '%s' is too short (increase its length to %li)", ali_dest, wanted_ali_len);
-            ignore_fail_pos = 1;
+            ignore_fail_pos = true;
 
             if (wanted_ali_len>max_wanted_ali_len) max_wanted_ali_len = wanted_ali_len;
         }
 
-        AWT_allowedCode allowed_code;               // default: all allowed
-
-        if (!failed) {
-            int arb_transl_table, codon_start;
-            GB_ERROR local_error = AWT_getTranslationInfo(gb_species, arb_transl_table, codon_start);
-            if (local_error) {
-                failed          = 1;
-                fail_reason     = GBS_global_string("Error while reading 'transl_table' (%s)", local_error);
-                ignore_fail_pos = 1;
-            }
-            else if (arb_transl_table >= 0) {
-                // we found a 'transl_table' entry -> restrict used code to the code stored there
-                allowed_code.forbidAllBut(arb_transl_table);
-            }
-        }
-
         char *d = compressed_dest;
-        char *s = source;
+        const char *s = source;
 
-        if (!failed) {
+        if (!failure()) {
             char *p = buffer;
             int x_count = 0;
             const char *x_start = 0;
@@ -504,13 +472,11 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
 
                             if (sync_possibilities==0) {
                                 delete [] sync_possible_with_catchup;
-                                failed = 1;
                                 fail_reason = "Can't synchronize after 'X'";
                                 break;
                             }
                             if (sync_possibilities>1) {
                                 delete [] sync_possible_with_catchup;
-                                failed = 1;
                                 fail_reason = "Not enough data behind 'X' (please contact ARB-Support)";
                                 break;
                             }
@@ -520,7 +486,6 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
                             delete [] sync_possible_with_catchup;
                         }
                         else if (!synchronizeCodons(protein, d, x_count, x_count*3, &catchUp, allowed_code, allowed_code_left)) {
-                            failed = 1;
                             fail_reason = "Can't synchronize after 'X'";
                             break;
                         }
@@ -540,20 +505,20 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
                                 switch (i[0]) {
                                     case 'x':
                                     case 'X':
-                                        {
-                                            int take_per_X = catchUp/x_rest;
-                                            int o;
-                                            for (o=0; o<3; o++) {
-                                                if (o<take_per_X) {
-                                                    p[off++] = *d++;
-                                                }
-                                                else {
-                                                    p[off++] = '.';
-                                                }
+                                    {
+                                        int take_per_X = catchUp/x_rest;
+                                        int o;
+                                        for (o=0; o<3; o++) {
+                                            if (o<take_per_X) {
+                                                p[off++] = *d++;
                                             }
-                                            x_rest--;
-                                            break;
+                                            else {
+                                                p[off++] = '.';
+                                            }
                                         }
+                                        x_rest--;
+                                        break;
+                                    }
                                     case '.':
                                     case '-':
                                         p[off++] = i[0];
@@ -571,7 +536,6 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
                     else {
                         const char *why_fail;
                         if (!AWT_is_codon(c, d, allowed_code, allowed_code_left, &why_fail)) {
-                            failed = 1;
                             fail_reason = GBS_global_string("Not a codon (%s)", why_fail);
                             break;
                         }
@@ -589,7 +553,7 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
                 }
             }
 
-            if (!failed) {
+            if (!failure()) {
                 int len = p-buffer;
                 int rest = ali_len-len;
 
@@ -599,12 +563,12 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
             }
         }
 
-        if (failed) {
+        if (failure()) {
             int source_fail_pos = (s-1)-source+1;
             int dest_fail_pos = 0;
             {
                 int fail_d_base_count = d-compressed_dest;
-                char *dp = dest;
+                const char *dp = dest;
 
                 for (;;) {
                     char c = *dp++;
@@ -623,50 +587,141 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
                 }
             }
 
-            {
-                char *dup_fail_reason = strdup(fail_reason); // otherwise it may be destroyed by GBS_global_string
-                GB_warning(GBS_global_string("Automatic re-align failed for '%s'", GBT_read_name(gb_species)));
-
-                if (ignore_fail_pos) {
-                    GB_warning(GBS_global_string("Reason: %s", dup_fail_reason));
-                }
-                else {
-                    GB_warning(GBS_global_string("Reason: %s at %s:%i / %s:%i", dup_fail_reason, ali_source, source_fail_pos, ali_dest, dest_fail_pos));
-                }
-
-                free(dup_fail_reason);
+            if (!ignore_fail_pos) {
+                fail_reason = GBS_global_string("%s at %s:%i / %s:%i",
+                                                fail_reason,
+                                                ali_source, source_fail_pos,
+                                                ali_dest, dest_fail_pos);
             }
 
+            freenull(buffer);
         }
         else {
             nt_assert(strlen(buffer) == (unsigned)ali_len);
+        }
 
-            // re-alignment successful
-            error = GB_write_string(gb_dest_data, buffer);
+        free(compressed_dest);
 
-            if (!error) {
-                int explicit_table_known = allowed_code.explicit_table();
+        nt_assert(contradicted(buffer, fail_reason));
+        return buffer;
+    }
+};
 
-                if (explicit_table_known >= 0) { // we know the exact code -> write codon_start and transl_table
-                    const int codon_start  = 1; // by definition (after realignment)
-                    error = AWT_saveTranslationInfo(gb_species, explicit_table_known, codon_start);
+struct Data : virtual Noncopyable {
+    GBDATA *gb_data;
+    char   *data;
+    long    len;
+    char   *error;
+
+    Data(GBDATA *gb_species, const char *aliName)
+        : gb_data(NULL),
+          data(NULL),
+          error(NULL)
+    {
+        GBDATA *gb_ali = GB_entry(gb_species, aliName);
+        if (gb_ali) {
+            gb_data = GB_entry(gb_ali, "data");
+            if (gb_data) {
+                data          = GB_read_string(gb_data);
+                if (data) len = GB_read_string_count(gb_data);
+                else error    = strdup(GB_await_error());
+                return;
+            }
+        }
+        error = GBS_global_string_copy("No data in alignment '%s'", aliName);
+    }
+    ~Data() {
+        free(data);
+        free(error);
+    }
+};
+
+
+static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali_dest, long& neededLength) {
+    /*! realigns DNA alignment of marked sequences according to their protein alignment
+     * @param ali_source protein source alignment
+     * @param ali_dest modified DNA alignment
+     * @param neededLength result: minimum alignment length needed in ali_dest
+     */
+    AP_initialize_codon_tables();
+
+    {
+        GBDATA *gb_source = GBT_get_alignment(gb_main, ali_source); if (!gb_source) return "Please select a valid source alignment";
+        GBDATA *gb_dest   = GBT_get_alignment(gb_main, ali_dest);   if (!gb_dest)   return "Please select a valid destination alignment";
+    }
+
+    if (GBT_get_alignment_type(gb_main, ali_source) != GB_AT_AA)  return "Invalid source alignment type";
+    if (GBT_get_alignment_type(gb_main, ali_dest)   != GB_AT_DNA) return "Invalid destination alignment type";
+
+    long     ali_len = GBT_get_alignment_len(gb_main, ali_dest);
+    GB_ERROR error   = 0;
+
+    long no_of_marked_species    = GBT_count_marked_species(gb_main);
+    long no_of_realigned_species = 0;
+
+    arb_progress progress("Re-aligner", no_of_marked_species);
+    progress.auto_subtitles("Re-aligning species");
+
+    Realigner realigner(ali_source, ali_dest, ali_len);
+
+    for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
+         !error && gb_species;
+         gb_species = GBT_next_marked_species(gb_species))
+    {
+        realigner.clear_failure();
+
+        Data source(gb_species, ali_source);
+        Data dest(gb_species, ali_dest);
+
+        if      (source.error) realigner.set_failure(source.error);
+        else if (dest.error)   realigner.set_failure(dest.error);
+
+        if (!realigner.failure()) {
+            AWT_allowedCode allowed_code; // default: all translation tables allowed
+            {
+                int arb_transl_table, codon_start;
+                GB_ERROR local_error = AWT_getTranslationInfo(gb_species, arb_transl_table, codon_start);
+                if (local_error) {
+                    realigner.set_failure(GBS_global_string("Error while reading 'transl_table' (%s)", local_error));
                 }
-                else { // we dont know the exact code -> delete codon_start and transl_table
-                    error = AWT_removeTranslationInfo(gb_species);
+                else if (arb_transl_table >= 0) {
+                    // we found a 'transl_table' entry -> restrict used code to the code stored there
+                    allowed_code.forbidAllBut(arb_transl_table);
+                }
+            }
+
+            if (!realigner.failure()) {
+                char *buffer = realigner.realign_seq(allowed_code, source.data, source.len, dest.data, dest.len);
+                if (buffer) { // re-alignment successful
+                    error = GB_write_string(dest.gb_data, buffer);
+
+                    if (!error) {
+                        int explicit_table_known = allowed_code.explicit_table();
+
+                        if (explicit_table_known >= 0) { // we know the exact code -> write codon_start and transl_table
+                            const int codon_start  = 1; // by definition (after realignment)
+                            error = AWT_saveTranslationInfo(gb_species, explicit_table_known, codon_start);
+                        }
+                        else { // we dont know the exact code -> delete codon_start and transl_table
+                            error = AWT_removeTranslationInfo(gb_species);
+                        }
+                    }
+                    free(buffer);
                 }
             }
         }
 
-        free(buffer);
-        free(compressed_dest);
-        free(dest);
-        free(source);
+        if (realigner.failure()) {
+            nt_assert(!error);
+            GB_warning(GBS_global_string("Automatic re-align failed for '%s'\nReason: %s",
+                                         GBT_read_name(gb_species), realigner.failure()));
+        }
 
         progress.inc_and_check_user_abort(error);
         no_of_realigned_species++;
     }
 
-    neededLength = max_wanted_ali_len;
+    neededLength = realigner.get_max_wanted_ali_len();
 
     if (!error) {
         int not_realigned = no_of_marked_species - no_of_realigned_species;
