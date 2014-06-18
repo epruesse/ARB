@@ -8,11 +8,11 @@ species_data		%% (%
 		transl_table		"12"
 		codon_start		"2"
 		ali_dna			%% (%
-			data			"ATGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAAATATAGGTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAACAGTATTG-----------......."
+			data		:7000	"---------ATGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAAATATAGGTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAACAGTATTG---------"
 			%) /*ali_dna*/
 
 		ali_pro			%% (%
-			data			"XWQRKLLIVPNRT*I*VLLDT*ITVKLL*SSLLQQYX---X."
+			data		:7000	"XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQQYX-X."
 			%) /*ali_pro*/
 
 		%) /*species*/
@@ -23,13 +23,13 @@ species_data		%% (%
 		full_name		"Taxeobacter ocellatus"
 		acc			"ARB_21595EF"
 		transl_table		"21"
-		codon_start		"3"
+		codon_start		"2"
 		ali_dna			%% (%
-			data			"ATGGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGATCGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG-----------......."
+			data		:7000	"------------------ATGGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGATCGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG"
 			%) /*ali_dna*/
 
 		ali_pro			%% (%
-			data			"XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAX---.."
+			data		:7000	"XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-.."
 			%) /*ali_pro*/
 
 		%) /*species*/
@@ -40,13 +40,13 @@ species_data		%% (%
 		full_name		"Bacteroides fragilis"
 		acc			"ARB_4560B41C"
 		transl_table		"1"
-		codon_start		"1"
+		codon_start		"2"
 		ali_dna			%% (%
-			data			"ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG-----------......."
+			data		:7000	"ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"
 			%) /*ali_dna*/
 
 		ali_pro			%% (%
-			data			"MAKEKFERTKPHVNIGTIGHVDHGKTTLTAAITTVL---X.."
+			data		:7000	"MAKEK-FERTK-PHVNIGT-IGHVDHGKTTLTAAITTVLX.."
 			%) /*ali_pro*/
 
 		%) /*species*/
@@ -57,13 +57,13 @@ species_data		%% (%
 		full_name		"Streptomyces ramocissimus"
 		acc			"ARB_30F12BA8"
 		transl_table		"1"
-		codon_start		"1"
+		codon_start		"2"
 		ali_dna			%% (%
-			data			"ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTC-C--T--C------......."
+			data		:7000	"ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTCCTC------------------"
 			%) /*ali_dna*/
 
 		ali_pro			%% (%
-			data			"MSKTAYVRTKPHLNIGTMGHVDHGKTTLTAAITKVXXX-X.."
+			data		:7000	"MSKTAYVRTKPHLNIGTMGHVDHGKTTLTAAITKVXXX-X.."
 			%) /*ali_pro*/
 
 		%) /*species*/
@@ -75,11 +75,11 @@ species_data		%% (%
 		transl_table		"1"
 		codon_start		"1"
 		ali_dna			%% (%
-			data			"ATGTCCAAGACGGCGTACGTCCGC-CC--AC--C-T--GA-----GGCACGATG-GCC----CGACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTCCT-C----------......."
+			data		:7000	"------------------------------------ATGTCCAAGACGGCGTACGTCCGCCCACCTGAGGCACGATGGCCCGACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTCCTC"
 			%) /*ali_dna*/
 
 		ali_pro			%% (%
-			data			"MSKTAYVRXXXXXX-GTMXXXDHGKTTLTAAITKVXX--X.."
+			data		:7000	"MSKTAYVRXXXXXX-GTMXXXDHGKTTLTAAITKVXX--X.."
 			%) /*ali_pro*/
 
 		%) /*species*/
@@ -90,13 +90,13 @@ species_data		%% (%
 		full_name		"Mucor racemosus"
 		acc			"ARB_5ADBD66E"
 		transl_table		"1"
-		codon_start		"1"
+		codon_start		"2"
 		ali_dna			%% (%
-			data			"......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA......."
+			data		:7000	"...........ATGGGTAAAGAGAAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-----------"
 			%) /*ali_dna*/
 
 		ali_pro			%% (%
-			data			"..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
+			data		:7000	"..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
 			%) /*ali_pro*/
 
 		%) /*species*/
@@ -107,13 +107,13 @@ species_data		%% (%
 		full_name		"Mucor racemosus"
 		acc			"ARB_3627F120"
 		transl_table		"1"
-		codon_start		"1"
+		codon_start		"2"
 		ali_dna			%% (%
-			data			"ATGGGTAAGGAG---------------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA......."
+			data		:7000	"ATGGGTAAGGAGAAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA----------------------"
 			%) /*ali_dna*/
 
 		ali_pro			%% (%
-			data			"MGKE-----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
+			data		:7000	"MGKE-----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
 			%) /*ali_pro*/
 
 		%) /*species*/
@@ -126,11 +126,11 @@ species_data		%% (%
 		transl_table		"1"
 		codon_start		"1"
 		ali_dna			%% (%
-			data			"ATGGGTAAAGA-G--------------AAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA......."
+			data		:7000	"-----------ATGGGTAAAGAGAAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-----------"
 			%) /*ali_dna*/
 
 		ali_pro			%% (%
-			data			"MGKXX----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
+			data		:7000	"MGKXX----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
 			%) /*ali_pro*/
 
 		%) /*species*/
@@ -143,11 +143,11 @@ species_data		%% (%
 		transl_table		"1"
 		codon_start		"1"
 		ali_dna			%% (%
-			data			"ATGGGTAAA-G--A--A--A--A--G--A--CTCACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATAAA......."
+			data		:7000	"----------------------ATGGGTAAAGAAAAGACTCACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATAAA"
 			%) /*ali_dna*/
 
 		ali_pro			%% (%
-			data			"MGKXXXXXXXXHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
+			data		:7000	"MGKXXXXXXXXHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
 			%) /*ali_pro*/
 
 		%) /*species*/
@@ -160,11 +160,11 @@ species_data		%% (%
 		transl_table		"1"
 		codon_start		"1"
 		ali_dna			%% (%
-			data			"ATG-GGT-AAA-GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATAAA......."
+			data		:7000	"ATGGGTAAAGAAAAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATAAA----------------------"
 			%) /*ali_dna*/
 
 		ali_pro			%% (%
-			data			"MXXXE----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
+			data		:7000	"MXXXE----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
 			%) /*ali_pro*/
 
 		%) /*species*/
