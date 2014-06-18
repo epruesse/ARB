@@ -334,7 +334,7 @@ static int synchronizeCodons(const char *proteins, const char *dna, int minCatch
 // SYNC_LENGTH is the # of codons which will be synchronized (ahead!)
 // before deciding "X was realigned correctly"
 
-static GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *neededLength) {
+static GB_ERROR arb_transdna(GBDATA *gb_main, const char *ali_source, const char *ali_dest, long *neededLength) {
     AP_initialize_codon_tables();
 
     GBDATA *gb_source = GBT_get_alignment(gb_main, ali_source); if (!gb_source) return "Please select a valid source alignment";
@@ -617,13 +617,13 @@ static GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, 
 
             {
                 char *dup_fail_reason = strdup(fail_reason); // otherwise it may be destroyed by GBS_global_string
-                aw_message(GBS_global_string("Automatic re-align failed for '%s'", GBT_read_name(gb_species)));
+                GB_warning(GBS_global_string("Automatic re-align failed for '%s'", GBT_read_name(gb_species)));
 
                 if (ignore_fail_pos) {
-                    aw_message(GBS_global_string("Reason: %s", dup_fail_reason));
+                    GB_warning(GBS_global_string("Reason: %s", dup_fail_reason));
                 }
                 else {
-                    aw_message(GBS_global_string("Reason: %s at %s:%i / %s:%i", dup_fail_reason, ali_source, source_fail_pos, ali_dest, dest_fail_pos));
+                    GB_warning(GBS_global_string("Reason: %s at %s:%i / %s:%i", dup_fail_reason, ali_source, source_fail_pos, ali_dest, dest_fail_pos));
                 }
 
                 free(dup_fail_reason);
@@ -663,7 +663,7 @@ static GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, 
     if (!error) {
         int not_realigned = no_of_marked_species - no_of_realigned_species;
         if (not_realigned>0) {
-            aw_message(GBS_global_string("Did not try to realign %i species (source/dest alignment missing?)", not_realigned));
+            GB_warning(GBS_global_string("Did not try to realign %i species (source/dest alignment missing?)", not_realigned));
         }
     }
 
@@ -753,3 +753,84 @@ void NT_create_transpro_variables(AW_root *root, AW_default db1)
     root->awar_int(AWAR_TRANSPRO_XSTART, 1, db1);
     root->awar_int(AWAR_TRANSPRO_WRITE, 0, db1);
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+#include <arb_handlers.h>
+
+static std::string msgs;
+
+static void msg_to_string(const char *msg) {
+    msgs += msg;
+    msgs += '\n';
+}
+
+static arb_handlers test_handlers = {
+    msg_to_string,
+    msg_to_string,
+    msg_to_string,
+    active_arb_handlers->status,
+};
+
+#define DNASEQ(name) GB_read_char_pntr(GBT_read_sequence(GBT_find_species(gb_main, name), "ali_dna"))
+
+void TEST_realign() {
+    arb_handlers *old_handlers = active_arb_handlers;
+    ARB_install_handlers(test_handlers);
+
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_realign.arb", "rw");
+
+    {
+        GB_transaction ta(gb_main);
+        GB_ERROR       error;
+        long           neededLength = -1;
+
+        msgs  = "";
+        error = arb_transdna(gb_main, "ali_dna", "ali_pro", &neededLength);
+        TEST_EXPECT_ERROR_CONTAINS__BROKEN(error, "wrong ali"); // @@@ should raise an error (wrong ali types, because dest/source are swapped (wrong))
+        TEST_EXPECT_EQUAL(msgs, // @@@ elim when error
+                          "Automatic re-align failed for 'CytLyti6'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
+                          "Automatic re-align failed for 'TaxOcell'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
+                          "Automatic re-align failed for 'BctFra12'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
+                          "Automatic re-align failed for 'StrRamo3'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
+                          "Automatic re-align failed for 'StrCoel9'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
+                          "Automatic re-align failed for 'MucRacem'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
+                          "Automatic re-align failed for 'MucRace2'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
+                          "Automatic re-align failed for 'MucRace3'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
+                          "Automatic re-align failed for 'AbdGlauc'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
+                          "Automatic re-align failed for 'CddAlbic'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n");
+
+        msgs  = "";
+        error = arb_transdna(gb_main, "ali_pro", "ali_dna", &neededLength);
+        TEST_EXPECT_NO_ERROR(error);
+        TEST_EXPECT_EQUAL(msgs,
+                          "Automatic re-align failed for 'StrCoel9'\nReason: Not a codon ('TGG' does never translate to 'T' (1)) at ali_pro:17 / ali_dna:76\n"
+                          "Automatic re-align failed for 'MucRace3'\nReason: Not a codon ('CTC' does not translate to 'T' for any of the leftover trans-tables (0)) at ali_pro:11 / ali_dna:28\n"
+                          "Automatic re-align failed for 'AbdGlauc'\nReason: Not a codon ('GTT' does never translate to 'N' (1)) at ali_pro:14 / ali_dna:53\n"
+                          "Automatic re-align failed for 'CddAlbic'\nReason: Not a codon ('AAC' does never translate to 'K' (1)) at ali_pro:10 / ali_dna:15\n");
+
+        TEST_EXPECT_EQUAL(DNASEQ("BctFra12"), "ATGGCTAAAGAGAAA---TTTGAACGTACCAAA---CCGCACGTAAACATTGGTACA---ATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG.........");
+        TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"), "A..TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAACAGTAT......TG....");
+        TEST_EXPECT_EQUAL(DNASEQ("TaxOcell"), "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G..");
+        TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"), "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTC.........CTC.........");
+        TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"), "------------------------------------ATGTCCAAGACGGCGTACGTCCGCCCACCTGAGGCACGATGGCCCGACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTCCTC"); // @@@ fails (see above)
+        TEST_EXPECT_EQUAL(DNASEQ("MucRacem"), "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA......AA.");
+        TEST_EXPECT_EQUAL(DNASEQ("MucRace2"), "ATGGGTAAGGAG---------------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA......AA.");
+        TEST_EXPECT_EQUAL(DNASEQ("MucRace3"), "-----------ATGGGTAAAGAGAAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-----------"); // @@@ fails
+        TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"), "----------------------ATGGGTAAAGAAAAGACTCACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATAAA"); // @@@ fails
+        TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"), "ATGGGTAAAGAAAAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATAAA----------------------"); // @@@ fails
+    }
+
+    GB_close(gb_main);
+    ARB_install_handlers(*old_handlers);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
