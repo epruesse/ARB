@@ -334,7 +334,12 @@ static int synchronizeCodons(const char *proteins, const char *dna, int minCatch
 // SYNC_LENGTH is the # of codons which will be synchronized (ahead!)
 // before deciding "X was realigned correctly"
 
-static GB_ERROR arb_transdna(GBDATA *gb_main, const char *ali_source, const char *ali_dest, long *neededLength) {
+static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali_dest, long& neededLength) {
+    /*! realigns DNA alignment of marked sequences according to their protein alignment
+     * @param ali_source protein source alignment
+     * @param ali_dest modified DNA alignment
+     * @param neededLength result: minimum alignment length needed in ali_dest
+     */
     AP_initialize_codon_tables();
 
     GBDATA *gb_source = GBT_get_alignment(gb_main, ali_source); if (!gb_source) return "Please select a valid source alignment";
@@ -661,7 +666,7 @@ static GB_ERROR arb_transdna(GBDATA *gb_main, const char *ali_source, const char
         no_of_realigned_species++;
     }
 
-    *neededLength = max_wanted_ali_len;
+    neededLength = max_wanted_ali_len;
 
     if (!error) {
         int not_realigned = no_of_marked_species - no_of_realigned_species;
@@ -688,7 +693,7 @@ static void transdna_event(AW_window *aww) {
 
     while (!error && neededLength) {
         error = GB_begin_transaction(GLOBAL.gb_main);
-        if (!error) error = arb_transdna(GLOBAL.gb_main, ali_source, ali_dest, &neededLength);
+        if (!error) error = realign(GLOBAL.gb_main, ali_source, ali_dest, neededLength);
         error = GB_end_transaction(GLOBAL.gb_main, error);
 
         if (!error && neededLength>0) {
@@ -795,12 +800,12 @@ void TEST_realign() {
         long           neededLength = -1;
 
         msgs  = "";
-        error = arb_transdna(gb_main, "ali_dna", "ali_pro", &neededLength);
+        error = realign(gb_main, "ali_dna", "ali_pro", neededLength);
         TEST_EXPECT_ERROR_CONTAINS(error, "Invalid source alignment type");
         TEST_EXPECT_EQUAL(msgs, "");
 
         msgs  = "";
-        error = arb_transdna(gb_main, "ali_pro", "ali_dna", &neededLength);
+        error = realign(gb_main, "ali_pro", "ali_dna", neededLength);
         TEST_EXPECT_NO_ERROR(error);
         TEST_EXPECT_EQUAL(msgs,
                           "Automatic re-align failed for 'StrCoel9'\nReason: Not a codon ('TGG' does never translate to 'T' (1)) at ali_pro:17 / ali_dna:76\n"
