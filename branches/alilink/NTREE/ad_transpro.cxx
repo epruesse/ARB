@@ -340,6 +340,9 @@ static GB_ERROR arb_transdna(GBDATA *gb_main, const char *ali_source, const char
     GBDATA *gb_source = GBT_get_alignment(gb_main, ali_source); if (!gb_source) return "Please select a valid source alignment";
     GBDATA *gb_dest   = GBT_get_alignment(gb_main, ali_dest);   if (!gb_dest)   return "Please select a valid destination alignment";
 
+    if (GBT_get_alignment_type(gb_main, ali_source) != GB_AT_AA)  return "Invalid source alignment type";
+    if (GBT_get_alignment_type(gb_main, ali_dest)   != GB_AT_DNA) return "Invalid destination alignment type";
+
     long     ali_len            = GBT_get_alignment_len(gb_main, ali_dest);
     long     max_wanted_ali_len = 0;
     GB_ERROR error              = 0;
@@ -793,18 +796,8 @@ void TEST_realign() {
 
         msgs  = "";
         error = arb_transdna(gb_main, "ali_dna", "ali_pro", &neededLength);
-        TEST_EXPECT_ERROR_CONTAINS__BROKEN(error, "wrong ali"); // @@@ should raise an error (wrong ali types, because dest/source are swapped (wrong))
-        TEST_EXPECT_EQUAL(msgs, // @@@ elim when error
-                          "Automatic re-align failed for 'CytLyti6'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
-                          "Automatic re-align failed for 'TaxOcell'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
-                          "Automatic re-align failed for 'BctFra12'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
-                          "Automatic re-align failed for 'StrRamo3'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
-                          "Automatic re-align failed for 'StrCoel9'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
-                          "Automatic re-align failed for 'MucRacem'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
-                          "Automatic re-align failed for 'MucRace2'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
-                          "Automatic re-align failed for 'MucRace3'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
-                          "Automatic re-align failed for 'AbdGlauc'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n"
-                          "Automatic re-align failed for 'CddAlbic'\nReason: Alignment 'ali_pro' is too short (increase its length to 378)\n");
+        TEST_EXPECT_ERROR_CONTAINS(error, "Invalid source alignment type");
+        TEST_EXPECT_EQUAL(msgs, "");
 
         msgs  = "";
         error = arb_transdna(gb_main, "ali_pro", "ali_dna", &neededLength);
