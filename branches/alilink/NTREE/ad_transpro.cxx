@@ -863,12 +863,12 @@ void TEST_realign() {
         {
             GB_transaction ta(gb_main);
 
-            msgs = "";
+            msgs  = "";
             error = realign(gb_main, "ali_pro", "ali_dna", neededLength);
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs,
                               "Automatic re-align failed for 'StrCoel9'\nReason: Not a codon ('TGG' does never translate to 'T' (1)) at ali_pro:17 / ali_dna:76\n"
-                              "Automatic re-align failed for 'MucRace3'\nReason: Not a codon ('CTC' does not translate to 'T' for any of the leftover trans-tables (0)) at ali_pro:11 / ali_dna:28\n"
+                              "Automatic re-align failed for 'MucRace3'\nReason: Not a codon ('CTC' does not translate to 'T' (for any of the leftover trans-tables: 0)) at ali_pro:11 / ali_dna:28\n"
                               "Automatic re-align failed for 'AbdGlauc'\nReason: Not a codon ('GTT' does never translate to 'N' (1)) at ali_pro:14 / ali_dna:53\n"
                               "Automatic re-align failed for 'CddAlbic'\nReason: Not a codon ('AAC' does never translate to 'K' (1)) at ali_pro:10 / ali_dna:15\n");
 
@@ -932,8 +932,7 @@ void TEST_realign() {
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Alignment 'ali_dna' is too short (increase its length to 252)\n" },
                 { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Can't synchronize after 'X' [2] at ali_pro:25 / ali_dna:61\n" },
                 { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Can't synchronize after 'X' [1] at ali_pro:8 / ali_dna:16\n" },
-                // { "XG*SNFWPVQAARNHRHD--X---PRQNDSDRCYHHGAX-..", "Can't synchronize after 'X' [2] at ali_pro:25 / ali_dna:61\n" }, // @@@ causes invalid free - fix later
-                // { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon ('TAA' does not translate to '*' for any of the leftover trans-tables (\x109\xbb\x1b\xff\x7f)) at ali_pro:3 / ali_dna:7\n" }, // @@@ translation tables should be listed numerically
+                { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon ('TAA' does not translate to '*' (no trans-table left)) at ali_pro:3 / ali_dna:7\n" },
                 { 0, 0 }
             };
 
