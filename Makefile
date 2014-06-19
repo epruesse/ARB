@@ -211,14 +211,19 @@ ifeq ($(DEVELOPER),RALF)
  endif
 endif
 
-ifeq ($(STABS),1)
-	cflags := -O0  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
-else
-	cflags := -O0 $(gdb_common) # (using dwarf - cant debug inlines here, incredible slow on showing variable content)
+DBGOPTI:=-O0
+ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
+DBGOPTI:=-Og
 endif
 
-#	cflags := -O0 $(gdb_common) -gdwarf-3 # (specify explicit dwarf format)
-#	cflags := -O0  $(gdb_common) -gstabs  # using stabs (same here IIRC)
+ifeq ($(STABS),1)
+	cflags := $(DBGOPTI)  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
+else
+	cflags := $(DBGOPTI) $(gdb_common) # (using dwarf - cant debug inlines here, incredible slow on showing variable content)
+endif
+
+#	cflags := $(DBGOPTI) $(gdb_common) -gdwarf-3 # (specify explicit dwarf format)
+#	cflags := $(DBGOPTI) $(gdb_common) -gstabs  # using stabs (same here IIRC)
 #	cflags := -O2 $(gdb_common) # use this for callgrind (force inlining)
 
 ifeq ($(DARWIN),0)
@@ -264,6 +269,13 @@ endif
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
+ endif
+ ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
+#	extended_cpp_warnings += -Wunused-local-typedefs# gcc 4.7 (fails for each STATIC_ASSERT, enable only for Cxx11)
+#	extended_cpp_warnings += -Wzero-as-null-pointer-constant# gcc 4.7 #@@@ activate
+ endif
+ ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
+	extended_cpp_warnings += -Wunused-local-typedefs# available since gcc 4.7 (but fails for each STATIC_ASSERT, so enable only for Cxx11)
  endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
