@@ -205,6 +205,12 @@ ifeq ($(DEBUG),1)
 
 	gdb_common := -g -g3 -ggdb -ggdb3
 
+ifeq ($(DEVELOPER),RALF)
+ ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
+	STABS:=1
+ endif
+endif
+
 ifeq ($(STABS),1)
 	cflags := -O0  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
 else
