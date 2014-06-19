@@ -175,6 +175,7 @@ void TEST_range_copying() {
     TEST_EXPECT_EQUAL(&*SmartCharPtr(PosRange::empty().dup_corresponding_part(source, source_len)), ""); // empty range
     TEST_EXPECT_EQUAL(&*SmartCharPtr(PosRange(2, 5).dup_corresponding_part(NULL, 0)), "");               // empty source
 }
+TEST_PUBLISH(TEST_range_copying);
 
 void TEST_range_intersection() {
     PosRange empty;
