@@ -338,29 +338,29 @@ class Realigner {
     const char *ali_source;
     const char *ali_dest;
 
-    long ali_len;                   // of ali_dest
-    long max_wanted_ali_len;        // in ali_dest
+    size_t ali_len;        // of ali_dest
+    size_t needed_ali_len; // >ali_len if ali_dest is too short; 0 otherwise
 
     const char *fail_reason;
 
 public:
-    Realigner(const char *ali_source_, const char *ali_dest_, long ali_len_)
+    Realigner(const char *ali_source_, const char *ali_dest_, size_t ali_len_)
         : ali_source(ali_source_),
           ali_dest(ali_dest_),
           ali_len(ali_len_),
-          max_wanted_ali_len(0)
+          needed_ali_len(0)
     {
         clear_failure();
     }
 
-    long get_max_wanted_ali_len() const { return max_wanted_ali_len; }
+    size_t get_needed_dest_alilen() const { return needed_ali_len; }
 
     void set_failure(const char *reason) { fail_reason = reason; }
     void clear_failure() { fail_reason = NULL; }
 
     const char *failure() const { return fail_reason; }
 
-    char *realign_seq(AWT_allowedCode& allowed_code, const char *source, long source_len, const char *dest, long dest_len) {
+    char *realign_seq(AWT_allowedCode& allowed_code, const char *source, size_t source_len, const char *dest, size_t dest_len) {
         // compress destination DNA (=remove align-characters):
         char *compressed_dest = (char*)malloc(dest_len+1);
         {
@@ -375,15 +375,15 @@ public:
             *t = 0;
         }
 
-        long  wanted_ali_len  = source_len*3L;
-        char *buffer          = (char*)malloc(ali_len+1);
-        bool  ignore_fail_pos = false;
+        size_t  wanted_ali_len  = source_len*3;
+        char   *buffer          = (char*)malloc(ali_len+1);
+        bool    ignore_fail_pos = false;
 
         if (ali_len<wanted_ali_len) {
             fail_reason     = GBS_global_string("Alignment '%s' is too short (increase its length to %li)", ali_dest, wanted_ali_len);
             ignore_fail_pos = true;
 
-            if (wanted_ali_len>max_wanted_ali_len) max_wanted_ali_len = wanted_ali_len;
+            if (wanted_ali_len>needed_ali_len) needed_ali_len = wanted_ali_len;
         }
 
         char *d = compressed_dest;
@@ -610,7 +610,7 @@ public:
 struct Data : virtual Noncopyable {
     GBDATA *gb_data;
     char   *data;
-    long    len;
+    size_t  len;
     char   *error;
 
     Data(GBDATA *gb_species, const char *aliName)
@@ -637,11 +637,11 @@ struct Data : virtual Noncopyable {
 };
 
 
-static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali_dest, long& neededLength) {
+static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali_dest, size_t& neededLength) {
     /*! realigns DNA alignment of marked sequences according to their protein alignment
      * @param ali_source protein source alignment
      * @param ali_dest modified DNA alignment
-     * @param neededLength result: minimum alignment length needed in ali_dest
+     * @param neededLength result: minimum alignment length needed in ali_dest (if too short) or 0 if long enough
      */
     AP_initialize_codon_tables();
 
@@ -653,8 +653,10 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
     if (GBT_get_alignment_type(gb_main, ali_source) != GB_AT_AA)  return "Invalid source alignment type";
     if (GBT_get_alignment_type(gb_main, ali_dest)   != GB_AT_DNA) return "Invalid destination alignment type";
 
-    long     ali_len = GBT_get_alignment_len(gb_main, ali_dest);
-    GB_ERROR error   = 0;
+    long ali_len = GBT_get_alignment_len(gb_main, ali_dest);
+    nt_assert(ali_len>0);
+
+    GB_ERROR error = 0;
 
     long no_of_marked_species    = GBT_count_marked_species(gb_main);
     long no_of_realigned_species = 0;
@@ -722,7 +724,7 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
         no_of_realigned_species++;
     }
 
-    neededLength = realigner.get_max_wanted_ali_len();
+    neededLength = realigner.get_needed_dest_alilen();
 
     if (!error) {
         int not_realigned = no_of_marked_species - no_of_realigned_species;
@@ -749,37 +751,38 @@ static void transdna_event(AW_window *aww) {
     AW_root  *aw_root      = aww->get_root();
     char     *ali_source   = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
     char     *ali_dest     = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
-    long      neededLength = -1;
+    size_t    neededLength = 0;
     bool      retrying     = false;
     GB_ERROR  error        = 0;
 
-    while (!error && neededLength) {
-        error = GB_begin_transaction(GLOBAL.gb_main);
-        if (!error) error = realign(GLOBAL.gb_main, ali_source, ali_dest, neededLength);
-        error = GB_end_transaction(GLOBAL.gb_main, error);
+    do {
+        GBDATA *gb_main = GLOBAL.gb_main;
 
-        if (!error && neededLength>0) {
-            if (retrying || !aw_ask_sure("increase_ali_length", GBS_global_string("Increase length of '%s' to %li?", ali_dest, neededLength))) {
-                error = GBS_global_string("Missing %li columns in alignment '%s'", neededLength, ali_dest);
+        error = GB_begin_transaction(gb_main);
+        if (!error) error = realign(gb_main, ali_source, ali_dest, neededLength);
+        error = GB_end_transaction(gb_main, error);
+
+        if (!error && neededLength) { // alignment is too short
+            if (retrying || !aw_ask_sure("increase_ali_length", GBS_global_string("Increase length of '%s' to %zu?", ali_dest, neededLength))) {
+                long destLen = GBT_get_alignment_len(gb_main, ali_dest);
+                nt_assert(destLen>0 && size_t(destLen)<neededLength);
+                error = GBS_global_string("Missing %li columns in alignment '%s'", size_t(neededLength-destLen), ali_dest);
             }
             else {
-                error             = GB_begin_transaction(GLOBAL.gb_main);
-                if (!error) error = GBT_set_alignment_len(GLOBAL.gb_main, ali_dest, neededLength); // @@@ has no effect ? ? why ?
-                error             = GB_end_transaction(GLOBAL.gb_main, error);
+                error             = GB_begin_transaction(gb_main);
+                if (!error) error = GBT_set_alignment_len(gb_main, ali_dest, neededLength); // @@@ has no effect ? ? why ?
+                error             = GB_end_transaction(gb_main, error);
 
                 if (!error) {
                     aw_message(GBS_global_string("Alignment length of '%s' has been set to %li\n"
                                                  "running re-aligner again!",
                                                  ali_dest, neededLength));
                     retrying     = true;
-                    neededLength = -1;
+                    neededLength = 0;
                 }
             }
         }
-        else {
-            neededLength = 0;
-        }
-    }
+    } while (!error && neededLength);
 
     if (error) aw_message(error);
     free(ali_dest);
@@ -858,7 +861,7 @@ void TEST_realign() {
 
     {
         GB_ERROR error;
-        long     neededLength = -1;
+        size_t   neededLength = 0;
 
         {
             GB_transaction ta(gb_main);
