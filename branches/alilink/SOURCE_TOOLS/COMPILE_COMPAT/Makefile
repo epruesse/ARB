@@ -30,7 +30,7 @@ c0x.o: c0x.cxx Makefile
 	$(A_CXX) $(cflags) $(cxxflags_c0x) -c $< $(CXX_INCLUDES) -o $@ $(POST_COMPILE)
 
 nostd.o: nostd.cxx Makefile
-	$(A_CXX) $(cflags) $(cxxflags_nostd) -c $< $(CXX_INCLUDES) -o $@ $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags_nostd) -Wno-unused-local-typedefs -c $< $(CXX_INCLUDES) -o $@ $(POST_COMPILE)
 
 bin/% : %.o
 	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB) $(EXECLIBS)
