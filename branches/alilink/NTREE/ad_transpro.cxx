@@ -940,6 +940,7 @@ void TEST_realign() {
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G.." }, // original (@@@ why is the final 'G' so far to the right end?)
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHG---..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGT---------......" }, // missing some AA at right end -> @@@ DNA gets truncated (should be appended)
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH-----..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCAC---------------......" }, // same
+                // { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "---------AGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G.." }, // missing some AA at left end (@@@ should work similar to AA missing at right end)
                 { 0, 0 }
             };
 
@@ -994,6 +995,8 @@ void TEST_realign() {
                 { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Can't synchronize after 'X' [2] at ali_pro:25 / ali_dna:61\n" },
                 { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Can't synchronize after 'X' [1] at ali_pro:8 / ali_dna:16\n" },
                 { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon ('TAA' does not translate to '*' (no trans-table left)) at ali_pro:3 / ali_dna:7\n" },
+                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon ('ATG' does never translate to 'S' (1)) at ali_pro:4 / ali_dna:1\n" }, // missing some AA at left end (@@@ see commented test in realign_check above)
+                { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Not a codon ('CGG' does never translate to 'G' (1)) at ali_pro:24 / ali_dna:61\n" }, // ok to fail (some AA missing in the middle)
                 { 0, 0 }
             };
 
