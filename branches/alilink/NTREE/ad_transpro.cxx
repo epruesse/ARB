@@ -997,6 +997,7 @@ void TEST_realign() {
                 { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon ('TAA' does not translate to '*' (no trans-table left)) at ali_pro:3 / ali_dna:7\n" },
                 { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon ('ATG' does never translate to 'S' (1)) at ali_pro:4 / ali_dna:1\n" }, // missing some AA at left end (@@@ see commented test in realign_check above)
                 { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Not a codon ('CGG' does never translate to 'G' (1)) at ali_pro:24 / ali_dna:61\n" }, // ok to fail (some AA missing in the middle)
+                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Can't synchronize after 'X' [2] at ali_pro:38 / ali_dna:124\n" }, // too many AA (@@@ should be tested ahead and warn abount "not enough DNA data or similar")
                 { 0, 0 }
             };
 
