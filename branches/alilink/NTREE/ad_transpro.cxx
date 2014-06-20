@@ -334,6 +334,8 @@ static int synchronizeCodons(const char *proteins, const char *dna, int minCatch
 // SYNC_LENGTH is the # of codons which will be synchronized (ahead!)
 // before deciding "X was realigned correctly"
 
+inline bool isGap(char c) { return c == '-' || c == '.'; }
+
 class Realigner {
     const char *ali_source;
     const char *ali_dest;
@@ -342,6 +344,19 @@ class Realigner {
     size_t needed_ali_len; // >ali_len if ali_dest is too short; 0 otherwise
 
     const char *fail_reason;
+
+    char *unalign(const char *data, size_t len, size_t& compressed_len) {
+        // removes gaps; return compressed length
+        char *compressed = (char*)malloc(len+1);
+        compressed_len   = 0;
+        for (size_t p = 0; p<len && data[p]; ++p) {
+            if (!isGap(data[p])) {
+                compressed[compressed_len++] = data[p];
+            }
+        }
+        compressed[compressed_len] = 0;
+        return compressed;
+    }
 
 public:
     Realigner(const char *ali_source_, const char *ali_dest_, size_t ali_len_)
@@ -361,22 +376,10 @@ public:
     const char *failure() const { return fail_reason; }
 
     char *realign_seq(AWT_allowedCode& allowed_code, const char *source, size_t source_len, const char *dest, size_t dest_len) {
-        // compress destination DNA (=remove align-characters):
-        char *compressed_dest = (char*)malloc(dest_len+1);
-        {
-            const char *f = dest;
-            char *t = compressed_dest;
-
-            while (1) {
-                char c = *f++;
-                if (!c) break;
-                if (c!='.' && c!='-') *t++ = c;
-            }
-            *t = 0;
-        }
+        nt_assert(!failure());
 
         size_t  wanted_ali_len  = source_len*3;
-        char   *buffer          = (char*)malloc(ali_len+1);
+        char   *buffer          = NULL;
         bool    ignore_fail_pos = false;
 
         if (ali_len<wanted_ali_len) {
@@ -385,13 +388,17 @@ public:
 
             if (wanted_ali_len>needed_ali_len) needed_ali_len = wanted_ali_len;
         }
+        else {
+            // compress destination DNA (=remove align-characters):
+            size_t  compressed_len; // @@@ useful somewhere below? elim if not
+            char   *compressed_dest = unalign(dest, dest_len, compressed_len);
 
-        char *d = compressed_dest;
-        const char *s = source;
+            buffer = (char*)malloc(ali_len+1);
 
-        if (!failure()) {
-            char *p = buffer;
-            int x_count = 0;
+            char       *d       = compressed_dest;
+            const char *s       = source;
+            char       *p       = buffer;
+            int         x_count = 0;
             const char *x_start = 0;
 
             for (;;) {
@@ -406,7 +413,7 @@ public:
                     break;
                 }
 
-                if (c=='.' || c=='-') {
+                if (isGap(c)) {
                     p[0] = p[1] = p[2] = c;
                     p += 3;
                 }
@@ -422,7 +429,7 @@ public:
                             x_count++;
                         }
                         else {
-                            if (c2!='.' && c2!='-') break;
+                            if (!isGap(c2)) break;
                             gap_count++;
                         }
                         s++;
@@ -445,7 +452,7 @@ public:
                             for (count=1, off=0; count<SYNC_LENGTH; off++) {
                                 char c2 = s[off];
 
-                                if (c2!='.' && c2!='-') {
+                                if (!isGap(c2)) {
                                     c2 = toupper(c2);
                                     if (c2=='X') break; // can't sync X
                                     protein[count++] = c2;
@@ -561,46 +568,46 @@ public:
                 p += rest;
                 p[0] = 0;
             }
-        }
 
-        if (failure()) {
-            int source_fail_pos = (s-1)-source+1;
-            int dest_fail_pos = 0;
-            {
-                int fail_d_base_count = d-compressed_dest;
-                const char *dp = dest;
+            if (failure()) {
+                int source_fail_pos = (s-1)-source+1;
+                int dest_fail_pos = 0;
+                {
+                    int fail_d_base_count = d-compressed_dest;
+                    const char *dp = dest;
 
-                for (;;) {
-                    char c = *dp++;
+                    for (;;) {
+                        char c = *dp++;
 
-                    if (!c) {
-                        nt_assert(c);
-                        break;
-                    }
-                    if (c!='.' && c!='-') {
-                        if (!fail_d_base_count) {
-                            dest_fail_pos = (dp-1)-dest+1;
+                        if (!c) {
+                            nt_assert(c);
                             break;
                         }
-                        fail_d_base_count--;
+                        if (!isGap(c)) {
+                            if (!fail_d_base_count) {
+                                dest_fail_pos = (dp-1)-dest+1;
+                                break;
+                            }
+                            fail_d_base_count--;
+                        }
                     }
                 }
+
+                if (!ignore_fail_pos) {
+                    fail_reason = GBS_global_string("%s at %s:%i / %s:%i",
+                                                    fail_reason,
+                                                    ali_source, source_fail_pos,
+                                                    ali_dest, dest_fail_pos);
+                }
+
+                freenull(buffer);
+            }
+            else {
+                nt_assert(strlen(buffer) == (unsigned)ali_len);
             }
 
-            if (!ignore_fail_pos) {
-                fail_reason = GBS_global_string("%s at %s:%i / %s:%i",
-                                                fail_reason,
-                                                ali_source, source_fail_pos,
-                                                ali_dest, dest_fail_pos);
-            }
-
-            freenull(buffer);
+            free(compressed_dest);
         }
-        else {
-            nt_assert(strlen(buffer) == (unsigned)ali_len);
-        }
-
-        free(compressed_dest);
 
         nt_assert(contradicted(buffer, fail_reason));
         return buffer;
