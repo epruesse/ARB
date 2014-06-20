@@ -920,6 +920,57 @@ void TEST_realign() {
             ta.close("aborted");
         }
 
+        // document some existing behavior
+        {
+            GB_transaction ta(gb_main);
+
+            GBDATA *gb_TaxOcell_amino = GBT_read_sequence(gb_TaxOcell, "ali_pro");
+            GBDATA *gb_TaxOcell_dna   = GBT_read_sequence(gb_TaxOcell, "ali_dna");
+            TEST_REJECT_NULL(gb_TaxOcell_amino);
+            TEST_REJECT_NULL(gb_TaxOcell_dna);
+
+            struct realign_check {
+                const char *seq;
+                const char *result;
+            };
+
+            realign_check seq[] = {
+                //"XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-.." // original aa sequence
+                // { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "sdfjlksdjf" }, // templ
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G.." }, // original (@@@ why is the final 'G' so far to the right end?)
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHG---..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGT---------......" }, // missing some AA at right end -> @@@ DNA gets truncated (should be appended)
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH-----..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCAC---------------......" }, // same
+                { 0, 0 }
+            };
+
+            int arb_transl_table, codon_start;
+            TEST_EXPECT_NO_ERROR(AWT_getTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
+
+            TEST_EXPECT_EQUAL(arb_transl_table, 14);
+            TEST_EXPECT_EQUAL(codon_start, 1);
+
+            for (int s = 0; seq[s].seq; ++s) {
+                TEST_ANNOTATE(GBS_global_string("s=%i", s));
+                TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, seq[s].seq));
+                msgs  = "";
+                TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
+                error = realign(gb_main, "ali_pro", "ali_dna", neededLength);
+                TEST_EXPECT_NO_ERROR(error);
+                TEST_EXPECT_EQUAL(msgs, "");
+                TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_dna), seq[s].result);
+
+                TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
+            }
+
+            ta.close("aborted");
+        }
+
+        { // workaround until #493 is fixed
+            GB_transaction ta(gb_main);
+            TEST_EXPECT_EQUAL__BROKEN(GBT_count_marked_species(gb_main), 1, 0);
+            GB_write_flag(gb_TaxOcell, 1);
+        }
+
         // write some aa sequences provoking failures
         {
             GB_transaction ta(gb_main);
@@ -966,6 +1017,9 @@ void TEST_realign() {
             }
 
             ta.close("aborted");
+
+#undef ERRPREFIX
+#undef ERRPREFIX_LEN
         }
 
         { // workaround until #493 is fixed
