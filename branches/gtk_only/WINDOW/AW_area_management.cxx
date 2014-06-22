@@ -48,7 +48,6 @@
 
 class AW_area_management::Pimpl : virtual Noncopyable {
 public:
-    AW_area_management *self;   // pointer to public part containing signals
     GtkWidget          *widget; // the drawing area
     AW_window          *aww;    // parent window
     AW_area             area;   // which area (INFO, MIDDLE, BOTTOM)
@@ -59,8 +58,7 @@ public:
     AW_device_print    *print_device;
     AW_device_click    *click_device;
 
-    Pimpl(AW_area_management* self_, AW_window* aww_, AW_area area_, GtkWidget* widget_) : 
-        self(self_),
+    Pimpl(AW_window* aww_, AW_area area_, GtkWidget* widget_) : 
         widget(widget_),
         aww(aww_),
         area(area_),
@@ -267,7 +265,7 @@ static const char* AW_area_labels[] = {
 };
 
 AW_area_management::AW_area_management(AW_window* window, AW_area area, GtkWidget* widget) 
-    : prvt(new AW_area_management::Pimpl(this, window, area, widget)) 
+    : prvt(new AW_area_management::Pimpl(window, area, widget)) 
 {
     aw_assert(area >= 0 && area < AW_MAX_AREA);
     
