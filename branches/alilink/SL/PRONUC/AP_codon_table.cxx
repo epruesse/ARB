@@ -396,7 +396,7 @@ char AWT_is_start_codon(const char *dna, int arb_code_nr) {
 }
 
 
-bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_code, AWT_allowedCode& allowed_code_left, const char **fail_reason_ptr) {
+bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& allowed_code, AWT_allowedCode& allowed_code_left, const char **fail_reason_ptr) {
     // return TRUE if 'dna' contains a codon of 'protein' ('dna' must not contain any gaps)
     // allowed_code contains 1 for each allowed code and 0 otherwise
     // allowed_code_left contains a copy of allowed_codes with all impossible codes set to zero

@@ -303,13 +303,10 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
 
 // Realign a dna alignment with a given protein source
 
-static int synchronizeCodons(const char *proteins, const char *dna, int minCatchUp, int maxCatchUp, int *foundCatchUp,
-                             const AWT_allowedCode& initially_allowed_code, AWT_allowedCode& allowed_code_left) {
-
-    for (int catchUp=minCatchUp; catchUp<=maxCatchUp; catchUp++) {
-        const char *dna_start = dna+catchUp;
-        AWT_allowedCode allowed_code;
-        allowed_code = initially_allowed_code;
+static int synchronizeCodons(const char *proteins, const char *dna, int dna_len, int minCatchUp, int maxCatchUp, int *foundCatchUp, const AWT_allowedCode& initially_allowed_code, AWT_allowedCode& allowed_code_left) {
+    for (int catchUp=minCatchUp; catchUp<=maxCatchUp; ++catchUp) {
+        const char      *dna_start    = dna+catchUp;
+        AWT_allowedCode  allowed_code = initially_allowed_code;
 
         for (int p=0; ; p++) {
             char prot = proteins[p];
@@ -319,10 +316,11 @@ static int synchronizeCodons(const char *proteins, const char *dna, int minCatch
                 return 1;
             }
 
+            if ((dna_start-dna+3)>dna_len) break; // not enough DNA
             if (!AWT_is_codon(prot, dna_start, allowed_code, allowed_code_left)) break;
 
-            allowed_code = allowed_code_left; // if synchronized: use left codes as allowed codes!
-            dna_start += 3;
+            allowed_code  = allowed_code_left; // if synchronized: use left codes as allowed codes!
+            dna_start    += 3;
         }
     }
 
@@ -348,7 +346,7 @@ class Realigner {
     char *unalign(const char *data, size_t len, size_t& compressed_len) {
         // removes gaps; return compressed length
         char *compressed = (char*)malloc(len+1);
-        compressed_len   = 0;
+        compressed_len        = 0;
         for (size_t p = 0; p<len && data[p]; ++p) {
             if (!isGap(data[p])) {
                 compressed[compressed_len++] = data[p];
@@ -375,7 +373,7 @@ public:
 
     const char *failure() const { return fail_reason; }
 
-    char *realign_seq(AWT_allowedCode& allowed_code, const char *source, size_t source_len, const char *dest, size_t dest_len) {
+    char *realign_seq(AWT_allowedCode& allowed_code, const char *const source, size_t source_len, const char *const dest, size_t dest_len) {
         nt_assert(!failure());
 
         size_t  wanted_ali_len  = source_len*3;
@@ -465,13 +463,14 @@ public:
 
                         int catchUp;
                         if (count<SYNC_LENGTH) {
-                            int sync_possibilities = 0;
+                            int  sync_possibilities         = 0;
                             int *sync_possible_with_catchup = new int[x_count*3+1];
-                            int maxCatchup = x_count*3;
+                            int  maxCatchup                 = x_count*3;
 
                             catchUp = x_count-1;
                             for (;;) {
-                                if (!synchronizeCodons(protein, d, catchUp+1, maxCatchup, &catchUp, allowed_code, allowed_code_left)) {
+#define DEST_COMPRESSED_RESTLEN (compressed_len-(d-compressed_dest))
+                                if (!synchronizeCodons(protein, d, DEST_COMPRESSED_RESTLEN, catchUp+1, maxCatchup, &catchUp, allowed_code, allowed_code_left)) {
                                     break;
                                 }
                                 sync_possible_with_catchup[sync_possibilities++] = catchUp;
@@ -492,7 +491,7 @@ public:
                             catchUp = sync_possible_with_catchup[0];
                             delete [] sync_possible_with_catchup;
                         }
-                        else if (!synchronizeCodons(protein, d, x_count, x_count*3, &catchUp, allowed_code, allowed_code_left)) {
+                        else if (!synchronizeCodons(protein, d, DEST_COMPRESSED_RESTLEN, x_count, x_count*3, &catchUp, allowed_code, allowed_code_left)) {
                             fail_reason = "Can't synchronize after 'X' [2]";
                             break;
                         }
