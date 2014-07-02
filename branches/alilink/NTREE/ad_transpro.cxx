@@ -301,9 +301,28 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     return aws;
 }
 
-// Realign a dna alignment with a given protein source
+// -------------------------------------------------------------
+//      Realign a dna alignment with a given protein source
 
-static int synchronizeCodons(const char *proteins, const char *dna, int dna_len, int minCatchUp, int maxCatchUp, int *foundCatchUp, const AWT_allowedCode& initially_allowed_code, AWT_allowedCode& allowed_code_left) {
+enum SyncResult {
+    SYNC_UNKNOWN,      // not tested
+    SYNC_FOUND,        // found a way to sync
+    SYNC_FAILURE,      // could not sync (no translation succeeded)
+    SYNC_DATA_MISSING, // could not sync (not enough dna data)
+};
+
+static SyncResult synchronizeCodons(const char *proteins, const char *dna, int dna_len, int minCatchUp, int maxCatchUp, int *foundCatchUp, const AWT_allowedCode& initially_allowed_code, AWT_allowedCode& allowed_code_left) {
+    /*! called after X's where encountered.
+     * attempts to find a dna-part which translates into the given protein-sequence
+     * @param proteins wanted translation
+     * @param dna dna sequence
+     * @param dna_len length of dna
+     * @param minCatchUp minimum number of nucleotides to skip (at start of dna)
+     * @param maxCatchUp maximum number of nucleotides to skip (at start of dna)
+     * @param foundCatchUp result parameter: number of nucleotides skipped
+     * @param initially_allowed_code translation codes that might be considered
+     * @param allowed_code_left leftover translation codes (after a sync has been found)
+     */
     for (int catchUp=minCatchUp; catchUp<=maxCatchUp; ++catchUp) {
         const char      *dna_start    = dna+catchUp;
         AWT_allowedCode  allowed_code = initially_allowed_code;
@@ -313,10 +332,13 @@ static int synchronizeCodons(const char *proteins, const char *dna, int dna_len,
 
             if (!prot) { // all proteins were synchronized
                 *foundCatchUp = catchUp;
-                return 1;
+                return SYNC_FOUND;
             }
 
-            if ((dna_start-dna+3)>dna_len) break; // not enough DNA
+            if ((dna_start-dna+3)>dna_len) { // not enough DNA
+                // higher catchUp's cannot succeed => return
+                return SYNC_DATA_MISSING;
+            }
             if (!AWT_is_codon(prot, dna_start, allowed_code, allowed_code_left)) break;
 
             allowed_code  = allowed_code_left; // if synchronized: use left codes as allowed codes!
@@ -324,7 +346,7 @@ static int synchronizeCodons(const char *proteins, const char *dna, int dna_len,
         }
     }
 
-    return 0;
+    return SYNC_FAILURE;
 }
 
 #define SYNC_LENGTH 4
@@ -461,7 +483,10 @@ public:
                         nt_assert(count>=1);
                         protein[count] = 0;
 
-                        int catchUp;
+                        nt_assert(!fail_reason);
+
+                        int        catchUp;
+                        SyncResult sync_result = SYNC_UNKNOWN;
                         if (count<SYNC_LENGTH) {
                             int  sync_possibilities         = 0;
                             int *sync_possible_with_catchup = new int[x_count*3+1];
@@ -470,29 +495,35 @@ public:
                             catchUp = x_count-1;
                             for (;;) {
 #define DEST_COMPRESSED_RESTLEN (compressed_len-(d-compressed_dest))
-                                if (!synchronizeCodons(protein, d, DEST_COMPRESSED_RESTLEN, catchUp+1, maxCatchup, &catchUp, allowed_code, allowed_code_left)) {
+                                sync_result = synchronizeCodons(protein, d, DEST_COMPRESSED_RESTLEN, catchUp+1, maxCatchup, &catchUp, allowed_code, allowed_code_left);
+                                if (sync_result != SYNC_FOUND) {
                                     break;
                                 }
                                 sync_possible_with_catchup[sync_possibilities++] = catchUp;
                             }
 
+                            nt_assert(!fail_reason);
                             if (sync_possibilities==0) {
-                                delete [] sync_possible_with_catchup;
-                                fail_reason = "Can't synchronize after 'X' [1]";
-                                break;
+                                fail_reason = sync_result == SYNC_DATA_MISSING ? "not enough dna data" : "no translation found";
                             }
-                            if (sync_possibilities>1) {
-                                delete [] sync_possible_with_catchup;
-                                fail_reason = "Not enough data behind 'X' (please contact ARB-Support)";
-                                break;
+                            else if (sync_possibilities>1) {
+                                fail_reason = "multiple realign possibilities found";
                             }
-
-                            nt_assert(sync_possibilities==1);
-                            catchUp = sync_possible_with_catchup[0];
+                            else {
+                                nt_assert(sync_possibilities==1);
+                                catchUp = sync_possible_with_catchup[0];
+                            }
                             delete [] sync_possible_with_catchup;
                         }
-                        else if (!synchronizeCodons(protein, d, DEST_COMPRESSED_RESTLEN, x_count, x_count*3, &catchUp, allowed_code, allowed_code_left)) {
-                            fail_reason = "Can't synchronize after 'X' [2]";
+                        else {
+                            sync_result = synchronizeCodons(protein, d, DEST_COMPRESSED_RESTLEN, x_count, x_count*3, &catchUp, allowed_code, allowed_code_left);
+                            if (sync_result != SYNC_FOUND) {
+                                fail_reason = sync_result == SYNC_DATA_MISSING ? "not enough dna data" : "no translation found";
+                            }
+                        }
+
+                        if (fail_reason) {
+                            fail_reason = GBS_global_string("Can't synchronize after 'X' (%s)", fail_reason);
                             break;
                         }
 
@@ -989,14 +1020,14 @@ void TEST_realign() {
             realign_fail seq[] = {
                 //"XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-.." // original aa sequence
                 // { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "sdfjlksdjf" }, // templ
-                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Not enough data behind 'X' (please contact ARB-Support) at ali_pro:12 / ali_dna:19\n" },
+                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Can't synchronize after 'X' (multiple realign possibilities found) at ali_pro:12 / ali_dna:19\n" }, // @@@ should be fixed with #419
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Alignment 'ali_dna' is too short (increase its length to 252)\n" },
-                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Can't synchronize after 'X' [2] at ali_pro:25 / ali_dna:61\n" },
-                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Can't synchronize after 'X' [1] at ali_pro:8 / ali_dna:16\n" },
+                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Can't synchronize after 'X' (no translation found) at ali_pro:25 / ali_dna:61\n" },
+                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Can't synchronize after 'X' (no translation found) at ali_pro:8 / ali_dna:16\n" },
                 { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon ('TAA' does not translate to '*' (no trans-table left)) at ali_pro:3 / ali_dna:7\n" },
                 { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon ('ATG' does never translate to 'S' (1)) at ali_pro:4 / ali_dna:1\n" }, // missing some AA at left end (@@@ see commented test in realign_check above)
                 { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Not a codon ('CGG' does never translate to 'G' (1)) at ali_pro:24 / ali_dna:61\n" }, // ok to fail (some AA missing in the middle)
-                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Can't synchronize after 'X' [2] at ali_pro:38 / ali_dna:124\n" }, // too many AA (@@@ should be tested ahead and warn abount "not enough DNA data or similar")
+                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Can't synchronize after 'X' (not enough dna data) at ali_pro:38 / ali_dna:124\n" }, // too many AA
                 { 0, 0 }
             };
 
