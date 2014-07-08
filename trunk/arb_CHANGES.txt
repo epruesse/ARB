@@ -1,5 +1,10 @@
 ARB change log
 
+Major changes for next release:
+
+ - arb_parsimony
+   - dots were treated as gaps for protein sequences (now treated as 'X'; analog to DNA treating gaps as 'N'). thx to Yan Shi for detecting that problem!
+
 Major changes for arb-6.0:
 
  - merge databases allows to
