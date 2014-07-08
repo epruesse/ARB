@@ -359,26 +359,26 @@ inline bool isGap(char c) { return c == '-' || c == '.'; }
 class RealignAttempt {
     AWT_allowedCode allowed_code;
 
-    const char *d;              // compressed dna sequence // @@@ rename
-    size_t      compressed_len; // length of dna sequence
+    const char *compressed_dna;
+    size_t      compressed_len; // length of compressed_dna
 
-    const char *s; // aligned protein sequence // @@@ rename -> protein?
+    const char *aligned_protein;
 
-    char   *p;       // dna target buffer // @@@ rename -> target
-    size_t  ali_len; // wanted target length // @@@ rename -> target_len
+    char   *target_dna;
+    size_t  target_len; // wanted target length
 
     GB_ERROR fail_reason;
-    size_t protein_fail_position;
-    size_t dna_fail_position; // in compressed seq
+    size_t   protein_fail_position;
+    size_t   dna_fail_position; // in compressed seq
 
 public:
-    RealignAttempt(const AWT_allowedCode& allowed_code_, const char *compressed_dna, size_t compressed_len_, const char *protein, char *target_dna, size_t ali_len_)
+    RealignAttempt(const AWT_allowedCode& allowed_code_, const char *compressed_dna_, size_t compressed_len_, const char *aligned_protein_, char *target_dna_, size_t target_len_)
         : allowed_code(allowed_code_),
-          d(compressed_dna),
+          compressed_dna(compressed_dna_),
           compressed_len(compressed_len_),
-          s(protein),
-          p(target_dna),
-          ali_len(ali_len_),
+          aligned_protein(aligned_protein_),
+          target_dna(target_dna_),
+          target_len(target_len_),
           fail_reason(NULL),
           protein_fail_position(size_t(-1)),
           dna_fail_position(size_t(-1))
@@ -394,47 +394,47 @@ public:
         int         x_count = 0;
         const char *x_start = 0;
 
-        const char *compressed_dest = d; // @@@ rename -> compressed_dna_start
-        const char *buffer          = p; // @@@ rename -> target_start
-        const char *source          = s; // @@@ rename -> protein_start
+        const char *compressed_dna_start  = compressed_dna;
+        const char *target_dna_start      = target_dna;
+        const char *aligned_protein_start = aligned_protein;
 
         for (;;) {
-            char c = *s++;
-            if (!c) {
+            char p = *aligned_protein++;
+            if (!p) {
                 if (x_count) {
                     int off = -(x_count*3);
-                    while (d[0]) {
-                        p[off++] = *d++;
+                    while (compressed_dna[0]) {
+                        target_dna[off++] = *compressed_dna++;
                     }
                 }
                 break;
             }
 
-            if (isGap(c)) {
-                p[0] = p[1] = p[2] = c;
-                p += 3;
+            if (isGap(p)) {
+                target_dna[0] = target_dna[1] = target_dna[2] = p;
+                target_dna += 3;
             }
-            else if (toupper(c)=='X') { // one X represents 1 to 3 DNAs (normally 1 or 2, but 'NNN' translates to 'X')
-                x_start = s-1;
+            else if (toupper(p)=='X') { // one X represents 1 to 3 DNAs (normally 1 or 2, but 'NNN' translates to 'X')
+                x_start = aligned_protein-1;
                 x_count = 1;
                 int gap_count = 0;
 
                 for (;;) {
-                    char c2 = toupper(s[0]);
+                    char p2 = toupper(aligned_protein[0]);
 
-                    if (c2=='X') {
+                    if (p2=='X') {
                         x_count++;
                     }
                     else {
-                        if (!isGap(c2)) break;
+                        if (!isGap(p2)) break;
                         gap_count++;
                     }
-                    s++;
+                    aligned_protein++;
                 }
 
                 int setgap = (x_count+gap_count)*3;
-                memset(p, '.', setgap);
-                p += setgap;
+                memset(target_dna, '.', setgap);
+                target_dna += setgap;
             }
             else {
                 AWT_allowedCode allowed_code_left;
@@ -445,14 +445,14 @@ public:
                     {
                         int off;
 
-                        protein[0] = toupper(c);
+                        protein[0] = toupper(p);
                         for (count=1, off=0; count<SYNC_LENGTH; off++) {
-                            char c2 = s[off];
+                            char p2 = aligned_protein[off];
 
-                            if (!isGap(c2)) {
-                                c2 = toupper(c2);
-                                if (c2=='X') break; // can't sync X
-                                protein[count++] = c2;
+                            if (!isGap(p2)) {
+                                p2 = toupper(p2);
+                                if (p2=='X') break; // can't sync X
+                                protein[count++] = p2;
                             }
                         }
                     }
@@ -471,8 +471,8 @@ public:
 
                         catchUp = x_count-1;
                         for (;;) {
-#define DEST_COMPRESSED_RESTLEN (compressed_len-(d-compressed_dest))
-                            sync_result = synchronizeCodons(protein, d, DEST_COMPRESSED_RESTLEN, catchUp+1, maxCatchup, &catchUp, allowed_code, allowed_code_left);
+#define DEST_COMPRESSED_RESTLEN (compressed_len-(compressed_dna-compressed_dna_start))
+                            sync_result = synchronizeCodons(protein, compressed_dna, DEST_COMPRESSED_RESTLEN, catchUp+1, maxCatchup, &catchUp, allowed_code, allowed_code_left);
                             if (sync_result != SYNC_FOUND) {
                                 break;
                             }
@@ -493,7 +493,7 @@ public:
                         delete [] sync_possible_with_catchup;
                     }
                     else {
-                        sync_result = synchronizeCodons(protein, d, DEST_COMPRESSED_RESTLEN, x_count, x_count*3, &catchUp, allowed_code, allowed_code_left);
+                        sync_result = synchronizeCodons(protein, compressed_dna, DEST_COMPRESSED_RESTLEN, x_count, x_count*3, &catchUp, allowed_code, allowed_code_left);
                         if (sync_result != SYNC_FOUND) {
                             fail_reason = sync_result == SYNC_DATA_MISSING ? "not enough dna data" : "no translation found";
                         }
@@ -508,7 +508,7 @@ public:
 
                     // copy 'catchUp' characters (they are the content of the found Xs):
                     {
-                        const char *after = s-1;
+                        const char *after = aligned_protein-1;
                         const char *i;
                         int off = int(after-x_start);
                         nt_assert(off>=x_count);
@@ -524,10 +524,10 @@ public:
                                     int o;
                                     for (o=0; o<3; o++) {
                                         if (o<take_per_X) {
-                                            p[off++] = *d++;
+                                            target_dna[off++] = *compressed_dna++;
                                         }
                                         else {
-                                            p[off++] = '.';
+                                            target_dna[off++] = '.';
                                         }
                                     }
                                     x_rest--;
@@ -535,9 +535,9 @@ public:
                                 }
                                 case '.':
                                 case '-':
-                                    p[off++] = i[0];
-                                    p[off++] = i[0];
-                                    p[off++] = i[0];
+                                    target_dna[off++] = i[0];
+                                    target_dna[off++] = i[0];
+                                    target_dna[off++] = i[0];
                                     break;
                                 default:
                                     nt_assert(0);
@@ -549,7 +549,7 @@ public:
                 }
                 else {
                     const char *why_fail;
-                    if (!AWT_is_codon(c, d, allowed_code, allowed_code_left, &why_fail)) {
+                    if (!AWT_is_codon(p, compressed_dna, allowed_code, allowed_code_left, &why_fail)) {
                         fail_reason = GBS_global_string("Not a codon (%s)", why_fail);
                         break;
                     }
@@ -558,30 +558,30 @@ public:
                 }
 
                 // copy one codon:
-                p[0] = d[0];
-                p[1] = d[1];
-                p[2] = d[2];
+                target_dna[0] = compressed_dna[0];
+                target_dna[1] = compressed_dna[1];
+                target_dna[2] = compressed_dna[2];
 
-                p += 3;
-                d += 3;
+                target_dna     += 3;
+                compressed_dna += 3;
             }
         }
 
         if (!failure()) {
-            int len = p-buffer;
-            int rest = ali_len-len;
+            int inserted = target_dna-target_dna_start;
+            int rest     = target_len-inserted;
 
-            memset(p, '.', rest);
-            p += rest;
-            p[0] = 0;
+            memset(target_dna, '.', rest);
+            target_dna += rest;
+            target_dna[0] = 0;
         }
 
         if (failure()) {
-            protein_fail_position = (s-1)-source+1;
-            dna_fail_position     = d-compressed_dest;
+            protein_fail_position = (aligned_protein-1)-aligned_protein_start+1;
+            dna_fail_position     = compressed_dna-compressed_dna_start;
         }
         else {
-            nt_assert(strlen(buffer) == (unsigned)ali_len);
+            nt_assert(strlen(target_dna_start) == (unsigned)target_len);
         }
 
         return failure();
