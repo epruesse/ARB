@@ -356,6 +356,238 @@ static SyncResult synchronizeCodons(const char *proteins, const char *dna, int d
 
 inline bool isGap(char c) { return c == '-' || c == '.'; }
 
+class RealignAttempt {
+    AWT_allowedCode allowed_code;
+
+    const char *d;              // compressed dna sequence // @@@ rename
+    size_t      compressed_len; // length of dna sequence
+
+    const char *s; // aligned protein sequence // @@@ rename -> protein?
+
+    char   *p;       // dna target buffer // @@@ rename -> target
+    size_t  ali_len; // wanted target length // @@@ rename -> target_len
+
+    GB_ERROR fail_reason;
+    size_t protein_fail_position;
+    size_t dna_fail_position; // in compressed seq
+
+public:
+    RealignAttempt(const AWT_allowedCode& allowed_code_, const char *compressed_dna, size_t compressed_len_, const char *protein, char *target_dna, size_t ali_len_)
+        : allowed_code(allowed_code_),
+          d(compressed_dna),
+          compressed_len(compressed_len_),
+          s(protein),
+          p(target_dna),
+          ali_len(ali_len_),
+          fail_reason(NULL),
+          protein_fail_position(size_t(-1)),
+          dna_fail_position(size_t(-1))
+    {}
+
+    const AWT_allowedCode& get_remaining_code() const { return allowed_code; }
+    const char *failure() const { return fail_reason; }
+
+    size_t get_protein_fail_position() const { nt_assert(failure()); return protein_fail_position; }
+    size_t get_dna_fail_position() const { nt_assert(failure()); return dna_fail_position; }
+
+    GB_ERROR perform() {
+        int         x_count = 0;
+        const char *x_start = 0;
+
+        const char *compressed_dest = d; // @@@ rename -> compressed_dna_start
+        const char *buffer          = p; // @@@ rename -> target_start
+        const char *source          = s; // @@@ rename -> protein_start
+
+        for (;;) {
+            char c = *s++;
+            if (!c) {
+                if (x_count) {
+                    int off = -(x_count*3);
+                    while (d[0]) {
+                        p[off++] = *d++;
+                    }
+                }
+                break;
+            }
+
+            if (isGap(c)) {
+                p[0] = p[1] = p[2] = c;
+                p += 3;
+            }
+            else if (toupper(c)=='X') { // one X represents 1 to 3 DNAs (normally 1 or 2, but 'NNN' translates to 'X')
+                x_start = s-1;
+                x_count = 1;
+                int gap_count = 0;
+
+                for (;;) {
+                    char c2 = toupper(s[0]);
+
+                    if (c2=='X') {
+                        x_count++;
+                    }
+                    else {
+                        if (!isGap(c2)) break;
+                        gap_count++;
+                    }
+                    s++;
+                }
+
+                int setgap = (x_count+gap_count)*3;
+                memset(p, '.', setgap);
+                p += setgap;
+            }
+            else {
+                AWT_allowedCode allowed_code_left;
+
+                if (x_count) { // synchronize
+                    char protein[SYNC_LENGTH+1];
+                    int count;
+                    {
+                        int off;
+
+                        protein[0] = toupper(c);
+                        for (count=1, off=0; count<SYNC_LENGTH; off++) {
+                            char c2 = s[off];
+
+                            if (!isGap(c2)) {
+                                c2 = toupper(c2);
+                                if (c2=='X') break; // can't sync X
+                                protein[count++] = c2;
+                            }
+                        }
+                    }
+
+                    nt_assert(count>=1);
+                    protein[count] = 0;
+
+                    nt_assert(!fail_reason);
+
+                    int        catchUp;
+                    SyncResult sync_result = SYNC_UNKNOWN;
+                    if (count<SYNC_LENGTH) {
+                        int  sync_possibilities         = 0;
+                        int *sync_possible_with_catchup = new int[x_count*3+1];
+                        int  maxCatchup                 = x_count*3;
+
+                        catchUp = x_count-1;
+                        for (;;) {
+#define DEST_COMPRESSED_RESTLEN (compressed_len-(d-compressed_dest))
+                            sync_result = synchronizeCodons(protein, d, DEST_COMPRESSED_RESTLEN, catchUp+1, maxCatchup, &catchUp, allowed_code, allowed_code_left);
+                            if (sync_result != SYNC_FOUND) {
+                                break;
+                            }
+                            sync_possible_with_catchup[sync_possibilities++] = catchUp;
+                        }
+
+                        nt_assert(!fail_reason);
+                        if (sync_possibilities==0) {
+                            fail_reason = sync_result == SYNC_DATA_MISSING ? "not enough dna data" : "no translation found";
+                        }
+                        else if (sync_possibilities>1) {
+                            fail_reason = "multiple realign possibilities found";
+                        }
+                        else {
+                            nt_assert(sync_possibilities==1);
+                            catchUp = sync_possible_with_catchup[0];
+                        }
+                        delete [] sync_possible_with_catchup;
+                    }
+                    else {
+                        sync_result = synchronizeCodons(protein, d, DEST_COMPRESSED_RESTLEN, x_count, x_count*3, &catchUp, allowed_code, allowed_code_left);
+                        if (sync_result != SYNC_FOUND) {
+                            fail_reason = sync_result == SYNC_DATA_MISSING ? "not enough dna data" : "no translation found";
+                        }
+                    }
+
+                    if (fail_reason) {
+                        fail_reason = GBS_global_string("Can't synchronize after 'X' (%s)", fail_reason);
+                        break;
+                    }
+
+                    allowed_code = allowed_code_left;
+
+                    // copy 'catchUp' characters (they are the content of the found Xs):
+                    {
+                        const char *after = s-1;
+                        const char *i;
+                        int off = int(after-x_start);
+                        nt_assert(off>=x_count);
+                        off = -(off*3);
+                        int x_rest = x_count;
+
+                        for (i=x_start; i<after; i++) {
+                            switch (i[0]) {
+                                case 'x':
+                                case 'X':
+                                {
+                                    int take_per_X = catchUp/x_rest;
+                                    int o;
+                                    for (o=0; o<3; o++) {
+                                        if (o<take_per_X) {
+                                            p[off++] = *d++;
+                                        }
+                                        else {
+                                            p[off++] = '.';
+                                        }
+                                    }
+                                    x_rest--;
+                                    break;
+                                }
+                                case '.':
+                                case '-':
+                                    p[off++] = i[0];
+                                    p[off++] = i[0];
+                                    p[off++] = i[0];
+                                    break;
+                                default:
+                                    nt_assert(0);
+                                    break;
+                            }
+                        }
+                    }
+                    x_count = 0;
+                }
+                else {
+                    const char *why_fail;
+                    if (!AWT_is_codon(c, d, allowed_code, allowed_code_left, &why_fail)) {
+                        fail_reason = GBS_global_string("Not a codon (%s)", why_fail);
+                        break;
+                    }
+
+                    allowed_code = allowed_code_left;
+                }
+
+                // copy one codon:
+                p[0] = d[0];
+                p[1] = d[1];
+                p[2] = d[2];
+
+                p += 3;
+                d += 3;
+            }
+        }
+
+        if (!failure()) {
+            int len = p-buffer;
+            int rest = ali_len-len;
+
+            memset(p, '.', rest);
+            p += rest;
+            p[0] = 0;
+        }
+
+        if (failure()) {
+            protein_fail_position = (s-1)-source+1;
+            dna_fail_position     = d-compressed_dest;
+        }
+        else {
+            nt_assert(strlen(buffer) == (unsigned)ali_len);
+        }
+
+        return failure();
+    }
+};
+
 class Realigner {
     const char *ali_source;
     const char *ali_dest;
@@ -410,230 +642,48 @@ public:
         }
         else {
             // compress destination DNA (=remove align-characters):
-            size_t  compressed_len; // @@@ useful somewhere below? elim if not
+            size_t  compressed_len;
             char   *compressed_dest = unalign(dest, dest_len, compressed_len);
 
             buffer = (char*)malloc(ali_len+1);
 
-            char       *d       = compressed_dest;
-            const char *s       = source;
-            char       *p       = buffer;
-            int         x_count = 0;
-            const char *x_start = 0;
-
-            for (;;) {
-                char c = *s++;
-                if (!c) {
-                    if (x_count) {
-                        int off = -(x_count*3);
-                        while (d[0]) {
-                            p[off++] = *d++;
-                        }
-                    }
-                    break;
-                }
-
-                if (isGap(c)) {
-                    p[0] = p[1] = p[2] = c;
-                    p += 3;
-                }
-                else if (toupper(c)=='X') { // one X represents 1 to 3 DNAs
-                    x_start = s-1;
-                    x_count = 1;
-                    int gap_count = 0;
-
-                    for (;;) {
-                        char c2 = toupper(s[0]);
-
-                        if (c2=='X') {
-                            x_count++;
-                        }
-                        else {
-                            if (!isGap(c2)) break;
-                            gap_count++;
-                        }
-                        s++;
-                    }
-
-                    int setgap = (x_count+gap_count)*3;
-                    memset(p, '.', setgap);
-                    p += setgap;
-                }
-                else {
-                    AWT_allowedCode allowed_code_left;
-
-                    if (x_count) { // synchronize
-                        char protein[SYNC_LENGTH+1];
-                        int count;
-                        {
-                            int off;
-
-                            protein[0] = toupper(c);
-                            for (count=1, off=0; count<SYNC_LENGTH; off++) {
-                                char c2 = s[off];
-
-                                if (!isGap(c2)) {
-                                    c2 = toupper(c2);
-                                    if (c2=='X') break; // can't sync X
-                                    protein[count++] = c2;
-                                }
-                            }
-                        }
-
-                        nt_assert(count>=1);
-                        protein[count] = 0;
-
-                        nt_assert(!fail_reason);
-
-                        int        catchUp;
-                        SyncResult sync_result = SYNC_UNKNOWN;
-                        if (count<SYNC_LENGTH) {
-                            int  sync_possibilities         = 0;
-                            int *sync_possible_with_catchup = new int[x_count*3+1];
-                            int  maxCatchup                 = x_count*3;
-
-                            catchUp = x_count-1;
-                            for (;;) {
-#define DEST_COMPRESSED_RESTLEN (compressed_len-(d-compressed_dest))
-                                sync_result = synchronizeCodons(protein, d, DEST_COMPRESSED_RESTLEN, catchUp+1, maxCatchup, &catchUp, allowed_code, allowed_code_left);
-                                if (sync_result != SYNC_FOUND) {
-                                    break;
-                                }
-                                sync_possible_with_catchup[sync_possibilities++] = catchUp;
-                            }
-
-                            nt_assert(!fail_reason);
-                            if (sync_possibilities==0) {
-                                fail_reason = sync_result == SYNC_DATA_MISSING ? "not enough dna data" : "no translation found";
-                            }
-                            else if (sync_possibilities>1) {
-                                fail_reason = "multiple realign possibilities found";
-                            }
-                            else {
-                                nt_assert(sync_possibilities==1);
-                                catchUp = sync_possible_with_catchup[0];
-                            }
-                            delete [] sync_possible_with_catchup;
-                        }
-                        else {
-                            sync_result = synchronizeCodons(protein, d, DEST_COMPRESSED_RESTLEN, x_count, x_count*3, &catchUp, allowed_code, allowed_code_left);
-                            if (sync_result != SYNC_FOUND) {
-                                fail_reason = sync_result == SYNC_DATA_MISSING ? "not enough dna data" : "no translation found";
-                            }
-                        }
-
-                        if (fail_reason) {
-                            fail_reason = GBS_global_string("Can't synchronize after 'X' (%s)", fail_reason);
-                            break;
-                        }
-
-                        allowed_code = allowed_code_left;
-
-                        // copy 'catchUp' characters (they are the content of the found Xs):
-                        {
-                            const char *after = s-1;
-                            const char *i;
-                            int off = int(after-x_start);
-                            nt_assert(off>=x_count);
-                            off = -(off*3);
-                            int x_rest = x_count;
-
-                            for (i=x_start; i<after; i++) {
-                                switch (i[0]) {
-                                    case 'x':
-                                    case 'X':
-                                    {
-                                        int take_per_X = catchUp/x_rest;
-                                        int o;
-                                        for (o=0; o<3; o++) {
-                                            if (o<take_per_X) {
-                                                p[off++] = *d++;
-                                            }
-                                            else {
-                                                p[off++] = '.';
-                                            }
-                                        }
-                                        x_rest--;
-                                        break;
-                                    }
-                                    case '.':
-                                    case '-':
-                                        p[off++] = i[0];
-                                        p[off++] = i[0];
-                                        p[off++] = i[0];
-                                        break;
-                                    default:
-                                        nt_assert(0);
-                                        break;
-                                }
-                            }
-                        }
-                        x_count = 0;
-                    }
-                    else {
-                        const char *why_fail;
-                        if (!AWT_is_codon(c, d, allowed_code, allowed_code_left, &why_fail)) {
-                            fail_reason = GBS_global_string("Not a codon (%s)", why_fail);
-                            break;
-                        }
-
-                        allowed_code = allowed_code_left;
-                    }
-
-                    // copy one codon:
-                    p[0] = d[0];
-                    p[1] = d[1];
-                    p[2] = d[2];
-
-                    p += 3;
-                    d += 3;
-                }
-            }
-
+            RealignAttempt attempt(allowed_code, compressed_dest, compressed_len, source, buffer, ali_len);
+            fail_reason = attempt.perform();
             if (!failure()) {
-                int len = p-buffer;
-                int rest = ali_len-len;
-
-                memset(p, '.', rest);
-                p += rest;
-                p[0] = 0;
+                allowed_code = attempt.get_remaining_code();
             }
+            else {
+                if (!ignore_fail_pos) {
+                    int source_fail_pos = attempt.get_protein_fail_position();
+                    int dest_fail_pos = 0;
+                    {
+                        int fail_d_base_count = attempt.get_dna_fail_position();
 
-            if (failure()) {
-                int source_fail_pos = (s-1)-source+1;
-                int dest_fail_pos = 0;
-                {
-                    int fail_d_base_count = d-compressed_dest;
-                    const char *dp = dest;
+                        const char *dp = dest;
 
-                    for (;;) {
-                        char c = *dp++;
+                        for (;;) {
+                            char c = *dp++;
 
-                        if (!c) {
-                            nt_assert(c);
-                            break;
-                        }
-                        if (!isGap(c)) {
-                            if (!fail_d_base_count) {
-                                dest_fail_pos = (dp-1)-dest+1;
+                            if (!c) {
+                                nt_assert(c);
                                 break;
                             }
-                            fail_d_base_count--;
+                            if (!isGap(c)) {
+                                if (!fail_d_base_count) {
+                                    dest_fail_pos = (dp-1)-dest+1;
+                                    break;
+                                }
+                                fail_d_base_count--;
+                            }
                         }
                     }
-                }
 
-                if (!ignore_fail_pos) {
                     fail_reason = GBS_global_string("%s at %s:%i / %s:%i",
                                                     fail_reason,
                                                     ali_source, source_fail_pos,
                                                     ali_dest, dest_fail_pos);
                 }
-
                 freenull(buffer);
-            }
-            else {
-                nt_assert(strlen(buffer) == (unsigned)ali_len);
             }
 
             free(compressed_dest);
