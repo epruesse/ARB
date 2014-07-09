@@ -349,6 +349,99 @@ static SyncResult synchronizeCodons(const char *proteins, const char *dna, int d
     return SYNC_FAILURE;
 }
 
+class Distributor : virtual Noncopyable {
+    int xcount;
+    int *dist;
+    int *left;
+
+    GB_ERROR error;
+
+    void fillFrom(int off) {
+        nt_assert(!error);
+        nt_assert(off<xcount);
+
+        do {
+            int leftX    = xcount-off;
+            int leftDNA  = left[off];
+            int minLeave = leftX-1;
+            int maxLeave = minLeave*3;
+            int minTake  = std::max(1, leftDNA-maxLeave);
+            int maxTake  = std::min(3, leftDNA-minLeave);
+
+            nt_assert(minTake<=maxTake);
+
+            dist[off]   = minTake;
+            left[off+1] = left[off]-dist[off];
+
+            off++;
+        } while (off<xcount);
+
+        nt_assert(left[xcount] == 0); // expect correct amount of dna has been used
+    }
+    bool incAt(int off) {
+        nt_assert(!error);
+        nt_assert(off<xcount);
+
+        if (dist[off] == 3) {
+            return false;
+        }
+
+        int leftX    = xcount-off;
+        int leftDNA  = left[off];
+        int minLeave = leftX-1;
+        int maxTake  = std::min(3, leftDNA-minLeave);
+
+        if (dist[off] == maxTake) {
+            return false;
+        }
+
+        dist[off]++;
+        left[off+1]--;
+        fillFrom(off+1);
+        return true;
+    }
+
+public:
+    Distributor(int xcount_, int dnacount)
+        : xcount(xcount_),
+          dist(new int[xcount]),
+          left(new int[xcount+1]),
+          error(NULL)
+    {
+        if (dnacount<xcount) {
+            error = "not enough nucleotides";
+        }
+        else if (dnacount>3*xcount) {
+            error = "too much nucleotides";
+        }
+        else {
+            left[0] = dnacount;
+            fillFrom(0);
+        }
+    }
+    ~Distributor() {
+        delete [] dist;
+        delete [] left;
+    }
+
+    int operator[](int off) const {
+        nt_assert(!error);
+        nt_assert(off>=0 && off<xcount);
+        return dist[off];
+    }
+
+    int size() const { return xcount; }
+
+    GB_ERROR get_error() const { return error; }
+
+    bool next() {
+        for (int incPos = xcount-2; incPos>=0; --incPos) {
+            if (incAt(incPos)) return true;
+        }
+        return false;
+    }
+};
+
 #define SYNC_LENGTH 4
 // every X in amino-alignment, it represents 1 to 3 bases in DNA-Alignment
 // SYNC_LENGTH is the # of codons which will be synchronized (ahead!)
@@ -1169,6 +1262,67 @@ void TEST_realign() {
 
     GB_close(gb_main);
     ARB_install_handlers(*old_handlers);
+}
+
+static const char *permOf(const Distributor& dist) {
+    const int   MAXDIST = 10;
+    static char buffer[MAXDIST+1];
+
+    nt_assert(dist.size() <= MAXDIST);
+    for (int p = 0; p<dist.size(); ++p) {
+        buffer[p] = '0'+dist[p];
+    }
+    buffer[dist.size()] = 0;
+
+    return buffer;
+}
+
+static arb_test::match_expectation stateOf(Distributor& dist, const char *expected_perm, bool hasNext) {
+    using namespace arb_test;
+
+    expectation_group expected;
+    expected.add(that(permOf(dist)).is_equal_to(expected_perm));
+    expected.add(that(dist.next()).is_equal_to(hasNext));
+    return all().ofgroup(expected);
+}
+
+void TEST_distributor() {
+    TEST_EXPECT_EQUAL(Distributor(3, 2).get_error(), "not enough nucleotides");
+    TEST_EXPECT_EQUAL(Distributor(3, 10).get_error(), "too much nucleotides");
+
+    Distributor minDist(3, 3);
+    TEST_EXPECTATION(stateOf(minDist, "111", false));
+    // TEST_EXPECT_EQUAL(permOf(minDist), "111"); TEST_EXPECT_EQUAL(minDist.next(), false);
+
+    Distributor maxDist(3, 9);
+    TEST_EXPECTATION(stateOf(maxDist, "333", false));
+
+    Distributor meanDist(3, 6);
+    TEST_EXPECTATION(stateOf(meanDist, "123", true));
+    TEST_EXPECTATION(stateOf(meanDist, "132", true));
+    TEST_EXPECTATION(stateOf(meanDist, "213", true));
+    TEST_EXPECTATION(stateOf(meanDist, "222", true));
+    TEST_EXPECTATION(stateOf(meanDist, "231", true));
+    TEST_EXPECTATION(stateOf(meanDist, "312", true));
+    TEST_EXPECTATION(stateOf(meanDist, "321", false));
+
+    Distributor belowMax(4, 11);
+    TEST_EXPECTATION(stateOf(belowMax, "2333", true));
+    TEST_EXPECTATION(stateOf(belowMax, "3233", true));
+    TEST_EXPECTATION(stateOf(belowMax, "3323", true));
+    TEST_EXPECTATION(stateOf(belowMax, "3332", false));
+
+    Distributor aboveMin(4, 6);
+    TEST_EXPECTATION(stateOf(aboveMin, "1113", true));
+    TEST_EXPECTATION(stateOf(aboveMin, "1122", true));
+    TEST_EXPECTATION(stateOf(aboveMin, "1131", true));
+    TEST_EXPECTATION(stateOf(aboveMin, "1212", true));
+    TEST_EXPECTATION(stateOf(aboveMin, "1221", true));
+    TEST_EXPECTATION(stateOf(aboveMin, "1311", true));
+    TEST_EXPECTATION(stateOf(aboveMin, "2112", true));
+    TEST_EXPECTATION(stateOf(aboveMin, "2121", true));
+    TEST_EXPECTATION(stateOf(aboveMin, "2211", true));
+    TEST_EXPECTATION(stateOf(aboveMin, "3111", false));
 }
 
 #endif // UNIT_TESTS
