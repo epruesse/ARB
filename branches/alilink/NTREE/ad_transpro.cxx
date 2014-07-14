@@ -1039,6 +1039,8 @@ void TEST_realign() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("TEST_realign.arb", "rw");
 
+    arb_suppress_progress here;
+
     {
         GB_ERROR error;
         size_t   neededLength = 0;
@@ -1123,6 +1125,8 @@ void TEST_realign() {
             TEST_EXPECT_EQUAL(arb_transl_table, 14);
             TEST_EXPECT_EQUAL(codon_start, 1);
 
+            char *org_dna = GB_read_string(gb_TaxOcell_dna);
+
             for (int s = 0; seq[s].seq; ++s) {
                 TEST_ANNOTATE(GBS_global_string("s=%i", s));
                 TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, seq[s].seq));
@@ -1133,9 +1137,12 @@ void TEST_realign() {
                 TEST_EXPECT_EQUAL(msgs, "");
                 TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_dna), seq[s].result);
 
+                // restore (possibly) changed DB entries
                 TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
+                TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_dna, org_dna));
             }
 
+            free(org_dna);
             ta.close("aborted");
         }
 
