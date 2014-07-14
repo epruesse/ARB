@@ -349,7 +349,7 @@ static SyncResult synchronizeCodons(const char *proteins, const char *dna, int d
     return SYNC_FAILURE;
 }
 
-class Distributor : virtual Noncopyable {
+class Distributor {
     int xcount;
     int *dist;
     int *left;
@@ -419,6 +419,16 @@ public:
             fillFrom(0);
         }
     }
+    Distributor(const Distributor& other)
+        : xcount(other.xcount),
+          dist(new int[xcount]),
+          left(new int[xcount+1]),
+          error(other.error)
+    {
+        memcpy(dist, other.dist, sizeof(*dist)*xcount);
+        memcpy(left, other.left, sizeof(*left)*(xcount+1));
+    }
+    DECLARE_ASSIGNMENT_OPERATOR(Distributor);
     ~Distributor() {
         delete [] dist;
         delete [] left;
