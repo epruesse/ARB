@@ -1,0 +1,31 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	multiprobe.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile strunk ********
+TITLE		Multiprobe parameters for calculation
+
+DESCRIPTION     Missing
+
+NOTES           Further parameters the user has to specify:
+
+	        - select how big the combination should be
+        	- select if the complement should be checked, too
+        	- select the minimum mismatch that unmarked species should have
+                  in the combination
+        	- for weighting mismatches there are three possibilities:
+
+        		1. all mismatches are weighted equally
+
+        		2. mismatches are weighted depending on which kind of
+                           mismatch occurred
+
+        		3. mismatches are weighted stronger the nearer it occurs
+                           at the center of the probe
+
+        	- maximum non-group hits which are allowed for the calculation
+        	- last but not least the pt_server has to be chosen. Remember to
+                  use an up to date server !!!

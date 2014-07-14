@@ -1,0 +1,4 @@
+# libraries needed to link against XML/XML.a
+
+lib/libCORE.so
+
