@@ -1,0 +1,72 @@
+#!/bin/bash
+set -e
+
+small_dna_tree() {
+    local MODEL=$1
+    # try N ML searches
+    $RAXML -p $SEED -s $SEQFILE -m $MODEL \
+        -N $N \
+        -n TREE_INFERENCE
+    # run bootstraps
+    $RAXML -p $SEED -b $SEED -s $SEQFILE -m $MODEL \
+        -N autoMRE_IGN \
+        -n BOOTSTRAP
+    # draw bipartition information
+    $RAXML -f b -m $MODEL \
+        -t RAxML_bestTree.TREE_INFERENCE \
+        -z RAxML_bootstrap.BOOTSTRAP \
+        -n ML_TREE_WITH_SUPPORT
+    # compute extended majority rule consensus
+    $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.BOOTSTRAP -n BOOTSTRAP_CONSENSUS
+    
+    #import?
+    # arb_read_tree...
+}
+ 
+large_dna_tree() {
+    # run fast bootstraps
+    $RAXML -f a -m $MODEL -p $SEED -x $SEED -s $SEQFILE -n autoMRE_IGN -n FAST_BS
+    # create consensus tree
+    $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.FAST_BS -n FAST_BS_MAJORITY
+}   
+
+calc_mem_size() {
+}
+
+aa_tree() {
+    # -m PROTGAMMALG4X
+}
+
+
+help() {
+    echo "$0: <seqtype> <protocol> <model> <seed>"
+    echo "seqtype: DNA|AA"
+    echo "protocol: large|small (tree size)"
+    echo "model: GTRGAMMA|GTRcat"
+    echo "seed: random-seed"
+}
+
+
+while [ -n "$1" ]; do 
+  case "$1" in
+      -p) # protocol
+          PROT="$2"
+          shift
+          ;;
+      -m) # subst model
+          MODEL="$2"
+          shift
+          ;;
+      -nt) # seqtype dna
+          SEQTYPE=N
+          ;;
+      -aa) # seqtype proto
+          SEQTYPE=A
+          ;;
+      *)
+          report_error unknown command
+          ;;
+  esac
+done
+
+case "$PROT" in)
