@@ -1,7 +1,24 @@
 #!/bin/bash
 set -e
+set -x
 
-small_dna_tree() {
+cpu_has_feature() {
+    case `uname` in
+        Darwin)
+            SHOW="sysctl machdep.cpu.features"
+            ;;
+        Linux)
+            SHOW="grep flags /proc/cpuinfo"
+            ;;
+    esac
+    $SHOW | grep -qi "$1"
+}
+
+can_run() {
+    which "$1" && test -x `which "$1"`
+}
+
+dna_tree_thorough() {
     local MODEL=$1
     # try N ML searches
     $RAXML -p $SEED -s $SEQFILE -m $MODEL \
@@ -22,8 +39,8 @@ small_dna_tree() {
     #import?
     # arb_read_tree...
 }
- 
-large_dna_tree() {
+
+dna_tree_quick() {
     # run fast bootstraps
     $RAXML -f a -m $MODEL -p $SEED -x $SEED -s $SEQFILE -n autoMRE_IGN -n FAST_BS
     # create consensus tree
@@ -31,12 +48,17 @@ large_dna_tree() {
 }   
 
 calc_mem_size() {
+    echo
 }
 
 aa_tree() {
+    echo
     # -m PROTGAMMALG4X
 }
 
+report_error() {
+    arb_message "$*"
+}
 
 help() {
     echo "$0: <seqtype> <protocol> <model> <seed>"
@@ -45,6 +67,17 @@ help() {
     echo "model: GTRGAMMA|GTRcat"
     echo "seed: random-seed"
 }
+
+# select RAxML binary
+if cpu_has_feature avx && can_run raxmlHPC8-AVX.PTHREADS; then
+    RAXML=raxmlHPC8-AVX.PTHREADS
+elif cpu_has_feature sse3 && can_run raxmlHPC8-SSE3.PTHREADS; then
+    RAXML=raxmlHPC8-SSE3.PTHREADS
+elif can_run raxmlHPC8-PTHREADS; then
+    RAXML=raxmlHPC8-PTHREADS
+else
+    report_error Could not find working RAxML binary. 
+fi
 
 
 while [ -n "$1" ]; do 
@@ -57,6 +90,10 @@ while [ -n "$1" ]; do
           MODEL="$2"
           shift
           ;;
+      -s) # random seed
+          SEED="$2"
+          shift
+          ;;
       -nt) # seqtype dna
           SEQTYPE=N
           ;;
@@ -67,6 +104,14 @@ while [ -n "$1" ]; do
           report_error unknown command
           ;;
   esac
+  shift
 done
 
-case "$PROT" in)
+case "${SEQTYPE}.${PROT}" in
+    N.quick)
+        dna_tree_quick
+        ;;
+    N.thorough)
+        dna_tree_thorough
+        ;;
+esac

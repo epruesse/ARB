@@ -24,8 +24,8 @@
 
 menu:Phylogeny max. Likelyhood
 
-item:RAxML 8
-itemmethod: arb_raxml8
+item:RAxML 8 (DNA)
+itemmethod: arb_raxml8.sh -p $PROTOCOL -m $MODEL -s $SEED -nt INPUTFILE
 itemhelp:raxml8.help
 seqtype:N
 
@@ -35,16 +35,16 @@ informat:genbank
 arg:PROTOCOL
 arglabel:Protocol
 argtype:chooser
-argchoice:Small Tree:small
-argchoice:Large Tree:large
+argchoice:Thorough:thorough
+argchoice:Quick:quick
 
 arg:MODEL
 argtype:chooser
 arglabel:Substitution Mpdel
-argchoice:GTRGAMMA:GTRGAMMA (standard, slower)
-argchoice:GTRCAT:GTRCAT (minimum 150 seqs)
+argchoice:GTRGAMMA (standard, max 10k seqs):GTRGAMMA
+argchoice:GTRCAT (faster, min 150 seqs):GTRCAT 
 
 arg:SEED
 argtype:text
 arglabel:Random Seed
-argtext:
+argtext:123456
