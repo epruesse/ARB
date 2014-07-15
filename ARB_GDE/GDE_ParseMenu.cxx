@@ -574,7 +574,7 @@ void TEST_load_menu() {
         TEST_EXPECT_EQUAL(menus,
                           "Import;Export;Print;Align;User;SAI;Incremental phylogeny;Phylogeny Distance Matrix;"
                           "Phylogeny max. parsimony;Phylogeny max. Likelyhood EXP;Phylogeny max. Likelyhood;Phylogeny (Other);");
-        TEST_EXPECT_EQUAL(menuitems, "3;1;1;11;1;1;1;3;2;1;7;5;");
+        TEST_EXPECT_EQUAL(menuitems, "3;1;1;11;1;1;1;3;2;1;8;5;");
     }
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }
