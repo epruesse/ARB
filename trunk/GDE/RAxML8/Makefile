@@ -10,10 +10,8 @@ TARFILE=$(wildcard standard-RAxML-8.*.*gz)
 
 ifeq (($DARWIN),1)
 MAKE_SUFFIX=mac	
-SED_OPTS="-i ''"
 else
 MAKE_SUFFIX=gcc
-SED_OPTS="-i"
 endif
 
 RAXML_BIN=$(ARBHOME)/bin/raxmlHPC8-
@@ -47,7 +45,7 @@ unpack.%.stamp: $(TARFILE)
 	rm -rf $$DIR &&\
 	mkdir $$DIR &&\
 	tar -C $$DIR --strip-components=1 -xzf $(TARFILE) &&\
-	sed $(SED_OPTS) 's/-march=native//' $$DIR/Makefile*)
+	arb_sed 's/-march=native//' $$DIR/Makefile*)
 	touch $@ -r $(TARFILE)	
 
 %.stamp:
