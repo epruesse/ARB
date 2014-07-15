@@ -1,0 +1,50 @@
+# Menu for RAxML 8
+# 
+# use cases:
+#  - build small  publication dna tree
+#     - multiple ml searches, pick best
+#     - run bootstraps 
+#     - import best ml tree + support values      
+#     - import consensus from bootstraps
+#  - build quick&dirty dna tree (or large tree)
+#     - fast bootstraps
+#     - import consensus
+#  - build AA tree
+#  - extend dna tree
+#  - get support SH-like support values for tree
+
+# Options:
+# 
+# sequence type: DNA, AA
+# tree size: large small
+# search type: fast slow
+
+# sequence type: DNA
+# tree size: small
+
+menu:Phylogeny max. Likelyhood
+
+item:RAxML 8
+itemmethod: arb_raxml8
+itemhelp:raxml8.help
+seqtype:N
+
+in:INPUTFILE
+informat:genbank
+
+arg:PROTOCOL
+arglabel:Protocol
+argtype:chooser
+argchoice:Small Tree:small
+argchoice:Large Tree:large
+
+arg:MODEL
+argtype:chooser
+arglabel:Substitution Mpdel
+argchoice:GTRGAMMA:GTRGAMMA (standard, slower)
+argchoice:GTRCAT:GTRCAT (minimum 150 seqs)
+
+arg:SEED
+argtype:text
+arglabel:Random Seed
+argtext:
