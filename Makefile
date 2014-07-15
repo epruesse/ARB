@@ -134,8 +134,10 @@ USE_GCC_MINOR:=$(word 2,$(SPLITTED_VERSION))
 USE_GCC_PATCHLEVEL:=$(word 3,$(SPLITTED_VERSION))
 
 USE_GCC_452_OR_HIGHER:=
+USE_GCC_46_OR_HIGHER:=
 USE_GCC_47_OR_HIGHER:=
 USE_GCC_48_OR_HIGHER:=
+
 
 ifeq ($(USE_GCC_MAJOR),4)
  ifeq ($(USE_GCC_MINOR),5)
@@ -145,6 +147,7 @@ ifeq ($(USE_GCC_MAJOR),4)
  else
   ifneq ('$(findstring $(USE_GCC_MINOR),6789)','')
    USE_GCC_452_OR_HIGHER:=yes
+   USE_GCC_46_OR_HIGHER:=yes
    ifneq ($(USE_GCC_MINOR),6)
     USE_GCC_47_OR_HIGHER:=yes
     ifneq ($(USE_GCC_MINOR),7)
@@ -155,6 +158,7 @@ ifeq ($(USE_GCC_MAJOR),4)
  endif
 else
  USE_GCC_452_OR_HIGHER:=yes
+ USE_GCC_46_OR_HIGHER:=yes
  USE_GCC_47_OR_HIGHER:=yes
  USE_GCC_48_OR_HIGHER:=yes
 endif

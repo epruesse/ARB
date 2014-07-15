@@ -4,14 +4,19 @@
 # use approx 1 thread per 500bp
 
 # Versions of RAxML to build
-VERSIONS=SSE3.PTHREADS PTHREADS AVX.PTHREADS
+VERSIONS:=SSE3.PTHREADS PTHREADS 
+
+# AVX needs gcc >= 4.6.0 
+ifeq ($(USE_GCC_46_OR_HIGHER), "yes")
+  VERSIONS+=AVX.PTHREADS
+endif
 
 TARFILE=$(wildcard standard-RAxML-8.*.*gz)
 
 ifeq (($DARWIN),1)
-MAKE_SUFFIX=mac	
+  MAKE_SUFFIX=mac	
 else
-MAKE_SUFFIX=gcc
+  MAKE_SUFFIX=gcc
 endif
 
 RAXML_BIN=$(ARBHOME)/bin/raxmlHPC8-
@@ -23,7 +28,7 @@ all: install
 clean:
 	rm -rf builddir.*
 	rm -f $(RAXML_BIN)*
-	rm -f unpack.stamp.*
+	rm -f unpack.*.stamp
 
 ## internal targets
 
@@ -37,15 +42,15 @@ build:  $(VERSIONS:%=$(RAXML_BIN)%)
 #  which are needed by RAxML)
 
 $(RAXML_BIN)%: unpack.%.stamp
-	MAKEFLAGS= $(MAKE) -C $(<:unpack.%.stamp=builddir%) -f Makefile.$(@:$(RAXML_BIN)%=%).$(MAKE_SUFFIX)
-	cp $(<:unpack.%.stamp=builddir%)/raxmlHPC-* $@
+	MAKEFLAGS= $(MAKE) -C $(<:unpack.%.stamp=builddir.%) -f Makefile.$(@:$(RAXML_BIN)%=%).$(MAKE_SUFFIX)
+	cp $(<:unpack.%.stamp=builddir.%)/raxmlHPC-* $@
 
 unpack.%.stamp: $(TARFILE)
-	(DIR=$(@:unpack.%.stamp=builddir%); \
+	(DIR=$(@:unpack.%.stamp=builddir.%); \
 	rm -rf $$DIR &&\
 	mkdir $$DIR &&\
 	tar -C $$DIR --strip-components=1 -xzf $(TARFILE) &&\
-	arb_sed 's/-march=native//' $$DIR/Makefile*)
+	arb_sed -i 's/-march=native//' $$DIR/Makefile*)
 	touch $@ -r $(TARFILE)	
 
 %.stamp:
