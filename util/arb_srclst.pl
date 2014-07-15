@@ -106,6 +106,7 @@ my %used_extensions = map { $_ => 1; } (
                                         'source', 'menu',
                                         'template', 'default',
                                         'txt', 'doc', 'ps', 'pdf',
+                                        'tar.gz', 'tgz',
                                        );
 
 my %skipped_extensions = map { $_ => 1; } (
