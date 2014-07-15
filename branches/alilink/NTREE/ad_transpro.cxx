@@ -836,7 +836,7 @@ public:
                                 break;
                             }
                             if (!isGap(c)) {
-                                dest_fail_pos = (dp-1)-dest+1;
+                                dest_fail_pos = (dp-1)-dest;
                                 if (!fail_d_base_count) break;
                                 fail_d_base_count--;
                             }
@@ -845,8 +845,8 @@ public:
 
                     fail_reason = GBS_global_string("%s at %s:%i / %s:%i",
                                                     fail_reason,
-                                                    ali_source, source_fail_pos,
-                                                    ali_dest, dest_fail_pos);
+                                                    ali_source, info2bio(source_fail_pos),
+                                                    ali_dest, info2bio(dest_fail_pos));
                 }
                 freenull(buffer);
             }
@@ -1124,8 +1124,8 @@ void TEST_realign() {
             error = realign(gb_main, "ali_pro", "ali_dna", neededLength);
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs,
-                              "Automatic re-align failed for 'BctFra12'\nReason: not enough nucs for X's at sequence end at ali_pro:39 / ali_dna:109\n" // new correct report (got no nucs for 1 X) @@@ prot pos 1 too low!
-                              "Automatic re-align failed for 'StrRamo3'\nReason: not enough nucs for X's at sequence end at ali_pro:35 / ali_dna:106\n" // new correct report (got 3 nucs for 4 Xs) @@@ prot pos 1 too low!
+                              "Automatic re-align failed for 'BctFra12'\nReason: not enough nucs for X's at sequence end at ali_pro:40 / ali_dna:109\n" // new correct report (got no nucs for 1 X)
+                              "Automatic re-align failed for 'StrRamo3'\nReason: not enough nucs for X's at sequence end at ali_pro:36 / ali_dna:106\n" // new correct report (got 3 nucs for 4 Xs)
                 );
 
             TEST_EXPECT_EQUAL(DNASEQ("BctFra12"),    "ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"); // now fails as expected => seq unchanged
@@ -1249,16 +1249,16 @@ void TEST_realign() {
                 // { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "sdfjlksdjf" }, // templ
 
                 // wanted realign failures:
-                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'TCA' does never translate to 'P' at ali_pro:24 / ali_dna:64\n" },   // ok to fail: 5 Xs impossible               @@@ dna position wrong ('TCA' is @ 74)
+                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'TCA' does never translate to 'P' at ali_pro:25 / ali_dna:64\n" },   // ok to fail: 5 Xs impossible               @@@ dna position wrong ('TCA' is @ 74)
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Alignment 'ali_dna' is too short (increase its length to 252)\n" },                          // ok to fail: wrong alignment length
-                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'TCA' does never translate to 'P' at ali_pro:24 / ali_dna:64\n" },   // ok to fail                                @@@ dna position wrong ('TCA' is @ 74)
-                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'TTT' translates to 'F', not to 'A' at ali_pro:7 / ali_dna:17\n" },  // ok to fail                                @@@ dna position wrong ('TTT' is @ 32 & 33)
-                { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'CAC' translates to 'H', not to 'R' at ali_pro:12 / ali_dna:35\n" }, // ok to fail                                @@@ dna position wrong ('CAC' is @ 51)
-                { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'CGG' translates to 'R', not to 'G' at ali_pro:23 / ali_dna:61\n" }, // ok to fail: some AA missing in the middle @@@ dna position wrong ('CGG' is @ 62)
-                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Failed to sync behind 'X', best attempt failed with: Not a codon: Not enough nucleotides (got '') at ali_pro:37 / ali_dna:116\n" },    // ok to fail: too many AA
+                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'TCA' does never translate to 'P' at ali_pro:25 / ali_dna:64\n" },   // ok to fail                                @@@ dna position wrong ('TCA' is @ 74)
+                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'TTT' translates to 'F', not to 'A' at ali_pro:8 / ali_dna:17\n" },  // ok to fail                                @@@ dna position wrong ('TTT' is @ 32 & 33)
+                { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'CAC' translates to 'H', not to 'R' at ali_pro:13 / ali_dna:35\n" }, // ok to fail                                @@@ dna position wrong ('CAC' is @ 51)
+                { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'CGG' translates to 'R', not to 'G' at ali_pro:24 / ali_dna:61\n" }, // ok to fail: some AA missing in the middle @@@ dna position wrong ('CGG' is @ 62)
+                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Failed to sync behind 'X', best attempt failed with: Not a codon: Not enough nucleotides (got '') at ali_pro:38 / ali_dna:116\n" },    // ok to fail: too many AA
 
                 // failing realignments that should work:
-                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon: 'ATG' translates to 'M', not to 'S' at ali_pro:3 / ali_dna:1\n" },                      // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
+                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon: 'ATG' translates to 'M', not to 'S' at ali_pro:4 / ali_dna:1\n" },                      // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
 
                 { 0, 0 }
             };
