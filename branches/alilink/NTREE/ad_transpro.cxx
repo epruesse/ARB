@@ -304,51 +304,6 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
 // -------------------------------------------------------------
 //      Realign a dna alignment with a given protein source
 
-enum SyncResult {
-    SYNC_UNKNOWN,      // not tested
-    SYNC_FOUND,        // found a way to sync
-    SYNC_FAILURE,      // could not sync (no translation succeeded)
-    SYNC_DATA_MISSING, // could not sync (not enough dna data)
-};
-
-static SyncResult synchronizeCodons(const char *proteins, const char *dna, int dna_len, int minCatchUp, int maxCatchUp, int *foundCatchUp, const AWT_allowedCode& initially_allowed_code, AWT_allowedCode& allowed_code_left) {
-    /*! called after X's where encountered.
-     * attempts to find a dna-part which translates into the given protein-sequence
-     * @param proteins wanted translation
-     * @param dna dna sequence
-     * @param dna_len length of dna
-     * @param minCatchUp minimum number of nucleotides to skip (at start of dna)
-     * @param maxCatchUp maximum number of nucleotides to skip (at start of dna)
-     * @param foundCatchUp result parameter: number of nucleotides skipped
-     * @param initially_allowed_code translation codes that might be considered
-     * @param allowed_code_left leftover translation codes (after a sync has been found)
-     */
-    for (int catchUp=minCatchUp; catchUp<=maxCatchUp; ++catchUp) {
-        const char      *dna_start    = dna+catchUp;
-        AWT_allowedCode  allowed_code = initially_allowed_code;
-
-        for (int p=0; ; p++) {
-            char prot = proteins[p];
-
-            if (!prot) { // all proteins were synchronized
-                *foundCatchUp = catchUp;
-                return SYNC_FOUND;
-            }
-
-            if ((dna_start-dna+3)>dna_len) { // not enough DNA
-                // higher catchUp's cannot succeed => return
-                return SYNC_DATA_MISSING;
-            }
-            if (!AWT_is_codon(prot, dna_start, allowed_code, allowed_code_left)) break;
-
-            allowed_code  = allowed_code_left; // if synchronized: use left codes as allowed codes!
-            dna_start    += 3;
-        }
-    }
-
-    return SYNC_FAILURE;
-}
-
 class Distributor {
     int xcount;
     int *dist;
@@ -434,6 +389,8 @@ public:
         delete [] left;
     }
 
+    void reset() { *this = Distributor(xcount, left[0]); }
+
     int operator[](int off) const {
         nt_assert(!error);
         nt_assert(off>=0 && off<xcount);
@@ -450,6 +407,37 @@ public:
         }
         return false;
     }
+
+    bool mayFailTranslation() const {
+        for (int i = 0; i<xcount; ++i) {
+            if (dist[i] == 3) return true;
+        }
+        return false;
+    }
+    int get_score() const {
+        // rates balanced distributions high
+        int score = 1;
+        for (int i = 0; i<xcount; ++i) {
+            score *= dist[i];
+        }
+        return score;
+    }
+
+    bool translates_to_Xs(const char *dna, const AWT_allowedCode& with_code) const {
+        bool translates = true;
+        int  off        = 0;
+        for (int p = 0; translates && p<xcount; off += dist[p++]) {
+            if (dist[p] == 3) {
+                AWT_allowedCode  left_code;
+                const char      *why_fail;
+
+                translates = AWT_is_codon('X', dna+off, with_code, left_code, &why_fail);
+
+                // if (translates) with_code = left_code; // @@@ code-exclusion ignored here (maybe not even happens..)
+            }
+        }
+        return translates;
+    }
 };
 
 #define SYNC_LENGTH 4
@@ -458,6 +446,8 @@ public:
 // before deciding "X was realigned correctly"
 
 inline bool isGap(char c) { return c == '-' || c == '.'; }
+
+const size_t NOPOS = size_t(-1);
 
 class RealignAttempt {
     AWT_allowedCode allowed_code;
@@ -470,9 +460,72 @@ class RealignAttempt {
     char   *target_dna;
     size_t  target_len; // wanted target length
 
-    GB_ERROR fail_reason;
-    size_t   protein_fail_position;
-    size_t   dna_fail_position; // in compressed seq
+    GB_ERROR    fail_reason;
+    const char *protein_fail_at; // in aligned protein seq
+    const char *dna_fail_at;     // in compressed seq
+
+    GB_ERROR distribute_xdata(size_t dna_dist_size, size_t xcount, char *xtarget, const AWT_allowedCode& with_code) {
+        /*! distributes 'dna_dist_size' nucs starting at 'compressed_dna'
+         * @param xtarget destination buffer (target positions are marked with '!')
+         * @param xcount number of X's encountered
+         */
+
+        Distributor dist(xcount, dna_dist_size);
+        GB_ERROR    error = dist.get_error();
+        if (!error) {
+            Distributor best(dist);
+
+            while (dist.next()) {
+                if (dist.get_score() > best.get_score()) {
+                    if (!dist.mayFailTranslation() || best.mayFailTranslation()) {
+                        best = dist;
+                    }
+                }
+            }
+
+            if (best.mayFailTranslation()) {
+                if (!best.translates_to_Xs(compressed_dna, with_code)) {
+                    nt_assert(!error);
+                    error = "no translating X-distribution found";
+                    dist.reset();
+                    do {
+                        if (dist.translates_to_Xs(compressed_dna, with_code)) {
+                            best  = dist;
+                            error = NULL;
+                            break;
+                        }
+                    } while (dist.next());
+
+                    while (dist.next()) {
+                        if (dist.get_score() > best.get_score()) {
+                            if (dist.translates_to_Xs(compressed_dna, with_code)) {
+                                best = dist;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!error) {    // now really distribute nucs
+                int off = 0; // offset into compressed_dna
+                for (int x = 0; x<best.size(); ++x) {
+                    while (xtarget[0] != '!') {
+                        nt_assert(xtarget[1] && xtarget[2]); // buffer overflow
+                        xtarget += 3;
+                    }
+
+                    int b;
+                    for (b = 0; b<dist[x]; ++b) xtarget[b] = compressed_dna[off+b];
+                    for (; b<3; ++b)            xtarget[b] = '-';
+
+                    xtarget += 3;
+                    off     += dist[x];
+                }
+            }
+        }
+
+        return error;
+    }
 
 public:
     RealignAttempt(const AWT_allowedCode& allowed_code_, const char *compressed_dna_, size_t compressed_len_, const char *aligned_protein_, char *target_dna_, size_t target_len_)
@@ -483,194 +536,199 @@ public:
           target_dna(target_dna_),
           target_len(target_len_),
           fail_reason(NULL),
-          protein_fail_position(size_t(-1)),
-          dna_fail_position(size_t(-1))
+          protein_fail_at(NULL),
+          dna_fail_at(NULL)
     {}
 
     const AWT_allowedCode& get_remaining_code() const { return allowed_code; }
     const char *failure() const { return fail_reason; }
 
-    size_t get_protein_fail_position() const { nt_assert(failure()); return protein_fail_position; }
-    size_t get_dna_fail_position() const { nt_assert(failure()); return dna_fail_position; }
+    const char *get_protein_fail_at() const { nt_assert(failure()); return protein_fail_at; }
+    const char *get_dna_fail_at() const { nt_assert(failure()); return dna_fail_at; }
 
     GB_ERROR perform() {
-        int         x_count = 0;
-        const char *x_start = 0;
+        int         x_count      = 0;
+        char       *x_start      = NULL; // points into target_dna
+        const char *x_start_prot = NULL; // points into aligned_protein
 
-        const char *compressed_dna_start  = compressed_dna;
-        const char *target_dna_start      = target_dna;
-        const char *aligned_protein_start = aligned_protein;
+        const char *compressed_dna_start = compressed_dna;
+        const char *target_dna_start     = target_dna;
+
+        bool complete = false; // set to true, if recursive attempt succeeds
 
         for (;;) {
             char p = *aligned_protein++;
-            if (!p) {
-                if (x_count) {
-                    int off = -(x_count*3);
-                    while (compressed_dna[0]) {
-                        target_dna[off++] = *compressed_dna++;
-                    }
-                }
-                break;
-            }
 
             if (isGap(p)) {
                 target_dna[0] = target_dna[1] = target_dna[2] = p;
                 target_dna += 3;
             }
             else if (toupper(p)=='X') { // one X represents 1 to 3 DNAs (normally 1 or 2, but 'NNN' translates to 'X')
-                x_start = aligned_protein-1;
-                x_count = 1;
+                x_start      = target_dna;
+                x_start_prot = aligned_protein-1;
+
+                x_count       = 1;
                 int gap_count = 0;
+
+                // @@@ perform by loop below!
+                target_dna[0] = target_dna[1] = target_dna[2] = '!'; // fill X space with marker
+                target_dna += 3;
 
                 for (;;) {
                     char p2 = toupper(aligned_protein[0]);
 
                     if (p2=='X') {
                         x_count++;
+                        target_dna[0] = target_dna[1] = target_dna[2] = '!'; // fill X space with marker
+                    }
+                    else if (isGap(p2)) {
+                        gap_count++;
+                        target_dna[0] = target_dna[1] = target_dna[2] = p2; // insert gap
                     }
                     else {
-                        if (!isGap(p2)) break;
-                        gap_count++;
+                        break;
                     }
                     aligned_protein++;
+                    target_dna += 3;
                 }
-
-                int setgap = (x_count+gap_count)*3;
-                memset(target_dna, '.', setgap);
-                target_dna += setgap;
             }
             else {
-                AWT_allowedCode allowed_code_left;
+                if (x_count) {
+                    int min_dna = x_count;
+                    int max_dna = x_count*3;
 
-                if (x_count) { // synchronize
-                    char protein[SYNC_LENGTH+1];
-                    int count;
-                    {
-                        int off;
+                    size_t written_dna     = target_dna-target_dna_start;
+                    size_t target_rest_len = target_len-written_dna;
 
-                        protein[0] = toupper(p);
-                        for (count=1, off=0; count<SYNC_LENGTH; off++) {
-                            char p2 = aligned_protein[off];
+                    if (p) {
+                        char       *foremost_rest_failure    = NULL;
+                        const char *foremost_protein_fail_at = NULL;
+                        const char *foremost_dna_fail_at     = NULL;
 
-                            if (!isGap(p2)) {
-                                p2 = toupper(p2);
-                                if (p2=='X') break; // can't sync X
-                                protein[count++] = p2;
+                        for (int x_dna = min_dna; x_dna<=max_dna; ++x_dna) { // prefer low amounts of used dna
+                            const char *dna_rest     = compressed_dna+x_dna;
+                            size_t      dna_rest_len = compressed_len - (dna_rest-compressed_dna_start);
+
+                            RealignAttempt attemptRest(allowed_code, dna_rest, dna_rest_len, aligned_protein-1, target_dna, target_rest_len);
+                            GB_ERROR       rest_failed = attemptRest.perform();
+
+                            const char *rest_protein_fail_at = NULL;
+                            const char *rest_dna_fail_at     = NULL;
+
+                            if (rest_failed) {
+                                rest_protein_fail_at = attemptRest.get_protein_fail_at();
+                                rest_dna_fail_at     = attemptRest.get_dna_fail_at();
+                            }
+                            else { // use first success
+                                rest_failed = distribute_xdata(x_dna, x_count, x_start, attemptRest.get_remaining_code());
+                                if (rest_failed) {
+                                    // calculate dna/protein failure position (use start position of succeeded attempt)
+                                    // UNCOVERED(); // @@@ covered, but not used in resulting error message
+                                    rest_protein_fail_at = x_start_prot; // @@@ =start of Xs
+                                    rest_dna_fail_at     = dna_rest;     // @@@ =start of sync (behind Xs)
+                                }
+                                else {
+                                    allowed_code = attemptRest.get_remaining_code();
+                                }
+                            }
+
+                            if (rest_failed) {
+                                nt_assert(rest_protein_fail_at && rest_dna_fail_at); // failure w/o position
+
+                                // track failure with highest fail position:
+                                bool isFarmost = !foremost_rest_failure || foremost_protein_fail_at<rest_protein_fail_at;
+                                if (isFarmost) {
+                                    freedup(foremost_rest_failure, rest_failed);
+                                    foremost_protein_fail_at = rest_protein_fail_at;
+                                    foremost_dna_fail_at     = rest_dna_fail_at;
+                                }
+                            }
+                            else { // success
+                                freenull(foremost_rest_failure);
+                                complete = true;
+                                break; // use first success
                             }
                         }
-                    }
 
-                    nt_assert(count>=1);
-                    protein[count] = 0;
-
-                    nt_assert(!fail_reason);
-
-                    int        catchUp;
-                    SyncResult sync_result = SYNC_UNKNOWN;
-                    if (count<SYNC_LENGTH) {
-                        int  sync_possibilities         = 0;
-                        int *sync_possible_with_catchup = new int[x_count*3+1];
-                        int  maxCatchup                 = x_count*3;
-
-                        catchUp = x_count-1;
-                        for (;;) {
-#define DEST_COMPRESSED_RESTLEN (compressed_len-(compressed_dna-compressed_dna_start))
-                            sync_result = synchronizeCodons(protein, compressed_dna, DEST_COMPRESSED_RESTLEN, catchUp+1, maxCatchup, &catchUp, allowed_code, allowed_code_left);
-                            if (sync_result != SYNC_FOUND) {
-                                break;
+                        if (foremost_rest_failure) {
+                            nt_assert(!complete);
+                            if (strstr(foremost_rest_failure, "sync behind 'X'")) { // do not spam repetitive sync-failures
+                                fail_reason = GBS_static_string(foremost_rest_failure);
                             }
-                            sync_possible_with_catchup[sync_possibilities++] = catchUp;
-                        }
+                            else {
+                                fail_reason = GBS_global_string("Failed to sync behind 'X', best attempt failed with: %s", foremost_rest_failure);
+                            }
+                            freenull(foremost_rest_failure);
 
-                        nt_assert(!fail_reason);
-                        if (sync_possibilities==0) {
-                            fail_reason = sync_result == SYNC_DATA_MISSING ? "not enough dna data" : "no translation found";
-                        }
-                        else if (sync_possibilities>1) {
-                            fail_reason = "multiple realign possibilities found";
+                            // set failure positions
+                            protein_fail_at = foremost_protein_fail_at;
+                            dna_fail_at     = foremost_dna_fail_at;
                         }
                         else {
-                            nt_assert(sync_possibilities==1);
-                            catchUp = sync_possible_with_catchup[0];
+                            nt_assert(complete);
                         }
-                        delete [] sync_possible_with_catchup;
                     }
                     else {
-                        sync_result = synchronizeCodons(protein, compressed_dna, DEST_COMPRESSED_RESTLEN, x_count, x_count*3, &catchUp, allowed_code, allowed_code_left);
-                        if (sync_result != SYNC_FOUND) {
-                            fail_reason = sync_result == SYNC_DATA_MISSING ? "not enough dna data" : "no translation found";
+                        size_t dna_rest_len = compressed_len - (compressed_dna-compressed_dna_start);
+                        max_dna             = std::min(max_dna, int(dna_rest_len));
+
+                        if (min_dna>max_dna) {
+                            fail_reason = "not enough nucs for X's at sequence end";
+                            // @@@ set correct fail position!
                         }
-                    }
-
-                    if (fail_reason) {
-                        fail_reason = GBS_global_string("Can't synchronize after 'X' (%s)", fail_reason);
-                        break;
-                    }
-
-                    allowed_code = allowed_code_left;
-
-                    // copy 'catchUp' characters (they are the content of the found Xs):
-                    {
-                        const char *after = aligned_protein-1;
-                        const char *i;
-                        int off = int(after-x_start);
-                        nt_assert(off>=x_count);
-                        off = -(off*3);
-                        int x_rest = x_count;
-
-                        for (i=x_start; i<after; i++) {
-                            switch (i[0]) {
-                                case 'x':
-                                case 'X':
-                                {
-                                    int take_per_X = catchUp/x_rest;
-                                    int o;
-                                    for (o=0; o<3; o++) {
-                                        if (o<take_per_X) {
-                                            target_dna[off++] = *compressed_dna++;
-                                        }
-                                        else {
-                                            target_dna[off++] = '.';
-                                        }
-                                    }
-                                    x_rest--;
-                                    break;
-                                }
-                                case '.':
-                                case '-':
-                                    target_dna[off++] = i[0];
-                                    target_dna[off++] = i[0];
-                                    target_dna[off++] = i[0];
-                                    break;
-                                default:
-                                    nt_assert(0);
-                                    break;
+                        else {
+                            fail_reason = "internal error: no distribution attempted";
+                            for (int x_dna = max_dna; x_dna>=min_dna && fail_reason; --x_dna) { // prefer high amounts of dna
+                                fail_reason = distribute_xdata(x_dna, x_count, x_start, allowed_code); // @@@ pass/modify usable codes
+                                // @@@ set correct fail position!
                             }
+                            // @@@ clear fail position if !fail_reason
+                        }
+
+                        if (fail_reason) {
+                            // @@@ set correct fail position! (do not set aligned_protein or compressed_dna)
+                            aligned_protein = x_start_prot+1; // report error at start of X's
+                            // compressed_dna should be correct
                         }
                     }
+
+                    if (fail_reason) break;
+
                     x_count = 0;
+                    x_start = NULL;
+
+                    if (complete) break;
                 }
-                else {
-                    const char *why_fail;
+                else if (p) {
+                    AWT_allowedCode  allowed_code_left;
+                    const char      *why_fail;
+
                     if (!AWT_is_codon(p, compressed_dna, allowed_code, allowed_code_left, &why_fail)) {
-                        fail_reason = GBS_global_string("Not a codon (%s)", why_fail);
+                        fail_reason = GBS_global_string("Not a codon: %s", why_fail); // @@@ or wrong codon
                         break;
                     }
 
                     allowed_code = allowed_code_left;
+
+                    // copy one codon:
+                    target_dna[0] = compressed_dna[0];
+                    target_dna[1] = compressed_dna[1];
+                    target_dna[2] = compressed_dna[2];
+
+                    target_dna     += 3;
+                    compressed_dna += 3;
                 }
 
-                // copy one codon:
-                target_dna[0] = compressed_dna[0];
-                target_dna[1] = compressed_dna[1];
-                target_dna[2] = compressed_dna[2];
-
-                target_dna     += 3;
-                compressed_dna += 3;
+                if (!p) {
+                    break; // done
+                }
             }
         }
 
-        if (!failure()) {
+        nt_assert(!x_count || failure());
+
+        if (!failure() && !complete) {
+            // append leftover dna-data (data w/o corresponding aa):
             int inserted = target_dna-target_dna_start;
             int rest     = target_len-inserted;
 
@@ -680,8 +738,10 @@ public:
         }
 
         if (failure()) {
-            protein_fail_position = (aligned_protein-1)-aligned_protein_start+1;
-            dna_fail_position     = compressed_dna-compressed_dna_start;
+            if (!protein_fail_at) { // if no position set above, use current positions
+                protein_fail_at = aligned_protein-1;
+                dna_fail_at     = compressed_dna;
+            }
         }
         else {
             nt_assert(strlen(target_dna_start) == (unsigned)target_len);
@@ -689,6 +749,8 @@ public:
 
         return failure();
     }
+
+
 };
 
 class Realigner {
@@ -757,25 +819,25 @@ public:
             }
             else {
                 if (!ignore_fail_pos) {
-                    int source_fail_pos = attempt.get_protein_fail_position();
+                    int source_fail_pos = attempt.get_protein_fail_at() - source;
                     int dest_fail_pos = 0;
                     {
-                        int fail_d_base_count = attempt.get_dna_fail_position();
+                        int fail_d_base_count = attempt.get_dna_fail_at() - compressed_dest;
 
                         const char *dp = dest;
 
                         for (;;) {
                             char c = *dp++;
 
-                            if (!c) {
-                                nt_assert(c);
+                            if (!c) { // failure at end of sequence
+                                // nt_assert(c);
+                                // dest_fail_pos = (dp-1)-dest+1 +1; // fake a position after last
+                                dest_fail_pos++; // report position behind last non-gap
                                 break;
                             }
                             if (!isGap(c)) {
-                                if (!fail_d_base_count) {
-                                    dest_fail_pos = (dp-1)-dest+1;
-                                    break;
-                                }
+                                dest_fail_pos = (dp-1)-dest+1;
+                                if (!fail_d_base_count) break;
                                 fail_d_base_count--;
                             }
                         }
@@ -1062,21 +1124,20 @@ void TEST_realign() {
             error = realign(gb_main, "ali_pro", "ali_dna", neededLength);
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs,
-                              "Automatic re-align failed for 'StrCoel9'\nReason: Not a codon ('TGG' does never translate to 'T' (1)) at ali_pro:17 / ali_dna:76\n"
-                              "Automatic re-align failed for 'MucRace3'\nReason: Not a codon ('CTC' does not translate to 'T' (for any of the leftover trans-tables: 0)) at ali_pro:11 / ali_dna:28\n"
-                              "Automatic re-align failed for 'AbdGlauc'\nReason: Not a codon ('GTT' does never translate to 'N' (1)) at ali_pro:14 / ali_dna:53\n"
-                              "Automatic re-align failed for 'CddAlbic'\nReason: Not a codon ('AAC' does never translate to 'K' (1)) at ali_pro:10 / ali_dna:15\n");
+                              "Automatic re-align failed for 'BctFra12'\nReason: not enough nucs for X's at sequence end at ali_pro:39 / ali_dna:109\n" // new correct report (got no nucs for 1 X) @@@ prot pos 1 too low!
+                              "Automatic re-align failed for 'StrRamo3'\nReason: not enough nucs for X's at sequence end at ali_pro:35 / ali_dna:106\n" // new correct report (got 3 nucs for 4 Xs) @@@ prot pos 1 too low!
+                );
 
-            TEST_EXPECT_EQUAL(DNASEQ("BctFra12"), "ATGGCTAAAGAGAAA---TTTGAACGTACCAAA---CCGCACGTAAACATTGGTACA---ATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG.........");
-            TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"), "A..TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAACAGTAT......TG....");
-            TEST_EXPECT_EQUAL(DNASEQ("TaxOcell"), "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G..");
-            TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"), "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTC.........CTC.........");
-            TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"), "------------------------------------ATGTCCAAGACGGCGTACGTCCGCCCACCTGAGGCACGATGGCCCGACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTCCTC"); // @@@ fails (see above)
-            TEST_EXPECT_EQUAL(DNASEQ("MucRacem"), "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA......AA.");
-            TEST_EXPECT_EQUAL(DNASEQ("MucRace2"), "ATGGGTAAGGAG---------------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA......AA.");
-            TEST_EXPECT_EQUAL(DNASEQ("MucRace3"), "-----------ATGGGTAAAGAGAAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-----------"); // @@@ fails
-            TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"), "----------------------ATGGGTAAAGAAAAGACTCACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATAAA"); // @@@ fails
-            TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"), "ATGGGTAAAGAAAAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATAAA----------------------"); // @@@ fails
+            TEST_EXPECT_EQUAL(DNASEQ("BctFra12"),    "ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"); // now fails as expected => seq unchanged
+            TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"),    "A--TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAACAGTATT-----G--..."); // now correctly realigns the 2 trailing X's
+            TEST_EXPECT_EQUAL(DNASEQ("TaxOcell"),    "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG-----......"); // ok (manually checked)
+            TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"),    "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTCCTC------------------"); // now fails as expected => seq unchanged
+            TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"),    "ATGTCCAAGACGGCGTACGTCCGCCCAC--C--T--G--A-----GGCACGATGGC-C--C--GACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTCC--T--------C--......"); // performed // @@@ does not translate to 6 + 3 Xs (distribution error?)
+            TEST_EXPECT_EQUAL(DNASEQ("MucRacem"),    "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-......"); // ok (manually checked)
+            TEST_EXPECT_EQUAL(DNASEQ("MucRace2"),    "ATGGGTAAGGAG---------------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-......"); // ok (manually checked)
+            TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "ATGGGTAAAGA-G--------------AAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-......"); // fixed by rewrite (manually checked)
+            TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"),    "ATGGGTAAAGA-A--A--A--G--A--C--T--CACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATAAA-......"); // fixed by rewrite (manually checked)
+            TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATGGGTAA-A--GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATAAA-......"); // performed // @@@ but does not translate 3 Xs near start (distribution error?)
         }
         // -----------------------------
         //      provoke some errors
@@ -1122,10 +1183,16 @@ void TEST_realign() {
             realign_check seq[] = {
                 //"XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-.." // original aa sequence
                 // { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "sdfjlksdjf" }, // templ
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G.." }, // original (@@@ why is the final 'G' so far to the right end?)
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHG---..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGT---------......" }, // missing some AA at right end -> @@@ DNA gets truncated (should be appended)
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH-----..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCAC---------------......" }, // same
-                // { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "---------AGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G.." }, // missing some AA at left end (@@@ should work similar to AA missing at right end)
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG-----......" }, // original
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHG---..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGT---------......" }, // missing some AA at right end -> @@@ DNA gets truncated (should be appended)
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH-----..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCAC---------------......" }, // @@@ same
+
+                // { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "---------AGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G.." }, // missing some AA at left end (@@@ should work similar to AA missing at right end. fails: see below)
+                { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTTTTGACCGGTCC--A--A--GCCGCACG-T--AAACATCGGCACGATCGGTCACGTG--G--A--CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG--" }, // @@@ wrong realignment
+                { "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX-", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT---CGGTCACGTG--G--A-----CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG-----" }, // @@@ wrong realignment
+                { "XG*SNXLXRXQA-ARNHRHD-RXXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTT-TTGAC-CGGTC-CAAGCC---GCACGTAAACATCGGCACGAT---CGGTCAC--GTGGA----CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG--" }, // @@@ 'CGGTCAC--' -> 'RSX' (want: 'RXX')
+                { "XG*SXXFXDXVQAXT*TSARXRSXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGAAA-C--TTTT--GACCG-GTCCAAGCCGC-ACGTAAACATCGGCACGAT--CGGTCAC--GTGGA----CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG--" }, // @@@ check
+
                 { 0, 0 }
             };
 
@@ -1182,20 +1249,16 @@ void TEST_realign() {
                 // { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "sdfjlksdjf" }, // templ
 
                 // wanted realign failures:
-                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Can't synchronize after 'X' (multiple realign possibilities found) at ali_pro:12 / ali_dna:19\n" },           // ok to fail
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Alignment 'ali_dna' is too short (increase its length to 252)\n" }, // ok to fail
-                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Can't synchronize after 'X' (no translation found) at ali_pro:25 / ali_dna:61\n" },                           // ok to fail
-                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Can't synchronize after 'X' (no translation found) at ali_pro:8 / ali_dna:16\n" },                            // ok to fail
-                { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon ('TAA' does not translate to '*' (no trans-table left)) at ali_pro:3 / ali_dna:7\n" },            // ok to fail
-                { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Not a codon ('CGG' does never translate to 'G' (1)) at ali_pro:24 / ali_dna:61\n" },                          // ok to fail (some AA missing in the middle)
-                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Can't synchronize after 'X' (not enough dna data) at ali_pro:38 / ali_dna:124\n" },                           // ok to fail (too many AA)
+                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'TCA' does never translate to 'P' at ali_pro:24 / ali_dna:64\n" },   // ok to fail: 5 Xs impossible               @@@ dna position wrong ('TCA' is @ 74)
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Alignment 'ali_dna' is too short (increase its length to 252)\n" },                          // ok to fail: wrong alignment length
+                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'TCA' does never translate to 'P' at ali_pro:24 / ali_dna:64\n" },   // ok to fail                                @@@ dna position wrong ('TCA' is @ 74)
+                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'TTT' translates to 'F', not to 'A' at ali_pro:7 / ali_dna:17\n" },  // ok to fail                                @@@ dna position wrong ('TTT' is @ 32 & 33)
+                { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'CAC' translates to 'H', not to 'R' at ali_pro:12 / ali_dna:35\n" }, // ok to fail                                @@@ dna position wrong ('CAC' is @ 51)
+                { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'CGG' translates to 'R', not to 'G' at ali_pro:23 / ali_dna:61\n" }, // ok to fail: some AA missing in the middle @@@ dna position wrong ('CGG' is @ 62)
+                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Failed to sync behind 'X', best attempt failed with: Not a codon: Not enough nucleotides (got '') at ali_pro:37 / ali_dna:116\n" },    // ok to fail: too many AA
 
                 // failing realignments that should work:
-                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon ('ATG' does never translate to 'S' (1)) at ali_pro:4 / ali_dna:1\n" },                   // should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
-                { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "Can't synchronize after 'X' (multiple realign possibilities found) at ali_pro:13 / ali_dna:19\n" },  // @@@ should succeed
-                { "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX-", "Not a codon ('AAA' does never translate to 'R' (2)) at ali_pro:28 / ali_dna:80\n" },                 // @@@ should succeed
-                { "XG*SNXLXRXQA-ARNHRHD-RXXVX-PRQNDSDRCYHHGAX", "Not a codon ('AAA' does not translate to 'N' (no trans-table left)) at ali_pro:16 / ali_dna:40\n" }, // @@@ should succeed
-                { "XG*SXXFXDXVQAXT*TSARXRSXVX-PRQNDSDRCYHHGAX", "Not a codon ('TAA' does not translate to '*' (no trans-table left)) at ali_pro:3 / ali_dna:7\n" },   // @@@ should succeed
+                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon: 'ATG' translates to 'M', not to 'S' at ali_pro:3 / ali_dna:1\n" },                      // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
 
                 { 0, 0 }
             };

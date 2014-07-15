@@ -517,12 +517,12 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
             }
             else {
                 allowed_code_left.forbidAll();
-                fail_reason = GBS_global_string("'%c%c%c' does never translate to '%c' (1)", dna[0], dna[1], dna[2], protein);
+                fail_reason = GBS_global_string("'%c%c%c' translates to '%c', not to '%c'", dna[0], dna[1], dna[2], definite_translation[codon_nr], protein);
             }
         }
         else if (strchr(ambiguous_codons[codon_nr], protein)==0) {
             allowed_code_left.forbidAll();
-            fail_reason = GBS_global_string("'%c%c%c' does never translate to '%c' (2)", dna[0], dna[1], dna[2], protein);
+            fail_reason = GBS_global_string("'%c%c%c' does never translate to '%c'", dna[0], dna[1], dna[2], protein);
         }
         else {
 #if defined(ASSERTION_USED)
