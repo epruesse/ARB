@@ -652,11 +652,11 @@ public:
 
                         if (foremost_rest_failure) {
                             nt_assert(!complete);
-                            if (strstr(foremost_rest_failure, "sync behind 'X'")) { // do not spam repetitive sync-failures
+                            if (strstr(foremost_rest_failure, "Sync behind 'X'")) { // do not spam repetitive sync-failures
                                 fail_reason = GBS_static_string(foremost_rest_failure);
                             }
                             else {
-                                fail_reason = GBS_global_string("Failed to sync behind 'X', best attempt failed with: %s", foremost_rest_failure);
+                                fail_reason = GBS_global_string("Sync behind 'X' failed foremost with: %s", foremost_rest_failure);
                             }
                             freenull(foremost_rest_failure);
 
@@ -704,7 +704,7 @@ public:
                     const char      *why_fail;
 
                     if (!AWT_is_codon(p, compressed_dna, allowed_code, allowed_code_left, &why_fail)) {
-                        fail_reason = GBS_global_string("Not a codon: %s", why_fail); // @@@ or wrong codon
+                        fail_reason = why_fail;
                         break;
                     }
 
@@ -1249,16 +1249,16 @@ void TEST_realign() {
                 // { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "sdfjlksdjf" }, // templ
 
                 // wanted realign failures:
-                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'TCA' does never translate to 'P' at ali_pro:25 / ali_dna:64\n" },   // ok to fail: 5 Xs impossible               @@@ dna position wrong ('TCA' is @ 74)
+                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TCA' does never translate to 'P' at ali_pro:25 / ali_dna:64\n" },   // ok to fail: 5 Xs impossible               @@@ dna position wrong ('TCA' is @ 74)
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Alignment 'ali_dna' is too short (increase its length to 252)\n" },                          // ok to fail: wrong alignment length
-                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'TCA' does never translate to 'P' at ali_pro:25 / ali_dna:64\n" },   // ok to fail                                @@@ dna position wrong ('TCA' is @ 74)
-                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'TTT' translates to 'F', not to 'A' at ali_pro:8 / ali_dna:17\n" },  // ok to fail                                @@@ dna position wrong ('TTT' is @ 32 & 33)
-                { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'CAC' translates to 'H', not to 'R' at ali_pro:13 / ali_dna:35\n" }, // ok to fail                                @@@ dna position wrong ('CAC' is @ 51)
-                { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Failed to sync behind 'X', best attempt failed with: Not a codon: 'CGG' translates to 'R', not to 'G' at ali_pro:24 / ali_dna:61\n" }, // ok to fail: some AA missing in the middle @@@ dna position wrong ('CGG' is @ 62)
-                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Failed to sync behind 'X', best attempt failed with: Not a codon: Not enough nucleotides (got '') at ali_pro:38 / ali_dna:116\n" },    // ok to fail: too many AA
+                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TCA' does never translate to 'P' at ali_pro:25 / ali_dna:64\n" },   // ok to fail                                @@@ dna position wrong ('TCA' is @ 74)
+                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TTT' translates to 'F', not to 'A' at ali_pro:8 / ali_dna:17\n" },  // ok to fail                                @@@ dna position wrong ('TTT' is @ 32 & 33)
+                { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CAC' translates to 'H', not to 'R' at ali_pro:13 / ali_dna:35\n" }, // ok to fail                                @@@ dna position wrong ('CAC' is @ 51)
+                { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CGG' translates to 'R', not to 'G' at ali_pro:24 / ali_dna:61\n" }, // ok to fail: some AA missing in the middle @@@ dna position wrong ('CGG' is @ 62)
+                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Sync behind 'X' failed foremost with: Not enough nucleotides (got '') at ali_pro:38 / ali_dna:116\n" },    // ok to fail: too many AA
 
                 // failing realignments that should work:
-                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon: 'ATG' translates to 'M', not to 'S' at ali_pro:4 / ali_dna:1\n" },                      // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
+                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "'ATG' translates to 'M', not to 'S' at ali_pro:4 / ali_dna:1\n" },                      // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
 
                 { 0, 0 }
             };
