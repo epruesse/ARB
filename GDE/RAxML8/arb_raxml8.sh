@@ -98,13 +98,13 @@ dna_tree_thorough() {
         -z RAxML_bootstrap.BOOTSTRAP \
         -n ML_TREE_WITH_SUPPORT
     # import
-    arb_read_tree tree_raxml_ml_with_support RAxML_bipartitions.ML_TREE_WITH_SUPPORT
+    arb_read_tree tree_raxml RAxML_bipartitions.ML_TREE_WITH_SUPPORT
 
     # compute extended majority rule consensus
     $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.BOOTSTRAP -n BOOTSTRAP_CONSENSUS
    
     # import
-    arb_read_tree tree_raxml_bs_consensus RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS
+    arb_read_tree tree_raxml_mre RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS
 }
 
 # this is the fast protocol
@@ -117,7 +117,8 @@ dna_tree_quick() {
     # create consensus tree
     $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.FAST_BS -n FAST_BS_MAJORITY
     # import
-    arb_read_tree tree_raxml_fast_bs_consensus RAxML_MajorityRuleExtendedConsensusTree.FAST_BS_MAJORITY
+    arb_read_tree tree_raxml RAxML_bipartitions.FAST_BS
+    arb_read_tree tree_raxml_mre RAxML_MajorityRuleExtendedConsensusTree.FAST_BS_MAJORITY
 }   
 
 calc_mem_size() {
@@ -197,7 +198,6 @@ rm $FILE
 
 cd "$DIR"
 
-
 # select RAxML binary
 if cpu_has_feature avx && can_run raxmlHPC8-AVX.PTHREADS; then
     RAXML=raxmlHPC8-AVX.PTHREADS
@@ -209,10 +209,25 @@ else
     report_error Could not find working RAxML binary. 
 fi
 
-# calculate number of threads (if not passed)
+# get some numbers
 CORES=`cpu_get_cores`
+BP=`head -n 1 $SEQFILE | cut -c 16-`
+NSEQS=`head -n 1 $SEQFILE | cut -c 1-16`
+
+# warn if model does not match sequence number
+if [ "$MODEL" == "GTRRAMMA" -a $NSEQS -gt 10000 ]; then
+    arb_message "Using the GTRGAMMA model on more than 10,000 sequences." \
+        "This is not considered good practice. Please refer to " \
+        "the RAxML manual for details."
+fi
+if [ "$MODEL" == "GTRCAT" -a -$NSEQS -lt 150 ]; then
+    arb_message "Using the GTRCAT model on less than 150 sequences." \
+        "This is not considered good practice. Please refer to " \
+        "the RAxML manual for details."
+fi
+
+# calculate number of threads (if not passed)
 if [ -z "$THREADS" ]; then
-    BP=`head -n 1 $SEQFILE | cut -c 16-`
     THREADS=$(( $BP / $BASES_PER_THREAD + 2))
     # +1 is for master thread,
     # another +1 for the first $BASES_PER_THREAD (bash truncates)
