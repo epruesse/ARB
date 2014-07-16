@@ -18,6 +18,7 @@
 #include "gb_memory.h"
 #endif
 
+struct gb_callback_list;
 
 // --------------------------------------------------------------------------------
 
@@ -55,7 +56,7 @@ union gb_data_base_type_union {
 struct gb_db_extended {
     long                 creation_date;
     long                 update_date;
-    struct gb_callback  *callback;
+    gb_callback_list    *callback;
     gb_transaction_save *old;
 };
 
@@ -73,10 +74,10 @@ struct gb_flag_types {                                                  // publi
     unsigned int saved_flags : 8;
 };
 
-struct gb_flag_types2 {                                                 // private flags, abortable
+struct gb_flag_types2 { // private flags (DB server and each client have their own copy!), abortable
     // uncritical section, undoable
     unsigned int last_updated : 8;
-    unsigned int usr_ref : 7;                                           // for user access
+    unsigned int user_bits : 7;                                         // user flags (see GB_USERFLAG_...)
     // critic section, do not update any below
     unsigned int folded_container : 1;
     unsigned int update_in_server : 1;                                  // already informed
@@ -186,7 +187,7 @@ struct GBDATA {
     long creation_date() const { return ext ? ext->creation_date : 0; }
     long update_date()   const { return ext ? ext->update_date   : 0; }
 
-    gb_callback *get_callbacks() const { return ext ? ext->callback : NULL; }
+    gb_callback_list *get_callbacks() const { return ext ? ext->callback : NULL; }
     gb_transaction_save *get_oldData() const { return ext ? ext->old : 0; }
 };
 
@@ -312,6 +313,10 @@ inline void gb_abort_transaction_local_rek(GBCONTAINER*& gbc) {
 }
 
 // --------------------------------------------------------------------------------
+
+#ifndef GB_STORAGE_H
+#include "gb_storage.h"
+#endif
 
 #else
 #error gb_data.h included twice

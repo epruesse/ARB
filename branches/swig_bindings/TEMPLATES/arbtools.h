@@ -25,12 +25,20 @@
 //  Base class for classes that may not be copied, neither via copy
 //  constructor or assignment operator.
 
+#ifdef Cxx11
+struct Noncopyable {
+    Noncopyable(const Noncopyable& other) = delete;
+    Noncopyable& operator= (const Noncopyable&) = delete;
+    Noncopyable() {}
+};
+#else
 class Noncopyable {
     Noncopyable(const Noncopyable&);
-    Noncopyable& operator=(const Noncopyable&);
+    Noncopyable& operator = (const Noncopyable&);
 public:
     Noncopyable() {}
 };
+#endif
 
 
 // helper macros to make inplace-reconstruction less obfuscated
@@ -114,6 +122,19 @@ public:
     BASE*& forward() { return forwarded_ptr; }
 };
 
+// NAN/INF checks
+// replace c99 macros isnan, isnormal and isinf. isinf is broken for gcc 4.4.3; see ../CORE/arb_diff.cxx@isinf
+
+template <typename T> inline bool is_nan(const T& n) { return n != n; }
+template <typename T> inline bool is_nan_or_inf(const T& n) { return is_nan(0*n); }
+template <typename T> inline bool is_normal(const T& n) { return n != 0 && !is_nan_or_inf(n); }
+template <typename T> inline bool is_inf(const T& n) { return !is_nan(n) && is_nan_or_inf(n); }
+
+inline int double_cmp(const double d1, const double d2) {
+    /*! returns <0 if d1<d2, >0 if d1>d2 (i.e. this function behaves like strcmp) */
+    double d = d1-d2;
+    return d<0 ? -1 : (d>0 ? 1 : 0);
+}
 
 #else
 #error arbtools.h included twice

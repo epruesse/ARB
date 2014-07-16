@@ -22,22 +22,7 @@
 
 #include <Xm/List.h>
 
-static int AW_sort_AW_select_table_struct(const void *t1, const void *t2, void *) {
-    return strcmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
-                  static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
-}
-static int AW_sort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
-    return strcmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
-                  static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
-}
-static int AW_isort_AW_select_table_struct(const void *t1, const void *t2, void *) {
-    return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
-                       static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
-}
-static int AW_isort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
-    return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
-                       static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
-}
+__ATTR__NORETURN inline void selection_type_mismatch(const char *triedType) { type_mismatch(triedType, "selection-list"); }
 
 // --------------------------
 //      AW_selection_list
@@ -52,6 +37,11 @@ AW_selection_list::AW_selection_list(const char *variable_namei, int variable_ty
     list_table             = NULL;
     last_of_list_table     = NULL;
     default_select         = NULL;
+}
+
+AW_selection_list::~AW_selection_list() {
+    clear();
+    free(variable_name);
 }
 
 inline XmString XmStringCreateSimple_wrapper(const char *text) {
@@ -186,29 +176,36 @@ void AW_selection::refresh() {
     get_sellist()->update();
 }
 
-void AW_selection_list::clear(bool clear_default) {
+void AW_selection_list::clear() {
+    /** Remove all items from the list. Default item is removed as well.*/
     while (list_table) {
         AW_selection_list_entry *nextEntry = list_table->next;
         delete list_table;
         list_table = nextEntry;
     }
-    list_table = NULL;
+    list_table         = NULL;
     last_of_list_table = NULL;
 
-    if (clear_default && default_select) {
-        delete default_select;
-        default_select = NULL;
-    }
+    delete_default();
 }
 
 bool AW_selection_list::default_is_selected() const {
-    return strcmp(get_selected_value(), get_default_value()) == 0;
+    const char *sel = get_selected_value();
+    if (!sel) {
+        // (case should be impossible in gtk port)
+        return true; // handle "nothing" like default
+    }
+
+    const char *def = get_default_value();
+    return def && (strcmp(sel, def) == 0);
 }
 
 const char *AW_selection_list::get_selected_value() const {
     int                      i;
     AW_selection_list_entry *lt;
     AW_selection_list_entry *found = 0;
+
+    aw_assert(select_list_widget);
     
     for (i=1, lt = list_table; lt; i++, lt = lt->next) {
         lt->is_selected = XmListPosSelected(select_list_widget, i);
@@ -222,13 +219,18 @@ const char *AW_selection_list::get_selected_value() const {
     return found ? found->value.get_string() : NULL;
 }
 
-AW_selection_list_entry *AW_selection_list::get_entry_at(int index) {
+AW_selection_list_entry *AW_selection_list::get_entry_at(int index) const {
     AW_selection_list_entry *entry = list_table;
     while (index && entry) {
         entry = entry->next;
         index--;
     }
     return entry;
+}
+
+
+void AW_selection_list::select_default() {
+    set_awar_value(get_default_value());
 }
 
 void AW_selection_list::delete_element_at(const int index) {
@@ -258,7 +260,8 @@ void AW_selection_list::delete_value(const char *value) {
 }
 
 const char *AW_selection_list::get_awar_value() const {
-    return AW_root::SINGLETON->awar(variable_name)->read_char_pntr();
+    AW_awar *awar = AW_root::SINGLETON->awar(variable_name);
+    return awar->read_char_pntr();
 }
 
 char *AW_selection_list::get_content_as_string(long number_of_lines) {
@@ -302,51 +305,44 @@ int AW_selection_list::get_index_of_selected() {
     return get_index_of(awar_value);
 }
 
-int AW_selection_list::get_index_of_displayed(const char *displayed) {
-    /*! get index of an entry in the selection list
-     * @return 0..n-1 index of first element displaying displayed (or -1)
-     */
-    int                        element_index = 0;
-    AW_selection_list_iterator entry(this);
-
-    while (entry) {
-        if (strcmp(entry.get_displayed(), displayed) == 0) break;
-        ++element_index;
-    }
-
-    return element_index;
-}
-
-void AW_selection_list::init_from_array(const CharPtrArray& entries, const char *defaultEntry) {
+void AW_selection_list::init_from_array(const CharPtrArray& entries, const char *default_displayed, const char *default_value) {
     // update selection list with contents of NULL-terminated array 'entries'
-    // 'defaultEntry' is used as default selection
+    //
+    // 'default_displayed' and 'default_value' are used as default selection.
+    // To position the default selection, add 'default_value' to 'entries' as well.
+    //
     // awar value will be changed to 'defaultEntry' if it does not match any other entry
+    //
     // Note: This works only with selection lists bound to AW_STRING awars.
 
-    aw_assert(defaultEntry);
-    char *defaultEntryCopy = strdup(defaultEntry); // use a copy (just in case defaultEntry point to a value free'd by clear_selection_list())
-    bool  defInserted      = false;
+    aw_assert(default_displayed);
+    aw_assert(default_value);
+
+    // use copies (just in case default_* points to a value free'd by clear())
+    char *defaultDispCopy  = strdup(default_displayed);
+    char *defaultValueCopy = strdup(default_value);
+
+    bool defInserted = false;
 
     clear();
     for (int i = 0; entries[i]; ++i) {
-        if (!defInserted && strcmp(entries[i], defaultEntryCopy) == 0) {
-            insert_default(defaultEntryCopy, defaultEntryCopy);
+        if (!defInserted && strcmp(entries[i], defaultValueCopy) == 0) {
+            insert_default(defaultDispCopy, defaultValueCopy);
             defInserted = true;
         }
         else {
             insert(entries[i], entries[i]);
         }
     }
-    if (!defInserted) insert_default(defaultEntryCopy, defaultEntryCopy);
+    if (!defInserted) insert_default(defaultDispCopy, defaultValueCopy);
     update();
 
     const char *selected = get_selected_value();
     if (selected) set_awar_value(selected);
 
-    free(defaultEntryCopy);
+    free(defaultValueCopy);
+    free(defaultDispCopy);
 }
-
-__ATTR__NORETURN inline void selection_type_mismatch(const char *triedType) { type_mismatch(triedType, "selection-list"); }
 
 void AW_selection_list::insert(const char *displayed, const char *value) {
     if (variable_type != AW_STRING) {
@@ -364,13 +360,20 @@ void AW_selection_list::insert(const char *displayed, const char *value) {
     }
 }
 
+void AW_selection_list::delete_default() {
+    /** Removes the default entry from the list*/
+    if (default_select) {
+        delete default_select;
+        default_select = NULL;
+    }
+}
 
 void AW_selection_list::insert_default(const char *displayed, const char *value) {
     if (variable_type != AW_STRING) {
         selection_type_mismatch("string");
         return;
     }
-    if (default_select) delete default_select;
+    if (default_select) delete_default();
     default_select = new AW_selection_list_entry(displayed, value);
 }
 
@@ -394,9 +397,7 @@ void AW_selection_list::insert_default(const char *displayed, int32_t value) {
         selection_type_mismatch("int");
         return;
     }
-    if (default_select) {
-        delete default_select;
-    }
+    if (default_select) delete_default();
     default_select = new AW_selection_list_entry(displayed, value);
 }
 
@@ -421,30 +422,40 @@ void AW_selection_list::insert_default(const char *displayed, GBDATA *pointer) {
         selection_type_mismatch("pointer");
         return;
     }
-    if (default_select) delete default_select;
+    if (default_select) delete_default();
     default_select = new AW_selection_list_entry(displayed, pointer);
 }
 
 
 void AW_selection_list::move_content_to(AW_selection_list *target_list) {
-    // @@@ instead of COPYING, it could simply move the entries (may cause problems with iterator)
+    //! move all entries (despite default entry) to another AW_selection_list
 
-    AW_selection_list_entry *entry = list_table;
-    while (entry) {
-        aw_assert(default_select != entry); // should not be possible
+    if (default_select) {
+        char *defDisp = strdup(default_select->get_displayed());
+        char *defVal  = strdup(default_select->value.get_string());
 
-        if (!target_list->list_table) {
-            target_list->last_of_list_table = target_list->list_table = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
-        }
-        else {
-            target_list->last_of_list_table->next = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
-            target_list->last_of_list_table = target_list->last_of_list_table->next;
-            target_list->last_of_list_table->next = NULL;
-        }
-        entry = entry->next;
+        delete_default();
+        move_content_to(target_list);
+        insert_default(defDisp, defVal);
+
+        free(defVal);
+        free(defDisp);
     }
-
-    clear(false);
+    else {
+        AW_selection_list_entry *entry = list_table;
+        while (entry) {
+            if (!target_list->list_table) {
+                target_list->last_of_list_table = target_list->list_table = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
+            }
+            else {
+                target_list->last_of_list_table->next = new AW_selection_list_entry(entry->get_displayed(), entry->value.get_string());
+                target_list->last_of_list_table = target_list->last_of_list_table->next;
+                target_list->last_of_list_table->next = NULL;
+            }
+            entry = entry->next;
+        }
+        clear();
+    }
 }
 
 void AW_selection_list::move_selection(int offset) {
@@ -476,7 +487,8 @@ void AW_selection_list::select_element_at(int wanted_index) {
 }
 
 void AW_selection_list::set_awar_value(const char *new_value) {
-    AW_root::SINGLETON->awar(variable_name)->write_string(new_value);
+    AW_awar *awar = AW_root::SINGLETON->awar(variable_name);
+    awar->write_string(new_value);
 }
 
 void AW_selection_list::set_file_suffix(const char *suffix) {
@@ -499,7 +511,17 @@ size_t AW_selection_list::size() {
     return count;
 }
 
-void AW_selection_list::sort(bool backward, bool case_sensitive) {
+static int sel_sort_backward(const char *d1, const char *d2) { return strcmp(d2, d1); }
+static int sel_isort_backward(const char *d1, const char *d2) { return ARB_stricmp(d2, d1); }
+static int gb_compare_function__2__sellist_cmp_fun(const void *t1, const void *t2, void *v_selcmp) {
+    sellist_cmp_fun selcmp = (sellist_cmp_fun)v_selcmp;
+    return selcmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
+                  static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
+}
+
+void AW_selection_list::sortCustom(sellist_cmp_fun cmp) {
+    // WARNING: function behaves different in motif and gtk:
+    // gtk also sorts default-element, motif always places default-element @ bottom
     size_t count = size();
     if (count) {
         AW_selection_list_entry **tables = new AW_selection_list_entry *[count];
@@ -508,17 +530,7 @@ void AW_selection_list::sort(bool backward, bool case_sensitive) {
             tables[count++] = lt;
         }
 
-        gb_compare_function comparator;
-        if (backward) {
-            if (case_sensitive) comparator = AW_sort_AW_select_table_struct_backward;
-            else comparator                = AW_isort_AW_select_table_struct_backward;
-        }
-        else {
-            if (case_sensitive) comparator = AW_sort_AW_select_table_struct;
-            else comparator                = AW_isort_AW_select_table_struct;
-        }
-
-        GB_sort((void**)tables, 0, count, comparator, 0);
+        GB_sort((void**)tables, 0, count, gb_compare_function__2__sellist_cmp_fun, (void*)cmp);
 
         size_t i;
         for (i=0; i<count-1; i++) {
@@ -532,9 +544,23 @@ void AW_selection_list::sort(bool backward, bool case_sensitive) {
     }
 }
 
+void AW_selection_list::sort(bool backward, bool case_sensitive) {
+    // WARNING: function behaves different in motif and gtk:
+    // gtk also sorts default-element, motif always places default-element @ bottom
+    sellist_cmp_fun cmp;
+    if (backward) {
+        if (case_sensitive) cmp = sel_sort_backward;
+        else cmp                = sel_isort_backward;
+    }
+    else {
+        if (case_sensitive) cmp = strcmp;
+        else cmp                = ARB_stricmp;
+    }
+    sortCustom(cmp);
+}
+
 void AW_selection_list::to_array(StrArray& array, bool values) {
     /*! read contents of selection list into an array.
-     * @param array contents are stored here
      * @param values true->read values, false->read displayed strings
      * Use GBT_free_names() to free the result.
      *
@@ -589,22 +615,6 @@ char *AW_selection_list_entry::copy_string_for_display(const char *str) {
     return out;
 }
 
-void AW_selection_list::selectAll() {
-    int i;
-    AW_selection_list_entry *lt;
-    for (i=0, lt = list_table; lt; i++, lt = lt->next) {
-        XmListSelectPos(select_list_widget, i, False);
-    }
-    if (default_select) {
-        XmListSelectPos(select_list_widget, i, False);
-    }
-}
-
-void AW_selection_list::deselectAll() {
-    XmListDeselectAllItems(select_list_widget);
-}
-
-
 // -------------------------
 //      AW_DB_selection
 
@@ -624,4 +634,151 @@ AW_DB_selection::~AW_DB_selection() {
     GB_transaction ta(gbd);
     GB_remove_callback(gbd, GB_CB_CHANGED, makeDatabaseCallback(AW_DB_selection_refresh_cb, this));
 }
+
+GBDATA *AW_DB_selection::get_gb_main() {
+    return GB_get_root(gbd);
+}
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+#define TEST_LIST_CONTENT(list,values,expected) do {    \
+        StrArray a;                                     \
+        (list).to_array(a, values);                     \
+        char *str = GBT_join_names(a, ';');             \
+        TEST_EXPECT_EQUAL(str, expected);               \
+        free(str);                                      \
+    } while(0)
+
+#define TEST_GET_LIST_CONTENT(list,expected) do {       \
+        char *str = (list).get_content_as_string(10);   \
+        TEST_EXPECT_EQUAL(str, expected);               \
+        free(str);                                      \
+    } while(0)
+
+void TEST_selection_list_access() {
+#if defined(ARB_GTK)
+    AW_selection_list list0(NULL, false);
+    AW_selection_list list1(NULL, false);
+    AW_selection_list list2(NULL, false);
+#else // ARB_MOTIF
+    AW_selection_list list0("bla", GB_STRING, NULL);
+    AW_selection_list list1("bla", GB_STRING, NULL);
+    AW_selection_list list2("alb", GB_STRING, NULL);
+#endif
+
+    list0.insert_default("First", "1st");
+    list0.insert("Second", "2nd");
+    list0.insert("Third", "3rd");
+
+    list1.insert("First", "1st");
+    list1.insert_default("Second", "2nd");
+    list1.insert("Third", "3rd");
+
+    list2.insert("First", "1st");
+    list2.insert("Second", "2nd");
+    list2.insert("Third", "3rd");
+    list2.insert_default("Default", "");
+
+    TEST_EXPECT_EQUAL(list0.size(), 2);
+    TEST_EXPECT_EQUAL(list1.size(), 2);
+    TEST_EXPECT_EQUAL(list2.size(), 3);
+
+    TEST_EXPECT_EQUAL(list1.get_default_value(), "2nd");
+    TEST_EXPECT_EQUAL(list1.get_default_display(), "Second");
+
+    TEST_EXPECT_EQUAL(list0.get_index_of("1st"), -1); // default value is not indexed
+    TEST_EXPECT_EQUAL(list0.get_index_of("2nd"), 0);
+    TEST_EXPECT_EQUAL(list0.get_index_of("3rd"), 1);  // = second non-default entry
+
+    TEST_EXPECT_EQUAL(list1.get_index_of("1st"), 0);
+    TEST_EXPECT_EQUAL(list1.get_index_of("2nd"), -1); // default value is not indexed
+    TEST_EXPECT_EQUAL(list1.get_index_of("3rd"), 1);  // = second non-default entry
+
+    TEST_EXPECT_EQUAL(list2.get_index_of("1st"), 0);
+    TEST_EXPECT_EQUAL(list2.get_index_of("2nd"), 1);
+    TEST_EXPECT_EQUAL(list2.get_index_of("3rd"), 2);
+
+
+    TEST_EXPECT_EQUAL(list0.get_value_at(0), "2nd");
+    TEST_EXPECT_EQUAL(list0.get_value_at(1), "3rd");
+    TEST_EXPECT_NULL(list0.get_value_at(2));
+
+    TEST_EXPECT_EQUAL(list1.get_value_at(0), "1st");
+    TEST_EXPECT_EQUAL(list1.get_value_at(1), "3rd");
+    TEST_EXPECT_NULL(list1.get_value_at(2));
+
+    TEST_EXPECT_EQUAL(list2.get_value_at(0), "1st");
+    TEST_EXPECT_EQUAL(list2.get_value_at(1), "2nd");
+    TEST_EXPECT_EQUAL(list2.get_value_at(2), "3rd");
+    TEST_EXPECT_NULL(list2.get_value_at(3));
+
+    TEST_LIST_CONTENT(list1, true,  "1st;3rd");
+    TEST_LIST_CONTENT(list1, false, "First;Third");
+    TEST_GET_LIST_CONTENT(list1,    "First\nThird\n");
+
+    TEST_LIST_CONTENT(list2, true,  "1st;2nd;3rd");
+    TEST_LIST_CONTENT(list2, false, "First;Second;Third");
+    TEST_GET_LIST_CONTENT(list2,    "First\nSecond\nThird\n");
+
+    {
+        AW_selection_list_iterator iter1(&list1);
+        AW_selection_list_iterator iter2(&list2);
+
+        TEST_EXPECT(bool(iter1));
+        TEST_EXPECT(bool(iter2));
+
+        TEST_EXPECT_EQUAL(iter1.get_displayed(), "First");
+        TEST_EXPECT_EQUAL(iter2.get_displayed(), "First");
+
+        TEST_EXPECT_EQUAL(iter1.get_value(), "1st");
+        TEST_EXPECT_EQUAL(iter2.get_value(), "1st");
+
+        ++iter1;
+        ++iter2;
+
+        TEST_EXPECT(bool(iter1));
+        TEST_EXPECT(bool(iter2));
+
+        TEST_EXPECT_EQUAL(iter1.get_displayed(), "Third");
+        TEST_EXPECT_EQUAL(iter2.get_displayed(), "Second");
+
+        TEST_EXPECT_EQUAL(iter1.get_value(), "3rd");
+        TEST_EXPECT_EQUAL(iter2.get_value(), "2nd");
+
+        ++iter1;
+        ++iter2;
+
+        TEST_REJECT(bool(iter1));
+        TEST_EXPECT(bool(iter2));
+    }
+
+    {
+#if defined(ARB_GTK)
+        AW_selection_list copy1(NULL, false);
+        AW_selection_list copy2(NULL, false);
+#else // ARB_MOTIF
+        AW_selection_list copy1("c1", GB_STRING, NULL);
+        AW_selection_list copy2("c2", GB_STRING, NULL);
+#endif
+
+        list1.move_content_to(&copy1);
+        list2.move_content_to(&copy2);
+
+        TEST_EXPECT_EQUAL(list1.size(), 0);
+        TEST_EXPECT_EQUAL(list2.size(), 0);
+
+        TEST_LIST_CONTENT(copy1, true, "1st;3rd");
+        TEST_LIST_CONTENT(copy2, true, "1st;2nd;3rd");
+    }
+}
+TEST_PUBLISH(TEST_selection_list_access);
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
 

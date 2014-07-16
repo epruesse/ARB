@@ -153,8 +153,8 @@ static bool ED4_show_protein_match_on_device(AW_device *device, int gc, const ch
     /*! \brief Calls ED4_pfold_calculate_secstruct_match() for the visible area in the
      *         editor to compute the protein secondary structure match and outputs the
      *         result to the device.
-     *  \param[in] protstruct        The protein structure (primary or secondary) that should be compared to \a global_protstruct
-     *  \param[in] global_protstruct The reference protein secondary structure SAI
+     *  \param[in] protstruct    The protein structure (primary or secondary) that should be compared to \a cl_protstruct
+     *  \param[in] cl_protstruct The reference protein secondary structure SAI
      */
 
     GB_ERROR error = 0;
@@ -417,7 +417,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
     // Set background
 
     {
-        GB_transaction       dummy(GLOBAL_gb_main);
+        GB_transaction       ta(GLOBAL_gb_main);
         ST_ML_Color         *colors       = 0;
         char                *searchColors = results().buildColorString(this, seq_start, seq_end); // defined in ED4_SearchResults class : ED4_search.cxx
         ED4_species_manager *spec_man     = get_parent(ED4_L_SPECIES)->to_species_manager();

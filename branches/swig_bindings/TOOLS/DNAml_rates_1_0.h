@@ -5,6 +5,13 @@
  *    1 gives new version
  */
 
+#ifndef CXXFORWARD_H
+#include <cxxforward.h>
+#endif
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+
 #define Debug 1
 
 //  Program constants and parameters
@@ -24,9 +31,10 @@
 #define unlikely  -1.0E300  // low likelihood for initialization
 #define decimal_point   '.'
 
-#define ABS(x)    (((x)< 0)  ? -(x) : (x))
-#define MIN(x, y) (((x)<(y)) ?  (x) : (y))
-#define MAX(x, y) (((x)>(y)) ?  (x) : (y))
+// the following macros are already defined in gmacros.h:
+// #define ABS(x)    (((x)< 0)  ? -(x) : (x))
+// #define MIN(x, y) (((x)<(y)) ?  (x) : (y))
+// #define MAX(x, y) (((x)>(y)) ?  (x) : (y))
 #define LOG(x)    (((x)> 0) ? log(x) : hang("log domain error"))
 #define nint(x)   ((int) ((x)>0 ? ((x)+0.5) : ((x)-0.5)))
 #define aint(x)   ((double) ((int) (x)))
@@ -35,6 +43,12 @@
 typedef double  xtype;
 struct          node;
 typedef node   *nodeptr;
+
+#if defined(Cxx11)
+CONSTEXPR int MAXNODES = leafs_2_nodes(maxsp, ROOTED);
+#else // !defined(Cxx11)
+const int MAXNODES = 2*maxsp+1;
+#endif
 
 struct xarray {
     xarray  *prev;
@@ -58,7 +72,7 @@ struct node {
 struct tree {
     double  likelihood;
     double  log_f[maxpatterns];
-    nodeptr nodep[2*maxsp-1];
+    nodeptr nodep[MAXNODES];
     nodeptr start;
     int     mxtips;
     int     ntips;

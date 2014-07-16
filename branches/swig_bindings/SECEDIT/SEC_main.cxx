@@ -14,7 +14,7 @@
 #include "SEC_drawn_pos.hxx"
 #include "SEC_toggle.hxx"
 
-#include <FileBuffer.h>
+#include <BufferedFileReader.h>
 
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
@@ -192,14 +192,14 @@ static void sec_mode_event(AW_window *aws, SEC_root *sec_root, AWT_COMMAND_MODE 
     switch (mode) {
         case AWT_MODE_ZOOM: text = MODE_TEXT_STANDARD_ZOOMMODE(); break;
 
-        case AWT_MODE_EDIT: text = MODE_TEXT_1BUTTON("CONSTRAINT", "modify constraint");       break;
-        case AWT_MODE_LINE: text = MODE_TEXT_1BUTTON("SET CURSOR", "set cursor in ARB_EDIT4"); break;
+        case AWT_MODE_EDIT:   text = MODE_TEXT_1BUTTON("CONSTRAINT", "modify constraint");       break;
+        case AWT_MODE_CURSOR: text = MODE_TEXT_1BUTTON("SET CURSOR", "set cursor in ARB_EDIT4"); break;
 
-        case AWT_MODE_MOVE:    text = MODE_TEXT_2BUTTONS("HELIX",      "build helix",                             "remove helix");                  break;
+        case AWT_MODE_FOLD:    text = MODE_TEXT_2BUTTONS("FOLD",       "fold helix",                              "unfold helix");                  break;
         case AWT_MODE_SETROOT: text = MODE_TEXT_2BUTTONS("SET ROOT",   "set logical center of structure",         "reset angles on sub-structure"); break;
-        case AWT_MODE_ROT:     text = MODE_TEXT_2BUTTONS("ROTATE",     "rotate helix/loop",                       "same w/o substructure");         break;
+        case AWT_MODE_ROTATE:  text = MODE_TEXT_2BUTTONS("ROTATE",     "rotate helix/loop",                       "same w/o substructure");         break;
         case AWT_MODE_STRETCH: text = MODE_TEXT_2BUTTONS("STRETCH",    "click and drag to stretch helices/loops", "reset");                         break;
-        case AWT_MODE_PROINFO: text = MODE_TEXT_2BUTTONS("PROBE INFO", "display PROBE information",               "undisplay");                     break;
+        case AWT_MODE_PINFO:   text = MODE_TEXT_2BUTTONS("PROBE INFO", "display PROBE information",               "undisplay");                     break;
 
         default: text = no_mode_text_defined(); break;
     }
@@ -286,7 +286,7 @@ static void export_structure_to_file(AW_window *, AW_CL cl_db)
 inline GB_ERROR expectedError(const char *expected) {
     return GBS_global_string("expected '%s'", expected);
 }
-inline GB_ERROR expectContent(FileBuffer& file, const char *expected) {
+inline GB_ERROR expectContent(LineReader& file, const char *expected) {
     GB_ERROR error = 0;
     string   line;
     if (!file.getLine(line) || line != expected) {
@@ -295,7 +295,7 @@ inline GB_ERROR expectContent(FileBuffer& file, const char *expected) {
     return error;
 }
 
-static string scanToken(FileBuffer& file, string& rest, GB_ERROR& error) {
+static string scanToken(LineReader& file, string& rest, GB_ERROR& error) {
     string line;
     string token;
 
@@ -318,7 +318,7 @@ static string scanToken(FileBuffer& file, string& rest, GB_ERROR& error) {
     return token;
 }
 
-static GB_ERROR expectToken(FileBuffer& file, const char *token, string& content) {
+static GB_ERROR expectToken(LineReader& file, const char *token, string& content) {
     GB_ERROR error      = 0;
     string   foundToken = scanToken(file, content, error);
     if (foundToken != token) error = expectedError(token);
@@ -341,7 +341,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
             error = GB_export_errorf("Can't open file '%s'", filename);
         }
         else {
-            FileBuffer file(filename, in);
+            BufferedFileReader file(filename, in);
             error = expectContent(file, ASS_START);
 
             string structure;
@@ -424,7 +424,7 @@ static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_int
     aws->callback(makeHelpCallback("sec_imexport.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    AW_create_fileselection(aws, AWAR_SECEDIT_SAVEDIR);
+    AW_create_standard_fileselection(aws, AWAR_SECEDIT_SAVEDIR);
 
     aws->at("save");
     if (export_to_file) {
@@ -603,7 +603,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
     aws->at("bonds");
     aws->label("Display bonds");
-    aws->create_option_menu(AWAR_SECEDIT_SHOW_BONDS);
+    aws->create_option_menu(AWAR_SECEDIT_SHOW_BONDS, true);
     aws->insert_option("None",       "n", SHOW_NO_BONDS);
     aws->insert_option("Helix",      "h", SHOW_HELIX_BONDS);
     aws->insert_option("+Non-helix", "o", SHOW_NHELIX_BONDS);
@@ -621,7 +621,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
     aws->at("cursor");
     aws->label("Annotate cursor            :");
-    aws->create_option_menu(AWAR_SECEDIT_SHOW_CURPOS);
+    aws->create_option_menu(AWAR_SECEDIT_SHOW_CURPOS, true);
     aws->insert_option("None",     "n", SHOW_NO_CURPOS);
     aws->insert_option("Absolute", "a", SHOW_ABS_CURPOS);
     aws->insert_option("Ecoli",    "e", SHOW_ECOLI_CURPOS);
@@ -711,8 +711,8 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->insert_menu_topic("secedit_import", "Load structure", "L", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)db);
     awm->insert_menu_topic("secedit_export", "Save structure", "S", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)db);
     awm->sep______________();
-    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG", "X", "sec_layout.hlp",  AWM_ALL, AWT_popup_sec_export_window, (AW_CL)scr, 0);
-    awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "secedit2prt.hlp", AWM_ALL, AWT_popup_print_window,      (AW_CL)scr, 0);
+    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG", "X", "sec_layout.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_sec_export_window, scr));
+    awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "secedit2prt.hlp", AWM_ALL, makeWindowCallback(AWT_popup_print_window, scr));
     awm->sep______________();
 
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
@@ -720,23 +720,23 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->create_menu("Properties", "P", AWM_ALL);
     awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
     awm->sep______________();
-    awm->insert_menu_topic("props_secedit", "Change Colors and Fonts", "C", "secedit_props_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)scr->gc_manager);
+    awm->insert_menu_topic("props_secedit", "Change Colors and Fonts", "C", "secedit_props_data.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, scr->gc_manager));
     awm->sep______________();
     awm->insert_menu_topic("sync_search_colors", "Sync search colors with EDIT4", "s", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)1, 0);
     awm->insert_menu_topic("sync_range_colors",  "Sync range colors with EDIT4",  "r", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)2, 0);
     awm->insert_menu_topic("sync_other_colors",  "Sync other colors with EDIT4",  "o", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)4, 0);
     awm->insert_menu_topic("sync_all_colors",    "Sync all colors with EDIT4",    "a", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)(1|2|4), 0);
     awm->sep______________();
-    awm->insert_menu_topic("sec_save_props",    "How to save properties",   "p", "savedef.hlp", AWM_ALL, (AW_CB) AW_help_popup, (AW_CL)"sec_props.hlp", 0);
+    awm->insert_menu_topic("sec_save_props",    "How to save properties",   "p", "savedef.hlp", AWM_ALL, makeHelpCallback("sec_props.hlp"));
 
-    awm->create_mode("pzoom.xpm",       "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_ZOOM));
-    awm->create_mode("sec_modify.xpm",  "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_MOVE));
-    awm->create_mode("setroot.xpm",     "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_SETROOT));
-    awm->create_mode("rot.xpm",         "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_ROT));
-    awm->create_mode("stretch.xpm",     "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_STRETCH));
-    awm->create_mode("info.xpm",        "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_EDIT));
-    awm->create_mode("sec_setcurs.xpm", "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_LINE));
-    awm->create_mode("probeInfo.xpm",   "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_PROINFO));
+    awm->create_mode("mode_zoom.xpm",    "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_ZOOM));
+    awm->create_mode("mode_fold.xpm",    "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_FOLD));
+    awm->create_mode("mode_setroot.xpm", "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_SETROOT));
+    awm->create_mode("mode_rotate.xpm",  "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_ROTATE));
+    awm->create_mode("mode_stretch.xpm", "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_STRETCH));
+    awm->create_mode("mode_edit.xpm",    "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_EDIT));
+    awm->create_mode("mode_cursor.xpm",  "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_CURSOR));
+    awm->create_mode("mode_pinfo.xpm",   "sec_mode.hlp", AWM_ALL, makeWindowCallback(sec_mode_event, root, AWT_MODE_PINFO));
 
     awm->set_info_area_height(250);
     awm->at(5, 2);

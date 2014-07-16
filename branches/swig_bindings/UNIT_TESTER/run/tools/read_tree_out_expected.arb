@@ -31,7 +31,7 @@ tree_data	:7000	%% (%
 		%) /*tree_newick_dq*/
 
 	tree_newick_group		%% (%
-		tree			"N0.1,0.1;LHelPylor\AR11%\AN0.1,0.1;R11%\AN0.1,0.1;R11%\AN0.1,0.1;LAnaMargi\ALEhrEhrli\ALCowRumin\AR11%\AN0.1,0.1;LRhdSphae\AR11%\AN0.1,0.1;LAzoCauli\ALBraJapon\A"
+		tree			"N0.1,0.1;LHelPylor\AR10%\AN0.1,0.1;R10%\AN0.1,0.1;R10%\AN0.1,0.1;LAnaMargi\ALEhrEhrli\ALCowRumin\AR10%\AN0.1,0.1;LRhdSphae\AR10%\AN0.1,0.1;LAzoCauli\ALBraJapon\A"
 		node			%% (%
 			group_name		"inner"
 			id			%i 0

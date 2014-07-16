@@ -12,7 +12,7 @@ UP	sp_info.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		GROUP MODE
 
-OCCURRENCE	ARB_NT (<GROUP> button of the left column)
+OCCURRENCE	ARB_NT and ARB_PARSIMONY: <GROUP> button in the left column
 		F3 on the keyboard
 
 DESCRIPTION	A group is a subtree with a name assigned to its root node.
@@ -45,11 +45,7 @@ DESCRIPTION	A group is a subtree with a name assigned to its root node.
 			button.
 
 
-NOTES		To store the groupings, assign any information ('SAI': name,
-		fullname, ...) to them using the 'SPECIES INFORMATION' tool.
-
-		The middle mouse button (placed anywhere within the tree
-		display area) can be used to move the whole tree.
+NOTES		None
 
 EXAMPLES	None
 

@@ -18,35 +18,53 @@
 #include "arb_string.h"
 #include "arb_msg.h"
 #include "arb_file.h"
+#include <arb_str.h>
+#include <arb_assert.h>
+#include <arbtools.h>
+#include <smartptr.h>
 
 #include <list>
 #include <string>
 
-
-#ifdef UNIT_TESTS
-#include <test_unit.h>
-#include <arb_str.h>
-
-// ARB_textfiles_have_difflines + ARB_files_are_equal are helper functions used by unit tests.
-
 #define MAX_REGS 13
 
 class difflineMode : virtual Noncopyable {
-    int               mode;
-    GBS_regex        *reg[MAX_REGS];
-    const char       *replace[MAX_REGS];
-    int               count;
-    mutable GB_ERROR  error;
+    int mode;
 
-    static bool is_may;
+    GBS_regex  *reg[MAX_REGS];
+    bool        wordsOnly[MAX_REGS]; // only match if regexpr hits a word
+    const char *replace[MAX_REGS];
 
-    void add(const char *regEx, GB_CASE case_flag, const char *replacement) {
+    int              count;
+    mutable GB_ERROR error;
+
+    void add(bool onlyWords, const char *regEx, GB_CASE case_flag, const char *replacement) {
         if (!error) {
             arb_assert(count<MAX_REGS);
             reg[count] = GBS_compile_regexpr(regEx, case_flag, &error);
             if (!error) {
-                replace[count] = replacement;
+                replace[count]   = replacement;
+                wordsOnly[count] = onlyWords;
                 count++;
+            }
+        }
+    }
+
+    static bool is_word_char(char c) { return isalnum(c) || c == '_'; } // matches posix word def
+
+    typedef SmartCustomPtr(GBS_regex, GBS_free_regexpr) GBS_regexPtr;
+
+    mutable bool        may_involved;
+    static GBS_regexPtr contains_May;
+
+    void avoid_may_problems(const char *str) const {
+        if (!may_involved) {
+            if (GBS_regmatch_compiled(str, &*contains_May, NULL)) {
+                // 'May' does not differ between short/long monthname
+                // -> use less accurate tests in May
+                fprintf(stderr, "Loosening month comparison: 'May' involved in '%s'\n", str);
+                const_cast<difflineMode*>(this)->add(false, "<Month>", GB_MIND_CASE, "<MON>");
+                may_involved = true;
             }
         }
     }
@@ -55,36 +73,31 @@ public:
     difflineMode(int mode_)
         : mode(mode_),
           count(0),
-          error(NULL)
+          error(NULL),
+          may_involved(false)
     {
         memset(reg, 0, sizeof(reg));
         switch (mode) {
             case 0: break;
             case 1:  {
-                add("[0-9]{2}:[0-9]{2}:[0-9]{2}", GB_MIND_CASE, "<TIME>");
-                add("(Mon|Tue|Wed|Thu|Fri|Sat|Sun)", GB_IGNORE_CASE, "<DOW>");
+                add(false, "[0-9]{2}:[0-9]{2}:[0-9]{2}", GB_MIND_CASE, "<TIME>");
+                add(true, "(Mon|Tue|Wed|Thu|Fri|Sat|Sun)", GB_IGNORE_CASE, "<DOW>");
 
-                add("(January|February|March|April|May|June|July|August|September|October|November|December)", GB_IGNORE_CASE, "<Month>");
-                add("(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)", GB_IGNORE_CASE, "<MON>");
+                add(true, "(January|February|March|April|May|June|July|August|September|October|November|December)", GB_IGNORE_CASE, "<Month>");
+                add(true, "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)", GB_IGNORE_CASE, "<MON>");
 
-                add("<MON>[ -][0-9]{4}",   GB_IGNORE_CASE, "<MON> <YEAR>");
-                add("<Month>[ -][0-9]{4}", GB_IGNORE_CASE, "<Month> <YEAR>");
+                add(false, "<MON>[ -][0-9]{4}",   GB_IGNORE_CASE, "<MON> <YEAR>");
+                add(false, "<Month>[ -][0-9]{4}", GB_IGNORE_CASE, "<Month> <YEAR>");
 
-                add("<TIME>[ -][0-9]{4}",  GB_IGNORE_CASE, "<TIME> <YEAR>");
+                add(false, "<TIME>[ -][0-9]{4}",  GB_IGNORE_CASE, "<TIME> <YEAR>");
 
-                add("<MON>[ -][0-9 ]?[0-9]",   GB_IGNORE_CASE, "<MON> <DAY>");
-                add("<Month>[ -][0-9 ]?[0-9]", GB_IGNORE_CASE, "<Month> <DAY>");
+                add(false, "<MON>[ -][0-9 ]?[0-9]",   GB_IGNORE_CASE, "<MON> <DAY>");
+                add(false, "<Month>[ -][0-9 ]?[0-9]", GB_IGNORE_CASE, "<Month> <DAY>");
 
-                add("[0-9]{2}[ -\\.]+<MON>",   GB_IGNORE_CASE, "<DAY> <MON>");
-                add("[0-9]{2}[ -\\.]+<Month>", GB_IGNORE_CASE, "<DAY> <Month>");
+                add(false, "[0-9]{2}[ -\\.]+<MON>",   GB_IGNORE_CASE, "<DAY> <MON>");
+                add(false, "[0-9]{2}[ -\\.]+<Month>", GB_IGNORE_CASE, "<DAY> <Month>");
 
-                add("<DAY>, [0-9]{4}", GB_IGNORE_CASE, "<DAY> <YEAR>");
-
-                if (is_may) {
-                    // 'May' does not differ between short/long monthname
-                    // -> use less accurate tests in May
-                    add("<Month>", GB_MIND_CASE, "<MON>");
-                }
+                add(false, "<DAY>, [0-9]{4}", GB_IGNORE_CASE, "<DAY> <YEAR>");
 
                 break;
             }
@@ -101,6 +114,7 @@ public:
     const char *get_error() const { return error; }
     int get_count() const { return count; }
 
+private:
     void replaceAll(char*& str) const {
         for (int i = 0; i<count; ++i) {
             size_t      matchlen;
@@ -110,15 +124,29 @@ public:
                 char       *prefix = GB_strpartdup(str, matched-1);
                 const char *suffix = matched+matchlen;
 
-                freeset(str, GBS_global_string_copy("%s%s%s", prefix, replace[i], suffix));
+                bool do_repl = true;
+                if (wordsOnly[i]) {
+                    if      (prefix[0] != 0 && is_word_char(matched[-1])) do_repl = false;
+                    else if (suffix[0] != 0 && is_word_char(suffix[0]))   do_repl = false;
+                }
+
+                if (do_repl) freeset(str, GBS_global_string_copy("%s%s%s", prefix, replace[i], suffix));
+
                 free(prefix);
             }
         }
     }
-    void replaceAll(char*& str1, char*& str2) const { replaceAll(str1); replaceAll(str2); }
+public:
+    void replaceAll(char*& str1, char*& str2) const {
+        avoid_may_problems(str1);
+        avoid_may_problems(str2);
+        replaceAll(str1);
+        replaceAll(str2);
+    }
 };
 
-bool difflineMode::is_may = strstr(GB_date_string(), "May") != 0;
+static GB_ERROR            static_error               = NULL;
+difflineMode::GBS_regexPtr difflineMode::contains_May = GBS_compile_regexpr("May", GB_IGNORE_CASE, &static_error);
 
 static void cutEOL(char *s) {
     char *lf      = strchr(s, '\n');
@@ -223,7 +251,6 @@ public:
     }
 };
 
-
 bool ARB_textfiles_have_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode) {
     // special_mode: 0 = none, 1 = accept date and time changes as equal
     //
@@ -245,7 +272,8 @@ bool ARB_textfiles_have_difflines(const char *file1, const char *file2, int expe
             DiffLines     diff_lines;
             difflineMode  mode(special_mode);
 
-            TEST_EXPECT_NO_ERROR(mode.get_error());
+            // TEST_EXPECT_NO_ERROR(mode.get_error());
+            error = mode.get_error();
 
             while (!error && !feof(diffout)) {
                 char *line = fgets(buffer, BUFSIZE, diffout);
@@ -306,6 +334,9 @@ bool ARB_textfiles_have_difflines(const char *file1, const char *file2, int expe
     if (error) printf("ARB_textfiles_have_difflines(%s, %s) fails: %s\n", file1, file2, error);
     return !error;
 }
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
 
 size_t ARB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, size_t common, size_t blockStartAddress) {
     size_t equal_bytes;
@@ -483,5 +514,66 @@ void TEST_logic() {
     }
 }
 
+#include <cmath>
+// #include <math.h>
+
+void TEST_naninf() {
+    double num  = 3.1415;
+    double zero = num-num;
+    double inf  = num/zero;
+    double ninf = -inf;
+    double nan  = 0*inf;
+
+    TEST_EXPECT_DIFFERENT(inf, ninf);
+    TEST_EXPECT_EQUAL(ninf, -1.0/zero);
+
+    // decribe how isnan, isinf and isnormal shall behave:
+#define TEST_ISINF(isinf_fun)           \
+    TEST_EXPECT(isinf_fun(inf));        \
+    TEST_EXPECT(!!isinf_fun(ninf));     \
+    TEST_EXPECT(isinf_fun(INFINITY));   \
+    TEST_EXPECT(!isinf_fun(nan));       \
+    TEST_EXPECT(!isinf_fun(NAN));       \
+    TEST_EXPECT(!isinf_fun(num));       \
+    TEST_EXPECT(!isinf_fun(zero))
+
+#define TEST_ISNAN(isnan_fun)           \
+    TEST_EXPECT(isnan_fun(nan));        \
+    TEST_EXPECT(isnan_fun(NAN));        \
+    TEST_EXPECT(!isnan_fun(inf));       \
+    TEST_EXPECT(!isnan_fun(ninf));      \
+    TEST_EXPECT(!isnan_fun(INFINITY));  \
+    TEST_EXPECT(!isnan_fun(zero));  \
+    TEST_EXPECT(!isnan_fun(num))
+
+#define TEST_ISNORMAL(isnormal_fun)             \
+    TEST_EXPECT(isnormal_fun(num));             \
+    TEST_EXPECT(!isnormal_fun(zero));           \
+    TEST_EXPECT(!isnormal_fun(inf));            \
+    TEST_EXPECT(!isnormal_fun(ninf));           \
+    TEST_EXPECT(!isnormal_fun(nan));            \
+    TEST_EXPECT(!isnormal_fun(INFINITY));       \
+    TEST_EXPECT(!isnormal_fun(NAN))
+
+    // check behavior of arb templates:
+    TEST_ISNAN(is_nan);
+    TEST_ISINF(is_inf);
+    TEST_ISNORMAL(is_normal);
+
+    // document behavior of math.h macros:
+    TEST_ISNAN(isnan);
+#if (GCC_PATCHLEVEL_CODE >= 40403 && GCC_PATCHLEVEL_CODE <= 40407 && defined(DEBUG))
+    // TEST_ISINF(isinf); // isinf macro is broken (gcc 4.4.3 up to gcc 4.4.7, if compiled with DEBUG)
+    TEST_EXPECT__BROKEN(isinf(ninf)); // broken; contradicts http://www.cplusplus.com/reference/cmath/isinf/
+#else
+    TEST_ISINF(isinf);
+#endif
+    // TEST_ISNORMAL(isnormal); // ok if <math.h> included,  compile error if <cmath> included
+
+    // check behavior of std-versions:
+    TEST_ISNAN(std::isnan);
+    TEST_ISINF(std::isinf);
+    TEST_ISNORMAL(std::isnormal);
+}
 
 #endif // UNIT_TESTS

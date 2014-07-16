@@ -104,20 +104,27 @@ public:
     inline PT_local& get_PT_local() const;
 };
 
+class MatchRequest : virtual Noncopyable {
+    PT_local& pt_local;
 
-class MatchRequest {
-    PT_local&       pt_local;
-    int             accepted_N_mismatches[PT_POS_TREE_HEIGHT+PT_POS_SECURITY+1];
+    int  max_ambig; // max. possible ambiguous hits (i.e. max value in Mismatches::ambig)
+    int *accepted_N_mismatches;
+
     MismatchWeights weights;
 
     void init_accepted_N_mismatches(int ignored_Nmismatches, int when_less_than_Nmismatches);
 
 public:
-    explicit MatchRequest(PT_local& locs)
+    explicit MatchRequest(PT_local& locs, int probe_length)
         : pt_local(locs),
+          max_ambig(probe_length),
+          accepted_N_mismatches(new int[max_ambig+1]),
           weights(locs.bond)
     {
         init_accepted_N_mismatches(pt_local.pm_nmatches_ignored, pt_local.pm_nmatches_limit);
+    }
+    ~MatchRequest() {
+        delete [] accepted_N_mismatches;
     }
 
     PT_local& get_PT_local() const { return pt_local; }
@@ -128,7 +135,10 @@ public:
         return reached;
     }
 
-    int accept_N_mismatches(int ambig) const { return accepted_N_mismatches[ambig]; }
+    int accept_N_mismatches(int ambig) const {
+        pt_assert(ambig<=max_ambig);
+        return accepted_N_mismatches[ambig];
+    }
 
     bool add_hit(const DataLoc& at, const Mismatches& mismatch);
     bool add_hits_for_children(POS_TREE2 *pt, const Mismatches& mismatch);
@@ -148,16 +158,16 @@ void MatchRequest::init_accepted_N_mismatches(int ignored_Nmismatches, int when_
     //
     // above that limit, every N-mismatch counts as mismatch
 
-    if ((when_less_than_Nmismatches-1)>PT_POS_TREE_HEIGHT) when_less_than_Nmismatches = PT_POS_TREE_HEIGHT+1;
-    if (ignored_Nmismatches >= when_less_than_Nmismatches) ignored_Nmismatches = when_less_than_Nmismatches-1;
+    when_less_than_Nmismatches = std::min(when_less_than_Nmismatches, max_ambig+1);
+    ignored_Nmismatches        = std::min(ignored_Nmismatches, when_less_than_Nmismatches-1);
 
     accepted_N_mismatches[0] = 0;
     int mm;
     for (mm = 1; mm<when_less_than_Nmismatches; ++mm) {
         accepted_N_mismatches[mm] = mm>ignored_Nmismatches ? mm-ignored_Nmismatches : 0;
     }
-    pt_assert(mm <= (PT_POS_TREE_HEIGHT+1));
-    for (; mm <= PT_POS_TREE_HEIGHT; ++mm) {
+    pt_assert(mm <= (max_ambig+1));
+    for (; mm <= max_ambig; ++mm) {
         accepted_N_mismatches[mm] = mm;
     }
 }
@@ -171,7 +181,6 @@ inline void Mismatches::count_weighted(char probe, char seq, int height) {
 }
 
 inline bool Mismatches::accepted() const {
-    pt_assert(ambig <= PT_POS_TREE_HEIGHT);
     if (get_PT_local().sort_by == PT_MATCH_TYPE_INTEGER) {
         return (req.accept_N_mismatches(ambig)+plain) <= req.allowed_mismatches();
     }
@@ -454,7 +463,7 @@ int probe_match(PT_local *locs, aisc_string probestring) {
 
     pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, probestring);
 
-    MatchRequest req(*locs);
+    MatchRequest req(*locs, probe_len);
 
     pt_assert(req.allowed_mismatches() >= 0); // till [8011] value<0 was used to trigger "new match" (feature unused)
     Mismatches mismatch(req);
@@ -778,9 +787,9 @@ bytestring *match_string(const PT_local *locs) {
 
 
 bytestring *MP_match_string(const PT_local *locs) {
-    /*! Create list of species where probe matches and #mismatches (for multiprobe)
+    /*! Create list of species where probe matches and append number of mismatches and weighted mismatches (used by multiprobe)
      *
-     * Format: header^1name^1#mismatch^1name^1#mismatch....^0
+     * Format: "header^1name^1#mismatches^1#wmismatches^1name^1#mismatches^1#wmismatches....^0"
      *         (where ^0 and ^1 are ASCII 0 and 1)
      *
      * Implements server function 'MP_MATCH_STRING'

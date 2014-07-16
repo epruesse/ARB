@@ -3,7 +3,7 @@
 
 .PHONY: all clean
 
-CXX ?= g++
+CXX=$(A_CXX)
 CXXFLAGS=-c -O3 -msse2 -mfpmath=sse -D_FILE_OFFSET_BITS=64 -DNDEBUG=1
 LDFLAGS= -g
 

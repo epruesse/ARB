@@ -493,7 +493,7 @@ static int searchWord(GB_DICTIONARY *dict, cu_str source, long size, unsigned lo
 }
 
 #ifdef DEBUG
-int look(GB_DICTIONARY *dict, GB_CSTR source) {
+int lookup_DICTIONARY(GB_DICTIONARY *dict, GB_CSTR source) { // used for debugging
     unsigned long wordIndex;
     int           wordLen;
     int           wordFound = searchWord(dict, (cu_str)source, strlen(source), &wordIndex, &wordLen);
@@ -2672,6 +2672,7 @@ void TEST_SLOW_optimize() {
 
     TEST_EXPECT_NO_ERROR(GBK_system(GBS_global_string("rm %s %s %s %s", target_ascii, nonopti, optimized, reoptimized)));
 }
+TEST_PUBLISH(TEST_SLOW_optimize);
 
 #endif // UNIT_TESTS
 

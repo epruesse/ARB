@@ -23,6 +23,7 @@
 #define AWAR_DTREE_BASELINEWIDTH   "awt/dtree/baselinewidth"
 #define AWAR_DTREE_VERICAL_DIST    "awt/dtree/verticaldist"
 #define AWAR_DTREE_AUTO_JUMP       "awt/dtree/autojump"
+#define AWAR_DTREE_AUTO_JUMP_TREE  "awt/dtree/autojump_tree"
 #define AWAR_DTREE_SHOW_CIRCLE     "awt/dtree/show_circle"
 #define AWAR_DTREE_SHOW_BRACKETS   "awt/dtree/show_brackets"
 #define AWAR_DTREE_CIRCLE_ZOOM     "awt/dtree/circle_zoom"
@@ -36,7 +37,7 @@
 #define AWAR_DTREE_DENDRO_ZOOM_TEXT "awt/dtree/dendro/zoomtext"
 #define AWAR_DTREE_DENDRO_XPAD      "awt/dtree/dendro/xpadding"
 
-void awt_create_dtree_awars(AW_root *aw_root, AW_default def);
+void awt_create_dtree_awars(AW_root *aw_root, AW_default db);
 
 #define NT_BOX_WIDTH      7 // pixel
 #define NT_ROOT_WIDTH     9
@@ -45,7 +46,7 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def);
 #define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree*, (ntw)->gfx)
 
 
-enum AP_tree_sort {
+enum AP_tree_display_type {
     AP_TREE_NORMAL, // normal tree display (dendrogram)
     AP_TREE_RADIAL, // radial tree display
     AP_TREE_IRS, // like AP_TREE_NORMAL, with folding line
@@ -53,8 +54,24 @@ enum AP_tree_sort {
     AP_LIST_SIMPLE // simple display only showing name (used at startup to avoid NDS error messages)
 };
 
-inline bool sort_is_list_style(AP_tree_sort sort) { return sort == AP_LIST_NDS || sort == AP_LIST_SIMPLE; }
-inline bool sort_is_tree_style(AP_tree_sort sort) { return !sort_is_list_style(sort); }
+enum AP_tree_jump_type { // bit-values
+    AP_JUMP_KEEP_VISIBLE  = 1,  // automatically make selected node visible (on changes)
+    AP_JUMP_UNFOLD_GROUPS = 2,  //
+    AP_JUMP_FORCE_VCENTER = 4,  // force vertical centering (even if visible)
+    AP_JUMP_ALLOW_HCENTER = 8,  // force horizontal centering (if vertically centered); only works together with AP_JUMP_FORCE_VCENTER
+    AP_JUMP_FORCE_HCENTER = 16, // force horizontal centering
+    AP_JUMP_BE_VERBOOSE   = 32, // tell why nothing happened etc.
+
+    // convenience defs:
+    AP_DONT_JUMP         = 0,
+    AP_JUMP_SMART_CENTER = AP_JUMP_FORCE_VCENTER|AP_JUMP_ALLOW_HCENTER,
+    AP_JUMP_FORCE_CENTER = AP_JUMP_FORCE_VCENTER|AP_JUMP_FORCE_HCENTER,
+
+    AP_JUMP_BY_BUTTON = AP_JUMP_SMART_CENTER|AP_JUMP_UNFOLD_GROUPS|AP_JUMP_BE_VERBOOSE,
+};
+
+inline bool sort_is_list_style(AP_tree_display_type sort) { return sort == AP_LIST_NDS || sort == AP_LIST_SIMPLE; }
+inline bool sort_is_tree_style(AP_tree_display_type sort) { return !sort_is_list_style(sort); }
 
 
 class AWT_graphic_tree_group_state;
@@ -74,6 +91,7 @@ struct AWT_scaled_font_limits {
 };
 
 enum AD_MAP_VIEWER_TYPE {
+    ADMVT_NONE = 0,
     ADMVT_INFO,
     ADMVT_WWW,
     ADMVT_SELECT
@@ -99,6 +117,14 @@ struct AWT_command_data {
      * Purpose of this class is to allow to delete such data w/o knowing anything else.
      */
     virtual ~AWT_command_data() {}
+};
+
+enum CollapseMode {
+    COLLAPSE_ALL      = 0,
+    EXPAND_MARKED     = 1, // do not collapse groups containing marked species
+    COLLAPSE_TERMINAL = 2, // do not collapse groups with subgroups
+    EXPAND_ALL        = 4,
+    EXPAND_COLOR      = 8, // do not collapse groups containing species with color == parameter 'color_group'
 };
 
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
@@ -134,11 +160,11 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     AW_device *disp_device; // device for recursive functions
 
-    AW_bitset line_filter, vert_line_filter, mark_filter, group_bracket_filter;
-    AW_bitset leaf_text_filter, group_text_filter, remark_text_filter, other_text_filter;
-    AW_bitset ruler_filter, root_filter;
-    int       treemode;
-    bool      nds_show_all;
+    const AW_bitset line_filter, vert_line_filter, mark_filter, group_bracket_filter, bs_circle_filter;
+    const AW_bitset leaf_text_filter, group_text_filter, remark_text_filter, other_text_filter;
+    const AW_bitset ruler_filter, root_filter;
+
+    bool nds_show_all;
 
     AD_map_viewer_cb  map_viewer_cb;
     AWT_command_data  *cmd_data;
@@ -172,16 +198,21 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     }
 
     virtual void read_tree_settings();
-    void update_structure() { get_root_node()->compute_tree(tree_static->get_gb_main()); }
+    void update_structure() {
+        AP_tree *root = get_root_node();
+        if (root) root->compute_tree();
+    }
     void apply_zoom_settings_for_treetype(AWT_canvas *ntw);
-    
-    int draw_branch_line(int gc, const AW::Position& root, const AW::Position& leaf) {
+
+    int draw_branch_line(int gc, const AW::Position& root, const AW::Position& leaf, AW_bitset filter) {
         const AW_click_cd *old = disp_device->get_click_cd();
         td_assert(old && old->get_cd1() && !old->get_cd2()); // cd1 should be the node
 
         AW_click_cd branch(disp_device, old->get_cd1(), (AW_CL)"branch");
-        return disp_device->line(gc, root, leaf, line_filter);
+        return disp_device->line(gc, root, leaf, filter);
     }
+
+    bool warn_inappropriate_mode(AWT_COMMAND_MODE mode);
 
 protected:
     void store_command_data(AWT_command_data *new_cmd_data) {
@@ -195,8 +226,8 @@ public:
     // *********** read only variables !!!
 
     AW_root      *aw_root;
-    AP_tree_sort  tree_sort;
-    AP_tree      *tree_root_display;                // @@@ what is this used for ?
+    AP_tree_display_type  tree_sort;
+    AP_tree      *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
     AP_tree_root *tree_static;
     GBDATA       *gb_main;
 
@@ -206,8 +237,9 @@ public:
     ~AWT_graphic_tree() OVERRIDE;
 
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
+    bool is_logically_zoomed() { return displayed_root != get_root_node(); }
 
-    void init(const AP_tree& tree_prototype, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
+    void init(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
 
     void show(AW_device *device) OVERRIDE;
@@ -231,24 +263,22 @@ public:
 
     void detect_group_state(AP_tree *at, AWT_graphic_tree_group_state *state, AP_tree *skip_this_son);
 
-    int      group_tree(AP_tree *at, int mode, int color_group);
-    void     group_rest_tree(AP_tree *at, int mode, int color_group);
-    int      resort_tree(int mode, AP_tree *at = 0);
+    bool     group_tree(AP_tree *at, CollapseMode mode, int color_group);
+    void     group_rest_tree(AP_tree *at, CollapseMode mode, int color_group);
+    void     reorder_tree(TreeOrder mode);
     GB_ERROR create_group(AP_tree * at) __ATTR__USERESULT;
     void     toggle_group(AP_tree * at);
-    void     jump(AP_tree *at, const char *name);
-    AP_tree *search(AP_tree *root, const char *name);
     GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL,  AW_CL) OVERRIDE __ATTR__USERESULT;
     GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
     int      check_update(GBDATA *gb_main) OVERRIDE;         // reload tree if needed
     void     update(GBDATA *gb_main) OVERRIDE;
-    void     set_tree_type(AP_tree_sort type, AWT_canvas *ntw);
+    void     set_tree_type(AP_tree_display_type type, AWT_canvas *ntw);
 
     double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
     void show_ruler(AW_device *device, int gc);
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
 
-#if defined(UNIT_TESTS)
+#if defined(UNIT_TESTS) // UT_DIFF
     friend class fake_AWT_graphic_tree;
 #endif
 };
@@ -341,6 +371,7 @@ public:
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
 bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri);
+void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name);
 
 #else
 #error TreeDisplay.hxx included twice

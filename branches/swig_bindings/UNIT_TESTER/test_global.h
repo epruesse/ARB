@@ -56,10 +56,20 @@
     } while(0)
 # endif
 
-# define TRIGGER_ASSERTION(backtrace)           \
-    do {                                        \
-        SET_ASSERTION_FAILED_FLAG();            \
-        ARB_SIGSEGV(backtrace);                 \
+#define SEGV_INSIDE_TEST_STOP_OTHERWISE(backtrace)              \
+    do {                                                        \
+        if (RUNNING_TEST()) {                                   \
+            ARB_SIGSEGV(backtrace);                             \
+        }                                                       \
+        else {                                                  \
+            ARB_STOP(backtrace);                                \
+        }                                                       \
+    } while(0)
+
+# define TRIGGER_ASSERTION(backtrace)                           \
+    do {                                                        \
+        SET_ASSERTION_FAILED_FLAG();                            \
+        SEGV_INSIDE_TEST_STOP_OTHERWISE(backtrace);             \
     } while(0)
 
 namespace arb_test {
@@ -77,6 +87,13 @@ namespace arb_test {
         FLAG_RAISE,
         FLAG_IS_RAISED,
     };
+
+    inline const char *fakeenv(const char *var) {
+        // override some environment variables for unittests
+        if (strcmp(var, "HOME") == 0) return "./homefake"; // normally should be $ARBHOME/UNIT_TESTER/run/homefake
+        return NULL;
+    }
+
 
     class GlobalTestData {
         typedef bool (*FlagCallback)(FlagAction action, const char *name);

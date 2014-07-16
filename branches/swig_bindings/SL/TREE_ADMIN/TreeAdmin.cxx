@@ -18,15 +18,22 @@
 #include <cctype>
 #include <aw_msg.hxx>
 #include <arb_global_defs.h>
+#include <awt_TreeAwars.hxx>
 
 #define ta_assert(cond) arb_assert(cond)
 
-#define AWAR_TREE_DEST "tmp/ad_tree/tree_dest"
+#define AWAR_TREE_SOURCE "tmp/ad_tree/tree_source"
+#define AWAR_TREE_DEST   "tmp/ad_tree/tree_dest"
 
 namespace TreeAdmin {
 
-    void create_awars(AW_root *root, AW_default aw_def) {
-        root->awar_string(AWAR_TREE_DEST, 0, aw_def)->set_srt(GBT_TREE_AWAR_SRT);
+    void create_awars(AW_root *root, AW_default aw_def, bool registerTreeAwar) {
+        AW_awar *awar_srcTree = root->awar_string(AWAR_TREE_SOURCE, 0, aw_def)->set_srt(GBT_TREE_AWAR_SRT);
+        if (registerTreeAwar) AWT_registerTreeAwarSimple(awar_srcTree);
+        root->awar_string(AWAR_TREE_DEST, 0, aw_def)->set_srt(GBT_TREE_AWAR_SRT); // no need to register (awar always follows the tree selected in admin window!)
+    }
+    AW_awar *source_tree_awar(AW_root *root) {
+        return root->awar(AWAR_TREE_SOURCE);
     }
     AW_awar *dest_tree_awar(AW_root *root) {
         return root->awar(AWAR_TREE_DEST);
@@ -36,8 +43,7 @@ namespace TreeAdmin {
         return awr->awar(awar_selected_tree);
     }
 
-    void delete_tree_cb(AW_window *aww, AW_CL cl_spec) {
-        const Spec *spec      = (Spec*)cl_spec;
+    void delete_tree_cb(AW_window *aww, const Spec *spec) {
         AW_awar    *awar_tree = spec->tree_awar(aww->get_root());
         char       *name      = awar_tree->read_string();
         GBDATA     *gb_main   = spec->get_gb_main();
@@ -50,6 +56,7 @@ namespace TreeAdmin {
             gb_tree = GBT_find_tree(gb_main, name);
             if (!gb_tree) error = "Please select tree to delete";
             else {
+                AWT_announce_tree_deleted(name);
                 GBDATA *gb_next = GBT_find_next_tree(gb_tree);
                 awar_tree->write_string(gb_next ? GBT_get_tree_name(gb_next) : NO_TREE_SELECTED);
             }
@@ -116,6 +123,7 @@ namespace TreeAdmin {
                 }
                 else {
                     error = GBT_rename_tree(gb_main, source, dest);
+                    if (!error) AWT_announce_tree_renamed(source, dest);
                 }
             }
 
@@ -129,19 +137,16 @@ namespace TreeAdmin {
         free(source);
     }
 
-    static void tree_rename_cb(AW_window *aww, AW_CL cl_spec) { tree_copy_or_rename_cb(aww, false, *(const Spec*)cl_spec); }
-    static void tree_copy_cb  (AW_window *aww, AW_CL cl_spec) { tree_copy_or_rename_cb(aww, true, *(const Spec*)cl_spec);  }
+    static void tree_rename_cb(AW_window *aww, const Spec *spec) { tree_copy_or_rename_cb(aww, false, *spec); }
+    static void tree_copy_cb  (AW_window *aww, const Spec *spec) { tree_copy_or_rename_cb(aww, true, *spec);  }
 
-    static void current_as_dest_treename_cb(AW_window *aww, AW_CL cl_spec) {
+    static void current_as_dest_treename_cb(AW_window *aww, const Spec *spec) {
         AW_root    *awr  = aww->get_root();
-        const Spec *spec = (Spec*)cl_spec;
         dest_tree_awar(awr)->write_string(spec->tree_awar(awr)->read_char_pntr());
     }
 
-    static void make_dest_treename_unique_cb(AW_window *aww, AW_CL cl_spec) {
+    static void make_dest_treename_unique_cb(AW_window *aww, const Spec *spec) {
         // generated a unique treename
-        const Spec *spec = (Spec*)cl_spec;
-        
         AW_root *awr       = aww->get_root();
         AW_awar *awar_dest = awr->awar(AWAR_TREE_DEST);
 
@@ -176,7 +181,7 @@ namespace TreeAdmin {
         free(name);
     }
 
-    static AW_window *create_copy_or_rename_window(AW_root *root, const char *win_id, const char *win_title, const char *go_label, void (*go_cb)(AW_window*, AW_CL), AW_CL cl_spec) {
+    static AW_window *create_copy_or_rename_window(AW_root *root, const char *win_id, const char *win_title, const char *go_label, void (*go_cb)(AW_window*, const Spec*), const Spec *spec) {
         AW_window_simple *aws = new AW_window_simple;
         aws->init(root, win_id, win_title);
 
@@ -185,9 +190,9 @@ namespace TreeAdmin {
 
         aws->at_newline();
         aws->label("Current:");
-        aws->callback(current_as_dest_treename_cb, cl_spec);
+        aws->callback(makeWindowCallback(current_as_dest_treename_cb, spec));
         aws->at_set_to(true, false, -10, 25);
-        aws->create_button("use_current", ((const Spec*)cl_spec)->tree_awar(aws->get_root())->awar_name);
+        aws->create_button("use_current", spec->tree_awar(aws->get_root())->awar_name);
 
         aws->at_newline();
         aws->label("New:    ");
@@ -195,13 +200,13 @@ namespace TreeAdmin {
         aws->create_input_field(AWAR_TREE_DEST);
 
         aws->at_newline();
-        aws->callback(go_cb, cl_spec);
+        aws->callback(makeWindowCallback(go_cb, spec));
         aws->create_autosize_button("GO", go_label, "");
 
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_autosize_button("CLOSE", "Abort", "A");
 
-        aws->callback(make_dest_treename_unique_cb, cl_spec);
+        aws->callback(makeWindowCallback(make_dest_treename_unique_cb, spec));
         aws->create_autosize_button("UNIQUE", "Unique name", "U");
     
         aws->at_newline();
@@ -210,11 +215,11 @@ namespace TreeAdmin {
     }
 
     
-    AW_window *create_rename_window(AW_root *root, AW_CL cl_spec) {
-        return create_copy_or_rename_window(root, "RENAME_TREE", "Rename Tree", "Rename Tree", tree_rename_cb, cl_spec);
+    AW_window *create_rename_window(AW_root *root, const Spec *spec) {
+        return create_copy_or_rename_window(root, "RENAME_TREE", "Rename Tree", "Rename Tree", tree_rename_cb, spec);
     }
-    AW_window *create_copy_window(AW_root *root, AW_CL cl_spec) {
-        return create_copy_or_rename_window(root, "COPY_TREE",   "Copy Tree",   "Copy Tree",   tree_copy_cb, cl_spec);
+    AW_window *create_copy_window(AW_root *root, const Spec *spec) {
+        return create_copy_or_rename_window(root, "COPY_TREE",   "Copy Tree",   "Copy Tree",   tree_copy_cb, spec);
     }
 
     

@@ -76,9 +76,17 @@ static void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_updat
     vui->change_from_widget(call_data);
 }
 
-static void track_awar_change_cb(GBDATA*, AW_awar *awar, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
+struct TrackedAwarChange {
+    AW_awar *awar;
+    bool     changed;
+
+    TrackedAwarChange(AW_awar *awar_) : awar(awar_), changed(false) {}
+};
+
+static void track_awar_change_cb(GBDATA *IF_ASSERTION_USED(gbd), TrackedAwarChange *tac, GB_CB_TYPE IF_ASSERTION_USED(cb_type)) {
     aw_assert(cb_type == GB_CB_CHANGED);
-    awar->root->track_awar_change(awar);
+    aw_assert(tac->awar->gb_var == gbd);
+    tac->changed = true;
 }
 
 void VarUpdateInfo::change_from_widget(XtPointer call_data) {
@@ -91,10 +99,11 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
         root->changer_of_variable = widget;
     }
 
+    TrackedAwarChange tac(awar);
     if (root->is_tracking()) {
         // add a callback which writes macro-code (BEFORE any other callback happens; last added, first calledback)
         GB_transaction ta(awar->gb_var);
-        GB_add_callback(awar->gb_var, GB_CB_CHANGED, makeDatabaseCallback(track_awar_change_cb, awar));
+        GB_add_callback(awar->gb_var, GB_CB_CHANGED, makeDatabaseCallback(track_awar_change_cb, &tac));
     }
 
     bool run_cb = true;
@@ -152,8 +161,13 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
     }
 
     if (root->is_tracking()) {
-        GB_transaction ta(awar->gb_var);
-        GB_remove_callback(awar->gb_var, GB_CB_CHANGED, makeDatabaseCallback(track_awar_change_cb, awar));
+        {
+            GB_transaction ta(awar->gb_var);
+            GB_remove_callback(awar->gb_var, GB_CB_CHANGED, makeDatabaseCallback(track_awar_change_cb, &tac));
+        }
+        if (tac.changed) {
+            root->track_awar_change(awar);
+        }
     }
 
     if (error) {
@@ -1132,7 +1146,10 @@ static void scroll_sellist(Widget scrolledList, bool upwards) {
 static void scroll_sellist_up(Widget scrolledList, XEvent*, String*, Cardinal*) { scroll_sellist(scrolledList, true); }
 static void scroll_sellist_dn(Widget scrolledList, XEvent*, String*, Cardinal*) { scroll_sellist(scrolledList, false); }
 
-AW_selection_list* AW_window::create_selection_list(const char *var_name, int columns, int rows) {
+AW_selection_list* AW_window::create_selection_list(const char *var_name, int columns, int rows, bool /*fallback2default*/) {
+    // Note: fallback2default has no meaning in motif-version (always acts like 'false', i.e. never does fallback)
+    // see also .@create_option_menu
+
     Widget         scrolledWindowList; // @@@ fix locals
     Widget         scrolledList;
     VarUpdateInfo *vui;
@@ -1289,13 +1306,16 @@ __ATTR__NORETURN inline void toggle_type_mismatch(const char *triedType) { type_
 // ----------------------
 //      Options-Menu
 
-AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_label tmp_label, const char *mnemonic) {
+AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name, bool /*fallback2default*/) {
+    // Note: fallback2default has no meaning in motif-version (always acts like 'false', i.e. never does fallback)
+    // see also .@create_selection_list
+
     Widget optionMenu_shell;
     Widget optionMenu;
     Widget optionMenu1;
-    int x_for_position_of_menu;
+    int    x_for_position_of_menu;
 
-    if (_at->label_for_inputfield) tmp_label = _at->label_for_inputfield;
+    const char *tmp_label = _at->label_for_inputfield;
     if (tmp_label && !tmp_label[0]) {
         aw_assert(0); // do not specify empty labels (causes misalignment)
         tmp_label = NULL;
@@ -1345,10 +1365,6 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_la
                                                       NULL);
                 free(help_label);
             }
-
-            if (mnemonic && mnemonic[0] && strchr(tmp_label, mnemonic[0])) {
-                XtVaSetValues(optionMenu1, RES_CONVERT(XmNmnemonic, mnemonic), NULL);
-            }
         }
         else {
             _at->x_for_next_button = _at->saved_x;
@@ -1374,11 +1390,11 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_la
 
     get_root()->number_of_option_menus++;
 
-    AW_awar *vs = root->awar(var_name);
+    AW_awar *vs = root->awar(awar_name);
     {
         AW_option_menu_struct *next =
             new AW_option_menu_struct(get_root()->number_of_option_menus,
-                                      var_name,
+                                      awar_name,
                                       vs->variable_type,
                                       optionMenu1,
                                       optionMenu,

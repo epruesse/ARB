@@ -3,14 +3,14 @@
 use strict;
 use warnings;
 
-my $debug_matching = 0;
+my $debug_matching = 0; # set to 1 to view file matching and decision
 my $ignore_unknown = 0;
 
 # ------------------------------------------------------------
 # override checks below and save strictly as checked-in in SVN
 
 my @strictly_as_in_svn_when_matchesDir = (
-                                           qr/\/GDE\/MAFFT\/mafft-[0-9\.]+-with[out]*-extensions\/.*$/o,
+                                           qr/\/GDE\/MAFFT\/mafft-[0-9\.]+-with[out]*-extensions/o,
                                           );
 
 # ------------------------------------------------------------
@@ -22,11 +22,14 @@ my @skipped_directories = (
                            qr/\/HELP_SOURCE\/Xml$/o,
                            qr/\/GDE\/MUSCLE\/obj$/o,
                            qr/\/GDE\/PHYML20130708\/phyml\/autom4te.cache$/o,
+                           qr/\/GDE\/RAxML8\/builddir/o,
                            qr/\/ignore\./o,
                            qr/\/PERL2ARB\/blib$/o,
                            qr/\/HEADERLIBS\/[^\/]+/o,
                            qr/\/UNIT_TESTER\/logs$/o,
                            qr/\/UNIT_TESTER\/tests$/o,
+                           qr/\/UNIT_TESTER\/tests\.slow$/o,
+                           qr/\/UNIT_TESTER\/run\/homefake\/.arb_prop\/(macros|cfgSave)$/o,
                            qr/^\.\/ARB_SOURCE_DOC/o,
                            qr/^\.\/dep_graphs/o,
                            qr/^\.\/INCLUDE$/o,
@@ -68,7 +71,6 @@ my %skipped_files = map { $_ => 1; } (
                                       '.build.lst',
                                       '.cvsignore',
                                       '.depends',
-                                      'ARB_GDEmenus',
                                       'ChangeLog',
                                       'config.makefile',
                                       'helpfiles.lst',
@@ -82,7 +84,7 @@ my %skipped_files = map { $_ => 1; } (
                                       '.DS_Store',
                                       );
 
-my %used_extensions = map { $_ => 1; } (
+my %used_extensions = map { $_ => 1; } ( # matches part behind last '.' in filename
                                         'c', 'cpp', 'cxx', 'cc',
                                         'h', 'hpp', 'hxx',
 
@@ -104,9 +106,10 @@ my %used_extensions = map { $_ => 1; } (
                                         'source', 'menu',
                                         'template', 'default',
                                         'txt', 'doc', 'ps', 'pdf',
+                                        'tgz', 'gz',
                                        );
 
-my %skipped_extensions = map { $_ => 1; } (
+my %skipped_extensions = map { $_ => 1; } ( # matches part behind last '.' in filename
                                            'a',
                                            'bak',
                                            'class',
@@ -139,7 +142,6 @@ my @used_when_matches = (
                          qr/needs_libs\..*/io,
                          qr/readme$/io,
                          qr/typemap$/io,
-                         qr/unused.*source.*\.tgz$/io,
                         );
 
 my @skipped_when_matches = (
@@ -157,14 +159,12 @@ my @used_when_matchesFull = (
                              qr/\/CLUSTALW\/.*$/o,
                              qr/\/EISPACK\/rg\.html$/o,
                              qr/\/GDE\/.*\.html$/o,
-                             qr/\/GDEHELP\/DATA_FILES/o,
                              qr/\/GDEHELP\/FASTA/o,
                              qr/\/GDEHELP\/GDE.*/o,
                              qr/\/GDEHELP\/HELP_PLAIN/o,
                              qr/\/GDEHELP\/HELP_WRITTEN/o,
                              qr/\/GDEHELP\/Makefile\.helpfiles/o,
                              qr/\/HEADERLIBS\/.*COPYING$/o,
-                             qr/\/HEADERLIBS\/.*\.tgz$/o,
                              qr/\/HELP_SOURCE\/.*\.gif$/o,
                              qr/\/HELP_SOURCE\/oldhelp\/.*\.(ps|pdf)\.gz$/o,
                              qr/\/HELP_SOURCE\/oldhelp\/.*\.hlp$/o,
@@ -199,6 +199,7 @@ my @used_when_matchesFull = (
                              qr/^\.\/lib\/import\/.*\.ift2?$/o,
                              qr/^\.\/lib\/inputMasks\/.*\.mask$/o,
                              qr/^\.\/lib\/macros\/.*\.amc$/o,
+                             qr/^\.\/lib\/macros\/.checks\/.*\.expected$/o,
                              qr/^\.\/lib\/nas\/names\.dat\.template$/o,
                              qr/^\.\/lib\/pictures\/.*\.(fig|vfont)$/o,
                              qr/^\.\/lib\/pixmaps\/.*\.xpm$/o,
@@ -207,6 +208,7 @@ my @used_when_matchesFull = (
                              qr/^\.\/lib\/rna3d\/images\/.*\.png$/o,
                              qr/^\.\/lib\/sellists\/.*\.sellst$/o,
                              qr/^\.\/lib\/submit\//o,
+                             qr/^\.\/lib\/BUGS\//o,
                              qr/^\.\/util\/arb_.*$/o,
                              qr/^\.\/util\/config\..*$/o,
                              qr/\/GDE\/.*\/Makefile\.[^\/]+$/io,
@@ -221,9 +223,12 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/arb.*\.tgz$/o,
                                 qr/^\.\/bin\//o,
                                 qr/^\.\/GDE\/CORE\/functions.h$/o,
+                                qr/^\.\/GDE\/PHYML[^\/]+\/phyml\/(configure|config.h.in)$/o,
                                 qr/^\.\/lib\/ARB\.pm$/o,
                                 qr/^\.\/lib\/arb_tcp\.dat$/o,
+                                qr/^\.\/lib\/gde\/.*\.menu$/o,
                                 qr/^\.\/lib\/nas\/names.*\.dat$/o,
+                                qr/^\.\/lib\/macros\/\.checks\/.*\.ids$/o,
                                 qr/^\.\/lib\/motifHack\/pixmaps\/.*$/o,
                                 qr/^\.\/PERL2ARB\/.*\.h$/o,
                                 qr/^\.\/PERL2ARB\/ARB\.bs$/o,
@@ -240,6 +245,7 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/UNIT_TESTER\/run\/.*\.ARM$/o,
                                 qr/^\.\/UNIT_TESTER\/run\/.*\.ARF$/o,
                                 qr/^\.\/UNIT_TESTER\/Makefile\.setup\.local\.last$/o,
+                                qr/^\.\/TAGS\./o, # avoid failure while 'make tags' is running
                                 qr/date\.xsl$/o,
                                );
 
@@ -295,7 +301,7 @@ sub useIfMatching($\@\$) {
   my ($str,$regexp_arr_r,$use_r) = @_;
   my $matches = matchingExpr($str,@$regexp_arr_r);
   if ($matches>0) {
-    if ($debug_matching!=0) { print "'$str' matches '".$$regexp_arr_r[$matches-1]."' => use!\n"; }
+    if ($debug_matching!=0) { print STDERR "'$str' matches '".$$regexp_arr_r[$matches-1]."' => use!\n"; }
     $$use_r = 1;
   }
 }
@@ -303,7 +309,7 @@ sub dontUseIfMatching($\@\$) {
   my ($str,$regexp_arr_r,$use_r) = @_;
   my $matches = matchingExpr($str,@$regexp_arr_r);
   if ($matches>0) {
-    if ($debug_matching!=0) { print "'$str' matches '".$$regexp_arr_r[$matches-1]."' => don't use!\n"; }
+    if ($debug_matching!=0) { print STDERR "'$str' matches '".$$regexp_arr_r[$matches-1]."' => don't use!\n"; }
     $$use_r = 0;
   }
 }
@@ -320,8 +326,14 @@ sub useFile($$) {
     if ($file =~ /\.([^\.]+)$/o) {
       my $ext = $1;
       $hasExt = 1;
-      if (exists $used_extensions{$ext}) { $use = 1; }
-      elsif (exists $skipped_extensions{$ext}) { $use = 0; }
+      if (exists $used_extensions{$ext}) {
+        if ($debug_matching!=0) { print STDERR "'$file' matches extension '".$ext."' => use!\n"; }
+        $use = 1;
+      }
+      elsif (exists $skipped_extensions{$ext}) {
+        if ($debug_matching!=0) { print STDERR "'$file' matches extension '".$ext."' => don't use!\n"; }
+        $use = 0;
+      }
     }
   }
 
@@ -372,14 +384,18 @@ my $VC_UNKNOWN = 3; # in SVN, but unknown whether dir or file
 my $svn_entries_read = 0;
 my %all_svn_entries = ();
 
+sub isSVNcheckout($) {
+  my ($dir) = @_;
+  if (-f $dir.'/.svn/entries') { return 1; }
+  if (-f $dir.'/.svn/wc.db') { return 1; }
+  return 0;
+}
+
 sub getSVNEntries($\%) {
   my ($dir,$SVN_r) = @_;
 
   if ($svn_entries_read==0) { # first call
-    my $svnentries = $dir.'/.svn/entries';
-    if (not -f $svnentries) {
-      return 0;
-    }
+    if (isSVNcheckout($dir)==0) { return 0; }
 
     my $cmd = "svn status -v $dir";
     open(SVNSTATUS, "$cmd|") || die "failed to execute '$cmd' (Reason: $!)";

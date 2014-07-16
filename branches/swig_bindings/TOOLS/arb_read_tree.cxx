@@ -9,35 +9,35 @@
 // ============================================================= //
 
 #include <TreeRead.h>
-#include <arbdbt.h>
 #include <arb_strbuf.h>
 #include <arb_defs.h>
 #include <ctime>
 
-// add_bootstrap interprets the length of the branches as bootstrap value
-// (this is needed by Phylip DNAPARS/PROTPARS with bootstrapping)
-//
-// 'hundred' specifies which value represents 100%
 
 static void add_bootstrap(GBT_TREE *node, double hundred) {
+    // add_bootstrap interprets the length of the branches as bootstrap value
+    // (this is needed by Phylip DNAPARS/PROTPARS with bootstrapping)
+    //
+    // 'hundred' specifies which value represents 100%
+
     if (node->is_leaf) {
-        freenull(node->remark_branch);
+        node->remove_remark();
         return;
     }
 
     node->leftlen  /= hundred;
     node->rightlen /= hundred;
 
-    double left_bs  = node->leftlen  * 100.0 + 0.5;
-    double right_bs = node->rightlen * 100.0 + 0.5;
+    double left_bs  = node->leftlen  * 100.0;
+    double right_bs = node->rightlen * 100.0;
 
 #if defined(DEBUG) && 0
     fprintf(stderr, "node->leftlen  = %f left_bs  = %f\n", node->leftlen, left_bs);
     fprintf(stderr, "node->rightlen = %f right_bs = %f\n", node->rightlen, right_bs);
 #endif // DEBUG
 
-    node->leftson->remark_branch  = GBS_global_string_copy("%2.0f%%", left_bs);
-    node->rightson->remark_branch = GBS_global_string_copy("%2.0f%%", right_bs);
+    node->leftson ->set_bootstrap(left_bs);
+    node->rightson->set_bootstrap(right_bs);
 
     node->leftlen  = DEFAULT_BRANCH_LENGTH; // reset branchlengths
     node->rightlen = DEFAULT_BRANCH_LENGTH;
@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
                 char *warnings             = 0;
                 bool  allow_length_scaling = !param.consense && !param.scale;
 
-                tree = TREE_load(param.treefilename, sizeof(GBT_TREE), &comment_from_treefile, allow_length_scaling, &warnings);
+                tree = TREE_load(param.treefilename, GBT_TREE_NodeFactory(), &comment_from_treefile, allow_length_scaling, &warnings);
                 if (!tree) {
                     error = GB_await_error();
                 }
@@ -248,7 +248,7 @@ int main(int argc, char **argv) {
             error = GB_begin_transaction(gb_main);
 
             if (!error && tree->is_leaf) error = "Cannot load tree (need at least 2 leafs)";
-            if (!error) error                  = GBT_write_tree(gb_main, 0, param.tree_name, tree);
+            if (!error) error                  = GBT_write_tree(gb_main, param.tree_name, tree);
 
             if (!error) {
                 // write tree comment
@@ -282,7 +282,7 @@ int main(int argc, char **argv) {
         if (error) show_error(gb_main, error);
         else       show_message(gb_msg_main, GBS_global_string("Tree %s read into the database", param.tree_name));
 
-        GBT_delete_tree(tree);
+        delete tree;
         free(comment_from_file);
         free(comment_from_treefile);
     }

@@ -38,7 +38,7 @@ class  AW_root_cblist;
 struct AW_var_target;
 struct AW_widget_refresh_cb;
 
-// @@@ [CB] eliminate decls below? just use AW_RCB instead
+// @@@ [CB] eliminate decls below? just use AW_RCB instead // @@@ duplicated in cb.h
 typedef AW_RCB  Awar_CB;
 typedef Awar_CB Awar_CB2;
 typedef         void (*Awar_CB1)(AW_root *, AW_CL);
@@ -134,6 +134,9 @@ public:
     void    update();       // awar has changed
 
     AW_awar *set_minmax(float min, float max);
+    float    get_min() const;
+    float    get_max() const;
+    AW_awar *set_min(float min) { return set_minmax(min, get_max()); }
     AW_awar *set_srt(const char *srt);
 
     AW_awar *map(const char *awarn);
@@ -152,12 +155,12 @@ public:
 
     AW_VARIABLE_TYPE get_type() const;
 
-    char       *read_string();
-    const char *read_char_pntr();
-    char       *read_as_string();
-    long        read_int();
-    double      read_float();
-    GBDATA     *read_pointer();
+    char       *read_string() const;
+    const char *read_char_pntr() const;
+    char       *read_as_string() const;
+    long        read_int() const;
+    double      read_float() const;
+    GBDATA     *read_pointer() const;
 
     GB_ERROR write_string(const char *aw_string);
     GB_ERROR write_as_string(const char *aw_string);

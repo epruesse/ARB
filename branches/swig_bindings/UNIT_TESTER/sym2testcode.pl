@@ -125,7 +125,11 @@ sub parse($) {
           $is_unit_test = 1;
           if ($' =~ /^POSTCOND_/o) { $is_postcond = 1; }
         }
-        elsif ($symbol =~ /TEST_/o) { $is_disabled_test = 1; }
+        elsif ($symbol =~ /TEST_/o) {
+          if (not $` =~  /publish/) { # skip publishers
+            $is_disabled_test = 1;
+          }
+        }
 
         my $is_global_symbol = ($type eq 'T');
 
@@ -166,25 +170,39 @@ sub parse($) {
 
 # --------------------------------------------------------------------------------
 
-sub filter($) {
-  my ($expr) = @_;
-  my $regexpr = qr/$expr/;
+sub filter($$) {
+  my ($expr_mod,$expr_fun) = @_;
+
+  my $reg_mod = qr/$expr_mod/;
+  my $reg_fun = qr/$expr_fun/;
 
   my %del = ();
-  foreach my $symbol (keys %location) {
+  foreach my $symbol (keys %simple_test) {
     my $loc = $location{$symbol};
-    if (not $loc =~ $regexpr) { $del{$symbol} = 1; }
+    if (defined $loc and not $loc =~ $reg_mod) { $del{$symbol} = 1; }
+    elsif (not $symbol =~ $reg_fun) { $del{$symbol} = 2; }
     else { $del{$symbol} = 0; }
   }
 
   {
-    my $warn = 0;
+    my $warned = 0;
     foreach (sort keys %simple_test) {
       my $del = $del{$_};
       if (defined $del and $del==1) {
-        if ($warn==0) {
-          print "Skipped tests (restriction set to '$expr'):\n";
-          $warn = 1;
+        if ($warned==0) {
+          print "Skipped tests (restricting to modules matching '$expr_mod'):\n";
+          $warned = 1;
+        }
+        print '* '.$_."\n";
+      }
+    }
+    $warned = 0;
+    foreach (sort keys %simple_test) {
+      my $del = $del{$_};
+      if (defined $del and $del==2) {
+        if ($warned==0) {
+          print "Skipped tests (restricting to functions matching '$expr_fun'):\n";
+          $warned = 1;
         }
         print '* '.$_."\n";
       }
@@ -307,26 +325,28 @@ HEAD
 
 sub main() {
   my $args = scalar(@ARGV);
-  if ($args != 5) {
-    die("Usage: sym2testcode.pl libname restrict-expr nm-output gen-cxx warn-level skip-slow\n".
+  if ($args != 6) {
+    die("Usage: sym2testcode.pl libname restrict-mod restrict-fun nm-output gen-cxx warn-level\n".
         "    libname        name of library to run tests for\n".
-        "    restrict-expr  regexpr to restrict to specific module in library\n".
+        "    restrict-mod   regexpr to restrict to specific module in library\n".
+        "    restrict-fun   regexpr to restrict to matching test functions\n".
         "    nm-output      output of nm\n".
         "    gen_cxx        name of C++ file to generate\n".
         "    warn-level     (0=quiet|1=noisy)\n".
         "Error: Expected 5 arguments\n");
   }
 
-  my $libname   = shift @ARGV;
-  my $restrict  = shift @ARGV;
-  my $nm_output = shift @ARGV;
-  my $gen_cxx   = shift @ARGV;
-  $warn_level   = shift @ARGV;
+  my $libname     = shift @ARGV;
+  my $restrictMod = shift @ARGV;
+  my $restrictFun = shift @ARGV;
+  my $nm_output   = shift @ARGV;
+  my $gen_cxx     = shift @ARGV;
+  $warn_level     = shift @ARGV;
 
   parse($nm_output);
   fail_if_no_tests_defined($libname); # comment out to disableErrorOnUnitsWithoutTests
 
-  filter($restrict);
+  filter($restrictMod,$restrictFun);
   eval {
     create($libname,$gen_cxx);
   };

@@ -21,7 +21,7 @@ public:
         gb_main = GB_open(":", "rwt");
         if (!gb_main) {
             GB_print_error();
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
     }
     ~ARBDB_connector() {

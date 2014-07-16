@@ -16,28 +16,10 @@
 
 
 struct RB_INFO {
-    GBT_LEN   len;
-    GBT_TREE *node;
-    int       percent; // branch probability [0..100]
+    GBT_LEN     len;
+    RootedTree *node;
+    int         percent;    // branch probability [0..100]
 };
-
-
-#define RMSTRLEN 81
-
-static char *rb_remark(const char *info, int perc, char *txt) {
-    // build a remark with the percentage representation of the partition
-    char *txt2 = (char *) getmem(RMSTRLEN);
-    sprintf(txt2, "%s%i%%", info, perc);
-    if (txt) {
-        strcat(txt, txt2);
-        free(txt2);
-    }
-    else {
-        txt = txt2;
-    }
-
-    return txt;
-}
 
 static int GBT_TREE_order(const GBT_TREE *t1, const GBT_TREE *t2) {
     // define a strict order on trees
@@ -47,7 +29,8 @@ static int GBT_TREE_order(const GBT_TREE *t1, const GBT_TREE *t2) {
         GBT_LEN l1 = t1->leftlen+t1->rightlen;
         GBT_LEN l2 = t2->leftlen+t2->rightlen;
 
-        cmp = double_cmp(l1, l2); // insert smaller len first
+        cmp = double_cmp(l1, l2); // NOW REALLY insert smaller len first
+                                  // (change had no effect on test results)
         if (!cmp) {
             if (t1->is_leaf) {
                 cmp = strcmp(t1->name, t2->name);
@@ -59,7 +42,10 @@ static int GBT_TREE_order(const GBT_TREE *t1, const GBT_TREE *t2) {
                 int crr = GBT_TREE_order(t1->rightson, t2->rightson);
 
                 cmp = cll+clr+crl+crr;
-                arb_assert(cmp); // order not strict enough
+                if (!cmp) {
+                    cmp = cll;
+                    arb_assert(cmp); // order not strict enough
+                }
             }
         }
     }
@@ -75,7 +61,8 @@ static int RB_INFO_order(const void *v1, const void *v2, void *) {
     int cmp = i1->percent - i2->percent; // insert more probable branches first
 
     if (!cmp) {
-        cmp = double_cmp(i1->len, i2->len); // insert smaller len first
+        cmp = double_cmp(i1->len, i2->len); // NOW REALLY insert smaller len first
+                                            // (change slightly affected test results in "weak" tree-parts)
         if (!cmp) {
             cmp = GBT_TREE_order(i1->node, i2->node);
         }
@@ -83,29 +70,30 @@ static int RB_INFO_order(const void *v1, const void *v2, void *) {
     return cmp;
 }
 
-RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
+RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
     // doing all the work for rb_gettree() :-)
     // convert a Ntree into a GBT-Tree
-    
-    GBT_TREE *gbtnode = (GBT_TREE *) getmem(sizeof(GBT_TREE));
-    gbtnode->father   = father;
+
+    RootedTree *tnode = DOWNCAST(RootedTree*,root->makeNode());
+    tnode->father     = NULL;
 
     RB_INFO *info = (RB_INFO *) getmem(sizeof(RB_INFO));
-    info->node    = gbtnode;                             // return-information
-    info->percent = int(tree->part->get_weight()*100.0+.5); 
+    info->node    = tnode;                             // return-information
+    info->percent = int(tree->part->get_weight()*100.0+.5);
     info->len     = tree->part->get_len();
 
     NSONS *nsonp = tree->son_list;
     if (!nsonp) {                                        // if node is leaf
         int idx = tree->part->index();
 
-        gbtnode->name    = strdup(get_species_name(idx));
-        gbtnode->is_leaf = true;
+        tnode->name    = strdup(get_species_name(idx));
+        tnode->is_leaf = true;
     }
     else {
-        gbtnode->is_leaf = false;
+        tnode->is_leaf = false;
+        arb_assert(!tnode->get_remark());
         if (info->percent < 100) {
-            gbtnode->remark_branch = rb_remark("", info->percent, gbtnode->remark_branch);
+            tnode->set_bootstrap(info->percent);
         }
 
         int      multifurc = ntree_count_sons(tree);
@@ -114,7 +102,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
         {
             int sidx = 0;
             while (nsonp) {
-                son_info[sidx++] = rbtree(nsonp->node, NULL);
+                son_info[sidx++] = rbtree(nsonp->node, root);
                 nsonp            = nsonp->next;
             }
 
@@ -126,11 +114,11 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
             for (int sidx1 = 0; sidx1<multifurc; sidx1 += 2) {
                 int sidx2 = sidx1+1;
                 if (sidx2<multifurc) {
-                    GBT_TREE *mf;
-                    RB_INFO *sinfo;
+                    RootedTree *mf;
+                    RB_INFO    *sinfo;
 
                     if (multifurc > 2) {
-                        mf    = (GBT_TREE *) getmem(sizeof(GBT_TREE));
+                        mf    = DOWNCAST(RootedTree*, root->makeNode());
                         sinfo = (RB_INFO *) getmem(sizeof(RB_INFO));
 
                         mf->father = NULL;
@@ -140,7 +128,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
                         sinfo->node    = mf;
                     }
                     else { // last step
-                        mf    = gbtnode;
+                        mf    = tnode;
                         sinfo = info;
                     }
 
@@ -167,16 +155,18 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, GBT_TREE *father) {
 
         arb_assert(multifurc == 1);
         arb_assert(son_info[0] == info);
-        arb_assert(info->node->father == father);
+        arb_assert(info->node->father == NULL);
     }
     return info;
 }
 
 
-GBT_TREE *ConsensusTree::rb_gettree(const NT_NODE *tree) {
+SizeAwareTree *ConsensusTree::rb_gettree(const NT_NODE *tree) {
     // reconstruct GBT Tree from Ntree. Ntree is not destructed afterwards!
-    RB_INFO  *info    = rbtree(tree, NULL);
-    GBT_TREE *gbttree = info->node;
+    RB_INFO       *info   = rbtree(tree, new TreeRoot(new SizeAwareNodeFactory, true));
+    SizeAwareTree *satree = DOWNCAST(SizeAwareTree*, info->node);
+    satree->announce_tree_constructed();
+    ASSERT_VALID_TREE(satree);
     free(info);
-    return gbttree;
+    return satree;
 }

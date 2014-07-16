@@ -7,7 +7,7 @@
 #define AWAR_DB_FILTER AWAR_DB "filter"
 #define AWAR_DB_NAME   AWAR_DB_PATH "_without_path" //  awar is automatically updated when AWAR_DB_PATH changes
 
-#define AWAR_DEFAULT_ALIGNMENT "presets/use"
+#define AWAR_DEFAULT_ALIGNMENT "presets/use" // has to match ../ARBDB/arbdb.h@GB_DEFAULT_ALIGNMENT
 
 #define AWAR_TREE          "focus/tree_name"
 #define AWAR_TREE_REFRESH  "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
@@ -24,7 +24,6 @@
 #define AWAR_TARGET_STRING        "nt/target_string"
 #define AWAR_PRIMER_TARGET_STRING "nt/primer_target_string"
 #define AWAR_GENE_CONTENT         "nt/gene_content"
-#define AWAR_MIN_MISMATCHES       "nt/min_mismatches"
 #define AWAR_MAX_MISMATCHES       "nt/max_mismatches"
 #define AWAR_ITARGET_STRING       "nt/itarget_string"
 #define AWAR_EXPERT               "nt/expert"

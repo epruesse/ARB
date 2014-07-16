@@ -310,6 +310,47 @@ static void awt_aps_go(AW_window *aww) {
     free(text);
 }
 
+static void cutExt(char *name, const char *removeExt) {
+    char *found = strstr(name, removeExt);
+    if (found && strcmp(found, removeExt) == 0) {
+        found[0] = 0;
+    }
+}
+static char *correct_extension(const char *name, const char *newExt) {
+    char *noExt = strdup(name);
+    cutExt(noExt, ".ps");
+    cutExt(noExt, ".txt");
+
+    char *result = (char*)malloc(strlen(noExt)+strlen(newExt)+1);
+    strcpy(result, noExt);
+    strcat(result, newExt);
+    if (strcmp(name, result) == 0) freenull(result);
+
+    free(noExt);
+    return result;
+}
+
+static void aps_correct_filename(AW_root *aw_root) {
+    int type = aw_root->awar(AWAR_APRINT_PRINTTO)->read_int();
+    if (type == AWT_APRINT_DEST_FILE || type == AWT_APRINT_DEST_AFILE) {
+        AW_awar    *awar_name = aw_root->awar(AWAR_APRINT_FILE);
+        const char *name      = awar_name->read_char_pntr();
+        char       *new_name  = NULL;
+
+        if (type == AWT_APRINT_DEST_FILE) {
+            new_name = correct_extension(name, ".ps");
+        }
+        else {
+            awt_assert((type == AWT_APRINT_DEST_AFILE));
+            new_name = correct_extension(name, ".txt");
+        }
+        if (new_name) {
+            awar_name->write_string(new_name);
+            free(new_name);
+        }
+    }
+}
+
 void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, const char *title) {
     static AW_window_simple *aws = 0;
 
@@ -336,8 +377,11 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, cons
         awr->awar_float(AWAR_APRINT_DX, 1.0);
         awr->awar_float(AWAR_APRINT_DY, 1.0);
 
+        awr->awar_string(AWAR_APRINT_FILE, "print.ps")->add_callback(aps_correct_filename);
         awr->awar_int(AWAR_APRINT_ORIENTATION, (int)AWT_APRINT_ORIENTATION_PORTRAIT)->add_callback(awt_aps_set_magnification_to_fit_xpage);
-        awr->awar_int(AWAR_APRINT_PRINTTO, int(AWT_APRINT_DEST_PRINTER));
+        awr->awar_int(AWAR_APRINT_PRINTTO, int(AWT_APRINT_DEST_PRINTER))->add_callback(aps_correct_filename);
+        aps_correct_filename(awr);
+
         {
             char *print_command;
             if (getenv("PRINTER")) {
@@ -350,7 +394,6 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, cons
             awr->awar_string(AWAR_APRINT_PRINTER, print_command);
             free(print_command);
         }
-        awr->awar_string(AWAR_APRINT_FILE, "print.ps");
 
         awt_aps_text_changed(awr);
 

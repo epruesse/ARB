@@ -31,11 +31,11 @@ endif
 # if you change lib-dependencies here,
 # please update corresponding definitions in ../BINDEP/
 
-LIB_ARBDB               := $(LIBPATH) $(ARBDB_LIB)
+LIB_ARBDB               := $(LIBPATH) $(ARBDB_LIB) $(ARB_GLIB_LIBS)
 LIBS_ARB_PROBE          := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a ../PROBE_COM/common.a ../SL/REGEXPR/REGEXPR.a
 LIBS_ARB_READ_TREE      := ../SL/TREE_READ/TREE_READ.a
 LIBS_ARB_EXPORT_TREE    := ../SL/TREE_WRITE/TREE_WRITE.a ../XML/XML.a $(LIBS_ARB_READ_TREE)
-LIBS_ARB_CONSENSUS_TREE := $(LIBS_ARB_EXPORT_TREE) ../CONSENSUS_TREE/CONSENSUS_TREE.a
+LIBS_ARB_CONSENSUS_TREE := $(LIBS_ARB_EXPORT_TREE) ../CONSENSUS_TREE/CONSENSUS_TREE.a ../SL/ROOTED_TREE/ROOTED_TREE.a
 
 OBJECTS:=$(addsuffix .o,$(TOOLS))
 BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
@@ -48,7 +48,7 @@ all: $(BINARIES)
 %.o: %.c
 	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
-$(ARBHOME)/bin/arb_probe: arb_probe.o $(LIBS_ARB_PROBE)
+$(ARBHOME)/bin/arb_probe: arb_probe.o $(LIBS_ARB_PROBE) $(use_ARB_main)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_PROBE) $(LIB_ARBDB) $(EXECLIBS) 
 
 $(ARBHOME)/bin/arb_read_tree: arb_read_tree.o  $(LIBS_ARB_READ_TREE)
@@ -57,14 +57,13 @@ $(ARBHOME)/bin/arb_read_tree: arb_read_tree.o  $(LIBS_ARB_READ_TREE)
 $(ARBHOME)/bin/arb_export_tree: arb_export_tree.o  $(LIBS_ARB_EXPORT_TREE)
 	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_EXPORT_TREE) $(LIB_ARBDB) $(EXECLIBS) 
 
-$(ARBHOME)/bin/arb_consensus_tree: arb_consensus_tree.o  $(LIBS_ARB_CONSENSUS_TREE)
+$(ARBHOME)/bin/arb_consensus_tree: arb_consensus_tree.o  $(LIBS_ARB_CONSENSUS_TREE) $(use_ARB_main)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_CONSENSUS_TREE) $(LIB_ARBDB) $(EXECLIBS) 
 
-$(ARBHOME)/bin/arb_a2ps: arb_a2ps.o
+$(ARBHOME)/bin/arb_a2ps: arb_a2ps.o $(use_ARB_main_C)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $< $(LIB_ARBDB) $(EXECLIBS)
-#	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB) $(EXECLIBS)
 
-$(ARBHOME)/bin/%: %.o
+$(ARBHOME)/bin/%: %.o $(use_ARB_main)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIB_ARBDB) $(EXECLIBS)
 
 clean:
@@ -135,10 +134,12 @@ arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_defs.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_diff.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_file.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_str.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -155,6 +156,7 @@ arb_consensus_tree.o: $(ARBHOME)/INCLUDE/downcast.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/nds.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/test_global.h

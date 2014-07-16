@@ -9,6 +9,8 @@
 #include  <sys/types.h>
 #include <sys/time.h>
 #include <time.h> 
+#include <stdlib.h>
+#include <string.h>
 double accTime = 0.0;
 double globTime = 0.0;
 struct timeval ttime;

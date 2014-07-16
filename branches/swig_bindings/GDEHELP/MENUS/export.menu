@@ -1,6 +1,7 @@
 item:Export sequences to foreign format (Readseq) ...
 itemmeta: R
-itemmethod:arb_readseq in1 -pipe -all -form=$FORMAT > $OUTPUTFILE
+seqtype:*
+itemmethod:arb_readseq TmpInputFile -pipe -all -form=$FORMAT > $OUTPUTFILE
 itemhelp:readseq.help
 
 arg:FORMAT
@@ -27,5 +28,5 @@ arg:OUTPUTFILE
 argtype:filename
 arglabel:Save as?
 
-in:in1
+in:TmpInputFile
 informat:genbank

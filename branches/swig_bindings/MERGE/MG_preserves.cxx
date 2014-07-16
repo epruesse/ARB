@@ -57,7 +57,7 @@ static void init_alignments(preserve_para *para) {
     // initialize the alignment selection list
     ConstStrArray ali_names;
     get_global_alignments(ali_names);
-    para->alignmentList->init_from_array(ali_names, "All");
+    para->alignmentList->init_from_array(ali_names, "All", "All");
 }
 
 static void clear_candidates(preserve_para *para) {
@@ -236,13 +236,12 @@ static void find_SAI_candidates(Candidates& candidates, const CharPtrArray& ali_
     GBS_free_hash(src_SAIs);
 }
 
-static void calculate_preserves_cb(AW_window *aww, AW_CL cl_para) {
+static void calculate_preserves_cb(AW_window *aww, preserve_para *para) {
     // FIND button (rebuild candidates list)
 
     GB_transaction ta_src(GLOBAL_gb_src);
     GB_transaction ta_dst(GLOBAL_gb_dst);
 
-    preserve_para *para = (preserve_para*)cl_para;
     clear_candidates(para);
 
     const char *ali = aww->get_root()->awar(AWAR_REMAP_ALIGNMENT)->read_char_pntr();
@@ -299,17 +298,14 @@ static char *get_selected_reference(AW_root *aw_root) {
     return aw_root->awar(AWAR_REMAP_SEL_REFERENCE)->read_string();
 }
 
-static void refresh_reference_list_cb(AW_root *aw_root, AW_CL cl_para) {
-    preserve_para *para = (preserve_para*)cl_para;
+static void refresh_reference_list_cb(AW_root *aw_root, preserve_para *para) {
     ConstStrArray  refs;
     read_references(refs, aw_root);
-    para->usedRefsList->init_from_array(refs, "");
+    para->usedRefsList->init_from_array(refs, "", "");
 }
 
-static void add_selected_cb(AW_window *aww, AW_CL cl_para) {
+static void add_selected_cb(AW_window *aww, preserve_para *para) {
     // ADD button (add currently selected candidate to references)
-
-    preserve_para *para    = (preserve_para*)cl_para;
     AW_root       *aw_root = aww->get_root();
     ConstStrArray  refs;
     read_references(refs, aw_root);
@@ -400,7 +396,7 @@ static void init_preserve_awars(AW_root *aw_root) {
     aw_root->awar_string(AWAR_REMAP_SEL_REFERENCE, "", GLOBAL_gb_dst);
 }
 
-AW_window *MG_select_preserves_cb(AW_root *aw_root) {
+AW_window *MG_create_preserves_selection_window(AW_root *aw_root) {
     // SELECT PRESERVES window
     init_preserve_awars(aw_root);
 
@@ -421,7 +417,7 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     preserve_para *para = new preserve_para; // do not free (is passed to callback)
 
     aws->at("ali");
-    para->alignmentList = aws->create_selection_list(AWAR_REMAP_ALIGNMENT, 10, 30);
+    para->alignmentList = aws->create_selection_list(AWAR_REMAP_ALIGNMENT, 10, 30, true);
 
     // ----------
 
@@ -430,7 +426,7 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     aws->create_toggle(AWAR_REMAP_ENABLE);
 
     aws->at("reference");
-    para->usedRefsList = aws->create_selection_list(AWAR_REMAP_SEL_REFERENCE, 10, 30);
+    para->usedRefsList = aws->create_selection_list(AWAR_REMAP_SEL_REFERENCE, 10, 30, true);
 
     aws->button_length(8);
 
@@ -457,15 +453,15 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     // ----------
 
     aws->at("find");
-    aws->callback(calculate_preserves_cb, (AW_CL)para);
+    aws->callback(makeWindowCallback(calculate_preserves_cb, para));
     aws->create_autosize_button("FIND", "Find candidates", "F", 1);
 
     aws->at("add");
-    aws->callback(add_selected_cb, (AW_CL)para);
+    aws->callback(makeWindowCallback(add_selected_cb, para));
     aws->create_button("ADD", "Add", "A");
 
     aws->at("candidate");
-    para->refCandidatesList = aws->create_selection_list(AWAR_REMAP_CANDIDATE, 10, 30);
+    para->refCandidatesList = aws->create_selection_list(AWAR_REMAP_CANDIDATE, 10, 30, true);
 
     {
         GB_transaction ta_src(GLOBAL_gb_src);
@@ -477,7 +473,7 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
 
     {
         AW_awar *awar_list = aw_root->awar(AWAR_REMAP_SPECIES_LIST);
-        awar_list->add_callback(refresh_reference_list_cb, (AW_CL)para);
+        awar_list->add_callback(makeRootCallback(refresh_reference_list_cb, para));
         awar_list->touch(); // trigger callback
     }
 

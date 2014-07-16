@@ -155,8 +155,6 @@ public:
     void get_clicked_text(class AW_clicked_text *ptr) const;
 };
 
-const AW_clicked_element *AW_getBestClick(const AW_clicked_line *cl, const AW_clicked_text *ct);
-
 #else
 #error aw_device_click.hxx included twice
 #endif // AW_DEVICE_CLICK_HXX

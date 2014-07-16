@@ -30,6 +30,8 @@
 #include "arbtools.h"
 #endif
 
+#define ARB_CRASH_CODE(sig) (128+(sig))
+
 class BackTraceInfo : virtual Noncopyable {
     void   **array;
     size_t   size;

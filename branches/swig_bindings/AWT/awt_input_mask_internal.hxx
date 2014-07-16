@@ -210,12 +210,12 @@ private:
 
 protected:
 
-    void add_awar_callbacks();
-    void remove_awar_callbacks();
+    void add_awarItem_callbacks();
+    void remove_awarItem_callbacks();
 
 public:
     awt_mask_awar_item(awt_input_mask_global& global_, const std::string& awar_base, const std::string& default_value, bool saved_with_properties);
-    virtual ~awt_mask_awar_item() OVERRIDE { remove_awar_callbacks(); }
+    virtual ~awt_mask_awar_item() OVERRIDE { remove_awarItem_callbacks(); }
 
     virtual void awar_changed() = 0; // called when awar changes
 

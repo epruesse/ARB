@@ -72,20 +72,20 @@ static const char *default_color(int cset, int elem) {
     return result;
 }
 
-static void awt_awar_changed_cb(AW_root *, AW_CL cl_sc) {
-    AWT_seq_colors *sc = (AWT_seq_colors *)cl_sc;
+static void color_awar_changed_cb(AW_root *, AWT_seq_colors *sc) {
     sc->reload();
 }
 
 static void create_seq_color_awars(AW_root *awr, AWT_seq_colors *asc) {
     awt_assert(!seq_color_awars_created);
 
-    awr->awar_int(AWAR_SEQ_NAME_SELECTOR_NA, default_NUC_set, AW_ROOT_DEFAULT)->add_callback(awt_awar_changed_cb, (AW_CL)asc);
-    awr->awar_int(AWAR_SEQ_NAME_SELECTOR_AA, default_AMI_set, AW_ROOT_DEFAULT)->add_callback(awt_awar_changed_cb, (AW_CL)asc);
+    RootCallback update_cb = makeRootCallback(color_awar_changed_cb, asc);
+    awr->awar_int(AWAR_SEQ_NAME_SELECTOR_NA, default_NUC_set, AW_ROOT_DEFAULT)->add_callback(update_cb);
+    awr->awar_int(AWAR_SEQ_NAME_SELECTOR_AA, default_AMI_set, AW_ROOT_DEFAULT)->add_callback(update_cb);
 
     for (int elem = 0; elem<SEQ_COLOR_SET_ELEMS; ++elem) {
         const char *awar_name = GBS_global_string(AWAR_SEQ_NAME_STRINGS_TEMPLATE, elem);
-        awr->awar_string(awar_name, default_characters(elem))->add_callback(awt_awar_changed_cb, (AW_CL)asc);
+        awr->awar_string(awar_name, default_characters(elem))->add_callback(update_cb);
 
         for (int cset = 0; cset<SEQ_COLOR_SETS; ++cset) {
             awar_name         = GBS_global_string(AWAR_SEQ_NAME_TEMPLATE, cset, elem);
@@ -98,7 +98,7 @@ static void create_seq_color_awars(AW_root *awr, AWT_seq_colors *asc) {
             // add callback AFTER writing to awar above to avoid recursion
             // (the CB calls this function again, and seq_color_awars_created is set
             // to true at the very end...
-            awar_col->add_callback(awt_awar_changed_cb, (AW_CL)asc);
+            awar_col->add_callback(update_cb);
         }
     }
 
@@ -292,7 +292,7 @@ void AWT_reference::init(const char *species_name, const char *alignment_name) {
     awt_assert(species_name);
     awt_assert(alignment_name);
 
-    GB_transaction dummy(gb_main);
+    GB_transaction ta(gb_main);
     GBDATA *gb_species = GBT_find_species(gb_main, species_name);
 
     init();

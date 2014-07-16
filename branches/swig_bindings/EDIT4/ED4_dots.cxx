@@ -22,9 +22,9 @@
 using namespace std;
 
 #define AWAR_DOT_BASE      "dotmiss/"
-#define AWAR_DOT_SAI       AWAR_DOT_BASE "sai"    // selected SAI
-#define AWAR_DOT_SAI_CHARS AWAR_DOT_BASE "chars"  // handle columns where SAI contains one of these chars
-#define AWAR_DOT_MARKED    AWAR_DOT_BASE "marked" // handle marked only?
+#define AWAR_DOT_SAI       AWAR_DOT_BASE "sainame" // selected SAI
+#define AWAR_DOT_SAI_CHARS AWAR_DOT_BASE "chars"   // handle columns where SAI contains one of these chars
+#define AWAR_DOT_MARKED    AWAR_DOT_BASE "marked"  // handle marked only?
 
 struct dot_insert_stat {
     size_t  pos_count;
@@ -259,7 +259,7 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
 
         aws->at("cons_def");
         aws->label("Change definition of");
-        aws->callback(AW_POPUP, (AW_CL)ED4_create_consensus_definition_window, 0);
+        aws->callback(ED4_create_consensus_definition_window);
         aws->create_button("CONS_DEF", "Consensus", "C");
 
         aws->at("go");

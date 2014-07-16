@@ -37,12 +37,12 @@
 #include "gb_comm.h"
 #include "gb_data.h"
 #include "gb_localdata.h"
-#include "gb_main.h"
 
 #include <SigHandler.h>
 
 #include <algorithm>
 #include <arb_misc.h>
+#include <arb_defs.h>
 
 static int gbcm_pipe_violation_flag = 0;
 void gbcms_sigpipe(int) {
@@ -95,50 +95,49 @@ long gbcm_read(int socket, char *ptr, long size) {
 }
 
 GBCM_ServerResult gbcm_write_flush(int socket) {
-    char *ptr;
-    long    leftsize, writesize;
-    ptr = gb_local->write_buffer;
-    leftsize = gb_local->write_ptr - ptr;
+    char *ptr      = gb_local->write_buffer;
+    long  leftsize = gb_local->write_ptr - ptr;
+
     gb_local->write_free = gb_local->write_bufsize;
-    if (!leftsize) return GBCM_SERVER_OK;
 
-    gb_local->write_ptr = ptr;
-    gbcm_pipe_violation_flag = 0;
+    if (leftsize) {
+        gb_local->write_ptr = ptr;
+        gbcm_pipe_violation_flag = 0;
 
-    writesize = write(socket, ptr, (size_t)leftsize);
+        long writesize = write(socket, ptr, (size_t)leftsize);
 
-    if (gbcm_pipe_violation_flag || writesize<0) {
-        if (gb_local->iamclient) {
-            fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
-            exit(-1);
-        }
-        fprintf(stderr, "writesize: %li ppid %i\n", writesize, getppid());
-        return GBCM_SERVER_FAULT;
-    }
-    ptr += writesize;
-    leftsize = leftsize - writesize;
-
-    while (leftsize) {
-        GB_sleep(10, MS);
-
-        writesize = write(socket, ptr, (size_t)leftsize);
         if (gbcm_pipe_violation_flag || writesize<0) {
-            if ((int)getppid() <= 1) {
+            if (gb_local->iamclient) {
                 fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
-                exit(-1);
+                exit(EXIT_SUCCESS);
             }
-            fprintf(stderr, "write error\n");
+            fprintf(stderr, "writesize: %li ppid %i\n", writesize, getppid());
             return GBCM_SERVER_FAULT;
         }
         ptr += writesize;
-        leftsize -= writesize;
+        leftsize = leftsize - writesize;
+
+        while (leftsize) {
+            GB_sleep(10, MS);
+
+            writesize = write(socket, ptr, (size_t)leftsize);
+            if (gbcm_pipe_violation_flag || writesize<0) {
+                if ((int)getppid() <= 1) {
+                    fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
+                    exit(EXIT_SUCCESS);
+                }
+                fprintf(stderr, "write error\n");
+                return GBCM_SERVER_FAULT;
+            }
+            ptr += writesize;
+            leftsize -= writesize;
+        }
     }
     return GBCM_SERVER_OK;
 }
 
 GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size) {
-
-    while  (size >= gb_local->write_free) {
+    while (size >= gb_local->write_free) {
         memcpy(gb_local->write_ptr, ptr, (int)gb_local->write_free);
         gb_local->write_ptr += gb_local->write_free;
         size -= gb_local->write_free;
@@ -497,14 +496,6 @@ GB_ULONG GB_time_of_day() {
     return tp.tv_sec;
 }
 
-long GB_last_saved_clock(GBDATA *gb_main) {
-    return GB_MAIN(gb_main)->last_saved_transaction;
-}
-
-GB_ULONG GB_last_saved_time(GBDATA *gb_main) {
-    return GB_MAIN(gb_main)->last_saved_time;
-}
-
 GB_ERROR GB_textprint(const char *path) {
     // goes to header: __ATTR__USERESULT
     char       *fpath   = GBS_eval_env(path);
@@ -722,7 +713,7 @@ GB_CSTR GB_getenvARBHOME() {
         if (!arbhome) {
             fprintf(stderr, "Fatal ERROR: Environment Variable ARBHOME not found !!!\n"
                     "   Please set 'ARBHOME' to the installation path of ARB\n");
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
         Arbhome = arbhome;
     }
@@ -738,37 +729,37 @@ GB_CSTR GB_getenvARBMACRO() {
     return am;
 }
 
-static GB_CSTR getenv_autodirectory(const char *envvar, const char *defaultDirectory) {
-    static const char *dir = 0;
+static char *getenv_autodirectory(const char *envvar, const char *defaultDirectory) {
+    // if environment variable 'envvar' contains an existing directory -> use that
+    // otherwise fallback to 'defaultDirectory' (create if not existing)
+    // return heap-copy of full directory name
+    char *dir = getenv_existing_directory(envvar);
     if (!dir) {
-        dir = getenv_existing_directory(envvar);
-        if (!dir) {
-            dir = GBS_eval_env(defaultDirectory);
-            if (!GB_is_directory(dir)) {
-                GB_ERROR error = GB_create_directory(dir);
-                if (error) GB_warning(error);
-            }
+        dir = GBS_eval_env(defaultDirectory);
+        if (!GB_is_directory(dir)) {
+            GB_ERROR error = GB_create_directory(dir);
+            if (error) GB_warning(error);
         }
     }
     return dir;
 }
 
 GB_CSTR GB_getenvARB_PROP() {
-    static const char *ap = 0;
-    if (!ap) ap = getenv_autodirectory("ARB_PROP", GB_path_in_HOME(".arb_prop"));  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_PROP
-    return ap;
+    static SmartCharPtr ArbProps;
+    if (ArbProps.isNull()) ArbProps = getenv_autodirectory("ARB_PROP", GB_path_in_HOME(".arb_prop")); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_PROP
+    return &*ArbProps;
 }
 
 GB_CSTR GB_getenvARBMACROHOME() {
-    static const char *amh = 0;
-    if (!amh) amh = getenv_autodirectory("ARBMACROHOME", GB_path_in_arbprop("macros"));  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACROHOME
-    return amh;
+    static SmartCharPtr ArbMacroHome;
+    if (ArbMacroHome.isNull()) ArbMacroHome = getenv_autodirectory("ARBMACROHOME", GB_path_in_arbprop("macros"));  // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACROHOME
+    return &*ArbMacroHome;
 }
 
-static GB_CSTR GB_getenvARBCONFIG() {
-    static const char *ac = 0;
-    if (!ac) ac = getenv_autodirectory("ARBCONFIG", GB_path_in_arbprop("cfgSave")); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBCONFIG
-    return ac;
+GB_CSTR GB_getenvARBCONFIG() {
+    static SmartCharPtr ArbConfig;
+    if (ArbConfig.isNull()) ArbConfig = getenv_autodirectory("ARBCONFIG", GB_path_in_arbprop("cfgSave")); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBCONFIG
+    return &*ArbConfig;
 }
 
 GB_CSTR GB_getenvARB_GS() {
@@ -877,7 +868,7 @@ bool GB_host_is_local(const char *hostname) {
         ARB_stricmp(hostname, arb_gethostname()) == 0;
 }
 
-GB_ULONG GB_get_physical_memory() {
+static GB_ULONG get_physical_memory() {
     // Returns the physical available memory size in k available for one process
     static GB_ULONG physical_memsize = 0;
     if (!physical_memsize) {
@@ -971,7 +962,7 @@ static GB_ULONG parse_env_mem_definition(const char *env_override, GB_ERROR& err
 
             case '%':
                 factor = num/100.0;
-                num    = GB_get_physical_memory();
+                num    = get_physical_memory();
                 break;
 
             default: valid = false; break;
@@ -1017,7 +1008,7 @@ GB_ULONG GB_get_usable_memory() {
             GB_informationf("Note: Setting envar ARB_MEMORY will override that restriction (percentage or absolute memsize)");
         }
         useable_memory = env_memory;
-        gb_assert(useable_memory>0 && useable_memory<GB_get_physical_memory());
+        gb_assert(useable_memory>0 && useable_memory<get_physical_memory());
     }
     return useable_memory;
 }
@@ -1134,15 +1125,14 @@ GB_CSTR GB_canonical_path(const char *anypath) {
 
                 const char *canonical_dir = NULL;
                 if (!dir) {
-                    gb_assert(anypath[0] == '/' && !strchr(anypath+1, '/'));
-                    canonical_dir = "/";
+                    gb_assert(!strchr(anypath, '/'));
+                    canonical_dir = GB_canonical_path("."); // use working directory
                 }
                 else {
                     gb_assert(strcmp(dir, anypath) != 0); // avoid deadlock
-
                     canonical_dir = GB_canonical_path(dir);
-                    gb_assert(canonical_dir);
                 }
+                gb_assert(canonical_dir);
 
                 // manually resolve '.' and '..' in non-existing parent directories
                 if (strcmp(fullname, "..") == 0) {
@@ -1265,12 +1255,11 @@ GB_CSTR GB_path_in_arbprop(const char *relative_path) {
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right) {
     return GB_path_in_ARBLIB(GB_concat_path(relative_path_left, anypath_right));
 }
+GB_CSTR GB_path_in_arb_temp(const char *relative_path) {
+    return GB_path_in_HOME(GB_concat_path(".arb_tmp", relative_path));
+}
 
-#ifdef P_tmpdir
-#define GB_PATH_TMP P_tmpdir
-#else
-#define GB_PATH_TMP "/tmp"
-#endif
+#define GB_PATH_TMP GB_path_in_arb_temp("tmp") // = "~/.arb_tmp/tmp" (used wherever '/tmp' was used in the past)
 
 FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_fullname) {
     // fopens a tempfile
@@ -1283,31 +1272,37 @@ FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_full
     // - heap-copy of used filename in 'res_fullname' (if res_fullname != NULL)
     // (even if fopen failed)
 
-    GB_CSTR   file  = GB_concat_path(GB_PATH_TMP, filename);
-    bool      write = strpbrk(fmode, "wa") != 0;
-    GB_ERROR  error = 0;
+    char     *file  = strdup(GB_concat_path(GB_PATH_TMP, filename));
+    GB_ERROR  error = GB_create_parent_directory(file);
+    FILE     *fp    = NULL;
 
-    FILE *fp = fopen(file, fmode);
-    if (fp) {
-        // make file private
-        if (fchmod(fileno(fp), S_IRUSR|S_IWUSR) != 0) {
-            error = GB_IO_error("changing permissions of", file);
+    if (!error) {
+        bool write = strpbrk(fmode, "wa") != 0;
+
+        fp = fopen(file, fmode);
+        if (fp) {
+            // make file private
+            if (fchmod(fileno(fp), S_IRUSR|S_IWUSR) != 0) {
+                error = GB_IO_error("changing permissions of", file);
+            }
         }
-    }
-    else {
-        error = GB_IO_error(GBS_global_string("opening(%s) tempfile", write ? "write" : "read"), file);
-    }
+        else {
+            error = GB_IO_error(GBS_global_string("opening(%s) tempfile", write ? "write" : "read"), file);
+        }
 
-    if (res_fullname) {
-        *res_fullname = file ? strdup(file) : 0;
+        if (res_fullname) {
+            *res_fullname = file ? strdup(file) : 0;
+        }
     }
 
     if (error) {
         // don't care if anything fails here..
         if (fp) { fclose(fp); fp = 0; }
-        if (file) unlink(file); 
+        if (file) unlink(file);
         GB_export_error(error);
     }
+
+    free(file);
 
     return fp;
 }
@@ -1365,7 +1360,13 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
     // If parts are not valid (e.g. cause 'fullpath' doesn't have a .suffix) the corresponding result pointer
     // is set to NULL.
     //
-    // The '/' and '.' characters are not included in the results (except the '.' in 'res_fullname')
+    // The '/' and '.' characters at the split-positions will be removed (not included in the results-strings).
+    // Exceptions:
+    // - the '.' in 'res_fullname'
+    // - the '/' if directory part is the rootdir
+    //
+    // Note:
+    // - if the filename starts with '.' (and that is the only '.' in the filename, an empty filename is returned: "")
 
     if (fullpath && fullpath[0]) {
         const char *lslash     = strrchr(fullpath, '/');
@@ -1375,13 +1376,20 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
 
         gb_assert(terminal);
         gb_assert(name_start);
-
         gb_assert(terminal > fullpath); // ensure (terminal-1) is a valid character position in path
 
-        if (res_dir)       *res_dir       = lslash ? GB_strpartdup(fullpath, lslash-1) : NULL;
-        if (res_fullname)  *res_fullname  = GB_strpartdup(name_start, terminal-1);
-        if (res_name_only) *res_name_only = GB_strpartdup(name_start, ldot ? ldot-1 : terminal-1);
-        if (res_suffix)    *res_suffix    = ldot ? GB_strpartdup(ldot+1, terminal-1) : NULL;
+        if (!lslash && fullpath[0] == '.' && (fullpath[1] == 0 || (fullpath[1] == '.' && fullpath[2] == 0))) { // '.' and '..'
+            if (res_dir)       *res_dir       = strdup(fullpath);
+            if (res_fullname)  *res_fullname  = NULL;
+            if (res_name_only) *res_name_only = NULL;
+            if (res_suffix)    *res_suffix    = NULL;
+        }
+        else {
+            if (res_dir)       *res_dir       = lslash ? GB_strpartdup(fullpath, lslash == fullpath ? lslash : lslash-1) : NULL;
+            if (res_fullname)  *res_fullname  = GB_strpartdup(name_start, terminal-1);
+            if (res_name_only) *res_name_only = GB_strpartdup(name_start, ldot ? ldot-1 : terminal-1);
+            if (res_suffix)    *res_suffix    = ldot ? GB_strpartdup(ldot+1, terminal-1) : NULL;
+        }
     }
     else {
         if (res_dir)       *res_dir       = NULL;
@@ -1481,14 +1489,94 @@ void TEST_gbcm_get_m_id() {
         free(arb_not_cano);                                             \
     } while (0)
 
-void TEST_paths() {
+static arb_test::match_expectation path_splits_into(const char *path, const char *Edir, const char *Enameext, const char *Ename, const char *Eext) {
+    using namespace arb_test;
+    expectation_group expected;
 
+    char *Sdir,*Snameext,*Sname,*Sext;
+    GB_split_full_path(path, &Sdir, &Snameext, &Sname, &Sext);
+
+    expected.add(that(Sdir).is_equal_to(Edir));
+    expected.add(that(Snameext).is_equal_to(Enameext));
+    expected.add(that(Sname).is_equal_to(Ename));
+    expected.add(that(Sext).is_equal_to(Eext));
+
+    free(Sdir);
+    free(Snameext);
+    free(Sname);
+    free(Sext);
+
+    return all().ofgroup(expected);
+}
+
+#define TEST_EXPECT_PATH_SPLITS_INTO(path,dir,nameext,name,ext)         TEST_EXPECTATION(path_splits_into(path,dir,nameext,name,ext))
+#define TEST_EXPECT_PATH_SPLITS_INTO__BROKEN(path,dir,nameext,name,ext) TEST_EXPECTATION__BROKEN(path_splits_into(path,dir,nameext,name,ext))
+
+static arb_test::match_expectation path_splits_reversible(const char *path) {
+    using namespace arb_test;
+    expectation_group expected;
+
+    char *Sdir,*Snameext,*Sname,*Sext;
+    GB_split_full_path(path, &Sdir, &Snameext, &Sname, &Sext);
+
+    expected.add(that(GB_append_suffix(Sname, Sext)).is_equal_to(Snameext)); // GB_append_suffix should reverse name.ext-split
+    expected.add(that(GB_concat_path(Sdir, Snameext)).is_equal_to(path));    // GB_concat_path should reverse dir/file-split
+
+    free(Sdir);
+    free(Snameext);
+    free(Sname);
+    free(Sext);
+
+    return all().ofgroup(expected);
+}
+
+#define TEST_SPLIT_REVERSIBILITY(path)         TEST_EXPECTATION(path_splits_reversible(path))
+#define TEST_SPLIT_REVERSIBILITY__BROKEN(path) TEST_EXPECTATION__BROKEN(path_splits_reversible(path))
+
+void TEST_paths() {
     // test GB_concat_path
     TEST_EXPECT_EQUAL(GB_concat_path("a", NULL), "a");
     TEST_EXPECT_EQUAL(GB_concat_path(NULL, "b"), "b");
     TEST_EXPECT_EQUAL(GB_concat_path("a", "b"), "a/b");
 
     TEST_EXPECT_EQUAL(GB_concat_path("/", "test.fig"), "/test.fig");
+
+    // test GB_split_full_path
+    TEST_EXPECT_PATH_SPLITS_INTO("dir/sub/.ext",              "dir/sub",   ".ext",            "",            "ext");
+    TEST_EXPECT_PATH_SPLITS_INTO("/root/sub/file.notext.ext", "/root/sub", "file.notext.ext", "file.notext", "ext");
+
+    TEST_EXPECT_PATH_SPLITS_INTO("./file.ext", ".", "file.ext", "file", "ext");
+    TEST_EXPECT_PATH_SPLITS_INTO("/file",      "/", "file",     "file", NULL);
+    TEST_EXPECT_PATH_SPLITS_INTO(".",          ".", NULL,       NULL,   NULL);
+
+    // test reversibility of GB_split_full_path and GB_concat_path/GB_append_suffix
+    {
+        const char *prefix[] = {
+            "",
+            "dir/",
+            "dir/sub/",
+            "/dir/",
+            "/dir/sub/",
+            "/",
+            "./",
+            "../",
+        };
+
+        for (size_t d = 0; d<ARRAY_ELEMS(prefix); ++d) {
+            TEST_ANNOTATE(GBS_global_string("prefix='%s'", prefix[d]));
+
+            TEST_SPLIT_REVERSIBILITY(GBS_global_string("%sfile.ext", prefix[d]));
+            TEST_SPLIT_REVERSIBILITY(GBS_global_string("%sfile", prefix[d]));
+            TEST_SPLIT_REVERSIBILITY(GBS_global_string("%s.ext", prefix[d]));
+            if (prefix[d][0]) { // empty string "" reverts to NULL
+                TEST_SPLIT_REVERSIBILITY(prefix[d]);
+            }
+        }
+    }
+
+    // GB_canonical_path basics
+    TEST_EXPECT_CONTAINS(GB_canonical_path("./bla"), "UNIT_TESTER/run/bla");
+    TEST_EXPECT_CONTAINS(GB_canonical_path("bla"),   "UNIT_TESTER/run/bla");
 
     {
         char        *arbhome    = strdup(GB_getenvARBHOME());
@@ -1596,5 +1684,22 @@ void TEST_GB_remove_on_exit() {
     TEST_REJECT(t.exists());
 }
 
-#endif
+void TEST_some_paths() {
+    gb_getenv_hook old = GB_install_getenv_hook(arb_test::fakeenv);
+    {
+        // ../UNIT_TESTER/run/homefake
+
+        TEST_EXPECT_CONTAINS__BROKEN(GB_getenvHOME(), "/UNIT_TESTER/run/homefake"); // GB_getenvHOME() ignores the hook
+        // @@@ this is a general problem - unit tested code cannot use GB_getenvHOME() w/o problems
+
+        TEST_EXPECT_CONTAINS(GB_getenvARB_PROP(), "/UNIT_TESTER/run/homefake/.arb_prop");
+        TEST_EXPECT_CONTAINS(GB_getenvARBMACRO(), "/lib/macros");
+
+        TEST_EXPECT_CONTAINS(GB_getenvARBCONFIG(),    "/UNIT_TESTER/run/homefake/.arb_prop/cfgSave");
+        TEST_EXPECT_CONTAINS(GB_getenvARBMACROHOME(), "/UNIT_TESTER/run/homefake/.arb_prop/macros");  // works in [11068]
+    }
+    TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
+}
+
+#endif // UNIT_TESTS
 

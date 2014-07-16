@@ -1,20 +1,21 @@
 item:FastTree2 (nucleotide)
 itemmeta:F
+seqtype:N
 itemmethod:(GOTO_LOCAL_DIR; \
-            arb_sed 's/#/>/' <in1 | \
+            arb_sed 's/#/>/' <TmpInputFile | \
             arb_sed 's/%/>/' | \
             arb_sed 's/"/>/'| \
             arb_sed 's/@/>/' | \
             arb_sed '/^[^>]/ y/./-/' > fasttree_in; \
-            RUN_IN_WINDOW(($ARBHOME/bin/FastTree $FAST $MODEL -nt fasttree_in > fasttree_out; \
+            RUN_IN_WINDOW(( ($ARBHOME/bin/FastTree $FAST $MODEL -nt fasttree_in > fasttree_out || STOP_ON_FAILURE(FastTree)) && \
                            $DISPLAY_FUNC));)&
 
 
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree?
-argchoice:Load into ARB ('tree_fasttree_//'):$ARBHOME/bin/arb_read_tree tree_fasttree_$$ fasttree_out "PRG=FastTree"
-argchoice:Treetool:treetool mr_bayes_out.newick
+argchoice:Load into ARB ('tree_fasttree_//'):$ARBHOME/bin/arb_read_tree tree_fasttree_$$ fasttree_out "PRG=FastTree$FAST FILTER=$FILTER MODEL=!$MODEL"
+argchoice:Treetool:treetool fasttree_out
 
 
 arg:FAST
@@ -30,39 +31,48 @@ argchoice:Jukes-Cantor:
 argchoice:GTR:-gtr
 
 
-in:in1
+in:TmpInputFile
 informat:flat
 insave:
 
 //----------------------
 
+#define PREPARE_MRBAYES_INFILE(INFILE) \
+        ( \
+                arb_sed -i '/LABELPOS/d' INFILE     `#MrBayes does not understand the LABELPOS command, therefore it is removed.` && \
+                arb_sed -i '/EQUATE/d' INFILE       `#MrBayes does not support EQUATE macros, remove them.` && \
+                arb_sed -i '/OPTIONS/,/;/d' INFILE  `#MrBayes does not support the OPTIONS block, remove it. (delete everything between OPTIONS and ';')` \
+        )
 
+#define NEXUS2NEWICK(FROM,APPENDTO) ($ARBHOME/bin/arb_nexus2newick.awk FROM >> APPENDTO || STOP_ON_FAILURE(arb_nexus2newick))
 
 item:MrBayes
 itemmeta:B
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR; \
-            arb_convert_aln -GenBank in1 -NEXUS mrbayes_in; \
-            arb_sed -i '/LABELPOS/d' mrbayes_in                `#MrBayes does not understand the LABELPOS command, therefore it is removed.`; \
-            arb_sed -i '/EQUATE/d' mrbayes_in                  `#MrBayes does not support EQUATE macros, remove them.`; \
-            arb_sed -i '/OPTIONS/,/;/d' mrbayes_in             `#MrBayes does not support the OPTIONS block, remove it. (delete everything between OPTIONS and ';')`; \
-            `#Now we write the mrbayes command block to the nexus file`; \
-            COMMAND="begin mrbayes; \
+            GEN_NEXUS(mrbayes_in) && \
+            PREPARE_MRBAYES_INFILE(mrbayes_in) && \
+            ( \
+                `# append the mrbayes command block to the nexus file`; \
+                COMMAND="begin mrbayes; \
                          set autoclose=yes nowarn=yes; \
                          lset nst=$NST rates=$RATES ngammacat=$NGAMMACAT; \
                          mcmc ngen=$NGEN nchains=$NCHAINS temp=$TEMP samplefreq=$SAMPLEFREQ burninfrac=$BURNINFRAC; \
                          sump; \
                          sumt Outputname=mrbayes_out Conformat=simple; \
                      end;" \
-            && echo $COMMAND >> mrbayes_in; \
-            RUN_IN_WINDOW(($ARBHOME/bin/mb mrbayes_in; \
-                           $ARBHOME/bin/arb_nexus2newick.awk mrbayes_out.con.tre >> mr_bayes_out.newick;  $DISPLAY_FUNC));)&
+                && echo $COMMAND >> mrbayes_in; \
+            ) && \
+            RUN_IN_WINDOW(( ($ARBHOME/bin/mb mrbayes_in || STOP_ON_FAILURE(MrBayes)) && \
+                            NEXUS2NEWICK(mrbayes_out.con.tre,mr_bayes_out.newick) && \
+                            $DISPLAY_FUNC));)&
 
 itemhelp:MrBayes.help
 
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree?
-argchoice:Load into ARB ('tree_mrBayes_//'):$ARBHOME/bin/arb_read_tree tree_mrbayes_$$ mr_bayes_out.newick
+argchoice:Load into ARB ('tree_mrBayes_//'):$ARBHOME/bin/arb_read_tree tree_mrbayes_$$ mr_bayes_out.newick "PRG=MrBayes FILTER=$FILTER RATE=$RATES"
 argchoice:Treetool:treetool mr_bayes_out.newick
 
 arg:NST
@@ -114,7 +124,7 @@ arglabel:Fraction of samples that will be discarded\nwhen convergence diagnostic
 argtext:0.25
 
 
-in:in1
+in:TmpInputFile
 informat:genbank
 insave:
 
@@ -122,30 +132,32 @@ insave:
 
 
 item:MrBayes (custom)
-itemmeta:B
+itemmeta:c
+seqtype:*
 itemmethod:(GOTO_LOCAL_DIR; \
-            arb_convert_aln -GenBank in1 -NEXUS mrbayes_in; \
-            arb_sed -i '/LABELPOS/d' mrbayes_in                `#MrBayes does not understand the LABELPOS command, therefore it is removed.`; \
-            arb_sed -i '/EQUATE/d' mrbayes_in                  `#MrBayes does not support EQUATE macros, remove them.`; \
-            arb_sed -i '/OPTIONS/,/;/d' mrbayes_in             `#MrBayes does not support the OPTIONS block, remove it. (delete everything between OPTIONS and ';')`; \
-            `#Now we write the mrbayes command block to the nexus file`; \
-             cat $COMMAD_FILE >> mrbayes_in; \
-            RUN_IN_WINDOW(($ARBHOME/bin/mb mrbayes_in; \
-                           $ARBHOME/bin/arb_nexus2newick.awk mrbayes_out.con.tre >> mr_bayes_out.newick;  $DISPLAY_FUNC));)&
+            GEN_NEXUS(mrbayes_in) && \
+            PREPARE_MRBAYES_INFILE(mrbayes_in) && \
+            ( \
+                `# append the mrbayes command block to the nexus file`; \
+                cat $COMMAND_FILE >> mrbayes_in; \
+            ) && \
+            RUN_IN_WINDOW(( ($ARBHOME/bin/mb mrbayes_in || STOP_ON_FAILURE(MrBayes)) && \
+                            NEXUS2NEWICK(mrbayes_out.con.tre,mr_bayes_out.newick) && \
+                            $DISPLAY_FUNC)))&
 
 itemhelp:MrBayesCustom.help
 
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree?
-argchoice:Load into ARB ('tree_mrBayes_//'):$ARBHOME/bin/arb_read_tree tree_mrbayes_$$ mr_bayes_out.newick
+argchoice:Load into ARB ('tree_mrBayes_//'):$ARBHOME/bin/arb_read_tree tree_mrbayes_$$ mr_bayes_out.newick "PRG=MrBayes(custom) FILTER=$FILTER RATE=$RATES"
 argchoice:Treetool:treetool mr_bayes_out.newick
 
-arg:COMMAD_FILE
+arg:COMMAND_FILE
 argtype:filename
 arglabel:MrBayes command file
 
-in:in1
+in:TmpInputFile
 informat:genbank
 insave:
 
@@ -153,10 +165,10 @@ insave:
 
 item:TREEPUZZLE ...
 itemmeta: T
-itemmethod:(GOTO_LOCAL_DIR; \
-            arb_convert_aln -GenBank in1 -phylip infile;\
-            RUN_IN_WINDOW((puzzle;$DISPLAY_FUNC));\
-            RM_LOCAL_FILES(in1 outdist) )&
+seqtype:*
+itemmethod:(GOTO_LOCAL_DIR; GEN_PHYLIP(infile) && \
+            RUN_IN_WINDOW(((puzzle || STOP_ON_FAILURE(puzzle)) && $DISPLAY_FUNC));\
+            RM_LOCAL_FILES(TmpInputFile outdist) )&
 itemhelp:treepuzzle.help
 
 arg:DISPLAY_FUNC
@@ -165,8 +177,7 @@ arglabel:What to do with the tree?
 argchoice:ARB ('tree_puz_//'):arb_read_tree tree_puz_$$ outtree "PRG=PUZZLE FILTER=$FILTER PKG=strimmer/v. haeseler"
 argchoice:Treetool:treetool outtree
 
-in:in1
+in:TmpInputFile
 informat:genbank
-inmask:
 insave:
 

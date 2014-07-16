@@ -4,12 +4,16 @@
 
 item:Pretty print sequences (slow) ...
 itemmeta: P
-itemmethod: arb_readseq in1 -p -a -f=pretty $NAMELEFT $NAMERIGHT $NUMTOP $NUMBOT $NUMLEFT $NUMRIGHT -col=$COLS -width=$WIDTH $MATCH $GAPC > in1.pretty;\
-            (arb_textprint in1.pretty;\
-             /bin/rm -f in1 in1.pretty )&
+seqtype:*
+itemmethod: GOTO_LOCAL_DIR; \
+            (arb_readseq TmpInputFile -p -a -f=pretty $NAMELEFT $NAMERIGHT $NUMTOP $NUMBOT $NUMLEFT $NUMRIGHT -col=$COLS -width=$WIDTH $MATCH $GAPC > pretty.seq || STOP_ON_FAILURE(arb_readseq)) && \
+            (arb_textprint pretty.seq; \
+             RM_LOCAL_FILES(TmpInputFile pretty.seq) )&
 itemhelp:readseq.help
-in:in1
+
+in:TmpInputFile
 informat:genbank
+insave:
 
 arg:NAMETOP
 argtype:choice_menu

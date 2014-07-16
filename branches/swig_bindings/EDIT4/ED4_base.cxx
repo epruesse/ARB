@@ -68,7 +68,7 @@ void ED4_terminal::changed_by_database()
 #endif
 
                 ED4_species_manager *spman = get_parent(ED4_L_SPECIES)->to_species_manager();
-                spman->do_callbacks(); // @@@ removed cb called here (when editing consensus; occur only once ? ) -> ED4_cursor.cxx@INVALID_CB_HANDLING 
+                spman->do_callbacks();
 
                 if (dynamic_prop & ED4_P_CONSENSUS_RELEVANT) {
                     ED4_multi_species_manager *multiman = get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();

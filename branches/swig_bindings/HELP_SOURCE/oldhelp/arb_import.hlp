@@ -9,15 +9,12 @@ UP	arb_intro.hlp
 SUB	importift.hlp
 
 SUB	universal_ift.hlp
-SUB	dewachter_ift.hlp
 SUB	rdp_ift.hlp
 SUB	ebi_ift.hlp
 
 SUB	fasta_ift.hlp
 SUB	dssp_ift.hlp
-SUB	gde_ift.hlp
 SUB	gde_flat_ift.hlp
-SUB	ae2_ift.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -55,8 +52,19 @@ DESCRIPTION	Reads foreign data(base) formats, creates a new ARB database,
 
 		Press the 'GO' button.
 
+SECTION		Custom import filters
+
+		You may create and store your own private import filters in 
+		directory '~/,arb_prop/filter'. See LINK{importift.hlp} for information
+		about the import filter definition language.		
+
 NOTES		Following file formats currently can be detected and loaded:
-		GENBANK, RDP: GENBANK and AE2, GCG used by GENIUS, FastA, DSSP.
+		GENBANK, RDP: GENBANK, EBI and FastA
+
+                Several uncommon file formats (including AE2, GCG and DSSP)
+                are kept in directory '$ARBHOME/lib/import/older'. To
+                make them available, copy or symlink them into ''$ARBHOME/lib/import' or into
+                your local filter directory '~/.arb_prop/filter/'.
 
 		To import big new databases into an existing ARB database, convert it
 		to the ARB format first, save and merge it with the
@@ -77,3 +85,4 @@ WARNINGS	When using 'AUTO DETECT', check if the correct format is detected.
 BUGS		'AUTO DETECT' looks for certain key-words in the files. If it can't
 		find these words, it does not accept the file, even if the file has
                 the correct format. This is especially true for the gcg format.
+

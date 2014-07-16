@@ -20,7 +20,6 @@
 
 #include <awt_sel_boxes.hxx>
 
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
@@ -107,8 +106,8 @@ static void update_cluster_sellist() {
 static void update_restore_label(AW_window *aww) {
     AW_root    *aw_root = aww->get_root();
     AW_awar    *awar    = aw_root->awar(AWAR_CLUSTER_RESTORE_LABEL);
-    size_t      size    = global_data->count(STORED_CLUSTERS);
-    const char *label   = size ? GBS_global_string("Stored: %zu", size) : "None stored";
+    unsigned    size    = global_data->count(STORED_CLUSTERS);
+    const char *label   = size ? GBS_global_string("Stored: %u", size) : "None stored";
 
     awar->write_string(label);
 }
@@ -146,29 +145,33 @@ static void calculate_clusters(AW_window *aww) {
 
         {
             char    *use     = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
-            AliView *aliview = global_data->weighted_filter.create_aliview(use);
+            AliView *aliview = global_data->weighted_filter.create_aliview(use, error);
 
-            AP_sequence *seq = GBT_is_alignment_protein(gb_main, use)
-                ? (AP_sequence*)new AP_sequence_protein(aliview)
-                : new AP_sequence_parsimony(aliview);
+            if (aliview) {
+                AP_sequence *seq = GBT_is_alignment_protein(gb_main, use)
+                    ? (AP_sequence*)new AP_sequence_protein(aliview)
+                    : new AP_sequence_parsimony(aliview);
 
-            AP_FLOAT maxDistance    = aw_root->awar(AWAR_CLUSTER_MAXDIST)->read_float();
-            size_t   minClusterSize = aw_root->awar(AWAR_CLUSTER_MINSIZE)->read_int();
+                AP_FLOAT maxDistance    = aw_root->awar(AWAR_CLUSTER_MAXDIST)->read_float();
+                unsigned minClusterSize = aw_root->awar(AWAR_CLUSTER_MINSIZE)->read_int();
 
-            tree = new ClusterTreeRoot(aliview, seq, maxDistance/100, minClusterSize);
+                tree = new ClusterTreeRoot(aliview, seq, maxDistance/100, minClusterSize);
 
-            delete seq;
+                delete seq;
+            }
             free(use);
         }
 
-        progress.subtitle("Loading tree");
-        {
-            char *tree_name = aw_root->awar(AWAR_DIST_TREE_CURR_NAME)->read_string();
-            error           = tree->loadFromDB(tree_name);
-            free(tree_name);
-        }
+        if (!error) {
+            progress.subtitle("Loading tree");
+            {
+                char *tree_name = aw_root->awar(AWAR_DIST_TREE_CURR_NAME)->read_string();
+                error           = tree->loadFromDB(tree_name);
+                free(tree_name);
+            }
 
-        if (!error) error = tree->linkToDB(0, 0);
+            if (!error) error = tree->linkToDB(0, 0);
+        }
     }
 
     if (!error) {
@@ -200,7 +203,7 @@ static int with_affected_clusters_do(AW_root *aw_root, AffectedClusters affected
         }
     }
     else {
-        size_t shown = global_data->count(SHOWN_CLUSTERS);
+        unsigned shown = global_data->count(SHOWN_CLUSTERS);
         if (shown) {
             ClusterIDs     clusters(global_data->get_clusterIDs(SHOWN_CLUSTERS)); // intended copy!
             ClusterIDsIter cli_end = clusters.end();
@@ -243,18 +246,18 @@ static void mark_cluster(ClusterPtr cluster, AW_CL cl_mask) {
         global_data->get_aw_root()->awar(AWAR_SPECIES_NAME)->write_string(name);
     }
 }
-static void mark_clusters(AW_window *, AW_CL cl_affected, AW_CL cl_warn_if_none_affected) {
-    AffectedClusters  affected = AffectedClusters(cl_affected);
-    AW_root          *aw_root  = global_data->get_aw_root();
-    GBDATA           *gb_main  = global_data->get_gb_main();
-    GB_transaction    ta(gb_main);
+static void mark_clusters(AW_window *, AffectedClusters affected, bool warn_if_none_affected) {
+    AW_root *aw_root = global_data->get_aw_root();
+    GBDATA  *gb_main = global_data->get_gb_main();
+
+    GB_transaction ta(gb_main);
 
     bool  markRep = aw_root->awar(AWAR_CLUSTER_MARKREP)->read_int();
     bool  selRep  = aw_root->awar(AWAR_CLUSTER_SELECTREP)->read_int();
     AW_CL mask    = markRep * MARK_REPRES + selRep * SELECT_REPRES;
 
     GBT_mark_all(gb_main, 0);                       // unmark all
-    int marked = with_affected_clusters_do(aw_root, affected, cl_warn_if_none_affected, mask, mark_cluster);
+    int marked = with_affected_clusters_do(aw_root, affected, warn_if_none_affected, mask, mark_cluster);
     if (!marked || !selRep) {
         // nothing marked -> force tree refresh
         if (selRep) {
@@ -293,20 +296,19 @@ class GroupTree;
 typedef map<string, GroupTree*> Species2Tip;
 
 class GroupTree : public ARB_countedTree {
-    size_t leaf_count;                              // total number of leafs in subtree
-    size_t tagged_count;                            // tagged leafs
+    unsigned leaf_count;   // total number of leafs in subtree
+    unsigned tagged_count; // tagged leafs
 
     void update_tag_counters();
 public:
 
-    GroupTree(ARB_tree_root *root)
-        : ARB_countedTree(root)
-        , leaf_count(0)
-        , tagged_count(0)
+    explicit GroupTree(ARB_seqtree_root *root)
+        : ARB_countedTree(root),
+          leaf_count(0),
+          tagged_count(0)
     {}
 
     // ARB_countedTree interface
-    virtual GroupTree *dup() const OVERRIDE { return new GroupTree(const_cast<ARB_tree_root*>(get_tree_root())); }
     virtual void init_tree() OVERRIDE { update_leaf_counters(); }
     // ARB_countedTree interface end
 
@@ -314,21 +316,27 @@ public:
 
     void map_species2tip(Species2Tip& mapping);
 
-    size_t get_leaf_count() const OVERRIDE { return leaf_count; }
-    size_t update_leaf_counters();
+    unsigned get_leaf_count() const OVERRIDE { return leaf_count; }
+    unsigned update_leaf_counters();
 
     void tag_leaf() {
         di_assert(is_leaf);
         tagged_count = 1;
         get_father()->update_tag_counters();
     }
-    size_t get_tagged_count() const { return tagged_count; }
+    unsigned get_tagged_count() const { return tagged_count; }
     void clear_tags();
 
     double tagged_rate() const { return double(get_tagged_count())/get_leaf_count(); }
 };
 
-size_t GroupTree::update_leaf_counters() {
+struct GroupTreeNodeFactory : public RootedTreeNodeFactory {
+    virtual RootedTree *makeNode(TreeRoot *root) const {
+        return new GroupTree(DOWNCAST(ARB_seqtree_root*, root));
+    }
+};
+
+unsigned GroupTree::update_leaf_counters() {
     if (is_leaf) leaf_count = 1;
     else leaf_count = get_leftson()->update_leaf_counters() + get_rightson()->update_leaf_counters();
     return leaf_count;
@@ -362,11 +370,11 @@ void GroupTree::update_tag_counters() {
 }
 
 struct GroupChanges {
-    size_t created;
-    size_t skipped;
-    size_t overwritten;
-    size_t deleted;
-    size_t restored;
+    unsigned created;
+    unsigned skipped;
+    unsigned overwritten;
+    unsigned deleted;
+    unsigned restored;
 
     void clear() { created = skipped = overwritten = deleted = restored = 0; }
     bool exist() const { return created||overwritten||deleted||restored; }
@@ -374,11 +382,11 @@ struct GroupChanges {
     void show_message() {
         string msg;
 
-        if (created)     msg += GBS_global_string("%zu created  ",     created);
-        if (overwritten) msg += GBS_global_string("%zu overwritten  ", overwritten);
-        if (skipped)     msg += GBS_global_string("%zu skipped  ",     skipped);
-        if (deleted)     msg += GBS_global_string("%zu deleted  ",     deleted);
-        if (restored)    msg += GBS_global_string("%zu restored  ",    restored);
+        if (created)     msg += GBS_global_string("%u created  ",     created);
+        if (overwritten) msg += GBS_global_string("%u overwritten  ", overwritten);
+        if (skipped)     msg += GBS_global_string("%u skipped  ",     skipped);
+        if (deleted)     msg += GBS_global_string("%u deleted  ",     deleted);
+        if (restored)    msg += GBS_global_string("%u restored  ",    restored);
 
         if (!msg.empty()) {
             msg = string("Group changes: ")+msg;
@@ -396,24 +404,24 @@ struct GroupChanges {
 typedef map<GroupTree*, ClusterPtr> Group2Cluster;
 
 class GroupBuilder : virtual Noncopyable {
-    GBDATA         *gb_main;
-    string          tree_name;
-    ARB_tree_root  *tree_root;
-    Group_Action    action;                         // create or delete ?
-    Species2Tip     species2tip;                    // map speciesName -> leaf
-    ARB_ERROR       error;
-    ClusterPtr      bad_cluster;                    // error occurred here (is set)
-    Group_Existing  existing;
-    size_t          existing_count;                 // counts existing groups
-    Group_NotFound  notfound;
-    double          matchRatio;                     // needed identity of subtree and cluster
-    double          maxDist;                        // max. Distance used for calculation
-    string          cluster_prefix;                 // prefix for cluster name
-    string          cluster_suffix_def;             // suffix-definition for cluster name
-    GroupChanges    changes;                        // count tree modifications
-    bool            del_match_prefixes;             // only delete groups, where prefix matches
+    GBDATA           *gb_main;
+    string            tree_name;
+    ARB_seqtree_root *tree_root;
+    Group_Action      action;                       // create or delete ?
+    Species2Tip       species2tip;                  // map speciesName -> leaf
+    ARB_ERROR         error;
+    ClusterPtr        bad_cluster;                  // error occurred here (is set)
+    Group_Existing    existing;
+    unsigned          existing_count;               // counts existing groups
+    Group_NotFound    notfound;
+    double            matchRatio;                   // needed identity of subtree and cluster
+    double            maxDist;                      // max. Distance used for calculation
+    string            cluster_prefix;               // prefix for cluster name
+    string            cluster_suffix_def;           // suffix-definition for cluster name
+    GroupChanges      changes;                      // count tree modifications
+    bool              del_match_prefixes;           // only delete groups, where prefix matches
 
-    GroupTree *find_group_position(GroupTree *subtree, size_t cluster_size);
+    GroupTree *find_group_position(GroupTree *subtree, unsigned cluster_size);
 
 public:
     GroupBuilder(GBDATA *gb_main_, Group_Action action_)
@@ -441,7 +449,7 @@ public:
     ARB_ERROR get_error() const { return error; }
     ClusterPtr get_bad_cluster() const { return bad_cluster; }
     Group_Existing with_existing() const { return existing; }
-    size_t get_existing_count() const { return existing_count; }
+    unsigned get_existing_count() const { return existing_count; }
     double get_max_distance() const { return maxDist; }
 
     ARB_ERROR save_modified_tree();
@@ -465,7 +473,7 @@ public:
 void GroupBuilder::load_tree() {
     di_assert(!tree_root);
 
-    tree_root = new ARB_tree_root(new AliView(gb_main), GroupTree(NULL), NULL, false);
+    tree_root = new ARB_seqtree_root(new AliView(gb_main), new GroupTreeNodeFactory, NULL, false);
     error     = tree_root->loadFromDB(tree_name.c_str());
 
     if (error) {
@@ -497,7 +505,7 @@ ARB_ERROR GroupBuilder::save_modified_tree() {
     return error;
 }
 
-GroupTree *GroupBuilder::find_group_position(GroupTree *subtree, size_t cluster_size) {
+GroupTree *GroupBuilder::find_group_position(GroupTree *subtree, unsigned cluster_size) {
     // searches for best group in subtree matching the cluster
 
     GroupTree *groupPos = NULL;
@@ -518,8 +526,8 @@ class HasntCurrentClusterPrefix : public ARB_tree_predicate {
     const GroupBuilder& builder;
 public:
     HasntCurrentClusterPrefix(const GroupBuilder& builder_) : builder(builder_) {}
-    bool selects(const ARB_tree& tree) const OVERRIDE {
-        const char *groupname        = tree.group_name();
+    bool selects(const ARB_seqtree& tree) const OVERRIDE {
+        const char *groupname        = tree.get_group_name();
         bool        hasClusterPrefix = groupname && builder.matches_current_prefix(groupname);
         return !hasClusterPrefix;
     }
@@ -534,7 +542,7 @@ string concatenate_name_parts(const list<string>& namepart) {
 }
 
 struct UseTreeRoot : public ARB_tree_predicate {
-    bool selects(const ARB_tree& tree) const OVERRIDE { return tree.is_root_node(); }
+    bool selects(const ARB_seqtree& tree) const OVERRIDE { return tree.is_root_node(); }
 };
 
 string GroupBuilder::generate_group_name(ClusterPtr cluster, const GroupTree *group_node) {
@@ -760,14 +768,13 @@ static void accept_proposed_names(ClusterPtr cluster, AW_CL cl_accept) {
     cluster->accept_proposed(accept);
 }
 
-static void group_clusters(AW_window *, AW_CL cl_Group_Action) {
-    Group_Action      action   = (Group_Action)cl_Group_Action;
+static void group_clusters(AW_window *, Group_Action action) {
     AW_root          *aw_root  = global_data->get_aw_root();
     Group_What        what     = (Group_What)aw_root->awar(AWAR_CLUSTER_GROUP_WHAT)->read_int();
     AffectedClusters  affected = what == GROUP_LISTED ? ALL_CLUSTERS : SEL_CLUSTER;
 
     GroupBuilder groupBuilder(global_data->get_gb_main(), action);
-    
+
     GB_transaction ta(global_data->get_gb_main());
     with_affected_clusters_do(aw_root, affected, true, (AW_CL)&groupBuilder, update_cluster_group);
 
@@ -811,7 +818,8 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->at_newline();
 
-        aws->create_option_menu(AWAR_CLUSTER_GROUP_WHAT, "For", "F");
+        aws->label("For");
+        aws->create_option_menu(AWAR_CLUSTER_GROUP_WHAT, true);
         aws->insert_option        ("selected cluster", "s", GROUP_SELECTED);
         aws->insert_default_option("listed clusters",  "l", GROUP_LISTED);
         aws->update_option_menu();
@@ -823,7 +831,8 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->at_newline();
 
-        aws->create_option_menu(AWAR_CLUSTER_GROUP_NOTFOUND, "-> if no matching subtree found", "n");
+        aws->label("-> if no matching subtree found");
+        aws->create_option_menu(AWAR_CLUSTER_GROUP_NOTFOUND, true);
         aws->insert_default_option("abort",          "a", NOTFOUND_ABORT);
         aws->insert_option        ("warn",           "w", NOTFOUND_WARN);
         aws->insert_option        ("ignore",         "i", NOTFOUND_IGNORE);
@@ -831,10 +840,11 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->at_newline();
 
-        aws->callback(group_clusters, GROUP_CREATE);
+        aws->callback(makeWindowCallback(group_clusters, GROUP_CREATE));
         aws->create_autosize_button("CREATE_GROUPS", "create groups!");
 
-        aws->create_option_menu(AWAR_CLUSTER_GROUP_EXISTING, "If group exists", "x");
+        aws->label("If group exists");
+        aws->create_option_menu(AWAR_CLUSTER_GROUP_EXISTING, true);
         aws->insert_default_option("abort",                "a", EXISTING_GROUP_ABORT);
         aws->insert_option        ("skip",                 "s", EXISTING_GROUP_SKIP);
         aws->insert_option        ("overwrite (caution!)", "o", EXISTING_GROUP_OVERWRITE);
@@ -843,7 +853,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->at_newline();
 
-        aws->callback(group_clusters, GROUP_DELETE);
+        aws->callback(makeWindowCallback(group_clusters, GROUP_DELETE));
         aws->create_autosize_button("DELETE_GROUPS", "delete groups!");
 
         aws->create_text_toggle(AWAR_CLUSTER_GROUP_PREFIX_MATCH, "(all)", "(where prefix matches)", 30);
@@ -854,7 +864,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
         aws->at_newline();
         aws->button_length(60);
         aws->label("=>"); 
-        aws->create_button("=>", AWAR_CLUSTER_GROUP_EXAMPLE);
+        aws->create_button(NULL, AWAR_CLUSTER_GROUP_EXAMPLE);
 
         aws->window_fit();
     }
@@ -871,12 +881,10 @@ static void delete_selected_cluster(ClusterPtr cluster, AW_CL) {
     select_cluster(nextId);
     global_data->remove(cluster, SHOWN_CLUSTERS);
 }
-static void delete_clusters(AW_window *aww, AW_CL cl_affected) {
-    AffectedClusters affected = AffectedClusters(cl_affected);
-
+static void delete_clusters(AW_window *aww, AffectedClusters affected) {
     switch (affected) {
         case SEL_CLUSTER:
-            with_affected_clusters_do(aww->get_root(), affected, true, cl_affected, delete_selected_cluster);
+            with_affected_clusters_do(aww->get_root(), affected, true, affected, delete_selected_cluster);
             break;
         case ALL_CLUSTERS:
             select_cluster(0);
@@ -897,12 +905,10 @@ static void store_selected_cluster(ClusterPtr cluster, AW_CL) {
     select_cluster(nextId);
     global_data->store(cluster->get_ID());
 }
-static void store_clusters(AW_window *aww, AW_CL cl_affected) {
-    AffectedClusters affected = AffectedClusters(cl_affected);
-
+static void store_clusters(AW_window *aww, AffectedClusters affected) {
     switch (affected) {
         case SEL_CLUSTER:
-            with_affected_clusters_do(aww->get_root(), affected, true, cl_affected, store_selected_cluster);
+            with_affected_clusters_do(aww->get_root(), affected, true, affected, store_selected_cluster);
             break;
         case ALL_CLUSTERS:
             select_cluster(0);
@@ -931,20 +937,20 @@ static void swap_clusters(AW_window *aww) {
 #warning "implement save/load clusters"
 #endif
 static void save_clusters(AW_window *) {
-    cl_assert(0); // not impl
+    aw_message("save_clusters not implemented");
 }
 static void load_clusters(AW_window *) {
-    cl_assert(0); // not impl
+    aw_message("load_clusters not implemented");
 }
 
 // ---------------------------------
 //      cluster detection window
 
-AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weightedFilter) {
+AW_window *DI_create_cluster_detection_window(AW_root *aw_root, WeightedFilter *weightedFilter) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         cl_assert(!global_data);
-        global_data = new ClustersData(*(WeightedFilter*)cl_weightedFilter);
+        global_data = new ClustersData(*weightedFilter);
 
         aws = new AW_window_simple;
         aws->init(aw_root, "DETECT_CLUSTERS", "Detect clusters in tree");
@@ -986,20 +992,20 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
 
         // column 1
 
-        aws->at("mark_all"); aws->callback(mark_clusters, ALL_CLUSTERS, true); aws->create_button("MARKALL", "Mark all");
+        aws->at("mark_all"); aws->callback(makeWindowCallback(mark_clusters, ALL_CLUSTERS, true)); aws->create_button("MARKALL", "Mark all");
 
         aws->at("auto_mark");  aws->create_toggle(AWAR_CLUSTER_AUTOMARK);
         aws->at("mark_rep");   aws->create_toggle(AWAR_CLUSTER_MARKREP);
         aws->at("select_rep"); aws->create_toggle(AWAR_CLUSTER_SELECTREP);
 
-        aws->at("mark"); aws->callback(mark_clusters, SEL_CLUSTER, true); aws->create_button("MARK", "Mark cluster");
+        aws->at("mark"); aws->callback(makeWindowCallback(mark_clusters, SEL_CLUSTER, true)); aws->create_button("MARK", "Mark cluster");
 
         // column 2
 
         aws->at("group"); aws->callback(popup_group_clusters_window); aws->create_button("GROUP", "Cluster groups..");
 
         aws->at("sort");
-        aws->create_option_menu(AWAR_CLUSTER_ORDER);
+        aws->create_option_menu(AWAR_CLUSTER_ORDER, true);
         aws->insert_default_option("by mean distance",  "d", SORT_BY_MEANDIST);
         aws->insert_option        ("by min bases used", "b", SORT_BY_MIN_BASES);
         aws->insert_option        ("by size",           "s", SORT_BY_CLUSTERSIZE);
@@ -1011,18 +1017,18 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
 
         // store/restore
 
-        aws->at("store_all"); aws->callback(store_clusters,  ALL_CLUSTERS); aws->create_button("STOREALL", "Store all");
-        aws->at("store");     aws->callback(store_clusters,  SEL_CLUSTER);  aws->create_button("STORESEL", "Store selected");
-        aws->at("restore");   aws->callback(restore_clusters);              aws->create_button("RESTORE",  AWAR_CLUSTER_RESTORE_LABEL);
-        aws->at("swap");      aws->callback(swap_clusters);                 aws->create_button("Swap",     "Swap stored");
+        aws->at("store_all"); aws->callback(makeWindowCallback(store_clusters, ALL_CLUSTERS)); aws->create_button("STOREALL", "Store all");
+        aws->at("store");     aws->callback(makeWindowCallback(store_clusters, SEL_CLUSTER));  aws->create_button("STORESEL", "Store selected");
+        aws->at("restore");   aws->callback(restore_clusters);                                 aws->create_button("RESTORE",  AWAR_CLUSTER_RESTORE_LABEL);
+        aws->at("swap");      aws->callback(swap_clusters);                                    aws->create_button("Swap",     "Swap stored");
 
         // column 4
 
-        aws->at("clear");     aws->callback(delete_clusters, ALL_CLUSTERS); aws->create_button("CLEAR",    "Clear list");
-        aws->at("delete");    aws->callback(delete_clusters, SEL_CLUSTER);  aws->create_button("DEL",      "Delete selected");
+        aws->at("clear");  aws->callback(makeWindowCallback(delete_clusters, ALL_CLUSTERS)); aws->create_button("CLEAR", "Clear list");
+        aws->at("delete"); aws->callback(makeWindowCallback(delete_clusters, SEL_CLUSTER));  aws->create_button("DEL",   "Delete selected");
         aws->sens_mask(AWM_DISABLED);
-        aws->at("save");    aws->callback(save_clusters);    aws->create_button("SAVE",    "Save list");
-        aws->at("load");    aws->callback(load_clusters);    aws->create_button("LOAD",    "Load list");
+        aws->at("save"); aws->callback(save_clusters); aws->create_button("SAVE", "Save list");
+        aws->at("load"); aws->callback(load_clusters); aws->create_button("LOAD", "Load list");
         aws->sens_mask(AWM_ALL);
 
 
@@ -1030,7 +1036,7 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
         //      clusterlist
 
         aws->at("cluster_list");
-        global_data->clusterList = aws->create_selection_list(AWAR_CLUSTER_SELECTED);
+        global_data->clusterList = aws->create_selection_list(AWAR_CLUSTER_SELECTED, true);
         update_cluster_sellist();
 
         aw_root->awar(AWAR_CLUSTER_SELECTED)->add_callback(select_cluster_cb);

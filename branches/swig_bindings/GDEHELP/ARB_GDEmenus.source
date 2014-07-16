@@ -1,25 +1,43 @@
-#define STD_REMOVE(in1)         /bin/rm -f in1 infile intree outfile outtree treefile arb_read_tree_args
+// special conventions:
+//
+// * each external command ('itemmethod') runs in its separate directory under ~/.arb_tmp
+// * if sequences are exported ARB writes them in GenBank format into a tmpfile (e.g. sth like '/tmp/gde3170_0')
+//   In 'itemmethod' every occurrance of 'TmpInputFile' (as specified at entry 'in:') is replaced by the name of that tempfile.
+//   Some macros defined below expect that placeholder, i.e. always use 'TmpInputFile' for 'in:'!
+// * if sequences are (re-)imported, ARB prepares a temporary output-file. itemmethod shall use the placeholder 'TmpOutputFile'
+//   to generate its content. Always use 'TmpOutputFile' for 'out:'.
+//   Do not remove TmpOutputFile using RM_LOCAL_FILES. It is expected and will be removed by ARB_GDE (after command termination).
+// * 'arg:DISPLAY_FUNC' shall be a single command (to be chainable with && in itemmethod)
 
-#define GOTO_LOCAL_DIR          mkdir -p ~/.arb_tmp/$$; cd ~/.arb_tmp/$$; STD_REMOVE(nofile)
-#define RM_LOCAL_DIR(in1)       cd ~/.arb_tmp/$$ ; STD_REMOVE(in1); cd .. ; rmdir $$
+// GOTO_LOCAL_DIR and RM_LOCAL_FILES need to be used on top-script level
+// (opening sub-shells might change value of $$)
 
-#define GEN_INFILE(in1)         GOTO_LOCAL_DIR ; arb_convert_aln -GenBank in1 -phylip infile
-#define RM_LOCAL_FILES(in1)     RM_LOCAL_DIR(in1)
+#define GOTO_LOCAL_DIR          mkdir -p ~/.arb_tmp/$$; cd ~/.arb_tmp/$$
+#define RM_LOCAL_FILES(FILES)   GOTO_LOCAL_DIR ; cd .. ; rm -rf $$
+
+#define GENERATE(OUTFILE,FORMAT) arb_convert_aln --arb-notify -GenBank TmpInputFile -FORMAT OUTFILE
+
+#define GEN_PHYLIP(OUTFILE)     GENERATE(OUTFILE,phylip)
+#define GEN_FASTDNAML(OUTFILE)  GENERATE(OUTFILE,fastdnaml)
+#define GEN_NEXUS(OUTFILE)      GENERATE(OUTFILE,NEXUS)
 
 #define RUN_IN_WINDOW(cmd)      ${ARB_XCMD} bash -x -c @@LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; cmd ;arb_wait@@
 // Note: @@ will result in a single quote. see ../ARB_GDE/GDE_ParseMenu.cxx@WHY_USE_DOUBLE_AT
 
+#define STOP_ON_FAILURE(WHAT_FAILED) (arb_message "Error running WHAT_FAILED (inspect console for details)";false) 
+// intended use '( command || STOP_ON_FAILURE(command-description)) && ( dependent-command || STOP_ON_FAILURE(dependent-command-description) && ...)'
+
 #include <warning.genmenu>
 
-lmenu:Export
+menu:Export
 menumeta: E
 #include <export.genmenu>
 
-lmenu:Print
+menu:Print
 menumeta: r
 #include <pretty_print.genmenu>
 
-lmenu:Import
+menu:Import
 menumeta:I
 #include <import.genmenu>
 

@@ -23,14 +23,14 @@
 #include <GenomeImport.h>
 #include <GEN.hxx>
 #include <adGene.h>
-
 #include <arb_progress.h>
 #include <arb_strbuf.h>
 #include <arb_file.h>
+#include <arb_str.h>
+#include <macros.hxx>
 
 #include <climits>
 #include <unistd.h>
-#include <macros.hxx>
 
 using namespace std;
 
@@ -265,10 +265,19 @@ import_format::~import_format() {
 }
 
 
+static int cmp_ift(const void *p0, const void *p1, void *) {
+    return ARB_stricmp((const char *)p0, (const char *)p1);
+}
 
 void ArbImporter::detect_format(AW_root *root) {
     StrArray files;
-    GBS_read_dir(files, GB_path_in_ARBLIB("import"), "*.ift");
+    {
+        AW_awar       *awar_dirs = root->awar(AWAR_FORM"/directory");
+        ConstStrArray  dirs;
+        GBT_split_string(dirs, awar_dirs->read_char_pntr(), ":", true);
+        for (unsigned i = 0; i<dirs.size(); ++i) GBS_read_dir(files, dirs[i], "*.ift");
+    }
+    files.sort(cmp_ift, NULL);
 
     char     buffer[AWTI_IMPORT_CHECK_BUFFER_SIZE+10];
     GB_ERROR error = 0;
@@ -699,7 +708,6 @@ static string expandSetVariables(const SetVariables& variables, const string& so
 }
 
 GB_ERROR ArbImporter::read_data(char *ali_name, int security_write) {
-    char        num[6];
     char        text[100];
     static int  counter         = 0;
     GBDATA     *gb_species_data = GBT_get_species_data(gb_import_main);
@@ -738,7 +746,6 @@ GB_ERROR ArbImporter::read_data(char *ali_name, int security_write) {
         int max_line = never_warn ? INT_MAX : MAX_COMMENT_LINES;
 
         for (line=0; line<=max_line; line++) {
-            sprintf(num, "%i  ", line);
             if (line == max_line) {
                 const char *file = NULL;
                 if (filenames[current_file_idx]) file = filenames[current_file_idx];
@@ -805,7 +812,7 @@ GB_ERROR ArbImporter::read_data(char *ali_name, int security_write) {
                                 string expanded_field = expandSetVariables(variables, string(match->append ? match->append : match->write), err_flag, ifo);
                                 if (err_flag) error   = GB_await_error();
                                 else   field          = GBS_string_2_key(expanded_field.c_str());
-                                if (error) what_error = "APPEND or WRITE";
+                                if (error) what_error = match->append ? "APPEND" : "WRITE";
                             }
 
                             if (!error && match->mtag) {
@@ -1204,7 +1211,7 @@ static void genom_flag_changed(AW_root *awr) {
     }
     else {
         AWTI_import_set_ali_and_type(awr, GENOM_ALIGNMENT, "dna", 0);
-        awr->awar_string(AWAR_FORM"/filter", ".fit"); // *hack* to hide normal import filters
+        awr->awar_string(AWAR_FORM"/filter", ".fit"); // *hack* to hide normal import filters // @@@ doesnt work?!
     }
 }
 
@@ -1269,8 +1276,15 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
 
     importer->doExit = do_exit; // change/set behavior of CLOSE button
 
-    AW_create_fileselection_awars(awr, AWAR_FILE_BASE, ".", "", defname);
-    AW_create_fileselection_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import"), ".ift", "*");
+    {
+        GBS_strstruct path(500);
+        path.cat(GB_path_in_arbprop("filter"));
+        path.put(':');
+        path.cat(GB_path_in_ARBLIB("import"));
+
+        AW_create_fileselection_awars(awr, AWAR_FILE_BASE, ".",             "",     defname);
+        AW_create_fileselection_awars(awr, AWAR_FORM,      path.get_data(), ".ift", "*");
+    }
 
     awr->awar_string(AWAR_ALI, "dummy"); // these defaults are never used
     awr->awar_string(AWAR_ALI_TYPE, "dummy"); // they are overwritten by AWTI_import_set_ali_and_type
@@ -1293,8 +1307,8 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
         aws->callback(makeHelpCallback("arb_import.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
-        AW_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD", true, true); // select import filename
-        AW_create_fileselection(aws, AWAR_FORM, "", "ARBHOME", false, false); // select import filter
+        AW_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD",     ANY_DIR,    true);  // select import filename
+        AW_create_fileselection(aws, AWAR_FORM,      "",     "ARBHOME", MULTI_DIRS, false); // select import filter
 
         aws->at("auto");
         aws->callback(detect_input_format_cb);
@@ -1304,14 +1318,14 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
         aws->create_input_field(AWAR_ALI, 4);
 
         aws->at("type");
-        aws->create_option_menu(AWAR_ALI_TYPE);
-        aws->insert_option("dna", "d", "dna");
-        aws->insert_option("rna", "r", "rna");
-        aws->insert_option("protein", "p", "ami");
+        aws->create_option_menu(AWAR_ALI_TYPE, true);
+        aws->insert_option        ("dna",     "d", "dna");
+        aws->insert_default_option("rna",     "r", "rna");
+        aws->insert_option        ("protein", "p", "ami");
         aws->update_option_menu();
 
         aws->at("protect");
-        aws->create_option_menu(AWAR_ALI_PROTECTION);
+        aws->create_option_menu(AWAR_ALI_PROTECTION, true);
         aws->insert_option("0", "0", 0);
         aws->insert_option("1", "1", 1);
         aws->insert_option("2", "2", 2);

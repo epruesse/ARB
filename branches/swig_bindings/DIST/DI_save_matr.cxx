@@ -23,8 +23,8 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
     switch (type) {
         case DI_SAVE_PHYLIP_COMP:
             {
-                fprintf(out, "    %li\n", nentries);
-                for (row = 0; row<size_t(nentries); row++) {
+                fprintf(out, "    %zu\n", nentries);
+                for (row = 0; row<nentries; row++) {
                     fprintf(out, "%-10s ", entries[row]->name);
                     for (col=0; col<row; col++) {
                         fprintf(out, "%6f ", matrix->get(row, col));
@@ -37,7 +37,7 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
         case DI_SAVE_TABBED:
             {
                 GBDATA         *gb_main  = get_gb_main();
-                GB_transaction  dummy(gb_main);
+                GB_transaction  ta(gb_main);
                 size_t          app_size = 200;     // maximum width for NDS output (and max. height for vertical one)
                 size_t          maxnds   = 0;
                 bool            tabbed   = (type == DI_SAVE_TABBED);
@@ -49,7 +49,7 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
 
                 // create all NDS strings
                 char **nds_results = new char*[nentries];
-                for (col=0; col<size_t(nentries); col++) {
+                for (col=0; col<nentries; col++) {
                     const char *buf        = entries[col]->name;
                     GBDATA     *gb_species = GBT_find_species_rel_species_data(gb_species_data, buf);
                     if (gb_species) {
@@ -70,7 +70,7 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
 
                 // print column headers :
                 if (tabbed) {
-                    for (col=0; col<size_t(nentries); col++) {
+                    for (col=0; col<nentries; col++) {
                         if (!tabbed && (col%4) == 0) fputc('\t', out);
                         fprintf(out, "\t%s", nds_results[col]);
                     }
@@ -78,12 +78,12 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
                 }
                 else {
                     bool *eos_reached = new bool[nentries];
-                    for (col = 0; col<size_t(nentries); ++col) eos_reached[col] = false;
+                    for (col = 0; col<nentries; ++col) eos_reached[col] = false;
 
                     for (row = 0; row<maxnds; ++row) {
                         for (col = 0; col<(maxnds+2); ++col) fputc(' ', out);
 
-                        for (col = 0; col<size_t(nentries); ++col) {
+                        for (col = 0; col<nentries; ++col) {
                             if (!tabbed && (col%4) == 0) fprintf(out, "  ");
                             if (!eos_reached[col]) {
                                 char c = nds_results[col][row];
@@ -98,7 +98,7 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
                 }
 
                 // print data lines :
-                for (row = 0; row<size_t(nentries); row++) {
+                for (row = 0; row<nentries; row++) {
                     if (!tabbed && (row%4) == 0) fprintf(out, "\n"); // empty line after 4 lines of data
 
                     if (tabbed) {
@@ -113,7 +113,7 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
                     }
 
                     // print the matrix :
-                    for (col=0; col<size_t(nentries); col++) {
+                    for (col=0; col<nentries; col++) {
                         if (tabbed) {
                             fputc('\t', out);
                         }
@@ -150,7 +150,7 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
                 fprintf(out, "Maximum:\t%f\n", max);
                 fprintf(out, "Average:\t%f\n", sum/(nentries*nentries));
 
-                for (col=0; col<size_t(nentries); col++) free(nds_results[col]);
+                for (col=0; col<nentries; col++) free(nds_results[col]);
                 free(nds_results);
             }
             break;

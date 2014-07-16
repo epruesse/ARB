@@ -69,7 +69,7 @@ HELP2XML=$(ARBHOME)/bin/arb_help2xml
 # --------------------------------------------------------------------------------
 # Generate help files in $(HLP_GENERATED):
 
-generated:
+generated: dirs
 		@echo ---------------------------------------------------
 		@echo ------------ Generating some help files:
 		(cd $(HLP_GENERATED);$(MAKE) all)
@@ -151,6 +151,9 @@ ps: $(PS_DEST)
 
 pdf: $(PDF_DEST)
 
+$(PS_DEST) : dirs
+$(PDF_DEST) : dirs
+
 nonhlp_formats: ps pdf
 
 $(HLP_DEST)/%.ps.gz : $(HLP_SOURCE)/%.ps.gz
@@ -162,7 +165,7 @@ $(HLP_DEST)/%.pdf.gz : $(HLP_SOURCE)/%.pdf.gz
 # --------------------------------------------------------------------------------
 
 delzerohtml:
-		-find $(HTML_LOCATION) -name "*.html" -size -1 -exec rm {} \;
+		-if [ -d $(HTML_LOCATION) ] ; then find $(HTML_LOCATION) -name "*.html" -size -1 -exec rm {} \; ; fi
 
 date :
 	$(MAKE) date.xsl.tmp
@@ -251,7 +254,7 @@ $(XML_DEPEND) : arb_help2xml.cxx
 %.o: %.cxx
 	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
-$(HELP2XML): arb_help2xml.o $(LIBS)
+$(HELP2XML): arb_help2xml.o $(LIBS) $(use_ARB_main)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS) $(LIBPATH) $(CORE_LIB) $(EXECLIBS)
 
 

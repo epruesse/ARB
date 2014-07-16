@@ -8,12 +8,10 @@
 //                                                                 //
 // =============================================================== //
 
-#include "gb_key.h"
 #include "gb_ts.h"
 #include "gb_index.h"
 #include "gb_localdata.h"
-#include "gb_storage.h"
-#include "gb_cb.h"
+#include "ad_hcb.h"
 
 // Copy all info + external data mem to an one step undo buffer
 // (needed to abort transactions)
@@ -29,7 +27,47 @@ inline void _GB_CHECK_IN_UNDO_MODIFY(GB_MAIN_TYPE *Main, GBDATA *gbd) {
     if (Main->undo_type) gb_check_in_undo_modify(Main, gbd);
 }
 
+// ---------------------------
+//      trigger callbacks
+//      (i.e. add them to pending callbacks)
 
+void GB_MAIN_TYPE::callback_group::trigger(GBDATA *gbd, GB_CB_TYPE type, gb_callback_list *dataCBs) {
+    if (hierarchy_cbs) {
+        for (gb_hierarchy_callback_list::itertype cb = hierarchy_cbs->callbacks.begin(); cb != hierarchy_cbs->callbacks.end(); ++cb) {
+            if ((cb->spec.get_type() & type) && cb->triggered_by(gbd)) {
+                pending.add_unchecked(gb_triggered_callback(gbd, gbd->ext->old, cb->spec));
+            }
+        }
+    }
+    if (dataCBs) {
+        for (gb_callback_list::itertype cb = dataCBs->callbacks.begin(); cb != dataCBs->callbacks.end(); ++cb) {
+            if (cb->spec.get_type() & type) {
+                pending.add_unchecked(gb_triggered_callback(gbd, gbd->ext->old, cb->spec));
+            }
+        }
+    }
+}
+
+inline void GB_MAIN_TYPE::trigger_change_callbacks(GBDATA *gbd, GB_CB_TYPE type) {
+    changeCBs.trigger(gbd, type, gbd->get_callbacks());
+}
+
+void GB_MAIN_TYPE::trigger_delete_callbacks(GBDATA *gbd) {
+    gb_callback_list *cbl = gbd->get_callbacks();
+    if (cbl || deleteCBs.hierarchy_cbs) {
+        gb_assert(gbd->ext);
+
+        gbd->ext->callback = NULL;
+        if (!gbd->ext->old && gbd->type() != GB_DB) {
+            gb_save_extern_data_in_ts(gbd->as_entry());
+        }
+
+        deleteCBs.trigger(gbd, GB_CB_DELETE, cbl);
+
+        gb_assert(gbd->ext->callback == NULL);
+        delete cbl;
+    }
+}
 // ---------------------------
 //      GB data management
 
@@ -219,27 +257,55 @@ static void gb_unlink_entry(GBDATA * gbd) {
     }
 }
 
-void GB_MAIN_TYPE::init(const char *db_path) {
-    if (db_path) path = strdup(db_path);
-    key_2_index_hash = GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE);
-    compression_mask = -1; // allow all compressions
-    cache.init();
+GB_MAIN_TYPE::GB_MAIN_TYPE(const char *db_path)
+    : transaction_level(0),
+      aborted_transaction(0),
+      i_am_server(false),
+      c_link(NULL),
+      server_data(NULL),
+      dummy_father(NULL),
+      root_container(NULL),
+      gb_key_data(NULL),
+      path(nulldup(db_path)),
+      opentype(gb_open_all),
+      disabled_path(NULL),
+      allow_corrupt_file_recovery(0),
+      compression_mask(-1), // allow all compressions
+      keycnt(0),
+      sizeofkeys(0),
+      first_free_key(0),
+      keys(NULL),
+      key_2_index_hash(GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE)),
+      key_clock(0),
+      last_updated(0),
+      last_saved_time(0),
+      last_saved_transaction(0),
+      last_main_saved_transaction(0),
+      requested_undo_type(GB_UNDO_NONE),
+      undo_type(GB_UNDO_NONE),
+      undo(NULL),
+      security_level(0),
+      old_security_level(0),
+      pushed_security_level(0),
+      clock(0),
+      remote_hash(NULL),
+      command_hash(NULL),
+      resolve_link_hash(NULL),
+      table_hash(NULL),
+      close_callbacks(NULL),
+      this_user(NULL)
+{
+    for (int i = 0; i<ALLOWED_DATES; ++i) dates[i] = NULL;
+    for (int i = 0; i<GB_MAX_USERS;  ++i) users[i] = NULL;
+
     gb_init_undo_stack(this);
-    gb_init_ctype_table();
     gb_local->announce_db_open(this);
 }
 
-GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) {
-    GB_MAIN_TYPE *Main = (GB_MAIN_TYPE *)gbm_get_mem(sizeof(*Main), 0);
-    Main->init(path);
-    return Main;
-}
-
-void GB_MAIN_TYPE::cleanup() {
+GB_MAIN_TYPE::~GB_MAIN_TYPE() {
     gb_assert(!dummy_father);
     gb_assert(!root_container);
 
-    cache.destroy();
     release_main_idx();
 
     if (command_hash)      GBS_free_hash(command_hash);
@@ -259,12 +325,8 @@ void GB_MAIN_TYPE::cleanup() {
     free(path);
     free(disabled_path);
     free(qs.quick_save_disabled);
-}
 
-void gb_destroy_main(GB_MAIN_TYPE *Main) {
-    Main->cleanup();
-    gb_local->announce_db_close(Main);
-    gbm_free_mem(Main, sizeof(*Main), 0);
+    gb_local->announce_db_close(this);
 }
 
 GBDATA *gb_make_pre_defined_entry(GBCONTAINER *father, GBDATA *gbd, long index_pos, GBQUARK keyq) {
@@ -387,22 +449,10 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
 
 void gb_pre_delete_entry(GBDATA *gbd) {
     // Reduce an entry to its absolute minimum and remove it from database
-    GB_MAIN_TYPE *Main      = GB_MAIN_NO_FATHER(gbd);
-    GB_TYPES      type      = gbd->type();
-    long          gbm_index = GB_GBM_INDEX(gbd);
+    GB_MAIN_TYPE *Main = GB_MAIN_NO_FATHER(gbd);
+    GB_TYPES      type = gbd->type();
 
-    gb_callback *cb_next;
-    for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb_next) {
-        gbd->ext->callback = 0;
-        cb_next = cb->next;
-        if (!gbd->ext->old && type != GB_DB) {
-            gb_save_extern_data_in_ts(gbd->as_entry());
-        }
-        if (cb->spec.get_type() & GB_CB_DELETE) {
-            gb_add_delete_callback_list(gbd, gbd->ext->old, cb->spec);
-        }
-        gbm_free_mem(cb, sizeof(gb_callback), gbm_index);
-    }
+    Main->trigger_delete_callbacks(gbd);
 
     {
         GBCONTAINER *gb_father = GB_FATHER(gbd);
@@ -655,18 +705,19 @@ void gb_create_key_array(GB_MAIN_TYPE *Main, int index) {
     if (index >= Main->sizeofkeys) {
         Main->sizeofkeys = index*3/2+1;
         if (Main->keys) {
-            int i;
             Main->keys = (gb_Key *)realloc(Main->keys, sizeof(gb_Key) * (size_t)Main->sizeofkeys);
             memset((char *)&(Main->keys[Main->keycnt]), 0, sizeof(gb_Key) * (size_t) (Main->sizeofkeys - Main->keycnt));
-            for (i = Main->keycnt; i < Main->sizeofkeys; i++) {
-                Main->keys[i].compression_mask = -1;
-            }
         }
         else {
             Main->sizeofkeys = 1000;
+            if (index>=Main->sizeofkeys) Main->sizeofkeys = index+1;
             Main->keys = (gb_Key *)GB_calloc(sizeof(gb_Key), (size_t)Main->sizeofkeys);
         }
+        for (int i = Main->keycnt; i < Main->sizeofkeys; i++) {
+            Main->keys[i].compression_mask = -1;
+        }
     }
+    gb_assert(index<Main->sizeofkeys);
 }
 
 long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
@@ -854,7 +905,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
             }
             // fall-through
 
-        default:                                    // means GB_SON_CHANGED + GB_NORMAL_CHANGE
+        default: // means GB_SON_CHANGED + GB_NORMAL_CHANGE
 
             if (gbd->is_container()) {
                 GBCONTAINER    *gbc = gbd->as_container();
@@ -892,18 +943,14 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_crea
                 gbd->flags2.update_in_server = 1;
             }
             else {
-                GB_CB_TYPE gbtype = son_created ? GB_CB_CHANGED_OR_SON_CREATED : GB_CB_CHANGED;
+                GB_CB_TYPE cbtype = son_created ? GB_CB_CHANGED_OR_SON_CREATED : GB_CB_CHANGED;
                 gbd->create_extended();
                 gbd->touch_update(Main->clock);
                 if (gbd->flags2.header_changed) {
                     gbd->as_container()->header_update_date = Main->clock;
                 }
 
-                for (gb_callback *cb = gbd->get_callbacks(); cb; cb = cb->next) {
-                    if (cb->spec.get_type() & GB_CB_CHANGED_OR_SON_CREATED) {
-                        gb_add_changed_callback_list(gbd, gbd->ext->old, cb->spec.with_type_changed_to(gbtype));
-                    }
-                }
+                Main->trigger_change_callbacks(gbd, cbtype);
 
                 GB_FREE_TRANSACTION_SAVE(gbd);
             }

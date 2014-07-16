@@ -211,7 +211,8 @@ char *GB_property_file(bool warn_when_not_found, const char *filename) {
 }
 
 void GBS_read_dir(StrArray& names, const char *dir, const char *mask) {
-    /* Return names of files in directory 'dir'.
+    /* Return full pathnames of files in directory 'dir'.
+     *
      * Filter through 'mask':
      * - mask == NULL -> return all files
      * -      in format '/expr/' -> use regular expression (case sensitive)
@@ -220,7 +221,7 @@ void GBS_read_dir(StrArray& names, const char *dir, const char *mask) {
      * Result are inserted into 'names' and 'names' is sorted alphanumerically.
      * Note: 'names' are not cleared, so several calls with the same StrArray get collected.
      *
-     * In case of error, result is empty and error is exported.
+     * In case of error, 'names' is empty and error is exported.
      *
      * Special case: If 'dir' is the name of a file, return an array with file as only element
      */
@@ -327,9 +328,11 @@ void TEST_GBS_read_dir() {
 }
 
 void TEST_find_file() {
+    gb_getenv_hook old = GB_install_getenv_hook(arb_test::fakeenv);
+
     TEST_EXPECT_EQUAL(GB_existing_file("min_ascii.arb", false), "min_ascii.arb");
     TEST_EXPECT_NULL(GB_existing_file("nosuchfile", false));
-    
+
     char *tcporg = GB_lib_file(false, "", "arb_tcp_org.dat");
     TEST_EXPECT_EQUAL(tcporg, GB_path_in_ARBHOME("lib/arb_tcp_org.dat"));
     TEST_EXPECT_NULL(GB_lib_file(true, "bla", "blub"));
@@ -339,6 +342,9 @@ void TEST_find_file() {
     TEST_EXPECT_EQUAL(status, GB_path_in_ARBHOME("lib/arb_default/status.arb"));
     TEST_EXPECT_NULL(GB_property_file(true, "undhepp"));
     free(status);
+
+    TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }
+TEST_PUBLISH(TEST_find_file);
 
 #endif // UNIT_TESTS

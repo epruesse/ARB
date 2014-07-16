@@ -65,6 +65,7 @@ GDE.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -210,32 +211,6 @@ GDE_Genbank.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/test_global.h
 
-GDE_global.o: gde.hxx
-GDE_global.o: GDE_def.h
-GDE_global.o: GDE_extglob.h
-GDE_global.o: GDE_menu.h
-GDE_global.o: GDE_proto.h
-GDE_global.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GDE_global.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GDE_global.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GDE_global.o: $(ARBHOME)/INCLUDE/arb_core.h
-GDE_global.o: $(ARBHOME)/INCLUDE/arb_error.h
-GDE_global.o: $(ARBHOME)/INCLUDE/arb_msg.h
-GDE_global.o: $(ARBHOME)/INCLUDE/arb_string.h
-GDE_global.o: $(ARBHOME)/INCLUDE/arbdb.h
-GDE_global.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-GDE_global.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GDE_global.o: $(ARBHOME)/INCLUDE/arbtools.h
-GDE_global.o: $(ARBHOME)/INCLUDE/attributes.h
-GDE_global.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-GDE_global.o: $(ARBHOME)/INCLUDE/cxxforward.h
-GDE_global.o: $(ARBHOME)/INCLUDE/downcast.h
-GDE_global.o: $(ARBHOME)/INCLUDE/dupstr.h
-GDE_global.o: $(ARBHOME)/INCLUDE/gccver.h
-GDE_global.o: $(ARBHOME)/INCLUDE/smartptr.h
-GDE_global.o: $(ARBHOME)/INCLUDE/static_assert.h
-GDE_global.o: $(ARBHOME)/INCLUDE/test_global.h
-
 GDE_HGLfile.o: gde.hxx
 GDE_HGLfile.o: GDE_def.h
 GDE_HGLfile.o: GDE_extglob.h
@@ -272,7 +247,9 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arb_core.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arb_error.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arb_file.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arb_msg.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arb_string.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -282,6 +259,7 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cb.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cb_base.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -289,6 +267,7 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/gccver.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/MultiFileReader.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/test_global.h

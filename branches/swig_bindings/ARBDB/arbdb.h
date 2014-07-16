@@ -27,6 +27,8 @@
 #define GB_SYSTEM_FOLDER   "__SYSTEM__"
 #define GB_SYSTEM_KEY_DATA "@key_data"
 
+#define GB_DEFAULT_ALIGNMENT "presets/use" // has to match ../WINDOW/aw_awar_defs.hxx@AWAR_DEFAULT_ALIGNMENT
+
 // ---------------------
 //      simple types
 
@@ -45,6 +47,13 @@ struct DictData;
 struct CharPtrArray;
 struct StrArray;
 struct ConstStrArray;
+
+// -------------------
+//      constants
+
+#define GB_USERFLAG_ANY       127  // maximum for gb_flag_types2::usr_ref
+#define GB_USERFLAG_QUERY     1    // bit used for search&query (used on species, genes, experiments)
+#define GB_USERFLAG_GHOSTNODE 1    // bit used by gbt_write_tree (only used on tree-nodes; so it does not clash with GB_USERFLAG_QUERY)
 
 // --------------
 //      enums
@@ -111,17 +120,24 @@ typedef const char *(*gb_getenv_hook)(const char *varname);
 //      GB_transaction
 
 class GB_transaction : virtual Noncopyable {
-    GBDATA *ta_main;
+    GBDATA   *ta_main;
     bool      ta_open;          // is transaction open ?
     GB_ERROR  ta_err;
 
+    void init(GBDATA *gb_main, bool initial);
+protected:
+    GB_transaction(GBDATA *gb_main, bool) { init(gb_main, true); }
 public:
-    GB_transaction(GBDATA *gb_main);
+    GB_transaction(GBDATA *gb_main) { init(gb_main, false); }
     ~GB_transaction();
 
     bool ok() const { return ta_open && !ta_err; }  // ready to work on DB?
     GB_ERROR close(GB_ERROR error);                 // abort transaction if error (e.g.: 'return ta.close(error);')
     ARB_ERROR close(ARB_ERROR& error);              // abort transaction if error (e.g.: 'return ta.close(error);')
+};
+
+struct GB_initial_transaction : public GB_transaction {
+    GB_initial_transaction(GBDATA *gb_main) : GB_transaction(gb_main, true) {}
 };
 
 class GB_shell {
@@ -137,6 +153,7 @@ public:
 
 // --------------------------------------------
 
+#if defined(DEBUG)
 struct GB_SizeInfo {
     long containers; // no of containers
     long terminals;  // no of terminals
@@ -148,6 +165,7 @@ struct GB_SizeInfo {
 
     void collect(GBDATA *gbd);
 };
+#endif
 
 // --------------------------------------------
 //      include generated public prototypes

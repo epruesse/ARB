@@ -1164,7 +1164,7 @@ static void usage(const char *exeName, const char *err) {
            , SERVER_VERSION, exeName);
     arb_print_server_params();
     if (err) printf("Error: %s\n", err);
-    exit(-1);
+    exit(EXIT_FAILURE);
 }
 
 int ARB_main(int argc, char *argv[]) {
@@ -1197,7 +1197,7 @@ int ARB_main(int argc, char *argv[]) {
 
         if (!cname) {
             GB_print_error();
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
         name = strdup(cname);
     }
@@ -1209,7 +1209,7 @@ int ARB_main(int argc, char *argv[]) {
         if (!strcmp(argv[1], "-look")) {
             printf("ARB_name_server: No client - terminating.\n");
             aisc_close(AN_global.cl_link, AN_global.cl_main); AN_global.cl_link = 0;
-            exit(0);
+            exit(EXIT_SUCCESS);
         }
 
         printf("There is another active nameserver. I try to kill it..\n");
@@ -1222,13 +1222,13 @@ int ARB_main(int argc, char *argv[]) {
 
     if (error) {
         printf("ARB_name_server: %s\n", error);
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     if (((strcmp(argv[1], "-kill") == 0)) ||
         ((argc==3) && (strcmp(argv[2], "-kill")==0))) {
         printf("ARB_name_server: Now I kill myself!\n");
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
     for (i=0, so=0; (i<MAX_TRY) && (!so); i++) {
         so = open_aisc_server(name, NAME_SERVER_SLEEP*1000L, 0);
@@ -1236,7 +1236,7 @@ int ARB_main(int argc, char *argv[]) {
     }
     if (!so) {
         printf("AN_SERVER: Gave up on opening the communication socket!\n");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
     AN_global.server_communication = so;
 

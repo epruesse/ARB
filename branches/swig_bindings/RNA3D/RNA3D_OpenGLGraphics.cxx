@@ -110,14 +110,14 @@ void OpenGLGraphics::init_font(GLuint base, char* f)
     display = glXGetCurrentDisplay();
     if (display == 0) {
         fprintf(stderr, "XOpenDisplay() failed.  Exiting.\n");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
     else {
         // Load the font.
         font_info = XLoadQueryFont(display, f);
         if (!font_info) {
             fprintf(stderr, "XLoadQueryFont() failed - Exiting.\n");
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
         else {
             // Tell GLX which font & glyphs to use.
@@ -133,7 +133,7 @@ void OpenGLGraphics::print_string(GLuint base, char* s)
 {
     if (!glIsList(font_base)) {
         fprintf(stderr, "print_string(): Bad display list. - Exiting.\n");
-        exit (-1);
+        exit(EXIT_FAILURE);
     }
     else if (s && strlen(s)) {
         glPushAttrib(GL_LIST_BIT);
@@ -148,7 +148,7 @@ void OpenGLGraphics::InitMainFont(char* f)
     font_base = glGenLists(256);
     if (!glIsList(font_base)) {
         fprintf(stderr, "InitMainFont(): Out of display lists. - Exiting.\n");
-        exit (-1);
+        exit(EXIT_FAILURE);
     }
     else {
         init_font(font_base, f);

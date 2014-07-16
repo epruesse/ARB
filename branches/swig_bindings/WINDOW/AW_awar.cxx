@@ -19,6 +19,8 @@
 #include <ad_cb.h>
 #include <list>
 #include <sys/stat.h>
+#include <climits>
+#include <cfloat>
 
 #if defined(DEBUG)
 // uncomment next line to dump all awar-changes to stderr
@@ -150,13 +152,13 @@ WRITE_SKELETON(write_pointer, GBDATA*, "%p", GB_write_pointer) // defines rewrit
 #undef AWAR_CHANGE_DUMP
 
 
-char *AW_awar::read_as_string() {
+char *AW_awar::read_as_string() const {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
 }
 
-const char *AW_awar::read_char_pntr() {
+const char *AW_awar::read_char_pntr() const {
     aw_assert(variable_type == AW_STRING);
 
     if (!gb_var) return "";
@@ -164,25 +166,25 @@ const char *AW_awar::read_char_pntr() {
     return GB_read_char_pntr(gb_var);
 }
 
-double AW_awar::read_float() {
+double AW_awar::read_float() const {
     if (!gb_var) return 0.0;
     GB_transaction ta(gb_var);
     return GB_read_float(gb_var);
 }
 
-long AW_awar::read_int() {
+long AW_awar::read_int() const {
     if (!gb_var) return 0;
     GB_transaction ta(gb_var);
     return (long)GB_read_int(gb_var);
 }
 
-GBDATA *AW_awar::read_pointer() {
+GBDATA *AW_awar::read_pointer() const {
     if (!gb_var) return NULL;
     GB_transaction ta(gb_var);
     return GB_read_pointer(gb_var);
 }
 
-char *AW_awar::read_string() {
+char *AW_awar::read_string() const {
     aw_assert(variable_type == AW_STRING);
 
     if (!gb_var) return strdup("");
@@ -192,7 +194,7 @@ char *AW_awar::read_string() {
 
 void AW_awar::touch() {
     if (gb_var) {
-        GB_transaction dummy(gb_var);
+        GB_transaction ta(gb_var);
         GB_touch(gb_var);
     }
 }
@@ -496,6 +498,29 @@ AW_awar *AW_awar::set_minmax(float min, float max) {
     return this;
 }
 
+float AW_awar::get_min() const {
+    if (variable_type == AW_STRING) GBK_terminatef("get_min does not apply to string AWAR '%s'", awar_name);
+    bool isSet = (pp.f.min != pp.f.max); // as used in AW_awar::update
+    if (!isSet) {
+        aw_assert(float(INT_MIN)>=-FLT_MAX);
+        if (variable_type == AW_INT) return float(INT_MIN);
+        aw_assert(variable_type == AW_FLOAT);
+        return -FLT_MAX;
+    }
+    return pp.f.min;
+}
+float AW_awar::get_max() const {
+    if (variable_type == AW_STRING) GBK_terminatef("get_max does not apply to string AWAR '%s'", awar_name);
+    bool isSet = (pp.f.min != pp.f.max); // as used in AW_awar::update
+    if (!isSet) {
+        aw_assert(float(INT_MAX)<=FLT_MAX);
+        if (variable_type == AW_INT) return float(INT_MAX);
+        aw_assert(variable_type == AW_FLOAT);
+        return FLT_MAX;
+    }
+    return pp.f.max;
+}
+
 AW_awar *AW_awar::set_srt(const char *srt) {
     assert_var_type(AW_STRING);
     pp.srt = srt;
@@ -684,6 +709,7 @@ void TEST_AW_root_cblist() {
     AW_root_cblist::clear(cb_list);
     TEST_EXPECT_CBS_CALLED(cb_list, 0, 0); // list clear - nothing should be called
 }
+TEST_PUBLISH(TEST_AW_root_cblist);
 
 #endif // UNIT_TESTS
 

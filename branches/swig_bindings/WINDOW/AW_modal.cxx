@@ -183,7 +183,12 @@ void file_selection_cb(AW_window *aw, int ok_cancel_flag) {
 static AW_window_message *new_input_window(AW_root *root, const char *title, const char *buttons) {
     // helper for aw_input and aw_string_selection
     //
-    // 'buttons' comma separated list of button names (buttons starting with \n force a newline)
+    // 'buttons': comma separated list of button names
+    // - a buttonname starting with - marks the abort button (only one possible)
+    // - buttonnames starting with \n force a newline
+    // (has to be '-\nNAME' if combined)
+
+    aw_assert(buttons);
 
     AW_window_message *aw_msg = new AW_window_message;
 
@@ -199,19 +204,21 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
     aw_msg->at_newline();
     aw_msg->create_input_field(AW_INPUT_AWAR, INPUT_SIZE);
 
-    size_t        butCount = 2;                     // ok and cancel
     ConstStrArray button_names;
-    int           maxlen   = 6;                     // use as min.length for buttons (for 'CANCEL')
+    int           maxlen = 0; // track max. button length (used as min.length for buttons)
 
-    if (buttons) {
-        GBT_split_string(button_names, buttons, ',');
-        butCount = button_names.size();
+    GBT_split_string(button_names, buttons, ',');
+    size_t butCount = button_names.size();
 
-        for (size_t b = 0; b<butCount; b++) {
-            int len = strlen(button_names[b]);
-            if (len>maxlen) maxlen = len;
+    int abortButton = -1; // index of abort button (-1 means 'none')
+    for (size_t b = 0; b<butCount; b++) {
+        if (button_names[b][0] == '-') {
+            aw_assert(abortButton<0); // only one abort button possible!
+            abortButton        = b;
+            button_names.replace(b, button_names[b]+1); // point behind '-'
         }
-
+        int len = strlen(button_names[b]);
+        if (len>maxlen) maxlen = len;
     }
 
     aw_msg->button_length(maxlen+1);
@@ -223,31 +230,27 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
     aw_msg->callback(makeWindowCallback(input_history_cb,  1)); aw_msg->create_button("fwd", ">>", 0);
     size_t thisLine = 2;
 
-    // @@@ add a history button (opening a window with elements from history)
-
     if (butCount>(MAXBUTTONSPERLINE-thisLine) && butCount <= MAXBUTTONSPERLINE) { // approx. 5 buttons (2+3) fit into one line
         aw_msg->at_newline();
         thisLine = 0;
     }
 
-    if (buttons) {
-        for (size_t b = 0; b<butCount; b++) {
-            const char *name    = button_names[b];
-            bool        forceLF = name[0] == '\n';
+    for (size_t b = 0; b<butCount; b++) {
+        const char *name    = button_names[b];
+        bool        forceLF = name[0] == '\n';
 
-            if (thisLine >= MAXBUTTONSPERLINE || forceLF) {
-                aw_msg->at_newline();
-                thisLine = 0;
-                if (forceLF) name++;
-            }
-            aw_msg->callback(makeWindowCallback(input_cb, int(b))); // use b == 0 as result for 1st button, 1 for 2nd button, etc.
-            aw_msg->create_button(name, name, "");
-            thisLine++;
+        if (thisLine >= MAXBUTTONSPERLINE || forceLF) {
+            aw_msg->at_newline();
+            thisLine = 0;
+            if (forceLF) name++;
         }
-    }
-    else {
-        aw_msg->callback(makeWindowCallback(input_cb,  0)); aw_msg->create_button("OK", "OK", "O");
-        aw_msg->callback(makeWindowCallback(input_cb, -1)); aw_msg->create_button("CANCEL", "CANCEL", "C");
+
+        // use 0 as result for 1st button, 1 for 2nd button, etc.
+        // use -1 for abort button
+        int resultCode = b == abortButton ? -1 : b;
+        aw_msg->callback(makeWindowCallback(input_cb, resultCode));
+        aw_msg->create_button(name, name, "");
+        thisLine++;
     }
 
     return aw_msg;
@@ -282,7 +285,7 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
 
     aw_assert(GB_get_transaction_level(inAwar->gb_var) <= 0); // otherwise history would not work
 
-    if (!aw_msg) aw_msg = new_input_window(root, title, NULL);
+    if (!aw_msg) aw_msg = new_input_window(root, title, "Ok,-Abort");
     else aw_msg->set_window_title(title);
 
     aw_msg->window_fit();
@@ -307,34 +310,15 @@ char *aw_input(const char *prompt, const char *default_input) {
     return aw_input("Enter string", prompt, default_input);
 }
 
-static char *aw_input2awar(const char *title, const char *prompt, const char *awar_name) {
-    AW_root *aw_root       = AW_root::SINGLETON;
-    AW_awar *awar          = aw_root->awar(awar_name);
-    char    *default_value = awar->read_string();
-    char    *result        = aw_input(title, prompt, default_value);
-
-    awar->write_string(result);
-    free(default_value);
-
-    return result;
-}
-
-char *aw_input2awar(const char *prompt, const char *awar_name) {
-    return aw_input2awar("Enter string", prompt, awar_name);
-}
-
-
-char *aw_string_selection(const char *title, const char *prompt, const char *default_input,
-                          const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
+char *aw_string_selection(const char *title, const char *prompt, const char *default_input, const char *value_list, const char *buttons) {
     // A modal input window. A String may be entered by hand or selected from value_list
     //
     //      title           window title
     //      prompt          prompt at input field
     //      default_input   default value (if NULL => "").
     //      value_list      Existing selections (separated by ';') or NULL if no selection exists
-    //      buttons         String containing answer button names separated by ',' (default is "OK,Cancel")
+    //      buttons         String containing answer button names separated by ',' (default is "Ok,-Abort")
     //                      Use aw_string_selected_button() to detect which has been pressed.
-    //      check_fun       function to correct input (or NULL for no check). The function may return NULL to indicate no correction
     //
     // returns the value of the inputfield
 
@@ -347,8 +331,9 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
         AW_selection_list *sel;
     };
 
+    // create one window for each button combination
     const char   *bkey = buttons ? buttons : ",default,";
-    str_sel_data *sd      = (str_sel_data*)GBS_read_hash(str_sels, bkey);
+    str_sel_data *sd   = (str_sel_data*)GBS_read_hash(str_sels, bkey);
     if (!sd) {
         sd         = new str_sel_data;
         sd->aw_msg = 0;
@@ -378,10 +363,10 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     aw_assert(GB_get_transaction_level(inAwar->gb_var) <= 0); // otherwise history would not work
 
     if (!aw_msg) {
-        aw_msg = new_input_window(root, title, buttons);
+        aw_msg = new_input_window(root, title, buttons ? buttons : "Ok,-Abort");
 
         aw_msg->at_newline();
-        sel = aw_msg->create_selection_list(AW_INPUT_AWAR, INPUT_SIZE, 10);
+        sel = aw_msg->create_selection_list(AW_INPUT_AWAR, INPUT_SIZE, 10, false);
         sel->insert_default("", "");
         sel->update();
     }
@@ -393,6 +378,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     // update the selection box :
     aw_assert(sel);
     sel->clear();
+    sel->insert_default("<new>", "");
     if (value_list) {
         char *values = strdup(value_list);
         char *word;
@@ -402,7 +388,6 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
         }
         free(values);
     }
-    sel->insert_default("<new>", "");
     sel->update();
 
     // do modal loop :
@@ -419,19 +404,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
             root->process_events();
 
             char *this_input = root->awar(AW_INPUT_AWAR)->read_string();
-            if (strcmp(this_input, last_input) != 0) {
-                if (check_fun) {
-                    char *corrected_input = check_fun(this_input);
-                    if (corrected_input) {
-                        if (strcmp(corrected_input, this_input) != 0) {
-                            root->awar(AW_INPUT_AWAR)->write_string(corrected_input);
-                        }
-                        free(corrected_input);
-                    }
-                }
-                reassign(last_input, this_input);
-            }
-            free(this_input);
+            reassign(last_input, this_input);
 
             if (!aw_msg->is_shown()) { // somebody hided/closed the window
                 input_cb(aw_msg, -1); // CANCEL
@@ -446,17 +419,20 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     return aw_input_cb_result;
 }
 
-char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name, const char *value_list, const char *buttons, char *(*check_fun)(const char*)) {
+char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name, const char *value_list, const char *buttons) {
     // params see aw_string_selection
-    // default_value is taken from and result is written back to awar 'awar_name'
+    // 
+    // default for string is taken from awar 'awar_name'.
+    // result is written back to awar.
+    // if abort button is pressed, old value is written back to awar.
 
-    AW_root *aw_root       = AW_root::SINGLETON;
-    AW_awar *awar          = aw_root->awar(awar_name);
-    char    *default_value = awar->read_string();
-    char    *result        = aw_string_selection(title, prompt, default_value, value_list, buttons, check_fun);
+    AW_root *aw_root   = AW_root::SINGLETON;
+    AW_awar *awar      = aw_root->awar(awar_name);
+    char    *old_value = awar->read_string();
+    char    *result    = aw_string_selection(title, prompt, old_value, value_list, buttons);
 
-    awar->write_string(result);
-    free(default_value);
+    awar->write_string(result ? result : old_value);
+    free(old_value);
 
     return result;
 }
@@ -494,7 +470,7 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
         aw_msg->at("title");
         aw_msg->create_button(0, AW_FILE_SELECT_TITLE_AWAR);
 
-        AW_create_fileselection(aw_msg, AW_FILE_SELECT_BASE);
+        AW_create_standard_fileselection(aw_msg, AW_FILE_SELECT_BASE);
 
         aw_msg->button_length(7);
 

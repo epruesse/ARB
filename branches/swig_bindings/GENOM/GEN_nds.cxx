@@ -288,10 +288,7 @@ static void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL c
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        create_selection_list_on_itemfields((GBDATA *)cgb_main,
-                                                aws, "tmp/gene_viewkey/key_text",
-                                                FIELD_FILTER_NDS,
-                                                "scandb", "rescandb", GEN_get_selector(), 20, 10);
+        create_selection_list_on_itemfields((GBDATA*)cgb_main, aws, "tmp/gene_viewkey/key_text", true, FIELD_FILTER_NDS, "scandb", "rescandb", GEN_get_selector(), 20, 10, SF_STANDARD, NULL);
 
         win =  (AW_window*)aws;
     }
@@ -360,7 +357,7 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, AW_CL cgb_main)
 
             aws->button_length(0);
 
-            aws->callback(AWT_create_select_srtaci_window, AW_CL(inputFieldAwarName), 0);
+            aws->callback(makeWindowCallback(AWT_popup_select_srtaci_window, inputFieldAwarName));
             sprintf(buf, "SELECT_SRTACI_%i", i);
             aws->create_button(buf, "S", "S");
 

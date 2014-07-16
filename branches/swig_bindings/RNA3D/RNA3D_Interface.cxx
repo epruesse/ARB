@@ -659,7 +659,7 @@ static AW_window *CreateHelp_window(AW_root *aw_root) {
 
 AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host& host) {
     // Main Window - Canvas on which the actual painting is done
-    GB_transaction dummy(gb_main);
+    GB_transaction ta(gb_main);
 
     awr->awar_int(AWAR_3D_SAI_SELECTED, 0, AW_ROOT_DEFAULT);
 
@@ -708,7 +708,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
         awm->create_toggle(AWAR_3D_DISPLAY_MASK, "#unmask.xpm", "#mask.xpm");
 
         awm->get_at_position(&cur_x, &cur_y);
-        awm->callback(AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)RNA3D->gl_Canvas->gc_manager);
+        awm->callback(makeCreateWindowCallback(AW_create_gc_window, RNA3D->gl_Canvas->gc_manager));
         awm->button_length(0);
         awm->create_button("setColors", "#colors.xpm");
 

@@ -11,7 +11,7 @@ SUB	rst_log_zoom.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		LOGICAL ZOOM MODE
 
-OCCURRENCE	ARB_NT <LZoom> button in the left column
+OCCURRENCE	ARB_NT and ARB_PARSIMONY: <LZoom> button in the left column
 		F5 on the keyboard
 
 DESCRIPTION	The 'LOGICAL ZOOM MODE' allows you to display subtrees within
@@ -33,17 +33,10 @@ DESCRIPTION	The 'LOGICAL ZOOM MODE' allows you to display subtrees within
 
 
 
-NOTES		Short descriptions of the 'MODE' and the functions assigned
-		to the mouse buttons are given in the fourth line of the
-		'ARB_NT' window.
-
-		To reset the display to show the whole tree either
+NOTES		To reset the display to show the whole tree either
                 - choose the 'Logical Zoom' item from the 'Tree/Reset zoom' menu or
                 - left-click somewhere outside the tree or
                 - press the key '0' (zero) in the tree display.
-
-		The middle mouse button (placed anywhere within the tree
-		display area) can be used to move the whole tree.
 
 EXAMPLES	None
 

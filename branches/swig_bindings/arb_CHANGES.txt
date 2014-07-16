@@ -2,10 +2,22 @@ ARB change log
 
 Major changes for next release:
 
+ - arb_parsimony
+   - dots were treated as gaps for protein sequences (now treated as 'X'; analog to DNA treating gaps as 'N'). thx to Yan Shi for detecting that problem!
+
+Major changes for arb-6.0:
+
  - merge databases allows to
    - merge from an existing database into the database loaded in ARB_NT
    - merge to existing databases from the database loaded in ARB_NT
- - Detect clusters of species with similar sequences (OTUs) in ARB_DIST
+ - ARB can now
+   - be restarted with another database and
+   - a second instance of ARB can be opened
+ - ARB_DIST
+   - Detect clusters of species with similar sequences (OTUs)
+   - allow automatic recalculation of matrix and/or tree whenever some parameter or
+     data changes (only makes sense for smaller species sets)
+   - extract distance matrix from tree
  - Rewrote chimera check. Allows filtering
  - added RNACMA (computes clusters of correlated positions)
  - PT-Server
@@ -31,6 +43,7 @@ Major changes for next release:
      - fixed number of outgroup hits reported when decreasing temperature
        (now each outgroup member only occurs once)
      - show possible reasons why no probes could be designed
+   - probe match (allow any number of mismatches)
    - next relative search
      - can be restricted to column ranges (needs a PT-Server calculated from aligned sequences)
      - corrected and improved scaling of relative scores
@@ -42,7 +55,7 @@ Major changes for next release:
    - align multiple column-blocks based on SAI
  - Rewrote alignment adaption during merge
  - Insert/delete columns using a SAI to define affected columns
- - EDIT4
+ - ARB_EDIT4
    - improved support for using multiple edit-windows
    - smoother refreshes
    - tweaked ORF display
@@ -50,9 +63,8 @@ Major changes for next release:
    - ARBs extended newick format (with bootstrap values) handled more restrictive now
    - fixed several bugs; improved errors/warnings
  - consensus trees
-   - calculate from multiple existing trees
+   - calculate from multiple existing trees (also allows to merge not completely overlapping trees)
    - fixed NJ-bootstrapping (no longer drops species)
- - trees sortable now
  - tree display
    - Show brackets on open groups (dendrogram tree only)
    - rewrote IRS (folded) display
@@ -61,15 +73,37 @@ Major changes for next release:
  - added a branch analysis tool
    - groups several functions previously availiable via menuitems (e.g. mark long branches, etc.)
    - added leaf-distance analysis
+ - other tree functionality
+   - treelist sortable now
+   - new beautify-tree modes (radial tree / according to other tree)
+   - function to remove marked/zombies from ALL trees
+   - create multifurcations (by branchlength/bootstrap limit)
+   - toggle 100% bootstrap values
  - tweaked printing (interface, overlapping)
+ - if YOU edit a helpfile it will be automatically packed into an archive ready to be sent to ARB developers
  - probe design:
    - added LOAD to result window
  - automation
    - macro recording works in ARB client applications (ARB_EDIT4, ARB_PARS, ARB_MERGE, ..)
    - arb_ntree can execute macro from command line
    - added "Never ask again" to modal question boxes (for better compatibility with macros)
+   - a macro can be called for all marked species (once for each)
+   - macros can be nested (i.e. can call other macros)
+ - support for user-specific customization:
+   - of GDE menus (in ~/.arb_prop/gde)
+   - of import/export filters (in ~/.arb_prop/filter)
+ - ACI (some new commands, bugfixes)
+ - updated/added external tools:
+   - added FastTree (version 2.1.7)
+   - added MAFFT (version 7.055)
+   - added MrBayes (version 3.2.1)
+   - added MUSCLE (version 3.8.31)
+   - added PHYML (2013/07/08; also kept old version 2.4.5)
+   - added PROBCONS (version 1.12)
+   - updated RAxML (version 7.7.2)
  - load/save for window specific settings (e.g. allows to share parts of configuration with other users)
  - Support for mouse-wheel
+ - many unlisted bugfixes
  - many internal refactorings
 
 

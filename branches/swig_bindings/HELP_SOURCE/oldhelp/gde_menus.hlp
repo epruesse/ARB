@@ -3,15 +3,15 @@ UP      agde.hlp
 UP      glossary.hlp
 UP      save.hlp
 
-TITLE           GDE menus
+TITLE           Customizing GDE menus
 
 DESCRIPTION     ARB uses the GDE menus to plugin external tools 
 
                 This helpfile contains parts of the original GDE helpfile
-                and has been  slightly modified to fit to the way
+                and has been modified to fit to the way
                 GDE menus are used inside ARB.
 
-SECTION Using the GDE menus
+SECTION Description of GDE menus as used in ARB
 
         The GDE uses a menu description language to
         define what external programs it can call, and what
@@ -23,10 +23,18 @@ SECTION Using the GDE menus
         programs when selected from a menu:
 
         Each step in this process is described in the file
-        $ARBHOME/GDEHELP/ARB_GDEmenus
+
+                $ARBHOME/lib/gde/arb.menu
 
         You may modify that file to include other external
         tools into the ARB interface.
+
+        Alternatively you can add files with suffix '.menu' either into
+        the global directory '$ARBHOME/lib/gde/' (menus defined there will
+        be available to all users) or into '~/.arb_prop/gde/' (menus defined
+        there will not be available to other users).
+
+SECTION GDE menus language
 
         The language used in this file describes three phases
         to an external function call. The first phase
@@ -48,16 +56,27 @@ SECTION Using the GDE menus
         The keywords for phase one are:
 
                 menu:menu name      Name of current menu
+                menumeta:meta_key   Meta key equivalence (quick keys)
+                menumask:expert     Whole menu will be inaccessible in ARBs novice mode
+
                 item:item name      Name of current menu item
                 itemmeta:meta_key   Meta key equivalence (quick keys)
                 itemhelp:help_file  Help file (either full path, or in $ARBHOME/lib/help)
                 itemmethod:         Unix command
+                itemmask:expert     Whole menu will be inaccessible in ARBs novice mode
+
+                seqtype:TYPE
+                        Known TYPEs:
+                              'A' -> select amino acid sequences
+                              'N' -> select nucleotide sequences
+                              '*' -> select ANY sequences
+                              '-' (or whole entry missing) -> do not select sequences
 
         The itemmethod command is a bit more involved, it
         is the Unix command that will actually run the
         external program intended.
 
-        It is one line long, and can be up to 256 characters in
+        It is one line long, and can be up to 4096 characters in
         length. It can have embedded variable names (starting
         with a '$') that will be replaced with appropriate values
         later on.
@@ -107,7 +126,7 @@ SECTION Using the GDE menus
 
                         Used for sliders.
 
-            argvalue:default_value (integer)
+            argvalue:default_value
 
                         It is the numeric value associated with
                         sliders or the default choice in
@@ -128,14 +147,19 @@ SECTION Using the GDE menus
                         value is passed to the itemmethod
                         line.
 
+            argmask:expert
+
+                        Whole arg will be inaccessible in ARBs novice mode
+
+
         The keywords for phase three are as follows:
 
             in:input_file
 
-                        GDE will replace this name with a
-                        randomly generated temporary file
-                        name. It will then write the selected
-                        data out to this file.
+                        GDE will replace this name with a randomly generated temporary file
+                        name. It will then write the selected data out to this file.
+
+                        Convention: always use TmpInputFile as placeholder
 
             informat:file_format
 
@@ -143,10 +167,21 @@ SECTION Using the GDE menus
                         this function. Currently support
                         values are Genbank, and flat.
 
-            inmask:
+            intyped:DETAILS
 
-                        This data can be controlled by a
-                        selection mask.
+                        Whether to save sequence type information.
+
+                        Known DETAILS:
+
+                              basic        default; plain sequences exported
+                              detailed     -> prefix sequence name by IDCHAR
+
+                        Known IDCHARs:
+
+                              '#'       RNA / DNA
+                              '%'       PROTEIN
+                              '@'       MASK (obsolete)
+                              '"'       TEXT or unknown
 
             insave:
 
@@ -156,11 +191,11 @@ SECTION Using the GDE menus
 
             out:output_file
 
-                        GDE will replace this name with a
-                        randomly generated temporary file
-                        name. It is up to the external function
-                        to fill this file with any results that
+                        GDE will replace this name with a randomly generated temporary file
+                        name. It is up to the external function to fill this file with any results that
                         might be read back into the GDE.
+
+                        Convention: always use TmpOutputFile as placeholder
 
             outformat:file_format
 
@@ -173,12 +208,6 @@ SECTION Using the GDE menus
 
                         Do not remove this file after reading.
                         This is useful for background tasks.
-
-            outoverwrite:
-
-                        Overwrite existing sequences in the current
-                        GDE window. Currently supported with
-                        "gde" format only.
 
 
         Here is a sample dialog box, and it's entry in the

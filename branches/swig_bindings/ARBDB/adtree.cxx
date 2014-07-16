@@ -15,76 +15,176 @@
 #include <set>
 #include <limits.h>
 #include <arb_global_defs.h>
+#include <arb_strbuf.h>
+#include <arb_diff.h>
+#include <arb_defs.h>
 
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0
-
-// ----------------
-//      basics
 
 GBDATA *GBT_get_tree_data(GBDATA *gb_main) {
     return GBT_find_or_create(gb_main, "tree_data", 7);
 }
 
+GBT_TREE::bs100_mode GBT_TREE::toggle_bootstrap100(bs100_mode mode) {
+    if (!is_leaf) {
+        if (!is_root_node()) {
+            double bootstrap;
+            switch (parse_bootstrap(bootstrap)) {
+                case REMARK_NONE:
+                case REMARK_OTHER:
+                    switch (mode) {
+                        case BS_UNDECIDED: mode = BS_INSERT;
+                        case BS_INSERT: set_bootstrap(100);
+                        case BS_REMOVE: break;
+                    }
+                    break;
+                case REMARK_BOOTSTRAP:
+                    if (bootstrap >= 99.5) {
+                        switch (mode) {
+                            case BS_UNDECIDED: mode = BS_REMOVE;
+                            case BS_REMOVE: remove_remark();
+                            case BS_INSERT: break;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        mode = get_leftson()->toggle_bootstrap100(mode);
+        mode = get_rightson()->toggle_bootstrap100(mode);
+    }
+    return mode;
+}
+void GBT_TREE::remove_bootstrap() {
+    freenull(remark_branch);
+    if (!is_leaf) {
+        get_leftson()->remove_bootstrap();
+        get_rightson()->remove_bootstrap();
+    }
+}
+void GBT_TREE::reset_branchlengths() {
+    if (!is_leaf) {
+        leftlen = rightlen = DEFAULT_BRANCH_LENGTH;
+
+        get_leftson()->reset_branchlengths();
+        get_rightson()->reset_branchlengths();
+    }
+}
+
+void GBT_TREE::scale_branchlengths(double factor) {
+    if (!is_leaf) {
+        leftlen  *= factor;
+        rightlen *= factor;
+
+        get_leftson()->scale_branchlengths(factor);
+        get_rightson()->scale_branchlengths(factor);
+    }
+}
+
+GBT_LEN GBT_TREE::sum_child_lengths() const {
+    if (is_leaf) return 0.0;
+    return
+        leftlen +
+        rightlen +
+        get_leftson()->sum_child_lengths() +
+        get_rightson()->sum_child_lengths();
+}
+
+void GBT_TREE::bootstrap2branchlen() {
+    //! copy bootstraps to branchlengths
+    if (is_leaf) {
+        set_branchlength_unrooted(DEFAULT_BRANCH_LENGTH);
+    }
+    else {
+        if (father) {
+            double         bootstrap;
+            GBT_RemarkType rtype = parse_bootstrap(bootstrap);
+
+            if (rtype == REMARK_BOOTSTRAP) {
+                double len = bootstrap/100.0;
+                set_branchlength_unrooted(len);
+            }
+            else {
+                set_branchlength_unrooted(1.0); // no bootstrap means "100%"
+            }
+        }
+        get_leftson()->bootstrap2branchlen();
+        get_rightson()->bootstrap2branchlen();
+    }
+}
+
+void GBT_TREE::branchlen2bootstrap() {
+    //! copy branchlengths to bootstraps
+    remove_remark();
+    if (!is_leaf) {
+        if (!is_root_node()) {
+            set_bootstrap(get_branchlength_unrooted()*100.0);
+        }
+        get_leftson()->branchlen2bootstrap();
+        get_rightson()->branchlen2bootstrap();
+    }
+}
+
+GBT_TREE *GBT_TREE::fixDeletedSon() {
+    // fix node after one son has been deleted
+    GBT_TREE *result = NULL;
+
+    if (leftson) {
+        gb_assert(!rightson);
+        result  = leftson;
+        leftson = NULL;
+    }
+    else {
+        gb_assert(!leftson);
+        gb_assert(rightson);
+
+        result   = rightson;
+        rightson = NULL;
+    }
+
+    // now 'result' contains the lasting tree
+    result->father = father;
+
+    if (remark_branch && !result->remark_branch) { // rescue remarks if possible
+        result->remark_branch    = remark_branch;
+        remark_branch = NULL;
+    }
+    if (gb_node && !result->gb_node) { // rescue group if possible
+        result->gb_node = gb_node;
+        gb_node         = NULL;
+    }
+
+    is_leaf = true; // don't try recursive delete
+    delete this;
+
+    return result;
+}
+
+const GBT_TREE *GBT_TREE::ancestor_common_with(const GBT_TREE *other) const {
+    if (this == other) return this;
+    if (is_anchestor_of(other)) return this;
+    if (other->is_anchestor_of(this)) return other;
+    return get_father()->ancestor_common_with(other->get_father());
+}
+
 // ----------------------
 //      remove leafs
 
-
-static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
-    // fix tree after one son has been deleted
-    // (Note: this function only works correct for trees with minimum element size!)
-    GBT_TREE *delNode = tree;
-
-    if (delNode->leftson) {
-        gb_assert(!delNode->rightson);
-        tree             = delNode->leftson;
-        delNode->leftson = 0;
-    }
-    else {
-        gb_assert(!delNode->leftson);
-        gb_assert(delNode->rightson);
-
-        tree              = delNode->rightson;
-        delNode->rightson = 0;
-    }
-
-    // now tree is the new tree
-    tree->father = delNode->father;
-
-    if (delNode->remark_branch && !tree->remark_branch) { // rescue remarks if possible
-        tree->remark_branch    = delNode->remark_branch;
-        delNode->remark_branch = 0;
-    }
-    if (delNode->gb_node && !tree->gb_node) { // rescue group if possible
-        tree->gb_node    = delNode->gb_node;
-        delNode->gb_node = 0;
-    }
-
-    delNode->is_leaf = true; // don't try recursive delete
-
-    if (delNode->father) { // not root
-        GBT_delete_tree(delNode);
-    }
-    else { // root node
-        if (delNode->tree_is_one_piece_of_memory) {
-            // don't change root -> copy instead
-            memcpy(delNode, tree, sizeof(GBT_TREE));
-            tree = delNode;
-        }
-        else {
-            GBT_delete_tree(delNode);
-        }
-    }
-    return tree;
-}
-
-
-GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_HASH *species_hash, int *removed, int *groups_removed) {
-    // Given 'tree' can either
-    // - be linked (in this case 'species_hash' shall be NULL)
-    // - be unlinked (in this case 'species_hash' has to be provided)
-    //
-    // If 'removed' and/or 'groups_removed' is given, it's used to count the removed leafs/groups.
+GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HASH *species_hash, int *removed, int *groups_removed) { // @@@ add tests for GBT_remove_leafs()
+    /*! Remove leafs from given 'tree'.
+     * @param tree tree from which species will be removed
+     * @param mode defines what to remove
+     * @param species_hash hash translation from leaf-name to species-dbnode (not needed if tree is linked; see GBT_link_tree)
+     * @param removed will be incremented for each removed leaf (if !NULL)
+     * @param groups_removed will be incremented for each removed group (if !NULL)
+     * @return new root node
+     *
+     * if 'species_hash' is not provided and tree is not linked,
+     * the function will silently act strange:
+     * - GBT_REMOVE_MARKED and GBT_REMOVE_UNMARKED will remove any leaf
+     * - GBT_REMOVE_ZOMBIES and GBT_KEEP_MARKED will remove all leafs
+     */
 
     if (tree->is_leaf) {
         if (tree->name) {
@@ -98,17 +198,18 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_H
             else gb_node = tree->gb_node;
 
             if (gb_node) {
-                if (mode & (GBT_REMOVE_MARKED|GBT_REMOVE_NOT_MARKED)) {
+                if (mode & (GBT_REMOVE_MARKED|GBT_REMOVE_UNMARKED)) {
                     long flag = GB_read_flag(gb_node);
-                    deleteSelf = (flag && (mode&GBT_REMOVE_MARKED)) || (!flag && (mode&GBT_REMOVE_NOT_MARKED));
+                    deleteSelf = (flag && (mode&GBT_REMOVE_MARKED)) || (!flag && (mode&GBT_REMOVE_UNMARKED));
                 }
             }
             else { // zombie
-                if (mode & GBT_REMOVE_DELETED) deleteSelf = true;
+                if (mode & GBT_REMOVE_ZOMBIES) deleteSelf = true;
             }
 
             if (deleteSelf) {
-                GBT_delete_tree(tree);
+                delete tree;
+                tree = NULL;
                 if (removed) (*removed)++;
             }
         }
@@ -119,45 +220,138 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TREE_REMOVE_TYPE mode, const GB_H
 
         if (tree->leftson) {
             if (!tree->rightson) { // right son deleted
-                tree = fixDeletedSon(tree);
+                tree = tree->fixDeletedSon();
             }
             // otherwise no son deleted
         }
         else if (tree->rightson) { // left son deleted
-            tree = fixDeletedSon(tree);
+            tree = tree->fixDeletedSon();
         }
         else {                  // everything deleted -> delete self
             if (tree->name && groups_removed) (*groups_removed)++;
             tree->is_leaf = true;
-            GBT_delete_tree(tree);
+            delete tree;
+            tree = NULL;
         }
     }
 
     return tree;
 }
 
-// -------------------
-//      free tree
+// ---------------------
+//      trees order
 
+inline int get_tree_idx(GBDATA *gb_tree) {
+    GBDATA *gb_order = GB_entry(gb_tree, "order");
+    int     idx      = 0;
+    if (gb_order) {
+        idx = GB_read_int(gb_order);
+        gb_assert(idx>0); // invalid index
+    }
+    return idx;
+}
 
-void GBT_delete_tree(GBT_TREE*& tree)
-     /* frees a tree only in memory (not in the database)
-        to delete the tree in Database
-        just call GB_delete((GBDATA *)gb_tree);
-     */
-{
-    if (tree) {
-        free(tree->name);
-        free(tree->remark_branch);
+inline int get_max_tree_idx(GBDATA *gb_treedata) {
+    int max_idx = 0;
+    for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
+        int idx = get_tree_idx(gb_tree);
+        if (idx>max_idx) max_idx = idx;
+    }
+    return max_idx;
+}
 
-        if (!tree->is_leaf) {
-            GBT_delete_tree(tree->leftson);
-            GBT_delete_tree(tree->rightson);
+inline GBDATA *get_tree_with_idx(GBDATA *gb_treedata, int at_idx) {
+    GBDATA *gb_found = NULL;
+    for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree && !gb_found; gb_tree = GB_nextChild(gb_tree)) {
+        int idx = get_tree_idx(gb_tree);
+        if (idx == at_idx) {
+            gb_found = gb_tree;
         }
-        if (!tree->tree_is_one_piece_of_memory || !tree->father) {
-            free(tree);
+    }
+    return gb_found;
+}
+
+inline GBDATA *get_tree_infrontof_idx(GBDATA *gb_treedata, int infrontof_idx) {
+    GBDATA *gb_infrontof = NULL;
+    if (infrontof_idx) {
+        int best_idx = 0;
+        for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
+            int idx = get_tree_idx(gb_tree);
+            gb_assert(idx);
+            if (idx>best_idx && idx<infrontof_idx) {
+                best_idx     = idx;
+                gb_infrontof = gb_tree;
+            }
         }
-        tree = NULL;
+    }
+    return gb_infrontof;
+}
+
+inline GBDATA *get_tree_behind_idx(GBDATA *gb_treedata, int behind_idx) {
+    GBDATA *gb_behind = NULL;
+    if (behind_idx) {
+        int best_idx = INT_MAX;
+        for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
+            int idx = get_tree_idx(gb_tree);
+            gb_assert(idx);
+            if (idx>behind_idx && idx<best_idx) {
+                best_idx  = idx;
+                gb_behind = gb_tree;
+            }
+        }
+    }
+    return gb_behind;
+}
+
+inline GB_ERROR set_tree_idx(GBDATA *gb_tree, int idx) {
+    GB_ERROR  error    = NULL;
+    GBDATA   *gb_order = GB_entry(gb_tree, "order");
+    if (!gb_order) {
+        gb_order = GB_create(gb_tree, "order", GB_INT);
+        if (!gb_order) error = GB_await_error();
+    }
+    if (!error) error = GB_write_int(gb_order, idx);
+    return error;
+}
+
+static GB_ERROR reserve_tree_idx(GBDATA *gb_treedata, int idx) {
+    GB_ERROR  error   = NULL;
+    GBDATA   *gb_tree = get_tree_with_idx(gb_treedata, idx);
+    if (gb_tree) {
+        error = reserve_tree_idx(gb_treedata, idx+1);
+        if (!error) error = set_tree_idx(gb_tree, idx+1);
+    }
+    return error;
+}
+
+static void ensure_trees_have_order(GBDATA *gb_treedata) {
+    GBDATA *gb_main = GB_get_father(gb_treedata);
+
+    gb_assert(GB_get_root(gb_main)       == gb_main);
+    gb_assert(GBT_get_tree_data(gb_main) == gb_treedata);
+
+    GB_ERROR  error              = NULL;
+    GBDATA   *gb_tree_order_flag = GB_search(gb_main, "/tmp/trees_have_order", GB_INT);
+
+    if (!gb_tree_order_flag) error = GB_await_error();
+    else {
+        if (GB_read_int(gb_tree_order_flag) == 0) { // not checked yet
+            int max_idx = get_max_tree_idx(gb_treedata);
+            for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree && !error; gb_tree = GB_nextChild(gb_tree)) {
+                if (!get_tree_idx(gb_tree)) {
+                    error = set_tree_idx(gb_tree, ++max_idx);
+                }
+            }
+            if (!error) error = GB_write_int(gb_tree_order_flag, 1);
+        }
+    }
+    if (error) GBK_terminatef("failed to order trees (Reason: %s)", error);
+}
+
+static void tree_set_default_order(GBDATA *gb_tree) {
+    // if 'gb_tree' has no order yet, move it to the bottom (as done previously)
+    if (!get_tree_idx(gb_tree)) {
+        set_tree_idx(gb_tree, get_max_tree_idx(GB_get_father(gb_tree))+1);
     }
 }
 
@@ -210,7 +404,7 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
 
             if (node_is_used) { // set id for used nodes
                 error = GBT_write_int(node->gb_node, "id", *startid);
-                if (!error) GB_write_usr_private(node->gb_node, 0);
+                if (!error) GB_clear_user_flag(node->gb_node, GB_USERFLAG_GHOSTNODE); // mark node as "used"
             }
             else {          // delete unused nodes
                 error = GB_delete(node->gb_node);
@@ -227,7 +421,7 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
 
 static char *gbt_write_tree_rek_new(const GBT_TREE *node, char *dest, long mode) {
     {
-        char *c1 = node->remark_branch;
+        const char *c1 = node->get_remark();
         if (c1) {
             if (mode == GBT_PUT_DATA) {
                 int c;
@@ -279,7 +473,7 @@ static char *gbt_write_tree_rek_new(const GBT_TREE *node, char *dest, long mode)
     }
 }
 
-static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree, int plain_only) {
+static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree) {
     /*! writes a tree to the database.
      *
      * If tree is loaded by function GBT_read_tree(..) then 'tree_name' should be NULL
@@ -287,13 +481,9 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
      *
      * To copy a tree call GB_copy(dest,source);
      * or set recursively all tree->gb_node variables to zero (that unlinks the tree),
-     *
-     * if 'plain_only' == 1 only the plain tree string is written
      */
 
     GB_ERROR error = 0;
-
-    gb_assert(implicated(plain_only, tree_name == 0)); 
 
     if (tree) {
         if (tree_name) {
@@ -315,12 +505,10 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
         gb_assert(gb_tree || error);
 
         if (!error) {
-            if (!plain_only) {
-                // mark all old style tree data for deletion
-                GBDATA *gb_node;
-                for (gb_node = GB_entry(gb_tree, "node"); gb_node; gb_node = GB_nextEntry(gb_node)) {
-                    GB_write_usr_private(gb_node, 1);
-                }
+            // mark all old style tree data for deletion
+            GBDATA *gb_node;
+            for (gb_node = GB_entry(gb_tree, "node"); gb_node; gb_node = GB_nextEntry(gb_node)) {
+                GB_set_user_flag(gb_node, GB_USERFLAG_GHOSTNODE); // mark as "possibly unused"
             }
 
             // build tree-string and save to DB
@@ -338,7 +526,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
             }
         }
 
-        if (!plain_only && !error) {
+        if (!error) {
             // save nodes to DB
             long size         = 0;
             error             = gbt_write_tree_nodes(gb_tree, tree, &size); // reports number of nodes in 'size'
@@ -354,26 +542,50 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
                 {
                     GBDATA *gbd = GB_entry(gb_node, "id");
                     gb_node_next = GB_nextEntry(gb_node);
-                    if (!gbd || GB_read_usr_private(gb_node)) error = GB_delete(gb_node);
+                    if (!gbd || GB_user_flag(gb_node, GB_USERFLAG_GHOSTNODE)) error = GB_delete(gb_node);
                 }
             }
         }
 
-        if (!error) GBT_order_tree(gb_tree);
+        if (!error) tree_set_default_order(gb_tree);
     }
 
     return error;
 }
 
-GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree) {
-    return gbt_write_tree(gb_main, gb_tree, tree_name, tree, 0);
+GB_ERROR GBT_write_tree(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree) {
+    return gbt_write_tree(gb_main, NULL, tree_name, tree);
+}
+GB_ERROR GBT_overwrite_tree(GBDATA *gb_tree, GBT_TREE *tree) {
+    return gbt_write_tree(GB_get_root(gb_tree), gb_tree, NULL, tree);
+}
+
+static GB_ERROR write_tree_remark(GBDATA *gb_tree, const char *remark) {
+    return GBT_write_string(gb_tree, "remark", remark);
 }
 GB_ERROR GBT_write_tree_remark(GBDATA *gb_main, const char *tree_name, const char *remark) {
-    return GBT_write_string(GBT_find_tree(gb_main, tree_name), "remark", remark);
+    return write_tree_remark(GBT_find_tree(gb_main, tree_name), remark);
+}
+
+GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_tree, const char *log_entry) {
+    GB_ERROR    error      = NULL;
+    const char *old_remark = GBT_read_char_pntr(gb_tree, "remark");
+    if (!old_remark && GB_have_error()) {
+        error = GB_await_error();
+    }
+    else {
+        char *new_remark = GBS_log_dated_action_to(old_remark, log_entry);
+        error            = write_tree_remark(gb_tree, new_remark);
+        free(new_remark);
+    }
+    return error;
+}
+GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_main, const char *tree_name, const char *log_entry) {
+    return GBT_log_to_tree_remark(GBT_find_tree(gb_main, tree_name), log_entry);
 }
 
 GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree, const char *remark) {
-    GB_ERROR error              = GBT_write_tree(gb_main, NULL, tree_name, tree);
+    GB_ERROR error              = GBT_write_tree(gb_main, tree_name, tree);
     if (!error && remark) error = GBT_write_tree_remark(gb_main, tree_name, remark);
     return error;
 }
@@ -381,90 +593,80 @@ GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, GBT_
 // ----------------------------
 //      tree read functions
 
-static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error) {
-    gb_assert(error);
-    if (*error) return NULL;
+static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, const TreeNodeFactory& nodeFactory, int size_of_tree, GB_ERROR& error) {
+    GBT_TREE *node = NULL;
+    if (!error) {
+        node = nodeFactory.makeNode();
 
-    GBT_TREE *node;
-    if (structure_size>0) {
-        node = (GBT_TREE *)GB_calloc(1, (size_t)structure_size);
-    }
-    else {
-        static char *membase;
-        if (!startid[0]) {
-            membase = (char *)GB_calloc(size_of_tree+1, (size_t)(-2*structure_size)); // because of inner nodes
+        char  c = *((*data)++);
+        char *p1;
+
+        if (c=='R') {
+            p1 = strchr(*data, 1);
+            *(p1++) = 0;
+            node->set_remark(*data);
+            c = *(p1++);
+            *data = p1;
         }
-        node = (GBT_TREE *)membase;
-        node->tree_is_one_piece_of_memory = 1;
-        membase -= structure_size;
-    }
-
-    char  c = *((*data)++);
-    char *p1;
-
-    if (c=='R') {
-        p1 = strchr(*data, 1);
-        *(p1++) = 0;
-        node->remark_branch = strdup(*data);
-        c = *(p1++);
-        *data = p1;
-    }
 
 
-    if (c=='N') {
-        p1 = (char *)strchr(*data, ',');
-        *(p1++) = 0;
-        node->leftlen = GB_atof(*data);
-        *data = p1;
-        p1 = (char *)strchr(*data, ';');
-        *(p1++) = 0;
-        node->rightlen = GB_atof(*data);
-        *data = p1;
-        if ((*startid < size_of_tree) && (node->gb_node = gb_tree_nodes[*startid])) {
-            GBDATA *gb_group_name = GB_entry(node->gb_node, "group_name");
-            if (gb_group_name) {
-                node->name = GB_read_string(gb_group_name);
+        if (c=='N') {
+            p1 = (char *)strchr(*data, ',');
+            *(p1++) = 0;
+            node->leftlen = GB_atof(*data);
+            *data = p1;
+            p1 = (char *)strchr(*data, ';');
+            *(p1++) = 0;
+            node->rightlen = GB_atof(*data);
+            *data = p1;
+            if ((*startid < size_of_tree) && (node->gb_node = gb_tree_nodes[*startid])) {
+                GBDATA *gb_group_name = GB_entry(node->gb_node, "group_name");
+                if (gb_group_name) {
+                    node->name = GB_read_string(gb_group_name);
+                }
+            }
+            (*startid)++;
+            node->leftson = gbt_read_tree_rek(data, startid, gb_tree_nodes, nodeFactory, size_of_tree, error);
+            if (!node->leftson) freenull(node);
+            else {
+                node->rightson = gbt_read_tree_rek(data, startid, gb_tree_nodes, nodeFactory, size_of_tree, error);
+                if (!node->rightson) {
+                    freenull(node->leftson);
+                    freenull(node);
+                }
+                else {
+                    node->leftson->father  = node;
+                    node->rightson->father = node;
+                }
             }
         }
-        (*startid)++;
-        node->leftson = gbt_read_tree_rek(data, startid, gb_tree_nodes, structure_size, size_of_tree, error);
-        if (!node->leftson) {
-            if (!node->tree_is_one_piece_of_memory) free(node);
-            return NULL;
-        }
-        node->rightson = gbt_read_tree_rek(data, startid, gb_tree_nodes, structure_size, size_of_tree, error);
-        if (!node->rightson) {
-            if (!node->tree_is_one_piece_of_memory) free(node);
-            return NULL;
-        }
-        node->leftson->father = node;
-        node->rightson->father = node;
-    }
-    else if (c=='L') {
-        node->is_leaf = true;
-        p1            = (char *)strchr(*data, 1);
+        else if (c=='L') {
+            node->is_leaf = true;
+            p1            = (char *)strchr(*data, 1);
 
-        gb_assert(p1);
-        gb_assert(p1[0] == 1);
+            gb_assert(p1);
+            gb_assert(p1[0] == 1);
 
-        *p1        = 0;
-        node->name = strdup(*data);
-        *data      = p1+1;
-    }
-    else {
-        if (!c) {
-            *error = "Unexpected end of tree definition.";
+            *p1        = 0;
+            node->name = strdup(*data);
+            *data      = p1+1;
         }
         else {
-            *error = GBS_global_string("Can't interpret tree definition (expected 'N' or 'L' - not '%c')", c);
+            if (!c) {
+                error = "Unexpected end of tree definition.";
+            }
+            else {
+                error = GBS_global_string("Can't interpret tree definition (expected 'N' or 'L' - not '%c')", c);
+            }
+            freenull(node);
         }
-        return NULL;
     }
+    gb_assert(contradicted(node, error));
     return node;
 }
 
 
-static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, int structure_size, int node_count, GB_ERROR *error) {
+static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, const TreeNodeFactory& nodeFactory, int node_count, GB_ERROR& error) {
     GBDATA   **gb_tree_nodes;
     GBT_TREE  *node = 0;
 
@@ -472,55 +674,48 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
     if (gb_tree) {
         GBDATA *gb_node;
 
-        for (gb_node = GB_entry(gb_tree, "node"); gb_node && !*error; gb_node = GB_nextEntry(gb_node)) {
+        for (gb_node = GB_entry(gb_tree, "node"); gb_node && !error; gb_node = GB_nextEntry(gb_node)) {
             long    i;
             GBDATA *gbd = GB_entry(gb_node, "id");
             if (!gbd) continue;
 
             i = GB_read_int(gbd);
             if (i<0 || i >= node_count) {
-                *error = "An inner node of the tree is corrupt";
+                error = "An inner node of the tree is corrupt";
             }
             else {
                 gb_tree_nodes[i] = gb_node;
             }
         }
     }
-    if (!*error) {
+    if (!error) {
         char *cptr[1];
         long  startid[1];
         char *fbuf;
 
         startid[0] = 0;
         fbuf       = cptr[0] = GB_read_string(gb_ctree);
-        node       = gbt_read_tree_rek(cptr, startid, gb_tree_nodes, structure_size, (int)node_count, error);
+        node       = gbt_read_tree_rek(cptr, startid, gb_tree_nodes, nodeFactory, node_count, error);
         free (fbuf);
     }
 
     free(gb_tree_nodes);
 
+    gb_assert(contradicted(node, error));
     return node;
 }
 
-GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long structure_size, int *tree_size) {
+GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, const TreeNodeFactory& nodeFactory, int *tree_size) {
     /*! Loads a tree from DB into any user defined structure.
      *
-     * Make sure that the first members of your structure look exactly like GBT_TREE!
-     *
      * @param gb_main DB root node
-     * @param structure_size sizeof(yourStructure)
-     *
-     * If structure_size < 0 then the tree is allocated as just one big piece of memory,
-     * which can be freed by free((void *)root_of_tree) + deleting names or
-     * by GBT_delete_tree().
-     *
      * @param tree_name is the name of the tree in the db
-     *
+     * @param nodeFactory makes the tree-node instances
      * @param tree_size if != NULL -> gets set to "size of tree" (aka number of leafs minus 1)
      *
      * @return
      * - NULL if any error occurs (which is exported then)
-     * - root of loaded tree
+     * - root of loaded tree (dynamic type depends on 'nodeFactory')
      */
 
     GB_ERROR error = 0;
@@ -552,10 +747,11 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
                             error = "old unsupported tree format";
                         }
                         else { // "new" style tree
-                            GBT_TREE *tree = read_tree_and_size_internal(gb_tree, gb_ctree, structure_size, size, &error);
+                            GBT_TREE *tree = read_tree_and_size_internal(gb_tree, gb_ctree, nodeFactory, size, error);
                             if (!error) {
                                 gb_assert(tree);
                                 if (tree_size) *tree_size = size; // return size of tree (=leafs-1)
+                                tree->announce_tree_constructed();
                                 return tree;
                             }
 
@@ -572,9 +768,9 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
     return NULL;
 }
 
-GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, long structure_size) {
+GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, const TreeNodeFactory& nodeFactory) {
     //! @see GBT_read_tree_and_size()
-    return GBT_read_tree_and_size(gb_main, tree_name, structure_size, 0);
+    return GBT_read_tree_and_size(gb_main, tree_name, nodeFactory, 0);
 }
 
 size_t GBT_count_leafs(const GBT_TREE *tree) {
@@ -719,123 +915,6 @@ void GBT_unlink_tree(GBT_TREE *tree) {
     if (!tree->is_leaf) {
         GBT_unlink_tree(tree->leftson);
         GBT_unlink_tree(tree->rightson);
-    }
-}
-
-// ---------------------
-//      trees order
-
-inline int get_tree_idx(GBDATA *gb_tree) {
-    GBDATA *gb_order = GB_entry(gb_tree, "order");
-    int     idx      = 0;
-    if (gb_order) {
-        idx = GB_read_int(gb_order);
-        gb_assert(idx>0); // invalid index
-    }
-    return idx;
-}
-
-inline int get_max_tree_idx(GBDATA *gb_treedata) {
-    int max_idx = 0;
-    for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
-        int idx = get_tree_idx(gb_tree);
-        if (idx>max_idx) max_idx = idx;
-    }
-    return max_idx;
-}
-
-inline GBDATA *get_tree_with_idx(GBDATA *gb_treedata, int at_idx) {
-    GBDATA *gb_found = NULL;
-    for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree && !gb_found; gb_tree = GB_nextChild(gb_tree)) {
-        int idx = get_tree_idx(gb_tree);
-        if (idx == at_idx) {
-            gb_found = gb_tree;
-        }
-    }
-    return gb_found;
-}
-
-inline GBDATA *get_tree_infrontof_idx(GBDATA *gb_treedata, int infrontof_idx) {
-    GBDATA *gb_infrontof = NULL;
-    if (infrontof_idx) {
-        int best_idx = 0;
-        for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
-            int idx = get_tree_idx(gb_tree);
-            gb_assert(idx);
-            if (idx>best_idx && idx<infrontof_idx) {
-                best_idx     = idx;
-                gb_infrontof = gb_tree;
-            }
-        }
-    }
-    return gb_infrontof;
-}
-
-inline GBDATA *get_tree_behind_idx(GBDATA *gb_treedata, int behind_idx) {
-    GBDATA *gb_behind = NULL;
-    if (behind_idx) {
-        int best_idx = INT_MAX;
-        for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
-            int idx = get_tree_idx(gb_tree);
-            gb_assert(idx);
-            if (idx>behind_idx && idx<best_idx) {
-                best_idx  = idx;
-                gb_behind = gb_tree;
-            }
-        }
-    }
-    return gb_behind;
-}
-
-inline GB_ERROR set_tree_idx(GBDATA *gb_tree, int idx) {
-    GB_ERROR  error    = NULL;
-    GBDATA   *gb_order = GB_entry(gb_tree, "order");
-    if (!gb_order) {
-        gb_order = GB_create(gb_tree, "order", GB_INT);
-        if (!gb_order) error = GB_await_error();
-    }
-    if (!error) error = GB_write_int(gb_order, idx);
-    return error;
-}
-
-static GB_ERROR reserve_tree_idx(GBDATA *gb_treedata, int idx) {
-    GB_ERROR  error   = NULL;
-    GBDATA   *gb_tree = get_tree_with_idx(gb_treedata, idx);
-    if (gb_tree) {
-        error = reserve_tree_idx(gb_treedata, idx+1);
-        if (!error) error = set_tree_idx(gb_tree, idx+1);
-    }
-    return error;
-}
-
-static void ensure_trees_have_order(GBDATA *gb_treedata) {
-    GBDATA *gb_main = GB_get_father(gb_treedata);
-
-    gb_assert(GB_get_root(gb_main)       == gb_main);
-    gb_assert(GBT_get_tree_data(gb_main) == gb_treedata);
-
-    GB_ERROR  error              = NULL;
-    GBDATA   *gb_tree_order_flag = GB_search(gb_main, "/tmp/trees_have_order", GB_INT);
-
-    if (!gb_tree_order_flag) error = GB_await_error();
-    else {
-        if (GB_read_int(gb_tree_order_flag) == 0) { // not checked yet
-            int max_idx = get_max_tree_idx(gb_treedata);
-            for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree && !error; gb_tree = GB_nextChild(gb_tree)) {
-                if (!get_tree_idx(gb_tree)) {
-                    error = set_tree_idx(gb_tree, ++max_idx);
-                }
-            }
-            if (!error) error = GB_write_int(gb_tree_order_flag, 1);
-        }
-    }
-    if (error) GBK_terminatef("failed to order trees (Reason: %s)", error);
-}
-
-void GBT_order_tree(GBDATA *gb_tree) {
-    // if 'gb_tree' has no order yet, move it to the bottom (as done previously)
-    if (!get_tree_idx(gb_tree)) {
-        set_tree_idx(gb_tree, get_max_tree_idx(GB_get_father(gb_tree))+1);
     }
 }
 
@@ -1196,6 +1275,48 @@ GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count) {
     return result;
 }
 
+static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat format) {
+    gb_assert(tree);
+    if (tree->is_leaf) {
+        out.cat(tree->name);
+    }
+    else {
+        out.put('(');
+        tree2newick(tree->leftson, out, format);
+        out.put(',');
+        tree2newick(tree->rightson, out, format);
+        out.put(')');
+
+        if (format & (nGROUP|nREMARK)) {
+            const char *remark = format&nREMARK ? tree->get_remark() : NULL;
+            const char *group  = format&nGROUP ? tree->name : NULL;
+
+            if (remark || group) {
+                out.put('\'');
+                if (remark) {
+                    out.cat(remark);
+                    if (group) out.put(':');
+                }
+                if (group) out.cat(group);
+                out.put('\'');
+            }
+        }
+    }
+
+    if (format&nLENGTH && !tree->is_root_node()) {
+        out.put(':');
+        out.nprintf(10, "%5.3f", tree->get_branchlength());
+    }
+}
+
+char *GBT_tree_2_newick(const GBT_TREE *tree, NewickFormat format) {
+    GBS_strstruct out(1000);
+    if (tree) tree2newick(tree, out, format);
+    out.put(';');
+    return out.release();
+}
+
+
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
@@ -1221,7 +1342,50 @@ void TEST_tree_names() {
     TEST_EXPECT_NO_ERROR(GBT_check_tree_name("tree_ok"));
 }
 
-void TEST_tree() {
+void TEST_tree_contraints() {
+    // test minima
+    const int MIN_LEAFS = 2;
+
+    TEST_EXPECT_EQUAL(leafs_2_nodes(MIN_LEAFS, ROOTED), 3);
+    TEST_EXPECT_EQUAL(leafs_2_nodes(MIN_LEAFS, UNROOTED), 2);
+    TEST_EXPECT_EQUAL(leafs_2_edges(MIN_LEAFS, ROOTED), 2);
+    TEST_EXPECT_EQUAL(leafs_2_edges(MIN_LEAFS, UNROOTED), 1);
+
+    TEST_EXPECT_EQUAL(MIN_LEAFS, nodes_2_leafs(3, ROOTED));   // test minimum (3 nodes rooted)
+    TEST_EXPECT_EQUAL(MIN_LEAFS, nodes_2_leafs(2, UNROOTED)); // test minimum (2 nodes unrooted)
+
+    TEST_EXPECT_EQUAL(MIN_LEAFS, edges_2_leafs(2, ROOTED));   // test minimum (2 edges rooted)
+    TEST_EXPECT_EQUAL(MIN_LEAFS, edges_2_leafs(1, UNROOTED)); // test minimum (1 edge unrooted)
+
+    // test inverse functions:
+    for (int i = 3; i<=7; ++i) {
+        // test "leaf->XXX" and back conversions (any number of leafs is possible)
+        TEST_EXPECT_EQUAL(i, nodes_2_leafs(leafs_2_nodes(i, ROOTED), ROOTED));
+        TEST_EXPECT_EQUAL(i, nodes_2_leafs(leafs_2_nodes(i, UNROOTED), UNROOTED));
+
+        TEST_EXPECT_EQUAL(i, edges_2_leafs(leafs_2_edges(i, ROOTED), ROOTED));
+        TEST_EXPECT_EQUAL(i, edges_2_leafs(leafs_2_edges(i, UNROOTED), UNROOTED));
+
+        bool odd = i%2;
+        if (odd) {
+            TEST_EXPECT_EQUAL(i, leafs_2_nodes(nodes_2_leafs(i, ROOTED), ROOTED)); // rooted trees only contain odd numbers of nodes
+            TEST_EXPECT_EQUAL(i, leafs_2_edges(edges_2_leafs(i, UNROOTED), UNROOTED)); // unrooted trees only contain odd numbers of edges
+        }
+        else { // even
+            TEST_EXPECT_EQUAL(i, leafs_2_nodes(nodes_2_leafs(i, UNROOTED), UNROOTED)); // unrooted trees only contain even numbers of nodes
+            TEST_EXPECT_EQUAL(i, leafs_2_edges(edges_2_leafs(i, ROOTED), ROOTED)); // rooted trees only contain even numbers of edges
+        }
+
+        // test adding a leaf adds two nodes:
+        int added = i+1;
+        TEST_EXPECT_EQUAL(leafs_2_nodes(added, ROOTED)-leafs_2_nodes(i, ROOTED), 2);
+        TEST_EXPECT_EQUAL(leafs_2_nodes(added, UNROOTED)-leafs_2_nodes(i, UNROOTED), 2);
+    }
+
+
+}
+
+void TEST_copy_rename_delete_tree_order() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("TEST_trees.arb", "r");
 
@@ -1231,10 +1395,10 @@ void TEST_tree() {
         {
             TEST_EXPECT_NULL(GBT_get_tree_name(NULL));
             
-            TEST_EXPECT_EQUAL(GBT_name_of_largest_tree(gb_main), "tree_test");
+            TEST_EXPECT_EQUAL(GBT_name_of_largest_tree(gb_main), "tree_removal");
 
             TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_top_tree(gb_main)), "tree_test");
-            TEST_EXPECT_EQUAL(GBT_name_of_bottom_tree(gb_main), "tree_nj_bs");
+            TEST_EXPECT_EQUAL(GBT_name_of_bottom_tree(gb_main), "tree_removal");
 
             long inner_nodes = GBT_size_of_tree(gb_main, "tree_nj_bs");
             TEST_EXPECT_EQUAL(inner_nodes, 5);
@@ -1242,7 +1406,7 @@ void TEST_tree() {
             TEST_EXPECT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", 20), "tree_nj_bs                 (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
 
             {
-                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", sizeof(GBT_TREE));
+                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", GBT_TREE_NodeFactory());
 
                 TEST_REJECT_NULL(tree);
 
@@ -1251,17 +1415,24 @@ void TEST_tree() {
                 size_t   species_count;
                 GB_CSTR *species = GBT_get_names_of_species_in_tree(tree, &species_count);
 
-                StrArray  species2;
+                StrArray species2;
                 for (int i = 0; species[i]; ++i) species2.put(strdup(species[i]));
 
                 TEST_EXPECT_EQUAL(species_count, leaf_count);
                 TEST_EXPECT_EQUAL(long(species_count), inner_nodes+1);
-                char *joined = GBT_join_names(species2, '*');
-                TEST_EXPECT_EQUAL(joined, "CloButyr*CloButy2*CorGluta*CorAquat*CurCitre*CytAquat");
-                free(joined);
+
+                {
+                    char *joined = GBT_join_names(species2, '*');
+                    TEST_EXPECT_EQUAL(joined, "CloButyr*CloButy2*CorGluta*CorAquat*CurCitre*CytAquat");
+                    free(joined);
+                }
+
                 free(species);
 
-                GBT_delete_tree(tree);
+                TEST_EXPECT_NEWICK(nSIMPLE, tree, "(CloButyr,(CloButy2,((CorGluta,(CorAquat,CurCitre)),CytAquat)));");
+                TEST_EXPECT_NEWICK(nSIMPLE, NULL, ";");
+
+                delete tree;
             }
 
             TEST_EXPECT_EQUAL(GBT_existing_tree(gb_main, "tree_nj_bs"), "tree_nj_bs");
@@ -1270,42 +1441,45 @@ void TEST_tree() {
 
         // changing tree order
         {
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_test|tree_tree2|tree_nj|tree_nj_bs");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_test|tree_tree2|tree_nj|tree_nj_bs|tree_removal");
 
-            GBDATA *gb_test  = GBT_find_tree(gb_main, "tree_test");
-            GBDATA *gb_tree2 = GBT_find_tree(gb_main, "tree_tree2");
-            GBDATA *gb_nj    = GBT_find_tree(gb_main, "tree_nj");
-            GBDATA *gb_nj_bs = GBT_find_tree(gb_main, "tree_nj_bs");
+            GBDATA *gb_test    = GBT_find_tree(gb_main, "tree_test");
+            GBDATA *gb_tree2   = GBT_find_tree(gb_main, "tree_tree2");
+            GBDATA *gb_nj      = GBT_find_tree(gb_main, "tree_nj");
+            GBDATA *gb_nj_bs   = GBT_find_tree(gb_main, "tree_nj_bs");
+            GBDATA *gb_removal = GBT_find_tree(gb_main, "tree_removal");
 
-            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_nj_bs)); // move to bottom
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_nj|tree_nj_bs|tree_test");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_removal)); // move to bottom
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_nj|tree_nj_bs|tree_removal|tree_test");
 
             TEST_EXPECT_EQUAL(GBT_tree_behind(gb_tree2), gb_nj);
             TEST_EXPECT_EQUAL(GBT_tree_behind(gb_nj), gb_nj_bs);
-            TEST_EXPECT_EQUAL(GBT_tree_behind(gb_nj_bs), gb_test);
+            TEST_EXPECT_EQUAL(GBT_tree_behind(gb_nj_bs), gb_removal);
+            TEST_EXPECT_EQUAL(GBT_tree_behind(gb_removal), gb_test);
             TEST_EXPECT_NULL(GBT_tree_behind(gb_test));
 
             TEST_EXPECT_NULL(GBT_tree_infrontof(gb_tree2));
             TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_nj), gb_tree2);
             TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_nj_bs), gb_nj);
-            TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_test), gb_nj_bs);
+            TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_removal), gb_nj_bs);
+            TEST_EXPECT_EQUAL(GBT_tree_infrontof(gb_test), gb_removal);
 
-            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_INFRONTOF, gb_tree2)); // move to top
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_test|tree_tree2|tree_nj|tree_nj_bs");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_INFRONTOF, gb_tree2)); // move back to top
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_test|tree_tree2|tree_nj|tree_nj_bs|tree_removal");
 
-            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_tree2));
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj|tree_nj_bs");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_test, GBT_BEHIND, gb_tree2)); // move from top
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_nj|tree_nj_bs|tree_removal");
 
-            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_nj_bs, GBT_INFRONTOF, gb_nj));
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj_bs|tree_nj");
+            TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_removal, GBT_INFRONTOF, gb_nj)); // move from end
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_removal|tree_nj|tree_nj_bs");
 
             TEST_EXPECT_NO_ERROR(GBT_move_tree(gb_nj_bs, GBT_INFRONTOF, gb_nj_bs)); // noop
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "4:tree_tree2|tree_test|tree_nj_bs|tree_nj");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_removal|tree_nj|tree_nj_bs");
 
             TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_top_tree(gb_main)), "tree_tree2");
 
-            TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj_bs)), "tree_nj");
-            TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj)), "tree_tree2"); // last -> first
+            TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_removal)), "tree_nj");
+            TEST_EXPECT_EQUAL(GBT_get_tree_name(GBT_find_next_tree(gb_nj_bs)), "tree_tree2"); // last -> first
         }
 
         // check tree order is maintained by copy, rename and delete
@@ -1318,18 +1492,18 @@ void TEST_tree() {
 
             TEST_EXPECT_NO_ERROR(GBT_copy_tree(gb_main, "tree_test", "tree_test_copy"));
             TEST_REJECT_NULL(GBT_find_tree(gb_main, "tree_test_copy"));
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_nj");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "6:tree_tree2|tree_test|tree_test_copy|tree_removal|tree_nj|tree_nj_bs");
 
             // rename
             TEST_EXPECT_NO_ERROR(GBT_rename_tree(gb_main, "tree_nj", "tree_renamed_nj"));
             TEST_REJECT_NULL(GBT_find_tree(gb_main, "tree_renamed_nj"));
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_renamed_nj");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "6:tree_tree2|tree_test|tree_test_copy|tree_removal|tree_renamed_nj|tree_nj_bs");
 
             TEST_EXPECT_NO_ERROR(GBT_rename_tree(gb_main, "tree_tree2", "tree_renamed_tree2"));
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_renamed_tree2|tree_test|tree_test_copy|tree_nj_bs|tree_renamed_nj");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "6:tree_renamed_tree2|tree_test|tree_test_copy|tree_removal|tree_renamed_nj|tree_nj_bs");
 
             TEST_EXPECT_NO_ERROR(GBT_rename_tree(gb_main, "tree_test_copy", "tree_renamed_test_copy"));
-            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "5:tree_renamed_tree2|tree_test|tree_renamed_test_copy|tree_nj_bs|tree_renamed_nj");
+            TEST_EXPECT_EQUAL(getTreeOrder(gb_main), "6:tree_renamed_tree2|tree_test|tree_renamed_test_copy|tree_removal|tree_renamed_nj|tree_nj_bs");
 
             // delete
 
@@ -1338,10 +1512,12 @@ void TEST_tree() {
             GBDATA *gb_renamed_test_copy = GBT_find_tree(gb_main, "tree_renamed_test_copy");
             GBDATA *gb_renamed_tree2     = GBT_find_tree(gb_main, "tree_renamed_tree2");
             GBDATA *gb_test              = GBT_find_tree(gb_main, "tree_test");
+            GBDATA *gb_removal           = GBT_find_tree(gb_main, "tree_removal");
 
             TEST_EXPECT_NO_ERROR(GB_delete(gb_renamed_tree2));
             TEST_EXPECT_NO_ERROR(GB_delete(gb_renamed_test_copy));
             TEST_EXPECT_NO_ERROR(GB_delete(gb_renamed_nj));
+            TEST_EXPECT_NO_ERROR(GB_delete(gb_removal));
 
             // .. two trees left
 
@@ -1351,6 +1527,7 @@ void TEST_tree() {
             TEST_EXPECT_EQUAL(GBT_find_top_tree(gb_main), gb_test);
             TEST_EXPECT_EQUAL(GBT_find_bottom_tree(gb_main), gb_nj_bs);
             
+            TEST_EXPECT_EQUAL(GBT_find_next_tree(gb_test), gb_nj_bs);
             TEST_EXPECT_EQUAL(GBT_find_next_tree(gb_test), gb_nj_bs);
             TEST_EXPECT_EQUAL(GBT_find_next_tree(gb_nj_bs), gb_test);
 
@@ -1393,5 +1570,140 @@ void TEST_tree() {
 
     GB_close(gb_main);
 }
+TEST_PUBLISH(TEST_copy_rename_delete_tree_order);
+
+void TEST_tree_remove_leafs() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_trees.arb", "r");
+
+    {
+        GBT_TreeRemoveType tested_modes[] = {
+            GBT_REMOVE_MARKED,
+            GBT_REMOVE_UNMARKED,
+            GBT_REMOVE_ZOMBIES,
+            GBT_KEEP_MARKED,
+        };
+
+        const char *org_topo          = "((CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.029,(CloBifer:0.388,((CloCarni:0.120,CurCitre:0.058):1.000,((CloPaste:0.179,(Zombie1:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.010):0.131,(CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,(CorAquat:0.084,Zombie2:0.058):0.103):0.054):0.207):0.162):0.124):0.124):0.029);";
+        const char *rem_marked_topo   = "((CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.029,(CloBifer:0.388,(CloCarni:1.000,((CloPaste:0.179,Zombie1:0.010):0.131,(CelBiazo:0.059,Zombie2:0.054):0.162):0.124):0.124):0.029);";
+        const char *rem_unmarked_topo = "(CurCitre:1.000,((Zombie1:0.120,(CloButy2:0.009,CloButyr:0.000):0.564):0.131,(CytAquat:0.711,(CorGluta:0.522,(CorAquat:0.084,Zombie2:0.058):0.103):0.207):0.162):0.124);";
+        const char *rem_zombies_topo  = "((CloInnoc:0.371,(CloTyrob:0.009,(CloTyro2:0.017,(CloTyro3:1.046,CloTyro4:0.061):0.026):0.017):0.274):0.029,(CloBifer:0.388,((CloCarni:0.120,CurCitre:0.058):1.000,((CloPaste:0.179,(CloButy2:0.009,CloButyr:0.000):0.010):0.131,(CytAquat:0.711,(CelBiazo:0.059,(CorGluta:0.522,CorAquat:0.103):0.054):0.207):0.162):0.124):0.124):0.029);";
+        const char *kept_marked_topo  = "(CurCitre:1.000,((CloButy2:0.009,CloButyr:0.000):0.131,(CytAquat:0.711,(CorGluta:0.522,CorAquat:0.103):0.207):0.162):0.124);";
+
+        const char *kept_zombies_topo        = "(Zombie1:0.131,Zombie2:0.162);";
+        const char *kept_zombies_broken_topo = "Zombie2;";
+
+        const char *empty_topo = ";";
+
+        GB_transaction ta(gb_main);
+        for (unsigned mode = 0; mode<ARRAY_ELEMS(tested_modes); ++mode) {
+            GBT_TreeRemoveType what = tested_modes[mode];
+
+            for (int linked = 0; linked<=1; ++linked) {
+                TEST_ANNOTATE(GBS_global_string("mode=%u linked=%i", mode, linked));
+
+                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_removal", GBT_TREE_NodeFactory());
+                bool      once = mode == 0 && linked == 0;
+
+                if (linked) {
+                    int zombies    = 0;
+                    int duplicates = 0;
+
+                    TEST_EXPECT_NO_ERROR(GBT_link_tree(tree, gb_main, false, &zombies, &duplicates));
+
+                    TEST_EXPECT_EQUAL(zombies, 2);
+                    TEST_EXPECT_EQUAL(duplicates, 0);
+                }
+
+                if (once) TEST_EXPECT_NEWICK(nLENGTH, tree, org_topo);
+
+                int removedCount       = 0;
+                int groupsRemovedCount = 0;
+
+                tree = GBT_remove_leafs(tree, what, NULL, &removedCount, &groupsRemovedCount);
+
+                if (linked) {
+                    GBT_TreeRemoveType what_next = what;
+
+                    switch (what) {
+                        case GBT_REMOVE_MARKED:
+                            TEST_EXPECT_EQUAL(removedCount, 6);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                            TEST_EXPECT_NEWICK(nLENGTH, tree, rem_marked_topo);
+                            what_next = GBT_REMOVE_UNMARKED;
+                            break;
+                        case GBT_REMOVE_UNMARKED:
+                            TEST_EXPECT_EQUAL(removedCount, 9);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
+                            TEST_EXPECT_NEWICK(nLENGTH, tree, rem_unmarked_topo);
+                            what_next = GBT_REMOVE_MARKED;
+                            break;
+                        case GBT_REMOVE_ZOMBIES:
+                            TEST_EXPECT_EQUAL(removedCount, 2);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                            TEST_EXPECT_NEWICK(nLENGTH, tree, rem_zombies_topo);
+                            break;
+                        case GBT_KEEP_MARKED:
+                            TEST_EXPECT_EQUAL(removedCount, 11);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
+                            TEST_EXPECT_NEWICK(nLENGTH, tree, kept_marked_topo);
+                            what_next = GBT_REMOVE_MARKED;
+                            break;
+                    }
+
+                    if (what_next != what) {
+                        gb_assert(tree);
+                        tree = GBT_remove_leafs(tree, what_next, NULL, &removedCount, &groupsRemovedCount);
+
+                        switch (what) {
+                            case GBT_REMOVE_MARKED: // + GBT_REMOVE_UNMARKED
+                                TEST_EXPECT_EQUAL(removedCount, 16);
+                                TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
+                                TEST_EXPECT_NEWICK__BROKEN(nLENGTH, tree, kept_zombies_topo);
+                                TEST_EXPECT_NEWICK(nLENGTH, tree, kept_zombies_broken_topo); // @@@ invalid topology (single leaf)
+                                break;
+                            case GBT_REMOVE_UNMARKED: // + GBT_REMOVE_MARKED
+                                TEST_EXPECT_EQUAL(removedCount, 15);
+                                TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
+                                TEST_EXPECT_NEWICK(nLENGTH, tree, kept_zombies_topo);
+                                break;
+                            case GBT_KEEP_MARKED: // + GBT_REMOVE_MARKED
+                                TEST_EXPECT_EQUAL(removedCount, 17);
+                                TEST_EXPECT_EQUAL__BROKEN(groupsRemovedCount, 2, 1); // @@@ expect that all groups have been removed! 
+                                TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
+                                TEST_EXPECT_NEWICK(nLENGTH, tree, empty_topo);
+                                break;
+                            default:
+                                TEST_REJECT(true);
+                                break;
+                        }
+                    }
+                }
+                else {
+                    switch (what) {
+                        case GBT_REMOVE_MARKED:
+                        case GBT_REMOVE_UNMARKED:
+                            TEST_EXPECT_EQUAL(removedCount, 0);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 0);
+                            TEST_EXPECT_NEWICK(nLENGTH, tree, org_topo);
+                            break;
+                        case GBT_REMOVE_ZOMBIES:
+                        case GBT_KEEP_MARKED:
+                            TEST_EXPECT_EQUAL(removedCount, 17);
+                            TEST_EXPECT_EQUAL(groupsRemovedCount, 2);
+                            TEST_EXPECT_NEWICK(nLENGTH, tree, empty_topo);
+                            break;
+                    }
+                }
+
+                delete tree;
+            }
+        }
+    }
+
+    GB_close(gb_main);
+}
+TEST_PUBLISH(TEST_tree_remove_leafs);
+
 
 #endif // UNIT_TESTS

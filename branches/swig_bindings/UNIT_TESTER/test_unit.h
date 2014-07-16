@@ -551,7 +551,7 @@ namespace arb_test {
         const char *make(bool expected, bool got) const {
             if (expected) return make(primary, got);
             if (inverse) return make(inverse, !got);
-            return make(primary, !got);
+            return make(primary, got);
         }
     };
 
@@ -975,7 +975,8 @@ namespace arb_test {
 #define fulfills(pred,arg)    predicate_expectation(true, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
 #define contradicts(pred,arg) predicate_expectation(false, MATCHABLE_ARGS_UNTYPED(pred), MATCHABLE_ARGS_UNTYPED(arg))
 
-#define does_contain(val) fulfills(containing(),val)
+#define does_contain(val)   fulfills(containing(),val)
+#define doesnt_contain(val) contradicts(containing(),val)
 
 #define that(thing) CREATE_matchable(MATCHABLE_ARGS_TYPED(thing))
 
@@ -1014,10 +1015,10 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_EXPECT_ZERO(cond)         TEST_EXPECTATION(that(cond).is_equal_to(0))
-#define TEST_EXPECT_ZERO__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(0))
-#define TEST_REJECT_ZERO(cond)         TEST_EXPECTATION(that(cond).does_differ_from(0))
-#define TEST_REJECT_ZERO__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).does_differ_from(0))
+#define TEST_EXPECT_ZERO(cond)             TEST_EXPECT_EQUAL(cond, 0)
+#define TEST_EXPECT_ZERO__BROKEN(cond,got) TEST_EXPECT_EQUAL__BROKEN(cond, 0, got)
+#define TEST_REJECT_ZERO(cond)             TEST_EXPECTATION(that(cond).does_differ_from(0))
+#define TEST_REJECT_ZERO__BROKEN(cond)     TEST_EXPECTATION__BROKEN(that(cond).does_differ_from(0))
 
 #define TEST_EXPECT_ZERO_OR_SHOW_ERRNO(iocond)                  \
     do {                                                        \
@@ -1109,20 +1110,22 @@ namespace arb_test {
 
 const bool DOES_SEGFAULT       = true;
 const bool DOESNT_SEGFAULT     = false;
+const bool CALL_WILL_SEGFAULT  = true;
+const bool CALL_WONT_SEGFAULT  = false;
 const bool FAILS_ASSERTION     = true;
 const bool FULFILLS_ASSERTIONS = false;
 
 #  ifdef ASSERTION_USED
-inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expect_assert_fail, bool expectation_untestable_under_valgrind) {
+inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expect_assert_fail, bool call_would_SEGV) {
     using namespace arb_test;
 
     bool& assertion_failed = test_data().assertion_failed;
     bool  old_state        = assertion_failed;
 
     expectation_group expected;
-    if (GBK_running_on_valgrind()) {
-        GBK_raises_SIGSEGV(cb); // just call
-        expected.add(that(expectation_untestable_under_valgrind).is_equal_to(true));
+    if (call_would_SEGV && GBK_running_on_valgrind()) {
+        // don't provoke a SEGV when valgrinding
+        expected.add(that(call_would_SEGV).is_equal_to(expect_SEGV));
     }
     else {
         expected.add(that(GBK_raises_SIGSEGV(cb)).is_equal_to(expect_SEGV));
@@ -1133,38 +1136,58 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
     return all().ofgroup(expected);
 }
 #  else
-inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool expectation_untestable_under_valgrind) {
+inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEGV, bool call_would_SEGV) {
     using namespace arb_test;
-    if (GBK_running_on_valgrind()) {
-        return that(expectation_untestable_under_valgrind).is_equal_to(true);
+    if (call_would_SEGV && GBK_running_on_valgrind()) {
+        // don't provoke a SEGV when valgrinding
+        return that(call_would_SEGV).is_equal_to(expect_SEGV);
     }
     return that(GBK_raises_SIGSEGV(cb)).is_equal_to(expect_SEGV);
 }
 #  endif
 # endif
 
+// Note: Please toggle all permutations of
+//       * ../ARBDB/adstring.cxx@TEST_TEST_MACROS
+//       * Makefile.local.setup@VALGRIND
+//       * and DEBUG/NDEBUG mode in ../config.makefile@DEBUG
+//       and run tests in adstring.cxx whenever you change the macros below!
+//
+// Note for callers:
+//
+//   These tests will normally not fail under valgrind. If CALL_WILL_SEGFAULT,
+//   then the 'cb' will not be called (to avoid valgrind fails).
+//   Should be no problem, because normally valgrinded unittests run
+//   ADDITIONALLY to not-valgrinded unittests (where tests WILL fail in case).
+
 # ifdef ASSERTION_USED
 
-#  define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, true))
-#  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, FAILS_ASSERTION, false))
-#  define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
-#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, true)) 
-#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, FULFILLS_ASSERTIONS, false)) 
-#  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, false))
+#  define TEST_EXPECT_NO_SEGFAULT(cb)                    TEST_EXPECTATION(expect_callback(cb,         DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, CALL_WONT_SEGFAULT))
+#  define TEST_EXPECT_NO_SEGFAULT__WANTED(cb)            TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, FULFILLS_ASSERTIONS, CALL_WILL_SEGFAULT))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)           TEST_EXPECTATION(expect_callback(cb,         DOES_SEGFAULT,   FAILS_ASSERTION,     CALL_WILL_SEGFAULT))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)   TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT,   FAILS_ASSERTION,     CALL_WONT_SEGFAULT))
+#  define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb) TEST_EXPECT_NO_SEGFAULT__WANTED(cb)
+#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb,         DOES_SEGFAULT,   FULFILLS_ASSERTIONS, CALL_WILL_SEGFAULT))
+#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT,   FULFILLS_ASSERTIONS, CALL_WONT_SEGFAULT))
+#  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT_NO_SEGFAULT__WANTED(cb)
 
 # else // ENABLE_CRASH_TESTS but no ASSERTION_USED (test segfaults in NDEBUG mode)
 
+#  define TEST_EXPECT_NO_SEGFAULT(cb)                    TEST_EXPECTATION(expect_callback(cb,         DOESNT_SEGFAULT, CALL_WONT_SEGFAULT))
+#  define TEST_EXPECT_NO_SEGFAULT__WANTED(cb)            TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, CALL_WILL_SEGFAULT))
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)
 #  define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb)
-#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb, DOES_SEGFAULT, true)) 
-#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT, false)) 
-#  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECTATION__WANTED(expect_callback(cb, DOESNT_SEGFAULT, false))
+#  define TEST_EXPECT_SEGFAULT(cb)                       TEST_EXPECTATION(expect_callback(cb,         DOES_SEGFAULT,   CALL_WILL_SEGFAULT))
+#  define TEST_EXPECT_SEGFAULT__WANTED(cb)               TEST_EXPECTATION__WANTED(expect_callback(cb, DOES_SEGFAULT,   CALL_WONT_SEGFAULT))
+#  define TEST_EXPECT_SEGFAULT__UNWANTED(cb)             TEST_EXPECT_NO_SEGFAULT__WANTED(cb)
 
 # endif
 
 #else // not ENABLE_CRASH_TESTS (i.e. skip these tests completely)
 
+# define TEST_EXPECT_NO_SEGFAULT(cb)
+# define TEST_EXPECT_NO_SEGFAULT__WANTED(cb)
 # define TEST_EXPECT_CODE_ASSERTION_FAILS(cb)
 # define TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(cb)
 # define TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(cb)
@@ -1176,14 +1199,23 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 
 // --------------------------------------------------------------------------------
 
-#define TEST_EXPECT_EQUAL(e1,t2)         TEST_EXPECTATION(that(e1).is_equal_to(t2))
-#define TEST_EXPECT_EQUAL__BROKEN(e1,t2) TEST_EXPECTATION__BROKEN(that(e1).is_equal_to(t2))
+namespace arb_test {
+    template <typename T>
+    inline void expect_broken(const arb_test::matchable_value<T>& That, const T& want, const T& got) {
+        TEST_EXPECTATION__BROKEN(That.is_equal_to(want));
+        TEST_EXPECTATION(That.is_equal_to(got));
+    }
+};
 
-#define TEST_EXPECT_SIMILAR(e1,t2,epsilon)         TEST_EXPECTATION(that(e1).fulfills(epsilon_similar(epsilon), t2))
-#define TEST_EXPECT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_EXPECTATION__BROKEN(that(e1).fulfills(epsilon_similar(epsilon), t2))
+#define TEST_EXPECT_EQUAL(expr,want)             TEST_EXPECTATION(that(expr).is_equal_to(want))
+#define TEST_EXPECT_EQUAL__BROKEN(expr,want,got) do { TEST_EXPECTATION__BROKEN(that(expr).is_equal_to(want)); TEST_EXPECTATION(that(expr).is_equal_to(got)); } while(0)
+#define TEST_EXPECT_EQUAL__IGNARG(expr,want,ign) TEST_EXPECTATION(that(expr).is_equal_to(want))
 
-#define TEST_EXPECT_DIFFERENT(e1,t2)         TEST_EXPECTATION(that(e1).does_differ_from(t2));
-#define TEST_EXPECT_DIFFERENT__BROKEN(e1,t2) TEST_EXPECTATION__BROKEN(that(e1).does_differ_from(t2));
+#define TEST_EXPECT_SIMILAR(expr,want,epsilon)         TEST_EXPECTATION(that(expr).fulfills(epsilon_similar(epsilon), want))
+#define TEST_EXPECT_SIMILAR__BROKEN(expr,want,epsilon) TEST_EXPECTATION__BROKEN(that(expr).fulfills(epsilon_similar(epsilon), want))
+
+#define TEST_EXPECT_DIFFERENT(expr,want)         TEST_EXPECTATION(that(expr).does_differ_from(want));
+#define TEST_EXPECT_DIFFERENT__BROKEN(expr,want) TEST_EXPECTATION__BROKEN(that(expr).does_differ_from(want));
 
 #define TEST_EXPECT_LESS(val,ref)              TEST_EXPECTATION(that(val).is_less_than(ref))
 #define TEST_EXPECT_MORE(val,ref)              TEST_EXPECTATION(that(val).is_more_than(ref))
@@ -1192,17 +1224,18 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 #define TEST_EXPECT_IN_RANGE(val,lower,higher) TEST_EXPECTATION(all().of(that(val).is_more_or_equal(lower),     \
                                                                          that(val).is_less_or_equal(higher)))
 
-#define TEST_EXPECT_CONTAINS(str, part) TEST_EXPECTATION(that(str).does_contain(part))
+#define TEST_EXPECT_CONTAINS(str,part)         TEST_EXPECTATION(that(str).does_contain(part))
+#define TEST_EXPECT_CONTAINS__BROKEN(str,part) TEST_EXPECTATION__BROKEN(that(str).does_contain(part))
 
-#define TEST_EXPECT_NULL(n)         TEST_EXPECT_EQUAL(n, (typeof(n))NULL)
-#define TEST_EXPECT_NULL__BROKEN(n) TEST_EXPECT_EQUAL__BROKEN(n, (typeof(n))NULL)
-#define TEST_REJECT_NULL(n)         TEST_EXPECT_DIFFERENT(n, (typeof(n))NULL)
-#define TEST_REJECT_NULL__BROKEN(n) TEST_EXPECT_DIFFERENT__BROKEN(n, (typeof(n))NULL)
+#define TEST_EXPECT_NULL(n)             TEST_EXPECT_EQUAL(n, (typeof(n))NULL)
+#define TEST_EXPECT_NULL__BROKEN(n,got) TEST_EXPECT_EQUAL__BROKEN(n, (typeof(n))NULL, got)
+#define TEST_REJECT_NULL(n)             TEST_EXPECT_DIFFERENT(n, (typeof(n))NULL)
+#define TEST_REJECT_NULL__BROKEN(n)     TEST_EXPECT_DIFFERENT__BROKEN(n, (typeof(n))NULL)
 
-#define TEST_EXPECT(cond)         TEST_EXPECT_EQUAL(cond, true)
-#define TEST_EXPECT__BROKEN(cond) TEST_EXPECT_EQUAL__BROKEN(cond, true)
-#define TEST_REJECT(cond)         TEST_EXPECT_EQUAL(cond, false)
-#define TEST_REJECT__BROKEN(cond) TEST_EXPECT_EQUAL__BROKEN(cond, false)
+#define TEST_EXPECT(cond)         TEST_EXPECTATION(that(cond).is_equal_to(true))
+#define TEST_EXPECT__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(true))
+#define TEST_REJECT(cond)         TEST_EXPECTATION(that(cond).is_equal_to(false))
+#define TEST_REJECT__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(false))
 
 // --------------------------------------------------------------------------------
 // the following macros only work when
@@ -1276,11 +1309,62 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
+#ifdef ARBDBT_H
+
+namespace arb_test {
+    inline match_expectation expect_newick_equals(NewickFormat format, const GBT_TREE *tree, const char *expected_newick) {
+        char              *newick   = GBT_tree_2_newick(tree, format);
+        match_expectation  expected = that(newick).is_equal_to(expected_newick);
+        free(newick);
+        return expected;
+    }
+    inline match_expectation saved_newick_equals(NewickFormat format, GBDATA *gb_main, const char *treename, const char *expected_newick) {
+        expectation_group  expected;
+        GB_transaction     ta(gb_main);
+        GBT_TREE          *tree = GBT_read_tree(gb_main, treename, GBT_TREE_NodeFactory());
+
+        expected.add(that(tree).does_differ_from_NULL());
+        if (tree) {
+            expected.add(expect_newick_equals(format, tree, expected_newick));
+            delete tree;
+        }
+        return all().ofgroup(expected);
+    }
+};
+
+#define TEST_EXPECT_NEWICK(format,tree,expected_newick)         TEST_EXPECTATION(arb_test::expect_newick_equals(format, tree, expected_newick))
+#define TEST_EXPECT_NEWICK__BROKEN(format,tree,expected_newick) TEST_EXPECTATION__BROKEN(arb_test::expect_newick_equals(format, tree, expected_newick))
+
+#define TEST_EXPECT_SAVED_NEWICK(format,gb_main,treename,expected_newick)         TEST_EXPECTATION(arb_test::saved_newick_equals(format, gb_main, treename, expected_newick))
+#define TEST_EXPECT_SAVED_NEWICK__BROKEN(format,gb_main,treename,expected_newick) TEST_EXPECTATION__BROKEN(arb_test::saved_newick_equals(format, gb_main, treename, expected_newick))
+
+#else
+
+#define WARN_MISS_ARBDBT() need_include__arbdbt_h__BEFORE__test_unit_h
+
+#define TEST_EXPECT_NEWICK(format,tree,expected_newick)         WARN_MISS_ARBDBT()
+#define TEST_EXPECT_NEWICK__BROKEN(format,tree,expected_newick) WARN_MISS_ARBDBT()
+
+#define TEST_EXPECT_SAVED_NEWICK(format,gb_main,treename,expected_newick)         WARN_MISS_ARBDBT()
+#define TEST_EXPECT_SAVED_NEWICK__BROKEN(format,gb_main,treename,expected_newick) WARN_MISS_ARBDBT()
+
+#endif
+
+// --------------------------------------------------------------------------------
+
 #define TEST_SETUP_GLOBAL_ENVIRONMENT(modulename) do {                                                          \
         arb_test::test_data().raiseLocalFlag(ANY_SETUP);                                                        \
         TEST_EXPECT_NO_ERROR(GBK_system(GBS_global_string("../test_environment setup %s",  (modulename))));     \
     } while(0)
 // cleanup is done (by Makefile.suite) after all unit tests have been run
+
+// --------------------------------------------------------------------------------
+// Some functions do not export information about their source location.
+// Fix that problem by writing
+//     TEST_PUBLISH(TEST_something)
+// just behind the function TEST_something.
+
+#define TEST_PUBLISH(testfunction) void publish##testfunction() { testfunction(); }
 
 // --------------------------------------------------------------------------------
 

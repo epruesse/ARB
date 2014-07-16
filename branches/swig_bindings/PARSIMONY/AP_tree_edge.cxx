@@ -69,6 +69,24 @@ void AP_tree_edge::initialize(AP_tree_nlen *tree) {
     new AP_tree_edge(tree->get_leftson(), tree->get_rightson()); // link brothers
 }
 
+void AP_tree_edge::destroy(AP_tree_nlen *tree) {
+    /*! Destroys all edges in the whole tree */
+    AP_tree_edge *edge = tree->nextEdge(NULL);
+    if (!edge) {
+        ap_assert(tree->is_root_node());
+        edge = tree->get_leftson()->edgeTo(tree->get_rightson());
+    }
+    ap_assert(edge); // got no edges?
+
+    edge->buildChain(-1);
+    while (edge) {
+        AP_tree_edge *next = edge->Next();
+        delete edge;
+        edge = next;
+    }
+}
+
+
 void AP_tree_edge::tailDistance(AP_tree_nlen *n)
 {
     ap_assert(!n->is_leaf);    // otherwise call was not necessary!
@@ -564,15 +582,10 @@ static void ap_calc_bootstrap_remark(AP_tree_nlen *son_node, AP_BL_MODE mode, co
         else {
             if (two<one) one = two; // dependent bootstrap values, take minimum (safe)
         }
-        const char *text = 0;
-        if (one < 1.0) { // was: < 0.99
-            text = GBS_global_string("%i%%", int(100.0 * one + 0.5));
-        }
-        else {
-            text = "100%";
-        }
-        freedup(son_node->remark_branch, text);
-        freedup(son_node->get_brother()->remark_branch, text);
+
+        double bootstrap = one<1.0 ? 100.0 * one : 100.0;
+        son_node->set_bootstrap(bootstrap);
+        son_node->get_brother()->set_remark(son_node->get_remark());
     }
 }
 
@@ -625,11 +638,11 @@ static void ap_calc_branch_lengths(AP_tree_nlen * /* root */, AP_tree_nlen *son,
     }
 
     if (son->leftson->is_leaf) {
-        ap_calc_leaf_branch_length((AP_tree_nlen*)son->leftson);
+        ap_calc_leaf_branch_length(son->get_leftson());
     }
 
     if (son->rightson->is_leaf) {
-        ap_calc_leaf_branch_length((AP_tree_nlen*)son->rightson);
+        ap_calc_leaf_branch_length(son->get_rightson());
     }
 }
 const double ap_undef_bl = 10.5;
@@ -654,8 +667,8 @@ static void ap_check_leaf_bl(AP_tree_nlen *node) {
         return;
     }
     else {
-        if (node->leftlen == ap_undef_bl)   ap_calc_leaf_branch_length((AP_tree_nlen *)node->leftson);
-        if (node->rightlen == ap_undef_bl)  ap_calc_leaf_branch_length((AP_tree_nlen *)node->rightson);
+        if (node->leftlen == ap_undef_bl)   ap_calc_leaf_branch_length(node->get_leftson());
+        if (node->rightlen == ap_undef_bl)  ap_calc_leaf_branch_length(node->get_rightson());
     }
 }
 
@@ -828,25 +841,21 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
     data.parsValue[2] = pars_three;
 
 
-    if (dumpNNI)
-    {
-        if (dumpNNI==2)
-        {
-            fprintf(stderr, "Fatal! NNI called between optimize and statistics!\n");
-            exit(1);
-        }
+    if (dumpNNI) {
+        if (dumpNNI==2) GBK_terminate("NNI called between optimize and statistics");
+
         AP_tree_nlen *node0 = this->node[0];
         AP_tree_nlen *node1 = this->node[1];
         if (node0->gr.leaf_sum > node1->gr.leaf_sum) { // node0 is final son
             node0 = node1;
         }
-        static int num = 0;
-        delete node0->remark_branch;
-        node0->remark_branch = (char *)calloc(sizeof(char), 100);
-        sprintf(node0->remark_branch, "%i %4.0f:%4.0f:%4.0f     %4.0f:%4.0f:%4.0f\n", num++,
-                oldData.parsValue[0], oldData.parsValue[1], oldData.parsValue[2],
-                data.parsValue[0], data.parsValue[1], data.parsValue[2]);
 
+        static int num = 0;
+
+        node0->use_as_remark(GBS_global_string_copy("%i %4.0f:%4.0f:%4.0f     %4.0f:%4.0f:%4.0f\n",
+                                                    num++,
+                                                    oldData.parsValue[0], oldData.parsValue[1], oldData.parsValue[2],
+                                                    data.parsValue[0], data.parsValue[1], data.parsValue[2]));
 
         cout
             << setw(4) << distInsertBorder
@@ -872,18 +881,16 @@ ostream& operator<<(ostream& out, const AP_tree_edge& e)
 
     out << ' ';
 
-    if (notTooDeep || &e==NULL)
-    {
+    if (notTooDeep || &e==NULL) {
         out << e;
     }
-    else
-    {
+    else {
         notTooDeep = 1;
         out << "AP_tree_edge(" << e
             << ", node[0]=" << *(e.node[0])
             << ", node[1]=" << *(e.node[1])
             << ")";
-        notTooDeep = 0;
+        notTooDeep = 0; // cppcheck-suppress redundantAssignment
     }
 
     return out << ' ';

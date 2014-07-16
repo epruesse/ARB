@@ -12,7 +12,7 @@ BEGIN {
   if (not exists $ENV{'ARBHOME'}) { die "Environment variable \$ARBHOME has to be defined"; }
   my $arbhome = $ENV{'ARBHOME'};
   push @INC, "$arbhome/lib";
-  push @INC, "$arbhome/PERL_SCRIPTS/SPECIES";
+  push @INC, "$arbhome/PERL_SCRIPTS/lib";
   1;
 }
 
@@ -109,6 +109,7 @@ sub buildMarklist($\%) {
 
   %$marklist_r = map {
     chomp;
+    s/\r+$//;
     $_ => 1;
   } @lines;
 }

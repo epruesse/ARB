@@ -228,7 +228,7 @@ static struct MutableItemSelector GEN_item_selector = {
     GEN_select_gene,
     gen_get_gene_id,
     gen_find_gene_by_id,
-    (AW_CB)gene_field_selection_list_update_cb,
+    gene_field_selection_list_update_cb,
     -1, // unknown
     CHANGE_KEY_PATH_GENES,
     "gene",
@@ -273,7 +273,7 @@ static void auto_select_pseudo_species(AW_root *awr, GBDATA *gb_main, const char
 }
 
 static void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
-    GB_transaction  dummy(gb_main);
+    GB_transaction  ta(gb_main);
     GBDATA         *gb_gene      = GEN_get_current_gene(gb_main, awr);
     bool            clear        = true;
     AW_awar        *awar_content = awr->awar(AWAR_GENE_CONTENT);
@@ -938,11 +938,8 @@ static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
     aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_delete_window, (AW_CL)bis);
     aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_create_window, (AW_CL)bis);
     aws->sep______________();
-    aws->insert_menu_topic("gen_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_unhide_all_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
-    aws->sep______________();
-    aws->insert_menu_topic("gen_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, FIELD_FILTER_NDS);
-    aws->insert_menu_topic("gen_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_delete_unused_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
-    aws->insert_menu_topic("gen_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_update_cb,        (AW_CL)gb_main, FIELD_FILTER_NDS);
+    aws->insert_menu_topic("gen_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_unhide_all_cb, gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("gen_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_update_cb,     gb_main, FIELD_FILTER_NDS));
     aws->sep______________();
     aws->insert_menu_topic("gen_edit_loc", "Edit gene location", "l", "gen_create.hlp", AD_F_ALL, popup_gene_location_editor, (AW_CL)gb_main, 0);
 }
@@ -1034,7 +1031,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
         awtqs.gb_main             = (GBDATA*)cl_gb_main;
         awtqs.species_name        = AWAR_SPECIES_NAME;
         awtqs.tree_name           = AWAR_TREE;
-        awtqs.select_bit          = 1;
+        awtqs.select_bit          = GB_USERFLAG_QUERY;
         awtqs.use_menu            = 1;
         awtqs.ere_pos_fig         = "ere3";
         awtqs.where_pos_fig       = "where3";

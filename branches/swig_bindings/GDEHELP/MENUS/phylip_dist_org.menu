@@ -1,11 +1,12 @@
 item:Phylip Distance Methods (Original Phylip, Interactive)
 itemmeta: I
-itemmethod:(GEN_INFILE(in1);\
+seqtype:*
+itemmethod:(GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
             RUN_IN_WINDOW(($DPGM;\
                            mv -f outfile infile;\
-                           ${ARB_XCMD} $PROGRAM;\
+                           (${ARB_XCMD} $PROGRAM || STOP_ON_FAILURE($PROGRAM)) && \
                            $DISPLAY_FUNC));\
-            RM_LOCAL_FILES(in1))&
+            RM_LOCAL_FILES(TmpInputFile))&
 itemhelp:phylip_distance.help
 
 arg:DISPLAY_FUNC
@@ -29,8 +30,7 @@ argchoice:RNA/DNA (dnadist):dnadist
 argchoice:AA      (protdist):protdist
 
 
-in:in1
+in:TmpInputFile
 informat:genbank
-inmask:sdfgdfg
 insave:
 

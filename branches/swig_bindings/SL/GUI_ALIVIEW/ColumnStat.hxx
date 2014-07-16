@@ -17,6 +17,9 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
 
 /* Create a window, that allows you to select a column statistic and 
  * get the weights from the selected SAI
@@ -67,14 +70,16 @@ public:
     ColumnStat(GBDATA *gb_main, AW_root *awr, const char *awar_template, AW_awar *awar_used_alignment);
     ~ColumnStat();
 
-    GB_ERROR calculate(AP_filter *filter);
+    __ATTR__USERESULT GB_ERROR calculate(AP_filter *filter);
     void     forget();
 
     GBDATA *get_gb_main() const { return gb_main; }
 
+    bool has_valid_alignment() const { return !strchr(alignment_name, '?'); }
+
     const char *get_awar_smooth() const { return awar_smooth; }
     const char *get_awar_enable_helix() const { return awar_enable_helix; }
-    const char *get_type_path() const { return type_path; }
+    const char *get_type_path() const { arb_assert(has_valid_alignment()); return type_path; }
 
     bool has_rates() const { return rates != NULL; }
     void weight_by_inverseRates() const;

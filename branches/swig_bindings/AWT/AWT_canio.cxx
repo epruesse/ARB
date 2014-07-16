@@ -556,7 +556,11 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *scr, const char *xfig_name, bool add_
 
     device->reset();
     device->set_color_mode(use_color);
+#ifdef ARB_GTK
+    GB_ERROR error = NULL;
+#else
     GB_ERROR error = device->open(xfig_name);
+#endif
 
     if (!error) {
         Rectangle drawsize = get_drawsize(scr, draw_all);
@@ -588,6 +592,10 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *scr, const char *xfig_name, bool add_
         if (!draw_all) filter |= AW_PRINTER_CLIP;
 
         device->set_filter(filter);
+#ifdef ARB_GTK
+        error = device->open(xfig_name);
+        if (error) return error;
+#endif     
         scr->gfx->show(device);
 
         if (add_invisibles) {
@@ -621,11 +629,10 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *scr, const char *xfig_name, bool add_
 
 // --------------------------------------------------------------------------------
 
-static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_canvas) {
-    AWT_canvas *scr  = (AWT_canvas*)cl_canvas;
-    AW_root    *awr  = aww->get_root();
-    char       *xfig = AW_get_selected_fullname(awr, AWAR_CANIO_FILE_BASE);
-    
+static void canvas_to_xfig_and_run_xfig(AW_window *aww, AWT_canvas *scr) {
+    AW_root *awr  = aww->get_root();
+    char    *xfig = AW_get_selected_fullname(awr, AWAR_CANIO_FILE_BASE);
+
     GB_ERROR error = NULL;
     if (xfig[0] == 0) {
         error = "Please enter a file name";
@@ -634,7 +641,11 @@ static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_canvas) {
         error = canvas_to_xfig(scr, xfig, true, 0.0);
         if (!error) {
             awr->awar(AWAR_CANIO_FILE_DIR)->touch(); // reload dir to show created xfig
+#if defined(ARB_GTK)
+            error = GBK_system(GBS_global_string("evince %s &", xfig));
+#else
             error = GBK_system(GBS_global_string("xfig %s &", xfig));
+#endif
         }
     }
     if (error) aw_message(error);
@@ -760,12 +771,16 @@ static void canvas_to_printer(AW_window *aww, AW_CL cl_canvas) {
 
 // --------------------------------------------------------------------------------
 
-void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
+void AWT_popup_tree_export_window(AW_window *parent_win, AWT_canvas *scr) {
     static AW_window_simple *aws = 0;
 
     AW_root *awr = parent_win->get_root();
     create_export_awars(awr);
+#if defined(ARB_GTK)
+    resetFiletype(awr, "pdf", "print.pdf");
+#else
     resetFiletype(awr, "fig", "print.fig");
+#endif
 
     if (!aws) {
         aws = new AW_window_simple;
@@ -780,7 +795,7 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
 
         aws->label_length(15);
 
-        AW_create_fileselection(aws, AWAR_CANIO_FILE_BASE);
+        AW_create_standard_fileselection(aws, AWAR_CANIO_FILE_BASE);
 
         aws->at("what");
         aws->label("Clip at Screen");
@@ -800,14 +815,14 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
         aws->label("Export colors");
         aws->create_toggle(AWAR_CANIO_COLOR);
 
-        aws->at("xfig"); aws->callback(canvas_to_xfig_and_run_xfig, cl_canvas);
+        aws->at("xfig"); aws->callback(makeWindowCallback(canvas_to_xfig_and_run_xfig, scr));
         aws->create_autosize_button("START_XFIG", "EXPORT to XFIG", "X");
     }
 
     aws->activate();
 }
 
-void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
+void AWT_popup_sec_export_window(AW_window *parent_win, AWT_canvas *scr) {
     static AW_window_simple *aws = 0;
 
     AW_root *awr = parent_win->get_root();
@@ -826,11 +841,11 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
         aws->create_button("HELP", "HELP", "H");
 
         aws->label_length(15);
-        AW_create_fileselection(aws, AWAR_CANIO_FILE_BASE);
+        AW_create_standard_fileselection(aws, AWAR_CANIO_FILE_BASE);
 
         aws->at("what");
         aws->label("Clip Options");
-        aws->create_option_menu(AWAR_CANIO_CLIP);
+        aws->create_option_menu(AWAR_CANIO_CLIP, true);
         aws->insert_option("Export screen only", "s", 0);
         aws->insert_default_option("Export complete structure", "c", 1);
         aws->update_option_menu();
@@ -839,7 +854,7 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
         aws->label("Export colors");
         aws->create_toggle(AWAR_CANIO_COLOR);
 
-        aws->at("xfig"); aws->callback(canvas_to_xfig_and_run_xfig, cl_canvas);
+        aws->at("xfig"); aws->callback(makeWindowCallback(canvas_to_xfig_and_run_xfig, scr));
         aws->create_autosize_button("START_XFIG", "EXPORT to XFIG", "X");
     }
 
@@ -861,9 +876,8 @@ static void fit_pages_cb(AW_window *aww, AW_CL cl_pages) {
     fit_pages(awr, wanted_pages, true);
 }
 
-void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
+void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
     AW_root                 *awr = parent_win->get_root();
-    AWT_canvas              *scr = (AWT_canvas*)cl_canvas;
     static AW_window_simple *aws = 0;
 
     create_print_awars(awr, scr);
@@ -935,7 +949,7 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         aws->at("psizey"); aws->create_input_field(AWAR_CANIO_PAPER_SY, 5);
 
         aws->at("paper");
-        aws->create_option_menu(AWAR_CANIO_PAPER);
+        aws->create_option_menu(AWAR_CANIO_PAPER, true);
         aws->insert_default_option(knownPaperFormat[0].get_description(), "", 0);
         for (int f = 1; f<int(ARRAY_ELEMS(knownPaperFormat)); ++f) {
             const PaperFormat& format = knownPaperFormat[f];

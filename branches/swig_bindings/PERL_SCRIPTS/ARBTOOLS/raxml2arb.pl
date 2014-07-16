@@ -15,6 +15,10 @@
 use strict;
 use warnings;
 
+my $MODE_NORMAL       = 0;
+my $MODE_BOOTSTRAPPED = 1;
+my $MODE_OPTIMIZED    = 2;
+
 sub arb_message($) {
   my ($msg) = @_;
   print "Message: $msg\n";
@@ -32,6 +36,37 @@ sub error($) {
   die $msg;
 }
 
+my $loaded_log = undef;
+my @log = ();
+
+sub loadLog($) {
+  my ($log) = @_;
+  if (defined $loaded_log) {
+    if ($log ne $loaded_log) {
+      $loaded_log = undef;
+      @log = ();
+    }
+  }
+  if (not defined $loaded_log) {
+    open(LOG,'<'.$log) || die "can't load '$log' (Reason: $!)";
+    my $line;
+    while (defined($line=<LOG>)) {
+      chomp($line);
+      push @log, $line;
+    }
+    close(LOG);
+  }
+}
+
+sub firstLogLineMatching($$) {
+  my ($log,$regexp) = @_;
+  loadLog($log);
+  foreach my $line (@log) {
+    if ($line =~ $regexp) { return ($line,$1); }
+  }
+  return (undef,undef);
+}
+
 sub raxml_filename($$$) {
   my ($type,$name,$run) = @_;
   my $fname = 'RAxML_'.$type.'.'.$name;
@@ -45,7 +80,36 @@ sub someWhat($$) {
   return $count.' '.$what.'s';
 }
 
-sub treeInfo($$) {
+my @splitted_trees = ();
+
+sub split_treefile($$$) {
+  my ($in,$out,$treesExpected) = @_;
+  @splitted_trees = ();
+  my $outcount = 0;
+  open(IN,'<'.$in) || die "can't read '$in' (Reason: $!)";
+  my $line;
+  while (defined($line=<IN>)) {
+    if ($line =~ /\(/o) {
+      my $outname = "$out.$outcount"; $outcount++;
+      open(OUT,'>'.$outname) || die "can't write '$outname' (Reason: $!)";
+      print OUT $line;
+      close(OUT);
+      push @splitted_trees, $outname;
+    }
+    else {
+      print "Unexpected line in '$in':\n";
+      print $line;
+    }
+  }
+  close(IN);
+  my $treesFound = scalar(@splitted_trees);
+  if ($treesFound!=$treesExpected) {
+    die "Failed to split '$in' into single treefiles\n".
+    "(expected to find $treesExpected trees, found $treesFound)";
+  }
+}
+
+sub treeInfo_normal($$) {
   my ($name,$run) = @_;
 
   my $result       = raxml_filename('result',$name,$run);
@@ -58,13 +122,7 @@ sub treeInfo($$) {
     if (-f $parsimony) { return ($parsimony,'unknown'); }
   }
 
-  open(LOG,'<'.$log) || die "can't open '$log' (Reason: $!)";
-  my $line = undef;
-  foreach (<LOG>) { if ($_ ne '') { $line = $_; } }
-  close(LOG);
-
-  chomp($line);
-
+  my ($line) = firstLogLineMatching($log,qr/./); # first non-empty line
   if (not $line =~ / (.*)$/o) {
     die "can't parse likelyhood from '$log'";
   }
@@ -73,18 +131,66 @@ sub treeInfo($$) {
   return ($result,$likelyhood);
 }
 
-sub findTrees($$\%) {
-  my ($name,$runs,$likelyhood_r) = @_;
+sub treeInfo_bootstrapped($$) {
+  my ($name,$run) = @_;
+
+  my $info = raxml_filename('info',$name,undef);
+  if (defined $run) {
+    my $treeCount = scalar(@splitted_trees);
+    if ($run>=$treeCount) {
+      die "Invalid run number $run - has to be in [0 .. ".($treeCount-1)."]";
+    }
+    my ($line,$likelyhood) = firstLogLineMatching($info,qr/^Bootstrap\[$run\]:\s.*\slikelihood\s+([^\s,]+),/);
+    if (not defined $likelyhood) {
+      die "Failed to parse likelyhood for 'Bootstrap[$run]' from '$info'";
+    }
+    return ($splitted_trees[$run],$likelyhood);
+  }
+  else {
+    my $bestTree = raxml_filename('bestTree',$name,undef);
+    my ($line,$likelyhood) = firstLogLineMatching($info,qr/^Final ML Optimization Likelihood:\s+(.*)$/);
+    if (not defined $likelyhood) {
+      arb_message("Failed to extract final likelyhood from '$info'");
+      $likelyhood = 'unknown';
+    }
+    return ($bestTree,$likelyhood);
+  }
+}
+
+
+
+sub treeInfo($$$) {
+  my ($mode,$name,$run) = @_;
+
+  if ($mode==$MODE_BOOTSTRAPPED)                     { return treeInfo_bootstrapped($name,$run); }
+  if ($mode==$MODE_NORMAL or $mode==$MODE_OPTIMIZED) { return treeInfo_normal($name,$run); }
+
+  die "Unhandled mode '$mode'";
+}
+
+sub findTrees($$$$\%) {
+  my ($name,$mode,$runs,$take,$likelyhood_r) = @_;
 
   %$likelyhood_r = ();
 
-  if ($runs==1) {
-    my ($tree,$likely) = treeInfo($name,undef);
+  my $singleTree = 0;
+  if    ($mode==$MODE_NORMAL)       { if ($runs==1) { $singleTree = 1; } }
+  elsif ($mode==$MODE_BOOTSTRAPPED) { if ($take==1) { $singleTree = 1; } }
+  elsif ($mode==$MODE_OPTIMIZED)    { $singleTree = 1; }
+  else { die; }
+
+  if ($singleTree==1) {
+    my ($tree,$likely) = treeInfo($mode,$name,undef);
     $$likelyhood_r{$tree} = $likely;
   }
   else {
+    if ($mode==$MODE_BOOTSTRAPPED) {
+      my $raxml_out   = raxml_filename('bootstrap',$name,undef);
+      split_treefile($raxml_out, 'raxml2arb.tree',$runs);
+      print "Splitted '$raxml_out' into ".scalar(@splitted_trees)." treefiles\n";
+    }
     for (my $r = 0; $r<$runs; $r++) {
-      my ($tree,$likely) = treeInfo($name,$r);
+      my ($tree,$likely) = treeInfo($mode,$name,$r);
       $$likelyhood_r{$tree} = $likely;
     }
   }
@@ -94,48 +200,51 @@ sub main() {
   eval {
     my $args = scalar(@ARGV);
 
-    if ($args != 4) {
-      die "Usage: raxml2arb.pl RUNNAME NUMBEROFRUNS TAKETREES [import|consense]\n".
+    if ($args != 6) {
+      die "Usage: raxml2arb.pl RUNNAME NUMBEROFRUNS [normal|bootstrapped|optimized] TAKETREES [import|consense] \"COMMENT\"\n".
         "       import: Import the best TAKETREES trees of NUMBEROFRUNS generated trees into ARB\n".
         "       consense: Create and import consensus tree of best TAKETREES trees of NUMBEROFRUNS generated trees\n";
     }
 
-    my ($RUNNAME,$NUMBEROFRUNS,$TAKETREES,$CONSENSE) = @ARGV;
+    my ($RUNNAME,$NUMBEROFRUNS,$MODE,$TAKETREES,$CONSENSE,$COMMENT) = @ARGV;
 
-    if ($NUMBEROFRUNS<1) { die "NUMBEROFRUNS has to be 1 or more ($NUMBEROFRUNS)"; }
+    if ($NUMBEROFRUNS<1) { die "NUMBEROFRUNS has to be 1 or higher (NUMBEROFRUNS=$NUMBEROFRUNS)"; }
 
-    my %likelyhood = ();
-    findTrees($RUNNAME,$NUMBEROFRUNS,%likelyhood);
+    my %likelyhood  = (); # key=treefile, value=likelyhood
+    my @treesToTake = (); # treefiles
+
+    my $mode = $MODE_NORMAL;
+    if ($MODE eq 'bootstrapped') { $mode = $MODE_BOOTSTRAPPED; }
+    elsif ($MODE eq 'optimized') { $mode = $MODE_OPTIMIZED; }
+    elsif ($MODE ne 'normal') { die "Unexpected mode '$MODE' (accepted: 'normal', 'bootstrapped', 'optimized')"; }
+
+    my $calc_consense = 0;
+    if ($CONSENSE eq 'consense') { $calc_consense = 1; }
+    elsif ($CONSENSE ne 'import') { die "Unknown value '$CONSENSE' (expected 'import' or 'consense')"; }
+
+    findTrees($RUNNAME,$mode,$NUMBEROFRUNS,$TAKETREES,%likelyhood);
 
     my $createdTrees = scalar(keys %likelyhood);
     print "Found ".someWhat($createdTrees,'tree').":\n";
 
     if ($TAKETREES > $createdTrees) {
-      arb_message("Cant take more trees ($TAKETREES) than calculated ($NUMBEROFRUNS) .. using all");
+      arb_message("Cant take more trees (=$TAKETREES) than calculated (=$createdTrees) .. using all");
       $TAKETREES = $createdTrees;
-    }
-
-    my $calc_consense = 0;
-    if ($CONSENSE eq 'consense') {
-      if ($TAKETREES<2) {
-        arb_message("Need to take at least 2 trees to create a consensus tree - importing..");
-        $CONSENSE = 'import';
-      }
-      else {
-        $calc_consense = 1;
-      }
-    }
-    elsif ($CONSENSE ne 'import') {
-      die "Unknown value '$CONSENSE' (expected 'import' or 'consense')";
     }
 
     my @sortedTrees = sort { $likelyhood{$b} <=> $likelyhood{$a}; } keys %likelyhood;
     foreach (@sortedTrees) { print "  $_ = ".$likelyhood{$_}."\n"; }
 
-    my @treesToTake = splice(@sortedTrees,0,$TAKETREES);
-    if (scalar(@treesToTake)<1) { die "No trees to $CONSENSE"; }
+    @treesToTake = splice(@sortedTrees,0,$TAKETREES);
 
     my $treesToTake = scalar(@treesToTake);
+    if ($treesToTake==0) { die "failed to detect RAxML output trees"; }
+
+    if ($calc_consense and $treesToTake<2) {
+      arb_message("Need to take at least 2 trees to create a consensus tree - importing..");
+      $calc_consense = 0;
+    }
+
     my $treename = 'tree_RAxML_'.$$;
     my $infofile = 'RAxML_info.'.$RUNNAME;
 
@@ -151,7 +260,7 @@ sub main() {
           $currTreename .= '_'.$count;
           $count++;
         }
-        my $command = 'arb_read_tree '.$currTreename.' '.$_.' "likelyhood='.$likelyhood{$_}.'"';
+        my $command = 'arb_read_tree '.$currTreename.' '.$_.' "'.$COMMENT."\n".'likelyhood='.$likelyhood{$_}.'"';
         if (-f $infofile) { $command .= ' -commentFromFile '.$infofile; }
 
         system($command)==0 || die "can't execute '$command' (Reason: $?)";
@@ -194,7 +303,7 @@ sub main() {
         die "Consense failed (no 'outtree' generated)";
       }
 
-      my $comment = "Consensus tree of $treesToTake trees\nLikelyhood: min=$minLH mean=$meanLH max=$maxLH";
+      my $comment = "$COMMENT\nConsensus tree of $treesToTake trees\nLikelyhood: min=$minLH mean=$meanLH max=$maxLH";
       $command = 'arb_read_tree -consense '.$treesToTake.' '.$treename.' outtree "'.$comment.'"';
       if (-f $infofile) { $command .= ' -commentFromFile '.$infofile; }
       system($command)==0 || die "can't execute '$command' (Reason: $?)";

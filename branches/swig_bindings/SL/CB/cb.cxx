@@ -127,6 +127,8 @@ __ATTR__FORMAT(1) static void tracef(const char *format, ...) {
 static AW_root    *fake_root   = (AW_root*)1;
 static AW_window  *fake_win    = (AW_window*)2;
 static GBDATA     *fake_gbd    = (GBDATA*)3;
+static AW_awar    *fake_awar   = (AW_awar*)4;
+static bool        fake_bool   = false;
 static GB_CB_TYPE  fake_gbtype = GB_CB_CHANGED;
 
 static void rcb0(AW_root *r) {
@@ -179,6 +181,25 @@ static void wcb2(AW_window *w, char c, long long val) {
     tracef("wcb2(%c=%lli) [long long]\n", c, val);
 }
 
+static void tacb0(AW_awar *a) {
+    TEST_EXPECT(a == fake_awar);
+    tracef("tacb0()\n");
+}
+static void tacb1(AW_awar *a, bool b) {
+    TEST_EXPECT(a == fake_awar);
+    TEST_EXPECT(b == fake_bool);
+    tracef("tacb1()\n");
+}
+static void tacb2(AW_awar *a, bool b, const char *name) {
+    TEST_EXPECT(a == fake_awar);
+    TEST_EXPECT(b == fake_bool);
+    tracef("tacb2(%s)\n", name);
+}
+static void tacb2(AW_awar *a, bool b, int val) {
+    TEST_EXPECT(a == fake_awar);
+    TEST_EXPECT(b == fake_bool);
+    tracef("tacb2(%i)\n", val);
+}
 
 static void ucb0(UNFIXED) {
     tracef("ucb0()\n");
@@ -293,6 +314,7 @@ inline void call(const RootCallback& rcb) { rcb(fake_root); }
 inline void call(const WindowCallback& wcb) { wcb(fake_win); }
 inline void call(const CreateWindowCallback& cwcb) { TEST_EXPECT(cwcb(fake_root) == fake_win); }
 inline void call(const DatabaseCallback& dbcb) { dbcb(fake_gbd, fake_gbtype); }
+inline void call(const TreeAwarCallback& tacb) { tacb(fake_awar, fake_bool); }
 
 #define TEST_CB(cb,expectedChecksum) do {                               \
         traceChecksum = -666;                                           \
@@ -331,6 +353,12 @@ void TEST_cbs() {
         TEST_CB_TRACE(makeWindowCallback(wcb1, "dispatched"), "wcb1(dispatched)\n");
         TEST_CB_TRACE(makeWindowCallback(wcb2, "age",  46),   "wcb2(age=46) [int]\n");
         TEST_CB_TRACE(makeWindowCallback(wcb2, "size", 178L), "wcb2(size=178) [long]\n");
+
+        TEST_CB_TRACE(makeTreeAwarCallback(plaincb),             "plaincb()\n");
+        TEST_CB_TRACE(makeTreeAwarCallback(tacb0),               "tacb0()\n");
+        TEST_CB_TRACE(makeTreeAwarCallback(tacb1),               "tacb1()\n");
+        TEST_CB_TRACE(makeTreeAwarCallback(tacb2, "dispatched"), "tacb2(dispatched)\n");
+        TEST_CB_TRACE(makeTreeAwarCallback(tacb2, 46),           "tacb2(46)\n");
 
         // declaring a cb with UNFIXED as fixed-argument allows to use callbacks as RootCallback AND as WindowCallback
         // (when we use sigc++ in the future this should be changed to allowing functions w/o the UNFIXED-parameter)

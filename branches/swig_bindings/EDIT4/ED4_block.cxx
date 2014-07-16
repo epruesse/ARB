@@ -358,14 +358,6 @@ static void ED4_with_whole_block(const ED4_block_operator& block_operator) {
         for (CursorPositions::iterator ab = at_base.begin(); ab != at_base.end(); ++ab) {
             ED4_window *win = ab->first;
             win->cursor.jump_base_pos(ab->second, ED4_JUMP_KEEP_VISIBLE); // restore cursor at same base
-            
-#if defined(DEBUG)
-            ED4_cursor& cursor = win->cursor;
-            if (cursor.owner_of_cursor) {
-                int bp_now = cursor.get_base_position();
-                e4_assert(bp_now == ab->second); // @@@ restore cursor does not work properly with 2 windows
-            }
-#endif
         }
     }
 }
@@ -1011,7 +1003,7 @@ AW_window *ED4_create_modsai_window(AW_root *root) {
     aws->create_button("go", "GO");
 
     aws->at("box");
-    AW_selection_list *sellist = aws->create_selection_list(AWAR_MOD_SAI_SCRIPT);
+    AW_selection_list *sellist = aws->create_selection_list(AWAR_MOD_SAI_SCRIPT, false);
     GB_ERROR error;
     {
         StorableSelectionList storable_sellist(TypedSelectionList("sellst", sellist, "SRT/ACI scripts", "srt_aci"));

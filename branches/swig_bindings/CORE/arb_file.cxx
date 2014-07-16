@@ -248,7 +248,7 @@ GB_ERROR GB_rename_file(const char *oldpath, const char *newpath) {
 
     GB_ERROR error = NULL;
     if (rename(oldpath, newpath) != 0) {
-        error = GB_IO_error("renaming", GBS_global_string("%s into %s", oldpath, newpath));
+        error = GB_IO_error("renaming", GBS_global_string("%s' into '%s", oldpath, newpath)); // Note: GB_IO_error quotes it's 2nd arg
     }
     else {
         error = GB_set_mode_of_file(newpath, old_mod);
@@ -333,6 +333,7 @@ void TEST_basic_file_checks() {
         TEST_EXPECT_DIFFERENT(GB_unlink(linkNowhere), -1);
     }
 }
+TEST_PUBLISH(TEST_basic_file_checks);
 
 #endif // UNIT_TESTS
 

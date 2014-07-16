@@ -1687,14 +1687,14 @@ ED4_species_manager::~ED4_species_manager() {
     // if assertion fails, callbacks are still bound to this manager.
     // You need to remove all callbacks at two places:
     // 1. ED4_species_manager::remove_all_callbacks
-    // 2. ED4_quit_editor()
+    // 2. ED4_exit()
 }
 
 void ED4_species_manager::add_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd) {
 #if defined(DEBUG_SPMAN_CALLBACKS)
     printf("this=%p - add_sequence_changed_cb\n", (char*)this);
 #endif // DEBUG
-    callbacks.insert(ED4_species_manager_cb_data(cb, cd));
+    callbacks.push_back(ED4_species_manager_cb_data(cb, cd));
 }
 
 void ED4_species_manager::remove_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd) {
@@ -1702,11 +1702,11 @@ void ED4_species_manager::remove_sequence_changed_cb(ED4_species_manager_cb cb, 
 #if defined(DEBUG_SPMAN_CALLBACKS)
     printf("this=%p - remove_sequence_changed_cb\n", (char*)this);
 #endif // DEBUG
-    callbacks.erase(ED4_species_manager_cb_data(cb, cd));
+    callbacks.remove(ED4_species_manager_cb_data(cb, cd));
 }
 
 void ED4_species_manager::do_callbacks() {
-    for (std::set<ED4_species_manager_cb_data>::iterator cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
+    for (std::list<ED4_species_manager_cb_data>::iterator cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
         cb->call(this);
     }
 }
@@ -1717,7 +1717,7 @@ void ED4_species_manager::remove_all_callbacks() {
             ED4_cursor&  cursor                  = ew->cursor;
             ED4_base    *cursors_species_manager = cursor.owner_of_cursor->get_parent(ED4_L_SPECIES);
             if (cursors_species_manager == this) {
-                cursor.invalidate_base_position(); // removes the callback
+                cursor.prepare_shutdown(); // removes any callbacks
             }
         }
         e4_assert(callbacks.empty());

@@ -74,7 +74,7 @@ AW_window *NT_create_select_tree_window(AW_root *awr, const char *awar_tree) {
         aws->load_xfig("select_simple.fig");
 
         aws->at("selection");
-        awt_create_selection_list_on_trees(GLOBAL.gb_main, (AW_window *)aws, awar_tree);
+        awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, awar_tree, true);
 
         aws->auto_space(5, 5);
         aws->button_length(6);
@@ -93,12 +93,12 @@ AW_window *NT_create_select_tree_window(AW_root *awr, const char *awar_tree) {
 }
 
 void NT_select_bottom_tree(AW_window *aww, const char *awar_tree) {
-    GB_transaction dummy(GLOBAL.gb_main);
+    GB_transaction ta(GLOBAL.gb_main);
     const char *ltree = GBT_name_of_bottom_tree(GLOBAL.gb_main);
     if (ltree) aww->get_root()->awar(awar_tree)->write_string(ltree);
 }
 
-AW_window *NT_open_select_alignment_window(AW_root *awr)
+AW_window *NT_create_select_alignment_window(AW_root *awr)
 {
     static AW_window_simple *aws = 0;
     if (!aws) {
@@ -118,7 +118,7 @@ AW_window *NT_open_select_alignment_window(AW_root *awr)
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(AW_POPUP, (AW_CL)NT_create_alignment_window, (AW_CL)aws);
+        aws->callback(makeCreateWindowCallback(NT_create_alignment_window, static_cast<AW_window*>(aws)));
         aws->help_text("ad_align.hlp");
         aws->create_button("MODIFY", "ADMIN", "A");
 

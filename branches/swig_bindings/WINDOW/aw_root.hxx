@@ -21,8 +21,6 @@
 #define aw_assert(bed) arb_assert(bed)
 #endif
 
-typedef AW_window *(*AW_PPP)(AW_root*, AW_CL, AW_CL); // @@@ [CB] similar to AW_Window_Creator
-
 #if defined(ASSERTION_USED)
 #define legal_mask(m) (((m)&AWM_ALL) == (m))
 #endif // ASSERTION_USED
@@ -39,10 +37,8 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
 char *aw_input(const char *prompt, const char *default_input);
 inline char *aw_input(const char *prompt) { return aw_input(prompt, NULL); }
 
-char *aw_input2awar(const char *prompt, const char *awar_value);
-
-char *aw_string_selection     (const char *title, const char *prompt, const char *default_value, const char *value_list, const char *buttons, char *(*check_fun)(const char*));
-char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name,     const char *value_list, const char *buttons, char *(*check_fun)(const char*));
+char *aw_string_selection     (const char *title, const char *prompt, const char *default_value, const char *value_list, const char *buttons);
+char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name,     const char *value_list, const char *buttons);
 
 int aw_string_selection_button();   // returns index of last selected button (destroyed by aw_string_selection and aw_input)
 
@@ -138,7 +134,7 @@ public:
 
     // the real public section:
     AW_root(const char *propertyFile, const char *program, bool no_exit, UserActionTracker *user_tracker, int* argc, char*** argv);
-#if defined(UNIT_TESTS)
+#if defined(UNIT_TESTS) // UT_DIFF
     AW_root(const char *properties); // fake-root for unit-tests (allows access to awar-subsystem)
 #endif
     ~AW_root();
@@ -196,6 +192,7 @@ public:
 
 #if defined(DEBUG)
     size_t callallcallbacks(int mode);
+    class ConstStrArray *get_action_ids();
 #endif // DEBUG
 };
 

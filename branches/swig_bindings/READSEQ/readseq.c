@@ -381,27 +381,25 @@ void erralert(short err)
   switch (err) {
     case 0  :
       break;
-    case eFileNotFound: fprintf(stderr, "File not found: %s\n", inputfile);
+    case eFileNotFound: fprintf(stderr, "arb_readseq: File not found: %s\n", inputfile);
       break;
-    case eFileCreate: fprintf(stderr, "Can't open output file.\n");
+    case eFileCreate: fprintf(stderr, "arb_readseq: Can't open output file.\n");
       break;
-    case eASNerr: fprintf(stderr, "Error in ASN.1 sequence routines.\n");
+    case eASNerr: fprintf(stderr, "arb_readseq: Error in ASN.1 sequence routines.\n");
       break;
-    case eNoData: fprintf(stderr, "No data in file.\n");
+    case eNoData: fprintf(stderr, "arb_readseq: No data in file.\n");
       break;
-    case eItemNotFound: fprintf(stderr, "Specified item not in file.\n");
+    case eItemNotFound: fprintf(stderr, "arb_readseq: Specified item not in file.\n");
       break;
-    case eUnequalSize:  fprintf(stderr,
-      "This format requires equal length sequences.\nSequence truncated or padded to fit.\n");
+    case eUnequalSize:  fprintf(stderr, "arb_readseq: This format requires equal length sequences.\nSequence truncated or padded to fit.\n");
       break;
-    case eUnknownFormat: fprintf(stderr, "Error: this format is unknown to me.\n");
+    case eUnknownFormat: fprintf(stderr, "arb_readseq: Error: this format is unknown to me.\n");
       break;
-    case eOneFormat: fprintf(stderr,
-      "Warning: This format permits only 1 sequence per file.\n");
+    case eOneFormat: fprintf(stderr, "arb_readseq: Warning: This format permits only 1 sequence per file.\n");
       break;
-    case eMemFull: fprintf(stderr, "Out of storage memory. Sequence truncated.\n");
+    case eMemFull: fprintf(stderr, "arb_readseq: Out of storage memory. Sequence truncated.\n");
       break;
-    default: fprintf(stderr, "readSeq error = %d\n", err);
+    default: fprintf(stderr, "arb_readseq: errorcode = %d\n", err);
       break;
     }
 } /* erralert */

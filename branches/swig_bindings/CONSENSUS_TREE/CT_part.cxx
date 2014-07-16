@@ -15,9 +15,7 @@
 
 #include "CT_part.hxx"
 #include <arbdbt.h>
-
-#if defined(DEBUG)
-#endif
+#include <arb_strarray.h>
 
 #define BITS_PER_PELEM (sizeof(PELEM)*8)
 
@@ -69,25 +67,58 @@ PartitionSize::PartitionSize(const int len)
 }
 
 #if defined(NTREE_DEBUG_FUNCTIONS)
+
+static const CharPtrArray *namesPtr = NULL;
+
+void PART::start_pretty_printing(const CharPtrArray& names) { namesPtr = &names; }
+void PART::stop_pretty_printing() { namesPtr = NULL; }
+
 void PART::print() const {
     // ! Testfunction to print a part
-    int i, j, k=0;
-    PELEM l;
+    int       k     = 0;
+    const int longs = get_longs();
+    const int plen  = info->get_bits();
 
-    int longs = get_longs();
-    int plen = info->get_bits();
-    for (i=0; i<longs; i++) {
-        l = 1;
-        for (j=0; k<plen && size_t(j)<sizeof(PELEM)*8; j++, k++) {
-            if (p[i] & l)
-                printf("1");
-            else
-                printf("0");
-            l <<= 1;
+    if (namesPtr) {
+        const CharPtrArray& names = *namesPtr;
+        for (int part = 0; part<=1; ++part) {
+            // bool first = true;
+            for (int i=0; i<longs; i++) {
+                PELEM el = 1;
+                for (int j=0; k<plen && size_t(j)<sizeof(PELEM)*8; j++, k++) {
+                    bool bitset = p[i] & el;
+                    if (bitset == part) {
+                        const char *name = names[k];
+#if 1
+                        fputc(name[0], stdout); // first char of name
+#else
+                        if (!first) fputc(',', stdout);
+                        else first = false;
+                        fputs(name, stdout); // full name
+#endif
+                    }
+                    el <<= 1;
+                }
+            }
+            if (!part) {
+                fputs("---", stdout);
+                k = 0;
+            }
+        }
+    }
+    else {
+        for (int i=0; i<longs; i++) {
+            PELEM el = 1;
+            for (int j=0; k<plen && size_t(j)<sizeof(PELEM)*8; j++, k++) {
+                bool bitset = p[i] & el;
+                fputc('0'+bitset, stdout);
+                el <<= 1;
+            }
         }
     }
 
-    printf("  len=%.5f  prob=%5.1f%%  leaf=%i  dist2center=%i\n", len, weight*100.0, is_leaf_edge(), distance_to_tree_center());
+    printf("  len=%.5f  prob=%5.1f%%  w.len=%.5f  leaf=%i  dist2center=%i\n",
+           len, weight*100.0, get_len(), is_leaf_edge(), distance_to_tree_center());
 }
 #endif
 
@@ -101,36 +132,6 @@ PART *PartitionSize::create_root() const {
     arb_assert(p->is_valid());
     return p;
 }
-
-
-bool PART::is_son_of(const PART *father) const {
-    /*! test if the part 'son' is possibly a son of the part 'father'.
-     *
-     * A father defined in this context as a part covers every bit of his son. needed in CT_ntree
-     */
-
-    arb_assert(is_valid());
-    arb_assert(father->is_valid());
-    
-#if defined(ASSERTION_USED)
-    bool is_equal = true;
-#endif
-    int longs = get_longs();
-    for (int i=0; i<longs; i++) {
-        PELEM s = p[i];
-        PELEM f = father->p[i];
-
-        if ((s&f) != s) return false; // father has not all son bits set
-#if defined(ASSERTION_USED)
-        if (s != f) is_equal = false;
-#endif
-    }
-
-    arb_assert(!is_equal); // if is_equal, father and son are identical (which is wrong);
-                           // e.g. happens when PartRegistry stores multiple instances of the same part
-    return true;
-}
-
 
 bool PART::overlaps_with(const PART *other) const {
     /*! test if two parts overlap (i.e. share common bits)
@@ -165,7 +166,24 @@ void PART::invert() {
     arb_assert(is_valid());
 }
 
-void PART::add_from(const PART *source) {
+void PART::invertInSuperset(const PART *superset) {
+    arb_assert(is_valid());
+    arb_assert(is_subset_of(superset));
+
+    int longs = get_longs();
+    for (int i=0; i<longs; i++) {
+        p[i] = p[i] ^ superset->p[i];
+    }
+    p[longs-1] &= get_cutmask();
+
+    members = superset->get_members()-members;
+
+    arb_assert(is_valid());
+    arb_assert(is_subset_of(superset));
+}
+
+
+void PART::add_members_from(const PART *source) {
     //! destination = source or destination
     arb_assert(source->is_valid());
     arb_assert(is_valid());
@@ -233,17 +251,28 @@ int PART::count_members() const {
 }
 
 bool PART::is_standardized() const { // @@@ inline
-    return p[0] & 1;
+    /*! true if PART is in standard representation.
+     * @see standardize()
+     */
+
+    // may be any criteria which differs between PART and its inverse
+    // if you change the criteria, generated trees will change
+    // (because branch-insertion-order is affected)
+
+    return bit_is_set(0);
 }
 
-void PART::standardize() { // @@@ inline or elim
+void PART::standardize() {
     /*! standardize the partition
      *
-     * two parts are equal if one is just the inverted version of the other.
-     * so the standard is defined that the version is the representant, whose first bit is equal 1
+     * Generally two PARTs are equivalent, if one is the inverted version of the other.
+     * A standardized PART is equal for equivalent PARTs, i.e. may be used as key (as done in PartRegistry)
      */
     arb_assert(is_valid());
-    if (!is_standardized()) invert();
+    if (!is_standardized()) {
+        invert();
+        arb_assert(is_standardized());
+    }
     arb_assert(is_valid());
 }
 
@@ -281,7 +310,7 @@ int PART::insertionOrder_cmp(const PART *other) const {
     int cmp = is_leaf_edge() - other->is_leaf_edge();
 
     if (!cmp) {
-        cmp = double_cmp(weight, other->weight); // insert bigger weight first
+        cmp = -double_cmp(weight, other->weight); // insert bigger weight first
         if (!cmp) {
             int centerdist1 = distance_to_tree_center();
             int centerdist2 = other->distance_to_tree_center();
@@ -289,7 +318,9 @@ int PART::insertionOrder_cmp(const PART *other) const {
             cmp = centerdist1-centerdist2; // insert central edges first
 
             if (!cmp) {
-                cmp = double_cmp(other->get_len(), get_len()); // insert bigger len first
+                cmp = -double_cmp(get_len(), other->get_len()); // NOW REALLY insert bigger len first
+                                                                // (change affected test results: increased in-tree-distance,
+                                                                // but reduced parsimony value of result-trees)
                 if (!cmp) {
                     cmp = id - other->id; // strict by definition
                     arb_assert(cmp);
@@ -324,7 +355,6 @@ int PART::topological_cmp(const PART *other) const {
 
     return cmp;
 }
-
 
 // --------------------------------------------------------------------------------
 

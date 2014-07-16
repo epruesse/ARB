@@ -29,15 +29,7 @@ extern Gmenu menu[GDEMAXMENU];
 extern int   num_menus;
 extern int   DataType;
 extern int   FileFormat;
-extern int   OVERWRITE;
-extern int   BlockInput;
 extern char  FileName[80];
-
-#ifdef SeeAlloc
-int TotalCalloc  = 0;
-int TotalRealloc = 0;
-#endif
-
 
 // Months of the year
 extern const char *GDEmonth[12];

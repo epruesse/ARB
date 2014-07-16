@@ -37,8 +37,7 @@
 #define ST_ML_AWAR_CQ_REPORT       ST_ML_AWAR "report"
 #define ST_ML_AWAR_CQ_KEEP_REPORTS ST_ML_AWAR "keep_reports"
 
-static void st_ok_cb(AW_window *aww, AW_CL cl_st_ml) {
-    ST_ML   *st_ml          = (ST_ML*)cl_st_ml;
+static void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
     AW_root *root           = aww->get_root();
     char    *alignment_name = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->get_gb_main())->read_string();
     char    *tree_name      = root->awar_string(AWAR_TREE, "", st_ml->get_gb_main())->read_string();
@@ -84,11 +83,11 @@ AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml) {
     st_ml->create_column_statistic(root, ST_ML_AWAR_COLSTAT_NAME, awar_default_alignment);
 
     aws->at("GO");
-    aws->callback(st_ok_cb, (AW_CL)st_ml);
+    aws->callback(makeWindowCallback(st_ok_cb, st_ml));
     aws->create_button("GO", "GO", "G");
 
     aws->at("awt_csp");
-    aws->callback(AW_POPUP, (AW_CL)COLSTAT_create_selection_window, (AW_CL)st_ml->get_column_statistic());
+    aws->callback(makeCreateWindowCallback(COLSTAT_create_selection_window, st_ml->get_column_statistic()));
     aws->button_length(20);
     aws->create_button("SELECT_CSP", ST_ML_AWAR_COLSTAT_NAME);
 
@@ -130,9 +129,8 @@ struct st_check_cb_data : public Noncopyable {
     }
 };
 
-static void st_check_cb(AW_window *aww, AW_CL cl_st_check_cb_data) {
-    st_check_cb_data *data = (st_check_cb_data*)cl_st_check_cb_data;
-    GB_transaction    ta(data->gb_main);
+static void st_check_cb(AW_window *aww, st_check_cb_data *data) {
+    GB_transaction ta(data->gb_main);
 
     AW_root *r = aww->get_root();
 
@@ -178,12 +176,12 @@ static void st_remove_entries(AW_window */*aww*/) {
     // @@@ shall remove created all entries (from current alignment)
 }
 
-AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
+AW_window *STAT_create_chimera_check_window(AW_root *root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(root, "SEQUENCE_QUALITY_CHECK", "Check quality of marked sequences");
-        aws->load_xfig("check_quality.fig");
+        aws->init(root, "CHIMERA_CHECK", "Chimera Check of marked sequences");
+        aws->load_xfig("chimera_check.fig");
 
         STAT_create_awars(root, gb_main);
 
@@ -191,7 +189,7 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(makeHelpCallback("check_quality.hlp"));
+        aws->callback(makeHelpCallback("chimera_check.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
@@ -200,37 +198,29 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
 
         aws->at("which");
         {
-            aws->create_option_menu(ST_ML_AWAR_CQ_MARKED_ONLY);
+            aws->create_option_menu(ST_ML_AWAR_CQ_MARKED_ONLY, true);
             aws->insert_option("All in tree", "t", 0);
             aws->insert_option("Only marked and in tree", "m", 1);
             aws->update_option_menu();
         }
 
         aws->at("colstat");
-        aws->callback(AW_POPUP, (AW_CL)COLSTAT_create_selection_window, (AW_CL)cb_data->colstat);
+        aws->callback(makeCreateWindowCallback(COLSTAT_create_selection_window, cb_data->colstat));
         aws->create_button("SELECT_CSP", ST_ML_AWAR_COLSTAT_NAME);
 
         
         aws->at("filter");
-        aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)(cb_data->filter->get_adfiltercbstruct()));
+        aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, cb_data->filter->get_adfiltercbstruct()));
         aws->create_button("SELECT_FILTER", ST_ML_AWAR_FILTER_NAME);
         
         aws->at("sb");
         aws->create_input_field(ST_ML_AWAR_CQ_BUCKET_SIZE);
 
-        create_selection_list_on_itemfields(gb_main, aws,
-                                                ST_ML_AWAR_CQ_DEST_FIELD,
-                                                1 << GB_STRING,
-                                                "dest",
-                                                0,
-                                                SPECIES_get_selector(),
-                                                20, 10,
-                                                SF_STANDARD,
-                                                "SELECT_REPORT_FIELD");
+        create_selection_list_on_itemfields(gb_main, aws, ST_ML_AWAR_CQ_DEST_FIELD, true, 1 << GB_STRING, "dest", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, "SELECT_REPORT_FIELD");
 
         aws->at("report");
         {
-            aws->create_option_menu(ST_ML_AWAR_CQ_REPORT);
+            aws->create_option_menu(ST_ML_AWAR_CQ_REPORT, true);
             aws->insert_option("No", "N", 0);
             aws->insert_option("to temporary entry", "t", 1);
             aws->insert_option("to permanent entry", "p", 2);
@@ -251,7 +241,7 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
         }
 
         aws->at("GO");
-        aws->callback(st_check_cb, (AW_CL)cb_data);
+        aws->callback(makeWindowCallback(st_check_cb, cb_data));
         aws->create_button("GO", "GO", "G");
     }
     return aws;

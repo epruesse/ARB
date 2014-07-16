@@ -33,14 +33,14 @@ namespace TreeAdmin {
         AW_awar *tree_awar(AW_root *awr) const;
     };
 
-    void create_awars(AW_root *root, AW_default aw_def);
+    void create_awars(AW_root *root, AW_default aw_def, bool registerTreeAwar);
     AW_awar *dest_tree_awar(AW_root *root);
+    AW_awar *source_tree_awar(AW_root *root);
 
+    AW_window *create_rename_window(AW_root *root, const Spec *spec);
+    AW_window *create_copy_window(AW_root *root, const Spec *spec);
 
-    AW_window *create_rename_window(AW_root *root, AW_CL cl_spec);
-    AW_window *create_copy_window(AW_root *root, AW_CL cl_spec);
-
-    void delete_tree_cb(AW_window *aww, AW_CL cl_spec);
+    void delete_tree_cb(AW_window *aww, const Spec *spec);
 };
 
 #else

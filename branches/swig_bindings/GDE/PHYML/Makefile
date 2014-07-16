@@ -13,7 +13,7 @@ ifndef ARB
 # original compilation
 
 CC = gcc #cc
-CFLAGS = -O4 -fomit-frame-pointer -Wall -static
+CFLAGS = -O4 -fomit-frame-pointer -Wall
 # CFLAGS = -Wall
 # CFLAGS = -g -Wall
 # CFLAGS = -pg -Wall -fprofile-arcs -static
@@ -28,7 +28,7 @@ CC     = $(A_CC)
 CFLAGS = $(cflags) -fomit-frame-pointer
 EXEC   = $(ARBHOME)/bin/phyml
 
-ifdef DARWIN
+ifeq ($(DARWIN),1)
 CFLAGS += -fPIC
 endif
 

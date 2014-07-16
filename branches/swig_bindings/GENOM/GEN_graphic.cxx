@@ -93,16 +93,16 @@ void GEN_graphic::handle_command(AW_device *, AWT_graphic_event& event) {
                 break;
             }
             case AWT_MODE_SELECT:
-            case AWT_MODE_EDIT: {
+            case AWT_MODE_INFO: {
                 if (event.button()==AW_BUTTON_LEFT) {
                     const AW_clicked_element *clicked = event.best_click();
                     if (clicked) {
                         GEN_gene *gene = (GEN_gene*)clicked->cd1();
                         if (gene) {
-                            GB_transaction dummy(gb_main);
+                            GB_transaction ta(gb_main);
                             aw_root->awar(AWAR_LOCAL_GENE_NAME(window_nr))->write_string(gene->Name().c_str());
 
-                            if (event.cmd() == AWT_MODE_EDIT) {
+                            if (event.cmd() == AWT_MODE_INFO) {
                                 GEN_popup_gene_infowindow(aw_root, gb_main);
                             }
                         }

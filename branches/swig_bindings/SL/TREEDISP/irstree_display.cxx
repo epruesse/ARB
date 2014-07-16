@@ -18,7 +18,7 @@ using namespace AW;
 
 const int tipBoxSize = 3;
 
-static struct {
+struct IRS_data {
     bool   draw_separator;
     AW_pos y;
     AW_pos min_y;    // ypos of folding line
@@ -52,7 +52,8 @@ static struct {
     }
 
     
-} IRS;
+};
+static IRS_data IRS;
 
 AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     if (!IRS.is_size_device) {
@@ -98,7 +99,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         }
 
         Position    textpos  = leaf+IRS.adjust_text;
-        const char *specinfo = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node->get_gbt_tree(), tree_static->get_tree_name());
+        const char *specinfo = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node, tree_static->get_tree_name());
         disp_device->text(gc, specinfo, textpos);
 
         return IRS.y;
@@ -112,9 +113,9 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             group_name = tree_static->get_tree_name();
         }
         else {
-            group_name = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node->get_gbt_tree(), tree_static->get_tree_name());
+            group_name = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node, tree_static->get_tree_name());
         }
-        frame_width = node->gr.tree_depth * IRS.x_scale;
+        frame_width = node->gr.max_tree_depth * IRS.x_scale;
     }
 
     if (node->gr.grouped) { // folded group
@@ -155,7 +156,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             Position box_rcenter = gbox.right_edge().centroid();
 
             if (group_name) { //  a node name should be displayed
-                const char *groupinfo = GBS_global_string("%s (%i)", group_name, node->gr.leaf_sum);
+                const char *groupinfo = GBS_global_string("%s (%u)", group_name, node->gr.leaf_sum);
                 disp_device->text(gc, groupinfo, box_rcenter+IRS.adjust_text);
             }
 
@@ -193,7 +194,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         disp_device->set_line_attributes(gc, 1, AW_DOTTED);
         disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset+frame_width, group_y1); // opened-group-frame
 
-        const char *groupinfo = GBS_global_string("%s (%i)", group_name, node->gr.leaf_sum);
+        const char *groupinfo = GBS_global_string("%s (%u)", group_name, node->gr.leaf_sum);
         disp_device->text(node->gr.gc, groupinfo, x_offset-IRS.onePixel + IRS.gap, group_y1 + 2*IRS.adjust_text.y() + IRS.gap);
     }
 
@@ -210,11 +211,11 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     if (left_y > IRS.min_y) {
         if (left_y < IRS.max_y) { // clip y on top border
             AW_click_cd cd(disp_device, (AW_CL)node->leftson);
-            if (node->leftson->remark_branch) {
-                AWT_show_branch_remark(disp_device, node->leftson->remark_branch, node->leftson->is_leaf, left_x, left_y, 1, remark_text_filter);
+            if (node->leftson->get_remark()) {
+                AWT_show_branch_remark(disp_device, node->leftson->get_remark(), node->leftson->is_leaf, left_x, left_y, 1, remark_text_filter);
             }
             set_line_attributes_for(node->get_leftson()); 
-            draw_branch_line(node->get_leftson()->gr.gc, Position(x_offset, left_y), Position(left_x,  left_y));
+            draw_branch_line(node->get_leftson()->gr.gc, Position(x_offset, left_y), Position(left_x, left_y), line_filter);
         }
     }
     else {
@@ -225,11 +226,11 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
 
     if (right_y > IRS.min_y && right_y < IRS.max_y) { // visible right branch in lower part of display
         AW_click_cd cd(disp_device, (AW_CL)node->rightson);
-        if (node->rightson->remark_branch) {
-            AWT_show_branch_remark(disp_device, node->rightson->remark_branch, node->rightson->is_leaf, right_x, right_y, 1, remark_text_filter);
+        if (node->rightson->get_remark()) {
+            AWT_show_branch_remark(disp_device, node->rightson->get_remark(), node->rightson->is_leaf, right_x, right_y, 1, remark_text_filter);
         }
         set_line_attributes_for(node->get_rightson()); 
-        draw_branch_line(node->get_rightson()->gr.gc, Position(x_offset, right_y), Position(right_x,  right_y));
+        draw_branch_line(node->get_rightson()->gr.gc, Position(x_offset, right_y), Position(right_x,  right_y), line_filter);
     }
 
     AW_click_cd cd(disp_device, (AW_CL)node);
@@ -269,7 +270,7 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, double height) {
     IRS.onePixel       = disp_device->rtransform_size(1.0);
     IRS.gap            = 3*IRS.onePixel;
     IRS.group_closed   = 0;
-    IRS.tree_depth     = at->gr.tree_depth;
+    IRS.tree_depth     = at->gr.max_tree_depth;
     IRS.openGroupExtra = IRS.step_y+IRS.gap;
     IRS.sep_filter     = AW_SCREEN|AW_PRINTER_CLIP;
 

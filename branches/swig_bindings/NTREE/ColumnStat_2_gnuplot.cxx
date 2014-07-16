@@ -339,7 +339,7 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
     // cl_mode = 1 -> write file and run gnuplot
     // cl_mode = 2 -> delete all files with same prefix
 
-    GB_transaction  dummy(GLOBAL.gb_main);
+    GB_transaction  ta(GLOBAL.gb_main);
     ColumnStat     *column_stat = (ColumnStat *)cl_column_stat;
     GB_ERROR        error       = 0;
     int             mode        = int(cl_mode);
@@ -349,14 +349,20 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
         char *alignment_name   = aww->get_root()->awar(AWAR_CS2GP_FILTER_ALIGNMENT)->read_string();
         long  alignment_length = GBT_get_alignment_len(GLOBAL.gb_main, alignment_name);
 
-        AP_filter filter(filterstring, "0", alignment_length);
+        if (alignment_length<0) {
+            GB_clear_error();
+            error = "Please select a valid alignment";
+        }
+        else {
+            AP_filter filter(filterstring, "0", alignment_length);
 
-        free(alignment_name);
-        free(filterstring);
+            free(alignment_name);
+            free(filterstring);
 
-        error = column_stat->calculate(&filter);
+            error = column_stat->calculate(&filter);
 
-        if (!error && !column_stat->get_length()) error = "Please select column statistic";
+            if (!error && !column_stat->get_length()) error = "Please select column statistic";
+        }
     }
 
     if (!error) {
@@ -562,8 +568,18 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
     if (error) aw_message(error);
 }
 
-AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
+static void colstat_ali_changed_cb(AW_root *root) {
+    if (GLOBAL.gb_main) {
+        long smooth_max = GBT_get_alignment_len(GLOBAL.gb_main, root->awar(AWAR_CS2GP_FILTER_ALIGNMENT)->read_char_pntr());
+        if (smooth_max<0) { // ali not found
+            GB_clear_error();
+            smooth_max = 1; // min=max -> do not limit
+        }
+        root->awar(AWAR_CS2GP_SMOOTH_VALUES)->set_minmax(1, smooth_max);
+    }
+}
 
+AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     GB_transaction ta(GLOBAL.gb_main);
 
     AW_awar          *awar_default_alignment = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", GLOBAL.gb_main);
@@ -573,16 +589,17 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     aws->init(root, "EXPORT_CSP_TO_GNUPLOT", "Export Column statistic to GnuPlot");
     aws->load_xfig("cpro/csp_2_gnuplot.fig");
 
-    root->awar_int(AWAR_CS2GP_SMOOTH_VALUES, 1)
-        ->set_minmax(1, GBT_get_alignment_len(GLOBAL.gb_main, awar_default_alignment->read_char_pntr()));
+    root->awar_int(AWAR_CS2GP_SMOOTH_VALUES, 1);
     root->awar_int(AWAR_CS2GP_GNUPLOT_OVERLAY_POSTFIX);
     root->awar_int(AWAR_CS2GP_GNUPLOT_OVERLAY_PREFIX);
     root->awar_string(AWAR_CS2GP_SMOOTH_GNUPLOT);
 
     root->awar_string(AWAR_CS2GP_FILTER_NAME);
     root->awar_string(AWAR_CS2GP_FILTER_FILTER);
-    root->awar_string(AWAR_CS2GP_FILTER_ALIGNMENT);
-    root->awar(AWAR_CS2GP_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);  // use current alignment for filter
+    AW_awar *awar_ali = root->awar_string(AWAR_CS2GP_FILTER_ALIGNMENT);
+    awar_ali->map(AWAR_DEFAULT_ALIGNMENT);  // use current alignment for filter
+    awar_ali->add_callback(colstat_ali_changed_cb);
+    awar_ali->touch();
 
     AW_create_fileselection_awars(root, AWAR_CS2GP, "", ".gc_gnu", "noname.gc_gnu");
 
@@ -592,13 +609,13 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     aws->at("help"); aws->callback(makeHelpCallback("csp_2_gnuplot.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    AW_create_fileselection(aws, AWAR_CS2GP);
+    AW_create_standard_fileselection(aws, AWAR_CS2GP);
 
     aws->at("csp");
     COLSTAT_create_selection_list(aws, column_stat);
 
     aws->at("what");
-    AW_selection_list *plotTypeList = aws->create_selection_list(AWAR_CS2GP_SUFFIX);
+    AW_selection_list *plotTypeList = aws->create_selection_list(AWAR_CS2GP_SUFFIX, true);
     for (int pt = 0; pt<PT_PLOT_TYPES; ++pt) {
         plotTypeList->insert(plotTypeDescription[pt], plotTypeName[pt]);
     }
@@ -607,7 +624,7 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
 
     adfiltercbstruct *filter = awt_create_select_filter(root, GLOBAL.gb_main, AWAR_CS2GP_FILTER_NAME);
     aws->at("ap_filter");
-    aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)filter);
+    aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, filter));
     aws->create_button("SELECT_FILTER", AWAR_CS2GP_FILTER_NAME);
 
     aws->at("smooth");

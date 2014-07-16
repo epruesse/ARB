@@ -17,7 +17,7 @@ BEGIN {
   if (not exists $ENV{'ARBHOME'}) { die "Environment variable \$ARBHOME has to be defined"; }
   my $arbhome = $ENV{'ARBHOME'};
   push @INC, "$arbhome/lib";
-  push @INC, "$arbhome/PERL_SCRIPTS/SPECIES";
+  push @INC, "$arbhome/PERL_SCRIPTS/lib";
   1;
 }
 
@@ -168,6 +168,7 @@ sub main() {
     while (defined($line=<TABLE>)) {
       eval {
         chomp $line;
+        $line =~ s/\r+$//;
         my @row = ();
         parse_row($line,@row);
 

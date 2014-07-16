@@ -5,7 +5,7 @@ To install a precompiled ARB
 1. download the needed files from our homepage http://www.arb-home.de/
    and save them into a directory of your choice (i.e. ~/arb-install/ )
 
-   Files needed: 'arb.*.tgz' and 'arb_install.sh'
+   Files needed: 'arb-*.tgz' and 'arb_install.sh'
                  (see arb_README.txt for details on different versions)
 
 2. get root
@@ -19,7 +19,14 @@ To install a precompiled ARB
   * the package-install-script for ubuntu:              SH/arb_installubuntu4arb.sh
 
 --------------------------------------------------------------------------------
-4b. Otherwise use your package manager to install the
+4b. If you're using debian please install one of the centos versions
+
+You may also want to use 
+  * the package-install-script for ubuntu:              SH/arb_installubuntu4arb.sh
+(Note: add 'contrib non-free' behind 'main' in /etc/apt/sources.list)
+
+--------------------------------------------------------------------------------
+4c. Otherwise use your package manager to install the
     software that is needed to run ARB:
 
 - (open)motif
@@ -92,11 +99,35 @@ To build ARB from source
    a. run
 
         make all
+
+      to compile arb. On a multiprocessor machine you may want to call
+
+        make -j5 all
+
+      or similar (where the number should be the number of processors + 1).
+
+      This will fail on first call telling you to edit config.Makefile.
+      Open that file in your editor and check whether the default values
+      suit your system and needs.
+
+      If you like to activate openGL features set OPENGL to 1
+      (needs additional libraries).
+
+      When done, again call one of the make commands mentioned above.
+
+      If compilation fails, have a look at the packages needed for compilation
+      below. For ubuntu/debian there is a script for automated package
+      installation in
+
+             SH/arb_installubuntu4arb.sh
+
+      Once compilation succeeds, call
+
         arb
 
-      to run arb in compilation directory or
+      to run arb in compilation directory.
 
-   a. run
+   b. run
 
         make tarfile
         ./arb_install.sh
@@ -104,10 +135,6 @@ To build ARB from source
       to install arb for all users
 
    and follow the instructions there.
-
-   On the first call 'make' will generate a file name
-   config.makefile. Edit the file to change the
-   build-options available for ARB (e.g. 32/64 bit, openGL)
 
 
 Additional software that is needed to compile ARB:
@@ -125,6 +152,7 @@ Additional software that is needed to compile open gl parts:
 - mesa-devel
 - mesaglw (opensuse)
 - mesaglw-devel (opensuse)
+- libGLw-devel (SuSE 13.x)
 - libpng
 - libglew
 - glew-devel (opensuse)

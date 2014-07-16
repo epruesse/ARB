@@ -92,7 +92,7 @@ void AWT_canvas::init_device(AW_device *device) {
 }
 
 void AWT_canvas::recalc_size(bool adjust_scrollbars) {
-    GB_transaction  dummy(this->gb_main);
+    GB_transaction  ta(this->gb_main);
     AW_device_size *size_device = aww->get_size_device(AW_MIDDLE_AREA);
 
     size_device->set_filter(AW_SIZE|(consider_text_for_size ? AW_SIZE_UNSCALED : 0));
@@ -303,7 +303,7 @@ static void clip_expose(AW_window *aww, AWT_canvas *scr,
     device->clear_part(left_border, top_border, right_border-left_border,
                        bottom_border-top_border, -1);
 
-    GB_transaction dummy(scr->gb_main);
+    GB_transaction ta(scr->gb_main);
 
     if (scr->gfx->check_update(scr->gb_main)>0) {
         scr->zoom_reset();
@@ -760,4 +760,48 @@ void AWT_nonDB_graphic::update(GBDATA *) {
     printf("AWT_nonDB_graphic can't be updated\n");
 #endif // DEBUG
 }
+
+const AW_clicked_element *AWT_graphic_event::best_click(ClickPreference prefer) {
+    // returns the element with lower distance (to mouse-click- or key-"click"-position).
+    // or NULL (if no element was found inside catch-distance)
+
+    const AW_clicked_element *bestClick = 0;
+
+    if (M_cl->exists) {
+        if (M_ct->exists) {
+            switch (prefer) {
+                case PREFER_NEARER:
+                    if (M_cl->distance < M_ct->distance) {
+                        bestClick = M_cl;
+                    }
+                    else {
+                        bestClick = M_ct;
+                    }
+                    break;
+
+                case PREFER_LINE: bestClick = M_cl; break;
+                case PREFER_TEXT: bestClick = M_ct; break;
+            }
+        }
+        else {
+            bestClick = M_cl;
+        }
+    }
+    else if (M_ct->exists) {
+        bestClick = M_ct;
+    }
+
+#if defined(DEBUG) && 0
+    if (bestClick) {
+        const char *type = bestClick == M_cl ? "line" : "text";
+        printf("best click catches '%s' (distance=%i)\n", type, bestClick->distance);
+    }
+    else {
+        printf("click catched nothing\n");
+    }
+#endif
+
+    return bestClick;
+}
+
 

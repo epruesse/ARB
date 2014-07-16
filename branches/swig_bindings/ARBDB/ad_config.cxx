@@ -76,7 +76,7 @@ GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name) {
     return gb_config;
 }
 
-static void GBT_free_configuration_data(GBT_config *data) {
+void GBT_free_configuration_data(GBT_config *data) {
     free(data->top_area);
     free(data->middle_area);
     free(data);

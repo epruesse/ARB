@@ -21,27 +21,49 @@ class AW_clicked_text;
 
 enum AWT_COMMAND_MODE {
     AWT_MODE_NONE,
+    AWT_MODE_EMPTY, // placeholder (currently used in PARSIMONY)
+
+    // NTREE, PARSIMONY, GENEMAP and SECEDIT:
+    AWT_MODE_ZOOM,
+
+    // NTREE, PARSIMONY and GENEMAP:
     AWT_MODE_SELECT,
+
+    // NTREE, PARSIMONY and SECEDIT:
+    AWT_MODE_SETROOT,
+
+    // NTREE and GENEMAP:
+    AWT_MODE_INFO,
+
+    // NTREE and PARSIMONY:
+    AWT_MODE_MOVE,
     AWT_MODE_MARK,
     AWT_MODE_GROUP,
-    AWT_MODE_ZOOM,
     AWT_MODE_LZOOM,
-    AWT_MODE_EDIT, // species info
-    AWT_MODE_WWW,
-    AWT_MODE_LINE,
-    AWT_MODE_ROT,
-    AWT_MODE_SPREAD,
     AWT_MODE_SWAP,
-    AWT_MODE_LENGTH,
-    AWT_MODE_MOVE,
-    AWT_MODE_SETROOT,
-    AWT_MODE_RESET,
 
+    // NTREE and SECEDIT:
+    AWT_MODE_ROTATE,
+
+    // NTREE only:
+    AWT_MODE_LINE,
+    AWT_MODE_WWW,
+    AWT_MODE_SPREAD,
+    AWT_MODE_LENGTH,
+    AWT_MODE_MULTIFURC,
+
+    // PARSIMONY only:
     AWT_MODE_KERNINGHAN,
     AWT_MODE_NNI,
     AWT_MODE_OPTIMIZE,
-    AWT_MODE_PROINFO,
-    AWT_MODE_STRETCH
+
+    // SECEDIT only:
+    AWT_MODE_FOLD,
+    AWT_MODE_CURSOR,
+    AWT_MODE_EDIT,
+    AWT_MODE_PINFO,
+    AWT_MODE_STRETCH,
+    AWT_MODE_SET_CURSOR
 };
 
 #define STANDARD_PADDING 10
@@ -162,7 +184,9 @@ public:
     AW_event_type type() const { return M_type; }
 
     const AW::Position& position() const { return mousepos; } // screen-coordinates
-    const AW_clicked_element *best_click() const { return AW_getBestClick(M_cl, M_ct); }
+
+    enum ClickPreference { PREFER_NEARER, PREFER_LINE, PREFER_TEXT };
+    const AW_clicked_element *best_click(ClickPreference prefer = PREFER_NEARER);
 };
 
 class AWT_graphic {
@@ -233,7 +257,7 @@ public:
     // in fact: private
     // (in real fact: needs rewrite)
 
-    char   *user_awar;
+    char   *user_awar; // contains name of awar (awar contains name of tree displayed in canvas)
     void    init_device(AW_device *device);
     AW_pos  trans_to_fit;
     AW_pos  shift_x_to_fit;
@@ -313,9 +337,9 @@ inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {
 void AWT_expose_cb(UNFIXED, AWT_canvas *scr);
 void AWT_resize_cb(UNFIXED, AWT_canvas *scr);
 
-void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL);
-void AWT_popup_sec_export_window (AW_window *parent_win, AW_CL cl_canvas, AW_CL);
-void AWT_popup_print_window      (AW_window *parent_win, AW_CL cl_canvas, AW_CL);
+void AWT_popup_tree_export_window(AW_window *parent_win, AWT_canvas *scr);
+void AWT_popup_sec_export_window (AW_window *parent_win, AWT_canvas *scr);
+void AWT_popup_print_window      (AW_window *parent_win, AWT_canvas *scr);
 
 
 #endif

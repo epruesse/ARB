@@ -19,7 +19,6 @@
 #include <netinet/tcp.h>
 
 #include "gb_key.h"
-#include "gb_storage.h"
 #include "gb_comm.h"
 #include "gb_localdata.h"
 
@@ -89,13 +88,15 @@ static void g_bcms_delete_Socinf(Socinf *THIS) {
 }
 
 struct gb_server_data {
-    int                hso;
-    char              *unix_name;
-    Socinf            *soci;
-    long               nsoc;
-    long               timeout;
-    GBDATA            *gb_main;
-    int                wait_for_new_request;
+    int     hso;
+    char   *unix_name;
+    Socinf *soci;
+    long    nsoc;
+    long    timeout;
+    GBDATA *gb_main;
+    int     wait_for_new_request;
+    bool    inside_remote_action;
+
     gbcms_delete_list *del_first; // All deleted items, that are yet unknown to at least one client
     gbcms_delete_list *del_last;
 };
@@ -241,8 +242,16 @@ void GBCMS_shutdown(GBDATA *gbd) {
 #warning rewrite gbcm_write_bin (error handling - do not export)
 #endif
 
+template<typename T>
+inline void write_into_comm_buffer(long& buffer, T& t) {
+    STATIC_ASSERT(sizeof(t) <= sizeof(long));
+
+    buffer         = 0; // initialize (avoid to write uninitialized byte to avoid valgrind errors)
+    *(T*)(&buffer) = t;
+}
+
 static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode, long deep, int send_headera) {
-     /* send a database item to client/server
+    /* send a database item to client/server
       *
       * mode    =1 server
       *         =0 client
@@ -257,13 +266,13 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
     buffer[i++] = (long)gbd;
     buffer[i++] = gbd->index;
 
-    *(gb_flag_types *)(&buffer[i++]) = gbd->flags;
+    write_into_comm_buffer(buffer[i++], gbd->flags);
 
     if (gbd->is_container()) {
         GBCONTAINER *gbc = gbd->as_container();
         int          end = gbc->d.nheader;
 
-        *(gb_flag_types3 *)(&buffer[i++]) = gbc->flags3;
+        write_into_comm_buffer(buffer[i++], gbc->flags3);
 
         buffer[i++] = send_headera ? end : -1;
         buffer[i++] = deep ? gbc->d.size : -1;
@@ -1575,6 +1584,33 @@ GB_ERROR gbcms_add_to_delete_list(GBDATA *gbd) {
         }
     }
     return 0;
+}
+
+void GB_set_remote_action(GBDATA *gbd, bool in_action) {
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+
+    gb_assert(Main->is_server()); // GB_set_remote_action not allowed from clients
+    if (Main->is_server()) {
+        gb_server_data *hs = Main->server_data;
+        gb_assert(hs); // have no server data (program logic error)
+        if (hs) {
+            gb_assert(hs->inside_remote_action != in_action);
+            hs->inside_remote_action = in_action;
+        }
+    }
+}
+bool GB_inside_remote_action(GBDATA *gbd) {
+    GB_MAIN_TYPE *Main   = GB_MAIN(gbd);
+    bool          inside = false;
+
+    gb_assert(Main->is_server()); // GB_inside_remote_action not allowed from clients
+    if (Main->is_server()) {
+        gb_server_data *hs = Main->server_data;
+        if (hs) {
+            inside = hs->inside_remote_action;
+        }
+    }
+    return inside;
 }
 
 long GB_read_clients(GBDATA *gbd) {

@@ -230,6 +230,7 @@ namespace RefEntries {
         AW_window_simple *aws = new AW_window_simple;
 
         aws->init(aw_root, window_id, title);
+        aws->at(10, 10);
         aws->auto_space(10, 10);
 
         bind_result_refresh_cbs(aw_root, reh);
@@ -249,7 +250,8 @@ namespace RefEntries {
         items_name[0]    = toupper(items_name[0]);
 
         aws->at_newline();
-        aws->create_option_menu(AWAR_MARKBYREF_ALL, GBS_global_string("%s to examine", items_name));
+        aws->label(GBS_global_string("%s to examine", items_name));
+        aws->create_option_menu(AWAR_MARKBYREF_ALL, true);
         aws->insert_option("Marked", "M", 0);
         aws->insert_option("All",    "A", 1);
         aws->update_option_menu();

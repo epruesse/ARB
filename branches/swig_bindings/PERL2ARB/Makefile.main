@@ -5,8 +5,12 @@
 
 ARB_MAINMAKEFILE=../Makefile
 THIS=Makefile.main
+
+# howto call Makefile.main (this file)
 MAKETHIS=$(MAKE) -f $(THIS)
-#MAKETHIS=$(MAKE) -d -f $(THIS)
+
+# howto call generated Makefile
+PMAKE=$(MAKE) "CC=$(A_CXX)" 
 
 LIB=$(ARBHOME)/lib
 ARBDB=$(ARBHOME)/ARBDB
@@ -18,7 +22,7 @@ HEADERS = \
 	$(ARBDB)/ad_prot.h \
 	$(ARBDB)/ad_t_prot.h \
 
-ifdef DARWIN
+ifeq ($(DARWIN),1)
 SO:=bundle
 else
 SO:=so
@@ -27,7 +31,7 @@ endif
 ARB_SO=blib/arch/auto/ARB/ARB.$(SO)
 
 TARGET_PM=$(LIB)/ARB.pm
-TARGET_SO=$(LIB)/ARB.$(SO)	
+TARGET_SO=$(LIB)/ARB.$(SO)
 
 TARGETS=$(TARGET_PM) $(TARGET_SO)
 
@@ -41,6 +45,7 @@ PASTHRU_INC :=
 PASTHRU_DEFINE :=
 
 export MYEXTLIB PASTHRU_INC PASTHRU_DEFINE dflags
+export CC CXX A_CC A_CXX 
 
 # ------------------------------------------------------------
 
@@ -67,18 +72,14 @@ $(ARB_SO) : $(XS_DEPENDS) depends.stamp
 	-rm $(ARB_SO)
 	@echo "Used perl version: `perl -v | grep 'This is perl'`"
 	@echo "-------- calling MakeMaker-Makefile"
-	( $(MAKE) "dflags=${dflags} " $@ || \
-		(echo "------ failed.. retry once"; \
-		 $(MAKE) "dflags=${dflags}" $@))
+	( $(PMAKE) $@ || (echo "------ failed[1].. retry once"; $(PMAKE) $@))
 	@echo "-------- post-recreating .depends"
 	+$(MAKETHIS) "DEPENDS=0" .depends
 	+$(MAKETHIS) $@ # recurse
 
-ARB.c : $(XS_DEPENDS) 
+ARB.c : $(XS_DEPENDS)
 	@echo "-------- calling MakeMaker-Makefile (to get depends)"
-	( $(MAKE) "dflags=${dflags}" $@ || \
-		(echo "------ failed.. retry once"; \
-		 $(MAKE) "dflags=${dflags}" $@ ))
+	( $(PMAKE) $@ || (echo "------ failed[2].. retry once"; $(PMAKE) $@))
 	@echo "-------- end of MakeMaker-Makefile"
 
 # buildMakefile
@@ -97,7 +98,7 @@ else
 	hacked_cflags:=$(cross_cflags)
 endif
 
-used_cflags:=$(subst -Weffc++,,$(hacked_cflags))
+used_cflags:=$(subst -Weffc++,,$(hacked_cflags)) -Wno-literal-suffix $(CXX_INCLUDES)
 used_lflags:=$(cross_lflags)
 
 MAKE_MAKEFILE=make_arbperl_makefile.pl

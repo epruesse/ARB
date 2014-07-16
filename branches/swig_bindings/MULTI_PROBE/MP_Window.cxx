@@ -58,24 +58,24 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
         result_window->create_input_field(MP_AWAR_RESULTPROBESCOMMENT);
 
         result_window->at("box");
-        result_window->callback(MP_result_chosen);
-        result_probes_list = result_window->create_selection_list(MP_AWAR_RESULTPROBES);
+        result_window->callback(MP_result_chosen); // @@@ used as SELLIST_CLICK_CB (see #559)
+        result_probes_list = result_window->create_selection_list(MP_AWAR_RESULTPROBES, true);
         result_probes_list->set_file_suffix("mpr");
         result_probes_list->insert_default("", "");
 
         const StorableSelectionList *storable_probes_list = new StorableSelectionList(TypedSelectionList("mpr", result_probes_list, "multiprobes", "multi_probes"));
 
         result_window->at("buttons");
-        result_window->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storable_probes_list);
+        result_window->callback(makeCreateWindowCallback(create_load_box_for_selection_lists, storable_probes_list));
         result_window->create_button("LOAD_RPL", "LOAD");
 
-        result_window->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storable_probes_list);
+        result_window->callback(makeCreateWindowCallback(create_save_box_for_selection_lists, storable_probes_list));
         result_window->create_button("SAVE_RPL", "SAVE");
 
-        result_window->callback(awt_clear_selection_list_cb, (AW_CL)result_probes_list);
+        result_window->callback(makeWindowCallback(awt_clear_selection_list_cb, result_probes_list));
         result_window->create_button("CLEAR", "CLEAR");
 
-        result_window->callback(MP_delete_selected, AW_CL(result_probes_list));
+        result_window->callback(makeWindowCallback(MP_delete_selected, result_probes_list));
         result_window->create_button("DELETE", "DELETE");
 
         // change comment :
@@ -183,6 +183,8 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
                 isSavedFormat = false;
             }
             else {
+                char T_or_U = T_or_U_for_load ? T_or_U_for_load : 'U';
+
                 std::string sep = reg_saved.subexpr_match(2)->extract(line[i]);
 
                 int quality   = atoi(reg_saved.subexpr_match(1)->extract(line[i]).c_str());
@@ -195,9 +197,7 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
                     size_t  plen   = probe.length();
                     char   *dprobe = GB_strndup(probe.c_str(), plen);
 
-                    mp_assert(T_or_U_for_load);
-
-                    GBT_reverseComplementNucSequence(dprobe, plen, T_or_U_for_load);
+                    GBT_reverseComplementNucSequence(dprobe, plen, T_or_U);
                     probe = dprobe;
                     free(dprobe);
                 }
@@ -289,55 +289,45 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
 }
 
 void MP_Window::build_pt_server_list() {
-    int     i;
-    char    *choice;
-
 #if defined(WARN_TODO)
 #warning why option_menu ? better use selection list ( awt_create_selection_list_on_pt_servers )
 #endif
 
     aws->at("PTServer");
     aws->callback(MP_cache_sonden);
-    aws->create_option_menu(MP_AWAR_PTSERVER);
+    aws->create_option_menu(MP_AWAR_PTSERVER, true);
 
-    for (i=0; ; i++) {
-        choice = GBS_ptserver_id_to_choice(i, 1);
-        if (! choice) break;
+    for (int i=0; ; i++) {
+        char *choice = GBS_ptserver_id_to_choice(i, 1);
+        if (choice) {
+            aws->insert_option(choice, "", i);
+            delete choice;
+            choice = NULL;
+        }
+        else {
+            if (GB_have_error()) {
+                aws->insert_option("<error>", "", i);
+                GB_clear_error();
+            }
+            else {
+                break;
+            }
+        }
 
-        aws->insert_option(choice, "", i);
-        delete choice;
     }
 
     aws->update_option_menu();
 }
 
-static void track_ali_change_cb(GBDATA *gb_ali) {
-    GB_transaction     ta(gb_ali);
-    GBDATA            *gb_main = GB_get_root(gb_ali);
+static void track_ali_change_cb(AW_root*, GBDATA *gb_main) {
+    GB_transaction     ta(gb_main);
     char              *aliname = GBT_get_default_alignment(gb_main);
     GB_alignment_type  alitype = GBT_get_alignment_type(gb_main, aliname);
-    GB_ERROR           error   = GBT_determine_T_or_U(alitype, &T_or_U_for_load, "reverse-complement");
 
-    if (error) aw_message(error);
+    GBT_determine_T_or_U(alitype, &T_or_U_for_load, "reverse-complement"); // T_or_U_for_load is set to 0 in error-case
+    GB_clear_error();
+
     free(aliname);
-}
-
-static void install_track_ali_type_callback(GBDATA *gb_main) {
-    GB_transaction ta(gb_main);
-    GB_ERROR       error = NULL;
-
-    GBDATA *gb_ali = GB_search(gb_main, "presets/use", GB_FIND);
-    if (!gb_ali) {
-        error = GB_await_error();
-    }
-    else {
-        error = GB_add_callback(gb_ali, GB_CB_CHANGED, makeDatabaseCallback(track_ali_change_cb));
-        track_ali_change_cb(gb_ali);
-    }
-
-    if (error) {
-        aw_message(GBS_global_string("Cannot install ali-callback (Reason: %s)", error));
-    }
 }
 
 static void MP_collect_probes(AW_window*, awt_collect_mode mode, AW_CL) {
@@ -347,7 +337,7 @@ static void MP_collect_probes(AW_window*, awt_collect_mode mode, AW_CL) {
                 int                        idx = probelist->get_index_of_selected();
                 AW_selection_list_iterator sel(probelist, idx);
                 selected_list->insert(sel.get_displayed(), sel.get_value());
-                MP_delete_selected(NULL, AW_CL(probelist));
+                MP_delete_selected(NULL, probelist);
             }
             break;
 
@@ -356,7 +346,7 @@ static void MP_collect_probes(AW_window*, awt_collect_mode mode, AW_CL) {
                 int                        idx = selected_list->get_index_of_selected();
                 AW_selection_list_iterator sel(selected_list, idx);
                 probelist->insert(sel.get_displayed(), sel.get_value());
-                MP_delete_selected(NULL, AW_CL(selected_list));
+                MP_delete_selected(NULL, selected_list);
             }
             break;
             
@@ -385,8 +375,9 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     initialized             = true;
 #endif
 
-    install_track_ali_type_callback(gb_main);
-    
+    aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->add_callback(makeRootCallback(track_ali_change_cb, gb_main));
+    track_ali_change_cb(aw_root, gb_main);
+
     result_window = NULL;
 
     aws = new AW_window_simple;
@@ -403,14 +394,14 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     aws->button_length(7);
     aws->at("Selectedprobes");
-    aws->callback(MP_selected_chosen);
-    selected_list = aws->create_selection_list(MP_AWAR_SELECTEDPROBES, max_seq_col, max_seq_hgt);
+    aws->callback(MP_selected_chosen); // @@@ used as SELLIST_CLICK_CB (see #559)
+    selected_list = aws->create_selection_list(MP_AWAR_SELECTEDPROBES, max_seq_col, max_seq_hgt, true);
     const StorableSelectionList *storable_selected_list = new StorableSelectionList(TypedSelectionList("prb", selected_list, "probes", "selected_probes"), mp_list2file, mp_file2list);
 
     selected_list->insert_default("", "");
 
     aws->at("Probelist");
-    probelist = aws->create_selection_list(MP_AWAR_PROBELIST);
+    probelist = aws->create_selection_list(MP_AWAR_PROBELIST, true);
     const StorableSelectionList *storable_probelist = new StorableSelectionList(TypedSelectionList("prb", probelist, "probes", "all_probes"), mp_list2file, mp_file2list);
     probelist->insert_default("", "");
 
@@ -428,22 +419,22 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
         aws->at(rightSide ? "RightButtons" : "LeftButtons");
 
-        aws->callback(AW_POPUP, (AW_CL)create_load_box_for_selection_lists, (AW_CL)storableList);
+        aws->callback(makeCreateWindowCallback(create_load_box_for_selection_lists, storableList));
         aws->create_button(GBS_global_string("LOAD_%s", id_suffix), "LOAD");
 
-        aws->callback(AW_POPUP, (AW_CL)create_save_box_for_selection_lists, (AW_CL)storableList);
+        aws->callback(makeCreateWindowCallback(create_save_box_for_selection_lists, storableList));
         aws->create_button(GBS_global_string("SAVE_%s", id_suffix), "SAVE");
 
-        aws->callback(awt_clear_selection_list_cb, (AW_CL)sellist);
+        aws->callback(makeWindowCallback(awt_clear_selection_list_cb, sellist));
         aws->create_button(GBS_global_string("CLEAR_%s", id_suffix), "CLEAR");
 
-        aws->callback(MP_delete_selected, (AW_CL)sellist);
+        aws->callback(makeWindowCallback(MP_delete_selected, sellist));
         aws->create_button(GBS_global_string("DELETE_%s", id_suffix), "DELETE");
     }
 
     aws->at("Quality");
     aws->callback(MP_cache_sonden);
-    aws->create_option_menu(MP_AWAR_QUALITY);
+    aws->create_option_menu(MP_AWAR_QUALITY, true);
     aws->insert_option("High Priority", "", 5);
     aws->insert_option("       4", "", 4);
     aws->insert_option("Normal 3", "", 3);
@@ -465,7 +456,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     aw_root->awar(MP_AWAR_PTSERVER)->add_callback(MP_cache_sonden2); // remove cached probes when changing pt-server
 
     aws->at("NoOfProbes");
-    aws->create_option_menu(MP_AWAR_NOOFPROBES);
+    aws->create_option_menu(MP_AWAR_NOOFPROBES, true);
     aws->callback(MP_cache_sonden);
     aws->insert_option("Compute  1 probe ", "", 1);
     char str[50];
@@ -502,7 +493,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     aws->at("OutsideMismatches");
     aws->callback(MP_cache_sonden);
-    aws->create_option_menu(MP_AWAR_OUTSIDEMISMATCHES);
+    aws->create_option_menu(MP_AWAR_OUTSIDEMISMATCHES, true);
     aws->insert_option("3.0", "", (float)3.0);
     aws->insert_option("2.5", "", (float)2.5);
     aws->insert_option("2.0", "", (float)2.0);
@@ -513,7 +504,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     // max mismatches for group
     aws->at("Greyzone");
     aws->callback(MP_cache_sonden);
-    aws->create_option_menu(MP_AWAR_GREYZONE);
+    aws->create_option_menu(MP_AWAR_GREYZONE, true);
     aws->insert_default_option("0.0", "", (float)0.0);
     for (float lauf=0.1; lauf<(float)1.0; lauf+=0.1) {
         char strs[20];

@@ -180,6 +180,9 @@ public:
         }
         return !head;
     }
+    static void drop() {
+        if (head) head->destroy();
+    }
 };
 
 ExecutingMacro *ExecutingMacro::head = NULL;
@@ -208,16 +211,8 @@ static void macro_terminated(GBDATA *gb_terminated, GB_CB_TYPE IF_ASSERTION_USED
 
 static void dont_announce_done(AW_root*, AW_CL) {}
 
-GB_ERROR MacroRecorder::execute(const char *file, AW_RCB1 execution_done_cb, AW_CL client_data) {
+GB_ERROR MacroRecorder::execute(const char *macroFile, bool loop_marked, AW_RCB1 execution_done_cb, AW_CL client_data) {
     GB_ERROR  error = NULL;
-    char     *path;
-    if (file[0] == '/') {
-        path = strdup(file);
-    }
-    else {
-        path = GBS_global_string_copy("%s/%s", GB_getenvARBMACROHOME(), file);
-    }
-
     {
         GBDATA         *gb_main = get_gbmain();
         GB_transaction  ta(gb_main);
@@ -239,13 +234,10 @@ GB_ERROR MacroRecorder::execute(const char *file, AW_RCB1 execution_done_cb, AW_
         if (!execution_done_cb) execution_done_cb = dont_announce_done;
         ExecutingMacro::add(execution_done_cb, client_data);
 
-        const char *com = GBS_global_string("perl %s &", path);
-        printf("[Action '%s']\n", com);
-        if (system(com)) { // async(!) call to macro
-            aw_message(GBS_global_string("Calling '%s' failed", com));
-        }
-        free(path);
+        error = GBT_macro_execute(macroFile, loop_marked, true);
+        if (error) ExecutingMacro::drop(); // avoid double free
     }
+
     return error;
 }
 

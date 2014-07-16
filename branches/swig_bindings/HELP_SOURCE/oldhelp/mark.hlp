@@ -7,11 +7,13 @@ UP	mode.hlp
 SUB	sp_search.hlp
 SUB	configuration.hlp
 SUB	colorize.hlp
+SUB	mode_mark.hlp
+SUB	sp_mark.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		What are Marked Species ?
+TITLE		What are Marked Species?
 
 DESCRIPTION	All species have a flag which can be set to FALSE or TRUE.
 		All species with the flag set to TRUE are called marked
@@ -32,7 +34,12 @@ EXAMPLES	Mark one known species:
 		Mark all species in selected tree:
 
 			1. Unmark all species: <ARB_NT/species/unmark all sp>
-			2. <ARB_NT/Species/Mark Species in Tree>
+			2. <ARB_NT/Species/Mark species/Species in Tree/Mark species in Tree>
+
+                     or
+
+                        1. Select the <MARK MODE>
+                        2. Press the left mouse button somewhere outside the tree.
 
 		Mark a subtree:
 

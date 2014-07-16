@@ -279,7 +279,7 @@ static void PV_ManageTerminals(AW_root *root) {
 
     int dispMarked = root->awar(AWAR_PV_MARKED)->read_int();
     if (dispMarked) {
-        GB_transaction dummy(GLOBAL_gb_main);
+        GB_transaction ta(GLOBAL_gb_main);
         int marked = GBT_count_marked_species(GLOBAL_gb_main);
         if (marked) {
             for (GBDATA *gbSpecies = GBT_first_marked_species(GLOBAL_gb_main);
@@ -652,7 +652,7 @@ static void PV_PrintMissingDBentryInformation() {
 }
 
 static void PV_DisplayAminoAcidNames(AW_root *root) {
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
 
     for (ED4_terminal *terminal = ED4_ROOT->root_group_man->get_first_terminal();
          terminal;
@@ -700,7 +700,7 @@ void PV_SequenceUpdate_CB(GB_CB_TYPE gbtype) {
         (ED4_ROOT->alignment_type == GB_AT_DNA) &&
         !gbWritingData)
     {
-        GB_transaction dummy(GLOBAL_gb_main);
+        GB_transaction ta(GLOBAL_gb_main);
 
         ED4_cursor *cursor = &current_cursor();
         if (cursor->in_species_seq_terminal()) {
@@ -792,7 +792,7 @@ void PV_AddCorrespondingOrfTerminals(ED4_species_name_terminal *spNameTerm) {
 
 void PV_AddOrfTerminalsToLoadedSpecies() {
     if (gTerminalsCreated) {
-        GB_transaction dummy(GLOBAL_gb_main);
+        GB_transaction ta(GLOBAL_gb_main);
         int marked = GBT_count_marked_species(GLOBAL_gb_main);
         if (marked) {
             GBDATA *gbSpecies;
@@ -832,7 +832,7 @@ static void PV_CreateAllTerminals(AW_root *root) {
     // if terminals are already created then do nothing exit the function
     if (bTerminalsFound) return;
 
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
 
     // Number of ORF terminals to be created = 3 forward strands + 3 complementary strands + 1 DB field strand
     // totally 7 strands has to be created
@@ -967,7 +967,7 @@ void PV_CreateAwars(AW_root *root, AW_default aw_def) {
 }
 
 AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
 
     static AW_window_simple *aws = 0;
     if (aws) return aws;
@@ -995,7 +995,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
     {
         aw_root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, GLOBAL_gb_main);
         aws->at("table");
-        aws->create_option_menu(AWAR_PROTEIN_TYPE);
+        aws->create_option_menu(AWAR_PROTEIN_TYPE, true);
         for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
             aws->insert_option(AWT_get_codon_code_name(code_nr), "", code_nr);
         }
@@ -1038,7 +1038,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
         aws->create_button("COLORMAPS", "#colorMaps.xpm");
 
         aws->at("colors");
-        aws->callback(AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)ED4_ROOT->gc_manager);
+        aws->callback(makeWindowCallback(ED4_popup_gc_window, ED4_ROOT->gc_manager));
         aws->button_length(0);
         aws->create_button("COLORS", "#colors.xpm");
 

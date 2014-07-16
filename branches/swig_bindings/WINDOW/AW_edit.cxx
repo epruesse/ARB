@@ -79,8 +79,11 @@ static unsigned check_file_changed_cb(AW_root *, fileChanged_cb_data *data) {
 
 void AW_edit(const char *path, aw_fileChanged_cb callback, AW_window *aww, GBDATA *gb_main) {
     // Start external editor on file 'path' (asynchronously)
+    // 
     // if 'callback' is specified, it is called everytime the file is changed
-    // [aww and gb_main may be 0 if callback is 0]
+    // and once after the editor terminated.
+    //
+    // 'aww' and 'gb_main' have to passed if a callback is specified!
 
     const char          *editor  = GB_getenvARB_TEXTEDIT();
     char                *fpath   = GBS_eval_env(path);

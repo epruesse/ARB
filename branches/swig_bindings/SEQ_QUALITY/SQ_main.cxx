@@ -18,7 +18,6 @@
 #include <awt_filter.hxx>
 #include <awt_sel_boxes.hxx>
 
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
@@ -62,7 +61,7 @@ void SQ_create_awars(AW_root * aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_FILTER_NAME, "none", aw_def);
     aw_root->awar_string(AWAR_FILTER_FILTER, "", aw_def);
     AW_awar *awar_ali = aw_root->awar_string(AWAR_FILTER_ALI, "", aw_def);
-    awar_ali->map("presets/use");
+    awar_ali->map(AWAR_DEFAULT_ALIGNMENT);
 }
 
 // --------------------------------------------------------------------------------
@@ -84,14 +83,12 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
             error = GB_push_transaction(gb_main);
 
             if (!error) {
-                tree = GBT_read_tree(gb_main, treename, sizeof(*tree));
+                tree = GBT_read_tree(gb_main, treename, GBT_TREE_NodeFactory());
                 if (!tree) error = GB_await_error();
                 else {
                     error = GBT_link_tree(tree, gb_main, false, NULL, NULL);
                     if (!error) {
-                        GBT_TREE_REMOVE_TYPE mode = GBT_REMOVE_DELETED;
-                        if (marked_only) mode     = GBT_TREE_REMOVE_TYPE(mode|GBT_REMOVE_NOT_MARKED);
-
+                        GBT_TreeRemoveType mode = marked_only ? GBT_KEEP_MARKED : GBT_REMOVE_ZOMBIES;
                         tree = GBT_remove_leafs(tree, mode, NULL, NULL, NULL);
                         if (!tree || tree->is_leaf) {
                             error = GBS_global_string("Tree contains less than 2 species after removing zombies%s",
@@ -125,6 +122,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
 
         // Load and use Sequence-Filter
         AP_filter *filter = awt_get_filter((adfiltercbstruct*)res_from_awt_create_select_filter);
+        error             = awt_invalid_filter(filter);
 
         /*
           SQ_evaluate() generates the final estimation for the quality of an alignment.
@@ -134,62 +132,64 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
           for the final result.
         */
 
-        if (tree == 0) {
-            if (reevaluate) {
-                SQ_mark_species(gb_main, mark_below, marked_only);
-            }
-            else {
-                arb_progress  progress(GBT_get_species_count(gb_main)*2);
-                SQ_GroupData *globalData = new SQ_GroupData_RNA;
+        if (!error) {
+            if (tree == 0) {
+                if (reevaluate) {
+                    SQ_mark_species(gb_main, mark_below, marked_only);
+                }
+                else {
+                    arb_progress  progress(GBT_get_species_count(gb_main)*2);
+                    SQ_GroupData *globalData = new SQ_GroupData_RNA;
 
-                progress.subtitle("pass1");
-                error = SQ_pass1_no_tree(globalData, gb_main, filter, progress);
-                if (!error) {
-                    progress.subtitle("pass2");
-                    error = SQ_pass2_no_tree(globalData, gb_main, filter, progress);
+                    progress.subtitle("pass1");
+                    error = SQ_pass1_no_tree(globalData, gb_main, filter, progress);
                     if (!error) {
-                        error = SQ_evaluate(gb_main, weights, marked_only);
-                        if (mark_flag && !error) {
-                            SQ_mark_species(gb_main, mark_below, marked_only);
+                        progress.subtitle("pass2");
+                        error = SQ_pass2_no_tree(globalData, gb_main, filter, progress);
+                        if (!error) {
+                            error = SQ_evaluate(gb_main, weights, marked_only);
+                            if (mark_flag && !error) {
+                                SQ_mark_species(gb_main, mark_below, marked_only);
+                            }
                         }
                     }
+                    if (error) progress.done();
+                    delete globalData;
                 }
-                if (error) progress.done();
-                delete globalData;
-            }
-        }
-        else {
-            SQ_TREE_ERROR check = SQ_check_tree_structure(tree);
-            if (check != NONE) {
-                switch (check) {
-                    case ZOMBIE:
-                        error = "Found one or more zombies in the tree.\n"
-                            "Please remove them or use another tree before running the quality check tool.";
-                        break;
-                    case MISSING_NODE:
-                        error = "Missing node(s) or unusable tree structure.\n"
-                            "Please fix the tree before running the quality check tool.";
-                        break;
-                    default:
-                        error = "An error occurred while traversing the tree.\n"
-                            "Please fix the tree before running the quality check tool.";
-                        break;
-                }
-            }
-            else if (reevaluate) {
-                SQ_mark_species(gb_main, mark_below, marked_only);
             }
             else {
-                arb_progress progress(SQ_count_nodes(tree)*2);
-                SQ_GroupData *globalData = new SQ_GroupData_RNA;
+                SQ_TREE_ERROR check = SQ_check_tree_structure(tree);
+                if (check != NONE) {
+                    switch (check) {
+                        case ZOMBIE:
+                            error = "Found one or more zombies in the tree.\n"
+                                "Please remove them or use another tree before running the quality check tool.";
+                            break;
+                        case MISSING_NODE:
+                            error = "Missing node(s) or unusable tree structure.\n"
+                                "Please fix the tree before running the quality check tool.";
+                            break;
+                        default:
+                            error = "An error occurred while traversing the tree.\n"
+                                "Please fix the tree before running the quality check tool.";
+                            break;
+                    }
+                }
+                else if (reevaluate) {
+                    SQ_mark_species(gb_main, mark_below, marked_only);
+                }
+                else {
+                    arb_progress progress(SQ_count_nodes(tree)*2);
+                    SQ_GroupData *globalData = new SQ_GroupData_RNA;
 
-                progress.subtitle("pass1");
-                SQ_calc_and_apply_group_data(tree, gb_main, globalData, filter, progress);
-                progress.subtitle("pass2");
-                SQ_calc_and_apply_group_data2(tree, gb_main, globalData, filter, progress);
-                SQ_evaluate(gb_main, weights, marked_only);
-                if (mark_flag) SQ_mark_species(gb_main, mark_below, marked_only);
-                delete globalData;
+                    progress.subtitle("pass1");
+                    SQ_calc_and_apply_group_data(tree, gb_main, globalData, filter, progress);
+                    progress.subtitle("pass2");
+                    SQ_calc_and_apply_group_data2(tree, gb_main, globalData, filter, progress);
+                    SQ_evaluate(gb_main, weights, marked_only);
+                    if (mark_flag) SQ_mark_species(gb_main, mark_below, marked_only);
+                    delete globalData;
+                }
             }
         }
         awt_destroy_filter(filter);
@@ -198,7 +198,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
     if (error) aw_message(error);
 
     SQ_clear_group_dictionary();
-    GBT_delete_tree(tree);
+    delete tree;
 }
 
 static void sq_remove_quality_entries_cb(AW_window *, AW_CL cl_gb_main) {
@@ -206,11 +206,10 @@ static void sq_remove_quality_entries_cb(AW_window *, AW_CL cl_gb_main) {
     SQ_remove_quality_entries(gb_main);
 }
 
-AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL cl_gb_main) {
+AW_window *SQ_create_seq_quality_window(AW_root *aw_root, GBDATA *gb_main) {
     // create window for sequence quality calculation (called only once)
-    
-    GBDATA           *gb_main = (GBDATA*)cl_gb_main;
-    AW_window_simple *aws     = new AW_window_simple;
+
+    AW_window_simple *aws = new AW_window_simple;
 
     aws->init(aw_root, "CALC_SEQ_QUALITY", "CALCULATE SEQUENCE QUALITY");
     aws->load_xfig("seq_quality.fig");
@@ -251,15 +250,15 @@ AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL cl_gb_main) {
     aws->create_input_field(AWAR_SQ_MARK_BELOW, 3);
 
     aws->at("tree");
-    awt_create_selection_list_on_trees(gb_main, (AW_window *) aws, AWAR_TREE);
+    awt_create_selection_list_on_trees(gb_main, aws, AWAR_TREE, true);
 
     aws->at("filter");
-    adfiltercbstruct *filtercd = awt_create_select_filter(aws->get_root(), gb_main, AWAR_FILTER_NAME);
-    aws->callback(AW_POPUP, (AW_CL) awt_create_select_filter_win, (AW_CL)filtercd);
+    adfiltercbstruct *adfilter = awt_create_select_filter(aws->get_root(), gb_main, AWAR_FILTER_NAME);
+    aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, adfilter));
     aws->create_button("SELECT_FILTER", AWAR_FILTER_NAME);
 
     aws->at("go");
-    aws->callback(sq_calc_seq_quality_cb, (AW_CL)filtercd, (AW_CL)gb_main);
+    aws->callback(sq_calc_seq_quality_cb, (AW_CL)adfilter, (AW_CL)gb_main);
     aws->highlight();
     aws->create_button("GO", "GO", "G");
 

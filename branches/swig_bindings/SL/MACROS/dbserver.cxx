@@ -67,6 +67,8 @@ struct db_interrupt_data : virtual Noncopyable {
 };
 
 __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, const db_interrupt_data& dib) { // @@@ split into several functions
+    arb_assert(!GB_have_error());
+
     GB_ERROR  error   = 0;
     GBDATA   *gb_main = dib.gb_main;
 
@@ -79,7 +81,7 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
             MacroRecorder     *macroRecorder = dynamic_cast<MacroRecorder*>(tracker);
 
             error               = macroRecorder->handle_tracked_client_action(client_action);
-            GB_ERROR trig_error = GBT_write_string(gb_main, MACRO_TRIGGER_TRACKED, "");                            // tell client that action has been recorded
+            GB_ERROR trig_error = GBT_write_string(gb_main, MACRO_TRIGGER_TRACKED, ""); // tell client that action has been recorded
             if (!error) error   = trig_error;
         }
         free(client_action);
@@ -164,14 +166,18 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
                         GBT_write_string(gb_main, remote.action(), "");
                     }
                     else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
+                        GB_set_remote_action(gb_main, true);
                         aw_root->awar(tmp_awar)->touch();
+                        GB_set_remote_action(gb_main, false);
                         IF_DUMP_ACTION(printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", tmp_awar));
                         action[0] = 0; // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
                         GBT_write_string(gb_main, remote.action(), "");
                     }
                     else {
                         IF_DUMP_ACTION(printf("remote command (write awar) awar='%s' value='%s'\n", tmp_awar, value));
+                        GB_set_remote_action(gb_main, true);
                         error = aw_root->awar(tmp_awar)->write_as_string(value);
+                        GB_set_remote_action(gb_main, false);
                     }
                 }
                 GBT_write_string(gb_main, remote.result(), error ? error : "");
@@ -180,19 +186,32 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
                 aw_message_if(error);
             }
             GB_pop_transaction(gb_main); // @@@ end required/possible here?
+            arb_assert(!GB_have_error()); // error exported by some callback? (unwanted)
 
             if (action[0]) {
-                AW_cb *cbs = aw_root->search_remote_command(action);
+#if defined(ARB_GTK)
+                AW_action* act = aw_root->action_try(action);
+#else // ARB_MOTIF
+                AW_cb *act = aw_root->search_remote_command(action);
+#endif
 
-                if (cbs) {
+                if (act) {
                     IF_DUMP_ACTION(printf("remote command (%s) found, running callback\n", action));
-                    cbs->run_callbacks();
+                    arb_assert(!GB_have_error());
+                    GB_set_remote_action(gb_main, true);
+#if defined(ARB_GTK)
+                    act->user_clicked(NULL);
+#else // ARB_MOTIF
+                    act->run_callbacks();
+#endif
+                    GB_set_remote_action(gb_main, false);
+                    arb_assert(!GB_have_error()); // error exported by callback (unwanted)
                     GBT_write_string(gb_main, remote.result(), "");
                 }
                 else {
                     IF_DUMP_ACTION(printf("remote command (%s) is unknown\n", action));
-                    aw_message(GB_export_errorf("Unknown action '%s' in macro", action));
-                    GBT_write_string(gb_main, remote.result(), GB_await_error());
+                    error = GBS_global_string("Unknown action '%s' in macro", action);
+                    GBT_write_string(gb_main, remote.result(), error);
                 }
                 GBT_write_string(gb_main, remote.action(), ""); // tell perl-client call has completed (remote_action)
             }
@@ -203,18 +222,22 @@ __ATTR__USERESULT static GB_ERROR check_for_remote_command(AW_root *aw_root, con
         }
     }
 
+    arb_assert(!GB_have_error());
     if (error) fprintf(stderr, "Error in check_for_remote_command: %s\n", error);
     return error;
 }
 
 inline bool remote_command_handler(AW_root *awr, const db_interrupt_data& dib) {
     // returns false in case of errors
+    arb_assert(!GB_have_error());
+
+    bool     ok    = true;
     GB_ERROR error = check_for_remote_command(awr, dib);
     if (error) {
         aw_message(error);
-        return false;
+        ok = false;
     }
-    return true;
+    return ok;
 }
 
 static unsigned serve_db_interrupt(AW_root *awr, db_interrupt_data *dib) { // server

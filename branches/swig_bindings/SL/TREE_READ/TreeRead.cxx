@@ -14,7 +14,6 @@
 #include <arb_strbuf.h>
 #include <arb_file.h>
 #include <arb_defs.h>
-#include <arbdbt.h>
 #include <algorithm>
 
 #define tree_assert(cond) arb_assert(cond)
@@ -43,6 +42,8 @@ class TreeReader : virtual Noncopyable {
 
     char *warnings;
 
+    const TreeNodeFactory& nodeMaker;
+
     void setError(const char *message);
     void setErrorAt(const char *message);
     void setExpectedError(const char *expected);
@@ -66,17 +67,17 @@ class TreeReader : virtual Noncopyable {
 
     char *unnamedNodeName() { return GBS_global_string_copy("unnamed%i", ++unnamed_counter); }
 
-    GBT_TREE *load_subtree(int structuresize, GBT_LEN& nodeLen);
-    GBT_TREE *load_named_node(int structuresize, GBT_LEN& nodeLen);
+    GBT_TREE *load_subtree(GBT_LEN& nodeLen);
+    GBT_TREE *load_named_node(GBT_LEN& nodeLen);
 
 public:
 
-    TreeReader(FILE *input, const char *file_name);
+    TreeReader(FILE *input, const char *file_name, const TreeNodeFactory& nodeMaker_);
     ~TreeReader();
 
-    GBT_TREE *load(int structuresize) {
+    GBT_TREE *load() {
         GBT_LEN   rootNodeLen = DEFAULT_BRANCH_LENGTH_MARKER; // ignored dummy
-        GBT_TREE *tree        = load_named_node(structuresize, rootNodeLen);
+        GBT_TREE *tree        = load_named_node(rootNodeLen);
 
         if (!error) {
             if (rootNodeLen != DEFAULT_BRANCH_LENGTH_MARKER && rootNodeLen != 0.0) {
@@ -90,6 +91,7 @@ public:
                 add_warningf("Unexpected input-data after tree: '%s'", unused_input);
                 free(unused_input);
             }
+            tree->announce_tree_constructed();
         }
         return tree;
     }
@@ -113,7 +115,7 @@ public:
     GBT_LEN get_max_found_branchlen() const { return max_found_branchlen; }
 };
 
-TreeReader::TreeReader(FILE *input, const char *file_name)
+TreeReader::TreeReader(FILE *input, const char *file_name, const TreeNodeFactory& nodeMaker_)
     : unnamed_counter(0),
       tree_file_name(strdup(file_name)),
       in(input),
@@ -124,6 +126,7 @@ TreeReader::TreeReader(FILE *input, const char *file_name)
       max_found_bootstrap(-1),
       lfmode(LF_UNKNOWN),
       warnings(NULL),
+      nodeMaker(nodeMaker_),
       error(NULL)
 {
     read_tree_char();
@@ -361,14 +364,14 @@ void TreeReader::setBranchName_acceptingBootstrap(GBT_TREE *node, char*& name) {
         }
 
         if (is_bootstrap) {
-            bootstrap = bootstrap*100.0 + 0.5; // needed if bootstrap values are between 0.0 and 1.0 (downscaling is done later)
+            bootstrap = bootstrap*100.0; // needed if bootstrap values are between 0.0 and 1.0 (downscaling is done later)
             if (bootstrap > max_found_bootstrap) { max_found_bootstrap = bootstrap; }
 
-            if (node->remark_branch) {
+            if (node->get_remark()) {
                 error = "Invalid duplicated bootstrap specification detected";
             }
             else {
-                node->remark_branch = GBS_global_string_copy("%i%%", int(bootstrap));
+                node->set_bootstrap(bootstrap);
             }
 
             if (end[0] != 0) {      // sth behind bootstrap value
@@ -470,8 +473,8 @@ bool TreeReader::eat_and_set_name_and_length(GBT_TREE *node, GBT_LEN& nodeLen) {
     return !error;
 }
 
-static GBT_TREE *createLinkedTreeNode(GBT_TREE *left, GBT_LEN leftlen, GBT_TREE *right, GBT_LEN rightlen, int structuresize) {
-    GBT_TREE *node = (GBT_TREE*)GB_calloc(1, structuresize);
+static GBT_TREE *createLinkedTreeNode(const TreeNodeFactory& nodeMaker, GBT_TREE *left, GBT_LEN leftlen, GBT_TREE *right, GBT_LEN rightlen) { // @@@ move into class GBT_tree (as ctor) - or better move into TreeNodeFactory
+    GBT_TREE *node = nodeMaker.makeNode();
 
     node->leftson  = left;
     node->leftlen  = leftlen;
@@ -484,14 +487,14 @@ static GBT_TREE *createLinkedTreeNode(GBT_TREE *left, GBT_LEN leftlen, GBT_TREE 
     return node;
 }
 
-GBT_TREE *TreeReader::load_named_node(int structuresize, GBT_LEN& nodeLen) {
+GBT_TREE *TreeReader::load_named_node(GBT_LEN& nodeLen) {
     // reads a node or subtree.
     // a single node is expected to have a name (or will be auto-named)
     // subtrees may have a name (groupname)
     GBT_TREE *node = NULL;
 
     if (last_character == '(') {
-        node = load_subtree(structuresize, nodeLen);
+        node = load_subtree(nodeLen);
     }
     else {                      // single node
         eat_white();
@@ -499,7 +502,7 @@ GBT_TREE *TreeReader::load_named_node(int structuresize, GBT_LEN& nodeLen) {
         if (name) {
             if (!name[0]) freeset(name, unnamedNodeName());
 
-            node          = (GBT_TREE*)GB_calloc(1, structuresize);
+            node          = nodeMaker.makeNode();
             node->is_leaf = true;
             node->name    = name;
         }
@@ -510,7 +513,8 @@ GBT_TREE *TreeReader::load_named_node(int structuresize, GBT_LEN& nodeLen) {
     }
     if (node && !error) {
         if (!eat_and_set_name_and_length(node, nodeLen)) {
-            GBT_delete_tree(node);
+            delete node;
+            node = NULL;
         }
     }
     tree_assert(contradicted(node, error));
@@ -519,7 +523,7 @@ GBT_TREE *TreeReader::load_named_node(int structuresize, GBT_LEN& nodeLen) {
 }
 
 
-GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
+GBT_TREE *TreeReader::load_subtree(GBT_LEN& nodeLen) {
     // loads a subtree (i.e. expects parenthesis around one or several nodes)
     //
     // 'nodeLen' normally is set to DEFAULT_BRANCH_LENGTH_MARKER
@@ -535,7 +539,7 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
     drop_tree_char('(');
 
     GBT_LEN   leftLen = DEFAULT_BRANCH_LENGTH_MARKER;
-    GBT_TREE *left    = load_named_node(structuresize, leftLen);
+    GBT_TREE *left    = load_named_node(leftLen);
 
     if (left) {
         switch (last_character) {
@@ -551,7 +555,7 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
 
                 while (last_character == ',' && !error) {
                     if (right) { // multi-branch
-                        GBT_TREE *pair = createLinkedTreeNode(left, leftLen, right, rightLen, structuresize);
+                        GBT_TREE *pair = createLinkedTreeNode(nodeMaker, left, leftLen, right, rightLen);
 
                         left  = pair; leftLen = 0;
                         right = 0; rightLen = DEFAULT_BRANCH_LENGTH_MARKER;
@@ -559,13 +563,13 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
 
                     drop_tree_char(',');
                     if (!error) {
-                        right = load_named_node(structuresize, rightLen);
+                        right = load_named_node(rightLen);
                     }
                 }
 
                 if (!error) {
                     if (last_character == ')') {
-                        node    = createLinkedTreeNode(left, leftLen, right, rightLen, structuresize);
+                        node    = createLinkedTreeNode(nodeMaker, left, leftLen, right, rightLen);
                         nodeLen = DEFAULT_BRANCH_LENGTH_MARKER;
 
                         left  = NULL;
@@ -576,8 +580,11 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
                     }
                 }
 
-                GBT_delete_tree(right);
-                if (error) GBT_delete_tree(node);
+                delete right;
+                if (error) {
+                    delete node;
+                    node = NULL;
+                }
 
                 break;
             }
@@ -586,7 +593,7 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
                 setExpectedError("one of ',)'");
                 break;
         }
-        GBT_delete_tree(left);
+        delete left;
     }
 
     if (!error) drop_tree_char(')');
@@ -595,9 +602,8 @@ GBT_TREE *TreeReader::load_subtree(int structuresize, GBT_LEN& nodeLen) {
     return node;
 }
 
-GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, bool allow_length_scaling, char **warningPtr) {
+GBT_TREE *TREE_load(const char *path, const TreeNodeFactory& nodeMaker, char **commentPtr, bool allow_length_scaling, char **warningPtr) {
     /* Load a newick compatible tree from file 'path',
-       structure size should be >0, see GBT_read_tree for more information
        if commentPtr != NULL -> set it to a malloc copy of all concatenated comments found in tree file
        if warningPtr != NULL -> set it to a malloc copy of any warnings occurring during tree-load (e.g. autoscale- or informational warnings)
     */
@@ -614,14 +620,17 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, bool
         if (name_only) ++name_only;
         else        name_only = path;
 
-        TreeReader reader(input, name_only);
-        if (!reader.error) tree = reader.load(structuresize);
+        TreeReader reader(input, name_only, nodeMaker);
+        if (!reader.error) tree = reader.load();
         fclose(input);
 
         if      (reader.error)          error = reader.error;
         else if (tree && tree->is_leaf) error = "tree is too small (need at least 2 species)";
 
-        if (error) GBT_delete_tree(tree);
+        if (error) {
+            delete tree;
+            tree = NULL;
+        }
 
         if (tree) {
             double bootstrap_scale = 1.0;
@@ -676,20 +685,6 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, bool
 #include <test_unit.h>
 #endif
 
-static char *leafNames(GBT_TREE *tree, size_t& count) {
-    GB_CSTR       *name_array = GBT_get_names_of_species_in_tree(tree, &count);
-    GBS_strstruct  names(1024);
-
-    for (size_t n = 0; n<count; ++n) {
-        names.cat(name_array[n]);
-        names.put(',');
-    }
-    names.cut_tail(1);
-    free(name_array);
-
-    return names.release();
-}
-
 static GBT_TREE *loadFromFileContaining(const char *treeString, char **warningsPtr) {
     const char *filename = "trees/tmp.tree";
     FILE       *out      = fopen(filename, "wt");
@@ -698,7 +693,7 @@ static GBT_TREE *loadFromFileContaining(const char *treeString, char **warningsP
     if (out) {
         fputs(treeString, out);
         fclose(out);
-        tree = TREE_load(filename, sizeof(GBT_TREE), NULL, false, warningsPtr);
+        tree = TREE_load(filename, GBT_TREE_NodeFactory(), NULL, false, warningsPtr);
     }
     else {
         GB_export_IO_error("save tree", filename);
@@ -719,18 +714,16 @@ static arb_test::match_expectation loading_tree_failed_with(GBT_TREE *tree, cons
     return all().ofgroup(expected);
 }
 
-static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const char *names_expected, size_t count_expected) {
+static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const char *newick_expected) {
     using namespace   arb_test;
     expectation_group expected;
 
     expected.add(that(tree).does_differ_from_NULL());
     expected.add(that(GB_get_error()).is_equal_to_NULL());
     if (!GB_have_error() && tree) {
-        size_t  leafcount;
-        char   *names = leafNames(tree, leafcount);
-        expected.add(that(names).is_equal_to(names_expected));
-        expected.add(that(leafcount).is_equal_to(count_expected));
-        free(names);
+        char *newick = GBT_tree_2_newick(tree, nSIMPLE);
+        expected.add(that(newick).is_equal_to(newick_expected));
+        free(newick);
     }
     return all().ofgroup(expected);
 }
@@ -738,12 +731,12 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
 #define TEST_EXPECT_TREELOAD_FAILED_WITH(tree,errpart)         TEST_EXPECTATION(loading_tree_failed_with(tree, errpart))
 #define TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree,errpart) TEST_EXPECTATION__BROKEN(loading_tree_failed_with(tree, errpart))
 
-#define TEST_EXPECT_TREELOAD(tree,names,count)         TEST_EXPECTATION(loading_tree_succeeds(tree,names,count))
-#define TEST_EXPECT_TREELOAD__BROKEN(tree,names,count) TEST_EXPECTATION__BROKEN(loading_tree_succeeds(tree,names,count))
+#define TEST_EXPECT_TREELOAD(tree,newick)         TEST_EXPECTATION(loading_tree_succeeds(tree,newick))
+#define TEST_EXPECT_TREELOAD__BROKEN(tree,newick) TEST_EXPECTATION__BROKEN(loading_tree_succeeds(tree,newick))
 
-#define TEST_EXPECT_TREEFILE_FAILS_WITH(name,errpart) do {                          \
-        GBT_TREE *tree = TREE_load(name, sizeof(GBT_TREE), NULL, false, NULL);      \
-        TEST_EXPECT_TREELOAD_FAILED_WITH(tree, errpart);                            \
+#define TEST_EXPECT_TREEFILE_FAILS_WITH(name,errpart) do {                              \
+        GBT_TREE *tree = TREE_load(name, GBT_TREE_NodeFactory(), NULL, false, NULL);    \
+        TEST_EXPECT_TREELOAD_FAILED_WITH(tree, errpart);                                \
     } while(0)
 
 #define TEST_EXPECT_TREESTRING_FAILS_WITH(treeString,errpart) do {      \
@@ -751,48 +744,40 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
         TEST_EXPECT_TREELOAD_FAILED_WITH(tree, errpart);                \
     } while(0)
 
-// arguments 'names,count' are vs regression only!
-#define TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN(treeString,errpart,names,count) do {  \
+// argument 'newick' is vs regression only!
+#define TEST_EXPECT_TREESTRING_FAILS_WITH__BROKEN(treeString,errpart,newick) do {       \
         char     *warnings = NULL;                                                      \
         GBT_TREE *tree     = loadFromFileContaining(treeString, &warnings);             \
         TEST_EXPECT_TREELOAD_FAILED_WITH__BROKEN(tree, errpart);                        \
-        TEST_EXPECT_TREELOAD(tree, names, count);                                       \
+        TEST_EXPECT_TREELOAD(tree, newick);                                             \
         TEST_EXPECT_NULL(warnings);                                                     \
-        GBT_delete_tree(tree);                                                          \
+        delete tree;                                                                    \
         free(warnings);                                                                 \
     } while(0)
 
-#define TEST_EXPECT_TREESTRING_OK(treeString,names,count) do {                  \
+#define TEST_EXPECT_TREESTRING_OK(treeString,newick) do {                       \
         char     *warnings = NULL;                                              \
         GBT_TREE *tree     = loadFromFileContaining(treeString, &warnings);     \
-        TEST_EXPECT_TREELOAD(tree, names, count);                               \
+        TEST_EXPECT_TREELOAD(tree, newick);                                     \
         TEST_EXPECT_NULL(warnings);                                             \
-        GBT_delete_tree(tree);                                                  \
+        delete tree;                                                            \
         free(warnings);                                                         \
     } while(0)
 
-#define TEST_EXPECT_TREESTRING_OK_WITH_WARNING(treeString,names,count,warnPart) do {    \
-        char     *warnings = NULL;                                                      \
-        GBT_TREE *tree     = loadFromFileContaining(treeString, &warnings);             \
-        TEST_EXPECT_TREELOAD(tree, names, count);                                       \
-        TEST_REJECT_NULL(warnings);                                                     \
-        TEST_EXPECT_CONTAINS(warnings, warnPart);                                       \
-        GBT_delete_tree(tree);                                                          \
-        free(warnings);                                                                 \
+#define TEST_EXPECT_TREESTRING_OK_WITH_WARNING(treeString,newick,warnPart) do { \
+        char     *warnings = NULL;                                              \
+        GBT_TREE *tree     = loadFromFileContaining(treeString, &warnings);     \
+        TEST_EXPECT_TREELOAD(tree, newick);                                     \
+        TEST_REJECT_NULL(warnings);                                             \
+        TEST_EXPECT_CONTAINS(warnings, warnPart);                               \
+        delete tree;                                                            \
+        free(warnings);                                                         \
     } while(0)
 
-#define TEST_EXPECT_TREESTRING_OK__BROKEN(treeString,names,count) do {  \
+#define TEST_EXPECT_TREESTRING_OK__BROKEN(treeString,newick) do {       \
         GBT_TREE *tree = loadFromFileContaining(treeString, NULL);      \
-        TEST_EXPECT_TREELOAD__BROKEN(tree, names, count);               \
+        TEST_EXPECT_TREELOAD__BROKEN(tree, newick);                     \
     } while(0)
-
-inline size_t countCommas(const char *str) {
-    size_t commas = 0;
-    for (size_t i = 0; str[i]; ++i) {
-        commas += (str[i] == ',');
-    }
-    return commas;
-}
 
 void TEST_load_tree() {
     // just are few tests covering most of this module.
@@ -801,10 +786,10 @@ void TEST_load_tree() {
     // simple succeeding tree load
     {
         char     *comment = NULL;
-        GBT_TREE *tree    = TREE_load("trees/test.tree", sizeof(GBT_TREE), &comment, false, NULL);
+        GBT_TREE *tree    = TREE_load("trees/test.tree", GBT_TREE_NodeFactory(), &comment, false, NULL);
         // -> ../../UNIT_TESTER/run/trees/test.tree
 
-        TEST_EXPECT_TREELOAD(tree, "s1,s2,s3,s 4,s5,s-6", 6);
+        TEST_EXPECT_TREELOAD(tree, "(((s1,s2),(s3,s 4)),(s5,s-6));");
         if (tree) {
             TEST_REJECT_NULL(comment);
             TEST_EXPECT_CONTAINS(comment,
@@ -816,7 +801,7 @@ void TEST_load_tree() {
                                  ": Loaded from trees/test.tree\n");
         }
         free(comment);
-        GBT_delete_tree(tree);
+        delete tree;
     }
 
     // detailed load tests (checking branchlengths and nodenames)
@@ -835,18 +820,18 @@ void TEST_load_tree() {
             "((a,b)'0.17:G',(c,d)'0.333:H',(e,f)'0.125:I':0.2);", // [8] test bootstraps in range [0..1]
         };
 
-        const char *expected_nodes[] = {
-            "node1,node2",
-            "node1,node2,node3",
-            "a,b,c",
+        const char *expected_newick[] = {
+            "(node1,node2);",
+            "(node1,(node2,node3));",
+            "(a,(b,c));",
 
-            "a,b,c,d,e,f",
-            "a,b,c,d,e,f",
-            "a,b,c,d,e,f",
-            "a,b,c,d,e,f",
+            "(((a,b),(c,d)),(e,f));",
+            "(((a,b),(c,d)),(e,f));",
+            "(((a,b),(c,d)),(e,f));",
+            "(((a,b),(c,d)),(e,f));",
 
-            "a,b,c,d,e,f",
-            "a,b,c,d,e,f",
+            "(((a,b),(c,d)),(e,f));",
+            "(((a,b),(c,d)),(e,f));",
         };
         const char *expected_warnings[] = {
             NULL,
@@ -861,14 +846,14 @@ void TEST_load_tree() {
             NULL, // no auto-scaling shall occur here (bootstraps are in [0..1])
         };
 
-        STATIC_ASSERT(ARRAY_ELEMS(expected_nodes) == ARRAY_ELEMS(treestring));
+        STATIC_ASSERT(ARRAY_ELEMS(expected_newick) == ARRAY_ELEMS(treestring));
         STATIC_ASSERT(ARRAY_ELEMS(expected_warnings) == ARRAY_ELEMS(treestring));
 
         for (size_t i = 0; i<ARRAY_ELEMS(treestring); ++i) {
             TEST_ANNOTATE(GBS_global_string("for tree #%zu = '%s'", i, treestring[i]));
             char     *warnings = NULL;
             GBT_TREE *tree     = loadFromFileContaining(treestring[i], &warnings);
-            TEST_EXPECT_TREELOAD(tree, expected_nodes[i], countCommas(expected_nodes[i])+1);
+            TEST_EXPECT_TREELOAD(tree, expected_newick[i]);
             switch (i) {
                 case 0:
                     TEST_EXPECT_EQUAL(tree->name, "rootgroup");
@@ -881,7 +866,7 @@ void TEST_load_tree() {
                 case 2:
                     // test bootstrap with percent-specification is parsed correctly
                     TEST_EXPECT_NULL(tree->rightson->name);
-                    TEST_EXPECT_EQUAL(tree->rightson->remark_branch, "17%");
+                    TEST_EXPECT_EQUAL(tree->rightson->get_remark(), "17%");
                     TEST_EXPECT_EQUAL(tree->rightlen, 0.2);
                     break;
 
@@ -892,21 +877,21 @@ void TEST_load_tree() {
                 case 7:
                 case 8:
                     // check bootstraps
-                    TEST_EXPECT_NULL(tree->leftson->remark_branch);
+                    TEST_EXPECT_NULL(tree->leftson->get_remark());
                     switch (i) {
                         case 4:
                         case 6:
-                            TEST_EXPECT_NULL(tree->leftson->leftson->remark_branch);
-                            TEST_EXPECT_NULL(tree->leftson->rightson->remark_branch);
-                            TEST_EXPECT_NULL(tree->rightson->remark_branch);
+                            TEST_EXPECT_NULL(tree->leftson->leftson->get_remark());
+                            TEST_EXPECT_NULL(tree->leftson->rightson->get_remark());
+                            TEST_EXPECT_NULL(tree->rightson->get_remark());
                             break;
                         case 3:
                         case 5:
                         case 7:
                         case 8:
-                            TEST_EXPECT_EQUAL(tree->leftson->leftson->remark_branch,  "17%");
-                            TEST_EXPECT_EQUAL(tree->leftson->rightson->remark_branch, "33%");
-                            TEST_EXPECT_EQUAL(tree->rightson->remark_branch,          "13%");
+                            TEST_EXPECT_EQUAL(tree->leftson->leftson->get_remark(),  "17%");
+                            TEST_EXPECT_EQUAL(tree->leftson->rightson->get_remark(), "33%");
+                            TEST_EXPECT_EQUAL(tree->rightson->get_remark(),          "13%");
                             break;
                         default:
                             TEST_REJECT(true); // unhandled tree
@@ -961,18 +946,19 @@ void TEST_load_tree() {
                 TEST_EXPECT_NULL(warnings);
             }
             free(warnings);
-            GBT_delete_tree(tree);
+            delete tree;
         }
 
         TEST_ANNOTATE(NULL);
     }
 
     // test valid trees with strange or wrong behavior
-    TEST_EXPECT_TREESTRING_OK("(,);", "unnamed1,unnamed2", 2); // tree with 2 unamed species (weird, but ok)
-    TEST_EXPECT_TREESTRING_OK("( a, (b,(c),d), (e,(f)) );", "a,b,c,d,e,f", 6);
-    TEST_EXPECT_TREESTRING_OK("(((((a)))), ((b, c)));", "a,b,c", 3);
+    TEST_EXPECT_TREESTRING_OK("(,);",                       "(unnamed1,unnamed2);");   // tree with 2 unamed species (weird, but ok)
+    TEST_EXPECT_TREESTRING_OK("( a, (b,(c),d), (e,(f)) );", "((a,((b,c),d)),(e,f));");
+    TEST_EXPECT_TREESTRING_OK("(((((a)))), ((b, c)));",     "(a,(b,c));");
 
-    TEST_EXPECT_TREESTRING_OK_WITH_WARNING("( (a), (((b),(c),(d))group)dupgroup, ((e),(f)) );", "a,b,c,d,e,f", 6,
+    TEST_EXPECT_TREESTRING_OK_WITH_WARNING("( (a), (((b),(c),(d))group)dupgroup, ((e),(f)) );",
+                                           "((a,((b,c),d)),(e,f));",
                                            "Duplicated group name specification detected");
 
     // test unacceptable trees
@@ -1014,14 +1000,13 @@ void TEST_load_tree() {
     TEST_EXPECT_TREESTRING_FAILS_WITH("[unclosed\ncomment [ bla ]", "while reading comment");
 
     TEST_EXPECT_TREESTRING_FAILS_WITH("(a, b:d)", "Expected valid length while looking at 'd)<EOF>'");
-    TEST_EXPECT_TREESTRING_OK("(a, b:5)", "a,b", 2);
 
     // questionable accepted trees / check warnings
+    TEST_EXPECT_TREESTRING_OK_WITH_WARNING("(a,b):0.5", "(a,b);", "Length specified for root-node has been ignored");
+    TEST_EXPECT_TREESTRING_OK_WITH_WARNING("(a, b))",   "(a,b);", "Unexpected input-data after tree: ')'");
 
-    TEST_EXPECT_TREESTRING_OK_WITH_WARNING("(a,b):0.5", "a,b", 2, "Length specified for root-node has been ignored");
-    TEST_EXPECT_TREESTRING_OK_WITH_WARNING("(a, b))", "a,b", 2, "Unexpected input-data after tree: ')'");
-
-    TEST_EXPECT_TREESTRING_OK("(a*,b%);", "a*,b%", 2); // @@@ really accept such names?
+    TEST_EXPECT_TREESTRING_OK("(a*,b%);", "(a*,b%);"); // @@@ really accept such names?
+    TEST_EXPECT_TREESTRING_OK("(a, b:5)", "(a,b);");
 
     // check errors
     TEST_EXPECT_TREEFILE_FAILS_WITH("trees/nosuch.tree",    "No such file");

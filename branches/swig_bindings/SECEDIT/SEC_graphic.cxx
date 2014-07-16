@@ -318,7 +318,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                 }
                 break;
 
-            case AWT_MODE_ROT: { // rotate branches/loops
+            case AWT_MODE_ROTATE: { // rotate branches/loops
                 if (event == AW_Mouse_Release) {
                     exports.save = 1;
                 }
@@ -396,7 +396,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                 }
                 break;
 
-            case AWT_MODE_MOVE: { // fold/unfold helix
+            case AWT_MODE_FOLD: { // fold/unfold helix
                 if (event == AW_Mouse_Press) {
                     if (button == AW_BUTTON_LEFT) { // fold helix
                         if (loop) {
@@ -434,8 +434,8 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                 }
                 break;
             }
-            case AWT_MODE_LINE:
-            case AWT_MODE_PROINFO:
+            case AWT_MODE_CURSOR:
+            case AWT_MODE_PINFO:
                 elem = 0; // handle element-independent
                 break;
             default: sec_assert(0); break;
@@ -447,7 +447,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
 
     if (!elem) {
         switch (cmd) {
-            case AWT_MODE_LINE: // set cursor in ARB_EDIT4
+            case AWT_MODE_CURSOR: // set cursor in ARB_EDIT4
                 if (event == AW_Mouse_Press) {
                     if (abspos >= 0 && size_t(abspos) < sec_root->max_index()) {
                         // sequence position in AWAR_SET_CURSOR_POSITION is starting with 0!
@@ -456,7 +456,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                 }
                 break;
 
-            case AWT_MODE_PROINFO: // display search pattern
+            case AWT_MODE_PINFO: // display search pattern
                 if (event == AW_Mouse_Press) {
                     if (button == AW_BUTTON_LEFT) {
                         if (abspos >= 0 && size_t(abspos) < sec_root->max_index()) {

@@ -5,14 +5,16 @@ ARCHS_COMMON = \
 	AxML/AxML.dummy \
 	RAxML/RAxML.dummy \
 	PHYML/PHYML.dummy \
+	MrBAYES/MrBAYES.dummy \
 
 ARCHS_NO_DEPENDS = \
 	PHYML20130708/PHYML20130708.dummy \
 	MAFFT/MAFFT.dummy \
 	MUSCLE/MUSCLE.dummy \
 	PROBCONS/PROBCONS.dummy \
-	MrBAYES/MrBAYES.dummy \
-	FASTTREE/FASTTREE.dummy
+	FASTTREE/FASTTREE.dummy \
+	RAxML8/RAxML8.dummy \
+
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
@@ -28,7 +30,7 @@ ARCHS_NON_DEBIAN = \
 
 # --------------------------------------------------------------------------------
 
-ifdef DEBIAN
+ifeq ($(DEBIAN),1)
 ARCHS_DEPENDS = $(ARCHS_COMMON)
 else
 ARCHS_DEPENDS = $(ARCHS_COMMON) $(ARCHS_NON_DEBIAN)
@@ -51,6 +53,11 @@ ifeq ('$(UNIT_TESTS)','0')
 sub_cflags:=$(subst -DUNIT_TESTS,,$(sub_cflags))
 endif
 
+# note the above does not affect all subdirs. see also manual changes to:
+# - MrBAYES/mrbayes_3.2.1/Makefile
+# - PROBCONS/probcons/Makefile
+# - FASTTREE/Makefile
+
 # --------------------------------------------------------------------------------
 
 $(MAIN):
@@ -71,7 +78,7 @@ clean: $(ARCHS:.dummy=.clean)
 	@$(MAKE) -C $(@D) -r depends
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null || \
 		(echo "$(@D)/Makefile:666: Error: No dependencies in $(@D)/Makefile"; false) # check whether sub Makefile has dependencies
-	@../SOURCE_TOOLS/fix_depends.pl "(from GDE)" < $(@D)/Makefile > $(@D)/Makefile.2
+	@$(ARBHOME)/SOURCE_TOOLS/fix_depends.pl "(from GDE)" < $(@D)/Makefile > $(@D)/Makefile.2
 	@mv $(@D)/Makefile.old $(@D)/Makefile # restore old Makefile
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 

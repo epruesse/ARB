@@ -49,7 +49,6 @@
 #include "NT_local.h"
 #include <awt_sel_boxes.hxx>
 #include <arb_progress.h>
-#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <aw_awar.hxx>
@@ -104,15 +103,14 @@ static void CON_evaluatestatistic(char   *&result, int **statistic, char **group
     int j = 0;
     int groupfr[MAX_GROUPS]; // frequency of group
     int highestfr, highestgr;
-    long numentries;
 
     arb_progress progress("calculating result", alignlength);
 
     result=(char *)GB_calloc(alignlength+1, 1);
 
     for (int column=0; column<alignlength; column++) {
-        numentries=0;
-        for (row=0; statistic[row]; row++) numentries+=statistic[row][column];
+        long numentries = 0;
+        for (row=0; statistic[row]; row++) numentries += statistic[row][column];
         if (numentries==0) {
             result[column]='.';
         }
@@ -288,12 +286,10 @@ static int CON_makegrouptable(char **gf, char *groupnames,
  */
 
 
-static long CON_makestatistic(int **statistic, int *convtable, char *align, int onlymarked)
-{
-    long maxalignlen=GBT_get_alignment_len(GLOBAL.gb_main, align);
-    GBDATA *gb_species, *alidata;
-    int i, nrofspecies=0;
+static long CON_makestatistic(int **statistic, int *convtable, char *align, int onlymarked) {
+    long maxalignlen = GBT_get_alignment_len(GLOBAL.gb_main, align);
 
+    int nrofspecies;
     if (onlymarked) {
         nrofspecies = GBT_count_marked_species(GLOBAL.gb_main);
     }
@@ -304,6 +300,7 @@ static long CON_makestatistic(int **statistic, int *convtable, char *align, int 
     arb_progress progress(nrofspecies);
     progress.auto_subtitles("Examining sequence");
 
+    GBDATA *gb_species;
     if (onlymarked) {
         gb_species = GBT_first_marked_species(GLOBAL.gb_main);
     }
@@ -312,11 +309,12 @@ static long CON_makestatistic(int **statistic, int *convtable, char *align, int 
     }
 
     while (gb_species) {
-        if ((alidata=GBT_read_sequence(gb_species, align))) {
+        GBDATA *alidata = GBT_read_sequence(gb_species, align);
+        if (alidata) {
             unsigned char        c;
             const unsigned char *data = (const unsigned char *)GB_read_char_pntr(alidata);
 
-            i = 0;
+            int i = 0;
             while ((c=data[i])) {
                 if ((c=='-') || ((c>='a')&&(c<='z')) || ((c>='A')&&(c<='Z'))
                     || (c=='*')) {
@@ -334,7 +332,7 @@ static long CON_makestatistic(int **statistic, int *convtable, char *align, int 
         }
         ++progress;
     }
-    return (nrofspecies);
+    return nrofspecies;
 }
 
 
@@ -689,7 +687,7 @@ static void CON_calculate_cb(AW_window *aw)
 
 void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def)
 {
-    GB_transaction dummy(GLOBAL.gb_main);
+    GB_transaction ta(GLOBAL.gb_main);
     {
         char *defali = GBT_get_default_alignment(GLOBAL.gb_main);
         aw_root->awar_string("tmp/con/alignment", defali, aw_def);
@@ -724,9 +722,7 @@ static AW_window * CON_showgroupswin_cb(AW_root *aw_root)
     return (AW_window *)aws;
 }
 
-AW_window *
-AP_open_con_expert_window(AW_root *aw_root)
-{
+AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "BUILD_CONSENSUS", "CONSENSUS OF SEQUENCES");
     aws->load_xfig("consensus/expert.fig");
@@ -792,7 +788,7 @@ AP_open_con_expert_window(AW_root *aw_root)
     aws->update_toggle_field();
 
     aws->at("save_box");
-    awt_create_selection_list_on_sai(GLOBAL.gb_main, aws, "tmp/con/name");
+    awt_create_selection_list_on_sai(GLOBAL.gb_main, aws, "tmp/con/name", false);
 
     return aws;
 }
@@ -808,89 +804,95 @@ AP_open_con_expert_window(AW_root *aw_root)
  */
 
 static void CON_calc_max_freq_cb(AW_window *aw) {
+    arb_assert(!GB_have_error());
 
-    AW_root *awr=aw->get_root();
-    long maxalignlen, i;
-    int *statistic[MAX_AMINOS+1];
-    int convtable[256];
-    int onlymarked=1, isamino=1;
-    long no_gaps;
+    AW_root  *awr   = aw->get_root();
+    GB_ERROR  error = NULL;
 
-    GB_ERROR  error       = 0;
-    GB_push_transaction(GLOBAL.gb_main);
+    GB_transaction ta(GLOBAL.gb_main);
 
-    char *align = GBT_get_default_alignment(GLOBAL.gb_main);
-    maxalignlen = GBT_get_alignment_len(GLOBAL.gb_main, align);
-    no_gaps     = awr->awar(AWAR_MAX_FREQ_NO_GAPS)->read_int();
+    char *align       = GBT_get_default_alignment(GLOBAL.gb_main);
+    long  maxalignlen = GBT_get_alignment_len(GLOBAL.gb_main, align);
 
     if (maxalignlen<=0) {
-        GB_pop_transaction(GLOBAL.gb_main);
-        aw_message("alignment doesn't exist!");
-        delete align;
-        return;
+        GB_clear_error();
+        error = "alignment doesn't exist!";
     }
-    isamino = GBT_is_alignment_protein(GLOBAL.gb_main, align);
+    else {
+        int isamino = GBT_is_alignment_protein(GLOBAL.gb_main, align);
 
-    arb_progress progress("Calculating max. frequency");
-    long nrofspecies;
+        arb_progress progress("Calculating max. frequency");
 
-    CON_maketables(convtable, statistic, maxalignlen, isamino);
-    nrofspecies = CON_makestatistic(statistic, convtable, align, onlymarked);
+        int *statistic[MAX_AMINOS+1];
+        int  convtable[256];
+        CON_maketables(convtable, statistic, maxalignlen, isamino);
 
-    int   end            = MAX_BASES;
-    if (isamino) end     = MAX_AMINOS;
-    int   pos;
-    char *result         = new char[maxalignlen+1];
-    char *result2        = new char[maxalignlen+1];
-    result[maxalignlen]  = 0;
-    result2[maxalignlen] = 0;
+        const int onlymarked  = 1;
+        long      nrofspecies = CON_makestatistic(statistic, convtable, align, onlymarked);
 
-    for (pos = 0;  pos < maxalignlen; pos++) {
-        int sum                               = 0;
-        int max                               = 0;
-        for (i=0; i<end; i++) {
-            if (no_gaps && (i == convtable[(unsigned char)'-'])) continue;
-            sum                              += statistic[i][pos];
-            if (statistic[i][pos] > max) max  = statistic[i][pos];
+        int end = isamino ? MAX_AMINOS : MAX_BASES;
+
+        char *result1 = new char[maxalignlen+1];
+        char *result2 = new char[maxalignlen+1];
+
+        result1[maxalignlen] = 0;
+        result2[maxalignlen] = 0;
+
+        long no_gaps = awr->awar(AWAR_MAX_FREQ_NO_GAPS)->read_int();
+
+        for (int pos = 0; pos < maxalignlen; pos++) {
+            int sum = 0;
+            int max = 0;
+
+            for (int i=0; i<end; i++) {
+                if (no_gaps && (i == convtable[(unsigned char)'-'])) continue;
+                sum                              += statistic[i][pos];
+                if (statistic[i][pos] > max) max  = statistic[i][pos];
+            }
+            if (sum == 0) {
+                result1[pos] = '=';
+                result2[pos] = '=';
+            }
+            else {
+                result1[pos] = "01234567890"[(( 10*max)/sum)%11]; // @@@ why %11?
+                result2[pos] = "01234567890"[((100*max)/sum)%10];
+            }
         }
-        if (sum == 0) {
-            result[pos] = '=';
-            result2[pos] = '=';
+
+        const char *savename    = awr->awar(AWAR_MAX_FREQ_SAI_NAME)->read_char_pntr();
+        GBDATA     *gb_extended = GBT_find_or_create_SAI(GLOBAL.gb_main, savename);
+        if (!gb_extended) {
+            error = GB_await_error();
         }
         else {
-            result[pos] = "01234567890"[((10*max)/sum)%11];
-            result2[pos] = "01234567890"[((100*max)/sum)%10];
+            GBDATA *gb_data1 = GBT_add_data(gb_extended, align, "data", GB_STRING);
+            GBDATA *gb_data2 = GBT_add_data(gb_extended, align, "dat2", GB_STRING);
+
+            error             = GB_write_string(gb_data1, result1);
+            if (!error) error = GB_write_string(gb_data2, result2);
+
+            GBDATA *gb_options = GBT_add_data(gb_extended, align, "_TYPE", GB_STRING);
+
+            if (!error) {
+                const char *type = GBS_global_string("MFQ: [species: %li] [exclude gaps: %li]", nrofspecies, no_gaps);
+                error            = GB_write_string(gb_options, type);
+            }
         }
+
+        delete [] result1;
+        delete [] result2;
+        CON_cleartables(statistic, isamino);
     }
 
-    char   *savename    = awr->awar(AWAR_MAX_FREQ_SAI_NAME)->read_string();
-    GBDATA *gb_extended = GBT_find_or_create_SAI(GLOBAL.gb_main, savename);
-    free(savename);
-    GBDATA *gb_data     = GBT_add_data(gb_extended, align, "data", GB_STRING);
-    GBDATA *gb_data2    = GBT_add_data(gb_extended, align, "dat2", GB_STRING);
-    error               = GB_write_string(gb_data, result);
-    if (!error) error   = GB_write_string(gb_data2, result2);
-    GBDATA *gb_options  = GBT_add_data(gb_extended, align, "_TYPE", GB_STRING);
-    delete [] result;
-    delete [] result2;
-
-    if (!error) {
-        char    buffer[2000];
-        sprintf (buffer, "MFQ: [species: %li] [exclude gaps: %li]",
-                 nrofspecies, no_gaps);
-        error=GB_write_string(gb_options, buffer);
-    }
-
-    GB_pop_transaction(GLOBAL.gb_main);
-
-    CON_cleartables(statistic, isamino);
-    free(align);
+    error = ta.close(error);
     if (error) aw_message(error);
+
+    free(align);
+
+    arb_assert(!GB_have_error());
 }
 
-AW_window *
-AP_open_max_freq_window(AW_root *aw_root)
-{
+AW_window *AP_create_max_freq_window(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "MAX_FREQUENCY", "MAX FREQUENCY");
     aws->load_xfig("consensus/max_freq.fig");
@@ -913,7 +915,7 @@ AP_open_max_freq_window(AW_root *aw_root)
     aws->create_input_field(AWAR_MAX_FREQ_SAI_NAME, 1);
 
     aws->at("sai");
-    awt_create_selection_list_on_sai(GLOBAL.gb_main, aws, AWAR_MAX_FREQ_SAI_NAME);
+    awt_create_selection_list_on_sai(GLOBAL.gb_main, aws, AWAR_MAX_FREQ_SAI_NAME, false);
 
     aws->at("gaps");
     aws->create_toggle(AWAR_MAX_FREQ_NO_GAPS);

@@ -39,7 +39,7 @@ void GEN_create_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main);
 
 void GEN_popup_gene_infowindow(AW_root *aw_root, GBDATA *gb_main);
 AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main);
-AW_window *GEN_create_first_map(AW_root *aw_root, AW_CL cl_gb_main);
+AW_window *GEN_create_first_map(AW_root *aw_root, GBDATA *gb_main);
 
 class AW_window_menu_modes;
 void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool for_ARB_NTREE);

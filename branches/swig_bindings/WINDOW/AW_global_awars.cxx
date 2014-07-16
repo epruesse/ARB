@@ -31,7 +31,7 @@ static void awar_updated_cb(AW_root*, AW_awar *awar) {
     if (!in_global_awar_cb) {
         char           *content = awar->read_as_string();
         const char     *db_path = get_db_path(awar);
-        GB_transaction  dummy(gb_main4awar);
+        GB_transaction  ta(gb_main4awar);
         GBDATA         *gbd     = GB_search(gb_main4awar, db_path, GB_FIND);
 
         aw_assert(gbd);             // should exists
@@ -60,7 +60,7 @@ GB_ERROR AW_awar::make_global() {
 
     add_callback(makeRootCallback(awar_updated_cb, this));
 
-    GB_transaction  dummy(gb_main4awar);
+    GB_transaction  ta(gb_main4awar);
     const char     *db_path = get_db_path(this);
     GBDATA         *gbd     = GB_search(gb_main4awar, db_path, GB_FIND);
     GB_ERROR        error   = 0;
@@ -134,6 +134,7 @@ void ARB_declare_global_awars(AW_root *aw_root, AW_default aw_def) {
 
     declare_awar_global(aw_root->awar_string(AWAR_WWW_BROWSER, OPENURL " \"$(URL)\"", aw_def));
     declare_awar_global(aw_root->awar_int(AWAR_AWM_MASK, AWM_MASK_UNKNOWN, aw_def)->add_callback(AWAR_AWM_MASK_changed_cb));
+    declare_awar_global(aw_root->awar_string(AWAR_ARB_TREE_RENAMED, "", aw_def));
 
     AW_awar *awar_focus          = aw_root->awar_int(AWAR_AW_FOCUS_FOLLOWS_MOUSE, 0, aw_def);
     aw_root->focus_follows_mouse = awar_focus->read_int();
@@ -157,3 +158,7 @@ GB_ERROR ARB_bind_global_awars(GBDATA *gb_main) {
     return error;
 }
 
+GBDATA *get_globalawars_gbmain() {
+    //! hack to access open ARB database (used for helpfile editing)
+    return gb_main4awar;
+}

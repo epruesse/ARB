@@ -20,6 +20,16 @@
 #include <cb.h>
 #endif
 
+#if defined(ARB_GTK)
+# if defined(ARB_MOTIF)
+#  error ARB_GTK and ARB_MOTIF cannot both be defined
+# endif
+#else // !defined(ARB_GTK)
+# if !defined(ARB_MOTIF)
+#  error Either ARB_GTK or ARB_MOTIF has to be defined
+# endif
+#endif
+
 class AW_window;
 class AW_device;
 class AW_device_click;
@@ -181,6 +191,11 @@ public:
           const char            *help_texti = 0,
           AW_cb                 *next       = 0);
 
+    ~AW_cb() {
+        delete next; next = NULL;
+        free(id);
+    }
+
     void run_callbacks();                           // runs the whole list
     bool contains(AW_CB g);                         // test if contained in list
     bool is_equal(const AW_cb& other) const;
@@ -292,7 +307,10 @@ public:
 
     class AW_xfig *xfig_data;
 
-    void create_window_variables();
+
+    const char    *window_local_awarname(const char *localname, bool tmp = true);
+    class AW_awar *window_local_awar(const char *localname, bool tmp = true);
+    void           create_window_variables();
 
     void recalc_pos_atShow(AW_PosRecalc pr) { recalc_pos_at_show = pr; }
     AW_PosRecalc get_recalc_pos_atShow() const { return recalc_pos_at_show; }
@@ -369,7 +387,7 @@ public:
     void    message(char *title, int ms);   // Set for ms milliseconds the title of the window
     void    set_window_title(const char *title);   // Set the window title forever
 
-    const char *get_window_title();       // Get the window's title
+    const char *get_window_title() const;       // Get the window's title
     const char *get_window_id() const { return window_defaults_name; } // Get the window's internal name
 
     const char *local_id(const char *id) const;
@@ -416,18 +434,23 @@ public:
     // ************** Create the menu buttons *********
     void create_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
     void insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
-    void insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active mask, const WindowCallback& cb);
-    void insert_menu_topic(const char *topic_id, AW_label name, const char *mnemonic, const char *helpText, AW_active mask, const CreateWindowCallback& cwcb) { insert_menu_topic(topic_id, name, mnemonic, helpText, mask, makeWindowPopper(cwcb)); }
-    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
-    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1)); }
-    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1, cd2)); }
+
+    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, const WindowCallback& cb);
+
+    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, const CreateWindowCallback& cwcb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowPopper(cwcb)); }
+    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, WindowCallbackSimple cb)          { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
+    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, CreateWindowCallbackSimple cb)    { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeCreateWindowCallback(cb)); }
+
+    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1, cd2)); }
+    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1)); }
+
     void sep______________(); // insert a separator
     void close_sub_menu();
 
-    void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, const WindowCallback& cb);
-    void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB0 cb) { insert_help_topic(name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
-    void insert_help_topic(AW_label name, const char *mnemonic, const char *help_text_, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
-        insert_help_topic(name, mnemonic, help_text_, mask, makeWindowCallback(f, cd1, cd2));
+    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, const WindowCallback& cb);
+    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, AW_CB0 cb) { insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(cb)); }
+    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
+        insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(f, cd1, cd2));
     }
 
     // ************** Create modes on the left side ******************
@@ -537,15 +560,23 @@ public:
 
 private:
     static void popper(AW_window *, CreateWindowCallback *windowMaker);
+    static void replacer(AW_window *aww, CreateWindowCallback *windowMaker);
+    static void destroyCreateWindowCallback(CreateWindowCallback *windowMaker);
+public:
     static WindowCallback makeWindowPopper(const CreateWindowCallback& cwcb) {
-        return makeWindowCallback(popper, new CreateWindowCallback(cwcb));
+        return makeWindowCallback(popper, destroyCreateWindowCallback, new CreateWindowCallback(cwcb));
+    }
+    static WindowCallback makeWindowReplacer(const CreateWindowCallback& cwcb) {
+        return makeWindowCallback(replacer, destroyCreateWindowCallback, new CreateWindowCallback(cwcb));
     }
 
-public:
     // normal callbacks
     void callback(const WindowCallback& cb);
+
     void callback(const CreateWindowCallback& cwcb) { callback(makeWindowPopper(cwcb)); }
-    void callback(void (*f)(AW_window*)) { callback(makeWindowCallback(f)); }
+    void callback(CreateWindowCallbackSimple cb)    { callback(makeCreateWindowCallback(cb)); }
+    void callback(WindowCallbackSimple cb)          { callback(makeWindowCallback(cb)); }
+
     void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1)); }
     void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1, cd2)); }
 
@@ -568,7 +599,7 @@ public:
 
 
     // ***** option_menu is a menu where only one selection is visible at a time
-    AW_option_menu_struct *create_option_menu(const char *awar_name, AW_label label=0, const char *mnemonic=0);
+    AW_option_menu_struct *create_option_menu(const char *awar_name, bool fallback2default);
     void clear_option_menu(AW_option_menu_struct *oms);  // used to redefine available options
 
 private:
@@ -611,7 +642,8 @@ public:
 
     // ***** selection list is a redefinable scrolled list of items
 
-    AW_selection_list *create_selection_list(const char *awar_name, int columns = 4, int rows = 4);
+    AW_selection_list *create_selection_list(const char *awar_name, int columns, int rows, bool fallback2default);
+    AW_selection_list *create_selection_list(const char *awar_name, bool fallback2default) { return create_selection_list(awar_name, 4, 4, fallback2default); }
 };
 
 

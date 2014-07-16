@@ -29,7 +29,6 @@
 #include "DNAml_rates_1_0.h"
 
 #include <aw_awar_defs.hxx>
-#include <arbdbt.h>
 
 #include <unistd.h>
 #include <cmath>
@@ -396,7 +395,7 @@ static void getyspace() {
 }
 
 
-static void setuptree(tree *tr, int numSp) {
+static void setuptree(tree *tr, const int numSp) {
     nodeptr p = NULL;
 
     for (int i = 1; i <= numSp; i++) {   //  Set-up tips
@@ -411,7 +410,8 @@ static void setuptree(tree *tr, int numSp) {
         tr->nodep[i] = p;
     }
 
-    for (int i = numSp+1; i <= 2*numSp-1 && !anerror; i++) { // Internal nodes    **  was : 2*numSp-2 (ralf)
+    const int nodes = leafs_2_nodes(numSp, ROOTED);
+    for (int i = numSp+1; i <= nodes && !anerror; i++) { // internal nodes
         nodeptr q = NULL;
         for (int j = 1; j <= 3; j++) {
             p = (nodeptr)malloc(sizeof(node));
@@ -1937,22 +1937,24 @@ int ARB_main(int argc, char *argv[]) {
 
     {
         tree curtree;
-        for (int i = 0; i<(2*maxsp-1); ++i) curtree.nodep[i] = 0;
+        for (int i = 0; i<MAXNODES; ++i) {
+            curtree.nodep[i] = 0;
+        }
 
         tree *tr = &curtree;
-        getinput(tr, infile);                       if (anerror)  return 1;
-        linkxarray(3, 3, & freextip, & usedxtip);   if (anerror)  return 1;
-        setupnodex(tr);                             if (anerror)  return 1;
-        makeUserRates(tr, infile);                  if (anerror)  return 1;
-
-        writeToArb();
-        if (dbsavename) saveArb(dbsavename);
+        getinput(tr, infile);
+        if (!anerror) linkxarray(3, 3, & freextip, & usedxtip);
+        if (!anerror) setupnodex(tr);
+        if (!anerror) makeUserRates(tr, infile);
+        if (!anerror) {
+            writeToArb();
+            if (dbsavename) saveArb(dbsavename);
+        }
         closeArb();
-
-        freeTree(tr);
+        if (!anerror) freeTree(tr);
     }
 
     if (wantSTDIN(inputname)) fclose(infile);
 
-    return EXIT_SUCCESS;
+    return anerror ? EXIT_FAILURE : EXIT_SUCCESS;
 }

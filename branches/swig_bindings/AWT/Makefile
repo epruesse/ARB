@@ -2,8 +2,8 @@
 
 .SUFFIXES: .o .cxx .depend
 
-CXX=$(wildcard *.cxx)
-OBJECTS=$(subst .cxx,.o,$(CXX))
+SOURCES=$(wildcard *.cxx)
+OBJECTS=$(subst .cxx,.o,$(SOURCES))
 
 LIB_SHARED=../lib/$(MAIN:.a=).$(SHARED_LIB_SUFFIX)
 
@@ -172,6 +172,7 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -202,7 +203,9 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_core.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_diff.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_file.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_misc.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_str.h
@@ -377,13 +380,13 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cb_base.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/items.h
@@ -457,6 +460,38 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/ttypes.h
+
+AWT_TreeAwars.o: awt_TreeAwars.hxx
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/ad_cb.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arb_core.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arb_string.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arbdb.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arbtools.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/aw_global_awars.hxx
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/cb_base.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/cbtypes.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/downcast.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/gccver.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/static_assert.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/test_global.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AWT_www.o: awt.hxx
 AWT_www.o: awt_config_manager.hxx
