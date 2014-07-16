@@ -32,7 +32,7 @@ my $reg_is_error = qr/^error:\s/i;
 my $reg_is_warning = qr/^warning:\s/i;
 my $reg_is_note = qr/^note:\s/i;
 my $reg_is_instantiated = qr/^\s\s+instantiated\sfrom\s/;
-my $reg_is_required = qr/^\s\s+required\sfrom\s/;
+my $reg_is_required = qr/^\s\s+required\s(from|by)\s/;
 
 # regexps for warning messages (for part behind 'warning: ')
 my $reg_shadow_warning = qr/^declaration\sof\s.*\sshadows\s/;
@@ -42,11 +42,11 @@ my $reg_shadow_location = qr/^shadowed\s/;
 my $filter_Weffpp = 1;
 my @reg_Weffpp = (
                   qr/only\sdefines\sprivate\sconstructors\sand\shas\sno\sfriends/, # unwanted warning about singleton-class where the only instance exists as a static member of itself
-                  qr/^base\sclass\s.*has\sa\snon-virtual\sdestructor/,
+                  qr/^base\sclass\s.*has\s*(a|accessible)\snon-virtual\sdestructor/,
                   qr/\sshould\sbe\sinitialized\sin\sthe\smember\sinitialization\slist/,
                   qr/boost::icl::(insert|add)_iterator<ContainerT>.*should\sreturn/, # filter boost-iterator postfix operators warnings
                   qr/^\s\sbut\sdoes\snot\soverride/, # belongs to reg_Weffpp_copyable
-                  qr/^\s\sor\s'operator=/, # belongs to reg_Weffpp_copyable
+                  qr/^\s\sor\s\'operator=/, # belongs to reg_Weffpp_copyable
                  );
 
 my $filter_Weffpp_copyable = 0; # 1 = filter copy-ctor/op=-warning, 0 = check for Noncopyable and warn
@@ -139,8 +139,8 @@ sub advice_derived_from_Noncopyable($$$) {
  LINE: while (defined($line=<FILE>)) {
     $line_count++;
     if ($line_count==$linenr) {
-      if ($line =~ /(class|struct)\s+$uq_classname(.*)Noncopyable/) {
-        my $prefix = $2;
+      if ($line =~ /(class|struct)\s+($uq_classname|$classname)(.*)Noncopyable/) {
+        my $prefix = $3;
         if (not $prefix =~ /\/\//) { # if we have a comment, assume it mentions that the class is derived from a Noncopyable
           if (not $prefix =~ /virtual/) {
             print $file.':'.$linenr.': inheritance from Noncopyable should be virtual'."\n";
@@ -198,6 +198,8 @@ sub store_shadow($\@) {
   $shadow_warning = $warn;
 }
 
+my $last_pushed_related = 0;
+
 sub push_loc_and_related($$\@\@) {
   my ($location_info,$message,$related_r,$out_r) = @_;
   if (defined $location_info) {
@@ -205,7 +207,17 @@ sub push_loc_and_related($$\@\@) {
     $location_info = undef;
   }
   push @$out_r, $message;
+  $last_pushed_related = scalar(@$related_r);
   foreach (@$related_r) { push @$out_r, $_; }
+}
+
+sub drop_last_pushed_relateds(\@) {
+  my ($out_r) = @_;
+  if ($last_pushed_related>0) {
+    my $before_related = scalar(@$out_r) - $last_pushed_related - 1;
+    $before_related>=0 || die "impossible (out_r-elements=".scalar(@$out_r)."; last_pushed_related=$last_pushed_related)";
+    @$out_r = @$out_r[0 .. $before_related];
+  }
 }
 
 sub included_from_here($) {
@@ -243,7 +255,7 @@ sub parse_input(\@) {
   my $is_error          = 0;
   my $curr_out_r = \@warnout;
 
- LINE: while (defined($_=<>)) {
+ LINE: while (defined($_=<STDIN>)) {
     chomp;
     my $filter_current = 0;
 
@@ -311,7 +323,11 @@ sub parse_input(\@) {
         if ($did_show_previous==0) {
           $_ = suppress($_,@warnout);
         }
-        #else display normally
+        else {
+          if ($msg =~ /in\sexpansion\sof\smacro/o) {
+            drop_last_pushed_relateds(@$curr_out_r);
+          }
+        }
       }
     }
     elsif ($_ =~ $reg_location or $_ =~ $reg_location2) {
@@ -382,7 +398,7 @@ sub main() {
 
   eval {
     if ($pass_through==1) {
-      while (defined($_=<>)) { print $_; }
+      while (defined($_=<STDIN>)) { print $_; }
     }
     else {
       my @out = ();

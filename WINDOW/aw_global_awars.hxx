@@ -17,6 +17,8 @@
 
 #define AWAR_WWW_BROWSER            "www/browse_cmd" // how to call the users browser
 #define AWAR_AW_FOCUS_FOLLOWS_MOUSE "focus/follow"   // shall focus follow mouse
+#define AWAR_ARB_TREE_RENAMED       "tmp/tree_rename" // contains "oldname=newname" whenever a tree gets renamed
+                                                      // (newname is NO_TREE_SELECTED if a tree has been deleted)
 
 #else
 #error aw_global_awars.hxx included twice

@@ -335,7 +335,10 @@ AW_file.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_file.h
+AW_file.o: $(ARBHOME)/INCLUDE/arb_misc.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_file.o: $(ARBHOME)/INCLUDE/arb_str.h
+AW_file.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_file.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -420,6 +423,7 @@ AW_help.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_file.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_help.o: $(ARBHOME)/INCLUDE/arb_str.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_help.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_help.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -480,7 +484,9 @@ AW_position.o: aw_base.hxx
 AW_position.o: aw_position.hxx
 AW_position.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_position.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_position.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_position.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_position.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AW_position.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_position.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_position.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -638,6 +644,7 @@ AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -711,6 +718,7 @@ AW_select.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_select.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_select.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_select.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_select.o: $(ARBHOME)/INCLUDE/test_unit.h
 AW_select.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_status.o: aw_awar.hxx
@@ -778,6 +786,8 @@ AW_window.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_file.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_window.o: $(ARBHOME)/INCLUDE/arb_str.h
+AW_window.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h

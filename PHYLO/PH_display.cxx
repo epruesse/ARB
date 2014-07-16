@@ -197,7 +197,7 @@ void PH_display::display()       // draw area
 
     if (!device) return;
     
-    GB_transaction dummy(PHDATA::ROOT->gb_main);
+    GB_transaction ta(PHDATA::ROOT->get_gb_main());
     switch (display_what) // be careful: text origin is lower left
     {
         case NONE: return;
@@ -271,10 +271,10 @@ void PH_display::display()       // draw area
 
             const AW_font_limits& lim = device->get_font_limits(0, 0);
 
-            minhom   = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
-            maxhom   = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
-            startcol = main_win->get_root()->awar("phyl/filter/startcol")->read_int();
-            stopcol  = main_win->get_root()->awar("phyl/filter/stopcol")->read_int();
+            minhom   = main_win->get_root()->awar(AWAR_PHYLO_FILTER_MINHOM)->read_int();
+            maxhom   = main_win->get_root()->awar(AWAR_PHYLO_FILTER_MAXHOM)->read_int();
+            startcol = main_win->get_root()->awar(AWAR_PHYLO_FILTER_STARTCOL)->read_int();
+            stopcol  = main_win->get_root()->awar(AWAR_PHYLO_FILTER_STOPCOL)->read_int();
 
             for (x = horiz_page_start; x < horiz_page_start + horiz_page_size; x++) {
                 int             gc = 1;
@@ -310,32 +310,11 @@ void PH_display::display()       // draw area
 }
 
 
-void PH_display::print()
-{
-    printf("\nContents of class PH_display:\n");
-    printf("display_what: %d\n", display_what);
-    printf("screen_width:          %f  screen_height:        %f\n", screen_width, screen_height);
-    printf("cell_width:            %ld  cell_height:          %ld\n", cell_width, cell_height);
-    printf("cell_offset:           %ld\n", cell_offset);
-    printf("horiz_page_size:       %ld  vert_page_size:       %ld\n", horiz_page_size, vert_page_size);
-    printf("horiz_page_start:      %ld  vert_page_start:      %ld\n", horiz_page_start, vert_page_start);
-    printf("off_dx:                %ld  off_dy:               %ld\n", off_dx, off_dy);
-    printf("horiz_last_view_start: %ld  vert_last_view_start: %ld\n", horiz_last_view_start, vert_last_view_start);
-}
-
-
-void PH_display::set_scrollbar_steps(AW_window *aww, long width_h, long width_v, long page_h, long page_v)
-{
-    char buffer[200];
-
-    sprintf(buffer, "window/%s/scroll_width_horizontal", aww->window_defaults_name);
-    aww->get_root()->awar(buffer)->write_int(width_h);
-    sprintf(buffer, "window/%s/scroll_width_vertical", aww->window_defaults_name);
-    aww->get_root()->awar(buffer)->write_int(width_v);
-    sprintf(buffer, "window/%s/horizontal_page_increment", aww->window_defaults_name);
-    aww->get_root()->awar(buffer)->write_int(page_h);
-    sprintf(buffer, "window/%s/vertical_page_increment", aww->window_defaults_name);
-    aww->get_root()->awar(buffer)->write_int(page_v);
+void PH_display::set_scrollbar_steps(AW_window *aww, long width_h, long width_v, long page_h, long page_v) {
+    aww->window_local_awar("scroll_width_horizontal")  ->write_int(width_h);
+    aww->window_local_awar("scroll_width_vertical")    ->write_int(width_v);
+    aww->window_local_awar("horizontal_page_increment")->write_int(page_h);
+    aww->window_local_awar("vertical_page_increment")  ->write_int(page_v);
 }
 
 
@@ -476,35 +455,35 @@ void display_status_cb() {
                 phds.newline();
 
                 phds.writePadded("Start at column:", LABEL_LEN);
-                phds.write((long)aw_root->awar("phyl/filter/startcol")->read_int());
+                phds.write((long)aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->read_int());
                 phds.move_x(15);
                 phds.set_tab();
                 phds.writePadded("Stop at column:", LABEL_LEN);
-                phds.write((long)aw_root->awar("phyl/filter/stopcol")->read_int());
+                phds.write((long)aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->read_int());
                 phds.newline();
 
                 phds.writePadded("Minimal similarity:", LABEL_LEN);
-                phds.write((long)aw_root->awar("phyl/filter/minhom")->read_int());
+                phds.write((long)aw_root->awar(AWAR_PHYLO_FILTER_MINHOM)->read_int());
                 phds.set_cursor_x(phds.get_tab());
                 phds.writePadded("Maximal similarity:", LABEL_LEN);
-                phds.write((long)aw_root->awar("phyl/filter/maxhom")->read_int());
+                phds.write((long)aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM)->read_int());
                 phds.newline();
                 phds.newline();
 
                 phds.writePadded("'.':", LABEL_LEN);
-                phds.write(filter_text[aw_root->awar("phyl/filter/point")->read_int()]);
+                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_POINT)->read_int()]);
                 phds.newline();
 
                 phds.writePadded("'-':", LABEL_LEN);
-                phds.write(filter_text[aw_root->awar("phyl/filter/minus")->read_int()]);
+                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_MINUS)->read_int()]);
                 phds.newline();
 
                 phds.writePadded("ambiguity codes:", LABEL_LEN);
-                phds.write(filter_text[aw_root->awar("phyl/filter/rest")->read_int()]);
+                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_REST)->read_int()]);
                 phds.newline();
 
                 phds.writePadded("lowercase chars:", LABEL_LEN);
-                phds.write(filter_text[aw_root->awar("phyl/filter/lower")->read_int()]);
+                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_LOWER)->read_int()]);
                 break;
 
             case matrix_dpy: phds.set_origin();

@@ -21,7 +21,6 @@ struct GargChoice {
 };
 
 struct GmenuItemArg {
-    int         optional;       // is this optional?
     int         type;           // TEXT, SLIDER, CHOOSER, etc.
     int         ivalue;
     double      min;            // minimum range value
@@ -32,7 +31,6 @@ struct GmenuItemArg {
     int         textwidth;      // text width used for input field
     char       *label;          // description of arg function
     char       *symbol;         // internal symbol table mapping
-    char       *method;         // commandline interpretation
     GargChoice *choice;         // choices
     // ARB BEGIN
     AW_active     active_mask;  // expert/novice
@@ -45,17 +43,12 @@ enum TypeInfo {
 };
 
 struct GfileFormat {
-    int       save;             // how should file be saved
-    int       overwrite;        // how should file be loaded
+    bool      save;             // whether file should be saved
     int       format;           // what format is each field
-    int       maskable;         // Can a write through mask be used?
-    int       select;           // what type of selection
     char     *symbol;           // internal symbol table mapping
     char     *name;             // file name
     TypeInfo  typeinfo;
 };
-
-class AW_window;
 
 struct GmenuItem {
     int           numargs;        // number of agruments to cmnd
@@ -81,10 +74,8 @@ struct Gmenu {
     GmenuItem *item;            // menu items
     // ARB BEGIN
     char       meta;            // Meta character for menu
-    AW_active     active_mask;    // expert/novice
+    AW_active  active_mask;     // expert/novice
 };
-
-typedef unsigned char uchar;
 
 extern struct gde_database_access {
     GDE_get_sequences_cb  get_sequences;

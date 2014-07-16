@@ -21,8 +21,10 @@
 #include <arb_file.h>
 #include <aw_question.hxx>
 
-static char *namesFilename(AW_CL cl_gb_main) {
-    const char *field    = AW_get_nameserver_addid((GBDATA*)cl_gb_main);
+#define AWAR_NAMESERVER_STATUS "tmp/nameserver/status"
+
+static char *namesFilename(GBDATA *gb_main) {
+    const char *field    = AW_get_nameserver_addid(gb_main);
     const char *filename = field[0] ? GBS_global_string("names_%s.dat", field) : "names.dat";
     char       *fullname = nulldup(GB_path_in_ARBLIB("nas", filename));
 
@@ -37,9 +39,9 @@ inline bool continue_with_namesDat_destruction(const char *kindOfDestruction) {
                           "Are you REALLY sure you like to continue %s names.dat?", kindOfDestruction));
 }
 
-static void awtc_delete_names_file(AW_window */*aws*/, AW_CL cl_gb_main) {
+static void awtc_delete_names_file(AW_window*, GBDATA *gb_main) {
     if (continue_with_namesDat_destruction("deleting")) {
-        char     *path    = namesFilename(cl_gb_main);
+        char     *path    = namesFilename(gb_main);
         char     *newpath = GBS_string_eval(path, "*=*%", 0);
         GB_ERROR  error   = GB_rename_file(path, newpath);
         if (error) aw_message(error);
@@ -48,17 +50,17 @@ static void awtc_delete_names_file(AW_window */*aws*/, AW_CL cl_gb_main) {
     }
 }
 
-static void awtc_edit_names_file(AW_window * /* aws */, AW_CL cl_gb_main) {
+static void awtc_edit_names_file(AW_window*, GBDATA *gb_main) {
     if (continue_with_namesDat_destruction("editing")) {
-        char *path = namesFilename(cl_gb_main);
+        char *path = namesFilename(gb_main);
         AW_edit(path);
         free(path);
     }
 }
 
-static void awtc_remove_arb_acc(AW_window * /* aws */, AW_CL cl_gb_main) {
+static void awtc_remove_arb_acc(AW_window*, GBDATA *gb_main) {
     if (continue_with_namesDat_destruction("filtering")) {
-        char *path    = namesFilename(cl_gb_main);
+        char *path    = namesFilename(gb_main);
         char *newpath = GBS_string_eval(path, "*=*%", 0);
         char *command = GBS_global_string_copy("cp %s %s;"
                                                "arb_replace -l '"
@@ -75,19 +77,21 @@ static void awtc_remove_arb_acc(AW_window * /* aws */, AW_CL cl_gb_main) {
     }
 }
 
-static void addid_changed_cb(AW_root *, AW_CL cl_gb_main) {
-    GBDATA   *gb_main = (GBDATA*)cl_gb_main;
-    GB_ERROR  error   = AW_test_nameserver(gb_main);
+static void addid_changed_cb(AW_root *awr, GBDATA *gb_main, bool show_advice) {
+    GB_ERROR error = AW_test_nameserver(gb_main);
 
-    if (error) aw_message(error);
-    else AW_advice("Calling 'Species/Synchronize IDs' is highly recommended", AW_ADVICE_TOGGLE_AND_HELP, 0, "namesadmin.hlp");
+    awr->awar(AWAR_NAMESERVER_STATUS)->write_string(error ? error : "ok");
+    if (!error && show_advice) {
+        AW_advice("Calling 'Species/Synchronize IDs' is highly recommended", AW_ADVICE_TOGGLE_AND_HELP, 0, "namesadmin.hlp");
+    }
 }
 
 void AW_create_namesadmin_awars(AW_root *awr, GBDATA *gb_main) {
     awr->awar_string(AWAR_NAMESERVER_ADDID, "", gb_main);
+    awr->awar_string(AWAR_NAMESERVER_STATUS, "<unchecked>", gb_main);
 }
 
-AW_window *AW_create_namesadmin_window(AW_root *root, AW_CL cl_gb_main) {
+AW_window *AW_create_namesadmin_window(AW_root *root, GBDATA *gb_main) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "NAME_SERVER_ADMIN", "NAME_SERVER ADMIN");
 
@@ -106,29 +110,35 @@ AW_window *AW_create_namesadmin_window(AW_root *root, AW_CL cl_gb_main) {
     aws->sens_mask(AWM_EXP);
     {
         aws->at("delete");
-        aws->callback(awtc_delete_names_file, cl_gb_main);
+        aws->callback(makeWindowCallback(awtc_delete_names_file, gb_main));
         aws->create_button("DELETE_OLD_NAMES_FILE", "Delete old names file");
 
         aws->at("edit");
-        aws->callback(awtc_edit_names_file, cl_gb_main);
+        aws->callback(makeWindowCallback(awtc_edit_names_file, gb_main));
         aws->create_button("EDIT_NAMES_FILE", "Edit names file");
 
         aws->at("remove_arb");
-        aws->callback(awtc_remove_arb_acc, cl_gb_main);
+        aws->callback(makeWindowCallback(awtc_remove_arb_acc, gb_main));
         aws->create_button("REMOVE_SUPERFLUOUS_ENTRIES_IN_NAMES_FILE",
                            "Remove all entries with an\n'ARB*' accession number\nfrom names file");
 
         aws->at("config");
-        aws->callback(awt_edit_arbtcpdat_cb, cl_gb_main);
+        aws->callback(makeWindowCallback(awt_edit_arbtcpdat_cb, gb_main));
         aws->create_button("CREATE_TEMPLATE", "Configure arb_tcp.dat");
     }
     aws->sens_mask(AWM_ALL);
 
     AW_awar *awar_addid = root->awar(AWAR_NAMESERVER_ADDID);
-    awar_addid->add_callback(addid_changed_cb, cl_gb_main);
+    awar_addid->add_callback(makeRootCallback(addid_changed_cb, gb_main, true));
 
     aws->at("add_field");
     aws->create_input_field(AWAR_NAMESERVER_ADDID, 20);
+
+    aws->at("status");
+    aws->button_length(50);
+    aws->create_button(NULL, AWAR_NAMESERVER_STATUS);
+
+    addid_changed_cb(root, gb_main, false); // force status update
 
     return aws;
 }

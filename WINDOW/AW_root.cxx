@@ -243,8 +243,13 @@ static arb_handlers aw_handlers = {
     aw_message_and_dump_stderr,
     aw_message,
     dump_stdout,
-    AW_status_impl, 
+    AW_status_impl,
 };
+
+static void free_action(long action) {
+    AW_cb *cb = (AW_cb*)action;
+    delete cb;
+}
 
 void AW_root::init_root(const char *programname, bool no_exit) {
     // initialize ARB X application
@@ -253,7 +258,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     const int    MAX_FALLBACKS = 30;
     char        *fallback_resources[MAX_FALLBACKS];
 
-    prvt->action_hash = GBS_create_hash(1000, GB_MIND_CASE);
+    prvt->action_hash = GBS_create_dynaval_hash(1000, GB_MIND_CASE, free_action); // actions are added via define_remote_command()
 
     p_r-> no_exit = no_exit;
     program_name  = strdup(programname);
@@ -283,7 +288,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 
     if (p_r->display == NULL) {
         printf("cannot open display\n");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
     {
         GBDATA *gbd = (GBDATA*)application_database;
@@ -291,7 +296,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
         if (!(fontstruct = XLoadQueryFont(p_r->display, font))) {
             if (!(fontstruct = XLoadQueryFont(p_r->display, "fixed"))) {
                 printf("can not load font\n");
-                exit(-1);
+                exit(EXIT_FAILURE);
             }
         }
     }
@@ -397,7 +402,7 @@ void AW_root::create_colormap() {
 void AW_root::window_hide(AW_window *aww) {
     active_windows--;
     if (active_windows<0) {
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
     if (current_modal_window == aww) {
         current_modal_window = NULL;
@@ -554,9 +559,8 @@ static long AW_unlink_awar_from_DB(const char */*key*/, long cl_awar, void *cl_g
     awar->unlink_from_DB(gb_main);
     return cl_awar;
 }
-void AW_root::unlink_awars_from_DB(AW_default database) {
-    GBDATA *gb_main = (GBDATA*)database;
 
+void AW_root::unlink_awars_from_DB(GBDATA *gb_main) {
     aw_assert(GB_get_root(gb_main) == gb_main);
 
     GB_transaction ta(gb_main); // needed in awar-callbacks during unlink

@@ -25,6 +25,8 @@
 #define AWAR_BA_MIN_ROOTDIST AWAR_BRANCH_ANALYSIS "/min_rootdist"
 #define AWAR_BA_DEGENERATION AWAR_BRANCH_ANALYSIS "/degeneration"
 
+// AISC_MKPT_PROMOTE:class AWT_canvas;
+
 class BranchWindow : virtual Noncopyable {
     AWT_canvas       *ntw;
     char             *suffix;
@@ -64,7 +66,7 @@ private:
     AW_awar *awar(const char *name) { return get_awroot()->awar(name); }
 
     void postmark_action() const {
-        get_tree()->compute_tree(get_gbmain());
+        get_tree()->compute_tree();
         get_canvas()->refresh();
     }
 
@@ -76,7 +78,7 @@ private:
 
 public:
     void set_info(const char *msg) const { awar_info->write_string(msg); }
-    void unmark_all() const { NT_mark_all_cb(get_window(), (AW_CL)get_canvas(), 0); }
+    void unmark_all() const { NT_mark_all_cb(NULL, get_canvas(), 0); }
 
     void markDegeneratedBranches() {
         if (have_tree()) {
@@ -201,9 +203,7 @@ void BranchWindow::create_window(AW_root *aw_root) {
     aws->at("degen"); aws->create_input_field(AWAR_BA_DEGENERATION, WIDTH);
 }
 
-AW_window *NT_open_branch_analysis_window(AW_root *aw_root, AW_CL cl_ntw) {
-    AWT_canvas *ntw = (AWT_canvas *)cl_ntw;
-
+AW_window *NT_create_branch_analysis_window(AW_root *aw_root, AWT_canvas *ntw) {
     static BranchWindow *bw[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NULLINIT };
 
     int ntw_id = NT_get_canvas_id(ntw);

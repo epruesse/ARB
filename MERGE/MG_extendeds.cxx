@@ -15,7 +15,6 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
-#include <aw_window.hxx>
 #include <arbdbt.h>
 
 #define AWAR_EX_NAME_SRC    AWAR_MERGE_TMP_SRC "extended_name"
@@ -55,7 +54,7 @@ static void MG_extended_rename_cb(AW_window *aww, GBDATA *gbmain, int db_nr) {
     free(source);
 }
 
-static AW_window *MG_create_extended_rename_window(AW_root *root, AW_CL db_nr) {
+static AW_window *MG_create_extended_rename_window(AW_root *root, int db_nr) {
     AW_window_simple *aws = new AW_window_simple;
     if (db_nr == 1) {
         aws->init(root, "MERGE_RENAME_SAI_1", "SAI RENAME 1");
@@ -76,13 +75,13 @@ static AW_window *MG_create_extended_rename_window(AW_root *root, AW_CL db_nr) {
     aws->create_input_field(AWAR_EX_DEST, 15);
 
     aws->at("ok");
-    aws->callback((AW_CB)MG_extended_rename_cb, (AW_CL)GLOBAL_gb_dst, db_nr);
+    aws->callback(makeWindowCallback(MG_extended_rename_cb, GLOBAL_gb_dst, db_nr));
     aws->create_button("GO", "GO", "G");
 
     return aws;
 }
 
-static void MG_extended_delete_cb(AW_window *aww, AW_CL db_nr) {
+static void MG_extended_delete_cb(AW_window *aww, int db_nr) {
     GBDATA   *gbmain = get_gb_main(db_nr);
     GB_ERROR  error  = GB_begin_transaction(gbmain);
 
@@ -97,7 +96,7 @@ static void MG_extended_delete_cb(AW_window *aww, AW_CL db_nr) {
     GB_end_transaction_show_error(gbmain, error, aw_message);
 }
 
-static void MG_transfer_extended(AW_window *aww, AW_CL force) {
+static void MG_transfer_extended(AW_window *aww) {
     AW_root *awr    = aww->get_root();
     char    *source = awr->awar(AWAR_EX_NAME_SRC)->read_string();
     char    *dest   = awr->awar(AWAR_EX_NAME_SRC)->read_string();
@@ -115,8 +114,8 @@ static void MG_transfer_extended(AW_window *aww, AW_CL force) {
             else {
                 GBDATA *gb_dest_sai = GBT_find_SAI_rel_SAI_data(gb_dst_sai_data, dest);
                 if (gb_dest_sai) {
-                    if (force) error = GB_delete(gb_dest_sai);
-                    else error       = GBS_global_string("SAI '%s' exists, delete it first", dest);
+                    // if (force) error = GB_delete(gb_dest_sai); else
+                    error = GBS_global_string("SAI '%s' exists, delete it first", dest);
                 }
                 if (!error) {
                     gb_dest_sai             = GB_create_container(gb_dst_sai_data, "extended");
@@ -142,14 +141,12 @@ inline void map_extended(AW_root *aw_root, DbScanner *scanner, int db_nr) {
     map_db_scanner(scanner, gb_sai, CHANGE_KEY_PATH);
 }
 
-static void MG_map_src_extended(AW_root *aw_root, AW_CL cl_scanner) { map_extended(aw_root, (DbScanner*)cl_scanner, 1); }
-static void MG_map_dst_extended(AW_root *aw_root, AW_CL cl_scanner) { map_extended(aw_root, (DbScanner*)cl_scanner, 2); }
+static void MG_map_src_extended(AW_root *aw_root, DbScanner *scanner) { map_extended(aw_root, scanner, 1); }
+static void MG_map_dst_extended(AW_root *aw_root, DbScanner *scanner) { map_extended(aw_root, scanner, 2); }
 
-AW_window *MG_merge_extendeds_cb(AW_root *awr) {
-    static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
+AW_window *MG_create_merge_SAIs_window(AW_root *awr) {
+    AW_window_simple *aws = new AW_window_simple;
 
-    aws = new AW_window_simple;
     aws->init(awr, "MERGE_SAI", "MERGE SAI");
     aws->load_xfig("merge/extended.fig");
 
@@ -161,35 +158,35 @@ AW_window *MG_merge_extendeds_cb(AW_root *awr) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("ex1");
-    awt_create_selection_list_on_sai(GLOBAL_gb_src, (AW_window *)aws, AWAR_EX_NAME_SRC);
+    awt_create_selection_list_on_sai(GLOBAL_gb_src, aws, AWAR_EX_NAME_SRC, true);
     DbScanner *scanner = create_db_scanner(GLOBAL_gb_src, aws, "info1", 0, 0, 0, DB_SCANNER, 0, 0, 0, SPECIES_get_selector());
-    aws->get_root()->awar(AWAR_EX_NAME_SRC)->add_callback(MG_map_src_extended, (AW_CL)scanner);
+    aws->get_root()->awar(AWAR_EX_NAME_SRC)->add_callback(makeRootCallback(MG_map_src_extended, scanner));
 
     aws->at("ex2");
-    awt_create_selection_list_on_sai(GLOBAL_gb_dst, (AW_window *)aws, AWAR_EX_NAME_DST);
+    awt_create_selection_list_on_sai(GLOBAL_gb_dst, aws, AWAR_EX_NAME_DST, true);
     scanner = create_db_scanner(GLOBAL_gb_dst, aws, "info2", 0, 0, 0, DB_SCANNER, 0, 0, 0, SPECIES_get_selector());
-    aws->get_root()->awar(AWAR_EX_NAME_DST)->add_callback(MG_map_dst_extended, (AW_CL)scanner);
+    aws->get_root()->awar(AWAR_EX_NAME_DST)->add_callback(makeRootCallback(MG_map_dst_extended, scanner));
 
     aws->button_length(20);
 
     aws->at("delete1");
-    aws->callback(MG_extended_delete_cb, 1);
+    aws->callback(makeWindowCallback(MG_extended_delete_cb, 1));
     aws->create_button("DELETE_SAI_DB1", "Delete SAI");
 
     aws->at("delete2");
-    aws->callback(MG_extended_delete_cb, 2);
+    aws->callback(makeWindowCallback(MG_extended_delete_cb, 2));
     aws->create_button("DELETE_SAI_DB2", "Delete SAI");
 
     aws->at("rename1");
-    aws->callback(AW_POPUP, (AW_CL)MG_create_extended_rename_window, 1);
+    aws->callback(makeCreateWindowCallback(MG_create_extended_rename_window, 1));
     aws->create_button("RENAME_SAI_DB1", "Rename SAI");
 
     aws->at("rename2");
-    aws->callback(AW_POPUP, (AW_CL)MG_create_extended_rename_window, 2);
+    aws->callback(makeCreateWindowCallback(MG_create_extended_rename_window, 2));
     aws->create_button("RENAME_SAI_DB2", "Rename SAI");
 
     aws->at("transfer");
-    aws->callback(MG_transfer_extended, 0);
+    aws->callback(MG_transfer_extended);
     aws->create_button("TRANSFER_SAI", "Transfer SAI");
 
     aws->button_length(0);
@@ -198,5 +195,5 @@ AW_window *MG_merge_extendeds_cb(AW_root *awr) {
     aws->callback(makeHelpCallback("mg_extendeds.hlp"));
     aws->create_button("HELP_MERGE", "#merge/icon.xpm");
 
-    return (AW_window *)aws;
+    return aws;
 }

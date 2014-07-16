@@ -111,7 +111,7 @@ static string *get_downgroups(const ARB_countedTree *ct, const ARB_tree_predicat
         group_members = 0;
     }
     else {
-        const char *group_name = ct->group_name();
+        const char *group_name = ct->get_group_name();
 
         if (group_name && keep_group_name.selects(*ct)) {
             group_members = ct->get_leaf_count();
@@ -137,7 +137,7 @@ static string *get_downgroups(const ARB_countedTree *ct, const ARB_tree_predicat
     return result;
 }
 static const char *get_upgroup(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name, const ARB_countedTree*& upgroupPtr, bool reuse_original_name) {
-    const char *group_name = ct->group_name();
+    const char *group_name = ct->get_group_name();
     char       *original   = (reuse_original_name && group_name) ? originalGroupName(group_name) : NULL;
 
     if (original) {
@@ -234,7 +234,7 @@ string Cluster::get_upgroup_info(const ARB_countedTree *ct, const ARB_tree_predi
 // --------------------------
 //      DisplayFormat
 
-class DisplayFormat {
+class DisplayFormat : virtual Noncopyable {
     size_t   max_count;
     AP_FLOAT max_dist;
     AP_FLOAT max_minBases;
@@ -274,6 +274,10 @@ public:
         , max_minBases(0.0)
         , format_string(NULL)
     {}
+
+    ~DisplayFormat() {
+        free(format_string);
+    }
 
     void announce(size_t count, AP_FLOAT maxDist, AP_FLOAT minBases) {
         max_count    = std::max(max_count, count);

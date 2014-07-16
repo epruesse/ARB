@@ -3,7 +3,7 @@
 TOOLS := \
 	arb_proto_2_xsub \
 
-LIB_ARBDB            := $(LIBPATH) $(ARBDB_LIB)
+LIB_ARBDB            := $(LIBPATH) $(ARBDB_LIB) $(ARB_GLIB_LIBS)
 LIBS_ARB_PROBE       := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a
 LIBS_ARB_READ_TREE   := ../SL/TREE_READ/TREE_READ.a
 LIBS_ARB_EXPORT_TREE := ../SL/TREE_WRITE/TREE_WRITE.a ../XML/XML.a $(LIBS_ARB_READ_TREE)
@@ -19,7 +19,7 @@ all: $(BINARIES)
 %.o: %.c
 	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
-$(ARBHOME)/bin/%: %.o
+$(ARBHOME)/bin/%: %.o $(use_ARB_main)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIB_ARBDB) $(EXECLIBS)
 
 clean:
@@ -62,9 +62,9 @@ arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/dupstr.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/test_global.h

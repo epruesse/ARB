@@ -656,7 +656,7 @@ GBDATA *GBT_gen_accession_number(GBDATA *gb_species, const char *ali_name) {
 }
 
 
-int GBT_is_partial(GBDATA *gb_species, int default_value, int define_if_undef) {
+int GBT_is_partial(GBDATA *gb_species, int default_value, bool define_if_undef) {
     // checks whether a species has a partial or full sequence
     //
     // Note: partial sequences should not be used for tree calculations
@@ -701,14 +701,23 @@ GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname) {
 }
 
 char *GBT_get_default_alignment(GBDATA *gb_main) {
-    return GBT_read_string(gb_main, "presets/use");
+    gb_assert(!GB_have_error()); // illegal to enter this function when an error is exported!
+    return GBT_read_string(gb_main, GB_DEFAULT_ALIGNMENT);
 }
 
 GB_ERROR GBT_set_default_alignment(GBDATA *gb_main, const char *alignment_name) {
-    return GBT_write_string(gb_main, "presets/use", alignment_name);
+    return GBT_write_string(gb_main, GB_DEFAULT_ALIGNMENT, alignment_name);
 }
 
 GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {
+    /*! @return global alignment container for alignment 'aliname' or
+     * NULL if alignment not found (error exported in that case)
+     */
+    if (!aliname) {
+        GB_export_error("no alignment given");
+        return NULL;
+    }
+
     GBDATA *gb_presets        = GBT_get_presets(gb_main);
     GBDATA *gb_alignment_name = GB_find_string(gb_presets, "alignment_name", aliname, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
@@ -723,6 +732,9 @@ GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {
 #warning recode and change result type to long* ?
 #endif
 long GBT_get_alignment_len(GBDATA *gb_main, const char *aliname) {
+    /*! @return length of alignment 'aliname' or
+     * -1 if alignment not found (error exported in that case)
+     */
     GBDATA *gb_alignment = GBT_get_alignment(gb_main, aliname);
     return gb_alignment ? *GBT_read_int(gb_alignment, "alignment_len") : -1;
 }
@@ -742,6 +754,9 @@ GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *aliname, long new_le
 }
 
 char *GBT_get_alignment_type_string(GBDATA *gb_main, const char *aliname) {
+    /*! @return type-string of alignment 'aliname' or
+     * NULL if alignment not found (error exported in that case)
+     */
     char   *result       = NULL;
     GBDATA *gb_alignment = GBT_get_alignment(gb_main, aliname);
     if (gb_alignment) {
@@ -974,10 +989,17 @@ void TEST_alignment() {
             }
         }
 
+        // test functions called with aliname==NULL
+        TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GBT_get_alignment(gb_main, NULL), "no alignment");
+        TEST_EXPECT_EQUAL(GBT_get_alignment_len(gb_main, NULL), -1);
+        TEST_EXPECT_CONTAINS(GB_await_error(), "no alignment");
+        TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GBT_get_alignment_type_string(gb_main, NULL), "no alignment");
+
         free(def_ali_name);
     }
 
     GB_close(gb_main);
 }
+TEST_PUBLISH(TEST_alignment);
 
 #endif // UNIT_TESTS

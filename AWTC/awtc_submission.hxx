@@ -13,7 +13,7 @@
 
 
 void       AWTC_create_submission_variables(AW_root *root, AW_default db1);
-AW_window *AWTC_create_submission_window(AW_root *root, AW_CL cl_gbmain);
+AW_window *AWTC_create_submission_window(AW_root *root, GBDATA *gb_main);
 
 #else
 #error awtc_submission.hxx included twice

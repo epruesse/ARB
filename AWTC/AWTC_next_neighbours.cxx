@@ -322,19 +322,19 @@ void AWTC_create_common_next_neighbour_fields(AW_window *aws) {
     aws->create_input_field(AWAR_NN_MISMATCHES, 3);
 
     aws->at("mode");
-    aws->create_option_menu(AWAR_NN_FAST_MODE, 0, 0);
+    aws->create_option_menu(AWAR_NN_FAST_MODE, true);
     aws->insert_default_option("Complete", "", 0);
     aws->insert_option("Quick", "", 1);
     aws->update_option_menu();
 
     aws->at("score");
-    aws->create_option_menu(AWAR_NN_REL_MATCHES, 0, 0);
+    aws->create_option_menu(AWAR_NN_REL_MATCHES, true);
     aws->insert_option("absolute", "", 0);
     aws->insert_default_option("relative", "", 1);
     aws->update_option_menu();
 
     aws->at("scaling");
-    aws->create_option_menu(AWAR_NN_REL_SCALING, 0, 0);
+    aws->create_option_menu(AWAR_NN_REL_SCALING, true);
     aws->insert_option        ("to source POC",  "", RSS_SOURCE);
     aws->insert_option        ("to target POC",  "", RSS_TARGET);
     aws->insert_default_option("to maximum POC", "", RSS_BOTH_MAX);
@@ -453,5 +453,5 @@ void TEST_SLOW_PT_FamilyFinder() {
     GB_close(gb_main);
 }
 
-#endif
+#endif // UNIT_TESTS
 

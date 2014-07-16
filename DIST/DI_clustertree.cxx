@@ -24,15 +24,10 @@ typedef std::set<LeafRelation> SortedPairValues; // iterator runs from small to 
 
 
 ClusterTreeRoot::ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_)
-    : ARB_tree_root(aliview, ClusterTree(0), seqTemplate_, false)
-    , maxDistance(maxDistance_)
-    , minClusterSize(minClusterSize_)
-{
-
-}
-
-ClusterTreeRoot::~ClusterTreeRoot() {
-}
+    : ARB_seqtree_root(aliview, new ClusterTreeNodeFactory, seqTemplate_, false),
+      maxDistance(maxDistance_),
+      minClusterSize(minClusterSize_)
+{}
 
 #if defined(DEBUG)
 struct ClusterStats {
@@ -71,9 +66,9 @@ GB_ERROR ClusterTreeRoot::find_clusters() {
 #if defined(DEBUG)
     printf("----------------------------------------\n");
     printf("maxDistance:       %f\n", maxDistance);
-    printf("minClusterSize:    %zu\n", minClusterSize);
-    printf("Leafs in tree:     %zu\n", root->get_leaf_count());
-    printf("Possible clusters: %zu\n", root->get_cluster_count());
+    printf("minClusterSize:    %u\n", minClusterSize);
+    printf("Leafs in tree:     %u\n", root->get_leaf_count());
+    printf("Possible clusters: %u\n", root->get_cluster_count());
 #endif // DEBUG
 
     arb_progress cluster_progress(root->get_cluster_count());
@@ -398,7 +393,7 @@ AP_FLOAT ClusterTree::get_seqDist(const TwoLeafs& pair) {
                    name1, name2, mutations, wbc1, wbc2, minBaseCount, dist);
 #endif // DEBUG
 
-            cl_assert(!std::isnan(dist));
+            cl_assert(!is_nan_or_inf(dist));
             
             (*sequenceDists)[pair] = dist;
             delete ancestor;

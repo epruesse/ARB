@@ -729,4 +729,4 @@ void TEST_ARBDB_memory() { // not a real unit test - just was used for debugging
 }
 
 
-#endif
+#endif // UNIT_TESTS

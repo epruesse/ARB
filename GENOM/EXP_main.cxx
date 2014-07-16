@@ -60,19 +60,13 @@ struct EXP_item_type_species_selector : public awt_item_type_selector {
     virtual size_t get_self_awar_content_length() const OVERRIDE {
         return 12 + 1 + 40; // species-name+'/'+experiment_name
     }
-    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // add callbacks to awars
-        root->awar(get_self_awar())->add_callback(f, cl_mask);
-    }
-    virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const OVERRIDE { // add callbacks to awars
-        root->awar(get_self_awar())->remove_callback(f, cl_mask);
-    }
     virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
         char   *species_name    = root->awar(AWAR_ORGANISM_NAME)->read_string();
         char   *experiment_name = root->awar(AWAR_EXPERIMENT_NAME)->read_string();
         GBDATA *gb_experiment   = 0;
 
         if (species_name[0] && experiment_name[0]) {
-            GB_transaction dummy(gb_main);
+            GB_transaction ta(gb_main);
             GBDATA *gb_species = GBT_find_species(gb_main, species_name);
             if (gb_species) {
                 gb_experiment = EXP_find_experiment(gb_species, experiment_name);
@@ -91,18 +85,16 @@ struct EXP_item_type_species_selector : public awt_item_type_selector {
 
 static EXP_item_type_species_selector item_type_experiment;
 
-static void EXP_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL cl_gb_main) {
-    int                              id         = int(cl_id);
+static void EXP_open_mask_window(AW_window *aww, int id, GBDATA *gb_main) {
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
     exp_assert(descriptor);
     if (descriptor) {
-        GBDATA *gb_main = (GBDATA*)cl_gb_main;
         AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_experiment, descriptor->get_internal_maskname(), descriptor->is_local_mask());
     }
 }
 
 static void EXP_create_mask_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) {
-    AWT_create_mask_submenu(awm, AWT_IT_EXPERIMENT, EXP_open_mask_window, (AW_CL)gb_main);
+    AWT_create_mask_submenu(awm, AWT_IT_EXPERIMENT, EXP_open_mask_window, gb_main);
 }
 
 static AW_window *create_colorize_experiments_window(AW_root *aw_root, AW_CL cl_gb_main) {
@@ -124,7 +116,7 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, 
         EXP_create_mask_submenu(awm, gb_main);
 
         awm->sep______________();
-        awm->insert_menu_topic("experiment_colors",     "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL, AW_POPUP,  (AW_CL)create_colorize_experiments_window, (AW_CL)gb_main);
+        awm->insert_menu_topic("experiment_colors",     "Colors ...",           "C",    "colorize.hlp", AWM_ALL, AW_POPUP,  (AW_CL)create_colorize_experiments_window, (AW_CL)gb_main);
     }
     if (submenu) awm->close_sub_menu();
 }

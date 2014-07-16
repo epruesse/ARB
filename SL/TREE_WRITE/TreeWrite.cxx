@@ -54,8 +54,8 @@ static void export_tree_label(const char *label, FILE *out, TREE_node_quoting qm
 
         if (whole_label_quoted(fixed_label, label_length)) {
             // if whole label is quoted -> remove quotes
-            fixed_label[label_length-1] = 0;
-            strcpy(fixed_label, fixed_label+1);
+            memmove(fixed_label, fixed_label+1, label_length-2);
+            fixed_label[label_length-2] = 0;
         }
     }
 
@@ -102,15 +102,15 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
                                           bool save_bootstraps, bool save_groupnames, TREE_node_quoting qmode)
 {
     const char *error = 0;
-    const char *buf;
 
     if (pretty) indentTo(indent, out);
 
     if (tree->is_leaf) {
-        if (node_gen) buf = node_gen->gen(gb_main, tree->gb_node, NDS_OUTPUT_LEAFTEXT, tree, tree_name);
-        else          buf = tree->name;
+        const char *label;
+        if (node_gen) label = node_gen->gen(gb_main, tree->gb_node, NDS_OUTPUT_LEAFTEXT, tree, tree_name);
+        else          label = tree->name;
 
-        export_tree_label(buf, out, qmode);
+        export_tree_label(label, out, qmode);
     }
     else {
         if (pretty) fputs("(\n", out);
@@ -129,31 +129,25 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
         if (pretty) indentTo(indent, out);
         fputc(')', out);
 
-        buf             = 0;
         char *bootstrap = 0;
-
-        if (tree->remark_branch && save_bootstraps) {
-            const char *boot = tree->remark_branch;
-            if (boot[strlen(boot)-1] == '%') { // does remark_branch contain a bootstrap value ?
-                char   *end = 0;
-                double  val = strtod(boot, &end);
-                tree_assert(end[0] == '%');        // otherwise sth strange is contained in remark_branch
-
-                boot = GBS_global_string("%i", int(val+0.5));
+        if (save_bootstraps) {
+            double value;
+            switch (tree->parse_bootstrap(value)) {
+                case REMARK_BOOTSTRAP: bootstrap = GBS_global_string_copy("%i", int(value+0.5)); break;
+                case REMARK_OTHER:     bootstrap = strdup(tree->get_remark()); break;
+                case REMARK_NONE:      break;
             }
-            bootstrap = strdup(boot);
         }
 
-        if (tree->name && save_groupnames) buf = tree->name;
-
-        const char *print = 0;
-        if (buf) {
-            if (bootstrap) print = GBS_global_string("%s:%s", bootstrap, buf);
-            else           print = buf;
+        const char *group = (tree->name && save_groupnames) ? tree->name : 0;
+        const char *label = 0;
+        if (group) {
+            if (bootstrap) label = GBS_global_string("%s:%s", bootstrap, group);
+            else           label = group;
         }
-        else if (bootstrap) print = bootstrap;
+        else if (bootstrap) label = bootstrap;
 
-        if (print) export_tree_label(print, out, qmode);
+        if (label) export_tree_label(label, out, qmode);
 
         free(bootstrap);
     }
@@ -184,20 +178,18 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
         item_tag.add_attribute("length", GBS_global_string("%.5f", my_length));
     }
     else {
-        char *groupname = 0;
         char *bootstrap = 0;
-
-        if (tree->remark_branch) {
-            const char *boot = tree->remark_branch;
-            if (boot[0] && boot[strlen(boot)-1] == '%') { // does remark_branch contain a bootstrap value ?
-                char   *end = 0;
-                double  val = strtod(boot, &end);
-
-                tree_assert(end[0] == '%');          // otherwise sth strange is contained in remark_branch
-                bootstrap = GBS_global_string_copy("%i", int(val+0.5));
+        {
+            double value;
+            switch (tree->parse_bootstrap(value)) {
+                case REMARK_BOOTSTRAP: bootstrap = GBS_global_string_copy("%i", int(value+0.5)); break;
+                case REMARK_OTHER:     break; // @@@ other branch-remarks are currently not saved into xml format
+                case REMARK_NONE:      break;
             }
         }
-        bool folded = false;
+
+        bool  folded    = false;
+        char *groupname = 0;
         if (tree->name) {
             const char *buf;
 
@@ -261,9 +253,9 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
 
     if (!output) error = GB_export_errorf("file '%s' could not be opened for writing", path);
     else {
-        GB_transaction gb_dummy(gb_main);
+        GB_transaction ta(gb_main);
 
-        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, sizeof(GBT_TREE));
+        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, GBT_TREE_NodeFactory());
         if (!tree) error = GB_await_error();
         else {
             error = GBT_link_tree(tree, gb_main, true, 0, 0);
@@ -337,11 +329,11 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, const char *tree_name, const TREE_no
     GB_ERROR  error  = 0;
     FILE     *output = fopen(path, "w");
 
-    if (!output) error = GB_export_errorf("file '%s' could not be opened for writing", path);
+    if (!output) error = GBS_global_string("file '%s' could not be opened for writing", path);
     else {
-        GB_transaction gb_dummy(gb_main);
+        GB_transaction ta(gb_main);
 
-        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, sizeof(GBT_TREE));
+        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, GBT_TREE_NodeFactory());
         if (!tree) error = GB_await_error();
         else {
             error = GBT_link_tree(tree, gb_main, true, 0, 0);
@@ -374,7 +366,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, const char *tree_name, const TREE_no
                 }
             }
 
-            GBT_delete_tree(tree);
+            delete tree;
         }
 
         fprintf(output, ";\n");

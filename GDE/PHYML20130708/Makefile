@@ -11,6 +11,9 @@ CONFIG_STATUS    = $(BUILDDIR)/config.status
 # automatically remove now obsolete file (@@@ remove this code after some time)
 OBSOLETE_STAMP   = phyml.stamp
 
+CC=$(A_CC)
+CXX=$(A_CXX)
+
 # ARBs standard target:
 $(MAIN) : $(INSTALLED_BINARY)
 	rm -f $(OBSOLETE_STAMP)
@@ -28,7 +31,15 @@ retry: clean
 $(INSTALLED_BINARY): $(CONFIG_STATUS)
 	$(MAKE) -C $(BUILDDIR) install
 
-$(CONFIG_STATUS): Makefile
+phyml/configure : phyml/configure.fallback
+	@echo "Using $<:"
+	cp -p $< $@
+
+phyml/config.h.in : phyml/config.h.in.fallback
+	@echo "Using $<:"
+	cp -p $< $@
+
+$(CONFIG_STATUS): Makefile phyml/configure phyml/config.h.in
 	$(MAKE) clean
 	mkdir -p $(BUILDDIR)
 	cd $(BUILDDIR) && ../phyml/configure CPP='' --prefix=$(ARBHOME) --program-suffix=$(SUFFIX)

@@ -12,7 +12,6 @@
 #include "awtlocal.hxx"
 #include "awt_sel_boxes.hxx"
 
-#include <aw_window.hxx>
 #include <aw_awar.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
@@ -505,8 +504,8 @@ static void create_tables_var(GBDATA *gb_main, AW_root *aw_root) {
     aw_root->awar_string(AWAR_TABLE_REM, "no rem");
 
     AW_create_fileselection_awars(aw_root, AWAR_TABLE_EXPORT, "", "table", "tablefile");
-
     AW_create_fileselection_awars(aw_root, AWAR_TABLE_IMPORT, "", "table", "tablefile");
+
     aw_root->awar_string(AWAR_TABLE_IMPORT "/table_name", "table_");
 
     aw_root->awar(AWAR_TABLE_NAME)->add_callback((AW_RCB1)table_vars_callback, (AW_CL)gb_main);

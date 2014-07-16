@@ -96,12 +96,17 @@ static int init_local_com_struct() {
 }
 
 static const char *AP_probe_pt_look_for_server(ARB_ERROR& error) {
+    // DRY vs  ../MULTI_PROBE/MP_noclass.cxx@MP_probe_pt_look_for_server
+    // DRY vs  ../PROBE_DESIGN/probe_design.cxx@PD_probe_pt_look_for_server
     const char *server_tag = GBS_ptserver_tag(P.SERVERID);
-
     error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
-    if (error) return NULL;
-    
-    return GBS_read_arb_tcp(server_tag);
+
+    const char *result = NULL;
+    if (!error) {
+        result = GBS_read_arb_tcp(server_tag);
+        if (!result) error = GB_await_error();
+    }
+    return result;
 }
 
 class PTserverConnection {
@@ -449,14 +454,14 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
 
     showhelp = (pargc <= 1);
 
-#ifdef UNIT_TESTS
+#ifdef UNIT_TESTS // UT_DIFF
     const int minServerID   = TEST_GENESERVER_ID;
 #else // !UNIT_TESTS
     const int minServerID   = 0;
 #endif
 
     P.SERVERID = getInt("serverid", 0, minServerID, 100, "Server Id, look into $ARBHOME/lib/arb_tcp.dat");
-#ifdef UNIT_TESTS
+#ifdef UNIT_TESTS // UT_DIFF
     if (P.SERVERID<0) { arb_assert(P.SERVERID == TEST_SERVER_ID || P.SERVERID == TEST_GENESERVER_ID); }
 #endif
 
@@ -1369,6 +1374,45 @@ void TEST_SLOW_match_probe() {
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
         arguments[2] = "matchmismatches=2"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
     }
+
+    // -------------------------------------------------------------
+    //      tests related to http://bugs.arb-home.de/ticket/410
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=ACGGACUCCGGGAAACCGGGGCUAAUACC", // length=29
+            NULL, // matchmismatches
+            "matchacceptN=5",
+            "matchlimitN=7",
+            "matchmaxresults=10",
+        };
+
+        CCP expectd0 = "    name---- fullname mis N_mis wmis pos ecoli rev          'ACGGACUCCGGGAAACCGGGGCUAAUACC'\1"
+            "BcSSSS00\1" "  BcSSSS00            0     0  0.0  84    72 0   UAGCGGCGG-=============================-GGAUGGUGA\1"
+            "Bl0LLL00\1" "  Bl0LLL00            0     0  0.0  84    72 0   CAGCGGCGG-=============================-GGAUGCUGA\1"
+            "AclPleur\1" "  AclPleur            4     0  4.6  84    72 0   GAGUGGCGG-=======a========u=UA=========-GCGUAAUCA\1"
+            "PtVVVulg\1" "  PtVVVulg            4     0  5.1  84    72 0   GAGCGGCGG-=======a=U======G=U==========-GCAUGACCA\1"
+            "DsssDesu\1" "  DsssDesu            5     0  5.3  84    72 0   GAGUGGCGC-========u=C====Gu==A=========-GGAUACAGA\1"
+            "PsAAAA00\1" "  PsAAAA00            5     0  5.3  84    72 0   CAGCGGCGG-======gu=C======G==C=========-GCAUACGCA\1";
+
+        arguments[2] = "matchmismatches=5"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
+    }
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=ACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGGUGA", // length=38
+            NULL, // matchmismatches
+            "matchacceptN=5",
+            "matchlimitN=7",
+            "matchmaxresults=10",
+        };
+
+        CCP expectd0 = "    name---- fullname mis N_mis wmis pos ecoli rev          'ACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGGUGA'\1"
+            "BcSSSS00\1" "  BcSSSS00            0     0  0.0  84    72 0   UAGCGGCGG-======================================-UGAUUGGGG\1"
+            "Bl0LLL00\1" "  Bl0LLL00            1     0  1.5  84    72 0   CAGCGGCGG-==================================C===-UGAUUGGGG\1";
+
+        arguments[2] = "matchmismatches=18"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
+    }
 }
 
 static char *extract_locations(const char *probe_design_result) {
@@ -1702,7 +1746,16 @@ void TEST_SLOW_design_probe() {
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
 
-    // same as above (with probelen == 8)
+#if defined(ARB_64)
+#define RES_64
+#else // !defined(ARB_64)
+// results below differ for some(!) 32 bit arb versions (numeric issues?)
+// (e.g. u1004 behaves like 64bit version; u1204 doesnt)
+// #define RES_64 // uncomment for u1004
+#endif
+
+
+        // same as above (with probelen == 8)
     {
         const char *arguments[] = {
             "prgnamefake",
@@ -1732,9 +1785,15 @@ void TEST_SLOW_design_probe() {
             "CGGACGGG  8 A+ 2   69   20    1  87.5 30.0 CCCGUCCG |  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2\n"
             "GGACGGGC  8 A+ 4   70   20    1  87.5 30.0 GCCCGUCC |  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3\n"
             "GACGGGCC  8 A+ 5   71   20    1  87.5 30.0 GGCCCGUC |  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3\n"
+#if defined(RES_64)
             "ACGGGCGC  8 B=98   86   13    1  87.5 30.0 GCGCCCGU |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  1\n"
             "CGGGCGCU  8 B+ 1   87   13    1  87.5 30.0 AGCGCCCG |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  1\n"
             "CAGCGGCG  8 C=63   58    8    1  87.5 30.0 CGCCGCUG |  2  2  2  2  2  2  2  6  6  6  6  6  6  6  8  8  8  8  8  8\n";
+#else // !defined(RES_64)
+            "ACGGGCGC  8 B=98   86   13    1  87.5 30.0 GCGCCCGU |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  2\n"
+            "CGGGCGCU  8 B+ 1   87   13    1  87.5 30.0 AGCGCCCG |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  2\n"
+            "CAGCGGCG  8 C=63   58    8    1  87.5 30.0 CGCCGCUG |  2  2  2  2  2  2  2  6  6  6  6  6  6  6  8  8  8  8  8 10\n";
+#endif
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
@@ -1851,9 +1910,17 @@ void TEST_SLOW_design_probe() {
             "Max. nongroup hits 0 (lowest rejected nongroup hits: 2)\n"
             "Min. group hits    50%\n"
             "Target   le apos ecol qual grps   G+C temp    Probe | Decrease T by n*.3C -> probe matches n non group species\n"
+#if defined(RES_64)
             "CGGCAGCG  8 A=28   23   20    1  87.5 30.0 CGCUGCCG | - - - - - - - - - - - - - - - - - - - -\n"
+#else // !defined(RES_64)
+            "CGGCAGCG  8 A=28   23   20    1  87.5 30.0 CGCUGCCG | - - - - - - - - - - - - - - - - - - - 3\n"
+#endif
             "UGGGCGGC  8 B=67   60    8    1  87.5 30.0 GCCGCCCA | - - - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1\n"
+#if defined(RES_64)
             "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 4 4 4 4 4 4\n"
+#else // !defined(RES_64)
+            "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 4 4 4 4 4 5\n"
+#endif
             "GGGCGGCG  8 B+ 1   60    8    1 100.0 32.0 CGCCGCCC | - - - - - - - 3 3 3 3 3 3 3 3 3 3 3 3 3\n"
             "GGCGGCGA  8 B+ 2   60    8    1  87.5 30.0 UCGCCGCC | - - - - - - - 3 3 3 3 3 3 3 3 3 3 3 3 3\n"
             "GCGGCGAG  8 B+ 3   60    3    1  87.5 30.0 CUCGCCGC | - - 1 1 1 1 1 4 4 4 4 4 4 4 4 4 4 4 4 4\n";
@@ -2088,7 +2155,7 @@ void TEST_SLOW_get_existing_probes() {
 
 // #define TEST_AUTO_UPDATE // uncomment to auto-update expected index dumps
 
-void TEST_index_dump() {
+void TEST_SLOW_index_dump() {
     for (int use_gene_ptserver = 0; use_gene_ptserver <= 1; use_gene_ptserver++) {
         const char *dumpfile     = use_gene_ptserver ? "index_gpt.dump" : "index_pt.dump";
         char       *dumpfile_exp = GBS_global_string_copy("%s.expected", dumpfile);
@@ -2365,4 +2432,4 @@ void TEST_SLOW_variable_defaults_in_server() {
     link = 0;
 }
 
-#endif
+#endif // UNIT_TESTS

@@ -12,6 +12,7 @@
 #include "gb_main.h"
 
 #include <arb_sort.h>
+#include <arb_file.h>
 #include <arb_sleep.h>
 #include <arb_str.h>
 #include <arb_strarray.h>
@@ -214,7 +215,7 @@ void GBT_install_message_handler(GBDATA *gb_main) {
 
 void GBT_message(GBDATA *gb_main, const char *msg) {
     /*! When called in client(or server) this causes the DB server to show the message.
-     * Message is showed via GB_warning (which uses aw_message in GUIs)
+     * Message is shown via GB_warning (which uses aw_message in GUIs)
      *
      * Note: The message is not shown before the transaction ends.
      * If the transaction is aborted, the message is never shown!
@@ -825,6 +826,108 @@ GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const ch
     return error;
 }
 
+inline char *find_macro_in(const char *dir, const char *macroname) {
+    char *full = GBS_global_string_copy("%s/%s", dir, macroname);
+    if (!GB_is_readablefile(full)) {
+        freeset(full, GBS_global_string_copy("%s.amc", full));
+        if (!GB_is_readablefile(full)) freenull(full);
+    }
+    return full;
+}
+
+static char *fullMacroname(const char *macro_name) {
+    /*! detect full path of 'macro_name'
+     * @param macro_name full path or path relative to ARBMACRO or ARBMACROHOME
+     * @return full path or NULL (in which case an error is exported)
+     */
+
+    gb_assert(!GB_have_error());
+
+    if (GB_is_readablefile(macro_name)) return strdup(macro_name);
+
+    char *in_ARBMACROHOME = find_macro_in(GB_getenvARBMACROHOME(), macro_name);
+    char *in_ARBMACRO     = find_macro_in(GB_getenvARBMACRO(),     macro_name);
+    char *result          = NULL;
+
+    if (in_ARBMACROHOME) {
+        if (in_ARBMACRO) {
+            GB_export_errorf("ambiguous macro name '%s'\n"
+                             "('%s' and\n"
+                             " '%s' exist both.\n"
+                             " You have to rename or delete one of them!)",
+                             macro_name, in_ARBMACROHOME, in_ARBMACRO);
+        }
+        else reassign(result, in_ARBMACROHOME);
+    }
+    else {
+        if (in_ARBMACRO) reassign(result, in_ARBMACRO);
+        else GB_export_errorf("Failed to detect macro '%s'", macro_name);
+    }
+
+    free(in_ARBMACRO);
+    free(in_ARBMACROHOME);
+
+    gb_assert(contradicted(result, GB_have_error()));
+
+    return result;
+}
+
+inline const char *relative_inside(const char *dir, const char *fullpath) {
+    if (ARB_strBeginsWith(fullpath, dir)) {
+        const char *result = fullpath+strlen(dir);
+        if (result[0] == '/') return result+1;
+    }
+    return NULL;
+}
+
+const char *GBT_relativeMacroname(const char *macro_name) {
+    /*! make macro_name relative if it is located in or below ARBMACROHOME or ARBMACRO.
+     * Inverse function of fullMacroname()
+     * @return pointer into macro_name (relative part) or macro_name itself (if macro is located somewhere else)
+     */
+
+    const char *result  = relative_inside(GB_getenvARBMACROHOME(), macro_name);
+    if (!result) result = relative_inside(GB_getenvARBMACRO(), macro_name);
+    if (!result) result = macro_name;
+    return result;
+}
+
+GB_ERROR GBT_macro_execute(const char *macro_name, bool loop_marked, bool run_async) {
+    /*! simply execute a macro
+     *
+     * In doubt: do not use this function, instead use ../SL/MACROS/macros.hxx@execute_macro
+     *
+     * @param macro_name contains the macro filename (either with full path or relative to directories pointed to by ARBMACRO or ARBMACROHOME)
+     * @param loop_marked if true -> call macro once for each marked species
+     * @param run_async if true -> run perl asynchronously (will not detect perl failure in that case!)
+     */
+
+    GB_ERROR  error     = NULL;
+    char     *fullMacro = fullMacroname(macro_name);
+    if (!fullMacro) {
+        error = GB_await_error();
+    }
+    else {
+        char *perl_args = NULL;
+        if (loop_marked) {
+            const char *with_all_marked = GB_path_in_ARBHOME("PERL_SCRIPTS/MACROS/with_all_marked.pl");
+            perl_args = GBS_global_string_copy("'%s' '%s'", with_all_marked, fullMacro);
+        }
+        else {
+            perl_args = GBS_global_string_copy("'%s'", fullMacro);
+        }
+
+        char *cmd = GBS_global_string_copy("perl %s %s", perl_args, run_async ? "&" : "");
+
+        error = GBK_system(cmd);
+
+        free(cmd);
+        free(perl_args);
+        free(fullMacro);
+    }
+    return error;
+}
+
 // ---------------------------
 //      self-notification
 // ---------------------------
@@ -1065,5 +1168,79 @@ void TEST_scan_db() {
     
     GB_close(gb_main);
 }
+
+static arb_test::match_expectation macroFoundAs(const char *shortName, const char *expectedFullName_tmp, const char *expectedRelName, const char *partOfError) {
+    char *expectedFullName = nulldup(expectedFullName_tmp);
+
+    using namespace   arb_test;
+    expectation_group expected;
+
+    {
+        char *found = fullMacroname(shortName);
+        expected.add(that(found).is_equal_to(expectedFullName));
+        if (found) {
+            expected.add(that(GBT_relativeMacroname(found)).is_equal_to(expectedRelName));
+        }
+        free(found);
+    }
+
+    GB_ERROR error = GB_have_error() ? GB_await_error() : NULL;
+    if (partOfError) {
+        if (error) {
+            expected.add(that(error).does_contain(partOfError));
+        }
+        else {
+            expected.add(that(error).does_differ_from_NULL());
+        }
+    }
+    else {
+        expected.add(that(error).is_equal_to_NULL());
+    }
+
+    free(expectedFullName);
+    return all().ofgroup(expected);
+}
+
+#define TEST_FULLMACRO_EQUALS(shortName,fullName,relName) TEST_EXPECTATION(macroFoundAs(shortName, fullName, relName, NULL))
+#define TEST_FULLMACRO_FAILS(shortName,expectedErrorPart) TEST_EXPECTATION(macroFoundAs(shortName, NULL, NULL, expectedErrorPart))
+
+void TEST_find_macros() {
+    gb_getenv_hook old = GB_install_getenv_hook(arb_test::fakeenv);
+
+#define TEST         "test"
+#define RESERVED     "reserved4ut"
+#define TEST_AMC     TEST ".amc"
+#define RESERVED_AMC RESERVED ".amc"
+
+    // unlink test.amc in ARBMACROHOME (from previous run)
+    // ../UNIT_TESTER/run/homefake/.arb_prop/macros
+    char *test_amc = strdup(GB_concat_path(GB_getenvARBMACROHOME(), TEST_AMC));
+    char *res_amc  = strdup(GB_concat_path(GB_getenvARBMACROHOME(), RESERVED_AMC));
+
+    TEST_EXPECT_DIFFERENT(GB_unlink(test_amc), -1);
+    TEST_EXPECT_DIFFERENT(GB_unlink(res_amc), -1);
+
+    // check if it finds macros in ARBMACRO = ../lib/macros
+    TEST_FULLMACRO_EQUALS(TEST, GB_path_in_ARBLIB("macros/" TEST_AMC), TEST_AMC);
+
+    // searching reserved4ut.amc should fail now (macro should not exists)
+    TEST_FULLMACRO_FAILS(RESERVED, "Failed to detect");
+
+    // --------------------------------
+    // create 2 macros in ARBMACROHOME
+    TEST_EXPECT_NO_ERROR(GBK_system(GBS_global_string("touch '%s'; touch '%s'", test_amc, res_amc)));
+
+    // searching test.amc should fail now (macro exists in ARBMACROHOME and ARBMACRO)
+    TEST_FULLMACRO_FAILS(TEST, "ambiguous macro name");
+
+    // check if it finds macros in ARBMACROHOME = ../UNIT_TESTER/run/homefake/.arb_prop/macros
+    TEST_FULLMACRO_EQUALS(RESERVED, res_amc, RESERVED_AMC);
+
+    free(res_amc);
+    free(test_amc);
+
+    TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
+}
+TEST_PUBLISH(TEST_find_macros);
 
 #endif // UNIT_TESTS

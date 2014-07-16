@@ -19,5 +19,5 @@ clean:
 	-rm -f $(TARGET_XPM)
 
 $(TARGETDIR)/%.xpm : $(SOURCEDIR)/%.xpm $(CONVERTER) Makefile
-	$(CONVERTER) < $< > $@
+	$(CONVERTER) $@ < $< 
 

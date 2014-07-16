@@ -29,19 +29,15 @@ static GB_ERROR nt_species_join(GBDATA *dest, GBDATA *source, int deep, char *se
     GB_ERROR error = 0;
 
     switch (dtype) {
-        case GB_DB: {
-            GBDATA     *gb_source_field;
-            const char *source_field;
-            GBDATA     *gb_dest_field;
-
-            for (gb_source_field = GB_child(source);
+        case GB_DB:
+            for (GBDATA *gb_source_field = GB_child(source);
                  !error && gb_source_field;
                  gb_source_field = GB_nextChild(gb_source_field))
             {
-                source_field = GB_read_key_pntr(gb_source_field);
+                const char *source_field = GB_read_key_pntr(gb_source_field);
                 if (!strcmp(source_field, "name")) continue;
 
-                gb_dest_field = GB_entry(dest, source_field);
+                GBDATA *gb_dest_field = GB_entry(dest, source_field);
                 if (gb_dest_field) { // if destination exists -> recurse
                     error = nt_species_join(gb_dest_field, gb_source_field, 0, sep, sep2);
                 }
@@ -61,37 +57,34 @@ static GB_ERROR nt_species_join(GBDATA *dest, GBDATA *source, int deep, char *se
                 }
             }
             break;
-        }
 
         case GB_STRING: {
             char *sf = GB_read_string(source);
             char *df = GB_read_string(dest);
-            if (!strcmp(sf, df)) {
-                free(sf);
-                free(df);
-                break;
+            if (strcmp(sf, df) != 0) {
+                char *s = sep;
+                const char *spacers = " ";
+                if (deep) {
+                    s = sep2;
+                    spacers = ".- ";
+                }
+                int i;
+                // remove trailing spacers;
+                for (i = strlen(df)-1; i>=0; i--) {
+                    if (strchr(spacers, df[i])) df[i] = 0;
+                }
+                // remove leading spacers
+                int end = strlen(sf);
+                for (i=0; i<end; i++) {
+                    if (!strchr(spacers, sf[i])) break;
+                }
+                char *str = new char [strlen(sf) + strlen(df) + strlen(s) + 1];
+                sprintf(str, "%s%s%s", df, s, sf+i);
+                error = GB_write_string(dest, str);
+                delete [] str;
             }
-            char *s = sep;
-            const char *spacers = " ";
-            if (deep) {
-                s = sep2;
-                spacers = ".- ";
-            }
-            int i;
-            // remove trailing spacers;
-            for (i = strlen(df)-1; i>=0; i--) {
-                if (strchr(spacers, df[i])) df[i] = 0;
-            }
-            // remove leading spacers
-            int end = strlen(sf);
-            for (i=0; i<end; i++) {
-                if (!strchr(spacers, sf[i])) break;
-            }
-            char *str = new char [strlen(sf) + strlen(df) + strlen(s) + 1];
-            sprintf(str, "%s%s%s", df, s, sf+i);
-            error = GB_write_string(dest, str);
-            delete [] str;
-            free(sf); free(df);
+            free(sf);
+            free(df);
             break;
         }
         default: {
@@ -148,38 +141,34 @@ static void species_rename_join(AW_window *aww) {
 
 AW_window *NT_create_species_join_window(AW_root *root) {
     static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
+    if (!aws) {
+        root->awar_string(AWAR_SPECIES_JOIN_FIELD, "name", AW_ROOT_DEFAULT);
+        root->awar_string(AWAR_SPECIES_JOIN_SEP, "#", AW_ROOT_DEFAULT);
+        root->awar_string(AWAR_SPECIES_JOIN_SEP2, "#", AW_ROOT_DEFAULT);
 
-    root->awar_string(AWAR_SPECIES_JOIN_FIELD, "name", AW_ROOT_DEFAULT);
-    root->awar_string(AWAR_SPECIES_JOIN_SEP, "#", AW_ROOT_DEFAULT);
-    root->awar_string(AWAR_SPECIES_JOIN_SEP2, "#", AW_ROOT_DEFAULT);
+        aws = new AW_window_simple;
+        aws->init(root, "JOIN_SPECIES", "JOIN SPECIES");
+        aws->load_xfig("join_species.fig");
 
-    aws = new AW_window_simple;
-    aws->init(root, "JOIN_SPECIES", "JOIN SPECIES");
-    aws->load_xfig("join_species.fig");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->at("help"); aws->callback(makeHelpCallback("species_join.hlp"));
+        aws->create_button("HELP", "HELP", "H");
 
-    aws->at("help"); aws->callback(makeHelpCallback("species_join.hlp"));
-    aws->create_button("HELP", "HELP", "H");
+        aws->at("sym");
+        aws->create_input_field(AWAR_SPECIES_JOIN_SEP);
 
-    aws->at("sym");
-    aws->create_input_field(AWAR_SPECIES_JOIN_SEP);
+        aws->at("symseq");
+        aws->create_input_field(AWAR_SPECIES_JOIN_SEP2);
 
-    aws->at("symseq");
-    aws->create_input_field(AWAR_SPECIES_JOIN_SEP2);
+        aws->at("go");
+        aws->callback(species_rename_join);
+        aws->help_text("species_join.hlp");
+        aws->create_button("GO", "GO", "G");
 
-    aws->at("go");
-    aws->callback(species_rename_join);
-    aws->help_text("species_join.hlp");
-    aws->create_button("GO", "GO", "G");
-
-    create_selection_list_on_itemfields(GLOBAL.gb_main,
-                                            aws, AWAR_SPECIES_JOIN_FIELD,
-                                            FIELD_FILTER_NDS,
-                                            "field", 0, SPECIES_get_selector(), 20, 10);
-
-    return (AW_window *)aws;
+        create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_SPECIES_JOIN_FIELD, true, FIELD_FILTER_NDS, "field", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    }
+    return aws;
 }

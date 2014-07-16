@@ -232,7 +232,7 @@ GB_ERROR GB_export_error(const char *error) { // just a temp hack around format-
 GB_ERROR GB_export_errorf(const char *templat, ...) {
     /* goes to header:
      * __ATTR__FORMAT(1)
-     * __ATTR__DEPRECATED_TODO("use GB_export_error(GBS_global_string(...))")
+     * __ATTR__DEPRECATED_LATER("use GB_export_error(GBS_global_string(...))")
      *          because it's misused (where GBS_global_string should be used)
      *          old functionality will remain available via 'GB_export_error(GBS_global_string(...))' 
      */
@@ -424,7 +424,7 @@ void GBK_terminate(const char *error) { // goes to header __ATTR__NORETURN
 
     fflush(stderr);
     ARB_SIGSEGV(0); // GBK_terminate shall not be called, fix reason for call (this will crash in RELEASE version)
-    exit(EXIT_FAILURE);
+    exit(ARB_CRASH_CODE(0)); // should not be reached..just ensure ARB really terminates if somebody changes ARB_SIGSEGV
 }
 
 void GBK_terminatef(const char *templat, ...) {

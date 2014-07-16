@@ -34,8 +34,8 @@
 #define RULER_LINEWIDTH "ruler/ruler_width" // line width of ruler
 #define RULER_SIZE      "ruler/size"
 
-#define DEFAULT_RULER_LINEWIDTH DEFAULT_LINEWIDTH
-#define DEFAULT_RULER_LENGTH    DEFAULT_BRANCH_LENGTH
+#define DEFAULT_RULER_LINEWIDTH tree_defaults::LINEWIDTH
+#define DEFAULT_RULER_LENGTH    tree_defaults::LENGTH
 
 using namespace AW;
 
@@ -69,42 +69,6 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
                      NULL);
 
     return gc_manager;
-}
-
-AP_tree *AWT_graphic_tree::search(AP_tree *node, const char *name) {
-    if (node) {
-        if (node->is_leaf) {
-            if (node->name && strcmp(name, node->name) == 0) {
-                return node;
-            }
-        }
-        else {
-            AP_tree *result = search(node->get_leftson(), name);
-            if (!result) result = search(node->get_rightson(), name);
-            return result;
-        }
-    }
-    return 0;
-}
-
-void AWT_graphic_tree::jump(AP_tree *at, const char *name)
-{
-    if (sort_is_list_style(tree_sort)) return;
-
-    at = search(at, name);
-    if (!at) return;
-    if (tree_sort == AP_TREE_NORMAL) {
-        tree_root_display = get_root_node();
-    }
-    else {
-        while (at->father &&
-               at->gr.view_sum<15 &&
-               0 == at->gr.grouped)
-        {
-            at = at->get_father();
-        }
-        tree_root_display = at;
-    }
 }
 
 void AWT_graphic_tree::mark_species_in_tree(AP_tree *at, int mark_mode) {
@@ -147,7 +111,7 @@ void AWT_graphic_tree::mark_species_in_tree_that(AP_tree *at, int mark_mode, int
 
     if (!at) return;
 
-    GB_transaction dummy(tree_static->get_gb_main());
+    GB_transaction ta(tree_static->get_gb_main());
     if (at->is_leaf) {
         if (at->gb_node) {      // not a zombie
             int oldMark = GB_read_flag(at->gb_node);
@@ -172,7 +136,7 @@ void AWT_graphic_tree::mark_species_in_rest_of_tree(AP_tree *at, int mark_mode) 
     if (at) {
         AP_tree *pa = at->get_father();
         if (pa) {
-            GB_transaction dummy(tree_static->get_gb_main());
+            GB_transaction ta(tree_static->get_gb_main());
 
             mark_species_in_tree(at->get_brother(), mark_mode);
             mark_species_in_rest_of_tree(pa, mark_mode);
@@ -185,7 +149,7 @@ void AWT_graphic_tree::mark_species_in_rest_of_tree_that(AP_tree *at, int mark_m
     if (at) {
         AP_tree *pa = at->get_father();
         if (pa) {
-            GB_transaction dummy(tree_static->get_gb_main());
+            GB_transaction ta(tree_static->get_gb_main());
 
             mark_species_in_tree_that(at->get_brother(), mark_mode, condition, cd);
             mark_species_in_rest_of_tree_that(pa, mark_mode, condition, cd);
@@ -241,41 +205,14 @@ struct AWT_graphic_tree_group_state {
     bool all_terminal_closed() const { return opened_terminal == 0 && closed_terminal == closed; }
     bool all_marked_opened() const { return marked_in_groups > 0 && closed_with_marked == 0; }
 
-    int next_expand_mode() const {
-        if (closed_with_marked) return 1; // expand marked
-        return 4; // expand all
+    CollapseMode next_expand_mode() const {
+        if (closed_with_marked) return EXPAND_MARKED;
+        return EXPAND_ALL;
     }
 
-    int next_collapse_mode() const {
-        if (all_terminal_closed()) return 0; // collapse all
-        return 2; // group terminal
-    }
-
-    int next_group_mode() const {
-        if (all_terminal_closed()) {
-            if (marked_in_groups && !all_marked_opened()) return 1; // all but marked
-            return 4; // expand all
-        }
-        if (all_marked_opened()) {
-            if (all_opened()) return 0; // collapse all
-            return 4;           // expand all
-        }
-        if (all_opened()) return 0; // collapse all
-        if (!all_closed()) return 0; // collapse all
-
-        if (!all_terminal_closed()) return 2; // group terminal
-        if (marked_in_groups) return 1; // all but marked
-        return 4; // expand all
-    }
-
-    void dump() {
-        printf("closed=%i               opened=%i\n", closed, opened);
-        printf("closed_terminal=%i      opened_terminal=%i\n", closed_terminal, opened_terminal);
-        printf("closed_with_marked=%i   opened_with_marked=%i\n", closed_with_marked, opened_with_marked);
-        printf("marked_in_groups=%i     marked_outside_groups=%i\n", marked_in_groups, marked_outside_groups);
-
-        printf("all_opened=%i all_closed=%i all_terminal_closed=%i all_marked_opened=%i\n",
-               all_opened(), all_closed(), all_terminal_closed(), all_marked_opened());
+    CollapseMode next_collapse_mode() const {
+        if (all_terminal_closed()) return COLLAPSE_ALL;
+        return COLLAPSE_TERMINAL;
     }
 };
 
@@ -286,7 +223,7 @@ void AWT_graphic_tree::detect_group_state(AP_tree *at, AWT_graphic_tree_group_st
         return;                 // leafs never get grouped
     }
 
-    if (at->gb_node) {          // i am a group
+    if (at->is_named_group()) {
         AWT_graphic_tree_group_state sub_state;
         if (at->leftson != skip_this_son) detect_group_state(at->get_leftson(), &sub_state, skip_this_son);
         if (at->rightson != skip_this_son) detect_group_state(at->get_rightson(), &sub_state, skip_this_son);
@@ -318,7 +255,7 @@ void AWT_graphic_tree::detect_group_state(AP_tree *at, AWT_graphic_tree_group_st
     }
 }
 
-void AWT_graphic_tree::group_rest_tree(AP_tree *at, int mode, int color_group) {
+void AWT_graphic_tree::group_rest_tree(AP_tree *at, CollapseMode mode, int color_group) {
     if (at) {
         AP_tree *pa = at->get_father();
         if (pa) {
@@ -328,148 +265,55 @@ void AWT_graphic_tree::group_rest_tree(AP_tree *at, int mode, int color_group) {
     }
 }
 
-int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)    // run on father !!!
-{
-    /*
-      mode      does group
+bool AWT_graphic_tree::group_tree(AP_tree *at, CollapseMode mode, int color_group) {
+    /*! collapse/expand subtree according to mode and color_group
+     * Run on father! (why?)
+     * @return true if subtree shall expand
+     */
 
-      0         all
-      1         all but marked
-      2         all but groups with subgroups
-      4         none (ungroups all)
-      8         all but color_group
+    if (!at) return true;
 
-    */
+    GB_transaction ta(tree_static->get_gb_main());
 
-    if (!at) return 1;
-
-    GB_transaction dummy(tree_static->get_gb_main());
-
+    bool expand_me = false;
     if (at->is_leaf) {
-        int ungroup_me = 0;
-
-        if (mode & 4) ungroup_me = 1;
-        if (at->gb_node) { // not a zombie
-            if (!ungroup_me && (mode & 1)) { // do not group marked
-                if (GB_read_flag(at->gb_node)) { // i am a marked species
-                    ungroup_me = 1;
-                }
+        if (mode & EXPAND_ALL) expand_me = true;
+        if (at->gb_node) { // ignore zombies
+            if (!expand_me && (mode & EXPAND_MARKED)) { // do not group marked
+                if (GB_read_flag(at->gb_node)) expand_me = true;
             }
-            if (!ungroup_me && (mode & 8)) { // do not group one color_group
+            if (!expand_me && (mode & EXPAND_COLOR)) { // do not group specified color_group
                 int my_color_group = AW_find_color_group(at->gb_node, true);
-                if (my_color_group == color_group) { // i am of that color group
-                    ungroup_me = 1;
-                }
-            }
-        }
-
-        return ungroup_me;
-    }
-
-    int flag  = group_tree(at->get_leftson(), mode, color_group);
-    flag     += group_tree(at->get_rightson(), mode, color_group);
-
-    at->gr.grouped = 0;
-
-    if (!flag) { // no son requests to be shown
-        if (at->gb_node) { // i am a group
-            GBDATA *gn = GB_entry(at->gb_node, "group_name");
-            if (gn) {
-                if (strlen(GB_read_char_pntr(gn))>0) { // and I have a name
-                    at->gr.grouped     = 1;
-                    if (mode & 2) flag = 1; // do not group non-terminal groups
-                }
-            }
-        }
-    }
-    if (!at->father) get_root_node()->compute_tree(tree_static->get_gb_main());
-
-    return flag;
-}
-
-
-
-int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
-{
-    /* mode
-
-       0    to top
-       1    to bottom
-       2    center (to top)
-       3    center (to bottom; don't use this - it's used internal)
-
-       post-condition: leafname contains alphabetically "smallest" name of subtree
-
-    */
-    static const char *leafname;
-
-    if (!at) {
-        GB_transaction dummy(this->gb_main);
-        at = get_root_node();
-        if (!at) return 0;
-        at->arb_tree_set_leafsum_viewsum();
-
-        this->resort_tree(mode, at);
-        at->compute_tree(this->gb_main);
-        return 0;
-    }
-
-    if (at->is_leaf) {
-        leafname = at->name;
-        return 1;
-    }
-    int leftsize  = at->get_leftson() ->gr.leaf_sum;
-    int rightsize = at->get_rightson()->gr.leaf_sum;
-
-    if ((mode &1) == 0) {   // to top
-        if (rightsize >leftsize) {
-            at->swap_featured_sons();
-        }
-    }
-    else {
-        if (rightsize < leftsize) {
-            at->swap_featured_sons();
-        }
-    }
-
-    int lmode = mode;
-    int rmode = mode;
-    if ((mode & 2) == 2) {
-        lmode = 2;
-        rmode = 3;
-    }
-
-    resort_tree(lmode, at->get_leftson());
-    td_assert(leafname);
-    const char *leftleafname = leafname;
-
-    resort_tree(rmode, at->get_rightson());
-    td_assert(leafname);
-    const char *rightleafname = leafname;
-
-    td_assert(leftleafname && rightleafname);
-
-    if (leftleafname && rightleafname) {
-        int name_cmp = strcmp(leftleafname, rightleafname);
-        if (name_cmp<0) { // leftleafname < rightleafname
-            leafname = leftleafname;
-        }
-        else { // (name_cmp>=0) aka: rightleafname <= leftleafname
-            leafname = rightleafname;
-            if (rightsize==leftsize && name_cmp>0) { // if sizes of subtrees are equal and rightleafname<leftleafname -> swap branches
-                at->swap_featured_sons();
+                if (my_color_group == color_group) expand_me = true;
             }
         }
     }
     else {
-        if (leftleafname) leafname = leftleafname;
-        else leafname = rightleafname;
-    }
+        expand_me = group_tree(at->get_leftson (), mode, color_group);
+        expand_me = group_tree(at->get_rightson(), mode, color_group) || expand_me;
 
-    return 0;
+        at->gr.grouped = 0;
+
+        if (!expand_me) { // no son requests to be expanded
+            if (at->is_named_group()) {
+                at->gr.grouped = 1; // group me
+                if (mode & COLLAPSE_TERMINAL) expand_me = true; // do not group non-terminal groups
+            }
+        }
+        if (!at->father) get_root_node()->compute_tree();
+    }
+    return expand_me;
 }
 
-static void show_bootstrap_circle(AW_device *device, const char *bootstrap, double zoom_factor, double max_radius, double len, const Position& center, bool elipsoid, double elip_ysize, int filter) {
+void AWT_graphic_tree::reorder_tree(TreeOrder mode) {
+    AP_tree *at = get_root_node();
+    if (at) {
+        at->reorder_tree(mode);
+        at->compute_tree();
+    }
+}
+
+static void show_bootstrap_circle(AW_device *device, const char *bootstrap, double zoom_factor, double max_radius, double len, const Position& center, bool elipsoid, double elip_ysize, int filter) { // @@@ directly pass bootstrap value?
     double radius           = .01 * atoi(bootstrap); // bootstrap values are given in % (0..100)
     if (radius < .1) radius = .1;
 
@@ -506,50 +350,47 @@ static void show_bootstrap_circle(AW_device *device, const char *bootstrap, doub
 
 static void AWT_graphic_tree_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
-    if (agt->tree_root_display == old || agt->tree_root_display->is_inside(old)) {
-        agt->tree_root_display = newroot;
+    if (agt->displayed_root == old || agt->displayed_root->is_inside(old)) {
+        agt->displayed_root = newroot;
     }
 }
 
 static void AWT_graphic_tree_node_deleted(void *cd, AP_tree *del) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
-    if (agt->tree_root_display == del) {
-        agt->tree_root_display = agt->get_root_node();
+    if (agt->displayed_root == del) {
+        agt->displayed_root = agt->get_root_node();
     }
     if (agt->get_root_node() == del) {
-        agt->tree_root_display = 0;
+        agt->displayed_root = 0;
     }
 }
 void AWT_graphic_tree::toggle_group(AP_tree * at) {
     GB_ERROR error = NULL;
 
-    if (at->gb_node) {                                            // existing group
-        char *gname = GBT_read_string(at->gb_node, "group_name");
-        if (gname) {
-            const char *msg = GBS_global_string("What to do with group '%s'?", gname);
+    if (at->is_named_group()) { // existing group
+        const char *msg = GBS_global_string("What to do with group '%s'?", at->name);
 
-            switch (aw_question(NULL, msg, "Rename,Destroy,Cancel")) {
-                case 0: {                                                    // rename
-                    char *new_gname = aw_input("Rename group", "Change group name:", at->name);
-                    if (new_gname) {
-                        freeset(at->name, new_gname);
-                        error = GBT_write_string(at->gb_node, "group_name", new_gname);
-                    }
-                    break;
+        switch (aw_question(NULL, msg, "Rename,Destroy,Cancel")) {
+            case 0: { // rename
+                char *new_gname = aw_input("Rename group", "Change group name:", at->name);
+                if (new_gname) {
+                    freeset(at->name, new_gname);
+                    error = GBT_write_string(at->gb_node, "group_name", new_gname);
+                    exports.save = !error;
                 }
-
-                case 1:                                      // destroy
-                    at->gr.grouped = 0;
-                    at->name       = 0;
-                    error          = GB_delete(at->gb_node);
-                    at->gb_node    = 0;
-                    break;
-
-                case 2:         // cancel
-                    break;
+                break;
             }
 
-            free(gname);
+            case 1: // destroy
+                at->gr.grouped = 0;
+                at->name       = 0;
+                error          = GB_delete(at->gb_node); // ODD: expecting this to also destroy linewidth, rot and spread - but it doesn't!
+                at->gb_node    = 0;
+                exports.save = !error; // ODD: even when commenting out this line info is not deleted
+                break;
+
+            case 2: // cancel
+                break;
         }
     }
     else {
@@ -564,32 +405,36 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
     GB_ERROR error = NULL;
     if (!at->name) {
         char *gname = aw_input("Enter Name of Group");
-        if (gname) {
+        if (gname && gname[0]) {
             GBDATA         *gb_tree  = tree_static->get_gb_tree();
             GBDATA         *gb_mainT = GB_get_root(gb_tree);
             GB_transaction  ta(gb_mainT);
 
-            if (!at->gb_node) {
-                at->gb_node   = GB_create_container(gb_tree, "node");
-                if (!at->gb_node) error = GB_await_error();
-                else {
-                    error = GBT_write_int(at->gb_node, "id", 0);
-                    exports.save = !error;
-                }
+            GBDATA *gb_node     = GB_create_container(gb_tree, "node");
+            if (!gb_node) error = GB_await_error();
+
+            if (at->gb_node) {                                     // already have existing node info (e.g. for linewidth)
+                if (!error) error = GB_copy(gb_node, at->gb_node); // copy existing node and ..
+                if (!error) error = GB_delete(at->gb_node);        // .. delete old one (to trigger invalidation of taxonomy-cache)
             }
 
+            if (!error) error = GBT_write_int(gb_node, "id", 0); // force re-creation of node-id
+
             if (!error) {
-                GBDATA *gb_name     = GB_search(at->gb_node, "group_name", GB_STRING);
+                GBDATA *gb_name     = GB_search(gb_node, "group_name", GB_STRING);
                 if (!gb_name) error = GB_await_error();
-                else {
-                    error = GBT_write_group_name(gb_name, gname);
-                    if (!error) at->name = gname;
-                }
+                else    error       = GBT_write_group_name(gb_name, gname);
+            }
+            exports.save = !error;
+            if (!error) {
+                at->gb_node = gb_node;
+                at->name    = gname;
             }
             error = ta.close(error);
         }
     }
     else if (!at->gb_node) {
+        td_assert(0); // please note here if this else-branch is ever reached (and if: how!)
         at->gb_node = GB_create_container(tree_static->get_gb_tree(), "node");
 
         if (!at->gb_node) error = GB_await_error();
@@ -602,36 +447,55 @@ GB_ERROR AWT_graphic_tree::create_group(AP_tree * at) {
     return error;
 }
 
-struct Dragged : public AWT_command_data {
+class Dragged : public AWT_command_data {
     /*! Is dragged and can be dropped.
      * Knows how to indicate dragging.
      */
+    AWT_graphic_exports& exports;
+
+protected:
+    AWT_graphic_exports& get_exports() { return exports; }
+
+public:
     enum DragAction { DRAGGING, DROPPED };
 
-    Dragged() {}
+    Dragged(AWT_graphic_exports& exports_)
+        : exports(exports_)
+    {}
 
     static bool valid_drag_device(AW_device *device) { return device->type() == AW_DEVICE_SCREEN; }
 
     virtual void draw_drag_indicator(AW_device *device, int drag_gc) const = 0;
-    virtual void perform(DragAction action, const AW_clicked_element *target, const Position& mousepos, AWT_graphic_exports& exports) = 0;
-    virtual void abort(AWT_graphic_exports& exports) = 0;
+    virtual void perform(DragAction action, const AW_clicked_element *target, const Position& mousepos) = 0;
+    virtual void abort() = 0;
 
-    void do_drag(const AW_clicked_element *drag_target, const Position& mousepos, AWT_graphic_exports& exports)  {
-        perform(DRAGGING, drag_target, mousepos, exports);
+    void do_drag(const AW_clicked_element *drag_target, const Position& mousepos) {
+        perform(DRAGGING, drag_target, mousepos);
     }
-    void do_drop(const AW_clicked_element *drop_target, const Position& mousepos, AWT_graphic_exports& exports) {
-        perform(DROPPED, drop_target, mousepos, exports);
+    void do_drop(const AW_clicked_element *drop_target, const Position& mousepos) {
+        perform(DROPPED, drop_target, mousepos);
     }
 
     void hide_drag_indicator(AW_device *device, int drag_gc) const {
-#ifndef ARB_GTK
+#ifdef ARB_MOTIF
         // hide by XOR-drawing only works in motif
         draw_drag_indicator(device, drag_gc);
-#else
-#error test behavior in gtk
+#else // ARB_GTK
+        exports.refresh = 1;
 #endif
     }
 };
+
+bool AWT_graphic_tree::warn_inappropriate_mode(AWT_COMMAND_MODE mode) {
+    if (mode == AWT_MODE_ROTATE || mode == AWT_MODE_SPREAD) {
+        if (tree_sort != AP_TREE_RADIAL) {
+            aw_message("Please select the radial tree display mode to use this command");
+            return true;
+        }
+    }
+    return false;
+}
+
 
 void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
     //! handles AW_Event_Type = AW_Keyboard_Press.
@@ -654,7 +518,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
             Dragged *dragging = dynamic_cast<Dragged*>(cmddata);
             if (dragging) {
                 dragging->hide_drag_indicator(device, drag_gc);
-                dragging->abort(exports); // abort what ever we did
+                dragging->abort(); // abort what ever we did
                 store_command_data(NULL);
             }
         }
@@ -716,12 +580,11 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
 
         if (!handled && event.key_char() == '0') {
             // handle reset-key promised by
-            // - KEYINFO_ABORT_AND_RESET (AWT_MODE_ROT, AWT_MODE_LENGTH, AWT_MODE_LINE, AWT_MODE_SPREAD)
+            // - KEYINFO_ABORT_AND_RESET (AWT_MODE_ROTATE, AWT_MODE_LENGTH, AWT_MODE_MULTIFURC, AWT_MODE_LINE, AWT_MODE_SPREAD)
             // - KEYINFO_RESET (AWT_MODE_LZOOM)
-            // (replacement for AWT_MODE_RESET)
 
             if (event.cmd() == AWT_MODE_LZOOM) {
-                tree_root_display  = tree_root_display->get_root_node();
+                displayed_root     = displayed_root->get_root_node();
                 exports.zoom_reset = 1;
             }
             else if (pointed.is_ruler()) {
@@ -729,7 +592,8 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                 td_assert(gb_tree);
 
                 switch (event.cmd()) {
-                    case AWT_MODE_ROT: break; // ruler has no rotation
+                    case AWT_MODE_ROTATE: break; // ruler has no rotation
+                    case AWT_MODE_SPREAD: break; // ruler has no spread
                     case AWT_MODE_LENGTH: {
                         GB_transaction ta(gb_tree);
                         GBDATA *gb_ruler_size = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
@@ -744,32 +608,34 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                         exports.structure_change = 1;
                         break;
                     }
-                    case AWT_MODE_SPREAD: break; // ruler has no spread
                     default: break;
                 }
             }
             else if (pointed.node()) {
+                if (warn_inappropriate_mode(event.cmd())) return;
                 switch (event.cmd()) {
-                    case AWT_MODE_ROT:
-                        pointed.node()->reset_rotation();
+                    case AWT_MODE_ROTATE:
+                        pointed.node()->reset_subtree_angles();
                         exports.save = 1;
                         break;
 
-                    case AWT_MODE_LENGTH: {
-                        GBT_LEN blen = pointed.node()->get_branchlength();
-                        blen         = (blen == 0.0) ? DEFAULT_BRANCH_LENGTH : 0.0;
-                        pointed.node()->set_branchlength(blen);
+                    case AWT_MODE_LENGTH:
+                        pointed.node()->set_branchlength_unrooted(0.0);
                         exports.save = 1;
                         break;
-                    }
+
+                    case AWT_MODE_MULTIFURC:
+                        pointed.node()->multifurcate();
+                        exports.save = 1;
+                        break;
+
                     case AWT_MODE_LINE:
-                        pointed.node()->set_linewidth(DEFAULT_LINEWIDTH);
-                        pointed.node()->reset_linewidths(); // does only reset child (resetting father also does not help, since it resets my brother)
+                        pointed.node()->reset_subtree_linewidths();
                         exports.save = 1;
                         break;
 
                     case AWT_MODE_SPREAD:
-                        pointed.node()->reset_spread();
+                        pointed.node()->reset_subtree_spreads();
                         exports.save = 1;
                         break;
 
@@ -813,7 +679,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                       do_parent :
                         at  = at->get_father();
                         while (at) {
-                            if (at->gb_node) break;
+                            if (at->is_named_group()) break;
                             at = at->get_father();
                         }
 
@@ -824,7 +690,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                     }
 
                     if (at) {
-                        int next_group_mode;
+                        CollapseMode next_group_mode;
 
                         if (event.key_char() == 'x') {  // expand
                             next_group_mode = state.next_expand_mode();
@@ -849,7 +715,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
                     AWT_graphic_tree_group_state state;
                     detect_group_state(root_node, &state, pointed.node());
 
-                    int next_group_mode;
+                    CollapseMode next_group_mode;
                     if (event.key_char() == 'X') {  // expand
                         next_group_mode = state.next_expand_mode();
                     }
@@ -873,18 +739,14 @@ static bool command_on_GBDATA(GBDATA *gbd, const AWT_graphic_event& event, AD_ma
     bool refresh = false;
 
     if (event.type() == AW_Mouse_Press && event.button() != AW_BUTTON_MIDDLE) {
-        bool select = false;
+        AD_MAP_VIEWER_TYPE selectType = ADMVT_NONE;
 
         switch (event.cmd()) {
-            case AWT_MODE_WWW:
-                map_viewer_cb(gbd, ADMVT_WWW);
-                break;
-                
-            case AWT_MODE_MARK: 
+            case AWT_MODE_MARK: // see also .@OTHER_MODE_MARK_HANDLER
                 switch (event.button()) {
                     case AW_BUTTON_LEFT:
                         GB_write_flag(gbd, 1);
-                        select  = true;
+                        selectType = ADMVT_SELECT;
                         break;
                     case AW_BUTTON_RIGHT:
                         GB_write_flag(gbd, 0);
@@ -895,16 +757,16 @@ static bool command_on_GBDATA(GBDATA *gbd, const AWT_graphic_event& event, AD_ma
                 refresh = true;
                 break;
 
-            default :
-                select = true;
-                break;
+            case AWT_MODE_WWW:  selectType = ADMVT_WWW;    break;
+            case AWT_MODE_INFO: selectType = ADMVT_INFO;   break;
+            default:            selectType = ADMVT_SELECT; break;
         }
 
-        if (select) {
-            map_viewer_cb(gbd, ADMVT_INFO);
+        if (selectType != ADMVT_NONE) {
+            map_viewer_cb(gbd, selectType);
+            refresh = true;
         }
     }
-
 
     return refresh;
 }
@@ -942,25 +804,25 @@ public:
 class DragNDrop : public Dragged {
     LineOrText Drag, Drop;
 
-    virtual void perform_drop(AWT_graphic_exports& exports) = 0;
+    virtual void perform_drop() = 0;
 
     void drag(const AW_clicked_element *drag_target)  {
         Drop = drag_target ? *drag_target : Drag;
     }
-    void drop(const AW_clicked_element *drop_target, AWT_graphic_exports& exports) {
+    void drop(const AW_clicked_element *drop_target) {
         drag(drop_target);
-        perform_drop(exports);
+        perform_drop();
     }
 
-    void perform(DragAction action, const AW_clicked_element *target, const Position&, AWT_graphic_exports& exports) OVERRIDE {
+    void perform(DragAction action, const AW_clicked_element *target, const Position&) OVERRIDE {
         switch (action) {
             case DRAGGING: drag(target); break;
-            case DROPPED:  drop(target, exports); break;
+            case DROPPED:  drop(target); break;
         }
     }
 
-    void abort(AWT_graphic_exports& exports) OVERRIDE {
-        perform(DROPPED, Drag.element(), Position(), exports); // drop dragged element onto itself to abort
+    void abort() OVERRIDE {
+        perform(DROPPED, Drag.element(), Position()); // drop dragged element onto itself to abort
     }
 
 protected:
@@ -968,7 +830,10 @@ protected:
     const AW_clicked_element *dest_element() const { return Drop.element(); }
 
 public:
-    DragNDrop(const AW_clicked_element *dragFrom) : Drag(*dragFrom), Drop(Drag) { }
+    DragNDrop(const AW_clicked_element *dragFrom, AWT_graphic_exports& exports_)
+        : Dragged(exports_),
+          Drag(*dragFrom), Drop(Drag)
+    {}
 
     void draw_drag_indicator(AW_device *device, int drag_gc) const {
         td_assert(valid_drag_device(device));
@@ -981,7 +846,7 @@ public:
 class BranchMover : public DragNDrop {
     AW_MouseButton button;
 
-    void perform_drop(AWT_graphic_exports& exports) {
+    void perform_drop() OVERRIDE {
         ClickedTarget source(source_element());
         ClickedTarget dest(dest_element());
 
@@ -1005,7 +870,7 @@ class BranchMover : public DragNDrop {
                 aw_message(error);
             }
             else {
-                exports.save = 1;
+                get_exports().save = 1;
             }
         }
         else {
@@ -1018,7 +883,10 @@ class BranchMover : public DragNDrop {
     }
 
 public:
-    BranchMover(const AW_clicked_element *dragFrom, AW_MouseButton button_) : DragNDrop(dragFrom), button(button_) {}
+    BranchMover(const AW_clicked_element *dragFrom, AW_MouseButton button_, AWT_graphic_exports& exports_)
+        : DragNDrop(dragFrom, exports_),
+          button(button_)
+    {}
 };
 
 
@@ -1028,20 +896,20 @@ class Scaler : public Dragged {
     double unscale;
 
     virtual void draw_scale_indicator(const AW::Position& drag_pos, AW_device *device, int drag_gc) const = 0;
-    virtual void do_scale(const Position& drag_pos, AWT_graphic_exports& exports) = 0;
+    virtual void do_scale(const Position& drag_pos) = 0;
 
-    void perform(DragAction action, const AW_clicked_element *, const Position& mousepos, AWT_graphic_exports& exports) OVERRIDE {
+    void perform(DragAction action, const AW_clicked_element *, const Position& mousepos) OVERRIDE {
         switch (action) {
             case DRAGGING:
                 last_drag_pos = mousepos;
                 // fall-through (aka instantly apply drop-action while dragging)
             case DROPPED:
-                do_scale(mousepos, exports);
+                do_scale(mousepos);
                 break;
         }
     }
-    void abort(AWT_graphic_exports& exports) OVERRIDE {
-        perform(DROPPED, NULL, mouse_start, exports); // drop exactly where dragging started
+    void abort() OVERRIDE {
+        perform(DROPPED, NULL, mouse_start); // drop exactly where dragging started
     }
 
 
@@ -1050,12 +918,13 @@ protected:
     Vector scaling(const Position& current) const { return Vector(mouse_start, current)*unscale; } // returns world-coordinates
 
 public:
-    Scaler(const Position& start, double unscale_)
-        : mouse_start(start),
+    Scaler(const Position& start, double unscale_, AWT_graphic_exports& exports_)
+        : Dragged(exports_),
+          mouse_start(start),
           last_drag_pos(start),
           unscale(unscale_)
     {
-        td_assert(unscale == unscale); // !nan
+        td_assert(!is_nan_or_inf(unscale));
     }
 
     void draw_drag_indicator(AW_device *device, int drag_gc) const { draw_scale_indicator(last_drag_pos, device, drag_gc); }
@@ -1151,13 +1020,13 @@ class RulerScaler : public Scaler { // derived from Noncopyable
     }
 
     void draw_scale_indicator(const AW::Position& , AW_device *, int ) const {}
-    void do_scale(const Position& drag_pos, AWT_graphic_exports& exports) {
+    void do_scale(const Position& drag_pos) {
         GB_transaction ta(gbdata());
-        if (write_pos(awar_start+scaling(drag_pos))) exports.refresh = 1;
+        if (write_pos(awar_start+scaling(drag_pos))) get_exports().refresh = 1;
     }
 public:
-    RulerScaler(const Position& start, double unscale_, const DB_scalable& xs, const DB_scalable& ys)
-        : Scaler(start, unscale_),
+    RulerScaler(const Position& start, double unscale_, const DB_scalable& xs, const DB_scalable& ys, AWT_graphic_exports& exports_)
+        : Scaler(start, unscale_, exports_),
           x(xs),
           y(ys)
     {
@@ -1172,7 +1041,8 @@ static void text_near_head(AW_device *device, int gc, const LineVector& line, co
     device->text(gc, text, at);
 }
 
-enum ScaleMode { SCALE_LENGTH, SCALE_SPREAD };
+enum ScaleMode { SCALE_LENGTH, SCALE_LENGTH_PRESERVING, SCALE_SPREAD };
+
 class BranchScaler : public Scaler { // derived from Noncopyable
     ScaleMode  mode;
     AP_tree   *node;
@@ -1190,7 +1060,8 @@ class BranchScaler : public Scaler { // derived from Noncopyable
 
     float get_val() const {
         switch (mode) {
-            case SCALE_LENGTH: return node->get_branchlength();
+            case SCALE_LENGTH_PRESERVING:
+            case SCALE_LENGTH: return node->get_branchlength_unrooted();
             case SCALE_SPREAD: return node->gr.spread;
         }
         td_assert(0);
@@ -1198,7 +1069,8 @@ class BranchScaler : public Scaler { // derived from Noncopyable
     }
     void set_val(float val) {
         switch (mode) {
-            case SCALE_LENGTH: node->set_branchlength(val); break;
+            case SCALE_LENGTH_PRESERVING: node->set_branchlength_preserving(val); break;
+            case SCALE_LENGTH: node->set_branchlength_unrooted(val); break;
             case SCALE_SPREAD: node->gr.spread = val; break;
         }
     }
@@ -1248,18 +1120,19 @@ class BranchScaler : public Scaler { // derived from Noncopyable
         device->line(drag_gc, branch);
     }
 
-    void do_scale(const Position& drag_pos, AWT_graphic_exports& exports) {
+    void do_scale(const Position& drag_pos) {
         double oldval = get_val();
 
         if (start_val == 0.0) { // can't scale
             if (!zero_val_removed) {
                 switch (mode) {
                     case SCALE_LENGTH:
-                        set_val(DEFAULT_BRANCH_LENGTH); // fake branchlength (can't scale zero-length branches)
+                    case SCALE_LENGTH_PRESERVING:
+                        set_val(tree_defaults::LENGTH); // fake branchlength (can't scale zero-length branches)
                         aw_message("Cannot scale zero sized branches\nBranchlength has been set to 0.1\nNow you may scale the branch");
                         break;
                     case SCALE_SPREAD:
-                        set_val(1.0);                   // reset spread (can't scale unspreaded branches) // @@@ define and use DEFAULT_SPREAD
+                        set_val(tree_defaults::SPREAD); // reset spread (can't scale unspreaded branches)
                         aw_message("Cannot spread unspreaded branches\nSpreading has been set to 1.0\nNow you may spread the branch"); // @@@ clumsy
                         break;
                 }
@@ -1282,7 +1155,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
                     float val = start_val * scale;
                     if (val<0.0) {
                         if (node->is_leaf || !allow_neg_val) {
-                            val = -val; // do NOT accept negative values
+                            val = 0.0; // do NOT accept negative values
                         }
                     }
                     if (discrete) {
@@ -1294,14 +1167,14 @@ class BranchScaler : public Scaler { // derived from Noncopyable
         }
 
         if (oldval != get_val()) {
-            exports.save = 1;
+            get_exports().save = 1;
         }
     }
 
 public:
 
-    BranchScaler(ScaleMode mode_, AP_tree *node_, const LineVector& branch_, const Position& attach_, const Position& start, double unscale_, bool discrete_, bool allow_neg_values_)
-        : Scaler(start, unscale_),
+    BranchScaler(ScaleMode mode_, AP_tree *node_, const LineVector& branch_, const Position& attach_, const Position& start, double unscale_, bool discrete_, bool allow_neg_values_, AWT_graphic_exports& exports_)
+        : Scaler(start, unscale_, exports_),
           mode(mode_),
           node(node_),
           start_val(get_val()),
@@ -1315,27 +1188,27 @@ public:
     }
 };
 
-class BranchLinewidthScaler : public Scaler {
+class BranchLinewidthScaler : public Scaler, virtual Noncopyable {
     AP_tree *node;
     int      start_width;
     bool     wholeSubtree;
 
 public:
-    BranchLinewidthScaler(AP_tree *node_, const Position& start, bool wholeSubtree_)
-        : Scaler(start, 0.1), // 0.1 = > change linewidth dragpixel/10
+    BranchLinewidthScaler(AP_tree *node_, const Position& start, bool wholeSubtree_, AWT_graphic_exports& exports_)
+        : Scaler(start, 0.1, exports_), // 0.1 = > change linewidth dragpixel/10
           node(node_),
           start_width(node->get_linewidth()),
           wholeSubtree(wholeSubtree_)
     {}
 
     void draw_scale_indicator(const AW::Position& , AW_device *, int ) const OVERRIDE {}
-    void do_scale(const Position& drag_pos, AWT_graphic_exports& exports) OVERRIDE {
+    void do_scale(const Position& drag_pos) OVERRIDE {
         Vector moved = scaling(drag_pos);
         double ymove = -moved.y();
         int    old   = node->get_linewidth();
 
         int width = start_width + ymove;
-        if (width<DEFAULT_LINEWIDTH) width = DEFAULT_LINEWIDTH;
+        if (width<tree_defaults::LINEWIDTH) width = tree_defaults::LINEWIDTH;
 
         if (width != old) {
             if (wholeSubtree) {
@@ -1344,12 +1217,12 @@ public:
             else {
                 node->set_linewidth(width);
             }
-            exports.save = 1;
+            get_exports().save = 1;
         }
     }
 };
 
-class BranchRotator : public Dragged {
+class BranchRotator : public Dragged, virtual Noncopyable {
     AW_device  *device;
     AP_tree    *node;
     LineVector  clicked_branch;
@@ -1357,7 +1230,7 @@ class BranchRotator : public Dragged {
     Position    hinge;
     Position    mousepos_world;
 
-    void perform(DragAction, const AW_clicked_element *, const Position& mousepos, AWT_graphic_exports& exports) OVERRIDE {
+    void perform(DragAction, const AW_clicked_element *, const Position& mousepos) OVERRIDE {
         mousepos_world = device->rtransform(mousepos);
 
         double prev_angle = node->get_angle();
@@ -1368,18 +1241,19 @@ class BranchRotator : public Dragged {
 
         node->set_angle(orig_angle + diff.radian());
 
-        if (node->get_angle() != prev_angle) exports.save = 1;
+        if (node->get_angle() != prev_angle) get_exports().save = 1;
     }
 
-    void abort(AWT_graphic_exports& exports) OVERRIDE {
+    void abort() OVERRIDE {
         node->set_angle(orig_angle);
-        exports.save    = 1;
-        exports.refresh = 1;
+        get_exports().save    = 1;
+        get_exports().refresh = 1;
     }
 
 public:
-    BranchRotator(AW_device *device_, AP_tree *node_, const LineVector& clicked_branch_, const Position& mousepos)
-        : device(device_),
+    BranchRotator(AW_device *device_, AP_tree *node_, const LineVector& clicked_branch_, const Position& mousepos, AWT_graphic_exports& exports_)
+        : Dragged(exports_),
+          device(device_),
           node(node_),
           clicked_branch(clicked_branch_),
           orig_angle(node->get_angle()),
@@ -1399,10 +1273,28 @@ public:
     }
 };
 
+static AWT_graphic_event::ClickPreference preferredForCommand(AWT_COMMAND_MODE mode) {
+    // return preferred click target for tree-display
+    // (Note: not made this function a member of AWT_graphic_event,
+    //  since modes are still reused in other ARB applications,
+    //  e.g. AWT_MODE_ROTATE in SECEDIT)
+
+    switch (mode) {
+        case AWT_MODE_ROTATE:
+        case AWT_MODE_LENGTH:
+        case AWT_MODE_MULTIFURC:
+        case AWT_MODE_SPREAD:
+            return AWT_graphic_event::PREFER_LINE;
+
+        default:
+            return AWT_graphic_event::PREFER_NEARER;
+    }
+}
+
 void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& event) {
     td_assert(event.button()!=AW_BUTTON_MIDDLE); // shall be handled by caller
 
-    if (!tree_static) return;     // no tree -> no commands
+    if (!tree_static) return;                      // no tree -> no commands
 
     if (event.type() == AW_Keyboard_Release) return;
     if (event.type() == AW_Keyboard_Press) return handle_key(device, event);
@@ -1411,7 +1303,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
     if (event.button() == AW_BUTTON_NONE) return;
     td_assert(event.button() == AW_BUTTON_LEFT || event.button() == AW_BUTTON_RIGHT); // nothing else should come here
 
-    ClickedTarget clicked(this, event.best_click());
+    ClickedTarget clicked(this, event.best_click(preferredForCommand(event.cmd())));
     if (clicked.species()) {
         if (command_on_GBDATA(clicked.species(), event, map_viewer_cb)) {
             exports.refresh = 1;
@@ -1419,6 +1311,8 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         return;
     }
 
+    if (!tree_static->get_root_node()) return; // no tree -> no commands
+    
     GBDATA          *gb_tree  = tree_static->get_gb_tree();
     const Position&  mousepos = event.position();
 
@@ -1432,18 +1326,18 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                 dragging->hide_drag_indicator(device, drag_gc);
                 if (event.type() == AW_Mouse_Press) {
                     // mouse pressed while dragging (e.g. press other button)
-                    dragging->abort(exports); // abort what ever we did
+                    dragging->abort(); // abort what ever we did
                     store_command_data(NULL);
                 }
                 else {
                     switch (event.type()) {
                         case AW_Mouse_Drag:
-                            dragging->do_drag(clicked.element(), mousepos, exports);
+                            dragging->do_drag(clicked.element(), mousepos);
                             dragging->draw_drag_indicator(device, drag_gc);
                             break;
 
                         case AW_Mouse_Release:
-                            dragging->do_drop(clicked.element(), mousepos, exports);
+                            dragging->do_drop(clicked.element(), mousepos);
                             store_command_data(NULL);
                             break;
                         default:
@@ -1460,33 +1354,41 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         DB_scalable ydata;
         double      unscale = device->get_unscale();
 
-        if (event.cmd() == AWT_MODE_LENGTH) { // scale ruler
-            xdata = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
+        switch (event.cmd()) {
+            case AWT_MODE_LENGTH:
+            case AWT_MODE_MULTIFURC: { // scale ruler
+                xdata = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
 
-            double rel  = clicked.get_rel_attach();
-            if (tree_sort == AP_TREE_IRS) {
-                unscale /= (rel-1)*irs_tree_ruler_scale_factor; // ruler has opposite orientation in IRS mode
-            }
-            else {
-                unscale /= rel;
-            }
+                double rel  = clicked.get_rel_attach();
+                if (tree_sort == AP_TREE_IRS) {
+                    unscale /= (rel-1)*irs_tree_ruler_scale_factor; // ruler has opposite orientation in IRS mode
+                }
+                else {
+                    unscale /= rel;
+                }
 
-            if (event.button() == AW_BUTTON_RIGHT) xdata.set_discretion_factor(10);
-            xdata.set_min(0.01);
+                if (event.button() == AW_BUTTON_RIGHT) xdata.set_discretion_factor(10);
+                xdata.set_min(0.01);
+                break;
+            }
+            case AWT_MODE_LINE: // scale ruler linewidth
+                ydata = GB_searchOrCreate_int(gb_tree, RULER_LINEWIDTH, DEFAULT_RULER_LINEWIDTH);
+                ydata.set_min(0);
+                ydata.inverse();
+                break;
+
+            default: { // move ruler or ruler text
+                bool isText = clicked.is_text();
+                xdata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_x" : "ruler_x"), 0.0);
+                ydata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_y" : "ruler_y"), 0.0);
+                break;
+            }
         }
-        else if (event.cmd() == AWT_MODE_LINE) { // scale ruler linewidth
-            ydata = GB_searchOrCreate_int(gb_tree, RULER_LINEWIDTH, DEFAULT_RULER_LINEWIDTH);
-            ydata.set_min(0);
-            ydata.inverse();
-        }
-        else { // move ruler or ruler text
-            bool isText = clicked.is_text();
-            xdata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_x" : "ruler_x"), 0.0);
-            ydata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_y" : "ruler_y"), 0.0);
-        }
-        store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata));
+        store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
         return;
     }
+
+    if (event.type() == AW_Mouse_Press && warn_inappropriate_mode(event.cmd())) return;
 
     switch (event.cmd()) {
         // -----------------------------
@@ -1494,30 +1396,34 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
 
         case AWT_MODE_MOVE:
             if (event.type() == AW_Mouse_Press && clicked.node() && clicked.node()->father) {
-                BranchMover *mover = new BranchMover(clicked.element(), event.button());
+                BranchMover *mover = new BranchMover(clicked.element(), event.button(), exports);
                 store_command_data(mover);
                 mover->draw_drag_indicator(device, drag_gc);
             }
             break;
 
         case AWT_MODE_LENGTH:
+        case AWT_MODE_MULTIFURC:
             if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
                 bool allow_neg_branches = aw_root->awar(AWAR_EXPERT)->read_int();
                 bool discrete_lengths   = event.button() == AW_BUTTON_RIGHT;
 
                 const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
                 td_assert(cl);
-                BranchScaler *scaler = new BranchScaler(SCALE_LENGTH, clicked.node(), cl->get_line(), clicked.element()->get_attach_point(), mousepos, device->get_unscale(), discrete_lengths, allow_neg_branches);
+
+                ScaleMode     mode   = event.cmd() == AWT_MODE_LENGTH ? SCALE_LENGTH : SCALE_LENGTH_PRESERVING;
+                BranchScaler *scaler = new BranchScaler(mode, clicked.node(), cl->get_line(), clicked.element()->get_attach_point(), mousepos, device->get_unscale(), discrete_lengths, allow_neg_branches, exports);
+
                 store_command_data(scaler);
                 scaler->draw_drag_indicator(device, drag_gc);
             }
             break;
 
-        case AWT_MODE_ROT:
+        case AWT_MODE_ROTATE:
             if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
                 const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
                 td_assert(cl);
-                BranchRotator *rotator = new BranchRotator(device, clicked.node(), cl->get_line(), mousepos);
+                BranchRotator *rotator = new BranchRotator(device, clicked.node(), cl->get_line(), mousepos, exports);
                 store_command_data(rotator);
                 rotator->draw_drag_indicator(device, drag_gc);
             }
@@ -1525,7 +1431,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
 
         case AWT_MODE_LINE:
             if (event.type()==AW_Mouse_Press && clicked.node()) {
-                BranchLinewidthScaler *widthScaler = new BranchLinewidthScaler(clicked.node(), mousepos, event.button() == AW_BUTTON_RIGHT);
+                BranchLinewidthScaler *widthScaler = new BranchLinewidthScaler(clicked.node(), mousepos, event.button() == AW_BUTTON_RIGHT, exports);
                 store_command_data(widthScaler);
                 widthScaler->draw_drag_indicator(device, drag_gc);
             }
@@ -1535,7 +1441,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
                 const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
                 td_assert(cl);
-                BranchScaler *spreader = new BranchScaler(SCALE_SPREAD, clicked.node(), cl->get_line(), clicked.element()->get_attach_point(), mousepos, device->get_unscale(), false, false);
+                BranchScaler *spreader = new BranchScaler(SCALE_SPREAD, clicked.node(), cl->get_line(), clicked.element()->get_attach_point(), mousepos, device->get_unscale(), false, false, exports);
                 store_command_data(spreader);
                 spreader->draw_drag_indicator(device, drag_gc);
             }
@@ -1549,13 +1455,13 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                 switch (event.button()) {
                     case AW_BUTTON_LEFT:
                         if (clicked.node()) {
-                            tree_root_display  = clicked.node();
+                            displayed_root     = clicked.node();
                             exports.zoom_reset = 1;
                         }
                         break;
                     case AW_BUTTON_RIGHT:
-                        if (tree_root_display->father) {
-                            tree_root_display  = tree_root_display->get_father();
+                        if (displayed_root->father) {
+                            displayed_root     = displayed_root->get_father();
                             exports.zoom_reset = 1;
                         }
                         break;
@@ -1563,9 +1469,6 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                     default: td_assert(0); break;
                 }
             }
-            break;
-
-        case AWT_MODE_RESET: // @@@ remove this mode (globally!)
             break;
 
     act_like_group :
@@ -1590,7 +1493,6 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                     case AW_BUTTON_RIGHT:
                         if (gb_tree) {
                             toggle_group(clicked.node());
-                            exports.save = 1;
                         }
                         break;
                     default: td_assert(0); break;
@@ -1605,7 +1507,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                         if (clicked.node()) clicked.node()->set_root();
                         break;
                     case AW_BUTTON_RIGHT:
-                        DOWNCAST(AP_tree*, tree_static->find_innermost_edge().son())->set_root();
+                        tree_static->find_innermost_edge().set_root();
                         break;
                     default: td_assert(0); break;
                 }
@@ -1617,7 +1519,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         case AWT_MODE_SWAP:
             if (event.type()==AW_Mouse_Press && clicked.node()) {
                 switch (event.button()) {
-                    case AW_BUTTON_LEFT:  clicked.node()->swap_featured_sons(); break;
+                    case AW_BUTTON_LEFT:  clicked.node()->swap_sons(); break;
                     case AW_BUTTON_RIGHT: clicked.node()->rotate_subtree();     break;
                     default: td_assert(0); break;
                 }
@@ -1625,7 +1527,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             }
             break;
 
-        case AWT_MODE_MARK:
+        case AWT_MODE_MARK: // see also .@OTHER_MODE_MARK_HANDLER
             if (event.type() == AW_Mouse_Press && clicked.node()) {
                 GB_transaction ta(tree_static->get_gb_main());
 
@@ -1638,7 +1540,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                 }
                 exports.refresh = 1;
                 tree_static->update_timers(); // do not reload the tree
-                get_root_node()->calc_color();
+                update_structure();
             }
             break;
 
@@ -1656,8 +1558,8 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         // now handle all modes which only act on tips (aka species) and
         // shall perform identically in tree- and list-modes
 
-        case AWT_MODE_EDIT:
-        case AWT_MODE_WWW: {
+        case AWT_MODE_INFO:
+        case AWT_MODE_WWW: { 
             if (clicked.node() && clicked.node()->gb_node) {
                 if (command_on_GBDATA(clicked.node()->gb_node, event, map_viewer_cb)) {
                     exports.refresh = 1;
@@ -1670,7 +1572,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
     }
 }
 
-void AWT_graphic_tree::set_tree_type(AP_tree_sort type, AWT_canvas *ntw) {
+void AWT_graphic_tree::set_tree_type(AP_tree_display_type type, AWT_canvas *ntw) {
     if (sort_is_list_style(type)) {
         if (tree_sort == type) { // we are already in wanted view
             nds_show_all = !nds_show_all; // -> toggle between 'marked' and 'all'
@@ -1713,31 +1615,34 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type, AWT_canvas *ntw) {
 }
 
 AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
-    : AWT_graphic()
+    : AWT_graphic(),
+      line_filter          (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE),
+      vert_line_filter     (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER),
+      mark_filter          (AW_SCREEN|AW_PRINTER_EXT),
+      group_bracket_filter (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
+      bs_circle_filter     (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
+      leaf_text_filter     (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
+      group_text_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
+      remark_text_filter   (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
+      other_text_filter    (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
+      ruler_filter         (AW_SCREEN|AW_CLICK|AW_PRINTER), // appropriate size-filter added manually in code
+      root_filter          (AW_SCREEN|AW_PRINTER_EXT)
+
 {
-    line_filter          = AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_SIZE|AW_PRINTER;
-    vert_line_filter     = AW_SCREEN|AW_PRINTER;
-    group_bracket_filter = AW_SCREEN|AW_PRINTER|AW_CLICK|AW_CLICK_DROP|AW_SIZE_UNSCALED;
-    leaf_text_filter     = AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED;
-    group_text_filter    = AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED;
-    remark_text_filter   = AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED;
-    other_text_filter    = AW_SCREEN|AW_CLICK|AW_PRINTER|AW_SIZE_UNSCALED;
-    mark_filter          = AW_SCREEN|AW_PRINTER_EXT;
-    ruler_filter         = AW_SCREEN|AW_CLICK|AW_PRINTER; // appropriate size-filter added manually in code
-    root_filter          = AW_SCREEN|AW_CLICK|AW_PRINTER_EXT;
+    td_assert(gb_main_);
 
     set_tree_type(AP_TREE_NORMAL, NULL);
-    tree_root_display = 0;
-    tree_proto        = 0;
-    link_to_database  = false;
-    tree_static       = 0;
-    baselinewidth     = 1;
-    species_name      = 0;
-    aw_root           = aw_root_;
-    gb_main           = gb_main_;
-    cmd_data          = NULL;
-    nds_show_all      = true;
-    map_viewer_cb     = map_viewer_cb_;
+    displayed_root   = 0;
+    tree_proto       = 0;
+    link_to_database = false;
+    tree_static      = 0;
+    baselinewidth    = 1;
+    species_name     = 0;
+    aw_root          = aw_root_;
+    gb_main          = gb_main_;
+    cmd_data         = NULL;
+    nds_show_all     = true;
+    map_viewer_cb    = map_viewer_cb_;
 }
 
 AWT_graphic_tree::~AWT_graphic_tree() {
@@ -1747,8 +1652,8 @@ AWT_graphic_tree::~AWT_graphic_tree() {
     delete tree_static;
 }
 
-void AWT_graphic_tree::init(const AP_tree& tree_prototype, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs) {
-    tree_static = new AP_tree_root(aliview, tree_prototype, seq_prototype, insert_delete_cbs);
+void AWT_graphic_tree::init(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs) {
+    tree_static = new AP_tree_root(aliview, nodeMaker_, seq_prototype, insert_delete_cbs);
 
     td_assert(!insert_delete_cbs || link_to_database); // inserting delete callbacks w/o linking to DB has no effect!
     link_to_database = link_to_database_;
@@ -1756,39 +1661,52 @@ void AWT_graphic_tree::init(const AP_tree& tree_prototype, AliView *aliview, AP_
 
 void AWT_graphic_tree::unload() {
     delete tree_static->get_root_node();
-    tree_root_display = 0;
+    displayed_root = 0;
 }
 
 GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_database */, AW_CL /* cl_insert_delete_cbs */) {
     GB_ERROR error = 0;
 
-    if (name[0] == 0 || strcmp(name, NO_TREE_SELECTED) == 0) {
-        unload();
-        zombies    = 0;
-        duplicates = 0;
-    }
-    else {
-        {
-            char *name_dup = strdup(name); // name might be freed by unload()
-            unload();
-            error = tree_static->loadFromDB(name_dup);
-            free(name_dup);
-        }
-
-        if (!error && link_to_database) {
-            error = tree_static->linkToDB(&zombies, &duplicates);
-        }
-
-        if (error) {
-            delete tree_static->get_root_node();
+    if (!name) { // happens in error-case (called by AWT_graphic::postevent_handler to load previous state)
+        if (tree_static) {
+            name = tree_static->get_tree_name();
+            td_assert(name);
         }
         else {
-            tree_root_display = get_root_node();
+            error = "Please select a tree (name lost)";
+        }
+    }
 
-            get_root_node()->compute_tree(gb_main);
+    if (!error) {
+        if (name[0] == 0 || strcmp(name, NO_TREE_SELECTED) == 0) {
+            unload();
+            zombies    = 0;
+            duplicates = 0;
+        }
+        else {
+            freenull(tree_static->gone_tree_name);
+            {
+                char *name_dup = strdup(name); // name might be freed by unload()
+                unload();
+                error = tree_static->loadFromDB(name_dup);
+                free(name_dup);
+            }
 
-            tree_static->set_root_changed_callback(AWT_graphic_tree_root_changed, this);
-            tree_static->set_node_deleted_callback(AWT_graphic_tree_node_deleted, this);
+            if (!error && link_to_database) {
+                error = tree_static->linkToDB(&zombies, &duplicates);
+            }
+
+            if (error) {
+                delete tree_static->get_root_node();
+            }
+            else {
+                displayed_root = get_root_node();
+
+                get_root_node()->compute_tree();
+
+                tree_static->set_root_changed_callback(AWT_graphic_tree_root_changed, this);
+                tree_static->set_node_deleted_callback(AWT_graphic_tree_node_deleted, this);
+            }
         }
     }
 
@@ -1802,6 +1720,9 @@ GB_ERROR AWT_graphic_tree::save(GBDATA * /* dummy */, const char * /* name */, A
     }
     else if (tree_static && tree_static->get_tree_name()) {
         if (tree_static->gb_tree_gone) {
+            td_assert(!tree_static->gone_tree_name);
+            tree_static->gone_tree_name = strdup(tree_static->get_tree_name());
+
             GB_transaction ta(gb_main);
             error = GB_delete(tree_static->gb_tree_gone);
             error = ta.close(error);
@@ -1848,7 +1769,7 @@ int AWT_graphic_tree::check_update(GBDATA *) {
                 }
                 case AP_UPDATE_RELINKED: {
                     GB_ERROR error = tree_root->relink();
-                    if (!error) tree_root->compute_tree(gb_main);
+                    if (!error) tree_root->compute_tree();
                     if (error) aw_message(error);
                     break;
                 }
@@ -1976,7 +1897,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
             // display text
-            const char            *data       = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
+            const char            *data       = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             const AW_font_limits&  charLimits = disp_device->get_font_limits(at->gr.gc, 'A');
 
             double   unscale  = disp_device->get_unscale();
@@ -2007,7 +1928,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         Position s0(Pen);
         Position s1(s0);  s1.movey(box_height);
-        Position n0(s0);  n0.movex(at->gr.tree_depth);
+        Position n0(s0);  n0.movex(at->gr.max_tree_depth);
         Position n1(s1);  n1.movex(at->gr.min_tree_depth);
 
         Position group[4] = { s0, s1, n1, n0 };
@@ -2024,7 +1945,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         limits.x_right = n0.xpos();
 
         if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-            const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
+            const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             size_t      data_len = strlen(data);
 
             Position textPos = n0+text_offset;
@@ -2035,7 +1956,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
 
         Position    countPos = s0+text_offset;
-        const char *count    = GBS_global_string(" %i", at->gr.leaf_sum);
+        const char *count    = GBS_global_string(" %u", at->gr.leaf_sum);
         disp_device->text(at->gr.gc, count, countPos, 0.0, group_text_filter);
 
         limits.y_top    = s0.ypos();
@@ -2093,7 +2014,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                 limits.x_right = x2;
             
                 if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-                    const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
+                    const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
                     size_t      data_len = strlen(data);
 
                     LineVector worldBracket = disp_device->transform(bracket.right_edge());
@@ -2128,19 +2049,19 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             }
 
             AW_click_cd cds(disp_device, (AW_CL)son);
-            if (son->remark_branch) {
+            if (son->get_remark()) {
                 Position remarkPos(n);
                 remarkPos.movey(-scaled_font.ascent*0.1);
-                bool bootstrap_shown = AWT_show_branch_remark(disp_device, son->remark_branch, son->is_leaf, remarkPos, 1, remark_text_filter);
+                bool bootstrap_shown = AWT_show_branch_remark(disp_device, son->get_remark(), son->is_leaf, remarkPos, 1, remark_text_filter);
                 if (show_circle && bootstrap_shown) {
-                    show_bootstrap_circle(disp_device, son->remark_branch, circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, remark_text_filter);
+                    show_bootstrap_circle(disp_device, son->get_remark(), circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, bs_circle_filter);
                 }
             }
 
             set_line_attributes_for(son);
             unsigned int gc = son->gr.gc;
-            draw_branch_line(gc, s, n);
-            disp_device->line(gc, attach, s, vert_line_filter);
+            draw_branch_line(gc, s, n, line_filter);
+            draw_branch_line(gc, attach, s, vert_line_filter);
         }
         limits.y_branch = attach.ypos();
     }
@@ -2166,18 +2087,18 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
 
     AW_click_cd cd(disp_device, (AW_CL)at);
     set_line_attributes_for(at);
-    draw_branch_line(at->gr.gc, Position(x_root, y_root), Position(x_center, y_center));
-
-    // draw mark box
-    if (at->gb_node && GB_read_flag(at->gb_node)) {
-        filled_box(at->gr.gc, Position(x_center, y_center), NT_BOX_WIDTH);
-    }
+    draw_branch_line(at->gr.gc, Position(x_root, y_root), Position(x_center, y_center), line_filter);
 
     if (at->is_leaf) {
+        // draw mark box
+        if (at->gb_node && GB_read_flag(at->gb_node)) {
+            filled_box(at->gr.gc, Position(x_center, y_center), NT_BOX_WIDTH);
+        }
+
         if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
             if (at->hasName(species_name)) cursor = Position(x_center, y_center);
             scale_text_koordinaten(disp_device, at->gr.gc, x_center, y_center, tree_orientation, 0);
-            const char *data =  make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
+            const char *data =  make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
                               (AW_pos)x_center, (AW_pos) y_center,
                               (AW_pos) .5 - .5 * cos(tree_orientation),
@@ -2188,7 +2109,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
 
     if (at->gr.grouped) {
         l_min = at->gr.min_tree_depth;
-        l_max = at->gr.tree_depth;
+        l_max = at->gr.max_tree_depth;
 
         r    = l = 0.5;
         AW_pos q[6];
@@ -2212,7 +2133,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
             scale_text_koordinaten(disp_device, at->gr.gc, x_center, y_center, w, 0);
 
             // insert text (e.g. name of group)
-            const char *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
+            const char *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
                               (AW_pos)x_center, (AW_pos) y_center,
                               (AW_pos).5 - .5 * cos(tree_orientation),
@@ -2273,19 +2194,19 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         }
     }
     if (show_circle) {
-        if (at->leftson->remark_branch) {
+        if (at->leftson->get_remark()) {
             AW_click_cd cdl(disp_device, (AW_CL)at->leftson);
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
             z = at->leftlen * .5;
             Position center(x_center + z * cos(w), y_center + z * sin(w));
-            show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, center, false, 0, remark_text_filter);
+            show_bootstrap_circle(disp_device, at->leftson->get_remark(), circle_zoom_factor, circle_max_size, at->leftlen, center, false, 0, bs_circle_filter);
         }
-        if (at->rightson->remark_branch) {
+        if (at->rightson->get_remark()) {
             AW_click_cd cdr(disp_device, (AW_CL)at->rightson);
             w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
             z = at->rightlen * .5;
             Position center(x_center + z * cos(w), y_center + z * sin(w));
-            show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, center, false, 0, remark_text_filter);
+            show_bootstrap_circle(disp_device, at->rightson->get_remark(), circle_zoom_factor, circle_max_size, at->rightlen, center, false, 0, bs_circle_filter);
         }
     }
 }
@@ -2321,7 +2242,7 @@ void AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
 
     bool mode_has_ruler = ruler_awar(NULL);
     if (mode_has_ruler) {
-        GB_transaction dummy(gb_tree);
+        GB_transaction ta(gb_tree);
 
         float ruler_size = *GBT_readOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
         float ruler_y    = 0.0;
@@ -2360,17 +2281,17 @@ void AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
         float ruler_x = 0.0;
         ruler_x       = ruler_add_x + *GBT_readOrCreate_float(gb_tree, ruler_awar("ruler_x"), ruler_x);
 
-        td_assert(ruler_x == ruler_x); // !nan
+        td_assert(!is_nan_or_inf(ruler_x));
 
         float ruler_text_x = 0.0;
         ruler_text_x       = *GBT_readOrCreate_float(gb_tree, ruler_awar("text_x"), ruler_text_x);
 
-        td_assert(ruler_text_x == ruler_text_x); // !nan
+        td_assert(!is_nan_or_inf(ruler_text_x));
 
         float ruler_text_y = 0.0;
         ruler_text_y       = *GBT_readOrCreate_float(gb_tree, ruler_awar("text_y"), ruler_text_y);
 
-        td_assert(ruler_text_y == ruler_text_y); // !nan
+        td_assert(!is_nan_or_inf(ruler_text_y));
 
         int ruler_width = *GBT_readOrCreate_int(gb_tree, RULER_LINEWIDTH, DEFAULT_RULER_LINEWIDTH);
 
@@ -2577,7 +2498,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
             AW_pos x               = part_x_pos[p];
             if (align_right[p]) x += max_part_width[p] - col.print_width;
 
-            disp_device->text(gc, col.text, x, y, 0.0, other_text_filter, col.len);
+            disp_device->text(gc, col.text, x, y, 0.0, leaf_text_filter, col.len);
         }
     }
 
@@ -2656,7 +2577,7 @@ void AWT_graphic_tree::show(AW_device *device) {
 
     cursor = Origin;
 
-    if (!tree_root_display && sort_is_tree_style(tree_sort)) { // if there is no tree, but display style needs tree
+    if (!displayed_root && sort_is_tree_style(tree_sort)) { // if there is no tree, but display style needs tree
         static const char *no_tree_text[] = {
             "No tree (selected)",
             "",
@@ -2679,17 +2600,17 @@ void AWT_graphic_tree::show(AW_device *device) {
             case AP_TREE_NORMAL: {
                 DendroSubtreeLimits limits;
                 Position pen(0, 0.05);
-                show_dendrogram(tree_root_display, pen, limits);
+                show_dendrogram(displayed_root, pen, limits);
                 list_tree_ruler_y = pen.ypos() + 2.0 * scaled_branch_distance;
                 break;
             }
             case AP_TREE_RADIAL:
-                empty_box(tree_root_display->gr.gc, Origin, NT_ROOT_WIDTH);
-                show_radial_tree(tree_root_display, 0, 0, 2*M_PI, 0.0, 0, 0);
+                empty_box(displayed_root->gr.gc, Origin, NT_ROOT_WIDTH);
+                show_radial_tree(displayed_root, 0, 0, 2*M_PI, 0.0, 0, 0);
                 break;
 
             case AP_TREE_IRS:
-                show_irs_tree(tree_root_display, scaled_branch_distance);
+                show_irs_tree(displayed_root, scaled_branch_distance);
                 break;
 
             case AP_LIST_NDS:       // this is the list all/marked species mode (no tree)
@@ -2697,7 +2618,8 @@ void AWT_graphic_tree::show(AW_device *device) {
                 break;
 
             case AP_LIST_SIMPLE:    // simple list of names (used at startup only)
-                show_nds_list(gb_main, false);
+                // don't see why we need to draw ANY tree at startup -> disabled
+                // show_nds_list(gb_main, false);
                 break;
         }
         if (are_distinct(Origin, cursor)) empty_box(AWT_GC_CURSOR, cursor, NT_SELECTED_WIDTH);
@@ -2720,33 +2642,44 @@ void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, A
     aw_message("INFO MESSAGE");
 }
 
-
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
-    AWT_graphic_tree *apdt    = new AWT_graphic_tree(root, gb_main, map_viewer_cb);
-    apdt->init(AP_tree(0), new AliView(gb_main), NULL, true, false); // tree w/o sequence data
+    AWT_graphic_tree *apdt = new AWT_graphic_tree(root, gb_main, map_viewer_cb);
+    apdt->init(new AP_TreeNodeFactory, new AliView(gb_main), NULL, true, false); // tree w/o sequence data
     return apdt;
 }
 
-void awt_create_dtree_awars(AW_root *aw_root, AW_default def)
-{
-    aw_root->awar_int(AWAR_DTREE_BASELINEWIDTH, 1, def)->set_minmax(1, 10);
-    aw_root->awar_float(AWAR_DTREE_VERICAL_DIST, 1.0, def)->set_minmax(0.01, 30);
-    aw_root->awar_int(AWAR_DTREE_AUTO_JUMP, 1, def);
+void awt_create_dtree_awars(AW_root *aw_root, AW_default db) {
+    aw_root->awar_int  (AWAR_DTREE_BASELINEWIDTH, 1)  ->set_minmax(1,    10);
+    aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,  1.0)->set_minmax(0.01, 30);
 
-    aw_root->awar_int(AWAR_DTREE_SHOW_BRACKETS, 1, def);
-    aw_root->awar_int(AWAR_DTREE_SHOW_CIRCLE, 0, def);
-    aw_root->awar_int(AWAR_DTREE_USE_ELLIPSE, 1, def);
+    aw_root->awar_int(AWAR_DTREE_AUTO_JUMP,      AP_JUMP_KEEP_VISIBLE);
+    aw_root->awar_int(AWAR_DTREE_AUTO_JUMP_TREE, AP_JUMP_FORCE_VCENTER);
 
-    aw_root->awar_float(AWAR_DTREE_CIRCLE_ZOOM, 1.0, def)   ->set_minmax(0.01, 20);
-    aw_root->awar_float(AWAR_DTREE_CIRCLE_MAX_SIZE, 1.5, def) ->set_minmax(0.01, 200);
-    aw_root->awar_int(AWAR_DTREE_GREY_LEVEL, 20, def)       ->set_minmax(0, 100);
+    aw_root->awar_int(AWAR_DTREE_SHOW_BRACKETS, 1);
+    aw_root->awar_int(AWAR_DTREE_SHOW_CIRCLE,   0);
+    aw_root->awar_int(AWAR_DTREE_USE_ELLIPSE,   1);
+
+    aw_root->awar_float(AWAR_DTREE_CIRCLE_ZOOM,     1.0)->set_minmax(0.01, 20);
+    aw_root->awar_float(AWAR_DTREE_CIRCLE_MAX_SIZE, 1.5)->set_minmax(0.01, 200);
+    aw_root->awar_int  (AWAR_DTREE_GREY_LEVEL,      20) ->set_minmax(0,    100);
     
-    aw_root->awar_int(AWAR_DTREE_RADIAL_ZOOM_TEXT, 0, def);
-    aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD, 150, def);
-    aw_root->awar_int(AWAR_DTREE_DENDRO_ZOOM_TEXT, 0, def);
-    aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD, 300, def);
+    aw_root->awar_int(AWAR_DTREE_RADIAL_ZOOM_TEXT, 0);
+    aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD,      150);
+    aw_root->awar_int(AWAR_DTREE_DENDRO_ZOOM_TEXT, 0);
+    aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD,      300);
 
-    aw_root->awar_int(AWAR_TREE_REFRESH, 0, def);
+    aw_root->awar_int(AWAR_TREE_REFRESH, 0, db);
+}
+
+void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name) {
+    aws->label(label);
+    aws->create_option_menu(awar_name, true);
+    aws->insert_default_option("do nothing",        "n", AP_DONT_JUMP);
+    aws->insert_option        ("keep visible",      "k", AP_JUMP_KEEP_VISIBLE);
+    aws->insert_option        ("center vertically", "v", AP_JUMP_FORCE_VCENTER);
+    aws->insert_option        ("center",            "c", AP_JUMP_FORCE_CENTER);
+    aws->update_option_menu();
+    aws->at_newline();
 }
 
 // --------------------------------------------------------------------------------
@@ -2768,7 +2701,7 @@ static AW_rgb colors_def[] = {
     0xf0c000, // AWT_GC_SELECTED
     0xbb8833, // AWT_GC_UNDIFF
     0x622300, // AWT_GC_NSELECTED
-    0x977a0e, // AWT_GC_SOME_MISMATCHES
+    0x977a0e, // AWT_GC_ZOMBIES
     0x000000, // AWT_GC_BLACK
     0xffff00, // AWT_GC_YELLOW
     0xff0000, // AWT_GC_RED
@@ -2861,7 +2794,7 @@ public:
     void set_var_mode(int mode) { var_mode = mode; }
     void test_show_tree(AW_device *device) { show(device); }
 
-    void test_print_tree(AW_device_print *print_device, AP_tree_sort type, bool show_handles) {
+    void test_print_tree(AW_device_print *print_device, AP_tree_display_type type, bool show_handles) {
         const int      SCREENSIZE = 541; // use a prime as screensize to reduce rounding errors
         AW_device_size size_device(print_device->get_common());
 
@@ -2951,8 +2884,7 @@ void TEST_treeDisplay() {
     AW_init_color_group_defaults(NULL);
     fake_AW_init_color_groups();
 
-    AP_tree proto(0);
-    agt.init(proto, new AliView(gb_main), NULL, true, false);
+    agt.init(new AP_TreeNodeFactory, new AliView(gb_main), NULL, true, false);
 
     {
         GB_transaction ta(gb_main);
@@ -2970,8 +2902,8 @@ void TEST_treeDisplay() {
     for (int show_handles = 0; show_handles <= 1; ++show_handles) {
         for (int color = 0; color <= 1; ++color) {
             print_dev.set_color_mode(color);
-            // for (AP_tree_sort type = AP_TREE_NORMAL; type <= AP_LIST_SIMPLE; type = AP_tree_sort(type+1)) {
-            for (AP_tree_sort type = AP_LIST_SIMPLE; type >= AP_TREE_NORMAL; type = AP_tree_sort(type-1)) { // now passes
+            // for (AP_tree_display_type type = AP_TREE_NORMAL; type <= AP_LIST_SIMPLE; type = AP_tree_display_type(type+1)) {
+            for (AP_tree_display_type type = AP_LIST_SIMPLE; type >= AP_TREE_NORMAL; type = AP_tree_display_type(type-1)) {
                 if (spoolnameof[type]) {
                     char *spool_name     = GBS_global_string_copy("display/%s_%c%c", spoolnameof[type], "MC"[color], "NH"[show_handles]);
                     char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name);
@@ -3013,6 +2945,5 @@ void TEST_treeDisplay() {
 
     GB_close(gb_main);
 }
-
 
 #endif // UNIT_TESTS

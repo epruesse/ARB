@@ -32,9 +32,10 @@ enum SelectedFields {
     SF_ALL      = ((SF_HIDDEN<<1)-1),
 };
 
-#define FIELD_FILTER_NDS    (1<<GB_STRING)|(1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|(1<<GB_BITS)|(1<<GB_LINK)
-#define FIELD_FILTER_PARS   (1<<GB_STRING)|(1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|(1<<GB_BITS)|(1<<GB_LINK)
-#define FIELD_FILTER_STRING (1<<GB_STRING)|(1<<GB_BITS)|(1<<GB_LINK)
+CONSTEXPR long FIELD_FILTER_STRING = (1<<GB_STRING)|(1<<GB_BITS)|(1<<GB_LINK);
+CONSTEXPR long FIELD_FILTER_NDS    = (1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|FIELD_FILTER_STRING;
+CONSTEXPR long FIELD_FILTER_PARS   = FIELD_FILTER_NDS;
+CONSTEXPR long FIELD_UNFILTERED    = -1L;
 
 class Itemfield_Selection : public AW_DB_selection { // derived from a Noncopyable
     long            type_filter;
@@ -58,43 +59,35 @@ public:
 Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main,
                                                          AW_window      *aws,
                                                          const char     *varname,
+                                                         bool            fallback2default,
                                                          long            type_filter,
                                                          const char     *scan_xfig_label,
                                                          const char     *rescan_xfig_label,
                                                          ItemSelector&   selector,
                                                          size_t          columns,
                                                          size_t          visible_rows,
-                                                         SelectedFields  field_filter       = SF_STANDARD,
-                                                         const char     *popup_button_label = NULL);
+                                                         SelectedFields  field_filter,
+                                                         const char     *popup_button_label);
 
 
 enum RescanMode {
-    RESCAN_UNKNOWN    = 1, // scan database for unknown fields and add them
-    RESCAN_DEL_UNUSED = 2, // delete all unused fields
-    RESCAN_SHOW_ALL   = 4, // unhide all hidden fields
-
-    RESCAN_REFRESH = RESCAN_UNKNOWN|RESCAN_DEL_UNUSED
+    RESCAN_REFRESH  = 1, // scan database for unregistered/unused fields and update the field list
+    RESCAN_SHOW_ALL = 2, // unhide all hidden fields
 };
 
 // @@@ generalize (use BoundItemSel)
 
 void species_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode);
-void gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode);
+void gene_field_selection_list_rescan   (GBDATA *gb_main, long bitfilter, RescanMode mode);
 
-void species_field_selection_list_scan_unknown_cb(AW_window *aww, GBDATA *gb_main, long bitfilter);
-void species_field_selection_list_delete_unused_cb(AW_window *aww, GBDATA *gb_main, long bitfilter);
-void species_field_selection_list_unhide_all_cb(AW_window *aww, GBDATA *gb_main, long bitfilter);
-void species_field_selection_list_update_cb(AW_window *aww, GBDATA *gb_main, long bitfilter);
+void species_field_selection_list_unhide_all_cb(AW_window*, GBDATA *gb_main, long bitfilter);
+void species_field_selection_list_update_cb    (AW_window*, GBDATA *gb_main, long bitfilter);
 
-void gene_field_selection_list_scan_unknown_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
-void gene_field_selection_list_delete_unused_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
-void gene_field_selection_list_unhide_all_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
-void gene_field_selection_list_update_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
+void gene_field_selection_list_unhide_all_cb(AW_window*, GBDATA *gb_main, long bitfilter);
+void gene_field_selection_list_update_cb    (AW_window*, GBDATA *gb_main, long bitfilter);
 
-void experiment_field_selection_list_scan_unknown_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
-void experiment_field_selection_list_delete_unused_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
-void experiment_field_selection_list_unhide_all_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
-void experiment_field_selection_list_update_cb(AW_window *dummy, GBDATA *gb_main, long bitfilter);
+void experiment_field_selection_list_unhide_all_cb(AW_window*, GBDATA *gb_main, long bitfilter);
+void experiment_field_selection_list_update_cb    (AW_window*, GBDATA *gb_main, long bitfilter);
 
 #else
 #error item_sel_list.h included twice

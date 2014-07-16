@@ -77,41 +77,51 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
                 char **fieldNames = (char **)malloc(serverCount*sizeof(*fieldNames));
                 for (int c = 0; c<serverCount; c++) {
                     const char *ipport = GBS_read_arb_tcp(nameservers[c]);
-                    fieldNames[c]      = nulldup(GBS_scan_arb_tcp_param(ipport, "-f")); // may return 0
+                    if (!ipport) {
+                        error = GB_await_error();
+                        fieldNames[c] = NULL;
+                    }
+                    else {
+                        fieldNames[c] = nulldup(GBS_scan_arb_tcp_param(ipport, "-f"));      // may return 0
 
-                    // parameter -f contains default value (e.g. '-fstart=1')
-                    if (fieldNames[c]) {
-                        char *equal = strchr(fieldNames[c], '=');
-                        if (equal) equal[0] = 0;
+                        // parameter -f contains default value (e.g. '-fstart=1')
+                        if (fieldNames[c]) {
+                            char *equal = strchr(fieldNames[c], '=');
+                            if (equal) equal[0] = 0;
+                        }
                     }
                 }
 
-                if (serverCount == 1) { // exactly 1 server defined -> don't ask
-                    error = set_addid(gb_main, fieldNames[0]);
-                }
-                else { // let the user select which nameserver to use
-                    int         len     = serverCount; // commas+0term
-                    const char *nofield = "None (only 'acc')";
-
-                    for (int c = 0; c<serverCount; c++) {
-                        if (fieldNames[c]) len += strlen(fieldNames[c]);
-                        else len += strlen(nofield);
+                if (!error) {
+                    if (serverCount == 1) { // exactly 1 server defined -> don't ask
+                        error = set_addid(gb_main, fieldNames[0]);
                     }
+                    else { // let the user select which nameserver to use
+                        aw_assert(serverCount>1);
 
-                    char *buttons = (char*)malloc(len);
-                    buttons[0]    = 0;
-                    for (int c = 0; c<serverCount; c++) {
-                        if (c) strcat(buttons, ",");
-                        strcat(buttons, fieldNames[c] ? fieldNames[c] : nofield);
+                        int         len     = serverCount; // commas+0term
+                        const char *nofield = "None (only 'acc')";
+
+                        for (int c = 0; c<serverCount; c++) {
+                            if (fieldNames[c]) len += strlen(fieldNames[c]);
+                            else len += strlen(nofield);
+                        }
+
+                        char *buttons = (char*)malloc(len);
+                        buttons[0]    = 0;
+                        for (int c = 0; c<serverCount; c++) {
+                            if (c) strcat(buttons, ",");
+                            strcat(buttons, fieldNames[c] ? fieldNames[c] : nofield);
+                        }
+
+                        int answer = aw_question("nameserv_select",
+                                                 "Select if and which additional DB field you want to use",
+                                                 buttons, false, "namesadmin.hlp");
+
+                        error = set_addid(gb_main, fieldNames[answer]);
+
+                        free(buttons);
                     }
-
-                    int answer = aw_question("nameserv_select",
-                                             "Select if and which additional DB field you want to use",
-                                             buttons, false, "namesadmin.hlp");
-
-                    error = set_addid(gb_main, fieldNames[answer]);
-
-                    free(buttons);
                 }
 
                 for (int c = 0; c<serverCount; c++) free(fieldNames[c]);
@@ -197,6 +207,8 @@ public:
     }
 
     GB_ERROR connect(GBDATA *gb_main) {
+        aw_assert(!GB_have_error());
+
         arb_progress::show_comment("Connecting to name server");
 
         GB_ERROR err = 0;
@@ -255,6 +267,7 @@ public:
                 err = reconnect(gb_main);
             }
         }
+        aw_assert(!GB_have_error());
         return err;
     }
 
@@ -299,8 +312,7 @@ PersistentNameServerConnection::~PersistentNameServerConnection() {
 // --------------------------------------------------------------------------------
 
 GB_ERROR AW_test_nameserver(GBDATA *gb_main) {
-    GB_ERROR err = name_server.connect(gb_main);
-    return err;
+    return name_server.connect(gb_main);
 }
 
 // --------------------------------------------------------------------------------
@@ -549,7 +561,7 @@ static void awt_rename_cb(AW_window *aww, GBDATA *gb_main) {
 }
 
 
-AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main) {
+AW_window *AWTC_create_rename_window(AW_root *root, GBDATA *gb_main) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "AUTORENAME_SPECIES", "Synchronize species IDs");
 
@@ -565,7 +577,7 @@ AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main) {
 
     aws->at("go");
     aws->highlight();
-    aws->callback((AW_CB1)awt_rename_cb, gb_main);
+    aws->callback(makeWindowCallback(awt_rename_cb, gb_main));
     aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;

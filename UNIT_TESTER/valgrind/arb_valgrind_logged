@@ -9,7 +9,7 @@ CALL() {
     local LOGGED=$LOGGED_BASE$$.log
     local EXE=$1
     shift
-    arb_valgrind -L $LOGGED.stdout -E $LOGGED.stderr $EXE "$@" > $LOGGING
+    arb_valgrind -e -L $LOGGED.stdout -E $LOGGED.stderr $EXE "$@" > $LOGGING
     local EXITCODE=$?
     sleep 2
     cp $LOGGING $LOGGED

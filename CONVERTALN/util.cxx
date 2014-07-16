@@ -1,4 +1,4 @@
-#include <FileBuffer.h>
+#include <BufferedFileReader.h>
 #include "fun.h"
 #include "defs.h"
 #include "global.h"

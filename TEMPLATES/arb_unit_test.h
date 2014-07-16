@@ -85,7 +85,7 @@ namespace arb_unit_test {
 
 };
 
-#endif
+#endif // UNIT_TESTS
 
 #else
 #error arb_unit_test.h included twice

@@ -353,7 +353,7 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
 
     aws->at(box_pos_fig);
 
-    cbs->fields      = aws->create_selection_list(cbs->awarname_current_item, 20, 10);
+    cbs->fields      = aws->create_selection_list(cbs->awarname_current_item, 20, 10, true);
     cbs->aws         = aws;
     cbs->awr         = aw_root;
     cbs->gb_main     = gb_main;
@@ -399,7 +399,7 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
     //!************* Create the rescan button ***************
     if (rescan_pos_fig) {
         aws->at(rescan_pos_fig);
-        aws->callback(cbs->selector.selection_list_rescan_cb, (AW_CL)cbs->gb_main, (AW_CL)type_filter);
+        aws->callback(makeWindowCallback(cbs->selector.selection_list_rescan_cb, cbs->gb_main, type_filter));
         aws->create_button("RESCAN_DB", "RESCAN", "R");
     }
 

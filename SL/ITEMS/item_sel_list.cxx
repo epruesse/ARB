@@ -14,10 +14,13 @@
 #include "item_sel_list.h"
 
 #include <arbdbt.h>
+#include <arb_global_defs.h>
 
-static AW_window *existing_window_creator(AW_window *, AW_CL cl1, AW_CL) {
-    return (AW_window*)cl1;
+#if defined(ARB_MOTIF)
+static AW_window *existing_window_creator(AW_root*, AW_window *aw_existing) {
+    return aw_existing;
 }
+#endif
 
 Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
                                          GBDATA            *gb_key_data,
@@ -34,7 +37,11 @@ Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
 
 void Itemfield_Selection::fill() {
     if (field_filter & SF_PSEUDO) {
+#if defined(ARB_GTK)
+        insert_default(PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
+#else // ARB_MOTIF
         insert(PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
+#endif
         insert(PSEUDO_FIELD_ALL_FIELDS, PSEUDO_FIELD_ALL_FIELDS);
     }
 
@@ -76,13 +83,17 @@ void Itemfield_Selection::fill() {
             }
         }
     }
-    insert_default("????", "----");
+
+    if (!get_sellist()->get_default_value()) {
+        insert_default("<no field>", NO_FIELD_SELECTED);
+    }
 }
 
 
 Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main,
                                                          AW_window      *aws,
                                                          const char     *varname,
+                                                         bool            fallback2default,
                                                          long            type_filter,
                                                          const char     *scan_xfig_label,
                                                          const char     *rescan_xfig_label,
@@ -90,10 +101,11 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
                                                          size_t          columns,
                                                          size_t          visible_rows,
                                                          SelectedFields  field_filter,
-                                                         const char     *popup_button_id) // @@@ button id is not needed - only causes xtra macro command 
+                                                         const char     *popup_button_id) // @@@ button id is not needed - only causes xtra macro command
 {
     /* show fields of a item (e.g. species, SAI, gene)
      * 'varname'                is the awar set by the selection list
+     * 'fallback2default'       whether awar value shall be reset to default (see create_option_menu/create_selection_list)
      * 'type_filter'            is a bitstring which controls what types are shown in the selection list
      *                          (e.g '1<<GB_INT || 1 <<GB_STRING' enables ints and strings)
      * 'scan_xfig_label'        is the position of the selection box (or selection button)
@@ -111,13 +123,17 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
         gb_key_data = GB_search(gb_main, selector.change_key_path, GB_CREATE_CONTAINER);
     }
 
-    AW_selection_list *sellist         = 0;
-    AW_window         *win_for_sellist = aws;
+    AW_selection_list *sellist = 0;
 
     if (scan_xfig_label) aws->at(scan_xfig_label);
-    
+
     if (popup_button_id) {
+#ifdef ARB_GTK
+        aws->button_length(columns);
+        sellist = aws->create_option_menu(varname, fallback2default);
+#else // ARB_MOTIF
         // create HIDDEN popup window containing the selection list
+        AW_window *win_for_sellist = aws;
         {
             AW_window_simple *aw_popup = new AW_window_simple;
             aw_popup->init(aws->get_root(), "SELECT_LIST_ENTRY", "SELECT AN ENTRY");
@@ -125,8 +141,8 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
             aw_popup->auto_space(10, 10);
             aw_popup->at_newline();
 
-            aw_popup->callback((AW_CB0)AW_POPDOWN);
-            sellist = aw_popup->create_selection_list(varname, columns, visible_rows);
+            aw_popup->callback((AW_CB0)AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
+            sellist = aw_popup->create_selection_list(varname, columns, visible_rows, fallback2default);
 
             aw_popup->at_newline();
             aw_popup->callback((AW_CB0)AW_POPDOWN);
@@ -140,12 +156,13 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
 
         // and bind hidden window popup to button
         aws->button_length(columns);
-        aws->callback((AW_CB2)AW_POPUP, (AW_CL)existing_window_creator, (AW_CL)win_for_sellist);
+        aws->callback(makeCreateWindowCallback(existing_window_creator, win_for_sellist)); 
         aws->create_button(popup_button_id, varname);
+#endif
 
     }
     else { // otherwise just insert the selection list at point
-        sellist = aws->create_selection_list(varname, columns, visible_rows);
+        sellist = aws->create_selection_list(varname, columns, visible_rows, fallback2default);
     }
 
     if (rescan_xfig_label) {
@@ -153,7 +170,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
         aws->get_at_position(&x, &y);
 
         aws->at(rescan_xfig_label);
-        aws->callback(selector.selection_list_rescan_cb, (AW_CL)gb_main, (AW_CL)-1);
+        aws->callback(makeWindowCallback(selector.selection_list_rescan_cb, gb_main, FIELD_UNFILTERED));
         aws->create_button(rescan_xfig_label, "RESCAN", "R");
 
         if (popup_button_id) aws->at(x, y); // restore 'at' position if popup_list_in_window
@@ -161,6 +178,12 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
 
     Itemfield_Selection *selection = new Itemfield_Selection(sellist, gb_key_data, type_filter, field_filter, selector);
     selection->refresh();
+
+#ifdef ARB_GTK
+    if(popup_button_id) {
+        aws->update_option_menu();
+    }
+#endif
     return selection;
 }
 

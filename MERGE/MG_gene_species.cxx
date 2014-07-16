@@ -262,7 +262,7 @@ static void MG_update_example(AW_root *aw_root) {
 
     if (!curr_species || !curr_species[0]) error = "No species selected.";
     else {
-        GB_transaction  dummy(GLOBAL_gb_src);
+        GB_transaction  ta(GLOBAL_gb_src);
         GBDATA         *gb_species = GBT_find_species(GLOBAL_gb_src, curr_species);
 
         if (!gb_species)                                    error = GB_export_errorf("No such species: '%s'", curr_species);
@@ -429,9 +429,7 @@ static void MG_aci_changed_cb(AW_root *aw_root) {
     }
 }
 
-static void MG_update_selection_list_on_field_transfers(AW_root *aw_root, AW_CL cl_geneSpecFieldList) {
-    AW_selection_list *geneSpecFieldList = (AW_selection_list*)cl_geneSpecFieldList;
-
+static void MG_update_selection_list_on_field_transfers(AW_root *aw_root, AW_selection_list *geneSpecFieldList) {
     geneSpecFieldList->clear();
 
     {
@@ -539,7 +537,7 @@ static void load_gene_species_xfer_fields(AW_window *aww, const char *stored_str
     }
 
     // refresh mask :
-    MG_update_selection_list_on_field_transfers(aw_root, cl_geneSpecFieldList);
+    MG_update_selection_list_on_field_transfers(aw_root, (AW_selection_list*)cl_geneSpecFieldList);
 }
 
 AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
@@ -585,16 +583,16 @@ AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
     aws->create_text_field(AWAR_MERGE_GENE_SPECIES_EXAMPLE, 40, 3);
 
     aws->at("fields");
-    AW_selection_list *geneSpecFieldList = aws->create_selection_list(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD, 10, 30);
+    AW_selection_list *geneSpecFieldList = aws->create_selection_list(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD, 10, 30, true);
 
-    MG_update_selection_list_on_field_transfers(aw_root, (AW_CL)geneSpecFieldList);
+    MG_update_selection_list_on_field_transfers(aw_root, geneSpecFieldList);
 
     aws->at("save");
     AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "gene_species_field_xfer",
                               store_gene_species_xfer_fields, load_gene_species_xfer_fields, (AW_CL)geneSpecFieldList, 0);
 
     // add callbacks for this window :
-    aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->add_callback(MG_update_selection_list_on_field_transfers, (AW_CL)geneSpecFieldList);
+    aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->add_callback(makeRootCallback(MG_update_selection_list_on_field_transfers, geneSpecFieldList));
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->add_callback(MG_current_field_def_changed_cb);
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_SOURCE)->add_callback(MG_source_field_changed_cb);
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_DEST)->add_callback(MG_dest_field_changed_cb);

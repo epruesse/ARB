@@ -37,20 +37,21 @@
 #define AWAR_DB_DST AWAR_MERGE_TMP_DST "db"
 
 inline const char *awar_name_tmp(int db_nr, const char *name) {
-    mg_assert(db_nr == 1 || db_nr == 2);
+    mg_assert(db_nr == 1 || db_nr == 2); // @@@ replace these magics (throughout whole library)
     static char buffer[256];
     sprintf(buffer, "%s%s", db_nr == 1 ? AWAR_MERGE_TMP_SRC : AWAR_MERGE_TMP_DST, name);
     return buffer;
 }
 
-AW_window *MG_merge_alignment_cb(AW_root *awr);
-AW_window *MG_merge_names_cb(AW_root *awr);
-AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new);
-AW_window *MG_select_preserves_cb(AW_root *awr);
-AW_window *MG_merge_extendeds_cb(AW_root *awr);
-AW_window *MG_merge_trees_cb(AW_root *awr);
-AW_window *MG_merge_configs_cb(AW_root *awr);
-AW_window *create_mg_check_fields(AW_root *aw_root);
+AW_window *MG_create_merge_alignment_window(AW_root *awr);
+AW_window *MG_create_merge_names_window(AW_root *awr);
+AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new);
+AW_window *MG_create_preserves_selection_window(AW_root *awr);
+AW_window *MG_create_merge_SAIs_window(AW_root *awr);
+AW_window *MG_create_merge_trees_window(AW_root *awr);
+AW_window *MG_create_merge_configs_window(AW_root *awr);
+
+AW_window *create_mg_check_fields_window(AW_root *aw_root);
 
 void MG_create_config_awar(AW_root *aw_root, AW_default aw_def);
 void MG_create_trees_awar(AW_root *aw_root, AW_default aw_def);
@@ -65,7 +66,7 @@ void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_src, GBDAT
 void     MG_set_renamed(bool renamed, AW_root *aw_root, const char *reason);
 GB_ERROR MG_expect_renamed();
 
-int MG_copy_and_check_alignments(AW_window *aww);
+int MG_copy_and_check_alignments();
 
 // export of gene-species:
 
@@ -76,7 +77,7 @@ GB_ERROR   MG_export_fields(AW_root *aw_root, GBDATA *gb_src, GBDATA *gb_dst, GB
 #define AWAR_REMAP_SPECIES_LIST AWAR_MERGE_SAV "remap_species_list"
 #define AWAR_REMAP_ENABLE       AWAR_MERGE_SAV "remap_enable"
 
-#define IS_QUERIED_SPECIES(gb_species) (1 & GB_read_usr_private(gb_species))
+#define IS_QUERIED_SPECIES(gb_species) GB_user_flag(gb_species, GB_USERFLAG_QUERY)
 int mg_count_queried(GBDATA *gb_main);
 
 const char *MG_left_AWAR_SPECIES_NAME();

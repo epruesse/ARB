@@ -52,8 +52,9 @@ struct MutableItemSelector { // @@@ remove AW_root arguments!
     void (*update_item_awars)(GBDATA* gb_main, AW_root *aw_root, const char *item_name);
     char *(*generate_item_id)(GBDATA *gb_main, GBDATA *gb_item); // @@@ remove parameter 'gb_main'
     GBDATA *(*find_item_by_id)(GBDATA *gb_main, const char *id);
-    AW_CB selection_list_rescan_cb;
-    int item_name_length;                                        // -1 means "unknown" (might be long)
+    void (*selection_list_rescan_cb)(AW_window*, GBDATA *gb_main, long bitfilter);
+
+    int item_name_length; // -1 means "unknown" (might be long)
 
     const char *change_key_path;
     const char *item_name;                          // "species" or "gene" or "experiment" or "organism"
@@ -75,7 +76,19 @@ struct MutableItemSelector { // @@@ remove AW_root arguments!
 
 #define AWAR_KEY_SELECT "tmp/viewkeys/key_select"
 
-void popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main);
+struct FieldSelectionParam {
+    GBDATA     *gb_main;
+    const char *awar_name;
+    bool        fallback2default;
+
+    FieldSelectionParam(GBDATA *gb_main_, const char *awar_name_, bool fallback2default_)
+        : gb_main(gb_main_),
+          awar_name(awar_name_),
+          fallback2default(fallback2default_)
+    {}
+};
+
+void popup_select_species_field_window(AW_window *aww, FieldSelectionParam *fsp);
 
 struct MutableBoundItemSel {
     GBDATA        *gb_main;

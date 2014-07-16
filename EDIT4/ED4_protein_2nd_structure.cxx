@@ -855,6 +855,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                         prob /= count;
                         prob = (prob + max_breaker_value[current_struct] - min_former_value[current_struct]) / (max_breaker_value[current_struct] + max_former_value[current_struct] - min_former_value[current_struct]);
 
+#if 0 // code w/o effect
                         // map to match characters and store in result_buffer
                         int prob_normalized = ED4_pfold_round_sym(prob * 9);
                         // e4_assert(prob_normalized >= 0 && prob_normalized <= 9); // if this happens check if normalization is correct or some undefined characters mess everything up
@@ -862,6 +863,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
                         if (prob_normalized >= 0 && prob_normalized <= 9) {
                             prob_symbol = pair_chars_2[prob_normalized];
                         }
+#endif
                     }
                 }
 
@@ -1016,7 +1018,7 @@ static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL om
 
     aww->clear_option_menu(_oms);
     aww->insert_default_option(selected_sai, "", selected_sai);
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
 
     for (GBDATA *sai = GBT_first_SAI(GLOBAL_gb_main);
          sai;
@@ -1064,7 +1066,8 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
 
     // create SAI option menu
     aws->label_length(30);
-    AW_option_menu_struct *oms_sai = aws->create_option_menu(PFOLD_AWAR_SELECTED_SAI, "Selected Protein Structure SAI");
+    aws->label("Selected Protein Structure SAI");
+    AW_option_menu_struct *oms_sai = aws->create_option_menu(PFOLD_AWAR_SELECTED_SAI, true);
     ED4_pfold_select_SAI_and_update_option_menu(aws, (AW_CL)oms_sai, 0);
     aws->at_newline();
     aws->label("-> Filter SAI names for");
@@ -1075,7 +1078,8 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
     // create match method option menu
     PFOLD_MATCH_METHOD match_method = (PFOLD_MATCH_METHOD) ED4_ROOT->aw_root->awar(PFOLD_AWAR_MATCH_METHOD)->read_int();
     aws->label_length(12);
-    aws->create_option_menu(PFOLD_AWAR_MATCH_METHOD, "Match Method");
+    aws->label("Match Method");
+    aws->create_option_menu(PFOLD_AWAR_MATCH_METHOD, true);
     for (int i = 0; const char *mm_aw = pfold_match_method_awars[i].name; i++) {
         aws->callback(makeWindowCallback(cb));
         if (match_method == pfold_match_method_awars[i].value) {

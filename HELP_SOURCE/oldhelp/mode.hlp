@@ -13,17 +13,16 @@ SUB	mode_info.hlp
 SUB	mode_www.hlp
 SUB	mode_width.hlp
 SUB	mode_rotate.hlp
-SUB	mode_angle.hlp
+SUB	mode_spread.hlp
 SUB	mode_swap.hlp
 SUB	mode_length.hlp
 SUB	mode_move.hlp
-SUB	mode_set_root.hlp
-SUB	mode_reset.hlp
+SUB	mode_setroot.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		MODES
+TITLE		NTREE MODES (general info)
 
 OCCURRENCE	ARB_NT <buttons in the first column>
 
@@ -31,13 +30,26 @@ DESCRIPTION	Pressing one of the buttons in the left column of the
 		'ARB_NT' window activates tree display and modification
 		functions.
 
-NOTES		Short descriptions of the 'MODEs' and the functions assigned
-		to the mouse buttons are given in the fourth line of the
-		'ARB_NT' window. To execute the respective functions, the
+                You may also use the function keys F1 to F12.
+                F1 selects the topmost mode, F2 the next ...
+
+		The middle mouse button (placed anywhere within the tree
+		display area) can be used to move the whole tree (works in most modes).
+
+NOTES		A short descriptions of each 'MODE' is shown directly above the
+                tree display subwindow. It informs about the differences between the
+                left and right mouse key and tells if there are mode-specific keyboard
+                shortcuts available.
+
+		To execute the respective functions, the
 		cursor has to be located within the tree display area while
 		pressing the mouse buttons.
-		You may also use the function keys to select a mode. F1 selects the
-		topmost mode, F2 the next and so on.
+
+		The scale bar and its label can be moved by positioning the
+		cursor anywhere on the bar, keeping the left mouse button
+		pressed, moving the cursor to the desired position and
+                subsequently releasing the mouse button. The label of the bar
+		can be moved independently.
 
 EXAMPLES	None
 

@@ -26,7 +26,7 @@
 #define AWAR_INSDEL_AMOUNT    AWAR_INSDEL "nchar"
 #define AWAR_INSDEL_DELETABLE AWAR_INSDEL "characters"
 #define AWAR_INSDEL_RANGE     AWAR_INSDEL "range"
-#define AWAR_INSDEL_SAI       AWAR_INSDEL "sai"
+#define AWAR_INSDEL_SAI       AWAR_INSDEL "sainame"
 #define AWAR_INSDEL_CONTAINS  AWAR_INSDEL "contains"
 #define AWAR_INSDEL_SAI_CHARS AWAR_INSDEL "saichars"
 #define AWAR_INSDEL_AFFECTED  AWAR_INSDEL "affected"
@@ -235,11 +235,10 @@ AW_window *create_insertDeleteColumn_window(AW_root *root) {
     return aws;
 }
 
-AW_window *create_insertDeleteBySAI_window(AW_root *root, AW_CL cl_gbmain) {
+AW_window *create_insertDeleteBySAI_window(AW_root *root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
     if (!aws) {
-        GBDATA *gb_main = (GBDATA*)cl_gbmain;
-        aws             = new AW_window_simple;
+        aws = new AW_window_simple;
 
         aws->init(root, "INSDEL_BY_SAI", "Insert/delete using SAI");
 
@@ -255,7 +254,7 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, AW_CL cl_gbmain) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("select");
-        aws->create_option_menu(AWAR_INSDEL_RANGE);
+        aws->create_option_menu(AWAR_INSDEL_RANGE, true);
         aws->insert_option("ranges",  "r", RANGES);
         aws->insert_option("columns", "c", SINGLE_COLUMNS);
         aws->update_option_menu();
@@ -266,7 +265,7 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, AW_CL cl_gbmain) {
         awt_create_SAI_selection_button(gb_main, aws, AWAR_INSDEL_SAI);
 
         aws->at("contains");
-        aws->create_option_menu(AWAR_INSDEL_CONTAINS);
+        aws->create_option_menu(AWAR_INSDEL_CONTAINS, true);
         aws->insert_option("contains",        "c", CONTAINS);
         aws->insert_option("doesn't contain", "d", DOESNT_CONTAIN);
         aws->update_option_menu();
@@ -296,7 +295,7 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, AW_CL cl_gbmain) {
         aws->create_input_field(AWAR_INSDEL_AMOUNT, 7);
 
         aws->at("direction");
-        aws->create_option_menu(AWAR_INSDEL_DIRECTION);
+        aws->create_option_menu(AWAR_INSDEL_DIRECTION, true);
         aws->insert_option("in front of", "f", INFRONTOF);
         aws->insert_option("behind",      "b", BEHIND);
         aws->update_option_menu();

@@ -10,6 +10,7 @@
 // ============================================================= //
 
 #include "recmac.hxx"
+#include "macros_local.hxx"
 
 #include <arbdbt.h>
 
@@ -17,10 +18,13 @@
 #include <arb_defs.h>
 #include <arb_diff.h>
 #include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 #include <FileContent.h>
 
 #include <cctype>
+#include <arb_str.h>
+#include <aw_file.hxx>
 
 void warn_unrecordable(const char *what) {
     aw_message(GBS_global_string("could not record %s", what));
@@ -80,18 +84,67 @@ RecordingMacro::RecordingMacro(const char *filename, const char *application_id_
     }
 }
 
+void RecordingMacro::write_as_perl_string(const char *value) const {
+    const char SQUOTE = '\'';
+    write(SQUOTE);
+    for (int i = 0; value[i]; ++i) {
+        char c = value[i];
+        if (c == SQUOTE) {
+            write('\\');
+            write(SQUOTE);
+        }
+        else {
+            write(c);
+        }
+    }
+    write(SQUOTE);
+}
+
 void RecordingMacro::write_action(const char *app_id, const char *action_name) {
-    write("BIO::remote_action($gb_main");
-    write_quoted_param(app_id);
-    write(','); GBS_fwrite_string(action_name, out);
-    write(");\n");
+    bool handled = false;
+
+    // Recording "macro-execution" as GUI-clicks caused multiple macros running asynchronously (see #455)
+    // Instead of recording GUI-clicks, macros are called directly:
+    static const char *MACRO_ACTION_START = MACRO_WINDOW_ID "/";
+    if (ARB_strBeginsWith(action_name, MACRO_ACTION_START)) {
+        static int  MACRO_START_LEN = strlen(MACRO_ACTION_START);
+        const char *sub_action      = action_name+MACRO_START_LEN;
+
+        int playbackType = 0;
+        if      (strcmp(sub_action, MACRO_PLAYBACK_ID)        == 0) playbackType = 1;
+        else if (strcmp(sub_action, MACRO_PLAYBACK_MARKED_ID) == 0) playbackType = 2;
+
+        if (playbackType) {
+            char       *macroFullname = AW_get_selected_fullname(AW_root::SINGLETON, AWAR_MACRO_BASE);
+            const char *macroName     = GBT_relativeMacroname(macroFullname); // points into macroFullname
+
+            write("BIO::macro_execute(");
+            write_as_perl_string(macroName); // use relative macro name (allows to share macros between users)
+            write(", ");
+            write('0'+(playbackType-1));
+            write(", 0);\n"); // never run asynchronously (otherwise (rest of) current and called macro will interfere)
+            flush();
+
+            free(macroFullname);
+
+            handled = true;
+        }
+    }
+
+    // otherwise "normal" operation (=trigger GUI element)
+    if (!handled) {
+        write("BIO::remote_action($gb_main");
+        write(','); write_as_perl_string(app_id);
+        write(','); write_as_perl_string(action_name);
+        write(");\n");
+    }
     flush();
 }
 void RecordingMacro::write_awar_change(const char *app_id, const char *awar_name, const char *content) {
     write("BIO::remote_awar($gb_main");
-    write_quoted_param(app_id);
-    write(','); GBS_fwrite_string(awar_name, out);
-    write(','); GBS_fwrite_string(content, out);
+    write(','); write_as_perl_string(app_id);
+    write(','); write_as_perl_string(awar_name);
+    write(','); write_as_perl_string(content);
     write(");\n");
     flush();
 }
@@ -101,6 +154,9 @@ void RecordingMacro::track_action(const char *action_id) {
     ma_assert(out && !error);
     if (!action_id) {
         warn_unrecordable("anonymous GUI element");
+    }
+    else if (action_id[0] == '$') { // actions starting with '$' are interpreted as "unrecordable"
+        warn_unrecordable(GBS_global_string("unrecordable action '%s'", action_id));
     }
     else if (strcmp(action_id, stop_action_name) != 0) { // silently ignore stop-recording button press
         write_action(application_id, action_id);
@@ -141,14 +197,24 @@ GB_ERROR RecordingMacro::stop() {
 // -------------------------
 //      post processing
 
+inline const char *closing_quote(const char *str, char qchar) {
+    const char *found = strchr(str, qchar);
+    if (found>str) {
+        if (found[-1] == '\\') { // escaped -> search behind
+            return closing_quote(found+1, qchar);
+        }
+    }
+    return found;
+}
+
 inline char *parse_quoted_string(const char *& line) {
     // read '"string"' from start of line.
     // return 'string'.
     // skips spaces.
 
     while (isspace(line[0])) ++line;
-    if (line[0] == '\"') {
-        const char *other_quote = strchr(line+1, '\"');
+    if (line[0] == '\"' || line[0] == '\'') {
+        const char *other_quote = closing_quote(line+1, line[0]);
         if (other_quote) {
             char *str = GB_strpartdup(line+1, other_quote-1);
             line      = other_quote+1;
@@ -191,6 +257,15 @@ inline char *modifies_awar(const char *line, char *& app_id) {
     return NULL;
 }
 
+inline bool opens_macro_dialog(const char *line) {
+    // return true, if the macro-command in 'line' opens the macro dialog
+    return strcmp(line, "BIO::remote_action($gb_main,\'ARB_NT\',\'macros\');") == 0;
+}
+inline bool is_end_of_macro(const char *line) {
+    // return true, if the macro-command in 'line' belongs to code at end (of any macro)
+    return strcmp(line, "ARB::close($gb_main);") == 0;
+}
+
 inline bool is_comment(const char *line) {
     int i = 0;
     while (isspace(line[i])) ++i;
@@ -229,6 +304,17 @@ void RecordingMacro::post_process() {
                     }
                 }
                 free(mod_awar);
+            }
+            else if (opens_macro_dialog(line[i])) {
+                bool isLastCommand = true;
+                for (size_t n = i+1; n<line.size() && isLastCommand; ++n) {
+                    if (!is_comment(line[n]) && !is_end_of_macro(line[n])) {
+                        isLastCommand = false;
+                    }
+                }
+                if (isLastCommand) {
+                    free(line.replace(i, GBS_global_string_copy("# %s", line[i])));
+                }
             }
             free(app_id);
         }
@@ -281,6 +367,7 @@ void TEST_parse() {
 #define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_EXPECT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
 
 void TEST_post_process() {
+    // ../../UNIT_TESTER/run/general
     const char *source   = "general/pp.amc";
     const char *dest     = "general/pp_out.amc";
     const char *expected = "general/pp_exp.amc";

@@ -11,7 +11,7 @@ UP	treeadm.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Move node info
 
-OCCURRENCE	ARB_NT/Tree/Copy_Del.../Move Node Info
+OCCURRENCE	ARB_NT/Tree/Tree admin/Move Node Info
 
 DESCRIPTION	Move the internal group labels from one tree to another. If
 		the trees are different, the program will try to guess where to
@@ -33,7 +33,12 @@ DESCRIPTION	Move the internal group labels from one tree to another. If
 		containing at least one marked species are moved to the
 		destination tree.
 
-NOTES		None
+NOTES		Moving node info depends on placement of the tree root. Setting the
+		root in the destination tree similar to the root in the source tree
+		can greatly improve results of node transfer.
+
+BUGS		ARB sets the root-node of the destination tree, but often fails to 
+		find the best possible node (see also LINK{http://bugs.arb-home.de/ticket/451})
 
 EXAMPLES	None
 

@@ -4,7 +4,7 @@ OBJECT = readseq.o ureadseq.o
 
 BINARY=$(ARBHOME)/bin/arb_readseq
 
-ifdef DEBIAN
+ifeq ($(DEBIAN),1)
 all:
 	@echo Do not compile readseq.  Instead use the Debian package.
 else

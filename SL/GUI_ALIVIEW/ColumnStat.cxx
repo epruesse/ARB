@@ -14,7 +14,6 @@
 
 #include <AP_filter.hxx>
 #include <BI_helix.hxx>
-#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
@@ -61,7 +60,7 @@ ColumnStat::ColumnStat(GBDATA *gb_maini, AW_root *awri, const char *awar_templat
 
     ga_assert(strcmp(awar_name, awar_alignment) != 0); // awar_template must end with (or contain) "/name"
 
-    awr->awar_string(awar_name, "NONE");
+    awr->awar_string(awar_name, "");
     awr->awar_string(awar_alignment)->map(awar_used_alignment);
     awr->awar_int(awar_smooth);
     awr->awar_int(awar_enable_helix, 1);
@@ -97,7 +96,7 @@ ColumnStat::~ColumnStat() {
 GB_ERROR ColumnStat::calculate(AP_filter *filter) {
     forget(); // delete previously calculated stats
 
-    GB_transaction dummy(gb_main);
+    GB_transaction ta(gb_main);
     GB_ERROR       error            = 0;
     size_t         alignment_length = 0;
     {
@@ -119,150 +118,168 @@ GB_ERROR ColumnStat::calculate(AP_filter *filter) {
         char   *sai_name = awr->awar(awar_name)->read_string();
         GBDATA *gb_sai   = GBT_find_SAI(gb_main, sai_name);
 
-        if (!gb_sai) error = "Please select a column statistic";
-
-        GBDATA *gb_ali   = 0;
-        GBDATA *gb_freqs = 0;
-        if (!error) {
-            gb_ali = GB_entry(gb_sai, alignment_name);
-            if (!gb_ali) error = GBS_global_string("SAI '%s' does not exist in alignment '%s'", sai_name, alignment_name);
-        }
-        if (!error) {
-            gb_freqs = GB_entry(gb_ali, "FREQUENCIES");
-            if (!gb_ali) error = GBS_global_string("Column statistic '%s' is invalid\n(has no FREQUENCIES)", sai_name);
+        if (!gb_sai) {
+            if (strcmp(sai_name, "") != 0) { // no error if SAI name is empty
+                error = GBS_global_string("Column statistic: no such SAI: '%s'", sai_name);
+            }
         }
 
-        if (!error) {
-            seq_len = filter ? filter->get_filtered_length() : alignment_length;
-
-            delete [] weights; weights  = new GB_UINT4[seq_len];
-            delete [] rates;   rates    = new float[seq_len];
-            delete [] ttratio; ttratio  = new float[seq_len];
-            delete [] is_helix; is_helix = new bool[seq_len];
-            delete [] mut_sum; mut_sum  = new GB_UINT4[seq_len];
-            delete [] freq_sum; freq_sum = new GB_UINT4[seq_len];
-
-            delete desc; desc = 0;
-
-            size_t i;
-            size_t j;
-            for (i=0; i<256; i++) { delete frequency[i]; frequency[i]=0; }
-
-            long use_helix = awr->awar(awar_enable_helix)->read_int();
-
-            for (i=0; i<seq_len; i++) {
-                is_helix[i] = false;
-                weights[i]  = 1;
+        if (gb_sai) {
+            GBDATA *gb_ali   = 0;
+            GBDATA *gb_freqs = 0;
+            if (!error) {
+                gb_ali = GB_entry(gb_sai, alignment_name);
+                if (!gb_ali) error = GBS_global_string("SAI '%s' does not exist in alignment '%s'", sai_name, alignment_name);
+            }
+            if (!error) {
+                gb_freqs = GB_entry(gb_ali, "FREQUENCIES");
+                if (!gb_freqs) error = GBS_global_string("Column statistic '%s' is invalid (has no FREQUENCIES)", sai_name);
             }
 
-            if (!error && use_helix) {            // calculate weights and helix filter
-                BI_helix helix;
-                error = helix.init(this->gb_main, alignment_name);
-                if (error) {
-                    aw_message(error);
-                    error = 0;
-                    goto no_helix;
+            if (!error) {
+                seq_len = filter ? filter->get_filtered_length() : alignment_length;
+
+                delete [] weights; weights  = new GB_UINT4[seq_len];
+                delete [] rates;   rates    = new float[seq_len];
+                delete [] ttratio; ttratio  = new float[seq_len];
+                delete [] is_helix; is_helix = new bool[seq_len];
+                delete [] mut_sum; mut_sum  = new GB_UINT4[seq_len];
+                delete [] freq_sum; freq_sum = new GB_UINT4[seq_len];
+
+                delete desc; desc = 0;
+
+                size_t i;
+                size_t j;
+                for (i=0; i<256; i++) { delete frequency[i]; frequency[i]=0; }
+
+                long use_helix = awr->awar(awar_enable_helix)->read_int();
+
+                for (i=0; i<seq_len; i++) {
+                    is_helix[i] = false;
+                    weights[i]  = 1;
                 }
-                error = 0;
-                for (j=i=0; i<alignment_length; i++) {
-                    if (!filter || filter->use_position(i)) {
-                        if (helix.pairtype(i) == HELIX_PAIR) {
-                            is_helix[j] = true;
-                            weights[j]  = 1;
+
+                if (!error && use_helix) {            // calculate weights and helix filter
+                    BI_helix helix;
+                    error = helix.init(this->gb_main, alignment_name);
+                    if (error) {
+                        aw_message(error);
+                        error = 0;
+                        goto no_helix;
+                    }
+                    error = 0;
+                    for (j=i=0; i<alignment_length; i++) {
+                        if (!filter || filter->use_position(i)) {
+                            if (helix.pairtype(i) == HELIX_PAIR) {
+                                is_helix[j] = true;
+                                weights[j]  = 1;
+                            }
+                            else {
+                                is_helix[j] = false;
+                                weights[j]  = 2;
+                            }
+                            j++;
+                        }
+                    }
+                }
+              no_helix :
+
+                for (i=0; i<seq_len; i++) freq_sum[i] = 0;
+
+                GBDATA *gb_freq;
+                GB_UINT4 *freqi[256];
+                for (i=0; i<256; i++) freqi[i] = 0;
+                int wf;                 // ********* read the frequency statistic
+                for (gb_freq = GB_child(gb_freqs); gb_freq; gb_freq = GB_nextChild(gb_freq)) {
+                    char *key = GB_read_key(gb_freq);
+                    if (key[0] == 'N' && key[1] && !key[2]) {
+                        wf = key[1];
+                        freqi[wf] = GB_read_ints(gb_freq);
+                    }
+                    free(key);
+                }
+
+                GB_UINT4 *minmut      = 0;
+                GB_UINT4 *transver    = 0;
+                GBDATA   *gb_minmut   = GB_entry(gb_freqs, "TRANSITIONS");
+                GBDATA   *gb_transver = GB_entry(gb_freqs, "TRANSVERSIONS");
+
+                if (!gb_minmut)   error = GBS_global_string("Column statistic '%s' is invalid (has no FREQUENCIES/TRANSITIONS)", sai_name);
+                if (!gb_transver) error = GBS_global_string("Column statistic '%s' is invalid (has no FREQUENCIES/TRANSVERSIONS)", sai_name);
+
+                if (gb_minmut) {
+                    minmut = GB_read_ints(gb_minmut);
+                    if (!minmut) error = GBS_global_string("Column statistic '%s' is invalid (error reading FREQUENCIES/TRANSITIONS: %s)", sai_name, GB_await_error());
+                }
+                if (gb_transver) {
+                    transver = GB_read_ints(gb_transver);
+                    if (!transver) error = GBS_global_string("Column statistic '%s' is invalid (error reading FREQUENCIES/TRANSVERSIONS: %s)", sai_name, GB_await_error());
+                }
+
+                if (!error) {
+                    unsigned long max_freq_sum = 0;
+                    for (wf = 0; wf<256; wf++) {    // ********* calculate sum of mutations
+                        if (!freqi[wf]) continue;   // ********* calculate nbases for each col.
+                        for (j=i=0; i<alignment_length; i++) {
+                            if (filter && !filter->use_position(i)) continue;
+                            freq_sum[j] += freqi[wf][i];
+                            mut_sum[j] = minmut[i];
+                            j++;
+                        }
+                    }
+                    for (i=0; i<seq_len; i++)
+                        if (freq_sum[i] > max_freq_sum)
+                            max_freq_sum = freq_sum[i];
+                    unsigned long min_freq_sum = DIST_MIN_SEQ(max_freq_sum);
+
+                    for (wf = 0; wf<256; wf++) {
+                        if (!freqi[wf]) continue;
+                        frequency[wf] = new float[seq_len];
+                        for (j=i=0; i<alignment_length; i++) {
+                            if (filter && !filter->use_position(i)) continue;
+                            if (freq_sum[j] > min_freq_sum) {
+                                frequency[wf][j] = freqi[wf][i]/(float)freq_sum[j];
+                            }
+                            else {
+                                frequency[wf][j] = 0;
+                                weights[j] = 0;
+                            }
+                            j++;
+                        }
+                    }
+
+                    for (j=i=0; i<alignment_length; i++) { // ******* calculate rates
+                        if (filter && !filter->use_position(i)) continue;
+                        if (!weights[j]) {
+                            rates[j] = 1.0;
+                            ttratio[j] = 0.5;
+                            j++;
+                            continue;
+                        }
+                        rates[j] = (mut_sum[j] / (float)freq_sum[j]);
+                        if (transver[i] > 0) {
+                            ttratio[j] = (minmut[i] - transver[i]) / (float)transver[i];
                         }
                         else {
-                            is_helix[j] = false;
-                            weights[j]  = 2;
+                            ttratio[j] = 2.0;
                         }
+                        if (ttratio[j] < 0.05) ttratio[j] = 0.05;
+                        if (ttratio[j] > 5.0) ttratio[j] = 5.0;
                         j++;
                     }
+
+                    // ****** normalize rates
+
+                    double sum_rates = 0;
+                    for (i=0; i<seq_len; i++) sum_rates += rates[i];
+                    sum_rates /= seq_len;
+                    for (i=0; i<seq_len; i++) rates[i] /= sum_rates;
                 }
+
+                free(transver);
+                free(minmut);
+                for (i=0; i<256; i++) free(freqi[i]);
             }
-        no_helix :
-
-            for (i=0; i<seq_len; i++) freq_sum[i] = 0;
-
-            GBDATA *gb_freq;
-            GB_UINT4 *freqi[256];
-            for (i=0; i<256; i++) freqi[i] = 0;
-            int wf;                 // ********* read the frequency statistic
-            for (gb_freq = GB_child(gb_freqs); gb_freq; gb_freq = GB_nextChild(gb_freq)) {
-                char *key = GB_read_key(gb_freq);
-                if (key[0] == 'N' && key[1] && !key[2]) {
-                    wf = key[1];
-                    freqi[wf] = GB_read_ints(gb_freq);
-                }
-                free(key);
-            }
-
-            GB_UINT4 *minmut = 0;
-            GBDATA *gb_minmut = GB_entry(gb_freqs, "TRANSITIONS");
-            if (gb_minmut) minmut = GB_read_ints(gb_minmut);
-
-            GB_UINT4 *transver = 0;
-            GBDATA *gb_transver = GB_entry(gb_freqs, "TRANSVERSIONS");
-            if (gb_transver) transver = GB_read_ints(gb_transver);
-            unsigned long max_freq_sum = 0;
-            for (wf = 0; wf<256; wf++) {    // ********* calculate sum of mutations
-                if (!freqi[wf]) continue;   // ********* calculate nbases for each col.
-                for (j=i=0; i<alignment_length; i++) {
-                    if (filter && !filter->use_position(i)) continue;
-                    freq_sum[j] += freqi[wf][i];
-                    mut_sum[j] = minmut[i];
-                    j++;
-                }
-            }
-            for (i=0; i<seq_len; i++)
-                if (freq_sum[i] > max_freq_sum)
-                    max_freq_sum = freq_sum[i];
-            unsigned long min_freq_sum = DIST_MIN_SEQ(max_freq_sum);
-
-            for (wf = 0; wf<256; wf++) {
-                if (!freqi[wf]) continue;
-                frequency[wf] = new float[seq_len];
-                for (j=i=0; i<alignment_length; i++) {
-                    if (filter && !filter->use_position(i)) continue;
-                    if (freq_sum[j] > min_freq_sum) {
-                        frequency[wf][j] = freqi[wf][i]/(float)freq_sum[j];
-                    }
-                    else {
-                        frequency[wf][j] = 0;
-                        weights[j] = 0;
-                    }
-                    j++;
-                }
-            }
-
-            for (j=i=0; i<alignment_length; i++) { // ******* calculate rates
-                if (filter && !filter->use_position(i)) continue;
-                if (!weights[j]) {
-                    rates[j] = 1.0;
-                    ttratio[j] = 0.5;
-                    j++;
-                    continue;
-                }
-                rates[j] = (mut_sum[j] / (float)freq_sum[j]);
-                if (transver[i] > 0) {
-                    ttratio[j] = (minmut[i] - transver[i]) / (float)transver[i];
-                }
-                else {
-                    ttratio[j] = 2.0;
-                }
-                if (ttratio[j] < 0.05) ttratio[j] = 0.05;
-                if (ttratio[j] > 5.0) ttratio[j] = 5.0;
-                j++;
-            }
-
-            // ****** normalize rates
-
-            double sum_rates                   = 0;
-            for (i=0; i<seq_len; i++) sum_rates += rates[i];
-            sum_rates                         /= seq_len;
-            for (i=0; i<seq_len; i++) rates[i] /= sum_rates;
-
-            free(transver);
-            free(minmut);
-            for (i=0; i<256; i++) free(freqi[i]);
         }
         free(sai_name);
     }
@@ -310,21 +327,24 @@ void ColumnStat::print() {
 static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
     // return NULL for non-columnstat SAIs
     ColumnStat *column_stat = (ColumnStat*)cl_column_stat;
-    GBDATA     *gb_type     = GB_search(gb_extended, column_stat->get_type_path(), GB_FIND);
-    char       *result      = NULL;
 
-    if (gb_type) {
-        const char *type = GB_read_char_pntr(gb_type);
+    char *result = NULL;
+    if (column_stat->has_valid_alignment()) {
+        GBDATA *gb_type = GB_search(gb_extended, column_stat->get_type_path(), GB_FIND);
 
-        if (GBS_string_matches(type, "PV?:*", GB_MIND_CASE)) {
-            GBS_strstruct *strstruct = GBS_stropen(100);
+        if (gb_type) {
+            const char *type = GB_read_char_pntr(gb_type);
 
-            GBS_strcat(strstruct, GBT_read_name(gb_extended));
-            GBS_strcat(strstruct, ":      <");
-            GBS_strcat(strstruct, type);
-            GBS_strcat(strstruct, ">");
+            if (GBS_string_matches(type, "PV?:*", GB_MIND_CASE)) {
+                GBS_strstruct *strstruct = GBS_stropen(100);
 
-            result = GBS_strclose(strstruct);
+                GBS_strcat(strstruct, GBT_read_name(gb_extended));
+                GBS_strcat(strstruct, ":      <");
+                GBS_strcat(strstruct, type);
+                GBS_strcat(strstruct, ">");
+
+                result = GBS_strclose(strstruct);
+            }
         }
     }
     return result;
@@ -332,7 +352,7 @@ static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
 
 void ColumnStat::create_sai_selection_list(AW_window *aww) {
     GB_transaction ta(gb_main);
-    sai_sel_box_id = awt_create_selection_list_on_sai(gb_main, aww, awar_name, filter_columnstat_SAIs, (AW_CL)this);
+    sai_sel_box_id = awt_create_selection_list_on_sai(gb_main, aww, awar_name, true, filter_columnstat_SAIs, (AW_CL)this);
 }
 
 void COLSTAT_create_selection_list(AW_window *aws, ColumnStat *column_stat) {

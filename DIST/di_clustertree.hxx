@@ -50,18 +50,18 @@ const float NO_DISTANCE = -1.0;
 // ------------------------
 //      ClusterTreeRoot
 
-class ClusterTreeRoot : public ARB_tree_root {
+class ClusterTreeRoot : public ARB_seqtree_root {
     AP_FLOAT maxDistance;                           // max. allowed distance inside cluster
-    size_t   minClusterSize;                        // min. size of cluster (number of leafs)
+    unsigned minClusterSize;                        // min. size of cluster (number of leafs)
 
 public:
     ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_);
-    virtual ~ClusterTreeRoot() OVERRIDE;
+    virtual ~ClusterTreeRoot() OVERRIDE {}
 
-    DEFINE_DOWNCAST_ACCESSORS(ClusterTree, get_root_node, ARB_tree_root::get_root_node());
+    DEFINE_DOWNCAST_ACCESSORS(ClusterTree, get_root_node, ARB_seqtree_root::get_root_node());
 
     GB_ERROR find_clusters();
-    size_t get_minClusterSize() const { return minClusterSize; }
+    unsigned get_minClusterSize() const { return minClusterSize; }
     AP_FLOAT get_maxDistance() const { return maxDistance; }
 };
 
@@ -120,9 +120,9 @@ typedef LeafRelations::const_iterator    LeafRelationCIter;
 class ClusterTree : public ARB_countedTree { // derived from a Noncopyable
     ClusterState state;
 
-    size_t   leaf_count;                            // number of leafs in subtree
-    size_t   clus_count;                            // number of clusters at and in subtree
-    size_t   depth;                                 // depth of node ( 1 == root )
+    unsigned leaf_count;                            // number of leafs in subtree
+    unsigned clus_count;                            // number of clusters at and in subtree
+    unsigned depth;                                 // depth of node ( 1 == root )
     AP_FLOAT min_bases;                             // min. bases used for comparing two members
 
     NodeValues    *branchDepths;                    // leaf-depths (distance from this each leaf)
@@ -135,11 +135,11 @@ class ClusterTree : public ARB_countedTree { // derived from a Noncopyable
     void calc_branch_dists();
 
 #if defined(TRACE_DIST_CALC)
-    size_t calculatedDistances;
+    unsigned calculatedDistances;
 #endif // TRACE_DIST_CALC
 
 public:
-    ClusterTree(ClusterTreeRoot *tree_root_)
+    explicit ClusterTree(ClusterTreeRoot *tree_root_)
         : ARB_countedTree(tree_root_)
         , state(CS_UNKNOWN)
         , leaf_count(0)
@@ -152,7 +152,7 @@ public:
         , worstKnownDistance(NULL)
     {}
 
-    virtual ~ClusterTree() OVERRIDE {
+    ~ClusterTree() OVERRIDE {
         delete worstKnownDistance;
         delete sequenceDists;
         delete branchDists;
@@ -160,22 +160,18 @@ public:
     }
     DEFINE_TREE_ACCESSORS(ClusterTreeRoot, ClusterTree);
 
-    virtual ClusterTree *dup() const OVERRIDE {              // create new ClusterTree element from prototype
-        return new ClusterTree(const_cast<ClusterTreeRoot*>(get_tree_root()));
-    }
-
-    size_t get_cluster_count() const { return clus_count; }
-    size_t get_leaf_count() const OVERRIDE { return leaf_count; }
-    size_t get_depth() const { return depth; }
+    unsigned get_cluster_count() const { return clus_count; }
+    unsigned get_leaf_count() const OVERRIDE { return leaf_count; }
+    unsigned get_depth() const { return depth; }
 
 #if defined(TRACE_DIST_CALC)
-    size_t get_calculated_distances() const { return calculatedDistances; }
+    unsigned get_calculated_distances() const { return calculatedDistances; }
 #endif // TRACE_DIST_CALC
 
     bool knows_seqDists() const { return state & (CS_IS_CLUSTER|CS_SUB_CLUSTER); }
 
-    size_t possible_relations() const { return (leaf_count*(leaf_count-1)) / 2; }
-    size_t known_seqDists() const { return knows_seqDists() ? possible_relations() : 0; }
+    unsigned possible_relations() const { return (leaf_count*(leaf_count-1)) / 2; }
+    unsigned known_seqDists() const { return knows_seqDists() ? possible_relations() : 0; }
 
     ClusterTree *get_cluster(size_t num);           // this allows sequentiell access to clusters
     ClusterState get_state() const { return state; }
@@ -204,8 +200,14 @@ public:
     void oblivion(bool forgetDistances); // forget unneeded data
 };
 
+struct ClusterTreeNodeFactory : public RootedTreeNodeFactory {
+    virtual RootedTree *makeNode(TreeRoot *root) const {
+        return new ClusterTree(DOWNCAST(ClusterTreeRoot*, root));
+    }
+};
+
 struct UseAnyTree : public ARB_tree_predicate {
-    bool selects(const ARB_tree&) const OVERRIDE { return true; }
+    bool selects(const ARB_seqtree&) const OVERRIDE { return true; }
 };
 
 #else

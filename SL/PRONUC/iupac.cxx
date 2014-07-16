@@ -309,7 +309,7 @@ void TEST_nuc_groups() {
             const Nuc_Group& group = nuc_group[base][alitype];
             if (group.members) {
                 if ((base+'A') == 'N') {
-                    TEST_EXPECT_EQUAL__BROKEN(group.count, strlen(group.members));
+                    TEST_EXPECT_EQUAL__BROKEN(group.count, strlen(group.members), 1);
                     // @@@ fails because count is 1 for "ACGT" [N]
                     // maybe be expected by resolve_IUPAC_target_string (fix this first)
                     TEST_EXPECT_EQUAL(group.count, 1U); // fixture for behavior
@@ -329,4 +329,4 @@ void TEST_nuc_groups() {
     }
 }
 
-#endif
+#endif // UNIT_TESTS

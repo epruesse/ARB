@@ -61,7 +61,7 @@ inline char *get_alitype_eval(AW_root *aw_root) {
     return GBS_global_string_copy("%s=", aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_char_pntr()); 
 }
 
-void alitype_changed_cb(AW_root *aw_root, AW_CL cl_db_sel) {
+static void alitype_changed_cb(AW_root *aw_root, AW_CL cl_db_sel) {
     AW_DB_selection *db_sel   = (AW_DB_selection*)cl_db_sel;
     char            *ali_type = get_alitype_eval(aw_root);
     awt_reconfigure_selection_list_on_alignments(db_sel, ali_type);
@@ -415,7 +415,7 @@ static GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, Spec
 
                                 free(content);
                                 freeset(new_content, whole);
-                                new_content_len = strlen(new_content);
+                                new_content_len = strlen(new_content); // cppcheck-suppress deallocuse
                             }
                         }
 
@@ -672,15 +672,7 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, AW_CL option
     aws->at("field_select");
     aws->auto_space(0, 0);
     aws->callback(AW_POPDOWN);
-    create_selection_list_on_itemfields(GLOBAL.gb_main, aws,
-                                            AWAR_CON_MERGE_FIELD,
-                                            FIELD_FILTER_NDS,
-                                            "field_select",
-                                            0,
-                                            SPECIES_get_selector(),
-                                            20, 30,
-                                            SelectedFields(SF_PSEUDO|SF_HIDDEN),
-                                            "sel_merge_field");
+    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_CON_MERGE_FIELD, true, FIELD_FILTER_NDS, "field_select", 0, SPECIES_get_selector(), 20, 30, SelectedFields(SF_PSEUDO|SF_HIDDEN), "sel_merge_field");
 
     aws->at("store_sp_no");
     aws->label_length(20);
@@ -731,7 +723,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     AW_selection    *sel_alis = awt_create_subset_selection_list(aws, all_alis->get_sellist(), "concatAligns", "collect", "sort");
 
     aws->at("type");
-    aws->create_option_menu(AWAR_CON_SEQUENCE_TYPE);
+    aws->create_option_menu(AWAR_CON_SEQUENCE_TYPE, true);
     aws->insert_option("DNA", "d", "dna");
     aws->insert_option("RNA", "r", "rna");
     aws->insert_default_option("PROTEIN", "p", "ami");
@@ -755,7 +747,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->callback(concatenateAlignments, (AW_CL)sel_alis);
     aws->create_button("CONCATENATE", "CONCATENATE", "A");
 
-    aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesWindow, 0);
+    aws->callback(NT_createMergeSimilarSpeciesWindow);
     aws->create_button("MERGE_SPECIES", "MERGE SIMILAR SPECIES", "M");
 
     aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesAndConcatenateWindow, (AW_CL)sel_alis);

@@ -10,11 +10,8 @@
 
 #include "gb_key.h"
 #include "gb_map.h"
-#include "gb_storage.h"
 #include "gb_index.h"
 #include <arb_file.h>
-
-#include <static_assert.h>
 
 #define ADMAP_BYTE_ORDER    0x01020304
 #define GB_MAX_MAPPED_FILES 10
@@ -313,16 +310,16 @@ static long write_IFS(gb_index_files *ifs, FILE *out, long *offset) {
 }
 
 static void convertFlags4Save(gb_flag_types *flags, gb_flag_types2 *flags2, gb_flag_types3 */*flags3*/) {
-    flags->unused = 0;
-    flags->user_flags = 0;
+    flags->unused      = 0;
+    flags->user_flags  = 0;
     gb_assert(flags->temporary==0);
     flags->saved_flags = 0;
 
-    flags2->last_updated = 0;
-    flags2->usr_ref = 0;
+    flags2->last_updated     = 0;
+    flags2->user_bits        = 0;
     flags2->folded_container = 0;
     flags2->update_in_server = 0;
-    flags2->header_changed = 0;
+    flags2->header_changed   = 0;
 }
 static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FILE *out, long *offset, GB_MAIN_IDX main_idx) {
     /*

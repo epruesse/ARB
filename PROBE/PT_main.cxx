@@ -356,18 +356,18 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
             if (update_reason) {
                 printf("- updating postree (Reason: %s)\n", update_reason);
 
-                const char *build_step[] = {
-                    "build_clean",
-                    "build",
-                };
+                // run build_clean
+                char *cmd = GBS_global_string_copy("%s -build_clean -D%s", exename, arbdb_name);
+                make_valgrinded_call(cmd);
+                error           = GBK_system(cmd);
+                free(cmd);
 
-                for (size_t s = 0; !error && s<ARRAY_ELEMS(build_step); s++) {
-                    if (s == 1 && !GB_supports_mapfile()) continue; // skip useless step 
-                    
-                    char *build_cmd = GBS_global_string_copy("%s -%s -D%s", exename, build_step[s], arbdb_name);
-                    make_valgrinded_call(build_cmd);
-                    error           = GBK_system(build_cmd);
-                    free(build_cmd);
+                // run build
+                if (!error) {
+                    cmd = GBS_global_string_copy("%s -build -D%s", exename, arbdb_name);
+                    make_valgrinded_call(cmd);
+                    error           = GBK_system(cmd);
+                    free(cmd);
                 }
 
                 if (error) error = GBS_global_string("Failed to update postree (Reason: %s)", error.deliver());
@@ -407,7 +407,7 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
                 aisc_accept_calls(so);
             }
         }
-        aisc_server_shutdown(so);
+        aisc_server_shutdown(psg.com_so);
     }
     return error;
 }

@@ -15,9 +15,17 @@ OCCURRENCE      ARB_NT
 
 SECTION         BRIEF DESCRIPTION
 
-                All description files of import formats are located in
-                the directory '$ARBHOME/lib/import'.
-                Each of these files describe how to analyze the input files.
+		Import filters delivered together with ARB are located in
+                the directory '$ARBHOME/lib/import'. Their file extension
+		has to be '.ift'!
+
+		When you customize your own import filters store them in 
+		directory '~/.arb_prop/filter/'. You only need to copy them
+		into '$ARBHOME/lib/import' if multiple users on this machine
+		should be able to use the customized filters.
+
+                Each of the import filters describes how to analyze and read files
+		of one specific format.
 
                 A basic import description file (.ift) looks like this:
 

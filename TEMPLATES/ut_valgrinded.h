@@ -95,13 +95,13 @@ inline void make_valgrinded_call(char *&command) {
 inline bool will_valgrind_calls() { return utvg::get_valgrind_info().wanted; }
 inline bool seen_valgrinded_call() { return utvg::flag_exists(UTVG_CALL_SEEN); }
 
-#else
+#else // !UNIT_TESTS
 
 #define make_valgrinded_call(command)
 inline bool will_valgrind_calls() { return false; }
 inline bool seen_valgrinded_call() { return false; }
 
-#endif
+#endif // UNIT_TESTS
 
 
 #else

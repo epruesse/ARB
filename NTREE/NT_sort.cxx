@@ -21,17 +21,22 @@
 
 #define NT_RESORT_FILTER (1<<GB_STRING)|(1<<GB_INT)|(1<<GB_FLOAT)
 
-// test
+#define CUSTOM_CRITERIA 3
 
-struct customsort_struct {
-    const char *key1;
-    const char *key2;
-    const char *key3;
+struct customCriterion {
+    char *key;
+    bool  reverse;
+
+    customCriterion() : key(NULL), reverse(false) {}
+    customCriterion(const char *key_, bool reverse_) : key(strdup(key_)), reverse(reverse_) {}
+    customCriterion(const customCriterion& other) : key(strdup(other.key)), reverse(other.reverse) {}
+    DECLARE_ASSIGNMENT_OPERATOR(customCriterion);
+    ~customCriterion() { free(key); }
 };
 
-static int cmpByKey(GBDATA *gbd1, GBDATA *gbd2, const char *field) {
-    GBDATA *gb_field1 = GB_entry(gbd1, field);
-    GBDATA *gb_field2 = GB_entry(gbd2, field);
+static int cmpByKey(GBDATA *gbd1, GBDATA *gbd2, const customCriterion& by) {
+    GBDATA *gb_field1 = GB_entry(gbd1, by.key);
+    GBDATA *gb_field2 = GB_entry(gbd2, by.key);
 
     int cmp;
     if (gb_field1) {
@@ -62,6 +67,8 @@ static int cmpByKey(GBDATA *gbd1, GBDATA *gbd2, const char *field) {
                     cmp = 0; // other field type -> no idea how to compare
                     break;
             }
+
+            if (by.reverse) cmp = -cmp;
         }
         else cmp = -1;           // existing < missing!
     }
@@ -70,17 +77,15 @@ static int cmpByKey(GBDATA *gbd1, GBDATA *gbd2, const char *field) {
     return cmp;
 }
 
-static int resort_data_by_customsub(const void *v1, const void *v2, void *cd_sortBy) {
-    GBDATA            *gbd1   = (GBDATA*)v1;
-    GBDATA            *gbd2   = (GBDATA*)v2;
-    customsort_struct *sortBy = (customsort_struct*)cd_sortBy;
+static int resort_data_by_customOrder(const void *v1, const void *v2, void *cd_sortBy) {
+    GBDATA *gbd1 = (GBDATA*)v1;
+    GBDATA *gbd2 = (GBDATA*)v2;
 
-    int cmp = cmpByKey(gbd1, gbd2, sortBy->key1);
-    if (!cmp) {
-        cmp = cmpByKey(gbd1, gbd2, sortBy->key2);
-        if (!cmp) {
-            cmp = cmpByKey(gbd1, gbd2, sortBy->key3);
-        }
+    const customCriterion *sortBy = (const customCriterion *)cd_sortBy;
+
+    int cmp = 0;
+    for (int c = 0; !cmp && c<CUSTOM_CRITERIA; ++c) {
+        cmp = cmpByKey(gbd1, gbd2, sortBy[c]);
     }
     return cmp;
 }
@@ -104,12 +109,8 @@ static void NT_resort_data_base_by_tree(GBT_TREE *tree, GBDATA *gb_species_data)
 }
 
 
-static GB_ERROR NT_resort_data_base(GBT_TREE *tree, const char *key1, const char *key2, const char *key3) {
-    customsort_struct sortBy;
-
-    sortBy.key1 = key1;
-    sortBy.key2 = key2;
-    sortBy.key3 = key3;
+static GB_ERROR NT_resort_data_base(GBT_TREE *tree, const customCriterion *sortBy) {
+    nt_assert(contradicted(tree, sortBy));
 
     GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
     if (!error) {
@@ -118,12 +119,12 @@ static GB_ERROR NT_resort_data_base(GBT_TREE *tree, const char *key1, const char
         else {
             if (tree) {
                 gb_resort_data_count = 0;
-                gb_resort_data_list = (GBDATA **)calloc(sizeof(GBDATA *), GB_nsons(gb_sd) + 256);
+                gb_resort_data_list  = (GBDATA **)calloc(sizeof(GBDATA *), GB_nsons(gb_sd) + 256);
                 NT_resort_data_base_by_tree(tree, gb_sd);
             }
             else {
                 gb_resort_data_list = GBT_gen_species_array(GLOBAL.gb_main, &gb_resort_data_count);
-                GB_sort((void **)gb_resort_data_list, 0, gb_resort_data_count, resort_data_by_customsub, &sortBy);
+                GB_sort((void **)gb_resort_data_list, 0, gb_resort_data_count, resort_data_by_customOrder, (void*)sortBy);
 
             }
             error = GB_resort_data_base(GLOBAL.gb_main, gb_resort_data_list, gb_resort_data_count);
@@ -139,32 +140,43 @@ void NT_resort_data_by_phylogeny(AW_window *, AW_CL cl_ntw, AW_CL) {
     GBT_TREE     *tree  = nt_get_tree_root_of_canvas((AWT_canvas*)cl_ntw);
 
     if (!tree)  error = "Please select/build a tree first";
-    if (!error) error = NT_resort_data_base(tree, 0, 0, 0);
+    if (!error) error = NT_resort_data_base(tree, NULL);
     if (error) aw_message(error);
 }
+
+#define AWAR_TREE_SORT1 "ad_tree/sort_1"
+#define AWAR_TREE_SORT2 "ad_tree/sort_2"
+#define AWAR_TREE_SORT3 "ad_tree/sort_3"
+
+#define AWAR_TREE_REV1 "ad_tree/rev1"
+#define AWAR_TREE_REV2 "ad_tree/rev2"
+#define AWAR_TREE_REV3 "ad_tree/rev3"
 
 static void NT_resort_data_by_user_criteria(AW_window *aw) {
     arb_progress progress("Sorting data");
-    
-    char *s1 = aw->get_root()->awar("ad_tree/sort_1")->read_string();
-    char *s2 = aw->get_root()->awar("ad_tree/sort_2")->read_string();
-    char *s3 = aw->get_root()->awar("ad_tree/sort_3")->read_string();
 
-    GB_ERROR error = NT_resort_data_base(0, s1, s2, s3);
+    AW_root *aw_root = aw->get_root();
+
+    customCriterion sortBy[CUSTOM_CRITERIA];
+    sortBy[0] = customCriterion(aw_root->awar(AWAR_TREE_SORT1)->read_char_pntr(), aw_root->awar(AWAR_TREE_REV1)->read_int());
+    sortBy[1] = customCriterion(aw_root->awar(AWAR_TREE_SORT2)->read_char_pntr(), aw_root->awar(AWAR_TREE_REV2)->read_int());
+    sortBy[2] = customCriterion(aw_root->awar(AWAR_TREE_SORT3)->read_char_pntr(), aw_root->awar(AWAR_TREE_REV3)->read_int());
+
+    GB_ERROR error = NT_resort_data_base(NULL, sortBy);
     if (error) aw_message(error);
-
-    free(s3);
-    free(s2);
-    free(s1);
 }
 
-void NT_build_resort_awars(AW_root *awr, AW_default aw_def) {
-    awr->awar_string("ad_tree/sort_1", "name",      aw_def);
-    awr->awar_string("ad_tree/sort_2", "full_name", aw_def);
-    awr->awar_string("ad_tree/sort_3", "name",      aw_def);
+void NT_create_resort_awars(AW_root *awr, AW_default aw_def) {
+    awr->awar_string(AWAR_TREE_SORT1, "name",      aw_def);
+    awr->awar_string(AWAR_TREE_SORT2, "full_name", aw_def);
+    awr->awar_string(AWAR_TREE_SORT3, "",          aw_def);
+
+    awr->awar_int(AWAR_TREE_REV1, 0, aw_def);
+    awr->awar_int(AWAR_TREE_REV2, 0, aw_def);
+    awr->awar_int(AWAR_TREE_REV3, 0, aw_def);
 }
 
-AW_window *NT_build_resort_window(AW_root *awr) {
+AW_window *NT_create_resort_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(awr, "SORT_DATABASE", "SORT DATABASE");
     aws->load_xfig("nt_sort.fig");
@@ -177,25 +189,17 @@ AW_window *NT_build_resort_window(AW_root *awr) {
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
+    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT1, true, NT_RESORT_FILTER, "key1", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT2, true, NT_RESORT_FILTER, "key2", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT3, true, NT_RESORT_FILTER, "key3", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+
+    aws->at("rev1"); aws->label("Reverse"); aws->create_toggle(AWAR_TREE_REV1);
+    aws->at("rev2"); aws->label("Reverse"); aws->create_toggle(AWAR_TREE_REV2);
+    aws->at("rev3"); aws->label("Reverse"); aws->create_toggle(AWAR_TREE_REV3);
+
     aws->at("go");
     aws->callback((AW_CB0)NT_resort_data_by_user_criteria);
     aws->create_button("GO", "GO", "G");
 
-    create_selection_list_on_itemfields(GLOBAL.gb_main,
-                                            aws, "ad_tree/sort_1",
-                                            NT_RESORT_FILTER,
-                                            "key1", 0, SPECIES_get_selector(), 20, 10);
-
-    create_selection_list_on_itemfields(GLOBAL.gb_main,
-                                            aws, "ad_tree/sort_2",
-                                            NT_RESORT_FILTER,
-                                            "key2", 0, SPECIES_get_selector(), 20, 10);
-
-    create_selection_list_on_itemfields(GLOBAL.gb_main,
-                                            aws, "ad_tree/sort_3",
-                                            NT_RESORT_FILTER,
-                                            "key3", 0, SPECIES_get_selector(), 20, 10);
-
-    return (AW_window *)aws;
-
+    return aws;
 }

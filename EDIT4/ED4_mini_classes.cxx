@@ -407,7 +407,7 @@ struct ConsensusBuildParams {
         upper       = awr->awar(ED4_AWAR_CONSENSUS_UPPER)->read_int();
         lower       = awr->awar(ED4_AWAR_CONSENSUS_LOWER)->read_int();
     }
-#if defined(UNIT_TESTS)
+#if defined(UNIT_TESTS) // UT_DIFF
     ConsensusBuildParams() {
         // uses awar defaults
         countgaps   = 1;
@@ -422,7 +422,7 @@ struct ConsensusBuildParams {
 
 static ConsensusBuildParams *BK = NULL; // @@@ make member of ED4_char_table ?
 
-void ED4_consensus_definition_changed(AW_root*, AW_CL, AW_CL) {
+void ED4_consensus_definition_changed(AW_root*) {
     delete BK; BK = 0; // invalidate
     ED4_ROOT->request_refresh_for_consensus_terminals();
 }
@@ -447,7 +447,7 @@ static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
     return NULL;
 }
 
-void ED4_consensus_display_changed(AW_root *root, AW_CL, AW_CL) {
+void ED4_consensus_display_changed(AW_root *root) {
     int show = root->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int();
     ED4_ROOT->root_group_man->route_down_hierarchy(toggle_consensus_display, show).expect_no_error();
 }

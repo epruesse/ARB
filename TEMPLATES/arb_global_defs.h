@@ -12,8 +12,10 @@
 #ifndef ARB_GLOBAL_DEFS_H
 #define ARB_GLOBAL_DEFS_H
 
-#define NO_TREE_SELECTED "tree_?????"
-#define NO_ALI_SELECTED  "????"
+#define NO_TREE_SELECTED   "tree_?????"
+#define NO_ALI_SELECTED    "????"
+#define NO_CONFIG_SELECTED ""
+#define NO_FIELD_SELECTED  "----"
 
 #define DISPLAY_NONE "<< none >>"
 

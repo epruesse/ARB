@@ -183,7 +183,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
 
             for (int count = 0; count<tree_count && !error; ++count) {
                 const char *tname = tree_names[count];
-                GBT_TREE   *tree  = GBT_read_tree(NameSession.gb_main, tname, -sizeof(GBT_TREE));
+                GBT_TREE   *tree  = GBT_read_tree(NameSession.gb_main, tname, GBT_TREE_NodeFactory());
                 ++progress;
 
                 if (tree) {
@@ -193,12 +193,13 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
 
                     ++progress;
 
-                    GBT_write_tree(NameSession.gb_main, 0, tname, tree);
-                    GBT_delete_tree(tree);
-                    
+                    GBT_write_tree(NameSession.gb_main, tname, tree);
+                    delete tree;
+
                     progress.inc_and_check_user_abort(error);
                 }
                 else {
+                    GBT_message(NameSession.gb_main, GBS_global_string("Warning: failed to read '%s' (Reason: %s)", tname, GB_await_error()));
                     ++progress;
                     ++progress;
                 }
@@ -252,6 +253,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                     if (!error && need_save) {
                         error = GBT_save_configuration_data(config, NameSession.gb_main, config_names[count]);
                     }
+                    GBT_free_configuration_data(config);
                 }
                 progress.inc_and_check_user_abort(error);
             }
@@ -329,6 +331,7 @@ void TEST_SLOW_rename_session() {
     TEST_EXPECT_TEXTFILE_DIFFLINES(outputname, expectedname, 0);
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(outputname));
 }
+TEST_PUBLISH(TEST_SLOW_rename_session);
 
 #endif // UNIT_TESTS
 

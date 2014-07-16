@@ -19,7 +19,6 @@
 #include <awtc_next_neighbours.hxx>
 #include <awt_sel_boxes.hxx>
 
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
@@ -36,8 +35,6 @@
 #include <climits>
 
 #include <list>
-
-using std::list;
 
 // --------------------------------------------------------------------------------
 
@@ -134,7 +131,7 @@ struct SearchRelativeParams : virtual Noncopyable {
 #define FA_AWAR_NEXT_RELATIVES      FA_AWAR_ROOT "next_relatives"
 #define FA_AWAR_RELATIVE_RANGE      FA_AWAR_ROOT "relrange"
 #define FA_AWAR_PT_SERVER_ALIGNMENT "tmp/" FA_AWAR_ROOT "relative_ali"
-#define FA_AWAR_SAI_RANGE_NAME      FA_AWAR_ROOT "sai/name"
+#define FA_AWAR_SAI_RANGE_NAME      FA_AWAR_ROOT "sai/sainame"
 #define FA_AWAR_SAI_RANGE_CHARS     FA_AWAR_ROOT "sai/chars"
 
 #define FA_AWAR_ISLAND_HOPPING_ROOT  "island_hopping/"
@@ -298,7 +295,7 @@ public:
 };
 
 class LooseBases {
-    typedef list<ExplicitRange> Ranges;
+    typedef std::list<ExplicitRange> Ranges;
 
     Ranges ranges;
     
@@ -1848,15 +1845,17 @@ class Aligner : virtual Noncopyable {
     int                maxProtection;         // protection level
 
     // -------------------- new members
-    int            wasNotAllowedToAlign;      // number of failures caused by wrong protection
-    int            err_count;                 // count errors
-    bool           continue_on_error;         /* true -> run single alignments in separate transactions.
+    int                wasNotAllowedToAlign;  // number of failures caused by wrong protection
+    int                err_count;             // count errors
+    bool               continue_on_error;         /* true -> run single alignments in separate transactions.
                                                *         If one target fails, continue with rest.
                                                * false -> run all in one transaction
                                                *          One fails -> all fail!
                                                */
-    FA_errorAction error_action;
-    list<GBDATA*>  species_to_mark;           // species that will be marked after aligning
+    FA_errorAction     error_action;
+
+    typedef std::list<GBDATA*> GBDATAlist;
+    GBDATAlist species_to_mark;       // species that will be marked after aligning
 
     ARB_ERROR alignToReference(GBDATA *gb_toalign, const AlignmentReference& ref);
     ARB_ERROR alignTargetsToReference(const AlignmentReference& ref, GBDATA *gb_species_data);
@@ -2147,7 +2146,7 @@ ARB_ERROR Aligner::run() {
 
         GB_transaction ta(gb_main);
         GBT_mark_all(gb_main, 0);
-        for (list<GBDATA*>::iterator sp = species_to_mark.begin(); sp != species_to_mark.end(); ++sp) {
+        for (GBDATAlist::iterator sp = species_to_mark.begin(); sp != species_to_mark.end(); ++sp) {
             GB_write_flag(*sp, 1);
         }
 
@@ -2321,7 +2320,7 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
             GBDATA *gb_main          = data_access->gb_main;
             char   *editor_alignment = 0;
             {
-                GB_transaction  dummy(gb_main);
+                GB_transaction  ta(gb_main);
                 char           *default_alignment = GBT_get_default_alignment(gb_main);
 
                 editor_alignment = root->awar_string(AWAR_EDITOR_ALIGNMENT, default_alignment)->read_string();
@@ -2518,18 +2517,18 @@ static AW_window *create_island_hopping_window(AW_root *root, AW_CL) {
         aws->button_length(1);
 
         int dummy;
-        aws->at("h_a"); aws->get_at_position(&xpos[0], &dummy); aws->create_button("A", "A");
-        aws->at("h_c"); aws->get_at_position(&xpos[1], &dummy); aws->create_button("C", "C");
-        aws->at("h_g"); aws->get_at_position(&xpos[2], &dummy); aws->create_button("G", "G");
-        aws->at("h_t"); aws->get_at_position(&xpos[3], &dummy); aws->create_button("T", "T");
+        aws->at("h_a"); aws->get_at_position(&xpos[0], &dummy); aws->create_button(NULL, "A");
+        aws->at("h_c"); aws->get_at_position(&xpos[1], &dummy); aws->create_button(NULL, "C");
+        aws->at("h_g"); aws->get_at_position(&xpos[2], &dummy); aws->create_button(NULL, "G");
+        aws->at("h_t"); aws->get_at_position(&xpos[3], &dummy); aws->create_button(NULL, "T");
 
-        aws->at("v_a"); aws->get_at_position(&dummy, &ypos[0]); aws->create_button("A", "A");
-        aws->at("v_c"); aws->get_at_position(&dummy, &ypos[1]); aws->create_button("C", "C");
-        aws->at("v_g"); aws->get_at_position(&dummy, &ypos[2]); aws->create_button("G", "G");
-        aws->at("v_t"); aws->get_at_position(&dummy, &ypos[3]); aws->create_button("T", "T");
+        aws->at("v_a"); aws->get_at_position(&dummy, &ypos[0]); aws->create_button(NULL, "A");
+        aws->at("v_c"); aws->get_at_position(&dummy, &ypos[1]); aws->create_button(NULL, "C");
+        aws->at("v_g"); aws->get_at_position(&dummy, &ypos[2]); aws->create_button(NULL, "G");
+        aws->at("v_t"); aws->get_at_position(&dummy, &ypos[3]); aws->create_button(NULL, "T");
     }
 
-    aws->at("subst"); aws->create_button("subst_para", "Substitution rate parameters:");
+    aws->at("subst"); aws->create_button(NULL, "Substitution rate parameters:");
 
 #define XOFF -25
 #define YOFF 0
@@ -2703,7 +2702,8 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     // Protection
 
     aws->at("protection");
-    aws->create_option_menu(FA_AWAR_PROTECTION, "Protection");
+    aws->label("Protection");
+    aws->create_option_menu(FA_AWAR_PROTECTION, true);
     aws->insert_default_option("0", 0, 0);
     aws->insert_option("1", 0, 1);
     aws->insert_option("2", 0, 2);
@@ -2716,7 +2716,8 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     // MirrorCheck
 
     aws->at("mirror");
-    aws->create_option_menu(FA_AWAR_MIRROR, "Turn check");
+    aws->label("Turn check");
+    aws->create_option_menu(FA_AWAR_MIRROR, true);
     aws->insert_option        ("Never turn sequence",         "", FA_TURN_NEVER);
     aws->insert_default_option("User acknowledgment ",        "", FA_TURN_INTERACTIVE);
     aws->insert_option        ("Automatically turn sequence", "", FA_TURN_ALWAYS);
@@ -2725,7 +2726,8 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     // Report
 
     aws->at("insert");
-    aws->create_option_menu(FA_AWAR_REPORT, "Report");
+    aws->label("Report");
+    aws->create_option_menu(FA_AWAR_REPORT, true);
     aws->insert_option        ("No report",                   "", FA_NO_REPORT);
     aws->sens_mask(AWM_EXP);
     aws->insert_default_option("Report to temporary entries", "", FA_TEMP_REPORT);
@@ -2740,7 +2742,8 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->create_toggle(FA_AWAR_CONTINUE_ON_ERROR);
 
     aws->at("on_failure");
-    aws->create_option_menu(FA_AWAR_ACTION_ON_ERROR, "On failure");
+    aws->label("On failure");
+    aws->create_option_menu(FA_AWAR_ACTION_ON_ERROR, true);
     aws->insert_default_option("do nothing",   "", FA_NO_ACTION);
     aws->insert_option        ("mark failed",  "", FA_MARK_FAILED);
     aws->insert_option        ("mark aligned", "", FA_MARK_ALIGNED);
@@ -3343,8 +3346,11 @@ void TEST_SLOW_Aligner_checksumError() {
 
         error = aligner.run();
     }
-    TEST_EXPECT_NULL__BROKEN(error.deliver());
-    TEST_EXPECT_EQUAL__BROKEN(USED_RELS_FOR("MtnK1722"), "???");
+    {
+        GB_ERROR err = error.deliver();
+        TEST_EXPECT_NULL__BROKEN(err, "Aligner produced 1 error");
+    }
+    TEST_EXPECT_EQUAL__BROKEN(USED_RELS_FOR("MtnK1722"), "???", "<No such field 'used_rels'>"); // subsequent failure
 
     GB_close(gb_main);
 }
@@ -3405,17 +3411,21 @@ void TEST_BASIC_UnalignedBases() {
 
         LooseBases selfRecalc;
         selfRecalc.follow_ali_change_and_append(ub, AliChange(New, New));
-        TEST_EXPECT_EQUAL__BROKEN(asstr(selfRecalc), " 3/18 8/15 0/6 3/11 8/11 10/15 10/17"); // wanted behavior?
-        TEST_EXPECT_EQUAL(asstr(selfRecalc),         " 3/18 8/17 0/6 3/11 8/13 10/15 10/18"); // doc wrong behavior @@@ "8/17", "8/13", "10/18" are wrong
+        TEST_EXPECT_EQUAL__BROKEN(asstr(selfRecalc),
+                                  " 3/18 8/15 0/6 3/11 8/11 10/15 10/17",  // wanted behavior?
+                                  " 3/18 8/17 0/6 3/11 8/13 10/15 10/18"); // doc wrong behavior @@@ "8/17", "8/13", "10/18" are wrong
 
         ub.follow_ali_change_and_append(selfRecalc, AliChange(New, Old));
-        TEST_EXPECT_EQUAL__BROKEN(asstr(ub), " 1/7 3/5 0/1 1/3 3/3 4/5 4/6"); // wanted behavior? (from wanted behavior above)
-        TEST_EXPECT_EQUAL__BROKEN(asstr(ub), " 1/7 3/6 0/1 1/3 3/4 4/5 4/7"); // wanted behavior? (from wrong result above)
-        TEST_EXPECT_EQUAL(asstr(ub),         " 1/7 3/7 0/2 1/4 3/5 4/6 4/7"); // doc wrong
+        TEST_EXPECT_EQUAL__BROKEN(asstr(ub),
+                                  " 1/7 3/5 0/1 1/3 3/3 4/5 4/6",  // wanted behavior? (from wanted behavior above)
+                                  " 1/7 3/7 0/2 1/4 3/5 4/6 4/7"); // document wrong behavior
+        TEST_EXPECT_EQUAL__BROKEN(asstr(ub),
+                                  " 1/7 3/6 0/1 1/3 3/4 4/5 4/7",  // wanted behavior? (from wrong result above)
+                                  " 1/7 3/7 0/2 1/4 3/5 4/6 4/7"); // document wrong behavior
     }
 }
 
 
-#endif
+#endif // UNIT_TESTS
 
 

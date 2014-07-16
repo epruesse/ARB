@@ -11,42 +11,23 @@ UP	mode.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		ROTATE MODE
 
-OCCURRENCE	ARB_NT <ninth button in the left column>
-		F9 on the keyboard
+OCCURRENCE	ARB_NT <button in the left column>
 
 DESCRIPTION	The 'ROTATE MODE' allows you to rotate branches or subtrees
 		of the displayed tree.
 
-		Click on the <ninth button in the left column> of the
-                'ARB_NT' window or press the 'F9' key on the keyboard to
-                activate the 'ROTATE MODE'. In the latter case, the
-                cursor has to be placed within the tree display area.
+		Click on the <button in the left column> of the
+                'ARB_NT' window to activate the 'ROTATE MODE'.
 
-                Simply click and drag a branch to rotate it.
+                Simply click and drag a branch to rotate it. Please note this
+                only has an effect for radial tree display.
 
                 To reset the rotation of all branches of a subtree,
                 press the key '0' (zero) while pointing to that subtree.
 
-                See also LINK{mode_angle.hlp}.
+                See also LINK{mode_spread.hlp}.
 
-NOTES		Short descriptions of the 'MODE' and the functions assigned
-		to the mouse buttons are given in the fourth line of the
-		'ARB_NT' window.
-
-		The displayed tree topology is exported to the drawing
-		tool xfig.
-
-		The middle mouse button (placed anywhere within the tree
-		display area) can be used to move the whole tree.
-
-		The scale bar and its label can be moved by positioning the
-		cursor anywhere on the bar, keeping the left mouse button
-		pressed, moving the cursor to the desired position and
-                subsequently releasing the mouse button. The label of the bar
-		can be moved independently.
-
-		The previous topology can be restored using the 'RESET MODE'
-		('RESET' button on the 'ARB_NT' window).
+NOTES		None
 
 EXAMPLES	None
 

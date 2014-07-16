@@ -49,10 +49,9 @@ probe_tabs *probe_tabs::duplicate()
 }
 
 
-probe_tabs::probe_tabs(int *new_group_field, int *new_non_group_field, int len_group)
-{
+probe_tabs::probe_tabs(int *new_group_field, int *new_non_group_field, int len_group) {
     int length;
-    memset(this, 0, sizeof(probe_tabs));
+    memset((void*)this, 0, sizeof(probe_tabs)); // @@@ potentially dangerous (overwrites vtable pointer!)
 
     if (new_group_field)                                // Duplicate !!!
     {

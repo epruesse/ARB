@@ -32,8 +32,8 @@ class RecordingMacro : virtual Noncopyable {
 
     void write(char ch) const { fputc(ch, out); }
     void write(const char *text) const { fputs(text, out); }
-    void write_quoted_param(const char *value) const { write(",\""); write(value); write('\"'); }
 
+    void write_as_perl_string(const char *value) const;
     void write_dated_comment(const char *what) const;
 
     void flush() const { fflush(out); }

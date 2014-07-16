@@ -28,6 +28,8 @@
 #include <map>
 #include <algorithm>
 #include <arb_misc.h>
+#include <arb_diff.h>
+#include <arb_file.h>
 #include <ad_cb.h>
 
 // do includes above (otherwise depends depend on DEBUG)
@@ -198,6 +200,7 @@ void AWT_create_db_browser_awars(AW_root *aw_root, AW_default aw_def) {
 }
 
 static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create) { // @@@  this may be moved to ARBDB-sources
+    awt_assert(!GB_have_error());
     if (str) {
         if (str[0] == '/' && str[1] == 0) { // root
             return GB_get_root(gbd);
@@ -281,6 +284,7 @@ static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create)
         }
         // no brackets -> normal search
     }
+    awt_assert(!GB_have_error());
     return GB_search(gbd, str, create); // do normal search
 }
 
@@ -426,7 +430,7 @@ static void toggle_tmp_cb(AW_window *aww) {
         }
     }
 
-    if (!done) {
+    if (!done && !is_dbbrowser_pseudo_path(path)) {
         char *path_in_tmp = GBS_global_string_copy("/tmp%s", path);
 
         char *lslash = strrchr(path_in_tmp, '/');
@@ -555,13 +559,18 @@ static char *get_container_description(GBDATA *gbd) {
 
 static char *get_dbentry_content(GBDATA *gbd, GB_TYPES type, bool shorten_repeats, const MemDump& dump) {
     awt_assert(type != GB_DB);
-    
-    char *content = NULL;
-    if (!dump.wrapped()) content = GB_read_as_string(gbd);
-    if (!content) { // use dumper
-        long      size = GB_read_count(gbd);
-        const int plen = 30;
 
+    char *content = NULL;
+    if (!dump.wrapped()) content = GB_read_as_string(gbd); // @@@
+    if (!content) { // use dumper
+        long        size;
+        if (type == GB_POINTER) {
+            size = sizeof(GBDATA*);
+        }
+        else {
+            size = GB_read_count(gbd);
+        }
+        const int plen = 30;
         GBS_strstruct buf(dump.mem_needed_for_dump(size)+plen);
 
         if (!dump.wrapped()) buf.nprintf(plen, "<%li bytes>: ", size);
@@ -579,6 +588,7 @@ static char *get_dbentry_content(GBDATA *gbd, GB_TYPES type, bool shorten_repeat
 }
 
 static void update_browser_selection_list(AW_root *aw_root, AW_selection_list *id) {
+    awt_assert(!GB_have_error());
     DB_browser *browser = get_the_browser();
     char       *path    = aw_root->awar(AWAR_DBB_PATH)->read_string();
     bool        is_root;
@@ -611,6 +621,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_selection_list *i
             free(history);
         }
         else {
+            if (GB_have_error()) id->insert(GBS_global_string("Error: %s", GB_await_error()), "");
             id->insert("No such node!", "");
             id->insert("-> goto valid node", BROWSE_CMD_GOTO_VALID_NODE);
         }
@@ -709,6 +720,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_selection_list *i
     id->update();
 
     free(path);
+    awt_assert(!GB_have_error());
 }
 
 static void order_changed_cb(AW_root *aw_root) {
@@ -870,7 +882,7 @@ static void child_changed_cb(AW_root *aw_root) {
                 GBDATA     *gb_main = browser->get_db();
 
                 if (gb_main) {
-                    GB_transaction  dummy(gb_main);
+                    GB_transaction  ta(gb_main);
                     GBDATA         *gb_selected_node = GB_search_numbered(gb_main, fullpath, GB_FIND);
 
                     string info;
@@ -989,6 +1001,7 @@ static void child_changed_cb(AW_root *aw_root) {
 static void path_changed_cb(AW_root *aw_root) {
     static bool avoid_recursion = false;
     if (!avoid_recursion) {
+        awt_assert(!GB_have_error());
         LocallyModify<bool> flag(avoid_recursion, true);
 
         DB_browser *browser    = get_the_browser();
@@ -1011,12 +1024,16 @@ static void path_changed_cb(AW_root *aw_root) {
             }
 
             if (found) {
+                LocallyModify<bool> flag2(inside_path_change, true);
                 add_to_history(aw_root, goto_child ? GBS_global_string("%s/%s", path, goto_child) : path);
                 GBDATA *father = GB_get_father(found);
                 track_node(father ? father : found);
             }
             else if (is_dbbrowser_pseudo_path(path)) {
                 GB_clear_error(); // ignore error about invalid key
+            }
+            else if (GB_have_error()) {
+                aw_message(GB_await_error());
             }
             browser->set_path(path);
             free(path);
@@ -1026,6 +1043,7 @@ static void path_changed_cb(AW_root *aw_root) {
 
         LocallyModify<bool> flag2(inside_path_change, true);
         aw_root->awar(AWAR_DBB_BROWSE)->rewrite_string(goto_child ? goto_child : "");
+        awt_assert(!GB_have_error());
     }
 }
 static void db_changed_cb(AW_root *aw_root) {
@@ -1038,7 +1056,7 @@ static void db_changed_cb(AW_root *aw_root) {
 }
 
 void DB_browser::update_DB_selector() {
-    if (!oms) oms = aww->create_option_menu(AWAR_DBB_DB);
+    if (!oms) oms = aww->create_option_menu(AWAR_DBB_DB, true);
     else aww->clear_option_menu(oms);
 
     int idx = 0;
@@ -1085,7 +1103,7 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         update_DB_selector();
 
         aws->at("order");
-        aws->create_option_menu(AWAR_DBB_ORDER);
+        aws->create_option_menu(AWAR_DBB_ORDER, true);
         for (int idx = 0; idx<SORT_COUNT; ++idx) {
             aws->insert_option(sort_order_name[idx], "", idx);
         }
@@ -1106,7 +1124,7 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->label("Rec.size"); aws->create_toggle(AWAR_DBB_RECSIZE);
 
         aws->at("browse");
-        browse_list = aws->create_selection_list(AWAR_DBB_BROWSE);
+        browse_list = aws->create_selection_list(AWAR_DBB_BROWSE, true);
         update_browser_selection_list(aw_root, browse_list);
 
         aws->at("infoopt");
@@ -1130,7 +1148,7 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
     return aww;
 }
 
-static void callallcallbacks(AW_window *aww, AW_CL mode, AW_CL) {
+static void callallcallbacks(AW_window *aww, int mode) {
     static bool running = false; // avoid deadlock
     if (!running) {
         LocallyModify<bool> flag(running, true);
@@ -1141,32 +1159,73 @@ static void callallcallbacks(AW_window *aww, AW_CL mode, AW_CL) {
 
 
 void AWT_create_debug_menu(AW_window *awmm) {
-    awmm->create_menu("4debug", "4", AWM_ALL);
+    awmm->create_menu("4debugz", "z", AWM_ALL);
 
-    awmm->insert_menu_topic("-db_browser", "Browse loaded database(s)", "B", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_db_browser, 0);
+    awmm->insert_menu_topic("-db_browser", "Browse loaded database(s)", "B", "db_browser.hlp", AWM_ALL, create_db_browser);
 
     awmm->sep______________();
     {
         awmm->insert_sub_menu("Callbacks (dangerous! use at your own risk)", "C", AWM_ALL);
-        awmm->insert_menu_topic("!run_all_cbs_alph",  "Call all callbacks (alpha-order)",     "a", "", AWM_ALL, callallcallbacks, 0, 0);
-        awmm->insert_menu_topic("!run_all_cbs_nalph", "Call all callbacks (alpha-reverse)",   "l", "", AWM_ALL, callallcallbacks, 1, 0);
-        awmm->insert_menu_topic("!run_all_cbs_loc",   "Call all callbacks (code-order)",      "c", "", AWM_ALL, callallcallbacks, 2, 0);
-        awmm->insert_menu_topic("!run_all_cbs_nloc",  "Call all callbacks (code-reverse)",    "o", "", AWM_ALL, callallcallbacks, 3, 0);
-        awmm->insert_menu_topic("!run_all_cbs_rnd",   "Call all callbacks (random)",          "r", "", AWM_ALL, callallcallbacks, 4, 0);
+        awmm->insert_menu_topic("!run_all_cbs_alph",  "Call all callbacks (alpha-order)",     "a", "", AWM_ALL, makeWindowCallback(callallcallbacks, 0));
+        awmm->insert_menu_topic("!run_all_cbs_nalph", "Call all callbacks (alpha-reverse)",   "l", "", AWM_ALL, makeWindowCallback(callallcallbacks, 1));
+        awmm->insert_menu_topic("!run_all_cbs_loc",   "Call all callbacks (code-order)",      "c", "", AWM_ALL, makeWindowCallback(callallcallbacks, 2));
+        awmm->insert_menu_topic("!run_all_cbs_nloc",  "Call all callbacks (code-reverse)",    "o", "", AWM_ALL, makeWindowCallback(callallcallbacks, 3));
+        awmm->insert_menu_topic("!run_all_cbs_rnd",   "Call all callbacks (random)",          "r", "", AWM_ALL, makeWindowCallback(callallcallbacks, 4));
         awmm->sep______________();
-        awmm->insert_menu_topic("!forget_called_cbs", "Forget called",     "F", "", AWM_ALL, callallcallbacks, -1, 0);
-        awmm->insert_menu_topic("!mark_all_called",   "Mark all called",   "M", "", AWM_ALL, callallcallbacks, -2, 0);
+        awmm->insert_menu_topic("!forget_called_cbs", "Forget called",     "F", "", AWM_ALL, makeWindowCallback(callallcallbacks, -1));
+        awmm->insert_menu_topic("!mark_all_called",   "Mark all called",   "M", "", AWM_ALL, makeWindowCallback(callallcallbacks, -2));
         awmm->sep______________();
-        awmm->insert_menu_topic("!run_all_cbs_alph_inf",  "Call all callbacks (alpha-order repeated)",     "", "", AWM_ALL, callallcallbacks, 8|0, 0);
-        awmm->insert_menu_topic("!run_all_cbs_nalph_inf", "Call all callbacks (alpha-reverse repeated)",   "", "", AWM_ALL, callallcallbacks, 8|1, 0);
-        awmm->insert_menu_topic("!run_all_cbs_loc_inf",   "Call all callbacks (code-order repeated)",      "", "", AWM_ALL, callallcallbacks, 8|2, 0);
-        awmm->insert_menu_topic("!run_all_cbs_nloc_inf",  "Call all callbacks (code-reverse repeated)",    "", "", AWM_ALL, callallcallbacks, 8|3, 0);
-        awmm->insert_menu_topic("!run_all_cbs_rnd_inf",   "Call all callbacks (random repeated)",          "", "", AWM_ALL, callallcallbacks, 8|4, 0);
+        {
+            awmm->insert_sub_menu("Call repeated", "p", AWM_ALL);
+            awmm->insert_menu_topic("!run_all_cbs_alph_inf",  "Call all callbacks (alpha-order repeated)",     "a", "", AWM_ALL, makeWindowCallback(callallcallbacks, 8|0));
+            awmm->insert_menu_topic("!run_all_cbs_nalph_inf", "Call all callbacks (alpha-reverse repeated)",   "l", "", AWM_ALL, makeWindowCallback(callallcallbacks, 8|1));
+            awmm->insert_menu_topic("!run_all_cbs_loc_inf",   "Call all callbacks (code-order repeated)",      "c", "", AWM_ALL, makeWindowCallback(callallcallbacks, 8|2));
+            awmm->insert_menu_topic("!run_all_cbs_nloc_inf",  "Call all callbacks (code-reverse repeated)",    "o", "", AWM_ALL, makeWindowCallback(callallcallbacks, 8|3));
+            awmm->insert_menu_topic("!run_all_cbs_rnd_inf",   "Call all callbacks (random repeated)",          "r", "", AWM_ALL, makeWindowCallback(callallcallbacks, 8|4));
+            awmm->close_sub_menu();
+        }
         awmm->close_sub_menu();
     }
     awmm->sep______________();
 
 }
+
+#if 0
+void AWT_check_action_ids(AW_root *, const char *) {
+}
+#else
+void AWT_check_action_ids(AW_root *aw_root, const char *suffix) {
+    // check actions ids (see #428)
+    // suffix is appended to filenames (needed if one application may have different states)
+    GB_ERROR error = NULL;
+    {
+        SmartPtr<ConstStrArray> action_ids = aw_root->get_action_ids();
+
+        const char *checksdir = GB_path_in_ARBLIB("macros/.checks");
+        char       *save      = GBS_global_string_copy("%s/%s%s_action.ids", checksdir, aw_root->program_name, suffix);
+
+        FILE *out       = fopen(save, "wt");
+        if (!out) error = GB_IO_error("writing", save);
+        else {
+            for (size_t i = 0; i<action_ids->size(); ++i) {
+                fprintf(out, "%s\n", (*action_ids)[i]);
+            }
+            fclose(out);
+        }
+
+        if (!error) {
+            char *expected         = GBS_global_string_copy("%s.expected", save);
+            bool  asExpected       = ARB_textfiles_have_difflines(expected, save, 0, 0);
+            if (!asExpected) error = GBS_global_string("action ids differ from expected (see console)");
+            free(expected);
+        }
+
+        if (!error) GB_unlink(save);
+        free(save);
+    }
+    if (error) fprintf(stderr, "AWT_check_action_ids: Error: %s\n", error);
+}
+#endif
 
 #endif // DEBUG
 

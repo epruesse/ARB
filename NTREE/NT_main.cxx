@@ -33,7 +33,9 @@
 #include <arb_progress.h>
 #include <arb_file.h>
 #include <awt_sel_boxes.hxx>
+#include <awt_TreeAwars.hxx>
 #include <macros.hxx>
+#include <signal.h>
 
 using namespace std;
 
@@ -144,7 +146,7 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
 
 static GB_ERROR nt_check_database_consistency() {
     // called once on ARB_NTREE startup
-    arb_progress("Checking consistency");
+    arb_progress cons_progress("Checking consistency");
 
     GB_ERROR err  = NT_format_all_alignments(GLOBAL.gb_main);
     if (!err) err = NT_repair_DB(GLOBAL.gb_main);
@@ -153,13 +155,18 @@ static GB_ERROR nt_check_database_consistency() {
 }
 
 __ATTR__USERESULT static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, const char *autorun_macro) {
+    AWT_initTreeAwarRegistry(GLOBAL.gb_main);
+
     GB_ERROR error = configure_macro_recording(aw_root, "ARB_NT", GLOBAL.gb_main); // @@@ problematic if called from startup-importer
     if (!error) {
         nt_create_main_window(aw_root);
-        if (GB_is_server(GLOBAL.gb_main)) error = nt_check_database_consistency();
+        if (GB_is_server(GLOBAL.gb_main)) {
+            error = nt_check_database_consistency();
+            if (!error) NT_repair_userland_problems();
+        }
     }
 
-    if (!error && autorun_macro) awt_execute_macro(aw_root, autorun_macro); // @@@ triggering execution here is ok, but its a bad place to pass 'autorun_macro'. Should be handled more generally
+    if (!error && autorun_macro) execute_macro(aw_root, autorun_macro); // @@@ triggering execution here is ok, but its a bad place to pass 'autorun_macro'. Should be handled more generally
 
     return error;
 }
@@ -279,7 +286,7 @@ static AW_window *nt_create_intro_window(AW_root *awr) {
     aws->callback(makeHelpCallback("arb_intro.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    AW_create_fileselection(aws, "tmp/nt/arbdb");
+    AW_create_standard_fileselection(aws, "tmp/nt/arbdb");
 
     aws->button_length(0);
 
@@ -371,12 +378,10 @@ public:
     void print_help(FILE *out) const {
         fprintf(out,
                 "\n"
-                "arb_ntree version " ARB_VERSION "\n"
+                "arb_ntree version " ARB_VERSION_DETAILED "\n"
                 "(C) 1993-" ARB_BUILD_YEAR " Lehrstuhl fuer Mikrobiologie - TU Muenchen\n"
                 "http://www.arb-home.de/\n"
-#if defined(SHOW_WHERE_BUILD)
                 "(version build by: " ARB_BUILD_USER "@" ARB_BUILD_HOST ")\n"
-#endif // SHOW_WHERE_BUILD
                 "\n"
                 "Possible usage:\n"
                 "  arb_ntree               => start ARB (intro)\n"
@@ -405,6 +410,17 @@ public:
             if (strcmp(opt, "help") == 0 || strcmp(opt, "h") == 0) { help_requested = true; }
             else if (strcmp(opt, "execute") == 0) { shift(); macro_name = *args; }
             else if (strcmp(opt, "import") == 0) { do_import = true; }
+
+            // bunch of test switches to provoke various ways to terminate (see also http://bugs.arb-home.de/ticket/538)
+            else if (strcmp(opt, "crash") == 0) { GBK_terminate("crash requested"); }
+            else if (strcmp(opt, "trap") == 0) { arb_assert(0); }
+            else if (strcmp(opt, "sighup") == 0) { raise(SIGHUP); }
+            else if (strcmp(opt, "sigsegv") == 0) { raise(SIGSEGV); }
+            else if (strcmp(opt, "sigterm") == 0) { raise(SIGTERM); }
+            else if (strcmp(opt, "fail") == 0) { exit(EXIT_FAILURE); }
+            else if (strcmp(opt, "exit") == 0) { exit(EXIT_SUCCESS); }
+            // end of test switches ----------------------------------------
+
             else error = GBS_global_string("Unknown switch '%s'", args[0]);
             shift();
         }
@@ -451,6 +467,8 @@ static ArgType detectArgType(const char *arg) {
 
 enum RunMode { NORMAL, IMPORT, MERGE, BROWSE };
 
+#define ABORTED_BY_USER "aborted by user"
+
 static ARB_ERROR check_argument_for_mode(const char *database, char *&browser_startdir, RunMode& mode) {
     // Check whether 'database' is a
     // - ARB database
@@ -491,7 +509,7 @@ static ARB_ERROR check_argument_for_mode(const char *database, char *&browser_st
                     case CONVERT_DB:    mode = IMPORT; break;
                     case LOAD_DB:       break;
                     case NOIDEA:        nt_assert(0);
-                    case EXIT:          error = "User abort"; break;
+                    case EXIT:          error = ABORTED_BY_USER; break;
                     case BROWSE_DB: {
                         char *dir = nulldup(full_path);
                         while (dir && !GB_is_directory(dir)) freeset(dir, AW_extract_directory(dir));
@@ -628,6 +646,7 @@ public:
     }
 
     GB_ERROR open_db_for_merge(bool is_source_db);
+    void close_db() { if (gb_main) GB_close(gb_main); }
 };
 
 GB_ERROR SelectedDatabase::open_db_for_merge(bool is_source_db) {
@@ -669,7 +688,7 @@ GB_ERROR SelectedDatabase::open_db_for_merge(bool is_source_db) {
     return error;
 }
 
-struct merge_scheme {
+struct merge_scheme : virtual Noncopyable {
     SelectedDatabase *src;
     SelectedDatabase *dst;
 
@@ -685,6 +704,17 @@ struct merge_scheme {
           awar_dst(NULL),
           error(NULL)
     {}
+    ~merge_scheme() {
+        if (error) {
+            src->close_db();
+            dst->close_db();
+        }
+        delete src;
+        delete dst;
+        free(awar_src);
+        free(awar_dst);
+    }
+
 
     void open_dbs() {
         if (!error) error = src->open_db_for_merge(true);
@@ -709,14 +739,13 @@ static void exit_from_merge(const char *restart_args) {
     }
 }
 
-static void merge_startup_abort_cb(AW_window *, AW_CL) {
+static void merge_startup_abort_cb(AW_window*) {
     fputs("Error: merge aborted by user\n", stderr);
     exit_from_merge(NULL);
 }
 
-static AW_window *merge_startup_error_window(AW_root *aw_root, AW_CL cl_error) {
+static AW_window *merge_startup_error_window(AW_root *aw_root, GB_ERROR error) {
     AW_window_simple *aw_msg = new AW_window_simple;
-    GB_ERROR          error  = GB_ERROR(cl_error);
 
     aw_msg->init(aw_root, "arb_merge_error", "ARB merge error");
     aw_msg->recalc_size_atShow(AW_RESIZE_DEFAULT); // force size recalc (ignores user size)
@@ -727,16 +756,14 @@ static AW_window *merge_startup_error_window(AW_root *aw_root, AW_CL cl_error) {
     aw_msg->create_autosize_button(NULL, error, "", 2);
     aw_msg->at_newline();
 
-    aw_msg->callback(merge_startup_abort_cb, 0);
+    aw_msg->callback(merge_startup_abort_cb);
     aw_msg->create_autosize_button("OK", "Ok", "O", 2);
 
     aw_msg->window_fit();
 
     return aw_msg;
 }
-static AW_window *startup_merge_main_window(AW_root *aw_root, AW_CL cl_merge_scheme) {
-    merge_scheme *ms = (merge_scheme*)cl_merge_scheme;
-
+static AW_window *startup_merge_main_window(AW_root *aw_root, merge_scheme *ms) {
     ms->fix_src(aw_root);
     ms->fix_dst(aw_root);
 
@@ -756,49 +783,41 @@ static AW_window *startup_merge_main_window(AW_root *aw_root, AW_CL cl_merge_sch
         nt_assert(got_macro_ability(aw_root));
     }
     else {
-        aw_result = merge_startup_error_window(aw_root, AW_CL(ms->error));
+        aw_result = merge_startup_error_window(aw_root, ms->error);
     }
     delete ms; // was allocated in startup_gui()
     return aw_result;
 }
 
-static AW_window *startup_merge_prompting_for_nonexplicit_dst_db(AW_root *aw_root, AW_CL cl_merge_scheme) {
-    merge_scheme *ms = (merge_scheme*)cl_merge_scheme;
-    AW_window    *aw_result;
-
+static AW_window *startup_merge_prompting_for_nonexplicit_dst_db(AW_root *aw_root, merge_scheme *ms) {
+    AW_window *aw_result;
     if (ms->dst->needs_to_prompt()) {
         aw_result = awt_create_load_box(aw_root, "Select", ms->dst->get_role(),
                                         ms->dst->get_dir(), ms->dst->get_mask(),
                                         &(ms->awar_dst),
-                                        0,
-                                        startup_merge_main_window,
-                                        merge_startup_abort_cb, "Cancel",
-                                        cl_merge_scheme);
+                                        AW_window::makeWindowReplacer(makeCreateWindowCallback(startup_merge_main_window, ms)),
+                                        makeWindowCallback(merge_startup_abort_cb), "Cancel");
     }
     else {
-        aw_result = startup_merge_main_window(aw_root, cl_merge_scheme);
+        aw_result = startup_merge_main_window(aw_root, ms);
     }
     return aw_result;
 }
 
-static AW_window *startup_merge_prompting_for_nonexplicit_dbs(AW_root *aw_root, AW_CL cl_merge_scheme) {
+static AW_window *startup_merge_prompting_for_nonexplicit_dbs(AW_root *aw_root, merge_scheme *ms) {
     // if src_spec or dst_spec needs to be prompted for -> startup prompters with callbacks bound to continue
     // otherwise just startup merge
 
-    merge_scheme *ms = (merge_scheme*)cl_merge_scheme;
-    AW_window    *aw_result;
-
+    AW_window *aw_result;
     if (ms->src->needs_to_prompt()) {
         aw_result = awt_create_load_box(aw_root, "Select", ms->src->get_role(),
                                         ms->src->get_dir(), ms->src->get_mask(),
                                         &(ms->awar_src),
-                                        0,
-                                        startup_merge_prompting_for_nonexplicit_dst_db,
-                                        merge_startup_abort_cb, "Cancel",
-                                        cl_merge_scheme);
+                                        AW_window::makeWindowReplacer(makeCreateWindowCallback(startup_merge_prompting_for_nonexplicit_dst_db, ms)),
+                                        makeWindowCallback(merge_startup_abort_cb), "Cancel");
     }
     else {
-        aw_result = startup_merge_prompting_for_nonexplicit_dst_db(aw_root, cl_merge_scheme);
+        aw_result = startup_merge_prompting_for_nonexplicit_dst_db(aw_root, ms);
     }
     return aw_result;
 }
@@ -831,6 +850,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
 
     ARB_declare_global_awars(aw_root, AW_ROOT_DEFAULT);
 
+    aw_root->setUserActionTracker(new NullTracker); // no macro recording inside prompters that may popup
     if (!error) {
         nt_assert(!cl.wants_help());
                 
@@ -853,7 +873,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
             }
             else {
                 aw_root->setUserActionTracker(new NullTracker); // no macro recording during startup of merge tool (file prompts)
-                AW_window *aww = startup_merge_prompting_for_nonexplicit_dbs(aw_root, AW_CL(ms));
+                AW_window *aww = startup_merge_prompting_for_nonexplicit_dbs(aw_root, ms);
 
                 nt_assert(contradicted(aww, error));
 
@@ -899,14 +919,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
                         aw_root->awar(AWAR_DB_PATH)->write_string(latest);
                         free(latest);
                     }
-                    AW_window *iws;
-                    if (GLOBAL.window_creator) {
-                        iws = GLOBAL.window_creator(aw_root, 0);
-                    }
-                    else {
-                        iws = nt_create_intro_window(aw_root);
-                    }
-                    iws->show();
+                    nt_create_intro_window(aw_root)->show();
                     aw_root->setUserActionTracker(new NullTracker); // no macro recording inside intro window
                     aw_root->main_loop();
                 }
@@ -915,11 +928,26 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
         }
     }
 
-    if (error) aw_popup_ok(error.preserve());
-    delete aw_root;
+    if (error) {
+        const char *msg = error.preserve();
+        if (strcmp(msg, ABORTED_BY_USER) != 0) aw_popup_ok(msg);
+    }
 }
 
 int ARB_main(int argc, char *argv[]) {
+    {
+        // i really dont want 'arb_ntree --help' to startup the GUI
+        // hack: parse CL twice
+        NtreeCommandLine cl(argc, argv);
+        bool             cl_ok = !cl.parse().deliver();
+        if (cl_ok) {
+            if (cl.wants_help()) {
+                cl.print_help(stderr);
+                return EXIT_SUCCESS;
+            }
+        }
+    }
+
     aw_initstatus();
     GB_set_verbose();
 

@@ -48,8 +48,8 @@ enum GB_CB_TYPE {
     GB_CB_SON_CREATED = 4, // new son created
 
     // convenience defs:
-    GB_CB_ALL = GB_CB_DELETE|GB_CB_CHANGED|GB_CB_SON_CREATED,
-
+    GB_CB_ALL                    = GB_CB_DELETE|GB_CB_CHANGED|GB_CB_SON_CREATED,
+    GB_CB_ALL_BUT_DELETE         = GB_CB_ALL&~GB_CB_DELETE,
     GB_CB_CHANGED_OR_DELETED     = GB_CB_CHANGED|GB_CB_DELETE,
     GB_CB_CHANGED_OR_SON_CREATED = GB_CB_CHANGED|GB_CB_SON_CREATED,
 };
@@ -62,6 +62,16 @@ enum GB_alignment_type {
     GB_AT_DNA,      // Nucleotide sequence (T)
     GB_AT_AA,       // AminoAcid
 };
+
+enum NewickFormat { // bit-values
+    nSIMPLE = 0,
+    nLENGTH = 1,
+    nGROUP  = 2,
+    nREMARK = 4,
+
+    nALL = nLENGTH|nGROUP|nREMARK,
+};
+
 
 #else
 #error arbdb_base.h included twice

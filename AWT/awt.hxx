@@ -28,8 +28,6 @@
 
 // ------------------------------------------------------------
 
-void awt_set_string(AW_window *aws, AW_CL varname, AW_CL value);    // set an awar
-
 void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, const char *title=0);
 void AWT_show_file(AW_root *awr, const char *filename);
 
@@ -72,6 +70,7 @@ void AWT_announce_db_to_browser(GBDATA *gb_main, const char *description);
 void AWT_browser_forget_db(GBDATA *gb_main);
 
 void AWT_create_debug_menu(AW_window *awmm);
+void AWT_check_action_ids(AW_root *aw_root, const char *suffix);
 #endif // DEBUG
 
 class UserActionTracker;

@@ -79,7 +79,7 @@ public:
     const char *get_aliname() const;
     unsigned long get_user_push_counter() const { return user_push_counter; }
 
-    GB_ERROR open(char *db_server);
+    GB_ERROR open(const char *db_server);
 
     void user_push();
     void user_pop();

@@ -522,7 +522,7 @@ void ED4_jump_to_current_species(AW_window *aww, AW_CL) {
     ED4_LocalWinContext uses(aww);
     char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
     if (name && name[0]) {
-        GB_transaction dummy(GLOBAL_gb_main);
+        GB_transaction ta(GLOBAL_gb_main);
 #if defined(TRACE_JUMPS)
         printf("Jump to selected species (%s)\n", name);
 #endif
@@ -589,7 +589,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
 {
     e4_assert(species_name && species_name[0]);
 
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
     ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(species_name);
     int loaded = 0;
 
@@ -664,7 +664,7 @@ void ED4_get_and_jump_to_current_from_menu(AW_window *aw, AW_CL cl, AW_CL) {
 
 void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
 #define BUFFERSIZE 1000
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
     int marked = GBT_count_marked_species(GLOBAL_gb_main);
 
     if (marked) {
@@ -1012,16 +1012,41 @@ void ED4_cursor::jump_screen_pos(int screen_pos, ED4_CursorJumpType jump_type) {
     else {
         ShowCursor(cursor_diff*length_of_char, ED4_C_LEFT, abs(cursor_diff));
     }
+#if defined(ASSERTION_USED)
+    {
+        int sp = get_screen_pos();
+        e4_assert(sp == screen_pos);
+    }
+#endif
 }
 
 void ED4_cursor::jump_sequence_pos(int seq_pos, ED4_CursorJumpType jump_type) {
     int screen_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen(seq_pos);
     jump_screen_pos(screen_pos, jump_type);
+    if (owner_of_cursor) {
+        int res_seq_pos = get_sequence_pos();
+        if (res_seq_pos != seq_pos) { // failed -> retry
+            int screen_pos2 = ED4_ROOT->root_group_man->remap()->sequence_to_screen(seq_pos);
+            e4_assert(screen_pos2 != screen_pos);
+            if (screen_pos2 != screen_pos) {
+                jump_screen_pos(screen_pos2, jump_type);
+                res_seq_pos = get_sequence_pos();
+            }
+            e4_assert(res_seq_pos == seq_pos);
+        }
+    }
 }
 
 void ED4_cursor::jump_base_pos(int base_pos, ED4_CursorJumpType jump_type) {
     int seq_pos = base2sequence_position(base_pos);
     jump_sequence_pos(seq_pos, jump_type);
+
+#if defined(ASSERTION_USED)
+    if (owner_of_cursor) {
+        int bp = get_base_position();
+        e4_assert(bp == base_pos);
+    }
+#endif
 }
 
 class has_base_at : public ED4_TerminalPredicate {
@@ -1421,7 +1446,7 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
 
     draw_cursor(win_x, win_y);
 
-    GB_transaction gb_dummy(GLOBAL_gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
     updateAwars(new_term_selected);
 
     return ED4_R_OK;
@@ -1441,46 +1466,35 @@ ED4_returncode ED4_cursor::show_clicked_cursor(AW_pos click_xpos, ED4_terminal *
    ED4_base_position
    -------------------------------------------------------------------------------- */
 
-ED4_base_position::ED4_base_position()
-    : calced4term(0)
-{
-}
-
-ED4_base_position::~ED4_base_position() {
-    invalidate();
-}
-
 static void ed4_bp_sequence_changed_cb(ED4_species_manager *, AW_CL cl_base_pos) {
     ED4_base_position *base_pos = (ED4_base_position*)cl_base_pos;
     base_pos->invalidate();
 }
 
-void ED4_base_position::invalidate() {
+void ED4_base_position::remove_changed_cb() {
     if (calced4term) {
         ED4_species_manager *species_manager = calced4term->get_parent(ED4_L_SPECIES)->to_species_manager();
-        species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this); // @@@ removes cb called later -> ED4_base.cxx@INVALID_CB_HANDLING 
+        species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
 
-        calced4term = 0;
+        calced4term = NULL;
     }
 }
 
 static bool is_gap(char c) { return ED4_is_align_character[safeCharIndex(c)]; }
 static bool is_consensus_gap(char c) { return ED4_is_align_character[safeCharIndex(c)] || c == '='; }
 
-void ED4_base_position::calc4term(const ED4_terminal *base)
-{
+void ED4_base_position::calc4term(const ED4_terminal *base) {
     e4_assert(base);
 
     ED4_species_manager *species_manager = base->get_parent(ED4_L_SPECIES)->to_species_manager();
-    int                  len;
-    char                *seq;
 
-    if (calced4term) {
-        ED4_species_manager *prev_species_manager = calced4term->get_parent(ED4_L_SPECIES)->to_species_manager();
-        prev_species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
+    int   len;
+    char *seq;
+
+    if (base != calced4term) { // terminal changes => rebind callback to new manager
+        remove_changed_cb();
+        species_manager->add_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
     }
-
-    species_manager->add_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
 
     bool (*isGap_fun)(char);
     if (species_manager->is_consensus_manager()) {
@@ -1575,7 +1589,7 @@ public:
 CursorPos *CursorPos::head = 0;
 
 void ED4_store_curpos(AW_window *aww) {
-    GB_transaction       dummy(GLOBAL_gb_main);
+    GB_transaction       ta(GLOBAL_gb_main);
     ED4_LocalWinContext  uses(aww);
     ED4_cursor          *cursor = &current_cursor();
     
@@ -1588,7 +1602,7 @@ void ED4_store_curpos(AW_window *aww) {
 }
 
 void ED4_restore_curpos(AW_window *aww) {
-    GB_transaction       dummy(GLOBAL_gb_main);
+    GB_transaction       ta(GLOBAL_gb_main);
     ED4_LocalWinContext  uses(aww);
     ED4_cursor          *cursor = &current_cursor();
 
@@ -1611,7 +1625,7 @@ void ED4_clear_stored_curpos() {
    -------------------------------------------------------------------------------- */
 
 void ED4_helix_jump_opposite(AW_window *aww) {
-    GB_transaction       dummy(GLOBAL_gb_main);
+    GB_transaction       ta(GLOBAL_gb_main);
     ED4_LocalWinContext  uses(aww);
     ED4_cursor          *cursor = &current_cursor();
 

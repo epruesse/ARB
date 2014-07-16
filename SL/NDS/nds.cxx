@@ -12,7 +12,6 @@
 #include <awt_config_manager.hxx>
 #include <awt_sel_boxes.hxx>
 
-#include <aw_window.hxx>
 #include <aw_awar.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
@@ -280,14 +279,14 @@ static void awt_pre_to_view(AW_root *aw_root) {
     }
     free(str);
 }
-void AWT_create_select_srtaci_window(AW_window *aww, AW_CL awar_acisrt, AW_CL /*awar_short*/) {
+void AWT_popup_select_srtaci_window(AW_window *aww, const char *acisrt_awarname) {
     static AW_window *win = 0;
 
     if (!win) {
         AW_root *aw_root = aww->get_root();
         aw_root->awar_string(AWAR_SELECT_ACISRT);
         aw_root->awar_string(AWAR_SELECT_ACISRT_PRE);
-        aw_root->awar(AWAR_SELECT_ACISRT)->map((char *)awar_acisrt);
+        aw_root->awar(AWAR_SELECT_ACISRT)->map(acisrt_awarname);
 
         AW_window_simple *aws = new AW_window_simple;
         aws->init(aw_root, "SRT_ACI_SELECT", "SRT_ACI_SELECT");
@@ -303,7 +302,7 @@ void AWT_create_select_srtaci_window(AW_window *aww, AW_CL awar_acisrt, AW_CL /*
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("box");
-        AW_selection_list *programs = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE);
+        AW_selection_list *programs = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE, true);
         GB_ERROR error;
         {
             StorableSelectionList storable_sellist(TypedSelectionList("sellst", programs, "SRT/ACI scripts", "srt_aci"));
@@ -434,7 +433,7 @@ static void nds_restore_config(AW_window *aww, const char *stored, AW_CL, AW_CL)
     }
 }
 
-AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main) {
+AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
@@ -451,7 +450,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("page");
-        aws->create_option_menu(AWAR_NDS_PAGE);
+        aws->create_option_menu(AWAR_NDS_PAGE, true);
         for (int p = 0; p < NDS_PAGES; p++) {
             const char *text = GBS_global_string("Entries %i - %i", p*NDS_PER_PAGE+1, (p+1)*NDS_PER_PAGE);
             aws->insert_option(text, "", p);
@@ -484,14 +483,16 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main) {
             aws->create_toggle(viewkeyAwarName(i, "group"));
 
             {
-                char *awar_name = strdup(viewkeyAwarName(i, "key_text"));
+                const char *awar_name = strdup(viewkeyAwarName(i, "key_text"));
 
                 aws->button_length(20);
                 aws->get_at_position(&fieldx, &dummy);
                 aws->create_input_field(awar_name, 15);
 
                 aws->button_length(0);
-                aws->callback(popup_select_species_field_window, (AW_CL)awar_name, cgb_main); // awar_name belongs to cbs now
+
+                FieldSelectionParam *fsp = new FieldSelectionParam(gb_main, awar_name, false); // awar_name belongs to fsp now
+                aws->callback(makeWindowCallback(popup_select_species_field_window, fsp));     // fsp belongs to callback now
                 aws->get_at_position(&fieldselectx, &dummy);
 
                 char *button_id = GBS_global_string_copy("SELECT_NDS_%i", i+1);
@@ -507,7 +508,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main) {
 
                 aws->get_at_position(&srtx, &dummy);
                 aws->button_length(0);
-                aws->callback(AWT_create_select_srtaci_window, (AW_CL)awar_name, 0); // awar_name belongs to cbs now
+                aws->callback(makeWindowCallback(AWT_popup_select_srtaci_window, awar_name)); // awar_name belongs to cbs now
                 {
                     char *button_id = GBS_global_string_copy("SELECT_SRTACI_%i", i+1);
                     aws->create_button(button_id, "S");
@@ -649,6 +650,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
                             }
                             case GB_STRING:
                                 field_output = GB_read_char_pntr(gbe);
+                                if (!field_output) field_output="<read error>";
                                 break;
 
                             default: {
@@ -656,6 +658,11 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
                                 field_output    = GBS_static_string(as_string);
                                 free(as_string);
                             }
+                        }
+                    }
+                    else {
+                        if (GB_have_error()) {
+                            field_output = GB_await_error();
                         }
                     }
                 }

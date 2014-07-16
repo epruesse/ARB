@@ -18,6 +18,7 @@
 
 #include <ctime>
 #include <sys/time.h>
+#include <Keeper.h>
 
 char *GB_strduplen(const char *p, unsigned len) {
     // fast replacement for strdup, if len is known
@@ -89,6 +90,17 @@ const char *GB_date_string() {
     cr[0]          = 0;         // cut of \n
 
     return readable;
+}
+
+// --------------------------------------------------------------------------------
+
+const char *GB_keep_string(char *str) {
+    /*! keep an allocated string until program termination
+     * useful to avoid valgrind reporting leaks e.g for callback parameters
+     */
+    static Keeper<char*> stringKeeper;
+    stringKeeper.keep(str);
+    return str;
 }
 
 
@@ -169,7 +181,7 @@ void TEST_arbtest_copyable() {
         TEST_EXPECT_EQUAL((d).make(false, false), (ff)); \
     } while(0)
 
-#define TEST_SIMPLE_DESCRIPTIONS(d, ae, nae) TEST_DESCRIPTIONS(d, ae, nae, nae, ae)
+#define TEST_SIMPLE_DESCRIPTIONS(d, ae, nae) TEST_DESCRIPTIONS(d, ae, nae, ae, nae)
 
 void TEST_arbtest_predicate_description() {
     TEST_SIMPLE_DESCRIPTIONS(predicate_description("similar"), "is similar", "isnt similar");
@@ -374,6 +386,7 @@ void TEST_user_type_with_expectations() {
                           that(ut2).fulfills(in_same_quadrant, ut3),
                           that(ut3).fulfills(in_same_quadrant, ut4)));
 }
+TEST_PUBLISH(TEST_user_type_with_expectations);
 
 void TEST_similarity() {
     double d1      = 0.7531;
@@ -409,6 +422,7 @@ void TEST_less_equal() {
     TEST_EXPECT_LESS(x, y);
     TEST_EXPECT_IN_RANGE(y, x, z);
 }
+TEST_PUBLISH(TEST_less_equal);
 
 #endif // UNIT_TESTS
 

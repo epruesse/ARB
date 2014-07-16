@@ -32,7 +32,7 @@ enum st_report_enum {
 AP_tree     *STAT_find_node_by_name(ST_ML *st_ml, const char *species_name);
 ST_ML_Color *STAT_get_color_string(ST_ML *st_ml, char *species_name, AP_tree *node, int start_ali_pos, int end_ali_pos);
 bool         STAT_update_ml_likelihood(ST_ML *st_ml, char *result[4], int& latest_update, const char *species_name, AP_tree *node);
-AW_window   *STAT_create_quality_check_window(AW_root *aw_root, GBDATA *gb_main);
+AW_window   *STAT_create_chimera_check_window(AW_root *aw_root, GBDATA *gb_main);
 
 
 #else

@@ -24,9 +24,9 @@
 // -> DB loads w/o delay, cause it's mmap'ped into memory
 #endif
 
-#if defined(UNIT_TESTS)
+#if defined(UNIT_TESTS) // UT_DIFF
 #undef MEMORY_TEST
-#define MEMORY_TEST 0 // test mmapped-DB version in unittests (recommended setting)
+#define MEMORY_TEST 0 // test mmapped-DB version in unittests (recommended setting; same as in RELEASE)
 // #define MEMORY_TEST 1 // test DEBUG DB version in unittests
 #endif
 
@@ -97,7 +97,7 @@ typedef long GB_REL_PIFES;
 //      ARBDB memory functions
 
 enum ARB_MEMORY_INDEX {
-    GBM_CB_INDEX     = -1,
+    GBM_CB_INDEX     = -1, // Note: historical name. originally was used to allocate database-callback-memory (which is now done with new and delete)
     GBM_HASH_INDEX   = -2,
     GBM_HEADER_INDEX = -3,
     GBM_UNDO         = -4,

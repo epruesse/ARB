@@ -18,8 +18,7 @@
 
 using namespace std;
 
-#define DEFAULT_COLOR 8
-extern adfiltercbstruct *agde_filtercd;
+extern adfiltercbstruct *agde_filter;
 
 /*
   ReplaceArgs():
@@ -42,46 +41,40 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     /*
      *  The basic idea is to replace all of the symbols in the method
      *  string with the values picked in the dialog box.  The method
-     *  is the general command line structure.  All arguments have three
-     *  parts, a label, a method, and a value.  The method never changes, and
-     *  is used to represent '-flag's for a given function.  Values are the
+     *  is the general command line structure.  All arguments have two
+     *  parts : a label and a value.  Values are the
      *  associated arguments that some flags require.  All symbols that
      *  require argvalue replacement should have a '$' infront of the symbol
-     *  name in the itemmethod definition.  All symbols without the '$' will
-     *  be replaced by their argmethod.  There is currently no way to do a label
-     *  replacement, as the label is considered to be for use in the dialog
-     *  box only.  An example command line replacement would be:
+     *  name in the itemmethod definition.
      *
-     *       itemmethod=>        "lpr arg1 $arg1 $arg2"
+     *  If '$symbol' is prefixed by '!' ARB_GDE does a label replacement, i.e. insert
+     *  the value visible in GUI. Only works for argchoice arguments!
+     *  This is intended for informational use (e.g. to write used settings
+     *  into the comment of a generated tree).
+     *
+     *  An example command line replacement would be:
+     *
+     *       itemmethod=>        "lpr -P $arg1 $arg2"
      *
      *       arglabel arg1=>     "To printer?"
-     *       argmethod arg1=>    "-P"
      *       argvalue arg1=>     "lw"
      *
      *       arglabel arg2=>     "File name?"
      *       argvalue arg2=>     "foobar"
-     *       argmethod arg2=>    ""
      *
      *   final command line:
      *
      *       lpr -P lw foobar
      *
-     *   At this point, the chooser dialog type only supports the arglabel and
-     *   argmethod field.  So if an argument is of type chooser, and
-     *   its symbol is "this", then "$this" has no real meaning in the
-     *   itemmethod definition.  Its format in the .GDEmenu file is slighty
-     *   different as well.  A choice from a chooser field looks like:
-     *
-     *       argchoice:Argument_label:Argument_method
-     *
-     *
      */
 
-    char *method    = 0;
-    char *textvalue = 0;
-    
-    const char *symbol = gmenuitem->arg[number].symbol;
-    int         type   = gmenuitem->arg[number].type;
+    char       *textvalue  = 0;
+    const char *labelvalue = 0;
+
+    GmenuItemArg& currArg = gmenuitem->arg[number];
+
+    const char *symbol = currArg.symbol;
+    int         type   = currArg.type;
 
     if (type == SLIDER) {
         char *awarname = GDE_makeawarname(gmenuitem, number);
@@ -102,12 +95,21 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
              type == TEXTFIELD)
     {
         char *awarname = GDE_makeawarname(gmenuitem, number);
-        method         = awr->awar(awarname)->read_string();
         textvalue      = awr->awar(awarname)->read_string();
+
+        if (currArg.choice) {
+            for (int c = 0; c<currArg.numchoices && !labelvalue; ++c) {
+                GargChoice& choice = currArg.choice[c];
+                if (choice.method) {
+                    if (strcmp(choice.method, textvalue) == 0) {
+                        labelvalue = choice.label;
+                    }
+                }
+            }
+        }
     }
 
     if (textvalue == NULL)  textvalue=(char *)calloc(1, sizeof(char));
-    if (method == NULL)     method=(char *)calloc(1, sizeof(char));
     if (symbol == NULL)     symbol="";
 
     set<string>warned_about;
@@ -116,14 +118,29 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     for (int i, j = 0; (i=Find2(Action+j, symbol)) != -1;) {
         i += j;
         ++j;
-        if (i>0 && Action[i-1] == '$')
-        {
-            int   newlen = strlen(Action)-strlen(symbol) +strlen(textvalue);
+        if (i>0 && Action[i-1] == '$') {
+            const char *replaceBy = textvalue;
+            int         skip      = 1;
+
+            if (i>1 && Action[i-2] == '!') { // use label (if available)
+                if (labelvalue) {
+                    replaceBy = labelvalue;
+                    skip = 2; // skip '!'
+                }
+                else {
+                    aw_message(GBS_global_string("[ARB_GDE]: Cannot access label of '%s'\n", symbol));
+                    return NULL; // @@@ ignores ressources (should only occur during development)
+                }
+            }
+
+            int   repLen = strlen(replaceBy);
+            int   symLen = strlen(symbol);
+            int   newlen = strlen(Action)-skip-symLen+repLen+1;
             char *temp   = (char *)calloc(newlen, 1);
-            if (!temp) Error("ReplaceArgs():Error in calloc");
-            strncat(temp, Action, i-1);
-            strncat(temp, textvalue, strlen(textvalue));
-            strcat(temp, &(Action[i+strlen(symbol)]));
+
+            strncat(temp, Action, i-skip);
+            strncat(temp, replaceBy, repLen);
+            strcat(temp, &(Action[i+symLen]));
             freeset(Action, temp);
         }
         else {
@@ -144,16 +161,7 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     }
 
     free(textvalue);
-    free(method);
     return (Action);
-}
-
-
-
-static long LMAX(long a, long b)
-{
-    if (a>b) return a;
-    return b;
 }
 
 static void GDE_free(void **p) {
@@ -171,8 +179,6 @@ static char *ReplaceFile(char *Action, GfileFormat file)
     {
         newlen = strlen(Action)-strlen(symbol) + strlen(method)+1;
         temp = (char *)calloc(newlen, 1);
-        if (temp == NULL)
-            Error("ReplaceFile():Error in calloc");
         strncat(temp, Action, i);
         strncat(temp, method, strlen(method));
         strcat(temp, &(Action[i+strlen(symbol)]));
@@ -195,8 +201,6 @@ static char *ReplaceString(char *Action, const char *old, const char *news)
     {
         newlen = strlen(Action)-strlen(symbol) + strlen(method)+1;
         temp = (char *)calloc(newlen, 1);
-        if (temp == NULL)
-            Error("ReplaceFile():Error in calloc");
         strncat(temp, Action, i);
         strncat(temp, method, strlen(method));
         strcat(temp, &(Action[i+strlen(symbol)]));
@@ -205,11 +209,9 @@ static char *ReplaceString(char *Action, const char *old, const char *news)
     return (Action);
 }
 
-
 static void GDE_freesequ(NA_Sequence *sequ) {
     if (sequ) {
         GDE_free((void**)&sequ->comments);
-        GDE_free((void**)&sequ->cmask);
         GDE_free((void**)&sequ->baggage);
         GDE_free((void**)&sequ->sequence);
     }
@@ -220,8 +222,6 @@ static void GDE_freeali(NA_Alignment *dataset) {
         GDE_free((void**)&dataset->id);
         GDE_free((void**)&dataset->description);
         GDE_free((void**)&dataset->authority);
-        GDE_free((void**)&dataset->cmask);
-        GDE_free((void**)&dataset->selection_mask);
         GDE_free((void**)&dataset->alignment_name);
 
         for (unsigned long i=0; i<dataset->numelements; i++) {
@@ -230,7 +230,10 @@ static void GDE_freeali(NA_Alignment *dataset) {
     }
 }
 
-static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelements) {
+static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumelements) {
+    if (dataset->numelements == oldnumelements) return;
+    gde_assert(dataset->numelements > oldnumelements); // otherwise this is a noop
+
     GBDATA   *gb_main = db_access.gb_main;
     GB_ERROR  error   = GB_begin_transaction(gb_main);
 
@@ -245,6 +248,7 @@ static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelem
         else {
             align       = defaultAlign;
             maxalignlen = GBT_get_alignment_len(gb_main, align);
+            if (maxalignlen<0) error = GB_await_error();
         }
     }
 
@@ -391,51 +395,6 @@ static void GDE_export(NA_Alignment *dataset, const char *align, long oldnumelem
         progress.inc_and_check_user_abort(error);
     }
 
-    // colormasks
-    for (i = 0; !error && i < dataset->numelements; i++) {
-        NA_Sequence *sequ = &(dataset->element[i]);
-
-        if (sequ->cmask) {
-            maxalignlen     = LMAX(maxalignlen, sequ->seqlen);
-            char *resstring = (char *)calloc((unsigned int)maxalignlen + 1, sizeof(char));
-            char *dummy     = resstring;
-
-            for (long j = 0; j < maxalignlen - sequ->seqlen; j++) *resstring++ = DEFAULT_COLOR;
-            for (long k = 0; k < sequ->seqlen; k++)               *resstring++ = (char)sequ->cmask[i];
-            *resstring = '\0';
-
-            GBDATA *gb_ali     = GB_search(sequ->gb_species, align, GB_CREATE_CONTAINER);
-            if (!gb_ali) error = GB_await_error();
-            else {
-                GBDATA *gb_color     = GB_search(gb_ali, "colmask", GB_BYTES);
-                if (!gb_color) error = GB_await_error();
-                else    error        = GB_write_bytes(gb_color, dummy, maxalignlen);
-            }
-            free(dummy);
-        }
-    }
-
-    if (!error && dataset->cmask) {
-        maxalignlen     = LMAX(maxalignlen, dataset->cmask_len);
-        char *resstring = (char *)calloc((unsigned int)maxalignlen + 1, sizeof(char));
-        char *dummy     = resstring;
-        long  k;
-
-        for (k = 0; k < maxalignlen - dataset->cmask_len; k++) *resstring++ = DEFAULT_COLOR;
-        for (k = 0; k < dataset->cmask_len; k++)               *resstring++ = (char)dataset->cmask[k];
-        *resstring = '\0';
-
-        GBDATA *gb_extended     = GBT_find_or_create_SAI(db_access.gb_main, "COLMASK");
-        if (!gb_extended) error = GB_await_error();
-        else {
-            GBDATA *gb_color     = GBT_add_data(gb_extended, align, "colmask", GB_BYTES);
-            if (!gb_color) error = GB_await_error();
-            else    error        = GB_write_bytes(gb_color, dummy, maxalignlen);
-        }
-
-        free(dummy);
-    }
-
     progress.done();
 
     GB_end_transaction_show_error(db_access.gb_main, error, aw_message);
@@ -447,22 +406,22 @@ static char *preCreateTempfile(const char *name) {
     // exits in case of error
     char *fullname = GB_create_tempfile(name);
 
-    if (!fullname) Error(GBS_global_string("preCreateTempfile: %s", GB_await_error())); // exits
+    if (!fullname) aw_message(GBS_global_string("[ARB_GDE]: %s", GB_await_error()));
     return fullname;
 }
 
 void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
-    AW_root   *aw_root           = aw->get_root();
-    AP_filter *filter2           = awt_get_filter(agde_filtercd);
-    char      *filter_name       = 0;      // aw_root->awar(AWAR_GDE_FILTER_NAME)->read_string()
-    char      *alignment_name    = strdup("ali_unknown");
-    bool       marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);
-    long       cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
-    GmenuItem *current_item      = gmenuitem;
-    int        stop              = 0;
+    gde_assert(!GB_have_error());
+
+    AW_root   *aw_root      = aw->get_root();
+    GmenuItem *current_item = gmenuitem;
 
     GapCompression compress = static_cast<GapCompression>(aw_root->awar(AWAR_GDE_COMPRESSION)->read_int());
     arb_progress   progress(current_item->label);
+
+
+    char *alignment_name = NULL;
+    int   stop           = 0;
 
     if (current_item->numinputs>0) {
         TypeInfo typeinfo = UNKNOWN_TYPEINFO;
@@ -478,19 +437,36 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         gde_assert(typeinfo != UNKNOWN_TYPEINFO);
 
         if (!stop) {
-            DataSet->gb_main = db_access.gb_main;
-            GB_begin_transaction(DataSet->gb_main);
-            freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
-            freedup(alignment_name, DataSet->alignment_name);
+            AP_filter *filter2 = awt_get_filter(agde_filter);
+            gde_assert(gmenuitem->seqtype != '-'); // inputs w/o seqtype? impossible!
+            {
+                GB_ERROR error = awt_invalid_filter(filter2);
+                if (error) {
+                    aw_message(error);
+                    stop = 1;
+                }
+            }
 
-            progress.subtitle("reading database");
-            if (db_access.get_sequences) {
-                stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon, typeinfo);
+            if (!stop) {
+                DataSet->gb_main = db_access.gb_main;
+                GB_begin_transaction(DataSet->gb_main);
+                freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
+                freedup(alignment_name, DataSet->alignment_name);
+
+                progress.subtitle("reading database");
+
+                long cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
+                bool marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);
+
+                if (db_access.get_sequences) {
+                    stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon, typeinfo);
+                }
+                else {
+                    stop = ReadArbdb(DataSet, marked, filter2, compress, cutoff_stop_codon, typeinfo);
+                }
+                GB_commit_transaction(DataSet->gb_main);
             }
-            else {
-                stop = ReadArbdb(DataSet, marked, filter2, compress, cutoff_stop_codon, typeinfo);
-            }
-            GB_commit_transaction(DataSet->gb_main);
+            delete filter2;
         }
 
         if (!stop && DataSet->numelements==0) {
@@ -500,18 +476,8 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     }
 
     if (!stop) {
-        int select_mode = 0;
-        {
-            bool flag = false;
-            for (int j=0; j<current_item->numinputs; j++) {
-                if (current_item->input[j].format != STATUS_FILE) {
-                    flag = true;
-                }
-            }
-            if (flag && DataSet) select_mode = ALL;
-        }
-
-        int pid = getpid();
+        int select_mode = (DataSet && (current_item->numinputs>0)) ? ALL : NONE;
+        int pid         = getpid();
 
         static int fileindx = 0;
         for (int j=0; j<current_item->numinputs; j++) {
@@ -522,11 +488,9 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             gfile.name = preCreateTempfile(buffer);
 
             switch (gfile.format) {
-                case COLORMASK:   WriteCMask  (DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case GENBANK:     WriteGen    (DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case NA_FLAT:     WriteNA_Flat(DataSet, gfile.name, select_mode, gfile.maskable); break;
-                case STATUS_FILE: WriteStatus (DataSet, gfile.name);                 break;
-                case GDE:         WriteGDE    (DataSet, gfile.name, select_mode, gfile.maskable); break;
+                case GENBANK: WriteGen    (DataSet, gfile.name, select_mode); break;
+                case NA_FLAT: WriteNA_Flat(DataSet, gfile.name, select_mode); break;
+                case GDE:     WriteGDE    (DataSet, gfile.name, select_mode); break;
                 default: break;
             }
         }
@@ -538,8 +502,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         }
 
         // Create the command line for external the function call
-        char *Action = (char*)strdup(current_item->method);
-        if (Action == NULL) Error("DO(): Error in duplicating method string");
+        char *Action = strdup(current_item->method);
 
         while (1) {
             char *oldAction = strdup(Action);
@@ -554,24 +517,20 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         for(int j=0; j<current_item->numinputs;  j++) Action = ReplaceFile(Action, current_item->input[j]);
         for(int j=0; j<current_item->numoutputs; j++) Action = ReplaceFile(Action, current_item->output[j]);
 
-        filter_name = AWT_get_combined_filter_name(aw_root, "gde");
-        Action = ReplaceString(Action, "$FILTER", filter_name);
+        if (Find(Action, "$FILTER") == true) {
+            char *filter_name = AWT_get_combined_filter_name(aw_root, "gde");
+            Action            = ReplaceString(Action, "$FILTER", filter_name);
+            free(filter_name);
+        }
 
         // call and go...
         progress.subtitle("calling external program");
         aw_message_if(GBK_system(Action));
         free(Action);
 
-        long oldnumelements = DataSet->numelements;
-
-        BlockInput = false;
+        size_t oldnumelements = DataSet->numelements;
 
         for (int j=0; j<current_item->numoutputs; j++) {
-            if (current_item->output[j].overwrite) {
-                if (current_item->output[j].format == GDE) OVERWRITE = true;
-                else Warning("Overwrite mode only available for GDE format");
-            }
-
             switch (current_item->output[j].format) {
                 /* The LoadData routine must be reworked so that
                  * OpenFileName uses it, and so I can remove the
@@ -582,13 +541,10 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
                 case GDE:
                     LoadData(current_item->output[j].name);
                     break;
-                case COLORMASK:
-                    ReadCMask(current_item->output[j].name);
-                    break;
                 default:
+                    gde_assert(0);
                     break;
             }
-            OVERWRITE = false;
         }
         for (int j=0; j<current_item->numoutputs; j++) {
             if (!current_item->output[j].save) {
@@ -606,11 +562,11 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     }
 
     free(alignment_name);
-    delete filter2;
-    free(filter_name);
 
     GDE_freeali(DataSet);
     freeset(DataSet, (NA_Alignment *)Calloc(1, sizeof(NA_Alignment)));
     DataSet->rel_offset = 0;
+
+    gde_assert(!GB_have_error());
 }
 

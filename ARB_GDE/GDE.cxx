@@ -1,11 +1,11 @@
 #include "GDE_extglob.h"
 #include "GDE_awars.h"
 
-#include <aw_window.hxx>
 #include <aw_msg.hxx>
 #include <aw_awar.hxx>
 #include <aw_file.hxx>
 #include <aw_root.hxx>
+#include <aw_awar_defs.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
 
@@ -16,7 +16,7 @@
 // AISC_MKPT_PROMOTE:#include "GDE_menu.h"
 // AISC_MKPT_PROMOTE:#endif
 
-adfiltercbstruct *agde_filtercd = 0;
+adfiltercbstruct *agde_filter = 0;
 
 Gmenu         menu[GDEMAXMENU];
 int           num_menus = 0;
@@ -132,7 +132,7 @@ static AW_window *GDE_create_filename_browser_window(AW_root *aw_root, const cha
     aws->callback((AW_CB0) AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    AW_create_fileselection(aws, awar_prefix);
+    AW_create_standard_fileselection(aws, awar_prefix);
 
     return aws;
 }
@@ -188,7 +188,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
         aws->at("help");
         aws->callback((AW_CB2)GDE_showhelp_cb, (AW_CL)gmenuitem, 0);
-        aws->create_button("GDE_HELP", "HELP...", "H");
+        aws->create_button("GDE_HELP", "HELP", "H");
 
         aws->at("start");
         aws->callback((AW_CB2)GDE_startaction_cb, (AW_CL)gmenuitem, 0);
@@ -237,7 +237,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
             if (seqtype != '-') {
                 aws->at("compression");
-                aws->create_option_menu(AWAR_GDE_COMPRESSION);
+                aws->create_option_menu(AWAR_GDE_COMPRESSION, true);
                 aws->insert_option("none", "n", COMPRESS_NONE);
                 aws->insert_option("vertical gaps", "v", COMPRESS_VERTICAL_GAPS);
                 aws->insert_default_option("columns w/o info", "i", COMPRESS_NONINFO_COLUMNS);
@@ -246,10 +246,10 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
                 aws->button_length(12);
                 aws->at("filtername");
-                if (!agde_filtercd) { // create only one filter - used for all GDE calls
-                    agde_filtercd = awt_create_select_filter(aws->get_root(), db_access.gb_main, AWAR_GDE_FILTER_NAME);
+                if (!agde_filter) { // create only one filter - used for all GDE calls
+                    agde_filter = awt_create_select_filter(aws->get_root(), db_access.gb_main, AWAR_GDE_FILTER_NAME);
                 }
-                aws->callback((AW_CB2)AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)agde_filtercd);
+                aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, agde_filter));
                 aws->create_button("SELECT_FILTER", AWAR_GDE_FILTER_NAME);
             }
 
@@ -348,7 +348,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
                 if (itemarg.label[0]) aws->label(itemarg.label);
                 aws->sens_mask(itemarg.active_mask);
-                aws->create_option_menu(newawar);
+                aws->create_option_menu(newawar, true);
 
                 for (long j=0; j<itemarg.numchoices; j++) {
                     if (strcmp(itemarg.choice[j].method, curr_value) == 0) curr_value_legal = true;
@@ -389,7 +389,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
-                awt_create_selection_list_on_trees(db_access.gb_main, aws, newawar);
+                awt_create_selection_list_on_trees(db_access.gb_main, aws, newawar, true);
                 free(newawar);
             }
             else if (itemarg.type==CHOICE_SAI) {
@@ -398,7 +398,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
-                awt_create_selection_list_on_sai(db_access.gb_main, aws, newawar);
+                awt_create_selection_list_on_sai(db_access.gb_main, aws, newawar, true);
                 free(newawar);
             }
             else if (itemarg.type==CHOICE_WEIGHTS) {
@@ -407,7 +407,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
-                AWT_sai_selection *id = awt_create_selection_list_on_sai(db_access.gb_main, aws, newawar, gde_filter_weights);
+                AWT_sai_selection *id = awt_create_selection_list_on_sai(db_access.gb_main, aws, newawar, true, gde_filter_weights);
                 free(newawar);
                 aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback(makeRootCallback(awt_selection_list_on_sai_update_cb, id));
             }
@@ -426,14 +426,13 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
 
 
-void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel, const char *menuitemlabel) {
+void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
     // Load GDE menu items.
     //
     // If 'menulabel' == NULL -> load all menus
     // Else                   -> load specified menu
     //
-    // If 'menuitemlabel' == NULL -> load complete menu(s)
-    // Else                       -> load only specific menu topic
+    // Always loads complete menu(s).
 
     gde_assert(db_access.gb_main); // forgot to call GDE_create_var() ?
 
@@ -460,15 +459,14 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel, co
         long num_items = menu[nmenu].numitems;
         for (long nitem=0; nitem<num_items; nitem++) {
             GmenuItem *menuitem=&menu[nmenu].item[nitem];
-            if (!menuitemlabel || strcmp(menuitem->label, menuitemlabel) == 0) {
-                itemloaded = true;
-                gde_assert(!menuitem->help || ARB_strBeginsWith(menuitem->help, "agde_"));
-                hotkey[0] = menuitem->meta;
-                awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey,
-                                       menuitem->help, menuitem->active_mask,
-                                       AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)menuitem);
-            }
+            itemloaded = true;
+            gde_assert(!menuitem->help || ARB_strBeginsWith(menuitem->help, "agde_"));
+            hotkey[0] = menuitem->meta;
+            awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey,
+                                   menuitem->help, menuitem->active_mask,
+                                   AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)menuitem);
         }
+
         if (!menulabel) {
             awm->close_sub_menu();
         }
@@ -477,25 +475,11 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel, co
     if (!menuloaded && menulabel) {
         fprintf(stderr, "GDE-Warning: Could not find requested menu '%s'\n", menulabel);
     }
-    if (!itemloaded && menuitemlabel) {
-        if (menulabel) {
-            fprintf(stderr, "GDE-Warning: Could not find requested topic '%s' in menu '%s'\n", menuitemlabel, menulabel);
-        }
-        else {
-            fprintf(stderr, "GDE-Warning: Could not find requested topic '%s'\n", menuitemlabel);
-        }
-    }
 }
 
 struct gde_database_access db_access = { NULL, GDE_WINDOWTYPE_DEFAULT, 0, NULL};
 
-void GDE_create_var(AW_root              *aw_root,
-                    AW_default            aw_def,
-                    GBDATA               *gb_main,
-                    GDE_get_sequences_cb  get_sequences,
-                    gde_window_type       window_type,
-                    AW_CL                 client_data)
-{
+GB_ERROR GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data) {
     db_access.get_sequences = get_sequences;
     db_access.window_type   = window_type;
     db_access.client_data   = client_data;
@@ -523,7 +507,7 @@ void GDE_create_var(AW_root              *aw_root,
             break;
     }
 
-    aw_root->awar_string("presets/use",             "", db_access.gb_main);
+    aw_root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", db_access.gb_main);
     
     aw_root->awar_string(AWAR_GDE_FILTER_NAME,      "", aw_def);
     aw_root->awar_string(AWAR_GDE_FILTER_FILTER,    "", aw_def);
@@ -534,11 +518,11 @@ void GDE_create_var(AW_root              *aw_root,
 
     aw_root->awar_int(AWAR_GDE_COMPRESSION, COMPRESS_NONINFO_COLUMNS, aw_def);
 
-    aw_root->awar(AWAR_GDE_ALIGNMENT)->map("presets/use");
-    aw_root->awar(AWAR_GDE_FILTER_ALIGNMENT)->map("presets/use");
+    aw_root->awar(AWAR_GDE_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
+    aw_root->awar(AWAR_GDE_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
 
     DataSet = (NA_Alignment *) Calloc(1, sizeof(NA_Alignment));
     DataSet->rel_offset = 0;
-    ParseMenu();
+    return LoadMenus();
 }
 

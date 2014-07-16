@@ -34,7 +34,7 @@ bool got_macro_ability(AW_root *aw_root);
 
 // gui-interface:
 void insert_macro_menu_entry(AW_window *awm, bool prepend_separator);
-void awt_execute_macro(AW_root *root, const char *macroname);
+void execute_macro(AW_root *root, const char *macroname);
 
 #else
 #error macros.hxx included twice

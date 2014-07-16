@@ -52,10 +52,10 @@ void MP_close_main(AW_window *aww)
     if (mp_main->get_mp_window()->get_result_window())
         mp_main->get_mp_window()->get_result_window()->hide();
 
-    GB_transaction dummy(scr->gb_main);
+    GB_transaction ta(scr->gb_main);
 
     AP_tree *ap_tree = AWT_TREE(scr)->get_root_node();
-    if (ap_tree) ap_tree->calc_color();
+    if (ap_tree) ap_tree->uncolorize();
 
     if (scr->gb_main)
         scr->gfx->update(scr->gb_main);
@@ -520,8 +520,8 @@ void MP_show_probes_in_tree(AW_window */*aww*/) {
 
     mp_main->get_stc()->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
 
-    GB_transaction dummy(scr->gb_main);
-    AWT_TREE(scr)->get_root_node()->calc_color_probes(mp_main->get_stc()->sondentopf->get_color_hash());
+    GB_transaction ta(scr->gb_main);
+    AWT_TREE(scr)->get_root_node()->colorize(mp_main->get_stc()->sondentopf->get_color_hash());
 
     if (scr->gb_main)
         scr->gfx->update(scr->gb_main);
@@ -635,7 +635,7 @@ void MP_mark_probes_in_tree(AW_window *aww) {
     }
     GB_pop_transaction(scr->gb_main);
 
-    GB_transaction dummy(scr->gb_main);
+    GB_transaction ta(scr->gb_main);
 
     if (scr->gb_main)
         scr->gfx->update(scr->gb_main);
@@ -743,23 +743,26 @@ void MP_group_all_except_marked(AW_window * /* aww */) {
 
 void MP_normal_colors_in_tree(AW_window */*aww*/) {
     AWT_canvas  *scr = mp_main->get_canvas();
-    GB_transaction dummy(scr->gb_main);
+    GB_transaction ta(scr->gb_main);
 
-    AWT_TREE(scr)->get_root_node()->calc_color();
-
-    if (scr->gb_main)
-        scr->gfx->update(scr->gb_main);
-
-    scr->refresh();
+    AWT_graphic_tree *tree = AWT_TREE(scr);
+    if (tree) {
+        AP_tree *root = tree->get_root_node();
+        if (root) {
+            root->uncolorize();
+            if (scr->gb_main) scr->gfx->update(scr->gb_main);
+            scr->refresh();
+        }
+    }
 }
 
-void MP_delete_selected(AW_window*, AW_CL cl_sellist) {
-    AW_selection_list *sellist = (AW_selection_list*)cl_sellist;
-
-    int idx = sellist->get_index_of_selected();
-    sellist->delete_element_at(idx);
-    sellist->select_element_at(idx);
-    sellist->update();
+void MP_delete_selected(UNFIXED, AW_selection_list *sellist) {
+    if (!sellist->default_is_selected()) {
+        int idx = sellist->get_index_of_selected();
+        sellist->delete_element_at(idx);
+        sellist->select_element_at(idx);
+        sellist->update();
+    }
 }
 
 
@@ -819,14 +822,18 @@ int MP_init_local_com_struct()
 }
 
 const char *MP_probe_pt_look_for_server() {
+    // DRY vs  ../TOOLS/arb_probe.cxx@AP_probe_pt_look_for_server
+    // DRY vs  ../PROBE_DESIGN/probe_design.cxx@PD_probe_pt_look_for_server
     const char *server_tag = GBS_ptserver_tag(mp_gl_awars.ptserver);
     GB_ERROR    error      = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
 
-    if (error) {
-        aw_message(error);
-        return 0;
+    const char *result = NULL;
+    if (!error) {
+        result = GBS_read_arb_tcp(server_tag);
+        if (!result) error = GB_await_error();
     }
-    return GBS_read_arb_tcp(server_tag);
+    if (error) aw_message(error);
+    return result;
 }
 
 // --------------------------------------------------------------------------------
@@ -882,4 +889,4 @@ void TEST_MP_get_comment_and_probes() {
     free(probes_only);
 }
 
-#endif
+#endif // UNIT_TESTS

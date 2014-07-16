@@ -6,6 +6,18 @@ DEADLOCKGUARD=1# install guard to avoid deadlocks (SVN default!)
 
 # also see test_unit.h@ENABLE_CRASH_TESTS
 
+# ---------- slow tests 
+SKIP_SLOW=15# skip slow tests (run only every SKIP_SLOW minutes)
+SKIP_SLOW=0# always run all tests
+
+# ---------- warnings?
+WARN_LEVEL=1# enable warnings (recommended)
+#WARN_LEVEL=0# disable warnings
+
+# ---------- only changed tests?
+ONLY_CHANGED_TESTS=1# only run changed tests
+#ONLY_CHANGED_TESTS=0# also run unchanged tests
+
 # ---------- Valgrind
 # @@@ valgrind makes tests fail atm
 # (most likely two pt-servers try to start parallel on the same port)
@@ -28,6 +40,11 @@ CHECK_LEAKS=1# check definite leaks
 RESTRICT_MODULE='.'
 #RESTRICT_MODULE='ED4_mini_classes\.cxx'
 #RESTRICT_MODULE='(ED4_mini_classes|ED4_cursor)\.cxx'
+
+# ---------- restrict tests by name to test-functions matching regexpr 'RESTRICT_FUN': 
+RESTRICT_FUN='.'
+#RESTRICT_FUN='arb_export_tree'
+#RESTRICT_FUN='tree'
 
 # ---------- restrict what coverage is displayed
 # to activate COVERAGE edit ../config.makefile@COVERAGE
@@ -60,6 +77,7 @@ RESTRICT_LIB=# run all tests
 #RESTRICT_LIB=libCORE
 #RESTRICT_LIB=EDIT4
 #RESTRICT_LIB=TREEDISP
+#RESTRICT_LIB=PARSIMONY
 
 #RESTRICT_LIB=arb_probe
 #RESTRICT_LIB=arb_probe:arb_test
@@ -70,15 +88,13 @@ RESTRICT_LIB=# run all tests
 #RESTRICT_LIB=SEQIO:CONVERTALN
 #RESTRICT_LIB=client:arb_probe:AWTC
 #RESTRICT_LIB=libARBDB:libWINDOW:SEQIO
-#RESTRICT_LIB=arb_probe:arb_test:AWTC:PTCLEAN:PROBE:MULTI_PROBE
+#RESTRICT_LIB=libARBDB:DBSERVER
+#RESTRICT_LIB=TREE_READ:CONSENSUS_TREE:arb_consensus_tree:arb_test:TREEDISP
 
-# ---------- slow tests 
-SKIP_SLOW=15# skip slow tests (run only every SKIP_SLOW minutes)
-SKIP_SLOW=0# always run all tests
-
-# ---------- warnings?
-WARN_LEVEL=1# enable warnings (recommended)
-#WARN_LEVEL=0# disable warnings 
+#RESTRICT_LIB=CONSENSUS_TREE:arb_consensus_tree:DIST:NEIGHBOURJOIN# NJ related
+#RESTRICT_LIB=arb_probe:arb_test:AWTC:PTCLEAN:PROBE:MULTI_PROBE# ptserver related tests
+#RESTRICT_LIB=TREE_READ:CONSENSUS_TREE:arb_consensus_tree:arb_test:TREEDISP:PARSIMONY# tree related tests
+#RESTRICT_LIB=libARBDB:TREE_READ:CONSENSUS_TREE:arb_consensus_tree:arb_test:TREEDISP:PARSIMONY# tree related tests (including tree handling in ARBDB)
 
 # ---------- unit tests create a patch each time tests pass ok
 # PATCHES_KEEP_HOURS and PATCHES_MIN_KEPT define when patches are removed again 

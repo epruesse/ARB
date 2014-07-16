@@ -20,11 +20,13 @@ int ARB_main(int argc, char *argv[]) {
     const char *progname = argv[0];
     if (!progname || progname[0] == 0) progname = "arb_message";
 
-    char *the_message  = strdup(argv[1]);
-    char *unencoded_lf = 0;
+    char   *the_message  = strdup(argv[1]);
+    size_t  len          = strlen(the_message);
+    char   *unencoded_lf = 0;
     while ((unencoded_lf = strstr(the_message, "\\n")) != 0) {
         unencoded_lf[0] = '\n';
-        strcpy(unencoded_lf+1, unencoded_lf+2);
+        size_t restlen  = len-(unencoded_lf-the_message)-1; // len - "chars before \n" - "\n"
+        memmove(unencoded_lf+1, unencoded_lf+2, restlen+1); // copy restlen plus 0-terminator
     }
 
     {

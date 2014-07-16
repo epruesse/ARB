@@ -293,7 +293,7 @@ static void mg_check_field_cb(AW_window *aww) {
 }
 
 
-AW_window *create_mg_check_fields(AW_root *aw_root) {
+AW_window *create_mg_check_fields_window(AW_root *aw_root) {
     aw_root->awar_string(AWAR_SOURCE_FIELD);
     aw_root->awar_string(AWAR_DEST_FIELD, "tmp", AW_ROOT_DEFAULT);
     aw_root->awar_string(AWAR_EXCLUDE, ".-", AW_ROOT_DEFAULT);
@@ -325,11 +325,8 @@ AW_window *create_mg_check_fields(AW_root *aw_root) {
     aws->at("tag");
     aws->create_input_field(AWAR_ETAG, 6);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_SOURCE_FIELD,
-                                            FIELD_FILTER_STRING, "source", 0, SPECIES_get_selector(), 20, 10);
-
-    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_DEST_FIELD,
-                                            (1<<GB_STRING)|(1<<GB_INT), "dest", 0, SPECIES_get_selector(), 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_SOURCE_FIELD, true, FIELD_FILTER_STRING,        "source", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_DEST_FIELD,   true, (1<<GB_STRING)|(1<<GB_INT), "dest",   0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
 
 #if defined(WARN_TODO)
 #warning check code above. Maybe one call has to get GLOBAL_gb_src ?

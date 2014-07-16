@@ -72,13 +72,18 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable
     void createListRekSide(AP_CO_LIST *list, int *cn);
 
 public:
-    AP_tree_nlen(AP_tree_root *tree_root);
-    virtual ~AP_tree_nlen() OVERRIDE {}
-    DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree_nlen);
+    explicit AP_tree_nlen(AP_tree_root *troot)
+        : AP_tree(troot),
+          kernighan(AP_NONE),
+          distance(INT_MAX),
+          mutation_rate(0)
+    {
+        edge[0]  = edge[1]  = edge[2]  = NULL;
+        index[0] = index[1] = index[2] = 0;
+    }
+    ~AP_tree_nlen() OVERRIDE {}
 
-    // ARB_tree interface
-    virtual AP_tree_nlen *dup() const OVERRIDE;
-    // ARB_tree interface (end)
+    DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree_nlen);
 
     void     unhash_sequence();
     AP_FLOAT costs(char *mutPerSite = NULL);        // cost of a tree (number of changes ..)
@@ -94,13 +99,17 @@ public:
 
     // tree reconstruction methods:
     void insert(AP_tree_nlen *new_brother);
+    void initial_insert(AP_tree_nlen *new_brother, AP_tree_root *troot);
+
     void remove() OVERRIDE;
+    void swap_sons() OVERRIDE;
     void swap_assymetric(AP_TREE_SIDE mode) OVERRIDE;
     void moveNextTo(AP_tree_nlen *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveNextTo to test if possible
     void set_root() OVERRIDE;
 
     // overload virtual methods from AP_tree:
     void insert(AP_tree *new_brother) OVERRIDE { insert(DOWNCAST(AP_tree_nlen*, new_brother)); }
+    void initial_insert(AP_tree *new_brother, AP_tree_root *troot) OVERRIDE { initial_insert(DOWNCAST(AP_tree_nlen*, new_brother), troot); }
     void moveNextTo(AP_tree *node, AP_FLOAT rel_pos) OVERRIDE { moveNextTo(DOWNCAST(AP_tree_nlen*, node), rel_pos); }
 
     // tree optimization methods:
@@ -153,14 +162,20 @@ public:
 
     char *getSequenceCopy();
 
-#if defined(CHECK_TREE_STRUCTURE)
+#if defined(PROVIDE_TREE_STRUCTURE_TESTS)
     void assert_edges_valid() const;
     void assert_valid() const;
-#endif // CHECK_TREE_STRUCTURE
+#endif // PROVIDE_TREE_STRUCTURE_TESTS
 
 
     friend      class AP_tree_edge;
     friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);
+};
+
+struct AP_TreeNlenNodeFactory : public RootedTreeNodeFactory {
+    RootedTree *makeNode(TreeRoot *root) const OVERRIDE {
+        return new AP_tree_nlen(DOWNCAST(AP_tree_root*, root));
+    }
 };
 
 // ---------------------
@@ -205,6 +220,9 @@ class AP_tree_edge : virtual Noncopyable {
 
     friend class AP_tree_nlen;
     friend std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
+#if defined(UNIT_TESTS) // UT_DIFF
+    friend void TEST_tree_modifications();
+#endif
 
 protected:
 
@@ -220,6 +238,7 @@ public:
     AP_tree_edge(AP_tree_nlen *node1, AP_tree_nlen *node2);
 
     static void initialize(AP_tree_nlen *root);
+    static void destroy(AP_tree_nlen *root);
 
     // access methods:
 

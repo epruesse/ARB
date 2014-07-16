@@ -46,7 +46,7 @@ void MG_create_species_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_APPEND);
 }
 
-static void MG_map_species(AW_root *aw_root, AW_CL db_nr) {
+static void MG_map_species(AW_root *aw_root, int db_nr) {
     GBDATA     *gb_main   = get_gb_main(db_nr);
     const char *awar_name = db_nr == 1 ? AWAR_SPECIES_SRC : AWAR_SPECIES_DST;
     DbScanner  *scanner   = db_nr == 1 ? scanner_src : scanner_dst;
@@ -177,7 +177,7 @@ static bool adaption_enabled(AW_root *awr) {
 }
 
 static void MG_transfer_selected_species(AW_window *aww) {
-    if (MG_copy_and_check_alignments(aww) != 0) return;
+    if (MG_copy_and_check_alignments() != 0) return;
 
     AW_root  *aw_root  = aww->get_root();
     char     *src_name = aw_root->awar(AWAR_SPECIES_SRC)->read_string();
@@ -219,7 +219,7 @@ static void MG_transfer_selected_species(AW_window *aww) {
 }
 
 static void MG_transfer_species_list(AW_window *aww) {
-    if (MG_copy_and_check_alignments(aww) != 0) return;
+    if (MG_copy_and_check_alignments() != 0) return;
 
     GB_ERROR error = NULL;
     GB_begin_transaction(GLOBAL_gb_src);
@@ -267,7 +267,7 @@ static void MG_transfer_species_list(AW_window *aww) {
 }
 
 static void MG_transfer_fields_cb(AW_window *aww) {
-    if (MG_copy_and_check_alignments(aww) != 0) return;
+    if (MG_copy_and_check_alignments() != 0) return;
 
     char     *field  = aww->get_root()->awar(AWAR_FIELD_SRC)->read_string();
     long      append = aww->get_root()->awar(AWAR_APPEND)->read_int();
@@ -370,9 +370,8 @@ static void MG_transfer_fields_cb(AW_window *aww) {
     free(field);
 }
 
-static AW_window *MG_transfer_fields(AW_root *aw_root)
-{
-    GB_transaction    dummy(GLOBAL_gb_src);
+static AW_window *MG_create_transfer_fields_window(AW_root *aw_root) {
+    GB_transaction    ta(GLOBAL_gb_src);
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(aw_root, "MERGE_TRANSFER_FIELD", "TRANSFER FIELD");
@@ -394,16 +393,13 @@ static AW_window *MG_transfer_fields(AW_root *aw_root)
     aws->at("append");
     aws->create_toggle(AWAR_APPEND);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_src,
-                                            aws, AWAR_FIELD_SRC,
-                                            FIELD_FILTER_NDS,
-                                            "scandb", "rescandb", SPECIES_get_selector(), 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, FIELD_FILTER_NDS, "scandb", "rescandb", SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
 
     return (AW_window*)aws;
 }
 
 static void MG_move_field_cb(AW_window *aww) {
-    if (MG_copy_and_check_alignments(aww) != 0) return;
+    if (MG_copy_and_check_alignments() != 0) return;
 
     AW_root  *aw_root = aww->get_root();
     char     *field   = aww->get_root()->awar(AWAR_FIELD_SRC)->read_string();
@@ -477,9 +473,8 @@ static void MG_move_field_cb(AW_window *aww) {
     free(field);
 }
 
-static AW_window *create_mg_move_fields(AW_root *aw_root)
-{
-    GB_transaction dummy(GLOBAL_gb_src);
+static AW_window *create_mg_move_fields_window(AW_root *aw_root) {
+    GB_transaction ta(GLOBAL_gb_src);
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "MERGE_CROSS_MOVE_FIELD", "CROSS MOVE FIELD");
@@ -499,10 +494,7 @@ static AW_window *create_mg_move_fields(AW_root *aw_root)
     aws->create_button("HELP", "HELP");
 
 
-    create_selection_list_on_itemfields(GLOBAL_gb_src,
-                                            aws, AWAR_FIELD_SRC,
-                                            FIELD_FILTER_NDS,
-                                            "scandb", "rescandb", SPECIES_get_selector(), 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, FIELD_FILTER_NDS, "scandb", "rescandb", SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
 
     return (AW_window*)aws;
 }
@@ -567,12 +559,11 @@ static void MG_merge_tagged_field_cb(AW_window *aww) {
     GB_end_transaction_show_error(GLOBAL_gb_dst, error, aw_message);
 }
 
-static AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
-{
+static AW_window *create_mg_merge_tagged_fields_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
 
-    GB_transaction dummy(GLOBAL_gb_src);
+    GB_transaction ta(GLOBAL_gb_src);
 
     aw_root->awar_string(AWAR_FIELD_SRC, "full_name");
     aw_root->awar_string(AWAR_FIELD_DST, "full_name");
@@ -604,8 +595,8 @@ static AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 
     aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL, 5);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, FIELD_FILTER_NDS, "fields1", 0, SPECIES_get_selector(), 20, 10);
-    create_selection_list_on_itemfields(GLOBAL_gb_dst,  aws, AWAR_FIELD_DST, FIELD_FILTER_NDS, "fields2", 0, SPECIES_get_selector(), 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, FIELD_FILTER_NDS, "fields1", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_FIELD_DST, true, FIELD_FILTER_NDS, "fields2", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
 
     return (AW_window*)aws;
 }
@@ -796,7 +787,7 @@ GB_ERROR MERGE_sequences_simple(AW_root *awr) {
 
                     if (!error) {
                         GB_write_flag(D_species, 1);          // mark species
-                        GB_write_usr_private(D_species, 255); // put in hitlist
+                        GB_set_user_flag(D_species, GB_USERFLAG_QUERY); // put in search&query hitlist
                         error = GBT_write_string(D_species, "name", s_name);
                     }
                 }
@@ -840,7 +831,7 @@ static GBDATA *mg_get_first_species_data2(GBDATA *, AW_root *, QUERY_RANGE) {
 }
 
 static GBDATA *mg_get_selected_species1(GBDATA * /* gb_main */, AW_root *aw_root) {
-    GB_transaction dummy(GLOBAL_gb_src);
+    GB_transaction ta(GLOBAL_gb_src);
     char   *species_name            = aw_root->awar(AWAR_SPECIES_SRC)->read_string();
     GBDATA *gb_species              = 0;
     if (species_name[0]) gb_species = GBT_find_species(GLOBAL_gb_src, species_name);
@@ -848,7 +839,7 @@ static GBDATA *mg_get_selected_species1(GBDATA * /* gb_main */, AW_root *aw_root
     return gb_species;
 }
 static GBDATA *mg_get_selected_species2(GBDATA * /* gb_main */, AW_root *aw_root) {
-    GB_transaction dummy(GLOBAL_gb_dst);
+    GB_transaction ta(GLOBAL_gb_dst);
     char   *species_name            = aw_root->awar(AWAR_SPECIES_DST)->read_string();
     GBDATA *gb_species              = 0;
     if (species_name[0]) gb_species = GBT_find_species(GLOBAL_gb_dst, species_name);
@@ -875,14 +866,17 @@ static void mg_initialize_species_selectors() {
     }
 }
 
-AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new) {
-    static AW_window_simple_menu *aws = 0;
-    if (aws) return (AW_window *)aws;
+AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
+    GB_ERROR error = MG_expect_renamed();
+    if (error) {
+        aw_message(error);
+        return NULL; // deny to open window before user has renamed species
+    }
 
     awr->awar_string(AWAR_REMAP_SPECIES_LIST, "ecoli", GLOBAL_gb_dst);
     awr->awar_int(AWAR_REMAP_ENABLE, 0, GLOBAL_gb_dst);
 
-    aws = new AW_window_simple_menu;
+    AW_window_simple_menu *aws = new AW_window_simple_menu;
     aws->init(awr, "MERGE_TRANSFER_SPECIES", "TRANSFER SPECIES");
     aws->load_xfig("merge/species.fig");
 
@@ -904,7 +898,7 @@ AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new) {
         awtqs.expect_hit_in_ref_list = false;
         awtqs.species_name           = AWAR_SPECIES_SRC;
         awtqs.tree_name              = 0;               // no selected tree here -> can't use tree related ACI commands without specifying a tree
-        awtqs.select_bit             = 1;
+        awtqs.select_bit             = GB_USERFLAG_QUERY;
         awtqs.ere_pos_fig            = "ere1";
         awtqs.by_pos_fig             = "by1";
         awtqs.qbox_pos_fig           = "qbox1";
@@ -927,7 +921,7 @@ AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new) {
 
         DbScanner *scanner = create_db_scanner(GLOBAL_gb_src, aws, "box1", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
         scanner_src = scanner;
-        aws->get_root()->awar(AWAR_SPECIES_SRC)->add_callback(MG_map_species, 1);
+        aws->get_root()->awar(AWAR_SPECIES_SRC)->add_callback(makeRootCallback(MG_map_species, 1));
     }
     {
         QUERY::query_spec awtqs(MG_species_selector[1]);
@@ -937,7 +931,7 @@ AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new) {
         awtqs.gb_ref                 = GLOBAL_gb_src;
         awtqs.expect_hit_in_ref_list = true;
         awtqs.species_name           = AWAR_SPECIES_DST;
-        awtqs.select_bit             = 1;
+        awtqs.select_bit             = GB_USERFLAG_QUERY;
         awtqs.ere_pos_fig            = "ere2";
         awtqs.by_pos_fig             = "by2";
         awtqs.qbox_pos_fig           = "qbox2";
@@ -960,7 +954,7 @@ AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new) {
 
         DbScanner *scanner = create_db_scanner(GLOBAL_gb_dst, aws, "box2", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
         scanner_dst = scanner;
-        aws->get_root()->awar(AWAR_SPECIES_DST)->add_callback(MG_map_species, 2);
+        aws->get_root()->awar(AWAR_SPECIES_DST)->add_callback(makeRootCallback(MG_map_species, 2));
     }
 
     // big transfer buttons:
@@ -979,7 +973,7 @@ AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new) {
                            "Transfer\nlisted\nspecies\n\nDelete\nduplicates\nin target DB", "T");
 
         aws->at("transfield");
-        aws->callback(AW_POPUP, (AW_CL)MG_transfer_fields, 0);
+        aws->callback(MG_create_transfer_fields_window);
         aws->create_button("TRANSFER_FIELD_OF_LISTED_DELETE_DUPLI",
                            "Transfer\nfield\nof listed\nspecies\n\nDelete\nduplicates\nin target DB", "T");
 
@@ -1001,7 +995,7 @@ AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new) {
         aws->create_text_field(AWAR_REMAP_SPECIES_LIST);
 
         aws->at("pres_sel");
-        aws->callback((AW_CB1)AW_POPUP, (AW_CL)MG_select_preserves_cb);
+        aws->callback(MG_create_preserves_selection_window);
         aws->create_button("SELECT", "SELECT", "S");
 
         aws->sens_mask(AWM_ALL);
@@ -1013,16 +1007,16 @@ AW_window *MG_merge_species_cb(AW_root *awr, AW_CL dst_is_new) {
     aws->callback(makeHelpCallback("mg_species.hlp"));
     aws->create_button("HELP_MERGE", "#merge/icon.xpm");
 
-    aws->create_menu("Source->Target", ">");
-    aws->insert_menu_topic("compare_field_of_listed",   "Compare a field of listed species ...", "C", "checkfield.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_mg_check_fields, 0);
+    aws->create_menu("Source->Target", "g");
+    aws->insert_menu_topic("compare_field_of_listed",   "Compare a field of listed species ...", "C", "checkfield.hlp", AWM_ALL, create_mg_check_fields_window);
     aws->insert_menu_topic("move_field_of_selected",    "Move one field of selected source species to same field of selected target species", "M",
-                            "movefield.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_mg_move_fields, 0);
+                            "movefield.hlp", AWM_ALL, create_mg_move_fields_window);
     aws->insert_menu_topic("merge_field_of_listed_to_new_field", "Merge field of listed species of source-DB with different fields of same species in target-DB ", "D",
-                            "mergetaggedfield.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_mg_merge_tagged_fields, 0);
+                            "mergetaggedfield.hlp", AWM_ALL, create_mg_merge_tagged_fields_window);
 
     aws->sep______________();
     aws->insert_menu_topic("def_gene_species_field_xfer", "Define field transfer for gene-species", "g", "gene_species_field_transfer.hlp",
-                           AWM_ALL, AW_POPUP, (AW_CL)MG_gene_species_create_field_transfer_def_window, 0);
+                           AWM_ALL, MG_gene_species_create_field_transfer_def_window);
 
     return aws;
 }

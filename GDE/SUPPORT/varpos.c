@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "Flatio.c"
 #define MAX(a,b) ((a)>(b)?(a):(b))
  

@@ -217,9 +217,7 @@ __ATTR__NORETURN static void aisc_server_sigsegv(int sig) {
 
 static int pipe_broken;
 
-static void aisc_server_sigpipe(int)
-{
-    fputs("AISC server: pipe broken\n", stderr);
+static void aisc_server_sigpipe(int) {
     pipe_broken = 1;
 }
 
@@ -247,7 +245,10 @@ static int aisc_s_write(int socket, char *ptr, int size) {
     pipe_broken = 0;
     while (leftsize) {
         int writesize = write(socket, ptr, leftsize);
-        if (pipe_broken) return -1;
+        if (pipe_broken) {
+            fputs("AISC server: pipe broken\n", stderr);
+            return -1;
+        }
         if (writesize<0) return -1;
         ptr += writesize;
         leftsize -= writesize;
@@ -1176,13 +1177,13 @@ Hs_struct *aisc_accept_calls(Hs_struct *hs)
                 free(si);
 #ifdef SERVER_TERMINATE_ON_CONNECTION_CLOSE
                 if (hs->nsoc == 0) { // no clients left
-                    if (hs->fork) exit(0); // child exits
+                    if (hs->fork) exit(EXIT_SUCCESS); // child exits
                     return hs; // parent exits
                 }
                 break;
 #else
                 // normal behavior
-                if (hs->nsoc == 0 && hs->fork) exit(0);
+                if (hs->nsoc == 0 && hs->fork) exit(EXIT_SUCCESS);
                 break;
 #endif
             }
