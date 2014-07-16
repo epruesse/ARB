@@ -594,26 +594,40 @@ public:
             }
             else {
                 if (x_count) {
-                    int min_dna = x_count;
-                    int max_dna = x_count*3;
-
                     size_t written_dna     = target_dna-target_dna_start;
                     size_t target_rest_len = target_len-written_dna;
 
-                    if (p) {
+                    size_t compressed_rest_len = compressed_len - (compressed_dna-compressed_dna_start);
+                    nt_assert(compressed_rest_len<=compressed_len);
+                    nt_assert(strlen(compressed_dna) == compressed_rest_len);
+
+                    size_t min_dna = x_count;
+                    size_t max_dna = std::min(x_count*3, int(compressed_rest_len));
+
+                    if (min_dna>max_dna) {
+                        fail_reason     = "not enough nucs for X's at sequence end";
+                        // @@@ set correct fail position!
+                        protein_fail_at = x_start_prot;
+                        dna_fail_at     = compressed_dna;
+                    }
+                    else if (p) {
                         char       *foremost_rest_failure    = NULL;
                         const char *foremost_protein_fail_at = NULL;
                         const char *foremost_dna_fail_at     = NULL;
 
-                        for (int x_dna = min_dna; x_dna<=max_dna; ++x_dna) { // prefer low amounts of used dna
-                            const char *dna_rest     = compressed_dna+x_dna;
-                            size_t      dna_rest_len = compressed_len - (dna_rest-compressed_dna_start);
+                        for (size_t x_dna = min_dna; x_dna<=max_dna; ++x_dna) { // prefer low amounts of used dna
+                            const char *dna_rest     = compressed_dna      + x_dna;
+                            size_t      dna_rest_len = compressed_rest_len - x_dna;
 
-                            RealignAttempt attemptRest(allowed_code, dna_rest, dna_rest_len, aligned_protein-1, target_dna, target_rest_len);
-                            GB_ERROR       rest_failed = attemptRest.perform();
+                            nt_assert(strlen(dna_rest) == dna_rest_len);
+                            nt_assert(compressed_rest_len>=x_dna);
 
+                            GB_ERROR    rest_failed          = NULL;
                             const char *rest_protein_fail_at = NULL;
                             const char *rest_dna_fail_at     = NULL;
+
+                            RealignAttempt attemptRest(allowed_code, dna_rest, dna_rest_len, aligned_protein-1, target_dna, target_rest_len);
+                            rest_failed = attemptRest.perform();
 
                             if (rest_failed) {
                                 rest_protein_fail_at = attemptRest.get_protein_fail_at();
@@ -669,21 +683,13 @@ public:
                         }
                     }
                     else {
-                        size_t dna_rest_len = compressed_len - (compressed_dna-compressed_dna_start);
-                        max_dna             = std::min(max_dna, int(dna_rest_len));
-
-                        if (min_dna>max_dna) {
-                            fail_reason = "not enough nucs for X's at sequence end";
+                        fail_reason = "internal error: no distribution attempted";
+                        nt_assert(min_dna>0);
+                        for (size_t x_dna = max_dna; x_dna>=min_dna && fail_reason; --x_dna) {     // prefer high amounts of dna
+                            fail_reason = distribute_xdata(x_dna, x_count, x_start, allowed_code); // @@@ pass/modify usable codes
                             // @@@ set correct fail position!
                         }
-                        else {
-                            fail_reason = "internal error: no distribution attempted";
-                            for (int x_dna = max_dna; x_dna>=min_dna && fail_reason; --x_dna) { // prefer high amounts of dna
-                                fail_reason = distribute_xdata(x_dna, x_count, x_start, allowed_code); // @@@ pass/modify usable codes
-                                // @@@ set correct fail position!
-                            }
-                            // @@@ clear fail position if !fail_reason
-                        }
+                        // @@@ clear fail position if !fail_reason
 
                         if (fail_reason) {
                             // @@@ set correct fail position! (do not set aligned_protein or compressed_dna)
@@ -703,10 +709,19 @@ public:
                     AWT_allowedCode  allowed_code_left;
                     const char      *why_fail;
 
-                    if (!AWT_is_codon(p, compressed_dna, allowed_code, allowed_code_left, &why_fail)) {
-                        fail_reason = why_fail;
-                        break;
+                    size_t compressed_rest_len = compressed_len - (compressed_dna-compressed_dna_start);
+                    if (compressed_rest_len>compressed_len || compressed_rest_len<3) {
+                        fail_reason = GBS_global_string("not enough nucs left for codon of '%c'", p);
                     }
+                    else {
+                        nt_assert(strlen(compressed_dna) == compressed_rest_len);
+                        nt_assert(compressed_rest_len >= 3);
+                        if (!AWT_is_codon(p, compressed_dna, allowed_code, allowed_code_left, &why_fail)) {
+                            fail_reason = why_fail;
+                        }
+                    }
+
+                    if (fail_reason) break;
 
                     allowed_code = allowed_code_left;
 
@@ -1249,13 +1264,13 @@ void TEST_realign() {
                 // { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "sdfjlksdjf" }, // templ
 
                 // wanted realign failures:
-                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TCA' does never translate to 'P' at ali_pro:25 / ali_dna:64\n" },   // ok to fail: 5 Xs impossible               @@@ dna position wrong ('TCA' is @ 74)
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Alignment 'ali_dna' is too short (increase its length to 252)\n" },                          // ok to fail: wrong alignment length
-                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TCA' does never translate to 'P' at ali_pro:25 / ali_dna:64\n" },   // ok to fail                                @@@ dna position wrong ('TCA' is @ 74)
-                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TTT' translates to 'F', not to 'A' at ali_pro:8 / ali_dna:17\n" },  // ok to fail                                @@@ dna position wrong ('TTT' is @ 32 & 33)
-                { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CAC' translates to 'H', not to 'R' at ali_pro:13 / ali_dna:35\n" }, // ok to fail                                @@@ dna position wrong ('CAC' is @ 51)
-                { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CGG' translates to 'R', not to 'G' at ali_pro:24 / ali_dna:61\n" }, // ok to fail: some AA missing in the middle @@@ dna position wrong ('CGG' is @ 62)
-                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Sync behind 'X' failed foremost with: Not enough nucleotides (got '') at ali_pro:38 / ali_dna:116\n" },    // ok to fail: too many AA
+                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TCA' does never translate to 'P' at ali_pro:25 / ali_dna:64\n" },      // ok to fail: 5 Xs impossible               @@@ dna position wrong ('TCA' is @ 74)
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Alignment 'ali_dna' is too short (increase its length to 252)\n" }, // ok to fail: wrong alignment length
+                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TCA' does never translate to 'P' at ali_pro:25 / ali_dna:64\n" },      // ok to fail                                @@@ dna position wrong ('TCA' is @ 74)
+                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TTT' translates to 'F', not to 'A' at ali_pro:8 / ali_dna:17\n" },     // ok to fail                                @@@ dna position wrong ('TTT' is @ 32 & 33)
+                { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CAC' translates to 'H', not to 'R' at ali_pro:13 / ali_dna:35\n" },    // ok to fail                                @@@ dna position wrong ('CAC' is @ 51)
+                { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CGG' translates to 'R', not to 'G' at ali_pro:24 / ali_dna:61\n" },    // ok to fail: some AA missing in the middle @@@ dna position wrong ('CGG' is @ 62)
+                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Sync behind 'X' failed foremost with: not enough nucs left for codon of 'H' at ali_pro:38 / ali_dna:116\n" }, // ok to fail: too many AA
 
                 // failing realignments that should work:
                 { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "'ATG' translates to 'M', not to 'S' at ali_pro:4 / ali_dna:1\n" },                      // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
