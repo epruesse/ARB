@@ -33,7 +33,8 @@ clean:
 ## internal targets
 
 install: build
-	cp -a arb_raxml8.sh $(ARBHOME)/bin
+	cp arb_raxml8.sh $(ARBHOME)/bin
+	chmod a+x $(ARBHOME)/bin/arb_raxml8.sh
 	cp raxml8.menu $(ARBHOME)/lib/gde
 
 build:  $(VERSIONS:%=$(RAXML_BIN)%)
