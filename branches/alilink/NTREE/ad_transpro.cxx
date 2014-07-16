@@ -507,16 +507,74 @@ class RealignAttempt {
             }
 
             if (!error) {    // now really distribute nucs
-                int off = 0; // offset into compressed_dna
+                int   off           = 0;  // offset into compressed_dna
+                char *xtarget_start = xtarget;
+
                 for (int x = 0; x<best.size(); ++x) {
                     while (xtarget[0] != '!') {
                         nt_assert(xtarget[1] && xtarget[2]); // buffer overflow
                         xtarget += 3;
                     }
 
-                    int b;
-                    for (b = 0; b<dist[x]; ++b) xtarget[b] = compressed_dna[off+b];
-                    for (; b<3; ++b)            xtarget[b] = '-';
+                    switch (dist[x]) {
+                        case 1:
+                            xtarget[0] = '-';
+                            xtarget[1] = compressed_dna[off];
+                            xtarget[2] = '-';
+                            break;
+
+                        case 2: {
+                            enum { UNDECIDED, SPREAD, LEFT, RIGHT } mode = UNDECIDED;
+
+                            bool gap_right   = isGap(xtarget[3]);
+                            int  follow_dist = x<best.size()-1 ? dist[x+1] : 0;
+
+                            bool has_gaps_left  = xtarget>xtarget_start && isGap(xtarget[-1]);
+                            bool has_gaps_right = gap_right || follow_dist == 1;
+
+                            if (has_gaps_left && has_gaps_right) mode = SPREAD;
+                            else if (has_gaps_left)              mode = LEFT;
+                            else if (has_gaps_right)             mode = RIGHT;
+                            else {
+                                bool has_nogaps_left  = xtarget>xtarget_start && !isGap(xtarget[-1]);
+                                bool has_nogaps_right = !gap_right && follow_dist == 3;
+
+                                if (has_nogaps_left && has_nogaps_right) mode = SPREAD;
+                                else if (has_nogaps_left)                mode = RIGHT;
+                                else                                     mode = LEFT;
+                            }
+
+                            switch (mode) {
+                                case UNDECIDED: nt_assert(0); // fall-through in NDEBUG
+                                case SPREAD:
+                                    xtarget[0] = compressed_dna[off];
+                                    xtarget[1] = '-';
+                                    xtarget[2] = compressed_dna[off+1];
+                                    break;
+                                case LEFT:
+                                    xtarget[0] = compressed_dna[off];
+                                    xtarget[1] = compressed_dna[off+1];
+                                    xtarget[2] = '-';
+                                    break;
+                                case RIGHT:
+                                    xtarget[0] = '-';
+                                    xtarget[1] = compressed_dna[off];
+                                    xtarget[2] = compressed_dna[off+1];
+                                    break;
+                            }
+
+                            break;
+                        }
+                        case 3:
+                            xtarget[0] = compressed_dna[off];
+                            xtarget[1] = compressed_dna[off+1];
+                            xtarget[2] = compressed_dna[off+2];
+                            break;
+
+                        default:
+                            nt_assert(0);
+                            break;
+                    }
 
                     xtarget += 3;
                     off     += dist[x];
@@ -1144,15 +1202,15 @@ void TEST_realign() {
                 );
 
             TEST_EXPECT_EQUAL(DNASEQ("BctFra12"),    "ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"); // now fails as expected => seq unchanged
-            TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"),    "A--TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAACAGTATT-----G--..."); // now correctly realigns the 2 trailing X's
-            TEST_EXPECT_EQUAL(DNASEQ("TaxOcell"),    "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG-----......"); // ok (manually checked)
+            TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"),    "-A-TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAACAGTAT-T-----G-..."); // now correctly realigns the 2 trailing X's
+            TEST_EXPECT_EQUAL(DNASEQ("TaxOcell"),    "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G----......"); // ok (manually checked)
             TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"),    "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTCCTC------------------"); // now fails as expected => seq unchanged
-            TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"),    "ATGTCCAAGACGGCGTACGTCCGCCCAC--C--T--G--A-----GGCACGATGGC-C--C--GACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTCC--T--------C--......"); // performed // @@@ does not translate to 6 + 3 Xs (distribution error?)
-            TEST_EXPECT_EQUAL(DNASEQ("MucRacem"),    "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-......"); // ok (manually checked)
-            TEST_EXPECT_EQUAL(DNASEQ("MucRace2"),    "ATGGGTAAGGAG---------------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-......"); // ok (manually checked)
-            TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "ATGGGTAAAGA-G--------------AAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-......"); // fixed by rewrite (manually checked)
-            TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"),    "ATGGGTAAAGA-A--A--A--G--A--C--T--CACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATAAA-......"); // fixed by rewrite (manually checked)
-            TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATGGGTAA-A--GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATAAA-......"); // performed // @@@ but does not translate 3 Xs near start (distribution error?)
+            TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"),    "ATGTCCAAGACGGCGTACGTCCGCCCA-C--C--T--G--A----GGCACGATG-GC-C--C-GACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTC-C--T--------C-......"); // performed // @@@ does not translate to 6 + 3 Xs (distribution error?)
+            TEST_EXPECT_EQUAL(DNASEQ("MucRacem"),    "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......"); // ok (manually checked)
+            TEST_EXPECT_EQUAL(DNASEQ("MucRace2"),    "ATGGGTAAGGAG---------------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......"); // ok (manually checked)
+            TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "ATGGGTAAA-GA-G-------------AAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......"); // fixed by rewrite (manually checked)
+            TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"),    "ATGGGTAAA-GA-A--A--A--G--A--C--T-CACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATA-AA......"); // fixed by rewrite (manually checked)
+            TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATGGGT-AA-A-GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATA-AA......"); // performed // @@@ but does not translate 3 Xs near start (distribution error?)
         }
         // -----------------------------
         //      provoke some errors
@@ -1198,15 +1256,15 @@ void TEST_realign() {
             realign_check seq[] = {
                 //"XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-.." // original aa sequence
                 // { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "sdfjlksdjf" }, // templ
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG-----......" }, // original
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G----......" }, // original
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHG---..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGT---------......" }, // missing some AA at right end -> @@@ DNA gets truncated (should be appended)
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH-----..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCAC---------------......" }, // @@@ same
 
                 // { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "---------AGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G.." }, // missing some AA at left end (@@@ should work similar to AA missing at right end. fails: see below)
-                { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTTTTGACCGGTCC--A--A--GCCGCACG-T--AAACATCGGCACGATCGGTCACGTG--G--A--CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG--" }, // @@@ wrong realignment
-                { "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX-", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT---CGGTCACGTG--G--A-----CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG-----" }, // @@@ wrong realignment
-                { "XG*SNXLXRXQA-ARNHRHD-RXXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTT-TTGAC-CGGTC-CAAGCC---GCACGTAAACATCGGCACGAT---CGGTCAC--GTGGA----CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG--" }, // @@@ 'CGGTCAC--' -> 'RSX' (want: 'RXX')
-                { "XG*SXXFXDXVQAXT*TSARXRSXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGAAA-C--TTTT--GACCG-GTCCAAGCCGC-ACGTAAACATCGGCACGAT--CGGTCAC--GTGGA----CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG--" }, // @@@ check
+                { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTTTTGACCGGTC-C--A--A-GCCGCA-CG-T-AAACATCGGCACGATCGGTCACGT-G--G--A-CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G-" }, // @@@ wrong realignment
+                { "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX-", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT---CGGTCACGT-G--G--A----CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G----" }, // @@@ wrong realignment
+                { "XG*SNXLXRXQA-ARNHRHD-RXXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTT-TTGAC-CGGTC-CAAGCC---GCACGTAAACATCGGCACGAT---CGGTCA-C-GTG-GA---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G-" }, // @@@ 'CGGTCAC--' -> 'RSX' (want: 'RXX')
+                { "XG*SXXFXDXVQAXT*TSARXRSXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGA-AA-C-TTT-T-GACCG-GTCCAAGCCGC-ACGTAAACATCGGCACGA-T-CGGTCA-C-GTG-GA---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G-" }, // @@@ check
 
                 { 0, 0 }
             };
@@ -1260,7 +1318,7 @@ void TEST_realign() {
 #define ERRPREFIX_LEN 49
 
             // dna of TaxOcell:
-            // "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG-----......"
+            // "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G----......"
 
             realign_fail seq[] = {
                 //"XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-.." // original aa sequence
@@ -1273,7 +1331,7 @@ void TEST_realign() {
                 { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TTT' translates to 'F', not to 'A' at ali_pro:8 / ali_dna:17\n" },     // ok to fail
                 { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CAC' translates to 'H', not to 'R' at ali_pro:13 / ali_dna:35\n" },    // ok to fail
                 { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CGG' translates to 'R', not to 'G' at ali_pro:24 / ali_dna:61\n" },    // ok to fail: some AA missing in the middle
-                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Sync behind 'X' failed foremost with: not enough nucs left for codon of 'H' at ali_pro:38 / ali_dna:116\n" }, // ok to fail: too many AA
+                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Sync behind 'X' failed foremost with: not enough nucs left for codon of 'H' at ali_pro:38 / ali_dna:117\n" }, // ok to fail: too many AA
 
                 // failing realignments that should work:
                 { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "'ATG' translates to 'M', not to 'S' at ali_pro:4 / ali_dna:1\n" },                      // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
