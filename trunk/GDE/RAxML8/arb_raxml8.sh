@@ -3,8 +3,8 @@ set -e
 
 BASES_PER_THREAD=300
 
+# always wait on exit
 trap on_exit EXIT
-
 on_exit() {
     wait_and_exit
 }
@@ -68,6 +68,12 @@ cpu_get_cores() {
     esac
 }
 
+# this is the "thorough" protocol.
+# 1. do $NTREE searches for best ML tree
+# 2. run $BOOTSTRAP BS searches
+# 3. combine into ML tree with support values
+# 4. calculate consensus tree
+# 5. import trees into ARB
 dna_tree_thorough() {
     # try N ML searches
     $RAXML -p "$SEED" -s "$SEQFILE" -m $MODEL \
@@ -101,6 +107,10 @@ dna_tree_thorough() {
     arb_read_tree tree_raxml_bs_consensus RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS
 }
 
+# this is the fast protocol
+# 1. run fast bootstraps
+# 2. calculate consensus
+# 3. import into ARB
 dna_tree_quick() {
     # run fast bootstraps
     $RAXML -f a -m $MODEL -p "$SEED" -x "$SEED" -s "$SEQFILE" -N "$BOOTSTRAPS" -n FAST_BS
@@ -120,6 +130,9 @@ aa_tree() {
     echo
     # -m PROTGAMMALG4X
 }
+
+###### main #####
+
 
 while [ -n "$1" ]; do 
   case "$1" in
@@ -163,6 +176,15 @@ while [ -n "$1" ]; do
   esac
   shift
 done
+
+
+# set up environment 
+if [ -n "$LD_LIBRARY_PATH" ]; then
+    LD_LIBRARY_PATH="$ARBHOME/lib"
+else
+    LD_LIBRARY_PATH="$ARBHOME/lib:$LD_LIBRARY_PATH"
+fi
+export LD_LIBRARY_PATH
 
 
 # prepare data in tempdir
