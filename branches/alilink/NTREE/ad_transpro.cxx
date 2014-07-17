@@ -172,25 +172,25 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
         if (use_entries) { // use 'transl_table' and 'codon_start' fields ?
             if (spec_no_transl_info) {
                 int embl_transl_table = AWT_arb_code_nr_2_embl_transl_table(selected_ttable);
-                aw_message(GBS_global_string("%i taxa had no valid translation info (fields 'transl_table' and 'codon_start')\n"
+                GB_warning(GBS_global_string("%i taxa had no valid translation info (fields 'transl_table' and 'codon_start')\n"
                                              "Defaults (%i and %i) have been used%s.",
                                              spec_no_transl_info,
                                              embl_transl_table, selected_startpos+1,
                                              save_entries ? " and written to DB entries" : ""));
             }
             else { // all entries were present
-                aw_message("codon_start and transl_table entries were found for all translated taxa");
+                GB_warning("codon_start and transl_table entries were found for all translated taxa");
             }
         }
 
         if (no_data>0) {
-            aw_message(GBS_global_string("%i taxa had no data in '%s'", no_data, ali_source));
+            GB_warning(GBS_global_string("%i taxa had no data in '%s'", no_data, ali_source));
         }
         if ((count+no_data) == 0) {
-            aw_message("Please mark species to translate");
+            GB_warning("Please mark species to translate");
         }
         else {
-            aw_message(GBS_global_string("%i taxa converted\n  %f stops per sequence found",
+            GB_warning(GBS_global_string("%i taxa converted\n  %f stops per sequence found",
                                          count, (double)stops/(double)count));
         }
     }
