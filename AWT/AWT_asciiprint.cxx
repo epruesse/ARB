@@ -141,7 +141,8 @@ static void awt_aps_text_changed(AW_root *awr) {
     awt_aps_set_magnification_to_fit_xpage(awr);
 }
 
-static void AWT_write_file(const char *filename, const char *file) {
+static void write_file(const char *filename, const char *file) {
+    printf("Printing to ASCII file '%s'\n", filename);
     FILE *f = fopen(filename, "r");
     if (f) {
         fclose(f);
@@ -165,9 +166,9 @@ static void awt_aps_go(AW_window *aww) {
     freeset(text, GBS_replace_tabs_by_spaces(text));
 
     AWT_asciiprint_destination dest = (AWT_asciiprint_destination)awr->awar(AWAR_APRINT_PRINTTO)->read_int();
-    if (dest == AWT_APRINT_DEST_AFILE) {
+    if (dest == AWT_APRINT_DEST_FILE_ASCII) {
         char *file = awr->awar(AWAR_APRINT_FILE)->read_string();
-        AWT_write_file(file, text);
+        write_file(file, text);
         free(file);
     }
     else {
@@ -267,7 +268,7 @@ static void awt_aps_go(AW_window *aww) {
                     free(printer);
                     break;
                 }
-                case AWT_APRINT_DEST_FILE: {
+                case AWT_APRINT_DEST_FILE_PS: {
                     char *file = awr->awar(AWAR_APRINT_FILE)->read_string();
                     scall = GBS_global_string("%s >%s;rm -f %s", a2ps_call, file, tmp_file);
                     free(file);
@@ -332,16 +333,16 @@ static char *correct_extension(const char *name, const char *newExt) {
 
 static void aps_correct_filename(AW_root *aw_root) {
     int type = aw_root->awar(AWAR_APRINT_PRINTTO)->read_int();
-    if (type == AWT_APRINT_DEST_FILE || type == AWT_APRINT_DEST_AFILE) {
+    if (type == AWT_APRINT_DEST_FILE_PS || type == AWT_APRINT_DEST_FILE_ASCII) {
         AW_awar    *awar_name = aw_root->awar(AWAR_APRINT_FILE);
         const char *name      = awar_name->read_char_pntr();
         char       *new_name  = NULL;
 
-        if (type == AWT_APRINT_DEST_FILE) {
+        if (type == AWT_APRINT_DEST_FILE_PS) {
             new_name = correct_extension(name, ".ps");
         }
         else {
-            awt_assert((type == AWT_APRINT_DEST_AFILE));
+            awt_assert((type == AWT_APRINT_DEST_FILE_ASCII));
             new_name = correct_extension(name, ".txt");
         }
         if (new_name) {
@@ -378,6 +379,7 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, cons
         awr->awar_float(AWAR_APRINT_DY, 1.0);
 
         awr->awar_string(AWAR_APRINT_FILE, "print.ps")->add_callback(aps_correct_filename);
+
         awr->awar_int(AWAR_APRINT_ORIENTATION, (int)AWT_APRINT_ORIENTATION_PORTRAIT)->add_callback(awt_aps_set_magnification_to_fit_xpage);
         awr->awar_int(AWAR_APRINT_PRINTTO, int(AWT_APRINT_DEST_PRINTER))->add_callback(aps_correct_filename);
         aps_correct_filename(awr);
@@ -458,8 +460,8 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, cons
         aws->at("printto");
         aws->create_toggle_field(AWAR_APRINT_PRINTTO);
         aws->insert_toggle("Printer", "P", int(AWT_APRINT_DEST_PRINTER));
-        aws->insert_toggle("File (Postscript)", "F", int(AWT_APRINT_DEST_FILE));
-        aws->insert_toggle("File (ASCII)", "A", int(AWT_APRINT_DEST_AFILE));
+        aws->insert_toggle("File (Postscript)", "F", int(AWT_APRINT_DEST_FILE_PS));
+        aws->insert_toggle("File (ASCII)", "A", int(AWT_APRINT_DEST_FILE_ASCII));
         aws->insert_toggle("Preview", "V", int(AWT_APRINT_DEST_PREVIEW));
         aws->update_toggle_field();
 
