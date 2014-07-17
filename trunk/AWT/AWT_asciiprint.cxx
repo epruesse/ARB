@@ -142,7 +142,7 @@ static void awt_aps_text_changed(AW_root *awr) {
 }
 
 static void write_file(const char *filename, const char *file) {
-    printf("Printing to ASCII file '%s'\n", filename);
+    fprintf(stderr, "Printing to ASCII file '%s'\n", filename);
     FILE *f = fopen(filename, "r");
     if (f) {
         fclose(f);
@@ -159,6 +159,12 @@ static void write_file(const char *filename, const char *file) {
     fclose(f);
 }
 
+static char *printFile(AW_root *awr) {
+    const char *home = GB_getenv("HOME");
+    const char *name = awr->awar(AWAR_APRINT_FILE)->read_char_pntr();
+    return GBS_global_string_copy("%s/%s", home, name);
+}
+
 static void awt_aps_go(AW_window *aww) {
     AW_root *awr  = aww->get_root();
     char    *text = awr->awar(AWAR_APRINT_TEXT)->read_string();
@@ -167,7 +173,7 @@ static void awt_aps_go(AW_window *aww) {
 
     AWT_asciiprint_destination dest = (AWT_asciiprint_destination)awr->awar(AWAR_APRINT_PRINTTO)->read_int();
     if (dest == AWT_APRINT_DEST_FILE_ASCII) {
-        char *file = awr->awar(AWAR_APRINT_FILE)->read_string();
+        char *file = printFile(awr);
         write_file(file, text);
         free(file);
     }
@@ -269,7 +275,8 @@ static void awt_aps_go(AW_window *aww) {
                     break;
                 }
                 case AWT_APRINT_DEST_FILE_PS: {
-                    char *file = awr->awar(AWAR_APRINT_FILE)->read_string();
+                    char *file = printFile(awr);
+                    fprintf(stderr, "Printing to PS file '%s'\n", file);
                     scall = GBS_global_string("%s >%s;rm -f %s", a2ps_call, file, tmp_file);
                     free(file);
                     break;
