@@ -1232,6 +1232,14 @@ void TEST_realign() {
                 { "MucRacem", "..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
                 { "MucRace2", "MGKE-----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
 
+                { "MucRace3", "MGKXX----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
+                { "AbdGlauc", "MGKXXXXXXXXHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
+
+                { "StrCoel9", "MSKTAYVRXXXXXX-GTMXXXDHGKTTLTAAITKVXX--X..",
+                  CHANGED,    "MSKTAYVRPXXXXX-GTMXXXDHGKTTLTAAITKVXX--X.." }, // @@@ wrong X-distribution -> wrong retranslation (P instead of X @ 9)
+                { "CddAlbic", "MXXXE----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..",
+                  CHANGED,    "MGXXE----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.." }, // @@@ wrong X-distribution -> wrong retranslation (G instead of X @ 2)
+
                 { NULL, NULL, SAME, NULL }
             };
 
