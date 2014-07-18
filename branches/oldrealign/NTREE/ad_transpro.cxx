@@ -738,7 +738,7 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
                         int explicit_table_known = allowed_code.explicit_table();
 
                         if (explicit_table_known >= 0) { // we know the exact code -> write codon_start and transl_table
-                            const int codon_start  = 1; // by definition (after realignment)
+                            const int codon_start  = 0; // by definition (after realignment)
                             error = AWT_saveTranslationInfo(gb_species, explicit_table_known, codon_start);
                         }
                         else { // we dont know the exact code -> delete codon_start and transl_table
@@ -980,7 +980,7 @@ void TEST_realign() {
             TEST_EXPECT_NO_ERROR(AWT_getTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
 
             TEST_EXPECT_EQUAL(arb_transl_table, 14);
-            TEST_EXPECT_EQUAL(codon_start, 1);
+            TEST_EXPECT_EQUAL(codon_start, 0);
 
             char *org_dna = GB_read_string(gb_TaxOcell_dna);
 
@@ -1051,7 +1051,7 @@ void TEST_realign() {
             TEST_EXPECT_NO_ERROR(AWT_getTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
 
             TEST_EXPECT_EQUAL(arb_transl_table, 14);
-            TEST_EXPECT_EQUAL(codon_start, 1);
+            TEST_EXPECT_EQUAL(codon_start, 0);
 
             for (int s = 0; seq[s].seq; ++s) {
                 TEST_ANNOTATE(GBS_global_string("s=%i", s));
