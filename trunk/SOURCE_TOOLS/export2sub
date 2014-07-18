@@ -21,6 +21,7 @@ export DEBIAN
 export REDHAT
 
 export CC CXX
+export USE_GCC_46_OR_HIGHER
 
 export A_CC  CC_INCLUDES
 export A_CXX CXX_INCLUDES

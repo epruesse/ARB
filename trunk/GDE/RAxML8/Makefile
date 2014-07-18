@@ -7,7 +7,7 @@
 VERSIONS:=SSE3.PTHREADS PTHREADS 
 
 # AVX needs gcc >= 4.6.0 
-ifeq ($(USE_GCC_46_OR_HIGHER), "yes")
+ifeq ("$(USE_GCC_46_OR_HIGHER)", "yes")
   VERSIONS+=AVX.PTHREADS
 endif
 
