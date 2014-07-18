@@ -1176,6 +1176,7 @@ static arb_handlers test_handlers = {
 };
 
 #define DNASEQ(name) GB_read_char_pntr(GBT_read_sequence(GBT_find_species(gb_main, name), "ali_dna"))
+#define PROSEQ(name) GB_read_char_pntr(GBT_read_sequence(GBT_find_species(gb_main, name), "ali_pro"))
 
 void TEST_realign() {
     arb_handlers *old_handlers = active_arb_handlers;
@@ -1212,20 +1213,84 @@ void TEST_realign() {
             TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"),    "ATGGGTAAA-GA-A--A--A--G--A--C--T-CACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATA-AA......"); // fixed by rewrite (manually checked)
             TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATGGGT-AA-A-GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATA-AA......"); // performed // @@@ but does not translate 3 Xs near start (distribution error?)
         }
+
+        // test translation of sucessful realignments (see previous section)
+        {
+            GB_transaction ta(gb_main);
+
+            enum TransResult { SAME, CHANGED };
+            struct translate_check {
+                const char *species_name;
+                const char *original_prot;
+                TransResult retranslation;
+                const char *changed_prot; // if changed by translation (NULL for SAME)
+            };
+
+            translate_check trans[] = {
+                { "BctFra12", "MAKEK-FERTK-PHVNIGT-IGHVDHGKTTLTAAITTVLX..",   // original
+                  CHANGED,    "MAKEK-FERTK-PHVNIGT-IGHVDHGKTTLTAAITTVL..." }, // changed retranslation (ok because terminal X does not match any DNA)
+
+                { "CytLyti6", "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQQYX-X.",
+                  CHANGED,    "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQQY..X." }, // @@@ unwanted - caused by wrong realignment
+
+                { "TaxOcell", "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..",
+                  CHANGED,    "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGA...X" }, // @@@ unwanted - caused by wrong realignment
+
+                { "StrRamo3", "MSKTAYVRTKPHLNIGTMGHVDHGKTTLTAAITKVXXX-X..",
+                  CHANGED,    "MSKTAYVRTKPHLNIGTMGHVDHGKTTLTAAITKV...L..." }, // @@@ unwanted - caused by wrong realignment
+
+                { "MucRacem", "..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..",
+                  CHANGED,    "..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGI..X" }, // @@@ unwanted - caused by wrong realignment
+
+                { "MucRace2", "MGKE-----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..",
+                  CHANGED,    "MGKE-----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGI..X" }, // @@@ unwanted - caused by wrong realignment
+
+                { NULL, NULL, SAME, NULL }
+            };
+
+            // check original protein sequences
+            for (int t = 0; trans[t].species_name; ++t) {
+                const translate_check& T = trans[t];
+                TEST_ANNOTATE(T.species_name);
+                TEST_EXPECT_EQUAL(PROSEQ(T.species_name), T.original_prot);
+            }
+
+            msgs  = "";
+            error = arb_r2a(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
+            TEST_EXPECT_NO_ERROR(error);
+            TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n10 taxa converted\n  1.000000 stops per sequence found\n");
+
+            // check re-translated protein sequences
+            for (int t = 0; trans[t].species_name; ++t) {
+                const translate_check& T = trans[t];
+                TEST_ANNOTATE(T.species_name);
+                switch (T.retranslation) {
+                    case SAME:
+                        TEST_EXPECT_NULL(T.changed_prot);
+                        TEST_EXPECT_EQUAL(PROSEQ(T.species_name), T.original_prot);
+                        break;
+                    case CHANGED:
+                        TEST_REJECT_NULL(T.changed_prot);
+                        TEST_EXPECT_DIFFERENT(T.original_prot, T.changed_prot);
+                        TEST_EXPECT_EQUAL(PROSEQ(T.species_name), T.changed_prot);
+                        break;
+                }
+            }
+
+            ta.close("dont commit");
+        }
+
         // -----------------------------
         //      provoke some errors
 
         GBDATA *gb_TaxOcell;
+        // unmark all but gb_TaxOcell
         {
             GB_transaction ta(gb_main);
 
             gb_TaxOcell = GBT_find_species(gb_main, "TaxOcell");
             TEST_REJECT_NULL(gb_TaxOcell);
-
-            // unmark all but gb_TaxOcell
-            for (GBDATA *gbd = GBT_first_marked_species(gb_main); gbd; gbd = GBT_next_marked_species(gbd)) {
-                if (gbd != gb_TaxOcell) GB_write_flag(gbd, 0);
-            }
+            GB_write_flag(gb_TaxOcell, 1);
         }
 
         // wrong alignment type
