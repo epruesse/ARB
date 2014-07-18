@@ -250,4 +250,3 @@ esac
 
 # FIXME: cleanup temp dir
 
-wait_and_exit
