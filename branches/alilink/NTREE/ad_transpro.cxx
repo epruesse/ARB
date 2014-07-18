@@ -1227,23 +1227,10 @@ void TEST_realign() {
             };
 
             translate_check trans[] = {
-                { "BctFra12", "MAKEK-FERTK-PHVNIGT-IGHVDHGKTTLTAAITTVLX..",   // original
-                  CHANGED,    "MAKEK-FERTK-PHVNIGT-IGHVDHGKTTLTAAITTVL..." }, // changed retranslation (ok because terminal X does not match any DNA)
-
-                { "CytLyti6", "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQQYX-X.",
-                  CHANGED,    "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQQY..X." }, // @@@ unwanted - caused by wrong realignment
-
-                { "TaxOcell", "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..",
-                  CHANGED,    "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGA...X" }, // @@@ unwanted - caused by wrong realignment
-
-                { "StrRamo3", "MSKTAYVRTKPHLNIGTMGHVDHGKTTLTAAITKVXXX-X..",
-                  CHANGED,    "MSKTAYVRTKPHLNIGTMGHVDHGKTTLTAAITKV...L..." }, // @@@ unwanted - caused by wrong realignment
-
-                { "MucRacem", "..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..",
-                  CHANGED,    "..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGI..X" }, // @@@ unwanted - caused by wrong realignment
-
-                { "MucRace2", "MGKE-----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..",
-                  CHANGED,    "MGKE-----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGI..X" }, // @@@ unwanted - caused by wrong realignment
+                { "CytLyti6", "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQQYX-X.", SAME, NULL },
+                { "TaxOcell", "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", SAME, NULL },
+                { "MucRacem", "..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
+                { "MucRace2", "MGKE-----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
 
                 { NULL, NULL, SAME, NULL }
             };
@@ -1258,7 +1245,7 @@ void TEST_realign() {
             msgs  = "";
             error = arb_r2a(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
             TEST_EXPECT_NO_ERROR(error);
-            TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n10 taxa converted\n  1.000000 stops per sequence found\n");
+            TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n10 taxa converted\n  0.900000 stops per sequence found\n");
 
             // check re-translated protein sequences
             for (int t = 0; trans[t].species_name; ++t) {
@@ -1290,6 +1277,8 @@ void TEST_realign() {
 
             gb_TaxOcell = GBT_find_species(gb_main, "TaxOcell");
             TEST_REJECT_NULL(gb_TaxOcell);
+
+            GBT_mark_all(gb_main, 0);
             GB_write_flag(gb_TaxOcell, 1);
         }
 
