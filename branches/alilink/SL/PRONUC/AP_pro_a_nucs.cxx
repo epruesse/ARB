@@ -14,6 +14,7 @@
 #include <arbdbt.h>
 #include <ad_cb.h>
 #include <arb_str.h>
+#include <algorithm>
 
 #define pn_assert(cond) arb_assert(cond)
 
@@ -382,20 +383,15 @@ static void user_code_nr_changed_cb(GBDATA *gb_awar) {
 
 #define CACHED_TRANSLATORS 4
 
-#if defined(DEBUG)
-// #define DUMP_TRANSLATOR_ALLOC
-#endif // DEBUG
-
-
 AWT_translator *AWT_get_translator(int code_nr) {
-    static AWT_translator *cached[CACHED_TRANSLATORS];
+    static SmartPtr<AWT_translator> cached[CACHED_TRANSLATORS];
 
-    if (!cached[0] || cached[0]->CodeNr() != code_nr) { // most recent != requested
-        AWT_translator *translator = 0;
-        int             i;
+    if (cached[0].isNull() || cached[0]->CodeNr() != code_nr) { // most recent != requested
+        SmartPtr<AWT_translator> translator;
 
+        int i;
         for (i = 1; i<CACHED_TRANSLATORS; i++) {
-            if (cached[i] && cached[i]->CodeNr() == code_nr) {
+            if (cached[i].isSet() && cached[i]->CodeNr() == code_nr) {
                 // found existing translator
                 translator = cached[i];
                 cached[i]  = 0;
@@ -403,38 +399,20 @@ AWT_translator *AWT_get_translator(int code_nr) {
             }
         }
 
-        if (!translator) {
+        if (translator.isNull()) {
             translator = new AWT_translator(code_nr);
-
-#if defined(DUMP_TRANSLATOR_ALLOC)
-            static int allocCount = 0;
-            allocCount++;
-            printf("Alloc translator for code_nr=%i (allocCount=%i)\n", translator->CodeNr(), allocCount);
-#endif // DUMP_TRANSLATOR_ALLOC
-
         }
 
         // insert new or found translator at front and shift existing to higher indices:
-        for (i = 0; i<CACHED_TRANSLATORS && translator; i++) {
-            AWT_translator *move = cached[i];
-            cached[i]  = translator;
-            translator = move;
+        for (i = 0; i<CACHED_TRANSLATORS && translator.isSet(); i++) {
+            std::swap(cached[i], translator);
         }
 
-        // delete oldest translator,  if no empty array position was found:
-        if (translator) {
-#if defined(DUMP_TRANSLATOR_ALLOC)
-            static int freeCount = 0;
-            freeCount++;
-            printf("Free translator for code_nr=%i (freeCount=%i)\n", translator->CodeNr(), freeCount);
-#endif // DUMP_TRANSLATOR_ALLOC
-
-            delete translator;
-        }
+        // deletes oldest translator,  if no empty array position was found:
     }
 
     pn_assert(cached[0]->CodeNr() == code_nr);
-    return cached[0];
+    return &*cached[0];
 }
 
 int AWT_default_protein_type(GBDATA *gb_main) {
