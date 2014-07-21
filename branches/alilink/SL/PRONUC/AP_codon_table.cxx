@@ -476,13 +476,8 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
                         memcpy(dna_copy, dna, 3);
                         dna_copy[3] = 0;
 
-#if defined(DEBUG) && 0
-                        printf("Check if '%s' is a codon for '%c'\n", dna_copy, protein);
-#endif
-
-                        int all_are_codons = 1;
-                        AWT_allowedCode allowed_code_copy;
-                        allowed_code_copy = allowed_code;
+                        bool            all_are_codons    = true;
+                        AWT_allowedCode allowed_code_copy = allowed_code;
 
                         for (int i=0; decoded_iupac[i]; i++) {
                             dna_copy[first_error_pos] = decoded_iupac[i];
@@ -501,9 +496,6 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
                             allowed_code_left.forbidAll();
                             fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate", dna_copy);
                         }
-#if defined(DEBUG) && 0
-                        printf("result      = %i\n", all_are_codons);
-#endif
                     }
                 }
             }
