@@ -431,8 +431,7 @@ public:
                 AWT_allowedCode  left_code;
                 const char      *why_fail;
 
-                translates = AWT_is_codon('X', dna+off, with_code, left_code, &why_fail); // @@@ check is most likely wrong
-                nt_assert(!translates); // @@@ it never succeeds (try to translate 'NNN'?)
+                translates = AWT_is_codon('X', dna+off, with_code, left_code, &why_fail);
                 // if (translates) with_code = left_code; // @@@ code-exclusion ignored here (maybe not even happens..)
             }
         }
@@ -566,7 +565,6 @@ class RealignAttempt {
                             break;
                         }
                         case 3:
-                            UNCOVERED(); // @@@ need test for this case (if it can happen @ all; see also assert in translates_to_Xs) 
                             xtarget[0] = compressed_dna[off];
                             xtarget[1] = compressed_dna[off+1];
                             xtarget[2] = compressed_dna[off+2];
@@ -1203,7 +1201,6 @@ void TEST_realign() {
             TEST_EXPECT_EQUAL(msgs,
                               "Automatic re-align failed for 'BctFra12'\nReason: not enough nucs for X's at sequence end at ali_pro:40 / ali_dna:109\n" // new correct report (got no nucs for 1 X)
                               "Automatic re-align failed for 'StrRamo3'\nReason: not enough nucs for X's at sequence end at ali_pro:36 / ali_dna:106\n" // new correct report (got 3 nucs for 4 Xs)
-                              "Automatic re-align failed for 'MucRace2'\nReason: Sync behind 'X' failed foremost with: not enough nucs left for codon of 'K' at ali_pro:40 / ali_dna:113\n"
                 );
 
             TEST_EXPECT_EQUAL(DNASEQ("BctFra12"),    "ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"); // now fails as expected => seq unchanged
@@ -1212,7 +1209,7 @@ void TEST_realign() {
             TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"),    "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTCCTC------------------"); // now fails as expected => seq unchanged
             TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"),    "ATGTCCAAGACGGCGTACGTCCGC-C--C--A--C-CT-G-A---GGCACGATG-G--C-CC-GACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTC-C--T--------C-......");
             TEST_EXPECT_EQUAL(DNASEQ("MucRacem"),    "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......");
-            TEST_EXPECT_EQUAL(DNASEQ("MucRace2"),    ".ATGGGTAAGGAGAAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGT-ATNNN-ATAA-A------------."); // @@@ fails
+            TEST_EXPECT_EQUAL(DNASEQ("MucRace2"),    "ATGGGTAAGGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTAT-NN-NATAAA------");
             TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "ATGGGTAAA-G-A-G------------AAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......");
             TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"),    "ATGGGTAAA-G--A--A--A--A--G--A-CT-CACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATA-AA......");
             TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATGGG-TA-AA-GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATA-AA......");
@@ -1233,10 +1230,7 @@ void TEST_realign() {
                 { "CytLyti6", "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQQYX-X.", SAME, NULL },
                 { "TaxOcell", "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", SAME, NULL },
                 { "MucRacem", "..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
-
-                { "MucRace2", "MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGXXXK--",
-                  CHANGED,    "MGKEKTHVNVVVIGHVDSGKSTTTGHLIYKCGGXXXXX---" }, // @@@ unwanted - caused by wrong realignment
-
+                { "MucRace2", "MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGXXXK--", SAME, NULL },
                 { "MucRace3", "MGKXX----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
                 { "AbdGlauc", "MGKXXXXXXXXHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
                 { "StrCoel9", "MSKTAYVRXXXXXX-GTMXXXDHGKTTLTAAITKVXX--X..", SAME, NULL },

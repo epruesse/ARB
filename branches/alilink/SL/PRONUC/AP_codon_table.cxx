@@ -499,6 +499,17 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
                     }
                 }
             }
+
+            if (protein == 'X') { // invert result for 'X'
+                is_codon = !is_codon;
+                if (fail_reason) {
+                    fail_reason = NULL;
+                }
+                else {
+                    pn_assert(!too_short); // otherwise array access in next line is undefined
+                    fail_reason = GBS_global_string("'%c%c%c' does not translate to 'X'", dna[0], dna[1], dna[2]);
+                }
+            }
         }
         else if (definite_translation[codon_nr]!='?') {
             int ok = definite_translation[codon_nr]==protein;
