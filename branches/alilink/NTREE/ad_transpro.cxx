@@ -431,8 +431,8 @@ public:
                 AWT_allowedCode  left_code;
                 const char      *why_fail;
 
-                translates = AWT_is_codon('X', dna+off, with_code, left_code, &why_fail);
-
+                translates = AWT_is_codon('X', dna+off, with_code, left_code, &why_fail); // @@@ check is most likely wrong
+                nt_assert(!translates); // @@@ it never succeeds (try to translate 'NNN'?)
                 // if (translates) with_code = left_code; // @@@ code-exclusion ignored here (maybe not even happens..)
             }
         }
@@ -516,7 +516,7 @@ class RealignAttempt {
                         xtarget += 3;
                     }
 
-                    switch (dist[x]) {
+                    switch (best[x]) {
                         case 1:
                             xtarget[0] = '-';
                             xtarget[1] = compressed_dna[off];
@@ -527,7 +527,7 @@ class RealignAttempt {
                             enum { UNDECIDED, SPREAD, LEFT, RIGHT } mode = UNDECIDED;
 
                             bool gap_right   = isGap(xtarget[3]);
-                            int  follow_dist = x<best.size()-1 ? dist[x+1] : 0;
+                            int  follow_dist = x<best.size()-1 ? best[x+1] : 0;
 
                             bool has_gaps_left  = xtarget>xtarget_start && isGap(xtarget[-1]);
                             bool has_gaps_right = gap_right || follow_dist == 1;
@@ -566,6 +566,7 @@ class RealignAttempt {
                             break;
                         }
                         case 3:
+                            UNCOVERED(); // @@@ need test for this case (if it can happen @ all; see also assert in translates_to_Xs) 
                             xtarget[0] = compressed_dna[off];
                             xtarget[1] = compressed_dna[off+1];
                             xtarget[2] = compressed_dna[off+2];
@@ -577,7 +578,7 @@ class RealignAttempt {
                     }
 
                     xtarget += 3;
-                    off     += dist[x];
+                    off     += best[x];
                 }
             }
         }
@@ -1204,15 +1205,15 @@ void TEST_realign() {
                 );
 
             TEST_EXPECT_EQUAL(DNASEQ("BctFra12"),    "ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"); // now fails as expected => seq unchanged
-            TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"),    "-A-TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAACAGTAT-T-----G-..."); // now correctly realigns the 2 trailing X's
-            TEST_EXPECT_EQUAL(DNASEQ("TaxOcell"),    "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G----......"); // ok (manually checked)
+            TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"),    "-A-TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAACAGTAT-T-----G-...");
+            TEST_EXPECT_EQUAL(DNASEQ("TaxOcell"),    "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G----......");
             TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"),    "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTCCTC------------------"); // now fails as expected => seq unchanged
-            TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"),    "ATGTCCAAGACGGCGTACGTCCGCCCA-C--C--T--G--A----GGCACGATG-GC-C--C-GACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTC-C--T--------C-......"); // performed // @@@ does not translate to 6 + 3 Xs (distribution error?)
-            TEST_EXPECT_EQUAL(DNASEQ("MucRacem"),    "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......"); // ok (manually checked)
-            TEST_EXPECT_EQUAL(DNASEQ("MucRace2"),    "ATGGGTAAGGAG---------------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......"); // ok (manually checked)
-            TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "ATGGGTAAA-GA-G-------------AAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......"); // fixed by rewrite (manually checked)
-            TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"),    "ATGGGTAAA-GA-A--A--A--G--A--C--T-CACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATA-AA......"); // fixed by rewrite (manually checked)
-            TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATGGGT-AA-A-GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATA-AA......"); // performed // @@@ but does not translate 3 Xs near start (distribution error?)
+            TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"),    "ATGTCCAAGACGGCGTACGTCCGC-C--C--A--C-CT-G-A---GGCACGATG-G--C-CC-GACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTC-C--T--------C-......");
+            TEST_EXPECT_EQUAL(DNASEQ("MucRacem"),    "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......");
+            TEST_EXPECT_EQUAL(DNASEQ("MucRace2"),    "ATGGGTAAGGAG---------------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......");
+            TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "ATGGGTAAA-G-A-G------------AAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......");
+            TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"),    "ATGGGTAAA-G--A--A--A--A--G--A-CT-CACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATA-AA......");
+            TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATGGG-TA-AA-GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATA-AA......");
         }
 
         // test translation of sucessful realignments (see previous section)
@@ -1231,14 +1232,10 @@ void TEST_realign() {
                 { "TaxOcell", "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", SAME, NULL },
                 { "MucRacem", "..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
                 { "MucRace2", "MGKE-----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
-
                 { "MucRace3", "MGKXX----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
                 { "AbdGlauc", "MGKXXXXXXXXHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
-
-                { "StrCoel9", "MSKTAYVRXXXXXX-GTMXXXDHGKTTLTAAITKVXX--X..",
-                  CHANGED,    "MSKTAYVRPXXXXX-GTMXXXDHGKTTLTAAITKVXX--X.." }, // @@@ wrong X-distribution -> wrong retranslation (P instead of X @ 9)
-                { "CddAlbic", "MXXXE----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..",
-                  CHANGED,    "MGXXE----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.." }, // @@@ wrong X-distribution -> wrong retranslation (G instead of X @ 2)
+                { "StrCoel9", "MSKTAYVRXXXXXX-GTMXXXDHGKTTLTAAITKVXX--X..", SAME, NULL },
+                { "CddAlbic", "MXXXE----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
 
                 { NULL, NULL, SAME, NULL }
             };
@@ -1325,13 +1322,10 @@ void TEST_realign() {
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH-----..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCAC---------------......", SAME, NULL }, // @@@ same
 
                 // { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "---------AGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G..", SAME, NULL }, // missing some AA at left end (@@@ should work similar to AA missing at right end. fails: see below)
-                { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTTTTGACCGGTC-C--A--A-GCCGCA-CG-T-AAACATCGGCACGATCGGTCACGT-G--G--A-CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G-", CHANGED,
-                  "XG*SNFWPVXXXAAXXNHRHDRSRXXXPRQNDSDRCYHHGAX" }, // @@@ wrong realignment
-                { "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX-", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT---CGGTCACGT-G--G--A----CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G----", CHANGED,
-                  "XG*SNFWPVQAARNHRHD-RSRXXX-PRQNDSDRCYHHGAX-" }, // @@@ wrong realignment
-                { "XG*SNXLXRXQA-ARNHRHD-RXXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTT-TTGAC-CGGTC-CAAGCC---GCACGTAAACATCGGCACGAT---CGGTCA-C-GTG-GA---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G-", CHANGED,
-                  "XG*SNXLXRXQA-ARNHRHD-RSXVX-PRQNDSDRCYHHGAX" }, // @@@ 'CGGTCAC--' -> 'RSX' (want: 'RXX')
-                { "XG*SXXFXDXVQAXT*TSARXRSXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGA-AA-C-TTT-T-GACCG-GTCCAAGCCGC-ACGTAAACATCGGCACGA-T-CGGTCA-C-GTG-GA---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G-", SAME, NULL }, // @@@ check
+                { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTTTTG-AC-CG-GT-CC-AA-GCCGC-AC-GT-AAACATCGGCACGATCG-GT-CA-CG-TG-GA-CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G-", SAME, NULL },
+                { "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX-", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT---CG-GT-CA-CG-TG-G-A---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G----", SAME, NULL },
+                { "XG*SNXLXRXQA-ARNHRHD-RXXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTT-TTGAC-CGGTC-CAAGCC---GCACGTAAACATCGGCACGAT---CGGTC-AC-GTG-GA---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G-", SAME, NULL },
+                { "XG*SXXFXDXVQAXT*TSARXRSXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGA-A-AC-TTT-T-GACCG-GTCCAAGCCGC-ACGTAAACATCGGCACGA-T-CGGTCA-C-GTG-GA---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G-", SAME, NULL },
 
                 { 0, 0, SAME, NULL }
             };
@@ -1577,6 +1571,29 @@ void TEST_distributor() {
     TEST_EXPECTATION(stateOf(aboveMin, "2121", true));
     TEST_EXPECTATION(stateOf(aboveMin, "2211", true));
     TEST_EXPECTATION(stateOf(aboveMin, "3111", false));
+
+    Distributor check(6, 8);
+    TEST_EXPECTATION(stateOf(check, "111113", true));
+    TEST_EXPECTATION(stateOf(check, "111122", true));
+    TEST_EXPECTATION(stateOf(check, "111131", true));
+    TEST_EXPECTATION(stateOf(check, "111212", true));
+    TEST_EXPECTATION(stateOf(check, "111221", true));
+    TEST_EXPECTATION(stateOf(check, "111311", true));
+    TEST_EXPECTATION(stateOf(check, "112112", true));
+    TEST_EXPECTATION(stateOf(check, "112121", true));
+    TEST_EXPECTATION(stateOf(check, "112211", true));
+    TEST_EXPECTATION(stateOf(check, "113111", true));
+    TEST_EXPECTATION(stateOf(check, "121112", true));
+    TEST_EXPECTATION(stateOf(check, "121121", true));
+    TEST_EXPECTATION(stateOf(check, "121211", true));
+    TEST_EXPECTATION(stateOf(check, "122111", true));
+    TEST_EXPECTATION(stateOf(check, "131111", true));
+    TEST_EXPECTATION(stateOf(check, "211112", true));
+    TEST_EXPECTATION(stateOf(check, "211121", true));
+    TEST_EXPECTATION(stateOf(check, "211211", true));
+    TEST_EXPECTATION(stateOf(check, "212111", true));
+    TEST_EXPECTATION(stateOf(check, "221111", true));
+    TEST_EXPECTATION(stateOf(check, "311111", false));
 }
 
 #endif // UNIT_TESTS
