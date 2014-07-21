@@ -394,7 +394,7 @@ AWT_translator *AWT_get_translator(int code_nr) {
             if (cached[i].isSet() && cached[i]->CodeNr() == code_nr) {
                 // found existing translator
                 translator = cached[i];
-                cached[i]  = 0;
+                cached[i].SetNull();
                 break;
             }
         }
