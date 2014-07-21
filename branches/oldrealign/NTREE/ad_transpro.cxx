@@ -898,6 +898,7 @@ void TEST_realign() {
     GBDATA   *gb_main = GB_open("TEST_realign.arb", "rw");
 
     arb_suppress_progress here;
+    enum TransResult { SAME, CHANGED };
 
     {
         GB_ERROR error;
@@ -931,7 +932,6 @@ void TEST_realign() {
         {
             GB_transaction ta(gb_main);
 
-            enum TransResult { SAME, CHANGED };
             struct translate_check {
                 const char *species_name;
                 const char *original_prot;
@@ -1029,16 +1029,19 @@ void TEST_realign() {
             struct realign_check {
                 const char *seq;
                 const char *result;
+                TransResult retranslation;
+                const char *changed_prot; // if changed by translation (NULL for SAME)
             };
 
             realign_check seq[] = {
                 //"XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-.." // original aa sequence
                 // { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "sdfjlksdjf" }, // templ
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G.." }, // original (@@@ why is the final 'G' so far to the right end?)
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHG---..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGT---------......" }, // missing some AA at right end -> @@@ DNA gets truncated (should be appended)
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH-----..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCAC---------------......" }, // same
-                // { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "---------AGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G.." }, // missing some AA at left end (@@@ should work similar to AA missing at right end)
-                { 0, 0 }
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G..", CHANGED,  // original (@@@ why is the final 'G' so far to the right end?)
+                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGA...X" },
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHG---..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGT---------......", SAME, NULL }, // missing some AA at right end -> @@@ DNA gets truncated (should be appended)
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH-----..", "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCAC---------------......", SAME, NULL }, // same
+                // { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "---------AGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G..", SAME, NULL }, // missing some AA at left end (@@@ should work similar to AA missing at right end)
+                { 0, 0, SAME, NULL }
             };
 
             int arb_transl_table, codon_start;
@@ -1051,13 +1054,30 @@ void TEST_realign() {
 
             for (int s = 0; seq[s].seq; ++s) {
                 TEST_ANNOTATE(GBS_global_string("s=%i", s));
-                TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, seq[s].seq));
-                msgs  = "";
+                realign_check& S = seq[s];
+                TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, S.seq));
+                msgs             = "";
                 TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
-                error = realign(gb_main, "ali_pro", "ali_dna", neededLength);
+                error            = realign(gb_main, "ali_pro", "ali_dna", neededLength);
                 TEST_EXPECT_NO_ERROR(error);
                 TEST_EXPECT_EQUAL(msgs, "");
-                TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_dna), seq[s].result);
+                TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_dna), S.result);
+
+                // test retranslation:
+                msgs  = "";
+                error = arb_r2a(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
+                TEST_EXPECT_NO_ERROR(error);
+                TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n1 taxa converted\n  1.000000 stops per sequence found\n");
+                switch (S.retranslation) {
+                    case SAME:
+                        TEST_EXPECT_NULL(S.changed_prot);
+                        TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_amino), S.seq);
+                        break;
+                    case CHANGED:
+                        TEST_REJECT_NULL(S.changed_prot);
+                        TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_amino), S.changed_prot);
+                        break;
+                }
 
                 // restore (possibly) changed DB entries
                 TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
