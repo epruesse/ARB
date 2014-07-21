@@ -580,10 +580,15 @@ public:
                         allowed_code = allowed_code_left;
                     }
 
+                    if (!d[0] || !d[1] || !d[2]) {
+                        fail_reason = "ran out of sequence";
+                        break;
+                    }
+
                     // copy one codon:
-                    p[0] = d[0];
-                    p[1] = d[1];
-                    p[2] = d[2];
+                    p[0] = d[0]; nt_assert(d[0]);
+                    p[1] = d[1]; nt_assert(d[1]);
+                    p[2] = d[2]; nt_assert(d[2]);
 
                     p += 3;
                     d += 3;
@@ -591,7 +596,7 @@ public:
             }
 
             if (!failure()) {
-                int len = p-buffer;
+                int len  = p-buffer;
                 int rest = ali_len-len;
 
                 memset(p, '.', rest);
@@ -912,9 +917,11 @@ void TEST_realign() {
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs,
                               "Automatic re-align failed for 'StrCoel9'\nReason: Not a codon ('TGG' does never translate to 'T' (1)) at ali_pro:17 / ali_dna:76\n"
+                              "Automatic re-align failed for 'MucRace2'\nReason: ran out of sequence at ali_pro:40 / ali_dna:111\n"
                               "Automatic re-align failed for 'MucRace3'\nReason: Not a codon ('CTC' does not translate to 'T' (for any of the leftover trans-tables: 0)) at ali_pro:11 / ali_dna:28\n"
                               "Automatic re-align failed for 'AbdGlauc'\nReason: Not a codon ('GTT' does never translate to 'N' (1)) at ali_pro:14 / ali_dna:53\n"
-                              "Automatic re-align failed for 'CddAlbic'\nReason: Not a codon ('AAC' does never translate to 'K' (1)) at ali_pro:10 / ali_dna:15\n");
+                              "Automatic re-align failed for 'CddAlbic'\nReason: Not a codon ('AAC' does never translate to 'K' (1)) at ali_pro:10 / ali_dna:15\n"
+                );
 
             TEST_EXPECT_EQUAL(DNASEQ("BctFra12"), "ATGGCTAAAGAGAAA---TTTGAACGTACCAAA---CCGCACGTAAACATTGGTACA---ATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG.........");
             TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"), "A..TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAACAGTAT......TG....");
@@ -922,7 +929,7 @@ void TEST_realign() {
             TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"), "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTC.........CTC.........");
             TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"), "------------------------------------ATGTCCAAGACGGCGTACGTCCGCCCACCTGAGGCACGATGGCCCGACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTCCTC"); // @@@ fails (see above)
             TEST_EXPECT_EQUAL(DNASEQ("MucRacem"), "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA......AA.");
-            TEST_EXPECT_EQUAL(DNASEQ("MucRace2"), "ATGGGTAAGGAG---------------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA......AA.");
+            TEST_EXPECT_EQUAL(DNASEQ("MucRace2"), ".ATGGGTAAGGAGAAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGT-ATNNN-ATAA-A------------."); // @@@ fails
             TEST_EXPECT_EQUAL(DNASEQ("MucRace3"), "-----------ATGGGTAAAGAGAAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-----------"); // @@@ fails
             TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"), "----------------------ATGGGTAAAGAAAAGACTCACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATAAA"); // @@@ fails
             TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"), "ATGGGTAAAGAAAAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATAAA----------------------"); // @@@ fails
@@ -955,8 +962,8 @@ void TEST_realign() {
                 { "MucRacem", "..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..",
                   CHANGED,    "..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGI..X" }, // @@@ unwanted - caused by wrong realignment
 
-                { "MucRace2", "MGKE-----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..",
-                  CHANGED,    "MGKE-----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGI..X" }, // @@@ unwanted - caused by wrong realignment
+                { "MucRace2", "MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGXXXK--",
+                  CHANGED,    "MGKEKTHVNVVVIGHVDSGKSTTTGHLIYKCGGXXXXX---" }, // @@@ unwanted - caused by wrong realignment
 
                 { NULL, NULL, SAME, NULL }
             };
