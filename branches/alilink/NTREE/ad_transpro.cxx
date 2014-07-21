@@ -663,7 +663,6 @@ public:
 
                     if (min_dna>max_dna) {
                         fail_reason     = "not enough nucs for X's at sequence end";
-                        // @@@ set correct fail position!
                         protein_fail_at = x_start_prot;
                         dna_fail_at     = compressed_dna;
                     }
@@ -694,9 +693,8 @@ public:
                                 rest_failed = distribute_xdata(x_dna, x_count, x_start, attemptRest.get_remaining_code());
                                 if (rest_failed) {
                                     // calculate dna/protein failure position (use start position of succeeded attempt)
-                                    // UNCOVERED(); // @@@ covered, but not used in resulting error message
-                                    rest_protein_fail_at = x_start_prot; // @@@ =start of Xs
-                                    rest_dna_fail_at     = dna_rest;     // @@@ =start of sync (behind Xs)
+                                    rest_protein_fail_at = x_start_prot; // start of Xs
+                                    rest_dna_fail_at     = dna_rest;     // start of sync (behind Xs)
                                 }
                                 else {
                                     allowed_code = attemptRest.get_remaining_code();
@@ -744,15 +742,15 @@ public:
                         fail_reason = "internal error: no distribution attempted";
                         nt_assert(min_dna>0);
                         for (size_t x_dna = max_dna; x_dna>=min_dna && fail_reason; --x_dna) {     // prefer high amounts of dna
-                            fail_reason = distribute_xdata(x_dna, x_count, x_start, allowed_code); // @@@ pass/modify usable codes
-                            // @@@ set correct fail position!
+                            fail_reason = distribute_xdata(x_dna, x_count, x_start, allowed_code); // @@@ pass/modify usable codes?
                         }
-                        // @@@ clear fail position if !fail_reason
 
                         if (fail_reason) {
-                            // @@@ set correct fail position! (do not set aligned_protein or compressed_dna)
-                            aligned_protein = x_start_prot+1; // report error at start of X's
-                            // compressed_dna should be correct
+                            protein_fail_at = x_start_prot+1; // report error at start of X's
+                            dna_fail_at     = compressed_dna;
+                        }
+                        else {
+                            protein_fail_at = dna_fail_at = NULL;
                         }
                     }
 
