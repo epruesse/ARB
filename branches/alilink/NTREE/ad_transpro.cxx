@@ -709,7 +709,8 @@ public:
                                 nt_assert(rest_protein_fail_at && rest_dna_fail_at); // failure w/o position
 
                                 // track failure with highest fail position:
-                                bool isFarmost = !foremost_rest_failure || foremost_protein_fail_at<rest_protein_fail_at;
+                                bool isFarmost = !foremost_rest_failure || foremost_protein_fail_at<rest_protein_fail_at ||
+                                    (foremost_protein_fail_at == rest_protein_fail_at && foremost_dna_fail_at<rest_dna_fail_at);
                                 if (isFarmost) {
                                     freedup(foremost_rest_failure, rest_failed);
                                     foremost_protein_fail_at = rest_protein_fail_at;
@@ -1408,11 +1409,11 @@ void TEST_realign() {
                 // { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "sdfjlksdjf" }, // templ
 
                 // wanted realign failures:
-                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TCA' does never translate to 'P' at ali_pro:25 / ali_dna:64\n" },      // ok to fail: 5 Xs impossible
+                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'GGA' translates to 'G', not to 'P' at ali_pro:25 / ali_dna:70\n" },    // ok to fail: 5 Xs impossible
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Alignment 'ali_dna' is too short (increase its length to 252)\n" }, // ok to fail: wrong alignment length
-                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TCA' does never translate to 'P' at ali_pro:25 / ali_dna:64\n" },      // ok to fail
-                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TTT' translates to 'F', not to 'A' at ali_pro:8 / ali_dna:17\n" },     // ok to fail
-                { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CAC' translates to 'H', not to 'R' at ali_pro:13 / ali_dna:35\n" },    // ok to fail
+                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'GGA' translates to 'G', not to 'P' at ali_pro:25 / ali_dna:70\n" },    // ok to fail
+                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TGA' does never translate to 'A' at ali_pro:8 / ali_dna:19\n" },       // ok to fail
+                { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'ACG' translates to 'T', not to 'R' at ali_pro:13 / ali_dna:36\n" },    // ok to fail
                 { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CGG' translates to 'R', not to 'G' at ali_pro:24 / ali_dna:61\n" },    // ok to fail: some AA missing in the middle
                 { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Sync behind 'X' failed foremost with: not enough nucs left for codon of 'H' at ali_pro:38 / ali_dna:117\n" }, // ok to fail: too many AA
 
