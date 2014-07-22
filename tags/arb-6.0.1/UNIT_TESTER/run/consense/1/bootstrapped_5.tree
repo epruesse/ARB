@@ -1,0 +1,67 @@
+[<NONE>
+Wed Mar  7 19:10:42 2012: tree_bootstrapped_5 saved to /home/ralf/ARB-bilbo/ARB.fix-trunk/UNIT_TESTER/run/consense/1/bootstrapped_5.tree
+]
+(
+  (
+    (
+      (
+        (
+          (
+            (
+              (
+                StaAureu:0.00949,
+                (
+                  StaHomin:0.00399,
+                  StaHaemo:0.00196
+                ):0.00407
+              ):0.04629,
+              BclGlob2:0.04495
+            ):0.02142,
+            (
+              (
+                (
+                  (
+                    (
+                      LcbPont2:0.01875,
+                      LcbReu40:0.02081
+                    ):0.03616,
+                    LcbA1923:0.05843
+                  ):0.00487,
+                  (
+                    LcbFruct:0.02463,
+                    LcbSanfr:0.03587
+                  ):0.02457
+                ):0.01801,
+                CrnAlter:0.05107
+              ):0.00154,
+              (
+                StcSaliv:0.05741,
+                LccL2279:0.05385
+              ):0.02235
+            ):0.00746
+          ):0.06806,
+          CloProte:0.03569
+        ):0.00707,
+        CloTyrob:0.04660
+      ):0.00497,
+      (
+        (
+          CloSardi:0.01825,
+          CloColla:0.02481
+        ):0.01088,
+        CloTetan:0.02758
+      ):0.00528
+    ):0.00284,
+    (
+      CloPerfr:0.03046,
+      (
+        CloParap:0.01881,
+        (
+          CloCorin:0.01677,
+          CloBotul:0.01658
+        ):0.00795
+      ):0.00400
+    ):0.00687
+  ):0.01366,
+  CloCellu:0.01366
+);
