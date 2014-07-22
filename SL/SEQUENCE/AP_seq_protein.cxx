@@ -137,8 +137,7 @@ static void update_min_mutations(int code_nr, const AWT_distance_meter *distance
 // #define SHOW_SEQ
 #endif // DEBUG
 
-void AP_sequence_protein::set(const char *isequence)
-{
+void AP_sequence_protein::set(const char *isequence) {
     AWT_translator *translator = AWT_get_user_translator(get_aliview()->get_gb_main());
     update_min_mutations(translator->CodeNr(), translator->getDistanceMeter());
 
@@ -165,9 +164,10 @@ void AP_sequence_protein::set(const char *isequence)
             fputc(c, stdout);
 #endif // SHOW_SEQ
 
-            if (c >= 'A' && c <= 'Z')       p = prot2AP_PROTEIN[c-'A'];
-            else if (c == '-' || c == '.')  p = APP_GAP;
-            else if (c == '*')              p = APP_STAR;
+            if (c >= 'A' && c <= 'Z') p = prot2AP_PROTEIN[c-'A'];
+            else if (c == '-')        p = APP_GAP;
+            else if (c == '.')        p = APP_X;
+            else if (c == '*')        p = APP_STAR;
 
             if (p == APP_ILLEGAL) {
                 GB_warning(GBS_global_string("Illegal sequence character '%c' replaced by gap", c));
