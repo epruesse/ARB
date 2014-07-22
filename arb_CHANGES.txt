@@ -1,6 +1,6 @@
 ARB change log
 
-Fixes for arb-6.0.1
+Fixes for arb-6.0.1 (22 Jul 2014):
 
  - arb_parsimony
    - skip unwanted automatic branchlength recalculations (e.g. by unfolding a group)
@@ -11,7 +11,7 @@ Fixes for arb-6.0.1
    - print to file now always saves in user home
  - raxml (import tree with bootstrap values)
 
-Major changes for arb-6.0:
+Major changes for arb-6.0 (4 Jun 2014):
 
  - merge databases allows to
    - merge from an existing database into the database loaded in ARB_NT
