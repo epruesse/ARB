@@ -42,8 +42,8 @@ enum AWT_asciiprint_paper_size {
 
 enum AWT_asciiprint_destination {
     AWT_APRINT_DEST_PRINTER,
-    AWT_APRINT_DEST_FILE,
-    AWT_APRINT_DEST_AFILE,
+    AWT_APRINT_DEST_FILE_PS,
+    AWT_APRINT_DEST_FILE_ASCII,
     AWT_APRINT_DEST_PREVIEW
 };
 
