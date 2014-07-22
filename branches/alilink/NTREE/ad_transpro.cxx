@@ -595,7 +595,9 @@ public:
           fail_reason(NULL),
           protein_fail_at(NULL),
           dna_fail_at(NULL)
-    {}
+    {
+        nt_assert(aligned_protein[0]);
+    }
 
     const AWT_allowedCode& get_remaining_code() const { return allowed_code; }
     const char *failure() const { return fail_reason; }
@@ -741,8 +743,10 @@ public:
                     else {
                         fail_reason = "internal error: no distribution attempted";
                         nt_assert(min_dna>0);
-                        for (size_t x_dna = max_dna; x_dna>=min_dna && fail_reason; --x_dna) {     // prefer high amounts of dna
+                        size_t x_dna;
+                        for (x_dna = max_dna; x_dna>=min_dna; --x_dna) {     // prefer high amounts of dna
                             fail_reason = distribute_xdata(x_dna, x_count, x_start, allowed_code); // @@@ pass/modify usable codes?
+                            if (!fail_reason) break; // found distribution -> done
                         }
 
                         if (fail_reason) {
@@ -750,7 +754,8 @@ public:
                             dna_fail_at     = compressed_dna;
                         }
                         else {
-                            protein_fail_at = dna_fail_at = NULL;
+                            protein_fail_at  = dna_fail_at = NULL;
+                            compressed_dna  += x_dna;
                         }
                     }
 
@@ -800,11 +805,11 @@ public:
 
         if (!failure() && !complete) {
             // append leftover dna-data (data w/o corresponding aa):
-            int inserted = target_dna-target_dna_start;
-            int rest     = target_len-inserted;
+            int inserted        = target_dna-target_dna_start;
+            int target_rest_len = target_len-inserted;
 
-            memset(target_dna, '.', rest);
-            target_dna += rest;
+            memset(target_dna, '.', target_rest_len);
+            target_dna += target_rest_len;
             target_dna[0] = 0;
         }
 
