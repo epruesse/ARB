@@ -41,17 +41,17 @@ Installation from Pre-Compiled Binaries:
 ----------------------------------------
 
   1) Download "arb_install.sh" and the arb-*.tgz matching your distribution
-     from http://download.arb-home.de/release/arb-6.0/
+     from http://download.arb-home.de/release/latest/
 
      Files:
-     arb-6.0.centos5-amd64.tgz
-     arb-6.0.centos6-amd64.tgz
-     arb-6.0.osx.tgz
-     arb-6.0.ubuntu1004-amd64.tgz
-     arb-6.0.ubuntu1204-amd64.tgz
-     arb-6.0.ubuntu1304-amd64.tgz
-     32bit/arb-6.0.ubuntu1004-32bit.tgz
-     32bit/arb-6.0.ubuntu1204-32bit.tgz
+     arb-*.centos5-amd64.tgz
+     arb-*.centos6-amd64.tgz
+     arb-*.osx.tgz
+     arb-*.ubuntu1004-amd64.tgz
+     arb-*.ubuntu1204-amd64.tgz
+     arb-*.ubuntu1304-amd64.tgz
+
+     (where '*' stands for the most recent version number, e.g. '6.0.1')
 
      If your distribution is neither Ubuntu nor Centos, try Centos. 
      If your distributions version is not among the above, try the next older
@@ -72,7 +72,6 @@ Installation from Pre-Compiled Binaries:
          'arb_install.sh'                // install script
          'arb_README.txt'                // this file
          'arb-*.tgz'                     // your chosen ARB version
-
 
       and type
 
@@ -109,7 +108,7 @@ Installation from Pre-Compiled Binaries:
 
       ii)  Unpack ARB into this folder. E.g.
 
-         tar -C ~/arb-6.0 -xzf ~/Downloads/arb-6.0.ubuntu1304-amd64.tgz
+         tar -C ~/arb-6.0 -xzf ~/Downloads/arb-6.0.1.ubuntu1304-amd64.tgz
 
       iii) Install library dependencies. 
  
