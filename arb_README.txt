@@ -44,14 +44,14 @@ Installation from Pre-Compiled Binaries:
      from http://download.arb-home.de/release/latest/
 
      Files:
-     arb-VNUM.centos5-amd64.tgz
-     arb-VNUM.centos6-amd64.tgz
-     arb-VNUM.osx.tgz
-     arb-VNUM.ubuntu1004-amd64.tgz
-     arb-VNUM.ubuntu1204-amd64.tgz
-     arb-VNUM.ubuntu1304-amd64.tgz
+     arb-*.centos5-amd64.tgz
+     arb-*.centos6-amd64.tgz
+     arb-*.osx.tgz
+     arb-*.ubuntu1004-amd64.tgz
+     arb-*.ubuntu1204-amd64.tgz
+     arb-*.ubuntu1304-amd64.tgz
 
-     (where VNUM stands for the most recent version number, e.g. 'arb-6.0.1')
+     (where '*' stands for the most recent version number, e.g. '6.0.1')
 
      If your distribution is neither Ubuntu nor Centos, try Centos. 
      If your distributions version is not among the above, try the next older
@@ -72,7 +72,6 @@ Installation from Pre-Compiled Binaries:
          'arb_install.sh'                // install script
          'arb_README.txt'                // this file
          'arb-*.tgz'                     // your chosen ARB version
-
 
       and type
 
