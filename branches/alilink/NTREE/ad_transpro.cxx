@@ -806,7 +806,23 @@ public:
         if (!failure() && !complete) {
             while (target_dna>target_dna_start && isGap(target_dna[-1])) --target_dna; // remove terminal gaps
 
-            // append leftover dna-data (data w/o corresponding aa) // @@@ missing
+            // append leftover dna-data (data w/o corresponding aa)
+            {
+                size_t compressed_rest_len = compressed_len - (compressed_dna-compressed_dna_start);
+                int    inserted            = target_dna-target_dna_start;
+                size_t target_rest_len     = target_len-inserted;
+
+                if (compressed_rest_len<=target_rest_len) {
+                    memcpy(target_dna, compressed_dna, compressed_rest_len);
+                    target_dna     += compressed_rest_len;
+                    compressed_dna += compressed_rest_len;
+                }
+                else {
+                    fail_reason = GBS_global_string("too much trailing DNA (%zu nucs, but only %zu columns left)",
+                                                    compressed_rest_len, target_rest_len);
+                }
+            }
+
             // fill rest of sequence with dots
             if (!failure()) {
                 int inserted        = target_dna-target_dna_start;
@@ -1330,10 +1346,10 @@ void TEST_realign() {
                 // { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "sdfjlksdjf" }, // templ
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G..........", CHANGED, // original
                   "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - only changes gaptype at EOS
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHG---..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGT...............", CHANGED, // missing some AA at right end -> @@@ DNA gets truncated (should be appended)
-                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHG....." }, // ok - only changes gaptype at EOS
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH-----..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCAC.....................", CHANGED, // @@@ same
-                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH......." }, // ok - only changes gaptype at EOS
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHG---..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG...........", CHANGED, // missing some AA at right end (extra DNA gets no longer truncated!)
+                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - adds translation of extra DNA (DNA should never be modified by realigner!)
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH-----..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG...........", CHANGED,
+                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - adds translation of extra DNA
 
                 // { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "---------AGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G..", SAME, NULL }, // missing some AA at left end (@@@ should work similar to AA missing at right end. fails: see below)
                 { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTTTTG-AC-CG-GT-CC-AA-GCCGC-AC-GT-AAACATCGGCACGATCG-GT-CA-CG-TG-GA-CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", SAME, NULL },
@@ -1430,6 +1446,7 @@ void TEST_realign() {
                 { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'ACG' translates to 'T', not to 'R' at ali_pro:13 / ali_dna:36\n" },    // ok to fail
                 { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CGG' translates to 'R', not to 'G' at ali_pro:24 / ali_dna:61\n" },    // ok to fail: some AA missing in the middle
                 { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Sync behind 'X' failed foremost with: not enough nucs left for codon of 'H' at ali_pro:38 / ali_dna:117\n" }, // ok to fail: too many AA
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY-----H..", "Sync behind 'X' failed foremost with: too much trailing DNA (10 nucs, but only 6 columns left) at ali_pro:43 / ali_dna:106\n" }, // ok to fail: not enough space to place extra nucs behind 'H'
 
                 // failing realignments that should work:
                 { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "'ATG' translates to 'M', not to 'S' at ali_pro:4 / ali_dna:1\n" },                      // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
