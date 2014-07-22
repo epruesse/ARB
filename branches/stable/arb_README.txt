@@ -41,15 +41,17 @@ Installation from Pre-Compiled Binaries:
 ----------------------------------------
 
   1) Download "arb_install.sh" and the arb-*.tgz matching your distribution
-     from http://download.arb-home.de/release/arb-6.0.1/
+     from http://download.arb-home.de/release/latest/
 
      Files:
-     arb-6.0.1.centos5-amd64.tgz
-     arb-6.0.1.centos6-amd64.tgz
-     arb-6.0.1.osx.tgz
-     arb-6.0.1.ubuntu1004-amd64.tgz
-     arb-6.0.1.ubuntu1204-amd64.tgz
-     arb-6.0.1.ubuntu1304-amd64.tgz
+     arb-VNUM.centos5-amd64.tgz
+     arb-VNUM.centos6-amd64.tgz
+     arb-VNUM.osx.tgz
+     arb-VNUM.ubuntu1004-amd64.tgz
+     arb-VNUM.ubuntu1204-amd64.tgz
+     arb-VNUM.ubuntu1304-amd64.tgz
+
+     (where VNUM stands for the most recent version number, e.g. 'arb-6.0.1')
 
      If your distribution is neither Ubuntu nor Centos, try Centos. 
      If your distributions version is not among the above, try the next older
