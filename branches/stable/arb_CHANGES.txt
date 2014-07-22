@@ -3,12 +3,12 @@ ARB change log
 Fixes for arb-6.0.1
 
  - arb_parsimony
-   - skip unwanted automatic branchlength recalculation (e.g. by unfolding a group)
+   - skip unwanted automatic branchlength recalculations (e.g. by unfolding a group)
    - corrected branchlength calculation for "Add marked partial species"
    - dots were treated as gaps for protein sequences (now treated as 'X'; analog to DNA treating gaps as 'N'). thx to Yan Shi for detecting that problem!
  - print
    - preview failed (showed empty postscript file)
-   - to file now always saves in user home
+   - print to file now always saves in user home
  - raxml (import tree with bootstrap values)
 
 Major changes for arb-6.0:
