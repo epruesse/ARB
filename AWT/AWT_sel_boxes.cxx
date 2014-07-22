@@ -234,7 +234,7 @@ void awt_edit_arbtcpdat_cb(AW_window *aww, GBDATA *gb_main) {
     free(filename);
 }
 
-#if defined(ARB_MOTIF)
+#if !defined(ARB_GTK)
 static char *readable_pt_servername(int index, int maxlength) {
     char *fullname = GBS_ptserver_id_to_choice(index, 0);
     if (!fullname) {
@@ -275,7 +275,7 @@ static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, c
     aw_popup->auto_space(10, 10);
 
     aw_popup->at_newline();
-    aw_popup->callback((AW_CB0)AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
+    aw_popup->callback((AW_CB0)AW_POPDOWN);
     AW_selection_list *sellist = aw_popup->create_selection_list(varname, PT_SERVERNAME_SELLIST_WIDTH, 20, true);
 
     aw_popup->at_newline();
@@ -289,7 +289,7 @@ static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, c
 
     return aw_popup;
 }
-#endif // ARB_MOTIF
+#endif // ARB_GTK
 
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
     if (popup) {
@@ -300,7 +300,7 @@ void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname
         aws->button_length(PT_SERVERNAME_LENGTH+1);
         aws->update_option_menu();
         aws->button_length(old_button_length);
-#else // ARB_MOTIF
+#else
 
         AW_root *aw_root              = aws->get_root();
         char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
@@ -1171,7 +1171,7 @@ public:
                 }
                 if (old_pos != new_pos) {
                     GBT_names_move(listContent, old_pos, new_pos);
-                    subset_list->init_from_array(listContent, subset_list->get_default_display(), subset_list->get_default_value());
+                    subset_list->init_from_array(listContent, subset_list->get_default_value());
                 }
             }
         }

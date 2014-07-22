@@ -1,3 +1,4 @@
+#include "GDE_def.h"
 #include "GDE_proto.h"
 
 #include <aw_msg.hxx>
@@ -29,6 +30,8 @@ static int Arbdb_get_curelem(NA_Alignment *dataset)
     }
     return curelem;
 }
+
+extern int Default_PROColor_LKUP[], Default_NAColor_LKUP[];
 
 static void set_constant_fields(NA_Sequence *this_elem) {
     this_elem->attr            = DEFAULT_X_ATTR;

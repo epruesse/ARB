@@ -15,9 +15,10 @@
 
 */
 
-static bool CheckType(char *seq, int len) {
+static int CheckType(char *seq, int len) {
     /*   CheckType:  Check base composition to see if the sequence
-     *   appears to be an amino acid sequence.
+     *   appears to be an amino acid sequence.  If it is, pass back
+     *   TRUE, else FALSE.
      */
     int j, count1 = 0, count2 = 0;
 
@@ -29,7 +30,7 @@ static bool CheckType(char *seq, int len) {
                 count2++;
         }
 
-    return ((count2 > count1/4) ? true : false);
+    return ((count2 > count1/4) ? TRUE : FALSE);
 }
 
 // ARB
@@ -69,9 +70,9 @@ GB_ERROR ReadGen(char *filename, NA_Alignment *dataset) {
         error = GB_IO_error("reading", filename);
     }
     else {
-        bool    done         = false;
+        int     done         = FALSE;
         size_t  len          = 0;
-        bool    IS_REALLY_AA = false;
+        int     IS_REALLY_AA = FALSE;
         char    in_line[GBUFSIZ], c;
         char   *buffer       = 0, *gencomments = NULL, fields[8][GBUFSIZ];
         size_t  buflen       = 0;
@@ -152,9 +153,9 @@ GB_ERROR ReadGen(char *filename, NA_Alignment *dataset) {
 
             else if (Find(in_line, "ORIGIN"))
             {
-                done = false;
+                done = FALSE;
                 len = 0;
-                for (; !done && fgets(in_line, GBUFSIZ, file) != 0;)
+                for (; done == FALSE && fgets(in_line, GBUFSIZ, file) != 0;)
                 {
                     if (in_line[0] != '/')
                     {
@@ -190,7 +191,7 @@ GB_ERROR ReadGen(char *filename, NA_Alignment *dataset) {
                                                           element[curelem]));
                         for (size_t j=0; j<len; j++) buffer[j] = '\0';
                         len = 0;
-                        done = true;
+                        done = TRUE;
                         dataset->element[curelem].comments = gencomments;
                         dataset->element[curelem].comments_len= genclen - 1;
                         dataset->element[curelem].comments_maxlen = genclen;
@@ -202,10 +203,13 @@ GB_ERROR ReadGen(char *filename, NA_Alignment *dataset) {
                 /* Test if sequence should be converted by the translation table
                  * If it looks like a protein...
                  */
-                if (dataset->element[curelem].rmatrix && !IS_REALLY_AA) {
-                    IS_REALLY_AA = CheckType((char*)dataset->element[curelem]. sequence, dataset->element[curelem].seqlen);
+                if (dataset->element[curelem].rmatrix &&
+                    IS_REALLY_AA == FALSE)
+                {
+                    IS_REALLY_AA = CheckType((char*)dataset->element[curelem].
+                                             sequence, dataset->element[curelem].seqlen);
 
-                    if (!IS_REALLY_AA)
+                    if (IS_REALLY_AA == FALSE)
                         Ascii2NA((char*)dataset->element[curelem].sequence,
                                  dataset->element[curelem].seqlen,
                                  dataset->element[curelem].rmatrix);

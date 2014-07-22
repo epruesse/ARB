@@ -132,7 +132,6 @@ void TEST_MultiFileReader() {
         TEST_EXPECT_EQUAL(reader.get_error(), "While reading 'general/nosuch.input': No such file or directory");
     }
 }
-TEST_PUBLISH(TEST_MultiFileReader);
 
 #endif // UNIT_TESTS
 

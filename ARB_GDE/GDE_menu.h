@@ -43,12 +43,14 @@ enum TypeInfo {
 };
 
 struct GfileFormat {
-    bool      save;             // whether file should be saved
+    int       save;             // how should file be saved
     int       format;           // what format is each field
     char     *symbol;           // internal symbol table mapping
     char     *name;             // file name
     TypeInfo  typeinfo;
 };
+
+class AW_window;
 
 struct GmenuItem {
     int           numargs;        // number of agruments to cmnd
@@ -76,6 +78,8 @@ struct Gmenu {
     char       meta;            // Meta character for menu
     AW_active  active_mask;     // expert/novice
 };
+
+typedef unsigned char uchar;
 
 extern struct gde_database_access {
     GDE_get_sequences_cb  get_sequences;

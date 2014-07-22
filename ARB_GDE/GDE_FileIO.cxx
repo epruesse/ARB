@@ -3,7 +3,8 @@
 #include <aw_msg.hxx>
 #include <algorithm>
 
-static void Regroup(NA_Alignment *alignment) {
+void Regroup(NA_Alignment *alignment)
+{
     size_t j;
     size_t group;
     int last;
@@ -145,6 +146,12 @@ static void ReadNA_Flat(char *filename, char *dataset) {
     for (j=0; j<data->numelements; j++)
         data->maxlen = std::max(data->maxlen, data->element[j].seqlen +
                                 data->element[j].offset);
+
+    for (j=0; j<data->numelements; j++)
+        if (data->element[j].seqlen==0)
+            data->element[j].protect =
+                PROT_BASE_CHANGES + PROT_GREY_SPACE+
+                PROT_WHITE_SPACE + PROT_TRANSLATION;
 
     NormalizeOffset(data);
     Regroup(data);
@@ -427,13 +434,20 @@ void InitNASeq(NA_Sequence *seq, int type) {
     seq->comments_len = 0;
     seq->comments_maxlen = 0;
     seq->description[0] = '\0';
+    seq->mask = NULL;
     seq->seqlen = 0;
     seq->seqmaxlen = 0;
+    seq->protect = PROT_WHITE_SPACE + PROT_TRANSLATION;
+#ifdef HGL
+    seq->attr = 0;
+#else
     seq->attr = IS_5_TO_3 + IS_PRIMARY;
+#endif
     seq->elementtype = type;
     seq->groupid = 0;
     seq->groupb = NULL;
     seq->groupf = NULL;
+    seq->cmask = NULL;
 
     switch (type)
     {

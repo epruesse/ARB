@@ -139,8 +139,8 @@ sub advice_derived_from_Noncopyable($$$) {
  LINE: while (defined($line=<FILE>)) {
     $line_count++;
     if ($line_count==$linenr) {
-      if ($line =~ /(class|struct)\s+($uq_classname|$classname)(.*)Noncopyable/) {
-        my $prefix = $3;
+      if ($line =~ /(class|struct)\s+$uq_classname(.*)Noncopyable/) {
+        my $prefix = $2;
         if (not $prefix =~ /\/\//) { # if we have a comment, assume it mentions that the class is derived from a Noncopyable
           if (not $prefix =~ /virtual/) {
             print $file.':'.$linenr.': inheritance from Noncopyable should be virtual'."\n";

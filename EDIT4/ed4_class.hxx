@@ -777,7 +777,7 @@ public:
             fputs("scrollbars not in sync with scrolled_rect:\n", stderr);
 #if defined(ARB_GTK)
 #define POSTYPE "%zu"
-#else // ARB_MOTIF
+#else
 #define POSTYPE "%i"
 #endif
             fprintf(stderr, "    aww->slider_pos_vertical  =" POSTYPE " scrolled_rect->top_dim() =%f\n", aww->slider_pos_vertical,   scrolled_rect.top_dim());

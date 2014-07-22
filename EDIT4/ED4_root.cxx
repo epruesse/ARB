@@ -1594,10 +1594,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->create_menu("Properties", "P", AWM_ALL);
 
-#ifdef ARB_MOTIF
-    awmm->insert_menu_topic("props_frame", "Frame Settings ", "F", 0, AWM_ALL, AW_preset_window);
-#endif
-
+    awmm->insert_menu_topic("props_frame",     "Frame Settings ",       "F", 0,                  AWM_ALL, AW_preset_window);
     awmm->insert_menu_topic("props_options",   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, ED4_create_level_1_options_window);
     awmm->insert_menu_topic("props_consensus", "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, ED4_create_consensus_definition_window);
     awmm->sep______________();
@@ -1668,18 +1665,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->callback(ED4_quit_editor);
     awmm->help_text("quit.hlp");
 
-    if (clone) {
-        awmm->create_button("CLOSE", "#close.xpm");
-#if defined(ARB_GTK)
-        awmm->set_close_action("CLOSE");
-#endif
-    }
-    else {
-        awmm->create_button("QUIT", "#quit.xpm");
-#if defined(ARB_GTK)
-        awmm->set_close_action("QUIT");
-#endif
-    }
+    if (clone) awmm->create_button("CLOSE", "#close.xpm");
+    else       awmm->create_button("QUIT", "#quit.xpm");
 
     awmm->at("help");
     awmm->callback(AW_help_entry_pressed);
@@ -1908,8 +1895,6 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 #if defined(DEBUG)
     AWT_check_action_ids(awmm->get_root(), "");
 #endif
-
-    announce_useraction_in(awmm);
 
     return (ED4_R_OK);
 }

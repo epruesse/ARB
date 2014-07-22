@@ -1570,7 +1570,6 @@ void TEST_copy_rename_delete_tree_order() {
 
     GB_close(gb_main);
 }
-TEST_PUBLISH(TEST_copy_rename_delete_tree_order);
 
 void TEST_tree_remove_leafs() {
     GB_shell  shell;
@@ -1703,7 +1702,6 @@ void TEST_tree_remove_leafs() {
 
     GB_close(gb_main);
 }
-TEST_PUBLISH(TEST_tree_remove_leafs);
 
 
 #endif // UNIT_TESTS

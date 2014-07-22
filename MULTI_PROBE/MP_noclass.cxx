@@ -822,18 +822,14 @@ int MP_init_local_com_struct()
 }
 
 const char *MP_probe_pt_look_for_server() {
-    // DRY vs  ../TOOLS/arb_probe.cxx@AP_probe_pt_look_for_server
-    // DRY vs  ../PROBE_DESIGN/probe_design.cxx@PD_probe_pt_look_for_server
     const char *server_tag = GBS_ptserver_tag(mp_gl_awars.ptserver);
     GB_ERROR    error      = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
 
-    const char *result = NULL;
-    if (!error) {
-        result = GBS_read_arb_tcp(server_tag);
-        if (!result) error = GB_await_error();
+    if (error) {
+        aw_message(error);
+        return 0;
     }
-    if (error) aw_message(error);
-    return result;
+    return GBS_read_arb_tcp(server_tag);
 }
 
 // --------------------------------------------------------------------------------

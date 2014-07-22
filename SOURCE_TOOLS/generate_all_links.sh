@@ -172,7 +172,6 @@ symlink_file ../TEMPLATES/cxxforward.h INCLUDE/cxxforward.h &&
 symlink_file ../TEMPLATES/downcast.h INCLUDE/downcast.h &&
 symlink_file ../TEMPLATES/dupstr.h INCLUDE/dupstr.h &&
 symlink_file ../TEMPLATES/gccver.h INCLUDE/gccver.h &&
-symlink_file ../TEMPLATES/Keeper.h INCLUDE/Keeper.h &&
 symlink_file ../TEMPLATES/malloc.h INCLUDE/malloc.h &&
 symlink_file ../TEMPLATES/mode_text.h INCLUDE/mode_text.h &&
 symlink_file ../TEMPLATES/output.h INCLUDE/output.h &&

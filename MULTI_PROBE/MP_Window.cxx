@@ -58,7 +58,7 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
         result_window->create_input_field(MP_AWAR_RESULTPROBESCOMMENT);
 
         result_window->at("box");
-        result_window->callback(MP_result_chosen); // @@@ used as SELLIST_CLICK_CB (see #559)
+        result_window->callback(MP_result_chosen);
         result_probes_list = result_window->create_selection_list(MP_AWAR_RESULTPROBES, true);
         result_probes_list->set_file_suffix("mpr");
         result_probes_list->insert_default("", "");
@@ -289,6 +289,9 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
 }
 
 void MP_Window::build_pt_server_list() {
+    int     i;
+    char    *choice;
+
 #if defined(WARN_TODO)
 #warning why option_menu ? better use selection list ( awt_create_selection_list_on_pt_servers )
 #endif
@@ -297,23 +300,12 @@ void MP_Window::build_pt_server_list() {
     aws->callback(MP_cache_sonden);
     aws->create_option_menu(MP_AWAR_PTSERVER, true);
 
-    for (int i=0; ; i++) {
-        char *choice = GBS_ptserver_id_to_choice(i, 1);
-        if (choice) {
-            aws->insert_option(choice, "", i);
-            delete choice;
-            choice = NULL;
-        }
-        else {
-            if (GB_have_error()) {
-                aws->insert_option("<error>", "", i);
-                GB_clear_error();
-            }
-            else {
-                break;
-            }
-        }
+    for (i=0; ; i++) {
+        choice = GBS_ptserver_id_to_choice(i, 1);
+        if (! choice) break;
 
+        aws->insert_option(choice, "", i);
+        delete choice;
     }
 
     aws->update_option_menu();
@@ -394,7 +386,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     aws->button_length(7);
     aws->at("Selectedprobes");
-    aws->callback(MP_selected_chosen); // @@@ used as SELLIST_CLICK_CB (see #559)
+    aws->callback(MP_selected_chosen);
     selected_list = aws->create_selection_list(MP_AWAR_SELECTEDPROBES, max_seq_col, max_seq_hgt, true);
     const StorableSelectionList *storable_selected_list = new StorableSelectionList(TypedSelectionList("prb", selected_list, "probes", "selected_probes"), mp_list2file, mp_file2list);
 

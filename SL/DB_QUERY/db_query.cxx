@@ -33,7 +33,6 @@
 #include <awt_sel_boxes.hxx>
 #include <rootAsWin.h>
 #include <ad_cb.h>
-#include <Keeper.h>
 
 using namespace std;
 using namespace QUERY;
@@ -42,10 +41,6 @@ using namespace QUERY;
 #define MAX_SHOWN_DATA_SIZE 500
 
 #define AWAR_COLORIZE "tmp/dbquery_all/colorize"
-
-static void free_hit_description(long info) {
-    free(reinterpret_cast<char*>(info));
-}
 
 inline void SET_QUERIED(GBDATA *gb_species, DbQuery *query, const char *hitInfo, size_t hitInfoLen = 0) {
     dbq_assert(hitInfo);
@@ -69,15 +64,17 @@ inline void SET_QUERIED(GBDATA *gb_species, DbQuery *query, const char *hitInfo,
         info = strdup(hitInfo);
     }
 
-    GBS_write_hash(query->hit_description, name, reinterpret_cast<long>(info)); // overwrite hit info (also deallocates) 
+    long  toFree = GBS_write_hash(query->hit_description, name, reinterpret_cast<long>(info));
+    if (toFree) free(reinterpret_cast<char*>(toFree)); // free old value (from hash)
     free(name);
 }
 
 inline void CLEAR_QUERIED(GBDATA *gb_species, DbQuery *query) {
     GB_clear_user_flag(gb_species, query->select_bit);
 
-    char *name = query->selector.generate_item_id(query->gb_main, gb_species);
-    GBS_write_hash(query->hit_description, name, 0); // delete hit info (also deallocates)
+    char *name   = query->selector.generate_item_id(query->gb_main, gb_species);
+    long  toFree = GBS_write_hash(query->hit_description, name, 0); // delete hit info
+    if (toFree) free(reinterpret_cast<char*>(toFree));
     free(name);
 }
 
@@ -241,8 +238,7 @@ static void first_searchkey_changed_cb(AW_root *, DbQuery *query) {
     QUERY_RESULT_ORDER order[MAX_CRITERIA];
     split_sort_mask(query->sort_mask, order);
 
-    QUERY_RESULT_ORDER usedOrder = find_display_determining_sort_order(order);
-    if (usedOrder != QUERY_SORT_BY_HIT_DESCRIPTION && usedOrder != QUERY_SORT_NONE) { // do we display values?
+    if (find_display_determining_sort_order(order) != QUERY_SORT_BY_HIT_DESCRIPTION) { // do we display values?
         DbQuery_update_list(query);
     }
 }
@@ -286,23 +282,14 @@ static void result_sort_order_changed_cb(AW_root *aw_root, DbQuery *query) {
     DbQuery_update_list(query);
 }
 
-struct hits_sort_params : virtual Noncopyable {
-    DbQuery            *query;
-    char               *first_key;
+struct hits_sort_params {
+    DbQuery                *query;
+    char                   *first_key;
     QUERY_RESULT_ORDER  order[MAX_CRITERIA];
-
-    hits_sort_params(DbQuery *q, const char *fk)
-        : query(q),
-          first_key(strdup(fk))
-    {}
-
-    ~hits_sort_params() {
-        free(first_key);
-    }
 };
 
 static int compare_hits(const void *cl_item1, const void *cl_item2, void *cl_param) {
-    const hits_sort_params *param = static_cast<const hits_sort_params*>(cl_param);
+    hits_sort_params *param = static_cast<hits_sort_params*>(cl_param);
 
     GBDATA *gb_item1 = (GBDATA*)cl_item1;
     GBDATA *gb_item2 = (GBDATA*)cl_item2;
@@ -401,7 +388,6 @@ inline bool is_pseudo_key(const char *key) {
 void QUERY::DbQuery_update_list(DbQuery *query) {
     GB_push_transaction(query->gb_main);
 
-    dbq_assert(query->hitlist);
     query->hitlist->clear();
 
     AW_window     *aww      = query->aws;
@@ -430,7 +416,8 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
 
     // sort hits
 
-    hits_sort_params param(query, aww->get_root()->awar(query->awar_keys[0])->read_char_pntr());
+    hits_sort_params param = { query, NULL, {} };
+    param.first_key = aww->get_root()->awar(query->awar_keys[0])->read_string();
 
     bool is_pseudo  = is_pseudo_key(param.first_key);
     bool show_value = !is_pseudo; // cannot refer to key-value of pseudo key
@@ -1891,7 +1878,6 @@ static void update_colorset_selection_list(const color_save_data *csd) {
     csd->colorsets->clear();
     GBDATA *gb_item_root = get_colorset_root(csd);
 
-    csd->colorsets->insert_default("<new colorset>", "");
     for (GBDATA *gb_colorset = GB_entry(gb_item_root, "colorset");
          gb_colorset;
          gb_colorset = GB_nextEntry(gb_colorset))
@@ -1899,6 +1885,7 @@ static void update_colorset_selection_list(const color_save_data *csd) {
         const char *name = GBT_read_name(gb_colorset);
         csd->colorsets->insert(name, name);
     }
+    csd->colorsets->insert_default("<new colorset>", "");
     csd->colorsets->update();
 }
 
@@ -2517,7 +2504,6 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     aws->insert_toggle("4 normal", "4", 4);
     aws->insert_toggle("5 ", "5", 5);
     aws->insert_toggle("6 the truth", "5", 6);
-    aws->update_toggle_field();
 
     create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, FIELD_FILTER_NDS, "list", 0, query->selector, 20, 10, SF_STANDARD, NULL);
 
@@ -2578,64 +2564,11 @@ const char *DbQuery::get_tree_name() const {
         return aws->get_root()->awar(awar_tree_name)->read_char_pntr();
 }
 
-DbQuery::~DbQuery() {
-    for (int s = 0; s<QUERY_SEARCHES; ++s) {
-        delete fieldsel[s];
-        free(awar_keys[s]);
-        free(awar_queries[s]);
-        free(awar_not[s]);
-        free(awar_operator[s]);
-    }
-
-    free(species_name);
-
-    free(awar_setkey);
-    free(awar_setprotection);
-    free(awar_setvalue);
-
-    free(awar_parskey);
-    free(awar_parsvalue);
-    free(awar_parspredefined);
-
-    free(awar_ere);
-    free(awar_where);
-    free(awar_by);
-    free(awar_use_tag);
-    free(awar_double_pars);
-    free(awar_deftag);
-    free(awar_tag);
-    free(awar_count);
-    free(awar_sort);
-
-    GBS_free_hash(hit_description);
-}
-
-// ----------------------------------------
-// store query data until DB close
-
-typedef Keeper<DbQuery*> QueryKeeper;
-template<> void Keeper<DbQuery*>::destroy(DbQuery *q) { delete q; }
-static SmartPtr<QueryKeeper> queryKeeper;
-static void destroyKeptQueries(GBDATA*, void*) {
-    queryKeeper.SetNull();
-}
-static void keepQuery(GBDATA *gbmain, DbQuery *q) {
-    if (queryKeeper.isNull()) {
-        queryKeeper = new QueryKeeper;
-        GB_atclose(gbmain, destroyKeptQueries, NULL);
-    }
-    queryKeeper->keep(q);
-}
-
-// ----------------------------------------
-
 DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *query_id) {
     char     buffer[256];
     AW_root *aw_root = aws->get_root();
     GBDATA  *gb_main = awtqs->gb_main;
     DbQuery *query   = new DbQuery(awtqs->get_queried_itemtype());
-
-    keepQuery(gb_main, query); // transfers ownership of query
 
     // @@@ set all the things below via ctor!
     // @@@ create a copyable object containing everything query_spec and DbQuery have in common -> pass that object to DbQuery-ctor
@@ -2646,9 +2579,8 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     query->expect_hit_in_ref_list = awtqs->expect_hit_in_ref_list;
     query->select_bit             = awtqs->select_bit;
     query->species_name           = strdup(awtqs->species_name);
-
     query->set_tree_awar_name(awtqs->tree_name);
-    query->hit_description = GBS_create_dynaval_hash(query_count_items(query, QUERY_ALL_ITEMS, QUERY_GENERATE), GB_IGNORE_CASE, free_hit_description);
+    query->hit_description = GBS_create_hash(query_count_items(query, QUERY_ALL_ITEMS, QUERY_GENERATE), GB_IGNORE_CASE);
 
     GB_push_transaction(gb_main);
 
@@ -2675,8 +2607,6 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             sprintf(buffer, "tmp/dbquery_%s/operator_%i", query_id, key_id);
             query->awar_operator[key_id] = strdup(buffer);
             aw_root->awar_string(query->awar_operator[key_id], "ign", AW_ROOT_DEFAULT);
-
-            query->fieldsel[key_id] = NULL;
         }
         aw_root->awar(query->awar_keys[0])->add_callback(makeRootCallback(first_searchkey_changed_cb, query));
     }
@@ -2764,8 +2694,8 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             aws->restore_at_size_and_attach(&at_size);
 
             {
-                char *button_id      = GBS_global_string_copy("field_sel_%s_%i", query_id, key);
-                query->fieldsel[key] = create_selection_list_on_itemfields(gb_main, aws, query->awar_keys[key], true, FIELD_FILTER_NDS, 0, awtqs->rescan_pos_fig, awtqs->get_queried_itemtype(), 22, 20, SF_PSEUDO, button_id);
+                char *button_id = GBS_global_string_copy("field_sel_%s_%i", query_id, key);
+                create_selection_list_on_itemfields(gb_main, aws, query->awar_keys[key], true, FIELD_FILTER_NDS, 0, awtqs->rescan_pos_fig, awtqs->get_queried_itemtype(), 22, 20, SF_PSEUDO, button_id);
                 free(button_id);
             }
 
@@ -2793,7 +2723,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         for (int key = 0; key<QUERY_SEARCHES; ++key) {
             aws->at(xpos_calc[2], ypos+key*KEY_Y_OFFSET);
             aws->restore_at_size_and_attach(&at_size);
-#if defined(ARB_MOTIF)
+#if !defined(ARB_GTK)
             aws->d_callback(makeWindowCallback(perform_query_cb, query, EXT_QUERY_NONE)); // enable ENTER in searchfield to start search
 #endif
             aws->create_input_field(query->awar_queries[key], 12);
@@ -2802,11 +2732,14 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
 
     if (awtqs->result_pos_fig) {
         aws->at(awtqs->result_pos_fig);
+        if (awtqs->popup_info_window) {
+            aws->callback(RootAsWindowCallback::simple(awtqs->popup_info_window, query->gb_main));
+        }
         aws->d_callback(makeWindowCallback(toggle_flag_cb, query));
 
         {
-            const char *this_awar_name = GB_keep_string(GBS_global_string_copy("tmp/dbquery_%s/select", query_id)); // do not free this cause it's passed to new_selection_made_cb
-            AW_awar    *awar           = aw_root->awar_string(this_awar_name, "", AW_ROOT_DEFAULT);
+            char    *this_awar_name = GBS_global_string_copy("tmp/dbquery_%s/select", query_id); // do not free this, cause it's passed to new_selection_made_cb
+            AW_awar *awar           = aw_root->awar_string(this_awar_name, "", AW_ROOT_DEFAULT);
 
             query->hitlist = aws->create_selection_list(this_awar_name, 5, 5, true);
             awar->add_callback(makeRootCallback(new_selection_made_cb, this_awar_name, query));
@@ -2814,20 +2747,10 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         query->hitlist->insert_default("end of list", "");
         query->hitlist->update();
     }
-
     if (awtqs->count_pos_fig) {
-        aws->button_length(13);
         aws->at(awtqs->count_pos_fig);
         aws->label("Hits:");
         aws->create_button(0, query->awar_count, 0, "+");
-
-        if (awtqs->popup_info_window) {
-            aws->callback(RootAsWindowCallback::simple(awtqs->popup_info_window, query->gb_main));
-            aws->create_button("popinfo", "Info");
-        }
-    }
-    else {
-        dbq_assert(!awtqs->popup_info_window); // dont know where to display
     }
 
     if (awtqs->config_pos_fig) {
@@ -2841,7 +2764,6 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     }
 
     aws->button_length(18);
-
     if (awtqs->do_query_pos_fig) {
         aws->at(awtqs->do_query_pos_fig);
         aws->callback(makeWindowCallback(perform_query_cb, query, EXT_QUERY_NONE));

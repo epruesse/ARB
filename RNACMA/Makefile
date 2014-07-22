@@ -13,7 +13,6 @@ ifeq ($(SUPPRESS_WARNINGS),1)
 cma_cxxflags:= $(subst -Weffc++,,$(cma_cxxflags))
 cma_cxxflags:= $(subst -Wctor-dtor-privacy,,$(cma_cxxflags))
 cma_cxxflags:= $(subst -Wlogical-op,,$(cma_cxxflags))
-cma_cxxflags:= $(subst -Wunused-local-typedefs,,$(cma_cxxflags))
 cma_cflags:= $(subst -Wshadow,,$(cma_cflags))
 cma_cflags+= -Wno-unused-local-typedefs# this is included in -Wall
 endif

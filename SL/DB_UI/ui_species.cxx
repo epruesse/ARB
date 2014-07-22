@@ -465,7 +465,7 @@ public:
         }
     }
 
-    __ATTR__USERESULT GB_ERROR save_changes() {
+    GB_ERROR save_changes() {
         GB_ERROR warning = NULL;
         if (order_changed) {
             if (key_count) {
@@ -525,7 +525,7 @@ static void reorder_keys(AW_window *aws, ReorderMode mode, Itemfield_Selection *
             }
         }
 
-        warning = sorter.save_changes();
+        sorter.save_changes();
     }
     GB_commit_transaction(gb_main);
 

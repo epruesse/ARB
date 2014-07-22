@@ -539,7 +539,6 @@ adhashtools.o: $(ARBHOME)/INCLUDE/smartptr.h
 adhashtools.o: $(ARBHOME)/INCLUDE/static_assert.h
 adhashtools.o: $(ARBHOME)/INCLUDE/test_global.h
 
-adindex.o: ad_cb_prot.h
 adindex.o: ad_prot.h
 adindex.o: arbdb.h
 adindex.o: arbdb_base.h
@@ -574,7 +573,6 @@ adindex.o: $(ARBHOME)/INCLUDE/gccver.h
 adindex.o: $(ARBHOME)/INCLUDE/smartptr.h
 adindex.o: $(ARBHOME)/INCLUDE/static_assert.h
 adindex.o: $(ARBHOME)/INCLUDE/test_global.h
-adindex.o: $(ARBHOME)/INCLUDE/test_unit.h
 adindex.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 aditem.o: ad_prot.h

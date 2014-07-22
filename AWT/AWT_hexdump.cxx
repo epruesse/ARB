@@ -84,7 +84,6 @@ void TEST_hexdump() {
                            );
     }
 }
-TEST_PUBLISH(TEST_hexdump);
 
 #endif // UNIT_TESTS
 

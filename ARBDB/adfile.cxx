@@ -345,6 +345,5 @@ void TEST_find_file() {
 
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }
-TEST_PUBLISH(TEST_find_file);
 
 #endif // UNIT_TESTS

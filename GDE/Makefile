@@ -13,8 +13,6 @@ ARCHS_NO_DEPENDS = \
 	MUSCLE/MUSCLE.dummy \
 	PROBCONS/PROBCONS.dummy \
 	FASTTREE/FASTTREE.dummy \
-	RAxML8/RAxML8.dummy \
-
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here

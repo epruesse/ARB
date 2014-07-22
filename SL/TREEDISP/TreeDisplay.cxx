@@ -477,10 +477,10 @@ public:
     }
 
     void hide_drag_indicator(AW_device *device, int drag_gc) const {
-#ifdef ARB_MOTIF
+#ifndef ARB_GTK
         // hide by XOR-drawing only works in motif
         draw_drag_indicator(device, drag_gc);
-#else // ARB_GTK
+#else
         exports.refresh = 1;
 #endif
     }
@@ -2651,9 +2651,7 @@ AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer
 void awt_create_dtree_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int  (AWAR_DTREE_BASELINEWIDTH, 1)  ->set_minmax(1,    10);
     aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,  1.0)->set_minmax(0.01, 30);
-
-    aw_root->awar_int(AWAR_DTREE_AUTO_JUMP,      AP_JUMP_KEEP_VISIBLE);
-    aw_root->awar_int(AWAR_DTREE_AUTO_JUMP_TREE, AP_JUMP_FORCE_VCENTER);
+    aw_root->awar_int  (AWAR_DTREE_AUTO_JUMP,     1);
 
     aw_root->awar_int(AWAR_DTREE_SHOW_BRACKETS, 1);
     aw_root->awar_int(AWAR_DTREE_SHOW_CIRCLE,   0);
@@ -2669,17 +2667,6 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD,      300);
 
     aw_root->awar_int(AWAR_TREE_REFRESH, 0, db);
-}
-
-void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name) {
-    aws->label(label);
-    aws->create_option_menu(awar_name, true);
-    aws->insert_default_option("do nothing",        "n", AP_DONT_JUMP);
-    aws->insert_option        ("keep visible",      "k", AP_JUMP_KEEP_VISIBLE);
-    aws->insert_option        ("center vertically", "v", AP_JUMP_FORCE_VCENTER);
-    aws->insert_option        ("center",            "c", AP_JUMP_FORCE_CENTER);
-    aws->update_option_menu();
-    aws->at_newline();
 }
 
 // --------------------------------------------------------------------------------

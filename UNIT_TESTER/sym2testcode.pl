@@ -125,11 +125,7 @@ sub parse($) {
           $is_unit_test = 1;
           if ($' =~ /^POSTCOND_/o) { $is_postcond = 1; }
         }
-        elsif ($symbol =~ /TEST_/o) {
-          if (not $` =~  /publish/) { # skip publishers
-            $is_disabled_test = 1;
-          }
-        }
+        elsif ($symbol =~ /TEST_/o) { $is_disabled_test = 1; }
 
         my $is_global_symbol = ($type eq 'T');
 

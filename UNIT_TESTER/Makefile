@@ -37,7 +37,7 @@ test_environment: $(ALL_OBJECTS) $(TEST_ENVIRONMENT_LIBS)
 
 clean:
 	rm -f $(ALL_OBJECTS) *.a test_environment skipslow.stamp
-	rm -rf logs tests tests.slow
+	rm -rf logs tests
 	$(MAKE) -f Makefile.test clean
 
 
