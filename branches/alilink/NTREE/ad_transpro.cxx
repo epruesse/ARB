@@ -1350,6 +1350,8 @@ void TEST_realign() {
                   "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - adds translation of extra DNA (DNA should never be modified by realigner!)
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH-----..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG...........", CHANGED,
                   "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - adds translation of extra DNA
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY---H....", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTAT---------CACCACGGTGCTG..", CHANGED, // rightmost possible position of 'H' (see failing test below)
+                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY---HHGAX" }, // ok - adds translation of extra DNA
 
                 // { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "---------AGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G..", SAME, NULL }, // missing some AA at left end (@@@ should work similar to AA missing at right end. fails: see below)
                 { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTTTTG-AC-CG-GT-CC-AA-GCCGC-AC-GT-AAACATCGGCACGATCG-GT-CA-CG-TG-GA-CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", SAME, NULL },
@@ -1384,7 +1386,7 @@ void TEST_realign() {
                 msgs  = "";
                 error = arb_r2a(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
                 TEST_EXPECT_NO_ERROR(error);
-                if (s == 6) {
+                if (s == 7) {
                     TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n1 taxa converted\n  2.000000 stops per sequence found\n");
                 }
                 else {
@@ -1446,7 +1448,7 @@ void TEST_realign() {
                 { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'ACG' translates to 'T', not to 'R' at ali_pro:13 / ali_dna:36\n" },    // ok to fail
                 { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CGG' translates to 'R', not to 'G' at ali_pro:24 / ali_dna:61\n" },    // ok to fail: some AA missing in the middle
                 { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Sync behind 'X' failed foremost with: not enough nucs left for codon of 'H' at ali_pro:38 / ali_dna:117\n" }, // ok to fail: too many AA
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY-----H..", "Sync behind 'X' failed foremost with: too much trailing DNA (10 nucs, but only 6 columns left) at ali_pro:43 / ali_dna:106\n" }, // ok to fail: not enough space to place extra nucs behind 'H'
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY----H...", "Sync behind 'X' failed foremost with: too much trailing DNA (10 nucs, but only 9 columns left) at ali_pro:43 / ali_dna:106\n" }, // ok to fail: not enough space to place extra nucs behind 'H'
 
                 // failing realignments that should work:
                 { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "'ATG' translates to 'M', not to 'S' at ali_pro:4 / ali_dna:1\n" },                      // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
