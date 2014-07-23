@@ -321,9 +321,11 @@ class Distributor {
             int minLeave = leftX-1;
             int maxLeave = minLeave*3;
             int minTake  = std::max(1, leftDNA-maxLeave);
-            int maxTake  = std::min(3, leftDNA-minLeave);
 
+#if defined(ASSERTION_USED)
+            int maxTake  = std::min(3, leftDNA-minLeave);
             nt_assert(minTake<=maxTake);
+#endif
 
             dist[off]   = minTake;
             left[off+1] = left[off]-dist[off];
@@ -605,7 +607,17 @@ public:
     const char *get_protein_fail_at() const { nt_assert(failure()); return protein_fail_at; }
     const char *get_dna_fail_at() const { nt_assert(failure()); return dna_fail_at; }
 
-    GB_ERROR perform() {
+    void write_codon(char c) {
+        memset(target_dna, c, 3);
+        target_dna += 3;
+    }
+    void copy_codon() {
+        memcpy(target_dna, compressed_dna, 3);
+        target_dna     += 3;
+        compressed_dna += 3;
+    }
+
+    GB_ERROR perform() { // @@@ method far too big :(
         int         x_count      = 0;
         char       *x_start      = NULL; // points into target_dna
         const char *x_start_prot = NULL; // points into aligned_protein
@@ -618,37 +630,28 @@ public:
         for (;;) {
             char p = *aligned_protein++;
 
-            if (isGap(p)) {
-                target_dna[0] = target_dna[1] = target_dna[2] = p;
-                target_dna += 3;
-            }
+            if (isGap(p)) write_codon(p);
             else if (toupper(p)=='X') { // one X represents 1 to 3 DNAs (normally 1 or 2, but 'NNN' translates to 'X')
-                x_start      = target_dna;
-                x_start_prot = aligned_protein-1;
-
-                x_count       = 1;
+                x_start       = target_dna;
+                x_start_prot  = --aligned_protein;
+                x_count       = 0;
                 int gap_count = 0;
-
-                // @@@ perform by loop below!
-                target_dna[0] = target_dna[1] = target_dna[2] = '!'; // fill X space with marker
-                target_dna += 3;
 
                 for (;;) {
                     char p2 = toupper(aligned_protein[0]);
 
                     if (p2=='X') {
                         x_count++;
-                        target_dna[0] = target_dna[1] = target_dna[2] = '!'; // fill X space with marker
+                        write_codon('!'); // fill X space with marker
                     }
                     else if (isGap(p2)) {
                         gap_count++;
-                        target_dna[0] = target_dna[1] = target_dna[2] = p2; // insert gap
+                        write_codon(p2);
                     }
                     else {
                         break;
                     }
                     aligned_protein++;
-                    target_dna += 3;
                 }
             }
             else {
@@ -785,14 +788,7 @@ public:
                     if (fail_reason) break;
 
                     allowed_code = allowed_code_left;
-
-                    // copy one codon:
-                    target_dna[0] = compressed_dna[0];
-                    target_dna[1] = compressed_dna[1];
-                    target_dna[2] = compressed_dna[2];
-
-                    target_dna     += 3;
-                    compressed_dna += 3;
+                    copy_codon();
                 }
 
                 if (!p) {
