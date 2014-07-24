@@ -497,13 +497,16 @@ public:
 class RealignAttempt : virtual Noncopyable {
     AWT_allowedCode allowed_code;
 
-    const char *compressed_dna;
-    size_t      compressed_len; // length of compressed_dna
+    const char *const  compressed_dna_start;
+    const char        *compressed_dna;
+    size_t             compressed_len;  // length of compressed_dna
 
-    const char *aligned_protein;
+    const char *const  aligned_protein_start;
+    const char        *aligned_protein;
 
-    char   *target_dna;
-    size_t  target_len; // wanted target length
+    char *const  target_dna_start;
+    char        *target_dna;
+    size_t       target_len;  // wanted target length
 
     FailedAt fail;
 
@@ -529,12 +532,17 @@ class RealignAttempt : virtual Noncopyable {
     GB_ERROR distribute_xdata(size_t dna_dist_size, size_t xcount, char *xtarget, const AWT_allowedCode& with_code);
     void perform();
 
+    bool sync_behind_X_and_distribute(int& x_count, char*& x_start, const char *const x_start_prot);
+
 public:
     RealignAttempt(const AWT_allowedCode& allowed_code_, const char *compressed_dna_, size_t compressed_len_, const char *aligned_protein_, char *target_dna_, size_t target_len_)
         : allowed_code(allowed_code_),
+          compressed_dna_start(compressed_dna_),
           compressed_dna(compressed_dna_),
           compressed_len(compressed_len_),
+          aligned_protein_start(aligned_protein_),
           aligned_protein(aligned_protein_),
+          target_dna_start(target_dna_),
           target_dna(target_dna_),
           target_len(target_len_)
     {
@@ -647,13 +655,107 @@ GB_ERROR RealignAttempt::distribute_xdata(size_t dna_dist_size, size_t xcount, c
     return error;
 }
 
-void RealignAttempt::perform() { // @@@ method far too big :(
-    int         x_count      = 0;
-    char       *x_start      = NULL; // points into target_dna
-    const char *x_start_prot = NULL; // points into aligned_protein
+bool RealignAttempt::sync_behind_X_and_distribute(int& x_count, char*& x_start, const char *const x_start_prot) {
+// we need:
+// 1. sync behind X
+//    - we have fixed number of Xs
+// 2. sync at start of sequence if enough dna available
+//    - we have variable number of Xs (depending on number of gaps before data-start in protein sequence)
+// 
+// (1) is implemented by this function
 
-    const char *compressed_dna_start = compressed_dna;
-    const char *target_dna_start     = target_dna;
+    size_t written_dna     = target_dna-target_dna_start;
+    size_t target_rest_len = target_len-written_dna;
+    bool   complete        = false;
+
+    nt_assert(!failed());
+    nt_assert(aligned_protein>aligned_protein_start);
+    const char p = aligned_protein[-1];
+
+    size_t compressed_rest_len = compressed_len - (compressed_dna-compressed_dna_start);
+    nt_assert(compressed_rest_len<=compressed_len);
+    nt_assert(strlen(compressed_dna) == compressed_rest_len);
+
+    size_t min_dna = x_count;
+    size_t max_dna = std::min(x_count*3, int(compressed_rest_len));
+
+    if (min_dna>max_dna) {
+        fail = FailedAt("not enough nucs for X's at sequence end", x_start_prot, compressed_dna);
+    }
+    else if (p) {
+        FailedAt foremost;
+
+        for (size_t x_dna = min_dna; x_dna<=max_dna; ++x_dna) { // prefer low amounts of used dna
+            const char *dna_rest     = compressed_dna      + x_dna;
+            size_t      dna_rest_len = compressed_rest_len - x_dna;
+
+            nt_assert(strlen(dna_rest) == dna_rest_len);
+            nt_assert(compressed_rest_len>=x_dna);
+
+            RealignAttempt attemptRest(allowed_code, dna_rest, dna_rest_len, aligned_protein-1, target_dna, target_rest_len);
+            FailedAt       restFailed = attemptRest.failed();
+
+            if (!restFailed) {
+                GB_ERROR disterr = distribute_xdata(x_dna, x_count, x_start, attemptRest.get_remaining_code());
+                if (disterr) {
+                    restFailed = FailedAt(disterr, x_start_prot, dna_rest); // prot=start of Xs; dna=start of sync (behind Xs)
+                }
+                else {
+                    allowed_code = attemptRest.get_remaining_code();
+                }
+            }
+
+            if (restFailed) {
+                if (restFailed > foremost) foremost = restFailed; // track "best" failure (highest fail position)
+            }
+            else { // success
+                foremost = FailedAt();
+                complete = true;
+                break; // use first success and return
+            }
+        }
+
+        if (foremost) {
+            nt_assert(!complete);
+            fail = foremost;
+            if (!strstr(fail.why(), "Sync behind 'X'")) { // do not spam repetitive sync-failures
+                fail.add_prefix("Sync behind 'X' failed foremost with: ");
+            }
+        }
+        else {
+            nt_assert(complete);
+        }
+    }
+    else {
+        GB_ERROR fail_reason = "internal error: no distribution attempted";
+        nt_assert(min_dna>0);
+        size_t x_dna;
+        for (x_dna = max_dna; x_dna>=min_dna; --x_dna) {     // prefer high amounts of dna
+            fail_reason = distribute_xdata(x_dna, x_count, x_start, allowed_code); // @@@ pass/modify usable codes?
+            if (!fail_reason) break; // found distribution -> done
+        }
+
+        if (fail_reason) {
+            fail = FailedAt(fail_reason, x_start_prot+1, compressed_dna); // report error at start of X's
+        }
+        else {
+            fail = FailedAt(); // clear
+            compressed_dna += x_dna;
+        }
+    }
+
+    if (!failed()) {
+        x_count = 0;
+        x_start = NULL;
+    }
+
+    return complete;
+}
+
+void RealignAttempt::perform() {
+    int         x_count      = 0;
+    char       *x_start      = NULL;   // points into target_dna
+    const char *x_start_prot = NULL;   // points into aligned_protein
 
     bool complete = false; // set to true, if recursive attempt succeeds
 
@@ -662,111 +764,27 @@ void RealignAttempt::perform() { // @@@ method far too big :(
 
         if (isGap(p)) write_codon(p);
         else if (toupper(p)=='X') { // one X represents 1 to 3 DNAs (normally 1 or 2, but 'NNN' translates to 'X')
-            x_start       = target_dna;
-            x_start_prot  = --aligned_protein;
-            x_count       = 0;
-            int gap_count = 0;
+            x_start      = target_dna;
+            x_start_prot = --aligned_protein;
+            x_count      = 0;
 
             for (;;) {
                 char p2 = toupper(aligned_protein[0]);
 
-                if (p2=='X') {
-                    x_count++;
-                    write_codon('!'); // fill X space with marker
-                }
-                else if (isGap(p2)) {
-                    gap_count++;
-                    write_codon(p2);
-                }
-                else {
-                    break;
-                }
+                if      (p2=='X')   { x_count++; write_codon('!'); } // fill X space with marker
+                else if (isGap(p2)) write_codon(p2);
+                else break;
+
                 aligned_protein++;
             }
         }
         else {
             if (x_count) {
-                size_t written_dna     = target_dna-target_dna_start;
-                size_t target_rest_len = target_len-written_dna;
-
-                size_t compressed_rest_len = compressed_len - (compressed_dna-compressed_dna_start);
-                nt_assert(compressed_rest_len<=compressed_len);
-                nt_assert(strlen(compressed_dna) == compressed_rest_len);
-
-                size_t min_dna = x_count;
-                size_t max_dna = std::min(x_count*3, int(compressed_rest_len));
-
-                if (min_dna>max_dna) {
-                    fail = FailedAt("not enough nucs for X's at sequence end", x_start_prot, compressed_dna);
-                }
-                else if (p) {
-                    FailedAt foremost;
-
-                    for (size_t x_dna = min_dna; x_dna<=max_dna; ++x_dna) { // prefer low amounts of used dna
-                        const char *dna_rest     = compressed_dna      + x_dna;
-                        size_t      dna_rest_len = compressed_rest_len - x_dna;
-
-                        nt_assert(strlen(dna_rest) == dna_rest_len);
-                        nt_assert(compressed_rest_len>=x_dna);
-
-                        RealignAttempt attemptRest(allowed_code, dna_rest, dna_rest_len, aligned_protein-1, target_dna, target_rest_len);
-                        FailedAt       restFailed = attemptRest.failed();
-
-                        if (!restFailed) {
-                            GB_ERROR disterr = distribute_xdata(x_dna, x_count, x_start, attemptRest.get_remaining_code());
-                            if (disterr) {
-                                restFailed = FailedAt(disterr, x_start_prot, dna_rest); // prot=start of Xs; dna=start of sync (behind Xs)
-                            }
-                            else {
-                                allowed_code = attemptRest.get_remaining_code();
-                            }
-                        }
-
-                        if (restFailed) {
-                            if (restFailed > foremost) foremost = restFailed; // track "best" failure (highest fail position)
-                        }
-                        else { // success
-                            foremost = FailedAt();
-                            complete = true;
-                            break; // use first success and return
-                        }
-                    }
-
-                    if (foremost) {
-                        nt_assert(!complete);
-                        fail = foremost;
-                        if (!strstr(fail.why(), "Sync behind 'X'")) { // do not spam repetitive sync-failures
-                            fail.add_prefix("Sync behind 'X' failed foremost with: ");
-                        }
-                    }
-                    else {
-                        nt_assert(complete);
-                    }
-                }
-                else {
-                    GB_ERROR fail_reason = "internal error: no distribution attempted";
-                    nt_assert(min_dna>0);
-                    size_t x_dna;
-                    for (x_dna = max_dna; x_dna>=min_dna; --x_dna) {     // prefer high amounts of dna
-                        fail_reason = distribute_xdata(x_dna, x_count, x_start, allowed_code); // @@@ pass/modify usable codes?
-                        if (!fail_reason) break; // found distribution -> done
-                    }
-
-                    if (fail_reason) {
-                        fail = FailedAt(fail_reason, x_start_prot+1, compressed_dna); // report error at start of X's
-                    }
-                    else {
-                        fail = FailedAt(); // clear
-                        compressed_dna += x_dna;
-                    }
-                }
-
-                if (failed()) break;
-
-                x_count = 0;
-                x_start = NULL;
-
-                if (complete) break;
+                nt_assert(!complete);
+                complete = sync_behind_X_and_distribute(x_count, x_start, x_start_prot);
+                if (complete || failed()) break;
+                // @@@ shouldn't we otherwise perform the else branch directly?
+                // @@@ or fail?
             }
             else if (p) {
                 AWT_allowedCode allowed_code_left;
@@ -790,9 +808,7 @@ void RealignAttempt::perform() { // @@@ method far too big :(
                 copy_codon();
             }
 
-            if (!p) {
-                break; // done
-            }
+            if (!p) break; // done
         }
     }
 
@@ -838,7 +854,6 @@ void RealignAttempt::perform() { // @@@ method far too big :(
     }
 #endif
 }
-
 
 class Realigner {
     const char *ali_source;
