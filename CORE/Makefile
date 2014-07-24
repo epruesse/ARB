@@ -149,6 +149,19 @@ arb_msg.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_msg.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_msg.o: $(ARBHOME)/INCLUDE/test_global.h
 
+arb_pattern.o: arb_assert.h
+arb_pattern.o: arb_core.h
+arb_pattern.o: arb_msg.h
+arb_pattern.o: arb_pattern.h
+arb_pattern.o: arb_strbuf.h
+arb_pattern.o: $(ARBHOME)/INCLUDE/arbtools.h
+arb_pattern.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_pattern.o: $(ARBHOME)/INCLUDE/cxxforward.h
+arb_pattern.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_pattern.o: $(ARBHOME)/INCLUDE/gccver.h
+arb_pattern.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_pattern.o: $(ARBHOME)/INCLUDE/test_unit.h
+
 arb_progress.o: arb_assert.h
 arb_progress.o: arb_core.h
 arb_progress.o: arb_handlers.h
