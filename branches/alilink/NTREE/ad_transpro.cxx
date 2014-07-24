@@ -518,6 +518,7 @@ class RealignAttempt : virtual Noncopyable {
     }
 
     GB_ERROR distribute_xdata(size_t dna_dist_size, size_t xcount, char *xtarget, const AWT_allowedCode& with_code);
+    void perform();
 
 public:
     RealignAttempt(const AWT_allowedCode& allowed_code_, const char *compressed_dna_, size_t compressed_len_, const char *aligned_protein_, char *target_dna_, size_t target_len_)
@@ -529,16 +530,11 @@ public:
           target_len(target_len_)
     {
         nt_assert(aligned_protein[0]);
+        perform();
     }
 
     const AWT_allowedCode& get_remaining_code() const { return allowed_code; }
-
-    // @@@ replace by method returning FailedAt
-    const char *failure() const { return fail.why(); }
-    const char *fail_at_prot() const { nt_assert(failure()); return fail.protein_at(); }
-    const char *fail_at_dna() const { nt_assert(failure()); return fail.dna_at(); }
-
-    const FailedAt& perform();
+    const FailedAt& failed() const { return fail; }
 };
 
 GB_ERROR RealignAttempt::distribute_xdata(size_t dna_dist_size, size_t xcount, char *xtarget, const AWT_allowedCode& with_code) { // @@@ method far too big :(
@@ -662,7 +658,7 @@ GB_ERROR RealignAttempt::distribute_xdata(size_t dna_dist_size, size_t xcount, c
     return error;
 }
 
-const FailedAt& RealignAttempt::perform() { // @@@ method far too big :(
+void RealignAttempt::perform() { // @@@ method far too big :(
     int         x_count      = 0;
     char       *x_start      = NULL; // points into target_dna
     const char *x_start_prot = NULL; // points into aligned_protein
@@ -725,20 +721,20 @@ const FailedAt& RealignAttempt::perform() { // @@@ method far too big :(
                         nt_assert(compressed_rest_len>=x_dna);
 
                         RealignAttempt attemptRest(allowed_code, dna_rest, dna_rest_len, aligned_protein-1, target_dna, target_rest_len);
-                        FailedAt failed = attemptRest.perform();
+                        FailedAt       restFailed = attemptRest.failed();
 
-                        if (!failed) {
+                        if (!restFailed) {
                             GB_ERROR disterr = distribute_xdata(x_dna, x_count, x_start, attemptRest.get_remaining_code());
                             if (disterr) {
-                                failed = FailedAt(disterr, x_start_prot, dna_rest); // prot=start of Xs; dna=start of sync (behind Xs)
+                                restFailed = FailedAt(disterr, x_start_prot, dna_rest); // prot=start of Xs; dna=start of sync (behind Xs)
                             }
                             else {
                                 allowed_code = attemptRest.get_remaining_code();
                             }
                         }
 
-                        if (failed) {
-                            if (failed > foremost) foremost = failed; // track "best" failure (highest fail position)
+                        if (restFailed) {
+                            if (restFailed > foremost) foremost = restFailed; // track "best" failure (highest fail position)
                         }
                         else { // success
                             foremost = FailedAt();
@@ -776,7 +772,7 @@ const FailedAt& RealignAttempt::perform() { // @@@ method far too big :(
                     }
                 }
 
-                if (failure()) break;
+                if (failed()) break;
 
                 x_count = 0;
                 x_start = NULL;
@@ -799,7 +795,7 @@ const FailedAt& RealignAttempt::perform() { // @@@ method far too big :(
                     }
                 }
 
-                if (failure()) break;
+                if (failed()) break;
 
                 allowed_code = allowed_code_left;
                 copy_codon();
@@ -811,9 +807,9 @@ const FailedAt& RealignAttempt::perform() { // @@@ method far too big :(
         }
     }
 
-    nt_assert(!x_count || failure());
+    nt_assert(!x_count || failed());
 
-    if (!failure() && !complete) {
+    if (!failed() && !complete) {
         while (target_dna>target_dna_start && isGap(target_dna[-1])) --target_dna; // remove terminal gaps
 
         // append leftover dna-data (data w/o corresponding aa)
@@ -835,7 +831,7 @@ const FailedAt& RealignAttempt::perform() { // @@@ method far too big :(
         }
 
         // fill rest of sequence with dots
-        if (!failure()) {
+        if (!failed()) {
             int inserted        = target_dna-target_dna_start;
             int target_rest_len = target_len-inserted;
             nt_assert(target_rest_len>=0);
@@ -848,11 +844,10 @@ const FailedAt& RealignAttempt::perform() { // @@@ method far too big :(
     }
 
 #if defined(ASSERTION_USED)
-    if (!failure()) {
+    if (!failed()) {
         nt_assert(strlen(target_dna_start) == (unsigned)target_len);
     }
 #endif
-    return fail;
 }
 
 
@@ -913,15 +908,15 @@ public:
             buffer = (char*)malloc(ali_len+1);
 
             RealignAttempt  attempt(allowed_code, compressed_dest, compressed_len, source, buffer, ali_len);
-            const FailedAt& failed = attempt.perform();
+            const FailedAt& failed = attempt.failed();
             if (!failed) {
                 allowed_code = attempt.get_remaining_code();
             }
             else {
-                int source_fail_pos = attempt.fail_at_prot() - source;
+                int source_fail_pos = failed.protein_at() - source;
                 int dest_fail_pos   = 0;
                 {
-                    int fail_d_base_count = attempt.fail_at_dna() - compressed_dest;
+                    int fail_d_base_count = failed.dna_at() - compressed_dest;
 
                     const char *dp = dest;
 
