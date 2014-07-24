@@ -511,9 +511,18 @@ class RealignAttempt : virtual Noncopyable {
         memset(target_dna, c, 3);
         target_dna += 3;
     }
+    void write_codon(char c1, char c2, char c3) {
+        target_dna[0]  = c1;
+        target_dna[1]  = c2;
+        target_dna[2]  = c3;
+        target_dna    += 3;
+    }
+    void copy_codon(const char *source) {
+        memcpy(target_dna, source, 3);
+        target_dna += 3;
+    }
     void copy_codon() {
-        memcpy(target_dna, compressed_dna, 3);
-        target_dna     += 3;
+        copy_codon(compressed_dna);
         compressed_dna += 3;
     }
 
@@ -537,11 +546,13 @@ public:
     const FailedAt& failed() const { return fail; }
 };
 
-GB_ERROR RealignAttempt::distribute_xdata(size_t dna_dist_size, size_t xcount, char *xtarget, const AWT_allowedCode& with_code) { // @@@ method far too big :(
+GB_ERROR RealignAttempt::distribute_xdata(size_t dna_dist_size, size_t xcount, char *xtarget, const AWT_allowedCode& with_code) {
     /*! distributes 'dna_dist_size' nucs starting at 'compressed_dna'
      * @param xtarget destination buffer (target positions are marked with '!')
      * @param xcount number of X's encountered
      */
+
+    LocallyModify<char*> writePtr(target_dna, xtarget);
 
     Distributor dist(xcount, dna_dist_size);
     GB_ERROR    error = dist.get_error();
@@ -579,37 +590,31 @@ GB_ERROR RealignAttempt::distribute_xdata(size_t dna_dist_size, size_t xcount, c
             }
         }
 
-        if (!error) {    // now really distribute nucs
-            int   off           = 0;  // offset into compressed_dna
-            char *xtarget_start = xtarget;
+        if (!error) { // now really distribute nucs
+            int          off           = 0; // offset into compressed_dna
+            char * const xtarget_start = target_dna;
 
             for (int x = 0; x<best.size(); ++x) {
-                while (xtarget[0] != '!') {
-                    nt_assert(xtarget[1] && xtarget[2]); // buffer overflow
-                    xtarget += 3;
+                while (target_dna[0] != '!') {
+                    nt_assert(target_dna[1] && target_dna[2]); // buffer overflow
+                    target_dna += 3;
                 }
 
                 switch (best[x]) {
-                    case 1:
-                        xtarget[0] = '-';
-                        xtarget[1] = compressed_dna[off];
-                        xtarget[2] = '-';
-                        break;
-
                     case 2: {
                         enum { UNDECIDED, SPREAD, LEFT, RIGHT } mode = UNDECIDED;
 
-                        bool gap_right   = isGap(xtarget[3]);
+                        bool gap_right   = isGap(target_dna[3]);
                         int  follow_dist = x<best.size()-1 ? best[x+1] : 0;
 
-                        bool has_gaps_left  = xtarget>xtarget_start && isGap(xtarget[-1]);
+                        bool has_gaps_left  = target_dna>xtarget_start && isGap(target_dna[-1]);
                         bool has_gaps_right = gap_right || follow_dist == 1;
 
                         if (has_gaps_left && has_gaps_right) mode = SPREAD;
                         else if (has_gaps_left)              mode = LEFT;
                         else if (has_gaps_right)             mode = RIGHT;
                         else {
-                            bool has_nogaps_left  = xtarget>xtarget_start && !isGap(xtarget[-1]);
+                            bool has_nogaps_left  = target_dna>xtarget_start && !isGap(target_dna[-1]);
                             bool has_nogaps_right = !gap_right && follow_dist == 3;
 
                             if (has_nogaps_left && has_nogaps_right) mode = SPREAD;
@@ -617,40 +622,24 @@ GB_ERROR RealignAttempt::distribute_xdata(size_t dna_dist_size, size_t xcount, c
                             else                                     mode = LEFT;
                         }
 
+                        char d1 = compressed_dna[off];
+                        char d2 = compressed_dna[off+1];
+
                         switch (mode) {
                             case UNDECIDED: nt_assert(0); // fall-through in NDEBUG
-                            case SPREAD:
-                                xtarget[0] = compressed_dna[off];
-                                xtarget[1] = '-';
-                                xtarget[2] = compressed_dna[off+1];
-                                break;
-                            case LEFT:
-                                xtarget[0] = compressed_dna[off];
-                                xtarget[1] = compressed_dna[off+1];
-                                xtarget[2] = '-';
-                                break;
-                            case RIGHT:
-                                xtarget[0] = '-';
-                                xtarget[1] = compressed_dna[off];
-                                xtarget[2] = compressed_dna[off+1];
-                                break;
+                            case SPREAD: write_codon(d1,  '-', d2);  break;
+                            case LEFT:   write_codon(d1,  d2,  '-'); break;
+                            case RIGHT:  write_codon('-', d1,  d2);  break;
                         }
 
                         break;
                     }
-                    case 3:
-                        xtarget[0] = compressed_dna[off];
-                        xtarget[1] = compressed_dna[off+1];
-                        xtarget[2] = compressed_dna[off+2];
-                        break;
-
-                    default:
-                        nt_assert(0);
-                        break;
+                    case 1: write_codon('-', compressed_dna[off], '-'); break;
+                    case 3: copy_codon(compressed_dna+off); break;
+                    default: nt_assert(0); break;
                 }
 
-                xtarget += 3;
-                off     += best[x];
+                off += best[x];
             }
         }
     }
