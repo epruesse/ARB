@@ -203,10 +203,16 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 #define AWAR_TRANSPRO_PREFIX "transpro/"
 #define AWAR_TRANSPRO_SOURCE AWAR_TRANSPRO_PREFIX "source"
 #define AWAR_TRANSPRO_DEST   AWAR_TRANSPRO_PREFIX "dest"
+
+// translator only:
 #define AWAR_TRANSPRO_POS    AWAR_TRANSPRO_PREFIX "pos" // [0..N-1]
 #define AWAR_TRANSPRO_MODE   AWAR_TRANSPRO_PREFIX "mode"
 #define AWAR_TRANSPRO_XSTART AWAR_TRANSPRO_PREFIX "xstart"
 #define AWAR_TRANSPRO_WRITE  AWAR_TRANSPRO_PREFIX "write"
+
+// realigner only:
+#define AWAR_REALIGN_INCALI  AWAR_TRANSPRO_PREFIX "incali"
+#define AWAR_REALIGN_UNMARK  AWAR_TRANSPRO_PREFIX "unmark"
 
 static void transpro_event(AW_window *aww) {
     GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
@@ -440,11 +446,6 @@ public:
         return translates;
     }
 };
-
-#define SYNC_LENGTH 4
-// every X in amino-alignment, it represents 1 to 3 bases in DNA-Alignment
-// SYNC_LENGTH is the # of codons which will be synchronized (ahead!)
-// before deciding "X was realigned correctly"
 
 inline bool isGap(char c) { return c == '-' || c == '.'; }
 
@@ -983,11 +984,12 @@ struct Data : virtual Noncopyable {
 };
 
 
-static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali_dest, size_t& neededLength) {
+static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali_dest, size_t& neededLength, bool unmark_succeeded) {
     /*! realigns DNA alignment of marked sequences according to their protein alignment
      * @param ali_source protein source alignment
      * @param ali_dest modified DNA alignment
      * @param neededLength result: minimum alignment length needed in ali_dest (if too short) or 0 if long enough
+     * @param unmark_succeeded unmark all species that were successfully realigned
      */
     AP_initialize_codon_tables();
 
@@ -1011,6 +1013,8 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
     progress.auto_subtitles("Re-aligning species");
 
     Realigner realigner(ali_source, ali_dest, ali_len);
+
+    char *markedSpecies = GBT_store_marked_species(gb_main, 0);
 
     for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
          !error && gb_species;
@@ -1056,6 +1060,7 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
                         }
                     }
                     free(buffer);
+                    if (!error && unmark_succeeded) GB_write_flag(gb_species, 0);
                 }
             }
         }
@@ -1085,50 +1090,50 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
     if (error) progress.done();
     else error = GBT_check_data(gb_main,ali_dest);
 
+    if (error) {
+        GB_ERROR restoreError = GBT_restore_marked_species(gb_main, markedSpecies);
+        if (restoreError) GB_warning(restoreError);
+    }
+    free(markedSpecies);
+
     return error;
 }
 
-#undef SYNC_LENGTH
-
-
 static void transdna_event(AW_window *aww) {
-    AW_root  *aw_root      = aww->get_root();
-    char     *ali_source   = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
-    char     *ali_dest     = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
-    size_t    neededLength = 0;
-    bool      retrying     = false;
-    GB_ERROR  error        = 0;
+    AW_root  *aw_root          = aww->get_root();
+    char     *ali_source       = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
+    char     *ali_dest         = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
+    bool      unmark_succeeded = aw_root->awar(AWAR_REALIGN_UNMARK)->read_int();
+    size_t    neededLength     = 0;
+    GBDATA   *gb_main          = GLOBAL.gb_main;
+    GB_ERROR  error            = GB_begin_transaction(gb_main);
+    if (!error) error          = realign(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
+    error                      = GB_end_transaction(gb_main, error);
 
-    do {
-        GBDATA *gb_main = GLOBAL.gb_main;
+    if (!error && neededLength) {
+        bool auto_inc_alisize = aw_root->awar(AWAR_REALIGN_INCALI)->read_int();
+        if (auto_inc_alisize) {
+            GB_transaction ta(gb_main);
+            error = GBT_set_alignment_len(gb_main, ali_dest, neededLength);
+            if (!error) {
+                aw_message(GBS_global_string("Alignment length of '%s' has been set to %li\n"
+                                             "running re-aligner again!",
+                                             ali_dest, neededLength));
 
-        error = GB_begin_transaction(gb_main);
-        if (!error) error = realign(gb_main, ali_source, ali_dest, neededLength);
-        error = GB_end_transaction(gb_main, error);
-
-        if (!error && neededLength) { // alignment is too short
-            if (retrying || !aw_ask_sure("increase_ali_length", GBS_global_string("Increase length of '%s' to %zu?", ali_dest, neededLength))) {
-                GB_transaction ta(gb_main);
-                long           destLen = GBT_get_alignment_len(gb_main, ali_dest);
-                nt_assert(destLen>0 && size_t(destLen)<neededLength);
-                error                  = GBS_global_string("Missing %li columns in alignment '%s'", size_t(neededLength-destLen), ali_dest);
-                retrying               = false;
-            }
-            else {
-                error             = GB_begin_transaction(gb_main);
-                if (!error) error = GBT_set_alignment_len(gb_main, ali_dest, neededLength); // @@@ has no effect ? ? why ?
-                error             = GB_end_transaction(gb_main, error);
-
-                if (!error) {
-                    aw_message(GBS_global_string("Alignment length of '%s' has been set to %li\n"
-                                                 "running re-aligner again!",
-                                                 ali_dest, neededLength));
-                    retrying     = true;
-                    neededLength = 0;
+                error = realign(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
+                if (neededLength) {
+                    error = GBS_global_string("internal error: neededLength=%zu (after autoinc)", neededLength);
                 }
             }
+            error = ta.close(error);
         }
-    } while (!error && retrying);
+        else {
+            GB_transaction ta(gb_main);
+            long           destLen = GBT_get_alignment_len(gb_main, ali_dest);
+            nt_assert(destLen>0 && size_t(destLen)<neededLength);
+            error = GBS_global_string("Missing %li columns in alignment '%s' (got=%li, need=%zu)", size_t(neededLength-destLen), ali_dest, destLen, neededLength);
+        }
+    }
 
     if (error) aw_message(error);
     free(ali_dest);
@@ -1154,23 +1159,27 @@ AW_window *NT_create_realign_dna_window(AW_root *root) {
     aws->at("dest");
     awt_create_selection_list_on_alignments(GLOBAL.gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
 
+    aws->at("autolen"); aws->create_toggle(AWAR_REALIGN_INCALI);
+    aws->at("unmark");  aws->create_toggle(AWAR_REALIGN_UNMARK);
+
     aws->at("realign");
     aws->callback(transdna_event);
-    aws->highlight();
-    aws->create_button("REALIGN", "REALIGN", "T");
+    aws->create_autosize_button("REALIGN", "Realign marked species", "R");
 
     return aws;
 }
 
 
-void NT_create_transpro_variables(AW_root *root, AW_default db1)
-{
-    root->awar_string(AWAR_TRANSPRO_SOURCE, "",         db1);
-    root->awar_string(AWAR_TRANSPRO_DEST,   "",         db1);
-    root->awar_string(AWAR_TRANSPRO_MODE,   "settings", db1);
-    root->awar_int(AWAR_TRANSPRO_POS,    0, db1);
-    root->awar_int(AWAR_TRANSPRO_XSTART, 1, db1);
-    root->awar_int(AWAR_TRANSPRO_WRITE, 0, db1);
+void NT_create_transpro_variables(AW_root *root, AW_default props) {
+    root->awar_string(AWAR_TRANSPRO_SOURCE, "",         props);
+    root->awar_string(AWAR_TRANSPRO_DEST,   "",         props);
+    root->awar_string(AWAR_TRANSPRO_MODE,   "settings", props);
+
+    root->awar_int(AWAR_TRANSPRO_POS,    0, props);
+    root->awar_int(AWAR_TRANSPRO_XSTART, 1, props);
+    root->awar_int(AWAR_TRANSPRO_WRITE,  0, props);
+    root->awar_int(AWAR_REALIGN_INCALI,  0, props);
+    root->awar_int(AWAR_REALIGN_UNMARK,  0, props);
 }
 
 // --------------------------------------------------------------------------------
@@ -1217,7 +1226,7 @@ void TEST_realign() {
             GB_transaction ta(gb_main);
 
             msgs  = "";
-            error = realign(gb_main, "ali_pro", "ali_dna", neededLength);
+            error = realign(gb_main, "ali_pro", "ali_dna", neededLength, false);
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs,
                               "Automatic re-align failed for 'BctFra12'\nReason: not enough nucs for X's at sequence end at ali_pro:40 / ali_dna:109\n" // new correct report (got no nucs for 1 X)
@@ -1315,7 +1324,7 @@ void TEST_realign() {
             GB_transaction ta(gb_main);
             msgs  = "";
             TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
-            error = realign(gb_main, "ali_dna", "ali_pro", neededLength);
+            error = realign(gb_main, "ali_dna", "ali_pro", neededLength, false);
             TEST_EXPECT_ERROR_CONTAINS(error, "Invalid source alignment type");
             TEST_EXPECT_EQUAL(msgs, "");
             ta.close("aborted");
@@ -1373,7 +1382,7 @@ void TEST_realign() {
                 TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, S.seq));
                 msgs             = "";
                 TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
-                error            = realign(gb_main, "ali_pro", "ali_dna", neededLength);
+                error            = realign(gb_main, "ali_pro", "ali_dna", neededLength, false);
                 TEST_EXPECT_NO_ERROR(error);
                 TEST_EXPECT_EQUAL(msgs, "");
                 TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_dna), S.result);
@@ -1465,7 +1474,7 @@ void TEST_realign() {
                 TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, seq[s].seq));
                 msgs  = "";
                 TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
-                error = realign(gb_main, "ali_pro", "ali_dna", neededLength);
+                error = realign(gb_main, "ali_pro", "ali_dna", neededLength, false);
                 TEST_EXPECT_NO_ERROR(error);
                 TEST_EXPECT_CONTAINS(msgs, ERRPREFIX);
                 TEST_EXPECT_EQUAL(msgs.c_str()+ERRPREFIX_LEN, seq[s].failure);
@@ -1495,7 +1504,7 @@ void TEST_realign() {
 
             msgs  = "";
             TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
-            error = realign(gb_main, "ali_pro", "ali_dna", neededLength);
+            error = realign(gb_main, "ali_pro", "ali_dna", neededLength, false);
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: Error while reading 'transl_table' (Illegal (or unsupported) value (666) in 'transl_table' (item='TaxOcell'))\n" FAILONE);
             ta.close("aborted");
@@ -1521,7 +1530,7 @@ void TEST_realign() {
 
                 msgs  = "";
                 TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
-                error = realign(gb_main, "ali_pro", "ali_dna", neededLength);
+                error = realign(gb_main, "ali_pro", "ali_dna", neededLength, false);
                 TEST_EXPECT_NO_ERROR(error);
                 if (i) {
                     TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_pro'\n" FAILONE);
