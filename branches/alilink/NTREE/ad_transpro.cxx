@@ -1110,9 +1110,11 @@ static void transdna_event(AW_window *aww) {
 
         if (!error && neededLength) { // alignment is too short
             if (retrying || !aw_ask_sure("increase_ali_length", GBS_global_string("Increase length of '%s' to %zu?", ali_dest, neededLength))) {
-                long destLen = GBT_get_alignment_len(gb_main, ali_dest);
+                GB_transaction ta(gb_main);
+                long           destLen = GBT_get_alignment_len(gb_main, ali_dest);
                 nt_assert(destLen>0 && size_t(destLen)<neededLength);
-                error = GBS_global_string("Missing %li columns in alignment '%s'", size_t(neededLength-destLen), ali_dest);
+                error                  = GBS_global_string("Missing %li columns in alignment '%s'", size_t(neededLength-destLen), ali_dest);
+                retrying               = false;
             }
             else {
                 error             = GB_begin_transaction(gb_main);
@@ -1128,7 +1130,7 @@ static void transdna_event(AW_window *aww) {
                 }
             }
         }
-    } while (!error && neededLength);
+    } while (!error && retrying);
 
     if (error) aw_message(error);
     free(ali_dest);
