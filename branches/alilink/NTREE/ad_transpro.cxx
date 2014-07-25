@@ -1005,7 +1005,7 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
     GB_ERROR error = 0;
 
     long no_of_marked_species    = GBT_count_marked_species(gb_main);
-    long no_of_realigned_species = 0;
+    long no_of_realigned_species = 0; // count successfully realigned species
 
     arb_progress progress("Re-aligner", no_of_marked_species);
     progress.auto_subtitles("Re-aligning species");
@@ -1062,30 +1062,28 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
 
         if (realigner.failure()) {
             nt_assert(!error);
-            GB_warning(GBS_global_string("Automatic re-align failed for '%s'\nReason: %s",
-                                         GBT_read_name(gb_species), realigner.failure()));
+            GB_warningf("Automatic re-align failed for '%s'\nReason: %s", GBT_read_name(gb_species), realigner.failure());
+        }
+        else {
+            no_of_realigned_species++;
         }
 
         progress.inc_and_check_user_abort(error);
-        no_of_realigned_species++;
     }
 
     neededLength = realigner.get_needed_dest_alilen();
 
-    if (!error) {
-        int not_realigned = no_of_marked_species - no_of_realigned_species;
-        if (not_realigned>0) {
-            // case should no longer happen!
-            UNCOVERED();
-            GB_warning(GBS_global_string("Did not try to realign %i species (unknown reason - please report)", not_realigned));
-            progress.inc_by(not_realigned);
-        }
+    if (no_of_marked_species == 0) {
+        GB_warning("Please mark some species to realign them");
     }
-    else {
-        progress.done();
+    else if (no_of_realigned_species != no_of_marked_species) {
+        long failed = no_of_marked_species-no_of_realigned_species;
+        nt_assert(failed>0);
+        GB_warningf("%li marked species failed to realign", failed);
     }
 
-    if (!error) error = GBT_check_data(gb_main,ali_dest);
+    if (error) progress.done();
+    else error = GBT_check_data(gb_main,ali_dest);
 
     return error;
 }
@@ -1224,6 +1222,7 @@ void TEST_realign() {
             TEST_EXPECT_EQUAL(msgs,
                               "Automatic re-align failed for 'BctFra12'\nReason: not enough nucs for X's at sequence end at ali_pro:40 / ali_dna:109\n" // new correct report (got no nucs for 1 X)
                               "Automatic re-align failed for 'StrRamo3'\nReason: not enough nucs for X's at sequence end at ali_pro:36 / ali_dna:106\n" // new correct report (got 3 nucs for 4 Xs)
+                              "2 marked species failed to realign\n"
                 );
 
             TEST_EXPECT_EQUAL(DNASEQ("BctFra12"),    "ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"); // now fails as expected => seq unchanged
@@ -1430,6 +1429,8 @@ void TEST_realign() {
 #define ERRPREFIX     "Automatic re-align failed for 'TaxOcell'\nReason: "
 #define ERRPREFIX_LEN 49
 
+#define FAILONE "1 marked species failed to realign\n"
+
             // dna of TaxOcell:
             // "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G----......"
 
@@ -1438,17 +1439,17 @@ void TEST_realign() {
                 // { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "sdfjlksdjf" }, // templ
 
                 // wanted realign failures:
-                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'GGA' translates to 'G', not to 'P' at ali_pro:25 / ali_dna:70\n" },    // ok to fail: 5 Xs impossible
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Alignment 'ali_dna' is too short (increase its length to 252)\n" }, // ok to fail: wrong alignment length
-                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'GGA' translates to 'G', not to 'P' at ali_pro:25 / ali_dna:70\n" },    // ok to fail
-                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TGA' does never translate to 'A' at ali_pro:8 / ali_dna:19\n" },       // ok to fail
-                { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'ACG' translates to 'T', not to 'R' at ali_pro:13 / ali_dna:36\n" },    // ok to fail
-                { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CGG' translates to 'R', not to 'G' at ali_pro:24 / ali_dna:61\n" },    // ok to fail: some AA missing in the middle
-                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Sync behind 'X' failed foremost with: not enough nucs left for codon of 'H' at ali_pro:38 / ali_dna:117\n" }, // ok to fail: too many AA
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY----H...", "Sync behind 'X' failed foremost with: too much trailing DNA (10 nucs, but only 9 columns left) at ali_pro:43 / ali_dna:106\n" }, // ok to fail: not enough space to place extra nucs behind 'H'
+                { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'GGA' translates to 'G', not to 'P' at ali_pro:25 / ali_dna:70\n" FAILONE },    // ok to fail: 5 Xs impossible
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Alignment 'ali_dna' is too short (increase its length to 252)\n" FAILONE }, // ok to fail: wrong alignment length
+                { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'GGA' translates to 'G', not to 'P' at ali_pro:25 / ali_dna:70\n" FAILONE },    // ok to fail
+                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TGA' does never translate to 'A' at ali_pro:8 / ali_dna:19\n" FAILONE },       // ok to fail
+                { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'ACG' translates to 'T', not to 'R' at ali_pro:13 / ali_dna:36\n" FAILONE },    // ok to fail
+                { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CGG' translates to 'R', not to 'G' at ali_pro:24 / ali_dna:61\n" FAILONE },    // ok to fail: some AA missing in the middle
+                { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Sync behind 'X' failed foremost with: not enough nucs left for codon of 'H' at ali_pro:38 / ali_dna:117\n" FAILONE }, // ok to fail: too many AA
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY----H...", "Sync behind 'X' failed foremost with: too much trailing DNA (10 nucs, but only 9 columns left) at ali_pro:43 / ali_dna:106\n" FAILONE }, // ok to fail: not enough space to place extra nucs behind 'H'
 
                 // failing realignments that should work:
-                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "'ATG' translates to 'M', not to 'S' at ali_pro:4 / ali_dna:1\n" },                      // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
+                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "'ATG' translates to 'M', not to 'S' at ali_pro:4 / ali_dna:1\n" FAILONE },                      // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
 
                 { 0, 0 }
             };
@@ -1496,7 +1497,7 @@ void TEST_realign() {
             TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
             error = realign(gb_main, "ali_pro", "ali_dna", neededLength);
             TEST_EXPECT_NO_ERROR(error);
-            TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: Error while reading 'transl_table' (Illegal (or unsupported) value (666) in 'transl_table' (item='TaxOcell'))\n");
+            TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: Error while reading 'transl_table' (Illegal (or unsupported) value (666) in 'transl_table' (item='TaxOcell'))\n" FAILONE);
             ta.close("aborted");
         }
 
@@ -1523,10 +1524,10 @@ void TEST_realign() {
                 error = realign(gb_main, "ali_pro", "ali_dna", neededLength);
                 TEST_EXPECT_NO_ERROR(error);
                 if (i) {
-                    TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_pro'\n");
+                    TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_pro'\n" FAILONE);
                 }
                 else {
-                    TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_dna'\n");
+                    TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_dna'\n" FAILONE);
                 }
                 ta.close("aborted");
             }
