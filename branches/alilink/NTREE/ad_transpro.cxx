@@ -783,8 +783,8 @@ void RealignAttempt::perform() {
                 nt_assert(!complete);
                 complete = sync_behind_X_and_distribute(x_count, x_start, x_start_prot);
                 if (complete || failed()) break;
-                // @@@ shouldn't we otherwise perform the else branch directly?
-                // @@@ or fail?
+                nt_assert(!p); // not all proteins were processed
+                if (p) fail = FailedAt("internal error", aligned_protein-1, compressed_dna);
             }
             else if (p) {
                 AWT_allowedCode allowed_code_left;
