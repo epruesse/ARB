@@ -23,6 +23,60 @@
 #include <cctype>
 #include <arb_defs.h>
 
+template<typename T>
+class BufferPtr {
+    T *const  bstart;
+    T        *curr;
+public:
+    explicit BufferPtr(T *b) : bstart(b), curr(b) {}
+
+    const T* start() const { return bstart; }
+    size_t offset() const { return curr-bstart; }
+
+    T get() { return *curr++; }
+
+    void put(T c) { *curr++ = c; }
+    void put(T c1, T c2, T c3) { put(c1); put(c2); put(c3); }
+    void put(T c, size_t count) {
+        memset(curr, c, count*sizeof(T));
+        inc(count);
+    }
+    void copy(BufferPtr<const T>& source, size_t count) {
+        memcpy(curr, source, count*sizeof(T));
+        inc(count);
+        source.inc(count);
+    }
+
+    T operator[](int i) const {
+        nt_assert(i>=0 || size_t(-i)<offset());
+        return curr[i];
+    }
+
+    operator const T*() const { return curr; }
+    operator T*() { return curr; }
+
+    void inc(int o) { curr += o; nt_assert(curr>=bstart); }
+
+    BufferPtr<T>& operator++() { curr++; return *this; }
+    BufferPtr<T>& operator--() { inc(-1); return *this; }
+};
+
+template<typename T>
+class SizedBufferPtr : public BufferPtr<T> {
+    size_t len;
+public:
+    SizedBufferPtr(T *b, size_t len_) : BufferPtr<T>(b), len(len_) {}
+    ~SizedBufferPtr() { nt_assert(valid()); }
+    bool valid() const { return this->offset()<=len; }
+    size_t restLength() const { nt_assert(valid()); return len-this->offset(); }
+    size_t length() const { return len; }
+};
+
+typedef SizedBufferPtr<const char> SizedReadBuffer;
+typedef SizedBufferPtr<char>       SizedWriteBuffer;
+
+// ----------------------------------------
+
 static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, int selected_startpos,
                         bool    translate_all, const char *ali_source, const char *ali_dest)
 {
@@ -496,41 +550,12 @@ public:
 };
 
 class RealignAttempt : virtual Noncopyable {
-    AWT_allowedCode allowed_code;
+    AWT_allowedCode       allowed_code;
+    SizedReadBuffer       compressed_dna;
+    BufferPtr<const char> aligned_protein;
+    SizedWriteBuffer      target_dna;
+    FailedAt              fail;
 
-    const char *const  compressed_dna_start;
-    const char        *compressed_dna;
-    size_t             compressed_len;  // length of compressed_dna
-
-    const char *const  aligned_protein_start;
-    const char        *aligned_protein;
-
-    char *const  target_dna_start;
-    char        *target_dna;
-    size_t       target_len;  // wanted target length
-
-    FailedAt fail;
-
-    void write_codon(char c) {
-        memset(target_dna, c, 3);
-        target_dna += 3;
-    }
-    void write_codon(char c1, char c2, char c3) {
-        target_dna[0]  = c1;
-        target_dna[1]  = c2;
-        target_dna[2]  = c3;
-        target_dna    += 3;
-    }
-    void copy_codon(const char *source) {
-        memcpy(target_dna, source, 3);
-        target_dna += 3;
-    }
-    void copy_codon() {
-        copy_codon(compressed_dna);
-        compressed_dna += 3;
-    }
-
-    GB_ERROR distribute_xdata(size_t dna_dist_size, size_t xcount, char *xtarget, const AWT_allowedCode& with_code);
     void perform();
 
     bool sync_behind_X_and_distribute(int& x_count, char*& x_start, const char *const x_start_prot);
@@ -538,14 +563,9 @@ class RealignAttempt : virtual Noncopyable {
 public:
     RealignAttempt(const AWT_allowedCode& allowed_code_, const char *compressed_dna_, size_t compressed_len_, const char *aligned_protein_, char *target_dna_, size_t target_len_)
         : allowed_code(allowed_code_),
-          compressed_dna_start(compressed_dna_),
-          compressed_dna(compressed_dna_),
-          compressed_len(compressed_len_),
-          aligned_protein_start(aligned_protein_),
+          compressed_dna(compressed_dna_, compressed_len_),
           aligned_protein(aligned_protein_),
-          target_dna_start(target_dna_),
-          target_dna(target_dna_),
-          target_len(target_len_)
+          target_dna(target_dna_, target_len_)
     {
         nt_assert(aligned_protein[0]);
         perform();
@@ -555,16 +575,15 @@ public:
     const FailedAt& failed() const { return fail; }
 };
 
-GB_ERROR RealignAttempt::distribute_xdata(size_t dna_dist_size, size_t xcount, char *xtarget, const AWT_allowedCode& with_code) {
-    /*! distributes 'dna_dist_size' nucs starting at 'compressed_dna'
+static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtarget_, const AWT_allowedCode& with_code) {
+    /*! distributes 'dna' to marked X-positions
      * @param xtarget destination buffer (target positions are marked with '!')
      * @param xcount number of X's encountered
      */
 
-    LocallyModify<char*> writePtr(target_dna, xtarget);
-
-    Distributor dist(xcount, dna_dist_size);
-    GB_ERROR    error = dist.get_error();
+    BufferPtr<char> xtarget(xtarget_);
+    Distributor     dist(xcount, dna.length());
+    GB_ERROR        error = dist.get_error();
     if (!error) {
         Distributor best(dist);
 
@@ -577,12 +596,12 @@ GB_ERROR RealignAttempt::distribute_xdata(size_t dna_dist_size, size_t xcount, c
         }
 
         if (best.mayFailTranslation()) {
-            if (!best.translates_to_Xs(compressed_dna, with_code)) {
+            if (!best.translates_to_Xs(dna, with_code)) {
                 nt_assert(!error);
                 error = "no translating X-distribution found";
                 dist.reset();
                 do {
-                    if (dist.translates_to_Xs(compressed_dna, with_code)) {
+                    if (dist.translates_to_Xs(dna, with_code)) {
                         best  = dist;
                         error = NULL;
                         break;
@@ -591,7 +610,7 @@ GB_ERROR RealignAttempt::distribute_xdata(size_t dna_dist_size, size_t xcount, c
 
                 while (dist.next()) {
                     if (dist.get_score() > best.get_score()) {
-                        if (dist.translates_to_Xs(compressed_dna, with_code)) {
+                        if (dist.translates_to_Xs(dna, with_code)) {
                             best = dist;
                         }
                     }
@@ -600,30 +619,27 @@ GB_ERROR RealignAttempt::distribute_xdata(size_t dna_dist_size, size_t xcount, c
         }
 
         if (!error) { // now really distribute nucs
-            int          off           = 0; // offset into compressed_dna
-            char * const xtarget_start = target_dna;
-
             for (int x = 0; x<best.size(); ++x) {
-                while (target_dna[0] != '!') {
-                    nt_assert(target_dna[1] && target_dna[2]); // buffer overflow
-                    target_dna += 3;
+                while (xtarget[0] != '!') {
+                    nt_assert(xtarget[1] && xtarget[2]); // buffer overflow
+                    xtarget.inc(3);
                 }
 
                 switch (best[x]) {
                     case 2: {
                         enum { UNDECIDED, SPREAD, LEFT, RIGHT } mode = UNDECIDED;
 
-                        bool gap_right   = isGap(target_dna[3]);
+                        bool gap_right   = isGap(xtarget[3]);
                         int  follow_dist = x<best.size()-1 ? best[x+1] : 0;
 
-                        bool has_gaps_left  = target_dna>xtarget_start && isGap(target_dna[-1]);
+                        bool has_gaps_left  = xtarget.offset()>0 && isGap(xtarget[-1]);
                         bool has_gaps_right = gap_right || follow_dist == 1;
 
                         if (has_gaps_left && has_gaps_right) mode = SPREAD;
                         else if (has_gaps_left)              mode = LEFT;
                         else if (has_gaps_right)             mode = RIGHT;
                         else {
-                            bool has_nogaps_left  = target_dna>xtarget_start && !isGap(target_dna[-1]);
+                            bool has_nogaps_left  = xtarget.offset()>0 && !isGap(xtarget[-1]);
                             bool has_nogaps_right = !gap_right && follow_dist == 3;
 
                             if (has_nogaps_left && has_nogaps_right) mode = SPREAD;
@@ -631,24 +647,23 @@ GB_ERROR RealignAttempt::distribute_xdata(size_t dna_dist_size, size_t xcount, c
                             else                                     mode = LEFT;
                         }
 
-                        char d1 = compressed_dna[off];
-                        char d2 = compressed_dna[off+1];
+                        char d1 = dna.get();
+                        char d2 = dna.get();
 
                         switch (mode) {
                             case UNDECIDED: nt_assert(0); // fall-through in NDEBUG
-                            case SPREAD: write_codon(d1,  '-', d2);  break;
-                            case LEFT:   write_codon(d1,  d2,  '-'); break;
-                            case RIGHT:  write_codon('-', d1,  d2);  break;
+                            case SPREAD: xtarget.put(d1,  '-', d2);  break;
+                            case LEFT:   xtarget.put(d1,  d2,  '-'); break;
+                            case RIGHT:  xtarget.put('-', d1,  d2);  break;
                         }
 
                         break;
                     }
-                    case 1: write_codon('-', compressed_dna[off], '-'); break;
-                    case 3: copy_codon(compressed_dna+off); break;
+                    case 1: xtarget.put('-', dna.get(), '-'); break;
+                    case 3: xtarget.copy(dna, 3); break;
                     default: nt_assert(0); break;
                 }
-
-                off += best[x];
+                nt_assert(dna.valid());
             }
         }
     }
@@ -662,33 +677,31 @@ bool RealignAttempt::sync_behind_X_and_distribute(int& x_count, char*& x_start, 
 //    - we have fixed number of Xs
 // 2. sync at start of sequence if enough dna available
 //    - we have variable number of Xs (depending on number of gaps before data-start in protein sequence)
-// 
+//
 // (1) is implemented by this function
 
-    size_t written_dna     = target_dna-target_dna_start;
-    size_t target_rest_len = target_len-written_dna;
-    bool   complete        = false;
+    bool complete = false;
 
     nt_assert(!failed());
-    nt_assert(aligned_protein>aligned_protein_start);
+    nt_assert(aligned_protein.offset()>0);
     const char p = aligned_protein[-1];
 
-    size_t compressed_rest_len = compressed_len - (compressed_dna-compressed_dna_start);
-    nt_assert(compressed_rest_len<=compressed_len);
+    size_t compressed_rest_len = compressed_dna.restLength();
     nt_assert(strlen(compressed_dna) == compressed_rest_len);
 
     size_t min_dna = x_count;
-    size_t max_dna = std::min(x_count*3, int(compressed_rest_len));
+    size_t max_dna = std::min(size_t(x_count)*3, compressed_rest_len);
 
     if (min_dna>max_dna) {
         fail = FailedAt("not enough nucs for X's at sequence end", x_start_prot, compressed_dna);
     }
     else if (p) {
         FailedAt foremost;
+        size_t   target_rest_len = target_dna.restLength();
 
         for (size_t x_dna = min_dna; x_dna<=max_dna; ++x_dna) { // prefer low amounts of used dna
-            const char *dna_rest     = compressed_dna      + x_dna;
-            size_t      dna_rest_len = compressed_rest_len - x_dna;
+            const char *dna_rest     = compressed_dna + x_dna;
+            size_t      dna_rest_len = compressed_rest_len     - x_dna;
 
             nt_assert(strlen(dna_rest) == dna_rest_len);
             nt_assert(compressed_rest_len>=x_dna);
@@ -697,7 +710,8 @@ bool RealignAttempt::sync_behind_X_and_distribute(int& x_count, char*& x_start, 
             FailedAt       restFailed = attemptRest.failed();
 
             if (!restFailed) {
-                GB_ERROR disterr = distribute_xdata(x_dna, x_count, x_start, attemptRest.get_remaining_code());
+                SizedReadBuffer distrib_dna(compressed_dna, x_dna);
+                GB_ERROR        disterr = distribute_xdata(distrib_dna, x_count, x_start, attemptRest.get_remaining_code());
                 if (disterr) {
                     restFailed = FailedAt(disterr, x_start_prot, dna_rest); // prot=start of Xs; dna=start of sync (behind Xs)
                 }
@@ -732,7 +746,8 @@ bool RealignAttempt::sync_behind_X_and_distribute(int& x_count, char*& x_start, 
         nt_assert(min_dna>0);
         size_t x_dna;
         for (x_dna = max_dna; x_dna>=min_dna; --x_dna) {     // prefer high amounts of dna
-            fail_reason = distribute_xdata(x_dna, x_count, x_start, allowed_code); // @@@ pass/modify usable codes?
+            SizedReadBuffer append_dna(compressed_dna, x_dna);
+            fail_reason = distribute_xdata(append_dna, x_count, x_start, allowed_code); // @@@ pass/modify usable codes?
             if (!fail_reason) break; // found distribution -> done
         }
 
@@ -741,7 +756,7 @@ bool RealignAttempt::sync_behind_X_and_distribute(int& x_count, char*& x_start, 
         }
         else {
             fail = FailedAt(); // clear
-            compressed_dna += x_dna;
+            compressed_dna.inc(x_dna);
         }
     }
 
@@ -761,9 +776,9 @@ void RealignAttempt::perform() {
     bool complete = false; // set to true, if recursive attempt succeeds
 
     for (;;) {
-        char p = *aligned_protein++;
+        char p = aligned_protein.get();
 
-        if (isGap(p)) write_codon(p);
+        if (isGap(p)) target_dna.put(p, 3);
         else if (toupper(p)=='X') { // one X represents 1 to 3 DNAs (normally 1 or 2, but 'NNN' translates to 'X')
             x_start      = target_dna;
             x_start_prot = --aligned_protein;
@@ -772,11 +787,11 @@ void RealignAttempt::perform() {
             for (;;) {
                 char p2 = toupper(aligned_protein[0]);
 
-                if      (p2=='X')   { x_count++; write_codon('!'); } // fill X space with marker
-                else if (isGap(p2)) write_codon(p2);
+                if      (p2=='X')   { x_count++; target_dna.put('!', 3); } // fill X space with marker
+                else if (isGap(p2)) target_dna.put(p2, 3);
                 else break;
 
-                aligned_protein++;
+                ++aligned_protein;
             }
         }
         else {
@@ -789,9 +804,9 @@ void RealignAttempt::perform() {
             }
             else if (p) {
                 AWT_allowedCode allowed_code_left;
-                size_t          compressed_rest_len = compressed_len - (compressed_dna-compressed_dna_start);
+                size_t          compressed_rest_len = compressed_dna.restLength();
 
-                if (compressed_rest_len>compressed_len || compressed_rest_len<3) {
+                if (compressed_rest_len<3) {
                     fail = FailedAt(GBS_global_string("not enough nucs left for codon of '%c'", p), aligned_protein-1, compressed_dna);
                 }
                 else {
@@ -806,28 +821,26 @@ void RealignAttempt::perform() {
                 if (failed()) break;
 
                 allowed_code = allowed_code_left;
-                copy_codon();
+                target_dna.copy(compressed_dna, 3);
             }
 
             if (!p) break; // done
         }
     }
 
+    nt_assert(compressed_dna.valid());
     nt_assert(!x_count || failed());
 
     if (!failed() && !complete) {
-        while (target_dna>target_dna_start && isGap(target_dna[-1])) --target_dna; // remove terminal gaps
+        while (target_dna.offset()>0 && isGap(target_dna[-1])) --target_dna; // remove terminal gaps
 
         // append leftover dna-data (data w/o corresponding aa)
         {
-            size_t compressed_rest_len = compressed_len - (compressed_dna-compressed_dna_start);
-            int    inserted            = target_dna-target_dna_start;
-            size_t target_rest_len     = target_len-inserted;
+            size_t compressed_rest_len = compressed_dna.restLength();
+            size_t target_rest_len     = target_dna.restLength();
 
             if (compressed_rest_len<=target_rest_len) {
-                memcpy(target_dna, compressed_dna, compressed_rest_len);
-                target_dna     += compressed_rest_len;
-                compressed_dna += compressed_rest_len;
+                target_dna.copy(compressed_dna, compressed_rest_len);
             }
             else {
                 fail = FailedAt(GBS_global_string("too much trailing DNA (%zu nucs, but only %zu columns left)",
@@ -836,22 +849,13 @@ void RealignAttempt::perform() {
             }
         }
 
-        // fill rest of sequence with dots
-        if (!failed()) {
-            int inserted        = target_dna-target_dna_start;
-            int target_rest_len = target_len-inserted;
-            nt_assert(target_rest_len>=0);
-            if (target_rest_len) {
-                memset(target_dna, '.', target_rest_len);
-                target_dna += target_rest_len;
-            }
-        }
-        target_dna[0] = 0;
+        if (!failed()) target_dna.put('.', target_dna.restLength()); // fill rest of sequence with dots
+        *target_dna = 0;
     }
 
 #if defined(ASSERTION_USED)
     if (!failed()) {
-        nt_assert(strlen(target_dna_start) == (unsigned)target_len);
+        nt_assert(strlen(target_dna.start()) == target_dna.length());
     }
 #endif
 }
