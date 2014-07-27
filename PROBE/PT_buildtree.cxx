@@ -319,7 +319,7 @@ public:
         return cmp>0;
     }
 
-    void dump(FILE *out, size_t max_kb_usable) const {
+    void print_info(FILE *out, size_t max_kb_usable) const {
         fprintf(out,
                 "Estimated memory usage for %i %s: %s%s\n",
                 passes,
@@ -348,7 +348,9 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable,
                 PartitionSpec curr(forced_passes, max_kb_for_passes(prob, forced_passes, overallBases), depth);
                 if (curr.isBetterThan(best, max_kb_usable)) {
                     best = curr;
-                    best.dump(stdout, max_kb_usable);
+#if defined(DEBUG)
+                    best.print_info(stdout, max_kb_usable);
+#endif
                 }
             }
         }
@@ -357,13 +359,17 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable,
                 PartitionSpec curr(passes, max_kb_for_passes(prob, passes, overallBases), depth);
                 if (curr.isBetterThan(best, max_kb_usable)) {
                     best = curr;
-                    best.dump(stdout, max_kb_usable);
+#if defined(DEBUG)
+                    best.print_info(stdout, max_kb_usable);
+#endif
                 }
                 if (!curr.willUseMoreThan(max_kb_usable)) break;
             }
         }
     }
     fflush(stdout);
+
+    best.print_info(stdout, max_kb_usable);
 
     if (best.willUseMoreThan(max_kb_usable)) {
         const int allowed_passes = PrefixIterator(PT_QU, PT_T, PT_MAX_PARTITION_DEPTH).steps();
