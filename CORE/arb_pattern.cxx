@@ -48,7 +48,6 @@ char* arb_shell_expand(const char* str) {
     if (error) {
         GB_export_errorf("Encountered error \"%s\" while expanding \"%s\"",
                         error, str);
-        wordfree(&result);
         return strdup(str);
     }
 
@@ -63,6 +62,7 @@ char* arb_shell_expand(const char* str) {
         GBS_strcat(out, result.we_wordv[i]);
     }
 
+    wordfree(&result);
     return GBS_strclose(out);
 }
 
@@ -90,6 +90,12 @@ void TEST_arb_shell_expand() {
     res = arb_shell_expand("$ARBHOME");
     TEST_REJECT(GB_have_error());
     TEST_EXPECT_EQUAL(res, getenv("ARBHOME"));
+    free(res);
+
+    res = arb_shell_expand("$ARBHOME&");
+    TEST_EXPECT(GB_have_error());
+    GB_await_error();
+    TEST_EXPECT_EQUAL(res, "$ARBHOME&");
     free(res);
     
 }
