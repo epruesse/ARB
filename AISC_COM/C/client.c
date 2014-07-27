@@ -242,7 +242,7 @@ aisc_com *aisc_open(const char *path, AISC_Object& main_obj, long magic, GB_ERRO
     if (err) {
         if (*err) {
             link->error = err;
-            PRTERR("ARB_DB_CLIENT_OPEN");
+            PRTERR("AISC");
         }
         if (link->socket) {
             shutdown(link->socket, SHUT_RDWR);
