@@ -99,8 +99,11 @@ static GB_ERROR arb_open_tcp_socket(char* name, bool do_connect, int *fd);
  * @param  do_connect    connect if true (client), otherwise bind (server)
  * @param  fd            file descriptor of opened socket (out)
  * @param  filename_out  filename of unix socket (out)
+ *                       must be NULL or allocated (will be freed)
  *
- * @result NULL if all went fine, otherwise error message
+ * @result NULL if all went fine
+ *         "" if could not connect
+ *         otherwise error message
  */
 GB_ERROR arb_open_socket(const char* name, bool do_connect, int *fd, char** filename_out) {
     if (!name || strlen(name) == 0) {
@@ -152,8 +155,12 @@ static GB_ERROR arb_open_unix_socket(char* filename, bool do_connect, int *fd) {
     // connect or bind socket
     if (do_connect) {
         if (connect(*fd, (sockaddr*)&unix_socket, sizeof(sockaddr_un))) {
-            return GBS_global_string("Failed to connect unix socket \"%s\": %s",
-                                     filename, strerror(errno));
+            if (errno == ECONNREFUSED || errno == ENOENT) {
+                return "";
+            } else {
+                return GBS_global_string("Failed to connect unix socket \"%s\": %s (%i)",
+                                         filename, strerror(errno), errno);
+            }
         }
     }
     else {
@@ -208,8 +215,12 @@ static GB_ERROR arb_open_tcp_socket(char* name, bool do_connect, int *fd) {
     int one = 1;
     if (do_connect) {
         if (connect(*fd, (sockaddr*)&tcp_socket, sizeof(tcp_socket))) {
-            return GBS_global_string("Failed to connect TCP socket \"%s\": %s",
+            if (errno == ECONNREFUSED) {
+                return "";
+            } else {
+                return GBS_global_string("Failed to connect TCP socket \"%s\": %s",
                                      name, strerror(errno));
+            }
         }
     }
     else { // no connect (bind)
@@ -234,58 +245,113 @@ static GB_ERROR arb_open_tcp_socket(char* name, bool do_connect, int *fd) {
 #ifdef UNIT_TESTS
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
+#include <sys/wait.h>
 #endif
+
+int echo_server(const char* portname) {
+    int mypid = fork();
+    if (mypid) return mypid;
+   
+    int fd;
+    char *filename = NULL;
+    GB_ERROR error = arb_open_socket(portname, false, &fd, &filename);
+    if (error) {
+        exit(1);
+    }
+
+    if (listen(fd, 1)) {
+        exit(2);
+    }
+
+    int cli_fd = accept(fd, NULL, NULL);
+    if (cli_fd < 0) {
+        exit(3);
+    }
+
+
+    char buf[500];
+    ssize_t n;
+    do {
+        n = sizeof(buf);
+        n = arb_socket_read(fd, buf, n);
+        n = arb_socket_write(fd, buf, n);
+    } while (n && strncmp(buf, "exit", sizeof("exit")));
+             
+    close(fd);
+    if (filename) { 
+        unlink(filename);
+        free(filename);
+    }
+   
+    exit(0);
+}
 
 void TEST_open_socket() {
     int fd;
     char *filename = NULL;
+    int server_pid, server_status;
+
+    // set up port names
+    char *unix_socket = arb_shell_expand(":$ARBHOME/UNIT_TESTER/sockets/test.socket");
+    char tcp_socket[sizeof("65536")], tcp_socket2[sizeof("localhost:65536")];
+    int port = 32039;
+    for (; port < 32139; port++) {
+        snprintf(tcp_socket, sizeof(tcp_socket), "%i", port);
+        const char *err = arb_open_socket(tcp_socket, true, &fd, &filename);
+        if (!err) { // connected
+            close(fd);
+        } 
+        else if (err[0] == '\0') { // could not connect
+            // found a free socket
+            break;
+        } 
+        else { // other error
+            TEST_EXPECT_NULL(err);
+        }
+    }
+    snprintf(tcp_socket2, sizeof(tcp_socket2), "localhost:%i", port);
+
     
-    TEST_EXPECT_NULL(arb_open_socket("32039", false, &fd, &filename));
+    // Test opening server sockets
+    TEST_EXPECT_NULL(arb_open_socket(tcp_socket, false, &fd, &filename));
     TEST_EXPECT(fd>0);
     TEST_EXPECT_NULL(filename);
     TEST_EXPECT_EQUAL(close(fd), 0);
 
-    TEST_EXPECT_NULL(arb_open_socket("localhost:32039", false, &fd, &filename));
+    TEST_EXPECT_NULL(arb_open_socket(tcp_socket2, false, &fd, &filename));
     TEST_EXPECT(fd>0);
     TEST_EXPECT_NULL(filename);
     TEST_EXPECT_EQUAL(close(fd), 0);
 
-    TEST_EXPECT_NULL(arb_open_socket(":/tmp/$USER-$$", false, &fd, &filename));
+    TEST_EXPECT_NULL(arb_open_socket(unix_socket, false, &fd, &filename));
     TEST_EXPECT(fd>0);
     TEST_REJECT_NULL(filename);
     TEST_EXPECT_EQUAL(close(fd), 0);
     TEST_EXPECT_EQUAL(unlink(filename), 0);
     freenull(filename);
 
-    TEST_EXPECT_NULL(system("nc -l 32039&"));
+    // Test connecting to existing socket
+    server_pid = echo_server(tcp_socket);
+    TEST_REJECT_NULL(server_pid);
     usleep(10000);
-    TEST_EXPECT_NULL(arb_open_socket("32039", true, &fd, &filename));
+    TEST_EXPECT_NULL(arb_open_socket(tcp_socket, true, &fd, &filename));
     TEST_EXPECT(fd>0);
     TEST_EXPECT_NULL(filename);
     TEST_EXPECT_EQUAL(close(fd), 0);
+    TEST_EXPECT_EQUAL(server_pid, waitpid(server_pid, &server_status, 0));
 
-    TEST_EXPECT_NULL(system("nc -l 32039&"));
+    server_pid = echo_server(unix_socket);
     usleep(10000);
-    TEST_EXPECT_NULL(arb_open_socket("localhost:32039", true, &fd, &filename));
-    TEST_EXPECT(fd>0);
-    TEST_EXPECT_NULL(filename);
-    TEST_EXPECT_EQUAL(close(fd), 0);
-
-    char fname[500], buf[500];
-    snprintf(fname, sizeof(fname), "/tmp/test-socket-%hi", getpid());
-    snprintf(buf, sizeof(buf), "nc -l -U %s&", fname);
-    TEST_EXPECT_NULL(system(buf));
-    snprintf(buf, sizeof(buf), ":%s", fname);
-    usleep(10000);
-    TEST_EXPECT_NULL(arb_open_socket(buf, true, &fd, &filename));
+    TEST_EXPECT_NULL(arb_open_socket(unix_socket, true, &fd, &filename));
     TEST_EXPECT(fd>0);
     TEST_EXPECT_EQUAL(filename, fname);
     TEST_EXPECT_EQUAL(close(fd), 0);
     TEST_EXPECT_EQUAL(unlink(filename), 0);
+    TEST_EXPECT_EQUAL(server_pid, waitpid(server_pid, &server_status, 0));
     freenull(filename);
 
-    // cannot test do_connect=true w/o server to connect to
-    // (entire process is blocking)
+    
+    free(unix_socket);
 }
 
 #endif // UNIT_TESTS
