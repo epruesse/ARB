@@ -409,6 +409,7 @@ void TEST_open_socket() {
     
     free(unix_socket);
 }
+TEST_PUBLISH(TEST_open_socket);
 
 #endif // UNIT_TESTS
 
