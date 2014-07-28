@@ -1454,7 +1454,8 @@ void TEST_realign() {
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY----H...", "Sync behind 'X' failed foremost with: too much trailing DNA (10 nucs, but only 9 columns left) at ali_pro:43 / ali_dna:106\n" FAILONE }, // ok to fail: not enough space to place extra nucs behind 'H'
 
                 // failing realignments that should work:
-                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "'ATG' translates to 'M', not to 'S' at ali_pro:4 / ali_dna:1\n" FAILONE },                      // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
+                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "'ATG' translates to 'M', not to 'S' at ali_pro:4 / ali_dna:1\n" FAILONE }, // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
+                { "--SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX--..", "'ATG' translates to 'M', not to 'S' at ali_pro:3 / ali_dna:1\n" FAILONE }, // @@@ should fail with "not enough gaps"
 
                 { 0, 0 }
             };
