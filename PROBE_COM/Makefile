@@ -72,14 +72,6 @@ client.o: $(ARBHOME)/INCLUDE/gccver.h
 client.o: $(ARBHOME)/INCLUDE/SigHandler.h
 client.o: $(ARBHOME)/INCLUDE/test_global.h
 
-common.o: $(ARBHOME)/INCLUDE/arb_assert.h
-common.o: $(ARBHOME)/INCLUDE/arb_core.h
-common.o: $(ARBHOME)/INCLUDE/arb_cs.h
-common.o: $(ARBHOME)/INCLUDE/arb_msg.h
-common.o: $(ARBHOME)/INCLUDE/attributes.h
-common.o: $(ARBHOME)/INCLUDE/dupstr.h
-common.o: $(ARBHOME)/INCLUDE/test_global.h
-
 GENC/aisc_global.o: aisc_func_types.h
 GENC/aisc_global.o: aisc_global.h
 GENC/aisc_global.o: aisc_server.h
