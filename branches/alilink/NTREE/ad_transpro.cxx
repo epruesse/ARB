@@ -871,6 +871,35 @@ class Realigner {
         return compressed;
     }
 
+    GB_ERROR annotate_fail_position(const FailedAt& failed, const char *source, const char *dest, const char *compressed_dest) {
+        int source_fail_pos = failed.protein_at() - source;
+        int dest_fail_pos   = 0;
+        {
+            int fail_d_base_count = failed.dna_at() - compressed_dest;
+
+            const char *dp = dest;
+
+            for (;;) {
+                char c = *dp++;
+
+                if (!c) { // failure at end of sequence
+                    dest_fail_pos++; // report position behind last non-gap
+                    break;
+                }
+                if (!isGap(c)) {
+                    dest_fail_pos = (dp-1)-dest;
+                    if (!fail_d_base_count) break;
+                    fail_d_base_count--;
+                }
+            }
+        }
+        return GBS_global_string("%s at %s:%i / %s:%i",
+                                 failed.why(),
+                                 ali_source, info2bio(source_fail_pos),
+                                 ali_dest, info2bio(dest_fail_pos));
+    }
+
+
 public:
     Realigner(const char *ali_source_, const char *ali_dest_, size_t ali_len_)
         : ali_source(ali_source_),
@@ -911,37 +940,11 @@ public:
                 allowed_code = attempt.get_remaining_code();
             }
             else {
-                int source_fail_pos = failed.protein_at() - source;
-                int dest_fail_pos   = 0;
-                {
-                    int fail_d_base_count = failed.dna_at() - compressed_dest;
-
-                    const char *dp = dest;
-
-                    for (;;) {
-                        char c = *dp++;
-
-                        if (!c) { // failure at end of sequence
-                            dest_fail_pos++; // report position behind last non-gap
-                            break;
-                        }
-                        if (!isGap(c)) {
-                            dest_fail_pos = (dp-1)-dest;
-                            if (!fail_d_base_count) break;
-                            fail_d_base_count--;
-                        }
-                    }
-                }
-                fail_reason = GBS_global_string("%s at %s:%i / %s:%i",
-                                                failed.why(),
-                                                ali_source, info2bio(source_fail_pos),
-                                                ali_dest, info2bio(dest_fail_pos));
+                fail_reason = annotate_fail_position(failed, source, dest, compressed_dest);
                 freenull(buffer);
             }
-
             free(compressed_dest);
         }
-
         nt_assert(contradicted(buffer, fail_reason));
         return buffer;
     }
