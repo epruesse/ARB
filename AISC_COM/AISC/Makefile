@@ -49,7 +49,6 @@ IMPORT_PROTO = GENH/import_proto.h
 
 SERVER = server.a
 CLIENT = client.a
-COMMON = common.a
 
 AISC_SERVER_EXTERN = GENH/aisc_server_extern.aisc
 

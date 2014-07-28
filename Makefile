@@ -904,8 +904,8 @@ ARCHS = \
 # ----------------------- 
 #     library packets     
 
-ARCHS_CLIENT_PROBE = PROBE_COM/client.a PROBE_COM/common.a
-ARCHS_CLIENT_NAMES = NAMES_COM/client.a NAMES_COM/common.a
+ARCHS_CLIENT_PROBE = PROBE_COM/client.a 
+ARCHS_CLIENT_NAMES = NAMES_COM/client.a 
 
 ARCHS_SERVER_PROBE = PROBE_COM/server.a $(ARCHS_CLIENT_PROBE)
 ARCHS_SERVER_NAMES = NAMES_COM/server.a $(ARCHS_CLIENT_NAMES)
