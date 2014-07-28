@@ -132,7 +132,7 @@ static const char *readable_result[] = {
     "VIOLATED"     ,
     "INTERRUPTED"  ,
     "THREW"        ,
-    "INVALID"      ,
+    "INVALID"      , // use TEST_PUBLISH to make it valid
     "{unknown}"    ,
 };
 #endif
