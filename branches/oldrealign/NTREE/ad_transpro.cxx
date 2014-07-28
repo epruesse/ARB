@@ -1130,7 +1130,8 @@ void TEST_realign() {
                 { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Can't synchronize after 'X' (not enough dna data) at ali_pro:38 / ali_dna:124\n" },                           // ok to fail (too many AA)
 
                 // failing realignments that should work:
-                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon ('ATG' does never translate to 'S' (1)) at ali_pro:4 / ali_dna:1\n" },                   // should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
+                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Not a codon ('ATG' does never translate to 'S' (1)) at ali_pro:4 / ali_dna:1\n" },                   // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
+                { "--SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX--..", "Not a codon ('ATG' does never translate to 'S' (1)) at ali_pro:3 / ali_dna:1\n" },                   // @@@ should fail with "not enough gaps"
                 { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "Can't synchronize after 'X' (multiple realign possibilities found) at ali_pro:13 / ali_dna:19\n" },  // @@@ should succeed
                 { "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX-", "Not a codon ('AAA' does never translate to 'R' (2)) at ali_pro:28 / ali_dna:80\n" },                 // @@@ should succeed
                 { "XG*SNXLXRXQA-ARNHRHD-RXXVX-PRQNDSDRCYHHGAX", "Not a codon ('AAA' does not translate to 'N' (no trans-table left)) at ali_pro:16 / ali_dna:40\n" }, // @@@ should succeed
