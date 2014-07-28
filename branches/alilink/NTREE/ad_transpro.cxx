@@ -900,6 +900,26 @@ class Realigner {
     }
 
 
+    static void calc_needed_dna(const char *prot, size_t len, size_t& minDNA, size_t& maxDNA) {
+        minDNA = maxDNA = 0;
+        for (size_t o = 0; o<len; ++o) {
+            char p = toupper(prot[o]);
+            if (p == 'X') {
+                minDNA += 1;
+                maxDNA += 3;
+            }
+            else if (!isGap(p)) {
+                minDNA += 3;
+                maxDNA += 3;
+            }
+        }
+    }
+    static size_t countLeadingGaps(const char *buffer) {
+        size_t gaps = 0;
+        for (int o = 0; isGap(buffer[o]); ++o) ++gaps;
+        return gaps;
+    }
+
 public:
     Realigner(const char *ali_source_, const char *ali_dest_, size_t ali_len_)
         : ali_source(ali_source_),
@@ -934,12 +954,39 @@ public:
 
             buffer = (char*)malloc(ali_len+1);
 
-            RealignAttempt  attempt(allowed_code, compressed_dest, compressed_len, source, buffer, ali_len);
-            const FailedAt& failed = attempt.failed();
-            if (!failed) {
-                allowed_code = attempt.get_remaining_code();
+            RealignAttempt attempt(allowed_code, compressed_dest, compressed_len, source, buffer, ali_len);
+            FailedAt       failed = attempt.failed();
+
+            if (failed) {
+                // test for superfluous DNA at sequence start
+                size_t min_dna, max_dna;
+                calc_needed_dna(source, source_len, min_dna, max_dna);
+
+                if (min_dna<compressed_len) { // we have more DNA than we need
+                    size_t extra_dna = compressed_len-min_dna;
+                    for (size_t skip = 1; skip<=extra_dna; ++skip) {
+                        RealignAttempt attemptSkipped(allowed_code, compressed_dest+skip, compressed_len-skip, source, buffer, ali_len);
+                        if (!attemptSkipped.failed()) {
+                            size_t start_gaps = countLeadingGaps(buffer);
+                            if (start_gaps<skip) {
+                                failed = FailedAt(GBS_global_string("Not enough gaps to place %zu extra nucs at start of sequence",
+                                                                    skip), source, compressed_dest);
+                            }
+                            else { // success
+                                memcpy(buffer+(start_gaps-skip), compressed_dest, skip); // copy-in skipped dna
+                                failed       = FailedAt();                               // success
+                                allowed_code = attemptSkipped.get_remaining_code();
+                            }
+                            break; // no need to skip more dna, when we already have too few leading gaps
+                        }
+                    }
+                }
             }
             else {
+                allowed_code = attempt.get_remaining_code();
+            }
+
+            if (failed) {
                 fail_reason = annotate_fail_position(failed, source, dest, compressed_dest);
                 freenull(buffer);
             }
@@ -1353,8 +1400,9 @@ void TEST_realign() {
                   "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - adds translation of extra DNA
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY---H....", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTAT---------CACCACGGTGCTG..", CHANGED, // rightmost possible position of 'H' (see failing test below)
                   "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY---HHGAX" }, // ok - adds translation of extra DNA
+                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "-ATGGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G..........", CHANGED, // missing some AA at left end (extra DNA gets detected now)
+                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - adds translation of extra DNA (start of alignment)
 
-                // { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "---------AGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G..", SAME, NULL }, // missing some AA at left end (@@@ should work similar to AA missing at right end. fails: see below)
                 { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTTTTG-AC-CG-GT-CC-AA-GCCGC-AC-GT-AAACATCGGCACGATCG-GT-CA-CG-TG-GA-CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", SAME, NULL },
                 { "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX-", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT---CG-GT-CA-CG-TG-G-A---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G....", CHANGED,
                   "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX." }, // ok - only changes gaptype at EOS
@@ -1387,7 +1435,7 @@ void TEST_realign() {
                 msgs  = "";
                 error = arb_r2a(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
                 TEST_EXPECT_NO_ERROR(error);
-                if (s == 7) {
+                if (s == 8) {
                     TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n1 taxa converted\n  2.000000 stops per sequence found\n");
                 }
                 else {
@@ -1452,10 +1500,9 @@ void TEST_realign() {
                 { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CGG' translates to 'R', not to 'G' at ali_pro:24 / ali_dna:61\n" FAILONE },    // ok to fail: some AA missing in the middle
                 { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Sync behind 'X' failed foremost with: not enough nucs left for codon of 'H' at ali_pro:38 / ali_dna:117\n" FAILONE }, // ok to fail: too many AA
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY----H...", "Sync behind 'X' failed foremost with: too much trailing DNA (10 nucs, but only 9 columns left) at ali_pro:43 / ali_dna:106\n" FAILONE }, // ok to fail: not enough space to place extra nucs behind 'H'
+                { "--SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX--..", "Not enough gaps to place 8 extra nucs at start of sequence at ali_pro:1 / ali_dna:1\n" FAILONE }, // also see related, succeeding test above (which has same AA seq; just one more leading gap)
 
                 // failing realignments that should work:
-                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "'ATG' translates to 'M', not to 'S' at ali_pro:4 / ali_dna:1\n" FAILONE }, // @@@ should succeed; missing some AA at left end (@@@ see commented test in realign_check above)
-                { "--SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX--..", "'ATG' translates to 'M', not to 'S' at ali_pro:3 / ali_dna:1\n" FAILONE }, // @@@ should fail with "not enough gaps"
 
                 { 0, 0 }
             };
