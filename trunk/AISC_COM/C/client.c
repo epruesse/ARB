@@ -20,7 +20,6 @@
 
 #include "client_privat.h"
 #include "client.h"
-#include "common.h"
 
 #include "trace.h"
 
@@ -47,29 +46,6 @@ static int aisc_print_error_to_stderr = 1;
 static char errbuf[300];
 
 #define PRTERR(msg) if (aisc_print_error_to_stderr) fprintf(stderr, "%s: %s\n", msg, link->error);
-
-
-static int aisc_c_read(int socket, char *ptr, long size) {
-    long leftsize = size;
-    while (leftsize) {
-        long readsize = read(socket, ptr, (size_t)leftsize);
-        if (readsize<=0) return 0;
-        ptr += readsize;
-        leftsize -= readsize;
-    }
-    return size;
-}
-
-static int aisc_c_write(int socket, const char *ptr, int size) {
-    int leftsize = size;
-    while (leftsize) {
-        int writesize = write(socket, ptr, leftsize);
-        if (writesize<=0) return 0;
-        ptr += writesize;
-        leftsize -= writesize;
-    }
-    return size;
-}
 
 // -----------------------------
 //      bytestring handling
@@ -99,7 +75,7 @@ static int aisc_c_send_bytes_queue(aisc_com *link) {
     aisc_bytes_list *bl, *bl_next;
     for (bl = link->aisc_client_bytes_first; bl; bl=bl_next) {
         bl_next = bl->next;
-        len = aisc_c_write(link->socket, bl->data, bl->size);
+        len = arb_socket_write(link->socket, bl->data, bl->size);
         free(bl);
         if (len<0)return 1;
     };
@@ -120,7 +96,7 @@ static int aisc_add_message_queue(aisc_com *link, long size)
 {
     client_msg_queue *msg    = (client_msg_queue *) calloc(sizeof(client_msg_queue), 1);
     char             *buffer = (char *)calloc(sizeof(char), (size_t)size);
-    long              len    = aisc_c_read(link->socket, buffer, size);
+    long              len    = arb_socket_read(link->socket, buffer, size);
 
     if (len != size) {
         link->error = err_connection_problems;
@@ -151,7 +127,7 @@ static int aisc_check_error(aisc_com * link)
  aisc_check_next :
 
     link->error = 0; // @@@ avoid (rui)
-    len = aisc_c_read(link->socket, (char *)(link->aisc_mes_buffer), 2*sizeof(long));
+    len = arb_socket_read(link->socket, (char *)(link->aisc_mes_buffer), 2*sizeof(long));
     if (len != 2*sizeof(long)) {
         link->error = err_connection_problems;
         PRTERR("AISC_ERROR");
@@ -175,7 +151,7 @@ static int aisc_check_error(aisc_com * link)
             goto aisc_check_next;
 
         }
-        len = aisc_c_read(link->socket, (char *)(link->aisc_mes_buffer), size * sizeof(long));
+        len = arb_socket_read(link->socket, (char *)(link->aisc_mes_buffer), size * sizeof(long));
         if (len != (long)(size*sizeof(long))) {
             link->error = err_connection_problems;
             PRTERR("AISC_ERROR");
@@ -200,12 +176,11 @@ static int aisc_check_error(aisc_com * link)
 
 static long aisc_init_client(aisc_com *link)
 {
-    int len, mes_cnt;
+    int mes_cnt;
     mes_cnt = 2;
     link->aisc_mes_buffer[0] = mes_cnt-2;
     link->aisc_mes_buffer[1] = AISC_INIT+link->magic;
-    len = aisc_c_write(link->socket, (const char *)link->aisc_mes_buffer, mes_cnt * sizeof(long));
-    if (!len) {
+    if (arb_socket_write(link->socket, (const char *)link->aisc_mes_buffer, mes_cnt * sizeof(long))) {
         link->error = err_connection_problems;
         PRTERR("AISC_CONN_ERROR");
         return 0;
@@ -214,13 +189,7 @@ static long aisc_init_client(aisc_com *link)
     return link->aisc_mes_buffer[0];
 }
 
-static void ignore_sigpipe(int) {
-}
-
 static void aisc_free_link(aisc_com *link) {
-    if (link->old_sigpipe_handler != SIG_ERR) { // failed to install -> do not uninstall
-        UNINSTALL_SIGHANDLER(SIGPIPE, ignore_sigpipe, link->old_sigpipe_handler, "aisc_free_link");
-    }
     free(link);
 }
 
@@ -236,7 +205,7 @@ aisc_com *aisc_open(const char *path, AISC_Object& main_obj, long magic, GB_ERRO
     link->magic = magic;
     {
         static char *unix_name = 0;
-        err = aisc_client_open_socket(path, TCP_NODELAY, 1, &link->socket, &unix_name);
+        err = arb_open_socket(path, true, &link->socket, &unix_name);
         freenull(unix_name);
     }
     if (err) {
@@ -253,8 +222,6 @@ aisc_com *aisc_open(const char *path, AISC_Object& main_obj, long magic, GB_ERRO
         aisc_assert(!(*error && main_obj.exists()));
         return 0;
     }
-
-    link->old_sigpipe_handler = INSTALL_SIGHANDLER(SIGPIPE, ignore_sigpipe, "aisc_open");
 
     main_obj.init(aisc_init_client(link));
     if (!main_obj.exists() || link->error) {
@@ -275,7 +242,7 @@ int aisc_close(aisc_com *link, AISC_Object& object) {
             link->aisc_mes_buffer[0] = 0;
             link->aisc_mes_buffer[1] = 0;
             link->aisc_mes_buffer[2] = 0;
-            aisc_c_write(link->socket, (const char *)link->aisc_mes_buffer, 3 * sizeof(long));
+            arb_socket_write(link->socket, (const char *)link->aisc_mes_buffer, 3 * sizeof(long));
             shutdown(link->socket, SHUT_RDWR);
             close(link->socket);
             link->socket = 0;
@@ -346,8 +313,8 @@ int aisc_get(aisc_com *link, int o_type, const AISC_Object& object, ...)
     if (mes_cnt > 3) {
         link->aisc_mes_buffer[0] = mes_cnt - 2;
         link->aisc_mes_buffer[1] = AISC_GET+link->magic;
-        len = aisc_c_write(link->socket, (const char *)(link->aisc_mes_buffer), (size_t)(mes_cnt * sizeof(long)));
-        if (!len) {
+        if (arb_socket_write(link->socket, (const char *)(link->aisc_mes_buffer), 
+                             (size_t)(mes_cnt * sizeof(long)))) {
             link->error = err_connection_problems;
             PRTERR("AISC_GET_ERROR");
             return 1;
@@ -379,7 +346,7 @@ int aisc_get(aisc_com *link, int o_type, const AISC_Object& object, ...)
                     AISC_DUMP(aisc_get, int, size);
                     if (size) {
                         arg_pntr[i][0] = (long)calloc(sizeof(char), (size_t)size);
-                        len = aisc_c_read(link->socket, (char *)(arg_pntr[i][0]), size);
+                        len = arb_socket_read(link->socket, (char *)(arg_pntr[i][0]), size);
                         if (size!=len) {
                             link->error = err_connection_problems;
                             PRTERR("AISC_GET_ERROR");
@@ -409,7 +376,6 @@ long *aisc_debug_info(aisc_com *link, int o_type, const AISC_Object& object, int
 {
     int mes_cnt;
     int o_t;
-    int len;
 
     mes_cnt = 2;
     o_t     = attribute & AISC_OBJ_TYPE_MASK;
@@ -431,8 +397,7 @@ long *aisc_debug_info(aisc_com *link, int o_type, const AISC_Object& object, int
     link->aisc_mes_buffer[mes_cnt++] = attribute;
     link->aisc_mes_buffer[0] = mes_cnt - 2;
     link->aisc_mes_buffer[1] = AISC_DEBUG_INFO+link->magic;
-    len = aisc_c_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long));
-    if (!len) {
+    if (arb_socket_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long))) {
         link->error = err_connection_problems;
         PRTERR("AISC_GET_ERROR");
         return 0;
@@ -579,8 +544,7 @@ int aisc_put(aisc_com *link, int o_type, const AISC_Object& object, ...) { // go
     if (mes_cnt > 3) {
         link->aisc_mes_buffer[0] = mes_cnt - 2;
         link->aisc_mes_buffer[1] = AISC_SET+link->magic;
-        int len = aisc_c_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long));
-        if (!len) {
+        if (arb_socket_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long))) {
             link->error = err_connection_problems;
             PRTERR("AISC_SET_ERROR");
             return 1;
@@ -607,8 +571,7 @@ int aisc_nput(aisc_com *link, int o_type, const AISC_Object& object, ...) { // g
     if (mes_cnt > 3) {
         link->aisc_mes_buffer[0] = mes_cnt - 2;
         link->aisc_mes_buffer[1] = AISC_NSET+link->magic;
-        int len = aisc_c_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long));
-        if (!len) {
+        if (arb_socket_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long))) {
             link->error = err_connection_problems;
             PRTERR("AISC_SET_ERROR");
             return 1;
@@ -626,7 +589,6 @@ int aisc_create(aisc_com *link, int father_type, const AISC_Object& father,
     // goes to header: __ATTR__SENTINEL
     // arguments in '...' set elements of CREATED object (not of father)
     int mes_cnt;
-    int len;
     va_list parg;
     mes_cnt = 2;
     if ((father_type&0xff00ffff)) {
@@ -657,8 +619,7 @@ int aisc_create(aisc_com *link, int father_type, const AISC_Object& father,
     if (!(mes_cnt = aisc_collect_sets(link, mes_cnt, parg, object_type, 7))) return 1;
     link->aisc_mes_buffer[0] = mes_cnt - 2;
     link->aisc_mes_buffer[1] = AISC_CREATE+link->magic;
-    len = aisc_c_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long));
-    if (!len) {
+    if (arb_socket_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long))) {
         link->error = err_connection_problems;
         PRTERR("AISC_CREATE_ERROR");
         return 1;

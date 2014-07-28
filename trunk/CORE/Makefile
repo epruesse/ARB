@@ -61,6 +61,7 @@ arb_cs.o: arb_assert.h
 arb_cs.o: arb_core.h
 arb_cs.o: arb_cs.h
 arb_cs.o: arb_msg.h
+arb_cs.o: arb_pattern.h
 arb_cs.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_cs.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_cs.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -68,6 +69,7 @@ arb_cs.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_cs.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_cs.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_cs.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_cs.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_diff.o: arb_assert.h
 arb_diff.o: arb_core.h
