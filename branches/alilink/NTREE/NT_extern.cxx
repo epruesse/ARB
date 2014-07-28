@@ -1698,7 +1698,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     awm->at_set_to(false, false, ((2-is_genome_db)*EDIT_XSIZE), EDIT_YSIZE);
     awm->callback(NT_start_editor_on_tree, 0, (AW_CL)ntw);
     awm->help_text("arb_edit4.hlp");
-    awm->create_button("EDIT_SEQUENCES", "#editor.xpm");
+    awm->create_button("EDIT_SEQUENCES", is_genome_db ? "#editor_small.xpm" : "#editor.xpm");
 
     if (is_genome_db) {
         awm->at_set_to(false, false, EDIT_XSIZE, EDIT_YSIZE);

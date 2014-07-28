@@ -1435,7 +1435,7 @@ static void print_prologue() {
 
     // Go on
     printf("/docsave save def\n");
-    fclose(f);
+    if (f) fclose(f);
 }
 
 /*

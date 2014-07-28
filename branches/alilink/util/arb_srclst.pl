@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-my $debug_matching = 0;
+my $debug_matching = 0; # set to 1 to view file matching and decision
 my $ignore_unknown = 0;
 
 # ------------------------------------------------------------
@@ -22,6 +22,7 @@ my @skipped_directories = (
                            qr/\/HELP_SOURCE\/Xml$/o,
                            qr/\/GDE\/MUSCLE\/obj$/o,
                            qr/\/GDE\/PHYML20130708\/phyml\/autom4te.cache$/o,
+                           qr/\/GDE\/RAxML8\/builddir/o,
                            qr/\/ignore\./o,
                            qr/\/PERL2ARB\/blib$/o,
                            qr/\/HEADERLIBS\/[^\/]+/o,
@@ -83,7 +84,7 @@ my %skipped_files = map { $_ => 1; } (
                                       '.DS_Store',
                                       );
 
-my %used_extensions = map { $_ => 1; } (
+my %used_extensions = map { $_ => 1; } ( # matches part behind last '.' in filename
                                         'c', 'cpp', 'cxx', 'cc',
                                         'h', 'hpp', 'hxx',
 
@@ -105,9 +106,10 @@ my %used_extensions = map { $_ => 1; } (
                                         'source', 'menu',
                                         'template', 'default',
                                         'txt', 'doc', 'ps', 'pdf',
+                                        'tgz', 'gz',
                                        );
 
-my %skipped_extensions = map { $_ => 1; } (
+my %skipped_extensions = map { $_ => 1; } ( # matches part behind last '.' in filename
                                            'a',
                                            'bak',
                                            'class',
@@ -140,7 +142,6 @@ my @used_when_matches = (
                          qr/needs_libs\..*/io,
                          qr/readme$/io,
                          qr/typemap$/io,
-                         qr/unused.*source.*\.tgz$/io,
                         );
 
 my @skipped_when_matches = (
@@ -164,7 +165,6 @@ my @used_when_matchesFull = (
                              qr/\/GDEHELP\/HELP_WRITTEN/o,
                              qr/\/GDEHELP\/Makefile\.helpfiles/o,
                              qr/\/HEADERLIBS\/.*COPYING$/o,
-                             qr/\/HEADERLIBS\/.*\.tgz$/o,
                              qr/\/HELP_SOURCE\/.*\.gif$/o,
                              qr/\/HELP_SOURCE\/oldhelp\/.*\.(ps|pdf)\.gz$/o,
                              qr/\/HELP_SOURCE\/oldhelp\/.*\.hlp$/o,
@@ -245,6 +245,7 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/UNIT_TESTER\/run\/.*\.ARM$/o,
                                 qr/^\.\/UNIT_TESTER\/run\/.*\.ARF$/o,
                                 qr/^\.\/UNIT_TESTER\/Makefile\.setup\.local\.last$/o,
+                                qr/^\.\/TAGS\./o, # avoid failure while 'make tags' is running
                                 qr/date\.xsl$/o,
                                );
 
@@ -300,7 +301,7 @@ sub useIfMatching($\@\$) {
   my ($str,$regexp_arr_r,$use_r) = @_;
   my $matches = matchingExpr($str,@$regexp_arr_r);
   if ($matches>0) {
-    if ($debug_matching!=0) { print "'$str' matches '".$$regexp_arr_r[$matches-1]."' => use!\n"; }
+    if ($debug_matching!=0) { print STDERR "'$str' matches '".$$regexp_arr_r[$matches-1]."' => use!\n"; }
     $$use_r = 1;
   }
 }
@@ -308,7 +309,7 @@ sub dontUseIfMatching($\@\$) {
   my ($str,$regexp_arr_r,$use_r) = @_;
   my $matches = matchingExpr($str,@$regexp_arr_r);
   if ($matches>0) {
-    if ($debug_matching!=0) { print "'$str' matches '".$$regexp_arr_r[$matches-1]."' => don't use!\n"; }
+    if ($debug_matching!=0) { print STDERR "'$str' matches '".$$regexp_arr_r[$matches-1]."' => don't use!\n"; }
     $$use_r = 0;
   }
 }
@@ -325,8 +326,14 @@ sub useFile($$) {
     if ($file =~ /\.([^\.]+)$/o) {
       my $ext = $1;
       $hasExt = 1;
-      if (exists $used_extensions{$ext}) { $use = 1; }
-      elsif (exists $skipped_extensions{$ext}) { $use = 0; }
+      if (exists $used_extensions{$ext}) {
+        if ($debug_matching!=0) { print STDERR "'$file' matches extension '".$ext."' => use!\n"; }
+        $use = 1;
+      }
+      elsif (exists $skipped_extensions{$ext}) {
+        if ($debug_matching!=0) { print STDERR "'$file' matches extension '".$ext."' => don't use!\n"; }
+        $use = 0;
+      }
     }
   }
 
