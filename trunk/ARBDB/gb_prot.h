@@ -132,7 +132,6 @@ void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, 
 char *gbs_search_second_bracket(const char *source);
 
 /* adsocket.cxx */
-void gbcms_sigpipe(int dummy_1x);
 void gbcm_read_flush(void);
 long gbcm_read(int socket, char *ptr, long size);
 GBCM_ServerResult gbcm_write_flush(int socket);
