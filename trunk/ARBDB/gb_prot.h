@@ -137,7 +137,7 @@ void gbcm_read_flush(void);
 long gbcm_read(int socket, char *ptr, long size);
 GBCM_ServerResult gbcm_write_flush(int socket);
 GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size);
-GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name);
+GB_ERROR gbcm_open_socket(const char *path, bool do_connect, int *psocket, char **unix_name);
 long gbcms_close(gbcmc_comm *link);
 gbcmc_comm *gbcmc_open(const char *path);
 long gbcm_write_two(int socket, long a, long c);
