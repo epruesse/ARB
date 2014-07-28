@@ -19,8 +19,18 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/stat.h>
 #include <netinet/tcp.h>
 
+// We need one of the below to prevent SIGPIPE on writes to 
+// closed socket. For systems that have neither (Solaris),
+// we'd need to implement ignoring the signal in the write
+// loop (not done). 
+#ifndef SO_NOSIGPIPE
+#ifndef MSG_NOSIGNAL
+#error Neither SO_NOSIGPIPE nor MSG_NOSIGNAL available!
+#endif
+#endif
 
 void arb_gethostbyname(const char *name, struct hostent *& he, GB_ERROR& err) {
     he = gethostbyname(name);
@@ -51,7 +61,7 @@ size_t arb_socket_read(int socket, char* ptr, size_t size) {
     while(to_read) {
         ssize_t read_len = read(socket, ptr, to_read);
         if (read_len <= 0) { // read failed
-            // FIXME: GB_export_error?
+            // FIXME: GB_export_error!
             return 0;
         }
         ptr += read_len;
@@ -64,25 +74,26 @@ ssize_t arb_socket_write(int socket, const char* ptr, size_t size) {
     size_t to_write = size;
 
     while (to_write) {
-#ifdef LINUX
+#ifdef MSG_NOSIGNAL
+        // Linux has MSG_NOSIGNAL, but not SO_NOSIGPIPE
+        // prevent SIGPIPE here
         ssize_t write_len = send(socket, ptr, to_write, MSG_NOSIGNAL);
 #else
         ssize_t write_len = write(socket, ptr, to_write);
 #endif
         if (write_len <= 0) { // write failed 
-            if (write_len == EPIPE) {
+            if (errno == EPIPE) {
                 fputs("pipe broken\n", stderr);
             }
-            // FIXME: GB_export_error?
+
+            // FIXME: GB_export_error!
             return -1;
         }
         ptr += write_len;
         to_write -= write_len;
     }
-    return size;
+    return 0;
 }
-
-
 
 static GB_ERROR arb_open_unix_socket(char* name, bool do_connect, int *fd);
 static GB_ERROR arb_open_tcp_socket(char* name, bool do_connect, int *fd);
@@ -164,16 +175,32 @@ static GB_ERROR arb_open_unix_socket(char* filename, bool do_connect, int *fd) {
         }
     }
     else {
-        // re-use existing file
-        int one = 1;
-        if (setsockopt(*fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one))){
-            fprintf(stderr, "Warning: setsockopt(...REUSEADDR...) failed: %s", strerror(errno));
+        struct stat stt;
+        if (!stat(filename, &stt)) {
+            if (!S_ISSOCK(stt.st_mode)) {
+                return GBS_global_string("Failed to create unix socket at \"%s\": file exists"
+                                         " and is not a socket", filename);
+            }
+            if (unlink(filename)) {
+                return GBS_global_string("Failed to create unix socket at \"%s\": cannot remove"
+                                         " existing socket", filename);
+            }
         }
         if (bind(*fd, (sockaddr*)&unix_socket, sizeof(sockaddr_un))) {
             return  GBS_global_string("Failed to bind unix socket \"%s\": %s",
                                       filename, strerror(errno));
         }
     }
+
+#ifdef SO_NOSIGPIPE
+    // OSX has SO_NOSIGPIPE but not MSG_NOSIGNAL
+    // prevent SIGPIPE here:
+    int one = 1;
+    if (setsockopt(*fd, SOL_SOCKET, SO_NOSIGPIPE, (const char *)&one, sizeof(one))){
+        fprintf(stderr, "Warning: setsockopt(...NOSIGPIPE...) failed: %s", strerror(errno));
+    }
+#endif
+    
 
     return NULL;
 }
@@ -271,11 +298,14 @@ int echo_server(const char* portname) {
 
     char buf[500];
     ssize_t n;
-    do {
+    while(1) {
         n = sizeof(buf);
-        n = arb_socket_read(fd, buf, n);
-        n = arb_socket_write(fd, buf, n);
-    } while (n && strncmp(buf, "exit", sizeof("exit")));
+        n = arb_socket_read(cli_fd, buf, n);
+        if (n == 0) break;
+        n = arb_socket_write(cli_fd, buf, n);
+        if (n == -1) break;;
+        if (strcmp(buf, "exit") == 0) break;
+    }
              
     close(fd);
     if (filename) { 
@@ -330,7 +360,7 @@ void TEST_open_socket() {
     TEST_EXPECT_EQUAL(unlink(filename), 0);
     freenull(filename);
 
-    // Test connecting to existing socket
+    // Test connecting to existing tcp socket
     server_pid = echo_server(tcp_socket);
     TEST_REJECT_NULL(server_pid);
     usleep(10000);
@@ -340,16 +370,42 @@ void TEST_open_socket() {
     TEST_EXPECT_EQUAL(close(fd), 0);
     TEST_EXPECT_EQUAL(server_pid, waitpid(server_pid, &server_status, 0));
 
+    // Test connecting to closed socket
+    TEST_EXPECT_EQUAL("", arb_open_socket(tcp_socket, true, &fd, &filename));
+    TEST_EXPECT_EQUAL("", arb_open_socket(unix_socket, true, &fd, &filename));
+    
+    // Test connecting to existing unix socket
     server_pid = echo_server(unix_socket);
     usleep(10000);
     TEST_EXPECT_NULL(arb_open_socket(unix_socket, true, &fd, &filename));
     TEST_EXPECT(fd>0);
-    TEST_EXPECT_EQUAL(filename, fname);
-    TEST_EXPECT_EQUAL(close(fd), 0);
-    TEST_EXPECT_EQUAL(unlink(filename), 0);
-    TEST_EXPECT_EQUAL(server_pid, waitpid(server_pid, &server_status, 0));
-    freenull(filename);
 
+    // Test read/write
+    char send_buf[500], recv_buf[500];
+    for (unsigned int i=0; i < sizeof(send_buf); i++) {
+        send_buf[i]=i % 64 + '0';
+    }
+    send_buf[sizeof(send_buf)-1]='\0';
+
+    TEST_EXPECT_NULL(arb_socket_write(fd, send_buf, sizeof(send_buf)));
+    TEST_EXPECT_EQUAL(sizeof(recv_buf), arb_socket_read(fd, recv_buf, sizeof(recv_buf)));
+    TEST_EXPECT_EQUAL(send_buf, recv_buf);
+    TEST_EXPECT_NULL(arb_socket_write(fd, send_buf, sizeof(send_buf)));
+    TEST_EXPECT_EQUAL(sizeof(recv_buf), arb_socket_read(fd, recv_buf, sizeof(recv_buf)));
+    TEST_EXPECT_EQUAL(send_buf, recv_buf);
+
+    // Test sigpipe (writing to closed socket)
+    // tell server to die:
+    strcpy(send_buf, "exit"); 
+    TEST_EXPECT_NULL(arb_socket_write(fd, send_buf, sizeof(send_buf)));
+    TEST_EXPECT_EQUAL(sizeof(recv_buf), arb_socket_read(fd, recv_buf, sizeof(recv_buf)));
+    // wait for server to die
+    TEST_EXPECT_EQUAL(server_pid, waitpid(server_pid, &server_status, 0));
+    // try writing to closed pipe
+    TEST_EXPECT_EQUAL(-1, arb_socket_write(fd, send_buf, sizeof(send_buf)));
+
+    TEST_EXPECT_EQUAL(close(fd), 0);
+    freenull(filename);
     
     free(unix_socket);
 }
