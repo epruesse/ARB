@@ -491,17 +491,19 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE IF_ASSERT
     }
 }
 
-ED4_returncode ED4_root::init_alignment() {
+ARB_ERROR ED4_root::init_alignment() {
     GB_transaction ta(GLOBAL_gb_main);
 
     alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
     alignment_type = GBT_get_alignment_type(GLOBAL_gb_main, alignment_name);
     if (alignment_type==GB_AT_UNKNOWN) {
-        aw_popup_exit("You have to select a valid alignment before you can start ARB_EDIT4");
+        return GBS_global_string("You have to select a valid alignment before you can start ARB_EDIT4\n(%s)", GB_await_error());
     }
 
     GBDATA *gb_alignment = GBT_get_alignment(GLOBAL_gb_main, alignment_name);
-    if (!gb_alignment) aw_popup_exit("You can't edit without an existing alignment");
+    if (!gb_alignment) {
+        return GBS_global_string("You can't edit without an existing alignment\n(%s)", GB_await_error());
+    }
 
     GBDATA *gb_alignment_len = GB_search(gb_alignment, "alignment_len", GB_FIND);
     int alignment_length = GB_read_int(gb_alignment_len);
@@ -511,7 +513,7 @@ ED4_returncode ED4_root::init_alignment() {
 
     aw_root->awar_string(AWAR_EDITOR_ALIGNMENT, alignment_name);
 
-    return ED4_R_OK;
+    return NULL;
 }
 
 void ED4_root::recalc_font_group() {
