@@ -2339,7 +2339,9 @@ ifeq ($(UNIT_TESTS),1)
 	@$(TIMECMD) $(MAKE) run_tests
 endif
 	@echo "$(SEP) $(MAKE) build [done]"
+ifeq ($(DEBUG),1)
 	@$(MAKE) save_test_no_error >/dev/null # just show hints
+endif
 	@cat $(TIMELOG)
 	@rm $(TIMELOG)
 
