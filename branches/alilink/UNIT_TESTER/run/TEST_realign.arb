@@ -8,11 +8,11 @@ species_data		%% (%
 		transl_table		"12"
 		codon_start		"2"
 		ali_dna			%% (%
-			data		:7000	"---------ATGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAAATATAGGTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAACAGTATTG---------"
+			data		:7000	"---------ATGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAAATATAGGTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAASAGTATTG---------"
 			%) /*ali_dna*/
 
 		ali_pro			%% (%
-			data		:7000	"XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQQYX-X."
+			data		:7000	"XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLZZYX-X."
 			%) /*ali_pro*/
 
 		%) /*species*/
@@ -29,7 +29,7 @@ species_data		%% (%
 			%) /*ali_dna*/
 
 		ali_pro			%% (%
-			data		:7000	"XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-.."
+			data		:7000	"XG*SNFWPVQAARNHRHD--RSRGPRQBDSDRCYHHGAX-.."
 			%) /*ali_pro*/
 
 		%) /*species*/
@@ -126,11 +126,11 @@ species_data		%% (%
 		transl_table		"1"
 		codon_start		"1"
 		ali_dna			%% (%
-			data		:7000	"-----------ATGGGTAAAGAGAAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-----------"
+			data		:7000	"-----------ATGGGTAAAGAGAAGACTCACGTTRAYGTTGTCGTTATTGGTCACGTCRATTCCGGTAAGTCCACCNCCRCTGGTCACTTGATTTACAAGTGTGGTGGTATAA-A----------"
 			%) /*ali_dna*/
 
 		ali_pro			%% (%
-			data		:7000	"MGKXX----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
+			data		:7000	"MGKXX----KTHVBVVVIGHVBSGKSTTTGHLIYKCGGIX.."
 			%) /*ali_pro*/
 
 		%) /*species*/
