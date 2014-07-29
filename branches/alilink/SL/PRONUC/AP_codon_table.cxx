@@ -495,7 +495,7 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
                         else {
                             allowed_code_left.forbidAll();
                             memcpy(dna_copy, dna, 3);
-                            fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate", dna_copy);
+                            fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate to '%c'", dna_copy, protein);
                         }
                     }
                 }
@@ -818,7 +818,7 @@ void TEST_codon_check() {
 
     test_not_codon not_codon[] = {
         { 'P', "NNN", "Three consecutive IUPAC codes 'NNN'" }, // @@@ should be allowed
-        { 'B', "RAT", "Not all IUPAC-combinations of 'RAT' translate and Not all IUPAC-combinations of 'RAT' translate" }, // @@@ wrong (RAT is listed by AP_get_codons for code==0; see above)
+        { 'B', "RAT", "Not all IUPAC-combinations of 'RAT' translate to 'D' and Not all IUPAC-combinations of 'RAT' translate to 'N'" }, // @@@ wrong (RAT is listed by AP_get_codons for code==0; see above)
 
         { 0, NULL, NULL}
     };
