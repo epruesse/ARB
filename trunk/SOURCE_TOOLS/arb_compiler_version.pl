@@ -37,6 +37,22 @@ sub main() {
 
     if ($detectedCompiler eq 'unknown') {
       if ($detailedVersion =~ /apple.*llvm.*clang/oi) { $detectedCompiler = 'clang'; }
+      else {
+        # check for clang according to #582
+        my $cmd = "$compiler -dM -E -x c /dev/null";
+        if (open(CMD,$cmd.'|')) { 
+        LINE: foreach (<CMD>) {
+            if (/__clang__/) {
+              $detectedCompiler = 'clang';
+              last LINE;
+            }
+          }
+          close(CMD);
+        }
+        else {
+          print STDERR "failed to execute '$cmd'";
+        }
+      }
     }
 
     if ($detectedCompiler eq 'unknown') {
