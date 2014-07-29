@@ -471,8 +471,8 @@ public:
                             protein[0] = toupper(c);
                             for (count=1, off=0; count<SYNC_LENGTH; off++) {
                                 char c2 = s[off];
-
                                 if (!isGap(c2)) {
+                                    if (!c2) break;
                                     c2 = toupper(c2);
                                     if (c2=='X') break; // can't sync X
                                     protein[count++] = c2;
