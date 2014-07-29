@@ -916,6 +916,7 @@ void TEST_realign() {
             error = realign(gb_main, "ali_pro", "ali_dna", neededLength);
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs,
+                              "Automatic re-align failed for 'CytLyti6'\nReason: Not a codon (Not all IUPAC-combinations of 'CAG' translate and Not all IUPAC-combinations of 'GAG' translate) at ali_pro:37 / ali_dna:110\n"
                               "Automatic re-align failed for 'StrCoel9'\nReason: Not a codon ('TGG' does never translate to 'T' (1)) at ali_pro:17 / ali_dna:76\n"
                               "Automatic re-align failed for 'MucRace2'\nReason: ran out of sequence at ali_pro:40 / ali_dna:111\n"
                               "Automatic re-align failed for 'MucRace3'\nReason: Not a codon ('CTC' does not translate to 'T' (for any of the leftover trans-tables: 0)) at ali_pro:11 / ali_dna:28\n"
@@ -924,13 +925,13 @@ void TEST_realign() {
                 );
 
             TEST_EXPECT_EQUAL(DNASEQ("BctFra12"), "ATGGCTAAAGAGAAA---TTTGAACGTACCAAA---CCGCACGTAAACATTGGTACA---ATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG.........");
-            TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"), "A..TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAACAGTAT......TG....");
+            TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"), "---------ATGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAAATATAGGTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAASAGTATTG---------"); // @@@ fails (see above)
             TEST_EXPECT_EQUAL(DNASEQ("TaxOcell"), "AT.GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT.........G..");
             TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"), "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTC.........CTC.........");
-            TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"), "------------------------------------ATGTCCAAGACGGCGTACGTCCGCCCACCTGAGGCACGATGGCCCGACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTCCTC"); // @@@ fails (see above)
+            TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"), "------------------------------------ATGTCCAAGACGGCGTACGTCCGCCCACCTGAGGCACGATGGCCCGACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTCCTC"); // @@@ fails
             TEST_EXPECT_EQUAL(DNASEQ("MucRacem"), "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA......AA.");
             TEST_EXPECT_EQUAL(DNASEQ("MucRace2"), ".ATGGGTAAGGAGAAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGT-ATNNN-ATAA-A------------."); // @@@ fails
-            TEST_EXPECT_EQUAL(DNASEQ("MucRace3"), "-----------ATGGGTAAAGAGAAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-----------"); // @@@ fails
+            TEST_EXPECT_EQUAL(DNASEQ("MucRace3"), "-----------ATGGGTAAAGAGAAGACTCACGTTRAYGTTGTCGTTATTGGTCACGTCRATTCCGGTAAGTCCACCNCCRCTGGTCACTTGATTTACAAGTGTGGTGGTATAA-A----------"); // @@@ fails
             TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"), "----------------------ATGGGTAAAGAAAAGACTCACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATAAA"); // @@@ fails
             TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"), "ATGGGTAAAGAAAAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATAAA----------------------"); // @@@ fails
         }
@@ -950,10 +951,7 @@ void TEST_realign() {
                 { "BctFra12", "MAKEK-FERTK-PHVNIGT-IGHVDHGKTTLTAAITTVLX..",   // original
                   CHANGED,    "MAKEK-FERTK-PHVNIGT-IGHVDHGKTTLTAAITTVL..." }, // changed retranslation (ok because terminal X does not match any DNA)
 
-                { "CytLyti6", "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQQYX-X.",
-                  CHANGED,    "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQQY..X." }, // @@@ unwanted - caused by wrong realignment
-
-                { "TaxOcell", "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..",
+                { "TaxOcell", "XG*SNFWPVQAARNHRHD--RSRGPRQBDSDRCYHHGAX-..",
                   CHANGED,    "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGA...X" }, // @@@ unwanted - caused by wrong realignment
 
                 { "StrRamo3", "MSKTAYVRTKPHLNIGTMGHVDHGKTTLTAAITKVXXX-X..",
