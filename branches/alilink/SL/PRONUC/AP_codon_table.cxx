@@ -806,9 +806,11 @@ void TEST_codon_check() {
         { 'P', "CCN", ALL_TABLES },
         { 'R', "CGN", ALL_TABLES },
         { 'D', "GAY", ALL_TABLES },
+        { 'X', "NNN", ALL_TABLES },
 
         { 'R', "AGR", "0,2,3,5,7,8,9,12,13,15,16" },
         { 'W', "TGR", "1,2,3,4,6,10,11,14" }, // R=AG
+        { 'X', "TGR", "" }, // @@@ should have tables (e.g. code==0: TGA->* TGG->W => TGR->X?)
 
         { 0, NULL, NULL}
     };
@@ -816,10 +818,6 @@ void TEST_codon_check() {
     test_not_codon not_codon[] = {
         { 'P', "NNN", "Three consecutive IUPAC codes 'NNN'" }, // @@@ should be allowed
         { 'B', "RAT", "Not all IUPAC-combinations of 'AAT' translate and Not all IUPAC-combinations of 'GAT' translate" }, // @@@ wrong (RAT is listed by AP_get_codons for code==0; see above)
-
-        // all X checks fail
-        { 'X', "NNN", "Three consecutive IUPAC codes 'NNN'" },           // @@@ wrong
-        { 'X', "TGR", "Not all IUPAC-combinations of 'TGA' translate" }, // @@@ wrong
 
         { 0, NULL, NULL}
     };
