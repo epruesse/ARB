@@ -757,3 +757,100 @@ const char *AP_get_codons(char protein, int code_nr) {
     return buffer;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static const char *allowed2string(const AWT_allowedCode& allowed) {
+    const int    MAX_LEN = 41;
+    static char  buffer[MAX_LEN];
+    char        *out     = buffer;
+
+    for (int a = 0; a<AWT_CODON_TABLES; ++a) {
+        if (allowed.is_allowed(a)) {
+            out += sprintf(out, (out == buffer ? "%i" : ",%i"), a);
+        }
+    }
+    pn_assert((out-buffer)<MAX_LEN);
+    out[0] = 0;
+    return buffer;
+}
+
+void TEST_codon_check() {
+    AP_initialize_codon_tables();
+
+    TEST_EXPECT_EQUAL(AP_get_codons('D', 0), "GATGACGAY");
+    TEST_EXPECT_EQUAL(AP_get_codons('N', 0), "AATAACAAY");
+    TEST_EXPECT_EQUAL(AP_get_codons('B', 0), "AAT" "AAC" "GAT" "GAC" "AAY" "RAT" "RAC" "GAY" "RAY"); // 'B' = 'D' or 'N'
+
+    TEST_EXPECT_EQUAL(AP_get_codons('X', 0), ""); // @@@ wrong: TGR->X (or disallow call)
+
+    struct test_is_codon {
+        char        protein;
+        const char *codon;
+        const char *tables;
+    };
+    struct test_not_codon {
+        char        protein;
+        const char *codon;
+        const char *error;
+    };
+
+#define ALL_TABLES "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"
+
+    test_is_codon is_codon[] = {
+        { 'P', "CCC", ALL_TABLES },
+        { 'P', "CCN", ALL_TABLES },
+        { 'R', "CGN", ALL_TABLES },
+        { 'D', "GAY", ALL_TABLES },
+
+        { 'R', "AGR", "0,2,3,5,7,8,9,12,13,15,16" },
+        { 'W', "TGR", "1,2,3,4,6,10,11,14" }, // R=AG
+
+        { 0, NULL, NULL}
+    };
+
+    test_not_codon not_codon[] = {
+        { 'P', "NNN", "Three consecutive IUPAC codes 'NNN'" }, // @@@ should be allowed
+        { 'B', "RAT", "Not all IUPAC-combinations of 'AAT' translate and Not all IUPAC-combinations of 'GAT' translate" }, // @@@ wrong (RAT is listed by AP_get_codons for code==0; see above)
+
+        // all X checks fail
+        { 'X', "NNN", "Three consecutive IUPAC codes 'NNN'" },           // @@@ wrong
+        { 'X', "TGR", "Not all IUPAC-combinations of 'TGA' translate" }, // @@@ wrong
+
+        { 0, NULL, NULL}
+    };
+
+    const AWT_allowedCode allowed;
+    for (int c = 0; is_codon[c].protein; ++c) {
+        const test_is_codon& C = is_codon[c];
+        TEST_ANNOTATE(GBS_global_string("%c <- %s", C.protein, C.codon));
+
+        AWT_allowedCode  allowed_left;
+        const char      *failure;
+        bool             isCodon = AWT_is_codon(C.protein, C.codon, allowed, allowed_left, &failure);
+
+        TEST_EXPECT_NULL(failure);
+        TEST_EXPECT(isCodon);
+        TEST_EXPECT_EQUAL(allowed2string(allowed_left), C.tables);
+    }
+    for (int c = 0; not_codon[c].protein; ++c) {
+        const test_not_codon& C = not_codon[c];
+        TEST_ANNOTATE(GBS_global_string("%c <- %s", C.protein, C.codon));
+
+        AWT_allowedCode  allowed_left;
+        const char      *failure;
+        bool             isCodon = AWT_is_codon(C.protein, C.codon, allowed, allowed_left, &failure);
+
+        TEST_EXPECT_EQUAL(failure, C.error);
+        TEST_EXPECT(!isCodon);
+        // TEST_EXPECT_EQUAL(allowed2string(allowed_left), ALL_TABLES); // @@@ undefined in fail-case?
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
