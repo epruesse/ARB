@@ -802,7 +802,13 @@ void TEST_codon_check() {
         { 'P', "CCC", ALL_TABLES },
         { 'P', "CCN", ALL_TABLES },
         { 'R', "CGN", ALL_TABLES },
+
         { 'D', "GAY", ALL_TABLES },
+        { 'N', "AAY", ALL_TABLES },
+        { 'B', "AAY", ALL_TABLES }, // translates to 'N', but matches B(=D|N) for realigner
+
+        { 'Q', "CAR", ALL_TABLES },
+        { 'E', "GAR", ALL_TABLES },
 
         { 'R', "AGR", "0,2,3,5,7,8,9,12,13,15,16" },
         { 'W', "TGR", "1,2,3,4,6,10,11,14" }, // R=AG
@@ -813,6 +819,9 @@ void TEST_codon_check() {
     test_not_codon not_codon[] = {
         { 'P', "NNN", "Three consecutive IUPAC codes 'NNN'" }, // @@@ should be allowed
         { 'B', "RAT", "Not all IUPAC-combinations of 'AAT' translate and Not all IUPAC-combinations of 'GAT' translate" }, // @@@ wrong (RAT is listed by AP_get_codons for code==0; see above)
+        { 'B', "RAY", "Not all IUPAC-combinations of 'AAY' translate and Not all IUPAC-combinations of 'GAY' translate" }, // @@@ wrong (same)
+        { 'D', "RAY", "Not all IUPAC-combinations of 'AAY' translate" }, // @@@ message wrong, but ok to fail (RAY translates to B, not D)
+        { 'Z', "SAR", "Not all IUPAC-combinations of 'CAR' translate and Not all IUPAC-combinations of 'GAR' translate" }, // @@@ wrong (analog)
 
         // all X checks fail
         { 'X', "NNN", "Three consecutive IUPAC codes 'NNN'" },           // @@@ wrong
