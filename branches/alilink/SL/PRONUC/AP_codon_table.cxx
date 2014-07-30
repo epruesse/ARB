@@ -458,42 +458,37 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
         }
         else {
             pn_assert(error_positions);
-            if (error_positions==3) { // don't accept codons with 3 errors
-                fail_reason = GBS_global_string("Three consecutive IUPAC codes '%c%c%c'", dna[0], dna[1], dna[2]); // @@@ accept these as well
+            const char *decoded_iupac = iupac::decode(dna[first_error_pos], GB_AT_DNA, 0);
+
+            if (!decoded_iupac[0]) { // no valid IUPAC
+                allowed_code_left.forbidAll();
+                fail_reason = GBS_global_string("Not a valid IUPAC code:'%c'", dna[first_error_pos]);
             }
             else {
-                const char *decoded_iupac = iupac::decode(dna[first_error_pos], GB_AT_DNA, 0);
+                char dna_copy[4];
+                memcpy(dna_copy, dna, 3);
+                dna_copy[3] = 0;
 
-                if (!decoded_iupac[0]) { // no valid IUPAC
-                    allowed_code_left.forbidAll();
-                    fail_reason = GBS_global_string("Not a valid IUPAC code:'%c'", dna[first_error_pos]);
+                bool            all_are_codons    = true;
+                AWT_allowedCode allowed_code_copy = allowed_code;
+
+                for (int i=0; decoded_iupac[i]; i++) {
+                    dna_copy[first_error_pos] = decoded_iupac[i];
+                    if (!AWT_is_codon(protein, dna_copy, allowed_code_copy, allowed_code_left)) {
+                        all_are_codons = false;
+                        break;
+                    }
+                    allowed_code_copy = allowed_code_left;
+                }
+
+                if (all_are_codons) {
+                    allowed_code_left = allowed_code_copy;
+                    is_codon          = true;
                 }
                 else {
-                    char dna_copy[4];
-                    memcpy(dna_copy, dna, 3);
-                    dna_copy[3] = 0;
-
-                    bool            all_are_codons    = true;
-                    AWT_allowedCode allowed_code_copy = allowed_code;
-
-                    for (int i=0; decoded_iupac[i]; i++) {
-                        dna_copy[first_error_pos] = decoded_iupac[i];
-                        if (!AWT_is_codon(protein, dna_copy, allowed_code_copy, allowed_code_left)) {
-                            all_are_codons = false;
-                            break;
-                        }
-                        allowed_code_copy = allowed_code_left;
-                    }
-
-                    if (all_are_codons) {
-                        allowed_code_left = allowed_code_copy;
-                        is_codon          = true;
-                    }
-                    else {
-                        allowed_code_left.forbidAll();
-                        dna_copy[first_error_pos] = dna[first_error_pos];
-                        fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate to '%c'", dna_copy, protein);
-                    }
+                    allowed_code_left.forbidAll();
+                    dna_copy[first_error_pos] = dna[first_error_pos];
+                    fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate to '%c'", dna_copy, protein);
                 }
             }
         }
@@ -832,7 +827,7 @@ void TEST_codon_check() {
         { 'E', "GAR", ALL_TABLES },
         { 'Z', "SAR", ALL_TABLES },
 
-        { 'X', "NNN", ALL_TABLES },
+        { 'X', "NNN", "" }, // @@@ tables are wrong (should be ALL_TABLES)
 
         { 'L', "TTR", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15" },
         { 'L', "YTA", "0,1,3,4,5,6,7,8,9,10,11,12,13,14,15" },
@@ -853,9 +848,9 @@ void TEST_codon_check() {
     };
 
     test_not_codon not_codon[] = {
-        { 'P', "SYK", "Three consecutive IUPAC codes 'SYK'" },                  // @@@ wrong message
-        { 'F', "SYK", "Three consecutive IUPAC codes 'SYK'" },                  // @@@ wrong message
-        { 'P', "NNN", "Three consecutive IUPAC codes 'NNN'" },                  // @@@ wrong message
+        { 'P', "SYK", "Not all IUPAC-combinations of 'SYK' translate to 'P'" }, // correct (possible translations are PAL)
+        { 'F', "SYK", "Not all IUPAC-combinations of 'SYK' translate to 'F'" }, // @@@ wrong message (never translates to F)
+        { 'P', "NNN", "Not all IUPAC-combinations of 'NNN' translate to 'P'" }, // correct failure
         { 'D', "RAY", "Not all IUPAC-combinations of 'RAY' translate to 'D'" }, // correct failure
         { 'E', "SAR", "Not all IUPAC-combinations of 'SAR' translate to 'E'" }, // correct failure
 
