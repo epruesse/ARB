@@ -827,12 +827,12 @@ void TEST_codon_check() {
         { 'B', "GAY", ALL_TABLES }, // translates to 'D', but matches B(=D|N) for realigner
         { 'B', "RAY", ALL_TABLES }, // translates to 'D' or to 'N' (i.e. only matches 'B', see failing test for 'RAY' below)
         { 'B', "RAT", ALL_TABLES },
-        { 'Z', "SAR", ALL_TABLES },
-
-        { 'X', "NNN", ALL_TABLES },
 
         { 'Q', "CAR", ALL_TABLES },
         { 'E', "GAR", ALL_TABLES },
+        { 'Z', "SAR", ALL_TABLES },
+
+        { 'X', "NNN", ALL_TABLES },
 
         { 'L', "TTR", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15" },
         { 'L', "YTA", "0,1,3,4,5,6,7,8,9,10,11,12,13,14,15" },
@@ -853,8 +853,11 @@ void TEST_codon_check() {
     };
 
     test_not_codon not_codon[] = {
-        { 'P', "NNN", "Three consecutive IUPAC codes 'NNN'" }, // @@@ should be allowed
+        { 'P', "SYK", "Three consecutive IUPAC codes 'SYK'" },                  // @@@ wrong message
+        { 'F', "SYK", "Three consecutive IUPAC codes 'SYK'" },                  // @@@ wrong message
+        { 'P', "NNN", "Three consecutive IUPAC codes 'NNN'" },                  // @@@ wrong message
         { 'D', "RAY", "Not all IUPAC-combinations of 'RAY' translate to 'D'" }, // correct failure
+        { 'E', "SAR", "Not all IUPAC-combinations of 'SAR' translate to 'E'" }, // correct failure
 
         // @@@ manually check these (they are listed by AP_get_codons above)
         { 'S', "CYT", "Not all IUPAC-combinations of 'CYT' translate to 'S'" },
