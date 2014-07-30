@@ -325,7 +325,22 @@ inline char nextBase(char c) {
         case 'T': return 'C';
         case 'C': return 'A';
         case 'A': return 'G';
+#if 0
         case 'G': return 0;
+#else
+        case 'G': return 'M';
+        case 'M': return 'R';
+        case 'R': return 'W';
+        case 'W': return 'S';
+        case 'S': return 'Y';
+        case 'Y': return 'K';
+        case 'K': return 'V';
+        case 'V': return 'H';
+        case 'H': return 'D';
+        case 'D': return 'B';
+        case 'B': return 'N';
+        case 'N': return 0;
+#endif
         default: pn_assert(0);
     }
     return 0;
