@@ -42,16 +42,11 @@ class AWT_allowedCode {
             allowed[a] = other.allowed[a];
         }
     }
-    void set(int val) {
-        for (int a=0; a<AWT_CODON_TABLES; a++) {
-            allowed[a] = val;
-        }
-    }
 
     void legal(int IF_ASSERTION_USED(nr)) const { pn_assert(nr >= 0 && nr<AWT_CODON_TABLES); }
 
 public:
-    AWT_allowedCode() { set(1); }
+    AWT_allowedCode() { allowAll(true); }
     AWT_allowedCode(const AWT_allowedCode& other) { copy(other); }
     AWT_allowedCode& operator=(const AWT_allowedCode& other)  { copy(other); return *this; }
 
@@ -59,8 +54,12 @@ public:
     void allow(int nr) { legal(nr); allowed[nr]=1; }
     void forbid(int nr) { legal(nr); allowed[nr]=0; }
 
-    void forbidAll() { set(0); }
-    void allowAll() { set(1); }
+    void allowAll(bool Allow = true) {
+        for (int a=0; a<AWT_CODON_TABLES; a++) {
+            allowed[a] = Allow;
+        }
+    }
+    void forbidAll() { allowAll(false); }
 
     void forbidAllBut(int nr) {
         legal(nr);
