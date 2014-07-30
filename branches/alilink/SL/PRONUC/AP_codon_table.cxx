@@ -852,6 +852,7 @@ void TEST_codon_check() {
         { 'L', "CTN", "0,1,3,4,5,6,7,8,10,11,12,13,14,15,16" },
         { 'L', "CTK", "0,1,3,4,5,6,7,8,10,11,12,13,14,15,16" },
         { 'L', "TWG", "13,15" },
+        { 'X', "TWG", "" }, // @@@ should be all but "13,15"
 
         { 'S', "AGY", ALL_TABLES },
         { 'S', "TCN", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,16" },
@@ -862,15 +863,19 @@ void TEST_codon_check() {
         { 'X', "TGR", "" }, // @@@ should have tables (e.g. code==0: TGA->* TGG->W => TGR->X?)
 
         { 'C', "TGW", "7" },
+        { 'X', "TGW", "" }, // @@@ should be all but 7
 
         { '*', "TRA", "0,8,9,12,13,15,16" },
+        { 'X', "TRA", "" }, // @@@ should be all but "0,8,9,12,13,15,16"
 
         { '*', "TAR", "0,1,2,3,4,6,7,8,9,10,14,16" },
         { 'Q', "TAR", "5" },
         { 'Z', "TAR", "5" },
+        { 'X', "TAR", "" }, // @@@ should be "11,12,13,15"
 
         { 'B', "AAW", "6,11,14" },
         { 'N', "AAW", "6,11,14" },
+        { 'X', "AAW", "" }, // @@@ should be all but "6,11,14"
 
         { 'L', "CTG", "0,1,3,4,5,6,7,8,10,11,12,13,14,15,16" }, // all but 2 and 9
         { 'S', "CTG", "9" },
@@ -878,11 +883,13 @@ void TEST_codon_check() {
 
         { 'L', "CTR", "0,1,3,4,5,6,7,8,10,11,12,13,14,15,16" }, // all but 2 and 9
         { 'T', "CTR", "2" },
+        { 'X', "CTR", "" }, // @@@ should be the 9
 
         { '*', "AGR", "1" },
         { 'G', "AGR", "10" },
         { 'R', "AGR", "0,2,3,5,7,8,9,12,13,15,16" },
         { 'S', "AGR", "4,6,11,14" },
+        { 'X', "AGR", "" }, // @@@ should fail (no transtable produces X!!!!)
 
         { 'X', "A-C", "" }, // @@@ should have ALL_TABLES
         { 'X', ".T.", "" }, // @@@ should have ALL_TABLES
