@@ -856,6 +856,12 @@ void TEST_codon_check() {
         { 'X', "NNN", "Three consecutive IUPAC codes 'NNN'" },           // @@@ wrong
         { 'X', "TGR", "Not all IUPAC-combinations of 'TGA' translate" }, // @@@ wrong
 
+        { 'X', "A-C", "Not a valid IUPAC code:'-'" }, // @@@ should succeed
+        { 'X', ".T.", "Not a valid IUPAC code:'.'" }, // @@@ should succeed
+
+        { 'L', "A-C", "Not a valid IUPAC code:'-'" }, // @@@ wrong message (should be 'Not enough nucleotides')
+        { 'V', ".T.", "Not a valid IUPAC code:'.'" }, // @@@ wrong message (should be 'Not enough nucleotides')
+
         { 0, NULL, NULL}
     };
 
