@@ -844,6 +844,9 @@ void TEST_codon_check() {
         { 'W', "TGR", "1,2,3,4,6,10,11,14" }, // R=AG
         { 'X', "TGR", "" }, // @@@ should have tables (e.g. code==0: TGA->* TGG->W => TGR->X?)
 
+        { 'X', "A-C", "" }, // @@@ should have ALL_TABLES
+        { 'X', ".T.", "" }, // @@@ should have ALL_TABLES
+
         { 0, NULL, NULL}
     };
 
@@ -859,6 +862,9 @@ void TEST_codon_check() {
         { 'S', "CWT", "Not all IUPAC-combinations of 'CWT' translate to 'S'" },
         { 'S', "CSA", "Not all IUPAC-combinations of 'CSA' translate to 'S'" },
         { 'S', "GYA", "Not all IUPAC-combinations of 'GYA' translate to 'S'" },
+
+        { 'L', "A-C", "Not a valid IUPAC code:'-'" }, // @@@ wrong message (should be 'Not enough nucleotides')
+        { 'V', ".T.", "Not a valid IUPAC code:'.'" }, // @@@ wrong message (should be 'Not enough nucleotides')
 
         { 0, NULL, NULL}
     };
