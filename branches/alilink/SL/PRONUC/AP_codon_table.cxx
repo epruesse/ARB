@@ -35,49 +35,49 @@ static AWT_Codon_Code_Definition AWT_codon_def[AWT_CODON_TABLES+1] =
             " (1) Standard code",
             "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG", // The first code in this table has to be 'Standard code'!
             "---M---------------M---------------M----------------------------",
-            1
+            1 // arb:0
         },
         {
             " (2) Vertebrate mitochondrial code",
             "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG",
             "--------------------------------MMMM---------------M------------",
-            2
+            2 // arb:1
         },
         {
             " (3) Yeast mitochondrial code",
             "FFLLSSSSYY**CCWWTTTTPPPPHHQQRRRRIIMMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
             "----------------------------------MM----------------------------",
-            3
+            3 // arb:2
         },
         {
             " (4) Mold/Protozoan/Coelenterate mito. + Mycoplasma/Spiroplasma code",
             "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
             "--MM---------------M------------MMMM---------------M------------",
-            4
+            4 // arb:3
         },
         {
             " (5) Invertebrate mitochondrial code",
             "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSSSVVVVAAAADDEEGGGG",
             "---M----------------------------MMMM---------------M------------",
-            5
+            5 // arb:4
         },
         {
             " (6) Ciliate, Dasycladacean and Hexamita nuclear code",
             "FFLLSSSSYYQQCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
             "-----------------------------------M----------------------------",
-            6
+            6 // arb:5
         },
         {
             " (9) Echinoderm and Flatworm mitochondrial code",
             "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
             "-----------------------------------M---------------M------------",
-            9
+            9 // arb:6
         },
         {
             "(10) Euplotid nuclear code",
             "FFLLSSSSYY**CCCWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
             "-----------------------------------M----------------------------",
-            10
+            10 // arb:7
         },
         //   0000000001111111111222222222233333333334444444444555555555566666
         //   1234567890123456789012345678901234567890123456789012345678901234
@@ -89,55 +89,55 @@ static AWT_Codon_Code_Definition AWT_codon_def[AWT_CODON_TABLES+1] =
             "(11) Bacterial and Plant Plastid code",
             "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
             "---M---------------M------------MMMM---------------M------------",
-            11
+            11 // arb:8
         },
         {
             "(12) Alternative Yeast nuclear code",
             "FFLLSSSSYY**CC*WLLLSPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
             "-------------------M---------------M----------------------------",
-            12
+            12 // arb:9
         },
         {
             "(13) Ascidian mitochondrial code",
             "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSGGVVVVAAAADDEEGGGG",
             "---M------------------------------MM---------------M------------",
-            13
+            13 // arb:10
         },
         {
             "(14) Alternative Flatworm mitochondrial code",
             "FFLLSSSSYYY*CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
             "-----------------------------------M----------------------------",
-            14
+            14 // arb:11
         },
         {
             "(15) Blepharisma nuclear code",
             "FFLLSSSSYY*QCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
             "-----------------------------------M----------------------------",
-            15
+            15 // arb:12
         },
         {
             "(16) Chlorophycean mitochondrial code",
             "FFLLSSSSYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
             "-----------------------------------M----------------------------",
-            16
+            16 // arb:13
         },
         {
             "(21) Trematode mitochondrial code",
             "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
             "-----------------------------------M---------------M------------",
-            21
+            21 // arb:14
         },
         {
             "(22) Scenedesmus obliquus mitochondrial code",
             "FFLLSS*SYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
             "-----------------------------------M----------------------------",
-            22
+            22 // arb:15
         },
         {
             "(23) Thraustochytrium mitochondrial code",
             "FF*LSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
             "--------------------------------M--M---------------M------------",
-            23
+            23 // arb:16
         },
 
         { 0, 0, 0, 0 } // end of table-marker
