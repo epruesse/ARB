@@ -783,6 +783,17 @@ void TEST_codon_check() {
     TEST_EXPECT_EQUAL(AP_get_codons('N', 0), "AATAACAAY");
     TEST_EXPECT_EQUAL(AP_get_codons('B', 0), "AAT" "AAC" "GAT" "GAC" "AAY" "RAT" "RAC" "GAY" "RAY"); // 'B' = 'D' or 'N'
 
+    TEST_EXPECT_EQUAL(AP_get_codons('L', 0),  "TTATTGCTTCTCCTACTG"    "TTRYTAYTGCTYCTWCTKCTMCTSCTRCTHCTBCTDCTVYTRCTN");
+    TEST_EXPECT_EQUAL(AP_get_codons('L', 2),  "TTATTG"                "TTR");
+    TEST_EXPECT_EQUAL(AP_get_codons('L', 9),  "TTATTGCTTCTCCTAT"      "TRYTACTYCTWCTMCTH");
+    TEST_EXPECT_EQUAL(AP_get_codons('L', 13), "TTATTGTAGCTTCTCCTACTG" "TTRYTATWGYTGCTYCTWCTKCTMCTSCTRCTHCTBCTDCTVYTRCTN");
+    TEST_EXPECT_EQUAL(AP_get_codons('L', 16), "TTGCTTCTCCTAC"         "TGYTGCTYCTWCTKCTMCTSCTRCTHCTBCTDCTVCTN");
+
+    TEST_EXPECT_EQUAL(AP_get_codons('S', 0),  "TCTTCCTCATCGAGTAGCT"       "CYTCWTCKTCMTCSTCRAGYTCHTCBTCDTCVTCN");
+    TEST_EXPECT_EQUAL(AP_get_codons('S', 4),  "TCTTCCTCATCGAGTAGCAGAAGGT" "CYTCWTCKTCMTCSTCRAGYAGWAGKAGMAGSAGRTCHTCBTCDTCVAGHAGBAGDAGVTCNAGN");
+    TEST_EXPECT_EQUAL(AP_get_codons('S', 9),  "TCTTCCTCATCGCTGAGTAGCT"    "CYTCWTCKTCMTCSTCRAGYTCHTCBTCDTCVTCN");
+    TEST_EXPECT_EQUAL(AP_get_codons('S', 15), "TCTTCCTCGAGTAGCT"          "CYTCKTCSAGYTCB");
+
     TEST_EXPECT_EQUAL(AP_get_codons('X', 0), ""); // @@@ wrong: TGR->X (or disallow call)
 
     struct test_is_codon {
@@ -806,9 +817,21 @@ void TEST_codon_check() {
         { 'D', "GAY", ALL_TABLES },
         { 'N', "AAY", ALL_TABLES },
         { 'B', "AAY", ALL_TABLES }, // translates to 'N', but matches B(=D|N) for realigner
+        { 'B', "GAY", ALL_TABLES }, // translates to 'D', but matches B(=D|N) for realigner
 
         { 'Q', "CAR", ALL_TABLES },
         { 'E', "GAR", ALL_TABLES },
+
+        { 'L', "TTR", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15" },
+        { 'L', "YTA", "0,1,3,4,5,6,7,8,9,10,11,12,13,14,15" },
+        { 'L', "CTM", "0,1,3,4,5,6,7,8,9,10,11,12,13,14,15,16" },
+        { 'L', "CTN", "0,1,3,4,5,6,7,8,10,11,12,13,14,15,16" },
+        { 'L', "CTK", "0,1,3,4,5,6,7,8,10,11,12,13,14,15,16" },
+        { 'L', "TWG", "13,15" },
+
+        { 'S', "AGY", ALL_TABLES },
+        { 'S', "TCN", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,16" },
+        { 'S', "AGN", "4,6,11,14" },
 
         { 'R', "AGR", "0,2,3,5,7,8,9,12,13,15,16" },
         { 'W', "TGR", "1,2,3,4,6,10,11,14" }, // R=AG
@@ -822,6 +845,12 @@ void TEST_codon_check() {
         { 'B', "RAY", "Not all IUPAC-combinations of 'AAY' translate and Not all IUPAC-combinations of 'GAY' translate" }, // @@@ wrong (same)
         { 'D', "RAY", "Not all IUPAC-combinations of 'AAY' translate" }, // @@@ message wrong, but ok to fail (RAY translates to B, not D)
         { 'Z', "SAR", "Not all IUPAC-combinations of 'CAR' translate and Not all IUPAC-combinations of 'GAR' translate" }, // @@@ wrong (analog)
+
+        // @@@ manually check these (they are listed by AP_get_codons above)
+        { 'S', "CYT", "Not all IUPAC-combinations of 'CCT' translate" },
+        { 'S', "CWT", "Not all IUPAC-combinations of 'CAT' translate" },
+        { 'S', "CSA", "Not all IUPAC-combinations of 'CCA' translate" },
+        { 'S', "GYA", "Not all IUPAC-combinations of 'GCA' translate" },
 
         // all X checks fail
         { 'X', "NNN", "Three consecutive IUPAC codes 'NNN'" },           // @@@ wrong
