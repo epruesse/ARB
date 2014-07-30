@@ -790,6 +790,17 @@ void TEST_codon_check() {
     TEST_EXPECT_EQUAL(AP_get_codons('N', 0), "AATAACAAY");
     TEST_EXPECT_EQUAL(AP_get_codons('B', 0), "AAT" "AAC" "GAT" "GAC" "AAY" "RAT" "RAC" "GAY" "RAY"); // 'B' = 'D' or 'N'
 
+    TEST_EXPECT_EQUAL(AP_get_codons('L', 0),  "TTATTGCTTCTCCTACTG"    "TTRYTAYTGCTYCTWCTKCTMCTSCTRCTHCTBCTDCTVYTRCTN");
+    TEST_EXPECT_EQUAL(AP_get_codons('L', 2),  "TTATTG"                "TTR");
+    TEST_EXPECT_EQUAL(AP_get_codons('L', 9),  "TTATTGCTTCTCCTAT"      "TRYTACTYCTWCTMCTH");
+    TEST_EXPECT_EQUAL(AP_get_codons('L', 13), "TTATTGTAGCTTCTCCTACTG" "TTRYTATWGYTGCTYCTWCTKCTMCTSCTRCTHCTBCTDCTVYTRCTN");
+    TEST_EXPECT_EQUAL(AP_get_codons('L', 16), "TTGCTTCTCCTAC"         "TGYTGCTYCTWCTKCTMCTSCTRCTHCTBCTDCTVCTN");
+
+    TEST_EXPECT_EQUAL(AP_get_codons('S', 0),  "TCTTCCTCATCGAGTAGCT"       "CYTCWTCKTCMTCSTCRAGYTCHTCBTCDTCVTCN");
+    TEST_EXPECT_EQUAL(AP_get_codons('S', 4),  "TCTTCCTCATCGAGTAGCAGAAGGT" "CYTCWTCKTCMTCSTCRAGYAGWAGKAGMAGSAGRTCHTCBTCDTCVAGHAGBAGDAGVTCNAGN");
+    TEST_EXPECT_EQUAL(AP_get_codons('S', 9),  "TCTTCCTCATCGCTGAGTAGCT"    "CYTCWTCKTCMTCSTCRAGYTCHTCBTCDTCVTCN");
+    TEST_EXPECT_EQUAL(AP_get_codons('S', 15), "TCTTCCTCGAGTAGCT"          "CYTCKTCSAGYTCB");
+
     TEST_EXPECT_EQUAL(AP_get_codons('X', 0), ""); // @@@ wrong: TGR->X (or disallow call)
 
     struct test_is_codon {
@@ -823,6 +834,17 @@ void TEST_codon_check() {
         { 'Q', "CAR", ALL_TABLES },
         { 'E', "GAR", ALL_TABLES },
 
+        { 'L', "TTR", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15" },
+        { 'L', "YTA", "0,1,3,4,5,6,7,8,9,10,11,12,13,14,15" },
+        { 'L', "CTM", "0,1,3,4,5,6,7,8,9,10,11,12,13,14,15,16" },
+        { 'L', "CTN", "0,1,3,4,5,6,7,8,10,11,12,13,14,15,16" },
+        { 'L', "CTK", "0,1,3,4,5,6,7,8,10,11,12,13,14,15,16" },
+        { 'L', "TWG", "13,15" },
+
+        { 'S', "AGY", ALL_TABLES },
+        { 'S', "TCN", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,16" },
+        { 'S', "AGN", "4,6,11,14" },
+
         { 'R', "AGR", "0,2,3,5,7,8,9,12,13,15,16" },
         { 'W', "TGR", "1,2,3,4,6,10,11,14" }, // R=AG
         { 'X', "TGR", "" }, // @@@ should have tables (e.g. code==0: TGA->* TGG->W => TGR->X?)
@@ -833,6 +855,12 @@ void TEST_codon_check() {
     test_not_codon not_codon[] = {
         { 'P', "NNN", "Three consecutive IUPAC codes 'NNN'" }, // @@@ should be allowed
         { 'D', "RAY", "Not all IUPAC-combinations of 'RAY' translate to 'D'" }, // correct failure
+
+        // @@@ manually check these (they are listed by AP_get_codons above)
+        { 'S', "CYT", "Not all IUPAC-combinations of 'CYT' translate to 'S'" },
+        { 'S', "CWT", "Not all IUPAC-combinations of 'CWT' translate to 'S'" },
+        { 'S', "CSA", "Not all IUPAC-combinations of 'CSA' translate to 'S'" },
+        { 'S', "GYA", "Not all IUPAC-combinations of 'GYA' translate to 'S'" },
 
         { 0, NULL, NULL}
     };
