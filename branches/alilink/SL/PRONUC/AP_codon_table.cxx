@@ -491,7 +491,7 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
                     }
                     else {
                         allowed_code_left.forbidAll();
-                        memcpy(dna_copy, dna, 3);
+                        dna_copy[first_error_pos] = dna[first_error_pos];
                         fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate to '%c'", dna_copy, protein);
                     }
                 }
@@ -813,6 +813,10 @@ void TEST_codon_check() {
         { 'D', "GAY", ALL_TABLES },
         { 'N', "AAY", ALL_TABLES },
         { 'B', "AAY", ALL_TABLES }, // translates to 'N', but matches B(=D|N) for realigner
+        { 'B', "GAY", ALL_TABLES }, // translates to 'D', but matches B(=D|N) for realigner
+        { 'B', "RAY", ALL_TABLES }, // translates to 'D' or to 'N' (i.e. only matches 'B', see failing test for 'RAY' below)
+        { 'B', "RAT", ALL_TABLES },
+        { 'Z', "SAR", ALL_TABLES },
 
         { 'X', "NNN", ALL_TABLES },
 
@@ -823,16 +827,12 @@ void TEST_codon_check() {
         { 'W', "TGR", "1,2,3,4,6,10,11,14" }, // R=AG
         { 'X', "TGR", "" }, // @@@ should have tables (e.g. code==0: TGA->* TGG->W => TGR->X?)
 
-        { 'B', "RAT", ALL_TABLES },
-        { 'B', "RAY", ALL_TABLES },
-        { 'Z', "SAR", ALL_TABLES },
-
         { 0, NULL, NULL}
     };
 
     test_not_codon not_codon[] = {
         { 'P', "NNN", "Three consecutive IUPAC codes 'NNN'" }, // @@@ should be allowed
-        { 'D', "RAY", "Not all IUPAC-combinations of 'RAY' translate to 'D'" }, // @@@ message wrong, but ok to fail (RAY translates to B, not D)
+        { 'D', "RAY", "Not all IUPAC-combinations of 'RAY' translate to 'D'" }, // correct failure
 
         { 0, NULL, NULL}
     };
