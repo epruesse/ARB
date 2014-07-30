@@ -395,6 +395,31 @@ char AWT_is_start_codon(const char *dna, int arb_code_nr) {
     return is_start_codon;
 }
 
+inline bool protMatches(char p1, char p2) {
+    /*! return true if p1 matches p2
+     * @param p1 "normal" protein (neighter B nor Z)
+     * @param p2 any protein (also B or Z)
+     * B is a shortcut for Asp(=D) or Asn(=N)
+     * Z is a shortcut for Glu(=E) or Gln(=Q)
+     */
+    pn_assert(p1 != 'B' && p1 != 'Z');
+    pn_assert(p1 == toupper(p1));
+    pn_assert(p2 == toupper(p2));
+
+    if (p1 == p2) return true;
+    if (p2 == 'B') return p1 == 'D' || p1 == 'N';
+    if (p2 == 'Z') return p1 == 'E' || p1 == 'Q';
+    return false;
+}
+inline bool containsProtMatching(const char *pstr, char p) {
+    /*! return true, if 'pstr' contains any protein that matches 'p'.
+     * uses same logic as protMatches()
+     */
+    pn_assert(p == toupper(p));
+    if (p == 'B') return strchr(pstr, 'D') != 0 || strchr(pstr, 'N') != 0;
+    if (p == 'Z') return strchr(pstr, 'E') != 0 || strchr(pstr, 'Q') != 0;
+    return strchr(pstr, p)                 != 0;
+}
 
 bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& allowed_code, AWT_allowedCode& allowed_code_left, const char **fail_reason_ptr) {
     // return TRUE if 'dna' contains a codon of 'protein' ('dna' must not contain any gaps)
@@ -409,173 +434,145 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
     if (fail_reason_ptr) *fail_reason_ptr = 0;
 
     protein = toupper(protein);
-    if (protein=='B') {         // B is a shortcut for Asp(=D) or Asn(=N)
-        is_codon = AWT_is_codon('D', dna, allowed_code, allowed_code_left, &fail_reason);
-        if (!is_codon) {
-            pn_assert(fail_reason != 0); // if failed there should always be a failure-reason
-            char *fail1 = strdup(fail_reason);
-            is_codon    = AWT_is_codon('N', dna, allowed_code, allowed_code_left, &fail_reason);
-            if (!is_codon) {
-                char *fail2 = strdup(fail_reason);
-                fail_reason = GBS_global_string("%s and %s", fail1, fail2);
-                free(fail2);
-            }
-            free(fail1);
-        }
-    }
-    else if (protein=='Z') {    // Z is a shortcut for Glu(=E) or Gln(=Q)
-        is_codon = AWT_is_codon('E', dna, allowed_code, allowed_code_left, &fail_reason);
-        if (!is_codon) {
-            pn_assert(fail_reason != 0); // if failed there should always be a failure-reason
-            char *fail1 = strdup(fail_reason);
-            is_codon    = AWT_is_codon('Q', dna, allowed_code, allowed_code_left, &fail_reason);
-            if (!is_codon) {
-                char *fail2 = strdup(fail_reason);
-                fail_reason = GBS_global_string("%s and %s", fail1, fail2);
-                free(fail2);
-            }
-            free(fail1);
-        }
-    }
-    else {
-        int codon_nr = calc_codon_nr(dna);
-        if (codon_nr==AWT_MAX_CODONS) { // dna is not a clean codon (it contains iupac-codes)
-            int  error_positions = 0;
-            int  first_error_pos = -1;
-            bool too_short       = false;
-            {
-                int iupac_pos;
-                for (iupac_pos=0; iupac_pos<3 && !too_short; iupac_pos++) {
-                    if (!dna[iupac_pos]) {
-                        too_short = true;
-                    }
-                    else if (strchr("ACGTU", dna[iupac_pos]) == 0) {
-                        if (first_error_pos==-1) first_error_pos = iupac_pos;
-                        error_positions++;
-                    }
+
+    int codon_nr = calc_codon_nr(dna);
+    if (codon_nr==AWT_MAX_CODONS) { // dna is not a clean codon (i.e. it contains iupac-codes or gaps)
+        int  error_positions = 0;
+        int  first_error_pos = -1;
+        bool too_short       = false;
+        {
+            int iupac_pos;
+            for (iupac_pos=0; iupac_pos<3 && !too_short; iupac_pos++) {
+                if (!dna[iupac_pos]) {
+                    too_short = true;
                 }
-            }
-
-            if (too_short) {
-                fail_reason = GBS_global_string("Not enough nucleotides (got '%s')", dna);
-            }
-            else {
-                pn_assert(error_positions);
-                if (error_positions==3) { // don't accept codons with 3 errors
-                    fail_reason = GBS_global_string("Three consecutive IUPAC codes '%c%c%c'", dna[0], dna[1], dna[2]);
-                }
-                else {
-                    const char *decoded_iupac = iupac::decode(dna[first_error_pos], GB_AT_DNA, 0);
-
-                    if (!decoded_iupac[0]) { // no valid IUPAC
-                        allowed_code_left.forbidAll();
-                        fail_reason = GBS_global_string("Not a valid IUPAC code:'%c'", dna[first_error_pos]);
-                    }
-                    else {
-                        char dna_copy[4];
-                        memcpy(dna_copy, dna, 3);
-                        dna_copy[3] = 0;
-
-                        bool            all_are_codons    = true;
-                        AWT_allowedCode allowed_code_copy = allowed_code;
-
-                        for (int i=0; decoded_iupac[i]; i++) {
-                            dna_copy[first_error_pos] = decoded_iupac[i];
-                            if (!AWT_is_codon(protein, dna_copy, allowed_code_copy, allowed_code_left)) {
-                                all_are_codons = 0;
-                                break;
-                            }
-                            allowed_code_copy = allowed_code_left;
-                        }
-
-                        if (all_are_codons) {
-                            allowed_code_left = allowed_code_copy;
-                            is_codon          = true;
-                        }
-                        else {
-                            allowed_code_left.forbidAll();
-                            memcpy(dna_copy, dna, 3);
-                            fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate to '%c'", dna_copy, protein);
-                        }
-                    }
-                }
-            }
-
-            if (protein == 'X') { // invert result for 'X'
-                is_codon = !is_codon;
-                if (fail_reason) {
-                    fail_reason = NULL;
-                }
-                else {
-                    pn_assert(!too_short); // otherwise array access in next line is undefined
-                    fail_reason = GBS_global_string("'%c%c%c' does not translate to 'X'", dna[0], dna[1], dna[2]);
+                else if (strchr("ACGTU", dna[iupac_pos]) == 0) {
+                    if (first_error_pos==-1) first_error_pos = iupac_pos;
+                    error_positions++;
                 }
             }
         }
-        else if (definite_translation[codon_nr]!='?') {
-            int ok = definite_translation[codon_nr]==protein;
 
-            if (ok) {
-                allowed_code_left = allowed_code;
-                is_codon          = true;
-            }
-            else {
-                allowed_code_left.forbidAll();
-                fail_reason = GBS_global_string("'%c%c%c' translates to '%c', not to '%c'", dna[0], dna[1], dna[2], definite_translation[codon_nr], protein);
-            }
-        }
-        else if (strchr(ambiguous_codons[codon_nr], protein)==0) {
-            allowed_code_left.forbidAll();
-            fail_reason = GBS_global_string("'%c%c%c' does never translate to '%c'", dna[0], dna[1], dna[2], protein);
+        if (too_short) {
+            fail_reason = GBS_global_string("Not enough nucleotides (got '%s')", dna);
         }
         else {
-#if defined(ASSERTION_USED)
-            bool correct_disallowed_translation = false;
-#endif
+            pn_assert(error_positions);
+            if (error_positions==3) { // don't accept codons with 3 errors
+                fail_reason = GBS_global_string("Three consecutive IUPAC codes '%c%c%c'", dna[0], dna[1], dna[2]); // @@@ accept these as well
+            }
+            else {
+                const char *decoded_iupac = iupac::decode(dna[first_error_pos], GB_AT_DNA, 0);
 
-            // search for allowed correct translation possibility:
-            for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
-                if (AWT_codon_def[code_nr].aa[codon_nr] == protein) { // does it translate correct?
-                    if (allowed_code.is_allowed(code_nr)) { // is this code allowed?
-                        allowed_code_left.allow(code_nr);
-                        is_codon = true;
+                if (!decoded_iupac[0]) { // no valid IUPAC
+                    allowed_code_left.forbidAll();
+                    fail_reason = GBS_global_string("Not a valid IUPAC code:'%c'", dna[first_error_pos]);
+                }
+                else {
+                    char dna_copy[4];
+                    memcpy(dna_copy, dna, 3);
+                    dna_copy[3] = 0;
+
+                    bool            all_are_codons    = true;
+                    AWT_allowedCode allowed_code_copy = allowed_code;
+
+                    for (int i=0; decoded_iupac[i]; i++) {
+                        dna_copy[first_error_pos] = decoded_iupac[i];
+                        if (!AWT_is_codon(protein, dna_copy, allowed_code_copy, allowed_code_left)) {
+                            all_are_codons = false;
+                            break;
+                        }
+                        allowed_code_copy = allowed_code_left;
+                    }
+
+                    if (all_are_codons) {
+                        allowed_code_left = allowed_code_copy;
+                        is_codon          = true;
                     }
                     else {
-                        allowed_code_left.forbid(code_nr); // otherwise forbid code in future
-#if defined(ASSERTION_USED)
-                        correct_disallowed_translation = true;
-#endif
+                        allowed_code_left.forbidAll();
+                        memcpy(dna_copy, dna, 3);
+                        fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate to '%c'", dna_copy, protein);
                     }
+                }
+            }
+        }
+
+        if (protein == 'X') { // invert result for 'X'
+            is_codon = !is_codon;
+            if (fail_reason) {
+                fail_reason = NULL;
+            }
+            else {
+                pn_assert(!too_short); // otherwise array access in next line is undefined
+                fail_reason = GBS_global_string("'%c%c%c' does not translate to 'X'", dna[0], dna[1], dna[2]);
+            }
+        }
+    }
+    else if (definite_translation[codon_nr]!='?') { // codon has a definite translation (i.e. translates equal for all code-tables)
+        int ok = protMatches(definite_translation[codon_nr], protein);
+
+        if (ok) {
+            allowed_code_left = allowed_code;
+            is_codon          = true;
+        }
+        else {
+            allowed_code_left.forbidAll();
+            fail_reason = GBS_global_string("'%c%c%c' translates to '%c', not to '%c'", dna[0], dna[1], dna[2], definite_translation[codon_nr], protein);
+        }
+    }
+    else if (!containsProtMatching(ambiguous_codons[codon_nr], protein)) { // codon does not translate to protein in any code-table
+        allowed_code_left.forbidAll();
+        fail_reason = GBS_global_string("'%c%c%c' does never translate to '%c'", dna[0], dna[1], dna[2], protein);
+    }
+    else {
+#if defined(ASSERTION_USED)
+        bool correct_disallowed_translation = false;
+#endif
+
+        // Now codon translates to protein in at least 1 code-table!
+        // Check whether protein translates in any of the allowed code-tables:
+        for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
+            if (protMatches(AWT_codon_def[code_nr].aa[codon_nr], protein)) { // does it translate correct?
+                if (allowed_code.is_allowed(code_nr)) { // is this code allowed?
+                    allowed_code_left.allow(code_nr);
+                    is_codon = true;
                 }
                 else {
                     allowed_code_left.forbid(code_nr); // otherwise forbid code in future
+#if defined(ASSERTION_USED)
+                    correct_disallowed_translation = true;
+#endif
+                }
+            }
+            else {
+                allowed_code_left.forbid(code_nr); // otherwise forbid code in future
+            }
+        }
+
+        if (!is_codon) {
+            pn_assert(correct_disallowed_translation); // should be true because otherwise we shouldn't run into this else-branch
+
+            char  left_tables[AWT_CODON_TABLES*3+1];
+            char *ltp   = left_tables;
+            bool  first = true;
+
+            for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
+                if (allowed_code.is_allowed(code_nr)) {
+                    if (!first) *ltp++ = ',';
+                    ltp   += sprintf(ltp, "%i", code_nr);
+                    first  = false;
                 }
             }
 
-            if (!is_codon) {
-                pn_assert(correct_disallowed_translation); // should be true because otherwise we shouldn't run into this else-branch
-
-                char  left_tables[AWT_CODON_TABLES*3+1];
-                char *ltp   = left_tables;
-                bool  first = true;
-
-                for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
-                    if (allowed_code.is_allowed(code_nr)) {
-                        if (!first) *ltp++ = ',';
-                        ltp   += sprintf(ltp, "%i", code_nr);
-                        first  = false;
-                    }
-                }
-
-                char *prefix = GBS_global_string_copy("'%c%c%c' does not translate to '%c'", dna[0], dna[1], dna[2], protein);
-                if (first) { // no translation table left
-                    fail_reason = GBS_global_string("%s (no trans-table left)", prefix);
-                }
-                else {
-                    fail_reason = GBS_global_string("%s (for any of the leftover trans-tables: %s)", prefix, left_tables);
-                }
-                free(prefix);
+            char *prefix = GBS_global_string_copy("'%c%c%c' does not translate to '%c'", dna[0], dna[1], dna[2], protein);
+            if (first) { // no translation table left
+                fail_reason = GBS_global_string("%s (no trans-table left)", prefix);
             }
+            else {
+                fail_reason = GBS_global_string("%s (for any of the leftover trans-tables: %s)", prefix, left_tables);
+            }
+            free(prefix);
         }
     }
 
@@ -783,6 +780,12 @@ static const char *allowed2string(const AWT_allowedCode& allowed) {
 void TEST_codon_check() {
     AP_initialize_codon_tables();
 
+    TEST_EXPECT(protMatches('V', 'V'));
+    TEST_EXPECT(protMatches('N', 'B'));
+    TEST_EXPECT(protMatches('E', 'Z'));
+    TEST_EXPECT(!protMatches('N', 'Z'));
+    TEST_EXPECT(!protMatches('V', 'Z'));
+
     TEST_EXPECT_EQUAL(AP_get_codons('D', 0), "GATGACGAY");
     TEST_EXPECT_EQUAL(AP_get_codons('N', 0), "AATAACAAY");
     TEST_EXPECT_EQUAL(AP_get_codons('B', 0), "AAT" "AAC" "GAT" "GAC" "AAY" "RAT" "RAC" "GAY" "RAY"); // 'B' = 'D' or 'N'
@@ -820,15 +823,16 @@ void TEST_codon_check() {
         { 'W', "TGR", "1,2,3,4,6,10,11,14" }, // R=AG
         { 'X', "TGR", "" }, // @@@ should have tables (e.g. code==0: TGA->* TGG->W => TGR->X?)
 
+        { 'B', "RAT", ALL_TABLES },
+        { 'B', "RAY", ALL_TABLES },
+        { 'Z', "SAR", ALL_TABLES },
+
         { 0, NULL, NULL}
     };
 
     test_not_codon not_codon[] = {
         { 'P', "NNN", "Three consecutive IUPAC codes 'NNN'" }, // @@@ should be allowed
-        { 'B', "RAT", "Not all IUPAC-combinations of 'RAT' translate to 'D' and Not all IUPAC-combinations of 'RAT' translate to 'N'" }, // @@@ wrong (RAT is listed by AP_get_codons for code==0; see above)
-        { 'B', "RAY", "Not all IUPAC-combinations of 'RAY' translate to 'D' and Not all IUPAC-combinations of 'RAY' translate to 'N'" }, // @@@ wrong (same)
         { 'D', "RAY", "Not all IUPAC-combinations of 'RAY' translate to 'D'" }, // @@@ message wrong, but ok to fail (RAY translates to B, not D)
-        { 'Z', "SAR", "Not all IUPAC-combinations of 'SAR' translate to 'E' and Not all IUPAC-combinations of 'SAR' translate to 'Q'" }, // @@@ wrong (analog)
 
         { 0, NULL, NULL}
     };
