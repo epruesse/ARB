@@ -420,6 +420,7 @@ inline bool containsProtMatching(const char *pstr, char p) {
     if (p == 'Z') return strchr(pstr, 'E') != 0 || strchr(pstr, 'Q') != 0;
     return strchr(pstr, p)                 != 0;
 }
+inline bool isGap(char c) { return c == '-' || c == '.'; }
 
 bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& allowed_code, AWT_allowedCode& allowed_code_left, const char **fail_reason_ptr) {
     // return TRUE if 'dna' contains a codon of 'protein' ('dna' must not contain any gaps)
@@ -440,13 +441,13 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
         int  error_positions = 0;
         int  first_error_pos = -1;
         bool too_short       = false;
-        {
-            int iupac_pos;
-            for (iupac_pos=0; iupac_pos<3 && !too_short; iupac_pos++) {
-                if (!dna[iupac_pos]) {
-                    too_short = true;
-                }
-                else if (strchr("ACGTU", dna[iupac_pos]) == 0) {
+
+        for (int iupac_pos=0; iupac_pos<3 && !too_short; iupac_pos++) {
+            char N = dna[iupac_pos];
+            if (!N) too_short = true;
+            else if (strchr("ACGTU", N) == 0) {
+                if (isGap(N)) too_short = true;
+                else {
                     if (first_error_pos==-1) first_error_pos = iupac_pos;
                     error_positions++;
                 }
@@ -454,6 +455,7 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
         }
 
         if (too_short) {
+            allowed_code_left.forbidAll();
             fail_reason = GBS_global_string("Not enough nucleotides (got '%s')", dna);
         }
         else {
@@ -863,8 +865,8 @@ void TEST_codon_check() {
         { 'S', "CSA", "Not all IUPAC-combinations of 'CSA' translate to 'S'" },
         { 'S', "GYA", "Not all IUPAC-combinations of 'GYA' translate to 'S'" },
 
-        { 'L', "A-C", "Not a valid IUPAC code:'-'" }, // @@@ wrong message (should be 'Not enough nucleotides')
-        { 'V', ".T.", "Not a valid IUPAC code:'.'" }, // @@@ wrong message (should be 'Not enough nucleotides')
+        { 'L', "A-C", "Not enough nucleotides (got 'A-C')" }, // correct failure
+        { 'V', ".T.", "Not enough nucleotides (got '.T.')" }, // correct failure
 
         { 0, NULL, NULL}
     };
