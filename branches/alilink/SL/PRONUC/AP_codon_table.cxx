@@ -903,6 +903,7 @@ void TEST_codon_check() {
 
         { 'X', "A-C", ALL_TABLES },
         { 'X', ".T.", ALL_TABLES },
+        { 'X', "...", ALL_TABLES }, // @@@ wrong
 
         // tests to protect buffer overflows in dna
         { 'X', "..", ALL_TABLES }, // @@@ broken by realigner fixes; should report error
@@ -933,6 +934,8 @@ void TEST_codon_check() {
 
         { 'L', "A-C", "Not enough nucleotides (got 'A-C')" }, // correct failure
         { 'V', ".T.", "Not enough nucleotides (got '.T.')" }, // correct failure
+        { 'L', "...", "Not enough nucleotides (got '...')" },
+        { 'J', "...", "Not enough nucleotides (got '...')" }, // @@@ should be sth like "'J' is no valid protein"
 
         // tests to protect buffer overflows in dna
 
