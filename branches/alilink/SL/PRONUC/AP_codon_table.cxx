@@ -473,8 +473,8 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
     else {
         int codon_nr = calc_codon_nr(dna);
         if (codon_nr==AWT_MAX_CODONS) { // dna is not a clean codon (i.e. it contains iupac-codes or gaps)
-            int  error_positions = 0;
-            int  first_error_pos = -1;
+            int  iupac_positions = 0;
+            int  first_iupac_pos = -1;
             bool too_short       = false;
 
             for (int iupac_pos=0; iupac_pos<3 && !too_short; iupac_pos++) {
@@ -483,8 +483,8 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
                 else if (strchr("ACGTU", N) == 0) {
                     if (isGap(N)) too_short = true;
                     else {
-                        if (first_error_pos==-1) first_error_pos = iupac_pos;
-                        error_positions++;
+                        if (first_iupac_pos==-1) first_iupac_pos = iupac_pos;
+                        iupac_positions++;
                     }
                 }
             }
@@ -494,12 +494,12 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
                 fail_reason = GBS_global_string("Not enough nucleotides (got '%s')", dna);
             }
             else {
-                pn_assert(error_positions);
-                const char *decoded_iupac = iupac::decode(dna[first_error_pos], GB_AT_DNA, 0);
+                pn_assert(iupac_positions);
+                const char *decoded_iupac = iupac::decode(dna[first_iupac_pos], GB_AT_DNA, 0);
 
                 if (!decoded_iupac[0]) { // no valid IUPAC
                     allowed_code_left.forbidAll();
-                    fail_reason = GBS_global_string("Not a valid IUPAC code:'%c'", dna[first_error_pos]);
+                    fail_reason = GBS_global_string("Not a valid IUPAC code:'%c'", dna[first_iupac_pos]);
                 }
                 else {
                     char dna_copy[4];
@@ -510,7 +510,7 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
                     AWT_allowedCode allowed_code_copy = allowed_code;
 
                     for (int i=0; decoded_iupac[i]; i++) {
-                        dna_copy[first_error_pos] = decoded_iupac[i];
+                        dna_copy[first_iupac_pos] = decoded_iupac[i];
                         if (!AWT_is_codon(protein, dna_copy, allowed_code_copy, allowed_code_left)) {
                             all_are_codons = false;
                             break;
@@ -525,7 +525,7 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
                     }
                     else {
                         allowed_code_left.forbidAll();
-                        dna_copy[first_error_pos] = dna[first_error_pos];
+                        dna_copy[first_iupac_pos] = dna[first_iupac_pos];
                         fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate to '%c'", dna_copy, protein);
                     }
                 }
