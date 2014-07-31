@@ -890,6 +890,11 @@ void TEST_codon_check() {
         { 'L', "A-C", "Not a valid IUPAC code:'-'" }, // @@@ wrong message (should be 'Not enough nucleotides')
         { 'V', ".T.", "Not a valid IUPAC code:'.'" }, // @@@ wrong message (should be 'Not enough nucleotides')
 
+        // test invalid chars
+        { 'X', "AZA", "Not a valid IUPAC code:'Z'" },
+        { 'X', "A@A", "Not a valid IUPAC code:'@'" },
+        { 'L', "AZA", "Not a valid IUPAC code:'Z'" },
+
         // tests to protect buffer overflows in dna
         { 'X', "..", "Not enough nucleotides (got '..')" },
         { 'X', "-",  "Not enough nucleotides (got '-')" },
