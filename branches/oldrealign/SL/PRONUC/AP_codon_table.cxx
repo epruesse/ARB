@@ -859,6 +859,9 @@ void TEST_codon_check() {
         { 'R', "AGR", "0,2,3,5,7,8,9,12,13,15,16" },
         { 'S', "AGR", "4,6,11,14" },
 
+        // tests to protect buffer overflows in dna
+        // @@@ none of them succeeds here
+
         { 0, NULL, NULL}
     };
 
@@ -878,12 +881,28 @@ void TEST_codon_check() {
         // all X checks fail
         { 'X', "NNN", "Three consecutive IUPAC codes 'NNN'" },           // @@@ wrong
         { 'X', "TGR", "Not all IUPAC-combinations of 'TGA' translate" }, // @@@ wrong
+        { 'J', "RAY", "Not all IUPAC-combinations of 'AAY' translate" }, // @@@ should be sth like "'J' is no valid protein"
+        { 'J', "AAA", "'AAA' does never translate to 'J' (2)" },         // @@@ should be sth like "'J' is no valid protein"
 
         { 'X', "A-C", "Not a valid IUPAC code:'-'" }, // @@@ should succeed
         { 'X', ".T.", "Not a valid IUPAC code:'.'" }, // @@@ should succeed
 
         { 'L', "A-C", "Not a valid IUPAC code:'-'" }, // @@@ wrong message (should be 'Not enough nucleotides')
         { 'V', ".T.", "Not a valid IUPAC code:'.'" }, // @@@ wrong message (should be 'Not enough nucleotides')
+
+        // tests to protect buffer overflows in dna
+        { 'X', "..", "Not enough nucleotides (got '..')" },
+        { 'X', "-",  "Not enough nucleotides (got '-')" },
+        { 'X', "CG", "Not enough nucleotides (got 'CG')" }, // @@@ wrong
+        { 'X', "T",  "Not enough nucleotides (got 'T')" },  // @@@ wrong
+        { 'X', "",   "Not enough nucleotides (got '')" },
+
+        { 'A', "--", "Not enough nucleotides (got '--')" },
+        { 'L', ".",  "Not enough nucleotides (got '.')" },
+        { 'J', ".",  "Not enough nucleotides (got '.')" },  // @@@ should be sth like "'J' is no valid protein"
+        { 'L', "AT", "Not enough nucleotides (got 'AT')" },
+        { 'L', "C",  "Not enough nucleotides (got 'C')" },
+        { 'L', "",   "Not enough nucleotides (got '')" },
 
         { 0, NULL, NULL}
     };
