@@ -96,7 +96,7 @@ ALLOWED_gcc_VERSIONS=\
 	4.6.1 4.6.2 4.6.3 \
 	4.7.1 4.7.2 4.7.3 \
 	4.8.0 4.8.1 4.8.2 4.8.3 \
-	4.9.0  \
+	4.9.0 4.9.1 \
 
 # supported clang versions:
 ALLOWED_clang_VERSIONS=\
