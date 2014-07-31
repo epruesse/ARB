@@ -50,9 +50,21 @@ public:
     AWT_allowedCode(const AWT_allowedCode& other) { copy(other); }
     AWT_allowedCode& operator=(const AWT_allowedCode& other)  { copy(other); return *this; }
 
-    int is_allowed(int nr) const { legal(nr); return allowed[nr]!=0; }
-    void allow(int nr) { legal(nr); allowed[nr]=1; }
+    int is_allowed(int nr) const { legal(nr); return allowed[nr] != 0; }
+    bool any() const {
+        int a = 0;
+        while (a<AWT_CODON_TABLES && !allowed[a]) ++a;
+        return a<AWT_CODON_TABLES;
+    }
+    bool none() const { return !any(); }
+
+    void allow(int nr) { legal(nr); allowed[nr] = 1; }
     void forbid(int nr) { legal(nr); allowed[nr]=0; }
+    void forbid(const AWT_allowedCode& other) {
+        for (int a=0; a<AWT_CODON_TABLES; a++) {
+            if (other.is_allowed(a)) forbid(a);
+        }
+    }
 
     void allowAll(bool Allow = true) {
         for (int a=0; a<AWT_CODON_TABLES; a++) {
