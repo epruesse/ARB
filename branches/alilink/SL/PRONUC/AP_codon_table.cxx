@@ -964,6 +964,11 @@ void TEST_codon_check() {
         { 'X', "-",   "No nucleotides left" },
         { 'X', "",    "No nucleotides left" },
 
+        // test invalid chars
+        { 'X', "AZA", "Not a valid IUPAC code:'Z'" },
+        { 'X', "A@A", "Not a valid IUPAC code:'@'" },
+        { 'L', "AZA", "Not a valid IUPAC code:'Z'" },
+
         // tests to protect buffer overflows in dna
 
         { 'A', "--", "No nucleotides left" },
