@@ -1497,7 +1497,7 @@ void TEST_realign() {
 #define ERRPREFIX     "Automatic re-align failed for 'TaxOcell'\nReason: "
 #define ERRPREFIX_LEN 49
 
-#define FAILONE "1 marked species failed to realign (none succeeded)\n"
+#define FAILONE "All marked species failed to realign\n"
 
             // dna of TaxOcell:
             // "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G----......"
