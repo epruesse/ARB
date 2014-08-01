@@ -650,6 +650,10 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
 
 // -------------------------------------------------------------------------------- Codon_Group
 
+#if defined(DEBUG)
+// #define DUMP_CODON_GROUP_EXPANSION
+#endif
+
 class Codon_Group
 {
     char codon[64]; // index is calculated with calc_codon_nr
@@ -681,9 +685,8 @@ Codon_Group& Codon_Group::operator+=(const Codon_Group& other) {
 }
 
 inline int legal_dna_no(int i) { return i>=0 && i<4; }
-inline void my_memcpy(char *dest, const char *source, size_t length) { for (size_t l=0; l<length; l++) { dest[l] = source[l]; } }
 
-inline const char *buildMixedCodon(const char *con1, const char *con2) {
+inline const char *buildMixedCodon(const char *const con1, const char *const con2) {
     int mismatches = 0;
     int mismatch_index = -1;
     static char buf[4];
@@ -701,7 +704,21 @@ inline const char *buildMixedCodon(const char *con1, const char *con2) {
     if (mismatches==1) { // exactly one position differs between codons
         pn_assert(mismatch_index!=-1);
         buf[mismatch_index] = iupac::combine(con1[mismatch_index], con2[mismatch_index], GB_AT_DNA);
-        buf[3] = 0;
+        buf[3]              = 0;
+
+        if (memcmp(con1, buf, 3) == 0 ||
+            memcmp(con2, buf, 3) == 0)
+        {
+            return 0;
+        }
+
+#if defined(DUMP_CODON_GROUP_EXPANSION)
+        printf(" buildMixedCodon('%c%c%c','%c%c%c') == '%s'\n",
+               con1[0], con1[1], con1[2],
+               con2[0], con2[1], con2[2],
+               buf);
+#endif
+
         return buf;
     }
     return 0;
@@ -732,7 +749,7 @@ static int expandMore(const char *bufferStart, int no_of_condons, char*&to_buffe
                 }
 
                 if (!found) {
-                    my_memcpy(to_buffer, result, 3); to_buffer+=3;
+                    memmove(to_buffer, result, 3); to_buffer+=3;
                     added++;
                 }
             }
@@ -754,7 +771,7 @@ int Codon_Group::expand(char *to_buffer) const {
         }
     }
 
-#if defined(DEBUG) && 0
+#if defined(DUMP_CODON_GROUP_EXPANSION)
     to_buffer[0] = 0;
     printf("codons = '%s'\n", org_to_buffer);
 #endif
@@ -763,7 +780,7 @@ int Codon_Group::expand(char *to_buffer) const {
         int new_count = expandMore(org_to_buffer, count, to_buffer);
         if (new_count==count) break; // nothing expanded -> done
         count = new_count;
-#if defined(DEBUG) && 0
+#if defined(DUMP_CODON_GROUP_EXPANSION)
         to_buffer[0] = 0;
         printf("codons (expandedMore) = '%s'\n", org_to_buffer);
 #endif
@@ -861,10 +878,10 @@ void TEST_codon_check() {
     TEST_EXPECT_EQUAL(AP_get_codons('L', 13), "TTATTGTAGCTTCTCCTACTG" "TTRYTATWGYTGCTYCTWCTKCTMCTSCTRCTHCTBCTDCTVYTRCTN");
     TEST_EXPECT_EQUAL(AP_get_codons('L', 16), "TTGCTTCTCCTAC"         "TGYTGCTYCTWCTKCTMCTSCTRCTHCTBCTDCTVCTN");
 
-    TEST_EXPECT_EQUAL(AP_get_codons('S', 0),  "TCTTCCTCATCGAGTAGCT"       "CYTCWTCKTCMTCSTCRAGYTCHTCBTCDTCVTCN"); // @@@ wrong (CYT, CWT, CSA and GYA are NO codons for 'S') this + following
-    TEST_EXPECT_EQUAL(AP_get_codons('S', 4),  "TCTTCCTCATCGAGTAGCAGAAGGT" "CYTCWTCKTCMTCSTCRAGYAGWAGKAGMAGSAGRTCHTCBTCDTCVAGHAGBAGDAGVTCNAGN");
-    TEST_EXPECT_EQUAL(AP_get_codons('S', 9),  "TCTTCCTCATCGCTGAGTAGCT"    "CYTCWTCKTCMTCSTCRAGYTCHTCBTCDTCVTCN");
-    TEST_EXPECT_EQUAL(AP_get_codons('S', 15), "TCTTCCTCGAGTAGCT"          "CYTCKTCSAGYTCB");
+    TEST_EXPECT_EQUAL(AP_get_codons('S', 0),  "TCTTCCTCATCGAGTAGC"       "TCYTCWTCKTCMTCSTCRAGYTCHTCBTCDTCVTCN");
+    TEST_EXPECT_EQUAL(AP_get_codons('S', 4),  "TCTTCCTCATCGAGTAGCAGAAGG" "TCYTCWTCKTCMTCSTCRAGYAGWAGKAGMAGSAGRTCHTCBTCDTCVAGHAGBAGDAGVTCNAGN");
+    TEST_EXPECT_EQUAL(AP_get_codons('S', 9),  "TCTTCCTCATCGCTGAGTAGC"    "TCYTCWTCKTCMTCSTCRAGYTCHTCBTCDTCVTCN");
+    TEST_EXPECT_EQUAL(AP_get_codons('S', 15), "TCTTCCTCGAGTAGC"          "TCYTCKTCSAGYTCB");
 
     TEST_EXPECT_EQUAL(AP_get_codons('X', 0), ""); // @@@ wrong: TGR->X (or disallow call)
 
@@ -908,8 +925,10 @@ void TEST_codon_check() {
         { 'X', "TWG", "0,1,2,3,4,5,6,7,8,9,10,11,12,14,16" }, // all but "13,15"
 
         { 'S', "AGY", ALL_TABLES },
-        { 'S', "TCN", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,16" },
+        { 'S', "TCY", ALL_TABLES },
+        { 'S', "TCN", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,16" }, // all but 15
         { 'S', "AGN", "4,6,11,14" },
+        { 'S', "AGR", "4,6,11,14" },
 
         { 'R', "AGR", "0,2,3,5,7,8,9,12,13,15,16" },
         { 'W', "TGR", "1,2,3,4,6,10,11,14" }, // R=AG
@@ -941,7 +960,6 @@ void TEST_codon_check() {
         { '*', "AGR", "1" },
         { 'G', "AGR", "10" },
         { 'R', "AGR", "0,2,3,5,7,8,9,12,13,15,16" },
-        { 'S', "AGR", "4,6,11,14" },
 
         { 'X', "A-C", ALL_TABLES },
         { 'X', ".T.", ALL_TABLES },
@@ -960,10 +978,7 @@ void TEST_codon_check() {
         { 'D', "RAY", "Not all IUPAC-combinations of 'RAY' translate to 'D'" }, // correct failure
         { 'E', "SAR", "Not all IUPAC-combinations of 'SAR' translate to 'E'" }, // correct failure
 
-        { 'S', "CYT", "'CYT' never translates to 'S'" },
-        { 'S', "CWT", "'CWT' never translates to 'S'" },
-        { 'S', "CSA", "'CSA' never translates to 'S'" },
-        { 'S', "GYA", "'GYA' never translates to 'S'" },
+        { 'S', "CYT", "'CYT' never translates to 'S'" }, // correct failure
 
         { 'X', "AGR", "'AGR' never translates to 'X'" },
         { 'J', "RAY", "'J' is no valid amino acid" },
