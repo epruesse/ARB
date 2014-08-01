@@ -483,7 +483,7 @@ public:
         for (int i = 0; i<xcount; ++i) {
             score *= dist[i];
         }
-        return score;
+        return score + 6 - dist[0] - dist[xcount-1]; // prefer border positions with less nucs
     }
 
     bool translates_to_Xs(const char *dna, const AWT_allowedCode& with_code) const {
@@ -576,7 +576,7 @@ public:
     const FailedAt& failed() const { return fail; }
 };
 
-static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtarget_, const AWT_allowedCode& with_code) {
+static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtarget_, bool gap_before, bool gap_after, const AWT_allowedCode& with_code) {
     /*! distributes 'dna' to marked X-positions
      * @param xtarget destination buffer (target positions are marked with '!')
      * @param xcount number of X's encountered
@@ -630,22 +630,26 @@ static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtar
                     case 2: {
                         enum { UNDECIDED, SPREAD, LEFT, RIGHT } mode = UNDECIDED;
 
-                        bool gap_right   = isGap(xtarget[3]);
-                        int  follow_dist = x<best.size()-1 ? best[x+1] : 0;
+                        bool is_1st_X  = xtarget.offset() == 0;
+                        bool gaps_left = is_1st_X ? gap_before : isGap(xtarget[-1]);
 
-                        bool has_gaps_left  = xtarget.offset()>0 && isGap(xtarget[-1]);
-                        bool has_gaps_right = gap_right || follow_dist == 1;
+                        if (gaps_left) mode = LEFT;
+                        else { // definitely has no gap left!
+                            bool is_last_X  = x == best.size()-1;
+                            int  next_nucs  = is_last_X ? 0 : best[x+1];
+                            bool gaps_right = isGap(xtarget[3]) || next_nucs == 1 || (is_last_X && gap_after);
 
-                        if (has_gaps_left && has_gaps_right) mode = SPREAD;
-                        else if (has_gaps_left)              mode = LEFT;
-                        else if (has_gaps_right)             mode = RIGHT;
-                        else {
-                            bool has_nogaps_left  = xtarget.offset()>0 && !isGap(xtarget[-1]);
-                            bool has_nogaps_right = !gap_right && follow_dist == 3;
-
-                            if (has_nogaps_left && has_nogaps_right) mode = SPREAD;
-                            else if (has_nogaps_left)                mode = RIGHT;
-                            else                                     mode = LEFT;
+                            if (gaps_right) mode = RIGHT;
+                            else {
+                                bool nogaps_right = next_nucs == 3 || (is_last_X && !gap_after);
+                                if (nogaps_right) { // we know, we have NO adjacent gaps
+                                    mode = is_last_X ? LEFT : (is_1st_X ? RIGHT : SPREAD);
+                                }
+                                else {
+                                    nt_assert(!is_last_X);
+                                    mode = RIGHT; // forward problem to next X
+                                }
+                            }
                         }
 
                         char d1 = dna.get();
@@ -713,7 +717,11 @@ bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const
 
             if (!restFailed) {
                 SizedReadBuffer distrib_dna(compressed_dna, x_dna);
-                GB_ERROR        disterr = distribute_xdata(distrib_dna, x_count, x_start, attemptRest.get_remaining_code());
+
+                bool has_gap_before = x_start == target_dna.start() ? true : isGap(x_start[-1]);
+                bool has_gap_after  = isGap(dna_rest[0]);
+
+                GB_ERROR disterr = distribute_xdata(distrib_dna, x_count, x_start, has_gap_before, has_gap_after, attemptRest.get_remaining_code());
                 if (disterr) {
                     restFailed = FailedAt(disterr, x_start_prot, dna_rest); // prot=start of Xs; dna=start of sync (behind Xs)
                 }
@@ -749,7 +757,7 @@ bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const
         size_t x_dna;
         for (x_dna = max_dna; x_dna>=min_dna; --x_dna) {     // prefer high amounts of dna
             SizedReadBuffer append_dna(compressed_dna, x_dna);
-            fail_reason = distribute_xdata(append_dna, x_count, x_start, allowed_code); // @@@ pass/modify usable codes?
+            fail_reason = distribute_xdata(append_dna, x_count, x_start, false, true, allowed_code); // @@@ pass/modify usable codes?
             if (!fail_reason) break; // found distribution -> done
         }
 
@@ -1282,13 +1290,14 @@ void TEST_realign() {
             TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"),    "-A-TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAASAGTAT-T-----G....");
             TEST_EXPECT_EQUAL(DNASEQ("TaxOcell"),    "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G..........");
             TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"),    "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTCCTC------------------"); // now fails as expected => seq unchanged
-            TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"),    "ATGTCCAAGACGGCGTACGTCCGC-C--C--A--C-CT-G-A---GGCACGATG-G--C-CC-GACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTC-C--T--------C.......");
+            TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"),    "ATGTCCAAGACGGCGTACGTCCGC-C--C--A-CC-TG--A----GGCACGATG-G-CC--C-GACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTC-C--T--------C.......");
             TEST_EXPECT_EQUAL(DNASEQ("MucRacem"),    "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......");
-            TEST_EXPECT_EQUAL(DNASEQ("MucRace2"),    "ATGGGTAAGGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTAT-NN-NATAAA......");
+            TEST_EXPECT_EQUAL(DNASEQ("MucRace2"),    "ATGGGTAAGGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGT-ATNNNAT-AAA......");
             // TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "ATGGGTAAA-G-A-G------------AAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......");
             TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "-----------ATGGGTAAAGAGAAGACTCACGTTRAYGTTGTCGTTATTGGTCACGTCRATTCCGGTAAGTCCACCNCCRCTGGTCACTTGATTTACAAGTGTGGTGGTATAA-A----------"); // @@@ now fails (unwanted)
-            TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"),    "ATGGGTAAA-G--A--A--A--A--G--A-CT-CACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATA-AA......");
-            TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATGGG-TA-AA-GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATA-AA......");
+            TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"),    "ATGGGTAAA-G--A--A--A--A--G-AC--T-CACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATA-AA......");
+            TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATG-GG-TAAA-GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATA-AA......");
+            // ------------------------------------- "123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123"
         }
 
         // test translation of sucessful realignments (see previous section)
@@ -1405,11 +1414,12 @@ void TEST_realign() {
                 { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "-ATGGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G..........", CHANGED, // missing some AA at left end (extra DNA gets detected now)
                   "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - adds translation of extra DNA (start of alignment)
 
-                { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTTTTG-AC-CG-GT-CC-AA-GCCGC-AC-GT-AAACATCGGCACGATCG-GT-CA-CG-TG-GA-CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", SAME, NULL },
-                { "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX-", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT---CG-GT-CA-CG-TG-G-A---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G....", CHANGED,
+                { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTTT-TG-AC-CG-GT-CCAA-GCC-GC-ACGT-AAACATCGGCACGAT-CG-GT-CA-CG-TGGA-CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", SAME, NULL },
+                { "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX-", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT---CG-GT-CA-CG-TG-GA----CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G....", CHANGED,
                   "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX." }, // ok - only changes gaptype at EOS
-                { "XG*SNXLXRXQA-ARNHRHD-RXXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTT-TTGAC-CGGTC-CAAGCC---GCACGTAAACATCGGCACGAT---CGGTC-AC-GTG-GA---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", SAME, NULL },
+                { "XG*SNXLXRXQA-ARNHRHD-RXXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTT-TTGAC-CGGTC-CAAGCC---GCACGTAAACATCGGCACGAT---CGG-TCAC-GTG-GA---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", SAME, NULL },
                 { "XG*SXXFXDXVQAXT*TSARXRSXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGA-A-AC-TTT-T-GACCG-GTCCAAGCCGC-ACGTAAACATCGGCACGA-T-CGGTCA-C-GTG-GA---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", SAME, NULL },
+                // -------------------------------------------- "123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123"
 
                 { 0, 0, SAME, NULL }
             };
