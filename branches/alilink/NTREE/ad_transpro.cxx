@@ -1375,16 +1375,18 @@ void TEST_realign() {
             GB_write_flag(gb_TaxOcell, 1);
         }
 
+        TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
+
         // wrong alignment type
         {
             GB_transaction ta(gb_main);
             msgs  = "";
-            TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
             error = realign_marked(gb_main, "ali_dna", "ali_pro", neededLength, false);
             TEST_EXPECT_ERROR_CONTAINS(error, "Invalid source alignment type");
             TEST_EXPECT_EQUAL(msgs, "");
-            ta.close("aborted");
         }
+
+        TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
 
         // document some existing behavior
         {
@@ -1440,7 +1442,6 @@ void TEST_realign() {
 
                 TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, S.seq));
                 msgs  = "";
-                TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
                 error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
                 TEST_EXPECT_NO_ERROR(error);
                 TEST_EXPECT_EQUAL(msgs, "");
@@ -1473,14 +1474,9 @@ void TEST_realign() {
             }
 
             free(org_dna);
-            ta.close("aborted");
         }
 
-        { // workaround until #493 is fixed
-            GB_transaction ta(gb_main);
-            TEST_EXPECT_EQUAL__BROKEN(GBT_count_marked_species(gb_main), 1, 0);
-            GB_write_flag(gb_TaxOcell, 1);
-        }
+        TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
 
         // write some aa sequences provoking failures
         {
@@ -1532,7 +1528,6 @@ void TEST_realign() {
                 TEST_ANNOTATE(GBS_global_string("s=%i", s));
                 TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, seq[s].seq));
                 msgs  = "";
-                TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
                 error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
                 TEST_EXPECT_NO_ERROR(error);
                 TEST_EXPECT_CONTAINS(msgs, ERRPREFIX);
@@ -1541,18 +1536,11 @@ void TEST_realign() {
                 TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
             }
 
-            ta.close("aborted");
-
 #undef ERRPREFIX
 #undef ERRPREFIX_LEN
         }
 
-        { // workaround until #493 is fixed
-            GB_transaction ta(gb_main);
-            TEST_EXPECT_EQUAL__BROKEN(GBT_count_marked_species(gb_main), 1, 0);
-            GB_write_flag(gb_TaxOcell, 1);
-        }
-
+        TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
 
         // invalid translation info
         {
@@ -1562,18 +1550,12 @@ void TEST_realign() {
             TEST_EXPECT_NO_ERROR(GB_write_string(gb_trans_table, "666")); // evil translation table
 
             msgs  = "";
-            TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
             error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: Error while reading 'transl_table' (Illegal (or unsupported) value (666) in 'transl_table' (item='TaxOcell'))\n" FAILONE);
-            ta.close("aborted");
         }
 
-        { // workaround until #493 is fixed
-            GB_transaction ta(gb_main);
-            TEST_EXPECT_EQUAL__BROKEN(GBT_count_marked_species(gb_main), 1, 0);
-            GB_write_flag(gb_TaxOcell, 1);
-        }
+        TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
 
         // source/dest alignment missing
         for (int i = 0; i<2; ++i) {
@@ -1588,7 +1570,6 @@ void TEST_realign() {
                 GB_pop_my_security(gb_main);
 
                 msgs  = "";
-                TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
                 error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
                 TEST_EXPECT_NO_ERROR(error);
                 if (i) {
@@ -1597,15 +1578,10 @@ void TEST_realign() {
                 else {
                     TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_dna'\n" FAILONE);
                 }
-                ta.close("aborted");
-            }
-
-            { // workaround until #493 is fixed
-                GB_transaction ta(gb_main);
-                TEST_EXPECT_EQUAL__BROKEN(GBT_count_marked_species(gb_main), 1, 0);
-                GB_write_flag(gb_TaxOcell, 1);
             }
         }
+
+        TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
     }
 
     GB_close(gb_main);
