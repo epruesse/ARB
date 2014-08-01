@@ -2565,7 +2565,7 @@ static void query_box_restore_config(AW_window *aww, const char *stored, AW_CL c
 }
 
 template<typename CB>
-static void query_rel_menu_entry(AW_window *aws, const char *id, const char *query_id, AW_label label, const char *mnemonic, const char *helpText, AW_active Mask, const CB& cb) {
+static void query_rel_menu_entry(AW_window *aws, const char *id, const char *query_id, const char* label, const char *mnemonic, const char *helpText, AW_active Mask, const CB& cb) {
     char *rel_id = GBS_global_string_copy("%s_%s", query_id, id);
     aws->insert_menu_topic(rel_id, label, mnemonic, helpText, Mask, cb);
     free(rel_id);

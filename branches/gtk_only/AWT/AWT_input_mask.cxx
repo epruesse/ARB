@@ -493,7 +493,7 @@ void awt_radio_button::build_widget(AW_window *aws) {
     int                            pos = 0;
 
     for (; b != buttons.end() && v != values.end(); ++b, ++v, ++pos) {
-        void (AW_window::*ins_togg)(AW_label, const char*, const char*);
+        void (AW_window::*ins_togg)(const char*, const char*, const char*);
 
         if (pos == default_position) ins_togg = &AW_window::insert_default_toggle;
         else ins_togg                         = &AW_window::insert_toggle;
