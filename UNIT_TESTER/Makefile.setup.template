@@ -7,12 +7,12 @@ DEADLOCKGUARD=1# install guard to avoid deadlocks (SVN default!)
 # also see test_unit.h@ENABLE_CRASH_TESTS
 
 # ---------- slow tests 
-SKIP_SLOW=15# skip slow tests (run only every SKIP_SLOW minutes)
+#SKIP_SLOW=15# skip slow tests (run only every SKIP_SLOW minutes)
 SKIP_SLOW=0# always run all tests
 
 # ---------- warnings?
-WARN_LEVEL=1# enable warnings (recommended)
-#WARN_LEVEL=0# disable warnings
+#WARN_LEVEL=1# enable warnings (recommended)
+WARN_LEVEL=0# disable warnings
 
 # ---------- only changed tests?
 ONLY_CHANGED_TESTS=1# only run changed tests
@@ -31,7 +31,7 @@ VALGRIND=# do not valgrind anything
 # also see ../TEMPLATES/ut_valgrinded.h@VALGRIND_ONLY_SOME
 
 # ---------- Leak checking needs VALGRIND!=0
-CHECK_LEAKS=0# check no leaks
+#CHECK_LEAKS=0# check no leaks
 CHECK_LEAKS=1# check definite leaks
 #CHECK_LEAKS=2# check reachable leaks
 # for higher leak resolution edit ../SOURCE_TOOLS/arb_valgrind@resolution

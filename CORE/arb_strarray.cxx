@@ -268,6 +268,7 @@ void TEST_GBT_names_index_of() {
     TEST_EXPECT_EQUAL(GBT_names_index_of(names, ""), 0);
     TEST_EXPECT_EQUAL(GBT_names_index_of(names, "no"), -1);
 }
+TEST_PUBLISH(TEST_GBT_names_index_of);
 
 #define TEST_EXPECT_NAMES_JOIN_TO(names, sep, expected) \
     do {                                                \

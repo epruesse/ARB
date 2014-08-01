@@ -474,8 +474,8 @@ int ARB_main(int argc, char *argv[]) {
 
     aw_initstatus();
 
-    GB_shell shell;
-    GB_ERROR error = NULL;
+    GB_shell  shell;
+    ARB_ERROR error;
     GLOBAL_gb_main = GB_open(data_path, "rwt");
     if (!GLOBAL_gb_main) {
         error = GB_await_error();
@@ -490,7 +490,9 @@ int ARB_main(int argc, char *argv[]) {
         error = configure_macro_recording(ED4_ROOT->aw_root, "ARB_EDIT4", GLOBAL_gb_main);
         if (!error) {
             ED4_ROOT->database = new EDB_root_bact;
-            ED4_ROOT->init_alignment();
+            error              = ED4_ROOT->init_alignment();
+        }
+        if (!error) {
             ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
             ED4_ROOT->st_ml           = STAT_create_ST_ML(GLOBAL_gb_main);
@@ -579,13 +581,14 @@ int ARB_main(int argc, char *argv[]) {
             ED4_ROOT->aw_root->main_loop(); // enter main-loop
         }
 
+        shutdown_macro_recording(ED4_ROOT->aw_root);
         GB_close(GLOBAL_gb_main);
     }
 
     bool have_aw_root = ED4_ROOT && ED4_ROOT->aw_root;
     if (error) {
-        if (have_aw_root) aw_popup_exit(error);
-        else fprintf(stderr, "arb_edit4: Error: %s\n", error);
+        if (have_aw_root) aw_popup_ok(error.deliver());
+        else fprintf(stderr, "arb_edit4: Error: %s\n", error.deliver());
     }
     if (have_aw_root) delete ED4_ROOT->aw_root;
 
