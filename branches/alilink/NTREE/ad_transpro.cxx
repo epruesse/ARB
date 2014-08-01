@@ -1035,7 +1035,7 @@ struct Data : virtual Noncopyable {
 };
 
 
-static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali_dest, size_t& neededLength, bool unmark_succeeded) {
+static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const char *ali_dest, size_t& neededLength, bool unmark_succeeded) {
     /*! realigns DNA alignment of marked sequences according to their protein alignment
      * @param ali_source protein source alignment
      * @param ali_dest modified DNA alignment
@@ -1150,7 +1150,7 @@ static GB_ERROR realign(GBDATA *gb_main, const char *ali_source, const char *ali
     return error;
 }
 
-static void transdna_event(AW_window *aww) {
+static void realign_event(AW_window *aww) {
     AW_root  *aw_root          = aww->get_root();
     char     *ali_source       = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
     char     *ali_dest         = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
@@ -1158,7 +1158,7 @@ static void transdna_event(AW_window *aww) {
     size_t    neededLength     = 0;
     GBDATA   *gb_main          = GLOBAL.gb_main;
     GB_ERROR  error            = GB_begin_transaction(gb_main);
-    if (!error) error          = realign(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
+    if (!error) error          = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
     error                      = GB_end_transaction(gb_main, error);
 
     if (!error && neededLength) {
@@ -1171,7 +1171,7 @@ static void transdna_event(AW_window *aww) {
                                              "running re-aligner again!",
                                              ali_dest, neededLength));
 
-                error = realign(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
+                error = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
                 if (neededLength) {
                     error = GBS_global_string("internal error: neededLength=%zu (after autoinc)", neededLength);
                 }
@@ -1182,7 +1182,9 @@ static void transdna_event(AW_window *aww) {
             GB_transaction ta(gb_main);
             long           destLen = GBT_get_alignment_len(gb_main, ali_dest);
             nt_assert(destLen>0 && size_t(destLen)<neededLength);
-            error = GBS_global_string("Missing %li columns in alignment '%s' (got=%li, need=%zu)", size_t(neededLength-destLen), ali_dest, destLen, neededLength);
+            error = GBS_global_string("Missing %li columns in alignment '%s' (got=%li, need=%zu)\n"
+                                      "(check toggle to permit auto-increment)",
+                                      size_t(neededLength-destLen), ali_dest, destLen, neededLength);
         }
     }
 
@@ -1214,7 +1216,7 @@ AW_window *NT_create_realign_dna_window(AW_root *root) {
     aws->at("unmark");  aws->create_toggle(AWAR_REALIGN_UNMARK);
 
     aws->at("realign");
-    aws->callback(transdna_event);
+    aws->callback(realign_event);
     aws->create_autosize_button("REALIGN", "Realign marked species", "R");
 
     return aws;
@@ -1277,7 +1279,7 @@ void TEST_realign() {
             GB_transaction ta(gb_main);
 
             msgs  = "";
-            error = realign(gb_main, "ali_pro", "ali_dna", neededLength, false);
+            error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs,
                               "Automatic re-align failed for 'BctFra12'\nReason: not enough nucs for X's at sequence end at ali_pro:40 / ali_dna:109\n" // new correct report (got no nucs for 1 X)
@@ -1378,7 +1380,7 @@ void TEST_realign() {
             GB_transaction ta(gb_main);
             msgs  = "";
             TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
-            error = realign(gb_main, "ali_dna", "ali_pro", neededLength, false);
+            error = realign_marked(gb_main, "ali_dna", "ali_pro", neededLength, false);
             TEST_EXPECT_ERROR_CONTAINS(error, "Invalid source alignment type");
             TEST_EXPECT_EQUAL(msgs, "");
             ta.close("aborted");
@@ -1435,10 +1437,11 @@ void TEST_realign() {
             for (int s = 0; seq[s].seq; ++s) {
                 TEST_ANNOTATE(GBS_global_string("s=%i", s));
                 realign_check& S = seq[s];
+
                 TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, S.seq));
-                msgs             = "";
+                msgs  = "";
                 TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
-                error            = realign(gb_main, "ali_pro", "ali_dna", neededLength, false);
+                error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
                 TEST_EXPECT_NO_ERROR(error);
                 TEST_EXPECT_EQUAL(msgs, "");
                 TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_dna), S.result);
@@ -1530,7 +1533,7 @@ void TEST_realign() {
                 TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, seq[s].seq));
                 msgs  = "";
                 TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
-                error = realign(gb_main, "ali_pro", "ali_dna", neededLength, false);
+                error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
                 TEST_EXPECT_NO_ERROR(error);
                 TEST_EXPECT_CONTAINS(msgs, ERRPREFIX);
                 TEST_EXPECT_EQUAL(msgs.c_str()+ERRPREFIX_LEN, seq[s].failure);
@@ -1560,7 +1563,7 @@ void TEST_realign() {
 
             msgs  = "";
             TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
-            error = realign(gb_main, "ali_pro", "ali_dna", neededLength, false);
+            error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: Error while reading 'transl_table' (Illegal (or unsupported) value (666) in 'transl_table' (item='TaxOcell'))\n" FAILONE);
             ta.close("aborted");
@@ -1586,7 +1589,7 @@ void TEST_realign() {
 
                 msgs  = "";
                 TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
-                error = realign(gb_main, "ali_pro", "ali_dna", neededLength, false);
+                error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
                 TEST_EXPECT_NO_ERROR(error);
                 if (i) {
                     TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_pro'\n" FAILONE);
