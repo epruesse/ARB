@@ -1065,8 +1065,6 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
 
     Realigner realigner(ali_source, ali_dest, ali_len);
 
-    char *markedSpecies = GBT_store_marked_species(gb_main, 0);
-
     for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
          !error && gb_species;
          gb_species = GBT_next_marked_species(gb_species))
@@ -1120,7 +1118,7 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
             nt_assert(!error);
             GB_warningf("Automatic re-align failed for '%s'\nReason: %s", GBT_read_name(gb_species), realigner.failure());
         }
-        else {
+        else if (!error) {
             no_of_realigned_species++;
         }
 
@@ -1135,48 +1133,50 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
     else if (no_of_realigned_species != no_of_marked_species) {
         long failed = no_of_marked_species-no_of_realigned_species;
         nt_assert(failed>0);
-        GB_warningf("%li marked species failed to realign", failed);
+        if (no_of_realigned_species) {
+            GB_warningf("%li marked species failed to realign (%li succeeded)", failed, no_of_realigned_species);
+        }
+        else {
+            GB_warning("All marked species failed to realign");
+        }
     }
 
     if (error) progress.done();
     else error = GBT_check_data(gb_main,ali_dest);
 
-    if (error) {
-        GB_ERROR restoreError = GBT_restore_marked_species(gb_main, markedSpecies);
-        if (restoreError) GB_warning(restoreError);
-    }
-    free(markedSpecies);
-
     return error;
 }
 
 static void realign_event(AW_window *aww) {
-    AW_root  *aw_root          = aww->get_root();
-    char     *ali_source       = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
-    char     *ali_dest         = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
-    bool      unmark_succeeded = aw_root->awar(AWAR_REALIGN_UNMARK)->read_int();
-    size_t    neededLength     = 0;
-    GBDATA   *gb_main          = GLOBAL.gb_main;
-    GB_ERROR  error            = GB_begin_transaction(gb_main);
-    if (!error) error          = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
-    error                      = GB_end_transaction(gb_main, error);
+    AW_root *aw_root          = aww->get_root();
+    char    *ali_source       = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
+    char    *ali_dest         = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
+    bool     unmark_succeeded = aw_root->awar(AWAR_REALIGN_UNMARK)->read_int();
+    size_t   neededLength     = 0;
+    GBDATA  *gb_main          = GLOBAL.gb_main;
+
+    GB_ERROR error    = GB_begin_transaction(gb_main);
+    if (!error) error = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
+    GB_commit_transaction(gb_main); // do NOT abort (mark problem)
 
     if (!error && neededLength) {
         bool auto_inc_alisize = aw_root->awar(AWAR_REALIGN_INCALI)->read_int();
         if (auto_inc_alisize) {
-            GB_transaction ta(gb_main);
-            error = GBT_set_alignment_len(gb_main, ali_dest, neededLength);
+            {
+                GB_transaction ta(gb_main);
+                error = ta.close(GBT_set_alignment_len(gb_main, ali_dest, neededLength));
+            }
             if (!error) {
                 aw_message(GBS_global_string("Alignment length of '%s' has been set to %li\n"
                                              "running re-aligner again!",
                                              ali_dest, neededLength));
 
+                GB_transaction ta(gb_main); // do NOT abort (mark problem)
                 error = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
                 if (neededLength) {
                     error = GBS_global_string("internal error: neededLength=%zu (after autoinc)", neededLength);
                 }
             }
-            error = ta.close(error);
         }
         else {
             GB_transaction ta(gb_main);
@@ -1285,7 +1285,7 @@ void TEST_realign() {
                               "Automatic re-align failed for 'BctFra12'\nReason: not enough nucs for X's at sequence end at ali_pro:40 / ali_dna:109\n" // new correct report (got no nucs for 1 X)
                               "Automatic re-align failed for 'StrRamo3'\nReason: not enough nucs for X's at sequence end at ali_pro:36 / ali_dna:106\n" // new correct report (got 3 nucs for 4 Xs)
                               "Automatic re-align failed for 'MucRace3'\nReason: Sync behind 'X' failed foremost with: Not all IUPAC-combinations of 'NCC' translate to 'T' at ali_pro:28 / ali_dna:78\n" // @@@ still unwanted
-                              "3 marked species failed to realign\n"
+                              "3 marked species failed to realign (7 succeeded)\n"
                 );
 
             TEST_EXPECT_EQUAL(DNASEQ("BctFra12"),    "ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"); // now fails as expected => seq unchanged
@@ -1497,7 +1497,7 @@ void TEST_realign() {
 #define ERRPREFIX     "Automatic re-align failed for 'TaxOcell'\nReason: "
 #define ERRPREFIX_LEN 49
 
-#define FAILONE "1 marked species failed to realign\n"
+#define FAILONE "1 marked species failed to realign (none succeeded)\n"
 
             // dna of TaxOcell:
             // "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G----......"
