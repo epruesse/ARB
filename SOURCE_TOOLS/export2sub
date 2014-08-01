@@ -21,6 +21,7 @@ export DEBIAN
 export REDHAT
 
 export CC CXX
+export USE_GCC_46_OR_HIGHER
 
 export A_CC  CC_INCLUDES
 export A_CXX CXX_INCLUDES
@@ -30,6 +31,7 @@ export POST_COMPILE
 
 export LD_LIBRARY_PATH LIBPATH SYSLIBS
 export GTKLIBS
+export GUI_LIBS
 export ARB_GLIB_LIBS
 export GL_LIBS_SYS GL_PNGLIBS_SYS
 export TIFFLIBS
