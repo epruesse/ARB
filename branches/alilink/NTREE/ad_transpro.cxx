@@ -1044,6 +1044,9 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
      */
     AP_initialize_codon_tables();
 
+    nt_assert(GB_get_transaction_level(gb_main) == 0);
+    GB_transaction ta(gb_main); // do not abort (otherwise sth goes wrong with species marks)
+
     {
         GBDATA *gb_source = GBT_get_alignment(gb_main, ali_source); if (!gb_source) return "Please select a valid source alignment";
         GBDATA *gb_dest   = GBT_get_alignment(gb_main, ali_dest);   if (!gb_dest)   return "Please select a valid destination alignment";
@@ -1148,16 +1151,13 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
 }
 
 static void realign_event(AW_window *aww) {
-    AW_root *aw_root          = aww->get_root();
-    char    *ali_source       = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
-    char    *ali_dest         = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
-    bool     unmark_succeeded = aw_root->awar(AWAR_REALIGN_UNMARK)->read_int();
-    size_t   neededLength     = 0;
-    GBDATA  *gb_main          = GLOBAL.gb_main;
-
-    GB_ERROR error    = GB_begin_transaction(gb_main);
-    if (!error) error = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
-    GB_commit_transaction(gb_main); // do NOT abort (mark problem)
+    AW_root  *aw_root          = aww->get_root();
+    char     *ali_source       = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
+    char     *ali_dest         = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
+    bool      unmark_succeeded = aw_root->awar(AWAR_REALIGN_UNMARK)->read_int();
+    size_t    neededLength     = 0;
+    GBDATA   *gb_main          = GLOBAL.gb_main;
+    GB_ERROR  error            = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
 
     if (!error && neededLength) {
         bool auto_inc_alisize = aw_root->awar(AWAR_REALIGN_INCALI)->read_int();
@@ -1171,7 +1171,6 @@ static void realign_event(AW_window *aww) {
                                              "running re-aligner again!",
                                              ali_dest, neededLength));
 
-                GB_transaction ta(gb_main); // do NOT abort (mark problem)
                 error = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
                 if (neededLength) {
                     error = GBS_global_string("internal error: neededLength=%zu (after autoinc)", neededLength);
@@ -1276,8 +1275,6 @@ void TEST_realign() {
         size_t   neededLength = 0;
 
         {
-            GB_transaction ta(gb_main);
-
             msgs  = "";
             error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
             TEST_EXPECT_NO_ERROR(error);
@@ -1288,18 +1285,22 @@ void TEST_realign() {
                               "3 marked species failed to realign (7 succeeded)\n"
                 );
 
-            TEST_EXPECT_EQUAL(DNASEQ("BctFra12"),    "ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"); // now fails as expected => seq unchanged
-            TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"),    "-A-TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAASAGTAT-T-----G....");
-            TEST_EXPECT_EQUAL(DNASEQ("TaxOcell"),    "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G..........");
-            TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"),    "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTCCTC------------------"); // now fails as expected => seq unchanged
-            TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"),    "ATGTCCAAGACGGCGTACGTCCGC-C--C--A-CC-TG--A----GGCACGATG-G-CC--C-GACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTC-C--T--------C.......");
-            TEST_EXPECT_EQUAL(DNASEQ("MucRacem"),    "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......");
-            TEST_EXPECT_EQUAL(DNASEQ("MucRace2"),    "ATGGGTAAGGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGT-ATNNNAT-AAA......");
-            // TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "ATGGGTAAA-G-A-G------------AAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......");
-            TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "-----------ATGGGTAAAGAGAAGACTCACGTTRAYGTTGTCGTTATTGGTCACGTCRATTCCGGTAAGTCCACCNCCRCTGGTCACTTGATTTACAAGTGTGGTGGTATAA-A----------"); // @@@ now fails (unwanted)
-            TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"),    "ATGGGTAAA-G--A--A--A--A--G-AC--T-CACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATA-AA......");
-            TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATG-GG-TAAA-GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATA-AA......");
-            // ------------------------------------- "123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123"
+            {
+                GB_transaction ta(gb_main);
+
+                TEST_EXPECT_EQUAL(DNASEQ("BctFra12"),    "ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"); // now fails as expected => seq unchanged
+                TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"),    "-A-TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAASAGTAT-T-----G....");
+                TEST_EXPECT_EQUAL(DNASEQ("TaxOcell"),    "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G..........");
+                TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"),    "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTCCTC------------------"); // now fails as expected => seq unchanged
+                TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"),    "ATGTCCAAGACGGCGTACGTCCGC-C--C--A-CC-TG--A----GGCACGATG-G-CC--C-GACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTC-C--T--------C.......");
+                TEST_EXPECT_EQUAL(DNASEQ("MucRacem"),    "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......");
+                TEST_EXPECT_EQUAL(DNASEQ("MucRace2"),    "ATGGGTAAGGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGT-ATNNNAT-AAA......");
+                // TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "ATGGGTAAA-G-A-G------------AAGACTCACGTTAACGTTGTCGTTATTGGTCACGTCGATTCCGGTAAGTCCACCACCACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......");
+                TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "-----------ATGGGTAAAGAGAAGACTCACGTTRAYGTTGTCGTTATTGGTCACGTCRATTCCGGTAAGTCCACCNCCRCTGGTCACTTGATTTACAAGTGTGGTGGTATAA-A----------"); // @@@ now fails (unwanted)
+                TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"),    "ATGGGTAAA-G--A--A--A--A--G-AC--T-CACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATA-AA......");
+                TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATG-GG-TAAA-GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATA-AA......");
+                // ------------------------------------- "123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123"
+            }
         }
 
         // test translation of sucessful realignments (see previous section)
@@ -1379,7 +1380,6 @@ void TEST_realign() {
 
         // wrong alignment type
         {
-            GB_transaction ta(gb_main);
             msgs  = "";
             error = realign_marked(gb_main, "ali_dna", "ali_pro", neededLength, false);
             TEST_EXPECT_ERROR_CONTAINS(error, "Invalid source alignment type");
@@ -1390,10 +1390,13 @@ void TEST_realign() {
 
         // document some existing behavior
         {
-            GB_transaction ta(gb_main);
-
-            GBDATA *gb_TaxOcell_amino = GBT_read_sequence(gb_TaxOcell, "ali_pro");
-            GBDATA *gb_TaxOcell_dna   = GBT_read_sequence(gb_TaxOcell, "ali_dna");
+            GBDATA *gb_TaxOcell_amino;
+            GBDATA *gb_TaxOcell_dna;
+            {
+                GB_transaction ta(gb_main);
+                gb_TaxOcell_amino = GBT_read_sequence(gb_TaxOcell, "ali_pro");
+                gb_TaxOcell_dna   = GBT_read_sequence(gb_TaxOcell, "ali_dna");
+            }
             TEST_REJECT_NULL(gb_TaxOcell_amino);
             TEST_REJECT_NULL(gb_TaxOcell_dna);
 
@@ -1428,49 +1431,59 @@ void TEST_realign() {
                 { 0, 0, SAME, NULL }
             };
 
-            int arb_transl_table, codon_start;
-            TEST_EXPECT_NO_ERROR(AWT_getTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
+            int   arb_transl_table, codon_start;
+            char *org_dna;
+            {
+                GB_transaction ta(gb_main);
+                TEST_EXPECT_NO_ERROR(AWT_getTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
 
-            TEST_EXPECT_EQUAL(arb_transl_table, 14);
-            TEST_EXPECT_EQUAL(codon_start, 0);
+                TEST_EXPECT_EQUAL(arb_transl_table, 14);
+                TEST_EXPECT_EQUAL(codon_start, 0);
 
-            char *org_dna = GB_read_string(gb_TaxOcell_dna);
+                org_dna = GB_read_string(gb_TaxOcell_dna);
+            }
 
             for (int s = 0; seq[s].seq; ++s) {
                 TEST_ANNOTATE(GBS_global_string("s=%i", s));
                 realign_check& S = seq[s];
 
-                TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, S.seq));
+                {
+                    GB_transaction ta(gb_main);
+                    TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, S.seq));
+                }
                 msgs  = "";
                 error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
                 TEST_EXPECT_NO_ERROR(error);
                 TEST_EXPECT_EQUAL(msgs, "");
-                TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_dna), S.result);
+                {
+                    GB_transaction ta(gb_main);
+                    TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_dna), S.result);
 
-                // test retranslation:
-                msgs  = "";
-                error = arb_r2a(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
-                TEST_EXPECT_NO_ERROR(error);
-                if (s == 8) {
-                    TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n1 taxa converted\n  2.000000 stops per sequence found\n");
-                }
-                else {
-                    TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n1 taxa converted\n  1.000000 stops per sequence found\n");
-                }
-                switch (S.retranslation) {
-                    case SAME:
-                        TEST_EXPECT_NULL(S.changed_prot);
-                        TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_amino), S.seq);
-                        break;
-                    case CHANGED:
-                        TEST_REJECT_NULL(S.changed_prot);
-                        TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_amino), S.changed_prot);
-                        break;
-                }
+                    // test retranslation:
+                    msgs  = "";
+                    error = arb_r2a(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
+                    TEST_EXPECT_NO_ERROR(error);
+                    if (s == 8) {
+                        TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n1 taxa converted\n  2.000000 stops per sequence found\n");
+                    }
+                    else {
+                        TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n1 taxa converted\n  1.000000 stops per sequence found\n");
+                    }
+                    switch (S.retranslation) {
+                        case SAME:
+                            TEST_EXPECT_NULL(S.changed_prot);
+                            TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_amino), S.seq);
+                            break;
+                        case CHANGED:
+                            TEST_REJECT_NULL(S.changed_prot);
+                            TEST_EXPECT_EQUAL(GB_read_char_pntr(gb_TaxOcell_amino), S.changed_prot);
+                            break;
+                    }
 
-                // restore (possibly) changed DB entries
-                TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
-                TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_dna, org_dna));
+                    // restore (possibly) changed DB entries
+                    TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
+                    TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_dna, org_dna));
+                }
             }
 
             free(org_dna);
@@ -1480,8 +1493,6 @@ void TEST_realign() {
 
         // write some aa sequences provoking failures
         {
-            GB_transaction ta(gb_main);
-
             GBDATA *gb_TaxOcell_amino = GBT_read_sequence(gb_TaxOcell, "ali_pro");
             TEST_REJECT_NULL(gb_TaxOcell_amino);
 
@@ -1519,21 +1530,30 @@ void TEST_realign() {
             };
 
             int arb_transl_table, codon_start;
-            TEST_EXPECT_NO_ERROR(AWT_getTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
+            {
+                GB_transaction ta(gb_main);
+                TEST_EXPECT_NO_ERROR(AWT_getTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
+            }
 
             TEST_EXPECT_EQUAL(arb_transl_table, 14);
             TEST_EXPECT_EQUAL(codon_start, 0);
 
             for (int s = 0; seq[s].seq; ++s) {
                 TEST_ANNOTATE(GBS_global_string("s=%i", s));
-                TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, seq[s].seq));
+                {
+                    GB_transaction ta(gb_main);
+                    TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, seq[s].seq));
+                }
                 msgs  = "";
                 error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
                 TEST_EXPECT_NO_ERROR(error);
                 TEST_EXPECT_CONTAINS(msgs, ERRPREFIX);
                 TEST_EXPECT_EQUAL(msgs.c_str()+ERRPREFIX_LEN, seq[s].failure);
 
-                TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
+                {
+                    GB_transaction ta(gb_main);
+                    TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
+                }
             }
 
 #undef ERRPREFIX
@@ -1548,12 +1568,12 @@ void TEST_realign() {
 
             GBDATA *gb_trans_table = GB_entry(gb_TaxOcell, "transl_table");
             TEST_EXPECT_NO_ERROR(GB_write_string(gb_trans_table, "666")); // evil translation table
-
-            msgs  = "";
-            error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
-            TEST_EXPECT_NO_ERROR(error);
-            TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: Error while reading 'transl_table' (Illegal (or unsupported) value (666) in 'transl_table' (item='TaxOcell'))\n" FAILONE);
         }
+
+        msgs  = "";
+        error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
+        TEST_EXPECT_NO_ERROR(error);
+        TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: Error while reading 'transl_table' (Illegal (or unsupported) value (666) in 'transl_table' (item='TaxOcell'))\n" FAILONE);
 
         TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
 
@@ -1568,16 +1588,16 @@ void TEST_realign() {
                 GB_push_my_security(gb_main);
                 TEST_EXPECT_NO_ERROR(GB_delete(gb_ali));
                 GB_pop_my_security(gb_main);
+            }
 
-                msgs  = "";
-                error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
-                TEST_EXPECT_NO_ERROR(error);
-                if (i) {
-                    TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_pro'\n" FAILONE);
-                }
-                else {
-                    TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_dna'\n" FAILONE);
-                }
+            msgs  = "";
+            error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
+            TEST_EXPECT_NO_ERROR(error);
+            if (i) {
+                TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_pro'\n" FAILONE);
+            }
+            else {
+                TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_dna'\n" FAILONE);
             }
         }
 
