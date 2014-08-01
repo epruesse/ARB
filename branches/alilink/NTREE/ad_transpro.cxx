@@ -1533,7 +1533,7 @@ void TEST_realign() {
                 { "XG*SNFXXXXXAXNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'GGA' translates to 'G', not to 'P' at ali_pro:25 / ali_dna:70\n" FAILONE },    // ok to fail: 5 Xs impossible
                 { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Alignment 'ali_dna' is too short (increase its length to 252)\n" FAILONE }, // ok to fail: wrong alignment length
                 { "XG*SNFWPVQAARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'GGA' translates to 'G', not to 'P' at ali_pro:25 / ali_dna:70\n" FAILONE },    // ok to fail
-                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TGA' does never translate to 'A' at ali_pro:8 / ali_dna:19\n" FAILONE },       // ok to fail
+                { "XG*SNX-A-X-ARNHRHD--XXX-PRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'TGA' never translates to 'A' at ali_pro:8 / ali_dna:19\n" FAILONE },           // ok to fail
                 { "XG*SXFXPXQAXRNHRHD--RSRGPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'ACG' translates to 'T', not to 'R' at ali_pro:13 / ali_dna:36\n" FAILONE },    // ok to fail
                 { "XG*SNFWPVQAARNHRHD-----GPRQNDSDRCYHHGAX-..", "Sync behind 'X' failed foremost with: 'CGG' translates to 'R', not to 'G' at ali_pro:24 / ali_dna:61\n" FAILONE },    // ok to fail: some AA missing in the middle
                 { "XG*SNFWPVQAARNHRHDRSRGPRQNDSDRCYHHGAXHHGA.", "Sync behind 'X' failed foremost with: not enough nucs left for codon of 'H' at ali_pro:38 / ali_dna:117\n" FAILONE }, // ok to fail: too many AA

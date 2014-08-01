@@ -15,6 +15,7 @@
 #include <arbdb.h>
 
 #include <cctype>
+#include <arb_str.h>
 
 #define pn_assert(cond) arb_assert(cond)
 
@@ -437,6 +438,14 @@ inline bool containsProtMatching(const char *pstr, char p) {
 }
 inline bool isGap(char c) { return c == '-' || c == '.'; }
 
+inline GB_ERROR neverTranslatesError(const char *dna, char protein) {
+    const char *prot_check = "ABCDEFGHIKLMNPQRSTVWXYZ*";
+    if (strchr(prot_check, protein) == 0) {
+        return GBS_global_string("'%c' is no valid amino acid", protein);
+    }
+    return GBS_global_string("'%c%c%c' never translates to '%c'", dna[0], dna[1], dna[2], protein);
+}
+
 bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& allowed_code, AWT_allowedCode& allowed_code_left, const char **fail_reason_ptr) {
     // return TRUE if 'dna' contains a codon of 'protein' ('dna' must not contain any gaps)
     // allowed_code contains 1 for each allowed code and 0 otherwise
@@ -517,7 +526,7 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
                 allowed_code_left = allowed_code_copy;
             }
             else {
-                fail_reason = GBS_global_string("'%c%c%c' never translates to '%c'", dna[0], dna[1], dna[2], protein);
+                fail_reason = neverTranslatesError(dna, protein);
             }
         }
         else if (codon_nr==AWT_MAX_CODONS) { // dna is a codon with one or more IUPAC codes
@@ -529,16 +538,23 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
             memcpy(dna_copy, dna, 3);
             dna_copy[3] = 0;
 
-            bool            all_are_codons    = true;
+            bool all_are_codons = true;
+            bool one_is_codon   = false;
+
             AWT_allowedCode allowed_code_copy = allowed_code;
 
             for (int i=0; decoded_iupac[i]; i++) {
                 dna_copy[first_iupac_pos] = decoded_iupac[i];
-                if (!AWT_is_codon(protein, dna_copy, allowed_code_copy, allowed_code_left)) {
+                const char *subfail;
+                if (!AWT_is_codon(protein, dna_copy, allowed_code_copy, allowed_code_left, &subfail)) {
                     all_are_codons = false;
-                    break;
+                    if (!one_is_codon && ARB_strBeginsWith(subfail, "Not all ")) one_is_codon = true;
+                    if (one_is_codon) break;
                 }
-                allowed_code_copy = allowed_code_left;
+                else {
+                    one_is_codon      = true;
+                    allowed_code_copy = allowed_code_left;
+                }
             }
 
             if (all_are_codons) {
@@ -549,7 +565,12 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
             else {
                 allowed_code_left.forbidAll();
                 dna_copy[first_iupac_pos] = dna[first_iupac_pos];
-                fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate to '%c'", dna_copy, protein);
+                if (one_is_codon) {
+                    fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate to '%c'", dna_copy, protein); // careful when changing this message (see above)
+                }
+                else {
+                    fail_reason = neverTranslatesError(dna_copy, protein);
+                }
             }
         }
         else if (definite_translation[codon_nr]!='?') { // codon has a definite translation (i.e. translates equal for all code-tables)
@@ -566,7 +587,7 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
         }
         else if (!containsProtMatching(ambiguous_codons[codon_nr], protein)) { // codon does not translate to protein in any code-table
             allowed_code_left.forbidAll();
-            fail_reason = GBS_global_string("'%c%c%c' does never translate to '%c'", dna[0], dna[1], dna[2], protein);
+            fail_reason = neverTranslatesError(dna, protein);
         }
         else {
 #if defined(ASSERTION_USED)
@@ -840,7 +861,7 @@ void TEST_codon_check() {
     TEST_EXPECT_EQUAL(AP_get_codons('L', 13), "TTATTGTAGCTTCTCCTACTG" "TTRYTATWGYTGCTYCTWCTKCTMCTSCTRCTHCTBCTDCTVYTRCTN");
     TEST_EXPECT_EQUAL(AP_get_codons('L', 16), "TTGCTTCTCCTAC"         "TGYTGCTYCTWCTKCTMCTSCTRCTHCTBCTDCTVCTN");
 
-    TEST_EXPECT_EQUAL(AP_get_codons('S', 0),  "TCTTCCTCATCGAGTAGCT"       "CYTCWTCKTCMTCSTCRAGYTCHTCBTCDTCVTCN");
+    TEST_EXPECT_EQUAL(AP_get_codons('S', 0),  "TCTTCCTCATCGAGTAGCT"       "CYTCWTCKTCMTCSTCRAGYTCHTCBTCDTCVTCN"); // @@@ wrong (CYT, CWT, CSA and GYA are NO codons for 'S') this + following
     TEST_EXPECT_EQUAL(AP_get_codons('S', 4),  "TCTTCCTCATCGAGTAGCAGAAGGT" "CYTCWTCKTCMTCSTCRAGYAGWAGKAGMAGSAGRTCHTCBTCDTCVAGHAGBAGDAGVTCNAGN");
     TEST_EXPECT_EQUAL(AP_get_codons('S', 9),  "TCTTCCTCATCGCTGAGTAGCT"    "CYTCWTCKTCMTCSTCRAGYTCHTCBTCDTCVTCN");
     TEST_EXPECT_EQUAL(AP_get_codons('S', 15), "TCTTCCTCGAGTAGCT"          "CYTCKTCSAGYTCB");
@@ -934,25 +955,24 @@ void TEST_codon_check() {
 
     test_not_codon not_codon[] = {
         { 'P', "SYK", "Not all IUPAC-combinations of 'SYK' translate to 'P'" }, // correct (possible translations are PAL)
-        { 'F', "SYK", "Not all IUPAC-combinations of 'SYK' translate to 'F'" }, // @@@ wrong message (never translates to F)
+        { 'F', "SYK", "'SYK' never translates to 'F'" },                        // correct failure
         { 'P', "NNN", "Not all IUPAC-combinations of 'NNN' translate to 'P'" }, // correct failure
         { 'D', "RAY", "Not all IUPAC-combinations of 'RAY' translate to 'D'" }, // correct failure
         { 'E', "SAR", "Not all IUPAC-combinations of 'SAR' translate to 'E'" }, // correct failure
 
-        // @@@ manually check these (they are listed by AP_get_codons above)
-        { 'S', "CYT", "Not all IUPAC-combinations of 'CYT' translate to 'S'" },
-        { 'S', "CWT", "Not all IUPAC-combinations of 'CWT' translate to 'S'" },
-        { 'S', "CSA", "Not all IUPAC-combinations of 'CSA' translate to 'S'" },
-        { 'S', "GYA", "Not all IUPAC-combinations of 'GYA' translate to 'S'" },
+        { 'S', "CYT", "'CYT' never translates to 'S'" },
+        { 'S', "CWT", "'CWT' never translates to 'S'" },
+        { 'S', "CSA", "'CSA' never translates to 'S'" },
+        { 'S', "GYA", "'GYA' never translates to 'S'" },
 
         { 'X', "AGR", "'AGR' never translates to 'X'" },
-        { 'J', "RAY", "Not all IUPAC-combinations of 'RAY' translate to 'J'" }, // @@@ should be sth like "'J' is no valid protein"
-        { 'J', "AAA", "'AAA' does never translate to 'J'" },         // @@@ should be sth like "'J' is no valid protein"
+        { 'J', "RAY", "'J' is no valid amino acid" },
+        { 'J', "AAA", "'J' is no valid amino acid" },
 
         { 'L', "A-C", "Not enough nucleotides (got 'A-C')" }, // correct failure
         { 'V', ".T.", "Not enough nucleotides (got '.T.')" }, // correct failure
         { 'L', "...", "No nucleotides left" },
-        { 'J', "...", "No nucleotides left" }, // @@@ should be sth like "'J' is no valid protein"
+        { 'J', "...", "No nucleotides left" },
 
         { 'X', "...", "No nucleotides left" },
         { 'X', "..",  "No nucleotides left" },
@@ -968,7 +988,7 @@ void TEST_codon_check() {
 
         { 'A', "--", "No nucleotides left" },
         { 'L', ".",  "No nucleotides left" },
-        { 'J', ".",  "No nucleotides left" },  // @@@ should be sth like "'J' is no valid protein"
+        { 'J', ".",  "No nucleotides left" },
         { 'L', "AT", "Not enough nucleotides (got 'AT')" },
         { 'L', "C",  "Not enough nucleotides (got 'C')" },
         { 'L', "",   "No nucleotides left" },

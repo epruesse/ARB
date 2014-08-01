@@ -46,6 +46,7 @@ AP_codon_table.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AP_codon_table.o: $(ARBHOME)/INCLUDE/arb_str.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arbdb_base.h
