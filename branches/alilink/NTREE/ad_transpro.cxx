@@ -268,6 +268,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 // realigner only:
 #define AWAR_REALIGN_INCALI  AWAR_TRANSPRO_PREFIX "incali"
 #define AWAR_REALIGN_UNMARK  AWAR_TRANSPRO_PREFIX "unmark"
+#define AWAR_REALIGN_CUTOFF  "tmp/" AWAR_TRANSPRO_PREFIX "cutoff" // dangerous -> do not save
 
 static void transpro_event(AW_window *aww) {
     GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
@@ -556,17 +557,19 @@ class RealignAttempt : virtual Noncopyable {
     BufferPtr<const char> aligned_protein;
     SizedWriteBuffer      target_dna;
     FailedAt              fail;
+    bool                  cutoff_dna;
 
     void perform();
 
     bool sync_behind_X_and_distribute(const int x_count, char *const x_start, const char *const x_start_prot);
 
 public:
-    RealignAttempt(const AWT_allowedCode& allowed_code_, const char *compressed_dna_, size_t compressed_len_, const char *aligned_protein_, char *target_dna_, size_t target_len_)
+    RealignAttempt(const AWT_allowedCode& allowed_code_, const char *compressed_dna_, size_t compressed_len_, const char *aligned_protein_, char *target_dna_, size_t target_len_, bool cutoff_dna_)
         : allowed_code(allowed_code_),
           compressed_dna(compressed_dna_, compressed_len_),
           aligned_protein(aligned_protein_),
-          target_dna(target_dna_, target_len_)
+          target_dna(target_dna_, target_len_),
+          cutoff_dna(cutoff_dna_)
     {
         nt_assert(aligned_protein[0]);
         perform();
@@ -712,7 +715,7 @@ bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const
             nt_assert(strlen(dna_rest) == dna_rest_len);
             nt_assert(compressed_rest_len>=x_dna);
 
-            RealignAttempt attemptRest(allowed_code, dna_rest, dna_rest_len, aligned_protein-1, target_dna, target_rest_len);
+            RealignAttempt attemptRest(allowed_code, dna_rest, dna_rest_len, aligned_protein-1, target_dna, target_rest_len, cutoff_dna);
             FailedAt       restFailed = attemptRest.failed();
 
             if (!restFailed) {
@@ -831,11 +834,9 @@ void RealignAttempt::perform() {
     if (!failed() && !complete) {
         while (target_dna.offset()>0 && isGap(target_dna[-1])) --target_dna; // remove terminal gaps
 
-        // append leftover dna-data (data w/o corresponding aa)
-        {
+        if (!cutoff_dna) { // append leftover dna-data (data w/o corresponding aa)
             size_t compressed_rest_len = compressed_dna.restLength();
-            size_t target_rest_len     = target_dna.restLength();
-
+            size_t target_rest_len = target_dna.restLength();
             if (compressed_rest_len<=target_rest_len) {
                 target_dna.copy(compressed_dna, compressed_rest_len);
             }
@@ -945,7 +946,7 @@ public:
 
     const char *failure() const { return fail_reason; }
 
-    char *realign_seq(AWT_allowedCode& allowed_code, const char *const source, size_t source_len, const char *const dest, size_t dest_len) {
+    char *realign_seq(AWT_allowedCode& allowed_code, const char *const source, size_t source_len, const char *const dest, size_t dest_len, bool cutoff_dna) {
         nt_assert(!failure());
 
         size_t  wanted_ali_len = source_len*3;
@@ -962,7 +963,7 @@ public:
 
             buffer = (char*)malloc(ali_len+1);
 
-            RealignAttempt attempt(allowed_code, compressed_dest, compressed_len, source, buffer, ali_len);
+            RealignAttempt attempt(allowed_code, compressed_dest, compressed_len, source, buffer, ali_len, cutoff_dna);
             FailedAt       failed = attempt.failed();
 
             if (failed) {
@@ -973,18 +974,20 @@ public:
                 if (min_dna<compressed_len) { // we have more DNA than we need
                     size_t extra_dna = compressed_len-min_dna;
                     for (size_t skip = 1; skip<=extra_dna; ++skip) {
-                        RealignAttempt attemptSkipped(allowed_code, compressed_dest+skip, compressed_len-skip, source, buffer, ali_len);
+                        RealignAttempt attemptSkipped(allowed_code, compressed_dest+skip, compressed_len-skip, source, buffer, ali_len, cutoff_dna);
                         if (!attemptSkipped.failed()) {
-                            size_t start_gaps = countLeadingGaps(buffer);
-                            if (start_gaps<skip) {
-                                failed = FailedAt(GBS_global_string("Not enough gaps to place %zu extra nucs at start of sequence",
-                                                                    skip), source, compressed_dest);
+                            failed = FailedAt(); // clear
+                            if (!cutoff_dna) {
+                                size_t start_gaps = countLeadingGaps(buffer);
+                                if (start_gaps<skip) {
+                                    failed = FailedAt(GBS_global_string("Not enough gaps to place %zu extra nucs at start of sequence",
+                                                                        skip), source, compressed_dest);
+                                }
+                                else { // success
+                                    memcpy(buffer+(start_gaps-skip), compressed_dest, skip); // copy-in skipped dna
+                                }
                             }
-                            else { // success
-                                memcpy(buffer+(start_gaps-skip), compressed_dest, skip); // copy-in skipped dna
-                                failed       = FailedAt();                               // success
-                                allowed_code = attemptSkipped.get_remaining_code();
-                            }
+                            if (!failed) allowed_code = attemptSkipped.get_remaining_code();
                             break; // no need to skip more dna, when we already have too few leading gaps
                         }
                     }
@@ -1035,7 +1038,7 @@ struct Data : virtual Noncopyable {
 };
 
 
-static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const char *ali_dest, size_t& neededLength, bool unmark_succeeded) {
+static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const char *ali_dest, size_t& neededLength, bool unmark_succeeded, bool cutoff_dna) {
     /*! realigns DNA alignment of marked sequences according to their protein alignment
      * @param ali_source protein source alignment
      * @param ali_dest modified DNA alignment
@@ -1095,7 +1098,7 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
             }
 
             if (!realigner.failure()) {
-                char *buffer = realigner.realign_seq(allowed_code, source.data, source.len, dest.data, dest.len);
+                char *buffer = realigner.realign_seq(allowed_code, source.data, source.len, dest.data, dest.len, cutoff_dna);
                 if (buffer) { // re-alignment successful
                     error = GB_write_string(dest.gb_data, buffer);
 
@@ -1155,9 +1158,10 @@ static void realign_event(AW_window *aww) {
     char     *ali_source       = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
     char     *ali_dest         = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
     bool      unmark_succeeded = aw_root->awar(AWAR_REALIGN_UNMARK)->read_int();
+    bool      cutoff_dna       = aw_root->awar(AWAR_REALIGN_CUTOFF)->read_int();
     size_t    neededLength     = 0;
     GBDATA   *gb_main          = GLOBAL.gb_main;
-    GB_ERROR  error            = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
+    GB_ERROR  error            = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded, cutoff_dna);
 
     if (!error && neededLength) {
         bool auto_inc_alisize = aw_root->awar(AWAR_REALIGN_INCALI)->read_int();
@@ -1171,7 +1175,7 @@ static void realign_event(AW_window *aww) {
                                              "running re-aligner again!",
                                              ali_dest, neededLength));
 
-                error = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded);
+                error = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded, cutoff_dna);
                 if (neededLength) {
                     error = GBS_global_string("internal error: neededLength=%zu (after autoinc)", neededLength);
                 }
@@ -1213,6 +1217,7 @@ AW_window *NT_create_realign_dna_window(AW_root *root) {
 
     aws->at("autolen"); aws->create_toggle(AWAR_REALIGN_INCALI);
     aws->at("unmark");  aws->create_toggle(AWAR_REALIGN_UNMARK);
+    aws->at("cutoff");  aws->create_toggle(AWAR_REALIGN_CUTOFF);
 
     aws->at("realign");
     aws->callback(realign_event);
@@ -1232,6 +1237,7 @@ void NT_create_transpro_variables(AW_root *root, AW_default props) {
     root->awar_int(AWAR_TRANSPRO_WRITE,  0, props);
     root->awar_int(AWAR_REALIGN_INCALI,  0, props);
     root->awar_int(AWAR_REALIGN_UNMARK,  0, props);
+    root->awar_int(AWAR_REALIGN_CUTOFF,  0, props);
 }
 
 // --------------------------------------------------------------------------------
@@ -1276,7 +1282,7 @@ void TEST_realign() {
 
         {
             msgs  = "";
-            error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
+            error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs,
                               "Automatic re-align failed for 'BctFra12'\nReason: not enough nucs for X's at sequence end at ali_pro:40 / ali_dna:109\n" // new correct report (got no nucs for 1 X)
@@ -1381,7 +1387,7 @@ void TEST_realign() {
         // wrong alignment type
         {
             msgs  = "";
-            error = realign_marked(gb_main, "ali_dna", "ali_pro", neededLength, false);
+            error = realign_marked(gb_main, "ali_dna", "ali_pro", neededLength, false, false);
             TEST_EXPECT_ERROR_CONTAINS(error, "Invalid source alignment type");
             TEST_EXPECT_EQUAL(msgs, "");
         }
@@ -1401,34 +1407,41 @@ void TEST_realign() {
             TEST_REJECT_NULL(gb_TaxOcell_dna);
 
             struct realign_check {
-                const char *seq;
-                const char *result;
-                TransResult retranslation;
-                const char *changed_prot; // if changed by translation (NULL for SAME)
+                const char  *seq;
+                const char  *result;
+                bool         cutoff;
+                TransResult  retranslation;
+                const char  *changed_prot; // if changed by translation (NULL for SAME)
             };
 
             realign_check seq[] = {
                 //"XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-.." // original aa sequence
                 // { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "sdfjlksdjf" }, // templ
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G..........", CHANGED, // original
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G..........", false, CHANGED, // original
                   "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - only changes gaptype at EOS
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHG---..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG...........", CHANGED, // missing some AA at right end (extra DNA gets no longer truncated!)
-                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - adds translation of extra DNA (DNA should never be modified by realigner!)
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH-----..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG...........", CHANGED,
-                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - adds translation of extra DNA
-                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY---H....", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTAT---------CACCACGGTGCTG..", CHANGED, // rightmost possible position of 'H' (see failing test below)
-                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY---HHGAX" }, // ok - adds translation of extra DNA
-                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "-ATGGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G..........", CHANGED, // missing some AA at left end (extra DNA gets detected now)
-                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - adds translation of extra DNA (start of alignment)
 
-                { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTTT-TG-AC-CG-GT-CCAA-GCC-GC-ACGT-AAACATCGGCACGAT-CG-GT-CA-CG-TGGA-CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", SAME, NULL },
-                { "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX-", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT---CG-GT-CA-CG-TG-GA----CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G....", CHANGED,
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHG.....", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG...........", false, CHANGED, // missing some AA at right end (extra DNA gets no longer truncated!)
+                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - adds translation of extra DNA (DNA should never be modified by realigner!)
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHG.....", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGT...............", true,  SAME, NULL }, // missing some AA at right end -> cutoff DNA
+
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYH-----..", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG...........", false, CHANGED,
+                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - adds translation of extra DNA
+                { "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY---H....", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTAT---------CACCACGGTGCTG..", false, CHANGED, // rightmost possible position of 'H' (see failing test below)
+                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCY---HHGAX" }, // ok - adds translation of extra DNA
+
+                { "---SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX-..", "-ATGGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G..........", false, CHANGED, // missing some AA at left end (extra DNA gets detected now)
+                  "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - adds translation of extra DNA (start of alignment)
+                { "...SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX...", ".........AGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G..........", true,  SAME, NULL }, // missing some AA at left end -> cutoff DNA
+
+
+                { "XG*SNFXXXXXXAXXXNHRHDXXXXXXPRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTTT-TG-AC-CG-GT-CCAA-GCC-GC-ACGT-AAACATCGGCACGAT-CG-GT-CA-CG-TGGA-CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", false, SAME, NULL },
+                { "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX-", "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT---CG-GT-CA-CG-TG-GA----CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G....", false, CHANGED,
                   "XG*SNFWPVQAARNHRHD-XXXXXX-PRQNDSDRCYHHGAX." }, // ok - only changes gaptype at EOS
-                { "XG*SNXLXRXQA-ARNHRHD-RXXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTT-TTGAC-CGGTC-CAAGCC---GCACGTAAACATCGGCACGAT---CGG-TCAC-GTG-GA---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", SAME, NULL },
-                { "XG*SXXFXDXVQAXT*TSARXRSXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGA-A-AC-TTT-T-GACCG-GTCCAAGCCGC-ACGTAAACATCGGCACGA-T-CGGTCA-C-GTG-GA---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", SAME, NULL },
+                { "XG*SNXLXRXQA-ARNHRHD-RXXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGAAACTT-TTGAC-CGGTC-CAAGCC---GCACGTAAACATCGGCACGAT---CGG-TCAC-GTG-GA---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", false, SAME, NULL },
+                { "XG*SXXFXDXVQAXT*TSARXRSXVX-PRQNDSDRCYHHGAX", "AT-GGCTAAAGA-A-AC-TTT-T-GACCG-GTCCAAGCCGC-ACGTAAACATCGGCACGA-T-CGGTCA-C-GTG-GA---CCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G.", false, SAME, NULL },
                 // -------------------------------------------- "123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123"
 
-                { 0, 0, SAME, NULL }
+                { 0, 0, false, SAME, NULL }
             };
 
             int   arb_transl_table, codon_start;
@@ -1452,7 +1465,7 @@ void TEST_realign() {
                     TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, S.seq));
                 }
                 msgs  = "";
-                error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
+                error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, S.cutoff);
                 TEST_EXPECT_NO_ERROR(error);
                 TEST_EXPECT_EQUAL(msgs, "");
                 {
@@ -1463,8 +1476,11 @@ void TEST_realign() {
                     msgs  = "";
                     error = arb_r2a(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
                     TEST_EXPECT_NO_ERROR(error);
-                    if (s == 8) {
+                    if (s == 10) {
                         TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n1 taxa converted\n  2.000000 stops per sequence found\n");
+                    }
+                    else if (s == 6) {
+                        TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n1 taxa converted\n  0.000000 stops per sequence found\n");
                     }
                     else {
                         TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n1 taxa converted\n  1.000000 stops per sequence found\n");
@@ -1545,7 +1561,7 @@ void TEST_realign() {
                     TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, seq[s].seq));
                 }
                 msgs  = "";
-                error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
+                error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
                 TEST_EXPECT_NO_ERROR(error);
                 TEST_EXPECT_CONTAINS(msgs, ERRPREFIX);
                 TEST_EXPECT_EQUAL(msgs.c_str()+ERRPREFIX_LEN, seq[s].failure);
@@ -1571,7 +1587,7 @@ void TEST_realign() {
         }
 
         msgs  = "";
-        error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
+        error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
         TEST_EXPECT_NO_ERROR(error);
         TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: Error while reading 'transl_table' (Illegal (or unsupported) value (666) in 'transl_table' (item='TaxOcell'))\n" FAILONE);
 
@@ -1591,7 +1607,7 @@ void TEST_realign() {
             }
 
             msgs  = "";
-            error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false);
+            error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
             TEST_EXPECT_NO_ERROR(error);
             if (i) {
                 TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_pro'\n" FAILONE);
