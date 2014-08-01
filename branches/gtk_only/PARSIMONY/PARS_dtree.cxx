@@ -275,6 +275,7 @@ void AWT_graphic_parsimony::show(AW_device *device) {
 
 void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event& event) {
     ClickedTarget clicked(this, event.best_click());
+    bool          recalc_branchlengths_on_structure_change = true;
 
     switch (event.cmd()) {
         // @@@ something is designed completely wrong here!
@@ -363,11 +364,14 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
             break;
 
         default:
+            recalc_branchlengths_on_structure_change = false;
+            // fall-through (modes listed below trigger branchlength calculation)
+        case AWT_MODE_MOVE:
             AWT_graphic_tree::handle_command(device, event);
             break;
     }
 
-    if (exports.save == 1) {
+    if (exports.save == 1 && recalc_branchlengths_on_structure_change) {
         arb_progress progress("Recalculating branch lengths");
         rootEdge()->calc_branchlengths();
         reorder_tree(BIG_BRANCHES_TO_TOP); // beautify after recalc_branch_lengths

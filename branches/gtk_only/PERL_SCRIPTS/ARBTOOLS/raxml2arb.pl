@@ -147,7 +147,7 @@ sub treeInfo_bootstrapped($$) {
     return ($splitted_trees[$run],$likelyhood);
   }
   else {
-    my $bestTree = raxml_filename('bestTree',$name,undef);
+    my $bestTree = raxml_filename('bipartitions',$name,undef);
     my ($line,$likelyhood) = firstLogLineMatching($info,qr/^Final ML Optimization Likelihood:\s+(.*)$/);
     if (not defined $likelyhood) {
       arb_message("Failed to extract final likelyhood from '$info'");
@@ -175,7 +175,10 @@ sub findTrees($$$$\%) {
 
   my $singleTree = 0;
   if    ($mode==$MODE_NORMAL)       { if ($runs==1) { $singleTree = 1; } }
-  elsif ($mode==$MODE_BOOTSTRAPPED) { if ($take==1) { $singleTree = 1; } }
+  elsif ($mode==$MODE_BOOTSTRAPPED) {
+    if ($take==1) { $singleTree = 1; }
+    else { arb_message("Note: to import raxml bootstrap tree, set 'Select ## best trees' to '1'"); }
+  }
   elsif ($mode==$MODE_OPTIMIZED)    { $singleTree = 1; }
   else { die; }
 

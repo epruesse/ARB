@@ -747,18 +747,19 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
                         father->swap_sons();
                     }
 
-                    if (!error) {
-                        // now correct the branch lengths.
-                        // First calc the original branchlen
+                    if (!error) { // now correct the branch lengths modified by insert()
+                        // calc the original branchlen (of target leaf branch)
                         GBT_LEN orglen = father->get_branchlength()+target->get_branchlength();
 
-                        if (is_partial) { // we now have a subtree of partial sequences
-                            brother->set_branchlength(orglen); // each partial sequence has it's branchlength.
+                        if (is_partial) { // we have a subtree of partial sequences
+                            target->set_branchlength(orglen); // restore original branchlength
                             father->set_branchlength(0); // all father branches are zero length
                         }
                         else { // we have a subtree of one full+one partial sequence
+                            ap_assert(full_seq->get_father() == father);
+
                             father->set_branchlength(orglen); // father branch represents original length (w/o partial seq)
-                            full_seq->set_branchlength(0); // full seq has no sub-branch length
+                            full_seq->set_branchlength(0);    // full seq has no sub-branch length
                         }
                         part_leaf->set_branchlength(i->get_branchlength());
                         printf("Adding with branchlength=%f\n", i->get_branchlength());

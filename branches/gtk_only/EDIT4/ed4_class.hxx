@@ -1613,7 +1613,7 @@ public:
 
     // Initializing functions
     ED4_returncode  create_hierarchy(char *area_string_middle, char *area_string_top);
-    ED4_returncode  init_alignment();
+    ARB_ERROR init_alignment();
     void recalc_font_group();
 
     AW_window *create_new_window();

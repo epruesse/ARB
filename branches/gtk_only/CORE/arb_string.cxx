@@ -386,6 +386,7 @@ void TEST_user_type_with_expectations() {
                           that(ut2).fulfills(in_same_quadrant, ut3),
                           that(ut3).fulfills(in_same_quadrant, ut4)));
 }
+TEST_PUBLISH(TEST_user_type_with_expectations);
 
 void TEST_similarity() {
     double d1      = 0.7531;
