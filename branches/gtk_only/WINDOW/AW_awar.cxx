@@ -788,10 +788,24 @@ void AW_awar_impl::set_temp_if_is_default(GBDATA *gb_db) {
  *                 Ownership is transfered, mapper will be deleted with binding.
  */
 void AW_awar_impl::bind_value(GObject* obj, const char *propname, AW_awar_gvalue_mapper* mapper) {
+    awar_gparam_binding binding(this, obj);
+
+    // Remove previous binding of GObject to an AWAR if present
+    AW_awar *awar_prev = (AW_awar*)g_object_get_data(obj, "AWAR");
+    if (awar_prev) {
+        aw_debug("AWAR %s: overwriting binding?!");
+        awar_prev->unbind(obj);
+    }
+
+    // Create binding
     gparam_bindings.push_back(awar_gparam_binding(this, obj));
     if (!gparam_bindings.back().connect(propname, mapper)) {
         gparam_bindings.pop_back();
+        return;
     }
+
+    // Store reference to us in gobject_data
+    g_object_set_data(obj, "AWAR", (gpointer)this);
 }
 
 /**
