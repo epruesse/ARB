@@ -47,6 +47,9 @@ $(CONFIG_STATUS): Makefile phyml/configure phyml/config.h.in
 clean :
 	rm -rf $(BUILDDIR)
 	rm -f $(INSTALLED_BINARY)
+	rm -f phyml/config.h.in
+	rm -f phyml/configure	
+
 
 .PHONY : clean 
 

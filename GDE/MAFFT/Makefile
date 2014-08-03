@@ -33,7 +33,11 @@ clean_here:
 	rm -f mafft.stamp
 	rm -f $(ARBHOME)/bin/mafft*
 
-clean: clean_core clean_extensions clean_here
+clean_dirs:
+	rm -rf $(SCRIPTDIR)
+	rm -rf $(BINDIR)
+
+clean: clean_core clean_extensions clean_here clean_dirs
 
 make_core:
 	+cd $(MAFFTDIR)/core && make && make install
