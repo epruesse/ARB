@@ -3,16 +3,9 @@ ARCHS_COMMON = \
 	CLUSTAL/CLUSTAL.dummy  \
 	SUPPORT/SUPPORT.dummy \
 	AxML/AxML.dummy \
-	RAxML/RAxML.dummy \
-	PHYML/PHYML.dummy \
-	MrBAYES/MrBAYES.dummy \
 
 ARCHS_NO_DEPENDS = \
 	PHYML20130708/PHYML20130708.dummy \
-	MAFFT/MAFFT.dummy \
-	MUSCLE/MUSCLE.dummy \
-	PROBCONS/PROBCONS.dummy \
-	FASTTREE/FASTTREE.dummy \
 	RAxML8/RAxML8.dummy \
 
 
@@ -24,9 +17,16 @@ ARCHS_NO_DEPENDS = \
 
 ARCHS_NON_DEBIAN = \
 	CLUSTALW/CLUSTALW.dummy  \
+	FASTTREE/FASTTREE.dummy \
+	MAFFT/MAFFT.dummy \
+	MrBAYES/MrBAYES.dummy \
+	MUSCLE/MUSCLE.dummy \
 	PHYLIP/PHYLIP.dummy \
+	PROBCONS/PROBCONS.dummy \
+	RAxML/RAxML.dummy \
 	TREEPUZZLE/TREEPUZZLE.dummy \
 	FASTDNAML/FASTDNAML.dummy \
+	PHYML/PHYML.dummy \
 
 # --------------------------------------------------------------------------------
 
