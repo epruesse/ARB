@@ -1034,7 +1034,6 @@ void TEST_codon_check() {
 
         TEST_EXPECT_EQUAL(failure, C.error);
         TEST_EXPECT(!isCodon);
-        // TEST_EXPECT_EQUAL(allowed2string(allowed_left), ALL_TABLES); // @@@ undefined in fail-case?
     }
 }
 

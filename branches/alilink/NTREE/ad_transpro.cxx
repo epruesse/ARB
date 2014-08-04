@@ -48,8 +48,7 @@ public:
     }
 
     T operator[](int i) const {
-        // nt_assert(i>=0 || size_t(-i)<=offset()); // @@@ correct (but never happens)
-        nt_assert(i>=0 || size_t(-i)<offset()); // @@@ wrong (-offset is ok)
+        nt_assert(i>=0 || size_t(-i)<=offset());
         return curr[i];
     }
 
@@ -679,8 +678,6 @@ static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtar
     return error;
 }
 
- // @@@ method to sync at start of sequence if enough dna is available
-
 bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const x_start, const char *const x_start_prot) {
     /*! brute-force search for sync behind 'X' and distribute dna onto X positions
      * @param x_count number of X encountered
@@ -868,7 +865,7 @@ class Realigner {
     const char *fail_reason;
 
     char *unalign(const char *data, size_t len, size_t& compressed_len) {
-        // removes gaps; return compressed length
+        // removes gaps from sequence
         char *compressed = (char*)malloc(len+1);
         compressed_len        = 0;
         for (size_t p = 0; p<len && data[p]; ++p) {
@@ -1651,7 +1648,6 @@ void TEST_distributor() {
 
     Distributor minDist(3, 3);
     TEST_EXPECTATION(stateOf(minDist, "111", false));
-    // TEST_EXPECT_EQUAL(permOf(minDist), "111"); TEST_EXPECT_EQUAL(minDist.next(), false);
 
     Distributor maxDist(3, 9);
     TEST_EXPECTATION(stateOf(maxDist, "333", false));
