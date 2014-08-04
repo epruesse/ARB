@@ -1,4 +1,0 @@
-# libraries needed to link against SL/PRONUC/PRONUC.a
-
-lib/libARBDB.so
-
