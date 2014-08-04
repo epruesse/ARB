@@ -1,10 +1,10 @@
 
-ARCHS_COMMON = \
+ARCHS_COMMON_DEPENDS = \
 	CLUSTAL/CLUSTAL.dummy  \
 	SUPPORT/SUPPORT.dummy \
 	AxML/AxML.dummy \
 
-ARCHS_NO_DEPENDS = \
+ARCHS_COMMON_NO_DEPENDS = \
 	PHYML20130708/PHYML20130708.dummy \
 	RAxML8/RAxML8.dummy \
 
@@ -15,25 +15,29 @@ ARCHS_NO_DEPENDS = \
 # Note: I'm not sure whether this is a good idea. Due to limited manpower it often takes
 # longer until ARB works with newer (incompatible) versions of these tools. --ralf
 
-ARCHS_NON_DEBIAN = \
+ARCHS_NON_DEBIAN_DEPENDS = \
 	CLUSTALW/CLUSTALW.dummy  \
-	FASTTREE/FASTTREE.dummy \
-	MAFFT/MAFFT.dummy \
+	FASTDNAML/FASTDNAML.dummy \
 	MrBAYES/MrBAYES.dummy \
-	MUSCLE/MUSCLE.dummy \
 	PHYLIP/PHYLIP.dummy \
-	PROBCONS/PROBCONS.dummy \
+	PHYML/PHYML.dummy \
 	RAxML/RAxML.dummy \
 	TREEPUZZLE/TREEPUZZLE.dummy \
-	FASTDNAML/FASTDNAML.dummy \
-	PHYML/PHYML.dummy \
+
+ARCHS_NON_DEBIAN_NO_DEPENDS = \
+	FASTTREE/FASTTREE.dummy \
+	MAFFT/MAFFT.dummy \
+	MUSCLE/MUSCLE.dummy \
+	PROBCONS/PROBCONS.dummy \
 
 # --------------------------------------------------------------------------------
 
 ifeq ($(DEBIAN),1)
-ARCHS_DEPENDS = $(ARCHS_COMMON)
+ARCHS_DEPENDS    = $(ARCHS_COMMON_DEPENDS)
+ARCHS_NO_DEPENDS = $(ARCHS_COMMON_NO_DEPENDS)
 else
-ARCHS_DEPENDS = $(ARCHS_COMMON) $(ARCHS_NON_DEBIAN)
+ARCHS_DEPENDS    = $(ARCHS_COMMON_DEPENDS)    $(ARCHS_NON_DEBIAN_DEPENDS)
+ARCHS_NO_DEPENDS = $(ARCHS_COMMON_NO_DEPENDS) $(ARCHS_NON_DEBIAN_NO_DEPENDS)
 endif
 
 ARCHS=$(ARCHS_DEPENDS) $(ARCHS_NO_DEPENDS)
