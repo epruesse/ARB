@@ -847,7 +847,7 @@ GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize) {
 #include <map>
 #include <ad_cb_prot.h>
 
-class cb_counter {
+class cb_counter : virtual Noncopyable {
     GBDATA *gbd;
     int deletes, changes, creates;
     bool do_trace;

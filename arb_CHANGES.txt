@@ -2,8 +2,13 @@ ARB change log
 
 Major changes for next release:
 
-      @@@
-
+ - DNA realigner
+   * several unjustified failures will no longer happen (fixes #419 and most likely #145)
+     - correctly re-syncs after 'X' (if possible at all)
+     - no longer fails for 'B' and 'Z'
+     - accepts 3 or more consecutive IUPAC codes in DNA
+   * added option to cut-off DNA sequence (was done at end of sequence by old version. fixed)
+   * fixed several minor bugs
 
 Fixes for arb-6.0.1 (22 Jul 2014):
 
