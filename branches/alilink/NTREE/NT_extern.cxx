@@ -1278,7 +1278,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->insert_sub_menu("Align Sequences",  "S");
             {
-                awm->insert_menu_topic("realign_dna", "Realign nucleic acid according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, NT_create_realign_dna_window);
+                awm->insert_menu_topic("realign_dna", "Realign DNA according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, NT_create_realign_dna_window);
                 GDE_load_menu(awm, AWM_ALL, "Align");
             }
             awm->close_sub_menu();
