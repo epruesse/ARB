@@ -702,27 +702,29 @@ void PV_SequenceUpdate_CB(GB_CB_TYPE gbtype) {
     {
         GB_transaction ta(GLOBAL_gb_main);
 
-        ED4_cursor *cursor = &current_cursor();
-        if (cursor->in_species_seq_terminal()) {
-            ED4_terminal *cursorTerminal = cursor->owner_of_cursor;
-            char         *speciesName    = cursorTerminal->to_sequence_terminal()->species_name;
-            for (int i=0; i<PV_AA_Terminals4Species; i++) {
-                // get the corresponding orf_terminal skipping sequence_info terminal
-                // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal();
-                // Make sure it is ORF terminal
-                if (cursorTerminal->is_orf_terminal()) {
-                    ED4_orf_terminal *orfTerm = cursorTerminal->to_orf_terminal();
-                    // Get the AA sequence flag - says which strand we are in
-                    int   aaStartPos = int(orfTerm->GET_aaStartPos());
-                    int aaStrandType = int(orfTerm->GET_aaStrandType());
-                    // retranslate the genesequence and store it to the orf_terminal
-                    TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, orfTerm, speciesName, aaStartPos-1, aaStrandType);
+        for (ED4_window *win = ED4_ROOT->first_window; win; win = win->next) {
+            ED4_cursor& cursor = win->cursor;
+            if (cursor.in_species_seq_terminal()) {
+                ED4_terminal *cursorTerminal = cursor.owner_of_cursor;
+                char         *speciesName    = cursorTerminal->to_sequence_terminal()->species_name;
+                for (int i=0; i<PV_AA_Terminals4Species; i++) {
+                    // get the corresponding orf_terminal skipping sequence_info terminal
+                    // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
+                    cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal();
+                    // Make sure it is ORF terminal
+                    if (cursorTerminal->is_orf_terminal()) {
+                        ED4_orf_terminal *orfTerm = cursorTerminal->to_orf_terminal();
+                        // Get the AA sequence flag - says which strand we are in
+                        int   aaStartPos = int(orfTerm->GET_aaStartPos());
+                        int aaStrandType = int(orfTerm->GET_aaStrandType());
+                        // retranslate the genesequence and store it to the orf_terminal
+                        TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, orfTerm, speciesName, aaStartPos-1, aaStrandType);
+                    }
                 }
+                // Print missing DB entries
+                PV_PrintMissingDBentryInformation();
+                PV_RefreshWindow(ED4_ROOT->aw_root);
             }
-            // Print missing DB entries
-            PV_PrintMissingDBentryInformation();
-            PV_RefreshWindow(ED4_ROOT->aw_root);
         }
     }
 }
