@@ -1298,6 +1298,39 @@ void TEST_realign() {
         size_t   neededLength = 0;
 
         {
+            struct transinfo_check {
+                const char  *species_name;
+                const char  *old_info;
+                TransResult  changed;
+                const char  *new_info;
+            };
+
+            transinfo_check info[] = {
+                { "BctFra12", "t=0,cs=1",  SAME,    NULL },        // fails -> unchanged
+                { "CytLyti6", "t=9,cs=1",  CHANGED, "t=9,cs=0" },
+                { "TaxOcell", "t=14,cs=1", CHANGED, "t=14,cs=0" },
+                { "StrRamo3", "t=0,cs=1",  SAME,    NULL },        // fails -> unchanged
+                { "StrCoel9", "t=0,cs=0",  SAME,    NULL },        // already correct
+                { "MucRacem", "t=0,cs=1",  CHANGED, "t=0,cs=0" },
+                { "MucRace2", "t=0,cs=1",  CHANGED, "t=0,cs=0" },
+                { "MucRace3", "t=0,cs=0",  SAME,    NULL },        // fails -> unchanged
+                { "AbdGlauc", "t=0,cs=0",  SAME,    NULL },        // already correct
+                { "CddAlbic", "t=0,cs=0",  SAME,    NULL },        // already correct
+
+                { NULL, NULL, SAME, NULL }
+            };
+
+            {
+                GB_transaction ta(gb_main);
+
+                for (int i = 0; info[i].species_name; ++i) {
+                    const transinfo_check& I = info[i];
+                    TEST_ANNOTATE(I.species_name);
+                    TEST_EXPECT_EQUAL(TRANSLATION_INFO(I.species_name), I.old_info);
+                }
+            }
+            TEST_ANNOTATE(NULL);
+
             msgs  = "";
             error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
             TEST_EXPECT_NO_ERROR(error);
@@ -1323,16 +1356,21 @@ void TEST_realign() {
                 TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATG-GG-TAAA-GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATA-AA......");
                 // ------------------------------------- "123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123"
 
-                TEST_EXPECT_EQUAL(TRANSLATION_INFO("BctFra12"), "t=0,cs=1"); // failed
-                TEST_EXPECT_EQUAL(TRANSLATION_INFO("CytLyti6"), "t=9,cs=0");
-                TEST_EXPECT_EQUAL(TRANSLATION_INFO("TaxOcell"), "t=14,cs=0");
-                TEST_EXPECT_EQUAL(TRANSLATION_INFO("StrRamo3"), "t=0,cs=1"); // failed
-                TEST_EXPECT_EQUAL(TRANSLATION_INFO("StrCoel9"), "t=0,cs=0");
-                TEST_EXPECT_EQUAL(TRANSLATION_INFO("MucRacem"), "t=0,cs=0");
-                TEST_EXPECT_EQUAL(TRANSLATION_INFO("MucRace2"), "t=0,cs=0");
-                TEST_EXPECT_EQUAL(TRANSLATION_INFO("MucRace3"), "t=0,cs=0"); // failed
-                TEST_EXPECT_EQUAL(TRANSLATION_INFO("AbdGlauc"), "t=0,cs=0");
-                TEST_EXPECT_EQUAL(TRANSLATION_INFO("CddAlbic"), "t=0,cs=0");
+                for (int i = 0; info[i].species_name; ++i) {
+                    const transinfo_check& I = info[i];
+                    TEST_ANNOTATE(I.species_name);
+                    switch (I.changed) {
+                        case SAME:
+                            TEST_EXPECT_EQUAL(TRANSLATION_INFO(I.species_name), I.old_info);
+                            TEST_EXPECT_NULL(I.new_info);
+                            break;
+                        case CHANGED:
+                            TEST_EXPECT_EQUAL(TRANSLATION_INFO(I.species_name), I.new_info);
+                            TEST_EXPECT_DIFFERENT(I.new_info, I.old_info);
+                            break;
+                    }
+                }
+                TEST_ANNOTATE(NULL);
             }
         }
 
@@ -1368,6 +1406,7 @@ void TEST_realign() {
                 TEST_ANNOTATE(T.species_name);
                 TEST_EXPECT_EQUAL(PROSEQ(T.species_name), T.original_prot);
             }
+            TEST_ANNOTATE(NULL);
 
             msgs  = "";
             error = arb_r2a(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
@@ -1390,6 +1429,7 @@ void TEST_realign() {
                         break;
                 }
             }
+            TEST_ANNOTATE(NULL);
 
             ta.close("dont commit");
         }
@@ -1525,6 +1565,7 @@ void TEST_realign() {
                     TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_dna, org_dna)); // restore changed DB entry
                 }
             }
+            TEST_ANNOTATE(NULL);
 
             free(org_dna);
         }
@@ -1595,6 +1636,7 @@ void TEST_realign() {
                     TEST_EXPECT_EQUAL(translation_info(gb_TaxOcell), "t=14,cs=0");
                 }
             }
+            TEST_ANNOTATE(NULL);
 
 #undef ERRPREFIX
 #undef ERRPREFIX_LEN
@@ -1640,6 +1682,7 @@ void TEST_realign() {
                 TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_dna'\n" FAILONE);
             }
         }
+        TEST_ANNOTATE(NULL);
 
         TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
     }
