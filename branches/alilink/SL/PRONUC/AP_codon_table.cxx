@@ -651,6 +651,11 @@ bool AWT_is_codon(char protein, const char *const dna, const TransTables& allowe
         pn_assert(fail_reason);
         if (fail_reason_ptr) *fail_reason_ptr = fail_reason; // set failure-reason if requested
     }
+#if defined(ASSERTION_USED)
+    else {
+        pn_assert(remaining.is_subset_of(allowed));
+    }
+#endif
     return is_codon;
 }
 

@@ -91,6 +91,13 @@ public:
         }
         return table;
     }
+
+    bool is_subset_of(const TransTables& other) const {
+        for (int i = 0; i<AWT_CODON_TABLES; ++i) {
+            if (is_allowed(i) && !other.is_allowed(i)) return false;
+        }
+        return true;
+    }
 };
 
 // --------------------------------------------------------------------------------

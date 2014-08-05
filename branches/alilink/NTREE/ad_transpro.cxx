@@ -826,6 +826,7 @@ void RealignAttempt::perform() {
 
             if (failed()) break;
 
+            nt_assert(remaining.is_subset_of(allowed));
             allowed = remaining;
             target_dna.copy(compressed_dna, 3);
         }
@@ -989,13 +990,17 @@ public:
                                     memcpy(buffer+(start_gaps-skip), compressed_dest, skip); // copy-in skipped dna
                                 }
                             }
-                            if (!failed) allowed = attemptSkipped.get_remaining_tables();
+                            if (!failed) {
+                                nt_assert(attempt.get_remaining_tables().is_subset_of(allowed));
+                                allowed = attemptSkipped.get_remaining_tables();
+                            }
                             break; // no need to skip more dna, when we already have too few leading gaps
                         }
                     }
                 }
             }
             else {
+                nt_assert(attempt.get_remaining_tables().is_subset_of(allowed));
                 allowed = attempt.get_remaining_tables();
             }
 
