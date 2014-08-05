@@ -348,7 +348,7 @@ inline char nextBase(char c) {
 }
 
 void AWT_dump_codons() {
-    AWT_allowedCode allowed_code;
+    const TransTables all_allowed;
 
     for (char c='*'; c<='Z'; c++) {
         printf("Codes for '%c': ", c);
@@ -363,15 +363,15 @@ void AWT_dump_codons() {
                     dna[2]=b3;
                     dna[3]=0;
 
-                    AWT_allowedCode allowed_code_left;
-                    if (AWT_is_codon(c, dna, allowed_code, allowed_code_left)) {
+                    TransTables remaining;
+                    if (AWT_is_codon(c, dna, all_allowed, remaining)) {
                         if (!first_line) printf("\n               ");
                         first_line = 0;
                         printf("%s (", dna);
 
                         int first=1;
                         for (int code=0; code<AWT_CODON_TABLES; code++) {
-                            if (allowed_code_left.is_allowed(code)) {
+                            if (remaining.is_allowed(code)) {
                                 if (!first) printf(",");
                                 first=0;
                                 printf("%i", code);
@@ -446,12 +446,17 @@ inline GB_ERROR neverTranslatesError(const char *dna, char protein) {
     return GBS_global_string("'%c%c%c' never translates to '%c'", dna[0], dna[1], dna[2], protein);
 }
 
-bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& allowed_code, AWT_allowedCode& allowed_code_left, const char **fail_reason_ptr) {
-    // return TRUE if 'dna' contains a codon of 'protein' ('dna' must not contain any gaps)
-    // allowed_code contains 1 for each allowed code and 0 otherwise
-    // allowed_code_left contains a copy of allowed_code with all impossible codes set to zero
+bool AWT_is_codon(char protein, const char *const dna, const TransTables& allowed, TransTables& remaining, const char **fail_reason_ptr) {
+    /*! test if 'dna' codes 'protein'
+     * @param protein amino acid
+     * @param dna three nucleotides (gaps allowed, e.g. 'A-C' can be tested vs 'X')
+     * @param allowed allowed translation tables
+     * @param remaining returns the remaining allowed translation tables (only if this functions returns true)
+     * @param fail_reason_ptr if not NULL => store reason for failure here (or set it to NULL on success)
+     * @return true if dna translates to protein
+     */
 
-    pn_assert(allowed_code.any());
+    pn_assert(allowed.any());
     pn_assert(codon_tables_initialized);
 
     const char *fail_reason               = 0;
@@ -512,18 +517,19 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
 
     if (!decided) {
         if (protein == 'X') {
-            AWT_allowedCode  allowed_code_copy = allowed_code;
-            const char      *prot_check        = "ABCDEFGHIKLMNPQRSTVWYZ*";
+            TransTables  allowed_copy = allowed;
+            const char  *prot_check   = "ABCDEFGHIKLMNPQRSTVWYZ*";
+
             for (int pc = 0; prot_check[pc]; ++pc) {
-                if (AWT_is_codon(prot_check[pc], dna, allowed_code_copy, allowed_code_left)) {
-                    allowed_code_copy.forbid(allowed_code_left);
-                    if (allowed_code_copy.none()) break;
+                if (AWT_is_codon(prot_check[pc], dna, allowed_copy, remaining)) {
+                    allowed_copy.forbid(remaining);
+                    if (allowed_copy.none()) break;
                 }
             }
 
-            if (allowed_code_copy.any()) {
+            if (allowed_copy.any()) {
                 is_codon          = true;
-                allowed_code_left = allowed_code_copy;
+                remaining = allowed_copy;
             }
             else {
                 fail_reason = neverTranslatesError(dna, protein);
@@ -541,29 +547,29 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
             bool all_are_codons = true;
             bool one_is_codon   = false;
 
-            AWT_allowedCode allowed_code_copy = allowed_code;
+            TransTables allowed_copy = allowed;
 
             for (int i=0; decoded_iupac[i]; i++) {
                 dna_copy[first_iupac_pos] = decoded_iupac[i];
                 const char *subfail;
-                if (!AWT_is_codon(protein, dna_copy, allowed_code_copy, allowed_code_left, &subfail)) {
+                if (!AWT_is_codon(protein, dna_copy, allowed_copy, remaining, &subfail)) {
                     all_are_codons = false;
                     if (!one_is_codon && ARB_strBeginsWith(subfail, "Not all ")) one_is_codon = true;
                     if (one_is_codon) break;
                 }
                 else {
                     one_is_codon      = true;
-                    allowed_code_copy = allowed_code_left;
+                    allowed_copy = remaining;
                 }
             }
 
             if (all_are_codons) {
-                pn_assert(allowed_code_copy.any());
-                allowed_code_left = allowed_code_copy;
+                pn_assert(allowed_copy.any());
+                remaining = allowed_copy;
                 is_codon          = true;
             }
             else {
-                allowed_code_left.forbidAll();
+                remaining.forbidAll();
                 dna_copy[first_iupac_pos] = dna[first_iupac_pos];
                 if (one_is_codon) {
                     fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate to '%c'", dna_copy, protein); // careful when changing this message (see above)
@@ -577,16 +583,16 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
             int ok = protMatches(definite_translation[codon_nr], protein);
 
             if (ok) {
-                allowed_code_left = allowed_code;
+                remaining = allowed;
                 is_codon          = true;
             }
             else {
-                allowed_code_left.forbidAll();
+                remaining.forbidAll();
                 fail_reason = GBS_global_string("'%c%c%c' translates to '%c', not to '%c'", dna[0], dna[1], dna[2], definite_translation[codon_nr], protein);
             }
         }
         else if (!containsProtMatching(ambiguous_codons[codon_nr], protein)) { // codon does not translate to protein in any code-table
-            allowed_code_left.forbidAll();
+            remaining.forbidAll();
             fail_reason = neverTranslatesError(dna, protein);
         }
         else {
@@ -598,19 +604,19 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
             // Check whether protein translates in any of the allowed code-tables:
             for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
                 if (protMatches(AWT_codon_def[code_nr].aa[codon_nr], protein)) { // does it translate correct?
-                    if (allowed_code.is_allowed(code_nr)) { // is this code allowed?
-                        allowed_code_left.allow(code_nr);
+                    if (allowed.is_allowed(code_nr)) { // is this code allowed?
+                        remaining.allow(code_nr);
                         is_codon = true;
                     }
                     else {
-                        allowed_code_left.forbid(code_nr); // otherwise forbid code in future
+                        remaining.forbid(code_nr); // otherwise forbid code in future
 #if defined(ASSERTION_USED)
                         correct_disallowed_translation = true;
 #endif
                     }
                 }
                 else {
-                    allowed_code_left.forbid(code_nr); // otherwise forbid code in future
+                    remaining.forbid(code_nr); // otherwise forbid code in future
                 }
             }
 
@@ -622,7 +628,7 @@ bool AWT_is_codon(char protein, const char *const dna, const AWT_allowedCode& al
                 bool  first = true;
 
                 for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
-                    if (allowed_code.is_allowed(code_nr)) {
+                    if (allowed.is_allowed(code_nr)) {
                         if (!first) *ltp++ = ',';
                         ltp   += sprintf(ltp, "%i", code_nr);
                         first  = false;
@@ -844,7 +850,7 @@ const char *AP_get_codons(char protein, int code_nr) {
 #include <test_unit.h>
 #endif
 
-static const char *allowed2string(const AWT_allowedCode& allowed) {
+static const char *allowed2string(const TransTables& allowed) {
     const int    MAX_LEN = 41;
     static char  buffer[MAX_LEN];
     char        *out     = buffer;
@@ -1011,26 +1017,26 @@ void TEST_codon_check() {
         { 0, NULL, NULL}
     };
 
-    const AWT_allowedCode allowed;
+    const TransTables allowed;
     for (int c = 0; is_codon[c].protein; ++c) {
         const test_is_codon& C = is_codon[c];
         TEST_ANNOTATE(GBS_global_string("%c <- %s", C.protein, C.codon));
 
-        AWT_allowedCode  allowed_left;
-        const char      *failure;
-        bool             isCodon = AWT_is_codon(C.protein, C.codon, allowed, allowed_left, &failure);
+        TransTables  remaining;
+        const char  *failure;
+        bool         isCodon = AWT_is_codon(C.protein, C.codon, allowed, remaining, &failure);
 
         TEST_EXPECT_NULL(failure);
         TEST_EXPECT(isCodon);
-        TEST_EXPECT_EQUAL(allowed2string(allowed_left), C.tables);
+        TEST_EXPECT_EQUAL(allowed2string(remaining), C.tables);
     }
     for (int c = 0; not_codon[c].protein; ++c) {
         const test_not_codon& C = not_codon[c];
         TEST_ANNOTATE(GBS_global_string("%c <- %s", C.protein, C.codon));
 
-        AWT_allowedCode  allowed_left;
-        const char      *failure;
-        bool             isCodon = AWT_is_codon(C.protein, C.codon, allowed, allowed_left, &failure);
+        TransTables  remaining;
+        const char  *failure;
+        bool         isCodon = AWT_is_codon(C.protein, C.codon, allowed, remaining, &failure);
 
         TEST_EXPECT_EQUAL(failure, C.error);
         TEST_EXPECT(!isCodon);

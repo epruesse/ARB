@@ -486,16 +486,16 @@ public:
         return score + 6 - dist[0] - dist[xcount-1]; // prefer border positions with less nucs
     }
 
-    bool translates_to_Xs(const char *dna, const AWT_allowedCode& with_code) const {
+    bool translates_to_Xs(const char *dna, const TransTables& allowed) const {
         bool translates = true;
         int  off        = 0;
         for (int p = 0; translates && p<xcount; off += dist[p++]) {
             if (dist[p] == 3) {
-                AWT_allowedCode  left_code;
-                const char      *why_fail;
+                TransTables  remaining;
+                const char  *why_fail;
 
-                translates = AWT_is_codon('X', dna+off, with_code, left_code, &why_fail);
-                // if (translates) with_code = left_code; // @@@ code-exclusion ignored here (maybe not even happens..)
+                translates = AWT_is_codon('X', dna+off, allowed, remaining, &why_fail);
+                // if (translates) allowed = remaining; // @@@ code-exclusion ignored here (maybe not even happens..)
             }
         }
         return translates;
@@ -551,7 +551,7 @@ public:
 };
 
 class RealignAttempt : virtual Noncopyable {
-    AWT_allowedCode       allowed_code;
+    TransTables           allowed;
     SizedReadBuffer       compressed_dna;
     BufferPtr<const char> aligned_protein;
     SizedWriteBuffer      target_dna;
@@ -563,8 +563,8 @@ class RealignAttempt : virtual Noncopyable {
     bool sync_behind_X_and_distribute(const int x_count, char *const x_start, const char *const x_start_prot);
 
 public:
-    RealignAttempt(const AWT_allowedCode& allowed_code_, const char *compressed_dna_, size_t compressed_len_, const char *aligned_protein_, char *target_dna_, size_t target_len_, bool cutoff_dna_)
-        : allowed_code(allowed_code_),
+    RealignAttempt(const TransTables& allowed_, const char *compressed_dna_, size_t compressed_len_, const char *aligned_protein_, char *target_dna_, size_t target_len_, bool cutoff_dna_)
+        : allowed(allowed_),
           compressed_dna(compressed_dna_, compressed_len_),
           aligned_protein(aligned_protein_),
           target_dna(target_dna_, target_len_),
@@ -574,14 +574,19 @@ public:
         perform();
     }
 
-    const AWT_allowedCode& get_remaining_code() const { return allowed_code; }
+    const TransTables& get_remaining_tables() const { return allowed; }
     const FailedAt& failed() const { return fail; }
 };
 
-static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtarget_, bool gap_before, bool gap_after, const AWT_allowedCode& with_code) {
+static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtarget_, bool gap_before, bool gap_after, const TransTables& allowed) {
     /*! distributes 'dna' to marked X-positions
      * @param xtarget destination buffer (target positions are marked with '!')
      * @param xcount number of X's encountered
+     * @param gap_before true if resulting realignment has a gap or the start of alignment before the X-positions
+     * @param gap_after analog to 'gap_before'
+     * @param allowed allowed translation tables
+     * @@@ [impl param] remaining remaining allowed translation tables (with those tables disabled for which no distribution possible)
+     * @return error if dna distribution wasn't possible
      */
 
     BufferPtr<char> xtarget(xtarget_);
@@ -599,12 +604,12 @@ static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtar
         }
 
         if (best.mayFailTranslation()) {
-            if (!best.translates_to_Xs(dna, with_code)) {
+            if (!best.translates_to_Xs(dna, allowed)) {
                 nt_assert(!error);
                 error = "no translating X-distribution found";
                 dist.reset();
                 do {
-                    if (dist.translates_to_Xs(dna, with_code)) {
+                    if (dist.translates_to_Xs(dna, allowed)) {
                         best  = dist;
                         error = NULL;
                         break;
@@ -613,7 +618,7 @@ static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtar
 
                 while (dist.next()) {
                     if (dist.get_score() > best.get_score()) {
-                        if (dist.translates_to_Xs(dna, with_code)) {
+                        if (dist.translates_to_Xs(dna, allowed)) {
                             best = dist;
                         }
                     }
@@ -712,7 +717,7 @@ bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const
             nt_assert(strlen(dna_rest) == dna_rest_len);
             nt_assert(compressed_rest_len>=x_dna);
 
-            RealignAttempt attemptRest(allowed_code, dna_rest, dna_rest_len, aligned_protein-1, target_dna, target_rest_len, cutoff_dna);
+            RealignAttempt attemptRest(allowed, dna_rest, dna_rest_len, aligned_protein-1, target_dna, target_rest_len, cutoff_dna);
             FailedAt       restFailed = attemptRest.failed();
 
             if (!restFailed) {
@@ -721,12 +726,12 @@ bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const
                 bool has_gap_before = x_start == target_dna.start() ? true : isGap(x_start[-1]);
                 bool has_gap_after  = isGap(dna_rest[0]);
 
-                GB_ERROR disterr = distribute_xdata(distrib_dna, x_count, x_start, has_gap_before, has_gap_after, attemptRest.get_remaining_code());
+                GB_ERROR disterr = distribute_xdata(distrib_dna, x_count, x_start, has_gap_before, has_gap_after, attemptRest.get_remaining_tables());
                 if (disterr) {
                     restFailed = FailedAt(disterr, x_start_prot, dna_rest); // prot=start of Xs; dna=start of sync (behind Xs)
                 }
                 else {
-                    allowed_code = attemptRest.get_remaining_code();
+                    allowed = attemptRest.get_remaining_tables();
                 }
             }
 
@@ -757,7 +762,7 @@ bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const
         size_t x_dna;
         for (x_dna = max_dna; x_dna>=min_dna; --x_dna) {     // prefer high amounts of dna
             SizedReadBuffer append_dna(compressed_dna, x_dna);
-            fail_reason = distribute_xdata(append_dna, x_count, x_start, false, true, allowed_code); // @@@ pass/modify usable codes?
+            fail_reason = distribute_xdata(append_dna, x_count, x_start, false, true, allowed); // @@@ pass/modify usable codes?
             if (!fail_reason) break; // found distribution -> done
         }
 
@@ -804,8 +809,8 @@ void RealignAttempt::perform() {
 
         if (isGap(p)) target_dna.put(p, 3);
         else {
-            AWT_allowedCode allowed_code_left;
-            size_t          compressed_rest_len = compressed_dna.restLength();
+            TransTables remaining;
+            size_t      compressed_rest_len = compressed_dna.restLength();
 
             if (compressed_rest_len<3) {
                 fail = FailedAt(GBS_global_string("not enough nucs left for codon of '%c'", p), aligned_protein-1, compressed_dna);
@@ -814,14 +819,14 @@ void RealignAttempt::perform() {
                 nt_assert(strlen(compressed_dna) == compressed_rest_len);
                 nt_assert(compressed_rest_len >= 3);
                 const char *why_fail;
-                if (!AWT_is_codon(p, compressed_dna, allowed_code, allowed_code_left, &why_fail)) {
+                if (!AWT_is_codon(p, compressed_dna, allowed, remaining, &why_fail)) {
                     fail = FailedAt(why_fail, aligned_protein-1, compressed_dna);
                 }
             }
 
             if (failed()) break;
 
-            allowed_code = allowed_code_left;
+            allowed = remaining;
             target_dna.copy(compressed_dna, 3);
         }
     }
@@ -943,7 +948,7 @@ public:
 
     const char *failure() const { return fail_reason; }
 
-    char *realign_seq(AWT_allowedCode& allowed_code, const char *const source, size_t source_len, const char *const dest, size_t dest_len, bool cutoff_dna) {
+    char *realign_seq(TransTables& allowed, const char *const source, size_t source_len, const char *const dest, size_t dest_len, bool cutoff_dna) {
         nt_assert(!failure());
 
         size_t  wanted_ali_len = source_len*3;
@@ -960,7 +965,7 @@ public:
 
             buffer = (char*)malloc(ali_len+1);
 
-            RealignAttempt attempt(allowed_code, compressed_dest, compressed_len, source, buffer, ali_len, cutoff_dna);
+            RealignAttempt attempt(allowed, compressed_dest, compressed_len, source, buffer, ali_len, cutoff_dna);
             FailedAt       failed = attempt.failed();
 
             if (failed) {
@@ -971,7 +976,7 @@ public:
                 if (min_dna<compressed_len) { // we have more DNA than we need
                     size_t extra_dna = compressed_len-min_dna;
                     for (size_t skip = 1; skip<=extra_dna; ++skip) {
-                        RealignAttempt attemptSkipped(allowed_code, compressed_dest+skip, compressed_len-skip, source, buffer, ali_len, cutoff_dna);
+                        RealignAttempt attemptSkipped(allowed, compressed_dest+skip, compressed_len-skip, source, buffer, ali_len, cutoff_dna);
                         if (!attemptSkipped.failed()) {
                             failed = FailedAt(); // clear
                             if (!cutoff_dna) {
@@ -984,14 +989,14 @@ public:
                                     memcpy(buffer+(start_gaps-skip), compressed_dest, skip); // copy-in skipped dna
                                 }
                             }
-                            if (!failed) allowed_code = attemptSkipped.get_remaining_code();
+                            if (!failed) allowed = attemptSkipped.get_remaining_tables();
                             break; // no need to skip more dna, when we already have too few leading gaps
                         }
                     }
                 }
             }
             else {
-                allowed_code = attempt.get_remaining_code();
+                allowed = attempt.get_remaining_tables();
             }
 
             if (failed) {
@@ -1081,7 +1086,7 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
         else if (dest.error)   realigner.set_failure(dest.error);
 
         if (!realigner.failure()) {
-            AWT_allowedCode allowed_code; // default: all translation tables allowed
+            TransTables allowed; // default: all translation tables allowed
             {
                 int arb_transl_table, codon_start;
                 GB_ERROR local_error = AWT_getTranslationInfo(gb_species, arb_transl_table, codon_start);
@@ -1090,17 +1095,17 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
                 }
                 else if (arb_transl_table >= 0) {
                     // we found a 'transl_table' entry -> restrict used code to the code stored there
-                    allowed_code.forbidAllBut(arb_transl_table);
+                    allowed.forbidAllBut(arb_transl_table);
                 }
             }
 
             if (!realigner.failure()) {
-                char *buffer = realigner.realign_seq(allowed_code, source.data, source.len, dest.data, dest.len, cutoff_dna);
+                char *buffer = realigner.realign_seq(allowed, source.data, source.len, dest.data, dest.len, cutoff_dna);
                 if (buffer) { // re-alignment successful
                     error = GB_write_string(dest.gb_data, buffer);
 
                     if (!error) {
-                        int explicit_table_known = allowed_code.explicit_table();
+                        int explicit_table_known = allowed.explicit_table();
 
                         if (explicit_table_known >= 0) { // we know the exact code -> write codon_start and transl_table
                             const int codon_start  = 0; // by definition (after realignment)

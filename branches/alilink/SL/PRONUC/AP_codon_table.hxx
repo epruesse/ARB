@@ -34,10 +34,10 @@ const int AWAR_PROTEIN_TYPE_bacterial_code_index = 8; // contains the index of t
 
 // --------------------------------------------------------------------------------
 
-class AWT_allowedCode {
+class TransTables {
     char allowed[AWT_CODON_TABLES];
 
-    void copy(const AWT_allowedCode& other) {
+    void copy(const TransTables& other) {
         for (int a=0; a<AWT_CODON_TABLES; a++) {
             allowed[a] = other.allowed[a];
         }
@@ -46,9 +46,9 @@ class AWT_allowedCode {
     void legal(int IF_ASSERTION_USED(nr)) const { pn_assert(nr >= 0 && nr<AWT_CODON_TABLES); }
 
 public:
-    AWT_allowedCode() { allowAll(true); }
-    AWT_allowedCode(const AWT_allowedCode& other) { copy(other); }
-    AWT_allowedCode& operator=(const AWT_allowedCode& other)  { copy(other); return *this; }
+    TransTables() { allowAll(true); }
+    TransTables(const TransTables& other) { copy(other); }
+    TransTables& operator=(const TransTables& other)  { copy(other); return *this; }
 
     int is_allowed(int nr) const { legal(nr); return allowed[nr] != 0; }
     bool any() const {
@@ -60,7 +60,7 @@ public:
 
     void allow(int nr) { legal(nr); allowed[nr] = 1; }
     void forbid(int nr) { legal(nr); allowed[nr]=0; }
-    void forbid(const AWT_allowedCode& other) {
+    void forbid(const TransTables& other) {
         for (int a=0; a<AWT_CODON_TABLES; a++) {
             if (other.is_allowed(a)) forbid(a);
         }
@@ -100,7 +100,7 @@ void AP_initialize_codon_tables();
 int AWT_embl_transl_table_2_arb_code_nr(int embl_code_nr);
 int AWT_arb_code_nr_2_embl_transl_table(int arb_code_nr);
 
-bool        AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_code, AWT_allowedCode& allowed_code_left, const char **fail_reason = 0);
+bool        AWT_is_codon(char protein, const char *const dna, const TransTables& allowed, TransTables& allowed_left, const char **fail_reason_ptr = 0);
 const char *AP_get_codons(char protein, int code_nr);
 
 char AWT_is_start_codon(const char *dna, int arb_code_nr);
