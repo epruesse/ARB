@@ -1258,6 +1258,19 @@ static void msg_to_string(const char *msg) {
     msgs += '\n';
 }
 
+static const char *translation_info(GBDATA *gb_species) {
+    int      arb_transl_table;
+    int      codon_start;
+    GB_ERROR error = AWT_getTranslationInfo(gb_species, arb_transl_table, codon_start);
+
+    static SmartCharPtr result;
+
+    if (error) result = GBS_global_string_copy("Error: %s", error);
+    else       result = GBS_global_string_copy("t=%i,cs=%i", arb_transl_table, codon_start);
+
+    return &*result;
+}
+
 static arb_handlers test_handlers = {
     msg_to_string,
     msg_to_string,
@@ -1267,6 +1280,8 @@ static arb_handlers test_handlers = {
 
 #define DNASEQ(name) GB_read_char_pntr(GBT_read_sequence(GBT_find_species(gb_main, name), "ali_dna"))
 #define PROSEQ(name) GB_read_char_pntr(GBT_read_sequence(GBT_find_species(gb_main, name), "ali_pro"))
+
+#define TRANSLATION_INFO(name) translation_info(GBT_find_species(gb_main, name))
 
 void TEST_realign() {
     arb_handlers *old_handlers = active_arb_handlers;
@@ -1296,17 +1311,28 @@ void TEST_realign() {
             {
                 GB_transaction ta(gb_main);
 
-                TEST_EXPECT_EQUAL(DNASEQ("BctFra12"),    "ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"); // failed => seq unchanged
+                TEST_EXPECT_EQUAL(DNASEQ("BctFra12"),    "ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"); // failed = > seq unchanged
                 TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"),    "-A-TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAASAGTAT-T-----G....");
                 TEST_EXPECT_EQUAL(DNASEQ("TaxOcell"),    "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G..........");
-                TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"),    "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTCCTC------------------"); // failed => seq unchanged
+                TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"),    "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTCCTC------------------"); // failed = > seq unchanged
                 TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"),    "ATGTCCAAGACGGCGTACGTCCGC-C--C--A-CC-TG--A----GGCACGATG-G-CC--C-GACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTC-C--T--------C.......");
                 TEST_EXPECT_EQUAL(DNASEQ("MucRacem"),    "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......");
                 TEST_EXPECT_EQUAL(DNASEQ("MucRace2"),    "ATGGGTAAGGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGT-ATNNNAT-AAA......");
-                TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "-----------ATGGGTAAAGAGAAGACTCACGTTRAYGTTGTCGTTATTGGTCACGTCRATTCCGGTAAGTCCACCNCCRCTGGTCACTTGATTTACAAGTGTGGTGGTATAA-A----------"); // failed => seq unchanged
+                TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "-----------ATGGGTAAAGAGAAGACTCACGTTRAYGTTGTCGTTATTGGTCACGTCRATTCCGGTAAGTCCACCNCCRCTGGTCACTTGATTTACAAGTGTGGTGGTATAA-A----------"); // failed = > seq unchanged
                 TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"),    "ATGGGTAAA-G--A--A--A--A--G-AC--T-CACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATA-AA......");
                 TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATG-GG-TAAA-GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATA-AA......");
                 // ------------------------------------- "123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123"
+
+                TEST_EXPECT_EQUAL(TRANSLATION_INFO("BctFra12"), "t=0,cs=1"); // failed
+                TEST_EXPECT_EQUAL(TRANSLATION_INFO("CytLyti6"), "t=9,cs=0");
+                TEST_EXPECT_EQUAL(TRANSLATION_INFO("TaxOcell"), "t=14,cs=0");
+                TEST_EXPECT_EQUAL(TRANSLATION_INFO("StrRamo3"), "t=0,cs=1"); // failed
+                TEST_EXPECT_EQUAL(TRANSLATION_INFO("StrCoel9"), "t=0,cs=0");
+                TEST_EXPECT_EQUAL(TRANSLATION_INFO("MucRacem"), "t=0,cs=0");
+                TEST_EXPECT_EQUAL(TRANSLATION_INFO("MucRace2"), "t=0,cs=0");
+                TEST_EXPECT_EQUAL(TRANSLATION_INFO("MucRace3"), "t=0,cs=0"); // failed
+                TEST_EXPECT_EQUAL(TRANSLATION_INFO("AbdGlauc"), "t=0,cs=0");
+                TEST_EXPECT_EQUAL(TRANSLATION_INFO("CddAlbic"), "t=0,cs=0");
             }
         }
 
@@ -1450,10 +1476,7 @@ void TEST_realign() {
             {
                 GB_transaction ta(gb_main);
                 TEST_EXPECT_NO_ERROR(AWT_getTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
-
-                TEST_EXPECT_EQUAL(arb_transl_table, 14);
-                TEST_EXPECT_EQUAL(codon_start, 0);
-
+                TEST_EXPECT_EQUAL(translation_info(gb_TaxOcell), "t=14,cs=0");
                 org_dna = GB_read_string(gb_TaxOcell_dna);
             }
 
@@ -1486,6 +1509,7 @@ void TEST_realign() {
                     else {
                         TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n1 taxa converted\n  1.000000 stops per sequence found\n");
                     }
+
                     switch (S.retranslation) {
                         case SAME:
                             TEST_EXPECT_NULL(S.changed_prot);
@@ -1497,9 +1521,8 @@ void TEST_realign() {
                             break;
                     }
 
-                    // restore (possibly) changed DB entries
-                    TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
-                    TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_dna, org_dna));
+                    TEST_EXPECT_EQUAL(translation_info(gb_TaxOcell), "t=14,cs=0");
+                    TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_dna, org_dna)); // restore changed DB entry
                 }
             }
 
@@ -1569,7 +1592,7 @@ void TEST_realign() {
 
                 {
                     GB_transaction ta(gb_main);
-                    TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
+                    TEST_EXPECT_EQUAL(translation_info(gb_TaxOcell), "t=14,cs=0");
                 }
             }
 
