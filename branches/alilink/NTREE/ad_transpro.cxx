@@ -1092,6 +1092,7 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
 
         if (!realigner.failure()) {
             TransTables allowed; // default: all translation tables allowed
+            bool        has_valid_translation_info = false;
             {
                 int arb_transl_table, codon_start;
                 GB_ERROR local_error = AWT_getTranslationInfo(gb_species, arb_transl_table, codon_start);
@@ -1101,6 +1102,7 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
                 else if (arb_transl_table >= 0) {
                     // we found a 'transl_table' entry -> restrict used code to the code stored there
                     allowed.forbidAllBut(arb_transl_table);
+                    has_valid_translation_info = true;
                 }
             }
 
@@ -1116,10 +1118,12 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
                             const int codon_start  = 0; // by definition (after realignment)
                             error = AWT_saveTranslationInfo(gb_species, explicit_table_known, codon_start);
                         }
-                        else { // we dont know the exact code -> delete codon_start and transl_table
+#if defined(ASSERTION_USED)
+                        else { // we dont know the exact code -> can only happen if species has no translation info
                             UNCOVERED();
-                            error = AWT_removeTranslationInfo(gb_species);
+                            nt_assert(!has_valid_translation_info);
                         }
+#endif
                     }
                     free(buffer);
                     if (!error && unmark_succeeded) GB_write_flag(gb_species, 0);
