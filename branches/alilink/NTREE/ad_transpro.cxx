@@ -486,18 +486,26 @@ public:
         return score + 6 - dist[0] - dist[xcount-1]; // prefer border positions with less nucs
     }
 
-    bool translates_to_Xs(const char *dna, const TransTables& allowed) const {
+    bool translates_to_Xs(const char *dna, TransTables allowed, TransTables& remaining) const {
+        /*! checks whether distribution of 'dna' translates to X's
+         * @param dna compressed dna
+         * @param allowed allowed translation tables
+         * @param remaining remaining translation tables
+         * @return true if 'dna' translates to X's
+         */
         bool translates = true;
         int  off        = 0;
         for (int p = 0; translates && p<xcount; off += dist[p++]) {
             if (dist[p] == 3) {
-                TransTables  remaining;
-                const char  *why_fail;
-
-                translates = AWT_is_codon('X', dna+off, allowed, remaining, &why_fail);
-                // if (translates) allowed = remaining; // @@@ code-exclusion ignored here (maybe not even happens..)
+                TransTables this_remaining;
+                translates = AWT_is_codon('X', dna+off, allowed, this_remaining);
+                if (translates) {
+                    nt_assert(this_remaining.is_subset_of(allowed));
+                    allowed = this_remaining;
+                }
             }
         }
+        if (translates) remaining = allowed;
         return translates;
     }
 };
@@ -578,14 +586,14 @@ public:
     const FailedAt& failed() const { return fail; }
 };
 
-static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtarget_, bool gap_before, bool gap_after, const TransTables& allowed) {
+static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtarget_, bool gap_before, bool gap_after, const TransTables& allowed, TransTables& remaining) {
     /*! distributes 'dna' to marked X-positions
      * @param xtarget destination buffer (target positions are marked with '!')
      * @param xcount number of X's encountered
      * @param gap_before true if resulting realignment has a gap or the start of alignment before the X-positions
      * @param gap_after analog to 'gap_before'
      * @param allowed allowed translation tables
-     * @@@ [impl param] remaining remaining allowed translation tables (with those tables disabled for which no distribution possible)
+     * @param remaining remaining allowed translation tables (with those tables disabled for which no distribution possible)
      * @return error if dna distribution wasn't possible
      */
 
@@ -594,32 +602,44 @@ static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtar
     GB_ERROR        error = dist.get_error();
     if (!error) {
         Distributor best(dist);
+        TransTables best_remaining = allowed;
 
         while (dist.next()) {
             if (dist.get_score() > best.get_score()) {
                 if (!dist.mayFailTranslation() || best.mayFailTranslation()) {
-                    best = dist;
+                    best           = dist;
+                    best_remaining = allowed;
+                    nt_assert(best_remaining.is_subset_of(allowed));
                 }
             }
         }
 
         if (best.mayFailTranslation()) {
-            if (!best.translates_to_Xs(dna, allowed)) {
+            TransTables curr_remaining;
+            if (best.translates_to_Xs(dna, allowed, curr_remaining)) {
+                best_remaining = curr_remaining;
+                nt_assert(best_remaining.is_subset_of(allowed));
+            }
+            else {
                 nt_assert(!error);
                 error = "no translating X-distribution found";
                 dist.reset();
                 do {
-                    if (dist.translates_to_Xs(dna, allowed)) {
-                        best  = dist;
-                        error = NULL;
+                    if (dist.translates_to_Xs(dna, allowed, curr_remaining)) {
+                        best           = dist;
+                        best_remaining = curr_remaining;
+                        error          = NULL;
+                        nt_assert(best_remaining.is_subset_of(allowed));
                         break;
                     }
                 } while (dist.next());
 
                 while (dist.next()) {
                     if (dist.get_score() > best.get_score()) {
-                        if (dist.translates_to_Xs(dna, allowed)) {
-                            best = dist;
+                        if (dist.translates_to_Xs(dna, allowed, curr_remaining)) {
+                            best           = dist;
+                            best_remaining = curr_remaining;
+                            nt_assert(best_remaining.is_subset_of(allowed));
                         }
                     }
                 }
@@ -677,6 +697,10 @@ static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtar
                 }
                 nt_assert(dna.valid());
             }
+
+            nt_assert(!error);
+            remaining = best_remaining;
+            nt_assert(remaining.is_subset_of(allowed));
         }
     }
 
@@ -726,12 +750,15 @@ bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const
                 bool has_gap_before = x_start == target_dna.start() ? true : isGap(x_start[-1]);
                 bool has_gap_after  = isGap(dna_rest[0]);
 
-                GB_ERROR disterr = distribute_xdata(distrib_dna, x_count, x_start, has_gap_before, has_gap_after, attemptRest.get_remaining_tables());
+                TransTables remaining;
+                GB_ERROR    disterr = distribute_xdata(distrib_dna, x_count, x_start, has_gap_before, has_gap_after, attemptRest.get_remaining_tables(), remaining);
                 if (disterr) {
                     restFailed = FailedAt(disterr, x_start_prot, dna_rest); // prot=start of Xs; dna=start of sync (behind Xs)
                 }
                 else {
-                    allowed = attemptRest.get_remaining_tables();
+                    nt_assert(remaining.is_subset_of(allowed));
+                    nt_assert(remaining.is_subset_of(attemptRest.get_remaining_tables()));
+                    allowed = remaining;
                 }
             }
 
@@ -762,8 +789,13 @@ bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const
         size_t x_dna;
         for (x_dna = max_dna; x_dna>=min_dna; --x_dna) {     // prefer high amounts of dna
             SizedReadBuffer append_dna(compressed_dna, x_dna);
-            fail_reason = distribute_xdata(append_dna, x_count, x_start, false, true, allowed); // @@@ pass/modify usable codes?
-            if (!fail_reason) break; // found distribution -> done
+            TransTables     remaining;
+            fail_reason = distribute_xdata(append_dna, x_count, x_start, false, true, allowed, remaining);
+            if (!fail_reason) { // found distribution -> done
+                nt_assert(remaining.is_subset_of(allowed));
+                allowed = remaining;
+                break;
+            }
         }
 
         if (fail_reason) {
@@ -1395,7 +1427,7 @@ void TEST_realign() {
 
             translate_check trans[] = {
                 { "CytLyti6", "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLZZYX-X.",
-                  CHANGED,    "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQZYX-X." }, // ok: one of the Zs near end translate to Q
+                  CHANGED,    "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQZYX-X." }, // ok: one of the Zs near end translates to Q
                 { "TaxOcell", "XG*SNFWPVQAARNHRHD--RSRGPRQBDSDRCYHHGAX-..",
                   CHANGED,    "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - only changes gaptype at EOS
                 { "MucRacem", "..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
@@ -1690,10 +1722,10 @@ void TEST_realign() {
                 { "LX", "YTRATH", -1, NO_TI,        NULL }, // fine                (ATH->X for table=1,2,4,10,14)
                 { "LX", "YTRATH", 2,  "t=2,cs=0",   NULL }, // @@@ should fail     (YTR->X for table=2)
                 { "XX", "YTRATH", 2,  "t=2,cs=0",   NULL }, // fine                (both->X for table=2)
-                { "XX", "YTRATH", -1, "t=-1,cs=-1", NULL }, // @@@ should detect TI(2)
+                { "XX", "YTRATH", -1, "t=2,cs=0",   NULL }, // correctly detects TI(2)
 
                 { "XX", "AARATH", 14, "t=14,cs=0",  NULL }, // fine (both->X for table=14)
-                { "XX", "AARATH", -1, "t=-1,cs=-1", NULL }, // @@@ should detect TI (14)
+                { "XX", "AARATH", -1, "t=14,cs=0",  NULL }, // correctly detects TI(14)
                 { "KI", "AARATH", -1, NO_TI,        NULL }, // fine (for table!=1,2,4,6,10,11,14)
                 { "KI", "AARATH", 4,  "t=4,cs=0",   NULL }, // @@@ should fail (ATH->X for table=4)
                 { "KX", "AARATH", 14, "t=14,cs=0",  NULL }, // @@@ should fail (AAR->X for table=14)
