@@ -23,7 +23,7 @@ else
 	test -f $(INSTALLED_BINARY) || $(MAKE) retry
 endif
 
-retry: clean
+retry: clean_build
 	@echo "---------------------------------------- PHYML 'make install' failed to install -> trigger rebuild"
 	$(MAKE) "DONT_RETRY_TWICE=1" $(MAIN)
 	@echo "---------------------------------------- PHYML rebuild succeeded"
@@ -40,13 +40,18 @@ phyml/config.h.in : phyml/config.h.in.fallback
 	cp -p $< $@
 
 $(CONFIG_STATUS): Makefile phyml/configure phyml/config.h.in
-	$(MAKE) clean
+	$(MAKE) clean_build
 	mkdir -p $(BUILDDIR)
 	cd $(BUILDDIR) && ../phyml/configure CPP='' --prefix=$(ARBHOME) --program-suffix=$(SUFFIX)
 
-clean :
+clean_build:
 	rm -rf $(BUILDDIR)
 	rm -f $(INSTALLED_BINARY)
 
-.PHONY : clean 
+clean : clean_build
+	rm -f phyml/config.h.in
+	rm -f phyml/configure
+
+
+.PHONY : clean clean_build
 
