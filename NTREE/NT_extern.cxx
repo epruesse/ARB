@@ -469,7 +469,7 @@ static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     aw_root->awar_string("tmp/nt/arbdb/optimize_tree_name", largest_tree);
 
     aws = new AW_window_simple;
-    aws->init(aw_root, "OPTIMIZE_DATABASE", "OPTIMIZE DATABASE");
+    aws->init(aw_root, "OPTIMIZE_DATABASE", "OPTIMIZE DATABASE COMPRESSION");
     aws->load_xfig("optimize.fig");
 
     aws->at("trees");
@@ -517,7 +517,7 @@ static AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
     aws->at("optimize");
     aws->callback(NT_create_database_optimization_window);
     aws->help_text("optimize.hlp");
-    aws->create_button("OPTIMIZE", "OPTIMIZE");
+    aws->create_button("OPTIMIZE", "OPTIMIZE DATABASE COMPRESSION");
 
     aws->at("save"); aws->callback(NT_save_as_cb);
     aws->create_button("SAVE", "SAVE", "S");
