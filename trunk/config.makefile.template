@@ -38,8 +38,8 @@ COVERAGE := 0# gcov support (0=off,1=on,2=on but hidden)
 MACH  := LINUX# Linux g++  and gcc
 LINUX := 1
 
-# DEBIAN := 1 # uncomment for DEBIAN systems
-# REDHAT := 1 # uncomment for REDHAT systems
+# DEBIAN := 1# uncomment for DEBIAN systems
+# REDHAT := 1# uncomment for REDHAT systems
 
 # ------------
 # Section: Mac OSX
