@@ -1712,27 +1712,27 @@ void TEST_realign() {
 
                 { "LK", "YTRAAR", 2,  "t=2,cs=0",   "Not all IUPAC-combinations of 'YTR' translate to 'L' at ali_pro:1 / ali_dna:1\n" }, // expected failure (CTA->T for table=2)
                 { "LX", "YTRAAR", -1, NO_TI,        NULL }, // fine           (AAR->X for table=6,11,14)
-                { "LX", "YTRAAR", 2,  "t=2,cs=0",   NULL }, // @@@ should fail(AAR->K for table=2)
+                { "LX", "YTRAAR", 2,  "t=2,cs=0",   "Not all IUPAC-combinations of 'YTR' translate to 'L' at ali_pro:1 / ali_dna:1\n" }, // expected failure (AAR->K for table=2)
                 { "LK", "YTRAAR", -1, NO_TI,        NULL }, // fine           (AAR->K for table!=6,11,14)
-                { "LK", "YTRAAR", 6,  "t=6,cs=0",   NULL }, // @@@ should fail(AAA->N for table=6)
+                { "LK", "YTRAAR", 6,  "t=6,cs=0",   "Not all IUPAC-combinations of 'AAR' translate to 'K' at ali_pro:2 / ali_dna:4\n" }, // expected failure (AAA->N for table=6)
                 { "XK", "YTRAAR", -1, NO_TI,        NULL }, // fine           (YTR->X for table=2,9,16)
                 { "XX", "YTRAAR", 0,  "t=0,cs=0",   NULL }, // @@@ should fail(none can translate to X with table=0)
                 { "XX", "YTRAAR", -1, NO_TI,        NULL }, // @@@ should fail(not both can translate to 'X')
 
                 { "LX", "YTRATH", -1, NO_TI,        NULL }, // fine                (ATH->X for table=1,2,4,10,14)
-                { "LX", "YTRATH", 2,  "t=2,cs=0",   NULL }, // @@@ should fail     (YTR->X for table=2)
+                { "LX", "YTRATH", 2,  "t=2,cs=0",   "Not all IUPAC-combinations of 'YTR' translate to 'L' at ali_pro:1 / ali_dna:1\n" }, // expected failure (YTR->X for table=2)
                 { "XX", "YTRATH", 2,  "t=2,cs=0",   NULL }, // fine                (both->X for table=2)
                 { "XX", "YTRATH", -1, "t=2,cs=0",   NULL }, // correctly detects TI(2)
 
                 { "XX", "AARATH", 14, "t=14,cs=0",  NULL }, // fine (both->X for table=14)
                 { "XX", "AARATH", -1, "t=14,cs=0",  NULL }, // correctly detects TI(14)
                 { "KI", "AARATH", -1, NO_TI,        NULL }, // fine (for table!=1,2,4,6,10,11,14)
-                { "KI", "AARATH", 4,  "t=4,cs=0",   NULL }, // @@@ should fail (ATH->X for table=4)
-                { "KX", "AARATH", 14, "t=14,cs=0",  NULL }, // @@@ should fail (AAR->X for table=14)
+                { "KI", "AARATH", 4,  "t=4,cs=0",   "Not all IUPAC-combinations of 'ATH' translate to 'I' at ali_pro:2 / ali_dna:4\n" }, // expected failure (ATH->X for table=4)
+                { "KX", "AARATH", 14, "t=14,cs=0",  "Not all IUPAC-combinations of 'AAR' translate to 'K' at ali_pro:1 / ali_dna:1\n" }, // expected failure (AAR->X for table=14)
                 { "KX", "AARATH", -1, NO_TI,        NULL }, // fine for table=1,2,4,10
                 { "KX", "AARATH", 4,  "t=4,cs=0",   NULL }, // test table=4
-                { "XI", "AARATH", 14, "t=14,cs=0",  NULL }, // @@@ should fail (ATH->X for table=14)
-                { "KI", "AARATH", 14, "t=14,cs=0",  NULL }, // @@@ should fail
+                { "XI", "AARATH", 14, "t=14,cs=0",  "Sync behind 'X' failed foremost with: Not all IUPAC-combinations of 'ATH' translate to 'I' at ali_pro:2 / ali_dna:4\n" }, // expected failure (ATH->X for table=14)
+                { "KI", "AARATH", 14, "t=14,cs=0",  "Not all IUPAC-combinations of 'AAR' translate to 'K' at ali_pro:1 / ali_dna:1\n" }, // expected failure (AAR->X for table=14)
 
                 { NULL, NULL, 0, NULL, NULL }
             };
@@ -1762,7 +1762,7 @@ void TEST_realign() {
                     TEST_EXPECT_EQUAL(msgs.c_str()+ERRPREFIX_LEN, wanted_msgs);
                 }
                 else {
-                    TEST_EXPECT_CONTAINS(msgs, "");
+                    TEST_EXPECT_EQUAL(msgs, "");
                 }
 
                 GB_transaction ta(gb_main);
