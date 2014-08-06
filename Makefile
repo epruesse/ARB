@@ -1750,6 +1750,7 @@ perl_clean:
 
 PERL2ARB/PERL2ARB.clean:
 	$(MAKE) perl_clean
+	$(MAKE) -C PERL_SCRIPTS/test clean
 
 # ---------------------------------------- bindings to script languages
 
