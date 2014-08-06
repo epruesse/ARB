@@ -53,11 +53,30 @@ sub main() {
       print STDERR "detailedVersion='$detailedVersion'\n";
     }
 
-    if ($detailedVersion =~ /\s([0-9]+(?:\.[0-9]+)+)\s/) {
-      $detectedVersion = $1;
-    }
-    elsif ($dumpedVersion =~ /^([0-9]+(?:\.[0-9]+)+)$/) {
-      $detectedVersion = $dumpedVersion;
+    {
+      my $dv_from_dumped = undef;
+      my $dv_from_detail = undef;
+
+      if ($dumpedVersion   =~ /^([0-9]+(?:\.[0-9]+)+)$/)   { $dv_from_dumped = $dumpedVersion; }
+      if ($detailedVersion =~ /\s([0-9]+(?:\.[0-9]+)+)\s/) { $dv_from_detail = $1; }
+
+      if (defined $dv_from_dumped) {
+        $detectedVersion =
+          ((defined $dv_from_detail) and (length($dv_from_detail)>length($dv_from_dumped)))
+          ? $dv_from_detail
+          : $dv_from_dumped;
+      }
+      else {
+        if (defined $dv_from_detail)  { $detectedVersion = $dv_from_detail; }
+        else {
+          print STDERR "Problems detecting compiler version:\n";
+          print STDERR "dumpedVersion='$dumpedVersion'\n";
+          print STDERR "detailedVersion='$detailedVersion'\n";
+          print STDERR "dv_from_dumped='$dv_from_dumped'\n";
+          print STDERR "dv_from_detail='$dv_from_detail'\n";
+        }
+      }
+
     }
 
     chomp($detectedVersion);
