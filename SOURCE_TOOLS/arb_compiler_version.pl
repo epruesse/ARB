@@ -81,13 +81,6 @@ sub main() {
 
     chomp($detectedVersion);
     chomp($detectedCompiler);
-
-    print STDERR "---------------------------------------- [dump start]\n";
-    print STDERR "dumpedVersion='$dumpedVersion'\n";
-    print STDERR "detailedVersion='$detailedVersion'\n";
-    print STDERR "detectedVersion='$detectedVersion'\n";
-    print STDERR "detectedCompiler='$detectedCompiler'\n";
-    print STDERR "---------------------------------------- [dump end]\n";
   }
 
   my $result = $detectedCompiler." ".$detectedVersion;
