@@ -26,6 +26,9 @@ sub main() {
     if (not defined $dumpedVersion)   { $dumpedVersion   = $undetectable; }
     if (not defined $detailedVersion) { $detailedVersion = $undetectable; }
 
+    chomp($dumpedVersion);
+    chomp($detailedVersion);
+
     my $cmd = "$compiler -dM -E -x c /dev/null";
     if (open(CMD,$cmd.'|')) {
     LINE: foreach (<CMD>) {
@@ -56,10 +59,17 @@ sub main() {
     elsif ($dumpedVersion =~ /^([0-9]+(?:\.[0-9]+)+)$/) {
       $detectedVersion = $dumpedVersion;
     }
-  }
 
-  chomp($detectedVersion);
-  chomp($detectedCompiler);
+    chomp($detectedVersion);
+    chomp($detectedCompiler);
+
+    print STDERR "---------------------------------------- [dump start]\n";
+    print STDERR "dumpedVersion='$dumpedVersion'\n";
+    print STDERR "detailedVersion='$detailedVersion'\n";
+    print STDERR "detectedVersion='$detectedVersion'\n";
+    print STDERR "detectedCompiler='$detectedCompiler'\n";
+    print STDERR "---------------------------------------- [dump end]\n";
+  }
 
   my $result = $detectedCompiler." ".$detectedVersion;
   print $result."\n";
