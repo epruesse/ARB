@@ -1710,8 +1710,11 @@ void TEST_realign() {
 
                 { "G",  "RGG",    -1, "t=10,cs=0",  NULL }, // correctly detects TI(10)
 
-                { "LK", "YTRAAR", 2,  "t=2,cs=0",   "Not all IUPAC-combinations of 'YTR' translate to 'L' at ali_pro:1 / ali_dna:1\n" }, // expected failure (CTA->T for table=2)
-                { "LX", "YTRAAR", -1, NO_TI,        NULL }, // fine           (AAR->X for table=6,11,14)
+                { "LK",  "YTRAAR",    2,  "t=2,cs=0",  "Not all IUPAC-combinations of 'YTR' translate to 'L' at ali_pro:1 / ali_dna:1\n" }, // expected failure (CTA->T for table=2)
+                { "LX",  "YTRAAR",    -1, NO_TI,       NULL }, // fine (AAR->X for table=6,11,14)
+                { "LXX", "YTRAARATH", -1, "t=14,cs=0", NULL }, // correctly detects TI(14)
+                { "LXI", "YTRAARATH", -1, NO_TI,       NULL }, // fine (for table=6,11)
+
                 { "LX", "YTRAAR", 2,  "t=2,cs=0",   "Not all IUPAC-combinations of 'YTR' translate to 'L' at ali_pro:1 / ali_dna:1\n" }, // expected failure (AAR->K for table=2)
                 { "LK", "YTRAAR", -1, NO_TI,        NULL }, // fine           (AAR->K for table!=6,11,14)
                 { "LK", "YTRAAR", 6,  "t=6,cs=0",   "Not all IUPAC-combinations of 'AAR' translate to 'K' at ali_pro:2 / ali_dna:4\n" }, // expected failure (AAA->N for table=6)
