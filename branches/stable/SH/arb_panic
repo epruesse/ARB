@@ -22,7 +22,9 @@ echo "  There may be more than one database server (ARB_NT):"
 echo "          --------------------------------"
 
 for i in $chooser ; do
-    /bin/echo "             - >" `ls $i` "<";
+    if [ ! -L "$i" ] ; then
+        /bin/echo "             - >" `ls $i` "<";
+    fi
 done
 echo "          --------------------------------"
 
