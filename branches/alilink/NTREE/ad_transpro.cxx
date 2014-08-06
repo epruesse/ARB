@@ -807,6 +807,8 @@ bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const
         }
     }
 
+    nt_assert(implicated(complete, allowed.any()));
+
     return complete;
 }
 
@@ -893,6 +895,19 @@ void RealignAttempt::perform() {
 #endif
 }
 
+inline char *unalign(const char *data, size_t len, size_t& compressed_len) {
+    // removes gaps from sequence
+    char *compressed = (char*)malloc(len+1);
+    compressed_len        = 0;
+    for (size_t p = 0; p<len && data[p]; ++p) {
+        if (!isGap(data[p])) {
+            compressed[compressed_len++] = data[p];
+        }
+    }
+    compressed[compressed_len] = 0;
+    return compressed;
+}
+
 class Realigner {
     const char *ali_source;
     const char *ali_dest;
@@ -901,19 +916,6 @@ class Realigner {
     size_t needed_ali_len; // >ali_len if ali_dest is too short; 0 otherwise
 
     const char *fail_reason;
-
-    char *unalign(const char *data, size_t len, size_t& compressed_len) {
-        // removes gaps from sequence
-        char *compressed = (char*)malloc(len+1);
-        compressed_len        = 0;
-        for (size_t p = 0; p<len && data[p]; ++p) {
-            if (!isGap(data[p])) {
-                compressed[compressed_len++] = data[p];
-            }
-        }
-        compressed[compressed_len] = 0;
-        return compressed;
-    }
 
     GB_ERROR annotate_fail_position(const FailedAt& failed, const char *source, const char *dest, const char *compressed_dest) {
         int source_fail_pos = failed.protein_at() - source;
@@ -1152,6 +1154,7 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
                         }
 #if defined(ASSERTION_USED)
                         else { // we dont know the exact code -> can only happen if species has no translation info
+                            nt_assert(allowed.any()); // bug in realigner
                             nt_assert(!has_valid_translation_info);
                         }
 #endif
@@ -1719,8 +1722,13 @@ void TEST_realign() {
                 { "LK", "YTRAAR", -1, NO_TI,        NULL }, // fine           (AAR->K for table!=6,11,14)
                 { "LK", "YTRAAR", 6,  "t=6,cs=0",   "Not all IUPAC-combinations of 'AAR' translate to 'K' at ali_pro:2 / ali_dna:4\n" }, // expected failure (AAA->N for table=6)
                 { "XK", "YTRAAR", -1, NO_TI,        NULL }, // fine           (YTR->X for table=2,9,16)
-                { "XX", "YTRAAR", 0,  "t=0,cs=0",   NULL }, // @@@ should fail(none can translate to X with table=0)
-                { "XX", "YTRAAR", -1, NO_TI,        NULL }, // @@@ should fail(not both can translate to 'X')
+
+                { "XX",   "-YTRAAR",      0,  "t=0,cs=0", NULL },                                                                                             // does not fail because it realigns such that it translates back to 'XXX'
+                { "XXL",  "YTRAARTTG",    0,  "t=0,cs=0", "Not enough gaps to place 2 extra nucs at start of sequence at ali_pro:1 / ali_dna:1\n" },          // expected failure (none can translate to X with table= 0, so it tries )
+                { "-XXL", "-YTRA-AR-TTG", 0,  "t=0,cs=0", NULL },                                                                                             // does not fail because it realigns such that it translates back to 'XXXL'
+                { "IXXL", "ATTYTRAARTTG", 0,  "t=0,cs=0", "Sync behind 'X' failed foremost with: 'RTT' never translates to 'L' at ali_pro:4 / ali_dna:9\n" }, // expected failure (none of the 2 middle codons can translate to X with table= 0)
+                { "XX",   "-YTRAAR",      -1, NO_TI,      NULL },                                                                                             // does not fail because it realigns such that it translates back to 'XXX'
+                { "IXXL", "ATTYTRAARTTG", -1, NO_TI,      "Sync behind 'X' failed foremost with: 'RTT' never translates to 'L' at ali_pro:4 / ali_dna:9\n" }, // expected failure (not both 2 middle codons can translate to X with same table)
 
                 { "LX", "YTRATH", -1, NO_TI,        NULL }, // fine                (ATH->X for table=1,2,4,10,14)
                 { "LX", "YTRATH", 2,  "t=2,cs=0",   "Not all IUPAC-combinations of 'YTR' translate to 'L' at ali_pro:1 / ali_dna:1\n" }, // expected failure (YTR->X for table=2)
@@ -1770,7 +1778,19 @@ void TEST_realign() {
 
                 GB_transaction ta(gb_main);
                 if (!error) {
-                    TEST_EXPECT_CONTAINS(GB_read_char_pntr(gb_TaxOcell_dna), E.dna);
+                    const char *dnaseq      = GB_read_char_pntr(gb_TaxOcell_dna);
+                    size_t      expextedLen = strlen(E.dna);
+                    size_t      seqlen      = strlen(dnaseq);
+                    char       *firstPart   = GB_strndup(dnaseq, expextedLen);
+                    size_t      dna_behind;
+                    char       *nothing     = unalign(dnaseq+expextedLen, seqlen-expextedLen, dna_behind);
+
+                    TEST_EXPECT_EQUAL(firstPart, E.dna);
+                    TEST_EXPECT_EQUAL(dna_behind, 0);
+                    TEST_EXPECT_EQUAL(nothing, "");
+
+                    free(nothing);
+                    free(firstPart);
                 }
                 TEST_EXPECT_EQUAL(translation_info(gb_TaxOcell), E.info);
             }
