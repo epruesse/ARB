@@ -486,18 +486,26 @@ public:
         return score + 6 - dist[0] - dist[xcount-1]; // prefer border positions with less nucs
     }
 
-    bool translates_to_Xs(const char *dna, const AWT_allowedCode& with_code) const {
+    bool translates_to_Xs(const char *dna, TransTables allowed, TransTables& remaining) const {
+        /*! checks whether distribution of 'dna' translates to X's
+         * @param dna compressed dna
+         * @param allowed allowed translation tables
+         * @param remaining remaining translation tables
+         * @return true if 'dna' translates to X's
+         */
         bool translates = true;
         int  off        = 0;
         for (int p = 0; translates && p<xcount; off += dist[p++]) {
             if (dist[p] == 3) {
-                AWT_allowedCode  left_code;
-                const char      *why_fail;
-
-                translates = AWT_is_codon('X', dna+off, with_code, left_code, &why_fail);
-                // if (translates) with_code = left_code; // @@@ code-exclusion ignored here (maybe not even happens..)
+                TransTables this_remaining;
+                translates = AWT_is_codon('X', dna+off, allowed, this_remaining);
+                if (translates) {
+                    nt_assert(this_remaining.is_subset_of(allowed));
+                    allowed = this_remaining;
+                }
             }
         }
+        if (translates) remaining = allowed;
         return translates;
     }
 };
@@ -551,7 +559,7 @@ public:
 };
 
 class RealignAttempt : virtual Noncopyable {
-    AWT_allowedCode       allowed_code;
+    TransTables           allowed;
     SizedReadBuffer       compressed_dna;
     BufferPtr<const char> aligned_protein;
     SizedWriteBuffer      target_dna;
@@ -563,8 +571,8 @@ class RealignAttempt : virtual Noncopyable {
     bool sync_behind_X_and_distribute(const int x_count, char *const x_start, const char *const x_start_prot);
 
 public:
-    RealignAttempt(const AWT_allowedCode& allowed_code_, const char *compressed_dna_, size_t compressed_len_, const char *aligned_protein_, char *target_dna_, size_t target_len_, bool cutoff_dna_)
-        : allowed_code(allowed_code_),
+    RealignAttempt(const TransTables& allowed_, const char *compressed_dna_, size_t compressed_len_, const char *aligned_protein_, char *target_dna_, size_t target_len_, bool cutoff_dna_)
+        : allowed(allowed_),
           compressed_dna(compressed_dna_, compressed_len_),
           aligned_protein(aligned_protein_),
           target_dna(target_dna_, target_len_),
@@ -574,14 +582,19 @@ public:
         perform();
     }
 
-    const AWT_allowedCode& get_remaining_code() const { return allowed_code; }
+    const TransTables& get_remaining_tables() const { return allowed; }
     const FailedAt& failed() const { return fail; }
 };
 
-static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtarget_, bool gap_before, bool gap_after, const AWT_allowedCode& with_code) {
+static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtarget_, bool gap_before, bool gap_after, const TransTables& allowed, TransTables& remaining) {
     /*! distributes 'dna' to marked X-positions
      * @param xtarget destination buffer (target positions are marked with '!')
      * @param xcount number of X's encountered
+     * @param gap_before true if resulting realignment has a gap or the start of alignment before the X-positions
+     * @param gap_after analog to 'gap_before'
+     * @param allowed allowed translation tables
+     * @param remaining remaining allowed translation tables (with those tables disabled for which no distribution possible)
+     * @return error if dna distribution wasn't possible
      */
 
     BufferPtr<char> xtarget(xtarget_);
@@ -589,32 +602,44 @@ static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtar
     GB_ERROR        error = dist.get_error();
     if (!error) {
         Distributor best(dist);
+        TransTables best_remaining = allowed;
 
         while (dist.next()) {
             if (dist.get_score() > best.get_score()) {
                 if (!dist.mayFailTranslation() || best.mayFailTranslation()) {
-                    best = dist;
+                    best           = dist;
+                    best_remaining = allowed;
+                    nt_assert(best_remaining.is_subset_of(allowed));
                 }
             }
         }
 
         if (best.mayFailTranslation()) {
-            if (!best.translates_to_Xs(dna, with_code)) {
+            TransTables curr_remaining;
+            if (best.translates_to_Xs(dna, allowed, curr_remaining)) {
+                best_remaining = curr_remaining;
+                nt_assert(best_remaining.is_subset_of(allowed));
+            }
+            else {
                 nt_assert(!error);
                 error = "no translating X-distribution found";
                 dist.reset();
                 do {
-                    if (dist.translates_to_Xs(dna, with_code)) {
-                        best  = dist;
-                        error = NULL;
+                    if (dist.translates_to_Xs(dna, allowed, curr_remaining)) {
+                        best           = dist;
+                        best_remaining = curr_remaining;
+                        error          = NULL;
+                        nt_assert(best_remaining.is_subset_of(allowed));
                         break;
                     }
                 } while (dist.next());
 
                 while (dist.next()) {
                     if (dist.get_score() > best.get_score()) {
-                        if (dist.translates_to_Xs(dna, with_code)) {
-                            best = dist;
+                        if (dist.translates_to_Xs(dna, allowed, curr_remaining)) {
+                            best           = dist;
+                            best_remaining = curr_remaining;
+                            nt_assert(best_remaining.is_subset_of(allowed));
                         }
                     }
                 }
@@ -672,6 +697,10 @@ static GB_ERROR distribute_xdata(SizedReadBuffer& dna, size_t xcount, char *xtar
                 }
                 nt_assert(dna.valid());
             }
+
+            nt_assert(!error);
+            remaining = best_remaining;
+            nt_assert(remaining.is_subset_of(allowed));
         }
     }
 
@@ -712,7 +741,7 @@ bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const
             nt_assert(strlen(dna_rest) == dna_rest_len);
             nt_assert(compressed_rest_len>=x_dna);
 
-            RealignAttempt attemptRest(allowed_code, dna_rest, dna_rest_len, aligned_protein-1, target_dna, target_rest_len, cutoff_dna);
+            RealignAttempt attemptRest(allowed, dna_rest, dna_rest_len, aligned_protein-1, target_dna, target_rest_len, cutoff_dna);
             FailedAt       restFailed = attemptRest.failed();
 
             if (!restFailed) {
@@ -721,12 +750,15 @@ bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const
                 bool has_gap_before = x_start == target_dna.start() ? true : isGap(x_start[-1]);
                 bool has_gap_after  = isGap(dna_rest[0]);
 
-                GB_ERROR disterr = distribute_xdata(distrib_dna, x_count, x_start, has_gap_before, has_gap_after, attemptRest.get_remaining_code());
+                TransTables remaining;
+                GB_ERROR    disterr = distribute_xdata(distrib_dna, x_count, x_start, has_gap_before, has_gap_after, attemptRest.get_remaining_tables(), remaining);
                 if (disterr) {
                     restFailed = FailedAt(disterr, x_start_prot, dna_rest); // prot=start of Xs; dna=start of sync (behind Xs)
                 }
                 else {
-                    allowed_code = attemptRest.get_remaining_code();
+                    nt_assert(remaining.is_subset_of(allowed));
+                    nt_assert(remaining.is_subset_of(attemptRest.get_remaining_tables()));
+                    allowed = remaining;
                 }
             }
 
@@ -757,8 +789,13 @@ bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const
         size_t x_dna;
         for (x_dna = max_dna; x_dna>=min_dna; --x_dna) {     // prefer high amounts of dna
             SizedReadBuffer append_dna(compressed_dna, x_dna);
-            fail_reason = distribute_xdata(append_dna, x_count, x_start, false, true, allowed_code); // @@@ pass/modify usable codes?
-            if (!fail_reason) break; // found distribution -> done
+            TransTables     remaining;
+            fail_reason = distribute_xdata(append_dna, x_count, x_start, false, true, allowed, remaining);
+            if (!fail_reason) { // found distribution -> done
+                nt_assert(remaining.is_subset_of(allowed));
+                allowed = remaining;
+                break;
+            }
         }
 
         if (fail_reason) {
@@ -769,6 +806,8 @@ bool RealignAttempt::sync_behind_X_and_distribute(const int x_count, char *const
             compressed_dna.inc(x_dna);
         }
     }
+
+    nt_assert(implicated(complete, allowed.any()));
 
     return complete;
 }
@@ -804,8 +843,8 @@ void RealignAttempt::perform() {
 
         if (isGap(p)) target_dna.put(p, 3);
         else {
-            AWT_allowedCode allowed_code_left;
-            size_t          compressed_rest_len = compressed_dna.restLength();
+            TransTables remaining;
+            size_t      compressed_rest_len = compressed_dna.restLength();
 
             if (compressed_rest_len<3) {
                 fail = FailedAt(GBS_global_string("not enough nucs left for codon of '%c'", p), aligned_protein-1, compressed_dna);
@@ -814,14 +853,15 @@ void RealignAttempt::perform() {
                 nt_assert(strlen(compressed_dna) == compressed_rest_len);
                 nt_assert(compressed_rest_len >= 3);
                 const char *why_fail;
-                if (!AWT_is_codon(p, compressed_dna, allowed_code, allowed_code_left, &why_fail)) {
+                if (!AWT_is_codon(p, compressed_dna, allowed, remaining, &why_fail)) {
                     fail = FailedAt(why_fail, aligned_protein-1, compressed_dna);
                 }
             }
 
             if (failed()) break;
 
-            allowed_code = allowed_code_left;
+            nt_assert(remaining.is_subset_of(allowed));
+            allowed = remaining;
             target_dna.copy(compressed_dna, 3);
         }
     }
@@ -855,6 +895,19 @@ void RealignAttempt::perform() {
 #endif
 }
 
+inline char *unalign(const char *data, size_t len, size_t& compressed_len) {
+    // removes gaps from sequence
+    char *compressed = (char*)malloc(len+1);
+    compressed_len        = 0;
+    for (size_t p = 0; p<len && data[p]; ++p) {
+        if (!isGap(data[p])) {
+            compressed[compressed_len++] = data[p];
+        }
+    }
+    compressed[compressed_len] = 0;
+    return compressed;
+}
+
 class Realigner {
     const char *ali_source;
     const char *ali_dest;
@@ -863,19 +916,6 @@ class Realigner {
     size_t needed_ali_len; // >ali_len if ali_dest is too short; 0 otherwise
 
     const char *fail_reason;
-
-    char *unalign(const char *data, size_t len, size_t& compressed_len) {
-        // removes gaps from sequence
-        char *compressed = (char*)malloc(len+1);
-        compressed_len        = 0;
-        for (size_t p = 0; p<len && data[p]; ++p) {
-            if (!isGap(data[p])) {
-                compressed[compressed_len++] = data[p];
-            }
-        }
-        compressed[compressed_len] = 0;
-        return compressed;
-    }
 
     GB_ERROR annotate_fail_position(const FailedAt& failed, const char *source, const char *dest, const char *compressed_dest) {
         int source_fail_pos = failed.protein_at() - source;
@@ -943,7 +983,7 @@ public:
 
     const char *failure() const { return fail_reason; }
 
-    char *realign_seq(AWT_allowedCode& allowed_code, const char *const source, size_t source_len, const char *const dest, size_t dest_len, bool cutoff_dna) {
+    char *realign_seq(TransTables& allowed, const char *const source, size_t source_len, const char *const dest, size_t dest_len, bool cutoff_dna) {
         nt_assert(!failure());
 
         size_t  wanted_ali_len = source_len*3;
@@ -960,7 +1000,7 @@ public:
 
             buffer = (char*)malloc(ali_len+1);
 
-            RealignAttempt attempt(allowed_code, compressed_dest, compressed_len, source, buffer, ali_len, cutoff_dna);
+            RealignAttempt attempt(allowed, compressed_dest, compressed_len, source, buffer, ali_len, cutoff_dna);
             FailedAt       failed = attempt.failed();
 
             if (failed) {
@@ -971,7 +1011,7 @@ public:
                 if (min_dna<compressed_len) { // we have more DNA than we need
                     size_t extra_dna = compressed_len-min_dna;
                     for (size_t skip = 1; skip<=extra_dna; ++skip) {
-                        RealignAttempt attemptSkipped(allowed_code, compressed_dest+skip, compressed_len-skip, source, buffer, ali_len, cutoff_dna);
+                        RealignAttempt attemptSkipped(allowed, compressed_dest+skip, compressed_len-skip, source, buffer, ali_len, cutoff_dna);
                         if (!attemptSkipped.failed()) {
                             failed = FailedAt(); // clear
                             if (!cutoff_dna) {
@@ -984,14 +1024,18 @@ public:
                                     memcpy(buffer+(start_gaps-skip), compressed_dest, skip); // copy-in skipped dna
                                 }
                             }
-                            if (!failed) allowed_code = attemptSkipped.get_remaining_code();
+                            if (!failed) {
+                                nt_assert(attempt.get_remaining_tables().is_subset_of(allowed));
+                                allowed = attemptSkipped.get_remaining_tables();
+                            }
                             break; // no need to skip more dna, when we already have too few leading gaps
                         }
                     }
                 }
             }
             else {
-                allowed_code = attempt.get_remaining_code();
+                nt_assert(attempt.get_remaining_tables().is_subset_of(allowed));
+                allowed = attempt.get_remaining_tables();
             }
 
             if (failed) {
@@ -1081,7 +1125,8 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
         else if (dest.error)   realigner.set_failure(dest.error);
 
         if (!realigner.failure()) {
-            AWT_allowedCode allowed_code; // default: all translation tables allowed
+            TransTables allowed; // default: all translation tables allowed
+            bool        has_valid_translation_info = false;
             {
                 int arb_transl_table, codon_start;
                 GB_ERROR local_error = AWT_getTranslationInfo(gb_species, arb_transl_table, codon_start);
@@ -1090,26 +1135,29 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
                 }
                 else if (arb_transl_table >= 0) {
                     // we found a 'transl_table' entry -> restrict used code to the code stored there
-                    allowed_code.forbidAllBut(arb_transl_table);
+                    allowed.forbidAllBut(arb_transl_table);
+                    has_valid_translation_info = true;
                 }
             }
 
             if (!realigner.failure()) {
-                char *buffer = realigner.realign_seq(allowed_code, source.data, source.len, dest.data, dest.len, cutoff_dna);
+                char *buffer = realigner.realign_seq(allowed, source.data, source.len, dest.data, dest.len, cutoff_dna);
                 if (buffer) { // re-alignment successful
                     error = GB_write_string(dest.gb_data, buffer);
 
                     if (!error) {
-                        int explicit_table_known = allowed_code.explicit_table();
+                        int explicit_table_known = allowed.explicit_table();
 
                         if (explicit_table_known >= 0) { // we know the exact code -> write codon_start and transl_table
                             const int codon_start  = 0; // by definition (after realignment)
                             error = AWT_saveTranslationInfo(gb_species, explicit_table_known, codon_start);
                         }
-                        else { // we dont know the exact code -> delete codon_start and transl_table
-                            UNCOVERED();
-                            error = AWT_removeTranslationInfo(gb_species);
+#if defined(ASSERTION_USED)
+                        else { // we dont know the exact code -> can only happen if species has no translation info
+                            nt_assert(allowed.any()); // bug in realigner
+                            nt_assert(!has_valid_translation_info);
                         }
+#endif
                     }
                     free(buffer);
                     if (!error && unmark_succeeded) GB_write_flag(gb_species, 0);
@@ -1253,6 +1301,19 @@ static void msg_to_string(const char *msg) {
     msgs += '\n';
 }
 
+static const char *translation_info(GBDATA *gb_species) {
+    int      arb_transl_table;
+    int      codon_start;
+    GB_ERROR error = AWT_getTranslationInfo(gb_species, arb_transl_table, codon_start);
+
+    static SmartCharPtr result;
+
+    if (error) result = GBS_global_string_copy("Error: %s", error);
+    else       result = GBS_global_string_copy("t=%i,cs=%i", arb_transl_table, codon_start);
+
+    return &*result;
+}
+
 static arb_handlers test_handlers = {
     msg_to_string,
     msg_to_string,
@@ -1262,6 +1323,8 @@ static arb_handlers test_handlers = {
 
 #define DNASEQ(name) GB_read_char_pntr(GBT_read_sequence(GBT_find_species(gb_main, name), "ali_dna"))
 #define PROSEQ(name) GB_read_char_pntr(GBT_read_sequence(GBT_find_species(gb_main, name), "ali_pro"))
+
+#define TRANSLATION_INFO(name) translation_info(GBT_find_species(gb_main, name))
 
 void TEST_realign() {
     arb_handlers *old_handlers = active_arb_handlers;
@@ -1278,30 +1341,79 @@ void TEST_realign() {
         size_t   neededLength = 0;
 
         {
+            struct transinfo_check {
+                const char  *species_name;
+                const char  *old_info;
+                TransResult  changed;
+                const char  *new_info;
+            };
+
+            transinfo_check info[] = {
+                { "BctFra12", "t=0,cs=1",  SAME,    NULL },        // fails -> unchanged
+                { "CytLyti6", "t=9,cs=1",  CHANGED, "t=9,cs=0" },
+                { "TaxOcell", "t=14,cs=1", CHANGED, "t=14,cs=0" },
+                { "StrRamo3", "t=0,cs=1",  SAME,    NULL },        // fails -> unchanged
+                { "StrCoel9", "t=0,cs=0",  SAME,    NULL },        // already correct
+                { "MucRacem", "t=0,cs=1",  CHANGED, "t=0,cs=0" },
+                { "MucRace2", "t=0,cs=1",  CHANGED, "t=0,cs=0" },
+                { "MucRace3", "t=0,cs=0",  SAME,    NULL },        // fails -> unchanged
+                { "AbdGlauc", "t=0,cs=0",  SAME,    NULL },        // already correct
+                { "CddAlbic", "t=0,cs=0",  SAME,    NULL },        // already correct
+
+                { NULL, NULL, SAME, NULL }
+            };
+
+            {
+                GB_transaction ta(gb_main);
+
+                for (int i = 0; info[i].species_name; ++i) {
+                    const transinfo_check& I = info[i];
+                    TEST_ANNOTATE(I.species_name);
+                    TEST_EXPECT_EQUAL(TRANSLATION_INFO(I.species_name), I.old_info);
+                }
+            }
+            TEST_ANNOTATE(NULL);
+
             msgs  = "";
             error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs,
                               "Automatic re-align failed for 'BctFra12'\nReason: not enough nucs for X's at sequence end at ali_pro:40 / ali_dna:109\n" // new correct report (got no nucs for 1 X)
                               "Automatic re-align failed for 'StrRamo3'\nReason: not enough nucs for X's at sequence end at ali_pro:36 / ali_dna:106\n" // new correct report (got 3 nucs for 4 Xs)
-                              "Automatic re-align failed for 'MucRace3'\nReason: Sync behind 'X' failed foremost with: Not all IUPAC-combinations of 'NCC' translate to 'T' at ali_pro:28 / ali_dna:78\n" // correct report
+                              "Automatic re-align failed for 'MucRace3'\nReason: Sync behind 'X' failed foremost with: Not all IUPAC-combinations of 'NCC' translate to 'T' (for trans-table 0) at ali_pro:28 / ali_dna:78\n" // correct report
                               "3 marked species failed to realign (7 succeeded)\n"
                 );
 
             {
                 GB_transaction ta(gb_main);
 
-                TEST_EXPECT_EQUAL(DNASEQ("BctFra12"),    "ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"); // failed => seq unchanged
+                TEST_EXPECT_EQUAL(DNASEQ("BctFra12"),    "ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"); // failed = > seq unchanged
                 TEST_EXPECT_EQUAL(DNASEQ("CytLyti6"),    "-A-TGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAA---ATATAG---GTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAASAGTAT-T-----G....");
                 TEST_EXPECT_EQUAL(DNASEQ("TaxOcell"),    "AT-GGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGAT------CGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCT-G..........");
-                TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"),    "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTCCTC------------------"); // failed => seq unchanged
+                TEST_EXPECT_EQUAL(DNASEQ("StrRamo3"),    "ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTCCTC------------------"); // failed = > seq unchanged
                 TEST_EXPECT_EQUAL(DNASEQ("StrCoel9"),    "ATGTCCAAGACGGCGTACGTCCGC-C--C--A-CC-TG--A----GGCACGATG-G-CC--C-GACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTC-C--T--------C.......");
                 TEST_EXPECT_EQUAL(DNASEQ("MucRacem"),    "......ATGGGTAAAGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATA-AA......");
                 TEST_EXPECT_EQUAL(DNASEQ("MucRace2"),    "ATGGGTAAGGAG---------AAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGT-ATNNNAT-AAA......");
-                TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "-----------ATGGGTAAAGAGAAGACTCACGTTRAYGTTGTCGTTATTGGTCACGTCRATTCCGGTAAGTCCACCNCCRCTGGTCACTTGATTTACAAGTGTGGTGGTATAA-A----------"); // failed => seq unchanged
+                TEST_EXPECT_EQUAL(DNASEQ("MucRace3"),    "-----------ATGGGTAAAGAGAAGACTCACGTTRAYGTTGTCGTTATTGGTCACGTCRATTCCGGTAAGTCCACCNCCRCTGGTCACTTGATTTACAAGTGTGGTGGTATAA-A----------"); // failed = > seq unchanged
                 TEST_EXPECT_EQUAL(DNASEQ("AbdGlauc"),    "ATGGGTAAA-G--A--A--A--A--G-AC--T-CACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATA-AA......");
                 TEST_EXPECT_EQUAL(DNASEQ("CddAlbic"),    "ATG-GG-TAAA-GAA------------AAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATA-AA......");
                 // ------------------------------------- "123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123"
+
+                for (int i = 0; info[i].species_name; ++i) {
+                    const transinfo_check& I = info[i];
+                    TEST_ANNOTATE(I.species_name);
+                    switch (I.changed) {
+                        case SAME:
+                            TEST_EXPECT_EQUAL(TRANSLATION_INFO(I.species_name), I.old_info);
+                            TEST_EXPECT_NULL(I.new_info);
+                            break;
+                        case CHANGED:
+                            TEST_EXPECT_EQUAL(TRANSLATION_INFO(I.species_name), I.new_info);
+                            TEST_EXPECT_DIFFERENT(I.new_info, I.old_info);
+                            break;
+                    }
+                }
+                TEST_ANNOTATE(NULL);
             }
         }
 
@@ -1318,7 +1430,7 @@ void TEST_realign() {
 
             translate_check trans[] = {
                 { "CytLyti6", "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLZZYX-X.",
-                  CHANGED,    "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQZYX-X." }, // ok: one of the Zs near end translate to Q
+                  CHANGED,    "XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLQZYX-X." }, // ok: one of the Zs near end translates to Q
                 { "TaxOcell", "XG*SNFWPVQAARNHRHD--RSRGPRQBDSDRCYHHGAX-..",
                   CHANGED,    "XG*SNFWPVQAARNHRHD--RSRGPRQNDSDRCYHHGAX..." }, // ok - only changes gaptype at EOS
                 { "MucRacem", "..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX..", SAME, NULL },
@@ -1337,6 +1449,7 @@ void TEST_realign() {
                 TEST_ANNOTATE(T.species_name);
                 TEST_EXPECT_EQUAL(PROSEQ(T.species_name), T.original_prot);
             }
+            TEST_ANNOTATE(NULL);
 
             msgs  = "";
             error = arb_r2a(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
@@ -1359,6 +1472,7 @@ void TEST_realign() {
                         break;
                 }
             }
+            TEST_ANNOTATE(NULL);
 
             ta.close("dont commit");
         }
@@ -1390,18 +1504,19 @@ void TEST_realign() {
 
         TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
 
-        // document some existing behavior
+        GBDATA *gb_TaxOcell_amino;
+        GBDATA *gb_TaxOcell_dna;
         {
-            GBDATA *gb_TaxOcell_amino;
-            GBDATA *gb_TaxOcell_dna;
-            {
-                GB_transaction ta(gb_main);
-                gb_TaxOcell_amino = GBT_read_sequence(gb_TaxOcell, "ali_pro");
-                gb_TaxOcell_dna   = GBT_read_sequence(gb_TaxOcell, "ali_dna");
-            }
-            TEST_REJECT_NULL(gb_TaxOcell_amino);
-            TEST_REJECT_NULL(gb_TaxOcell_dna);
+            GB_transaction ta(gb_main);
+            gb_TaxOcell_amino = GBT_read_sequence(gb_TaxOcell, "ali_pro");
+            gb_TaxOcell_dna   = GBT_read_sequence(gb_TaxOcell, "ali_dna");
+        }
+        TEST_REJECT_NULL(gb_TaxOcell_amino);
+        TEST_REJECT_NULL(gb_TaxOcell_dna);
 
+        // -----------------------------------------
+        //      document some existing behavior
+        {
             struct realign_check {
                 const char  *seq;
                 const char  *result;
@@ -1445,10 +1560,7 @@ void TEST_realign() {
             {
                 GB_transaction ta(gb_main);
                 TEST_EXPECT_NO_ERROR(AWT_getTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
-
-                TEST_EXPECT_EQUAL(arb_transl_table, 14);
-                TEST_EXPECT_EQUAL(codon_start, 0);
-
+                TEST_EXPECT_EQUAL(translation_info(gb_TaxOcell), "t=14,cs=0");
                 org_dna = GB_read_string(gb_TaxOcell_dna);
             }
 
@@ -1481,6 +1593,7 @@ void TEST_realign() {
                     else {
                         TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n1 taxa converted\n  1.000000 stops per sequence found\n");
                     }
+
                     switch (S.retranslation) {
                         case SAME:
                             TEST_EXPECT_NULL(S.changed_prot);
@@ -1492,22 +1605,20 @@ void TEST_realign() {
                             break;
                     }
 
-                    // restore (possibly) changed DB entries
-                    TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
-                    TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_dna, org_dna));
+                    TEST_EXPECT_EQUAL(translation_info(gb_TaxOcell), "t=14,cs=0");
+                    TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_dna, org_dna)); // restore changed DB entry
                 }
             }
+            TEST_ANNOTATE(NULL);
 
             free(org_dna);
         }
 
         TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
 
-        // write some aa sequences provoking failures
+        // ----------------------------------------------------
+        //      write some aa sequences provoking failures
         {
-            GBDATA *gb_TaxOcell_amino = GBT_read_sequence(gb_TaxOcell, "ali_pro");
-            TEST_REJECT_NULL(gb_TaxOcell_amino);
-
             struct realign_fail {
                 const char *seq;
                 const char *failure;
@@ -1541,14 +1652,10 @@ void TEST_realign() {
                 { 0, 0 }
             };
 
-            int arb_transl_table, codon_start;
             {
                 GB_transaction ta(gb_main);
-                TEST_EXPECT_NO_ERROR(AWT_getTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
+                TEST_EXPECT_EQUAL(translation_info(gb_TaxOcell), "t=14,cs=0");
             }
-
-            TEST_EXPECT_EQUAL(arb_transl_table, 14);
-            TEST_EXPECT_EQUAL(codon_start, 0);
 
             for (int s = 0; seq[s].seq; ++s) {
                 TEST_ANNOTATE(GBS_global_string("s=%i", s));
@@ -1564,20 +1671,139 @@ void TEST_realign() {
 
                 {
                     GB_transaction ta(gb_main);
-                    TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, arb_transl_table, codon_start));
+                    TEST_EXPECT_EQUAL(translation_info(gb_TaxOcell), "t=14,cs=0"); // should not change if error
                 }
             }
-
-#undef ERRPREFIX
-#undef ERRPREFIX_LEN
+            TEST_ANNOTATE(NULL);
         }
 
         TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
 
-        // invalid translation info
+        // ----------------------------------------------
+        //      some examples for given DNA/AA pairs
+
+        {
+            struct explicit_realign {
+                const char *acids;
+                const char *dna;
+                int         table;
+                const char *info;
+                const char *msgs;
+            };
+
+            // YTR (=X(2,9,16), =L(else))
+            //     CTA (=T(2),        =L(else))
+            //     CTG (=T(2), =S(9), =L(else))
+            //     TTA (=*(16),       =L(else))
+            //     TTG (=L(always))
+            //
+            // AAR (=X(6,11,14), =K(else))
+            //     AAA (=N(6,11,14), =K(else))
+            //     AAG (=K(always))
+            //
+            // ATH (=X(1,2,4,10,14), =I(else))
+            //     ATA (=M(1,2,4,10,14), =I(else))
+            //     ATC (=I(always))
+            //     ATT (=I(always))
+
+            const char*const NO_TI = "t=-1,cs=-1";
+
+            explicit_realign example[] = {
+                { "LK", "TTGAAG", -1, NO_TI,        NULL }, // fine (for any table)
+
+                { "G",  "RGG",    -1, "t=10,cs=0",  NULL }, // correctly detects TI(10)
+
+                { "LK",  "YTRAAR",    2,  "t=2,cs=0",  "Not all IUPAC-combinations of 'YTR' translate to 'L' (for trans-table 2) at ali_pro:1 / ali_dna:1\n" }, // expected failure (CTA->T for table=2)
+                { "LX",  "YTRAAR",    -1, NO_TI,       NULL }, // fine (AAR->X for table=6,11,14)
+                { "LXX", "YTRAARATH", -1, "t=14,cs=0", NULL }, // correctly detects TI(14)
+                { "LXI", "YTRAARATH", -1, NO_TI,       NULL }, // fine (for table=6,11)
+
+                { "LX", "YTRAAR", 2,  "t=2,cs=0",   "Not all IUPAC-combinations of 'YTR' translate to 'L' (for trans-table 2) at ali_pro:1 / ali_dna:1\n" }, // expected failure (AAR->K for table=2)
+                { "LK", "YTRAAR", -1, NO_TI,        NULL }, // fine           (AAR->K for table!=6,11,14)
+                { "LK", "YTRAAR", 6,  "t=6,cs=0",   "Not all IUPAC-combinations of 'AAR' translate to 'K' (for trans-table 6) at ali_pro:2 / ali_dna:4\n" }, // expected failure (AAA->N for table=6)
+                { "XK", "YTRAAR", -1, NO_TI,        NULL }, // fine           (YTR->X for table=2,9,16)
+
+                { "XX",   "-YTRAAR",      0,  "t=0,cs=0", NULL },                                                                                             // does not fail because it realigns such that it translates back to 'XXX'
+                { "XXL",  "YTRAARTTG",    0,  "t=0,cs=0", "Not enough gaps to place 2 extra nucs at start of sequence at ali_pro:1 / ali_dna:1\n" },          // expected failure (none can translate to X with table= 0, so it tries )
+                { "-XXL", "-YTRA-AR-TTG", 0,  "t=0,cs=0", NULL },                                                                                             // does not fail because it realigns such that it translates back to 'XXXL'
+                { "IXXL", "ATTYTRAARTTG", 0,  "t=0,cs=0", "Sync behind 'X' failed foremost with: 'RTT' never translates to 'L' (for trans-table 0) at ali_pro:4 / ali_dna:9\n" }, // expected failure (none of the 2 middle codons can translate to X with table= 0)
+                { "XX",   "-YTRAAR",      -1, NO_TI,      NULL },                                                                                             // does not fail because it realigns such that it translates back to 'XXX'
+                { "IXXL", "ATTYTRAARTTG", -1, NO_TI,      "Sync behind 'X' failed foremost with: 'RTT' never translates to 'L' at ali_pro:4 / ali_dna:9\n" }, // expected failure (not both 2 middle codons can translate to X with same table)
+
+                { "LX", "YTRATH", -1, NO_TI,        NULL }, // fine                (ATH->X for table=1,2,4,10,14)
+                { "LX", "YTRATH", 2,  "t=2,cs=0",   "Not all IUPAC-combinations of 'YTR' translate to 'L' (for trans-table 2) at ali_pro:1 / ali_dna:1\n" }, // expected failure (YTR->X for table=2)
+                { "XX", "YTRATH", 2,  "t=2,cs=0",   NULL }, // fine                (both->X for table=2)
+                { "XX", "YTRATH", -1, "t=2,cs=0",   NULL }, // correctly detects TI(2)
+
+                { "XX", "AARATH", 14, "t=14,cs=0",  NULL }, // fine (both->X for table=14)
+                { "XX", "AARATH", -1, "t=14,cs=0",  NULL }, // correctly detects TI(14)
+                { "KI", "AARATH", -1, NO_TI,        NULL }, // fine (for table!=1,2,4,6,10,11,14)
+                { "KI", "AARATH", 4,  "t=4,cs=0",   "Not all IUPAC-combinations of 'ATH' translate to 'I' (for trans-table 4) at ali_pro:2 / ali_dna:4\n" }, // expected failure (ATH->X for table=4)
+                { "KX", "AARATH", 14, "t=14,cs=0",  "Not all IUPAC-combinations of 'AAR' translate to 'K' (for trans-table 14) at ali_pro:1 / ali_dna:1\n" }, // expected failure (AAR->X for table=14)
+                { "KX", "AARATH", -1, NO_TI,        NULL }, // fine for table=1,2,4,10
+                { "KX", "AARATH", 4,  "t=4,cs=0",   NULL }, // test table=4
+                { "XI", "AARATH", 14, "t=14,cs=0",  "Sync behind 'X' failed foremost with: Not all IUPAC-combinations of 'ATH' translate to 'I' (for trans-table 14) at ali_pro:2 / ali_dna:4\n" }, // expected failure (ATH->X for table=14)
+                { "KI", "AARATH", 14, "t=14,cs=0",  "Not all IUPAC-combinations of 'AAR' translate to 'K' (for trans-table 14) at ali_pro:1 / ali_dna:1\n" }, // expected failure (AAR->X for table=14)
+
+                { NULL, NULL, 0, NULL, NULL }
+            };
+
+            for (int e = 0; example[e].acids; ++e) {
+                const explicit_realign& E = example[e];
+                TEST_ANNOTATE(GBS_global_string("%s <- %s (#%i)", E.acids, E.dna, E.table));
+
+                {
+                    GB_transaction ta(gb_main);
+                    TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_dna, E.dna));
+                    TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, E.acids));
+                    if (E.table == -1) {
+                        TEST_EXPECT_NO_ERROR(AWT_removeTranslationInfo(gb_TaxOcell));
+                    }
+                    else {
+                        TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, E.table, 0));
+                    }
+                }
+
+                msgs  = "";
+                error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
+                TEST_EXPECT_NULL(error);
+                if (E.msgs) {
+                    TEST_EXPECT_CONTAINS(msgs, ERRPREFIX);
+                    string wanted_msgs = string(E.msgs)+FAILONE;
+                    TEST_EXPECT_EQUAL(msgs.c_str()+ERRPREFIX_LEN, wanted_msgs);
+                }
+                else {
+                    TEST_EXPECT_EQUAL(msgs, "");
+                }
+
+                GB_transaction ta(gb_main);
+                if (!error) {
+                    const char *dnaseq      = GB_read_char_pntr(gb_TaxOcell_dna);
+                    size_t      expextedLen = strlen(E.dna);
+                    size_t      seqlen      = strlen(dnaseq);
+                    char       *firstPart   = GB_strndup(dnaseq, expextedLen);
+                    size_t      dna_behind;
+                    char       *nothing     = unalign(dnaseq+expextedLen, seqlen-expextedLen, dna_behind);
+
+                    TEST_EXPECT_EQUAL(firstPart, E.dna);
+                    TEST_EXPECT_EQUAL(dna_behind, 0);
+                    TEST_EXPECT_EQUAL(nothing, "");
+
+                    free(nothing);
+                    free(firstPart);
+                }
+                TEST_EXPECT_EQUAL(translation_info(gb_TaxOcell), E.info);
+            }
+        }
+
+        TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
+
+        // ----------------------------------
+        //      invalid translation info
         {
             GB_transaction ta(gb_main);
 
+            TEST_EXPECT_NO_ERROR(AWT_saveTranslationInfo(gb_TaxOcell, 14, 0));
             GBDATA *gb_trans_table = GB_entry(gb_TaxOcell, "transl_table");
             TEST_EXPECT_NO_ERROR(GB_write_string(gb_trans_table, "666")); // evil translation table
         }
@@ -1585,11 +1811,11 @@ void TEST_realign() {
         msgs  = "";
         error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
         TEST_EXPECT_NO_ERROR(error);
-        TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: Error while reading 'transl_table' (Illegal (or unsupported) value (666) in 'transl_table' (item='TaxOcell'))\n" FAILONE);
-
+        TEST_EXPECT_EQUAL(msgs, ERRPREFIX "Error while reading 'transl_table' (Illegal (or unsupported) value (666) in 'transl_table' (item='TaxOcell'))\n" FAILONE);
         TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
 
-        // source/dest alignment missing
+        // ---------------------------------------
+        //      source/dest alignment missing
         for (int i = 0; i<2; ++i) {
             TEST_ANNOTATE(GBS_global_string("i=%i", i));
 
@@ -1606,15 +1832,19 @@ void TEST_realign() {
             error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
             TEST_EXPECT_NO_ERROR(error);
             if (i) {
-                TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_pro'\n" FAILONE);
+                TEST_EXPECT_EQUAL(msgs, ERRPREFIX "No data in alignment 'ali_pro'\n" FAILONE);
             }
             else {
-                TEST_EXPECT_EQUAL(msgs, "Automatic re-align failed for 'TaxOcell'\nReason: No data in alignment 'ali_dna'\n" FAILONE);
+                TEST_EXPECT_EQUAL(msgs, ERRPREFIX "No data in alignment 'ali_dna'\n" FAILONE);
             }
         }
+        TEST_ANNOTATE(NULL);
 
         TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
     }
+
+#undef ERRPREFIX
+#undef ERRPREFIX_LEN
 
     GB_close(gb_main);
     ARB_install_handlers(*old_handlers);
