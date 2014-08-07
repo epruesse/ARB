@@ -612,20 +612,9 @@ bool AWT_is_codon(char protein, const char *const dna, const TransTables& allowe
             if (!is_codon) {
                 pn_assert(correct_disallowed_translation); // should be true because otherwise we shouldn't run into this else-branch
 
-                char  left_tables[AWT_CODON_TABLES*3+1];
-                char *ltp   = left_tables;
-                bool  first = true;
-
-                for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
-                    if (allowed.is_allowed(code_nr)) {
-                        if (!first) *ltp++ = ',';
-                        ltp   += sprintf(ltp, "%i", code_nr);
-                        first  = false;
-                    }
-                }
-
+                const char *left_tables = allowed.to_string();
                 char *prefix = GBS_global_string_copy("'%c%c%c' does not translate to '%c'", dna[0], dna[1], dna[2], protein);
-                pn_assert(!first); // allowed should never be empty!
+                pn_assert(left_tables[0]); // allowed should never be empty!
                 fail_reason = GBS_global_string("%s (for any of the leftover trans-tables: %s)", prefix, left_tables);
                 free(prefix);
             }
