@@ -426,7 +426,7 @@ static AW_window *NT_create_save_quick_as_window(AW_root *aw_root, const char *b
 }
 
 static void NT_database_optimization(AW_window *aww) {
-    arb_progress progress("Optimizing database", 2);
+    arb_progress progress("Optimizing database compression", 2);
 
     GB_push_my_security(GLOBAL.gb_main);
     GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
@@ -469,7 +469,7 @@ static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     aw_root->awar_string("tmp/nt/arbdb/optimize_tree_name", largest_tree);
 
     aws = new AW_window_simple;
-    aws->init(aw_root, "OPTIMIZE_DATABASE", "OPTIMIZE DATABASE COMPRESSION");
+    aws->init(aw_root, "OPTIMIZE_DATABASE", "Optimize database compression");
     aws->load_xfig("optimize.fig");
 
     aws->at("trees");
@@ -517,7 +517,7 @@ static AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
     aws->at("optimize");
     aws->callback(NT_create_database_optimization_window);
     aws->help_text("optimize.hlp");
-    aws->create_button("OPTIMIZE", "OPTIMIZE DATABASE COMPRESSION");
+    aws->create_autosize_button("OPTIMIZE", "Optimize database compression");
 
     aws->at("save"); aws->callback(NT_save_as_cb);
     aws->create_button("SAVE", "SAVE", "S");
@@ -1144,7 +1144,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
                 awm->insert_menu_topic("new_window", "New window (same database)", "N", "newwindow.hlp", AWM_ALL, makeCreateWindowCallback(popup_new_main_window, clone+1));
             }
             awm->sep______________();
-            awm->insert_menu_topic("optimize_db",  "Optimize database",          "O", "optimize.hlp",  AWM_ALL, NT_create_database_optimization_window);
+            awm->insert_menu_topic("optimize_db",  "Optimize database compression", "O", "optimize.hlp",  AWM_ALL, NT_create_database_optimization_window);
             awm->sep______________();
 
             awm->insert_sub_menu("Import",      "I");
