@@ -625,12 +625,8 @@ bool AWT_is_codon(char protein, const char *const dna, const TransTables& allowe
                 }
 
                 char *prefix = GBS_global_string_copy("'%c%c%c' does not translate to '%c'", dna[0], dna[1], dna[2], protein);
-                if (first) { // no translation table left
-                    fail_reason = GBS_global_string("%s (no trans-table left)", prefix);
-                }
-                else {
-                    fail_reason = GBS_global_string("%s (for any of the leftover trans-tables: %s)", prefix, left_tables);
-                }
+                pn_assert(!first); // allowed should never be empty!
+                fail_reason = GBS_global_string("%s (for any of the leftover trans-tables: %s)", prefix, left_tables);
                 free(prefix);
             }
         }
@@ -1022,6 +1018,46 @@ void TEST_codon_check() {
 
         TEST_EXPECT_EQUAL(failure, C.error);
         TEST_EXPECT(!isCodon);
+    }
+
+    // ----------------------------------
+    //      test uncombinable codons
+    struct test_uncombinable_codons {
+        char        protein1;
+        const char *codon1;
+        const char *tables;
+        char        protein2;
+        const char *codon2;
+        const char *error;
+    };
+    test_uncombinable_codons uncomb_codons[] = {
+        { '*', "TTA", "16",      'E', "SAR", "Not all IUPAC-combinations of 'SAR' translate to 'E'" },
+        { '*', "TTA", "16",      'X', "TRA", "'TRA' never translates to 'X'" }, // @@@ wrong for tables=(1,2,3,4,5,6,7,10,11,14)
+        { 'L', "TAG", "13,15",   'X', "TRA", "'TRA' never translates to 'X'" }, // @@@ wrong for tables=(1,2,3,4,5,6,7,10,11,14)
+        { 'L', "TAG", "13,15",   'Q', "TAR", "'TAR' never translates to 'Q'" }, // @@@ wrong for table=5
+        { '*', "TTA", "16",      '*', "TCA", "'TCA' does not translate to '*' (for any of the leftover trans-tables: 16)" },
+        { 'N', "AAA", "6,11,14", 'X', "AAW", "'AAW' never translates to 'X'" }, // @@@ wrong for tables = (0,1,2,3,4,5,7,8,9,10,12,13,15,16)
+        { 'N', "AAA", "6,11,14", 'K', "AAA", "'AAA' does not translate to 'K' (for any of the leftover trans-tables: 6,11,14)" },
+
+        { 0, NULL, NULL, 0, NULL, NULL}
+    };
+
+    for (int c = 0; uncomb_codons[c].protein1; ++c) {
+        const test_uncombinable_codons& C = uncomb_codons[c];
+        TEST_ANNOTATE(GBS_global_string("%c <- %s + %c <- %s", C.protein1, C.codon1, C.protein2, C.codon2));
+
+        TransTables  remaining;
+        const char  *failure;
+        bool         isCodon = AWT_is_codon(C.protein1, C.codon1, allowed, remaining, &failure);
+
+        TEST_EXPECT(isCodon);
+        TEST_EXPECT_EQUAL(remaining.to_string(), C.tables);
+
+        TransTables  remaining2;
+        isCodon = AWT_is_codon(C.protein2, C.codon2, remaining, remaining2, &failure);
+        TEST_EXPECT_EQUAL(failure, C.error);
+        TEST_REJECT(isCodon);
+
     }
 }
 
