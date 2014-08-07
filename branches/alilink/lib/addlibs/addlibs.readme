@@ -1,0 +1,14 @@
+
+The libs in this directory are provided together with ARB, because
+there are several systems lacking these libraries (or the versions
+needed by ARB).
+
+If you start ARB using the script 'arb' (and you should do so)
+this directory will be appended to the library paths.
+
+So if the needed libraries are not installed in your system, the
+libraries from this directory will be used.
+
+(Note: not all releases provide libraries here)
+
+
