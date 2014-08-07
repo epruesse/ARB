@@ -15,6 +15,12 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef STATIC_ASSERT_H
+#include <static_assert.h>
+#endif
+#ifndef _STDINT_H
+#include <stdint.h>
+#endif
 
 #define pn_assert(cond) arb_assert(cond)
 
@@ -28,63 +34,40 @@ struct AWT_Codon_Code_Definition {
 };
 
 #define AWT_CODON_TABLES 17     // number of different Amino-Translation-Tables
-#define AWT_MAX_CODONS 64       // maximum of possible codon (= 4^3)
+#define AWT_MAX_CODONS   64     // maximum of possible codon ( = 4^3)
 
 const int AWAR_PROTEIN_TYPE_bacterial_code_index = 8; // contains the index of the bacterial code table
 
 // --------------------------------------------------------------------------------
 
 class TransTables {
-    char allowed[AWT_CODON_TABLES];
+    uint32_t allowed;
 
-    void copy(const TransTables& other) {
-        for (int a=0; a<AWT_CODON_TABLES; a++) {
-            allowed[a] = other.allowed[a];
-        }
-    }
-
-    void legal(int IF_ASSERTION_USED(nr)) const { pn_assert(nr >= 0 && nr<AWT_CODON_TABLES); }
+    static uint32_t bitmask(int nr) { pn_assert(nr >= 0 && nr<AWT_CODON_TABLES); return 1<<nr; }
 
 public:
-    TransTables() { allowAll(true); }
-    TransTables(const TransTables& other) { copy(other); }
-    TransTables& operator=(const TransTables& other)  { copy(other); return *this; }
+    TransTables() { allowAll(); }
 
-    int is_allowed(int nr) const { legal(nr); return allowed[nr] != 0; }
-    bool any() const {
-        int a = 0;
-        while (a<AWT_CODON_TABLES && !allowed[a]) ++a;
-        return a<AWT_CODON_TABLES;
-    }
-    bool none() const { return !any(); }
+    bool is_allowed(int nr) const { return (allowed & bitmask(nr)) != 0; }
+    bool any()  const { return  allowed; }
+    bool none() const { return !allowed; }
 
-    void allow(int nr) { legal(nr); allowed[nr] = 1; }
-    void forbid(int nr) { legal(nr); allowed[nr]=0; }
-    void forbid(const TransTables& other) {
-        for (int a=0; a<AWT_CODON_TABLES; a++) {
-            if (other.is_allowed(a)) forbid(a);
-        }
-    }
+    void allow(int nr) { allowed |= bitmask(nr); }
+    void forbid(int nr) { allowed &= ~bitmask(nr); }
+    void forbid(const TransTables& other) { allowed &= ~other.allowed; }
 
-    void allowAll(bool Allow = true) {
-        for (int a=0; a<AWT_CODON_TABLES; a++) {
-            allowed[a] = Allow;
-        }
+    void allowAll() {
+        STATIC_ASSERT(sizeof(allowed)*8 > AWT_CODON_TABLES); // one bit wasted
+        allowed = (1<<AWT_CODON_TABLES)-1;
     }
-    void forbidAll() { allowAll(false); }
-
-    void forbidAllBut(int nr) {
-        legal(nr);
-        for (int a=0; a<AWT_CODON_TABLES; a++) {
-            if (a != nr) allowed[a] = 0;
-        }
-    }
+    void forbidAll() { allowed = 0; }
+    void forbidAllBut(int nr) { allowed &= bitmask(nr); }
 
     int explicit_table() const {
         // return explicit table number (or -1 if not exactly 1 table is allowed)
         int table = -1;
         for (int i = 0; i<AWT_CODON_TABLES; ++i) {
-            if (allowed[i]) {
+            if (is_allowed(i)) {
                 if (table != -1) return -1;
                 table = i;
             }
@@ -92,12 +75,7 @@ public:
         return table;
     }
 
-    bool is_subset_of(const TransTables& other) const {
-        for (int i = 0; i<AWT_CODON_TABLES; ++i) {
-            if (is_allowed(i) && !other.is_allowed(i)) return false;
-        }
-        return true;
-    }
+    bool is_subset_of(const TransTables& other) const { return (allowed&other.allowed) == allowed; }
 
     const char *to_string() const {
         const int    MAX_LEN = 42;
