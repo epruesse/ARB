@@ -456,6 +456,7 @@ bool AWT_is_codon(char protein, const char *const dna, const TransTables& allowe
     int  first_iupac_pos = -1;
     int  iupac_positions = 0;
     bool decided         = false;
+    bool general_failure = false;
 
     protein = toupper(protein);
 
@@ -577,12 +578,14 @@ bool AWT_is_codon(char protein, const char *const dna, const TransTables& allowe
             }
             else {
                 remaining.forbidAll();
-                fail_reason = GBS_global_string("'%c%c%c' translates to '%c', not to '%c'", dna[0], dna[1], dna[2], definite_translation[codon_nr], protein);
+                fail_reason     = GBS_global_string("'%c%c%c' translates to '%c', not to '%c'", dna[0], dna[1], dna[2], definite_translation[codon_nr], protein);
+                general_failure = true;
             }
         }
         else if (!containsProtMatching(ambiguous_codons[codon_nr], protein)) { // codon does not translate to protein in any code-table
             remaining.forbidAll();
             fail_reason = neverTranslatesError(dna, protein);
+            general_failure = true;
         }
         else {
 #if defined(ASSERTION_USED)
@@ -611,19 +614,22 @@ bool AWT_is_codon(char protein, const char *const dna, const TransTables& allowe
 
             if (!is_codon) {
                 pn_assert(correct_disallowed_translation); // should be true because otherwise we shouldn't run into this else-branch
-
-                const char *left_tables = allowed.to_string();
-                char *prefix = GBS_global_string_copy("'%c%c%c' does not translate to '%c'", dna[0], dna[1], dna[2], protein);
-                pn_assert(left_tables[0]); // allowed should never be empty!
-                fail_reason = GBS_global_string("%s (for any of the leftover trans-tables: %s)", prefix, left_tables);
-                free(prefix);
+                fail_reason = GBS_global_string("'%c%c%c' does not translate to '%c'", dna[0], dna[1], dna[2], protein);
             }
         }
     }
 
     if (!is_codon) {
         pn_assert(fail_reason);
-        if (fail_reason_ptr) *fail_reason_ptr = fail_reason; // set failure-reason if requested
+        if (fail_reason_ptr) {
+            if (!allowed.all() && !general_failure) {
+                const char *left_tables = allowed.to_string();
+                pn_assert(left_tables[0]); // allowed should never be empty!
+                fail_reason             = GBS_global_string("%s (for any of the leftover trans-tables: %s)", fail_reason, left_tables);
+            }
+
+            *fail_reason_ptr = fail_reason; // set failure-reason if requested
+        }
     }
 #if defined(ASSERTION_USED)
     else {
@@ -1020,12 +1026,12 @@ void TEST_codon_check() {
         const char *error;
     };
     test_uncombinable_codons uncomb_codons[] = {
-        { '*', "TTA", "16",      'E', "SAR", "Not all IUPAC-combinations of 'SAR' translate to 'E'" },
-        { '*', "TTA", "16",      'X', "TRA", "'TRA' never translates to 'X'" }, // @@@ wrong for tables=(1,2,3,4,5,6,7,10,11,14)
-        { 'L', "TAG", "13,15",   'X', "TRA", "'TRA' never translates to 'X'" }, // @@@ wrong for tables=(1,2,3,4,5,6,7,10,11,14)
-        { 'L', "TAG", "13,15",   'Q', "TAR", "'TAR' never translates to 'Q'" }, // @@@ wrong for table=5
+        { '*', "TTA", "16",      'E', "SAR", "Not all IUPAC-combinations of 'SAR' translate to 'E' (for any of the leftover trans-tables: 16)" },
+        { '*', "TTA", "16",      'X', "TRA", "'TRA' never translates to 'X' (for any of the leftover trans-tables: 16)" },
+        { 'L', "TAG", "13,15",   'X', "TRA", "'TRA' never translates to 'X' (for any of the leftover trans-tables: 13,15)" },
+        { 'L', "TAG", "13,15",   'Q', "TAR", "'TAR' never translates to 'Q' (for any of the leftover trans-tables: 13,15)" },
         { '*', "TTA", "16",      '*', "TCA", "'TCA' does not translate to '*' (for any of the leftover trans-tables: 16)" },
-        { 'N', "AAA", "6,11,14", 'X', "AAW", "'AAW' never translates to 'X'" }, // @@@ wrong for tables = (0,1,2,3,4,5,7,8,9,10,12,13,15,16)
+        { 'N', "AAA", "6,11,14", 'X', "AAW", "'AAW' never translates to 'X' (for any of the leftover trans-tables: 6,11,14)" },
         { 'N', "AAA", "6,11,14", 'K', "AAA", "'AAA' does not translate to 'K' (for any of the leftover trans-tables: 6,11,14)" },
 
         { 0, NULL, NULL, 0, NULL, NULL}

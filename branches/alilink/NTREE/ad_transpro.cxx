@@ -1380,7 +1380,7 @@ void TEST_realign() {
             TEST_EXPECT_EQUAL(msgs,
                               "Automatic re-align failed for 'BctFra12'\nReason: not enough nucs for X's at sequence end at ali_pro:40 / ali_dna:109\n" // new correct report (got no nucs for 1 X)
                               "Automatic re-align failed for 'StrRamo3'\nReason: not enough nucs for X's at sequence end at ali_pro:36 / ali_dna:106\n" // new correct report (got 3 nucs for 4 Xs)
-                              "Automatic re-align failed for 'MucRace3'\nReason: Sync behind 'X' failed foremost with: Not all IUPAC-combinations of 'NCC' translate to 'T' at ali_pro:28 / ali_dna:78\n" // correct report
+                              "Automatic re-align failed for 'MucRace3'\nReason: Sync behind 'X' failed foremost with: Not all IUPAC-combinations of 'NCC' translate to 'T' (for any of the leftover trans-tables: 0) at ali_pro:28 / ali_dna:78\n" // correct report
                               "3 marked species failed to realign (7 succeeded)\n"
                 );
 
@@ -1713,37 +1713,37 @@ void TEST_realign() {
 
                 { "G",  "RGG",    -1, "t=10,cs=0",  NULL }, // correctly detects TI(10)
 
-                { "LK",  "YTRAAR",    2,  "t=2,cs=0",  "Not all IUPAC-combinations of 'YTR' translate to 'L' at ali_pro:1 / ali_dna:1\n" }, // expected failure (CTA->T for table=2)
+                { "LK",  "YTRAAR",    2,  "t=2,cs=0",  "Not all IUPAC-combinations of 'YTR' translate to 'L' (for any of the leftover trans-tables: 2) at ali_pro:1 / ali_dna:1\n" }, // expected failure (CTA->T for table=2)
                 { "LX",  "YTRAAR",    -1, NO_TI,       NULL }, // fine (AAR->X for table=6,11,14)
                 { "LXX", "YTRAARATH", -1, "t=14,cs=0", NULL }, // correctly detects TI(14)
                 { "LXI", "YTRAARATH", -1, NO_TI,       NULL }, // fine (for table=6,11)
 
-                { "LX", "YTRAAR", 2,  "t=2,cs=0",   "Not all IUPAC-combinations of 'YTR' translate to 'L' at ali_pro:1 / ali_dna:1\n" }, // expected failure (AAR->K for table=2)
+                { "LX", "YTRAAR", 2,  "t=2,cs=0",   "Not all IUPAC-combinations of 'YTR' translate to 'L' (for any of the leftover trans-tables: 2) at ali_pro:1 / ali_dna:1\n" }, // expected failure (AAR->K for table=2)
                 { "LK", "YTRAAR", -1, NO_TI,        NULL }, // fine           (AAR->K for table!=6,11,14)
-                { "LK", "YTRAAR", 6,  "t=6,cs=0",   "Not all IUPAC-combinations of 'AAR' translate to 'K' at ali_pro:2 / ali_dna:4\n" }, // expected failure (AAA->N for table=6)
+                { "LK", "YTRAAR", 6,  "t=6,cs=0",   "Not all IUPAC-combinations of 'AAR' translate to 'K' (for any of the leftover trans-tables: 6) at ali_pro:2 / ali_dna:4\n" }, // expected failure (AAA->N for table=6)
                 { "XK", "YTRAAR", -1, NO_TI,        NULL }, // fine           (YTR->X for table=2,9,16)
 
                 { "XX",   "-YTRAAR",      0,  "t=0,cs=0", NULL },                                                                                             // does not fail because it realigns such that it translates back to 'XXX'
                 { "XXL",  "YTRAARTTG",    0,  "t=0,cs=0", "Not enough gaps to place 2 extra nucs at start of sequence at ali_pro:1 / ali_dna:1\n" },          // expected failure (none can translate to X with table= 0, so it tries )
                 { "-XXL", "-YTRA-AR-TTG", 0,  "t=0,cs=0", NULL },                                                                                             // does not fail because it realigns such that it translates back to 'XXXL'
-                { "IXXL", "ATTYTRAARTTG", 0,  "t=0,cs=0", "Sync behind 'X' failed foremost with: 'RTT' never translates to 'L' at ali_pro:4 / ali_dna:9\n" }, // expected failure (none of the 2 middle codons can translate to X with table= 0)
+                { "IXXL", "ATTYTRAARTTG", 0,  "t=0,cs=0", "Sync behind 'X' failed foremost with: 'RTT' never translates to 'L' (for any of the leftover trans-tables: 0) at ali_pro:4 / ali_dna:9\n" }, // expected failure (none of the 2 middle codons can translate to X with table= 0)
                 { "XX",   "-YTRAAR",      -1, NO_TI,      NULL },                                                                                             // does not fail because it realigns such that it translates back to 'XXX'
                 { "IXXL", "ATTYTRAARTTG", -1, NO_TI,      "Sync behind 'X' failed foremost with: 'RTT' never translates to 'L' at ali_pro:4 / ali_dna:9\n" }, // expected failure (not both 2 middle codons can translate to X with same table)
 
                 { "LX", "YTRATH", -1, NO_TI,        NULL }, // fine                (ATH->X for table=1,2,4,10,14)
-                { "LX", "YTRATH", 2,  "t=2,cs=0",   "Not all IUPAC-combinations of 'YTR' translate to 'L' at ali_pro:1 / ali_dna:1\n" }, // expected failure (YTR->X for table=2)
+                { "LX", "YTRATH", 2,  "t=2,cs=0",   "Not all IUPAC-combinations of 'YTR' translate to 'L' (for any of the leftover trans-tables: 2) at ali_pro:1 / ali_dna:1\n" }, // expected failure (YTR->X for table=2)
                 { "XX", "YTRATH", 2,  "t=2,cs=0",   NULL }, // fine                (both->X for table=2)
                 { "XX", "YTRATH", -1, "t=2,cs=0",   NULL }, // correctly detects TI(2)
 
                 { "XX", "AARATH", 14, "t=14,cs=0",  NULL }, // fine (both->X for table=14)
                 { "XX", "AARATH", -1, "t=14,cs=0",  NULL }, // correctly detects TI(14)
                 { "KI", "AARATH", -1, NO_TI,        NULL }, // fine (for table!=1,2,4,6,10,11,14)
-                { "KI", "AARATH", 4,  "t=4,cs=0",   "Not all IUPAC-combinations of 'ATH' translate to 'I' at ali_pro:2 / ali_dna:4\n" }, // expected failure (ATH->X for table=4)
-                { "KX", "AARATH", 14, "t=14,cs=0",  "Not all IUPAC-combinations of 'AAR' translate to 'K' at ali_pro:1 / ali_dna:1\n" }, // expected failure (AAR->X for table=14)
+                { "KI", "AARATH", 4,  "t=4,cs=0",   "Not all IUPAC-combinations of 'ATH' translate to 'I' (for any of the leftover trans-tables: 4) at ali_pro:2 / ali_dna:4\n" }, // expected failure (ATH->X for table=4)
+                { "KX", "AARATH", 14, "t=14,cs=0",  "Not all IUPAC-combinations of 'AAR' translate to 'K' (for any of the leftover trans-tables: 14) at ali_pro:1 / ali_dna:1\n" }, // expected failure (AAR->X for table=14)
                 { "KX", "AARATH", -1, NO_TI,        NULL }, // fine for table=1,2,4,10
                 { "KX", "AARATH", 4,  "t=4,cs=0",   NULL }, // test table=4
-                { "XI", "AARATH", 14, "t=14,cs=0",  "Sync behind 'X' failed foremost with: Not all IUPAC-combinations of 'ATH' translate to 'I' at ali_pro:2 / ali_dna:4\n" }, // expected failure (ATH->X for table=14)
-                { "KI", "AARATH", 14, "t=14,cs=0",  "Not all IUPAC-combinations of 'AAR' translate to 'K' at ali_pro:1 / ali_dna:1\n" }, // expected failure (AAR->X for table=14)
+                { "XI", "AARATH", 14, "t=14,cs=0",  "Sync behind 'X' failed foremost with: Not all IUPAC-combinations of 'ATH' translate to 'I' (for any of the leftover trans-tables: 14) at ali_pro:2 / ali_dna:4\n" }, // expected failure (ATH->X for table=14)
+                { "KI", "AARATH", 14, "t=14,cs=0",  "Not all IUPAC-combinations of 'AAR' translate to 'K' (for any of the leftover trans-tables: 14) at ali_pro:1 / ali_dna:1\n" }, // expected failure (AAR->X for table=14)
 
                 { NULL, NULL, 0, NULL, NULL }
             };

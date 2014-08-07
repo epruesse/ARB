@@ -40,6 +40,8 @@ const int AWAR_PROTEIN_TYPE_bacterial_code_index = 8; // contains the index of t
 
 // --------------------------------------------------------------------------------
 
+#define ALL_TABLES_MASK ((1<<AWT_CODON_TABLES)-1)
+
 class TransTables {
     uint32_t allowed;
 
@@ -51,6 +53,7 @@ public:
     bool is_allowed(int nr) const { return (allowed & bitmask(nr)) != 0; }
     bool any()  const { return  allowed; }
     bool none() const { return !allowed; }
+    bool all() const { return allowed == ALL_TABLES_MASK; }
 
     void allow(int nr) { allowed |= bitmask(nr); }
     void forbid(int nr) { allowed &= ~bitmask(nr); }
@@ -58,7 +61,7 @@ public:
 
     void allowAll() {
         STATIC_ASSERT(sizeof(allowed)*8 > AWT_CODON_TABLES); // one bit wasted
-        allowed = (1<<AWT_CODON_TABLES)-1;
+        allowed = ALL_TABLES_MASK;
     }
     void forbidAll() { allowed = 0; }
     void forbidAllBut(int nr) { allowed &= bitmask(nr); }
