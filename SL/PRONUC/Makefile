@@ -56,6 +56,7 @@ AP_codon_table.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_codon_table.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/test_global.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/test_unit.h
 
