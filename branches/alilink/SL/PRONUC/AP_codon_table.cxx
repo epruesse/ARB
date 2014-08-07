@@ -870,19 +870,16 @@ void TEST_codon_check() {
 
     TEST_EXPECT_EQUAL(AP_get_codons('X', 0), ""); // @@@ wrong: TGR->X (or disallow call)
 
+#define ALL_TABLES "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"
+    const TransTables allowed;
+
+    // ---------------------------
+    //      test valid codons
     struct test_is_codon {
         char        protein;
         const char *codon;
         const char *tables;
     };
-    struct test_not_codon {
-        char        protein;
-        const char *codon;
-        const char *error;
-    };
-
-#define ALL_TABLES "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"
-
     test_is_codon is_codon[] = {
         { 'P', "CCC", ALL_TABLES },
         { 'P', "CCN", ALL_TABLES },
@@ -956,6 +953,26 @@ void TEST_codon_check() {
         { 0, NULL, NULL}
     };
 
+    for (int c = 0; is_codon[c].protein; ++c) {
+        const test_is_codon& C = is_codon[c];
+        TEST_ANNOTATE(GBS_global_string("%c <- %s", C.protein, C.codon));
+
+        TransTables  remaining;
+        const char  *failure;
+        bool         isCodon = AWT_is_codon(C.protein, C.codon, allowed, remaining, &failure);
+
+        TEST_EXPECT_NULL(failure);
+        TEST_EXPECT(isCodon);
+        TEST_EXPECT_EQUAL(remaining.to_string(), C.tables);
+    }
+
+    // -----------------------------
+    //      test invalid codons
+    struct test_not_codon {
+        char        protein;
+        const char *codon;
+        const char *error;
+    };
     test_not_codon not_codon[] = {
         { 'P', "SYK", "Not all IUPAC-combinations of 'SYK' translate to 'P'" }, // correct (possible translations are PAL)
         { 'F', "SYK", "'SYK' never translates to 'F'" },                        // correct failure
@@ -995,20 +1012,6 @@ void TEST_codon_check() {
 
         { 0, NULL, NULL}
     };
-
-    const TransTables allowed;
-    for (int c = 0; is_codon[c].protein; ++c) {
-        const test_is_codon& C = is_codon[c];
-        TEST_ANNOTATE(GBS_global_string("%c <- %s", C.protein, C.codon));
-
-        TransTables  remaining;
-        const char  *failure;
-        bool         isCodon = AWT_is_codon(C.protein, C.codon, allowed, remaining, &failure);
-
-        TEST_EXPECT_NULL(failure);
-        TEST_EXPECT(isCodon);
-        TEST_EXPECT_EQUAL(remaining.to_string(), C.tables);
-    }
     for (int c = 0; not_codon[c].protein; ++c) {
         const test_not_codon& C = not_codon[c];
         TEST_ANNOTATE(GBS_global_string("%c <- %s", C.protein, C.codon));
