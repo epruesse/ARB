@@ -623,9 +623,16 @@ bool AWT_is_codon(char protein, const char *const dna, const TransTables& allowe
         pn_assert(fail_reason);
         if (fail_reason_ptr) {
             if (!allowed.all() && !general_failure) {
-                const char *left_tables = allowed.to_string();
-                pn_assert(left_tables[0]); // allowed should never be empty!
-                fail_reason             = GBS_global_string("%s (for any of the leftover trans-tables: %s)", fail_reason, left_tables);
+                int one = allowed.explicit_table();
+                if (one == -1) {
+                    const char *left_tables = allowed.to_string();
+                    pn_assert(left_tables[0]); // allowed should never be empty!
+
+                    fail_reason = GBS_global_string("%s (for any of the leftover trans-tables: %s)", fail_reason, left_tables);
+                }
+                else {
+                    fail_reason = GBS_global_string("%s (for trans-table %i)", fail_reason, one);
+                }
             }
 
             *fail_reason_ptr = fail_reason; // set failure-reason if requested
@@ -1026,11 +1033,11 @@ void TEST_codon_check() {
         const char *error;
     };
     test_uncombinable_codons uncomb_codons[] = {
-        { '*', "TTA", "16",      'E', "SAR", "Not all IUPAC-combinations of 'SAR' translate to 'E' (for any of the leftover trans-tables: 16)" },
-        { '*', "TTA", "16",      'X', "TRA", "'TRA' never translates to 'X' (for any of the leftover trans-tables: 16)" },
+        { '*', "TTA", "16",      'E', "SAR", "Not all IUPAC-combinations of 'SAR' translate to 'E' (for trans-table 16)" },
+        { '*', "TTA", "16",      'X', "TRA", "'TRA' never translates to 'X' (for trans-table 16)" },
         { 'L', "TAG", "13,15",   'X', "TRA", "'TRA' never translates to 'X' (for any of the leftover trans-tables: 13,15)" },
         { 'L', "TAG", "13,15",   'Q', "TAR", "'TAR' never translates to 'Q' (for any of the leftover trans-tables: 13,15)" },
-        { '*', "TTA", "16",      '*', "TCA", "'TCA' does not translate to '*' (for any of the leftover trans-tables: 16)" },
+        { '*', "TTA", "16",      '*', "TCA", "'TCA' does not translate to '*' (for trans-table 16)" },
         { 'N', "AAA", "6,11,14", 'X', "AAW", "'AAW' never translates to 'X' (for any of the leftover trans-tables: 6,11,14)" },
         { 'N', "AAA", "6,11,14", 'K', "AAA", "'AAA' does not translate to 'K' (for any of the leftover trans-tables: 6,11,14)" },
 
