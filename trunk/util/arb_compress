@@ -13,6 +13,8 @@ tar -czf arb.tgz -T <(
      ! -path \*/unused/\* \
      ! -path \*ChangeLog \
      ! -path \*lib/nas/names.dat \
+     ! -path \*lib/macros/.checks/\* \
+     ! -path \*PERL_SCRIPTS/test/\* \
      ! -name \#\* 
 )
    
