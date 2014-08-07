@@ -64,15 +64,16 @@ public:
     void forbidAllBut(int nr) { allowed &= bitmask(nr); }
 
     int explicit_table() const {
-        // return explicit table number (or -1 if not exactly 1 table is allowed)
-        int table = -1;
-        for (int i = 0; i<AWT_CODON_TABLES; ++i) {
-            if (is_allowed(i)) {
-                if (table != -1) return -1;
-                table = i;
+        // return explicit table number (or -1 if not exactly one table is allowed)
+        if (any()) {
+            uint32_t tabs = allowed;
+            for (int t = 0; t<AWT_CODON_TABLES; ++t) {
+                if (tabs&1) return (tabs == 1) ? t : -1;
+                tabs >>= 1;
             }
+            pn_assert(0);
         }
-        return table;
+        return -1;
     }
 
     bool is_subset_of(const TransTables& other) const { return (allowed&other.allowed) == allowed; }
