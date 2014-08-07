@@ -351,9 +351,9 @@ void AWT_dump_codons() {
     const TransTables all_allowed;
 
     for (char c='*'; c<='Z'; c++) {
-        printf("Codes for '%c': ", c);
-        int first_line = 1;
-        int found = 0;
+        printf("Codons for '%c': ", c);
+        bool first_line = true;
+        bool found      = false;
         for (char b1='T'; b1; b1=nextBase(b1)) {
             for (char b2='T'; b2; b2=nextBase(b2)) {
                 for (char b3='T'; b3; b3=nextBase(b3)) {
@@ -365,27 +365,16 @@ void AWT_dump_codons() {
 
                     TransTables remaining;
                     if (AWT_is_codon(c, dna, all_allowed, remaining)) {
-                        if (!first_line) printf("\n               ");
-                        first_line = 0;
-                        printf("%s (", dna);
-
-                        int first=1;
-                        for (int code=0; code<AWT_CODON_TABLES; code++) {
-                            if (remaining.is_allowed(code)) {
-                                if (!first) printf(",");
-                                first=0;
-                                printf("%i", code);
-                            }
-                        }
-                        printf(") ");
-
-                        found = 1;
+                        if (!first_line) fputs("\n                ", stdout);
+                        first_line = false;
+                        printf("%s (%s)", dna, remaining.to_string());
+                        found = true;
                     }
                 }
             }
         }
-        if (!found) printf("none");
-        printf("\n");
+        if (!found) fputs("none", stdout);
+        fputs("\n", stdout);
         if (c=='*') c='A'-1;
     }
 }
@@ -855,21 +844,6 @@ const char *AP_get_codons(char protein, int code_nr) {
 #include <test_unit.h>
 #endif
 
-static const char *allowed2string(const TransTables& allowed) {
-    const int    MAX_LEN = 41;
-    static char  buffer[MAX_LEN];
-    char        *out     = buffer;
-
-    for (int a = 0; a<AWT_CODON_TABLES; ++a) {
-        if (allowed.is_allowed(a)) {
-            out += sprintf(out, (out == buffer ? "%i" : ",%i"), a);
-        }
-    }
-    pn_assert((out-buffer)<MAX_LEN);
-    out[0] = 0;
-    return buffer;
-}
-
 void TEST_codon_check() {
     AP_initialize_codon_tables();
 
@@ -1033,7 +1007,7 @@ void TEST_codon_check() {
 
         TEST_EXPECT_NULL(failure);
         TEST_EXPECT(isCodon);
-        TEST_EXPECT_EQUAL(allowed2string(remaining), C.tables);
+        TEST_EXPECT_EQUAL(remaining.to_string(), C.tables);
     }
     for (int c = 0; not_codon[c].protein; ++c) {
         const test_not_codon& C = not_codon[c];

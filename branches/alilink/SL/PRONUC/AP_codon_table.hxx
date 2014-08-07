@@ -98,6 +98,22 @@ public:
         }
         return true;
     }
+
+    const char *to_string() const {
+        const int    MAX_LEN = 42;
+        static char  buffer[MAX_LEN];
+        char        *out     = buffer;
+
+        for (int a = 0; a<AWT_CODON_TABLES; ++a) {
+            if (is_allowed(a)) {
+                out += sprintf(out, ",%i", a);
+            }
+        }
+        pn_assert((out-buffer)<MAX_LEN);
+        out[0] = 0;
+        return buffer+1;
+    }
+
 };
 
 // --------------------------------------------------------------------------------
