@@ -1,6 +1,6 @@
 ARB change log
 
-Fixes for arb-6.0.2 (??? 2014):
+Fixes for arb-6.0.2 (8 Aug 2014):
 
  - compile issues on Snow Leopard (OSX 10.6)
  - merge Debian security fix for CVE-2008-5378
