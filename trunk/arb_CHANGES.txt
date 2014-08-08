@@ -10,6 +10,13 @@ Major changes for next release:
    * added option to cut-off DNA sequence (was done at end of sequence by old version. fixed)
    * fixed several minor bugs
 
+Fixes for arb-6.0.2 (8 Aug 2014):
+
+ - compile issues on Snow Leopard (OSX 10.6)
+ - merge Debian security fix for CVE-2008-5378
+ - small changes to build system for Debian
+ - add desktop integration files
+
 Fixes for arb-6.0.1 (22 Jul 2014):
 
  - arb_parsimony
