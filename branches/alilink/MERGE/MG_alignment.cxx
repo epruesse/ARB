@@ -9,18 +9,16 @@
 // =============================================================== //
 
 #include "merge.hxx"
+#include "MG_ali_admin.hxx"
 
 #include <awt_sel_boxes.hxx>
 #include <aw_root.hxx>
-#include <aw_question.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 #include <arb_strarray.h>
-#include <arb_global_defs.h>
 
 #include <unistd.h>
-#include "MG_ali_admin.hxx"
 
 #define AWAR_ALI_SRC AWAR_MERGE_TMP_SRC "alignment_name"
 #define AWAR_ALI_DST AWAR_MERGE_TMP_DST "alignment_name"

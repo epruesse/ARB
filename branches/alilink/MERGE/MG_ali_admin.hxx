@@ -11,8 +11,9 @@
 #ifndef MG_ALI_ADMIN_HXX
 #define MG_ALI_ADMIN_HXX
 
-class AW_window;
-class AW_root;
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
+#endif
 
 void MG_alignment_vars_callback(AW_root *aw_root, int db_nr);
 void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def);
