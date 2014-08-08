@@ -269,7 +269,7 @@ static AW_window *MG_create_alignment_window(AW_root *root, int db_nr) {
 
     sprintf(header, "ALIGNMENT CONTROL %i", db_nr);
     aws->init(root, header, header);
-    aws->load_xfig("merge/ad_align.fig");
+    aws->load_xfig("merge/ad_align.fig"); // @@@ elim
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");

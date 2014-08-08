@@ -226,104 +226,101 @@ static AW_window *create_alignment_create_window(AW_root *root)
 
 AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown) {
     // if 'aw_popmedown' points to a window, that window is popped down
-
     static AW_window_simple *aws = 0;
-
     if (aw_popmedown) aw_popmedown->hide();
+    if (!aws) {
+        aws = new AW_window_simple;
 
-    if (aws) return aws; // do not duplicate
+        aws->init(root, "INFO_OF_ALIGNMENT", "ALIGNMENT INFORMATION");
+        aws->load_xfig("ad_align.fig");
 
-    aws = new AW_window_simple;
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->init(root, "INFO_OF_ALIGNMENT", "ALIGNMENT INFORMATION");
-    aws->load_xfig("ad_align.fig");
+        aws->callback(makeHelpCallback("ad_align.hlp"));
+        aws->at("help");
+        aws->create_button("HELP", "HELP", "H");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->button_length(13);
 
-    aws->callback(makeHelpCallback("ad_align.hlp"));
-    aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
+        aws->at("delete");
+        aws->callback(ad_al_delete_cb);
+        aws->create_button("DELETE", "DELETE", "D");
 
-    aws->button_length(13);
+        aws->at("rename");
+        aws->callback(AW_POPUP, (AW_CL)create_alignment_rename_window, 0);
+        aws->create_button("RENAME", "RENAME", "R");
 
-    aws->at("delete");
-    aws->callback(ad_al_delete_cb);
-    aws->create_button("DELETE", "DELETE", "D");
+        aws->at("create");
+        aws->callback(AW_POPUP, (AW_CL)create_alignment_create_window, 0);
+        aws->create_button("CREATE", "CREATE", "N");
 
-    aws->at("rename");
-    aws->callback(AW_POPUP, (AW_CL)create_alignment_rename_window, 0);
-    aws->create_button("RENAME", "RENAME", "R");
+        aws->at("copy");
+        aws->callback(AW_POPUP, (AW_CL)create_alignment_copy_window, 0);
+        aws->create_button("COPY", "COPY", "C");
 
-    aws->at("create");
-    aws->callback(AW_POPUP, (AW_CL)create_alignment_create_window, 0);
-    aws->create_button("CREATE", "CREATE", "N");
+        aws->at("check_len");
+        aws->callback(ed_al_check_len_cb);
+        aws->create_button("CHECK_LEN", "CHECK LEN", "L");
 
-    aws->at("copy");
-    aws->callback(AW_POPUP, (AW_CL)create_alignment_copy_window, 0);
-    aws->create_button("COPY", "COPY", "C");
+        aws->at("align");
+        aws->callback(ed_al_align_cb);
+        aws->create_button("FORMAT", "FORMAT", "F");
 
-    aws->at("check_len");
-    aws->callback(ed_al_check_len_cb);
-    aws->create_button("CHECK_LEN", "CHECK LEN", "L");
+        aws->at("list");
+        awt_create_selection_list_on_alignments(GLOBAL.gb_main, aws, AWAR_DEFAULT_ALIGNMENT, "*=");
 
-    aws->at("align");
-    aws->callback(ed_al_align_cb);
-    aws->create_button("FORMAT", "FORMAT", "F");
+        aws->at("aligned");
+        aws->create_option_menu("presets/aligned", true);
+        aws->callback(ed_al_check_len_cb);
+        aws->insert_default_option("not formatted", "n", 0);
+        aws->callback(ed_al_align_cb);
+        aws->insert_option("formatted", "j", 1);
+        aws->update_option_menu();
 
-    aws->at("list");
-    awt_create_selection_list_on_alignments(GLOBAL.gb_main, aws, AWAR_DEFAULT_ALIGNMENT, "*=");
+        aws->at("auto_format");
+        aws->create_option_menu("presets/auto_format", true);
+        aws->callback(ed_al_check_auto_format);
+        aws->insert_default_option("ask", "a", 0);
+        aws->callback(ed_al_check_auto_format);
+        aws->insert_option("always", "", 1);
+        aws->callback(ed_al_check_auto_format);
+        aws->insert_option("never", "", 2);
+        aws->update_option_menu();
 
-    aws->at("aligned");
-    aws->create_option_menu("presets/aligned", true);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_default_option("not formatted", "n", 0);
-    aws->callback(ed_al_align_cb);
-    aws->insert_option("formatted", "j", 1);
-    aws->update_option_menu();
+        aws->at("len");
+        aws->create_input_field("presets/alignment_len", 7);
 
-    aws->at("auto_format");
-    aws->create_option_menu("presets/auto_format", true);
-    aws->callback(ed_al_check_auto_format);
-    aws->insert_default_option("ask", "a", 0);
-    aws->callback(ed_al_check_auto_format);
-    aws->insert_option("always", "", 1);
-    aws->callback(ed_al_check_auto_format);
-    aws->insert_option("never", "", 2);
-    aws->update_option_menu();
+        aws->at("type");
+        aws->create_option_menu("presets/alignment_type", true);
+        aws->insert_option("dna", "d", "dna");
+        aws->insert_option("rna", "r", "rna");
+        aws->insert_option("pro", "p", "ami");
+        aws->insert_default_option("???", "?", "usr");
+        aws->update_option_menu();
 
-    aws->at("len");
-    aws->create_input_field("presets/alignment_len", 7);
+        aws->at("security");
+        aws->create_option_menu("presets/security", true);
+        aws->callback(ed_al_check_len_cb);
+        aws->insert_option("0", "0", 0);
+        aws->callback(ed_al_check_len_cb);
+        aws->insert_option("1", "1", 1);
+        aws->callback(ed_al_check_len_cb);
+        aws->insert_option("2", "2", 2);
+        aws->callback(ed_al_check_len_cb);
+        aws->insert_option("3", "3", 3);
+        aws->callback(ed_al_check_len_cb);
+        aws->insert_option("4", "4", 4);
+        aws->callback(ed_al_check_len_cb);
+        aws->insert_option("5", "5", 5);
+        aws->callback(ed_al_check_len_cb);
+        aws->insert_default_option("6", "6", 6);
+        aws->update_option_menu();
 
-    aws->at("type");
-    aws->create_option_menu("presets/alignment_type", true);
-    aws->insert_option("dna", "d", "dna");
-    aws->insert_option("rna", "r", "rna");
-    aws->insert_option("pro", "p", "ami");
-    aws->insert_default_option("???", "?", "usr");
-    aws->update_option_menu();
-
-    aws->at("security");
-    aws->create_option_menu("presets/security", true);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_option("0", "0", 0);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_option("1", "1", 1);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_option("2", "2", 2);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_option("3", "3", 3);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_option("4", "4", 4);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_option("5", "5", 5);
-    aws->callback(ed_al_check_len_cb);
-    aws->insert_default_option("6", "6", 6);
-    aws->update_option_menu();
-
-    aws->at("rem");
-    aws->create_text_field("presets/alignment_rem");
+        aws->at("rem");
+        aws->create_text_field("presets/alignment_rem");
+    }
 
     return aws;
 }
