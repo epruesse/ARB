@@ -26,6 +26,9 @@
 #define AWAR_ALIGNED(db_nr)  awar_name_tmp(db_nr, "aligned")
 #define AWAR_SECURITY(db_nr) awar_name_tmp(db_nr, "security")
 
+// ---------------------------
+//      @@@ sync 108273910263
+
 void MG_alignment_vars_callback(AW_root *aw_root, int db_nr) {
     mg_assert(!GB_have_error());
 
@@ -85,6 +88,8 @@ static void MG_ad_al_delete_cb(AW_window *aww, int db_nr) {
     }
 }
 
+// -----------------------------
+//      @@@ sync 9264389714
 
 static void MG_ed_al_check_len_cb(AW_window *aww, int db_nr) {
     GBDATA *gb_main = get_gb_main(db_nr);
@@ -99,6 +104,9 @@ static void MG_ed_al_check_len_cb(AW_window *aww, int db_nr) {
     free(use);
 }
 
+// -----------------------------
+//      @@@ sync 0273492431
+
 static void MG_copy_delete_rename(AW_window * aww, int db_nr, int dele) {
     GBDATA *gb_main = get_gb_main(db_nr);
 
@@ -109,7 +117,9 @@ static void MG_copy_delete_rename(AW_window * aww, int db_nr, int dele) {
     GB_ERROR error = GB_begin_transaction(gb_main);
 
     if (!error) error = GBT_rename_alignment(gb_main, source, dest, (int)1, (int)dele);
-    if (!error) error = GBT_add_new_changekey(gb_main, GBS_global_string("%s/data", dest), GB_STRING);
+    if (!error) {
+        error = GBT_add_new_changekey(gb_main, GBS_global_string("%s/data", dest), GB_STRING);
+    }
 
     error = GB_end_transaction(gb_main, error);
     aww->hide_or_notify(error);
@@ -122,9 +132,11 @@ static void MG_copy_delete_rename(AW_window * aww, int db_nr, int dele) {
 static AW_window *create_alignment_copy_window(AW_root *root, int db_nr)
 {
     AW_window_simple *aws = new AW_window_simple;
-    char header[80];
-    sprintf(header, "ALIGNMENT COPY %i", db_nr);
-    aws->init(root, header, header);
+    {
+        char header[80];
+        sprintf(header, "ALIGNMENT COPY %i", db_nr);
+        aws->init(root, header, header);
+    }
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -147,9 +159,11 @@ static AW_window *create_alignment_copy_window(AW_root *root, int db_nr)
 static AW_window *MG_create_alignment_rename_window(AW_root *root, int db_nr)
 {
     AW_window_simple *aws = new AW_window_simple;
-    char header[80];
-    sprintf(header, "ALIGNMENT RENAME %i", db_nr);
-    aws->init(root, header, header);
+    {
+        char header[80];
+        sprintf(header, "ALIGNMENT RENAME %i", db_nr);
+        aws->init(root, header, header);
+    }
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -170,21 +184,26 @@ static AW_window *MG_create_alignment_rename_window(AW_root *root, int db_nr)
 }
 
 static void MG_aa_create_alignment(AW_window *aww, int db_nr) {
-    GBDATA   *gb_main      = get_gb_main(db_nr);
-    char     *name         = aww->get_root()->awar(AWAR_ALI_DEST(db_nr))->read_string();
-    GB_ERROR  error        = GB_begin_transaction(gb_main);
-    GBDATA   *gb_alignment = GBT_create_alignment(gb_main, name, 0, 0, 0, "dna");
+    GBDATA   *gb_main = get_gb_main(db_nr);
+    GB_ERROR  error   = GB_begin_transaction(gb_main);
+    if (!error) {
+        char     *name         = aww->get_root()->awar(AWAR_ALI_DEST(db_nr))->read_string();
+        GBDATA   *gb_alignment = GBT_create_alignment(gb_main, name, 0, 0, 0, "dna");
 
-    if (!gb_alignment) error = GB_await_error();
+        if (!gb_alignment) error = GB_await_error();
+        // else @@@ add changekey
+        free(name);
+    }
     GB_end_transaction_show_error(gb_main, error, aw_message);
-    free(name);
 }
 
 static AW_window *MG_create_alignment_create_window(AW_root *root, int db_nr) {
     AW_window_simple *aws = new AW_window_simple;
-    char header[80];
-    sprintf(header, "ALIGNMENT CREATE %i", db_nr);
-    aws->init(root, header, header);
+    {
+        char header[80];
+        sprintf(header, "ALIGNMENT CREATE %i", db_nr);
+        aws->init(root, header, header);
+    }
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -205,72 +224,78 @@ static AW_window *MG_create_alignment_create_window(AW_root *root, int db_nr) {
 }
 
 AW_window *MG_create_alignment_window(AW_root *root, int db_nr) {
-    GBDATA           *gb_main = get_gb_main(db_nr);
-    AW_window_simple *aws = new AW_window_simple;
-    char              header[80];
+    static AW_window_simple *aws = 0;
+    if (!aws) {
+        GBDATA *gb_main = get_gb_main(db_nr);
+        aws             = new AW_window_simple;
 
-    sprintf(header, "ALIGNMENT CONTROL %i", db_nr);
-    aws->init(root, header, header);
-    aws->load_xfig("merge/ad_align.fig"); // @@@ elim
+        char header[80];
+        sprintf(header, "ALIGNMENT CONTROL %i", db_nr);
+        aws->init(root, header, header);
 
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->load_xfig("merge/ad_align.fig"); // @@@ use same fig?
 
-    aws->callback(makeHelpCallback("ad_align.hlp"));
-    aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->button_length(13);
+        aws->callback(makeHelpCallback("ad_align.hlp"));
+        aws->at("help");
+        aws->create_button("HELP", "HELP", "H");
 
-    aws->at("list");
-    awt_create_selection_list_on_alignments(gb_main, aws, AWAR_ALI_NAME(db_nr), "*=");
+        // button column
+        aws->button_length(13);
 
-    aws->at("delete");
-    aws->callback(makeWindowCallback(MG_ad_al_delete_cb, db_nr));
-    aws->create_button("DELETE", "DELETE", "D");
+        aws->at("delete");
+        aws->callback(makeWindowCallback(MG_ad_al_delete_cb, db_nr));
+        aws->create_button("DELETE", "DELETE", "D");
 
-    aws->at("rename");
-    aws->callback(makeCreateWindowCallback(MG_create_alignment_rename_window, db_nr));
-    aws->create_button("RENAME", "RENAME", "R");
+        aws->at("rename");
+        aws->callback(makeCreateWindowCallback(MG_create_alignment_rename_window, db_nr));
+        aws->create_button("RENAME", "RENAME", "R");
 
-    aws->at("create");
-    aws->callback(makeCreateWindowCallback(MG_create_alignment_create_window, db_nr));
-    aws->create_button("CREATE", "CREATE", "N");
+        aws->at("create");
+        aws->callback(makeCreateWindowCallback(MG_create_alignment_create_window, db_nr));
+        aws->create_button("CREATE", "CREATE", "N");
 
-    aws->at("copy");
-    aws->callback(makeCreateWindowCallback(create_alignment_copy_window, db_nr));
-    aws->create_button("COPY", "COPY", "C");
+        aws->at("copy");
+        aws->callback(makeCreateWindowCallback(create_alignment_copy_window, db_nr));
+        aws->create_button("COPY", "COPY", "C");
 
-    aws->at("aligned");
-    aws->create_option_menu(AWAR_ALIGNED(db_nr), true);
-    aws->insert_option("justified", "j", 1);
-    aws->insert_default_option("not justified", "n", 0);
-    aws->update_option_menu();
+        // ali selection list
+        aws->at("list");
+        awt_create_selection_list_on_alignments(gb_main, aws, AWAR_ALI_NAME(db_nr), "*=");
 
-    aws->at("len");
-    aws->create_input_field(AWAR_ALI_LEN(db_nr), 8);
+        // alignment settings
+        aws->at("aligned");
+        aws->create_option_menu(AWAR_ALIGNED(db_nr), true);
+        aws->insert_default_option("not justified", "n", 0);
+        aws->insert_option("justified", "j", 1);
+        aws->update_option_menu();
 
-    aws->at("type");
-    aws->create_option_menu(AWAR_ALI_TYPE(db_nr), true);
-    aws->insert_option("dna", "d", "dna");
-    aws->insert_option("rna", "r", "rna");
-    aws->insert_option("pro", "p", "ami");
-    aws->insert_default_option("???", "?", "usr");
-    aws->update_option_menu();
+        aws->at("len");
+        aws->create_input_field(AWAR_ALI_LEN(db_nr), 8);
 
-    aws->at("security");
-    aws->callback(makeWindowCallback(MG_ed_al_check_len_cb, db_nr));
-    aws->create_option_menu(AWAR_SECURITY(db_nr), true);
-    aws->insert_option("0", "0", 0);
-    aws->insert_option("1", "1", 1);
-    aws->insert_option("2", "2", 2);
-    aws->insert_option("3", "3", 3);
-    aws->insert_option("4", "4", 4);
-    aws->insert_option("5", "5", 5);
-    aws->insert_default_option("6", "6", 6);
-    aws->update_option_menu();
+        aws->at("type");
+        aws->create_option_menu(AWAR_ALI_TYPE(db_nr), true);
+        aws->insert_option("dna", "d", "dna");
+        aws->insert_option("rna", "r", "rna");
+        aws->insert_option("pro", "p", "ami");
+        aws->insert_default_option("???", "?", "usr");
+        aws->update_option_menu();
 
+        aws->at("security");
+        aws->callback(makeWindowCallback(MG_ed_al_check_len_cb, db_nr));
+        aws->create_option_menu(AWAR_SECURITY(db_nr), true);
+        aws->insert_option("0", "0", 0);
+        aws->insert_option("1", "1", 1);
+        aws->insert_option("2", "2", 2);
+        aws->insert_option("3", "3", 3);
+        aws->insert_option("4", "4", 4);
+        aws->insert_option("5", "5", 5);
+        aws->insert_default_option("6", "6", 6);
+        aws->update_option_menu();
+    }
     return aws;
 }
 
