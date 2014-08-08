@@ -25,6 +25,7 @@
 #include <ctype.h>
 
 // #define PTM_TRACE_MAX_MEM_USAGE
+// #define PTM_TRACE_PARTITION_DETECTION
 
 // AISC_MKPT_PROMOTE: class DataLoc;
 
@@ -348,7 +349,7 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable,
                 PartitionSpec curr(forced_passes, max_kb_for_passes(prob, forced_passes, overallBases), depth);
                 if (curr.isBetterThan(best, max_kb_usable)) {
                     best = curr;
-#if defined(DEBUG)
+#if defined(PTM_TRACE_PARTITION_DETECTION)
                     best.print_info(stdout, max_kb_usable);
 #endif
                 }
@@ -359,7 +360,7 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable,
                 PartitionSpec curr(passes, max_kb_for_passes(prob, passes, overallBases), depth);
                 if (curr.isBetterThan(best, max_kb_usable)) {
                     best = curr;
-#if defined(DEBUG)
+#if defined(PTM_TRACE_PARTITION_DETECTION)
                     best.print_info(stdout, max_kb_usable);
 #endif
                 }
