@@ -14,7 +14,6 @@
 #include <arbdbt.h>
 #include <ad_cb.h>
 #include <arb_str.h>
-#include <algorithm>
 
 #define pn_assert(cond) arb_assert(cond)
 
@@ -154,7 +153,7 @@ static int codon_defined_in(const char *codon, const char *codons) {
 // must be compatible with DIST/PH_protdist.cxx !!
 // except that this table has an 's' insertion !!!
 
-#define T2I_ENTRIES_MAX 196 // maximum number of generated translations (by code number 11)
+#define T2I_ENTRIES_MAX 190
 
 AWT_translator::AWT_translator(int arb_protein_code_nr) :
     distance_meter(0),
@@ -383,36 +382,59 @@ static void user_code_nr_changed_cb(GBDATA *gb_awar) {
 
 #define CACHED_TRANSLATORS 4
 
+#if defined(DEBUG)
+// #define DUMP_TRANSLATOR_ALLOC
+#endif // DEBUG
+
+
 AWT_translator *AWT_get_translator(int code_nr) {
-    static SmartPtr<AWT_translator> cached[CACHED_TRANSLATORS];
+    static AWT_translator *cached[CACHED_TRANSLATORS];
 
-    if (cached[0].isNull() || cached[0]->CodeNr() != code_nr) { // most recent != requested
-        SmartPtr<AWT_translator> translator;
+    if (!cached[0] || cached[0]->CodeNr() != code_nr) { // most recent != requested
+        AWT_translator *translator = 0;
+        int             i;
 
-        int i;
         for (i = 1; i<CACHED_TRANSLATORS; i++) {
-            if (cached[i].isSet() && cached[i]->CodeNr() == code_nr) {
+            if (cached[i] && cached[i]->CodeNr() == code_nr) {
                 // found existing translator
                 translator = cached[i];
-                cached[i].SetNull();
+                cached[i]  = 0;
                 break;
             }
         }
 
-        if (translator.isNull()) {
+        if (!translator) {
             translator = new AWT_translator(code_nr);
+
+#if defined(DUMP_TRANSLATOR_ALLOC)
+            static int allocCount = 0;
+            allocCount++;
+            printf("Alloc translator for code_nr=%i (allocCount=%i)\n", translator->CodeNr(), allocCount);
+#endif // DUMP_TRANSLATOR_ALLOC
+
         }
 
         // insert new or found translator at front and shift existing to higher indices:
-        for (i = 0; i<CACHED_TRANSLATORS && translator.isSet(); i++) {
-            std::swap(cached[i], translator);
+        for (i = 0; i<CACHED_TRANSLATORS && translator; i++) {
+            AWT_translator *move = cached[i];
+            cached[i]  = translator;
+            translator = move;
         }
 
-        // deletes oldest translator,  if no empty array position was found:
+        // delete oldest translator,  if no empty array position was found:
+        if (translator) {
+#if defined(DUMP_TRANSLATOR_ALLOC)
+            static int freeCount = 0;
+            freeCount++;
+            printf("Free translator for code_nr=%i (freeCount=%i)\n", translator->CodeNr(), freeCount);
+#endif // DUMP_TRANSLATOR_ALLOC
+
+            delete translator;
+        }
     }
 
     pn_assert(cached[0]->CodeNr() == code_nr);
-    return &*cached[0];
+    return cached[0];
 }
 
 int AWT_default_protein_type(GBDATA *gb_main) {
@@ -438,26 +460,3 @@ AWT_translator *AWT_get_user_translator(GBDATA *gb_main) {
     return AWT_get_translator(AWT_default_protein_type(gb_main));
 }
 
-// --------------------------------------------------------------------------------
-
-#ifdef UNIT_TESTS
-#ifndef TEST_UNIT_H
-#include <test_unit.h>
-#endif
-
-static int test_code_nr = -1;
-static void translator_instance() {
-    AWT_translator instance(test_code_nr);
-}
-
-void TEST_translator_instantiation() {
-    for (int i = 0; i<AWT_CODON_TABLES; ++i) {
-        TEST_ANNOTATE(GBS_global_string("i=%i", i));
-        test_code_nr = i;
-        TEST_EXPECT_NO_SEGFAULT(translator_instance);
-    }
-}
-
-#endif // UNIT_TESTS
-
-// --------------------------------------------------------------------------------

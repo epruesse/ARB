@@ -373,14 +373,18 @@ int ED4_members::members_ok() const {
 }
 #endif // ASSERTION_USED
 
-ED4_members::ED4_members(ED4_manager *the_owner) {
-    my_owner   = the_owner;
+ED4_members::ED4_members(ED4_manager *the_owner)
+{
+    my_owner = the_owner;
     memberList = (ED4_base **) calloc(1, sizeof(ED4_base*));
-    if (!memberList) GBK_terminate("out of memory");
+
+    if (memberList == NULL) {
+        aw_popup_exit("ED4_member::ED4_member: memory problem!");
+    }
 
     memberList[0] = NULL;
     no_of_members = 0;
-    size_of_list  = 1;
+    size_of_list = 1;
 }
 
 

@@ -15,12 +15,6 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
-#ifndef STATIC_ASSERT_H
-#include <static_assert.h>
-#endif
-#ifndef _STDINT_H
-#include <stdint.h>
-#endif
 
 #define pn_assert(cond) arb_assert(cond)
 
@@ -34,68 +28,58 @@ struct AWT_Codon_Code_Definition {
 };
 
 #define AWT_CODON_TABLES 17     // number of different Amino-Translation-Tables
-#define AWT_MAX_CODONS   64     // maximum of possible codon ( = 4^3)
+#define AWT_MAX_CODONS 64       // maximum of possible codon (= 4^3)
 
 const int AWAR_PROTEIN_TYPE_bacterial_code_index = 8; // contains the index of the bacterial code table
 
 // --------------------------------------------------------------------------------
 
-#define ALL_TABLES_MASK ((1<<AWT_CODON_TABLES)-1)
+class AWT_allowedCode {
+    char allowed[AWT_CODON_TABLES];
 
-class TransTables {
-    uint32_t allowed;
+    void copy(const AWT_allowedCode& other) {
+        for (int a=0; a<AWT_CODON_TABLES; a++) {
+            allowed[a] = other.allowed[a];
+        }
+    }
+    void set(int val) {
+        for (int a=0; a<AWT_CODON_TABLES; a++) {
+            allowed[a] = val;
+        }
+    }
 
-    static uint32_t bitmask(int nr) { pn_assert(nr >= 0 && nr<AWT_CODON_TABLES); return 1<<nr; }
+    void legal(int IF_ASSERTION_USED(nr)) const { pn_assert(nr >= 0 && nr<AWT_CODON_TABLES); }
 
 public:
-    TransTables() { allowAll(); }
+    AWT_allowedCode() { set(1); }
+    AWT_allowedCode(const AWT_allowedCode& other) { copy(other); }
+    AWT_allowedCode& operator=(const AWT_allowedCode& other)  { copy(other); return *this; }
 
-    bool is_allowed(int nr) const { return (allowed & bitmask(nr)) != 0; }
-    bool any()  const { return  allowed; }
-    bool none() const { return !allowed; }
-    bool all() const { return allowed == ALL_TABLES_MASK; }
+    int is_allowed(int nr) const { legal(nr); return allowed[nr]!=0; }
+    void allow(int nr) { legal(nr); allowed[nr]=1; }
+    void forbid(int nr) { legal(nr); allowed[nr]=0; }
 
-    void allow(int nr) { allowed |= bitmask(nr); }
-    void forbid(int nr) { allowed &= ~bitmask(nr); }
-    void forbid(const TransTables& other) { allowed &= ~other.allowed; }
+    void forbidAll() { set(0); }
+    void allowAll() { set(1); }
 
-    void allowAll() {
-        STATIC_ASSERT(sizeof(allowed)*8 > AWT_CODON_TABLES); // one bit wasted
-        allowed = ALL_TABLES_MASK;
+    void forbidAllBut(int nr) {
+        legal(nr);
+        for (int a=0; a<AWT_CODON_TABLES; a++) {
+            if (a != nr) allowed[a] = 0;
+        }
     }
-    void forbidAll() { allowed = 0; }
-    void forbidAllBut(int nr) { allowed &= bitmask(nr); }
 
     int explicit_table() const {
-        // return explicit table number (or -1 if not exactly one table is allowed)
-        if (any()) {
-            uint32_t tabs = allowed;
-            for (int t = 0; t<AWT_CODON_TABLES; ++t) {
-                if (tabs&1) return (tabs == 1) ? t : -1;
-                tabs >>= 1;
-            }
-            pn_assert(0);
-        }
-        return -1;
-    }
-
-    bool is_subset_of(const TransTables& other) const { return (allowed&other.allowed) == allowed; }
-
-    const char *to_string() const {
-        const int    MAX_LEN = 42;
-        static char  buffer[MAX_LEN];
-        char        *out     = buffer;
-
-        for (int a = 0; a<AWT_CODON_TABLES; ++a) {
-            if (is_allowed(a)) {
-                out += sprintf(out, ",%i", a);
+        // return explicit table number (or -1 if not exactly 1 table is allowed)
+        int table = -1;
+        for (int i = 0; i<AWT_CODON_TABLES; ++i) {
+            if (allowed[i]) {
+                if (table != -1) return -1;
+                table = i;
             }
         }
-        pn_assert((out-buffer)<MAX_LEN);
-        out[0] = 0;
-        return buffer+1;
+        return table;
     }
-
 };
 
 // --------------------------------------------------------------------------------
@@ -105,7 +89,7 @@ void AP_initialize_codon_tables();
 int AWT_embl_transl_table_2_arb_code_nr(int embl_code_nr);
 int AWT_arb_code_nr_2_embl_transl_table(int arb_code_nr);
 
-bool        AWT_is_codon(char protein, const char *const dna, const TransTables& allowed, TransTables& allowed_left, const char **fail_reason_ptr = 0);
+bool        AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_code, AWT_allowedCode& allowed_code_left, const char **fail_reason = 0);
 const char *AP_get_codons(char protein, int code_nr);
 
 char AWT_is_start_codon(const char *dna, int arb_code_nr);

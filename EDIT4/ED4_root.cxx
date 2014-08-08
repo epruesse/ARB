@@ -491,19 +491,17 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE IF_ASSERT
     }
 }
 
-ARB_ERROR ED4_root::init_alignment() {
+ED4_returncode ED4_root::init_alignment() {
     GB_transaction ta(GLOBAL_gb_main);
 
     alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
     alignment_type = GBT_get_alignment_type(GLOBAL_gb_main, alignment_name);
     if (alignment_type==GB_AT_UNKNOWN) {
-        return GBS_global_string("You have to select a valid alignment before you can start ARB_EDIT4\n(%s)", GB_await_error());
+        aw_popup_exit("You have to select a valid alignment before you can start ARB_EDIT4");
     }
 
     GBDATA *gb_alignment = GBT_get_alignment(GLOBAL_gb_main, alignment_name);
-    if (!gb_alignment) {
-        return GBS_global_string("You can't edit without an existing alignment\n(%s)", GB_await_error());
-    }
+    if (!gb_alignment) aw_popup_exit("You can't edit without an existing alignment");
 
     GBDATA *gb_alignment_len = GB_search(gb_alignment, "alignment_len", GB_FIND);
     int alignment_length = GB_read_int(gb_alignment_len);
@@ -513,7 +511,7 @@ ARB_ERROR ED4_root::init_alignment() {
 
     aw_root->awar_string(AWAR_EDITOR_ALIGNMENT, alignment_name);
 
-    return NULL;
+    return ED4_R_OK;
 }
 
 void ED4_root::recalc_font_group() {
@@ -1596,10 +1594,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->create_menu("Properties", "P", AWM_ALL);
 
-#ifdef ARB_MOTIF
-    awmm->insert_menu_topic("props_frame", "Frame Settings ", "F", 0, AWM_ALL, AW_preset_window);
-#endif
-
+    awmm->insert_menu_topic("props_frame",     "Frame Settings ",       "F", 0,                  AWM_ALL, AW_preset_window);
     awmm->insert_menu_topic("props_options",   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, ED4_create_level_1_options_window);
     awmm->insert_menu_topic("props_consensus", "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, ED4_create_consensus_definition_window);
     awmm->sep______________();
@@ -1670,18 +1665,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->callback(ED4_quit_editor);
     awmm->help_text("quit.hlp");
 
-    if (clone) {
-        awmm->create_button("CLOSE", "#close.xpm");
-#if defined(ARB_GTK)
-        awmm->set_close_action("CLOSE");
-#endif
-    }
-    else {
-        awmm->create_button("QUIT", "#quit.xpm");
-#if defined(ARB_GTK)
-        awmm->set_close_action("QUIT");
-#endif
-    }
+    if (clone) awmm->create_button("CLOSE", "#close.xpm");
+    else       awmm->create_button("QUIT", "#quit.xpm");
 
     awmm->at("help");
     awmm->callback(AW_help_entry_pressed);
@@ -1910,8 +1895,6 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 #if defined(DEBUG)
     AWT_check_action_ids(awmm->get_root(), "");
 #endif
-
-    announce_useraction_in(awmm);
 
     return (ED4_R_OK);
 }

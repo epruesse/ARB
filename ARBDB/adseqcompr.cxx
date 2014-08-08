@@ -1116,7 +1116,6 @@ void TEST_SLOW_sequence_compression() {
 
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(compressed));
 }
-TEST_PUBLISH(TEST_SLOW_sequence_compression);
 
 #endif // UNIT_TESTS
 

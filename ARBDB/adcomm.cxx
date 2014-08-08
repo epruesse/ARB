@@ -88,15 +88,13 @@ static void g_bcms_delete_Socinf(Socinf *THIS) {
 }
 
 struct gb_server_data {
-    int     hso;
-    char   *unix_name;
-    Socinf *soci;
-    long    nsoc;
-    long    timeout;
-    GBDATA *gb_main;
-    int     wait_for_new_request;
-    bool    inside_remote_action;
-
+    int                hso;
+    char              *unix_name;
+    Socinf            *soci;
+    long               nsoc;
+    long               timeout;
+    GBDATA            *gb_main;
+    int                wait_for_new_request;
     gbcms_delete_list *del_first; // All deleted items, that are yet unknown to at least one client
     gbcms_delete_list *del_last;
 };
@@ -182,10 +180,11 @@ GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) {
         }
         else {
             int   socket;
-            char *unix_name = NULL;
+            char *unix_name;
 
-            error = gbcm_open_socket(path, false, &socket, &unix_name);
+            error = gbcm_open_socket(path, TCP_NODELAY, 0, &socket, &unix_name);
             if (!error) {
+                ASSERT_RESULT_PREDICATE(is_default_or_ignore_sighandler, INSTALL_SIGHANDLER(SIGPIPE, gbcms_sigpipe, "GBCMS_open"));
                 ASSERT_RESULT(SigHandler, SIG_DFL,                       INSTALL_SIGHANDLER(SIGHUP, gbcms_sighup, "GBCMS_open"));
 
                 gbcms_gb_main = gb_main->as_container();
@@ -1583,33 +1582,6 @@ GB_ERROR gbcms_add_to_delete_list(GBDATA *gbd) {
         }
     }
     return 0;
-}
-
-void GB_set_remote_action(GBDATA *gbd, bool in_action) {
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-
-    gb_assert(Main->is_server()); // GB_set_remote_action not allowed from clients
-    if (Main->is_server()) {
-        gb_server_data *hs = Main->server_data;
-        gb_assert(hs); // have no server data (program logic error)
-        if (hs) {
-            gb_assert(hs->inside_remote_action != in_action);
-            hs->inside_remote_action = in_action;
-        }
-    }
-}
-bool GB_inside_remote_action(GBDATA *gbd) {
-    GB_MAIN_TYPE *Main   = GB_MAIN(gbd);
-    bool          inside = false;
-
-    gb_assert(Main->is_server()); // GB_inside_remote_action not allowed from clients
-    if (Main->is_server()) {
-        gb_server_data *hs = Main->server_data;
-        if (hs) {
-            inside = hs->inside_remote_action;
-        }
-    }
-    return inside;
 }
 
 long GB_read_clients(GBDATA *gbd) {

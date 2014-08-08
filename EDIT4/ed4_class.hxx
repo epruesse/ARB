@@ -777,7 +777,7 @@ public:
             fputs("scrollbars not in sync with scrolled_rect:\n", stderr);
 #if defined(ARB_GTK)
 #define POSTYPE "%zu"
-#else // ARB_MOTIF
+#else
 #define POSTYPE "%i"
 #endif
             fprintf(stderr, "    aww->slider_pos_vertical  =" POSTYPE " scrolled_rect->top_dim() =%f\n", aww->slider_pos_vertical,   scrolled_rect.top_dim());
@@ -1613,7 +1613,7 @@ public:
 
     // Initializing functions
     ED4_returncode  create_hierarchy(char *area_string_middle, char *area_string_top);
-    ARB_ERROR init_alignment();
+    ED4_returncode  init_alignment();
     void recalc_font_group();
 
     AW_window *create_new_window();

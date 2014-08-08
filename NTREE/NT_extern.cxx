@@ -426,7 +426,7 @@ static AW_window *NT_create_save_quick_as_window(AW_root *aw_root, const char *b
 }
 
 static void NT_database_optimization(AW_window *aww) {
-    arb_progress progress("Optimizing database compression", 2);
+    arb_progress progress("Optimizing database", 2);
 
     GB_push_my_security(GLOBAL.gb_main);
     GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
@@ -469,7 +469,7 @@ static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     aw_root->awar_string("tmp/nt/arbdb/optimize_tree_name", largest_tree);
 
     aws = new AW_window_simple;
-    aws->init(aw_root, "OPTIMIZE_DATABASE", "Optimize database compression");
+    aws->init(aw_root, "OPTIMIZE_DATABASE", "OPTIMIZE DATABASE");
     aws->load_xfig("optimize.fig");
 
     aws->at("trees");
@@ -517,7 +517,7 @@ static AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
     aws->at("optimize");
     aws->callback(NT_create_database_optimization_window);
     aws->help_text("optimize.hlp");
-    aws->create_autosize_button("OPTIMIZE", "Optimize database compression");
+    aws->create_button("OPTIMIZE", "OPTIMIZE");
 
     aws->at("save"); aws->callback(NT_save_as_cb);
     aws->create_button("SAVE", "SAVE", "S");
@@ -541,7 +541,6 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_BASELINEWIDTH,    "line_width" },
     { AWAR_DTREE_VERICAL_DIST,     "vert_dist" },
     { AWAR_DTREE_AUTO_JUMP,        "auto_jump" },
-    { AWAR_DTREE_AUTO_JUMP_TREE,   "auto_jump_tree" },
     { AWAR_DTREE_SHOW_CIRCLE,      "show_circle" },
     { AWAR_DTREE_SHOW_BRACKETS,    "show_brackets" },
     { AWAR_DTREE_USE_ELLIPSE,      "use_ellipse" },
@@ -566,72 +565,75 @@ static void tree_setting_restore_config(AW_window *aww, const char *stored_strin
 
 static AW_window *NT_create_tree_settings_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(aw_root, "TREE_PROPS", "TREE SETTINGS");
-        aws->load_xfig("awt/tree_settings.fig");
+    if (aws) return (AW_window *)aws;
 
-        aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+    aws = new AW_window_simple;
+    aws->init(aw_root, "TREE_PROPS", "TREE SETTINGS");
+    aws->load_xfig("awt/tree_settings.fig");
 
-        aws->at("help");
-        aws->callback(makeHelpCallback("nt_tree_settings.hlp"));
-        aws->create_button("HELP", "HELP", "H");
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("button");
-        aws->auto_space(10, 10);
-        aws->label_length(30);
+    aws->at("help");
+    aws->callback(makeHelpCallback("nt_tree_settings.hlp"));
+    aws->create_button("HELP", "HELP", "H");
 
-        aws->label("Base line width");
-        aws->create_input_field(AWAR_DTREE_BASELINEWIDTH, 4);
-        aws->at_newline();
+    aws->at("button");
+    aws->auto_space(10, 10);
+    aws->label_length(30);
 
-        aws->label("Relative vertical distance");
-        aws->create_input_field(AWAR_DTREE_VERICAL_DIST, 4);
-        aws->at_newline();
+    aws->label("Base line width");
+    aws->create_input_field(AWAR_DTREE_BASELINEWIDTH, 4);
+    aws->at_newline();
 
-        TREE_insert_jump_option_menu(aws, "On species change", AWAR_DTREE_AUTO_JUMP);
-        TREE_insert_jump_option_menu(aws, "On tree change",    AWAR_DTREE_AUTO_JUMP_TREE);
+    aws->label("Relative vertical distance");
+    aws->create_input_field(AWAR_DTREE_VERICAL_DIST, 4);
+    aws->at_newline();
 
-        aws->label("Show group brackets");
-        aws->create_toggle(AWAR_DTREE_SHOW_BRACKETS);
-        aws->at_newline();
+    aws->label("Auto jump");
+    aws->create_toggle(AWAR_DTREE_AUTO_JUMP);
+    aws->at_newline();
 
-        aws->label("Show bootstrap circles");
-        aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
-        aws->at_newline();
+    aws->label("Show group brackets");
+    aws->create_toggle(AWAR_DTREE_SHOW_BRACKETS);
+    aws->at_newline();
 
-        aws->label("Use ellipses");
-        aws->create_toggle(AWAR_DTREE_USE_ELLIPSE);
-        aws->at_newline();
+    aws->label("Show bootstrap circles");
+    aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
+    aws->at_newline();
 
-        aws->label("Bootstrap circle zoom factor");
-        aws->create_input_field(AWAR_DTREE_CIRCLE_ZOOM, 4);
-        aws->at_newline();
+    aws->label("Use ellipses");
+    aws->create_toggle(AWAR_DTREE_USE_ELLIPSE);
+    aws->at_newline();
 
-        aws->label("Boostrap radius limit");
-        aws->create_input_field(AWAR_DTREE_CIRCLE_MAX_SIZE, 4);
-        aws->at_newline();
+    aws->label("Bootstrap circle zoom factor");
+    aws->create_input_field(AWAR_DTREE_CIRCLE_ZOOM, 4);
+    aws->at_newline();
 
-        aws->label("Grey Level of Groups%");
-        aws->create_input_field(AWAR_DTREE_GREY_LEVEL, 4);
-        aws->at_newline();
+    aws->label("Boostrap radius limit");
+    aws->create_input_field(AWAR_DTREE_CIRCLE_MAX_SIZE, 4);
+    aws->at_newline();
 
-        aws->label("Text zoom/pad (dendro)");
-        aws->create_toggle(AWAR_DTREE_DENDRO_ZOOM_TEXT);
-        aws->create_input_field(AWAR_DTREE_DENDRO_XPAD, 4);
-        aws->at_newline();
+    aws->label("Grey Level of Groups%");
+    aws->create_input_field(AWAR_DTREE_GREY_LEVEL, 4);
+    aws->at_newline();
 
-        aws->label("Text zoom/pad (radial)");
-        aws->create_toggle(AWAR_DTREE_RADIAL_ZOOM_TEXT);
-        aws->create_input_field(AWAR_DTREE_RADIAL_XPAD, 4);
-        aws->at_newline();
+    aws->label("Text zoom/pad (dendro)");
+    aws->create_toggle(AWAR_DTREE_DENDRO_ZOOM_TEXT);
+    aws->create_input_field(AWAR_DTREE_DENDRO_XPAD, 4);
+    aws->at_newline();
 
-        aws->at("config");
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "tree_settings", tree_setting_store_config, tree_setting_restore_config, 0, 0);
-    }
-    return aws;
+    aws->label("Text zoom/pad (radial)");
+    aws->create_toggle(AWAR_DTREE_RADIAL_ZOOM_TEXT);
+    aws->create_input_field(AWAR_DTREE_RADIAL_XPAD, 4);
+    aws->at_newline();
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "tree_settings", tree_setting_store_config, tree_setting_restore_config, 0, 0);
+
+    return (AW_window *)aws;
+
 }
 
 enum streamSource { FROM_PIPE, FROM_FILE };
@@ -1028,15 +1030,15 @@ static void canvas_tree_awar_changed_cb(AW_awar *, bool, AWT_canvas *ntw) {
 static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     GB_push_transaction(GLOBAL.gb_main);
 
-    char        window_title[256];
-    const char *awar_tree = NULL;
+    char  window_title[256];
+    char * const awar_tree = (char *)GB_calloc(sizeof(char), strlen(AWAR_TREE) + 10);          // do not free this
 
     if (clone) {
-        awar_tree = GB_keep_string(GBS_global_string_copy(AWAR_TREE "_%i", clone));
+        sprintf(awar_tree, AWAR_TREE "_%i", clone);
         sprintf(window_title, "ARB_NT_%i", clone);
     }
     else {
-        awar_tree = AWAR_TREE;
+        sprintf(awar_tree, AWAR_TREE);
         sprintf(window_title, "ARB_NT");
     }
     AW_window_menu_modes *awm = new AW_window_menu_modes;
@@ -1079,8 +1081,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
         AWT_registerTreeAwarCallback(tree_awar, makeTreeAwarCallback(canvas_tree_awar_changed_cb, ntw), false);
     }
 
-    awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, false));
-    awr->awar(AWAR_TREE_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, true));
+    awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw));
 
     awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback(makeRootCallback(AWT_resize_cb, ntw));
 
@@ -1144,7 +1145,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
                 awm->insert_menu_topic("new_window", "New window (same database)", "N", "newwindow.hlp", AWM_ALL, makeCreateWindowCallback(popup_new_main_window, clone+1));
             }
             awm->sep______________();
-            awm->insert_menu_topic("optimize_db",  "Optimize database compression", "O", "optimize.hlp",  AWM_ALL, NT_create_database_optimization_window);
+            awm->insert_menu_topic("optimize_db",  "Optimize database",          "O", "optimize.hlp",  AWM_ALL, NT_create_database_optimization_window);
             awm->sep______________();
 
             awm->insert_sub_menu("Import",      "I");
@@ -1217,8 +1218,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->insert_sub_menu("Sort Species",         "s");
             {
-                awm->insert_menu_topic("$sort_by_field", "According to Database Entries", "D", "sp_sort_fld.hlp",  AWM_ALL, NT_create_resort_window);
-                awm->insert_menu_topic("$sort_by_tree",  "According to Phylogeny",        "P", "sp_sort_phyl.hlp", AWM_ALL, NT_resort_data_by_phylogeny, (AW_CL)ntw, 0);
+                awm->insert_menu_topic("sort_by_field", "According to Database Entries", "D", "sp_sort_fld.hlp",  AWM_ALL, NT_create_resort_window);
+                awm->insert_menu_topic("sort_by_tree",  "According to Phylogeny",        "P", "sp_sort_phyl.hlp", AWM_ALL, NT_resort_data_by_phylogeny, (AW_CL)ntw,                    0);
             }
             awm->close_sub_menu();
 
@@ -1278,7 +1279,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->insert_sub_menu("Align Sequences",  "S");
             {
-                awm->insert_menu_topic("realign_dna", "Realign DNA according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, NT_create_realign_dna_window);
+                awm->insert_menu_topic("realign_dna", "Realign nucleic acid according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, NT_create_realign_dna_window);
                 GDE_load_menu(awm, AWM_ALL, "Align");
             }
             awm->close_sub_menu();
@@ -1698,7 +1699,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     awm->at_set_to(false, false, ((2-is_genome_db)*EDIT_XSIZE), EDIT_YSIZE);
     awm->callback(NT_start_editor_on_tree, 0, (AW_CL)ntw);
     awm->help_text("arb_edit4.hlp");
-    awm->create_button("EDIT_SEQUENCES", is_genome_db ? "#editor_small.xpm" : "#editor.xpm");
+    awm->create_button("EDIT_SEQUENCES", "#editor.xpm");
 
     if (is_genome_db) {
         awm->at_set_to(false, false, EDIT_XSIZE, EDIT_YSIZE);

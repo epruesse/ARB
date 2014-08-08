@@ -95,7 +95,6 @@ void TEST_linefeed_conversion() {
     TEST_EXPECT_READS_SAME(cunix,fmac);
     TEST_EXPECT_READS_SAME(cunix,fbroken);
 }
-TEST_PUBLISH(TEST_linefeed_conversion);
 
 #endif // UNIT_TESTS
 

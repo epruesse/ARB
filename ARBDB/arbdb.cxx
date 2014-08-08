@@ -2637,15 +2637,10 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
         if (client_count<0)
             return "Sorry: this program is not the arbdb server, you cannot resort your data";
 
-        if (client_count>0) {
-            bool only_macro_playback_client = client_count == 1 && GB_inside_remote_action(gb_main);
-
-            if (!only_macro_playback_client) {
-                return GBS_global_string("There are %li clients (editors, tree programs) connected to this server.\n"
-                                         "You need to close these clients before you can run this operation.",
-                                         client_count);
-            }
-        }
+        if (client_count>0)
+            return GBS_global_string("There are %li clients (editors, tree programs) connected to this server.\n"
+                                     "You need to these close clients before you can run this operation.",
+                                     client_count);
     }
 
     if (listsize <= 0) return 0;

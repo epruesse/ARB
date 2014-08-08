@@ -1727,6 +1727,7 @@ void TEST_io_number() {
 
 void TEST_GBDATA_size() {
     // protect GBDATA/GBENTRY/GBCONTAINER against unwanted changes
+
     GBENTRY fakeEntry;
 
 #if defined(ARB_64)
@@ -1751,6 +1752,5 @@ void TEST_GBDATA_size() {
 
 #endif
 }
-TEST_PUBLISH(TEST_GBDATA_size);
 
 #endif // UNIT_TESTS

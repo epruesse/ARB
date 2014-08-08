@@ -23,6 +23,7 @@ void GDE_load_menu(AW_window *awm, AW_active dummy_1x, const char *menulabel);
 GB_ERROR GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data);
 
 /* GDE_FileIO.cxx */
+void Regroup(NA_Alignment *alignment);
 char *Calloc(int count, int size);
 char *Realloc(char *block, int size);
 void Cfree(char *block);
@@ -45,8 +46,9 @@ char *uniqueID(void);
 
 /* GDE_ParseMenu.cxx */
 GB_ERROR LoadMenus(void);
-bool Find(const char *target, const char *key);
+int Find(const char *target, const char *key);
 int Find2(const char *target, const char *key);
+void throwError(const char *msg) __ATTR__NORETURN;
 void splitEntry(const char *input, char *head, char *tail);
 
 /* GDE_arbdb_io.cxx */

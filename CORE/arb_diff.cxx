@@ -21,7 +21,6 @@
 #include <arb_str.h>
 #include <arb_assert.h>
 #include <arbtools.h>
-#include <smartptr.h>
 
 #include <list>
 #include <string>
@@ -38,6 +37,8 @@ class difflineMode : virtual Noncopyable {
     int              count;
     mutable GB_ERROR error;
 
+    static bool is_may;
+
     void add(bool onlyWords, const char *regEx, GB_CASE case_flag, const char *replacement) {
         if (!error) {
             arb_assert(count<MAX_REGS);
@@ -52,29 +53,11 @@ class difflineMode : virtual Noncopyable {
 
     static bool is_word_char(char c) { return isalnum(c) || c == '_'; } // matches posix word def
 
-    typedef SmartCustomPtr(GBS_regex, GBS_free_regexpr) GBS_regexPtr;
-
-    mutable bool        may_involved;
-    static GBS_regexPtr contains_May;
-
-    void avoid_may_problems(const char *str) const {
-        if (!may_involved) {
-            if (GBS_regmatch_compiled(str, &*contains_May, NULL)) {
-                // 'May' does not differ between short/long monthname
-                // -> use less accurate tests in May
-                fprintf(stderr, "Loosening month comparison: 'May' involved in '%s'\n", str);
-                const_cast<difflineMode*>(this)->add(false, "<Month>", GB_MIND_CASE, "<MON>");
-                may_involved = true;
-            }
-        }
-    }
-
 public:
     difflineMode(int mode_)
         : mode(mode_),
           count(0),
-          error(NULL),
-          may_involved(false)
+          error(NULL)
     {
         memset(reg, 0, sizeof(reg));
         switch (mode) {
@@ -99,6 +82,12 @@ public:
 
                 add(false, "<DAY>, [0-9]{4}", GB_IGNORE_CASE, "<DAY> <YEAR>");
 
+                if (is_may) {
+                    // 'May' does not differ between short/long monthname
+                    // -> use less accurate tests in May
+                    add(false, "<Month>", GB_MIND_CASE, "<MON>");
+                }
+
                 break;
             }
             default: arb_assert(0); break;
@@ -114,7 +103,6 @@ public:
     const char *get_error() const { return error; }
     int get_count() const { return count; }
 
-private:
     void replaceAll(char*& str) const {
         for (int i = 0; i<count; ++i) {
             size_t      matchlen;
@@ -136,17 +124,10 @@ private:
             }
         }
     }
-public:
-    void replaceAll(char*& str1, char*& str2) const {
-        avoid_may_problems(str1);
-        avoid_may_problems(str2);
-        replaceAll(str1);
-        replaceAll(str2);
-    }
+    void replaceAll(char*& str1, char*& str2) const { replaceAll(str1); replaceAll(str2); }
 };
 
-static GB_ERROR            static_error               = NULL;
-difflineMode::GBS_regexPtr difflineMode::contains_May = GBS_compile_regexpr("May", GB_IGNORE_CASE, &static_error);
+bool difflineMode::is_may = strstr(GB_date_string(), "May") != 0;
 
 static void cutEOL(char *s) {
     char *lf      = strchr(s, '\n');

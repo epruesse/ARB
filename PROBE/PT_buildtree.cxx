@@ -25,7 +25,6 @@
 #include <ctype.h>
 
 // #define PTM_TRACE_MAX_MEM_USAGE
-// #define PTM_TRACE_PARTITION_DETECTION
 
 // AISC_MKPT_PROMOTE: class DataLoc;
 
@@ -320,7 +319,7 @@ public:
         return cmp>0;
     }
 
-    void print_info(FILE *out, size_t max_kb_usable) const {
+    void dump(FILE *out, size_t max_kb_usable) const {
         fprintf(out,
                 "Estimated memory usage for %i %s: %s%s\n",
                 passes,
@@ -349,9 +348,7 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable,
                 PartitionSpec curr(forced_passes, max_kb_for_passes(prob, forced_passes, overallBases), depth);
                 if (curr.isBetterThan(best, max_kb_usable)) {
                     best = curr;
-#if defined(PTM_TRACE_PARTITION_DETECTION)
-                    best.print_info(stdout, max_kb_usable);
-#endif
+                    best.dump(stdout, max_kb_usable);
                 }
             }
         }
@@ -360,17 +357,13 @@ static Partition decide_passes_to_use(size_t overallBases, size_t max_kb_usable,
                 PartitionSpec curr(passes, max_kb_for_passes(prob, passes, overallBases), depth);
                 if (curr.isBetterThan(best, max_kb_usable)) {
                     best = curr;
-#if defined(PTM_TRACE_PARTITION_DETECTION)
-                    best.print_info(stdout, max_kb_usable);
-#endif
+                    best.dump(stdout, max_kb_usable);
                 }
                 if (!curr.willUseMoreThan(max_kb_usable)) break;
             }
         }
     }
     fflush(stdout);
-
-    best.print_info(stdout, max_kb_usable);
 
     if (best.willUseMoreThan(max_kb_usable)) {
         const int allowed_passes = PrefixIterator(PT_QU, PT_T, PT_MAX_PARTITION_DEPTH).steps();

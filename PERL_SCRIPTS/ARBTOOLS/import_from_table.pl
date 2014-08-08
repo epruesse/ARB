@@ -168,7 +168,6 @@ sub main() {
     while (defined($line=<TABLE>)) {
       eval {
         chomp $line;
-        $line =~ s/\r+$//;
         my @row = ();
         parse_row($line,@row);
 

@@ -61,7 +61,6 @@ arb_cs.o: arb_assert.h
 arb_cs.o: arb_core.h
 arb_cs.o: arb_cs.h
 arb_cs.o: arb_msg.h
-arb_cs.o: arb_pattern.h
 arb_cs.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_cs.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_cs.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -69,7 +68,6 @@ arb_cs.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_cs.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_cs.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_cs.o: $(ARBHOME)/INCLUDE/test_global.h
-arb_cs.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_diff.o: arb_assert.h
 arb_diff.o: arb_core.h
@@ -84,7 +82,6 @@ arb_diff.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_diff.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_diff.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_diff.o: $(ARBHOME)/INCLUDE/gccver.h
-arb_diff.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_diff.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_diff.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -151,19 +148,6 @@ arb_msg.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_msg.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_msg.o: $(ARBHOME)/INCLUDE/test_global.h
 
-arb_pattern.o: arb_assert.h
-arb_pattern.o: arb_core.h
-arb_pattern.o: arb_msg.h
-arb_pattern.o: arb_pattern.h
-arb_pattern.o: arb_strbuf.h
-arb_pattern.o: $(ARBHOME)/INCLUDE/arbtools.h
-arb_pattern.o: $(ARBHOME)/INCLUDE/attributes.h
-arb_pattern.o: $(ARBHOME)/INCLUDE/cxxforward.h
-arb_pattern.o: $(ARBHOME)/INCLUDE/dupstr.h
-arb_pattern.o: $(ARBHOME)/INCLUDE/gccver.h
-arb_pattern.o: $(ARBHOME)/INCLUDE/test_global.h
-arb_pattern.o: $(ARBHOME)/INCLUDE/test_unit.h
-
 arb_progress.o: arb_assert.h
 arb_progress.o: arb_core.h
 arb_progress.o: arb_handlers.h
@@ -229,7 +213,6 @@ arb_string.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_string.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_string.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_string.o: $(ARBHOME)/INCLUDE/gccver.h
-arb_string.o: $(ARBHOME)/INCLUDE/Keeper.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_unit.h
 

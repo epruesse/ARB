@@ -182,9 +182,7 @@ static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
     const char *pt_server = GBS_read_arb_tcp(ptnam.str().c_str());
     GB_ERROR    gb_error  = NULL;
 
-    if (!pt_server) {
-        gb_error = GBS_global_string("Unable to find definition for chosen PT-server\n(Reason: %s)", GB_await_error());
-    }
+    if (!pt_server) gb_error = "Unable to find definition for chosen PT-server";
     else {
         const char *pt_db = pt_server + strlen(pt_server) + 1;
         pt_db += strlen(pt_db)+3;

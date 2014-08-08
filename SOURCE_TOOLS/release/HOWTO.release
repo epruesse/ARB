@@ -79,10 +79,6 @@ Overview:
         - to branch the release call
                 SOURCE_TOOLS/release/release_tool.pl branch_stable
 
-        Note: After the release is done, consider
-              - deleting the branch 'rc' or
-              - instantly create rc1 for next release (see 2. above).
-
 
 5. Hotfixes for release
 

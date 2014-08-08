@@ -28,17 +28,13 @@ static char *readableItemname(const GmenuItem& i) {
     return GBS_global_string_copy("%s/%s", i.parent_menu->label, i.label);
 }
 
-inline __ATTR__NORETURN void throwError(const char *msg) {
-    throw string(msg);
-}
-
 static __ATTR__NORETURN void throwParseError(const char *msg, const LineReader& file) {
     fprintf(stderr, "\n%s:%li: %s\n", file.getFilename().c_str(), file.getLineNumber(), msg);
     fflush(stderr);
     throwError(msg);
 }
 
-static __ATTR__NORETURN void throwItemError(const GmenuItem& i, const char *error, const LineReader& file) {
+__ATTR__NORETURN static void throwItemError(const GmenuItem& i, const char *error, const LineReader& file) {
     char       *itemName = readableItemname(i);
     const char *msg      = GBS_global_string("[Above this line] Invalid item '%s' defined: %s", itemName, error);
     free(itemName);
@@ -400,7 +396,7 @@ static void ParseMenus(LineReader& in) {
 
                 thisitem->input     = (GfileFormat*)resize;
                 thisinput           = &(thisitem->input)[curinput];
-                thisinput->save     = false;
+                thisinput->save     = FALSE;
                 thisinput->format   = 0;
                 thisinput->symbol   = strdup(temp);
                 thisinput->name     = NULL;
@@ -414,7 +410,7 @@ static void ParseMenus(LineReader& in) {
             }
             else if (strcmp(head, "insave") == 0) {
                 THROW_IF_NO_INPUT();
-                thisinput->save = true;
+                thisinput->save = TRUE;
             }
             else if (strcmp(head, "intyped") == 0) {
                 THROW_IF_NO_INPUT();
@@ -432,7 +428,7 @@ static void ParseMenus(LineReader& in) {
 
                 thisitem->output   = (GfileFormat*)resize;
                 thisoutput         = &(thisitem->output)[curoutput];
-                thisoutput->save   = false;
+                thisoutput->save   = FALSE;
                 thisoutput->format = 0;
                 thisoutput->symbol = strdup(temp);
                 thisoutput->name   = NULL;
@@ -446,7 +442,7 @@ static void ParseMenus(LineReader& in) {
             }
             else if (strcmp(head, "outsave") == 0) {
                 THROW_IF_NO_OUTPUT();
-                thisoutput->save = true;
+                thisoutput->save = TRUE;
             }
             else {
                 throwParseError(GBS_global_string("No known GDE-menu-command found (line='%s')", in_line), in);
@@ -500,9 +496,9 @@ GB_ERROR LoadMenus() {
     return error;
 }
 
-bool Find(const char *target, const char *key) {
+int Find(const char *target, const char *key) {
     // Search the target string for the given key
-    return strstr(target, key) ? true : false;
+    return strstr(target, key) ? TRUE : FALSE;
 }
 
 int Find2(const char *target, const char *key) {
@@ -514,6 +510,11 @@ int Find2(const char *target, const char *key) {
 }
 
 // --------------------------------------------------------------------------------
+
+void throwError(const char *msg) {
+    // goes to header: __ATTR__NORETURN
+    throw string(msg);
+}
 
 inline void trim(char *str) {
     int s = 0;
@@ -574,7 +575,7 @@ void TEST_load_menu() {
         TEST_EXPECT_EQUAL(menus,
                           "Import;Export;Print;Align;User;SAI;Incremental phylogeny;Phylogeny Distance Matrix;"
                           "Phylogeny max. parsimony;Phylogeny max. Likelyhood EXP;Phylogeny max. Likelyhood;Phylogeny (Other);");
-        TEST_EXPECT_EQUAL(menuitems, "3;1;1;11;1;1;1;3;2;1;8;5;");
+        TEST_EXPECT_EQUAL(menuitems, "3;1;1;11;1;1;1;3;2;1;7;5;");
     }
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }

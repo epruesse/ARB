@@ -69,7 +69,6 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_error.h
-MG_alignment.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_string.h

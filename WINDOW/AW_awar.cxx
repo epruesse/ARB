@@ -152,13 +152,13 @@ WRITE_SKELETON(write_pointer, GBDATA*, "%p", GB_write_pointer) // defines rewrit
 #undef AWAR_CHANGE_DUMP
 
 
-char *AW_awar::read_as_string() const {
+char *AW_awar::read_as_string() {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
 }
 
-const char *AW_awar::read_char_pntr() const {
+const char *AW_awar::read_char_pntr() {
     aw_assert(variable_type == AW_STRING);
 
     if (!gb_var) return "";
@@ -166,25 +166,25 @@ const char *AW_awar::read_char_pntr() const {
     return GB_read_char_pntr(gb_var);
 }
 
-double AW_awar::read_float() const {
+double AW_awar::read_float() {
     if (!gb_var) return 0.0;
     GB_transaction ta(gb_var);
     return GB_read_float(gb_var);
 }
 
-long AW_awar::read_int() const {
+long AW_awar::read_int() {
     if (!gb_var) return 0;
     GB_transaction ta(gb_var);
     return (long)GB_read_int(gb_var);
 }
 
-GBDATA *AW_awar::read_pointer() const {
+GBDATA *AW_awar::read_pointer() {
     if (!gb_var) return NULL;
     GB_transaction ta(gb_var);
     return GB_read_pointer(gb_var);
 }
 
-char *AW_awar::read_string() const {
+char *AW_awar::read_string() {
     aw_assert(variable_type == AW_STRING);
 
     if (!gb_var) return strdup("");
@@ -709,7 +709,6 @@ void TEST_AW_root_cblist() {
     AW_root_cblist::clear(cb_list);
     TEST_EXPECT_CBS_CALLED(cb_list, 0, 0); // list clear - nothing should be called
 }
-TEST_PUBLISH(TEST_AW_root_cblist);
 
 #endif // UNIT_TESTS
 

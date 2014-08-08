@@ -20,16 +20,6 @@
 #include <cb.h>
 #endif
 
-#if defined(ARB_GTK)
-# if defined(ARB_MOTIF)
-#  error ARB_GTK and ARB_MOTIF cannot both be defined
-# endif
-#else // !defined(ARB_GTK)
-# if !defined(ARB_MOTIF)
-#  error Either ARB_GTK or ARB_MOTIF has to be defined
-# endif
-#endif
-
 class AW_window;
 class AW_device;
 class AW_device_click;
@@ -190,11 +180,6 @@ public:
           const WindowCallback&  wcb,
           const char            *help_texti = 0,
           AW_cb                 *next       = 0);
-
-    ~AW_cb() {
-        delete next; next = NULL;
-        free(id);
-    }
 
     void run_callbacks();                           // runs the whole list
     bool contains(AW_CB g);                         // test if contained in list
@@ -561,13 +546,12 @@ public:
 private:
     static void popper(AW_window *, CreateWindowCallback *windowMaker);
     static void replacer(AW_window *aww, CreateWindowCallback *windowMaker);
-    static void destroyCreateWindowCallback(CreateWindowCallback *windowMaker);
 public:
     static WindowCallback makeWindowPopper(const CreateWindowCallback& cwcb) {
-        return makeWindowCallback(popper, destroyCreateWindowCallback, new CreateWindowCallback(cwcb));
+        return makeWindowCallback(popper, new CreateWindowCallback(cwcb));
     }
     static WindowCallback makeWindowReplacer(const CreateWindowCallback& cwcb) {
-        return makeWindowCallback(replacer, destroyCreateWindowCallback, new CreateWindowCallback(cwcb));
+        return makeWindowCallback(replacer, new CreateWindowCallback(cwcb));
     }
 
     // normal callbacks

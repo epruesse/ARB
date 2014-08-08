@@ -92,7 +92,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
     GB_ERROR    error = 0;
 
     if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
-        error = GB_await_error();
+        error = GB_export_errorf("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
     }
     else {
         const char *server       = strchr(tcp_id, 0) + 1;
@@ -184,14 +184,12 @@ static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, const char *tcp_id,
 }
 
 GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
-    arb_assert(!GB_have_error());
-
     GB_ERROR    error       = 0;
     const char *tcp_id      = GBS_read_arb_tcp(arb_tcp_env);
     const char *arb_tcp_dat = "$(ARBHOME)/lib/arb_tcp.dat";
 
     if (!tcp_id) {
-        error = GBS_global_string("Entry '%s' not found in %s (%s)", arb_tcp_env, arb_tcp_dat, GB_await_error());
+        error = GBS_global_string("Entry '%s' not found in %s", arb_tcp_env, arb_tcp_dat);
     }
     else {
         const char *file = GBS_scan_arb_tcp_param(tcp_id, "-d"); // find parameter behind '-d'
@@ -272,7 +270,6 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
         }
     }
 
-    arb_assert(!GB_have_error());
     return error;
 }
 
@@ -281,7 +278,7 @@ GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env) {
     GB_ERROR    error = 0;
 
     if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
-        error = GB_await_error();
+        error = GB_export_errorf("Missing line '%s' in $(ARBHOME)/lib/arb_tcp.dat:", arb_tcp_env);
     }
     else {
         const char *server = strchr(tcp_id, 0)+1;

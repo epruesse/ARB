@@ -134,10 +134,8 @@ USE_GCC_MINOR:=$(word 2,$(SPLITTED_VERSION))
 USE_GCC_PATCHLEVEL:=$(word 3,$(SPLITTED_VERSION))
 
 USE_GCC_452_OR_HIGHER:=
-USE_GCC_46_OR_HIGHER:=
 USE_GCC_47_OR_HIGHER:=
 USE_GCC_48_OR_HIGHER:=
-
 
 ifeq ($(USE_GCC_MAJOR),4)
  ifeq ($(USE_GCC_MINOR),5)
@@ -147,7 +145,6 @@ ifeq ($(USE_GCC_MAJOR),4)
  else
   ifneq ('$(findstring $(USE_GCC_MINOR),6789)','')
    USE_GCC_452_OR_HIGHER:=yes
-   USE_GCC_46_OR_HIGHER:=yes
    ifneq ($(USE_GCC_MINOR),6)
     USE_GCC_47_OR_HIGHER:=yes
     ifneq ($(USE_GCC_MINOR),7)
@@ -158,7 +155,6 @@ ifeq ($(USE_GCC_MAJOR),4)
  endif
 else
  USE_GCC_452_OR_HIGHER:=yes
- USE_GCC_46_OR_HIGHER:=yes
  USE_GCC_47_OR_HIGHER:=yes
  USE_GCC_48_OR_HIGHER:=yes
 endif
@@ -209,25 +205,14 @@ ifeq ($(DEBUG),1)
 
 	gdb_common := -g -g3 -ggdb -ggdb3
 
-ifeq ($(DEVELOPER),RALF)
- ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-	STABS:=1
- endif
-endif
-
-DBGOPTI:=-O0
-ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-DBGOPTI:=-Og
-endif
-
 ifeq ($(STABS),1)
-	cflags := $(DBGOPTI)  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
+	cflags := -O0  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
 else
-	cflags := $(DBGOPTI) $(gdb_common) # (using dwarf - cant debug inlines here, incredible slow on showing variable content)
+	cflags := -O0 $(gdb_common) # (using dwarf - cant debug inlines here, incredible slow on showing variable content)
 endif
 
-#	cflags := $(DBGOPTI) $(gdb_common) -gdwarf-3 # (specify explicit dwarf format)
-#	cflags := $(DBGOPTI) $(gdb_common) -gstabs  # using stabs (same here IIRC)
+#	cflags := -O0 $(gdb_common) -gdwarf-3 # (specify explicit dwarf format)
+#	cflags := -O0  $(gdb_common) -gstabs  # using stabs (same here IIRC)
 #	cflags := -O2 $(gdb_common) # use this for callgrind (force inlining)
 
 ifeq ($(DARWIN),0)
@@ -273,13 +258,6 @@ endif
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
- endif
- ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
-#	extended_cpp_warnings += -Wunused-local-typedefs# gcc 4.7 (fails for each STATIC_ASSERT, enable only for Cxx11)
-#	extended_cpp_warnings += -Wzero-as-null-pointer-constant# gcc 4.7 #@@@ activate
- endif
- ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-	extended_cpp_warnings += -Wunused-local-typedefs# available since gcc 4.7 (but fails for each STATIC_ASSERT, so enable only for Cxx11)
  endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
@@ -440,8 +418,6 @@ ifeq ($(DARWIN),1)
 else
 	XLIBS:=-L$(XHOME)/$(CROSS_LIB) -lXm -lXpm -lXt -lXext -lX11
 endif
-
-dflags += -DARB_MOTIF
 
 #---------------------- open GL
 
@@ -904,8 +880,8 @@ ARCHS = \
 # ----------------------- 
 #     library packets     
 
-ARCHS_CLIENT_PROBE = PROBE_COM/client.a 
-ARCHS_CLIENT_NAMES = NAMES_COM/client.a 
+ARCHS_CLIENT_PROBE = PROBE_COM/client.a PROBE_COM/common.a
+ARCHS_CLIENT_NAMES = NAMES_COM/client.a NAMES_COM/common.a
 
 ARCHS_SERVER_PROBE = PROBE_COM/server.a $(ARCHS_CLIENT_PROBE)
 ARCHS_SERVER_NAMES = NAMES_COM/server.a $(ARCHS_CLIENT_NAMES)
@@ -1881,8 +1857,7 @@ relocated: links
 	$(MAKE) build
 
 # -----------------------------------
-# some stress tests
-# (helpful to reveal race conditions with -j)
+# some stress tests:
 
 rebuild4ever: rebuild
 	$(MAKE) rebuild4ever
@@ -1901,9 +1876,6 @@ perl4ever: clean
 	$(MAKE) perl
 	$(MAKE) perl4ever
 
-help4ever: clean
-	$(MAKE) help
-	$(MAKE) help4ever
 
 # -----------------------------------
 
@@ -2340,9 +2312,7 @@ ifeq ($(UNIT_TESTS),1)
 	@$(TIMECMD) $(MAKE) run_tests
 endif
 	@echo "$(SEP) $(MAKE) build [done]"
-ifeq ($(DEBUG),1)
 	@$(MAKE) save_test_no_error >/dev/null # just show hints
-endif
 	@cat $(TIMELOG)
 	@rm $(TIMELOG)
 

@@ -812,7 +812,7 @@ GB_ERROR ArbImporter::read_data(char *ali_name, int security_write) {
                                 string expanded_field = expandSetVariables(variables, string(match->append ? match->append : match->write), err_flag, ifo);
                                 if (err_flag) error   = GB_await_error();
                                 else   field          = GBS_string_2_key(expanded_field.c_str());
-                                if (error) what_error = match->append ? "APPEND" : "WRITE";
+                                if (error) what_error = "APPEND or WRITE";
                             }
 
                             if (!error && match->mtag) {

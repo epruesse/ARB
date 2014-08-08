@@ -1689,6 +1689,5 @@ void TEST_SLOW_corruptedEntries_saveProtection() {
         name = name_NORMAL; // restart with normal names
     }
 }
-TEST_PUBLISH(TEST_SLOW_corruptedEntries_saveProtection);
 
 #endif // UNIT_TESTS

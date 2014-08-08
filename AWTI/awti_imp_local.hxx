@@ -40,20 +40,15 @@
 struct import_match : virtual Noncopyable {
     // one for each "MATCH" section of the import format
 
-    char *match;
-
-    // variables get expanded when one of the following variables is used:
-    // (search for 'expandSetVariables')
-    char *aci;
-    char *srt;
-    char *mtag;
-    char *append;
-    char *write;
-    // --------------------
-
+    char     *match;
+    char     *aci;
+    char     *srt;
+    char     *mtag;
+    char     *append;
+    char     *write;
     char     *setvar;
     GB_TYPES  type;
-    char     *defined_at; // where was match defined
+    char     *defined_at;     // where was match defined
 
     import_match *next;
 

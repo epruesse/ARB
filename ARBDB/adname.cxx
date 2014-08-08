@@ -331,7 +331,6 @@ void TEST_SLOW_rename_session() {
     TEST_EXPECT_TEXTFILE_DIFFLINES(outputname, expectedname, 0);
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(outputname));
 }
-TEST_PUBLISH(TEST_SLOW_rename_session);
 
 #endif // UNIT_TESTS
 

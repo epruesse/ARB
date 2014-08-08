@@ -68,7 +68,7 @@ SECTION         COMMANDS
                 Options:
                          -m            create map file too
                          -r            try to repair destroyed database
-                         -c[tree_xxx]  optimize database compression using tree_xxx or largest tree
+                         -c[tree_xxx]  optimize database using tree_xxx or largest tree
 
 NOTES		It is very useful to start a performance meter to see
 		whether there are running background jobs (fastdnaml, phylip...)

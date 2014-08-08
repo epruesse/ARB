@@ -69,7 +69,7 @@ HELP2XML=$(ARBHOME)/bin/arb_help2xml
 # --------------------------------------------------------------------------------
 # Generate help files in $(HLP_GENERATED):
 
-generated: dirs
+generated:
 		@echo ---------------------------------------------------
 		@echo ------------ Generating some help files:
 		(cd $(HLP_GENERATED);$(MAKE) all)
@@ -150,9 +150,6 @@ PDF_DEST=$(PDF_SRC:$(HLP_SOURCE)/%=$(HLP_DEST)/%)
 ps: $(PS_DEST)
 
 pdf: $(PDF_DEST)
-
-$(PS_DEST) : dirs
-$(PDF_DEST) : dirs
 
 nonhlp_formats: ps pdf
 

@@ -354,9 +354,6 @@ const char *GBS_read_arb_tcp(const char *env) {
      *         // para2 exists
      *     }
      * }
-     * else {
-     * // handle error!
-     * }
      *
      * see also GBS_read_arb_tcp_param() above
      *
@@ -385,7 +382,7 @@ const char *GBS_read_arb_tcp(const char *env) {
                 if (!result) { // no user-specific entry found
                     result = arb_tcp_dat.get_entry(env);
                     if (!result) {
-                        error = GBS_global_string("No such entry '%s' (or '%s') in '%s'",
+                        error = GBS_global_string("Expected entry '%s' or '%s' in '%s'",
                                                   env, envuser, arb_tcp_dat.get_filename());
                     }
                 }

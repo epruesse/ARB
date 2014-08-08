@@ -6,8 +6,6 @@ ARCHS_COMMON_DEPENDS = \
 
 ARCHS_COMMON_NO_DEPENDS = \
 	PHYML20130708/PHYML20130708.dummy \
-	RAxML8/RAxML8.dummy \
-
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here

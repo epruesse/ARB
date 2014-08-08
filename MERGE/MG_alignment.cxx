@@ -17,7 +17,6 @@
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 #include <arb_strarray.h>
-#include <arb_global_defs.h>
 
 #include <unistd.h>
 
@@ -32,8 +31,6 @@
 #define AWAR_ALI_DST AWAR_MERGE_TMP_DST "alignment_name"
 
 static void MG_alignment_vars_callback(AW_root *aw_root, int db_nr) {
-    mg_assert(!GB_have_error());
-
     GBDATA         *gb_main = get_gb_main(db_nr);
     GB_transaction  ta(gb_main);
 
@@ -41,7 +38,6 @@ static void MG_alignment_vars_callback(AW_root *aw_root, int db_nr) {
     GBDATA *ali_cont = GBT_get_alignment(gb_main, use);
 
     if (!ali_cont) {
-        GB_clear_error();
         aw_root->awar(AWAR_ALI_TYPE(db_nr))->unmap();
         aw_root->awar(AWAR_ALI_LEN (db_nr))->unmap();
         aw_root->awar(AWAR_ALIGNED (db_nr))->unmap();
@@ -60,14 +56,12 @@ static void MG_alignment_vars_callback(AW_root *aw_root, int db_nr) {
 
     }
     free(use);
-
-    mg_assert(!GB_have_error());
 }
 
 
 void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def) {
     for (int db_nr = 1; db_nr <= 2; ++db_nr) {
-        aw_root->awar_string(AWAR_ALI_NAME(db_nr), NO_ALI_SELECTED, aw_def);
+        aw_root->awar_string(AWAR_ALI_NAME(db_nr), "", aw_def);
         aw_root->awar_string(AWAR_ALI_DEST(db_nr), "", aw_def);
         aw_root->awar_string(AWAR_ALI_TYPE(db_nr), "", aw_def);
         aw_root->awar_int   (AWAR_ALI_LEN (db_nr), 0,  aw_def);

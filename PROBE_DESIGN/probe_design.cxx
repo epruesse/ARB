@@ -248,12 +248,9 @@ static int init_local_com_struct()
     return 0;
 }
 
-static const char *PD_probe_pt_look_for_server(AW_root *root, GB_ERROR& error) {
+static const char *PD_probe_pt_look_for_server(AW_root *root, GB_ERROR& error) { 
     // return PT server info string (see GBS_read_arb_tcp for details)
     // or NULL (in this case 'error' is set)
-
-    // DRY vs  ../TOOLS/arb_probe.cxx@AP_probe_pt_look_for_server
-    // DRY vs  ../MULTI_PROBE/MP_noclass.cxx@MP_probe_pt_look_for_server
 
     const char *result     = 0;
     const char *server_tag = GBS_ptserver_tag(root->awar(AWAR_PT_SERVER)->read_int());
@@ -1688,7 +1685,7 @@ static void pd_kill_pt_server(AW_window *aww, bool kill_all)
             progress.inc_and_check_user_abort(error);
         }
         progress.done();
-        aw_message_if(error);
+        if (error) aw_message(error);
     }
 }
 
@@ -1702,24 +1699,16 @@ static void pd_query_pt_server(AW_window *aww) {
                "df $ARBHOME/lib/pts;");
     GBS_strcat(strstruct, "echo;echo 'Running ARB programs:';");
 
-    GB_ERROR error = NULL;
     {
-        const char *server = GBS_read_arb_tcp(server_tag);
-        if (!server) {
-            error = GB_await_error();
-        }
-        else {
-            char *arb_who = prefixSSH(server, "$ARBHOME/bin/arb_who", 0);
-            GBS_strcat(strstruct, arb_who);
-            free(arb_who);
-        }
+        const char *server  = GBS_read_arb_tcp(server_tag);
+        char       *arb_who = prefixSSH(server, "$ARBHOME/bin/arb_who", 0);
+        GBS_strcat(strstruct, arb_who);
+        free(arb_who);
     }
 
-    char *sys         = GBS_strclose(strstruct);
-    if (!error) error = GB_xcmd(sys, true, false);
+    char *sys = GBS_strclose(strstruct);
+    GB_xcmd(sys, true, false);
     free(sys);
-
-    aw_message_if(error);
 }
 
 static void pd_export_pt_server(AW_window *aww, GBDATA *gb_main) {
@@ -1762,42 +1751,38 @@ static void pd_export_pt_server(AW_window *aww, GBDATA *gb_main) {
         arb_look_and_kill_server(AISC_MAGIC_NUMBER, server_tag);
 
         const char *ipPort = GBS_read_arb_tcp(server_tag);
-        const char *file   = NULL;
-        if (!ipPort) error = GB_await_error();
-        else {
-            file = GBS_scan_arb_tcp_param(ipPort, "-d");
-            GBS_add_ptserver_logentry(GBS_global_string("Started build of '%s'", file));
+        const char *file   = GBS_scan_arb_tcp_param(ipPort, "-d");
 
+        GBS_add_ptserver_logentry(GBS_global_string("Started build of '%s'", file));
+        {
             char *db_name = awr->awar(AWAR_DB_PATH)->read_string();
             GBS_add_ptserver_logentry(GBS_global_string("Exporting DB '%s'", db_name));
             free(db_name);
         }
 
-        if (!error) {
-            progress.subtitle("Exporting the database");
-            {
-                const char *mode = GB_supports_mapfile() ? "mbf" : "bf"; // save PT-server database with Fastload file (if supported)
-                if (create_gene_server) {
-                    char *temp_server_name = GBS_string_eval(file, "*.arb=*_temp.arb", 0);
-                    error = GB_save_as(gb_main, temp_server_name, mode);
+        progress.subtitle("Exporting the database");
+        {
+            const char *mode = GB_supports_mapfile() ? "mbf" : "bf"; // save PT-server database with Fastload file (if supported)
+            if (create_gene_server) {
+                char *temp_server_name = GBS_string_eval(file, "*.arb=*_temp.arb", 0);
+                error = GB_save_as(gb_main, temp_server_name, mode);
 
-                    if (!error) {
-                        // convert database (genes -> species)
-                        progress.subtitle("Preparing DB for gene PT server");
-                        GBS_add_ptserver_logentry("Preparing DB for gene PT server");
-                        char *command = GBS_global_string_copy("$ARBHOME/bin/arb_gene_probe %s %s", temp_server_name, file);
-                        printf("Executing '%s'\n", command);
-                        int result = system(command);
-                        if (result != 0) {
-                            error = GBS_global_string("Couldn't convert database for gene pt server (arb_gene_probe failed, see console for reason)");
-                        }
-                        free(command);
+                if (!error) {
+                    // convert database (genes -> species)
+                    progress.subtitle("Preparing DB for gene PT server");
+                    GBS_add_ptserver_logentry("Preparing DB for gene PT server");
+                    char *command = GBS_global_string_copy("$ARBHOME/bin/arb_gene_probe %s %s", temp_server_name, file);
+                    printf("Executing '%s'\n", command);
+                    int result = system(command);
+                    if (result != 0) {
+                        error = GBS_global_string("Couldn't convert database for gene pt server (arb_gene_probe failed, see console for reason)");
                     }
-                    free(temp_server_name);
+                    free(command);
                 }
-                else { // normal pt_server
-                    error = GB_save_as(gb_main, file, mode);
-                }
+                free(temp_server_name);
+            }
+            else { // normal pt_server
+                error = GB_save_as(gb_main, file, mode);
             }
         }
 
@@ -1969,7 +1954,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
 
     if (selList==0) {
         aws->at("box");
-        aws->callback(makeWindowCallback(pg_result_selected, gb_main)); // @@@ used as SELLIST_CLICK_CB (see #559)
+        aws->callback(makeWindowCallback(pg_result_selected, gb_main));
         selList = pg_global.selList = aws->create_selection_list(AWAR_PG_SELECTED_RESULT, 2, 2, true);
     }
     else {
