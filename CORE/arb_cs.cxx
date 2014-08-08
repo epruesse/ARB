@@ -376,8 +376,8 @@ void TEST_open_socket() {
     
     // Test connecting to existing unix socket
     server_pid = echo_server(unix_socket);
-    usleep(10000);
-    TEST_EXPECT_NULL(arb_open_socket(unix_socket, true, &fd, &filename));
+    usleep(20000);
+    TEST_EXPECT_NULL(arb_open_socket(unix_socket, true, &fd, &filename)); // @@@ randomly fails in jenkins (build820/u1304/DEBUG, build817/cent5/DEBUG+cent6/NDEBUG)
     TEST_EXPECT(fd>0);
 
     // Test read/write
