@@ -145,7 +145,7 @@ static void ed_al_align_cb(AW_window *aww) {
 // -----------------------------
 //      @@@ sync 0273492431
 
-static void aa_copy_delete_rename(AW_window *aww, AW_CL copy, AW_CL dele) {
+static void aa_copy_delete_rename(AW_window *aww, int copy, int dele) {
     GBDATA *gb_main = GLOBAL.gb_main;
 
     AW_root *awr    = aww->get_root();
@@ -154,7 +154,7 @@ static void aa_copy_delete_rename(AW_window *aww, AW_CL copy, AW_CL dele) {
 
     GB_ERROR error = GB_begin_transaction(gb_main);
 
-    if (!error) error = GBT_rename_alignment(gb_main, source, dest, (int)copy, (int)dele);
+    if (!error) error = GBT_rename_alignment(gb_main, source, dest, copy, dele);
     if (!error) {
         char *nfield = GBS_global_string_copy("%s/data", dest);
         error        = GBT_add_new_changekey(gb_main, nfield, GB_STRING);
@@ -185,7 +185,7 @@ static AW_window *create_alignment_copy_window(AW_root *root)
     aws->create_input_field(AWAR_ALI_DEST, 15);
 
     aws->at("ok");
-    aws->callback(aa_copy_delete_rename, 1, 0); // @@@ use makeWindowCallback
+    aws->callback(makeWindowCallback(aa_copy_delete_rename, 1, 0));
     aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
@@ -207,7 +207,7 @@ static AW_window *create_alignment_rename_window(AW_root *root)
     aws->create_input_field(AWAR_ALI_DEST, 15);
 
     aws->at("ok");
-    aws->callback(aa_copy_delete_rename, 1, 1); // @@@ use makeWindowCallback
+    aws->callback(makeWindowCallback(aa_copy_delete_rename, 1, 1));
     aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
@@ -247,7 +247,7 @@ static AW_window *create_alignment_create_window(AW_root *root) {
     aws->create_input_field(AWAR_ALI_DEST, 15);
 
     aws->at("ok");
-    aws->callback(aa_create_alignment); // @@@ use makeWindowCallback
+    aws->callback(makeWindowCallback(aa_create_alignment));
     aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
@@ -282,15 +282,15 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown) {
         aws->create_button("DELETE", "DELETE", "D");
 
         aws->at("rename");
-        aws->callback(AW_POPUP, (AW_CL)create_alignment_rename_window, 0);
+        aws->callback(create_alignment_rename_window);
         aws->create_button("RENAME", "RENAME", "R");
 
         aws->at("create");
-        aws->callback(AW_POPUP, (AW_CL)create_alignment_create_window, 0);
+        aws->callback(create_alignment_create_window);
         aws->create_button("CREATE", "CREATE", "N");
 
         aws->at("copy");
-        aws->callback(AW_POPUP, (AW_CL)create_alignment_copy_window, 0);
+        aws->callback(create_alignment_copy_window);
         aws->create_button("COPY", "COPY", "C");
 
         aws->at("check_len");
