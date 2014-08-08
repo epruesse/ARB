@@ -195,6 +195,7 @@ my @used_when_matchesFull = (
                              qr/^\.\/lib\/arb_default\/.*\.arb$/o,
                              qr/^\.\/lib\/arb_tcp_org\.dat$/o,
                              qr/^\.\/lib\/config\.[^\.]+$/io,
+                             qr/^\.\/lib\/desktop\/.*$/o,
                              qr/^\.\/lib\/export\/.*\.eft$/o,
                              qr/^\.\/lib\/import\/.*\.ift2?$/o,
                              qr/^\.\/lib\/inputMasks\/.*\.mask$/o,
