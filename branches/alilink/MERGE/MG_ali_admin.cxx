@@ -65,7 +65,7 @@ void MG_alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
     mg_assert(!GB_have_error());
 }
 
-void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def) { // @@@ split in single calls for each db number; pass ali-selection awar
+void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def) { // @@@ split in single calls for each db number; pass AliAdmin?
     for (int db_nr = 1; db_nr <= 2; ++db_nr) {
         aw_root->awar_string(AWAR_ALI_NAME(db_nr), NO_ALI_SELECTED, aw_def) ->set_srt(GBT_ALI_AWAR_SRT); // @@@ srt not needed/wanted here
         aw_root->awar_string(AWAR_ALI_DEST(db_nr), "",              aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
@@ -79,8 +79,8 @@ void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def) { // @@@ spl
     // @@@ nt-admin adds change-callback to ali-selection-list awar (and calls it once)
 }
 
-static void MG_ad_al_delete_cb(AW_window *aww, AliAdmin *admin) {
-    if (aw_ask_sure("merge_delete_ali", "Are you sure to delete all data belonging to this alignment?")) {
+static void delete_ali_cb(AW_window *aww, AliAdmin *admin) {
+    if (aw_ask_sure("delete_ali_data", "Are you sure to delete all data belonging to this alignment?")) {
         GBDATA *gb_main = admin->get_gb_main();
         char   *source  = aww->get_root()->awar(AWAR_ALI_NAME(admin->get_db_nr()))->read_string();
         {
@@ -94,7 +94,7 @@ static void MG_ad_al_delete_cb(AW_window *aww, AliAdmin *admin) {
     }
 }
 
-static void MG_ed_al_check_len_cb(AW_window *aww, AliAdmin *admin) {
+static void ali_checklen_cb(AW_window *aww, AliAdmin *admin) {
     GBDATA *gb_main = admin->get_gb_main();
     char   *use     = aww->get_root()->awar(AWAR_ALI_NAME(admin->get_db_nr()))->read_string();
 
@@ -164,7 +164,7 @@ static AW_window *create_alignment_copy_window(AW_root *root, AliAdmin *admin) {
     return (AW_window *)aws;
 }
 
-static AW_window *MG_create_alignment_rename_window(AW_root *root, AliAdmin *admin) {
+static AW_window *create_alignment_rename_window(AW_root *root, AliAdmin *admin) {
     AW_window_simple *aws = new AW_window_simple;
 
     int db_nr = admin->get_db_nr();
@@ -266,11 +266,11 @@ AW_window *MG_create_alignment_window(AW_root *root, AliAdmin *admin) {
         aws->button_length(13);
 
         aws->at("delete");
-        aws->callback(makeWindowCallback(MG_ad_al_delete_cb, admin));
+        aws->callback(makeWindowCallback(delete_ali_cb, admin));
         aws->create_button("DELETE", "DELETE", "D");
 
         aws->at("rename");
-        aws->callback(makeCreateWindowCallback(MG_create_alignment_rename_window, admin));
+        aws->callback(makeCreateWindowCallback(create_alignment_rename_window, admin));
         aws->create_button("RENAME", "RENAME", "R");
 
         aws->at("create");
@@ -304,7 +304,7 @@ AW_window *MG_create_alignment_window(AW_root *root, AliAdmin *admin) {
         aws->update_option_menu();
 
         aws->at("security");
-        aws->callback(makeWindowCallback(MG_ed_al_check_len_cb, admin));
+        aws->callback(makeWindowCallback(ali_checklen_cb, admin));
         aws->create_option_menu(AWAR_SECURITY(db_nr), true);
         aws->insert_option("0", "0", 0);
         aws->insert_option("1", "1", 1);

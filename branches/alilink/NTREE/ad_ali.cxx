@@ -20,14 +20,16 @@
 #include <arb_global_defs.h>
 #include <AliAdmin.h>
 
+ // @@@ eliminate use of AWAR_DEFAULT_ALIGNMENT
+
 #define AWAR_ALI_NAME "presets/alignment_name" // @@@ elim (use AWAR_DEFAULT_ALIGNMENT everywhere)
 #define AWAR_ALI_DEST "presets/alignment_dest"
 #define AWAR_ALI_TYPE "presets/alignment_type"
 #define AWAR_ALI_LEN  "presets/alignment_len"
-#define AWAR_ALI_REM  "presets/alignment_rem"
-#define AWAR_ALI_AUTO "presets/auto_format"
 #define AWAR_ALIGNED  "presets/aligned"
 #define AWAR_SECURITY "presets/security"
+#define AWAR_ALI_REM  "presets/alignment_rem"
+#define AWAR_ALI_AUTO "presets/auto_format"
 
 // ---------------------------
 //      @@@ sync 108273910263
@@ -80,7 +82,7 @@ static AliAdmin *get_ntree_ali_admin() {
     return ntreeAliAdmin;
 }
 
-void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def) {
+void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def) { // @@@ pass AliAdmin?
     AW_awar *awar_def_ali = aw_root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", aw_def);
     GB_push_transaction(GLOBAL.gb_main);
 
@@ -104,10 +106,10 @@ void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def) {
     GB_pop_transaction(GLOBAL.gb_main);
 }
 
-static void ad_al_delete_cb(AW_window *aww) {
-    if (aw_ask_sure("delete_ali_data", "Are you sure to delete all data belonging to this alignment")) {
-        GBDATA *gb_main = GLOBAL.gb_main;
-        char *source = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
+static void delete_ali_cb(AW_window *aww, AliAdmin *admin) {
+    if (aw_ask_sure("delete_ali_data", "Are you sure to delete all data belonging to this alignment?")) {
+        GBDATA *gb_main = admin->get_gb_main();
+        char   *source  = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
         {
             GB_transaction ta(gb_main);
             GB_ERROR       error = GBT_rename_alignment(gb_main, source, 0, 0, 1);
@@ -119,8 +121,8 @@ static void ad_al_delete_cb(AW_window *aww) {
     }
 }
 
-static void ed_al_check_len_cb(AW_window *aww) {
-    GBDATA *gb_main = GLOBAL.gb_main;
+static void ali_checklen_cb(AW_window *aww, AliAdmin *admin) {
+    GBDATA *gb_main = admin->get_gb_main();
     char   *use     = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
 
     GB_transaction ta(gb_main);
@@ -132,7 +134,7 @@ static void ed_al_check_len_cb(AW_window *aww) {
     free(use);
 }
 
-static void ed_al_check_auto_format(AW_window *aww) {
+static void never_auto_format_ali_genom_cb(AW_window *aww) {
     AW_root *awr = aww->get_root();
     char    *use = awr->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
     if (strcmp(use, "ali_genom") == 0) {
@@ -140,14 +142,14 @@ static void ed_al_check_auto_format(AW_window *aww) {
     }
 }
 
-static void ed_al_align_cb(AW_window *aww) {
+static void ali_format_cb(AW_window *aww, AliAdmin *admin) {
     char     *use = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
     GB_begin_transaction(GLOBAL.gb_main);
     GB_ERROR  err = ARB_format_alignment(GLOBAL.gb_main, use);
     GB_commit_transaction(GLOBAL.gb_main);
     if (err) aw_message(err);
     free(use);
-    ed_al_check_len_cb(aww);
+    ali_checklen_cb(aww, admin);
 }
 
 // -----------------------------
@@ -199,6 +201,7 @@ static AW_window *create_alignment_copy_window(AW_root *root, AliAdmin *admin) {
 
     return (AW_window *)aws;
 }
+
 static AW_window *create_alignment_rename_window(AW_root *root, AliAdmin *admin) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "RENAME_ALIGNMENT", "ALIGNMENT RENAME");
@@ -221,7 +224,7 @@ static AW_window *create_alignment_rename_window(AW_root *root, AliAdmin *admin)
     return (AW_window *)aws;
 }
 
-static void create_alignment_db(AW_window *aww, AliAdmin *admin) {
+static void create_alignment_cb(AW_window *aww, AliAdmin *admin) {
     GBDATA   *gb_main = admin->get_gb_main();
     GB_ERROR  error   = GB_begin_transaction(gb_main);
     if (!error) {
@@ -255,7 +258,7 @@ static AW_window *create_alignment_create_window(AW_root *root, AliAdmin *admin)
     aws->create_input_field(AWAR_ALI_DEST, 15);
 
     aws->at("ok");
-    aws->callback(makeWindowCallback(create_alignment_db, admin));
+    aws->callback(makeWindowCallback(create_alignment_cb, admin));
     aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
@@ -283,7 +286,7 @@ static AW_window *create_alignment_window(AW_root *root, AliAdmin *admin) {
         aws->button_length(13);
 
         aws->at("delete");
-        aws->callback(ad_al_delete_cb);
+        aws->callback(makeWindowCallback(delete_ali_cb, admin));
         aws->create_button("DELETE", "DELETE", "D");
 
         aws->at("rename");
@@ -299,11 +302,11 @@ static AW_window *create_alignment_window(AW_root *root, AliAdmin *admin) {
         aws->create_button("COPY", "COPY", "C");
 
         aws->at("check_len");
-        aws->callback(ed_al_check_len_cb);
+        aws->callback(makeWindowCallback(ali_checklen_cb, admin));
         aws->create_button("CHECK_LEN", "CHECK LEN", "L");
 
         aws->at("align");
-        aws->callback(ed_al_align_cb);
+        aws->callback(makeWindowCallback(ali_format_cb, admin));
         aws->create_button("FORMAT", "FORMAT", "F");
 
         // ali selection list
@@ -313,8 +316,8 @@ static AW_window *create_alignment_window(AW_root *root, AliAdmin *admin) {
         // alignment settings
         aws->at("aligned");
         aws->create_option_menu(AWAR_ALIGNED, true);
-        aws->callback(ed_al_check_len_cb); aws->insert_default_option("not formatted", "n", 0);
-        aws->callback(ed_al_align_cb);     aws->insert_option("formatted", "j", 1);
+        aws->callback(makeWindowCallback(ali_checklen_cb, admin)); aws->insert_default_option("not formatted", "n", 0);
+        aws->callback(makeWindowCallback(ali_format_cb, admin));   aws->insert_option("formatted", "j", 1);
         aws->update_option_menu();
 
         aws->at("len");
@@ -329,21 +332,23 @@ static AW_window *create_alignment_window(AW_root *root, AliAdmin *admin) {
         aws->update_option_menu();
 
         aws->at("security");
+        aws->callback(makeWindowCallback(ali_checklen_cb, admin));
         aws->create_option_menu(AWAR_SECURITY, true);
-        aws->callback(ed_al_check_len_cb); aws->insert_option("0", "0", 0);
-        aws->callback(ed_al_check_len_cb); aws->insert_option("1", "1", 1);
-        aws->callback(ed_al_check_len_cb); aws->insert_option("2", "2", 2);
-        aws->callback(ed_al_check_len_cb); aws->insert_option("3", "3", 3);
-        aws->callback(ed_al_check_len_cb); aws->insert_option("4", "4", 4);
-        aws->callback(ed_al_check_len_cb); aws->insert_option("5", "5", 5);
-        aws->callback(ed_al_check_len_cb); aws->insert_default_option("6", "6", 6);
+        aws->insert_option("0", "0", 0);
+        aws->insert_option("1", "1", 1);
+        aws->insert_option("2", "2", 2);
+        aws->insert_option("3", "3", 3);
+        aws->insert_option("4", "4", 4);
+        aws->insert_option("5", "5", 5);
+        aws->insert_default_option("6", "6", 6);
         aws->update_option_menu();
 
         aws->at("auto_format");
+        aws->callback(never_auto_format_ali_genom_cb);
         aws->create_option_menu(AWAR_ALI_AUTO, true);
-        aws->callback(ed_al_check_auto_format); aws->insert_default_option("ask", "a", 0);
-        aws->callback(ed_al_check_auto_format); aws->insert_option("always", "", 1);
-        aws->callback(ed_al_check_auto_format); aws->insert_option("never", "", 2);
+        aws->insert_default_option("ask", "a", 0);
+        aws->insert_option("always", "", 1);
+        aws->insert_option("never", "", 2);
         aws->update_option_menu();
 
         aws->at("rem");
