@@ -224,9 +224,9 @@ static AW_window *MG_create_alignment_create_window(AW_root *root, int db_nr) {
 }
 
 AW_window *MG_create_alignment_window(AW_root *root, int db_nr) {
-    mg_assert(db_nr>=0 && db_nr<=1);
+    mg_assert(db_nr>=1 && db_nr<=2);
 
-    static AW_window_simple *aws_exists[2] = { NULL, NULL };
+    static AW_window_simple *aws_exists[3] = { NULL, NULL, NULL };
     if (!aws_exists[db_nr]) {
         GBDATA           *gb_main = get_gb_main(db_nr);
         AW_window_simple *aws     = new AW_window_simple;
