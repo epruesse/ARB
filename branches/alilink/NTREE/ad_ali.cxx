@@ -153,9 +153,9 @@ static void ed_al_align_cb(AW_window *aww) {
 // -----------------------------
 //      @@@ sync 0273492431
 
-static void aa_copy_delete_rename(AW_window *aww, int copy, int dele) {
+static void copy_rename_cb(AW_window *aww, AliAdmin *admin, CopyRenameMode mode) {
     nt_assert(!GB_have_error());
-    GBDATA *gb_main = GLOBAL.gb_main;
+    GBDATA *gb_main = admin->get_gb_main();
 
     AW_root *awr    = aww->get_root();
     char    *source = awr->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
@@ -163,7 +163,7 @@ static void aa_copy_delete_rename(AW_window *aww, int copy, int dele) {
 
     GB_ERROR error = GB_begin_transaction(gb_main);
 
-    if (!error) error = GBT_rename_alignment(gb_main, source, dest, copy, dele);
+    if (!error) error = GBT_rename_alignment(gb_main, source, dest, 1, mode == CRM_RENAME);
     if (!error) {
         char *nfield = GBS_global_string_copy("%s/data", dest);
         error        = GBT_add_new_changekey(gb_main, nfield, GB_STRING);
@@ -178,7 +178,7 @@ static void aa_copy_delete_rename(AW_window *aww, int copy, int dele) {
     nt_assert(!GB_have_error());
 }
 
-static AW_window *create_alignment_copy_window(AW_root *root) {
+static AW_window *create_alignment_copy_window(AW_root *root, AliAdmin *admin) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "COPY_ALIGNMENT", "ALIGNMENT COPY");
     aws->load_xfig("ad_al_si.fig");
@@ -194,12 +194,12 @@ static AW_window *create_alignment_copy_window(AW_root *root) {
     aws->create_input_field(AWAR_ALI_DEST, 15);
 
     aws->at("ok");
-    aws->callback(makeWindowCallback(aa_copy_delete_rename, 1, 0));
+    aws->callback(makeWindowCallback(copy_rename_cb, admin, CRM_COPY));
     aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
 }
-static AW_window *create_alignment_rename_window(AW_root *root) {
+static AW_window *create_alignment_rename_window(AW_root *root, AliAdmin *admin) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "RENAME_ALIGNMENT", "ALIGNMENT RENAME");
     aws->load_xfig("ad_al_si.fig");
@@ -215,14 +215,14 @@ static AW_window *create_alignment_rename_window(AW_root *root) {
     aws->create_input_field(AWAR_ALI_DEST, 15);
 
     aws->at("ok");
-    aws->callback(makeWindowCallback(aa_copy_delete_rename, 1, 1));
+    aws->callback(makeWindowCallback(copy_rename_cb, admin, CRM_RENAME));
     aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
 }
 
-static void aa_create_alignment(AW_window *aww) {
-    GBDATA   *gb_main = GLOBAL.gb_main;
+static void create_alignment_db(AW_window *aww, AliAdmin *admin) {
+    GBDATA   *gb_main = admin->get_gb_main();
     GB_ERROR  error   = GB_begin_transaction(gb_main);
     if (!error) {
         char   *name         = aww->get_root()->awar(AWAR_ALI_DEST)->read_string();
@@ -239,7 +239,7 @@ static void aa_create_alignment(AW_window *aww) {
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
-static AW_window *create_alignment_create_window(AW_root *root) {
+static AW_window *create_alignment_create_window(AW_root *root, AliAdmin *admin) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "CREATE_ALIGNMENT", "ALIGNMENT CREATE");
     aws->load_xfig("ad_al_si.fig");
@@ -255,19 +255,16 @@ static AW_window *create_alignment_create_window(AW_root *root) {
     aws->create_input_field(AWAR_ALI_DEST, 15);
 
     aws->at("ok");
-    aws->callback(makeWindowCallback(aa_create_alignment));
+    aws->callback(makeWindowCallback(create_alignment_db, admin));
     aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
 }
 
-AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown) {
-    // if 'aw_popmedown' points to a window, that window is popped down
-    if (aw_popmedown) aw_popmedown->hide();
-
+static AW_window *create_alignment_window(AW_root *root, AliAdmin *admin) {
     static AW_window_simple *aws = 0;
     if (!aws) {
-        GBDATA *gb_main = GLOBAL.gb_main;
+        GBDATA *gb_main = admin->get_gb_main();
         aws             = new AW_window_simple;
 
         aws->init(root, "INFO_OF_ALIGNMENT", "ALIGNMENT INFORMATION");
@@ -290,15 +287,15 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown) {
         aws->create_button("DELETE", "DELETE", "D");
 
         aws->at("rename");
-        aws->callback(create_alignment_rename_window);
+        aws->callback(makeCreateWindowCallback(create_alignment_rename_window, admin));
         aws->create_button("RENAME", "RENAME", "R");
 
         aws->at("create");
-        aws->callback(create_alignment_create_window);
+        aws->callback(makeCreateWindowCallback(create_alignment_create_window, admin));
         aws->create_button("CREATE", "CREATE", "N");
 
         aws->at("copy");
-        aws->callback(create_alignment_copy_window);
+        aws->callback(makeCreateWindowCallback(create_alignment_copy_window, admin));
         aws->create_button("COPY", "COPY", "C");
 
         aws->at("check_len");
@@ -354,4 +351,10 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown) {
     }
 
     return aws;
+}
+
+AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown) { 
+    // if 'aw_popmedown' points to a window, that window is popped down
+    if (aw_popmedown) aw_popmedown->hide();
+    return create_alignment_window(root, get_ntree_ali_admin());
 }

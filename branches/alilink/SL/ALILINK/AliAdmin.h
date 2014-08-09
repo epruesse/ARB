@@ -20,6 +20,11 @@
 
 #define ali_assert(cond) arb_assert(cond)
 
+enum CopyRenameMode { // @@@ move inside AliAdmin.cxx asap
+    CRM_RENAME,
+    CRM_COPY,
+};
+
 class AliAdmin {
     int           db_nr;
     GBDATA *const gb_main;

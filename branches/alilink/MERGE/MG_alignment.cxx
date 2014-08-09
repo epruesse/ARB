@@ -110,11 +110,11 @@ AW_window *MG_create_merge_alignment_window(AW_root *awr) {
     awt_create_selection_list_on_alignments(GLOBAL_gb_dst, aws, AWAR_ALI_DST, "*=");
 
     aws->at("modify1");
-    aws->callback(makeCreateWindowCallback(MG_create_alignment_window, 1));
+    aws->callback(makeCreateWindowCallback(MG_create_alignment_window, get_ali_admin(1)));
     aws->create_button("MODIFY_DB1", "MODIFY");
 
     aws->at("modify2");
-    aws->callback(makeCreateWindowCallback(MG_create_alignment_window, 2));
+    aws->callback(makeCreateWindowCallback(MG_create_alignment_window, get_ali_admin(2)));
     aws->create_button("MODIFY_DB2", "MODIFY");
 
 
