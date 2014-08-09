@@ -17,6 +17,7 @@
 #include <aw_msg.hxx>
 #include <aw_awar_defs.hxx>
 #include <arbdbt.h>
+#include <arb_global_defs.h>
 
 #define AWAR_ALI_NAME "presets/alignment_name"
 #define AWAR_ALI_DEST "presets/alignment_dest"
@@ -78,7 +79,7 @@ void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def) {
     GBDATA *use = GB_search(GLOBAL.gb_main, AWAR_DEFAULT_ALIGNMENT, GB_STRING);
     awar_def_ali->map(use);
 
-    aw_root->awar_string(AWAR_ALI_NAME, "", aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
+    aw_root->awar_string(AWAR_ALI_NAME, NO_ALI_SELECTED, aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
     aw_root->awar_string(AWAR_ALI_DEST, "", aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
     aw_root->awar_string(AWAR_ALI_TYPE, "", aw_def);
     aw_root->awar_string(AWAR_ALI_REM,  "", aw_def);

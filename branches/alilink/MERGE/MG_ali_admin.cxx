@@ -64,8 +64,8 @@ void MG_alignment_vars_callback(AW_root *aw_root, int db_nr) {
 
 void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def) {
     for (int db_nr = 1; db_nr <= 2; ++db_nr) {
-        aw_root->awar_string(AWAR_ALI_NAME(db_nr), NO_ALI_SELECTED, aw_def); // @@@ add srt (to enforce valid aliname)
-        aw_root->awar_string(AWAR_ALI_DEST(db_nr), "",              aw_def);
+        aw_root->awar_string(AWAR_ALI_NAME(db_nr), NO_ALI_SELECTED, aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
+        aw_root->awar_string(AWAR_ALI_DEST(db_nr), "",              aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
         aw_root->awar_string(AWAR_ALI_TYPE(db_nr), "",              aw_def);
 
         aw_root->awar_int(AWAR_ALI_LEN (db_nr), 0, aw_def);
