@@ -64,13 +64,16 @@ void MG_alignment_vars_callback(AW_root *aw_root, int db_nr) {
 
 void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def) {
     for (int db_nr = 1; db_nr <= 2; ++db_nr) {
-        aw_root->awar_string(AWAR_ALI_NAME(db_nr), NO_ALI_SELECTED, aw_def);
-        aw_root->awar_string(AWAR_ALI_DEST(db_nr), "", aw_def);
-        aw_root->awar_string(AWAR_ALI_TYPE(db_nr), "", aw_def);
-        aw_root->awar_int   (AWAR_ALI_LEN (db_nr), 0,  aw_def);
-        aw_root->awar_int   (AWAR_ALIGNED (db_nr), 0,  aw_def);
-        aw_root->awar_int   (AWAR_SECURITY(db_nr), 0,  aw_def);
+        aw_root->awar_string(AWAR_ALI_NAME(db_nr), NO_ALI_SELECTED, aw_def); // @@@ add srt (to enforce valid aliname)
+        aw_root->awar_string(AWAR_ALI_DEST(db_nr), "",              aw_def);
+        aw_root->awar_string(AWAR_ALI_TYPE(db_nr), "",              aw_def);
+
+        aw_root->awar_int(AWAR_ALI_LEN (db_nr), 0, aw_def);
+        aw_root->awar_int(AWAR_ALIGNED (db_nr), 0, aw_def);
+        aw_root->awar_int(AWAR_SECURITY(db_nr), 0, aw_def);
     }
+
+    // @@@ nt-admin adds change-callback to ali-selection-list awar (and calls it once)
 }
 
 static void MG_ad_al_delete_cb(AW_window *aww, int db_nr) {
@@ -87,9 +90,6 @@ static void MG_ad_al_delete_cb(AW_window *aww, int db_nr) {
         free(source);
     }
 }
-
-// -----------------------------
-//      @@@ sync 9264389714
 
 static void MG_ed_al_check_len_cb(AW_window *aww, int db_nr) {
     GBDATA *gb_main = get_gb_main(db_nr);
@@ -108,6 +108,7 @@ static void MG_ed_al_check_len_cb(AW_window *aww, int db_nr) {
 //      @@@ sync 0273492431
 
 static void MG_copy_delete_rename(AW_window * aww, int db_nr, int dele) {
+    mg_assert(!GB_have_error());
     GBDATA *gb_main = get_gb_main(db_nr);
 
     AW_root *awr    = aww->get_root();
@@ -116,9 +117,12 @@ static void MG_copy_delete_rename(AW_window * aww, int db_nr, int dele) {
 
     GB_ERROR error = GB_begin_transaction(gb_main);
 
-    if (!error) error = GBT_rename_alignment(gb_main, source, dest, (int)1, (int)dele);
+    const int copy    = 1;
+    if (!error) error = GBT_rename_alignment(gb_main, source, dest, copy, dele);
     if (!error) {
-        error = GBT_add_new_changekey(gb_main, GBS_global_string("%s/data", dest), GB_STRING);
+        char *nfield = GBS_global_string_copy("%s/data", dest);
+        error        = GBT_add_new_changekey(gb_main, nfield, GB_STRING);
+        free(nfield);
     }
 
     error = GB_end_transaction(gb_main, error);
@@ -126,11 +130,10 @@ static void MG_copy_delete_rename(AW_window * aww, int db_nr, int dele) {
 
     free(source);
     free(dest);
+    mg_assert(!GB_have_error());
 }
 
-
-static AW_window *create_alignment_copy_window(AW_root *root, int db_nr)
-{
+static AW_window *create_alignment_copy_window(AW_root *root, int db_nr) {
     AW_window_simple *aws = new AW_window_simple;
     {
         char header[80];
@@ -156,8 +159,7 @@ static AW_window *create_alignment_copy_window(AW_root *root, int db_nr)
     return (AW_window *)aws;
 }
 
-static AW_window *MG_create_alignment_rename_window(AW_root *root, int db_nr)
-{
+static AW_window *MG_create_alignment_rename_window(AW_root *root, int db_nr) {
     AW_window_simple *aws = new AW_window_simple;
     {
         char header[80];
@@ -191,7 +193,11 @@ static void MG_aa_create_alignment(AW_window *aww, int db_nr) {
         GBDATA   *gb_alignment = GBT_create_alignment(gb_main, name, 0, 0, 0, "dna");
 
         if (!gb_alignment) error = GB_await_error();
-        // else @@@ add changekey
+        else {
+            char *nfield = GBS_global_string_copy("%s/data", name);
+            error        = GBT_add_new_changekey(gb_main, nfield, GB_STRING);
+            free(nfield);
+        }
         free(name);
     }
     GB_end_transaction_show_error(gb_main, error, aw_message);

@@ -78,14 +78,14 @@ void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def) {
     GBDATA *use = GB_search(GLOBAL.gb_main, AWAR_DEFAULT_ALIGNMENT, GB_STRING);
     awar_def_ali->map(use);
 
-    aw_root->awar_string(AWAR_ALI_NAME, "",   aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
-    aw_root->awar_string(AWAR_ALI_DEST, "",   aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
-
+    aw_root->awar_string(AWAR_ALI_NAME, "", aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
+    aw_root->awar_string(AWAR_ALI_DEST, "", aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
     aw_root->awar_string(AWAR_ALI_TYPE, "", aw_def);
-    aw_root->awar_int(AWAR_ALI_LEN, 0, aw_def);
-    aw_root->awar_int(AWAR_ALIGNED, 0, aw_def);
+    aw_root->awar_string(AWAR_ALI_REM,  "", aw_def);
+
+    aw_root->awar_int(AWAR_ALI_LEN,  0, aw_def);
+    aw_root->awar_int(AWAR_ALIGNED,  0, aw_def);
     aw_root->awar_int(AWAR_SECURITY, 0, aw_def);
-    aw_root->awar_string(AWAR_ALI_REM); // @@@ add '"", aw_def'?
     aw_root->awar_int(AWAR_ALI_AUTO, 0, aw_def);
 
     awar_def_ali->add_callback(alignment_vars_callback);
@@ -108,17 +108,6 @@ static void ad_al_delete_cb(AW_window *aww) {
     }
 }
 
-static void ed_al_check_auto_format(AW_window *aww) {
-    AW_root *awr = aww->get_root();
-    char    *use = awr->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
-    if (strcmp(use, "ali_genom") == 0) {
-        awr->awar(AWAR_ALI_AUTO)->write_int(2); // ali_genom is always forced to "skip"
-    }
-}
-
-// -----------------------------
-//      @@@ sync 9264389714
-
 static void ed_al_check_len_cb(AW_window *aww) {
     GBDATA *gb_main = GLOBAL.gb_main;
     char   *use     = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
@@ -130,6 +119,14 @@ static void ed_al_check_len_cb(AW_window *aww) {
 
     aw_message_if(error);
     free(use);
+}
+
+static void ed_al_check_auto_format(AW_window *aww) {
+    AW_root *awr = aww->get_root();
+    char    *use = awr->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
+    if (strcmp(use, "ali_genom") == 0) {
+        awr->awar(AWAR_ALI_AUTO)->write_int(2); // ali_genom is always forced to "skip"
+    }
 }
 
 static void ed_al_align_cb(AW_window *aww) {
@@ -146,6 +143,7 @@ static void ed_al_align_cb(AW_window *aww) {
 //      @@@ sync 0273492431
 
 static void aa_copy_delete_rename(AW_window *aww, int copy, int dele) {
+    nt_assert(!GB_have_error());
     GBDATA *gb_main = GLOBAL.gb_main;
 
     AW_root *awr    = aww->get_root();
@@ -166,10 +164,10 @@ static void aa_copy_delete_rename(AW_window *aww, int copy, int dele) {
 
     free(source);
     free(dest);
+    nt_assert(!GB_have_error());
 }
 
-static AW_window *create_alignment_copy_window(AW_root *root)
-{
+static AW_window *create_alignment_copy_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "COPY_ALIGNMENT", "ALIGNMENT COPY");
     aws->load_xfig("ad_al_si.fig");
@@ -190,8 +188,7 @@ static AW_window *create_alignment_copy_window(AW_root *root)
 
     return (AW_window *)aws;
 }
-static AW_window *create_alignment_rename_window(AW_root *root)
-{
+static AW_window *create_alignment_rename_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "RENAME_ALIGNMENT", "ALIGNMENT RENAME");
     aws->load_xfig("ad_al_si.fig");
@@ -336,12 +333,9 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown) {
 
         aws->at("auto_format");
         aws->create_option_menu(AWAR_ALI_AUTO, true);
-        aws->callback(ed_al_check_auto_format);
-        aws->insert_default_option("ask", "a", 0);
-        aws->callback(ed_al_check_auto_format);
-        aws->insert_option("always", "", 1);
-        aws->callback(ed_al_check_auto_format);
-        aws->insert_option("never", "", 2);
+        aws->callback(ed_al_check_auto_format); aws->insert_default_option("ask", "a", 0);
+        aws->callback(ed_al_check_auto_format); aws->insert_option("always", "", 1);
+        aws->callback(ed_al_check_auto_format); aws->insert_option("never", "", 2);
         aws->update_option_menu();
 
         aws->at("rem");
