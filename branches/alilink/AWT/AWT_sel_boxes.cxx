@@ -1043,7 +1043,7 @@ AW_window *awt_create_load_box(AW_root     *aw_root,
 
     aws->at("go");
     aws->callback(ok_cb);
-    aws->create_button("GO", action);
+    aws->create_autosize_button("GO", action);
 
     AW_create_standard_fileselection(aws, base_name);
     free(base_name);
