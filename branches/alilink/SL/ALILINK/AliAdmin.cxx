@@ -11,10 +11,6 @@
 
 #include "AliAdmin.h"
 
-using namespace std;
-
-
-
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS

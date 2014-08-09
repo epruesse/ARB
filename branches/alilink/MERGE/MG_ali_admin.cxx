@@ -18,6 +18,7 @@
 
 #include <arbdbt.h>
 #include <arb_global_defs.h>
+#include <AliAdmin.h>
 
 #define AWAR_ALI_NAME(db_nr) awar_name_tmp(db_nr, "alignment_name")
 #define AWAR_ALI_DEST(db_nr) awar_name_tmp(db_nr, "alignment_dest")
@@ -26,14 +27,20 @@
 #define AWAR_ALIGNED(db_nr)  awar_name_tmp(db_nr, "aligned")
 #define AWAR_SECURITY(db_nr) awar_name_tmp(db_nr, "security")
 
+__ATTR__DEPRECATED("use AliAdmin to access gb_main") inline GBDATA *dep_get_gb_main(int db_nr) { // @@@ elim, then remove include merge.hxx
+    return get_gb_main(db_nr);
+}
+
 // ---------------------------
 //      @@@ sync 108273910263
 
-void MG_alignment_vars_callback(AW_root *aw_root, int db_nr) {
+void MG_alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
     mg_assert(!GB_have_error());
 
-    GBDATA         *gb_main = get_gb_main(db_nr);
-    GB_transaction  ta(gb_main);
+    GBDATA *gb_main = admin->get_gb_main();
+    int     db_nr   = admin->get_db_nr(); // @@@ elim
+
+    GB_transaction ta(gb_main);
 
     char   *use      = aw_root->awar(AWAR_ALI_NAME(db_nr))->read_string();
     GBDATA *ali_cont = GBT_get_alignment(gb_main, use);
@@ -62,9 +69,9 @@ void MG_alignment_vars_callback(AW_root *aw_root, int db_nr) {
     mg_assert(!GB_have_error());
 }
 
-void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def) {
+void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def) { // @@@ split in single calls for each db number; pass ali-selection awar
     for (int db_nr = 1; db_nr <= 2; ++db_nr) {
-        aw_root->awar_string(AWAR_ALI_NAME(db_nr), NO_ALI_SELECTED, aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
+        aw_root->awar_string(AWAR_ALI_NAME(db_nr), NO_ALI_SELECTED, aw_def) ->set_srt(GBT_ALI_AWAR_SRT); // @@@ srt not needed/wanted here
         aw_root->awar_string(AWAR_ALI_DEST(db_nr), "",              aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
         aw_root->awar_string(AWAR_ALI_TYPE(db_nr), "",              aw_def);
 
@@ -78,7 +85,7 @@ void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def) {
 
 static void MG_ad_al_delete_cb(AW_window *aww, int db_nr) {
     if (aw_ask_sure("merge_delete_ali", "Are you sure to delete all data belonging to this alignment?")) {
-        GBDATA *gb_main = get_gb_main(db_nr);
+        GBDATA *gb_main = dep_get_gb_main(db_nr);
         char   *source  = aww->get_root()->awar(AWAR_ALI_NAME(db_nr))->read_string();
         {
             GB_transaction ta(gb_main);
@@ -92,7 +99,7 @@ static void MG_ad_al_delete_cb(AW_window *aww, int db_nr) {
 }
 
 static void MG_ed_al_check_len_cb(AW_window *aww, int db_nr) {
-    GBDATA *gb_main = get_gb_main(db_nr);
+    GBDATA *gb_main = dep_get_gb_main(db_nr);
     char   *use     = aww->get_root()->awar(AWAR_ALI_NAME(db_nr))->read_string();
 
     GB_transaction ta(gb_main);
@@ -109,7 +116,7 @@ static void MG_ed_al_check_len_cb(AW_window *aww, int db_nr) {
 
 static void MG_copy_delete_rename(AW_window * aww, int db_nr, int dele) {
     mg_assert(!GB_have_error());
-    GBDATA *gb_main = get_gb_main(db_nr);
+    GBDATA *gb_main = dep_get_gb_main(db_nr);
 
     AW_root *awr    = aww->get_root();
     char    *source = awr->awar(AWAR_ALI_NAME(db_nr))->read_string();
@@ -186,7 +193,7 @@ static AW_window *MG_create_alignment_rename_window(AW_root *root, int db_nr) {
 }
 
 static void MG_aa_create_alignment(AW_window *aww, int db_nr) {
-    GBDATA   *gb_main = get_gb_main(db_nr);
+    GBDATA   *gb_main = dep_get_gb_main(db_nr);
     GB_ERROR  error   = GB_begin_transaction(gb_main);
     if (!error) {
         char     *name         = aww->get_root()->awar(AWAR_ALI_DEST(db_nr))->read_string();
@@ -234,7 +241,7 @@ AW_window *MG_create_alignment_window(AW_root *root, int db_nr) {
 
     static AW_window_simple *aws_exists[3] = { NULL, NULL, NULL };
     if (!aws_exists[db_nr]) {
-        GBDATA           *gb_main = get_gb_main(db_nr);
+        GBDATA           *gb_main = dep_get_gb_main(db_nr);
         AW_window_simple *aws     = new AW_window_simple;
 
         aws_exists[db_nr] = aws;

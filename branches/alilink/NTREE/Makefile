@@ -42,6 +42,7 @@ ad_ali.o: NT_local.h
 ad_ali.o: NT_local_proto.h
 ad_ali.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_ali.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ad_ali.o: $(ARBHOME)/INCLUDE/AliAdmin.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arb_error.h

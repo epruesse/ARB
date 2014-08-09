@@ -66,6 +66,7 @@ MG_ali_admin.o: merge.hxx
 MG_ali_admin.o: mg_merge.hxx
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MG_ali_admin.o: $(ARBHOME)/INCLUDE/AliAdmin.h
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -102,6 +103,7 @@ MG_alignment.o: MG_ali_admin.hxx
 MG_alignment.o: mg_merge.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MG_alignment.o: $(ARBHOME)/INCLUDE/AliAdmin.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_error.h

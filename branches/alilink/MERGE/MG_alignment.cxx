@@ -17,6 +17,7 @@
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 #include <arb_strarray.h>
+#include <AliAdmin.h>
 
 #include <unistd.h>
 
@@ -74,11 +75,19 @@ int MG_copy_and_check_alignments() {
     return !!error;
 }
 
+static AliAdmin *get_ali_admin(int db_nr) {
+    static AliAdmin *admin[3] = { NULL, NULL, NULL };
+    if (!admin[db_nr]) {
+        admin[db_nr] = new AliAdmin(db_nr, get_gb_main(db_nr));
+    }
+    return admin[db_nr];
+}
+
 AW_window *MG_create_merge_alignment_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
 
-    awr->awar(AWAR_ALI_SRC)->add_callback(makeRootCallback(MG_alignment_vars_callback, 1));
-    awr->awar(AWAR_ALI_DST)->add_callback(makeRootCallback(MG_alignment_vars_callback, 2));
+    awr->awar(AWAR_ALI_SRC)->add_callback(makeRootCallback(MG_alignment_vars_callback, get_ali_admin(1))); // @@@ ntree version does this in NT_create_alignment_vars 
+    awr->awar(AWAR_ALI_DST)->add_callback(makeRootCallback(MG_alignment_vars_callback, get_ali_admin(2)));
 
     aws->init(awr, "MERGE_ALIGNMENTS", "MERGE ALIGNMENTS");
     aws->load_xfig("merge/alignment.fig");
