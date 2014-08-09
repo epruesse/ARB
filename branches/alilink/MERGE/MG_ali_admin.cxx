@@ -224,10 +224,14 @@ static AW_window *MG_create_alignment_create_window(AW_root *root, int db_nr) {
 }
 
 AW_window *MG_create_alignment_window(AW_root *root, int db_nr) {
-    static AW_window_simple *aws = 0;
-    if (!aws) {
-        GBDATA *gb_main = get_gb_main(db_nr);
-        aws             = new AW_window_simple;
+    mg_assert(db_nr>=0 && db_nr<=1);
+
+    static AW_window_simple *aws_exists[2] = { NULL, NULL };
+    if (!aws_exists[db_nr]) {
+        GBDATA           *gb_main = get_gb_main(db_nr);
+        AW_window_simple *aws     = new AW_window_simple;
+
+        aws_exists[db_nr] = aws;
 
         char header[80];
         sprintf(header, "ALIGNMENT CONTROL %i", db_nr);
@@ -296,6 +300,6 @@ AW_window *MG_create_alignment_window(AW_root *root, int db_nr) {
         aws->insert_default_option("6", "6", 6);
         aws->update_option_menu();
     }
-    return aws;
+    return aws_exists[db_nr];
 }
 
