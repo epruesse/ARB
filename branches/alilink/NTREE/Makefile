@@ -14,8 +14,6 @@ $(MAIN): $(OBJECTS)
 proto:
 	../AISC_MKPTPS/aisc_mkpt -P -E -G -F ^NT_,^AP_ -w NT_local_proto.h $(SOURCES) >NT_local_proto.h.tmp
 	../SOURCE_TOOLS/mv_if_diff NT_local_proto.h.tmp NT_local_proto.h
-	../AISC_MKPTPS/aisc_mkpt -P -E -G -w NT_cb.h NT_cb.cxx NT_extern.cxx >NT_cb.h.tmp
-	../SOURCE_TOOLS/mv_if_diff NT_cb.h.tmp NT_cb.h
 
 .cxx.o:
 	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
@@ -470,7 +468,6 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 NT_cb.o: ad_trees.h
-NT_cb.o: NT_cb.h
 NT_cb.o: NT_local.h
 NT_cb.o: NT_local_proto.h
 NT_cb.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -591,7 +588,6 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/ttypes.h
 
-NT_edconf.o: NT_cb.h
 NT_edconf.o: NT_local.h
 NT_edconf.o: NT_local_proto.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_config.h
@@ -632,7 +628,6 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 NT_extern.o: ad_trees.h
 NT_extern.o: map_viewer.h
-NT_extern.o: NT_cb.h
 NT_extern.o: NT_local.h
 NT_extern.o: NT_local_proto.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_cb.h
@@ -838,7 +833,6 @@ NT_join.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_join.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_join.o: $(ARBHOME)/INCLUDE/ttypes.h
 
-NT_main.o: NT_cb.h
 NT_main.o: NT_local.h
 NT_main.o: NT_local_proto.h
 NT_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -890,7 +884,6 @@ NT_main.o: $(ARBHOME)/INCLUDE/svn_revision.h
 NT_main.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_main.o: $(ARBHOME)/INCLUDE/ttypes.h
 
-NT_sort.o: NT_cb.h
 NT_sort.o: NT_local.h
 NT_sort.o: NT_local_proto.h
 NT_sort.o: $(ARBHOME)/INCLUDE/ad_prot.h

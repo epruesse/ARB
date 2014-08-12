@@ -9,7 +9,6 @@
 // =============================================================== //
 
 #include "NT_local.h"
-#include "NT_cb.h"
 
 #include <item_sel_list.h>
 #include <aw_awar.hxx>
@@ -137,7 +136,7 @@ static GB_ERROR NT_resort_data_base(GBT_TREE *tree, const customCriterion *sortB
 void NT_resort_data_by_phylogeny(AW_window *, AW_CL cl_ntw, AW_CL) {
     arb_progress  progress("Sorting data");
     GB_ERROR      error = 0;
-    GBT_TREE     *tree  = nt_get_tree_root_of_canvas((AWT_canvas*)cl_ntw);
+    GBT_TREE     *tree  = NT_get_tree_root_of_canvas((AWT_canvas*)cl_ntw);
 
     if (!tree)  error = "Please select/build a tree first";
     if (!error) error = NT_resort_data_base(tree, NULL);

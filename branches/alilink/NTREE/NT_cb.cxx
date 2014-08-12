@@ -9,7 +9,6 @@
 // =============================================================== //
 
 #include "NT_local.h"
-#include "NT_cb.h"
 #include "ad_trees.h"
 
 #include <awt_canvas.hxx>
