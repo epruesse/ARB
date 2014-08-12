@@ -29,7 +29,7 @@
 //      @@@ sync 108273910263
 
 static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
-    mg_assert(!GB_have_error());
+    ali_assert(!GB_have_error());
 
     GBDATA *gb_main = admin->get_gb_main();
     int     db_nr   = admin->get_db_nr(); // @@@ elim
@@ -60,7 +60,7 @@ static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
     }
     free(use);
 
-    mg_assert(!GB_have_error());
+    ali_assert(!GB_have_error());
 }
 
 static void create_admin_awars(AW_root *aw_root, AW_default aw_def, AliAdmin *admin) {
@@ -111,7 +111,7 @@ static void ali_checklen_cb(AW_window *aww, AliAdmin *admin) {
 //      @@@ sync 0273492431
 
 static void copy_rename_cb(AW_window *aww, AliAdmin *admin, CopyRenameMode mode) {
-    mg_assert(!GB_have_error());
+    ali_assert(!GB_have_error());
 
     GBDATA  *gb_main = admin->get_gb_main();
     AW_root *awr     = aww->get_root();
@@ -132,7 +132,7 @@ static void copy_rename_cb(AW_window *aww, AliAdmin *admin, CopyRenameMode mode)
 
     free(source);
     free(dest);
-    mg_assert(!GB_have_error());
+    ali_assert(!GB_have_error());
 }
 
 static AW_window *create_alignment_copy_window(AW_root *root, AliAdmin *admin) {
@@ -238,7 +238,7 @@ static AW_window *create_alignment_create_window(AW_root *root, AliAdmin *admin)
 
 AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
     int db_nr = admin->get_db_nr();
-    mg_assert(db_nr>=1 && db_nr<=2);
+    ali_assert(db_nr>=1 && db_nr<=2);
 
     if (!admin->get_window()) {
         GBDATA           *gb_main = admin->get_gb_main();
