@@ -108,8 +108,8 @@ static void never_auto_format_ali_genom_cb(AW_window *aww, AliAdmin *admin) {
 
 static void ali_format_cb(AW_window *aww, AliAdmin *admin) {
     {
-        GB_transaction ta(GLOBAL.gb_main);
-        GB_ERROR       error = ARB_format_alignment(GLOBAL.gb_main, admin->get_selected_ali());
+        GB_transaction ta(admin->get_gb_main());
+        GB_ERROR       error = ARB_format_alignment(admin->get_gb_main(), admin->get_selected_ali());
         aw_message_if(error);
     }
     ali_checklen_cb(aww, admin);
