@@ -32,12 +32,14 @@ class AliAdmin {
     int            db_nr; // @@@ elim
     GBDATA *const  gb_main;
     AW_window     *aws;
+    const char    *select_awarname;
 
 public:
-    AliAdmin(int db_nr_, GBDATA *gb_main_)
+    AliAdmin(int db_nr_, GBDATA *gb_main_, const char *select_awarname_)
         : db_nr(db_nr_),
           gb_main(gb_main_),
-          aws(NULL)
+          aws(NULL),
+          select_awarname(select_awarname_)
     {}
 
     GBDATA *get_gb_main() const { return gb_main; }
@@ -48,6 +50,8 @@ public:
 
     void store_window(AW_window *aw) { ali_assert(!aws); aws = aw; }
     AW_window *get_window() const { return aws; }
+
+    const char *get_select_awarname() const { return select_awarname; }
 };
 
 #else

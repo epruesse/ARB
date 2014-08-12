@@ -70,7 +70,6 @@ MG_ali_admin.o: $(ARBHOME)/INCLUDE/AliAdmin.h
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_error.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_string.h
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -107,6 +106,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/AliAdmin.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_error.h
+MG_alignment.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_string.h

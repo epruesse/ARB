@@ -17,12 +17,10 @@
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 #include <arb_strarray.h>
+#include <arb_global_defs.h>
 #include <AliAdmin.h>
 
 #include <unistd.h>
-
-#define AWAR_ALI_SRC AWAR_MERGE_TMP_SRC "alignment_name" // @@@ same as AWAR_ALI_SELECT(1); retrieve from AliAdmin
-#define AWAR_ALI_DST AWAR_MERGE_TMP_DST "alignment_name" // @@@ same as AWAR_ALI_SELECT(2); retrieve from AliAdmin
 
 static void copy_and_check_alignments_ignoreResult() { MG_copy_and_check_alignments(); }
 int MG_copy_and_check_alignments() {
@@ -75,19 +73,29 @@ int MG_copy_and_check_alignments() {
     return !!error;
 }
 
-static AliAdmin *get_ali_admin(int db_nr) {
-    static AliAdmin *admin[3] = { NULL, NULL, NULL };
-    if (!admin[db_nr]) {
-        admin[db_nr] = new AliAdmin(db_nr, get_gb_main(db_nr));
-    }
-    return admin[db_nr];
+static void bindAdmin(AW_window *aws, const char *at_ali, const char *at_modify, const char *button_id, int db_nr) {
+    const char *awarname_select[] = {
+        NULL,
+        AWAR_MERGE_TMP_SRC "alignment_name",
+        AWAR_MERGE_TMP_DST "alignment_name"
+    };
+
+    AW_root *aw_root = aws->get_root();
+    GBDATA  *gb_main = get_gb_main(db_nr);
+
+    aw_root->awar_string(awarname_select[db_nr], NO_ALI_SELECTED, AW_ROOT_DEFAULT);
+    AliAdmin *const admin = new AliAdmin(db_nr, gb_main, awarname_select[db_nr]); // do not free (bound to callbacks)
+
+    aws->at(at_ali);
+    awt_create_selection_list_on_alignments(gb_main, aws, awarname_select[db_nr], "*=");
+
+    aws->at(at_modify);
+    aws->callback(makeCreateWindowCallback(MG_create_AliAdmin_window, admin));
+    aws->create_button(button_id, "MODIFY");
 }
 
 AW_window *MG_create_merge_alignment_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
-
-    MG_create_alignment_awars(awr, AW_ROOT_DEFAULT, get_ali_admin(1));
-    MG_create_alignment_awars(awr, AW_ROOT_DEFAULT, get_ali_admin(2));
 
     aws->init(awr, "MERGE_ALIGNMENTS", "MERGE ALIGNMENTS");
     aws->load_xfig("merge/alignment.fig");
@@ -103,20 +111,8 @@ AW_window *MG_create_merge_alignment_window(AW_root *awr) {
     aws->callback(makeWindowCallback(copy_and_check_alignments_ignoreResult));
     aws->create_button("CHECK", "Check");
 
-    aws->at("ali1");
-    awt_create_selection_list_on_alignments(GLOBAL_gb_src, aws, AWAR_ALI_SRC, "*=");
-
-    aws->at("ali2");
-    awt_create_selection_list_on_alignments(GLOBAL_gb_dst, aws, AWAR_ALI_DST, "*=");
-
-    aws->at("modify1");
-    aws->callback(makeCreateWindowCallback(MG_create_AliAdmin_window, get_ali_admin(1)));
-    aws->create_button("MODIFY_DB1", "MODIFY");
-
-    aws->at("modify2");
-    aws->callback(makeCreateWindowCallback(MG_create_AliAdmin_window, get_ali_admin(2)));
-    aws->create_button("MODIFY_DB2", "MODIFY");
-
+    bindAdmin(aws, "ali1", "modify1", "MODIFY_DB1", 1);
+    bindAdmin(aws, "ali2", "modify2", "MODIFY_DB2", 2);
 
     aws->button_length(0);
     aws->shadow_width(1);

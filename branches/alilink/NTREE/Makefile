@@ -44,7 +44,6 @@ ad_ali.o: $(ARBHOME)/INCLUDE/AliAdmin.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arb_error.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arbdb.h

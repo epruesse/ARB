@@ -17,7 +17,6 @@
 
 class AliAdmin;
 
-void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def, AliAdmin *admin);
 AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin);
 
 #else

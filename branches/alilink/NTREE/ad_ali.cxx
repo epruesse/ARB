@@ -17,10 +17,8 @@
 #include <aw_msg.hxx>
 #include <aw_awar_defs.hxx>
 #include <arbdbt.h>
-#include <arb_global_defs.h>
 #include <AliAdmin.h>
 
-#define AWAR_ALI_SELECT AWAR_DEFAULT_ALIGNMENT
 #define AWAR_ALI_DEST   "presets/alignment_dest"
 #define AWAR_ALI_TYPE   "presets/alignment_type"
 #define AWAR_ALI_LEN    "presets/alignment_len"
@@ -39,7 +37,7 @@ static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
 
     GB_transaction ta(gb_main);
 
-    char    *use = aw_root->awar(AWAR_ALI_SELECT)->read_string();
+    char   *use      = aw_root->awar(admin->get_select_awarname())->read_string();
     GBDATA *ali_cont = GBT_get_alignment(gb_main, use);
 
     if (!ali_cont) {
@@ -71,9 +69,8 @@ static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
     nt_assert(!GB_have_error());
 }
 
-static void create_alignment_vars(AW_root *aw_root, AW_default aw_def, AliAdmin *admin) {
-
-    AW_awar *awar_ali_select = aw_root->awar(AWAR_ALI_SELECT);
+static void create_admin_awars(AW_root *aw_root, AW_default aw_def, AliAdmin *admin) {
+    AW_awar *awar_ali_select = aw_root->awar(admin->get_select_awarname());
 
     aw_root->awar_string(AWAR_ALI_DEST, "", aw_def)->set_srt(GBT_ALI_AWAR_SRT);
     aw_root->awar_string(AWAR_ALI_TYPE, "", aw_def);
@@ -92,7 +89,7 @@ static void create_alignment_vars(AW_root *aw_root, AW_default aw_def, AliAdmin 
 static void delete_ali_cb(AW_window *aww, AliAdmin *admin) {
     if (aw_ask_sure("delete_ali_data", "Are you sure to delete all data belonging to this alignment?")) {
         GBDATA *gb_main = admin->get_gb_main();
-        char   *source  = aww->get_root()->awar(AWAR_ALI_SELECT)->read_string();
+        char   *source  = aww->get_root()->awar(admin->get_select_awarname())->read_string();
         {
             GB_transaction ta(gb_main);
             GB_ERROR       error = GBT_rename_alignment(gb_main, source, 0, 0, 1);
@@ -106,7 +103,7 @@ static void delete_ali_cb(AW_window *aww, AliAdmin *admin) {
 
 static void ali_checklen_cb(AW_window *aww, AliAdmin *admin) {
     GBDATA *gb_main = admin->get_gb_main();
-    char   *use     = aww->get_root()->awar(AWAR_ALI_SELECT)->read_string();
+    char   *use     = aww->get_root()->awar(admin->get_select_awarname())->read_string();
 
     GB_transaction ta(gb_main);
 
@@ -117,16 +114,16 @@ static void ali_checklen_cb(AW_window *aww, AliAdmin *admin) {
     free(use);
 }
 
-static void never_auto_format_ali_genom_cb(AW_window *aww) {
+static void never_auto_format_ali_genom_cb(AW_window *aww, AliAdmin *admin) {
     AW_root *awr = aww->get_root();
-    char    *use = awr->awar(AWAR_ALI_SELECT)->read_string();
+    char    *use = awr->awar(admin->get_select_awarname())->read_string();
     if (strcmp(use, "ali_genom") == 0) {
         awr->awar(AWAR_ALI_AUTO)->write_int(2); // ali_genom is always forced to "skip"
     }
 }
 
 static void ali_format_cb(AW_window *aww, AliAdmin *admin) {
-    char     *use = aww->get_root()->awar(AWAR_ALI_SELECT)->read_string();
+    char     *use = aww->get_root()->awar(admin->get_select_awarname())->read_string();
     GB_begin_transaction(GLOBAL.gb_main);
     GB_ERROR  err = ARB_format_alignment(GLOBAL.gb_main, use);
     GB_commit_transaction(GLOBAL.gb_main);
@@ -140,11 +137,11 @@ static void ali_format_cb(AW_window *aww, AliAdmin *admin) {
 
 static void copy_rename_cb(AW_window *aww, AliAdmin *admin, CopyRenameMode mode) {
     nt_assert(!GB_have_error());
-    GBDATA *gb_main = admin->get_gb_main();
 
-    AW_root *awr    = aww->get_root();
-    char    *source = awr->awar(AWAR_ALI_SELECT)->read_string();
-    char    *dest   = awr->awar(AWAR_ALI_DEST)->read_string();
+    GBDATA  *gb_main = admin->get_gb_main();
+    AW_root *awr     = aww->get_root();
+    char    *source  = awr->awar(admin->get_select_awarname())->read_string();
+    char    *dest    = awr->awar(AWAR_ALI_DEST)->read_string();
 
     GB_ERROR error = GB_begin_transaction(gb_main);
 
@@ -254,9 +251,8 @@ AW_window *NT_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
         GBDATA           *gb_main = admin->get_gb_main();
         AW_window_simple *aws     = new AW_window_simple;
 
+        create_admin_awars(root, AW_ROOT_DEFAULT, admin);
         admin->store_window(aws);
-
-        create_alignment_vars(root, AW_ROOT_DEFAULT, admin);
 
         aws->init(root, "INFO_OF_ALIGNMENT", "ALIGNMENT INFORMATION");
 
@@ -299,7 +295,7 @@ AW_window *NT_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
 
         // ali selection list
         aws->at("list");
-        awt_create_selection_list_on_alignments(gb_main, aws, AWAR_ALI_SELECT, "*=");
+        awt_create_selection_list_on_alignments(gb_main, aws, admin->get_select_awarname(), "*=");
 
         // alignment settings
         aws->at("aligned");
@@ -332,7 +328,7 @@ AW_window *NT_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
         aws->update_option_menu();
 
         aws->at("auto_format");
-        aws->callback(never_auto_format_ali_genom_cb);
+        aws->callback(makeWindowCallback(never_auto_format_ali_genom_cb, admin));
         aws->create_option_menu(AWAR_ALI_AUTO, true);
         aws->insert_default_option("ask", "a", 0);
         aws->insert_option("always", "", 1);
