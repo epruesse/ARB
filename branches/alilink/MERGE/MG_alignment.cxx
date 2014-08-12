@@ -21,8 +21,8 @@
 
 #include <unistd.h>
 
-#define AWAR_ALI_SRC AWAR_MERGE_TMP_SRC "alignment_name" // @@@ same as AWAR_ALI_NAME(1); retrieve from AliAdmin
-#define AWAR_ALI_DST AWAR_MERGE_TMP_DST "alignment_name" // @@@ same as AWAR_ALI_NAME(2); retrieve from AliAdmin
+#define AWAR_ALI_SRC AWAR_MERGE_TMP_SRC "alignment_name" // @@@ same as AWAR_ALI_SELECT(1); retrieve from AliAdmin
+#define AWAR_ALI_DST AWAR_MERGE_TMP_DST "alignment_name" // @@@ same as AWAR_ALI_SELECT(2); retrieve from AliAdmin
 
 static void copy_and_check_alignments_ignoreResult() { MG_copy_and_check_alignments(); }
 int MG_copy_and_check_alignments() {

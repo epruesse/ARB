@@ -29,7 +29,7 @@ enum CopyRenameMode { // @@@ move inside AliAdmin.cxx asap
 };
 
 class AliAdmin {
-    int            db_nr;
+    int            db_nr; // @@@ elim
     GBDATA *const  gb_main;
     AW_window     *aws;
 
@@ -41,7 +41,7 @@ public:
     {}
 
     GBDATA *get_gb_main() const { return gb_main; }
-    __ATTR__DEPRECATED_LATER("dont use dbnr") int get_db_nr() const {
+    __ATTR__DEPRECATED("dont use dbnr") int get_db_nr() const {
         ali_assert(db_nr>=1 && db_nr<=2); // call forbidden for ntree-admin (@@@ will be eliminated)
         return db_nr;
     }

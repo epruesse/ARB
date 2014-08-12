@@ -20,16 +20,14 @@
 #include <arb_global_defs.h>
 #include <AliAdmin.h>
 
- // @@@ eliminate use of AWAR_DEFAULT_ALIGNMENT
-
-#define AWAR_ALI_NAME "presets/alignment_name" // @@@ unused (only mapped around)
-#define AWAR_ALI_DEST "presets/alignment_dest"
-#define AWAR_ALI_TYPE "presets/alignment_type"
-#define AWAR_ALI_LEN  "presets/alignment_len"
-#define AWAR_ALIGNED  "presets/aligned"
-#define AWAR_SECURITY "presets/security"
-#define AWAR_ALI_REM  "presets/alignment_rem"
-#define AWAR_ALI_AUTO "presets/auto_format"
+#define AWAR_ALI_SELECT AWAR_DEFAULT_ALIGNMENT
+#define AWAR_ALI_DEST   "presets/alignment_dest"
+#define AWAR_ALI_TYPE   "presets/alignment_type"
+#define AWAR_ALI_LEN    "presets/alignment_len"
+#define AWAR_ALIGNED    "presets/aligned"
+#define AWAR_SECURITY   "presets/security"
+#define AWAR_ALI_REM    "presets/alignment_rem"
+#define AWAR_ALI_AUTO   "presets/auto_format"
 
 // ---------------------------
 //      @@@ sync 108273910263
@@ -41,12 +39,11 @@ static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
 
     GB_transaction ta(gb_main);
 
-    char    *use = aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
+    char    *use = aw_root->awar(AWAR_ALI_SELECT)->read_string();
     GBDATA *ali_cont = GBT_get_alignment(gb_main, use);
 
     if (!ali_cont) {
         GB_clear_error();
-        aw_root->awar(AWAR_ALI_NAME)->unmap();
         aw_root->awar(AWAR_ALI_TYPE)->unmap();
         aw_root->awar(AWAR_ALI_LEN)->unmap();
         aw_root->awar(AWAR_ALIGNED)->unmap();
@@ -55,7 +52,6 @@ static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
         aw_root->awar(AWAR_ALI_AUTO)->unmap();
     }
     else {
-        GBDATA *ali_name        = GB_search(ali_cont, "alignment_name",           GB_STRING);
         GBDATA *ali_len         = GB_search(ali_cont, "alignment_len",            GB_INT);
         GBDATA *ali_aligned     = GB_search(ali_cont, "aligned",                  GB_INT);
         GBDATA *ali_type        = GB_search(ali_cont, "alignment_type",           GB_STRING);
@@ -63,7 +59,6 @@ static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
         GBDATA *ali_rem         = GB_search(ali_cont, "alignment_rem",            GB_STRING);
         GBDATA *ali_auto_format = GB_search(ali_cont, "auto_format",              GB_INT);
 
-        aw_root->awar(AWAR_ALI_NAME)->map(ali_name);
         aw_root->awar(AWAR_ALI_TYPE)->map(ali_type);
         aw_root->awar(AWAR_ALI_LEN) ->map(ali_len);
         aw_root->awar(AWAR_ALIGNED) ->map(ali_aligned);
@@ -77,8 +72,10 @@ static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
 }
 
 static void create_alignment_vars(AW_root *aw_root, AW_default aw_def, AliAdmin *admin) {
-    aw_root->awar_string(AWAR_ALI_NAME, NO_ALI_SELECTED, aw_def) ->set_srt(GBT_ALI_AWAR_SRT); // @@@ srt not needed/wanted here
-    aw_root->awar_string(AWAR_ALI_DEST, "", aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
+
+    AW_awar *awar_ali_select = aw_root->awar(AWAR_ALI_SELECT);
+
+    aw_root->awar_string(AWAR_ALI_DEST, "", aw_def)->set_srt(GBT_ALI_AWAR_SRT);
     aw_root->awar_string(AWAR_ALI_TYPE, "", aw_def);
     aw_root->awar_string(AWAR_ALI_REM,  "", aw_def);
 
@@ -88,14 +85,14 @@ static void create_alignment_vars(AW_root *aw_root, AW_default aw_def, AliAdmin 
     aw_root->awar_int(AWAR_ALI_AUTO, 0, aw_def);
 
     RootCallback rcb = makeRootCallback(alignment_vars_callback, admin);
-    aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->add_callback(rcb);
+    awar_ali_select->add_callback(rcb);
     rcb(aw_root);
 }
 
 static void delete_ali_cb(AW_window *aww, AliAdmin *admin) {
     if (aw_ask_sure("delete_ali_data", "Are you sure to delete all data belonging to this alignment?")) {
         GBDATA *gb_main = admin->get_gb_main();
-        char   *source  = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
+        char   *source  = aww->get_root()->awar(AWAR_ALI_SELECT)->read_string();
         {
             GB_transaction ta(gb_main);
             GB_ERROR       error = GBT_rename_alignment(gb_main, source, 0, 0, 1);
@@ -109,7 +106,7 @@ static void delete_ali_cb(AW_window *aww, AliAdmin *admin) {
 
 static void ali_checklen_cb(AW_window *aww, AliAdmin *admin) {
     GBDATA *gb_main = admin->get_gb_main();
-    char   *use     = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
+    char   *use     = aww->get_root()->awar(AWAR_ALI_SELECT)->read_string();
 
     GB_transaction ta(gb_main);
 
@@ -122,14 +119,14 @@ static void ali_checklen_cb(AW_window *aww, AliAdmin *admin) {
 
 static void never_auto_format_ali_genom_cb(AW_window *aww) {
     AW_root *awr = aww->get_root();
-    char    *use = awr->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
+    char    *use = awr->awar(AWAR_ALI_SELECT)->read_string();
     if (strcmp(use, "ali_genom") == 0) {
         awr->awar(AWAR_ALI_AUTO)->write_int(2); // ali_genom is always forced to "skip"
     }
 }
 
 static void ali_format_cb(AW_window *aww, AliAdmin *admin) {
-    char     *use = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
+    char     *use = aww->get_root()->awar(AWAR_ALI_SELECT)->read_string();
     GB_begin_transaction(GLOBAL.gb_main);
     GB_ERROR  err = ARB_format_alignment(GLOBAL.gb_main, use);
     GB_commit_transaction(GLOBAL.gb_main);
@@ -146,7 +143,7 @@ static void copy_rename_cb(AW_window *aww, AliAdmin *admin, CopyRenameMode mode)
     GBDATA *gb_main = admin->get_gb_main();
 
     AW_root *awr    = aww->get_root();
-    char    *source = awr->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
+    char    *source = awr->awar(AWAR_ALI_SELECT)->read_string();
     char    *dest   = awr->awar(AWAR_ALI_DEST)->read_string();
 
     GB_ERROR error = GB_begin_transaction(gb_main);
@@ -302,7 +299,7 @@ AW_window *NT_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
 
         // ali selection list
         aws->at("list");
-        awt_create_selection_list_on_alignments(gb_main, aws, AWAR_DEFAULT_ALIGNMENT, "*=");
+        awt_create_selection_list_on_alignments(gb_main, aws, AWAR_ALI_SELECT, "*=");
 
         // alignment settings
         aws->at("aligned");
