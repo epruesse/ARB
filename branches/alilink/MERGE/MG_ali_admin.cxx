@@ -8,8 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include "merge.hxx" // @@@ unwanted, needed e.g. for awar_name_tmp
-
 #include <awt_sel_boxes.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
@@ -18,19 +16,8 @@
 #include <arbdbt.h>
 #include <AliAdmin.h>
 
-#define AWAR_ALI_DEST(db_nr)   awar_name_tmp(db_nr, "alignment_dest")
-#define AWAR_ALI_TYPE(db_nr)   awar_name_tmp(db_nr, "alignment_type")
-#define AWAR_ALI_LEN(db_nr)    awar_name_tmp(db_nr, "alignment_len")
-#define AWAR_ALIGNED(db_nr)    awar_name_tmp(db_nr, "aligned")
-#define AWAR_SECURITY(db_nr)   awar_name_tmp(db_nr, "security")
-
-// ---------------------------
-//      @@@ sync 108273910263
-
-static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
+static void alignment_vars_callback(AW_root *, AliAdmin *admin) {
     ali_assert(!GB_have_error());
-
-    int db_nr = admin->get_db_nr(); // @@@ elim
 
     GBDATA         *gb_main  = admin->get_gb_main();
     GB_transaction  ta(gb_main);
@@ -38,10 +25,10 @@ static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
 
     if (!ali_cont) {
         GB_clear_error();
-        aw_root->awar(AWAR_ALI_TYPE(db_nr))->unmap();
-        aw_root->awar(AWAR_ALI_LEN (db_nr))->unmap();
-        aw_root->awar(AWAR_ALIGNED (db_nr))->unmap();
-        aw_root->awar(AWAR_SECURITY(db_nr))->unmap();
+        admin->type_awar()->unmap();
+        admin->len_awar()->unmap();
+        admin->aligned_awar()->unmap();
+        admin->security_awar()->unmap();
     }
     else {
         GBDATA *ali_len      = GB_entry(ali_cont, "alignment_len");
@@ -49,27 +36,25 @@ static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
         GBDATA *ali_type     = GB_entry(ali_cont, "alignment_type");
         GBDATA *ali_security = GB_entry(ali_cont, "alignment_write_security");
 
-        aw_root->awar(AWAR_ALI_TYPE(db_nr))->map(ali_type);
-        aw_root->awar(AWAR_ALI_LEN (db_nr))->map(ali_len);
-        aw_root->awar(AWAR_ALIGNED (db_nr))->map(ali_aligned);
-        aw_root->awar(AWAR_SECURITY(db_nr))->map(ali_security);
-
+        admin->type_awar()    ->map(ali_type);
+        admin->len_awar()     ->map(ali_len);
+        admin->aligned_awar() ->map(ali_aligned);
+        admin->security_awar()->map(ali_security);
     }
 
     ali_assert(!GB_have_error());
 }
 
 static void create_admin_awars(AW_root *aw_root, AW_default aw_def, AliAdmin *admin) {
-    int db_nr = admin->get_db_nr();
-    aw_root->awar_string(AWAR_ALI_DEST(db_nr), "", aw_def)->set_srt(GBT_ALI_AWAR_SRT);
-    aw_root->awar_string(AWAR_ALI_TYPE(db_nr), "", aw_def);
+    aw_root->awar_string(admin->dest_name(), "", aw_def)->set_srt(GBT_ALI_AWAR_SRT);
+    aw_root->awar_string(admin->type_name(), "", aw_def);
 
-    aw_root->awar_int(AWAR_ALI_LEN (db_nr), 0, aw_def);
-    aw_root->awar_int(AWAR_ALIGNED (db_nr), 0, aw_def);
-    aw_root->awar_int(AWAR_SECURITY(db_nr), 0, aw_def);
+    aw_root->awar_int(admin->len_name(),      0, aw_def);
+    aw_root->awar_int(admin->aligned_name(),  0, aw_def);
+    aw_root->awar_int(admin->security_name(), 0, aw_def);
 
     RootCallback rcb = makeRootCallback(alignment_vars_callback, admin);
-    admin->get_select_awar()->add_callback(rcb);
+    admin->select_awar()->add_callback(rcb);
     rcb(aw_root);
 }
 
@@ -93,18 +78,13 @@ static void ali_checklen_cb(AW_window *, AliAdmin *admin) {
     aw_message_if(error);
 }
 
-// -----------------------------
-//      @@@ sync 0273492431
-
 static void copy_rename_cb(AW_window *aww, AliAdmin *admin, CopyRenameMode mode) {
     ali_assert(!GB_have_error());
 
     GBDATA     *gb_main = admin->get_gb_main();
-    AW_root    *awr     = aww->get_root();
     const char *source  = admin->get_selected_ali();
-    char       *dest    = awr->awar(AWAR_ALI_DEST(admin->get_db_nr()))->read_string();
-
-    GB_ERROR error = GB_begin_transaction(gb_main);
+    const char *dest    = admin->get_dest_ali();
+    GB_ERROR    error   = GB_begin_transaction(gb_main);
 
     if (!error) error = GBT_rename_alignment(gb_main, source, dest, 1, mode == CRM_RENAME);
     if (!error) {
@@ -116,7 +96,6 @@ static void copy_rename_cb(AW_window *aww, AliAdmin *admin, CopyRenameMode mode)
     error = GB_end_transaction(gb_main, error);
     aww->hide_or_notify(error);
 
-    free(dest);
     ali_assert(!GB_have_error());
 }
 
@@ -139,7 +118,7 @@ static AW_window *create_alignment_copy_window(AW_root *root, AliAdmin *admin) {
     aws->create_autosize_button(0, "Please enter the new name\nof the alignment");
 
     aws->at("input");
-    aws->create_input_field(AWAR_ALI_DEST(db_nr), 15);
+    aws->create_input_field(admin->dest_name(), 15);
 
     aws->at("ok");
     aws->callback(makeWindowCallback(copy_rename_cb, admin, CRM_COPY));
@@ -167,7 +146,7 @@ static AW_window *create_alignment_rename_window(AW_root *root, AliAdmin *admin)
     aws->create_autosize_button(0, "Please enter the name\nof the new alignment");
 
     aws->at("input");
-    aws->create_input_field(AWAR_ALI_DEST(db_nr), 15);
+    aws->create_input_field(admin->dest_name(), 15);
 
     aws->at("ok");
     aws->callback(makeWindowCallback(copy_rename_cb, admin, CRM_RENAME));
@@ -176,20 +155,19 @@ static AW_window *create_alignment_rename_window(AW_root *root, AliAdmin *admin)
     return (AW_window *)aws;
 }
 
-static void create_alignment_cb(AW_window *aww, AliAdmin *admin) {
+static void create_alignment_cb(AW_window *, AliAdmin *admin) {
     GBDATA   *gb_main = admin->get_gb_main();
     GB_ERROR  error   = GB_begin_transaction(gb_main);
     if (!error) {
-        char     *name         = aww->get_root()->awar(AWAR_ALI_DEST(admin->get_db_nr()))->read_string();
-        GBDATA   *gb_alignment = GBT_create_alignment(gb_main, name, 0, 0, 0, "dna");
+        const char *name   = admin->get_dest_ali();
+        GBDATA     *gb_ali = GBT_create_alignment(gb_main, name, 0, 0, 0, "dna");
 
-        if (!gb_alignment) error = GB_await_error();
+        if (!gb_ali) error = GB_await_error();
         else {
             char *nfield = GBS_global_string_copy("%s/data", name);
             error        = GBT_add_new_changekey(gb_main, nfield, GB_STRING);
             free(nfield);
         }
-        free(name);
     }
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
@@ -212,7 +190,7 @@ static AW_window *create_alignment_create_window(AW_root *root, AliAdmin *admin)
     aws->create_autosize_button(0, "Please enter the new name\nof the alignment");
 
     aws->at("input");
-    aws->create_input_field(AWAR_ALI_DEST(db_nr), 15);
+    aws->create_input_field(admin->dest_name(), 15);
 
     aws->at("ok");
     aws->callback(makeWindowCallback(create_alignment_cb, admin));
@@ -269,20 +247,20 @@ AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
 
         // ali selection list
         aws->at("list");
-        awt_create_selection_list_on_alignments(gb_main, aws, admin->get_select_awarname(), "*=");
+        awt_create_selection_list_on_alignments(gb_main, aws, admin->select_name(), "*=");
 
         // alignment settings
         aws->at("aligned");
-        aws->create_option_menu(AWAR_ALIGNED(db_nr), true);
-        aws->insert_default_option("not justified", "n", 0);
-        aws->insert_option("justified", "j", 1);
+        aws->create_option_menu(admin->aligned_name(), true);
+        aws->insert_default_option("not formatted", "n", 0);
+        aws->insert_option("formatted", "j", 1);
         aws->update_option_menu();
 
         aws->at("len");
-        aws->create_input_field(AWAR_ALI_LEN(db_nr), 8);
+        aws->create_input_field(admin->len_name(), 8);
 
         aws->at("type");
-        aws->create_option_menu(AWAR_ALI_TYPE(db_nr), true);
+        aws->create_option_menu(admin->type_name(), true);
         aws->insert_option("dna", "d", "dna");
         aws->insert_option("rna", "r", "rna");
         aws->insert_option("pro", "p", "ami");
@@ -291,7 +269,7 @@ AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
 
         aws->at("security");
         aws->callback(makeWindowCallback(ali_checklen_cb, admin));
-        aws->create_option_menu(AWAR_SECURITY(db_nr), true);
+        aws->create_option_menu(admin->security_name(), true);
         aws->insert_option("0", "0", 0);
         aws->insert_option("1", "1", 1);
         aws->insert_option("2", "2", 2);
@@ -301,6 +279,7 @@ AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
         aws->insert_default_option("6", "6", 6);
         aws->update_option_menu();
     }
+
     return admin->get_window();
 }
 

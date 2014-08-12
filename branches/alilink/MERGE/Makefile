@@ -62,8 +62,6 @@ MG_adapt_ali.o: $(ARBHOME)/INCLUDE/static_assert.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/test_global.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/test_unit.h
 
-MG_ali_admin.o: merge.hxx
-MG_ali_admin.o: mg_merge.hxx
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_ali_admin.o: $(ARBHOME)/INCLUDE/AliAdmin.h

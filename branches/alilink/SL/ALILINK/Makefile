@@ -34,6 +34,7 @@ AliAdmin.o: AliAdmin.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/arb_core.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/arb_error.h
+AliAdmin.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/arbtools.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/attributes.h

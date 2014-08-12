@@ -79,12 +79,17 @@ static void bindAdmin(AW_window *aws, const char *at_ali, const char *at_modify,
         AWAR_MERGE_TMP_SRC "alignment_name",
         AWAR_MERGE_TMP_DST "alignment_name"
     };
+    const char *awarbase[] = {
+        NULL,
+        AWAR_MERGE_TMP_SRC,
+        AWAR_MERGE_TMP_DST
+    };
 
     AW_root *aw_root = aws->get_root();
     GBDATA  *gb_main = get_gb_main(db_nr);
 
     aw_root->awar_string(awarname_select[db_nr], NO_ALI_SELECTED, AW_ROOT_DEFAULT);
-    AliAdmin *const admin = new AliAdmin(db_nr, gb_main, awarname_select[db_nr]); // do not free (bound to callbacks)
+    AliAdmin *const admin = new AliAdmin(db_nr, gb_main, awarname_select[db_nr], awarbase[db_nr]); // do not free (bound to callbacks)
 
     aws->at(at_ali);
     awt_create_selection_list_on_alignments(gb_main, aws, awarname_select[db_nr], "*=");
