@@ -104,6 +104,17 @@ static AliAdmin *get_ntree_ali_admin() {
     return ntreeAliAdmin;
 }
 
+void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
+    // map awar containing selected alignment with db-entry (both contain same value; historical)
+    // - allows access via AWAR_DEFAULT_ALIGNMENT and GBT_get_default_alignment
+
+    AW_awar        *awar_def_ali = aw_root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", aw_def);
+    GB_transaction  ta(gb_main);
+    GBDATA         *gb_use       = GB_search(gb_main, GB_DEFAULT_ALIGNMENT, GB_STRING);
+
+    awar_def_ali->map(gb_use);
+}
+
 AW_window *NT_create_alignment_admin_window(AW_root *root, AW_window *aw_popmedown) {
     // if 'aw_popmedown' points to a window, that window is popped down
     if (aw_popmedown) aw_popmedown->hide();

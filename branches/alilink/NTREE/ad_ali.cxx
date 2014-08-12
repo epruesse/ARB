@@ -77,12 +77,6 @@ static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
 }
 
 static void create_alignment_vars(AW_root *aw_root, AW_default aw_def, AliAdmin *admin) {
-    AW_awar *awar_def_ali = aw_root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", aw_def);
-    GB_push_transaction(GLOBAL.gb_main);
-
-    GBDATA *use = GB_search(GLOBAL.gb_main, AWAR_DEFAULT_ALIGNMENT, GB_STRING);
-    awar_def_ali->map(use); // @@@ mapping has to be done globally at NTREE startup
-
     aw_root->awar_string(AWAR_ALI_NAME, NO_ALI_SELECTED, aw_def) ->set_srt(GBT_ALI_AWAR_SRT); // @@@ srt not needed/wanted here
     aw_root->awar_string(AWAR_ALI_DEST, "", aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
     aw_root->awar_string(AWAR_ALI_TYPE, "", aw_def);
@@ -94,10 +88,8 @@ static void create_alignment_vars(AW_root *aw_root, AW_default aw_def, AliAdmin 
     aw_root->awar_int(AWAR_ALI_AUTO, 0, aw_def);
 
     RootCallback rcb = makeRootCallback(alignment_vars_callback, admin);
-    awar_def_ali->add_callback(rcb);
+    aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->add_callback(rcb);
     rcb(aw_root);
-
-    GB_pop_transaction(GLOBAL.gb_main);
 }
 
 static void delete_ali_cb(AW_window *aww, AliAdmin *admin) {
