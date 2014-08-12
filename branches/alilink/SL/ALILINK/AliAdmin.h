@@ -11,14 +11,11 @@
 #ifndef ALIADMIN_H
 #define ALIADMIN_H
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
+#ifndef AW_AWAR_HXX
+#include <aw_awar.hxx>
 #endif
-#ifndef AW_BASE_HXX
-#include <aw_base.hxx>
-#endif
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
 #endif
 
 #define ali_assert(cond) arb_assert(cond)
@@ -52,6 +49,8 @@ public:
     AW_window *get_window() const { return aws; }
 
     const char *get_select_awarname() const { return select_awarname; }
+    AW_awar *get_select_awar() const { return AW_root::SINGLETON->awar(get_select_awarname()); }
+    const char *get_selected_ali() const { return get_select_awar()->read_char_pntr(); }
 };
 
 #else
