@@ -22,7 +22,7 @@
 
  // @@@ eliminate use of AWAR_DEFAULT_ALIGNMENT
 
-#define AWAR_ALI_NAME "presets/alignment_name" // @@@ elim (use AWAR_DEFAULT_ALIGNMENT everywhere)
+#define AWAR_ALI_NAME "presets/alignment_name" // @@@ unused (only mapped around)
 #define AWAR_ALI_DEST "presets/alignment_dest"
 #define AWAR_ALI_TYPE "presets/alignment_type"
 #define AWAR_ALI_LEN  "presets/alignment_len"
@@ -76,18 +76,12 @@ static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
     nt_assert(!GB_have_error());
 }
 
-static AliAdmin *get_ntree_ali_admin() {
-    static AliAdmin *ntreeAliAdmin    = NULL;
-    if (!ntreeAliAdmin) ntreeAliAdmin = new AliAdmin(-1, GLOBAL.gb_main);
-    return ntreeAliAdmin;
-}
-
-void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def) { // @@@ pass AliAdmin?
+static void create_alignment_vars(AW_root *aw_root, AW_default aw_def, AliAdmin *admin) {
     AW_awar *awar_def_ali = aw_root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", aw_def);
     GB_push_transaction(GLOBAL.gb_main);
 
     GBDATA *use = GB_search(GLOBAL.gb_main, AWAR_DEFAULT_ALIGNMENT, GB_STRING);
-    awar_def_ali->map(use);
+    awar_def_ali->map(use); // @@@ mapping has to be done globally at NTREE startup
 
     aw_root->awar_string(AWAR_ALI_NAME, NO_ALI_SELECTED, aw_def) ->set_srt(GBT_ALI_AWAR_SRT); // @@@ srt not needed/wanted here
     aw_root->awar_string(AWAR_ALI_DEST, "", aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
@@ -99,7 +93,7 @@ void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def) { // @@@ pass
     aw_root->awar_int(AWAR_SECURITY, 0, aw_def);
     aw_root->awar_int(AWAR_ALI_AUTO, 0, aw_def);
 
-    RootCallback rcb = makeRootCallback(alignment_vars_callback, get_ntree_ali_admin());
+    RootCallback rcb = makeRootCallback(alignment_vars_callback, admin);
     awar_def_ali->add_callback(rcb);
     rcb(aw_root);
 
@@ -264,11 +258,15 @@ static AW_window *create_alignment_create_window(AW_root *root, AliAdmin *admin)
     return (AW_window *)aws;
 }
 
-static AW_window *create_alignment_window(AW_root *root, AliAdmin *admin) {
+// AISC_MKPT_PROMOTE:class AliAdmin;
+
+AW_window *NT_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         GBDATA *gb_main = admin->get_gb_main();
         aws             = new AW_window_simple;
+
+        create_alignment_vars(root, AW_ROOT_DEFAULT, admin);
 
         aws->init(root, "INFO_OF_ALIGNMENT", "ALIGNMENT INFORMATION");
 
@@ -358,8 +356,3 @@ static AW_window *create_alignment_window(AW_root *root, AliAdmin *admin) {
     return aws;
 }
 
-AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown) { 
-    // if 'aw_popmedown' points to a window, that window is popped down
-    if (aw_popmedown) aw_popmedown->hide();
-    return create_alignment_window(root, get_ntree_ali_admin());
-}

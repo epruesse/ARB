@@ -21,8 +21,8 @@
 
 #include <unistd.h>
 
-#define AWAR_ALI_SRC AWAR_MERGE_TMP_SRC "alignment_name"
-#define AWAR_ALI_DST AWAR_MERGE_TMP_DST "alignment_name"
+#define AWAR_ALI_SRC AWAR_MERGE_TMP_SRC "alignment_name" // @@@ same as AWAR_ALI_NAME(1); retrieve from AliAdmin
+#define AWAR_ALI_DST AWAR_MERGE_TMP_DST "alignment_name" // @@@ same as AWAR_ALI_NAME(2); retrieve from AliAdmin
 
 static void copy_and_check_alignments_ignoreResult() { MG_copy_and_check_alignments(); }
 int MG_copy_and_check_alignments() {
@@ -86,8 +86,8 @@ static AliAdmin *get_ali_admin(int db_nr) {
 AW_window *MG_create_merge_alignment_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
 
-    awr->awar(AWAR_ALI_SRC)->add_callback(makeRootCallback(MG_alignment_vars_callback, get_ali_admin(1))); // @@@ ntree version does this in NT_create_alignment_vars 
-    awr->awar(AWAR_ALI_DST)->add_callback(makeRootCallback(MG_alignment_vars_callback, get_ali_admin(2)));
+    MG_create_alignment_awars(awr, AW_ROOT_DEFAULT, get_ali_admin(1));
+    MG_create_alignment_awars(awr, AW_ROOT_DEFAULT, get_ali_admin(2));
 
     aws->init(awr, "MERGE_ALIGNMENTS", "MERGE ALIGNMENTS");
     aws->load_xfig("merge/alignment.fig");
@@ -110,11 +110,11 @@ AW_window *MG_create_merge_alignment_window(AW_root *awr) {
     awt_create_selection_list_on_alignments(GLOBAL_gb_dst, aws, AWAR_ALI_DST, "*=");
 
     aws->at("modify1");
-    aws->callback(makeCreateWindowCallback(MG_create_alignment_window, get_ali_admin(1)));
+    aws->callback(makeCreateWindowCallback(MG_create_AliAdmin_window, get_ali_admin(1)));
     aws->create_button("MODIFY_DB1", "MODIFY");
 
     aws->at("modify2");
-    aws->callback(makeCreateWindowCallback(MG_create_alignment_window, get_ali_admin(2)));
+    aws->callback(makeCreateWindowCallback(MG_create_AliAdmin_window, get_ali_admin(2)));
     aws->create_button("MODIFY_DB2", "MODIFY");
 
 

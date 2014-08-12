@@ -216,7 +216,6 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     NT_create_resort_awars(awr, def);
     NT_create_trackAliChanges_Awars(awr, GLOBAL.gb_main);
 
-    NT_create_alignment_vars(awr, def);
     create_nds_vars(awr, def, GLOBAL.gb_main);
     create_export_nds_awars(awr, def);
     awt_create_dtree_awars(awr, GLOBAL.gb_main);
@@ -1256,7 +1255,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
         awm->create_menu("Sequence", "S", AWM_ALL);
         {
-            awm->insert_menu_topic("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_ALL, makeCreateWindowCallback(NT_create_alignment_window, (AW_window*)0));
+            awm->insert_menu_topic("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_ALL, makeCreateWindowCallback(NT_create_alignment_admin_window, (AW_window*)0));
             awm->insert_sub_menu("Insert/delete", "I");
             {
                 awm->insert_menu_topic("ins_del_col", ".. column",     "c", "insdel.hlp",     AWM_ALL, create_insertDeleteColumn_window);

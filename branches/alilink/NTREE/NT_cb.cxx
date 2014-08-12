@@ -20,6 +20,7 @@
 #include <arbdbt.h>
 
 #include <map>
+#include <AliAdmin.h>
 
 
 // AISC_MKPT_PROMOTE:#ifndef ARBDB_BASE_H
@@ -97,6 +98,18 @@ void NT_select_bottom_tree(AW_window *aww, const char *awar_tree) {
     if (ltree) aww->get_root()->awar(awar_tree)->write_string(ltree);
 }
 
+static AliAdmin *get_ntree_ali_admin() {
+    static AliAdmin *ntreeAliAdmin    = NULL;
+    if (!ntreeAliAdmin) ntreeAliAdmin = new AliAdmin(-1, GLOBAL.gb_main);
+    return ntreeAliAdmin;
+}
+
+AW_window *NT_create_alignment_admin_window(AW_root *root, AW_window *aw_popmedown) {
+    // if 'aw_popmedown' points to a window, that window is popped down
+    if (aw_popmedown) aw_popmedown->hide();
+    return NT_create_AliAdmin_window(root, get_ntree_ali_admin());
+}
+
 AW_window *NT_create_select_alignment_window(AW_root *awr)
 {
     static AW_window_simple *aws = 0;
@@ -117,7 +130,7 @@ AW_window *NT_create_select_alignment_window(AW_root *awr)
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(makeCreateWindowCallback(NT_create_alignment_window, static_cast<AW_window*>(aws)));
+        aws->callback(makeCreateWindowCallback(NT_create_alignment_admin_window, static_cast<AW_window*>(aws)));
         aws->help_text("ad_align.hlp");
         aws->create_button("MODIFY", "ADMIN", "A");
 

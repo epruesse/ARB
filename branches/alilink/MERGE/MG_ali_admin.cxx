@@ -30,7 +30,7 @@
 // ---------------------------
 //      @@@ sync 108273910263
 
-void MG_alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
+static void alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
     mg_assert(!GB_have_error());
 
     GBDATA *gb_main = admin->get_gb_main();
@@ -65,18 +65,20 @@ void MG_alignment_vars_callback(AW_root *aw_root, AliAdmin *admin) {
     mg_assert(!GB_have_error());
 }
 
-void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def) { // @@@ split in single calls for each db number; pass AliAdmin?
-    for (int db_nr = 1; db_nr <= 2; ++db_nr) {
-        aw_root->awar_string(AWAR_ALI_NAME(db_nr), NO_ALI_SELECTED, aw_def) ->set_srt(GBT_ALI_AWAR_SRT); // @@@ srt not needed/wanted here
-        aw_root->awar_string(AWAR_ALI_DEST(db_nr), "",              aw_def) ->set_srt(GBT_ALI_AWAR_SRT);
-        aw_root->awar_string(AWAR_ALI_TYPE(db_nr), "",              aw_def);
+void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def, AliAdmin *admin) {
+    int db_nr = admin->get_db_nr();
+    aw_root->awar_string(AWAR_ALI_NAME(db_nr), NO_ALI_SELECTED, aw_def) ->set_srt(GBT_ALI_AWAR_SRT); // @@@ srt not needed/wanted here
 
-        aw_root->awar_int(AWAR_ALI_LEN (db_nr), 0, aw_def);
-        aw_root->awar_int(AWAR_ALIGNED (db_nr), 0, aw_def);
-        aw_root->awar_int(AWAR_SECURITY(db_nr), 0, aw_def);
-    }
+    AW_awar *awar_ali_dest = aw_root->awar_string(AWAR_ALI_DEST(db_nr), "", aw_def);
+    awar_ali_dest->set_srt(GBT_ALI_AWAR_SRT);
 
-    // @@@ nt-admin adds change-callback to ali-selection-list awar (and calls it once)
+    aw_root->awar_string(AWAR_ALI_TYPE(db_nr), "", aw_def);
+
+    aw_root->awar_int(AWAR_ALI_LEN (db_nr), 0, aw_def);
+    aw_root->awar_int(AWAR_ALIGNED (db_nr), 0, aw_def);
+    aw_root->awar_int(AWAR_SECURITY(db_nr), 0, aw_def);
+
+    awar_ali_dest->add_callback(makeRootCallback(alignment_vars_callback, admin));
 }
 
 static void delete_ali_cb(AW_window *aww, AliAdmin *admin) {
@@ -237,7 +239,7 @@ static AW_window *create_alignment_create_window(AW_root *root, AliAdmin *admin)
     return (AW_window *)aws;
 }
 
-AW_window *MG_create_alignment_window(AW_root *root, AliAdmin *admin) {
+AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
     int db_nr = admin->get_db_nr();
     mg_assert(db_nr>=1 && db_nr<=2);
 

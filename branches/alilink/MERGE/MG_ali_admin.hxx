@@ -17,9 +17,8 @@
 
 class AliAdmin;
 
-void MG_alignment_vars_callback(AW_root *aw_root, AliAdmin *admin);
-void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def);
-AW_window *MG_create_alignment_window(AW_root *root, AliAdmin *admin);
+void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def, AliAdmin *admin);
+AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin);
 
 #else
 #error MG_ali_admin.hxx included twice
