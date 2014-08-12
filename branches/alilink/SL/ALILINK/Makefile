@@ -36,6 +36,7 @@ AliAdmin.o: $(ARBHOME)/INCLUDE/arb_core.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/arbtools.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/attributes.h
+AliAdmin.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/dupstr.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/gccver.h

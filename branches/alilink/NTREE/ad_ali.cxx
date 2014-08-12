@@ -261,10 +261,11 @@ static AW_window *create_alignment_create_window(AW_root *root, AliAdmin *admin)
 // AISC_MKPT_PROMOTE:class AliAdmin;
 
 AW_window *NT_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
-    static AW_window_simple *aws = 0;
-    if (!aws) {
-        GBDATA *gb_main = admin->get_gb_main();
-        aws             = new AW_window_simple;
+    if (!admin->get_window()) {
+        GBDATA           *gb_main = admin->get_gb_main();
+        AW_window_simple *aws     = new AW_window_simple;
+
+        admin->store_window(aws);
 
         create_alignment_vars(root, AW_ROOT_DEFAULT, admin);
 
@@ -353,6 +354,6 @@ AW_window *NT_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
         aws->create_text_field(AWAR_ALI_REM);
     }
 
-    return aws;
+    return admin->get_window();
 }
 

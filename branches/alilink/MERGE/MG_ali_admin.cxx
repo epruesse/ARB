@@ -243,16 +243,17 @@ AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
     int db_nr = admin->get_db_nr();
     mg_assert(db_nr>=1 && db_nr<=2);
 
-    static AW_window_simple *aws_exists[3] = { NULL, NULL, NULL };
-    if (!aws_exists[db_nr]) {
+    if (!admin->get_window()) {
         GBDATA           *gb_main = admin->get_gb_main();
         AW_window_simple *aws     = new AW_window_simple;
 
-        aws_exists[db_nr] = aws;
+        admin->store_window(aws);
 
-        char header[80];
-        sprintf(header, "ALIGNMENT CONTROL %i", db_nr);
-        aws->init(root, header, header);
+        {
+            char header[80];
+            sprintf(header, "ALIGNMENT CONTROL %i", db_nr);
+            aws->init(root, header, header);
+        }
 
         aws->load_xfig("merge/ad_align.fig"); // @@@ use same fig?
 
@@ -317,6 +318,6 @@ AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
         aws->insert_default_option("6", "6", 6);
         aws->update_option_menu();
     }
-    return aws_exists[db_nr];
+    return admin->get_window();
 }
 

@@ -14,6 +14,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
+#endif
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
@@ -26,13 +29,15 @@ enum CopyRenameMode { // @@@ move inside AliAdmin.cxx asap
 };
 
 class AliAdmin {
-    int           db_nr;
-    GBDATA *const gb_main;
+    int            db_nr;
+    GBDATA *const  gb_main;
+    AW_window     *aws;
 
 public:
     AliAdmin(int db_nr_, GBDATA *gb_main_)
         : db_nr(db_nr_),
-          gb_main(gb_main_)
+          gb_main(gb_main_),
+          aws(NULL)
     {}
 
     GBDATA *get_gb_main() const { return gb_main; }
@@ -40,6 +45,9 @@ public:
         ali_assert(db_nr>=1 && db_nr<=2); // call forbidden for ntree-admin (@@@ will be eliminated)
         return db_nr;
     }
+
+    void store_window(AW_window *aw) { ali_assert(!aws); aws = aw; }
+    AW_window *get_window() const { return aws; }
 };
 
 #else
