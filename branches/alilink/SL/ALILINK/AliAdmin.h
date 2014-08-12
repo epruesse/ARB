@@ -28,8 +28,16 @@ enum CopyRenameMode { // @@@ move inside AliAdmin.cxx asap
     CRM_COPY,
 };
 
+enum AdminType {
+    MAIN_ADMIN,
+    SOURCE_ADMIN,
+    TARGET_ADMIN,
+
+    ALI_ADMIN_TYPES
+};
+
 class AliAdmin {
-    int            db_nr; // @@@ elim
+    AdminType      type;
     GBDATA *const  gb_main;
     AW_window     *aws;
     const char    *select_awarname;
@@ -40,24 +48,23 @@ class AliAdmin {
     }
 
 public:
-    AliAdmin(int db_nr_, GBDATA *gb_main_, const char *select_awarname_, const char *tmp_awarbase_)
-        : db_nr(db_nr_),
+    AliAdmin(AdminType type_, GBDATA *gb_main_, const char *select_awarname_, const char *tmp_awarbase_)
+        : type(type_),
           gb_main(gb_main_),
           aws(NULL),
           select_awarname(select_awarname_),
           tmp_awarbase(tmp_awarbase_)
     {
+        ali_assert(type>=0 && type<ALI_ADMIN_TYPES);
         ali_assert(strrchr(tmp_awarbase, '/')[1] == 0); // has to end with '/'
     }
 
     GBDATA *get_gb_main() const { return gb_main; }
-    __ATTR__DEPRECATED("dont use dbnr") int get_db_nr() const {
-        ali_assert(db_nr>=1 && db_nr<=2); // call forbidden for ntree-admin (@@@ will be eliminated)
-        return db_nr;
-    }
 
     void store_window(AW_window *aw) { ali_assert(!aws); aws = aw; }
     AW_window *get_window() const { return aws; }
+
+    void window_init(class AW_window_simple *aw, const char *id_templ, const char *title_templ) const;
 
     const char *select_name()  const { return select_awarname; }
     const char *dest_name()    const { return tmp_awarname("alignment_dest"); }

@@ -99,15 +99,9 @@ static void copy_rename_cb(AW_window *aww, AliAdmin *admin, CopyRenameMode mode)
     ali_assert(!GB_have_error());
 }
 
-static AW_window *create_alignment_copy_window(AW_root *root, AliAdmin *admin) {
+static AW_window *create_alignment_copy_window(AW_root *, AliAdmin *admin) {
     AW_window_simple *aws = new AW_window_simple;
-
-    int db_nr = admin->get_db_nr();
-    {
-        char header[80];
-        sprintf(header, "ALIGNMENT COPY %i", db_nr);
-        aws->init(root, header, header);
-    }
+    admin->window_init(aws, "COPY_%s", "Copy %s");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -127,15 +121,9 @@ static AW_window *create_alignment_copy_window(AW_root *root, AliAdmin *admin) {
     return (AW_window *)aws;
 }
 
-static AW_window *create_alignment_rename_window(AW_root *root, AliAdmin *admin) {
+static AW_window *create_alignment_rename_window(AW_root *, AliAdmin *admin) {
     AW_window_simple *aws = new AW_window_simple;
-
-    int db_nr = admin->get_db_nr();
-    {
-        char header[80];
-        sprintf(header, "ALIGNMENT RENAME %i", db_nr);
-        aws->init(root, header, header);
-    }
+    admin->window_init(aws, "RENAME_%s", "Rename %s");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -172,14 +160,9 @@ static void create_alignment_cb(AW_window *, AliAdmin *admin) {
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
-static AW_window *create_alignment_create_window(AW_root *root, AliAdmin *admin) {
-    AW_window_simple *aws   = new AW_window_simple;
-    int               db_nr = admin->get_db_nr();
-    {
-        char header[80];
-        sprintf(header, "ALIGNMENT CREATE %i", db_nr);
-        aws->init(root, header, header);
-    }
+static AW_window *create_alignment_create_window(AW_root *, AliAdmin *admin) {
+    AW_window_simple *aws = new AW_window_simple;
+    admin->window_init(aws, "CREATE_%s", "Create %s");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -200,9 +183,6 @@ static AW_window *create_alignment_create_window(AW_root *root, AliAdmin *admin)
 }
 
 AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
-    int db_nr = admin->get_db_nr();
-    ali_assert(db_nr>=1 && db_nr<=2);
-
     if (!admin->get_window()) {
         GBDATA           *gb_main = admin->get_gb_main();
         AW_window_simple *aws     = new AW_window_simple;
@@ -210,12 +190,7 @@ AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
         create_admin_awars(root, AW_ROOT_DEFAULT, admin);
         admin->store_window(aws);
 
-        {
-            char header[80];
-            sprintf(header, "ALIGNMENT CONTROL %i", db_nr);
-            aws->init(root, header, header);
-        }
-
+        admin->window_init(aws, "INFO_OF_%s", "%s information");
         aws->load_xfig("merge/ad_align.fig"); // @@@ use same fig?
 
         aws->callback((AW_CB0)AW_POPDOWN);

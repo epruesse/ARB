@@ -100,7 +100,7 @@ void NT_select_bottom_tree(AW_window *aww, const char *awar_tree) {
 
 static AliAdmin *get_ntree_ali_admin() {
     static AliAdmin *ntreeAliAdmin    = NULL;
-    if (!ntreeAliAdmin) ntreeAliAdmin = new AliAdmin(-1, GLOBAL.gb_main, AWAR_DEFAULT_ALIGNMENT, "tmp/presets/");
+    if (!ntreeAliAdmin) ntreeAliAdmin = new AliAdmin(MAIN_ADMIN, GLOBAL.gb_main, AWAR_DEFAULT_ALIGNMENT, "tmp/presets/");
     return ntreeAliAdmin;
 }
 

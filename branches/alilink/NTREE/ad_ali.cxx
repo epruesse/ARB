@@ -126,9 +126,9 @@ static void copy_rename_cb(AW_window *aww, AliAdmin *admin, CopyRenameMode mode)
     ali_assert(!GB_have_error());
 }
 
-static AW_window *create_alignment_copy_window(AW_root *root, AliAdmin *admin) {
+static AW_window *create_alignment_copy_window(AW_root *, AliAdmin *admin) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "COPY_ALIGNMENT", "ALIGNMENT COPY");
+    admin->window_init(aws, "COPY_%s", "Copy %s");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -148,9 +148,9 @@ static AW_window *create_alignment_copy_window(AW_root *root, AliAdmin *admin) {
     return (AW_window *)aws;
 }
 
-static AW_window *create_alignment_rename_window(AW_root *root, AliAdmin *admin) {
+static AW_window *create_alignment_rename_window(AW_root *, AliAdmin *admin) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "RENAME_ALIGNMENT", "ALIGNMENT RENAME");
+    admin->window_init(aws, "RENAME_%s", "Rename %s");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -187,9 +187,9 @@ static void create_alignment_cb(AW_window *, AliAdmin *admin) {
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
-static AW_window *create_alignment_create_window(AW_root *root, AliAdmin *admin) {
+static AW_window *create_alignment_create_window(AW_root *, AliAdmin *admin) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "CREATE_ALIGNMENT", "ALIGNMENT CREATE");
+    admin->window_init(aws, "CREATE_%s", "Create %s");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -217,8 +217,7 @@ AW_window *NT_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
         create_admin_awars(root, AW_ROOT_DEFAULT, admin);
         admin->store_window(aws);
 
-        aws->init(root, "INFO_OF_ALIGNMENT", "ALIGNMENT INFORMATION");
-
+        admin->window_init(aws, "INFO_OF_%s", "%s information");
         aws->load_xfig("ad_align.fig"); // @@@ use same fig?
 
         aws->callback((AW_CB0)AW_POPDOWN);

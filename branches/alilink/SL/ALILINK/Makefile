@@ -40,7 +40,9 @@ AliAdmin.o: $(ARBHOME)/INCLUDE/arbtools.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/attributes.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AliAdmin.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AliAdmin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/cb.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/cb_base.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/cbtypes.h
