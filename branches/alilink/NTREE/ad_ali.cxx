@@ -19,13 +19,13 @@
 #include <arbdbt.h>
 #include <AliAdmin.h>
 
-#define AWAR_ALI_DEST   "presets/alignment_dest"
-#define AWAR_ALI_TYPE   "presets/alignment_type"
-#define AWAR_ALI_LEN    "presets/alignment_len"
-#define AWAR_ALIGNED    "presets/aligned"
-#define AWAR_SECURITY   "presets/security"
-#define AWAR_ALI_REM    "presets/alignment_rem"
-#define AWAR_ALI_AUTO   "presets/auto_format"
+#define AWAR_ALI_DEST   "tmp/presets/alignment_dest"
+#define AWAR_ALI_TYPE   "tmp/presets/alignment_type"
+#define AWAR_ALI_LEN    "tmp/presets/alignment_len"
+#define AWAR_ALIGNED    "tmp/presets/aligned"
+#define AWAR_SECURITY   "tmp/presets/security"
+#define AWAR_ALI_REM    "tmp/presets/alignment_rem"
+#define AWAR_ALI_AUTO   "tmp/presets/auto_format"
 
 // ---------------------------
 //      @@@ sync 108273910263
