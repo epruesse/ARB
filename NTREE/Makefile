@@ -14,8 +14,6 @@ $(MAIN): $(OBJECTS)
 proto:
 	../AISC_MKPTPS/aisc_mkpt -P -E -G -F ^NT_,^AP_ -w NT_local_proto.h $(SOURCES) >NT_local_proto.h.tmp
 	../SOURCE_TOOLS/mv_if_diff NT_local_proto.h.tmp NT_local_proto.h
-	../AISC_MKPTPS/aisc_mkpt -P -E -G -w NT_cb.h NT_cb.cxx NT_extern.cxx >NT_cb.h.tmp
-	../SOURCE_TOOLS/mv_if_diff NT_cb.h.tmp NT_cb.h
 
 .cxx.o:
 	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
@@ -37,42 +35,6 @@ depend.init:
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
-
-ad_ali.o: NT_local.h
-ad_ali.o: NT_local_proto.h
-ad_ali.o: $(ARBHOME)/INCLUDE/ad_prot.h
-ad_ali.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arb_assert.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arb_core.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arb_error.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arb_msg.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arb_string.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arbdb.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arbdbt.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arbtools.h
-ad_ali.o: $(ARBHOME)/INCLUDE/attributes.h
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_question.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/cb.h
-ad_ali.o: $(ARBHOME)/INCLUDE/cb_base.h
-ad_ali.o: $(ARBHOME)/INCLUDE/cbtypes.h
-ad_ali.o: $(ARBHOME)/INCLUDE/cxxforward.h
-ad_ali.o: $(ARBHOME)/INCLUDE/downcast.h
-ad_ali.o: $(ARBHOME)/INCLUDE/dupstr.h
-ad_ali.o: $(ARBHOME)/INCLUDE/gccver.h
-ad_ali.o: $(ARBHOME)/INCLUDE/insdel.h
-ad_ali.o: $(ARBHOME)/INCLUDE/smartptr.h
-ad_ali.o: $(ARBHOME)/INCLUDE/static_assert.h
-ad_ali.o: $(ARBHOME)/INCLUDE/test_global.h
-ad_ali.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ad_ext.o: NT_local.h
 ad_ext.o: NT_local_proto.h
@@ -468,11 +430,11 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 NT_cb.o: ad_trees.h
-NT_cb.o: NT_cb.h
 NT_cb.o: NT_local.h
 NT_cb.o: NT_local_proto.h
 NT_cb.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_cb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_cb.o: $(ARBHOME)/INCLUDE/AliAdmin.h
 NT_cb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_cb.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_cb.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -589,7 +551,6 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/ttypes.h
 
-NT_edconf.o: NT_cb.h
 NT_edconf.o: NT_local.h
 NT_edconf.o: NT_local_proto.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_config.h
@@ -630,7 +591,6 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 NT_extern.o: ad_trees.h
 NT_extern.o: map_viewer.h
-NT_extern.o: NT_cb.h
 NT_extern.o: NT_local.h
 NT_extern.o: NT_local_proto.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_cb.h
@@ -836,7 +796,6 @@ NT_join.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_join.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_join.o: $(ARBHOME)/INCLUDE/ttypes.h
 
-NT_main.o: NT_cb.h
 NT_main.o: NT_local.h
 NT_main.o: NT_local_proto.h
 NT_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -888,7 +847,6 @@ NT_main.o: $(ARBHOME)/INCLUDE/svn_revision.h
 NT_main.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_main.o: $(ARBHOME)/INCLUDE/ttypes.h
 
-NT_sort.o: NT_cb.h
 NT_sort.o: NT_local.h
 NT_sort.o: NT_local_proto.h
 NT_sort.o: $(ARBHOME)/INCLUDE/ad_prot.h

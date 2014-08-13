@@ -15,7 +15,7 @@
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 
-#include <algorithm>
+#include <cmath>
 #include <list>
 
 #if defined(DEBUG)
@@ -88,8 +88,6 @@ public:
 
     const char *add_reference(const char *in_reference, const char *out_reference); // returns only warnings
     char       *remap(const char *sequence);        // returns 0 on error, else copy of sequence
-
-    char *readable_inconsistent_positions();
 
 #if defined(DUMP_MAPPING)
     static void dump(const int *data, int len, const char *comment, int dontShow) {
@@ -772,8 +770,7 @@ GB_ERROR MG_transfer_all_alignments(MG_remaps *remaps, GBDATA *source_species, G
 #define TEST_REMAP1REF(id,ro,rn,seqold,expected)             TEST_REMAP1REF_INT(id, TEST_EXPECT_EQUAL__IGNARG, ro, rn, seqold, expected, NULL)
 #define TEST_REMAP1REF__BROKEN(id,ro,rn,seqold,expected,got) TEST_REMAP1REF_INT(id, TEST_EXPECT_EQUAL__BROKEN, ro, rn, seqold, expected, got)
 
-#define TEST_REMAP2REFS(id,ro1,rn1,ro2,rn2,seqold,expected)             TEST_REMAP2REFS_INT(id, TEST_EXPECT_EQUAL__IGNARG, ro1, rn1, ro2, rn2, seqold, expected, NULL)
-#define TEST_REMAP2REFS__BROKEN(id,ro1,rn1,ro2,rn2,seqold,expected,got) TEST_REMAP2REFS_INT(id, TEST_EXPECT_EQUAL__BROKEN, ro1, rn1, ro2, rn2, seqold, expected, got)
+#define TEST_REMAP2REFS(id,ro1,rn1,ro2,rn2,seqold,expected) TEST_REMAP2REFS_INT(id, TEST_EXPECT_EQUAL__IGNARG, ro1, rn1, ro2, rn2, seqold, expected, NULL)
 
 #define TEST_REMAP1REF_FWDREV(id, ro, rn, so, sn)       \
     TEST_REMAP1REF(id "(fwd)", ro, rn, so, sn);         \
@@ -791,7 +788,6 @@ GB_ERROR MG_transfer_all_alignments(MG_remaps *remaps, GBDATA *source_species, G
     TEST_REMAP2REFS_FWDREV(id "/ref=r1+r2 ", ro1, rn1, ro2, rn2, so, sn); \
     TEST_REMAP2REFS_FWDREV(id "/ref=r1+src", ro1, rn1, so, sn, ro2, rn2); \
     TEST_REMAP2REFS_FWDREV(id "/ref=r2+src", ro2, rn2, so, sn, ro1, rn1)
-
 
 void TEST_remapping() {
     // ----------------------------------------

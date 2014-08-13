@@ -19,13 +19,9 @@
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
-#include <aw_window.hxx>
 #include <aw_select.hxx>
-#include <adGene.h>
 #include <arbdbt.h>
 #include <arb_str.h>
-
-using namespace std;
 
 #define AWAR_MERGE_GENE_SPECIES_SAV AWAR_MERGE_SAV "gene_species/"
 #define AWAR_MERGE_GENE_SPECIES_TMP AWAR_MERGE_TMP "gene_species/"
