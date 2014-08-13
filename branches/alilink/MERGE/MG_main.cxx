@@ -9,10 +9,7 @@
 // =============================================================== //
 
 #include "merge.hxx"
-#include "MG_ali_admin.hxx"
-
 #include <AW_rename.hxx>
-
 #include <awt.hxx>
 
 #include <aw_preset.hxx>

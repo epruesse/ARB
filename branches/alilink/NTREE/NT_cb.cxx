@@ -98,12 +98,6 @@ void NT_select_bottom_tree(AW_window *aww, const char *awar_tree) {
     if (ltree) aww->get_root()->awar(awar_tree)->write_string(ltree);
 }
 
-static AliAdmin *get_ntree_ali_admin() {
-    static AliAdmin *ntreeAliAdmin    = NULL;
-    if (!ntreeAliAdmin) ntreeAliAdmin = new AliAdmin(MAIN_ADMIN, GLOBAL.gb_main, AWAR_DEFAULT_ALIGNMENT, "tmp/presets/");
-    return ntreeAliAdmin;
-}
-
 void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
     // map awar containing selected alignment with db-entry (both contain same value; historical)
     // - allows access via AWAR_DEFAULT_ALIGNMENT and GBT_get_default_alignment
@@ -118,7 +112,11 @@ void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_ma
 AW_window *NT_create_alignment_admin_window(AW_root *root, AW_window *aw_popmedown) {
     // if 'aw_popmedown' points to a window, that window is popped down
     if (aw_popmedown) aw_popmedown->hide();
-    return NT_create_AliAdmin_window(root, get_ntree_ali_admin());
+
+    static AliAdmin *ntreeAliAdmin    = NULL;
+    if (!ntreeAliAdmin) ntreeAliAdmin = new AliAdmin(MAIN_ADMIN, GLOBAL.gb_main, AWAR_DEFAULT_ALIGNMENT, "tmp/presets/");
+
+    return ALI_create_admin_window(root, ntreeAliAdmin);
 }
 
 AW_window *NT_create_select_alignment_window(AW_root *awr)

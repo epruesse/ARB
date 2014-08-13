@@ -9,7 +9,6 @@
 // =============================================================== //
 
 #include "merge.hxx"
-#include "MG_ali_admin.hxx"
 
 #include <awt_sel_boxes.hxx>
 #include <aw_root.hxx>
@@ -95,7 +94,7 @@ static void bindAdmin(AW_window *aws, const char *at_ali, const char *at_modify,
     awt_create_selection_list_on_alignments(gb_main, aws, awarname_select[type], "*=");
 
     aws->at(at_modify);
-    aws->callback(makeCreateWindowCallback(MG_create_AliAdmin_window, admin));
+    aws->callback(makeCreateWindowCallback(ALI_create_admin_window, admin));
     aws->create_button(button_id, "MODIFY");
 }
 

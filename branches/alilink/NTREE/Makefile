@@ -36,40 +36,6 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
-ad_ali.o: $(ARBHOME)/INCLUDE/ad_prot.h
-ad_ali.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-ad_ali.o: $(ARBHOME)/INCLUDE/AliAdmin.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arb_assert.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arb_core.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arb_error.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arb_msg.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arb_string.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arbdb.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arbdbt.h
-ad_ali.o: $(ARBHOME)/INCLUDE/arbtools.h
-ad_ali.o: $(ARBHOME)/INCLUDE/attributes.h
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_question.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/cb.h
-ad_ali.o: $(ARBHOME)/INCLUDE/cb_base.h
-ad_ali.o: $(ARBHOME)/INCLUDE/cbtypes.h
-ad_ali.o: $(ARBHOME)/INCLUDE/cxxforward.h
-ad_ali.o: $(ARBHOME)/INCLUDE/downcast.h
-ad_ali.o: $(ARBHOME)/INCLUDE/dupstr.h
-ad_ali.o: $(ARBHOME)/INCLUDE/gccver.h
-ad_ali.o: $(ARBHOME)/INCLUDE/insdel.h
-ad_ali.o: $(ARBHOME)/INCLUDE/smartptr.h
-ad_ali.o: $(ARBHOME)/INCLUDE/static_assert.h
-ad_ali.o: $(ARBHOME)/INCLUDE/test_global.h
-ad_ali.o: $(ARBHOME)/INCLUDE/ttypes.h
-
 ad_ext.o: NT_local.h
 ad_ext.o: NT_local_proto.h
 ad_ext.o: $(ARBHOME)/INCLUDE/ad_prot.h

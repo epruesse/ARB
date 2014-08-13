@@ -1,12 +1,14 @@
 // =============================================================== //
 //                                                                 //
-//   File      : MG_ali_admin.cxx                                  //
-//   Purpose   :                                                   //
+//   File      : AdminGui.cxx                                      //
+//   Purpose   : alignment admin GUI                               //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
 //                                                                 //
 // =============================================================== //
+
+#include <insdel.h>
 
 #include <awt_sel_boxes.hxx>
 #include <aw_root.hxx>
@@ -29,29 +31,37 @@ static void alignment_vars_callback(AW_root *, AliAdmin *admin) {
         admin->len_awar()->unmap();
         admin->aligned_awar()->unmap();
         admin->security_awar()->unmap();
+        admin->remark_awar()->unmap();
+        admin->auto_awar()->unmap();
     }
     else {
-        GBDATA *ali_len      = GB_entry(ali_cont, "alignment_len");
-        GBDATA *ali_aligned  = GB_entry(ali_cont, "aligned");
-        GBDATA *ali_type     = GB_entry(ali_cont, "alignment_type");
-        GBDATA *ali_security = GB_entry(ali_cont, "alignment_write_security");
+        GBDATA *ali_len         = GB_search(ali_cont, "alignment_len",            GB_INT);
+        GBDATA *ali_aligned     = GB_search(ali_cont, "aligned",                  GB_INT);
+        GBDATA *ali_type        = GB_search(ali_cont, "alignment_type",           GB_STRING);
+        GBDATA *ali_security    = GB_search(ali_cont, "alignment_write_security", GB_INT);
+        GBDATA *ali_rem         = GB_search(ali_cont, "alignment_rem",            GB_STRING);
+        GBDATA *ali_auto_format = GB_search(ali_cont, "auto_format",              GB_INT);
 
         admin->type_awar()    ->map(ali_type);
         admin->len_awar()     ->map(ali_len);
         admin->aligned_awar() ->map(ali_aligned);
         admin->security_awar()->map(ali_security);
+        admin->remark_awar()  ->map(ali_rem);
+        admin->auto_awar()    ->map(ali_auto_format);
     }
 
     ali_assert(!GB_have_error());
 }
 
 static void create_admin_awars(AW_root *aw_root, AW_default aw_def, AliAdmin *admin) {
-    aw_root->awar_string(admin->dest_name(), "", aw_def)->set_srt(GBT_ALI_AWAR_SRT);
-    aw_root->awar_string(admin->type_name(), "", aw_def);
+    aw_root->awar_string(admin->dest_name(),   "", aw_def)->set_srt(GBT_ALI_AWAR_SRT);
+    aw_root->awar_string(admin->type_name(),   "", aw_def);
+    aw_root->awar_string(admin->remark_name(), "", aw_def);
 
     aw_root->awar_int(admin->len_name(),      0, aw_def);
     aw_root->awar_int(admin->aligned_name(),  0, aw_def);
     aw_root->awar_int(admin->security_name(), 0, aw_def);
+    aw_root->awar_int(admin->auto_name(),     0, aw_def);
 
     RootCallback rcb = makeRootCallback(alignment_vars_callback, admin);
     admin->select_awar()->add_callback(rcb);
@@ -77,6 +87,26 @@ static void ali_checklen_cb(AW_window *, AliAdmin *admin) {
     error = ta.close(error);
     aw_message_if(error);
 }
+
+static void never_auto_format_ali_genom_cb(AW_window *, AliAdmin *admin) {
+    if (strcmp(admin->get_selected_ali(), "ali_genom") == 0) {
+        admin->auto_awar()->write_int(2); // ali_genom is always forced to "skip"
+    }
+}
+
+static void ali_format_cb(AW_window *aww, AliAdmin *admin) {
+    {
+        GB_transaction ta(admin->get_gb_main());
+        GB_ERROR       error = ARB_format_alignment(admin->get_gb_main(), admin->get_selected_ali());
+        aw_message_if(error);
+    }
+    ali_checklen_cb(aww, admin);
+}
+
+enum CopyRenameMode {
+    CRM_RENAME,
+    CRM_COPY,
+};
 
 static void copy_rename_cb(AW_window *aww, AliAdmin *admin, CopyRenameMode mode) {
     ali_assert(!GB_have_error());
@@ -182,7 +212,7 @@ static AW_window *create_alignment_create_window(AW_root *, AliAdmin *admin) {
     return (AW_window *)aws;
 }
 
-AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
+AW_window *ALI_create_admin_window(AW_root *root, AliAdmin *admin) {
     if (!admin->get_window()) {
         GBDATA           *gb_main = admin->get_gb_main();
         AW_window_simple *aws     = new AW_window_simple;
@@ -191,7 +221,7 @@ AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
         admin->store_window(aws);
 
         admin->window_init(aws, "INFO_OF_%s", "%s information");
-        aws->load_xfig("merge/ad_align.fig"); // @@@ use same fig?
+        aws->load_xfig("ad_align.fig");
 
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
@@ -220,6 +250,14 @@ AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
         aws->callback(makeCreateWindowCallback(create_alignment_copy_window, admin));
         aws->create_button("COPY", "COPY", "C");
 
+        aws->at("check_len");
+        aws->callback(makeWindowCallback(ali_checklen_cb, admin));
+        aws->create_button("CHECK_LEN", "CHECK LEN", "L");
+
+        aws->at("align");
+        aws->callback(makeWindowCallback(ali_format_cb, admin));
+        aws->create_button("FORMAT", "FORMAT", "F");
+
         // ali selection list
         aws->at("list");
         awt_create_selection_list_on_alignments(gb_main, aws, admin->select_name(), "*=");
@@ -227,8 +265,8 @@ AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
         // alignment settings
         aws->at("aligned");
         aws->create_option_menu(admin->aligned_name(), true);
-        aws->insert_default_option("not formatted", "n", 0);
-        aws->insert_option("formatted", "j", 1);
+        aws->callback(makeWindowCallback(ali_checklen_cb, admin)); aws->insert_default_option("not formatted", "n", 0);
+        aws->callback(makeWindowCallback(ali_format_cb, admin));   aws->insert_option("formatted", "j", 1);
         aws->update_option_menu();
 
         aws->at("len");
@@ -253,6 +291,17 @@ AW_window *MG_create_AliAdmin_window(AW_root *root, AliAdmin *admin) {
         aws->insert_option("5", "5", 5);
         aws->insert_default_option("6", "6", 6);
         aws->update_option_menu();
+
+        aws->at("auto_format");
+        aws->callback(makeWindowCallback(never_auto_format_ali_genom_cb, admin));
+        aws->create_option_menu(admin->auto_name(), true);
+        aws->insert_default_option("ask", "a", 0);
+        aws->insert_option("always", "", 1);
+        aws->insert_option("never", "", 2);
+        aws->update_option_menu();
+
+        aws->at("rem");
+        aws->create_text_field(admin->remark_name());
     }
 
     return admin->get_window();

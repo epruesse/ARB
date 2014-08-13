@@ -62,41 +62,7 @@ MG_adapt_ali.o: $(ARBHOME)/INCLUDE/static_assert.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/test_global.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/test_unit.h
 
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/ad_prot.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/AliAdmin.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_assert.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_core.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_error.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_msg.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/arb_string.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/arbdb.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/arbdbt.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/arbtools.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/attributes.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/aw_question.hxx
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/cb.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/cb_base.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/cbtypes.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/cxxforward.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/downcast.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/dupstr.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/gccver.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/smartptr.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/static_assert.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/test_global.h
-MG_ali_admin.o: $(ARBHOME)/INCLUDE/ttypes.h
-
 MG_alignment.o: merge.hxx
-MG_alignment.o: MG_ali_admin.hxx
 MG_alignment.o: mg_merge.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -273,7 +239,6 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/test_global.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 MG_main.o: merge.hxx
-MG_main.o: MG_ali_admin.hxx
 MG_main.o: mg_merge.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

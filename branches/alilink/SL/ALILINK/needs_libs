@@ -1,3 +1,4 @@
 # libraries needed to link against SL/ALILINK/ALILINK.a
 
-lib/libWINDOW.so
+lib/libAWT.so
+SL/INSDEL/INSDEL.a

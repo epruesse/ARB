@@ -23,11 +23,6 @@
 
 #define ali_assert(cond) arb_assert(cond)
 
-enum CopyRenameMode { // @@@ move inside AliAdmin.cxx asap
-    CRM_RENAME,
-    CRM_COPY,
-};
-
 enum AdminType {
     MAIN_ADMIN,
     SOURCE_ADMIN,
@@ -87,6 +82,9 @@ public:
     const char *get_selected_ali()const { return select_awar()->read_char_pntr(); }
     const char *get_dest_ali()    const { return dest_awar()->read_char_pntr(); }
 };
+
+
+AW_window *ALI_create_admin_window(AW_root *root, AliAdmin *admin);
 
 #else
 #error AliAdmin.h included twice

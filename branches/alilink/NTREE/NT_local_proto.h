@@ -99,12 +99,6 @@ void NT_deleteValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
 void NT_importValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
 void NT_suggestValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
 
-/* ad_ali.cxx */
-
-class AliAdmin;
-
-AW_window *NT_create_AliAdmin_window(AW_root *root, AliAdmin *admin);
-
 /* ad_ext.cxx */
 AW_window *NT_create_extendeds_window(AW_root *aw_root);
 
