@@ -9,7 +9,6 @@
 // =============================================================== //
 
 #include "NT_local.h"
-#include "NT_cb.h"
 #include "ad_trees.h"
 
 #include <awt_canvas.hxx>
@@ -21,6 +20,7 @@
 #include <arbdbt.h>
 
 #include <map>
+#include <AliAdmin.h>
 
 
 // AISC_MKPT_PROMOTE:#ifndef ARBDB_BASE_H
@@ -98,6 +98,27 @@ void NT_select_bottom_tree(AW_window *aww, const char *awar_tree) {
     if (ltree) aww->get_root()->awar(awar_tree)->write_string(ltree);
 }
 
+void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
+    // map awar containing selected alignment with db-entry (both contain same value; historical)
+    // - allows access via AWAR_DEFAULT_ALIGNMENT and GBT_get_default_alignment
+
+    AW_awar        *awar_def_ali = aw_root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", aw_def);
+    GB_transaction  ta(gb_main);
+    GBDATA         *gb_use       = GB_search(gb_main, GB_DEFAULT_ALIGNMENT, GB_STRING);
+
+    awar_def_ali->map(gb_use);
+}
+
+AW_window *NT_create_alignment_admin_window(AW_root *root, AW_window *aw_popmedown) {
+    // if 'aw_popmedown' points to a window, that window is popped down
+    if (aw_popmedown) aw_popmedown->hide();
+
+    static AliAdmin *ntreeAliAdmin    = NULL;
+    if (!ntreeAliAdmin) ntreeAliAdmin = new AliAdmin(MAIN_ADMIN, GLOBAL.gb_main, AWAR_DEFAULT_ALIGNMENT, "tmp/presets/");
+
+    return ALI_create_admin_window(root, ntreeAliAdmin);
+}
+
 AW_window *NT_create_select_alignment_window(AW_root *awr)
 {
     static AW_window_simple *aws = 0;
@@ -118,7 +139,7 @@ AW_window *NT_create_select_alignment_window(AW_root *awr)
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(makeCreateWindowCallback(NT_create_alignment_window, static_cast<AW_window*>(aws)));
+        aws->callback(makeCreateWindowCallback(NT_create_alignment_admin_window, static_cast<AW_window*>(aws)));
         aws->help_text("ad_align.hlp");
         aws->create_button("MODIFY", "ADMIN", "A");
 

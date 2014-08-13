@@ -41,6 +41,8 @@ class AWT_canvas;
 void NT_delete_mark_all_cb(void *, AWT_canvas *ntw);
 AW_window *NT_create_select_tree_window(AW_root *awr, const char *awar_tree);
 void NT_select_bottom_tree(AW_window *aww, const char *awar_tree);
+void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main);
+AW_window *NT_create_alignment_admin_window(AW_root *root, AW_window *aw_popmedown);
 AW_window *NT_create_select_alignment_window(AW_root *awr);
 void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
@@ -60,7 +62,12 @@ AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr);
 void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL cl_ntw);
 
 /* NT_extern.cxx */
+void NT_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID);
+void NT_exit(AW_window *aws, AW_CL exitcode);
+void NT_restart(AW_root *aw_root, const char *arb_ntree_args);
+GBT_TREE *NT_get_tree_root_of_canvas(AWT_canvas *ntw);
 int NT_get_canvas_id(AWT_canvas *ntw);
+void NT_create_main_window(AW_root *aw_root);
 
 /* NT_import.cxx */
 void NT_import_sequences(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
@@ -91,10 +98,6 @@ AW_window *NT_create_searchManuallyNames_window(AW_root *aw_root);
 void NT_deleteValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
 void NT_importValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
 void NT_suggestValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
-
-/* ad_ali.cxx */
-void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def);
-AW_window *NT_create_alignment_window(AW_root *root, AW_window *aw_popmedown);
 
 /* ad_ext.cxx */
 AW_window *NT_create_extendeds_window(AW_root *aw_root);

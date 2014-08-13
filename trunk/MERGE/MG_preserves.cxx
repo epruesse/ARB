@@ -18,7 +18,6 @@
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
-#include <aw_window.hxx>
 #include <aw_select.hxx>
 #include <arb_progress.h>
 #include <arb_global_defs.h>
