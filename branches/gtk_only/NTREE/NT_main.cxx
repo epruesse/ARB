@@ -9,7 +9,6 @@
 // =============================================================== //
 
 #include "NT_local.h"
-#include "NT_cb.h"
 
 #include <mg_merge.hxx>
 #include <awti_import.hxx>
@@ -159,7 +158,7 @@ __ATTR__USERESULT static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_ro
 
     GB_ERROR error = configure_macro_recording(aw_root, "ARB_NT", GLOBAL.gb_main); // @@@ problematic if called from startup-importer
     if (!error) {
-        nt_create_main_window(aw_root);
+        NT_create_main_window(aw_root);
         if (GB_is_server(GLOBAL.gb_main)) {
             error = nt_check_database_consistency();
             if (!error) NT_repair_userland_problems();
@@ -256,7 +255,7 @@ static void nt_intro_start_merge(AW_window *aw_intro) {
     const char *dir        = aw_root->awar("tmp/nt/arbdb/directory")->read_char_pntr();
     char       *merge_args = GBS_global_string_copy("'%s' '%s'", dir, dir);
 
-    nt_restart(aw_root, merge_args); //  call arb_ntree as merge-tool on exit
+    NT_restart(aw_root, merge_args); //  call arb_ntree as merge-tool on exit
 }
 
 static void nt_intro_start_import(AW_window *aw_intro) {
@@ -278,7 +277,7 @@ static AW_window *nt_create_intro_window(AW_root *awr) {
     aws->init(awr, "ARB_INTRO", "ARB INTRO");
     aws->load_xfig("arb_intro.fig");
 
-    aws->callback(nt_exit, EXIT_SUCCESS);
+    aws->callback(NT_exit, EXIT_SUCCESS);
     aws->at("close");
     aws->create_button("EXIT", "Exit", "x");
     aws->set_close_action("EXIT");
@@ -731,11 +730,11 @@ struct merge_scheme : virtual Noncopyable {
 static bool merge_tool_running_as_client = true; // default to safe state (true avoids call of 'arb_clean' at exit)
 static void exit_from_merge(const char *restart_args) {
     if (merge_tool_running_as_client) { // there is a main ARB running
-        if (restart_args) nt_start(restart_args, true);
-        exit(EXIT_SUCCESS); // exit w/o killing clients (as nt_exit() does)
+        if (restart_args) NT_start(restart_args, true);
+        exit(EXIT_SUCCESS); // exit w/o killing clients (as NT_exit() does)
     }
     else {
-        nt_restart(AW_root::SINGLETON, restart_args ? restart_args : "");
+        NT_restart(AW_root::SINGLETON, restart_args ? restart_args : "");
         nt_assert(0);
     }
 }

@@ -11,7 +11,6 @@
 #include "map_viewer.h"
 #include "NT_local.h"
 #include "ad_trees.h"
-#include "NT_cb.h"
 
 #include <seq_quality.h>
 #include <multi_probe.hxx>
@@ -216,7 +215,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     NT_create_resort_awars(awr, def);
     NT_create_trackAliChanges_Awars(awr, GLOBAL.gb_main);
 
-    NT_create_alignment_vars(awr, def);
+    NT_create_alignment_vars(awr, def, GLOBAL.gb_main);
     create_nds_vars(awr, def, GLOBAL.gb_main);
     create_export_nds_awars(awr, def);
     awt_create_dtree_awars(awr, GLOBAL.gb_main);
@@ -313,7 +312,7 @@ static void nt_run(const char *command) {
     }
 }
 
-void nt_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
+void NT_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID) {
     char *command = GBS_global_string_copy("arb_launcher --async %s %s", restart_with_new_ARB_PID ? "arb" : "arb_ntree", arb_ntree_args);
     nt_run(command);
     free(command);
@@ -326,7 +325,7 @@ __ATTR__NORETURN static void really_exit(int exitcode, bool kill_my_clients) {
     exit(exitcode);
 }
 
-void nt_exit(AW_window *aws, AW_CL exitcode) {
+void NT_exit(AW_window *aws, AW_CL exitcode) {
     AW_root *aw_root = aws->get_root();
     shutdown_macro_recording(aw_root);
     bool is_server_and_has_clients = GLOBAL.gb_main && GB_read_clients(GLOBAL.gb_main)>0;
@@ -334,11 +333,11 @@ void nt_exit(AW_window *aws, AW_CL exitcode) {
         really_exit(exitcode, is_server_and_has_clients);
     }
 }
-void nt_restart(AW_root *aw_root, const char *arb_ntree_args) {
+void NT_restart(AW_root *aw_root, const char *arb_ntree_args) {
     // restarts arb_ntree (with new ARB_PID)
     bool is_server_and_has_clients = GLOBAL.gb_main && GB_read_clients(GLOBAL.gb_main)>0;
     if (nt_disconnect_from_db(aw_root, GLOBAL.gb_main))  {
-        nt_start(arb_ntree_args, true);
+        NT_start(arb_ntree_args, true);
         really_exit(EXIT_SUCCESS, is_server_and_has_clients);
     }
 }
@@ -353,10 +352,10 @@ static void nt_start_2nd_arb(AW_window *aww, AW_CL cl_quit) {
     }
 
     if (cl_quit) {
-        nt_restart(aw_root, dir4intro);
+        NT_restart(aw_root, dir4intro);
     }
     else {
-        nt_start(dir4intro, true);
+        NT_start(dir4intro, true);
     }
     free(dir4intro);
 }
@@ -425,7 +424,7 @@ static AW_window *NT_create_save_quick_as_window(AW_root *aw_root, const char *b
 }
 
 static void NT_database_optimization(AW_window *aww) {
-    arb_progress progress("Optimizing database", 2);
+    arb_progress progress("Optimizing database compression", 2);
 
     GB_push_my_security(GLOBAL.gb_main);
     GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
@@ -468,11 +467,11 @@ static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     aw_root->awar_string("tmp/nt/arbdb/optimize_tree_name", largest_tree);
 
     aws = new AW_window_simple;
-    aws->init(aw_root, "OPTIMIZE_DATABASE", "OPTIMIZE DATABASE");
+    aws->init(aw_root, "OPTIMIZE_DATABASE", "Optimize database compression");
     aws->load_xfig("optimize.fig");
 
     aws->at("trees");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, "tmp/nt/arbdb/optimize_tree_name", true);
+    awt_create_TREE_selection_list(GLOBAL.gb_main, aws, "tmp/nt/arbdb/optimize_tree_name", true);
 
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
@@ -516,7 +515,7 @@ static AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
     aws->at("optimize");
     aws->callback(NT_create_database_optimization_window);
     aws->help_text("optimize.hlp");
-    aws->create_button("OPTIMIZE", "OPTIMIZE");
+    aws->create_autosize_button("OPTIMIZE", "Optimize database compression");
 
     aws->at("save"); aws->callback(NT_save_as_cb);
     aws->create_button("SAVE", "SAVE", "S");
@@ -903,7 +902,7 @@ static void NT_alltree_remove_leafs(AW_window *, GBT_TreeRemoveType mode, GBDATA
     aw_message_if(ta.close(error));
 }
 
-GBT_TREE *nt_get_tree_root_of_canvas(AWT_canvas *ntw) {
+GBT_TREE *NT_get_tree_root_of_canvas(AWT_canvas *ntw) {
     AWT_graphic_tree *tree = AWT_TREE(ntw);
     if (tree) {
         AP_tree *root = tree->get_root_node();
@@ -1130,8 +1129,6 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
         awm->insert_menu_topic("fix_db",      "Fix database",            "F", 0, AWM_ALL, (AW_CB)NT_fix_database,            0,                                       0);
         awm->insert_menu_topic("debug_arbdb", "Print debug information", "d", 0, AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)                  GLOBAL.gb_main, 0);
         awm->insert_menu_topic("test_compr",  "Test compression",        "T", 0, AWM_ALL, (AW_CB)GBT_compression_test,       (AW_CL)                  GLOBAL.gb_main, 0);
-        awm->sep______________();
-        awm->insert_menu_topic("table_admin",       "Table Admin (unfinished/unknown purpose)",  "A", "tableadm.hlp",    AWM_ALL, makeCreateWindowCallback(AWT_create_tables_admin_window, GLOBAL.gb_main));
 #endif // DEBUG
 
         awm->create_menu("File", "F", AWM_ALL);
@@ -1143,7 +1140,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
                 awm->insert_menu_topic("new_window", "New window (same database)", "N", "newwindow.hlp", AWM_ALL, makeCreateWindowCallback(popup_new_main_window, clone+1));
             }
             awm->sep______________();
-            awm->insert_menu_topic("optimize_db",  "Optimize database",          "O", "optimize.hlp",  AWM_ALL, NT_create_database_optimization_window);
+            awm->insert_menu_topic("optimize_db",  "Optimize database compression", "O", "optimize.hlp",  AWM_ALL, NT_create_database_optimization_window);
             awm->sep______________();
 
             awm->insert_sub_menu("Import",      "I");
@@ -1185,7 +1182,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->insert_menu_topic("new_arb",     "Start second database",      "d", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 0);
             awm->insert_menu_topic("restart_arb", "Quit + load other database", "l", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 1);
-            awm->insert_menu_topic("quit",        "Quit",                       "Q", "quit.hlp", AWM_ALL, nt_exit,          EXIT_SUCCESS);
+            awm->insert_menu_topic("quit",        "Quit",                       "Q", "quit.hlp", AWM_ALL, NT_exit,          EXIT_SUCCESS);
         }
 
         // -----------------
@@ -1256,7 +1253,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
         awm->create_menu("Sequence", "S", AWM_ALL);
         {
-            awm->insert_menu_topic("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_ALL, makeCreateWindowCallback(NT_create_alignment_window, (AW_window*)0));
+            awm->insert_menu_topic("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_ALL, makeCreateWindowCallback(NT_create_alignment_admin_window, (AW_window*)0));
             awm->insert_sub_menu("Insert/delete", "I");
             {
                 awm->insert_menu_topic("ins_del_col", ".. column",     "c", "insdel.hlp",     AWM_ALL, create_insertDeleteColumn_window);
@@ -1277,7 +1274,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->insert_sub_menu("Align Sequences",  "S");
             {
-                awm->insert_menu_topic("realign_dna", "Realign nucleic acid according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, NT_create_realign_dna_window);
+                awm->insert_menu_topic("realign_dna", "Realign DNA according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, NT_create_realign_dna_window);
                 GDE_load_menu(awm, AWM_ALL, "Align");
             }
             awm->close_sub_menu();
@@ -1576,7 +1573,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
         awm->create_button("CLOSE", "#close.xpm");
     }
     else {
-        awm->callback(nt_exit, EXIT_SUCCESS);
+        awm->callback(NT_exit, EXIT_SUCCESS);
         awm->set_hide_on_close(false); //the main window should really close when closed
         awm->help_text("quit.hlp");
         awm->create_button("QUIT", "#quit.xpm");
@@ -1778,7 +1775,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     return awm;
 }
 
-void nt_create_main_window(AW_root *aw_root) {
+void NT_create_main_window(AW_root *aw_root) {
     GB_ERROR error = GB_request_undo_type(GLOBAL.gb_main, GB_UNDO_NONE);
     if (error) aw_message(error);
 

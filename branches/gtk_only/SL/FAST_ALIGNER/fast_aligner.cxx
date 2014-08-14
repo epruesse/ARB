@@ -2661,7 +2661,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
 
     aws->label_length(0);
     aws->at("pt_server");
-    awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
+    awt_create_PTSERVER_selection_button(aws, AWAR_PT_SERVER);
 
     aws->at("relrange");
     aws->label("Data from range only, plus");

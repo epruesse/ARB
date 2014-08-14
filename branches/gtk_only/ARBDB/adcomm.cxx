@@ -1588,8 +1588,7 @@ GB_ERROR gbcms_add_to_delete_list(GBDATA *gbd) {
 void GB_set_remote_action(GBDATA *gbd, bool in_action) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
-    gb_assert(Main->is_server()); // GB_set_remote_action not allowed from clients
-    if (Main->is_server()) {
+    if (Main->is_server()) { // GB_set_remote_action has no effect in clients
         gb_server_data *hs = Main->server_data;
         gb_assert(hs); // have no server data (program logic error)
         if (hs) {
