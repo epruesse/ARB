@@ -94,10 +94,6 @@ AW_DB_selection *awt_create_TREE_selection_list(GBDATA *gb_main, AW_window *aws,
 void awt_create_PTSERVER_selection_button(AW_window *aws, const char *varname);
 void awt_create_PTSERVER_selection_list(AW_window *aws, const char *varname);
 
-void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const char *varname); // @@@ elim
-void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *tablename, const char *varname); // @@@ elim
-AW_window *AWT_create_tables_admin_window(AW_root *aw_root, GBDATA *gb_main); // @@@ elim
-
 void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
 AWT_sai_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
 void awt_SAI_selection_list_update_cb(UNFIXED, AWT_sai_selection *cbsid);
