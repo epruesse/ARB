@@ -73,7 +73,7 @@ public:
     }
 };
 
-AW_DB_selection *awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
+AW_DB_selection *awt_create_ALI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
     // Create selection lists on alignments
     //
     // if 'ali_type_match' is set, then only insert alignments,
@@ -90,7 +90,7 @@ AW_DB_selection *awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_win
     return alisel;
 }
 
-void awt_reconfigure_selection_list_on_alignments(AW_DB_selection *dbsel, const char *ali_type_match) {
+void awt_reconfigure_ALI_selection_list(AW_DB_selection *dbsel, const char *ali_type_match) {
     AWT_alignment_selection *alisel = dynamic_cast<AWT_alignment_selection*>(dbsel);
     alisel->reconfigure(ali_type_match);
 }
@@ -133,7 +133,7 @@ struct AWT_tree_selection: public AW_DB_selection {
     }
 };
 
-AW_DB_selection *awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
+AW_DB_selection *awt_create_TREE_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
     GBDATA *gb_tree_data;
     {
         GB_transaction ta(gb_main);
@@ -239,7 +239,7 @@ static char *readable_pt_servername(int index, int maxlength) {
     char *fullname = GBS_ptserver_id_to_choice(index, 0);
     if (!fullname) {
 #ifdef DEBUG
-        printf("awar given to awt_create_selection_list_on_pt_servers() does not contain a valid index\n");
+        printf("awar given to ptserver-selection does not contain a valid index\n");
 #endif
         GB_clear_error();
         return strdup("-undefined-");
@@ -291,49 +291,47 @@ static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, c
 }
 #endif // ARB_MOTIF
 
-void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
-    if (popup) {
+void awt_create_PTSERVER_selection_button(AW_window *aws, const char *varname) {
 #ifdef ARB_GTK
-        (new AWT_ptserver_selection(aws->create_option_menu(varname, true)))->refresh();
+    (new AWT_ptserver_selection(aws->create_option_menu(varname, true)))->refresh();
 
-        int old_button_length = aws->get_button_length();
-        aws->button_length(PT_SERVERNAME_LENGTH+1);
-        aws->update_option_menu();
-        aws->button_length(old_button_length);
+    int old_button_length = aws->get_button_length();
+    aws->button_length(PT_SERVERNAME_LENGTH+1);
+    aws->update_option_menu();
+    aws->button_length(old_button_length);
 #else // ARB_MOTIF
 
-        AW_root *aw_root              = aws->get_root();
-        char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
-        int      ptserver_index       = aw_root->awar(varname)->read_int();
+    AW_root *aw_root              = aws->get_root();
+    char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
+    int      ptserver_index       = aw_root->awar(varname)->read_int();
 
-        if (ptserver_index<0) { // fix invalid pt_server indices
-            ptserver_index = 0;
-            aw_root->awar(varname)->write_int(ptserver_index);
-        }
+    if (ptserver_index<0) { // fix invalid pt_server indices
+        ptserver_index = 0;
+        aw_root->awar(varname)->write_int(ptserver_index);
+    }
 
-        char        *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
-        char *const  varnameDup    = strdup(varname);
+    char        *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
+    char *const  varnameDup    = strdup(varname);
 
-        awt_assert(!GB_have_error());
+    awt_assert(!GB_have_error());
 
-        aw_root->awar_string(awar_buttontext_name, readable_name, AW_ROOT_DEFAULT);
-        aw_root->awar(varname)->add_callback(makeRootCallback(update_ptserver_button, varnameDup));
+    aw_root->awar_string(awar_buttontext_name, readable_name, AW_ROOT_DEFAULT);
+    aw_root->awar(varname)->add_callback(makeRootCallback(update_ptserver_button, varnameDup));
 
-        int old_button_length = aws->get_button_length();
+    int old_button_length = aws->get_button_length();
 
-        aws->button_length(PT_SERVERNAME_LENGTH+1);
-        aws->callback(makeCreateWindowCallback(create_selection_list_on_pt_servers_window, varnameDup));
-        aws->create_button("CURR_PT_SERVER", awar_buttontext_name);
+    aws->button_length(PT_SERVERNAME_LENGTH+1);
+    aws->callback(makeCreateWindowCallback(create_selection_list_on_pt_servers_window, varnameDup));
+    aws->create_button("CURR_PT_SERVER", awar_buttontext_name);
 
-        aws->button_length(old_button_length);
+    aws->button_length(old_button_length);
 
-        free(readable_name);
-        free(awar_buttontext_name);
+    free(readable_name);
+    free(awar_buttontext_name);
 #endif
-    }
-    else {
-        (new AWT_ptserver_selection(aws->create_selection_list(varname, true)))->refresh();
-    }
+}
+void awt_create_PTSERVER_selection_list(AW_window *aws, const char *varname) {
+    (new AWT_ptserver_selection(aws->create_selection_list(varname, true)))->refresh();
 }
 
 // ----------------------------------
@@ -457,7 +455,7 @@ struct AWT_configuration_selection : public AW_DB_selection {
     }
 };
 
-void awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
+void awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
     GBDATA *gb_configuration_data;
     {
         GB_transaction ta(gb_main);
@@ -467,7 +465,7 @@ void awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws
     (new AWT_configuration_selection(sellist, gb_configuration_data))->refresh();
 }
 
-char *awt_create_string_on_configurations(GBDATA *gb_main) {
+char *awt_create_CONFIG_string(GBDATA *gb_main) {
     // returns semicolon-separated string containing configuration names
     // (or NULL if no configs exist)
 
@@ -550,8 +548,8 @@ void AWT_sai_selection::fill() {
     sel->update();
 }
 
-void awt_selection_list_on_sai_update_cb(UNFIXED, AWT_sai_selection *saisel) {
-    /* update the selection box defined by awt_create_selection_list_on_sai
+void awt_SAI_selection_list_update_cb(UNFIXED, AWT_sai_selection *saisel) {
+    /* update the selection box defined by awt_create_SAI_selection_list
      *
      * useful only when filterproc is defined
      * (changes to SAIs will automatically callback this function)
@@ -567,8 +565,8 @@ AWT_sai_selection *SAI_selection_list_spec::create_list(AW_window *aws, bool fal
     GBDATA            *gb_sai_data = GBT_get_SAI_data(gb_main);
     AWT_sai_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
 
-    awt_selection_list_on_sai_update_cb(0, saisel);
-    GB_add_callback(gb_sai_data, GB_CB_CHANGED, makeDatabaseCallback(awt_selection_list_on_sai_update_cb, saisel));
+    awt_SAI_selection_list_update_cb(0, saisel);
+    GB_add_callback(gb_sai_data, GB_CB_CHANGED, makeDatabaseCallback(awt_SAI_selection_list_update_cb, saisel));
 
     return saisel;
 }
@@ -605,12 +603,12 @@ static void popup_filtered_sai_selection_list(AW_window *aww, const SAI_selectio
     popup_filtered_sai_selection_list(aww->get_root(), spec);
 }
 
-void awt_popup_sai_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main) {
+void awt_popup_SAI_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main) {
     SAI_selection_list_spec spec(awar_name, gb_main);
     popup_filtered_sai_selection_list(aww, &spec);
 }
 
-AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
+AWT_sai_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
     /* Selection list for SAIs
      *
      * if filter_proc is set then show only those items on which
@@ -621,7 +619,7 @@ AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *
     return spec.create_list(aws, fallback2default);
 }
 
-void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
+void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) { // @@@ use option menu in gtk
     SAI_selection_list_spec *spec = new SAI_selection_list_spec(varname, gb_main);
     spec->define_filter(filter_poc, filter_cd);
     aws->callback(makeWindowCallback(popup_filtered_sai_selection_list, spec));

@@ -74,7 +74,7 @@ AW_window *NT_create_select_tree_window(AW_root *awr, const char *awar_tree) {
         aws->load_xfig("select_simple.fig");
 
         aws->at("selection");
-        awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, awar_tree, true);
+        awt_create_TREE_selection_list(GLOBAL.gb_main, aws, awar_tree, true);
 
         aws->auto_space(5, 5);
         aws->button_length(6);
@@ -130,7 +130,7 @@ AW_window *NT_create_select_alignment_window(AW_root *awr)
 
         aws->at("selection");
         aws->callback((AW_CB0)AW_POPDOWN);
-        awt_create_selection_list_on_alignments(GLOBAL.gb_main, (AW_window *)aws, AWAR_DEFAULT_ALIGNMENT, "*=");
+        awt_create_ALI_selection_list(GLOBAL.gb_main, (AW_window *)aws, AWAR_DEFAULT_ALIGNMENT, "*=");
 
         aws->auto_space(5, 5);
         aws->button_length(6);

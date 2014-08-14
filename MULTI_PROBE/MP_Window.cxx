@@ -290,7 +290,7 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
 
 void MP_Window::build_pt_server_list() {
 #if defined(WARN_TODO)
-#warning why option_menu ? better use selection list ( awt_create_selection_list_on_pt_servers )
+#warning why option_menu ? better @@@ use awt_create_PTSERVER_selection_button or awt_create_PTSERVER_selection_list
 #endif
 
     aws->at("PTServer");
@@ -452,7 +452,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     //      multi probe parameters
 
     aws->at("PTServer");
-    awt_create_selection_list_on_pt_servers(aws, MP_AWAR_PTSERVER, true);
+    awt_create_PTSERVER_selection_button(aws, MP_AWAR_PTSERVER);
     aw_root->awar(MP_AWAR_PTSERVER)->add_callback(MP_cache_sonden2); // remove cached probes when changing pt-server
 
     aws->at("NoOfProbes");
