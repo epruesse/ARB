@@ -63,6 +63,8 @@ class SAI_selection_list_spec : virtual Noncopyable {
     awt_sai_sellist_filter filter_poc;
     AW_CL                  filter_cd;
 
+    AWT_sai_selection *init(AW_selection_list *sellist) const;
+
 public:
     SAI_selection_list_spec(const char *awar_name_, GBDATA *gb_main_)
         : awar_name(strdup(awar_name_)),
@@ -81,6 +83,9 @@ public:
     const char *get_awar_name() const { return awar_name; }
 
     AWT_sai_selection *create_list(AW_window *aws, bool fallback2default) const;
+#if defined(ARB_GTK)
+    AWT_sai_selection *create_optionMenu(AW_window *aws, bool fallback2default) const;
+#endif
 };
 
 // -----------------------------------------
