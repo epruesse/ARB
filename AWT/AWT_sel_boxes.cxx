@@ -456,10 +456,8 @@ void awt_SAI_selection_list_update_cb(UNFIXED, AWT_sai_selection *saisel) {
     saisel->refresh();
 }
 
-AWT_sai_selection *SAI_selection_list_spec::create_list(AW_window *aws, bool fallback2default) const {
-    GB_transaction ta(gb_main);
-
-    AW_selection_list *sellist     = aws->create_selection_list(awar_name, 40, 4, fallback2default);
+AWT_sai_selection *SAI_selection_list_spec::init(AW_selection_list *sellist) const {
+    GB_transaction     ta(gb_main);
     GBDATA            *gb_sai_data = GBT_get_SAI_data(gb_main);
     AWT_sai_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
 
@@ -468,6 +466,16 @@ AWT_sai_selection *SAI_selection_list_spec::create_list(AW_window *aws, bool fal
 
     return saisel;
 }
+
+AWT_sai_selection *SAI_selection_list_spec::create_list(AW_window *aws, bool fallback2default) const {
+    return init(aws->create_selection_list(awar_name, 40, 4, fallback2default));
+}
+
+#if defined(ARB_GTK)
+AWT_sai_selection *SAI_selection_list_spec::create_optionMenu(AW_window *aws, bool fallback2default) const {
+    return init(aws->create_option_menu(awar_name, fallback2default));
+}
+#endif
 
 static void popup_filtered_sai_selection_list(AW_root *aw_root, const SAI_selection_list_spec *spec) {
     const char *awar_name = spec->get_awar_name();
@@ -518,11 +526,16 @@ AWT_sai_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws
 }
 
 void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
-    // @@@ use option menu in gtk? (see awt_create_PTSERVER_selection_button)
     SAI_selection_list_spec *spec = new SAI_selection_list_spec(varname, gb_main);
     spec->define_filter(filter_poc, filter_cd);
+#if defined(ARB_GTK)
+    // use option menu in gtk
+    spec->create_optionMenu(aws, true);
+    aws->update_option_menu();
+#else // !defined(ARB_GTK)
     aws->callback(makeWindowCallback(popup_filtered_sai_selection_list, spec));
     aws->create_button("SELECT_SAI", varname);
+#endif
 }
 
 // --------------------------------------------------
