@@ -192,7 +192,7 @@ void AWT_ptserver_selection::refresh_all() {
         (*pts_sel)->refresh();
     }
 }
-static void awt_refresh_all_pt_server_selection_lists() {
+static void refresh_all_PTSERVER_selection_lists() {
     AWT_ptserver_selection::refresh_all();
 }
 static unsigned track_log_cb(AW_root *) {
@@ -224,7 +224,7 @@ AWT_ptserver_selection::AWT_ptserver_selection(AW_selection_list *sellist_)
 
 static void arb_tcp_dat_changed_cb(const char * /* path */, bool fileChanged, bool /* editorTerminated */) {
     if (fileChanged) {
-        awt_refresh_all_pt_server_selection_lists();
+        refresh_all_PTSERVER_selection_lists();
     }
 }
 
@@ -268,7 +268,7 @@ static void update_ptserver_button(AW_root *aw_root, const char *varname) {
     free(awar_buttontext_name);
 }
 
-static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, const char *varname) {
+static AW_window *create_PTSERVER_selection_window(AW_root *aw_root, const char *varname) {
     AW_window_simple *aw_popup = new AW_window_simple;
 
     aw_popup->init(aw_root, "SELECT_PT_SERVER", "Select a PT-Server");
@@ -321,7 +321,7 @@ void awt_create_PTSERVER_selection_button(AW_window *aws, const char *varname) {
     int old_button_length = aws->get_button_length();
 
     aws->button_length(PT_SERVERNAME_LENGTH+1);
-    aws->callback(makeCreateWindowCallback(create_selection_list_on_pt_servers_window, varnameDup));
+    aws->callback(makeCreateWindowCallback(create_PTSERVER_selection_window, varnameDup));
     aws->create_button("CURR_PT_SERVER", awar_buttontext_name);
 
     aws->button_length(old_button_length);
