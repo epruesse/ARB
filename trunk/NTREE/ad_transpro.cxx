@@ -316,10 +316,10 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("source");
-    awt_create_selection_list_on_alignments(GLOBAL.gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
+    awt_create_ALI_selection_list(GLOBAL.gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
 
     aws->at("dest");
-    awt_create_selection_list_on_alignments(GLOBAL.gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
+    awt_create_ALI_selection_list(GLOBAL.gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
 
     root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, GLOBAL.gb_main);
     aws->at("table");
@@ -1256,9 +1256,9 @@ AW_window *NT_create_realign_dna_window(AW_root *root) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("source");
-    awt_create_selection_list_on_alignments(GLOBAL.gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
+    awt_create_ALI_selection_list(GLOBAL.gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
     aws->at("dest");
-    awt_create_selection_list_on_alignments(GLOBAL.gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
+    awt_create_ALI_selection_list(GLOBAL.gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
 
     aws->at("autolen"); aws->create_toggle(AWAR_REALIGN_INCALI);
     aws->at("unmark");  aws->create_toggle(AWAR_REALIGN_UNMARK);

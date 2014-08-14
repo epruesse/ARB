@@ -710,7 +710,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
 
     awm->create_menu("Properties", "P", AWM_ALL);
     awm->insert_menu_topic("selectDispField", "Select Display Field",      "F", "displayField.hlp", AWM_ALL, makeCreateWindowCallback(createDisplayField_window, gb_main));
-    awm->insert_menu_topic("selectSAI",       "Select SAI",                "S", NULL,               AWM_ALL, makeWindowCallback(awt_popup_sai_selection_list, AWAR_SPV_SAI_2_PROBE, gb_main));
+    awm->insert_menu_topic("selectSAI",       "Select SAI",                "S", NULL,               AWM_ALL, makeWindowCallback(awt_popup_SAI_selection_list, AWAR_SPV_SAI_2_PROBE, gb_main));
     awm->insert_menu_topic("clrTransTable",   "Define Color Translations", "D", NULL,               AWM_ALL, create_colorTranslationTable_window);
     awm->insert_menu_topic("SetColors",       "Set Colors and Fonts",      "t", "setColors.hlp",    AWM_ALL, makeCreateWindowCallback(createSaiColorWindow, scr->gc_manager));
 

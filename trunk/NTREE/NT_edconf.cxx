@@ -469,7 +469,7 @@ static GB_ERROR nt_create_configuration(AW_window *, GBT_TREE *tree, const char 
     GB_ERROR  error   = NULL;
 
     if (!conf_name) {
-        char *existing_configs = awt_create_string_on_configurations(GLOBAL.gb_main);
+        char *existing_configs = awt_create_CONFIG_string(GLOBAL.gb_main);
         conf_name              = to_free = aw_string_selection2awar("CREATE CONFIGURATION", "Enter name of configuration:", AWAR_CONFIGURATION, existing_configs, NULL);
         free(existing_configs);
     }
@@ -596,7 +596,7 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("list");
-        awt_create_selection_list_on_configurations(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, false);
+        awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, false);
 
         aws->at("store");
         aws->callback(makeWindowCallback(nt_store_configuration, ntw));
@@ -663,7 +663,7 @@ AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr) {
         aws->init(awr, "SELECT_CONFIGURATION", "SELECT A CONFIGURATION");
         aws->at(10, 10);
         aws->auto_space(0, 0);
-        awt_create_selection_list_on_configurations(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, false);
+        awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, false);
         aws->at_newline();
 
         aws->callback((AW_CB0)nt_start_editor_on_configuration);

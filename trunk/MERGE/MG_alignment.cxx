@@ -91,7 +91,7 @@ static void bindAdmin(AW_window *aws, const char *at_ali, const char *at_modify,
     AliAdmin *const admin = new AliAdmin(type, gb_main, awarname_select[type], awarbase[type]); // do not free (bound to callbacks)
 
     aws->at(at_ali);
-    awt_create_selection_list_on_alignments(gb_main, aws, awarname_select[type], "*=");
+    awt_create_ALI_selection_list(gb_main, aws, awarname_select[type], "*=");
 
     aws->at(at_modify);
     aws->callback(makeCreateWindowCallback(ALI_create_admin_window, admin));
