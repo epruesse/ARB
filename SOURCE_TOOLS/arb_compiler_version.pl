@@ -26,33 +26,25 @@ sub main() {
     if (not defined $dumpedVersion)   { $dumpedVersion   = $undetectable; }
     if (not defined $detailedVersion) { $detailedVersion = $undetectable; }
 
-    if ($detailedVersion =~ /\s/) {
-      my $firstWord = $`;
-      if ($firstWord eq 'gcc' or $firstWord eq 'clang') {
-        $detectedCompiler = $firstWord;
-      }
-      elsif ($firstWord eq 'g++') { $detectedCompiler = 'gcc'; }
-      elsif ($firstWord eq 'clang++') { $detectedCompiler = 'clang'; }
-    }
+    chomp($dumpedVersion);
+    chomp($detailedVersion);
 
-    if ($detectedCompiler eq 'unknown') {
-      if ($detailedVersion =~ /apple.*llvm.*clang/oi) { $detectedCompiler = 'clang'; }
-      else {
-        # check for clang according to #582
-        my $cmd = "$compiler -dM -E -x c /dev/null";
-        if (open(CMD,$cmd.'|')) { 
-        LINE: foreach (<CMD>) {
-            if (/__clang__/) {
-              $detectedCompiler = 'clang';
-              last LINE;
-            }
-          }
-          close(CMD);
+    my $cmd = "$compiler -dM -E -x c /dev/null";
+    if (open(CMD,$cmd.'|')) {
+    LINE: foreach (<CMD>) {
+        if (/__GNUC__/) {
+          $detectedCompiler = 'gcc';
+          # clang also defines __GNUC__ so don't "last" here
         }
-        else {
-          print STDERR "failed to execute '$cmd'";
+        elsif (/__clang__/) {
+          $detectedCompiler = 'clang';
+          last LINE;
         }
       }
+      close(CMD);
+    }
+    else {
+      print STDERR "failed to execute '$cmd'";
     }
 
     if ($detectedCompiler eq 'unknown') {
@@ -61,18 +53,35 @@ sub main() {
       print STDERR "detailedVersion='$detailedVersion'\n";
     }
 
-    if ($dumpedVersion =~ /\..*\./) {
-      $detectedVersion = $dumpedVersion;
-    }
-    else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     # if version info does not contain patchlevel -> use detailedVersion
-      if ($detailedVersion =~ /\s([0-9]+\.[0-9]+\.[0-9]+)\s/) {
-        $detectedVersion = $1;
-      }
-    }
-  }
+    {
+      my $dv_from_dumped = undef;
+      my $dv_from_detail = undef;
 
-  chomp($detectedVersion);
-  chomp($detectedCompiler);
+      if ($dumpedVersion   =~ /^([0-9]+(?:\.[0-9]+)+)$/)   { $dv_from_dumped = $dumpedVersion; }
+      if ($detailedVersion =~ /\s([0-9]+(?:\.[0-9]+)+)\s/) { $dv_from_detail = $1; }
+
+      if (defined $dv_from_dumped) {
+        $detectedVersion =
+          ((defined $dv_from_detail) and (length($dv_from_detail)>length($dv_from_dumped)))
+          ? $dv_from_detail
+          : $dv_from_dumped;
+      }
+      else {
+        if (defined $dv_from_detail)  { $detectedVersion = $dv_from_detail; }
+        else {
+          print STDERR "Problems detecting compiler version:\n";
+          print STDERR "dumpedVersion='$dumpedVersion'\n";
+          print STDERR "detailedVersion='$detailedVersion'\n";
+          print STDERR "dv_from_dumped='$dv_from_dumped'\n";
+          print STDERR "dv_from_detail='$dv_from_detail'\n";
+        }
+      }
+
+    }
+
+    chomp($detectedVersion);
+    chomp($detectedCompiler);
+  }
 
   my $result = $detectedCompiler." ".$detectedVersion;
   print $result."\n";

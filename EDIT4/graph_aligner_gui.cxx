@@ -374,7 +374,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     aws->at_shift(0, hgap);
     aws->button_length(24);
     aws->label("PT Server:");
-    awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
+    awt_create_PTSERVER_selection_button(aws, AWAR_PT_SERVER);
 
     aws->at_newline();
     aws->label_length(0);

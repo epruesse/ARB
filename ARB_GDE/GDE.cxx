@@ -167,7 +167,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                     if (seqtype != '-') { // '-' means "skip sequence export"
                         aws->at("which_alignment");
                         const char *ali_filter = seqtype == 'A' ? "pro=:ami=" : (seqtype == 'N' ? "dna=:rna=" : "*=");
-                        awt_create_selection_list_on_alignments(db_access.gb_main, (AW_window *)aws, AWAR_GDE_ALIGNMENT, ali_filter);
+                        awt_create_ALI_selection_list(db_access.gb_main, (AW_window *)aws, AWAR_GDE_ALIGNMENT, ali_filter);
 
                         aws->at("which_species");
                         aws->create_toggle_field(AWAR_GDE_SPECIES);
@@ -350,7 +350,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
-                awt_create_selection_list_on_trees(db_access.gb_main, aws, newawar, true);
+                awt_create_TREE_selection_list(db_access.gb_main, aws, newawar, true);
                 free(newawar);
             }
             else if (itemarg.type==CHOICE_SAI) {
@@ -359,7 +359,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
-                awt_create_selection_list_on_sai(db_access.gb_main, aws, newawar, true);
+                awt_create_SAI_selection_list(db_access.gb_main, aws, newawar, true);
                 free(newawar);
             }
             else if (itemarg.type==CHOICE_WEIGHTS) {
@@ -368,9 +368,9 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
-                AWT_sai_selection *id = awt_create_selection_list_on_sai(db_access.gb_main, aws, newawar, true, gde_filter_weights);
+                AWT_sai_selection *id = awt_create_SAI_selection_list(db_access.gb_main, aws, newawar, true, gde_filter_weights);
                 free(newawar);
-                aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback(makeRootCallback(awt_selection_list_on_sai_update_cb, id));
+                aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback(makeRootCallback(awt_SAI_selection_list_update_cb, id));
             }
 
             aws->at_newline();

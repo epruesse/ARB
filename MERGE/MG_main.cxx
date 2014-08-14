@@ -9,9 +9,7 @@
 // =============================================================== //
 
 #include "merge.hxx"
-
 #include <AW_rename.hxx>
-
 #include <awt.hxx>
 
 #include <aw_preset.hxx>
@@ -379,7 +377,6 @@ void MERGE_create_all_awars(AW_root *awr, AW_default aw_def) {
     MG_create_trees_awar(awr, aw_def);
     MG_create_config_awar(awr, aw_def);
     MG_create_extendeds_awars(awr, aw_def);
-    MG_create_alignment_awars(awr, aw_def);
     MG_create_species_awars(awr, aw_def);
     MG_create_gene_species_awars(awr, aw_def);
 

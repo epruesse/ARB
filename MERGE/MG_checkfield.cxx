@@ -11,7 +11,6 @@
 #include "merge.hxx"
 
 #include <item_sel_list.h>
-#include <awt_sel_boxes.hxx>
 
 #include <aw_awar.hxx>
 #include <aw_root.hxx>

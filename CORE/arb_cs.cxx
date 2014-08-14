@@ -364,7 +364,7 @@ void TEST_open_socket() {
     server_pid = echo_server(tcp_socket);
     TEST_REJECT_NULL(server_pid);
     usleep(10000);
-    TEST_EXPECT_NULL(arb_open_socket(tcp_socket, true, &fd, &filename));
+    TEST_EXPECT_NULL(arb_open_socket(tcp_socket, true, &fd, &filename)); // @@@ randomly fails on waltz (11/Aug/14, 12/Aug/14)
     TEST_EXPECT(fd>0);
     TEST_EXPECT_NULL(filename);
     TEST_EXPECT_EQUAL(close(fd), 0);
@@ -376,8 +376,8 @@ void TEST_open_socket() {
     
     // Test connecting to existing unix socket
     server_pid = echo_server(unix_socket);
-    usleep(10000);
-    TEST_EXPECT_NULL(arb_open_socket(unix_socket, true, &fd, &filename));
+    usleep(20000);
+    TEST_EXPECT_NULL(arb_open_socket(unix_socket, true, &fd, &filename)); // @@@ randomly fails in jenkins (build820/u1304/DEBUG, build817/cent5/DEBUG+cent6/NDEBUG)
     TEST_EXPECT(fd>0);
 
     // Test read/write

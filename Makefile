@@ -967,6 +967,7 @@ ARCHS_NTREE = \
 		PROBE_DESIGN/PROBE_DESIGN.a \
 		SEQ_QUALITY/SEQ_QUALITY.a \
 		SERVERCNTRL/SERVERCNTRL.a \
+		SL/ALILINK/ALILINK.a \
 		SL/AW_NAME/AW_NAME.a \
 		SL/DB_UI/DB_UI.a \
 		SL/DB_SCANNER/DB_SCANNER.a \
@@ -1351,6 +1352,7 @@ RNACMA/RNACMA.dummy:			links_non_perl header_libs
 SECEDIT/SECEDIT.dummy:			links_non_perl
 SEQ_QUALITY/SEQ_QUALITY.dummy:		links_non_perl
 SERVERCNTRL/SERVERCNTRL.dummy:		links_non_perl com
+SL/ALILINK/ALILINK.dummy:		links_non_perl
 SL/ALIVIEW/ALIVIEW.dummy:		links_non_perl
 SL/AP_TREE/AP_TREE.dummy:		links_non_perl
 SL/ARB_TREE/ARB_TREE.dummy:		links_non_perl
@@ -1774,6 +1776,7 @@ perl_clean:
 
 PERL2ARB/PERL2ARB.clean:
 	$(MAKE) perl_clean
+	$(MAKE) -C PERL_SCRIPTS/test clean
 
 # ---------------------------------------- bindings to script languages
 
@@ -2113,6 +2116,7 @@ TEST_SANDBOXES = \
 	SL/CB/CB.test \
 
 UNITS_TESTED = \
+	SL/ALILINK/ALILINK.test \
 	SL/TREE_READ/TREE_READ.test \
 	DBSERVER/DBSERVER.test \
 	AWT/libAWT.test \
