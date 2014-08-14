@@ -288,37 +288,6 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
     return error;
 }
 
-void MP_Window::build_pt_server_list() {
-#if defined(WARN_TODO)
-#warning why option_menu ? better @@@ use awt_create_PTSERVER_selection_button or awt_create_PTSERVER_selection_list
-#endif
-
-    aws->at("PTServer");
-    aws->callback(MP_cache_sonden);
-    aws->create_option_menu(MP_AWAR_PTSERVER, true);
-
-    for (int i=0; ; i++) {
-        char *choice = GBS_ptserver_id_to_choice(i, 1);
-        if (choice) {
-            aws->insert_option(choice, "", i);
-            delete choice;
-            choice = NULL;
-        }
-        else {
-            if (GB_have_error()) {
-                aws->insert_option("<error>", "", i);
-                GB_clear_error();
-            }
-            else {
-                break;
-            }
-        }
-
-    }
-
-    aws->update_option_menu();
-}
-
 static void track_ali_change_cb(AW_root*, GBDATA *gb_main) {
     GB_transaction     ta(gb_main);
     char              *aliname = GBT_get_default_alignment(gb_main);
