@@ -517,7 +517,8 @@ AWT_sai_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws
     return spec.create_list(aws, fallback2default);
 }
 
-void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) { // @@@ use option menu in gtk
+void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
+    // @@@ use option menu in gtk? (see awt_create_PTSERVER_selection_button)
     SAI_selection_list_spec *spec = new SAI_selection_list_spec(varname, gb_main);
     spec->define_filter(filter_poc, filter_cd);
     aws->callback(makeWindowCallback(popup_filtered_sai_selection_list, spec));
