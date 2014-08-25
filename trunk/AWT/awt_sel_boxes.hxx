@@ -56,38 +56,6 @@ public:
 typedef char *(*awt_sai_sellist_filter)(GBDATA *, AW_CL);
 class AWT_sai_selection;
 
-class SAI_selection_list_spec : virtual Noncopyable {
-    char   *awar_name;
-    GBDATA *gb_main;
-
-    awt_sai_sellist_filter filter_poc;
-    AW_CL                  filter_cd;
-
-    AWT_sai_selection *init(AW_selection_list *sellist) const;
-
-public:
-    SAI_selection_list_spec(const char *awar_name_, GBDATA *gb_main_)
-        : awar_name(strdup(awar_name_)),
-          gb_main(gb_main_),
-          filter_poc(NULL),
-          filter_cd(0)
-    {}
-    ~SAI_selection_list_spec() { free(awar_name); }
-
-    void define_filter(awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_) {
-        // Warning: do not use different filters for same awar! (wont work as expected)
-        filter_poc = filter_poc_;
-        filter_cd  = filter_cd_;
-    }
-
-    const char *get_awar_name() const { return awar_name; }
-
-    AWT_sai_selection *create_list(AW_window *aws, bool fallback2default) const;
-#if defined(ARB_GTK)
-    AWT_sai_selection *create_optionMenu(AW_window *aws, bool fallback2default) const;
-#endif
-};
-
 // -----------------------------------------
 //      various database selection boxes
 
