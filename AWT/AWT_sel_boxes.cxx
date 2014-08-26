@@ -43,8 +43,8 @@ class AWT_alignment_selection : public AW_DB_selection { // derived from a Nonco
     char *ali_type_match;                           // filter for wanted alignments (GBS_string_eval command)
 public:
     AWT_alignment_selection(AW_selection_list *sellist_, GBDATA *gb_presets, const char *ali_type_match_)
-        : AW_DB_selection(sellist_, gb_presets)
-        , ali_type_match(nulldup(ali_type_match_))
+        : AW_DB_selection(sellist_, gb_presets),
+          ali_type_match(nulldup(ali_type_match_))
     {}
     
     void fill() OVERRIDE {
@@ -73,21 +73,98 @@ public:
     }
 };
 
+class ALI_sellst_spec : virtual Noncopyable {
+    char   *awar_name;
+    GBDATA *gb_main;
+    char   *ali_type_match;
+
+    AWT_alignment_selection *init(AW_selection_list *sellist) const {
+        GB_transaction           ta(gb_main);
+        GBDATA                  *gb_presets = GBT_get_presets(gb_main);
+        AWT_alignment_selection *alisel     = new AWT_alignment_selection(sellist, gb_presets, ali_type_match);
+
+        alisel->refresh();
+        return alisel;
+    }
+
+public:
+    ALI_sellst_spec(const char *awar_name_, GBDATA *gb_main_, const char *ali_type_match_)
+        : awar_name(strdup(awar_name_)),
+          gb_main(gb_main_),
+          ali_type_match(strdup(ali_type_match_))
+    {
+    }
+    ~ALI_sellst_spec() {
+        free(awar_name);
+        free(ali_type_match);
+    }
+
+    const char *get_awar_name() const { return awar_name; }
+
+    AWT_alignment_selection *create_list(AW_window *aws, bool fallback2default) const {
+        return init(aws->create_selection_list(awar_name, 40, 4, fallback2default));
+    }
+#if defined(ARB_GTK)
+    AWT_alignment_selection *create_optionMenu(AW_window *aws, bool fallback2default) const {
+        return init(aws->create_option_menu(awar_name, fallback2default));
+    }
+#endif
+};
+
+#if defined(ARB_MOTIF)
+static void popup_filtered_ali_selection_list(AW_root *aw_root, const ALI_sellst_spec *spec) { // @@@ DRY vs popup_filtered_sai_selection_list
+    const char *awar_name = spec->get_awar_name();
+
+    static GB_HASH *ALI_window_hash       = 0;
+    if (!ALI_window_hash) ALI_window_hash = GBS_create_hash(10, GB_MIND_CASE);
+
+    AW_window_simple *aws = reinterpret_cast<AW_window_simple *>(GBS_read_hash(ALI_window_hash, awar_name));
+
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "SELECT_ALI", "Select alignment");
+        aws->load_xfig("select_simple.fig");
+
+        aws->at("selection");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        spec->create_list(aws, true);
+
+        aws->at("button");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->window_fit();
+
+        GBS_write_hash(ALI_window_hash, awar_name, reinterpret_cast<long>(aws));
+    }
+
+    aws->activate();
+}
+static void popup_filtered_ali_selection_list(AW_window *aww, const ALI_sellst_spec *spec) {
+    popup_filtered_ali_selection_list(aww->get_root(), spec);
+}
+#endif
+
 AW_DB_selection *awt_create_ALI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
     // Create selection lists on alignments
     //
     // if 'ali_type_match' is set, then only insert alignments,
     // where 'ali_type_match' GBS_string_eval's the alignment type
 
-    GBDATA *gb_presets;
-    {
-        GB_transaction ta(gb_main);
-        gb_presets = GBT_get_presets(gb_main);
-    }
-    AW_selection_list       *sellist = aws->create_selection_list(varname, 20, 3, true);
-    AWT_alignment_selection *alisel  = new AWT_alignment_selection(sellist, gb_presets, ali_type_match);
-    alisel->refresh(); // belongs to window now
-    return alisel;
+    ALI_sellst_spec spec(varname, gb_main, ali_type_match);
+    return spec.create_list(aws, true);
+}
+
+void awt_create_ALI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
+    ALI_sellst_spec *spec = new ALI_sellst_spec(varname, gb_main, ali_type_match);
+#if defined(ARB_GTK)
+    // use option menu in gtk
+    spec->create_optionMenu(aws, true);
+    aws->update_option_menu();
+#else // !defined(ARB_GTK)
+    aws->callback(makeWindowCallback(popup_filtered_ali_selection_list, spec));
+    aws->create_button("SELECT_ALI", varname);
+#endif
 }
 
 void awt_reconfigure_ALI_selection_list(AW_DB_selection *dbsel, const char *ali_type_match) {
@@ -446,7 +523,7 @@ void AWT_sai_selection::fill() {
     sel->update();
 }
 
-void awt_SAI_selection_list_update_cb(UNFIXED, AWT_sai_selection *saisel) {
+void awt_SAI_selection_list_update_cb(UNFIXED, AWT_sai_selection *saisel) { // @@@ elim?
     /* update the selection box defined by awt_create_SAI_selection_list
      *
      * useful only when filterproc is defined
@@ -468,8 +545,8 @@ class SAI_sellst_spec : virtual Noncopyable {
         GBDATA            *gb_sai_data = GBT_get_SAI_data(gb_main);
         AWT_sai_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
 
-        awt_SAI_selection_list_update_cb(0, saisel);
-        GB_add_callback(gb_sai_data, GB_CB_CHANGED, makeDatabaseCallback(awt_SAI_selection_list_update_cb, saisel));
+        awt_SAI_selection_list_update_cb(0, saisel); // @@@ use saisel->refresh();
+        GB_add_callback(gb_sai_data, GB_CB_CHANGED, makeDatabaseCallback(awt_SAI_selection_list_update_cb, saisel)); // @@@ CB is superflous (also installed by AW_DB_selection)
 
         return saisel;
     }

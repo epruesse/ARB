@@ -409,7 +409,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
                 AWT_sai_selection *id = awt_create_SAI_selection_list(db_access.gb_main, aws, newawar, true, gde_filter_weights);
                 free(newawar);
-                aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback(makeRootCallback(awt_SAI_selection_list_update_cb, id));
+                aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback(makeRootCallback(awt_SAI_selection_list_update_cb, id)); // @@@ superfluous?
             }
 
             aws->at_newline();
