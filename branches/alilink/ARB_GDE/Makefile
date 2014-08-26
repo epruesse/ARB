@@ -71,6 +71,8 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

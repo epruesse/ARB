@@ -28,23 +28,102 @@
 #include <arb_file.h>
 #include <arb_global_defs.h>
 
-#include <list>
 #include "awt_modules.hxx"
 #include <BufferedFileReader.h>
 
+#include <list>
+#include <map>
+
 using namespace std;
 
+typedef map<string, AW_window*> WinMap;
 
+class SelectionListSpec {
+    string        awar_name;
+    static WinMap window_map; // contains popup windows of all selection list popups
+
+    virtual AW_DB_selection *create(AW_selection_list *sellist) const = 0;
+    AW_DB_selection *init(AW_selection_list *sellist) const {
+        AW_DB_selection *sel = create(sellist);
+        sel->refresh();
+        return sel;
+    }
+
+public:
+    SelectionListSpec(const char *awar_name_)
+        : awar_name(awar_name_)
+    {}
+    virtual ~SelectionListSpec() {}
+
+    virtual const char *get_macro_id() const = 0;
+    virtual const char *get_title() const    = 0;
+
+    const char *get_awar_name() const { return awar_name.c_str(); }
+
+    AW_DB_selection *create_list(AW_window *aws, bool fallback2default) const {
+        return init(aws->create_selection_list(get_awar_name(), 40, 4, fallback2default));
+    }
+
+#if defined(ARB_GTK)
+    AW_DB_selection *create_optionMenu(AW_window *aws, bool fallback2default) const {
+        return init(aws->create_option_menu(get_awar_name(), fallback2default));
+    }
+#endif
+
+    void popup() const {
+        WinMap::iterator  found  = window_map.find(awar_name);
+        if (found == window_map.end()) {
+            AW_window_simple *aws = new AW_window_simple;
+            aws->init(AW_root::SINGLETON, get_macro_id(), get_title());
+            aws->load_xfig("select_simple.fig");
+
+            aws->at("selection");
+            aws->callback((AW_CB0)AW_POPDOWN);
+            create_list(aws, true);
+
+            aws->at("button");
+            aws->callback(AW_POPDOWN);
+            aws->create_button("CLOSE", "CLOSE", "C");
+
+            aws->window_fit();
+
+            window_map[awar_name] = aws;
+            aws->activate();
+        }
+        else {
+            found->second->activate();
+        }
+    }
+
+    void create_button(AW_window *aws) const;
+};
+WinMap SelectionListSpec::window_map; 
+
+#if defined(ARB_MOTIF)
+static void popup_SelectionListSpec_cb(UNFIXED, const SelectionListSpec *spec) {
+    spec->popup();
+}
+#endif
+void SelectionListSpec::create_button(AW_window *aws) const {
+    // WARNING: this is bound to callback (do not free)
+#if defined(ARB_GTK) // use option menu in gtk
+    create_optionMenu(aws, true);
+    aws->update_option_menu();
+#else // !defined(ARB_GTK)
+    aws->callback(makeWindowCallback(popup_SelectionListSpec_cb, this));
+    aws->create_button(get_macro_id(), get_awar_name());
+#endif
+}
 
 // --------------------------------------
 //      selection boxes on alignments
 
-class AWT_alignment_selection : public AW_DB_selection { // derived from a Noncopyable
+class ALI_selection : public AW_DB_selection { // derived from a Noncopyable
     char *ali_type_match;                           // filter for wanted alignments (GBS_string_eval command)
 public:
-    AWT_alignment_selection(AW_selection_list *sellist_, GBDATA *gb_presets, const char *ali_type_match_)
-        : AW_DB_selection(sellist_, gb_presets)
-        , ali_type_match(nulldup(ali_type_match_))
+    ALI_selection(AW_selection_list *sellist_, GBDATA *gb_presets, const char *ali_type_match_)
+        : AW_DB_selection(sellist_, gb_presets),
+          ali_type_match(nulldup(ali_type_match_))
     {}
     
     void fill() OVERRIDE {
@@ -73,25 +152,42 @@ public:
     }
 };
 
-AW_DB_selection *awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
+class ALI_sellst_spec : public SelectionListSpec, virtual Noncopyable {
+    GBDATA *gb_main;
+    string  ali_type_match;
+
+    AW_DB_selection *create(AW_selection_list *sellist) const {
+        GB_transaction ta(gb_main);
+        return new ALI_selection(sellist, GBT_get_presets(gb_main), ali_type_match.c_str());
+    }
+
+public:
+    ALI_sellst_spec(const char *awar_name_, GBDATA *gb_main_, const char *ali_type_match_)
+        : SelectionListSpec(awar_name_),
+          gb_main(gb_main_),
+          ali_type_match(ali_type_match_)
+    {}
+
+    const char *get_macro_id() const { return "SELECT_ALI"; }
+    const char *get_title() const { return "Select alignment"; }
+};
+
+AW_DB_selection *awt_create_ALI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
     // Create selection lists on alignments
     //
     // if 'ali_type_match' is set, then only insert alignments,
     // where 'ali_type_match' GBS_string_eval's the alignment type
 
-    GBDATA *gb_presets;
-    {
-        GB_transaction ta(gb_main);
-        gb_presets = GBT_get_presets(gb_main);
-    }
-    AW_selection_list       *sellist = aws->create_selection_list(varname, 20, 3, true);
-    AWT_alignment_selection *alisel  = new AWT_alignment_selection(sellist, gb_presets, ali_type_match);
-    alisel->refresh(); // belongs to window now
-    return alisel;
+    ALI_sellst_spec spec(varname, gb_main, ali_type_match);
+    return spec.create_list(aws, true);
 }
 
-void awt_reconfigure_selection_list_on_alignments(AW_DB_selection *dbsel, const char *ali_type_match) {
-    AWT_alignment_selection *alisel = dynamic_cast<AWT_alignment_selection*>(dbsel);
+void awt_create_ALI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
+    (new ALI_sellst_spec(varname, gb_main, ali_type_match))->create_button(aws); // do not free yet (bound to callback in ARB_MOTIF)
+}
+
+void awt_reconfigure_ALI_selection_list(AW_DB_selection *dbsel, const char *ali_type_match) {
+    ALI_selection *alisel = dynamic_cast<ALI_selection*>(dbsel);
     alisel->reconfigure(ali_type_match);
 }
 
@@ -133,7 +229,7 @@ struct AWT_tree_selection: public AW_DB_selection {
     }
 };
 
-AW_DB_selection *awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
+AW_DB_selection *awt_create_TREE_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
     GBDATA *gb_tree_data;
     {
         GB_transaction ta(gb_main);
@@ -153,21 +249,21 @@ AW_DB_selection *awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *
 #define PT_SERVERNAME_SELLIST_WIDTH 30              // this for lists
 #define PT_SERVER_TRACKLOG_TIMER    10000           // every 10 seconds
 
-class AWT_ptserver_selection : public AW_selection {
-    typedef list<AWT_ptserver_selection*> PTserverSelections;
+class PT_selection : public AW_selection {
+    typedef list<PT_selection*> PT_selections;
     
-    static PTserverSelections ptserver_selections;
+    static PT_selections ptserver_selections;
 public:
-    AWT_ptserver_selection(AW_selection_list *sellist_);
+    PT_selection(AW_selection_list *sellist_);
 
     void fill() OVERRIDE;
 
     static void refresh_all();
 };
 
-AWT_ptserver_selection::PTserverSelections AWT_ptserver_selection::ptserver_selections;
+PT_selection::PT_selections PT_selection::ptserver_selections;
 
-void AWT_ptserver_selection::fill() {
+void PT_selection::fill() {
     const char * const *pt_servers = GBS_get_arb_tcp_entries("ARB_PT_SERVER*");
 
     int count = 0;
@@ -186,14 +282,14 @@ void AWT_ptserver_selection::fill() {
     insert_default("-undefined-", (long)-1);
 }
 
-void AWT_ptserver_selection::refresh_all() {
-    PTserverSelections::iterator end = ptserver_selections.end();
-    for (PTserverSelections::iterator pts_sel = ptserver_selections.begin(); pts_sel != end; ++pts_sel) {
+void PT_selection::refresh_all() {
+    PT_selections::iterator end = ptserver_selections.end();
+    for (PT_selections::iterator pts_sel = ptserver_selections.begin(); pts_sel != end; ++pts_sel) {
         (*pts_sel)->refresh();
     }
 }
-static void awt_refresh_all_pt_server_selection_lists() {
-    AWT_ptserver_selection::refresh_all();
+static void refresh_all_PTSERVER_selection_lists() {
+    PT_selection::refresh_all();
 }
 static unsigned track_log_cb(AW_root *) {
     static long  last_ptserverlog_mod = 0;
@@ -204,14 +300,14 @@ static unsigned track_log_cb(AW_root *) {
 #if defined(DEBUG)
         fprintf(stderr, "%s modified!\n", ptserverlog);
 #endif // DEBUG
-        AWT_ptserver_selection::refresh_all();
+        PT_selection::refresh_all();
         last_ptserverlog_mod = ptserverlog_mod;
     }
 
     return PT_SERVER_TRACKLOG_TIMER;
 }
 
-AWT_ptserver_selection::AWT_ptserver_selection(AW_selection_list *sellist_)
+PT_selection::PT_selection(AW_selection_list *sellist_)
     : AW_selection(sellist_)
 {
     if (ptserver_selections.empty()) {
@@ -224,7 +320,7 @@ AWT_ptserver_selection::AWT_ptserver_selection(AW_selection_list *sellist_)
 
 static void arb_tcp_dat_changed_cb(const char * /* path */, bool fileChanged, bool /* editorTerminated */) {
     if (fileChanged) {
-        awt_refresh_all_pt_server_selection_lists();
+        refresh_all_PTSERVER_selection_lists();
     }
 }
 
@@ -239,7 +335,7 @@ static char *readable_pt_servername(int index, int maxlength) {
     char *fullname = GBS_ptserver_id_to_choice(index, 0);
     if (!fullname) {
 #ifdef DEBUG
-        printf("awar given to awt_create_selection_list_on_pt_servers() does not contain a valid index\n");
+        printf("awar given to ptserver-selection does not contain a valid index\n");
 #endif
         GB_clear_error();
         return strdup("-undefined-");
@@ -268,7 +364,7 @@ static void update_ptserver_button(AW_root *aw_root, const char *varname) {
     free(awar_buttontext_name);
 }
 
-static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, const char *varname) {
+static AW_window *create_PTSERVER_selection_window(AW_root *aw_root, const char *varname) {
     AW_window_simple *aw_popup = new AW_window_simple;
 
     aw_popup->init(aw_root, "SELECT_PT_SERVER", "Select a PT-Server");
@@ -285,157 +381,53 @@ static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, c
     aw_popup->window_fit();
     aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
-    (new AWT_ptserver_selection(sellist))->refresh();
+    (new PT_selection(sellist))->refresh();
 
     return aw_popup;
 }
 #endif // ARB_MOTIF
 
-void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
-    if (popup) {
+void awt_create_PTSERVER_selection_button(AW_window *aws, const char *varname) {
 #ifdef ARB_GTK
-        (new AWT_ptserver_selection(aws->create_option_menu(varname, true)))->refresh();
+    (new PT_selection(aws->create_option_menu(varname, true)))->refresh();
 
-        int old_button_length = aws->get_button_length();
-        aws->button_length(PT_SERVERNAME_LENGTH+1);
-        aws->update_option_menu();
-        aws->button_length(old_button_length);
+    int old_button_length = aws->get_button_length();
+    aws->button_length(PT_SERVERNAME_LENGTH+1);
+    aws->update_option_menu();
+    aws->button_length(old_button_length);
 #else // ARB_MOTIF
 
-        AW_root *aw_root              = aws->get_root();
-        char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
-        int      ptserver_index       = aw_root->awar(varname)->read_int();
+    AW_root *aw_root              = aws->get_root();
+    char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
+    int      ptserver_index       = aw_root->awar(varname)->read_int();
 
-        if (ptserver_index<0) { // fix invalid pt_server indices
-            ptserver_index = 0;
-            aw_root->awar(varname)->write_int(ptserver_index);
-        }
+    if (ptserver_index<0) { // fix invalid pt_server indices
+        ptserver_index = 0;
+        aw_root->awar(varname)->write_int(ptserver_index);
+    }
 
-        char        *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
-        char *const  varnameDup    = strdup(varname);
+    char        *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
+    char *const  varnameDup    = strdup(varname);
 
-        awt_assert(!GB_have_error());
+    awt_assert(!GB_have_error());
 
-        aw_root->awar_string(awar_buttontext_name, readable_name, AW_ROOT_DEFAULT);
-        aw_root->awar(varname)->add_callback(makeRootCallback(update_ptserver_button, varnameDup));
+    aw_root->awar_string(awar_buttontext_name, readable_name, AW_ROOT_DEFAULT);
+    aw_root->awar(varname)->add_callback(makeRootCallback(update_ptserver_button, varnameDup));
 
-        int old_button_length = aws->get_button_length();
+    int old_button_length = aws->get_button_length();
 
-        aws->button_length(PT_SERVERNAME_LENGTH+1);
-        aws->callback(makeCreateWindowCallback(create_selection_list_on_pt_servers_window, varnameDup));
-        aws->create_button("CURR_PT_SERVER", awar_buttontext_name);
+    aws->button_length(PT_SERVERNAME_LENGTH+1);
+    aws->callback(makeCreateWindowCallback(create_PTSERVER_selection_window, varnameDup));
+    aws->create_button("CURR_PT_SERVER", awar_buttontext_name);
 
-        aws->button_length(old_button_length);
+    aws->button_length(old_button_length);
 
-        free(readable_name);
-        free(awar_buttontext_name);
+    free(readable_name);
+    free(awar_buttontext_name);
 #endif
-    }
-    else {
-        (new AWT_ptserver_selection(aws->create_selection_list(varname, true)))->refresh();
-    }
 }
-
-// ----------------------------------
-//      selection boxes on tables
-
-
-#if defined(WARN_TODO)
-#warning derive awt_sel_list_for_tables from AW_DB_selection
-#endif
-
-struct awt_sel_list_for_tables {
-    AW_window         *aws;
-    GBDATA            *gb_main;
-    AW_selection_list *id;
-    const char        *table_name;
-};
-
-static void awt_create_selection_list_on_tables_cb(GBDATA *, struct awt_sel_list_for_tables *cbs) {
-    cbs->id->clear();
-    GBDATA *gb_table;
-    for (gb_table = GBT_first_table(cbs->gb_main);
-         gb_table;
-         gb_table = GBT_next_table(gb_table)) {
-
-        GBDATA *gb_name = GB_entry(gb_table, "name");
-        GBDATA *gb_description = GB_search(gb_table, "description", GB_STRING);
-        if (!gb_name) continue;
-        char *table_name = GB_read_string(gb_name);
-        char *description = GB_read_string(gb_description);
-        const char *info_text = GBS_global_string("%s: %s", table_name, description);
-        cbs->id->insert(info_text, table_name);
-        free(table_name);
-        free(description);
-    }
-    cbs->id->insert_default("", "");
-    cbs->id->update();
-}
-
-void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const char *varname)
-{
-    AW_selection_list *id;
-    GBDATA  *gb_table_data;
-    struct awt_sel_list_for_tables *cbs;
-    GB_push_transaction(gb_main);
-
-    id = aws->create_selection_list(varname, 40, 8, true);
-    cbs = new awt_sel_list_for_tables;
-    cbs->aws = aws;
-    cbs->gb_main = gb_main;
-    cbs->id = id;
-
-    awt_create_selection_list_on_tables_cb(0, cbs);
-
-    gb_table_data = GB_search(gb_main, "table_data", GB_CREATE_CONTAINER);
-    GB_add_callback(gb_table_data, GB_CB_CHANGED, makeDatabaseCallback(awt_create_selection_list_on_tables_cb, cbs));
-
-    GB_pop_transaction(gb_main);
-}
-
-static void awt_create_selection_list_on_table_fields_cb(GBDATA *, struct awt_sel_list_for_tables *cbs) {
-    cbs->id->clear();
-    GBDATA  *gb_table = GBT_open_table(cbs->gb_main, cbs->table_name, true); // read only
-    GBDATA *gb_table_field;
-    for (gb_table_field = GBT_first_table_field(gb_table);
-         gb_table_field;
-         gb_table_field = GBT_next_table_field(gb_table_field))
-    {
-        GBDATA *gb_name = GB_entry(gb_table_field, "name");
-        GBDATA *gb_description = GB_search(gb_table_field, "description", GB_STRING);
-        if (!gb_name) continue;
-        char *table_name = GB_read_string(gb_name);
-        char *description = GB_read_string(gb_description);
-        const char *info_text = GBS_global_string("%s: %s", table_name, description);
-        cbs->id->insert(info_text, table_name);
-        free(table_name);
-        free(description);
-    }
-    cbs->id->insert_default("", "");
-    cbs->id->update();
-}
-
-void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *table_name, const char *varname) {
-    // if tablename == 0 -> take fields from species table
-
-    AW_selection_list              *id;
-    struct awt_sel_list_for_tables *cbs;
-    GB_push_transaction(gb_main);
-
-    id = aws->create_selection_list(varname, 40, 8, true);
-    cbs = new awt_sel_list_for_tables;
-    cbs->aws = aws;
-    cbs->gb_main = gb_main;
-    cbs->id = id;
-    cbs->table_name = strdup(table_name);
-
-    awt_create_selection_list_on_table_fields_cb(0, cbs);
-
-    GBDATA  *gb_table = GBT_open_table(gb_main, table_name, true); // read only
-    if (gb_table) {
-        GB_add_callback(gb_table, GB_CB_CHANGED, makeDatabaseCallback(awt_create_selection_list_on_table_fields_cb, cbs));
-    }
-    GB_pop_transaction(gb_main);
+void awt_create_PTSERVER_selection_list(AW_window *aws, const char *varname) {
+    (new PT_selection(aws->create_selection_list(varname, true)))->refresh();
 }
 
 // -------------------------------------------------
@@ -457,7 +449,7 @@ struct AWT_configuration_selection : public AW_DB_selection {
     }
 };
 
-void awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
+void awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
     GBDATA *gb_configuration_data;
     {
         GB_transaction ta(gb_main);
@@ -467,7 +459,7 @@ void awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws
     (new AWT_configuration_selection(sellist, gb_configuration_data))->refresh();
 }
 
-char *awt_create_string_on_configurations(GBDATA *gb_main) {
+char *awt_create_CONFIG_string(GBDATA *gb_main) {
     // returns semicolon-separated string containing configuration names
     // (or NULL if no configs exist)
 
@@ -495,13 +487,13 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
 //      SAI selection
 
 
-class AWT_sai_selection : public AW_DB_selection { // derived from a Noncopyable
+class SAI_selection : public AW_DB_selection { // derived from a Noncopyable
     awt_sai_sellist_filter filter_poc;
     AW_CL                  filter_cd;
 
 public:
 
-    AWT_sai_selection(AW_selection_list *sellist_, GBDATA *gb_sai_data, awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_)
+    SAI_selection(AW_selection_list *sellist_, GBDATA *gb_sai_data, awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_)
         : AW_DB_selection(sellist_, gb_sai_data),
           filter_poc(filter_poc_),
           filter_cd(filter_cd_)
@@ -510,7 +502,7 @@ public:
     void fill() OVERRIDE;
 };
 
-void AWT_sai_selection::fill() {
+void SAI_selection::fill() {
     AW_selection_list *sel = get_sellist();
     sel->clear();
 
@@ -550,82 +542,47 @@ void AWT_sai_selection::fill() {
     sel->update();
 }
 
-void awt_selection_list_on_sai_update_cb(UNFIXED, AWT_sai_selection *saisel) {
-    /* update the selection box defined by awt_create_selection_list_on_sai
-     *
-     * useful only when filterproc is defined
-     * (changes to SAIs will automatically callback this function)
-     */
+class SAI_sellst_spec : public SelectionListSpec, virtual Noncopyable {
+    GBDATA                 *gb_main;
+    awt_sai_sellist_filter  filter_poc;
+    AW_CL                   filter_cd;
 
-    saisel->refresh();
-}
-
-AWT_sai_selection *SAI_selection_list_spec::create_list(AW_window *aws, bool fallback2default) const {
-    GB_transaction ta(gb_main);
-
-    AW_selection_list *sellist     = aws->create_selection_list(awar_name, 40, 4, fallback2default);
-    GBDATA            *gb_sai_data = GBT_get_SAI_data(gb_main);
-    AWT_sai_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
-
-    awt_selection_list_on_sai_update_cb(0, saisel);
-    GB_add_callback(gb_sai_data, GB_CB_CHANGED, makeDatabaseCallback(awt_selection_list_on_sai_update_cb, saisel));
-
-    return saisel;
-}
-
-static void popup_filtered_sai_selection_list(AW_root *aw_root, const SAI_selection_list_spec *spec) {
-    const char *awar_name = spec->get_awar_name();
-
-    static GB_HASH *SAI_window_hash       = 0;
-    if (!SAI_window_hash) SAI_window_hash = GBS_create_hash(10, GB_MIND_CASE);
-
-    AW_window_simple *aws = reinterpret_cast<AW_window_simple *>(GBS_read_hash(SAI_window_hash, awar_name));
-
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(aw_root, "SELECT_SAI", "SELECT SAI");
-        aws->load_xfig("select_simple.fig");
-
-        aws->at("selection");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        spec->create_list(aws, true);
-
-        aws->at("button");
-        aws->callback(AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->window_fit();
-
-        GBS_write_hash(SAI_window_hash, awar_name, reinterpret_cast<long>(aws));
+    AW_DB_selection *create(AW_selection_list *sellist) const {
+        GB_transaction ta(gb_main);
+        return new SAI_selection(sellist, GBT_get_SAI_data(gb_main), filter_poc, filter_cd);
     }
 
-    aws->activate();
-}
-static void popup_filtered_sai_selection_list(AW_window *aww, const SAI_selection_list_spec *spec) {
-    popup_filtered_sai_selection_list(aww->get_root(), spec);
+public:
+    SAI_sellst_spec(const char *awar_name_, GBDATA *gb_main_, awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_)
+        : SelectionListSpec(awar_name_),
+          gb_main(gb_main_),
+          filter_poc(filter_poc_),
+          filter_cd(filter_cd_)
+    {
+        // Warning: do not use different filters for same awar! (wont work as expected) // @@@ add assertion against
+    }
+
+    const char *get_macro_id() const { return "SELECT_SAI"; }
+    const char *get_title() const { return "Select SAI"; }
+};
+
+void awt_popup_SAI_selection_list(AW_window *, const char *awar_name, GBDATA *gb_main) {
+    SAI_sellst_spec spec(awar_name, gb_main, NULL, 0);
+    spec.popup();
 }
 
-void awt_popup_sai_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main) {
-    SAI_selection_list_spec spec(awar_name, gb_main);
-    popup_filtered_sai_selection_list(aww, &spec);
-}
-
-AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
+AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
     /* Selection list for SAIs
      *
      * if filter_proc is set then show only those items on which
      * filter_proc returns a string (string must be a heap copy)
      */
-    SAI_selection_list_spec spec(varname, gb_main);
-    spec.define_filter(filter_poc, filter_cd);
+    SAI_sellst_spec spec(varname, gb_main, filter_poc, filter_cd);
     return spec.create_list(aws, fallback2default);
 }
 
 void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
-    SAI_selection_list_spec *spec = new SAI_selection_list_spec(varname, gb_main);
-    spec->define_filter(filter_poc, filter_cd);
-    aws->callback(makeWindowCallback(popup_filtered_sai_selection_list, spec));
-    aws->create_button("SELECT_SAI", varname);
+    (new SAI_sellst_spec(varname, gb_main, filter_poc, filter_cd))->create_button(aws); // do not free yet (bound to callback in ARB_MOTIF)
 }
 
 // --------------------------------------------------
@@ -1202,5 +1159,6 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
 
     return subsel;
 }
+
 
 

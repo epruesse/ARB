@@ -373,10 +373,10 @@ AW_window *AP_create_pos_var_pars_window(AW_root *root) {
     aws->create_input_field(AWAR_PVP_SAI);
 
     aws->at("box");
-    awt_create_selection_list_on_sai(GLOBAL.gb_main, aws, AWAR_PVP_SAI, false);
+    awt_create_SAI_selection_list(GLOBAL.gb_main, aws, AWAR_PVP_SAI, false);
 
     aws->at("trees");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_PVP_TREE, true);
+    awt_create_TREE_selection_list(GLOBAL.gb_main, aws, AWAR_PVP_TREE, true);
 
     aws->at("go");
     aws->highlight();

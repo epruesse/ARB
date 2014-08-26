@@ -172,7 +172,7 @@ AW_window *NT_create_trackAliChanges_window(AW_root *root) {
     aws->create_input_field(AWAR_TRACK_INITIALS);
 
     aws->at("ali_sel");
-    awt_create_selection_list_on_alignments(GLOBAL.gb_main, aws, AWAR_TRACK_ALI, "*=");
+    awt_create_ALI_selection_list(GLOBAL.gb_main, aws, AWAR_TRACK_ALI, "*=");
 
     aws->at("go");
     aws->callback(trackAlignmentChanges);

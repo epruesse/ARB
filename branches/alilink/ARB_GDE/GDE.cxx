@@ -1,16 +1,19 @@
 #include "GDE_extglob.h"
 #include "GDE_awars.h"
 
+#include <awt_sel_boxes.hxx>
+#include <awt_filter.hxx>
+
 #include <aw_msg.hxx>
 #include <aw_awar.hxx>
 #include <aw_file.hxx>
 #include <aw_root.hxx>
 #include <aw_awar_defs.hxx>
-#include <awt_sel_boxes.hxx>
-#include <awt_filter.hxx>
+#include <aw_select.hxx>
+
+#include <arb_str.h>
 
 #include <cmath>
-#include <arb_str.h>
 
 // AISC_MKPT_PROMOTE:#ifndef GDE_MENU_H
 // AISC_MKPT_PROMOTE:#include "GDE_menu.h"
@@ -118,6 +121,10 @@ static char *gde_filter_weights(GBDATA *gb_sai, AW_CL) {
 
 }
 
+static void refresh_weights_sellist_cb(AW_root*, AW_DB_selection *saisel) {
+    saisel->refresh();
+}
+
 static AW_window *GDE_create_filename_browser_window(AW_root *aw_root, const char *awar_prefix, const char *title) {
     AW_window_simple *aws = new AW_window_simple;
 
@@ -205,7 +212,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                     if (seqtype != '-') { // '-' means "skip sequence export"
                         aws->at("which_alignment");
                         const char *ali_filter = seqtype == 'A' ? "pro=:ami=" : (seqtype == 'N' ? "dna=:rna=" : "*=");
-                        awt_create_selection_list_on_alignments(db_access.gb_main, (AW_window *)aws, AWAR_GDE_ALIGNMENT, ali_filter);
+                        awt_create_ALI_selection_list(db_access.gb_main, (AW_window *)aws, AWAR_GDE_ALIGNMENT, ali_filter);
 
                         aws->at("which_species");
                         aws->create_toggle_field(AWAR_GDE_SPECIES);
@@ -389,7 +396,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
-                awt_create_selection_list_on_trees(db_access.gb_main, aws, newawar, true);
+                awt_create_TREE_selection_list(db_access.gb_main, aws, newawar, true);
                 free(newawar);
             }
             else if (itemarg.type==CHOICE_SAI) {
@@ -398,18 +405,19 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
-                awt_create_selection_list_on_sai(db_access.gb_main, aws, newawar, true);
+                awt_create_SAI_selection_list(db_access.gb_main, aws, newawar, true);
                 free(newawar);
             }
             else if (itemarg.type==CHOICE_WEIGHTS) {
-                char *defopt=itemarg.textvalue;
-                char *newawar=GDE_makeawarname(gmenuitem, i);
+                char *defopt  = itemarg.textvalue;
+                char *newawar = GDE_makeawarname(gmenuitem, i);
+
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
-                AWT_sai_selection *id = awt_create_selection_list_on_sai(db_access.gb_main, aws, newawar, true, gde_filter_weights);
+                AW_DB_selection *saisel = awt_create_SAI_selection_list(db_access.gb_main, aws, newawar, true, gde_filter_weights);
                 free(newawar);
-                aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback(makeRootCallback(awt_selection_list_on_sai_update_cb, id));
+                aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback(makeRootCallback(refresh_weights_sellist_cb, saisel));
             }
 
             aws->at_newline();

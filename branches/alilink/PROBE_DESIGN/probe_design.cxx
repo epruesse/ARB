@@ -1313,7 +1313,7 @@ AW_window *create_probe_design_window(AW_root *root, GBDATA *gb_main) {
 
     aws->at("pt_server");
     aws->label("PT-Server:");
-    awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
+    awt_create_PTSERVER_selection_button(aws, AWAR_PT_SERVER);
 
     aws->at("lenout");   aws->create_input_field(AWAR_PD_DESIGN_CLIPRESULT, 6);
     aws->at("mishit");   aws->create_input_field(AWAR_PD_DESIGN_MISHIT,     6);
@@ -1593,7 +1593,7 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
         aws->create_button("EXPERT", "EXPERT", "X");
 
         aws->at("pt_server");
-        awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
+        awt_create_PTSERVER_selection_button(aws, AWAR_PT_SERVER);
 
         aws->at("complement");
         aws->create_toggle(AWAR_PD_MATCH_COMPLEMENT);
@@ -1848,7 +1848,7 @@ AW_window *create_probe_admin_window(AW_root *root, GBDATA *gb_main) {
     aws->button_length(18);
 
     aws->at("pt_server");
-    awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, false);
+    awt_create_PTSERVER_selection_list(aws, AWAR_PROBE_ADMIN_PT_SERVER);
 
     aws->at("start");
     aws->callback(pd_start_pt_server);

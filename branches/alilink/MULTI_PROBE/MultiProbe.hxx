@@ -161,9 +161,6 @@ class MP_Window : virtual Noncopyable {
     AW_window_simple *aws;
     AW_window_simple *result_window;
 
-    void build_pt_server_list();
-    // zeigt auf naechstes Zeichen
-
 public:
     AW_window_simple    *get_window()       { return aws; };
     AW_window_simple    *get_result_window()    { return result_window; };
