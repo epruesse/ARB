@@ -54,7 +54,6 @@ public:
 };
 
 typedef char *(*awt_sai_sellist_filter)(GBDATA *, AW_CL);
-class AWT_sai_selection;
 
 // -----------------------------------------
 //      various database selection boxes
@@ -71,8 +70,8 @@ void awt_create_PTSERVER_selection_button(AW_window *aws, const char *varname);
 void awt_create_PTSERVER_selection_list(AW_window *aws, const char *varname);
 
 void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
-AWT_sai_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
-void awt_SAI_selection_list_update_cb(UNFIXED, AWT_sai_selection *cbsid);
+AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
+__ATTR__DEPRECATED("call refresh on saisel") void awt_SAI_selection_list_update_cb(UNFIXED, AW_DB_selection *saisel);
 void awt_popup_SAI_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main);
 
 void  awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);

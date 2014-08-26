@@ -78,10 +78,10 @@ class ALI_sellst_spec : virtual Noncopyable {
     GBDATA *gb_main;
     char   *ali_type_match;
 
-    AWT_alignment_selection *init(AW_selection_list *sellist) const {
-        GB_transaction           ta(gb_main);
-        GBDATA                  *gb_presets = GBT_get_presets(gb_main);
-        AWT_alignment_selection *alisel     = new AWT_alignment_selection(sellist, gb_presets, ali_type_match);
+    AW_DB_selection *init(AW_selection_list *sellist) const {
+        GB_transaction   ta(gb_main);
+        GBDATA          *gb_presets = GBT_get_presets(gb_main);
+        AW_DB_selection *alisel     = new AWT_alignment_selection(sellist, gb_presets, ali_type_match);
 
         alisel->refresh();
         return alisel;
@@ -101,11 +101,11 @@ public:
 
     const char *get_awar_name() const { return awar_name; }
 
-    AWT_alignment_selection *create_list(AW_window *aws, bool fallback2default) const {
+    AW_DB_selection *create_list(AW_window *aws, bool fallback2default) const {
         return init(aws->create_selection_list(awar_name, 40, 4, fallback2default));
     }
 #if defined(ARB_GTK)
-    AWT_alignment_selection *create_optionMenu(AW_window *aws, bool fallback2default) const {
+    AW_DB_selection *create_optionMenu(AW_window *aws, bool fallback2default) const {
         return init(aws->create_option_menu(awar_name, fallback2default));
     }
 #endif
@@ -523,7 +523,7 @@ void AWT_sai_selection::fill() {
     sel->update();
 }
 
-void awt_SAI_selection_list_update_cb(UNFIXED, AWT_sai_selection *saisel) { // @@@ elim?
+void awt_SAI_selection_list_update_cb(UNFIXED, AW_DB_selection *saisel) { // @@@ elim?
     /* update the selection box defined by awt_create_SAI_selection_list
      *
      * useful only when filterproc is defined
@@ -540,10 +540,10 @@ class SAI_sellst_spec : virtual Noncopyable {
     awt_sai_sellist_filter filter_poc;
     AW_CL                  filter_cd;
 
-    AWT_sai_selection *init(AW_selection_list *sellist) const {
-        GB_transaction     ta(gb_main);
-        GBDATA            *gb_sai_data = GBT_get_SAI_data(gb_main);
-        AWT_sai_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
+    AW_DB_selection *init(AW_selection_list *sellist) const {
+        GB_transaction   ta(gb_main);
+        GBDATA          *gb_sai_data = GBT_get_SAI_data(gb_main);
+        AW_DB_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
 
         awt_SAI_selection_list_update_cb(0, saisel); // @@@ use saisel->refresh();
         GB_add_callback(gb_sai_data, GB_CB_CHANGED, makeDatabaseCallback(awt_SAI_selection_list_update_cb, saisel)); // @@@ CB is superflous (also installed by AW_DB_selection)
@@ -568,12 +568,12 @@ public:
 
     const char *get_awar_name() const { return awar_name; }
 
-    AWT_sai_selection *create_list(AW_window *aws, bool fallback2default) const {
+    AW_DB_selection *create_list(AW_window *aws, bool fallback2default) const {
         return init(aws->create_selection_list(awar_name, 40, 4, fallback2default));
     }
 
 #if defined(ARB_GTK)
-    AWT_sai_selection *create_optionMenu(AW_window *aws, bool fallback2default) const {
+    AW_DB_selection *create_optionMenu(AW_window *aws, bool fallback2default) const {
         return init(aws->create_option_menu(awar_name, fallback2default));
     }
 #endif
@@ -616,7 +616,7 @@ void awt_popup_SAI_selection_list(AW_window *aww, const char *awar_name, GBDATA 
     popup_filtered_sai_selection_list(aww, &spec);
 }
 
-AWT_sai_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
+AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
     /* Selection list for SAIs
      *
      * if filter_proc is set then show only those items on which
