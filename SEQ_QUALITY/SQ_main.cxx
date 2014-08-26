@@ -250,7 +250,7 @@ AW_window *SQ_create_seq_quality_window(AW_root *aw_root, GBDATA *gb_main) {
     aws->create_input_field(AWAR_SQ_MARK_BELOW, 3);
 
     aws->at("tree");
-    awt_create_selection_list_on_trees(gb_main, aws, AWAR_TREE, true);
+    awt_create_TREE_selection_list(gb_main, aws, AWAR_TREE, true);
 
     aws->at("filter");
     adfiltercbstruct *adfilter = awt_create_select_filter(aws->get_root(), gb_main, AWAR_FILTER_NAME);

@@ -1746,7 +1746,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->update_option_menu();
 
     aws->at("which_alignment");
-    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_DIST_ALIGNMENT, "*=");
+    awt_create_ALI_selection_list(GLOBAL_gb_main, (AW_window *)aws, AWAR_DIST_ALIGNMENT, "*=");
 
     // filter & weights
 
@@ -1823,7 +1823,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     // tree selection
 
     aws->at("tree_list");
-    awt_create_selection_list_on_trees(GLOBAL_gb_main, aws, AWAR_DIST_TREE_CURR_NAME, true);
+    awt_create_TREE_selection_list(GLOBAL_gb_main, aws, AWAR_DIST_TREE_CURR_NAME, true);
 
     aws->at("detect_clusters");
     aws->callback(makeCreateWindowCallback(DI_create_cluster_detection_window, weighted_filter));

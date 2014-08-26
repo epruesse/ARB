@@ -472,7 +472,7 @@ static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     aws->load_xfig("optimize.fig");
 
     aws->at("trees");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, "tmp/nt/arbdb/optimize_tree_name", true);
+    awt_create_TREE_selection_list(GLOBAL.gb_main, aws, "tmp/nt/arbdb/optimize_tree_name", true);
 
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
@@ -1130,8 +1130,6 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
         awm->insert_menu_topic("fix_db",      "Fix database",            "F", 0, AWM_ALL, (AW_CB)NT_fix_database,            0,                                       0);
         awm->insert_menu_topic("debug_arbdb", "Print debug information", "d", 0, AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)                  GLOBAL.gb_main, 0);
         awm->insert_menu_topic("test_compr",  "Test compression",        "T", 0, AWM_ALL, (AW_CB)GBT_compression_test,       (AW_CL)                  GLOBAL.gb_main, 0);
-        awm->sep______________();
-        awm->insert_menu_topic("table_admin",       "Table Admin (unfinished/unknown purpose)",  "A", "tableadm.hlp",    AWM_ALL, makeCreateWindowCallback(AWT_create_tables_admin_window, GLOBAL.gb_main));
 #endif // DEBUG
 
         awm->create_menu("File", "F", AWM_ALL);

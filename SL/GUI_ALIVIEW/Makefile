@@ -100,6 +100,8 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/BI_helix.hxx

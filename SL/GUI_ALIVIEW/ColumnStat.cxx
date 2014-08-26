@@ -11,12 +11,14 @@
 #include "ColumnStat.hxx"
 #include "awt_sel_boxes.hxx"
 #include "ga_local.h"
-
 #include <AP_filter.hxx>
 #include <BI_helix.hxx>
+
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
+#include <aw_select.hxx>
+
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 
@@ -31,9 +33,7 @@ void ColumnStat::refresh_sai_selection_list() {
     freeset(alignment_name, awr->awar(awar_alignment)->read_string());
     freeset(type_path, GBS_string_eval(alignment_name, "*=*1/_TYPE", 0));
 
-    if (sai_sel_box_id) {
-        awt_selection_list_on_sai_update_cb(0, sai_sel_box_id);
-    }
+    if (saisel) saisel->refresh();
 }
 
 static void refresh_columnstat_selection(AW_root *, AW_CL cl_column_stat) {
@@ -352,7 +352,7 @@ static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
 
 void ColumnStat::create_sai_selection_list(AW_window *aww) {
     GB_transaction ta(gb_main);
-    sai_sel_box_id = awt_create_selection_list_on_sai(gb_main, aww, awar_name, true, filter_columnstat_SAIs, (AW_CL)this);
+    saisel = awt_create_SAI_selection_list(gb_main, aww, awar_name, true, filter_columnstat_SAIs, (AW_CL)this);
 }
 
 void COLSTAT_create_selection_list(AW_window *aws, ColumnStat *column_stat) {

@@ -260,7 +260,7 @@ AW_window *ALI_create_admin_window(AW_root *root, AliAdmin *admin) {
 
         // ali selection list
         aws->at("list");
-        awt_create_selection_list_on_alignments(gb_main, aws, admin->select_name(), "*=");
+        awt_create_ALI_selection_list(gb_main, aws, admin->select_name(), "*=");
 
         // alignment settings
         aws->at("aligned");

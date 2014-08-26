@@ -64,7 +64,7 @@ inline char *get_alitype_eval(AW_root *aw_root) {
 static void alitype_changed_cb(AW_root *aw_root, AW_CL cl_db_sel) {
     AW_DB_selection *db_sel   = (AW_DB_selection*)cl_db_sel;
     char            *ali_type = get_alitype_eval(aw_root);
-    awt_reconfigure_selection_list_on_alignments(db_sel, ali_type);
+    awt_reconfigure_ALI_selection_list(db_sel, ali_type);
     free(ali_type);
 }
 
@@ -78,7 +78,7 @@ static AW_DB_selection* createSelectionList(GBDATA *gb_main, AW_window *aws, con
 
     AW_root         *aw_root  = aws->get_root();
     char            *ali_type = get_alitype_eval(aw_root);
-    AW_DB_selection *db_sel   = awt_create_selection_list_on_alignments(gb_main, aws, awarName, ali_type);
+    AW_DB_selection *db_sel   = awt_create_ALI_selection_list(gb_main, aws, awarName, ali_type);
 
     free(ali_type);
     return db_sel;

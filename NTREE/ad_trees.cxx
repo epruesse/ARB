@@ -520,9 +520,9 @@ static AW_window_simple *create_select_two_trees_window(AW_root *root, const cha
     aws->create_button("HELP", "Help", "H");
 
     aws->at("tree1");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name, true);
+    awt_create_TREE_selection_list(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name, true);
     aws->at("tree2");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::dest_tree_awar(root)->awar_name, false);
+    awt_create_TREE_selection_list(GLOBAL.gb_main, aws, TreeAdmin::dest_tree_awar(root)->awar_name, false);
 
     AW_awar *awar_displayed_tree = root->awar(AWAR_TREE_NAME);
 
@@ -560,7 +560,7 @@ static AW_window_simple *create_select_other_tree_window(AW_root *root, const ch
     AW_awar *awar_displayed_tree = root->awar(displayed_tree_awarname);
 
     aws->at("tree");
-    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name, true);
+    awt_create_TREE_selection_list(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name, true);
 
     aws->at("select");
     aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::source_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED", "Use");
@@ -722,7 +722,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->button_length(0);
 
         aws->at("list");
-        awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_TREE_NAME, true);
+        awt_create_TREE_selection_list(GLOBAL.gb_main, aws, AWAR_TREE_NAME, true);
 
         aws->at("sort");
         awt_create_order_buttons(aws, reorder_trees_cb, 0);
@@ -824,7 +824,7 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("list");
-        AW_DB_selection *all_trees      = awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_TREE_CONSENSE_SELECTED, true);
+        AW_DB_selection *all_trees      = awt_create_TREE_selection_list(GLOBAL.gb_main, aws, AWAR_TREE_CONSENSE_SELECTED, true);
         AW_selection    *selected_trees = awt_create_subset_selection_list(aws, all_trees->get_sellist(), "selected", "add", "sort");
 
         aws->at("name");
