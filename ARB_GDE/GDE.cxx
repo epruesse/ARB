@@ -1,16 +1,19 @@
 #include "GDE_extglob.h"
 #include "GDE_awars.h"
 
+#include <awt_sel_boxes.hxx>
+#include <awt_filter.hxx>
+
 #include <aw_msg.hxx>
 #include <aw_awar.hxx>
 #include <aw_file.hxx>
 #include <aw_root.hxx>
 #include <aw_awar_defs.hxx>
-#include <awt_sel_boxes.hxx>
-#include <awt_filter.hxx>
+#include <aw_select.hxx>
+
+#include <arb_str.h>
 
 #include <cmath>
-#include <arb_str.h>
 
 // AISC_MKPT_PROMOTE:#ifndef GDE_MENU_H
 // AISC_MKPT_PROMOTE:#include "GDE_menu.h"
@@ -78,6 +81,10 @@ static char *gde_filter_weights(GBDATA *gb_sai, AW_CL) {
     free(ali_name);
     return result;
 
+}
+
+static void refresh_weights_sellist_cb(AW_root*, AW_DB_selection *saisel) {
+    saisel->refresh();
 }
 
 static AW_window *GDE_create_filename_browser_window(AW_root *aw_root, const char *awar_prefix, const char *title) {
@@ -363,14 +370,15 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 free(newawar);
             }
             else if (itemarg.type==CHOICE_WEIGHTS) {
-                char *defopt=itemarg.textvalue;
-                char *newawar=GDE_makeawarname(gmenuitem, i);
+                char *defopt  = itemarg.textvalue;
+                char *newawar = GDE_makeawarname(gmenuitem, i);
+
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
-                AWT_sai_selection *id = awt_create_SAI_selection_list(db_access.gb_main, aws, newawar, true, gde_filter_weights);
+                AW_DB_selection *saisel = awt_create_SAI_selection_list(db_access.gb_main, aws, newawar, true, gde_filter_weights);
                 free(newawar);
-                aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback(makeRootCallback(awt_SAI_selection_list_update_cb, id));
+                aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback(makeRootCallback(refresh_weights_sellist_cb, saisel));
             }
 
             aws->at_newline();
