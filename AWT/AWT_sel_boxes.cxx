@@ -28,13 +28,90 @@
 #include <arb_file.h>
 #include <arb_global_defs.h>
 
-#include <list>
 #include "awt_modules.hxx"
 #include <BufferedFileReader.h>
 
+#include <list>
+#include <map>
+
 using namespace std;
 
+typedef map<string, AW_window*> WinMap;
 
+class SelectionListSpec {
+    string        awar_name;
+    static WinMap window_map; // contains popup windows of all selection list popups
+
+    virtual AW_DB_selection *create(AW_selection_list *sellist) const = 0;
+    AW_DB_selection *init(AW_selection_list *sellist) const {
+        AW_DB_selection *sel = create(sellist);
+        sel->refresh();
+        return sel;
+    }
+
+public:
+    SelectionListSpec(const char *awar_name_)
+        : awar_name(awar_name_)
+    {}
+    virtual ~SelectionListSpec() {}
+
+    virtual const char *get_macro_id() const = 0;
+    virtual const char *get_title() const    = 0;
+
+    const char *get_awar_name() const { return awar_name.c_str(); }
+
+    AW_DB_selection *create_list(AW_window *aws, bool fallback2default) const {
+        return init(aws->create_selection_list(get_awar_name(), 40, 4, fallback2default));
+    }
+
+#if defined(ARB_GTK)
+    AW_DB_selection *create_optionMenu(AW_window *aws, bool fallback2default) const {
+        return init(aws->create_option_menu(awar_name, fallback2default));
+    }
+#endif
+
+    void popup() const {
+        WinMap::iterator  found  = window_map.find(awar_name);
+        if (found == window_map.end()) {
+            AW_window_simple *aws = new AW_window_simple;
+            aws->init(AW_root::SINGLETON, get_macro_id(), get_title());
+            aws->load_xfig("select_simple.fig");
+
+            aws->at("selection");
+            aws->callback((AW_CB0)AW_POPDOWN);
+            create_list(aws, true);
+
+            aws->at("button");
+            aws->callback(AW_POPDOWN);
+            aws->create_button("CLOSE", "CLOSE", "C");
+
+            aws->window_fit();
+
+            window_map[awar_name] = aws;
+            aws->activate();
+        }
+        else {
+            found->second->activate();
+        }
+    }
+
+    void create_button(AW_window *aws) const;
+};
+WinMap SelectionListSpec::window_map; 
+
+static void popup_SelectionListSpec_cb(UNFIXED, const SelectionListSpec *spec) {
+    spec->popup();
+}
+void SelectionListSpec::create_button(AW_window *aws) const {
+    // WARNING: this is bound to callback (do not free)
+#if defined(ARB_GTK) // use option menu in gtk
+    create_optionMenu(aws, true);
+    aws->update_option_menu();
+#else // !defined(ARB_GTK)
+    aws->callback(makeWindowCallback(popup_SelectionListSpec_cb, this));
+    aws->create_button(get_macro_id(), get_awar_name());
+#endif
+}
 
 // --------------------------------------
 //      selection boxes on alignments
@@ -73,77 +150,25 @@ public:
     }
 };
 
-class ALI_sellst_spec : virtual Noncopyable {
-    char   *awar_name;
+class ALI_sellst_spec : public SelectionListSpec, virtual Noncopyable {
     GBDATA *gb_main;
-    char   *ali_type_match;
+    string  ali_type_match;
 
-    AW_DB_selection *init(AW_selection_list *sellist) const {
-        GB_transaction   ta(gb_main);
-        GBDATA          *gb_presets = GBT_get_presets(gb_main);
-        AW_DB_selection *alisel     = new ALI_selection(sellist, gb_presets, ali_type_match);
-
-        alisel->refresh();
-        return alisel;
+    AW_DB_selection *create(AW_selection_list *sellist) const {
+        GB_transaction ta(gb_main);
+        return new ALI_selection(sellist, GBT_get_presets(gb_main), ali_type_match.c_str());
     }
 
 public:
     ALI_sellst_spec(const char *awar_name_, GBDATA *gb_main_, const char *ali_type_match_)
-        : awar_name(strdup(awar_name_)),
+        : SelectionListSpec(awar_name_),
           gb_main(gb_main_),
-          ali_type_match(strdup(ali_type_match_))
-    {
-    }
-    ~ALI_sellst_spec() {
-        free(awar_name);
-        free(ali_type_match);
-    }
+          ali_type_match(ali_type_match_)
+    {}
 
-    const char *get_awar_name() const { return awar_name; }
-
-    AW_DB_selection *create_list(AW_window *aws, bool fallback2default) const {
-        return init(aws->create_selection_list(awar_name, 40, 4, fallback2default));
-    }
-#if defined(ARB_GTK)
-    AW_DB_selection *create_optionMenu(AW_window *aws, bool fallback2default) const {
-        return init(aws->create_option_menu(awar_name, fallback2default));
-    }
-#endif
+    const char *get_macro_id() const { return "SELECT_ALI"; }
+    const char *get_title() const { return "Select alignment"; }
 };
-
-#if defined(ARB_MOTIF)
-static void popup_filtered_ali_selection_list(AW_root *aw_root, const ALI_sellst_spec *spec) { // @@@ DRY vs popup_filtered_sai_selection_list
-    const char *awar_name = spec->get_awar_name();
-
-    static GB_HASH *ALI_window_hash       = 0;
-    if (!ALI_window_hash) ALI_window_hash = GBS_create_hash(10, GB_MIND_CASE);
-
-    AW_window_simple *aws = reinterpret_cast<AW_window_simple *>(GBS_read_hash(ALI_window_hash, awar_name));
-
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(aw_root, "SELECT_ALI", "Select alignment");
-        aws->load_xfig("select_simple.fig");
-
-        aws->at("selection");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        spec->create_list(aws, true);
-
-        aws->at("button");
-        aws->callback(AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->window_fit();
-
-        GBS_write_hash(ALI_window_hash, awar_name, reinterpret_cast<long>(aws));
-    }
-
-    aws->activate();
-}
-static void popup_filtered_ali_selection_list(AW_window *aww, const ALI_sellst_spec *spec) {
-    popup_filtered_ali_selection_list(aww->get_root(), spec);
-}
-#endif
 
 AW_DB_selection *awt_create_ALI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
     // Create selection lists on alignments
@@ -156,15 +181,7 @@ AW_DB_selection *awt_create_ALI_selection_list(GBDATA *gb_main, AW_window *aws, 
 }
 
 void awt_create_ALI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
-    ALI_sellst_spec *spec = new ALI_sellst_spec(varname, gb_main, ali_type_match);
-#if defined(ARB_GTK)
-    // use option menu in gtk
-    spec->create_optionMenu(aws, true);
-    aws->update_option_menu();
-#else // !defined(ARB_GTK)
-    aws->callback(makeWindowCallback(popup_filtered_ali_selection_list, spec));
-    aws->create_button("SELECT_ALI", varname);
-#endif
+    (new ALI_sellst_spec(varname, gb_main, ali_type_match))->create_button(aws); // do not free yet (bound to callback in ARB_MOTIF)
 }
 
 void awt_reconfigure_ALI_selection_list(AW_DB_selection *dbsel, const char *ali_type_match) {
@@ -523,84 +540,33 @@ void SAI_selection::fill() {
     sel->update();
 }
 
-class SAI_sellst_spec : virtual Noncopyable {
-    char   *awar_name;
-    GBDATA *gb_main;
+class SAI_sellst_spec : public SelectionListSpec, virtual Noncopyable {
+    GBDATA                 *gb_main;
+    awt_sai_sellist_filter  filter_poc;
+    AW_CL                   filter_cd;
 
-    awt_sai_sellist_filter filter_poc;
-    AW_CL                  filter_cd;
-
-    AW_DB_selection *init(AW_selection_list *sellist) const {
-        GB_transaction   ta(gb_main);
-        GBDATA          *gb_sai_data = GBT_get_SAI_data(gb_main);
-        AW_DB_selection *saisel      = new SAI_selection(sellist, gb_sai_data, filter_poc, filter_cd);
-        saisel->refresh();
-        return saisel;
+    AW_DB_selection *create(AW_selection_list *sellist) const {
+        GB_transaction ta(gb_main);
+        return new SAI_selection(sellist, GBT_get_SAI_data(gb_main), filter_poc, filter_cd);
     }
 
 public:
-    SAI_sellst_spec(const char *awar_name_, GBDATA *gb_main_)
-        : awar_name(strdup(awar_name_)),
+    SAI_sellst_spec(const char *awar_name_, GBDATA *gb_main_, awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_)
+        : SelectionListSpec(awar_name_),
           gb_main(gb_main_),
-          filter_poc(NULL),
-          filter_cd(0)
-    {}
-    ~SAI_sellst_spec() { free(awar_name); }
-
-    void define_filter(awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_) {
-        // Warning: do not use different filters for same awar! (wont work as expected)
-        filter_poc = filter_poc_;
-        filter_cd  = filter_cd_;
+          filter_poc(filter_poc_),
+          filter_cd(filter_cd_)
+    {
+        // Warning: do not use different filters for same awar! (wont work as expected) // @@@ add assertion against
     }
 
-    const char *get_awar_name() const { return awar_name; }
-
-    AW_DB_selection *create_list(AW_window *aws, bool fallback2default) const {
-        return init(aws->create_selection_list(awar_name, 40, 4, fallback2default));
-    }
-
-#if defined(ARB_GTK)
-    AW_DB_selection *create_optionMenu(AW_window *aws, bool fallback2default) const {
-        return init(aws->create_option_menu(awar_name, fallback2default));
-    }
-#endif
+    const char *get_macro_id() const { return "SELECT_SAI"; }
+    const char *get_title() const { return "Select SAI"; }
 };
 
-static void popup_filtered_sai_selection_list(AW_root *aw_root, const SAI_sellst_spec *spec) {
-    const char *awar_name = spec->get_awar_name();
-
-    static GB_HASH *SAI_window_hash       = 0;
-    if (!SAI_window_hash) SAI_window_hash = GBS_create_hash(10, GB_MIND_CASE);
-
-    AW_window_simple *aws = reinterpret_cast<AW_window_simple *>(GBS_read_hash(SAI_window_hash, awar_name));
-
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(aw_root, "SELECT_SAI", "SELECT SAI");
-        aws->load_xfig("select_simple.fig");
-
-        aws->at("selection");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        spec->create_list(aws, true);
-
-        aws->at("button");
-        aws->callback(AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->window_fit();
-
-        GBS_write_hash(SAI_window_hash, awar_name, reinterpret_cast<long>(aws));
-    }
-
-    aws->activate();
-}
-static void popup_filtered_sai_selection_list(AW_window *aww, const SAI_sellst_spec *spec) {
-    popup_filtered_sai_selection_list(aww->get_root(), spec);
-}
-
-void awt_popup_SAI_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main) {
-    SAI_sellst_spec spec(awar_name, gb_main);
-    popup_filtered_sai_selection_list(aww, &spec);
+void awt_popup_SAI_selection_list(AW_window *, const char *awar_name, GBDATA *gb_main) {
+    SAI_sellst_spec spec(awar_name, gb_main, NULL, 0);
+    spec.popup();
 }
 
 AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
@@ -609,22 +575,12 @@ AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, 
      * if filter_proc is set then show only those items on which
      * filter_proc returns a string (string must be a heap copy)
      */
-    SAI_sellst_spec spec(varname, gb_main);
-    spec.define_filter(filter_poc, filter_cd);
+    SAI_sellst_spec spec(varname, gb_main, filter_poc, filter_cd);
     return spec.create_list(aws, fallback2default);
 }
 
 void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
-    SAI_sellst_spec *spec = new SAI_sellst_spec(varname, gb_main);
-    spec->define_filter(filter_poc, filter_cd);
-#if defined(ARB_GTK)
-    // use option menu in gtk
-    spec->create_optionMenu(aws, true);
-    aws->update_option_menu();
-#else // !defined(ARB_GTK)
-    aws->callback(makeWindowCallback(popup_filtered_sai_selection_list, spec));
-    aws->create_button("SELECT_SAI", varname);
-#endif
+    (new SAI_sellst_spec(varname, gb_main, filter_poc, filter_cd))->create_button(aws); // do not free yet (bound to callback in ARB_MOTIF)
 }
 
 // --------------------------------------------------
@@ -1201,5 +1157,6 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
 
     return subsel;
 }
+
 
 
