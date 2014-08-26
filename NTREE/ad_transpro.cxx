@@ -1243,9 +1243,9 @@ static void realign_event(AW_window *aww) {
 
 AW_window *NT_create_realign_dna_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "REALIGN_DNA", "REALIGN DNA");
+    aws->init(root, "REALIGN_DNA", "Realign DNA");
 
-    aws->load_xfig("transdna.fig");
+    aws->load_xfig("realign_dna.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
@@ -1255,14 +1255,8 @@ AW_window *NT_create_realign_dna_window(AW_root *root) {
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    aws->at("source");
-#if defined(DEVEL_RALF)
-    awt_create_ALI_selection_button(GLOBAL.gb_main, aws, AWAR_TRANSPRO_SOURCE, "dna=:rna="); // @@@ nonsense here - just testing awt_create_ALI_selection_button somewhere 
-#else // !defined(DEVEL_RALF)
-    awt_create_ALI_selection_list(GLOBAL.gb_main, aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
-#endif
-    aws->at("dest");
-    awt_create_ALI_selection_list(GLOBAL.gb_main, aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
+    aws->at("source"); awt_create_ALI_selection_list(GLOBAL.gb_main, aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
+    aws->at("dest");   awt_create_ALI_selection_list(GLOBAL.gb_main, aws, AWAR_TRANSPRO_DEST,   "pro=:ami=");
 
     aws->at("autolen"); aws->create_toggle(AWAR_REALIGN_INCALI);
     aws->at("unmark");  aws->create_toggle(AWAR_REALIGN_UNMARK);
