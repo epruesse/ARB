@@ -107,6 +107,7 @@ my %used_extensions = map { $_ => 1; } ( # matches part behind last '.' in filen
                                         'template', 'default',
                                         'txt', 'doc', 'ps', 'pdf',
                                         'tgz', 'gz',
+                                        'svg', 'png',
                                        );
 
 my %skipped_extensions = map { $_ => 1; } ( # matches part behind last '.' in filename
