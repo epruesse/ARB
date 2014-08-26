@@ -150,6 +150,8 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx

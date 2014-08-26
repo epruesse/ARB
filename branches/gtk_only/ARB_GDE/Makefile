@@ -94,6 +94,8 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
