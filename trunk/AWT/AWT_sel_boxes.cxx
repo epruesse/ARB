@@ -39,10 +39,10 @@ using namespace std;
 // --------------------------------------
 //      selection boxes on alignments
 
-class AWT_alignment_selection : public AW_DB_selection { // derived from a Noncopyable
+class ALI_selection : public AW_DB_selection { // derived from a Noncopyable
     char *ali_type_match;                           // filter for wanted alignments (GBS_string_eval command)
 public:
-    AWT_alignment_selection(AW_selection_list *sellist_, GBDATA *gb_presets, const char *ali_type_match_)
+    ALI_selection(AW_selection_list *sellist_, GBDATA *gb_presets, const char *ali_type_match_)
         : AW_DB_selection(sellist_, gb_presets),
           ali_type_match(nulldup(ali_type_match_))
     {}
@@ -81,7 +81,7 @@ class ALI_sellst_spec : virtual Noncopyable {
     AW_DB_selection *init(AW_selection_list *sellist) const {
         GB_transaction   ta(gb_main);
         GBDATA          *gb_presets = GBT_get_presets(gb_main);
-        AW_DB_selection *alisel     = new AWT_alignment_selection(sellist, gb_presets, ali_type_match);
+        AW_DB_selection *alisel     = new ALI_selection(sellist, gb_presets, ali_type_match);
 
         alisel->refresh();
         return alisel;
@@ -168,7 +168,7 @@ void awt_create_ALI_selection_button(GBDATA *gb_main, AW_window *aws, const char
 }
 
 void awt_reconfigure_ALI_selection_list(AW_DB_selection *dbsel, const char *ali_type_match) {
-    AWT_alignment_selection *alisel = dynamic_cast<AWT_alignment_selection*>(dbsel);
+    ALI_selection *alisel = dynamic_cast<ALI_selection*>(dbsel);
     alisel->reconfigure(ali_type_match);
 }
 
@@ -230,21 +230,21 @@ AW_DB_selection *awt_create_TREE_selection_list(GBDATA *gb_main, AW_window *aws,
 #define PT_SERVERNAME_SELLIST_WIDTH 30              // this for lists
 #define PT_SERVER_TRACKLOG_TIMER    10000           // every 10 seconds
 
-class AWT_ptserver_selection : public AW_selection {
-    typedef list<AWT_ptserver_selection*> PTserverSelections;
+class PT_selection : public AW_selection {
+    typedef list<PT_selection*> PT_selections;
     
-    static PTserverSelections ptserver_selections;
+    static PT_selections ptserver_selections;
 public:
-    AWT_ptserver_selection(AW_selection_list *sellist_);
+    PT_selection(AW_selection_list *sellist_);
 
     void fill() OVERRIDE;
 
     static void refresh_all();
 };
 
-AWT_ptserver_selection::PTserverSelections AWT_ptserver_selection::ptserver_selections;
+PT_selection::PT_selections PT_selection::ptserver_selections;
 
-void AWT_ptserver_selection::fill() {
+void PT_selection::fill() {
     const char * const *pt_servers = GBS_get_arb_tcp_entries("ARB_PT_SERVER*");
 
     int count = 0;
@@ -263,14 +263,14 @@ void AWT_ptserver_selection::fill() {
     insert_default("-undefined-", (long)-1);
 }
 
-void AWT_ptserver_selection::refresh_all() {
-    PTserverSelections::iterator end = ptserver_selections.end();
-    for (PTserverSelections::iterator pts_sel = ptserver_selections.begin(); pts_sel != end; ++pts_sel) {
+void PT_selection::refresh_all() {
+    PT_selections::iterator end = ptserver_selections.end();
+    for (PT_selections::iterator pts_sel = ptserver_selections.begin(); pts_sel != end; ++pts_sel) {
         (*pts_sel)->refresh();
     }
 }
 static void refresh_all_PTSERVER_selection_lists() {
-    AWT_ptserver_selection::refresh_all();
+    PT_selection::refresh_all();
 }
 static unsigned track_log_cb(AW_root *) {
     static long  last_ptserverlog_mod = 0;
@@ -281,14 +281,14 @@ static unsigned track_log_cb(AW_root *) {
 #if defined(DEBUG)
         fprintf(stderr, "%s modified!\n", ptserverlog);
 #endif // DEBUG
-        AWT_ptserver_selection::refresh_all();
+        PT_selection::refresh_all();
         last_ptserverlog_mod = ptserverlog_mod;
     }
 
     return PT_SERVER_TRACKLOG_TIMER;
 }
 
-AWT_ptserver_selection::AWT_ptserver_selection(AW_selection_list *sellist_)
+PT_selection::PT_selection(AW_selection_list *sellist_)
     : AW_selection(sellist_)
 {
     if (ptserver_selections.empty()) {
@@ -362,7 +362,7 @@ static AW_window *create_PTSERVER_selection_window(AW_root *aw_root, const char 
     aw_popup->window_fit();
     aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
-    (new AWT_ptserver_selection(sellist))->refresh();
+    (new PT_selection(sellist))->refresh();
 
     return aw_popup;
 }
@@ -370,7 +370,7 @@ static AW_window *create_PTSERVER_selection_window(AW_root *aw_root, const char 
 
 void awt_create_PTSERVER_selection_button(AW_window *aws, const char *varname) {
 #ifdef ARB_GTK
-    (new AWT_ptserver_selection(aws->create_option_menu(varname, true)))->refresh();
+    (new PT_selection(aws->create_option_menu(varname, true)))->refresh();
 
     int old_button_length = aws->get_button_length();
     aws->button_length(PT_SERVERNAME_LENGTH+1);
@@ -408,7 +408,7 @@ void awt_create_PTSERVER_selection_button(AW_window *aws, const char *varname) {
 #endif
 }
 void awt_create_PTSERVER_selection_list(AW_window *aws, const char *varname) {
-    (new AWT_ptserver_selection(aws->create_selection_list(varname, true)))->refresh();
+    (new PT_selection(aws->create_selection_list(varname, true)))->refresh();
 }
 
 // -------------------------------------------------
@@ -468,13 +468,13 @@ char *awt_create_CONFIG_string(GBDATA *gb_main) {
 //      SAI selection
 
 
-class AWT_sai_selection : public AW_DB_selection { // derived from a Noncopyable
+class SAI_selection : public AW_DB_selection { // derived from a Noncopyable
     awt_sai_sellist_filter filter_poc;
     AW_CL                  filter_cd;
 
 public:
 
-    AWT_sai_selection(AW_selection_list *sellist_, GBDATA *gb_sai_data, awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_)
+    SAI_selection(AW_selection_list *sellist_, GBDATA *gb_sai_data, awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_)
         : AW_DB_selection(sellist_, gb_sai_data),
           filter_poc(filter_poc_),
           filter_cd(filter_cd_)
@@ -483,7 +483,7 @@ public:
     void fill() OVERRIDE;
 };
 
-void AWT_sai_selection::fill() {
+void SAI_selection::fill() {
     AW_selection_list *sel = get_sellist();
     sel->clear();
 
@@ -533,7 +533,7 @@ class SAI_sellst_spec : virtual Noncopyable {
     AW_DB_selection *init(AW_selection_list *sellist) const {
         GB_transaction   ta(gb_main);
         GBDATA          *gb_sai_data = GBT_get_SAI_data(gb_main);
-        AW_DB_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
+        AW_DB_selection *saisel      = new SAI_selection(sellist, gb_sai_data, filter_poc, filter_cd);
         saisel->refresh();
         return saisel;
     }
