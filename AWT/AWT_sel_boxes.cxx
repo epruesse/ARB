@@ -523,16 +523,6 @@ void AWT_sai_selection::fill() {
     sel->update();
 }
 
-void awt_SAI_selection_list_update_cb(UNFIXED, AW_DB_selection *saisel) { // @@@ elim?
-    /* update the selection box defined by awt_create_SAI_selection_list
-     *
-     * useful only when filterproc is defined
-     * (changes to SAIs will automatically callback this function)
-     */
-
-    saisel->refresh();
-}
-
 class SAI_sellst_spec : virtual Noncopyable {
     char   *awar_name;
     GBDATA *gb_main;
@@ -544,10 +534,7 @@ class SAI_sellst_spec : virtual Noncopyable {
         GB_transaction   ta(gb_main);
         GBDATA          *gb_sai_data = GBT_get_SAI_data(gb_main);
         AW_DB_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
-
-        awt_SAI_selection_list_update_cb(0, saisel); // @@@ use saisel->refresh();
-        GB_add_callback(gb_sai_data, GB_CB_CHANGED, makeDatabaseCallback(awt_SAI_selection_list_update_cb, saisel)); // @@@ CB is superflous (also installed by AW_DB_selection)
-
+        saisel->refresh();
         return saisel;
     }
 
