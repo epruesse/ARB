@@ -456,28 +456,53 @@ void awt_SAI_selection_list_update_cb(UNFIXED, AWT_sai_selection *saisel) {
     saisel->refresh();
 }
 
-AWT_sai_selection *SAI_selection_list_spec::init(AW_selection_list *sellist) const {
-    GB_transaction     ta(gb_main);
-    GBDATA            *gb_sai_data = GBT_get_SAI_data(gb_main);
-    AWT_sai_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
+class SAI_sellst_spec : virtual Noncopyable {
+    char   *awar_name;
+    GBDATA *gb_main;
 
-    awt_SAI_selection_list_update_cb(0, saisel);
-    GB_add_callback(gb_sai_data, GB_CB_CHANGED, makeDatabaseCallback(awt_SAI_selection_list_update_cb, saisel));
+    awt_sai_sellist_filter filter_poc;
+    AW_CL                  filter_cd;
 
-    return saisel;
-}
+    AWT_sai_selection *init(AW_selection_list *sellist) const {
+        GB_transaction     ta(gb_main);
+        GBDATA            *gb_sai_data = GBT_get_SAI_data(gb_main);
+        AWT_sai_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
 
-AWT_sai_selection *SAI_selection_list_spec::create_list(AW_window *aws, bool fallback2default) const {
-    return init(aws->create_selection_list(awar_name, 40, 4, fallback2default));
-}
+        awt_SAI_selection_list_update_cb(0, saisel);
+        GB_add_callback(gb_sai_data, GB_CB_CHANGED, makeDatabaseCallback(awt_SAI_selection_list_update_cb, saisel));
+
+        return saisel;
+    }
+
+public:
+    SAI_sellst_spec(const char *awar_name_, GBDATA *gb_main_)
+        : awar_name(strdup(awar_name_)),
+          gb_main(gb_main_),
+          filter_poc(NULL),
+          filter_cd(0)
+    {}
+    ~SAI_sellst_spec() { free(awar_name); }
+
+    void define_filter(awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_) {
+        // Warning: do not use different filters for same awar! (wont work as expected)
+        filter_poc = filter_poc_;
+        filter_cd  = filter_cd_;
+    }
+
+    const char *get_awar_name() const { return awar_name; }
+
+    AWT_sai_selection *create_list(AW_window *aws, bool fallback2default) const {
+        return init(aws->create_selection_list(awar_name, 40, 4, fallback2default));
+    }
 
 #if defined(ARB_GTK)
-AWT_sai_selection *SAI_selection_list_spec::create_optionMenu(AW_window *aws, bool fallback2default) const {
-    return init(aws->create_option_menu(awar_name, fallback2default));
-}
+    AWT_sai_selection *create_optionMenu(AW_window *aws, bool fallback2default) const {
+        return init(aws->create_option_menu(awar_name, fallback2default));
+    }
 #endif
+};
 
-static void popup_filtered_sai_selection_list(AW_root *aw_root, const SAI_selection_list_spec *spec) {
+static void popup_filtered_sai_selection_list(AW_root *aw_root, const SAI_sellst_spec *spec) {
     const char *awar_name = spec->get_awar_name();
 
     static GB_HASH *SAI_window_hash       = 0;
@@ -505,12 +530,12 @@ static void popup_filtered_sai_selection_list(AW_root *aw_root, const SAI_select
 
     aws->activate();
 }
-static void popup_filtered_sai_selection_list(AW_window *aww, const SAI_selection_list_spec *spec) {
+static void popup_filtered_sai_selection_list(AW_window *aww, const SAI_sellst_spec *spec) {
     popup_filtered_sai_selection_list(aww->get_root(), spec);
 }
 
 void awt_popup_SAI_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main) {
-    SAI_selection_list_spec spec(awar_name, gb_main);
+    SAI_sellst_spec spec(awar_name, gb_main);
     popup_filtered_sai_selection_list(aww, &spec);
 }
 
@@ -520,13 +545,13 @@ AWT_sai_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws
      * if filter_proc is set then show only those items on which
      * filter_proc returns a string (string must be a heap copy)
      */
-    SAI_selection_list_spec spec(varname, gb_main);
+    SAI_sellst_spec spec(varname, gb_main);
     spec.define_filter(filter_poc, filter_cd);
     return spec.create_list(aws, fallback2default);
 }
 
 void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
-    SAI_selection_list_spec *spec = new SAI_selection_list_spec(varname, gb_main);
+    SAI_sellst_spec *spec = new SAI_sellst_spec(varname, gb_main);
     spec->define_filter(filter_poc, filter_cd);
 #if defined(ARB_GTK)
     // use option menu in gtk
