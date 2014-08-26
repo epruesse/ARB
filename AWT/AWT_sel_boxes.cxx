@@ -66,7 +66,7 @@ public:
 
 #if defined(ARB_GTK)
     AW_DB_selection *create_optionMenu(AW_window *aws, bool fallback2default) const {
-        return init(aws->create_option_menu(awar_name, fallback2default));
+        return init(aws->create_option_menu(get_awar_name(), fallback2default));
     }
 #endif
 
@@ -99,9 +99,11 @@ public:
 };
 WinMap SelectionListSpec::window_map; 
 
+#if defined(ARB_MOTIF)
 static void popup_SelectionListSpec_cb(UNFIXED, const SelectionListSpec *spec) {
     spec->popup();
 }
+#endif
 void SelectionListSpec::create_button(AW_window *aws) const {
     // WARNING: this is bound to callback (do not free)
 #if defined(ARB_GTK) // use option menu in gtk
