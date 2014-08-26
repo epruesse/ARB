@@ -59,6 +59,9 @@ class AWT_sai_selection;
 // -----------------------------------------
 //      various database selection boxes
 
+ // @@@ awt_create_ALI_selection_list and awt_create_SAI_selection_list use different kinds of class-level (either use AW_DB_selection or specific classes for both)
+
+void awt_create_ALI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match);
 AW_DB_selection *awt_create_ALI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match);
 void awt_reconfigure_ALI_selection_list(AW_DB_selection *alisel, const char *ali_type_match);
 
