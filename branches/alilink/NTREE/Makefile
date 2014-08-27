@@ -137,9 +137,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_error.h
-ad_transpro.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_msg.h
-ad_transpro.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -152,7 +150,6 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-ad_transpro.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -166,8 +163,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/gccver.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/test_global.h
-ad_transpro.o: $(ARBHOME)/INCLUDE/test_unit.h
-ad_transpro.o: $(ARBHOME)/INCLUDE/Translate.hxx
+ad_transpro.o: $(ARBHOME)/INCLUDE/TranslateRealign.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ad_trees.o: ad_trees.h

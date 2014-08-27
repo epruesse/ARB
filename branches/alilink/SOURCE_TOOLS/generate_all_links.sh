@@ -277,6 +277,7 @@ symlink_file ../RNA3D/rna3d_extern.hxx INCLUDE/rna3d_extern.hxx &&
 symlink_file ../SEQ_QUALITY/seq_quality.h INCLUDE/seq_quality.h &&
 symlink_file ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h &&
 symlink_file ../SL/ALILINK/AliAdmin.h INCLUDE/AliAdmin.h &&
+symlink_file ../SL/ALILINK/TranslateRealign.h INCLUDE/TranslateRealign.h &&
 symlink_file ../SL/ALIVIEW/AliView.hxx INCLUDE/AliView.hxx &&
 symlink_file ../SL/AP_TREE/AP_Tree.hxx INCLUDE/AP_Tree.hxx &&
 symlink_file ../SL/ARB_TREE/ARB_Tree.hxx INCLUDE/ARB_Tree.hxx &&
