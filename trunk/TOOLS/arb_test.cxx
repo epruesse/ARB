@@ -308,6 +308,7 @@ void TEST_arb_export_tree() {
                        ";\n",                                                                    // shall export an empty newick tree
                        "arb_export_tree from '" TREE_DB "': ARB ERROR: Failed to read tree 'tree_nosuch' (Reason: tree not found)\n"); // with error!
 }
+TEST_PUBLISH(TEST_arb_export_tree);
 
 static char *notification_result = NULL;
 static void test_notification_cb(const char *message, void *cd) {

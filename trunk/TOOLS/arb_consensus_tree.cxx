@@ -338,7 +338,7 @@ void TEST_consensus_tree_from_mostly_overlapping_trees_2() {
     TEST_EXPECTATION(build_expected_consensus_tree(8, "overlap2", 1, 3, 137.772, "overlap2_mostly", 8, 0.529109));
     // ../UNIT_TESTER/run/consense/8/overlap2_mostly.tree
 }
-
+TEST_PUBLISH(TEST_consensus_tree_from_mostly_overlapping_trees_2);
 
 
 #define REPEATED_TESTS

@@ -1157,6 +1157,7 @@ void TEST_sort_tree_by_other_tree() {
 
     GB_close(gb_main);
 }
+TEST_PUBLISH(TEST_sort_tree_by_other_tree);
 
 void TEST_move_node_info() {
     GB_shell  shell;
