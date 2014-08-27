@@ -50,7 +50,7 @@ static void transpro_event(AW_window *aww) {
         bool     save2fields   = aw_root->awar(AWAR_TRANSPRO_WRITE)->read_int();
         bool     translate_all = aw_root->awar(AWAR_TRANSPRO_XSTART)->read_int();
 
-        error             = arb_r2a(GLOBAL.gb_main, strcmp(mode, "fields") == 0, save2fields, startpos, translate_all, ali_source, ali_dest);
+        error             = ALI_translate_marked(GLOBAL.gb_main, strcmp(mode, "fields") == 0, save2fields, startpos, translate_all, ali_source, ali_dest);
         if (!error) error = GBT_check_data(GLOBAL.gb_main, 0);
 
         free(mode);
@@ -137,7 +137,7 @@ static void realign_event(AW_window *aww) {
     bool      cutoff_dna       = aw_root->awar(AWAR_REALIGN_CUTOFF)->read_int();
     size_t    neededLength     = 0;
     GBDATA   *gb_main          = GLOBAL.gb_main;
-    GB_ERROR  error            = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded, cutoff_dna);
+    GB_ERROR  error            = ALI_realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded, cutoff_dna);
 
     if (!error && neededLength) {
         bool auto_inc_alisize = aw_root->awar(AWAR_REALIGN_INCALI)->read_int();
@@ -151,7 +151,7 @@ static void realign_event(AW_window *aww) {
                                              "running re-aligner again!",
                                              ali_dest, neededLength));
 
-                error = realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded, cutoff_dna);
+                error = ALI_realign_marked(gb_main, ali_source, ali_dest, neededLength, unmark_succeeded, cutoff_dna);
                 if (neededLength) {
                     error = GBS_global_string("internal error: neededLength=%zu (after autoinc)", neededLength);
                 }
