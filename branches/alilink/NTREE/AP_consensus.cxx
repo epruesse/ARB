@@ -55,6 +55,10 @@
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 
+// AISC_MKPT_PROMOTE:#ifndef AW_BASE_HXX
+// AISC_MKPT_PROMOTE:#include <aw_base.hxx>
+// AISC_MKPT_PROMOTE:#endif
+
 #define AWAR_MAX_FREQ   "tmp/CON_MAX_FREQ/"
 
 #define AWAR_MAX_FREQ_NO_GAPS AWAR_MAX_FREQ "no_gaps"
