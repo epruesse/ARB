@@ -15,8 +15,8 @@
 #include <arbdb_base.h>
 #endif
 
-GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, int selected_startpos, bool translate_all, const char *ali_source, const char *ali_dest); // @@@ rename
-GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const char *ali_dest, size_t& neededLength, bool unmark_succeeded, bool cutoff_dna); // @@@ rename
+GB_ERROR ALI_translate_marked(GBDATA *gb_main, bool use_entries, bool save_entries, int selected_startpos, bool translate_all, const char *ali_source, const char *ali_dest);
+GB_ERROR ALI_realign_marked(GBDATA *gb_main, const char *ali_source, const char *ali_dest, size_t& neededLength, bool unmark_succeeded, bool cutoff_dna);
 
 #else
 #error TranslateRealign.h included twice

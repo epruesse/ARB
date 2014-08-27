@@ -75,7 +75,7 @@ typedef SizedBufferPtr<char>       SizedWriteBuffer;
 // ----------------------------------
 //      Translate protein -> dna
 
-GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, int selected_startpos, bool translate_all, const char *ali_source, const char *ali_dest) {
+GB_ERROR ALI_translate_marked(GBDATA *gb_main, bool use_entries, bool save_entries, int selected_startpos, bool translate_all, const char *ali_source, const char *ali_dest) {
     // if use_entries   == true -> use fields 'codon_start' and 'transl_table' for translation
     //                           (selected_startpos and AWAR_PROTEIN_TYPE are only used both fields are missing,
     //                            if only one is missing, now an error occurs)
@@ -966,7 +966,7 @@ struct Data : virtual Noncopyable {
     }
 };
 
-GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const char *ali_dest, size_t& neededLength, bool unmark_succeeded, bool cutoff_dna) {
+GB_ERROR ALI_realign_marked(GBDATA *gb_main, const char *ali_source, const char *ali_dest, size_t& neededLength, bool unmark_succeeded, bool cutoff_dna) {
     /*! realigns DNA alignment of marked sequences according to their protein alignment
      * @param ali_source protein source alignment
      * @param ali_dest modified DNA alignment
@@ -1176,7 +1176,7 @@ void TEST_realign() {
             TEST_ANNOTATE(NULL);
 
             msgs  = "";
-            error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
+            error = ALI_realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs,
                               "Automatic re-align failed for 'BctFra12'\nReason: not enough nucs for X's at sequence end at ali_pro:40 / ali_dna:109\n" // new correct report (got no nucs for 1 X)
@@ -1253,7 +1253,7 @@ void TEST_realign() {
             TEST_ANNOTATE(NULL);
 
             msgs  = "";
-            error = arb_r2a(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
+            error = ALI_translate_marked(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
             TEST_EXPECT_NO_ERROR(error);
             TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n10 taxa converted\n  1.100000 stops per sequence found\n");
 
@@ -1298,7 +1298,7 @@ void TEST_realign() {
         // wrong alignment type
         {
             msgs  = "";
-            error = realign_marked(gb_main, "ali_dna", "ali_pro", neededLength, false, false);
+            error = ALI_realign_marked(gb_main, "ali_dna", "ali_pro", neededLength, false, false);
             TEST_EXPECT_ERROR_CONTAINS(error, "Invalid source alignment type");
             TEST_EXPECT_EQUAL(msgs, "");
         }
@@ -1374,7 +1374,7 @@ void TEST_realign() {
                     TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, S.seq));
                 }
                 msgs  = "";
-                error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, S.cutoff);
+                error = ALI_realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, S.cutoff);
                 TEST_EXPECT_NO_ERROR(error);
                 TEST_EXPECT_EQUAL(msgs, "");
                 {
@@ -1383,7 +1383,7 @@ void TEST_realign() {
 
                     // test retranslation:
                     msgs  = "";
-                    error = arb_r2a(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
+                    error = ALI_translate_marked(gb_main, true, false, 0, true, "ali_dna", "ali_pro");
                     TEST_EXPECT_NO_ERROR(error);
                     if (s == 10) {
                         TEST_EXPECT_EQUAL(msgs, "codon_start and transl_table entries were found for all translated taxa\n1 taxa converted\n  2.000000 stops per sequence found\n");
@@ -1465,7 +1465,7 @@ void TEST_realign() {
                     TEST_EXPECT_NO_ERROR(GB_write_string(gb_TaxOcell_amino, seq[s].seq));
                 }
                 msgs  = "";
-                error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
+                error = ALI_realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
                 TEST_EXPECT_NO_ERROR(error);
                 TEST_EXPECT_CONTAINS(msgs, ERRPREFIX);
                 TEST_EXPECT_EQUAL(msgs.c_str()+ERRPREFIX_LEN, seq[s].failure);
@@ -1566,7 +1566,7 @@ void TEST_realign() {
                 }
 
                 msgs  = "";
-                error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
+                error = ALI_realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
                 TEST_EXPECT_NULL(error);
                 if (E.msgs) {
                     TEST_EXPECT_CONTAINS(msgs, ERRPREFIX);
@@ -1610,7 +1610,7 @@ void TEST_realign() {
         }
 
         msgs  = "";
-        error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
+        error = ALI_realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
         TEST_EXPECT_NO_ERROR(error);
         TEST_EXPECT_EQUAL(msgs, ERRPREFIX "Error while reading 'transl_table' (Illegal (or unsupported) value (666) in 'transl_table' (item='TaxOcell'))\n" FAILONE);
         TEST_EXPECT_EQUAL(GBT_count_marked_species(gb_main), 1);
@@ -1630,7 +1630,7 @@ void TEST_realign() {
             }
 
             msgs  = "";
-            error = realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
+            error = ALI_realign_marked(gb_main, "ali_pro", "ali_dna", neededLength, false, false);
             TEST_EXPECT_NO_ERROR(error);
             if (i) {
                 TEST_EXPECT_EQUAL(msgs, ERRPREFIX "No data in alignment 'ali_pro'\n" FAILONE);
