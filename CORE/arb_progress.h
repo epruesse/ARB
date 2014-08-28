@@ -44,6 +44,7 @@ public:
 
     virtual void inc()                              = 0;
     virtual void implicit_inc()                     = 0;
+    virtual void inc_to(int x)                      = 0;
     virtual void child_updates_gauge(double gauge)  = 0;
     virtual void done()                             = 0;
     virtual void force_update()                     = 0;
@@ -131,6 +132,7 @@ public:
     void force_update() { counter->force_update(); }
 
     void inc() { counter->inc(); }
+    void inc_to(int x) { counter->inc_to(x); }
     void done() { counter->done(); }
     void auto_subtitles(const char *prefix) { counter->auto_subtitles(prefix); }
 
@@ -244,6 +246,7 @@ public:
     const arb_progress& operator++() { inc(); return *this; } // ++progress
 
     void inc_by(int count) { arb_assert(count>0); while (count--) inc(); }
+    void inc_to(int x) { used->inc_to(x); }
 
     void sub_progress_skipped() { used->child_terminated(); }
 

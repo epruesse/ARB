@@ -17,6 +17,7 @@
 #include <arb_str.h>
 #include <arb_file.h>
 #include <arb_defs.h>
+#include <arb_progress.h>
 
 #include "gb_key.h"
 #include "gb_localdata.h"
@@ -655,11 +656,13 @@ static void DEBUG_DUMP_INDENTED(long deep, const char *s) {
 #endif // DEBUG_READ
 // ----------------------------------------
 
-
-static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, long version, long reversed, long deep) {
+static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, long version, 
+                               long reversed, long deep, arb_progress& progress) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbc_dest);
 
     DEBUG_DUMP_INDENTED(deep, GBS_global_string("Reading container with %li items", nitems));
+
+    progress.inc_to(ftell(in));
 
     gb_create_header_array(gbc_dest, (int)nitems);
     gb_header_list *header = GB_DATA_LIST_HEADER(gbc_dest->d);
@@ -671,6 +674,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
     bool is_quicksave = version != 1;
 
     for (long item = 0; item<nitems; item++) {
+        progress.inc();
         long type = getc(in);
         DEBUG_DUMP_INDENTED(deep, GBS_global_string("Item #%li/%li type=%02lx (filepos=%08lx)", item+1, nitems, type, ftell(in)-1));
         if (type == EOF) {
@@ -849,7 +853,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
             case GB_DB: {
                 long size = gb_get_number(in);
                 // gbc->d.size  is automatically incremented
-                if (gb_read_bin_rek_V2(in, gbc, size, version, reversed, deep+1)) {
+                if (gb_read_bin_rek_V2(in, gbc, size, version, reversed, deep+1, progress)) {
                     if (!GBCONTAINER_MAIN(gbc_dest)->allow_corrupt_file_recovery) {
                         return -1;
                     }
@@ -922,7 +926,7 @@ inline bool read_keyword(const char *expected_keyword, FILE *in, GBCONTAINER *gb
     return as_expected;
 }
 
-static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff) {
+static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff, arb_progress& progress) {
     int   c = 1;
     long  i;
     long  error;
@@ -1153,7 +1157,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff) {
             if (Main->clock<=0) Main->clock++;
             // fall-through
         case 1: // master arb file
-            error = gb_read_bin_rek_V2(in, gbc, nodecnt, version, reversed, 0);
+            error = gb_read_bin_rek_V2(in, gbc, nodecnt, version, reversed, 0, progress);
             break;
         default:
             GB_internal_errorf("Sorry: This ARB Version does not support database format V%li", version);
@@ -1445,7 +1449,10 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                 i = (input != stdin) ? gb_read_in_uint32(input, 0) : 0;
 
                 if (is_binary_db_id(i)) {
-                    i = gb_read_bin(input, gbc, false);     // read or map whole db
+                    {
+                        arb_progress progress("Loading database", GB_size_of_FILE(input));
+                        i = gb_read_bin(input, gbc, false, progress);     // read or map whole db
+                    }
                     gbc = Main->root_container;
                     fclose(input);
 
@@ -1486,7 +1493,10 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                             }
                             i = gb_read_in_uint32(input, 0);
                             if (is_binary_db_id(i)) {
-                                err = gb_read_bin(input, gbc, true);
+                                {
+                                    arb_progress progress("Loading quicksave", GB_size_of_FILE(input) / 1024);
+                                    err = gb_read_bin(input, gbc, true, progress);
+                                }
                                 fclose (input);
 
                                 if (err) {
