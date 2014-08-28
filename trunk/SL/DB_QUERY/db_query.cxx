@@ -2111,7 +2111,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
             free(window_id);
         }
 
-        aws->load_xfig("color_loadsave.fig");
+        aws->load_xfig("query/color_loadsave.fig");
 
         aws->at("close");
         aws->callback(AW_POPDOWN);
@@ -2200,7 +2200,7 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
         free(macro_name);
     }
 
-    aws->load_xfig("colorize.fig");
+    aws->load_xfig("query/colorize.fig");
 
     aws->auto_space(10, 10);
 
@@ -2282,7 +2282,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
         free(macro_name);
     }
 
-    aws->load_xfig("awt/parser.fig");
+    aws->load_xfig("query/modify_fields.fig");
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
@@ -2430,7 +2430,7 @@ static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
 AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SET_DATABASE_FIELD_OF_LISTED", "SET MANY FIELDS");
-    aws->load_xfig("ad_mset.fig");
+    aws->load_xfig("query/write_fields.fig");
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
@@ -2497,7 +2497,7 @@ static void set_protection_of_queried_cb(AW_window*, DbQuery *query) {
 static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SET_PROTECTION_OF_FIELD_OF_LISTED", "SET PROTECTIONS OF FIELDS");
-    aws->load_xfig("awt/set_protection.fig");
+    aws->load_xfig("query/set_protection.fig");
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
