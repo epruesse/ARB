@@ -2634,13 +2634,13 @@ void GB_disable_quicksave(GBDATA *gbd, const char *reason) {
 GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long listsize) {
     {
         long client_count = GB_read_clients(gb_main);
-        if (client_count<0)
+        if (client_count<0) {
             return "Sorry: this program is not the arbdb server, you cannot resort your data";
-
+        }
         if (client_count>0) {
-            bool only_macro_playback_client = client_count == 1 && GB_inside_remote_action(gb_main);
-
-            if (!only_macro_playback_client) {
+            // resort will do a big amount of client update callbacks => disallow clients here
+            bool called_from_macro = GB_inside_remote_action(gb_main);
+            if (!called_from_macro) { // accept macro clients
                 return GBS_global_string("There are %li clients (editors, tree programs) connected to this server.\n"
                                          "You need to close these clients before you can run this operation.",
                                          client_count);
