@@ -663,6 +663,10 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
     DEBUG_DUMP_INDENTED(deep, GBS_global_string("Reading container with %li items", nitems));
 
     progress.inc_to(ftell(in));
+    if (progress.aborted()) {
+        GB_export_error(progress.error_if_aborted());
+        return -1;
+    }
 
     gb_create_header_array(gbc_dest, (int)nitems);
     gb_header_list *header = GB_DATA_LIST_HEADER(gbc_dest->d);
