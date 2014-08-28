@@ -678,7 +678,6 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
     bool is_quicksave = version != 1;
 
     for (long item = 0; item<nitems; item++) {
-        progress.inc();
         long type = getc(in);
         DEBUG_DUMP_INDENTED(deep, GBS_global_string("Item #%li/%li type=%02lx (filepos=%08lx)", item+1, nitems, type, ftell(in)-1));
         if (type == EOF) {
