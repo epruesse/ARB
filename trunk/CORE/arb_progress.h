@@ -23,9 +23,9 @@
 #endif
 
 #if defined(DEBUG)
+#define TEST_COUNTERS
 #if defined(DEVEL_RALF)
 #define DUMP_PROGRESS
-#define TEST_COUNTERS
 #endif
 #endif
 
