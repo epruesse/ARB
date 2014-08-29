@@ -26,8 +26,9 @@ sub die {
   if ($already_dying==0) {
     $already_dying++; # do not recurse
     my ($msg) = @_;
-    $msg =~ s/\'/\"/g;
-    system("arb_message 'Macro execution error: $msg (see console for details)'");
+    if ($msg eq '') { $msg = 'unknown error'; }
+    $msg =~ s/\'/"/g;
+    system("arb_message 'Macro execution error:\n$msg'");
     use Carp;
     Carp::confess("Macro execution error: '@_'");
   }
