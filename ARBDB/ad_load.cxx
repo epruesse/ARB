@@ -1455,6 +1455,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                     {
                         arb_progress progress("Loading database", GB_size_of_FILE(input));
                         i = gb_read_bin(input, gbc, false, progress);     // read or map whole db
+                        progress.done();
                     }
                     gbc = Main->root_container;
                     fclose(input);
@@ -1499,6 +1500,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                                 {
                                     arb_progress progress("Loading quicksave", GB_size_of_FILE(input) / 1024);
                                     err = gb_read_bin(input, gbc, true, progress);
+                                    progress.done();
                                 }
                                 fclose (input);
 
