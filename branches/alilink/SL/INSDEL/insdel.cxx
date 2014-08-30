@@ -1792,7 +1792,7 @@ static ARB_ERROR add_some_SAIs(GBDATA *gb_main, const char *ali_name) {
     return error;
 }
 
-void TEST_insert_delete_DB() {
+static void test_insert_delete_DB() {
     GB_shell    shell;
     ARB_ERROR   error;
     const char *ali_name = "ali_mini";
@@ -2106,6 +2106,9 @@ void TEST_insert_delete_DB() {
     GB_close(gb_main);
     TEST_EXPECT_NO_ERROR(error.deliver());
 }
+void TEST_insert_delete_DB() {
+    test_insert_delete_DB(); // wrap test code in subroutine (otherwise nm 2.24 fails to provide source-location, even if TEST_PUBLISH is used)
+}
 
 void TEST_insert_delete_DB_using_SAI() {
     GB_shell    shell;
@@ -2227,6 +2230,7 @@ void TEST_insert_delete_DB_using_SAI() {
     GB_close(gb_main);
     TEST_EXPECT_NO_ERROR(error.deliver());
 }
+TEST_PUBLISH(TEST_insert_delete_DB_using_SAI);
 
 #endif // UNIT_TESTS
 

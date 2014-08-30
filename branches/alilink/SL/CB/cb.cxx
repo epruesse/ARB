@@ -439,6 +439,7 @@ void TEST_cbs() {
     }
 
 }
+TEST_PUBLISH(TEST_cbs);
 
 #endif // UNIT_TESTS
 
