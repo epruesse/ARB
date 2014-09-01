@@ -981,7 +981,8 @@ namespace arb_test {
 #define that(thing) CREATE_matchable(MATCHABLE_ARGS_TYPED(thing))
 
 #define TEST_EXPECTATION(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_that(); } while(0)
-#define TEST_EXPECTATION__BROKEN(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_broken(); } while(0)
+#define TEST_EXPECTATION__BROKEN_SIMPLE(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_broken(); } while(0)
+#define TEST_EXPECTATION__BROKEN(WANTED,GOT) do { using namespace arb_test; asserter(WANTED, #WANTED, __FILE__, __LINE__).expect_broken(); asserter(GOT, #GOT, __FILE__, __LINE__).expect_that(); } while(0)
 #define TEST_EXPECTATION__WANTED(EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_wanted_behavior(); } while(0)
 
 #define TEST_EXPECTATION__BROKENIF(COND,EXPCTN) do { using namespace arb_test; asserter(EXPCTN, #EXPCTN, __FILE__, __LINE__).expect_brokenif(COND,#COND); } while(0)
@@ -1202,13 +1203,12 @@ inline arb_test::match_expectation expect_callback(void (*cb)(), bool expect_SEG
 namespace arb_test {
     template <typename T>
     inline void expect_broken(const arb_test::matchable_value<T>& That, const T& want, const T& got) {
-        TEST_EXPECTATION__BROKEN(That.is_equal_to(want));
-        TEST_EXPECTATION(That.is_equal_to(got));
+        TEST_EXPECTATION__BROKEN(That.is_equal_to(want), That.is_equal_to(got));
     }
 };
 
 #define TEST_EXPECT_EQUAL(expr,want)             TEST_EXPECTATION(that(expr).is_equal_to(want))
-#define TEST_EXPECT_EQUAL__BROKEN(expr,want,got) do { TEST_EXPECTATION__BROKEN(that(expr).is_equal_to(want)); TEST_EXPECTATION(that(expr).is_equal_to(got)); } while(0)
+#define TEST_EXPECT_EQUAL__BROKEN(expr,want,got) do { TEST_EXPECTATION__BROKEN(that(expr).is_equal_to(want), that(expr).is_equal_to(got)); } while(0)
 #define TEST_EXPECT_EQUAL__IGNARG(expr,want,ign) TEST_EXPECTATION(that(expr).is_equal_to(want))
 
 #define TEST_EXPECT_SIMILAR(expr,want,epsilon)         TEST_EXPECTATION(that(expr).fulfills(epsilon_similar(epsilon), want))
@@ -1225,7 +1225,7 @@ namespace arb_test {
                                                                          that(val).is_less_or_equal(higher)))
 
 #define TEST_EXPECT_CONTAINS(str,part)         TEST_EXPECTATION(that(str).does_contain(part))
-#define TEST_EXPECT_CONTAINS__BROKEN(str,part) TEST_EXPECTATION__BROKEN(that(str).does_contain(part))
+#define TEST_EXPECT_CONTAINS__BROKEN(str,part) TEST_EXPECTATION__BROKEN_SIMPLE(that(str).does_contain(part))
 
 #define TEST_EXPECT_NULL(n)             TEST_EXPECT_EQUAL(n, (typeof(n))NULL)
 #define TEST_EXPECT_NULL__BROKEN(n,got) TEST_EXPECT_EQUAL__BROKEN(n, (typeof(n))NULL, got)
@@ -1233,9 +1233,9 @@ namespace arb_test {
 #define TEST_REJECT_NULL__BROKEN(n)     TEST_EXPECT_DIFFERENT__BROKEN(n, (typeof(n))NULL)
 
 #define TEST_EXPECT(cond)         TEST_EXPECTATION(that(cond).is_equal_to(true))
-#define TEST_EXPECT__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(true))
+#define TEST_EXPECT__BROKEN(cond) TEST_EXPECTATION__BROKEN_SIMPLE(that(cond).is_equal_to(true))
 #define TEST_REJECT(cond)         TEST_EXPECTATION(that(cond).is_equal_to(false))
-#define TEST_REJECT__BROKEN(cond) TEST_EXPECTATION__BROKEN(that(cond).is_equal_to(false))
+#define TEST_REJECT__BROKEN(cond) TEST_EXPECTATION__BROKEN_SIMPLE(that(cond).is_equal_to(false))
 
 // --------------------------------------------------------------------------------
 // the following macros only work when
@@ -1333,10 +1333,10 @@ namespace arb_test {
 };
 
 #define TEST_EXPECT_NEWICK(format,tree,expected_newick)         TEST_EXPECTATION(arb_test::expect_newick_equals(format, tree, expected_newick))
-#define TEST_EXPECT_NEWICK__BROKEN(format,tree,expected_newick) TEST_EXPECTATION__BROKEN(arb_test::expect_newick_equals(format, tree, expected_newick))
+#define TEST_EXPECT_NEWICK__BROKEN(format,tree,expected_newick) TEST_EXPECTATION__BROKEN_SIMPLE(arb_test::expect_newick_equals(format, tree, expected_newick))
 
 #define TEST_EXPECT_SAVED_NEWICK(format,gb_main,treename,expected_newick)         TEST_EXPECTATION(arb_test::saved_newick_equals(format, gb_main, treename, expected_newick))
-#define TEST_EXPECT_SAVED_NEWICK__BROKEN(format,gb_main,treename,expected_newick) TEST_EXPECTATION__BROKEN(arb_test::saved_newick_equals(format, gb_main, treename, expected_newick))
+#define TEST_EXPECT_SAVED_NEWICK__BROKEN(format,gb_main,treename,expected_newick) TEST_EXPECTATION__BROKEN_SIMPLE(arb_test::saved_newick_equals(format, gb_main, treename, expected_newick))
 
 #else
 
