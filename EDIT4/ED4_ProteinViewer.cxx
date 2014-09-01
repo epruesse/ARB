@@ -390,7 +390,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_orf_terminal *aaSeqTerm, const ch
         char *defaultAlignment = GBT_get_default_alignment(GLOBAL_gb_main);
         if (!defaultAlignment) error = GB_await_error();
         else {
-            GBDATA *gb_SeqData = GBT_read_sequence(gb_species, defaultAlignment);
+            GBDATA *gb_SeqData = GBT_find_sequence(gb_species, defaultAlignment);
             if (!gb_SeqData) {
                 error = GB_get_error();
                 if (!error) error = GBS_global_string("Species '%s' has no data in alignment '%s'", spName, defaultAlignment);
@@ -426,7 +426,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_orf_terminal *aaSeqTerm, const ch
                         if (gb_alignment_exists) {
                             int     skip_sp     = 0;
                             char   *question    = 0;
-                            GBDATA *gb_seq_data = GBT_read_sequence(gb_species, newAlignmentName);
+                            GBDATA *gb_seq_data = GBT_find_sequence(gb_species, newAlignmentName);
                             if (gb_seq_data) {
                                 e4_assert(ASKtoOverWriteData);
                                 question = GBS_global_string_copy("\"%s\" contain data in the alignment \"%s\"!", spName, newAlignmentName);
@@ -520,7 +520,7 @@ static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_orf_termi
         char *defaultAlignment = GBT_get_default_alignment(GLOBAL_gb_main);
         if (!defaultAlignment) error = GB_await_error();
         else {
-            GBDATA *gb_SeqData = GBT_read_sequence(gb_species, defaultAlignment);
+            GBDATA *gb_SeqData = GBT_find_sequence(gb_species, defaultAlignment);
             if (!gb_SeqData) {
                 error = GB_get_error();
                 if (!error) error = GBS_global_string("Species '%s' has no data in alignment '%s'", speciesName, defaultAlignment);

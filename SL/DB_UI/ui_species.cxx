@@ -1015,7 +1015,7 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
              gb_species = GBT_next_species(gb_species))
         {
             if (!IS_QUERIED(gb_species, query)) continue;
-            GBDATA *gb_data = GBT_read_sequence(gb_species, ali_name);
+            GBDATA *gb_data = GBT_find_sequence(gb_species, ali_name);
             if (gb_data) {
                 PosRange         range    = org_range; // modified by read_sequence_region
                 char            *sequence = read_sequence_region(gb_data, range);
@@ -1109,7 +1109,7 @@ static void awtc_nn_search(AW_window *aww) {
         }
         else {
             char   *ali_name = aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
-            GBDATA *gb_data  = GBT_read_sequence(gb_species, ali_name);
+            GBDATA *gb_data  = GBT_find_sequence(gb_species, ali_name);
 
             if (gb_data) {
                 sequence = read_sequence_region(gb_data, range);

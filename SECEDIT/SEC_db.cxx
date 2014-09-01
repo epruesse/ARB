@@ -53,7 +53,7 @@ static void db_callback(GBDATA *, const SEC_dbcb *cb) {
 
 SEC_seq_data::SEC_seq_data(GBDATA *gb_item, const char *aliname, const SEC_dbcb *cb) {
     gb_name   = GB_search(gb_item, "name", GB_FIND);
-    gb_data   = GBT_read_sequence(gb_item, aliname);
+    gb_data   = GBT_find_sequence(gb_item, aliname);
     change_cb = cb;
     len       = GB_read_string_count(gb_data);
     Data      = GB_read_string(gb_data);

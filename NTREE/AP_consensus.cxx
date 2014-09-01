@@ -309,7 +309,7 @@ static long CON_makestatistic(int **statistic, int *convtable, char *align, int 
     }
 
     while (gb_species) {
-        GBDATA *alidata = GBT_read_sequence(gb_species, align);
+        GBDATA *alidata = GBT_find_sequence(gb_species, align);
         if (alidata) {
             unsigned char        c;
             const unsigned char *data = (const unsigned char *)GB_read_char_pntr(alidata);
@@ -433,7 +433,7 @@ static GB_ERROR CON_export(char *savename, char *align, int **statistic, char *r
         else gb_species            = GBT_first_species(GLOBAL.gb_main);
 
         while (gb_species) {
-            if (GBT_read_sequence(gb_species, align)) {
+            if (GBT_find_sequence(gb_species, align)) {
                 GBDATA     *gb_speciesname = GB_search(gb_species, "name", GB_FIND);
                 const char *name           = GB_read_char_pntr(gb_speciesname);
 

@@ -306,7 +306,7 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
                 GBDATA *gb_data  = GBT_add_data(gb_extended, align, "data", GB_STRING);
 
                 if (!gb_data) error = GB_await_error();
-                else error          = GBT_write_sequence(gb_data, align, maxalignlen, new_seq);
+                else error          = GBT_write_sequence(gb_data, maxalignlen, new_seq);
             }
         }
         else {                  // save as sequence
@@ -362,7 +362,7 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
                     GBDATA *gb_data     = GBT_add_data(gb_species, align, "data", GB_STRING); // does only add if not already existing
                     if (!gb_data) error = GB_await_error();
                     else {
-                        GBDATA *gb_old_data   = GBT_read_sequence(gb_species, align);
+                        GBDATA *gb_old_data   = GBT_find_sequence(gb_species, align);
                         bool    writeSequence = true;
                         if (gb_old_data) {          // we already have data -> compare checksums
                             const char *old_seq      = GB_read_char_pntr(gb_old_data);
@@ -384,7 +384,7 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
                             }
                         }
                         if (writeSequence) {
-                            error = GBT_write_sequence(gb_data, align, maxalignlen, new_seq);
+                            error = GBT_write_sequence(gb_data, maxalignlen, new_seq);
                         }
                     }
                 }
