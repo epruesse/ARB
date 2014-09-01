@@ -372,7 +372,7 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
     else gb_species        = GBT_first_species_rel_species_data(gb_species_data);
 
     while (gb_species) {
-        if (GBT_read_sequence(gb_species, dataset->alignment_name)) numberspecies++;
+        if (GBT_find_sequence(gb_species, dataset->alignment_name)) numberspecies++;
         else missingdata++;
 
         if (marked) gb_species = GBT_next_marked_species(gb_species);
@@ -390,7 +390,7 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
     else gb_species        = GBT_first_species_rel_species_data(gb_species_data);
 
     while (gb_species) {
-        if (GBT_read_sequence(gb_species, dataset->alignment_name)) {
+        if (GBT_find_sequence(gb_species, dataset->alignment_name)) {
             the_species[numberspecies]=gb_species;
             numberspecies++;
         }
@@ -406,7 +406,7 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
         the_sequences[i] = (char *)malloc((size_t)maxalignlen+1);
         the_sequences[i][maxalignlen] = 0;
         memset(the_sequences[i], '.', (size_t)maxalignlen);
-        const char *data = GB_read_char_pntr(GBT_read_sequence(the_species[i], dataset->alignment_name));
+        const char *data = GB_read_char_pntr(GBT_find_sequence(the_species[i], dataset->alignment_name));
         int size = strlen(data);
         if (size > maxalignlen) size = (int)maxalignlen;
         strncpy_terminate(the_sequences[i], data, size+1);

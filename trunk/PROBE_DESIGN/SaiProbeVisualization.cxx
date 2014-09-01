@@ -215,7 +215,7 @@ static const char *translateSAItoColors(AW_root *awr, GBDATA *gb_main, int start
 
                 const char *species_name = g_pbdata->probeSpecies[speciesNo];
                 GBDATA *gb_species       = GBT_find_species(gb_main, species_name);
-                GBDATA *gb_seq_data      = GBT_read_sequence(gb_species, alignment_name);
+                GBDATA *gb_seq_data      = GBT_find_sequence(gb_species, alignment_name);
                 if (gb_seq_data) seqData = GB_read_char_pntr(gb_seq_data);
             }
 
@@ -280,7 +280,7 @@ static int calculateEndPosition(GBDATA *gb_main, int startPos, int speciesNo, in
     const char *species_name   = g_pbdata->probeSpecies[speciesNo];
     GBDATA     *gb_species     = GBT_find_species(gb_main, species_name);
     if (gb_species) {
-        GBDATA *gb_seq_data      = GBT_read_sequence(gb_species, alignment_name);
+        GBDATA *gb_seq_data      = GBT_find_sequence(gb_species, alignment_name);
         if (gb_seq_data) {
             const char *seqData = GB_read_char_pntr(gb_seq_data);
 

@@ -970,7 +970,7 @@ GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *align
     freenull(*protstruct);
 
     if (gb_protstruct) {
-        GBDATA *gb_data = GBT_read_sequence(gb_protstruct, alignment_name);
+        GBDATA *gb_data = GBT_find_sequence(gb_protstruct, alignment_name);
         if (gb_data) *protstruct = GB_read_string(gb_data);
     }
 

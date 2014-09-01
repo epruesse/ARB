@@ -149,7 +149,7 @@ static void dot_missing_bases(AW_window *aww) {
                     GBDATA *gb_sai     = GBT_expect_SAI(GLOBAL_gb_main, sai_name);
                     if (!gb_sai) error = GB_await_error();
                     else {
-                        GBDATA *gb_ali = GBT_read_sequence(gb_sai, ED4_ROOT->alignment_name);
+                        GBDATA *gb_ali = GBT_find_sequence(gb_sai, ED4_ROOT->alignment_name);
                         if (!gb_ali) {
                             error = GBS_global_string("SAI '%s' has no data in '%s'", sai_name, ED4_ROOT->alignment_name);
                         }

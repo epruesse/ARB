@@ -389,7 +389,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
     int splitted_gene_counter_old = splitted_gene_counter;
     int intergene_counter_old     = intergene_counter;
 
-    GBDATA *gb_ali_genom = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
+    GBDATA *gb_ali_genom = GBT_find_sequence(gb_organism, GENOM_ALIGNMENT);
     gp_assert(gb_ali_genom);                                                       // existence has to be checked by caller!
 
     const char *ali_genom       = GB_read_char_pntr(gb_ali_genom);
@@ -516,7 +516,7 @@ int ARB_main(int argc, char *argv[]) {
              gb_species && !error;
              gb_species = GBT_next_species(gb_species))
         {
-            GBDATA *gb_ali_genom = GBT_read_sequence(gb_species, GENOM_ALIGNMENT);
+            GBDATA *gb_ali_genom = GBT_find_sequence(gb_species, GENOM_ALIGNMENT);
             if (!gb_ali_genom) {
                 // skip species w/o alignment 'GENOM_ALIGNMENT' (genome DBs often contain pseudo species)
                 ++non_ali_genom_species;
