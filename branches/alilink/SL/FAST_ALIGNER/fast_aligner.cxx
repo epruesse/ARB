@@ -1193,7 +1193,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                     }
                     else {
                         alignBuffer.setDotsAtEOSequence();
-                        error = GBT_write_sequence(gbd, alignment, max_seq_length, alignBuffer.text()); // aligned all -> write all
+                        error = GBT_write_sequence(gbd, max_seq_length, alignBuffer.text()); // aligned all -> write all
                     }
                 }
             }

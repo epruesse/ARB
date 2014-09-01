@@ -38,7 +38,7 @@ GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long align
 GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *dest, int copy, int dele);
 NOT4PERL GBDATA *GBT_add_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type) __ATTR__DEPRECATED_TODO("better use GBT_create_sequence_data()");
 NOT4PERL GBDATA *GBT_create_sequence_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type, int security_write);
-GB_ERROR GBT_write_sequence(GBDATA *gb_data, const char *ali_name, long ali_len, const char *sequence);
+GB_ERROR GBT_write_sequence(GBDATA *gb_data, long ali_len, const char *sequence);
 GBDATA *GBT_gen_accession_number(GBDATA *gb_species, const char *ali_name);
 int GBT_is_partial(GBDATA *gb_species, int default_value, bool define_if_undef);
 GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname);
