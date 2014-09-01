@@ -174,7 +174,7 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
         error_reason = strdup("Please select a species.");
     }
     else {
-        GBDATA *gb_data = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
+        GBDATA *gb_data = GBT_find_sequence(gb_organism, GENOM_ALIGNMENT);
         if (!gb_data) {
             error_reason = GBS_global_string_copy("'%s' has no data in '%s'", organism_name.c_str(), GENOM_ALIGNMENT);
         }

@@ -367,7 +367,7 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos, long seqLe
         }
         else { // unknown -> autodetect
             GBDATA *gb_organism = GB_get_grandfather(gb_gene);
-            GBDATA *gb_genome   = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
+            GBDATA *gb_genome   = GBT_find_sequence(gb_organism, GENOM_ALIGNMENT);
 
             length = GB_read_count(gb_genome);
         }

@@ -973,7 +973,7 @@ void ED4_testSplitNMerge(AW_window *aw, AW_CL, AW_CL)
     {
         name = root->awar(AWAR_SPECIES_NAME)->read_string();
         species = GBT_find_species(gb_main, name);
-        gbd = species ? GBT_read_sequence(species, ali) : NULL;
+        gbd = species ? GBT_find_sequence(species, ali) : NULL;
         data = gbd ? GB_read_string(gbd) : NULL;
         length = gbd ? GB_read_string_count(gbd) : NULL;
 
@@ -1269,7 +1269,7 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access) {
         char   *helix_name   = GBT_get_default_helix(GLOBAL_gb_main);
         GBDATA *gb_helix_con = GBT_find_SAI(GLOBAL_gb_main, helix_name);
         if (gb_helix_con) {
-            GBDATA *gb_helix = GBT_read_sequence(gb_helix_con, alignment_name);
+            GBDATA *gb_helix = GBT_find_sequence(gb_helix_con, alignment_name);
             if (gb_helix) helix_string = GB_read_string(gb_helix);
         }
         free(helix_name);

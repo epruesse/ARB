@@ -151,7 +151,7 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
         }
         else {
             const char *alignment = GBT_get_default_alignment(gb_main);
-            GBDATA     *gb_seq    = GBT_read_sequence(gb_species, alignment);
+            GBDATA     *gb_seq    = GBT_find_sequence(gb_species, alignment);
 
             if (!gb_seq) {
                 error = GBS_global_string("Selected species has no sequence data in alignment '%s'", alignment);
@@ -307,7 +307,7 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
     }
     else {
         const char *alignment = GBT_get_default_alignment(gb_main);
-        gb_seq                = GBT_read_sequence(gb_species, alignment);
+        gb_seq                = GBT_find_sequence(gb_species, alignment);
         if (!gb_seq) {
             error = GB_export_errorf("Species '%s' has no data in alignment '%s'", selected_species, alignment);
         }

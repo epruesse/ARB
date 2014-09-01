@@ -269,7 +269,7 @@ GB_ERROR PT_init_input_data() {
 
         psg.ecoli = 0;
         if (gb_ref) {
-            GBDATA *gb_data = GBT_read_sequence(gb_ref, psg.alignment_name);
+            GBDATA *gb_data = GBT_find_sequence(gb_ref, psg.alignment_name);
             if (gb_data) {
                 psg.ecoli = GB_read_string(gb_data);
             }
