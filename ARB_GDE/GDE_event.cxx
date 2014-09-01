@@ -306,7 +306,7 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
                 GBDATA *gb_data  = GBT_add_data(gb_extended, align, "data", GB_STRING);
 
                 if (!gb_data) error = GB_await_error();
-                else error          = GBT_write_sequence(gb_data, align, maxalignlen, new_seq);
+                else error          = GBT_write_sequence(gb_data, maxalignlen, new_seq);
             }
         }
         else {                  // save as sequence
@@ -384,7 +384,7 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
                             }
                         }
                         if (writeSequence) {
-                            error = GBT_write_sequence(gb_data, align, maxalignlen, new_seq);
+                            error = GBT_write_sequence(gb_data, maxalignlen, new_seq);
                         }
                     }
                 }

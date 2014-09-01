@@ -846,7 +846,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
                 if (!gb_data) error = GB_await_error();
                 else {
                     size_t sequence_length = strlen(sequence);
-                    error                  = GBT_write_sequence(gb_data, ali, sequence_length, sequence);
+                    error                  = GBT_write_sequence(gb_data, sequence_length, sequence);
                 }
             }
 
