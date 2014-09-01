@@ -1766,7 +1766,7 @@ static GB_ERROR gbl_sequence(GBL_command_arguments *args) {
 
                 if (!use) error = GB_await_error();
                 else {
-                    GBDATA *gb_seq = GBT_read_sequence(args->get_ref(), use);
+                    GBDATA *gb_seq = GBT_find_sequence(args->get_ref(), use);
 
                     if (gb_seq) PASS_2_OUT(args, GB_read_string(gb_seq));
                     else        COPY_2_OUT(args, ""); // if current alignment does not exist -> return empty string

@@ -613,7 +613,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
 
         {
             GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, species_name);
-            GBDATA *gbd = GBT_read_sequence(gb_species, ED4_ROOT->alignment_name);
+            GBDATA *gbd = GBT_find_sequence(gb_species, ED4_ROOT->alignment_name);
 
             if (gbd) {
                 char *data = GB_read_string(gbd);
@@ -711,7 +711,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
                 }
 
                 {
-                    GBDATA *gbd = GBT_read_sequence(gb_species, default_alignment);
+                    GBDATA *gbd = GBT_find_sequence(gb_species, default_alignment);
 
                     if (gbd) {
                         char *data = GB_read_string(gbd);

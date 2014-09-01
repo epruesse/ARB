@@ -58,7 +58,7 @@ const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tba
 
     if (tree->is_leaf) {
         if (tree->gb_node) {
-            GBDATA *gb_data = GBT_read_sequence(tree->gb_node, ali_name);
+            GBDATA *gb_data = GBT_find_sequence(tree->gb_node, ali_name);
             if (gb_data) {
                 size_t seq_len = ali_len;
                 if (GB_read_string_count(gb_data) < seq_len) {

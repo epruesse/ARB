@@ -82,7 +82,7 @@ static void trackAlignmentChanges(AW_window *aww) {
          gb_species && !error;
          gb_species = GBT_next_species(gb_species))
     {
-        GBDATA *gb_seq = GBT_read_sequence(gb_species, ali);
+        GBDATA *gb_seq = GBT_find_sequence(gb_species, ali);
         if (gb_seq) {
             // has data in wanted alignment
             const char *seq          = GB_read_char_pntr(gb_seq);

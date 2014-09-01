@@ -265,7 +265,7 @@ public:
 
 const unsigned char *export_sequence_data::get_seq_data(GBDATA *gb_species, size_t& slen, GB_ERROR& err) const {
     const char *data   = 0;
-    GBDATA     *gb_seq = GBT_read_sequence(gb_species, ali);
+    GBDATA     *gb_seq = GBT_find_sequence(gb_species, ali);
 
     if (!gb_seq) {
         err  = GBS_global_string_copy("No data in alignment '%s' of species '%s'", ali, GBT_read_name(gb_species));

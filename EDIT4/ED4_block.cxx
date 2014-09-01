@@ -942,7 +942,7 @@ static void modsai_cb(AW_window *aww) {
                 : GBS_global_string("Failed to find SAI '%s'", sainame);
         }
         else {
-            GBDATA *gb_data = GBT_read_sequence(gb_sai, ED4_ROOT->alignment_name);
+            GBDATA *gb_data = GBT_find_sequence(gb_sai, ED4_ROOT->alignment_name);
 
             if (!gb_data) error = GB_await_error();
             else {

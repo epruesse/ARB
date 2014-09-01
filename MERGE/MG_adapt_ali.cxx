@@ -620,8 +620,8 @@ static MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *
         }
         else {
             // look for sequence/SAI "data"
-            GBDATA *gb_seq_left  = GBT_read_sequence(gb_species_left, alignment_name);
-            GBDATA *gb_seq_right = GBT_read_sequence(gb_species_right, alignment_name);
+            GBDATA *gb_seq_left  = GBT_find_sequence(gb_species_left, alignment_name);
+            GBDATA *gb_seq_right = GBT_find_sequence(gb_species_right, alignment_name);
 
             if (gb_seq_left && gb_seq_right) {
                 GB_TYPES type_left  = GB_read_type(gb_seq_left);
@@ -682,8 +682,8 @@ static GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GB
     GB_ERROR error = NULL;
 
     if (remap) {                                    // shall remap?
-        GBDATA *gb_seq_left  = GBT_read_sequence(source_species,      alignment_name);
-        GBDATA *gb_seq_right = GBT_read_sequence(destination_species, alignment_name);
+        GBDATA *gb_seq_left  = GBT_find_sequence(source_species,      alignment_name);
+        GBDATA *gb_seq_right = GBT_find_sequence(destination_species, alignment_name);
 
         if (gb_seq_left && gb_seq_right) {          // if one DB hasn't sequence -> sequence was not copied
             char *ls = GB_read_string(gb_seq_left);

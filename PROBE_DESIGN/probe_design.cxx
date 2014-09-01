@@ -290,7 +290,7 @@ static GB_ERROR pd_get_the_names(GBDATA *gb_main, bytestring &bs, bytestring &ch
         GBDATA *gb_name = GB_entry(gb_species, "name");
         if (!gb_name) { error = species_requires(gb_species, "name"); break; }
 
-        GBDATA *gb_data = GBT_read_sequence(gb_species, use);
+        GBDATA *gb_data = GBT_find_sequence(gb_species, use);
         if (!gb_data) { error = species_requires(gb_species, GBS_global_string("data in '%s'", use)); break; }
 
         GBS_intcat(checksums, GBS_checksum(GB_read_char_pntr(gb_data), 1, ".-"));
@@ -326,7 +326,7 @@ static GB_ERROR pd_get_the_gene_names(GBDATA *gb_main, bytestring &bs, bytestrin
     for (GBDATA *gb_species = GEN_first_organism(gb_main); gb_species && !error; gb_species = GEN_next_organism(gb_species)) {
         const char *species_name = 0;
         {
-            GBDATA *gb_data = GBT_read_sequence(gb_species, use);
+            GBDATA *gb_data = GBT_find_sequence(gb_species, use);
             if (!gb_data) { error = species_requires(gb_species, GBS_global_string("data in '%s'", use)); break; }
 
             GBDATA *gb_name = GB_search(gb_species, "name", GB_FIND);
@@ -565,7 +565,7 @@ static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
                     abort = true;
                 }
                 else {
-                    GBDATA *data = GBT_read_sequence(gb_species, ali_name);
+                    GBDATA *data = GBT_find_sequence(gb_species, ali_name);
                     if (!data) {
                         aw_message(GB_export_errorf("Species '%s' has no sequence belonging to alignment '%s'", uname, ali_name));
                         abort = true;

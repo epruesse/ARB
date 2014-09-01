@@ -643,7 +643,7 @@ GB_ERROR GBT_write_sequence(GBDATA *gb_data, long ali_len, const char *sequence)
 GBDATA *GBT_gen_accession_number(GBDATA *gb_species, const char *ali_name) {
     GBDATA *gb_acc = GB_entry(gb_species, "acc");
     if (!gb_acc) {
-        GBDATA *gb_data = GBT_read_sequence(gb_species, ali_name);
+        GBDATA *gb_data = GBT_find_sequence(gb_species, ali_name);
         if (gb_data) {                                     // found a valid alignment
             GB_CSTR     sequence = GB_read_char_pntr(gb_data);
             long        id       = GBS_checksum(sequence, 1, ".-");
@@ -693,10 +693,7 @@ int GBT_is_partial(GBDATA *gb_species, int default_value, bool define_if_undef) 
     return result;
 }
 
-#if defined(WARN_TODO)
-#warning rename GBT_read_sequence - it does not read the sequence itself
-#endif
-GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname) {
+GBDATA *GBT_find_sequence(GBDATA *gb_species, const char *aliname) {
     GBDATA *gb_ali = GB_entry(gb_species, aliname);
     return gb_ali ? GB_entry(gb_ali, "data") : 0;
 }
@@ -866,7 +863,7 @@ NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revCo
 
     if (!pos) error = GB_await_error();
     else {
-        GBDATA        *gb_seq        = GBT_read_sequence(gb_species, "ali_genom");
+        GBDATA        *gb_seq        = GBT_find_sequence(gb_species, "ali_genom");
         unsigned long  seq_length    = GB_read_count(gb_seq);
         int            p;
         int            parts         = pos->parts;
