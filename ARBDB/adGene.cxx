@@ -251,7 +251,7 @@ GEN_position *GEN_read_position(GBDATA *gb_gene) {
 
     if (gb_pos_joined) {
         parts = GB_read_int(gb_pos_joined);
-        if (parts != 1) { // splitted
+        if (parts != 1) { // split
             if (parts>1) joinable = true;
             else if (parts<-1) parts = -parts; // neg value means "not joinable" (comes from feature location 'order(...)')
             else error = GBS_global_string("Illegal value %i in 'pos_joined'", parts);

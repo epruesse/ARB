@@ -129,7 +129,7 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
                 }
                 else {
                     aw_message(GBS_global_string("[ARB_GDE]: Cannot access label of '%s'\n", symbol));
-                    return NULL; // @@@ ignores ressources (should only occur during development)
+                    return NULL; // @@@ ignores resources (should only occur during development)
                 }
             }
 
