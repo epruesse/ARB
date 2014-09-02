@@ -230,6 +230,43 @@ static void GDE_freeali(NA_Alignment *dataset) {
     }
 }
 
+static GB_ERROR WEIRD_write_sequence(GBDATA *gb_data, long ali_len, const char *sequence) {
+    /* writes sequence data.
+     * Specials things done:
+     * - cuts content beyond 'ali_len' if consisting of ".-nN"
+     * - increments alignment length (stored in DB)
+     */
+
+    // @@@ should 'ali_len' be ref and modified, when alignment length gets modified?
+
+    int      slen     = strlen(sequence);
+    int      old_char = 0;
+    GB_ERROR error    = 0;
+    if (slen > ali_len) {
+        int i;
+        for (i = slen -1; i>=ali_len; i--) {
+            if (!strchr("-.nN", sequence[i])) break;    // real base after end of alignment
+        }
+        i++;                            // points to first 0 after alignment
+        if (i > ali_len) {
+            GBDATA     *gb_main  = GB_get_root(gb_data);
+            const char *ali_name = GB_read_key_pntr(gb_data);
+            ali_len              = GBT_get_alignment_len(gb_main, ali_name); // @@@ weird (what if passed in ali_len is completely wrong?)
+            if (slen > ali_len) {               // check for modified alignment len // @@@ should it use 'i'?
+                GBT_set_alignment_len(gb_main, ali_name, i);
+                ali_len = i;
+            }
+        }
+        if (slen > ali_len) {
+            old_char = sequence[ali_len];
+            ((char*)sequence)[ali_len] = 0;
+        }
+    }
+    error = GB_write_string(gb_data, sequence);
+    if (slen> ali_len) ((char*)sequence)[ali_len] = old_char;
+    return error;
+}
+
 static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumelements) {
     if (dataset->numelements == oldnumelements) return;
     gde_assert(dataset->numelements > oldnumelements); // otherwise this is a noop
@@ -306,7 +343,7 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
                 GBDATA *gb_data  = GBT_add_data(gb_extended, align, "data", GB_STRING);
 
                 if (!gb_data) error = GB_await_error();
-                else error          = GBT_write_sequence(gb_data, maxalignlen, new_seq);
+                else error          = WEIRD_write_sequence(gb_data, maxalignlen, new_seq);
             }
         }
         else {                  // save as sequence
@@ -384,7 +421,7 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
                             }
                         }
                         if (writeSequence) {
-                            error = GBT_write_sequence(gb_data, maxalignlen, new_seq);
+                            error = WEIRD_write_sequence(gb_data, maxalignlen, new_seq);
                         }
                     }
                 }
