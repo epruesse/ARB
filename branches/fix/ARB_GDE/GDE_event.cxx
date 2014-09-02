@@ -267,31 +267,31 @@ static GB_ERROR WEIRD_write_sequence(GBDATA *gb_data, long ali_len, const char *
     return error;
 }
 
-static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumelements) {
+static void GDE_export(NA_Alignment *dataset, const char *ali_name, size_t oldnumelements) {
     if (dataset->numelements == oldnumelements) return;
     gde_assert(dataset->numelements > oldnumelements); // otherwise this is a noop
 
     GBDATA   *gb_main = db_access.gb_main;
     GB_ERROR  error   = GB_begin_transaction(gb_main);
 
-    long  maxalignlen  = GBT_get_alignment_len(gb_main, align);
-    char *defaultAlign = NULL;
+    long  maxalignlen  = GBT_get_alignment_len(gb_main, ali_name);
+    char *def_ali_name = NULL;
 
     if (maxalignlen <= 0 && !error) {
         GB_clear_error(); // clear "alignment not found" error
 
-        defaultAlign             = GBT_get_default_alignment(gb_main);
-        if (!defaultAlign) error = GB_await_error();
+        def_ali_name             = GBT_get_default_alignment(gb_main);
+        if (!def_ali_name) error = GB_await_error();
         else {
-            align       = defaultAlign;
-            maxalignlen = GBT_get_alignment_len(gb_main, align);
+            ali_name                 = def_ali_name;
+            maxalignlen              = GBT_get_alignment_len(gb_main, ali_name);
             if (maxalignlen<0) error = GB_await_error();
         }
     }
 
     long lotyp = 0;
     if (!error) {
-        GB_alignment_type at = GBT_get_alignment_type(gb_main, align);
+        GB_alignment_type at = GBT_get_alignment_type(gb_main, ali_name);
 
         switch (at) {
             case GB_AT_DNA:     lotyp = DNA;     break;
@@ -335,24 +335,24 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
         gde_assert((int)strlen(new_seq) == sequ->seqlen);
 
         if (!issame) {          // save as extended
-            GBDATA *gb_extended = GBT_find_or_create_SAI(db_access.gb_main, savename);
+            GBDATA *gb_extended = GBT_find_or_create_SAI(gb_main, savename);
 
             if (!gb_extended) error = GB_await_error();
             else {
                 sequ->gb_species = gb_extended;
-                GBDATA *gb_data  = GBT_add_data(gb_extended, align, "data", GB_STRING);
+                GBDATA *gb_data  = GBT_add_data(gb_extended, ali_name, "data", GB_STRING);
 
                 if (!gb_data) error = GB_await_error();
                 else error          = WEIRD_write_sequence(gb_data, maxalignlen, new_seq);
             }
         }
         else {                  // save as sequence
-            GBDATA *gb_species_data     = GBT_get_species_data(db_access.gb_main);
+            GBDATA *gb_species_data     = GBT_get_species_data(gb_main);
             if (!gb_species_data) error = GB_await_error();
             else {
                 GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, savename);
 
-                GB_push_my_security(db_access.gb_main);
+                GB_push_my_security(gb_main);
 
                 if (gb_species) {   // new element that already exists !!!!
                     const char *question =
@@ -396,10 +396,10 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
                     gde_assert(!error);
                     sequ->gb_species = gb_species;
 
-                    GBDATA *gb_data     = GBT_add_data(gb_species, align, "data", GB_STRING); // does only add if not already existing
+                    GBDATA *gb_data     = GBT_add_data(gb_species, ali_name, "data", GB_STRING); // does only add if not already existing
                     if (!gb_data) error = GB_await_error();
                     else {
-                        GBDATA *gb_old_data   = GBT_find_sequence(gb_species, align);
+                        GBDATA *gb_old_data   = GBT_find_sequence(gb_species, ali_name);
                         bool    writeSequence = true;
                         if (gb_old_data) {          // we already have data -> compare checksums
                             const char *old_seq      = GB_read_char_pntr(gb_old_data);
@@ -425,7 +425,7 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
                         }
                     }
                 }
-                GB_pop_my_security(db_access.gb_main);
+                GB_pop_my_security(gb_main);
             }
         }
         free(savename);
@@ -435,7 +435,7 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
     progress.done();
 
     GB_end_transaction_show_error(db_access.gb_main, error, aw_message);
-    free(defaultAlign);
+    free(def_ali_name);
 }
 
 static char *preCreateTempfile(const char *name) {
