@@ -230,44 +230,51 @@ static void GDE_freeali(NA_Alignment *dataset) {
     }
 }
 
-static GB_ERROR WEIRD_write_sequence(GBDATA *gb_data, long ali_len, const char *sequence) {
+static GB_ERROR write_sequence_autoinc_alisize(GBDATA *gb_data, long& ali_len, const char *sequence, int seq_len) {
     /* writes sequence data.
      * Specials things done:
-     * - cuts content beyond 'ali_len' if consisting of ".-nN"
-     * - increments alignment length (stored in DB)
+     * - cuts content beyond 'ali_len' if nothing relevant there
+     * - increments alignment length (stored in DB and parameter)
      */
 
-    // @@@ should 'ali_len' be ref and modified, when alignment length gets modified?
-
-    int      slen     = strlen(sequence);
-    int      old_char = 0;
     GB_ERROR error    = 0;
-    if (slen > ali_len) {
-        int i;
-        for (i = slen -1; i>=ali_len; i--) {
-            if (!strchr("-.nN", sequence[i])) break;    // real base after end of alignment
-        }
-        i++;                            // points to first 0 after alignment
-        if (i > ali_len) {
-            GBDATA     *gb_main  = GB_get_root(gb_data);
-            const char *ali_name = GB_read_key_pntr(gb_data);
-            ali_len              = GBT_get_alignment_len(gb_main, ali_name); // @@@ weird (what if passed in ali_len is completely wrong?)
-            if (slen > ali_len) {               // check for modified alignment len // @@@ should it use 'i'?
-                GBT_set_alignment_len(gb_main, ali_name, i);
-                ali_len = i;
-            }
-        }
-        if (slen > ali_len) {
-            old_char = sequence[ali_len];
-            ((char*)sequence)[ali_len] = 0;
+    int      part_len = seq_len; // size that will be written
+    if (seq_len > ali_len) { // sequence longer than alignment
+        // check whether it can be cutoff w/o loosing anything relevant
+        int oversize          = seq_len-ali_len;
+        int irrelevant        = strspn(sequence+ali_len, "-.nN"); // @@@ this has to be different for AA!
+        int relevant_oversize = oversize-irrelevant;
+
+        part_len = ali_len+relevant_oversize;
+
+        if (relevant_oversize) { // got some relevant data behind alignment length -> increase alignment length
+            int         new_ali_len = part_len;
+            GBDATA     *gb_main     = GB_get_root(gb_data);
+            const char *ali_name    = GB_read_key_pntr(gb_data);
+
+            gde_assert(GBT_get_alignment_len(gb_main, ali_name) == ali_len);
+
+            error   = GBT_set_alignment_len(gb_main, ali_name, new_ali_len);
+            ali_len = new_ali_len;
         }
     }
-    error = GB_write_string(gb_data, sequence);
-    if (slen> ali_len) ((char*)sequence)[ali_len] = old_char;
+
+    if (!error) {
+        if (part_len<seq_len) {
+            char *seq_part = GB_strndup(sequence, part_len);
+            error = GB_write_string(gb_data, seq_part);
+            free(seq_part);
+        }
+        else {
+            gde_assert(part_len == seq_len);
+            error = GB_write_string(gb_data, sequence);
+        }
+    }
+
     return error;
 }
 
-static void GDE_export(NA_Alignment *dataset, const char *ali_name, size_t oldnumelements) {
+static void export_to_DB(NA_Alignment *dataset, const char *ali_name, size_t oldnumelements) {
     if (dataset->numelements == oldnumelements) return;
     gde_assert(dataset->numelements > oldnumelements); // otherwise this is a noop
 
@@ -302,10 +309,12 @@ static void GDE_export(NA_Alignment *dataset, const char *ali_name, size_t oldnu
     }
 
     unsigned long i;
+    const long    oldalignlen = maxalignlen;
+    bool          auto_format = false;
 
     AW_repeated_question overwrite_question;
     AW_repeated_question checksum_change_question;
-    
+
     arb_progress progress("importing", dataset->numelements-oldnumelements+1); // +1 avoids zero-progress
     for (i = oldnumelements; !error && i < dataset->numelements; i++) {
         NA_Sequence *sequ = dataset->element+i;
@@ -330,9 +339,11 @@ static void GDE_export(NA_Alignment *dataset, const char *ali_name, size_t oldnu
 
         sequ->gb_species = 0;
 
-        const char *new_seq = (const char *)sequ->sequence;
-        gde_assert(new_seq[sequ->seqlen] == 0);
-        gde_assert((int)strlen(new_seq) == sequ->seqlen);
+        const char *const new_seq     = (const char *)sequ->sequence;
+        int               new_seq_len = sequ->seqlen;
+
+        gde_assert(new_seq[new_seq_len] == 0);
+        gde_assert((int)strlen(new_seq) == new_seq_len);
 
         if (!issame) {          // save as extended
             GBDATA *gb_extended = GBT_find_or_create_SAI(gb_main, savename);
@@ -343,7 +354,10 @@ static void GDE_export(NA_Alignment *dataset, const char *ali_name, size_t oldnu
                 GBDATA *gb_data  = GBT_add_data(gb_extended, ali_name, "data", GB_STRING);
 
                 if (!gb_data) error = GB_await_error();
-                else error          = WEIRD_write_sequence(gb_data, maxalignlen, new_seq);
+                else {
+                    error = write_sequence_autoinc_alisize(gb_data, maxalignlen, new_seq, new_seq_len);
+                    if (new_seq_len<maxalignlen) auto_format = true;
+                }
             }
         }
         else {                  // save as sequence
@@ -421,7 +435,8 @@ static void GDE_export(NA_Alignment *dataset, const char *ali_name, size_t oldnu
                             }
                         }
                         if (writeSequence) {
-                            error = WEIRD_write_sequence(gb_data, maxalignlen, new_seq);
+                            error = write_sequence_autoinc_alisize(gb_data, maxalignlen, new_seq, new_seq_len);
+                            if (new_seq_len<maxalignlen) auto_format = true;
                         }
                     }
                 }
@@ -430,6 +445,16 @@ static void GDE_export(NA_Alignment *dataset, const char *ali_name, size_t oldnu
         }
         free(savename);
         progress.inc_and_check_user_abort(error);
+    }
+
+    if (!auto_format) auto_format = oldalignlen != maxalignlen;
+
+    if (auto_format) {
+        if (db_access.format_ali) {
+            GB_push_my_security(gb_main);
+            error = db_access.format_ali(gb_main, ali_name);
+            GB_pop_my_security(gb_main);
+        }
     }
 
     progress.done();
@@ -595,7 +620,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             }
         }
 
-        GDE_export(DataSet, alignment_name, oldnumelements);
+        export_to_DB(DataSet, alignment_name, oldnumelements);
     }
 
     free(alignment_name);
