@@ -416,7 +416,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height) {
     free(buffer);
 
     if (error) {
-        error = GBS_global_string("Error: Can't read XFIG ressource - programmers error or defect installation\n"
+        error = GBS_global_string("Error: Can't read XFIG resource - programmers error or defect installation\n"
                                   "Reason: %s\n", error);
 
         if (font_width>0 && font_height>0) { // react with fatal exit

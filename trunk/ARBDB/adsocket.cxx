@@ -1221,7 +1221,7 @@ void GB_remove_on_exit(const char *filename) {
 
 void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullname, char **res_name_only, char **res_suffix) {
     // Takes a file (or directory) name and splits it into "path/name.suffix".
-    // If result pointers (res_*) are non-NULL, they are assigned heap-copies of the splitted parts.
+    // If result pointers (res_*) are non-NULL, they are assigned heap-copies of the split parts.
     // If parts are not valid (e.g. cause 'fullpath' doesn't have a .suffix) the corresponding result pointer
     // is set to NULL.
     //

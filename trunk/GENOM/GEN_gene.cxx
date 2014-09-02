@@ -37,7 +37,7 @@
 //
 // pos_complement        = 1 -> CDS is on opposite strand
 
-// fields for splitted genes:
+// fields for split genes:
 // --------------------------
 // pos_joined         = xxx -> gene consists of abs(xxx) parts (if missing xxx == 1 is assumed)
 //
@@ -83,7 +83,7 @@
 // pos_uncertain = contains 2 chars (1. for start-pos, 2. for end-pos); = means 'pos is exact'; < means 'pos may be lower'; > means 'pos may be higher'; missing -> like ==
 // complement    = 1 -> encoding from right to left
 //
-// fields for splitted genes:
+// fields for split genes:
 // --------------------------
 // pos_joined               = xxx -> gene consists of xxx parts (may not exist if xxx == 1)
 // pos_beginxxx, pos_endxxx = start-/end-positions for parts 2...n
@@ -138,7 +138,7 @@ GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *locati
 }
 
 GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location, int partNumber) {
-    //  partNumber 1..n which part of a splitted gene
+    //  partNumber 1..n which part of a split gene
     //  maxParts   1..n of how many parts consists this gene?
 
     init(gb_gene_, root_);
