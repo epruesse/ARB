@@ -274,6 +274,67 @@ static GB_ERROR write_sequence_autoinc_alisize(GBDATA *gb_data, long& ali_len, c
     return error;
 }
 
+inline bool isgap(char c) {
+    return c == '.' || c == '-';
+}
+
+inline char eatgaps(const char *seq, int& index) {
+    /*! increments index forward to next base (or EOS)
+     * @return first gap char seen or 0
+     */
+    if (isgap(seq[index])) {
+        char gap = seq[index++];
+        while (isgap(seq[index])) ++index;
+        return gap;
+    }
+    return 0;
+}
+
+static char *fix_aligned_data(const char *old_seq, const char *new_seq) {
+    char *fixed = strdup(new_seq);
+
+    int o = 0;
+    int n = 0;
+    int f = 0;
+
+    while (old_seq[o]) {
+        char og = eatgaps(old_seq, o);
+        char ng = eatgaps(new_seq, n);
+
+        if (og && ng && og != ng) {
+            memset(fixed+f, og, n-f);
+            f = n;
+        }
+        else {
+            f = n;
+        }
+
+        char oc = old_seq[o++];
+        char nc = new_seq[n++];
+        if (!nc) break;
+
+        if (oc != nc) {
+            char oC = toupper(oc);
+            char nC = toupper(nc);
+
+            if ((oC == nC) ||
+                (oC == 'U' && nC == 'T') ||
+                (oC == 'T' && nC == 'U'))
+            {
+                fixed[f++] = oc;
+            }
+            else {
+                f++; // fail (keep char)
+            }
+        }
+        else {
+            f++;
+        }
+    }
+
+    return fixed;
+}
+
 static void export_to_DB(NA_Alignment *dataset, const char *ali_name, size_t oldnumelements, bool aligned_data) {
     /*! (re-)import data into arb DB
      * @param dataset normally has been read from file (which was created by external tool)
@@ -345,8 +406,8 @@ static void export_to_DB(NA_Alignment *dataset, const char *ali_name, size_t old
 
         sequ->gb_species = 0;
 
-        const char *const new_seq     = (const char *)sequ->sequence;
-        int               new_seq_len = sequ->seqlen;
+        const char *new_seq     = (const char *)sequ->sequence;
+        int         new_seq_len = sequ->seqlen;
 
         gde_assert(new_seq[new_seq_len] == 0);
         gde_assert((int)strlen(new_seq) == new_seq_len);
@@ -370,7 +431,8 @@ static void export_to_DB(NA_Alignment *dataset, const char *ali_name, size_t old
             GBDATA *gb_species_data     = GBT_get_species_data(gb_main);
             if (!gb_species_data) error = GB_await_error();
             else {
-                GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, savename);
+                GBDATA *gb_species       = GBT_find_species_rel_species_data(gb_species_data, savename);
+                bool    fix_data_changes = false;
 
                 GB_push_my_security(gb_main);
 
@@ -409,6 +471,8 @@ static void export_to_DB(NA_Alignment *dataset, const char *ali_name, size_t old
                             if (!gb_species) error = GB_await_error();
                             break;
                     }
+
+                    fix_data_changes = replace_mode == REIMPORT_SEQ;
                 }
                 else {
                     if (aligned_data) {
@@ -432,12 +496,36 @@ static void export_to_DB(NA_Alignment *dataset, const char *ali_name, size_t old
                             long        old_checksum = GBS_checksum(old_seq, 1, "-.");
                             long        new_checksum = GBS_checksum(new_seq, 1, "-.");
 
+                            if (fix_data_changes && old_checksum != new_checksum) {
+                                // apply some fixes to (realigned) data
+                                char *new_seq_fixed  = fix_aligned_data(old_seq, new_seq);
+                                long  fixed_checksum = GBS_checksum(new_seq_fixed, 1, "-.");
+                                if (fixed_checksum == old_checksum) { // fix succeeded
+                                    free(sequ->sequence);
+                                    sequ->sequence = (NA_Base*)new_seq_fixed;
+                                    new_seq        = new_seq_fixed;
+                                    new_checksum   = fixed_checksum;
+                                }
+                                else {
+                                    fprintf(stderr, "Checksum changed for '%s':\nold='%s'\nfix='%s' (failed)\nnew='%s'\n", savename, old_seq, new_seq_fixed, new_seq);
+                                    free(new_seq_fixed);
+                                }
+                            }
                             if (old_checksum != new_checksum) {
-                                char *question = GBS_global_string_copy("Warning: Sequence checksum of '%s' has changed\n", savename);
+                                if (!fix_data_changes) { // already dumped above
+                                    fprintf(stderr, "Checksum changed for '%s':\nold='%s'\nnew='%s'\n", savename, old_seq, new_seq);
+                                }
+
+                                char *question = GBS_global_string_copy("Warning: Sequence checksum of '%s' has changed!\n"
+                                                                        "This should NOT happen if you aligned sequences!\n"
+                                                                        "(see console for changes to sequence)", savename);
+
+                                const char *allowToSaveAnswer = fix_data_changes ? NULL : "GDE_accept_seqchange";
+
                                 enum ChangeMode {
                                     ACCEPT_CHANGE = 0,
                                     REJECT_CHANGE = 1,
-                                } change_mode = (ChangeMode)checksum_change_question.get_answer("GDE_accept", question, "Accept change,Reject", "all", false);
+                                } change_mode = (ChangeMode)checksum_change_question.get_answer(allowToSaveAnswer, question, "Accept change,Reject", "all", false);
 
                                 if (change_mode == REJECT_CHANGE) writeSequence = false;
 
@@ -644,3 +732,46 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     gde_assert(!GB_have_error());
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static arb_test::match_expectation fixed_as(const char *old, const char *expected_fix, const char *aligned) {
+    using namespace    arb_test;
+    char              *fixed = fix_aligned_data(old, aligned);
+    match_expectation  e     = that(fixed).is_equal_to(expected_fix);
+    free(fixed);
+    return e;
+}
+
+#define TEST_FIX_ALIGNED(o,f,a)             TEST_EXPECTATION(fixed_as(o,f,a))
+#define TEST_FIX_ALIGNED__BROKEN(o,fw,fg,a) TEST_EXPECTATION__BROKEN(fixed_as(o,fw,a), fixed_as(o,fg,a))
+
+void TEST_fix_aligned_data() {
+    TEST_FIX_ALIGNED("...A---CG..G--U.....", // old
+                     "..AC--G..GU...",       // fixed: gaps corrected; T->U
+                     "--AC--G--GT---");      // aligned
+
+    TEST_FIX_ALIGNED("A---CG..G--U",         // old (no gaps at border)
+                     "--AC--G..GU---",       // fixed: gaps corrected; T->U
+                     "--AC--G--GT---");      // aligned
+
+    TEST_FIX_ALIGNED("...A---CG..G--U.....", // old
+                     "AC--G..GU",            // fixed: gaps corrected; T->U
+                     "AC--G--GT");           // aligned (no gaps at border)
+
+    TEST_FIX_ALIGNED("A---CG..G--U", // old
+                     "AC-----GT",    // not fixed
+                     "AC-----GT");   // aligned (bases changed!)
+
+    TEST_FIX_ALIGNED("A---cG..G--t", // old
+                     "Ac--G..Gt",    // fixed: lower case chars restored: C->c and U->t
+                     "AC--G--GU");   // aligned
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
