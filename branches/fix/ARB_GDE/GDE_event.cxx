@@ -274,7 +274,13 @@ static GB_ERROR write_sequence_autoinc_alisize(GBDATA *gb_data, long& ali_len, c
     return error;
 }
 
-static void export_to_DB(NA_Alignment *dataset, const char *ali_name, size_t oldnumelements) {
+static void export_to_DB(NA_Alignment *dataset, const char *ali_name, size_t oldnumelements, bool aligned_data) {
+    /*! (re-)import data into arb DB
+     * @param dataset normally has been read from file (which was created by external tool)
+     * @param ali_name write sequence data into that alignment
+     * @param oldnumelements start index into dataset
+     * @param aligned_data if true => only import sequences; expect checksums did not change; repair some minor, unwanted changes (case, T<>U, gaptype)
+     */
     if (dataset->numelements == oldnumelements) return;
     gde_assert(dataset->numelements > oldnumelements); // otherwise this is a noop
 
@@ -369,22 +375,25 @@ static void export_to_DB(NA_Alignment *dataset, const char *ali_name, size_t old
                 GB_push_my_security(gb_main);
 
                 if (gb_species) {   // new element that already exists !!!!
-                    const char *question =
-                        GBS_global_string("You are (re-)importing a species '%s'.\n"
-                                          "That species already exists in your database!\n"
-                                          "\n"
-                                          "Possible actions:\n"
-                                          "\n"
-                                          "       - overwrite existing species (all fields)\n"
-                                          "       - overwrite the sequence (does not change other fields)\n"
-                                          "       - skip import of the species\n"
-                                          "\n"
-                                          "Note: After aligning it's recommended to choose 'overwrite sequence'.",
-                                          savename);
+                    enum ReplaceMode { REPLACE_SPEC = 0, REIMPORT_SEQ = 1, SKIP_IMPORT  = 2 } replace_mode;
 
+                    if (aligned_data) {
+                        replace_mode = REIMPORT_SEQ;
+                    }
+                    else {
+                        const char *question =
+                            GBS_global_string("You are (re-)importing a species '%s'.\n"
+                                              "That species already exists in your database!\n"
+                                              "\n"
+                                              "Possible actions:\n"
+                                              "\n"
+                                              "       - overwrite existing species (all fields)\n"
+                                              "       - overwrite the sequence (does not change other fields)\n"
+                                              "       - skip import of the species\n",
+                                              savename);
 
-                    enum ReplaceMode { REPLACE_SPEC = 0, REIMPORT_SEQ = 1, SKIP_IMPORT  = 2, }
-                    replace_mode = (ReplaceMode)overwrite_question.get_answer("GDE_overwrite", question, "Overwrite species,Overwrite sequence only,Skip entry", "all", false);
+                        replace_mode = (ReplaceMode)overwrite_question.get_answer("GDE_overwrite", question, "Overwrite species,Overwrite sequence only,Skip entry", "all", false);
+                    }
 
                     switch (replace_mode) {
                         case SKIP_IMPORT:
@@ -402,7 +411,10 @@ static void export_to_DB(NA_Alignment *dataset, const char *ali_name, size_t old
                     }
                 }
                 else {
-                    gb_species = GBT_find_or_create_species_rel_species_data(gb_species_data, savename);
+                    if (aligned_data) {
+                        aw_message(GBS_global_string("Warning: new species '%s' has been created (unexpected; possible naming problems)", savename));
+                    }
+                    gb_species             = GBT_find_or_create_species_rel_species_data(gb_species_data, savename);
                     if (!gb_species) error = GB_await_error();
                 }
 
@@ -620,7 +632,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             }
         }
 
-        export_to_DB(DataSet, alignment_name, oldnumelements);
+        export_to_DB(DataSet, alignment_name, oldnumelements, current_item->aligned);
     }
 
     free(alignment_name);
