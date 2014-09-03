@@ -250,7 +250,7 @@ static GB_ERROR write_sequence_autoinc_alisize(GBDATA *gb_data, long& ali_len, c
         if (relevant_oversize) { // got some relevant data behind alignment length -> increase alignment length
             int         new_ali_len = part_len;
             GBDATA     *gb_main     = GB_get_root(gb_data);
-            const char *ali_name    = GB_read_key_pntr(gb_data);
+            const char *ali_name    = GB_read_key_pntr(GB_get_father(gb_data));
 
             gde_assert(GBT_get_alignment_len(gb_main, ali_name) == ali_len);
 
