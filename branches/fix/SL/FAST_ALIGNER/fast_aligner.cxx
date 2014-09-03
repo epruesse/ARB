@@ -67,7 +67,7 @@ enum FA_turn {
 };
 
 enum FA_reference {
-    FA_REF_EXPLICIT,            // reference sequence explicitely specified
+    FA_REF_EXPLICIT,            // reference sequence explicitly specified
     FA_REF_CONSENSUS,           // use group consensus as reference
     FA_REF_RELATIVES,           // search next relatives by PT server
 };

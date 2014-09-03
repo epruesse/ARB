@@ -169,7 +169,7 @@ int ARB_main(int argc, char *argv[]) {
                     error = save_tree_as_newick(cons_tree, savename, comment);
                 }
                 else {
-                    printf("sucessfully created consensus tree\n"
+                    printf("successfully created consensus tree\n"
                            "(no savename specified -> tree not saved)\n");
                 }
                 delete cons_tree;

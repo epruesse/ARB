@@ -36,7 +36,7 @@ void CharPtrArray::sort(CharPtrArray_compare_fun compare, void *client_data) {
 void GBT_splitNdestroy_string(ConstStrArray& names, char*& namelist, const char *separator, bool dropEmptyTokens) {
     /*! Split 'namelist' into an array of substrings at each member of 'separator'.
      *
-     * @param names pointers to splitted parts (into namelist)
+     * @param names pointers to split parts (into namelist)
      * @param namelist string containing separator delimited parts
      * @param separator contains all characters handled as separators
      * @param dropEmptyTokens if true, empty tokens will be skipped
