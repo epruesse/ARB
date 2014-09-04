@@ -164,10 +164,6 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     return (Action);
 }
 
-static void GDE_free(void **p) {
-    freenull(*p);
-}
-
 static char *ReplaceFile(char *Action, GfileFormat file)
 {
     char *symbol, *method, *temp;
@@ -211,22 +207,30 @@ static char *ReplaceString(char *Action, const char *old, const char *news)
 
 static void GDE_freesequ(NA_Sequence *sequ) {
     if (sequ) {
-        GDE_free((void**)&sequ->comments);
-        GDE_free((void**)&sequ->baggage);
-        GDE_free((void**)&sequ->sequence);
+        freenull(sequ->comments);
+        freenull(sequ->baggage);
+        freenull(sequ->sequence);
     }
 }
 
-static void GDE_freeali(NA_Alignment *dataset) {
-    if (dataset) {
-        GDE_free((void**)&dataset->id);
-        GDE_free((void**)&dataset->description);
-        GDE_free((void**)&dataset->authority);
-        GDE_free((void**)&dataset->alignment_name);
+NA_Alignment::NA_Alignment(GBDATA *gb_main_) {
+    memset(this, 0, sizeof(*this));
 
-        for (unsigned long i=0; i<dataset->numelements; i++) {
-            GDE_freesequ(dataset->element+i);
-        }
+    gb_main = gb_main_;
+    {
+        GB_transaction ta(gb_main);
+        alignment_name = GBT_get_default_alignment(gb_main);
+    }
+}
+
+NA_Alignment::~NA_Alignment() {
+    free(id);
+    free(description);
+    free(authority);
+    free(alignment_name);
+
+    for (unsigned long i=0; i<numelements; i++) {
+        GDE_freesequ(element+i);
     }
 }
 
@@ -267,31 +271,22 @@ static GB_ERROR WEIRD_write_sequence(GBDATA *gb_data, long ali_len, const char *
     return error;
 }
 
-static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumelements) {
-    if (dataset->numelements == oldnumelements) return;
-    gde_assert(dataset->numelements > oldnumelements); // otherwise this is a noop
+static void GDE_export(NA_Alignment& dataset, size_t oldnumelements) {
+    if (dataset.numelements == oldnumelements) return;
+    gde_assert(dataset.numelements > oldnumelements); // otherwise this is a noop
 
-    GBDATA   *gb_main = db_access.gb_main;
-    GB_ERROR  error   = GB_begin_transaction(gb_main);
-
-    long  maxalignlen  = GBT_get_alignment_len(gb_main, align);
-    char *defaultAlign = NULL;
+    GBDATA     *gb_main     = db_access.gb_main;
+    GB_ERROR    error       = GB_begin_transaction(gb_main);
+    const char *ali_name    = dataset.alignment_name;
+    long        maxalignlen = GBT_get_alignment_len(gb_main, ali_name);
 
     if (maxalignlen <= 0 && !error) {
-        GB_clear_error(); // clear "alignment not found" error
-
-        defaultAlign             = GBT_get_default_alignment(gb_main);
-        if (!defaultAlign) error = GB_await_error();
-        else {
-            align       = defaultAlign;
-            maxalignlen = GBT_get_alignment_len(gb_main, align);
-            if (maxalignlen<0) error = GB_await_error();
-        }
+        error = GB_await_error();
     }
 
     long lotyp = 0;
     if (!error) {
-        GB_alignment_type at = GBT_get_alignment_type(gb_main, align);
+        GB_alignment_type at = GBT_get_alignment_type(gb_main, ali_name);
 
         switch (at) {
             case GB_AT_DNA:     lotyp = DNA;     break;
@@ -306,9 +301,9 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
     AW_repeated_question overwrite_question;
     AW_repeated_question checksum_change_question;
     
-    arb_progress progress("importing", dataset->numelements-oldnumelements+1); // +1 avoids zero-progress
-    for (i = oldnumelements; !error && i < dataset->numelements; i++) {
-        NA_Sequence *sequ = dataset->element+i;
+    arb_progress progress("importing", dataset.numelements-oldnumelements+1); // +1 avoids zero-progress
+    for (i = oldnumelements; !error && i < dataset.numelements; i++) {
+        NA_Sequence *sequ = dataset.element+i;
         int seqtyp, issame = 0;
 
         seqtyp = sequ->elementtype;
@@ -335,24 +330,24 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
         gde_assert((int)strlen(new_seq) == sequ->seqlen);
 
         if (!issame) {          // save as extended
-            GBDATA *gb_extended = GBT_find_or_create_SAI(db_access.gb_main, savename);
+            GBDATA *gb_extended = GBT_find_or_create_SAI(gb_main, savename);
 
             if (!gb_extended) error = GB_await_error();
             else {
                 sequ->gb_species = gb_extended;
-                GBDATA *gb_data  = GBT_add_data(gb_extended, align, "data", GB_STRING);
+                GBDATA *gb_data  = GBT_add_data(gb_extended, ali_name, "data", GB_STRING);
 
                 if (!gb_data) error = GB_await_error();
                 else error          = WEIRD_write_sequence(gb_data, maxalignlen, new_seq);
             }
         }
         else {                  // save as sequence
-            GBDATA *gb_species_data     = GBT_get_species_data(db_access.gb_main);
+            GBDATA *gb_species_data     = GBT_get_species_data(gb_main);
             if (!gb_species_data) error = GB_await_error();
             else {
                 GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, savename);
 
-                GB_push_my_security(db_access.gb_main);
+                GB_push_my_security(gb_main);
 
                 if (gb_species) {   // new element that already exists !!!!
                     const char *question =
@@ -396,10 +391,10 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
                     gde_assert(!error);
                     sequ->gb_species = gb_species;
 
-                    GBDATA *gb_data     = GBT_add_data(gb_species, align, "data", GB_STRING); // does only add if not already existing
+                    GBDATA *gb_data     = GBT_add_data(gb_species, ali_name, "data", GB_STRING); // does only add if not already existing
                     if (!gb_data) error = GB_await_error();
                     else {
-                        GBDATA *gb_old_data   = GBT_find_sequence(gb_species, align);
+                        GBDATA *gb_old_data   = GBT_find_sequence(gb_species, ali_name);
                         bool    writeSequence = true;
                         if (gb_old_data) {          // we already have data -> compare checksums
                             const char *old_seq      = GB_read_char_pntr(gb_old_data);
@@ -425,7 +420,7 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
                         }
                     }
                 }
-                GB_pop_my_security(db_access.gb_main);
+                GB_pop_my_security(gb_main);
             }
         }
         free(savename);
@@ -435,7 +430,6 @@ static void GDE_export(NA_Alignment *dataset, const char *align, size_t oldnumel
     progress.done();
 
     GB_end_transaction_show_error(db_access.gb_main, error, aw_message);
-    free(defaultAlign);
 }
 
 static char *preCreateTempfile(const char *name) {
@@ -455,10 +449,8 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
 
     GapCompression compress = static_cast<GapCompression>(aw_root->awar(AWAR_GDE_COMPRESSION)->read_int());
     arb_progress   progress(current_item->label);
-
-
-    char *alignment_name = NULL;
-    int   stop           = 0;
+    NA_Alignment   DataSet(db_access.gb_main);
+    int            stop     = 0;
 
     if (current_item->numinputs>0) {
         TypeInfo typeinfo = UNKNOWN_TYPEINFO;
@@ -485,11 +477,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             }
 
             if (!stop) {
-                DataSet->gb_main = db_access.gb_main;
-                GB_begin_transaction(DataSet->gb_main);
-                freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
-                freedup(alignment_name, DataSet->alignment_name);
-
+                GB_transaction ta(DataSet.gb_main);
                 progress.subtitle("reading database");
 
                 long cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
@@ -501,19 +489,18 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
                 else {
                     stop = ReadArbdb(DataSet, marked, filter2, compress, cutoff_stop_codon, typeinfo);
                 }
-                GB_commit_transaction(DataSet->gb_main);
             }
             delete filter2;
         }
 
-        if (!stop && DataSet->numelements==0) {
+        if (!stop && DataSet.numelements==0) {
             aw_message("no sequences selected");
             stop = 1;
         }
     }
 
     if (!stop) {
-        int select_mode = (DataSet && (current_item->numinputs>0)) ? ALL : NONE;
+        int select_mode = (current_item->numinputs>0) ? ALL : NONE;
         int pid         = getpid();
 
         static int fileindx = 0;
@@ -565,18 +552,14 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         aw_message_if(GBK_system(Action));
         free(Action);
 
-        size_t oldnumelements = DataSet->numelements;
+        size_t oldnumelements = DataSet.numelements;
 
         for (int j=0; j<current_item->numoutputs; j++) {
             switch (current_item->output[j].format) {
-                /* The LoadData routine must be reworked so that
-                 * OpenFileName uses it, and so I can remove the
-                 * major kluge in OpenFileName().
-                 */
                 case GENBANK:
                 case NA_FLAT:
                 case GDE:
-                    LoadData(current_item->output[j].name);
+                    LoadData(current_item->output[j].name, DataSet);
                     break;
                 default:
                     gde_assert(0);
@@ -595,14 +578,8 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             }
         }
 
-        GDE_export(DataSet, alignment_name, oldnumelements);
+        GDE_export(DataSet, oldnumelements);
     }
-
-    free(alignment_name);
-
-    GDE_freeali(DataSet);
-    freeset(DataSet, (NA_Alignment *)Calloc(1, sizeof(NA_Alignment)));
-    DataSet->rel_offset = 0;
 
     gde_assert(!GB_have_error());
 }
