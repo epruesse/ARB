@@ -335,32 +335,22 @@ static char *fix_aligned_data(const char *old_seq, const char *new_seq) {
     return fixed;
 }
 
-static void export_to_DB(NA_Alignment *dataset, const char *ali_name, size_t oldnumelements, bool aligned_data) {
+static void export_to_DB(NA_Alignment *dataset, size_t oldnumelements, bool aligned_data) {
     /*! (re-)import data into arb DB
      * @param dataset normally has been read from file (which was created by external tool)
-     * @param ali_name write sequence data into that alignment
      * @param oldnumelements start index into dataset
      * @param aligned_data if true => only import sequences; expect checksums did not change; repair some minor, unwanted changes (case, T<>U, gaptype)
      */
     if (dataset->numelements == oldnumelements) return;
     gde_assert(dataset->numelements > oldnumelements); // otherwise this is a noop
 
-    GBDATA   *gb_main = db_access.gb_main;
-    GB_ERROR  error   = GB_begin_transaction(gb_main);
-
-    long  maxalignlen  = GBT_get_alignment_len(gb_main, ali_name);
-    char *def_ali_name = NULL;
+    GBDATA     *gb_main     = db_access.gb_main;
+    GB_ERROR    error       = GB_begin_transaction(gb_main);
+    const char *ali_name    = DataSet->alignment_name;
+    long        maxalignlen = GBT_get_alignment_len(gb_main, ali_name);
 
     if (maxalignlen <= 0 && !error) {
-        GB_clear_error(); // clear "alignment not found" error
-
-        def_ali_name             = GBT_get_default_alignment(gb_main);
-        if (!def_ali_name) error = GB_await_error();
-        else {
-            ali_name                 = def_ali_name;
-            maxalignlen              = GBT_get_alignment_len(gb_main, ali_name);
-            if (maxalignlen<0) error = GB_await_error();
-        }
+        error = GB_await_error();
     }
 
     long lotyp = 0;
@@ -560,7 +550,6 @@ static void export_to_DB(NA_Alignment *dataset, const char *ali_name, size_t old
     progress.done();
 
     GB_end_transaction_show_error(db_access.gb_main, error, aw_message);
-    free(def_ali_name);
 }
 
 static char *preCreateTempfile(const char *name) {
@@ -581,9 +570,13 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     GapCompression compress = static_cast<GapCompression>(aw_root->awar(AWAR_GDE_COMPRESSION)->read_int());
     arb_progress   progress(current_item->label);
 
+    int stop = 0;
 
-    char *alignment_name = NULL;
-    int   stop           = 0;
+    DataSet->gb_main = db_access.gb_main;
+    {
+        GB_transaction ta(DataSet->gb_main);
+        freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
+    }
 
     if (current_item->numinputs>0) {
         TypeInfo typeinfo = UNKNOWN_TYPEINFO;
@@ -610,11 +603,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             }
 
             if (!stop) {
-                DataSet->gb_main = db_access.gb_main;
-                GB_begin_transaction(DataSet->gb_main);
-                freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
-                freedup(alignment_name, DataSet->alignment_name);
-
+                GB_transaction ta(DataSet->gb_main);
                 progress.subtitle("reading database");
 
                 long cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
@@ -626,7 +615,6 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
                 else {
                     stop = ReadArbdb(DataSet, marked, filter2, compress, cutoff_stop_codon, typeinfo);
                 }
-                GB_commit_transaction(DataSet->gb_main);
             }
             delete filter2;
         }
@@ -720,10 +708,8 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             }
         }
 
-        export_to_DB(DataSet, alignment_name, oldnumelements, current_item->aligned);
+        export_to_DB(DataSet, oldnumelements, current_item->aligned);
     }
-
-    free(alignment_name);
 
     GDE_freeali(DataSet);
     freeset(DataSet, (NA_Alignment *)Calloc(1, sizeof(NA_Alignment)));
