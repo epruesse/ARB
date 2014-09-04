@@ -164,10 +164,6 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     return (Action);
 }
 
-static void GDE_free(void **p) {
-    freenull(*p);
-}
-
 static char *ReplaceFile(char *Action, GfileFormat file)
 {
     char *symbol, *method, *temp;
@@ -211,18 +207,18 @@ static char *ReplaceString(char *Action, const char *old, const char *news)
 
 static void GDE_freesequ(NA_Sequence *sequ) {
     if (sequ) {
-        GDE_free((void**)&sequ->comments);
-        GDE_free((void**)&sequ->baggage);
-        GDE_free((void**)&sequ->sequence);
+        freenull(sequ->comments);
+        freenull(sequ->baggage);
+        freenull(sequ->sequence);
     }
 }
 
 static void GDE_freeali(NA_Alignment *dataset) {
     if (dataset) {
-        GDE_free((void**)&dataset->id);
-        GDE_free((void**)&dataset->description);
-        GDE_free((void**)&dataset->authority);
-        GDE_free((void**)&dataset->alignment_name);
+        freenull(dataset->id);
+        freenull(dataset->description);
+        freenull(dataset->authority);
+        freenull(dataset->alignment_name);
 
         for (unsigned long i=0; i<dataset->numelements; i++) {
             GDE_freesequ(dataset->element+i);
