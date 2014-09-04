@@ -126,8 +126,9 @@ struct NA_Alignment : virtual Noncopyable {
     NA_Sequence **group;        // link to array of pointers into each group
     int           format;       // default file format
 
-    GBDATA *gb_main;
-    char   *alignment_name;
+    GBDATA            *gb_main;
+    char              *alignment_name;
+    GB_alignment_type  alignment_type;
 
     NA_Alignment(GBDATA *gb_main_);
     ~NA_Alignment();
