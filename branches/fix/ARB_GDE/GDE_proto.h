@@ -26,7 +26,7 @@ GB_ERROR GDE_init(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_
 char *Calloc(int count, int size);
 char *Realloc(char *block, int size);
 void Cfree(char *block);
-void LoadData(char *filen);
+void LoadData(char *filen, NA_Alignment *dataset);
 void AppendNA(NA_Base *buffer, int len, NA_Sequence *seq);
 void Ascii2NA(char *buffer, int len, int matrix[16]);
 int WriteNA_Flat(NA_Alignment *aln, char *filename, int method);

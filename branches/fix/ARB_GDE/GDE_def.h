@@ -113,15 +113,14 @@ struct NA_Sequence {
     GBDATA  *gb_species;
 };
 
-struct NA_Alignment {
+struct NA_Alignment : virtual Noncopyable {
     char         *id;           // Alignment ID
     char         *description;  // Description of the alignment
     char         *authority;    // Who generated the alignment
     size_t        numelements;  // number of data elements
     int           maxnumelements; // maximum number of data elements
     int           maxlen;       // Maximum length of alignment
-    int           rel_offset;   // add this to every sequence offset
-    // to orient it back to 0
+    int           rel_offset;   // add this to every sequence offset to orient it back to 0
     NA_Sequence  *element;      // alignment elements
     size_t        numgroups;    // number of groups
     NA_Sequence **group;        // link to array of pointers into each group
@@ -129,9 +128,12 @@ struct NA_Alignment {
 
     GBDATA *gb_main;
     char   *alignment_name;
-};
 
-extern NA_Alignment *DataSet;
+    NA_Alignment() {
+        memset(this, 0, sizeof(*this));
+    }
+    ~NA_Alignment();
+};
 
 inline void strncpy_terminate(char *dest, const char *source, size_t dest_size) {
     // like strncpy, but also writes terminating zero byte
@@ -143,3 +145,4 @@ inline void strncpy_terminate(char *dest, const char *source, size_t dest_size) 
 #else
 #error GDE_def.h included twice
 #endif // GDE_DEF_H
+

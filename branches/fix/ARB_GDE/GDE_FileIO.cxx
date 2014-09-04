@@ -64,7 +64,7 @@ void Cfree(char *block)
     return;
 }
 
-static void ReadNA_Flat(char *filename, char *dataset) {
+static void ReadNA_Flat(char *filename, NA_Alignment *dataset) {
     size_t j;
     int jj, curelem=0, offset;
     char buffer[GBUFSIZ];
@@ -176,7 +176,7 @@ static GB_ERROR LoadFile(char *filename, NA_Alignment *dataset, int type, int fo
     switch (format)
     {
         case NA_FLAT:
-            ReadNA_Flat(filename, (char*)dataset);
+            ReadNA_Flat(filename, dataset);
             ((NA_Alignment*)dataset)->format = GDE;
             break;
 
@@ -247,7 +247,7 @@ static int FindType(char *name, int *dtype, int *ftype) {
     return result;
 }
 
-void LoadData(char *filen) {
+void LoadData(char *filen, NA_Alignment *dataset) {
     /* LoadData():
      * Load a data set from the command line argument.
      *
@@ -259,32 +259,17 @@ void LoadData(char *filen) {
      * All rights reserved.
      */
 
-    FILE         *file;
-    NA_Alignment *DataNaAln;
-
     // Get file name, determine the file type, and away we go..
     if (Find2(filen, "gde") != 0)
         strcpy(FileName, filen);
 
-    if ((file=fopen(filen, "r"))!=0)
-    {
+    FILE *file = fopen(filen, "r");
+    if (file) {
         FindType(filen, &DataType, &FileFormat);
-        switch (DataType)
-        {
+        switch (DataType) {
             case NASEQ_ALIGN: {
-                if (DataSet == NULL)
-                {
-                    DataSet = (NA_Alignment*)Calloc(1, sizeof(NA_Alignment));
-                    DataNaAln = (NA_Alignment*)DataSet;
-                    DataSet->rel_offset = 0;
-                }
-                else {
-                    DataNaAln = (NA_Alignment*)DataSet;
-                }
-
-                GB_ERROR error = LoadFile(filen, DataNaAln, DataType, FileFormat);
+                GB_ERROR error = LoadFile(filen, dataset, DataType, FileFormat);
                 if (error) aw_message(error);
-
                 break;
             }
             default:

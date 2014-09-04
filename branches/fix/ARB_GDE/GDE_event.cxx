@@ -213,16 +213,14 @@ static void GDE_freesequ(NA_Sequence *sequ) {
     }
 }
 
-static void GDE_freeali(NA_Alignment *dataset) {
-    if (dataset) {
-        freenull(dataset->id);
-        freenull(dataset->description);
-        freenull(dataset->authority);
-        freenull(dataset->alignment_name);
+NA_Alignment::~NA_Alignment() {
+    free(id);
+    free(description);
+    free(authority);
+    free(alignment_name);
 
-        for (unsigned long i=0; i<dataset->numelements; i++) {
-            GDE_freesequ(dataset->element+i);
-        }
+    for (unsigned long i=0; i<numelements; i++) {
+        GDE_freesequ(element+i);
     }
 }
 
@@ -342,7 +340,7 @@ static void export_to_DB(NA_Alignment *dataset, size_t oldnumelements, bool alig
 
     GBDATA     *gb_main     = db_access.gb_main;
     GB_ERROR    error       = GB_begin_transaction(gb_main);
-    const char *ali_name    = DataSet->alignment_name;
+    const char *ali_name    = dataset->alignment_name;
     long        maxalignlen = GBT_get_alignment_len(gb_main, ali_name);
 
     if (maxalignlen <= 0 && !error) {
@@ -568,6 +566,9 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
 
     int stop = 0;
 
+    NA_Alignment *DataSet = new NA_Alignment; // @@@ make auto
+
+    // @@@ move code below into fun
     DataSet->gb_main = db_access.gb_main;
     {
         GB_transaction ta(DataSet->gb_main);
@@ -678,14 +679,10 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
 
         for (int j=0; j<current_item->numoutputs; j++) {
             switch (current_item->output[j].format) {
-                /* The LoadData routine must be reworked so that
-                 * OpenFileName uses it, and so I can remove the
-                 * major kluge in OpenFileName().
-                 */
                 case GENBANK:
                 case NA_FLAT:
                 case GDE:
-                    LoadData(current_item->output[j].name);
+                    LoadData(current_item->output[j].name, DataSet);
                     break;
                 default:
                     gde_assert(0);
@@ -707,10 +704,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         export_to_DB(DataSet, oldnumelements, current_item->aligned);
     }
 
-    GDE_freeali(DataSet);
-    freeset(DataSet, (NA_Alignment *)Calloc(1, sizeof(NA_Alignment)));
-    DataSet->rel_offset = 0;
-
+    delete DataSet;
     gde_assert(!GB_have_error());
 }
 
