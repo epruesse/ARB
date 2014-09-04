@@ -339,18 +339,18 @@ static char *fix_aligned_data(const char *old_seq, const char *new_seq) {
     return fixed;
 }
 
-static void export_to_DB(NA_Alignment *dataset, size_t oldnumelements, bool aligned_data) {
+static void export_to_DB(NA_Alignment& dataset, size_t oldnumelements, bool aligned_data) {
     /*! (re-)import data into arb DB
      * @param dataset normally has been read from file (which was created by external tool)
      * @param oldnumelements start index into dataset
      * @param aligned_data if true => only import sequences; expect checksums did not change; repair some minor, unwanted changes (case, T<>U, gaptype)
      */
-    if (dataset->numelements == oldnumelements) return;
-    gde_assert(dataset->numelements > oldnumelements); // otherwise this is a noop
+    if (dataset.numelements == oldnumelements) return;
+    gde_assert(dataset.numelements > oldnumelements); // otherwise this is a noop
 
     GBDATA     *gb_main     = db_access.gb_main;
     GB_ERROR    error       = GB_begin_transaction(gb_main);
-    const char *ali_name    = dataset->alignment_name;
+    const char *ali_name    = dataset.alignment_name;
     long        maxalignlen = GBT_get_alignment_len(gb_main, ali_name);
 
     if (maxalignlen <= 0 && !error) {
@@ -376,9 +376,9 @@ static void export_to_DB(NA_Alignment *dataset, size_t oldnumelements, bool alig
     AW_repeated_question overwrite_question;
     AW_repeated_question checksum_change_question;
 
-    arb_progress progress("importing", dataset->numelements-oldnumelements+1); // +1 avoids zero-progress
-    for (i = oldnumelements; !error && i < dataset->numelements; i++) {
-        NA_Sequence *sequ = dataset->element+i;
+    arb_progress progress("importing", dataset.numelements-oldnumelements+1); // +1 avoids zero-progress
+    for (i = oldnumelements; !error && i < dataset.numelements; i++) {
+        NA_Sequence *sequ = dataset.element+i;
         int seqtyp, issame = 0;
 
         seqtyp = sequ->elementtype;
@@ -702,7 +702,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             }
         }
 
-        export_to_DB(&DataSet, oldnumelements, current_item->aligned);
+        export_to_DB(DataSet, oldnumelements, current_item->aligned);
     }
 
     gde_assert(!GB_have_error());
