@@ -145,7 +145,7 @@ AWT_species_set::~AWT_species_set() {
 
 AWT_species_set *AWT_species_set_root::move_tree_2_ssr(AP_tree *node) {
     AWT_species_set *ss;
-    // Warning: confusing ressource handling:
+    // Warning: confusing resource handling:
     // - leafs are returned "NOT owned by anybody"
     // - inner nodes are added to and owned by this->sets
 

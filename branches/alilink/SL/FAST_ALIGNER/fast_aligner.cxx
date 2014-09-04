@@ -67,7 +67,7 @@ enum FA_turn {
 };
 
 enum FA_reference {
-    FA_REF_EXPLICIT,            // reference sequence explicitely specified
+    FA_REF_EXPLICIT,            // reference sequence explicitly specified
     FA_REF_CONSENSUS,           // use group consensus as reference
     FA_REF_RELATIVES,           // search next relatives by PT server
 };
@@ -1193,7 +1193,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                     }
                     else {
                         alignBuffer.setDotsAtEOSequence();
-                        error = GBT_write_sequence(gbd, max_seq_length, alignBuffer.text()); // aligned all -> write all
+                        error = GB_write_string(gbd, alignBuffer.text()); // aligned all -> write all
                     }
                 }
             }

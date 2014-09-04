@@ -204,6 +204,18 @@ SECTION GDE menus language
                         values are colormask, Genbank, and
                         flat.
 
+            outaligned:yes
+
+                        GDE assumes external tool is an aligner or similar
+                        which only changes the alignment of bases.
+                        Sequence data will be re-imported w/o asking questions.
+
+                        Several minor changes in sequence data (by external tool)
+                        will be accepted and silently reverted. This includes
+                             - changing 'U' into 'T' (or vv)
+                             - case changes
+                             - gap changes ('.' to '-' or vv)
+
             outsave:
 
                         Do not remove this file after reading.

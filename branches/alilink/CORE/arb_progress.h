@@ -164,7 +164,7 @@ public:
         // 
         // expects to be incremented 'overall_count' times
         //      incrementation is done either
-        //      - explicitely by calling one of the inc...()-functions below or
+        //      - explicitly by calling one of the inc...()-functions below or
         //      - implicitely by creating another arb_progress while this one remains
         //
         // if you can't ahead-determine the exact number of incrementations,
@@ -176,7 +176,7 @@ public:
     explicit arb_progress(const char *title) {
         // open a wrapping progress indicator
         //
-        // expects NOT to be incremented explicitely!
+        // expects NOT to be incremented explicitly!
         //      if arb_progresses are created while this exists, they reuse the progress window.
         //      Useful to avoid spamming the user with numerous popping-up progress windows.
         setup(title, 0);
