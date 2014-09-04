@@ -475,25 +475,49 @@ static void export_to_DB(NA_Alignment& dataset, size_t oldnumelements, bool alig
                         GBDATA *gb_old_data   = GBT_find_sequence(gb_species, ali_name);
                         bool    writeSequence = true;
                         if (gb_old_data) {          // we already have data -> compare checksums
-                            const char *old_seq      = GB_read_char_pntr(gb_old_data);
-                            long        old_checksum = GBS_checksum(old_seq, 1, "-.");
-                            long        new_checksum = GBS_checksum(new_seq, 1, "-.");
+                            const char *old_seq = GB_read_char_pntr(gb_old_data);
 
-                            if (fix_data_changes && old_checksum != new_checksum) {
-                                // apply some fixes to (realigned) data
-                                char *new_seq_fixed  = fix_aligned_data(old_seq, new_seq, dataset.alignment_type);
-                                long  fixed_checksum = GBS_checksum(new_seq_fixed, 1, "-.");
-                                if (fixed_checksum == old_checksum) { // fix succeeded
+                            long old_checksum, new_checksum;
+                            bool calcStdChecksum = true;
+                            if (fix_data_changes) {
+                                char *new_seq_fixed = fix_aligned_data(old_seq, new_seq, dataset.alignment_type);  // apply some fixes to (realigned) data
+
+                                switch (dataset.alignment_type) {
+                                    case GB_AT_DNA:
+                                    case GB_AT_RNA: {
+                                        char *old_TU = GBS_string_eval(old_seq,       ":T=U:t=u", NULL);
+                                        char *new_TU = GBS_string_eval(new_seq_fixed, ":T=U:t=u", NULL);
+
+                                        old_checksum = GBS_checksum(old_TU, 1, "-.");
+                                        new_checksum = GBS_checksum(new_TU, 1, "-.");
+
+                                        free(new_TU);
+                                        free(old_TU);
+                                        break;
+                                    }
+                                    case GB_AT_AA:
+                                    case GB_AT_UNKNOWN:
+                                        old_checksum = GBS_checksum(old_seq,       1, "-.");
+                                        new_checksum = GBS_checksum(new_seq_fixed, 1, "-.");
+                                        break;
+                                }
+
+                                if (new_checksum == old_checksum) { // fix succeeded
                                     free(sequ->sequence);
-                                    sequ->sequence = (NA_Base*)new_seq_fixed;
-                                    new_seq        = new_seq_fixed;
-                                    new_checksum   = fixed_checksum;
+                                    sequ->sequence  = (NA_Base*)new_seq_fixed;
+                                    new_seq         = new_seq_fixed;
+                                    calcStdChecksum = false;
                                 }
                                 else {
                                     fprintf(stderr, "Checksum changed for '%s':\nold='%s'\nfix='%s' (failed)\nnew='%s'\n", savename, old_seq, new_seq_fixed, new_seq);
                                     free(new_seq_fixed);
                                 }
                             }
+                            if (calcStdChecksum) {
+                                old_checksum = GBS_checksum(old_seq, 1, "-.");
+                                new_checksum = GBS_checksum(new_seq, 1, "-.");
+                            }
+
                             if (old_checksum != new_checksum) {
                                 if (!fix_data_changes) { // already dumped above
                                     fprintf(stderr, "Checksum changed for '%s':\nold='%s'\nnew='%s'\n", savename, old_seq, new_seq);
