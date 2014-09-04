@@ -61,6 +61,7 @@ struct GmenuItem {
     GmenuItemArg *arg;            // argument definitions
     char          meta;           // Meta character for function
     char          seqtype;        // A -> amino, N -> nucleotide, '-' -> no sequence, otherwise both
+    bool          aligned;
     char         *help;           // associated helpfile ("agde_*.hlp")
     // ARB BEGIN
     struct Gmenu *parent_menu;
@@ -78,10 +79,11 @@ struct Gmenu {
 };
 
 extern struct gde_database_access {
-    GDE_get_sequences_cb  get_sequences;
-    gde_window_type       window_type;
-    AW_CL                 client_data;
-    GBDATA               *gb_main;
+    GDE_get_sequences_cb     get_sequences;
+    GDE_format_alignment_cb  format_ali;
+    gde_window_type          window_type;
+    AW_CL                    client_data;
+    GBDATA                  *gb_main;
 } db_access;
 
 

@@ -653,6 +653,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/EXP.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_extern.o: $(ARBHOME)/INCLUDE/gde.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/GEN.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/insdel.h
 NT_extern.o: $(ARBHOME)/INCLUDE/items.h
 NT_extern.o: $(ARBHOME)/INCLUDE/macros.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/multi_probe.hxx

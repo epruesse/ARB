@@ -158,6 +158,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_event.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_event.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_event.o: $(ARBHOME)/INCLUDE/test_global.h
+GDE_event.o: $(ARBHOME)/INCLUDE/test_unit.h
 GDE_event.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 GDE_FileIO.o: gde.hxx
