@@ -220,6 +220,7 @@ NA_Alignment::NA_Alignment(GBDATA *gb_main_) {
     {
         GB_transaction ta(gb_main);
         alignment_name = GBT_get_default_alignment(gb_main);
+        alignment_type = GBT_get_alignment_type(gb_main, alignment_name);
     }
 }
 
@@ -294,7 +295,7 @@ inline char eatgaps(const char *seq, int& index) {
     return 0;
 }
 
-static char *fix_aligned_data(const char *old_seq, const char *new_seq) {
+static char *fix_aligned_data(const char *old_seq, const char *new_seq, GB_alignment_type ali_type) {
     char *fixed = strdup(new_seq);
 
     int o = 0;
@@ -321,7 +322,7 @@ static char *fix_aligned_data(const char *old_seq, const char *new_seq) {
             char oC = toupper(oc);
             char nC = toupper(nc);
 
-            if ((oC == nC) ||
+            if ((oC == nC)               ||
                 (oC == 'U' && nC == 'T') ||
                 (oC == 'T' && nC == 'U'))
             {
@@ -492,7 +493,7 @@ static void export_to_DB(NA_Alignment& dataset, size_t oldnumelements, bool alig
 
                             if (fix_data_changes && old_checksum != new_checksum) {
                                 // apply some fixes to (realigned) data
-                                char *new_seq_fixed  = fix_aligned_data(old_seq, new_seq);
+                                char *new_seq_fixed  = fix_aligned_data(old_seq, new_seq, dataset.alignment_type);
                                 long  fixed_checksum = GBS_checksum(new_seq_fixed, 1, "-.");
                                 if (fixed_checksum == old_checksum) { // fix succeeded
                                     free(sequ->sequence);
@@ -715,37 +716,49 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
 #include <test_unit.h>
 #endif
 
-static arb_test::match_expectation fixed_as(const char *old, const char *expected_fix, const char *aligned) {
+static arb_test::match_expectation fixed_as(GB_alignment_type ali_type, const char *old, const char *expected_fix, const char *aligned) {
     using namespace    arb_test;
-    char              *fixed = fix_aligned_data(old, aligned);
+    char              *fixed = fix_aligned_data(old, aligned, ali_type);
     match_expectation  e     = that(fixed).is_equal_to(expected_fix);
     free(fixed);
     return e;
 }
 
-#define TEST_FIX_ALIGNED(o,f,a)             TEST_EXPECTATION(fixed_as(o,f,a))
-#define TEST_FIX_ALIGNED__BROKEN(o,fw,fg,a) TEST_EXPECTATION__BROKEN(fixed_as(o,fw,a), fixed_as(o,fg,a))
+#define TEST_FIX_ALIGNED(t,o,f,a)             TEST_EXPECTATION(fixed_as(t,o,f,a))
+#define TEST_FIX_ALIGNED__BROKEN(t,o,fw,fg,a) TEST_EXPECTATION__BROKEN(fixed_as(t,o,fw,a), fixed_as(t,o,fg,a))
 
 void TEST_fix_aligned_data() {
-    TEST_FIX_ALIGNED("...A---CG..G--U.....", // old
+    TEST_FIX_ALIGNED(GB_AT_RNA,
+                     "...A---CG..G--U.....", // old
                      "..AC--G..GU...",       // fixed: gaps corrected; T->U
                      "--AC--G--GT---");      // aligned
 
-    TEST_FIX_ALIGNED("A---CG..G--U",         // old (no gaps at border)
+    TEST_FIX_ALIGNED(GB_AT_RNA,
+                     "A---CG..G--U",         // old (no gaps at border)
                      "--AC--G..GU---",       // fixed: gaps corrected; T->U
                      "--AC--G--GT---");      // aligned
 
-    TEST_FIX_ALIGNED("...A---CG..G--U.....", // old
+    TEST_FIX_ALIGNED(GB_AT_RNA,
+                     "...A---CG..G--U.....", // old
                      "AC--G..GU",            // fixed: gaps corrected; T->U
                      "AC--G--GT");           // aligned (no gaps at border)
 
-    TEST_FIX_ALIGNED("A---CG..G--U", // old
+    TEST_FIX_ALIGNED(GB_AT_RNA,
+                     "A---CG..G--U", // old
                      "AC-----GT",    // not fixed
                      "AC-----GT");   // aligned (bases changed!)
 
-    TEST_FIX_ALIGNED("A---cG..G--t", // old
-                     "Ac--G..Gt",    // fixed: lower case chars restored: C->c and U->t
-                     "AC--G--GU");   // aligned
+    TEST_FIX_ALIGNED__BROKEN(GB_AT_DNA,
+                     "A---cTUu..G--t", // old
+                     "AcT--Tt..Gt",    // fixed: case restored; U's convert to T's
+                     "AcT--Uu..Gt",    // unwanted
+                     "ACT--UT--GU");   // aligned
+
+    TEST_FIX_ALIGNED__BROKEN(GB_AT_RNA,
+                     "A---cTUu..G--t", // old
+                     "AcU--Uu..Gu",    // fixed: case restored; T's convert to U's
+                     "AcT--Uu..Gt",    // unwanted
+                     "ACT--UT--GU");   // aligned
 }
 
 #endif // UNIT_TESTS
