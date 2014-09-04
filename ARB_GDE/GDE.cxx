@@ -21,9 +21,8 @@
 
 adfiltercbstruct *agde_filter = 0;
 
-Gmenu         menu[GDEMAXMENU];
-int           num_menus = 0;
-NA_Alignment *DataSet   = NULL;
+Gmenu menu[GDEMAXMENU];
+int   num_menus = 0;
 
 static char GDEBLANK[] = "\0";
 
@@ -529,8 +528,6 @@ GB_ERROR GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GD
     aw_root->awar(AWAR_GDE_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
     aw_root->awar(AWAR_GDE_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
 
-    DataSet = (NA_Alignment *) Calloc(1, sizeof(NA_Alignment));
-    DataSet->rel_offset = 0;
     return LoadMenus();
 }
 
