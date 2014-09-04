@@ -520,12 +520,12 @@ static void export_to_DB(NA_Alignment *dataset, const char *ali_name, size_t old
                                                                         "This should NOT happen if you aligned sequences!\n"
                                                                         "(see console for changes to sequence)", savename);
 
-                                const char *allowToSaveAnswer = fix_data_changes ? NULL : "GDE_accept_seqchange";
+                                const char *questionID = aligned_data ? "GDE_accept_aligner_seqchange" : "GDE_accept_seqchange";
 
                                 enum ChangeMode {
                                     ACCEPT_CHANGE = 0,
                                     REJECT_CHANGE = 1,
-                                } change_mode = (ChangeMode)checksum_change_question.get_answer(allowToSaveAnswer, question, "Accept change,Reject", "all", false);
+                                } change_mode = (ChangeMode)checksum_change_question.get_answer(questionID, question, "Accept change,Reject", "all", false);
 
                                 if (change_mode == REJECT_CHANGE) writeSequence = false;
 
