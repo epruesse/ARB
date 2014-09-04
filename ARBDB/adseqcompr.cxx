@@ -740,7 +740,7 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
                                 long  seq_len = GB_read_string_count(gbd);
                                 long  size    = GB_read_memuse(gbd);
 
-                                GB_write_string(gbd, "");
+                                GB_write_string(gbd, ""); // force recompression
                                 GB_write_string(gbd, data);
                                 free(data);
 

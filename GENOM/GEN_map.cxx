@@ -844,10 +844,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
             if (!error) { // write sequence data
                 GBDATA *gb_data     = GBT_add_data(gb_exist_geneSpec, ali, "data", GB_STRING);
                 if (!gb_data) error = GB_await_error();
-                else {
-                    size_t sequence_length = strlen(sequence);
-                    error                  = GBT_write_sequence(gb_data, sequence_length, sequence);
-                }
+                else    error       = GB_write_string(gb_data, sequence);
             }
 
             // write other entries:
