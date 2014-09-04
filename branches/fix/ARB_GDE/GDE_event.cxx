@@ -279,9 +279,8 @@ static GB_ERROR write_sequence_autoinc_alisize(GBDATA *gb_data, long& ali_len, c
     return error;
 }
 
-inline bool isgap(char c) {
-    return c == '.' || c == '-';
-}
+inline bool isgap(char c) { return c == '.' || c == '-'; }
+inline bool isTU(char c) { return c == 'T' || c == 'U'; }
 
 inline char eatgaps(const char *seq, int& index) {
     /*! increments index forward to next base (or EOS)
@@ -302,39 +301,28 @@ static char *fix_aligned_data(const char *old_seq, const char *new_seq, GB_align
     int n = 0;
     int f = 0;
 
+    bool fixTU = ali_type == GB_AT_RNA || ali_type == GB_AT_DNA;
+    char TU    = ali_type == GB_AT_RNA ? 'U' : 'T';
+    char tu    = tolower(TU);
+
     while (old_seq[o]) {
         char og = eatgaps(old_seq, o);
         char ng = eatgaps(new_seq, n);
 
-        if (og && ng && og != ng) {
-            memset(fixed+f, og, n-f);
-            f = n;
-        }
-        else {
-            f = n;
-        }
+        if (og && ng && og != ng) memset(fixed+f, og, n-f);
+        f = n;
 
         char oc = old_seq[o++];
         char nc = new_seq[n++];
         if (!nc) break;
 
-        if (oc != nc) {
-            char oC = toupper(oc);
-            char nC = toupper(nc);
+        char oC = toupper(oc);
+        char nC = toupper(nc);
 
-            if ((oC == nC)               ||
-                (oC == 'U' && nC == 'T') ||
-                (oC == 'T' && nC == 'U'))
-            {
-                fixed[f++] = oc;
-            }
-            else {
-                f++; // fail (keep char)
-            }
-        }
-        else {
-            f++;
-        }
+        if (fixTU && isTU(nC) && isTU(oC)) fixed[f] = (oc == oC) ? TU : tu;
+        else if (oc != nc && oC == nC)     fixed[f] = oc;
+
+        f++;
     }
 
     return fixed;
@@ -748,16 +736,14 @@ void TEST_fix_aligned_data() {
                      "AC-----GT",    // not fixed
                      "AC-----GT");   // aligned (bases changed!)
 
-    TEST_FIX_ALIGNED__BROKEN(GB_AT_DNA,
+    TEST_FIX_ALIGNED(GB_AT_DNA,
                      "A---cTUu..G--t", // old
                      "AcT--Tt..Gt",    // fixed: case restored; U's convert to T's
-                     "AcT--Uu..Gt",    // unwanted
                      "ACT--UT--GU");   // aligned
 
-    TEST_FIX_ALIGNED__BROKEN(GB_AT_RNA,
+    TEST_FIX_ALIGNED(GB_AT_RNA,
                      "A---cTUu..G--t", // old
                      "AcU--Uu..Gu",    // fixed: case restored; T's convert to U's
-                     "AcT--Uu..Gt",    // unwanted
                      "ACT--UT--GU");   // aligned
 }
 
