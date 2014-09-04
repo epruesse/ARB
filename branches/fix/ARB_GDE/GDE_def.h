@@ -129,9 +129,7 @@ struct NA_Alignment : virtual Noncopyable {
     GBDATA *gb_main;
     char   *alignment_name;
 
-    NA_Alignment() {
-        memset(this, 0, sizeof(*this));
-    }
+    NA_Alignment(GBDATA *gb_main_);
     ~NA_Alignment();
 };
 
@@ -145,4 +143,5 @@ inline void strncpy_terminate(char *dest, const char *source, size_t dest_size) 
 #else
 #error GDE_def.h included twice
 #endif // GDE_DEF_H
+
 

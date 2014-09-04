@@ -213,6 +213,16 @@ static void GDE_freesequ(NA_Sequence *sequ) {
     }
 }
 
+NA_Alignment::NA_Alignment(GBDATA *gb_main_) {
+    memset(this, 0, sizeof(*this));
+
+    gb_main = gb_main_;
+    {
+        GB_transaction ta(gb_main);
+        alignment_name = GBT_get_default_alignment(gb_main);
+    }
+}
+
 NA_Alignment::~NA_Alignment() {
     free(id);
     free(description);
@@ -563,17 +573,8 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
 
     GapCompression compress = static_cast<GapCompression>(aw_root->awar(AWAR_GDE_COMPRESSION)->read_int());
     arb_progress   progress(current_item->label);
-
-    int stop = 0;
-
-    NA_Alignment *DataSet = new NA_Alignment; // @@@ make auto
-
-    // @@@ move code below into fun
-    DataSet->gb_main = db_access.gb_main;
-    {
-        GB_transaction ta(DataSet->gb_main);
-        freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
-    }
+    NA_Alignment   DataSet(db_access.gb_main);
+    int            stop     = 0;
 
     if (current_item->numinputs>0) {
         TypeInfo typeinfo = UNKNOWN_TYPEINFO;
@@ -600,7 +601,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             }
 
             if (!stop) {
-                GB_transaction ta(DataSet->gb_main);
+                GB_transaction ta(DataSet.gb_main);
                 progress.subtitle("reading database");
 
                 long cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
@@ -616,14 +617,14 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             delete filter2;
         }
 
-        if (!stop && DataSet->numelements==0) {
+        if (!stop && DataSet.numelements==0) {
             aw_message("no sequences selected");
             stop = 1;
         }
     }
 
     if (!stop) {
-        int select_mode = (DataSet && (current_item->numinputs>0)) ? ALL : NONE;
+        int select_mode = (current_item->numinputs>0) ? ALL : NONE;
         int pid         = getpid();
 
         static int fileindx = 0;
@@ -675,7 +676,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         aw_message_if(GBK_system(Action));
         free(Action);
 
-        size_t oldnumelements = DataSet->numelements;
+        size_t oldnumelements = DataSet.numelements;
 
         for (int j=0; j<current_item->numoutputs; j++) {
             switch (current_item->output[j].format) {
@@ -701,10 +702,9 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             }
         }
 
-        export_to_DB(DataSet, oldnumelements, current_item->aligned);
+        export_to_DB(&DataSet, oldnumelements, current_item->aligned);
     }
 
-    delete DataSet;
     gde_assert(!GB_have_error());
 }
 
