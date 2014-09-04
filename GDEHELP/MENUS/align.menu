@@ -43,6 +43,7 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
+outaligned:yes
 
 //----------------------------------------------------
 
@@ -105,6 +106,7 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
+outaligned:yes
 
 //-------------------------------------------------------------------
 
@@ -168,6 +170,7 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
+outaligned:yes
 
 //--------------------------------------------------------
 
@@ -189,6 +192,7 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
+outaligned:yes
 
 // --------------------------------------------------------------------------------
 
@@ -223,6 +227,7 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
+outaligned:yes
 
 // --------------------------------------------------------------------------------
 
@@ -322,6 +327,7 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
+outaligned:yes
 
 // --------------------------------------------------------------------------------
 
@@ -412,6 +418,7 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
+outaligned:yes
 
 // --------------------------------------------------------------------------------
 
@@ -519,6 +526,7 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
+outaligned:yes
 
 // --------------------------------------------------------------------------------
 
@@ -619,6 +627,7 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
+outaligned:yes
 
 // --------------------------------------------------------------------------------
 

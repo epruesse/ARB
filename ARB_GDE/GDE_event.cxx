@@ -220,6 +220,7 @@ NA_Alignment::NA_Alignment(GBDATA *gb_main_) {
     {
         GB_transaction ta(gb_main);
         alignment_name = GBT_get_default_alignment(gb_main);
+        alignment_type = GBT_get_alignment_type(gb_main, alignment_name);
     }
 }
 
@@ -234,44 +235,105 @@ NA_Alignment::~NA_Alignment() {
     }
 }
 
-static GB_ERROR WEIRD_write_sequence(GBDATA *gb_data, long ali_len, const char *sequence) {
+static GB_ERROR write_sequence_autoinc_alisize(GBDATA *gb_data, long& ali_len, const char *sequence, int seq_len) {
     /* writes sequence data.
      * Specials things done:
-     * - cuts content beyond 'ali_len' if consisting of ".-nN"
-     * - increments alignment length (stored in DB)
+     * - cuts content beyond 'ali_len' if nothing relevant there
+     * - increments alignment length (stored in DB and parameter)
      */
 
-    // @@@ should 'ali_len' be ref and modified, when alignment length gets modified?
-
-    int      slen     = strlen(sequence);
-    int      old_char = 0;
     GB_ERROR error    = 0;
-    if (slen > ali_len) {
-        int i;
-        for (i = slen -1; i>=ali_len; i--) {
-            if (!strchr("-.nN", sequence[i])) break;    // real base after end of alignment
-        }
-        i++;                            // points to first 0 after alignment
-        if (i > ali_len) {
-            GBDATA     *gb_main  = GB_get_root(gb_data);
-            const char *ali_name = GB_read_key_pntr(gb_data);
-            ali_len              = GBT_get_alignment_len(gb_main, ali_name); // @@@ weird (what if passed in ali_len is completely wrong?)
-            if (slen > ali_len) {               // check for modified alignment len // @@@ should it use 'i'?
-                GBT_set_alignment_len(gb_main, ali_name, i);
-                ali_len = i;
-            }
-        }
-        if (slen > ali_len) {
-            old_char = sequence[ali_len];
-            ((char*)sequence)[ali_len] = 0;
+    int      part_len = seq_len; // size that will be written
+    if (seq_len > ali_len) { // sequence longer than alignment
+        // check whether it can be cutoff w/o loosing anything relevant
+        int oversize          = seq_len-ali_len;
+        int irrelevant        = strspn(sequence+ali_len, "-.nN"); // @@@ this has to be different for AA!
+        int relevant_oversize = oversize-irrelevant;
+
+        part_len = ali_len+relevant_oversize;
+
+        if (relevant_oversize) { // got some relevant data behind alignment length -> increase alignment length
+            int         new_ali_len = part_len;
+            GBDATA     *gb_main     = GB_get_root(gb_data);
+            const char *ali_name    = GB_read_key_pntr(GB_get_father(gb_data));
+
+            gde_assert(GBT_get_alignment_len(gb_main, ali_name) == ali_len);
+
+            error   = GBT_set_alignment_len(gb_main, ali_name, new_ali_len);
+            ali_len = new_ali_len;
         }
     }
-    error = GB_write_string(gb_data, sequence);
-    if (slen> ali_len) ((char*)sequence)[ali_len] = old_char;
+
+    if (!error) {
+        if (part_len<seq_len) {
+            char *seq_part = GB_strndup(sequence, part_len);
+            error = GB_write_string(gb_data, seq_part);
+            free(seq_part);
+        }
+        else {
+            gde_assert(part_len == seq_len);
+            error = GB_write_string(gb_data, sequence);
+        }
+    }
+
     return error;
 }
 
-static void GDE_export(NA_Alignment& dataset, size_t oldnumelements) {
+inline bool isgap(char c) { return c == '.' || c == '-'; }
+inline bool isTU(char c) { return c == 'T' || c == 'U'; }
+
+inline char eatgaps(const char *seq, int& index) {
+    /*! increments index forward to next base (or EOS)
+     * @return first gap char seen or 0
+     */
+    if (isgap(seq[index])) {
+        char gap = seq[index++];
+        while (isgap(seq[index])) ++index;
+        return gap;
+    }
+    return 0;
+}
+
+static char *fix_aligned_data(const char *old_seq, const char *new_seq, GB_alignment_type ali_type) {
+    char *fixed = strdup(new_seq);
+
+    int o = 0;
+    int n = 0;
+    int f = 0;
+
+    bool fixTU = ali_type == GB_AT_RNA || ali_type == GB_AT_DNA;
+    char TU    = ali_type == GB_AT_RNA ? 'U' : 'T';
+    char tu    = tolower(TU);
+
+    while (old_seq[o]) {
+        char og = eatgaps(old_seq, o);
+        char ng = eatgaps(new_seq, n);
+
+        if (og && ng && og != ng) memset(fixed+f, og, n-f);
+        f = n;
+
+        char oc = old_seq[o++];
+        char nc = new_seq[n++];
+        if (!nc) break;
+
+        char oC = toupper(oc);
+        char nC = toupper(nc);
+
+        if (fixTU && isTU(nC) && isTU(oC)) fixed[f] = (oc == oC) ? TU : tu;
+        else if (oc != nc && oC == nC)     fixed[f] = oc;
+
+        f++;
+    }
+
+    return fixed;
+}
+
+static void export_to_DB(NA_Alignment& dataset, size_t oldnumelements, bool aligned_data) {
+    /*! (re-)import data into arb DB
+     * @param dataset normally has been read from file (which was created by external tool)
+     * @param oldnumelements start index into dataset
+     * @param aligned_data if true => only import sequences; expect checksums did not change; repair some minor, unwanted changes (case, T<>U, gaptype)
+     */
     if (dataset.numelements == oldnumelements) return;
     gde_assert(dataset.numelements > oldnumelements); // otherwise this is a noop
 
@@ -297,10 +359,12 @@ static void GDE_export(NA_Alignment& dataset, size_t oldnumelements) {
     }
 
     unsigned long i;
+    const long    oldalignlen = maxalignlen;
+    bool          auto_format = false;
 
     AW_repeated_question overwrite_question;
     AW_repeated_question checksum_change_question;
-    
+
     arb_progress progress("importing", dataset.numelements-oldnumelements+1); // +1 avoids zero-progress
     for (i = oldnumelements; !error && i < dataset.numelements; i++) {
         NA_Sequence *sequ = dataset.element+i;
@@ -325,9 +389,11 @@ static void GDE_export(NA_Alignment& dataset, size_t oldnumelements) {
 
         sequ->gb_species = 0;
 
-        const char *new_seq = (const char *)sequ->sequence;
-        gde_assert(new_seq[sequ->seqlen] == 0);
-        gde_assert((int)strlen(new_seq) == sequ->seqlen);
+        const char *new_seq     = (const char *)sequ->sequence;
+        int         new_seq_len = sequ->seqlen;
+
+        gde_assert(new_seq[new_seq_len] == 0);
+        gde_assert((int)strlen(new_seq) == new_seq_len);
 
         if (!issame) {          // save as extended
             GBDATA *gb_extended = GBT_find_or_create_SAI(gb_main, savename);
@@ -338,34 +404,41 @@ static void GDE_export(NA_Alignment& dataset, size_t oldnumelements) {
                 GBDATA *gb_data  = GBT_add_data(gb_extended, ali_name, "data", GB_STRING);
 
                 if (!gb_data) error = GB_await_error();
-                else error          = WEIRD_write_sequence(gb_data, maxalignlen, new_seq);
+                else {
+                    error = write_sequence_autoinc_alisize(gb_data, maxalignlen, new_seq, new_seq_len);
+                    if (new_seq_len<maxalignlen) auto_format = true;
+                }
             }
         }
         else {                  // save as sequence
             GBDATA *gb_species_data     = GBT_get_species_data(gb_main);
             if (!gb_species_data) error = GB_await_error();
             else {
-                GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, savename);
+                GBDATA *gb_species       = GBT_find_species_rel_species_data(gb_species_data, savename);
+                bool    fix_data_changes = false;
 
                 GB_push_my_security(gb_main);
 
                 if (gb_species) {   // new element that already exists !!!!
-                    const char *question =
-                        GBS_global_string("You are (re-)importing a species '%s'.\n"
-                                          "That species already exists in your database!\n"
-                                          "\n"
-                                          "Possible actions:\n"
-                                          "\n"
-                                          "       - overwrite existing species (all fields)\n"
-                                          "       - overwrite the sequence (does not change other fields)\n"
-                                          "       - skip import of the species\n"
-                                          "\n"
-                                          "Note: After aligning it's recommended to choose 'overwrite sequence'.",
-                                          savename);
+                    enum ReplaceMode { REPLACE_SPEC = 0, REIMPORT_SEQ = 1, SKIP_IMPORT  = 2 } replace_mode;
 
+                    if (aligned_data) {
+                        replace_mode = REIMPORT_SEQ;
+                    }
+                    else {
+                        const char *question =
+                            GBS_global_string("You are (re-)importing a species '%s'.\n"
+                                              "That species already exists in your database!\n"
+                                              "\n"
+                                              "Possible actions:\n"
+                                              "\n"
+                                              "       - overwrite existing species (all fields)\n"
+                                              "       - overwrite the sequence (does not change other fields)\n"
+                                              "       - skip import of the species\n",
+                                              savename);
 
-                    enum ReplaceMode { REPLACE_SPEC = 0, REIMPORT_SEQ = 1, SKIP_IMPORT  = 2, }
-                    replace_mode = (ReplaceMode)overwrite_question.get_answer("GDE_overwrite", question, "Overwrite species,Overwrite sequence only,Skip entry", "all", false);
+                        replace_mode = (ReplaceMode)overwrite_question.get_answer("GDE_overwrite", question, "Overwrite species,Overwrite sequence only,Skip entry", "all", false);
+                    }
 
                     switch (replace_mode) {
                         case SKIP_IMPORT:
@@ -381,9 +454,14 @@ static void GDE_export(NA_Alignment& dataset, size_t oldnumelements) {
                             if (!gb_species) error = GB_await_error();
                             break;
                     }
+
+                    fix_data_changes = replace_mode == REIMPORT_SEQ;
                 }
                 else {
-                    gb_species = GBT_find_or_create_species_rel_species_data(gb_species_data, savename);
+                    if (aligned_data) {
+                        aw_message(GBS_global_string("Warning: new species '%s' has been created (unexpected; possible naming problems)", savename));
+                    }
+                    gb_species             = GBT_find_or_create_species_rel_species_data(gb_species_data, savename);
                     if (!gb_species) error = GB_await_error();
                 }
 
@@ -397,16 +475,64 @@ static void GDE_export(NA_Alignment& dataset, size_t oldnumelements) {
                         GBDATA *gb_old_data   = GBT_find_sequence(gb_species, ali_name);
                         bool    writeSequence = true;
                         if (gb_old_data) {          // we already have data -> compare checksums
-                            const char *old_seq      = GB_read_char_pntr(gb_old_data);
-                            long        old_checksum = GBS_checksum(old_seq, 1, "-.");
-                            long        new_checksum = GBS_checksum(new_seq, 1, "-.");
+                            const char *old_seq = GB_read_char_pntr(gb_old_data);
+
+                            long old_checksum, new_checksum;
+                            bool calcStdChecksum = true;
+                            if (fix_data_changes) {
+                                char *new_seq_fixed = fix_aligned_data(old_seq, new_seq, dataset.alignment_type);  // apply some fixes to (realigned) data
+
+                                switch (dataset.alignment_type) {
+                                    case GB_AT_DNA:
+                                    case GB_AT_RNA: {
+                                        char *old_TU = GBS_string_eval(old_seq,       ":T=U:t=u", NULL);
+                                        char *new_TU = GBS_string_eval(new_seq_fixed, ":T=U:t=u", NULL);
+
+                                        old_checksum = GBS_checksum(old_TU, 1, "-.");
+                                        new_checksum = GBS_checksum(new_TU, 1, "-.");
+
+                                        free(new_TU);
+                                        free(old_TU);
+                                        break;
+                                    }
+                                    case GB_AT_AA:
+                                    case GB_AT_UNKNOWN:
+                                        old_checksum = GBS_checksum(old_seq,       1, "-.");
+                                        new_checksum = GBS_checksum(new_seq_fixed, 1, "-.");
+                                        break;
+                                }
+
+                                if (new_checksum == old_checksum) { // fix succeeded
+                                    free(sequ->sequence);
+                                    sequ->sequence  = (NA_Base*)new_seq_fixed;
+                                    new_seq         = new_seq_fixed;
+                                    calcStdChecksum = false;
+                                }
+                                else {
+                                    fprintf(stderr, "Checksum changed for '%s':\nold='%s'\nfix='%s' (failed)\nnew='%s'\n", savename, old_seq, new_seq_fixed, new_seq);
+                                    free(new_seq_fixed);
+                                }
+                            }
+                            if (calcStdChecksum) {
+                                old_checksum = GBS_checksum(old_seq, 1, "-.");
+                                new_checksum = GBS_checksum(new_seq, 1, "-.");
+                            }
 
                             if (old_checksum != new_checksum) {
-                                char *question = GBS_global_string_copy("Warning: Sequence checksum of '%s' has changed\n", savename);
+                                if (!fix_data_changes) { // already dumped above
+                                    fprintf(stderr, "Checksum changed for '%s':\nold='%s'\nnew='%s'\n", savename, old_seq, new_seq);
+                                }
+
+                                char *question = GBS_global_string_copy("Warning: Sequence checksum of '%s' has changed!\n"
+                                                                        "This should NOT happen if you aligned sequences!\n"
+                                                                        "(see console for changes to sequence)", savename);
+
+                                const char *questionID = aligned_data ? "GDE_accept_aligner_seqchange" : "GDE_accept_seqchange";
+
                                 enum ChangeMode {
                                     ACCEPT_CHANGE = 0,
                                     REJECT_CHANGE = 1,
-                                } change_mode = (ChangeMode)checksum_change_question.get_answer("GDE_accept", question, "Accept change,Reject", "all", false);
+                                } change_mode = (ChangeMode)checksum_change_question.get_answer(questionID, question, "Accept change,Reject", "all", false);
 
                                 if (change_mode == REJECT_CHANGE) writeSequence = false;
 
@@ -416,7 +542,8 @@ static void GDE_export(NA_Alignment& dataset, size_t oldnumelements) {
                             }
                         }
                         if (writeSequence) {
-                            error = WEIRD_write_sequence(gb_data, maxalignlen, new_seq);
+                            error = write_sequence_autoinc_alisize(gb_data, maxalignlen, new_seq, new_seq_len);
+                            if (new_seq_len<maxalignlen) auto_format = true;
                         }
                     }
                 }
@@ -425,6 +552,16 @@ static void GDE_export(NA_Alignment& dataset, size_t oldnumelements) {
         }
         free(savename);
         progress.inc_and_check_user_abort(error);
+    }
+
+    if (!auto_format) auto_format = oldalignlen != maxalignlen;
+
+    if (auto_format) {
+        if (db_access.format_ali) {
+            GB_push_my_security(gb_main);
+            error = db_access.format_ali(gb_main, ali_name);
+            GB_pop_my_security(gb_main);
+        }
     }
 
     progress.done();
@@ -578,9 +715,62 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             }
         }
 
-        GDE_export(DataSet, oldnumelements);
+        export_to_DB(DataSet, oldnumelements, current_item->aligned);
     }
 
     gde_assert(!GB_have_error());
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static arb_test::match_expectation fixed_as(GB_alignment_type ali_type, const char *old, const char *expected_fix, const char *aligned) {
+    using namespace    arb_test;
+    char              *fixed = fix_aligned_data(old, aligned, ali_type);
+    match_expectation  e     = that(fixed).is_equal_to(expected_fix);
+    free(fixed);
+    return e;
+}
+
+#define TEST_FIX_ALIGNED(t,o,f,a)             TEST_EXPECTATION(fixed_as(t,o,f,a))
+#define TEST_FIX_ALIGNED__BROKEN(t,o,fw,fg,a) TEST_EXPECTATION__BROKEN(fixed_as(t,o,fw,a), fixed_as(t,o,fg,a))
+
+void TEST_fix_aligned_data() {
+    TEST_FIX_ALIGNED(GB_AT_RNA,
+                     "...A---CG..G--U.....", // old
+                     "..AC--G..GU...",       // fixed: gaps corrected; T->U
+                     "--AC--G--GT---");      // aligned
+
+    TEST_FIX_ALIGNED(GB_AT_RNA,
+                     "A---CG..G--U",         // old (no gaps at border)
+                     "--AC--G..GU---",       // fixed: gaps corrected; T->U
+                     "--AC--G--GT---");      // aligned
+
+    TEST_FIX_ALIGNED(GB_AT_RNA,
+                     "...A---CG..G--U.....", // old
+                     "AC--G..GU",            // fixed: gaps corrected; T->U
+                     "AC--G--GT");           // aligned (no gaps at border)
+
+    TEST_FIX_ALIGNED(GB_AT_RNA,
+                     "A---CG..G--U", // old
+                     "AC-----GT",    // not fixed
+                     "AC-----GT");   // aligned (bases changed!)
+
+    TEST_FIX_ALIGNED(GB_AT_DNA,
+                     "A---cTUu..G--t", // old
+                     "AcT--Tt..Gt",    // fixed: case restored; U's convert to T's
+                     "ACT--UT--GU");   // aligned
+
+    TEST_FIX_ALIGNED(GB_AT_RNA,
+                     "A---cTUu..G--t", // old
+                     "AcU--Uu..Gu",    // fixed: case restored; T's convert to U's
+                     "ACT--UT--GU");   // aligned
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
