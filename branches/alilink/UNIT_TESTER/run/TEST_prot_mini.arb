@@ -1,0 +1,877 @@
+/*ARBDB ASCII*/
+species_data		%% (%
+	species		:5000	%$ (%
+		name		:7600	"CytLyti6"
+		flag		:7000	"m"
+		full_name		"Cytophaga lytica"
+		short_name		"C. lytica"
+		strain			"DSM 2039"
+		aacid			"395 "
+		acc			"ARB_6B3852E"
+		tmp			"397 "
+		status			"sorted"
+		aa			"395 "
+		exclude			"double entry"
+		aa_pro			"395 "
+		transl_table		"2"
+		codon_start		"1"
+		ali_pro1		%% (%
+			data		:7000	"--ANAGLSE---L*SF-DSIDNAPEEKE*GMTINTSHV..."
+			%) /*ali_pro1*/
+
+		ali_dna1		%% (%
+			data		:7000	"------GCAAATGCAGGTCTTTCTGAA---------TTAAGAAGTTTC---GATTCTATCGATAACGCTCCAGAAGAAAAAGAAAGAGGTATAACAATTAATACTTCTCACGTA........."
+			%) /*ali_dna1*/
+
+		ali_pro2		%% (%
+			data		:7000	"--ANAGLSE---L*SF-DSIDNAPEEKE*GMTINTSHV..."
+			%) /*ali_pro2*/
+
+		ali_dna2		%% (%
+			data		:7000	"------GCAAATGCAGGTCTTTCTGAA---------TTAAGAAGTTTC---GATTCTATCGATAACGCTCCAGAAGAAAAAGAAAGAGGTATAACAATTAATACTTCTCACGTA........."
+			%) /*ali_dna2*/
+
+		ali_rna			%% (%
+			data			"------GCAAAUGCAGGUCUUUCUGAA---------UUAAGAAGUUUC---GAUUCUAUCGAUAACGCUCCAGAAGAAAAAGAAAGAGGUAUAACAAUUAAUACUUCUCACGUA........."
+			%) /*ali_rna*/
+
+		%) /*species*/
+
+	species		:5000	%$ (%
+		name		:7600	"TaxOcell"
+		flag		:7000	"m"
+		full_name		"Taxeobacter ocellatus"
+		short_name		"T. ocellatus"
+		strain			"Myx 2105"
+		aacid			"395 "
+		acc			"ARB_21595EF"
+		tmp			"397 "
+		status			"sorted"
+		aa			"395 "
+		exclude			"double entry"
+		aa_pro			"395 "
+		transl_table		"2"
+		codon_start		"1"
+		ali_pro1		%% (%
+			data		:7000	"--ANKGLAA---KRDF-SSIDNAPEEKERGITINTAHV..."
+			%) /*ali_pro1*/
+
+		ali_dna1		%% (%
+			data		:7000	"------GCTAACAAAGGTCTGGCCGCT---------AAGCGTGACTTC---TCCTCGATCGACAACGCTCCGGAGGAAAAAGAGCGCGGTATCACCATCAACACCGCTCACGTT........."
+			%) /*ali_dna1*/
+
+		ali_pro2		%% (%
+			data		:7000	"--ANKGLAA---KRDF-SSIDNAPEEKERGITINTAHV..."
+			%) /*ali_pro2*/
+
+		ali_dna2		%% (%
+			data		:7000	"------GCTAACAAAGGTCTGGCCGCT---------AAGCGTGACTTC---TCCTCGATCGACAACGCTCCGGAGGAAAAAGAGCGCGGTATCACCATCAACACCGCTCACGTT........."
+			%) /*ali_dna2*/
+
+		ali_rna			%% (%
+			data			"------GCUAACAAAGGUCUGGCCGCU---------AAGCGUGACUUC---UCCUCGAUCGACAACGCUCCGGAGGAAAAAGAGCGCGGUAUCACCAUCAACACCGCUCACGUU........."
+			%) /*ali_rna*/
+
+		%) /*species*/
+
+	species		:5000	%$ (%
+		name		:7600	"BctFra12"
+		flag		:7000	"h"
+		full_name		"Bacteroides fragilis"
+		short_name		"B. fragilis"
+		aacid			"394 "
+		acc			"ARB_4560B41C"
+		tmp			"396 "
+		status			"sorted"
+		aa			"394 "
+		aa_pro			"394 "
+		transl_table		"2"
+		codon_start		"1"
+		ali_pro1		%% (%
+			data		:7000	"--AKKGLSE---LRS-FDSIDNAPEEKE*GITINTSHV..."
+			%) /*ali_pro1*/
+
+		ali_dna1		%% (%
+			data		:7000	"------GCAAAGAAAGGTCTTTCTGAA---------CTTCGTTCT---TTCGATTCTATCGATAATGCTCCTGAAGAAAAAGAAAGAGGTATTACTATCAATACTTCACACGTT........."
+			%) /*ali_dna1*/
+
+		ali_pro2		%% (%
+			data		:7000	"--AKKGLSE---LRS-FDSIDNAPEEKE*GITINTSHV..."
+			%) /*ali_pro2*/
+
+		ali_dna2		%% (%
+			data		:7000	"------GCAAAGAAAGGTCTTTCTGAA---------CTTCGTTCT---TTCGATTCTATCGATAATGCTCCTGAAGAAAAAGAAAGAGGTATTACTATCAATACTTCACACGTT........."
+			%) /*ali_dna2*/
+
+		ali_rna			%% (%
+			data			"------GCAAAGAAAGGUCUUUCUGAA---------CUUCGUUCU---UUCGAUUCUAUCGAUAAUGCUCCUGAAGAAAAAGAAAGAGGUAUUACUAUCAAUACUUCACACGUU........."
+			%) /*ali_rna*/
+
+		%) /*species*/
+
+	species		:5000	%$ (%
+		name		:7600	"StrRamo3"
+		flag		:7000	"h"
+		full_name		"Streptomyces ramocissimus"
+		aacid			"389 "
+		acc			"ARB_30F12BA8"
+		tmp			"392 "
+		aa			"389 "
+		aa_pro			"389 "
+		transl_table		"2"
+		codon_start		"1"
+		ali_pro1		%% (%
+			data		:7000	"--AERGSGT---FVP-FDRIDRAPEEAARGITINIAHV..."
+			%) /*ali_pro1*/
+
+		ali_dna1		%% (%
+			data		:7000	"------GCCGAGCGTGGCTCCGGGACG---------TTCGTCCCG---TTCGACCGCATCGACCGGGCCCCGGAGGAGGCCGCGCGCGGCATCACCATCAACATCGCGCACGTC........."
+			%) /*ali_dna1*/
+
+		ali_pro2		%% (%
+			data		:7000	"--AERGSGT---FVP-FDRIDRAPEEAARGITINIAHV..."
+			%) /*ali_pro2*/
+
+		ali_dna2		%% (%
+			data		:7000	"------GCCGAGCGTGGCTCCGGGACG---------TTCGTCCCG---TTCGACCGCATCGACCGGGCCCCGGAGGAGGCCGCGCGCGGCATCACCATCAACATCGCGCACGTC........."
+			%) /*ali_dna2*/
+
+		ali_rna			%% (%
+			data			"------GCCGAGCGUGGCUCCGGGACG---------UUCGUCCCG---UUCGACCGCAUCGACCGGGCCCCGGAGGAGGCCGCGCGCGGCAUCACCAUCAACAUCGCGCACGUC........."
+			%) /*ali_rna*/
+
+		%) /*species*/
+
+	species		:5000	%$ (%
+		name		:7600	"StrCoel9"
+		file			"[EBI] sctiuf3.em_ba"
+		gcg_id			"SCTIUF3"
+		acc			"X77040"
+		date			"[EBI] 14-JAN-1994 (Rel. 38, Created) 15-MAY-1995 (Rel. 43, Last updated, Version 8)"
+		full_name		"Streptomyces coelicolor"
+		tax			"[EBI] Eubacteria; Firmicutes; Actinomycetes; Streptomycetes; Streptomycetaceae; Streptomyces."
+		author			"[EBI] van Wezel G.P., Woudt L.P., Vervenne R., Verdurmen M.L., Vijgenboom E., Bosch L. van Wezel G.P."
+		title			"[EBI] Cloning and sequencing of the tuf genes of Streptomyces coelicolor A3(2)."
+		journal			"[EBI] Biochim. Biophys. Acta 1219:543-547(1994). Submitted (05-JAN-1994) to the EMBL/GenBank/DDBJ databases. G.P. Van Wezel, Leiden Uni., Dep. of Biochemistry, PO Box 9502, 2300 RA Leiden, NETHERLANDS"
+		strain			"[EBI] M145"
+		aacid			"392 "
+		nuc			"1179 "
+		db_name			"[EBI] Streptomyces coelicolor"
+		gene			"[EBI] S.coelicolor tuf3 gene"
+		id			"[EBI] SCTIUF3"
+		keywords		"[EBI] elongation factor Tu3 tuf3 gene."
+		tmp			"395 "
+		aa			"392 "
+		aa_pro			"392 "
+		transl_table		"2"
+		codon_start		"1"
+		ali_pro1		%% (%
+			data		:7000	"--AERGAGSTTQYVS-FDRIDRAPEEAARGITINIAHV..."
+			%) /*ali_pro1*/
+
+		ali_dna1		%% (%
+			data		:7000	"------GCCGAGCGCGGGGCCGGCAGCACCACCCAGTACGTTTCG---TTCGACCGCATCGACCGCGCCCCGGAGGAGGCGGCGCGCGGCATCACCATCAACATCGCGCACGTC........."
+			%) /*ali_dna1*/
+
+		ali_pro2		%% (%
+			data		:7000	"--AERGAGSTTQYVS-FDRIDRAPEEAARGITINIAHV..."
+			%) /*ali_pro2*/
+
+		ali_dna2		%% (%
+			data		:7000	"------GCCGAGCGCGGGGCCGGCAGCACCACCCAGTACGTTTCG---TTCGACCGCATCGACCGCGCCCCGGAGGAGGCGGCGCGCGGCATCACCATCAACATCGCGCACGTC........."
+			%) /*ali_dna2*/
+
+		ali_rna			%% (%
+			data			"------GCCGAGCGCGGGGCCGGCAGCACCACCCAGUACGUUUCG---UUCGACCGCAUCGACCGCGCCCCGGAGGAGGCGGCGCGCGGCAUCACCAUCAACAUCGCGCACGUC........."
+			%) /*ali_rna*/
+
+		%) /*species*/
+
+	%) /*species_data*/
+
+tree_data		%% (%
+	tree_prot		%% (%
+		tree			"N0.58248,0.66885;N0.04119,0.27423;N0.27475,0.31772;LBctFra12\ALCytLyti6\ALTaxOcell\AN0.09705,0.15387;LStrRamo3\ALStrCoel9\A"
+		nnodes			%i 4
+		ruler			%% (%
+			size			%f 0.1
+			RADIAL			%% (%
+				ruler_y			%f 5.80564
+				ruler_x			%f 0
+				%) /*RADIAL*/
+
+			text_x			%f 0
+			text_y			%f 0
+			ruler_width		%i 0
+			LIST			%% (%
+				ruler_y			%f 0
+				ruler_x			%f 0
+				text_x			%f 0
+				text_y			%f 0
+				%) /*LIST*/
+
+			%) /*ruler*/
+
+		security		%i 0
+		remark			"Phylip Categories Neighbour dotgapmax _834\n[created as copy of 'tree_workdec']"
+		node			%% (%
+			id			%i 0
+			group_name		"Bacteria EF-Tu"
+			%) /*node*/
+
+		order			%i 1
+		%) /*tree_prot*/
+
+	%) /*tree_data*/
+
+presets			%% (%
+	use			"ali_rna"
+	max_alignment_len		%i 2000
+	alignment_len		%i 0
+	max_name_len		%i 9
+	alignment		%% (%
+		alignment_name		"ali_pro1"
+		alignment_len		%i 41
+		aligned			%i 1
+		alignment_write_security		%i 5
+		alignment_type		"ami"
+		alignment_rem		""
+		auto_format		%i 0
+		%) /*alignment*/
+
+	key_data		%% (%
+		key			%% (%
+			key_name		"ali_pro1"
+			key_type		%i 15
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_pro1/data"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_dna1"
+			key_type		%i 15
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_dna1/data"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_pro2"
+			key_type		%i 15
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_pro2/data"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_dna2"
+			key_type		%i 15
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_dna2/data"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_rna"
+			key_type		%i 15
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_rna/data"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		%) /*key_data*/
+
+	alignment		%% (%
+		alignment_name		"ali_dna1"
+		alignment_len		%i 123
+		aligned			%i 1
+		alignment_write_security		%i 5
+		alignment_type		"dna"
+		alignment_rem		""
+		auto_format		%i 0
+		%) /*alignment*/
+
+	alignment		%% (%
+		alignment_name		"ali_pro2"
+		alignment_len		%i 41
+		aligned			%i 1
+		linked			"ali_dna2"
+		alignment_write_security		%i 5
+		alignment_type		"ami"
+		alignment_rem		""
+		auto_format		%i 0
+		%) /*alignment*/
+
+	alignment		%% (%
+		alignment_name		"ali_dna2"
+		alignment_len		%i 123
+		aligned			%i 1
+		linked			"ali_pro2"
+		alignment_write_security		%i 5
+		alignment_type		"dna"
+		alignment_rem		""
+		auto_format		%i 0
+		%) /*alignment*/
+
+	alignment		%% (%
+		alignment_name		"ali_rna"
+		alignment_len		%i 123
+		aligned			%i 1
+		alignment_write_security		%i 5
+		alignment_type		"rna"
+		alignment_rem		""
+		auto_format		%i 0
+		%) /*alignment*/
+
+	%) /*presets*/
+
+description		"very short alignments (2 DNA, 2 protein)"
+focus			%% (%
+	tree_name		"tree_prot"
+	%) /*focus*/
+
+nt			%% (%
+	protein_codon_type		%i 1
+	min_mismatches		%i 0
+	target_string		""
+	primer_target_string		""
+	gene_content		""
+	%) /*nt*/
+
+genom_db		%i 0
+checks			%% (%
+	check			"fix gene_data"
+	check			"del_mark_move_REF"
+	check			"fix_dict_compress"
+	check			"duplicated_item_colors"
+	%) /*checks*/
+
+extended_data		%% (%
+	%) /*extended_data*/
+
+configuration_data		%% (%
+	configuration		%% (%
+		name			"default_configuration"
+		top_area		""
+		middle_area		"\AGSAI-Maingroup\AE\AFMore Sequences\AE\AGBacteria EF-Tu\ALBctFra12\ALCytLyti6\ALTaxOcell\ALStrRamo3\ALStrCoel9\AE"
+		%) /*configuration*/
+
+	%) /*configuration_data*/
+
+sai_visualize		%% (%
+	%) /*sai_visualize*/
+
+track			%% (%
+	%) /*track*/
+
+arb_presets		%% (%
+	viewkey			%% (%
+		key_text		"name"
+		len1			%i 12
+		pars			""
+		group			%i 0
+		leaf			%i 1
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		"full_name"
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 1
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			"taxonomy(1)"
+		group			%i 1
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		"acc"
+		len1			%i 20
+		pars			""
+		group			%i 0
+		leaf			%i 1
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		"date"
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	%) /*arb_presets*/
+
+submission		%% (%
+	%) /*submission*/
+
+table_data		%% (%
+	%) /*table_data*/
+
+secedit			%% (%
+	structs			%% (%
+		%) /*structs*/
+
+	%) /*secedit*/
+
