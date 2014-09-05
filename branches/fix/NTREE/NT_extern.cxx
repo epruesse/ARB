@@ -555,12 +555,12 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { 0, 0 }
 };
 
-static char *tree_setting_store_config(AW_window *aww, AW_CL,  AW_CL) {
-    AWT_config_definition cdef(aww->get_root(), tree_setting_config_mapping);
+static char *tree_setting_store_config(AW_CL,  AW_CL) {
+    AWT_config_definition cdef(tree_setting_config_mapping);
     return cdef.read();
 }
-static void tree_setting_restore_config(AW_window *aww, const char *stored_string, AW_CL,  AW_CL) {
-    AWT_config_definition cdef(aww->get_root(), tree_setting_config_mapping);
+static void tree_setting_restore_config(const char *stored_string, AW_CL,  AW_CL) {
+    AWT_config_definition cdef(tree_setting_config_mapping);
     cdef.write(stored_string);
 }
 

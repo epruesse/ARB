@@ -2581,13 +2581,13 @@ static void query_box_init_config(AWT_config_definition& cdef, DbQuery *query) {
         cdef.add(query->awar_operator[key_id], "operator", key_id);
     }
 }
-static char *query_box_store_config(AW_window *aww, AW_CL cl_query, AW_CL) {
-    AWT_config_definition cdef(aww->get_root());
+static char *query_box_store_config(AW_CL cl_query, AW_CL) {
+    AWT_config_definition cdef;
     query_box_init_config(cdef, (DbQuery *)cl_query);
     return cdef.read();
 }
-static void query_box_restore_config(AW_window *aww, const char *stored, AW_CL cl_query, AW_CL) {
-    AWT_config_definition cdef(aww->get_root());
+static void query_box_restore_config(const char *stored, AW_CL cl_query, AW_CL) {
+    AWT_config_definition cdef;
     query_box_init_config(cdef, (DbQuery *)cl_query);
     cdef.write(stored);
 }

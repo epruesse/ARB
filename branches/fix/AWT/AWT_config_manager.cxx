@@ -36,47 +36,43 @@ private:
 
     AWT_store_config_to_string  store;
     AWT_load_config_from_string load;
-    AW_CL                       client1; // client data
-    AW_CL                       client2;
 
-    AW_window  *last_client_aww;
-    AW_default  default_file;
+    AW_CL client1; // client data for callbacks above
+    AW_CL client2;
+
+    AW_default default_file;
 
 public:
-    AWT_configuration(AW_window *aww, AW_default default_file_, const char *id_, AWT_store_config_to_string store_, AWT_load_config_from_string load_, AW_CL cl1, AW_CL cl2)
+    AWT_configuration(AW_default default_file_, const char *id_, AWT_store_config_to_string store_, AWT_load_config_from_string load_, AW_CL cl1, AW_CL cl2)
         : id(id_),
           store(store_),
           load(load_),
           client1(cl1),
           client2(cl2),
-          last_client_aww(aww),
           default_file(default_file_)
     {}
-    virtual ~AWT_configuration() {}
 
     bool operator<(const AWT_configuration& other) const { return id<other.id; }
     string get_awar_name(const string& subname) const { return string("general_configs/")+id+'/'+subname; }
     string get_awar_value(const string& subname, const char *default_value = "") const {
-        AW_root *aw_root   = last_client_aww->get_root();
         string   awar_name = get_awar_name(subname);
-        char    *value     = aw_root->awar_string(awar_name.c_str(), default_value, default_file)->read_string();
+        char    *value     = AW_root::SINGLETON->awar_string(awar_name.c_str(), default_value, default_file)->read_string();
         string   result    = value;
         free(value);
         return result;
     }
     void set_awar_value(const string& subname, const string& new_value) const {
-        AW_root *aw_root   = last_client_aww->get_root();
-        aw_root->awar_string(get_awar_name(subname).c_str(), "")->write_string(new_value.c_str());
+        AW_root::SINGLETON->awar_string(get_awar_name(subname).c_str(), "")->write_string(new_value.c_str());
     }
 
     const char *get_id() const { return id.c_str(); }
 
-    char *Store() const { return store(last_client_aww, client1, client2); }
+    char *Store() const { return store(client1, client2); }
     GB_ERROR Restore(const string& s) const {
         GB_ERROR error = 0;
 
         if (s.empty()) error = "empty/nonexistant config";
-        else load(last_client_aww, s.c_str(), client1, client2);
+        else load(s.c_str(), client1, client2);
 
         return error;
     }
@@ -291,7 +287,7 @@ static void destroy_AWT_configuration(AWT_configuration *c) { delete c; }
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store_cb,
                                AWT_load_config_from_string load_cb, AW_CL cl1, AW_CL cl2, const char *macro_id)
 {
-    AWT_configuration * const config = new AWT_configuration(aww, default_file_, id, store_cb, load_cb, cl1, cl2);
+    AWT_configuration * const config = new AWT_configuration(default_file_, id, store_cb, load_cb, cl1, cl2);
 
     aww->button_length(0); // -> autodetect size by size of graphic
     aww->callback(makeWindowCallback(AWT_start_config_manager, destroy_AWT_configuration, config));
@@ -403,18 +399,19 @@ AWT_config::AWT_config(const char *config_char_ptr)
         pos = end+2;            // skip ';'
     }
 }
-AWT_config::AWT_config(const AWT_config_mapping *cfgname_2_awar, AW_root *root)
-    : mapping(new AWT_config_mapping)
-    , parse_error(0)
+AWT_config::AWT_config(const AWT_config_mapping *cfgname_2_awar)
+    : mapping(new AWT_config_mapping),
+      parse_error(0)
 {
-    const config_map& awarmap  = cfgname_2_awar->cmap;
-    config_map& valuemap = mapping->cmap;
+    const config_map&  awarmap  = cfgname_2_awar->cmap;
+    config_map&        valuemap = mapping->cmap;
+    AW_root           *aw_root  = AW_root::SINGLETON;
 
     for (config_map::const_iterator c = awarmap.begin(); c != awarmap.end(); ++c) {
         const string& key(c->first);
         const string& awar_name(c->second);
 
-        char *awar_value = root->awar(awar_name.c_str())->read_as_string();
+        char *awar_value = aw_root->awar(awar_name.c_str())->read_as_string();
         valuemap[key]    = awar_value;
         free(awar_value);
     }
@@ -462,7 +459,7 @@ char *AWT_config::config_string() const {
     }
     return strdup(result.c_str());
 }
-GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW_root *root) const {
+GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar) const {
     GB_ERROR       error = 0;
     GB_transaction ta(AW_ROOT_DEFAULT);
     // Notes:
@@ -472,6 +469,7 @@ GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW
     //   difference IF the 1st awar is bound to main-DB. At best old behavior was obscure.
 
     awt_assert(!parse_error);
+    AW_root *aw_root = AW_root::SINGLETON;
     for (config_map::iterator e = mapping->begin(); !error && e != mapping->end(); ++e) {
         const string& config_name(e->first);
         const string& value(e->second);
@@ -482,7 +480,7 @@ GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW
         }
         else {
             const string&  awar_name(found->second);
-            AW_awar       *awar = root->awar(awar_name.c_str());
+            AW_awar       *awar = aw_root->awar(awar_name.c_str());
             awar->write_as_string(value.c_str());
         }
     }
@@ -492,11 +490,12 @@ GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW
 // ------------------------------
 //      AWT_config_definition
 
-AWT_config_definition::AWT_config_definition(AW_root *aw_root)
-    : root(aw_root),  config_mapping(new AWT_config_mapping) {}
+AWT_config_definition::AWT_config_definition()
+    : config_mapping(new AWT_config_mapping)
+{}
 
-AWT_config_definition::AWT_config_definition(AW_root *aw_root, AWT_config_mapping_def *mdef)
-    : root(aw_root),  config_mapping(new AWT_config_mapping)
+AWT_config_definition::AWT_config_definition(AWT_config_mapping_def *mdef)
+    : config_mapping(new AWT_config_mapping)
 {
     add(mdef);
 }
@@ -521,7 +520,7 @@ void AWT_config_definition::add(AWT_config_mapping_def *mdef) {
 char *AWT_config_definition::read() const {
     // creates a string from awar values
 
-    AWT_config current_state(config_mapping, root);
+    AWT_config current_state(config_mapping);
     return current_state.config_string();
 }
 void AWT_config_definition::write(const char *config_char_ptr) const {
@@ -530,7 +529,7 @@ void AWT_config_definition::write(const char *config_char_ptr) const {
 
     AWT_config wanted_state(config_char_ptr);
     GB_ERROR   error  = wanted_state.parseError();
-    if (!error) error = wanted_state.write_to_awars(config_mapping, root);
+    if (!error) error = wanted_state.write_to_awars(config_mapping);
     if (error) aw_message(GBS_global_string("Error restoring configuration (%s)", error));
 }
 

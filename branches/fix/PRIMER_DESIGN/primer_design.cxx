@@ -43,8 +43,8 @@ static double get_estimated_memory(AW_root *root) {
     return mem;
 }
 
-static void primer_design_event_update_memory(AW_window *aww) {
-    AW_root *root = aww->get_root();
+static void primer_design_event_update_memory() {
+    AW_root *root = AW_root::SINGLETON;
     double   mem  = get_estimated_memory(root);
 
     if (mem > 1073741824) {
@@ -273,7 +273,7 @@ static void primer_design_event_check_primer_length(AW_window *aww, AW_CL cl_max
     root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->write_int(min_length);
     root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->write_int(max_length);
 
-    primer_design_event_update_memory(aww);
+    primer_design_event_update_memory();
 }
 
 static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_from_gene) {
@@ -406,7 +406,7 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
             root->awar(AWAR_PRIMER_DESIGN_DIST_MAX)->write_int(dist_max);
 
             // update mem-info
-            primer_design_event_update_memory(aww);
+            primer_design_event_update_memory();
 
 #if defined(DUMP_PRIMER)
             printf ("primer_design_event_init : left_min   %7li\n", left_min);
@@ -451,15 +451,15 @@ static AWT_config_mapping_def primer_design_config_mapping[] = {
     { 0, 0 }
 };
 
-static char *primer_design_store_config(AW_window *aww, AW_CL,  AW_CL) {
-    AWT_config_definition cdef(aww->get_root(), primer_design_config_mapping);
+static char *primer_design_store_config(AW_CL,  AW_CL) {
+    AWT_config_definition cdef(primer_design_config_mapping);
     return cdef.read();
 }
 
-static void primer_design_restore_config(AW_window *aww, const char *stored_string, AW_CL,  AW_CL) {
-    AWT_config_definition cdef(aww->get_root(), primer_design_config_mapping);
+static void primer_design_restore_config(const char *stored_string, AW_CL,  AW_CL) {
+    AWT_config_definition cdef(primer_design_config_mapping);
     cdef.write(stored_string);
-    primer_design_event_update_memory(aww);
+    primer_design_event_update_memory();
 }
 
 AW_window *create_primer_design_window(AW_root *root, GBDATA *gb_main) {
@@ -508,14 +508,14 @@ AW_window *create_primer_design_window(AW_root *root, GBDATA *gb_main) {
     aws->create_input_field(AWAR_PRIMER_DESIGN_LEFT_POS, 7);
     
     aws->at("maxleft");
-    aws->callback(primer_design_event_update_memory);
+    aws->callback(makeWindowCallback(primer_design_event_update_memory));
     aws->create_input_field(AWAR_PRIMER_DESIGN_LEFT_LENGTH, 9);
 
     aws->at("minright");
     aws->create_input_field(AWAR_PRIMER_DESIGN_RIGHT_POS, 7);
     
     aws->at("maxright");
-    aws->callback(primer_design_event_update_memory);
+    aws->callback(makeWindowCallback(primer_design_event_update_memory));
     aws->create_input_field(AWAR_PRIMER_DESIGN_RIGHT_LENGTH, 9);
 
     aws->at("minlen");

@@ -97,8 +97,9 @@ inline const char *current_field_awar(AW_root *aw_root, const char *subfield) {
     return 0; // no field definition selected
 }
 
-static void create_awars_for_field(AW_root *aw_root, const char *cur_field) {
+static void create_awars_for_field(const char *cur_field) {
     // Note : MG_current_field_def_changed_cb also creates these awars!
+    AW_root *aw_root = AW_root::SINGLETON;
     aw_root->awar_string(field_awar(cur_field, "source"), cur_field, MG_props);
     aw_root->awar_int(field_awar(cur_field, "method"), 1, MG_props);
     aw_root->awar_string(field_awar(cur_field, "aci"), "", MG_props);
@@ -194,7 +195,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_src, GBDATA *gb_dst, GB_H
 
             // export one field (start contains destination field name)
             {
-                create_awars_for_field(aw_root, start);
+                create_awars_for_field(start);
                 CreationMethod  method = (CreationMethod)aw_root->awar(field_awar(start, "method"))->read_int();
                 char           *source = aw_root->awar(field_awar(start, "source"))->read_string();
                 char           *aci    = aw_root->awar(field_awar(start, "aci"))->read_string();
@@ -454,8 +455,6 @@ static void MG_update_selection_list_on_field_transfers(AW_root *aw_root, AW_sel
 }
 
 static void init_gene_species_xfer_fields_subconfig(AWT_config_definition& cdef, char *existing_definitions) {
-    AW_root *aw_root = cdef.get_root();
-
     char *start = existing_definitions+1;
     mg_assert(existing_definitions[0] == ';');
 
@@ -471,7 +470,7 @@ static void init_gene_species_xfer_fields_subconfig(AWT_config_definition& cdef,
         // add config :
 #define add_config(s, id) cdef.add(field_awar(s, id), id, count)
 
-        create_awars_for_field(aw_root, start);
+        create_awars_for_field(start);
 
         add_config(start, "source");
         add_config(start, "method");
@@ -488,11 +487,11 @@ static void init_gene_species_xfer_fields_config(AWT_config_definition& cdef) {
     cdef.add(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS, "fields");
     cdef.add(AWAR_MERGE_GENE_SPECIES_FIELDS_SAVE, "defs");
 }
-static char *store_gene_species_xfer_fields(AW_window *aww, AW_CL,  AW_CL) {
-    AW_root *aw_root = aww->get_root();
+static char *store_gene_species_xfer_fields(AW_CL, AW_CL) {
+    AW_root *aw_root = AW_root::SINGLETON;
     {
-        char                  *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
-        AWT_config_definition  cdef(aw_root);
+        char *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
+        AWT_config_definition cdef;
 
         init_gene_species_xfer_fields_subconfig(cdef, existing_definitions);
 
@@ -504,18 +503,18 @@ static char *store_gene_species_xfer_fields(AW_window *aww, AW_CL,  AW_CL) {
     }
 
     // save AWAR_MERGE_GENE_SPECIES_FIELDS_SAVE and AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS
-    AWT_config_definition sub_cdef(aw_root);
+    AWT_config_definition sub_cdef;
     init_gene_species_xfer_fields_config(sub_cdef);
     return sub_cdef.read();
 }
-static void load_gene_species_xfer_fields(AW_window *aww, const char *stored_string, AW_CL cl_geneSpecFieldList, AW_CL) {
-    AW_root *aw_root = aww->get_root();
+static void load_gene_species_xfer_fields(const char *stored_string, AW_CL cl_geneSpecFieldList, AW_CL) {
+    AW_root *aw_root = AW_root::SINGLETON;
 
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->write_string(""); // de-select
 
     // Load 'AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS' and 'AWAR_MERGE_GENE_SPECIES_FIELDS_SAVE'
     {
-        AWT_config_definition sub_cdef(aw_root);
+        AWT_config_definition sub_cdef;
         init_gene_species_xfer_fields_config(sub_cdef);
         sub_cdef.write(stored_string);
     }
@@ -524,7 +523,7 @@ static void load_gene_species_xfer_fields(AW_window *aww, const char *stored_str
         char *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
         char *sub_config           = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_SAVE)->read_string();
 
-        AWT_config_definition cdef(aw_root);
+        AWT_config_definition cdef;
         init_gene_species_xfer_fields_subconfig(cdef, existing_definitions);
         cdef.write(sub_config);
 

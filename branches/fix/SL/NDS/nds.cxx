@@ -330,14 +330,14 @@ static void nds_init_config(AWT_config_definition& cdef) {
     }
 }
 
-static char *nds_store_config(AW_window *aww, AW_CL, AW_CL) {
-    AWT_config_definition cdef(aww->get_root());
+static char *nds_store_config(AW_CL, AW_CL) {
+    AWT_config_definition cdef;
     nds_init_config(cdef);
     return cdef.read();
 }
 
-static void nds_restore_config(AW_window *aww, const char *stored, AW_CL, AW_CL) {
-    AWT_config_definition cdef(aww->get_root());
+static void nds_restore_config(const char *stored, AW_CL, AW_CL) {
+    AWT_config_definition cdef;
     nds_init_config(cdef);
 
     AWT_config parsedCfg(stored);
