@@ -1,0 +1,86 @@
+item:Import sequences using Readseq (slow) ...
+itemmeta: R
+itemmethod:arb_readseq $INPUTFILE -a -f2 > TmpOutputFile
+itemhelp:readseq.help
+
+arg:INPUTFILE
+argtype:filename
+arglabel:Name of file to import
+
+out:TmpOutputFile
+outformat:genbank
+
+
+
+item:Import fields from calc-sheet
+itemmeta: c
+itemmethod:( \
+        import_from_table.pl "$FROMFILE" \
+                --match "$MATCHCOL,$MATCHFIELD" \
+                --write "$WRITECOL,$WRITEFIELD" \
+                $SEPARATOR $OVERWRITE $SKIPUNKNOWN $MARKEDONLY $MARK $ASINT \
+        )&
+
+arg:FROMFILE
+argtype:filename
+arglabel:Import from CSV
+argtext:csv
+
+arg:WRITECOL
+arglabel:Write content of column
+argtype:slider
+argmin:1
+argmax:9999
+
+arg:WRITEFIELD
+arglabel:to field
+argtype:text
+
+arg:MATCHFIELD
+arglabel:of species for which field
+argtype:text
+
+arg:MATCHCOL
+arglabel:matches content of column
+argtype:slider
+argmin:1
+argmax:9999
+
+arg:SEPARATOR
+argtype:choice_menu
+arglabel:Columns are separated by
+argchoice:tabs:
+argchoice:commas:--csv
+
+arg:OVERWRITE
+argtype:chooser
+arglabel:Overwrite existing fields
+argchoice:no:
+argchoice:yes:--overwrite
+
+arg:SKIPUNKNOWN
+argtype:choice_menu
+arglabel:Unmatched entries will  
+argchoice:abort importing:
+argchoice:be skipped:--skip-unknown
+
+arg:MARKEDONLY
+argtype:choice_menu
+arglabel:Import to 
+argchoice:all species:
+argchoice:marked species:--marked-only
+
+arg:MARK
+argtype:choice_menu
+arglabel:Mark
+argchoice:dont change:
+argchoice:species when writing field (unmark rest):--mark
+
+arg:ASINT
+arglabel:Field type
+argtype:choice_menu
+argchoice:Text:
+argchoice:Numeric:--as-integer
+
+
+
