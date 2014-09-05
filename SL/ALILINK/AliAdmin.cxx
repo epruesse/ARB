@@ -33,18 +33,3 @@ void AliAdmin::window_init(AW_window_simple *aw, const char *id_templ, const cha
     free(id);
 }
 
-// --------------------------------------------------------------------------------
-
-#ifdef UNIT_TESTS
-#ifndef TEST_UNIT_H
-#include <test_unit.h>
-#endif
-
-void NOTEST_dummy() {
-    TEST_REJECT(true);
-}
-
-#endif // UNIT_TESTS
-
-// --------------------------------------------------------------------------------
-

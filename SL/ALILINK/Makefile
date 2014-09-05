@@ -86,8 +86,29 @@ AliAdmin.o: $(ARBHOME)/INCLUDE/gccver.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/smartptr.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/static_assert.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/test_global.h
-AliAdmin.o: $(ARBHOME)/INCLUDE/test_unit.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/ttypes.h
+
+LinkAlignments.o: LinkAlignments.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/ad_prot.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/arb_assert.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/arb_core.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/arb_error.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/arb_msg.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/arb_string.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/arbdb.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/arbdbt.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/arbtools.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/attributes.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/cxxforward.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/downcast.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/dupstr.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/gccver.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/smartptr.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/static_assert.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/test_global.h
+LinkAlignments.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 TranslateRealign.o: TranslateRealign.h
 TranslateRealign.o: $(ARBHOME)/INCLUDE/ad_prot.h
