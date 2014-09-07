@@ -2146,12 +2146,8 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
         aws->callback(makeHelpCallback("color_loadsave.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
-        aws->at("name");
-        aws->create_input_field(AWAR_COLOR_LOADSAVE_NAME, 60);
-
         dbq_assert(csd->colorsets == 0);
-        aws->at("list");
-        csd->colorsets = aws->create_selection_list(AWAR_COLOR_LOADSAVE_NAME, 0, 0, false);
+        csd->colorsets = awt_create_selection_list_with_input_field(aws, AWAR_COLOR_LOADSAVE_NAME, "list", "name");
 
         update_colorset_selection_list(csd);
 
