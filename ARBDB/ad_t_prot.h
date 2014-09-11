@@ -32,7 +32,7 @@ NOT4PERL void GBT_reverseComplementNucSequence(char *seq, long length, char T_or
 GBDATA *GBT_get_presets(GBDATA *gb_main);
 int GBT_count_alignments(GBDATA *gb_main);
 GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name);
-void GBT_get_alignment_names(ConstStrArray& names, GBDATA *gbd);
+void GBT_get_alignment_names(ConstStrArray& names, GBDATA *gb_main);
 GB_ERROR GBT_check_alignment_name(const char *alignment_name);
 GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long aligned, long security, const char *type);
 GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *dest, int copy, int dele);

@@ -301,14 +301,14 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
     return error;
 }
 
-void GBT_get_alignment_names(ConstStrArray& names, GBDATA *gbd) {
+void GBT_get_alignment_names(ConstStrArray& names, GBDATA *gb_main) {
     /* Get names of existing alignments from database.
      *
      * Returns: array of strings, the last element is NULL
      * (Note: use GBT_free_names() to free result)
      */
 
-    GBDATA *presets = GBT_get_presets(gbd);
+    GBDATA *presets = GBT_get_presets(gb_main);
     for (GBDATA *ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
         GBDATA *name = GB_entry(ali, "alignment_name");
         names.put(name ? GB_read_char_pntr(name) : "<unnamed alignment>");
