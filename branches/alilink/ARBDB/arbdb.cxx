@@ -2479,27 +2479,7 @@ inline void gb_remove_callbacks_that(GBDATA *gbd, PRED shallRemove) {
 
     if (gbd->ext) {
         gb_callback_list *cbl = gbd->get_callbacks();
-        if (cbl) {
-            bool prev_running = false;
-
-            for (gb_callback_list::itertype cb = cbl->callbacks.begin(); cb != cbl->callbacks.end(); ) {
-                bool this_running = cb->running;
-
-                if (shallRemove(*cb)) {
-                    if (prev_running || this_running) {
-                        cb->spec.mark_for_removal();
-                        ++cb;
-                    }
-                    else {
-                        cb = cbl->callbacks.erase(cb);
-                    }
-                }
-                else {
-                    ++cb;
-                }
-                prev_running = this_running;
-            }
-        }
+        if (cbl) cbl->remove_callbacks_that(shallRemove);
     }
 }
 
