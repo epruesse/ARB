@@ -47,7 +47,7 @@ class AWT_config {
     AWT_config& operator = (const AWT_config&);
 public:
     AWT_config(const char *config_string);
-    AWT_config(const AWT_config_mapping *cfgname_2_awar, AW_root *root); // internal use (reads current awar values)
+    AWT_config(const AWT_config_mapping *cfgname_2_awar); // internal use (reads current awar values)
     ~AWT_config();
 
     GB_ERROR parseError() const { return parse_error; }
@@ -60,7 +60,7 @@ public:
 
     // result
     char *config_string() const; // return current state as config string
-    GB_ERROR write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW_root *root) const; // internal use (write config into awars)
+    GB_ERROR write_to_awars(const AWT_config_mapping *cfgname_2_awar) const; // internal use (write config into awars)
 };
 
 // ------------------------------
@@ -68,15 +68,14 @@ public:
 
 class AWT_config_definition {
 private:
-    AW_root            *root;
     AWT_config_mapping *config_mapping; // defines config-name -> awar-name relation
 
     AWT_config_definition(const AWT_config_definition&);
     AWT_config_definition& operator = (const AWT_config_definition&);
 public:
-    AWT_config_definition(AW_root *aw_root);
-    AWT_config_definition(AW_root *aw_root, AWT_config_mapping_def *mapping_definition); // simple definition
-    virtual ~AWT_config_definition();
+    AWT_config_definition();
+    AWT_config_definition(AWT_config_mapping_def *mapping_definition); // simple definition
+    ~AWT_config_definition();
 
     void add(const char *awar_name, const char *config_name);
     void add(const char *awar_name, const char *config_name, int counter);
@@ -84,15 +83,13 @@ public:
 
     char *read() const;         // awars -> config string (heap copy)
     void write(const char *config_string) const; // config string -> awars (use to restore a saved configuration)
-
-    AW_root *get_root() const { return root; }
 };
 
 // ----------------------------------------
 //      callbacks from config manager :
 
-typedef char *(*AWT_store_config_to_string)(AW_window *aww, AW_CL cl1, AW_CL cl2);
-typedef void (*AWT_load_config_from_string)(AW_window *aww, const char *stored_string, AW_CL cl1, AW_CL cl2);
+typedef char *(*AWT_store_config_to_string)(AW_CL cl1, AW_CL cl2);
+typedef void (*AWT_load_config_from_string)(const char *stored_string, AW_CL cl1, AW_CL cl2);
 
 // ----------------------------------
 // the config manager itself

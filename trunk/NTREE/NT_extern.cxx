@@ -218,6 +218,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     NT_create_trackAliChanges_Awars(awr, GLOBAL.gb_main);
 
     NT_create_alignment_vars(awr, def, GLOBAL.gb_main);
+    NT_create_extendeds_vars(awr, def, GLOBAL.gb_main);
     create_nds_vars(awr, def, GLOBAL.gb_main);
     create_export_nds_awars(awr, def);
     awt_create_dtree_awars(awr, GLOBAL.gb_main);
@@ -555,12 +556,12 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { 0, 0 }
 };
 
-static char *tree_setting_store_config(AW_window *aww, AW_CL,  AW_CL) {
-    AWT_config_definition cdef(aww->get_root(), tree_setting_config_mapping);
+static char *tree_setting_store_config(AW_CL,  AW_CL) {
+    AWT_config_definition cdef(tree_setting_config_mapping);
     return cdef.read();
 }
-static void tree_setting_restore_config(AW_window *aww, const char *stored_string, AW_CL,  AW_CL) {
-    AWT_config_definition cdef(aww->get_root(), tree_setting_config_mapping);
+static void tree_setting_restore_config(const char *stored_string, AW_CL,  AW_CL) {
+    AWT_config_definition cdef(tree_setting_config_mapping);
     cdef.write(stored_string);
 }
 
@@ -1266,8 +1267,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->insert_sub_menu("Edit Sequences", "E");
             {
-                awm->insert_menu_topic("new_arb_edit4",  "Using marked species and tree", "m", "arb_edit4.hlp", AWM_ALL, NT_start_editor_on_tree, 0,  (AW_CL)ntw);
-                awm->insert_menu_topic("new2_arb_edit4", "... plus relatives",            "r", "arb_edit4.hlp", AWM_ALL, NT_start_editor_on_tree, -1, (AW_CL)ntw);
+                awm->insert_menu_topic("new_arb_edit4",  "Using marked species and tree", "m", "arb_edit4.hlp", AWM_ALL, makeWindowCallback(NT_start_editor_on_tree,  0, ntw));
+                awm->insert_menu_topic("new2_arb_edit4", "... plus relatives",            "r", "arb_edit4.hlp", AWM_ALL, makeWindowCallback(NT_start_editor_on_tree, -1, ntw));
                 awm->insert_menu_topic("old_arb_edit4",  "Using earlier configuration",   "c", "arb_edit4.hlp", AWM_ALL, NT_create_startEditorOnOldConfiguration_window);
             }
             awm->close_sub_menu();
@@ -1694,7 +1695,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     awm->at(db_alignx, second_liney);
 
     awm->at_set_to(false, false, ((2-is_genome_db)*EDIT_XSIZE), EDIT_YSIZE);
-    awm->callback(NT_start_editor_on_tree, 0, (AW_CL)ntw);
+    awm->callback(makeWindowCallback(NT_start_editor_on_tree, 0, ntw));
     awm->help_text("arb_edit4.hlp");
     awm->create_button("EDIT_SEQUENCES", is_genome_db ? "#editor_small.xpm" : "#editor.xpm");
 

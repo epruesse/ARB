@@ -59,7 +59,7 @@ void NT_rerepair_DB(AW_window *, AW_CL cl_gbmain, AW_CL dummy_1x);
 /* NT_edconf.cxx */
 void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_ntw, AW_CL dummy_1x);
 AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr);
-void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL cl_ntw);
+void NT_start_editor_on_tree(AW_window *, int use_species_aside, AWT_canvas *ntw);
 
 /* NT_extern.cxx */
 void NT_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID);
@@ -100,6 +100,7 @@ void NT_importValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
 void NT_suggestValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
 
 /* ad_ext.cxx */
+void NT_create_extendeds_vars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main);
 AW_window *NT_create_extendeds_window(AW_root *aw_root);
 
 /* ad_spec.cxx */
