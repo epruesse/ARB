@@ -100,6 +100,7 @@ void NT_importValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
 void NT_suggestValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
 
 /* ad_ext.cxx */
+void NT_create_extendeds_vars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main);
 AW_window *NT_create_extendeds_window(AW_root *aw_root);
 
 /* ad_spec.cxx */
