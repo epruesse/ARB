@@ -2146,12 +2146,8 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
         aws->callback(makeHelpCallback("color_loadsave.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
-        aws->at("name");
-        aws->create_input_field(AWAR_COLOR_LOADSAVE_NAME, 60);
-
         dbq_assert(csd->colorsets == 0);
-        aws->at("list");
-        csd->colorsets = aws->create_selection_list(AWAR_COLOR_LOADSAVE_NAME, 0, 0, false);
+        csd->colorsets = awt_create_selection_list_with_input_field(aws, AWAR_COLOR_LOADSAVE_NAME, "list", "name");
 
         update_colorset_selection_list(csd);
 
@@ -2581,13 +2577,13 @@ static void query_box_init_config(AWT_config_definition& cdef, DbQuery *query) {
         cdef.add(query->awar_operator[key_id], "operator", key_id);
     }
 }
-static char *query_box_store_config(AW_window *aww, AW_CL cl_query, AW_CL) {
-    AWT_config_definition cdef(aww->get_root());
+static char *query_box_store_config(AW_CL cl_query, AW_CL) {
+    AWT_config_definition cdef;
     query_box_init_config(cdef, (DbQuery *)cl_query);
     return cdef.read();
 }
-static void query_box_restore_config(AW_window *aww, const char *stored, AW_CL cl_query, AW_CL) {
-    AWT_config_definition cdef(aww->get_root());
+static void query_box_restore_config(const char *stored, AW_CL cl_query, AW_CL) {
+    AWT_config_definition cdef;
     query_box_init_config(cdef, (DbQuery *)cl_query);
     cdef.write(stored);
 }

@@ -79,7 +79,7 @@ void AW_cb::run_callbacks() {
 
     AW_root *root = aw->get_root();
     if (root->disable_callbacks) {
-        // some functions (namely aw_message, aw_input, aw_string_selection and aw_file_selection)
+        // some functions (namely aw_message, aw_input and aw_file_selection)
         // have to disable most callbacks, because they are often called from inside these callbacks
         // (e.g. because some exceptional condition occurred which needs user interaction) and if
         // callbacks weren't disabled, a recursive deadlock occurs.
