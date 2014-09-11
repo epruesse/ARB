@@ -1160,5 +1160,17 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
     return subsel;
 }
 
+AW_selection_list *awt_create_selection_list_with_input_field(AW_window *aww, const char *awar_name, const char *at_box, const char *at_field) {
+    /*! create selection_list and input_field on awar 'awar_name'
+     * @param aww window where to create gui elements
+     * @param at_box position of selection_list
+     * @param at_field position of input_field
+     */
+
+    aww->at(at_field);
+    aww->create_input_field(awar_name);
+    aww->at(at_box);
+    return aww->create_selection_list(awar_name, false);
+}
 
 

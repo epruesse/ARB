@@ -45,7 +45,8 @@ ad_ext.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arb_msg.h
-ad_ext.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
+ad_ext.o: $(ARBHOME)/INCLUDE/arb_sort.h
+ad_ext.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -81,6 +82,8 @@ ad_ext.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ad_ext.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+ad_ext.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
@@ -991,6 +994,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/EXP.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_extern.o: $(ARBHOME)/INCLUDE/gde.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/GEN.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/insdel.h
 NT_extern.o: $(ARBHOME)/INCLUDE/items.h
 NT_extern.o: $(ARBHOME)/INCLUDE/macros.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/multi_probe.hxx

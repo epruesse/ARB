@@ -164,6 +164,7 @@ void TEST_SLOW_ptclean() {
 #endif
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
 }
+TEST_PUBLISH(TEST_SLOW_ptclean);
 
 #endif // UNIT_TESTS
 

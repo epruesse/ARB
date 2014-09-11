@@ -173,13 +173,13 @@ static void www_init_config(AWT_config_definition& cdef) {
         sprintf(buf, AWAR_WWW_TEMPLATE,        i); cdef.add(buf, "template",    i);
     }
 }
-static char *www_store_config(AW_window *aww, AW_CL /* cl1 */, AW_CL /* cl2 */) {
-    AWT_config_definition cdef(aww->get_root());
+static char *www_store_config(AW_CL, AW_CL) {
+    AWT_config_definition cdef;
     www_init_config(cdef);
     return cdef.read();
 }
-static void www_restore_config(AW_window *aww, const char *stored_string, AW_CL /* cl1 */, AW_CL /* cl2 */) {
-    AWT_config_definition cdef(aww->get_root());
+static void www_restore_config(const char *stored_string, AW_CL, AW_CL) {
+    AWT_config_definition cdef;
     www_init_config(cdef);
     cdef.write(stored_string);
 }

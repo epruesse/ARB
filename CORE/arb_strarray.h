@@ -119,6 +119,15 @@ public:
     void clear() { resize(0); }
 
     void sort(CharPtrArray_compare_fun compare, void *client_data);
+    void uniq(CharPtrArray_compare_fun compare, void *client_data);
+    void sort_and_uniq(CharPtrArray_compare_fun compare, void *client_data) {
+        /*! sort the array and remove all duplicates
+         * @param compare function defining order on elements (@see e.g. GB_string_comparator)
+         * @param client_data user parameter forwarded to compare
+         */
+        sort(compare, client_data);
+        uniq(compare, client_data);
+    }
 };
 
 class StrArray : public CharPtrArray {

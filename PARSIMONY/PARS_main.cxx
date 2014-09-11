@@ -619,7 +619,7 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
             {
                 ++marked_found;
 
-                if (GBT_read_sequence(gb_marked, ap_main->get_aliname())) { // species has sequence in alignment
+                if (GBT_find_sequence(gb_marked, ap_main->get_aliname())) { // species has sequence in alignment
                     const char *name = GBT_read_name(gb_marked);
 
                     switch (GBT_is_partial(gb_marked, 1, true)) { // marks undef as 'partial sequence'

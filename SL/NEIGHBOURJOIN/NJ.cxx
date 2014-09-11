@@ -377,6 +377,7 @@ void TEST_neighbourjoining() {
         delete tree;
     }
 }
+TEST_PUBLISH(TEST_neighbourjoining);
 
 #endif // UNIT_TESTS
 

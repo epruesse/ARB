@@ -186,14 +186,21 @@ static void ParseMenus(LineReader& in) {
 
                 thismenu->item = (GmenuItem*)resize;
 
-                thisitem              = &(thismenu->item[curitem]);
-                thisitem->label       = strdup(temp);
-                thisitem->meta        = '\0';
-                thisitem->seqtype     = '-'; // no default sequence export
-                thisitem->numinputs   = 0;
-                thisitem->numoutputs  = 0;
-                thisitem->numargs     = 0;
-                thisitem->help        = NULL;
+                thisitem = &(thismenu->item[curitem]);
+
+                thisitem->numargs    = 0;
+                thisitem->numoutputs = 0;
+                thisitem->numinputs  = 0;
+                thisitem->label      = strdup(temp);
+                thisitem->method     = NULL;
+                thisitem->input      = NULL;
+                thisitem->output     = NULL;
+                thisitem->arg        = NULL;
+                thisitem->meta       = '\0';
+                thisitem->seqtype    = '-';   // no default sequence export
+                thisitem->aligned    = false;
+                thisitem->help       = NULL;
+
                 thisitem->parent_menu = thismenu;
                 thisitem->aws         = NULL; // no window opened yet
                 thisitem->active_mask = AWM_ALL;
@@ -443,6 +450,11 @@ static void ParseMenus(LineReader& in) {
                 else if (Find(temp, "gde")) thisoutput->format  = GDE;
                 else if (Find(temp, "flat")) thisoutput->format = NA_FLAT;
                 else throwParseError(GBS_global_string("Unknown outformat '%s' (allowed 'genbank', 'gde' or 'flat')", temp), in);
+            }
+            else if (strcmp(head, "outaligned") == 0) {
+                THROW_IF_NO_OUTPUT();
+                if (Find(temp, "yes")) thisitem->aligned = true;
+                else throwParseError(GBS_global_string("Unknown outaligned '%s' (allowed 'yes' or skip entry)", temp), in);
             }
             else if (strcmp(head, "outsave") == 0) {
                 THROW_IF_NO_OUTPUT();

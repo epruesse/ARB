@@ -459,13 +459,11 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height) {
     free(buffer);
 
     if (error) {
-        error = GBS_global_string("Error: Can't read XFIG ressource - programmers error or defect installation\n"
-                                  "Reason: %s\n", error);
+        error = GBS_global_string("Failed to read XFIG resource (defect installation?)\n"
+                                  "Reason: %s", error);
 
         if (font_width>0 && font_height>0) { // react with fatal exit
-            fputs(error, stderr);
-            fprintf(stderr, "Cannot continue - terminating.\n");
-            exit(EXIT_FAILURE);
+            GBK_terminate(error);
         }
 
         // special case (used by aw_read_xfigfont())

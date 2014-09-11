@@ -1737,6 +1737,7 @@ void TEST_hlp2xml_conversion() {
 
     HELP_FILE_COMPILE_ERROR("akjsdlkad.hlp", "Can't read from"); // no such file
 }
+TEST_PUBLISH(TEST_hlp2xml_conversion);
 
 
 // #define TEST_AUTO_UPDATE // uncomment to update expected xml // @@@ comment-out!

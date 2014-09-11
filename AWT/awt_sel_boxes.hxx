@@ -130,6 +130,8 @@ void create_print_box_for_selection_lists(AW_window *aw_window, const TypedSelec
 
 void awt_clear_selection_list_cb(AW_window *, AW_selection_list *sellist);
 
+AW_selection_list *awt_create_selection_list_with_input_field(AW_window *aww, const char *awar_name, const char *at_box, const char *at_field);
+
 #else
 #error awt_sel_boxes.hxx included twice
 #endif // AWT_SEL_BOXES_HXX

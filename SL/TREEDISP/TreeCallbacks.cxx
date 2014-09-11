@@ -83,7 +83,7 @@ static void count_mark_all_cb(UNFIXED, AWT_canvas *ntw) {
 }
 
 static int species_has_alignment(GBDATA *gb_species, void *cd_use) {
-    return GBT_read_sequence(gb_species, (const char*)cd_use) != 0;
+    return GBT_find_sequence(gb_species, (const char*)cd_use) != 0;
 }
 
 static int sequence_is_partial(GBDATA *gb_species, void *cd_partial) {

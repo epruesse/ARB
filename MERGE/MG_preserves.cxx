@@ -121,8 +121,8 @@ public:
         mg_assert(!GB_have_error());
 
         for (int i = 0; valid && ali_names[i]; ++i) {
-            if (GBDATA *gb_src_data = GBT_read_sequence(gb_src, ali_names[i])) {
-                if (GBDATA *gb_dst_data = GBT_read_sequence(gb_dst, ali_names[i])) {
+            if (GBDATA *gb_src_data = GBT_find_sequence(gb_src, ali_names[i])) {
+                if (GBDATA *gb_dst_data = GBT_find_sequence(gb_dst, ali_names[i])) {
                     ++found_alignments;
 
                     long src_bases  = count_bases(gb_src_data);

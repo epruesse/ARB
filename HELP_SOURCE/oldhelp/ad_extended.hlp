@@ -10,7 +10,7 @@ SUB	security.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		SAI Administration
 
-OCCURRENCE	ARB_NT/SAI/Admin
+OCCURRENCE	ARB_NT/SAI/Manage SAIs
 
 DESCRIPTION     Select 'SAI' entry from the 'Sequence Associated Information'
 		subwindow.

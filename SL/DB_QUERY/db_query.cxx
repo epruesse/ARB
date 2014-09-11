@@ -1589,6 +1589,9 @@ static void modify_fields_of_queried_cb(AW_window*, DbQuery *query) {
     GB_ERROR       error    = 0;
     char          *key      = aw_root->awar(query->awar_parskey)->read_string();
 
+    bool create_missing_field_as_string = aw_root->awar(query->awar_createDestField)->read_int();
+    bool allow_conversion_failure       = aw_root->awar(query->awar_acceptConvError)->read_int();
+
     if (!strcmp(key, "name")) {
         bool abort = false;
         switch (selector.type) {
@@ -1639,30 +1642,35 @@ static void modify_fields_of_queried_cb(AW_window*, DbQuery *query) {
         GBDATA *gb_key_name;
         {
             GBDATA *gb_key_data = GB_search(query->gb_main, selector.change_key_path, GB_CREATE_CONTAINER);
-            while (!error && !(gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD))) {
-                const char *question = GBS_global_string("The destination field '%s' does not exists", key);
-                if (aw_question("create_dest_field_from_mod_queried", question, "Create Field (Type STRING),Cancel")) {
-                    error = "Aborted by user";
+            gb_key_name         = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+
+            if (!gb_key_name) {
+                if (create_missing_field_as_string) {
+                    error       = GBT_add_new_changekey_to_keypath(query->gb_main, key, GB_STRING, selector.change_key_path);
+                    gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+                    if (!gb_key_data) {
+                        error = GBS_global_string("Failed to create field '%s'", key);
+                        dbq_assert(!GB_have_error());
+                    }
                 }
                 else {
-                    error = GBT_add_new_changekey_to_keypath(query->gb_main, key, GB_STRING, selector.change_key_path);
+                    error = GBS_global_string("The destination field '%s' does not exists\n"
+                                              "(mark the checkbox to allow to create it as STRING-field)",
+                                              key);
                 }
             }
         }
+        dbq_assert(gb_key_name||error);
 
-        GBDATA *gb_key_type;
+        bool      test_conversion_failure = false;
+        GBDATA   *gb_key_type;
+        GB_TYPES  key_type                = GB_NONE;
         if (!error) {
-            gb_key_type = GB_brother(gb_key_name, CHANGEKEY_TYPE);
-
+            gb_key_type             = GB_brother(gb_key_name, CHANGEKEY_TYPE);
             if (!gb_key_type) error = GB_await_error();
             else {
-                if (GB_read_int(gb_key_type)!=GB_STRING &&
-                    aw_question("write_non_string_field",
-                                "Writing to a non-STRING database field may lead to conversion problems.",
-                                "Continue,Abort"))
-                {
-                    error = "Aborted by user";
-                }
+                key_type = (GB_TYPES)GB_read_int(gb_key_type);
+                if (key_type != GB_STRING) test_conversion_failure = !allow_conversion_failure;
             }
         }
 
@@ -1721,10 +1729,27 @@ static void modify_fields_of_queried_cb(AW_window*, DbQuery *query) {
                                     }
                                     else {
                                         if (!gb_new) {
-                                            gb_new = GB_search(gb_item, key, (GB_TYPES)GB_read_int(gb_key_type));
+                                            gb_new = GB_search(gb_item, key, key_type);
                                             if (!gb_new) error = GB_await_error();
                                         }
-                                        if (!error) error = GB_write_as_string(gb_new, parsed);
+                                        if (!error) {
+                                            error = GB_write_as_string(gb_new, parsed); // <- field is actually written HERE
+                                            if (!error && test_conversion_failure) {
+                                                dbq_assert(key_type != GB_STRING);
+                                                char *resulting = GB_read_as_string(gb_new);
+                                                if (!resulting) {
+                                                    error = GB_await_error();
+                                                }
+                                                else {
+                                                    if (strcmp(resulting, parsed) != 0) {
+                                                        error = GBS_global_string("Conversion error: writing '%s'\n"
+                                                                                  "resulted in '%s'\n"
+                                                                                  "(mark checkbox to accept conversion errors)",
+                                                                                  parsed, resulting);
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                                 free(parsed);
@@ -2111,7 +2136,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
             free(window_id);
         }
 
-        aws->load_xfig("color_loadsave.fig");
+        aws->load_xfig("query/color_loadsave.fig");
 
         aws->at("close");
         aws->callback(AW_POPDOWN);
@@ -2121,12 +2146,8 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
         aws->callback(makeHelpCallback("color_loadsave.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
-        aws->at("name");
-        aws->create_input_field(AWAR_COLOR_LOADSAVE_NAME, 60);
-
         dbq_assert(csd->colorsets == 0);
-        aws->at("list");
-        csd->colorsets = aws->create_selection_list(AWAR_COLOR_LOADSAVE_NAME, 0, 0, false);
+        csd->colorsets = awt_create_selection_list_with_input_field(aws, AWAR_COLOR_LOADSAVE_NAME, "list", "name");
 
         update_colorset_selection_list(csd);
 
@@ -2200,7 +2221,7 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
         free(macro_name);
     }
 
-    aws->load_xfig("colorize.fig");
+    aws->load_xfig("query/colorize.fig");
 
     aws->auto_space(10, 10);
 
@@ -2282,7 +2303,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
         free(macro_name);
     }
 
-    aws->load_xfig("awt/parser.fig");
+    aws->load_xfig("query/modify_fields.fig");
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
@@ -2301,6 +2322,9 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     aws->at("tag");     aws->create_input_field(query->awar_tag);
 
     aws->at("double");  aws->create_toggle(query->awar_double_pars);
+
+    aws->at("create");  aws->create_toggle(query->awar_createDestField);
+    aws->at("accept");  aws->create_toggle(query->awar_acceptConvError);
 
     create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, false, FIELD_FILTER_PARS, "field", 0, query->selector, 20, 10, SF_STANDARD, NULL);
 
@@ -2430,7 +2454,7 @@ static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
 AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SET_DATABASE_FIELD_OF_LISTED", "SET MANY FIELDS");
-    aws->load_xfig("ad_mset.fig");
+    aws->load_xfig("query/write_fields.fig");
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
@@ -2497,7 +2521,7 @@ static void set_protection_of_queried_cb(AW_window*, DbQuery *query) {
 static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SET_PROTECTION_OF_FIELD_OF_LISTED", "SET PROTECTIONS OF FIELDS");
-    aws->load_xfig("awt/set_protection.fig");
+    aws->load_xfig("query/set_protection.fig");
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
@@ -2553,13 +2577,13 @@ static void query_box_init_config(AWT_config_definition& cdef, DbQuery *query) {
         cdef.add(query->awar_operator[key_id], "operator", key_id);
     }
 }
-static char *query_box_store_config(AW_window *aww, AW_CL cl_query, AW_CL) {
-    AWT_config_definition cdef(aww->get_root());
+static char *query_box_store_config(AW_CL cl_query, AW_CL) {
+    AWT_config_definition cdef;
     query_box_init_config(cdef, (DbQuery *)cl_query);
     return cdef.read();
 }
-static void query_box_restore_config(AW_window *aww, const char *stored, AW_CL cl_query, AW_CL) {
-    AWT_config_definition cdef(aww->get_root());
+static void query_box_restore_config(const char *stored, AW_CL cl_query, AW_CL) {
+    AWT_config_definition cdef;
     query_box_init_config(cdef, (DbQuery *)cl_query);
     cdef.write(stored);
 }
@@ -2596,6 +2620,8 @@ DbQuery::~DbQuery() {
     free(awar_parskey);
     free(awar_parsvalue);
     free(awar_parspredefined);
+    free(awar_createDestField);
+    free(awar_acceptConvError);
 
     free(awar_ere);
     free(awar_where);
@@ -2915,13 +2941,15 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     Items[0]    = toupper(Items[0]);
 
     if ((awtqs->use_menu || awtqs->open_parser_pos_fig)) {
-        sprintf(buffer, "tmp/dbquery_%s/tag",                 query_id); query->awar_tag            = strdup(buffer); aw_root->awar_string(query->awar_tag);
-        sprintf(buffer, "tmp/dbquery_%s/use_tag",             query_id); query->awar_use_tag        = strdup(buffer); aw_root->awar_int   (query->awar_use_tag);
-        sprintf(buffer, "tmp/dbquery_%s/deftag",              query_id); query->awar_deftag         = strdup(buffer); aw_root->awar_string(query->awar_deftag);
-        sprintf(buffer, "tmp/dbquery_%s/double_pars",         query_id); query->awar_double_pars    = strdup(buffer); aw_root->awar_int   (query->awar_double_pars);
-        sprintf(buffer, "tmp/dbquery_%s/parskey",             query_id); query->awar_parskey        = strdup(buffer); aw_root->awar_string(query->awar_parskey);
-        sprintf(buffer, "tmp/dbquery_%s/parsvalue",           query_id); query->awar_parsvalue      = strdup(buffer); aw_root->awar_string(query->awar_parsvalue);
-        sprintf(buffer, "tmp/dbquery_%s/awar_parspredefined", query_id); query->awar_parspredefined = strdup(buffer); aw_root->awar_string(query->awar_parspredefined);
+        sprintf(buffer, "tmp/dbquery_%s/tag",                 query_id); query->awar_tag             = strdup(buffer); aw_root->awar_string(query->awar_tag);
+        sprintf(buffer, "tmp/dbquery_%s/use_tag",             query_id); query->awar_use_tag         = strdup(buffer); aw_root->awar_int   (query->awar_use_tag);
+        sprintf(buffer, "tmp/dbquery_%s/deftag",              query_id); query->awar_deftag          = strdup(buffer); aw_root->awar_string(query->awar_deftag);
+        sprintf(buffer, "tmp/dbquery_%s/double_pars",         query_id); query->awar_double_pars     = strdup(buffer); aw_root->awar_int   (query->awar_double_pars);
+        sprintf(buffer, "tmp/dbquery_%s/parskey",             query_id); query->awar_parskey         = strdup(buffer); aw_root->awar_string(query->awar_parskey);
+        sprintf(buffer, "tmp/dbquery_%s/parsvalue",           query_id); query->awar_parsvalue       = strdup(buffer); aw_root->awar_string(query->awar_parsvalue);
+        sprintf(buffer, "tmp/dbquery_%s/awar_parspredefined", query_id); query->awar_parspredefined  = strdup(buffer); aw_root->awar_string(query->awar_parspredefined);
+        sprintf(buffer, "tmp/dbquery_%s/createDestField",     query_id); query->awar_createDestField = strdup(buffer); aw_root->awar_int   (query->awar_createDestField);
+        sprintf(buffer, "tmp/dbquery_%s/acceptConvError",     query_id); query->awar_acceptConvError = strdup(buffer); aw_root->awar_int   (query->awar_acceptConvError);
 
         if (awtqs->use_menu) {
             sprintf(buffer, "Modify Fields of Listed %s", Items); query_rel_menu_entry(aws, "mod_fields_of_listed", query_id, buffer, "F", "mod_field_list.hlp", AWM_ALL, makeCreateWindowCallback(create_modify_fields_window, query));
