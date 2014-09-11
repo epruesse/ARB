@@ -1787,5 +1787,6 @@ void TEST_attribute_parser() {
 
     clear_found_attribute();
 }
+TEST_PUBLISH(TEST_attribute_parser);
 
 #endif // UNIT_TESTS

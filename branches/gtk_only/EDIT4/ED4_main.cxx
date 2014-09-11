@@ -361,7 +361,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES, 0);
 
     {
-        GB_ERROR gde_err = GDE_create_var(ED4_ROOT->aw_root, ED4_ROOT->props_db, GLOBAL_gb_main, ED4_create_sequences_for_gde, GDE_WINDOWTYPE_EDIT4, 0);
+        GB_ERROR gde_err = GDE_init(ED4_ROOT->aw_root, ED4_ROOT->props_db, GLOBAL_gb_main, ED4_create_sequences_for_gde, 0, GDE_WINDOWTYPE_EDIT4, 0);
         if (gde_err) GBK_terminatef("Fatal error: %s", gde_err);
     }
 

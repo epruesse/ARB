@@ -297,7 +297,7 @@ void AWT_reference::init(const char *species_name, const char *alignment_name) {
 
     init();
     if (gb_species) {
-        GBDATA *gb_data = GBT_read_sequence(gb_species, alignment_name);
+        GBDATA *gb_data = GBT_find_sequence(gb_species, alignment_name);
         if (gb_data) {
             reference = GB_read_as_string(gb_data);
             if (reference) {

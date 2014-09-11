@@ -309,7 +309,7 @@ static void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
 
                 GBDATA *gb_organism = GEN_get_current_organism(gb_main, awr);
                 if (gb_organism) {
-                    GBDATA     *gb_seq   = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
+                    GBDATA     *gb_seq   = GBT_find_sequence(gb_organism, GENOM_ALIGNMENT);
                     const char *seq_data = GB_read_char_pntr(gb_seq);
 
                     long  len    = end_pos-start_pos+1;

@@ -241,6 +241,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AWT_config_manager.o: awt.hxx
 AWT_config_manager.o: awt_config_manager.hxx
+AWT_config_manager.o: awt_sel_boxes.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -281,6 +282,8 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx

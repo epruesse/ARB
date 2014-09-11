@@ -942,7 +942,7 @@ static void modsai_cb(AW_window *aww) {
                 : GBS_global_string("Failed to find SAI '%s'", sainame);
         }
         else {
-            GBDATA *gb_data = GBT_read_sequence(gb_sai, ED4_ROOT->alignment_name);
+            GBDATA *gb_data = GBT_find_sequence(gb_sai, ED4_ROOT->alignment_name);
 
             if (!gb_data) error = GB_await_error();
             else {
@@ -994,23 +994,19 @@ AW_window *ED4_create_modsai_window(AW_root *root) {
     aws->at("help");
     aws->callback(makeHelpCallback("e4_modsai.hlp"));
     aws->create_button("HELP", "Help", "H");
-    
-    aws->at("script");
-    aws->create_input_field(AWAR_MOD_SAI_SCRIPT);
 
-    aws->at("go");
-    aws->callback(modsai_cb);
-    aws->create_button("go", "GO");
-
-    aws->at("box");
-    AW_selection_list *sellist = aws->create_selection_list(AWAR_MOD_SAI_SCRIPT, false);
-    GB_ERROR error;
+    AW_selection_list *sellist = awt_create_selection_list_with_input_field(aws, AWAR_MOD_SAI_SCRIPT, "box", "script");
+    GB_ERROR           error;
     {
         StorableSelectionList storable_sellist(TypedSelectionList("sellst", sellist, "SRT/ACI scripts", "srt_aci"));
         error = storable_sellist.load(GB_path_in_ARBLIB("sellists/mod_sequence*.sellst"), false);
     }
     aw_message_if(error);
-    
+
+    aws->at("go");
+    aws->callback(modsai_cb);
+    aws->create_button("go", "GO");
+
     return aws;
 }
 

@@ -102,7 +102,7 @@ static GB_ERROR update_RangeList(AW_root *root, GBDATA *gb_main) {
     if (!error) error  = SELECTED.track_ali(gb_main);
 
     if (!error) {
-        GBDATA *gb_data = GBT_read_sequence(gb_sai, SELECTED.get_ali());
+        GBDATA *gb_data = GBT_find_sequence(gb_sai, SELECTED.get_ali());
         if (!gb_data) {
             if (GB_have_error()) error = GB_await_error();
             else error                 = GBS_global_string("SAI '%s' has no data in alignment '%s'", saiName, SELECTED.get_ali());

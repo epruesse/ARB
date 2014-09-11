@@ -22,6 +22,7 @@ struct null_counter: public arb_progress_counter {
 
     void inc() OVERRIDE {}
     void implicit_inc() OVERRIDE {}
+    void inc_to(int x) OVERRIDE {}
     void done() OVERRIDE {}
     void restart(int) OVERRIDE {}
     void force_update() OVERRIDE {}
@@ -142,6 +143,13 @@ public:
 
     void inc()          OVERRIDE { explicit_counter += 1; update_display_if_needed(); }
     void implicit_inc() OVERRIDE { implicit_counter += 1; update_display_if_needed(); }
+    void inc_to(int x) {
+        explicit_counter = std::max(explicit_counter, x);
+        if (maxcount) {
+            explicit_counter = std::min(explicit_counter, maxcount);
+        }
+        update_display_if_needed();
+    }
     
     void done() OVERRIDE {
         implicit_counter = explicit_counter = maxcount;

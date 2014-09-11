@@ -67,7 +67,7 @@ enum FA_turn {
 };
 
 enum FA_reference {
-    FA_REF_EXPLICIT,            // reference sequence explicitely specified
+    FA_REF_EXPLICIT,            // reference sequence explicitly specified
     FA_REF_CONSENSUS,           // use group consensus as reference
     FA_REF_RELATIVES,           // search next relatives by PT server
 };
@@ -170,7 +170,7 @@ inline ARB_ERROR species_not_found(GB_CSTR species_name) {
 }
 
 static ARB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_protection) {
-    GBDATA    *gbd   = GBT_read_sequence(gb_species, ali);
+    GBDATA    *gbd   = GBT_find_sequence(gb_species, ali);
     ARB_ERROR  error = 0;
 
     if (!gbd) {
@@ -980,7 +980,7 @@ static CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
 
 
     
-    gbd = GBT_read_sequence(gb_species, ali);       // get sequence
+    gbd = GBT_find_sequence(gb_species, ali);       // get sequence
 
     if (gbd) {
         long length = GB_read_string_count(gbd);
@@ -1193,7 +1193,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                     }
                     else {
                         alignBuffer.setDotsAtEOSequence();
-                        error = GBT_write_sequence(gbd, alignment, max_seq_length, alignBuffer.text()); // aligned all -> write all
+                        error = GB_write_string(gbd, alignBuffer.text()); // aligned all -> write all
                     }
                 }
             }
@@ -1292,7 +1292,7 @@ static ARB_ERROR alignTo(GBDATA                   *gb_toAlign,
     CompactedSubSequence *toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, NULL, &chksum, ali_params.range);
 
     if (island_hopper) {
-        GBDATA *gb_seq = GBT_read_sequence(gb_toAlign, alignment);      // get sequence
+        GBDATA *gb_seq = GBT_find_sequence(gb_toAlign, alignment);      // get sequence
         if (gb_seq) {
             long        length = GB_read_string_count(gb_seq);
             const char *data   = GB_read_char_pntr(gb_seq);
@@ -1406,7 +1406,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
         if (use_different_pt_server_alignment) {
             toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, 0, &chksum, ali_params.range);
 
-            GBDATA *gbd = GBT_read_sequence(gb_toAlign, relSearch.pt_server_alignment); // use a different alignment for next relative search
+            GBDATA *gbd = GBT_find_sequence(gb_toAlign, relSearch.pt_server_alignment); // use a different alignment for next relative search
             if (!gbd) {
                 error = GBS_global_string("Species '%s' has no data in alignment '%s'", GBT_read_name(gb_toAlign), relSearch.pt_server_alignment);
             }
@@ -1532,7 +1532,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                 }
 
                 if (turnIt) { // write mirrored sequence
-                    GBDATA *gbd = GBT_read_sequence(gb_toAlign, alignment);
+                    GBDATA *gbd = GBT_find_sequence(gb_toAlign, alignment);
                     GB_push_my_security(gbd);
                     error = GB_write_string(gbd, mirroredSequence);
                     GB_pop_my_security(gbd);
@@ -1569,7 +1569,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                         break;
                     }
 
-                    GBDATA *gb_sequence = GBT_read_sequence(gb_species, alignment);
+                    GBDATA *gb_sequence = GBT_find_sequence(gb_species, alignment);
                     if (gb_sequence) { // if relative has sequence data in the current alignment ..
                         gb_reference[i] = gb_species;
                     }
@@ -1599,8 +1599,8 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                 fa_assert(alignToSequence != 0);
 
                 if (island_hopper) {
-                    GBDATA *gb_ref   = GBT_read_sequence(gb_reference[0], alignment); // get reference sequence
-                    GBDATA *gb_align = GBT_read_sequence(gb_toAlign, alignment);      // get sequence to align
+                    GBDATA *gb_ref   = GBT_find_sequence(gb_reference[0], alignment); // get reference sequence
+                    GBDATA *gb_align = GBT_find_sequence(gb_toAlign, alignment);      // get sequence to align
 
                     if (gb_ref && gb_align) {
                         long        length_ref   = GB_read_string_count(gb_ref);
@@ -1922,7 +1922,7 @@ public:
 };
 
 ARB_ERROR Aligner::alignToReference(GBDATA *gb_toalign, const AlignmentReference& ref) {
-    int       myProtection = GB_read_security_write(GBT_read_sequence(gb_toalign, alignment));
+    int       myProtection = GB_read_security_write(GBT_find_sequence(gb_toalign, alignment));
     ARB_ERROR error;
 
     if (myProtection<=maxProtection) {
@@ -2041,7 +2041,7 @@ ARB_ERROR Aligner::alignToExplicitReference(GBDATA *gb_species_data, int max_seq
 #if defined(WARN_TODO)
 #warning setting island_hopper reference has to be done in called function (seems that it is NOT done for alignToConsensus and alignToRelatives). First get tests in place!
 #endif
-            GBDATA *gb_seq = GBT_read_sequence(gb_reference, alignment);        // get sequence
+            GBDATA *gb_seq = GBT_find_sequence(gb_reference, alignment);        // get sequence
             if (gb_seq) {
                 long        length = GB_read_string_count(gb_seq);
                 const char *data   = GB_read_char_pntr(gb_seq);
@@ -2290,7 +2290,7 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
                 GBDATA *gb_sai     = GBT_expect_SAI(data_access->gb_main, sai_name);
                 if (!gb_sai) error = GB_await_error();
                 else {
-                    GBDATA *gb_data = GBT_read_sequence(gb_sai, aliuse);
+                    GBDATA *gb_data = GBT_find_sequence(gb_sai, aliuse);
                     if (!gb_data) {
                         error = GB_have_error()
                             ? GB_await_error()
@@ -2919,7 +2919,7 @@ public:
         {
             string name = GBT_get_name(gb_species);
             if (oligos_counted.find(name) == oligos_counted.end()) {
-                GBDATA     *gb_data  = GBT_read_sequence(gb_species, ali_name.c_str());
+                GBDATA     *gb_data  = GBT_find_sequence(gb_species, ali_name.c_str());
                 const char *spec_seq = GB_read_char_pntr(gb_data);
 
                 if (partial_match) {
@@ -2975,7 +2975,7 @@ static const char *get_aligned_data_of(GBDATA *gb_main, const char *species_name
     GBDATA *gb_species     = GBT_find_species(gb_main, species_name);
     if (!gb_species) error = GB_await_error();
     else {
-        GBDATA *gb_data     = GBT_read_sequence(gb_species, test_aliname);
+        GBDATA *gb_data     = GBT_find_sequence(gb_species, test_aliname);
         if (!gb_data) error = GB_await_error();
         else {
             data             = GB_read_char_pntr(gb_data);

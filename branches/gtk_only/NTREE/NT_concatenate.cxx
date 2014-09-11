@@ -208,7 +208,7 @@ static void concatenateAlignments(AW_window *aws, AW_CL cl_selected_alis) {
 
                 for (size_t a = 0; a<ali_count; ++a) {
                     if (a) GBS_strcat(str_seq, ali_separator);
-                    GBDATA *gb_seq_data = GBT_read_sequence(gb_species, ali_names[a]);
+                    GBDATA *gb_seq_data = GBT_find_sequence(gb_species, ali_names[a]);
                     if (gb_seq_data) {
                         const char *str_data = GB_read_char_pntr(gb_seq_data);
                         GBS_strcat(str_seq, str_data);
@@ -482,7 +482,7 @@ static GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species
         long id = 0;
         for (SpeciesConcatenateList *speciesList = scl; speciesList; speciesList = speciesList->next) {
             for (int no_of_alignments = 0; ali_names[no_of_alignments]!=0; no_of_alignments++) {
-                GBDATA *gb_seq_data = GBT_read_sequence(speciesList->species, ali_names[no_of_alignments]);
+                GBDATA *gb_seq_data = GBT_find_sequence(speciesList->species, ali_names[no_of_alignments]);
                 if (gb_seq_data) {
                     const char *seq_data  = GB_read_char_pntr(gb_seq_data);
                     GBDATA *gb_data = GBT_add_data(gb_new_species, ali_names[no_of_alignments], "data", GB_STRING);

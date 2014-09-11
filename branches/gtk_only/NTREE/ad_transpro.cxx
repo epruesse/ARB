@@ -1325,8 +1325,8 @@ static arb_handlers test_handlers = {
     active_arb_handlers->status,
 };
 
-#define DNASEQ(name) GB_read_char_pntr(GBT_read_sequence(GBT_find_species(gb_main, name), "ali_dna"))
-#define PROSEQ(name) GB_read_char_pntr(GBT_read_sequence(GBT_find_species(gb_main, name), "ali_pro"))
+#define DNASEQ(name) GB_read_char_pntr(GBT_find_sequence(GBT_find_species(gb_main, name), "ali_dna"))
+#define PROSEQ(name) GB_read_char_pntr(GBT_find_sequence(GBT_find_species(gb_main, name), "ali_pro"))
 
 #define TRANSLATION_INFO(name) translation_info(GBT_find_species(gb_main, name))
 
@@ -1512,8 +1512,8 @@ void TEST_realign() {
         GBDATA *gb_TaxOcell_dna;
         {
             GB_transaction ta(gb_main);
-            gb_TaxOcell_amino = GBT_read_sequence(gb_TaxOcell, "ali_pro");
-            gb_TaxOcell_dna   = GBT_read_sequence(gb_TaxOcell, "ali_dna");
+            gb_TaxOcell_amino = GBT_find_sequence(gb_TaxOcell, "ali_pro");
+            gb_TaxOcell_dna   = GBT_find_sequence(gb_TaxOcell, "ali_dna");
         }
         TEST_REJECT_NULL(gb_TaxOcell_amino);
         TEST_REJECT_NULL(gb_TaxOcell_dna);
@@ -1826,7 +1826,7 @@ void TEST_realign() {
             {
                 GB_transaction ta(gb_main);
 
-                GBDATA *gb_ali = GB_get_father(GBT_read_sequence(gb_TaxOcell, i ? "ali_pro" : "ali_dna"));
+                GBDATA *gb_ali = GB_get_father(GBT_find_sequence(gb_TaxOcell, i ? "ali_pro" : "ali_dna"));
                 GB_push_my_security(gb_main);
                 TEST_EXPECT_NO_ERROR(GB_delete(gb_ali));
                 GB_pop_my_security(gb_main);
