@@ -2467,77 +2467,6 @@ bool CallbackList<CB>::contains_unremoved_callback(const CB& like) const {
 }
 #endif
 
-inline void add_to_callback_chain(gb_callback_list*& head, const TypedDatabaseCallback& cbs) {
-    if (!head) head = new gb_callback_list;
-    head->add(gb_callback(cbs));
-}
-inline void add_to_callback_chain(gb_hierarchy_callback_list*& head, const TypedDatabaseCallback& cbs, GBDATA *gb_representative) {
-    if (!head) head = new gb_hierarchy_callback_list;
-    head->add(gb_hierarchy_callback(cbs, gb_representative));
-}
-
-inline GB_ERROR gb_add_callback(GBDATA *gbd, const TypedDatabaseCallback& cbs) {
-    /* Adds a callback to a DB entry.
-     *
-     * Be careful when writing GB_CB_DELETE callbacks, there is a severe restriction:
-     *
-     * - the DB element may already be freed. The pointer is still pointing to the original
-     *   location, so you can use it to identify the DB element, but you cannot dereference
-     *   it under all circumstances.
-     *
-     * ARBDB internal delete-callbacks may use gb_get_main_during_cb() to access the DB root.
-     * See also: GB_get_gb_main_during_cb()
-     */
-
-#if defined(DEBUG)
-    if (GB_inside_callback(gbd, GB_CB_DELETE)) {
-        printf("Warning: add_priority_callback called inside delete-callback of gbd (gbd may already be freed)\n");
-#if defined(DEVEL_RALF)
-        gb_assert(0); // fix callback-handling (never modify callbacks from inside delete callbacks)
-#endif // DEVEL_RALF
-    }
-#endif // DEBUG
-
-    GB_test_transaction(gbd); // may return error
-    gbd->create_extended();
-    add_to_callback_chain(gbd->ext->callback, cbs);
-    return 0;
-}
-
-GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
-    return gb_add_callback(gbd, TypedDatabaseCallback(dbcb, type));
-}
-
-inline void GB_MAIN_TYPE::callback_group::add_hcb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
-    add_to_callback_chain(hierarchy_cbs, dbcb, gb_representative);
-}
-
-GB_ERROR GB_MAIN_TYPE::add_hierarchy_cb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
-    GB_CB_TYPE type = dbcb.get_type();
-    if (type & GB_CB_DELETE) {
-        deleteCBs.add_hcb(gb_representative, dbcb.with_type_changed_to(GB_CB_DELETE));
-    }
-    if (type & GB_CB_ALL_BUT_DELETE) {
-        changeCBs.add_hcb(gb_representative, dbcb.with_type_changed_to(GB_CB_TYPE(type&GB_CB_ALL_BUT_DELETE)));
-    }
-    return NULL;
-}
-
-GB_ERROR GB_add_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) { // @@@ needed to impl #418
-    /*! bind callback to ALL entries which are at the same DB-hierarchy as 'gbd'.
-     *
-     * Hierarchy callbacks are triggered before normal callbacks (added by GB_add_callback or GB_ensure_callback).
-     * Nevertheless delete callbacks take precedence over change callbacks
-     * (i.e. a normal delete callback is triggered before a hierarchical change callback).
-     *
-     * Hierarchy callbacks are cannot be installed and will NOT be triggered in NO_TRANSACTION_MODE
-     * (i.e. it will not work in ARBs property DBs)
-     */
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    gb_assert(Main->get_transaction_level()>=0); // hierarchical callbacks are not supported in NO_TRANSACTION_MODE
-    return Main->add_hierarchy_cb(gbd, TypedDatabaseCallback(dbcb, type));
-}
-
 template <typename PRED>
 inline void gb_remove_callbacks_that(GBDATA *gbd, PRED shallRemove) {
 #if defined(ASSERTION_USED)
@@ -2590,6 +2519,49 @@ struct IsSpecificCallback : private TypedDatabaseCallback {
     bool operator()(const gb_callback& cb) const { return is_equal_to(cb.spec); }
 };
 
+
+
+inline void add_to_callback_chain(gb_callback_list*& head, const TypedDatabaseCallback& cbs) {
+    if (!head) head = new gb_callback_list;
+    head->add(gb_callback(cbs));
+}
+inline void add_to_callback_chain(gb_hierarchy_callback_list*& head, const TypedDatabaseCallback& cbs, GBDATA *gb_representative) {
+    if (!head) head = new gb_hierarchy_callback_list;
+    head->add(gb_hierarchy_callback(cbs, gb_representative));
+}
+
+inline GB_ERROR gb_add_callback(GBDATA *gbd, const TypedDatabaseCallback& cbs) {
+    /* Adds a callback to a DB entry.
+     *
+     * Be careful when writing GB_CB_DELETE callbacks, there is a severe restriction:
+     *
+     * - the DB element may already be freed. The pointer is still pointing to the original
+     *   location, so you can use it to identify the DB element, but you cannot dereference
+     *   it under all circumstances.
+     *
+     * ARBDB internal delete-callbacks may use gb_get_main_during_cb() to access the DB root.
+     * See also: GB_get_gb_main_during_cb()
+     */
+
+#if defined(DEBUG)
+    if (GB_inside_callback(gbd, GB_CB_DELETE)) {
+        printf("Warning: add_priority_callback called inside delete-callback of gbd (gbd may already be freed)\n");
+#if defined(DEVEL_RALF)
+        gb_assert(0); // fix callback-handling (never modify callbacks from inside delete callbacks)
+#endif // DEVEL_RALF
+    }
+#endif // DEBUG
+
+    GB_test_transaction(gbd); // may return error
+    gbd->create_extended();
+    add_to_callback_chain(gbd->ext->callback, cbs);
+    return 0;
+}
+
+GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
+    return gb_add_callback(gbd, TypedDatabaseCallback(dbcb, type));
+}
+
 void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
     // remove specific callback; 'type' and 'dbcb' have to match
     gb_remove_callbacks_that(gbd, IsSpecificCallback(TypedDatabaseCallback(dbcb, type)));
@@ -2597,6 +2569,36 @@ void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& db
 void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {
     // removes all callbacks 'func' bound to 'gbd' with 'type'
     gb_remove_callbacks_that(gbd, IsCallback(func, type));
+}
+
+inline void GB_MAIN_TYPE::callback_group::add_hcb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
+    add_to_callback_chain(hierarchy_cbs, dbcb, gb_representative);
+}
+
+GB_ERROR GB_MAIN_TYPE::add_hierarchy_cb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
+    GB_CB_TYPE type = dbcb.get_type();
+    if (type & GB_CB_DELETE) {
+        deleteCBs.add_hcb(gb_representative, dbcb.with_type_changed_to(GB_CB_DELETE));
+    }
+    if (type & GB_CB_ALL_BUT_DELETE) {
+        changeCBs.add_hcb(gb_representative, dbcb.with_type_changed_to(GB_CB_TYPE(type&GB_CB_ALL_BUT_DELETE)));
+    }
+    return NULL;
+}
+
+GB_ERROR GB_add_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) { // @@@ needed to impl #418
+    /*! bind callback to ALL entries which are at the same DB-hierarchy as 'gbd'.
+     *
+     * Hierarchy callbacks are triggered before normal callbacks (added by GB_add_callback or GB_ensure_callback).
+     * Nevertheless delete callbacks take precedence over change callbacks
+     * (i.e. a normal delete callback is triggered before a hierarchical change callback).
+     *
+     * Hierarchy callbacks are cannot be installed and will NOT be triggered in NO_TRANSACTION_MODE
+     * (i.e. it will not work in ARBs property DBs)
+     */
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+    gb_assert(Main->get_transaction_level()>=0); // hierarchical callbacks are not supported in NO_TRANSACTION_MODE
+    return Main->add_hierarchy_cb(gbd, TypedDatabaseCallback(dbcb, type));
 }
 
 GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
