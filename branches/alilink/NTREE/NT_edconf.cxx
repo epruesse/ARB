@@ -464,15 +464,8 @@ static void nt_delete_configuration(AW_window *aww) {
 }
 
 
-static GB_ERROR nt_create_configuration(AW_window *, GBT_TREE *tree, const char *conf_name, int use_species_aside) {
-    char     *to_free = NULL;
-    GB_ERROR  error   = NULL;
-
-    if (!conf_name) {
-        char *existing_configs = awt_create_CONFIG_string(GLOBAL.gb_main);
-        conf_name              = to_free = aw_string_selection2awar("CREATE CONFIGURATION", "Enter name of configuration:", AWAR_CONFIGURATION, existing_configs, NULL);
-        free(existing_configs);
-    }
+static GB_ERROR nt_create_configuration(GBT_TREE *tree, const char *conf_name, int use_species_aside) {
+    GB_ERROR error = NULL;
 
     if (!conf_name || !conf_name[0]) error = "no config name given";
     else {
@@ -537,12 +530,12 @@ static GB_ERROR nt_create_configuration(AW_window *, GBT_TREE *tree, const char 
         }
     }
     
-    free(to_free);
     return error;
 }
 
 static void nt_store_configuration(AW_window*, AWT_canvas *ntw) {
-    GB_ERROR err = nt_create_configuration(0, NT_get_tree_root_of_canvas(ntw), 0, 0);
+    const char *cfgName = AW_root::SINGLETON->awar(AWAR_CONFIGURATION)->read_char_pntr();
+    GB_ERROR    err     = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), cfgName, 0);
     aw_message_if(err);
 }
 
@@ -595,6 +588,9 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->callback(makeHelpCallback("configuration.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
+        aws->at("name");
+        aws->create_input_field(AWAR_CONFIGURATION);
+
         aws->at("list");
         awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, false);
 
@@ -643,7 +639,7 @@ void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_ntw, AW_CL) {
 // -----------------------------------------
 //      various ways to start the editor
 
-#define CONFNAME "default_configuration"
+#define DEFAULT_CONFIGURATION "default_configuration"
 
 static void nt_start_editor_on_configuration(AW_window *aww) {
     aww->hide();
@@ -677,9 +673,9 @@ AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr) {
     return aws;
 }
 
-void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL cl_ntw) {
-    GB_ERROR error = nt_create_configuration(0, NT_get_tree_root_of_canvas((AWT_canvas*)cl_ntw), CONFNAME, (int)cl_use_species_aside);
-    if (!error) error = GBK_system("arb_edit4 -c " CONFNAME " &");
+void NT_start_editor_on_tree(AW_window *, int use_species_aside, AWT_canvas *ntw) {
+    GB_ERROR error = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), DEFAULT_CONFIGURATION, use_species_aside);
+    if (!error) error = GBK_system("arb_edit4 -c " DEFAULT_CONFIGURATION " &");
     aw_message_if(error);
 }
 

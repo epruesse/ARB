@@ -44,7 +44,8 @@ ad_ext.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arb_msg.h
-ad_ext.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
+ad_ext.o: $(ARBHOME)/INCLUDE/arb_sort.h
+ad_ext.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -58,6 +59,8 @@ ad_ext.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ad_ext.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+ad_ext.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/cb.h

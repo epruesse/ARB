@@ -20,10 +20,13 @@
 #include <aw_question.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
+#include <aw_select.hxx>
 #include <arb_strarray.h>
 
 #include <map>
 #include <string>
+#include "awt_sel_boxes.hxx"
+#include <arb_defs.h>
 
 using namespace std;
 
@@ -36,47 +39,48 @@ private:
 
     AWT_store_config_to_string  store;
     AWT_load_config_from_string load;
-    AW_CL                       client1; // client data
-    AW_CL                       client2;
 
-    AW_window  *last_client_aww;
-    AW_default  default_file;
+    AW_CL client1; // client data for callbacks above
+    AW_CL client2;
+
+    AW_default default_file;
 
 public:
-    AWT_configuration(AW_window *aww, AW_default default_file_, const char *id_, AWT_store_config_to_string store_, AWT_load_config_from_string load_, AW_CL cl1, AW_CL cl2)
+    AWT_configuration(AW_default default_file_, const char *id_, AWT_store_config_to_string store_, AWT_load_config_from_string load_, AW_CL cl1, AW_CL cl2)
         : id(id_),
           store(store_),
           load(load_),
           client1(cl1),
           client2(cl2),
-          last_client_aww(aww),
           default_file(default_file_)
     {}
-    virtual ~AWT_configuration() {}
 
     bool operator<(const AWT_configuration& other) const { return id<other.id; }
+
     string get_awar_name(const string& subname) const { return string("general_configs/")+id+'/'+subname; }
-    string get_awar_value(const string& subname, const char *default_value = "") const {
-        AW_root *aw_root   = last_client_aww->get_root();
+    AW_awar *get_awar(const string& subname, const char *default_value = "") const {
         string   awar_name = get_awar_name(subname);
-        char    *value     = aw_root->awar_string(awar_name.c_str(), default_value, default_file)->read_string();
-        string   result    = value;
+        return AW_root::SINGLETON->awar_string(awar_name.c_str(), default_value, default_file);
+    }
+
+    string get_awar_value(const string& subname, const char *default_value = "") const {
+        char   *value  = get_awar(subname, default_value)->read_string();
+        string  result = value;
         free(value);
         return result;
     }
     void set_awar_value(const string& subname, const string& new_value) const {
-        AW_root *aw_root   = last_client_aww->get_root();
-        aw_root->awar_string(get_awar_name(subname).c_str(), "")->write_string(new_value.c_str());
+        get_awar(subname)->write_string(new_value.c_str());
     }
 
     const char *get_id() const { return id.c_str(); }
 
-    char *Store() const { return store(last_client_aww, client1, client2); }
+    char *Store() const { return store(client1, client2); }
     GB_ERROR Restore(const string& s) const {
         GB_ERROR error = 0;
 
         if (s.empty()) error = "empty/nonexistant config";
-        else load(last_client_aww, s.c_str(), client1, client2);
+        else load(s.c_str(), client1, client2);
 
         return error;
     }
@@ -166,135 +170,174 @@ void remove_from_configs(const string& config, string& existing_configs) {
 
 static string config_prefix = "cfg_";
 
-static char *correct_key_name(const char *name) {
-    string  with_prefix = config_prefix+name;
+static void correct_key_name_cb(AW_root*, AW_awar *awar) {
+    string  with_prefix = config_prefix+awar->read_char_pntr();
     char   *corrected   = GBS_string_2_key(with_prefix.c_str());
-    freedup(corrected, strdup(corrected+config_prefix.length())); // remove prefix
-    return corrected;
+    awar->write_string(corrected+config_prefix.length());
+    free(corrected);
 }
 
-// ---------------------------------
-//      AWT_start_config_manager
+static void restore_cb(AW_window *, AWT_configuration *config) {
+    string   cfgName   = config->get_awar_value("current");
+    string   awar_name = config_prefix+cfgName;
+    GB_ERROR error     = config->Restore(config->get_awar_value(awar_name));
+    aw_message_if(error);
+}
+static void store_cb(AW_window *, AWT_configuration *config) {
+    string existing = config->get_awar_value("existing");
+    string cfgName  = config->get_awar_value("current");
 
-static void AWT_start_config_manager(AW_window *aww, AWT_configuration *config) {
-    string existing_configs = config->get_awar_value("existing");
-    config->get_awar_value("current"); // create!
+    remove_from_configs(cfgName, existing); // remove selected from existing configs
 
-    bool  reopen = false;
-    char *title  = GBS_global_string_copy("Configurations for '%s'", aww->window_name);
-
-    const char *buttons = "\nRESTORE,STORE,DELETE,LOAD,SAVE,-\nCLOSE,HELP";
-    enum Answer { CM_RESTORE, CM_STORE, CM_DELETE, CM_LOAD, CM_SAVE, CM_none, CM_HELP };
-
-    char   *cfgName = aw_string_selection2awar(title, "Enter a new or select an existing config", config->get_awar_name("current").c_str(), existing_configs.c_str(), buttons);
-    Answer  button  = (Answer)aw_string_selection_button();
-
-    GB_ERROR error = NULL;
-    if (button >= CM_RESTORE && button <= CM_SAVE) {
-        if (!cfgName || !cfgName[0]) {                // did user specify a config-name ?
-            error = "Please enter or select a config";
-        }
+    existing = existing.empty() ? cfgName : (string(cfgName)+';'+existing);
+    {
+        char   *config_string = config->Store();
+        string  awar_name     = config_prefix+cfgName;
+        config->set_awar_value(awar_name, config_string);
+        free(config_string);
     }
+    config->set_awar_value("existing", existing);
+}
+static void delete_cb(AW_window *, AWT_configuration *config) {
+    string existing = config->get_awar_value("existing");
+    string cfgName  = config->get_awar_value("current");
+    remove_from_configs(cfgName, existing); // remove selected from existing configs
+    config->set_awar_value("current", "");
+    config->set_awar_value("existing", existing);
+}
+static void load_cb(AW_window *, AWT_configuration *config) {
+    string   cfgName = config->get_awar_value("current");
+    GB_ERROR error   = NULL;
 
-    if (!error && button>=0) {
-        if (button == CM_HELP) {
-            AW_help_popup(aww, "configurations.hlp");
-        }
-        else {
-            freeset(cfgName, correct_key_name(cfgName));
+    if (cfgName.empty()) error = "Please enter or select target config";
+    else {
+        char *loadMask = GBS_global_string_copy("%s_*", config->get_id());
+        char *filename = aw_file_selection("Load config from file", "$(ARBCONFIG)", loadMask, ".arbcfg");
+        if (filename) {
+            string awar_name = config_prefix+cfgName;
 
-            string  awar_name = config_prefix+cfgName;
-            char   *filename  = 0;
-            bool    loading   = false;
-
-            awt_assert(GB_check_key(awar_name.c_str()) == NULL);
-
-            reopen = true;
-
-            switch (button) {
-                case CM_LOAD: {
-                    char *loadMask = GBS_global_string_copy("%s_*", config->get_id());
-                    filename       = aw_file_selection("Load config from file", "$(ARBCONFIG)", loadMask, ".arbcfg");
-                    free(loadMask);
-                    if (!filename) break;
-
-                    error = config->Load(filename, awar_name);
-                    if (error) break;
-
-                    loading = true;
-                    // fall-through
-                }
-
-                case CM_RESTORE:
-                    error = config->Restore(config->get_awar_value(awar_name));
-                    if (!error) {
-                        config->set_awar_value("current", cfgName);
-                        if (loading) goto AUTOSTORE;
-                        reopen = false;
-                    }
-                    break;
-
-                case CM_SAVE: {
-                    char *saveAs = GBS_global_string_copy("%s_%s", config->get_id(), cfgName);
-                    filename     = aw_file_selection("Save config to file", "$(ARBCONFIG)", saveAs, ".arbcfg");
-                    free(saveAs);
-                    if (!filename) break;
-                    // fall-through
-                }
-                case CM_STORE: {
-                      AUTOSTORE :
-                    remove_from_configs(cfgName, existing_configs); // remove existing config
-
-                    if (existing_configs.length()) existing_configs = string(cfgName)+';'+existing_configs;
-                    else existing_configs                           = cfgName;
-
-                    {
-                        char *config_string = config->Store();
-                        config->set_awar_value(awar_name, config_string);
-                        free(config_string);
-                    }
-                    config->set_awar_value("current", cfgName);
-                    config->set_awar_value("existing", existing_configs);
-
-                    if (filename && !loading) error = config->Save(filename, awar_name); // CM_SAVE
-                    break;
-                }
-
-                case CM_DELETE:
-                    remove_from_configs(cfgName, existing_configs); // remove existing config
-                    config->set_awar_value("current", "");
-                    config->set_awar_value("existing", existing_configs);
-
-                    // @@@ config is not really deleted from properties
-                    break;
-
-                case CM_HELP:
-                case CM_none:
-                    awt_assert(0); // should not come here
-                    break;
+            error = config->Load(filename, awar_name);
+            if (!error) {
+                // after successful load restore and store config
+                restore_cb(NULL, config);
+                store_cb(NULL, config);
             }
+            free(filename);
+        }
+        free(loadMask);
+    }
+    aw_message_if(error);
+}
+static void save_cb(AW_window *, AWT_configuration *config) {
+    string   cfgName = config->get_awar_value("current");
+    GB_ERROR error   = NULL;
+
+    if (cfgName.empty()) error = "Please enter or select config to save";
+    else {
+        char *saveAs   = GBS_global_string_copy("%s_%s", config->get_id(), cfgName.c_str());
+        char *filename = aw_file_selection("Save config to file", "$(ARBCONFIG)", saveAs, ".arbcfg");
+        if (filename) {
+            store_cb(NULL, config);
+            string awar_name = config_prefix+cfgName;
+            error            = config->Save(filename, awar_name);
+            free(filename);
+        }
+        free(saveAs);
+    }
+    aw_message_if(error);
+}
+
+static void refresh_config_sellist_cb(AW_root*, AWT_configuration *config, AW_selection_list *sel) {
+    string        cfgs_str = config->get_awar_value("existing");
+    ConstStrArray cfgs;
+    GBT_split_string(cfgs, cfgs_str.c_str(), ';');
+    sel->init_from_array(cfgs, "<new>", "");
+}
+
+static AW_window *create_config_manager_window(AW_root *, AWT_configuration *config, AW_window *aww) {
+    AW_window_simple *aws = new AW_window_simple;
+
+    char *title = GBS_global_string_copy("Configurations for '%s'", aww->get_window_title());
+    char *id    = GBS_global_string_copy("%s_config",               aww->get_window_id());
+
+    aws->init(aww->get_root(), id, title);
+    aws->load_xfig("awt/manage_config.fig");
+
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE");
+
+    aws->at("help");
+    aws->callback(makeHelpCallback("configurations.hlp"));
+    aws->create_button("HELP", "HELP");
+
+    // create awars
+    AW_awar *awar_existing = config->get_awar("existing");
+    AW_awar *awar_current  = config->get_awar("current");
+    awar_current->add_callback(makeRootCallback(correct_key_name_cb, awar_current));
+
+    AW_selection_list *sel = awt_create_selection_list_with_input_field(aws, awar_current->awar_name, "box", "name");
+
+    awar_existing->add_callback(makeRootCallback(refresh_config_sellist_cb, config, sel));
+    awar_existing->touch(); // fills selection list
+
+    aws->auto_space(0, 3);
+    aws->button_length(10);
+    aws->at("button");
+
+    int xpos = aws->get_at_xposition();
+    int ypos = aws->get_at_yposition();
+
+    int yoffset = 0; // irrelevant for 1st loop
+
+    struct but {
+        void (*cb)(AW_window*, AWT_configuration*);
+        const char *id;
+        const char *label;
+        const char *mnemonic;
+    } butDef[] = {
+        { restore_cb, "RESTORE", "Restore", "R" },
+        { store_cb,   "STORE",   "Store",   "S" },
+        { delete_cb,  "DELETE",  "Delete",  "D" },
+        { load_cb,    "LOAD",    "Load",    "L" },
+        { save_cb,    "SAVE",    "Save",    "v" },
+    };
+    const int buttons = ARRAY_ELEMS(butDef);
+    for (int b = 0; b<buttons; ++b) {
+        const but& B = butDef[b];
+
+        if (b>0) aws->at(xpos, ypos + b*yoffset);
+
+        aws->callback(makeWindowCallback(B.cb, config));
+        aws->create_button(B.id, B.label, B.mnemonic);
+
+        if (!b) {
+            aws->at_newline();
+            int ypos2 = aws->get_at_yposition();
+            yoffset   = ypos2-ypos;
+            aws->at_x(xpos);
         }
     }
 
-    free(title);
-    free(cfgName);
-
-    if (error) {
-        aw_message(error);
-        reopen = true;
-    }
-    if (reopen) AWT_start_config_manager(aww, config);
+    return aws;
 }
 
-static void destroy_AWT_configuration(AWT_configuration *c) { delete c; }
+static void destroy_AWT_configuration(AWT_configuration *c, AW_window*) { delete c; }
 
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store_cb,
                                AWT_load_config_from_string load_cb, AW_CL cl1, AW_CL cl2, const char *macro_id)
 {
-    AWT_configuration * const config = new AWT_configuration(aww, default_file_, id, store_cb, load_cb, cl1, cl2);
+    /*! inserts a config-button into aww
+     * @param default_file_ db where configs will be stored
+     * @param id unique id (has to be a key)
+     * @param store_cb creates a string from current state
+     * @param load_cb restores state from string
+     * @param macro_id custom macro id (normally NULL will do)
+     */
+    AWT_configuration * const config = new AWT_configuration(default_file_, id, store_cb, load_cb, cl1, cl2);
 
     aww->button_length(0); // -> autodetect size by size of graphic
-    aww->callback(makeWindowCallback(AWT_start_config_manager, destroy_AWT_configuration, config));
+    aww->callback(makeCreateWindowCallback(create_config_manager_window, destroy_AWT_configuration, config, aww));
     aww->create_button(macro_id ? macro_id : "SAVELOAD_CONFIG", "#conf_save.xpm");
 }
 
@@ -403,18 +446,19 @@ AWT_config::AWT_config(const char *config_char_ptr)
         pos = end+2;            // skip ';'
     }
 }
-AWT_config::AWT_config(const AWT_config_mapping *cfgname_2_awar, AW_root *root)
-    : mapping(new AWT_config_mapping)
-    , parse_error(0)
+AWT_config::AWT_config(const AWT_config_mapping *cfgname_2_awar)
+    : mapping(new AWT_config_mapping),
+      parse_error(0)
 {
-    const config_map& awarmap  = cfgname_2_awar->cmap;
-    config_map& valuemap = mapping->cmap;
+    const config_map&  awarmap  = cfgname_2_awar->cmap;
+    config_map&        valuemap = mapping->cmap;
+    AW_root           *aw_root  = AW_root::SINGLETON;
 
     for (config_map::const_iterator c = awarmap.begin(); c != awarmap.end(); ++c) {
         const string& key(c->first);
         const string& awar_name(c->second);
 
-        char *awar_value = root->awar(awar_name.c_str())->read_as_string();
+        char *awar_value = aw_root->awar(awar_name.c_str())->read_as_string();
         valuemap[key]    = awar_value;
         free(awar_value);
     }
@@ -462,7 +506,7 @@ char *AWT_config::config_string() const {
     }
     return strdup(result.c_str());
 }
-GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW_root *root) const {
+GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar) const {
     GB_ERROR       error = 0;
     GB_transaction ta(AW_ROOT_DEFAULT);
     // Notes:
@@ -472,6 +516,7 @@ GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW
     //   difference IF the 1st awar is bound to main-DB. At best old behavior was obscure.
 
     awt_assert(!parse_error);
+    AW_root *aw_root = AW_root::SINGLETON;
     for (config_map::iterator e = mapping->begin(); !error && e != mapping->end(); ++e) {
         const string& config_name(e->first);
         const string& value(e->second);
@@ -482,7 +527,7 @@ GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW
         }
         else {
             const string&  awar_name(found->second);
-            AW_awar       *awar = root->awar(awar_name.c_str());
+            AW_awar       *awar = aw_root->awar(awar_name.c_str());
             awar->write_as_string(value.c_str());
         }
     }
@@ -492,11 +537,12 @@ GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW
 // ------------------------------
 //      AWT_config_definition
 
-AWT_config_definition::AWT_config_definition(AW_root *aw_root)
-    : root(aw_root),  config_mapping(new AWT_config_mapping) {}
+AWT_config_definition::AWT_config_definition()
+    : config_mapping(new AWT_config_mapping)
+{}
 
-AWT_config_definition::AWT_config_definition(AW_root *aw_root, AWT_config_mapping_def *mdef)
-    : root(aw_root),  config_mapping(new AWT_config_mapping)
+AWT_config_definition::AWT_config_definition(AWT_config_mapping_def *mdef)
+    : config_mapping(new AWT_config_mapping)
 {
     add(mdef);
 }
@@ -521,7 +567,7 @@ void AWT_config_definition::add(AWT_config_mapping_def *mdef) {
 char *AWT_config_definition::read() const {
     // creates a string from awar values
 
-    AWT_config current_state(config_mapping, root);
+    AWT_config current_state(config_mapping);
     return current_state.config_string();
 }
 void AWT_config_definition::write(const char *config_char_ptr) const {
@@ -530,7 +576,7 @@ void AWT_config_definition::write(const char *config_char_ptr) const {
 
     AWT_config wanted_state(config_char_ptr);
     GB_ERROR   error  = wanted_state.parseError();
-    if (!error) error = wanted_state.write_to_awars(config_mapping, root);
+    if (!error) error = wanted_state.write_to_awars(config_mapping);
     if (error) aw_message(GBS_global_string("Error restoring configuration (%s)", error));
 }
 
