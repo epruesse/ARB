@@ -34,7 +34,12 @@ sub log_summary($) {
             if ($passed eq 'ALL') { $passed = $testCount; }
           }
         }
-        print "- $module ($passed/$testCount)\n";
+        my $msg = "- $module ($passed/$testCount)";
+        if ($passed != $testCount) {
+          my $failed = $testCount - $passed;
+          $msg = sprintf('%-40s <-- %i failed', $msg, $failed);
+        }
+        print "$msg\n";
       }
 
       close(LOG);
