@@ -1719,14 +1719,14 @@ static void search_init_config(AWT_config_definition& cdef, int search_type) {
     cdef.add(awarList->exact, "exact");
 }
 
-static char *search_store_config(AW_window *aww, AW_CL cl_search_type, AW_CL) {
-    AWT_config_definition cdef(aww->get_root());
+static char *search_store_config(AW_CL cl_search_type, AW_CL) {
+    AWT_config_definition cdef;
     search_init_config(cdef, int(cl_search_type));
     return cdef.read();
 }
 
-static void search_restore_config(AW_window *aww, const char *stored_string, AW_CL cl_search_type, AW_CL) {
-    AWT_config_definition cdef(aww->get_root());
+static void search_restore_config(const char *stored_string, AW_CL cl_search_type, AW_CL) {
+    AWT_config_definition cdef;
     search_init_config(cdef, int(cl_search_type));
     cdef.write(stored_string);
 }

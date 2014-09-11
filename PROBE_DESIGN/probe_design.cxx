@@ -1267,13 +1267,13 @@ static void probe_design_init_config(AWT_config_definition& cdef) {
     }
 }
 
-static char *probe_design_store_config(AW_window *aww, AW_CL, AW_CL) {
-    AWT_config_definition cdef(aww->get_root());
+static char *probe_design_store_config(AW_CL, AW_CL) {
+    AWT_config_definition cdef;
     probe_design_init_config(cdef);
     return cdef.read();
 }
-static void probe_design_restore_config(AW_window *aww, const char *stored_string, AW_CL, AW_CL) {
-    AWT_config_definition cdef(aww->get_root());
+static void probe_design_restore_config(const char *stored_string, AW_CL, AW_CL) {
+    AWT_config_definition cdef;
     probe_design_init_config(cdef);
     cdef.write(stored_string);
 }

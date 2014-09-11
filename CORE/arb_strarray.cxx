@@ -17,8 +17,23 @@
 #include <arb_sort.h>
 
 void CharPtrArray::sort(CharPtrArray_compare_fun compare, void *client_data) {
+    /*! sort the array
+     * @see sort_and_uniq for parameters
+     */
     GB_sort((void**)str, 0, size(), compare, client_data);
 }
+
+void CharPtrArray::uniq(CharPtrArray_compare_fun compare, void *client_data) {
+    /*! remove consecutive equal elements
+     * @see sort_and_uniq for parameters
+     */
+    for (int i = size()-2; i >= 0; --i) {
+        if (compare(str[i], str[i+1], client_data) == 0) {
+            remove(i+1);
+        }
+    }
+}
+
 
 /* ----------------------------------------
  * conversion between
