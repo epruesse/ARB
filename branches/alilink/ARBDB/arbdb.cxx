@@ -2428,11 +2428,12 @@ GB_ERROR GB_print_debug_information(void */*dummy_AW_root*/, GBDATA *gb_main) {
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     GB_push_transaction(gb_main);
     for (int i=0; i<Main->keycnt; i++) {
-        if (Main->keys[i].key) {
-            printf("%3i %20s    nref %i\n", i, Main->keys[i].key, (int)Main->keys[i].nref);
+        gb_Key& KEY = Main->keys[i];
+        if (KEY.key) {
+            printf("%3i %20s    nref %li\n", i, KEY.key, KEY.nref);
         }
         else {
-            printf("    %3i unused key, next free key = %li\n", i, Main->keys[i].next_free_key);
+            printf("    %3i unused key, next free key = %li\n", i, KEY.next_free_key);
         }
     }
     gbm_debug_mem();
@@ -2478,8 +2479,9 @@ static int gb_info(GBDATA *gbd, int deep) {
 
                 header = GB_DATA_LIST_HEADER(gbc->d);
                 for (index = 0; index < gbc->d.nheader; index++) {
-                    GBDATA *gb_sub = GB_HEADER_LIST_GBD(header[index]);
-                    printf("\t\t%10s (GBDATA*)0x%lx (GBCONTAINER*)0x%lx\n", Main->keys[header[index].flags.key_quark].key, (long)gb_sub, (long)gb_sub);
+                    GBDATA  *gb_sub = GB_HEADER_LIST_GBD(header[index]);
+                    GBQUARK  quark  = header[index].flags.key_quark;
+                    printf("\t\t%10s (GBDATA*)0x%lx (GBCONTAINER*)0x%lx\n", quark2key(Main, quark), (long)gb_sub, (long)gb_sub);
                 }
             }
             break;

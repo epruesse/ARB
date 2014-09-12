@@ -420,7 +420,8 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
     char     c;
     GBDATA  *gb;
     GB_CSTR  strng;
-    char    *key;
+
+    const char *key;
 
     for (gb = GB_child(gbc); gb; gb = GB_nextChild(gb)) {
         if (gb->flags.temporary) continue;
@@ -730,9 +731,10 @@ static int gb_write_bin(FILE *out, GBCONTAINER *gbc, uint32_t version) {
     fwrite("keys", 4, 1, out);
 
     for (long i=1; i<Main->keycnt; i++) {
-        if (Main->keys[i].nref>0) {
-            gb_put_number(Main->keys[i].nref, out);
-            fprintf(out, "%s", Main->keys[i].key);
+        gb_Key &KEY = Main->keys[i];
+        if (KEY.nref>0) {
+            gb_put_number(KEY.nref, out);
+            fputs(KEY.key, out);
         }
         else {
             putc(0, out);       // 0 nref
