@@ -790,9 +790,14 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
 #define TEST_EXPECT_CB_TRIGGERED(TRACE,GBD,TYPE)         TEST_EXPECT(TRACE.was_called_by(GBD, TYPE))
 #define TEST_EXPECT_CB_TRIGGERED_AT(TRACE,GBD,TYPE,TIME) TEST_EXPECT_EQUAL(TRACE.call_time(GBD, TYPE), TIME)
 
-#define TEST_EXPECT_CHANGE_TRIGGERED(TRACE,GBD) TEST_EXPECT_CB_TRIGGERED(TRACE, GBD, GB_CB_CHANGED)
-#define TEST_EXPECT_DELETE_TRIGGERED(TRACE,GBD) TEST_EXPECT_CB_TRIGGERED(TRACE, GBD, GB_CB_DELETE)
-#define TEST_EXPECT_NCHILD_TRIGGERED(TRACE,GBD) TEST_EXPECT_CB_TRIGGERED(TRACE, GBD, GB_CB_SON_CREATED)
+#define TEST_EXPECT_CHANGE_TRIGGERED(GBD) TEST_EXPECT_CB_TRIGGERED(TRACESTRUCT(GBD, changed),  GBD, GB_CB_CHANGED)
+#define TEST_EXPECT_DELETE_TRIGGERED(GBD) TEST_EXPECT_CB_TRIGGERED(TRACESTRUCT(GBD, deleted),  GBD, GB_CB_DELETE)
+#define TEST_EXPECT_NCHILD_TRIGGERED(GBD) TEST_EXPECT_CB_TRIGGERED(TRACESTRUCT(GBD, newchild), GBD, GB_CB_SON_CREATED)
+
+#define TEST_EXPECT_CHANGE_HIER_TRIGGERED(NAME,GBD) TEST_EXPECT_CB_TRIGGERED(HIERARCHY_TRACESTRUCT(NAME, changed),  GBD, GB_CB_CHANGED)
+#define TEST_EXPECT_DELETE_HIER_TRIGGERED(NAME,GBD) TEST_EXPECT_CB_TRIGGERED(HIERARCHY_TRACESTRUCT(NAME, deleted),  GBD, GB_CB_DELETE)
+#define TEST_EXPECT_NCHILD_HIER_TRIGGERED(NAME,GBD) TEST_EXPECT_CB_TRIGGERED(HIERARCHY_TRACESTRUCT(NAME, newchild), GBD, GB_CB_SON_CREATED)
+
 
 #define TEST_EXPECT_CHANGE_TRIGGERED_AT(TRACE,GBD,TIME) TEST_EXPECT_CB_TRIGGERED_AT(TRACE, GBD, GB_CB_CHANGED, TIME)
 #define TEST_EXPECT_DELETE_TRIGGERED_AT(TRACE,GBD,TIME) TEST_EXPECT_CB_TRIGGERED_AT(TRACE, GBD, GB_CB_DELETE, TIME)
@@ -835,7 +840,7 @@ void TEST_db_callbacks() {
     GB_begin_transaction(gb_main);
     GB_write_string(top, "hello world");
     GB_commit_transaction(gb_main);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_top_changed, top);
+    TEST_EXPECT_CHANGE_TRIGGERED(top);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     GB_begin_transaction(gb_main);
@@ -848,8 +853,8 @@ void TEST_db_callbacks() {
     GB_begin_transaction(gb_main);
     GB_write_flag(son, 1);                                  // only change "mark"
     GB_commit_transaction(gb_main);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_son_changed, son);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_EXPECT_CHANGE_TRIGGERED(son);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_top);
     TEST_EXPECT_TRIGGER__UNWANTED(trace_cont_top_newchild); // @@@ modifying son should not trigger newchild callback
     TEST_EXPECT_TRIGGERS_CHECKED();
 #else
@@ -859,9 +864,9 @@ void TEST_db_callbacks() {
     GB_begin_transaction(gb_main);
     GB_touch(grandson);
     GB_commit_transaction(gb_main);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_grandson_changed, grandson);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_EXPECT_CHANGE_TRIGGERED(grandson);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_son);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_top);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     // trigger change- and soncreate-callbacks via create
@@ -869,57 +874,57 @@ void TEST_db_callbacks() {
     GB_begin_transaction(gb_main);
     GBDATA *son2 = GB_create(cont_top, "son2", GB_INT); TEST_REJECT_NULL(son2);
     GB_commit_transaction(gb_main);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
-    TEST_EXPECT_NCHILD_TRIGGERED(trace_cont_top_newchild, cont_top);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_top);
+    TEST_EXPECT_NCHILD_TRIGGERED(cont_top);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     GB_begin_transaction(gb_main);
     GBDATA *grandson2 = GB_create(cont_son, "grandson2", GB_STRING); TEST_REJECT_NULL(grandson2);
     GB_commit_transaction(gb_main);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
-    TEST_EXPECT_NCHILD_TRIGGERED(trace_cont_son_newchild, cont_son);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_son);
+    TEST_EXPECT_NCHILD_TRIGGERED(cont_son);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_top);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     // trigger callbacks via delete
 
     TRIGGER_DELETE(son2);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_top);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     TRIGGER_DELETE(grandson2);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_top);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_son);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     TEST_EXPECT_NO_ERROR(GB_request_undo_type(gb_main, GB_UNDO_UNDO));
 
     TRIGGER_DELETE(top);
-    TEST_EXPECT_DELETE_TRIGGERED(trace_top_deleted, top);
+    TEST_EXPECT_DELETE_TRIGGERED(top);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     TRIGGER_DELETE(grandson);
-    TEST_EXPECT_DELETE_TRIGGERED(trace_grandson_deleted, grandson);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_son_changed, cont_son);
+    TEST_EXPECT_DELETE_TRIGGERED(grandson);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_top);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_son);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     TRIGGER_DELETE(cont_son);
-    TEST_EXPECT_DELETE_TRIGGERED(trace_ograndson_deleted, ograndson);
-    TEST_EXPECT_DELETE_TRIGGERED(trace_cont_son_deleted, cont_son);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_EXPECT_DELETE_TRIGGERED(ograndson);
+    TEST_EXPECT_DELETE_TRIGGERED(cont_son);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_top);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     // trigger callbacks by undoing last 3 delete transactions
 
     TEST_EXPECT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO)); // undo delete of cont_son
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
-    TEST_EXPECT_NCHILD_TRIGGERED(trace_cont_top_newchild, cont_top);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_top);
+    TEST_EXPECT_NCHILD_TRIGGERED(cont_top);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     TEST_EXPECT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO)); // undo delete of grandson
     // cont_son callbacks are not triggered (they are not restored by undo)
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_top);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     TEST_EXPECT_NO_ERROR(GB_undo(gb_main, GB_UNDO_UNDO)); // undo delete of top
@@ -939,15 +944,15 @@ void TEST_db_callbacks() {
     // trigger callbacks which will be removed
 
     TRIGGER_CHANGE(son);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_son_changed, son);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
+    TEST_EXPECT_CHANGE_TRIGGERED(son);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_top);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     GB_begin_transaction(gb_main);
     GBDATA *son3 = GB_create(cont_top, "son3", GB_INT); TEST_REJECT_NULL(son3);
     GB_commit_transaction(gb_main);
-    TEST_EXPECT_CHANGE_TRIGGERED(trace_cont_top_changed, cont_top);
-    TEST_EXPECT_NCHILD_TRIGGERED(trace_cont_top_newchild, cont_top);
+    TEST_EXPECT_CHANGE_TRIGGERED(cont_top);
+    TEST_EXPECT_NCHILD_TRIGGERED(cont_top);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     // test remove callback
@@ -1082,12 +1087,12 @@ void TEST_hierarchy_callbacks() {
 
     // trigger change-callback using same DB entry
     TRIGGER_CHANGE(anyGrandson);
-    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, anyGrandson);
+    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anyGrandson);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     // trigger change-callback using another DB entry (same hierarchy)
     TRIGGER_CHANGE(anotherGrandson);
-    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, anotherGrandson);
+    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anotherGrandson);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     // check nothing is triggered by an element at different hierarchy
@@ -1097,14 +1102,14 @@ void TEST_hierarchy_callbacks() {
     // trigger change-callback using both DB entries (in two TAs)
     TRIGGER_CHANGE(anyGrandson);
     TRIGGER_CHANGE(anotherGrandson);
-    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, anyGrandson);
-    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, anotherGrandson);
+    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anyGrandson);
+    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anotherGrandson);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     // trigger change-callback using both DB entries (in one TA)
     TRIGGER_2_CHANGES(anyGrandson, anotherGrandson);
-    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, anyGrandson);
-    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, anotherGrandson);
+    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anyGrandson);
+    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anotherGrandson);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     // trigger son-created-callback
@@ -1115,7 +1120,7 @@ void TEST_hierarchy_callbacks() {
         }
         TEST_EXPECT_NO_ERROR(ta.close(NULL));
     }
-    TEST_EXPECT_NCHILD_TRIGGERED(traceHier_anySonContainer_newchild, anySonContainer);
+    TEST_EXPECT_NCHILD_HIER_TRIGGERED(anySonContainer, anySonContainer);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     // trigger 2 son-created-callbacks (for 2 containers) and one change-callback (for a newly created son)
@@ -1127,9 +1132,9 @@ void TEST_hierarchy_callbacks() {
         }
         TEST_EXPECT_NO_ERROR(ta.close(NULL));
     }
-    TEST_EXPECT_CHANGE_TRIGGERED(traceHier_anyGrandson_changed, newGrandson);
-    TEST_EXPECT_NCHILD_TRIGGERED(traceHier_anySonContainer_newchild, anotherSonContainer);
-    TEST_EXPECT_NCHILD_TRIGGERED(traceHier_anySonContainer_newchild, anySonContainer);
+    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, newGrandson);
+    TEST_EXPECT_NCHILD_HIER_TRIGGERED(anySonContainer, anotherSonContainer);
+    TEST_EXPECT_NCHILD_HIER_TRIGGERED(anySonContainer, anySonContainer);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     // trigger delete-callback
@@ -1138,7 +1143,7 @@ void TEST_hierarchy_callbacks() {
         TEST_EXPECT_NO_ERROR(GB_delete(elimGrandson));
         TEST_EXPECT_NO_ERROR(ta.close(NULL));
     }
-    TEST_EXPECT_DELETE_TRIGGERED(traceHier_anyGrandson_deleted, elimGrandson);
+    TEST_EXPECT_DELETE_HIER_TRIGGERED(anyGrandson, elimGrandson);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     // bind normal (non-hierarchical) callbacks to entries which trigger hierarchical callbacks and ..
