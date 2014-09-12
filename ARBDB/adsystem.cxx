@@ -234,7 +234,7 @@ GB_ERROR gb_load_key_data_and_dictionaries(GB_MAIN_TYPE *Main) { // goes to head
                     if (!name) error = GB_await_error();
                     else {
                         GBQUARK quark = gb_find_or_create_quark(Main, name);
-                        if (quark<=0 || quark >= Main->sizeofkeys || !Main->keys[quark].key) {
+                        if (quark<=0 || quark >= Main->sizeofkeys || !quark2key(Main, quark)) {
                             error = GB_delete(gb_key);  // delete unused key
                         }
                     }
@@ -250,9 +250,9 @@ GB_ERROR gb_load_key_data_and_dictionaries(GB_MAIN_TYPE *Main) { // goes to head
                 ASSERT_RESULT_PREDICATE(isAbove<int>(0), gb_find_or_create_quark(Main, "compression_mask"));
 
                 for (int key=1; key<Main->sizeofkeys; key++) {
-                    char *k = Main->keys[key].key;
-                    if (!k) continue;
-                    gb_load_single_key_data(gb_main, key);
+                    if (quark2key(Main, key)) {
+                        gb_load_single_key_data(gb_main, key);
+                    }
                 }
             }
             GB_pop_my_security(gb_main);
