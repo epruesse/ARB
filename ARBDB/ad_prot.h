@@ -69,6 +69,11 @@ NOT4PERL void GB_dump(GBDATA *gbd);
 NOT4PERL void GB_dump_no_limit(GBDATA *gbd);
 GB_ERROR GB_fix_database(GBDATA *gb_main);
 
+/* ad_cb.cxx */
+GBDATA *GB_get_gb_main_during_cb(void);
+NOT4PERL const void *GB_read_old_value(void);
+long GB_read_old_size(void);
+
 /* ad_load.cxx */
 void GB_set_verbose(void);
 void GB_set_next_main_idx(long idx);
@@ -395,9 +400,6 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd);
 GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error);
 void GB_end_transaction_show_error(GBDATA *gbd, GB_ERROR error, void (*error_handler)(GB_ERROR));
 int GB_get_transaction_level(GBDATA *gbd);
-GBDATA *GB_get_gb_main_during_cb(void);
-NOT4PERL const void *GB_read_old_value(void);
-long GB_read_old_size(void);
 int GB_nsons(GBDATA *gbd);
 void GB_disable_quicksave(GBDATA *gbd, const char *reason);
 GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long listsize);

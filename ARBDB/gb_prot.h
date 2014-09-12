@@ -13,6 +13,10 @@
 #endif
 
 
+/* ad_cb.cxx */
+GB_MAIN_TYPE *gb_get_main_during_cb(void);
+void gb_remove_callbacks_marked_for_deletion(GBDATA *gbd);
+
 /* ad_core.cxx */
 void gb_touch_entry(GBDATA *gbd, GB_CHANGE val);
 void gb_touch_header(GBCONTAINER *gbc);
@@ -167,7 +171,6 @@ GBCONTAINER *gb_get_root(GBCONTAINER *gbc);
 GBENTRY *gb_create(GBCONTAINER *father, const char *key, GB_TYPES type);
 GBCONTAINER *gb_create_container(GBCONTAINER *father, const char *key);
 GB_ERROR gb_delete_force(GBDATA *source);
-GB_MAIN_TYPE *gb_get_main_during_cb(void);
 GB_ERROR gb_resort_system_folder_to_top(GBCONTAINER *gb_main);
 
 #else
