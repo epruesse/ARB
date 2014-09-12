@@ -13,7 +13,7 @@
 #endif
 
 
-/* arbdb.cxx */
+/* ad_cb.cxx */
 NOT4PERL bool GB_inside_callback(GBDATA *of_gbd, GB_CB_TYPE cbtype);
 char *GB_get_callback_info(GBDATA *gbd);
 GB_ERROR GB_add_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb);
