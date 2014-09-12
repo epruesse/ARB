@@ -3294,23 +3294,6 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
         TEST_EXPECT_NO_ERROR(ta.close(error));  \
     } while(0)
 
-#define TEST_EXPECT_NO_CALLBACK_TRIGGERED()                     \
-    TEST_EXPECT(trace_top_deleted.was_not_called());            \
-    TEST_EXPECT(trace_son_deleted.was_not_called());            \
-    TEST_EXPECT(trace_grandson_deleted.was_not_called());       \
-    TEST_EXPECT(trace_ograndson_deleted.was_not_called());      \
-    TEST_EXPECT(trace_cont_top_deleted.was_not_called());       \
-    TEST_EXPECT(trace_cont_son_deleted.was_not_called());       \
-    TEST_EXPECT(trace_top_changed.was_not_called());            \
-    TEST_EXPECT(trace_son_changed.was_not_called());            \
-    TEST_EXPECT(trace_grandson_changed.was_not_called());       \
-    TEST_EXPECT(trace_ograndson_changed.was_not_called());      \
-    TEST_EXPECT(trace_cont_top_changed.was_not_called());       \
-    TEST_EXPECT(trace_cont_son_changed.was_not_called());       \
-    TEST_EXPECT(trace_cont_top_newchild.was_not_called());      \
-    TEST_EXPECT(trace_cont_son_newchild.was_not_called());      \
-
-
 #define TEST_EXPECT_CB_TRIGGERED(TRACE,GBD,TYPE)         TEST_EXPECT(TRACE.was_called_by(GBD, TYPE))
 #define TEST_EXPECT_CB_TRIGGERED_AT(TRACE,GBD,TYPE,TIME) TEST_EXPECT_EQUAL(TRACE.call_time(GBD, TYPE), TIME)
 
@@ -3340,12 +3323,31 @@ void TEST_db_callbacks() {
 
     // install callbacks
     GB_begin_transaction(gb_main);
+
+    // callback_traces defined below have to be by TEST_EXPECT_NO_CALLBACK_TRIGGERED
     INIT_CONTAINER_CALLBACKS(cont_top);
     INIT_CONTAINER_CALLBACKS(cont_son);
     INIT_ENTRY_CALLBACKS(top);
     INIT_ENTRY_CALLBACKS(son);
     INIT_ENTRY_CALLBACKS(grandson);
     INIT_ENTRY_CALLBACKS(ograndson);
+
+#define TEST_EXPECT_NO_CALLBACK_TRIGGERED()                     \
+    TEST_EXPECT(trace_top_deleted.was_not_called());            \
+    TEST_EXPECT(trace_son_deleted.was_not_called());            \
+    TEST_EXPECT(trace_grandson_deleted.was_not_called());       \
+    TEST_EXPECT(trace_ograndson_deleted.was_not_called());      \
+    TEST_EXPECT(trace_cont_top_deleted.was_not_called());       \
+    TEST_EXPECT(trace_cont_son_deleted.was_not_called());       \
+    TEST_EXPECT(trace_top_changed.was_not_called());            \
+    TEST_EXPECT(trace_son_changed.was_not_called());            \
+    TEST_EXPECT(trace_grandson_changed.was_not_called());       \
+    TEST_EXPECT(trace_ograndson_changed.was_not_called());      \
+    TEST_EXPECT(trace_cont_top_changed.was_not_called());       \
+    TEST_EXPECT(trace_cont_son_changed.was_not_called());       \
+    TEST_EXPECT(trace_cont_top_newchild.was_not_called());      \
+    TEST_EXPECT(trace_cont_son_newchild.was_not_called());      \
+
     GB_commit_transaction(gb_main);
 
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
@@ -3488,6 +3490,7 @@ void TEST_db_callbacks() {
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
 
     GB_close(gb_main);
+#undef TEST_EXPECT_NO_CALLBACK_TRIGGERED
 }
 
 void TEST_POSTCOND_arbdb() {
@@ -3501,17 +3504,6 @@ void TEST_POSTCOND_arbdb() {
     TEST_REJECT(error);             // your test finished with an exported error
     TEST_REJECT(unclosed_GB_shell); // your test finished w/o destroying GB_shell
 }
-
-#define TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED()                   \
-    TEST_EXPECT(traceHier_anyGrandson_changed.was_not_called());        \
-    TEST_EXPECT(traceHier_anyGrandson_deleted.was_not_called());        \
-    TEST_EXPECT(traceHier_anySonContainer_newchild.was_not_called())
-
-#undef TEST_EXPECT_NO_CALLBACK_TRIGGERED
-
-#define TEST_EXPECT_NO_CALLBACK_TRIGGERED()                             \
-    TEST_EXPECT(trace_anotherGrandson_changed.was_not_called());        \
-    TEST_EXPECT(trace_elimGrandson2_deleted.was_not_called())
 
 void TEST_hierarchy_callbacks() {
     GB_shell  shell;
@@ -3609,9 +3601,15 @@ void TEST_hierarchy_callbacks() {
     GBDATA *elimGrandson2   = grandson111;
     GBDATA *newGrandson     = NULL;
 
+    // callback_traces defined below have to be by TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED
     INIT_CHANGED_HIERARCHY_CALLBACK(anyGrandson);
     INIT_DELETED_HIERARCHY_CALLBACK(anyGrandson);
     INIT_NWCHILD_HIERARCHY_CALLBACK(anySonContainer);
+
+#define TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED()                   \
+    TEST_EXPECT(traceHier_anyGrandson_changed.was_not_called());        \
+    TEST_EXPECT(traceHier_anyGrandson_deleted.was_not_called());        \
+    TEST_EXPECT(traceHier_anySonContainer_newchild.was_not_called())    \
 
     TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED();
 
@@ -3679,8 +3677,15 @@ void TEST_hierarchy_callbacks() {
     // bind normal (non-hierarchical) callbacks to entries which trigger hierarchical callbacks and ..
     calledWith::timer = 0;
     GB_begin_transaction(gb_main);
+
+    // callback_traces defined below have to be by TEST_EXPECT_NO_CALLBACK_TRIGGERED
     INIT_CHANGED_CALLBACK(anotherGrandson);
     INIT_DELETED_CALLBACK(elimGrandson2);
+
+#define TEST_EXPECT_NO_CALLBACK_TRIGGERED()                             \
+    TEST_EXPECT(trace_anotherGrandson_changed.was_not_called());        \
+    TEST_EXPECT(trace_elimGrandson2_deleted.was_not_called())           \
+
     GB_commit_transaction(gb_main);
 
     TEST_EXPECT_NO_CALLBACK_TRIGGERED();
@@ -3705,6 +3710,9 @@ void TEST_hierarchy_callbacks() {
 
     // cleanup
     GB_close(gb_main);
+
+#undef TEST_EXPECT_NO_CALLBACK_TRIGGERED
+#undef TEST_EXPECT_NO_HIERARCHY_CALLBACK_TRIGGERED
 }
 
 #endif // UNIT_TESTS
