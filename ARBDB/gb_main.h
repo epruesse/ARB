@@ -109,6 +109,7 @@ class GB_MAIN_TYPE : virtual Noncopyable {
         callback_group() : hierarchy_cbs(NULL) {}
 
         inline void add_hcb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb);
+        inline void remove_hcb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb);
         inline void forget_hcbs();
 
         void trigger(GBDATA *gbd, GB_CB_TYPE type, gb_callback_list *dataCBs);
@@ -219,6 +220,7 @@ public:
     bool has_pending_delete_callback() const { return deleteCBs.pending.pending(); }
 
     GB_ERROR add_hierarchy_cb(GBDATA *gbd, const TypedDatabaseCallback& dbcb);
+    GB_ERROR remove_hierarchy_cb(GBDATA *gbd, const TypedDatabaseCallback& dbcb);
     void forget_hierarchy_cbs();
 
     inline void trigger_change_callbacks(GBDATA *gbd, GB_CB_TYPE type);
@@ -228,7 +230,4 @@ public:
 #else
 #error gb_main.h included twice
 #endif // GB_MAIN_H
-
-
-
 

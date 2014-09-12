@@ -204,7 +204,21 @@ char *GB_get_callback_info(GBDATA *gbd) {
 template<typename CB>
 bool CallbackList<CB>::contains_unremoved_callback(const CB& like) const {
     for (const_itertype cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
-        if (cb->spec.is_equal_to(like.spec) && !cb->spec.is_marked_for_removal()) {
+        if (cb->spec.is_equal_to(like.spec) &&
+            !cb->spec.is_marked_for_removal())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+template<>
+bool CallbackList<gb_hierarchy_callback>::contains_unremoved_callback(const gb_hierarchy_callback& like) const {
+    for (const_itertype cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
+        if (cb->spec.is_equal_to(like.spec) &&
+            !cb->spec.is_marked_for_removal() &&
+            cb->get_location().is_equal_to(like.get_location())) // if location differs, accept duplicate callback
+        {
             return true;
         }
     }
@@ -243,8 +257,17 @@ struct IsSpecificCallback : private TypedDatabaseCallback {
     IsSpecificCallback(const TypedDatabaseCallback& cb) : TypedDatabaseCallback(cb) {}
     bool operator()(const gb_callback& cb) const { return is_equal_to(cb.spec); }
 };
-
-
+struct IsSpecificHierarchyCallback : private TypedDatabaseCallback {
+    gb_hierarchy_location loc;
+    IsSpecificHierarchyCallback(GBDATA *gb_representative, const TypedDatabaseCallback& cb)
+        : TypedDatabaseCallback(cb),
+          loc(gb_representative)
+    {}
+    bool operator()(const gb_callback& cb) const {
+        const gb_hierarchy_callback& hcb = static_cast<const gb_hierarchy_callback&>(cb);
+        return is_equal_to(cb.spec) && hcb.get_location().is_equal_to(loc);
+    }
+};
 
 inline void add_to_callback_chain(gb_callback_list*& head, const TypedDatabaseCallback& cbs) {
     if (!head) head = new gb_callback_list;
@@ -299,6 +322,12 @@ void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {
 inline void GB_MAIN_TYPE::callback_group::add_hcb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
     add_to_callback_chain(hierarchy_cbs, dbcb, gb_representative);
 }
+inline void GB_MAIN_TYPE::callback_group::remove_hcb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
+    if (hierarchy_cbs) {
+        hierarchy_cbs->remove_callbacks_that(IsSpecificHierarchyCallback(gb_representative, dbcb));
+    }
+}
+
 
 GB_ERROR GB_MAIN_TYPE::add_hierarchy_cb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
     GB_CB_TYPE type = dbcb.get_type();
@@ -308,7 +337,18 @@ GB_ERROR GB_MAIN_TYPE::add_hierarchy_cb(GBDATA *gb_representative, const TypedDa
     if (type & GB_CB_ALL_BUT_DELETE) {
         changeCBs.add_hcb(gb_representative, dbcb.with_type_changed_to(GB_CB_TYPE(type&GB_CB_ALL_BUT_DELETE)));
     }
-    return NULL;
+    return NULL; // @@@ always NULL?
+}
+
+GB_ERROR GB_MAIN_TYPE::remove_hierarchy_cb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
+    GB_CB_TYPE type = dbcb.get_type();
+    if (type & GB_CB_DELETE) {
+        deleteCBs.remove_hcb(gb_representative, dbcb.with_type_changed_to(GB_CB_DELETE));
+    }
+    if (type & GB_CB_ALL_BUT_DELETE) {
+        changeCBs.remove_hcb(gb_representative, dbcb.with_type_changed_to(GB_CB_TYPE(type&GB_CB_ALL_BUT_DELETE)));
+    }
+    return NULL; // @@@ always NULL?
 }
 
 GB_ERROR GB_add_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) { // @@@ needed to impl #418
@@ -324,6 +364,13 @@ GB_ERROR GB_add_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseC
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     gb_assert(Main->get_transaction_level()>=0); // hierarchical callbacks are not supported in NO_TRANSACTION_MODE
     return Main->add_hierarchy_cb(gbd, TypedDatabaseCallback(dbcb, type));
+}
+
+GB_ERROR GB_remove_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
+    //! remove callback added with GB_add_hierarchy_callback
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+    gb_assert(Main->get_transaction_level()>=0); // hierarchical callbacks are not supported in NO_TRANSACTION_MODE
+    return Main->remove_hierarchy_cb(gbd, TypedDatabaseCallback(dbcb, type));
 }
 
 GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
@@ -748,6 +795,10 @@ static void some_cb(GBDATA *gbd, callback_trace *trace, GB_CB_TYPE cbtype) {
 #define REMOVE_DELETED_CALLBACK(elem) GB_remove_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,deleted)))
 #define REMOVE_NWCHILD_CALLBACK(elem) GB_remove_callback(elem, GB_CB_SON_CREATED, makeDatabaseCallback(some_cb, &TRACESTRUCT(elem,newchild)))
 
+#define REMOVE_CHANGED_HIERARCHY_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_remove_hierarchy_callback(elem, GB_CB_CHANGED,     makeDatabaseCallback(some_cb, &HIERARCHY_TRACESTRUCT(elem,changed))))
+#define REMOVE_DELETED_HIERARCHY_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_remove_hierarchy_callback(elem, GB_CB_DELETE,      makeDatabaseCallback(some_cb, &HIERARCHY_TRACESTRUCT(elem,deleted))))
+#define REMOVE_NWCHILD_HIERARCHY_CALLBACK(elem) TEST_EXPECT_NO_ERROR(GB_remove_hierarchy_callback(elem, GB_CB_SON_CREATED, makeDatabaseCallback(some_cb, &HIERARCHY_TRACESTRUCT(elem,newchild))))
+
 #define INIT_CHANGED_CALLBACK(elem) callback_trace TRACECONSTRUCT(elem,changed);  ADD_CHANGED_CALLBACK(elem)
 #define INIT_DELETED_CALLBACK(elem) callback_trace TRACECONSTRUCT(elem,deleted);  ADD_DELETED_CALLBACK(elem)
 #define INIT_NWCHILD_CALLBACK(elem) callback_trace TRACECONSTRUCT(elem,newchild); ADD_NWCHILD_CALLBACK(elem)
@@ -1079,6 +1130,7 @@ void TEST_hierarchy_callbacks() {
     GBDATA *newGrandson     = NULL;
 
     ct_registry trace_registry;
+    callback_trace HIERARCHY_TRACECONSTRUCT(anyElem,changed); // no CB added yet
     INIT_CHANGED_HIERARCHY_CALLBACK(anyGrandson);
     INIT_DELETED_HIERARCHY_CALLBACK(anyGrandson);
     INIT_NWCHILD_HIERARCHY_CALLBACK(anySonContainer);
@@ -1172,6 +1224,46 @@ void TEST_hierarchy_callbacks() {
     TEST_EXPECT_CHANGE_TRIGGERED_AT(traceHier_anyGrandson_changed, anotherGrandson, 3);
     TEST_EXPECT_CHANGE_TRIGGERED_AT(trace_anotherGrandson_changed, anotherGrandson, 4);
 
+    TEST_EXPECT_TRIGGERS_CHECKED();
+
+    // test removed hierarchy callbacks stop to trigger
+    REMOVE_CHANGED_HIERARCHY_CALLBACK(anyGrandson);
+    REMOVE_DELETED_HIERARCHY_CALLBACK(anyGrandson);
+    TRIGGER_CHANGE(anyGrandson);
+    {
+        GB_initial_transaction ta(gb_main);
+        if (ta.ok()) TEST_EXPECT_NO_ERROR(GB_delete(anyGrandson));
+    }
+    TEST_EXPECT_TRIGGERS_CHECKED();
+
+    GBDATA *anyElem;
+
+    // bind SAME callback to different hierarchy locations
+    anyElem = top1;  ADD_CHANGED_HIERARCHY_CALLBACK(anyElem); // binds      hierarchy cb to "/top"
+    anyElem = son11; ADD_CHANGED_HIERARCHY_CALLBACK(anyElem); // binds SAME hierarchy cb to "/cont_top/son"
+
+    // - check both trigger independently and together
+    TRIGGER_CHANGE(top1);
+    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
+    TEST_EXPECT_TRIGGERS_CHECKED();
+
+    TRIGGER_CHANGE(son11);
+    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, son11);
+    TEST_EXPECT_TRIGGERS_CHECKED();
+
+    TRIGGER_CHANGE(top1);
+    TRIGGER_CHANGE(son11);
+    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
+    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, son11);
+    TEST_EXPECT_TRIGGERS_CHECKED();
+
+    // - check removing one does not disable the other
+    anyElem = top1;  REMOVE_CHANGED_HIERARCHY_CALLBACK(anyElem); // remove hierarchy cb from "/top"
+
+    TRIGGER_CHANGE(top1);
+    TRIGGER_CHANGE(son11);
+    // top1 no longer triggers -> ok
+    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, son11);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     // cleanup
