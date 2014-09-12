@@ -67,7 +67,7 @@ struct CallbackList {
     listtype callbacks;
 
 #if defined(ASSERTION_USED)
-    bool contains_unremoved_callback(const cbtype& like) const;
+    bool contains_unremoved_callback(const CB& like) const;
 #endif
 
     bool empty() const { return callbacks.empty(); }

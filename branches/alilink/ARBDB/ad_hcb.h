@@ -57,6 +57,14 @@ public:
         gb_assert(0);
         return false;
     }
+
+    bool is_equal_to(const gb_hierarchy_location& other) const {
+        int offset;
+        for (offset = 0; quark[offset]; ++offset) {
+            if (quark[offset] != other.quark[offset]) return false;
+        }
+        return other.quark[offset] == 0;
+    }
 };
 
 class gb_hierarchy_callback : public gb_callback {
@@ -68,6 +76,8 @@ public:
     {}
 
     bool triggered_by(GBDATA *gbd) const { return loc.matches(gbd); }
+
+    const gb_hierarchy_location& get_location() const { return loc; }
 };
 
 struct gb_hierarchy_callback_list : public CallbackList<gb_hierarchy_callback> {
