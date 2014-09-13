@@ -81,9 +81,9 @@ public:
 class gb_hierarchy_callback : public gb_callback {
     gb_hierarchy_location loc;
 public:
-    gb_hierarchy_callback(const TypedDatabaseCallback& spec_, GBDATA *gbd_representative)
+    gb_hierarchy_callback(const TypedDatabaseCallback& spec_, const gb_hierarchy_location& loc_)
         : gb_callback(spec_),
-          loc(gbd_representative)
+          loc(loc_)
     {}
     bool triggered_by(GBDATA *gbd) const { return loc.matches(gbd); }
     const gb_hierarchy_location& get_location() const { return loc; }
