@@ -396,7 +396,7 @@ GB_ERROR GB_MAIN_TYPE::remove_hierarchy_cb(const gb_hierarchy_location& loc, con
     return NULL;
 }
 
-#undef CHECK_HIER_CB_CONDITION()
+#undef CHECK_HIER_CB_CONDITION
 
 GB_ERROR GB_add_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
     /*! bind callback to ALL entries which are at the same DB-hierarchy as 'gbd'.
