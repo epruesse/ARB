@@ -15,9 +15,47 @@
 #include "gb_ts.h"
 
 #include <arb_strarray.h>
+#include <arb_strbuf.h>
 
 static gb_triggered_callback *currently_called_back = NULL; // points to callback during callback; NULL otherwise
 static GB_MAIN_TYPE          *inside_callback_main  = NULL; // points to DB root during callback; NULL otherwise
+
+gb_hierarchy_location::gb_hierarchy_location(GBDATA *gb_main, const char *db_path) {
+    invalidate();
+    if (db_path) {
+        ConstStrArray keys;
+        GBT_split_string(keys, db_path, '/');
+
+        size_t size = keys.size();
+        if (size>1 && !keys[0][0]) { // db_path starts with '/' and contains sth
+            GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
+            size_t        q    = 0;
+
+            for (size_t offset = size-1; offset>0; --offset, ++q) {
+                quark[q] = key2quark(Main, keys[offset]);
+                if (quark[q]<1) { // unknown/invalid key
+                    invalidate();
+                    return;
+                }
+            }
+            quark[size-1] = 0;
+            gb_assert(is_valid());
+        }
+    }
+}
+
+char *gb_hierarchy_location::get_db_path(GBDATA *gb_main) const {
+    GBS_strstruct  out(MAX_HIERARCHY_DEPTH*20);
+    GB_MAIN_TYPE  *Main = GB_MAIN(gb_main);
+
+    int offset = 0;
+    while (quark[offset]) ++offset;
+    while (offset-->0) {
+        out.put('/');
+        out.cat(quark2key(Main, quark[offset]));
+    }
+    return out.release();
+}
 
 void gb_pending_callbacks::call_and_forget(GB_CB_TYPE allowedTypes) {
 #if defined(ASSERTION_USED)
@@ -215,9 +253,9 @@ bool CallbackList<CB>::contains_unremoved_callback(const CB& like) const {
 template<>
 bool CallbackList<gb_hierarchy_callback>::contains_unremoved_callback(const gb_hierarchy_callback& like) const {
     for (const_itertype cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
-        if (cb->spec.is_equal_to(like.spec) &&
+        if (cb->spec.is_equal_to(like.spec)   &&
             !cb->spec.is_marked_for_removal() &&
-            cb->get_location().is_equal_to(like.get_location())) // if location differs, accept duplicate callback
+            cb->get_location() == like.get_location()) // if location differs, accept duplicate callback
         {
             return true;
         }
@@ -265,7 +303,7 @@ struct IsSpecificHierarchyCallback : private TypedDatabaseCallback {
     {}
     bool operator()(const gb_callback& cb) const {
         const gb_hierarchy_callback& hcb = static_cast<const gb_hierarchy_callback&>(cb);
-        return is_equal_to(cb.spec) && hcb.get_location().is_equal_to(loc);
+        return is_equal_to(cb.spec) && hcb.get_location() == loc;
     }
 };
 
@@ -1094,6 +1132,7 @@ void TEST_hierarchy_callbacks() {
         TEST_EXPECT(!loc_grandson.matches(top1));
         TEST_EXPECT(!loc_grandson.matches(cont_son22));
         TEST_EXPECT(!loc_grandson.matches(cson_gs));
+        TEST_EXPECT(!loc_grandson.matches(gb_main)); // nothing matches gb_main
 
         gb_hierarchy_location loc_ctop_top(ctop_top);
         TEST_EXPECT(loc_ctop_top.matches(ctop_top));
@@ -1102,18 +1141,45 @@ void TEST_hierarchy_callbacks() {
         gb_hierarchy_location loc_top_son(top_son);
         TEST_EXPECT(loc_top_son.matches(top_son));
         TEST_EXPECT(!loc_top_son.matches(son11));
+        TEST_EXPECT(!loc_top_son.matches(gb_main)); // nothing matches gb_main
 
         gb_hierarchy_location loc_gs(cson_gs);
         TEST_EXPECT(loc_gs.matches(cson_gs));
         TEST_EXPECT(!loc_gs.matches(grandson211));
 
         gb_hierarchy_location loc_root(gb_main);
-        TEST_EXPECT(loc_root.matches(gb_main));
-        TEST_EXPECT(!loc_root.matches(cont_top1));
-        TEST_EXPECT(!loc_root.matches(cont_son11));
-        TEST_EXPECT(!loc_root.matches(top1));
-        TEST_EXPECT(!loc_root.matches(son11));
-        TEST_EXPECT(!loc_root.matches(grandson211));
+        TEST_REJECT(loc_root.is_valid()); // deny binding hierarchy callback to gb_main
+        TEST_EXPECT(!loc_root.matches(gb_main)); // nothing matches gb_main
+        TEST_EXPECT(!loc_root.matches(cont_top1)); // nothing matches an invalid location
+
+        // test location from/to path
+        {
+            char *path_grandson = loc_grandson.get_db_path(gb_main);
+            TEST_EXPECT_EQUAL(path_grandson, "/cont_top/cont_son/grandson");
+
+            gb_hierarchy_location loc_grandson2(gb_main, path_grandson);
+            TEST_EXPECT(loc_grandson2.is_valid());
+            TEST_EXPECT(loc_grandson == loc_grandson2);
+
+            char *path_grandson2 = loc_grandson2.get_db_path(gb_main);
+            TEST_EXPECT_EQUAL(path_grandson, path_grandson2);
+
+            free(path_grandson2);
+            free(path_grandson);
+        }
+
+        gb_hierarchy_location loc_invalid(gb_main, "/no/such/path");
+        TEST_REJECT(loc_invalid.is_valid());
+        TEST_REJECT(loc_invalid == loc_invalid); // invalid locations equal nothing
+
+        TEST_REJECT(gb_hierarchy_location(gb_main, "/grandson/missing/son").is_valid());
+        TEST_EXPECT(gb_hierarchy_location(gb_main, "/grandson/cont_top/son").is_valid()); // non-existing path with existing keys is valid
+        // test some pathological locations:
+        TEST_REJECT(gb_hierarchy_location(gb_main, "")     .is_valid());
+        TEST_REJECT(gb_hierarchy_location(gb_main, "/")    .is_valid());
+        TEST_REJECT(gb_hierarchy_location(gb_main, "//")   .is_valid());
+        TEST_REJECT(gb_hierarchy_location(gb_main, "  /  ").is_valid());
+        TEST_REJECT(gb_hierarchy_location(gb_main, NULL)   .is_valid());
     }
 
 

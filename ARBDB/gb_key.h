@@ -39,6 +39,9 @@ struct gb_Key {
     GB_DICTIONARY *dictionary;                      // optional dictionary
 };
 
+inline GBQUARK key2quark(GB_MAIN_TYPE *Main, const char *key) {
+    return key ? GBS_read_hash(Main->key_2_index_hash, key) : -1;
+}
 inline const char *quark2key(GB_MAIN_TYPE *Main, GBQUARK key_quark) { return Main->keys[key_quark].key; }
 inline long quark2gbmindex(GB_MAIN_TYPE *Main, GBQUARK key_quark)  { return (Main->keys[key_quark].nref<GBM_MAX_UNINDEXED_ENTRIES) ? 0 : key_quark; }
 
