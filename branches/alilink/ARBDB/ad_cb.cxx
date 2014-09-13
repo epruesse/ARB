@@ -366,10 +366,13 @@ inline void GB_MAIN_TYPE::callback_group::remove_hcb(const gb_hierarchy_location
     }
 }
 
+#define CHECK_HIER_CB_CONDITION()                                                                       \
+    if (get_transaction_level()<0) return "no hierarchy callbacks allowed in NO_TRANSACTION_MODE";      \
+    if (!loc.is_valid()) return "invalid hierarchy location"
+
 GB_ERROR GB_MAIN_TYPE::add_hierarchy_cb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb) {
-    // @@@ test vs NO_TRANSACTION_MODE and report error
-    // @@@ test loc and report error
-    gb_assert(get_transaction_level() >= 0); // hierarchical callbacks are not supported in NO_TRANSACTION_MODE
+    CHECK_HIER_CB_CONDITION();
+
     GB_CB_TYPE type = dbcb.get_type();
     if (type & GB_CB_DELETE) {
         deleteCBs.add_hcb(loc, dbcb.with_type_changed_to(GB_CB_DELETE));
@@ -377,13 +380,12 @@ GB_ERROR GB_MAIN_TYPE::add_hierarchy_cb(const gb_hierarchy_location& loc, const 
     if (type & GB_CB_ALL_BUT_DELETE) {
         changeCBs.add_hcb(loc, dbcb.with_type_changed_to(GB_CB_TYPE(type&GB_CB_ALL_BUT_DELETE)));
     }
-    return NULL; // @@@ always NULL?
+    return NULL;
 }
 
 GB_ERROR GB_MAIN_TYPE::remove_hierarchy_cb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb) {
-    // @@@ test vs NO_TRANSACTION_MODE and report error
-    // @@@ test loc and report error
-    gb_assert(get_transaction_level() >= 0); // hierarchical callbacks are not supported in NO_TRANSACTION_MODE
+    CHECK_HIER_CB_CONDITION();
+
     GB_CB_TYPE type = dbcb.get_type();
     if (type & GB_CB_DELETE) {
         deleteCBs.remove_hcb(loc, dbcb.with_type_changed_to(GB_CB_DELETE));
@@ -391,25 +393,38 @@ GB_ERROR GB_MAIN_TYPE::remove_hierarchy_cb(const gb_hierarchy_location& loc, con
     if (type & GB_CB_ALL_BUT_DELETE) {
         changeCBs.remove_hcb(loc, dbcb.with_type_changed_to(GB_CB_TYPE(type&GB_CB_ALL_BUT_DELETE)));
     }
-    return NULL; // @@@ always NULL?
+    return NULL;
 }
 
-GB_ERROR GB_add_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) { // @@@ needed to impl #418
+#undef CHECK_HIER_CB_CONDITION()
+
+GB_ERROR GB_add_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
     /*! bind callback to ALL entries which are at the same DB-hierarchy as 'gbd'.
      *
      * Hierarchy callbacks are triggered before normal callbacks (added by GB_add_callback or GB_ensure_callback).
      * Nevertheless delete callbacks take precedence over change callbacks
      * (i.e. a normal delete callback is triggered before a hierarchical change callback).
      *
-     * Hierarchy callbacks are cannot be installed and will NOT be triggered in NO_TRANSACTION_MODE
+     * Hierarchy callbacks cannot be installed and will NOT be triggered in NO_TRANSACTION_MODE
      * (i.e. it will not work in ARBs property DBs)
+     *
+     * @return error if in NO_TRANSACTION_MODE or if hierarchy location is invalid
      */
     return GB_MAIN(gbd)->add_hierarchy_cb(gb_hierarchy_location(gbd), TypedDatabaseCallback(dbcb, type));
 }
 
 GB_ERROR GB_remove_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
-    //! remove callback added with GB_add_hierarchy_callback
+    //! remove callback added with GB_add_hierarchy_callback()
     return GB_MAIN(gbd)->remove_hierarchy_cb(gb_hierarchy_location(gbd), TypedDatabaseCallback(dbcb, type));
+}
+
+GB_ERROR GB_add_hierarchy_callback(GBDATA *gb_main, const char *db_path, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
+    //! same as overloaded GB_add_hierarchy_callback(), but using db_path instead of GBDATA to define hierarchy location
+    return GB_MAIN(gb_main)->add_hierarchy_cb(gb_hierarchy_location(gb_main, db_path), TypedDatabaseCallback(dbcb, type));
+}
+GB_ERROR GB_remove_hierarchy_callback(GBDATA *gb_main, const char *db_path, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
+    //! same as overloaded GB_remove_hierarchy_callback(), but using db_path instead of GBDATA to define hierarchy location
+    return GB_MAIN(gb_main)->remove_hierarchy_cb(gb_hierarchy_location(gb_main, db_path), TypedDatabaseCallback(dbcb, type));
 }
 
 GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
@@ -1183,7 +1198,6 @@ void TEST_hierarchy_callbacks() {
         TEST_REJECT(gb_hierarchy_location(gb_main, NULL)   .is_valid());
     }
 
-
     // instanciate callback_trace data and install hierarchy callbacks
     GBDATA *anySon = son11;
 
@@ -1318,20 +1332,44 @@ void TEST_hierarchy_callbacks() {
     TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, son11);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
-    TRIGGER_CHANGE(top1);
-    TRIGGER_CHANGE(son11);
+    TRIGGER_2_CHANGES(top1, son11);
     TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
     TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, son11);
     TEST_EXPECT_TRIGGERS_CHECKED();
 
     // - check removing one does not disable the other
-    anyElem = top1;  REMOVE_CHANGED_HIERARCHY_CALLBACK(anyElem); // remove hierarchy cb from "/top"
+    anyElem = son11;  REMOVE_CHANGED_HIERARCHY_CALLBACK(anyElem); // remove hierarchy cb from "/cont_top/son"
 
-    TRIGGER_CHANGE(top1);
-    TRIGGER_CHANGE(son11);
-    // top1 no longer triggers -> ok
-    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, son11);
+    TRIGGER_2_CHANGES(top1, son11);
+    // son11 no longer triggers -> ok
+    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
     TEST_EXPECT_TRIGGERS_CHECKED();
+
+    // test add/remove hierarchy cb by path
+    {
+        const char       *locpath = "/cont_top/son";
+        DatabaseCallback  dbcb    = makeDatabaseCallback(some_cb, &HIERARCHY_TRACESTRUCT(anyElem,changed));
+
+        TEST_EXPECT_NO_ERROR(GB_add_hierarchy_callback(gb_main, locpath, GB_CB_CHANGED, dbcb));
+
+        // now both should trigger again
+        TRIGGER_2_CHANGES(top1, son11);
+        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
+        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, son11);
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        TEST_EXPECT_NO_ERROR(GB_remove_hierarchy_callback(gb_main, locpath, GB_CB_CHANGED, dbcb));
+
+        TRIGGER_2_CHANGES(top1, son11);
+        // son11 no longer triggers -> ok
+        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        // check some failing binds
+        const char *invalidPath = "/no/such";
+        TEST_EXPECT_ERROR_CONTAINS(GB_add_hierarchy_callback(gb_main, invalidPath, GB_CB_CHANGED, dbcb), "invalid hierarchy location");
+        TEST_EXPECT_ERROR_CONTAINS(GB_add_hierarchy_callback(gb_main, GB_CB_CHANGED, dbcb), "invalid hierarchy location");
+    }
 
     // cleanup
     GB_close(gb_main);

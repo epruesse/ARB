@@ -21,6 +21,8 @@ void GB_remove_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& db
 void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func);
 GB_ERROR GB_add_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb);
 GB_ERROR GB_remove_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb);
+GB_ERROR GB_add_hierarchy_callback(GBDATA *gb_main, const char *db_path, GB_CB_TYPE type, const DatabaseCallback& dbcb);
+GB_ERROR GB_remove_hierarchy_callback(GBDATA *gb_main, const char *db_path, GB_CB_TYPE type, const DatabaseCallback& dbcb);
 GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb);
 
 #else
