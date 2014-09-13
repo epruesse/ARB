@@ -151,6 +151,7 @@ ad_cb.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_cb.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_cb.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_cb.o: $(ARBHOME)/INCLUDE/arb_strarray.h
+ad_cb.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ad_cb.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_cb.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_cb.o: $(ARBHOME)/INCLUDE/attributes.h
