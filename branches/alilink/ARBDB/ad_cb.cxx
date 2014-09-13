@@ -297,9 +297,9 @@ struct IsSpecificCallback : private TypedDatabaseCallback {
 };
 struct IsSpecificHierarchyCallback : private TypedDatabaseCallback {
     gb_hierarchy_location loc;
-    IsSpecificHierarchyCallback(GBDATA *gb_representative, const TypedDatabaseCallback& cb)
+    IsSpecificHierarchyCallback(const gb_hierarchy_location& loc_, const TypedDatabaseCallback& cb)
         : TypedDatabaseCallback(cb),
-          loc(gb_representative)
+          loc(loc_)
     {}
     bool operator()(const gb_callback& cb) const {
         const gb_hierarchy_callback& hcb = static_cast<const gb_hierarchy_callback&>(cb);
@@ -311,9 +311,9 @@ inline void add_to_callback_chain(gb_callback_list*& head, const TypedDatabaseCa
     if (!head) head = new gb_callback_list;
     head->add(gb_callback(cbs));
 }
-inline void add_to_callback_chain(gb_hierarchy_callback_list*& head, const TypedDatabaseCallback& cbs, GBDATA *gb_representative) {
+inline void add_to_callback_chain(gb_hierarchy_callback_list*& head, const TypedDatabaseCallback& cbs, const gb_hierarchy_location& loc) {
     if (!head) head = new gb_hierarchy_callback_list;
-    head->add(gb_hierarchy_callback(cbs, gb_representative));
+    head->add(gb_hierarchy_callback(cbs, loc));
 }
 
 inline GB_ERROR gb_add_callback(GBDATA *gbd, const TypedDatabaseCallback& cbs) {
@@ -357,34 +357,39 @@ void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {
     gb_remove_callbacks_that(gbd, IsCallback(func, type));
 }
 
-inline void GB_MAIN_TYPE::callback_group::add_hcb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
-    add_to_callback_chain(hierarchy_cbs, dbcb, gb_representative);
+inline void GB_MAIN_TYPE::callback_group::add_hcb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb) {
+    add_to_callback_chain(hierarchy_cbs, dbcb, loc);
 }
-inline void GB_MAIN_TYPE::callback_group::remove_hcb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
+inline void GB_MAIN_TYPE::callback_group::remove_hcb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb) {
     if (hierarchy_cbs) {
-        hierarchy_cbs->remove_callbacks_that(IsSpecificHierarchyCallback(gb_representative, dbcb));
+        hierarchy_cbs->remove_callbacks_that(IsSpecificHierarchyCallback(loc, dbcb));
     }
 }
 
-
-GB_ERROR GB_MAIN_TYPE::add_hierarchy_cb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
+GB_ERROR GB_MAIN_TYPE::add_hierarchy_cb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb) {
+    // @@@ test vs NO_TRANSACTION_MODE and report error
+    // @@@ test loc and report error
+    gb_assert(get_transaction_level() >= 0); // hierarchical callbacks are not supported in NO_TRANSACTION_MODE
     GB_CB_TYPE type = dbcb.get_type();
     if (type & GB_CB_DELETE) {
-        deleteCBs.add_hcb(gb_representative, dbcb.with_type_changed_to(GB_CB_DELETE));
+        deleteCBs.add_hcb(loc, dbcb.with_type_changed_to(GB_CB_DELETE));
     }
     if (type & GB_CB_ALL_BUT_DELETE) {
-        changeCBs.add_hcb(gb_representative, dbcb.with_type_changed_to(GB_CB_TYPE(type&GB_CB_ALL_BUT_DELETE)));
+        changeCBs.add_hcb(loc, dbcb.with_type_changed_to(GB_CB_TYPE(type&GB_CB_ALL_BUT_DELETE)));
     }
     return NULL; // @@@ always NULL?
 }
 
-GB_ERROR GB_MAIN_TYPE::remove_hierarchy_cb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb) {
+GB_ERROR GB_MAIN_TYPE::remove_hierarchy_cb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb) {
+    // @@@ test vs NO_TRANSACTION_MODE and report error
+    // @@@ test loc and report error
+    gb_assert(get_transaction_level() >= 0); // hierarchical callbacks are not supported in NO_TRANSACTION_MODE
     GB_CB_TYPE type = dbcb.get_type();
     if (type & GB_CB_DELETE) {
-        deleteCBs.remove_hcb(gb_representative, dbcb.with_type_changed_to(GB_CB_DELETE));
+        deleteCBs.remove_hcb(loc, dbcb.with_type_changed_to(GB_CB_DELETE));
     }
     if (type & GB_CB_ALL_BUT_DELETE) {
-        changeCBs.remove_hcb(gb_representative, dbcb.with_type_changed_to(GB_CB_TYPE(type&GB_CB_ALL_BUT_DELETE)));
+        changeCBs.remove_hcb(loc, dbcb.with_type_changed_to(GB_CB_TYPE(type&GB_CB_ALL_BUT_DELETE)));
     }
     return NULL; // @@@ always NULL?
 }
@@ -399,16 +404,12 @@ GB_ERROR GB_add_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseC
      * Hierarchy callbacks are cannot be installed and will NOT be triggered in NO_TRANSACTION_MODE
      * (i.e. it will not work in ARBs property DBs)
      */
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    gb_assert(Main->get_transaction_level()>=0); // hierarchical callbacks are not supported in NO_TRANSACTION_MODE
-    return Main->add_hierarchy_cb(gbd, TypedDatabaseCallback(dbcb, type));
+    return GB_MAIN(gbd)->add_hierarchy_cb(gb_hierarchy_location(gbd), TypedDatabaseCallback(dbcb, type));
 }
 
 GB_ERROR GB_remove_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
     //! remove callback added with GB_add_hierarchy_callback
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    gb_assert(Main->get_transaction_level()>=0); // hierarchical callbacks are not supported in NO_TRANSACTION_MODE
-    return Main->remove_hierarchy_cb(gbd, TypedDatabaseCallback(dbcb, type));
+    return GB_MAIN(gbd)->remove_hierarchy_cb(gb_hierarchy_location(gbd), TypedDatabaseCallback(dbcb, type));
 }
 
 GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
