@@ -523,7 +523,7 @@ void gb_delete_entry(GBDATA*& gbd) {
 }
 
 static void gb_delete_main_entry(GBCONTAINER*& gb_main) {
-    GBQUARK sys_quark = gb_find_existing_quark(GB_MAIN(gb_main), GB_SYSTEM_FOLDER);
+    GBQUARK sys_quark = key2quark(GB_MAIN(gb_main), GB_SYSTEM_FOLDER);
 
     // Note: sys_quark may be 0 (happens when destroying client db which never established a connection).
     // In this case no system folder/quark has been created (and we do no longer try to create it)

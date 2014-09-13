@@ -1507,15 +1507,9 @@ GB_CSTR gb_read_key_pntr(GBDATA *gbd) {
     return GB_KEY(gbd);
 }
 
-
-GBQUARK gb_find_existing_quark(GB_MAIN_TYPE *Main, const char *key) {
-    //! @return existing quark for 'key' (-1 if key == NULL, 0 if key is unknown)
-    return key ? GBS_read_hash(Main->key_2_index_hash, key) : -1;
-}
-
 GBQUARK gb_find_or_create_quark(GB_MAIN_TYPE *Main, const char *key) {
     //! @return existing or newly created quark for 'key'
-    GBQUARK quark     = gb_find_existing_quark(Main, key);
+    GBQUARK quark     = key2quark(Main, key);
     if (!quark) quark = gb_create_key(Main, key, true);
     return quark;
 }
@@ -1534,7 +1528,7 @@ GBQUARK gb_find_or_create_NULL_quark(GB_MAIN_TYPE *Main, const char *key) {
 
 GBQUARK GB_find_existing_quark(GBDATA *gbd, const char *key) {
     //! @return existing quark for 'key' (-1 if key == NULL, 0 if key is unknown)
-    return gb_find_existing_quark(GB_MAIN(gbd), key);
+    return key2quark(GB_MAIN(gbd), key);
 }
 
 GBQUARK GB_find_or_create_quark(GBDATA *gbd, const char *key) {

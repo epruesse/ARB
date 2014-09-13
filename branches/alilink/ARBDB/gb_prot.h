@@ -163,7 +163,6 @@ int gb_read_nr(GBDATA *gbd);
 GB_ERROR gb_write_compressed_pntr(GBENTRY *gbe, const char *s, long memsize, long stored_size);
 int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type);
 GB_CSTR gb_read_key_pntr(GBDATA *gbd);
-GBQUARK gb_find_existing_quark(GB_MAIN_TYPE *Main, const char *key);
 GBQUARK gb_find_or_create_quark(GB_MAIN_TYPE *Main, const char *key);
 GBQUARK gb_find_or_create_NULL_quark(GB_MAIN_TYPE *Main, const char *key);
 GBCONTAINER *gb_get_root(GBENTRY *gbe);
