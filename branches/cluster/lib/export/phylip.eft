@@ -1,0 +1,3 @@
+SUFFIX          phyl
+PRE_FORMAT      lib/export/genbank.eft
+SYSTEM          "arb_convert_aln -GenBank $< -phylip $>"
