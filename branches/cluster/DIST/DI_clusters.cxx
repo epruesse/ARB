@@ -240,41 +240,39 @@ void Cluster::mark_all_members(ClusterMarkMode mmode) const {
     }
 }
 
-static void mark_cluster(ClusterPtr cluster, ClusterMarkMode markRep, bool selRep) {
+static void mark_cluster(ClusterPtr cluster, ClusterMarkMode markRep) {
     cluster->mark_all_members(markRep);
-    if (selRep) {
-        GBDATA     *gb_species = cluster->get_representative();
-        const char *name       = GBT_get_name(gb_species);
-
-        global_data->get_aw_root()->awar(AWAR_SPECIES_NAME)->write_string(name);
-    }
 }
+static void select_representative(ClusterPtr cluster) {
+    GBDATA         *gb_species = cluster->get_representative();
+    GB_transaction  ta(gb_species);
+    const char     *name       = GBT_get_name(gb_species);
+    global_data->get_aw_root()->awar(AWAR_SPECIES_NAME)->write_string(name);
+}
+
 static void mark_clusters(AW_window *, AffectedClusters affected, bool warn_if_none_affected) {
     AW_root *aw_root = global_data->get_aw_root();
     GBDATA  *gb_main = global_data->get_gb_main();
 
-    GB_transaction ta(gb_main);
-
+    GB_transaction  ta(gb_main);
     ClusterMarkMode markRep = (ClusterMarkMode)aw_root->awar(AWAR_CLUSTER_MARKREP)->read_int();
-    bool            selRep  = aw_root->awar(AWAR_CLUSTER_SELECTREP)->read_int();
 
     GBT_mark_all(gb_main, 0); // unmark all
-
-    int marked = with_affected_clusters_do(aw_root, affected, warn_if_none_affected, makeClusterCallback(mark_cluster, markRep, selRep));
-    if (!marked || !selRep) {
-        // nothing marked -> force tree refresh
-        if (selRep) {
-            aw_root->awar(AWAR_SPECIES_NAME)->write_string("");
-        }
-        else {
-            aw_root->awar(AWAR_TREE_REFRESH)->touch(); // @@ hm - no effect?!
-        }
-    }
+    with_affected_clusters_do(aw_root, affected, warn_if_none_affected, makeClusterCallback(mark_cluster, markRep));
+    aw_root->awar(AWAR_TREE_REFRESH)->touch();
 }
 
 static void select_cluster_cb(AW_root *aw_root) {
+    GB_transaction ta(global_data->get_gb_main());
+
     bool auto_mark = aw_root->awar(AWAR_CLUSTER_AUTOMARK)->read_int();
     if (auto_mark) mark_clusters(NULL, SEL_CLUSTER, false);
+
+    bool selRep = aw_root->awar(AWAR_CLUSTER_SELECTREP)->read_int();
+    if (selRep) {
+        int selected = with_affected_clusters_do(aw_root, SEL_CLUSTER, false, makeClusterCallback(select_representative));
+        if (!selected) aw_root->awar(AWAR_SPECIES_NAME)->write_string(""); // force tree refresh(?)
+    }
 }
 
 static void select_cluster(ID id) {
