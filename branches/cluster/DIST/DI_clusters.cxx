@@ -1035,11 +1035,6 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, WeightedFilter *
 
         aws->at("clear");  aws->callback(makeWindowCallback(delete_clusters, ALL_CLUSTERS)); aws->create_button("CLEAR", "Clear list");
         aws->at("delete"); aws->callback(makeWindowCallback(delete_clusters, SEL_CLUSTER));  aws->create_button("DEL",   "Delete selected");
-        aws->sens_mask(AWM_DISABLED);
-        aws->at("save"); aws->callback(save_clusters); aws->create_button("SAVE", "Save list");
-        aws->at("load"); aws->callback(load_clusters); aws->create_button("LOAD", "Load list");
-        aws->sens_mask(AWM_ALL);
-
 
         // --------------------
         //      clusterlist
