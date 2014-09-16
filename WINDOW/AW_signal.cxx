@@ -573,5 +573,6 @@ void TEST_AW_signal_self_destroy() {
     sig->emit();
     TEST_EXPECT_EQUAL(rcb_self_destroy_count, 1);
 }
+TEST_PUBLISH(TEST_AW_signal_self_destroy);
 
 #endif
