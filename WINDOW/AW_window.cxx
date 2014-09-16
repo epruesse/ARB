@@ -411,19 +411,12 @@ void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize
 
     xfig->add_line(x1, y1, x2, y2, width);
 
-    class x {
-public:
-        static inline int max(int i1, int i2) {
-            return i1>i2 ? i1 : i2;
-        }
-    };
-
-    _at->max_x_size = x::max(_at->max_x_size, xfig->maxx - xfig->minx);
-    _at->max_y_size = x::max(_at->max_y_size, xfig->maxy - xfig->miny);
+    _at->max_x_size = std::max(_at->max_x_size, xfig->maxx - xfig->minx);
+    _at->max_y_size = std::max(_at->max_y_size, xfig->maxy - xfig->miny);
 
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
-        set_window_size(_at->max_x_size+1000, _at->max_y_size+1000);
+        set_window_size(WIDER_THAN_SCREEN, HIGHER_THAN_SCREEN);
     }
 }
 
@@ -637,7 +630,7 @@ void AW_window::load_xfig(const char *file, bool resize) {
 
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
-        set_window_size(_at->max_x_size+1000, _at->max_y_size+1000);
+        set_window_size(WIDER_THAN_SCREEN, HIGHER_THAN_SCREEN);
     }
 }
 
@@ -1876,8 +1869,8 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
         // are created in visible area (otherwise widget are crippled).
         // window will be resized later (on show)
 
-        width = 4000;
-        height = 3000;
+        width  = WIDER_THAN_SCREEN;
+        height = HIGHER_THAN_SCREEN;
 
         aww->recalc_size_atShow(AW_RESIZE_ANY);
     }
@@ -2391,7 +2384,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
 void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windowname) {
     root = root_in; // for macro
 
-    int width  = 100;                               // this is only the minimum size!
+    int width  = 100; // this is only the minimum size!
     int height = 100;
     int posx   = 50;
     int posy   = 50;
