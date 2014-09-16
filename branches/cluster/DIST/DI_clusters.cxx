@@ -186,6 +186,11 @@ static void calculate_clusters(AW_window *aww) {
 
 DECLARE_CBTYPE_FVV_AND_BUILDERS(ClusterCallback, void, ClusterPtr); // generates makeClusterCallback
 
+inline bool is_cluster(ID id) {
+    // 0 is 'no cluster' and -1 is used for list header
+    return id>0;
+}
+
 static int with_affected_clusters_do(AW_root *aw_root, AffectedClusters affected, bool warn_if_none_affected, ClusterCallback cb) {
     // returns number of affected clusters
     int affCount = 0;
@@ -193,7 +198,7 @@ static int with_affected_clusters_do(AW_root *aw_root, AffectedClusters affected
         AW_awar *awar  = aw_root->awar(AWAR_CLUSTER_SELECTED);
         ID       selID = awar->read_int();
 
-        if (selID) {
+        if (is_cluster(selID)) {
             ClusterPtr selCluster = global_data->clusterWithID(selID);
             cl_assert(!selCluster.isNull());
             cb(selCluster);
@@ -740,7 +745,7 @@ static void update_example(AW_root *aw_root) {
     ID     selID = aw_root->awar(AWAR_CLUSTER_SELECTED)->read_int();
     string value;
 
-    if (selID) {
+    if (is_cluster(selID)) {
         ClusterPtr selCluster = global_data->clusterWithID(selID);
         cl_assert(!selCluster.isNull());
 
