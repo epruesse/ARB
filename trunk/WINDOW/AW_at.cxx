@@ -70,7 +70,7 @@ void AW_window::at_set_min_size(int xmin, int ymin) {
     if (ymin > _at->max_y_size) _at->max_y_size = ymin;
 
     if (recalc_size_at_show != AW_KEEP_SIZE) {
-        set_window_size(_at->max_x_size+1000, _at->max_y_size+1000);
+        set_window_size(WIDER_THAN_SCREEN, HIGHER_THAN_SCREEN);
     }
 }
 

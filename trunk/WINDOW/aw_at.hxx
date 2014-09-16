@@ -5,6 +5,13 @@
 #include "aw_base.hxx"
 #endif
 
+// Motif misplaces or cripples widgets created beyond the current window limits.
+// Workaround: make window huge during setup (applies to windows which resize on show)
+// Note: Values below just need to be bigger than any actually created window, should probably be smaller than 32768
+// and can be eliminated when we (completely) switch to ARB_GTK
+#define WIDER_THAN_SCREEN  10000
+#define HIGHER_THAN_SCREEN  6000
+
 class AW_at {
 public:
     short shadow_thickness;
