@@ -184,8 +184,9 @@ static void calculate_clusters(AW_window *aww) {
     if (error) aw_message(error);
 }
 
+DECLARE_CBTYPE_FVV_AND_BUILDERS(ClusterCallback, void, ClusterPtr); // generates makeClusterCallback
 
-static int with_affected_clusters_do(AW_root *aw_root, AffectedClusters affected, bool warn_if_none_affected, AW_CL cd, void (*fun)(ClusterPtr, AW_CL)) {
+static int with_affected_clusters_do(AW_root *aw_root, AffectedClusters affected, bool warn_if_none_affected, ClusterCallback cb) {
     // returns number of affected clusters
     int affCount = 0;
     if (affected == SEL_CLUSTER) {
@@ -195,7 +196,7 @@ static int with_affected_clusters_do(AW_root *aw_root, AffectedClusters affected
         if (selID) {
             ClusterPtr selCluster = global_data->clusterWithID(selID);
             cl_assert(!selCluster.isNull());
-            fun(selCluster, cd);
+            cb(selCluster);
             affCount++;
         }
         else if (warn_if_none_affected) {
@@ -209,7 +210,7 @@ static int with_affected_clusters_do(AW_root *aw_root, AffectedClusters affected
             ClusterIDsIter cli_end = clusters.end();
             for (ClusterIDsIter cli = clusters.begin(); cli != cli_end; ++cli) {
                 ClusterPtr cluster = global_data->clusterWithID(*cli);
-                fun(cluster, cd);
+                cb(cluster);
                 affCount++;
             }
         }
@@ -257,7 +258,7 @@ static void mark_clusters(AW_window *, AffectedClusters affected, bool warn_if_n
     AW_CL mask    = markRep * MARK_REPRES + selRep * SELECT_REPRES;
 
     GBT_mark_all(gb_main, 0);                       // unmark all
-    int marked = with_affected_clusters_do(aw_root, affected, warn_if_none_affected, mask, mark_cluster);
+    int marked = with_affected_clusters_do(aw_root, affected, warn_if_none_affected, makeClusterCallback(mark_cluster, mask));
     if (!marked || !selRep) {
         // nothing marked -> force tree refresh
         if (selRep) {
@@ -756,15 +757,13 @@ static void update_example(AW_root *aw_root) {
     aw_root->awar(AWAR_CLUSTER_GROUP_EXAMPLE)->write_string(value.c_str());
 }
 
-static void update_cluster_group(ClusterPtr cluster, AW_CL cl_groupBuilder) {
-    GroupBuilder *groupBuilder = (GroupBuilder*)cl_groupBuilder;
+static void update_cluster_group(ClusterPtr cluster, GroupBuilder *groupBuilder) {
     if (!groupBuilder->get_error()) {
         groupBuilder->update_group(cluster);
     }
 }
 
-static void accept_proposed_names(ClusterPtr cluster, AW_CL cl_accept) {
-    bool accept(cl_accept);
+static void accept_proposed_names(ClusterPtr cluster, bool accept) {
     cluster->accept_proposed(accept);
 }
 
@@ -776,7 +775,7 @@ static void group_clusters(AW_window *, Group_Action action) {
     GroupBuilder groupBuilder(global_data->get_gb_main(), action);
 
     GB_transaction ta(global_data->get_gb_main());
-    with_affected_clusters_do(aw_root, affected, true, (AW_CL)&groupBuilder, update_cluster_group);
+    with_affected_clusters_do(aw_root, affected, true, makeClusterCallback(update_cluster_group, &groupBuilder));
 
     ARB_ERROR error = groupBuilder.get_error();
     if (error) {
@@ -796,7 +795,7 @@ static void group_clusters(AW_window *, Group_Action action) {
     aw_message_if(error);
     // careful! the following code will invalidate error, so don't use below
 
-    with_affected_clusters_do(aw_root, affected, false, (AW_CL)accept, accept_proposed_names); // just affects display
+    with_affected_clusters_do(aw_root, affected, false, makeClusterCallback(accept_proposed_names, accept)); // just affects display
     global_data->update_cluster_selection_list();
 }
 
@@ -875,7 +874,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 // ---------------
 //      delete
 
-static void delete_selected_cluster(ClusterPtr cluster, AW_CL) {
+static void delete_selected_cluster(ClusterPtr cluster) {
     int pos    = global_data->get_pos(cluster, SHOWN_CLUSTERS);
     int nextId = global_data->idAtPos(pos+1, SHOWN_CLUSTERS);
     select_cluster(nextId);
@@ -884,7 +883,7 @@ static void delete_selected_cluster(ClusterPtr cluster, AW_CL) {
 static void delete_clusters(AW_window *aww, AffectedClusters affected) {
     switch (affected) {
         case SEL_CLUSTER:
-            with_affected_clusters_do(aww->get_root(), affected, true, affected, delete_selected_cluster);
+            with_affected_clusters_do(aww->get_root(), affected, true, makeClusterCallback(delete_selected_cluster));
             break;
         case ALL_CLUSTERS:
             select_cluster(0);
@@ -898,7 +897,7 @@ static void delete_clusters(AW_window *aww, AffectedClusters affected) {
 // ----------------------
 //      store/restore
 
-static void store_selected_cluster(ClusterPtr cluster, AW_CL) {
+static void store_selected_cluster(ClusterPtr cluster) {
     int pos    = global_data->get_pos(cluster, SHOWN_CLUSTERS);
     int nextId = global_data->idAtPos(pos+1, SHOWN_CLUSTERS);
 
@@ -908,7 +907,7 @@ static void store_selected_cluster(ClusterPtr cluster, AW_CL) {
 static void store_clusters(AW_window *aww, AffectedClusters affected) {
     switch (affected) {
         case SEL_CLUSTER:
-            with_affected_clusters_do(aww->get_root(), affected, true, affected, store_selected_cluster);
+            with_affected_clusters_do(aww->get_root(), affected, true, makeClusterCallback(store_selected_cluster));
             break;
         case ALL_CLUSTERS:
             select_cluster(0);
