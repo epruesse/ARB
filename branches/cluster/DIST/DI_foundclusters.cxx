@@ -241,8 +241,8 @@ class DisplayFormat : virtual Noncopyable {
 
     mutable char *format_string;
 
-    static long calc_digits(long val) {
-        long digits;
+    static int calc_digits(long val) {
+        int digits;
         if (val>0) digits      = log10(val)+1;
         else if (val<0) digits = calc_digits(-val);
         else digits            = 1;
@@ -253,26 +253,30 @@ class DisplayFormat : virtual Noncopyable {
     }
 
     static char *make_format(size_t val) {
-        long digits = calc_digits(val);
-        return GBS_global_string_copy("%%%lizu", digits);
+        int digits = calc_digits(val);
+        return GBS_global_string_copy("%%%izu", digits);
     }
-    static char *make_format(AP_FLOAT val) {
-        long digits   = calc_digits(long(val));
-        long afterdot = digits <=3 ? 5-digits-1 : 0;
 
+    static void calc_float_format(AP_FLOAT val, int& all, int& afterdot) {
+        int digits   = calc_digits(long(val));
+        afterdot = digits <=3 ? 5-digits-1 : 0;
         cl_assert(afterdot >= 0);
-        long all = digits+(afterdot ? (afterdot+1) : 0);
+        all = digits+(afterdot ? (afterdot+1) : 0);
+    }
 
-        return GBS_global_string_copy("%%%li.%lif", all, afterdot);
+    static char *make_format(AP_FLOAT val) {
+        int all, afterdot;
+        calc_float_format(val, all, afterdot);
+        return GBS_global_string_copy("%%%i.%if", all, afterdot);
     }
 
 public:
 
     DisplayFormat()
-        : max_count(0)
-        , max_dist(0.0)
-        , max_minBases(0.0)
-        , format_string(NULL)
+        : max_count(0),
+          max_dist(0.0),
+          max_minBases(0.0),
+          format_string(NULL)
     {}
 
     ~DisplayFormat() {
@@ -285,6 +289,21 @@ public:
         max_minBases = std::max(max_minBases, minBases);
 
         freenull(format_string);
+    }
+
+    const char *get_header() const {
+        int countSize = calc_digits(max_count) + 2; // allow to use two of the spaces behind count
+        int distSize, baseSize;
+        {
+            int afterdot;
+            calc_float_format(max_dist,     distSize, afterdot);
+            calc_float_format(max_minBases, baseSize, afterdot);
+        }
+
+        return GBS_global_string("%-*s%*s  %*s  Groupname",
+                                 countSize, countSize<5 ? "#" : "Count",
+                                 distSize, "Mean [min-max] dist",
+                                 baseSize, "Bases");
     }
 
     const char *get_format() const {
@@ -426,6 +445,9 @@ void ClustersData::update_cluster_selection_list() {
             DisplayFormat format;
 
             for (int pass = 1; pass <= 2; ++pass) {
+                if (pass == 2) {
+                    clusterList->insert(format.get_header(), ID(-1));
+                }
                 for (ClusterIDsIter cl = shown.begin(); cl != cl_end; ++cl) {
                     ID         id      = *cl;
                     ClusterPtr cluster = clusterWithID(id);

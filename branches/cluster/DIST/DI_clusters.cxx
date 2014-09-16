@@ -271,7 +271,7 @@ static void select_cluster_cb(AW_root *aw_root) {
     bool selRep = aw_root->awar(AWAR_CLUSTER_SELECTREP)->read_int();
     if (selRep) {
         int selected = with_affected_clusters_do(aw_root, SEL_CLUSTER, false, makeClusterCallback(select_representative));
-        if (!selected) aw_root->awar(AWAR_SPECIES_NAME)->write_string(""); // force tree refresh(?)
+        if (!selected) aw_root->awar(AWAR_SPECIES_NAME)->write_string(""); // deselect species
     }
 }
 

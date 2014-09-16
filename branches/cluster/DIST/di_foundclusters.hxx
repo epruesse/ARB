@@ -98,7 +98,7 @@ public:
 
     size_t get_member_count() const { return members.size(); }
     void scan_display_widths(DisplayFormat& format) const;
-    const char *get_list_display(const DisplayFormat *format) const;
+    const char *get_list_display(const DisplayFormat *format) const; // only valid after calling scan_display_widths
 
     const DBItemSet& get_members() const { return members; }
 
