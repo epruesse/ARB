@@ -934,19 +934,6 @@ static void swap_clusters(AW_window *aww) {
     update_all(aww);
 }
 
-// ------------------
-//      save/load
-
-#if defined(WARN_TODO)
-#warning "implement save/load clusters"
-#endif
-static void save_clusters(AW_window *) {
-    aw_message("save_clusters not implemented");
-}
-static void load_clusters(AW_window *) {
-    aw_message("load_clusters not implemented");
-}
-
 // ---------------------------------
 //      cluster detection window
 
@@ -992,7 +979,7 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, WeightedFilter *
         // -------------------
         //      lower area
 
-        aws->button_length(18);
+        aws->button_length(10);
 
         // column 1
 
@@ -1010,6 +997,8 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, WeightedFilter *
         aws->at("mark_all"); aws->callback(makeWindowCallback(mark_clusters, ALL_CLUSTERS, true)); aws->create_button("MARKALL", "Mark all");
 
         // column 2
+
+        aws->button_length(18);
 
         aws->at("group"); aws->callback(popup_group_clusters_window); aws->create_button("GROUP", "Cluster groups..");
 
