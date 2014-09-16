@@ -224,23 +224,25 @@ static int with_affected_clusters_do(AW_root *aw_root, AffectedClusters affected
 // -------------
 //      mark
 
-void Cluster::mark_all_members(bool mark_representative) const {
+void Cluster::mark_all_members(ClusterMarkMode mmode) const {
     DBItemSetIter sp_end = members.end();
     for (DBItemSetIter sp = members.begin(); sp != sp_end; ++sp) {
-        if (mark_representative || (*sp != representative)) {
-            GB_write_flag(*sp, 1);
+        bool is_rep = *sp == representative;
+        bool mark;
+
+        switch (mmode) {
+            case CMM_ALL:         mark = true;    break;
+            case CMM_ONLY_REP:    mark = is_rep;  break;
+            case CMM_ALL_BUT_REP: mark = !is_rep; break;
         }
+
+        if (mark) GB_write_flag(*sp, 1);
     }
 }
 
-enum {
-    MARK_REPRES   = 1,
-    SELECT_REPRES = 2,
-};
-
-static void mark_cluster(ClusterPtr cluster, AW_CL cl_mask) {
-    cluster->mark_all_members(cl_mask & MARK_REPRES);
-    if (cl_mask & SELECT_REPRES) {
+static void mark_cluster(ClusterPtr cluster, ClusterMarkMode markRep, bool selRep) {
+    cluster->mark_all_members(markRep);
+    if (selRep) {
         GBDATA     *gb_species = cluster->get_representative();
         const char *name       = GBT_get_name(gb_species);
 
@@ -253,12 +255,12 @@ static void mark_clusters(AW_window *, AffectedClusters affected, bool warn_if_n
 
     GB_transaction ta(gb_main);
 
-    bool  markRep = aw_root->awar(AWAR_CLUSTER_MARKREP)->read_int();
-    bool  selRep  = aw_root->awar(AWAR_CLUSTER_SELECTREP)->read_int();
-    AW_CL mask    = markRep * MARK_REPRES + selRep * SELECT_REPRES;
+    ClusterMarkMode markRep = (ClusterMarkMode)aw_root->awar(AWAR_CLUSTER_MARKREP)->read_int();
+    bool            selRep  = aw_root->awar(AWAR_CLUSTER_SELECTREP)->read_int();
 
-    GBT_mark_all(gb_main, 0);                       // unmark all
-    int marked = with_affected_clusters_do(aw_root, affected, warn_if_none_affected, makeClusterCallback(mark_cluster, mask));
+    GBT_mark_all(gb_main, 0); // unmark all
+
+    int marked = with_affected_clusters_do(aw_root, affected, warn_if_none_affected, makeClusterCallback(mark_cluster, markRep, selRep));
     if (!marked || !selRep) {
         // nothing marked -> force tree refresh
         if (selRep) {
@@ -991,13 +993,18 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, WeightedFilter *
 
         // column 1
 
-        aws->at("mark_all"); aws->callback(makeWindowCallback(mark_clusters, ALL_CLUSTERS, true)); aws->create_button("MARKALL", "Mark all");
-
-        aws->at("auto_mark");  aws->create_toggle(AWAR_CLUSTER_AUTOMARK);
-        aws->at("mark_rep");   aws->create_toggle(AWAR_CLUSTER_MARKREP);
         aws->at("select_rep"); aws->create_toggle(AWAR_CLUSTER_SELECTREP);
+        aws->at("mark"); aws->callback(makeWindowCallback(mark_clusters, SEL_CLUSTER, true)); aws->create_button("MARK", "Mark");
+        aws->at("auto_mark"); aws->create_toggle(AWAR_CLUSTER_AUTOMARK);
 
-        aws->at("mark"); aws->callback(makeWindowCallback(mark_clusters, SEL_CLUSTER, true)); aws->create_button("MARK", "Mark cluster");
+        aws->at("mark_what");
+        aws->create_option_menu(AWAR_CLUSTER_MARKREP, true);
+        aws->insert_default_option("cluster w/o repr.",   "d", CMM_ALL_BUT_REP);
+        aws->insert_option        ("whole cluster",       "b", CMM_ALL);
+        aws->insert_option        ("only representative", "s", CMM_ONLY_REP);
+        aws->update_option_menu();
+
+        aws->at("mark_all"); aws->callback(makeWindowCallback(mark_clusters, ALL_CLUSTERS, true)); aws->create_button("MARKALL", "Mark all");
 
         // column 2
 
@@ -1047,11 +1054,11 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, WeightedFilter *
 }
 
 void DI_create_cluster_awars(AW_root *aw_root, AW_default def, AW_default db) {
-    aw_root->awar_float(AWAR_CLUSTER_MAXDIST,   3.0, def)->set_minmax(0.0, 100.0);
-    aw_root->awar_int  (AWAR_CLUSTER_MINSIZE,   7,   def)->set_minmax(2, INT_MAX);
-    aw_root->awar_int  (AWAR_CLUSTER_AUTOMARK,  1,   def);
-    aw_root->awar_int  (AWAR_CLUSTER_MARKREP,   0,   def);
-    aw_root->awar_int  (AWAR_CLUSTER_SELECTREP, 1,   def);
+    aw_root->awar_float(AWAR_CLUSTER_MAXDIST,   3.0,             def)->set_minmax(0.0, 100.0);
+    aw_root->awar_int  (AWAR_CLUSTER_MINSIZE,   7,               def)->set_minmax(2, INT_MAX);
+    aw_root->awar_int  (AWAR_CLUSTER_AUTOMARK,  1,               def);
+    aw_root->awar_int  (AWAR_CLUSTER_MARKREP,   CMM_ALL_BUT_REP, def);
+    aw_root->awar_int  (AWAR_CLUSTER_SELECTREP, 1,               def);
 
     aw_root->awar_int   (AWAR_CLUSTER_ORDER,         SORT_BY_MEANDIST, def);
     aw_root->awar_string(AWAR_CLUSTER_RESTORE_LABEL, "None stored",    def);

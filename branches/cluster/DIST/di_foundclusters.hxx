@@ -66,6 +66,12 @@ enum ClusterOrder {
 
 class DisplayFormat;
 
+enum ClusterMarkMode { // what to mark (REP=representative)
+    CMM_ALL_BUT_REP = 0,
+    CMM_ALL         = 1,
+    CMM_ONLY_REP    = 2,
+};
+
 class Cluster : virtual Noncopyable {
     double min_dist;                                // min. distance between species inside Cluster
     double max_dist;                                // dito, but max.
@@ -96,7 +102,7 @@ public:
 
     const DBItemSet& get_members() const { return members; }
 
-    void mark_all_members(bool mark_representative) const;
+    void mark_all_members(ClusterMarkMode mmode) const;
     GBDATA *get_representative() const { return representative; }
 
     std::string create_description(const ARB_countedTree *ct);
