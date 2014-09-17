@@ -6,10 +6,20 @@
 #endif
 
 class AW_xfig;
-class AW_window;
+
+#if defined(ARB_MOTIF)
+
+// Motif misplaces or cripples widgets created beyond the current window limits.
+// Workaround: make window huge during setup (applies to windows which resize on show)
+// Note: Values below just need to be bigger than any actually created window, should probably be smaller than 32768
+// and can be eliminated when we (completely) switch to ARB_GTK
+#define WIDER_THAN_SCREEN  10000
+#define HIGHER_THAN_SCREEN 6000
+
+#endif
 
 /**
- * A cursor that describes where and how gui elements should be placed 
+ * A cursor that describes where and how gui elements should be placed
  * in a window.
  */
 class AW_at {
