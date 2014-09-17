@@ -1164,15 +1164,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->insert_menu_topic("tree_2_xfig", "Export tree to XFIG ...", "E", "tree2file.hlp", AWM_ALL, makeWindowCallback(AWT_popup_tree_export_window, ntw));
         awm->insert_menu_topic("tree_print",  "Print tree ...",          "P", "tree2prt.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_print_window,       ntw));
         awm->sep______________();
-        awm->insert_sub_menu("Collapse/Expand Tree",         "C");
-        {
-            awm->insert_menu_topic("tree_group_all",        "Group all",      "a", "tgroupall.hlp",   AWM_ALL, makeWindowCallback(NT_group_tree_cb,       ntw));
-            awm->insert_menu_topic("tree_group_not_marked", "Group unmarked", "m", "tgroupnmrkd.hlp", AWM_ALL, makeWindowCallback(NT_group_not_marked_cb, ntw));
-            awm->insert_menu_topic("tree_ungroup_all",      "Ungroup all",    "U", "tungroupall.hlp", AWM_ALL, makeWindowCallback(NT_ungroup_all_cb,      ntw));
-            awm->sep______________();
-            NT_insert_color_collapse_submenu(awm, ntw);
-        }
-        awm->close_sub_menu();
+        NT_insert_collapse_submenu(awm, ntw);
         awm->sep______________();
         awm->insert_sub_menu("Remove Species from Tree",     "R");
         {

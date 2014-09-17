@@ -346,48 +346,70 @@ static void group_and_save_tree(AWT_canvas *ntw, CollapseMode mode, int color_gr
     save_changed_tree(ntw);
 }
 
-void NT_group_tree_cb      (UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, COLLAPSE_ALL,      0); }
-void NT_group_not_marked_cb(UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, EXPAND_MARKED,     0); }
-void NT_group_terminal_cb  (UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, COLLAPSE_TERMINAL, 0); }
-void NT_ungroup_all_cb     (UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, EXPAND_ALL,        0); }
+static void collapse_all_cb     (UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, COLLAPSE_ALL,      0); }
+static void collapse_terminal_cb(UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, COLLAPSE_TERMINAL, 0); }
+static void expand_all_cb       (UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, EXPAND_ALL,        0); }
+void NT_expand_marked_cb        (UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, EXPAND_MARKED,     0); }
+static void expand_zombies_cb   (UNFIXED, AWT_canvas *ntw) { group_and_save_tree(ntw, EXPAND_ZOMBIES,    0); }
 
-static void NT_group_not_color_cb(UNFIXED, AWT_canvas *ntw, int colornum) { group_and_save_tree(ntw, EXPAND_COLOR, colornum); }
+static void expand_color_cb(UNFIXED, AWT_canvas *ntw, int colornum) { group_and_save_tree(ntw, EXPAND_COLOR, colornum); }
 
-void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas) {
+static void insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas) {
 #define MAXLABEL 30
 #define MAXENTRY (AW_COLOR_GROUP_NAME_LEN+10)
 
     td_assert(ntree_canvas != 0);
 
-    awm->insert_sub_menu("Group all except Color ...", "C");
+    awm->insert_sub_menu("Expand color ...", "c");
 
     char        label_buf[MAXLABEL+1];
     char        entry_buf[MAXENTRY+1];
     char hotkey[]       = "x";
-    const char *hotkeys = "N1234567890AB";
+    const char *hotkeys = "AN1234567890BC"+1;
 
-    for (int i = 0; i <= AW_COLOR_GROUPS; ++i) {
+    for (int i = -1; i <= AW_COLOR_GROUPS; ++i) {
         sprintf(label_buf, "tree_group_not_color_%i", i);
 
         hotkey[0]                       = hotkeys[i];
         if (hotkey[0] == ' ') hotkey[0] = 0;
 
         if (i) {
-            char *color_group_name = AW_get_color_group_name(awm->get_root(), i);
-            sprintf(entry_buf, "%s group '%s'", hotkey, color_group_name);
-            free(color_group_name);
+            if (i<0) {
+                strcpy(entry_buf, "Any color group");
+            }
+            else {
+                char *color_group_name = AW_get_color_group_name(awm->get_root(), i);
+                sprintf(entry_buf, "%s group '%s'", hotkey, color_group_name);
+                free(color_group_name);
+            }
         }
         else {
             strcpy(entry_buf, "No color group");
         }
 
-        awm->insert_menu_topic(awm->local_id(label_buf), entry_buf, hotkey, "tgroupcolor.hlp", AWM_ALL, makeWindowCallback(NT_group_not_color_cb, ntree_canvas, i));
+        awm->insert_menu_topic(awm->local_id(label_buf), entry_buf, hotkey, "tree_group.hlp", AWM_ALL, makeWindowCallback(expand_color_cb, ntree_canvas, i));
     }
 
     awm->close_sub_menu();
 
 #undef MAXLABEL
 #undef MAXENTRY
+}
+
+void NT_insert_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntw) {
+    awm->insert_sub_menu("Collapse/expand groups",         "d");
+    {
+        const char *grouphelp = "tree_group.hlp";
+        awm->insert_menu_topic(awm->local_id("tree_group_all"),         "Collapse all",      "C", grouphelp, AWM_ALL, makeWindowCallback(collapse_all_cb,      ntw));
+        awm->insert_menu_topic(awm->local_id("tree_group_term_groups"), "Collapse terminal", "t", grouphelp, AWM_ALL, makeWindowCallback(collapse_terminal_cb, ntw));
+        awm->sep______________();
+        awm->insert_menu_topic(awm->local_id("tree_ungroup_all"),       "Expand all",        "E", grouphelp, AWM_ALL, makeWindowCallback(expand_all_cb,        ntw));
+        awm->insert_menu_topic(awm->local_id("tree_group_not_marked"),  "Expand marked",     "m", grouphelp, AWM_ALL, makeWindowCallback(NT_expand_marked_cb,  ntw));
+        awm->insert_menu_topic(awm->local_id("tree_ungroup_zombies"),   "Expand zombies",    "z", grouphelp, AWM_ALL, makeWindowCallback(expand_zombies_cb,    ntw));
+        awm->sep______________();
+        insert_color_collapse_submenu(awm, ntw);
+    }
+    awm->close_sub_menu();
 }
 
 // ------------------------
