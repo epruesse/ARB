@@ -1113,7 +1113,9 @@ void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize
 
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
-        set_window_size(_at.max_x_size+1000, _at.max_y_size+1000);
+#if defined(ARB_MOTIF)
+        set_window_size(WIDER_THAN_SCREEN, HIGHER_THAN_SCREEN);
+#endif
     }
 }
 
@@ -1281,7 +1283,11 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
 
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
-        set_window_size(_at.max_x_size, _at.max_y_size);
+#if defined(ARB_MOTIF)
+        set_window_size(WIDER_THAN_SCREEN, HIGHER_THAN_SCREEN);
+#else
+        set_window_size(_at.max_x_size, _at.max_y_size); // @@@ should not be needed in gtk, as soon as recalc_size_atShow has proper effect (see #377)
+#endif
     }
 
     set_expose_callback(AW_INFO_AREA, makeWindowCallback(AW_xfigCB_info_area, xfig_data));
