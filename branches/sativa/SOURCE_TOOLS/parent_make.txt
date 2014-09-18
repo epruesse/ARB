@@ -1,0 +1,39 @@
+
+Variable exports are performed over multiple directory levels from parent- to
+subdirectory-makefiles.
+
+To avoid specifying them at many locations, these exports are defined in files named
+export2sub.  Currently these export2sub exist:
+
+        ../SOURCE_TOOLS/export2sub
+        ../UNIT_TESTER/export2sub
+        ../AISC_COM/AISC/export2sub
+
+
+Short description of most important variables passed from parent makefiles:
+
+      A_CC                C-compiler
+      A_CXX               C++-compiler
+
+      cflags              C-compiler flags
+      cxxflags            additional C++-compiler flags
+                          (should be used as '$(cflags) $(cxxflags)'!)
+      shared_cflags       additional compiler flags used when compiling objects for a shared library
+
+      CC_INCLUDES         include directories for C-compiler
+      CXX_INCLUDES        include directories for C++-compiler
+
+      POST_COMPILE        global filter applied to compiler output (i.e. to errors and warnings)
+
+      LINK_EXECUTABLE     linker command for executables
+      LINK_STATIC_LIB     linker command for static libs
+      LINK_SHARED_LIB     linker command for shared libs (depends on LINK_STATIC)
+
+      LINK_STATIC         =0 -> use dynamic libs, =1 -> use only static libs
+      SHARED_LIB_SUFFIX   suffix for shared libs (contains .a if LINK_STATIC=1)
+
+Note:
+        Several variables are still passed directly via the call of the submakefile, e.g.
+                make -C subdir "VAR=content" target
+        If passing them is common at many places, they should better be passed via export2sub
+
