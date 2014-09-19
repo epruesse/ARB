@@ -154,7 +154,7 @@ GB_ERROR gb_load_key_data_and_dictionaries(GB_MAIN_TYPE *Main) __ATTR__USERESULT
 
 /* arbdb.cxx */
 GB_ERROR gb_unfold(GBCONTAINER *gbc, long deep, int index_pos);
-void gb_close_unclosed_DBs(void);
+void gb_abort_and_close_all_DBs(void);
 int gb_read_nr(GBDATA *gbd);
 GB_ERROR gb_write_compressed_pntr(GBENTRY *gbe, const char *s, long memsize, long stored_size);
 int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type);

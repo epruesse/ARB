@@ -48,6 +48,12 @@ static GB_shell4perl perl_shell;
 MODULE = ARB PACKAGE = ARB PREFIX = P2A_
 PROTOTYPES: ENABLE
 
+void
+P2A_prepare_to_die()
+
+  PPCODE:
+    GBP_prepare_to_die();
+
 
 MODULE = ARB PACKAGE = BIO PREFIX = P2AT_
 
