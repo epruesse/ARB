@@ -37,7 +37,7 @@ mafftlinks: $(MAFFTLINKS)
 
 scriptlinks:
 	ln -s -f `find ../SH           -perm -100 ! -type d -print` .
-	ln -s -f `find ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'manual.pl' -print` .
+	ln -s -f `find ../PERL_SCRIPTS -perm -100 ! -type d ! -path '*/IFTHELP/*' ! -path '*/TESTS/*' -print` .
 
 devellinks:
 	ln -s -f `find ../SOURCE_TOOLS -name "arb_*" -perm -100 ! -type d -print` .
