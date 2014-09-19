@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 #
 # script that tests features documented in ../../../PERL2ARB/DOC.html
+# (to make this test working you need to have LintSubs installed)
+#
 # @@@ TODO from: ../../../PERL2ARB/DOC.html@create_container
 
 use strict;
