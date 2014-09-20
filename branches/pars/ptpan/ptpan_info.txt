@@ -1,0 +1,6 @@
+09 September 2011
+
+The PTPan code formerly available in this folder was deprecated and
+has been removed.
+
+The current source code version will be integrated soon instead.
