@@ -599,7 +599,7 @@ static long push_partial(const char *, long val, void *cd_partial) {
 // -------------------------------
 //      Add Partial sequences
 
-static void NT_partial_add(AW_window *, AWT_canvas *ntw) {
+static void NT_add_partial(AW_window *, AWT_canvas *ntw) {
     GB_begin_transaction(GLOBAL_gb_main);
     GB_ERROR error = NULL;
 
@@ -797,13 +797,13 @@ static void NT_partial_add(AW_window *, AWT_canvas *ntw) {
 // -------------------------------
 //      add marked / selected
 
-static void NT_add      (AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, false); }
-static void NT_quick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, true); }
+static void NT_add_and_NNI(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, false); }
+static void NT_add_quick  (AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, true);  }
 
 // ------------------------------------------
 //      remove and add marked / selected
 
-static void NT_radd_internal(AW_window * aww, AWT_canvas *ntw, AddWhat what, bool quick) {
+static void nt_reAdd(AW_window * aww, AWT_canvas *ntw, AddWhat what, bool quick) {
     AW_awar *awar_best_pars = aww->get_root()->awar(AWAR_BEST_PARSIMONY);
     int      oldparsval     = awar_best_pars->read_int();
 
@@ -818,8 +818,8 @@ static void NT_radd_internal(AW_window * aww, AWT_canvas *ntw, AddWhat what, boo
     nt_add(aww, ntw, what, quick);
 }
 
-static void NT_radd      (AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, false); }
-static void NT_rquick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, true); }
+static void NT_reAdd_and_NNI(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_reAdd(aww, ntw, what, false); }
+static void NT_reAdd_quick  (AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_reAdd(aww, ntw, what, true);  }
 
 // --------------------------------------------------------------------------------
 
@@ -1122,8 +1122,8 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback(makeRootCallback(TREE_recompute_cb, ntw));
 
-    if (cmds->add_marked)           NT_quick_add(awm, ntw, NT_ADD_MARKED);
-    if (cmds->add_selected)         NT_quick_add(awm, ntw, NT_ADD_SELECTED);
+    if (cmds->add_marked)           NT_add_quick(awm, ntw, NT_ADD_MARKED);
+    if (cmds->add_selected)         NT_add_quick(awm, ntw, NT_ADD_SELECTED);
     if (cmds->calc_branch_lengths)  NT_branch_lengths(awm, ntw);
     if (cmds->calc_bootstrap)       NT_bootstrap(awm, ntw, 0);
     if (cmds->quit)                 pars_exit(awm);
@@ -1169,15 +1169,15 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->close_sub_menu();
         awm->insert_sub_menu("Add Species to Tree",      "A");
         {
-            awm->insert_menu_topic("add_marked",         "Add Marked Species",                              "M", "pa_quick.hlp",   AWM_ALL, makeWindowCallback(NT_quick_add,   ntw, NT_ADD_MARKED));
-            awm->insert_menu_topic("add_marked_nni",     "Add Marked Species + Local Optimization (NNI)",   "N", "pa_add.hlp",     AWM_ALL, makeWindowCallback(NT_add,         ntw, NT_ADD_MARKED));
-            awm->insert_menu_topic("rm_add_marked",      "Remove & Add Marked Species",                     "R", "pa_quick.hlp",   AWM_ALL, makeWindowCallback(NT_rquick_add,  ntw, NT_ADD_MARKED));
-            awm->insert_menu_topic("rm_add_marked_nni|", "Remove & Add Marked + Local Optimization (NNI)",  "L", "pa_add.hlp",     AWM_ALL, makeWindowCallback(NT_radd,        ntw, NT_ADD_MARKED));
+            awm->insert_menu_topic("add_marked",         "Add Marked Species",                              "M", "pa_quick.hlp",   AWM_ALL, makeWindowCallback(NT_add_quick,     ntw, NT_ADD_MARKED));
+            awm->insert_menu_topic("add_marked_nni",     "Add Marked Species + Local Optimization (NNI)",   "N", "pa_add.hlp",     AWM_ALL, makeWindowCallback(NT_add_and_NNI,   ntw, NT_ADD_MARKED));
+            awm->insert_menu_topic("rm_add_marked",      "Remove & Add Marked Species",                     "R", "pa_quick.hlp",   AWM_ALL, makeWindowCallback(NT_reAdd_quick,   ntw, NT_ADD_MARKED));
+            awm->insert_menu_topic("rm_add_marked_nni|", "Remove & Add Marked + Local Optimization (NNI)",  "L", "pa_add.hlp",     AWM_ALL, makeWindowCallback(NT_reAdd_and_NNI, ntw, NT_ADD_MARKED));
             awm->sep______________();
-            awm->insert_menu_topic("add_marked_partial", "Add Marked Partial Species",                      "P", "pa_partial.hlp", AWM_ALL, makeWindowCallback(NT_partial_add, ntw));
+            awm->insert_menu_topic("add_marked_partial", "Add Marked Partial Species",                      "P", "pa_partial.hlp", AWM_ALL, makeWindowCallback(NT_add_partial,   ntw));
             awm->sep______________();
-            awm->insert_menu_topic("add_selected",       "Add Selected Species",                            "S", "pa_quick.hlp",   AWM_ALL, makeWindowCallback(NT_quick_add,   ntw, NT_ADD_SELECTED));
-            awm->insert_menu_topic("add_selected_nni",   "Add Selected Species + Local Optimization (NNI)", "O", "pa_add.hlp",     AWM_ALL, makeWindowCallback(NT_add,         ntw, NT_ADD_SELECTED));
+            awm->insert_menu_topic("add_selected",       "Add Selected Species",                            "S", "pa_quick.hlp",   AWM_ALL, makeWindowCallback(NT_add_quick,     ntw, NT_ADD_SELECTED));
+            awm->insert_menu_topic("add_selected_nni",   "Add Selected Species + Local Optimization (NNI)", "O", "pa_add.hlp",     AWM_ALL, makeWindowCallback(NT_add_and_NNI,   ntw, NT_ADD_SELECTED));
         }
         awm->close_sub_menu();
         awm->sep______________();
