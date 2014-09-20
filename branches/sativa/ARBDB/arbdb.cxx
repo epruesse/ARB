@@ -737,9 +737,15 @@ void GB_close(GBDATA *gbd) {
     }
 }
 
-void gb_close_unclosed_DBs() {
+void gb_abort_and_close_all_DBs() {
     GBDATA *gb_main;
     while ((gb_main = gb_remembered_db())) {
+        // abort any open transactions
+        GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
+        while (Main->get_transaction_level()>0) {
+            Main->abort_transaction();
+        }
+        // and close DB
         GB_close(gb_main);
     }
 }
