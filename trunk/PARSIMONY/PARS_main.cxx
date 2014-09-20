@@ -249,7 +249,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
 
             }
         }
-        delete branchlist; branchlist = 0;
+        delete [] branchlist; branchlist = 0;
         if (bestposl->father != bestposr) {
             bestposl = bestposr;
         }
@@ -596,9 +596,12 @@ static long push_partial(const char *, long val, void *cd_partial) {
     return val;
 }
 
-static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
+// -------------------------------
+//      Add Partial sequences
+
+static void NT_add_partial(AW_window *, AWT_canvas *ntw) {
     GB_begin_transaction(GLOBAL_gb_main);
-    GB_ERROR error = 0;
+    GB_ERROR error = NULL;
 
     int full_marked_sequences = 0;
 
@@ -660,6 +663,8 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
                 if (partial.empty()) error = "No species left to add";
             }
         }
+
+        if (!error) error = GBT_add_new_changekey(GLOBAL_gb_main, "ARB_partial", GB_INT);
 
         if (!error) {
             rootNode()->reset_subtree_layout();
@@ -792,13 +797,13 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
 // -------------------------------
 //      add marked / selected
 
-static void NT_add      (AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, false); }
-static void NT_quick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, true); }
+static void NT_add_and_NNI(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, false); }
+static void NT_add_quick  (AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, true);  }
 
 // ------------------------------------------
 //      remove and add marked / selected
 
-static void NT_radd_internal(AW_window * aww, AWT_canvas *ntw, AddWhat what, bool quick) {
+static void nt_reAdd(AW_window * aww, AWT_canvas *ntw, AddWhat what, bool quick) {
     AW_awar *awar_best_pars = aww->get_root()->awar(AWAR_BEST_PARSIMONY);
     int      oldparsval     = awar_best_pars->read_int();
 
@@ -813,17 +818,8 @@ static void NT_radd_internal(AW_window * aww, AWT_canvas *ntw, AddWhat what, boo
     nt_add(aww, ntw, what, quick);
 }
 
-static void NT_radd      (AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, false); }
-static void NT_rquick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, true); }
-
-// -------------------------------
-//      Add Partial sequences
-
-
-static void NT_partial_add(AW_window *aww, AW_CL cl_ntw, AW_CL) {
-    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
-    nt_add_partial(aww, ntw);
-}
+static void NT_reAdd_and_NNI(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_reAdd(aww, ntw, what, false); }
+static void NT_reAdd_quick  (AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_reAdd(aww, ntw, what, true);  }
 
 // --------------------------------------------------------------------------------
 
@@ -834,7 +830,7 @@ static void NT_branch_lengths(AW_window *, AWT_canvas *ntw) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static void NT_bootstrap(AW_window *, AWT_canvas *ntw, AW_CL limit_only) {
+static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
     arb_progress progress("Calculating Bootstrap Limit");
     AP_BL_MODE mode       = AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY);
     rootEdge()->nni_rek(-1, false, mode, NULL);
@@ -934,7 +930,7 @@ static void TESTMENU_setBranchlen(AW_window *, AWT_canvas *ntw)
     refreshTree(ntw);
 }
 
-static void TESTMENU_treeStats(AW_window *, AWT_canvas *) {
+static void TESTMENU_treeStats(AW_window *) {
     ARB_tree_info tinfo;
     AP_tree_nlen *root = rootNode();
 
@@ -973,7 +969,7 @@ static void TESTMENU_sortTreeByName(AW_window *, AWT_canvas *ntw)
     refreshTree(ntw);
 }
 
-static void TESTMENU_buildAndDumpChain(AW_window *, AWT_canvas *)
+static void TESTMENU_buildAndDumpChain(AW_window *)
 {
     AP_tree_nlen *root = rootNode();
 
@@ -994,11 +990,11 @@ static void init_TEST_menu(AW_window_menu_modes *awm, AWT_canvas *ntw)
 {
     awm->create_menu("Test[debug]", "g", AWM_ALL);
 
-    awm->insert_menu_topic("mixtree",         "Mix tree",           "M", "", AWM_ALL, (AW_CB)TESTMENU_mixTree,           (AW_CL)ntw, 0);
-    awm->insert_menu_topic("treestat",        "Tree statistics",    "s", "", AWM_ALL, (AW_CB)TESTMENU_treeStats,         (AW_CL)ntw, 0);
-    awm->insert_menu_topic("setlens",         "Set branchlens",     "b", "", AWM_ALL, (AW_CB)TESTMENU_setBranchlen,      (AW_CL)ntw, 0);
-    awm->insert_menu_topic("sorttreebyname",  "Sort tree by name",  "o", "", AWM_ALL, (AW_CB)TESTMENU_sortTreeByName,    (AW_CL)ntw, 0);
-    awm->insert_menu_topic("buildndumpchain", "Build & dump chain", "c", "", AWM_ALL, (AW_CB)TESTMENU_buildAndDumpChain, (AW_CL)ntw, 0);
+    awm->insert_menu_topic("mixtree",         "Mix tree",           "M", "", AWM_ALL, makeWindowCallback(TESTMENU_mixTree, ntw));
+    awm->insert_menu_topic("treestat",        "Tree statistics",    "s", "", AWM_ALL, TESTMENU_treeStats);
+    awm->insert_menu_topic("setlens",         "Set branchlens",     "b", "", AWM_ALL, makeWindowCallback(TESTMENU_setBranchlen, ntw));
+    awm->insert_menu_topic("sorttreebyname",  "Sort tree by name",  "o", "", AWM_ALL, makeWindowCallback(TESTMENU_sortTreeByName, ntw));
+    awm->insert_menu_topic("buildndumpchain", "Build & dump chain", "c", "", AWM_ALL, TESTMENU_buildAndDumpChain);
 }
 #endif // TESTMENU
 
@@ -1048,11 +1044,9 @@ static GB_ERROR pars_check_size(AW_root *awr, GB_ERROR& warning) {
     return error;
 }
 
-static void pars_reset_optimal_parsimony(AW_window *aww, AW_CL *cl_ntw) {
+static void pars_reset_optimal_parsimony(AW_window *aww, AWT_canvas *ntw) {
     AW_root *awr = aww->get_root();
     awr->awar(AWAR_BEST_PARSIMONY)->write_int(awr->awar(AWAR_PARSIMONY)->read_int());
-
-    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     ntw->refresh();
 }
 
@@ -1128,8 +1122,8 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback(makeRootCallback(TREE_recompute_cb, ntw));
 
-    if (cmds->add_marked)           NT_quick_add(awm, ntw, NT_ADD_MARKED);
-    if (cmds->add_selected)         NT_quick_add(awm, ntw, NT_ADD_SELECTED);
+    if (cmds->add_marked)           NT_add_quick(awm, ntw, NT_ADD_MARKED);
+    if (cmds->add_selected)         NT_add_quick(awm, ntw, NT_ADD_SELECTED);
     if (cmds->calc_branch_lengths)  NT_branch_lengths(awm, ntw);
     if (cmds->calc_bootstrap)       NT_bootstrap(awm, ntw, 0);
     if (cmds->quit)                 pars_exit(awm);
@@ -1175,31 +1169,31 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->close_sub_menu();
         awm->insert_sub_menu("Add Species to Tree",      "A");
         {
-            awm->insert_menu_topic("add_marked",         "Add Marked Species",                              "M", "pa_quick.hlp",   AWM_ALL, (AW_CB)NT_quick_add,  (AW_CL)ntw, NT_ADD_MARKED);
-            awm->insert_menu_topic("add_marked_nni",     "Add Marked Species + Local Optimization (NNI)",   "N", "pa_add.hlp",     AWM_ALL, (AW_CB)NT_add,        (AW_CL)ntw, NT_ADD_MARKED);
-            awm->insert_menu_topic("rm_add_marked",      "Remove & Add Marked Species",                     "R", "pa_quick.hlp",   AWM_ALL, (AW_CB)NT_rquick_add, (AW_CL)ntw, NT_ADD_MARKED);
-            awm->insert_menu_topic("rm_add_marked_nni|", "Remove & Add Marked + Local Optimization (NNI)",  "L", "pa_add.hlp",     AWM_ALL, (AW_CB)NT_radd,       (AW_CL)ntw, NT_ADD_MARKED);
+            awm->insert_menu_topic("add_marked",         "Add Marked Species",                              "M", "pa_quick.hlp",   AWM_ALL, makeWindowCallback(NT_add_quick,     ntw, NT_ADD_MARKED));
+            awm->insert_menu_topic("add_marked_nni",     "Add Marked Species + Local Optimization (NNI)",   "N", "pa_add.hlp",     AWM_ALL, makeWindowCallback(NT_add_and_NNI,   ntw, NT_ADD_MARKED));
+            awm->insert_menu_topic("rm_add_marked",      "Remove & Add Marked Species",                     "R", "pa_quick.hlp",   AWM_ALL, makeWindowCallback(NT_reAdd_quick,   ntw, NT_ADD_MARKED));
+            awm->insert_menu_topic("rm_add_marked_nni|", "Remove & Add Marked + Local Optimization (NNI)",  "L", "pa_add.hlp",     AWM_ALL, makeWindowCallback(NT_reAdd_and_NNI, ntw, NT_ADD_MARKED));
             awm->sep______________();
-            awm->insert_menu_topic("add_marked_partial", "Add Marked Partial Species",                      "P", "pa_partial.hlp", AWM_ALL, NT_partial_add,       (AW_CL)ntw, (AW_CL)0);
+            awm->insert_menu_topic("add_marked_partial", "Add Marked Partial Species",                      "P", "pa_partial.hlp", AWM_ALL, makeWindowCallback(NT_add_partial,   ntw));
             awm->sep______________();
-            awm->insert_menu_topic("add_selected",       "Add Selected Species",                            "S", "pa_quick.hlp",   AWM_ALL, (AW_CB)NT_quick_add,  (AW_CL)ntw, NT_ADD_SELECTED);
-            awm->insert_menu_topic("add_selected_nni",   "Add Selected Species + Local Optimization (NNI)", "O", "pa_add.hlp",     AWM_ALL, (AW_CB)NT_add,        (AW_CL)ntw, NT_ADD_SELECTED);
+            awm->insert_menu_topic("add_selected",       "Add Selected Species",                            "S", "pa_quick.hlp",   AWM_ALL, makeWindowCallback(NT_add_quick,     ntw, NT_ADD_SELECTED));
+            awm->insert_menu_topic("add_selected_nni",   "Add Selected Species + Local Optimization (NNI)", "O", "pa_add.hlp",     AWM_ALL, makeWindowCallback(NT_add_and_NNI,   ntw, NT_ADD_SELECTED));
         }
         awm->close_sub_menu();
         awm->sep______________();
         awm->insert_sub_menu("Tree Optimization",        "O");
         {
-            awm->insert_menu_topic("nni",           "Local Optimization (NNI) of Marked Visible Nodes", "L", "",        AWM_ALL,    (AW_CB)NT_recursiveNNI, (AW_CL)ntw, 0);
-            awm->insert_menu_topic("kl_optimization",   "Global Optimization of Marked Visible Nodes",      "G", "pa_optimizer.hlp", AWM_ALL,   (AW_CB)NT_optimize, (AW_CL)ntw, 0);
+            awm->insert_menu_topic("nni",             "Local Optimization (NNI) of Marked Visible Nodes", "L", "",                 AWM_ALL, makeWindowCallback(NT_recursiveNNI, ntw));
+            awm->insert_menu_topic("kl_optimization", "Global Optimization of Marked Visible Nodes",      "G", "pa_optimizer.hlp", AWM_ALL, makeWindowCallback(NT_optimize,     ntw));
         }
         awm->close_sub_menu();
-        awm->insert_menu_topic("reset", "Reset optimal parsimony", "s", "", AWM_ALL, (AW_CB)pars_reset_optimal_parsimony, (AW_CL)ntw, 0);
+        awm->insert_menu_topic("reset", "Reset optimal parsimony", "s", "", AWM_ALL, makeWindowCallback(pars_reset_optimal_parsimony, ntw));
         awm->sep______________();
         awm->insert_menu_topic("beautify_tree",       "Beautify Tree",            "B", "resorttree.hlp",       AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_TOP));
-        awm->insert_menu_topic("calc_branch_lengths", "Calculate Branch Lengths", "L", "pa_branchlengths.hlp", AWM_ALL, (AW_CB)NT_branch_lengths, (AW_CL)ntw, 0);
+        awm->insert_menu_topic("calc_branch_lengths", "Calculate Branch Lengths", "L", "pa_branchlengths.hlp", AWM_ALL, makeWindowCallback(NT_branch_lengths, ntw));
         awm->sep______________();
-        awm->insert_menu_topic("calc_upper_bootstrap_indep", "Calculate Upper Bootstrap Limit (dependent NNI)",   "d", "pa_bootstrap.hlp", AWM_ALL, (AW_CB)NT_bootstrap,        (AW_CL)ntw, 0);
-        awm->insert_menu_topic("calc_upper_bootstrap_dep",   "Calculate Upper Bootstrap Limit (independent NNI)", "i", "pa_bootstrap.hlp", AWM_ALL, (AW_CB)NT_bootstrap,        (AW_CL)ntw, 1);
+        awm->insert_menu_topic("calc_upper_bootstrap_indep", "Calculate Upper Bootstrap Limit (dependent NNI)",   "d", "pa_bootstrap.hlp", AWM_ALL, makeWindowCallback(NT_bootstrap,        ntw, false));
+        awm->insert_menu_topic("calc_upper_bootstrap_dep",   "Calculate Upper Bootstrap Limit (independent NNI)", "i", "pa_bootstrap.hlp", AWM_ALL, makeWindowCallback(NT_bootstrap,        ntw, true));
         awm->insert_menu_topic("tree_remove_remark",         "Remove Bootstrap Values",                           "V", "trm_boot.hlp",     AWM_ALL, makeWindowCallback(NT_remove_bootstrap, ntw));
     }
 
@@ -1218,7 +1212,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...", "M", "props_frame.hlp",      AWM_ALL, AW_preset_window);
         awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...", "C", "pars_props_data.hlp",  AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
         awm->insert_menu_topic("props_tree2", "Tree: Settings ...",         "T", "nt_tree_settings.hlp", AWM_ALL, PARS_create_tree_settings_window);
-        awm->insert_menu_topic("props_kl",    "KERN. LIN ...",              "K", "kernlin.hlp",          AWM_ALL, AW_POPUP,(AW_CL)create_kernighan_window, 0);
+        awm->insert_menu_topic("props_kl",    "KERN. LIN ...",              "K", "kernlin.hlp",          AWM_ALL, makeCreateWindowCallback(create_kernighan_window));
         awm->sep______________();
         AW_insert_common_property_menu_entries(awm);
         awm->sep______________();
@@ -1297,12 +1291,12 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     awm->button_length(8);
     awm->at_x(db_stackx);
-    awm->callback((AW_CB1)AP_user_pop_cb, (AW_CL)ntw);
+    awm->callback(makeWindowCallback(AP_user_pop_cb, ntw));
     awm->help_text("ap_stack.hlp");
     awm->create_button("POP", "RESTORE", 0);
 
     awm->button_length(6);
-    awm->callback((AW_CB1)AP_user_push_cb, (AW_CL)ntw);
+    awm->callback(makeWindowCallback(AP_user_push_cb, ntw));
     awm->help_text("ap_stack.hlp");
     awm->create_button("PUSH", "STORE", 0);
 
