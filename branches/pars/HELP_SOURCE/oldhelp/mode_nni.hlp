@@ -13,7 +13,7 @@ UP	mode_optimize.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Nearest Neighbour Interchange
 
-OCCURRENCE	ARB_NT/Tree/Parsimony/<NNI>
+OCCURRENCE	ARB_PARSIMONY/<NNI mode button>
 
 DESCRIPTION	Searches for a better (more parsimonious) tree by swapping the
 		relative positions of subtrees separated by not more than one
@@ -24,7 +24,7 @@ NOTES		The current parsimony value (number of base changes needed) is
 		the 'ARB_PARSIMONY' window and the 'Message' window (pops up
 		while calculating).
 
-		On cycle of swapping is performed.
+		One cycle of swapping is performed.
 
 EXAMPLES	None
 
