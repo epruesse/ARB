@@ -5,7 +5,7 @@ UP	glossary.hlp
 
 TITLE		Estimation of Bootstrap by Parsimony
 
-OCCURRENCE	ARB_NT/Tree/Parsimony
+OCCURRENCE	ARB_PARSIMONY/Tree/Calculate Upper Bootstrap Limit
 
 DESCRIPTION	Given a large tree, traditional ways to calculate bootstrap
 		values are by magnitudes to slow. So a faster algorithm was
