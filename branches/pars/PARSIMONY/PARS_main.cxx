@@ -596,9 +596,12 @@ static long push_partial(const char *, long val, void *cd_partial) {
     return val;
 }
 
-static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
+// -------------------------------
+//      Add Partial sequences
+
+static void NT_partial_add(AW_window *, AWT_canvas *ntw) {
     GB_begin_transaction(GLOBAL_gb_main);
-    GB_ERROR error = 0;
+    GB_ERROR error = NULL;
 
     int full_marked_sequences = 0;
 
@@ -660,6 +663,8 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
                 if (partial.empty()) error = "No species left to add";
             }
         }
+
+        if (!error) error = GBT_add_new_changekey(GLOBAL_gb_main, "ARB_partial", GB_INT);
 
         if (!error) {
             rootNode()->reset_subtree_layout();
@@ -815,14 +820,6 @@ static void NT_radd_internal(AW_window * aww, AWT_canvas *ntw, AddWhat what, boo
 
 static void NT_radd      (AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, false); }
 static void NT_rquick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, true); }
-
-// -------------------------------
-//      Add Partial sequences
-
-
-static void NT_partial_add(AW_window *aww, AWT_canvas *ntw) {
-    nt_add_partial(aww, ntw);
-}
 
 // --------------------------------------------------------------------------------
 
