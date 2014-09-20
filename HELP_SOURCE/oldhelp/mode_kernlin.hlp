@@ -13,7 +13,7 @@ UP	mode_optimize.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		K.L. Optimization of the Tree
 
-OCCURRENCE	ARB_NT/Tree/Parsimony/<K.L.>
+OCCURRENCE	ARB_PARSIMONY/<K.L.>
 
 DESCRIPTION	Searches for a better (more parsimonious) tree by swapping
 		subtrees which are separated by up to 15 edges.

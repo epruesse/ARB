@@ -1175,15 +1175,15 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->close_sub_menu();
         awm->insert_sub_menu("Add Species to Tree",      "A");
         {
-            awm->insert_menu_topic("add_marked",         "Add Marked Species",                              "M", "pa_quick.hlp",     AWM_ALL, (AW_CB)NT_quick_add,  (AW_CL)ntw, NT_ADD_MARKED);
-            awm->insert_menu_topic("add_marked_nni",     "Add Marked Species + Local Optimization (NNI)",   "N", "pa_add.hlp",       AWM_ALL, (AW_CB)NT_add,        (AW_CL)ntw, NT_ADD_MARKED);
-            awm->insert_menu_topic("rm_add_marked",      "Remove & Add Marked Species",                     "R", "pa_add.hlp",       AWM_ALL, (AW_CB)NT_rquick_add, (AW_CL)ntw, NT_ADD_MARKED);
-            awm->insert_menu_topic("rm_add_marked_nni|", "Remove & Add Marked + Local Optimization (NNI)",  "L", "pa_add.hlp",       AWM_ALL, (AW_CB)NT_radd,       (AW_CL)ntw, NT_ADD_MARKED);
+            awm->insert_menu_topic("add_marked",         "Add Marked Species",                              "M", "pa_quick.hlp",   AWM_ALL, (AW_CB)NT_quick_add,  (AW_CL)ntw, NT_ADD_MARKED);
+            awm->insert_menu_topic("add_marked_nni",     "Add Marked Species + Local Optimization (NNI)",   "N", "pa_add.hlp",     AWM_ALL, (AW_CB)NT_add,        (AW_CL)ntw, NT_ADD_MARKED);
+            awm->insert_menu_topic("rm_add_marked",      "Remove & Add Marked Species",                     "R", "pa_quick.hlp",   AWM_ALL, (AW_CB)NT_rquick_add, (AW_CL)ntw, NT_ADD_MARKED);
+            awm->insert_menu_topic("rm_add_marked_nni|", "Remove & Add Marked + Local Optimization (NNI)",  "L", "pa_add.hlp",     AWM_ALL, (AW_CB)NT_radd,       (AW_CL)ntw, NT_ADD_MARKED);
             awm->sep______________();
-            awm->insert_menu_topic("add_marked_partial", "Add Marked Partial Species",                      "P", "pa_partial.hlp",   AWM_ALL, NT_partial_add,       (AW_CL)ntw, (AW_CL)0);
+            awm->insert_menu_topic("add_marked_partial", "Add Marked Partial Species",                      "P", "pa_partial.hlp", AWM_ALL, NT_partial_add,       (AW_CL)ntw, (AW_CL)0);
             awm->sep______________();
-            awm->insert_menu_topic("add_selected",       "Add Selected Species",                            "S", "pa_quick_sel.hlp", AWM_ALL, (AW_CB)NT_quick_add,  (AW_CL)ntw, NT_ADD_SELECTED);
-            awm->insert_menu_topic("add_selected_nni",   "Add Selected Species + Local Optimization (NNI)", "O", "pa_add_sel.hlp",   AWM_ALL, (AW_CB)NT_add,        (AW_CL)ntw, NT_ADD_SELECTED);
+            awm->insert_menu_topic("add_selected",       "Add Selected Species",                            "S", "pa_quick.hlp",   AWM_ALL, (AW_CB)NT_quick_add,  (AW_CL)ntw, NT_ADD_SELECTED);
+            awm->insert_menu_topic("add_selected_nni",   "Add Selected Species + Local Optimization (NNI)", "O", "pa_add.hlp",     AWM_ALL, (AW_CB)NT_add,        (AW_CL)ntw, NT_ADD_SELECTED);
         }
         awm->close_sub_menu();
         awm->sep______________();
