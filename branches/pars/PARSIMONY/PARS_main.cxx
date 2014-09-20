@@ -249,7 +249,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
 
             }
         }
-        delete branchlist; branchlist = 0;
+        delete [] branchlist; branchlist = 0;
         if (bestposl->father != bestposr) {
             bestposl = bestposr;
         }
