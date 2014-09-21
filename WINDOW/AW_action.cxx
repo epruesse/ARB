@@ -5,6 +5,8 @@
 #include "aw_window_gtk.hxx"
 #include "aw_msg.hxx"
 
+#include <arb_msg.h>
+
 #include "gtk/gtk.h"
 
 struct AW_action_g_signal_binding {

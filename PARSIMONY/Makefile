@@ -436,14 +436,10 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 PARS_klprops.o: pars_klprops.hxx
-PARS_klprops.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_core.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_error.h
-PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_msg.h
-PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_string.h
-PARS_klprops.o: $(ARBHOME)/INCLUDE/arbdb.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arbtools.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/attributes.h
