@@ -1,23 +1,19 @@
-// ============================================================= //
-//                                                               //
-//   File      : AW_at.cxx                                    //
-//   Purpose   :                                                 //
-//                                                               //
-//   Coded by Arne Boeckmann aboeckma@mpi-bremen.de on Aug 22, 2012   //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
+// =============================================================== //
+//                                                                 //
+//   File      : AW_at.cxx                                         //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
- 
 #include "aw_at.hxx"
 #include "aw_window.hxx"
-#include "aw_root.hxx"
 #include "aw_xfig.hxx"
+#include "aw_root.hxx"
 
-#ifndef ARBDB_H
-#include <arbdb.h>
-#endif
+#include <arbdbt.h>
 
 AW_at::AW_at(AW_window* pWindow) {
     memset((char*)this, 0, sizeof(AW_at));
@@ -153,18 +149,18 @@ void AW_at::at(const char *at_id_) {
     }
 }
 
-void AW_at::at(int x, int y){
+void AW_at::at(int x, int y) {
     at_x(x);
     at_y(y);
 }
 
-void AW_at::at_x(int x){
+void AW_at::at_x(int x) {
     if (x_for_next_button > max_x_size) max_x_size = x_for_next_button;
     x_for_next_button = x;
     if (x_for_next_button > max_x_size) max_x_size = x_for_next_button;
 }
 
-void AW_at::at_y(int y){
+void AW_at::at_y(int y) {
     if (y_for_next_button + biggest_height_of_buttons > max_y_size)
         max_y_size = y_for_next_button + biggest_height_of_buttons;
     biggest_height_of_buttons = biggest_height_of_buttons + y_for_next_button - y;
@@ -175,11 +171,11 @@ void AW_at::at_y(int y){
     y_for_next_button = y;
 }
 
-void AW_at::at_shift(int x, int y){
+void AW_at::at_shift(int x, int y) {
     at(x + x_for_next_button, y + y_for_next_button);
 }
 
-void AW_at::at_newline(){
+void AW_at::at_newline() {
   if (do_auto_increment) {
         at_y(auto_increment_y + y_for_next_button);
     }
@@ -195,24 +191,18 @@ void AW_at::at_newline(){
 }
 
 bool AW_at::at_ifdef(const char *at_id_) {
-    
     AW_xfig *xfig = window->get_xfig_data();
-    
-    if (NULL == xfig)
-    {
-        return false;
-    }
-    
+    if (!xfig) return false;
+
     char buffer[100];
 
-    #if defined(DEBUG)
-        int printed =
-    #endif // DEBUG
-    sprintf(buffer, "XY:%s", at_id_);
-        
-    #if defined(DEBUG)
-        aw_assert(printed<100);
-    #endif // DEBUG
+#if defined(DEBUG)
+    int printed =
+#endif // DEBUG
+        sprintf(buffer, "XY:%s", at_id_);
+#if defined(DEBUG)
+    aw_assert(printed<100);
+#endif // DEBUG
 
     if (GBS_read_hash(xfig->at_pos_hash, buffer+3)) return true; // "tag"
     if (GBS_read_hash(xfig->at_pos_hash, buffer+1)) return true; // "Y:tag"
@@ -224,6 +214,9 @@ bool AW_at::at_ifdef(const char *at_id_) {
 }
 
 void AW_at::at_set_to(bool attach_x_i, bool attach_y_i, int xoff, int yoff) {
+    // set "$to:XY:id" manually
+    // use negative offsets to set offset from right/lower border to to-position
+
     attach_any = attach_x_i || attach_y_i;
     attach_x   = attach_x_i;
     attach_y   = attach_y_i;
@@ -237,6 +230,7 @@ void AW_at::at_set_to(bool attach_x_i, bool attach_y_i, int xoff, int yoff) {
 
     correct_for_at_center = 0;
 }
+
 void AW_at::unset_at_commands() {
     correct_for_at_center = 0;
     to_position_exists    = false;
@@ -282,23 +276,26 @@ void AW_at::at_set_min_size(int xmin, int ymin){
     if (xmin > max_x_size) max_x_size = xmin; // this looks wrong, but its right!
     if (ymin > max_y_size) max_y_size = ymin;
 
-    /* @@@ sync code
+#if defined(ARB_MOTIF)
     if (recalc_size_at_show != AW_KEEP_SIZE) {
         set_window_size(WIDER_THAN_SCREEN, HIGHER_THAN_SCREEN);
     }
-    */
+#endif
 }
 
-void AW_at::auto_space(int x, int y){
+void AW_at::auto_space(int x, int y) {
     do_auto_space = true;
     auto_space_x  = x;
     auto_space_y  = y;
-    
+
     do_auto_increment = false;
-    
-    x_for_newline = x_for_next_button;
+
+    x_for_newline             = x_for_next_button;
     biggest_height_of_buttons = 0;
 }
+
+// -------------------------------------------------------------------------
+//      force-diff-sync 9126478246 (remove after merging back to trunk)
 
 void AW_at::auto_increment(int x, int y) {
     do_auto_increment = true;
@@ -318,10 +315,12 @@ void AW_at::button_length(int length) {
 }
 
 int  AW_at::get_button_length() const {
-    return length_of_buttons; 
+    return length_of_buttons;
 }
+
 void AW_at::get_at_position(int *x, int *y) const {
-    *x = x_for_next_button; *y = y_for_next_button; 
+    *x = x_for_next_button;
+    *y = y_for_next_button;
 }
 
 int AW_at::get_at_xposition() const {
@@ -331,8 +330,6 @@ int AW_at::get_at_xposition() const {
 int AW_at::get_at_yposition() const {
     return y_for_next_button; 
 }
-
-
 
 // -------------------
 //      AW_at_size
@@ -380,18 +377,18 @@ void AW_at_maxsize::restore(AW_at &at) const {
 //      AW_at_auto
 
 void AW_at_auto::store(const AW_at &at) {
-    if   (at.do_auto_increment) { 
+    if (at.do_auto_increment) {
         type = INC;   
         x = at.auto_increment_x; 
         y = at.auto_increment_y; 
     }
-    else if (at.do_auto_space)  { 
+    else if (at.do_auto_space)  {
         type = SPACE; 
         x = at.auto_space_x;
         y = at.auto_space_y;     
     }
     else {
-        type = OFF; 
+        type = OFF;
     }
 
     xfn  = at.x_for_newline;
@@ -404,7 +401,7 @@ void AW_at_auto::restore(AW_at &at) const {
     at.do_auto_space     = (type == SPACE);
     at.do_auto_increment = (type == INC);
 
-    if      (at.do_auto_space) {
+    if (at.do_auto_space) {
         at.auto_space_x     = x;
         at.auto_space_y     = y; 
     }
@@ -418,4 +415,7 @@ void AW_at_auto::restore(AW_at &at) const {
     at.y_for_next_button         = yfnb;
     at.biggest_height_of_buttons = bhob;
 }
+
+// -------------------------------------------------------------------------
+//      force-diff-sync 6423462367 (remove after merging back to trunk)
 

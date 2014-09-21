@@ -124,15 +124,9 @@ enum AW_PosRecalc {
     AW_REPOS_TO_MOUSE_ONCE = 3,                     // like AW_REPOS_TO_MOUSE, but only done once!
 };
 
-typedef AW_CB0 aw_hide_cb;
-
 class AW_window : virtual Noncopyable {
     AW_SizeRecalc recalc_size_at_show;
     AW_PosRecalc  recalc_pos_at_show;
-//    enum AW_PosRecalc  recalc_pos_at_show;
-//    aw_hide_cb         hide_cb;
-//
-//    bool expose_callback_added;
 
     void all_menus_created() const;
 
@@ -181,7 +175,7 @@ public:
     void         recalc_pos_atShow(AW_PosRecalc pr);
     void         recalc_size_atShow(enum AW_SizeRecalc sr);
     AW_PosRecalc get_recalc_pos_atShow() const;
-   
+
     void allow_delete_window(bool allow_close);
     void on_hide(AW_CB0 call_on_hide);
 
@@ -190,7 +184,9 @@ public:
      */
     AW_xfig* get_xfig_data();
 
+#if defined(ARB_MOTIF)
     void set_window_title_intern(char *title);
+#endif
 
     // special for EDIT4 
     void _get_area_size(AW_area area, AW_screen_area *square);
@@ -294,9 +290,6 @@ public:
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1, cd2)); }
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1)); }
 
-    /**
-     * insert a separator into the currently open menu
-     */
     void sep______________(); 
     /**
      * Closes the currently open sub menu.
@@ -368,17 +361,17 @@ public:
 
     void label_length(int length);   // Justifies all following labels
     void button_length(int length);   // Sets the width of all following buttons (in chars)
+#if defined(ARB_MOTIF)
     void button_height(int height);   // Sets the height of all following buttons (in lines)
+#endif
     int  get_button_length() const; // returns the current width of buttons
-    int  get_button_height() const; // returns the current height of buttons
-    void highlight();
+    void highlight();           // Creates a frame around the button
     void auto_increment(int dx, int dy);   // enable automatic placement of buttons
     // dx is the horizontal distance between the left
     // borders of two buttons
     void auto_space(int xspace, int yspace);   // enable automatic placement of buttons
     // xspace is the horizontal space between 2 buttons
 
-    void auto_off();            // disable auto_xxxxx
     void shadow_width (int shadow_thickness); // set the shadow_thickness of buttons
 
 
@@ -401,11 +394,10 @@ public:
 
     void dump_at_position(const char *debug_label) const; // for debugging (uses printf)
 
-    void at_attach(bool attach_x, bool attach_y); // attach to X, Y or both
     void at_set_to(bool attach_x, bool attach_y, int xoff, int yoff); // set "to:XY:id" manually
-    void at_unset_to();         // unset "to:id" manually
+    void at_unset_to();                                               // unset "to:id" manually
     void unset_at_commands();
-    void at_set_min_size(int xmin, int ymin); // define minimum window size
+    void at_set_min_size(int xmin, int ymin);                         // define minimum window size
 
     void store_at_size_and_attach(AW_at_size *at_size);   // get size of at-element
     void restore_at_size_and_attach(const AW_at_size *at_size);   // set size of a at-element
