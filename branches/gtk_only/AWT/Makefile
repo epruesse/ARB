@@ -523,14 +523,10 @@ AWT_map_key.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AWT_modules.o: awt_modules.hxx
-AWT_modules.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_modules.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AWT_modules.o: $(ARBHOME)/INCLUDE/arb_string.h
-AWT_modules.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/attributes.h

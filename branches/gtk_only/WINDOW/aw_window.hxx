@@ -1,12 +1,12 @@
 #pragma once
 
-#ifndef ARBDB_H
-#include <arbdb.h>
-#endif
 #ifndef AW_BASE_HXX
 #include "aw_base.hxx"
 #endif
-#ifndef ARB_ASSERT_H 
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+#ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
 #ifndef CB_H

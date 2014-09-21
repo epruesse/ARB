@@ -39,14 +39,10 @@ RNA3D_Graphics.o: RNA3D_GlobalHeader.hxx
 RNA3D_Graphics.o: RNA3D_Graphics.hxx
 RNA3D_Graphics.o: RNA3D_Interface.hxx
 RNA3D_Graphics.o: RNA3D_OpenGLEngine.hxx
-RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arb_core.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arb_defs.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arb_error.h
-RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arb_msg.h
-RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arb_string.h
-RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arbdb.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/attributes.h
