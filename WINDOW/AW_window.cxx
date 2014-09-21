@@ -116,7 +116,11 @@ void AW_window::unset_at_commands() {
 void AW_window::at_set_min_size(int xmin, int ymin) { _at.at_set_min_size(xmin, ymin); }
 void AW_window::auto_space(int x, int y){ _at.auto_space(x,y); }
 void AW_window::label_length(int length){ _at.label_length(length); }
-void AW_window::label(const char *_label){ freedup(_at.label_for_inputfield, _label); }
+
+void AW_window::label(const char *_label) {
+    freedup(_at.label_for_inputfield, _label);
+}
+
 void AW_window::button_length(int length){ _at.button_length(length); }
 int AW_window::get_button_length() const { return _at.get_button_length(); }
 void AW_window::get_at_position(int *x, int *y) const { _at.get_at_position(x,y); }
@@ -124,7 +128,8 @@ int AW_window::get_at_xposition() const { return _at.get_at_xposition(); }
 int AW_window::get_at_yposition() const { return _at.get_at_yposition(); }
 void AW_window::at(const char *at_id) { _at.at(at_id); }
 void AW_window::auto_increment(int dx, int dy) { _at.auto_increment(dx, dy); }
-void AW_window::restore_at_size_and_attach(const AW_at_size *at_size){
+
+void AW_window::restore_at_size_and_attach(const AW_at_size *at_size) {
     at_size->restore(_at);
 }
 void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
@@ -140,62 +145,60 @@ void AW_window::get_window_size(int& width, int& height){
     height = _at.max_y_size;
 }
 
-/**
- * set help text for next created button
- */
-void AW_window::help_text(const char *id){
+void AW_window::help_text(const char *id) {
+    //! set help text for next created button
     prvt->action_template.set_help(id);
 }
 
-/**
- * make next created button default button
- */
-void AW_window::highlight(){
+void AW_window::highlight() {
+    //! make next created button default button
     _at.highlight = true;
 }
 
-/** 
- * Set up sensitivity mask for next widget (action)
- */
-void AW_window::sens_mask(AW_active mask){
+void AW_window::sens_mask(AW_active mask) {
+    //! Set up sensitivity mask for next widget (action)
     prvt->action_template.set_active_mask(mask);
 }
 
-/**
- * Register callback for the next action implicitly created 
- * when making a widget.
- */
-void AW_window::callback(const WindowCallback& wcb){
+void AW_window::callback(const WindowCallback& wcb) {
+    /*!
+     * Register callback for the next action implicitly created
+     * when making a widget.
+     */
     prvt->action_template.clicked.connect(wcb, this);
 }
 
-/**
- * Register double click callback for the next action implicitly created 
- * when making a widget.
- */
-void AW_window::d_callback(const WindowCallback& wcb){
+void AW_window::d_callback(const WindowCallback& wcb) {
+    /*!
+     * Register double click callback for the next action implicitly created
+     * when making a widget.
+     */
     prvt->action_template.dclicked.connect(wcb, this);
 }
 
-/** 
- * checks if a label string is an image reference.
- * image references have "#" as their first character
- *
- * @param ref the label string
- * @return true if ref is an image reference
- */
+// ----------------------------------------------------------------------
+// force-diff-sync 7284637824 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
 static bool AW_IS_IMAGEREF(const char* ref) {
+    /*!
+     * checks if a label string is an image reference.
+     * image references have "#" as their first character
+     *
+     * @param ref the label string
+     * @return true if ref is an image reference
+     */
     return ref[0] == '#';
 }
 
-/** 
- * Converts ARB type mnemonics into GTK style mnemoics.
- * @param  text     the label text
- * @param  mnemonic the mnemonic character
- * @return copy of @param text with a _ inserted before the first
- *         occurance of @param mnemonic. MUST BE FREED.
- */
 static char* aw_convert_mnemonic(const char* text, const char* mnemonic) {
+    /*!
+     * Converts ARB type mnemonics into GTK style mnemoics.
+     * @param  text     the label text
+     * @param  mnemonic the mnemonic character
+     * @return copy of @param text with a _ inserted before the first
+     *         occurance of @param mnemonic. MUST BE FREED.
+     */
     char *rval = (char*) malloc(strlen(text)
                                 + 1 // \0 terminator
                                 + 1 // _ character
@@ -230,14 +233,14 @@ static char* aw_convert_mnemonic(const char* text, const char* mnemonic) {
     return rval;
 }
 
-/**
- * creates a label widget from ARB label descriptions
- * @param  label_text The text of the label. Image labels begin with a #.
- * @param  label_len  A fixed label width in characters or 0.
- * @param  mnemonic   Mnemononic char to be used
- * @return An GtkImage or a GtkLabel, depending. 
- */
 GtkWidget* AW_window::make_label(const char* label_text, short label_len, const char* mnemonic) {
+    /*!
+     * creates a label widget from ARB label descriptions
+     * @param  label_text The text of the label. Image labels begin with a #.
+     * @param  label_len  A fixed label width in characters or 0.
+     * @param  mnemonic   Mnemononic char to be used
+     * @return An GtkImage or a GtkLabel, depending.
+     */
     aw_return_val_if_fail(label_text, NULL);
     GtkWidget *widget;
 
@@ -896,7 +899,7 @@ void AW_window::create_menu(const char *name, const char *mnemonic, AW_active ma
     insert_sub_menu(name, mnemonic, mask);
 }
 
-void AW_window::close_sub_menu(){
+void AW_window::close_sub_menu() {
 #ifdef CHECK_DUPLICATED_MNEMONICS
     close_test_duplicate_mnemonics();
 #endif
@@ -1164,7 +1167,7 @@ void AW_window::insert_help_topic(const char *labeli,
                                   const char *mnemonic, const char *helpText,
                                   AW_active mask, const WindowCallback& cb) {
     aw_return_if_fail(prvt->help_menu != NULL);
-    
+
 #ifdef CHECK_DUPLICATED_MNEMONICS
     if (!current_mscope) init_duplicate_mnemonic(window_name);
     MnemonicScope *tmp = current_mscope;
@@ -1188,6 +1191,7 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
 #ifdef CHECK_DUPLICATED_MNEMONICS
     test_duplicate_mnemonics(labeli, mnemonic);
 #endif
+
     prvt->action_template.set_label(labeli); // fixme mnemonic
     if (helpText) help_text(helpText);
     sens_mask(mask);
@@ -1212,11 +1216,11 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
 void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_active mask /*= AWM_ALL*/){
     aw_return_if_fail(legal_mask(mask));
     aw_return_if_fail(prvt->menus.top());
-  
+
 #ifdef CHECK_DUPLICATED_MNEMONICS
     open_test_duplicate_mnemonics(labeli, mnemonic);
 #endif
-  
+
     //create new menu item with attached submenu
     GtkWidget   *wlabel    = make_label(labeli, 0, mnemonic);
     GtkWidget   *submenu   = gtk_menu_new();
@@ -1239,13 +1243,13 @@ void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_act
         // Append the new submenu to the current menu shell
         gtk_menu_shell_append(prvt->menus.top(), GTK_WIDGET(item));
     }
-    
+
     // use the new submenu as current menu shell.
     prvt->menus.push(GTK_MENU_SHELL(submenu));
 
-    #if defined(DUMP_MENU_LIST)
-        dumpOpenSubMenu(name);
-    #endif // DUMP_MENU_LIST
+#if defined(DUMP_MENU_LIST)
+    dumpOpenSubMenu(name);
+#endif // DUMP_MENU_LIST
 }
 
 static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
@@ -1265,7 +1269,7 @@ void AW_window::get_font_size(int& width, int& height) {
 // force-diff-sync 264782364273 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-void AW_window::load_xfig(const char *file, bool resize /*= true*/){
+void AW_window::load_xfig(const char *file, bool resize /*= true*/) {
     int width, height;
     prvt->get_font_size(width, height);
 
@@ -1278,8 +1282,6 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
     xfig_data->create_gcs(get_device(AW_INFO_AREA)); 
 
     _at.set_xfig(xfig_data);
-
-    // AW_device *device = get_device(AW_INFO_AREA);
 
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
@@ -1297,12 +1299,14 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/){
  * Construct window-local id.
  * Prefixes @param id with AW_window::window_defaults_name + "/"
  */
-const char *AW_window::local_id(const char *id) const{
-    return GBS_global_string("%s/%s", window_defaults_name, id); // @@@ warning - very short lifetime, may cause undesired problems
-                                                                 // (motif version was valid until next call of local_id())
+const char *AW_window::local_id(const char *id) const {
+    static char *last_local_id = 0;
+    freeset(last_local_id, GBS_global_string_copy("%s/%s", get_window_id(), id));
+    return last_local_id;
 }
 
 void AW_window::sep______________() {
+    //! insert a separator into the currently open menu
     aw_return_if_fail(prvt->menus.size() > 0);
     
     GtkWidget *item = gtk_separator_menu_item_new();
@@ -1505,7 +1509,7 @@ void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
 
 
 void AW_window::set_window_size(int width, int height) {
-    // only used from GDE once (looks like a hack) -- delete?
+    // only used from GDE once (@@@ looks like a hack -- delete?)
     prvt->set_size(width, height); 
 }
 
@@ -1522,9 +1526,11 @@ void AW_window::shadow_width (int /*shadow_thickness*/) {
     // won't implement
 }
 
+#if defined(ARB_MOTIF)
 void AW_window::button_height(int height) {
     _at.height_of_buttons = height>1 ? height : 0; 
 }
+#endif
 
 // ----------------------------------------------------------------------
 // force-diff-sync 874687234237 (remove after merging back to trunk)
@@ -1667,8 +1673,11 @@ void AW_window::set_close_action(const char* act_name) {
     }
 }
 
+// ----------------------------------------------------------------------
+// force-diff-sync 2964732647236 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
 
-void AW_window::recalc_pos_atShow(AW_PosRecalc pr){
+void AW_window::recalc_pos_atShow(AW_PosRecalc pr) {
     recalc_pos_at_show = pr;
 }
 
@@ -1727,8 +1736,9 @@ AW_xfig* AW_window::get_xfig_data() {
     return xfig_data;
 }
 
-
-/********* window show/hide/delete ***********/
+// ----------------------------------------------------------------------
+// force-diff-sync 8294723642364 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
 
 void AW_window::allow_delete_window(bool allow_close) {
     gtk_window_set_deletable(prvt->window, allow_close);
@@ -1741,7 +1751,7 @@ void AW_window::allow_delete_window(bool allow_close) {
 // force-diff-sync 9268347253894 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-bool AW_window::is_shown() const{
+bool AW_window::is_shown() const {
     return gtk_widget_get_visible(GTK_WIDGET(prvt->window));
 }
 
@@ -1776,26 +1786,30 @@ void AW_window::show() {
     prvt->popup_cb.emit();
 }
 
-void AW_window::hide(){
+void AW_window::hide() {
     if (!is_shown()) return;
     
     gtk_widget_hide(GTK_WIDGET(prvt->window));
     get_root()->window_hide(this);  // decrement window counter
 }
 
-void AW_window::hide_or_notify(const char *error){
+void AW_window::hide_or_notify(const char *error) {
     if (error) aw_message(error);
     else hide();
 }
 
-// make_visible, pop window to front and give it the focus
 void AW_window::activate() {
+    //! make_visible, pop window to front and give it the focus
     show();
     gtk_window_present(prvt->window);
 }
 
-void AW_window::on_hide(AW_CB0 f) {
-    g_signal_connect_swapped(prvt->window, "hide", G_CALLBACK(f), this);
+// ----------------------------------------------------------------------
+// force-diff-sync 9287423467632 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
+void AW_window::on_hide(AW_CB0 call_on_hide) {
+    g_signal_connect_swapped(prvt->window, "hide", G_CALLBACK(call_on_hide), this);
 }
 
 void AW_window::set_hide_on_close(bool value) {
