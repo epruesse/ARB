@@ -260,13 +260,11 @@ enum AW_PosRecalc {
     AW_REPOS_TO_MOUSE_ONCE = 3,                     // like AW_REPOS_TO_MOUSE, but only done once!
 };
 
-typedef void (*aw_hide_cb)(AW_window *aww);
-
 class AW_window : virtual Noncopyable {
-    enum AW_SizeRecalc recalc_size_at_show;
-    enum AW_PosRecalc  recalc_pos_at_show;
-    aw_hide_cb         hide_cb;
+    AW_SizeRecalc recalc_size_at_show;
+    AW_PosRecalc  recalc_pos_at_show;
 
+    AW_CB0 hide_cb;
     bool expose_callback_added;
 
     AW_cb *focus_cb;
@@ -312,23 +310,20 @@ public:
     class AW_awar *window_local_awar(const char *localname, bool tmp = true);
     void           create_window_variables();
 
-    void recalc_pos_atShow(AW_PosRecalc pr) { recalc_pos_at_show = pr; }
-    AW_PosRecalc get_recalc_pos_atShow() const { return recalc_pos_at_show; }
-
-    void recalc_size_atShow(enum AW_SizeRecalc sr) {
-        if (sr == AW_RESIZE_ANY) {
-            sr = (recalc_size_at_show == AW_RESIZE_USER) ? AW_RESIZE_USER : AW_RESIZE_DEFAULT;
-        }
-        recalc_size_at_show = sr;
-    }
+    void         recalc_pos_atShow(AW_PosRecalc pr);
+    void         recalc_size_atShow(enum AW_SizeRecalc sr);
+    AW_PosRecalc get_recalc_pos_atShow() const;
 
     void run_focus_callback();
-    
+
     void allow_delete_window(bool allow_close);
-    void on_hide(aw_hide_cb call_on_hide) { hide_cb = call_on_hide; }
+    void on_hide(AW_CB0 call_on_hide);
 
     void show_modal();
+
+#if defined(ARB_MOTIF)
     void set_window_title_intern(char *title);
+#endif
 
     int calculate_string_width(int columns) const;
     int calculate_string_height(int columns, int offset) const;
@@ -343,36 +338,33 @@ public:
     void *_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic, const char *name_of_color);
     void  refresh_toggle_field(int toggle_field_number); 
     void  _set_activate_callback(void *widget);
-    void  unset_at_commands();
     void  increment_at_commands(int width, int height);
 
 
     AW_color_idx alloc_named_data_color(int colnum, char *colorname);
 
+    // special for EDIT4
     void _get_area_size(AW_area area, AW_screen_area *square);
-    void get_scrollarea_size(AW_screen_area *square);
     
     int label_widget(void *wgt, AW_label str, char *mnemonic=0, int width = 0, int alignment = 0);
 
     // ------------------------------
     //      The read only section
 
-    char *window_name;                              // window title
-    char *window_defaults_name;
+    char *window_name;          //! window title
+    char *window_defaults_name; //! window id
     bool  window_is_shown;
 
     int slider_pos_vertical;
     int slider_pos_horizontal;
     int main_drag_gc;
 
-    AW_screen_area *picture;      // the result of tell scrolled
-    // picture size
+    AW_screen_area *picture;      // the result of tell scrolled picture size
 
     // --------------------------------
     //      The real public section
 
     AW_root *get_root() { return root; }
-
     // ******************* Global layout functions **********************
 
     void show(); // show newly created window or unhide hidden window (aka closed window)
@@ -444,7 +436,7 @@ public:
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1, cd2)); }
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1)); }
 
-    void sep______________(); // insert a separator
+    void sep______________();
     void close_sub_menu();
 
     void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, const WindowCallback& cb);
@@ -464,15 +456,17 @@ public:
     AW_pos get_scrolled_picture_height() const;
     void reset_scrolled_picture_size();
 
+    void get_scrollarea_size(AW_screen_area *square);
+
     void calculate_scrollbars();
     void set_vertical_scrollbar_position(int position);
     void set_horizontal_scrollbar_position(int position);
 
     void set_vertical_change_callback(const WindowCallback& wcb);
     void set_horizontal_change_callback(const WindowCallback& wcb);
-
-    void set_horizontal_scrollbar_left_indent(int indent);
     void set_vertical_scrollbar_top_indent(int indent);
+    void set_horizontal_scrollbar_left_indent(int indent);
+
 
     void update_scrollbar_settings_from_awars(AW_orientation orientation);
 
@@ -512,9 +506,10 @@ public:
 
     void label_length(int length);   // Justifies all following labels
     void button_length(int length);   // Sets the width of all following buttons (in chars)
+#if defined(ARB_MOTIF)
     void button_height(int height);   // Sets the height of all following buttons (in lines)
+#endif
     int  get_button_length() const; // returns the current width of buttons
-    int  get_button_height() const; // returns the current height of buttons
     void highlight();           // Creates a frame around the button
     void auto_increment(int dx, int dy);   // enable automatic placement of buttons
     // dx is the horizontal distance between the left
@@ -522,11 +517,12 @@ public:
     void auto_space(int xspace, int yspace);   // enable automatic placement of buttons
     // xspace is the horizontal space between 2 buttons
 
-    void auto_off();            // disable auto_xxxxx
     void shadow_width (int shadow_thickness); // set the shadow_thickness of buttons
 
+#if defined(ARB_MOTIF)
     void TuneBackground(Widget w, int modStrength);
     void TuneOrSetBackground(Widget w, const char *color, int modStrength);
+#endif
 
     // *** local modifiers: ********
     void at(int x, int y);      // abs pos of a button (>10,10)
@@ -547,10 +543,10 @@ public:
 
     void dump_at_position(const char *debug_label) const; // for debugging (uses printf)
 
-    void at_attach(bool attach_x, bool attach_y); // attach to X, Y or both
     void at_set_to(bool attach_x, bool attach_y, int xoff, int yoff); // set "to:XY:id" manually
-    void at_unset_to();         // unset "to:id" manually
-    void at_set_min_size(int xmin, int ymin); // define minimum window size
+    void at_unset_to();                                               // unset "to:id" manually
+    void unset_at_commands();
+    void at_set_min_size(int xmin, int ymin);                         // define minimum window size
 
     void store_at_size_and_attach(AW_at_size *at_size);   // get size of at-element
     void restore_at_size_and_attach(const AW_at_size *at_size);   // set size of a at-element
