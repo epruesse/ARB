@@ -11,6 +11,7 @@
 
 #include "awt_modules.hxx"
 #include <aw_window.hxx>
+#include <aw_at.hxx>
 
 #define awt_assert(cond) arb_assert(cond)
 

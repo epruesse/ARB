@@ -294,6 +294,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_main.o: $(ARBHOME)/INCLUDE/attributes.h
+SEC_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

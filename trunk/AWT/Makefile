@@ -336,6 +336,7 @@ AWT_modules.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_modules.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_window.hxx

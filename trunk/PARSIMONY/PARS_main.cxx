@@ -16,16 +16,19 @@
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
 #include <aw_msg.hxx>
-
-#include <awt.hxx>
-#include <ColumnStat.hxx>
-#include <nds.h>
-#include <awt_sel_boxes.hxx>
-#include <awt_filter.hxx>
-#include <arb_progress.h>
-#include <arb_misc.h>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
+#include <aw_at.hxx>
+
+#include <awt.hxx>
+#include <awt_sel_boxes.hxx>
+#include <awt_filter.hxx>
+
+#include <ColumnStat.hxx>
+#include <nds.h>
+#include <arb_progress.h>
+#include <arb_misc.h>
+
 #include <gui_aliview.hxx>
 #include <ad_cb.h>
 
