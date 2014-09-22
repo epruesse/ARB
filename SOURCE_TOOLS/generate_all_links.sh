@@ -330,6 +330,7 @@ symlink_file ../UNIT_TESTER/test_unit.h INCLUDE/test_unit.h &&
 symlink_file ../UNIT_TESTER/test_global.h INCLUDE/test_global.h &&
 symlink_file ../UNIT_TESTER/test_helpers.h INCLUDE/test_helpers.h &&
 symlink_file ../WINDOW/aw_advice.hxx INCLUDE/aw_advice.hxx &&
+symlink_file ../WINDOW/aw_at.hxx INCLUDE/aw_at.hxx &&
 symlink_file ../WINDOW/aw_awar.hxx INCLUDE/aw_awar.hxx &&
 symlink_file ../WINDOW/aw_awar_defs.hxx INCLUDE/aw_awar_defs.hxx &&
 symlink_file ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&

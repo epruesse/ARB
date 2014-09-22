@@ -58,58 +58,6 @@ class AW_at;
 
 enum AW_orientation { AW_HORIZONTAL, AW_VERTICAL };
 
-class AW_at_size {
-    int  to_offset_x;                               // here we use offsets (not positions like in AW_at)
-    int  to_offset_y;
-    bool to_position_exists;
-
-    bool attach_x;           // attach right side to right form
-    bool attach_y;
-    bool attach_lx;          // attach left side to right form
-    bool attach_ly;
-    bool attach_any;
-
-public:
-    AW_at_size()
-        : to_offset_x(0),
-          to_offset_y(0),
-          to_position_exists(false),
-          attach_x(false), 
-          attach_y(false), 
-          attach_lx(false), 
-          attach_ly(false), 
-          attach_any(false) 
-    {}
-
-    void store(const AW_at *at);
-    void restore(AW_at *at) const;
-};
-
-class AW_at_maxsize {
-    int maxx;
-    int maxy;
-
-public:
-    AW_at_maxsize()
-        : maxx(0),
-          maxy(0)
-    {}
-    
-    void store(const AW_at *at);
-    void restore(AW_at *at) const;
-};
-
-class AW_at_auto {
-    enum { INC, SPACE, OFF } type;
-    int x, y;
-    int xfn, xfnb, yfnb, bhob;
-public:
-    AW_at_auto() : type(OFF) {}
-
-    void store(const AW_at *at);
-    void restore(AW_at *at) const;
-};
-
 typedef const char *AW_label;       // label for buttons menus etc
 // "fsdf" simple label  // no '/' symbol !!!
 // "awarname/asdf"  // awar name (any '/' in string)
@@ -243,6 +191,7 @@ typedef char *AW_pixmap;
 class  AW_window_Motif;
 class  AW_selection_list_entry;
 class  AW_selection_list;
+class  AW_at_size;
 struct AW_option_menu_struct;
 struct aw_toggle_data;
 
