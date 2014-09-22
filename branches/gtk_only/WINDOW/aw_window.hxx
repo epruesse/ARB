@@ -49,9 +49,9 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
 class AW_window;
 class AW_xfig;
 class AW_device;
-class AW_window_gtk;
 struct AW_screen_area;
 struct GB_HASH;
+class AW_window_gtk;
 
 // --------------------------------------------------------------------------------
 
@@ -130,6 +130,7 @@ class AW_window : virtual Noncopyable {
     void all_menus_created() const;
 
     AW_awar *awar_posx, *awar_posy, *awar_width, *awar_height;
+
 protected:
     AW_window_gtk* prvt; /*< Contains all gtk dependent attributes */
   
@@ -157,19 +158,22 @@ protected:
 
 public:
 
-    // ************ This is not the public section *************
+    // ---------------------------------------- [start read-only section] @@@ should go private
 
+
+    AW_xfig *xfig_data; // @@@ private?
+
+private:
     //FIXME @@@ move aw_at into pimpl
-// private: //FIXME @@@ make _at private. Right now some global functions want to access it. Remove those global functions.
     AW_at _at; /** < Defines the next position at which something will be inserted into the window.  */
-// public:
-    const AW_at& get_at() const { return _at; }
-    AW_at& get_at() { return _at; }
+public:
+    // ---------------------------------------- [end read-only section]
+
+    const AW_at& get_at() const { return _at; } // @@@ elim
+    AW_at& get_at() { return _at; } // @@@ elim
 
     AW_window();
     virtual ~AW_window();
-
-    AW_xfig  *xfig_data;
 
     const char    *window_local_awarname(const char *localname, bool tmp = true);
     class AW_awar *window_local_awar(const char *localname, bool tmp = true);
@@ -182,12 +186,11 @@ public:
     void allow_delete_window(bool allow_close);
     void on_hide(AW_CB0 call_on_hide);
 
-    /**
-     * @return The current xfig data or NULL.
-     */
-    AW_xfig* get_xfig_data();
+    AW_xfig* get_xfig_data(); //! @return The current xfig data or NULL.
 
 #if defined(ARB_MOTIF)
+    void run_focus_callback();
+    void show_modal();
     void set_window_title_intern(char *title);
 #endif
 
