@@ -52,7 +52,6 @@ db_query.o: $(ARBHOME)/INCLUDE/arbdbt.h
 db_query.o: $(ARBHOME)/INCLUDE/arbtools.h
 db_query.o: $(ARBHOME)/INCLUDE/attributes.h
 db_query.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
-db_query.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx

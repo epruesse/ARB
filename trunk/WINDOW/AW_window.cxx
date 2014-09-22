@@ -114,13 +114,6 @@ void AW_window::label(const char *_label) {
     freedup(_at->label_for_inputfield, _label);
 }
 
-void AW_window::restore_at_size_and_attach(const AW_at_size *at_size) {
-    at_size->restore(get_at());
-}
-void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
-    at_size->store(get_at());
-}
-
 // ----------------------------------------------------------------------
 // force-diff-sync 1927391236 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
