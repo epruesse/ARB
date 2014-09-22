@@ -52,7 +52,6 @@ dbserver.o: $(ARBHOME)/INCLUDE/attributes.h
 dbserver.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-dbserver.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -115,7 +114,6 @@ macro_gui.o: $(ARBHOME)/INCLUDE/attributes.h
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-macro_gui.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx

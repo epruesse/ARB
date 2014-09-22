@@ -142,7 +142,6 @@ MP_main.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MP_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
@@ -256,7 +255,6 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MP_noclass.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -366,7 +364,6 @@ MP_probe.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MP_probe.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MP_probe.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -598,7 +595,6 @@ MP_Window.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MP_Window.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_base.hxx

@@ -43,7 +43,6 @@ depend.init:
 AW_action.o: aw_action.hxx
 AW_action.o: aw_area_management.hxx
 AW_action.o: aw_assert.hxx
-AW_action.o: aw_at.hxx
 AW_action.o: aw_base.hxx
 AW_action.o: aw_cb_struct.hxx
 AW_action.o: aw_clipable.hxx
@@ -98,7 +97,6 @@ AW_advice.o: aw_action.hxx
 AW_advice.o: aw_advice.hxx
 AW_advice.o: aw_area_management.hxx
 AW_advice.o: aw_assert.hxx
-AW_advice.o: aw_at.hxx
 AW_advice.o: aw_awar.hxx
 AW_advice.o: aw_base.hxx
 AW_advice.o: aw_cb_struct.hxx
@@ -154,7 +152,6 @@ AW_advice.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_area_management.o: aw_action.hxx
 AW_area_management.o: aw_area_management.hxx
 AW_area_management.o: aw_assert.hxx
-AW_area_management.o: aw_at.hxx
 AW_area_management.o: aw_base.hxx
 AW_area_management.o: aw_cb_struct.hxx
 AW_area_management.o: aw_clipable.hxx
@@ -259,7 +256,6 @@ AW_at.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_awar.o: aw_action.hxx
 AW_awar.o: aw_area_management.hxx
 AW_awar.o: aw_assert.hxx
-AW_awar.o: aw_at.hxx
 AW_awar.o: aw_awar.hxx
 AW_awar.o: aw_awar_impl.hxx
 AW_awar.o: aw_base.hxx
@@ -426,7 +422,6 @@ AW_common.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_common_gtk.o: aw_action.hxx
 AW_common_gtk.o: aw_area_management.hxx
 AW_common_gtk.o: aw_assert.hxx
-AW_common_gtk.o: aw_at.hxx
 AW_common_gtk.o: aw_base.hxx
 AW_common_gtk.o: aw_cb_struct.hxx
 AW_common_gtk.o: aw_clipable.hxx
@@ -651,7 +646,6 @@ AW_device_size.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_dialog.o: aw_action.hxx
 AW_dialog.o: aw_area_management.hxx
 AW_dialog.o: aw_assert.hxx
-AW_dialog.o: aw_at.hxx
 AW_dialog.o: aw_awar.hxx
 AW_dialog.o: aw_base.hxx
 AW_dialog.o: aw_cb_struct.hxx
@@ -721,7 +715,6 @@ AW_drawing_area.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_edit.o: aw_action.hxx
 AW_edit.o: aw_area_management.hxx
 AW_edit.o: aw_assert.hxx
-AW_edit.o: aw_at.hxx
 AW_edit.o: aw_base.hxx
 AW_edit.o: aw_cb_struct.hxx
 AW_edit.o: aw_clipable.hxx
@@ -778,7 +771,6 @@ AW_edit.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_element.o: aw_action.hxx
 AW_element.o: aw_area_management.hxx
 AW_element.o: aw_assert.hxx
-AW_element.o: aw_at.hxx
 AW_element.o: aw_base.hxx
 AW_element.o: aw_cb_struct.hxx
 AW_element.o: aw_clipable.hxx
@@ -827,7 +819,6 @@ AW_element.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_file.o: aw_action.hxx
 AW_file.o: aw_area_management.hxx
 AW_file.o: aw_assert.hxx
-AW_file.o: aw_at.hxx
 AW_file.o: aw_awar.hxx
 AW_file.o: aw_base.hxx
 AW_file.o: aw_cb_struct.hxx
@@ -926,7 +917,6 @@ AW_font_group.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_global_awars.o: aw_action.hxx
 AW_global_awars.o: aw_area_management.hxx
 AW_global_awars.o: aw_assert.hxx
-AW_global_awars.o: aw_at.hxx
 AW_global_awars.o: aw_awar.hxx
 AW_global_awars.o: aw_awar_defs.hxx
 AW_global_awars.o: aw_awars.hxx
@@ -987,7 +977,6 @@ AW_gtk_closures.o: aw_gtk_closures.hxx
 AW_help.o: aw_action.hxx
 AW_help.o: aw_area_management.hxx
 AW_help.o: aw_assert.hxx
-AW_help.o: aw_at.hxx
 AW_help.o: aw_awar.hxx
 AW_help.o: aw_base.hxx
 AW_help.o: aw_cb_struct.hxx
@@ -1049,7 +1038,6 @@ AW_modal.o: aw_action.hxx
 AW_modal.o: aw_advice.hxx
 AW_modal.o: aw_area_management.hxx
 AW_modal.o: aw_assert.hxx
-AW_modal.o: aw_at.hxx
 AW_modal.o: aw_awar.hxx
 AW_modal.o: aw_base.hxx
 AW_modal.o: aw_cb_struct.hxx
@@ -1127,7 +1115,6 @@ AW_preset.o: aw_action.hxx
 AW_preset.o: aw_advice.hxx
 AW_preset.o: aw_area_management.hxx
 AW_preset.o: aw_assert.hxx
-AW_preset.o: aw_at.hxx
 AW_preset.o: aw_awar.hxx
 AW_preset.o: aw_base.hxx
 AW_preset.o: aw_cb_struct.hxx
@@ -1222,7 +1209,6 @@ AW_rgb.o: aw_rgb.hxx
 AW_root.o: aw_action.hxx
 AW_root.o: aw_area_management.hxx
 AW_root.o: aw_assert.hxx
-AW_root.o: aw_at.hxx
 AW_root.o: aw_awar.hxx
 AW_root.o: aw_awar_defs.hxx
 AW_root.o: aw_awar_impl.hxx
@@ -1289,7 +1275,6 @@ AW_root.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_root_debug.o: aw_action.hxx
 AW_root_debug.o: aw_area_management.hxx
 AW_root_debug.o: aw_assert.hxx
-AW_root_debug.o: aw_at.hxx
 AW_root_debug.o: aw_base.hxx
 AW_root_debug.o: aw_cb_struct.hxx
 AW_root_debug.o: aw_clipable.hxx
@@ -1378,7 +1363,6 @@ AW_scalar.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_select.o: aw_action.hxx
 AW_select.o: aw_area_management.hxx
 AW_select.o: aw_assert.hxx
-AW_select.o: aw_at.hxx
 AW_select.o: aw_awar.hxx
 AW_select.o: aw_base.hxx
 AW_select.o: aw_cb_struct.hxx
@@ -1468,7 +1452,6 @@ AW_signal.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_status.o: aw_action.hxx
 AW_status.o: aw_area_management.hxx
 AW_status.o: aw_assert.hxx
-AW_status.o: aw_at.hxx
 AW_status.o: aw_awar.hxx
 AW_status.o: aw_awar_defs.hxx
 AW_status.o: aw_awars.hxx
@@ -1618,7 +1601,6 @@ AW_window.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_window_gtk.o: aw_action.hxx
 AW_window_gtk.o: aw_area_management.hxx
 AW_window_gtk.o: aw_assert.hxx
-AW_window_gtk.o: aw_at.hxx
 AW_window_gtk.o: aw_base.hxx
 AW_window_gtk.o: aw_cb_struct.hxx
 AW_window_gtk.o: aw_clipable.hxx
@@ -1669,7 +1651,6 @@ AW_window_gtk.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_window_menu_modes.o: aw_action.hxx
 AW_window_menu_modes.o: aw_area_management.hxx
 AW_window_menu_modes.o: aw_assert.hxx
-AW_window_menu_modes.o: aw_at.hxx
 AW_window_menu_modes.o: aw_awar.hxx
 AW_window_menu_modes.o: aw_base.hxx
 AW_window_menu_modes.o: aw_cb_struct.hxx
@@ -1727,7 +1708,6 @@ AW_window_menu_modes.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_window_simple.o: aw_action.hxx
 AW_window_simple.o: aw_area_management.hxx
 AW_window_simple.o: aw_assert.hxx
-AW_window_simple.o: aw_at.hxx
 AW_window_simple.o: aw_base.hxx
 AW_window_simple.o: aw_cb_struct.hxx
 AW_window_simple.o: aw_clipable.hxx
@@ -1778,7 +1758,6 @@ AW_window_simple.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_window_simple_menu.o: aw_action.hxx
 AW_window_simple_menu.o: aw_area_management.hxx
 AW_window_simple_menu.o: aw_assert.hxx
-AW_window_simple_menu.o: aw_at.hxx
 AW_window_simple_menu.o: aw_base.hxx
 AW_window_simple_menu.o: aw_cb_struct.hxx
 AW_window_simple_menu.o: aw_clipable.hxx

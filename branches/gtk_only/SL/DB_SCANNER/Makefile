@@ -52,7 +52,6 @@ db_scanner.o: $(ARBHOME)/INCLUDE/attributes.h
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-db_scanner.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx

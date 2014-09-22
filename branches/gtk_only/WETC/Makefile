@@ -44,7 +44,6 @@ WETC_main.o: $(ARBHOME)/INCLUDE/attributes.h
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-WETC_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx

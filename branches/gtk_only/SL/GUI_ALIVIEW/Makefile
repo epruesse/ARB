@@ -61,7 +61,6 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -126,7 +125,6 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/attributes.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ColumnStat.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx

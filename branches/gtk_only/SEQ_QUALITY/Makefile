@@ -73,7 +73,6 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-SQ_functions.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -144,7 +143,6 @@ SQ_main.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-SQ_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

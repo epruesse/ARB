@@ -52,7 +52,6 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AP_matrix.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx

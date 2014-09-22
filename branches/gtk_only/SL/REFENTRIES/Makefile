@@ -48,7 +48,6 @@ refentries.o: $(ARBHOME)/INCLUDE/attributes.h
 refentries.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-refentries.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

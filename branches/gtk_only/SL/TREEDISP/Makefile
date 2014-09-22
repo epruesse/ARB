@@ -64,7 +64,6 @@ irstree_display.o: $(ARBHOME)/INCLUDE/attributes.h
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-irstree_display.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -130,7 +129,6 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -201,7 +199,6 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/attributes.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

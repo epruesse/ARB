@@ -53,7 +53,6 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWTI_export.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -124,7 +123,6 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWTI_import.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx

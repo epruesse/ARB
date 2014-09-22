@@ -165,7 +165,6 @@ primer_design.o: $(ARBHOME)/INCLUDE/attributes.h
 primer_design.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-primer_design.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

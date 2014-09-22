@@ -58,7 +58,6 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -139,7 +138,6 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWT_canio.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -199,7 +197,6 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -257,7 +254,6 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -326,7 +322,6 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -423,7 +418,6 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -482,7 +476,6 @@ AWT_map_key.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -598,7 +591,6 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -666,7 +658,6 @@ AWT_seq_colors.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -763,7 +754,6 @@ AWT_www.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWT_www.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

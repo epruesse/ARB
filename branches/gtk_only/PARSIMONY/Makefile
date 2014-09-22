@@ -52,7 +52,6 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AP_buffer.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -119,7 +118,6 @@ AP_main.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AP_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -187,7 +185,6 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -255,7 +252,6 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -313,7 +309,6 @@ PARS_debug.o: $(ARBHOME)/INCLUDE/attributes.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-PARS_debug.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -383,7 +378,6 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/attributes.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -446,7 +440,6 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/attributes.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx

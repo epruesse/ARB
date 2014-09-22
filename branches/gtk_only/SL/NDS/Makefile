@@ -48,7 +48,6 @@ nds.o: $(ARBHOME)/INCLUDE/attributes.h
 nds.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-nds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx

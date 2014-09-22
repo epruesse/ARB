@@ -47,7 +47,6 @@ AdminGui.o: $(ARBHOME)/INCLUDE/attributes.h
 AdminGui.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AdminGui.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AdminGui.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AdminGui.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AdminGui.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AdminGui.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AdminGui.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -106,7 +105,6 @@ AliAdmin.o: $(ARBHOME)/INCLUDE/attributes.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AliAdmin.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx

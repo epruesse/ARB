@@ -56,7 +56,6 @@ ad_ext.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ad_ext.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -129,7 +128,6 @@ ad_spec.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ad_spec.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -202,7 +200,6 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ad_transpro.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -278,7 +275,6 @@ ad_trees.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ad_trees.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -359,7 +355,6 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AP_consensus.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -420,7 +415,6 @@ AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -485,7 +479,6 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -548,7 +541,6 @@ ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/attributes.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -618,7 +610,6 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -684,7 +675,6 @@ NT_cb.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-NT_cb.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -751,7 +741,6 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -858,7 +847,6 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-NT_edconf.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -935,7 +923,6 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -1032,7 +1019,6 @@ NT_import.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_import.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-NT_import.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -1099,7 +1085,6 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -1165,7 +1150,6 @@ NT_join.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_join.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-NT_join.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -1235,7 +1219,6 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -1309,7 +1292,6 @@ NT_sort.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-NT_sort.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -1374,7 +1356,6 @@ NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -1486,7 +1467,6 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-NT_validManual.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
