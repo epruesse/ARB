@@ -154,13 +154,17 @@ protected:
      */
     void init_window(const char *window_id, const char* window_name, 
                      int width, int height, bool resizable);
-    
+
 public:
 
     // ************ This is not the public section *************
-    //FIXME move aw_at into pimpl
-    //FIXME make _at private. Right now some global functions want to access it. Remove those global functions.
+
+    //FIXME @@@ move aw_at into pimpl
+// private: //FIXME @@@ make _at private. Right now some global functions want to access it. Remove those global functions.
     AW_at _at; /** < Defines the next position at which something will be inserted into the window.  */
+// public:
+    const AW_at& get_at() const { return _at; }
+    AW_at& get_at() { return _at; }
 
     AW_window();
     virtual ~AW_window();
