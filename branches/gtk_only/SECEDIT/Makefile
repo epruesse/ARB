@@ -400,7 +400,6 @@ SEC_main.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-SEC_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

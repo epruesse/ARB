@@ -526,7 +526,6 @@ AWT_modules.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AWT_modules.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx

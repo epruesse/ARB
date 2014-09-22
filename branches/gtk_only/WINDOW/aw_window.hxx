@@ -105,9 +105,24 @@ typedef char *AW_pixmap;
 class  AW_window_Motif;
 class  AW_selection_list_entry;
 class  AW_selection_list;
-class  AW_at_size;
 typedef AW_selection_list AW_option_menu_struct; //for compatibility reasons with old arb code
 struct aw_toggle_data;
+
+enum AW_at_storage_type {
+    AW_AT_SIZE_AND_ATTACH,
+    AW_AT_AUTO,
+    AW_AT_MAXSIZE,
+};
+struct AW_at_storage {
+    //! store/restore some properties from/to AW_at
+    virtual ~AW_at_storage() {}
+
+    // will be called via AW_window
+    virtual void store(const AW_at& at)   = 0;
+    virtual void restore(AW_at& at) const = 0;
+
+    static AW_at_storage *make(AW_window *aww, AW_at_storage_type type); // factory
+};
 
 enum AW_SizeRecalc {
     AW_KEEP_SIZE      = 0,                          // do not resize
@@ -163,9 +178,6 @@ protected:
                      int width, int height, bool resizable);
 
 public:
-
-    const AW_at& get_at() const { return *_at; } // @@@ elim
-    AW_at& get_at() { return *_at; } // @@@ elim
 
     AW_window();
     virtual ~AW_window();
@@ -400,8 +412,8 @@ public:
     void unset_at_commands();
     void at_set_min_size(int xmin, int ymin);                         // define minimum window size
 
-    void store_at_size_and_attach(AW_at_size *at_size);   // get size of at-element
-    void restore_at_size_and_attach(const AW_at_size *at_size);   // set size of a at-element
+    void store_at_to(AW_at_storage& storage) { storage.store(*_at); }
+    void restore_at_from(const AW_at_storage& stored) { stored.restore(*_at); }
 
     void sens_mask(AW_active mask);   // Set the sensitivity mask used for following widgets (Note: reset by next at()-command)
     void help_text(const char *id);   // Set the help text of a button

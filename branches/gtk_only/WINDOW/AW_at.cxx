@@ -334,6 +334,33 @@ int AW_at::get_at_yposition() const {
 // -------------------
 //      AW_at_size
 
+class AW_at_size : public AW_at_storage {
+    int  to_offset_x;                               // here we use offsets (not positions like in AW_at)
+    int  to_offset_y;
+    bool to_position_exists;
+
+    bool attach_x;           // attach right side to right form
+    bool attach_y;
+    bool attach_lx;          // attach left side to right form
+    bool attach_ly;
+    bool attach_any;
+
+public:
+    AW_at_size()
+        : to_offset_x(0),
+          to_offset_y(0),
+          to_position_exists(false),
+          attach_x(false),
+          attach_y(false),
+          attach_lx(false),
+          attach_ly(false),
+          attach_any(false)
+    {}
+
+    void store(const AW_at& at) OVERRIDE;
+    void restore(AW_at& at) const OVERRIDE;
+};
+
 void AW_at_size::store(const AW_at& at) {
     to_position_exists = at.to_position_exists;
     if (to_position_exists) {
@@ -363,6 +390,20 @@ void AW_at_size::restore(AW_at& at) const {
 // -------------------
 //      AW_at_maxsize
 
+class AW_at_maxsize : public AW_at_storage {
+    int maxx;
+    int maxy;
+
+public:
+    AW_at_maxsize()
+        : maxx(0),
+          maxy(0)
+    {}
+
+    void store(const AW_at &at) OVERRIDE;
+    void restore(AW_at &at) const OVERRIDE;
+};
+
 void AW_at_maxsize::store(const AW_at &at) {
     maxx = at.max_x_size;
     maxy = at.max_y_size;
@@ -375,6 +416,17 @@ void AW_at_maxsize::restore(AW_at &at) const {
 
 // -------------------
 //      AW_at_auto
+
+class AW_at_auto : public AW_at_storage {
+    enum { INC, SPACE, OFF } type;
+    int x, y;
+    int xfn, xfnb, yfnb, bhob;
+public:
+    AW_at_auto() : type(OFF), x(0), y(0), xfn(0), xfnb(0), yfnb(0), bhob(0) {}
+
+    void store(const AW_at &at) OVERRIDE;
+    void restore(AW_at &at) const OVERRIDE;
+};
 
 void AW_at_auto::store(const AW_at &at) {
     if (at.do_auto_increment) {
@@ -414,6 +466,20 @@ void AW_at_auto::restore(AW_at &at) const {
     at.x_for_next_button         = xfnb;
     at.y_for_next_button         = yfnb;
     at.biggest_height_of_buttons = bhob;
+}
+
+// -------------------------------
+//      AW_at_storage factory
+
+AW_at_storage *AW_at_storage::make(AW_window *aww, AW_at_storage_type type) {
+    AW_at_storage *s = NULL;
+    switch (type) {
+        case AW_AT_SIZE_AND_ATTACH: s = new AW_at_size(); break;
+        case AW_AT_AUTO:            s = new AW_at_auto(); break;
+        case AW_AT_MAXSIZE:         s = new AW_at_maxsize(); break;
+    }
+    aww->store_at_to(*s);
+    return s;
 }
 
 // -------------------------------------------------------------------------

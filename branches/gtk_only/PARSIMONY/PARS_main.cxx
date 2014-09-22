@@ -18,7 +18,6 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
-#include <aw_at.hxx>
 
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
@@ -1326,12 +1325,12 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     awm->at(db_treex, awm->get_at_yposition());
 
     {
-        AW_at_maxsize maxSize; // store size (so AWAR_FOOTER does not affect min. window size)
-        maxSize.store(awm->get_at());
+        SmartPtr<AW_at_storage> maxSize(AW_at_storage::make(awm, AW_AT_MAXSIZE));
+
         awm->button_length(AWAR_FOOTER_MAX_LEN);
         awm->create_button(0, AWAR_FOOTER);
         awm->at_newline();
-        maxSize.restore(awm->get_at());
+        awm->restore_at_from(*maxSize);
     }
 
     awm->get_at_position(&db_treex, &db_treey);

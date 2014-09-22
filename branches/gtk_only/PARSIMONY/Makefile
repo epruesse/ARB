@@ -508,7 +508,6 @@ PARS_main.o: $(ARBHOME)/INCLUDE/attributes.h
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-PARS_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
