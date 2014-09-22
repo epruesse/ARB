@@ -1,0 +1,35 @@
+menu:Print
+
+item:Validate taxonomy (SATIVA)
+itemmethod: (mkdir -p ~/.arb_tmp/$$; cd ~/.arb_tmp/$$ ; arb_convert_aln --arb-notify -GenBank TmpInputFile -phylip sativa_in.phy; ${ARB_XCMD} bash -x -c @@LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; arb_sativa.pl $MARKEDONLY $MARKMIS $TAXFIELD $SPECIESFIELD; arb_wait@@) & 
+seqtype:*
+itemmeta:v
+itemhelp:raxml.help
+
+#arb_export_tree $TREE > reftree.tre
+
+in:TmpInputFile
+informat:genbank
+insave:
+
+arg:MARKEDONLY
+arglabel:Process marked species only ?
+argtype:choice_menu
+argchoice:Yes:--marked-only
+argchoice:No:
+
+arg:MARKMIS
+arglabel:Mark found misplaced species ?
+argtype:choice_menu
+argchoice:Yes:--mark-misplaced
+argchoice:No:
+
+arg:TAXFIELD
+arglabel:Taxonomy path field
+argtype:text
+argtext:tax_ltp
+
+arg:SPECIESFIELD
+arglabel:Species name field
+argtype:text
+argtext:fullname_ltp
