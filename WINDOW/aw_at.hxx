@@ -14,7 +14,7 @@ class AW_xfig;
 // Note: Values below just need to be bigger than any actually created window, should probably be smaller than 32768
 // and can be eliminated when we (completely) switch to ARB_GTK
 #define WIDER_THAN_SCREEN  10000
-#define HIGHER_THAN_SCREEN 6000
+#define HIGHER_THAN_SCREEN  6000
 
 #endif
 
@@ -23,7 +23,6 @@ class AW_xfig;
  * in a window.
  */
 class AW_at {
-private:
     AW_window* window; /** < The window this cursor belongs to */
     AW_xfig* xfig_data;
 public:
@@ -101,7 +100,6 @@ public:
 
 
 class AW_at_size {
-protected:
     int  to_offset_x;                               // here we use offsets (not positions like in AW_at)
     int  to_offset_y;
     bool to_position_exists;
@@ -117,11 +115,11 @@ public:
         : to_offset_x(0),
           to_offset_y(0),
           to_position_exists(false),
-          attach_x(false), 
-          attach_y(false), 
-          attach_lx(false), 
-          attach_ly(false), 
-          attach_any(false) 
+          attach_x(false),
+          attach_y(false),
+          attach_lx(false),
+          attach_ly(false),
+          attach_any(false)
     {}
 
     void store(const AW_at& at);

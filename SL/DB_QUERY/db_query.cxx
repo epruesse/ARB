@@ -22,6 +22,7 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
+#include <aw_at.hxx>
 
 #include <arb_strbuf.h>
 #include <arb_sort.h>
