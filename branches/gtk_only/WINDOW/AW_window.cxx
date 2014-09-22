@@ -99,35 +99,35 @@ void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) { // @
 
 
 // proxy functions handing down stuff to AW_at
-void AW_window::at(int x, int y){ _at.at(x,y); }
-void AW_window::at_x(int x) { _at.at_x(x); }
-void AW_window::at_y(int y){ _at.at_y(y); }
-void AW_window::at_shift(int x, int y){ _at.at_shift(x,y); }
-void AW_window::at_newline(){ _at.at_newline(); }
-bool AW_window::at_ifdef(const  char *id){  return _at.at_ifdef(id); }
+void AW_window::at(int x, int y){ _at->at(x,y); }
+void AW_window::at_x(int x) { _at->at_x(x); }
+void AW_window::at_y(int y){ _at->at_y(y); }
+void AW_window::at_shift(int x, int y){ _at->at_shift(x,y); }
+void AW_window::at_newline(){ _at->at_newline(); }
+bool AW_window::at_ifdef(const  char *id){  return _at->at_ifdef(id); }
 void AW_window::at_set_to(bool attach_x, bool attach_y, int xoff, int yoff) {
-    _at.at_set_to(attach_x, attach_y, xoff, yoff);
+    _at->at_set_to(attach_x, attach_y, xoff, yoff);
 }
-void AW_window::at_unset_to() { _at.at_unset_to(); }
+void AW_window::at_unset_to() { _at->at_unset_to(); }
 void AW_window::unset_at_commands() { 
-    _at.unset_at_commands();     
+    _at->unset_at_commands();
 }
 
-void AW_window::at_set_min_size(int xmin, int ymin) { _at.at_set_min_size(xmin, ymin); }
-void AW_window::auto_space(int x, int y){ _at.auto_space(x,y); }
-void AW_window::label_length(int length){ _at.label_length(length); }
+void AW_window::at_set_min_size(int xmin, int ymin) { _at->at_set_min_size(xmin, ymin); }
+void AW_window::auto_space(int x, int y){ _at->auto_space(x,y); }
+void AW_window::label_length(int length){ _at->label_length(length); }
 
 void AW_window::label(const char *_label) {
-    freedup(_at.label_for_inputfield, _label);
+    freedup(_at->label_for_inputfield, _label);
 }
 
-void AW_window::button_length(int length){ _at.button_length(length); }
-int AW_window::get_button_length() const { return _at.get_button_length(); }
-void AW_window::get_at_position(int *x, int *y) const { _at.get_at_position(x,y); }
-int AW_window::get_at_xposition() const { return _at.get_at_xposition(); }
-int AW_window::get_at_yposition() const { return _at.get_at_yposition(); }
-void AW_window::at(const char *at_id) { _at.at(at_id); }
-void AW_window::auto_increment(int dx, int dy) { _at.auto_increment(dx, dy); }
+void AW_window::button_length(int length){ _at->button_length(length); }
+int AW_window::get_button_length() const { return _at->get_button_length(); }
+void AW_window::get_at_position(int *x, int *y) const { _at->get_at_position(x,y); }
+int AW_window::get_at_xposition() const { return _at->get_at_xposition(); }
+int AW_window::get_at_yposition() const { return _at->get_at_yposition(); }
+void AW_window::at(const char *at_id) { _at->at(at_id); }
+void AW_window::auto_increment(int dx, int dy) { _at->auto_increment(dx, dy); }
 
 void AW_window::restore_at_size_and_attach(const AW_at_size *at_size) {
     at_size->restore(get_at());
@@ -141,8 +141,8 @@ void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
 // ----------------------------------------------------------------------
 
 void AW_window::get_window_size(int& width, int& height){
-    width  = _at.max_x_size;
-    height = _at.max_y_size;
+    width  = _at->max_x_size;
+    height = _at->max_y_size;
 }
 
 void AW_window::help_text(const char *id) {
@@ -152,7 +152,7 @@ void AW_window::help_text(const char *id) {
 
 void AW_window::highlight() {
     //! make next created button default button
-    _at.highlight = true;
+    _at->highlight = true;
 }
 
 void AW_window::sens_mask(AW_active mask) {
@@ -283,13 +283,13 @@ void AW_window::put_with_label(GtkWidget *widget, GtkAlignment* label_alignment)
     #define SPACE_BELOW 5
     GtkWidget *hbox = 0, *wlabel = 0;
     // create label from label text
-    if (_at.label_for_inputfield) {
-        wlabel = make_label(_at.label_for_inputfield, _at.length_of_label_for_inputfield);
+    if (_at->label_for_inputfield) {
+        wlabel = make_label(_at->label_for_inputfield, _at->length_of_label_for_inputfield);
     }
     
     // (having/not having the hbox changes appearance!)
     hbox = gtk_hbox_new(false,0);
-    if (_at.at_id) gtk_widget_set_name(hbox, _at.at_id);
+    if (_at->at_id) gtk_widget_set_name(hbox, _at->at_id);
 
     if (wlabel) {
         // pack label into alignment and alignment into hbox
@@ -303,19 +303,19 @@ void AW_window::put_with_label(GtkWidget *widget, GtkAlignment* label_alignment)
     gtk_widget_size_request(GTK_WIDGET(hbox), &hbox_req);
 
     // if size given by xfig, scale hbox
-    if (_at.to_position_exists) { 
-        aw_warn_if_fail(_at.to_position_x >_at.x_for_next_button);               
-        aw_warn_if_fail(_at.to_position_y >_at.y_for_next_button);         
-        hbox_req.width = std::max(hbox_req.width, _at.to_position_x - _at.x_for_next_button);
-        hbox_req.height = std::max(hbox_req.height, _at.to_position_y - _at.y_for_next_button);
+    if (_at->to_position_exists) {
+        aw_warn_if_fail(_at->to_position_x >_at->x_for_next_button);
+        aw_warn_if_fail(_at->to_position_y >_at->y_for_next_button);
+        hbox_req.width = std::max(hbox_req.width, _at->to_position_x - _at->x_for_next_button);
+        hbox_req.height = std::max(hbox_req.height, _at->to_position_y - _at->y_for_next_button);
         
         gtk_widget_set_size_request(hbox, hbox_req.width, hbox_req.height);
     }
 
 
-    aw_drawing_area_put(prvt->fixed_size_area, hbox, &_at);
+    aw_drawing_area_put(prvt->fixed_size_area, hbox, _at);
 
-    _at.increment_at_commands(hbox_req.width * (2-_at.correct_for_at_center) / 2. + SPACE_BEHIND, 
+    _at->increment_at_commands(hbox_req.width * (2-_at->correct_for_at_center) / 2. + SPACE_BEHIND,
                                   hbox_req.height + SPACE_BELOW);
     unset_at_commands();
     prvt->last_widget = hbox;
@@ -359,7 +359,7 @@ bool AW_window::close_window_handler(GtkWidget* wgt, GdkEvent*, gpointer data) {
 void AW_window::create_label(const char* button_text, bool highlight_) {
     aw_return_if_fail(button_text != NULL);
 
-    GtkWidget *labelw = make_label(button_text, _at.length_of_buttons);
+    GtkWidget *labelw = make_label(button_text, _at->length_of_buttons);
 
     if (highlight_) {
         GtkWidget *frame = gtk_frame_new(NULL);
@@ -385,7 +385,7 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
     }
 
     GtkWidget *button_label, *button;
-    button_label = make_label(button_text, _at.length_of_buttons, mnemonic);
+    button_label = make_label(button_text, _at->length_of_buttons, mnemonic);
 
     AW_action *act = action_register(macro_name, true);
 
@@ -396,7 +396,7 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
        
     act->bind(button, "clicked");
 
-    bool do_highlight = _at.highlight;
+    bool do_highlight = _at->highlight;
     put_with_label(button);
 
     if (do_highlight) {
@@ -410,7 +410,7 @@ void AW_window::create_autosize_button(const char *macro_name, const char *butto
                                        const char *mnemonic /* = 0*/, unsigned xtraSpace /* = 1 */){
     aw_return_if_fail(buttonlabel != NULL);
     aw_return_if_fail(!AW_IS_IMAGEREF(buttonlabel)); 
-    aw_return_if_fail(!_at.to_position_exists); // wont work if to-position exists
+    aw_return_if_fail(!_at->to_position_exists); // wont work if to-position exists
 
     const char* content = buttonlabel;
 
@@ -432,15 +432,15 @@ void AW_window::create_autosize_button(const char *macro_name, const char *butto
         height++;
     }
 
-    short length_of_buttons = _at.length_of_buttons;
-    short height_of_buttons = _at.height_of_buttons;
+    short length_of_buttons = _at->length_of_buttons;
+    short height_of_buttons = _at->height_of_buttons;
 
-    _at.length_of_buttons = width+(xtraSpace*2) + 1 ;
-    _at.height_of_buttons = height;
+    _at->length_of_buttons = width+(xtraSpace*2) + 1 ;
+    _at->height_of_buttons = height;
     create_button(macro_name, buttonlabel, mnemonic);
 
-    _at.length_of_buttons = length_of_buttons;
-    _at.height_of_buttons = height_of_buttons;
+    _at->length_of_buttons = length_of_buttons;
+    _at->height_of_buttons = height_of_buttons;
 }
 
 GtkWidget* AW_window::get_last_widget() const{
@@ -587,7 +587,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     
     GtkWidget *entry;
 
-    int width = columns ? columns : _at.length_of_buttons;
+    int width = columns ? columns : _at->length_of_buttons;
 
     if (awar->get_type() == GB_STRING) {
         entry = gtk_entry_new();
@@ -983,7 +983,7 @@ void AW_window::clear_option_menu(AW_selection_list *sel) {
 AW_selection_list* AW_window::create_selection_list(const char *awar_name, int columns, int rows, bool fallback2default) {
     AW_awar* awar = get_root()->awar_no_error(awar_name);
     aw_return_val_if_fail(awar, NULL);
-    aw_warn_if_fail(!_at.label_for_inputfield); // labels have no effect for selection lists
+    aw_warn_if_fail(!_at->label_for_inputfield); // labels have no effect for selection lists
 
    
     GtkWidget *tree = gtk_tree_view_new();
@@ -992,7 +992,7 @@ AW_selection_list* AW_window::create_selection_list(const char *awar_name, int c
     GtkWidget *scrolled_win = gtk_scrolled_window_new(NULL, NULL);
     gtk_container_add(GTK_CONTAINER(scrolled_win), tree);
 
-    if (!_at.to_position_exists) {
+    if (!_at->to_position_exists) {
         // set size
         int char_width, char_height;
         prvt->get_font_size(char_width, char_height);
@@ -1112,7 +1112,7 @@ void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize
     aw_return_if_fail(xfig_data != NULL);  // forgot to call load_xfig ?
     
     xfig_data->add_line(x1, y1, x2, y2, width);
-    _at.set_xfig(xfig_data);
+    _at->set_xfig(xfig_data);
 
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
@@ -1281,14 +1281,14 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/) {
 
     xfig_data->create_gcs(get_device(AW_INFO_AREA)); 
 
-    _at.set_xfig(xfig_data);
+    _at->set_xfig(xfig_data);
 
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
 #if defined(ARB_MOTIF)
         set_window_size(WIDER_THAN_SCREEN, HIGHER_THAN_SCREEN);
 #else
-        set_window_size(_at.max_x_size, _at.max_y_size); // @@@ should not be needed in gtk, as soon as recalc_size_atShow has proper effect (see #377)
+        set_window_size(_at->max_x_size, _at->max_y_size); // @@@ should not be needed in gtk, as soon as recalc_size_atShow has proper effect (see #377)
 #endif
     }
 
@@ -1548,7 +1548,7 @@ AW_window::AW_window()
     recalc_pos_at_show(AW_KEEP_POS),
     prvt(new AW_window_gtk()),
     xfig_data(NULL),
-    _at(this),
+    _at(new AW_at(this)),
     event(),
     window_name(NULL),
     window_defaults_name(NULL),
@@ -1567,6 +1567,7 @@ AW_window::AW_window()
 
 AW_window::~AW_window() {
     delete picture;
+    delete _at;
     delete prvt;
 }
 
@@ -1588,8 +1589,8 @@ void AW_window::init_window(const char *window_name_, const char* window_title,
     prvt->set_resizable(resizable);
 
     // set minimum window size to size provided by init
-    if (width  > _at.max_x_size) _at.max_x_size = width;
-    if (height > _at.max_y_size) _at.max_y_size = height;
+    if (width  > _at->max_x_size) _at->max_x_size = width;
+    if (height > _at->max_y_size) _at->max_y_size = height;
 
     // manage transience:
     // the first created window is considered the main application

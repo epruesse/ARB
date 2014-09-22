@@ -131,9 +131,10 @@ class AW_window : virtual Noncopyable {
 
 protected:
     AW_window_gtk* prvt; /*< Contains all gtk dependent attributes */
+
 private:
     AW_xfig *xfig_data;
-    AW_at    _at; /** < Defines the next position at which something will be inserted into the window.  */ //FIXME @@@ move aw_at into pimpl
+    AW_at   *_at; /** < Defines the next position at which something will be inserted into the window.  */
 
     void all_menus_created() const;
 
@@ -163,8 +164,8 @@ protected:
 
 public:
 
-    const AW_at& get_at() const { return _at; } // @@@ elim
-    AW_at& get_at() { return _at; } // @@@ elim
+    const AW_at& get_at() const { return *_at; } // @@@ elim
+    AW_at& get_at() { return *_at; } // @@@ elim
 
     AW_window();
     virtual ~AW_window();
