@@ -130,10 +130,10 @@ void AW_window::at(const char *at_id) { _at.at(at_id); }
 void AW_window::auto_increment(int dx, int dy) { _at.auto_increment(dx, dy); }
 
 void AW_window::restore_at_size_and_attach(const AW_at_size *at_size) {
-    at_size->restore(_at);
+    at_size->restore(get_at());
 }
 void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
-    at_size->store(_at);
+    at_size->store(get_at());
 }
 
 // ----------------------------------------------------------------------
