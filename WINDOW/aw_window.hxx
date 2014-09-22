@@ -31,12 +31,13 @@
 #endif
 
 class AW_window;
+class AW_xfig;
 class AW_device;
+struct AW_screen_area;
+struct GB_HASH;
 class AW_device_click;
 class AW_device_print;
 class AW_device_size;
-struct AW_screen_area;
-struct GB_HASH;
 
 // --------------------------------------------------------------------------------
 
@@ -224,6 +225,13 @@ class AW_window : virtual Noncopyable {
     void all_menus_created() const;
     void create_toggle(const char *var_name, aw_toggle_data *tdata);
 
+#if defined(ARB_MOTIF)
+    int calculate_string_width(int columns) const;
+    int calculate_string_height(int columns, int offset) const;
+    char *align_string(const char *string, int columns);
+    void calculate_label_size(int *width, int *height, bool in_pixel, const char *non_at_label);
+#endif
+
 protected:
     AW_root *root;
 
@@ -234,31 +242,31 @@ protected:
 
 public:
 
-    // ************ This is not the public section *************
+    // ---------------------------------------- [start read-only section] @@@ should go private
 
-// private: //FIXME @@@ make _at private. Right now some global functions want to access it. Remove those global functions.
+    AW_event         event;
+    unsigned long    click_time;
+    long             color_table_size;
+    AW_rgb          *color_table;
+    int              number_of_timed_title_changes;
+    AW_window_Motif *p_w;
+    AW_cb           *_callback;
+    AW_cb           *_d_callback;
+
+    AW_xfig *xfig_data; // @@@ private?
+
+
+private: // FIXME @@@ make _at private. Right now some global functions want to access it. Remove those global functions.
     AW_at *_at; /** < Defines the next position at which something will be inserted into the window.  */
-// public:
-    const AW_at& get_at() const { return *_at; }
-    AW_at& get_at() { return *_at; }
+public:
+    // ---------------------------------------- [end read-only section]
 
-    AW_window_Motif *p_w;       // Do not use !!!
-    AW_cb    *_callback;
-    AW_cb    *_d_callback;
+    const AW_at& get_at() const { return *_at; } // @@@ elim
+    AW_at& get_at() { return *_at; } // @@@ elim
+
 
     AW_window();
     virtual ~AW_window();
-
-
-    AW_event       event;
-    unsigned long  click_time;
-    long           color_table_size;
-    AW_rgb        *color_table;
-
-    int number_of_timed_title_changes;
-
-    class AW_xfig *xfig_data;
-
 
     const char    *window_local_awarname(const char *localname, bool tmp = true);
     class AW_awar *window_local_awar(const char *localname, bool tmp = true);
@@ -268,20 +276,15 @@ public:
     void         recalc_size_atShow(enum AW_SizeRecalc sr);
     AW_PosRecalc get_recalc_pos_atShow() const;
 
-    void run_focus_callback();
-
     void allow_delete_window(bool allow_close);
     void on_hide(AW_CB0 call_on_hide);
 
-    void show_modal();
 
 #if defined(ARB_MOTIF)
+    void run_focus_callback();
+    void show_modal();
     void set_window_title_intern(char *title);
 #endif
-
-    int calculate_string_width(int columns) const;
-    int calculate_string_height(int columns, int offset) const;
-    char *align_string(const char *string, int columns);
 
     void update_label(Widget widget, const char *var_value);
     void update_toggle(Widget widget, const char *var_value, AW_CL cd);

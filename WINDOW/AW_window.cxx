@@ -1982,7 +1982,7 @@ const char *aw_str_2_label(const char *str, AW_window *aww) {
             AW_awar *is_awar = aww->get_root()->label_is_awar(str);
 
             if (is_awar) { // for labels displaying awar values, insert dummy text here
-                int wanted_len = aww->_at->length_of_buttons - 2;
+                int wanted_len = aww->get_at().length_of_buttons - 2;
                 if (wanted_len < 1) wanted_len = 1;
 
                 char *labelbuf       = GB_give_buffer(wanted_len+1);
@@ -2064,13 +2064,13 @@ static Pixmap getIcon(Screen *screen, const char *iconName, Pixel foreground, Pi
     return pixmap;
 }
 
-Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int width, int height, int posx, int posy) {
+Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int width, int height, int posx, int posy) { // @@@ move into AW_window
     AW_root *root = aww->get_root();
     Widget shell;
 
     // set minimum window size to size provided by init
-    if (width >aww->_at->max_x_size) aww->_at->max_x_size = width;
-    if (height>aww->_at->max_y_size) aww->_at->max_y_size = height;
+    if (width >aww->get_at().max_x_size) aww->get_at().max_x_size = width;
+    if (height>aww->get_at().max_y_size) aww->get_at().max_y_size = height;
 
     bool has_user_geometry = false;
     if (!GBS_read_hash(root->hash_for_windows, aww->get_window_id())) {
