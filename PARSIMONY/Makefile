@@ -329,7 +329,6 @@ PARS_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 PARS_main.o: $(ARBHOME)/INCLUDE/attributes.h
-PARS_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
