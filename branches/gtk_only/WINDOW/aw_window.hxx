@@ -127,12 +127,17 @@ class AW_window : virtual Noncopyable {
     AW_SizeRecalc recalc_size_at_show;
     AW_PosRecalc  recalc_pos_at_show;
 
-    void all_menus_created() const;
-
     AW_awar *awar_posx, *awar_posy, *awar_width, *awar_height;
 
 protected:
     AW_window_gtk* prvt; /*< Contains all gtk dependent attributes */
+private:
+    AW_xfig *xfig_data;
+    AW_at    _at; /** < Defines the next position at which something will be inserted into the window.  */ //FIXME @@@ move aw_at into pimpl
+
+    void all_menus_created() const;
+
+protected:
   
     /* put a widget into prvt->fixedArea according to _at.
      * @param label_alignment the alignment for the label.
@@ -157,17 +162,6 @@ protected:
                      int width, int height, bool resizable);
 
 public:
-
-    // ---------------------------------------- [start read-only section] @@@ should go private
-
-
-    AW_xfig *xfig_data; // @@@ private?
-
-private:
-    //FIXME @@@ move aw_at into pimpl
-    AW_at _at; /** < Defines the next position at which something will be inserted into the window.  */
-public:
-    // ---------------------------------------- [end read-only section]
 
     const AW_at& get_at() const { return _at; } // @@@ elim
     AW_at& get_at() { return _at; } // @@@ elim
