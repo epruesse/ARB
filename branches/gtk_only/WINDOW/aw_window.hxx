@@ -64,7 +64,6 @@ class AW_at;
 
 enum AW_orientation { AW_HORIZONTAL, AW_VERTICAL };
 
-
 typedef const char *AW_label;       // label for buttons menus etc
 // "fsdf" simple label  // no '/' symbol !!!
 // "awarname/asdf"  // awar name (any '/' in string)

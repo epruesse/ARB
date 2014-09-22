@@ -22,6 +22,8 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
+#include <aw_at.hxx>
+
 #include <mode_text.h>
 
 #include <arb_file.h>
