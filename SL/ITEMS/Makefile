@@ -49,7 +49,6 @@ changekey.o: $(ARBHOME)/INCLUDE/attributes.h
 changekey.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-changekey.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 changekey.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -110,7 +109,6 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/attributes.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-item_sel_list.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -170,7 +168,6 @@ species.o: $(ARBHOME)/INCLUDE/attributes.h
 species.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-species.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

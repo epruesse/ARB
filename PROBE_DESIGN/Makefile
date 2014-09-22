@@ -55,7 +55,6 @@ probe_design.o: $(ARBHOME)/INCLUDE/attributes.h
 probe_design.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -159,7 +158,6 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/attributes.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

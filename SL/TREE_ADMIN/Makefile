@@ -49,7 +49,6 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/attributes.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx

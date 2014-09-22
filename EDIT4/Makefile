@@ -57,7 +57,6 @@ ED4_base.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_base.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -128,7 +127,6 @@ ED4_block.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_block.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -195,7 +193,6 @@ ED4_colStat.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -266,7 +263,6 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -337,7 +333,6 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_dots.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -400,7 +395,6 @@ ED4_dump.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_dump.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -465,7 +459,6 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -547,7 +540,6 @@ ED4_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -629,7 +621,6 @@ ED4_manager.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_manager.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -692,7 +683,6 @@ ED4_members.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_members.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -757,7 +747,6 @@ ED4_mini_classes.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -821,7 +810,6 @@ ED4_naligner.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -884,7 +872,6 @@ ED4_nds.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_nds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -957,7 +944,6 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -1028,7 +1014,6 @@ ED4_objspec.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -1091,7 +1076,6 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -1159,7 +1143,6 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -1226,7 +1209,6 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -1318,7 +1300,6 @@ ED4_root.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_root.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -1399,7 +1380,6 @@ ED4_search.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_search.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -1473,7 +1453,6 @@ ED4_terminal.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -1549,7 +1528,6 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -1622,7 +1600,6 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_tools.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -1691,7 +1668,6 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -1763,7 +1739,6 @@ ED4_window.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-ED4_window.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -1830,7 +1805,6 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/attributes.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -1894,7 +1868,6 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/attributes.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

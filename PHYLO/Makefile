@@ -51,7 +51,6 @@ PH_data.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_data.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-PH_data.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -110,7 +109,6 @@ PH_display.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_display.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-PH_display.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -173,7 +171,6 @@ PH_filt.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-PH_filt.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -235,7 +232,6 @@ PH_main.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-PH_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx

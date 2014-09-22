@@ -76,7 +76,6 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/attributes.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

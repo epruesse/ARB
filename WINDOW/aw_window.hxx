@@ -15,7 +15,6 @@
 
 #include "aw_gtk_forward_declarations.hxx"
 #include "aw_root.hxx"
-#include "aw_at.hxx"
 
 #include "aw_help.hxx"
 #include "aw_cb_struct.hxx"
@@ -106,6 +105,7 @@ typedef char *AW_pixmap;
 class  AW_window_Motif;
 class  AW_selection_list_entry;
 class  AW_selection_list;
+class  AW_at_size;
 typedef AW_selection_list AW_option_menu_struct; //for compatibility reasons with old arb code
 struct aw_toggle_data;
 

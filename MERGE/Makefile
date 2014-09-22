@@ -83,7 +83,6 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MG_alignment.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -145,7 +144,6 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -207,7 +205,6 @@ MG_configs.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MG_configs.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -267,7 +264,6 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -330,7 +326,6 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -394,7 +389,6 @@ MG_main.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MG_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -462,7 +456,6 @@ MG_names.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_names.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MG_names.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -526,7 +519,6 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MG_preserves.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -592,7 +584,6 @@ MG_species.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_species.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MG_species.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -662,7 +653,6 @@ MG_trees.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-MG_trees.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx

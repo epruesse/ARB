@@ -49,7 +49,6 @@ RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -113,7 +112,6 @@ RNA3D_Interface.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -178,7 +176,6 @@ RNA3D_Main.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -242,7 +239,6 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -308,7 +304,6 @@ RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -370,7 +365,6 @@ RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -433,7 +427,6 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

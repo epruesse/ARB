@@ -52,7 +52,6 @@ AW_helix.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-AW_helix.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx

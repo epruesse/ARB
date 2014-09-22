@@ -66,7 +66,6 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-DI_clusters.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -190,7 +189,6 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -249,7 +247,6 @@ DI_main.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-DI_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
@@ -333,7 +330,6 @@ DI_matr.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-DI_matr.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -481,7 +477,6 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

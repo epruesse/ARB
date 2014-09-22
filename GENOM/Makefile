@@ -63,7 +63,6 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-EXP_interface.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
@@ -133,7 +132,6 @@ EXP_main.o: $(ARBHOME)/INCLUDE/attributes.h
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-EXP_main.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -241,7 +239,6 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
@@ -309,7 +306,6 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-GEN_interface.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
@@ -389,7 +385,6 @@ GEN_map.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-GEN_map.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -461,7 +456,6 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-GEN_nds.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
