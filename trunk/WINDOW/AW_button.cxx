@@ -384,19 +384,19 @@ inline void calculate_textsize(const char *str, int *width, int *height) {
     *height = textheight;
 }
 
-static void calculate_label_size(AW_window *aww, int *width, int *height, bool in_pixel, const char *non_at_label) {
+void AW_window::calculate_label_size(int *width, int *height, bool in_pixel, const char *non_at_label) {
     // in_pixel == true -> calculate size in pixels
     // in_pixel == false -> calculate size in characters
 
-    const char *label = non_at_label ? non_at_label : aww->_at->label_for_inputfield;
-    if (label) {
-        calculate_textsize(label, width, height);
-        if (aww->_at->length_of_label_for_inputfield) {
-            *width = aww->_at->length_of_label_for_inputfield;
+    const char *label_ = non_at_label ? non_at_label : _at->label_for_inputfield;
+    if (label_) {
+        calculate_textsize(label_, width, height);
+        if (_at->length_of_label_for_inputfield) {
+            *width = _at->length_of_label_for_inputfield;
         }
         if (in_pixel) {
-            *width  = aww->calculate_string_width(*width);
-            *height = aww->calculate_string_height(*height, 0);
+            *width  = calculate_string_width(*width);
+            *height = calculate_string_height(*height, 0);
         }
     }
     else {
@@ -509,7 +509,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     int width_of_button = -1, height_of_button = -1;
 
     int width_of_label, height_of_label;
-    calculate_label_size(this, &width_of_label, &height_of_label, true, 0);
+    calculate_label_size(&width_of_label, &height_of_label, true, 0);
     int width_of_label_and_spacer = _at->label_for_inputfield ? width_of_label+SPACE_BEHIND_LABEL : 0;
 
     bool let_motif_choose_size  = false;
@@ -875,7 +875,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     str         = root->awar(var_name)->read_as_string();
 
     int width_of_input_label, height_of_input_label;
-    calculate_label_size(this, &width_of_input_label, &height_of_input_label, true, 0);
+    calculate_label_size(&width_of_input_label, &height_of_input_label, true, 0);
     // @@@ FIXME: use height_of_input_label for propper Y-adjusting of label
     // width_of_input_label = this->calculate_string_width( calculate_label_length() );
 
@@ -1007,7 +1007,7 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
     str         = root->awar(var_name)->read_string();
 
     int width_of_text_label, height_of_text_label;
-    calculate_label_size(this, &width_of_text_label, &height_of_text_label, true, 0);
+    calculate_label_size(&width_of_text_label, &height_of_text_label, true, 0);
     // @@@ FIXME: use height_of_text_label for propper Y-adjusting of label
 
     // width_of_text_label = this->calculate_string_width( calculate_label_length() );
@@ -1348,7 +1348,7 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name, bool
 
         if (tmp_label) {
             int   width_help_label, height_help_label;
-            calculate_label_size(this, &width_help_label, &height_help_label, false, tmp_label);
+            calculate_label_size(&width_help_label, &height_help_label, false, tmp_label);
             // @@@ FIXME: use height_help_label for Y-alignment
 #if defined(DUMP_BUTTON_CREATION)
             printf("width_help_label=%i label='%s'\n", width_help_label, tmp_label);
@@ -1631,7 +1631,7 @@ void AW_window::create_toggle_field(const char *var_name, int orientation) {
 
     if (tmp_label) {
         int height_of_label;
-        calculate_label_size(this, &width_of_label, &height_of_label, true, tmp_label);
+        calculate_label_size(&width_of_label, &height_of_label, true, tmp_label);
         // @@@ FIXME: use height_of_label for Y-alignment
         // width_of_label = this->calculate_string_width( this->calculate_label_length() );
         label_for_toggle = XtVaCreateManagedWidget("label",
@@ -1729,7 +1729,7 @@ static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
             p_global->last_toggle_field->first_toggle = toggle;
         }
     }
-    root->make_sensitive(toggleButton, aww->_at->widget_mask);
+    root->make_sensitive(toggleButton, aww->get_at().widget_mask);
 
     aww->unset_at_commands();
     return  toggleButton;
