@@ -56,7 +56,6 @@ db_query.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
-db_query.o: $(ARBHOME)/INCLUDE/aw_at.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 db_query.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx

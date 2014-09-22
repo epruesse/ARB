@@ -22,7 +22,6 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
-#include <aw_at.hxx>
 
 #include <mode_text.h>
 
@@ -776,12 +775,12 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->at_newline();
 
     {
-        AW_at_maxsize maxSize; // store size (so AWAR_FOOTER does not affect min. window size)
-        maxSize.store(awm->get_at());
+        SmartPtr<AW_at_storage> maxSize(AW_at_storage::make(awm, AW_AT_MAXSIZE));
+
         awm->button_length(AWAR_FOOTER_MAX_LEN);
         awm->create_button(0, AWAR_FOOTER);
         awm->at_newline();
-        maxSize.restore(awm->get_at());
+        awm->restore_at_from(*maxSize);
     }
 
     awm->set_info_area_height(awm->get_at_yposition());

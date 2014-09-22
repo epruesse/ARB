@@ -129,13 +129,6 @@ int AW_window::get_at_yposition() const { return _at->get_at_yposition(); }
 void AW_window::at(const char *at_id) { _at->at(at_id); }
 void AW_window::auto_increment(int dx, int dy) { _at->auto_increment(dx, dy); }
 
-void AW_window::restore_at_size_and_attach(const AW_at_size *at_size) {
-    at_size->restore(get_at());
-}
-void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
-    at_size->store(get_at());
-}
-
 // ----------------------------------------------------------------------
 // force-diff-sync 1927391236 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
