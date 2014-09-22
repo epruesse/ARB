@@ -147,7 +147,7 @@ public:
         : maxx(0),
           maxy(0)
     {}
-    
+
     void store(const AW_at &at);
     void restore(AW_at &at) const;
 };

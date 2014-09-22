@@ -1327,11 +1327,11 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     {
         AW_at_maxsize maxSize; // store size (so AWAR_FOOTER does not affect min. window size)
-        maxSize.store(awm->_at);
+        maxSize.store(awm->get_at());
         awm->button_length(AWAR_FOOTER_MAX_LEN);
         awm->create_button(0, AWAR_FOOTER);
         awm->at_newline();
-        maxSize.restore(awm->_at);
+        maxSize.restore(awm->get_at());
     }
 
     awm->get_at_position(&db_treex, &db_treey);

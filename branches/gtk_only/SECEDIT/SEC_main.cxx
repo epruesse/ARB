@@ -777,11 +777,11 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
 
     {
         AW_at_maxsize maxSize; // store size (so AWAR_FOOTER does not affect min. window size)
-        maxSize.store(awm->_at);
+        maxSize.store(awm->get_at());
         awm->button_length(AWAR_FOOTER_MAX_LEN);
         awm->create_button(0, AWAR_FOOTER);
         awm->at_newline();
-        maxSize.restore(awm->_at);
+        maxSize.restore(awm->get_at());
     }
 
     awm->set_info_area_height(awm->get_at_yposition());

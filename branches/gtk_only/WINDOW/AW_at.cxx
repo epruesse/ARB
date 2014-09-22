@@ -378,14 +378,14 @@ void AW_at_maxsize::restore(AW_at &at) const {
 
 void AW_at_auto::store(const AW_at &at) {
     if (at.do_auto_increment) {
-        type = INC;   
-        x = at.auto_increment_x; 
-        y = at.auto_increment_y; 
+        type = INC;
+        x    = at.auto_increment_x;
+        y    = at.auto_increment_y;
     }
     else if (at.do_auto_space)  {
-        type = SPACE; 
-        x = at.auto_space_x;
-        y = at.auto_space_y;     
+        type = SPACE;
+        x    = at.auto_space_x;
+        y    = at.auto_space_y;
     }
     else {
         type = OFF;
@@ -402,12 +402,12 @@ void AW_at_auto::restore(AW_at &at) const {
     at.do_auto_increment = (type == INC);
 
     if (at.do_auto_space) {
-        at.auto_space_x     = x;
-        at.auto_space_y     = y; 
+        at.auto_space_x = x;
+        at.auto_space_y = y;
     }
     else if (at.do_auto_increment) {
         at.auto_increment_x = x;
-        at.auto_increment_y = y; 
+        at.auto_increment_y = y;
     }
 
     at.x_for_newline             = xfn;
