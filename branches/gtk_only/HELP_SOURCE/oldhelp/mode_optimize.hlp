@@ -13,7 +13,7 @@ UP	mode_nni.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Nearest Neighbour Interchange and K.L. Optimization
 
-OCCURRENCE	ARB_NT/Tree/Parsimony/<NNI + K.L.>
+OCCURRENCE	ARB_PARSIMONY/<NNI + K.L.>
 
 DESCRIPTION	Searches for a better (more parsimonious) tree by performing
 		alternating cycles of 'Nearest Neighbour Interchange' and 

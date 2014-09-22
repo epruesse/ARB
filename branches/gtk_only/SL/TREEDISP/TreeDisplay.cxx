@@ -278,14 +278,20 @@ bool AWT_graphic_tree::group_tree(AP_tree *at, CollapseMode mode, int color_grou
     bool expand_me = false;
     if (at->is_leaf) {
         if (mode & EXPAND_ALL) expand_me = true;
-        if (at->gb_node) { // ignore zombies
-            if (!expand_me && (mode & EXPAND_MARKED)) { // do not group marked
+        else if (at->gb_node) {
+            if (mode & EXPAND_MARKED) { // do not group marked
                 if (GB_read_flag(at->gb_node)) expand_me = true;
             }
             if (!expand_me && (mode & EXPAND_COLOR)) { // do not group specified color_group
                 int my_color_group = AW_find_color_group(at->gb_node, true);
-                if (my_color_group == color_group) expand_me = true;
+
+                expand_me =
+                    my_color_group == color_group || // specific or no color
+                    my_color_group != 0 && color_group == -1; // any color
             }
+        }
+        else { // zombie
+            expand_me = mode & EXPAND_ZOMBIES;
         }
     }
     else {
