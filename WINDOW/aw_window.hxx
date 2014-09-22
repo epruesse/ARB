@@ -218,7 +218,10 @@ class AW_window : virtual Noncopyable {
     bool expose_callback_added;
 
     AW_cb *focus_cb;
-    
+
+    AW_xfig *xfig_data;
+    AW_at   *_at; /** < Defines the next position at which something will be inserted into the window.  */
+
     int left_indent_of_horizontal_scrollbar;
     int top_indent_of_vertical_scrollbar;
 
@@ -242,6 +245,7 @@ protected:
 
 public:
 
+#if defined(ARB_MOTIF)
     // ---------------------------------------- [start read-only section] @@@ should go private
 
     AW_event         event;
@@ -253,13 +257,8 @@ public:
     AW_cb           *_callback;
     AW_cb           *_d_callback;
 
-    AW_xfig *xfig_data; // @@@ private?
-
-
-private: // FIXME @@@ make _at private. Right now some global functions want to access it. Remove those global functions.
-    AW_at *_at; /** < Defines the next position at which something will be inserted into the window.  */
-public:
     // ---------------------------------------- [end read-only section]
+#endif
 
     const AW_at& get_at() const { return *_at; } // @@@ elim
     AW_at& get_at() { return *_at; } // @@@ elim
