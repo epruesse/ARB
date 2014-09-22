@@ -278,84 +278,86 @@ int AW_window::get_at_yposition() const {
 // -------------------
 //      AW_at_size
 
-void AW_at_size::store(const AW_at *at) { // @@@ use ref (like gtk; for all functions below)
-    to_position_exists = at->to_position_exists;
+void AW_at_size::store(const AW_at& at) {
+    to_position_exists = at.to_position_exists;
     if (to_position_exists) {
-        to_offset_x = at->to_position_x - at->x_for_next_button;
-        to_offset_y = at->to_position_y - at->y_for_next_button;
+        to_offset_x = at.to_position_x - at.x_for_next_button;
+        to_offset_y = at.to_position_y - at.y_for_next_button;
     }
-    attach_x   = at->attach_x;
-    attach_y   = at->attach_y;
-    attach_lx  = at->attach_lx;
-    attach_ly  = at->attach_ly;
-    attach_any = at->attach_any;
+    attach_x   = at.attach_x;
+    attach_y   = at.attach_y;
+    attach_lx  = at.attach_lx;
+    attach_ly  = at.attach_ly;
+    attach_any = at.attach_any;
 }
-void AW_at_size::restore(AW_at *at) const {
-    at->to_position_exists = to_position_exists;
+
+void AW_at_size::restore(AW_at& at) const {
+    at.to_position_exists = to_position_exists;
     if (to_position_exists) {
-        at->to_position_x = at->x_for_next_button + to_offset_x;
-        at->to_position_y = at->y_for_next_button + to_offset_y;
+        at.to_position_x = at.x_for_next_button + to_offset_x;
+        at.to_position_y = at.y_for_next_button + to_offset_y;
     }
-    at->attach_x   = attach_x;
-    at->attach_y   = attach_y;
-    at->attach_lx  = attach_lx;
-    at->attach_ly  = attach_ly;
-    at->attach_any = attach_any;
+    at.attach_x   = attach_x;
+    at.attach_y   = attach_y;
+    at.attach_lx  = attach_lx;
+    at.attach_ly  = attach_ly;
+    at.attach_any = attach_any;
 }
 
 // -------------------
 //      AW_at_maxsize
 
-void AW_at_maxsize::store(const AW_at *at) {
-    maxx = at->max_x_size;
-    maxy = at->max_y_size;
+void AW_at_maxsize::store(const AW_at &at) {
+    maxx = at.max_x_size;
+    maxy = at.max_y_size;
 }
-void AW_at_maxsize::restore(AW_at *at) const {
-    at->max_x_size = maxx;
-    at->max_y_size = maxy;
+
+void AW_at_maxsize::restore(AW_at &at) const {
+    at.max_x_size = maxx;
+    at.max_y_size = maxy;
 }
 
 // -------------------
 //      AW_at_auto
 
-void AW_at_auto::store(const AW_at *at) {
-    if   (at->do_auto_increment) {
+void AW_at_auto::store(const AW_at &at) {
+    if (at.do_auto_increment) {
         type = INC;
-        x    = at->auto_increment_x;
-        y    = at->auto_increment_y;
+        x    = at.auto_increment_x;
+        y    = at.auto_increment_y;
     }
-    else if (at->do_auto_space) {
+    else if (at.do_auto_space)  {
         type = SPACE;
-        x = at->auto_space_x;
-        y = at->auto_space_y;
+        x    = at.auto_space_x;
+        y    = at.auto_space_y;
     }
     else {
         type = OFF;
     }
 
-    xfn  = at->x_for_newline;
-    xfnb = at->x_for_next_button;
-    yfnb = at->y_for_next_button;
-    bhob = at->biggest_height_of_buttons;
+    xfn  = at.x_for_newline;
+    xfnb = at.x_for_next_button;
+    yfnb = at.y_for_next_button;
+    bhob = at.biggest_height_of_buttons;
 }
 
-void AW_at_auto::restore(AW_at *at) const {
-    at->do_auto_space     = (type == SPACE);
-    at->do_auto_increment = (type == INC);
+void AW_at_auto::restore(AW_at &at) const {
+    at.do_auto_space     = (type == SPACE);
+    at.do_auto_increment = (type == INC);
 
-    if (at->do_auto_space) {
-        at->auto_space_x = x;
-        at->auto_space_y = y;
+    if (at.do_auto_space) {
+        at.auto_space_x = x;
+        at.auto_space_y = y;
     }
-    else if (at->do_auto_increment) {
-        at->auto_increment_x = x;
-        at->auto_increment_y = y;
+    else if (at.do_auto_increment) {
+        at.auto_increment_x = x;
+        at.auto_increment_y = y;
     }
 
-    at->x_for_newline             = xfn;
-    at->x_for_next_button         = xfnb;
-    at->y_for_next_button         = yfnb;
-    at->biggest_height_of_buttons = bhob;
+    at.x_for_newline             = xfn;
+    at.x_for_next_button         = xfnb;
+    at.y_for_next_button         = yfnb;
+    at.biggest_height_of_buttons = bhob;
 }
 
 // -------------------------------------------------------------------------
