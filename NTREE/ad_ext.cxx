@@ -274,7 +274,7 @@ static void set_SAI_group_cb(AW_root *aw_root, GBDATA *gb_main) {
 
 static AW_selection_list *sai_group_sel = NULL;
 static void refresh_SAI_groups_cb(AW_root*, GBDATA *gb_main) {
-    fill_SAI_group_selection_list(sai_group_sel, gb_main);
+    if (sai_group_sel) fill_SAI_group_selection_list(sai_group_sel, gb_main);
 }
 
 static void refresh_group_cb(AW_root *aw_root, GBDATA *gb_main) {

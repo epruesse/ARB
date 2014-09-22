@@ -738,7 +738,7 @@ void MP_selected_chosen(AW_window */*aww*/) {
 
 void MP_group_all_except_marked(AW_window * /* aww */) {
     AWT_canvas  *scr = mp_main->get_canvas();
-    NT_group_not_marked_cb(0, scr);
+    NT_expand_marked_cb(0, scr);
 }
 
 void MP_normal_colors_in_tree(AW_window */*aww*/) {
