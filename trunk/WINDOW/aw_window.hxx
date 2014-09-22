@@ -275,10 +275,12 @@ public:
     // ---------------------------------------- [end read-only section]
 #endif
 
+#if defined(ARB_MOTIF)
 #if defined(IN_ARB_WINDOW)
-    // internal use only
-    const AW_at& get_at() const { return *_at; } // @@@ elim
-    AW_at& get_at() { return *_at; } // @@@ elim
+    // only used internal and in motif (alternative would be to move a bunch of code into AW_window)
+    const AW_at& get_at() const { return *_at; }
+    AW_at& get_at() { return *_at; }
+#endif
 #endif
 
     AW_window();
