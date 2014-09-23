@@ -149,7 +149,6 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 break;
         }
 
-        aws->set_window_size(1000, 2000);
         aws->button_length(10);
         aws->at(10, 10);
         aws->auto_space(0, 10);
