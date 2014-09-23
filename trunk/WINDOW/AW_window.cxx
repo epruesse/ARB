@@ -315,7 +315,7 @@ void MnemonicScope::add(const char *topic_name, const char *mnemonic) {
             warn_mnemonic(topic_name, mnemonic, "is too long; only 1 character allowed");
         }
 
-        if (topic_name[0] == '#') { // graphical menu
+        if (AW_IS_IMAGEREF(topic_name)) {
             if (mnemonic[0]) {
                 warn_mnemonic(topic_name, mnemonic, "is useless for graphical menu entry");
             }
@@ -355,7 +355,7 @@ void MnemonicScope::add(const char *topic_name, const char *mnemonic) {
         }
     }
     else {
-        if (topic_name[0] != '#') { // not a graphical menu
+        if (!AW_IS_IMAGEREF(topic_name)) {
             fputs("Warning: mnemonic is missing", stderr);
             print_at_location(stderr, topic_name);
             requestPossibilities(topic_name);

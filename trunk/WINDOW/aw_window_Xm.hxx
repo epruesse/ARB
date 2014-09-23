@@ -40,11 +40,11 @@
 
 #define AW_MOTIF_LABEL
 
-#define RES_LABEL_CONVERT_AWW(str,aww)                             \
-    XmNlabelType, (str[0]=='#') ? XmPIXMAP : XmSTRING,             \
-    XtVaTypedArg, (str[0]=='#') ? XmNlabelPixmap : XmNlabelString, \
-    XmRString,                                                     \
-    aw_str_2_label(str, aww),                                      \
+#define RES_LABEL_CONVERT_AWW(str,aww)                                   \
+    XmNlabelType, AW_IS_IMAGEREF(str) ? XmPIXMAP : XmSTRING,             \
+    XtVaTypedArg, AW_IS_IMAGEREF(str) ? XmNlabelPixmap : XmNlabelString, \
+    XmRString,                                                           \
+    aw_str_2_label(str, aww),                                            \
     strlen(aw_str_2_label(str, aww))+1
 
 #define RES_LABEL_CONVERT(str) RES_LABEL_CONVERT_AWW(str, this)
