@@ -216,17 +216,6 @@ void AW_window::at_unset_to() {
     _at->attach_any = _at->attach_lx || _at->attach_ly;
 }
 
-void AW_window::at_set_min_size(int xmin, int ymin){
-    if (xmin > _at->max_x_size) _at->max_x_size = xmin; // this looks wrong, but its right!
-    if (ymin > _at->max_y_size) _at->max_y_size = ymin;
-
-#if defined(ARB_MOTIF)
-    if (recalc_size_at_show != AW_KEEP_SIZE) {
-        set_window_size(WIDER_THAN_SCREEN, HIGHER_THAN_SCREEN);
-    }
-#endif
-}
-
 void AW_window::auto_space(int x, int y) {
     _at->do_auto_space = true;
     _at->auto_space_x  = x;
