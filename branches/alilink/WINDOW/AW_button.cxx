@@ -384,19 +384,19 @@ inline void calculate_textsize(const char *str, int *width, int *height) {
     *height = textheight;
 }
 
-static void calculate_label_size(AW_window *aww, int *width, int *height, bool in_pixel, const char *non_at_label) {
+void AW_window::calculate_label_size(int *width, int *height, bool in_pixel, const char *non_at_label) {
     // in_pixel == true -> calculate size in pixels
     // in_pixel == false -> calculate size in characters
 
-    const char *label = non_at_label ? non_at_label : aww->_at->label_for_inputfield;
-    if (label) {
-        calculate_textsize(label, width, height);
-        if (aww->_at->length_of_label_for_inputfield) {
-            *width = aww->_at->length_of_label_for_inputfield;
+    const char *label_ = non_at_label ? non_at_label : _at->label_for_inputfield;
+    if (label_) {
+        calculate_textsize(label_, width, height);
+        if (_at->length_of_label_for_inputfield) {
+            *width = _at->length_of_label_for_inputfield;
         }
         if (in_pixel) {
-            *width  = aww->calculate_string_width(*width);
-            *height = aww->calculate_string_height(*height, 0);
+            *width  = calculate_string_width(*width);
+            *height = calculate_string_height(*height, 0);
         }
     }
     else {
@@ -426,7 +426,7 @@ void aw_detect_text_size(const char *text, size_t& width, size_t& height) {
 }
 
 void AW_window::create_autosize_button(const char *macro_name, AW_label buttonlabel, const  char *mnemonic, unsigned xtraSpace) {
-    aw_assert(buttonlabel[0] != '#');    // use create_button for graphical buttons!
+    aw_assert(!AW_IS_IMAGEREF(buttonlabel));    // use create_button for graphical buttons!
     aw_assert(!_at->to_position_exists); // wont work if to-position exists
 
     AW_awar *is_awar = get_root()->label_is_awar(buttonlabel);
@@ -500,7 +500,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 #define BUTTON_GRAPHIC_PADDING 12
 #define FLAT_GRAPHIC_PADDING   4 // for buttons w/o callback
 
-    bool is_graphical_button = buttonlabel[0] == '#';
+    bool is_graphical_button = AW_IS_IMAGEREF(buttonlabel);
 
 #if defined(ASSERTION_USED)
     AW_awar *is_awar = is_graphical_button ? NULL : get_root()->label_is_awar(buttonlabel);
@@ -509,7 +509,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     int width_of_button = -1, height_of_button = -1;
 
     int width_of_label, height_of_label;
-    calculate_label_size(this, &width_of_label, &height_of_label, true, 0);
+    calculate_label_size(&width_of_label, &height_of_label, true, 0);
     int width_of_label_and_spacer = _at->label_for_inputfield ? width_of_label+SPACE_BEHIND_LABEL : 0;
 
     bool let_motif_choose_size  = false;
@@ -826,8 +826,8 @@ void AW_window::create_toggle(const char *var_name, const char *no, const char *
     aw_toggle_data *tdata  = new aw_toggle_data;
     tdata->isTextToggle    = false;
 
-    aw_assert(no[0] == '#');
-    aw_assert(yes[0] == '#');
+    aw_assert(AW_IS_IMAGEREF(no));
+    aw_assert(AW_IS_IMAGEREF(yes));
 
     tdata->bitmapOrText[0] = strdup(no);
     tdata->bitmapOrText[1] = strdup(yes);
@@ -875,7 +875,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     str         = root->awar(var_name)->read_as_string();
 
     int width_of_input_label, height_of_input_label;
-    calculate_label_size(this, &width_of_input_label, &height_of_input_label, true, 0);
+    calculate_label_size(&width_of_input_label, &height_of_input_label, true, 0);
     // @@@ FIXME: use height_of_input_label for propper Y-adjusting of label
     // width_of_input_label = this->calculate_string_width( calculate_label_length() );
 
@@ -891,7 +891,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
                                             parentWidget,
                                             XmNwidth, (int)(width_of_input_label + 2),
                                             XmNhighlightThickness, 0,
-                                            RES_CONVERT(XmNlabelString, _at->label_for_inputfield),
+                                            RES_LABEL_CONVERT(_at->label_for_inputfield),
                                             XmNrecomputeSize, false,
                                             XmNalignment, XmALIGNMENT_BEGINNING,
                                             XmNfontList, p_global->fontlist,
@@ -1007,7 +1007,7 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
     str         = root->awar(var_name)->read_string();
 
     int width_of_text_label, height_of_text_label;
-    calculate_label_size(this, &width_of_text_label, &height_of_text_label, true, 0);
+    calculate_label_size(&width_of_text_label, &height_of_text_label, true, 0);
     // @@@ FIXME: use height_of_text_label for propper Y-adjusting of label
 
     // width_of_text_label = this->calculate_string_width( calculate_label_length() );
@@ -1022,7 +1022,7 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
                                             XmNx, (int)_at->x_for_next_button,
                                             XmNy, (int)(_at->y_for_next_button) + this->get_root()->y_correction_for_input_labels + 5 - 6,
                                             XmNwidth, (int)(width_of_text_label + 2),
-                                            RES_CONVERT(XmNlabelString, _at->label_for_inputfield),
+                                            RES_LABEL_CONVERT(_at->label_for_inputfield),
                                             XmNrecomputeSize, false,
                                             XmNalignment, XmALIGNMENT_BEGINNING,
                                             XmNfontList, p_global->fontlist,
@@ -1348,21 +1348,23 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name, bool
 
         if (tmp_label) {
             int   width_help_label, height_help_label;
-            calculate_label_size(this, &width_help_label, &height_help_label, false, tmp_label);
+            calculate_label_size(&width_help_label, &height_help_label, false, tmp_label);
             // @@@ FIXME: use height_help_label for Y-alignment
 #if defined(DUMP_BUTTON_CREATION)
             printf("width_help_label=%i label='%s'\n", width_help_label, tmp_label);
 #endif // DUMP_BUTTON_CREATION
 
             {
+                aw_assert(!AW_IS_IMAGEREF(tmp_label)); // using images as labels for option menus will work in gtk (wont fix in motif)
+
                 char *help_label = this->align_string(tmp_label, width_help_label);
-                optionMenu1 = XtVaCreateManagedWidget("optionMenu1",
-                                                      xmRowColumnWidgetClass,
-                                                      (_at->attach_any) ? INFO_FORM : INFO_WIDGET,
-                                                      XmNrowColumnType, XmMENU_OPTION,
-                                                      XmNsubMenuId, optionMenu,
-                                                      RES_CONVERT(XmNlabelString, help_label),
-                                                      NULL);
+                optionMenu1      = XtVaCreateManagedWidget("optionMenu1",
+                                                           xmRowColumnWidgetClass,
+                                                           (_at->attach_any) ? INFO_FORM : INFO_WIDGET,
+                                                           XmNrowColumnType, XmMENU_OPTION,
+                                                           XmNsubMenuId, optionMenu,
+                                                           RES_CONVERT(XmNlabelString, help_label),
+                                                           NULL);
                 free(help_label);
             }
         }
@@ -1454,7 +1456,7 @@ void *AW_window::_create_option_entry(AW_VARIABLE_TYPE IF_ASSERTION_USED(type), 
     entry = XtVaCreateManagedWidget("optionMenu_entry",
                                     xmPushButtonWidgetClass,
                                     oms->menu_widget,
-                                    RES_LABEL_CONVERT(((char *)name)),
+                                    RES_CONVERT(XmNlabelString, name), // force text (as gtk version does)
                                     XmNfontList, p_global->fontlist,
                                     XmNbackground, _at->background_color,
                                     NULL);
@@ -1631,7 +1633,7 @@ void AW_window::create_toggle_field(const char *var_name, int orientation) {
 
     if (tmp_label) {
         int height_of_label;
-        calculate_label_size(this, &width_of_label, &height_of_label, true, tmp_label);
+        calculate_label_size(&width_of_label, &height_of_label, true, tmp_label);
         // @@@ FIXME: use height_of_label for Y-alignment
         // width_of_label = this->calculate_string_width( this->calculate_label_length() );
         label_for_toggle = XtVaCreateManagedWidget("label",
@@ -1729,7 +1731,7 @@ static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
             p_global->last_toggle_field->first_toggle = toggle;
         }
     }
-    root->make_sensitive(toggleButton, aww->_at->widget_mask);
+    root->make_sensitive(toggleButton, aww->get_at().widget_mask);
 
     aww->unset_at_commands();
     return  toggleButton;

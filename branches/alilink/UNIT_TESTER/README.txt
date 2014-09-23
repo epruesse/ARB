@@ -72,6 +72,18 @@ How to use ARB unit testing
 
       Set WARN_LEVEL to 0 in Makefile.setup.local to disable warnings.
 
+      Random failures:
+
+             Some tests tend to fail randomly if started from inside jenkins (due to
+             parallel builds), whereas they behave proper and provide safety during
+             normal development. You should disable such tests for jenkins by enclosing
+             the whole test with:
+
+                #if !defined(DEVEL_JENKINS)
+                #endif
+
+             One example for such a test is ../CORE/arb_cs.cxx@TEST_open_socket
+
 
    Missing tests:
 

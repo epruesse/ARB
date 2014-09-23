@@ -74,6 +74,7 @@ AW_at.o: aw_root.hxx
 AW_at.o: aw_window.hxx
 AW_at.o: aw_xfig.hxx
 AW_at.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_at.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_at.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_at.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_at.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -81,12 +82,14 @@ AW_at.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_at.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_at.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_at.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_at.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_at.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_at.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_at.o: $(ARBHOME)/INCLUDE/cb.h
 AW_at.o: $(ARBHOME)/INCLUDE/cb_base.h
 AW_at.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_at.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_at.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_at.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_at.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_at.o: $(ARBHOME)/INCLUDE/smartptr.h

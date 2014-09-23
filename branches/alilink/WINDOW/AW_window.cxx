@@ -110,6 +110,10 @@ void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) { // @
     windows[popup]->activate();
 }
 
+void AW_window::label(const char *_label) {
+    freedup(_at->label_for_inputfield, _label);
+}
+
 // ----------------------------------------------------------------------
 // force-diff-sync 1927391236 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
@@ -121,6 +125,42 @@ void AW_window::get_window_size(int &width, int &height){
     height = hoffset + _at->max_y_size;
 }
 
+void AW_window::help_text(const char *id) {
+    //! set help text for next created button
+    delete _at->helptext_for_next_button; // @@@ delete/free mismatch
+    _at->helptext_for_next_button   = strdup(id);
+}
+
+void AW_window::highlight() {
+    //! make next created button default button
+    _at->highlight = true;
+}
+
+void AW_window::sens_mask(AW_active mask) {
+    //! Set up sensitivity mask for next widget (action)
+    aw_assert(legal_mask(mask));
+    _at->widget_mask = mask;
+}
+
+void AW_window::callback(const WindowCallback& wcb) {
+    /*!
+     * Register callback for the next action implicitly created
+     * when making a widget.
+     */
+    _callback = new AW_cb(this, wcb);
+}
+
+void AW_window::d_callback(const WindowCallback& wcb) {
+    /*!
+     * Register double click callback for the next action implicitly created
+     * when making a widget.
+     */
+    _d_callback = new AW_cb(this, wcb);
+}
+
+// ----------------------------------------------------------------------
+// force-diff-sync 7284637824 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
 
 static unsigned timed_window_title_cb(AW_root*, char *title, AW_window *aw) {
     aw->number_of_timed_title_changes--;
@@ -275,7 +315,7 @@ void MnemonicScope::add(const char *topic_name, const char *mnemonic) {
             warn_mnemonic(topic_name, mnemonic, "is too long; only 1 character allowed");
         }
 
-        if (topic_name[0] == '#') { // graphical menu
+        if (AW_IS_IMAGEREF(topic_name)) {
             if (mnemonic[0]) {
                 warn_mnemonic(topic_name, mnemonic, "is useless for graphical menu entry");
             }
@@ -315,7 +355,7 @@ void MnemonicScope::add(const char *topic_name, const char *mnemonic) {
         }
     }
     else {
-        if (topic_name[0] != '#') { // not a graphical menu
+        if (!AW_IS_IMAGEREF(topic_name)) {
             fputs("Warning: mnemonic is missing", stderr);
             print_at_location(stderr, topic_name);
             requestPossibilities(topic_name);
@@ -369,9 +409,11 @@ static void exit_duplicate_mnemonic() {
 void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask) {
     aw_assert(legal_mask(mask));
     p_w->menu_deep = 0;
+
 #ifdef CHECK_DUPLICATED_MNEMONICS
     init_duplicate_mnemonic(window_name);
 #endif
+
 #if defined(DUMP_MENU_LIST)
     dumpCloseAllSubMenus();
 #endif // DUMP_MENU_LIST
@@ -379,6 +421,10 @@ void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active mask)
 }
 
 void AW_window::close_sub_menu() {
+    /**
+     * Closes the currently open sub menu.
+     * If no menu is open this method will crash.
+     */
 #ifdef CHECK_DUPLICATED_MNEMONICS
     close_test_duplicate_mnemonics();
 #endif
@@ -404,26 +450,21 @@ void AW_window::all_menus_created() const { // this is called by AW_window::show
 // force-diff-sync 2939128467234 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize){
+void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize) {
     AW_xfig *xfig = (AW_xfig*)xfig_data;
     aw_assert(xfig);
     // forgot to call load_xfig ?
 
     xfig->add_line(x1, y1, x2, y2, width);
 
-    class x {
-public:
-        static inline int max(int i1, int i2) {
-            return i1>i2 ? i1 : i2;
-        }
-    };
-
-    _at->max_x_size = x::max(_at->max_x_size, xfig->maxx - xfig->minx);
-    _at->max_y_size = x::max(_at->max_y_size, xfig->maxy - xfig->miny);
+    _at->max_x_size = std::max(_at->max_x_size, xfig->maxx - xfig->minx);
+    _at->max_y_size = std::max(_at->max_y_size, xfig->maxy - xfig->miny);
 
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
-        set_window_size(_at->max_x_size+1000, _at->max_y_size+1000);
+#if defined(ARB_MOTIF)
+        set_window_size(WIDER_THAN_SCREEN, HIGHER_THAN_SCREEN);
+#endif
     }
 }
 
@@ -509,9 +550,11 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
 #if defined(DUMP_MENU_LIST)
     dumpMenuEntry(name);
 #endif // DUMP_MENU_LIST
+
 #ifdef CHECK_DUPLICATED_MNEMONICS
     test_duplicate_mnemonics(labeli, mnemonic);
 #endif
+
     if (mnemonic && *mnemonic && strchr(labeli, mnemonic[0])) {
         // create one sub-menu-point
         button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass,
@@ -560,6 +603,7 @@ void AW_window::insert_sub_menu(const char *labeli, const char *mnemonic, AW_act
 #if defined(DUMP_MENU_LIST)
     dumpOpenSubMenu(name);
 #endif // DUMP_MENU_LIST
+
 #ifdef CHECK_DUPLICATED_MNEMONICS
     open_test_duplicate_mnemonics(labeli, mnemonic);
 #endif
@@ -623,22 +667,32 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
 // ----------------------------------------------------------------------
 
 void AW_window::load_xfig(const char *file, bool resize) {
-    if (file)   xfig_data = new AW_xfig(file, get_root()->font_width, get_root()->font_height);
-    else        xfig_data = new AW_xfig(get_root()->font_width, get_root()->font_height); // create an empty xfig
+    int width  = get_root()->font_width;
+    int height = get_root()->font_height;
 
-    set_expose_callback(AW_INFO_AREA, makeWindowCallback(AW_xfigCB_info_area, xfig_data));
+    if (file)   xfig_data = new AW_xfig(file, width, height);
+    else        xfig_data = new AW_xfig(width, height); // create an empty xfig
+
     xfig_data->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1);
 
+    // @@@ move into AW_at::set_xfig
     int xsize = xfig_data->maxx - xfig_data->minx;
     int ysize = xfig_data->maxy - xfig_data->miny;
-
     if (xsize>_at->max_x_size) _at->max_x_size = xsize;
     if (ysize>_at->max_y_size) _at->max_y_size = ysize;
 
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
-        set_window_size(_at->max_x_size+1000, _at->max_y_size+1000);
+#if defined(ARB_MOTIF)
+        set_window_size(WIDER_THAN_SCREEN, HIGHER_THAN_SCREEN);
+#else
+        // @@@ should not be needed in gtk, as soon as recalc_size_atShow has proper effect (see #377)
+        // @@@ This is the last remaining use in gtk! Remove if removed here.
+        set_window_size(_at->max_x_size, _at->max_y_size);
+#endif
     }
+
+    set_expose_callback(AW_INFO_AREA, makeWindowCallback(AW_xfigCB_info_area, xfig_data));
 }
 
 /**
@@ -652,7 +706,7 @@ const char *AW_window::local_id(const char *id) const {
 }
 
 void AW_window::sep______________() {
-    // create one help-sub-menu-point
+    //! insert a separator into the currently open menu
     XtVaCreateManagedWidget("", xmSeparatorWidgetClass,
                             p_w->menu_bar[p_w->menu_deep],
                             NULL);
@@ -693,14 +747,14 @@ void AW_window::set_popup_callback(const WindowCallback& wcb) {
     p_w->popup_cb = new AW_cb(this, wcb, 0, p_w->popup_cb);
 }
 
-void AW_window::set_info_area_height(int height) {
-    XtVaSetValues(INFO_WIDGET, XmNheight, height, NULL);
-    XtVaSetValues(p_w->frame, XmNtopOffset, height, NULL);
+void AW_window::set_info_area_height(int h) {
+    XtVaSetValues(INFO_WIDGET, XmNheight, h, NULL);
+    XtVaSetValues(p_w->frame, XmNtopOffset, h, NULL);
 }
 
-void AW_window::set_bottom_area_height(int height) {
-    XtVaSetValues(BOTTOM_WIDGET, XmNheight, height, NULL);
-    XtVaSetValues(p_w->scroll_bar_horizontal, XmNbottomOffset, (int)height, NULL);
+void AW_window::set_bottom_area_height(int h) {
+    XtVaSetValues(BOTTOM_WIDGET, XmNheight, h, NULL);
+    XtVaSetValues(p_w->scroll_bar_horizontal, XmNbottomOffset, (int)h, NULL);
 }
 
 void AW_window::set_input_callback(AW_area area, const WindowCallback& wcb) {
@@ -770,7 +824,7 @@ void AW_window::get_scrollarea_size(AW_screen_area *square) {
     square->b -= top_indent_of_vertical_scrollbar;
 }
 
-void AW_window::calculate_scrollbars(){
+void AW_window::calculate_scrollbars() {
     AW_screen_area scrollArea;
     get_scrollarea_size(&scrollArea);
 
@@ -963,6 +1017,7 @@ void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
 
 
 void AW_window::set_window_size(int width, int height) {
+    // only used from GDE once (@@@ looks like a hack -- delete?)
     XtVaSetValues(p_w->shell, XmNwidth, (int)width, XmNheight, (int)height, NULL);
 }
 
@@ -977,11 +1032,19 @@ void AW_window::set_window_title(const char *title){
 
 const char *AW_window::get_window_title() const {
     char *title;
-
     XtVaGetValues(p_w->shell, XmNtitle, &title, NULL);
-
     return title;
 }
+
+void AW_window::shadow_width(int shadow_thickness) {
+    _at->shadow_thickness = shadow_thickness;
+}
+
+#if defined(ARB_MOTIF)
+void AW_window::button_height(int height) {
+    _at->height_of_buttons = height>1 ? height : 0;
+}
+#endif
 
 // ----------------------------------------------------------------------
 // force-diff-sync 874687234237 (remove after merging back to trunk)
@@ -1241,6 +1304,27 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
 
 }
 
+// ----------------------------------------------------------------------
+// force-diff-sync 2964732647236 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
+void AW_window::recalc_pos_atShow(AW_PosRecalc pr) {
+    recalc_pos_at_show = pr;
+}
+
+AW_PosRecalc AW_window::get_recalc_pos_atShow() const {
+    return recalc_pos_at_show;
+}
+
+void AW_window::recalc_size_atShow(enum AW_SizeRecalc sr) {
+    if (sr == AW_RESIZE_ANY) {
+        sr = (recalc_size_at_show == AW_RESIZE_USER) ? AW_RESIZE_USER : AW_RESIZE_DEFAULT;
+    }
+    recalc_size_at_show = sr;
+}
+
+
+
 // --------------
 //      focus
 
@@ -1379,6 +1463,226 @@ static void cleanupResizeEvents(Display *display) {
     }
 }
 
+static void aw_window_avoid_destroy_cb(Widget, AW_window *, XmAnyCallbackStruct *) {
+    aw_message("If YOU do not know what to answer, how should ARB know?\nPlease think again and answer the prompt!");
+}
+static void aw_window_noexit_destroy_cb(Widget,  AW_window *aww, XmAnyCallbackStruct *) {
+    aww->hide();
+    // don't exit, when using destroy callback
+}
+static void aw_window_destroy_cb(Widget,  AW_window *aww, XmAnyCallbackStruct *) {
+    AW_root *root = aww->get_root();
+    if ((p_global->main_aww == aww) || !p_global->main_aww->is_shown()) {
+#ifdef NDEBUG
+        if (!aw_ask_sure("quit_by_X", "Are you sure to quit?")) return;
+#endif
+        exit(EXIT_SUCCESS);
+    }
+    aww->hide();
+}
+
+static void aw_set_delete_window_cb(AW_window *aww, Widget shell, bool allow_close) {
+    Atom WM_DELETE_WINDOW = XmInternAtom(XtDisplay(shell), (char*)"WM_DELETE_WINDOW", False);
+
+    // remove any previous callbacks
+    XmRemoveWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_avoid_destroy_cb,  (caddr_t)aww);
+    XmRemoveWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_noexit_destroy_cb, (caddr_t)aww);
+    XmRemoveWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_destroy_cb,        (caddr_t)aww);
+
+    if (!allow_close) {
+        XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_avoid_destroy_cb, (caddr_t)aww);
+    }
+    else {
+        AW_root *root = aww->get_root();
+        if (p_global->no_exit) {
+            XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_noexit_destroy_cb, (caddr_t)aww);
+        }
+        else {
+            XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_destroy_cb, (caddr_t)aww);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------
+// force-diff-sync 8294723642364 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
+void AW_window::allow_delete_window(bool allow_close) {
+    aw_set_delete_window_cb(this, p_w->shell, allow_close);
+}
+
+// ----------------------------------------------------------------------
+// force-diff-sync 9268347253894 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
+bool AW_window::is_shown() const {
+    // return true if window is shown ( = not invisible and already created)
+    // Note: does return TRUE!, if window is only minimized by WM
+    return window_is_shown;
+}
+
+static void aw_update_window_geometry_awars(AW_window *aww) {
+    AW_window_Motif *motif = p_aww(aww);
+
+    short          posx, posy;
+    unsigned short width, height, borderwidth;
+    XtVaGetValues(motif->shell, // bad hack
+                  XmNborderWidth, &borderwidth,
+                  XmNwidth, &width,
+                  XmNheight, &height,
+                  XmNx, &posx,
+                  XmNy, &posy,
+                  NULL);
+
+    if (motif->knows_WM_offset()) {
+        posy -= motif->WM_top_offset;
+        posx -= motif->WM_left_offset;
+
+        if (posx<0) posx = 0;
+        if (posy<0) posy = 0;
+
+        aww->store_pos_in_awars(posx, posy);
+    }
+#if defined(DEBUG)
+    else {
+        fprintf(stderr, " WM_offsets unknown. Did not update awars!\n");
+    }
+#endif
+    aww->store_size_in_awars(width, height);
+}
+
+void AW_window::show() {
+    bool was_shown = true;
+    if (!window_is_shown) {
+        all_menus_created();
+        get_root()->window_show();
+        window_is_shown = true;
+        was_shown       = false;
+    }
+
+    if (recalc_size_at_show != AW_KEEP_SIZE) {
+        if (recalc_size_at_show == AW_RESIZE_DEFAULT) {
+            window_fit();
+        }
+        else {
+            aw_assert(recalc_size_at_show == AW_RESIZE_USER);
+            // check whether user size is too small and increase to minimum window size
+
+            int min_width, min_height;   get_window_size(min_width, min_height);
+            int user_width, user_height; get_size_from_awars(user_width, user_height);
+
+            if (user_width <min_width)  user_width  = min_width;
+            if (user_height<min_height) user_height = min_height;
+
+            set_window_size(user_width, user_height);
+        }
+        recalc_size_at_show = AW_KEEP_SIZE;
+    }
+
+    {
+        int  posx, posy;
+        bool setPos = false;
+
+        switch (recalc_pos_at_show) {
+            case AW_REPOS_TO_MOUSE_ONCE:
+                recalc_pos_at_show = AW_KEEP_POS;
+                // fallthrough
+            case AW_REPOS_TO_MOUSE: {
+                int mx, my; if (!get_mouse_pos(mx, my)) goto FALLBACK_CENTER;
+                int width, height; get_window_size(width, height);
+                {
+                    int wx, wy; get_window_content_pos(wx, wy);
+                    if (wx || wy) {
+                        if (p_w->knows_WM_offset()) {
+                            wx -= p_w->WM_left_offset;
+                            wy -= p_w->WM_top_offset; // @@@ values of wx/wy never used
+
+                            // add size of window decoration
+                            width  += p_w->WM_left_offset;
+                            height += p_w->WM_top_offset;
+                        }
+                    }
+                }
+
+                setPos = true;
+                posx   = mx-width/2;
+                posy   = my-height/2;
+
+                // avoid windows outside of screen
+                {
+                    int swidth, sheight; get_screen_size(swidth, sheight);
+                    int maxx = swidth-width;
+                    int maxy = sheight-height;
+
+                    if (posx>maxx) posx = maxx;
+                    if (posy>maxy) posy = maxy;
+
+                    if (posx<0) posx = 0;
+                    if (posy<0) posy = 0;
+                }
+
+                break;
+            }
+            case AW_REPOS_TO_CENTER: {
+                  FALLBACK_CENTER :
+                int width, height; get_window_size(width, height);
+                int swidth, sheight; get_screen_size(swidth, sheight);
+
+                setPos = true;
+                posx   = (swidth-width)/2;
+                posy   = (sheight-height)/4;
+                break;
+            }
+
+            case AW_KEEP_POS:
+                if (was_shown) {
+                    // user might have moved the window -> store (new) positions
+                    aw_update_window_geometry_awars(this);
+                }
+                break;
+        }
+
+        if (setPos) store_pos_in_awars(posx, posy);
+        else get_pos_from_awars(posx, posy);
+
+        set_window_frame_pos(posx, posy); // always set pos
+    }
+
+    XtPopup(p_w->shell, XtGrabNone);
+    if (!expose_callback_added) {
+        set_expose_callback(AW_INFO_AREA, aw_onExpose_calc_WM_offsets); // @@@ should be removed after it was called once
+        expose_callback_added = true;
+    }
+}
+
+void AW_window::show_modal() {
+    recalc_pos_atShow(AW_REPOS_TO_MOUSE);
+    get_root()->current_modal_window = this;
+    activate();
+}
+
+void AW_window::hide() {
+    if (window_is_shown) {
+        aw_update_window_geometry_awars(this);
+        if (hide_cb) hide_cb(this);
+        get_root()->window_hide(this);
+        window_is_shown = false;
+    }
+    XtPopdown(p_w->shell);
+}
+
+void AW_window::hide_or_notify(const char *error) {
+    if (error) aw_message(error);
+    else hide();
+}
+
+// ----------------------------------------------------------------------
+// force-diff-sync 9287423467632 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
+void AW_window::on_hide(AW_CB0 call_on_hide) {
+    hide_cb = call_on_hide;
+}
 
 inline void AW_area_management::run_resize_callback() {
     if (resize_cb) resize_cb->run_callbacks();
@@ -1677,7 +1981,7 @@ const char *aw_str_2_label(const char *str, AW_window *aww) {
             AW_awar *is_awar = aww->get_root()->label_is_awar(str);
 
             if (is_awar) { // for labels displaying awar values, insert dummy text here
-                int wanted_len = aww->_at->length_of_buttons - 2;
+                int wanted_len = aww->get_at().length_of_buttons - 2;
                 if (wanted_len < 1) wanted_len = 1;
 
                 char *labelbuf       = GB_give_buffer(wanted_len+1);
@@ -1716,56 +2020,6 @@ void AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str) {
 
         is_awar->tie_widget(0, widget, AW_WIDGET_LABEL_FIELD, aww);
     }
-}
-
-static void aw_window_avoid_destroy_cb(Widget, AW_window *, XmAnyCallbackStruct *) {
-    aw_message("If YOU do not know what to answer, how should ARB know?\nPlease think again and answer the prompt!");
-}
-
-static void aw_window_noexit_destroy_cb(Widget,  AW_window *aww, XmAnyCallbackStruct *) {
-    aww->hide();
-    // don't exit, when using destroy callback
-}
-
-static void aw_window_destroy_cb(Widget,  AW_window *aww, XmAnyCallbackStruct *) {
-    AW_root *root = aww->get_root();
-    if ((p_global->main_aww == aww) || !p_global->main_aww->is_shown()) {
-#ifdef NDEBUG
-        if (!aw_ask_sure("quit_by_X", "Are you sure to quit?")) return;
-#endif
-        exit(EXIT_SUCCESS);
-    }
-    aww->hide();
-}
-
-static void aw_update_window_geometry_awars(AW_window *aww) {
-    AW_window_Motif *motif = p_aww(aww);
-
-    short          posx, posy;
-    unsigned short width, height, borderwidth;
-    XtVaGetValues(motif->shell, // bad hack
-                  XmNborderWidth, &borderwidth,
-                  XmNwidth, &width,
-                  XmNheight, &height,
-                  XmNx, &posx,
-                  XmNy, &posy,
-                  NULL);
-
-    if (motif->knows_WM_offset()) {
-        posy -= motif->WM_top_offset;
-        posx -= motif->WM_left_offset;
-
-        if (posx<0) posx = 0;
-        if (posy<0) posy = 0;
-
-        aww->store_pos_in_awars(posx, posy);
-    }
-#if defined(DEBUG)
-    else {
-        fprintf(stderr, " WM_offsets unknown. Did not update awars!\n");
-    }
-#endif
-    aww->store_size_in_awars(width, height);
 }
 
 static long aw_loop_get_window_geometry(const char *, long val, void *) {
@@ -1809,39 +2063,13 @@ static Pixmap getIcon(Screen *screen, const char *iconName, Pixel foreground, Pi
     return pixmap;
 }
 
-static void aw_set_delete_window_cb(AW_window *aww, Widget shell, bool allow_close) {
-    Atom WM_DELETE_WINDOW = XmInternAtom(XtDisplay(shell), (char*)"WM_DELETE_WINDOW", False);
-
-    // remove any previous callbacks
-    XmRemoveWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_avoid_destroy_cb,  (caddr_t)aww);
-    XmRemoveWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_noexit_destroy_cb, (caddr_t)aww);
-    XmRemoveWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_destroy_cb,        (caddr_t)aww);
-
-    if (!allow_close) {
-        XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_avoid_destroy_cb, (caddr_t)aww);
-    }
-    else {
-        AW_root *root = aww->get_root();
-        if (p_global->no_exit) {
-            XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_noexit_destroy_cb, (caddr_t)aww);
-        }
-        else {
-            XmAddWMProtocolCallback(shell, WM_DELETE_WINDOW, (XtCallbackProc)aw_window_destroy_cb, (caddr_t)aww);
-        }
-    }
-}
-
-void AW_window::allow_delete_window(bool allow_close) {
-    aw_set_delete_window_cb(this, p_w->shell, allow_close);
-}
-
-Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int width, int height, int posx, int posy) {
+Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int width, int height, int posx, int posy) { // @@@ move into AW_window
     AW_root *root = aww->get_root();
     Widget shell;
 
     // set minimum window size to size provided by init
-    if (width >aww->_at->max_x_size) aww->_at->max_x_size = width;
-    if (height>aww->_at->max_y_size) aww->_at->max_y_size = height;
+    if (width >aww->get_at().max_x_size) aww->get_at().max_x_size = width;
+    if (height>aww->get_at().max_y_size) aww->get_at().max_y_size = height;
 
     bool has_user_geometry = false;
     if (!GBS_read_hash(root->hash_for_windows, aww->get_window_id())) {
@@ -1876,8 +2104,8 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
         // are created in visible area (otherwise widget are crippled).
         // window will be resized later (on show)
 
-        width = 4000;
-        height = 3000;
+        width  = WIDER_THAN_SCREEN;
+        height = HIGHER_THAN_SCREEN;
 
         aww->recalc_size_atShow(AW_RESIZE_ANY);
     }
@@ -2391,7 +2619,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
 void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windowname) {
     root = root_in; // for macro
 
-    int width  = 100;                               // this is only the minimum size!
+    int width  = 100; // this is only the minimum size!
     int height = 100;
     int posx   = 50;
     int posy   = 50;
@@ -2681,141 +2909,6 @@ void AW_window::wm_activate() {
         }
 #endif // DEBUG
     }
-}
-
-// ----------------------------------------------------------------------
-// force-diff-sync 9268347253894 (remove after merging back to trunk)
-// ----------------------------------------------------------------------
-
-bool AW_window::is_shown() const {
-    // return true if window is shown ( = not invisible and already created)
-    // Note: does return TRUE!, if window is only minimized by WM
-    return window_is_shown;
-}
-
-void AW_window::show() {
-    bool was_shown = true;
-    if (!window_is_shown) {
-        all_menus_created();
-        get_root()->window_show();
-        window_is_shown = true;
-        was_shown       = false;
-    }
-
-    if (recalc_size_at_show != AW_KEEP_SIZE) {
-        if (recalc_size_at_show == AW_RESIZE_DEFAULT) {
-            window_fit();
-        }
-        else {
-            aw_assert(recalc_size_at_show == AW_RESIZE_USER);
-            // check whether user size is too small and increase to minimum window size
-
-            int min_width, min_height;   get_window_size(min_width, min_height);
-            int user_width, user_height; get_size_from_awars(user_width, user_height);
-
-            if (user_width <min_width)  user_width  = min_width;
-            if (user_height<min_height) user_height = min_height;
-
-            set_window_size(user_width, user_height);
-        }
-        recalc_size_at_show = AW_KEEP_SIZE;
-    }
-
-    {
-        int  posx, posy;
-        bool setPos = false;
-
-        switch (recalc_pos_at_show) {
-            case AW_REPOS_TO_MOUSE_ONCE:
-                recalc_pos_at_show = AW_KEEP_POS;
-                // fallthrough
-            case AW_REPOS_TO_MOUSE: {
-                int mx, my; if (!get_mouse_pos(mx, my)) goto FALLBACK_CENTER;
-                int width, height; get_window_size(width, height);
-                {
-                    int wx, wy; get_window_content_pos(wx, wy);
-                    if (wx || wy) {
-                        if (p_w->knows_WM_offset()) {
-                            wx -= p_w->WM_left_offset;
-                            wy -= p_w->WM_top_offset; // @@@ values of wx/wy never used
-
-                            // add size of window decoration
-                            width  += p_w->WM_left_offset;
-                            height += p_w->WM_top_offset;
-                        }
-                    }
-                }
-
-                setPos = true;
-                posx   = mx-width/2;
-                posy   = my-height/2;
-                
-                // avoid windows outside of screen
-                {
-                    int swidth, sheight; get_screen_size(swidth, sheight);
-                    int maxx = swidth-width;
-                    int maxy = sheight-height;
-
-                    if (posx>maxx) posx = maxx;
-                    if (posy>maxy) posy = maxy;
-
-                    if (posx<0) posx = 0;
-                    if (posy<0) posy = 0;
-                }
-
-                break;
-            }
-            case AW_REPOS_TO_CENTER: {
-                  FALLBACK_CENTER :
-                int width, height; get_window_size(width, height);
-                int swidth, sheight; get_screen_size(swidth, sheight);
-
-                setPos = true;
-                posx   = (swidth-width)/2;
-                posy   = (sheight-height)/4;
-                break;
-            }
-
-            case AW_KEEP_POS:
-                if (was_shown) {
-                    // user might have moved the window -> store (new) positions
-                    aw_update_window_geometry_awars(this);
-                }
-                break;
-        }
-
-        if (setPos) store_pos_in_awars(posx, posy);
-        else get_pos_from_awars(posx, posy);
-
-        set_window_frame_pos(posx, posy); // always set pos
-    }
-
-    XtPopup(p_w->shell, XtGrabNone);
-    if (!expose_callback_added) {
-        set_expose_callback(AW_INFO_AREA, aw_onExpose_calc_WM_offsets); // @@@ should be removed after it was called once
-        expose_callback_added = true;
-    }
-}
-
-void AW_window::show_modal() {
-    recalc_pos_atShow(AW_REPOS_TO_MOUSE);
-    get_root()->current_modal_window = this;
-    activate();
-}
-
-void AW_window::hide() {
-    if (window_is_shown) {
-        aw_update_window_geometry_awars(this);
-        if (hide_cb) hide_cb(this);
-        get_root()->window_hide(this);
-        window_is_shown = false;
-    }
-    XtPopdown(p_w->shell);
-}
-
-void AW_window::hide_or_notify(const char *error){
-    if (error) aw_message(error);
-    else hide();
 }
 
 void AW_window::_set_activate_callback(void *widget) {

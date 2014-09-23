@@ -2763,13 +2763,12 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     int xpos_calc[3] = { -1, -1, -1 }; // X-positions for elements in search expressions
 
     if (awtqs->qbox_pos_fig) {
-        AW_at_size at_size;
-        int        xpos, ypos;
-
         aws->auto_space(1, 1);
-
         aws->at(awtqs->qbox_pos_fig);
-        aws->store_at_size_and_attach(&at_size);
+
+        SmartPtr<AW_at_storage> at_size(AW_at_storage::make(aws, AW_AT_SIZE_AND_ATTACH));
+
+        int xpos, ypos;
         aws->get_at_position(&xpos, &ypos);
 
         int ypos_dummy;
@@ -2787,7 +2786,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             }
 
             aws->at(xpos_calc[0], ypos+key*KEY_Y_OFFSET);
-            aws->restore_at_size_and_attach(&at_size);
+            aws->restore_at_from(*at_size);
 
             {
                 char *button_id      = GBS_global_string_copy("field_sel_%s_%i", query_id, key);
@@ -2811,14 +2810,14 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
     if (awtqs->query_pos_fig) {
         aws->at(awtqs->query_pos_fig);
 
-        AW_at_size at_size;
-        int        xpos, ypos;
-        aws->store_at_size_and_attach(&at_size);
+        SmartPtr<AW_at_storage> at_size(AW_at_storage::make(aws, AW_AT_SIZE_AND_ATTACH));
+
+        int xpos, ypos;
         aws->get_at_position(&xpos, &ypos);
 
         for (int key = 0; key<QUERY_SEARCHES; ++key) {
             aws->at(xpos_calc[2], ypos+key*KEY_Y_OFFSET);
-            aws->restore_at_size_and_attach(&at_size);
+            aws->restore_at_from(*at_size);
 #if defined(ARB_MOTIF)
             aws->d_callback(makeWindowCallback(perform_query_cb, query, EXT_QUERY_NONE)); // enable ENTER in searchfield to start search
 #endif

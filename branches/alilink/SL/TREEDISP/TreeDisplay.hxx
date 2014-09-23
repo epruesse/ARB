@@ -121,10 +121,11 @@ struct AWT_command_data {
 
 enum CollapseMode {
     COLLAPSE_ALL      = 0,
-    EXPAND_MARKED     = 1, // do not collapse groups containing marked species
-    COLLAPSE_TERMINAL = 2, // do not collapse groups with subgroups
+    EXPAND_MARKED     = 1,  // do not collapse groups containing marked species
+    COLLAPSE_TERMINAL = 2,  // do not collapse groups with subgroups
     EXPAND_ALL        = 4,
-    EXPAND_COLOR      = 8, // do not collapse groups containing species with color == parameter 'color_group'
+    EXPAND_COLOR      = 8,  // do not collapse groups containing species with color == parameter 'color_group' (or any color if 'color_group' is -1)
+    EXPAND_ZOMBIES    = 16, // do not collapse groups containing zombies
 };
 
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
