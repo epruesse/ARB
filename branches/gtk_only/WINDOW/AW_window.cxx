@@ -172,17 +172,6 @@ void AW_window::d_callback(const WindowCallback& wcb) {
 // force-diff-sync 7284637824 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-static bool AW_IS_IMAGEREF(const char* ref) {
-    /*!
-     * checks if a label string is an image reference.
-     * image references have "#" as their first character
-     *
-     * @param ref the label string
-     * @return true if ref is an image reference
-     */
-    return ref[0] == '#';
-}
-
 static char* aw_convert_mnemonic(const char* text, const char* mnemonic) {
     /*!
      * Converts ARB type mnemonics into GTK style mnemoics.
@@ -785,7 +774,7 @@ void MnemonicScope::add(const char *topic_name, const char *mnemonic) {
             warn_mnemonic(topic_name, mnemonic, "is too long; only 1 character allowed");
         }
 
-        if (topic_name[0] == '#') { // graphical menu
+        if (AW_IS_IMAGEREF(topic_name)) {
             if (mnemonic[0]) {
                 warn_mnemonic(topic_name, mnemonic, "is useless for graphical menu entry");
             }
@@ -825,7 +814,7 @@ void MnemonicScope::add(const char *topic_name, const char *mnemonic) {
         }
     }
     else {
-        if (topic_name[0] != '#') { // not a graphical menu
+        if (!AW_IS_IMAGEREF(topic_name)) {
             fputs("Warning: mnemonic is missing", stderr);
             print_at_location(stderr, topic_name);
             requestPossibilities(topic_name);
