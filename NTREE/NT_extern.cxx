@@ -1400,16 +1400,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
             awm->insert_menu_topic(awm->local_id("reset_physical_zoom"), "Physical zoom", "P", "rst_phys_zoom.hlp", AWM_ALL, makeWindowCallback(NT_reset_pzoom_cb, ntw));
         }
         awm->close_sub_menu();
-        awm->insert_sub_menu("Collapse/Expand tree",         "d");
-        {
-            awm->insert_menu_topic(awm->local_id("tree_group_all"),         "Group all",               "a", "tgroupall.hlp",   AWM_ALL, makeWindowCallback(NT_group_tree_cb,       ntw));
-            awm->insert_menu_topic(awm->local_id("tree_group_not_marked"),  "Group all except marked", "m", "tgroupnmrkd.hlp", AWM_ALL, makeWindowCallback(NT_group_not_marked_cb, ntw));
-            awm->insert_menu_topic(awm->local_id("tree_group_term_groups"), "Group terminal groups",   "t", "tgroupterm.hlp",  AWM_ALL, makeWindowCallback(NT_group_terminal_cb,   ntw));
-            awm->insert_menu_topic(awm->local_id("tree_ungroup_all"),       "Ungroup all",             "U", "tungroupall.hlp", AWM_ALL, makeWindowCallback(NT_ungroup_all_cb,      ntw));
-            awm->sep______________();
-            NT_insert_color_collapse_submenu(awm, ntw);
-        }
-        awm->close_sub_menu();
+        NT_insert_collapse_submenu(awm, ntw);
         awm->insert_sub_menu("Beautify tree", "e");
         {
             awm->insert_menu_topic(awm->local_id("beautifyt_tree"),  "#beautifyt.xpm",  "",  "resorttree.hlp", AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_TOP));

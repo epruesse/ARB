@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Calculate Branch Lengths
 
-OCCURRENCE	ARB_NT/Tree/Parsimony/Tree/Calculate Branch Lengths
+OCCURRENCE	ARB_PARSIMONY/Tree/Calculate Branch Lengths
 
 
 DESCRIPTION	Calculates branchlengths for the current tree.

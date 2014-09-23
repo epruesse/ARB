@@ -12,7 +12,7 @@ TITLE           Remove Zombies
 
 OCCURRENCE      ARB_NT/Tree/Remove Zombies
 
-DESCRIPTION     Removes 'deleted' species from the currently displayed tree.
+DESCRIPTION     Removes zombie species (see LINK{glossary.hlp}) from the currently displayed tree.
 
 NOTES           Nodes and IDs of species which have been deleted from the 
                 database, e.g. by
@@ -20,7 +20,7 @@ NOTES           Nodes and IDs of species which have been deleted from the
                 - ARB_NT/Species/Search/DELETE LISTED SPECIES or
                 - ARB_NT/Species/Info/SPECIES/Delete
 
-                are maintained in the trees and indicated as deleted (<name>).
+                are maintained in the trees and indicated as deleted by enclosing their name into '<' and '>' (e.g. '<EscColi>').
 
 EXAMPLES        None
 
