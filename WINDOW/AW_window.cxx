@@ -113,7 +113,6 @@ void AW_window::unset_at_commands() {
     _at->unset_at_commands();
 }
 
-void AW_window::at_set_min_size(int xmin, int ymin) { _at->at_set_min_size(xmin, ymin); }
 void AW_window::auto_space(int x, int y){ _at->auto_space(x,y); }
 void AW_window::label_length(int length){ _at->label_length(length); }
 
@@ -893,6 +892,10 @@ void AW_window::create_menu(const char *name, const char *mnemonic, AW_active ma
 }
 
 void AW_window::close_sub_menu() {
+    /**
+     * Closes the currently open sub menu.
+     * If no menu is open this method will crash.
+     */
 #ifdef CHECK_DUPLICATED_MNEMONICS
     close_test_duplicate_mnemonics();
 #endif
@@ -1101,7 +1104,7 @@ void AW_window::update_toggle_field() {
 // force-diff-sync 2939128467234 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize){
+void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize) {
     aw_return_if_fail(xfig_data != NULL);  // forgot to call load_xfig ?
     
     xfig_data->add_line(x1, y1, x2, y2, width);
@@ -1281,7 +1284,9 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/) {
 #if defined(ARB_MOTIF)
         set_window_size(WIDER_THAN_SCREEN, HIGHER_THAN_SCREEN);
 #else
-        set_window_size(_at->max_x_size, _at->max_y_size); // @@@ should not be needed in gtk, as soon as recalc_size_atShow has proper effect (see #377)
+        // @@@ should not be needed in gtk, as soon as recalc_size_atShow has proper effect (see #377)
+        // @@@ This is the last remaining use in gtk! Remove if removed here.
+        set_window_size(_at->max_x_size, _at->max_y_size);
 #endif
     }
 

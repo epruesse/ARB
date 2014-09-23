@@ -304,10 +304,6 @@ public:
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1)); }
 
     void sep______________(); 
-    /**
-     * Closes the currently open sub menu.
-     * If no menu is open this method will crash.
-     */
     void close_sub_menu();
 
     void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, const WindowCallback& cb);
@@ -340,13 +336,15 @@ public:
     void create_user_geometry_awars(int posx, int posy, int width, int height);
     
     // ************** Control window size  *********
+#if defined(IN_ARB_WINDOW)
     void set_window_size(int width, int height);
+#endif
     void get_window_size(int& width, int& height);
     void window_fit();                              // Recalculate the size of a window with buttons
 
+#if defined(IN_ARB_WINDOW)
     void store_size_in_awars(int width, int height);
     void get_size_from_awars(int& width, int& height);
-
 
     // ************** Control window position  *********
     void set_window_frame_pos(int xpos, int ypos);
@@ -354,15 +352,13 @@ public:
 
     void store_pos_in_awars(int xpos, int ypos);
     void get_pos_from_awars(int& xpos, int& ypos);
-    
-    
-    // *****************
 
+    // *****************
     void get_screen_size(int& width, int& height);
     bool get_mouse_pos(int& x, int& y);
-    void get_font_size(int& w, int& h);
-
     void set_focus_policy(bool follow_mouse);
+    void get_font_size(int& w, int& h);
+#endif
     
     // ************** ********************************************************************  *********
     // ************** Create buttons: First set modify flags and finally create the button  *********
@@ -410,7 +406,6 @@ public:
     void at_set_to(bool attach_x, bool attach_y, int xoff, int yoff); // set "to:XY:id" manually
     void at_unset_to();                                               // unset "to:id" manually
     void unset_at_commands();
-    void at_set_min_size(int xmin, int ymin);                         // define minimum window size
 
     void store_at_to(AW_at_storage& storage) { storage.store(*_at); }
     void restore_at_from(const AW_at_storage& stored) { stored.restore(*_at); }

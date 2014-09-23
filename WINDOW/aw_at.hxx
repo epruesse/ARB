@@ -88,7 +88,6 @@ public:
     void auto_increment(int x, int y);
     void unset_at_commands();
     void increment_at_commands(int x, int y);
-    void at_set_min_size(int xmin, int ymin);
     void auto_space(int x, int y);
     void label_length(int length);
     void button_length(int length);
