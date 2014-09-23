@@ -891,7 +891,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
                                             parentWidget,
                                             XmNwidth, (int)(width_of_input_label + 2),
                                             XmNhighlightThickness, 0,
-                                            RES_CONVERT(XmNlabelString, _at->label_for_inputfield),
+                                            RES_LABEL_CONVERT(_at->label_for_inputfield),
                                             XmNrecomputeSize, false,
                                             XmNalignment, XmALIGNMENT_BEGINNING,
                                             XmNfontList, p_global->fontlist,
@@ -1022,7 +1022,7 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
                                             XmNx, (int)_at->x_for_next_button,
                                             XmNy, (int)(_at->y_for_next_button) + this->get_root()->y_correction_for_input_labels + 5 - 6,
                                             XmNwidth, (int)(width_of_text_label + 2),
-                                            RES_CONVERT(XmNlabelString, _at->label_for_inputfield),
+                                            RES_LABEL_CONVERT(_at->label_for_inputfield),
                                             XmNrecomputeSize, false,
                                             XmNalignment, XmALIGNMENT_BEGINNING,
                                             XmNfontList, p_global->fontlist,
@@ -1355,14 +1355,16 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *awar_name, bool
 #endif // DUMP_BUTTON_CREATION
 
             {
+                aw_assert(!AW_IS_IMAGEREF(tmp_label)); // using images as labels for option menus will work in gtk (wont fix in motif)
+
                 char *help_label = this->align_string(tmp_label, width_help_label);
-                optionMenu1 = XtVaCreateManagedWidget("optionMenu1",
-                                                      xmRowColumnWidgetClass,
-                                                      (_at->attach_any) ? INFO_FORM : INFO_WIDGET,
-                                                      XmNrowColumnType, XmMENU_OPTION,
-                                                      XmNsubMenuId, optionMenu,
-                                                      RES_CONVERT(XmNlabelString, help_label),
-                                                      NULL);
+                optionMenu1      = XtVaCreateManagedWidget("optionMenu1",
+                                                           xmRowColumnWidgetClass,
+                                                           (_at->attach_any) ? INFO_FORM : INFO_WIDGET,
+                                                           XmNrowColumnType, XmMENU_OPTION,
+                                                           XmNsubMenuId, optionMenu,
+                                                           RES_CONVERT(XmNlabelString, help_label),
+                                                           NULL);
                 free(help_label);
             }
         }
@@ -1454,7 +1456,7 @@ void *AW_window::_create_option_entry(AW_VARIABLE_TYPE IF_ASSERTION_USED(type), 
     entry = XtVaCreateManagedWidget("optionMenu_entry",
                                     xmPushButtonWidgetClass,
                                     oms->menu_widget,
-                                    RES_LABEL_CONVERT(((char *)name)),
+                                    RES_CONVERT(XmNlabelString, name), // force text (as gtk version does)
                                     XmNfontList, p_global->fontlist,
                                     XmNbackground, _at->background_color,
                                     NULL);
