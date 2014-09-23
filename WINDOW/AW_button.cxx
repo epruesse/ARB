@@ -426,7 +426,7 @@ void aw_detect_text_size(const char *text, size_t& width, size_t& height) {
 }
 
 void AW_window::create_autosize_button(const char *macro_name, AW_label buttonlabel, const  char *mnemonic, unsigned xtraSpace) {
-    aw_assert(buttonlabel[0] != '#');    // use create_button for graphical buttons!
+    aw_assert(!AW_IS_IMAGEREF(buttonlabel));    // use create_button for graphical buttons!
     aw_assert(!_at->to_position_exists); // wont work if to-position exists
 
     AW_awar *is_awar = get_root()->label_is_awar(buttonlabel);
@@ -500,7 +500,7 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 #define BUTTON_GRAPHIC_PADDING 12
 #define FLAT_GRAPHIC_PADDING   4 // for buttons w/o callback
 
-    bool is_graphical_button = buttonlabel[0] == '#';
+    bool is_graphical_button = AW_IS_IMAGEREF(buttonlabel);
 
 #if defined(ASSERTION_USED)
     AW_awar *is_awar = is_graphical_button ? NULL : get_root()->label_is_awar(buttonlabel);
@@ -826,8 +826,8 @@ void AW_window::create_toggle(const char *var_name, const char *no, const char *
     aw_toggle_data *tdata  = new aw_toggle_data;
     tdata->isTextToggle    = false;
 
-    aw_assert(no[0] == '#');
-    aw_assert(yes[0] == '#');
+    aw_assert(AW_IS_IMAGEREF(no));
+    aw_assert(AW_IS_IMAGEREF(yes));
 
     tdata->bitmapOrText[0] = strdup(no);
     tdata->bitmapOrText[1] = strdup(yes);
