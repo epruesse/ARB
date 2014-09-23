@@ -11,6 +11,11 @@
 #ifndef AW_KEYSYM_HXX
 #define AW_KEYSYM_HXX
 
+inline bool AW_IS_IMAGEREF(const char* label) { // @@@ move into AW_window.cxx aftermerge
+    //! return true if 'label' is an image reference
+    return label[0] == '#';
+}
+
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdk.h>
 
