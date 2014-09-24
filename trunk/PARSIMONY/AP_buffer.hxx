@@ -39,7 +39,6 @@ class AP_STACK : virtual Noncopyable { // @@@ make typesafe (use template)
     struct AP_STACK_ELEM * first;
     struct AP_STACK_ELEM * pointer;
     unsigned long          stacksize;
-    unsigned long          max_stacksize;
 
 public:
     AP_STACK();
