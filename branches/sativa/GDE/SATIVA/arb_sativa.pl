@@ -15,8 +15,6 @@ use strict;
 use warnings;
 # use diagnostics;
 
-# just a svn/dav test-commit by ralf
-
 BEGIN {
   if (not exists $ENV{'ARBHOME'}) { die "Environment variable \$ARBHOME has to be defined"; }
   my $arbhome = $ENV{'ARBHOME'};
