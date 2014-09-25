@@ -89,20 +89,77 @@ sub exportTaxonomy($$$$$\@) {
 #  close(SEQFILE);
 }
 
+# ------------------------------------------------------------
+
+sub cpu_has_feature($) {
+    my ($feature) = @_;
+    my $cmd;
+    my $uname = `uname`;
+    chomp($uname);
+
+    if ($uname eq "Darwin") {
+       $cmd = "sysctl machdep.cpu.features";
+    }
+    elsif ($uname eq "Linux") {
+       $cmd = "grep flags /proc/cpuinfo";
+    }
+    else {
+       return 0;
+    }
+
+    `$cmd | grep -qi "$feature"`;
+    return $? + 1;
+}
+
+sub cpu_get_cores() {
+    my $cores = 2;
+    my $uname = `uname`;
+    chomp($uname);
+    if ($uname eq "Darwin") {
+       $cores = `sysctl -n hw.ncpu`;
+    }
+    elsif ($uname eq "Linux") {
+       $cores = `grep -c "^processor" /proc/cpuinfo`;
+    }
+
+    return $cores;
+}
+
 sub runPythonPipeline($$) {
   my ($seq_file,$tax_file) = @_;
 
   my $refjson_file = 'arb_export.json';
   my $cfg_file = $sativa_home.'/epac.cfg.sativa';
 
+  # auto-configure RAxML
+  my $cores = cpu_get_cores();
+
+  my $raxml_alias = "raxmlHPC8-sativa";
+  my $raxml_exec = "raxmlHPC8-sativa-PTHREADS";
+  if (cpu_has_feature("avx")==1) {
+      $raxml_exec = "raxmlHPC8-sativa-AVX.PTHREADS";
+  } 
+  elsif (cpu_has_feature("sse3")==1) {
+      $raxml_exec = "raxmlHPC8-sativa-SSE3.PTHREADS";
+  }
+
+  my $bindir = $ENV{'ARBHOME'}."/bin";
+  system("ln -fs $bindir/$raxml_exec $bindir/$raxml_alias");
+
 #  my $trainer_cmd = $sativa_home.'/epa_trainer.py -t '.$tax_file.' -s '.$seq_file.' -r '.$refjson_file;
   my $trainer_cmd = $sativa_home.'/epa_trainer.py';
-  system($trainer_cmd, '-t', $tax_file, '-s', $seq_file, '-r', $refjson_file, '-c', $cfg_file, '-no-hmmer');
+  system($trainer_cmd, '-t', $tax_file, '-s', $seq_file, '-r', $refjson_file, '-c', $cfg_file, '-T', $cores, '-no-hmmer');
 
-  my $checker_cmd = $sativa_home.'/find_mislabels.py';
-  system($checker_cmd, '-r', $refjson_file, '-c', $cfg_file);
-
+  if (-e $refjson_file) {
+      my $checker_cmd = $sativa_home.'/find_mislabels.py';
+      system($checker_cmd, '-r', $refjson_file, '-c', $cfg_file, '-T', $cores);
+  }
+  else {
+      die "There was a problem running SATIVA (see messages above). Exiting..."
+  }
 }
+
+# ------------------------------------------------------------
 
 sub deleteIfExists($$) {
   my ($father,$key) = @_;

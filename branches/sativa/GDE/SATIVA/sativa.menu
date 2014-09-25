@@ -1,7 +1,7 @@
 menu:Print
 
 item:Validate taxonomy (SATIVA)
-itemmethod: (mkdir -p ~/.arb_tmp/$$; cd ~/.arb_tmp/$$ ; arb_convert_aln --arb-notify -GenBank TmpInputFile -phylip sativa_in.phy; ${ARB_XCMD} bash -x -c @@LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; arb_sativa.pl $MARKEDONLY $MARKMIS $TAXFIELD $SPECIESFIELD; arb_wait@@) & 
+itemmethod: (mkdir -p ~/.arb_tmp/$$; cd ~/.arb_tmp/$$ ; arb_convert_aln --arb-notify -GenBank TmpInputFile -phylip sativa_in.phy; ${ARB_XCMD} bash -x -c @@LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; arb_sativa.pl $MARKEDONLY $MARKMIS $TAXFIELD $SPECIESFIELD; arb_wait@@; cd ~/.arb_tmp; rm -rf $$) & 
 seqtype:*
 itemmeta:v
 itemhelp:raxml.help
