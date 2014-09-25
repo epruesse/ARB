@@ -50,7 +50,7 @@ void AP_sequence_parsimony::set(const char *isequence)
 {
     size_t sequence_len = get_filter()->get_filtered_length();
     seq_pars     = new char[sequence_len+1];
-    memset(seq_pars, AP_N, (size_t)sequence_len+1);
+    memset(seq_pars, AP_D, (size_t)sequence_len+1); // init with dots
 
     const uchar *simplify = get_filter()->get_simplify_table();
     if (!table) this->build_table();
@@ -274,14 +274,15 @@ AP_FLOAT AP_sequence_parsimony::count_weighted_bases() const { // count all base
     static char *hits = 0;
     if (!hits) {
         hits = (char*)malloc(256);
-        memset(hits, 1, 256);                       // count ambiguous characters half
+        memset(hits, 1, 256); // count ambiguous characters half
 
-        hits[AP_A] = 2;                             // real characters full
+        hits[AP_A] = 2; // count real characters full
         hits[AP_C] = 2;
         hits[AP_G] = 2;
         hits[AP_T] = 2;
-        hits[AP_S] = 0;                             // count no gaps
-        hits[AP_N] = 0;                             // no Ns
+
+        hits[AP_S] = 0; // don't count gaps
+        hits[AP_D] = 0; // don't count dots (and other stuff)
     }
 
     const AP_weights *weights = get_weights();

@@ -24,8 +24,8 @@ enum AP_BASES {
     AP_C   = 2,
     AP_G   = 4,
     AP_T   = 8,
-    AP_S   = 16,                // Space (GAP)
-    AP_N   = 31,
+    AP_S   = 16, // known gap ('-')
+    AP_D   = 31, // maybe gap, maybe some base (anything unknown, esp. '.', '?'; interpreted as dot)
     AP_MAX = 32
 };
 
