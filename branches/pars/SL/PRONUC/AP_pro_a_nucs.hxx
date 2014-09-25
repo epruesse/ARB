@@ -20,13 +20,21 @@
 
 
 enum AP_BASES {
+    AP_ILLEGAL = 0,
+
     AP_A   = 1,
     AP_C   = 2,
     AP_G   = 4,
     AP_T   = 8,
-    AP_S   = 16, // known gap ('-')
-    AP_D   = 31, // maybe gap, maybe some base (anything unknown, esp. '.', '?'; interpreted as dot)
-    AP_MAX = 32
+    AP_GAP = 16,      // known gap ('-')
+
+    // -------------------- above are bit values, below combinations of them
+
+    // @@@ define IUPAC here not in AP_pro_a_nucs.cxx@AP_create_dna_to_ap_bases
+
+    AP_DOT = 31, // maybe gap, maybe some base (anything unknown, esp. '.', '?'; interpreted as dot)
+
+    AP_MAX = 32 // amount of possible values
 };
 
 struct arb_r2a_pro_2_nucs : virtual Noncopyable {

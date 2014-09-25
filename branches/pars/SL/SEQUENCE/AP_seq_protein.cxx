@@ -166,12 +166,12 @@ void AP_sequence_protein::set(const char *isequence) {
 
             if (c >= 'A' && c <= 'Z') p = prot2AP_PROTEIN[c-'A'];
             else if (c == '-')        p = APP_GAP;
-            else if (c == '.')        p = APP_X;
+            else if (c == '.')        p = APP_X; // @@@ use APP_DOT? dna uses AP_DOT
             else if (c == '*')        p = APP_STAR;
 
             if (p == APP_ILLEGAL) {
-                GB_warning(GBS_global_string("Illegal sequence character '%c' replaced by gap", c));
-                p = APP_GAP;
+                GB_warning(GBS_global_string("Invalid sequence character '%c' replaced by gap", c));
+                p = APP_GAP; // @@@ use APP_DOT here? dna does!
             }
 
             seq_prot[oidx++] = p;
@@ -201,7 +201,7 @@ void AP_sequence_protein::unset() {
 
 
 AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) {
-    // this works similar to AP_sequence_parsimony::combine
+    // Note: changes done here should also be be applied to AP_seq_dna.cxx@combine_impl
 
     const AP_sequence_protein *left  = (const AP_sequence_protein *)lefts;
     const AP_sequence_protein *right = (const AP_sequence_protein *)rights;
@@ -237,7 +237,7 @@ AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequenc
 
 #if !defined(MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS)
                 // count multiple mutations as 1 mutation
-                // this was an experiment (don't use it, it does not work!)
+                // (code here is unused)
                 if (idx>0 && (p[idx-1]&APP_GAP)) { // last position also contained gap..
                     if (((c1&APP_GAP) && (p1[idx-1]&APP_GAP)) || // ..in same sequence
                         ((c2&APP_GAP) && (p2[idx-1]&APP_GAP)))
@@ -277,6 +277,7 @@ AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequenc
 
 #if !defined(PROPAGATE_GAPS_UPWARDS)
         // do not propagate mixed gaps upwards (they cause neg. branches)
+        // (code here is unused)
         if (p[idx] & APP_GAP) { // contains gap
             if (p[idx] != APP_GAP) { // is not real gap
                 p[idx] = AP_PROTEINS(p[idx]^APP_GAP); //  remove the gap
@@ -318,6 +319,7 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
     //          overlap       7                  3
     //
     // algorithm is similar to AP_sequence_protein::combine()
+    // Note: changes done here should also be be applied to AP_seq_dna.cxx@partial_match_impl
 
     const AP_sequence_protein *part = (const AP_sequence_protein *)part_;
 

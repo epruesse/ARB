@@ -18,31 +18,34 @@
 
 enum AP_PROTEINS {
     APP_ILLEGAL = 0,
-    APP_A       = (1 <<  0),    // Ala
-    APP_C       = (1 <<  1),    // Cys
-    APP_D       = (1 <<  2),    // Asp
-    APP_E       = (1 <<  3),    // Glu
-    APP_F       = (1 <<  4),    // Phe
-    APP_G       = (1 <<  5),    // Gly
-    APP_H       = (1 <<  6),    // His
-    APP_I       = (1 <<  7),    // Ile
-    APP_K       = (1 <<  8),    // Lys
-    APP_L       = (1 <<  9),    // Leu
-    APP_M       = (1 << 10),    // Met
-    APP_N       = (1 << 11),    // Asn
-    APP_P       = (1 << 12),    // Pro
-    APP_Q       = (1 << 13),    // Gln
-    APP_R       = (1 << 14),    // Arg
-    APP_S       = (1 << 15),    // Ser
-    APP_T       = (1 << 16),    // Thr
-    APP_V       = (1 << 17),    // Val
-    APP_W       = (1 << 18),    // Trp
-    APP_Y       = (1 << 19),    // Tyr
 
-    APP_STAR = (1 << 20),        // *
-    APP_GAP = (1 << 21),        // space (gap)
+    APP_A    = (1 <<  0),       // Ala
+    APP_C    = (1 <<  1),       // Cys
+    APP_D    = (1 <<  2),       // Asp
+    APP_E    = (1 <<  3),       // Glu
+    APP_F    = (1 <<  4),       // Phe
+    APP_G    = (1 <<  5),       // Gly
+    APP_H    = (1 <<  6),       // His
+    APP_I    = (1 <<  7),       // Ile
+    APP_K    = (1 <<  8),       // Lys
+    APP_L    = (1 <<  9),       // Leu
+    APP_M    = (1 << 10),       // Met
+    APP_N    = (1 << 11),       // Asn
+    APP_P    = (1 << 12),       // Pro
+    APP_Q    = (1 << 13),       // Gln
+    APP_R    = (1 << 14),       // Arg
+    APP_S    = (1 << 15),       // Ser
+    APP_T    = (1 << 16),       // Thr
+    APP_V    = (1 << 17),       // Val
+    APP_W    = (1 << 18),       // Trp
+    APP_Y    = (1 << 19),       // Tyr
+    APP_STAR = (1 << 20),       // *
+    APP_GAP  = (1 << 21),       // known gap ('-')
 
-    APP_X = (APP_STAR-1),        // Xxx (any real codon)
+    // -------------------- above are bit values, below combinations of them
+
+    APP_X   = (APP_STAR-1),      // Xxx (any real codon)
+    APP_DOT = APP_X | APP_GAP,   // maybe a codon, maybe a gap // @@@ use where AP_DOT is used
 
     APP_B = APP_D | APP_N,      // Asx ( = Asp | Asn )
     APP_Z = APP_E | APP_Q,      // Glx ( = Glu | Gln )

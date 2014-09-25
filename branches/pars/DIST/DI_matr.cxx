@@ -186,11 +186,11 @@ static void selected_tree_changed_cb() {
 
 void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db) {
     GB_transaction ta(db);
-    DI_dna_matrix.set_descriptions(AP_A, "A");
-    DI_dna_matrix.set_descriptions(AP_C, "C");
-    DI_dna_matrix.set_descriptions(AP_G, "G");   
-    DI_dna_matrix.set_descriptions(AP_T, "TU");  
-    DI_dna_matrix.set_descriptions(AP_S, "GAP"); 
+    DI_dna_matrix.set_descriptions(AP_A,   "A");
+    DI_dna_matrix.set_descriptions(AP_C,   "C");
+    DI_dna_matrix.set_descriptions(AP_G,   "G");
+    DI_dna_matrix.set_descriptions(AP_T,   "TU");
+    DI_dna_matrix.set_descriptions(AP_GAP, "GAP");
 
     DI_dna_matrix.create_awars(aw_root, AWAR_DIST_MATRIX_DNA_BASE);
 

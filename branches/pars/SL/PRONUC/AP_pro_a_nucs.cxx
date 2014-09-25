@@ -30,7 +30,7 @@ char *AP_create_dna_to_ap_bases() {
             case 'c': case 'C': val = AP_C; break;
             case 't': case 'T':
             case 'u': case 'U': val = AP_T; break;
-            case '-':           val = AP_S; break;
+            case '-':           val = AP_GAP; break;
             case 'm': case 'M': val = AP_BASES(AP_A + AP_C); break;
             case 'r': case 'R': val = AP_BASES(AP_A + AP_G); break;
             case 'w': case 'W': val = AP_BASES(AP_A + AP_T); break;
@@ -42,13 +42,13 @@ char *AP_create_dna_to_ap_bases() {
             case 'd': case 'D': val = AP_BASES(AP_A + AP_G + AP_T); break;
             case 'b': case 'B': val = AP_BASES(AP_C + AP_G + AP_T); break;
             case 'n': case 'N': val = AP_BASES(AP_A + AP_G + AP_C + AP_T); break;
-            case '?': case '.': val = AP_BASES(AP_A + AP_G + AP_C + AP_T + AP_S); break;
-            default:            val = AP_D; break; // interpret everything else like a dot (alternative would be to abort with error)
+            case '?': case '.': val = AP_BASES(AP_A + AP_G + AP_C + AP_T + AP_GAP); break;
+            default:            val = AP_DOT; break; // interpret everything else like a dot (alternative would be to abort with error)
         }
         table[i] = (char)val;
     }
 
-    pn_assert(table[safeCharIndex('.')] == AP_D); // make sure a dot is a dot
+    pn_assert(table[safeCharIndex('.')] == AP_DOT); // make sure a dot is a dot
 
     return table;
 }
