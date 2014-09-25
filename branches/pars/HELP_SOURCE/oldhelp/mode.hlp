@@ -1,0 +1,58 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+SUB	mode_select.hlp
+SUB	mode_mark.hlp
+SUB	mode_group.hlp
+SUB	mode_pzoom.hlp
+SUB	mode_lzoom.hlp
+SUB	mode_info.hlp
+SUB	mode_www.hlp
+SUB	mode_width.hlp
+SUB	mode_rotate.hlp
+SUB	mode_spread.hlp
+SUB	mode_swap.hlp
+SUB	mode_length.hlp
+SUB	mode_move.hlp
+SUB	mode_setroot.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		NTREE MODES (general info)
+
+OCCURRENCE	ARB_NT <buttons in the first column>
+
+DESCRIPTION	Pressing one of the buttons in the left column of the
+		'ARB_NT' window activates tree display and modification
+		functions.
+
+                You may also use the function keys F1 to F12.
+                F1 selects the topmost mode, F2 the next ...
+
+		The middle mouse button (placed anywhere within the tree
+		display area) can be used to move the whole tree (works in most modes).
+
+NOTES		A short descriptions of each 'MODE' is shown directly above the
+                tree display subwindow. It informs about the differences between the
+                left and right mouse key and tells if there are mode-specific keyboard
+                shortcuts available.
+
+		To execute the respective functions, the
+		cursor has to be located within the tree display area while
+		pressing the mouse buttons.
+
+		The scale bar and its label can be moved by positioning the
+		cursor anywhere on the bar, keeping the left mouse button
+		pressed, moving the cursor to the desired position and
+                subsequently releasing the mouse button. The label of the bar
+		can be moved independently.
+
+EXAMPLES	None
+
+WARNINGS	no warnings
+
+BUGS		no bugs
