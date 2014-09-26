@@ -45,7 +45,6 @@ enum DI_TRANSFORMATION {
     DI_TRANSFORMATION_CATEGORIES_BARKER,
     DI_TRANSFORMATION_CATEGORIES_CHEMICAL,
 
-    DI_TRANSFORMATION_HAESCH,
     DI_TRANSFORMATION_KIMURA,
     DI_TRANSFORMATION_OLSEN,
     DI_TRANSFORMATION_FELSENSTEIN_VOIGT,
@@ -85,8 +84,6 @@ struct DI_ENTRY : virtual Noncopyable {
     AP_FLOAT                    gc_bias;
     int                         group_nr;           // species belongs to group number xxxx
 };
-
-typedef long DI_MUT_MATR[AP_MAX][AP_MAX];
 
 enum DI_SAVE_TYPE {
     DI_SAVE_PHYLIP_COMP,
@@ -165,13 +162,6 @@ public:
     char *unload();
     const char *save(char *filename, enum DI_SAVE_TYPE type);
 
-    void    clear(DI_MUT_MATR &hits);
-    void    make_sym(DI_MUT_MATR &hits);
-    void    rate_write(DI_MUT_MATR &hits, FILE *out);
-    long    *create_helix_filter(BI_helix *helix, const AP_filter *filter);
-    // 0 non helix 1 helix; compressed filter
-    GB_ERROR calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI_MUT_MATR &pairs, long *filter);
-    GB_ERROR haeschoe(const char *path);
     double  corr(double dist, double b, double & sigma);
 
     GB_ERROR  calculate(AW_root *awr, char *cancel, double alpha, DI_TRANSFORMATION transformation, bool *aborted_flag);

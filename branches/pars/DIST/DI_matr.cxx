@@ -481,208 +481,6 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
     return error;
 }
 
-void DI_MATRIX::clear(DI_MUT_MATR &hits)
-{
-    int i, j;
-    for (i=0; i<AP_MAX; i++) {
-        for (j=0; j<AP_MAX; j++) {
-            hits[i][j] = 0;
-        }
-    }
-}
-
-void DI_MATRIX::make_sym(DI_MUT_MATR &hits)
-{
-    int i, j;
-    for (i=AP_A; i<AP_MAX; i*=2) {
-        for (j=AP_A; j<=i; j*=2) {
-            hits[i][j] = hits[j][i] = hits[i][j] + hits[j][i];
-        }
-    }
-}
-
-void DI_MATRIX::rate_write(DI_MUT_MATR &hits, FILE *out) {
-    int i, j;
-    for (i=AP_A; i<AP_MAX; i*=2) {
-        for (j=AP_A; j<AP_MAX; j*=2) {
-            fprintf(out, "%5li ", hits[i][j]);
-        }
-        fprintf(out, "\n");
-    }
-}
-
-long *DI_MATRIX::create_helix_filter(BI_helix *helix, const AP_filter *filter) {
-    long   *result = (long *)calloc(sizeof(long), filter->get_filtered_length());
-    long   *temp   = (long *)calloc(sizeof(long), filter->get_filtered_length());
-    int     count  = 0;
-    size_t  i;
-
-    for (i=0; i<filter->get_length(); i++) {
-        if (filter->use_position(i)) {
-            temp[i] = count;
-            if (helix->pairtype(i) == HELIX_PAIR) {
-                result[count] = helix->opposite_position(i);
-            }
-            else {
-                result[count] = -1;
-            }
-            count++;
-        }
-    }
-    while (--count >= 0) {
-        if (result[count] >= 0) {
-            result[count] = temp[result[count]];
-        }
-    }
-    free(temp);
-    return result;
-}
-
-GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI_MUT_MATR &pairs, long *filter) {
-    if (nentries<=1) {
-        return "Not enough species selected to calculate rates";
-    }
-
-    arb_progress progress("rates", matrix_halfsize(nentries, false));
-    GB_ERROR     error = NULL;
-
-    long s_len = aliview->get_length();
-
-    this->clear(hrates);
-    this->clear(nrates);
-    this->clear(pairs);
-
-    for (size_t row = 0; row<nentries && !error; row++) {
-        for (size_t col=0; col<row; col++) {
-            const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
-            const unsigned char *seq2 = entries[col]->sequence_parsimony->get_usequence();
-            UNCOVERED();
-
-            for (long pos = 0; pos < s_len; pos++) {
-                if (filter[pos]>=0) {
-                    hrates[*seq1][*seq2]++;
-                }
-                else {
-                    nrates[*seq1][*seq2]++;
-                }
-                seq1++; seq2++;
-            }
-            progress.inc_and_check_user_abort(error);
-        }
-    }
-    for (size_t row = 0; row<nentries; row++) {
-        const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
-        UNCOVERED();
-        for (long pos = 0; pos < s_len; pos++) {
-            if (filter[pos]>=0) {
-                pairs[seq1[pos]][seq1[filter[pos]]]++;
-            }
-        }
-    }
-    progress.done();
-    return error;
-}
-
-// ----------------------------------------------------------------
-//      Some test functions to check correlated base correction
-
-GB_ERROR DI_MATRIX::haeschoe(const char *path) {
-    static BI_helix *helix = 0;
-    if (!helix) helix      = new BI_helix;
-
-    GB_ERROR error = helix->init(get_gb_main());
-    if (!error) {
-        FILE *out = fopen(path, "w");
-        if (!out) {
-            GB_export_IO_error("writing", path);
-            error = GB_await_error();
-        }
-        else {
-            arb_progress progress("Calculating distance matrix");
-
-            fprintf(out, "Pairs in helical regions:\n");
-            long *filter = create_helix_filter(helix, aliview->get_filter());
-            
-            DI_MUT_MATR temp, temp2, pairs;
-            error = calculate_rates(temp, temp2, pairs, filter);
-            if (!error) {
-                rate_write(pairs, out);
-                make_sym(temp); make_sym(temp2);
-                fprintf(out, "\nRatematrix helical parts:\n");
-                rate_write(temp, out);
-                fprintf(out, "\nRatematrix non helical parts:\n");
-                rate_write(temp2, out);
-
-                long pos;
-                long s_len;
-
-                s_len = aliview->get_length();
-                fprintf(out, "\nDistance matrix (Helixdist Helixlen Nonhelixdist Nonhelixlen):");
-                fprintf(out, "\n%zu", nentries);
-
-                const int MAXDISTDEBUG = 1000;
-                double    distdebug[MAXDISTDEBUG];
-
-                for (pos = 0; pos<MAXDISTDEBUG; pos++) distdebug[pos] = 0.0;
-
-                arb_progress dist_progress("distance", matrix_halfsize(nentries, false));
-                for (size_t row = 0; row<nentries && !error; row++) {
-                    fprintf (out, "\n%s  ", entries[row]->name);
-
-                    for (size_t col=0; col<row && !error; col++) {
-                        UNCOVERED();
-                        const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
-                        const unsigned char *seq2 = entries[col]->sequence_parsimony->get_usequence();
-                        this->clear(temp);
-                        this->clear(temp2);
-
-                        for (pos = 0; pos < s_len; pos++) {
-                            if (filter[pos]>=0) temp [*seq1][*seq2]++;
-                            else                temp2[*seq1][*seq2]++;
-                            seq1++; seq2++;
-                        }
-                        long hdist = 0, hall2 = 0;
-                        int i, j;
-                        for (i=AP_A; i<AP_MAX; i*=2) {
-                            for (j=AP_A; j<AP_MAX; j*=2) {
-                                hall2 += temp[i][j];
-                                if (i!=j) hdist += temp[i][j];
-                            }
-                        }
-
-                        long dist = 0, all = 0;
-                        for (i=AP_A; i<=AP_T; i*=2) {
-                            for (j=AP_A; j<=AP_T; j*=2) {
-                                all += temp2[i][j];
-                                if (i!=j) dist += temp2[i][j];
-                            }
-                        }
-                        fprintf(out, "(%4li:%4li %4li:%4li) ", hdist, hall2, dist, all);
-                        if (all>100) {
-                            distdebug[dist*MAXDISTDEBUG/all] = (double)hdist/(double)hall2;
-                        }
-                        dist_progress.inc_and_check_user_abort(error);
-                    }
-                }
-
-                if (!error) {
-                    fprintf (out, "\n");
-                    fprintf (out, "\nhdist/dist:\n");
-
-                    for (pos = 1; pos<MAXDISTDEBUG; pos++) {
-                        if (distdebug[pos]) {
-                            fprintf(out, "%4f %5f\n", (double)pos/(double)MAXDISTDEBUG, distdebug[pos]/(double)pos*(double)MAXDISTDEBUG);
-                        }
-                    }
-                }
-            }
-            
-            fclose(out);
-        }
-    }
-    return error;
-}
-
 char *DI_MATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *cancel)
 {
     long hits2[AP_MAX];
@@ -718,11 +516,6 @@ double DI_MATRIX::corr(double dist, double b, double & sigma) {
 
 GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI_TRANSFORMATION transformation, bool *aborted_flag)
 {
-    if (transformation == DI_TRANSFORMATION_HAESCH) {
-        GB_ERROR error = haeschoe("outfile");
-        if (error) return error;
-        return "Your matrices have been written to 'outfile'\nSorry I can not make a tree";
-    }
     int user_matrix_enabled = awr->awar(AWAR_DIST_MATRIX_DNA_ENABLED)->read_int();
     if (user_matrix_enabled) {  // set transformation Matrix
         switch (transformation) {
@@ -1356,7 +1149,6 @@ static const char *enum_trans_to_string[] = {
     "barker",
     "chemical",
 
-    "haesch",
     "kimura",
     "olsen",
     "felsenstein voigt",
@@ -1797,7 +1589,6 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->insert_option("olsen (dna)",             "o", (int)DI_TRANSFORMATION_OLSEN);
     aws->insert_option("felsenstein/voigt (exp)", "1", (int)DI_TRANSFORMATION_FELSENSTEIN_VOIGT);
     aws->insert_option("olsen/voigt (exp)",       "2", (int)DI_TRANSFORMATION_OLSEN_VOIGT);
-    aws->insert_option("haesch (exp)",            "f", (int)DI_TRANSFORMATION_HAESCH);
     aws->insert_option("kimura (pro)",            "k", (int)DI_TRANSFORMATION_KIMURA);
     aws->insert_option("PAM (protein)",           "c", (int)DI_TRANSFORMATION_PAM);
     aws->insert_option("Cat. Hall(exp)",          "c", (int)DI_TRANSFORMATION_CATEGORIES_HALL);
