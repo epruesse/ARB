@@ -125,8 +125,8 @@ sub cpu_get_cores() {
     return $cores;
 }
 
-sub runPythonPipeline($$) {
-  my ($seq_file,$tax_file) = @_;
+sub runPythonPipeline($$$$) {
+  my ($seq_file,$tax_file,$dup_rank_names,$wrong_rank_count) = @_;
 
   my $refjson_file = 'arb_export.json';
   my $cfg_file = $sativa_home.'/epac.cfg.sativa';
@@ -146,9 +146,9 @@ sub runPythonPipeline($$) {
   my $bindir = $ENV{'ARBHOME'}."/bin";
   system("ln -fs $bindir/$raxml_exec $bindir/$raxml_alias");
 
-#  my $trainer_cmd = $sativa_home.'/epa_trainer.py -t '.$tax_file.' -s '.$seq_file.' -r '.$refjson_file;
   my $trainer_cmd = $sativa_home.'/epa_trainer.py';
-  system($trainer_cmd, '-t', $tax_file, '-s', $seq_file, '-r', $refjson_file, '-c', $cfg_file, '-T', $cores, '-no-hmmer');
+  system($trainer_cmd, '-t', $tax_file, '-s', $seq_file, '-r', $refjson_file, '-c', $cfg_file, '-T', $cores, '-no-hmmer', 
+	'-dup-rank-names', $dup_rank_names, '-wrong-rank-count', $wrong_rank_count);
 
   if (-e $refjson_file) {
       my $checker_cmd = $sativa_home.'/find_mislabels.py';
@@ -243,7 +243,7 @@ sub die_usage($) {
   my ($err) = @_;
   print "Purpose: Run SATIVA taxonomy validation pipeline\n";
   print "and import results back into ARB\n";
-  print "Usage: arb_sativa.pl tax_field [species_field] [-marked]\n";
+  print "Usage: arb_sativa.pl [--marked-only] [--mark-misplaced] tax_field [species_field]\n";
   print "       tax_field         Field contatining full (original) taxonomic path (lineage)\n";
   print "       species_field     Field containing species name\n";
   print "       --marked-only     Process only species that are marked in ARB (default: process all)\n";
@@ -273,14 +273,14 @@ sub main() {
 
   my $tax_field  = shift @ARGV;
   my $species_field = shift @ARGV;
-#  $field = 'name' if (not defined $field);
+  my $dup_rank_names = shift @ARGV;
+  my $wrong_rank_count = shift @ARGV;
 
   my @marklist = {};
 
   exportTaxonomy($seq_file,$tax_file,$tax_field,$species_field,$marked_only,@marklist);
-#  my ($marked,$unmarked) = markSpecies(%marklist,$mark,$clearRest,$field,$ambiguous,$partial);
 
-  runPythonPipeline($seq_file, $tax_file);
+  runPythonPipeline($seq_file,$tax_file,$dup_rank_names,$wrong_rank_count);
 
   importResults($res_file,$marked_only,$mark_misplaced);
   

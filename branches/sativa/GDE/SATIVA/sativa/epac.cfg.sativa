@@ -1,7 +1,6 @@
 [raxml]
 raxml_home=..
 raxml_exec=raxmlHPC8-sativa
-raxml_threads=2
 
 # rate heterogeneity model: GTRGAMMA, GTRCAT, AUTO
 raxml_model=auto

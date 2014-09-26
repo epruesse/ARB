@@ -163,6 +163,8 @@ class EpacTrainerConfig(EpacConfig):
         self.taxonomy_fname = args.taxonomy_fname
         self.align_fname = args.align_fname
         self.no_hmmer = args.no_hmmer
+        self.dup_rank_names  = args.dup_rank_names
+        self.wrong_rank_count  = args.wrong_rank_count
         EpacConfig.__init__(self, args)
         
     def set_defaults(self):
