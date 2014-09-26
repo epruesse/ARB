@@ -41,7 +41,9 @@ void DI_MATRIX::analyse() {
         // calculate meanvalue of sequencelength:
         for (size_t row=0; row<nentries; row++) {
             const char *sequ = entries[row]->sequence_parsimony->get_sequence();
-            size_t      flen = aliview->get_length();
+            UNCOVERED();
+
+            size_t flen = aliview->get_length();
 
             long act_gci = 0;
             long act_len = 0;

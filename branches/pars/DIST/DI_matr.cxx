@@ -554,6 +554,8 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI
         for (size_t col=0; col<row; col++) {
             const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
             const unsigned char *seq2 = entries[col]->sequence_parsimony->get_usequence();
+            UNCOVERED();
+
             for (long pos = 0; pos < s_len; pos++) {
                 if (filter[pos]>=0) {
                     hrates[*seq1][*seq2]++;
@@ -568,6 +570,7 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI
     }
     for (size_t row = 0; row<nentries; row++) {
         const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
+        UNCOVERED();
         for (long pos = 0; pos < s_len; pos++) {
             if (filter[pos]>=0) {
                 pairs[seq1[pos]][seq1[filter[pos]]]++;
@@ -625,10 +628,9 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path) {
                     fprintf (out, "\n%s  ", entries[row]->name);
 
                     for (size_t col=0; col<row && !error; col++) {
-                        const unsigned char *seq1, *seq2;
-
-                        seq1 = entries[row]->sequence_parsimony->get_usequence();
-                        seq2 = entries[col]->sequence_parsimony->get_usequence();
+                        UNCOVERED();
+                        const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
+                        const unsigned char *seq2 = entries[col]->sequence_parsimony->get_usequence();
                         this->clear(temp);
                         this->clear(temp2);
 
@@ -691,6 +693,7 @@ char *DI_MATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *c
     memset((char *) &hits2[0], 0, sizeof(hits2));
     for (size_t row = 0; row < nentries; row++) {
         const char *seq1 = entries[row]->sequence_parsimony->get_sequence();
+        UNCOVERED();
         for (pos = 0; pos < s_len; pos++) {
             b = *(seq1++);
             if (cancel[b]) continue;
@@ -777,6 +780,7 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
             
             const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
             const unsigned char *seq2 = entries[col]->sequence_parsimony->get_usequence();
+            UNCOVERED();
 
             b = 0.0;
             switch (transformation) {

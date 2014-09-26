@@ -141,6 +141,8 @@ void AP_sequence_protein::set(const char *isequence) {
     AWT_translator *translator = AWT_get_user_translator(get_aliview()->get_gb_main());
     update_min_mutations(translator->CodeNr(), translator->getDistanceMeter());
 
+    UNCOVERED();
+
     size_t sequence_len = get_sequence_length();
     seq_prot            = new AP_PROTEINS[sequence_len+1];
 
@@ -206,6 +208,7 @@ AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequenc
     const AP_sequence_protein *left  = (const AP_sequence_protein *)lefts;
     const AP_sequence_protein *right = (const AP_sequence_protein *)rights;
 
+    UNCOVERED();
     size_t sequence_len = get_sequence_length();
     if (!seq_prot) seq_prot = new AP_PROTEINS[sequence_len + 1];
 
@@ -323,8 +326,10 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
 
     const AP_sequence_protein *part = (const AP_sequence_protein *)part_;
 
+    UNCOVERED();
     const AP_PROTEINS *pf      = get_sequence();
     const AP_PROTEINS *pp      = part->get_sequence();
+
     const AP_weights  *weights = get_weights();
 
     long min_end;                                   // minimum of both last non-gap positions
@@ -406,6 +411,8 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
 AP_FLOAT AP_sequence_protein::count_weighted_bases() const {
     AP_FLOAT           wcount;
     const AP_PROTEINS *sequence = get_sequence();
+
+    UNCOVERED();
 
     if (!sequence) wcount = -1.0;
     else {
