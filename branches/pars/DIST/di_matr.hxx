@@ -20,6 +20,9 @@
 #ifndef AP_MATRIX_HXX
 #include <AP_matrix.hxx>
 #endif
+#ifndef _GLIBCXX_STRING
+#include <string>
+#endif
 
 #define di_assert(cond) arb_assert(cond)
 
@@ -51,7 +54,10 @@ enum DI_TRANSFORMATION {
 
     DI_TRANSFORMATION_FROM_TREE,
 
-    DI_TRANSFORMATION_COUNT, // has to be last
+    // -------------------- real transformations are above
+
+    DI_TRANSFORMATION_COUNT,         // amount of real transformations
+    DI_TRANSFORMATION_NONE_DETECTED, // nothing was auto-detected
 };
 
 enum DI_MATRIX_TYPE {
@@ -173,7 +179,7 @@ public:
     GB_ERROR  calculate_pro(DI_TRANSFORMATION transformation, bool *aborted_flag);
     GB_ERROR  extract_from_tree(const char *treename, bool *aborted_flag);
 
-    void analyse();
+    DI_TRANSFORMATION detect_transformation(std::string& msg);
 
     int   search_group(GBT_TREE *node, GB_HASH *hash, size_t& groupcnt, char *groupname, DI_ENTRY **groups);
     char *compress(GBT_TREE *tree);

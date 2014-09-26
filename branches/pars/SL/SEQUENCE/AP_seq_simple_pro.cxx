@@ -13,7 +13,7 @@ AP_sequence_simple_protein::AP_sequence_simple_protein(const AliView *aliview)
 }
 
 AP_sequence_simple_protein::~AP_sequence_simple_protein() {
-    delete sequence;
+    delete [] sequence;
 }
 
 AP_sequence *AP_sequence_simple_protein::dup() const {

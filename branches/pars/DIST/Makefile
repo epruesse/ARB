@@ -281,6 +281,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/RootedTree.h
 DI_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_matr.o: $(ARBHOME)/INCLUDE/static_assert.h
 DI_matr.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_matr.o: $(ARBHOME)/INCLUDE/test_unit.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 DI_protdist.o: di_matr.hxx

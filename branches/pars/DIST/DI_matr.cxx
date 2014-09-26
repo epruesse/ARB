@@ -43,6 +43,8 @@
 #include <awt_TreeAwars.hxx>
 #include <arb_defs.h>
 
+using std::string;
+
 // --------------------------------------------------------------------------------
 
 #define AWAR_DIST_BOOTSTRAP_COUNT    AWAR_DIST_PREFIX "bootstrap/count"
@@ -439,7 +441,7 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
                 }
             }
             if (species_not_in_sort_tree) {
-                aw_message(GBS_global_string("Warning: %i of the affected species are not in sort-tree", species_not_in_sort_tree));
+                GBT_message(gb_main, GBS_global_string("Warning: %i of the affected species are not in sort-tree", species_not_in_sort_tree));
             }
         }
     }
@@ -447,7 +449,7 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
         if (show_warnings) {
             static bool shown = false;
             if (!shown) { // showing once is enough
-                aw_message("Warning: No valid tree given to sort matrix (using default database order)");
+                GBT_message(gb_main, "Warning: No valid tree given to sort matrix (using default database order)");
                 shown = true;
             }
         }
@@ -1609,7 +1611,11 @@ static void di_autodetect_callback(AW_window *aww) {
 
             if (!error) {
                 progress.subtitle("Search Correction");
-                phm.analyse();
+
+                string msg;
+                DI_TRANSFORMATION detected = phm.detect_transformation(msg);
+                aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(detected);
+                aw_message(msg.c_str());
             }
         }
 
@@ -1923,4 +1929,62 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     GB_pop_transaction(GLOBAL_gb_main);
     return aws;
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+class DIST_testenv : virtual Noncopyable {
+    GB_shell  shell;
+    GBDATA   *gb_main;
+    AliView  *ali_view;
+
+public:
+    DIST_testenv(const char *dbname, const char *aliName)
+        : ali_view(NULL)
+    {
+        gb_main = GB_open(dbname, "r");
+        TEST_REJECT_NULL(gb_main);
+
+        GB_transaction ta(gb_main);
+        size_t         aliLength = GBT_get_alignment_len(gb_main, aliName);
+
+        AP_filter filter(aliLength);
+        if (!filter.is_invalid()) {
+            AP_weights weights(&filter);
+            ali_view = new AliView(gb_main, filter, weights, aliName);
+        }
+    }
+    ~DIST_testenv() {
+        delete ali_view;
+        GB_close(gb_main);
+    }
+
+    const AliView& aliview() const { return *ali_view; }
+    GBDATA *gbmain() const { return gb_main; }
+};
+
+void TEST_matrix_analyse() {
+    for (int prot = 0; prot<=1; ++prot) {
+        TEST_ANNOTATE(GBS_global_string("prot=%i", prot));
+        DIST_testenv env("TEST_realign.arb", prot ? "ali_pro" : "ali_dna");
+
+        DI_MATRIX matrix(env.aliview(), NULL);
+        MatrixOrder order(env.gbmain(), "tree_abc");
+        TEST_EXPECT_NO_ERROR(matrix.load(DI_LOAD_MARKED, order, true, NULL));
+
+        {
+            string            msg;
+            DI_TRANSFORMATION expected = prot ? DI_TRANSFORMATION_PAM : DI_TRANSFORMATION_JUKES_CANTOR;
+            TEST_EXPECT_EQUAL(matrix.detect_transformation(msg), expected);
+        }
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
 
