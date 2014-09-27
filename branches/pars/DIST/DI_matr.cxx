@@ -723,23 +723,22 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
 }
 
 GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation, bool *aborted_flag) {
-    di_cattype whichcat;
-    di_codetype whichcode = UNIVERSAL;
+    di_cattype catType;
 
     switch (transformation) {
-        case DI_TRANSFORMATION_NONE:                whichcat = NONE;       break;
-        case DI_TRANSFORMATION_SIMILARITY:          whichcat = SIMILARITY; break;
-        case DI_TRANSFORMATION_KIMURA:              whichcat = KIMURA;     break;
-        case DI_TRANSFORMATION_PAM:                 whichcat = PAM;        break;
-        case DI_TRANSFORMATION_CATEGORIES_HALL:     whichcat = HALL;       break;
-        case DI_TRANSFORMATION_CATEGORIES_BARKER:   whichcat = GEORGE;     break;
-        case DI_TRANSFORMATION_CATEGORIES_CHEMICAL: whichcat = CHEMICAL;   break;
+        case DI_TRANSFORMATION_NONE:                catType = NONE;       break;
+        case DI_TRANSFORMATION_SIMILARITY:          catType = SIMILARITY; break;
+        case DI_TRANSFORMATION_KIMURA:              catType = KIMURA;     break;
+        case DI_TRANSFORMATION_PAM:                 catType = PAM;        break;
+        case DI_TRANSFORMATION_CATEGORIES_HALL:     catType = HALL;       break;
+        case DI_TRANSFORMATION_CATEGORIES_BARKER:   catType = GEORGE;     break;
+        case DI_TRANSFORMATION_CATEGORIES_CHEMICAL: catType = CHEMICAL;   break;
         default:
             return "This correction is not available for protein data";
     }
     matrix = new AP_smatrix(nentries);
 
-    di_protdist prodist(whichcode, whichcat, nentries, entries, aliview->get_length(), matrix);
+    di_protdist prodist(UNIVERSAL, catType, nentries, entries, aliview->get_length(), matrix);
     return prodist.makedists(aborted_flag);
 }
 
