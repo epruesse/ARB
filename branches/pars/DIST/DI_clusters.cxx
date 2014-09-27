@@ -14,7 +14,6 @@
 #include "di_foundclusters.hxx"
 #include "di_awars.hxx"
 
-#include <AP_filter.hxx>
 #include <AP_seq_protein.hxx>
 #include <AP_seq_dna.hxx>
 

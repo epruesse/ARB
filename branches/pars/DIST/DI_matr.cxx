@@ -17,7 +17,6 @@
 #include <neighbourjoin.hxx>
 #include <AP_seq_dna.hxx>
 #include <AP_filter.hxx>
-#include <BI_helix.hxx>
 #include <CT_ctree.hxx>
 #include <ColumnStat.hxx>
 
@@ -1045,8 +1044,6 @@ static void di_mark_by_distance(AW_window *aww, WeightedFilter *weighted_filter)
         aw_message(error);
     }
 }
-
-static void di_calculate_full_matrix_cb(AW_window *aww, const WeightedFilter *weighted_filter);
 
 static GB_ERROR di_recalc_matrix() {
     // recalculate matrix

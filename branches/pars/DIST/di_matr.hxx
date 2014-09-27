@@ -64,8 +64,6 @@ enum DI_MATRIX_TYPE {
     DI_MATRIX_COMPRESSED
 };
 
-class DI_MATRIX;
-class AW_root;
 class AP_sequence_parsimony;
 class AP_sequence_simple_protein;
 
@@ -90,8 +88,6 @@ enum DI_SAVE_TYPE {
     DI_SAVE_READABLE,
     DI_SAVE_TABBED
 };
-
-class BI_helix;
 
 enum LoadWhat { DI_LOAD_ALL, DI_LOAD_MARKED, DI_LOAD_LIST };
 

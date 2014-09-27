@@ -18,13 +18,6 @@
 #ifndef AP_SEQUENCE_HXX
 #include <AP_sequence.hxx>
 #endif
-
-#ifndef _GLIBCXX_CLIMITS
-#include <climits>
-#endif
-#ifndef _GLIBCXX_STRING
-#include <string>
-#endif
 #ifndef _GLIBCXX_MAP
 #include <map>
 #endif
@@ -32,7 +25,6 @@
 
 #define cl_assert(cond) arb_assert(cond)
 
-class AP_sequence;
 class ClusterTree;
 class arb_progress;
 
@@ -44,8 +36,6 @@ enum ClusterState {
     CS_IS_CLUSTER    = 8,                           // subtree is cluster (all sequence distances are known)
     CS_SUB_CLUSTER   = 16,                          // like CS_IS_CLUSTER, but father is cluster as well
 };
-
-const float NO_DISTANCE = -1.0;
 
 // ------------------------
 //      ClusterTreeRoot

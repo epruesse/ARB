@@ -14,8 +14,6 @@
 #include <arb_progress.h>
 #include <cmath>
 
-#define di_assert(cond) arb_assert(cond)
-
 #define epsilon 0.000001        // a small number
 
 double di_protdist::pameigs[20] = {

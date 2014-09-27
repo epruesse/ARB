@@ -19,10 +19,6 @@
 #include <smartptr.h>
 #endif
 
-
-#ifndef _GLIBCXX_SET
-#include <set>
-#endif
 #ifndef _GLIBCXX_MAP
 #include <map>
 #endif
@@ -45,7 +41,6 @@ class  ClusterTree;
 class  ARB_tree_predicate;
 struct ARB_countedTree;
 class  AW_selection_list;
-class  AW_window;
 
 // ---------------------
 //      Cluster
