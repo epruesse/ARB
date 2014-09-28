@@ -189,17 +189,12 @@ DI_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_main.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-DI_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-DI_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-DI_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-DI_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt.hxx
-DI_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/cb.h
 DI_main.o: $(ARBHOME)/INCLUDE/cb_base.h

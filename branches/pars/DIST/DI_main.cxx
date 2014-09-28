@@ -11,11 +11,9 @@
 #include <servercntrl.h>
 #include <arbdb.h>
 #include <awt.hxx>
-#include <awt_canvas.hxx>
 
 #include <aw_preset.hxx>
 #include <aw_root.hxx>
-#include <aw_msg.hxx>
 #include <macros.hxx>
 #include <aw_question.hxx>
 #include <awt_TreeAwars.hxx>
