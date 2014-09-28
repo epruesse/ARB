@@ -159,7 +159,7 @@ public:
     char *unload();
     const char *save(char *filename, enum DI_SAVE_TYPE type);
 
-    GB_ERROR  calculate(AW_root *awr, char *cancel, double alpha, DI_TRANSFORMATION transformation, bool *aborted_flag);
+    GB_ERROR  calculate(const char *cancel, DI_TRANSFORMATION transformation, bool *aborted_flag, AP_matrix *userdef_matrix);
     GB_ERROR  calculate_pro(DI_TRANSFORMATION transformation, bool *aborted_flag);
     GB_ERROR  extract_from_tree(const char *treename, bool *aborted_flag);
 

@@ -64,8 +64,18 @@ using std::string;
 
 DI_GLOBAL_MATRIX GLOBAL_MATRIX;
 
-static MatrixDisplay *matrixDisplay = 0;
-static AP_matrix      DI_dna_matrix(AP_MAX);
+static MatrixDisplay     *matrixDisplay = 0;
+static AP_userdef_matrix  userdef_DNA_matrix(AP_MAX, AWAR_DIST_MATRIX_DNA_BASE);
+
+static AP_matrix *get_user_matrix() {
+    AW_root *awr = AW_root::SINGLETON;
+    if (!awr->awar(AWAR_DIST_MATRIX_DNA_ENABLED)->read_int()) {
+        return NULL;
+    }
+    userdef_DNA_matrix.update_from_awars(awr);
+    userdef_DNA_matrix.normize();
+    return &userdef_DNA_matrix;
+}
 
 class BoundWindowCallback : virtual Noncopyable {
     AW_window      *aww;
@@ -174,7 +184,7 @@ static AW_window *create_dna_matrix_window(AW_root *aw_root) {
 
     aws->at_newline();
 
-    DI_dna_matrix.create_input_fields(aws, AWAR_DIST_MATRIX_DNA_BASE);
+    userdef_DNA_matrix.create_input_fields(aws);
     aws->window_fit();
     return aws;
 }
@@ -187,13 +197,14 @@ static void selected_tree_changed_cb() {
 
 void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db) {
     GB_transaction ta(db);
-    DI_dna_matrix.set_descriptions(AP_A,   "A");
-    DI_dna_matrix.set_descriptions(AP_C,   "C");
-    DI_dna_matrix.set_descriptions(AP_G,   "G");
-    DI_dna_matrix.set_descriptions(AP_T,   "TU");
-    DI_dna_matrix.set_descriptions(AP_GAP, "GAP");
 
-    DI_dna_matrix.create_awars(aw_root, AWAR_DIST_MATRIX_DNA_BASE);
+    userdef_DNA_matrix.set_descriptions(AP_A,   "A");
+    userdef_DNA_matrix.set_descriptions(AP_C,   "C");
+    userdef_DNA_matrix.set_descriptions(AP_G,   "G");
+    userdef_DNA_matrix.set_descriptions(AP_T,   "TU");
+    userdef_DNA_matrix.set_descriptions(AP_GAP, "GAP");
+
+    userdef_DNA_matrix.create_awars(aw_root);
 
     RootCallback matrix_needs_recalc_callback = makeRootCallback(matrix_needs_recalc_cb);
     aw_root->awar_int(AWAR_DIST_MATRIX_DNA_ENABLED, 0)->add_callback(matrix_needs_recalc_callback); // user matrix disabled by default
@@ -512,27 +523,19 @@ double DI_MATRIX::corr(double dist, double b, double & sigma) {
     return - b * log(1-dist/b);
 }
 
-GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI_TRANSFORMATION transformation, bool *aborted_flag)
-{
-    int user_matrix_enabled = awr->awar(AWAR_DIST_MATRIX_DNA_ENABLED)->read_int();
-    if (user_matrix_enabled) {  // set transformation Matrix
+GB_ERROR DI_MATRIX::calculate(const char *cancel, DI_TRANSFORMATION transformation, bool *aborted_flag, AP_matrix *userdef_matrix) {
+    if (userdef_matrix) {
         switch (transformation) {
             case DI_TRANSFORMATION_NONE:
             case DI_TRANSFORMATION_SIMILARITY:
             case DI_TRANSFORMATION_JUKES_CANTOR:
                 break;
             default:
-                aw_message("Sorry not implemented:\n"
-                           "    This kind of distance correction does not support\n"
-                           "    a user defined matrix - it will be ignored");
-                user_matrix_enabled = false;
+                aw_message("Sorry: this kind of distance correction does not support a user defined matrix - it will be ignored");
+                userdef_matrix = NULL;
                 break;
         }
-        DI_dna_matrix.read_awars(awr, AWAR_DIST_MATRIX_DNA_BASE);
-        DI_dna_matrix.normize();
     }
-
-
 
     matrix = new AP_smatrix(nentries);
 
@@ -586,7 +589,7 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
                 case  DI_TRANSFORMATION_NONE:
                 case  DI_TRANSFORMATION_SIMILARITY: {
                     double  dist = 0.0;
-                    if (user_matrix_enabled) {
+                    if (userdef_matrix) {
                         memset((char *)hits, 0, sizeof(long) * AP_MAX * AP_MAX);
                         int pos;
                         for (pos = s_len; pos >= 0; pos--) {
@@ -601,8 +604,8 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
                                     all_sum += hits[x][y];
                                 }
                                 else {
-                                    diffsum += hits[x][y] * DI_dna_matrix.get(x, y);
-                                    all_sum += hits[x][y] * DI_dna_matrix.get(x, y);
+                                    diffsum += hits[x][y] * userdef_matrix->get(x, y);
+                                    all_sum += hits[x][y] * userdef_matrix->get(x, y);
                                 }
                             }
                         }
@@ -909,7 +912,7 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const We
                             }
                             else {
                                 if (phm->is_AA) error = phm->calculate_pro(trans, &aborted);
-                                else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted);
+                                else            error = phm->calculate(cancel, trans, &aborted, get_user_matrix());
                             }
                         }
                     }
@@ -995,12 +998,8 @@ static void di_mark_by_distance(AW_window *aww, WeightedFilter *weighted_filter)
 
                         if (phm->nentries == 2) { // if species has no alignment -> nentries<2
                             if (!error) {
-                                if (phm->is_AA) {
-                                    error = phm->calculate_pro(trans, NULL);
-                                }
-                                else {
-                                    error = phm->calculate(aw_root, cancel, 0.0, trans, NULL);
-                                }
+                                if (phm->is_AA) error = phm->calculate_pro(trans, NULL);
+                                else            error = phm->calculate(cancel, trans, NULL, get_user_matrix());
                             }
 
                             if (!error) {
