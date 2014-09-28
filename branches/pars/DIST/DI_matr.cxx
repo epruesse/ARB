@@ -303,9 +303,8 @@ DI_ENTRY::~DI_ENTRY()
 
 }
 
-DI_MATRIX::DI_MATRIX(const AliView& aliview_, AW_root *awr) {
+DI_MATRIX::DI_MATRIX(const AliView& aliview_) {
     memset((char *)this, 0, sizeof(*this));
-    aw_root = awr;
     aliview = new AliView(aliview_);
 }
 
@@ -878,7 +877,7 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const We
 
                 LoadWhat all_flag = (strcmp(load_what, "all") == 0) ? DI_LOAD_ALL : DI_LOAD_MARKED;
                 {
-                    DI_MATRIX *phm   = new DI_MATRIX(*aliview, aw_root);
+                    DI_MATRIX *phm   = new DI_MATRIX(*aliview);
                     phm->matrix_type = DI_MATRIX_FULL;
 
                     static SmartCharPtr          last_sort_tree_name;
@@ -988,7 +987,7 @@ static void di_mark_by_distance(AW_window *aww, WeightedFilter *weighted_filter)
                          gb_species && !error;
                          gb_species = GBT_next_species(gb_species))
                     {
-                        DI_MATRIX *phm         = new DI_MATRIX(*aliview, aw_root);
+                        DI_MATRIX *phm         = new DI_MATRIX(*aliview);
                         phm->matrix_type       = DI_MATRIX_FULL;
                         GBDATA *species_pair[] = { gb_selected, gb_species, NULL };
 
@@ -1378,7 +1377,7 @@ static void di_autodetect_callback(AW_window *aww) {
             GB_pop_transaction(GLOBAL_gb_main);
         }
         else {
-            DI_MATRIX phm(*aliview, aw_root);
+            DI_MATRIX phm(*aliview);
 
             {
                 char *load_what      = aw_root->awar(AWAR_DIST_WHICH_SPECIES)->read_string();
@@ -1759,7 +1758,7 @@ void TEST_matrix_analyse() {
         TEST_ANNOTATE(GBS_global_string("prot=%i", prot));
         DIST_testenv env("TEST_realign.arb", prot ? "ali_pro" : "ali_dna");
 
-        DI_MATRIX matrix(env.aliview(), NULL);
+        DI_MATRIX matrix(env.aliview());
         MatrixOrder order(env.gbmain(), "tree_abc");
         TEST_EXPECT_NO_ERROR(matrix.load(DI_LOAD_MARKED, order, true, NULL));
 

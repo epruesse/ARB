@@ -133,7 +133,6 @@ class DI_MATRIX : virtual Noncopyable {
     GBDATA  *gb_species_data;
     long     seq_len;
     char     cancel_columns[256];
-    AW_root *aw_root;                               // only link
     size_t   entries_mem_size;
     AliView *aliview;
 
@@ -150,7 +149,7 @@ public:
     AP_smatrix      *matrix;
     DI_MATRIX_TYPE   matrix_type;
 
-    DI_MATRIX(const AliView& aliview, AW_root *awr);
+    explicit DI_MATRIX(const AliView& aliview);
     ~DI_MATRIX();
 
     const char *get_aliname() const { return aliview->get_aliname(); }
