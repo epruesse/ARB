@@ -502,7 +502,7 @@ char *DI_MATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *c
     memset((char *) &hits2[0], 0, sizeof(hits2));
     for (size_t row = 0; row < nentries; row++) {
         const char *seq1 = entries[row]->sequence_parsimony->get_sequence();
-        UNCOVERED();
+        // UNCOVERED(); // covered by TEST_matrix
         for (pos = 0; pos < s_len; pos++) {
             b = *(seq1++);
             if (cancel[b]) continue;
@@ -548,7 +548,7 @@ GB_ERROR DI_MATRIX::calculate(const char *cancel, DI_TRANSFORMATION transformati
     }
     memset(&cancel_columns[0], 0, 256);
 
-    for (i=0; i<strlen(cancel); i++) {
+    for (i=0; i<strlen(cancel); i++) { // @@@ omg .. strlen in loop
         int j = cancel[i];
         j = AP_sequence_parsimony::table[j];
         cancel_columns[j] = 1;
@@ -576,7 +576,7 @@ GB_ERROR DI_MATRIX::calculate(const char *cancel, DI_TRANSFORMATION transformati
             
             const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
             const unsigned char *seq2 = entries[col]->sequence_parsimony->get_usequence();
-            UNCOVERED();
+            // UNCOVERED(); // covered by TEST_matrix
 
             b = 0.0;
             switch (transformation) {
@@ -604,6 +604,7 @@ GB_ERROR DI_MATRIX::calculate(const char *cancel, DI_TRANSFORMATION transformati
                                     all_sum += hits[x][y];
                                 }
                                 else {
+                                    UNCOVERED(); // @@@ cover
                                     diffsum += hits[x][y] * userdef_matrix->get(x, y);
                                     all_sum += hits[x][y] * userdef_matrix->get(x, y);
                                 }
@@ -1718,6 +1719,9 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
+#include <arb_diff.h>
+#include <arb_file.h>
+
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
 #endif
@@ -1752,19 +1756,71 @@ public:
     GBDATA *gbmain() const { return gb_main; }
 };
 
-void TEST_matrix_analyse() {
-    for (int prot = 0; prot<=1; ++prot) {
-        TEST_ANNOTATE(GBS_global_string("prot=%i", prot));
-        DIST_testenv env("TEST_realign.arb", prot ? "ali_pro" : "ali_dna");
+void TEST_matrix() {
+    for (GB_alignment_type at = GB_AT_RNA; at<=GB_AT_AA; at = GB_alignment_type(at+1)) {
+        // ---------------
+        //      setup
+        //                               GB_AT_RNA         GB_AT_DNA           GB_AT_AA
+        const char *db_name[]=  { NULL, "TEST_trees.arb", "TEST_realign.arb", "TEST_realign.arb", };
+        const char *ali_name[]= { NULL, "ali_5s",         "ali_dna",          "ali_pro",          };
+
+        TEST_ANNOTATE(GBS_global_string("ali_name=%s", ali_name[at]));
+        DIST_testenv env(db_name[at], ali_name[at]);
 
         DI_MATRIX matrix(env.aliview());
-        MatrixOrder order(env.gbmain(), "tree_abc");
+        MatrixOrder order(env.gbmain(), "tree_abc"); // no such tree!
         TEST_EXPECT_NO_ERROR(matrix.load(DI_LOAD_MARKED, order, true, NULL));
 
+        // -------------------------------
+        //      detect_transformation
+        DI_TRANSFORMATION detected_trans;
         {
-            string            msg;
-            DI_TRANSFORMATION expected = prot ? DI_TRANSFORMATION_PAM : DI_TRANSFORMATION_JUKES_CANTOR;
-            TEST_EXPECT_EQUAL(matrix.detect_transformation(msg), expected);
+            string msg;
+
+            detected_trans = matrix.detect_transformation(msg);
+            DI_TRANSFORMATION expected = DI_TRANSFORMATION_NONE_DETECTED;
+            switch (at) {
+                case GB_AT_RNA: expected = DI_TRANSFORMATION_NONE;         break;
+                case GB_AT_DNA: expected = DI_TRANSFORMATION_JUKES_CANTOR; break;
+                case GB_AT_AA:  expected = DI_TRANSFORMATION_PAM;          break;
+                case GB_AT_UNKNOWN: di_assert(0); break;
+            }
+            TEST_EXPECT_EQUAL(detected_trans, expected);
+        }
+
+        // ------------------------------
+        //      calculate the matrix
+
+        // @@@ does not test user-defined transformation-matrix!
+        if (at == GB_AT_AA) {
+            matrix.calculate_pro(detected_trans, NULL);
+        }
+        else {
+            if (at == GB_AT_RNA) detected_trans = DI_TRANSFORMATION_FELSENSTEIN; // force calculate_overall_freqs
+            matrix.calculate("", detected_trans, NULL, NULL);
+        }
+
+        // -----------------------------------
+        //      save in available formats
+
+        for (DI_SAVE_TYPE saveType = DI_SAVE_PHYLIP_COMP; saveType<=DI_SAVE_TABBED; saveType = DI_SAVE_TYPE(saveType+1)) {
+            const char *savename = "distance/matrix.out";
+            matrix.save(savename, saveType);
+
+            const char *suffixAT[] = { NULL, "rna", "dna", "pro" };
+            const char *suffixST[] = { "phylipComp", "readable", "tabbed" };
+            char *expected = GBS_global_string_copy("distance/matrix.%s.%s.expected", suffixAT[at], suffixST[saveType]);
+
+// #define TEST_AUTO_UPDATE // uncomment to auto-update expected matrices // @@@
+
+#if defined(TEST_AUTO_UPDATE)
+            TEST_COPY_FILE(savename, expected);
+#else
+            TEST_EXPECT_TEXTFILES_EQUAL(savename, expected);
+#endif // TEST_AUTO_UPDATE
+            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename));
+
+            free(expected);
         }
     }
 }

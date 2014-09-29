@@ -230,7 +230,9 @@ DI_matr.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_defs.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_diff.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_file.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_msg.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_progress.h

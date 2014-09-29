@@ -20,7 +20,7 @@ DI_TRANSFORMATION DI_MATRIX::detect_transformation(string& msg) {
 
     DI_TRANSFORMATION result = DI_TRANSFORMATION_NONE_DETECTED;
     if (is_AA) {
-        // UNCOVERED(); // covered by TEST_matrix_analyse
+        // UNCOVERED(); // covered by TEST_matrix
         if (nentries> 100) {
             msg    = "A lot of sequences!\n   ==> fast Kimura selected! (instead of PAM)";
             result = DI_TRANSFORMATION_KIMURA;
@@ -40,7 +40,7 @@ DI_TRANSFORMATION DI_MATRIX::detect_transformation(string& msg) {
         // calculate meanvalue of sequencelength:
         for (size_t row=0; row<nentries; row++) {
             const char *sequ = entries[row]->sequence_parsimony->get_sequence();
-            // UNCOVERED(); // covered by TEST_matrix_analyse
+            // UNCOVERED(); // covered by TEST_matrix
 
             size_t flen = aliview->get_length();
 

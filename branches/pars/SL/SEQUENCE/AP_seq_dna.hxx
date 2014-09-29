@@ -31,7 +31,7 @@ public:
     ~AP_sequence_parsimony() OVERRIDE;
 
     const char *get_sequence() const {
-        // UNCOVERED(); // covered by TEST_calc_bootstraps
+        // UNCOVERED(); // covered by TEST_calc_bootstraps, TEST_matrix
         lazy_load_sequence();
         ap_assert(seq_pars);
         return seq_pars;

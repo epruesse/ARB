@@ -11,8 +11,7 @@
 #include "di_matr.hxx"
 #include <nds.h>
 
-const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
-{
+GB_ERROR DI_MATRIX::save(const char *filename, enum DI_SAVE_TYPE type) {
     FILE     *out;
     GB_ERROR  error = 0;
 
@@ -64,7 +63,7 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
                     if (slen>maxnds) maxnds = slen;
                 }
 
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
                 fprintf(out, "maxnds=%zu\n", maxnds);
 #endif // DEBUG
 
@@ -105,11 +104,7 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
                         fprintf(out, "%s", nds_results[row]);
                     }
                     else {
-                        char *nds   = nds_results[row];
-                        char  c     = nds[maxnds];
-                        nds[maxnds] = 0;
-                        fprintf(out, "%-*s ", int(maxnds), nds);
-                        nds[maxnds] = c;
+                        fprintf(out, "%-*s ", int(maxnds), nds_results[row]);
                     }
 
                     // print the matrix :
@@ -151,12 +146,12 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
                 fprintf(out, "Average:\t%f\n", sum/(nentries*nentries));
 
                 for (col=0; col<nentries; col++) free(nds_results[col]);
-                free(nds_results);
+                delete [] nds_results;
             }
             break;
         default:
             error = GB_export_error("Unknown Save Type");
     }
     fclose(out);
-    return (char *)error;
+    return error;
 }

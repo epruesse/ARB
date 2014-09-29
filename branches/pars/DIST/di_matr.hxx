@@ -157,7 +157,7 @@ public:
 
     GB_ERROR load(LoadWhat what, const MatrixOrder& order, bool show_warnings, GBDATA **species_list) __ATTR__USERESULT;
     char *unload();
-    const char *save(char *filename, enum DI_SAVE_TYPE type);
+    const char *save(const char *filename, enum DI_SAVE_TYPE type);
 
     GB_ERROR  calculate(const char *cancel, DI_TRANSFORMATION transformation, bool *aborted_flag, AP_matrix *userdef_matrix);
     GB_ERROR  calculate_pro(DI_TRANSFORMATION transformation, bool *aborted_flag);
