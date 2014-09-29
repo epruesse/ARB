@@ -786,11 +786,11 @@ void TEST_sequence_export() {
                 if (GB_is_regularfile(expected)) {
                     TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
                 }
-                else {
-                    system(GBS_global_string("cp %s %s", outname, expected));
-                }
+                else
 #else
-                system(GBS_global_string("cp %s %s", outname, expected));
+                {
+                    TEST_COPY_FILE(outname, expected);
+                }
 #endif
 #else
                 TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);

@@ -257,7 +257,7 @@ static arb_test::match_expectation build_expected_consensus_tree(const int treed
 
 #if defined(TEST_AUTO_UPDATE)
         if (!exported_as_expected) {
-            ASSERT_RESULT(int, 0, system(GBS_global_string("cp %s %s", saveas, expected_save)));
+            TEST_COPY_FILE(saveas, expected_save);
         }
 #else // !defined(TEST_AUTO_UPDATE)
         expected.add(that(exported_as_expected).is_equal_to(true));

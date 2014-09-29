@@ -1760,15 +1760,15 @@ void TEST_hlp2xml_output() {
         string html_expected = EXPECTED + tested_helpfile[i] + ".html";
         string hlp_expected  = EXPECTED + tested_helpfile[i] + ".hlp";
 
-        string cmd;
 
 #if defined(TEST_AUTO_UPDATE)
 # if defined(NDEBUG)
 #  error please use auto-update only in DEBUG mode
 # endif
-        cmd = string("cp ") + xml  + ' ' + xml_expected;  TEST_EXPECT_NO_ERROR(GBK_system(cmd.c_str()));
-        cmd = string("cp ") + html + ' ' + html_expected; TEST_EXPECT_NO_ERROR(GBK_system(cmd.c_str()));
-        cmd = string("cp ") + hlp  + ' ' + hlp_expected;  TEST_EXPECT_NO_ERROR(GBK_system(cmd.c_str()));
+        TEST_COPY_FILE(xml,  xml_expected);
+        TEST_COPY_FILE(html, html_expected);
+        TEST_COPY_FILE(hlp,  hlp_expected);
+        
 #else // !defined(TEST_AUTO_UPDATE)
 
 # if defined(DEBUG)
