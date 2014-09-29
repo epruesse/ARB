@@ -335,8 +335,6 @@ int echo_server(const char* portname) {
     exit(0);
 }
 
-#if !defined(DEVEL_JENKINS)
-// this test fails randomly (disabled in jenkins)
 void TEST_open_socket() {
     int fd;
     char *filename = NULL;
@@ -431,7 +429,6 @@ void TEST_open_socket() {
     free(unix_socket);
 }
 TEST_PUBLISH(TEST_open_socket);
-#endif
 
 #endif // UNIT_TESTS
 
