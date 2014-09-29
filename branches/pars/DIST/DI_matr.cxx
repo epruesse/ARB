@@ -552,7 +552,7 @@ GB_ERROR DI_MATRIX::calculate(const char *cancel, DI_TRANSFORMATION transformati
     memset(&cancel_columns[0], 0, 256);
 
     for (i=0; cancel[i]; i++) {
-        cancel_columns[AP_sequence_parsimony::table[cancel[i]]] = 1;
+        cancel_columns[safeCharIndex(AP_sequence_parsimony::table[safeCharIndex(cancel[i])])] = 1;
         UNCOVERED(); // @@@ cover
     }
 
