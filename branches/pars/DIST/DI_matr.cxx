@@ -490,8 +490,9 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
     return error;
 }
 
-char *DI_MATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *cancel)
-{
+char *DI_MATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *cancel) {
+    di_assert(is_AA == false);
+
     long hits2[AP_MAX];
     long sum   = 0;
     int  i;
@@ -524,6 +525,8 @@ double DI_MATRIX::corr(double dist, double b, double & sigma) {
 }
 
 GB_ERROR DI_MATRIX::calculate(const char *cancel, DI_TRANSFORMATION transformation, bool *aborted_flag, AP_matrix *userdef_matrix) {
+    di_assert(is_AA == false);
+
     if (userdef_matrix) {
         switch (transformation) {
             case DI_TRANSFORMATION_NONE:
@@ -548,16 +551,16 @@ GB_ERROR DI_MATRIX::calculate(const char *cancel, DI_TRANSFORMATION transformati
     }
     memset(&cancel_columns[0], 0, 256);
 
-    for (i=0; i<strlen(cancel); i++) { // @@@ omg .. strlen in loop
-        int j = cancel[i];
-        j = AP_sequence_parsimony::table[j];
-        cancel_columns[j] = 1;
+    for (i=0; cancel[i]; i++) {
+        cancel_columns[AP_sequence_parsimony::table[cancel[i]]] = 1;
+        UNCOVERED(); // @@@ cover
     }
-    long    columns;
+
+    long   columns;
     double b;
-    long frequencies[AP_MAX];
+    long   frequencies[AP_MAX];
     double rel_frequencies[AP_MAX];
-    double S_square=0;
+    double S_square = 0;
 
     switch (transformation) {
         case DI_TRANSFORMATION_FELSENSTEIN:
@@ -726,8 +729,9 @@ GB_ERROR DI_MATRIX::calculate(const char *cancel, DI_TRANSFORMATION transformati
 }
 
 GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation, bool *aborted_flag) {
-    di_cattype catType;
+    di_assert(is_AA == true);
 
+    di_cattype catType;
     switch (transformation) {
         case DI_TRANSFORMATION_NONE:                catType = NONE;       break;
         case DI_TRANSFORMATION_SIMILARITY:          catType = SIMILARITY; break;
@@ -1811,7 +1815,7 @@ void TEST_matrix() {
             const char *suffixST[] = { "phylipComp", "readable", "tabbed" };
             char *expected = GBS_global_string_copy("distance/matrix.%s.%s.expected", suffixAT[at], suffixST[saveType]);
 
-// #define TEST_AUTO_UPDATE // uncomment to auto-update expected matrices // @@@
+// #define TEST_AUTO_UPDATE // uncomment to auto-update expected matrices
 
 #if defined(TEST_AUTO_UPDATE)
             TEST_COPY_FILE(savename, expected);

@@ -77,8 +77,9 @@ public:
     DI_ENTRY(char *namei, DI_MATRIX *phmatri);
     ~DI_ENTRY();
 
-    // @@@ make a union?
-    AP_sequence                *sequence;
+    AP_sequence *sequence;
+
+    // @@@ remove the 2 ptrs below. just use 'sequence' above (that's what inheritance was made for)
     AP_sequence_parsimony      *sequence_parsimony; // if exist ok
     AP_sequence_simple_protein *sequence_protein;
 
