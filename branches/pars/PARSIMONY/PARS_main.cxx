@@ -601,7 +601,7 @@ static long push_partial(const char *, long val, void *cd_partial) {
 // -------------------------------
 //      Add Partial sequences
 
-static void NT_add_partial(AW_window *, AWT_canvas *ntw) {
+static void nt_add_partial(AWT_graphic_tree *agt) {
     GB_begin_transaction(GLOBAL_gb_main);
     GB_ERROR error = NULL;
 
@@ -792,7 +792,10 @@ static void NT_add_partial(AW_window *, AWT_canvas *ntw) {
     else {
         GB_commit_transaction(GLOBAL_gb_main);
     }
+}
 
+static void NT_add_partial_and_update(UNFIXED, AWT_canvas *ntw) {
+    nt_add_partial(AWT_TREE(ntw));
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -1179,7 +1182,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
             awm->insert_menu_topic("rm_add_marked",      "Remove & Add Marked Species",                     "R", "pa_quick.hlp",   AWM_ALL, makeWindowCallback(NT_reAdd_quick,   ntw, NT_ADD_MARKED));
             awm->insert_menu_topic("rm_add_marked_nni|", "Remove & Add Marked + Local Optimization (NNI)",  "L", "pa_add.hlp",     AWM_ALL, makeWindowCallback(NT_reAdd_and_NNI, ntw, NT_ADD_MARKED));
             awm->sep______________();
-            awm->insert_menu_topic("add_marked_partial", "Add Marked Partial Species",                      "P", "pa_partial.hlp", AWM_ALL, makeWindowCallback(NT_add_partial,   ntw));
+            awm->insert_menu_topic("add_marked_partial", "Add Marked Partial Species",                      "P", "pa_partial.hlp", AWM_ALL, makeWindowCallback(NT_add_partial_and_update, ntw));
             awm->sep______________();
             awm->insert_menu_topic("add_selected",       "Add Selected Species",                            "S", "pa_quick.hlp",   AWM_ALL, makeWindowCallback(NT_add_quick,     ntw, NT_ADD_SELECTED));
             awm->insert_menu_topic("add_selected_nni",   "Add Selected Species + Local Optimization (NNI)", "O", "pa_add.hlp",     AWM_ALL, makeWindowCallback(NT_add_and_NNI,   ntw, NT_ADD_SELECTED));
