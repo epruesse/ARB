@@ -187,13 +187,6 @@ clflags :=# linker flags (when passed through gcc)
 extended_warnings :=# warning flags for C and C++-compiler
 extended_cpp_warnings :=# warning flags for C++-compiler only
 
-# TEMPORARY WORKAROUND for linker issues with launchpad binutils
-# code was added to ld to check for overlapping FDEs. Since ARB
-# worked before, we want this not to fail for the moment.
-# FIXME: remove this!
-clflags += -Wl,-noinhibit-exec
-
-
 ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
 	ifeq ($(USE_CLANG),1)
@@ -239,6 +232,12 @@ endif
 ifeq ($(DARWIN),0)
 	lflags += -g
 	clflags += -Wl,-g
+
+# TEMPORARY WORKAROUND for linker issues with launchpad binutils
+# code was added to ld to check for overlapping FDEs. Since ARB
+# worked before, we want this not to fail for the moment.
+# FIXME: remove this!
+        clflags += -Wl,-noinhibit-exec
 endif
 
 # control how much you get spammed
