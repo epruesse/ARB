@@ -316,7 +316,7 @@ enum AddWhat {
     NT_ADD_SELECTED,
 };
 
-static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick) {
+static void nt_add(AWT_graphic_tree *agt, AddWhat what, bool quick) {
     GB_ERROR  error = 0;
 
     AP_tree *oldrootleft  = NULL;
@@ -410,8 +410,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick) {
     if (hash) GBS_free_hash(hash);
     if (error) aw_message(error);
 
-    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
-    pars_saveNrefresh_changed_tree(ntw);
+    agt->reorder_tree(BIG_BRANCHES_TO_TOP);
 }
 
 // ------------------------------------------
@@ -800,29 +799,31 @@ static void NT_add_partial(AW_window *, AWT_canvas *ntw) {
 // -------------------------------
 //      add marked / selected
 
-static void NT_add_and_NNI(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, false); }
-static void NT_add_quick  (AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, true);  }
+static void nt_add_and_update(AWT_canvas *ntw, AddWhat what, bool quick) {
+    nt_add(AWT_TREE(ntw), what, quick);
+    pars_saveNrefresh_changed_tree(ntw);
+}
+
+static void NT_add_and_NNI(UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_add_and_update(ntw, what, false); }
+static void NT_add_quick  (UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_add_and_update(ntw, what, true);  }
 
 // ------------------------------------------
 //      remove and add marked / selected
 
-static void nt_reAdd(AW_window * aww, AWT_canvas *ntw, AddWhat what, bool quick) {
-    AW_awar *awar_best_pars = aww->get_root()->awar(AWAR_BEST_PARSIMONY);
-    int      oldparsval     = awar_best_pars->read_int();
-
-    AWT_graphic_tree *agt = AWT_TREE(ntw);
+static void nt_reAdd(AWT_graphic_tree *agt, AddWhat what, bool quick) {
     if (agt->get_root_node()) {
         agt->get_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
+        nt_add(agt, what, quick);
     }
-
-    // restore old parsimony value (otherwise the state where species were removed would count) :
-    awar_best_pars->write_int(oldparsval);
-
-    nt_add(aww, ntw, what, quick);
 }
 
-static void NT_reAdd_and_NNI(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_reAdd(aww, ntw, what, false); }
-static void NT_reAdd_quick  (AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_reAdd(aww, ntw, what, true);  }
+static void nt_reAdd_and_update(AWT_canvas *ntw, AddWhat what, bool quick) {
+    nt_reAdd(AWT_TREE(ntw), what, quick);
+    pars_saveNrefresh_changed_tree(ntw);
+}
+
+static void NT_reAdd_and_NNI(UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_reAdd_and_update(ntw, what, false); }
+static void NT_reAdd_quick  (UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_reAdd_and_update(ntw, what, true);  }
 
 // --------------------------------------------------------------------------------
 
@@ -1125,8 +1126,8 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback(makeRootCallback(TREE_recompute_cb, ntw));
 
-    if (cmds->add_marked)           NT_add_quick(awm, ntw, NT_ADD_MARKED);
-    if (cmds->add_selected)         NT_add_quick(awm, ntw, NT_ADD_SELECTED);
+    if (cmds->add_marked)           NT_add_quick(NULL, ntw, NT_ADD_MARKED);
+    if (cmds->add_selected)         NT_add_quick(NULL, ntw, NT_ADD_SELECTED);
     if (cmds->calc_branch_lengths)  NT_branch_lengths(awm, ntw);
     if (cmds->calc_bootstrap)       NT_bootstrap(awm, ntw, 0);
     if (cmds->quit)                 pars_exit(awm);
