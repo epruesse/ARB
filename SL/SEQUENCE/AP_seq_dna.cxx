@@ -1,6 +1,7 @@
 #include "AP_seq_dna.hxx"
 #include "AP_parsimony_defaults.hxx"
 
+#include <arb_misc.h>
 #include <AP_pro_a_nucs.hxx>
 #include <AP_filter.hxx>
 #include <ARB_Tree.hxx>
@@ -15,12 +16,12 @@ char *AP_sequence_parsimony::table;
 
 AP_sequence_parsimony::AP_sequence_parsimony(const AliView *aliview)
     : AP_sequence(aliview)
-    , seq_pars(0)
+    , seq_pars(NULL)
 {
 }
 
 AP_sequence_parsimony::~AP_sequence_parsimony() {
-    delete [] seq_pars;
+    free(seq_pars);
 }
 
 AP_sequence *AP_sequence_parsimony::dup() const {
@@ -49,7 +50,7 @@ void AP_sequence_parsimony::build_table()
 void AP_sequence_parsimony::set(const char *isequence)
 {
     size_t sequence_len = get_filter()->get_filtered_length();
-    seq_pars     = new char[sequence_len+1];
+    arb_alloc_aligned(seq_pars, sequence_len+1);
     memset(seq_pars, AP_N, (size_t)sequence_len+1);
 
     const uchar *simplify = get_filter()->get_simplify_table();
@@ -99,7 +100,7 @@ void AP_sequence_parsimony::set(const char *isequence)
 }
 
 void AP_sequence_parsimony::unset() {
-    delete [] seq_pars; seq_pars = 0;
+    freenull(seq_pars);
     mark_sequence_set(false);
 }
 
@@ -112,8 +113,8 @@ AP_FLOAT AP_sequence_parsimony::combine(const AP_sequence *lefts, const AP_seque
     const AP_sequence_parsimony *right = (const AP_sequence_parsimony *)rights;
 
     size_t sequence_len = get_sequence_length();
-    if (seq_pars == 0) {
-        seq_pars = new char[sequence_len + 1];
+    if (seq_pars == NULL) {
+        arb_alloc_aligned(seq_pars, sequence_len+1);
     }
 
     const char *p1       = left->get_sequence();
