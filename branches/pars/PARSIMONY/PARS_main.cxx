@@ -602,6 +602,8 @@ static long push_partial(const char *, long val, void *cd_partial) {
 //      Add Partial sequences
 
 static void nt_add_partial(AWT_graphic_tree *agt) {
+    ap_assert(agt->gb_main == GLOBAL_gb_main); // @@@ if not failing -> remove GLOBAL_gb_main
+
     GB_begin_transaction(GLOBAL_gb_main);
     GB_ERROR error = NULL;
 
@@ -629,7 +631,7 @@ static void nt_add_partial(AWT_graphic_tree *agt) {
 
                     switch (GBT_is_partial(gb_marked, 1, true)) { // marks undef as 'partial sequence'
                         case 0: { // full sequences
-                            aw_message(GBS_global_string("'%s' is a full sequence (cannot add partial)", name));
+                            GBT_message(GLOBAL_gb_main, GBS_global_string("'%s' is a full sequence (cannot add partial)", name));
                             ++full_marked_sequences;
                             break;
                         }
@@ -658,12 +660,14 @@ static void nt_add_partial(AWT_graphic_tree *agt) {
 
                 int partials_already_in_tree = partial_marked_sequences - partial.size();
 
-                if (no_data>0) aw_message(GBS_global_string("%i marked species have no data in '%s'", no_data, ap_main->get_aliname()));
-                if (full_marked_sequences>0) aw_message(GBS_global_string("%i marked species are declared full sequences", full_marked_sequences));
-                if (partials_already_in_tree>0) aw_message(GBS_global_string("%i marked species are already in tree", partials_already_in_tree));
+                if (no_data>0) GBT_message(GLOBAL_gb_main, GBS_global_string("%i marked species have no data in '%s'", no_data, ap_main->get_aliname()));
+                if (full_marked_sequences>0) GBT_message(GLOBAL_gb_main, GBS_global_string("%i marked species are declared full sequences", full_marked_sequences));
+                if (partials_already_in_tree>0) GBT_message(GLOBAL_gb_main, GBS_global_string("%i marked species are already in tree", partials_already_in_tree));
 
                 if (partial.empty()) error = "No species left to add";
             }
+
+            GBS_free_hash(partial_hash);
         }
 
         if (!error) error = GBT_add_new_changekey(GLOBAL_gb_main, "ARB_partial", GB_INT);
@@ -689,9 +693,9 @@ static void nt_add_partial(AWT_graphic_tree *agt) {
                 const char *name = i->get_name();
 
                 if (i->is_multi_match()) {
-                    aw_message(GBS_global_string("Insertion of '%s' is ambiguous.\n"
-                                                 "(took first of equal scored insertion points: %s)",
-                                                 name, i->get_multilist().c_str()));
+                    GBT_message(GLOBAL_gb_main, GBS_global_string("Insertion of '%s' is ambiguous.\n"
+                                                                  "(took first of equal scored insertion points: %s)",
+                                                                  name, i->get_multilist().c_str()));
                 }
 
                 AP_tree_nlen *part_leaf  = i->release();
@@ -782,11 +786,11 @@ static void nt_add_partial(AWT_graphic_tree *agt) {
     }
 
     if (full_marked_sequences) {
-        aw_message(GBS_global_string("%i marked full sequences were not added", full_marked_sequences));
+        GBT_message(GLOBAL_gb_main, GBS_global_string("%i marked full sequences were not added", full_marked_sequences));
     }
 
     if (error) {
-        aw_message(error);
+        GBT_message(GLOBAL_gb_main, error);
         GB_abort_transaction(GLOBAL_gb_main);
     }
     else {
