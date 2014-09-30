@@ -58,6 +58,10 @@ public:
     }
     PARSIMONY_testenv(const char *dbname, const char *aliName);
     ~PARSIMONY_testenv() {
+        if (root_node()) {
+            AP_tree_edge::destroy(root_node());
+        }
+
         TEST_EXPECT_EQUAL(ap_main, &apMain);
         ap_main = NULL;
 
@@ -67,6 +71,7 @@ public:
     }
 
     AP_tree_nlen *root_node() { return apMain.get_root_node(); }
+    AP_tree_root *tree_root() { return agt->get_tree_root(); }
 
     GB_ERROR load_tree(const char *tree_name) {
         GB_transaction ta(GLOBAL_gb_main);      // @@@ do inside AWT_graphic_tree::load?
@@ -87,6 +92,8 @@ public:
     void pop() { apMain.pop(); }
 
     AWT_graphic_tree *graphic_tree() { return agt; }
+
+    GBDATA *gbmain() const { return GLOBAL_gb_main; }
 };
 
 

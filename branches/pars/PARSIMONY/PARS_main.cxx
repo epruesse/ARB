@@ -812,6 +812,7 @@ static void NT_add_quick  (UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_add_and_
 
 static void nt_reAdd(AWT_graphic_tree *agt, AddWhat what, bool quick) {
     if (agt->get_root_node()) {
+        ap_assert(what == NT_ADD_MARKED); // code below will misbehave for NT_ADD_SELECTED
         agt->get_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
         nt_add(agt, what, quick);
     }

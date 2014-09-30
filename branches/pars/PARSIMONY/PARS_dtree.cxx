@@ -559,8 +559,6 @@ void TEST_tree_modifications() {
 
         TEST_ASSERT_VALID_TREE(root);
 
-        AP_tree_edge::destroy(root);
-
         // delete memory allocated by insert() above and lost due to pop()s
         delete edge1_del_manually;
         delete edge2_del_manually;
@@ -598,7 +596,6 @@ void TEST_calc_bootstraps() {
         root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_estim_topo);
 
         TEST_EXPECT_EQUAL(env.root_node(), root);
-        AP_tree_edge::destroy(root);
     }
 }
 
