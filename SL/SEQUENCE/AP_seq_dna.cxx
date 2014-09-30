@@ -1,7 +1,7 @@
 #include "AP_seq_dna.hxx"
 #include "AP_parsimony_defaults.hxx"
 
-#include <arb_misc.h>
+#include <arb_mem.h>
 #include <AP_pro_a_nucs.hxx>
 #include <AP_filter.hxx>
 #include <ARB_Tree.hxx>

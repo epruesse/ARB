@@ -20,16 +20,6 @@
 const char *GBS_readable_size(unsigned long long size, const char *unit_suffix);
 const char *GBS_readable_timediff(size_t seconds);
 
-int arb_alloc_aligned_intern(void** tgt, size_t len); // internal
-
-/* allocate 16 byte aligned memory and export error on failure */
-template<class TYPE>
-inline int arb_alloc_aligned(TYPE*& tgt, size_t len) { 
-    return arb_alloc_aligned_intern((void**)&tgt, len * sizeof(TYPE));
-}
-
-
-
 #else
 #error arb_misc.h included twice
 #endif /* ARB_MISC_H */
