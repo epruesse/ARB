@@ -383,93 +383,28 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
 
 #ifdef UNIT_TESTS
 #include <arb_diff.h>
-#ifndef TEST_UNIT_H
 #include <test_unit.h>
-#endif
+#include "test_env.h"
 
-void fake_AW_init_color_groups();
+template<typename SEQTYPE>
+PARSIMONY_testenv<SEQTYPE>::PARSIMONY_testenv(const char *dbname, const char *aliName) {
+    common_init(dbname);
+    GB_transaction ta(GLOBAL_gb_main);
+    size_t aliLength = GBT_get_alignment_len(GLOBAL_gb_main, aliName);
 
-struct fake_agt : public AWT_graphic_tree, virtual Noncopyable {
-    AP_sequence_parsimony *templ;
-
-    fake_agt()
-        : AWT_graphic_tree(NULL, GLOBAL_gb_main, NULL),
-          templ(NULL)
-    {
+    AP_filter filter(aliLength);
+    if (!filter.is_invalid()) {
+        AP_weights weights(&filter);
+        agt->init(new AliView(GLOBAL_gb_main, filter, weights, aliName));
     }
-    ~fake_agt() {
-        delete templ;
-    }
-    void init(AliView *aliview) {
-        fake_AW_init_color_groups(); // acts like no species has a color
-        delete templ;
-        templ = aliview->has_data() ? new AP_sequence_parsimony(aliview) : NULL;
-        AWT_graphic_tree::init(new AP_TreeNlenNodeFactory, aliview, templ, true, false);
-    }
-};
-
-class PARSIMONY_testenv : virtual Noncopyable {
-    GB_shell  shell;
-    AP_main   apMain;
-    fake_agt *agt;
-
-    void common_init(const char *dbname) {
-        GLOBAL_gb_main = NULL;
-        apMain.open(dbname);
-
-        TEST_EXPECT_NULL(ap_main);
-        ap_main = &apMain;
-
-        agt = new fake_agt;
-        apMain.set_tree_root(agt);
-    }
-
-public:
-    PARSIMONY_testenv(const char *dbname) {
-        common_init(dbname);
-        agt->init(new AliView(GLOBAL_gb_main));
-    }
-    PARSIMONY_testenv(const char *dbname, const char *aliName) {
-        common_init(dbname);
-        GB_transaction ta(GLOBAL_gb_main);
-        size_t aliLength = GBT_get_alignment_len(GLOBAL_gb_main, aliName);
-
-        AP_filter filter(aliLength);
-        if (!filter.is_invalid()) {
-            AP_weights weights(&filter);
-            agt->init(new AliView(GLOBAL_gb_main, filter, weights, aliName));
-        }
-    }
-    ~PARSIMONY_testenv() {
-        TEST_EXPECT_EQUAL(ap_main, &apMain);
-        ap_main = NULL;
-
-        delete agt;
-        GB_close(GLOBAL_gb_main);
-        GLOBAL_gb_main = NULL;
-    }
-
-    GB_ERROR load_tree(const char *tree_name) {
-        GB_transaction ta(GLOBAL_gb_main); // @@@ do inside AWT_graphic_tree::load?
-        return agt->load(GLOBAL_gb_main, tree_name, 0, 0);
-    }
-    AP_tree_nlen *tree_root() { return apMain.get_root_node(); }
-
-    void push() { apMain.push(); }
-    void pop() { apMain.pop(); }
-};
+}
 
 void TEST_tree_modifications() {
-    PARSIMONY_testenv env("TEST_trees.arb");
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
 
     {
         AP_tree_nlen *root = env.tree_root();
-        TEST_REJECT_NULL(root);
-
-        AP_tree_edge::initialize(root);   // builds edges
-        TEST_ASSERT_VALID_TREE(root);
-
         root->compute_tree();
 
         // first check initial state:
@@ -644,7 +579,7 @@ void TEST_tree_modifications() {
 // - ...
 
 void TEST_calc_bootstraps() {
-    PARSIMONY_testenv env("TEST_trees.arb", "ali_5s");
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", "ali_5s");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
 
     const char *bs_origi_topo = "(((((((CloTyro3,CloTyro4)'40%',CloTyro2)'0%',CloTyrob)'97%',CloInnoc)'0%',CloBifer)'53%',(((CloButy2,CloButyr)'100%',CloCarni)'33%',CloPaste)'97%')'100%',((((CorAquat,CurCitre)'100%',CorGluta)'17%',CelBiazo)'40%',CytAquat)'100%');";
@@ -652,14 +587,10 @@ void TEST_calc_bootstraps() {
     const char *bs_estim_topo = "(((((((CloTyro3,CloTyro4)'75%',CloTyro2)'0%',CloTyrob)'100%',CloInnoc)'75%',CloBifer)'78%',(((CloButy2,CloButyr)'99%',CloCarni)'13%',CloPaste)'32%')'53%',((((CorAquat,CurCitre)'74%',CorGluta)'0%',CelBiazo)'56%',CytAquat)'53%');";
 
     {
-        AP_tree_nlen *root = env.tree_root();
-        TEST_REJECT_NULL(root);
-
-        AP_tree_edge::initialize(root);   // builds edges
-        TEST_EXPECT_EQUAL(root, rootNode()); // need tree-access via global 'ap_main' (too much code is based on that)
-
+        AP_tree_nlen *root      = env.tree_root();
         AP_tree_edge *root_edge = rootEdge();
-        TEST_REJECT_NULL(root_edge);
+
+        TEST_EXPECT(root && rootEdge);
 
         root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_origi_topo);
 
@@ -673,7 +604,7 @@ void TEST_calc_bootstraps() {
 
 void TEST_tree_remove_add_all() {
     // reproduces crash as described in #527
-    PARSIMONY_testenv env("TEST_trees.arb", "ali_5s");
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", "ali_5s");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_nj"));
 
     const int     LEAFS     = 6;
@@ -688,15 +619,13 @@ void TEST_tree_remove_add_all() {
     };
 
     AP_tree_nlen *root = env.tree_root();
-    TEST_REJECT_NULL(root);
 
     for (int i = 0; i<LEAFS; ++i) {
         leaf[i] = root->findLeafNamed(name[i]);
         TEST_REJECT_NULL(leaf[i]);
     }
 
-    AP_tree_edge::initialize(root);   // builds edges
-    TEST_EXPECT_EQUAL(root, rootNode()); // need tree-access via global 'ap_main' (too much code is based on that)
+    TEST_ASSERT_VALID_TREE(root);
 
     AP_tree_root *troot = leaf[0]->get_tree_root();
     TEST_REJECT_NULL(troot);

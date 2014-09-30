@@ -230,6 +230,7 @@ PARS_dtree.o: ap_tree_nlen.hxx
 PARS_dtree.o: pars_debug.hxx
 PARS_dtree.o: pars_dtree.hxx
 PARS_dtree.o: pars_main.hxx
+PARS_dtree.o: test_env.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/AliView.hxx
