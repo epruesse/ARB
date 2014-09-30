@@ -60,11 +60,3 @@ const char *GBS_readable_timediff(size_t seconds) {
     return buffer;
 }
 
-
-int arb_alloc_aligned_intern(void** tgt, size_t len) {
-    int error = posix_memalign(tgt, 16, len);
-    if (error != 0) {
-        GB_export_errorf("Failed to allocate memory: %s", strerror(error));
-    }
-    return error;
-}
