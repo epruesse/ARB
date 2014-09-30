@@ -203,8 +203,8 @@ public:
 
 
     ClustersData(WeightedFilter& weighted_filter_)
-        : weighted_filter(weighted_filter_),
-          sort_needed(true),
+        : sort_needed(true),
+          weighted_filter(weighted_filter_),
           clusterList(0)
     {
         criteria[0] = SORT_BY_MEANDIST;
