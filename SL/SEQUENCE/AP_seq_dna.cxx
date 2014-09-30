@@ -76,19 +76,16 @@ void AP_sequence_parsimony::set(const char *isequence)
         }
     }
     else {
-        int left_bases = sequence_len;
-        int filter_len = filt->get_length();
-        int oidx       = 0;                         // for output sequence
+        const size_t* base_pos = filt->get_filterpos_2_seqpos();
 
-        for (int idx = 0; idx<filter_len && left_bases; ++idx) {
-            if (filt->use_position(idx)) {
-                unsigned char c = (unsigned char)isequence[idx];
-                seq_pars[oidx++] = table[simplify[c]];
-                --left_bases;
+        for (size_t i = 0; i < sequence_len; ++i) {
+            size_t pos = base_pos[i];
+            unsigned char c = (unsigned char)isequence[pos];
+            seq_pars[i] = table[simplify[c]];
+
 #if defined(SHOW_SEQ)
                 fputc(simplify[c], stdout);
-#endif                          // SHOW_SEQ
-            }
+#endif // SHOW_SEQ
         }
     }
 
