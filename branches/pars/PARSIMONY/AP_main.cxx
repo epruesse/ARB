@@ -200,6 +200,6 @@ void AP_main::set_tree_root(AWT_graphic_tree *agt_) {
 }
 
 const char *AP_main::get_aliname() const {
-    return agt->tree_static->get_aliview()->get_aliname();
+    return get_tree_root()->get_aliview()->get_aliname();
 }
 

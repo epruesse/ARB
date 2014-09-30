@@ -66,7 +66,7 @@ public:
         GLOBAL_gb_main = NULL;
     }
 
-    AP_tree_nlen *tree_root() { return apMain.get_root_node(); }
+    AP_tree_nlen *root_node() { return apMain.get_root_node(); }
 
     GB_ERROR load_tree(const char *tree_name) {
         GB_transaction ta(GLOBAL_gb_main);      // @@@ do inside AWT_graphic_tree::load?
@@ -74,11 +74,11 @@ public:
         if (!error) {
             AP_tree_edge::initialize(rootNode());   // builds edges
 
-            ap_assert(tree_root());
-            ap_assert(tree_root() == rootNode()); // need tree-access via global 'ap_main' (too much code is based on that)
+            ap_assert(root_node());
+            ap_assert(root_node() == rootNode()); // need tree-access via global 'ap_main' (too much code is based on that)
             ap_assert(rootEdge());
 
-            TEST_ASSERT_VALID_TREE(tree_root());
+            TEST_ASSERT_VALID_TREE(root_node());
         }
         return error;
     }

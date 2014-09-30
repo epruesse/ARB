@@ -52,7 +52,7 @@ static AliView *pars_generate_aliview(WeightedFilter *pars_weighted_filter) {
 
 void PARS_tree_init(AWT_graphic_tree *agt) {
     ap_assert(agt->get_root_node());
-    ap_assert(agt == ap_main->get_tree_root());
+    ap_assert(agt == ap_main->get_graphic_tree());
 
     GB_transaction ta(GLOBAL_gb_main);
 
@@ -62,7 +62,7 @@ void PARS_tree_init(AWT_graphic_tree *agt) {
         aw_popup_exit("No valid alignment selected! Try again");
     }
 
-    agt->tree_static->set_root_changed_callback(AWT_graphic_parsimony_root_changed, agt);
+    agt->get_tree_root()->set_root_changed_callback(AWT_graphic_parsimony_root_changed, agt);
 }
 
 static double funktion_quadratisch(double wert, double *param_list, int param_anz) {
@@ -404,7 +404,7 @@ void TEST_tree_modifications() {
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
 
     {
-        AP_tree_nlen *root = env.tree_root();
+        AP_tree_nlen *root = env.root_node();
         root->compute_tree();
 
         // first check initial state:
@@ -587,7 +587,7 @@ void TEST_calc_bootstraps() {
     const char *bs_estim_topo = "(((((((CloTyro3,CloTyro4)'75%',CloTyro2)'0%',CloTyrob)'100%',CloInnoc)'75%',CloBifer)'78%',(((CloButy2,CloButyr)'99%',CloCarni)'13%',CloPaste)'32%')'53%',((((CorAquat,CurCitre)'74%',CorGluta)'0%',CelBiazo)'56%',CytAquat)'53%');";
 
     {
-        AP_tree_nlen *root      = env.tree_root();
+        AP_tree_nlen *root      = env.root_node();
         AP_tree_edge *root_edge = rootEdge();
 
         TEST_EXPECT(root && rootEdge);
@@ -597,7 +597,7 @@ void TEST_calc_bootstraps() {
         root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_limit_topo);
         root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_estim_topo);
 
-        TEST_EXPECT_EQUAL(env.tree_root(), root);
+        TEST_EXPECT_EQUAL(env.root_node(), root);
         AP_tree_edge::destroy(root);
     }
 }
@@ -618,7 +618,7 @@ void TEST_tree_remove_add_all() {
         "CorGluta",
     };
 
-    AP_tree_nlen *root = env.tree_root();
+    AP_tree_nlen *root = env.root_node();
 
     for (int i = 0; i<LEAFS; ++i) {
         leaf[i] = root->findLeafNamed(name[i]);

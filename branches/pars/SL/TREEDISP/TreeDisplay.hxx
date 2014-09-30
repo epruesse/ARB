@@ -170,6 +170,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AD_map_viewer_cb  map_viewer_cb;
     AWT_command_data  *cmd_data;
 
+    AP_tree_root *tree_static;
+
     void scale_text_koordinaten(AW_device *device, int gc, double& x, double& y, double orientation, int flag);
 
     // functions to compute displayinformation
@@ -226,10 +228,9 @@ public:
 
     // *********** read only variables !!!
 
-    AW_root      *aw_root;
+    AW_root              *aw_root;
     AP_tree_display_type  tree_sort;
-    AP_tree      *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
-    AP_tree_root *tree_static;
+    AP_tree              *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
     GBDATA       *gb_main;
 
     // *********** public section
@@ -237,6 +238,7 @@ public:
     AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
     ~AWT_graphic_tree() OVERRIDE;
 
+    AP_tree_root *get_tree_root() { return tree_static; }
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
     bool is_logically_zoomed() { return displayed_root != get_root_node(); }
 

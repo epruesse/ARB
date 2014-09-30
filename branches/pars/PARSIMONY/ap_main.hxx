@@ -72,7 +72,8 @@ public:
     }
 
     void set_tree_root(AWT_graphic_tree *agt_);
-    AWT_graphic_tree *get_tree_root() { return agt; }
+    AWT_graphic_tree *get_graphic_tree() { return agt; }
+    AP_tree_root *get_tree_root() const { return agt->get_tree_root(); }
 
     DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, agt->get_root_node());
 

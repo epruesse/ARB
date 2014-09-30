@@ -51,6 +51,7 @@ GBDATA              *GLOBAL_gb_main = NULL;
 static ArbParsimony *GLOBAL_PARS    = NULL;
 
 inline AWT_graphic_tree *global_tree() { return GLOBAL_PARS->get_tree(); }
+inline AP_tree_root *global_tree_root() { return global_tree()->get_tree_root(); }
 
 // waaah more globals :(
 AP_main *ap_main;
@@ -147,7 +148,7 @@ static long transform_gbd_to_leaf(const char *key, long val, void *) {
 #endif
 
     GBDATA       *gb_node = (GBDATA *)val;
-    AP_tree_root *troot   = ap_main->get_tree_root()->tree_static;
+    AP_tree_root *troot   = ap_main->get_tree_root();
     AP_tree_nlen *leaf    = DOWNCAST(AP_tree_nlen*, troot->makeNode());
 
     leaf->forget_origin(); // new leaf is not part of tree yet
@@ -187,7 +188,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
             last_inserted = leaf;
         }
         else {                                      // 2nd leaf -> create initial tree
-            AP_tree_root *troot = ap_main->get_tree_root()->tree_static;
+            AP_tree_root *troot = ap_main->get_tree_root();
 
             leaf->initial_insert(last_inserted, troot);
             last_inserted = NULL;
@@ -811,7 +812,7 @@ static void nt_reAdd(AW_window * aww, AWT_canvas *ntw, AddWhat what, bool quick)
 
     AWT_graphic_tree *agt = AWT_TREE(ntw);
     if (agt->get_root_node()) {
-        agt->tree_static->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
+        agt->get_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
     }
 
     // restore old parsimony value (otherwise the state where species were removed would count) :
@@ -1099,13 +1100,13 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         }
         else {
             AP_tree_edge::initialize(rootNode());   // builds edges
-            long removed = global_tree()->tree_static->remove_leafs(AWT_REMOVE_ZOMBIES);
+            long removed = global_tree_root()->remove_leafs(AWT_REMOVE_ZOMBIES);
 
             PARS_tree_init(global_tree());
-            removed += global_tree()->tree_static->remove_leafs(AWT_RemoveType(AWT_REMOVE_ZOMBIES | AWT_REMOVE_NO_SEQUENCE));
+            removed += global_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_ZOMBIES | AWT_REMOVE_NO_SEQUENCE));
 
             if (!global_tree()->get_root_node()) {
-                const char *aliname = global_tree()->tree_static->get_aliview()->get_aliname();
+                const char *aliname = global_tree_root()->get_aliview()->get_aliname();
                 error               = GBS_global_string("Less than 2 species contain data in '%s'\n"
                                                         "Tree vanished", aliname);
             }
