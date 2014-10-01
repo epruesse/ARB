@@ -1576,11 +1576,11 @@ arb_test::match_expectation topologyEquals(AP_tree_nlen *root_node, const char *
     }
 
     if (GB_is_regularfile(expected)) {
-        bool differs = textfiles_have_difflines(outfile,expected,0);
+        bool match_exp_topo = textfiles_have_difflines(outfile,expected,0);
 #if defined(AUTO_UPDATE_IF_CHANGED)
-        if (differs) update = true;
+        if (!match_exp_topo) update = true;
 #endif
-        if (!update) fulfilled.add(that(differs).is_equal_to(true));
+        if (!update) fulfilled.add(that(match_exp_topo).is_equal_to(true));
     }
     else {
         update = true;
