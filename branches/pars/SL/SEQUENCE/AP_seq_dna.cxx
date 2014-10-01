@@ -113,7 +113,7 @@ AP_FLOAT AP_sequence_parsimony::combine(const AP_sequence *lefts, const AP_seque
     const AP_sequence_parsimony *left  = (const AP_sequence_parsimony *)lefts;
     const AP_sequence_parsimony *right = (const AP_sequence_parsimony *)rights;
 
-    // UNCOVERED(); // covered by TEST_calc_bootstraps
+    // UNCOVERED(); // covered by TEST_calc_bootstraps + TEST_tree_quick_add_marked
     size_t sequence_len = get_sequence_length();
     if (seq_pars == 0) {
         seq_pars = new char[sequence_len + 1];
@@ -210,7 +210,7 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
 
     const AP_sequence_parsimony *part = (const AP_sequence_parsimony *)part_;
 
-    UNCOVERED();
+    // UNCOVERED(); // covered by TEST_tree_add_marked
     const char *pf = get_sequence();
     const char *pp = part->get_sequence();
 

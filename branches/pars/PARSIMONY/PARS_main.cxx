@@ -410,6 +410,7 @@ static void nt_add(AWT_graphic_tree *agt, AddWhat what, bool quick) {
     if (hash) GBS_free_hash(hash);
     if (error) aw_message(error);
 
+    // @@@ quick-add w/o NNI should sort according to original tree
     agt->reorder_tree(BIG_BRANCHES_TO_TOP);
 }
 
@@ -1544,3 +1545,306 @@ int ARB_main(int argc, char *argv[]) {
 }
 
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <arb_file.h>
+#include <arb_diff.h>
+#include <test_unit.h>
+#include <AP_seq_dna.hxx>
+#include "test_env.h"
+
+#if defined(DEVEL_RALF)
+// #define AUTO_UPDATE_IF_CHANGED // uncomment to auto update expected results
+#endif
+
+arb_test::match_expectation topologyEquals(AP_tree_nlen *root_node, const char *treefile_base) {
+    using namespace   arb_test;
+    expectation_group fulfilled;
+
+    char *outfile  = GBS_global_string_copy("pars/%s.tree", treefile_base);
+    char *expected = GBS_global_string_copy("%s.expected", outfile);
+    bool  update   = false;
+
+    {
+        FILE *out    = fopen(outfile, "wt");
+        fulfilled.add(that(out).does_differ_from_NULL());
+        char *newick = GBT_tree_2_newick(root_node, NewickFormat(nLENGTH|nWRAP));
+        fputs(newick, out);
+        free(newick);
+        fclose(out);
+    }
+
+    if (GB_is_regularfile(expected)) {
+        bool differs = textfiles_have_difflines(outfile,expected,0);
+#if defined(AUTO_UPDATE_IF_CHANGED)
+        if (differs) update = true;
+#endif
+        if (!update) fulfilled.add(that(differs).is_equal_to(true));
+    }
+    else {
+        update = true;
+    }
+
+    if (update) TEST_COPY_FILE(outfile, expected);
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(outfile));
+
+    free(expected);
+    free(outfile);
+
+    return all().ofgroup(fulfilled);
+}
+#define TEST_EXPECT_SAVED_TOPOLOGY(env,exp_topo) TEST_EXPECTATION(topologyEquals(env.root_node(), exp_topo))
+
+#define TEST_EXPECT_TOPOLOGY(env,exp_topo) TEST_EXPECT_NEWICK(nLENGTH, env.root_node(), exp_topo)
+#define TEST_EXPECT_PARSVAL(env,exp_pars)  TEST_EXPECT_SIMILAR(env.root_node()->costs(), exp_pars, 0.001);
+
+static GBDATA *copy_to(GBDATA *gb_species, const char *newShortname) {
+    GBDATA *gb_species_data = GB_get_father(gb_species);
+    GBDATA *gb_new_species  = GB_create_container(gb_species_data, "species");
+
+    GB_ERROR error = NULL;
+    if (!gb_new_species) {
+        error = GB_await_error();
+    }
+    else {
+        error = GB_copy(gb_new_species, gb_species);
+        if (!error) error = GBT_write_string(gb_new_species, "name", newShortname);
+    }
+
+    ap_assert(contradicted(gb_new_species, error));
+    return gb_new_species;
+}
+
+inline void mark_only(GBDATA *gb_species) {
+    GBDATA         *gb_main = GB_get_root(gb_species);
+    GB_transaction  ta(gb_main);
+    GBT_mark_all(gb_main, 0);
+    GB_write_flag(gb_species, 1);
+}
+
+inline int is_partial(GBDATA *gb_species) {
+    GB_transaction ta(gb_species);
+    return GBT_is_partial(gb_species, -1, false);
+}
+
+void TEST_tree_add_marked() {
+    const char *aliname = "ali_5s";
+
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
+
+    // @@@ better save to files (not very helpful here!)
+    const char *topo_reAdded  = "(((((((CorGluta:0.329,CytAquat:0.333):0.053,CloBifer:0.204):0.033,(CloButy2:0.000,CloButyr:0.000):0.058):0.292,((((CloTyro3:1.000,CloTyro4:0.027):0.065,CloTyro2:0.013):0.000,CloTyrob:0.013):0.339,CloInnoc:0.384):0.179):0.047,(CloCarni:0.158,CloPaste:0.211):0.056):0.137,(CorAquat:0.076,CurCitre:0.086):0.026):0.076,CelBiazo:0.076);";
+    const char *topo_reAdOpt  = "(((((((CorGluta:0.329,CytAquat:0.333):0.088,CloBifer:0.190):0.050,(CloButy2:0.000,CloButyr:0.000):0.058):0.277,(CloCarni:0.118,CloPaste:0.224):0.031):0.044,((((CloTyro3:1.000,CloTyro4:0.027):0.049,CloTyrob:0.013):0.000,CloTyro2:0.013):0.366,CloInnoc:0.370):0.211):0.165,(CorAquat:0.076,CurCitre:0.086):0.029):0.076,CelBiazo:0.076);";
+    // const char *topo_org      = "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,(((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,((((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
+    const char *topo_partClo  = "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,((((CloButy2:0.000,CloButyP:0.000):0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,((((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
+    const char *topo_partCor  = "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,(((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,((((CorAquat:0.084,CurCitre:0.058):0.103,(CorGluta:0.000,CorGlutP:0.000):0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
+    const char *topo_partBoth = "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,((((CloButy2:0.000,CloButyP:0.000):0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,((((CorAquat:0.084,CurCitre:0.058):0.103,(CorGluta:0.000,CorGlutP:0.000):0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
+    const char *topo_bug609   = "(((((((CloTyro3:1.000,CloTyro4:0.027):0.065,CloTyro2:0.013):0.000,CloTyrob:0.013):0.267,CloInnoc:0.411):0.065,CloBifer:0.277):0.112,((((CloButy2:0.000,CloButyP:0.000):0.000,CloButyr:0.000):0.145,CloCarni:0.211):0.120,CloPaste:0.276):0.000):0.023,((((CorAquat:0.089,CurCitre:0.099):0.065,((CorGlutP:0.000,CloButyM:0.000):0.000,CorGluta:0.137):0.384):0.121,CelBiazo:0.203):0.053,CytAquat:0.460):0.023);";
+
+    TEST_EXPECT_SAVED_TOPOLOGY(env, "initial");
+
+    const int PARSIMONY_ORG = 301;
+    TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+    // Note: following code leaks father nodes and edges
+    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_tree_add_marked
+
+    // test quick-add
+    {
+        env.push();
+
+        nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, true);
+
+        TEST_EXPECT_TOPOLOGY(env, topo_reAdded);
+        TEST_EXPECT_PARSVAL(env, 278);
+
+        env.pop();
+    }
+
+    // test add + NNI
+    {
+        env.push();
+
+        nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, false);
+
+        TEST_EXPECT_TOPOLOGY(env, topo_reAdOpt);
+        TEST_EXPECT_PARSVAL(env, 276);
+
+        env.pop();
+    }
+
+    // @@@ test optimize etc.
+
+    // test partial-add
+    {
+        GBDATA *gb_main = env.gbmain();
+        GBDATA *CloButyP; // partial created from 'CloButyr'
+        GBDATA *CorGlutP; // partial created from 'CorGluta'
+        GBDATA *CloButyM; // as CloButyP, but one basepos modified
+        {
+            GB_transaction  ta(gb_main);
+
+            GBDATA *CloButyr = GBT_expect_species(env.gbmain(), "CloButyr");
+            GBDATA *CorGluta = GBT_expect_species(env.gbmain(), "CorGluta");
+
+            TEST_REJECT_NULL(CloButyr);
+            TEST_REJECT_NULL(CorGluta);
+
+            CloButyP = copy_to(CloButyr, "CloButyP");
+            CloButyM = copy_to(CloButyr, "CloButyM");
+            CorGlutP = copy_to(CorGluta, "CorGlutP");
+
+            GBDATA *CloButyP_seq = GBT_find_sequence(CloButyP, aliname);
+            GBDATA *CloButyM_seq = GBT_find_sequence(CloButyM, aliname);
+            GBDATA *CorGlutP_seq = GBT_find_sequence(CorGlutP, aliname);
+
+            char *CloButyP_data = GB_read_string(CloButyP_seq);
+            char *CorGlutP_data = GB_read_string(CorGlutP_seq);
+
+            TEST_REJECT_NULL(CloButyP_data);
+            TEST_REJECT_NULL(CorGlutP_data);
+
+            // create 2 partial sequences (w/o overlap)
+            const int SPLIT = 56;
+            memset(CloButyP_data,       '.', SPLIT);
+            memset(CorGlutP_data+SPLIT, '.', strlen(CorGlutP_data)-SPLIT);
+
+            TEST_EXPECT_NO_ERROR(GB_write_string(CloButyP_seq, CloButyP_data));
+            TEST_EXPECT_NO_ERROR(GB_write_string(CorGlutP_seq, CorGlutP_data));
+
+            {
+                char *G = strchr(CloButyP_data, 'G');
+                TEST_REJECT_NULL(G);
+                G[0] = 'C'; // modify one basepos
+                TEST_EXPECT_NO_ERROR(GB_write_string(CloButyM_seq, CloButyP_data));
+            }
+
+            free(CloButyP_data);
+            free(CorGlutP_data);
+        }
+
+        // add CloButyP
+        {
+            env.push();
+
+            mark_only(CloButyP);
+            nt_add_partial(env.graphic_tree());
+            TEST_EXPECT_EQUAL(is_partial(CloButyP), 1);
+
+            AP_tree_nlen *CloButyP_node = env.root_node()->findLeafNamed("CloButyP");
+            TEST_REJECT_NULL(CloButyP_node);
+
+            const char *brother = CloButyP_node->get_brother()->name;
+            // CloButyr and CloButyr do not differ in seq-range of partial -> any of both may be chosen as brother.
+            // behavior should be changed with #605
+            TEST_EXPECTATION(exactly(1).of(that(brother).is_equal_to("CloButyr"),
+                                           that(brother).is_equal_to("CloButy2")));
+
+            TEST_EXPECT_TOPOLOGY(env, topo_partClo);
+            TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserting partials does not affect parsimony value
+
+            env.pop();
+        }
+
+        {
+            env.push();
+
+            // add CorGlutP
+            {
+                mark_only(CorGlutP);
+                nt_add_partial(env.graphic_tree());
+                TEST_EXPECT_EQUAL(is_partial(CorGlutP), 1);
+
+                AP_tree_nlen *CorGlutP_node = env.root_node()->findLeafNamed("CorGlutP");
+                TEST_REJECT_NULL(CorGlutP_node);
+
+                const char *brother = CorGlutP_node->get_brother()->name;
+                TEST_EXPECT_EQUAL(brother, "CorGluta"); // partial created from CorGluta gets inserted next to CorGluta
+
+                TEST_EXPECT_TOPOLOGY(env, topo_partCor);
+                TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
+            }
+
+            // also add CloButyP
+            {
+                mark_only(CloButyP);
+                nt_add_partial(env.graphic_tree());
+                TEST_EXPECT_EQUAL(is_partial(CloButyP), 1);
+
+                AP_tree_nlen *CloButyP_node = env.root_node()->findLeafNamed("CloButyP");
+                TEST_REJECT_NULL(CloButyP_node);
+
+                const char *brother = CloButyP_node->get_brother()->name;
+                TEST_EXPECTATION(exactly(1).of(that(brother).is_equal_to("CloButyr"),
+                                               that(brother).is_equal_to("CloButy2")));
+
+                TEST_EXPECT_TOPOLOGY(env, topo_partBoth);
+                TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
+            }
+
+            env.pop();
+        }
+
+        // now add CorGlutP as full, then CloButyP and CloButyM as partials
+        {
+            env.push();
+            {
+                mark_only(CorGlutP);
+                {
+                    GB_transaction  ta(CorGlutP);
+                    TEST_EXPECT_NO_ERROR(GBT_write_int(CorGlutP, "ARB_partial", 0)); // revert species to "full"
+                }
+                nt_add(env.graphic_tree(), NT_ADD_MARKED, true);
+                TEST_EXPECT_EQUAL(is_partial(CorGlutP), 0); // add as full sequence!
+
+                AP_tree_nlen *CorGlutP_node = env.root_node()->findLeafNamed("CorGlutP");
+                TEST_REJECT_NULL(CorGlutP_node);
+
+                const char *brother = CorGlutP_node->get_brother()->name;
+                TEST_EXPECT_EQUAL(brother, "CorGluta"); // partial created from CorGluta gets inserted next to CorGluta
+
+                TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
+            }
+
+            {
+                mark_only(CloButyP);
+                nt_add_partial(env.graphic_tree());
+                TEST_EXPECT_EQUAL(is_partial(CloButyP), 1);
+
+                AP_tree_nlen *CloButyP_node = env.root_node()->findLeafNamed("CloButyP");
+                TEST_REJECT_NULL(CloButyP_node);
+
+                const char *brother = CloButyP_node->get_brother()->name;
+                // CloButyP still falls next to matching full sequences (does not differ in partial range)
+                TEST_EXPECTATION(exactly(1).of(that(brother).is_equal_to("CloButyr"),
+                                               that(brother).is_equal_to("CloButy2")));
+
+                TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
+            }
+            {
+                mark_only(CloButyM);
+                nt_add_partial(env.graphic_tree());
+                TEST_EXPECT_EQUAL(is_partial(CloButyM), 1);
+
+                AP_tree_nlen *CloButyM_node = env.root_node()->findLeafNamed("CloButyM");
+                TEST_REJECT_NULL(CloButyM_node);
+
+                const char *brother = CloButyM_node->get_brother()->name;
+                // CloButyM differs slightly in overlap with CloButyr/CloButy2, but has no overlap with CorGlutP
+                TEST_EXPECT_EQUAL(brother, "CorGlutP"); // reproduces bug described in #609
+
+                TEST_EXPECT_TOPOLOGY(env, topo_bug609);
+                TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG+9); // @@@ known bug - partial should not affect parsimony value.
+                                                           // related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
+            }
+
+            env.pop();
+        }
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
