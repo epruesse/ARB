@@ -232,12 +232,6 @@ endif
 ifeq ($(DARWIN),0)
 	lflags += -g
 	clflags += -Wl,-g
-
-# TEMPORARY WORKAROUND for linker issues with launchpad binutils
-# code was added to ld to check for overlapping FDEs. Since ARB
-# worked before, we want this not to fail for the moment.
-# FIXME: remove this!
-        clflags += -Wl,-noinhibit-exec
 endif
 
 # control how much you get spammed
@@ -301,6 +295,14 @@ ifeq ($(USE_CLANG),1)
 # -Wstring-plus-int warns about common ARB coding practice
 # -Wgnu-static-float-init warns about accepted GNU extension
 	extended_cpp_warnings += -Wno-mismatched-tags -Wno-char-subscripts -Wno-unused-private-field -Wno-string-plus-int -Wno-gnu-static-float-init
+endif
+
+ifeq ($(USE_CLANG),0)
+# TEMPORARY WORKAROUND for linker issues with launchpad binutils
+# code was added to ld to check for overlapping FDEs. Since ARB
+# worked before, we want this not to fail for the moment.
+# FIXME: remove this!
+        clflags += -Wl,-noinhibit-exec
 endif
 
 #---------------------- developer
