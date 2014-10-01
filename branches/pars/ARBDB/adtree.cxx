@@ -1275,16 +1275,18 @@ GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count) {
     return result;
 }
 
-static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat format) {
+static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat format, int indent) {
     gb_assert(tree);
+    if ((format&nWRAP) && indent>0) { out.put('\n'); out.nput(' ', indent); }
     if (tree->is_leaf) {
         out.cat(tree->name);
     }
     else {
         out.put('(');
-        tree2newick(tree->leftson, out, format);
+        tree2newick(tree->leftson, out, format, indent+1);
         out.put(',');
-        tree2newick(tree->rightson, out, format);
+        tree2newick(tree->rightson, out, format, indent+1);
+        if ((format&nWRAP) && indent>0) { out.put('\n'); out.nput(' ', indent); }
         out.put(')');
 
         if (format & (nGROUP|nREMARK)) {
@@ -1311,7 +1313,7 @@ static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat f
 
 char *GBT_tree_2_newick(const GBT_TREE *tree, NewickFormat format) {
     GBS_strstruct out(1000);
-    if (tree) tree2newick(tree, out, format);
+    if (tree) tree2newick(tree, out, format, 0);
     out.put(';');
     return out.release();
 }
@@ -1647,6 +1649,26 @@ void TEST_tree_remove_leafs() {
                             TEST_EXPECT_EQUAL(removedCount, 11);
                             TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
                             TEST_EXPECT_NEWICK(nLENGTH, tree, kept_marked_topo);
+                            {
+                                // just a test for nWRAP NewickFormat (may be removed later)
+                                const char *kept_marked_topo_wrapped =
+                                    "(\n"
+                                    " CurCitre:1.000,\n"
+                                    " (\n"
+                                    "  (\n"
+                                    "   CloButy2:0.009,\n"
+                                    "   CloButyr:0.000\n"
+                                    "  ):0.131,\n"
+                                    "  (\n"
+                                    "   CytAquat:0.711,\n"
+                                    "   (\n"
+                                    "    CorGluta:0.522,\n"
+                                    "    CorAquat:0.103\n"
+                                    "   ):0.207\n"
+                                    "  ):0.162\n"
+                                    " ):0.124);";
+                                TEST_EXPECT_NEWICK(NewickFormat(nLENGTH|nWRAP), tree, kept_marked_topo_wrapped);
+                            }
                             what_next = GBT_REMOVE_MARKED;
                             break;
                     }

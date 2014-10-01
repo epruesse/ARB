@@ -68,6 +68,7 @@ enum NewickFormat { // bit-values
     nLENGTH = 1,
     nGROUP  = 2,
     nREMARK = 4,
+    nWRAP   = 8,
 
     nALL = nLENGTH|nGROUP|nREMARK,
 };
