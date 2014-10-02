@@ -72,12 +72,9 @@ endif
 
 export CC CXX A_CC A_CXX
 
-ifeq ($(LD_LIBRARY_PATH),'')
-LD_LIBRARY_PATH:=${ARBHOME}/lib
-endif
-
-ifeq ($(DARWIN),1)
-LD_LIBRARY_PATH:=${ARBHOME}/lib
+# unconditionally prepend $(ARBHOME)/lib to LD_LIBRARY_PATH if not found
+ifeq ($(findstring $(ARBHOME)/lib,$(LD_LIBRARY_PATH)),)
+LD_LIBRARY_PATH:=${ARBHOME}/lib:$(LD_LIBRARY_PATH)
 endif
 
 FORCEMASK = umask 002
@@ -820,7 +817,6 @@ check_TOOLS:
 		"$(MAKEDEPEND_PLAIN)" \
 		"$(LINK_SHARED_LIB)" \
 		"$(LINK_SHARED_LIB)" \
-
 
 check_ENVIRONMENT : check_PATH check_TOOLS
 		@echo "-------------------- Environment [start]"
