@@ -30,6 +30,7 @@
 #define AWAR_DTREE_CIRCLE_MAX_SIZE "awt/dtree/max_size"
 #define AWAR_DTREE_USE_ELLIPSE     "awt/dtree/ellipse"
 #define AWAR_DTREE_GREY_LEVEL      "awt/dtree/greylevel"
+#define AWAR_DTREE_BOOTSTRAP_MIN   "awt/dtree/bootstrap_min"
 
 #define AWAR_DTREE_RADIAL_ZOOM_TEXT "awt/dtree/radial/zoomtext"
 #define AWAR_DTREE_RADIAL_XPAD      "awt/dtree/radial/xpadding"
@@ -138,6 +139,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     int    use_ellipse;
     float  circle_zoom_factor;
     float  circle_max_size;
+    int    bootstrap_min;
 
     int zombies; // # of zombies during last load()
     int duplicates; // # of duplicates during last load()
@@ -371,7 +373,7 @@ public:
 };
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
-bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri);
+bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, int bootstrap_min);
 void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name);
 
 #else
