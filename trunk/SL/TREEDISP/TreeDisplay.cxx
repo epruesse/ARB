@@ -1822,7 +1822,7 @@ void AWT_graphic_tree::diamond(int gc, const Position& pos, int pixel_width) {
     disp_device->line(gc, r, b, mark_filter);
 }
 
-bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, const Position& pos, AW_pos alignment, AW_bitset filteri) {
+bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, const Position& pos, AW_pos alignment, AW_bitset filteri, int bootstrap_min) {
     // returns true if a bootstrap was DISPLAYED
     char       *end          = 0;
     int         bootstrap    = int(strtol(remark_branch, &end, 10));
@@ -1834,6 +1834,10 @@ bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool i
         if (bootstrap == 100) {
             show           = !is_leaf; // do not show 100% bootstraps at leafs
             if (show) text = "100%";
+        }
+        else if (bootstrap < bootstrap_min) {
+            show = false;
+            text = NULL;
         }
         else {
             if (bootstrap == 0) {
@@ -1856,8 +1860,8 @@ bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool i
     return is_bootstrap && show;
 }
 
-bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri) {
-    return AWT_show_branch_remark(device, remark_branch, is_leaf, Position(x, y), alignment, filteri);
+bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, int bootstrap_min) {
+    return AWT_show_branch_remark(device, remark_branch, is_leaf, Position(x, y), alignment, filteri, bootstrap_min);
 }
 
 void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtreeLimits& limits) {
@@ -2058,7 +2062,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             if (son->get_remark()) {
                 Position remarkPos(n);
                 remarkPos.movey(-scaled_font.ascent*0.1);
-                bool bootstrap_shown = AWT_show_branch_remark(disp_device, son->get_remark(), son->is_leaf, remarkPos, 1, remark_text_filter);
+                bool bootstrap_shown = AWT_show_branch_remark(disp_device, son->get_remark(), son->is_leaf, remarkPos, 1, remark_text_filter, bootstrap_min);
                 if (show_circle && bootstrap_shown) {
                     show_bootstrap_circle(disp_device, son->get_remark(), circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, bs_circle_filter);
                 }
@@ -2528,6 +2532,7 @@ void AWT_graphic_tree::read_tree_settings() {
     circle_zoom_factor     = aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
     circle_max_size        = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
     use_ellipse            = aw_root->awar(AWAR_DTREE_USE_ELLIPSE)->read_int();
+    bootstrap_min          = aw_root->awar(AWAR_DTREE_BOOTSTRAP_MIN)->read_int();
     
     freeset(species_name, aw_root->awar(AWAR_SPECIES_NAME)->read_string());
 }
@@ -2668,6 +2673,8 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_float(AWAR_DTREE_CIRCLE_ZOOM,     1.0)->set_minmax(0.01, 20);
     aw_root->awar_float(AWAR_DTREE_CIRCLE_MAX_SIZE, 1.5)->set_minmax(0.01, 200);
     aw_root->awar_int  (AWAR_DTREE_GREY_LEVEL,      20) ->set_minmax(0,    100);
+
+    aw_root->awar_int  (AWAR_DTREE_BOOTSTRAP_MIN, 50)->set_minmax(0,100);
     
     aw_root->awar_int(AWAR_DTREE_RADIAL_ZOOM_TEXT, 0);
     aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD,      150);
