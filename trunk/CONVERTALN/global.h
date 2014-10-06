@@ -93,7 +93,14 @@ inline bool str_equal(const char *s1, const char *s2) { return strcmp(s1, s2) ==
 inline bool str_iequal(const char *s1, const char *s2) { return strcasecmp(s1, s2) == 0; }
 
 inline int str0len(const char *str) {
+#if defined(NDEBUG) && (GCC_PATCHLEVEL_CODE == 40802)
+    // Note: outsmart broken optimizer of gcc 4.8.2:
+    if (str && str[0]) return strlen(str+1)+1;
+    return 0;
+#else
+    // Note: optimizer of gcc 4.8.2 fails for code below
     return str ? strlen(str) : 0;
+#endif
 }
 
 inline char *strndup(const char *str, int len) {
