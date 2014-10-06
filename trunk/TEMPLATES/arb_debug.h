@@ -55,6 +55,19 @@ static void CHECK_MEM_INITIALIZED(const void *ptr) {
 
 #endif // DEBUG
 
+inline int do_sth_that_is_not_optimized_away(int i) {
+    static int j;
+    j = i;
+    return j;
+}
+// provoke an invalid read (will produce a valgrind error).
+// intended to be used to track down "undebugable" problems 
+#define INVALID_READ() do { \
+        char *_x4711 = strdup("x");                                                                     \
+        do_sth_that_is_not_optimized_away(_x4711[2]);                                                   \
+        free(_x4711);                                                                                   \
+    } while(0)
+
 #else
 #error arb_debug.h included twice
 #endif // ARB_DEBUG_H
