@@ -2787,13 +2787,14 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         scaled_branch_distance = 1.0; // not final value!
         // var_mode is in range [0..3]
         // it is used to vary tree settings such that many different combinations get tested
-        grey_level         = 20*.01;
-        baselinewidth      = (var_mode == 3)+1;
-        show_brackets      = (var_mode != 2);
-        show_circle        = var_mode%3;
-        use_ellipse        = var_mode%2;
-        circle_zoom_factor = 1.3;
-        circle_max_size    = 1.5;
+        grey_level             = 20*.01;
+        baselinewidth          = (var_mode == 3)+1;
+        show_brackets          = (var_mode != 2);
+        show_circle            = var_mode%3;
+        use_ellipse            = var_mode%2;
+        circle_zoom_factor     = 1.3;
+        circle_max_size        = 1.5;
+        bootstrap_min          = 0;
     }
 
 public:
