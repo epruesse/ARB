@@ -1,0 +1,9 @@
+SUFFIX          seq
+BEGIN
+!!NA_SEQUENCE 1.0
+
+*(full_name)
+
+*(name) Length: *(|export_sequence|len) Check: *(|export_sequence|gcgchecksum) ..
+
+*(|export_sequence|format_sequence(firsttab=10;tab=10;width=50;numleft;gap=10))

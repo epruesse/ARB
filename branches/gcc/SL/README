@@ -1,0 +1,10 @@
+
+Howto add a new library (in a new SUBDIR):
+
+ - create new subdir and copy a recent Makefile into there              e.g. use ./REFENTRIES/Makefile
+ - add a dependency vs 'links' or 'links_non_perl'                      in ../Makefile@ADD_links_non_perl
+ - add it to the ARCHS_... definitions used for linking                 in ../Makefile@Individual_Programs_Section
+ - add all externally visible headers                                   in ../SOURCE_TOOLS/generate_all_links.sh@ALIVIEW
+ - add a stub for (nonexisting) unit tests                              in ../Makefile@UNITS_WORKING
+   or activate existing unit tests                                      in ../Makefile@UNITS_TESTED
+

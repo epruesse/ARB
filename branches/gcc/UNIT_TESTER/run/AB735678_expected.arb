@@ -1,0 +1,444 @@
+/*ARBDB ASCII*/
+tmp			%% (%
+	message			%% (%
+		pending			%% (%
+			%) /*pending*/
+
+		%) /*message*/
+
+	%) /*tmp*/
+
+species_data	:7000	%% (%
+	species			%$ (%
+		name			"genome00"
+		ARB_imported_from		"AB735678.txt"
+		ARB_imported_format		"EMBL"
+		gene_data		%% (%
+			gene			%% (%
+				name			"source"
+				type			"source"
+				ARB_display_hidden		%y 1
+				pos_start		"1"
+				pos_stop		"15341"
+				pos_complement		"0"
+				pos_certain		"=="
+				db_xref			"taxon:497819"
+				isolate			"CJP-YT-2012"
+				mol_type		"genomic DNA"
+				organelle		"mitochondrion"
+				organism		"Chionoecetes japonicus pacificus"
+				sub_species		"pacificus"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"CDS_COI_CytochromeOxidaseSubun"
+				type			"CDS"
+				pos_start		"1"
+				pos_stop		"1528"
+				pos_complement		"0"
+				pos_certain		"=="
+				codon_start		"1"
+				gene			"COI"
+				note			"TAA stop codon is completed by the addition of 3' Aresidues to the mRNA."
+				product			"cytochrome oxidase subunit I"
+				protein_id		"BAN60008.1"
+				transl_except		"(pos:1528,aa:TERM)"
+				transl_table		"5"
+				ARB_translation_rm		%y 1
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNALeu"
+				type			"tRNA"
+				pos_start		"1532"
+				pos_stop		"1596"
+				pos_complement		"0"
+				pos_certain		"=="
+				product			"tRNA-Leu"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"CDS_COII_CytochromeOxidaseSubu"
+				type			"CDS"
+				pos_start		"1606"
+				pos_stop		"2293"
+				pos_complement		"0"
+				pos_certain		"=="
+				codon_start		"1"
+				gene			"COII"
+				note			"TAA stop codon is completed by the addition of 3' Aresidues to the mRNA."
+				product			"cytochrome oxidase subunit II"
+				protein_id		"BAN60009.1"
+				transl_except		"(pos:2293,aa:TERM)"
+				transl_table		"5"
+				ARB_translation_rm		%y 1
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNALys"
+				type			"tRNA"
+				pos_start		"2294"
+				pos_stop		"2360"
+				pos_complement		"0"
+				pos_certain		"=="
+				product			"tRNA-Lys"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNAAsp"
+				type			"tRNA"
+				pos_start		"2361"
+				pos_stop		"2425"
+				pos_complement		"0"
+				pos_certain		"=="
+				product			"tRNA-Asp"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"CDS_ATP8_ATPase8X"
+				type			"CDS"
+				pos_start		"2426"
+				pos_stop		"2584"
+				pos_complement		"0"
+				pos_certain		"=="
+				codon_start		"1"
+				gene			"ATP8"
+				product			"ATPase8"
+				protein_id		"BAN60010.1"
+				transl_table		"5"
+				ARB_translation_rm		%y 1
+				%) /*gene*/
+
+			gene			%% (%
+				name			"CDS_ATP6_ATPase6X"
+				type			"CDS"
+				pos_start		"2578"
+				pos_stop		"3252"
+				pos_complement		"0"
+				pos_certain		"=="
+				codon_start		"1"
+				gene			"ATP6"
+				product			"ATPase6"
+				protein_id		"BAN60011.1"
+				transl_table		"5"
+				ARB_translation_rm		%y 1
+				%) /*gene*/
+
+			gene			%% (%
+				name			"CDS_COIII_CytochromeOxidaseSub"
+				type			"CDS"
+				pos_start		"3252"
+				pos_stop		"4042"
+				pos_complement		"0"
+				pos_certain		"=="
+				codon_start		"1"
+				gene			"COIII"
+				note			"TAA stop codon is completed by the addition of 3' Aresidues to the mRNA."
+				product			"cytochrome oxidase subunit III"
+				protein_id		"BAN60012.1"
+				transl_except		"(pos:4041..4042,aa:TERM)"
+				transl_table		"5"
+				ARB_translation_rm		%y 1
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNAGly"
+				type			"tRNA"
+				pos_start		"4043"
+				pos_stop		"4106"
+				pos_complement		"0"
+				pos_certain		"=="
+				product			"tRNA-Gly"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"CDS_NAD3_NADHDehydrogenaseSubu"
+				type			"CDS"
+				pos_start		"4107"
+				pos_stop		"4460"
+				pos_complement		"0"
+				pos_certain		"=="
+				codon_start		"1"
+				gene			"NAD3"
+				product			"NADH dehydrogenase subunit 3"
+				protein_id		"BAN60013.1"
+				transl_table		"5"
+				ARB_translation_rm		%y 1
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNAAsn"
+				type			"tRNA"
+				pos_start		"4589"
+				pos_stop		"4654"
+				pos_complement		"0"
+				pos_certain		"=="
+				product			"tRNA-Asn"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNASer_1"
+				type			"tRNA"
+				pos_start		"4658"
+				pos_stop		"4727"
+				pos_complement		"0"
+				pos_certain		"=="
+				product			"tRNA-Ser"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNAGlu"
+				type			"tRNA"
+				pos_start		"4729"
+				pos_stop		"4796"
+				pos_complement		"0"
+				pos_certain		"=="
+				product			"tRNA-Glu"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNAHis"
+				type			"tRNA"
+				pos_start		"4819"
+				pos_stop		"4882"
+				pos_complement		"1"
+				pos_certain		"=="
+				product			"tRNA-His"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNAPhe"
+				type			"tRNA"
+				pos_start		"4883"
+				pos_stop		"4946"
+				pos_complement		"1"
+				pos_certain		"=="
+				product			"tRNA-Phe"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"CDS_NADH5_NADHDehydrogenaseSub"
+				type			"CDS"
+				pos_start		"4949"
+				pos_stop		"6676"
+				pos_complement		"1"
+				pos_certain		"=="
+				codon_start		"1"
+				gene			"NADH5"
+				note			"TAA stop codon is completed by the addition of 3' Aresidues to the mRNA."
+				product			"NADH dehydrogenase subunit 5"
+				protein_id		"BAN60014.1"
+				transl_table		"5"
+				ARB_translation_rm		%y 1
+				%) /*gene*/
+
+			gene			%% (%
+				name			"CDS_NADH4_NADHDehydrogenaseSub"
+				type			"CDS"
+				pos_start		"6711"
+				pos_stop		"8047"
+				pos_complement		"1"
+				pos_certain		"=="
+				codon_start		"1"
+				gene			"NADH4"
+				note			"TAA stop codon is completed by the addition of 3' Aresidues to the mRNA."
+				product			"NADH dehydrogenase subunit 4"
+				protein_id		"BAN60015.1"
+				transl_except		"(pos:6711..6712,aa:TERM)"
+				transl_table		"5"
+				ARB_translation_rm		%y 1
+				%) /*gene*/
+
+			gene			%% (%
+				name			"CDS_NADH4L_NADHDehydrogenaseSu"
+				type			"CDS"
+				pos_start		"8041"
+				pos_stop		"8340"
+				pos_complement		"1"
+				pos_certain		"=="
+				codon_start		"1"
+				gene			"NADH4L"
+				product			"NADH dehydrogenase subunit 4L"
+				protein_id		"BAN60016.1"
+				transl_table		"5"
+				ARB_translation_rm		%y 1
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNAThr"
+				type			"tRNA"
+				pos_start		"8343"
+				pos_stop		"8406"
+				pos_complement		"0"
+				pos_certain		"=="
+				product			"tRNA-Thr"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNAPro"
+				type			"tRNA"
+				pos_start		"8407"
+				pos_stop		"8469"
+				pos_complement		"1"
+				pos_certain		"=="
+				product			"tRNA-Pro"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"CDS_NADH6_NADHDehydrogenaseSub"
+				type			"CDS"
+				pos_start		"8472"
+				pos_stop		"8978"
+				pos_complement		"0"
+				pos_certain		"=="
+				codon_start		"1"
+				gene			"NADH6"
+				note			"TAA stop codon is completed by the addition of 3' Aresidues to the mRNA."
+				product			"NADH dehydrogenase subunit 6"
+				protein_id		"BAN60017.1"
+				transl_table		"5"
+				ARB_translation_rm		%y 1
+				%) /*gene*/
+
+			gene			%% (%
+				name			"CDS_Cytb_CytochromeB"
+				type			"CDS"
+				pos_start		"8978"
+				pos_stop		"10112"
+				pos_complement		"0"
+				pos_certain		"=="
+				codon_start		"1"
+				gene			"Cytb"
+				note			"TAA stop codon is completed by the addition of 3' Aresidues to the mRNA."
+				product			"cytochrome b"
+				protein_id		"BAN60018.1"
+				transl_except		"(pos:10112,aa:TERM)"
+				transl_table		"5"
+				ARB_translation_rm		%y 1
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNASer_2"
+				type			"tRNA"
+				pos_start		"10113"
+				pos_stop		"10179"
+				pos_complement		"0"
+				pos_certain		"=="
+				product			"tRNA-Ser"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"CDS_NADH1_NADHDehydrogenaseSub"
+				type			"CDS"
+				pos_start		"10194"
+				pos_stop		"11159"
+				pos_complement		"1"
+				pos_certain		"=>"
+				codon_start		"1"
+				gene			"NADH1"
+				note			"start codon not determined"
+				product			"NADH dehydrogenase subunit 1"
+				protein_id		"BAN60019.1"
+				transl_table		"5"
+				ARB_translation_rm		%y 1
+				%) /*gene*/
+
+			gene			%% (%
+				name			"rRNA_LargeSubunitRibosomalRNA"
+				type			"rRNA"
+				pos_start		"11234"
+				pos_stop		"12568"
+				pos_complement		"1"
+				pos_certain		"=="
+				product			"large subunit ribosomal RNA"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNAVal"
+				type			"tRNA"
+				pos_start		"12543"
+				pos_stop		"12615"
+				pos_complement		"1"
+				pos_certain		"=="
+				product			"tRNA-Val"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"rRNA_SmallSubunitRibosomalRNA"
+				type			"rRNA"
+				pos_start		"12617"
+				pos_stop		"13430"
+				pos_complement		"1"
+				pos_certain		"=="
+				product			"small subunit ribosomal RNA"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNAGln"
+				type			"tRNA"
+				pos_start		"13997"
+				pos_stop		"14068"
+				pos_complement		"1"
+				pos_certain		"=="
+				product			"tRNA-Gln"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNAMet"
+				type			"tRNA"
+				pos_start		"14075"
+				pos_stop		"14141"
+				pos_complement		"0"
+				pos_certain		"=="
+				product			"tRNA-Met"
+				%) /*gene*/
+
+			gene			%% (%
+				name			"CDS_NADH2_NADHDehydrogenaseSub"
+				type			"CDS"
+				pos_start		"14142"
+				pos_stop		"15147"
+				pos_complement		"0"
+				pos_certain		"=="
+				codon_start		"1"
+				gene			"NADH2"
+				note			"TAA stop codon is completed by the addition of 3' Aresidues to the mRNA."
+				product			"NADH dehydrogenase subunit 2"
+				protein_id		"BAN60020.1"
+				transl_except		"(pos:15147,aa:TERM)"
+				transl_table		"5"
+				ARB_translation_rm		%y 1
+				%) /*gene*/
+
+			gene			%% (%
+				name			"tRNA_TRNATrp"
+				type			"tRNA"
+				pos_start		"15148"
+				pos_stop		"15214"
+				pos_complement		"0"
+				pos_certain		"=="
+				product			"tRNA-Trp"
+				%) /*gene*/
+
+			%) /*gene_data*/
+
+		ali_genom		%% (%
+			data			"atgcaacgatgattattttctacaaatcataaagatattggtactttatattttatatttggagcttgagctggcatagttggtacatcattaagattgattattcgagctgaacttgggcagcccggaactcttatcggaaatgaccaaatttataatgtagttgttacagcccacgcttttgttataatcttcttcatagttatacctattataattggaggatttggaaattgattaattcccttaatattaggagcccctgatatagcttttcctcgaataaataacataagattttgattattacctccttctttaacactactattaataagaggtatagtagaaagaggagtaggaactggatggactgtttaccctcctttagcagctgcaatcgctcacgctggagcctcggttgatatggggattttttctttacatttagctggagtttcctctattttgggagctgtaaattttataactaccgtaattaatatacgatccttcggtataagcctagaccaaatacctctttttgtttgagctgtgtttattacagctattttacttctactatctctgcctgttttagccggagcaatcaccatacttttaaccgatcgaaacttaaatacatctttttttgaccctgcaggaggaggagaccctgttttatatcaacatcttttttgattctttggacacccagaagtttatattcttatcctaccagcatttggtatagtttcacatattgttagtcaagaatccggtaaaaaagaatctttcgggacattgggaataatttatgctatattagcaattggaattttaggatttgtagtgtgagctcaccatatgttcactgtgggtatagatgtagacacacgagcttattttacctctgccactataattattgctgttcctacaggtattaaaatttttaggtggttaagaactcttcatggagctcaaatcaattacagtccatcattattatgggctcttgggtttattttatttaccgtaggaggattaactggagtagtattagcaaactcttctattgatattatcctacacgatacttactacgtagttgcccattttcactatgttttatcaataggagctgtgtttggtatttttgggggtattgctcattgatttcctctttttactggtctttctcttaaccctaaatgactaaaaattcacttttttattatatttattggagttaatattacttttttcccacaacattttttagggttaaacggtatgccgcgtcgttattcagactacccagatgcttttacaacatgaaatattgtatcctccatagggtctataatttcttttacagctgctttaggatttatattcattgtatgagaagctttaatctctaatcgtcctgtgttatttacccccttcctaccaacctctattgaatgagctcatgtgtatccccctgccgatcattcttacatggaaattcctttaattactaatttctaaaatggcagacagatgtataggatttaagctcctactaggaagtttaatcttcttttagaaacacgtttaatggcaacatgagcatatttaggatttcaagatggggcttctcctttaatagaacaattaattttctttcacgatcatattatattaattttaattataattattacatttgtagggtatataataatatctctaattataaactcacacatcaatcgatttatattagaaaaccaaacaattgagttaatttgaactgctcttcccgctgttattttagtatttattgctttaccttcccttcgacttttatatctattagatgaagtaaatagaccaactataactttaaaaacaatcggtcatcagtgatattgaaggtatgaatactcagactttttaaatgtagaatttgactcctacataactcctagaaatgaaataacaaattcatcttttcgacttcttgacgttgataatcgaactattgttccaataaacactcaaatccgagttatcattactgcagcggatgttatccactcgtgagccgtaccttcattgggtgtaaaagctgatgctattccggggcgacttaatcaatcaagattccttattactcggccgggacttttttttgggcagtgctctgaaatttgtggggccaatcatagcttcataccaattgtaattgaaagggtatctacggactccttcctaaattgaatttctttatcttattctgattcacccggtgactgaaagaaagtgcaggtcttttaaacctgctatagtattacgcctacttctggtggaagaggttagttaaattataaccttagtttgtcatactaaaataatcccctaaggatatctcttagtgcctcaaatagcccccttattgtgattatatttatttatattttttaatatttgtttactattatatttaactgttaattattttattaaaccatttgaaaaaattataactttaccaaataataaaactttaaaccaaaagccttgaaaattatagctaatcttttttcaatttttgaaccttcttcaagaatttttaatttttctattaactgagtatcaacatttttaggtttgatatttattccttatctttattgggcttctccttctcgatgatcttttttatgaagaaagattattttaactctacataaagaatttaaagctcttttaactccttcacacataggtgcctcaatgttatttatttctatatttagatttattttatttaataactttctaggattaataccttatgtatttacaagatctagtcatatagttataactatgtcattatctctacctttatggtttactttaatattatttggttgaataaatcacacacaacacatatttagacatttagttcctcaaggaacaccttctattttaataccctttatagtaattattgaaacaattaggaatgtcattcgtcctggaactcttgctattcgattggccgcgaatatgattgccggtcatttgcttttaactttattagggggtactggaccctcattagccttgtcaattttatcagtattaattttttgccaaatcctcttattaattttagaatctgctgttgcaattattcagtcatatgtatttgctgttttaagtaccctatacacaggagaaattaactaatgacatcatctcatagacaccatccttatcatttagtggatataagcccctgacctttaactgggtctattagagctataatactaacaactggccttgttaaatgatttcaccaatataacataaaccttcttatacttagacttatagcaactttattaactataattcaatggtgacgggatatcactcgagagggaacataccagggacttcacacatcaatagtagtaagaggcttacgttgaggtataattttatttattgtgtcagaaattctattctttttttcattcttctgagctttttttcatagaagattagcccctaatattgaaattggtatatattgacctcctttgggtattcaaccttttaatccctttcaaattccccttcttaatacaactatccttctctcatcaggagcaacagttacttgagcccatcattctattatagaatcaaatcactctcaggccctacaaagtttattattaactgttatcttagggatttatttcacttttttacaaggatttgaatatattgaagcttcatttactattgccgattctgtgtttgggtccactttctttgtagctactggatttcatggtcttcatgttctcattggaaccacttttttacttatttgtttaattcgcctttataattgccacttctcttctgaacaccacgttggatttgaggccgctgcttgatattgacactttgttgatgtagtttgattatttctttatattttcattgtactgatgaggtggttatttctttaatatattagtatatttgatttccaatcaaaaagtctagagtacctagaagaaataattatagtattattaattttatctttgattacattaactttatcctctcttgttatgttattagcttctattttatcaaaaaaaactattattgatcgcgaaaaaagatctccatatgagtgtgggtttgatcctaaaagatctgctcgtttaccattttctttacgattttttttaattgctgtaatttttttgatttttgatgttgaaattactttgcttctacctattgcttctattctaaattatactaatttattttcttatttgatcacaactatattatttctagtaatcttattattagggctttattacgaatggtctcaagaagctttagagtggtctaaataagtaagactatagtcaataaatgacgtgtgagttgcattcataaagagttctattgaaactagttttagttagaaagcgaaattattgcacttagtttcgacctaaattttggcttaggcctctaattattaataaaagccaaaacagaggcatatcactgttaatgatataattgaattattattcttattaagtaaagagatattaagtaaaatataaaagcttctaacttttaatataagcggttaaattccgtttatatctctaaatttttatagtgtaaagtaacacattacattttcactgtaaagctgaatttaattaattctaaaaacgattctctttaattttattattttacttaaagtaatactttacaactttagttccacaaactaacgtttttattaaactatttaaattatttacagataattttatctcttttgcatcttcagtgcaatattcttcataaattatataaatttttatataaaaacataaagaccaataacaactgaaacaaaaaatatttttatatagatttttaatctattcaattgtaatacatttaatattttaaataaattattaaaccttatgtttaatccctgacctccatggtattcatatcaacctttatcgcctactttttgaataattttccccacaacaaaagaacttattgtaatatttttagttcttaaaaaaggtataaaccatatagatccaattataattacaaacctataacaacttaacctatttaatttataagcaactcttagcatattaattatatacccaattactccccctaaaactctaatcaacagcactaaactttttataaaactatctatgcaaatcacatatacttctggaaaaataagtcaagataaaacactaccccctagtacagctcctattcctaacccccttatagaattagttataattttatctccatcatttatgtttcttatagatattaaattaaacctgccccttaaactatagtaaactaatcgcgttgtgtatataaccgttaatatagttgaaattacaaataatataaatacaactaaatttacactacttataaaagaaacctctaaaattatatcttttgaataaaatcctgctaaaaaaggaaatccacataaagctaaatttctaattacaaaaaaagaaatagtaataggtataaatttaattatccctcccatatgacgaatatcttgataatcactaacattatgaataataactccagcacatataaataataaagccttaaataaagcatgtcttaataaatgaaaaaaagctaaatcagggtaacctagagaaataattcttaatataacccctagttgtctcaatgtagataaagcaataattttttttaaatcatattcaaaattagctcctaatccagctataaacatggttaaacaagaaataattaataaaattatttggctatttgattcctctagagcagctctaaatcgaatcataagataaactcccgctgtaactaaagtcgaagaatgtactaaagcagatactggtgtaggagctgctatagcagctggcagccatgcagaaaatgggatttgagcccttttagtcatagcagctaaaattaatattattttaaatattaaccacctatcctctatatacattctatataaaaaaaaatttcaactaccaagacttattataaccccaattcctaataaaattgcaatatctccaacacgattagataaaattgttaatattccagcattagctgacttctcattttggtagtaaattacaagggcataagatactaaccctaacccatcccaacctaataaaatactaattaaattaggacttaaaattattattattatagataaaacaaatgctaatacaagatatataaaacgattaaagttcttatcatttgacatataactacccctatagtacaaaactcttctcgaaattaaaagaacaaatctcataaataataaagatacccaatctaaaactaaagtaaaagttatagaacatgaattcaatattataatttcccactcaactacatttgacatattttttattaatttagaaactcccctaataccacaaatcactgaccttgttcctaacctaattattctaatctcatataaattaatttttcaaatcattctttaacgctttacacattttattttaattaaagaactaattagtaataagtttctatttaaaagcaaaacatttaaaggtattcaatgtaaaaacaaaattatatactcttgaactttaccggaacagcaagaatataagctattaaagaataatccatgttgagttaacctatatatatacaatgtatatctcgctcttaaaaaagataaagaaattaaaccaaatatagtcaacttactccaacttacaactctaataattaaattaatttcccctaataaattaagagaaggtggtcttgctatatttcttactcttaataaaaaccaccacagacctattctaggtataaaagataacaatccctttcttattaataaacttcgactacctaatcgctcgtaaacaatattagctaaacaaaataaacctgaagaacataaaccatgacccaccataactactactgctccccttaaaccccatcagctaaaccctataataccacataagactaaccttatatgagcgacagaagaataagcaattaaagcttttatatcaacttgacgtaggcatattaaacttactaatctcccaccgaccaaccctaatcttaatcacactcagtaactttcttttcctataaattgaaataaaataagaacccgaataagcccgtagccccctaattttagtaaaactcccgctaaaattattgaaccagctactggagcctcgacatgagctttaggtaaccataaatgaagtatatatattggcagttttactacaaaagccattactgttgctagatatcaaattattattaaataactatcataaataaaaggttgccttaataaaatcacaaggctacctcttttatttaaagccaatagtaaagaacctaataaaggcaaagaaaataataaagtataaaataatatataaatacctgcttgaatgcgttcaggttggtatcctcaacctaaaattaaaattaaagtaggaattaaagacatttcaaatctaatataaaataatatatattctatagaagaaaaagtaattaaaagacaaatcaatagtaaaagatttacaccaataaatctaccataaaaatttttactgtattttactttttgactagctattaacaccagagatatgattcaaacccttaataaaattataatataacttacactatcaattcccaaactaaacccaataccataaaaataaaaatcatggtaccttattaaacccactataaaccttacaattaacaaaccaatttgaactacactacaaacttttatatattttatcaacataactaaaggtaaaattaattttaacattctaataaattaaacctagaaaatcgatcattaccgtgactacggaccacaaaaattaaaagacataatcctaaagccccctcacaagctgctagagttaaaaaaaacaaagaaaaataaatatctcctcctactcccgatatttgaactcttaacaatcaaaaaattcctaatattataaactctaatcttagtaaagaatttaaaagatgtttatgatattttataaacctccataaaccacaaaaaatcataaaaaatgaacaagctactataaaactaagatctatcatttgttttaatagtttaaaaaaaactttggtcttgtaagccaataatgaatactatttcttaaagcttcagagaaaaaattacttttatctttaattcccaaaattaatatttttataaactactctctgatatcaccttattaattattcccacaattataatactagctctcttattcacacgtctaactcatcctttatccctaggattaacattattaattcaaaccgtgggaatctctttaaacacaggactatccttatattctttttgattttcatatatcttatttataatttttttgggggggatattggtattatttatttatgtggcttctttagcctctaatgaatctttctctttctcatttttttatatgtttacttccttactagctttattattaattttcttaatatgtttatttatagatcctattctaatagtagatttttcttctttacctacggcttcaattgatgtaaaattatctacccctttaattacaagatgaatttatagaaactcaaatataatattcactttatttattatcctttatctcctcctaacattggttgttgtagttaaaatcacaaacctatttaaggggcctttacgactaataaactaatgattacccctatacgtaaatctcaccctttatttaaaattgttaacggagctttgattgacataccccttccaactaatatttctttattttgaaattttgggtctttattagggttatgtttaattgttcaaatttcaacaggattatttctatctatacactacaccgcccacattgatttagctttctcaagagttgcacatatttgtcgagatgtaaactatggttggcttcttcgaactatacatgccaatggggcttcacttttttttatttgtttatatttacacattgggcgtggtattttttatgggtcatatattattttccacgcgtgaatggtaggagtaattattttatttataactatagctactgcctttttaggatatgttcttccatggggacaaatatctttttggggagctaccgtaattacaaatttattttcagctattccatatattgggacagaccttgtacaatgaatttgaggtgggttttcagtagataacgcaacgttaactcgtttttttacattccattttgttttaccctttcttattgctgctgcgtctataattcatatcttattcctacaccaagcaggagctaataaccctctaggaatttcaagtcaattagataaagttccatttcatccttactttacttttaaagatattgtaggatttattgttataatttcttttctacttttattatcattaataaatccatatatattaggagacccagacaattttattcccgcaaaccctttagtaaccccagctcatattcaacctgagtgatattttctcttcgcttacgcaatcttacgatctattcctaataaattaggaggtgttattgctctagtagcttctgttgctattttaatgattttgccctttactcatgcttccaaattccgaagtttaaccttttacccattaaaccaaataatattttgactacttatctctattttaattctattaacttgaattggtgcacgccctgtcgaagctccttatgttatacttggtcaagttttaactgtattactatttttatattttattataaaccctttaatattaattttatgagataaaatacttaaatagttatttagtttataaaaaacatatattttgaaaatatataaaaagtaaatatcacttaataactgaataatatactaatttagttaaagattaaattcagactaaagcataaagctttaagcccaacaaaaaaaattaaatagttaattgaagttggtaaaaatctttttcaagctaagtgtataagcttatcataacgaaaccgtggtaatgttccacgaactcatacaaatataaacgaaattataacccccttaaaataaaataaacccgaacatggtcttctgcctaaaaaaataataacaaataaaactctcataaataaaattctagcatattctgctataaaaattaaagcaaatcctcctcttctatattctgtattaaatccggataccaactcagactctccctctgcaaaatcaaaaggtgtgcgatttgtttctgctaggcaagatctaaaccaaattaaacttaaaggaatagaaataattataaaccatcaattttcttgatatttattgaataactctaacctaaaccccccaactaatataataaaagataataaaatcaaagctaaccttacctcataagagatagtttgagctaccgctcgaagtcttcctagcaaagaatatttacaattagatgatcacccagctactattgtcctataaaccccgagacttagacaacaaaaaaaaaataaaactcttatattaaacctaaacatcccaatttcgtaaggcataactaatcaaaccaataaagccaaaaataaactaaaaattggagataaataataggctaaaaaattagacatagttggtattgtttgctctttagtgaataatttaactgcatctgaaaaaggctgcagaagtcctataaatcccactttgttgggtcccttacgaatttgaataaaccctaaaattttacgttctaataaagttacaaaggccactccaatgaggacacaaataattaaaatcaaaaaatttacaatctgaataaactctatcacaaaacaattagctttaattgttcaactacctatagaaacctctatttaatcaggtcctaaacctaacgcatataatctgccaaaatagtaatcaattaaaaataatttttacttctcaatcctttcgtactaaaaaataactcctcaattaggagatagaaaccgacctggctttcgccggtctgaactcaaatcatgtaaaaatttaaaggtcgaacagaccttcttaaataactgctgcattatttagatattttaattcaacatcgaggtcgcaaacttctttttcgataggagctctcaaaagaaataacgctgttatccctaaagtaacttagtcttttaatctttaataaggatcaactacattaaaatcatttattattgtattaagctataaacagttaatataaattatatttatgtcgccccaacaaaacacactaattagattaaacttttactttttaattaagtaaactctacttatatgtaaagctttatagggtcttatcgtccccctaaagaatctaagccttttcacttagaggttaatttctaattttataataaagacagttttcctttgtccgaccattcatacaagctttcaatcaaaaagctaatgattatgctacctttgcacggtcaaaataccgcggctcttaaacaatcctgtgtcagtgagcaggccagactatatatacccccaaatagacatgtttttgataaacaggcaagaaataaaattgcttagttcctttattatatcaactcatatttaaatctgtaaaattaatttatttttctaatttacaacatattttactaatagaaccattttttcttaatgttaaaaaataccattaatattttgataaaatttaaagtaatccataaatattttaaattattatatttttattagaacattatactatcatagctactcttaagcctagataaaaatacaatttaaataataaactattgacttatcttattgaataagaagctaaaccctcctactcttaaatcttaattaaaattaaaattaaaatctaaattaaatttatttctcaaataactagatatcacaaaactcaactggcatttcacctttaaattattatttaaaatttttatactacaaaaactttactaattacttaactttttttgttccgagattattgtctttatcaaattaatttgattctccctgatacacaaggtacatttttttataattactaacaatacctacacaaatttaaaatttcctttacagtacttttaacctatagctttaaactagaatttatttaacttttacttttctttaataattgatttcttaacacataaaacttataattttaaccaatttataaggtatcaaaataaaccgatttgcacggtaactcttttcaacgtaaatgaaatgctttacttgtttagctttattttgattaatccaggcttactttccagtgagcctactatgttacgacttatttcatctctaaatgaaagcgacgggcgatatgtacatgatttagagcttttatcttttaagcatattaagcttttattacaatcaaatcctcttttttaatcttatttaaaaaattattccatgtaatttaagattattgtaacccatttaaacttatttattggttgcaccttgatctaatttcaattataattaaaatgtcaataatatttctttaaaaattatctgataatgatggtatacaaactgatttaacaaaaataagtaagattttcgtggtgtatcgattataaaacaggttcctctgacaagactaaaccaccgccaaattcttcaaatttttagattataactgttaatgttcaagttatattattaaactccagtataatagggtatctaatcctagtttaggcctagaaattttctagcttcagtttaaattaatttaatttataaaaaataatctaatttcactttttatttttttaaatctatgataatcctctcttaactaataaaccaataactttcacccaaccctaaagtctaaccgcgactgctggcacaatatttaatcgggtttctaactattaccagatcacacttacatgtattgtctaatgatttatgctgagattttatttattataaattataatttttattttttatttaaatctatataaaatttattaaattactcactttaattttcatacaatttttatagtattataaaagcttaagaaagaataaaactttaactcttaatcaaatccaattcttagttaaaatctaaattaccattagcataatctaaaagtattattataatacctcttacacacctataaatatattatacgtaaggacaccacttaatgaataatacagttcattaagtgactatatttactcctaccttacatacaaagtattagaaaataacatacacacataaattataatacacatacatgttgtgtatattatgtattatatatatactaattataaaaagatgtaaataaaataataaatcttatatacatagatttataacataatatacactatgagtttccatttaactttattatataataagaacagtatttatacaacccctcttcatcttaaccaacgaagctttatctttaagcttaagtaaattactgattatattttaaaacttttatatttcttaaataagtacttatatcgattatttttaaagttatatttttggaattttaatattacaatatagtgcctgatttaaaaggaaagctttgatagagctgatcatgtaattatattattacctatattatttacagcagaattaaaccgcttcctcaaagatcaaaactttatgtgcttaactttacactaataaacaacacttcaaaagataagctaataaagctaatgggctcataccccgtaaatgagagtaaacctctctctttttaatggctattccaatatcatctttattttttcttttattattaattataagcttaattttatccatctcttcgtcttcatgatttggagcttgaattgggttagagcttaacttactgtcttttattcctattattgctaccaaaataaactcttattcatcagaagctgcattaaagtatttcttaatccaagctctagcctcatctttaattattatatcaacatctttagctctaatttatccttatatctcctcttttattattctaatagcattattattgaaattaggagcagctcctttccatttttgatttccccaagtaataatagggcttatatggacacaaatcattattttaataactattcaaaagattgctccaatgctacttatctcctacttaatggaaactaatctaattcttaaaactttaatcctatctgcaattttttcagccgtagtgggagccttagggggcttaaacaatataagtttacgaaaaattatagcattttcgtctattaatcacatatcttgaatattcatagctttaacaatcagagaaacaatatgattaatgtatttcattttttattctactatttctatctcagttgttcttttatttaactaccttcaaatctataatatctcttctatattaactctctcccctttaacttctattactcccttagctattcctatagctcttttatccataggggggttacccccttttactggtttcattcctaagtgaatcttaattcaagttatattagattctaatatagtaatttctttggtcttccttttaagctcagcccttattactttattcttttatttgcgaattattattccattctttttattatcaagcccatctatgtcattttataacaaaataaaatataataataaatctatatatttctattcatttatcttcttcaatctcgttggtataatatttccattaacttttattattccttaggattttaagttattaaaactaagtgccttcaaagcccttaaaaaagtaaacccttttaaatcctataagccctagtgctctgcacatctccagatttgcaatccgacatatttattatactttaagacctgataaaaagctaatgcttataaataaatttacaatctatcgcctatattcagccactttatc"
+			%) /*ali_genom*/
+
+		acc			"AB735678;"
+		date			"04-JUL-2013 (Rel. 117, Created)04-JUL-2013 (Rel. 117, Last updated, Version 1)"
+		description		"Chionoecetes japonicus pacificus mitochondrial DNA, complete genome,isolate: CJP-YT-2012."
+		full_name		"Chionoecetes japonicus pacificus"
+		keywd			"."
+		org_id			"AB735678; SV 1; circular; genomic DNA; STD; INV; 15341 BP."
+		organelle		"Mitochondrion"
+		tax			"Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Crustacea; Malacostraca;Eumalacostraca; Eucarida; Decapoda; Pleocyemata; Brachyura; Eubrachyura;Majoidea; Majidae; Chionoecetes."
+		author			"[REF1] Yanagimoto T., Kobayashi T.; [REF2] Yanagimoto T., Kobayashi T.;"
+		journal			"[REF1] Submitted (13-JUL-2012) to the INSDC.Contact:Takashi Yanagimoto National Research Institute of FisheriesScience; 2-12-4, Fukuura, Kanazawa-ku, Yokohama, Kanagawa 236-8648, Japan [REF2] Unpublished."
+		nuc_rp			"[REF1] 1-15341"
+		title			"[REF1] ; [REF2] \"Complete mitochondrial DNA sequence of the Red Queen Crab Chionoecetesjaponicus pacificus\";"
+		%) /*species*/
+
+	%) /*species_data*/
+

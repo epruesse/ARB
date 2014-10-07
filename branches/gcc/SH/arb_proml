@@ -1,0 +1,75 @@
+#!/bin/bash -x
+
+BOOTSTRAP=$1 ; shift
+MODEL=$1 ; shift
+REPORT=$1 ; shift
+ANALYSIS=$1 ; shift
+RANDOMIZE=$1 ; shift
+REARRANGE=$1 ; shift
+RATE_VARIATION=$1 ; shift
+VARIATION_COEFF=$1 ; shift
+HMM_RATES=$1 ; shift
+INV_FRACTION=$1 ; shift
+INTERACTIVE=$1 ; shift
+
+if [ -z "$INTERACTIVE" ]; then
+    echo "Usage: arb_proml bootstrap aachangemodel viewreport analysis randomize rearrange rate_variation variation_coeff hmm_rates inv_fraction interactive"
+else
+    FLAGS=""
+    ADD_PARA=""
+
+    if [ "$MODEL" = "PAM" ]; then
+        FLAGS="$FLAGS p"
+    fi
+    if [ "$ANALYSIS" = "fine" ]; then
+        FLAGS="$FLAGS s"
+    fi
+    if [ "$RANDOMIZE" = "1" ]; then
+        RANDOMSEED=$(($RANDOM|1)) # a odd number
+        FLAGS="$FLAGS j $RANDOMSEED 1"
+    fi
+    if [ "$REARRANGE" = "1" ]; then
+        FLAGS="$FLAGS g"
+    fi
+
+    case $RATE_VARIATION in
+        0) ;;
+        1) FLAGS="$FLAGS r"
+           ADD_PARA="$ADD_PARA $VARIATION_COEFF $HMM_RATES"
+           ;;
+        2) FLAGS="$FLAGS r r"
+           ADD_PARA="$ADD_PARA $VARIATION_COEFF $HMM_RATES $INV_FRACTION"
+           ;;
+        *) arb_message "Illegal value for 'rate_variation'"
+           exit 1
+           ;;
+    esac
+
+    if [ "$BOOTSTRAP" = "0" ]; then
+        if [ "$INTERACTIVE" = "0" ]; then
+            arb_echo $FLAGS y $ADD_PARA | proml
+        else
+            (arb_echo $FLAGS ; cat - ) | ( proml ; echo "Press RETURN to continue.." )
+        fi
+        #proml
+        echo >arb_read_tree_args
+        WHAT=proml
+    else
+        arb_bootstrap $BOOTSTRAP proml $FLAGS
+        WHAT=arb_bootstrap/proml/consense
+    fi
+
+    if [ -f outfile ]; then
+        if [ -s outfile ]; then
+            if [ "$REPORT" = "1" ]; then
+                arb_textedit outfile &
+            fi
+        else
+            arb_message "$WHAT: Error: generated 'outfile' is empty"
+            false
+        fi
+    else
+        arb_message "$WHAT: Error: 'outfile' has not been generated"
+        false
+    fi
+fi
