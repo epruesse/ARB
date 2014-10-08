@@ -30,7 +30,7 @@
 #define AWAR_DTREE_CIRCLE_MAX_SIZE "awt/dtree/max_size"
 #define AWAR_DTREE_USE_ELLIPSE     "awt/dtree/ellipse"
 #define AWAR_DTREE_GREY_LEVEL      "awt/dtree/greylevel"
-#define AWAR_DTREE_BOOTSTRAP_MIN   "awt/dtree/bootstrap_min"
+#define AWAR_DTREE_BOOTSTRAP_MIN   "awt/dtree/bootstrap/inner/min"
 
 #define AWAR_DTREE_RADIAL_ZOOM_TEXT "awt/dtree/radial/zoomtext"
 #define AWAR_DTREE_RADIAL_XPAD      "awt/dtree/radial/xpadding"
