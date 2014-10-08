@@ -180,14 +180,15 @@ sub dump_junitlog(\@) {
 
 # --------------------------------------------------------------------------------
 
-my $tests    = 0;
-my $skipped  = 0;
-my $passed   = 0;
-my $failed   = 0;
-my $warnings = 0;
-my $elapsed  = 0;
-my $crashed  = 0;
-my $valgrind = 0;
+my $tests     = 0;
+my $skipped   = 0;
+my $passed    = 0;
+my $failed    = 0;
+my $warnings  = 0;
+my $elapsed   = 0;
+my $crashed   = 0;
+my $valgrind  = 0;
+my $sanitized = 0;
 
 my %duration = (); # key=unit, value=ms
 
@@ -196,10 +197,11 @@ sub parse_log($\@) {
   my ($log,$junit_r) = @_;
   open(LOG,$log) || die "can't open '$log' (Reason: $!)";
 
-  my $tests_this   = 0;
-  my $skipped_this = 0;
-  my $passedALL    = 0;
-  my $seenSummary  = 0;
+  my $tests_this    = 0;
+  my $skipped_this  = 0;
+  my $passedALL     = 0;
+  my $seenSummary   = 0;
+  my $seenSanitized = 0;
 
   my $curr_target        = undef;
   my $last_error_message = undef;
@@ -274,6 +276,10 @@ sub parse_log($\@) {
     elsif (/^-+\s+(ARB-backtrace.*):$/) {
       $last_error_message = $1;
     }
+    elsif (/ERROR:\s*AddressSanitizer:\s*/o) {
+      $last_error_message = $';
+      $seenSanitized++;
+    }
   }
   close(LOG);
 
@@ -301,8 +307,15 @@ sub parse_log($\@) {
 
   if (not $seenSummary) {
     my $ARBHOME = $ENV{ARBHOME};
-    print "$ARBHOME/UNIT_TESTER/$log:1:0: Warning: No summary found in '$log' (maybe the test did not compile or crashed)\n";
-    $crashed++;
+    print "$ARBHOME/UNIT_TESTER/$log:1:0: Warning: No summary found in '$log' ";
+    if ($seenSanitized>0) {
+      $sanitized++;
+      print "(was aborted by AddressSanitizer)\n";
+    }
+    else {
+      $crashed++;
+      print "(maybe the test did not compile or crashed)\n";
+    }
   }
 
   $tests   += $tests_this;
@@ -384,6 +397,9 @@ sub print_summary($) {
       }
     }
   }
+  if ($sanitized>0) {
+    push @summary, sprintf(" Sanitizd: %5i units", $sanitized);
+  }
   push @summary, sprintf(" Crashed : %5i units", $crashed);
   push @summary, sprintf(" Warnings: %5i", $warnings);
   if ($valgrind>0) {
@@ -426,7 +442,7 @@ sub do_report() {
 
   dump_junitlog(@junit);
 
-  my $tests_failed = (($failed>0) or ($crashed>0) or ($valgrind>0));
+  my $tests_failed = (($failed>0) or ($crashed>0) or ($valgrind>0) or ($sanitized>0));
   print_summary($tests_failed);
   slow_cleanup($tests_failed);
   if ($tests_failed) {
