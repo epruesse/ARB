@@ -196,6 +196,7 @@ ifeq ($(DEBUG),0)
 		cflags := -O3# compiler flags (C and C++)
 	else
 		cflags := -O4# compiler flags (C and C++)
+#		cflags += -ggdb3# uncomment+rebuild to debug/valgrind/backtrace NDEBUG version
 		lflags += -O2# linker flags
 		clflags += -Wl,-O2# passthrough linker flags
 	endif
