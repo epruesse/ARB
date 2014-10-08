@@ -129,6 +129,41 @@ sub print_expand_pathless_messages($) {
   }
 }
 
+sub dump_log($) {
+  my ($log) = @_;
+
+  my $topdir = $ENV{ARBHOME};
+
+  open(LOG,$log) || die "can't open '$log' (Reason: $!)";
+  my $seen_AS = 0;
+  my $line;
+  while (defined($line=<LOG>)) {
+    if ($seen_AS==1) {
+      if ($line =~ /^\s+(\#[0-9]+\s.*)\s+(.*):([0-9]+)$/o) {
+        my ($msg,$file,$lineNo) = ($1,$2,$3);
+        if (-f $file) {
+          if ($file =~ /^$topdir\//) {
+            $file = $';
+          }
+          print "$file:$lineNo: $msg\n";
+        }
+        else {
+          print_expand_pathless_messages($line);
+        }
+      }
+    }
+    else {
+      if ($line =~ /AddressSanitizer/o) {
+        $seen_AS = 1;
+        if (defined $topdir) { print('fake[2]: Entering directory `'.$topdir."\'\n"); }
+      }
+      print_expand_pathless_messages($line);
+    }
+  }
+  if (defined $topdir and $seen_AS==1) { print('fake[2]: Leaving directory `'.$topdir."\'\n"); }
+  close(LOG);
+}
+
 # --------------------------------------------------------------------------------
 
 sub dump_junitlog(\@) {
@@ -256,10 +291,7 @@ sub parse_log($\@) {
   if (not $seenSummary) { $dump_log = 1; }
 
   if ($dump_log==1) {
-    open(LOG,$log) || die "can't open '$log' (Reason: $!)";
-    my $line;
-    while (defined($line=<LOG>)) { print_expand_pathless_messages($line); }
-    close(LOG);
+    dump_log($log);
   }
   else {
     my $log_ptr = $log;
