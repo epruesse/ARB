@@ -1032,7 +1032,7 @@ GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right) {
 
     GB_CSTR result = NULL;
 
-    if (anypath_right && anypath_right[0]) {
+    if (anypath_right) {
         if (anypath_right[0] == '/') {
             result = GB_concat_path(anypath_left, anypath_right+1);
         }
