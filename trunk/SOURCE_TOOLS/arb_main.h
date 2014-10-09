@@ -15,7 +15,7 @@
 
 static void start_of_main() {
     // const char *USER_LOCALE = ""; // -> use user-defined locale
-    const char *USER_LOCALE = "de_DE.UTF-8"; // use german locale
+    // const char *USER_LOCALE = "de_DE.UTF-8"; // use german locale
 
 
     // gtk apparently calls 'setlocale(LC_ALL, "");'

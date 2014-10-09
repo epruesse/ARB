@@ -1611,9 +1611,9 @@ static void categorize(int    Sites,
     double a = (Categs - 3.0)/log(max_2/min_2);
     double b = - a * log(min_2) + 2.0;
 
-    categrate[0] = min_1;
+    categrate[0]                                      = min_1;
     for (int k = 1; k <= Categs-2; k++)  categrate[k] = min_2 * exp((k-1)/a);
-    categrate[Categs-1] = max_1;
+    if (Categs>0) categrate[Categs-1] = max_1;
 
     for (int i = 1; i <= Sites; i++) {
         if (Weight[i] > 0) {
@@ -1668,16 +1668,26 @@ static GBDATA *create_next_SAI() {
     return gb_sai;
 }
 
-static void writeToArb() {
+static bool writeToArb() {
+    GB_ERROR error = NULL;
     GB_begin_transaction(gb_main);
 
     long   ali_len = GBT_get_alignment_len(gb_main, alignment_name);
-    char  *cats    = (char *)GB_calloc(ali_len, sizeof(char));   // categories
+    char  *cats    = (char *)GB_calloc(ali_len+1, sizeof(char)); // categories
     float *rates   = (float *)GB_calloc(ali_len, sizeof(float)); // rates to export
     char   category_string[1024];
 
-    // fill in rates and categories
+    // check filter has correct length
     {
+        long filter_len = strlen(arb_filter);
+        if (filter_len !=  ali_len) {
+            error = GBS_global_string("Filter length (%li) does not match alignment length (%li)",
+                                      filter_len, ali_len);
+        }
+    }
+
+    // fill in rates and categories
+    if (!error) {
         double  categrate[maxcategories]; // rate of a given category
         int     sitecateg[maxsites+1];    // category of a given site
 
@@ -1701,24 +1711,32 @@ static void writeToArb() {
             i++;
         }
 
-        // write categories
-        char *p = category_string;
-        p[0] = 0;    // if no categs
+        int unfiltered_sites = i-1;
+        if (unfiltered_sites != sites) {
+            error = GBS_global_string("Filter positions (%i) do not match input sequence positions (%i)",
+                                      unfiltered_sites, sites);
+        }
 
-        for (int k = 1; k <= categs; k ++) {
-            sprintf(p, " %G", categrate[categs-k]);
-            p += strlen(p);
+        // write categories
+        if (!error) {
+            char *p = category_string;
+            p[0]    = 0; // if no categs
+
+            for (int k = 1; k <= categs; k ++) {
+                sprintf(p, " %G", categrate[categs-k]);
+                p += strlen(p);
+            }
         }
     }
 
 
-    {
+    if (!error) {
         GBDATA *gb_sai = create_next_SAI();
         if (!gb_sai) {
-            fprintf(stderr, "Error: %s\n", GB_await_error());
+            error = GB_await_error();
         }
         else {
-            GBDATA *gb_data = GBT_add_data(gb_sai, alignment_name, "rates", GB_FLOATS);
+            GBDATA *gb_data = GBT_add_data(gb_sai, alignment_name, "rates", GB_FLOATS); // @@@ AFAIK not used anywhere
             GB_write_floats(gb_data, rates, ali_len);
 
             gb_data = GBT_add_data(gb_sai, alignment_name, "data", GB_STRING);
@@ -1732,7 +1750,11 @@ static void writeToArb() {
         }
     }
 
-    GB_commit_transaction(gb_main);
+    error = GB_end_transaction(gb_main, error);
+    if (error) {
+        fprintf(stderr, "Error in arb_dnarates: %s\n", error);
+    }
+    return !error;
 }
 
 static void openArb(const char *dbname) {
@@ -1947,8 +1969,8 @@ int ARB_main(int argc, char *argv[]) {
         if (!anerror) setupnodex(tr);
         if (!anerror) makeUserRates(tr, infile);
         if (!anerror) {
-            writeToArb();
-            if (dbsavename) saveArb(dbsavename);
+            anerror = !writeToArb();
+            if (!anerror && dbsavename) saveArb(dbsavename);
         }
         closeArb();
         if (!anerror) freeTree(tr);
