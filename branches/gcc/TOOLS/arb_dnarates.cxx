@@ -1668,7 +1668,8 @@ static GBDATA *create_next_SAI() {
     return gb_sai;
 }
 
-static void writeToArb() {
+static bool writeToArb() {
+    GB_ERROR error = NULL;
     GB_begin_transaction(gb_main);
 
     long   ali_len = GBT_get_alignment_len(gb_main, alignment_name);
@@ -1676,8 +1677,17 @@ static void writeToArb() {
     float *rates   = (float *)GB_calloc(ali_len, sizeof(float)); // rates to export
     char   category_string[1024];
 
-    // fill in rates and categories
+    // check filter has correct length
     {
+        long filter_len = strlen(arb_filter);
+        if (filter_len !=  ali_len) {
+            error = GBS_global_string("Filter length (%li) does not match alignment length (%li)",
+                                      filter_len, ali_len);
+        }
+    }
+
+    // fill in rates and categories
+    if (!error) {
         double  categrate[maxcategories]; // rate of a given category
         int     sitecateg[maxsites+1];    // category of a given site
 
@@ -1712,10 +1722,10 @@ static void writeToArb() {
     }
 
 
-    {
+    if (!error) {
         GBDATA *gb_sai = create_next_SAI();
         if (!gb_sai) {
-            fprintf(stderr, "Error: %s\n", GB_await_error());
+            error = GB_await_error();
         }
         else {
             GBDATA *gb_data = GBT_add_data(gb_sai, alignment_name, "rates", GB_FLOATS);
@@ -1732,7 +1742,11 @@ static void writeToArb() {
         }
     }
 
-    GB_commit_transaction(gb_main);
+    error = GB_end_transaction(gb_main, error);
+    if (error) {
+        fprintf(stderr, "Error in arb_dnarates: %s\n", error);
+    }
+    return !error;
 }
 
 static void openArb(const char *dbname) {
@@ -1947,8 +1961,8 @@ int ARB_main(int argc, char *argv[]) {
         if (!anerror) setupnodex(tr);
         if (!anerror) makeUserRates(tr, infile);
         if (!anerror) {
-            writeToArb();
-            if (dbsavename) saveArb(dbsavename);
+            anerror = !writeToArb();
+            if (!anerror && dbsavename) saveArb(dbsavename);
         }
         closeArb();
         if (!anerror) freeTree(tr);
