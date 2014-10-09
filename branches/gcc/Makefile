@@ -212,12 +212,6 @@ ifeq ($(DEBUG),1)
 
 	gdb_common := -g -g3 -ggdb -ggdb3
 
-ifeq ($(DEVELOPER),RALF)
- ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-	STABS:=1
- endif
-endif
-
 DBGOPTI:=-O0
 ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
 DBGOPTI:=-Og
