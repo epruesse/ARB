@@ -1711,13 +1711,21 @@ static bool writeToArb() {
             i++;
         }
 
-        // write categories
-        char *p = category_string;
-        p[0] = 0;    // if no categs
+        int unfiltered_sites = i-1;
+        if (unfiltered_sites != sites) {
+            error = GBS_global_string("Filter positions (%i) do not match input sequence positions (%i)",
+                                      unfiltered_sites, sites);
+        }
 
-        for (int k = 1; k <= categs; k ++) {
-            sprintf(p, " %G", categrate[categs-k]);
-            p += strlen(p);
+        // write categories
+        if (!error) {
+            char *p = category_string;
+            p[0]    = 0; // if no categs
+
+            for (int k = 1; k <= categs; k ++) {
+                sprintf(p, " %G", categrate[categs-k]);
+                p += strlen(p);
+            }
         }
     }
 
