@@ -1611,9 +1611,9 @@ static void categorize(int    Sites,
     double a = (Categs - 3.0)/log(max_2/min_2);
     double b = - a * log(min_2) + 2.0;
 
-    categrate[0] = min_1;
+    categrate[0]                                      = min_1;
     for (int k = 1; k <= Categs-2; k++)  categrate[k] = min_2 * exp((k-1)/a);
-    categrate[Categs-1] = max_1;
+    if (Categs>0) categrate[Categs-1] = max_1;
 
     for (int i = 1; i <= Sites; i++) {
         if (Weight[i] > 0) {
