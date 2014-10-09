@@ -3,13 +3,16 @@ use strict;
 use warnings;
 
 my $reg_summary     = qr/^UnitTester:.*\stests=([0-9]+)\s/;
-my $reg_interrupted = qr/interrupting.*deadlocked.*test/i;
+my $reg_interrupted = qr/interrupting.*deadlocked.*test/oi;
+my $reg_sanitizer   = qr/error.*addresssanitizer/oi;
 
 sub log_summary($) {
   my ($log) = @_;
-  my $interrupted = 0;
 
-  open(LOG,$log) || die "Failed to read '$log' (Reason: $!)";
+  my $interrupted = 0;
+  my $sanitizer   = 0;
+
+  open(LOG,'<'.$log) || die "Failed to read '$log' (Reason: $!)";
   my $line;
  LINE:  while (defined ($line=<LOG>)) {
     if ($line =~ $reg_summary) {
@@ -44,6 +47,10 @@ sub log_summary($) {
       $interrupted = 1;
       last LINE;
     }
+    elsif ($line =~ $reg_sanitizer) {
+      $sanitizer = 1;
+      last LINE;
+    }
   }
 
   close(LOG);
@@ -65,6 +72,7 @@ sub log_summary($) {
 
   my $msg = 'no summary; crashed?';
   if ($interrupted==1) { $msg = 'interrupted; deadlock?'; }
+  if ($sanitizer==1) { $msg = 'aborted by AddressSanitizer'; }
 
   print "- $module ($msg$extraMsg)\n";
 }
