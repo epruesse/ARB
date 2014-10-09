@@ -190,7 +190,6 @@ ifeq ($(DEBUG),0)
 		cflags := -O3# compiler flags (C and C++)
 	else
 		cflags := -O4# compiler flags (C and C++)
-#		cflags += -ggdb3# uncomment+rebuild to debug/valgrind/backtrace NDEBUG version
 		lflags += -O2# linker flags
 		clflags += -Wl,-O2# passthrough linker flags
 	endif
@@ -761,16 +760,6 @@ endif
 
 # ---------------------------------------- check gcc version
 
-COMPILER_BROKEN=0
-ifeq ('$(COMPILER_VERSION_ALLOWED)', '4.9.0')
-# gcc 4.9.0 produces invalid code (unittest of CONVERTALN crashes if compiled in NDEBUG with optimization>-O0)
-# similar problems seem to be produced by 4.8.2
-# - test in CONVERTALN does not crash or fail, but valgrind reports errors (NDEBUG with optimization>-O0) 
-# - cannot disable atm (4.8.2 is the system compiler in u1404). remove asap - cannot trust generated code!
-# - broken code example: CONVERTALN/global.h@40802
-	COMPILER_BROKEN=1
-endif
-
 check_same_GCC_VERSION:
 		$(ARBHOME)/SOURCE_TOOLS/check_same_compiler_version.pl $(COMPILER_NAME) $(COMPILER_VERSION_ALLOWED)
 
@@ -787,15 +776,10 @@ ifeq ('$(COMPILER_VERSION_ALLOWED)', '')
 		@echo ''
 		@false
 else
-ifeq ($(COMPILER_BROKEN),1)
-		@echo "  - $(COMPILER_NAME) version '$(COMPILER_VERSION_ALLOWED)' is broken. Compilation refused"
-		@false
-else
 		@echo "  - Supported $(COMPILER_NAME) version '$(COMPILER_VERSION_ALLOWED)' detected - fine!"
 		@echo ''
 		$(MAKE) check_same_GCC_VERSION
 
-endif
 endif
 
 #---------------------- check ARBHOME
