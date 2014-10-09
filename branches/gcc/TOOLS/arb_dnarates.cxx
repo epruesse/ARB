@@ -1736,7 +1736,7 @@ static bool writeToArb() {
             error = GB_await_error();
         }
         else {
-            GBDATA *gb_data = GBT_add_data(gb_sai, alignment_name, "rates", GB_FLOATS);
+            GBDATA *gb_data = GBT_add_data(gb_sai, alignment_name, "rates", GB_FLOATS); // @@@ AFAIK not used anywhere
             GB_write_floats(gb_data, rates, ali_len);
 
             gb_data = GBT_add_data(gb_sai, alignment_name, "data", GB_STRING);
