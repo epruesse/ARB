@@ -28,6 +28,8 @@
 # COVERAGE=0/1/2        compile in gcov support (useful together with UNIT_TESTS=1)
 #                       0=no, 1+2=compile in, 1=show
 # STABS=0/1             force stabs format? (0 = "use default format")
+# SANITIZE=0/1          use AddressSanitizer? (defaults to 0)
+# SHOWTODO=0/1          activate TODO-warnings? (defaults to 0, except for ralf)
 #
 # -----------------------------------------------------
 # The ARB source code is aware of the following defines:
@@ -134,7 +136,7 @@ USE_GCC_452_OR_HIGHER:=
 USE_GCC_46_OR_HIGHER:=
 USE_GCC_47_OR_HIGHER:=
 USE_GCC_48_OR_HIGHER:=
-
+USE_GCC_49_OR_HIGHER:=
 
 ifeq ($(USE_GCC_MAJOR),4)
  ifeq ($(USE_GCC_MINOR),5)
@@ -149,6 +151,9 @@ ifeq ($(USE_GCC_MAJOR),4)
     USE_GCC_47_OR_HIGHER:=yes
     ifneq ($(USE_GCC_MINOR),7)
      USE_GCC_48_OR_HIGHER:=yes
+      ifneq ($(USE_GCC_MINOR),8)
+       USE_GCC_49_OR_HIGHER:=yes
+      endif
     endif
    endif
   endif
@@ -158,6 +163,7 @@ else
  USE_GCC_46_OR_HIGHER:=yes
  USE_GCC_47_OR_HIGHER:=yes
  USE_GCC_48_OR_HIGHER:=yes
+ USE_GCC_49_OR_HIGHER:=yes
 endif
 
 #---------------------- define special directories for non standard builds
@@ -204,12 +210,6 @@ ifeq ($(DEBUG),1)
 	dflags := -DDEBUG
 
 	gdb_common := -g -g3 -ggdb -ggdb3
-
-ifeq ($(DEVELOPER),RALF)
- ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-	STABS:=1
- endif
-endif
 
 DBGOPTI:=-O0
 ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
@@ -308,6 +308,8 @@ ifneq ($(DEVELOPER),ANY) # ANY=default setting (skip all developer specific code
 	dflags += -DDEVEL_$(DEVELOPER)# activate developer/release specific code
 endif
 
+#---------------------- activate TODO warnings?
+
 ifndef SHOWTODO
  ifeq ($(DEVELOPER),RALF)
 	SHOWTODO:=1
@@ -317,6 +319,12 @@ ifndef SHOWTODO
 endif
 ifeq ($(SHOWTODO),1)
 	dflags += -DWARN_TODO# activate "TODO" warnings
+endif
+
+#---------------------- activate AddressSanitizer?
+
+ifndef SANITIZE
+ SANITIZE:=0
 endif
 
 #---------------------- 32 or 64 bit
@@ -421,6 +429,22 @@ ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
  cflags += -fno-diagnostics-show-caret#gcc 4.8 (4.7.?)
 endif
 #cflags += -save-temps# uncomment to see preprocessor output
+
+ifeq ($(SANITIZE),1)
+ ifeq ('$(USE_GCC_49_OR_HIGHER)','yes')
+# activate AddressSanitizer
+	cflags += -fsanitize=address -fno-omit-frame-pointer -ggdb3
+	EXECLIBS += -lasan
+#  EXECLIBS += -static-libasan
+ else
+  ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
+   $(error AddressSanitizer not yet tested with gcc 4.8.x)
+  else
+   $(warning AddressSanitizer not usable with gcc $(COMPILER_VERSION))
+   SANITIZE:=0
+  endif
+ endif
+endif
 
 #---------------------- X11 location
 

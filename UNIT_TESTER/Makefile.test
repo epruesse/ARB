@@ -158,7 +158,7 @@ $(TEST_DONE) : $(TEST_EXE)
 ifeq ($(findstring B,$(VALGRIND)),B)
 	$(MAKE) -f Makefile.test do_valgrind
 endif
-	$(TEST_EXE) 
+	ASAN_OPTIONS=handle_segv=0 $(TEST_EXE) 
 ifeq ($(COVERAGE),1)
 	@echo "UnitTester: coverage" # do not remove (used as trigger)
 	@echo "-------------------- test-coverage for $(UNITLIBNAME)"

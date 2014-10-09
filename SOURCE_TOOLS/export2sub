@@ -47,6 +47,7 @@ export CORE_LIB
 export ARBDB_LIB
 export UNIT_TESTS
 export SHOWTODO
+export SANITIZE
 
 # support for clang static checker
 export CLANG_STATIC_CHECKER
