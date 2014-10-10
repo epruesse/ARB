@@ -5,6 +5,7 @@ from ete2 import Tree
 
 class Taxonomy:
     EMPTY_RANK = "-"
+    RANK_UID_DELIM = "@@"
     
     def __init__(self):
         tree_nodes = []
@@ -24,6 +25,18 @@ class Taxonomy:
     def lowest_assigned_rank(ranks):
         rank_level = Taxonomy.lowest_assigned_rank_level(ranks)
         return ranks[rank_level]
+        
+    @staticmethod    
+    def get_rank_uid(ranks, rank_level):
+        return Taxonomy.RANK_UID_DELIM.join(ranks[:rank_level+1])
+
+    @staticmethod    
+    def split_rank_uid(rank_uid, min_lvls=0):
+        ranks = rank_uid.split(Taxonomy.RANK_UID_DELIM)
+        if len(ranks) < min_lvls:
+            return ranks + [Taxonomy.EMPTY_RANK] * (min_lvls - len(ranks))
+        else:
+            return ranks
 
     def get_seq_ranks(self, seq_id):
         return []
@@ -46,6 +59,22 @@ class GGTaxonomyFile(Taxonomy):
         for i in range(len(ranks)):
             new_ranks[i] = ranks[i].lstrip(GGTaxonomyFile.rank_placeholders[i])
         return new_ranks
+
+    @staticmethod
+    def add_prefix(ranks):
+        new_ranks = ['']*len(ranks);
+        for i in range(len(ranks)):
+            new_ranks[i] = GGTaxonomyFile.add_rank_prefix(ranks[i], i)
+        return new_ranks
+
+    @staticmethod
+    def add_rank_prefix(rank_name, rank_level):
+        prefix = GGTaxonomyFile.rank_placeholders[rank_level]
+        if rank_name.startswith(prefix):
+            return rank_name
+        else:
+            return prefix + rank_name
+
 
     @staticmethod
     def lineage_str(ranks, strip_prefix=False):
@@ -166,6 +195,8 @@ class GGTaxonomyFile(Taxonomy):
     def check_for_duplicates(self, autofix=False):
         parent_map = {}
         dups = []
+        old_fixed = {}
+        old_ranks = {}
         for sid, ranks in self.seq_ranks_map.iteritems():
             for i in range(1, len(ranks)):
                 if ranks[i] == Taxonomy.EMPTY_RANK:
@@ -178,11 +209,26 @@ class GGTaxonomyFile(Taxonomy):
                     if self.get_seq_ranks(old_sid)[i-1] != parent:
                         if autofix:
                             orig_name = self.lineage_str(sid)
+                            orig_old_name = self.lineage_str(old_sid)
+
+                            if old_sid not in old_fixed:
+                                old_fixed[old_sid] = self.lineage_str(old_sid)
+                                old_ranks[old_sid] = set([])
+                                
+                            if i not in old_ranks[old_sid]:
+                                self.seq_ranks_map[old_sid][i] += "_" + self.seq_ranks_map[old_sid][i-1]
+                                old_ranks[old_sid].add(i)
+
                             self.seq_ranks_map[sid][i] = ranks[i] + "_" + parent
-                            dup_rec = (old_sid, self.lineage_str(old_sid), sid, orig_name, self.lineage_str(sid))
+                            dup_rec = (old_sid, orig_old_name, sid, orig_name, self.lineage_str(sid))
                         else:
-							dup_rec = (old_sid, self.lineage_str(old_sid), sid, self.lineage_str(sid))
+                            dup_rec = (old_sid, self.lineage_str(old_sid), sid, self.lineage_str(sid))
                         dups.append(dup_rec)
+                        
+        if autofix:
+            for sid, orig_name in old_fixed.iteritems():
+                dup_rec = (sid, orig_name, sid, orig_name, self.lineage_str(sid))
+                dups.append(dup_rec)
 
         return dups
         
@@ -235,6 +281,8 @@ class GGTaxonomyFile(Taxonomy):
         
         
 class TaxTreeBuilder:
+    ROOT_LABEL = "<<root>>"
+
     def __init__(self, config, taxonomy):
         self.tree_nodes = {}
         self.leaf_count = {}
@@ -251,9 +299,9 @@ class TaxTreeBuilder:
             parent_level = rank_level            
             while ranks[parent_level] == Taxonomy.EMPTY_RANK:
                 parent_level -= 1
-            parentId = ranks[parent_level]
+            parentId = Taxonomy.get_rank_uid(ranks, parent_level)
         else:
-            parentId = "root"
+            parentId = TaxTreeBuilder.ROOT_LABEL
             parent_level = -1
 
         if (parentId in self.tree_nodes):
@@ -273,9 +321,9 @@ class TaxTreeBuilder:
             print "Number of nodes: %d" % self.taxonomy.seq_count()
         
         t0 = Tree()
-        t0.add_feature("name", "root")
-        self.tree_nodes["root"] = t0;
-        self.leaf_count["root"] = 0;
+        t0.add_feature("name", TaxTreeBuilder.ROOT_LABEL)
+        self.tree_nodes[TaxTreeBuilder.ROOT_LABEL] = t0;
+        self.leaf_count[TaxTreeBuilder.ROOT_LABEL] = 0;
         k = 0
         added = 0
         seq_ids = []
@@ -316,7 +364,7 @@ class TaxTreeBuilder:
             parent_level = tax_seq_level - 1            
             while ranks[parent_level] == Taxonomy.EMPTY_RANK:
                 parent_level -= 1
-            parent_name = ranks[parent_level]
+            parent_name = Taxonomy.get_rank_uid(ranks, parent_level)
             if parent_name in self.tree_nodes:
                 parent_node = self.tree_nodes[parent_name]
                 # filter by max number of seqs (threshold depends from rank level, 

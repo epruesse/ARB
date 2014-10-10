@@ -125,8 +125,8 @@ sub cpu_get_cores() {
     return $cores;
 }
 
-sub runPythonPipeline($$$$) {
-  my ($seq_file,$tax_file,$dup_rank_names,$wrong_rank_count) = @_;
+sub runPythonPipeline($$$$$) {
+  my ($seq_file,$tax_file,$dup_rank_names,$wrong_rank_count,$rank_test) = @_;
 
   my $refjson_file = 'arb_export.json';
   my $cfg_file = $sativa_home.'/epac.cfg.sativa';
@@ -145,14 +145,17 @@ sub runPythonPipeline($$$$) {
 
   my $bindir = $ENV{'ARBHOME'}."/bin";
   system("ln -fs $bindir/$raxml_exec $bindir/$raxml_alias");
+  system("ln -fs `pwd` $sativa_home/epac/tmp");
 
   my $trainer_cmd = $sativa_home.'/epa_trainer.py';
   system($trainer_cmd, '-t', $tax_file, '-s', $seq_file, '-r', $refjson_file, '-c', $cfg_file, '-T', $cores, '-no-hmmer', 
-	'-dup-rank-names', $dup_rank_names, '-wrong-rank-count', $wrong_rank_count);
+    '-dup-rank-names', $dup_rank_names, '-wrong-rank-count', $wrong_rank_count);
 
   if (-e $refjson_file) {
       my $checker_cmd = $sativa_home.'/find_mislabels.py';
-      system($checker_cmd, '-r', $refjson_file, '-c', $cfg_file, '-T', $cores);
+      my @args = ($checker_cmd, '-r', $refjson_file, '-c', $cfg_file, '-T', $cores, '-v');
+      if ($rank_test == 1) { push(@args, "-ranktest"); }
+      system(@args);
   }
   else {
       die "There was a problem running SATIVA (see messages above). Exiting..."
@@ -165,7 +168,7 @@ sub deleteIfExists($$) {
   my ($father,$key) = @_;
 
   my $gb_field = ARB::entry($father,$key);
-  if (defined $gb_field) {	
+  if (defined $gb_field) {  
     my $error = ARB::delete($gb_field);
     if ($error) { die $error; }
   }
@@ -189,6 +192,7 @@ sub importResults($$$) {
     my $conf = $fields[4];
     my $new_tax = $fields[6];
     $mis_map{$seq_id} = {conf => $conf, new_tax => $new_tax, mis_lvl => $lvl};
+    if (scalar(@fields) == 9) { $mis_map{$seq_id}{'rank_conf'} = $fields[8]; }
   }
   close(FILE);
 
@@ -211,10 +215,14 @@ sub importResults($$$) {
            if ($error) { die $error; }
            $error = BIO::write_string($gb_species, "sativa_tax", $mis_map{$name}{'new_tax'});
            if ($error) { die $error; }
-           $error = BIO::write_float($gb_species, "sativa_conf", $mis_map{$name}{'conf'});
+           $error = BIO::write_float($gb_species, "sativa_seqmis_conf", $mis_map{$name}{'conf'});
            if ($error) { die $error; }
            $error = BIO::write_string($gb_species, "sativa_mislabel_level", $mis_map{$name}{'mis_lvl'});
            if ($error) { die $error; }
+           if (exists $mis_map{$name}{'rank_conf'}) {
+               $error = BIO::write_string($gb_species, "sativa_rankmis_conf", $mis_map{$name}{'rank_conf'});
+               if ($error) { die $error; }
+           }
            
            if ($mark_misplaced==1) { ARB::write_flag($gb_species, 1); }
            $count++; 
@@ -223,9 +231,11 @@ sub importResults($$$) {
            $error = BIO::write_int($gb_species, "sativa_mislabel_flag", 0);
            if ($error) { die $error; }
  
-           deleteIfExists($gb_species, "sativa_tax");
-           deleteIfExists($gb_species, "sativa_conf");
-           deleteIfExists($gb_species, "sativa_mislabel_level");
+#           deleteIfExists($gb_species, "sativa_tax");
+#           deleteIfExists($gb_species, "sativa_conf");
+#           deleteIfExists($gb_species, "sativa_seqmis_conf");
+#           deleteIfExists($gb_species, "sativa_mislabel_level");
+#           deleteIfExists($gb_species, "sativa_misrank_conf");
 
            if ($mark_misplaced==1) { ARB::write_flag($gb_species, 0); }
          }
@@ -243,11 +253,12 @@ sub die_usage($) {
   my ($err) = @_;
   print "Purpose: Run SATIVA taxonomy validation pipeline\n";
   print "and import results back into ARB\n";
-  print "Usage: arb_sativa.pl [--marked-only] [--mark-misplaced] tax_field [species_field]\n";
+  print "Usage: arb_sativa.pl [--marked-only] [--mark-misplaced] [--rank-test] tax_field [species_field]\n";
   print "       tax_field         Field contatining full (original) taxonomic path (lineage)\n";
   print "       species_field     Field containing species name\n";
   print "       --marked-only     Process only species that are marked in ARB (default: process all)\n";
   print "       --mark-misplaced  Mark putatively misplaced species in ARB upon completion\n";
+  print "       --rank-test       Test for misplaced higher ranks\n";
   print "\n";
   die "Error: $err\n";
 }
@@ -262,11 +273,13 @@ sub main() {
 
   my $marked_only = 0;
   my $mark_misplaced = 0;
+  my $rank_test = 0;
 
   while (substr($ARGV[0],0,2) eq '--') {
     my $arg = shift @ARGV;
     if ($arg eq '--marked-only') { $marked_only = 1; }
     elsif ($arg eq '--mark-misplaced') { $mark_misplaced = 1; }
+    elsif ($arg eq '--rank-test') { $rank_test = 1; }
     else { die_usage("Unknown switch '$arg'"); }
     $args--;
   }
@@ -280,7 +293,7 @@ sub main() {
 
   exportTaxonomy($seq_file,$tax_file,$tax_field,$species_field,$marked_only,@marklist);
 
-  runPythonPipeline($seq_file,$tax_file,$dup_rank_names,$wrong_rank_count);
+  runPythonPipeline($seq_file,$tax_file,$dup_rank_names,$wrong_rank_count,$rank_test);
 
   importResults($res_file,$marked_only,$mark_misplaced);
   

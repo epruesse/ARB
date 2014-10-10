@@ -1,7 +1,7 @@
 menu:Print
 
 item:Validate taxonomy (SATIVA)
-itemmethod: (mkdir -p ~/.arb_tmp/$$; cd ~/.arb_tmp/$$ ; arb_convert_aln --arb-notify -GenBank TmpInputFile -phylip sativa_in.phy; ${ARB_XCMD} bash -x -c @@LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; arb_sativa.pl $MARKEDONLY $MARKMIS $TAXFIELD $SPECIESFIELD $DUPRANKS $BADRANKS; arb_wait@@; cd ~/.arb_tmp; rm -rf $$) & 
+itemmethod: (mkdir -p ~/.arb_tmp/$$; cd ~/.arb_tmp/$$ ; arb_convert_aln --arb-notify -GenBank TmpInputFile -phylip sativa_in.phy; ${ARB_XCMD} bash -x -c @@LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; arb_sativa.pl $MARKEDONLY $MARKMIS $RANKTEST $TAXFIELD $SPECIESFIELD $DUPRANKS $BADRANKS; arb_wait@@; cd ~/.arb_tmp; rm -rf $$) & 
 seqtype:*
 itemmeta:v
 itemhelp:raxml.help
@@ -24,6 +24,12 @@ argtype:choice_menu
 argchoice:Yes:--mark-misplaced
 argchoice:No:
 
+arg:RANKTEST
+arglabel:Test for misplaced higher ranks ?
+argtype:choice_menu
+argchoice:No:
+argchoice:Yes:--rank-test
+
 arg:TAXFIELD
 arglabel:Taxonomy path field
 argtype:text
@@ -37,6 +43,7 @@ argtext:fullname_ltp
 arg:DUPRANKS
 arglabel:Action for non-unique rank names
 argtype:choice_menu
+argchoice:Ignore:ignore
 argchoice:Auto-rename:autofix
 argchoice:Report and exit:abort
 argchoice:Skip sequences:skip
