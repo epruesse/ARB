@@ -323,7 +323,8 @@ endif
 
 #---------------------- activate AddressSanitizer?
 
-ASAN_OPTIONS=handle_segv=0:color=0
+//ASAN_OPTIONS:=handle_segv=0:color=0
+ASAN_OPTIONS:=handle_segv=0:detect_leaks=1:color=0
 
 ifndef SANITIZE
  SANITIZE:=0
@@ -1284,12 +1285,12 @@ addlibs:
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
 %.proto:
-	@$(MAKE) -C $(@D) \
+	@($(MAKE) -C $(@D) \
 		"AUTODEPENDS=0" \
 		"MAIN=nothing" \
 		"cflags=noCflags" \
 		"cxxflags=noCxxflags" \
-		proto
+		proto 2>&1 ) | $(ARBHOME)/SOURCE_TOOLS/asan2msg.pl
 
 %.clean:
 	@$(MAKE) -C $(@D) \
