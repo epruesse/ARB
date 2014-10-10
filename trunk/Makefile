@@ -431,18 +431,14 @@ endif
 #cflags += -save-temps# uncomment to see preprocessor output
 
 ifeq ($(SANITIZE),1)
- ifeq ('$(USE_GCC_49_OR_HIGHER)','yes')
+ ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
 # activate AddressSanitizer
-	cflags += -fsanitize=address -fno-omit-frame-pointer -ggdb3
-	EXECLIBS += -lasan
+  cflags += -fsanitize=address -fno-omit-frame-pointer -ggdb3
+  EXECLIBS += -lasan
 #  EXECLIBS += -static-libasan
  else
-  ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-   $(error AddressSanitizer not yet tested with gcc 4.8.x)
-  else
-   $(warning AddressSanitizer not usable with gcc $(COMPILER_VERSION))
-   SANITIZE:=0
-  endif
+  $(info AddressSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
+  SANITIZE:=0
  endif
 endif
 

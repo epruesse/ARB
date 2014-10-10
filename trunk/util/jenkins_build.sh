@@ -48,7 +48,7 @@ case $MODE in
   RELEASE)
     DEVELOPER="RELEASE"
     UNIT_TESTS=0
-    SANITIZE=0# never sanitize release! 
+    SANITIZE=0 # never sanitize release!
     ;;
   *)
     echo "Error: unknown MODE '$MODE' passed to jenkins_build.sh"
