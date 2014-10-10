@@ -323,6 +323,8 @@ endif
 
 #---------------------- activate AddressSanitizer?
 
+ASAN_OPTIONS=handle_segv=0:color=0
+
 ifndef SANITIZE
  SANITIZE:=0
 endif
