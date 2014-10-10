@@ -1,0 +1,2 @@
+This directory contains flags indicating the setup-status of global test-environments.
+see ../TestEnvironment.cxx@flagFileName
