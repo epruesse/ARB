@@ -152,7 +152,7 @@ sub dump_log($) {
       }
     }
     else {
-      if ($line =~ /AddressSanitizer/o) {
+      if ($line =~ /(AddressSanitizer|LeakSanitizer)/o) {
         $seen_AS = 1;
         if (defined $topdir) { print('fake[2]: Entering directory `'.$topdir."\'\n"); }
       }
@@ -277,7 +277,7 @@ sub parse_log($\@) {
     elsif (/^-+\s+(ARB-backtrace.*):$/) {
       $last_error_message = $1;
     }
-    elsif (/ERROR:\s*AddressSanitizer:\s*/o) {
+    elsif (/ERROR:\s*(AddressSanitizer|LeakSanitizer):\s*/o) {
       $last_error_message = $';
       $seenSanitized++;
     }
@@ -311,7 +311,7 @@ sub parse_log($\@) {
     print "$ARBHOME/UNIT_TESTER/$log:1:0: Warning: No summary found in '$log' ";
     if ($seenSanitized>0) {
       $sanitized++;
-      print "(was aborted by AddressSanitizer)\n";
+      print "(was aborted by Sanitizer)\n";
     }
     else {
       $crashed++;
