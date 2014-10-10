@@ -236,14 +236,14 @@ static Word *word_alloc(const char *s)
     return w;
 }
 
-static void word_free(Word *w)
-{
-    Word *oldw;
+static void word_free(Word*& word) {
+    Word *w = word;
     while (w) {
-        oldw = w;
+        Word *oldw = w;
         w = w->next;
         free(oldw);
     }
+    word = NULL;
 }
 
 static int List_len(Word *w) {
@@ -961,16 +961,18 @@ static Word *getparamlist(FILE *f) {
     // Get a parameter list; when this is called the next symbol in line
     // should be the first thing in the list.
 
-    static Word *pname[MAXPARAM];                   // parameter names
-    Word        *tlist;                             // type name
-    Word        *plist;                             // temporary
-    int          np      = 0;                       // number of parameters
-    int          typed[MAXPARAM];                   // parameter has been given a type
-    int          tlistdone;                         // finished finding the type name
-    int          sawsomething;
-    int          i;
-    int          inparen = 0;
-    char         buf[80];
+    Word *pname[MAXPARAM];                   // parameter names
+    Word *tlist   = NULL;                    // type name
+    Word *plist;                             // temporary
+    int   np      = 0;                       // number of parameters
+    int   typed[MAXPARAM];                   // parameter has been given a type
+    int   tlistdone;                         // finished finding the type name
+    int   sawsomething;
+    int   i;
+    int   inparen = 0;
+    char  buf[80];
+
+    Word *result = NULL;
 
     DEBUG_PRINT("in getparamlist\n");
     for (i = 0; i < MAXPARAM; i++)
@@ -982,17 +984,20 @@ static Word *getparamlist(FILE *f) {
 
     sawsomething = 0;                               // gets set nonzero when we see an arg
     for (;;) {
-        if (getsym(buf, f) < 0) return NULL;
+        if (getsym(buf, f) < 0) {
+            goto cleanup;
+        }
         if (*buf == ')' && (--inparen < 0)) {
             if (sawsomething) {                     // if we've seen an arg
                 pname[np] = plist;
-                plist = word_alloc(""); // @@@ Value stored to 'plist' is never read 
+                plist = word_alloc(""); // @@@ Value stored to 'plist' is never read
                 np++;
             }
             break;
         }
         if (*buf == ';') {                          // something weird
-            return ABORTED;
+            result = ABORTED;
+            goto cleanup;
         }
         sawsomething = 1;                           // there's something in the arg. list
         if (*buf == ',' && inparen == 0) {
@@ -1005,21 +1010,28 @@ static Word *getparamlist(FILE *f) {
             if (*buf == '(') inparen++;
         }
     }
-
+    
     // next, get the declarations after the function header
 
     inparen = 0;
 
+    word_free(plist);
+
     tlist = word_alloc("");
     plist = word_alloc("");
-    tlistdone = 0;
+
+    tlistdone    = 0;
     sawsomething = 0;
+
     for (;;) {
-        if (getsym(buf, f) < 0) return NULL;
+        if (getsym(buf, f) < 0) {
+            goto cleanup;
+        }
 
         if (*buf == ',' && !inparen) {              // handle a list like "int x,y,z"
-            if (!sawsomething)
-                return NULL;
+            if (!sawsomething) {
+                goto cleanup;
+            }
             for (i = 0; i < np; i++) {
                 if (!typed[i] && foundin(plist, pname[i])) {
                     typed[i] = 1;
@@ -1031,15 +1043,18 @@ static Word *getparamlist(FILE *f) {
                 }
             }
             if (!tlistdone) {
-                tlist = typelist(plist);
+                word_free(tlist);
+                tlist     = typelist(plist);
                 tlistdone = 1;
             }
             word_free(plist);
             plist = word_alloc("");
         }
         else if (*buf == ';') {                     // handle the end of a list
-            if (!sawsomething)
-                return ABORTED;
+            if (!sawsomething) {
+                result = ABORTED;
+                goto cleanup;
+            }
             for (i = 0; i < np; i++) {
                 if (!typed[i] && foundin(plist, pname[i])) {
                     typed[i] = 1;
@@ -1050,7 +1065,8 @@ static Word *getparamlist(FILE *f) {
                 }
             }
             tlistdone = 0;
-            word_free(tlist); word_free(plist);
+            word_free(tlist);
+            word_free(plist);
             tlist = word_alloc("");
             plist = word_alloc("");
         }
@@ -1065,8 +1081,14 @@ static Word *getparamlist(FILE *f) {
 
     // Now take the info we have and build a prototype list
 
+    word_free(plist);
+    word_free(tlist);
+
     // empty parameter list means "void"
-    if (np == 0) return word_alloc("void");
+    if (np == 0) {
+        result = word_alloc("void");
+        goto cleanup;
+    }
 
     plist = tlist = word_alloc("");
 
@@ -1117,7 +1139,9 @@ static Word *getparamlist(FILE *f) {
             }
 
             while (tlist->next) tlist = tlist->next;
-            tlist->next               = pname[i];
+
+            tlist->next = pname[i];
+            pname[i]    = NULL;
 
 #if !defined(AUTO_INT)
             if (add_dummy_name) {
@@ -1133,7 +1157,19 @@ static Word *getparamlist(FILE *f) {
         }
     }
 
-    return plist;
+    result = plist;
+    plist  = NULL;
+    tlist  = NULL;
+
+  cleanup:
+
+    word_free(plist);
+    word_free(tlist);
+    for (int n = 0; n<np; ++n) {
+        word_free(pname[n]);
+    }
+
+    return result;
 }
 
 inline Word *getLastPtrRef(Word *w) {
@@ -1320,7 +1356,7 @@ static void emit(Word *wlist, Word *plist, long startline) {
 static void getdecl(FILE *f, const char *header) {
     // parse all function declarations and print to STDOUT
 
-    Word *plist, *wlist  = NULL;
+    Word *wlist  = NULL;
     char  buf[80];
     int   sawsomething;
     long  startline;                                // line where declaration started
@@ -1329,10 +1365,12 @@ static void getdecl(FILE *f, const char *header) {
 
     current_file = strdup(header);
 
- again :
+  again :
     DEBUG_PRINT("again\n");
+
     word_free(wlist);
-    wlist         = word_alloc("");
+    wlist = word_alloc("");
+
     sawsomething  = 0;
     oktoprint     = 1;
     extern_c_seen = 0;
@@ -1341,7 +1379,7 @@ static void getdecl(FILE *f, const char *header) {
         DEBUG_PRINT("main getdecl loop\n");
         if (getsym(buf, f) < 0) {
             DEBUG_PRINT("EOF in getdecl loop\n");
-            return;
+            goto end;
         }
 
         DEBUG_PRINT("getdecl: '");
@@ -1366,7 +1404,7 @@ static void getdecl(FILE *f, const char *header) {
         if (strcmp(buf, "extern")==0) {
             if (getsym(buf, f)<0) {
                 DEBUG_PRINT("EOF in getdecl loop\n");
-                return;
+                goto end;
             }
 
             DEBUG_PRINT("test auf extern \"C\": '");
@@ -1397,7 +1435,7 @@ static void getdecl(FILE *f, const char *header) {
             while (!seen_static_or_inline) {
                 if (getsym(buf, f)<0) {
                     DEBUG_PRINT("EOF in getdecl loop (behind prefix __ATTR__)\n");
-                    return;
+                    goto end;
                 }
                 if (strcmp(buf, "static") == 0 || strcmp(buf, "inline") == 0) {
                     seen_static_or_inline = true;
@@ -1421,7 +1459,8 @@ static void getdecl(FILE *f, const char *header) {
 
         // A left parenthesis *might* indicate a function definition
         if (strcmp(buf, "(")==0) {
-            startline = linenum;
+            startline   = linenum;
+            Word *plist = NULL;
             if (!sawsomething || !(plist = getparamlist(f))) {
                 skipit(buf, f);
                 goto again;
@@ -1460,6 +1499,9 @@ static void getdecl(FILE *f, const char *header) {
         addword(wlist, buf);
         sawsomething = 1;
     }
+
+  end:
+    word_free(wlist);
 }
 
 __ATTR__NORETURN static void Usage(const char *msg = NULL) {
@@ -1663,7 +1705,7 @@ int ARB_main(int argc, char *argv[]) {
         }
     }
 
-    current_dir = strdup(getcwd(0, 255));
+    current_dir = getcwd(0, 255);
     if (argc == 0) {
         getdecl(stdin, "<from stdin>");
     }
