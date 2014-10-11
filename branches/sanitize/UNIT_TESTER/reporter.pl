@@ -281,6 +281,9 @@ sub parse_log($\@) {
       $last_error_message = $';
       $seenSanitized++;
     }
+    elsif (/\s+runtime\s+error:\s+/o) {
+      $dump_log = 1;
+    }
   }
   close(LOG);
 

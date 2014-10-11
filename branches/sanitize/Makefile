@@ -28,7 +28,7 @@
 # COVERAGE=0/1/2        compile in gcov support (useful together with UNIT_TESTS=1)
 #                       0=no, 1+2=compile in, 1=show
 # STABS=0/1             force stabs format? (0 = "use default format")
-# SANITIZE=0/1          use AddressSanitizer? (defaults to 0)
+# SANITIZE=0/1/2        use Sanitizer? (defaults to 0, 1=AddressSanitizer+LeakSanitizer, 2=UndefinedBehaviorSanitizer)
 # SHOWTODO=0/1          activate TODO-warnings? (defaults to 0, except for ralf)
 #
 # -----------------------------------------------------
@@ -433,10 +433,14 @@ ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
 endif
 #cflags += -save-temps# uncomment to see preprocessor output
 
+#---------------------- various sanitizers
+
+COMMON_SANITIZE_FLAGS:=-ggdb3 -fno-omit-frame-pointer
+
+# activate AddressSanitizer+LeakSanitizer?
 ifeq ($(SANITIZE),1)
  ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-# activate AddressSanitizer
-  cflags += -fsanitize=address -fno-omit-frame-pointer -ggdb3
+  cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=address
   EXECLIBS += -lasan
 #  EXECLIBS += -static-libasan
   ifneq ('$(USE_GCC_49_OR_HIGHER)','yes')
@@ -444,6 +448,17 @@ ifeq ($(SANITIZE),1)
   endif
  else
   $(info AddressSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
+  SANITIZE:=0
+ endif
+endif
+
+# activate UndefinedBehaviorSanitizer?
+ifeq ($(SANITIZE),2)
+ ifeq ('$(USE_GCC_49_OR_HIGHER)','yes')
+  cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
+  EXECLIBS += -lubsan
+ else
+  $(info UndefinedBehaviorSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
   SANITIZE:=0
  endif
 endif
