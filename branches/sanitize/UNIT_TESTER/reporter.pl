@@ -296,6 +296,7 @@ sub parse_log($\@) {
   }
 
   if (not $seenSummary) { $dump_log = 1; }
+  if ($seenSanitized>0) { $dump_log = 1; }
 
   if ($dump_log==1) {
     dump_log($log);

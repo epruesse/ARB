@@ -323,7 +323,7 @@ endif
 
 #---------------------- activate AddressSanitizer?
 
-//ASAN_OPTIONS:=handle_segv=0:color=0
+# ASAN_OPTIONS:=handle_segv=0:color=0
 ASAN_OPTIONS:=handle_segv=0:detect_leaks=1:color=0
 
 ifndef SANITIZE
@@ -439,6 +439,9 @@ ifeq ($(SANITIZE),1)
   cflags += -fsanitize=address -fno-omit-frame-pointer -ggdb3
   EXECLIBS += -lasan
 #  EXECLIBS += -static-libasan
+  ifneq ('$(USE_GCC_49_OR_HIGHER)','yes')
+   $(warning note that LeakSanitizer does not work with gcc $(COMPILER_VERSION))
+  endif
  else
   $(info AddressSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
   SANITIZE:=0

@@ -1262,11 +1262,18 @@ void TEST_leak_detection() {
     }
 
     TEST_EXPECT_EQUAL(sum, LEN);
+    TEST_EXPECT_CONTAINS(getenv("ASAN_OPTIONS"), "detect_leaks=1");
 
     // dont free
-    // free(p);
+#if 0
+    free(p);
+    free(p); // free twice
+#endif
 
     // leak is detected by valgrind (gcc 4.4.3, DEBUG=1, SANITIZE=0)
+
+    // gcc 4.8.0 + 4.8.3, DEBUG = 0, SANITIZE=1: LeakSanitizer does NOT detect leak
+    // gcc 4.9.0 + 4.9.1, DEBUG = 0, SANITIZE=1: LeakSanitizer does detect leak
 }
 
 
