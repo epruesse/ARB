@@ -1,5 +1,0 @@
-# libraries needed to link against SECEDIT/SECEDIT.a
-
-lib/libAWT.so
-SL/PRONUC/PRONUC.a
-SL/HELIX/HELIX.a
