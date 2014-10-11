@@ -1248,6 +1248,28 @@ void TEST_char_table() {
     BK = 0;
 }
 
+void TEST_leak_detection() {
+    // doesn't test anything, just leaks some memory
+
+    const int LEN = 1000;
+
+    char *p = (char*)malloc(LEN);
+    memset(p, 1, LEN);
+
+    int sum = 0;
+    for (int i = 0; i<LEN; ++i) {
+        sum += p[i];
+    }
+
+    TEST_EXPECT_EQUAL(sum, LEN);
+
+    // dont free
+    // free(p);
+
+    // leak is detected by valgrind (gcc 4.4.3, DEBUG=1, SANITIZE=0)
+}
+
+
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
