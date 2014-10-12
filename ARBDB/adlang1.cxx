@@ -742,10 +742,15 @@ static GB_ERROR gbl_origin(GBL_command_arguments *args) {
 }
 
 class Tab {
+#if (GCC_PATCHLEVEL_CODE == 40800)
+    uint8_t tab[256]; // same problem as fixed in [13041]
+#else // !defined(GCC_PATCHLEVEL_CODE)
     bool tab[256];
+#endif
 public:
     Tab(bool take, const char *invert) {
         bool init = !take;
+
         for (int i = 0; i<256; ++i) tab[i] = init;
         for (int i = 0; invert[i]; ++i) tab[safeCharIndex(invert[i])] = take;
     }
