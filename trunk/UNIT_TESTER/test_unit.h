@@ -268,6 +268,19 @@ namespace arb_test {
         operator const char *() const { return t.value(); }
     };
 
+#if (GCC_PATCHLEVEL_CODE == 40800)
+    // gcc 4.8.0 has some serious problem with bool <> int conversion and/or bool references
+    // test failures reported in #617 for unit PROBE were caused by two different 'truenesses' (both true, but not equal)
+    template <>
+    class copy<bool> {
+        int t; // works
+        // bool t; // makes tests fail again
+    public:
+        copy(bool t_) : t(t_) {}
+        operator bool() const { return t; }
+    };
+#endif
+
     template <typename T> class copy< copy<T> > { copy(const copy<T>& t_); }; // avoid copies of copies
 
     template <typename T> inline copy<T> make_copy(const T& t) { return copy<T>(t); }
