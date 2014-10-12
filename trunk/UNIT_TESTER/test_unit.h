@@ -21,8 +21,11 @@
 #ifndef _GLIBCXX_CSTDARG
 #include <cstdarg>
 #endif
-#ifndef _CPP_CSTDLIB
+#ifndef _GLIBCXX_CSTDLIB
 #include <cstdlib>
+#endif
+#ifndef _GLIBCXX_CSTDINT
+#include <cstdint>
 #endif
 #ifndef ERRNO_H
 #include <errno.h>
@@ -273,7 +276,7 @@ namespace arb_test {
     // test failures reported in #617 for unit PROBE were caused by two different 'truenesses' (both true, but not equal)
     template <>
     class copy<bool> {
-        int t; // works
+        uint8_t t; // works
         // bool t; // makes tests fail again
     public:
         copy(bool t_) : t(t_) {}
