@@ -388,7 +388,7 @@ GBDATA *gb_find_by_nr(GBCONTAINER *father, int index) {
 }
 
 class keychar_table {
-    bool table[256];
+    safebool table[256];
 public:
     keychar_table() {
         for (int i=0; i<256; i++) {

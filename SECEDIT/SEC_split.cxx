@@ -403,7 +403,7 @@ GB_ERROR SEC_root::unsplit_loop(SEC_helix_strand *remove_strand) {
         sec_assert(after[s]->get_loop() == loop[s]);
     }
 
-    bool is_terminal_loop[2] = { before[0] == after[0], before[1] == after[1] };
+    safebool is_terminal_loop[2] = { before[0] == after[0], before[1] == after[1] };
     int  i0      = -1;          // index of terminal loop (or -1)
     bool unsplit = true;
 

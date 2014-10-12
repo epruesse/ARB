@@ -71,8 +71,8 @@ AP_filter::AP_filter(const char *ifilter, const char *zerobases, size_t size) {
     else {
         init(size);
 
-        bool   char2mask[256];
-        size_t i;
+        safebool char2mask[256];
+        size_t   i;
 
         for (i = 0; i<256; ++i) char2mask[i] = true;
         if (zerobases) {

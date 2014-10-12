@@ -64,12 +64,12 @@ void awt_create_aww_vars(AW_root *aw_root, AW_default aw_def) {
     const int EXAMPLE_COUNT  = ARRAY_ELEMS(example);
     STATIC_ASSERT(EXAMPLE_COUNT <= WWW_COUNT);
 
-    bool example_url_seen[EXAMPLE_COUNT];
+    safebool example_url_seen[EXAMPLE_COUNT];
     for (int x = 0; x<EXAMPLE_COUNT; ++x) example_url_seen[x] = false;
 
-    AW_awar *awar_templ[WWW_COUNT];
-    AW_awar *awar_descr[WWW_COUNT];
-    bool     is_empty[WWW_COUNT];
+    AW_awar  *awar_templ[WWW_COUNT];
+    AW_awar  *awar_descr[WWW_COUNT];
+    safebool  is_empty[WWW_COUNT];
 
     for (int i = 0; i<WWW_COUNT; ++i) {
         const Example&  curr = i<EXAMPLE_COUNT ? example[i] : empty;

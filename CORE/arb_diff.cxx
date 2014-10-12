@@ -32,7 +32,7 @@ class difflineMode : virtual Noncopyable {
     int mode;
 
     GBS_regex  *reg[MAX_REGS];
-    bool        wordsOnly[MAX_REGS]; // only match if regexpr hits a word
+    safebool    wordsOnly[MAX_REGS];     // only match if regexpr hits a word
     const char *replace[MAX_REGS];
 
     int              count;
