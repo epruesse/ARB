@@ -34,8 +34,8 @@
 
 typedef XFontStruct *PIX_FONT;
 
-static bool openwinfonts;
-static bool is_scalable[AW_NUM_FONTS];     // whether the font is scalable
+static bool     openwinfonts;
+static safebool is_scalable[AW_NUM_FONTS];     // whether the font is scalable
 
 // defines the preferred xfontsel-'rgstry' values (most wanted first)
 

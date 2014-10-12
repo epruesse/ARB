@@ -18,6 +18,9 @@
 #ifndef _GLIBCXX_STRING
 #include <string>
 #endif
+#ifndef GCCVER_H
+#include <gccver.h>
+#endif
 
 #if defined(DEBUG)
 #ifndef _GLIBCXX_CSTDIO
@@ -32,8 +35,8 @@
 // use one instance for one set of hotkeys
 class awt_hotkeys {
 private:
-    bool used[26];
-    bool USED[26];
+    safebool used[26];
+    safebool USED[26];
     char artificial;
     char current[2];
 

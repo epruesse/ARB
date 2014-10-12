@@ -133,7 +133,7 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
     long        options_vector[OPT_COUNT];
     const char *real_chars, *low_chars, *rest_chars;
     char        all_chars[100], *sequence_bufferi, *sequence_bufferj;
-    bool        compare[256];
+    safebool    compare[256];
     AP_FLOAT    number_of_comparisons;
     bool        bases_used = true;                      // rna oder dna sequence : nur zum testen und Entwicklung
 

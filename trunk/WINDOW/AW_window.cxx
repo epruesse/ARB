@@ -3030,8 +3030,8 @@ void AW_window::TuneBackground(Widget w, int modStrength) {
     aw_assert(mod >= 0 && mod < 128);
     // illegal modification
 
-    bool incPossible[3]; // increment possible for color
-    bool decPossible[3]; // decrement possible for color
+    safebool incPossible[3]; // increment possible for color
+    safebool decPossible[3]; // decrement possible for color
     int incs = 0; // count possible increments
     int decs = 0; // count possible decrements
 

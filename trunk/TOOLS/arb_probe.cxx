@@ -609,7 +609,7 @@ int ARB_main(int argc, char *argv[]) {
 #endif
 
 static int test_setup(bool use_gene_ptserver) {
-    static bool setup[2] = { false, false };
+    static safebool setup[2] = { false, false };
     if (!setup[use_gene_ptserver]) {
         TEST_SETUP_GLOBAL_ENVIRONMENT(use_gene_ptserver ? "ptserver_gene" : "ptserver"); // first call will recreate the test pt-server
         setup[use_gene_ptserver] = true;
