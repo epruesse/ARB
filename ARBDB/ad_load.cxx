@@ -1296,7 +1296,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
     int            ignoreMissingMaster = 0;
     int            loadedQuickIndex    = -1;
     GB_ERROR       error               = 0;
-    char          *path                = strdup(cpath);
+    char          *path                = strdup(cpath?cpath:"");
     bool           dbCreated           = false;
 
     gb_assert(strchr(opent, 'd') == NULL); // mode 'd' is deprecated. You have to use 'D' and store your defaults inside ARBHOME/lib/arb_default
@@ -1436,7 +1436,9 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                         dbCreated = true;
                     }
 
-                    if (dbCreated) printf(" database %s created\n", path);
+                    if (dbCreated) {
+                        fprintf(stderr, "Created new database \"%s\".\n", path);
+                    }
                 }
                 else {
                     error = GBS_global_string("Database '%s' not found", path);
