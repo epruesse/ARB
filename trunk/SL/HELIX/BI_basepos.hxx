@@ -28,7 +28,7 @@
 typedef bool (*char_predicate_fun)(char);
 
 class CharPredicate { // general predicate for char
-    safebool isTrue[256];
+    bool isTrue[256];
 public:
     explicit CharPredicate(char_predicate_fun is_true) {
         for (int i = 0; i<256; ++i) {

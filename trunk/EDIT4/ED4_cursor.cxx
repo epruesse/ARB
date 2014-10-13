@@ -327,7 +327,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
         }
     }
 
-    safebool refresh_was_requested[MAX_AFFECTED];
+    bool refresh_was_requested[MAX_AFFECTED];
     e4_assert(affected >= 1 && affected <= MAX_AFFECTED);
     for (int a = 0; a<affected; ++a) {
         ED4_terminal *term       = affected_terminal[a];

@@ -780,6 +780,13 @@ endif
 
 # ---------------------------------------- check gcc version
 
+COMPILER_BROKEN:=0
+
+# gcc 4.8.0 produces invalid code (see #617)
+ifeq ('$(COMPILER_VERSION_ALLOWED)', '4.8.0') 
+COMPILER_BROKEN:=1
+endif
+
 check_same_GCC_VERSION:
 		$(ARBHOME)/SOURCE_TOOLS/check_same_compiler_version.pl $(COMPILER_NAME) $(COMPILER_VERSION_ALLOWED)
 
@@ -793,13 +800,15 @@ ifeq ('$(COMPILER_VERSION_ALLOWED)', '')
 		@echo '    - add your version to ALLOWED_$(COMPILER_NAME)_VERSIONS in the Makefile and try it out or'
 		@echo '    - switch to one of the allowed versions (see arb_README_gcc.txt for installing'
 		@echo '      a different version of gcc)'
-		@echo ''
-		@false
+		$(error Unsupported compiler '$(COMPILER_NAME)' version '$(COMPILER_VERSION)')
 else
+ifeq ($(COMPILER_BROKEN),1)
+		$(error $(COMPILER_NAME) version '$(COMPILER_VERSION_ALLOWED)' would build a broken ARB version. Compilation refused)
+else 
 		@echo "  - Supported $(COMPILER_NAME) version '$(COMPILER_VERSION_ALLOWED)' detected - fine!"
 		@echo ''
 		$(MAKE) check_same_GCC_VERSION
-
+endif
 endif
 
 #---------------------- check ARBHOME

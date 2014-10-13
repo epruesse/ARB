@@ -34,17 +34,6 @@
 # error Wrong compiler version (need at least gcc 4.3 or clang 4.2)
 #endif
 
-// -------------------------
-//      workaround bugs
-
-// gcc 4.8.0 has problems when bool is used as pod-array and in some classes
-#if (GCC_PATCHLEVEL_CODE == 40800)
-typedef unsigned char safebool;
-#else // not 4.8.0
-typedef bool safebool;
-#endif
-
-
 #else
 #error gccver.h included twice
 #endif // GCCVER_H

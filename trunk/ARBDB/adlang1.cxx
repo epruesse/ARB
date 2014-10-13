@@ -742,11 +742,10 @@ static GB_ERROR gbl_origin(GBL_command_arguments *args) {
 }
 
 class Tab {
-    safebool tab[256];
+    bool tab[256];
 public:
     Tab(bool take, const char *invert) {
         bool init = !take;
-
         for (int i = 0; i<256; ++i) tab[i] = init;
         for (int i = 0; invert[i]; ++i) tab[safeCharIndex(invert[i])] = take;
     }

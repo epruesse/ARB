@@ -15,6 +15,7 @@
 #include "awt_hotkeys.hxx"
 #include <cctype>
 
+
 using namespace std;
 
 const char* awt_hotkeys::artificial_hotkey() {

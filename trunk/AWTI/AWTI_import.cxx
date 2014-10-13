@@ -47,7 +47,7 @@ static GB_ERROR not_in_match_error(const char *cmd) {
     return GBS_global_string("Command '%s' may only appear after 'MATCH'", cmd);
 }
 
-static GB_ERROR read_import_format(const char *fullfile, import_format *ifo, safebool *var_set, bool included) {
+static GB_ERROR read_import_format(const char *fullfile, import_format *ifo, bool *var_set, bool included) {
     GB_ERROR  error = 0;
     FILE     *in    = fopen(fullfile, "rt");
 
@@ -196,7 +196,7 @@ GB_ERROR ArbImporter::read_format(const char *file) {
     delete ifo;
     ifo = new import_format;
 
-    safebool var_set[IFS_VARIABLES];
+    bool var_set[IFS_VARIABLES];
     for (int i = 0; i<IFS_VARIABLES; i++) var_set[i] = false;
 
     GB_ERROR error = read_import_format(fullfile, ifo, var_set, false);

@@ -133,7 +133,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
     if (!error) {
         arb_progress progress("Translating", GBT_count_marked_species(gb_main));
 
-        safebool table_used[AWT_CODON_TABLES];
+        bool table_used[AWT_CODON_TABLES];
         memset(table_used, 0, sizeof(table_used));
         selected_ttable = *GBT_read_int(gb_main, AWAR_PROTEIN_TYPE); // read selected table
 

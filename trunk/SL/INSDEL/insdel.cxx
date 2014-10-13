@@ -329,7 +329,7 @@ public:
 // --------------------------------------------------------------------------------
 
 class Deletable { // define characters allowed to delete (only applicable to TypedAliData<char>)
-    safebool deletable[256];
+    bool deletable[256];
 
     void init(bool val) {
         for (int i = 0; i<256; ++i) {
