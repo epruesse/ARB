@@ -27,6 +27,7 @@ use ARB;
 use tools;
 
 my $sativa_home = $ENV{'ARBHOME'}.'/bin/sativa';
+my ($start_time, $trainer_time, $mislabels_time);
 
 # ------------------------------------------------------------
 
@@ -134,28 +135,25 @@ sub runPythonPipeline($$$$$) {
   # auto-configure RAxML
   my $cores = cpu_get_cores();
 
-  my $raxml_alias = "raxmlHPC8-sativa";
-  my $raxml_exec = "raxmlHPC8-sativa-PTHREADS";
-  if (cpu_has_feature("avx")==1) {
-      $raxml_exec = "raxmlHPC8-sativa-AVX.PTHREADS";
-  } 
-  elsif (cpu_has_feature("sse3")==1) {
-      $raxml_exec = "raxmlHPC8-sativa-SSE3.PTHREADS";
-  }
-
   my $bindir = $ENV{'ARBHOME'}."/bin";
-  system("ln -fs $bindir/$raxml_exec $bindir/$raxml_alias");
-  system("ln -fs `pwd` $sativa_home/epac/tmp");
+  my $tmpdir = `pwd`;
+  chomp($tmpdir);
+
+  my $stime = time;
 
   my $trainer_cmd = $sativa_home.'/epa_trainer.py';
   system($trainer_cmd, '-t', $tax_file, '-s', $seq_file, '-r', $refjson_file, '-c', $cfg_file, '-T', $cores, '-no-hmmer', 
-    '-dup-rank-names', $dup_rank_names, '-wrong-rank-count', $wrong_rank_count);
+    '-dup-rank-names', $dup_rank_names, '-wrong-rank-count', $wrong_rank_count, '-tmpdir', $tmpdir);
+    
+  $trainer_time = time - $stime;
 
   if (-e $refjson_file) {
+      $stime = time;
       my $checker_cmd = $sativa_home.'/find_mislabels.py';
-      my @args = ($checker_cmd, '-r', $refjson_file, '-c', $cfg_file, '-T', $cores, '-v');
+      my @args = ($checker_cmd, '-r', $refjson_file, '-c', $cfg_file, '-T', $cores, '-v', '-tmpdir', $tmpdir);
       if ($rank_test == 1) { push(@args, "-ranktest"); }
       system(@args);
+      $mislabels_time = time - $stime;
   }
   else {
       die "There was a problem running SATIVA (see messages above). Exiting..."
@@ -241,7 +239,7 @@ sub importResults($$$) {
          }
        }
 
-  print "Mislabels found: $count\n";
+  print "\nMislabels found: $count\n\n";
   ARB::commit_transaction($gb_main);
   ARB::close($gb_main);
 }
@@ -290,6 +288,8 @@ sub main() {
   my $wrong_rank_count = shift @ARGV;
 
   my @marklist = {};
+  
+  $start_time = time;
 
   exportTaxonomy($seq_file,$tax_file,$tax_field,$species_field,$marked_only,@marklist);
 
@@ -297,7 +297,10 @@ sub main() {
 
   importResults($res_file,$marked_only,$mark_misplaced);
   
-  print "Done!\n";
+  my $total_time = time - $start_time;
+  print "Elapsed time: $total_time s (trainer: $trainer_time s, find_mislabels: $mislabels_time s)\n\n";
+  
+  print "Done!\n\n";
 }
 
 main();

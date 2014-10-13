@@ -35,6 +35,8 @@ clean:
 install: build
 	cp arb_sativa.pl $(ARBHOME)/bin
 	chmod a+x $(ARBHOME)/bin/arb_sativa.pl
+	cp arb_raxml8_sativa.sh $(ARBHOME)/bin
+	chmod a+x $(ARBHOME)/bin/arb_raxml8_sativa.sh
 	cp sativa.menu $(ARBHOME)/lib/gde
 	cp -r sativa $(ARBHOME)/bin
 #	ln -s $(ARBHOME)/bin $(ARBHOME)/bin/sativa/epac/bin

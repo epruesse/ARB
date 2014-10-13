@@ -33,12 +33,12 @@ argchoice:Yes:--rank-test
 arg:TAXFIELD
 arglabel:Taxonomy path field
 argtype:text
-argtext:tax_ltp
+argtext:tax_slv
 
 arg:SPECIESFIELD
 arglabel:Species name field
 argtype:text
-argtext:fullname_ltp
+argtext:full_name
 
 arg:DUPRANKS
 arglabel:Action for non-unique rank names
@@ -51,6 +51,7 @@ argchoice:Skip sequences:skip
 arg:BADRANKS
 arglabel:Action for redundant ranks (subclass, suborder etc.)
 argtype:choice_menu
+argchoice:Ignore:ignore
 argchoice:"Best guess" fix:autofix
 argchoice:Report and exit:abort
 argchoice:Skip sequences:skip
