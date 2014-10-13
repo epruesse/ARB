@@ -45,12 +45,12 @@ struct NodeTextBuilder {
     long count;
     int  show_errors;           // how many errors to show
 
-    long      lengths[NDS_COUNT];     // length of generated string
-    char     *dkeys[NDS_COUNT];       // database field name (may be empty)
-    safebool  rek[NDS_COUNT];         // 1->key is hierarchical (e.g. 'ali_16s/data')
-    char     *parsing[NDS_COUNT];     // ACI/SRT program
-    safebool  at_group[NDS_COUNT];    // whether string shall appear at group NDS entries
-    safebool  at_leaf[NDS_COUNT];     // whether string shall appear at leaf NDS entries
+    long  lengths[NDS_COUNT];   // length of generated string
+    char *dkeys[NDS_COUNT];     // database field name (may be empty)
+    bool  rek[NDS_COUNT];       // 1->key is hierarchical (e.g. 'ali_16s/data')
+    char *parsing[NDS_COUNT];   // ACI/SRT program
+    bool  at_group[NDS_COUNT];  // whether string shall appear at group NDS entries
+    bool  at_leaf[NDS_COUNT];   // whether string shall appear at leaf NDS entries
 
     void init_buffer() {
         bp         = buf;

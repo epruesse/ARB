@@ -491,7 +491,7 @@ void SEC_bond_def::paint(AW_device *device, char base1, char base2, const Positi
             const char *iupac1 = iupac::decode(base1, ali_type, 0);
             const char *iupac2 = iupac::decode(base2, ali_type, 0);
 
-            safebool useBond[SEC_BOND_PAIR_CHARS];
+            bool useBond[SEC_BOND_PAIR_CHARS];
             for (int i = 0; i<SEC_BOND_PAIR_CHARS; i++) useBond[i] = false;
 
             int maxIdx = -1;
@@ -623,7 +623,7 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
 struct StrandPositionData {
     int      abs[2];            // absolute sequence position
     int      previous[2];       // previous drawn index
-    safebool drawn[2];          // draw position ?
+    bool     drawn[2];          // draw position ?
     bool     isPair;            // true if position is pairing
     Position realpos[2];        // real position
 };
@@ -1152,8 +1152,8 @@ void SEC_region::align_helix_strands(SEC_root *root, SEC_region *other_region) {
                 int newp[2] = { 0, 0 };
 
                 while (curr[0] <= last[0] && curr[1] >= last[1]) {
-                    int      abs[2];
-                    safebool ispair[2];
+                    int  abs[2];
+                    bool ispair[2];
 
                     for (int r = 0; r<2; ++r) {
                         abs[r]    = absarr[r][curr[r]];

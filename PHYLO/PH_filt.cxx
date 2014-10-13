@@ -79,7 +79,7 @@ inline void strlwr(char *s) {
 
 float *PH_filter::calculate_column_homology() {
     long           i, j, max, num_all_chars;
-    safebool       mask[256];
+    bool           mask[256];
     char           delete_when_max[100], get_maximum_from[100], all_chars[100], max_char;
     long           reference_table[256], **chars_counted;
     char           real_chars[100], low_chars[100];

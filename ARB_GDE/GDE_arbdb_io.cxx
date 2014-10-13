@@ -121,8 +121,8 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
             if (compress==COMPRESS_VERTICAL_GAPS || // compress vertical gaps (and '.')
                 compress == COMPRESS_NONINFO_COLUMNS) // and additionally all columns containing no info (only N or X)
             {
-                size_t   i;
-                safebool isInfo[256];
+                size_t i;
+                bool   isInfo[256];
 
                 for (i=0; i<256; i++) isInfo[i] = true;
                 isInfo[UINT('-')] = false;

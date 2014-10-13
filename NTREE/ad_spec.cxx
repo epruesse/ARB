@@ -42,7 +42,7 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
         const int MAXLETTER   = 256;
         const int FIRSTLETTER = 0; // cppcheck-suppress variableScope
 
-        typedef safebool letterOccurs[MAXLETTER];
+        typedef bool letterOccurs[MAXLETTER];
 
         letterOccurs *occurs = (letterOccurs*)malloc(sizeof(*occurs)*alignment_len);
         for (int i = 0; i<MAXLETTER; ++i) {
