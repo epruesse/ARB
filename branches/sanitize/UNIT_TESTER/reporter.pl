@@ -3,6 +3,9 @@
 use strict;
 use warnings;
 
+use lib $ENV{ARBHOME}.'/SOURCE_TOOLS';
+use arb_build_common;
+
 # --------------------------------------------------------------------------------
 
 my $logdirectory = undef;
@@ -140,15 +143,10 @@ sub dump_log($) {
   while (defined($line=<LOG>)) {
     my $printed = 0;
     if ($seen_AS==1) {
-      if ($line =~ /^\s+(\#[0-9]+\s.*)\s+(.*):([0-9]+)$/o) {
-        my ($msg,$file,$lineNo) = ($1,$2,$3);
-        if (-f $file) {
-          if ($file =~ /^$topdir\//) {
-            $file = $';
-          }
-          print "$file:$lineNo: $msg\n";
-          $printed = 1;
-        }
+      my $formatted_line = format_asan_line($line,$topdir);
+      if (defined $formatted_line) {
+        print $formatted_line;
+        $printed = 1;
       }
     }
     else {
