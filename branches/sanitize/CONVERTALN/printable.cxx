@@ -48,7 +48,7 @@ void to_printable(const FormattedFile& in, const char *outf) {
     int total_seq = ali.get_count();
     int maxsize   = ali.get_max_len();
 
-    ca_assert(implicated(total_seq == 0, maxsize == 0));
+    ca_assert(implicated(total_seq == 0, maxsize == -1));
 
     if (total_seq>0) {
         int base_nums[total_seq];
