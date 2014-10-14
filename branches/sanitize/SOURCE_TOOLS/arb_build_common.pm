@@ -33,11 +33,11 @@ sub format_asan_line($$) {
       if ((defined $topdir) and ($file =~ /^$topdir\//)) {
         $file = $';
       }
-      $result = "$file:$lineNo: $msg";
+      $result = "$file:$lineNo: $msg\n";
     }
     elsif ($file =~ /^C\//o) {
       $result  = "PROBE_COM/$file:$lineNo: $msg\n";
-      $result .= "NAMES_COM/$file:$lineNo: [or here]";
+      $result .= "NAMES_COM/$file:$lineNo: [or here]\n";
     }
   }
   return $result;
