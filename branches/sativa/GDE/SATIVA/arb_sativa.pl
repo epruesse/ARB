@@ -143,7 +143,7 @@ sub runPythonPipeline($$$$$) {
 
   my $trainer_cmd = $sativa_home.'/epa_trainer.py';
   system($trainer_cmd, '-t', $tax_file, '-s', $seq_file, '-r', $refjson_file, '-c', $cfg_file, '-T', $cores, '-no-hmmer', 
-    '-dup-rank-names', $dup_rank_names, '-wrong-rank-count', $wrong_rank_count, '-tmpdir', $tmpdir);
+    '-dup-rank-names', $dup_rank_names, '-wrong-rank-count', $wrong_rank_count, '-tmpdir', $tmpdir, '-C');
     
   $trainer_time = time - $stime;
 
