@@ -456,6 +456,10 @@ endif
 ifeq ($(SANITIZE),2)
  ifeq ('$(USE_GCC_49_OR_HIGHER)','yes')
   cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
+  ifeq ('$(DEBUG)','1')
+#  workaround https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63531
+   extended_cpp_warnings:=$(subst -Weffc++,,$(extended_cpp_warnings))
+  endif
   EXECLIBS += -lubsan
  else
   $(info UndefinedBehaviorSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
