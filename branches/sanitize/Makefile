@@ -89,13 +89,13 @@ READLINK:=$(ARBHOME)/SH/arb_readlink
 
 # supported gcc versions:
 ALLOWED_gcc_VERSIONS=\
-	4.3.1 4.3.2 4.3.3 4.3.4 \
-	4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
-	      4.5.2 \
-	4.6.1 4.6.2 4.6.3 \
-	4.7.1 4.7.2 4.7.3 \
-	4.8.0 4.8.1 4.8.2 4.8.3 \
-	4.9.0 4.9.1 \
+        4.3.1 4.3.2 4.3.3 4.3.4 \
+        4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
+              4.5.2 \
+        4.6.1 4.6.2 4.6.3 \
+        4.7.1 4.7.2 4.7.3 4.7.4 \
+  4.8.0 4.8.1 4.8.2 4.8.3 \
+  4.9.0 4.9.1 \
 
 # supported clang versions:
 ALLOWED_clang_VERSIONS=\
@@ -259,7 +259,17 @@ endif
 
 # ------- above only warnings available in 3.0
 
- ifneq ('$(COMPILER_VERSION)','4.7.3') # g++ crashes on GenomeImport.cxx when -Weffc++ is active (bug reported)
+WEFFC_BROKEN:=0
+ ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
+  ifneq ('$(USE_GCC_48_OR_HIGHER)','yes')
+#  -Weffc++ broken in 4.7.x series
+# gcc 4.7.3 crashes on GenomeImport.cxx when -Weffc++ is active
+# (bug reported https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56923; apparently wont be fixed for 4.7-series)
+# gcc 4.7.4 crashes on DBwriter.cxx when -Weffc++ is active
+   WEFFC_BROKEN:=1
+  endif
+ endif
+ ifeq ('$(WEFFC_BROKEN)','0')
 	extended_cpp_warnings += -Weffc++# gcc 3.0.1
  endif
 	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
