@@ -275,7 +275,7 @@ sub parse_log($\@) {
     elsif (/^-+\s+(ARB-backtrace.*):$/) {
       $last_error_message = $1;
     }
-    elsif (/ERROR:\s*(AddressSanitizer|LeakSanitizer):\s*/o) {
+    elsif (/ERROR:\s*(AddressSanitizer|LeakSanitizer):/o) {
       $last_error_message = $';
       $seenSanitized++;
     }
@@ -301,11 +301,6 @@ sub parse_log($\@) {
 
   if ($dump_log==1) {
     dump_log($log);
-  }
-  else {
-    my $log_ptr = $log;
-    $log_ptr =~ s/^\./UNIT_TESTER/;
-    # print "Suppressing dispensable $log_ptr\n";
   }
 
   if (not $seenSummary) {

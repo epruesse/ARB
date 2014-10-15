@@ -56,6 +56,11 @@ failed_to_clean:
 
 cleanup_environment:
 	((./test_environment clean 2>&1) | $(ARBHOME)/SOURCE_TOOLS/asan2msg.pl) || $(MAKE) -f Makefile.suite failed_to_clean
+ifneq ($(SANITIZE),0)
+# delay until servers were able to append to log (before reporter scans logs)
+# cannot be ensured as they run asynchronous
+	sleep 1
+endif
 ifeq ($(VALGRIND_EXTERNAL),E)
 	./valgrind/arb_valgrind_logged WAIT
 endif
