@@ -28,7 +28,11 @@
 # COVERAGE=0/1/2        compile in gcov support (useful together with UNIT_TESTS=1)
 #                       0=no, 1+2=compile in, 1=show
 # STABS=0/1             force stabs format? (0 = "use default format")
-# SANITIZE=0/1/2        use Sanitizer? (defaults to 0, 1=AddressSanitizer+LeakSanitizer, 2=UndefinedBehaviorSanitizer)
+# SANITIZE=0/#/all      use Sanitizer? (defaults to 0,
+#                                       1=AddressSanitizer+LeakSanitizer,
+#                                       2=UndefinedBehaviorSanitizer,
+#                                       combine bit-values to activate multiple Sanitizers,
+#                                       specify 'all' to activate all)
 # SHOWTODO=0/1          activate TODO-warnings? (defaults to 0, except for ralf)
 #
 # -----------------------------------------------------
@@ -331,7 +335,7 @@ ifeq ($(SHOWTODO),1)
 	dflags += -DWARN_TODO# activate "TODO" warnings
 endif
 
-#---------------------- activate AddressSanitizer?
+#---------------------- activate Sanitizers?
 
 # ASAN_OPTIONS:=handle_segv=0:color=0
 ASAN_OPTIONS:=handle_segv=0:detect_leaks=1:color=0
@@ -340,6 +344,48 @@ LSAN_OPTIONS:=suppressions=$(ARBHOME)/SOURCE_TOOLS/arb.leaksan.supp
 
 ifndef SANITIZE
  SANITIZE:=0
+endif
+
+SANITIZE_ADDRESS:=0
+SANITIZE_UNDEFINED:=0
+
+ifneq ($(SANITIZE),0)
+ ifeq ($(SANITIZE),all)
+  SANITIZE:=3
+ endif
+
+ ifeq ($(SANITIZE),1)
+  SANITIZE_ADDRESS:=1
+ else
+  ifeq ($(SANITIZE),2)
+   SANITIZE_UNDEFINED:=1
+  else
+   ifeq ($(SANITIZE),3)
+    SANITIZE_ADDRESS:=1
+    SANITIZE_UNDEFINED:=1
+   else
+    $(error Unknown value '$(SANITIZE)' specified for SANITIZE in config.makefile)
+   endif
+  endif
+ endif
+endif
+
+ifeq ($(SANITIZE_ADDRESS),1)
+ ifneq ('$(USE_GCC_48_OR_HIGHER)','yes')
+  $(info AddressSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
+  SANITIZE_ADDRESS:=0
+ else
+  ifneq ('$(USE_GCC_49_OR_HIGHER)','yes')
+   $(warning note that LeakSanitizer does not work with gcc $(COMPILER_VERSION))
+  endif
+ endif
+endif
+
+ifeq ($(SANITIZE_UNDEFINED),1)
+ ifneq ('$(USE_GCC_49_OR_HIGHER)','yes')
+  $(info UndefinedBehaviorSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
+  SANITIZE_UNDEFINED:=0
+ endif
 endif
 
 #---------------------- 32 or 64 bit
@@ -450,33 +496,20 @@ endif
 COMMON_SANITIZE_FLAGS:=-ggdb3 -fno-omit-frame-pointer
 
 # activate AddressSanitizer+LeakSanitizer?
-ifeq ($(SANITIZE),1)
- ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-  cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=address
-  EXECLIBS += -lasan
-#  EXECLIBS += -static-libasan
-  ifneq ('$(USE_GCC_49_OR_HIGHER)','yes')
-   $(warning note that LeakSanitizer does not work with gcc $(COMPILER_VERSION))
-  endif
- else
-  $(info AddressSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
-  SANITIZE:=0
- endif
+ifeq ($(SANITIZE_ADDRESS),1)
+ cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=address
+ EXECLIBS += -lasan
+# EXECLIBS += -static-libasan
 endif
 
 # activate UndefinedBehaviorSanitizer?
-ifeq ($(SANITIZE),2)
- ifeq ('$(USE_GCC_49_OR_HIGHER)','yes')
-  cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
-  ifeq ('$(DEBUG)','1')
-#  workaround https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63531
-   extended_cpp_warnings:=$(subst -Weffc++,,$(extended_cpp_warnings))
-  endif
-  EXECLIBS += -lubsan
- else
-  $(info UndefinedBehaviorSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
-  SANITIZE:=0
+ifeq ($(SANITIZE_UNDEFINED),1)
+ cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
+ ifeq ('$(DEBUG)','1')
+# workaround https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63531
+  extended_cpp_warnings:=$(subst -Weffc++,,$(extended_cpp_warnings))
  endif
+ EXECLIBS += -lubsan
 endif
 
 #---------------------- X11 location
