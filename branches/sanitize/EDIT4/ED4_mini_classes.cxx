@@ -1248,7 +1248,7 @@ void TEST_char_table() {
     BK = 0;
 }
 
-void TEST_leak_detection() {
+void TEST_leak_detection() { // @@@ remove this test
     // doesn't test anything, just leaks some memory
 
     const int LEN = 1000;
@@ -1264,10 +1264,29 @@ void TEST_leak_detection() {
     TEST_EXPECT_EQUAL(sum, LEN);
     TEST_EXPECT_CONTAINS(getenv("ASAN_OPTIONS"), "detect_leaks=1");
 
+// #define LEAK
+// #define DOUBLE_FREE
+// #define DO_UNDEF
+
+// LEAK (+ DO_UNDEF) -> leak detected; nothing undef then (LeakSanitizer)
+// DO_UNDEF -> undefined behavior detected "heap use after free" (UndefinedBehaviorSanitizer)
+// DOUBLE_FREE -> double free detected (AddressSanitizer)
+
+#ifdef LEAK
     // dont free
-#if 0
+#else
     free(p);
-    free(p); // free twice
+#if defined(DOUBLE_FREE)
+    // double free
+    free(p);
+#endif
+#endif
+
+#if defined(DO_UNDEF)
+    // undefined behavior
+    if (p[0] == 0) {
+        fputs("Undefined\n", stderr);
+    }
 #endif
 
     // leak is detected by valgrind (gcc 4.4.3, DEBUG=1, SANITIZE=0)
