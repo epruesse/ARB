@@ -54,7 +54,7 @@ export CLANG_STATIC_CHECKER
 export CCC_ANALYZER_CPLUSPLUS
 
 # pass down SANITIZER control variables
-export ASAN_OPTIONS
+export ASAN_OPTIONS LSAN_OPTIONS
 
 # jenkins related
 export SVN_URL

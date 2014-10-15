@@ -335,6 +335,8 @@ endif
 
 # ASAN_OPTIONS:=handle_segv=0:color=0
 ASAN_OPTIONS:=handle_segv=0:detect_leaks=1:color=0
+# suppressions: SOURCE_TOOLS/arb.leaksan.supp
+LSAN_OPTIONS:=suppressions=$(ARBHOME)/SOURCE_TOOLS/arb.leaksan.supp
 
 ifndef SANITIZE
  SANITIZE:=0
