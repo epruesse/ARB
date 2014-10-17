@@ -4,7 +4,7 @@ item:Validate taxonomy (SATIVA)
 itemmethod: (mkdir -p ~/.arb_tmp/sativa_$$; cd ~/.arb_tmp/sativa_$$ ; arb_convert_aln --arb-notify -GenBank TmpInputFile -phylip sativa_in.phy; ${ARB_XCMD} bash -x -c @@LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; arb_sativa.pl $MARKEDONLY $MARKMIS $RANKTEST $TAXFIELD $SPECIESFIELD $DUPRANKS $BADRANKS; arb_wait@@; cd ~/.arb_tmp; rm -rf sativa_$$) & 
 seqtype:*
 itemmeta:v
-itemhelp:raxml.help
+itemhelp:sativa.help
 
 #arb_export_tree $TREE > reftree.tre
 
