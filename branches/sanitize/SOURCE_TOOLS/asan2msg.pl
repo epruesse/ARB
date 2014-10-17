@@ -8,9 +8,10 @@ use arb_build_common;
 
 my $reg_is_ASAN = qr/^\s+([#][0-9]+\s+.*)\s+([^\s]+):([0-9]+)$/o;
 
+my $topdir = $ENV{ARBHOME};
 my $line;
 while (defined($line=<STDIN>)) {
-  my $formatted_line = format_asan_line($line,undef);
+  my $formatted_line = format_asan_line($line,$topdir);
   if (defined $formatted_line) {
     print $formatted_line;
   }
