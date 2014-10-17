@@ -1,7 +1,0 @@
-# list of known leaks (suppressed by LeakSanitizer)
-# see also valgrind suppressions in arb.supp
-
-leak:TEST_tree_remove_add_all
-leak:illegal_alidata_composition
-leak:test_opendb
-leak:test_another_shell
