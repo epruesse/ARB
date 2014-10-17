@@ -337,10 +337,13 @@ endif
 
 #---------------------- activate Sanitizers?
 
-# ASAN_OPTIONS:=handle_segv=0:color=0
-ASAN_OPTIONS:=handle_segv=0:detect_leaks=1:color=0
+ASAN_OPTIONS:=handle_segv=0:color=0
+ASAN_OPTIONS+=:detect_leaks=1 # comment-out to disable leak-detection
+ASAN_OPTIONS+=:check_initialization_order=1
+
 # suppressions: SOURCE_TOOLS/arb.leaksan.supp
 LSAN_OPTIONS:=max_leaks=3:suppressions=$(ARBHOME)/SOURCE_TOOLS/arb.leaksan.supp
+
 
 ifndef SANITIZE
  SANITIZE:=0
