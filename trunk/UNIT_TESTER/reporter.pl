@@ -3,6 +3,9 @@
 use strict;
 use warnings;
 
+use lib $ENV{ARBHOME}.'/SOURCE_TOOLS';
+use arb_build_common;
+
 # --------------------------------------------------------------------------------
 
 my $logdirectory = undef;
@@ -140,19 +143,14 @@ sub dump_log($) {
   while (defined($line=<LOG>)) {
     my $printed = 0;
     if ($seen_AS==1) {
-      if ($line =~ /^\s+(\#[0-9]+\s.*)\s+(.*):([0-9]+)$/o) {
-        my ($msg,$file,$lineNo) = ($1,$2,$3);
-        if (-f $file) {
-          if ($file =~ /^$topdir\//) {
-            $file = $';
-          }
-          print "$file:$lineNo: $msg\n";
-          $printed = 1;
-        }
+      my $formatted_line = format_asan_line($line,$topdir);
+      if (defined $formatted_line) {
+        print $formatted_line;
+        $printed = 1;
       }
     }
     else {
-      if ($line =~ /AddressSanitizer/o) {
+      if ($line =~ /(AddressSanitizer|LeakSanitizer)/o) {
         $seen_AS = 1;
         if (defined $topdir) { print('fake[2]: Entering directory `'.$topdir."\'\n"); }
       }
@@ -277,9 +275,12 @@ sub parse_log($\@) {
     elsif (/^-+\s+(ARB-backtrace.*):$/) {
       $last_error_message = $1;
     }
-    elsif (/ERROR:\s*AddressSanitizer:\s*/o) {
+    elsif (/ERROR:\s*(AddressSanitizer|LeakSanitizer):/o) {
       $last_error_message = $';
       $seenSanitized++;
+    }
+    elsif (/\s+runtime\s+error:\s+/o) {
+      $dump_log = 1;
     }
   }
   close(LOG);
@@ -296,14 +297,10 @@ sub parse_log($\@) {
   }
 
   if (not $seenSummary) { $dump_log = 1; }
+  if ($seenSanitized>0) { $dump_log = 1; }
 
   if ($dump_log==1) {
     dump_log($log);
-  }
-  else {
-    my $log_ptr = $log;
-    $log_ptr =~ s/^\./UNIT_TESTER/;
-    # print "Suppressing dispensable $log_ptr\n";
   }
 
   if (not $seenSummary) {
@@ -311,7 +308,7 @@ sub parse_log($\@) {
     print "$ARBHOME/UNIT_TESTER/$log:1:0: Warning: No summary found in '$log' ";
     if ($seenSanitized>0) {
       $sanitized++;
-      print "(was aborted by AddressSanitizer)\n";
+      print "(was aborted by Sanitizer)\n";
     }
     else {
       $crashed++;

@@ -1009,7 +1009,7 @@ const char *GBS_funptr2readable(void *funptr, bool stripARBHOME) {
 // #define TEST_TEST_MACROS
 
 #ifdef ENABLE_CRASH_TESTS
-static void provokesegv() { *(volatile int *)0 = 0; }
+static void provokesegv() { raise(SIGSEGV); }
 static void dont_provokesegv() {}
 # if defined(ASSERTION_USED)
 static void failassertion() { gb_assert(0); }
