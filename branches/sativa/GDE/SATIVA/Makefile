@@ -25,7 +25,7 @@ RAXML_BIN=$(ARBHOME)/bin/raxmlHPC8-sativa-
 
 all: install
 
-clean:
+clean_local:
 	rm -rf builddir.*
 	rm -f $(RAXML_BIN)*
 	rm -f unpack.*.stamp
@@ -38,8 +38,17 @@ install: build
 	cp arb_raxml8_sativa.sh $(ARBHOME)/bin
 	chmod a+x $(ARBHOME)/bin/arb_raxml8_sativa.sh
 	cp sativa.menu $(ARBHOME)/lib/gde
-	cp -r sativa $(ARBHOME)/bin
+	find sativa -path "*.svn" -prune -o -type d -exec mkdir -p $(ARBHOME)/bin/{} \; 
+	find sativa -path "*.svn" -prune -o -type f -exec cp -p {} $(ARBHOME)/bin/{} \; 
 #	ln -s $(ARBHOME)/bin $(ARBHOME)/bin/sativa/epac/bin
+
+uninstall:
+	rm -f $(ARBHOME)/bin/arb_sativa.pl
+	rm -f $(ARBHOME)/bin/arb_raxml8_sativa.sh
+	rm -rf $(ARBHOME)/bin/sativa
+	rm -f $(ARBHOME)/lib/gde/sativa.menu
+
+clean: clean_local uninstall
 
 build:  $(VERSIONS:%=$(RAXML_BIN)%)
 
@@ -64,4 +73,4 @@ unpack.%.stamp: $(TARFILE)
 # prevent make from deleting intermediate targets:
 .SECONDARY:
 
-.PHONY: clean all
+.PHONY: clean all install build uninstall clean_local
