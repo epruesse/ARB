@@ -17,8 +17,8 @@ test: test.stamp
 
 test.stamp: $(ARB_PM) $(ARB_SO)
 	@echo $(SEP) Testing scripts in PERL_SCRIPTS
-ifeq ($(SANITIZE),1)
-	@echo "Warning: cannot test perl scripts (atm) if SANITIZE is active" # @@@ still fails -- accept atm
+ifneq ($(SANITIZE),0)
+	@echo "Warning: cannot test perl scripts (atm) when SANITIZE is active" # @@@ still fails -- accept atm
 	@true
 else
 	@perl -c testScripts.pl
