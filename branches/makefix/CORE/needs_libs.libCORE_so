@@ -1,0 +1,4 @@
+# libraries needed to link against CORE/libCORE.so
+# ARB CORE bases on glib (its no real CORE)
+
+$(ARB_GLIB_LIBS)
