@@ -509,8 +509,15 @@ endif
 ifeq ($(SANITIZE_UNDEFINED),1)
  cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
  ifeq ('$(DEBUG)','1')
-# workaround https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63531
-  extended_cpp_warnings:=$(subst -Weffc++,,$(extended_cpp_warnings))
+  ifeq ($(USE_GCC_MAJOR),4)
+   ifeq ($(USE_GCC_MINOR),9)
+    ifneq ('$(findstring $(USE_GCC_PATCHLEVEL),01)','')
+# workaround https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63531 for 4.9.0 + 4.9.1
+# (problem is fixed for 4.9.2)
+     extended_cpp_warnings:=$(subst -Weffc++,,$(extended_cpp_warnings))
+    endif
+   endif
+  endif
  endif
  EXECLIBS += -lubsan
 endif
