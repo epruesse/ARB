@@ -6,6 +6,7 @@
 # - gtk   specific errors should go into arb_gtk.supp
 #
 # see also arb_valgrind@suppressions
+# see also LeakSanitizer suppressions in arb.leaksan.supp
 
 {
    arb: leaks loaded xfig-data with AW_window

@@ -335,6 +335,8 @@ int echo_server(const char* portname) {
     exit(0);
 }
 
+#if !defined(DEVEL_JENKINS)
+// this test fails randomly (disabled in jenkins)
 void TEST_open_socket() {
     int fd;
     char *filename = NULL;
@@ -396,7 +398,7 @@ void TEST_open_socket() {
     // Test connecting to existing unix socket
     server_pid = echo_server(unix_socket);
     usleep(20000);
-    TEST_EXPECT_NULL(arb_open_socket(unix_socket, true, &fd, &filename)); // @@@ randomly fails in jenkins (build820/u1304/DEBUG, build817/cent5/DEBUG+cent6/NDEBUG)
+    TEST_EXPECT_NULL(arb_open_socket(unix_socket, true, &fd, &filename)); // @@@ randomly fails in jenkins (build820/u1304/DEBUG, build817/cent5/DEBUG+cent6/NDEBUG, failed again in build 876/u1304/NDEBUG)
     TEST_EXPECT(fd>0);
 
     // Test read/write
@@ -429,6 +431,7 @@ void TEST_open_socket() {
     free(unix_socket);
 }
 TEST_PUBLISH(TEST_open_socket);
+#endif
 
 #endif // UNIT_TESTS
 

@@ -363,15 +363,15 @@ void TEST_arb_consensus_tree() {
         char *saveas   = custom_tree_name(1, "consense1");
         char *expected = custom_tree_name(1, "consense1_expected");
     
-        TEST_STDOUT_CONTAINS("arb_consensus_tree"
+        TEST_OUTPUT_CONTAINS("arb_consensus_tree"
                              " -w consense/1/consense1.tree"
                              " consense/1/bootstrapped_1.tree"
                              " consense/1/bootstrapped_2.tree"
                              " consense/1/bootstrapped_3.tree"
                              " consense/1/bootstrapped_4.tree"
                              " consense/1/bootstrapped_5.tree"
-                             ,
-                             "database  created");
+                             ,"",
+                             "Created new database \"\"");
 
         TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(saveas, expected, 0);
         TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
@@ -384,14 +384,14 @@ void TEST_arb_consensus_tree() {
         char *saveas   = custom_tree_name(2, "consense2");
         char *expected = custom_tree_name(2, "consense2_expected");
     
-        TEST_STDOUT_CONTAINS("arb_consensus_tree"
+        TEST_OUTPUT_CONTAINS("arb_consensus_tree"
                              " -w consense/2/consense2.tree"
                              " consense/2/bootstrapped_1.tree"
                              " consense/2/bootstrapped_2.tree"
                              " consense/2/bootstrapped_3.tree"
                              " consense/2/bootstrapped_4.tree"
-                             ,
-                             "database  created");
+                             ,"",
+                             "Created new database \"\"");
 
         TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(saveas, expected, 0);
         TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));

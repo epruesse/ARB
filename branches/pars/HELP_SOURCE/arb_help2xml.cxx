@@ -263,7 +263,8 @@ public:
     Ostring(const string& s, size_t line_no, ParagraphType type_)
         : content(s),
           lineNo(line_no),
-          type(type_)
+          type(type_),
+          etype(NONE)
     {
         h2x_assert(type != ENUMERATED);
     }

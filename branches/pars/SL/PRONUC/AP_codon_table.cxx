@@ -256,11 +256,9 @@ inline char idx2dna(int idx) {
 }
 
 inline int calc_codon_nr(const char *dna) {
-    int i1 = dna2idx(dna[0]);
-    int i2 = dna2idx(dna[1]);
-    int i3 = dna2idx(dna[2]);
-
-    if (i1==4||i2==4||i3==4) return AWT_MAX_CODONS; // is not a codon
+    int i1 = dna2idx(dna[0]); if (i1 == 4) return AWT_MAX_CODONS; // is not a codon
+    int i2 = dna2idx(dna[1]); if (i2 == 4) return AWT_MAX_CODONS;
+    int i3 = dna2idx(dna[2]); if (i3 == 4) return AWT_MAX_CODONS;
 
     int codon_nr = i1*16 + i2*4 + i3;
     pn_assert(codon_nr>=0 && codon_nr<=AWT_MAX_CODONS);
@@ -497,7 +495,7 @@ bool AWT_is_codon(char protein, const char *const dna, const TransTables& allowe
             }
             else {
                 char dna_copy[4];
-                memcpy(dna_copy, dna, 3);
+                strncpy(dna_copy, dna, 3);
                 dna_copy[3] = 0;
 
                 fail_reason = GBS_global_string("Not enough nucleotides (got '%s')", dna_copy);
