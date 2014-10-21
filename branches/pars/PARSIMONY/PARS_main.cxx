@@ -1687,6 +1687,7 @@ void TEST_tree_add_marked() {
         nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, false);
 
         TEST_EXPECT_TOPOLOGY(env, topo_reAdOpt);
+        TEST_EXPECT_SAVED_TOPOLOGY(env, "added-NNI");
         TEST_EXPECT_PARSVAL(env, 276);
 
         env.pop();
