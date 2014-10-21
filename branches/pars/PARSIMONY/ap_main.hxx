@@ -14,8 +14,8 @@
 #ifndef AP_BUFFER_HXX
 #include "AP_buffer.hxx"
 #endif
-#ifndef TREEDISPLAY_HXX
-#include <TreeDisplay.hxx>
+#ifndef PARS_DTREE_HXX
+#include "pars_dtree.hxx"
 #endif
 
 #define AWAR_ALIGNMENT        "tmp/pars/alignment"
@@ -50,15 +50,12 @@ struct PARS_commands {
     }
 };
 
-class AP_tree_nlen;
-class AWT_graphic_tree;
-
 class AP_main : virtual Noncopyable {
-    AP_main_stack    *stack;
-    AP_main_list      list;
-    unsigned long     stack_level;
-    AWT_graphic_tree *agt;                          // provides access to tree!
-    unsigned long     user_push_counter;
+    AP_main_stack         *stack;
+    AP_main_list           list;
+    unsigned long          stack_level;
+    AWT_graphic_parsimony *agt; // provides access to tree!
+    unsigned long          user_push_counter;
 
 public:
     AP_main()
@@ -71,8 +68,8 @@ public:
         delete stack;
     }
 
-    void set_tree_root(AWT_graphic_tree *agt_);
-    AWT_graphic_tree *get_graphic_tree() { return agt; }
+    void set_tree_root(AWT_graphic_parsimony *agt_);
+    AWT_graphic_parsimony *get_graphic_tree() { return agt; }
     AP_tree_root *get_tree_root() const { return agt->get_tree_root(); }
 
     DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, agt->get_root_node());

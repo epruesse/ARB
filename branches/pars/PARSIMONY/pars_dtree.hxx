@@ -31,7 +31,7 @@ public:
     AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_);
 };
 
-void PARS_tree_init(AWT_graphic_tree *agt);
+void PARS_tree_init(AWT_graphic_parsimony *agt);
 
 #else
 #error pars_dtree.hxx included twice

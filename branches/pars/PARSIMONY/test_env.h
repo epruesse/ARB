@@ -14,11 +14,11 @@
 void fake_AW_init_color_groups();
 
 template<typename SEQTYPE>
-struct fake_agt : public AWT_graphic_tree, virtual Noncopyable {
+struct fake_agt : public AWT_graphic_parsimony, virtual Noncopyable {
     SEQTYPE *templ;
 
-    fake_agt()
-        : AWT_graphic_tree(NULL, GLOBAL_gb_main, NULL),
+    fake_agt(ArbParsimony& parsimony_)
+        : AWT_graphic_parsimony(parsimony_, GLOBAL_gb_main, NULL),
           templ(NULL)
     {
     }
@@ -39,6 +39,7 @@ class PARSIMONY_testenv : virtual Noncopyable {
     GB_shell           shell;
     AP_main            apMain;
     fake_agt<SEQTYPE> *agt;
+    ArbParsimony       parsimony;
 
     void common_init(const char *dbname) {
         GLOBAL_gb_main = NULL;
@@ -47,12 +48,14 @@ class PARSIMONY_testenv : virtual Noncopyable {
         TEST_EXPECT_NULL(ap_main);
         ap_main = &apMain;
 
-        agt = new fake_agt<SEQTYPE>;
+        agt = new fake_agt<SEQTYPE>(parsimony);
         apMain.set_tree_root(agt);
     }
 
 public:
-    PARSIMONY_testenv(const char *dbname) {
+    PARSIMONY_testenv(const char *dbname)
+        : parsimony(NULL)
+    {
         common_init(dbname);
         agt->init(new AliView(GLOBAL_gb_main));
     }
@@ -91,7 +94,7 @@ public:
     void push() { apMain.push(); }
     void pop() { apMain.pop(); }
 
-    AWT_graphic_tree *graphic_tree() { return agt; }
+    AWT_graphic_parsimony *graphic_tree() { return agt; }
 
     GBDATA *gbmain() const { return GLOBAL_gb_main; }
 };

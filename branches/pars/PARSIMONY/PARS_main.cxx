@@ -9,7 +9,6 @@
 // =============================================================== //
 
 #include "pars_main.hxx"
-#include "pars_dtree.hxx"
 #include "pars_klprops.hxx"
 #include "ap_tree_nlen.hxx"
 
@@ -47,10 +46,13 @@ AW_HEADER_MAIN
 #define AWAR_COLUMNSTAT_BASE "tmp/pars/colstat"
 #define AWAR_COLUMNSTAT_NAME AWAR_COLUMNSTAT_BASE "/name"
 
+#define AWT_TREE_PARS(ntw) DOWNCAST(AWT_graphic_parsimony*, (ntw)->gfx)
+
+
 GBDATA              *GLOBAL_gb_main = NULL;
 static ArbParsimony *GLOBAL_PARS    = NULL;
 
-inline AWT_graphic_tree *global_tree() { return GLOBAL_PARS->get_tree(); }
+inline AWT_graphic_parsimony *global_tree() { return GLOBAL_PARS->get_tree(); }
 inline AP_tree_root *global_tree_root() { return global_tree()->get_tree_root(); }
 
 // waaah more globals :(
@@ -316,13 +318,13 @@ enum AddWhat {
     NT_ADD_SELECTED,
 };
 
-static void nt_add(AWT_graphic_tree *agt, AddWhat what, bool quick) {
+static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
     GB_ERROR  error = 0;
 
     AP_tree *oldrootleft  = NULL;
     AP_tree *oldrootright = NULL;
     {
-        AP_tree *root = rootNode();
+        AP_tree_nlen *root = rootNode();
         if (root) {
             root->reset_subtree_layout();
             oldrootleft  = root->get_leftson();
@@ -602,7 +604,7 @@ static long push_partial(const char *, long val, void *cd_partial) {
 // -------------------------------
 //      Add Partial sequences
 
-static void nt_add_partial(AWT_graphic_tree *agt) {
+static void nt_add_partial(AWT_graphic_parsimony *agt) {
     ap_assert(agt->gb_main == GLOBAL_gb_main); // @@@ if not failing -> remove GLOBAL_gb_main
 
     GB_begin_transaction(GLOBAL_gb_main);
@@ -800,7 +802,7 @@ static void nt_add_partial(AWT_graphic_tree *agt) {
 }
 
 static void NT_add_partial_and_update(UNFIXED, AWT_canvas *ntw) {
-    nt_add_partial(AWT_TREE(ntw));
+    nt_add_partial(AWT_TREE_PARS(ntw));
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -808,7 +810,7 @@ static void NT_add_partial_and_update(UNFIXED, AWT_canvas *ntw) {
 //      add marked / selected
 
 static void nt_add_and_update(AWT_canvas *ntw, AddWhat what, bool quick) {
-    nt_add(AWT_TREE(ntw), what, quick);
+    nt_add(AWT_TREE_PARS(ntw), what, quick);
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -818,7 +820,7 @@ static void NT_add_quick  (UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_add_and_
 // ------------------------------------------
 //      remove and add marked / selected
 
-static void nt_reAdd(AWT_graphic_tree *agt, AddWhat what, bool quick) {
+static void nt_reAdd(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
     if (agt->get_root_node()) {
         ap_assert(what == NT_ADD_MARKED); // code below will misbehave for NT_ADD_SELECTED
         agt->get_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
@@ -827,7 +829,7 @@ static void nt_reAdd(AWT_graphic_tree *agt, AddWhat what, bool quick) {
 }
 
 static void nt_reAdd_and_update(AWT_canvas *ntw, AddWhat what, bool quick) {
-    nt_reAdd(AWT_TREE(ntw), what, quick);
+    nt_reAdd(AWT_TREE_PARS(ntw), what, quick);
     pars_saveNrefresh_changed_tree(ntw);
 }
 

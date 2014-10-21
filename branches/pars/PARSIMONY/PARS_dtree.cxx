@@ -31,7 +31,8 @@
 #include <aw_question.hxx>
 
 static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
-    AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
+    AWT_graphic_tree *agt = (AWT_graphic_tree*)cd; // @@@ dynacast?
+    UNCOVERED();
 
     if (old == agt->displayed_root) agt->displayed_root = newroot;
 }
@@ -50,7 +51,7 @@ static AliView *pars_generate_aliview(WeightedFilter *pars_weighted_filter) {
     return aliview;
 }
 
-void PARS_tree_init(AWT_graphic_tree *agt) {
+void PARS_tree_init(AWT_graphic_parsimony *agt) {
     ap_assert(agt->get_root_node());
     ap_assert(agt == ap_main->get_graphic_tree());
 
@@ -387,7 +388,9 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
 #include "test_env.h"
 
 template<typename SEQTYPE>
-PARSIMONY_testenv<SEQTYPE>::PARSIMONY_testenv(const char *dbname, const char *aliName) {
+PARSIMONY_testenv<SEQTYPE>::PARSIMONY_testenv(const char *dbname, const char *aliName)
+    : parsimony(NULL)
+{
     common_init(dbname);
     GB_transaction ta(GLOBAL_gb_main);
     size_t aliLength = GBT_get_alignment_len(GLOBAL_gb_main, aliName);

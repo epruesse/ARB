@@ -11,27 +11,24 @@
 #ifndef PARS_MAIN_HXX
 #define PARS_MAIN_HXX
 
-#ifndef TREEDISPLAY_HXX
-#include <TreeDisplay.hxx>
+#ifndef PARS_DTREE_HXX
+#include "pars_dtree.hxx"
 #endif
 
 #define MIN_SEQUENCE_LENGTH 20
 
-class AW_root;
-class AWT_graphic_tree;
 class WeightedFilter;
 class AP_tree_nlen;
-class arb_progress;
 
 class ArbParsimony {
-    AW_root          *awr;
-    AWT_graphic_tree *tree;
+    AW_root               *awr;
+    AWT_graphic_parsimony *tree;
 
 public:
     ArbParsimony(AW_root *awroot) : awr(awroot), tree(NULL) {}
 
     AW_root *get_awroot() const { return awr; }
-    AWT_graphic_tree *get_tree() const { return tree; }
+    AWT_graphic_parsimony *get_tree() const { return tree; }
 
     DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, get_tree()->get_root_node());
 

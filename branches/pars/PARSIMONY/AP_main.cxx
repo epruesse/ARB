@@ -194,7 +194,7 @@ void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
     if (node->push(mode, stack_level))  stack->push(node);
 }
 
-void AP_main::set_tree_root(AWT_graphic_tree *agt_) {
+void AP_main::set_tree_root(AWT_graphic_parsimony *agt_) {
     ap_assert(agt == 0 && agt_ != 0);               // do only once
     agt = agt_;
 }
