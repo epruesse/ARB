@@ -699,31 +699,6 @@ CC_INCLUDES  := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES) $(ARB_GLIB_INCLUDE)
 CXX_INCLUDES := $(CC_INCLUDES)
 MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
-# ------------------------------- 
-#     old PTSERVER or PTPAN?
-
-ifeq ($(PTPAN),1)
-# PTPAN only libs
-ARCHS_PT_SERVER = \
-	ptpan/PROBE.a
-else
-ifeq ($(PTPAN),2)
-# special mode to compile both servers (developers only!)
-ARCHS_PT_SERVER = \
-	ptpan/PROBE.a \
-	PROBE/PROBE.a
-ARCHS_PT_SERVER_LINK = PROBE/PROBE.a# default to old ptserver
-else
-# PT-server only libs
-ARCHS_PT_SERVER = \
-	PROBE/PROBE.a
-endif
-endif
-
-ifndef ARCHS_PT_SERVER_LINK
-ARCHS_PT_SERVER_LINK = $(ARCHS_PT_SERVER)
-endif
-
 # ---------------------------------------
 # wrap main()
 
@@ -965,7 +940,6 @@ checks: check_setup check_tabs
 # when adding new libs here, also add a dependency vs 'links' or 'links_non_perl' in .@DD_links_non_perl
 
 ARCHS = \
-			$(ARCHS_PT_SERVER) \
 			AISC/AISC.a \
 			AISC_MKPTPS/AISC_MKPTPS.a \
 			ARBDB/libARBDB.a \
@@ -995,6 +969,7 @@ ARCHS = \
 			PERLTOOLS/PERLTOOLS.a \
 			PHYLO/PHYLO.a \
 			PRIMER_DESIGN/PRIMER_DESIGN.a \
+			PROBE/PROBE.a \
 			PROBE_COM/server.a \
 			PROBE_DESIGN/PROBE_DESIGN.a \
 			PROBE_SET/PROBE_SET.a \
@@ -1018,9 +993,6 @@ ARCHS = \
 
 ARCHS_CLIENT_PROBE = PROBE_COM/client.a 
 ARCHS_CLIENT_NAMES = NAMES_COM/client.a 
-
-ARCHS_SERVER_PROBE = PROBE_COM/server.a $(ARCHS_CLIENT_PROBE)
-ARCHS_SERVER_NAMES = NAMES_COM/server.a $(ARCHS_CLIENT_NAMES)
 
 ARCHS_MAKEBIN = AISC_MKPTPS/AISC_MKPTPS.a AISC/AISC.a
 
@@ -1305,24 +1277,20 @@ $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) link_db
 
 #***********************************	arb_pt_server **************************************
 PROBE = bin/arb_pt_server
-ARCHS_PROBE_COMMON = \
+ARCHS_PROBE = \
+		PROBE/PROBE.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/HELIX/HELIX.a \
 		SL/PTCLEAN/PTCLEAN.a \
 
-ARCHS_PROBE_LINK = \
-		$(ARCHS_PROBE_COMMON) \
-		$(ARCHS_PT_SERVER_LINK) \
+ARCHS_SERVER_PROBE = PROBE_COM/server.a $(ARCHS_CLIENT_PROBE)
 
-ARCHS_PROBE_DEPEND = \
-		$(ARCHS_PROBE_COMMON) \
-		$(ARCHS_PT_SERVER) \
 
-$(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db 
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) config.makefile $(use_ARB_main) || ( \
+$(PROBE): $(ARCHS_PROBE:.a=.dummy) link_db 
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) config.makefile $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1331,6 +1299,8 @@ NAMES = bin/arb_name_server
 ARCHS_NAMES = \
 		NAMES/NAMES.a \
 		SERVERCNTRL/SERVERCNTRL.a \
+
+ARCHS_SERVER_NAMES = NAMES_COM/server.a $(ARCHS_CLIENT_NAMES)
 
 $(NAMES): $(ARCHS_NAMES:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(use_ARB_main) || ( \
@@ -1525,7 +1495,6 @@ NAMES/NAMES.dummy : 			com
 SL/AW_NAME/AW_NAME.dummy : 		com
 
 PROBE/PROBE.dummy : 			com
-ptpan/PROBE.dummy : 			com
 MULTI_PROBE/MULTI_PROBE.dummy : 	com
 PROBE_DESIGN/PROBE_DESIGN.dummy : 	com
 NALIGNER/NALIGNER.dummy : 		com
@@ -1728,7 +1697,7 @@ proto: proto_tools
 		CONVERTALN/CONVERTALN.proto \
 		NTREE/NTREE.proto \
 		MERGE/MERGE.proto \
-		$(ARCHS_PT_SERVER:.a=.proto) \
+		PROBE/PROBE.proto \
 		SERVERCNTRL/SERVERCNTRL.proto \
 		SL/SL.proto \
 
@@ -2202,9 +2171,6 @@ UNITS_WORKING = \
 	SL/ROOTED_TREE/ROOTED_TREE.test \
 
 # untestable units
-
-UNITS_NEED_FIX = \
-	ptpan/PROBE.test \
 
 UNITS_UNTESTABLE_ATM = \
 	PROBE_SET/PROBE_SET.test \
