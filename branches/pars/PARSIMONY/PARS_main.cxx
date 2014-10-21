@@ -1672,6 +1672,7 @@ void TEST_tree_add_marked() {
         nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, true);
 
         TEST_EXPECT_TOPOLOGY(env, topo_reAdded);
+        TEST_EXPECT_SAVED_TOPOLOGY(env, "quick-added");
         TEST_EXPECT_PARSVAL(env, 278);
 
         env.pop();
