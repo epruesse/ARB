@@ -1653,6 +1653,18 @@ void TEST_tree_add_marked() {
     // Note: following code leaks father nodes and edges
     // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_tree_add_marked
 
+    // test remove-marked only (same code as part of nt_reAdd)
+    {
+        env.push();
+
+        env.graphic_tree()->get_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
+        TEST_EXPECT_SAVED_TOPOLOGY(env, "removed");
+
+        env.pop();
+    }
+
+    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
     // test quick-add
     {
         env.push();
@@ -1662,10 +1674,10 @@ void TEST_tree_add_marked() {
         TEST_EXPECT_TOPOLOGY(env, topo_reAdded);
         TEST_EXPECT_PARSVAL(env, 278);
 
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
         env.pop();
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
     }
+
+    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
 
     // test add + NNI
     {
@@ -1678,6 +1690,8 @@ void TEST_tree_add_marked() {
 
         env.pop();
     }
+
+    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
 
     // @@@ test optimize etc.
 
