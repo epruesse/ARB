@@ -17,6 +17,7 @@
 
 class arb_progress;
 class ArbParsimony;
+class AP_tree_nlen;
 
 class AWT_graphic_parsimony : public AWT_graphic_tree, virtual Noncopyable {
     ArbParsimony& parsimony;
@@ -29,6 +30,10 @@ class AWT_graphic_parsimony : public AWT_graphic_tree, virtual Noncopyable {
 
 public:
     AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_);
+
+    AP_tree_nlen *get_root_node() {
+        return DOWNCAST(AP_tree_nlen*, AWT_graphic_tree::get_root_node());
+    }
 };
 
 void PARS_tree_init(AWT_graphic_parsimony *agt);
