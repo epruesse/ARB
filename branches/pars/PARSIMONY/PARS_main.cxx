@@ -1662,7 +1662,9 @@ void TEST_tree_add_marked() {
         TEST_EXPECT_TOPOLOGY(env, topo_reAdded);
         TEST_EXPECT_PARSVAL(env, 278);
 
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
         env.pop();
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
     }
 
     // test add + NNI
