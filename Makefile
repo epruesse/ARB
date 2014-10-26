@@ -308,14 +308,6 @@ ifeq ($(USE_CLANG),1)
 	extended_cpp_warnings += -Wno-mismatched-tags -Wno-char-subscripts -Wno-unused-private-field -Wno-string-plus-int -Wno-gnu-static-float-init
 endif
 
-ifeq ($(USE_CLANG),0)
-# TEMPORARY WORKAROUND for linker issues with launchpad binutils
-# code was added to ld to check for overlapping FDEs. Since ARB
-# worked before, we want this not to fail for the moment.
-# FIXME: remove this!
-        clflags += -Wl,-noinhibit-exec
-endif
-
 #---------------------- developer
 
 ifneq ($(DEVELOPER),ANY) # ANY=default setting (skip all developer specific code)
