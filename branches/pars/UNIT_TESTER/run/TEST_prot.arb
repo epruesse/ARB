@@ -1,6 +1,6 @@
 /*ARBDB ASCII*/
 species_data		%% (%
-	species		:5000	%% (%
+	species		:5000	%$ (%
 		name		:7600	"CytLyti6"
 		flag		:7000	"m"
 		full_name		"Cytophaga lytica"
@@ -67,7 +67,7 @@ species_data		%% (%
 		aa_pro			"394 "
 		%) /*species*/
 
-	species		:5000	%% (%
+	species		:5000	%$ (%
 		name		:7600	"StrRamo3"
 		flag		:7000	"h"
 		ali_tuf_pro	:5000	%% (%
@@ -137,7 +137,7 @@ species_data		%% (%
 		aa_pro			"441 "
 		%) /*species*/
 
-	species		:5000	%% (%
+	species		:5000	%$ (%
 		name		:7600	"MucRace2"
 		flag		:7000	"h"
 		ali_tuf_pro	:5000	%% (%
@@ -197,7 +197,7 @@ species_data		%% (%
 		aa_pro			"441 "
 		%) /*species*/
 
-	species		:5000	%% (%
+	species		:5000	%$ (%
 		name		:7600	"SacCere5"
 		flag		:7000	"h"
 		ali_tuf_pro	:5000	%% (%
@@ -1469,12 +1469,9 @@ search			%% (%
 nt			%% (%
 	protein_codon_type		%i 1
 	min_mismatches		%i 0
-	max_mismatches		%i 0
 	target_string		""
-	itarget_string		""
 	primer_target_string		""
 	gene_content		""
-	nameserver_addid		""
 	%) /*nt*/
 
 ARB_EDIT		%% (%
@@ -1557,17 +1554,10 @@ merge			%% (%
 	%) /*merge*/
 
 submission		%% (%
-	source			""
-	file			""
 	%) /*submission*/
 
 genom_db		%i 0
 sai_visualize		%% (%
-	sai_2_probe		""
-	db_field_name		"name"
-	db_field_width		%i 10
-	aci_command		""
-	selected_probe		""
 	%) /*sai_visualize*/
 
 MAUS			%% (%
@@ -1582,7 +1572,6 @@ checks			%% (%
 	%) /*checks*/
 
 track			%% (%
-	ali			"???"
 	initials		"westram"
 	%) /*track*/
 
