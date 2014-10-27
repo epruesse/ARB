@@ -1828,6 +1828,7 @@ void TEST_tree_add_marked() {
                 const char *brother = CorGlutP_node->get_brother()->name;
                 TEST_EXPECT_EQUAL(brother, "CorGluta"); // partial created from CorGluta gets inserted next to CorGluta
 
+                TEST_EXPECT_SAVED_TOPOLOGY(env, "addPartialAsFull-CorGlutP");
                 TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
             }
 
