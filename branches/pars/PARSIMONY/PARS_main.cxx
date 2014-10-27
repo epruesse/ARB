@@ -1598,7 +1598,6 @@ arb_test::match_expectation topologyEquals(AP_tree_nlen *root_node, const char *
 }
 #define TEST_EXPECT_SAVED_TOPOLOGY(env,exp_topo) TEST_EXPECTATION(topologyEquals(env.root_node(), exp_topo))
 
-#define TEST_EXPECT_TOPOLOGY(env,exp_topo) TEST_EXPECT_NEWICK(nLENGTH, env.root_node(), exp_topo)
 #define TEST_EXPECT_PARSVAL(env,exp_pars)  TEST_EXPECT_SIMILAR(env.root_node()->costs(), exp_pars, 0.001);
 
 static GBDATA *copy_to(GBDATA *gb_species, const char *newShortname) {
@@ -1635,16 +1634,6 @@ void TEST_tree_add_marked() {
 
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
-
-    // @@@ better save to files (not very helpful here!)
-    const char *topo_reAdded  = "(((((((CorGluta:0.329,CytAquat:0.333):0.053,CloBifer:0.204):0.033,(CloButy2:0.000,CloButyr:0.000):0.058):0.292,((((CloTyro3:1.000,CloTyro4:0.027):0.065,CloTyro2:0.013):0.000,CloTyrob:0.013):0.339,CloInnoc:0.384):0.179):0.047,(CloCarni:0.158,CloPaste:0.211):0.056):0.137,(CorAquat:0.076,CurCitre:0.086):0.026):0.076,CelBiazo:0.076);";
-    const char *topo_reAdOpt  = "(((((((CorGluta:0.329,CytAquat:0.333):0.088,CloBifer:0.190):0.050,(CloButy2:0.000,CloButyr:0.000):0.058):0.277,(CloCarni:0.118,CloPaste:0.224):0.031):0.044,((((CloTyro3:1.000,CloTyro4:0.027):0.049,CloTyrob:0.013):0.000,CloTyro2:0.013):0.366,CloInnoc:0.370):0.211):0.165,(CorAquat:0.076,CurCitre:0.086):0.029):0.076,CelBiazo:0.076);";
-    // const char *topo_org      = "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,(((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,((((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
-    const char *topo_partClo  = "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,((((CloButy2:0.000,CloButyP:0.000):0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,((((CorAquat:0.084,CurCitre:0.058):0.103,CorGluta:0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
-    const char *topo_partCor  = "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,(((CloButy2:0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,((((CorAquat:0.084,CurCitre:0.058):0.103,(CorGluta:0.000,CorGlutP:0.000):0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
-    const char *topo_partBoth = "(((((((CloTyro3:1.046,CloTyro4:0.061):0.026,CloTyro2:0.017):0.017,CloTyrob:0.009):0.274,CloInnoc:0.371):0.057,CloBifer:0.388):0.124,((((CloButy2:0.000,CloButyP:0.000):0.009,CloButyr:0.000):0.564,CloCarni:0.120):0.010,CloPaste:0.179):0.131):0.081,((((CorAquat:0.084,CurCitre:0.058):0.103,(CorGluta:0.000,CorGlutP:0.000):0.522):0.053,CelBiazo:0.059):0.207,CytAquat:0.711):0.081);";
-    const char *topo_bug609   = "(((((((CloTyro3:1.000,CloTyro4:0.027):0.065,CloTyro2:0.013):0.000,CloTyrob:0.013):0.267,CloInnoc:0.411):0.065,CloBifer:0.277):0.112,((((CloButy2:0.000,CloButyP:0.000):0.000,CloButyr:0.000):0.145,CloCarni:0.211):0.120,CloPaste:0.276):0.000):0.023,((((CorAquat:0.089,CurCitre:0.099):0.065,((CorGlutP:0.000,CloButyM:0.000):0.000,CorGluta:0.137):0.384):0.121,CelBiazo:0.203):0.053,CytAquat:0.460):0.023);";
-
     TEST_EXPECT_SAVED_TOPOLOGY(env, "initial");
 
     const int PARSIMONY_ORG = 301;
@@ -1671,7 +1660,6 @@ void TEST_tree_add_marked() {
 
         nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, true);
 
-        TEST_EXPECT_TOPOLOGY(env, topo_reAdded);
         TEST_EXPECT_SAVED_TOPOLOGY(env, "quick-added");
         TEST_EXPECT_PARSVAL(env, 278);
 
@@ -1686,7 +1674,6 @@ void TEST_tree_add_marked() {
 
         nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, false);
 
-        TEST_EXPECT_TOPOLOGY(env, topo_reAdOpt);
         TEST_EXPECT_SAVED_TOPOLOGY(env, "added-NNI");
         TEST_EXPECT_PARSVAL(env, 276);
 
@@ -1762,7 +1749,6 @@ void TEST_tree_add_marked() {
             TEST_EXPECTATION(exactly(1).of(that(brother).is_equal_to("CloButyr"),
                                            that(brother).is_equal_to("CloButy2")));
 
-            TEST_EXPECT_TOPOLOGY(env, topo_partClo);
             TEST_EXPECT_SAVED_TOPOLOGY(env, "addPart-CloButyP");
             TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserting partials does not affect parsimony value
 
@@ -1784,7 +1770,6 @@ void TEST_tree_add_marked() {
                 const char *brother = CorGlutP_node->get_brother()->name;
                 TEST_EXPECT_EQUAL(brother, "CorGluta"); // partial created from CorGluta gets inserted next to CorGluta
 
-                TEST_EXPECT_TOPOLOGY(env, topo_partCor);
                 TEST_EXPECT_SAVED_TOPOLOGY(env, "addPart-CorGlutP");
                 TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
             }
@@ -1802,7 +1787,6 @@ void TEST_tree_add_marked() {
                 TEST_EXPECTATION(exactly(1).of(that(brother).is_equal_to("CloButyr"),
                                                that(brother).is_equal_to("CloButy2")));
 
-                TEST_EXPECT_TOPOLOGY(env, topo_partBoth);
                 TEST_EXPECT_SAVED_TOPOLOGY(env, "addPart-CorGlutP-CloButyP");
                 TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
             }
@@ -1859,7 +1843,6 @@ void TEST_tree_add_marked() {
                 // CloButyM differs slightly in overlap with CloButyr/CloButy2, but has no overlap with CorGlutP
                 TEST_EXPECT_EQUAL(brother, "CorGlutP"); // reproduces bug described in #609
 
-                TEST_EXPECT_TOPOLOGY(env, topo_bug609);
                 TEST_EXPECT_SAVED_TOPOLOGY(env, "addPart-bug609");
                 TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG+9); // @@@ known bug - partial should not affect parsimony value.
                                                            // related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
