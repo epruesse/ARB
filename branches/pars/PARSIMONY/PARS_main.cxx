@@ -1763,6 +1763,7 @@ void TEST_tree_add_marked() {
                                            that(brother).is_equal_to("CloButy2")));
 
             TEST_EXPECT_TOPOLOGY(env, topo_partClo);
+            TEST_EXPECT_SAVED_TOPOLOGY(env, "addPart-CloButyP");
             TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserting partials does not affect parsimony value
 
             env.pop();
@@ -1784,6 +1785,7 @@ void TEST_tree_add_marked() {
                 TEST_EXPECT_EQUAL(brother, "CorGluta"); // partial created from CorGluta gets inserted next to CorGluta
 
                 TEST_EXPECT_TOPOLOGY(env, topo_partCor);
+                TEST_EXPECT_SAVED_TOPOLOGY(env, "addPart-CorGlutP");
                 TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
             }
 
@@ -1801,6 +1803,7 @@ void TEST_tree_add_marked() {
                                                that(brother).is_equal_to("CloButy2")));
 
                 TEST_EXPECT_TOPOLOGY(env, topo_partBoth);
+                TEST_EXPECT_SAVED_TOPOLOGY(env, "addPart-CorGlutP-CloButyP");
                 TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
             }
 
