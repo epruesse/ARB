@@ -1853,6 +1853,17 @@ void TEST_tree_add_marked() {
     }
 }
 
+void TEST_protein_tree_add_marked() {
+    const char *aliname = "ali_tuf_pro";
+
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_prot.arb", aliname);
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_prot"));
+    TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-initial");
+
+    const int PARSIMONY_ORG = 215;
+    TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+}
+
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
