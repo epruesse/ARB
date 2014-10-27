@@ -1860,6 +1860,7 @@ void TEST_tree_add_marked() {
                 TEST_EXPECT_EQUAL(brother, "CorGlutP"); // reproduces bug described in #609
 
                 TEST_EXPECT_TOPOLOGY(env, topo_bug609);
+                TEST_EXPECT_SAVED_TOPOLOGY(env, "addPart-bug609");
                 TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG+9); // @@@ known bug - partial should not affect parsimony value.
                                                            // related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
             }
