@@ -275,7 +275,50 @@ tree_data		%% (%
 			group_name		"EF-Tu / EF-1a"
 			%) /*node*/
 
+		order			%i 1
 		%) /*tree_prot*/
+
+	tree_prot_opti		%% (%
+		tree			"N0.673858,0.673858;N0.0262009,0.0218341;N0.0567686,0.0502183;N0.00436681,0.00437637;N0.00218341,0;LMucRace3\ALMucRacem\ALMucRace2\ALAbdGlauc\AN0.0633188,0.0742358;LCddAlbic\ALSacCere5\AN0.171717,0.257653;N0.0227848,0.15736;N0.151899,0.149367;LCytLyti6\ALTaxOcell\ALBctFra12\AN0.0535714,0.059126;LStrCoel9\ALStrRamo3\A"
+		nnodes			%i 10
+		ruler			%% (%
+			size			%f 0.1
+			RADIAL			%% (%
+				ruler_y			%f 5.80564
+				ruler_x			%f 0
+				%) /*RADIAL*/
+
+			text_x			%f 0
+			text_y			%f 0
+			ruler_width		%i 0
+			LIST			%% (%
+				ruler_y			%f 0
+				ruler_x			%f 0
+				text_x			%f 0
+				text_y			%f 0
+				%) /*LIST*/
+
+			%) /*ruler*/
+
+		security		%i 0
+		remark			"Phylip Categories Neighbour dotgapmax _834\n[created as copy of 'tree_workdec']\n[created as copy of 'tree_prot']"
+		node			%% (%
+			id			%i 1
+			group_name		"Eukarya EF-Tu"
+			%) /*node*/
+
+		node			%% (%
+			id			%i 6
+			group_name		"Bacteria EF-Tu"
+			%) /*node*/
+
+		node			%% (%
+			id			%i 0
+			group_name		"EF-Tu / EF-1a"
+			%) /*node*/
+
+		order			%i 2
+		%) /*tree_prot_opti*/
 
 	%) /*tree_data*/
 
@@ -1285,8 +1328,8 @@ genetic			%% (%
 	%) /*genetic*/
 
 focus			%% (%
-	tree_name		"tree_prot"
-	configuration		"tuf_feb05_SS_2"
+	tree_name		"tree_prot_opti"
+	configuration		"4"
 	%) /*focus*/
 
 search			%% (%
@@ -1589,6 +1632,12 @@ configuration_data		%% (%
 		name			"default_configuration"
 		top_area		""
 		middle_area		"\AGSAI-Maingroup\AE\AFMore Sequences\AE\AGEF-Tu / EF-1a\AGBacteria EF-Tu\ALBctFra12\ALCytLyti6\ALTaxOcell\ALStrRamo3\ALStrCoel9\AE\AGEukarya EF-Tu\ALMucRacem\ALMucRace2\ALMucRace3\ALAbdGlauc\ALSacCere5\ALCddAlbic\AE\AE"
+		%) /*configuration*/
+
+	configuration		%% (%
+		name			"4"
+		top_area		""
+		middle_area		"\AGSAI-Maingroup\AE\AFMore Sequences\AE\AGEF-Tu / EF-1a\AGBacteria EF-Tu\ALCytLyti6\ALStrRamo3\AE\AGEukarya EF-Tu\ALMucRace2\ALSacCere5\AE\AE"
 		%) /*configuration*/
 
 	%) /*configuration_data*/
