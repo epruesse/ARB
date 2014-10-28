@@ -1863,6 +1863,22 @@ void TEST_protein_tree_add_marked() {
 
     const int PARSIMONY_ORG = 917;
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+    // Note: following code leaks father nodes and edges
+    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_protein_tree_add_marked
+
+    // test remove-marked only (same code as part of nt_reAdd)
+    {
+        env.push();
+
+        env.graphic_tree()->get_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
+        TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-removed");
+        TEST_EXPECT_PARSVAL(env, 794);
+
+        env.pop();
+    }
+
+    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
 }
 
 #endif // UNIT_TESTS
