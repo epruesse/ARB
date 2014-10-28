@@ -1879,6 +1879,34 @@ void TEST_protein_tree_add_marked() {
     }
 
     TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+    // test quick-add
+    {
+        env.push();
+
+        nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, true);
+
+        TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-quick-added");
+        TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG+1);
+
+        env.pop();
+    }
+
+    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+    // test add + NNI
+    {
+        env.push();
+
+        nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, false);
+
+        TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-added-NNI");
+        TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+        env.pop();
+    }
+
+    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
 }
 
 #endif // UNIT_TESTS

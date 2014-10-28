@@ -323,7 +323,7 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
 
     const AP_sequence_protein *part = (const AP_sequence_protein *)part_;
 
-    UNCOVERED();
+    UNCOVERED(); // @@@ still uncovered
     const AP_PROTEINS *pf      = get_sequence();
     const AP_PROTEINS *pp      = part->get_sequence();
 
@@ -408,8 +408,6 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
 AP_FLOAT AP_sequence_protein::count_weighted_bases() const {
     AP_FLOAT           wcount;
     const AP_PROTEINS *sequence = get_sequence();
-
-    UNCOVERED();
 
     if (!sequence) wcount = -1.0;
     else {
