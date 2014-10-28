@@ -1630,6 +1630,60 @@ inline int is_partial(GBDATA *gb_species) {
     return GBT_is_partial(gb_species, -1, false);
 }
 
+static GBDATA *createPartialSeqFrom(GBDATA *gb_main, const char *aliname, const char *dest_species, const char *source_species, int startPos, int endPos) {
+    GB_transaction ta(gb_main);
+
+    GBDATA *gb_result         = NULL;
+    GBDATA *gb_source_species = GBT_expect_species(gb_main, source_species);
+
+    if (gb_source_species) {
+        GBDATA *gb_dest_species = copy_to(gb_source_species, dest_species);
+        GBDATA *gb_dest_seq     = GBT_find_sequence(gb_dest_species, aliname); // =same as source seq
+        char   *seq             = GB_read_string(gb_dest_seq);
+
+        if (seq) {
+            int maxPos = strlen(seq)-1;
+
+            startPos = std::min(startPos, maxPos);
+            endPos   = std::min(endPos, maxPos);
+
+            if (startPos>0) memset(seq, '.', startPos);
+            if (endPos<maxPos) memset(seq+endPos+1, '.', maxPos-endPos);
+
+            GB_ERROR error     = GB_write_string(gb_dest_seq, seq);
+            if (error) GB_export_error(error);
+            else     gb_result = gb_dest_species; // success
+
+            free(seq);
+        }
+    }
+
+    return gb_result;
+}
+
+static GB_ERROR modifyOneBase(GBDATA *gb_species, const char *aliname, char cOld, char cNew) {
+    GB_transaction ta(gb_species);
+    GB_ERROR       error = "failed to modifyOneBase";
+
+    GBDATA *gb_seq = GBT_find_sequence(gb_species, aliname);
+    if (gb_seq) {
+        char *seq = GB_read_string(gb_seq);
+        if (seq) {
+            char *B = strchr(seq, cOld);
+            if (!B) {
+                error = "does not contain base in modifyOneBase";
+            }
+            else {
+                B[0]  = cNew;
+                error = GB_write_string(gb_seq, seq);
+            }
+            free(seq);
+        }
+    }
+
+    return error;
+}
+
 void TEST_tree_add_marked() {
     const char *aliname = "ali_5s";
 
@@ -1688,50 +1742,13 @@ void TEST_tree_add_marked() {
     // test partial-add
     {
         GBDATA *gb_main = env.gbmain();
-        GBDATA *CloButyP; // partial created from 'CloButyr'
-        GBDATA *CorGlutP; // partial created from 'CorGluta'
-        GBDATA *CloButyM; // as CloButyP, but one basepos modified
-        {
-            GB_transaction  ta(gb_main);
 
-            GBDATA *CloButyr = GBT_expect_species(env.gbmain(), "CloButyr");
-            GBDATA *CorGluta = GBT_expect_species(env.gbmain(), "CorGluta");
-
-            TEST_REJECT_NULL(CloButyr);
-            TEST_REJECT_NULL(CorGluta);
-
-            CloButyP = copy_to(CloButyr, "CloButyP");
-            CloButyM = copy_to(CloButyr, "CloButyM");
-            CorGlutP = copy_to(CorGluta, "CorGlutP");
-
-            GBDATA *CloButyP_seq = GBT_find_sequence(CloButyP, aliname);
-            GBDATA *CloButyM_seq = GBT_find_sequence(CloButyM, aliname);
-            GBDATA *CorGlutP_seq = GBT_find_sequence(CorGlutP, aliname);
-
-            char *CloButyP_data = GB_read_string(CloButyP_seq);
-            char *CorGlutP_data = GB_read_string(CorGlutP_seq);
-
-            TEST_REJECT_NULL(CloButyP_data);
-            TEST_REJECT_NULL(CorGlutP_data);
-
-            // create 2 partial sequences (w/o overlap)
-            const int SPLIT = 56;
-            memset(CloButyP_data,       '.', SPLIT);
-            memset(CorGlutP_data+SPLIT, '.', strlen(CorGlutP_data)-SPLIT);
-
-            TEST_EXPECT_NO_ERROR(GB_write_string(CloButyP_seq, CloButyP_data));
-            TEST_EXPECT_NO_ERROR(GB_write_string(CorGlutP_seq, CorGlutP_data));
-
-            {
-                char *G = strchr(CloButyP_data, 'G');
-                TEST_REJECT_NULL(G);
-                G[0] = 'C'; // modify one basepos
-                TEST_EXPECT_NO_ERROR(GB_write_string(CloButyM_seq, CloButyP_data));
-            }
-
-            free(CloButyP_data);
-            free(CorGlutP_data);
-        }
+        // create 2 non-overlapping partial species
+        const int  SPLIT    = 55;
+        GBDATA    *CloButyP = createPartialSeqFrom(gb_main, aliname, "CloButyP", "CloButyr", SPLIT+1, INT_MAX);
+        GBDATA    *CorGlutP = createPartialSeqFrom(gb_main, aliname, "CorGlutP", "CorGluta", 0,       SPLIT);
+        GBDATA    *CloButyM = createPartialSeqFrom(gb_main, aliname, "CloButyM", "CloButyr", SPLIT+1, INT_MAX);
+        TEST_EXPECT_NO_ERROR(modifyOneBase(CloButyM, aliname, 'G', 'C')); // modify first 'G' into 'C'
 
         // add CloButyP
         {
@@ -1745,7 +1762,7 @@ void TEST_tree_add_marked() {
             TEST_REJECT_NULL(CloButyP_node);
 
             const char *brother = CloButyP_node->get_brother()->name;
-            // CloButyr and CloButyr do not differ in seq-range of partial -> any of both may be chosen as brother.
+            // CloButyr and CloButy2 do not differ in seq-range of partial -> any of both may be chosen as brother.
             // behavior should be changed with #605
             TEST_EXPECTATION(exactly(1).of(that(brother).is_equal_to("CloButyr"),
                                            that(brother).is_equal_to("CloButy2")));
