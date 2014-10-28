@@ -370,7 +370,7 @@ AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
 
 AWT_distance_meter::~AWT_distance_meter() {
     for (int i=0; i<64; i++) {
-        delete dist_[i];
+        free(dist_[i]);
     }
 
 }
