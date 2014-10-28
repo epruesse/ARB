@@ -1554,6 +1554,7 @@ int ARB_main(int argc, char *argv[]) {
 #include <arb_diff.h>
 #include <test_unit.h>
 #include <AP_seq_dna.hxx>
+#include <AP_seq_protein.hxx>
 #include "test_env.h"
 
 #if defined(DEVEL_RALF)
@@ -1856,11 +1857,11 @@ void TEST_tree_add_marked() {
 void TEST_protein_tree_add_marked() {
     const char *aliname = "ali_tuf_pro";
 
-    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_prot.arb", aliname);
+    PARSIMONY_testenv<AP_sequence_protein> env("TEST_prot.arb", aliname);
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_prot_opti"));
     TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-initial");
 
-    const int PARSIMONY_ORG = 212;
+    const int PARSIMONY_ORG = 917;
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
 }
 

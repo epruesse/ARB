@@ -321,6 +321,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/AliView.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/AP_seq_protein.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
