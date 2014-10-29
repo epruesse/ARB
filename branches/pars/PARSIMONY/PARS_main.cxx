@@ -1601,6 +1601,47 @@ arb_test::match_expectation topologyEquals(AP_tree_nlen *root_node, const char *
 
 #define TEST_EXPECT_PARSVAL(env,exp_pars)  TEST_EXPECT_SIMILAR(env.root_node()->costs(), exp_pars, 0.001);
 
+enum TopoMod {
+    MOD_REMOVE_MARKED,
+    MOD_QUICK_ADD,
+    MOD_ADD_NNI,
+};
+
+template <typename SEQ>
+static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
+    switch (mod) {
+        case MOD_REMOVE_MARKED:
+            env.graphic_tree()->get_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
+            break;
+
+        case MOD_QUICK_ADD:
+            nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, true);
+            break;
+
+        case MOD_ADD_NNI:
+            nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, false);
+            break;
+    }
+}
+
+template <typename SEQ>
+static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const char *topo, int pars_expected, PARSIMONY_testenv<SEQ>& env) {
+    using namespace   arb_test;
+    expectation_group fulfilled;
+
+    env.push();
+
+    modifyTopology(env, mod);
+    fulfilled.add(topologyEquals(env.root_node(), topo));
+    fulfilled.add(that(env.root_node()->costs()).fulfills(epsilon_similar(0.001), pars_expected));
+
+    env.pop();
+
+    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+    return all().ofgroup(fulfilled);
+}
+
 static GBDATA *copy_to(GBDATA *gb_species, const char *newShortname) {
     GBDATA *gb_species_data = GB_get_father(gb_species);
     GBDATA *gb_new_species  = GB_create_container(gb_species_data, "species");
@@ -1697,45 +1738,9 @@ void TEST_tree_add_marked() {
     // Note: following code leaks father nodes and edges
     // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_tree_add_marked
 
-    // test remove-marked only (same code as part of nt_reAdd)
-    {
-        env.push();
-
-        env.graphic_tree()->get_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
-        TEST_EXPECT_SAVED_TOPOLOGY(env, "removed");
-
-        env.pop();
-    }
-
-    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
-
-    // test quick-add
-    {
-        env.push();
-
-        nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, true);
-
-        TEST_EXPECT_SAVED_TOPOLOGY(env, "quick-added");
-        TEST_EXPECT_PARSVAL(env, 278);
-
-        env.pop();
-    }
-
-    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
-
-    // test add + NNI
-    {
-        env.push();
-
-        nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, false);
-
-        TEST_EXPECT_SAVED_TOPOLOGY(env, "added-NNI");
-        TEST_EXPECT_PARSVAL(env, 276);
-
-        env.pop();
-    }
-
-    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "removed",     PARSIMONY_ORG-93, env)); // test remove-marked only (same code as part of nt_reAdd)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "quick-added", PARSIMONY_ORG-23, env)); // test quick-add
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "added-NNI",   PARSIMONY_ORG-25, env)); // test add + NNI
 
     // @@@ test optimize etc.
 
@@ -1884,46 +1889,9 @@ void TEST_protein_tree_add_marked() {
     // Note: following code leaks father nodes and edges
     // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_protein_tree_add_marked
 
-    // test remove-marked only (same code as part of nt_reAdd)
-    {
-        env.push();
-
-        env.graphic_tree()->get_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
-        TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-removed");
-        TEST_EXPECT_PARSVAL(env, 794);
-
-        env.pop();
-    }
-
-    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
-
-    // test quick-add
-    {
-        env.push();
-
-        nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, true);
-
-        TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-quick-added");
-        TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG+1);
-
-        env.pop();
-    }
-
-    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
-
-    // test add + NNI
-    {
-        env.push();
-
-        nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, false);
-
-        TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-added-NNI");
-        TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
-
-        env.pop();
-    }
-
-    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",     PARSIMONY_ORG-123, env)); // test remove-marked only (same code as part of nt_reAdd)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-quick-added", PARSIMONY_ORG+1,   env)); // test quick-add
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-added-NNI",   PARSIMONY_ORG,     env)); // test add + NNI
 }
 
 #endif // UNIT_TESTS
