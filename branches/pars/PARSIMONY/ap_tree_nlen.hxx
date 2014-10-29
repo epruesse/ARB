@@ -221,7 +221,7 @@ class AP_tree_edge : virtual Noncopyable {
     friend class AP_tree_nlen;
     friend std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
 #if defined(UNIT_TESTS) // UT_DIFF
-    friend void TEST_tree_modifications();
+    friend void TEST_basic_tree_modifications();
 #endif
 
 protected:

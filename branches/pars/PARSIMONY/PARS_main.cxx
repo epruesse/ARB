@@ -1759,7 +1759,7 @@ static GB_ERROR modifyOneBase(GBDATA *gb_species, const char *aliname, char cOld
     return error;
 }
 
-void TEST_tree_add_marked() {
+void TEST_nucl_tree_modifications() {
     const char *aliname = "ali_5s";
 
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
@@ -1833,7 +1833,7 @@ void TEST_tree_add_marked() {
     }
 }
 
-void TEST_protein_tree_add_marked() {
+void TEST_prot_tree_modifications() {
     const char *aliname = "ali_tuf_pro";
 
     PARSIMONY_testenv<AP_sequence_protein> env("TEST_prot.arb", aliname);

@@ -405,7 +405,7 @@ PARSIMONY_testenv<SEQTYPE>::PARSIMONY_testenv(const char *dbname, const char *al
 template PARSIMONY_testenv<AP_sequence_protein>::PARSIMONY_testenv(const char *dbname, const char *aliName); // explicit instanciation (otherwise link error in unittest)
 
 
-void TEST_tree_modifications() {
+void TEST_basic_tree_modifications() {
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
 
