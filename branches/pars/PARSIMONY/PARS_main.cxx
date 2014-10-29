@@ -1605,6 +1605,7 @@ enum TopoMod {
     MOD_REMOVE_MARKED,
     MOD_QUICK_ADD,
     MOD_ADD_NNI,
+    MOD_ADD_PARTIAL,
 };
 
 template <typename SEQ>
@@ -1621,21 +1622,25 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
         case MOD_ADD_NNI:
             nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, false);
             break;
+
+        case MOD_ADD_PARTIAL:
+            nt_add_partial(env.graphic_tree());
+            break;
     }
 }
 
 template <typename SEQ>
-static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const char *topo, int pars_expected, PARSIMONY_testenv<SEQ>& env) {
+static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const char *topo, int pars_expected, PARSIMONY_testenv<SEQ>& env, bool restore) {
     using namespace   arb_test;
     expectation_group fulfilled;
 
-    env.push();
+    if (restore) env.push();
 
     modifyTopology(env, mod);
-    fulfilled.add(topologyEquals(env.root_node(), topo));
+    if (topo) fulfilled.add(topologyEquals(env.root_node(), topo));
     fulfilled.add(that(env.root_node()->costs()).fulfills(epsilon_similar(0.001), pars_expected));
 
-    env.pop();
+    if (restore) env.pop();
 
     TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
 
@@ -1669,6 +1674,35 @@ inline void mark_only(GBDATA *gb_species) {
 inline int is_partial(GBDATA *gb_species) {
     GB_transaction ta(gb_species);
     return GBT_is_partial(gb_species, -1, false);
+}
+
+template <typename SEQ>
+static arb_test::match_expectation addedAsBrotherOf(const char *name, const char *allowedBrothers, PARSIMONY_testenv<SEQ>& env) {
+    using namespace   arb_test;
+    expectation_group fulfilled;
+
+    AP_tree_nlen *node_in_tree = env.root_node()->findLeafNamed(name);
+    fulfilled.add(that(node_in_tree).does_differ_from(NULL));
+
+    const char *brother = node_in_tree->get_brother()->name;
+    fulfilled.add(that(allowedBrothers).does_contain(brother));
+
+    return all().ofgroup(fulfilled);
+}
+
+template <typename SEQ>
+static arb_test::match_expectation addingPartialResultsIn(GBDATA *gb_added_species, const char *allowedBrothers, const char *topo, int pars_expected, PARSIMONY_testenv<SEQ>& env) {
+    using namespace   arb_test;
+    expectation_group fulfilled;
+
+    mark_only(gb_added_species);
+    fulfilled.add(modifyingTopoResultsIn(MOD_ADD_PARTIAL, topo, pars_expected, env, false));
+    fulfilled.add(that(is_partial(gb_added_species)).is_equal_to(1));
+
+    const char *name = GBT_read_name(gb_added_species);
+    fulfilled.add(addedAsBrotherOf(name, allowedBrothers, env));
+
+    return all().ofgroup(fulfilled);
 }
 
 static GBDATA *createPartialSeqFrom(GBDATA *gb_main, const char *aliname, const char *dest_species, const char *source_species, int startPos, int endPos) {
@@ -1738,9 +1772,9 @@ void TEST_tree_add_marked() {
     // Note: following code leaks father nodes and edges
     // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_tree_add_marked
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "nucl-removed",   PARSIMONY_ORG-93, env)); // test remove-marked only (same code as part of nt_reAdd)
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env)); // test quick-add
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env)); // test add + NNI
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "nucl-removed",   PARSIMONY_ORG-93, env, true)); // test remove-marked only (same code as part of nt_reAdd)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
 
     // @@@ test optimize etc.
 
@@ -1755,122 +1789,45 @@ void TEST_tree_add_marked() {
         GBDATA    *CloButyM = createPartialSeqFrom(gb_main, aliname, "CloButyM", "CloButyr", SPLIT+1, INT_MAX);
         TEST_EXPECT_NO_ERROR(modifyOneBase(CloButyM, aliname, 'G', 'C')); // modify first 'G' into 'C'
 
-        // add CloButyP
+        // add CloButyP (and undo)
         {
             env.push();
-
-            mark_only(CloButyP);
-            nt_add_partial(env.graphic_tree());
-            TEST_EXPECT_EQUAL(is_partial(CloButyP), 1);
-
-            AP_tree_nlen *CloButyP_node = env.root_node()->findLeafNamed("CloButyP");
-            TEST_REJECT_NULL(CloButyP_node);
-
-            const char *brother = CloButyP_node->get_brother()->name;
             // CloButyr and CloButy2 do not differ in seq-range of partial -> any of both may be chosen as brother.
             // behavior should be changed with #605
-            TEST_EXPECTATION(exactly(1).of(that(brother).is_equal_to("CloButyr"),
-                                           that(brother).is_equal_to("CloButy2")));
-
-            TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-addPart-CloButyP");
-            TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserting partials does not affect parsimony value
-
+            TEST_EXPECTATION(addingPartialResultsIn(CloButyP, "CloButyr;CloButy2", "nucl-addPart-CloButyP", PARSIMONY_ORG, env));
             env.pop();
         }
 
         {
             env.push();
-
-            // add CorGlutP
-            {
-                mark_only(CorGlutP);
-                nt_add_partial(env.graphic_tree());
-                TEST_EXPECT_EQUAL(is_partial(CorGlutP), 1);
-
-                AP_tree_nlen *CorGlutP_node = env.root_node()->findLeafNamed("CorGlutP");
-                TEST_REJECT_NULL(CorGlutP_node);
-
-                const char *brother = CorGlutP_node->get_brother()->name;
-                TEST_EXPECT_EQUAL(brother, "CorGluta"); // partial created from CorGluta gets inserted next to CorGluta
-
-                TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-addPart-CorGlutP");
-                TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
-            }
-
-            // also add CloButyP
-            {
-                mark_only(CloButyP);
-                nt_add_partial(env.graphic_tree());
-                TEST_EXPECT_EQUAL(is_partial(CloButyP), 1);
-
-                AP_tree_nlen *CloButyP_node = env.root_node()->findLeafNamed("CloButyP");
-                TEST_REJECT_NULL(CloButyP_node);
-
-                const char *brother = CloButyP_node->get_brother()->name;
-                TEST_EXPECTATION(exactly(1).of(that(brother).is_equal_to("CloButyr"),
-                                               that(brother).is_equal_to("CloButy2")));
-
-                TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-addPart-CorGlutP-CloButyP");
-                TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
-            }
-
+            TEST_EXPECTATION(addingPartialResultsIn(CorGlutP, "CorGluta",          "nucl-addPart-CorGlutP",          PARSIMONY_ORG, env)); // add CorGlutP
+            TEST_EXPECTATION(addingPartialResultsIn(CloButyP, "CloButyr;CloButy2", "nucl-addPart-CorGlutP-CloButyP", PARSIMONY_ORG, env)); // also add CloButyP
             env.pop();
         }
 
         // now add CorGlutP as full, then CloButyP and CloButyM as partials
         {
             env.push();
+
+            mark_only(CorGlutP);
             {
-                mark_only(CorGlutP);
-                {
-                    GB_transaction  ta(CorGlutP);
-                    TEST_EXPECT_NO_ERROR(GBT_write_int(CorGlutP, "ARB_partial", 0)); // revert species to "full"
-                }
-                nt_add(env.graphic_tree(), NT_ADD_MARKED, true);
-                TEST_EXPECT_EQUAL(is_partial(CorGlutP), 0); // add as full sequence!
-
-                AP_tree_nlen *CorGlutP_node = env.root_node()->findLeafNamed("CorGlutP");
-                TEST_REJECT_NULL(CorGlutP_node);
-
-                const char *brother = CorGlutP_node->get_brother()->name;
-                TEST_EXPECT_EQUAL(brother, "CorGluta"); // partial created from CorGluta gets inserted next to CorGluta
-
-                TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-addPartialAsFull-CorGlutP");
-                TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
+                GB_transaction  ta(CorGlutP);
+                TEST_EXPECT_NO_ERROR(GBT_write_int(CorGlutP, "ARB_partial", 0)); // revert species to "full"
             }
 
-            {
-                mark_only(CloButyP);
-                nt_add_partial(env.graphic_tree());
-                TEST_EXPECT_EQUAL(is_partial(CloButyP), 1);
+            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "nucl-addPartialAsFull-CorGlutP", PARSIMONY_ORG, env, false));
+            TEST_EXPECT_EQUAL(is_partial(CorGlutP), 0); // check CorGlutP was added as full sequence
+            TEST_EXPECTATION(addedAsBrotherOf("CorGlutP", "CorGluta", env)); // partial created from CorGluta gets inserted next to CorGluta
 
-                AP_tree_nlen *CloButyP_node = env.root_node()->findLeafNamed("CloButyP");
-                TEST_REJECT_NULL(CloButyP_node);
+            // add CloButyP as partial.
+            // as expected it is placed next to matching full sequences (does not differ in partial range)
+            TEST_EXPECTATION(addingPartialResultsIn(CloButyP, "CloButyr;CloButy2", NULL, PARSIMONY_ORG, env));
 
-                const char *brother = CloButyP_node->get_brother()->name;
-                // CloButyP still falls next to matching full sequences (does not differ in partial range)
-                TEST_EXPECTATION(exactly(1).of(that(brother).is_equal_to("CloButyr"),
-                                               that(brother).is_equal_to("CloButy2")));
-
-                TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
-            }
-            {
-                mark_only(CloButyM);
-                nt_add_partial(env.graphic_tree());
-                TEST_EXPECT_EQUAL(is_partial(CloButyM), 1);
-
-                AP_tree_nlen *CloButyM_node = env.root_node()->findLeafNamed("CloButyM");
-                TEST_REJECT_NULL(CloButyM_node);
-
-                const char *brother = CloButyM_node->get_brother()->name;
-                // CloButyM differs slightly in overlap with CloButyr/CloButy2, but has no overlap with CorGlutP
-                TEST_EXPECT_EQUAL(brother, "CorGlutP"); // reproduces bug described in #609
-
-                TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-addPart-bug609");
-                TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG+9); // @@@ known bug - partial should not affect parsimony value.
-                                                           // related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
-            }
-
+            // CloButyM differs slightly in overlap with CloButyr/CloButy2, but has no overlap with CorGlutP
+            // reproduces bug described in #609
+            TEST_EXPECTATION(addingPartialResultsIn(CloButyM, "CorGlutP", "nucl-addPart-bug609",
+                                                    PARSIMONY_ORG+9, // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS 
+                                                    env));
             env.pop();
         }
     }
@@ -1889,9 +1846,9 @@ void TEST_protein_tree_add_marked() {
     // Note: following code leaks father nodes and edges
     // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_protein_tree_add_marked
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-123, env)); // test remove-marked only (same code as part of nt_reAdd)
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG+1,   env)); // test quick-add
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env)); // test add + NNI
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-123, env, true)); // test remove-marked only (same code as part of nt_reAdd)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG+1,   env, true)); // test quick-add
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
 }
 
 #endif // UNIT_TESTS
