@@ -1772,6 +1772,12 @@ void TEST_nucl_tree_modifications() {
     // Note: following code leaks father nodes and edges
     // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_tree_add_marked
 
+    // [NUCOPTI] opposed to protein tests below the initial tree here is NOT optimized! compare .@PROTOPTI
+    // -> removing and adding species produces a better tree
+    //
+    // diff initial->add-quick: http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-add-quick.tree.expected?old = HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
+    // diff initial->add-NNI:   http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-add-NNI.tree.expected?old   = HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
+
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "nucl-removed",   PARSIMONY_ORG-93, env, true)); // test remove-marked only (same code as part of nt_reAdd)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
@@ -1846,9 +1852,20 @@ void TEST_prot_tree_modifications() {
     // Note: following code leaks father nodes and edges
     // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_protein_tree_add_marked
 
+    // [PROTOPTI] opposed to nucleid tests above the initial tree here is already optimized! compare .@NUCOPTI
+    // -> adding species approximately reproduces initial topology
+    // 
+    // diff initial->add-quick: http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/prot-add-quick.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fprot-initial.tree.expected
+    // diff initial->add-NNI:   http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/prot-add-NNI.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fprot-initial.tree.expected
+    //
+    // Note: comparing these two diffs also demonstrates why quick-adding w/o NNI suffers
+
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-123, env, true)); // test remove-marked only (same code as part of nt_reAdd)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG+1,   env, true)); // test quick-add
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
+
+    // @@@ test optimize etc.
+
 }
 
 #endif // UNIT_TESTS
