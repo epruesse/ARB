@@ -1775,8 +1775,8 @@ void TEST_nucl_tree_modifications() {
     // [NUCOPTI] opposed to protein tests below the initial tree here is NOT optimized! compare .@PROTOPTI
     // -> removing and adding species produces a better tree
     //
-    // diff initial->add-quick: http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-add-quick.tree.expected?old = HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
-    // diff initial->add-NNI:   http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-add-NNI.tree.expected?old   = HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
+    // diff initial->add-quick: http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-add-quick.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
+    // diff initial->add-NNI:   http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-add-NNI.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "nucl-removed",   PARSIMONY_ORG-93, env, true)); // test remove-marked only (same code as part of nt_reAdd)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
