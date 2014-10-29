@@ -1730,7 +1730,7 @@ void TEST_tree_add_marked() {
 
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
-    TEST_EXPECT_SAVED_TOPOLOGY(env, "initial");
+    TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
 
     const int PARSIMONY_ORG = 301;
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
@@ -1738,9 +1738,9 @@ void TEST_tree_add_marked() {
     // Note: following code leaks father nodes and edges
     // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_tree_add_marked
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "removed",     PARSIMONY_ORG-93, env)); // test remove-marked only (same code as part of nt_reAdd)
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "quick-added", PARSIMONY_ORG-23, env)); // test quick-add
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "added-NNI",   PARSIMONY_ORG-25, env)); // test add + NNI
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "nucl-removed",   PARSIMONY_ORG-93, env)); // test remove-marked only (same code as part of nt_reAdd)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env)); // test quick-add
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env)); // test add + NNI
 
     // @@@ test optimize etc.
 
@@ -1772,7 +1772,7 @@ void TEST_tree_add_marked() {
             TEST_EXPECTATION(exactly(1).of(that(brother).is_equal_to("CloButyr"),
                                            that(brother).is_equal_to("CloButy2")));
 
-            TEST_EXPECT_SAVED_TOPOLOGY(env, "addPart-CloButyP");
+            TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-addPart-CloButyP");
             TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserting partials does not affect parsimony value
 
             env.pop();
@@ -1793,7 +1793,7 @@ void TEST_tree_add_marked() {
                 const char *brother = CorGlutP_node->get_brother()->name;
                 TEST_EXPECT_EQUAL(brother, "CorGluta"); // partial created from CorGluta gets inserted next to CorGluta
 
-                TEST_EXPECT_SAVED_TOPOLOGY(env, "addPart-CorGlutP");
+                TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-addPart-CorGlutP");
                 TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
             }
 
@@ -1810,7 +1810,7 @@ void TEST_tree_add_marked() {
                 TEST_EXPECTATION(exactly(1).of(that(brother).is_equal_to("CloButyr"),
                                                that(brother).is_equal_to("CloButy2")));
 
-                TEST_EXPECT_SAVED_TOPOLOGY(env, "addPart-CorGlutP-CloButyP");
+                TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-addPart-CorGlutP-CloButyP");
                 TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
             }
 
@@ -1835,7 +1835,7 @@ void TEST_tree_add_marked() {
                 const char *brother = CorGlutP_node->get_brother()->name;
                 TEST_EXPECT_EQUAL(brother, "CorGluta"); // partial created from CorGluta gets inserted next to CorGluta
 
-                TEST_EXPECT_SAVED_TOPOLOGY(env, "addPartialAsFull-CorGlutP");
+                TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-addPartialAsFull-CorGlutP");
                 TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG); // inserted w/o mutation -> parsimony value does not change
             }
 
@@ -1866,7 +1866,7 @@ void TEST_tree_add_marked() {
                 // CloButyM differs slightly in overlap with CloButyr/CloButy2, but has no overlap with CorGlutP
                 TEST_EXPECT_EQUAL(brother, "CorGlutP"); // reproduces bug described in #609
 
-                TEST_EXPECT_SAVED_TOPOLOGY(env, "addPart-bug609");
+                TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-addPart-bug609");
                 TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG+9); // @@@ known bug - partial should not affect parsimony value.
                                                            // related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
             }
@@ -1889,9 +1889,9 @@ void TEST_protein_tree_add_marked() {
     // Note: following code leaks father nodes and edges
     // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_protein_tree_add_marked
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",     PARSIMONY_ORG-123, env)); // test remove-marked only (same code as part of nt_reAdd)
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-quick-added", PARSIMONY_ORG+1,   env)); // test quick-add
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-added-NNI",   PARSIMONY_ORG,     env)); // test add + NNI
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-123, env)); // test remove-marked only (same code as part of nt_reAdd)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG+1,   env)); // test quick-add
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env)); // test add + NNI
 }
 
 #endif // UNIT_TESTS
