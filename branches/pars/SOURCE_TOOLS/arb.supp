@@ -44,21 +44,21 @@
 
 
 {
-   arb: TEST_tree_add_marked leaks nodes
+   arb: TEST_nucl_tree_modifications leaks nodes
    Memcheck:Leak
    fun:_Znwm
    ...
    fun:_ZN12AP_tree_edge10initializeEP12AP_tree_nlen
    ...
-   fun:_Z20TEST_tree_add_markedv
+   fun:_Z28TEST_nucl_tree_modificationsv
 }
 {
-   arb: TEST_tree_add_marked leaks nodes
+   arb: TEST_nucl_tree_modifications leaks nodes
    Memcheck:Leak
    fun:_Znwm
    fun:_ZNK22AP_TreeNlenNodeFactory8makeNodeEP8TreeRoot
    ...
    fun:_ZL6nt_addP21AWT_graphic_parsimony7AddWhatb
    ...
-   fun:_Z20TEST_tree_add_markedv
+   fun:_Z28TEST_nucl_tree_modificationsv
 }

@@ -1785,7 +1785,7 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
 
     // Note: following code leaks father nodes and edges
-    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_tree_add_marked
+    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_nucl_tree_modifications
 
     // [NUCOPTI] opposed to protein tests below the initial tree here is NOT optimized! compare .@PROTOPTI
     // -> removing and adding species produces a better tree
@@ -1864,12 +1864,11 @@ void TEST_prot_tree_modifications() {
     const int PARSIMONY_ORG = 917;
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
 
-    // Note: following code leaks father nodes and edges
-    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_protein_tree_add_marked
+    // @@@ opposed to TEST_nucl_tree_modifications valgrind does not report leaks here. why?
 
     // [PROTOPTI] opposed to nucleid tests above the initial tree here is already optimized! compare .@NUCOPTI
     // -> adding species approximately reproduces initial topology
-    // 
+    //
     // diff initial->add-quick: http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/prot-add-quick.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fprot-initial.tree.expected
     // diff initial->add-NNI:   http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/prot-add-NNI.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fprot-initial.tree.expected
     //
