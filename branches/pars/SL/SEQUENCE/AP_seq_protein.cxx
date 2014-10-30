@@ -323,11 +323,10 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
 
     const AP_sequence_protein *part = (const AP_sequence_protein *)part_;
 
-    UNCOVERED(); // @@@ still uncovered
-    const AP_PROTEINS *pf      = get_sequence();
-    const AP_PROTEINS *pp      = part->get_sequence();
+    const AP_PROTEINS *pf = get_sequence();
+    const AP_PROTEINS *pp = part->get_sequence();
 
-    const AP_weights  *weights = get_weights();
+    const AP_weights *weights = get_weights();
 
     long min_end;                                   // minimum of both last non-gap positions
     for (min_end = get_sequence_length()-1; min_end >= 0; --min_end) {

@@ -1805,10 +1805,10 @@ void TEST_nucl_tree_modifications() {
 
         // create 2 non-overlapping partial species
         const int  SPLIT    = 55;
-        GBDATA    *CloButyP = createPartialSeqFrom(gb_main, aliname, "CloButyP", "CloButyr", SPLIT+1, INT_MAX);
         GBDATA    *CorGlutP = createPartialSeqFrom(gb_main, aliname, "CorGlutP", "CorGluta", 0,       SPLIT);
+        GBDATA    *CloButyP = createPartialSeqFrom(gb_main, aliname, "CloButyP", "CloButyr", SPLIT+1, INT_MAX);
         GBDATA    *CloButyM = createPartialSeqFrom(gb_main, aliname, "CloButyM", "CloButyr", SPLIT+1, INT_MAX);
-        TEST_EXPECT_NO_ERROR(modifyOneBase(CloButyM, aliname, 'G', 'C')); // modify first 'G' into 'C'
+        TEST_EXPECT_NO_ERROR(modifyOneBase(CloButyM, aliname, 'G', 'C')); // change first 'G' into 'C'
 
         // add CloButyP (and undo)
         {
@@ -1832,7 +1832,7 @@ void TEST_nucl_tree_modifications() {
 
             mark_only(CorGlutP);
             {
-                GB_transaction  ta(CorGlutP);
+                GB_transaction  ta(gb_main);
                 TEST_EXPECT_NO_ERROR(GBT_write_int(CorGlutP, "ARB_partial", 0)); // revert species to "full"
             }
 
@@ -1881,6 +1881,63 @@ void TEST_prot_tree_modifications() {
 
     // @@@ test optimize etc.
 
+    // test partial-add
+    {
+        GBDATA *gb_main = env.gbmain();
+
+        // create 2 non-overlapping partial species
+        GBDATA    *MucRaceP = createPartialSeqFrom(gb_main, aliname, "MucRaceP", "MucRacem", 0, 60);
+        GBDATA    *StrCoelP = createPartialSeqFrom(gb_main, aliname, "StrCoelP", "StrCoel9", 66-1, 184-1);
+        GBDATA    *StrCoelM = createPartialSeqFrom(gb_main, aliname, "StrCoelM", "StrCoel9", 66-1, 184-1);
+        TEST_EXPECT_NO_ERROR(modifyOneBase(StrCoelM, aliname, 'Y', 'H')); // change first 'Y' into 'H'
+
+        // add StrCoelP (and undo)
+        {
+            env.push();
+            // StrCoel9 and StrRamo3 do not differ in seq-range of partial -> any of both may be chosen as brother.
+            // behavior should be changed with #605
+            // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-StrCoelP", PARSIMONY_ORG+114, env));
+            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-StrCoelP", PARSIMONY_ORG+114, env)); // @@@ inserted completely wrong?
+            env.pop();
+        }
+
+        {
+            env.push();
+            TEST_EXPECTATION(addingPartialResultsIn(MucRaceP, "MucRacem",          "prot-addPart-MucRaceP",          PARSIMONY_ORG+7, env)); // add MucRaceP
+            // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114, env)); // also add StrCoelP
+            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114+7, env)); // also add StrCoelP // @@@ same misplacement as above
+            env.pop();
+        }
+
+        // now add MucRaceP as full, then StrCoelP and StrCoelM as partials
+        {
+            env.push();
+
+            mark_only(MucRaceP);
+            {
+                GB_transaction  ta(gb_main);
+                TEST_EXPECT_NO_ERROR(GBT_write_int(MucRaceP, "ARB_partial", 0)); // revert species to "full"
+            }
+
+            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG+7, env, false));
+            TEST_EXPECT_EQUAL(is_partial(MucRaceP), 0); // check CorGlutP was added as full sequence
+            // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "MucRacem", env)); // partial created from MucRacem gets inserted next to MucRacem
+            TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "AbdGlauc", env)); // partial created from MucRacem gets inserted next to MucRacem // @@@ misplacement if added as full sequence (as partial placement is ok)
+
+            // add StrCoelP as partial.
+            // as expected it is placed next to matching full sequences (does not differ in partial range)
+            // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", NULL, PARSIMONY_ORG, env));
+            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "MucRaceP", NULL, PARSIMONY_ORG+114+2, env)); // @@@ same position as when adding it partial
+
+            // StrCoelM differs slightly in overlap with StrCoel9/StrRamo3, but has no overlap with MucRaceP
+            // reproduces bug described in #609
+            // @@@ does not demonstrate anything atm (because StrCoelP already is placed next to MucRaceP above) 
+            TEST_EXPECTATION(addingPartialResultsIn(StrCoelM, "StrCoelP", "prot-addPart-bug609",
+                                                    PARSIMONY_ORG+114+3, // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
+                                                    env));
+            env.pop();
+        }
+    }
 }
 
 #endif // UNIT_TESTS
