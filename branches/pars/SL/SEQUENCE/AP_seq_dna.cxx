@@ -219,10 +219,9 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
 
     const AP_weights *weights = get_weights();
 
-    long min_end;                                   // minimum of both last non-gap positions
-
     // @@@ to fix #609 replace "IsGap" by "HasGap" below (also use & instead of | for 'both', 'both' as used here in fact means 'any')
 
+    long min_end; // minimum of both last non-gap positions
     for (min_end = get_sequence_length()-1; min_end >= 0; --min_end) {
         char both = pf[min_end]|pp[min_end];
         if (notIsGap(both)) { // last non-gap found
@@ -278,9 +277,7 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
     *penaltyPtr = penalty;
 }
 
-
-
-AP_FLOAT AP_sequence_parsimony::count_weighted_bases() const { // count all bases
+AP_FLOAT AP_sequence_parsimony::count_weighted_bases() const {
     static char *hits = 0;
     if (!hits) {
         hits = (char*)malloc(256);
