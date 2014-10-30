@@ -484,9 +484,10 @@ public:
         return s;
     }
 
-    void dump() const {
-        printf("best match for '%s' is '%s' (overlap=%li penalty=%li)\n",
-               get_name(), best_full_match->name,
+    void dump(const char *whichMatch) const {
+        ap_assert(best_full_match);
+        printf("%s match for '%s' is '%s' (overlap=%li penalty=%li)\n",
+               whichMatch, get_name(), best_full_match->name,
                overlap, penalty);
     }
 
@@ -510,7 +511,7 @@ void PartialSequence::test_match(const AP_tree_nlen *leaf_full) {
         else if (curr_penalty == penalty) {
             // found two equal-rated insertion points -> store data for warning
 #if defined(DEBUG)
-            if (!multi_match) dump();
+            if (!multi_match) dump("better");
             printf("Another equal match is against '%s' (overlap=%li penalty=%li)\n", leaf_full->name, curr_overlap, curr_penalty);
 #endif // DEBUG
 
@@ -526,7 +527,16 @@ void PartialSequence::test_match(const AP_tree_nlen *leaf_full) {
         best_full_match = leaf_full;
         multi_match     = false;
         multi_list      = "";
+
+#if defined(DEBUG)
+        dump("better");
+#endif
     }
+#if defined(DEBUG)
+    else if (!multi_match) {
+        printf("Worse match against '%s' (overlap=%li penalty=%li)\n", leaf_full->name, curr_overlap, curr_penalty);
+    }
+#endif
 }
 
 static GB_ERROR nt_best_partial_match_rek(list<PartialSequence>& partial, const AP_tree_nlen *tree) {
@@ -688,7 +698,7 @@ static void nt_add_partial(AWT_graphic_parsimony *agt) {
 
 #if defined(DEBUG)
             // show results :
-            for (; i != e; ++i) i->dump();
+            for (; i != e; ++i) i->dump("best");
             i = partial.begin();
 #endif // DEBUG
 
@@ -1727,7 +1737,12 @@ static GBDATA *createPartialSeqFrom(GBDATA *gb_main, const char *aliname, const 
 
             GB_ERROR error     = GB_write_string(gb_dest_seq, seq);
             if (error) GB_export_error(error);
-            else     gb_result = gb_dest_species; // success
+            else {
+                gb_result = gb_dest_species; // success
+#if defined(DEBUG)
+                fprintf(stderr, "created partial '%s' from '%s' (seq='%s')\n", dest_species, source_species, seq);
+#endif
+            }
 
             free(seq);
         }
