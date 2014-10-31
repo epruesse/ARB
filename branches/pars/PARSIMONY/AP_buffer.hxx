@@ -102,6 +102,13 @@ struct AP_tree_edge_data
     int      distance;                              // the distance of the last insertion
 };
 
+enum AP_STACK_MODE {
+    NOTHING   = 0, // nothing to buffer in AP_tree node
+    STRUCTURE = 1, // only structure
+    SEQUENCE  = 2, // only sequence
+    BOTH      = 3, // sequence & treestructure is buffered
+    ROOT      = 7  // old root is buffered
+};
 
 struct AP_tree_buffer {
     unsigned long  controll;                        // used for internal buffer check

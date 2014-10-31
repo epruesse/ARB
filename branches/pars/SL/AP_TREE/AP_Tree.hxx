@@ -52,14 +52,6 @@ enum {
     AWT_GC_MAX = AWT_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
 };
 
-enum AP_STACK_MODE {
-    NOTHING   = 0,                                                      // nothing to buffer in AP_tree node
-    STRUCTURE = 1,                                                      // only structure
-    SEQUENCE  = 2,                                                      // only sequence
-    BOTH      = 3,                                                      // sequence & treestructure is buffered
-    ROOT      = 7                                                       // old root is buffered
-};
-
 enum AP_UPDATE_FLAGS {
     AP_UPDATE_OK       = 0,
     AP_UPDATE_RELINKED = -1,
