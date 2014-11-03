@@ -1644,13 +1644,21 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
     using namespace   arb_test;
     expectation_group fulfilled;
 
-    if (restore) env.push();
+    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+    if (restore) {
+        env.push();
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+    }
 
     modifyTopology(env, mod);
     if (topo) fulfilled.add(topologyEquals(env.root_node(), topo));
     fulfilled.add(that(env.root_node()->costs()).fulfills(epsilon_similar(0.001), pars_expected));
 
-    if (restore) env.pop();
+    if (restore) {
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        env.pop();
+    }
 
     TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
 
@@ -1794,8 +1802,8 @@ void TEST_nucl_tree_modifications() {
     // diff initial->add-NNI:   http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-add-NNI.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "nucl-removed",   PARSIMONY_ORG-93, env, true)); // test remove-marked only (same code as part of nt_reAdd)
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add // @@@ fails assertion
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI // @@@ fails assertion
 
     // @@@ test optimize etc.
 
@@ -1875,8 +1883,8 @@ void TEST_prot_tree_modifications() {
     // Note: comparing these two diffs also demonstrates why quick-adding w/o NNI suffers
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-123, env, true)); // test remove-marked only (same code as part of nt_reAdd)
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG+1,   env, true)); // test quick-add
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG+1,   env, true)); // test quick-add // @@@ fails assertion
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI // @@@ fails assertion
 
     // @@@ test optimize etc.
 

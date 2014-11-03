@@ -180,9 +180,32 @@ void AP_tree_nlen::assert_edges_valid() const {
     }
 }
 
+void AP_tree_nlen::assert_sequence_state_valid() const {
+    // if some node has a sequence, all son-nodes have to have sequences!
+
+    const AP_sequence *sequence = get_seq();
+    if (sequence) {
+        if (sequence->got_sequence()) {
+            if (!is_leaf) {
+                ap_assert(get_leftson()->get_seq()->got_sequence());
+                ap_assert(get_rightson()->get_seq()->got_sequence());
+            }
+        }
+        else {
+            if (is_leaf) ap_assert(sequence->is_bound_to_species()); // can do lazu load if needed
+        }
+
+        if (!is_leaf) {
+            get_leftson()->assert_sequence_state_valid();
+            get_rightson()->assert_sequence_state_valid();
+        }
+    }
+}
+
 void AP_tree_nlen::assert_valid() const {
     ap_assert(this);
     assert_edges_valid();
+    assert_sequence_state_valid();
     AP_tree::assert_valid();
 }
 
