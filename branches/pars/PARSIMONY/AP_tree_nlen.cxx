@@ -180,32 +180,59 @@ void AP_tree_nlen::assert_edges_valid() const {
     }
 }
 
-void AP_tree_nlen::assert_sequence_state_valid() const {
+#if defined(DEBUG)
+#define DUMP_INVALID_SUBTREES
+#endif
+
+#if defined(DUMP_INVALID_SUBTREES)
+inline void dumpSubtree(const char *msg, const AP_tree_nlen *node) {
+    fprintf(stderr, "%s:\n", msg);
+    char *printable = GBT_tree_2_newick(node, NewickFormat(nSIMPLE|nWRAP), true);
+    fputs(printable, stderr);
+    fputc('\n', stderr);
+    free(printable);
+}
+#endif
+
+bool AP_tree_nlen::sequence_state_valid() const {
     // if some node has a sequence, all son-nodes have to have sequences!
+
+    bool valid = true;
 
     const AP_sequence *sequence = get_seq();
     if (sequence) {
         if (sequence->got_sequence()) {
             if (!is_leaf) {
-                ap_assert(get_leftson()->get_seq()->got_sequence());
-                ap_assert(get_rightson()->get_seq()->got_sequence());
+                bool leftson_hasSequence  = get_leftson()->get_seq()->got_sequence();
+                bool rightson_hasSequence = get_rightson()->get_seq()->got_sequence();
+
+#if defined(DUMP_INVALID_SUBTREES)
+                if (!leftson_hasSequence) dumpSubtree("left subtree has no sequence", get_leftson());
+                if (!rightson_hasSequence) dumpSubtree("right subtree has no sequence", get_rightson());
+                if (!(leftson_hasSequence && rightson_hasSequence)) {
+                    dumpSubtree("while father HAS sequence", this);
+                }
+#endif
+
+                valid = leftson_hasSequence && rightson_hasSequence;
             }
         }
         else {
             if (is_leaf) ap_assert(sequence->is_bound_to_species()); // can do lazu load if needed
         }
-
-        if (!is_leaf) {
-            get_leftson()->assert_sequence_state_valid();
-            get_rightson()->assert_sequence_state_valid();
-        }
     }
+    if (!is_leaf) {
+        if (!get_leftson() ->sequence_state_valid()) valid = false;
+        if (!get_rightson()->sequence_state_valid()) valid = false;
+    }
+
+    return valid;
 }
 
 void AP_tree_nlen::assert_valid() const {
     ap_assert(this);
     assert_edges_valid();
-    assert_sequence_state_valid();
+    ap_assert(sequence_state_valid());
     AP_tree::assert_valid();
 }
 
