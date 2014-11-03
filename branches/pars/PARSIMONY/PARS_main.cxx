@@ -1582,7 +1582,7 @@ arb_test::match_expectation topologyEquals(AP_tree_nlen *root_node, const char *
     {
         FILE *out    = fopen(outfile, "wt");
         fulfilled.add(that(out).does_differ_from_NULL());
-        char *newick = GBT_tree_2_newick(root_node, NewickFormat(nLENGTH|nWRAP));
+        char *newick = GBT_tree_2_newick(root_node, NewickFormat(nLENGTH|nWRAP), false);
         fputs(newick, out);
         free(newick);
         fclose(out);

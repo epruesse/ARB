@@ -64,11 +64,11 @@ enum GB_alignment_type {
 };
 
 enum NewickFormat { // bit-values
-    nSIMPLE = 0,
-    nLENGTH = 1,
-    nGROUP  = 2,
-    nREMARK = 4,
-    nWRAP   = 8,
+    nSIMPLE  = 0,
+    nLENGTH  = 1,
+    nGROUP   = 2,
+    nREMARK  = 4,
+    nWRAP    = 8,
 
     nALL = nLENGTH|nGROUP|nREMARK,
 };
