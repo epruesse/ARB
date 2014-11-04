@@ -79,7 +79,7 @@ public:
         ap_assert(has_sequence);
     }
 
-    bool got_sequence() const { return has_sequence; }
+    bool hasSequence() const { return has_sequence; }
     void forget_sequence() {
         if (has_sequence) {
             unset();

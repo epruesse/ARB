@@ -201,10 +201,10 @@ bool AP_tree_nlen::sequence_state_valid() const {
 
     const AP_sequence *sequence = get_seq();
     if (sequence) {
-        if (sequence->got_sequence()) {
+        if (sequence->hasSequence()) {
             if (!is_leaf) {
-                bool leftson_hasSequence  = get_leftson()->get_seq()->got_sequence();
-                bool rightson_hasSequence = get_rightson()->get_seq()->got_sequence();
+                bool leftson_hasSequence  = get_leftson()->hasSequence();
+                bool rightson_hasSequence = get_rightson()->hasSequence();
 
 #if defined(DUMP_INVALID_SUBTREES)
                 if (!leftson_hasSequence) dumpSubtree("left subtree has no sequence", get_leftson());
@@ -871,7 +871,7 @@ void AP_tree_nlen::parsimony_rek(char *mutPerSite) {
             ap_assert(sequence);
         }
 
-        if (!sequence->got_sequence()) {
+        if (!sequence->hasSequence()) {
             AP_tree_nlen *lson = get_leftson();
             AP_tree_nlen *rson = get_rightson();
 
@@ -1185,7 +1185,7 @@ char* AP_tree_nlen::getSequenceCopy() {
     costs();
 
     AP_sequence_parsimony *pseq = DOWNCAST(AP_sequence_parsimony*, get_seq());
-    ap_assert(pseq->got_sequence());
+    ap_assert(pseq->hasSequence());
 
     size_t  len = pseq->get_sequence_length();
     char   *s   = new char[len];
