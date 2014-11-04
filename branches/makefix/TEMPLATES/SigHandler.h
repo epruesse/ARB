@@ -31,7 +31,7 @@ typedef void (*SigHandler)(int);
 #endif
 
 #ifndef ARB_ASSERT_H
-#error missing include to arb_assert.h
+#warning missing include to arb_assert.h
 #endif
 
 inline bool is_default_or_ignore_sighandler(SigHandler sh) {
