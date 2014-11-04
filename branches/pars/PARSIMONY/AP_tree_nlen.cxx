@@ -232,7 +232,13 @@ bool AP_tree_nlen::sequence_state_valid() const {
 void AP_tree_nlen::assert_valid() const {
     ap_assert(this);
     assert_edges_valid();
-    ap_assert(sequence_state_valid());
+#if 0
+    ap_assert(sequence_state_valid()); // @@@ reactivate later
+#else
+    if (!sequence_state_valid()) {
+        fputs("Warning: invalid sequence state!\n", stderr);
+    }
+#endif
     AP_tree::assert_valid();
 }
 

@@ -107,7 +107,7 @@ enum AP_STACK_MODE {
     STRUCTURE = 1, // only structure
     SEQUENCE  = 2, // only sequence
     BOTH      = 3, // sequence & treestructure is buffered
-    ROOT      = 7  // old root is buffered
+    ROOT      = 7  // old root is buffered (includes BOTH)
 };
 
 struct AP_tree_buffer {
