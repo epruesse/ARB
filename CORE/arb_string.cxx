@@ -424,6 +424,25 @@ void TEST_less_equal() {
 }
 TEST_PUBLISH(TEST_less_equal);
 
+enum MyEnum {
+    MY_UNKNOWN,
+    MY_RNA,
+    MY_DNA,
+    MY_AA,
+};
+
+void TEST_MyEnum_loop() {
+    int loops_performed = 0;
+    const char * const db_name[]=  { NULL, "TEST_trees.arb", "TEST_realign.arb", "TEST_realign.arb", NULL };
+    for (MyEnum at = MY_RNA; at<=MY_AA; at = MyEnum(at+1)) {
+        TEST_EXPECT(at>=1 && at<=3);
+        fprintf(stderr, "at=%i db_name[%i]='%s'\n", at, at, db_name[at]);
+        TEST_REJECT_NULL(db_name[at]);
+        loops_performed++;
+    }
+    TEST_EXPECT_EQUAL(loops_performed, 3);
+}
+
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
