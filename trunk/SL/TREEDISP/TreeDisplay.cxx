@@ -2916,8 +2916,9 @@ void TEST_treeDisplay() {
     for (int show_handles = 0; show_handles <= 1; ++show_handles) {
         for (int color = 0; color <= 1; ++color) {
             print_dev.set_color_mode(color);
-            // for (AP_tree_display_type type = AP_TREE_NORMAL; type <= AP_LIST_SIMPLE; type = AP_tree_display_type(type+1)) {
-            for (AP_tree_display_type type = AP_LIST_SIMPLE; type >= AP_TREE_NORMAL; type = AP_tree_display_type(type-1)) {
+            // for (int itype = AP_TREE_NORMAL; itype <= AP_LIST_SIMPLE; ++itype) {
+            for (int itype = AP_LIST_SIMPLE; itype >= AP_TREE_NORMAL; --itype) {
+                AP_tree_display_type type = AP_tree_display_type(itype);
                 if (spoolnameof[type]) {
                     char *spool_name     = GBS_global_string_copy("display/%s_%c%c", spoolnameof[type], "MC"[color], "NH"[show_handles]);
                     char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name);
