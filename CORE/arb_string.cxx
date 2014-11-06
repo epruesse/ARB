@@ -434,7 +434,8 @@ enum MyEnum {
 void TEST_MyEnum_loop() {
     int loops_performed = 0;
     const char * const db_name[]=  { NULL, "TEST_trees.arb", "TEST_realign.arb", "TEST_realign.arb", NULL };
-    for (MyEnum at = MY_RNA; at<=MY_AA; at = MyEnum(at+1)) {
+    for (int iat = MY_RNA; iat<=MY_AA; ++iat) {
+        MyEnum at = MyEnum(iat);
         TEST_EXPECT(at>=1 && at<=3);
         fprintf(stderr, "at=%i db_name[%i]='%s'\n", at, at, db_name[at]);
         TEST_REJECT_NULL(db_name[at]);
