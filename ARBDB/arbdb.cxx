@@ -2966,9 +2966,7 @@ static void re_add_self_cb(GBDATA *gbe, int *calledCounter, GB_CB_TYPE cbtype) {
 
     DatabaseCallback dbcb = makeDatabaseCallback(re_add_self_cb, calledCounter);
     GB_remove_callback(gbe, cbtype, dbcb);
-
-    GB_ERROR error = GB_add_callback(gbe, cbtype, dbcb);
-    gb_assert(!error);
+    ASSERT_NO_ERROR(GB_add_callback(gbe, cbtype, dbcb));
 }
 
 void TEST_db_callbacks_ta_nota() {
