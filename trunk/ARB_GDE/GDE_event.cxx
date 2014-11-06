@@ -477,7 +477,8 @@ static void export_to_DB(NA_Alignment& dataset, size_t oldnumelements, bool alig
                         if (gb_old_data) {          // we already have data -> compare checksums
                             const char *old_seq = GB_read_char_pntr(gb_old_data);
 
-                            long old_checksum, new_checksum;
+                            long old_checksum    = 0;
+                            long new_checksum    = 0;
                             bool calcStdChecksum = true;
                             if (fix_data_changes) {
                                 char *new_seq_fixed = fix_aligned_data(old_seq, new_seq, dataset.alignment_type);  // apply some fixes to (realigned) data

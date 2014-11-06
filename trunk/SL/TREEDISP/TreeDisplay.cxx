@@ -287,7 +287,7 @@ bool AWT_graphic_tree::group_tree(AP_tree *at, CollapseMode mode, int color_grou
 
                 expand_me =
                     my_color_group == color_group || // specific or no color
-                    my_color_group != 0 && color_group == -1; // any color
+                    (my_color_group != 0 && color_group == -1); // any color
             }
         }
         else { // zombie
