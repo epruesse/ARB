@@ -235,6 +235,12 @@ ifeq ($(DARWIN),0)
 	clflags += -Wl,-g
 endif
 
+ ifeq ($(DEBUG_GRAPHICS),1)
+	dflags += -DDEBUG_GRAPHICS
+ endif
+
+endif # DEBUG only
+
 # control how much you get spammed
 # (please do not change default in SVN, use developer specific setting as below)
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
@@ -247,7 +253,6 @@ endif
 ifeq ($(DEVELOPER),ELMAR)
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --only-first-error
 endif
-
 
 # Enable extra warnings
 	extended_warnings :=
@@ -291,11 +296,6 @@ WEFFC_BROKEN:=0
  ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wunused-local-typedefs# available since gcc 4.7 (but fails for each STATIC_ASSERT, so enable only for Cxx11)
  endif
-
- ifeq ($(DEBUG_GRAPHICS),1)
-	dflags += -DDEBUG_GRAPHICS
- endif
-endif
 
 #---------------------- turn off clang bogus warnings
 
