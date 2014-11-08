@@ -1804,40 +1804,6 @@ void TEST_nucl_tree_modifications() {
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "nucl-removed",   PARSIMONY_ORG-93, env, true)); // test remove-marked only (same code as part of nt_reAdd)
 
-    TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
-
-    // test set root to CytAquat + pop (works)
-    {
-        env.push();
-        env.root_node()->findLeafNamed("CytAquat")->set_root();
-        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
-        env.pop();
-        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
-    }
-
-    // test set root to CloButyr + pop (works)
-    {
-        env.push();
-        env.root_node()->findLeafNamed("CloButyr")->set_root();
-        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
-        env.pop();
-        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
-    }
-
-    // test set root to CytAquat + set root to CloButyr + pop (fails)
-    {
-        env.push();
-
-        env.root_node()->findLeafNamed("CytAquat")->set_root();
-        env.root_node()->findLeafNamed("CloButyr")->set_root();
-
-        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
-        env.pop();
-        TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->sequence_state_valid());
-        // that bug is severe, as this is the core functionality of arb_pars
-        // (move root, modify, check costs, pop if no improvement)
-    }
-
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add // @@@ fails assertion
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI // @@@ fails assertion
 
@@ -1982,6 +1948,64 @@ void TEST_prot_tree_modifications() {
             env.pop();
         }
     }
+}
+
+void TEST_broken_pops() {
+    const char *aliname = "ali_5s";
+
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
+    TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
+
+    const int PARSIMONY_ORG = 301;
+    TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+    TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+
+    // test set root to CytAquat + pop (works)
+    {
+        env.push();
+        env.root_node()->findLeafNamed("CytAquat")->set_root();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        env.pop();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+    }
+
+    // test set root to CloButyr + pop (works)
+    {
+        env.push();
+        env.root_node()->findLeafNamed("CloButyr")->set_root();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        env.pop();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+    }
+
+    // test set root to CytAquat + set root to CloButyr + pop (fails)
+    for (int calcCostsBetween = 0; calcCostsBetween<2; ++calcCostsBetween) {
+        TEST_ANNOTATE(GBS_global_string("calcCostsBetween=%i", calcCostsBetween));
+
+        TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+        env.push();
+
+        env.root_node()->findLeafNamed("CytAquat")->set_root();
+
+        if (calcCostsBetween) TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+        env.root_node()->findLeafNamed("CloButyr")->set_root();
+
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+        env.pop();
+
+        TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        // that bug is severe, as this is the core functionality of arb_pars
+        // (move root, modify, check costs, pop if no improvement)
+
+        TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    }
+
 }
 
 #endif // UNIT_TESTS
