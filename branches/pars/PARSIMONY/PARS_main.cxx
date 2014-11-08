@@ -234,10 +234,10 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
                     blf = branchlist[counter];
                 }
 
+                ASSERT_VALID_TREE(rootNode());
                 if (bl->father) {
                     bl->set_root();
                 }
-
                 ASSERT_VALID_TREE(rootNode());
 
                 leaf->moveNextTo(bl, 0.5);
@@ -1915,7 +1915,7 @@ void TEST_prot_tree_modifications() {
             env.push();
             TEST_EXPECTATION(addingPartialResultsIn(MucRaceP, "MucRacem",          "prot-addPart-MucRaceP",          PARSIMONY_ORG+7, env)); // add MucRaceP
             // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114, env)); // also add StrCoelP
-            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+7, env)); // also add StrCoelP // @@@ same misplacement as above
+            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114+7, env)); // also add StrCoelP // @@@ same misplacement as above
             env.pop();
         }
 
