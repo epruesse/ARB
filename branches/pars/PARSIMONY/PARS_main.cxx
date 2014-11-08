@@ -1950,7 +1950,9 @@ void TEST_prot_tree_modifications() {
     }
 }
 
-void TEST_broken_pops() {
+void TEST_node_stack() {
+    // test was used to fix #620
+
     const char *aliname = "ali_5s";
 
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
@@ -1975,6 +1977,19 @@ void TEST_broken_pops() {
     {
         env.push();
         env.root_node()->findLeafNamed("CloButyr")->set_root();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        env.pop();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+    }
+
+    // test set root to CloBifer + set root to CloTyrob + pop (works)
+    // Note: both species are in same subtree (of root)
+    {
+        env.push();
+
+        env.root_node()->findLeafNamed("CloBifer")->set_root();
+        env.root_node()->findLeafNamed("CloTyrob")->set_root();
+
         TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
         env.pop();
         TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
