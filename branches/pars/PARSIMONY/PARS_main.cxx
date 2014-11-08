@@ -1804,8 +1804,8 @@ void TEST_nucl_tree_modifications() {
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "nucl-removed",   PARSIMONY_ORG-93, env, true)); // test remove-marked only (same code as part of nt_reAdd)
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add // @@@ fails assertion
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI // @@@ fails assertion
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
 
     // @@@ test optimize etc.
 
@@ -1886,8 +1886,8 @@ void TEST_prot_tree_modifications() {
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-123, env, true)); // test remove-marked only (same code as part of nt_reAdd)
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG+1,   env, true)); // test quick-add // @@@ fails assertion
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI // @@@ fails assertion
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG+1,   env, true)); // test quick-add
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
 
     // @@@ test optimize etc.
 
