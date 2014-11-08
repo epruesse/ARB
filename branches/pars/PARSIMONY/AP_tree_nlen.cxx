@@ -767,8 +767,8 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
         AP_tree_buffer *last_buffer = stack.get_first();
         AP_sequence    *sequence    = get_seq();
 
-        if (sequence && (mode & SEQUENCE)) sequence->forget_sequence();
         if (0 == (mode & ~last_buffer->mode)) { // already buffered
+            if (sequence && (mode & SEQUENCE)) sequence->forget_sequence();
             return false;
         }
         new_buff = last_buffer;
