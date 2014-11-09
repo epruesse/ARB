@@ -94,6 +94,9 @@ public:
     void push() { apMain.push(); }
     void pop() { apMain.pop(); }
 
+    unsigned long get_stack_level() { return apMain.get_stack_level(); }
+    unsigned long get_user_push_counter() { return apMain.get_user_push_counter(); }
+
     AWT_graphic_parsimony *graphic_tree() { return agt; }
 
     GBDATA *gbmain() const { return GLOBAL_gb_main; }

@@ -11,9 +11,10 @@
 #ifndef AP_BUFFER_HXX
 #define AP_BUFFER_HXX
 
-#ifndef AP_TREE_HXX
-#include <AP_Tree.hxx>
+#ifndef AP_SEQUENCE_HXX
+#include <AP_sequence.hxx>
 #endif
+
 
 /* AP_STACK        dynamischer Stack fuer void *
  * AP_LIST         allgemeine doppelt verketteten Liste
@@ -110,6 +111,9 @@ enum AP_STACK_MODE {
     ROOT      = 7  // old root is buffered (includes BOTH)
 };
 
+class AP_tree;
+class AP_tree_root;
+
 struct AP_tree_buffer {
     unsigned long  controll;                        // used for internal buffer check
     unsigned int   count;                           // counts how often the entry is buffered
@@ -117,9 +121,9 @@ struct AP_tree_buffer {
     AP_sequence   *sequence;
     AP_FLOAT       mutation_rate;
     double         leftlen, rightlen;
-    AP_tree       *father;
-    AP_tree       *leftson;
-    AP_tree       *rightson;
+    AP_tree  *father;
+    AP_tree  *leftson;
+    AP_tree  *rightson;
     AP_tree_root  *root;
     GBDATA        *gb_node;
 

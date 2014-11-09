@@ -11,6 +11,7 @@
 #include "pars_main.hxx"
 #include "pars_klprops.hxx"
 #include "ap_tree_nlen.hxx"
+#include "ap_main.hxx"
 
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
@@ -1646,6 +1647,9 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
 
     TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
 
+    unsigned long upc = env.get_user_push_counter();
+    unsigned long sl  = env.get_stack_level();
+
     if (restore) {
         env.push();
         TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
@@ -1659,6 +1663,9 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
         TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
         env.pop();
     }
+
+    TEST_EXPECT_EQUAL(sl, env.get_stack_level());
+    TEST_EXPECT_EQUAL(upc, env.get_user_push_counter());
 
     TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
 

@@ -76,6 +76,7 @@ public:
 
     const char *get_aliname() const;
     unsigned long get_user_push_counter() const { return user_push_counter; }
+    unsigned long get_stack_level() const { return stack_level; }
 
     GB_ERROR open(const char *db_server);
 
@@ -89,6 +90,14 @@ public:
 
 extern AP_main *ap_main;
 extern GBDATA  *GLOBAL_gb_main;
+
+inline AP_tree_nlen *rootNode() {
+    return ap_main->get_root_node();
+}
+
+inline AP_tree_edge *rootEdge() {
+    return rootNode()->get_leftson()->edgeTo(rootNode()->get_rightson());
+}
 
 #else
 #error ap_main.hxx included twice

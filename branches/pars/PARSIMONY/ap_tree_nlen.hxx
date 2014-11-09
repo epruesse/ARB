@@ -18,9 +18,16 @@
 #ifndef _GLIBCXX_CLIMITS
 #include <climits>
 #endif
-#ifndef AP_MAIN_HXX
-#include <ap_main.hxx>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
+#ifndef AP_TREE_HXX
+#include <AP_Tree.hxx>
+#endif
+#ifndef AP_BUFFER_HXX
+#include "AP_buffer.hxx"
+#endif
+
 
 class AP_tree_nlen;
 
@@ -287,15 +294,6 @@ public:
 };
 
 std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
-
-
-inline AP_tree_nlen *rootNode() {
-    return ap_main->get_root_node();
-}
-
-inline AP_tree_edge *rootEdge() {
-    return rootNode()->get_leftson()->edgeTo(rootNode()->get_rightson());
-}
 
 #else
 #error ap_tree_nlen.hxx included twice

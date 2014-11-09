@@ -10,6 +10,7 @@
 // =============================================================== //
 
 #include "ap_tree_nlen.hxx"
+#include "ap_main.hxx"
 
 #include <AP_filter.hxx>
 #include <arb_progress.h>

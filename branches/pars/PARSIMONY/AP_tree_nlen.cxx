@@ -11,6 +11,7 @@
 
 #include "ap_tree_nlen.hxx"
 #include "pars_debug.hxx"
+#include "ap_main.hxx"
 
 #include <AP_seq_dna.hxx>
 #include <aw_root.hxx>
@@ -167,10 +168,10 @@ void AP_tree_nlen::assert_edges_valid() const {
         }
         else {
             ap_assert(edge_between(this, get_father()));
-            if (!is_leaf) {
-                ap_assert(edge_between(this, get_leftson()));
-                ap_assert(edge_between(this, get_rightson()));
-            }
+        }
+        if (!is_leaf) {
+            ap_assert(edge_between(this, get_leftson()));
+            ap_assert(edge_between(this, get_rightson()));
         }
     }
 
@@ -559,12 +560,12 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
             ap_main->push_node(grandpa, BOTH);
             push_all_upnode_sequences(grandpa);
         }
-        else { // grandson of root
+        else { // 'this' is grandson of root
             ap_main->push_node(grandpa, ROOT);
             ap_main->push_node(get_father()->get_brother(), STRUCTURE);
         }
     }
-    else { // son of root
+    else { // 'this' is son of root
         ap_main->push_node(get_father(), ROOT);
 
         if (!get_brother()->is_leaf) {

@@ -10,6 +10,7 @@
 
 #include "AP_error.hxx"
 #include "ap_tree_nlen.hxx"
+#include "ap_main.hxx"
 
 using namespace std;
 
