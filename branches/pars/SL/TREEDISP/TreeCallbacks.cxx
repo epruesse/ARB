@@ -697,7 +697,7 @@ void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
                     }
                     else { // keep visible
                         if (S.xpos()<0.0) {
-                            double relPos;
+                            double relPos = 0;
                             switch (gtree->tree_sort) {
                                 case AP_TREE_NORMAL:
                                 case AP_TREE_IRS:      relPos = .1; break;
