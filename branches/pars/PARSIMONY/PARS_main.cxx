@@ -1657,7 +1657,9 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
 
     modifyTopology(env, mod);
     if (topo) fulfilled.add(topologyEquals(env.root_node(), topo));
-    fulfilled.add(that(env.root_node()->costs()).fulfills(epsilon_similar(0.001), pars_expected));
+    if (pars_expected != -1) {
+        fulfilled.add(that(env.root_node()->costs()).fulfills(epsilon_similar(0.001), pars_expected));
+    }
 
     if (restore) {
         TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
@@ -1693,6 +1695,11 @@ inline void mark_only(GBDATA *gb_species) {
     GBDATA         *gb_main = GB_get_root(gb_species);
     GB_transaction  ta(gb_main);
     GBT_mark_all(gb_main, 0);
+    GB_write_flag(gb_species, 1);
+}
+inline void mark(GBDATA *gb_species) {
+    GBDATA         *gb_main = GB_get_root(gb_species);
+    GB_transaction  ta(gb_main);
     GB_write_flag(gb_species, 1);
 }
 
@@ -2002,7 +2009,7 @@ void TEST_node_stack() {
         TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
     }
 
-    // test set root to CytAquat + set root to CloButyr + pop (fails)
+    // test set root to CytAquat + set root to CloButyr + pop (failed, fixed by [13138])
     for (int calcCostsBetween = 0; calcCostsBetween<2; ++calcCostsBetween) {
         TEST_ANNOTATE(GBS_global_string("calcCostsBetween=%i", calcCostsBetween));
 
@@ -2033,15 +2040,106 @@ void TEST_node_stack() {
     {
         env.push();
         TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
-        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, NULL,   PARSIMONY_ORG-93, env, false)); // test remove-marked only (same code as part of nt_reAdd)
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, NULL, -1, env, false)); // test remove-marked only (same code as part of nt_reAdd)
         TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
 
         env.push();
         TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
-        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "nucl-add-quick-separated", PARSIMONY_ORG-23, env, false)); // test quick-add (same code as part of nt_reAdd)
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
         TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
         env.pop();
         TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ doing pop() after quick-adding produces an invalid tree (root-edge missing)
+
+        env.pop();
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+    }
+
+    // same as above, but with only 1 species marked
+    struct {
+        const char *name;
+        bool        correct[2];
+        bool        correct_after_2nd_pop[2];
+
+    } testSingle[] = {
+        { "CytAquat", { false, true  }, { true,  true  } },  // CytAquat is the only grandson of root (CytAquat located in lower subtree)
+        { "CloBifer", { true,  false }, { true,  true  } },  // two father nodes between CloBifer and root (CloBifer located in upper subtree)
+        { "CloPaste", { true,  false }, { true,  true  } },  // two father nodes between CloPaste and root (CloPaste located in upper subtree)
+        // cannot test the following - state does not get restored
+        // { "CorGluta", { true,  false }, { true,  false } },  // three father nodes between CorGluta and root (CorGluta located in lower subtree); @@@ might be a different problem
+        // { "CelBiazo", { true,  false }, { true,  false } },  // two father nodes between CelBiazo and root; @@@ might be a different problem
+
+        { NULL, { true, true }, { true, true } }
+    };
+
+    for (int i = 0; testSingle[i].name; ++i) {
+        for (int swapped = 0; swapped<2; ++swapped) {
+            TEST_ANNOTATE(GBS_global_string("single=%s swapped=%i", testSingle[i].name, swapped));
+            mark_only(env.root_node()->findLeafNamed(testSingle[i].name)->gb_node);
+
+            env.push();
+            if (swapped) {
+                env.root_node()->swap_sons();
+            }
+
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, NULL, -1, env, false)); // test remove-marked only (same code as part of nt_reAdd)
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+            env.push();
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            env.pop();
+
+            if (testSingle[i].correct[swapped]) {
+                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            }
+            else {
+                TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ doing pop() after quick-adding produces an invalid tree (root-edge missing)
+            }
+
+            env.pop();
+
+            if (testSingle[i].correct_after_2nd_pop[swapped]) {
+                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            }
+            else {
+                TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ doing 2nd pop() (=undo remove) produces an invalid tree 
+            }
+        }
+    }
+
+    // similar to above (remove+add a grandson of root; here grandson is a subtree with 4 species)
+
+    for (int remove_from_lower_subtree = 0; remove_from_lower_subtree<2; ++remove_from_lower_subtree) {
+        TEST_ANNOTATE(GBS_global_string("remove_from_lower_subtree=%i", remove_from_lower_subtree));
+
+        // mark a complete subtree (which - as a whole - forms a grandson of root). subtree is located in upper part of the tree
+        mark_only(env.root_node()->findLeafNamed("CloButy2")->gb_node);
+        mark(env.root_node()->findLeafNamed("CloButyr")->gb_node);
+        mark(env.root_node()->findLeafNamed("CloCarni")->gb_node);
+        mark(env.root_node()->findLeafNamed("CloPaste")->gb_node);
+
+        env.push();
+        if (remove_from_lower_subtree) {
+            env.root_node()->swap_sons();
+        }
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, NULL, -1, env, false)); // test remove-marked only (same code as part of nt_reAdd)
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+        env.push();
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        env.pop();
+
+        if (remove_from_lower_subtree) {
+            TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ broken if removed from lower part of tree
+        }
+        else {
+            TEST_EXPECT(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ NOT broken if removed from upper part of tree
+        }
 
         env.pop();
         TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
