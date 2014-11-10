@@ -170,7 +170,7 @@ public:
     char *getSequenceCopy();
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
-    void assert_edges_valid() const;
+    bool has_valid_edges() const;
     void assert_valid() const;
     bool sequence_state_valid() const;
 #endif // PROVIDE_TREE_STRUCTURE_TESTS

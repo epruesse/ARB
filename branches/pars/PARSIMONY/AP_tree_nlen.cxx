@@ -150,37 +150,6 @@ void AP_tree_nlen::linkAllEdges(AP_tree_edge *edge1, AP_tree_edge *edge2, AP_tre
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
 
-inline const AP_tree_edge *edge_between(const AP_tree_nlen *node1, const AP_tree_nlen *node2) {
-    AP_tree_edge *edge_12 = node1->edgeTo(node2);
-
-#if defined(ASSERTION_USED)
-    AP_tree_edge *edge_21 = node2->edgeTo(node1);
-    ap_assert(edge_12 == edge_21); // nodes should agree about their edge
-#endif
-
-    return edge_12;
-}
-
-void AP_tree_nlen::assert_edges_valid() const {
-    if (get_father()) {                     // root has no edges
-        if (get_father()->is_root_node()) { // sons of root have one edge between them
-            ap_assert(edge_between(this, get_brother()));
-        }
-        else {
-            ap_assert(edge_between(this, get_father()));
-        }
-        if (!is_leaf) {
-            ap_assert(edge_between(this, get_leftson()));
-            ap_assert(edge_between(this, get_rightson()));
-        }
-    }
-
-    if (!is_leaf) {
-        get_leftson()->assert_edges_valid();
-        get_rightson()->assert_edges_valid();
-    }
-}
-
 #if defined(DEBUG)
 #define DUMP_INVALID_SUBTREES
 #endif
@@ -194,6 +163,68 @@ inline void dumpSubtree(const char *msg, const AP_tree_nlen *node) {
     free(printable);
 }
 #endif
+
+inline const AP_tree_edge *edge_between(const AP_tree_nlen *node1, const AP_tree_nlen *node2) {
+    AP_tree_edge *edge_12 = node1->edgeTo(node2);
+
+#if defined(ASSERTION_USED)
+    AP_tree_edge *edge_21 = node2->edgeTo(node1);
+    ap_assert(edge_12 == edge_21); // nodes should agree about their edge
+#endif
+
+    return edge_12;
+}
+
+inline const char *no_valid_edge_between(const AP_tree_nlen *node1, const AP_tree_nlen *node2) {
+    AP_tree_edge *edge_12 = node1->edgeTo(node2);
+    AP_tree_edge *edge_21 = node2->edgeTo(node1);
+
+    if (edge_12 == edge_21) {
+        return edge_12 ? NULL : "edge missing";
+    }
+    return "edge inconsistent";
+}
+
+#if defined(DUMP_INVALID_SUBTREES)
+#define PRINT_BAD_EDGE(msg,node) dumpSubtree(msg,node)
+#else // !defined(DUMP_INVALID_SUBTREES)
+#define PRINT_BAD_EDGE(msg,node) fprintf(stderr, "Warning: %s (at node=%p)\n", (msg), (node))
+#endif
+
+#define SHOW_BAD_EDGE(format,str,node) do{              \
+        char *msg = GBS_global_string_copy(format,str); \
+        PRINT_BAD_EDGE(msg, node);                      \
+        free(msg);                                      \
+    }while(0)
+
+bool AP_tree_nlen::has_valid_edges() const {
+    bool valid = true;
+    if (get_father()) {                     // root has no edges
+        if (get_father()->is_root_node()) { // sons of root have one edge between them
+            if (is_leftson()) { // test root-edge only from one son
+                const char *invalid = no_valid_edge_between(this, get_brother());
+                if (invalid) {
+                    SHOW_BAD_EDGE("root-%s. root", invalid, get_father());
+                    valid = false;
+                }
+            }
+        }
+        else {
+            const char *invalid = no_valid_edge_between(this, get_father());
+            if (invalid) {
+                SHOW_BAD_EDGE("son-%s. father", invalid, get_father());
+                SHOW_BAD_EDGE("parent-%s. son", invalid, this);
+                valid = false;
+            }
+        }
+    }
+
+    if (!is_leaf) {
+        valid = get_leftson()->has_valid_edges() && valid;
+        valid = get_rightson()->has_valid_edges() && valid;
+    }
+    return valid;
+}
 
 bool AP_tree_nlen::sequence_state_valid() const {
     // if some node has a sequence, all son-nodes have to have sequences!
@@ -232,7 +263,7 @@ bool AP_tree_nlen::sequence_state_valid() const {
 
 void AP_tree_nlen::assert_valid() const {
     ap_assert(this);
-    assert_edges_valid();
+    ap_assert(has_valid_edges());
 #if 1
     ap_assert(sequence_state_valid());
 #else
