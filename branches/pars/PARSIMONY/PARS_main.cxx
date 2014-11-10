@@ -2062,11 +2062,10 @@ void TEST_node_stack() {
 
     } testSingle[] = {
         { "CytAquat", { false, true  }, { true,  true  } },  // CytAquat is the only grandson of root (CytAquat located in lower subtree)
-        { "CloBifer", { true,  false }, { true,  true  } },  // two father nodes between CloBifer and root (CloBifer located in upper subtree)
-        { "CloPaste", { true,  false }, { true,  true  } },  // two father nodes between CloPaste and root (CloPaste located in upper subtree)
-        // cannot test the following - state does not get restored
-        // { "CorGluta", { true,  false }, { true,  false } },  // three father nodes between CorGluta and root (CorGluta located in lower subtree); @@@ might be a different problem
-        // { "CelBiazo", { true,  false }, { true,  false } },  // two father nodes between CelBiazo and root; @@@ might be a different problem
+        { "CloBifer", { false, true  }, { false, true  } },  // two father nodes between CloBifer and root (CloBifer located in upper subtree)
+        { "CloPaste", { false, true  }, { false, true  } },  // two father nodes between CloPaste and root (CloPaste located in upper subtree)
+        { "CorGluta", { false,  true }, { false, true  } },  // three father nodes between CorGluta and root (CorGluta located in lower subtree); @@@ might be a different problem
+        { "CelBiazo", { true,  false }, { true,  true  } },  // two father nodes between CelBiazo and root; @@@ might be a different problem
 
         { NULL, { true, true }, { true, true } }
     };
@@ -2074,6 +2073,19 @@ void TEST_node_stack() {
     for (int i = 0; testSingle[i].name; ++i) {
         for (int swapped = 0; swapped<2; ++swapped) {
             TEST_ANNOTATE(GBS_global_string("single=%s swapped=%i", testSingle[i].name, swapped));
+
+            env.push();
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            {
+                AP_tree_nlen *old_rightson = env.root_node()->get_rightson();
+                env.root_node()->get_leftson()->get_rightson()->set_root();
+                old_rightson->get_leftson()->set_root();
+                old_rightson->set_root();
+
+                ap_assert(env.root_node()->get_rightson() == old_rightson);
+            }
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
             mark_only(env.root_node()->findLeafNamed(testSingle[i].name)->gb_node);
 
             env.push();
@@ -2104,8 +2116,11 @@ void TEST_node_stack() {
                 TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
             }
             else {
-                TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ doing 2nd pop() (=undo remove) produces an invalid tree 
+                TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ doing 2nd pop() (=undo remove) produces an invalid tree
             }
+
+            env.pop();
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
         }
     }
 
