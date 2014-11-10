@@ -208,6 +208,11 @@ bool AP_tree_nlen::has_valid_edges() const {
                     valid = false;
                 }
             }
+            const char *invalid = no_valid_edge_between(this, get_father());
+            if (!invalid || !strstr(invalid, "missing")) {
+                SHOW_BAD_EDGE("unexpected edge (%s) between root and son", invalid ? invalid : "valid", this);
+                valid = false;
+            }
         }
         else {
             const char *invalid = no_valid_edge_between(this, get_father());
