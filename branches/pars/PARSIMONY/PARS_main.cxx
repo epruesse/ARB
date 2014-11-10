@@ -2025,6 +2025,28 @@ void TEST_node_stack() {
         TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     }
 
+    // remove + quick add marked + pop() both works
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
+
+    // remove + quick-add marked + pop() quick-add -> corrupts tree
+    // (root-edge is lost)
+    {
+        env.push();
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, NULL,   PARSIMONY_ORG-93, env, false)); // test remove-marked only (same code as part of nt_reAdd)
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+#if 1
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "nucl-add-quick-separated", PARSIMONY_ORG-23, env, true)); // test quick-add // @@@ doing pop() after quick-adding produces an invalid tree (root-edge missing) 
+#else
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "nucl-add-quick-separated", PARSIMONY_ORG-23, env, false)); // test quick-add // @@@ w/o separate push/pop it works fine
+#endif
+
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        env.pop();
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+    }
+
 }
 
 #endif // UNIT_TESTS
