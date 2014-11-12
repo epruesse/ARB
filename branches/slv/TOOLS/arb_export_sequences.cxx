@@ -15,6 +15,7 @@
 #include <set>
 #include <iterator>
 #include <algorithm>
+#include <insdel.h>
 
 using std::cerr;
 using std::endl;
@@ -84,10 +85,11 @@ public:
     }
 
     string readData(GBDATA* spec) {
-        GBDATA *gbd = GB_find(spec, default_ali, SEARCH_CHILD);
+        GBDATA *gbd    = GB_find(spec, default_ali, SEARCH_CHILD);
         if (!gbd) return string("<empty>");
-        return readString(gbd, "data");
+        string  result = readString(gbd, "data");
         GB_release(gbd);
+        return result;
     }
 
     void addSequence(GBDATA* spec) {
@@ -142,7 +144,7 @@ public:
         GB_begin_transaction(gbdst);
         GBDATA *gbnew = GB_create_container(gbdst_spec, "species");
         GB_copy(gbnew, gbspec);
-        GB_release(gbnew);
+        GB_release(gbnew); 
         GB_commit_transaction(gbdst);
         aw_status(++count/count_max);
     }
@@ -152,7 +154,7 @@ public:
 
         {
             GB_transaction trans(gbdst);
-            GBT_format_alignment(gbdst, GBT_get_default_alignment(gbdst));
+            GB_ERROR       error = ARB_format_alignment(gbdst, GBT_get_default_alignment(gbdst));
         }
 
         if (GB_save_as(gbdst, filename.c_str(), "b")) {
