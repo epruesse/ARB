@@ -2629,11 +2629,12 @@ GB_ERROR GB_release(GBDATA *gbd) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
     GB_test_transaction(gbd);
-    if (Main->local_mode) return 0;
+    if (Main->is_server()) return 0;
     if (GB_ARRAY_FLAGS(gbd).changed && !gbd->flags2.update_in_server) {
-        GB_update_server(gbd);
+        GB_ERROR error = Main->send_update_to_server(gbd);
+        if (error) return error;
     }
-    if (GB_TYPE(gbd) != GB_DB) {
+    if (gbd->type() != GB_DB) {
         GB_ERROR error = GB_export_errorf("You cannot release non container (%s)",
                                           GB_read_key_pntr(gbd));
         GB_internal_error(error);
@@ -2644,12 +2645,12 @@ GB_ERROR GB_release(GBDATA *gbd) {
 
     for (index = 0; index < gbc->d.nheader; index++) {
         if ((gb = GBCONTAINER_ELEM(gbc, index))) {
-            gb_delete_entry(&gb);
+            gb_delete_entry(gb);
         }
     }
 
     gbc->flags2.folded_container = 1;
-    gb_do_callback_list(Main);       // do all callbacks
+    Main->call_pending_callbacks();
     return 0;
 }
 
