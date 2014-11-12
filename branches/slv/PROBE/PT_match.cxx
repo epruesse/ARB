@@ -652,6 +652,16 @@ char *get_match_overlay(const PT_probematch *ml) {
     return ref;
 }
 
+const char* get_match_acc(const PT_probematch *ml) {
+    return psg.data[ml->name].get_acc();
+}
+int get_match_start(const PT_probematch *ml) {
+    return psg.data[ml->name].get_start();
+}
+int get_match_stop(const PT_probematch *ml) {
+    return psg.data[ml->name].get_stop();
+}
+
 static const char *get_match_info_formatted(PT_probematch  *ml, const format_props& format) {
     GBS_strstruct *memfile = GBS_stropen(256);
     GBS_strcat(memfile, "  ");

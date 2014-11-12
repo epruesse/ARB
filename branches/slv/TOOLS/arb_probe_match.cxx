@@ -34,7 +34,7 @@ enum SORT_BY_TYPE {
     SORT_BY_WEIGHTED_MISMATCHES_W_POS_AND_STRENGTH = 2
 };
 
-int main(int argc, char ** argv) {
+int ARB_main(int argc, char ** argv) {
     const char* db = 0;
     const char* port = 0;
     const char* sequence = 0;
@@ -118,25 +118,26 @@ int main(int argc, char ** argv) {
         return 1;
     }
 
-    T_PT_LOCS       locs;
-    T_PT_MAIN       com;
-    T_PT_PDC        pdc;
+    T_PT_LOCS locs;
+    T_PT_MAIN com;
+    T_PT_PDC  pdc;
+    GB_ERROR  error;
 
-    aisc_com *link = aisc_open(port, &com, AISC_MAGIC_NUMBER);
+    aisc_com *link = aisc_open(port, com, AISC_MAGIC_NUMBER, &error);
     if (!link) {
-        cerr << "Cannot contact PT server" << endl;
+        cerr << "Cannot contact PT server (" << error << ')' << endl;
         return 1;
     }
 
     if (aisc_create(link, PT_MAIN, com,
-                    MAIN_LOCS, PT_LOCS, &locs,
+                    MAIN_LOCS, PT_LOCS, locs,
                     NULL)) {
         cerr << "Cannot create PT LOCS structure" << endl;
         return 1;
     }
 
     if (aisc_create(link, PT_LOCS, locs,
-                    LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc,
+                    LOCS_PROBE_DESIGN_CONFIG, PT_PDC, pdc,
                     NULL)) {
         cerr << "Cannot create PT PDC structure" << endl;
         return 1;
@@ -163,7 +164,7 @@ int main(int argc, char ** argv) {
     bs.data = 0;
     char *locs_error = 0;
     aisc_get(link, PT_LOCS, locs,
-             LOCS_MATCH_LIST,        &match_list,
+             LOCS_MATCH_LIST,        match_list.as_result_param(),
              LOCS_MATCH_LIST_CNT,    &match_list_cnt,
              LOCS_MATCH_STRING,      &bs,
              LOCS_MATCHES_TRUNCATED, &matches_truncated,
@@ -190,7 +191,7 @@ int main(int argc, char ** argv) {
               << "seq"
               << std::endl;
 
-    while (match_list) {
+    while (match_list.exists()) {
         char *m_acc, *m_sequence;
         long m_start, m_stop, m_pos, m_mismatches, m_n_mismatches;
         long m_reversed;
@@ -207,7 +208,7 @@ int main(int argc, char ** argv) {
                  MATCHLIST_DT,            &m_dt,
                  MATCHLIST_OVERLAY,       &m_sequence,
                  MATCHLIST_REVERSED,      &m_reversed,
-                 MATCHLIST_NEXT,          &match_list,
+                 MATCHLIST_NEXT,          match_list.as_result_param(),
                  NULL);
         std::cout << m_acc << "\t"
                   << m_start << "\t"
@@ -224,7 +225,7 @@ int main(int argc, char ** argv) {
     }
 
     free(bs.data);
-    aisc_close(link);
+    aisc_close(link, com);
     return 0;
 }
 

@@ -54,6 +54,9 @@ all: $(BINARIES)
 $(ARBHOME)/bin/arb_probe: arb_probe.o $(LIBS_ARB_PROBE) $(use_ARB_main)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_PROBE) $(LIB_ARBDB) $(EXECLIBS) 
 
+$(ARBHOME)/bin/arb_probe_match: arb_probe_match.o $(LIBS_ARB_PROBE) $(use_ARB_main)
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_PROBE) $(LIB_ARBDB) $(EXECLIBS) 
+
 $(ARBHOME)/bin/arb_read_tree: arb_read_tree.o  $(LIBS_ARB_READ_TREE)
 	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_READ_TREE) $(LIB_ARBDB) $(EXECLIBS) 
 
