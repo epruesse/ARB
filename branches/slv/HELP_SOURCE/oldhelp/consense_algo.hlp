@@ -1,0 +1,238 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB     consense_tree.hlp
+SUB     bootstrap.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Algorithm used for consensus tree
+
+OCCURRENCE      ARB_DIST/NJ bootstrap
+                ARB_NT/Tree/Build consensus tree
+
+DESCRIPTION     ARB has its own library for calculating consensus trees, which is used
+                when
+                 - calculating bootstrap trees with NJ (ARB_DIST),
+                 - directly calculating consensus trees using
+                   ARB_NT/Tree/Build consensus tree and
+                 - from the command line tool arb_consensus_tree.
+
+                The algorithm works as follows:
+
+                 - all trees are read and all occurring branches are stored in a branch-pool
+                 - the consensus tree is constructed iteratively by
+                   - picking the "best" branch and adding it to the tree.
+                   - deleting all now impossible branches from the branch pool.
+
+                The best branch (at each time of the iteration) is determined by the following
+                criteria (listed in order of significance):
+
+                 - inner branches are picked before leaf branches
+                 - branches occurring more often (i.e. branches with higher bootstrap values) are picked first
+                 - branches nearer to the center of the tree are preferred over more distant branches
+                 - longer branches are preferred over shorter branches
+
+                If all of the above criteria are really equal for two branches, the pick-order
+                depends on their appearance in the source trees (to make results reproducible).
+
+                The distance of each branch to the center of the tree is defined by the difference
+                between the number of species on each side of the branch. Branches with an equal
+                number of species on each side are considered "at the center" of the tree.
+
+SECTION         Partial trees
+
+                If a tree doesn't contain the full set of species (i.e. if the tree is partial),
+                all branches of that tree differ from branches of full trees.
+
+                To allow merging such trees with other trees, the set of missing species is added
+                once to each side of each branch, adding two hypothetical branches to the branch pool
+                (hypothetical in that way, that they do not neccessarily occur in any tree).
+
+                These two hypothetical branches are added with different probabilities:
+
+                 * adding missing species to the bigger side of a branch is done with a probability of 1.0
+                 * adding missing species to the smaller side of a branch is done with a
+                   probability P calculated as follows:
+
+                      P  =  ( S / B ) ^ M
+
+                   where
+
+                      S  =  number of edges on the SMALL side of the branch + 1
+                      B  =  number of edges on the BIG side of the branch + 1
+                      M  =  number of missing species
+
+                That probability tends towards zero for leaf branches and towards 1.0 for
+                center branches.
+
+                If you merge nearly identical topologies, which only differ by some species
+                removed from some of the topologies, the resulting bootstrap values reflect
+                the number of trees the species occurred in (e.g. 67% if species occurred
+                in 2 of 3 trees).
+
+                Another kind of branches is completely artificial: a branch with the missing
+                species on one side and all species from the partial tree on the other side.
+                These artificial branches will ONLY be considered for the output topology, if no
+                other tree defines such a branch and if it's absolutely necessary to build a
+                connected topology.
+
+                Since nothing is known about the length of such an artificial branch, a distance
+                of 1.0 will be assumed (e.g. happens when you merge disjunct trees) and a zero
+                bootstrap value will be written to the output tree.
+
+
+SECTION         Branch lengths
+
+                The branch lengths of the generated consensus tree are averaged from the input
+                branch lengths. When merging full trees, they should be quite accurate.
+
+                When merging partial trees, the lengths will be hypothetical, because all branches
+                from partial trees are hypothetical and nothing is known about how the length of
+                each branch will change by really adding the set of missing species when you use
+                a tree reconstruction tool.
+
+                As described above, hypothetical branches are inserted with a lowered
+                weight (probability) in case the missing species are estimated on the less probable
+                side of that branch. In that case the branch length of the hypothetical branch is
+                only added weighted proportionally to the assumed probability.
+
+                Example:
+
+                   Imagine merging 3 trees, where species C is missing in one tree and length of
+                   the branch 'AB---CD' is 0.3 in the two full trees and the length of the
+                   branch 'AB---D' in the partial tree is 0.6.
+
+                   The probability of adding C to the D-side of 'AB---D' is P=2/3.
+                   The summarized weight for that branch is 8/3, the summarized length will
+                   be 2*0.3 + 2/3*0.6 = 1.0. Then the average length calculates
+                   to 1.0 / (8/3) = 0.375, i.e a bit more than 0.3, but far from 0.6.
+
+
+NOTES           Please consider using a tree reconstruction tool (e.g ARB_PARSIMONY) to recalculate
+                the branch lengths of the generated consensus tree.
+
+EXAMPLES        Example for 2 trees:
+
+
+                          A      C                  A      D
+                           \    /                    \    /
+                            +--+                      +--+
+                           /    \                    /    \
+                          B      +--E               B      +--F
+                                 |                         |
+                                 D                         E
+
+
+                These trees contain the following branches:
+
+                           A---BCDE                  A---BDEF
+                           B---ACDE                  B---ADEF
+                           C---ABDE                  D---ABEF
+                           D---ABCE                  E---ABDF
+                           E---ABCD                  F---ABDE
+                           AB---CDE                  AB---DEF
+                           ABC---DE                  ABD---EF
+
+                Consensus tree is build upon the following branch pool:
+
+                           A      --- BCDE[F]              A[F]      --- BCDE
+                           B      --- ACDE[F]              B[F]      --- ACDE
+                           C      --- ABDE[F]              C[F]      --- ABDE
+                           D      --- ABCE[F]              D[F]      --- ABCE
+                           E      --- ABCD[F]              E[F]      --- ABCD
+                           A      --- B[C]DEF              A[C]      --- BDEF
+                           B      --- A[C]DEF              B[C]      --- ADEF
+                           D      --- A[C]BEF              D[C]      --- ABEF
+                           E      --- A[C]BDF              E[C]      --- ABDF
+                           F      --- A[C]BDE              F[C]      --- ABDE
+                           AB     --- CDE[F]               AB[F]     --- CDE
+                           ABC[F] --- DE                   ABC       --- DE[F]
+                           AB     --- [C]DEF               AB[C]     --- DEF
+                           AB[C]D --- EF                   ABD       --- [C]EF
+
+                (added missing species are shown in brackets; in left column species were added to
+                more likely side; in right column to less likely side)
+
+                Bootstrap values are calculated for branches:
+
+                           AB --- CDEF          100%            #1
+                           EF --- ABCD           56.2%          #2
+                           DE --- ABCF           50%            #3
+                           ABC --- DEF           33.3%          #4
+                           ABF --- CDE           16.7%          #5
+                           ABD --- CEF           16.7%          #6
+                           ABDE --- CF           12.5%          #7
+                           AF --- BCDE            6.25%         #8
+                           ACDE --- BF            6.25%         #9
+                           ABCE --- DF            6.25%         #10
+                           AC --- BDEF            6.25%         #11
+                           ADEF --- BC            6.25%         #12
+                           ABDF --- CE            6.25%         #13
+                           ABEF --- CD            6.25%         #14
+                           A --- BCDEF          100%            #15
+                           B --- ACDEF          100%            #16
+                           D --- ABCEF          100%            #17
+                           E --- ABCDF          100%            #18
+                           C --- ABDEF           50%            #19
+                           F --- ACBDE           50%            #20
+
+                Branches were listed in the order they will be picked: first picking the
+                inner branches (#1 .. #14) in order of their bootstrap values, then the
+                leaf branches (other criteria not shown in this example).
+
+                That results in the following tree building steps:
+
+                              AB---CDEF                    (add branch #1)
+
+
+                                     CD
+                                    /
+                                   /
+                              AB--+                        (add branch #2)
+                                   \56%
+                                    \
+                                     EF
+
+
+                              Now it's impossible to insert branch #3 => branch is dropped!
+
+
+                                     C
+                                    /
+                                   /
+                              AB--+                        (add branch #4)
+                                   \33%
+                                    \
+                                     +---D
+                                    /
+                                   /56%
+                                 EF
+
+
+                              Branches #5 to #14 are now impossible to insert => drop them
+
+                              Now only leaf branches (#15 to #20) have to be added, which leads to
+                              the following final topology:
+
+                              A         C
+                               \       /
+                                \     /
+                                 +---+
+                                /     \33%
+                               /       \
+                              B         +---D
+                                       /
+                                      /56%
+                                 E---+
+                                     |
+                                     |
+                                     F
+
+
+WARNINGS        None
+
+BUGS            No bugs known

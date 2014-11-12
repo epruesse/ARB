@@ -1,0 +1,132 @@
+/*ARBDB ASCII*/
+species_data		%% (%
+	species		:5000	%% (%
+		name		:7600	"MycTuber"
+		acc			"S45301 X58890"
+		full_name	:4400	"Mycobacterium tuberculosis "
+		%) /*species*/
+
+	species		:5000	%% (%
+		name		:7600	"MycLepra"
+		acc			"X53999"
+		full_name	:4400	"Mycobacterium leprae"
+		%) /*species*/
+
+	species		:5000	%% (%
+		name		:7600	"MycChlor"
+		acc			"X79094"
+		full_name	:4400	"Mycobacterium chlorophenolicus"
+		%) /*species*/
+
+	species		:5000	%% (%
+		name		:7600	"ActUtahe"
+		acc			"X80823"
+		full_name		"Act;ino\tplanes uta,hen.sis\n"
+		%) /*species*/
+
+	species		:5000	%% (%
+		name		:7600	"BifBifid"
+		acc			"S83624"
+		full_name	:4400	"Bifidobacterium bifidum "
+		%) /*species*/
+
+	species		:5000	%% (%
+		name		:7600	"ClavXyli"
+		acc			"M60935"
+		full_name	:4400	"Clavibacter xyli "
+		%) /*species*/
+
+	species		:5000	%% (%
+		name		:7600	"StpGrise"
+		acc			"M76388 X55435 X61478"
+		full_name	:4400	"Streptomyces griseus"
+		%) /*species*/
+
+	species		:5000	%% (%
+		name		:7600	"StpAmbof"
+		acc			"M27245"
+		full_name	:4400	"Streptomyces ambofaciens"
+		%) /*species*/
+
+	species		:5000	%% (%
+		name		:7600	"FraSpeci"
+		acc			"M88466"
+		full_name	:4400	"Frankia species"
+		%) /*species*/
+
+	%) /*species_data*/
+
+tree_data		%% (%
+	tree_pars		%% (%
+		tree			"N0.00564972,0.0608575;N0.00757217,0.0338983;N0.0917852,0.00956938;N0.0650995,0.0217195;N0.019678,0.00626118;LMycLepra\ALMycTuber\ALMycChlor\AN0.0685558,0.0720803;LActUtahe\ALFraSpeci\AN0.160326,0.0886076;LBifBifid\ALClavXyli\AN0.0359712,0.029703;LStpAmbof\ALStpGrise\A"
+		nnodes			%i 8
+		remark			"PRG=dnadist CORR=jukes_cantor FILTER=POS_VAR_BY_PARSIMONY PKG=ARB\n[created as copy of 'tree_NJ']"
+		security		%i 0
+		ruler			%% (%
+			size			%f 0.1
+			LIST			%% (%
+				ruler_y			%f 0
+				ruler_x			%f 0
+				text_x			%f 0
+				text_y			%f 0
+				%) /*LIST*/
+
+			ruler_width		%i 0
+			%) /*ruler*/
+
+		order			%i 2
+		%) /*tree_pars*/
+
+	%) /*tree_data*/
+
+description		"db to test NDS"
+focus			%% (%
+	tree_name		"tree_pars"
+	%) /*focus*/
+
+genom_db		%i 0
+sai_visualize		%% (%
+	%) /*sai_visualize*/
+
+arb_presets		%% (%
+	viewkey			%% (%
+		key_text		"name"
+		len1			%i 12
+		pars			"\"'\";dd;\"'\""
+		group			%i 0
+		leaf			%i 1
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		"full_name"
+		len1			%i 30
+		pars			":chloro=\\n:myce=\\t"
+		group			%i 0
+		leaf			%i 1
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			"taxonomy(1)"
+		group			%i 1
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		"acc"
+		len1			%i 20
+		pars			"\"acc=\";dd"
+		group			%i 0
+		leaf			%i 1
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		"date"
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	%) /*arb_presets*/
