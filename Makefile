@@ -656,8 +656,8 @@ LINK_SHARED_LIB := $(A_CXX) $(clflags) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
 # delete variables unused below
-lflags:=
-clflags:=
+#lflags:=
+#clflags:=
 
 # other used tools
 MAKEDEPEND_PLAIN = makedepend
@@ -922,6 +922,9 @@ checks: check_setup check_tabs
 
 # end test section ------------------------------
 
+# load new generic build system
+include SOURCE_TOOLS/module_build.mk
+
 # ---------------------------------------
 # List of standard top level directories
 #
@@ -1111,35 +1114,6 @@ $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) link_awt
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
-#***********************************	arb_rnacma **************************************
-RNACMA = bin/arb_rnacma
-ARCHS_RNACMA = \
-		RNACMA/RNACMA.a \
-
-$(RNACMA) : $(ARCHS_RNACMA:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNACMA) || ( \
-		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_RNACMA) $(LIBS) $(EXECLIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_RNACMA) $(LIBS) $(EXECLIBS) && \
-		echo "$(SEP) Link $@ [done]"; \
-		)
-
-#***********************************	arb_wetc **************************************
-WETC = bin/arb_wetc
-ARCHS_WETC = \
-		WETC/WETC.a \
-		SL/HELIX/HELIX.a \
-		SL/FILTER/FILTER.a \
-		XML/XML.a \
-
-$(WETC): $(ARCHS_WETC:.a=.dummy) link_awt
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) $(use_ARB_main) || ( \
-		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) && \
-		echo "$(SEP) Link $@ [done]"; \
-		)
-
 #***********************************	arb_dist **************************************
 DIST = bin/arb_dist
 ARCHS_DIST = \
@@ -1252,20 +1226,6 @@ $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) link_awt
 #***************************************************************************************
 #					SERVER SECTION
 #***************************************************************************************
-
-#***********************************	arb_db_server **************************************
-DBSERVER = bin/arb_db_server
-ARCHS_DBSERVER = \
-		DBSERVER/DBSERVER.a \
-		SERVERCNTRL/SERVERCNTRL.a \
-
-$(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) $(use_ARB_main) || ( \
-		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS) && \
-		echo "$(SEP) Link $@ [done]"; \
-		)
 
 #***********************************	arb_pt_server **************************************
 PROBE = bin/arb_pt_server
@@ -1459,7 +1419,6 @@ SL/TREE_WRITE/TREE_WRITE.dummy:		links_non_perl
 SL/TREEDISP/TREEDISP.dummy:		links_non_perl
 STAT/STAT.dummy:			links_non_perl
 TREEGEN/TREEGEN.dummy:			links_non_perl
-WETC/WETC.dummy:			links_non_perl
 WINDOW/libWINDOW.dummy:			links_non_perl
 XML/XML.dummy:				links_non_perl
 
@@ -1556,13 +1515,6 @@ help:   HELP_SOURCE/HELP_SOURCE.dummy
 
 HELP_SOURCE/HELP_SOURCE.dummy: link_core xml menus
 
-db:	ARBDB/libARBDB.dummy
-core:	CORE/libCORE.dummy
-aw:	WINDOW/libWINDOW.dummy
-awt:	AWT/libAWT.dummy
-awtc:	AWTC/AWTC.dummy
-awti:	AWTI/AWTI.dummy
-
 mp: 	MULTI_PROBE/MULTI_PROBE.dummy
 mg:	MERGE/MERGE.dummy
 ge: 	GENOM/GENOM.dummy
@@ -1595,14 +1547,13 @@ pst: 	PROBE_SET/PROBE_SET.dummy
 pd:	PROBE_DESIGN/PROBE_DESIGN.dummy
 na:	$(NAMES)
 sq:	SEQ_QUALITY/SEQ_QUALITY.dummy
-cma:    $(RNACMA)
+
 
 sec:	SECEDIT/SECEDIT.dummy
 
 e4:	$(EDIT4) readseq menus
 
 gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
-wetc:	$(WETC)
 
 xml:	XML/XML.dummy
 xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
@@ -2087,7 +2038,6 @@ rac_arb_edit4:		e4
 rac_arb_ntree:		nt
 rac_arb_pars:		pa
 rac_arb_phylo:		ph
-rac_arb_wetc:		wetc
 rac_arb_naligner:	nal
 rac_arb_pt_server:	pt
 rac_arb_db_server:	ds
