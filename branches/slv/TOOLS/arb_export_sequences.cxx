@@ -155,6 +155,11 @@ public:
         {
             GB_transaction trans(gbdst);
             GB_ERROR       error = ARB_format_alignment(gbdst, GBT_get_default_alignment(gbdst));
+
+            if (error) {
+                cerr << "ERROR: Failed to format alignments (" << error << ')' << endl;
+                exit(5);
+            }
         }
 
         if (GB_save_as(gbdst, filename.c_str(), "b")) {
