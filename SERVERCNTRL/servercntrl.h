@@ -5,6 +5,11 @@
 #ifndef SERVERCNTRL_H
 #define SERVERCNTRL_H
 
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
+#endif
+
 
 /* servercntrl.cxx */
 
