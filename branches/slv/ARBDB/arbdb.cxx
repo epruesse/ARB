@@ -2618,6 +2618,41 @@ GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback
     return gb_add_callback(gbd, newcb);
 }
 
+GB_ERROR GB_release(GBDATA *gbd) {
+    /*! free cached data in client.
+     *
+     * Warning: pointers into the freed region(s) will get invalid!
+     */
+    GBCONTAINER  *gbc;
+    GBDATA       *gb;
+    int           index;
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+
+    GB_test_transaction(gbd);
+    if (Main->local_mode) return 0;
+    if (GB_ARRAY_FLAGS(gbd).changed && !gbd->flags2.update_in_server) {
+        GB_update_server(gbd);
+    }
+    if (GB_TYPE(gbd) != GB_DB) {
+        GB_ERROR error = GB_export_errorf("You cannot release non container (%s)",
+                                          GB_read_key_pntr(gbd));
+        GB_internal_error(error);
+        return error;
+    }
+    if (gbd->flags2.folded_container) return 0;
+    gbc = (GBCONTAINER *)gbd;
+
+    for (index = 0; index < gbc->d.nheader; index++) {
+        if ((gb = GBCONTAINER_ELEM(gbc, index))) {
+            gb_delete_entry(&gb);
+        }
+    }
+
+    gbc->flags2.folded_container = 1;
+    gb_do_callback_list(Main);       // do all callbacks
+    return 0;
+}
+
 int GB_nsons(GBDATA *gbd) {
     /*! return number of child entries
      *
