@@ -223,6 +223,7 @@ arb_export_sequences.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 arb_export_sequences.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_export_sequences.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_export_sequences.o: $(ARBHOME)/INCLUDE/arb_error.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/arb_file.h
 arb_export_sequences.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_export_sequences.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_export_sequences.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -385,15 +385,21 @@ void TEST_arb_notify() {
 
 #define SEQ_DB          "TEST_loadsave.arb"
 #define TEMPLATE_DB     "tools/min_template.arb"
+#define EFT             "../../lib/export/fasta_wide.eft" // ../lib/export/fasta_wide.eft
+#define EXSEQ_EFT       "tools/exseq_via_eft.fasta"
 #define EXSEQ_FASTA     "tools/exseq.fasta"
 #define EXSEQ_ARB       "tools/exseq.arb"
 #define EXSEQ_ARB_ASCII "tools/exseq_ascii.arb"
+#define EXSEQ_RESTRICT  "tools/acc.list"
 
 void TEST_arb_export_sequences() {
-    TEST_RUN_TOOL("arb_export_sequences --format FASTA --source " SEQ_DB " --dest " EXSEQ_FASTA);
+    TEST_RUN_TOOL("arb_export_sequences --source " SEQ_DB " --format FASTA   --dest " EXSEQ_FASTA);
     TEST_OUTFILE_EXPECTED(EXSEQ_FASTA);
 
-    TEST_RUN_TOOL("arb_export_sequences --format ARB   --source " SEQ_DB " --dest " EXSEQ_ARB   " --arb-template " TEMPLATE_DB
+    TEST_RUN_TOOL("arb_export_sequences --source " SEQ_DB " --format " EFT " --dest " EXSEQ_EFT   " --accs " EXSEQ_RESTRICT);
+    TEST_OUTFILE_EXPECTED(EXSEQ_EFT);
+
+    TEST_RUN_TOOL("arb_export_sequences --source " SEQ_DB " --format ARB     --dest " EXSEQ_ARB   " --arb-template " TEMPLATE_DB
                   " && "
                   "arb_2_ascii " EXSEQ_ARB " " EXSEQ_ARB_ASCII
         );
