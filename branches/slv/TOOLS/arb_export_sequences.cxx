@@ -4,6 +4,7 @@
 
 #include <arbdb.h>
 #include <arbdbt.h>
+#include <arb_file.h>
 #include <AP_filter.hxx>
 #include <seqio.hxx>
 #include <insdel.h>
@@ -40,15 +41,9 @@ struct equals {
 
 /* fake aw_message/aw_status functions */
 
-void aw_status(double d) {
+static void aw_status(double d) {
     cerr << "aw_status_fraction: " << d << endl;
     cerr.flush();
-}
-void aw_message(char const* msg) {
-    cerr << "aw_message: " << msg << endl;
-}
-void aw_status(char const* /*msg*/) {
-//    cerr << "aw_status_msg: " << msg << endl;
 }
 
 /*  generic writer class */
@@ -248,7 +243,7 @@ public:
 
 
 
-void help() {
+static void help() {
     cerr <<
         "Exports sequences from an ARB database."
         "\n"
@@ -267,7 +262,7 @@ void help() {
          << endl;;
 }
 
-set<string> read_accession_file(const char* file) {
+static set<string> read_accession_file(const char* file) {
     set<string> accessions;
     ifstream ifs(file);
     string linestring;
@@ -365,7 +360,14 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    set<string> accessions = read_accession_file(accs);
+    set<string> accessions;
+    if (accs) {
+        if (!GB_is_regularfile(accs)) {
+            cerr << "unable to open accession number file '" << accs << '\'' << endl;
+            return 1;
+        }
+        accessions = read_accession_file(accs);
+    }
 
     GB_ERROR error    = NULL;
     int      exitcode = 0;
