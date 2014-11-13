@@ -52,15 +52,28 @@ void aw_status(char const* /*msg*/) {
 }
 
 /*  generic writer class */
-struct Writer : virtual Noncopyable {
-    virtual void addSequence(GBDATA*) = 0;
-    virtual void finish() {}
-    virtual const char *get_error() const { return NULL; }
+class Writer : virtual Noncopyable {
+    string err_state;
+protected:
+    virtual void set_error(const char *error) {
+        arb_assert(error);
+        if (!err_state.empty()) {
+            cerr << "ERROR: " << err_state << endl;
+        }
+        err_state = error;
+    }
+
+public:
     virtual ~Writer() {}
 
+    virtual void addSequence(GBDATA*) = 0;
+    virtual void finish() {}
+
+    const char *get_error() const {
+        return err_state.empty() ? NULL : err_state.c_str();
+    }
     bool ok() const { return !get_error(); }
 };
-
 
 class MultiFastaWriter : public Writer { // derived from Noncopyable
     ofstream file;
@@ -116,8 +129,6 @@ class ArbWriter : public Writer { // derived from Noncopyable
     double  count, count_max;
     GBDATA *gbdst, *gbdst_spec;
 
-    string err_state;
-
     void close() {
         if (gbdst) {
             GB_close(gbdst);
@@ -125,12 +136,8 @@ class ArbWriter : public Writer { // derived from Noncopyable
         }
     }
 
-    void set_error(const char *error) {
-        arb_assert(error);
-        if (!err_state.empty()) {
-            cerr << "ERROR: " << err_state << endl;
-        }
-        err_state = error;
+    void set_error(const char *error) OVERRIDE {
+        Writer::set_error(error);
         close();
     }
 
@@ -202,10 +209,6 @@ public:
 
         if (error) set_error(error);
     }
-
-    const char *get_error() const OVERRIDE {
-        return err_state.empty() ? NULL : err_state.c_str();
-    }
 };
 
 class AwtiExportWriter : public Writer { // derived from Noncopyable
@@ -215,6 +218,7 @@ class AwtiExportWriter : public Writer { // derived from Noncopyable
     const char *outname;
     char *real_outname;
     const int compress;
+
 public:
     AwtiExportWriter(GBDATA *_gbmain, const char *_dbname, const char* eft,
                      const char* out, int c)
@@ -231,14 +235,13 @@ public:
         const int cut_stop_codon = 0;
         const int multiple = 0;
 
-        char *aliname = GBT_get_default_alignment(gbmain);
-        AP_filter filter(GBT_get_alignment_len(gbmain, aliname));
-        GB_ERROR err = 0;
-        err = SEQIO_export_by_format(gbmain, marked_only, &filter,
-                                 cut_stop_codon, compress, dbname,
-                                 formname, outname, multiple, &real_outname);
+        char      *aliname = GBT_get_default_alignment(gbmain);
+        AP_filter  filter(GBT_get_alignment_len(gbmain, aliname));
+        GB_ERROR   err     = SEQIO_export_by_format(gbmain, marked_only, &filter,
+                                                    cut_stop_codon, compress, dbname,
+                                                    formname, outname, multiple, &real_outname);
         if (err) {
-            cerr << err << endl;
+            set_error(err);
         }
     }
 };
@@ -432,20 +435,9 @@ int main(int argc, char** argv) {
             delete writer;
         }
     }
-
-    GB_close(gbsrc);
+    if (gbsrc) GB_close(gbsrc);
 
     if (error) cerr << "ERROR: " << error << endl;
     return exitcode;
 }
 
-
-/*
-  Local Variables:
-  mode:c++
-  c-file-style:"stroustrup"
-  c-file-offsets:((innamespace . 0)(inline-open . 0)(case-label . 0))
-  indent-tabs-mode:nil
-  fill-column:99
-  End:
-*/
