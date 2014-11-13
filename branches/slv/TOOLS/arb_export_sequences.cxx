@@ -1,10 +1,12 @@
 #include <stdio.h> // needed for arbdb.h
 #include <string.h>
+#include <unistd.h>
 
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <AP_filter.hxx>
 #include <seqio.hxx>
+#include <insdel.h>
 
 #include <string>
 #include <vector>
@@ -15,7 +17,6 @@
 #include <set>
 #include <iterator>
 #include <algorithm>
-#include <insdel.h>
 
 using std::cerr;
 using std::endl;
@@ -54,7 +55,10 @@ void aw_status(char const* /*msg*/) {
 struct Writer : virtual Noncopyable {
     virtual void addSequence(GBDATA*) = 0;
     virtual void finish() {}
+    virtual const char *get_error() const { return NULL; }
     virtual ~Writer() {}
+
+    bool ok() const { return !get_error(); }
 };
 
 
@@ -112,58 +116,95 @@ class ArbWriter : public Writer { // derived from Noncopyable
     double  count, count_max;
     GBDATA *gbdst, *gbdst_spec;
 
+    string err_state;
+
+    void close() {
+        if (gbdst) {
+            GB_close(gbdst);
+            gbdst = NULL;
+        }
+    }
+
+    void set_error(const char *error) {
+        arb_assert(error);
+        if (!err_state.empty()) {
+            cerr << "ERROR: " << err_state << endl;
+        }
+        err_state = error;
+        close();
+    }
+
 public:
     ArbWriter(string ta, string f, int c)
-        : template_arb(ta), filename(f), count(0), count_max(c)
+        : template_arb(ta),
+          filename(f),
+          count(0),
+          count_max(c)
     {
         gbdst = GB_open(template_arb.c_str(), "rw");
-        if (!gbdst) {
-            cerr << "ERROR: Unable to open template file" << endl;
-            exit(1);
+        if (!gbdst) set_error("Unable to open template file");
+        else {
+            if (GB_request_undo_type(gbdst, GB_UNDO_NONE)) {
+                cerr << "WARN: Unable to disable undo buffer";
+            }
+
+            GB_begin_transaction(gbdst);
+            gbdst_spec = GB_search(gbdst, "species_data", GB_CREATE_CONTAINER);
+            GB_commit_transaction(gbdst);
+
+            GB_ERROR error = GB_save_as(gbdst, filename.c_str(), "b");
+            if (error) set_error(GBS_global_string("Unable to open output file (Reason: %s)", error));
         }
-
-        if (GB_request_undo_type(gbdst, GB_UNDO_NONE)) {
-            cerr << "WARN: Unable to disable undo buffer";
-        }
-
-        GB_begin_transaction(gbdst);
-        gbdst_spec = GB_search(gbdst, "species_data", GB_CREATE_CONTAINER);
-        GB_commit_transaction(gbdst);
-
-        if (GB_save_as(gbdst, filename.c_str(), "b")) {
-            cerr << "ERROR: Unable to open output file" << endl;
-            exit(1);
+    }
+    ~ArbWriter() {
+        close();
+        if (!ok()) {
+            unlink(filename.c_str());
         }
     }
 
     void addSequence(GBDATA* gbspec) OVERRIDE {
-        GB_begin_transaction(gbdst);
-        GBDATA *gbnew = GB_create_container(gbdst_spec, "species");
-        GB_copy(gbnew, gbspec);
-        GB_release(gbnew); 
-        GB_commit_transaction(gbdst);
+        if (gbdst) {
+            GB_transaction  ta(gbdst);
+            GBDATA         *gbnew = GB_create_container(gbdst_spec, "species");
+            GB_ERROR        error = NULL;
+            if (!gbnew) {
+                error = GB_await_error();
+            }
+            else {
+                error             = GB_copy(gbnew, gbspec);
+                if (!error) error = GB_release(gbnew);
+            }
+            if (error) set_error(error);
+        }
         aw_status(++count/count_max);
     }
 
     void finish() OVERRIDE {
-        cerr << "Compressing..." << endl;
-
-        {
-            GB_transaction trans(gbdst);
-            GB_ERROR       error = ARB_format_alignment(gbdst, GBT_get_default_alignment(gbdst));
-
-            if (error) {
-                cerr << "ERROR: Failed to format alignments (" << error << ')' << endl;
-                exit(5);
+        GB_ERROR error = NULL;
+        if (gbdst) {
+            cerr << "Compressing..." << endl;
+            GB_transaction  trans(gbdst);
+            char           *ali = GBT_get_default_alignment(gbdst);
+            if (!ali) {
+                error = "Your template DB has no default alignment";
+            }
+            else {
+                error            = ARB_format_alignment(gbdst, ali);
+                if (error) error = GBS_global_string("Failed to format alignments (Reason: %s)", error);
+                free(ali);
             }
         }
 
-        if (GB_save_as(gbdst, filename.c_str(), "b")) {
-            cerr << "ERROR: Unable to save to output file" << endl;
-            exit(5);
+        if (!error && GB_save_as(gbdst, filename.c_str(), "b")) {
+            error = "Unable to save to output file";
         }
 
-        GB_close(gbdst);
+        if (error) set_error(error);
+    }
+
+    const char *get_error() const OVERRIDE {
+        return err_state.empty() ? NULL : err_state.c_str();
     }
 };
 
@@ -323,61 +364,78 @@ int main(int argc, char** argv) {
 
     set<string> accessions = read_accession_file(accs);
 
+    GB_ERROR error    = NULL;
+    int      exitcode = 0;
+
     GBDATA *gbsrc = GB_open(src, "r");
     if (!gbsrc) {
-        cerr << "unable to open source file" << endl;
-        return 1;
+        error    = "unable to open source file";
+        exitcode = 1;
     }
 
-    GB_transaction trans(gbsrc);
+    if (!error) {
+        GB_transaction trans(gbsrc);
 
-    int count_max = 0;
-    if (accs) {
-        count_max = accessions.size();
-    } else {
-        for (GBDATA *gbspec = GBT_first_species(gbsrc);
-             gbspec; gbspec = GBT_next_species(gbspec)) {
-            count_max++;
+        int count_max = 0;
+        if (accs) {
+            count_max = accessions.size();
+        } else {
+            for (GBDATA *gbspec = GBT_first_species(gbsrc);
+                 gbspec; gbspec = GBT_next_species(gbspec)) {
+                count_max++;
+            }
+        }
+
+        char* default_ali = GBT_get_default_alignment(gbsrc);
+
+        // create writer for target type
+        Writer *writer = 0;
+        switch(format) {
+        case FMT_ARB:
+            writer = new ArbWriter(tmpl, dest, count_max);
+            break;
+        case FMT_FASTA:
+            writer = new MultiFastaWriter(dest, default_ali, count_max);
+            break;
+        case FMT_EFT:
+            writer = new AwtiExportWriter(gbsrc, src, eft, dest, compress);
+            break;
+
+        case FMT_NONE:
+            error    = "internal error";
+            exitcode = 2;
+            break;
+        }
+
+        if (writer) {
+            // generate file
+            for (GBDATA *gbspec = GBT_first_species(gbsrc);
+                 gbspec && writer->ok();
+                 gbspec = GBT_next_species(gbspec))
+            {
+                GBDATA *gbname = GB_find(gbspec, "acc", SEARCH_CHILD);
+                string name(GB_read_string(gbname));
+
+                if (!accs || accessions.count(name))  {
+                    writer->addSequence(gbspec);
+                }
+                GB_release(gbspec);
+            }
+
+            if (writer->ok()) writer->finish();
+            
+            if (!writer->ok()) {
+                error    = GBS_static_string(writer->get_error());
+                exitcode = 5;
+            }
+            delete writer;
         }
     }
 
-    char* default_ali = GBT_get_default_alignment(gbsrc);
-
-    // create writer for target type
-    Writer *writer=0;
-    switch(format) {
-    case FMT_ARB:
-        writer = new ArbWriter(tmpl, dest, count_max);
-        break;
-    case FMT_FASTA:
-        writer = new MultiFastaWriter(dest, default_ali, count_max);
-        break;
-    case FMT_EFT:
-        writer = new AwtiExportWriter(gbsrc, src, eft, dest, compress);
-        break;
-    case FMT_NONE:
-        cerr << "internal error" << endl;
-        return 2;
-        break;
-    }
-
-    // generate file
-    for (GBDATA *gbspec = GBT_first_species(gbsrc);
-         gbspec; gbspec = GBT_next_species(gbspec)) {
-
-        GBDATA *gbname = GB_find(gbspec, "acc", SEARCH_CHILD);
-        string name(GB_read_string(gbname));
-
-        if (!accs || accessions.count(name))  {
-            writer->addSequence(gbspec);
-        }
-        GB_release(gbspec);
-    }
-
-    writer->finish();
-    delete writer;
-    trans.close(NULL);
     GB_close(gbsrc);
+
+    if (error) cerr << "ERROR: " << error << endl;
+    return exitcode;
 }
 
 
