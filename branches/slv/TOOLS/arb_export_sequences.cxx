@@ -211,7 +211,6 @@ class AwtiExportWriter : public Writer { // derived from Noncopyable
     const char *dbname;
     const char *formname;
     const char *outname;
-    char *real_outname;
     const int compress;
 
 public:
@@ -230,14 +229,17 @@ public:
         const int cut_stop_codon = 0;
         const int multiple = 0;
 
-        char      *aliname = GBT_get_default_alignment(gbmain);
+        char      *aliname      = GBT_get_default_alignment(gbmain);
         AP_filter  filter(GBT_get_alignment_len(gbmain, aliname));
-        GB_ERROR   err     = SEQIO_export_by_format(gbmain, marked_only, &filter,
-                                                    cut_stop_codon, compress, dbname,
-                                                    formname, outname, multiple, &real_outname);
-        if (err) {
-            set_error(err);
-        }
+        char      *real_outname = 0;
+
+        GB_ERROR err = SEQIO_export_by_format(gbmain, marked_only, &filter,
+                                              cut_stop_codon, compress, dbname,
+                                              formname, outname, multiple, &real_outname);
+        if (err) set_error(err);
+
+        free(real_outname);
+        free(aliname);
     }
 };
 
