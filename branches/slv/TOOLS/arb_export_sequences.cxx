@@ -51,15 +51,14 @@ void aw_status(char const* /*msg*/) {
 }
 
 /*  generic writer class */
-class Writer {
-public:
-    virtual void addSequence(GBDATA*)=0;
-    virtual void finish() {};
+struct Writer : virtual Noncopyable {
+    virtual void addSequence(GBDATA*) = 0;
+    virtual void finish() {}
     virtual ~Writer() {}
 };
 
 
-class MultiFastaWriter : public Writer {
+class MultiFastaWriter : public Writer { // derived from Noncopyable
     ofstream file;
     char *default_ali;
     double count, count_max;
@@ -69,9 +68,6 @@ public:
           default_ali(a),
           count(0), count_max(c)
     {
-    }
-
-    ~MultiFastaWriter() {
     }
 
     string readString(GBDATA* spec, const char* key) {
@@ -92,7 +88,7 @@ public:
         return result;
     }
 
-    void addSequence(GBDATA* spec) {
+    void addSequence(GBDATA* spec) OVERRIDE {
         file << ">"
              << readString(spec, "acc") << "."
              << readString(spec, "start") << "."
@@ -110,10 +106,10 @@ public:
     }
 };
 
-class ArbWriter : public Writer {
-    string template_arb;
-    string filename;
-    double count, count_max;
+class ArbWriter : public Writer { // derived from Noncopyable
+    string  template_arb;
+    string  filename;
+    double  count, count_max;
     GBDATA *gbdst, *gbdst_spec;
 
 public:
@@ -140,7 +136,7 @@ public:
         }
     }
 
-    void addSequence(GBDATA* gbspec) {
+    void addSequence(GBDATA* gbspec) OVERRIDE {
         GB_begin_transaction(gbdst);
         GBDATA *gbnew = GB_create_container(gbdst_spec, "species");
         GB_copy(gbnew, gbspec);
@@ -149,7 +145,7 @@ public:
         aw_status(++count/count_max);
     }
 
-    void finish() {
+    void finish() OVERRIDE {
         cerr << "Compressing..." << endl;
 
         {
@@ -169,12 +165,9 @@ public:
 
         GB_close(gbdst);
     }
-
-    ~ArbWriter() {
-    }
 };
 
-class AwtiExportWriter : public Writer {
+class AwtiExportWriter : public Writer { // derived from Noncopyable
     GBDATA *gbmain;
     const char *dbname;
     const char *formname;
@@ -188,11 +181,11 @@ public:
     {
         GBT_mark_all(gbmain, 0);
     }
-    void addSequence(GBDATA *gbspec) {
+    void addSequence(GBDATA *gbspec) OVERRIDE {
         GB_write_flag(gbspec, 1);
     }
 
-    void finish() {
+    void finish() OVERRIDE {
         const int marked_only = 1;
         const int cut_stop_codon = 0;
         const int multiple = 0;
@@ -206,9 +199,6 @@ public:
         if (err) {
             cerr << err << endl;
         }
-    }
-
-    ~AwtiExportWriter() {
     }
 };
 
