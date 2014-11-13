@@ -368,5 +368,23 @@ void TEST_arb_notify() {
     EXIT_NOTIFICATION;
 }
 
+// #define TEST_AUTO_UPDATE_EXP_SEQ // uncomment to auto-update expected sequence exports
+#define SEQ_DB      "TEST_loadsave.arb"
+#define EXSEQ_FASTA "tools/exseq.fasta"
+
+#define EXPECTED(file) file ".expected"
+
+void TEST_arb_export_sequences() {
+    TEST_RUN_TOOL("arb_export_sequences --format FASTA --source " SEQ_DB " --dest " EXSEQ_FASTA);
+
+#if defined(TEST_AUTO_UPDATE_EXP_SEQ)
+    TEST_COPY_FILE(EXSEQ_FASTA, EXPECTED(EXSEQ_FASTA));
+#else 
+    TEST_EXPECT_TEXTFILES_EQUAL(EXSEQ_FASTA, EXPECTED(EXSEQ_FASTA));
+#endif
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(EXSEQ_FASTA));
+}
+
+
 #endif // UNIT_TESTS
 
