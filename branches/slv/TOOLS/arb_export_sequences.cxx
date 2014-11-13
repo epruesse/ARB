@@ -64,10 +64,10 @@ struct Writer : virtual Noncopyable {
 
 class MultiFastaWriter : public Writer { // derived from Noncopyable
     ofstream file;
-    char *default_ali;
+    string default_ali;
     double count, count_max;
 public:
-    MultiFastaWriter(string s,  char* a, int c)
+    MultiFastaWriter(string s, const char* a, int c)
         : file(s.c_str()),
           default_ali(a),
           count(0), count_max(c)
@@ -85,7 +85,7 @@ public:
     }
 
     string readData(GBDATA* spec) {
-        GBDATA *gbd    = GB_find(spec, default_ali, SEARCH_CHILD);
+        GBDATA *gbd    = GB_find(spec, default_ali.c_str(), SEARCH_CHILD);
         if (!gbd) return string("<empty>");
         string  result = readString(gbd, "data");
         GB_release(gbd);
@@ -386,17 +386,18 @@ int main(int argc, char** argv) {
             }
         }
 
-        char* default_ali = GBT_get_default_alignment(gbsrc);
-
         // create writer for target type
         Writer *writer = 0;
         switch(format) {
         case FMT_ARB:
             writer = new ArbWriter(tmpl, dest, count_max);
             break;
-        case FMT_FASTA:
-            writer = new MultiFastaWriter(dest, default_ali, count_max);
+        case FMT_FASTA: {
+            char *default_ali = GBT_get_default_alignment(gbsrc);
+            writer            = new MultiFastaWriter(dest, default_ali, count_max);
+            free(default_ali);
             break;
+        }
         case FMT_EFT:
             writer = new AwtiExportWriter(gbsrc, src, eft, dest, compress);
             break;
@@ -414,7 +415,7 @@ int main(int argc, char** argv) {
                  gbspec = GBT_next_species(gbspec))
             {
                 GBDATA *gbname = GB_find(gbspec, "acc", SEARCH_CHILD);
-                string name(GB_read_string(gbname));
+                string name(GB_read_char_pntr(gbname));
 
                 if (!accs || accessions.count(name))  {
                     writer->addSequence(gbspec);
