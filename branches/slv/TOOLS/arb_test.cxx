@@ -368,21 +368,37 @@ void TEST_arb_notify() {
     EXIT_NOTIFICATION;
 }
 
+// --------------------------------------------------------------------------------
+
 // #define TEST_AUTO_UPDATE_EXP_SEQ // uncomment to auto-update expected sequence exports
-#define SEQ_DB      "TEST_loadsave.arb"
-#define EXSEQ_FASTA "tools/exseq.fasta"
 
 #define EXPECTED(file) file ".expected"
+#if defined(TEST_AUTO_UPDATE_EXP_SEQ)
+#define UPDATE_OR_COMPARE(outfile) TEST_COPY_FILE(outfile, EXPECTED(outfile))
+#else // !defined(TEST_AUTO_UPDATE_EXP_SEQ)
+#define UPDATE_OR_COMPARE(outfile) TEST_EXPECT_TEXTFILES_EQUAL(outfile, EXPECTED(outfile))
+#endif
+#define TEST_OUTFILE_EXPECTED(outfile) do{                     \
+        UPDATE_OR_COMPARE(outfile);                            \
+        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(outfile));    \
+    }while(0)
+
+#define SEQ_DB          "TEST_loadsave.arb"
+#define TEMPLATE_DB     "tools/min_template.arb"
+#define EXSEQ_FASTA     "tools/exseq.fasta"
+#define EXSEQ_ARB       "tools/exseq.arb"
+#define EXSEQ_ARB_ASCII "tools/exseq_ascii.arb"
 
 void TEST_arb_export_sequences() {
     TEST_RUN_TOOL("arb_export_sequences --format FASTA --source " SEQ_DB " --dest " EXSEQ_FASTA);
+    TEST_OUTFILE_EXPECTED(EXSEQ_FASTA);
 
-#if defined(TEST_AUTO_UPDATE_EXP_SEQ)
-    TEST_COPY_FILE(EXSEQ_FASTA, EXPECTED(EXSEQ_FASTA));
-#else 
-    TEST_EXPECT_TEXTFILES_EQUAL(EXSEQ_FASTA, EXPECTED(EXSEQ_FASTA));
-#endif
-    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(EXSEQ_FASTA));
+    TEST_RUN_TOOL("arb_export_sequences --format ARB   --source " SEQ_DB " --dest " EXSEQ_ARB   " --arb-template " TEMPLATE_DB
+                  " && "
+                  "arb_2_ascii " EXSEQ_ARB " " EXSEQ_ARB_ASCII
+        );
+    TEST_OUTFILE_EXPECTED(EXSEQ_ARB_ASCII);
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(EXSEQ_ARB));
 }
 
 
