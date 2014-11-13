@@ -96,7 +96,8 @@ sub propedit_dir($$$) {
 
   # ---------------------------------------- conditions
 
-  my $creates_gcov = (defined $ext{c} or defined $ext{cpp} or defined $ext{cxx});
+  my $hasSource = (defined $ext{c} or defined $ext{cpp} or defined $ext{cxx});
+  my $hasHeader = (defined $ext{h} or defined $ext{hpp} or defined $ext{hxx});
   my $creates_bak = (defined $file{Makefile});
   my $is_root = ($rel eq '.');
 
@@ -109,7 +110,13 @@ sub propedit_dir($$$) {
                   '*.gcda',
                  );
 
-  if (not $creates_gcov) { push @unwanted, '*.gcno'; }
+  if (not $hasSource) {
+    push @unwanted, '*.gcno';
+    push @unwanted, '*.d';
+  }
+  if (not $hasHeader) {
+    push @unwanted, '*.mkpt';
+  }
   if (not $creates_bak) { push @unwanted, '*.bak'; }
   if (not $is_root) { push @unwanted, 'ChangeLog'; }
 
@@ -130,8 +137,14 @@ sub propedit_dir($$$) {
   # ---------------------------------------- add ignores
 
   if ($creates_bak) { add_missing('*.bak'); }
-  if ($creates_gcov) { add_missing('*.gcno'); }
-
+  if ($hasSource) {
+    add_missing('*.gcno');
+    add_missing('*.d');
+  }
+  if ($hasHeader) {
+    add_missing('*.mkpt');
+  }
+  
   # ---------------------------------------- add ignores
 
   $dump==0 || dumpContent('new', @content);
