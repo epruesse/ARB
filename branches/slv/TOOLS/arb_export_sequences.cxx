@@ -293,7 +293,7 @@ int main(int argc, char** argv) {
                 } else if (!strcmp(argv[i], "all")) {
                     compress = 2;
                 } else {
-                    cerr << "missing argument to --compress-gaps?";
+                    cerr << "missing argument to --eft-compress-gaps?";
                     i--;
                 }
             } else {
@@ -317,7 +317,7 @@ int main(int argc, char** argv) {
         return 1;
     }
     if (format == FMT_ARB && !tmpl) {
-        cerr << "need '--tmpl' parameter for output type ARB'" << endl;
+        cerr << "need '--arb-template' parameter for output type ARB'" << endl;
         return 1;
     }
 
