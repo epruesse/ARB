@@ -67,7 +67,8 @@ endef
 
 SOURCE_DIR:=$(shell pwd)
 LDFLAGS := -Llib 
-CPPFLAGS := -IINCLUDE -ITEMPLATES
+CPPFLAGS := -IINCLUDE 
+#-ITEMPLATES
 
 # make linking fail on unresolved symbols (even for libs)
 #LDFLAGS +=-Wl,-z,defs
@@ -119,19 +120,20 @@ define include_with_dir
 endef
 $(foreach mod,$(module-files),$(eval $(call include_with_dir,$(mod))))
 
-
-## create rules for each module
-define make_module_rules
-## module_HEADERS
-# prepend INCUDE/ to header files
-  $(1)_HEADERS=$($(1)_HEADERS:%=INCLUDE/%)
+define make_header_rules
 # create dependencies: INCLUDE/xxx.h: DIR/xxx.h
   $(foreach header,$($(1)_HEADERS:%=INCLUDE/%),
     $(header): $(header:INCLUDE/%=$($(1)_DIR)%)
   )
+# prepend INCUDE/ to header files
+  $(1)_HEADERS=$($(1)_HEADERS:%=INCLUDE/%)
+
   headers += $$($(1)_HEADERS)
   DISTCLEAN+=$$($(1)_HEADERS)
+endef 
+$(foreach mod,$(modules),$(eval $(call make_header_rules,$(mod))))
 
+define make_module_rules
 ## module_MKPT_HEADERS
 # .h.mkpt files for generated headers depend on sources and module.mk
   $(foreach header,$($(1)_MKPT_HEADERS),
@@ -254,16 +256,20 @@ endef
 
 ## depend files
 
-# use GCC to generate dependencies
-# -MG tells it to output also missing dependencies instead of failing
-# missing are either in INCLUDE or MKPT generated
+
+# - use GCC to generate dependencies
+#   -MG tells it to output also missing dependencies instead of failing
+# - remove path to current source dir where present
+# - replace names without path (not found) from
+#    $(headers) the mkpt headers of the current module
 define DEPEND_CMD
 $(call prettyprint,\
 $(A_CXX) $(cflags) $(cxxflags) $(CPPFLAGS) $(LOCAL_DEFINES) -o $@ -c $<  $(CXX_INCLUDES) \
  -M -MG -MF $@ -MT $(@:%.d=%.o) -MT $@;\
- $(ARB_SED) -i -e 's/$(subst /,\/,$(SOURCE_DIR))\///g'\
-            -e '$($(MODULE)_MKPT_HEADERS:%=s| \(%\)| $($(MODULE)_DIR:%/=%)\/\1 |;)'\
-            -e 's/ \([^/ ]*.h\)/ INCLUDE\/\1/g' $@ \
+HEADERS=`echo $(headers:INCLUDE/%=%)|	$(ARB_SED) -e 's/ /\\\\|/g; s/|$$//;'`;\
+$(ARB_SED) -i -e 's/$(subst /,\/,$(SOURCE_DIR))\///g' \
+           -e '$($(MODULE)_MKPT_HEADERS:%=s| \(%\)| $($(MODULE)_DIR:%/=%)\/\1 |;)' \
+           -e 's/ \('$$HEADERS'\)/ INCLUDE\/\1/g' $@\
 ,DEPEND)
 endef
 
@@ -288,7 +294,7 @@ $(static_libs):
 define LINKSO_CMD
 $(call prettyprint,\
 $(A_CXX) $(clflags) -shared $(GCOVFLAGS) -o $@ $(call makelinkdeps,$^) $(LDFLAGS),\
-LINK DLL)
+LINK_DLL)
 endef
 
 $(dynamic_libs):
