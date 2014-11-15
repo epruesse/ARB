@@ -1,13 +1,30 @@
-# new build system
+# This makefile contains the rules to build ARB's components based on configurations
+# specified in the module.mk files in the various directories. Each module.mk contains
+# the line 
+#    module := <name>
+# specifying the modules name. This name is a prefix for the variables specifying what
+# needs to be built from what in the respective module:
+#
+# <name>_TARGETS := <files>
+#   The artifacts of the module. These can be static libs ending in .a, dynamic libs
+#   ending in .so. All other files are treated as binaries. Paths are relative to the 
+#   source directory. $(dir) is provided as the module's directory:
+#      module_TARGETS := $(dir)AWT.a
+#
+# <name>_SOURCES := <files>
+#   These are the c/cxx source files. If unset, it will be filled with all c/cxx files in 
+#   the respective directory. "NONE" is reserved to indicate that no c/cxx sources exist.
+# 
+# <name>_OBJECTS := <files>
+#   Optional. Will be generated from <name>_SOURCES if empty.
+#
+# <name>_HEADERS := <files>
+#   Contains the names of the public header files that need to be copied to INCLUDE/
 
 # The makefiles depend on the .d (dependency) files, which depend on the header files. This 
 # is why all targets will first generate all headers. 
 
-# ar archive <- object files
-# object files <- c/c++ files, INCLUDE header files
-# INCLUDE header files <- header files
-# MODULE/file*.o <- MODULE/file.cxx
-# 
+
 
 
 ### Helper Functions
@@ -73,6 +90,7 @@ programs :=
 objects :=
 mkpt_headers :=
 headers :=
+aisc_targets :=
 module-files := $(shell find . -name module.mk)
 
 ### programs
@@ -105,13 +123,13 @@ $(foreach mod,$(module-files),$(eval $(call include_with_dir,$(mod))))
 ## create rules for each module
 define make_module_rules
 ## module_HEADERS
-# create dependencies: INCLUDE/xxx.h: DIR/xxx.h
-  $(foreach header,$($(1)_HEADERS),
-  INCLUDE/$(strip $(header)): $($(1)_DIR)$(strip $(header))
-	$$(call prettyprint,cp $$^ $$@,"CP")
-  )
 # prepend INCUDE/ to header files
-  $(1)_HEADERS:=$($(1)_HEADERS:%=INCLUDE/%)
+  $(1)_HEADERS=$($(1)_HEADERS:%=INCLUDE/%)
+# create dependencies: INCLUDE/xxx.h: DIR/xxx.h
+  $(foreach header,$($(1)_HEADERS:%=INCLUDE/%),
+    $(header): $(header:INCLUDE/%=$($(1)_DIR)%)
+  )
+  headers += $$($(1)_HEADERS)
   DISTCLEAN+=$$($(1)_HEADERS)
 
 ## module_MKPT_HEADERS
@@ -123,6 +141,30 @@ define make_module_rules
 
 # collect generated headers
   mkpt_headers += $($(1)_MKPT_HEADERS:%=$$($(1)_DIR)%)
+
+## module_AISC
+  ifneq (,$$($(1)_AISC))
+    $($(1)_DIR)DUMP:
+	mkdir $$@
+    $(1)_CLEAN += $($(1)_DIR)DUMP
+    aisc_targets += $($(1)_DIR)GENH/aisc.h
+
+    $(1)_CLEAN +=  $($(1)_DIR)GENH/aisc.h
+
+    $($(1)_DIR)GENH/aisc.h: $($(1)_DIR)$($(1)_AISC) | $($(1)_DIR)DUMP
+    $($(1)_DIR)GENH/aisc.h: module := $(1)
+    $($(1)_DIR)GENH/aisc_com.h: $($(1)_DIR)$($(1)_AISC) | $($(1)_DIR)DUMP
+    $($(1)_DIR)GENH/aisc_com.h: module := $(1)
+    $($(1)_DIR)GENH/global.aisc: module := $(1)
+    $($(1)_DIR)PT_extern.mkpt: module := $(1)
+
+
+    $($(1)_DIR)GENC/aisc_server.c: $($(1)_DIR)$($(1)_AISC) $($(1)_DIR)GENH/global.aisc | $($(1)_DIR)DUMP
+    $($(1)_DIR)GENC/aisc_server.c: module := $(1)
+
+
+
+  endif
 
 ## module_SOURCES
 # default is *.c *.cxx, empty indicated by "NONE"
@@ -159,8 +201,14 @@ define make_module_rules
   $$($(1)_TARGETS): $($(1)_DIR)module.mk
   $$($(1)_TARGETS): MODULE:=$(1)
 # add depends to targets' dependency list
-  $(foreach mod,$($(1)_LIBADD),\
-  $($(1)_TARGETS): $$($(mod)_TARGETS)
+  $(foreach mod,$($(1)_LIBADD),
+    $(foreach tgt,$($(mod)_TARGETS),
+      ifeq (,$(patsubst %.so,,$(tgt))) 
+        $($(1)_TARGETS): | $(tgt)
+      else
+        $($(1)_TARGETS): $(tgt)
+      endif
+    )
   )
 
   $(1)_LDFLAGS = \
@@ -171,7 +219,7 @@ define make_module_rules
 
 # create module clean target
   $(1)_clean:
-	-rm -f $$($(1)_CLEAN)
+	-rm -rf $$($(1)_CLEAN)
 # create module build target
   $(1): $$($(1)_TARGETS)
 
@@ -182,6 +230,7 @@ $(foreach mod,$(modules),$(eval $(call make_module_rules,$(mod))))
 
 
 #$(foreach mod,$(modules),$(info $(call make_module_rules,$(mod))))
+#$(info $(call make_module_rules,wetc))
 
 ## load dependencies (unless clean target called)
 ifneq ($(filter-out %clean, $(MAKECMDGOALS)),)
@@ -213,7 +262,7 @@ $(call prettyprint,\
 $(A_CXX) $(cflags) $(cxxflags) $(CPPFLAGS) $(LOCAL_DEFINES) -o $@ -c $<  $(CXX_INCLUDES) \
  -M -MG -MF $@ -MT $(@:%.d=%.o) -MT $@;\
  $(ARB_SED) -i -e 's/$(subst /,\/,$(SOURCE_DIR))\///g'\
-            -e '$($(MODULE)_MKPT_HEADERS:%=s/ \(%\)/ $($(MODULE)_DIR:%/=%)\/\1 /;)'\
+            -e '$($(MODULE)_MKPT_HEADERS:%=s| \(%\)| $($(MODULE)_DIR:%/=%)\/\1 |;)'\
             -e 's/ \([^/ ]*.h\)/ INCLUDE\/\1/g' $@ \
 ,DEPEND)
 endef
@@ -228,7 +277,7 @@ endef
 define AR_CMD
 $(call prettyprint,\
 ar rcs $@ $^,\
-LINKSLIB)
+AR)
 endef
 
 $(static_libs):
@@ -239,7 +288,7 @@ $(static_libs):
 define LINKSO_CMD
 $(call prettyprint,\
 $(A_CXX) $(clflags) -shared $(GCOVFLAGS) -o $@ $(call makelinkdeps,$^) $(LDFLAGS),\
-LINKLIB)
+LINK DLL)
 endef
 
 $(dynamic_libs):
@@ -251,13 +300,17 @@ define LINKEXEC_CMD
 $(call prettyprint,\
 $(A_CXX) $(clflags)  -o $@ $(call makelinkdeps,$^) $(LDFLAGS) \
  $($(MODULE)_LDFLAGS),\
-LINKEXE)
+LINK)
 endef
 
 $(programs): $(ARB_MAIN_CXX)
 $(programs):
 	$(LINKEXEC_CMD)
 
+## headers
+
+$(headers):
+	$(call prettyprint,cp $^ $@,"CP")
 
 ## mkpt witchery 
 
@@ -278,19 +331,19 @@ $(programs):
 define MKPT_CMD
 $(call prettyprint,\
 (cd $(@D);\
-../$(AISC_MKPT) $(if $($(MKPT_MOD)_NAME),-c '$($(MKPT_MOD)_NAME)') \
+$(SOURCE_DIR)/$(AISC_MKPT) $(if $($(MKPT_MOD)_NAME),-c '$($(MKPT_MOD)_NAME)') \
 		-G -w $(@F:%.mkpt=%) \
                 $(if $($(MKPT_MOD)_REGEX),-F $($(MKPT_MOD)_REGEX)) \
 		$($(MKPT_MOD)_FLAGS) \
 		$($(MKPT_MOD)_SRCS) > $(@F);\
-cp $(@F) $(@F:%.mkpt=%)), \
-MKPT)
+if cmp $(@F) $(@F:%.mkpt=%); then :; else \
+   cp $(@F) $(@F:%.mkpt=%); \
+   echo UPDATE $(@F:%.mkpt=%);\
+fi\
+), MKPT)
 endef
 
-# need mkpt tool to do any of this
 $(mkpt_headers:%.h=%.h.mkpt): MKPT_MOD=$(subst .,_,$(@F:%.mkpt=%))_MKPT
-
-# rule to build mkpt generated headers
 $(mkpt_headers:%.h=%.h.mkpt): $(AISC_MKPT)
 $(mkpt_headers:%.h=%.h.mkpt):
 	$(MKPT_CMD)
@@ -303,9 +356,10 @@ PHONTY+=mkpt_clean mkpt
 DISTCLEAN+=$(mkpt_headers:%.h=%.h.mkpt)
 REALCLEAN+=$(mkpt_headers) 
 
-PHONY+=prepare_headers
-prepare_headers:
-	echo x
+## aisc stuff
+
+define AISC_CMD
+endef
 
 
 # clean rules 
@@ -323,11 +377,11 @@ list:
 	@echo "module targets:" $(modules)
 	@echo "CLEAN:" $(CLEAN)
 	@echo "programs:" $(programs)
+	@echo "headers:" $(headers)
 
 xall: $(modules)
 
-
 # special targets:
 .PHONY: $(PHONY)
-.SUFFIXES: .o .d .c .cxx .so .a
+.SUFFIXES: .o .d .c .cxx .so .a .aisc
 

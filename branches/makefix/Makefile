@@ -237,7 +237,7 @@ endif
 
 # control how much you get spammed
 # (please do not change default in SVN, use developer specific setting as below)
-	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --original# dont modify compiler output
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --hide-Noncopyable-advices
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --show-useless-Weff++
@@ -254,11 +254,11 @@ endif
 	extended_cpp_warnings :=
 
 #       C and C++ 
-	extended_warnings     += -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
+#	extended_warnings     += -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
 
 #       C++ only 
-	extended_cpp_warnings += -Wnon-virtual-dtor -Wreorder -Wpointer-arith -Wdisabled-optimization -Wmissing-format-attribute
-	extended_cpp_warnings += -Wctor-dtor-privacy# < gcc 3
+#	extended_cpp_warnings += -Wnon-virtual-dtor -Wreorder -Wpointer-arith -Wdisabled-optimization -Wmissing-format-attribute
+#	extended_cpp_warnings += -Wctor-dtor-privacy# < gcc 3
 # 	extended_cpp_warnings += -Wfloat-equal# gcc 3.0
 
 # ------- above only warnings available in 3.0
@@ -274,22 +274,22 @@ WEFFC_BROKEN:=0
   endif
  endif
  ifeq ('$(WEFFC_BROKEN)','0')
-	extended_cpp_warnings += -Weffc++# gcc 3.0.1
+#	extended_cpp_warnings += -Weffc++# gcc 3.0.1
  endif
-	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
+#	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
 #	extended_cpp_warnings += -Wold-style-cast# gcc 3.0.4 (warn about 28405 old-style casts)
-	extended_cpp_warnings += -Winit-self# gcc 3.4.0
-	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
-	extended_cpp_warnings += -Wextra# gcc 3.4.0
+#	extended_cpp_warnings += -Winit-self# gcc 3.4.0
+#	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
+#	extended_cpp_warnings += -Wextra# gcc 3.4.0
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
-	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
+#	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
  endif
  ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
 #	extended_cpp_warnings += -Wunused-local-typedefs# gcc 4.7 (fails for each STATIC_ASSERT, enable only for Cxx11)
 #	extended_cpp_warnings += -Wzero-as-null-pointer-constant# gcc 4.7 #@@@ activate
  endif
  ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-	extended_cpp_warnings += -Wunused-local-typedefs# available since gcc 4.7 (but fails for each STATIC_ASSERT, so enable only for Cxx11)
+#	extended_cpp_warnings += -Wunused-local-typedefs# available since gcc 4.7 (but fails for each STATIC_ASSERT, so enable only for Cxx11)
  endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
@@ -1131,13 +1131,13 @@ ARCHS_DIST = \
 		SL/NEIGHBOURJOIN/NEIGHBOURJOIN.a \
 		XML/XML.a \
 
-$(DIST): $(ARCHS_DIST:.a=.dummy) link_awt
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) $(use_ARB_main) || ( \
-		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
-		echo "$(SEP) Link $@ [done]"; \
-		)
+#$(DIST): $(ARCHS_DIST:.a=.dummy) link_awt
+#	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) $(use_ARB_main) || ( \
+#		echo "$(SEP) Link $@"; \
+#		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PR#OBE) $(GUI_LIBS) $(EXECLIBS)" ; \
+#		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $#(GUI_LIBS) $(EXECLIBS) && \
+#		echo "$(SEP) Link $@ [done]"; \
+#		)
 
 #***********************************	arb_pars **************************************
 PARSIMONY = bin/arb_pars
