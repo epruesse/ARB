@@ -3,7 +3,7 @@ IF $(argc) != 4
 ENDIF
 
 DATA AISC { $(#FILE $(argv[2])) };
-DUMPDATA DUMP/aisc_com.pa__$(argv[2]).dump
+#DUMPDATA DUMP/aisc_com.pa__$(argv[2]).dump
 
 OPEN save $(argv[3])
 MOVETO $(AISC/PROJECT)

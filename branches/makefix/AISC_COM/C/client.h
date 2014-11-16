@@ -11,7 +11,7 @@
 #endif
 
 
-/* client.c */
+/* C/client.c */
 
 #include <client_types.h>
 

@@ -1,3 +1,3 @@
 module:=xml
 xml_TARGETS:=$(dir)XML.a
-xml_HEADERS:=xml.h
+xml_HEADERS:=xml.hxx

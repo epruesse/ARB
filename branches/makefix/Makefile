@@ -1223,44 +1223,6 @@ $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) link_awt
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
-#***************************************************************************************
-#					SERVER SECTION
-#***************************************************************************************
-
-#***********************************	arb_pt_server **************************************
-PROBE = bin/arb_pt_server
-ARCHS_PROBE = \
-		PROBE/PROBE.a \
-		SERVERCNTRL/SERVERCNTRL.a \
-		SL/HELIX/HELIX.a \
-		SL/PTCLEAN/PTCLEAN.a \
-
-ARCHS_SERVER_PROBE = PROBE_COM/server.a $(ARCHS_CLIENT_PROBE)
-
-
-$(PROBE): $(ARCHS_PROBE:.a=.dummy) link_db 
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) config.makefile $(use_ARB_main) || ( \
-		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS) && \
-		echo "$(SEP) Link $@ [done]"; \
-		)
-
-#***********************************	arb_name_server **************************************
-NAMES = bin/arb_name_server
-ARCHS_NAMES = \
-		NAMES/NAMES.a \
-		SERVERCNTRL/SERVERCNTRL.a \
-
-ARCHS_SERVER_NAMES = NAMES_COM/server.a $(ARCHS_CLIENT_NAMES)
-
-$(NAMES): $(ARCHS_NAMES:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(use_ARB_main) || ( \
-		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS) && \
-		echo "$(SEP) Link $@ [done]"; \
-		)
 
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
@@ -1542,7 +1504,6 @@ endif
 SL/SL.dummy: com
 
 ds:	$(DBSERVER)
-pt:	$(PROBE)
 pst: 	PROBE_SET/PROBE_SET.dummy
 pd:	PROBE_DESIGN/PROBE_DESIGN.dummy
 na:	$(NAMES)
@@ -1555,7 +1516,6 @@ e4:	$(EDIT4) readseq menus
 
 gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
 
-xml:	XML/XML.dummy
 xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
 stat:   STAT/STAT.dummy $(NTREE) $(EDIT4)
 fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy

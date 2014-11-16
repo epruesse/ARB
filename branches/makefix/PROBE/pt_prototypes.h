@@ -89,10 +89,6 @@ long PTD_write_leafs_to_disk(FILE *out, POS_TREE1 *const node, long pos, long *n
 ARB_ERROR PTD_read_leafs_from_disk(const char *fname, POS_TREE2*& root_ptr) __ATTR__USERESULT;
 const char *get_blocksize_description(int blocksize);
 
-/* probe_tree.h */
-template <typename T >int PT_forwhole_chain(POS_TREE1 *node, T& func);
-template <typename T >int PT_forwhole_chain(POS_TREE2 *node, T& func);
-
 #else
 #error pt_prototypes.h included twice
 #endif /* PT_PROTOTYPES_H */
