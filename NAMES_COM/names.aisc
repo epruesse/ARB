@@ -11,7 +11,7 @@ SERVER_INCLUDES (~
 #include <stdio.h>
 #include <aisc.h>
 #include <aisc_com.h>~)
-INCLUDE_INCLUDES (~$$(#FILE aisc_include.header)~)
+INCLUDE_INCLUDES (~$$(#FILE NAMES_COM/aisc_include.header)~)
 
 DATA {
 

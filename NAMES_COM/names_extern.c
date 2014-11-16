@@ -3,7 +3,7 @@
 #include "names_server.h"
 
 struct sigcontext;
-#include "C/server.h"
+#include "server.h"
 
 #include <aisc_server_proto.h>
 #include <aisc_server_extern.h>

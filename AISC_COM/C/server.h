@@ -11,7 +11,7 @@
 #endif
 
 
-/* server.c */
+/* C/server.c */
 
 #include <aisc_func_types.h>
 #ifndef _STDIO_H

@@ -11,7 +11,7 @@
 #endif
 
 
-/* aisc_extern.c */
+/* C/aisc_extern.c */
 dll_public *create_dll_public(void);
 int move_dll_header(const dll_header *sobj, dll_header *dobj);
 int get_COMMON_CNT(dll_header *THIS);

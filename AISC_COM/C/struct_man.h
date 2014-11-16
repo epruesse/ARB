@@ -11,7 +11,7 @@
 #endif
 
 
-/* struct_man.c */
+/* C/struct_man.c */
 
 struct aisc_hash_node;
 

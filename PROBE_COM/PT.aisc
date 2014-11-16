@@ -10,7 +10,7 @@ SERVER_INCLUDES (~
 #include <stdio.h>
 #include "PT_server.h"
 #include "PT_com.h"~)
-INCLUDE_INCLUDES (~$$(#FILE aisc_include.header)~)
+INCLUDE_INCLUDES (~$$(#FILE PROBE_COM/aisc_include.header)~)
 
 DATA {
 
