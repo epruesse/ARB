@@ -2030,6 +2030,30 @@ void TEST_node_stack() {
 
         TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
         TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+    }
+
+    {
+        env.push();
+        {
+            env.push();
+
+            env.root_node()->findLeafNamed("CloInnoc")->moveNextTo(env.root_node()->findLeafNamed("CytAquat"), 0.5);
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            env.root_node()->findLeafNamed("CloInnoc")->set_root();
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            env.root_node()->findLeafNamed("CytAquat")->moveNextTo(env.root_node()->findLeafNamed("CloPaste"), 0.5);
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            env.root_node()->findLeafNamed("CloPaste")->set_root();
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            env.root_node()->findLeafNamed("CloPaste")->moveNextTo(env.root_node()->findLeafNamed("CloInnoc"), 0.5); // @@@ corrupts tree (inconsistent tree-root)
+
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            env.pop();
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        }
+        env.pop();
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
     }
 
     // remove + quick add marked + pop() both works
