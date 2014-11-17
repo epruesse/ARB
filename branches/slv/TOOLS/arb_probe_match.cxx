@@ -118,12 +118,11 @@ int ARB_main(int argc, char ** argv) {
         return 1;
     }
 
-    T_PT_LOCS locs;
-    T_PT_MAIN com;
-    T_PT_PDC  pdc;
-    GB_ERROR  error;
-
-    aisc_com *link = aisc_open(port, com, AISC_MAGIC_NUMBER, &error);
+    T_PT_LOCS  locs;
+    T_PT_MAIN  com;
+    T_PT_PDC   pdc;
+    GB_ERROR   error = NULL;
+    aisc_com  *link  = aisc_open(port, com, AISC_MAGIC_NUMBER, &error);
     if (!link) {
         cerr << "Cannot contact PT server (" << error << ')' << endl;
         return 1;
