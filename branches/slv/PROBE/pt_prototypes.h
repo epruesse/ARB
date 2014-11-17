@@ -60,7 +60,7 @@ int ARB_main(int argc, char *argv[]);
 /* PT_match.cxx */
 char *create_reversed_probe(char *probe, int len);
 int probe_match(PT_local *locs, aisc_string probestring);
-char *get_match_overlay(const PT_probematch *ml);
+const char *get_match_overlay(const PT_probematch *ml);
 const char *get_match_acc(const PT_probematch *ml);
 int get_match_start(const PT_probematch *ml);
 int get_match_stop(const PT_probematch *ml);
