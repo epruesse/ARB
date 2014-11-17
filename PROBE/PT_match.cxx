@@ -569,7 +569,7 @@ inline void cat_spaced_right(GBS_strstruct *memfile, const char *text, int width
 inline void cat_dashed_left (GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', true); }
 inline void cat_dashed_right(GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', false); }
 
-char *get_match_overlay(const PT_probematch *ml) {
+const char *get_match_overlay(const PT_probematch *ml) {
     int       pr_len = strlen(ml->sequence);
     PT_local *locs   = (PT_local *)ml->mh.parent->parent;
 
@@ -649,7 +649,19 @@ char *get_match_overlay(const PT_probematch *ml) {
         }
     }
 
-    return ref;
+    static char *result = 0;
+    freeset(result, ref);
+    return result;
+}
+
+const char* get_match_acc(const PT_probematch *ml) {
+    return psg.data[ml->name].get_acc();
+}
+int get_match_start(const PT_probematch *ml) {
+    return psg.data[ml->name].get_start();
+}
+int get_match_stop(const PT_probematch *ml) {
+    return psg.data[ml->name].get_stop();
 }
 
 static const char *get_match_info_formatted(PT_probematch  *ml, const format_props& format) {
@@ -673,9 +685,7 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
     }
     cat_spaced_left(memfile, GBS_global_string("%i", ml->reversed), format.rev_width());
 
-    char *ref = get_match_overlay(ml);
-    GBS_strcat(memfile, ref);
-    free(ref);
+    GBS_strcat(memfile, get_match_overlay(ml));
 
     static char *result = 0;
     freeset(result, GBS_strclose(memfile));
