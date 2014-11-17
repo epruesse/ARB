@@ -266,7 +266,6 @@ void TEST_arb_probe_match() {
 
     // this probe-match is also tested with 'arb_probe'. see arb_probe.cxx@TEST_arb_probe_match
     TEST_STDOUT_EQUALS("arb_probe_match"
-                       " --db unusedparam" // @@@ elim
                        " --port :../sockets/pt.socket"
                        " --n-matches 0"
                        " --n-match-bound 4"

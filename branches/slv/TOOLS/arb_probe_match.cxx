@@ -35,7 +35,6 @@ enum SORT_BY_TYPE {
 };
 
 int ARB_main(int argc, char ** argv) {
-    const char* db = 0;
     const char* port = 0;
     const char* sequence = 0;
     int reversed = 0;
@@ -67,9 +66,7 @@ int ARB_main(int argc, char ** argv) {
         } else if (!strcmp(argv[i], "--weighted-pos")) {
             sort_by = SORT_BY_WEIGHTED_MISMATCHES_W_POS_AND_STRENGTH;
         } else if (argc > i+1) {
-            if (!strcmp(argv[i], "--db")) {
-                db = argv[++i];
-            } else if (!strcmp(argv[i], "--port")) {
+            if (!strcmp(argv[i], "--port")) {
                 port = argv[++i];
             } else if (!strcmp(argv[i], "--sequence")) {
                 sequence = argv[++i];
@@ -97,10 +94,6 @@ int ARB_main(int argc, char ** argv) {
 
     bool err = false;
 
-    if (!db) {
-        cerr << "need '--db' parameter" << endl;
-        err = true;
-    }
     if (!port) {
         cerr << "need '--port' parameter" << endl;
         err = true;
