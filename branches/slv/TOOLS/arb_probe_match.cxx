@@ -120,7 +120,6 @@ int ARB_main(int argc, char ** argv) {
 
     T_PT_LOCS  locs;
     T_PT_MAIN  com;
-    T_PT_PDC   pdc;
     GB_ERROR   error = NULL;
     aisc_com  *link  = aisc_open(port, com, AISC_MAGIC_NUMBER, &error);
     if (!link) {
@@ -132,13 +131,6 @@ int ARB_main(int argc, char ** argv) {
                     MAIN_LOCS, PT_LOCS, locs,
                     NULL)) {
         cerr << "Cannot create PT LOCS structure" << endl;
-        return 1;
-    }
-
-    if (aisc_create(link, PT_LOCS, locs,
-                    LOCS_PROBE_DESIGN_CONFIG, PT_PDC, pdc,
-                    NULL)) {
-        cerr << "Cannot create PT PDC structure" << endl;
         return 1;
     }
 
