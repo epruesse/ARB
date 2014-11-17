@@ -274,8 +274,8 @@ void TEST_arb_probe_match() {
 
                        "acc     \t"     "start\t" "stop\t" "pos\t" "mis\t" "wmis\t" "nmis\t" "dt\t" "rev\t" "seq\n"
                        "ARB_2CA9F764\t" "0\t"     "0\t"    "24\t"  "1\t"   "1.1\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-======A===-AUGGGAGCU\t" "\n"
-                       "ARB_6B04C30A\t" "0\t"     "0\t"    "24\t"  "2\t"   "2.2\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-======A=C=-ACGGGAGCU\t" "\n"
-                       "ARB_4C6C9E8C\t" "0\t"     "0\t"    "67\t"  "3\t"   "2.4\t"  "0\t"    "0\t"  "0\t"   "GGAUUUGUU-=g====CG==-CGGCGGACG\t" "\n"
+                       "ARB_6B04C30A\t" "0\t"     "0\t"    "24\t"  "2\t"   "2.2\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-======A=C=-ACGGGAGCU\t" "\n" // @@@ start/stop does not propagate from ../UNIT_TESTER/run/TEST_pt_src.arb@start
+                       "ARB_4C6C9E8C\t" "0\t"     "0\t"    "67\t"  "3\t"   "2.4\t"  "0\t"    "0\t"  "0\t"   "GGAUUUGUU-=g====CG==-CGGCGGACG\t" "\n" // @@@ same here
                        "ARB_948948A3\t" "0\t"     "0\t"    "81\t"  "3\t"   "2.8\t"  "0\t"    "0\t"  "0\t"   "ACGAGUGGC-=gA===C===-UUGGAAACG\t" "\n"
                        "ARB_5BEE4C92\t" "0\t"     "0\t"    "85\t"  "3\t"   "3.2\t"  "0\t"    "0\t"  "0\t"   "CGGCGGGAC-=g==CU====-AACCUGCGG\t" "\n"
                        "ARB_2180C521\t" "0\t"     "0\t"    "24\t"  "3\t"   "3.6\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-======Aa=C-GAUGGAAGC\t" "\n"
