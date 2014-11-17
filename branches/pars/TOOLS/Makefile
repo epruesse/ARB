@@ -7,15 +7,17 @@ TOOLS := \
 	arb_consensus_tree \
 	arb_dnarates \
 	arb_export_rates \
+	arb_export_sequences \
 	arb_export_tree \
+	arb_flush_mem \
 	arb_gene_probe \
 	arb_message \
 	arb_notify \
 	arb_primer \
 	arb_probe \
+	arb_probe_match \
 	arb_read_tree \
 	arb_replace \
-	arb_flush_mem \
 
 ifeq ($(DEBUG),1)
 # add all arb*test*.c[xx] files
@@ -35,6 +37,7 @@ LIB_ARBDB               := $(LIBPATH) $(ARBDB_LIB) $(ARB_GLIB_LIBS)
 LIBS_ARB_PROBE          := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a ../SL/REGEXPR/REGEXPR.a
 LIBS_ARB_READ_TREE      := ../SL/TREE_READ/TREE_READ.a
 LIBS_ARB_EXPORT_TREE    := ../SL/TREE_WRITE/TREE_WRITE.a ../XML/XML.a $(LIBS_ARB_READ_TREE)
+LIBS_ARB_EXPORT_SEQ     := ../SL/SEQIO/SEQIO.a ../XML/XML.a ../SL/INSDEL/INSDEL.a ../SL/FILTER/FILTER.a
 LIBS_ARB_CONSENSUS_TREE := $(LIBS_ARB_EXPORT_TREE) ../CONSENSUS_TREE/CONSENSUS_TREE.a ../SL/ROOTED_TREE/ROOTED_TREE.a
 
 OBJECTS:=$(addsuffix .o,$(TOOLS))
@@ -51,11 +54,17 @@ all: $(BINARIES)
 $(ARBHOME)/bin/arb_probe: arb_probe.o $(LIBS_ARB_PROBE) $(use_ARB_main)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_PROBE) $(LIB_ARBDB) $(EXECLIBS) 
 
+$(ARBHOME)/bin/arb_probe_match: arb_probe_match.o $(LIBS_ARB_PROBE) $(use_ARB_main)
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_PROBE) $(LIB_ARBDB) $(EXECLIBS) 
+
 $(ARBHOME)/bin/arb_read_tree: arb_read_tree.o  $(LIBS_ARB_READ_TREE)
 	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_READ_TREE) $(LIB_ARBDB) $(EXECLIBS) 
 
 $(ARBHOME)/bin/arb_export_tree: arb_export_tree.o  $(LIBS_ARB_EXPORT_TREE)
 	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_EXPORT_TREE) $(LIB_ARBDB) $(EXECLIBS) 
+
+$(ARBHOME)/bin/arb_export_sequences: arb_export_sequences.o  $(LIBS_ARB_EXPORT_SEQ)
+	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_EXPORT_SEQ) $(LIB_ARBDB) $(EXECLIBS) 
 
 $(ARBHOME)/bin/arb_consensus_tree: arb_consensus_tree.o  $(LIBS_ARB_CONSENSUS_TREE) $(use_ARB_main)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_CONSENSUS_TREE) $(LIB_ARBDB) $(EXECLIBS) 
@@ -207,6 +216,30 @@ arb_export_rates.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/test_global.h
+
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/arb_error.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/arb_file.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/arb_string.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/arbtools.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/cxxforward.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/downcast.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/gccver.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/insdel.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/seqio.hxx
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/smartptr.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/static_assert.h
+arb_export_sequences.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_export_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -380,6 +413,27 @@ arb_probe.o: $(ARBHOME)/INCLUDE/servercntrl.h
 arb_probe.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_probe.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_probe.o: $(ARBHOME)/INCLUDE/test_unit.h
+
+arb_probe_match.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/aisc_global.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/arb_error.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/arb_string.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/arbtools.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/bytestring.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/client.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/client_types.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/cxxforward.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/gccver.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/PT_com.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/smartptr.h
+arb_probe_match.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_read_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
