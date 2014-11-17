@@ -261,6 +261,38 @@ void TEST_SLOW_arb_probe() {
                        );
 }
 
+void TEST_arb_probe_match() {
+    TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver");
+
+    // this probe-match is also tested with 'arb_probe'. see arb_probe.cxx@TEST_arb_probe_match
+    TEST_STDOUT_EQUALS("arb_probe_match"
+                       " --db unusedparam" // @@@ elim
+                       " --port :../sockets/pt.socket"
+                       " --n-matches 0"
+                       " --n-match-bound 4"
+                       " --mismatches 3"
+                       " --sequence GAGCGGUCAG",
+
+                       "acc     \t"     "start\t" "stop\t" "pos\t" "mis\t" "wmis\t" "nmis\t" "dt\t" "rev\t" "seq\n"
+                       "ARB_2CA9F764\t" "0\t"     "0\t"    "24\t"  "1\t"   "1.1\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-======A===-AUGGGAGCU\t" "\n"
+                       "ARB_6B04C30A\t" "0\t"     "0\t"    "24\t"  "2\t"   "2.2\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-======A=C=-ACGGGAGCU\t" "\n"
+                       "ARB_4C6C9E8C\t" "0\t"     "0\t"    "67\t"  "3\t"   "2.4\t"  "0\t"    "0\t"  "0\t"   "GGAUUUGUU-=g====CG==-CGGCGGACG\t" "\n"
+                       "ARB_948948A3\t" "0\t"     "0\t"    "81\t"  "3\t"   "2.8\t"  "0\t"    "0\t"  "0\t"   "ACGAGUGGC-=gA===C===-UUGGAAACG\t" "\n"
+                       "ARB_5BEE4C92\t" "0\t"     "0\t"    "85\t"  "3\t"   "3.2\t"  "0\t"    "0\t"  "0\t"   "CGGCGGGAC-=g==CU====-AACCUGCGG\t" "\n"
+                       "ARB_2180C521\t" "0\t"     "0\t"    "24\t"  "3\t"   "3.6\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-======Aa=C-GAUGGAAGC\t" "\n"
+                       "ARB_815E94DB\t" "0\t"     "0\t"    "94\t"  "3\t"   "3.6\t"  "0\t"    "0\t"  "0\t"   "GGACUGCCC-==Aa==A===-CUAAUACCG\t" "\n"
+                       "ARB_948948A3\t" "0\t"     "0\t"    "24\t"  "3\t"   "4\t"    "0\t"    "0\t"  "0\t"   "GAUCAAGUC-==A====a=C-AGGUCUUCG\t" "\n"
+                       "ARB_9E1D1B16\t" "0\t"     "0\t"    "28\t"  "3\t"   "4\t"    "0\t"    "0\t"  "0\t"   "GAUCAAGUC-==A====a=C-GGGAAGGGA\t" "\n"
+                       "ARB_CEB24FD3\t" "0\t"     "0\t"    "24\t"  "3\t"   "4.1\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-=====A=G=A-GUUCCUUCG\t" "\n"
+                       "ARB_4FCDD74F\t" "0\t"     "0\t"    "24\t"  "3\t"   "4.1\t"  "0\t"    "0\t"  "0\t"   ".AUCAAGUC-=====A=G=A-GCUUCUUCG\t" "\n"
+                       "ARB_CF69AC5C\t" "0\t"     "0\t"    "24\t"  "3\t"   "4.1\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-=====A=G=A-GUUCCUUCG\t" "\n"
+                       "ARB_5BEE4C92\t" "0\t"     "0\t"    "24\t"  "3\t"   "4.1\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-=====A=G=A-GUUUCCUUC\t" "\n"
+                       "ARB_815E94DB\t" "0\t"     "0\t"    "156\t" "3\t"   "4.1\t"  "0\t"    "0\t"  "0\t"   "GUAGCCGUU-===GAA====-CGGCUGGAU\t" "\n"
+                       "ARB_1763CF6\t"  "0\t"     "0\t"    "24\t"  "3\t"   "2.4\t"  "3\t"    "0\t"  "0\t"   "GAUCAAGUC-=======...-<more>\t" "\n"
+                       "ARB_ED8B86F\t"  "0\t"     "0\t"    "28\t"  "3\t"   "2.4\t"  "3\t"    "0\t"  "0\t"   "GAUCAAGUC-=======...-<more>\t" "\n"
+        );
+}
+
 #define IN_DB     "tools/dnarates.arb"
 #define OUT_DB    "tools/dnarates_result.arb"
 #define WANTED_DB "tools/dnarates_expected.arb"
