@@ -209,6 +209,7 @@ int ARB_main(int argc, char ** argv) {
                  MATCHLIST_REVERSED,      &m_reversed,
                  MATCHLIST_NEXT,          match_list.as_result_param(),
                  NULL);
+
         std::cout << m_acc << "\t"
                   << m_start << "\t"
                   << m_stop << "\t"
@@ -221,6 +222,9 @@ int ARB_main(int argc, char ** argv) {
                   << m_sequence << "\t"
                   << std::endl;
         fflush(stdout);
+
+        free(m_acc);
+        free(m_sequence);
     }
 
     free(bs.data);
