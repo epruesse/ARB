@@ -1,4 +1,0 @@
-# libraries needed to link arb_export_tree
-
-SL/TREE_WRITE/TREE_WRITE.a
-SL/TREE_READ/TREE_READ.a
