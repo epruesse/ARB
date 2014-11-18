@@ -30,16 +30,19 @@
  * AP_main_list    Liste fuer AP_main_buffer
  */
 
-
+template <typename ELEM>
 struct AP_STACK_ELEM {
-    struct AP_STACK_ELEM * next;
-    void *                 node;
+    AP_STACK_ELEM *next;
+    ELEM          *node;
 };
 
+template <typename ELEM>
 class AP_STACK : virtual Noncopyable { // @@@ make typesafe (use template)
-    struct AP_STACK_ELEM * first;
-    struct AP_STACK_ELEM * pointer;
-    unsigned long          stacksize;
+    typedef AP_STACK_ELEM<ELEM> StackElem;
+
+    StackElem     *first;
+    StackElem     *pointer;
+    unsigned long  stacksize;
 
 public:
     AP_STACK()
@@ -53,19 +56,19 @@ public:
         }
     }
 
-    void push(void *element) {
-        AP_STACK_ELEM *stackelem = new AP_STACK_ELEM;
+    void push(ELEM *element) {
+        StackElem *stackelem = new StackElem;
         stackelem->node = element;
         stackelem->next = first;
         first = stackelem;
         stacksize++;
     }
 
-    void *pop() {
+    ELEM *pop() {
         if (!first) return 0;
 
-        AP_STACK_ELEM *stackelem = first;
-        void *         pntr      = first->node;
+        StackElem *stackelem = first;
+        ELEM      *pntr      = first->node;
 
         first = first->next;
         stacksize --;
@@ -75,18 +78,18 @@ public:
     }
     void clear() {
         while (stacksize > 0) {
-            AP_STACK_ELEM *pntr = first;
+            StackElem *pntr = first;
             first = first->next;
             stacksize --;
             delete pntr;
         }
     }
-    void *top() { return first ? first->node : NULL; }
+    ELEM *top() { return first ? first->node : NULL; }
     unsigned long size() { return stacksize; }
 
     // iterator:
     void  get_init() { pointer = 0; }
-    void *get() {
+    ELEM *get() {
         if (0 == pointer) {
             pointer = first;
         }
@@ -185,13 +188,7 @@ struct AP_tree_buffer {
     void print();
 };
 
-struct AP_tree_stack : public AP_STACK {
-    AP_tree_stack() {}
-    virtual ~AP_tree_stack() OVERRIDE {}
-    void  push(AP_tree_buffer *value) { AP_STACK::push((void *)value); }
-    AP_tree_buffer * pop() { return (AP_tree_buffer *) AP_STACK::pop(); }
-    AP_tree_buffer * get() { return (AP_tree_buffer *) AP_STACK::get(); }
-    AP_tree_buffer * top() { return (AP_tree_buffer *) AP_STACK::top(); }
+struct AP_tree_stack : public AP_STACK<AP_tree_buffer> {
     void print();
 };
 
@@ -204,7 +201,7 @@ class AP_tree_nlen;
 #define CHECK_ROOT_POPS
 #endif
 
-class AP_main_stack : public AP_STACK {
+class AP_main_stack : public AP_STACK<AP_tree_nlen> {
     unsigned long last_user_push_counter;
 #if defined(AVOID_MULTI_ROOT_PUSH)
     bool last_root_pushed;
@@ -214,11 +211,7 @@ class AP_main_stack : public AP_STACK {
 #endif
 
 public:
-    friend class AP_main;
-    void push(AP_tree_nlen *value) { AP_STACK::push((void *)value); }
-    AP_tree_nlen *pop() { return (AP_tree_nlen*)AP_STACK::pop(); }
-    AP_tree_nlen *get() { return (AP_tree_nlen*)AP_STACK::get(); }
-    AP_tree_nlen *top() { return (AP_tree_nlen*)AP_STACK::top(); }
+    friend class AP_main; // @@@ dont need friends
     void print();
 };
 
