@@ -16,69 +16,6 @@
 
 using namespace std;
 
-AP_STACK::AP_STACK() {
-    first = 0;
-    pointer = 0;
-    stacksize = 0;
-}
-
-AP_STACK::~AP_STACK() {
-    if (stacksize > 0) {
-        new AP_ERR("~AP_STACK()", "Stack is not empty !", 0);
-    }
-}
-
-void AP_STACK::push(void * element) {
-    AP_STACK_ELEM *stackelem = new AP_STACK_ELEM;
-    stackelem->node = element;
-    stackelem->next = first;
-    first = stackelem;
-    stacksize++;
-}
-
-void * AP_STACK::pop() {
-    if (!first) return 0;
-
-    AP_STACK_ELEM *stackelem = first;
-    void *         pntr      = first->node;
-
-    first = first->next;
-    stacksize --;
-    delete stackelem;
-
-    return pntr;
-}
-
-void AP_STACK::clear() {
-    while (stacksize > 0) {
-        AP_STACK_ELEM *pntr = first;
-        first = first->next;
-        stacksize --;
-        delete pntr;
-    }
-}
-
-void AP_STACK::get_init() {
-    pointer = 0;
-}
-
-void *AP_STACK::get() {
-    if (0 == pointer) {
-        pointer = first;
-    }
-    else {
-        if (pointer->next == 0) {
-            new AP_ERR("AP_STACK: get()", " more get() than elements in stack");
-            pointer = 0;
-            return 0;
-        }
-        else {
-            pointer = pointer->next;
-        }
-    }
-    return pointer->node;
-}
-
 // ----------------
 //      AP_LIST
 

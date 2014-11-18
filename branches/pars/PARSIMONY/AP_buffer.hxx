@@ -42,18 +42,64 @@ class AP_STACK : virtual Noncopyable { // @@@ make typesafe (use template)
     unsigned long          stacksize;
 
 public:
-    AP_STACK();
-    virtual ~AP_STACK();
+    AP_STACK()
+        : first(NULL),
+          pointer(NULL),
+          stacksize(0)
+    {}
+    virtual ~AP_STACK() {
+        if (stacksize>0) {
+            GBK_terminate("AP_STACK not empty in dtor");
+        }
+    }
 
-    void  push(void *element);
-    void *pop();
-    void  clear();
+    void push(void *element) {
+        AP_STACK_ELEM *stackelem = new AP_STACK_ELEM;
+        stackelem->node = element;
+        stackelem->next = first;
+        first = stackelem;
+        stacksize++;
+    }
+
+    void *pop() {
+        if (!first) return 0;
+
+        AP_STACK_ELEM *stackelem = first;
+        void *         pntr      = first->node;
+
+        first = first->next;
+        stacksize --;
+        delete stackelem;
+
+        return pntr;
+    }
+    void clear() {
+        while (stacksize > 0) {
+            AP_STACK_ELEM *pntr = first;
+            first = first->next;
+            stacksize --;
+            delete pntr;
+        }
+    }
     void *top() { return first ? first->node : NULL; }
     unsigned long size() { return stacksize; }
 
     // iterator:
-    void  get_init();
-    void *get();
+    void  get_init() { pointer = 0; }
+    void *get() {
+        if (0 == pointer) {
+            pointer = first;
+        }
+        else {
+            if (pointer->next == 0) {
+                return 0;
+            }
+            else {
+                pointer = pointer->next;
+            }
+        }
+        return pointer->node;
+    }
 };
 
 // ----------------
