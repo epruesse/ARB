@@ -54,23 +54,14 @@ class AP_main : virtual Noncopyable {
     AP_main_stack         *stack;
     AP_main_list           list;
     unsigned long          stack_level;
-    AWT_graphic_parsimony *agt; // provides access to tree!
-
-    unsigned long user_push_counter;
-
-#if defined(AVOID_MULTI_ROOT_PUSH)
-    bool root_pushed;
-#endif
+    AWT_graphic_parsimony *agt;       // provides access to tree!
+    StackFrameData         currframe; // saved/restored by push/pop
 
 public:
     AP_main()
         : stack(NULL),
           stack_level(0),
-          agt(NULL),
-          user_push_counter(0)
-#if defined(AVOID_MULTI_ROOT_PUSH)
-          , root_pushed(false)
-#endif
+          agt(NULL)
     {}
     ~AP_main() {
         delete stack;
@@ -83,7 +74,7 @@ public:
     DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, agt->get_root_node());
 
     const char *get_aliname() const;
-    unsigned long get_user_push_counter() const { return user_push_counter; }
+    unsigned long get_user_push_counter() const { return currframe.user_push_counter; }
     unsigned long get_stack_level() const { return stack_level; }
 
     GB_ERROR open(const char *db_server);

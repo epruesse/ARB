@@ -37,7 +37,7 @@ struct AP_STACK_ELEM {
 };
 
 template <typename ELEM>
-class AP_STACK : virtual Noncopyable { // @@@ make typesafe (use template)
+class AP_STACK : virtual Noncopyable {
     typedef AP_STACK_ELEM<ELEM> StackElem;
 
     StackElem     *first;
@@ -201,18 +201,30 @@ class AP_tree_nlen;
 #define CHECK_ROOT_POPS
 #endif
 
-class AP_main_stack : public AP_STACK<AP_tree_nlen> {
-    unsigned long last_user_push_counter;
+struct StackFrameData { // data local to current stack frame
+    unsigned long user_push_counter;
 #if defined(AVOID_MULTI_ROOT_PUSH)
-    bool last_root_pushed;
+    bool          root_pushed;
+    StackFrameData() : user_push_counter(0), root_pushed(false) {}
+#else
+    StackFrameData() : user_push_counter(0) {}
 #endif
+};
+
+class AP_main_stack : public AP_STACK<AP_tree_nlen> { // derived from Noncopyable
+    StackFrameData previous;
+
+public:
+    explicit AP_main_stack(const StackFrameData& data)
+        : previous(data)
+    {}
+
+    void print();
+    const StackFrameData& get_previous_frame_data() const { return previous; }
+
 #if defined(CHECK_ROOT_POPS)
     AP_tree_nlen *root_at_create; // root at creation time of stack
 #endif
-
-public:
-    friend class AP_main; // @@@ dont need friends
-    void print();
 };
 
 

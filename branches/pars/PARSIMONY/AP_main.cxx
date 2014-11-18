@@ -82,14 +82,14 @@ GB_ERROR AP_main::open(const char *db_server) {
 }
 
 void AP_main::user_push() {
-    this->user_push_counter = stack_level + 1;
-    this->push();
+    currframe.user_push_counter = stack_level + 1;
+    push();
 }
 
 void AP_main::user_pop() {
     // checks if user_pop possible
-    if (user_push_counter == stack_level) {
-        this->pop();    // changes user_push_counter if user pop
+    if (currframe.user_push_counter == stack_level) {
+        pop();    // changes user_push_counter if user pop
     }
     else {
         new AP_ERR("AP_main::user_pop()", "No user pop possible");
@@ -105,12 +105,7 @@ void AP_main::push() {
     stack_level ++;
     if (stack) list.push(stack);
 
-    stack                         = new AP_main_stack;
-    stack->last_user_push_counter = this->user_push_counter;
-
-#if defined(AVOID_MULTI_ROOT_PUSH)
-    stack->last_root_pushed = this->root_pushed;
-#endif
+    stack = new AP_main_stack(currframe);
 
 #if defined(CHECK_ROOT_POPS)
     stack->root_at_create = DOWNCAST(AP_tree_nlen*, get_tree_root()->get_root_node());
@@ -141,12 +136,8 @@ void AP_main::pop() {
     delete stack;
     stack_level --;
 
-    stack             = list.pop();
-    user_push_counter = stack ? stack->last_user_push_counter : 0;
-
-#if defined(AVOID_MULTI_ROOT_PUSH)
-    root_pushed = stack ? stack->last_root_pushed : false;
-#endif
+    stack     = list.pop();
+    currframe = stack ? stack->get_previous_frame_data() : StackFrameData();
 }
 
 void AP_main::clear() {
@@ -164,12 +155,12 @@ void AP_main::clear() {
         new AP_ERR("AP_main::clear", "Stack underflow !");
         return;
     }
-    if (user_push_counter >= stack_level) {
+    if (currframe.user_push_counter >= stack_level) {
         if (stack != 0) {
             if (stack->size() > 0) {
                 while (stack->size() > 0) {
                     knoten = stack->pop();
-                    knoten->clear(stack_level, user_push_counter);
+                    knoten->clear(stack_level, currframe.user_push_counter);
                 }
             }
             delete stack;
@@ -180,7 +171,7 @@ void AP_main::clear() {
         if (stack) {
             new_stack = list.pop();
             while ((knoten = stack->pop())) {
-                if (knoten->clear(stack_level, user_push_counter) != true) {
+                if (knoten->clear(stack_level, currframe.user_push_counter) != true) {
                     // node is not cleared because buffered in previous node stack
                     // node is instead copied in previous level
                     if (new_stack) new_stack->push(knoten);
@@ -195,11 +186,7 @@ void AP_main::clear() {
     }
     stack_level --;
 
-    user_push_counter = stack ? stack->last_user_push_counter : 0;
-
-#if defined(AVOID_MULTI_ROOT_PUSH)
-    root_pushed = stack ? stack->last_root_pushed : false;
-#endif
+    currframe = stack ? stack->get_previous_frame_data() : StackFrameData();
 }
 
 void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
@@ -222,12 +209,12 @@ void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
         ap_assert(node->is_root_node());
 
 #if defined(AVOID_MULTI_ROOT_PUSH)
-        if (root_pushed) {
+        if (currframe.root_pushed) {
             // do not push root twice inside same stack_level
             mode = BOTH;
         }
         else {
-            root_pushed = true;
+            currframe.root_pushed = true;
 #if defined(CHECK_ROOT_POPS)
             ap_assert(node == stack->root_at_create); // make sure the pushed root is the correct one
 #endif
