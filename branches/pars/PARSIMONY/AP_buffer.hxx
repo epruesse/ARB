@@ -45,13 +45,15 @@ public:
     AP_STACK();
     virtual ~AP_STACK();
 
-    void           push(void * element);
-    void          *pop();
-    void           clear();
-    void           get_init();
-    void          *get();
-    void          *get_first();
-    unsigned long  size();
+    void  push(void *element);
+    void *pop();
+    void  clear();
+    void *top() { return first ? first->node : NULL; }
+    unsigned long size() { return stacksize; }
+
+    // iterator:
+    void  get_init();
+    void *get();
 };
 
 // ----------------
@@ -143,7 +145,7 @@ struct AP_tree_stack : public AP_STACK {
     void  push(AP_tree_buffer *value) { AP_STACK::push((void *)value); }
     AP_tree_buffer * pop() { return (AP_tree_buffer *) AP_STACK::pop(); }
     AP_tree_buffer * get() { return (AP_tree_buffer *) AP_STACK::get(); }
-    AP_tree_buffer * get_first() { return (AP_tree_buffer *) AP_STACK::get_first(); }
+    AP_tree_buffer * top() { return (AP_tree_buffer *) AP_STACK::top(); }
     void print();
 };
 
@@ -170,7 +172,7 @@ public:
     void push(AP_tree_nlen *value) { AP_STACK::push((void *)value); }
     AP_tree_nlen *pop() { return (AP_tree_nlen*)AP_STACK::pop(); }
     AP_tree_nlen *get() { return (AP_tree_nlen*)AP_STACK::get(); }
-    AP_tree_nlen *get_first() { return (AP_tree_nlen*)AP_STACK::get_first(); }
+    AP_tree_nlen *top() { return (AP_tree_nlen*)AP_STACK::top(); }
     void print();
 };
 

@@ -37,14 +37,15 @@ void AP_STACK::push(void * element) {
 }
 
 void * AP_STACK::pop() {
-    void * pntr;
-    AP_STACK_ELEM * stackelem;
     if (!first) return 0;
-    stackelem = first;
-    pntr = first->node;
+
+    AP_STACK_ELEM *stackelem = first;
+    void *         pntr      = first->node;
+
     first = first->next;
     stacksize --;
     delete stackelem;
+
     return pntr;
 }
 
@@ -60,16 +61,8 @@ void AP_STACK::clear() {
 void AP_STACK::get_init() {
     pointer = 0;
 }
-void  * AP_STACK::get_first() {
-    if (first != 0) {
-        return first->node;
-    }
-    else {
-        return 0;
-    }
-}
 
-void  * AP_STACK::get() {
+void *AP_STACK::get() {
     if (0 == pointer) {
         pointer = first;
     }
@@ -84,10 +77,6 @@ void  * AP_STACK::get() {
         }
     }
     return pointer->node;
-}
-
-unsigned long AP_STACK::size() {
-    return stacksize;
 }
 
 // ----------------

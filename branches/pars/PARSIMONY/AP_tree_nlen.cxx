@@ -802,7 +802,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
     if (is_leaf && !(STRUCTURE & mode)) return false;    // tips push only structure
 
     if (this->stack_level == datum) { // node already has a push (at current stack-level)
-        AP_tree_buffer *last_buffer = stack.get_first();
+        AP_tree_buffer *last_buffer = stack.top();
 
         if (0 == (mode & ~last_buffer->mode)) { // already buffered
             AP_sequence *sequence = get_seq();
