@@ -149,9 +149,22 @@ struct AP_tree_stack : public AP_STACK {
 
 class AP_tree_nlen;
 
+// #define AVOID_MULTI_ROOT_PUSH
+// old version did not avoid (i.e. it was possible to push multiple ROOTs)
+
+#if defined(ASSERTION_USED)
+#define CHECK_ROOT_POPS
+#endif
+
 class AP_main_stack : public AP_STACK {
-protected:
-    unsigned long last_user_buffer;
+    unsigned long last_user_push_counter;
+#if defined(AVOID_MULTI_ROOT_PUSH)
+    bool last_root_pushed;
+#endif
+#if defined(CHECK_ROOT_POPS)
+    AP_tree_nlen *root_at_create; // root at creation time of stack
+#endif
+
 public:
     friend class AP_main;
     void push(AP_tree_nlen *value) { AP_STACK::push((void *)value); }

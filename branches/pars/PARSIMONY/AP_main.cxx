@@ -104,8 +104,17 @@ void AP_main::push() {
     //
     stack_level ++;
     if (stack) list.push(stack);
-    stack = new AP_main_stack;
-    stack->last_user_buffer = this->user_push_counter;
+
+    stack                         = new AP_main_stack;
+    stack->last_user_push_counter = this->user_push_counter;
+
+#if defined(AVOID_MULTI_ROOT_PUSH)
+    stack->last_root_pushed = this->root_pushed;
+#endif
+
+#if defined(CHECK_ROOT_POPS)
+    stack->root_at_create = DOWNCAST(AP_tree_nlen*, get_tree_root()->get_root_node());
+#endif
 }
 
 void AP_main::pop() {
@@ -124,10 +133,20 @@ void AP_main::pop() {
             knoten->pop(stack_level);
         }
     }
+
+#if defined(CHECK_ROOT_POPS)
+    ap_assert(stack->root_at_create == get_tree_root()->get_root_node()); // root has been restored!
+#endif
+
     delete stack;
     stack_level --;
-    stack = list.pop();
-    user_push_counter = stack ? stack->last_user_buffer : 0;
+
+    stack             = list.pop();
+    user_push_counter = stack ? stack->last_user_push_counter : 0;
+
+#if defined(AVOID_MULTI_ROOT_PUSH)
+    root_pushed = stack ? stack->last_root_pushed : false;
+#endif
 }
 
 void AP_main::clear() {
@@ -175,9 +194,12 @@ void AP_main::clear() {
         }
     }
     stack_level --;
-    if (stack) user_push_counter = stack->last_user_buffer;
-    else user_push_counter = 0;
 
+    user_push_counter = stack ? stack->last_user_push_counter : 0;
+
+#if defined(AVOID_MULTI_ROOT_PUSH)
+    root_pushed = stack ? stack->last_root_pushed : false;
+#endif
 }
 
 void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
@@ -192,6 +214,25 @@ void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
     if (stack_level < node->stack_level) {
         GB_warning("AP_main::push_node: stack_level < node->stack_level");
         return;
+    }
+
+    if (mode == ROOT) {
+        // test that it is really root what is pushed
+        ap_assert(!node->father);
+        ap_assert(node->is_root_node());
+
+#if defined(AVOID_MULTI_ROOT_PUSH)
+        if (root_pushed) {
+            // do not push root twice inside same stack_level
+            mode = BOTH;
+        }
+        else {
+            root_pushed = true;
+#if defined(CHECK_ROOT_POPS)
+            ap_assert(node == stack->root_at_create); // make sure the pushed root is the correct one
+#endif
+        }
+#endif
     }
 
     if (node->push(mode, stack_level))  stack->push(node);

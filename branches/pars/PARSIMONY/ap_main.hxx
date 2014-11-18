@@ -55,7 +55,12 @@ class AP_main : virtual Noncopyable {
     AP_main_list           list;
     unsigned long          stack_level;
     AWT_graphic_parsimony *agt; // provides access to tree!
-    unsigned long          user_push_counter;
+
+    unsigned long user_push_counter;
+
+#if defined(AVOID_MULTI_ROOT_PUSH)
+    bool root_pushed;
+#endif
 
 public:
     AP_main()
@@ -63,6 +68,9 @@ public:
           stack_level(0),
           agt(NULL),
           user_push_counter(0)
+#if defined(AVOID_MULTI_ROOT_PUSH)
+          , root_pushed(false)
+#endif
     {}
     ~AP_main() {
         delete stack;
