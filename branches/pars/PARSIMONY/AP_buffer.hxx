@@ -54,10 +54,10 @@ class AP_STACK : virtual Noncopyable {
 public:
     AP_STACK()
         : first(NULL),
-#if defined(PROVIDE_PRINT)
-          pointer(NULL),
-#endif
           stacksize(0)
+#if defined(PROVIDE_PRINT)
+        , pointer(NULL)
+#endif
     {}
     virtual ~AP_STACK() {
         if (stacksize>0) {
