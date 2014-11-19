@@ -161,6 +161,7 @@ void AP_LIST::clear() {
     list_len = 0;
 }
 
+#if defined(PROVIDE_PRINT)
 void AP_tree_buffer::print() {
     cout  << "AP_tree_buffer                      " << this;
     cout  << "\nfather " << father;
@@ -188,3 +189,4 @@ void AP_tree_stack::print() {
         elem->print();
     }
 }
+#endif

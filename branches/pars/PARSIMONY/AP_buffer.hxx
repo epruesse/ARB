@@ -30,6 +30,10 @@
  * AP_main_list    Liste fuer AP_main_buffer
  */
 
+#if defined(DEBUG)
+#define PROVIDE_PRINT
+#endif
+
 template <typename ELEM>
 struct AP_STACK_ELEM {
     AP_STACK_ELEM *next;
@@ -41,13 +45,18 @@ class AP_STACK : virtual Noncopyable {
     typedef AP_STACK_ELEM<ELEM> StackElem;
 
     StackElem     *first;
-    StackElem     *pointer;
     unsigned long  stacksize;
+
+#if defined(PROVIDE_PRINT)
+    StackElem *pointer;
+#endif
 
 public:
     AP_STACK()
         : first(NULL),
+#if defined(PROVIDE_PRINT)
           pointer(NULL),
+#endif
           stacksize(0)
     {}
     virtual ~AP_STACK() {
@@ -57,11 +66,28 @@ public:
     }
 
     void push(ELEM *element) {
+        //! add 'element' to top of stack
         StackElem *stackelem = new StackElem;
         stackelem->node = element;
         stackelem->next = first;
         first = stackelem;
         stacksize++;
+    }
+    void shift(ELEM *element) {
+        //! add 'element' to bottom of stack
+        if (stacksize) {
+            StackElem *bottomelem               = first;
+            while (bottomelem->next) bottomelem = bottomelem->next;
+
+            StackElem *newelem = new StackElem;
+            newelem->node      = element;
+            newelem->next      = NULL;
+
+            bottomelem->next = newelem;
+        }
+        else {
+            push(element);
+        }
     }
 
     ELEM *pop() {
@@ -76,6 +102,23 @@ public:
 
         return pntr;
     }
+    bool remove(ELEM *element) {
+        //! remove 'element' from stack
+        if (!first) return false;
+
+        StackElem** nextPtr = &first;
+        while (*nextPtr) {
+            StackElem *next = *nextPtr;
+            if (next->node == element) {
+                *nextPtr = next->next;
+                delete next;
+                return true;
+            }
+            nextPtr = &(next->next);
+        }
+        return false;
+    }
+
     void clear() {
         while (stacksize > 0) {
             StackElem *pntr = first;
@@ -87,6 +130,7 @@ public:
     ELEM *top() { return first ? first->node : NULL; }
     unsigned long size() { return stacksize; }
 
+#if defined(PROVIDE_PRINT)
     // iterator:
     void  get_init() { pointer = 0; }
     ELEM *get() {
@@ -103,6 +147,7 @@ public:
         }
         return pointer->node;
     }
+#endif
 };
 
 // ----------------
@@ -145,8 +190,7 @@ public:
 // ----------------------------------------------------------------
 //      special buffer-structures for AP_tree and AP_tree_edge
 
-class  AP_tree_edge;                                // defined in ap_tree_nlen.hxx
-struct AP_tree_buffer;
+class AP_tree_edge; // defined in ap_tree_nlen.hxx
 
 struct AP_tree_edge_data
 {
@@ -172,9 +216,9 @@ struct AP_tree_buffer {
     AP_sequence   *sequence;
     AP_FLOAT       mutation_rate;
     double         leftlen, rightlen;
-    AP_tree  *father;
-    AP_tree  *leftson;
-    AP_tree  *rightson;
+    AP_tree       *father;
+    AP_tree       *leftson;
+    AP_tree       *rightson;
     AP_tree_root  *root;
     GBDATA        *gb_node;
 
@@ -185,11 +229,15 @@ struct AP_tree_buffer {
     int                edgeIndex[3];
     AP_tree_edge_data  edgeData[3];
 
+#if defined(PROVIDE_PRINT)
     void print();
+#endif
 };
 
 struct AP_tree_stack : public AP_STACK<AP_tree_buffer> {
+#if defined(PROVIDE_PRINT)
     void print();
+#endif
 };
 
 class AP_tree_nlen;
@@ -219,11 +267,13 @@ public:
         : previous(data)
     {}
 
-    void print();
     const StackFrameData& get_previous_frame_data() const { return previous; }
 
 #if defined(CHECK_ROOT_POPS)
     AP_tree_nlen *root_at_create; // root at creation time of stack
+#endif
+#if defined(PROVIDE_PRINT)
+    void print();
 #endif
 };
 
