@@ -2048,6 +2048,51 @@ void TEST_node_stack() {
             TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
             env.root_node()->findLeafNamed("CloPaste")->moveNextTo(env.root_node()->findLeafNamed("CloInnoc"), 0.5);
             TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            {
+                AP_tree_nlen *son_of_brother;
+                AP_tree_nlen *brother_of_father;
+                AP_tree_nlen *son_of_root      = env.graphic_tree()->get_root_node()->get_leftson();
+                AP_tree_nlen *grandson_of_root = son_of_root->get_brother()->get_leftson();
+                AP_tree_nlen *some_leaf = env.root_node()->findLeafNamed("CloBifer");
+
+                ap_assert(son_of_root);
+                ap_assert(grandson_of_root);
+                ap_assert(some_leaf);
+
+#if 0
+                // COVER1: son of root -> grandson of root // @@@ fails assert in change_root (target root has father)
+                son_of_brother = son_of_root->get_brother()->get_leftson();
+                son_of_root->moveNextTo(son_of_brother, 0.5);
+                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+#endif
+
+#if 0
+                // COVER2: grandson of root -> son of brother // @@@ fails assert in change_root (target root has father)
+                son_of_brother = grandson_of_root->get_brother()->get_leftson();
+                grandson_of_root->moveNextTo(son_of_brother, 0.5);
+                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+#endif
+
+                // COVER3: some leaf -> son of brother
+                son_of_brother = some_leaf->get_brother()->get_leftson();
+                some_leaf->moveNextTo(son_of_brother, 0.5);
+                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+                // COVER4: some leaf -> son of brother
+                brother_of_father = some_leaf->get_father()->get_brother();
+                some_leaf->moveNextTo(brother_of_father, 0.5);
+                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+                // COVER5: move to father
+                some_leaf->moveNextTo(some_leaf->get_father(), 0.5);
+                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+#if 0
+                // fails assert in AP_tree::moveNextTo ("already there"). ok!
+                some_leaf->moveNextTo(some_leaf->get_brother(), 0.5);
+                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+#endif
+            }
 
             env.pop();
             TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
