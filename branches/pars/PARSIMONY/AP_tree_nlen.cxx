@@ -579,6 +579,7 @@ void AP_tree_nlen::set_root() {
 
 void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
     ap_assert(father);
+    ap_assert(newBrother);
     ap_assert(newBrother->father);
 
     ASSERT_VALID_TREE(rootNode());
@@ -633,6 +634,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
         if (thisFather==newBrothersFather->get_father()) { // son -> son of brother
             if (grandFather) {
                 if (grandFather->get_father()) {
+                    UNCOVERED(); // @@@ cover by test
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
                     AP_tree_edge *e4 = newBrother->edgeTo(oldBrother)->unlink();
 
@@ -643,6 +645,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                     thisFather->linkAllEdges(e2, e3, e4);
                 }
                 else { // grandson of root -> son of brother
+                    UNCOVERED(); // @@@ cover by test
                     AP_tree_nlen *uncle = thisFather->get_brother();
 
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
@@ -656,6 +659,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                 }
             }
             else { // son of root -> grandson of root
+                UNCOVERED(); // @@@ cover by test
                 oldBrother->unlinkAllEdges(&e1, &e2, &e3);
                 AP_tree::moveNextTo(newBrother, rel_pos);
                 thisFather->linkAllEdges(e1, e2, e3);
@@ -663,6 +667,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
         }
         else if (grandFather==newBrothersFather) { // son -> brother of father
             if (grandFather->father) {
+                UNCOVERED(); // @@@ cover by test
                 thisFather->unlinkAllEdges(&e1, &e2, &e3);
                 AP_tree_edge *e4 = grandFather->edgeTo(newBrother)->unlink();
 
@@ -743,6 +748,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
         }
     }
     else { // edgesChange==0
+        UNCOVERED(); // @@@ cover by test
         AP_tree::moveNextTo(newBrother, rel_pos);
     }
 
