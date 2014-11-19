@@ -222,7 +222,13 @@ void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
 #endif
     }
 
-    if (node->push(mode, stack_level))  stack->push(node);
+    if (node->push(mode, stack_level)) stack->push(node);
+    if (mode == ROOT) {
+        // In AP_main::pop(), root-node has to be restored after everything else has been restored.
+        // Move node to bottom of stack now to ensure that.
+        ASSERT_RESULT(bool, true, stack->remove(node));
+        stack->shift(node);
+    }
 }
 
 void AP_main::set_tree_root(AWT_graphic_parsimony *agt_) {

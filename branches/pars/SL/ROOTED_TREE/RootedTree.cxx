@@ -26,6 +26,7 @@ TreeRoot::~TreeRoot() {
 
 void TreeRoot::change_root(RootedTree *oldroot, RootedTree *newroot) {
     rt_assert(rootNode == oldroot);
+    rt_assert(implicated(newroot, !newroot->father));
     rootNode = newroot;
 
     if (oldroot && oldroot->get_tree_root() && !oldroot->is_inside(newroot)) oldroot->set_tree_root(0); // unlink from this
