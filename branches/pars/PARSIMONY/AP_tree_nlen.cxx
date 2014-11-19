@@ -646,7 +646,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                     thisFather->linkAllEdges(e2, e3, e4);
                 }
                 else { // grandson of root -> son of brother
-                    UNCOVERED(); // @@@ coverable by disabled test at PARS_main.cxx@COVER2
+                    // covered by test at PARS_main.cxx@COVER2
                     AP_tree_nlen *uncle = thisFather->get_brother();
 
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
@@ -660,7 +660,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                 }
             }
             else { // son of root -> grandson of root
-                UNCOVERED(); // @@@ coverable by disabled test at PARS_main.cxx@COVER1
+                // covered by test at PARS_main.cxx@COVER1
                 oldBrother->unlinkAllEdges(&e1, &e2, &e3);
                 AP_tree::moveNextTo(newBrother, rel_pos);
                 thisFather->linkAllEdges(e1, e2, e3);

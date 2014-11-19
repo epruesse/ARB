@@ -242,8 +242,9 @@ struct AP_tree_stack : public AP_STACK<AP_tree_buffer> {
 
 class AP_tree_nlen;
 
-// #define AVOID_MULTI_ROOT_PUSH
+#define AVOID_MULTI_ROOT_PUSH
 // old version did not avoid (i.e. it was possible to push multiple ROOTs)
+// fails some tests when undefined
 
 #if defined(ASSERTION_USED)
 #define CHECK_ROOT_POPS
