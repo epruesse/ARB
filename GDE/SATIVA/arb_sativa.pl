@@ -26,7 +26,7 @@ BEGIN {
 use ARB;
 use tools;
 
-my $sativa_home = $ENV{'ARBHOME'}.'/bin/sativa';
+my $sativa_home = $ENV{'ARBHOME'}.'/lib/sativa';
 my ($start_time, $trainer_time, $mislabels_time);
 
 # ------------------------------------------------------------
