@@ -172,9 +172,8 @@ void AP_tree_buffer::print() {
 void AP_main_stack::print() {
     unsigned long i = this->size();
     cout << "AP_main_stack " << this << "  Size " << i << "\n";
-    get_init();
-    for (; i > 0; i--) {
-        AP_tree *elem = get();
+    for (AP_main_stack::iterator e = begin(); e != end(); ++e, --i) {
+        AP_tree *elem = *e;
         cout << i << " - AP_tree *: " << elem << " \n";
     }
 }
@@ -183,10 +182,8 @@ void AP_main_stack::print() {
 void AP_tree_stack::print() {
     unsigned long i = this->size();
     cout << "AP_tree_stack :  Size " << i << "\n";
-    get_init();
-    for (; i > 0; i--) {
-        AP_tree_buffer *elem = get();
-        elem->print();
+    for (AP_tree_stack::iterator e = begin(); e != end(); ++e) {
+        (*e)->print();
     }
 }
 #endif

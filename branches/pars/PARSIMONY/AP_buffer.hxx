@@ -47,23 +47,30 @@ class AP_STACK : virtual Noncopyable {
     StackElem     *first;
     unsigned long  stacksize;
 
-#if defined(PROVIDE_PRINT)
-    StackElem *pointer;
-#endif
-
 public:
     AP_STACK()
         : first(NULL),
           stacksize(0)
-#if defined(PROVIDE_PRINT)
-        , pointer(NULL)
-#endif
     {}
     virtual ~AP_STACK() {
         if (stacksize>0) {
             GBK_terminate("AP_STACK not empty in dtor");
         }
     }
+
+    class iterator {
+        StackElem *current;
+    public:
+        iterator(AP_STACK *stack) : current(stack ? stack->first : NULL) {}
+
+        ELEM *operator*() const { return current->node; }
+        iterator& operator++() { current = current->next; return *this; }
+        bool operator == (const iterator& other) const { return current == other.current; }
+        bool operator != (const iterator& other) const { return current != other.current; }
+    };
+
+    iterator begin() { return iterator(this); }
+    iterator end() { return iterator(NULL); }
 
     void push(ELEM *element) {
         //! add 'element' to top of stack
@@ -129,25 +136,6 @@ public:
     }
     ELEM *top() { return first ? first->node : NULL; }
     unsigned long size() { return stacksize; }
-
-#if defined(PROVIDE_PRINT)
-    // iterator:
-    void  get_init() { pointer = 0; }
-    ELEM *get() {
-        if (0 == pointer) {
-            pointer = first;
-        }
-        else {
-            if (pointer->next == 0) {
-                return 0;
-            }
-            else {
-                pointer = pointer->next;
-            }
-        }
-        return pointer->node;
-    }
-#endif
 };
 
 // ----------------
