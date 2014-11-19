@@ -113,12 +113,13 @@ class EpacConfig:
         self.raxml_exec_full = self.raxml_home + self.raxml_exec
         if self.raxml_remote_host in ["", "localhost"]:
             self.raxml_remote_call = False
-            if not os.path.isdir(self.raxml_home):
-                print "RAxML home directory not found: %s" % self.raxml_home
-                sys.exit()
-            if not os.path.isfile(self.raxml_exec_full):
-                print "RAxML executable not found: %s" % self.raxml_exec_full
-                sys.exit()
+            if self.raxml_home:
+                if not os.path.isdir(self.raxml_home):
+                    print "RAxML home directory not found: %s" % self.raxml_home
+                    sys.exit()
+                elif not os.path.isfile(self.raxml_exec_full):
+                    print "RAxML executable not found: %s" % self.raxml_exec_full
+                    sys.exit()
         else:
             self.raxml_remote_call = True
         self.raxml_cmd = [self.raxml_exec_full, "-p", "12345", "-T", str(self.num_threads), "-w", self.raxml_outdir_abs]
@@ -131,7 +132,9 @@ class EpacConfig:
         parser = DefaultedConfigParser() #ConfigParser.SafeConfigParser()
         parser.read(config_fname)
         
-        self.raxml_home = self.resolve_relative_path(parser.get_param("raxml", "raxml_home", str, self.raxml_home) + "/")
+        self.raxml_home = parser.get_param("raxml", "raxml_home", str, self.raxml_home)
+        if self.raxml_home:
+            self.resolve_relative_path(self.raxml_home + "/")
         self.raxml_exec = parser.get_param("raxml", "raxml_exec", str, self.raxml_exec)
         self.raxml_remote_host = parser.get_param("raxml", "raxml_remote_host", str, self.raxml_remote_host)
 
