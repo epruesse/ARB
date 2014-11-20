@@ -169,7 +169,7 @@ public:
     int   eof();
     void  insert(void * new_one);
     void  append(void * new_one);
-    void  remove(void * object);
+    bool  remove(void * object);
     void  push(void *elem);
     void *pop();
     void  clear();

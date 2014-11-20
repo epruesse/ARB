@@ -9,7 +9,6 @@
 // =============================================================== //
 
 #include "AP_buffer.hxx"
-#include "AP_error.hxx"
 #include "ap_tree_nlen.hxx"
 
 #include <iostream>
@@ -83,7 +82,7 @@ void AP_LIST::append(void * new_one) {
     return;
 }
 
-void AP_LIST::remove(void * object) {
+bool AP_LIST::remove(void * object) {
     AP_list_elem  *elem = element(object);
     if (elem) {
         if (elem->prev) {
@@ -103,10 +102,10 @@ void AP_LIST::remove(void * object) {
         if (elem == pointer) pointer = 0;
         delete elem;
         list_len --;
-        return;
+
+        return true;
     }
-    new AP_ERR("AP_LIST::remove(void * object)", "no buffer element !\n");
-    return;
+    return false;
 }
 
 void AP_LIST::push(void *elem) {

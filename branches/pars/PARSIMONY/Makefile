@@ -1,6 +1,6 @@
 # for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend
-CPP_OBJECTS =  PARS_main.o PARS_dtree.o PARS_debug.o PARS_klprops.o AP_buffer.o AP_main.o AP_tree_nlen.o AP_tree_edge.o
+CPP_OBJECTS =  $(subst .cxx,.o,$(wildcard *.cxx))
 
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
@@ -29,7 +29,6 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 AP_buffer.o: AP_buffer.hxx
-AP_buffer.o: AP_error.hxx
 AP_buffer.o: ap_tree_nlen.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -59,7 +58,6 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AP_main.o: AP_buffer.hxx
-AP_main.o: AP_error.hxx
 AP_main.o: ap_main.hxx
 AP_main.o: ap_tree_nlen.hxx
 AP_main.o: pars_dtree.hxx
@@ -84,6 +82,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx

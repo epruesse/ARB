@@ -8,68 +8,11 @@
 //                                                                 //
 // =============================================================== //
 
-#include "AP_error.hxx"
 #include "ap_tree_nlen.hxx"
 #include "ap_main.hxx"
+#include <aw_msg.hxx>
 
 using namespace std;
-
-// ---------------
-//      AP_ERR
-
-int AP_ERR::mode = 0;
-
-AP_ERR::~AP_ERR()
-{
-    delete text;
-}
-
-
-AP_ERR::AP_ERR (const char *pntr)
-// setzt den Fehlertext und zeigt ihn an
-{
-    text = pntr;
-    if (mode == 0) {
-        cout << "\n*** WARNING *** \n" << text << "\n";
-        cout.flush();
-    }
-}
-
-AP_ERR::AP_ERR (const char *pntr, const char *pntr2)
-{
-    text = pntr2;
-    if (mode == 0) {
-        cout << "\n***** WARNING  in " << pntr << "\n" << text << "\n";
-        cout.flush();
-    }
-}
-
-AP_ERR::AP_ERR (const char *pntr, const char *pntr2, const int core)
-{
-    text = pntr2;
-    cout << "\n*** FATAL ERROR *** " << core << " in " << pntr << "\n" << text << "\n";
-    cout.flush();
-    GBK_terminate("AP_ERR[1]");
-}
-
-AP_ERR::AP_ERR (const char *pntr, const int core)
-// setzt den Fehlertext
-// bricht ab
-{
-    text = pntr;
-    cout << "\n*** FATAL ERROR *** " << core << "\n" << text << "\n";
-    cout.flush();
-    GBK_terminate("AP_ERR[2]");
-}
-
-const char *AP_ERR::show()
-{
-    return text;
-}
-
-void AP_ERR::set_mode(int i) {
-    mode = i;
-}
 
 // ----------------
 //      AP_main
@@ -92,9 +35,8 @@ void AP_main::user_pop() {
         pop();    // changes user_push_counter if user pop
     }
     else {
-        new AP_ERR("AP_main::user_pop()", "No user pop possible");
+        aw_message("No user-pop possible");
     }
-    return;
 }
 
 void AP_main::push() {
@@ -113,10 +55,8 @@ void AP_main::push() {
 }
 
 void AP_main::pop() {
-    if (!stack) {
-        new AP_ERR("AP_main::pop()", "Stack underflow !");
-        return;
-    }
+    if (!stack) GBK_terminate("AP_main::pop on empty stack");
+
     {
         AP_tree_nlen *knoten;
         while ((knoten = stack->pop())) {
@@ -148,41 +88,32 @@ void AP_main::clear() {
     // moves all not previous buffered nodes in the
     // previous stack
 
+    if (!stack) GBK_terminate("AP_main::clear on empty stack");
+
     AP_tree_nlen  *knoten;
     AP_main_stack *new_stack;
 
-    if (!stack) {
-        new AP_ERR("AP_main::clear", "Stack underflow !");
-        return;
-    }
     if (currframe.user_push_counter >= stack_level) {
-        if (stack != 0) {
-            if (stack->size() > 0) {
-                while (stack->size() > 0) {
-                    knoten = stack->pop();
-                    knoten->clear(stack_level, currframe.user_push_counter);
-                }
+        if (stack->size() > 0) {
+            while (stack->size() > 0) {
+                knoten = stack->pop();
+                knoten->clear(stack_level, currframe.user_push_counter);
             }
-            delete stack;
-            stack = list.pop();
         }
+        delete stack;
+        stack = list.pop();
     }
     else {
-        if (stack) {
-            new_stack = list.pop();
-            while ((knoten = stack->pop())) {
-                if (knoten->clear(stack_level, currframe.user_push_counter) != true) {
-                    // node is not cleared because buffered in previous node stack
-                    // node is instead copied in previous level
-                    if (new_stack) new_stack->push(knoten);
-                }
+        new_stack = list.pop();
+        while ((knoten = stack->pop())) {
+            if (knoten->clear(stack_level, currframe.user_push_counter) != true) {
+                // node is not cleared because buffered in previous node stack
+                // node is instead copied in previous level
+                if (new_stack) new_stack->push(knoten);
             }
-            delete stack;
-            stack = new_stack;
         }
-        else {
-            new AP_ERR("AP_main::clear");
-        }
+        delete stack;
+        stack = new_stack;
     }
     stack_level --;
 
