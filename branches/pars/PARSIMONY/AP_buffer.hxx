@@ -25,7 +25,7 @@
  *
  * AP_tree_stack   stack containing AP_tree_buffer* (each AP_tree_nlen contains one)
  * NodeStack       stack containing AP_tree_nlen* (NodeStack of current frame is member of AP_main)
- * AP_main_list    stack containing NodeStack (member of AP_main, stores previous NodeStack frames)
+ * FrameStack      stack containing NodeStacks (member of AP_main, stores previous NodeStack frames)
  */
 
 #if defined(DEBUG)
@@ -227,7 +227,7 @@ public:
 #endif
 };
 
-typedef AP_STACK<NodeStack> AP_main_list;
+typedef AP_STACK<NodeStack> FrameStack;
 
 #else
 #error AP_buffer.hxx included twice

@@ -45,7 +45,7 @@ void AP_main::push() {
     //
     //
     stack_level ++;
-    if (currFrame) list.push(currFrame);
+    if (currFrame) frames.push(currFrame);
 
     currFrame = new NodeStack(frameData);
 
@@ -76,7 +76,7 @@ void AP_main::pop() {
     delete currFrame;
     stack_level --;
 
-    currFrame     = list.pop();
+    currFrame     = frames.pop();
     frameData = currFrame ? currFrame->get_previous_frame_data() : StackFrameData();
 }
 
@@ -100,10 +100,10 @@ void AP_main::clear() {
             }
         }
         delete currFrame;
-        currFrame = list.pop();
+        currFrame = frames.pop();
     }
     else {
-        NodeStack *next_frame = list.pop();
+        NodeStack *next_frame = frames.pop();
         while ((node = currFrame->pop())) {
             if (node->clear(stack_level, frameData.user_push_counter) != true) {
                 // node is not cleared because buffered in previous node stack

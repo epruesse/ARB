@@ -52,7 +52,7 @@ struct PARS_commands {
 
 class AP_main : virtual Noncopyable {
     NodeStack             *currFrame;
-    AP_main_list           list;
+    FrameStack             frames;
     unsigned long          stack_level;
     AWT_graphic_parsimony *agt;       // provides access to tree!
     StackFrameData         frameData; // saved/restored by push/pop
