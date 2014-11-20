@@ -14,6 +14,9 @@
 #ifndef AP_SEQUENCE_HXX
 #include <AP_sequence.hxx>
 #endif
+#ifndef ARB_FORWARD_LIST_H
+#include <arb_forward_list.h>
+#endif
 
 /* AP_STACK        Stack container
  *
@@ -29,119 +32,38 @@
  */
 
 template <typename ELEM>
-struct AP_STACK_ELEM {
-    AP_STACK_ELEM *next;
-    ELEM          *node;
-};
-
-template <typename ELEM>
-class AP_STACK : virtual Noncopyable {
-    typedef AP_STACK_ELEM<ELEM> StackElem;
-
-    StackElem *first;
-    size_t     stacksize;
-
-public:
-    AP_STACK()
-        : first(NULL),
-          stacksize(0)
-    {}
-    virtual ~AP_STACK() {
-        if (stacksize>0) {
-            GBK_terminate("AP_STACK not empty in dtor");
-        }
-    }
-
-    class iterator {
-        StackElem *current;
-    public:
-        iterator(AP_STACK *stack) : current(stack ? stack->first : NULL) {}
-
-        ELEM *operator*() const { return current->node; }
-        iterator& operator++() { current = current->next; return *this; }
-        bool operator == (const iterator& other) const { return current == other.current; }
-        bool operator != (const iterator& other) const { return current != other.current; }
-    };
-
-    class const_iterator : public iterator {
-    public:
-        const_iterator(const AP_STACK *stack) : iterator(const_cast<AP_STACK*>(stack)) {}
-        const ELEM *operator*() const {
-            iterator *me     = static_cast<iterator*>(const_cast<AP_STACK<ELEM>::const_iterator*>(this));
-            ELEM     *result = **me;
-            return result;
-        }
-    };
-
-    iterator begin() { return iterator(this); }
-    iterator end() { return iterator(NULL); }
-    const_iterator begin() const { return const_iterator(this); }
-    const_iterator end() const { return const_iterator(NULL); }
+struct AP_STACK : public arb_forward_list<ELEM*> {
+    typedef arb_forward_list<ELEM*>       BASE;
+    typedef typename BASE::const_iterator const_iterator;
 
     void push(ELEM *element) {
         //! add 'element' to top of stack
-        StackElem *stackelem = new StackElem;
-        stackelem->node = element;
-        stackelem->next = first;
-        first = stackelem;
-        stacksize++;
+        BASE::push_front(element);
     }
     void shift(ELEM *element) {
         //! add 'element' to bottom of stack
-        if (stacksize) {
-            StackElem *bottomelem               = first;
-            while (bottomelem->next) bottomelem = bottomelem->next;
 
-            StackElem *newelem = new StackElem;
-            newelem->node      = element;
-            newelem->next      = NULL;
-
-            bottomelem->next = newelem;
-        }
-        else {
-            push(element);
-        }
+        // @@@ brute force
+        BASE::reverse();
+        push(element);
+        BASE::reverse();
     }
-
     ELEM *pop() {
-        if (!first) return 0;
+        if (BASE::empty()) return NULL;
 
-        StackElem *stackelem = first;
-        ELEM      *pntr      = first->node;
-
-        first = first->next;
-        stacksize --;
-        delete stackelem;
-
-        return pntr;
+        ELEM *result = top();
+        BASE::pop_front();
+        return result;
     }
-    bool remove(ELEM *element) {
-        //! remove 'element' from stack
-        if (!first) return false;
-
-        StackElem** nextPtr = &first;
-        while (*nextPtr) {
-            StackElem *next = *nextPtr;
-            if (next->node == element) {
-                *nextPtr = next->next;
-                delete next;
-                return true;
-            }
-            nextPtr = &(next->next);
-        }
-        return false;
+    ELEM *top() {
+        ap_assert(!BASE::empty());
+        return BASE::front();
     }
-
-    void clear() {
-        while (stacksize > 0) {
-            StackElem *pntr = first;
-            first = first->next;
-            stacksize --;
-            delete pntr;
-        }
+    size_t size() const {
+        size_t s = 0;
+        for (const_iterator i = BASE::begin(); i != BASE::end(); ++i) ++s;
+        return s;
     }
-    ELEM *top() { return first ? first->node : NULL; }
-    size_t size() const { return stacksize; }
 };
 
 // ----------------------------------------------------------------
