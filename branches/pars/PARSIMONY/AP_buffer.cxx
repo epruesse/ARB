@@ -33,10 +33,10 @@ void NodeStack::print() {
 }
 
 
-void AP_tree_stack::print() {
+void StateStack::print() {
     unsigned long i = this->size();
-    cout << "AP_tree_stack :  Size " << i << "\n";
-    for (AP_tree_stack::iterator e = begin(); e != end(); ++e) {
+    cout << "StateStack :  Size " << i << "\n";
+    for (StateStack::iterator e = begin(); e != end(); ++e) {
         (*e)->print();
     }
 }

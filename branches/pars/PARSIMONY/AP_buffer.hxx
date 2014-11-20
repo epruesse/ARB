@@ -19,11 +19,11 @@
  *
  * -- buffers
  *
- * AP_tree_buffer  holds (partial) state of AP_tree_nlen
+ * NodeState  holds (partial) state of AP_tree_nlen
  *
  * -- used stacks
  *
- * AP_tree_stack   stack containing AP_tree_buffer* (each AP_tree_nlen contains one)
+ * StateStack      stack containing NodeState* (each AP_tree_nlen contains one)
  * NodeStack       stack containing AP_tree_nlen* (NodeStack of current frame is member of AP_main)
  * FrameStack      stack containing NodeStacks (member of AP_main, stores previous NodeStack frames)
  */
@@ -158,14 +158,14 @@ enum AP_STACK_MODE {
 class AP_tree;
 class AP_tree_root;
 
-struct NodeState {
+struct NodeState { // buffers previous states of AP_tree_nlen
     unsigned long  controll;                        // used for internal buffer check
     unsigned int   count;                           // counts how often the entry is buffered
     AP_STACK_MODE  mode;
     AP_sequence   *sequence;
     AP_FLOAT       mutation_rate;
     double         leftlen, rightlen;
-    AP_tree       *father;
+    AP_tree       *father; // @@@ fix type (->AP_tree_nlen)
     AP_tree       *leftson;
     AP_tree       *rightson;
     AP_tree_root  *root;
@@ -183,7 +183,7 @@ struct NodeState {
 #endif
 };
 
-struct AP_tree_stack : public AP_STACK<NodeState> {
+struct StateStack : public AP_STACK<NodeState> {
 #if defined(PROVIDE_PRINT)
     void print();
 #endif

@@ -145,7 +145,7 @@ public:
     // ancestors in it
     AP_CO_LIST * createList(int *size);
 
-    class AP_tree_stack stack;  // tree stack
+    StateStack states;  // containes previous states of 'this'
 
     // misc stuff:
 

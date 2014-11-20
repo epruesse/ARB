@@ -777,7 +777,7 @@ bool AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count) {
         return false;
     }
 
-    NodeState *state = stack.pop();
+    NodeState *state = states.pop();
     bool       result;
 
     if (state->controll == datum - 1 || user_buffer_count >= datum) {
@@ -793,7 +793,7 @@ bool AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count) {
     else {
         stack_level = datum - 1;
 
-        stack.push(state);
+        states.push(state);
         result = false;
     }
 
@@ -811,7 +811,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
     if (is_leaf && !(STRUCTURE & mode)) return false;    // tips push only structure
 
     if (this->stack_level == datum) { // node already has a push (at current stack-level)
-        NodeState *is_stored = stack.top();
+        NodeState *is_stored = states.top();
 
         if (0 == (mode & ~is_stored->mode)) { // already buffered
             AP_sequence *sequence = get_seq();
@@ -827,7 +827,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
         store->controll = stack_level;
         store->mode     = NOTHING;
 
-        stack.push(store);
+        states.push(store);
         this->stack_level = datum;
         ret = true;
     }
@@ -873,7 +873,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
 void AP_tree_nlen::pop(unsigned long IF_ASSERTION_USED(datum)) { // pop old tree costs
     ap_assert(stack_level == datum); // error in node stack
 
-    NodeState     *previous = stack.pop();
+    NodeState     *previous = states.pop();
     AP_STACK_MODE  mode = previous->mode;
 
     if (mode&STRUCTURE) {
