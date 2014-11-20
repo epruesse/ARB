@@ -24,8 +24,8 @@
  * -- used stacks
  *
  * AP_tree_stack   stack containing AP_tree_buffer* (each AP_tree_nlen contains one)
- * AP_main_stack   stack containing AP_tree_nlen* (current stackframe is member of AP_main)
- * AP_main_list    stack containing AP_main_stack (member of AP_main, stores previous stackframes)
+ * NodeStack       stack containing AP_tree_nlen* (NodeStack of current frame is member of AP_main)
+ * AP_main_list    stack containing NodeStack (member of AP_main, stores previous NodeStack frames)
  */
 
 #if defined(DEBUG)
@@ -209,11 +209,11 @@ struct StackFrameData { // data local to current stack frame
 #endif
 };
 
-class AP_main_stack : public AP_STACK<AP_tree_nlen> { // derived from Noncopyable
+class NodeStack : public AP_STACK<AP_tree_nlen> { // derived from Noncopyable
     StackFrameData previous;
 
 public:
-    explicit AP_main_stack(const StackFrameData& data)
+    explicit NodeStack(const StackFrameData& data)
         : previous(data)
     {}
 
@@ -227,7 +227,7 @@ public:
 #endif
 };
 
-typedef AP_STACK<AP_main_stack> AP_main_list;
+typedef AP_STACK<NodeStack> AP_main_list;
 
 #else
 #error AP_buffer.hxx included twice

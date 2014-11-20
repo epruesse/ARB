@@ -51,20 +51,20 @@ struct PARS_commands {
 };
 
 class AP_main : virtual Noncopyable {
-    AP_main_stack         *stack;
+    NodeStack             *currFrame;
     AP_main_list           list;
     unsigned long          stack_level;
     AWT_graphic_parsimony *agt;       // provides access to tree!
-    StackFrameData         currframe; // saved/restored by push/pop
+    StackFrameData         frameData; // saved/restored by push/pop
 
 public:
     AP_main()
-        : stack(NULL),
+        : currFrame(NULL),
           stack_level(0),
           agt(NULL)
     {}
     ~AP_main() {
-        delete stack;
+        delete currFrame;
     }
 
     void set_tree_root(AWT_graphic_parsimony *agt_);
@@ -74,7 +74,7 @@ public:
     DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, agt->get_root_node());
 
     const char *get_aliname() const;
-    unsigned long get_user_push_counter() const { return currframe.user_push_counter; }
+    unsigned long get_user_push_counter() const { return frameData.user_push_counter; }
     unsigned long get_stack_level() const { return stack_level; }
 
     GB_ERROR open(const char *db_server);

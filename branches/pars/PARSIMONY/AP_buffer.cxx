@@ -23,10 +23,10 @@ void AP_tree_buffer::print() {
     cout  << "\nrights " << rightson << "\n sequence " << sequence << "\n";
 }
 
-void AP_main_stack::print() {
+void NodeStack::print() {
     unsigned long i = this->size();
-    cout << "AP_main_stack " << this << "  Size " << i << "\n";
-    for (AP_main_stack::iterator e = begin(); e != end(); ++e, --i) {
+    cout << "NodeStack " << this << "  Size " << i << "\n";
+    for (NodeStack::iterator e = begin(); e != end(); ++e, --i) {
         AP_tree *elem = *e;
         cout << i << " - AP_tree *: " << elem << " \n";
     }
