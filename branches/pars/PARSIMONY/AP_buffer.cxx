@@ -24,7 +24,7 @@ void NodeState::print() const {
 }
 
 void NodeStack::print() const {
-    unsigned long i = this->size();
+    unsigned long i = count_elements();
     cout << "NodeStack " << this << "  Size " << i << "\n";
     for (NodeStack::const_iterator e = begin(); e != end(); ++e, --i) {
         const AP_tree *elem = *e;
@@ -33,7 +33,7 @@ void NodeStack::print() const {
 }
 
 void StateStack::print() const {
-    unsigned long i = this->size();
+    unsigned long i = count_elements();
     cout << "StateStack :  Size " << i << "\n";
     for (StateStack::const_iterator e = begin(); e != end(); ++e) {
         (*e)->print();

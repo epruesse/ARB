@@ -92,12 +92,13 @@ void AP_main::clear() {
 
     AP_tree_nlen *node;
 
+    // @@@ ensure test coverage -> DRY cases below (they are nearly the same)
+
     if (frameData.user_push_counter >= stack_level) {
-        if (currFrame->size() > 0) {
-            while (currFrame->size() > 0) {
-                node = currFrame->pop();
-                node->clear(stack_level, frameData.user_push_counter);
-            }
+        while (!currFrame->empty()) {
+            UNCOVERED();
+            node = currFrame->pop();
+            node->clear(stack_level, frameData.user_push_counter);
         }
         delete currFrame;
         currFrame = frames.pop();
@@ -105,10 +106,15 @@ void AP_main::clear() {
     else {
         NodeStack *next_frame = frames.pop();
         while ((node = currFrame->pop())) {
+            // UNCOVERED();
             if (node->clear(stack_level, frameData.user_push_counter) != true) {
                 // node is not cleared because buffered in previous node stack
                 // node is instead copied in previous level
-                if (next_frame) next_frame->push(node);
+                UNCOVERED();
+                if (next_frame) {
+                    UNCOVERED();
+                    next_frame->push(node);
+                }
             }
         }
         delete currFrame;

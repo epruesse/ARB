@@ -75,10 +75,14 @@ struct AP_STACK : public arb_forward_list<ELEM*> {
         ap_assert(!BASE::empty());
         return BASE::front();
     }
-    size_t size() const {
+    size_t count_elements() const {
+#if defined(Cxx11)
         size_t s = 0;
         for (const_iterator i = BASE::begin(); i != BASE::end(); ++i) ++s;
         return s;
+#else // !defined(Cxx11)
+        return BASE::size();
+#endif
     }
 };
 
