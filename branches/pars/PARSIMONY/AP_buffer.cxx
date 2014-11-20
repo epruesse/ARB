@@ -16,27 +16,26 @@
 using namespace std;
 
 #if defined(PROVIDE_PRINT)
-void NodeState::print() {
+void NodeState::print() const {
     cout  << "NodeState                      " << this;
     cout  << "\nfather " << father;
     cout  << "\nlefts  " << leftson;
     cout  << "\nrights " << rightson << "\n sequence " << sequence << "\n";
 }
 
-void NodeStack::print() {
+void NodeStack::print() const {
     unsigned long i = this->size();
     cout << "NodeStack " << this << "  Size " << i << "\n";
-    for (NodeStack::iterator e = begin(); e != end(); ++e, --i) {
-        AP_tree *elem = *e;
+    for (NodeStack::const_iterator e = begin(); e != end(); ++e, --i) {
+        const AP_tree *elem = *e;
         cout << i << " - AP_tree *: " << elem << " \n";
     }
 }
 
-
-void StateStack::print() {
+void StateStack::print() const {
     unsigned long i = this->size();
     cout << "StateStack :  Size " << i << "\n";
-    for (StateStack::iterator e = begin(); e != end(); ++e) {
+    for (StateStack::const_iterator e = begin(); e != end(); ++e) {
         (*e)->print();
     }
 }

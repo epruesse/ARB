@@ -28,10 +28,6 @@
  * FrameStack      stack containing NodeStacks (member of AP_main, stores previous NodeStack frames)
  */
 
-#if defined(DEBUG)
-#define PROVIDE_PRINT
-#endif
-
 template <typename ELEM>
 struct AP_STACK_ELEM {
     AP_STACK_ELEM *next;
@@ -42,8 +38,8 @@ template <typename ELEM>
 class AP_STACK : virtual Noncopyable {
     typedef AP_STACK_ELEM<ELEM> StackElem;
 
-    StackElem     *first;
-    unsigned long  stacksize;
+    StackElem *first;
+    size_t     stacksize;
 
 public:
     AP_STACK()
@@ -67,8 +63,20 @@ public:
         bool operator != (const iterator& other) const { return current != other.current; }
     };
 
+    class const_iterator : public iterator {
+    public:
+        const_iterator(const AP_STACK *stack) : iterator(const_cast<AP_STACK*>(stack)) {}
+        const ELEM *operator*() const {
+            iterator *me     = static_cast<iterator*>(const_cast<AP_STACK<ELEM>::const_iterator*>(this));
+            ELEM     *result = **me;
+            return result;
+        }
+    };
+
     iterator begin() { return iterator(this); }
     iterator end() { return iterator(NULL); }
+    const_iterator begin() const { return const_iterator(this); }
+    const_iterator end() const { return const_iterator(NULL); }
 
     void push(ELEM *element) {
         //! add 'element' to top of stack
@@ -133,11 +141,15 @@ public:
         }
     }
     ELEM *top() { return first ? first->node : NULL; }
-    unsigned long size() { return stacksize; }
+    size_t size() const { return stacksize; }
 };
 
 // ----------------------------------------------------------------
 //      special buffer-structures for AP_tree and AP_tree_edge
+
+#if defined(DEBUG)
+#define PROVIDE_PRINT
+#endif
 
 class AP_tree_edge; // defined in ap_tree_nlen.hxx
 
@@ -179,13 +191,13 @@ struct NodeState { // buffers previous states of AP_tree_nlen
     AP_tree_edge_data  edgeData[3];
 
 #if defined(PROVIDE_PRINT)
-    void print();
+    void print() const;
 #endif
 };
 
 struct StateStack : public AP_STACK<NodeState> {
 #if defined(PROVIDE_PRINT)
-    void print();
+    void print() const;
 #endif
 };
 
@@ -223,7 +235,7 @@ public:
     AP_tree_nlen *root_at_create; // root at creation time of stack
 #endif
 #if defined(PROVIDE_PRINT)
-    void print();
+    void print() const;
 #endif
 };
 
