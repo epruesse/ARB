@@ -15,19 +15,17 @@
 #include <AP_sequence.hxx>
 #endif
 
-
-/* AP_STACK        dynamischer Stack fuer void *
- * AP_LIST         allgemeine doppelt verketteten Liste
+/* AP_STACK        Stack container
  *
- * -- Pufferstrukturen
+ * -- buffers
  *
- * AP_tree_buffer  Struktur die im AP_tree gepuffert wird
+ * AP_tree_buffer  holds (partial) state of AP_tree_nlen
  *
- * -- spezielle stacks ( um casts zu vermeiden )
+ * -- used stacks
  *
- * AP_tree_stack   Stack fuer AP_tree_buffer *
- * AP_main_stack   Stack fuer AP_tree *
- * AP_main_list    Liste fuer AP_main_buffer
+ * AP_tree_stack   stack containing AP_tree_buffer* (each AP_tree_nlen contains one)
+ * AP_main_stack   stack containing AP_tree_nlen* (current stackframe is member of AP_main)
+ * AP_main_list    stack containing AP_main_stack (member of AP_main, stores previous stackframes)
  */
 
 #if defined(DEBUG)
@@ -138,43 +136,6 @@ public:
     unsigned long size() { return stacksize; }
 };
 
-// ----------------
-//      AP_LIST
-
-struct AP_list_elem {
-    AP_list_elem * next;
-    AP_list_elem * prev;
-    void *         node;
-};
-
-class AP_LIST : virtual Noncopyable {
-    unsigned int  list_len;
-    unsigned int  akt;
-    AP_list_elem *first, *last, *pointer;
-
-    AP_list_elem *element(void * elem);
-public:
-    AP_LIST()
-        : list_len(0),
-          akt(0),
-          first(NULL), 
-          last(NULL), 
-          pointer(NULL) 
-    {}
-
-    virtual ~AP_LIST() {}
-
-    int   len();
-    int   is_element(void * node);
-    int   eof();
-    void  insert(void * new_one);
-    void  append(void * new_one);
-    bool  remove(void * object);
-    void  push(void *elem);
-    void *pop();
-    void  clear();
-};
-
 // ----------------------------------------------------------------
 //      special buffer-structures for AP_tree and AP_tree_edge
 
@@ -266,13 +227,7 @@ public:
 #endif
 };
 
-
-struct AP_main_list : public AP_LIST {
-    AP_main_stack * pop() { return  (AP_main_stack *)AP_LIST::pop(); }
-    void push(AP_main_stack * stack) { AP_LIST::push((void *) stack); }
-    void insert(AP_main_stack * stack) { AP_LIST::insert((void *)stack); }
-    void append(AP_main_stack * stack) { AP_LIST::append((void *)stack); }
-};
+typedef AP_STACK<AP_main_stack> AP_main_list;
 
 #else
 #error AP_buffer.hxx included twice
