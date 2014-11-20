@@ -158,7 +158,7 @@ enum AP_STACK_MODE {
 class AP_tree;
 class AP_tree_root;
 
-struct AP_tree_buffer {
+struct NodeState {
     unsigned long  controll;                        // used for internal buffer check
     unsigned int   count;                           // counts how often the entry is buffered
     AP_STACK_MODE  mode;
@@ -183,7 +183,7 @@ struct AP_tree_buffer {
 #endif
 };
 
-struct AP_tree_stack : public AP_STACK<AP_tree_buffer> {
+struct AP_tree_stack : public AP_STACK<NodeState> {
 #if defined(PROVIDE_PRINT)
     void print();
 #endif

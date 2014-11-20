@@ -16,8 +16,8 @@
 using namespace std;
 
 #if defined(PROVIDE_PRINT)
-void AP_tree_buffer::print() {
-    cout  << "AP_tree_buffer                      " << this;
+void NodeState::print() {
+    cout  << "NodeState                      " << this;
     cout  << "\nfather " << father;
     cout  << "\nlefts  " << leftson;
     cout  << "\nrights " << rightson << "\n sequence " << sequence << "\n";

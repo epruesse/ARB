@@ -777,22 +777,24 @@ bool AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count) {
         return false;
     }
 
-    AP_tree_buffer * buff = stack.pop();
-    bool             result;
+    NodeState *state = stack.pop();
+    bool       result;
 
-    if (buff->controll == datum - 1 || user_buffer_count >= datum) {
+    if (state->controll == datum - 1 || user_buffer_count >= datum) {
         // previous node is buffered
 
-        if (buff->mode & SEQUENCE) delete buff->sequence;
+        if (state->mode & SEQUENCE) delete state->sequence;
 
-        stack_level = buff->controll;
-        delete  buff;
-        result      = true;
+        stack_level = state->controll;
+
+        delete state;
+        result = true;
     }
     else {
         stack_level = datum - 1;
-        stack.push(buff);
-        result      = false;
+
+        stack.push(state);
+        result = false;
     }
 
     return result;
@@ -803,58 +805,58 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
     // according to mode
     // tree_structure or sequence is buffered in the node
 
-    AP_tree_buffer *new_buff;
-    bool            ret;
+    NodeState *store;
+    bool       ret;
 
     if (is_leaf && !(STRUCTURE & mode)) return false;    // tips push only structure
 
     if (this->stack_level == datum) { // node already has a push (at current stack-level)
-        AP_tree_buffer *last_buffer = stack.top();
+        NodeState *is_stored = stack.top();
 
-        if (0 == (mode & ~last_buffer->mode)) { // already buffered
+        if (0 == (mode & ~is_stored->mode)) { // already buffered
             AP_sequence *sequence = get_seq();
             if (sequence && (mode & SEQUENCE)) sequence->forget_sequence();
             return false;
         }
-        new_buff = last_buffer;
+        store = is_stored;
         ret = false;
     }
     else { // first push for this node (at current stack-level)
-        new_buff           = new AP_tree_buffer;
-        new_buff->count    = 1;
-        new_buff->controll = stack_level;
-        new_buff->mode     = NOTHING;
+        store           = new NodeState;
+        store->count    = 1;
+        store->controll = stack_level;
+        store->mode     = NOTHING;
 
-        stack.push(new_buff);
+        stack.push(store);
         this->stack_level = datum;
         ret = true;
     }
 
-    if ((mode & STRUCTURE) && !(new_buff->mode & STRUCTURE)) {
-        new_buff->father   = get_father();
-        new_buff->leftson  = get_leftson();
-        new_buff->rightson = get_rightson();
-        new_buff->leftlen  = leftlen;
-        new_buff->rightlen = rightlen;
-        new_buff->root     = get_tree_root();
-        new_buff->gb_node  = gb_node;
-        new_buff->distance = distance;
+    if ((mode & STRUCTURE) && !(store->mode & STRUCTURE)) {
+        store->father   = get_father();
+        store->leftson  = get_leftson();
+        store->rightson = get_rightson();
+        store->leftlen  = leftlen;
+        store->rightlen = rightlen;
+        store->root     = get_tree_root();
+        store->gb_node  = gb_node;
+        store->distance = distance;
 
         for (int e=0; e<3; e++) {
-            new_buff->edge[e]      = edge[e];
-            new_buff->edgeIndex[e] = index[e];
+            store->edge[e]      = edge[e];
+            store->edgeIndex[e] = index[e];
             if (edge[e]) {
-                new_buff->edgeData[e]  = edge[e]->data;
+                store->edgeData[e]  = edge[e]->data;
             }
         }
     }
 
     if (mode & SEQUENCE) {
         ap_assert(!is_leaf); // only allowed to push STRUCTURE for leafs
-        if (!(new_buff->mode & SEQUENCE)) {
+        if (!(store->mode & SEQUENCE)) {
             AP_sequence *sequence   = take_seq();
-            new_buff->sequence      = sequence;
-            new_buff->mutation_rate = mutation_rate;
+            store->sequence      = sequence;
+            store->mutation_rate = mutation_rate;
             mutation_rate           = 0.0;
         }
         else {
@@ -863,7 +865,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
         }
     }
 
-    new_buff->mode = (AP_STACK_MODE)(new_buff->mode|mode);
+    store->mode = (AP_STACK_MODE)(store->mode|mode);
 
     return ret;
 }
@@ -871,43 +873,43 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
 void AP_tree_nlen::pop(unsigned long IF_ASSERTION_USED(datum)) { // pop old tree costs
     ap_assert(stack_level == datum); // error in node stack
 
-    AP_tree_buffer *buff = stack.pop();
-    AP_STACK_MODE   mode = buff->mode;
+    NodeState     *previous = stack.pop();
+    AP_STACK_MODE  mode = previous->mode;
 
     if (mode&STRUCTURE) {
-        father   = buff->father;
-        leftson  = buff->leftson;
-        rightson = buff->rightson;
-        leftlen  = buff->leftlen;
-        rightlen = buff->rightlen;
-        set_tree_root(buff->root);
-        gb_node  = buff->gb_node;
-        distance = buff->distance;
+        father   = previous->father;
+        leftson  = previous->leftson;
+        rightson = previous->rightson;
+        leftlen  = previous->leftlen;
+        rightlen = previous->rightlen;
+        set_tree_root(previous->root);
+        gb_node  = previous->gb_node;
+        distance = previous->distance;
 
         for (int e=0; e<3; e++) {
-            edge[e] = buff->edge[e];
+            edge[e] = previous->edge[e];
 
             if (edge[e]) {
-                index[e] = buff->edgeIndex[e];
+                index[e] = previous->edgeIndex[e];
 
                 edge[e]->index[index[e]] = e;
                 edge[e]->node[index[e]]  = this;
-                edge[e]->data            = buff->edgeData[e];
+                edge[e]->data            = previous->edgeData[e];
             }
         }
     }
 
     if (mode&SEQUENCE) {
-        replace_seq(buff->sequence);
-        mutation_rate = buff->mutation_rate;
+        replace_seq(previous->sequence);
+        mutation_rate = previous->mutation_rate;
     }
 
     if (ROOT==mode) {
-        buff->root->change_root(buff->root->get_root_node(), this);
+        previous->root->change_root(previous->root->get_root_node(), this);
     }
 
-    stack_level = buff->controll;
-    delete buff;
+    stack_level = previous->controll;
+    delete previous;
 }
 
 void AP_tree_nlen::parsimony_rek(char *mutPerSite) {
