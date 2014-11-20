@@ -58,14 +58,14 @@ void AP_main::pop() {
     if (!currFrame) GBK_terminate("AP_main::pop on empty stack");
 
     {
-        AP_tree_nlen *knoten; // @@@ rename
-        while ((knoten = currFrame->pop())) {
-            if (stack_level != knoten->stack_level) {
+        AP_tree_nlen *node;
+        while ((node = currFrame->pop())) {
+            if (stack_level != node->stack_level) {
                 GB_internal_error("AP_main::pop: Error in stack_level");
-                cout << "Main UPD - node UPD : " << stack_level << " -- " << knoten->stack_level << " \n";
+                cout << "Main UPD - node UPD : " << stack_level << " -- " << node->stack_level << " \n";
                 return;
             }
-            knoten->pop(stack_level);
+            node->pop(stack_level);
         }
     }
 
@@ -90,13 +90,13 @@ void AP_main::clear() {
 
     if (!currFrame) GBK_terminate("AP_main::clear on empty stack");
 
-    AP_tree_nlen *knoten; // @@@ rename
+    AP_tree_nlen *node;
 
     if (frameData.user_push_counter >= stack_level) {
         if (currFrame->size() > 0) {
             while (currFrame->size() > 0) {
-                knoten = currFrame->pop();
-                knoten->clear(stack_level, frameData.user_push_counter);
+                node = currFrame->pop();
+                node->clear(stack_level, frameData.user_push_counter);
             }
         }
         delete currFrame;
@@ -104,11 +104,11 @@ void AP_main::clear() {
     }
     else {
         NodeStack *next_frame = list.pop();
-        while ((knoten = currFrame->pop())) {
-            if (knoten->clear(stack_level, frameData.user_push_counter) != true) {
+        while ((node = currFrame->pop())) {
+            if (node->clear(stack_level, frameData.user_push_counter) != true) {
                 // node is not cleared because buffered in previous node stack
                 // node is instead copied in previous level
-                if (next_frame) next_frame->push(knoten);
+                if (next_frame) next_frame->push(node);
             }
         }
         delete currFrame;
