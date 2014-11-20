@@ -34,6 +34,7 @@
 template <typename ELEM>
 struct AP_STACK : public arb_forward_list<ELEM*> {
     typedef arb_forward_list<ELEM*>       BASE;
+    typedef typename BASE::iterator       iterator;
     typedef typename BASE::const_iterator const_iterator;
 
     void push(ELEM *element) {
@@ -42,11 +43,26 @@ struct AP_STACK : public arb_forward_list<ELEM*> {
     }
     void shift(ELEM *element) {
         //! add 'element' to bottom of stack
-
-        // @@@ brute force
-        BASE::reverse();
-        push(element);
-        BASE::reverse();
+#if defined(Cxx11)
+        // uses forward_list
+        if (BASE::empty()) {
+            push(element);
+        }
+        else {
+            iterator i = BASE::begin();
+            iterator n = i;
+            while (true) {
+                if (++n == BASE::end()) {
+                    BASE::insert_after(i, element);
+                    break;
+                }
+                i = n;
+            }
+        }
+#else
+        // uses list
+        BASE::push_back(element);
+#endif
     }
     ELEM *pop() {
         if (BASE::empty()) return NULL;
