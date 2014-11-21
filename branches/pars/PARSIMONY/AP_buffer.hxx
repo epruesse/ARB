@@ -114,7 +114,6 @@ class AP_tree_root;
 
 struct NodeState { // buffers previous states of AP_tree_nlen
     unsigned long  controll;                        // used for internal buffer check
-    unsigned int   count;                           // counts how often the entry is buffered
     AP_STACK_MODE  mode;
     AP_sequence   *sequence;
     AP_FLOAT       mutation_rate;

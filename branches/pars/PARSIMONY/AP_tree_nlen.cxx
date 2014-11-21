@@ -823,7 +823,6 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
     }
     else { // first push for this node (at current stack-level)
         store           = new NodeState;
-        store->count    = 1;
         store->controll = stack_level;
         store->mode     = NOTHING;
 
