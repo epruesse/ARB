@@ -870,43 +870,47 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
     return ret;
 }
 
-void AP_tree_nlen::pop(unsigned long IF_ASSERTION_USED(datum)) { // pop old tree costs
-    ap_assert(stack_level == datum); // error in node stack
-
-    NodeState     *previous = states.pop();
-    AP_STACK_MODE  mode = previous->mode;
+void AP_tree_nlen::restore(const NodeState& state) {
+    AP_STACK_MODE mode = state.mode;
 
     if (mode&STRUCTURE) {
-        father   = previous->father;
-        leftson  = previous->leftson;
-        rightson = previous->rightson;
-        leftlen  = previous->leftlen;
-        rightlen = previous->rightlen;
-        set_tree_root(previous->root);
-        gb_node  = previous->gb_node;
-        distance = previous->distance;
+        father   = state.father;
+        leftson  = state.leftson;
+        rightson = state.rightson;
+        leftlen  = state.leftlen;
+        rightlen = state.rightlen;
+        set_tree_root(state.root);
+        gb_node  = state.gb_node;
+        distance = state.distance;
 
         for (int e=0; e<3; e++) {
-            edge[e] = previous->edge[e];
+            edge[e] = state.edge[e];
 
             if (edge[e]) {
-                index[e] = previous->edgeIndex[e];
+                index[e] = state.edgeIndex[e];
 
                 edge[e]->index[index[e]] = e;
                 edge[e]->node[index[e]]  = this;
-                edge[e]->data            = previous->edgeData[e];
+                edge[e]->data            = state.edgeData[e];
             }
         }
     }
 
     if (mode&SEQUENCE) {
-        replace_seq(previous->sequence);
-        mutation_rate = previous->mutation_rate;
+        replace_seq(state.sequence);
+        mutation_rate = state.mutation_rate;
     }
 
     if (ROOT==mode) {
-        previous->root->change_root(previous->root->get_root_node(), this);
+        state.root->change_root(state.root->get_root_node(), this);
     }
+}
+
+void AP_tree_nlen::pop(unsigned long IF_ASSERTION_USED(expected_stack_level)) { // pop old tree costs
+    ap_assert(stack_level == expected_stack_level); // error in node stack
+
+    NodeState *previous = states.pop();
+    restore(*previous);
 
     stack_level = previous->controll;
     delete previous;

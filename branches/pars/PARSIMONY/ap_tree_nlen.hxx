@@ -95,9 +95,11 @@ public:
     void     unhash_sequence();
     AP_FLOAT costs(char *mutPerSite = NULL);        // cost of a tree (number of changes ..)
 
-    bool push(AP_STACK_MODE, unsigned long); // push state of costs
-    void pop(unsigned long);    // pop old tree costs
+    bool push(AP_STACK_MODE, unsigned long);      // push state of costs
+    void pop(unsigned long expected_stack_level); // pop old tree costs
+    void restore(const NodeState& state);         // restore old node state
     bool clear(unsigned long stack_update, unsigned long user_push_counter);
+
 
     virtual AP_UPDATE_FLAGS check_update() OVERRIDE; // disable  load !!!!
 
