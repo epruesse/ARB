@@ -49,6 +49,9 @@ void AP_main::push() {
 
     currFrame = new NodeStack(frameData);
 
+#if defined(AVOID_MULTI_ROOT_PUSH)
+    frameData.root_pushed = false;
+#endif
 #if defined(CHECK_ROOT_POPS)
     currFrame->root_at_create = DOWNCAST(AP_tree_nlen*, get_tree_root()->get_root_node());
 #endif
@@ -75,7 +78,7 @@ void AP_main::pop() {
     delete currFrame;
     frameLevel --;
 
-    currFrame     = frames.pop();
+    currFrame = frames.pop();
     frameData = currFrame ? currFrame->get_previous_frame_data() : StackFrameData();
 }
 
