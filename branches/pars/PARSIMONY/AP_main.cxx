@@ -145,7 +145,7 @@ void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
 
 #if defined(AVOID_MULTI_ROOT_PUSH)
         if (frameData.root_pushed) {
-            // do not push root twice inside same stack_level
+            // do not push root twice in same frame
             mode = BOTH;
         }
         else {

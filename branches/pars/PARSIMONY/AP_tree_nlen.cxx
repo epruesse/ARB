@@ -821,7 +821,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long frame_level) {
         store = is_stored;
         ret = false;
     }
-    else { // first push for this node (at current stack-level)
+    else { // first push for this node (in current stack frame)
         store          = new NodeState;
         store->frameNr = pushed_to_frame;
         store->mode    = NOTHING;
@@ -906,8 +906,8 @@ void AP_tree_nlen::restore(const NodeState& state) {
     }
 }
 
-void AP_tree_nlen::pop(unsigned long IF_ASSERTION_USED(expected_stack_level)) { // pop old tree costs
-    ap_assert(pushed_to_frame == expected_stack_level); // error in node stack
+void AP_tree_nlen::pop(unsigned long IF_ASSERTION_USED(curr_frameLevel)) { // pop old tree costs
+    ap_assert(pushed_to_frame == curr_frameLevel); // error in node stack (node wasnt pushed in current frame!)
 
     NodeState *previous = states.pop();
     restore(*previous);
