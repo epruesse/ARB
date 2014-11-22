@@ -44,7 +44,7 @@
 
 
 {
-   arb: TEST_nucl_tree_modifications leaks nodes
+   arb: TEST_nucl_tree_modifications leaks edges
    Memcheck:Leak
    fun:_Znwm
    ...
@@ -61,4 +61,24 @@
    fun:_ZL6nt_addP21AWT_graphic_parsimony7AddWhatb
    ...
    fun:_Z28TEST_nucl_tree_modificationsv
+}
+
+{
+   arb: TEST_node_stack leaks edges
+   Memcheck:Leak
+   fun:_Znwm
+   ...
+   fun:_ZN12AP_tree_nlen*insertEPS_*
+   ...
+   fun:_Z15TEST_node_stackv
+}
+{
+   arb: TEST_node_stack leaks nodes
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNK22AP_TreeNlenNodeFactory8makeNodeEP8TreeRoot
+   ...
+   fun:_ZL6nt_addP21AWT_graphic_parsimony7AddWhatb
+   ...
+   fun:_Z15TEST_node_stackv
 }

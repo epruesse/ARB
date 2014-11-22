@@ -1969,6 +1969,9 @@ void TEST_node_stack() {
 
     const char *aliname = "ali_5s";
 
+    // Note: following code leaks father nodes and edges
+    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_node_stack
+
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
     TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");

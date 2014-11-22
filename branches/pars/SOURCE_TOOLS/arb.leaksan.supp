@@ -8,6 +8,7 @@
 leak:TEST_tree_remove_add_all
 leak:TEST_nucl_tree_modifications
 leak:TEST_prot_tree_modifications
+leak:TEST_node_stack
 # LeakSanitizer fails to dump the complete callstack for a bunch of (tolerated) leaks in TEST_nucl_tree_modifications
 # suppress them via sort_sequences_by_length
 leak:sort_sequences_by_length
