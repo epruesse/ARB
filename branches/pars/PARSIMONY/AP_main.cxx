@@ -25,13 +25,13 @@ GB_ERROR AP_main::open(const char *db_server) {
 }
 
 void AP_main::user_push() {
-    frameData.user_push_counter = stack_level + 1;
+    frameData.user_push_counter = frameLevel + 1;
     push();
 }
 
 void AP_main::user_pop() {
     // checks if user_pop possible
-    if (frameData.user_push_counter == stack_level) {
+    if (frameData.user_push_counter == frameLevel) {
         pop();    // changes user_push_counter if user pop
     }
     else {
@@ -44,7 +44,7 @@ void AP_main::push() {
     // WARNING:: node only has to be buffered once in the stack
     //
     //
-    stack_level ++;
+    frameLevel ++;
     if (currFrame) frames.push(currFrame);
 
     currFrame = new NodeStack(frameData);
@@ -60,12 +60,12 @@ void AP_main::pop() {
     {
         AP_tree_nlen *node;
         while ((node = currFrame->pop())) {
-            if (stack_level != node->stack_level) {
+            if (frameLevel != node->get_pushed_to_frame()) {
                 GB_internal_error("AP_main::pop: Error in stack_level");
-                cout << "Main UPD - node UPD : " << stack_level << " -- " << node->stack_level << " \n";
+                cout << "Main UPD - node UPD : " << frameLevel << " -- " << node->get_pushed_to_frame() << " \n";
                 return;
             }
-            node->pop(stack_level);
+            node->pop(frameLevel);
         }
     }
 
@@ -74,7 +74,7 @@ void AP_main::pop() {
 #endif
 
     delete currFrame;
-    stack_level --;
+    frameLevel --;
 
     currFrame     = frames.pop();
     frameData = currFrame ? currFrame->get_previous_frame_data() : StackFrameData();
@@ -94,11 +94,11 @@ void AP_main::clear() {
 
     // @@@ ensure test coverage -> DRY cases below (they are nearly the same)
 
-    if (frameData.user_push_counter >= stack_level) {
+    if (frameData.user_push_counter >= frameLevel) {
         while (!currFrame->empty()) {
             UNCOVERED();
             node = currFrame->pop();
-            node->clear(stack_level, frameData.user_push_counter);
+            node->clear(frameLevel, frameData.user_push_counter);
         }
         delete currFrame;
         currFrame = frames.pop();
@@ -107,7 +107,7 @@ void AP_main::clear() {
         NodeStack *next_frame = frames.pop();
         while ((node = currFrame->pop())) {
             // UNCOVERED();
-            if (node->clear(stack_level, frameData.user_push_counter) != true) {
+            if (node->clear(frameLevel, frameData.user_push_counter) != true) {
                 // node is not cleared because buffered in previous node stack
                 // node is instead copied in previous level
                 UNCOVERED();
@@ -120,7 +120,7 @@ void AP_main::clear() {
         delete currFrame;
         currFrame = next_frame;
     }
-    stack_level --;
+    frameLevel --;
 
     frameData = currFrame ? currFrame->get_previous_frame_data() : StackFrameData();
 }
@@ -134,7 +134,7 @@ void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
         return;
     }
 
-    if (stack_level < node->stack_level) {
+    if (frameLevel < node->get_pushed_to_frame()) {
         GB_warning("AP_main::push_node: stack_level < node->stack_level");
         return;
     }
@@ -158,7 +158,7 @@ void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
 #endif
     }
 
-    if (node->push(mode, stack_level)) currFrame->push(node);
+    if (node->push(mode, frameLevel)) currFrame->push(node);
     if (mode == ROOT) {
         // In AP_main::pop(), root-node has to be restored after everything else has been restored.
         // Move node to bottom of stack now to ensure that.

@@ -1648,7 +1648,7 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
     TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
 
     unsigned long upc = env.get_user_push_counter();
-    unsigned long sl  = env.get_stack_level();
+    unsigned long fl  = env.get_frame_level();
 
     if (restore) {
         env.push();
@@ -1666,7 +1666,7 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
         env.pop();
     }
 
-    TEST_EXPECT_EQUAL(sl, env.get_stack_level());
+    TEST_EXPECT_EQUAL(fl, env.get_frame_level());
     TEST_EXPECT_EQUAL(upc, env.get_user_push_counter());
 
     TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());

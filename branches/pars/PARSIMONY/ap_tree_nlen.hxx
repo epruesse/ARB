@@ -73,7 +73,8 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable
 
     AP_FLOAT mutation_rate;
 
-
+    unsigned long pushed_to_frame; // last frame this node has been pushed onto, 0 = none
+    StateStack    states;          // containes previous states of 'this'
 
     void createListRekUp(AP_CO_LIST *list, int *cn);
     void createListRekSide(AP_CO_LIST *list, int *cn);
@@ -83,7 +84,8 @@ public:
         : AP_tree(troot),
           kernighan(AP_NONE),
           distance(INT_MAX),
-          mutation_rate(0)
+          mutation_rate(0),
+          pushed_to_frame(0)
     {
         edge[0]  = edge[1]  = edge[2]  = NULL;
         index[0] = index[1] = index[2] = 0;
@@ -98,8 +100,9 @@ public:
     bool push(AP_STACK_MODE, unsigned long);      // push state of costs
     void pop(unsigned long expected_stack_level); // pop old tree costs
     void restore(const NodeState& state);         // restore old node state
-    bool clear(unsigned long stack_update, unsigned long user_push_counter);
+    bool clear(unsigned long frame_level, unsigned long user_push_counter);
 
+    unsigned long get_pushed_to_frame() const { return pushed_to_frame; }
 
     virtual AP_UPDATE_FLAGS check_update() OVERRIDE; // disable  load !!!!
 
@@ -146,8 +149,6 @@ public:
     // for crossover creates a list of 3 times the nodes with all
     // ancestors in it
     AP_CO_LIST * createList(int *size);
-
-    StateStack states;  // containes previous states of 'this'
 
     // misc stuff:
 

@@ -230,8 +230,6 @@ public: // @@@ fix public members
     AP_tree_members   gr;
     AP_branch_members br;
 
-    unsigned long stack_level; // @@@ maybe can be moved to AP_tree_nlen
-
     // ------------------
     //      functions
 private:
@@ -265,8 +263,7 @@ private:
 
 public:
     explicit AP_tree(AP_tree_root *troot)
-        : ARB_seqtree(troot),
-          stack_level(0)
+        : ARB_seqtree(troot)
     {
         gr.clear();
         br.clear();
