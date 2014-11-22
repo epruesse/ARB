@@ -73,8 +73,8 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable
 
     AP_FLOAT mutation_rate;
 
-    unsigned long pushed_to_frame; // last frame this node has been pushed onto, 0 = none
-    StateStack    states;          // containes previous states of 'this'
+    Level      pushed_to_frame;    // last frame this node has been pushed onto, 0 = none
+    StateStack states;             // containes previous states of 'this'
 
     void createListRekUp(AP_CO_LIST *list, int *cn);
     void createListRekSide(AP_CO_LIST *list, int *cn);
@@ -97,12 +97,12 @@ public:
     void     unhash_sequence();
     AP_FLOAT costs(char *mutPerSite = NULL);        // cost of a tree (number of changes ..)
 
-    bool push(AP_STACK_MODE, unsigned long);      // push state of costs
-    void pop(unsigned long curr_frameLevel); // pop old tree costs
+    bool push(AP_STACK_MODE, Level frame_level);      // push state of costs
+    void pop(Level curr_frameLevel); // pop old tree costs
     void restore(const NodeState& state);         // restore old node state
-    bool clear(unsigned long frame_level, unsigned long user_push_counter);
+    bool clear(Level frame_level, Level user_push_counter);
 
-    unsigned long get_pushed_to_frame() const { return pushed_to_frame; }
+    Level get_pushed_to_frame() const { return pushed_to_frame; }
     const StateStack& get_states() const { return states; }
 
     virtual AP_UPDATE_FLAGS check_update() OVERRIDE; // disable  load !!!!

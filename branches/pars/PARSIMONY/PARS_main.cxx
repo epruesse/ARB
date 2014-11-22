@@ -1647,8 +1647,8 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
 
     TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
 
-    unsigned long upc = env.get_user_push_counter();
-    unsigned long fl  = env.get_frame_level();
+    Level upc = env.get_user_push_counter();
+    Level fl  = env.get_frame_level();
 
     if (restore) {
         env.push();

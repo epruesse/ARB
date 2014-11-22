@@ -29,7 +29,7 @@ void NodeState::print(int indentLevel) const {
 }
 
 void NodeStack::print(int indentLevel) const {
-    unsigned long i = count_elements();
+    size_t i = count_elements();
     cout << space(indentLevel) << "NodeStack=" << this << "  size " << i << endl;
     for (NodeStack::const_iterator e = begin(); e != end(); ++e, --i) {
         const AP_tree_nlen *node = *e;
@@ -39,7 +39,7 @@ void NodeStack::print(int indentLevel) const {
 }
 
 void StateStack::print(int indentLevel) const {
-    unsigned long i = count_elements();
+    size_t i = count_elements();
     cout << space(indentLevel) << "StateStack=" << this << " size " << i << endl;
     for (StateStack::const_iterator e = begin(); e != end(); ++e) {
         (*e)->print(indentLevel+1);
@@ -47,7 +47,7 @@ void StateStack::print(int indentLevel) const {
 }
 
 void FrameStack::print(int indentLevel) const {
-    unsigned long i = count_elements();
+    size_t i = count_elements();
     cout << space(indentLevel) << "FrameStack=" << this << " size " << i << endl;
     for (FrameStack::const_iterator e = begin(); e != end(); ++e) {
         (*e)->print(indentLevel+1);

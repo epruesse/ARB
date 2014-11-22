@@ -766,7 +766,7 @@ void AP_tree_nlen::unhash_sequence() {
     if (sequence && !is_leaf) sequence->forget_sequence();
 }
 
-bool AP_tree_nlen::clear(unsigned long frame_level, unsigned long user_buffer_count) {
+bool AP_tree_nlen::clear(Level frame_level, Level user_buffer_count) {
     // returns
     // - true           if the first element is removed
     // - false          if it is copied into the previous level
@@ -801,7 +801,7 @@ bool AP_tree_nlen::clear(unsigned long frame_level, unsigned long user_buffer_co
 }
 
 
-bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long frame_level) {
+bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) {
     // according to mode
     // tree_structure or sequence is buffered in the node
 
@@ -906,7 +906,7 @@ void AP_tree_nlen::restore(const NodeState& state) {
     }
 }
 
-void AP_tree_nlen::pop(unsigned long IF_ASSERTION_USED(curr_frameLevel)) { // pop old tree costs
+void AP_tree_nlen::pop(Level IF_ASSERTION_USED(curr_frameLevel)) { // pop old tree costs
     ap_assert(pushed_to_frame == curr_frameLevel); // error in node stack (node wasnt pushed in current frame!)
 
     NodeState *previous = states.pop();

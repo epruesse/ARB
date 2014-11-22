@@ -53,7 +53,7 @@ struct PARS_commands {
 class AP_main : virtual Noncopyable {
     NodeStack             *currFrame;
     FrameStack             frames;
-    unsigned long          frameLevel;
+    Level                  frameLevel;
     AWT_graphic_parsimony *agt;       // provides access to tree!
     StackFrameData         frameData; // saved/restored by push/pop
 
@@ -74,8 +74,8 @@ public:
     DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, agt->get_root_node());
 
     const char *get_aliname() const;
-    unsigned long get_user_push_counter() const { return frameData.user_push_counter; }
-    unsigned long get_frameLevel() const { return frameLevel; }
+    Level get_user_push_counter() const { return frameData.user_push_counter; }
+    Level get_frameLevel() const { return frameLevel; }
 
     GB_ERROR open(const char *db_server);
 

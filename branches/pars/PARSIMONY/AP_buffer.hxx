@@ -112,8 +112,10 @@ enum AP_STACK_MODE {
 class AP_tree;
 class AP_tree_root;
 
+typedef unsigned long Level;
+
 struct NodeState { // buffers previous states of AP_tree_nlen
-    unsigned long  frameNr; // state of AP_tree_nlen::pushed_to_frame at creation time of NodeState
+    Level          frameNr; // state of AP_tree_nlen::pushed_to_frame at creation time of NodeState
     AP_STACK_MODE  mode;
     AP_sequence   *sequence;
     AP_FLOAT       mutation_rate;
@@ -153,9 +155,9 @@ class AP_tree_nlen;
 #endif
 
 struct StackFrameData { // data local to current stack frame
-    unsigned long user_push_counter;
+    Level user_push_counter;
 #if defined(AVOID_MULTI_ROOT_PUSH)
-    bool          root_pushed;
+    bool root_pushed;
     StackFrameData() : user_push_counter(0), root_pushed(false) {}
 #else
     StackFrameData() : user_push_counter(0) {}
