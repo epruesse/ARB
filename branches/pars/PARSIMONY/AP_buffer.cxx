@@ -15,28 +15,44 @@
 
 using namespace std;
 
+
+inline string space(int count) {
+    return string(count, ' ');
+}
+
 #if defined(PROVIDE_PRINT)
-void NodeState::print() const {
-    cout  << "NodeState                      " << this;
-    cout  << "\nfather " << father;
-    cout  << "\nlefts  " << leftson;
-    cout  << "\nrights " << rightson << "\n sequence " << sequence << "\n";
+void NodeState::print(int indentLevel) const {
+    cout  << space(indentLevel) << "NodeState=" << this << endl
+          << space(indentLevel+1) << "father=" << father << " lson=" << leftson << " rson=" << rightson << endl
+          << space(indentLevel+1) << "sequence=" << sequence << endl
+          << space(indentLevel+1) << "frameNr=" << frameNr << " mode=" << mode << endl;
 }
 
-void NodeStack::print() const {
+void NodeStack::print(int indentLevel) const {
     unsigned long i = count_elements();
-    cout << "NodeStack " << this << "  Size " << i << "\n";
+    cout << space(indentLevel) << "NodeStack=" << this << "  size " << i << endl;
     for (NodeStack::const_iterator e = begin(); e != end(); ++e, --i) {
-        const AP_tree *elem = *e;
-        cout << i << " - AP_tree *: " << elem << " \n";
+        const AP_tree_nlen *node = *e;
+        cout << space(indentLevel+1) << '[' << i << "] AP_tree_nlen*=" << node << endl;
+        node->get_states().print(indentLevel+2);
     }
 }
 
-void StateStack::print() const {
+void StateStack::print(int indentLevel) const {
     unsigned long i = count_elements();
-    cout << "StateStack :  Size " << i << "\n";
+    cout << space(indentLevel) << "StateStack=" << this << " size " << i << endl;
     for (StateStack::const_iterator e = begin(); e != end(); ++e) {
-        (*e)->print();
+        (*e)->print(indentLevel+1);
     }
 }
+
+void FrameStack::print(int indentLevel) const {
+    unsigned long i = count_elements();
+    cout << space(indentLevel) << "FrameStack=" << this << " size " << i << endl;
+    for (FrameStack::const_iterator e = begin(); e != end(); ++e) {
+        (*e)->print(indentLevel+1);
+    }
+}
+
 #endif
+

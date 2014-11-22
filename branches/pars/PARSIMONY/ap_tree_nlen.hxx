@@ -103,6 +103,7 @@ public:
     bool clear(unsigned long frame_level, unsigned long user_push_counter);
 
     unsigned long get_pushed_to_frame() const { return pushed_to_frame; }
+    const StateStack& get_states() const { return states; }
 
     virtual AP_UPDATE_FLAGS check_update() OVERRIDE; // disable  load !!!!
 

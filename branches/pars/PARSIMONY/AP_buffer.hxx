@@ -132,13 +132,13 @@ struct NodeState { // buffers previous states of AP_tree_nlen
     AP_tree_edge_data  edgeData[3];
 
 #if defined(PROVIDE_PRINT)
-    void print() const;
+    void print(int indentLevel = 0) const;
 #endif
 };
 
 struct StateStack : public AP_STACK<NodeState> {
 #if defined(PROVIDE_PRINT)
-    void print() const;
+    void print(int indentLevel = 0) const;
 #endif
 };
 
@@ -176,11 +176,15 @@ public:
     AP_tree_nlen *root_at_create; // root at creation time of stack
 #endif
 #if defined(PROVIDE_PRINT)
-    void print() const;
+    void print(int indentLevel = 0) const;
 #endif
 };
 
-typedef AP_STACK<NodeStack> FrameStack;
+struct FrameStack : public AP_STACK<NodeStack> {
+#if defined(PROVIDE_PRINT)
+    void print(int indentLevel = 0) const;
+#endif
+};
 
 #else
 #error AP_buffer.hxx included twice
