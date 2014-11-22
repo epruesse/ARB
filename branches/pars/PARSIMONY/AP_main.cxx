@@ -61,9 +61,8 @@ void AP_main::pop() {
         AP_tree_nlen *node;
         while ((node = currFrame->pop())) {
             if (frameLevel != node->get_pushed_to_frame()) {
-                GB_internal_error("AP_main::pop: Error in stack_level");
-                cout << "Main UPD - node UPD : " << frameLevel << " -- " << node->get_pushed_to_frame() << " \n";
-                return;
+                cerr << "Main frame level=" << frameLevel << " node frame level=" << node->get_pushed_to_frame() << endl;
+                GBK_terminate("AP_main::pop: main/node frame-level inconsistency");
             }
             node->pop(frameLevel);
         }
@@ -135,8 +134,8 @@ void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
     }
 
     if (frameLevel < node->get_pushed_to_frame()) {
-        GB_warning("AP_main::push_node: stack_level < node->stack_level");
-        return;
+        cerr << "Main frame level=" << frameLevel << " node frame level=" << node->get_pushed_to_frame() << endl;
+        GBK_terminate("AP_main::push_node: main/node frame-level inconsistency");
     }
 
     if (mode == ROOT) {
