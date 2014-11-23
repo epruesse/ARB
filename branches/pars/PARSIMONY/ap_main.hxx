@@ -85,6 +85,11 @@ public:
     void pop();
     void push_node(AP_tree_nlen *node, AP_STACK_MODE);
     void clear();               // clears all buffers
+
+#if defined(PROVIDE_PRINT)
+    void print(std::ostream& out);
+    void print2file(const char *file_in_ARBHOME);
+#endif
 };
 
 extern AP_main *ap_main;

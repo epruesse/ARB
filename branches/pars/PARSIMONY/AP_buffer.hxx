@@ -93,6 +93,11 @@ struct AP_STACK : public arb_forward_list<ELEM*> {
 #define PROVIDE_PRINT
 #endif
 
+#if defined(PROVIDE_PRINT)
+#include <ostream>
+#endif
+
+
 class AP_tree_edge; // defined in ap_tree_nlen.hxx
 
 struct AP_tree_edge_data
@@ -134,13 +139,13 @@ struct NodeState { // buffers previous states of AP_tree_nlen
     AP_tree_edge_data  edgeData[3];
 
 #if defined(PROVIDE_PRINT)
-    void print(int indentLevel = 0) const;
+    void print(std::ostream& out, int indentLevel = 0) const;
 #endif
 };
 
 struct StateStack : public AP_STACK<NodeState> {
 #if defined(PROVIDE_PRINT)
-    void print(int indentLevel = 0) const;
+    void print(std::ostream& out, int indentLevel = 0) const;
 #endif
 };
 
@@ -178,13 +183,13 @@ public:
     AP_tree_nlen *root_at_create; // root at creation time of stack
 #endif
 #if defined(PROVIDE_PRINT)
-    void print(int indentLevel = 0) const;
+    void print(std::ostream& out, int indentLevel = 0) const;
 #endif
 };
 
 struct FrameStack : public AP_STACK<NodeStack> {
 #if defined(PROVIDE_PRINT)
-    void print(int indentLevel = 0) const;
+    void print(std::ostream& out, int indentLevel = 0) const;
 #endif
 };
 

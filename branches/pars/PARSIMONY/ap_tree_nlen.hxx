@@ -179,6 +179,9 @@ public:
     bool sequence_state_valid() const;
 #endif // PROVIDE_TREE_STRUCTURE_TESTS
 
+#if defined(PROVIDE_PRINT)
+    void print(std::ostream& out, int indentLevel, const char *label) const;
+#endif
 
     friend      class AP_tree_edge;
     friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);

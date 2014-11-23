@@ -100,6 +100,20 @@ public:
     AWT_graphic_parsimony *graphic_tree() { return agt; }
 
     GBDATA *gbmain() const { return GLOBAL_gb_main; }
+
+#if defined(PROVIDE_PRINT)
+    void dump2file(const char *name) {
+        static int counter = 0;
+
+        if (counter == 0) {
+            system("rm $ARBHOME/[0-9][0-9]_*.log");
+        }
+
+        char *numbered_name = GBS_global_string_copy("%02i_%s.log", ++counter, name);
+        apMain.print2file(numbered_name);
+        free(numbered_name);
+    }
+#endif
 };
 
 

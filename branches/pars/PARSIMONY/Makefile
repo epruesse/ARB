@@ -29,7 +29,9 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 AP_buffer.o: AP_buffer.hxx
+AP_buffer.o: ap_main.hxx
 AP_buffer.o: ap_tree_nlen.hxx
+AP_buffer.o: pars_dtree.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -49,6 +51,15 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+AP_buffer.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_buffer.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+AP_buffer.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AP_buffer.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+AP_buffer.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AP_buffer.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+AP_buffer.o: $(ARBHOME)/INCLUDE/cb.h
+AP_buffer.o: $(ARBHOME)/INCLUDE/cb_base.h
+AP_buffer.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -57,6 +68,8 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/RootedTree.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_buffer.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
+AP_buffer.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AP_main.o: AP_buffer.hxx
 AP_main.o: ap_main.hxx
