@@ -183,7 +183,7 @@ public:
     AP_tree_nlen *root_at_create; // root at creation time of stack
 #endif
 #if defined(PROVIDE_PRINT)
-    void print(std::ostream& out, int indentLevel = 0) const;
+    void print(std::ostream& out, int indentLevel, Level frameNr) const;
 #endif
 };
 

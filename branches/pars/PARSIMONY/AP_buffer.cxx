@@ -31,21 +31,22 @@ void NodeState::print(ostream& out, int indentLevel) const {
         out << " father=" << father << " lson=" << leftson << " rson=" << rightson;
         out << " edges={";
         for (int e = 0; e<3; ++e) {
-            out << " e[" << edgeIndex[e] << "]=" << edge[e];
+            out << " e[" << e << "]=" << edge[e] << "[" << edgeIndex[e] << "]";
         }
         out << " }";
     }
     if (mode & SEQUENCE) {
-        out << " sequence=" << sequence << endl;
+        out << " sequence=" << sequence;
     }
+    out << endl;
 }
 
-void NodeStack::print(ostream& out, int indentLevel) const {
+void NodeStack::print(ostream& out, int indentLevel, Level frameNr) const {
     size_t i = count_elements();
-    out << space(indentLevel) << "NodeStack=" << this << "  size " << i << endl;
+    out << space(indentLevel) << "NodeStack=" << this << "  size " << i << " frameNr=" << frameNr << endl;
     for (NodeStack::const_iterator e = begin(); e != end(); ++e, --i) {
         const AP_tree_nlen *node = *e;
-        out << space(indentLevel+1) << '[' << i << "] AP_tree_nlen*=" << node << endl;
+        out << space(indentLevel+1) << '[' << i << "] AP_tree_nlen*=" << node << " pushed_to_frame=" << node->get_pushed_to_frame() << endl;
         node->get_states().print(out, indentLevel+2);
     }
 }
@@ -54,15 +55,19 @@ void StateStack::print(ostream& out, int indentLevel) const {
     size_t i = count_elements();
     out << space(indentLevel) << "StateStack=" << this << " size " << i << endl;
     for (StateStack::const_iterator e = begin(); e != end(); ++e) {
-        (*e)->print(out, indentLevel+1);
+        const NodeState& state = **e;
+        state.print(out, indentLevel+1);
     }
 }
 
 void FrameStack::print(ostream& out, int indentLevel) const {
     size_t i = count_elements();
     out << space(indentLevel) << "FrameStack=" << this << " size " << i << endl;
-    for (FrameStack::const_iterator e = begin(); e != end(); ++e) {
-        (*e)->print(out, indentLevel+1);
+
+    Level frameNr = i;
+    for (FrameStack::const_iterator e = begin(); e != end(); ++e, --frameNr) {
+        const NodeStack& nodeStack = **e;
+        nodeStack.print(out, indentLevel+1, frameNr);
     }
 }
 
@@ -74,11 +79,22 @@ void AP_tree_nlen::print(std::ostream& out, int indentLevel, const char *label) 
     for (int e = 0; e<3; ++e) {
         out << " edge[" << e << "]=" << edge[e];
         if (edge[e]) {
-            if (edge[e]->isConnectedTo(this)) {
-                out << "->" << edge[e]->otherNode(this);
+            const AP_tree_edge& E = *edge[e];
+            if (E.isConnectedTo(this)) {
+                out << "->" << E.otherNode(this);
             }
             else {
-                out << " (not connected to 'this'!)";
+                out << "(not connected to 'this'!";
+                AP_tree_nlen *son = E.sonNode();
+                if (son) {
+                    AP_tree_nlen *fath = E.otherNode(son);
+                    out << " son=" << son << " father=" << fath;
+                }
+                else {
+                    out << "no son node";
+                }
+
+                out << ')';
             }
         }
     }
@@ -101,7 +117,7 @@ void AP_main::print(ostream& out) {
     out << "AP_main frames:" << endl;
     if (currFrame) {
         out << " currFrame:" << endl;
-        currFrame->print(out, 2);
+        currFrame->print(out, 2, frames.count_elements()+1);
     }
     else {
         out << " no currFrame" << endl;
