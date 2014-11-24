@@ -99,7 +99,7 @@ public:
 
     bool push(AP_STACK_MODE, Level frame_level);      // push state of costs
     void pop(Level curr_frameLevel); // pop old tree costs
-    void restore(const NodeState& state);         // restore old node state
+    void restore(const NodeState& state, bool destructive); // restore old node state
     bool clear(Level frame_level, Level user_push_counter);
 
     Level get_pushed_to_frame() const { return pushed_to_frame; }

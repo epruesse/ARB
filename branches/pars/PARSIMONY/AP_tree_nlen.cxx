@@ -870,7 +870,11 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) {
     return ret;
 }
 
-void AP_tree_nlen::restore(const NodeState& state) {
+void AP_tree_nlen::restore(const NodeState& state, bool destructive) {
+    /*! restore 'this' from NodeState
+     * if 'destructive' is true, NodeState releases its sequence (i.e. can only be used once on each NodeState)
+     * otherwise the sequence gets copied into 'this'
+     */
     AP_STACK_MODE mode = state.mode;
 
     if (mode&STRUCTURE) {
@@ -897,7 +901,12 @@ void AP_tree_nlen::restore(const NodeState& state) {
     }
 
     if (mode&SEQUENCE) {
-        replace_seq(state.sequence);
+        if (destructive) {
+            replace_seq(state.sequence);
+        }
+        else {
+            replace_seq(state.sequence ? state.sequence->dup() : NULL);
+        }
         mutation_rate = state.mutation_rate;
     }
 
@@ -910,7 +919,7 @@ void AP_tree_nlen::pop(Level IF_ASSERTION_USED(curr_frameLevel)) { // pop old tr
     ap_assert(pushed_to_frame == curr_frameLevel); // error in node stack (node wasnt pushed in current frame!)
 
     NodeState *previous = states.pop();
-    restore(*previous);
+    restore(*previous, true);
 
     pushed_to_frame = previous->frameNr;
     delete previous;

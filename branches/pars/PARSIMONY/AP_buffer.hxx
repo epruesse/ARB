@@ -120,7 +120,10 @@ class AP_tree_root;
 typedef unsigned long Level;
 
 struct NodeState { // buffers previous states of AP_tree_nlen
-    Level          frameNr; // state of AP_tree_nlen::pushed_to_frame at creation time of NodeState
+    Level frameNr;          // state of AP_tree_nlen::pushed_to_frame at creation time of NodeState
+
+    // @@@ reorder members and mark what is stored in which mode
+
     AP_STACK_MODE  mode;
     AP_sequence   *sequence;
     AP_FLOAT       mutation_rate;
