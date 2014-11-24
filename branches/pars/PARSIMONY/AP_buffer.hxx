@@ -114,7 +114,7 @@ enum AP_STACK_MODE {
     ROOT      = 7  // old root is buffered (includes BOTH)
 };
 
-class AP_tree;
+class AP_tree_nlen;
 class AP_tree_root;
 
 typedef unsigned long Level;
@@ -125,9 +125,9 @@ struct NodeState { // buffers previous states of AP_tree_nlen
     AP_sequence   *sequence;
     AP_FLOAT       mutation_rate;
     double         leftlen, rightlen;
-    AP_tree       *father; // @@@ fix type (->AP_tree_nlen)
-    AP_tree       *leftson;
-    AP_tree       *rightson;
+    AP_tree_nlen  *father;
+    AP_tree_nlen  *leftson;
+    AP_tree_nlen  *rightson;
     AP_tree_root  *root;
     GBDATA        *gb_node;
 
