@@ -314,7 +314,7 @@ inline void sortOldestFirst(AP_tree_edge **e1, AP_tree_edge **e2, AP_tree_edge *
     sortOldestFirst(e1, e2);
 }
 
-void AP_tree_nlen::initial_insert(AP_tree_nlen *newBrother, AP_tree_root *troot) {
+void AP_tree_nlen::initial_insert(AP_tree_nlen *newBrother, AP_pars_root *troot) {
     // construct initial tree from 'this' and 'newBrother'
     // (both have to be leafs)
 
@@ -449,7 +449,7 @@ void AP_tree_nlen::remove() {
             edgeTo(oldBrother)->unlink();           // LOST_EDGE
 
 #if defined(ASSERTION_USED)
-            AP_tree_root *troot = get_tree_root();
+            AP_pars_root *troot = get_tree_root();
 #endif // ASSERTION_USED
             AP_tree::remove();
             ap_assert(!troot->get_root_node()); // tree should have been removed

@@ -60,7 +60,16 @@ enum AP_BL_MODE {
 
 class AP_tree_edge;
 
-class AP_tree_nlen : public AP_tree { // derived from a Noncopyable
+class AP_pars_root : public AP_tree_root {
+    // @@@ add responsibility for node/edge ressources
+public:
+    AP_pars_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks)
+        : AP_tree_root(aliView, nodeMaker_, seq_proto, add_delete_callbacks)
+    {
+    }
+};
+
+class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ rename -> AP_pars_tree? (later!)
     // tree that is independent of branch lengths and root
 
     AP_TREE_SIDE kernighan;     // Flag zum markieren
@@ -80,7 +89,7 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable
     void createListRekSide(AP_CO_LIST *list, int *cn);
 
 public:
-    explicit AP_tree_nlen(AP_tree_root *troot)
+    explicit AP_tree_nlen(AP_pars_root *troot)
         : AP_tree(troot),
           kernighan(AP_NONE),
           distance(INT_MAX),
@@ -92,7 +101,7 @@ public:
     }
     ~AP_tree_nlen() OVERRIDE {}
 
-    DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree_nlen);
+    DEFINE_TREE_ACCESSORS(AP_pars_root, AP_tree_nlen);
 
     void     unhash_sequence();
     AP_FLOAT costs(char *mutPerSite = NULL);        // cost of a tree (number of changes ..)
@@ -112,7 +121,7 @@ public:
 
     // tree reconstruction methods:
     void insert(AP_tree_nlen *new_brother);
-    void initial_insert(AP_tree_nlen *new_brother, AP_tree_root *troot);
+    void initial_insert(AP_tree_nlen *new_brother, AP_pars_root *troot);
 
     void remove() OVERRIDE;
     void swap_sons() OVERRIDE;
@@ -122,7 +131,7 @@ public:
 
     // overload virtual methods from AP_tree:
     void insert(AP_tree *new_brother) OVERRIDE { insert(DOWNCAST(AP_tree_nlen*, new_brother)); }
-    void initial_insert(AP_tree *new_brother, AP_tree_root *troot) OVERRIDE { initial_insert(DOWNCAST(AP_tree_nlen*, new_brother), troot); }
+    void initial_insert(AP_tree *new_brother, AP_tree_root *troot) OVERRIDE { initial_insert(DOWNCAST(AP_tree_nlen*, new_brother), DOWNCAST(AP_pars_root*, troot)); }
     void moveNextTo(AP_tree *node, AP_FLOAT rel_pos) OVERRIDE { moveNextTo(DOWNCAST(AP_tree_nlen*, node), rel_pos); }
 
     // tree optimization methods:
@@ -189,7 +198,7 @@ public:
 
 struct AP_TreeNlenNodeFactory : public RootedTreeNodeFactory {
     RootedTree *makeNode(TreeRoot *root) const OVERRIDE {
-        return new AP_tree_nlen(DOWNCAST(AP_tree_root*, root));
+        return new AP_tree_nlen(DOWNCAST(AP_pars_root*, root));
     }
 };
 

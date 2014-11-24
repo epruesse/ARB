@@ -54,7 +54,7 @@ GBDATA              *GLOBAL_gb_main = NULL;
 static ArbParsimony *GLOBAL_PARS    = NULL;
 
 inline AWT_graphic_parsimony *global_tree() { return GLOBAL_PARS->get_tree(); }
-inline AP_tree_root *global_tree_root() { return global_tree()->get_tree_root(); }
+inline AP_pars_root *global_tree_root() { return global_tree()->get_tree_root(); }
 
 // waaah more globals :(
 AP_main *ap_main;
@@ -151,7 +151,7 @@ static long transform_gbd_to_leaf(const char *key, long val, void *) {
 #endif
 
     GBDATA       *gb_node = (GBDATA *)val;
-    AP_tree_root *troot   = ap_main->get_tree_root();
+    AP_pars_root *troot   = ap_main->get_tree_root();
     AP_tree_nlen *leaf    = DOWNCAST(AP_tree_nlen*, troot->makeNode());
 
     leaf->forget_origin(); // new leaf is not part of tree yet
@@ -191,7 +191,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
             last_inserted = leaf;
         }
         else {                                      // 2nd leaf -> create initial tree
-            AP_tree_root *troot = ap_main->get_tree_root();
+            AP_pars_root *troot = ap_main->get_tree_root();
 
             leaf->initial_insert(last_inserted, troot);
             last_inserted = NULL;

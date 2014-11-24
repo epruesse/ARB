@@ -115,7 +115,7 @@ enum AP_STACK_MODE {
 };
 
 class AP_tree_nlen;
-class AP_tree_root;
+class AP_pars_root;
 
 typedef unsigned long Level;
 
@@ -131,7 +131,7 @@ struct NodeState { // buffers previous states of AP_tree_nlen
     AP_tree_nlen  *father;
     AP_tree_nlen  *leftson;
     AP_tree_nlen  *rightson;
-    AP_tree_root  *root;
+    AP_pars_root  *root;
     GBDATA        *gb_node;
 
     int distance;                                   // distance to border (pushed with STRUCTURE!)

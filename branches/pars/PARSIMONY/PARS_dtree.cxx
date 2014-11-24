@@ -209,6 +209,11 @@ AWT_graphic_parsimony::AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *g
       parsimony(parsimony_)
 {}
 
+AP_tree_root *AWT_graphic_parsimony::create_tree_root(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs) {
+    return new AP_pars_root(aliview, nodeMaker_, seq_prototype, insert_delete_cbs);
+}
+
+
 void ArbParsimony::generate_tree(WeightedFilter *pars_weighted_filter) {
     AliView     *aliview   = pars_generate_aliview(pars_weighted_filter);
     AP_sequence *seq_templ = 0;
@@ -379,7 +384,6 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
         reorder_tree(BIG_BRANCHES_TO_TOP); // beautify after recalc_branch_lengths
     }
 }
-
 
 // --------------------------------------------------------------------------------
 
@@ -631,7 +635,7 @@ void TEST_tree_remove_add_all() {
 
     TEST_ASSERT_VALID_TREE(root);
 
-    AP_tree_root *troot = leaf[0]->get_tree_root();
+    AP_pars_root *troot = leaf[0]->get_tree_root();
     TEST_REJECT_NULL(troot);
 
     // Note: following loop leaks father nodes and edges

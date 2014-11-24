@@ -219,6 +219,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     bool warn_inappropriate_mode(AWT_COMMAND_MODE mode);
 
+    virtual AP_tree_root *create_tree_root(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs);
+
 protected:
     void store_command_data(AWT_command_data *new_cmd_data) {
         delete cmd_data;

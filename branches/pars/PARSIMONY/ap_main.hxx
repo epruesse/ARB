@@ -69,7 +69,7 @@ public:
 
     void set_tree_root(AWT_graphic_parsimony *agt_);
     AWT_graphic_parsimony *get_graphic_tree() { return agt; }
-    AP_tree_root *get_tree_root() const { return agt->get_tree_root(); }
+    AP_pars_root *get_tree_root() const { return agt->get_tree_root(); }
 
     DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, agt->get_root_node());
 

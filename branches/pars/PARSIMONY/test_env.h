@@ -74,7 +74,7 @@ public:
     }
 
     AP_tree_nlen *root_node() { return apMain.get_root_node(); }
-    AP_tree_root *tree_root() { return agt->get_tree_root(); }
+    AP_pars_root *tree_root() { return agt->get_tree_root(); }
 
     GB_ERROR load_tree(const char *tree_name) {
         GB_transaction ta(GLOBAL_gb_main);      // @@@ do inside AWT_graphic_tree::load?
