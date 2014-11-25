@@ -1,0 +1,152 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	pt_server.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	next_neighbours.hlp
+SUB	next_neighbours_listed.hlp
+SUB	faligner.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Nearest relative search
+
+OCCURRENCE      ARB_NT/Search/More search/Search Next Relatives of SELECTED Species in PT Server
+                ARB_NT/Search/More search/Search Next Relatives of LISTED Species in PT Server
+                ARB_EDIT4/Edit/Integrated Aligners
+
+SECTION         ALGORITHM
+
+                Splits the sequence(s) into short oligos of a given size.
+                These oligos are 'Probe Matched' against the PT_SERVER database.
+                The more hits within the sequence of another species, the more related the other species is.
+
+SECTION         PARAMETERS
+
+                PT-Server
+
+                        Select the PT-Server to search
+
+                Oligo length
+
+                        Length of oligos used to perform probe match against the PT server.
+                        Default is 12.
+
+                Mismatches
+
+                        Number of mismatches allowed per oligo.
+                        Default is 0.
+
+                        Be careful: The search may get incredible slow, when rising the number of mismatches.
+
+                Search mode
+
+                       Complete:        Match all possible oligos
+                       Quick:           Only match oligos starting with 'A'
+
+                       The 'Quick mode' works well for many sequence types and is approx. 4 times
+                       faster than the 'Complete mode'. For some sequence types it completely fails,
+                       e.g. if there are repetitive areas containing many 'AAAAA'
+
+                       Relative and absolute scores will be approx. 1/4 (compared with complete mode) 
+
+                Match score:
+
+                       absolute:        returns the absolute number of hits
+                       relative:        returns the number of hits relative to some maximum (see score-scaling)
+
+                       Absolute hits:
+
+                                Absolute hits are the number of oligos which occur in the source sequence
+                                and in the targeted sequences (i.e. in the relatives of the source sequence).
+
+                                If an oligo occurs multiple times in source or target sequence, it only
+                                creates the minimum number of hits (e.g. if it occurs twice in source and
+                                three times in a target, only two hits will be counted for that target).
+
+                                The theoretical maximum for absolute hits is
+
+                                    maxhits = minimumBasecount(source, target) - oligolen + 1
+
+                                In practice that value is rarely or never reached because several oligos
+                                are skipped, namely all oligos containing IUPAC codes, N's or dots.
+                                The PT-server as well will not report matches hitting ambiguous positions
+                                or sequence endings.
+
+                                The number of absolute hits is as well affected by other parameters:
+
+                                - using quick search will only produces around 25% of the hits as using
+                                  complete search (assuming that 25% of all oligo starts with an 'A')
+                                - searching for complement or reverse will duplicate the number of possible
+                                  hits. Searching for all 4 reverse/complement-combinations will produce
+                                  4 times as many hits as a plain forward search.
+
+                       Relative score:
+
+                                The relative score is absolute hits scaled versus a maximum POC (possible oligo count).
+                                You can specify which maximum POC to use with the selection button next to
+                                the score selection button:
+
+                                        to source POC         maximum possible oligos in source
+                                        to target POC         maximum possible oligos in target
+                                        to minimum POC        minimum possible oligos in source or target
+                                        to maximum POC        maximum possible oligos in source or target
+
+                                'to source POC' will report ~100% score for partial source versus
+                                all full sequences containing the part.
+
+                                'to target POC' will report ~100% score for all partial target sequences
+                                which are contained in the source sequence.
+
+                                'to minimum POC' will report ~100% score if source is part of target or vice versa
+                                (this was the default method in previous ARB versions). 
+
+                                'to maximum POC' will report ~100% score if source and target contain each other, i.e.
+                                if they have an identical oligo distribution. If either source or target is missing
+                                some bases, the score will lower.
+
+
+                                When using 'quick search mode' the max. relative score will be 25% (if 25% of
+                                the oligos start with 'A').
+
+                                When searching for forward and reverse-complement, the theoretical max. relative
+                                score will be 200%. In practice it won't find much hits on the reverse-complement
+                                strand. So you'll get similar scores as without reverse-complement, but especially
+                                if you lower the oligo size, you'll probably reach scores above 100%.
+
+
+                                The EDIT4 aligner currently always uses 'to minimum POC'. 
+
+
+                Complement:
+
+                       forward:             Match only forward oligos
+                       reverse:             Match only reverse oligos
+                       complement:          Match only complement oligos
+                       reverse-complement:  Match only reverse-complement oligos
+
+                       The remaining options are combinations of the above.
+
+                       The combinations will affect the score, especially for shorter oligos.
+                       Please read the section about 'Relative score' above to avoid confusion.
+
+                       Note: Not available for EDIT4 aligner.
+
+                Target range:
+
+                       Restrict the alignment range in which oligos may match.
+                       Hits outside that range will not be considered.
+
+NOTES           Special effort is taken to eliminate multi-matches, which were ignored in past versions.
+                That resulted in relative scores far beyond 100%, especially for small oligo-lengths.
+
+                Now e.g. an oligo occurring 3 times in the source sequence will give atmost 3 absolute
+                hitpoints to any target sequence - even if it occurs there far more often.
+
+EXAMPLES	None
+
+WARNINGS	Use mismatches with care!
+
+BUGS		Relative score is not scaled to the maximum possible hits in the target range.
