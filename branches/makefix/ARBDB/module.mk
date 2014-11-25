@@ -20,7 +20,7 @@ xdb_toolkit_SRCS := adChangeKey.cxx adRevCompl.cxx aditem.cxx adname.cxx
 xdb_toolkit_SRCS += adseqcompr.cxx adtables.cxx adtools.cxx adtree.cxx 
 xdb_toolkit_SRCS += adali.cxx
 xdb_other_SRCS := arbdbpp.cxx ad_config.cxx
-xdb_normal_SRCS := $(call exclude-all,$(xdb_toolkit_SRCS) $(xdb_other_SRCS),$(notdir $(wildcard $(dir)*.cxx)))
+xdb_normal_SRCS := $(filter-out $(xdb_toolkit_SRCS) $(xdb_other_SRCS),$(notdir $(wildcard $(dir)*.cxx)))
 
 # six interface header files:
 gb_prot_h_MKPT_NAME :=Internal database interface
