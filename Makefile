@@ -64,6 +64,9 @@ ifndef ARB_64
 	ARB_64=1#default to 64bit
 endif
 
+CXX := g++
+
+
 # compiler settings:
 ifneq ($(CC),use__A_CC__instead_of__CC)
 
