@@ -1951,7 +1951,7 @@ void TEST_optimizations_some() {
     const unsigned seed           = 1417001558;
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 40073);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 40074);
 
 #if 0
     // @@@ test results changed by adding the MOD_OPTI_GLOBAL test above (rel #620)
@@ -1983,7 +1983,7 @@ void TEST_optimizations_all() {
     const unsigned seed           = 1417001558;
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 40073); // @@@ there is no difference in number of combines between TEST_optimizations_some and TEST_optimizations_all. why not?
+    TEST_EXPECT_EQUAL(env.combines_performed(), 40074); // @@@ there is no difference in number of combines between TEST_optimizations_some and TEST_optimizations_all. why not?
 }
 
 void TEST_prot_tree_modifications() {
@@ -2043,7 +2043,7 @@ void TEST_prot_tree_modifications() {
             TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114, env)); // also add StrCoelP
             TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114+7, env)); // also add StrCoelP // @@@ same misplacement as above
-            TEST_EXPECT_EQUAL(env.combines_performed(), 3);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 4);
             env.pop();
         }
 
