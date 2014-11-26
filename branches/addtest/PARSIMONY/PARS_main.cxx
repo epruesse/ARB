@@ -1854,7 +1854,7 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 591);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI // @@@ fails assertion
-    TEST_EXPECT_EQUAL(env.combines_performed(), 930);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 925);
 
     // @@@ test optimize etc.
 
@@ -1875,7 +1875,7 @@ void TEST_nucl_tree_modifications() {
             // CloButyr and CloButy2 do not differ in seq-range of partial -> any of both may be chosen as brother.
             // behavior should be changed with #605
             TEST_EXPECTATION(addingPartialResultsIn(CloButyP, "CloButyr;CloButy2", "nucl-addPart-CloButyP", PARSIMONY_ORG, env));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 11);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             env.pop();
         }
 
@@ -1951,7 +1951,7 @@ void TEST_optimizations_some() {
     const unsigned seed           = 1417001558;
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 60965);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 40073);
 
 #if 0
     // @@@ test results changed by adding the MOD_OPTI_GLOBAL test above (rel #620)
@@ -1983,7 +1983,7 @@ void TEST_optimizations_all() {
     const unsigned seed           = 1417001558;
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 60965); // @@@ there is no difference in number of combines between TEST_optimizations_some and TEST_optimizations_all. why not?
+    TEST_EXPECT_EQUAL(env.combines_performed(), 40073); // @@@ there is no difference in number of combines between TEST_optimizations_some and TEST_optimizations_all. why not?
 }
 
 void TEST_prot_tree_modifications() {
@@ -2012,7 +2012,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG+1,   env, true)); // test quick-add // @@@ fails assertion
     TEST_EXPECT_EQUAL(env.combines_performed(), 302);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI // @@@ fails assertion
-    TEST_EXPECT_EQUAL(env.combines_performed(), 472);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 471);
 
     // @@@ test optimize etc.
 
@@ -2043,7 +2043,7 @@ void TEST_prot_tree_modifications() {
             TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114, env)); // also add StrCoelP
             TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+7, env)); // also add StrCoelP // @@@ same misplacement as above
-            TEST_EXPECT_EQUAL(env.combines_performed(), 4);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 3);
             env.pop();
         }
 
@@ -2058,7 +2058,7 @@ void TEST_prot_tree_modifications() {
             }
 
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG+7, env, false));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 178);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 177);
             TEST_EXPECT_EQUAL(is_partial(MucRaceP), 0); // check CorGlutP was added as full sequence
             // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "MucRacem", env)); // partial created from MucRacem gets inserted next to MucRacem
             TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "AbdGlauc", env)); // partial created from MucRacem gets inserted next to MucRacem // @@@ misplacement if added as full sequence (as partial placement is ok)
@@ -2125,7 +2125,7 @@ void TEST_broken_pops() {
 
         if (calcCostsBetween) {
             TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
-            TEST_EXPECT_EQUAL(env.combines_performed(), 3);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 2);
         }
 
         env.root_node()->findLeafNamed("CloButyr")->set_root();
