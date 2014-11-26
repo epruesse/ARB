@@ -1833,7 +1833,9 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
 
     const int PARSIMONY_ORG = 301;
+    TEST_EXPECT_EQUAL(env.combines_performed(), 0);
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 14);
 
     // Note: following code leaks father nodes and edges
     // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_nucl_tree_modifications
@@ -1845,8 +1847,13 @@ void TEST_nucl_tree_modifications() {
     // diff initial->add-NNI:   http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-add-NNI.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "nucl-removed",   PARSIMONY_ORG-93, env, true)); // test remove-marked only (same code as part of nt_reAdd)
+    TEST_EXPECT_EQUAL(env.combines_performed(), 3);
+
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add // @@@ fails assertion
+    TEST_EXPECT_EQUAL(env.combines_performed(), 591);
+
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI // @@@ fails assertion
+    TEST_EXPECT_EQUAL(env.combines_performed(), 930);
 
     // @@@ test optimize etc.
 
@@ -1867,13 +1874,16 @@ void TEST_nucl_tree_modifications() {
             // CloButyr and CloButy2 do not differ in seq-range of partial -> any of both may be chosen as brother.
             // behavior should be changed with #605
             TEST_EXPECTATION(addingPartialResultsIn(CloButyP, "CloButyr;CloButy2", "nucl-addPart-CloButyP", PARSIMONY_ORG, env));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 11);
             env.pop();
         }
 
         {
             env.push();
             TEST_EXPECTATION(addingPartialResultsIn(CorGlutP, "CorGluta",          "nucl-addPart-CorGlutP",          PARSIMONY_ORG, env)); // add CorGlutP
+            TEST_EXPECT_EQUAL(env.combines_performed(), 5); // @@@ partial-add should not perform combines at all
             TEST_EXPECTATION(addingPartialResultsIn(CloButyP, "CloButyr;CloButy2", "nucl-addPart-CorGlutP-CloButyP", PARSIMONY_ORG, env)); // also add CloButyP
+            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             env.pop();
         }
 
@@ -1888,18 +1898,21 @@ void TEST_nucl_tree_modifications() {
             }
 
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "nucl-addPartialAsFull-CorGlutP", PARSIMONY_ORG, env, false));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 254);
             TEST_EXPECT_EQUAL(is_partial(CorGlutP), 0); // check CorGlutP was added as full sequence
             TEST_EXPECTATION(addedAsBrotherOf("CorGlutP", "CorGluta", env)); // partial created from CorGluta gets inserted next to CorGluta
 
             // add CloButyP as partial.
             // as expected it is placed next to matching full sequences (does not differ in partial range)
             TEST_EXPECTATION(addingPartialResultsIn(CloButyP, "CloButyr;CloButy2", NULL, PARSIMONY_ORG, env));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
 
             // CloButyM differs slightly in overlap with CloButyr/CloButy2, but has no overlap with CorGlutP
             // reproduces bug described in #609
             TEST_EXPECTATION(addingPartialResultsIn(CloButyM, "CorGlutP", "nucl-addPart-bug609",
                                                     PARSIMONY_ORG+9, // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS 
                                                     env));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             env.pop();
         }
     }
@@ -1922,18 +1935,22 @@ void TEST_optimizations_some() {
 
     const int PARSIMONY_ORG = 301;
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 14);
 
     // test branchlength calculation
     // (optimizations below implicitely recalculate branchlengths)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
+    TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
     // test optimize (some)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
+    TEST_EXPECT_EQUAL(env.combines_performed(), 581);
 
     const int      PARSIMONY_OPTI = 272; // may depend on seed
     const unsigned seed           = 1417001558;
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
+    TEST_EXPECT_EQUAL(env.combines_performed(), 60965);
 
 #if 0
     // @@@ test results changed by adding the MOD_OPTI_GLOBAL test above (rel #620)
@@ -1954,17 +1971,18 @@ void TEST_optimizations_all() {
 
     const int PARSIMONY_ORG = 301;
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 14);
 
     // test optimize (all)
     mark_all(env.gbmain());
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
+    TEST_EXPECT_EQUAL(env.combines_performed(), 581);
 
     const int      PARSIMONY_OPTI = 272; // may depend on seed
     const unsigned seed           = 1417001558;
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-
-    // @@@ there is no difference in number of combines (see log) between TEST_optimizations_some and TEST_optimizations_all. why not?
+    TEST_EXPECT_EQUAL(env.combines_performed(), 60965); // @@@ there is no difference in number of combines between TEST_optimizations_some and TEST_optimizations_all. why not?
 }
 
 void TEST_prot_tree_modifications() {
@@ -1976,6 +1994,7 @@ void TEST_prot_tree_modifications() {
 
     const int PARSIMONY_ORG = 917;
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 10);
 
     // @@@ opposed to TEST_nucl_tree_modifications valgrind does not report leaks here. why?
 
@@ -1988,8 +2007,11 @@ void TEST_prot_tree_modifications() {
     // Note: comparing these two diffs also demonstrates why quick-adding w/o NNI suffers
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-123, env, true)); // test remove-marked only (same code as part of nt_reAdd)
+    TEST_EXPECT_EQUAL(env.combines_performed(), 5);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG+1,   env, true)); // test quick-add // @@@ fails assertion
+    TEST_EXPECT_EQUAL(env.combines_performed(), 302);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI // @@@ fails assertion
+    TEST_EXPECT_EQUAL(env.combines_performed(), 472);
 
     // @@@ test optimize etc.
 
@@ -2010,14 +2032,17 @@ void TEST_prot_tree_modifications() {
             // behavior should be changed with #605
             // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-StrCoelP", PARSIMONY_ORG+114, env));
             TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-StrCoelP", PARSIMONY_ORG+114, env)); // @@@ inserted completely wrong?
+            TEST_EXPECT_EQUAL(env.combines_performed(), 4);
             env.pop();
         }
 
         {
             env.push();
             TEST_EXPECTATION(addingPartialResultsIn(MucRaceP, "MucRacem",          "prot-addPart-MucRaceP",          PARSIMONY_ORG+7, env)); // add MucRaceP
+            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114, env)); // also add StrCoelP
             TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114+7, env)); // also add StrCoelP // @@@ same misplacement as above
+            TEST_EXPECT_EQUAL(env.combines_performed(), 4);
             env.pop();
         }
 
@@ -2032,6 +2057,7 @@ void TEST_prot_tree_modifications() {
             }
 
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG+7, env, false));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 178);
             TEST_EXPECT_EQUAL(is_partial(MucRaceP), 0); // check CorGlutP was added as full sequence
             // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "MucRacem", env)); // partial created from MucRacem gets inserted next to MucRacem
             TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "AbdGlauc", env)); // partial created from MucRacem gets inserted next to MucRacem // @@@ misplacement if added as full sequence (as partial placement is ok)
@@ -2040,6 +2066,7 @@ void TEST_prot_tree_modifications() {
             // as expected it is placed next to matching full sequences (does not differ in partial range)
             // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", NULL, PARSIMONY_ORG, env));
             TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "MucRaceP", NULL, PARSIMONY_ORG+114+2, env)); // @@@ same position as when adding it partial
+            TEST_EXPECT_EQUAL(env.combines_performed(), 5);
 
             // StrCoelM differs slightly in overlap with StrCoel9/StrRamo3, but has no overlap with MucRaceP
             // reproduces bug described in #609
@@ -2047,6 +2074,7 @@ void TEST_prot_tree_modifications() {
             TEST_EXPECTATION(addingPartialResultsIn(StrCoelM, "StrCoelP", "prot-addPart-bug609",
                                                     PARSIMONY_ORG+114+3, // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
                                                     env));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             env.pop();
         }
     }

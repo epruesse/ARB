@@ -41,6 +41,7 @@ class PARSIMONY_testenv : virtual Noncopyable {
     AP_main            apMain;
     fake_agt<SEQTYPE> *agt;
     ArbParsimony       parsimony;
+    long               prev_combine_count;
 
     void common_init(const char *dbname) {
         apMain.open(dbname);
@@ -50,6 +51,8 @@ class PARSIMONY_testenv : virtual Noncopyable {
 
         agt = new fake_agt<SEQTYPE>(parsimony);
         parsimony.set_tree(agt);
+
+        prev_combine_count = AP_sequence::combine_count();
     }
 
 public:
@@ -69,6 +72,8 @@ public:
         ap_main = NULL;
 
         delete agt;
+
+        ap_assert(prev_combine_count == AP_sequence::combine_count()); // please add tests documenting combines_performed()
     }
 
     AP_tree_nlen *root_node() { return apMain.get_root_node(); }
@@ -96,6 +101,12 @@ public:
     AWT_graphic_parsimony *graphic_tree() { return agt; }
 
     GBDATA *gbmain() const { return ap_main->get_gb_main(); }
+
+    long combines_performed() {
+        long performed     = AP_sequence::combine_count()-prev_combine_count;
+        prev_combine_count = AP_sequence::combine_count();
+        return performed;
+    }
 };
 
 

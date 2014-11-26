@@ -602,11 +602,15 @@ void TEST_calc_bootstraps() {
 
         root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_origi_topo);
 
+        TEST_EXPECT_EQUAL(env.combines_performed(), 0);
         root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_limit_topo);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 214);
         root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_estim_topo);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 200);
 
         TEST_EXPECT_EQUAL(env.root_node(), root);
     }
+
 }
 
 void TEST_tree_remove_add_all() {
