@@ -56,14 +56,17 @@ class AP_main : virtual Noncopyable {
     Level                  frameLevel;
     AWT_graphic_parsimony *agt;       // provides access to tree!
     StackFrameData         frameData; // saved/restored by push/pop
+    GBDATA                *gb_main;
 
 public:
     AP_main()
         : currFrame(NULL),
           frameLevel(0),
-          agt(NULL)
+          agt(NULL),
+          gb_main(NULL)
     {}
     ~AP_main() {
+        if (gb_main) GB_close(gb_main);
         delete currFrame;
     }
 
@@ -73,6 +76,10 @@ public:
 
     DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, agt->get_root_node());
 
+    GBDATA *get_gb_main() const {
+        ap_assert(gb_main); // you need to call open() before you can use get_gb_main()
+        return gb_main;
+    }
     const char *get_aliname() const;
     Level get_user_push_counter() const { return frameData.user_push_counter; }
     Level get_frameLevel() const { return frameLevel; }
@@ -92,8 +99,7 @@ public:
 #endif
 };
 
-extern AP_main *ap_main;
-extern GBDATA  *GLOBAL_gb_main;
+extern AP_main *ap_main; // @@@ elim
 
 inline AP_tree_nlen *rootNode() {
     return ap_main->get_root_node();

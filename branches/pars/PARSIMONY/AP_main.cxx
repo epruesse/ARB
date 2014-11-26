@@ -18,9 +18,9 @@ using namespace std;
 //      AP_main
 
 GB_ERROR AP_main::open(const char *db_server) {
-    GB_ERROR error             = 0;
-    GLOBAL_gb_main             = GB_open(db_server, "rwt");
-    if (!GLOBAL_gb_main) error = GB_await_error();
+    GB_ERROR error      = 0;
+    gb_main             = GB_open(db_server, "rwt");
+    if (!gb_main) error = GB_await_error();
     return error;
 }
 
@@ -112,9 +112,9 @@ void AP_main::clear() {
             if (node->clear(frameLevel, frameData.user_push_counter) != true) {
                 // node is not cleared because buffered in previous node stack
                 // node is instead copied in previous level
-                UNCOVERED();
+                // UNCOVERED();
                 if (next_frame) {
-                    UNCOVERED();
+                    // UNCOVERED();
                     next_frame->push(node);
                 }
             }
