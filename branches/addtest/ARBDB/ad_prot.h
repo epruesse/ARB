@@ -181,6 +181,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
 
 /* admath.cxx */
 double GB_log_fak(int n);
+void GB_random_seed(unsigned seed);
 int GB_random(int range);
 
 /* adoptimize.cxx */
