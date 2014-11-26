@@ -74,9 +74,9 @@ void AP_ERR::set_mode(int i) {
 //      AP_main
 
 GB_ERROR AP_main::open(const char *db_server) {
-    GB_ERROR error             = 0;
-    GLOBAL_gb_main             = GB_open(db_server, "rwt");
-    if (!GLOBAL_gb_main) error = GB_await_error();
+    GB_ERROR error      = 0;
+    gb_main             = GB_open(db_server, "rwt");
+    if (!gb_main) error = GB_await_error();
     return error;
 }
 

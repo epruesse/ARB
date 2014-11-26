@@ -21,13 +21,11 @@ class WeightedFilter;
 class AP_tree_nlen;
 
 class ArbParsimony {
-    AW_root               *awr;
     AWT_graphic_parsimony *tree;
 
 public:
-    ArbParsimony(AW_root *awroot) : awr(awroot), tree(NULL) {}
+    ArbParsimony() : tree(NULL) {}
 
-    AW_root *get_awroot() const { return awr; }
     AWT_graphic_parsimony *get_tree() const { return tree; }
 
     DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, get_tree()->get_root_node());
