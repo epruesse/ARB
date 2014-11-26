@@ -2090,6 +2090,7 @@ void TEST_broken_pops() {
 
     const int PARSIMONY_ORG = 301;
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 14);
 
     TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
 
@@ -2112,6 +2113,7 @@ void TEST_broken_pops() {
     }
 
     // test set root to CytAquat + set root to CloButyr + pop (fails)
+    TEST_EXPECT_EQUAL(env.combines_performed(), 0);
     for (int calcCostsBetween = 0; calcCostsBetween<2; ++calcCostsBetween) {
         TEST_ANNOTATE(GBS_global_string("calcCostsBetween=%i", calcCostsBetween));
 
@@ -2121,12 +2123,16 @@ void TEST_broken_pops() {
 
         env.root_node()->findLeafNamed("CytAquat")->set_root();
 
-        if (calcCostsBetween) TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+        if (calcCostsBetween) {
+            TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 3);
+        }
 
         env.root_node()->findLeafNamed("CloButyr")->set_root();
 
         TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
         TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 6);
 
         env.pop();
 
@@ -2135,9 +2141,8 @@ void TEST_broken_pops() {
         // (move root, modify, check costs, pop if no improvement)
 
         TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 0);
     }
-
-    TEST_EXPECT_EQUAL(env.combines_performed(), 29); // @@@ distribute
 }
 
 #endif // UNIT_TESTS
