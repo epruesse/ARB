@@ -519,20 +519,20 @@ void AP_tree_nlen::set_root() {
     // from this to root buffer the nodes
     ap_main->push_node(this,  STRUCTURE);
 
-    AP_tree_nlen *old_brother = 0;
+    AP_tree_nlen *son_of_root = 0; // in previous topology 'this' was contained inside 'son_of_root'
     AP_tree_nlen *old_root    = 0;
     {
         AP_tree_nlen *pntr;
         for (pntr = get_father(); pntr->father; pntr = pntr->get_father()) {
             ap_main->push_node(pntr, BOTH);
-            old_brother = pntr;
+            son_of_root = pntr;
         }
         old_root = pntr;
     }
 
-    if (old_brother) {
-        old_brother = old_brother->get_brother();
-        ap_main->push_node(old_brother,  STRUCTURE);
+    if (son_of_root) {
+        AP_tree_nlen *other_son_of_root = son_of_root->get_brother();
+        ap_main->push_node(other_son_of_root, STRUCTURE);
     }
 
     ap_main->push_node(old_root, ROOT);
@@ -763,7 +763,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
 
     if (is_leaf && !(STRUCTURE & mode)) return false;    // tips push only structure
 
-    if (this->stack_level == datum) {
+    if (this->stack_level == datum) { // node already has a push (at current stack-level)
         AP_tree_buffer *last_buffer = stack.get_first();
         AP_sequence    *sequence    = get_seq();
 
@@ -774,7 +774,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
         new_buff = last_buffer;
         ret = false;
     }
-    else {
+    else { // first push for this node (at current stack-level)
         new_buff           = new AP_tree_buffer;
         new_buff->count    = 1;
         new_buff->controll = stack_level;

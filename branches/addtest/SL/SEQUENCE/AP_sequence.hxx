@@ -80,14 +80,7 @@ public:
     }
 
     bool hasSequence() const { return has_sequence; }
-    void forget_sequence() {
-        if (has_sequence) {
-            unset();
-            update       = 0;
-            has_sequence = false;
-            cached_wbc   = -1.0;
-        }
-    }
+    void forget_sequence() { if (has_sequence) unset(); }
 
     AP_FLOAT weighted_base_count() const { // returns < 0.0 if no sequence!
         if (cached_wbc<0.0) cached_wbc = count_weighted_bases();
