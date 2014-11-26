@@ -848,10 +848,14 @@ static void NT_reAdd_quick  (UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_reAdd_
 
 // --------------------------------------------------------------------------------
 
-static void NT_branch_lengths(AW_window *, AWT_canvas *ntw) {
+static void calc_branchlengths(AWT_graphic_parsimony *agt) {
     arb_progress progress("Calculating Branch Lengths");
     rootEdge()->calc_branchlengths();
-    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
+    agt->reorder_tree(BIG_BRANCHES_TO_TOP);
+}
+
+static void NT_calc_branch_lengths(AW_window *, AWT_canvas *ntw) {
+    calc_branchlengths(AWT_TREE_PARS(ntw));
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -874,7 +878,7 @@ static void NT_optimize(AW_window *, AWT_canvas *ntw) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
+static void recursiveNNI(AWT_graphic_tree *agt) {
     arb_progress progress("Recursive NNI");
     AP_FLOAT orgPars = rootNode()->costs();
     AP_FLOAT prevPars = orgPars;
@@ -886,8 +890,12 @@ static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
         prevPars = currPars;
     }
     rootEdge()->calc_branchlengths();
-    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
+    agt->reorder_tree(BIG_BRANCHES_TO_TOP);
     rootNode()->compute_tree();
+}
+
+static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
+    recursiveNNI(AWT_TREE(ntw));
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -1149,7 +1157,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     if (cmds->add_marked)           NT_add_quick(NULL, ntw, NT_ADD_MARKED);
     if (cmds->add_selected)         NT_add_quick(NULL, ntw, NT_ADD_SELECTED);
-    if (cmds->calc_branch_lengths)  NT_branch_lengths(awm, ntw);
+    if (cmds->calc_branch_lengths)  NT_calc_branch_lengths(awm, ntw);
     if (cmds->calc_bootstrap)       NT_bootstrap(awm, ntw, 0);
     if (cmds->quit)                 pars_exit(awm);
 
@@ -1215,7 +1223,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->insert_menu_topic("reset", "Reset optimal parsimony", "s", "", AWM_ALL, makeWindowCallback(pars_reset_optimal_parsimony, ntw));
         awm->sep______________();
         awm->insert_menu_topic("beautify_tree",       "Beautify Tree",            "B", "resorttree.hlp",       AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_TOP));
-        awm->insert_menu_topic("calc_branch_lengths", "Calculate Branch Lengths", "L", "pa_branchlengths.hlp", AWM_ALL, makeWindowCallback(NT_branch_lengths, ntw));
+        awm->insert_menu_topic("calc_branch_lengths", "Calculate Branch Lengths", "L", "pa_branchlengths.hlp", AWM_ALL, makeWindowCallback(NT_calc_branch_lengths, ntw));
         awm->sep______________();
         awm->insert_menu_topic("calc_upper_bootstrap_indep", "Calculate Upper Bootstrap Limit (dependent NNI)",   "d", "pa_bootstrap.hlp", AWM_ALL, makeWindowCallback(NT_bootstrap,        ntw, false));
         awm->insert_menu_topic("calc_upper_bootstrap_dep",   "Calculate Upper Bootstrap Limit (independent NNI)", "i", "pa_bootstrap.hlp", AWM_ALL, makeWindowCallback(NT_bootstrap,        ntw, true));
@@ -1613,9 +1621,14 @@ arb_test::match_expectation topologyEquals(AP_tree_nlen *root_node, const char *
 
 enum TopoMod {
     MOD_REMOVE_MARKED,
+
     MOD_QUICK_ADD,
     MOD_ADD_NNI,
+
     MOD_ADD_PARTIAL,
+
+    MOD_CALC_LENS,
+    MOD_OPTI_NNI,
 };
 
 template <typename SEQ>
@@ -1636,6 +1649,16 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
         case MOD_ADD_PARTIAL:
             nt_add_partial(env.graphic_tree());
             break;
+
+        case MOD_CALC_LENS:
+            calc_branchlengths(env.graphic_tree());
+            break;
+
+        case MOD_OPTI_NNI:
+            recursiveNNI(env.graphic_tree());
+            break;
+
+
     }
 }
 
@@ -1687,6 +1710,10 @@ inline void mark_only(GBDATA *gb_species) {
     GB_transaction  ta(gb_main);
     GBT_mark_all(gb_main, 0);
     GB_write_flag(gb_species, 1);
+}
+inline void mark_all(GBDATA *gb_main) {
+    GB_transaction  ta(gb_main);
+    GBT_mark_all(gb_main, 0);
 }
 
 inline int is_partial(GBDATA *gb_species) {
@@ -1860,6 +1887,36 @@ void TEST_nucl_tree_modifications() {
             env.pop();
         }
     }
+
+#if 0
+    // @@@ crashes here with missing sequence (caused by pop()), but works below in TEST_optimizations
+
+    // test branchlength calculation
+    // (optimizations below implicitely recalculate branchlengths)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG-17, env, false));
+#endif
+}
+
+void TEST_optimizations() {
+    const char *aliname = "ali_5s";
+
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
+    TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
+
+    const int PARSIMONY_ORG = 301;
+    TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+    // test branchlength calculation
+    // (optimizations below implicitely recalculate branchlengths)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
+
+    // test optimize (some)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
+
+    // test optimize (all)
+    mark_all(env.gbmain());
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
 }
 
 void TEST_prot_tree_modifications() {
