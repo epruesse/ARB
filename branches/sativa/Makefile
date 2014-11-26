@@ -28,7 +28,11 @@
 # COVERAGE=0/1/2        compile in gcov support (useful together with UNIT_TESTS=1)
 #                       0=no, 1+2=compile in, 1=show
 # STABS=0/1             force stabs format? (0 = "use default format")
-# SANITIZE=0/1          use AddressSanitizer? (defaults to 0)
+# SANITIZE=0/#/all      use Sanitizer? (defaults to 0,
+#                                       1=AddressSanitizer+LeakSanitizer,
+#                                       2=UndefinedBehaviorSanitizer,
+#                                       combine bit-values to activate multiple Sanitizers,
+#                                       specify 'all' to activate all)
 # SHOWTODO=0/1          activate TODO-warnings? (defaults to 0, except for ralf)
 #
 # -----------------------------------------------------
@@ -89,13 +93,13 @@ READLINK:=$(ARBHOME)/SH/arb_readlink
 
 # supported gcc versions:
 ALLOWED_gcc_VERSIONS=\
-	4.3.1 4.3.2 4.3.3 4.3.4 \
-	4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
-	      4.5.2 \
-	4.6.1 4.6.2 4.6.3 \
-	4.7.1 4.7.2 4.7.3 \
-	4.8.0 4.8.1 4.8.2 4.8.3 \
-	4.9.0 4.9.1 \
+        4.3.1 4.3.2 4.3.3 4.3.4 \
+        4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
+              4.5.2 \
+        4.6.1 4.6.2 4.6.3 \
+        4.7.1 4.7.2 4.7.3 4.7.4 \
+  4.8.0 4.8.1 4.8.2 4.8.3 \
+  4.9.0 4.9.1 4.9.2 \
 
 # supported clang versions:
 ALLOWED_clang_VERSIONS=\
@@ -231,6 +235,12 @@ ifeq ($(DARWIN),0)
 	clflags += -Wl,-g
 endif
 
+ ifeq ($(DEBUG_GRAPHICS),1)
+	dflags += -DDEBUG_GRAPHICS
+ endif
+
+endif # DEBUG only
+
 # control how much you get spammed
 # (please do not change default in SVN, use developer specific setting as below)
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
@@ -243,7 +253,6 @@ endif
 ifeq ($(DEVELOPER),ELMAR)
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --only-first-error
 endif
-
 
 # Enable extra warnings
 	extended_warnings :=
@@ -259,7 +268,17 @@ endif
 
 # ------- above only warnings available in 3.0
 
- ifneq ('$(COMPILER_VERSION)','4.7.3') # g++ crashes on GenomeImport.cxx when -Weffc++ is active (bug reported)
+WEFFC_BROKEN:=0
+ ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
+  ifneq ('$(USE_GCC_48_OR_HIGHER)','yes')
+#  -Weffc++ broken in 4.7.x series
+# gcc 4.7.3 crashes on GenomeImport.cxx when -Weffc++ is active
+# (bug reported https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56923; apparently wont be fixed for 4.7-series)
+# gcc 4.7.4 crashes on DBwriter.cxx when -Weffc++ is active
+   WEFFC_BROKEN:=1
+  endif
+ endif
+ ifeq ('$(WEFFC_BROKEN)','0')
 	extended_cpp_warnings += -Weffc++# gcc 3.0.1
  endif
 	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
@@ -267,6 +286,10 @@ endif
 	extended_cpp_warnings += -Winit-self# gcc 3.4.0
 	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
+ ifeq ($(DEBUG),1)
+#       turn off -Wmaybe-uninitialized in debug mode (gets activated with -Wextra). too many bogus warnings
+	extended_cpp_warnings += -Wno-maybe-uninitialized
+ endif
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
  endif
@@ -278,11 +301,6 @@ endif
 	extended_cpp_warnings += -Wunused-local-typedefs# available since gcc 4.7 (but fails for each STATIC_ASSERT, so enable only for Cxx11)
  endif
 
- ifeq ($(DEBUG_GRAPHICS),1)
-	dflags += -DDEBUG_GRAPHICS
- endif
-endif
-
 #---------------------- turn off clang bogus warnings
 
 ifeq ($(USE_CLANG),1)
@@ -292,14 +310,6 @@ ifeq ($(USE_CLANG),1)
 # -Wstring-plus-int warns about common ARB coding practice
 # -Wgnu-static-float-init warns about accepted GNU extension
 	extended_cpp_warnings += -Wno-mismatched-tags -Wno-char-subscripts -Wno-unused-private-field -Wno-string-plus-int -Wno-gnu-static-float-init
-endif
-
-ifeq ($(USE_CLANG),0)
-# TEMPORARY WORKAROUND for linker issues with launchpad binutils
-# code was added to ld to check for overlapping FDEs. Since ARB
-# worked before, we want this not to fail for the moment.
-# FIXME: remove this!
-        clflags += -Wl,-noinhibit-exec
 endif
 
 #---------------------- developer
@@ -321,10 +331,60 @@ ifeq ($(SHOWTODO),1)
 	dflags += -DWARN_TODO# activate "TODO" warnings
 endif
 
-#---------------------- activate AddressSanitizer?
+#---------------------- activate Sanitizers?
+
+ASAN_OPTIONS:=handle_segv=0:color=0
+ASAN_OPTIONS+=:detect_leaks=1 # comment-out to disable leak-detection
+ASAN_OPTIONS+=:check_initialization_order=1
+
+# suppressions: SOURCE_TOOLS/arb.leaksan.supp
+LSAN_OPTIONS:=max_leaks=3:suppressions=$(ARBHOME)/SOURCE_TOOLS/arb.leaksan.supp
+
 
 ifndef SANITIZE
  SANITIZE:=0
+endif
+
+SANITIZE_ADDRESS:=0
+SANITIZE_UNDEFINED:=0
+
+ifneq ($(SANITIZE),0)
+ ifeq ($(SANITIZE),all)
+  SANITIZE:=3
+ endif
+
+ ifeq ($(SANITIZE),1)
+  SANITIZE_ADDRESS:=1
+ else
+  ifeq ($(SANITIZE),2)
+   SANITIZE_UNDEFINED:=1
+  else
+   ifeq ($(SANITIZE),3)
+    SANITIZE_ADDRESS:=1
+    SANITIZE_UNDEFINED:=1
+   else
+    $(error Unknown value '$(SANITIZE)' specified for SANITIZE in config.makefile)
+   endif
+  endif
+ endif
+endif
+
+ifeq ($(SANITIZE_ADDRESS),1)
+ ifneq ('$(USE_GCC_48_OR_HIGHER)','yes')
+  $(info AddressSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
+  SANITIZE_ADDRESS:=0
+ else
+  ifneq ('$(USE_GCC_49_OR_HIGHER)','yes')
+   $(warning note that LeakSanitizer does not work with gcc $(COMPILER_VERSION))
+  endif
+ endif
+endif
+
+ifeq ($(SANITIZE_UNDEFINED),1)
+ ifneq ('$(USE_GCC_49_OR_HIGHER)','yes')
+  $(info UndefinedBehaviorSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
+  SANITIZE_UNDEFINED:=0
+ endif
 endif
 
 #---------------------- 32 or 64 bit
@@ -430,16 +490,32 @@ ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
 endif
 #cflags += -save-temps# uncomment to see preprocessor output
 
-ifeq ($(SANITIZE),1)
- ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-# activate AddressSanitizer
-  cflags += -fsanitize=address -fno-omit-frame-pointer -ggdb3
-  EXECLIBS += -lasan
-#  EXECLIBS += -static-libasan
- else
-  $(info AddressSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
-  SANITIZE:=0
+#---------------------- various sanitizers
+
+COMMON_SANITIZE_FLAGS:=-ggdb3 -fno-omit-frame-pointer
+
+# activate AddressSanitizer+LeakSanitizer?
+ifeq ($(SANITIZE_ADDRESS),1)
+ cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=address
+ EXECLIBS += -lasan
+# EXECLIBS += -static-libasan
+endif
+
+# activate UndefinedBehaviorSanitizer?
+ifeq ($(SANITIZE_UNDEFINED),1)
+ cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
+ ifeq ('$(DEBUG)','1')
+  ifeq ($(USE_GCC_MAJOR),4)
+   ifeq ($(USE_GCC_MINOR),9)
+    ifneq ('$(findstring $(USE_GCC_PATCHLEVEL),01)','')
+# workaround https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63531 for 4.9.0 + 4.9.1
+# (problem is fixed in 4.9.2 release)
+     extended_cpp_warnings:=$(subst -Weffc++,,$(extended_cpp_warnings))
+    endif
+   endif
+  endif
  endif
+ EXECLIBS += -lubsan
 endif
 
 #---------------------- X11 location
@@ -1239,7 +1315,7 @@ ARCHS_PROBE_DEPEND = \
 		$(ARCHS_PT_SERVER) \
 
 $(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db 
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) config.makefile $(use_ARB_main) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) config.makefile $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS) && \
@@ -1291,12 +1367,12 @@ addlibs:
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
 %.proto:
-	@$(MAKE) -C $(@D) \
+	@($(MAKE) -C $(@D) \
 		"AUTODEPENDS=0" \
 		"MAIN=nothing" \
 		"cflags=noCflags" \
 		"cxxflags=noCxxflags" \
-		proto
+		proto 2>&1 ) | $(ARBHOME)/SOURCE_TOOLS/asan2msg.pl
 
 %.clean:
 	@$(MAKE) -C $(@D) \
