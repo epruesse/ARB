@@ -2042,7 +2042,7 @@ void TEST_prot_tree_modifications() {
             TEST_EXPECTATION(addingPartialResultsIn(MucRaceP, "MucRacem",          "prot-addPart-MucRaceP",          PARSIMONY_ORG+7, env)); // add MucRaceP
             TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114, env)); // also add StrCoelP
-            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114+7, env)); // also add StrCoelP // @@@ same misplacement as above
+            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+7, env)); // also add StrCoelP // @@@ same misplacement as above
             TEST_EXPECT_EQUAL(env.combines_performed(), 4);
             env.pop();
         }
@@ -2136,10 +2136,7 @@ void TEST_broken_pops() {
 
         env.pop();
 
-        TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->sequence_state_valid());
-        // that bug is severe, as this is the core functionality of arb_pars
-        // (move root, modify, check costs, pop if no improvement)
-
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
         TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
         TEST_EXPECT_EQUAL(env.combines_performed(), 0);
     }
