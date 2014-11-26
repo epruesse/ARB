@@ -18,6 +18,7 @@
 #include <arb_strbuf.h>
 #include <arb_diff.h>
 #include <arb_defs.h>
+#include <arb_match.h>
 
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0
@@ -1311,11 +1312,27 @@ static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat f
     }
 }
 
-char *GBT_tree_2_newick(const GBT_TREE *tree, NewickFormat format) {
+char *GBT_tree_2_newick(const GBT_TREE *tree, NewickFormat format, bool compact) {
     GBS_strstruct out(1000);
     if (tree) tree2newick(tree, out, format, 0);
     out.put(';');
-    return out.release();
+
+    char *result = out.release();
+    if (compact && (format&nWRAP)) {
+        GB_ERROR error = NULL;
+
+        char *compact1 = GBS_regreplace(result, "/[\n ]*[)]/)/", &error);
+        if (compact1) {
+            char *compact2 = GBS_regreplace(compact1, "/[(][\n ]*/(/", &error);
+            if (compact2) freeset(result, compact2);
+            free(compact1);
+        }
+        if (error) {
+            fprintf(stderr, "Error in GBT_tree_2_newick: %s\n", error);
+            gb_assert(!error); // should be impossible; falls back to 'result' if happens
+        }
+    }
+    return result;
 }
 
 
@@ -1668,6 +1685,17 @@ void TEST_tree_remove_leafs() {
                                     "  ):0.162\n"
                                     " ):0.124);";
                                 TEST_EXPECT_NEWICK(NewickFormat(nLENGTH|nWRAP), tree, kept_marked_topo_wrapped);
+
+                                const char *expected_compacted =
+                                    "(CurCitre:1.000,\n"
+                                    " ((CloButy2:0.009,\n"
+                                    "   CloButyr:0.000):0.131,\n"
+                                    "  (CytAquat:0.711,\n"
+                                    "   (CorGluta:0.522,\n"
+                                    "    CorAquat:0.103):0.207):0.162):0.124);";
+                                char *compacted = GBT_tree_2_newick(tree, NewickFormat(nLENGTH|nWRAP), true);
+                                TEST_EXPECT_EQUAL(compacted, expected_compacted);
+                                free(compacted);
                             }
                             what_next = GBT_REMOVE_MARKED;
                             break;

@@ -180,32 +180,65 @@ void AP_tree_nlen::assert_edges_valid() const {
     }
 }
 
-void AP_tree_nlen::assert_sequence_state_valid() const {
+#if defined(DEBUG)
+#define DUMP_INVALID_SUBTREES
+#endif
+
+#if defined(DUMP_INVALID_SUBTREES)
+inline void dumpSubtree(const char *msg, const AP_tree_nlen *node) {
+    fprintf(stderr, "%s:\n", msg);
+    char *printable = GBT_tree_2_newick(node, NewickFormat(nSIMPLE|nWRAP), true);
+    fputs(printable, stderr);
+    fputc('\n', stderr);
+    free(printable);
+}
+#endif
+
+bool AP_tree_nlen::sequence_state_valid() const {
     // if some node has a sequence, all son-nodes have to have sequences!
+
+    bool valid = true;
 
     const AP_sequence *sequence = get_seq();
     if (sequence) {
-        if (sequence->got_sequence()) {
+        if (sequence->hasSequence()) {
             if (!is_leaf) {
-                ap_assert(get_leftson()->get_seq()->got_sequence());
-                ap_assert(get_rightson()->get_seq()->got_sequence());
+                bool leftson_hasSequence  = get_leftson()->hasSequence();
+                bool rightson_hasSequence = get_rightson()->hasSequence();
+
+#if defined(DUMP_INVALID_SUBTREES)
+                if (!leftson_hasSequence) dumpSubtree("left subtree has no sequence", get_leftson());
+                if (!rightson_hasSequence) dumpSubtree("right subtree has no sequence", get_rightson());
+                if (!(leftson_hasSequence && rightson_hasSequence)) {
+                    dumpSubtree("while father HAS sequence", this);
+                }
+#endif
+
+                valid = leftson_hasSequence && rightson_hasSequence;
             }
         }
         else {
             if (is_leaf) ap_assert(sequence->is_bound_to_species()); // can do lazu load if needed
         }
-
-        if (!is_leaf) {
-            get_leftson()->assert_sequence_state_valid();
-            get_rightson()->assert_sequence_state_valid();
-        }
     }
+    if (!is_leaf) {
+        if (!get_leftson() ->sequence_state_valid()) valid = false;
+        if (!get_rightson()->sequence_state_valid()) valid = false;
+    }
+
+    return valid;
 }
 
 void AP_tree_nlen::assert_valid() const {
     ap_assert(this);
     assert_edges_valid();
-    assert_sequence_state_valid();
+#if 0
+    ap_assert(sequence_state_valid()); // @@@ reactivate later
+#else
+    if (!sequence_state_valid()) {
+        fputs("Warning: invalid sequence state!\n", stderr);
+    }
+#endif
     AP_tree::assert_valid();
 }
 
@@ -838,7 +871,7 @@ void AP_tree_nlen::parsimony_rek(char *mutPerSite) {
             ap_assert(sequence);
         }
 
-        if (!sequence->got_sequence()) {
+        if (!sequence->hasSequence()) {
             AP_tree_nlen *lson = get_leftson();
             AP_tree_nlen *rson = get_rightson();
 
@@ -1152,7 +1185,7 @@ char* AP_tree_nlen::getSequenceCopy() {
     costs();
 
     AP_sequence_parsimony *pseq = DOWNCAST(AP_sequence_parsimony*, get_seq());
-    ap_assert(pseq->got_sequence());
+    ap_assert(pseq->hasSequence());
 
     size_t  len = pseq->get_sequence_length();
     char   *s   = new char[len];

@@ -1603,7 +1603,7 @@ arb_test::match_expectation topologyEquals(AP_tree_nlen *root_node, const char *
     {
         FILE *out    = fopen(outfile, "wt");
         fulfilled.add(that(out).does_differ_from_NULL());
-        char *newick = GBT_tree_2_newick(root_node, NewickFormat(nLENGTH|nWRAP));
+        char *newick = GBT_tree_2_newick(root_node, NewickFormat(nLENGTH|nWRAP), false);
         fputs(newick, out);
         free(newick);
         fclose(out);
@@ -1843,6 +1843,7 @@ void TEST_nucl_tree_modifications() {
     // [NUCOPTI] opposed to protein tests below the initial tree here is NOT optimized! compare .@PROTOPTI
     // -> removing and adding species produces a better tree
     //
+    // diff initial->removed  : http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-removed.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
     // diff initial->add-quick: http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-add-quick.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
     // diff initial->add-NNI:   http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-add-NNI.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
 
@@ -2078,6 +2079,65 @@ void TEST_prot_tree_modifications() {
             env.pop();
         }
     }
+}
+
+void TEST_broken_pops() {
+    const char *aliname = "ali_5s";
+
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
+    TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
+
+    const int PARSIMONY_ORG = 301;
+    TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+    TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+
+    // test set root to CytAquat + pop (works)
+    {
+        env.push();
+        env.root_node()->findLeafNamed("CytAquat")->set_root();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        env.pop();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+    }
+
+    // test set root to CloButyr + pop (works)
+    {
+        env.push();
+        env.root_node()->findLeafNamed("CloButyr")->set_root();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        env.pop();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+    }
+
+    // test set root to CytAquat + set root to CloButyr + pop (fails)
+    for (int calcCostsBetween = 0; calcCostsBetween<2; ++calcCostsBetween) {
+        TEST_ANNOTATE(GBS_global_string("calcCostsBetween=%i", calcCostsBetween));
+
+        TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+        env.push();
+
+        env.root_node()->findLeafNamed("CytAquat")->set_root();
+
+        if (calcCostsBetween) TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+        env.root_node()->findLeafNamed("CloButyr")->set_root();
+
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+        env.pop();
+
+        TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        // that bug is severe, as this is the core functionality of arb_pars
+        // (move root, modify, check costs, pop if no improvement)
+
+        TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    }
+
+    TEST_EXPECT_EQUAL(env.combines_performed(), 29); // @@@ distribute
 }
 
 #endif // UNIT_TESTS

@@ -67,7 +67,8 @@ void MatrixDisplay::setup() {
         max_chars[DI_G_ABOVE_DIST] = max_chars[DI_G_BELOW_DIST];
         max_chars[DI_G_NAMES]      = awr->awar(AWAR_MATRIX_NAMECHARS_TOP)->read_int();
 
-        for (DI_gc gc=DI_G_STANDARD; gc<=DI_G_LAST; gc = DI_gc(int(gc)+1)) {
+        for (int igc=DI_G_STANDARD; igc<=DI_G_LAST; ++igc) {
+            DI_gc gc = DI_gc(igc);
             if (max_chars[gc]) {
                 const AW_font_limits& lim = device->get_font_limits(gc, 0);
 

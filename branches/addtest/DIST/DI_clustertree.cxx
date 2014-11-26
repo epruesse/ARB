@@ -49,8 +49,7 @@ static void collectStats(ClusterTree *node, ClusterStats *stats) {
         default: break;
     }
     if (node->is_leaf) {
-        AP_sequence *seq = node->get_seq();
-        if (seq->got_sequence()) stats->loadedSequences++;
+        stats->loadedSequences += node->hasSequence();
     }
     else {
         collectStats(node->get_leftson(), stats);

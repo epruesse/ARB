@@ -1761,7 +1761,8 @@ public:
 };
 
 void TEST_matrix() {
-    for (GB_alignment_type at = GB_AT_RNA; at<=GB_AT_AA; at = GB_alignment_type(at+1)) {
+    for (int iat = GB_AT_RNA; iat<=GB_AT_AA; ++iat) {
+        GB_alignment_type at = GB_alignment_type(iat);
         // ---------------
         //      setup
         //                               GB_AT_RNA         GB_AT_DNA           GB_AT_AA
