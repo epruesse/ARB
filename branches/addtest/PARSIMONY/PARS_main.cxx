@@ -878,17 +878,20 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static void NT_optimize(AW_window *, AWT_canvas *ntw) {
+static void optimizeTree(AWT_graphic_parsimony *agt) {
     arb_progress progress("Optimizing Tree");
-    GLOBAL_PARS->optimize_tree(rootNode(), progress);
+    agt->get_parsimony().optimize_tree(rootNode(), progress);
     ASSERT_VALID_TREE(rootNode());
     rootEdge()->calc_branchlengths();
-    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
+    agt->reorder_tree(BIG_BRANCHES_TO_TOP);
     rootNode()->compute_tree();
+}
+static void NT_optimize(AW_window *, AWT_canvas *ntw) {
+    optimizeTree(AWT_TREE_PARS(ntw));
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static void recursiveNNI(AWT_graphic_tree *agt) {
+static void recursiveNNI(AWT_graphic_parsimony *agt) {
     arb_progress progress("Recursive NNI");
     AP_FLOAT orgPars = rootNode()->costs();
     AP_FLOAT prevPars = orgPars;
@@ -905,7 +908,7 @@ static void recursiveNNI(AWT_graphic_tree *agt) {
 }
 
 static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
-    recursiveNNI(AWT_TREE(ntw));
+    recursiveNNI(AWT_TREE_PARS(ntw));
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -1639,6 +1642,7 @@ enum TopoMod {
 
     MOD_CALC_LENS,
     MOD_OPTI_NNI,
+    MOD_OPTI_GLOBAL,
 };
 
 template <typename SEQ>
@@ -1668,7 +1672,9 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
             recursiveNNI(env.graphic_tree());
             break;
 
-
+        case MOD_OPTI_GLOBAL:
+            optimizeTree(env.graphic_tree());
+            break;
     }
 }
 
@@ -1907,7 +1913,7 @@ void TEST_nucl_tree_modifications() {
 #endif
 }
 
-void TEST_optimizations() {
+void TEST_optimizations_some() {
     const char *aliname = "ali_5s";
 
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
@@ -1924,9 +1930,41 @@ void TEST_optimizations() {
     // test optimize (some)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
 
+    const int      PARSIMONY_OPTI = 272; // may depend on seed
+    const unsigned seed           = 1417001558;
+    GB_random_seed(seed);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
+
+#if 0
+    // @@@ test results changed by adding the MOD_OPTI_GLOBAL test above (rel #620)
     // test optimize (all)
     mark_all(env.gbmain());
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
+
+    // in a fresh environment it works as before (see TEST_optimizations_all)
+#endif
+}
+
+void TEST_optimizations_all() {
+    const char *aliname = "ali_5s";
+
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
+    TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
+
+    const int PARSIMONY_ORG = 301;
+    TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+    // test optimize (all)
+    mark_all(env.gbmain());
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
+
+    const int      PARSIMONY_OPTI = 272; // may depend on seed
+    const unsigned seed           = 1417001558;
+    GB_random_seed(seed);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
+
+    // @@@ there is no difference in number of combines (see log) between TEST_optimizations_some and TEST_optimizations_all. why not?
 }
 
 void TEST_prot_tree_modifications() {
