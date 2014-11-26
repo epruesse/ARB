@@ -172,8 +172,8 @@ sub deleteIfExists($$) {
   }
 }
 
-sub importResults($$$) {
-  my ($res_file,$marked_only,$mark_misplaced) = @_;
+sub importResults($$$$) {
+  my ($res_file,$marked_only,$mark_misplaced,$field_suffix) = @_;
 
   open(FILE,'<'.$res_file) || die "can't open '$res_file' (Reason: $!)";
 
@@ -209,16 +209,16 @@ sub importResults($$$) {
          $name || expectError('read_string name');
          my $marked = ARB::read_flag($gb_species);
          if (defined $mis_map{$name}) {
-           $error = BIO::write_int($gb_species, "sativa_mislabel_flag", 1);
+           $error = BIO::write_int($gb_species, "sativa_mislabel_flag".$field_suffix, 1);
            if ($error) { die $error; }
-           $error = BIO::write_string($gb_species, "sativa_tax", $mis_map{$name}{'new_tax'});
+           $error = BIO::write_string($gb_species, "sativa_tax".$field_suffix, $mis_map{$name}{'new_tax'});
            if ($error) { die $error; }
-           $error = BIO::write_float($gb_species, "sativa_seqmis_conf", $mis_map{$name}{'conf'});
+           $error = BIO::write_float($gb_species, "sativa_seqmis_conf".$field_suffix, $mis_map{$name}{'conf'});
            if ($error) { die $error; }
-           $error = BIO::write_string($gb_species, "sativa_mislabel_level", $mis_map{$name}{'mis_lvl'});
+           $error = BIO::write_string($gb_species, "sativa_mislabel_level".$field_suffix, $mis_map{$name}{'mis_lvl'});
            if ($error) { die $error; }
            if (exists $mis_map{$name}{'rank_conf'}) {
-               $error = BIO::write_string($gb_species, "sativa_rankmis_conf", $mis_map{$name}{'rank_conf'});
+               $error = BIO::write_string($gb_species, "sativa_rankmis_conf".$field_suffix, $mis_map{$name}{'rank_conf'});
                if ($error) { die $error; }
            }
            
@@ -226,7 +226,7 @@ sub importResults($$$) {
            $count++; 
          }
          elsif ($marked==1 || $marked_only==0) {
-           $error = BIO::write_int($gb_species, "sativa_mislabel_flag", 0);
+           $error = BIO::write_int($gb_species, "sativa_mislabel_flag".$field_suffix, 0);
            if ($error) { die $error; }
  
 #           deleteIfExists($gb_species, "sativa_tax");
@@ -286,7 +286,11 @@ sub main() {
   my $species_field = shift @ARGV;
   my $dup_rank_names = shift @ARGV;
   my $wrong_rank_count = shift @ARGV;
-
+  
+  my $field_suffix = $tax_field;
+  $field_suffix =~ s/^tax\_//g;
+  $field_suffix = "_".$field_suffix;
+  
   my @marklist = {};
   
   $start_time = time;
@@ -295,7 +299,7 @@ sub main() {
 
   runPythonPipeline($seq_file,$tax_file,$dup_rank_names,$wrong_rank_count,$rank_test);
 
-  importResults($res_file,$marked_only,$mark_misplaced);
+  importResults($res_file,$marked_only,$mark_misplaced,$field_suffix);
   
   my $total_time = time - $start_time;
   print "Elapsed time: $total_time s (trainer: $trainer_time s, find_mislabels: $mislabels_time s)\n\n";
