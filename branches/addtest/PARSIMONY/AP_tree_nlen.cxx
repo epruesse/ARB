@@ -232,9 +232,10 @@ bool AP_tree_nlen::sequence_state_valid() const {
 void AP_tree_nlen::assert_valid() const {
     ap_assert(this);
     assert_edges_valid();
-#if 0
-    ap_assert(sequence_state_valid()); // @@@ reactivate later
+#if 1
+    ap_assert(sequence_state_valid());
 #else
+#warning does not fail for invalid sequence state
     if (!sequence_state_valid()) {
         fputs("Warning: invalid sequence state!\n", stderr);
     }
@@ -765,9 +766,9 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
 
     if (this->stack_level == datum) { // node already has a push (at current stack-level)
         AP_tree_buffer *last_buffer = stack.get_first();
-        AP_sequence    *sequence    = get_seq();
 
         if (0 == (mode & ~last_buffer->mode)) { // already buffered
+            AP_sequence *sequence = get_seq();
             if (sequence && (mode & SEQUENCE)) sequence->forget_sequence();
             return false;
         }
@@ -804,11 +805,18 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
         }
     }
 
-    if ((mode & SEQUENCE) && !(new_buff->mode & SEQUENCE)) {
-        AP_sequence *sequence   = take_seq();
-        new_buff->sequence      = sequence;
-        new_buff->mutation_rate = mutation_rate;
-        mutation_rate           = 0.0;
+    if (mode & SEQUENCE) {
+        ap_assert(!is_leaf); // only allowed to push STRUCTURE for leafs
+        if (!(new_buff->mode & SEQUENCE)) {
+            AP_sequence *sequence   = take_seq();
+            new_buff->sequence      = sequence;
+            new_buff->mutation_rate = mutation_rate;
+            mutation_rate           = 0.0;
+        }
+        else {
+            AP_sequence *sequence = get_seq();
+            if (sequence) sequence->forget_sequence();
+        }
     }
 
     new_buff->mode = (AP_STACK_MODE)(new_buff->mode|mode);
