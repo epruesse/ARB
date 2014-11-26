@@ -223,9 +223,9 @@ void ArbParsimony::generate_tree(WeightedFilter *pars_weighted_filter) {
         else seq_templ       = new AP_sequence_parsimony(aliview);
     }
 
-    tree = new AWT_graphic_parsimony(*this, aliview->get_gb_main(), PARS_map_viewer);
-    tree->init(new AP_TreeNlenNodeFactory, aliview, seq_templ, true, false);
-    ap_main->set_tree_root(tree);
+    AWT_graphic_parsimony *new_tree = new AWT_graphic_parsimony(*this, aliview->get_gb_main(), PARS_map_viewer);
+    new_tree->init(new AP_TreeNlenNodeFactory, aliview, seq_templ, true, false);
+    set_tree(new_tree);
 }
 
 AW_gc_manager AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw) {

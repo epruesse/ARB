@@ -49,7 +49,7 @@ class PARSIMONY_testenv : virtual Noncopyable {
         ap_main = &apMain;
 
         agt = new fake_agt<SEQTYPE>(parsimony);
-        apMain.set_tree_root(agt);
+        parsimony.set_tree(agt);
     }
 
 public:

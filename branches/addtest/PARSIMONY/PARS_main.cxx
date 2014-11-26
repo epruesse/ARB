@@ -56,6 +56,12 @@ inline AP_tree_root *global_tree_root() { return global_tree()->get_tree_root();
 // waaah more globals :(
 AP_main *ap_main; // @@@ move into ArbParsimony? or eliminate ArbParsimony
 
+void ArbParsimony::set_tree(AWT_graphic_parsimony *tree_) {
+    ap_assert(!tree); // only call once
+    tree = tree_;
+    ap_main->set_tree_root(tree);
+}
+
 static void pars_saveNrefresh_changed_tree(AWT_canvas *ntw) {
     ap_assert((AWT_TREE(ntw) == global_tree()));
 

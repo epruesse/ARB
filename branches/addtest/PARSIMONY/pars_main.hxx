@@ -31,6 +31,8 @@ public:
     DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, get_tree()->get_root_node());
 
     void generate_tree(WeightedFilter *pars_weighted_filter);
+    void set_tree(AWT_graphic_parsimony *tree_);
+
     void optimize_tree(AP_tree *tree, arb_progress& progress);
     void kernighan_optimize_tree(AP_tree *at);
 };
