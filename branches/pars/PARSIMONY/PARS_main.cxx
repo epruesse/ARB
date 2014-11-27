@@ -2011,7 +2011,8 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 10);
 
-    // @@@ opposed to TEST_nucl_tree_modifications valgrind does not report leaks here. why?
+    // Note: following code leaks father nodes and edges
+    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_prot_tree_modifications
 
     // [PROTOPTI] opposed to nucleid tests above the initial tree here is already optimized! compare .@NUCOPTI
     // -> adding species approximately reproduces initial topology
