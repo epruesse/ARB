@@ -1011,7 +1011,7 @@ AP_tree ** AP_tree::getRandomNodes(int anzahl) {
         buildNodeList(list, sumnodes);
 
         if (sumnodes) {
-            retlist = (AP_tree **)calloc(anzahl, sizeof(AP_tree *));
+            retlist = new AP_tree* [anzahl];
 
             long count = sumnodes;
             for (int i=0; i< anzahl; i++) {

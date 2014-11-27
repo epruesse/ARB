@@ -171,7 +171,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
         }
         progress.inc();
     }
-    delete list;
+    delete [] list;
     printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
 }
 
