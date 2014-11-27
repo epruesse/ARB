@@ -1057,7 +1057,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
 
     // Wurzel setzen
 
-    ap_main->push();
+    ap_main->remember();
     this->set_root();
     rootNode()->costs();
 
@@ -1079,7 +1079,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
         if (pars_refpntr[i]->get_father()->gr.hidden) continue;
 
         // nur wenn kein Blatt ist
-        ap_main->push();
+        ap_main->remember();
         pars_refpntr[i]->swap_assymetric(pars_side_ref[i]);
         pars[i] = rootNode()->costs();
         if (pars[i] < pars_best) {
@@ -1090,7 +1090,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
         if (pars[i] < schwellwert) {
             rek_width_dynamic++;
         }
-        ap_main->pop();
+        ap_main->revert();
         visited_subtrees ++;
 
     }
@@ -1151,7 +1151,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
     if (rek_width > visited_subtrees)   rek_width = visited_subtrees;
 
     for (i=0; i < rek_width; i++) {
-        ap_main->push();
+        ap_main->remember();
         pars_refpntr[pars_ref[i]]->kernighan = pars_side_ref[pars_ref[i]];
         // Markieren
         pars_refpntr[pars_ref[i]]->swap_assymetric(pars_side_ref[pars_ref[i]]);
@@ -1189,20 +1189,16 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
             }
             cout.flush();
 
-            ap_main->clear();
+            ap_main->accept();
             break;
         }
         else {
-            ap_main->pop();
+            ap_main->revert();
         }
     }
-    if (*abort_flag) {       // pop/clear wegen set_root
-        ap_main->clear();
-    }
-    else {
-        ap_main->pop();
-    }
-    return;
+
+    // *abort_flag is set if a better tree has been found
+    ap_main->accept_if(*abort_flag); // undo set_root otherwise
 }
 
 

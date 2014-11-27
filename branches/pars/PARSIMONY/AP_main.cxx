@@ -26,24 +26,24 @@ GB_ERROR AP_main::open(const char *db_server) {
 
 void AP_main::user_push() {
     frameData.user_push_counter = frameLevel + 1;
-    push();
+    remember();
 }
 
 void AP_main::user_pop() {
     // checks if user_pop possible
     if (frameData.user_push_counter == frameLevel) {
-        pop();    // changes user_push_counter if user pop
+        revert();    // changes user_push_counter if user pop
     }
     else {
         aw_message("No user-pop possible");
     }
 }
 
-void AP_main::push() {
-    // if count > 1 the nodes are buffered more than once
-    // WARNING:: node only has to be buffered once in the stack
-    //
-    //
+void AP_main::remember() {
+    /*! remember current tree state
+     * @see revert() and accept()
+     */
+
     frameLevel ++;
     if (currFrame) frames.push(currFrame);
 
@@ -57,7 +57,10 @@ void AP_main::push() {
 #endif
 }
 
-void AP_main::pop() {
+void AP_main::revert() {
+    /*! revert tree to last remembered state
+     * @see remember() and accept()
+     */
     if (!currFrame) GBK_terminate("AP_main::pop on empty stack");
 
     {
@@ -82,9 +85,13 @@ void AP_main::pop() {
     frameData = currFrame ? currFrame->get_previous_frame_data() : StackFrameData();
 }
 
-void AP_main::clear() {
-    // removes count elements from the list
-    // because the current tree is used
+void AP_main::accept() {
+    /*! accept changes performed on tree (since last remember())
+     * @see revert()
+     */
+
+    // @@@ outdated
+    // removes count(?) elements from the list because the current tree is used
     //
     // if stack_counter greater than last user_push then
     // moves all not previous buffered nodes in the
@@ -106,21 +113,23 @@ void AP_main::clear() {
         currFrame = frames.pop();
     }
     else {
-        NodeStack *next_frame = frames.pop();
+        NodeStack *prev_frame = frames.pop();
         while ((node = currFrame->pop())) {
             // UNCOVERED();
             if (node->clear(frameLevel, frameData.user_push_counter) != true) {
-                // node is not cleared because buffered in previous node stack
-                // node is instead copied in previous level
+                // node was not cleared (because also buffered in previous node stack).
+                // @@@ has to be done independent of user_push_counter
+                // if revert() gets called for previous stack, it is necessary to revert
+                // the current change as well -> move into previous frame
                 // UNCOVERED();
-                if (next_frame) {
+                if (prev_frame) {
                     // UNCOVERED();
-                    next_frame->push(node);
+                    prev_frame->push(node); // @@@ frames are pushed in reverted order (seems to be wrong)
                 }
             }
         }
         delete currFrame;
-        currFrame = next_frame;
+        currFrame = prev_frame;
     }
     frameLevel --;
 

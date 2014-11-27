@@ -86,12 +86,18 @@ public:
 
     GB_ERROR open(const char *db_server);
 
-    void user_push();
-    void user_pop();
-    void push();
-    void pop();
     void push_node(AP_tree_nlen *node, AP_STACK_MODE);
-    void clear();               // clears all buffers
+
+    void user_push(); // @@@ -> user_remember
+    void user_pop();  // @@@ -> user_revert
+    // @@@ add user_accept
+
+    void remember();
+    void revert();
+    void accept();
+
+    void accept_if(bool cond) { if (cond) accept(); else revert(); }
+    void revert_if(bool cond) { accept_if(!cond); }
 
 #if defined(PROVIDE_PRINT)
     void print(std::ostream& out);

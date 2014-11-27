@@ -163,7 +163,7 @@ class AP_tree_nlen;
 #endif
 
 struct StackFrameData { // data local to current stack frame
-    Level user_push_counter;
+    Level user_push_counter; // @@@ eliminate (instead maintain in AP_main)
 #if defined(AVOID_MULTI_ROOT_PUSH)
     bool root_pushed;
     StackFrameData() : user_push_counter(0), root_pushed(false) {}

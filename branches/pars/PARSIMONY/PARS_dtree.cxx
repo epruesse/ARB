@@ -151,7 +151,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
 
         if (!in_folded_group) {
             bool better_tree_found = false;
-            ap_main->push();
+            ap_main->remember();
             display_clear(funktion, param_list, param_anz, (int)pars_start, (int)rek_deep_max);
 
             tree_elem->kernighan_rek(0,
@@ -161,12 +161,12 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
                                      searchflag, &better_tree_found);
 
             if (better_tree_found) {
-                ap_main->clear();
+                ap_main->accept();
                 pars_start =  get_root_node()->costs();
                 progress.subtitle(GBS_global_string("New parsimony: %.1f (gain: %.1f)", pars_start, pars_org-pars_start));
             }
             else {
-                ap_main->pop();
+                ap_main->revert();
             }
         }
         progress.inc();

@@ -94,8 +94,8 @@ public:
         return error;
     }
 
-    void push() { apMain.push(); }
-    void pop() { apMain.pop(); }
+    void push() { apMain.remember(); }
+    void pop() { apMain.revert(); }
 
     Level get_frame_level() { return apMain.get_frameLevel(); }
     Level get_user_push_counter() { return apMain.get_user_push_counter(); }
