@@ -1,0 +1,142 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Cluster detection
+
+OCCURRENCE	ARB_DIST
+
+DESCRIPTION     Cluster detection searches for subtrees of the tree selected
+                in the ARB_DIST main window, that form homologous groups of sequences.
+
+                The main prerequisite for cluster detection to work well is a good tree,
+                preferable a tree optimized with ARB_PARSIMONY (since cluster detection uses
+                the same distance function as ARB_PARSIMONY does).
+
+                You may control the distance calculation by selecting filter and/or weights
+                in the ARB_DIST main window.
+
+                The following parameters define which subtrees will be reported as clusters
+                - Max. distance inside each cluster (no two sequences in a cluster have
+                  bigger distance than specified). Specify the distance as percentage of
+                  mutations, 100 means every base differs, 0 means no base differs 
+                - Min cluster size (clusters below that size are ignored)
+
+
+                Press 'Detect clusters' to start the cluster detection..
+
+                The clusters matching the given
+                parameters will be displayed in the list below.
+                Each line contains the following information:
+
+                     - number of species in cluster
+                     - mean distance [min. - max.distance]
+                     - minimal bases used for distance calculation (weighted)
+                     - a generated cluster description
+
+                Each cluster contains one so called 'representative'.
+                The representative is the species in the cluster with the least
+                mean distance to all other cluster members.
+
+SECTION Working with found clusters
+
+                Marking
+
+                        You can mark the members of the currently selected cluster by clicking
+                        on the 'Mark' button. Below that button you may select whether to mark
+                         - all species in the cluster,
+                         - all species in the cluster despite the representative or
+                         - only the representative.
+
+                        The second mode is useful when you plan to remove all but the
+                        representative from the tree.
+
+                        You may also mark ALL clusters by clicking on the 'Mark all' button.
+                        This is handy to expand all cluster in the tree or to load all clusters into the
+                        sequence editor.
+
+                Auto mark
+
+                        If you enable the 'Auto mark' toggle, ARB will automatically mark the cluster
+                        as soon as you select it in the list.
+
+                Selecting representative
+
+                        If this option is checked, the representative species of the selected cluster
+                        will be become the 'selected species'.
+
+                Storing intermediate results
+
+                        You may store the displayed clusters by either pressing
+                        - 'Store selected' or
+                        - 'Store all'
+
+                        The number of currently stored clusters will be displayed on
+                        the restore button. By pressing that button, you can restore
+                        these clusters.
+
+                        Press 'Swap stored' to exchange stored clusters with displayed
+                        clusters.
+
+                        Storing result will be useful to compare results of two cluster detections
+                        with different parameters.
+
+                Delete results
+
+                        You can delete results using 'Delete selected' or 'Clear list'.
+
+                Cluster groups
+
+                        Create groups for found clusters
+
+NOTES           The performance of the cluster detection is very sensitive to the parameters:
+
+                - Shortly said: Big cluster size + small max.distance => faster calculation
+                - A cluster size of 2 forces all sequences to be loaded. This consumes time and memory and
+                  may render the calculation impossible.
+                - Opposed a minimum cluster size of 10 only loads about 20% of the sequence
+                  data (in best case), a size of 20 will only load about 10% of data.
+
+                - The bigger the maximum allowed distance is, the more clusters will be found,
+                  hence the more has to be calculated.
+                - So if you got no idea about what distance to use, start with a low
+                  distance (e.g. 0.01) and if you don't find any clusters, increase
+                  the distance stepwise.
+
+EXAMPLES        One use case is to reduce a given tree by removing clones or very nearly
+                related species and only keeping one of them as representative of
+                the so formed OTU.
+
+                Steps:
+
+                        - search clusters
+                        - examine found clusters and delete those you'd like to keep
+                        - uncheck 'Mark representative' and click 'Mark all'
+                        - in ARB_NTREE call 'Tree/Remove species from tree/Remove marked'
+
+                Another use case is to create groups.
+
+                        If you choose higher values for the maximum distance allowed
+                        in found clusters and for the minimum cluster size, the found
+                        clusters might be good candidates to create groups.
+
+WARNINGS        Be careful when the minimum distance reported for a cluster is zero.
+                This may have 2 reasons:
+
+                     - two sequences are identical (in filtered region)
+                     - one sequence is empty (in filtered region)
+
+                In the second case, the results are meaningless and the empty sequence
+                will be used as representative (which makes no sense).
+
+                As a second indicator the min. number of base positions used for distance
+                calculation is listed for each cluster. When this gets low or zero the result
+                get more and more random.
+
+BUGS		No bugs known

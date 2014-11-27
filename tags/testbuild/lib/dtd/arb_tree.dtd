@@ -1,0 +1,41 @@
+<!-- ==================================================================== -->
+<!--                                                                      -->
+<!--   File      : arb_tree.dtd                                           -->
+<!--   Purpose   : DTD for ARB tree export                                -->
+<!--                                                                      -->
+<!--                                                                      -->
+<!-- Coded by Ralf Westram (coder@reallysoft.de) in May 2002              -->
+<!-- Copyright Department of Microbiology (Technical University Munich)   -->
+<!--                                                                      -->
+<!-- Visit our web site at: http://www.arb-home.de/                       -->
+<!--                                                                      -->
+<!-- ==================================================================== -->
+
+<!ELEMENT ARB_TREE (COMMENT|ITEM|BRANCH|FOLDED_GROUP)* >
+<!ATTLIST ARB_TREE database CDATA #IMPLIED> <!--name of ARB database tree was exported from-->
+<!ATTLIST ARB_TREE treename CDATA #IMPLIED> <!--ARB internal tree name-->
+<!ATTLIST ARB_TREE export_date CDATA #IMPLIED>
+
+<!ELEMENT COMMENT (#PCDATA) >
+
+<!ELEMENT BRANCH (BRANCH|ITEM|FOLDED_GROUP)* >
+<!ATTLIST BRANCH name ID #REQUIRED> <!--unique ID (enumerates the single branches, items and groups) -->
+<!ATTLIST BRANCH length CDATA #IMPLIED> <!--branchlength (defaults to zero)-->
+<!ATTLIST BRANCH bootstrap CDATA #IMPLIED > <!--bootstrap value (defaults to none)-->
+<!ATTLIST BRANCH groupname CDATA #IMPLIED > <!--groupname (defaults to none)-->
+<!ATTLIST BRANCH folded (0|1) #IMPLIED > <!--whether the group is folded (only legal if groupname was specified) -->
+
+<!ELEMENT ITEM EMPTY>
+<!ATTLIST ITEM name ID #REQUIRED> <!--unique ID (enumerates the single branches, items and groups) -->
+<!ATTLIST ITEM length CDATA #IMPLIED> <!--branchlength (defaults to zero)-->
+<!ATTLIST ITEM itemname CDATA #REQUIRED> <!--species ID (should be a unique ID (at least inside ARB))-->
+
+<!ELEMENT FOLDED_GROUP EMPTY> <!--a folded group-->
+<!ATTLIST FOLDED_GROUP name ID #REQUIRED> <!--unique ID (enumerates the single branches, items and groups) -->
+<!ATTLIST FOLDED_GROUP length CDATA #IMPLIED> <!--branchlength (defaults to zero)-->
+<!ATTLIST FOLDED_GROUP groupname CDATA #REQUIRED> <!--group name-->
+<!ATTLIST FOLDED_GROUP bootstrap CDATA #IMPLIED > <!--bootstrap value (defaults to none)-->
+<!ATTLIST FOLDED_GROUP items_in_group CDATA #REQUIRED > <!--number of items in group-->
+
+
+
