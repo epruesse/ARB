@@ -8,6 +8,11 @@
 #include <arb_str.h>
 #include <climits>
 
+inline bool hasGap(AP_PROTEINS c) { return c & APP_GAP; }
+inline bool isGap(AP_PROTEINS c)  { return c == APP_GAP; }
+
+inline bool notHasGap(AP_PROTEINS c) { return !hasGap(c); }
+inline bool notIsGap(AP_PROTEINS c)  { return !isGap(c); }
 
 // #define ap_assert(bed) arb_assert(bed)
 
@@ -166,12 +171,12 @@ void AP_sequence_protein::set(const char *isequence) {
 
             if (c >= 'A' && c <= 'Z') p = prot2AP_PROTEIN[c-'A'];
             else if (c == '-')        p = APP_GAP;
-            else if (c == '.')        p = APP_X;
+            else if (c == '.')        p = APP_X; // @@@ use APP_DOT? dna uses AP_DOT
             else if (c == '*')        p = APP_STAR;
 
             if (p == APP_ILLEGAL) {
-                GB_warning(GBS_global_string("Illegal sequence character '%c' replaced by gap", c));
-                p = APP_GAP;
+                GB_warning(GBS_global_string("Invalid sequence character '%c' replaced by gap", c));
+                p = APP_GAP; // @@@ use APP_DOT here? dna does!
             }
 
             seq_prot[oidx++] = p;
@@ -201,7 +206,7 @@ void AP_sequence_protein::unset() {
 
 
 AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) {
-    // this works similar to AP_sequence_parsimony::combine
+    // Note: changes done here should also be be applied to AP_seq_dna.cxx@combine_impl
 
     const AP_sequence_protein *left  = (const AP_sequence_protein *)lefts;
     const AP_sequence_protein *right = (const AP_sequence_protein *)rights;
@@ -231,18 +236,18 @@ AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequenc
 
             int mutations = INT_MAX;
 
-            if (p[idx]&APP_GAP) { // contains a gap
+            if (hasGap(p[idx])) { // contains a gap
                 mutations = 1;  // count first gap as mutation
                 // @@@ FIXME:  rethink the line above. maybe it should be 3 mutations ?
 
 #if !defined(MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS)
                 // count multiple mutations as 1 mutation
-                // this was an experiment (don't use it, it does not work!)
-                if (idx>0 && (p[idx-1]&APP_GAP)) { // last position also contained gap..
-                    if (((c1&APP_GAP) && (p1[idx-1]&APP_GAP)) || // ..in same sequence
-                        ((c2&APP_GAP) && (p2[idx-1]&APP_GAP)))
+                // (code here is unused)
+                if (idx>0 && hasGap(p[idx-1])) { // last position also contained gap..
+                    if ((hasGap(c1) && hasGap(p1[idx-1])) || // ..in same sequence
+                        (hasGap(c2) && hasGap(p2[idx-1])))
                     {
-                        if (!(p1[idx-1]&APP_GAP) || !(p2[idx-1]&APP_GAP)) { // if one of the sequences had no gap at previous position
+                        if (notHasGap(p1[idx-1]) || notHasGap(p2[idx-1])) { // if one of the sequences had no gap at previous position
                             mutations = 0; // skip multiple gaps
                         }
                     }
@@ -277,8 +282,9 @@ AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequenc
 
 #if !defined(PROPAGATE_GAPS_UPWARDS)
         // do not propagate mixed gaps upwards (they cause neg. branches)
-        if (p[idx] & APP_GAP) { // contains gap
-            if (p[idx] != APP_GAP) { // is not real gap
+        // (code here is unused)
+        if (hasGap(p[idx])) { // contains gap
+            if (notIsGap(p[idx])) { // is not real gap
                 p[idx] = AP_PROTEINS(p[idx]^APP_GAP); //  remove the gap
             }
         }
@@ -318,26 +324,30 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
     //          overlap       7                  3
     //
     // algorithm is similar to AP_sequence_protein::combine()
+    // Note: changes done here should also be be applied to AP_seq_dna.cxx@partial_match_impl
 
     const AP_sequence_protein *part = (const AP_sequence_protein *)part_;
 
-    const AP_PROTEINS *pf      = get_sequence();
-    const AP_PROTEINS *pp      = part->get_sequence();
-    const AP_weights  *weights = get_weights();
+    const AP_PROTEINS *pf = get_sequence();
+    const AP_PROTEINS *pp = part->get_sequence();
 
-    long min_end;                                   // minimum of both last non-gap positions
+    const AP_weights *weights = get_weights();
+
+    // @@@ to fix #609 replace "IsGap" by "HasGap" below (also use & instead of | for 'both', 'both' as used here in fact means 'any')
+
+    long min_end; // minimum of both last non-gap positions
     for (min_end = get_sequence_length()-1; min_end >= 0; --min_end) {
         AP_PROTEINS both = AP_PROTEINS(pf[min_end]|pp[min_end]);
-        if (both != APP_GAP) { // last non-gap found
-            if (pf[min_end] != APP_GAP) { // occurred in full sequence
+        if (notIsGap(both)) { // last non-gap found
+            if (notIsGap(pf[min_end])) { // occurred in full sequence
                 for (; min_end >= 0; --min_end) { // search same in partial sequence
-                    if (pp[min_end] != APP_GAP) break;
+                    if (notIsGap(pp[min_end])) break;
                 }
             }
             else {
-                ap_assert(pp[min_end] != APP_GAP); // occurred in partial sequence
+                ap_assert(notIsGap(pp[min_end])); // occurred in partial sequence
                 for (; min_end >= 0; --min_end) { // search same in full sequence
-                    if (pf[min_end] != APP_GAP) break;
+                    if (notIsGap(pf[min_end])) break;
                 }
             }
             break;
@@ -351,16 +361,16 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
         long max_start; // maximum of both first non-gap positions
         for (max_start = 0; max_start <= min_end; ++max_start) {
             AP_PROTEINS both = AP_PROTEINS(pf[max_start]|pp[max_start]);
-            if (both != APP_GAP) { // first non-gap found
-                if (pf[max_start] != APP_GAP) { // occurred in full sequence
+            if (notIsGap(both)) { // first non-gap found
+                if (notIsGap(pf[max_start])) { // occurred in full sequence
                     for (; max_start <= min_end; ++max_start) { // search same in partial
-                        if (pp[max_start] != APP_GAP) break;
+                        if (notIsGap(pp[max_start])) break;
                     }
                 }
                 else {
-                    ap_assert(pp[max_start] != APP_GAP); // occurred in partial sequence
+                    ap_assert(notIsGap(pp[max_start])); // occurred in partial sequence
                     for (; max_start <= min_end; ++max_start) { // search same in full
-                        if (pf[max_start] != APP_GAP) break;
+                        if (notIsGap(pf[max_start])) break;
                     }
                 }
                 break;
@@ -371,7 +381,7 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
             for (long idx = max_start; idx <= min_end; ++idx) {
                 if ((pf[idx]&pp[idx]) == 0) { // bases are distinct (aka mismatch)
                     int mutations;
-                    if ((pf[idx]|pp[idx])&APP_GAP) { // one is a gap
+                    if (hasGap(AP_PROTEINS(pf[idx]|pp[idx]))) { // one is a gap
                         mutations = 3;
                     }
                     else {
@@ -413,7 +423,7 @@ AP_FLOAT AP_sequence_protein::count_weighted_bases() const {
         const AP_weights *weights = get_weights();
 
         for (size_t idx = 0; idx<sequence_len; ++idx) {
-            if (sequence[idx] != APP_GAP) {
+            if (notIsGap(sequence[idx])) {
                 sum += weights->weight(idx);
             }
         }

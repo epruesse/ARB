@@ -10,7 +10,6 @@
 
 #include "AP_filter.hxx"
 #include <arbdb.h>
-#include <arb_mem.h>
 
 
 // ------------------
@@ -196,17 +195,16 @@ char *AP_filter::blowup_string(char *filtered_string, char fillChar) const {
 //      AP_weights
 
 AP_weights::AP_weights(const AP_filter *fil)
-    : len(fil->get_filtered_length()),
-      weights(NULL)
+    : len(fil->get_filtered_length())
+    , weights(new GB_UINT4[len])
 {
+    for (size_t i = 0; i<len; ++i) weights[i] = 1;
 }
 
 AP_weights::AP_weights(const GB_UINT4 *w, size_t wlen, const AP_filter *fil)
-    : len(fil->get_filtered_length()),
-      weights(NULL)
+    : len(fil->get_filtered_length())
+    , weights(new GB_UINT4[len])
 {
-    arb_alloc_aligned(weights, len);
-
     af_assert(wlen == fil->get_length());
 
     size_t i, j;
@@ -220,18 +218,14 @@ AP_weights::AP_weights(const GB_UINT4 *w, size_t wlen, const AP_filter *fil)
 }
 
 AP_weights::AP_weights(const AP_weights& other)
-
-    : len(other.len),
-      weights(NULL)
+    : len(other.len)
+    , weights(new GB_UINT4[len])
 {
-    if (other.weights != NULL) {
-        arb_alloc_aligned(weights, len);
-        memcpy(weights, other.weights, len*sizeof(*weights));
-    }
+    memcpy(weights, other.weights, len*sizeof(*weights));
 }
 
 AP_weights::~AP_weights() {
-    free(weights);
+    delete [] weights;
 }
 
 long AP_timer() {

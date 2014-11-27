@@ -49,8 +49,7 @@ static void collectStats(ClusterTree *node, ClusterStats *stats) {
         default: break;
     }
     if (node->is_leaf) {
-        AP_sequence *seq = node->get_seq();
-        if (seq->got_sequence()) stats->loadedSequences++;
+        stats->loadedSequences += node->hasSequence();
     }
     else {
         collectStats(node->get_leftson(), stats);
@@ -116,18 +115,6 @@ GB_ERROR ClusterTreeRoot::find_clusters() {
 
 // --------------------
 //      ClusterTree
-
-ClusterTree *ClusterTree::get_cluster(size_t num) {
-    cl_assert(num < get_cluster_count());
-
-    if (num == 0) return this;
-
-    ClusterTree *lson = get_leftson();
-    if (lson->get_cluster_count() <= num) {
-        return get_rightson()->get_cluster(num - lson->get_cluster_count());
-    }
-    return lson->get_cluster(num);
-}
 
 void ClusterTree::init_tree() {
     cl_assert(state == CS_UNKNOWN);

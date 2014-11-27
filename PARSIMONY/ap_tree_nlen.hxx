@@ -18,9 +18,16 @@
 #ifndef _GLIBCXX_CLIMITS
 #include <climits>
 #endif
-#ifndef AP_MAIN_HXX
-#include <ap_main.hxx>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
+#ifndef AP_TREE_HXX
+#include <AP_Tree.hxx>
+#endif
+#ifndef AP_BUFFER_HXX
+#include "AP_buffer.hxx"
+#endif
+
 
 class AP_tree_nlen;
 
@@ -53,7 +60,16 @@ enum AP_BL_MODE {
 
 class AP_tree_edge;
 
-class AP_tree_nlen : public AP_tree { // derived from a Noncopyable
+class AP_pars_root : public AP_tree_root {
+    // @@@ add responsibility for node/edge ressources
+public:
+    AP_pars_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks)
+        : AP_tree_root(aliView, nodeMaker_, seq_proto, add_delete_callbacks)
+    {
+    }
+};
+
+class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ rename -> AP_pars_tree? (later!)
     // tree that is independent of branch lengths and root
 
     AP_TREE_SIDE kernighan;     // Flag zum markieren
@@ -66,31 +82,37 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable
 
     AP_FLOAT mutation_rate;
 
-
+    Level      pushed_to_frame;    // last frame this node has been pushed onto, 0 = none
+    StateStack states;             // containes previous states of 'this'
 
     void createListRekUp(AP_CO_LIST *list, int *cn);
     void createListRekSide(AP_CO_LIST *list, int *cn);
 
 public:
-    explicit AP_tree_nlen(AP_tree_root *troot)
+    explicit AP_tree_nlen(AP_pars_root *troot)
         : AP_tree(troot),
           kernighan(AP_NONE),
           distance(INT_MAX),
-          mutation_rate(0)
+          mutation_rate(0),
+          pushed_to_frame(0)
     {
         edge[0]  = edge[1]  = edge[2]  = NULL;
         index[0] = index[1] = index[2] = 0;
     }
     ~AP_tree_nlen() OVERRIDE {}
 
-    DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree_nlen);
+    DEFINE_TREE_ACCESSORS(AP_pars_root, AP_tree_nlen);
 
     void     unhash_sequence();
     AP_FLOAT costs(char *mutPerSite = NULL);        // cost of a tree (number of changes ..)
 
-    bool push(AP_STACK_MODE, unsigned long); // push state of costs
-    void pop(unsigned long);    // pop old tree costs
-    bool clear(unsigned long stack_update, unsigned long user_push_counter);
+    bool push(AP_STACK_MODE, Level frame_level);      // push state of costs
+    void pop(Level curr_frameLevel); // pop old tree costs
+    void restore(const NodeState& state, bool destructive); // restore old node state
+    bool clear(Level frame_level, Level user_push_counter);
+
+    Level get_pushed_to_frame() const { return pushed_to_frame; }
+    const StateStack& get_states() const { return states; }
 
     virtual AP_UPDATE_FLAGS check_update() OVERRIDE; // disable  load !!!!
 
@@ -99,7 +121,7 @@ public:
 
     // tree reconstruction methods:
     void insert(AP_tree_nlen *new_brother);
-    void initial_insert(AP_tree_nlen *new_brother, AP_tree_root *troot);
+    void initial_insert(AP_tree_nlen *new_brother, AP_pars_root *troot);
 
     void remove() OVERRIDE;
     void swap_sons() OVERRIDE;
@@ -109,7 +131,7 @@ public:
 
     // overload virtual methods from AP_tree:
     void insert(AP_tree *new_brother) OVERRIDE { insert(DOWNCAST(AP_tree_nlen*, new_brother)); }
-    void initial_insert(AP_tree *new_brother, AP_tree_root *troot) OVERRIDE { initial_insert(DOWNCAST(AP_tree_nlen*, new_brother), troot); }
+    void initial_insert(AP_tree *new_brother, AP_tree_root *troot) OVERRIDE { initial_insert(DOWNCAST(AP_tree_nlen*, new_brother), DOWNCAST(AP_pars_root*, troot)); }
     void moveNextTo(AP_tree *node, AP_FLOAT rel_pos) OVERRIDE { moveNextTo(DOWNCAST(AP_tree_nlen*, node), rel_pos); }
 
     // tree optimization methods:
@@ -138,8 +160,6 @@ public:
     // ancestors in it
     AP_CO_LIST * createList(int *size);
 
-    class AP_tree_stack stack;  // tree stack
-
     // misc stuff:
 
     void setBranchlen(double leftLen, double rightLen) { leftlen = leftLen; rightlen = rightLen; }
@@ -163,10 +183,14 @@ public:
     char *getSequenceCopy();
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
-    void assert_edges_valid() const;
+    bool has_valid_edges() const;
     void assert_valid() const;
+    bool sequence_state_valid() const;
 #endif // PROVIDE_TREE_STRUCTURE_TESTS
 
+#if defined(PROVIDE_PRINT)
+    void print(std::ostream& out, int indentLevel, const char *label) const;
+#endif
 
     friend      class AP_tree_edge;
     friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);
@@ -174,7 +198,7 @@ public:
 
 struct AP_TreeNlenNodeFactory : public RootedTreeNodeFactory {
     RootedTree *makeNode(TreeRoot *root) const OVERRIDE {
-        return new AP_tree_nlen(DOWNCAST(AP_tree_root*, root));
+        return new AP_tree_nlen(DOWNCAST(AP_pars_root*, root));
     }
 };
 
@@ -221,7 +245,7 @@ class AP_tree_edge : virtual Noncopyable {
     friend class AP_tree_nlen;
     friend std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
 #if defined(UNIT_TESTS) // UT_DIFF
-    friend void TEST_tree_modifications();
+    friend void TEST_basic_tree_modifications();
 #endif
 
 protected:
@@ -286,15 +310,6 @@ public:
 };
 
 std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
-
-
-inline AP_tree_nlen *rootNode() {
-    return ap_main->get_root_node();
-}
-
-inline AP_tree_edge *rootEdge() {
-    return rootNode()->get_leftson()->edgeTo(rootNode()->get_rightson());
-}
 
 #else
 #error ap_tree_nlen.hxx included twice

@@ -1,27 +1,30 @@
 #include "AP_seq_dna.hxx"
 #include "AP_parsimony_defaults.hxx"
 
-#include <arb_mem.h>
 #include <AP_pro_a_nucs.hxx>
 #include <AP_filter.hxx>
 #include <ARB_Tree.hxx>
 
 
+inline bool hasGap(char c) { return c & AP_GAP; }
+inline bool isGap(char c)  { return c == AP_GAP; }
+
+inline bool notHasGap(char c) { return !hasGap(c); }
+inline bool notIsGap(char c)  { return !isGap(c); }
+
+// -------------------------------
+//      AP_sequence_parsimony
+
 char *AP_sequence_parsimony::table;
-
-/*!***************************
-
-
-******************************/
 
 AP_sequence_parsimony::AP_sequence_parsimony(const AliView *aliview)
     : AP_sequence(aliview)
-    , seq_pars(NULL)
+    , seq_pars(0)
 {
 }
 
 AP_sequence_parsimony::~AP_sequence_parsimony() {
-    free(seq_pars);
+    delete [] seq_pars;
 }
 
 AP_sequence *AP_sequence_parsimony::dup() const {
@@ -47,11 +50,11 @@ void AP_sequence_parsimony::build_table()
 
 // #define SHOW_SEQ
 
-void AP_sequence_parsimony::set(const char *isequence)
-{
+void AP_sequence_parsimony::set(const char *isequence) {
+    // UNCOVERED(); // covered by TEST_calc_bootstraps
     size_t sequence_len = get_filter()->get_filtered_length();
-    arb_alloc_aligned(seq_pars, sequence_len+1);
-    memset(seq_pars, AP_N, (size_t)sequence_len+1);
+    seq_pars     = new char[sequence_len+1];
+    memset(seq_pars, AP_DOT, (size_t)sequence_len+1); // init with dots
 
     const uchar *simplify = get_filter()->get_simplify_table();
     if (!table) this->build_table();
@@ -76,16 +79,19 @@ void AP_sequence_parsimony::set(const char *isequence)
         }
     }
     else {
-        const size_t* base_pos = filt->get_filterpos_2_seqpos();
+        int left_bases = sequence_len;
+        int filter_len = filt->get_length();
+        int oidx       = 0;                         // for output sequence
 
-        for (size_t i = 0; i < sequence_len; ++i) {
-            size_t pos = base_pos[i];
-            unsigned char c = (unsigned char)isequence[pos];
-            seq_pars[i] = table[simplify[c]];
-
+        for (int idx = 0; idx<filter_len && left_bases; ++idx) {
+            if (filt->use_position(idx)) {
+                unsigned char c = (unsigned char)isequence[idx];
+                seq_pars[oidx++] = table[simplify[c]];
+                --left_bases;
 #if defined(SHOW_SEQ)
                 fputc(simplify[c], stdout);
-#endif // SHOW_SEQ
+#endif                          // SHOW_SEQ
+            }
         }
     }
 
@@ -97,7 +103,7 @@ void AP_sequence_parsimony::set(const char *isequence)
 }
 
 void AP_sequence_parsimony::unset() {
-    freenull(seq_pars);
+    delete [] seq_pars; seq_pars = 0;
     mark_sequence_set(false);
 }
 
@@ -105,107 +111,73 @@ void AP_sequence_parsimony::unset() {
 #error AP_parsimony_defaults.hxx not included
 #endif // AP_PARSIMONY_DEFAULTS_HXX
 
+AP_FLOAT AP_sequence_parsimony::combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) {
+    // Note: changes done here should also be be applied to AP_seq_protein.cxx@combine_impl
 
+    const AP_sequence_parsimony *left  = (const AP_sequence_parsimony *)lefts;
+    const AP_sequence_parsimony *right = (const AP_sequence_parsimony *)rights;
 
-/** BELOW CODE CAREFULLY DESIGNED TO ALLOW VECTORIZATION
- *
- * If you mess with it, use "-fopt-info" or "-ftree-vectorizer-verbose=n".
- * Make sure you still see "LOOP VECTORIZED" in the output!
- */
+    // UNCOVERED(); // covered by TEST_calc_bootstraps + TEST_tree_quick_add_marked
+    size_t sequence_len = get_sequence_length();
+    if (seq_pars == 0) {
+        seq_pars = new char[sequence_len + 1];
+    }
 
-template <class COUNT, class SITE>
-static long do_combine(size_t sequence_len,
-                       const char * __restrict p1, 
-                       const char * __restrict p2,
-                       char * __restrict p,
-                       COUNT count,
-                       SITE site) {
+    const char *p1       = left->get_sequence();
+    const char *p2       = right->get_sequence();
+    char       *p        = seq_pars;
+    char       *mutpsite = mutation_per_site;
+    long        result   = 0;
+
+    const AP_weights *weights = get_weights();
 
     for (size_t idx = 0; idx<sequence_len; ++idx) {
         char c1 = p1[idx];
         char c2 = p2[idx];
-        
-        char c = c1 & c2;
-        p[idx] = (c==0)?c1|c2:c;
-        
-        count.add(idx, c);
-        site.add(idx, c);
-    }
 
-    return count.sum;
-}
+        ap_assert(c1 != AP_ILLEGAL);
+        ap_assert(c2 != AP_ILLEGAL);
 
-struct count_unweighted {
-    long sum;
-    count_unweighted():sum(0){}
-    void add(size_t, char c) {
-        sum += (c==0)?1:0;
-    }
-};
+        if ((c1&c2) == 0) {    // bases are distinct (that means we count a mismatch)
+            p[idx] = c1|c2;     // mix distinct bases
 
-struct count_weighted {
-    long sum;
-    const GB_UINT4* weights;
-    count_weighted(const GB_UINT4* w):sum(0), weights(w){}
-    void add(size_t idx, char c) {
-        sum += weights[idx] * (c==0)?1:0;
-    }
-};
+#if !defined(MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS)
+            // count multiple mutations as 1 mutation
+            // (code here is unused)
+            if (hasGap(p[idx])) {  // contains a gap
+                if (idx>0 && hasGap(p[idx-1])) { // last position also contained gap..
+                    if ((hasGap(c1) && hasGap(p1[idx-1])) || // ..in same sequence
+                        (hasGap(c2) && hasGap(p2[idx-1])))
+                    {
+                        if (notHasGap(p1[idx-1]) || notHasGap(p2[idx-1])) { // if one of the sequences had no gap at previous position
+                            continue; // skip multiple gaps
+                        }
+                    }
+                }
+            }
+#endif // MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS
 
-struct count_nothing {
-    void add(size_t, char) {}
-};
+            // now count mutation :
 
-struct count_mutpsite {
-    char * sites;
-    count_mutpsite(char *s):sites(s){}
-    void add(size_t idx, char c) {
-        // below is equal to "if (c) sites[idx]", the difference
-        // is that no branch is required and sites[idx] is always
-        // written, allowing vectorization
-        // we can't use (c==0)?1:0 for reasons unknown
-        // gcc 4.8.1 refuses to vectorize the conditional
-        sites[idx] += ((c | -c) >> 7 & 1) ^ 1;        
-    }
-};
-
-AP_FLOAT AP_sequence_parsimony::combine(const AP_sequence * lefts, 
-                                        const AP_sequence * rights,
-                                        char *mutation_per_site) {
-    const AP_sequence_parsimony *left = (const AP_sequence_parsimony *)lefts;
-    const AP_sequence_parsimony *right = (const AP_sequence_parsimony *)rights;
-
-     size_t sequence_len = get_sequence_length();
-    if (seq_pars == NULL) {
-        arb_alloc_aligned(seq_pars, sequence_len + 1);
-    }
-
-    const char * p1       = left->get_sequence();
-    const char * p2       = right->get_sequence();
-    long        result   = 0;
-
-    if (get_weights()->is_unweighted()) {
-        if (mutation_per_site) {
-            result = do_combine(sequence_len, p1, p2, seq_pars,  
-                                count_unweighted(), count_mutpsite(mutation_per_site));
-
+            if (mutpsite) mutpsite[idx]++;          // count mutations per site (unweighted)
+            result += weights->weight(idx);         // count weighted or simple
         }
         else {
-            result = do_combine(sequence_len, p1, p2, seq_pars,
-                                count_unweighted(), count_nothing());
+            p[idx] = c1&c2; // store common bases for both subtrees
         }
-    }
-    else {
-        if (mutation_per_site) {
-            result = do_combine(sequence_len, p1, p2, seq_pars,
-                                count_weighted(get_weights()->get_weights()),
-                                count_mutpsite(mutation_per_site));
+
+
+#if !defined(PROPAGATE_GAPS_UPWARDS)
+        // do not propagate mixed gaps upwards (they cause neg. branches)
+        // (code here is unused)
+        if (hasGap(p[idx])) {
+            if (notIsGap(p[idx])) {
+                p[idx] = AP_BASES(p[idx]^AP_GAP);
+            }
         }
-        else {
-            result = do_combine(sequence_len, p1, p2, seq_pars,
-                                count_weighted(get_weights()->get_weights()),
-                                count_nothing());
-        }
+#endif // PROPAGATE_GAPS_UPWARDS
+
+        ap_assert(p[idx] != 0);
     }
 
 #if defined(DEBUG) && 0
@@ -227,7 +199,6 @@ AP_FLOAT AP_sequence_parsimony::combine(const AP_sequence * lefts,
     return (AP_FLOAT)result;
 }
 
-
 void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overlapPtr, long *penaltyPtr) const {
     // matches the partial sequences 'part_' against 'this'
     // '*penaltyPtr' is set to the number of mismatches (possibly weighted)
@@ -238,28 +209,31 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
     //          overlap       7                  3
     //
     // algorithm is similar to AP_sequence_parsimony::combine()
+    // Note: changes done here should also be be applied to AP_seq_protein.cxx@partial_match_impl
 
     const AP_sequence_parsimony *part = (const AP_sequence_parsimony *)part_;
 
+    // UNCOVERED(); // covered by TEST_tree_add_marked
     const char *pf = get_sequence();
     const char *pp = part->get_sequence();
 
     const AP_weights *weights = get_weights();
 
-    long min_end;                                   // minimum of both last non-gap positions
+    // @@@ to fix #609 replace "IsGap" by "HasGap" below (also use & instead of | for 'both', 'both' as used here in fact means 'any')
 
+    long min_end; // minimum of both last non-gap positions
     for (min_end = get_sequence_length()-1; min_end >= 0; --min_end) {
         char both = pf[min_end]|pp[min_end];
-        if (both != AP_S) { // last non-gap found
-            if (pf[min_end] != AP_S) { // occurred in full sequence
+        if (notIsGap(both)) { // last non-gap found
+            if (notIsGap(pf[min_end])) { // occurred in full sequence
                 for (; min_end >= 0; --min_end) { // search same in partial sequence
-                    if (pp[min_end] != AP_S) break;
+                    if (notIsGap(pp[min_end])) break;
                 }
             }
             else {
-                ap_assert(pp[min_end] != AP_S); // occurred in partial sequence
+                ap_assert(notIsGap(pp[min_end])); // occurred in partial sequence
                 for (; min_end >= 0; --min_end) { // search same in full sequence
-                    if (pf[min_end] != AP_S) break;
+                    if (notIsGap(pf[min_end])) break;
                 }
             }
             break;
@@ -273,16 +247,16 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
         long max_start; // maximum of both first non-gap positions
         for (max_start = 0; max_start <= min_end; ++max_start) {
             char both = pf[max_start]|pp[max_start];
-            if (both != AP_S) { // first non-gap found
-                if (pf[max_start] != AP_S) { // occurred in full sequence
+            if (notIsGap(both)) { // first non-gap found
+                if (notIsGap(pf[max_start])) { // occurred in full sequence
                     for (; max_start <= min_end; ++max_start) { // search same in partial
-                        if (pp[max_start] != AP_S) break;
+                        if (notIsGap(pp[max_start])) break;
                     }
                 }
                 else {
-                    ap_assert(pp[max_start] != AP_S); // occurred in partial sequence
+                    ap_assert(notIsGap(pp[max_start])); // occurred in partial sequence
                     for (; max_start <= min_end; ++max_start) { // search same in full
-                        if (pf[max_start] != AP_S) break;
+                        if (notIsGap(pf[max_start])) break;
                     }
                 }
                 break;
@@ -303,24 +277,25 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
     *penaltyPtr = penalty;
 }
 
-
-
-AP_FLOAT AP_sequence_parsimony::count_weighted_bases() const { // count all bases
+AP_FLOAT AP_sequence_parsimony::count_weighted_bases() const {
     static char *hits = 0;
     if (!hits) {
         hits = (char*)malloc(256);
-        memset(hits, 1, 256);                       // count ambiguous characters half
+        memset(hits, 1, 256); // count ambiguous characters half
 
-        hits[AP_A] = 2;                             // real characters full
+        hits[AP_A] = 2; // count real characters full
         hits[AP_C] = 2;
         hits[AP_G] = 2;
         hits[AP_T] = 2;
-        hits[AP_S] = 0;                             // count no gaps
-        hits[AP_N] = 0;                             // no Ns
+
+        hits[AP_GAP] = 0; // don't count gaps
+        hits[AP_DOT] = 0; // don't count dots (and other stuff)
     }
 
     const AP_weights *weights = get_weights();
     const  char      *p       = get_sequence();
+
+    // UNCOVERED(); // covered by TEST_calc_bootstraps
 
     long   sum          = 0;
     size_t sequence_len = get_sequence_length();

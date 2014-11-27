@@ -205,7 +205,9 @@ TOOLDIR=../bin
 $(DESTDIR)/test_TOOLS_arb_test_o.done : \
 	$(TOOLDIR)/arb_export_tree \
 	$(TOOLDIR)/arb_export_rates \
+	$(TOOLDIR)/arb_export_sequences \
 	$(TOOLDIR)/arb_probe \
+	$(TOOLDIR)/arb_probe_match \
 	$(TOOLDIR)/arb_dnarates \
 
 # force tests affected by changed pt-server:

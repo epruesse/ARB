@@ -12,6 +12,7 @@
 #include "pars_main.hxx"
 #include "pars_debug.hxx"
 #include "ap_tree_nlen.hxx"
+#include "ap_main.hxx"
 
 #include <AP_seq_dna.hxx>
 #include <AP_seq_protein.hxx>
@@ -31,7 +32,8 @@
 #include <aw_question.hxx>
 
 static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
-    AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
+    AWT_graphic_tree *agt = (AWT_graphic_tree*)cd; // @@@ dynacast?
+    UNCOVERED();
 
     if (old == agt->displayed_root) agt->displayed_root = newroot;
 }
@@ -50,19 +52,20 @@ static AliView *pars_generate_aliview(WeightedFilter *pars_weighted_filter) {
     return aliview;
 }
 
-void PARS_tree_init(AWT_graphic_tree *agt) {
+void PARS_tree_init(AWT_graphic_parsimony *agt) {
     ap_assert(agt->get_root_node());
-    ap_assert(agt == ap_main->get_tree_root());
+    ap_assert(agt == ap_main->get_graphic_tree());
 
-    GB_transaction ta(GLOBAL_gb_main);
+    GBDATA         *gb_main = ap_main->get_gb_main();
+    GB_transaction  ta(gb_main);
 
     const char *use     = ap_main->get_aliname();
-    long        ali_len = GBT_get_alignment_len(GLOBAL_gb_main, use);
+    long        ali_len = GBT_get_alignment_len(gb_main, use);
     if (ali_len <= 1) {
         aw_popup_exit("No valid alignment selected! Try again");
     }
 
-    agt->tree_static->set_root_changed_callback(AWT_graphic_parsimony_root_changed, agt);
+    agt->get_tree_root()->set_root_changed_callback(AWT_graphic_parsimony_root_changed, agt);
 }
 
 static double funktion_quadratisch(double wert, double *param_list, int param_anz) {
@@ -75,24 +78,25 @@ static double funktion_quadratisch(double wert, double *param_list, int param_an
 
 
 void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
-    GB_push_transaction(GLOBAL_gb_main);
+    GBDATA *gb_main = ap_main->get_gb_main();
+    GB_push_transaction(gb_main);
 
     long prevCombineCount = AP_sequence::combine_count();
 
     AP_FLOAT       pars_start = get_root_node()->costs();
     const AP_FLOAT pars_org   = pars_start;
 
-    int rek_deep_max = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/maxdepth");
+    int rek_deep_max = *GBT_read_int(gb_main, "genetic/kh/maxdepth");
 
-    AP_KL_FLAG funktype = (AP_KL_FLAG)*GBT_read_int(GLOBAL_gb_main, "genetic/kh/function_type");
+    AP_KL_FLAG funktype = (AP_KL_FLAG)*GBT_read_int(gb_main, "genetic/kh/function_type");
 
-    int param_anz;
+    int    param_anz;
     double param_list[3];
-    double f_startx, f_maxy, f_maxx, f_max_deep;
-    f_max_deep = (double)rek_deep_max;                   //             x2
-    f_startx = (double)*GBT_read_int(GLOBAL_gb_main, "genetic/kh/dynamic/start");
-    f_maxy = (double)*GBT_read_int(GLOBAL_gb_main, "genetic/kh/dynamic/maxy");
-    f_maxx = (double)*GBT_read_int(GLOBAL_gb_main, "genetic/kh/dynamic/maxx");
+
+    double f_max_deep = (double)rek_deep_max;
+    double f_startx   = (double)*GBT_read_int(gb_main, "genetic/kh/dynamic/start");
+    double f_maxy     = (double)*GBT_read_int(gb_main, "genetic/kh/dynamic/maxy");
+    double f_maxx     = (double)*GBT_read_int(gb_main, "genetic/kh/dynamic/maxx");
 
     double (*funktion)(double wert, double *param_list, int param_anz);
     switch (funktype) {
@@ -115,29 +119,29 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
 
 
     AP_KL_FLAG searchflag=(AP_KL_FLAG)0;
-    if (*GBT_read_int(GLOBAL_gb_main, "genetic/kh/dynamic/enable")) {
+    if (*GBT_read_int(gb_main, "genetic/kh/dynamic/enable")) {
         searchflag = AP_DYNAMIK;
     }
-    if (*GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/enable")) {
+    if (*GBT_read_int(gb_main, "genetic/kh/static/enable")) {
         searchflag = (AP_KL_FLAG)(searchflag|AP_STATIC);
     }
 
     int rek_breite[8];
-    rek_breite[0] = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/depth0");
-    rek_breite[1] = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/depth1");
-    rek_breite[2] = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/depth2");
-    rek_breite[3] = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/depth3");
-    rek_breite[4] = *GBT_read_int(GLOBAL_gb_main, "genetic/kh/static/depth4");
+    rek_breite[0] = *GBT_read_int(gb_main, "genetic/kh/static/depth0");
+    rek_breite[1] = *GBT_read_int(gb_main, "genetic/kh/static/depth1");
+    rek_breite[2] = *GBT_read_int(gb_main, "genetic/kh/static/depth2");
+    rek_breite[3] = *GBT_read_int(gb_main, "genetic/kh/static/depth3");
+    rek_breite[4] = *GBT_read_int(gb_main, "genetic/kh/static/depth4");
     int rek_breite_anz = 5;
 
-    int       anzahl = (int)(*GBT_read_float(GLOBAL_gb_main, "genetic/kh/nodes")*at->count_leafs());
+    int       anzahl = (int)(*GBT_read_float(gb_main, "genetic/kh/nodes")*at->count_leafs());
     AP_tree **list   = at->getRandomNodes(anzahl);
     
     arb_progress progress(anzahl);
 
     progress.subtitle(GBS_global_string("Old Parsimony: %.1f", pars_start));
 
-    GB_pop_transaction(GLOBAL_gb_main);
+    GB_pop_transaction(gb_main);
 
     for (int i=0; i<anzahl && !progress.aborted(); i++) {
         AP_tree_nlen *tree_elem = DOWNCAST(AP_tree_nlen*, list[i]); // @@@ pass 'at' as AP_tree_nlen
@@ -147,7 +151,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
 
         if (!in_folded_group) {
             bool better_tree_found = false;
-            ap_main->push();
+            ap_main->remember();
             display_clear(funktion, param_list, param_anz, (int)pars_start, (int)rek_deep_max);
 
             tree_elem->kernighan_rek(0,
@@ -157,17 +161,17 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
                                      searchflag, &better_tree_found);
 
             if (better_tree_found) {
-                ap_main->clear();
+                ap_main->accept();
                 pars_start =  get_root_node()->costs();
                 progress.subtitle(GBS_global_string("New parsimony: %.1f (gain: %.1f)", pars_start, pars_org-pars_start));
             }
             else {
-                ap_main->pop();
+                ap_main->revert();
             }
         }
         progress.inc();
     }
-    delete list;
+    delete [] list;
     printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
 }
 
@@ -203,9 +207,14 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
 }
 
 AWT_graphic_parsimony::AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
-    : AWT_graphic_tree(parsimony_.get_awroot(), gb_main_, map_viewer_cb_),
+    : AWT_graphic_tree(AW_root::SINGLETON, gb_main_, map_viewer_cb_),
       parsimony(parsimony_)
 {}
+
+AP_tree_root *AWT_graphic_parsimony::create_tree_root(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs) {
+    return new AP_pars_root(aliview, nodeMaker_, seq_prototype, insert_delete_cbs);
+}
+
 
 void ArbParsimony::generate_tree(WeightedFilter *pars_weighted_filter) {
     AliView     *aliview   = pars_generate_aliview(pars_weighted_filter);
@@ -220,9 +229,9 @@ void ArbParsimony::generate_tree(WeightedFilter *pars_weighted_filter) {
         else seq_templ       = new AP_sequence_parsimony(aliview);
     }
 
-    tree = new AWT_graphic_parsimony(*this, aliview->get_gb_main(), PARS_map_viewer);
-    tree->init(new AP_TreeNlenNodeFactory, aliview, seq_templ, true, false);
-    ap_main->set_tree_root(tree);
+    AWT_graphic_parsimony *new_tree = new AWT_graphic_parsimony(*this, aliview->get_gb_main(), PARS_map_viewer);
+    new_tree->init(new AP_TreeNlenNodeFactory, aliview, seq_templ, true, false);
+    set_tree(new_tree);
 }
 
 AW_gc_manager AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw) {
@@ -383,93 +392,34 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
 
 #ifdef UNIT_TESTS
 #include <arb_diff.h>
-#ifndef TEST_UNIT_H
 #include <test_unit.h>
-#endif
+#include "test_env.h"
 
-void fake_AW_init_color_groups();
+template<typename SEQTYPE>
+PARSIMONY_testenv<SEQTYPE>::PARSIMONY_testenv(const char *dbname, const char *aliName)
+    : parsimony()
+{
+    common_init(dbname);
+    GBDATA         *gb_main   = ap_main->get_gb_main();
+    GB_transaction  ta(gb_main);
+    size_t          aliLength = GBT_get_alignment_len(gb_main, aliName);
 
-struct fake_agt : public AWT_graphic_tree, virtual Noncopyable {
-    AP_sequence_parsimony *templ;
-
-    fake_agt()
-        : AWT_graphic_tree(NULL, GLOBAL_gb_main, NULL),
-          templ(NULL)
-    {
+    AP_filter filter(aliLength);
+    if (!filter.is_invalid()) {
+        AP_weights weights(&filter);
+        agt->init(new AliView(gb_main, filter, weights, aliName));
     }
-    ~fake_agt() {
-        delete templ;
-    }
-    void init(AliView *aliview) {
-        fake_AW_init_color_groups(); // acts like no species has a color
-        delete templ;
-        templ = aliview->has_data() ? new AP_sequence_parsimony(aliview) : NULL;
-        AWT_graphic_tree::init(new AP_TreeNlenNodeFactory, aliview, templ, true, false);
-    }
-};
+}
 
-class PARSIMONY_testenv : virtual Noncopyable {
-    GB_shell  shell;
-    AP_main   apMain;
-    fake_agt *agt;
+template PARSIMONY_testenv<AP_sequence_protein>::PARSIMONY_testenv(const char *dbname, const char *aliName); // explicit instanciation (otherwise link error in unittest)
 
-    void common_init(const char *dbname) {
-        GLOBAL_gb_main = NULL;
-        apMain.open(dbname);
 
-        TEST_EXPECT_NULL(ap_main);
-        ap_main = &apMain;
-
-        agt = new fake_agt;
-        apMain.set_tree_root(agt);
-    }
-
-public:
-    PARSIMONY_testenv(const char *dbname) {
-        common_init(dbname);
-        agt->init(new AliView(GLOBAL_gb_main));
-    }
-    PARSIMONY_testenv(const char *dbname, const char *aliName) {
-        common_init(dbname);
-        GB_transaction ta(GLOBAL_gb_main);
-        size_t aliLength = GBT_get_alignment_len(GLOBAL_gb_main, aliName);
-
-        AP_filter filter(aliLength);
-        if (!filter.is_invalid()) {
-            AP_weights weights(&filter);
-            agt->init(new AliView(GLOBAL_gb_main, filter, weights, aliName));
-        }
-    }
-    ~PARSIMONY_testenv() {
-        TEST_EXPECT_EQUAL(ap_main, &apMain);
-        ap_main = NULL;
-
-        delete agt;
-        GB_close(GLOBAL_gb_main);
-        GLOBAL_gb_main = NULL;
-    }
-
-    GB_ERROR load_tree(const char *tree_name) {
-        GB_transaction ta(GLOBAL_gb_main); // @@@ do inside AWT_graphic_tree::load?
-        return agt->load(GLOBAL_gb_main, tree_name, 0, 0);
-    }
-    AP_tree_nlen *tree_root() { return apMain.get_root_node(); }
-
-    void push() { apMain.push(); }
-    void pop() { apMain.pop(); }
-};
-
-void TEST_tree_modifications() {
-    PARSIMONY_testenv env("TEST_trees.arb");
+void TEST_basic_tree_modifications() {
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
 
     {
-        AP_tree_nlen *root = env.tree_root();
-        TEST_REJECT_NULL(root);
-
-        AP_tree_edge::initialize(root);   // builds edges
-        TEST_ASSERT_VALID_TREE(root);
-
+        AP_tree_nlen *root = env.root_node();
         root->compute_tree();
 
         // first check initial state:
@@ -484,8 +434,8 @@ void TEST_tree_modifications() {
             TEST_EXPECT_SIMILAR(root_info.max_tree_depth, 1.624975, 0.000001);
             TEST_EXPECT_SIMILAR(root_info.min_tree_depth, 0.341681, 0.000001);
 
-            GB_transaction ta(GLOBAL_gb_main);
-            GBT_mark_all(GLOBAL_gb_main, 0); // unmark all species
+            GB_transaction ta(env.gbmain());
+            GBT_mark_all(env.gbmain(), 0); // unmark all species
             root->compute_tree();
             TEST_EXPECT_EQUAL(root_info.has_marked_children, 0);
         }
@@ -624,8 +574,6 @@ void TEST_tree_modifications() {
 
         TEST_ASSERT_VALID_TREE(root);
 
-        AP_tree_edge::destroy(root);
-
         // delete memory allocated by insert() above and lost due to pop()s
         delete edge1_del_manually;
         delete edge2_del_manually;
@@ -644,7 +592,7 @@ void TEST_tree_modifications() {
 // - ...
 
 void TEST_calc_bootstraps() {
-    PARSIMONY_testenv env("TEST_trees.arb", "ali_5s");
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", "ali_5s");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
 
     const char *bs_origi_topo = "(((((((CloTyro3,CloTyro4)'40%',CloTyro2)'0%',CloTyrob)'97%',CloInnoc)'0%',CloBifer)'53%',(((CloButy2,CloButyr)'100%',CloCarni)'33%',CloPaste)'97%')'100%',((((CorAquat,CurCitre)'100%',CorGluta)'17%',CelBiazo)'40%',CytAquat)'100%');";
@@ -652,28 +600,27 @@ void TEST_calc_bootstraps() {
     const char *bs_estim_topo = "(((((((CloTyro3,CloTyro4)'75%',CloTyro2)'0%',CloTyrob)'100%',CloInnoc)'75%',CloBifer)'78%',(((CloButy2,CloButyr)'99%',CloCarni)'13%',CloPaste)'32%')'53%',((((CorAquat,CurCitre)'74%',CorGluta)'0%',CelBiazo)'56%',CytAquat)'53%');";
 
     {
-        AP_tree_nlen *root = env.tree_root();
-        TEST_REJECT_NULL(root);
-
-        AP_tree_edge::initialize(root);   // builds edges
-        TEST_EXPECT_EQUAL(root, rootNode()); // need tree-access via global 'ap_main' (too much code is based on that)
-
+        AP_tree_nlen *root      = env.root_node();
         AP_tree_edge *root_edge = rootEdge();
-        TEST_REJECT_NULL(root_edge);
+
+        TEST_EXPECT(root && rootEdge);
 
         root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_origi_topo);
 
+        TEST_EXPECT_EQUAL(env.combines_performed(), 0);
         root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_limit_topo);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 214);
         root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_estim_topo);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 200);
 
-        TEST_EXPECT_EQUAL(env.tree_root(), root);
-        AP_tree_edge::destroy(root);
+        TEST_EXPECT_EQUAL(env.root_node(), root);
     }
+
 }
 
 void TEST_tree_remove_add_all() {
     // reproduces crash as described in #527
-    PARSIMONY_testenv env("TEST_trees.arb", "ali_5s");
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", "ali_5s");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_nj"));
 
     const int     LEAFS     = 6;
@@ -687,18 +634,16 @@ void TEST_tree_remove_add_all() {
         "CorGluta",
     };
 
-    AP_tree_nlen *root = env.tree_root();
-    TEST_REJECT_NULL(root);
+    AP_tree_nlen *root = env.root_node();
 
     for (int i = 0; i<LEAFS; ++i) {
         leaf[i] = root->findLeafNamed(name[i]);
         TEST_REJECT_NULL(leaf[i]);
     }
 
-    AP_tree_edge::initialize(root);   // builds edges
-    TEST_EXPECT_EQUAL(root, rootNode()); // need tree-access via global 'ap_main' (too much code is based on that)
+    TEST_ASSERT_VALID_TREE(root);
 
-    AP_tree_root *troot = leaf[0]->get_tree_root();
+    AP_pars_root *troot = leaf[0]->get_tree_root();
     TEST_REJECT_NULL(troot);
 
     // Note: following loop leaks father nodes and edges

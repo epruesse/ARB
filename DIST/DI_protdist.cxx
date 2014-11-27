@@ -14,8 +14,6 @@
 #include <arb_progress.h>
 #include <cmath>
 
-#define di_assert(cond) arb_assert(cond)
-
 #define epsilon 0.000001        // a small number
 
 double di_protdist::pameigs[20] = {
@@ -148,65 +146,6 @@ double di_protdist::pamprobs[20][20] = {
         -0.00084536, 0.01631369, 0.00095063, -0.09570217, 0.06480321
     }
 };
-
-void di_protdist::cats(di_cattype      wcat)
-{
-    // define categories of amino acids
-    aas             b;
-
-    // fundamental subgroups
-    cat[(long) CYS - (long) ALA] = 1;
-    cat[(long) MET - (long) ALA] = 2;
-    cat[(long) VAL - (long) ALA] = 3;
-    cat[(long) LEU - (long) ALA] = 3;
-    cat[(long) ILEU - (long) ALA] = 3;
-    cat[(long) GLY - (long) ALA] = 4;
-    cat[0] = 4;
-    cat[(long) SER - (long) ALA] = 4;
-    cat[(long) THR - (long) ALA] = 4;
-    cat[(long) PRO - (long) ALA] = 5;
-    cat[(long) PHE - (long) ALA] = 6;
-    cat[(long) TYR - (long) ALA] = 6;
-    cat[(long) TRP - (long) ALA] = 6;
-    cat[(long) GLU - (long) ALA] = 7;
-    cat[(long) GLN - (long) ALA] = 7;
-    cat[(long) ASP - (long) ALA] = 7;
-    cat[(long) ASN - (long) ALA] = 7;
-    cat[(long) LYS - (long) ALA] = 8;
-    cat[(long) ARG - (long) ALA] = 8;
-    cat[(long) HIS - (long) ALA] = 8;
-    if (wcat == GEORGE) {
-        /* George, Hunt and Barker: sulfhydryl, small hydrophobic,
-         * small hydrophilic, aromatic, acid/acid-amide/hydrophilic,
-         * basic
-         */
-        for (b = ALA; (long) b <= (long) VAL; b = (aas) ((long) b + 1)) {
-            if (cat[(long) b - (long) ALA] == 3)
-                cat[(long) b - (long) ALA] = 2;
-            if (cat[(long) b - (long) ALA] == 5)
-                cat[(long) b - (long) ALA] = 4;
-        }
-    }
-    if (wcat == CHEMICAL) {
-        /* Conn and Stumpf:  monoamino, aliphatic, heterocyclic,
-         * aromatic, dicarboxylic, basic
-         */
-        for (b = ALA; (long) b <= (long) VAL; b = (aas) ((long) b + 1)) {
-            if (cat[(long) b - (long) ALA] == 2)
-                cat[(long) b - (long) ALA] = 1;
-            if (cat[(long) b - (long) ALA] == 4)
-                cat[(long) b - (long) ALA] = 3;
-        }
-    }
-    // Ben Hall's personal opinion
-    if (wcat != HALL)
-        return;
-    for (b = ALA; (long) b <= (long) VAL; b = (aas) ((long) b + 1)) {
-        if (cat[(long) b - (long) ALA] == 3)
-            cat[(long) b - (long) ALA] = 2;
-    }
-}
-
 
 void di_protdist::maketrans() {
     // Make up transition probability matrix from code and category tables

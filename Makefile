@@ -194,6 +194,13 @@ clflags :=# linker flags (when passed through gcc)
 extended_warnings :=# warning flags for C and C++-compiler
 extended_cpp_warnings :=# warning flags for C++-compiler only
 
+# TEMPORARY WORKAROUND for linker issues with launchpad binutils
+# code was added to ld to check for overlapping FDEs. Since ARB
+# worked before, we want this not to fail for the moment.
+# FIXME: remove this!
+clflags += -Wl,-noinhibit-exec
+
+
 ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
 	ifeq ($(USE_CLANG),1)
@@ -2161,7 +2168,6 @@ TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
 UNITS_WORKING = \
 	$(RNA3D_TEST) \
 	AWTI/AWTI.test \
-	DIST/DIST.test \
 	EISPACK/EISPACK.test \
 	GENOM/GENOM.test \
 	GL/glAW/libglAW.test \
@@ -2209,7 +2215,17 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	DIST/DIST.test \
 	PARSIMONY/PARSIMONY.test \
+	EDIT4/EDIT4.test \
+	NTREE/NTREE.test \
+	MULTI_PROBE/MULTI_PROBE.test \
+
+# plain test-libaries not linked anywhere
+TEST_SANDBOXES = \
+	SL/CB/CB.test \
+
+UNITS_TESTED = \
 	SL/NEIGHBOURJOIN/NEIGHBOURJOIN.test \
 	SL/NDS/NDS.test \
 	ARB_GDE/ARB_GDE.test \
@@ -2224,12 +2240,6 @@ UNITS_TESTED_FIRST = \
 	TOOLS/arb_probe.test \
 	PERLTOOLS/arb_proto_2_xsub.test \
 	AWTC/AWTC.test \
-
-# plain test-libaries not linked anywhere
-TEST_SANDBOXES = \
-	SL/CB/CB.test \
-
-UNITS_TESTED = \
 	SL/ALILINK/ALILINK.test \
 	SL/TREE_READ/TREE_READ.test \
 	DBSERVER/DBSERVER.test \
@@ -2237,11 +2247,8 @@ UNITS_TESTED = \
 	CORE/libCORE.test \
 	SL/INSDEL/INSDEL.test \
 	SL/TREEDISP/TREEDISP.test \
-	NTREE/NTREE.test \
 	AISC_MKPTPS/mkptypes.test \
-	EDIT4/EDIT4.test \
 	MERGE/MERGE.test \
-	MULTI_PROBE/MULTI_PROBE.test \
 	SERVERCNTRL/SERVERCNTRL.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	SL/PRONUC/PRONUC.test \

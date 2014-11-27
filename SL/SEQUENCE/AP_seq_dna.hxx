@@ -30,7 +30,12 @@ public:
     AP_sequence_parsimony(const AliView *aliview);
     ~AP_sequence_parsimony() OVERRIDE;
 
-    const char *get_sequence() const { lazy_load_sequence(); ap_assert(seq_pars); return seq_pars; }
+    const char *get_sequence() const {
+        // UNCOVERED(); // covered by TEST_calc_bootstraps, TEST_matrix
+        lazy_load_sequence();
+        ap_assert(seq_pars);
+        return seq_pars;
+    }
     const unsigned char *get_usequence() const { return (const unsigned char*)get_sequence(); }
 
     AP_sequence *dup() const OVERRIDE;                         // used to get the real new element

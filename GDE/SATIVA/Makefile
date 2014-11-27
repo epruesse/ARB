@@ -38,14 +38,14 @@ install: build
 	cp arb_raxml8_sativa.sh $(ARBHOME)/bin
 	chmod a+x $(ARBHOME)/bin/arb_raxml8_sativa.sh
 	cp sativa.menu $(ARBHOME)/lib/gde
-	find sativa -path "*.svn" -prune -o -type d -exec mkdir -p $(ARBHOME)/lib/{} \; 
-	find sativa -path "*.svn" -prune -o -type f -exec cp -p {} $(ARBHOME)/lib/{} \; 
+	find sativa -path "*.svn" -prune -o -type d -exec mkdir -p $(ARBHOME)/bin/{} \; 
+	find sativa -path "*.svn" -prune -o -type f -exec cp -p {} $(ARBHOME)/bin/{} \; 
 #	ln -s $(ARBHOME)/bin $(ARBHOME)/bin/sativa/epac/bin
 
 uninstall:
 	rm -f $(ARBHOME)/bin/arb_sativa.pl
 	rm -f $(ARBHOME)/bin/arb_raxml8_sativa.sh
-	rm -rf $(ARBHOME)/lib/sativa
+	rm -rf $(ARBHOME)/bin/sativa
 	rm -f $(ARBHOME)/lib/gde/sativa.menu
 
 clean: clean_local uninstall

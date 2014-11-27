@@ -14,8 +14,8 @@
 #ifndef AP_BUFFER_HXX
 #include "AP_buffer.hxx"
 #endif
-#ifndef TREEDISPLAY_HXX
-#include <TreeDisplay.hxx>
+#ifndef PARS_DTREE_HXX
+#include "pars_dtree.hxx"
 #endif
 
 #define AWAR_ALIGNMENT        "tmp/pars/alignment"
@@ -50,47 +50,70 @@ struct PARS_commands {
     }
 };
 
-class AP_tree_nlen;
-class AWT_graphic_tree;
-
 class AP_main : virtual Noncopyable {
-    AP_main_stack    *stack;
-    AP_main_list      list;
-    unsigned long     stack_level;
-    AWT_graphic_tree *agt;                          // provides access to tree!
-    unsigned long     user_push_counter;
+    NodeStack             *currFrame;
+    FrameStack             frames;
+    Level                  frameLevel;
+    AWT_graphic_parsimony *agt;       // provides access to tree!
+    StackFrameData         frameData; // saved/restored by push/pop
+    GBDATA                *gb_main;
 
 public:
     AP_main()
-        : stack(NULL),
-          stack_level(0),
+        : currFrame(NULL),
+          frameLevel(0),
           agt(NULL),
-          user_push_counter(0)
+          gb_main(NULL)
     {}
     ~AP_main() {
-        delete stack;
+        if (gb_main) GB_close(gb_main);
+        delete currFrame;
     }
 
-    void set_tree_root(AWT_graphic_tree *agt_);
-    AWT_graphic_tree *get_tree_root() { return agt; }
+    void set_tree_root(AWT_graphic_parsimony *agt_);
+    AWT_graphic_parsimony *get_graphic_tree() { return agt; }
+    AP_pars_root *get_tree_root() const { return agt->get_tree_root(); }
 
     DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, agt->get_root_node());
 
+    GBDATA *get_gb_main() const {
+        ap_assert(gb_main); // you need to call open() before you can use get_gb_main()
+        return gb_main;
+    }
     const char *get_aliname() const;
-    unsigned long get_user_push_counter() const { return user_push_counter; }
+    Level get_user_push_counter() const { return frameData.user_push_counter; }
+    Level get_frameLevel() const { return frameLevel; }
 
     GB_ERROR open(const char *db_server);
 
-    void user_push();
-    void user_pop();
-    void push();
-    void pop();
     void push_node(AP_tree_nlen *node, AP_STACK_MODE);
-    void clear();               // clears all buffers
+
+    void user_push(); // @@@ -> user_remember
+    void user_pop();  // @@@ -> user_revert
+    // @@@ add user_accept
+
+    void remember();
+    void revert();
+    void accept();
+
+    void accept_if(bool cond) { if (cond) accept(); else revert(); }
+    void revert_if(bool cond) { accept_if(!cond); }
+
+#if defined(PROVIDE_PRINT)
+    void print(std::ostream& out);
+    void print2file(const char *file_in_ARBHOME);
+#endif
 };
 
-extern AP_main *ap_main;
-extern GBDATA  *GLOBAL_gb_main;
+extern AP_main *ap_main; // @@@ elim
+
+inline AP_tree_nlen *rootNode() {
+    return ap_main->get_root_node();
+}
+
+inline AP_tree_edge *rootEdge() {
+    return rootNode()->get_leftson()->edgeTo(rootNode()->get_rightson());
+}
 
 #else
 #error ap_main.hxx included twice

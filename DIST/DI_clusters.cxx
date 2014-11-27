@@ -14,7 +14,6 @@
 #include "di_foundclusters.hxx"
 #include "di_awars.hxx"
 
-#include <AP_filter.hxx>
 #include <AP_seq_protein.hxx>
 #include <AP_seq_dna.hxx>
 
@@ -306,6 +305,7 @@ class GroupTree : public ARB_countedTree {
     unsigned tagged_count; // tagged leafs
 
     void update_tag_counters();
+    unsigned get_leaf_count() const OVERRIDE { return leaf_count; }
 public:
 
     explicit GroupTree(ARB_seqtree_root *root)
@@ -322,7 +322,6 @@ public:
 
     void map_species2tip(Species2Tip& mapping);
 
-    unsigned get_leaf_count() const OVERRIDE { return leaf_count; }
     unsigned update_leaf_counters();
 
     void tag_leaf() {
@@ -336,8 +335,8 @@ public:
     double tagged_rate() const { return double(get_tagged_count())/get_leaf_count(); }
 };
 
-struct GroupTreeNodeFactory : public RootedTreeNodeFactory {
-    virtual RootedTree *makeNode(TreeRoot *root) const {
+class GroupTreeNodeFactory : public RootedTreeNodeFactory {
+    RootedTree *makeNode(TreeRoot *root) const OVERRIDE {
         return new GroupTree(DOWNCAST(ARB_seqtree_root*, root));
     }
 };
@@ -407,8 +406,6 @@ struct GroupChanges {
 // ---------------------
 //      GroupBuilder
 
-typedef map<GroupTree*, ClusterPtr> Group2Cluster;
-
 class GroupBuilder : virtual Noncopyable {
     GBDATA           *gb_main;
     string            tree_name;
@@ -428,6 +425,14 @@ class GroupBuilder : virtual Noncopyable {
     bool              del_match_prefixes;           // only delete groups, where prefix matches
 
     GroupTree *find_group_position(GroupTree *subtree, unsigned cluster_size);
+    double get_max_distance() const { return maxDist; }
+    void load_tree();
+
+    DEFINE_DOWNCAST_ACCESSORS(GroupTree, get_root_node, tree_root->get_root_node());
+
+    bool shall_delete_group(const char *name) const {
+        return !del_match_prefixes || matches_current_prefix(name);
+    }
 
 public:
     GroupBuilder(GBDATA *gb_main_, Group_Action action_)
@@ -454,14 +459,8 @@ public:
 
     ARB_ERROR get_error() const { return error; }
     ClusterPtr get_bad_cluster() const { return bad_cluster; }
-    Group_Existing with_existing() const { return existing; }
-    unsigned get_existing_count() const { return existing_count; }
-    double get_max_distance() const { return maxDist; }
 
     ARB_ERROR save_modified_tree();
-    void      load_tree();
-
-    DEFINE_DOWNCAST_ACCESSORS(GroupTree, get_root_node, tree_root->get_root_node());
 
     GroupTree *find_best_matching_subtree(ClusterPtr cluster);
     void update_group(ClusterPtr cluster); // create or delete group for cluster
@@ -469,10 +468,6 @@ public:
 
     bool matches_current_prefix(const char *groupname) const {
         return strstr(groupname, cluster_prefix.c_str()) == groupname;
-    }
-
-    bool shall_delete_group(const char *name) const {
-        return !del_match_prefixes || matches_current_prefix(name);
     }
 };
 
@@ -530,13 +525,13 @@ GroupTree *GroupBuilder::find_group_position(GroupTree *subtree, unsigned cluste
 
 class HasntCurrentClusterPrefix : public ARB_tree_predicate {
     const GroupBuilder& builder;
-public:
-    HasntCurrentClusterPrefix(const GroupBuilder& builder_) : builder(builder_) {}
     bool selects(const ARB_seqtree& tree) const OVERRIDE {
         const char *groupname        = tree.get_group_name();
         bool        hasClusterPrefix = groupname && builder.matches_current_prefix(groupname);
         return !hasClusterPrefix;
     }
+public:
+    HasntCurrentClusterPrefix(const GroupBuilder& builder_) : builder(builder_) {}
 };
 
 string concatenate_name_parts(const list<string>& namepart) {
@@ -547,7 +542,7 @@ string concatenate_name_parts(const list<string>& namepart) {
     return concat.erase(0, 1);
 }
 
-struct UseTreeRoot : public ARB_tree_predicate {
+class UseTreeRoot : public ARB_tree_predicate {
     bool selects(const ARB_seqtree& tree) const OVERRIDE { return tree.is_root_node(); }
 };
 

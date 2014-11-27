@@ -10,6 +10,7 @@
 // =============================================================== //
 
 #include "ap_tree_nlen.hxx"
+#include "ap_main.hxx"
 
 #include <AP_filter.hxx>
 #include <arb_progress.h>
@@ -595,11 +596,13 @@ static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
     if (Seq_len <= 1.0) Seq_len = 1.0;
 
     AP_FLOAT parsbest = rootNode()->costs();
-    ap_main->push();
+
+    ap_main->remember();
     leaf->remove();
-    AP_FLOAT Blen     = parsbest - rootNode()->costs();
-    ap_main->pop();
-    double   blen     = Blen/Seq_len;
+    AP_FLOAT Blen = parsbest - rootNode()->costs();
+    ap_main->revert();
+
+    double blen = Blen/Seq_len;
 
     if (!leaf->father->father) { // at root
         leaf->father->leftlen = blen*.5;
@@ -614,9 +617,6 @@ static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
         }
     }
 }
-
-
-
 
 static void ap_calc_branch_lengths(AP_tree_nlen * /* root */, AP_tree_nlen *son, double /* parsbest */, double blen) {
     AP_FLOAT seq_len = son->get_seq()->weighted_base_count();
@@ -796,35 +796,33 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
         }
     }
     {               // ********* first nni
-        ap_main->push();
+        ap_main->remember();
         son->swap_assymetric(AP_LEFT);
         pars_two = root->costs(mps ? mps->data(1) : NULL);
 
         if (pars_two <= parsbest) {
-            if ((mode & AP_BL_NNI_ONLY) == 0) ap_main->pop();
-            else                              ap_main->clear();
+            ap_main->accept_if(mode & AP_BL_NNI_ONLY);
 
             parsbest         = pars_two;
             betterValueFound = (int)(pars_one-pars_two);
         }
         else {
-            ap_main->pop();
+            ap_main->revert();
         }
     }
     {               // ********** second nni
-        ap_main->push();
+        ap_main->remember();
         son->swap_assymetric(AP_RIGHT);
         pars_three = root->costs(mps ? mps->data(2) : NULL);
 
         if (pars_three <= parsbest) {
-            if ((mode & AP_BL_NNI_ONLY) == 0) ap_main->pop();
-            else                              ap_main->clear();
+            ap_main->accept_if(mode & AP_BL_NNI_ONLY);
 
             parsbest         = pars_three;
             betterValueFound = (int)(pars_one-pars_three);
         }
         else {
-            ap_main->pop();
+            ap_main->revert();
         }
     }
 

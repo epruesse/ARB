@@ -227,7 +227,7 @@ void AP_tree::insert(AP_tree *new_brother) {
 }
 
 void AP_tree_root::change_root(RootedTree *oldroot, RootedTree *newroot) {
-    if (root_changed_cb) {
+    if (root_changed_cb) { // @@@ better call after calling base::change_root?
         root_changed_cb(root_changed_cd, DOWNCAST(AP_tree*, oldroot), DOWNCAST(AP_tree*, newroot));
     }
     if (!oldroot) {
@@ -348,12 +348,14 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
 
     if (father->leftson != this) get_father()->swap_sons();
 
-    if (father->father == 0) {
-        get_brother()->father = 0;
-        get_tree_root()->change_root(get_father(), get_brother());
+    AP_tree *new_root = NULL;
+    if (father->father == 0) { // move son of root
+        new_root         = get_brother();
+        new_root->father = 0;
+        ap_assert(!new_root->is_leaf); // wot?
     }
     else {
-        ARB_seqtree *grandfather = get_father()->get_father();
+        AP_tree *grandfather = get_father()->get_father();
         if (father == new_brother) {    // just pull branches !!
             new_brother  = get_brother();
             if (grandfather->leftson == father) {
@@ -382,8 +384,8 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
         }
     }
 
-    ARB_seqtree *new_tree          = get_father();
-    ARB_seqtree *brother_father    = new_brother->get_father();
+    AP_tree  *new_tree       = get_father();
+    AP_tree  *brother_father = new_brother->get_father();
     AP_FLOAT  laenge;
 
     if (brother_father->leftson == new_brother) {
@@ -401,6 +403,10 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     new_brother->father = new_tree;
     new_tree->rightson  = new_brother;
     new_tree->father    = brother_father;
+
+    if (new_root) {
+        new_tree->get_tree_root()->change_root(new_tree, new_root);
+    }
 }
 
 void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
@@ -1005,7 +1011,7 @@ AP_tree ** AP_tree::getRandomNodes(int anzahl) {
         buildNodeList(list, sumnodes);
 
         if (sumnodes) {
-            retlist = (AP_tree **)calloc(anzahl, sizeof(AP_tree *));
+            retlist = new AP_tree* [anzahl];
 
             long count = sumnodes;
             for (int i=0; i< anzahl; i++) {

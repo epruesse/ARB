@@ -11,7 +11,7 @@ try:
     from epac.raxml_util import RaxmlWrapper, FileUtils
     from epac.json_util import RefJsonParser, RefJsonChecker, EpaJsonParser
     from epac.taxonomy_util import Taxonomy,GGTaxonomyFile
-    from epac.classify_util import TaxTreeHelper,TaxClassifyHelper
+    from epac.classify_util import TaxClassifyHelper
 except ImportError, e:
     print("Some packages are missing, please re-downloand EPA-classifier")
     print e
@@ -48,8 +48,8 @@ class LeaveOneTest:
         self.cfg.compress_patterns = self.refjson.get_pattern_compression()
 
         reftree_str = self.refjson.get_raxml_readable_tree()
-        self.reftree = Tree(reftree_str)
-        self.reftree_size = len(self.reftree.get_leaves())
+        reftree = Tree(reftree_str)
+        self.reftree_size = len(reftree.get_leaves())
 
         # IMPORTANT: set EPA heuristic rate based on tree size!                
         self.cfg.resolve_auto_settings(self.reftree_size)
@@ -140,7 +140,7 @@ class LeaveOneTest:
         if mislabel_lvl >= 0:
             real_lvl = self.guess_rank_level(orig_ranks, mislabel_lvl)
             mis_rec = {}
-            mis_rec['name'] = EpacConfig.strip_ref_prefix(seq_name)
+            mis_rec['name'] = seq_name.lstrip(EpacConfig.REF_SEQ_PREFIX)
             mis_rec['orig_level'] = mislabel_lvl
             mis_rec['real_level'] = real_lvl
             mis_rec['level_name'] = self.rank_level_name(real_lvl)[1]
@@ -150,6 +150,7 @@ class LeaveOneTest:
             mis_rec['lws'] = lws
             mis_rec['conf'] = lws[mislabel_lvl]
             self.mislabels.append(mis_rec)
+            self.mislabels_cnt[real_lvl] += 1
             
             return mis_rec
         else:
@@ -176,7 +177,8 @@ class LeaveOneTest:
             mis_rec['lws'] = lws
             mis_rec['conf'] = lws[mislabel_lvl]
             self.rank_mislabels.append(mis_rec)
-               
+            self.rank_mislabels_cnt[real_lvl] += 1
+                
             return mis_rec
         else:
             return None                
@@ -205,39 +207,24 @@ class LeaveOneTest:
 
     def sort_mislabels(self):
         self.mislabels = sorted(self.mislabels, key=itemgetter('inv_level', 'conf'), reverse=True)
-        for mis_rec in self.mislabels:
-            real_lvl = mis_rec["real_level"]
-            self.mislabels_cnt[real_lvl] += 1
-        
         if self.ranktest:
             self.rank_mislabels = sorted(self.rank_mislabels, key=itemgetter('inv_level', 'conf'), reverse=True)
-            for mis_rec in self.rank_mislabels:
-                real_lvl = mis_rec["real_level"]
-                self.rank_mislabels_cnt[real_lvl] += 1
     
-    def write_mislabels(self, final=True):
-        if final:
-            out_fname = "%s.mis" % self.output_fname
-        else:
-            out_fname = "%s.premis" % self.output_fname
-        
-        with open(out_fname, "w") as fo_all:
+    def write_mislabels(self):
+        with open("%s.mis" % self.output_fname, "w") as fo_all:
             fields = ["SeqID", "MislabeledLevel", "OriginalLabel", "ProposedLabel", "Confidence", "OriginalTaxonomyPath", "ProposedTaxonomyPath", "PerRankConfidence"]
             if self.ranktest:
                 fields += ["HigherRankMisplacedConfidence"]
             header = ";" + "\t".join(fields) + "\n"
             fo_all.write(header)
-            if self.cfg.verbose and len(self.mislabels) > 0 and final:
+            if self.cfg.verbose and len(self.mislabels) > 0:
                 print "Mislabeled sequences:\n"
                 print header 
             for mis_rec in self.mislabels:
                 output = self.mis_rec_to_string(mis_rec)  + "\n"
                 fo_all.write(output)
-                if self.cfg.verbose and final:
+                if self.cfg.verbose:
                     print(output) 
-                    
-        if not final:
-            return
 
         if self.ranktest:
             with open("%s.misrank" % self.output_fname, "w") as fo_all:
@@ -268,17 +255,44 @@ class LeaveOneTest:
                     fo_stat.write(output + "\n")
                     print(output) 
        
-    def get_orig_ranks(self, seq_name):
-        nodes = self.tax_tree.get_leaves_by_name(seq_name)
-        if len(nodes) != 1:
-            print "FATAL ERROR: Sequence %s is not found in the taxonomic tree, or is present more than once!" % seq_name
-            sys.exit()
-        seq_node = nodes[0]
-        orig_ranks = Taxonomy.split_rank_uid(seq_node.up.name)
-        return orig_ranks
-    
+    def run_leave_seq_out_test(self):
+        job_name = self.cfg.subst_name("epa_%NAME%")
+        if self.jplace_fname:
+            jp = EpaJsonParser(self.jplace_fname)
+        else:        
+            jp = self.raxml.run_epa(job_name, self.refalign_fname, self.reftree_fname, self.optmod_fname, mode="l1o_seq")
+
+        placements = jp.get_placement()
+        seq_count = 0
+        for place in placements:
+            seq_name = place["n"][0]
+            
+            # get original taxonomic label
+            nodes = self.tax_tree.get_leaves_by_name(seq_name)
+            if len(nodes) != 1:
+                print "FATAL ERROR: Sequence %s is not found in the taxonomic tree, or is present more than once!" % seq_name
+                sys.exit()
+            seq_node = nodes[0]
+            orig_ranks = Taxonomy.split_rank_uid(seq_node.up.name)
+
+            # get EPA tax label
+            ranks, lws = self.classify_seq(place)
+            # check if they match
+            mis_rec = self.check_seq_tax_labels(seq_name, orig_ranks, ranks, lws)
+            # cross-check with higher rank mislabels
+            if self.ranktest and mis_rec:
+                rank_conf = 0
+                for lvl in range(2,len(orig_ranks)):
+                    tax_path = Taxonomy.get_rank_uid(orig_ranks, lvl)
+                    if tax_path in self.misrank_conf_map:
+                        rank_conf = max(rank_conf, self.misrank_conf_map[tax_path])
+                mis_rec['rank_conf'] = rank_conf
+            seq_count += 1
+
+        return seq_count    
+
     def run_leave_subtree_out_test(self):
-        job_name = self.cfg.subst_name("l1out_rank_%NAME%")
+        job_name = self.cfg.subst_name("tree_epa_%NAME%")
 #        if self.jplace_fname:
 #            jp = EpaJsonParser(self.jplace_fname)
 #        else:        
@@ -314,7 +328,7 @@ class LeaveOneTest:
         if len(subtree_list) == 0:
             return 0
             
-        subtree_list_file = self.cfg.tmp_fname("treelist_%NAME%.txt")
+        subtree_list_file = self.cfg.subst_name("treelist_%NAME%.txt")
         with open(subtree_list_file, "w") as fout:
             for rank_name, tips in subtree_list:
                 fout.write("%s\n" % " ".join(tips))
@@ -342,121 +356,24 @@ class LeaveOneTest:
                 subtree_count += 1
 
         return subtree_count    
-        
-    def run_leave_seq_out_test(self):
-        job_name = self.cfg.subst_name("l1out_seq_%NAME%")
-        if self.jplace_fname:
-            jp = EpaJsonParser(self.jplace_fname)
-        else:        
-            jp = self.raxml.run_epa(job_name, self.refalign_fname, self.reftree_fname, self.optmod_fname, mode="l1o_seq")
 
-        placements = jp.get_placement()
-        seq_count = 0
-        for place in placements:
-            seq_name = place["n"][0]
-            
-            # get original taxonomic label
-            orig_ranks = self.get_orig_ranks(seq_name)
+    def run_test(self, raxml_mode = True):
+        self.raxml = RaxmlWrapper(config)
 
-            # get EPA tax label
-            ranks, lws = self.classify_seq(place)
-            # check if they match
-            mis_rec = self.check_seq_tax_labels(seq_name, orig_ranks, ranks, lws)
-            # cross-check with higher rank mislabels
-            if self.ranktest and mis_rec:
-                rank_conf = 0
-                for lvl in range(2,len(orig_ranks)):
-                    tax_path = Taxonomy.get_rank_uid(orig_ranks, lvl)
-                    if tax_path in self.misrank_conf_map:
-                        rank_conf = max(rank_conf, self.misrank_conf_map[tax_path])
-                mis_rec['rank_conf'] = rank_conf
-            seq_count += 1
-
-        return seq_count    
-        
-    def run_final_epa_test(self):
-        self.reftree_outgroup = self.refjson.get_outgroup()
-        tmp_reftree = self.reftree.copy() 
-        tmp_taxtree = self.tax_tree.copy() 
-        for mis_rec in self.mislabels:
-            name = mis_rec['name']
-            rname = EpacConfig.REF_SEQ_PREFIX + name
-
-            leaf_nodes = tmp_reftree.get_leaves_by_name(rname)
-            if len(leaf_nodes) > 0:
-                leaf_nodes[0].delete()
-            else:
-                print "Node not found in the reference tree: %s" % rname
-
-            leaf_nodes = tmp_taxtree.get_leaves_by_name(rname)
-            if len(leaf_nodes) > 0:
-                leaf_nodes[0].delete()
-            else:
-                print "Node not found in the taxonomic tree: %s" % rname
-            
-        self.mislabels = []
-
-        th = TaxTreeHelper(self.origin_taxonomy)
-        th.set_mf_rooted_tree(tmp_taxtree)
-            
-        self.run_epa_once(tmp_reftree, th)
-            
-
-    def run_epa_once(self, reftree, th):
-        reftree_fname = self.cfg.tmp_fname("final_ref_%NAME%.tre")
-        job_name = self.cfg.subst_name("final_epa_%NAME%")
-
-        reftree.write(outfile=reftree_fname)
-
-        epa_result = self.raxml.run_epa(job_name, self.refalign_fname, reftree_fname, self.optmod_fname)
-        reftree_epalbl_str = epa_result.get_std_newick_tree()        
-        placements = epa_result.get_placement()
-        
-        # update branchid-taxonomy mapping to account for possible changes in branch numbering
-        reftree_tax = Tree(reftree_epalbl_str)
-        th.set_bf_unrooted_tree(reftree_tax)
-        bid_tax_map = th.get_bid_taxonomy_map()
-        
-        cl = TaxClassifyHelper(self.cfg, bid_tax_map)
-
-        for place in placements:
-            seq_name = place["n"][0]
-
-            # get original taxonomic label
-            orig_ranks = self.get_orig_ranks(seq_name)
-            # get EPA tax label
-            ranks, lws = cl.classify_seq(place["p"])
-            # check if they match
-            mis_rec = self.check_seq_tax_labels(seq_name, orig_ranks, ranks, lws)
-
-        if not self.cfg.debug:
-            self.raxml.cleanup(job_name)
-            FileUtils.remove_if_exists(reftree_fname)
-            
-    def run_test(self):
-        self.raxml = RaxmlWrapper(self.cfg)
-
-        print "Number of sequences in the reference: %d\n" % self.reftree_size
+        print "Total sequences: %d\n" % self.reftree_size
 
         self.refjson.get_raxml_readable_tree(self.reftree_fname)
         self.refalign_fname = self.refjson.get_alignment(self.tmp_refaln)        
         self.refjson.get_binary_model(self.optmod_fname)
 
         if self.ranktest:
-            print "Running the leave-one-rank-out test...\n"
             subtree_count = self.run_leave_subtree_out_test()
-            
-        print "Running the leave-one-sequence-out test...\n"
-        self.run_leave_seq_out_test()
 
-        if len(self.mislabels) > 0:
-            print "Leave-one-out test identified %d suspicious sequences; running final EPA test to check them...\n" % len(self.mislabels)
-            self.write_mislabels(final=False)
-            self.run_final_epa_test()
+        seq_count = self.run_leave_seq_out_test()
 
         self.sort_mislabels()
         self.write_mislabels()
-        print "\nPercentage of mislabeled sequences: %.2f %%" % (float(len(self.mislabels)) / self.reftree_size * 100)
+        print "\nPercentage of mislabeled sequences: %.2f %%" % (float(len(self.mislabels)) / seq_count * 100)
 
         if not self.cfg.debug:
             FileUtils.remove_if_exists(self.reftree_fname)
@@ -561,16 +478,10 @@ if __name__ == "__main__":
     args = parse_args()
     check_args(args)
     config = EpacConfig(args)
-    if config.verbose:
-        print_run_info(config, args)
-    
-    start_time = time.time()
+    print_run_info(config, args)
    
     t = LeaveOneTest(config, args)
-
     t.run_test()
     if not config.debug:
         t.cleanup()
 
-    elapsed_time = time.time() - start_time
-    print "\nDone! (%.0f s)\n" % elapsed_time

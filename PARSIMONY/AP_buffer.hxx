@@ -11,90 +11,94 @@
 #ifndef AP_BUFFER_HXX
 #define AP_BUFFER_HXX
 
-#ifndef AP_TREE_HXX
-#include <AP_Tree.hxx>
+#ifndef AP_SEQUENCE_HXX
+#include <AP_sequence.hxx>
+#endif
+#ifndef ARB_FORWARD_LIST_H
+#include <arb_forward_list.h>
 #endif
 
-/* AP_STACK        dynamischer Stack fuer void *
- * AP_LIST         allgemeine doppelt verketteten Liste
+/* AP_STACK        Stack container
  *
- * -- Pufferstrukturen
+ * -- buffers
  *
- * AP_tree_buffer  Struktur die im AP_tree gepuffert wird
+ * NodeState  holds (partial) state of AP_tree_nlen
  *
- * -- spezielle stacks ( um casts zu vermeiden )
+ * -- used stacks
  *
- * AP_tree_stack   Stack fuer AP_tree_buffer *
- * AP_main_stack   Stack fuer AP_tree *
- * AP_main_list    Liste fuer AP_main_buffer
+ * StateStack      stack containing NodeState* (each AP_tree_nlen contains one)
+ * NodeStack       stack containing AP_tree_nlen* (NodeStack of current frame is member of AP_main)
+ * FrameStack      stack containing NodeStacks (member of AP_main, stores previous NodeStack frames)
  */
 
+template <typename ELEM>
+struct AP_STACK : public arb_forward_list<ELEM*> {
+    typedef arb_forward_list<ELEM*>       BASE;
+    typedef typename BASE::iterator       iterator;
+    typedef typename BASE::const_iterator const_iterator;
 
-struct AP_STACK_ELEM {
-    struct AP_STACK_ELEM * next;
-    void *                 node;
-};
+    void push(ELEM *element) {
+        //! add 'element' to top of stack
+        BASE::push_front(element);
+    }
+    void shift(ELEM *element) {
+        //! add 'element' to bottom of stack
+#if defined(Cxx11)
+        // uses forward_list
+        if (BASE::empty()) {
+            push(element);
+        }
+        else {
+            iterator i = BASE::begin();
+            iterator n = i;
+            while (true) {
+                if (++n == BASE::end()) {
+                    BASE::insert_after(i, element);
+                    break;
+                }
+                i = n;
+            }
+        }
+#else
+        // uses list
+        BASE::push_back(element);
+#endif
+    }
+    ELEM *pop() {
+        if (BASE::empty()) return NULL;
 
-class AP_STACK : virtual Noncopyable { // @@@ make typesafe (use template)
-    struct AP_STACK_ELEM * first;
-    struct AP_STACK_ELEM * pointer;
-    unsigned long          stacksize;
-
-public:
-    AP_STACK();
-    virtual ~AP_STACK();
-
-    void           push(void * element);
-    void          *pop();
-    void           clear();
-    void           get_init();
-    void          *get();
-    void          *get_first();
-    unsigned long  size();
-};
-
-// ----------------
-//      AP_LIST
-
-struct AP_list_elem {
-    AP_list_elem * next;
-    AP_list_elem * prev;
-    void *         node;
-};
-
-class AP_LIST : virtual Noncopyable {
-    unsigned int  list_len;
-    unsigned int  akt;
-    AP_list_elem *first, *last, *pointer;
-
-    AP_list_elem *element(void * elem);
-public:
-    AP_LIST()
-        : list_len(0),
-          akt(0),
-          first(NULL), 
-          last(NULL), 
-          pointer(NULL) 
-    {}
-
-    virtual ~AP_LIST() {}
-
-    int   len();
-    int   is_element(void * node);
-    int   eof();
-    void  insert(void * new_one);
-    void  append(void * new_one);
-    void  remove(void * object);
-    void  push(void *elem);
-    void *pop();
-    void  clear();
+        ELEM *result = top();
+        BASE::pop_front();
+        return result;
+    }
+    ELEM *top() {
+        ap_assert(!BASE::empty());
+        return BASE::front();
+    }
+    size_t count_elements() const {
+#if defined(Cxx11)
+        size_t s = 0;
+        for (const_iterator i = BASE::begin(); i != BASE::end(); ++i) ++s;
+        return s;
+#else // !defined(Cxx11)
+        return BASE::size();
+#endif
+    }
 };
 
 // ----------------------------------------------------------------
 //      special buffer-structures for AP_tree and AP_tree_edge
 
-class  AP_tree_edge;                                // defined in ap_tree_nlen.hxx
-struct AP_tree_buffer;
+#if defined(DEBUG)
+#define PROVIDE_PRINT
+#endif
+
+#if defined(PROVIDE_PRINT)
+#include <ostream>
+#endif
+
+
+class AP_tree_edge; // defined in ap_tree_nlen.hxx
 
 struct AP_tree_edge_data
 {
@@ -102,18 +106,32 @@ struct AP_tree_edge_data
     int      distance;                              // the distance of the last insertion
 };
 
+enum AP_STACK_MODE {
+    NOTHING   = 0, // nothing to buffer in AP_tree node
+    STRUCTURE = 1, // only structure
+    SEQUENCE  = 2, // only sequence
+    BOTH      = 3, // sequence & treestructure is buffered
+    ROOT      = 7  // old root is buffered (includes BOTH)
+};
 
-struct AP_tree_buffer {
-    unsigned long  controll;                        // used for internal buffer check
-    unsigned int   count;                           // counts how often the entry is buffered
+class AP_tree_nlen;
+class AP_pars_root;
+
+typedef unsigned long Level;
+
+struct NodeState { // buffers previous states of AP_tree_nlen
+    Level frameNr;          // state of AP_tree_nlen::pushed_to_frame at creation time of NodeState
+
+    // @@@ reorder members and mark what is stored in which mode
+
     AP_STACK_MODE  mode;
     AP_sequence   *sequence;
     AP_FLOAT       mutation_rate;
     double         leftlen, rightlen;
-    AP_tree       *father;
-    AP_tree       *leftson;
-    AP_tree       *rightson;
-    AP_tree_root  *root;
+    AP_tree_nlen  *father;
+    AP_tree_nlen  *leftson;
+    AP_tree_nlen  *rightson;
+    AP_pars_root  *root;
     GBDATA        *gb_node;
 
     int distance;                                   // distance to border (pushed with STRUCTURE!)
@@ -123,39 +141,59 @@ struct AP_tree_buffer {
     int                edgeIndex[3];
     AP_tree_edge_data  edgeData[3];
 
-    void print();
+#if defined(PROVIDE_PRINT)
+    void print(std::ostream& out, int indentLevel = 0) const;
+#endif
 };
 
-struct AP_tree_stack : public AP_STACK {
-    AP_tree_stack() {}
-    virtual ~AP_tree_stack() OVERRIDE {}
-    void  push(AP_tree_buffer *value) { AP_STACK::push((void *)value); }
-    AP_tree_buffer * pop() { return (AP_tree_buffer *) AP_STACK::pop(); }
-    AP_tree_buffer * get() { return (AP_tree_buffer *) AP_STACK::get(); }
-    AP_tree_buffer * get_first() { return (AP_tree_buffer *) AP_STACK::get_first(); }
-    void print();
+struct StateStack : public AP_STACK<NodeState> {
+#if defined(PROVIDE_PRINT)
+    void print(std::ostream& out, int indentLevel = 0) const;
+#endif
 };
 
 class AP_tree_nlen;
 
-class AP_main_stack : public AP_STACK {
-protected:
-    unsigned long last_user_buffer;
-public:
-    friend class AP_main;
-    void push(AP_tree_nlen *value) { AP_STACK::push((void *)value); }
-    AP_tree_nlen *pop() { return (AP_tree_nlen*)AP_STACK::pop(); }
-    AP_tree_nlen *get() { return (AP_tree_nlen*)AP_STACK::get(); }
-    AP_tree_nlen *get_first() { return (AP_tree_nlen*)AP_STACK::get_first(); }
-    void print();
+#define AVOID_MULTI_ROOT_PUSH
+// old version did not avoid (i.e. it was possible to push multiple ROOTs)
+// fails some tests when undefined
+
+#if defined(ASSERTION_USED)
+#define CHECK_ROOT_POPS
+#endif
+
+struct StackFrameData { // data local to current stack frame
+    Level user_push_counter; // @@@ eliminate (instead maintain in AP_main)
+#if defined(AVOID_MULTI_ROOT_PUSH)
+    bool root_pushed;
+    StackFrameData() : user_push_counter(0), root_pushed(false) {}
+#else
+    StackFrameData() : user_push_counter(0) {}
+#endif
 };
 
+class NodeStack : public AP_STACK<AP_tree_nlen> { // derived from Noncopyable
+    StackFrameData previous;
 
-struct AP_main_list : public AP_LIST {
-    AP_main_stack * pop() { return  (AP_main_stack *)AP_LIST::pop(); }
-    void push(AP_main_stack * stack) { AP_LIST::push((void *) stack); }
-    void insert(AP_main_stack * stack) { AP_LIST::insert((void *)stack); }
-    void append(AP_main_stack * stack) { AP_LIST::append((void *)stack); }
+public:
+    explicit NodeStack(const StackFrameData& data)
+        : previous(data)
+    {}
+
+    const StackFrameData& get_previous_frame_data() const { return previous; }
+
+#if defined(CHECK_ROOT_POPS)
+    AP_tree_nlen *root_at_create; // root at creation time of stack
+#endif
+#if defined(PROVIDE_PRINT)
+    void print(std::ostream& out, int indentLevel, Level frameNr) const;
+#endif
+};
+
+struct FrameStack : public AP_STACK<NodeStack> {
+#if defined(PROVIDE_PRINT)
+    void print(std::ostream& out, int indentLevel = 0) const;
+#endif
 };
 
 #else

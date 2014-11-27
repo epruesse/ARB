@@ -11,6 +11,7 @@
 
 #include "ap_tree_nlen.hxx"
 #include "pars_debug.hxx"
+#include "ap_main.hxx"
 
 #include <AP_seq_dna.hxx>
 #include <aw_root.hxx>
@@ -149,6 +150,20 @@ void AP_tree_nlen::linkAllEdges(AP_tree_edge *edge1, AP_tree_edge *edge2, AP_tre
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
 
+#if defined(DEBUG)
+#define DUMP_INVALID_SUBTREES
+#endif
+
+#if defined(DUMP_INVALID_SUBTREES)
+inline void dumpSubtree(const char *msg, const AP_tree_nlen *node) {
+    fprintf(stderr, "%s:\n", msg);
+    char *printable = GBT_tree_2_newick(node, NewickFormat(nSIMPLE|nWRAP), true);
+    fputs(printable, stderr);
+    fputc('\n', stderr);
+    free(printable);
+}
+#endif
+
 inline const AP_tree_edge *edge_between(const AP_tree_nlen *node1, const AP_tree_nlen *node2) {
     AP_tree_edge *edge_12 = node1->edgeTo(node2);
 
@@ -160,29 +175,108 @@ inline const AP_tree_edge *edge_between(const AP_tree_nlen *node1, const AP_tree
     return edge_12;
 }
 
-void AP_tree_nlen::assert_edges_valid() const {
+inline const char *no_valid_edge_between(const AP_tree_nlen *node1, const AP_tree_nlen *node2) {
+    AP_tree_edge *edge_12 = node1->edgeTo(node2);
+    AP_tree_edge *edge_21 = node2->edgeTo(node1);
+
+    if (edge_12 == edge_21) {
+        return edge_12 ? NULL : "edge missing";
+    }
+    return "edge inconsistent";
+}
+
+#if defined(DUMP_INVALID_SUBTREES)
+#define PRINT_BAD_EDGE(msg,node) dumpSubtree(msg,node)
+#else // !defined(DUMP_INVALID_SUBTREES)
+#define PRINT_BAD_EDGE(msg,node) fprintf(stderr, "Warning: %s (at node=%p)\n", (msg), (node))
+#endif
+
+#define SHOW_BAD_EDGE(format,str,node) do{              \
+        char *msg = GBS_global_string_copy(format,str); \
+        PRINT_BAD_EDGE(msg, node);                      \
+        free(msg);                                      \
+    }while(0)
+
+bool AP_tree_nlen::has_valid_edges() const {
+    bool valid = true;
     if (get_father()) {                     // root has no edges
         if (get_father()->is_root_node()) { // sons of root have one edge between them
-            ap_assert(edge_between(this, get_brother()));
+            if (is_leftson()) { // test root-edge only from one son
+                const char *invalid = no_valid_edge_between(this, get_brother());
+                if (invalid) {
+                    SHOW_BAD_EDGE("root-%s. root", invalid, get_father());
+                    valid = false;
+                }
+            }
+            const char *invalid = no_valid_edge_between(this, get_father());
+            if (!invalid || !strstr(invalid, "missing")) {
+                SHOW_BAD_EDGE("unexpected edge (%s) between root and son", invalid ? invalid : "valid", this);
+                valid = false;
+            }
         }
         else {
-            ap_assert(edge_between(this, get_father()));
-            if (!is_leaf) {
-                ap_assert(edge_between(this, get_leftson()));
-                ap_assert(edge_between(this, get_rightson()));
+            const char *invalid = no_valid_edge_between(this, get_father());
+            if (invalid) {
+                SHOW_BAD_EDGE("son-%s. father", invalid, get_father());
+                SHOW_BAD_EDGE("parent-%s. son", invalid, this);
+                valid = false;
             }
         }
     }
 
     if (!is_leaf) {
-        get_leftson()->assert_edges_valid();
-        get_rightson()->assert_edges_valid();
+        valid = get_leftson()->has_valid_edges() && valid;
+        valid = get_rightson()->has_valid_edges() && valid;
     }
+    return valid;
+}
+
+bool AP_tree_nlen::sequence_state_valid() const {
+    // if some node has a sequence, all son-nodes have to have sequences!
+
+    bool valid = true;
+
+    const AP_sequence *sequence = get_seq();
+    if (sequence) {
+        if (sequence->hasSequence()) {
+            if (!is_leaf) {
+                bool leftson_hasSequence  = get_leftson()->hasSequence();
+                bool rightson_hasSequence = get_rightson()->hasSequence();
+
+#if defined(DUMP_INVALID_SUBTREES)
+                if (!leftson_hasSequence) dumpSubtree("left subtree has no sequence", get_leftson());
+                if (!rightson_hasSequence) dumpSubtree("right subtree has no sequence", get_rightson());
+                if (!(leftson_hasSequence && rightson_hasSequence)) {
+                    dumpSubtree("while father HAS sequence", this);
+                }
+#endif
+
+                valid = leftson_hasSequence && rightson_hasSequence;
+            }
+        }
+        else {
+            if (is_leaf) ap_assert(sequence->is_bound_to_species()); // can do lazu load if needed
+        }
+    }
+    if (!is_leaf) {
+        if (!get_leftson() ->sequence_state_valid()) valid = false;
+        if (!get_rightson()->sequence_state_valid()) valid = false;
+    }
+
+    return valid;
 }
 
 void AP_tree_nlen::assert_valid() const {
     ap_assert(this);
-    assert_edges_valid();
+    ap_assert(has_valid_edges());
+#if 1
+    ap_assert(sequence_state_valid());
+#else
+#warning does not fail for invalid sequence state
+    if (!sequence_state_valid()) {
+        fputs("Warning: invalid sequence state!\n", stderr);
+    }
+#endif
     AP_tree::assert_valid();
 }
 
@@ -220,7 +314,7 @@ inline void sortOldestFirst(AP_tree_edge **e1, AP_tree_edge **e2, AP_tree_edge *
     sortOldestFirst(e1, e2);
 }
 
-void AP_tree_nlen::initial_insert(AP_tree_nlen *newBrother, AP_tree_root *troot) {
+void AP_tree_nlen::initial_insert(AP_tree_nlen *newBrother, AP_pars_root *troot) {
     // construct initial tree from 'this' and 'newBrother'
     // (both have to be leafs)
 
@@ -355,7 +449,7 @@ void AP_tree_nlen::remove() {
             edgeTo(oldBrother)->unlink();           // LOST_EDGE
 
 #if defined(ASSERTION_USED)
-            AP_tree_root *troot = get_tree_root();
+            AP_pars_root *troot = get_tree_root();
 #endif // ASSERTION_USED
             AP_tree::remove();
             ap_assert(!troot->get_root_node()); // tree should have been removed
@@ -463,20 +557,20 @@ void AP_tree_nlen::set_root() {
     // from this to root buffer the nodes
     ap_main->push_node(this,  STRUCTURE);
 
-    AP_tree_nlen *old_brother = 0;
+    AP_tree_nlen *son_of_root = 0; // in previous topology 'this' was contained inside 'son_of_root'
     AP_tree_nlen *old_root    = 0;
     {
         AP_tree_nlen *pntr;
         for (pntr = get_father(); pntr->father; pntr = pntr->get_father()) {
             ap_main->push_node(pntr, BOTH);
-            old_brother = pntr;
+            son_of_root = pntr;
         }
         old_root = pntr;
     }
 
-    if (old_brother) {
-        old_brother = old_brother->get_brother();
-        ap_main->push_node(old_brother,  STRUCTURE);
+    if (son_of_root) {
+        AP_tree_nlen *other_son_of_root = son_of_root->get_brother();
+        ap_main->push_node(other_son_of_root, STRUCTURE);
     }
 
     ap_main->push_node(old_root, ROOT);
@@ -485,7 +579,9 @@ void AP_tree_nlen::set_root() {
 
 void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
     ap_assert(father);
+    ap_assert(newBrother);
     ap_assert(newBrother->father);
+    ap_assert(newBrother->father != father); // already there
 
     ASSERT_VALID_TREE(rootNode());
 
@@ -502,12 +598,12 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
             ap_main->push_node(grandpa, BOTH);
             push_all_upnode_sequences(grandpa);
         }
-        else { // grandson of root
+        else { // 'this' is grandson of root
             ap_main->push_node(grandpa, ROOT);
             ap_main->push_node(get_father()->get_brother(), STRUCTURE);
         }
     }
-    else { // son of root
+    else { // 'this' is son of root
         ap_main->push_node(get_father(), ROOT);
 
         if (!get_brother()->is_leaf) {
@@ -532,13 +628,14 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
     AP_tree_nlen *grandFather       = thisFather->get_father();
     AP_tree_nlen *oldBrother        = get_brother();
     AP_tree_nlen *newBrothersFather = newBrother->get_father();
-    int           edgesChange       = ! (father==newBrother || newBrother->father==father);
+    int           edgesChange       = father!=newBrother;
     AP_tree_edge *e1, *e2, *e3;
 
     if (edgesChange) {
         if (thisFather==newBrothersFather->get_father()) { // son -> son of brother
             if (grandFather) {
                 if (grandFather->get_father()) {
+                    // covered by test at PARS_main.cxx@COVER3
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
                     AP_tree_edge *e4 = newBrother->edgeTo(oldBrother)->unlink();
 
@@ -549,6 +646,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                     thisFather->linkAllEdges(e2, e3, e4);
                 }
                 else { // grandson of root -> son of brother
+                    // covered by test at PARS_main.cxx@COVER2
                     AP_tree_nlen *uncle = thisFather->get_brother();
 
                     thisFather->unlinkAllEdges(&e1, &e2, &e3);
@@ -562,6 +660,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                 }
             }
             else { // son of root -> grandson of root
+                // covered by test at PARS_main.cxx@COVER1
                 oldBrother->unlinkAllEdges(&e1, &e2, &e3);
                 AP_tree::moveNextTo(newBrother, rel_pos);
                 thisFather->linkAllEdges(e1, e2, e3);
@@ -569,6 +668,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
         }
         else if (grandFather==newBrothersFather) { // son -> brother of father
             if (grandFather->father) {
+                // covered by test at PARS_main.cxx@COVER4
                 thisFather->unlinkAllEdges(&e1, &e2, &e3);
                 AP_tree_edge *e4 = grandFather->edgeTo(newBrother)->unlink();
 
@@ -649,6 +749,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
         }
     }
     else { // edgesChange==0
+        // covered by test at PARS_main.cxx@COVER5
         AP_tree::moveNextTo(newBrother, rel_pos);
     }
 
@@ -665,141 +766,163 @@ void AP_tree_nlen::unhash_sequence() {
     if (sequence && !is_leaf) sequence->forget_sequence();
 }
 
-bool AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count) {
+bool AP_tree_nlen::clear(Level frame_level, Level user_buffer_count) {
     // returns
     // - true           if the first element is removed
     // - false          if it is copied into the previous level
     // according if user_buffer is greater than datum (wot?)
 
-    if (stack_level != datum) {
+    if (pushed_to_frame != frame_level) {
         ap_assert(0); // internal control number check failed
         return false;
     }
 
-    AP_tree_buffer * buff = stack.pop();
-    bool             result;
+    NodeState *state = states.pop();
+    bool       result;
 
-    if (buff->controll == datum - 1 || user_buffer_count >= datum) {
+    if (state->frameNr == frame_level - 1 || user_buffer_count >= frame_level) {
         // previous node is buffered
 
-        if (buff->mode & SEQUENCE) delete buff->sequence;
+        if (state->mode & SEQUENCE) delete state->sequence;
 
-        stack_level = buff->controll;
-        delete  buff;
-        result      = true;
+        pushed_to_frame = state->frameNr;
+
+        delete state;
+        result = true;
     }
     else {
-        stack_level = datum - 1;
-        stack.push(buff);
-        result      = false;
+        pushed_to_frame = frame_level - 1;
+
+        states.push(state);
+        result = false;
     }
 
     return result;
 }
 
 
-bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
+bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) {
     // according to mode
     // tree_structure or sequence is buffered in the node
 
-    AP_tree_buffer *new_buff;
-    bool            ret;
+    NodeState *store;
+    bool       ret;
 
     if (is_leaf && !(STRUCTURE & mode)) return false;    // tips push only structure
 
-    if (this->stack_level == datum) {
-        AP_tree_buffer *last_buffer = stack.get_first();
-        AP_sequence    *sequence    = get_seq();
+    if (pushed_to_frame == frame_level) { // node already has a push (at current frame_level)
+        NodeState *is_stored = states.top();
 
-        if (sequence && (mode & SEQUENCE)) sequence->forget_sequence();
-        if (0 == (mode & ~last_buffer->mode)) { // already buffered
+        if (0 == (mode & ~is_stored->mode)) { // already buffered
+            AP_sequence *sequence = get_seq();
+            if (sequence && (mode & SEQUENCE)) sequence->forget_sequence();
             return false;
         }
-        new_buff = last_buffer;
+        store = is_stored;
         ret = false;
     }
-    else {
-        new_buff           = new AP_tree_buffer;
-        new_buff->count    = 1;
-        new_buff->controll = stack_level;
-        new_buff->mode     = NOTHING;
+    else { // first push for this node (in current stack frame)
+        store          = new NodeState;
+        store->frameNr = pushed_to_frame;
+        store->mode    = NOTHING;
 
-        stack.push(new_buff);
-        this->stack_level = datum;
-        ret = true;
+        states.push(store);
+
+        pushed_to_frame = frame_level;
+        ret             = true;
     }
 
-    if ((mode & STRUCTURE) && !(new_buff->mode & STRUCTURE)) {
-        new_buff->father   = get_father();
-        new_buff->leftson  = get_leftson();
-        new_buff->rightson = get_rightson();
-        new_buff->leftlen  = leftlen;
-        new_buff->rightlen = rightlen;
-        new_buff->root     = get_tree_root();
-        new_buff->gb_node  = gb_node;
-        new_buff->distance = distance;
+    if ((mode & STRUCTURE) && !(store->mode & STRUCTURE)) {
+        store->father   = get_father();
+        store->leftson  = get_leftson();
+        store->rightson = get_rightson();
+        store->leftlen  = leftlen;
+        store->rightlen = rightlen;
+        store->root     = get_tree_root();
+        store->gb_node  = gb_node;
+        store->distance = distance;
 
         for (int e=0; e<3; e++) {
-            new_buff->edge[e]      = edge[e];
-            new_buff->edgeIndex[e] = index[e];
+            store->edge[e]      = edge[e];
+            store->edgeIndex[e] = index[e];
             if (edge[e]) {
-                new_buff->edgeData[e]  = edge[e]->data;
+                store->edgeData[e]  = edge[e]->data;
             }
         }
     }
 
-    if ((mode & SEQUENCE) && !(new_buff->mode & SEQUENCE)) {
-        AP_sequence *sequence   = take_seq();
-        new_buff->sequence      = sequence;
-        new_buff->mutation_rate = mutation_rate;
-        mutation_rate           = 0.0;
+    if (mode & SEQUENCE) {
+        ap_assert(!is_leaf); // only allowed to push STRUCTURE for leafs
+        if (!(store->mode & SEQUENCE)) {
+            AP_sequence *sequence   = take_seq();
+            store->sequence      = sequence;
+            store->mutation_rate = mutation_rate;
+            mutation_rate           = 0.0;
+        }
+        else {
+            AP_sequence *sequence = get_seq();
+            if (sequence) sequence->forget_sequence();
+        }
     }
 
-    new_buff->mode = (AP_STACK_MODE)(new_buff->mode|mode);
+    store->mode = (AP_STACK_MODE)(store->mode|mode);
 
     return ret;
 }
 
-void AP_tree_nlen::pop(unsigned long IF_ASSERTION_USED(datum)) { // pop old tree costs
-    ap_assert(stack_level == datum); // error in node stack
-
-    AP_tree_buffer *buff = stack.pop();
-    AP_STACK_MODE   mode = buff->mode;
+void AP_tree_nlen::restore(const NodeState& state, bool destructive) {
+    /*! restore 'this' from NodeState
+     * if 'destructive' is true, NodeState releases its sequence (i.e. can only be used once on each NodeState)
+     * otherwise the sequence gets copied into 'this'
+     */
+    AP_STACK_MODE mode = state.mode;
 
     if (mode&STRUCTURE) {
-        father   = buff->father;
-        leftson  = buff->leftson;
-        rightson = buff->rightson;
-        leftlen  = buff->leftlen;
-        rightlen = buff->rightlen;
-        set_tree_root(buff->root);
-        gb_node  = buff->gb_node;
-        distance = buff->distance;
+        father   = state.father;
+        leftson  = state.leftson;
+        rightson = state.rightson;
+        leftlen  = state.leftlen;
+        rightlen = state.rightlen;
+        set_tree_root(state.root);
+        gb_node  = state.gb_node;
+        distance = state.distance;
 
         for (int e=0; e<3; e++) {
-            edge[e] = buff->edge[e];
+            edge[e] = state.edge[e];
 
             if (edge[e]) {
-                index[e] = buff->edgeIndex[e];
+                index[e] = state.edgeIndex[e];
 
                 edge[e]->index[index[e]] = e;
                 edge[e]->node[index[e]]  = this;
-                edge[e]->data            = buff->edgeData[e];
+                edge[e]->data            = state.edgeData[e];
             }
         }
     }
 
     if (mode&SEQUENCE) {
-        replace_seq(buff->sequence);
-        mutation_rate = buff->mutation_rate;
+        if (destructive) {
+            replace_seq(state.sequence);
+        }
+        else {
+            replace_seq(state.sequence ? state.sequence->dup() : NULL);
+        }
+        mutation_rate = state.mutation_rate;
     }
 
     if (ROOT==mode) {
-        buff->root->change_root(buff->root->get_root_node(), this);
+        state.root->change_root(state.root->get_root_node(), this);
     }
+}
 
-    stack_level = buff->controll;
-    delete buff;
+void AP_tree_nlen::pop(Level IF_ASSERTION_USED(curr_frameLevel)) { // pop old tree costs
+    ap_assert(pushed_to_frame == curr_frameLevel); // error in node stack (node wasnt pushed in current frame!)
+
+    NodeState *previous = states.pop();
+    restore(*previous, true);
+
+    pushed_to_frame = previous->frameNr;
+    delete previous;
 }
 
 void AP_tree_nlen::parsimony_rek(char *mutPerSite) {
@@ -815,7 +938,7 @@ void AP_tree_nlen::parsimony_rek(char *mutPerSite) {
             ap_assert(sequence);
         }
 
-        if (!sequence->got_sequence()) {
+        if (!sequence->hasSequence()) {
             AP_tree_nlen *lson = get_leftson();
             AP_tree_nlen *rson = get_rightson();
 
@@ -934,7 +1057,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
 
     // Wurzel setzen
 
-    ap_main->push();
+    ap_main->remember();
     this->set_root();
     rootNode()->costs();
 
@@ -956,7 +1079,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
         if (pars_refpntr[i]->get_father()->gr.hidden) continue;
 
         // nur wenn kein Blatt ist
-        ap_main->push();
+        ap_main->remember();
         pars_refpntr[i]->swap_assymetric(pars_side_ref[i]);
         pars[i] = rootNode()->costs();
         if (pars[i] < pars_best) {
@@ -967,7 +1090,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
         if (pars[i] < schwellwert) {
             rek_width_dynamic++;
         }
-        ap_main->pop();
+        ap_main->revert();
         visited_subtrees ++;
 
     }
@@ -1028,7 +1151,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
     if (rek_width > visited_subtrees)   rek_width = visited_subtrees;
 
     for (i=0; i < rek_width; i++) {
-        ap_main->push();
+        ap_main->remember();
         pars_refpntr[pars_ref[i]]->kernighan = pars_side_ref[pars_ref[i]];
         // Markieren
         pars_refpntr[pars_ref[i]]->swap_assymetric(pars_side_ref[pars_ref[i]]);
@@ -1066,20 +1189,16 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
             }
             cout.flush();
 
-            ap_main->clear();
+            ap_main->accept();
             break;
         }
         else {
-            ap_main->pop();
+            ap_main->revert();
         }
     }
-    if (*abort_flag) {       // pop/clear wegen set_root
-        ap_main->clear();
-    }
-    else {
-        ap_main->pop();
-    }
-    return;
+
+    // *abort_flag is set if a better tree has been found
+    ap_main->accept_if(*abort_flag); // undo set_root otherwise
 }
 
 
@@ -1129,7 +1248,7 @@ char* AP_tree_nlen::getSequenceCopy() {
     costs();
 
     AP_sequence_parsimony *pseq = DOWNCAST(AP_sequence_parsimony*, get_seq());
-    ap_assert(pseq->got_sequence());
+    ap_assert(pseq->hasSequence());
 
     size_t  len = pseq->get_sequence_length();
     char   *s   = new char[len];

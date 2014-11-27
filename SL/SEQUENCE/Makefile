@@ -51,7 +51,6 @@ AP_seq_dna.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/arb_error.h
-AP_seq_dna.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx

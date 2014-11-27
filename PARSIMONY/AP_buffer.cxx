@@ -9,256 +9,128 @@
 // =============================================================== //
 
 #include "AP_buffer.hxx"
-#include "AP_error.hxx"
 #include "ap_tree_nlen.hxx"
+#include "ap_main.hxx"
 
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
-AP_STACK::AP_STACK() {
-    first = 0;
-    pointer = 0;
-    stacksize = 0;
+#if defined(PROVIDE_PRINT)
+
+inline string space(int count) {
+    return string(count, ' ');
 }
 
-AP_STACK::~AP_STACK() {
-    if (stacksize > 0) {
-        new AP_ERR("~AP_STACK()", "Stack is not empty !", 0);
+void NodeState::print(ostream& out, int indentLevel) const {
+    out  << space(indentLevel)
+         << "NodeState=" << this
+         << " frameNr=" << frameNr << " mode=" << mode;
+    if (mode & STRUCTURE) {
+        out << " father=" << father << " lson=" << leftson << " rson=" << rightson;
+        out << " edges={";
+        for (int e = 0; e<3; ++e) {
+            out << " e[" << e << "]=" << edge[e] << "[" << edgeIndex[e] << "]";
+        }
+        out << " }";
+    }
+    if (mode & SEQUENCE) {
+        out << " sequence=" << sequence;
+    }
+    out << endl;
+}
+
+void NodeStack::print(ostream& out, int indentLevel, Level frameNr) const {
+    size_t i = count_elements();
+    out << space(indentLevel) << "NodeStack=" << this << "  size " << i << " frameNr=" << frameNr << endl;
+    for (NodeStack::const_iterator e = begin(); e != end(); ++e, --i) {
+        const AP_tree_nlen *node = *e;
+        out << space(indentLevel+1) << '[' << i << "] AP_tree_nlen*=" << node << " pushed_to_frame=" << node->get_pushed_to_frame() << endl;
+        node->get_states().print(out, indentLevel+2);
     }
 }
 
-void AP_STACK::push(void * element) {
-    AP_STACK_ELEM *stackelem = new AP_STACK_ELEM;
-    stackelem->node = element;
-    stackelem->next = first;
-    first = stackelem;
-    stacksize++;
-}
-
-void * AP_STACK::pop() {
-    void * pntr;
-    AP_STACK_ELEM * stackelem;
-    if (!first) return 0;
-    stackelem = first;
-    pntr = first->node;
-    first = first->next;
-    stacksize --;
-    delete stackelem;
-    return pntr;
-}
-
-void AP_STACK::clear() {
-    while (stacksize > 0) {
-        AP_STACK_ELEM *pntr = first;
-        first = first->next;
-        stacksize --;
-        delete pntr;
+void StateStack::print(ostream& out, int indentLevel) const {
+    size_t i = count_elements();
+    out << space(indentLevel) << "StateStack=" << this << " size " << i << endl;
+    for (StateStack::const_iterator e = begin(); e != end(); ++e) {
+        const NodeState& state = **e;
+        state.print(out, indentLevel+1);
     }
 }
 
-void AP_STACK::get_init() {
-    pointer = 0;
+void FrameStack::print(ostream& out, int indentLevel) const {
+    size_t i = count_elements();
+    out << space(indentLevel) << "FrameStack=" << this << " size " << i << endl;
+
+    Level frameNr = i;
+    for (FrameStack::const_iterator e = begin(); e != end(); ++e, --frameNr) {
+        const NodeStack& nodeStack = **e;
+        nodeStack.print(out, indentLevel+1, frameNr);
+    }
 }
-void  * AP_STACK::get_first() {
-    if (first != 0) {
-        return first->node;
+
+
+void AP_tree_nlen::print(std::ostream& out, int indentLevel, const char *label) const {
+    out << space(indentLevel)
+        << label << "=" << this
+        << " father=" << get_father();
+    for (int e = 0; e<3; ++e) {
+        out << " edge[" << e << "]=" << edge[e];
+        if (edge[e]) {
+            const AP_tree_edge& E = *edge[e];
+            if (E.isConnectedTo(this)) {
+                out << "->" << E.otherNode(this);
+            }
+            else {
+                out << "(not connected to 'this'!";
+                AP_tree_nlen *son = E.sonNode();
+                if (son) {
+                    AP_tree_nlen *fath = E.otherNode(son);
+                    out << " son=" << son << " father=" << fath;
+                }
+                else {
+                    out << "no son node";
+                }
+
+                out << ')';
+            }
+        }
+    }
+
+    if (is_leaf) {
+        out << " name=" << name << endl;
     }
     else {
-        return 0;
+        out << endl;
+        get_leftson()->print(out, indentLevel+1, "left");
+        get_rightson()->print(out, indentLevel+1, "right");
     }
 }
 
-void  * AP_STACK::get() {
-    if (0 == pointer) {
-        pointer = first;
-    }
-    else {
-        if (pointer->next == 0) {
-            new AP_ERR("AP_STACK: get()", " more get() than elements in stack");
-            pointer = 0;
-            return 0;
-        }
-        else {
-            pointer = pointer->next;
-        }
-    }
-    return pointer->node;
-}
 
-unsigned long AP_STACK::size() {
-    return stacksize;
-}
+void AP_main::print(ostream& out) {
+    out << "AP_main tree:" << endl;
+    get_root_node()->print(out, 1, "root");
 
-// ----------------
-//      AP_LIST
-
-AP_list_elem * AP_LIST::element(void * elem) {
-    AP_list_elem *pntr = first;
-    while (pntr != 0) {
-        if (pntr->node == elem)
-            return pntr;
-        pntr = pntr->next;
-    }
-    return pntr;
-}
-
-int AP_LIST::len() {
-    return list_len;
-}
-
-int AP_LIST::is_element(void * node) {
-    if (element(node) == 0) return 0;
-    return 1;
-}
-
-int AP_LIST::eof() {
-    if (akt == list_len) return 1;
-    return 0;
-}
-
-void AP_LIST::insert(void * new_one) {
-    AP_list_elem * newelem = new AP_list_elem;
-    if (first == 0) {
-        first = newelem;
-        last = newelem;
-        newelem->next = 0;
-        newelem->prev = 0;
-        pointer = first;
+    out << "AP_main frames:" << endl;
+    if (currFrame) {
+        out << " currFrame:" << endl;
+        currFrame->print(out, 2, frames.count_elements()+1);
     }
     else {
-        first->prev = newelem;
-        newelem->prev = 0;
-        newelem->next = first;
-        first = newelem;
+        out << " no currFrame" << endl;
     }
-    newelem->node = new_one;
-    list_len++;
-    return;
+    frames.print(out, 1);
 }
 
-void AP_LIST::append(void * new_one) {
-    AP_list_elem * newelem = new AP_list_elem;
-    if (last == 0) {
-        first = newelem;
-        last = newelem;
-        newelem->prev = 0;
-        newelem->next = 0;
-        pointer = first;
-    }
-    else {
-        last->next = newelem;
-        newelem->prev = last;
-        last = newelem;
-        newelem->next = 0;
-    }
-    newelem->node = new_one;
-    list_len++;
-    return;
+void AP_main::print2file(const char *file_in_ARBHOME) {
+    const char    *full = GB_path_in_ARBHOME(file_in_ARBHOME);
+    std::ofstream  out(full, std::ofstream::out);
+    print(out);
+    out.close();
 }
 
-void AP_LIST::remove(void * object) {
-    AP_list_elem  *elem = element(object);
-    if (elem) {
-        if (elem->prev) {
-            elem->prev->next = elem->next;
-        }
-        else {
-            first = elem->next;
-            elem->next->prev = 0;
-        }
-        if (elem->next) {
-            elem->next->prev = elem->prev;
-        }
-        else {
-            last = elem->prev;
-            elem->prev->next = 0;
-        }
-        if (elem == pointer) pointer = 0;
-        delete elem;
-        list_len --;
-        return;
-    }
-    new AP_ERR("AP_LIST::remove(void * object)", "no buffer element !\n");
-    return;
-}
+#endif
 
-void AP_LIST::push(void *elem) {
-    AP_list_elem * newelem = new AP_list_elem;
-    if (first == 0) {
-        first = newelem;
-        last = newelem;
-        newelem->next = 0;
-        newelem->prev = 0;
-        pointer = first;
-    }
-    else {
-        first->prev = newelem;
-        newelem->prev = 0;
-        newelem->next = first;
-        first = newelem;
-    }
-    newelem->node = elem;
-    list_len++;
-    return;
-}
-
-void *AP_LIST::pop() {
-    AP_list_elem * pntr = first;
-    if (!first) return 0;
-    void * node = first->node;
-    list_len --;
-    if (0 == list_len) {
-        first = last = 0;
-        delete pntr;
-        return node;
-    }
-    else {
-        first = first->next;
-        first->prev = 0;
-    }
-    delete pntr;
-    return node;
-}
-
-
-void AP_LIST::clear() {
-    AP_list_elem*  npntr;
-    AP_list_elem* pntr = first;
-    while (pntr != 0) {
-        npntr = pntr->next;
-        delete pntr;
-        pntr = npntr;
-    }
-    first = last = 0;
-    akt = 0;
-    list_len = 0;
-}
-
-void AP_tree_buffer::print() {
-    cout  << "AP_tree_buffer                      " << this;
-    cout  << "\nfather " << father;
-    cout  << "\nlefts  " << leftson;
-    cout  << "\nrights " << rightson << "\n sequence " << sequence << "\n";
-}
-
-void AP_main_stack::print() {
-    unsigned long i = this->size();
-    cout << "AP_main_stack " << this << "  Size " << i << "\n";
-    get_init();
-    for (; i > 0; i--) {
-        AP_tree *elem = get();
-        cout << i << " - AP_tree *: " << elem << " \n";
-    }
-}
-
-
-void AP_tree_stack::print() {
-    unsigned long i = this->size();
-    cout << "AP_tree_stack :  Size " << i << "\n";
-    get_init();
-    for (; i > 0; i--) {
-        AP_tree_buffer *elem = get();
-        elem->print();
-    }
-}

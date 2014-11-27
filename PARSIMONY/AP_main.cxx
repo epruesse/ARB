@@ -8,198 +8,182 @@
 //                                                                 //
 // =============================================================== //
 
-#include "AP_error.hxx"
 #include "ap_tree_nlen.hxx"
+#include "ap_main.hxx"
+#include <aw_msg.hxx>
 
 using namespace std;
-
-// ---------------
-//      AP_ERR
-
-int AP_ERR::mode = 0;
-
-AP_ERR::~AP_ERR()
-{
-    delete text;
-}
-
-
-AP_ERR::AP_ERR (const char *pntr)
-// setzt den Fehlertext und zeigt ihn an
-{
-    text = pntr;
-    if (mode == 0) {
-        cout << "\n*** WARNING *** \n" << text << "\n";
-        cout.flush();
-    }
-}
-
-AP_ERR::AP_ERR (const char *pntr, const char *pntr2)
-{
-    text = pntr2;
-    if (mode == 0) {
-        cout << "\n***** WARNING  in " << pntr << "\n" << text << "\n";
-        cout.flush();
-    }
-}
-
-AP_ERR::AP_ERR (const char *pntr, const char *pntr2, const int core)
-{
-    text = pntr2;
-    cout << "\n*** FATAL ERROR *** " << core << " in " << pntr << "\n" << text << "\n";
-    cout.flush();
-    GBK_terminate("AP_ERR[1]");
-}
-
-AP_ERR::AP_ERR (const char *pntr, const int core)
-// setzt den Fehlertext
-// bricht ab
-{
-    text = pntr;
-    cout << "\n*** FATAL ERROR *** " << core << "\n" << text << "\n";
-    cout.flush();
-    GBK_terminate("AP_ERR[2]");
-}
-
-const char *AP_ERR::show()
-{
-    return text;
-}
-
-void AP_ERR::set_mode(int i) {
-    mode = i;
-}
 
 // ----------------
 //      AP_main
 
 GB_ERROR AP_main::open(const char *db_server) {
-    GB_ERROR error             = 0;
-    GLOBAL_gb_main             = GB_open(db_server, "rwt");
-    if (!GLOBAL_gb_main) error = GB_await_error();
+    GB_ERROR error      = 0;
+    gb_main             = GB_open(db_server, "rwt");
+    if (!gb_main) error = GB_await_error();
     return error;
 }
 
 void AP_main::user_push() {
-    this->user_push_counter = stack_level + 1;
-    this->push();
+    frameData.user_push_counter = frameLevel + 1;
+    remember();
 }
 
 void AP_main::user_pop() {
     // checks if user_pop possible
-    if (user_push_counter == stack_level) {
-        this->pop();    // changes user_push_counter if user pop
+    if (frameData.user_push_counter == frameLevel) {
+        revert();    // changes user_push_counter if user pop
     }
     else {
-        new AP_ERR("AP_main::user_pop()", "No user pop possible");
+        aw_message("No user-pop possible");
     }
-    return;
 }
 
-void AP_main::push() {
-    // if count > 1 the nodes are buffered more than once
-    // WARNING:: node only has to be buffered once in the stack
-    //
-    //
-    stack_level ++;
-    if (stack) list.push(stack);
-    stack = new AP_main_stack;
-    stack->last_user_buffer = this->user_push_counter;
+void AP_main::remember() {
+    /*! remember current tree state
+     * @see revert() and accept()
+     */
+
+    frameLevel ++;
+    if (currFrame) frames.push(currFrame);
+
+    currFrame = new NodeStack(frameData);
+
+#if defined(AVOID_MULTI_ROOT_PUSH)
+    frameData.root_pushed = false;
+#endif
+#if defined(CHECK_ROOT_POPS)
+    currFrame->root_at_create = DOWNCAST(AP_tree_nlen*, get_tree_root()->get_root_node());
+#endif
 }
 
-void AP_main::pop() {
-    AP_tree_nlen *knoten;
-    if (!stack) {
-        new AP_ERR("AP_main::pop()", "Stack underflow !");
-        return;
-    }
-    while ((knoten = stack->pop())) {
-        if (stack_level != knoten->stack_level) {
-            GB_internal_error("AP_main::pop: Error in stack_level");
-            cout << "Main UPD - node UPD : " << stack_level << " -- " << knoten->stack_level << " \n";
-            return;
+void AP_main::revert() {
+    /*! revert tree to last remembered state
+     * @see remember() and accept()
+     */
+    if (!currFrame) GBK_terminate("AP_main::pop on empty stack");
+
+    {
+        AP_tree_nlen *node;
+        while ((node = currFrame->pop())) {
+            if (frameLevel != node->get_pushed_to_frame()) {
+                cerr << "Main frame level=" << frameLevel << " node frame level=" << node->get_pushed_to_frame() << endl;
+                GBK_terminate("AP_main::pop: main/node frame-level inconsistency");
+            }
+            node->pop(frameLevel);
         }
-        knoten->pop(stack_level);
     }
-    delete stack;
-    stack_level --;
-    stack = list.pop();
-    user_push_counter = stack ? stack->last_user_buffer : 0;
+
+#if defined(CHECK_ROOT_POPS)
+    ap_assert(currFrame->root_at_create == get_tree_root()->get_root_node()); // root has been restored!
+#endif
+
+    delete currFrame;
+    frameLevel --;
+
+    currFrame = frames.pop();
+    frameData = currFrame ? currFrame->get_previous_frame_data() : StackFrameData();
 }
 
-void AP_main::clear() {
-    // removes count elements from the list
-    // because the current tree is used
+void AP_main::accept() {
+    /*! accept changes performed on tree (since last remember())
+     * @see revert()
+     */
+
+    // @@@ outdated
+    // removes count(?) elements from the list because the current tree is used
     //
     // if stack_counter greater than last user_push then
     // moves all not previous buffered nodes in the
     // previous stack
 
-    AP_tree_nlen  *knoten;
-    AP_main_stack *new_stack;
+    if (!currFrame) GBK_terminate("AP_main::clear on empty stack");
 
-    if (!stack) {
-        new AP_ERR("AP_main::clear", "Stack underflow !");
-        return;
-    }
-    if (user_push_counter >= stack_level) {
-        if (stack != 0) {
-            if (stack->size() > 0) {
-                while (stack->size() > 0) {
-                    knoten = stack->pop();
-                    knoten->clear(stack_level, user_push_counter);
-                }
-            }
-            delete stack;
-            stack = list.pop();
+    AP_tree_nlen *node;
+
+    // @@@ ensure test coverage -> DRY cases below (they are nearly the same)
+
+    if (frameData.user_push_counter >= frameLevel) {
+        while (!currFrame->empty()) {
+            UNCOVERED();
+            node = currFrame->pop();
+            node->clear(frameLevel, frameData.user_push_counter);
         }
+        delete currFrame;
+        currFrame = frames.pop();
     }
     else {
-        if (stack) {
-            new_stack = list.pop();
-            while ((knoten = stack->pop())) {
-                if (knoten->clear(stack_level, user_push_counter) != true) {
-                    // node is not cleared because buffered in previous node stack
-                    // node is instead copied in previous level
-                    if (new_stack) new_stack->push(knoten);
+        NodeStack *prev_frame = frames.pop();
+        while ((node = currFrame->pop())) {
+            // UNCOVERED();
+            if (node->clear(frameLevel, frameData.user_push_counter) != true) {
+                // node was not cleared (because also buffered in previous node stack).
+                // @@@ has to be done independent of user_push_counter
+                // if revert() gets called for previous stack, it is necessary to revert
+                // the current change as well -> move into previous frame
+                // UNCOVERED();
+                if (prev_frame) {
+                    // UNCOVERED();
+                    prev_frame->push(node); // @@@ frames are pushed in reverted order (seems to be wrong)
                 }
             }
-            delete stack;
-            stack = new_stack;
         }
-        else {
-            new AP_ERR("AP_main::clear");
-        }
+        delete currFrame;
+        currFrame = prev_frame;
     }
-    stack_level --;
-    if (stack) user_push_counter = stack->last_user_buffer;
-    else user_push_counter = 0;
+    frameLevel --;
 
+    frameData = currFrame ? currFrame->get_previous_frame_data() : StackFrameData();
 }
 
 void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
     //
     //  stores node
     //
-    if (!stack) {
+    if (!currFrame) {
         if (mode & SEQUENCE)    node->unhash_sequence();
         return;
     }
 
-    if (stack_level < node->stack_level) {
-        GB_warning("AP_main::push_node: stack_level < node->stack_level");
-        return;
+    if (frameLevel < node->get_pushed_to_frame()) {
+        cerr << "Main frame level=" << frameLevel << " node frame level=" << node->get_pushed_to_frame() << endl;
+        GBK_terminate("AP_main::push_node: main/node frame-level inconsistency");
     }
 
-    if (node->push(mode, stack_level))  stack->push(node);
+    if (mode == ROOT) {
+        // test that it is really root what is pushed
+        ap_assert(!node->father);
+        ap_assert(node->is_root_node());
+
+#if defined(AVOID_MULTI_ROOT_PUSH)
+        if (frameData.root_pushed) {
+            // do not push root twice in same frame
+            mode = BOTH;
+        }
+        else {
+            frameData.root_pushed = true;
+#if defined(CHECK_ROOT_POPS)
+            ap_assert(node == currFrame->root_at_create); // make sure the pushed root is the correct one
+#endif
+        }
+#endif
+    }
+
+    if (node->push(mode, frameLevel)) currFrame->push(node);
+    if (mode == ROOT) {
+        // In AP_main::pop(), root-node has to be restored after everything else has been restored.
+        // Move node to bottom of stack now to ensure that.
+        currFrame->remove(node);
+        currFrame->shift(node);
+    }
 }
 
-void AP_main::set_tree_root(AWT_graphic_tree *agt_) {
+void AP_main::set_tree_root(AWT_graphic_parsimony *agt_) {
     ap_assert(agt == 0 && agt_ != 0);               // do only once
     agt = agt_;
 }
 
 const char *AP_main::get_aliname() const {
-    return agt->tree_static->get_aliview()->get_aliname();
+    return get_tree_root()->get_aliview()->get_aliname();
 }
 

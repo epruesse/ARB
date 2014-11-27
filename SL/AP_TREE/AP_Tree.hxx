@@ -52,14 +52,6 @@ enum {
     AWT_GC_MAX = AWT_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
 };
 
-enum AP_STACK_MODE {
-    NOTHING   = 0,                                                      // nothing to buffer in AP_tree node
-    STRUCTURE = 1,                                                      // only structure
-    SEQUENCE  = 2,                                                      // only sequence
-    BOTH      = 3,                                                      // sequence & treestructure is buffered
-    ROOT      = 7                                                       // old root is buffered
-};
-
 enum AP_UPDATE_FLAGS {
     AP_UPDATE_OK       = 0,
     AP_UPDATE_RELINKED = -1,
@@ -238,8 +230,6 @@ public: // @@@ fix public members
     AP_tree_members   gr;
     AP_branch_members br;
 
-    unsigned long stack_level; // @@@ maybe can be moved to AP_tree_nlen
-
     // ------------------
     //      functions
 private:
@@ -273,8 +263,7 @@ private:
 
 public:
     explicit AP_tree(AP_tree_root *troot)
-        : ARB_seqtree(troot),
-          stack_level(0)
+        : ARB_seqtree(troot)
     {
         gr.clear();
         br.clear();
