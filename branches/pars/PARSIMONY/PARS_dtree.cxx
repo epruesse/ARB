@@ -411,7 +411,8 @@ PARSIMONY_testenv<SEQTYPE>::PARSIMONY_testenv(const char *dbname, const char *al
     }
 }
 
-template PARSIMONY_testenv<AP_sequence_protein>::PARSIMONY_testenv(const char *dbname, const char *aliName); // explicit instanciation (otherwise link error in unittest)
+template PARSIMONY_testenv<AP_sequence_protein>::PARSIMONY_testenv(const char *dbname, const char *aliName);   // explicit instanciation (otherwise link error in unittest)
+template PARSIMONY_testenv<AP_sequence_parsimony>::PARSIMONY_testenv(const char *dbname, const char *aliName); // explicit instanciation (as above, but only happens with gcc 4.6.3/NDEBUG)
 
 
 void TEST_basic_tree_modifications() {
