@@ -173,7 +173,7 @@ static long transform_gbd_to_leaf(const char *key, long val, void *) {
     GB_ERROR error = leaf->get_seq()->bind_to_species(gb_node);
     if (error) {
         aw_message(error);
-        delete leaf; leaf = 0;
+        destroy(leaf); leaf = 0;
     }
     return (long)leaf;
 }
@@ -189,7 +189,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
                                      key,
                                      leaf->get_seq()->weighted_base_count(),
                                      MIN_SEQUENCE_LENGTH));
-        delete leaf;
+        destroy(leaf);
         return 0;
     }
 
@@ -801,7 +801,7 @@ static void nt_add_partial(AWT_graphic_parsimony *agt) {
                     }
                 }
                 else {
-                    delete part_leaf;
+                    destroy(part_leaf);
                 }
 
                 part_insert_progress.inc_and_check_user_abort(error);

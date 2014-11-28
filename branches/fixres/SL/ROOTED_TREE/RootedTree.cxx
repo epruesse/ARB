@@ -19,7 +19,7 @@
 
 TreeRoot::~TreeRoot() {
     deleteWithNodes = false; // avoid recursive call of ~TreeRoot
-    delete rootNode;
+    destroyNode(rootNode);
     rt_assert(!rootNode);
     delete nodeMaker;
 }

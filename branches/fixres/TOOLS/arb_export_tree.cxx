@@ -69,7 +69,8 @@ int main(int argc, char **argv) {
                     GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, GBT_TREE_NodeFactory());
                     if (tree) {
                         error = TREE_export_tree(gb_main, stdout, tree, trifurcated, branchlens, doublequotes);
-                        delete tree;
+                        UNCOVERED();
+                        destroy(tree);
                     }
                     else {
                         GB_ERROR why_cant_read = GB_await_error();

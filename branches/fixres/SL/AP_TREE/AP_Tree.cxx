@@ -101,7 +101,7 @@ AP_tree_root::AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, 
 }
 
 AP_tree_root::~AP_tree_root() {
-    delete get_root_node();
+    destroyNode(get_root_node());
     free(gone_tree_name);
     ap_assert(!get_root_node());
 }
@@ -984,7 +984,8 @@ long AP_tree_root::remove_leafs(AWT_RemoveType awt_remove_type) {
             list[i]->remove();
             removed++;
             if (!(awt_remove_type & AWT_REMOVE_BUT_DONT_FREE)) {
-                delete list[i]->father;
+                UNCOVERED();
+                destroy(list[i]->father);
             }
             if (!get_root_node()) {
                 break; // tree has been deleted

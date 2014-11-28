@@ -65,6 +65,20 @@ protected:
         return result;
     }
 
+    virtual ~GBT_TREE() {
+        delete leftson;  gb_assert(!leftson);
+        delete rightson; gb_assert(!rightson);
+
+        unlink_from_father();
+
+        free(name);
+        free(remark_branch);
+    }
+    friend class GBT_TREE_NodeFactory;
+    virtual void destroy()  {
+        delete this;
+    }
+
 public:
     GBT_TREE()
         : is_leaf(false),
@@ -74,14 +88,8 @@ public:
           name(NULL),
           remark_branch(NULL)
     {}
-    virtual ~GBT_TREE() {
-        delete leftson;  gb_assert(!leftson);
-        delete rightson; gb_assert(!rightson);
-
-        unlink_from_father();
-
-        free(name);
-        free(remark_branch);
+    static void destroy(GBT_TREE *that)  { // replacement for destructor
+        if (that) delete that;
     }
 
     DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(GBT_TREE);
@@ -179,13 +187,17 @@ public:
     void remove_remark() { use_as_remark(NULL); }
 };
 
+inline void destroy(GBT_TREE *that) { GBT_TREE::destroy(that); }
+
 struct TreeNodeFactory {
     virtual ~TreeNodeFactory() {}
-    virtual GBT_TREE *makeNode() const = 0;
+    virtual GBT_TREE *makeNode() const             = 0;
+    virtual void destroyNode(GBT_TREE *node) const = 0;
 };
 
 struct GBT_TREE_NodeFactory : public TreeNodeFactory {
     GBT_TREE *makeNode() const OVERRIDE { return new GBT_TREE; }
+    void destroyNode(GBT_TREE *node) const OVERRIDE { delete node; }
 };
 
 enum GBT_TreeRemoveType {

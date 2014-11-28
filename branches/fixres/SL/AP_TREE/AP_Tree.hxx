@@ -225,6 +225,7 @@ public:
     }
 };
 
+class AP_TreeNodeFactory;
 class AP_tree : public ARB_seqtree {
 public: // @@@ fix public members
     AP_tree_members   gr;
@@ -261,6 +262,9 @@ private:
 
     void update_subtree_information();
 
+protected:
+    ~AP_tree() OVERRIDE;
+    friend class AP_TreeNodeFactory; // allowed to call dtor
 public:
     explicit AP_tree(AP_tree_root *troot)
         : ARB_seqtree(troot)
@@ -268,7 +272,6 @@ public:
         gr.clear();
         br.clear();
     }
-    ~AP_tree() OVERRIDE;
 
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
 
@@ -361,9 +364,8 @@ public:
 };
 
 struct AP_TreeNodeFactory : public RootedTreeNodeFactory {
-    virtual RootedTree *makeNode(TreeRoot *root) const {
-        return new AP_tree(DOWNCAST(AP_tree_root*, root));
-    }
+    RootedTree *makeNode(TreeRoot *root) const OVERRIDE { return new AP_tree(DOWNCAST(AP_tree_root*, root)); }
+    void destroyNode(TreeRoot *, RootedTree *node) const OVERRIDE { delete DOWNCAST(AP_tree*, node); }
 };
 
 #else

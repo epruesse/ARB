@@ -400,7 +400,8 @@ static void tree_load_cb(AW_window *aww) {
 
             if (!error) aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
 
-            delete tree;
+            UNCOVERED();
+            destroy(tree);
         }
 
         free(warnings);
@@ -785,7 +786,8 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
                         char *comment = tree_builder.get_remark();
                         error         = GBT_write_tree_with_remark(gb_main, cons_tree_name, cons_tree, comment);
                         free(comment);
-                        delete cons_tree;
+                        UNCOVERED();
+                        destroy(cons_tree);
                     }
                 }
                 if (error) progress.done();
@@ -988,7 +990,7 @@ static GB_ERROR sort_tree_by_other_tree(GBDATA *gb_main, RootedTree *tree, const
     if (!otherTree) error = GB_await_error();
     else {
         SortByTopo sorter(otherTree);
-        delete otherTree;
+        destroy(otherTree);
         sorter.reorder_subtree(tree);
     }
     return error;
@@ -1098,7 +1100,7 @@ static GB_ERROR sort_namedtree_by_other_tree(GBDATA *gb_main, const char *tree, 
         error             = sort_tree_by_other_tree(gb_main, Tree, other_tree);
         if (!error) error = GBT_write_tree(gb_main, tree, Tree);
     }
-    delete Tree;
+    destroy(Tree);
     return error;
 }
 
@@ -1144,7 +1146,7 @@ void TEST_sort_tree_by_other_tree() {
 
         tree->reorder_tree(BIG_BRANCHES_TO_EDGE); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_work", tree));
 
-        delete tree;
+        destroy(tree);
     }
 
 
@@ -1187,7 +1189,7 @@ void TEST_move_node_info() {
 
         TEST_EXPECT_NEWICK(nSIMPLE, tree, org_topo);
         TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_removal_copy", tree));
-        delete tree;
+        destroy(tree);
     }
 
     // move node info
@@ -1329,7 +1331,7 @@ void TEST_edges() {
             TEST_EXPECT_SIMILAR(down.length(),   MOD_NLEN, EPSILON);
         }
 
-        delete tree;
+        destroy(tree);
     }
 
     GB_close(gb_main);
@@ -1360,7 +1362,7 @@ void TEST_toggle_bootstraps100() {
         tree->remove_bootstrap();
         TEST_EXPECT_NEWICK(nREMARK, tree, topo_rem);
 
-        delete tree;
+        destroy(tree);
     }
 
     GB_close(gb_main);
@@ -1434,7 +1436,7 @@ void TEST_multifurcate_tree() {
                 break;
         }
 
-        delete tree;
+        destroy(tree);
     }
 
     GB_close(gb_main);

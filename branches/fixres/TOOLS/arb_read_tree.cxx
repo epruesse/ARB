@@ -282,7 +282,8 @@ int main(int argc, char **argv) {
         if (error) show_error(gb_main, error);
         else       show_message(gb_msg_main, GBS_global_string("Tree %s read into the database", param.tree_name));
 
-        delete tree;
+        UNCOVERED();
+        destroy(tree);
         free(comment_from_file);
         free(comment_from_treefile);
     }

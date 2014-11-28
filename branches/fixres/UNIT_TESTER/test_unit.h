@@ -1326,7 +1326,7 @@ namespace arb_test {
         expected.add(that(tree).does_differ_from_NULL());
         if (tree) {
             expected.add(expect_newick_equals(format, tree, expected_newick));
-            delete tree;
+            GBT_TREE::destroy(tree);
         }
         return all().ofgroup(expected);
     }

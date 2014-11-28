@@ -340,7 +340,8 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
             free(sai_name);
         }
 
-        delete tree;
+        UNCOVERED();
+        destroy(tree);
         free(tree_name);
     }
     free(ali_name);

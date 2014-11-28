@@ -513,7 +513,7 @@ GBT_TREE *TreeReader::load_named_node(GBT_LEN& nodeLen) {
     }
     if (node && !error) {
         if (!eat_and_set_name_and_length(node, nodeLen)) {
-            delete node;
+            destroy(node);
             node = NULL;
         }
     }
@@ -580,9 +580,9 @@ GBT_TREE *TreeReader::load_subtree(GBT_LEN& nodeLen) {
                     }
                 }
 
-                delete right;
+                destroy(right);
                 if (error) {
-                    delete node;
+                    destroy(node);
                     node = NULL;
                 }
 
@@ -593,7 +593,7 @@ GBT_TREE *TreeReader::load_subtree(GBT_LEN& nodeLen) {
                 setExpectedError("one of ',)'");
                 break;
         }
-        delete left;
+        destroy(left);
     }
 
     if (!error) drop_tree_char(')');
@@ -628,7 +628,7 @@ GBT_TREE *TREE_load(const char *path, const TreeNodeFactory& nodeMaker, char **c
         else if (tree && tree->is_leaf) error = "tree is too small (need at least 2 species)";
 
         if (error) {
-            delete tree;
+            destroy(tree);
             tree = NULL;
         }
 
@@ -760,7 +760,7 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
         GBT_TREE *tree     = loadFromFileContaining(treeString, &warnings);     \
         TEST_EXPECT_TREELOAD(tree, newick);                                     \
         TEST_EXPECT_NULL(warnings);                                             \
-        delete tree;                                                            \
+        destroy(tree);                                                          \
         free(warnings);                                                         \
     } while(0)
 
@@ -770,7 +770,7 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
         TEST_EXPECT_TREELOAD(tree, newick);                                     \
         TEST_REJECT_NULL(warnings);                                             \
         TEST_EXPECT_CONTAINS(warnings, warnPart);                               \
-        delete tree;                                                            \
+        destroy(tree);                                                          \
         free(warnings);                                                         \
     } while(0)
 
@@ -801,7 +801,7 @@ void TEST_load_tree() {
                                  ": Loaded from trees/test.tree\n");
         }
         free(comment);
-        delete tree;
+        destroy(tree);
     }
 
     // detailed load tests (checking branchlengths and nodenames)
@@ -946,7 +946,7 @@ void TEST_load_tree() {
                 TEST_EXPECT_NULL(warnings);
             }
             free(warnings);
-            delete tree;
+            destroy(tree);
         }
 
         TEST_ANNOTATE(NULL);

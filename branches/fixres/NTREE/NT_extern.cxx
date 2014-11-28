@@ -891,7 +891,8 @@ static void NT_alltree_remove_leafs(AW_window *, GBT_TreeRemoveType mode, GBDATA
                             modified++;
                         }
                     }
-                    delete tree;
+                    UNCOVERED();
+                    destroy(tree);
                 }
             }
             progress.inc_and_check_user_abort(error);

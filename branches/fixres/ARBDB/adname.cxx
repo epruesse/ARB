@@ -194,7 +194,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                     ++progress;
 
                     GBT_write_tree(NameSession.gb_main, tname, tree);
-                    delete tree;
+                    destroy(tree);
 
                     progress.inc_and_check_user_abort(error);
                 }

@@ -88,6 +88,9 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ renam
     void createListRekUp(AP_CO_LIST *list, int *cn);
     void createListRekSide(AP_CO_LIST *list, int *cn);
 
+protected:
+    ~AP_tree_nlen() OVERRIDE {}
+    friend class AP_TreeNlenNodeFactory; // allowed to call dtor
 public:
     explicit AP_tree_nlen(AP_pars_root *troot)
         : AP_tree(troot),
@@ -99,7 +102,6 @@ public:
         edge[0]  = edge[1]  = edge[2]  = NULL;
         index[0] = index[1] = index[2] = 0;
     }
-    ~AP_tree_nlen() OVERRIDE {}
 
     DEFINE_TREE_ACCESSORS(AP_pars_root, AP_tree_nlen);
 
@@ -199,6 +201,9 @@ public:
 struct AP_TreeNlenNodeFactory : public RootedTreeNodeFactory {
     RootedTree *makeNode(TreeRoot *root) const OVERRIDE {
         return new AP_tree_nlen(DOWNCAST(AP_pars_root*, root));
+    }
+    void destroyNode(TreeRoot *, RootedTree *node) const OVERRIDE {
+        delete DOWNCAST(AP_tree_nlen*, node);
     }
 };
 

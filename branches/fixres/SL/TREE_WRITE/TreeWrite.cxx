@@ -366,7 +366,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, const char *tree_name, const TREE_no
                 }
             }
 
-            delete tree;
+            destroy(tree);
         }
 
         fprintf(output, ";\n");

@@ -1586,7 +1586,7 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
             }
         }
 
-        delete tree;
+        destroy(tree);
     }
 
     if (!*error) {

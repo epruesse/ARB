@@ -209,7 +209,7 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HAS
             }
 
             if (deleteSelf) {
-                delete tree;
+                destroy(tree);
                 tree = NULL;
                 if (removed) (*removed)++;
             }
@@ -231,7 +231,7 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HAS
         else {                  // everything deleted -> delete self
             if (tree->name && groups_removed) (*groups_removed)++;
             tree->is_leaf = true;
-            delete tree;
+            destroy(tree);
             tree = NULL;
         }
     }
@@ -1451,7 +1451,7 @@ void TEST_copy_rename_delete_tree_order() {
                 TEST_EXPECT_NEWICK(nSIMPLE, tree, "(CloButyr,(CloButy2,((CorGluta,(CorAquat,CurCitre)),CytAquat)));");
                 TEST_EXPECT_NEWICK(nSIMPLE, NULL, ";");
 
-                delete tree;
+                destroy(tree);
             }
 
             TEST_EXPECT_EQUAL(GBT_existing_tree(gb_main, "tree_nj_bs"), "tree_nj_bs");
@@ -1746,7 +1746,7 @@ void TEST_tree_remove_leafs() {
                     }
                 }
 
-                delete tree;
+                destroy(tree);
             }
         }
     }

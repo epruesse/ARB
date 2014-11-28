@@ -172,7 +172,8 @@ int ARB_main(int argc, char *argv[]) {
                     printf("successfully created consensus tree\n"
                            "(no savename specified -> tree not saved)\n");
                 }
-                delete cons_tree;
+                UNCOVERED();
+                destroy(cons_tree);
             }
             free(comment);
         }
@@ -268,7 +269,7 @@ static arb_test::match_expectation build_expected_consensus_tree(const int treed
 
     free(saveas);
     free(comment);
-    delete tree;
+    destroy(tree);
 
     return all().ofgroup(expected);
 }
@@ -493,7 +494,7 @@ void TEST_SLOW_treeIO_stable() {
                             const char *capsLeaf = findFirstNameContaining(tree, "Caps");
                             TEST_EXPECT_EQUAL(capsLeaf, "_MhuCaps");
 
-                            delete tree;
+                            destroy(tree);
                         }
 
                         // export again
@@ -646,11 +647,11 @@ void TEST_CONSENSUS_TREE_functionality() {
     TEST_ASSERT_VALID_TREE(tree);
     tree->get_tree_root()->find_innermost_edge().set_root();
     TEST_EXPECT_NEWICK(nLENGTH, tree,
-                             "((((LbnMarin:0.019,LbnzAlb4:0.003):0.016,LbnAlexa:0.032):0.122,(ThtNivea:0.230,_MhuCaps:0.194):0.427):0.076,"
-                             "(((((DnrShiba:0.076,RsbElon4:0.053):0.034,MmbAlkal:0.069):0.016,((MabPelag:0.001,MabSalin:0.009):0.095,PaoMaris:0.092):0.036):0.030,((RblAerol:0.085,RblMesop:0.042):0.238,AticSea6:0.111):0.018):0.036,(OnlGran2:0.057,RsnAnta2:0.060):0.021):0.076);");
+                       "((((LbnMarin:0.019,LbnzAlb4:0.003):0.016,LbnAlexa:0.032):0.122,(ThtNivea:0.230,_MhuCaps:0.194):0.427):0.076,"
+                       "(((((DnrShiba:0.076,RsbElon4:0.053):0.034,MmbAlkal:0.069):0.016,((MabPelag:0.001,MabSalin:0.009):0.095,PaoMaris:0.092):0.036):0.030,((RblAerol:0.085,RblMesop:0.042):0.238,AticSea6:0.111):0.018):0.036,(OnlGran2:0.057,RsnAnta2:0.060):0.021):0.076);");
 
     TEST_ASSERT_VALID_TREE(tree);
-    delete tree;
+    destroy(tree);
     free(comment);
 }
 

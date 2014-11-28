@@ -84,7 +84,8 @@ GB_ERROR ClusterTreeRoot::find_clusters() {
     if (error) {
         // avoid further access after error
         change_root(root, NULL);
-        delete root;
+        UNCOVERED();
+        destroy(root);
     }
     else {
 #if defined(DEBUG)

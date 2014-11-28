@@ -29,12 +29,16 @@
 
 // --------------------------------------------------------------------------------
 
-struct CompressionTree : public GBT_TREE {
+class CompressionTree : public GBT_TREE {
+protected:
+    ~CompressionTree() OVERRIDE {}
+    friend class CompressionTree_NodeFactory;
+public:
+
     // members initialized by init_indices_and_count_sons
     int index; // master(inner nodes) or sequence(leaf nodes) index
     int sons;  // sons with sequence or masters (in subtree)
 
-    ~CompressionTree() OVERRIDE {}
 
     DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(CompressionTree);
 };
@@ -861,7 +865,8 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
 }
 
 class CompressionTree_NodeFactory : public TreeNodeFactory {
-    virtual GBT_TREE *makeNode() const OVERRIDE { return new CompressionTree; }
+    GBT_TREE *makeNode() const OVERRIDE { return new CompressionTree; }
+    void destroyNode(GBT_TREE *node) const OVERRIDE { delete DOWNCAST(CompressionTree*,node); }
 };
 
 GB_ERROR GBT_compress_sequence_tree2(GBDATA *gbd, const char *tree_name, const char *ali_name) { // goes to header: __ATTR__USERESULT // @@@ rename function
@@ -893,7 +898,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gbd, const char *tree_name, const c
                     else {
                         error             = GBT_link_tree(ctree, gb_main, false, 0, 0);
                         if (!error) error = compress_sequence_tree(gb_main, ctree, ali_name);
-                        delete ctree;
+                        destroy(ctree);
                     }
                 }
                 if (!error) GB_disable_quicksave(gb_main, "Database optimized");

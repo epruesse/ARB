@@ -146,6 +146,14 @@ class ClusterTree : public ARB_countedTree { // derived from a Noncopyable
 
     void oblivion(bool forgetDistances); // forget unneeded data
 
+protected:
+    ~ClusterTree() OVERRIDE {
+        delete worstKnownDistance;
+        delete sequenceDists;
+        delete branchDists;
+        delete branchDepths;
+    }
+    friend class ClusterTreeNodeFactory;
 public:
     explicit ClusterTree(ClusterTreeRoot *tree_root_)
         : ARB_countedTree(tree_root_)
@@ -160,12 +168,6 @@ public:
         , worstKnownDistance(NULL)
     {}
 
-    ~ClusterTree() OVERRIDE {
-        delete worstKnownDistance;
-        delete sequenceDists;
-        delete branchDists;
-        delete branchDepths;
-    }
     DEFINE_TREE_ACCESSORS(ClusterTreeRoot, ClusterTree);
 
     unsigned get_cluster_count() const { return clus_count; }
@@ -188,6 +190,9 @@ public:
 class ClusterTreeNodeFactory : public RootedTreeNodeFactory {
     RootedTree *makeNode(TreeRoot *root) const OVERRIDE {
         return new ClusterTree(DOWNCAST(ClusterTreeRoot*, root));
+    }
+    void destroyNode(TreeRoot *, RootedTree *node) const OVERRIDE {
+        delete DOWNCAST(ClusterTree*, node);
     }
 };
 

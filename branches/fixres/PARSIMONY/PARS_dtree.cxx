@@ -574,6 +574,7 @@ void TEST_basic_tree_modifications() {
         env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, top_topo);
 
         TEST_ASSERT_VALID_TREE(root);
+        AP_pars_root *treeroot = root->get_tree_root();
 
         // delete memory allocated by insert() above and lost due to pop()s
         delete edge1_del_manually;
@@ -583,14 +584,9 @@ void TEST_basic_tree_modifications() {
         node_del_manually->father   = NULL;
         node_del_manually->leftson  = NULL;
         node_del_manually->rightson = NULL;
-        delete node_del_manually;
+        destroy(node_del_manually, treeroot);
     }
 }
-
-// @@@ Tests wanted:
-// - NNI
-// - tree optimize
-// - ...
 
 void TEST_calc_bootstraps() {
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", "ali_5s");

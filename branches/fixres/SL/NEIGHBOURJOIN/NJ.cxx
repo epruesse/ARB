@@ -374,7 +374,7 @@ void TEST_neighbourjoining() {
             default: arb_assert(0); break;
         }
 
-        delete tree;
+        destroy(tree);
     }
 }
 TEST_PUBLISH(TEST_neighbourjoining);

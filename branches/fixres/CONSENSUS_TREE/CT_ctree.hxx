@@ -41,6 +41,7 @@ struct NT_NODE;
 class  PartitionSize;
 class  PartRegistry;
 class  RB_INFO;
+class  SizeAwareNodeFactory;
 
 // -----------------------
 //      SizeAwareTree
@@ -48,6 +49,9 @@ class  RB_INFO;
 class SizeAwareTree : public RootedTree {
     // simple size-aware tree
     unsigned leaf_count;
+protected:
+    ~SizeAwareTree() OVERRIDE {}
+    friend class SizeAwareNodeFactory; // allowed to call dtor
 public:
     SizeAwareTree(TreeRoot *root) : RootedTree(root) {}
     unsigned get_leaf_count() const OVERRIDE {
@@ -67,6 +71,7 @@ public:
 
 struct SizeAwareNodeFactory : public RootedTreeNodeFactory {
     RootedTree *makeNode(TreeRoot *root) const OVERRIDE { return new SizeAwareTree(root); }
+    void destroyNode(TreeRoot *, RootedTree *node) const OVERRIDE { delete DOWNCAST(SizeAwareTree*, node); }
 };
 
 // -----------------------
@@ -153,7 +158,7 @@ class ConsensusTreeBuilder {
 public:
     ~ConsensusTreeBuilder() {
         for (size_t i = 0; i<trees.size(); ++i) {
-            delete trees[i];
+            destroy(trees[i]);
         }
     }
 

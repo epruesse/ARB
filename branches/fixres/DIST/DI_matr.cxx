@@ -847,7 +847,8 @@ GB_ERROR DI_MATRIX::extract_from_tree(const char *treename, bool *aborted_flag) 
                     progress.inc_and_check_user_abort(error);
                 }
             }
-            delete tree;
+            UNCOVERED();
+            destroy(tree);
             if (aborted_flag && progress.aborted()) *aborted_flag = true;
             if (error) progress.done();
         }
@@ -1252,7 +1253,8 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
 
         if (bootstrap_flag) {
             error = ctree->insert_tree_weighted(tree, matr->nentries, 1, false);
-            delete tree; tree = NULL;
+            UNCOVERED();
+            destroy(tree); tree = NULL;
             loop_count++;
             progress->inc();
             if (!bootstrap_count) { // when waiting for kill
@@ -1305,7 +1307,8 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
         }
     }
 
-    delete tree;
+    UNCOVERED();
+    destroy(tree);
 
     // aw_status(); // remove 'abort' flag (@@@ got no equiv for arb_progress yet. really needed?)
 
@@ -1468,7 +1471,8 @@ static void di_calculate_compressed_matrix_cb(AW_window *aww, WeightedFilter *we
                 error = GLOBAL_MATRIX.get()->compress(tree);
             }
         }
-        delete tree;
+        UNCOVERED();
+        destroy(tree);
 
         // now force refresh
         if (matrixDisplay) {

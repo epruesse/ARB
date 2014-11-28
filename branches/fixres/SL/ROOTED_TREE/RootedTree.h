@@ -34,7 +34,8 @@ class ARB_edge;
 
 struct RootedTreeNodeFactory { // acts similar to TreeNodeFactory for trees with root
     virtual ~RootedTreeNodeFactory() {}
-    virtual RootedTree *makeNode(TreeRoot *root) const = 0;
+    virtual RootedTree *makeNode(TreeRoot *root) const               = 0;
+    virtual void destroyNode(TreeRoot *root, RootedTree *node) const = 0;
 };
 
 class TreeRoot : public TreeNodeFactory, virtual Noncopyable {
@@ -79,6 +80,7 @@ public:
 
     // TreeNodeFactory interface
     inline GBT_TREE *makeNode() const OVERRIDE;
+    inline void destroyNode(GBT_TREE *node) const OVERRIDE;
 
     RootedTree *get_root_node() { return rootNode; }
     const RootedTree *get_root_node() const { return rootNode; }
@@ -117,11 +119,6 @@ protected:
         //! return true for root-node and its sons
         return !father || !father->father;
     }
-
-public:
-    RootedTree(TreeRoot *root)
-        : tree_root(root)
-    {}
     ~RootedTree() OVERRIDE {
         if (tree_root) {
             rt_assert(tree_root->get_root_node() == this); // you may only free the root-node or unlinked nodes (i.e. such with tree_root==NULL)
@@ -130,6 +127,28 @@ public:
             root->TreeRoot::change_root(this, NULL);
             root->delete_by_node();
         }
+    }
+    void destroy() OVERRIDE {
+        rt_assert(this);
+        TreeRoot *myRoot = get_tree_root();
+        rt_assert(myRoot); // if this fails, you need to use destroy(TreeRoot*), i.e. destroy(RootedTree*, TreeRoot*)
+        myRoot->destroyNode(this);
+    }
+    void destroy(TreeRoot *viaRoot) {
+        rt_assert(this);
+#if defined(ASSERTION_USED)
+        TreeRoot *myRoot = get_tree_root();
+        rt_assert(!myRoot || myRoot == viaRoot);
+#endif
+        viaRoot->destroyNode(this);
+    }
+
+public:
+    RootedTree(TreeRoot *root)
+        : tree_root(root)
+    {}
+    static void destroy(RootedTree *that, TreeRoot *root) {
+        if (that) that->destroy(root);
     }
 
     void announce_tree_constructed() OVERRIDE {
@@ -220,8 +239,15 @@ public:
 #endif // PROVIDE_TREE_STRUCTURE_TESTS
 };
 
+inline void destroy(RootedTree *that, TreeRoot *root) {
+    RootedTree::destroy(that, root);
+}
+
 inline GBT_TREE *TreeRoot::makeNode() const {
     return nodeMaker->makeNode(const_cast<TreeRoot*>(this));
+}
+inline void TreeRoot::destroyNode(GBT_TREE *node) const {
+    nodeMaker->destroyNode(const_cast<TreeRoot*>(this), DOWNCAST(RootedTree*, node));
 }
 
 // ---------------------------------------------------------------------------------------

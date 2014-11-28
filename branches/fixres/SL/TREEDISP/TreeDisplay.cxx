@@ -1654,7 +1654,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
 AWT_graphic_tree::~AWT_graphic_tree() {
     delete cmd_data;
     free(species_name);
-    delete tree_proto;
+    destroy(tree_proto);
     delete tree_static;
 }
 
@@ -1669,7 +1669,7 @@ void AWT_graphic_tree::init(RootedTreeNodeFactory *nodeMaker_, AliView *aliview,
 }
 
 void AWT_graphic_tree::unload() {
-    delete tree_static->get_root_node();
+    destroy(tree_static->get_root_node());
     displayed_root = 0;
 }
 
@@ -1706,7 +1706,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_
             }
 
             if (error) {
-                delete tree_static->get_root_node();
+                destroy(tree_static->get_root_node());
             }
             else {
                 displayed_root = get_root_node();

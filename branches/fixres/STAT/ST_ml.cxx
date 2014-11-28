@@ -449,8 +449,9 @@ long ST_ML::delete_species(const char *key, long val, void *cd_st_ml) {
     else {
         AP_tree *leaf   = (AP_tree *) val;
         AP_tree *father = leaf->get_father();
+        UNCOVERED();
         leaf->remove();
-        delete father;                              // also deletes 'this'
+        destroy(father); // also deletes 'this'
 
         return 0;
     }

@@ -306,6 +306,9 @@ class GroupTree : public ARB_countedTree {
 
     void update_tag_counters();
     unsigned get_leaf_count() const OVERRIDE { return leaf_count; }
+protected:
+    ~GroupTree() OVERRIDE {}
+    friend class GroupTreeNodeFactory;
 public:
 
     explicit GroupTree(ARB_seqtree_root *root)
@@ -338,6 +341,9 @@ public:
 class GroupTreeNodeFactory : public RootedTreeNodeFactory {
     RootedTree *makeNode(TreeRoot *root) const OVERRIDE {
         return new GroupTree(DOWNCAST(ARB_seqtree_root*, root));
+    }
+    void destroyNode(TreeRoot *, RootedTree *node) const OVERRIDE {
+        delete DOWNCAST(GroupTree*, node);
     }
 };
 
