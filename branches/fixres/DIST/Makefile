@@ -45,6 +45,7 @@ DI_clusters.o: di_clustertree.hxx
 DI_clusters.o: di_foundclusters.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/adtree.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/AliView.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/AP_seq_protein.hxx
@@ -88,6 +89,7 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/ttypes.h
 DI_clustertree.o: di_clustertree.hxx
 DI_clustertree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/adtree.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/AliView.hxx
 DI_clustertree.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -114,6 +116,7 @@ DI_clustertree.o: $(ARBHOME)/INCLUDE/test_global.h
 DI_compress_matrix.o: di_matr.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/adtree.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AliView.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
@@ -145,6 +148,7 @@ DI_foundclusters.o: di_clustertree.hxx
 DI_foundclusters.o: di_foundclusters.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/adtree.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/AliView.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -219,6 +223,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/ad_cb.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_matr.o: $(ARBHOME)/INCLUDE/adtree.h
 DI_matr.o: $(ARBHOME)/INCLUDE/AliView.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
@@ -283,6 +288,7 @@ DI_protdist.o: di_matr.hxx
 DI_protdist.o: di_protdist.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/adtree.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/AliView.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
@@ -316,6 +322,7 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/test_global.h
 DI_save_matr.o: di_matr.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/adtree.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/AliView.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
@@ -349,6 +356,7 @@ DI_view_matrix.o: di_view_matrix.hxx
 DI_view_matrix.o: dist.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/adtree.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AliView.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
@@ -396,6 +404,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/ttypes.h
 distanalyse.o: di_matr.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/ad_prot.h
 distanalyse.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+distanalyse.o: $(ARBHOME)/INCLUDE/adtree.h
 distanalyse.o: $(ARBHOME)/INCLUDE/AliView.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx

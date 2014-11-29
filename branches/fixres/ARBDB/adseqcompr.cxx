@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include <arbdbt.h>
+#include <adtree.h>
 #include <arb_progress.h>
 #include <arb_file.h>
 #include <arb_misc.h>

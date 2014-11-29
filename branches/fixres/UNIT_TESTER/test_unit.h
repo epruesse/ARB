@@ -1309,7 +1309,7 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#ifdef ARBDBT_H
+#ifdef ADTREE_H
 
 namespace arb_test {
     inline match_expectation expect_newick_equals(NewickFormat format, const GBT_TREE *tree, const char *expected_newick) {
@@ -1340,13 +1340,13 @@ namespace arb_test {
 
 #else
 
-#define WARN_MISS_ARBDBT() need_include__arbdbt_h__BEFORE__test_unit_h
+#define WARN_MISS_ADTREE() need_include__adtree_h__BEFORE__test_unit_h
 
-#define TEST_EXPECT_NEWICK(format,tree,expected_newick)         WARN_MISS_ARBDBT()
-#define TEST_EXPECT_NEWICK__BROKEN(format,tree,expected_newick) WARN_MISS_ARBDBT()
+#define TEST_EXPECT_NEWICK(format,tree,expected_newick)         WARN_MISS_ADTREE()
+#define TEST_EXPECT_NEWICK__BROKEN(format,tree,expected_newick) WARN_MISS_ADTREE()
 
-#define TEST_EXPECT_SAVED_NEWICK(format,gb_main,treename,expected_newick)         WARN_MISS_ARBDBT()
-#define TEST_EXPECT_SAVED_NEWICK__BROKEN(format,gb_main,treename,expected_newick) WARN_MISS_ARBDBT()
+#define TEST_EXPECT_SAVED_NEWICK(format,gb_main,treename,expected_newick)         WARN_MISS_ADTREE()
+#define TEST_EXPECT_SAVED_NEWICK__BROKEN(format,gb_main,treename,expected_newick) WARN_MISS_ADTREE()
 
 #endif
 

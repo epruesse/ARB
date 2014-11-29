@@ -12,8 +12,8 @@
 #ifndef ROOTEDTREE_H
 #define ROOTEDTREE_H
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ADTREE_H
+#include <adtree.h>
 #endif
 #ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>

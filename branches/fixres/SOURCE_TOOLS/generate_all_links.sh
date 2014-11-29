@@ -213,6 +213,7 @@ symlink_file ../ARBDB/ad_prot.h INCLUDE/ad_prot.h &&
 symlink_file ../ARBDB/ad_remote.h INCLUDE/ad_remote.h &&
 symlink_file ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h &&
 symlink_file ../ARBDB/adGene.h INCLUDE/adGene.h &&
+symlink_file ../ARBDB/adtree.h INCLUDE/adtree.h &&
 symlink_file ../ARBDB/adperl.h INCLUDE/adperl.h &&
 symlink_file ../ARBDB/arbdb.h INCLUDE/arbdb.h &&
 symlink_file ../ARBDB/arbdb_base.h INCLUDE/arbdb_base.h &&

@@ -15,7 +15,7 @@
 #include <arb_progress.h>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
-#include <arbdbt.h>
+#include <adtree.h>
 #include <arb_sort.h>
 
 #define NT_RESORT_FILTER (1<<GB_STRING)|(1<<GB_INT)|(1<<GB_FLOAT)

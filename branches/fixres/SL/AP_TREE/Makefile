@@ -40,6 +40,7 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/ad_cb.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/adtree.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/AliView.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx

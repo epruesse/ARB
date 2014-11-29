@@ -23,7 +23,7 @@
 #include <aw_root.hxx>
 
 #include <arb_progress.h>
-#include <arbdbt.h>
+#include <adtree.h>
 #include <arb_global_defs.h>
 
 // --------------------------------------------------------------------------------

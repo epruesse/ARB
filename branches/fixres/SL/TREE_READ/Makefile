@@ -38,6 +38,7 @@ depend.init:
 TreeRead.o: TreeRead.h
 TreeRead.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeRead.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+TreeRead.o: $(ARBHOME)/INCLUDE/adtree.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_defs.h
@@ -64,6 +65,7 @@ TreeRead.o: $(ARBHOME)/INCLUDE/test_unit.h
 TreeTools.o: TreeRead.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+TreeTools.o: $(ARBHOME)/INCLUDE/adtree.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_error.h

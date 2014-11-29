@@ -39,6 +39,7 @@ ST_ml.o: $(ARBHOME)/INCLUDE/ad_cb.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ST_ml.o: $(ARBHOME)/INCLUDE/adtree.h
 ST_ml.o: $(ARBHOME)/INCLUDE/AliView.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx

@@ -32,6 +32,7 @@ probe_design.o: SaiProbeVisualization.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/adGene.h
+probe_design.o: $(ARBHOME)/INCLUDE/adtree.h
 probe_design.o: $(ARBHOME)/INCLUDE/aisc_global.h
 probe_design.o: $(ARBHOME)/INCLUDE/AliView.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx

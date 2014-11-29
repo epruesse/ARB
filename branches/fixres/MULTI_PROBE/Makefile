@@ -180,6 +180,7 @@ MP_noclass.o: MultiProbe.hxx
 MP_noclass.o: SoTl.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/adtree.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/AliView.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
@@ -383,6 +384,7 @@ MP_sondentopf.o: MultiProbe.hxx
 MP_sondentopf.o: SoTl.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/adtree.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/AliView.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx

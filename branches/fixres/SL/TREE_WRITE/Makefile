@@ -38,6 +38,7 @@ depend.init:
 TreeWrite.o: TreeWrite.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/adtree.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arb_error.h

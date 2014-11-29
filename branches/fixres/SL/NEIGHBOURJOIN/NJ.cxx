@@ -10,7 +10,7 @@
 
 #include "NJ.hxx"
 #include <neighbourjoin.hxx>
-#include <arbdbt.h>
+#include <adtree.h>
 #include <arb_diff.h>
 
 PH_NEIGHBOUR_DIST::PH_NEIGHBOUR_DIST()

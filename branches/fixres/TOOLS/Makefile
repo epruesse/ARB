@@ -141,6 +141,7 @@ arb_2_bin.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/adtree.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_defs.h
@@ -243,6 +244,7 @@ arb_export_sequences.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_export_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/adtree.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -437,6 +439,7 @@ arb_probe_match.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_read_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_read_tree.o: $(ARBHOME)/INCLUDE/adtree.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_defs.h

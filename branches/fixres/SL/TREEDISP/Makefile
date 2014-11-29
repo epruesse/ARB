@@ -46,6 +46,7 @@ depend.init:
 irstree_display.o: TreeDisplay.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/ad_prot.h
 irstree_display.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+irstree_display.o: $(ARBHOME)/INCLUDE/adtree.h
 irstree_display.o: $(ARBHOME)/INCLUDE/AliView.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -86,6 +87,7 @@ TreeCallbacks.o: TreeCallbacks.hxx
 TreeCallbacks.o: TreeDisplay.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/adtree.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/AliView.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -132,6 +134,7 @@ TreeDisplay.o: ../../WINDOW/aw_common.hxx
 TreeDisplay.o: TreeDisplay.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/adtree.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AliView.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx

@@ -17,7 +17,7 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_select.hxx>
-#include <arbdbt.h>
+#include <adtree.h>
 #include <items.h>
 #include <arb_msg_fwd.h>
 

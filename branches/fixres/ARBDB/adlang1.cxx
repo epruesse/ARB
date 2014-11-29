@@ -13,6 +13,7 @@
 #include "gb_localdata.h"
 
 #include <adGene.h>
+#include <adtree.h>
 #include <ad_cb.h>
 
 #include <arb_defs.h>

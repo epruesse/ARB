@@ -606,6 +606,7 @@ adlang1.o: ad_cb_prot.h
 adlang1.o: ad_prot.h
 adlang1.o: ad_t_prot.h
 adlang1.o: adGene.h
+adlang1.o: adtree.h
 adlang1.o: arbdb.h
 adlang1.o: arbdb_base.h
 adlang1.o: arbdbt.h
@@ -769,6 +770,7 @@ admath.o: $(ARBHOME)/INCLUDE/test_global.h
 adname.o: ad_config.h
 adname.o: ad_prot.h
 adname.o: ad_t_prot.h
+adname.o: adtree.h
 adname.o: arbdb.h
 adname.o: arbdb_base.h
 adname.o: arbdbt.h
@@ -920,6 +922,7 @@ adseqcompr.o: ad_cb.h
 adseqcompr.o: ad_cb_prot.h
 adseqcompr.o: ad_prot.h
 adseqcompr.o: ad_t_prot.h
+adseqcompr.o: adtree.h
 adseqcompr.o: arbdb.h
 adseqcompr.o: arbdb_base.h
 adseqcompr.o: arbdbt.h
@@ -1197,6 +1200,7 @@ adtools.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 adtree.o: ad_prot.h
 adtree.o: ad_t_prot.h
+adtree.o: adtree.h
 adtree.o: arbdb.h
 adtree.o: arbdb_base.h
 adtree.o: arbdbt.h

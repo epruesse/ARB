@@ -82,6 +82,7 @@ ad_spec.o: NT_local.h
 ad_spec.o: NT_local_proto.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ad_spec.o: $(ARBHOME)/INCLUDE/adtree.h
 ad_spec.o: $(ARBHOME)/INCLUDE/AliView.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -179,6 +180,7 @@ ad_trees.o: NT_local_proto.h
 ad_trees.o: NT_tree_cmp.h
 ad_trees.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_trees.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ad_trees.o: $(ARBHOME)/INCLUDE/adtree.h
 ad_trees.o: $(ARBHOME)/INCLUDE/AliView.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -313,6 +315,7 @@ AP_pos_var_pars.o: NT_local.h
 AP_pos_var_pars.o: NT_local_proto.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/adtree.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -392,6 +395,7 @@ NT_branchAnalysis.o: NT_local.h
 NT_branchAnalysis.o: NT_local_proto.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/adtree.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/AliView.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -559,6 +563,7 @@ NT_edconf.o: NT_local_proto.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_config.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/adtree.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -600,6 +605,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/ad_cb.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_extern.o: $(ARBHOME)/INCLUDE/adtree.h
 NT_extern.o: $(ARBHOME)/INCLUDE/AliView.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -855,6 +861,7 @@ NT_sort.o: NT_local.h
 NT_sort.o: NT_local_proto.h
 NT_sort.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_sort.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_sort.o: $(ARBHOME)/INCLUDE/adtree.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -930,6 +937,7 @@ NT_tree_cmp.o: NT_species_set.h
 NT_tree_cmp.o: NT_tree_cmp.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_tree_cmp.o: $(ARBHOME)/INCLUDE/adtree.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/AliView.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx

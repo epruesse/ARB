@@ -11,7 +11,7 @@
 #include "gb_local.h"
 
 #include <ad_config.h>
-#include <arbdbt.h>
+#include <adtree.h>
 
 #include <arb_progress.h>
 #include <arb_strbuf.h>
