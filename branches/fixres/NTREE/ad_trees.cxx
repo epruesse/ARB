@@ -938,7 +938,7 @@ class SortByTopo : virtual Noncopyable {
     SpeciesPosition        source_pos; // in ordering topology
     const SpeciesPosition *target_pos; // in target topology (used where source_pos does not provide order)
 
-    CombinedPosInfo reorder_subtree_rec(RootedTree *node) { // similar to ../SL/ROOTED_TREE/RootedTree.cxx@reorder_subtree
+    CombinedPosInfo reorder_subtree_rec(RootedTree *node) { // similar to ../ARBDB/RootedTree.cxx@reorder_subtree
         static const char *smallest_leafname; // has to be set to the alphabetically smallest name (when function exits)
 
         if (node->is_leaf) {
