@@ -263,6 +263,7 @@ arb_export_tree.o: $(ARBHOME)/INCLUDE/downcast.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/nds.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -456,6 +457,7 @@ arb_read_tree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/downcast.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/gccver.h
+arb_read_tree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/test_global.h

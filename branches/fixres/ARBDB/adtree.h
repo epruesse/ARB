@@ -187,6 +187,9 @@ struct GBT_TREE_NodeFactory : public TreeNodeFactory {
     void destroyNode(GBT_TREE *node) const OVERRIDE { delete node; }
 };
 
+#ifndef ROOTEDTREE_H
+#include "RootedTree.h"
+#endif
 
 #else
 #error adtree.h included twice

@@ -345,6 +345,7 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/gccver.h
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/RootedTree.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -592,6 +593,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/gccver.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/RootedTree.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -891,6 +893,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_sort.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_sort.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 NT_sort.o: $(ARBHOME)/INCLUDE/items.h
+NT_sort.o: $(ARBHOME)/INCLUDE/RootedTree.h
 NT_sort.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_sort.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_sort.o: $(ARBHOME)/INCLUDE/test_global.h

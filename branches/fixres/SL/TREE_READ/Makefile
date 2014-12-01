@@ -57,6 +57,7 @@ TreeRead.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeRead.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeRead.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeRead.o: $(ARBHOME)/INCLUDE/gccver.h
+TreeRead.o: $(ARBHOME)/INCLUDE/RootedTree.h
 TreeRead.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeRead.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeRead.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -80,6 +81,7 @@ TreeTools.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeTools.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeTools.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeTools.o: $(ARBHOME)/INCLUDE/gccver.h
+TreeTools.o: $(ARBHOME)/INCLUDE/RootedTree.h
 TreeTools.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeTools.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeTools.o: $(ARBHOME)/INCLUDE/test_global.h

@@ -623,6 +623,7 @@ adlang1.o: gb_memory.h
 adlang1.o: gb_prot.h
 adlang1.o: gb_storage.h
 adlang1.o: gb_tune.h
+adlang1.o: RootedTree.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_core.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_defs.h
@@ -777,6 +778,7 @@ adname.o: arbdb_base.h
 adname.o: arbdbt.h
 adname.o: gb_local.h
 adname.o: gb_prot.h
+adname.o: RootedTree.h
 adname.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adname.o: $(ARBHOME)/INCLUDE/arb_core.h
 adname.o: $(ARBHOME)/INCLUDE/arb_diff.h
@@ -937,6 +939,7 @@ adseqcompr.o: gb_memory.h
 adseqcompr.o: gb_prot.h
 adseqcompr.o: gb_storage.h
 adseqcompr.o: gb_tune.h
+adseqcompr.o: RootedTree.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_core.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_diff.h
@@ -1207,6 +1210,7 @@ adtree.o: arbdb_base.h
 adtree.o: arbdbt.h
 adtree.o: gb_local.h
 adtree.o: gb_prot.h
+adtree.o: RootedTree.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_defs.h
