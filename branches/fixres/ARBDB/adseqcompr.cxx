@@ -29,7 +29,11 @@
 
 // --------------------------------------------------------------------------------
 
-class CompressionTree : public GBT_TREE {
+struct CompressionRoot : public TreeRoot {
+    CompressionRoot();
+};
+
+class CompressionTree : public RootedTree {
 protected:
     ~CompressionTree() OVERRIDE {}
     friend class CompressionTree_NodeFactory;
@@ -39,9 +43,23 @@ public:
     int index; // master(inner nodes) or sequence(leaf nodes) index
     int sons;  // sons with sequence or masters (in subtree)
 
+    CompressionTree(CompressionRoot *croot) : RootedTree(croot) {}
 
-    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(CompressionTree);
+    unsigned get_leaf_count() const OVERRIDE {
+        gb_assert(0); // @@@ impl
+        return 0;
+    }
+    void compute_tree() OVERRIDE {}
+
+    DEFINE_TREE_ACCESSORS(CompressionRoot, CompressionTree);
 };
+
+class CompressionTree_NodeFactory : public RootedTreeNodeFactory {
+    RootedTree *makeNode(TreeRoot *root) const OVERRIDE { return new CompressionTree(DOWNCAST(CompressionRoot*, root)); }
+    void destroyNode(TreeRoot*, RootedTree *node) const OVERRIDE { delete DOWNCAST(CompressionTree*,node); }
+};
+
+CompressionRoot::CompressionRoot() : TreeRoot(new CompressionTree_NodeFactory, true) { }
 
 struct Consensus {
     int            len;
@@ -864,11 +882,6 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
     return error;
 }
 
-class CompressionTree_NodeFactory : public TreeNodeFactory {
-    GBT_TREE *makeNode() const OVERRIDE { return new CompressionTree; }
-    void destroyNode(GBT_TREE *node) const OVERRIDE { delete DOWNCAST(CompressionTree*,node); }
-};
-
 GB_ERROR GBT_compress_sequence_tree2(GBDATA *gbd, const char *tree_name, const char *ali_name) { // goes to header: __ATTR__USERESULT // @@@ rename function
     // Compress sequences, call only outside a transaction
     GB_ERROR      error = NULL;
@@ -893,7 +906,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gbd, const char *tree_name, const c
                 }
 
                 {
-                    CompressionTree *ctree = DOWNCAST(CompressionTree*, GBT_read_tree(gb_main, tree_name, CompressionTree_NodeFactory()));
+                    CompressionTree *ctree = DOWNCAST(CompressionTree*, GBT_read_tree(gb_main, tree_name, *new CompressionRoot));
                     if (!ctree) error      = GB_await_error();
                     else {
                         error             = GBT_link_tree(ctree, gb_main, false, 0, 0);
@@ -1126,4 +1139,5 @@ TEST_PUBLISH(TEST_SLOW_sequence_compression);
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
+
 
