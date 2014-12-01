@@ -396,7 +396,7 @@ class LeaveOneTest:
             
         self.mislabels = []
 
-        th = TaxTreeHelper(self.origin_taxonomy)
+        th = TaxTreeHelper(self.origin_taxonomy, self.cfg)
         th.set_mf_rooted_tree(tmp_taxtree)
             
         self.run_epa_once(tmp_reftree, th)
