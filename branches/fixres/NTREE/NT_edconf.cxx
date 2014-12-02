@@ -15,7 +15,7 @@
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <ad_config.h>
-#include <adtree.h>
+#include <TreeNode.h>
 #include <arb_strbuf.h>
 #include <arb_global_defs.h>
 

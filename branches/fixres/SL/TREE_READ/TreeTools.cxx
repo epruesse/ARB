@@ -9,7 +9,7 @@
 // ============================================================ //
 
 #include "TreeRead.h"
-#include <adtree.h>
+#include <TreeNode.h>
 
 void TREE_scale(GBT_TREE *tree, double length_scale, double bootstrap_scale) { // @@@ make a member of GBT_TREE?
     if (tree->leftson) {

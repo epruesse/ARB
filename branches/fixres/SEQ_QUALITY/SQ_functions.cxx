@@ -19,7 +19,7 @@
 
 #include <aw_preset.hxx>
 #include <arb_progress.h>
-#include <adtree.h>
+#include <TreeNode.h>
 
 using namespace std;
 

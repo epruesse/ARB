@@ -9,7 +9,7 @@
 // =============================================================== //
 
 #include <TreeWrite.h>
-#include <adtree.h>
+#include <TreeNode.h>
 #include <arb_handlers.h>
 #include <arb_global_defs.h>
 

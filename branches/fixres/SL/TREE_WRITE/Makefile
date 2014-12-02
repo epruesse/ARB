@@ -38,7 +38,6 @@ depend.init:
 TreeWrite.o: TreeWrite.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/adtree.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -56,8 +55,8 @@ TreeWrite.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/nds.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/RootedTree.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/test_global.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/TreeNode.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/xml.hxx

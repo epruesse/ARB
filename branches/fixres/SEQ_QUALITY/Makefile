@@ -57,7 +57,6 @@ SQ_functions.o: SQ_helix.h
 SQ_functions.o: SQ_physical_layout.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-SQ_functions.o: $(ARBHOME)/INCLUDE/adtree.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -82,10 +81,10 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/downcast.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/gccver.h
-SQ_functions.o: $(ARBHOME)/INCLUDE/RootedTree.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/smartptr.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/static_assert.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/test_global.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/TreeNode.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 SQ_GroupData.o: SQ_GroupData.h
@@ -102,7 +101,6 @@ SQ_main.o: SQ_functions.h
 SQ_main.o: SQ_GroupData.h
 SQ_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SQ_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-SQ_main.o: $(ARBHOME)/INCLUDE/adtree.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -132,8 +130,8 @@ SQ_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SQ_main.o: $(ARBHOME)/INCLUDE/downcast.h
 SQ_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_main.o: $(ARBHOME)/INCLUDE/gccver.h
-SQ_main.o: $(ARBHOME)/INCLUDE/RootedTree.h
 SQ_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 SQ_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 SQ_main.o: $(ARBHOME)/INCLUDE/test_global.h
+SQ_main.o: $(ARBHOME)/INCLUDE/TreeNode.h
 SQ_main.o: $(ARBHOME)/INCLUDE/ttypes.h

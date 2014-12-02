@@ -33,7 +33,6 @@ depend.init:
 nds.o: nds.h
 nds.o: $(ARBHOME)/INCLUDE/ad_prot.h
 nds.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-nds.o: $(ARBHOME)/INCLUDE/adtree.h
 nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 nds.o: $(ARBHOME)/INCLUDE/arb_core.h
 nds.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -64,9 +63,9 @@ nds.o: $(ARBHOME)/INCLUDE/downcast.h
 nds.o: $(ARBHOME)/INCLUDE/dupstr.h
 nds.o: $(ARBHOME)/INCLUDE/gccver.h
 nds.o: $(ARBHOME)/INCLUDE/items.h
-nds.o: $(ARBHOME)/INCLUDE/RootedTree.h
 nds.o: $(ARBHOME)/INCLUDE/smartptr.h
 nds.o: $(ARBHOME)/INCLUDE/static_assert.h
 nds.o: $(ARBHOME)/INCLUDE/test_global.h
 nds.o: $(ARBHOME)/INCLUDE/test_unit.h
+nds.o: $(ARBHOME)/INCLUDE/TreeNode.h
 nds.o: $(ARBHOME)/INCLUDE/ttypes.h

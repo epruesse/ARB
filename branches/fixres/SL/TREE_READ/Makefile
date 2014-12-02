@@ -38,7 +38,6 @@ depend.init:
 TreeRead.o: TreeRead.h
 TreeRead.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeRead.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-TreeRead.o: $(ARBHOME)/INCLUDE/adtree.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_defs.h
@@ -57,16 +56,15 @@ TreeRead.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeRead.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeRead.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeRead.o: $(ARBHOME)/INCLUDE/gccver.h
-TreeRead.o: $(ARBHOME)/INCLUDE/RootedTree.h
 TreeRead.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeRead.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeRead.o: $(ARBHOME)/INCLUDE/test_global.h
 TreeRead.o: $(ARBHOME)/INCLUDE/test_unit.h
+TreeRead.o: $(ARBHOME)/INCLUDE/TreeNode.h
 
 TreeTools.o: TreeRead.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-TreeTools.o: $(ARBHOME)/INCLUDE/adtree.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -81,7 +79,7 @@ TreeTools.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeTools.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeTools.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeTools.o: $(ARBHOME)/INCLUDE/gccver.h
-TreeTools.o: $(ARBHOME)/INCLUDE/RootedTree.h
 TreeTools.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeTools.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeTools.o: $(ARBHOME)/INCLUDE/test_global.h
+TreeTools.o: $(ARBHOME)/INCLUDE/TreeNode.h

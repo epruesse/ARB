@@ -8,14 +8,14 @@
 //                                                                 //
 // =============================================================== //
 
-#include <adtree.h>
 #include <arb_progress.h>
 #include <arb_file.h>
 #include <arb_misc.h>
 #include <arb_diff.h>
 #include "ad_cb.h"
-
 #include "gb_key.h"
+#include "TreeNode.h"
+
 #include <climits>
 
 // --------------------------------------------------------------------------------

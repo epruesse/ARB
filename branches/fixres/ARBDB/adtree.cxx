@@ -8,7 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include <adtree.h>
 #include <arb_progress.h>
 #include "gb_local.h"
 #include <arb_strarray.h>
@@ -19,6 +18,7 @@
 #include <arb_diff.h>
 #include <arb_defs.h>
 #include <arb_match.h>
+#include "TreeNode.h"
 
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0

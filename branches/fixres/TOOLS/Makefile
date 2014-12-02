@@ -141,7 +141,6 @@ arb_2_bin.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_consensus_tree.o: $(ARBHOME)/INCLUDE/adtree.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/arb_defs.h
@@ -166,11 +165,11 @@ arb_consensus_tree.o: $(ARBHOME)/INCLUDE/downcast.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/nds.h
-arb_consensus_tree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/test_unit.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/TreeRead.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/TreeWrite.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
@@ -244,7 +243,6 @@ arb_export_sequences.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_export_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_export_tree.o: $(ARBHOME)/INCLUDE/adtree.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -263,10 +261,10 @@ arb_export_tree.o: $(ARBHOME)/INCLUDE/downcast.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/nds.h
-arb_export_tree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/TreeWrite.h
 
 arb_flush_mem.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -440,7 +438,6 @@ arb_probe_match.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_read_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_read_tree.o: $(ARBHOME)/INCLUDE/adtree.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_defs.h
@@ -457,10 +454,10 @@ arb_read_tree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/downcast.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/gccver.h
-arb_read_tree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_read_tree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/TreeRead.h
 
 arb_replace.o: $(ARBHOME)/INCLUDE/ad_prot.h

@@ -9,7 +9,7 @@
 // ============================================================= //
 
 #include <TreeRead.h>
-#include <adtree.h>
+#include <TreeNode.h>
 #include <arb_strbuf.h>
 #include <arb_defs.h>
 #include <ctime>

@@ -1,6 +1,6 @@
 // ================================================================ //
 //                                                                  //
-//   File      : RootedTree.cxx                                     //
+//   File      : TreeNode.cxx                                       //
 //   Purpose   :                                                    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in December 2013   //
@@ -9,7 +9,7 @@
 //                                                                  //
 // ================================================================ //
 
-#include "RootedTree.h"
+#include "TreeNode.h"
 #include <map>
 #include <set>
 #include <cmath> // needed with 4.4.3 (but not with 4.7.3)

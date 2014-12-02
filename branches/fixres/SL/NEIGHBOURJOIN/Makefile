@@ -41,7 +41,6 @@ NJ.o: neighbourjoin.hxx
 NJ.o: NJ.hxx
 NJ.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NJ.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-NJ.o: $(ARBHOME)/INCLUDE/adtree.h
 NJ.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 NJ.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NJ.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -58,8 +57,8 @@ NJ.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NJ.o: $(ARBHOME)/INCLUDE/downcast.h
 NJ.o: $(ARBHOME)/INCLUDE/dupstr.h
 NJ.o: $(ARBHOME)/INCLUDE/gccver.h
-NJ.o: $(ARBHOME)/INCLUDE/RootedTree.h
 NJ.o: $(ARBHOME)/INCLUDE/smartptr.h
 NJ.o: $(ARBHOME)/INCLUDE/static_assert.h
 NJ.o: $(ARBHOME)/INCLUDE/test_global.h
 NJ.o: $(ARBHOME)/INCLUDE/test_unit.h
+NJ.o: $(ARBHOME)/INCLUDE/TreeNode.h

@@ -40,7 +40,6 @@ ARB_Tree.o: $(ARBHOME)/INCLUDE/ad_cb.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-ARB_Tree.o: $(ARBHOME)/INCLUDE/adtree.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/AliView.hxx
 ARB_Tree.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 ARB_Tree.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
@@ -61,8 +60,8 @@ ARB_Tree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/downcast.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/gccver.h
-ARB_Tree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/test_global.h
+ARB_Tree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/ttypes.h

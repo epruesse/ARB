@@ -29,8 +29,8 @@
 #ifndef _GLIBCXX_STRING
 #include <string>
 #endif
-#ifndef ROOTEDTREE_H
-#include <RootedTree.h>
+#ifndef TREENODE_H
+#include <TreeNode.h>
 #endif
 #ifndef ARB_PROGRESS_H
 #include <arb_progress.h>

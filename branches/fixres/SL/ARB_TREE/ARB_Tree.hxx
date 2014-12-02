@@ -18,8 +18,8 @@
 #ifndef DOWNCAST_H
 #include <downcast.h>
 #endif
-#ifndef ROOTEDTREE_H
-#include <RootedTree.h>
+#ifndef TREENODE_H
+#include <TreeNode.h>
 #endif
 #ifndef AP_SEQUENCE_HXX
 #include <AP_sequence.hxx>
