@@ -906,7 +906,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gbd, const char *tree_name, const c
                 }
 
                 {
-                    CompressionTree *ctree = DOWNCAST(CompressionTree*, GBT_read_tree(gb_main, tree_name, *new CompressionRoot));
+                    CompressionTree *ctree = DOWNCAST(CompressionTree*, GBT_read_tree(gb_main, tree_name, new CompressionRoot));
                     if (!ctree) error      = GB_await_error();
                     else {
                         error             = GBT_link_tree(ctree, gb_main, false, 0, 0);

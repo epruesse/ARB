@@ -1534,7 +1534,7 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
     }
     cached = GBS_read_hash(cached_taxonomies, tree_name);
     if (!cached) {
-        GBT_TREE *tree    = GBT_read_tree(gb_main, tree_name, *new SimpleRoot);
+        GBT_TREE *tree    = GBT_read_tree(gb_main, tree_name, new SimpleRoot);
         if (!tree) *error = GB_await_error();
         else     *error   = GBT_link_tree(tree, gb_main, false, 0, 0);
 

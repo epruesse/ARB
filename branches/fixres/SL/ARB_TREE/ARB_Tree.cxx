@@ -80,7 +80,7 @@ GB_ERROR ARB_seqtree_root::loadFromDB(const char *name) {
             freenull(tree_name);
         }
 
-        ARB_seqtree *arb_tree   = DOWNCAST(ARB_seqtree*, GBT_read_tree(gb_main, name, *this));
+        ARB_seqtree *arb_tree   = DOWNCAST(ARB_seqtree*, GBT_read_tree(gb_main, name, this));
         if (!arb_tree) error = GB_await_error();
         else {
             gb_tree             = GBT_find_tree(gb_main, name);

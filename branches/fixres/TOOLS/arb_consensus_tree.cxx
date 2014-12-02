@@ -38,7 +38,7 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
             char *warnings = NULL;
 
             TreeRoot      *root = new TreeRoot(new SizeAwareNodeFactory, true); // will be deleted when tree gets deleted
-            SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, TREE_load(input_trees[i], *root, NULL, true, &warnings));
+            SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, TREE_load(input_trees[i], root, NULL, true, &warnings));
             if (!tree) {
                 error = GBS_global_string("Failed to load tree '%s' (Reason: %s)", input_trees[i], GB_await_error());
             }
@@ -470,7 +470,7 @@ void TEST_SLOW_treeIO_stable() {
                         const char *reloaded_treename = "tree_reloaded";
                         {
                             char     *comment    = NULL;
-                            GBT_TREE *tree       = TREE_load(expectedfile, *new SimpleRoot, &comment, true, NULL);
+                            GBT_TREE *tree       = TREE_load(expectedfile, new SimpleRoot, &comment, true, NULL);
                             GB_ERROR  load_error = tree ? NULL : GB_await_error();
 
                             TEST_EXPECTATION(all().of(that(tree).does_differ_from_NULL(),
@@ -544,7 +544,7 @@ void TEST_CONSENSUS_TREE_functionality() {
     char *comment = NULL;
 
     SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, TREE_load("trees/bg_exp_p_GrpLen_0.tree",
-                                                             *new TreeRoot(new SizeAwareNodeFactory, true),
+                                                             new TreeRoot(new SizeAwareNodeFactory, true),
                                                              &comment, false, NULL));
     // -> ../UNIT_TESTER/run/trees/bg_exp_p_GrpLen_0.tree
 

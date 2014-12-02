@@ -34,6 +34,7 @@ typedef int GBQUARK; // -1 = any quark, 0 = no quark, >0 explicit quark
 typedef float GBT_LEN;
 
 class              RootedTree;
+class              TreeRoot;
 struct             TreeNodeFactory;
 typedef RootedTree GBT_TREE;
 

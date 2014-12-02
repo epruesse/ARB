@@ -183,7 +183,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
 
             for (int count = 0; count<tree_count && !error; ++count) {
                 const char *tname = tree_names[count];
-                GBT_TREE   *tree  = GBT_read_tree(NameSession.gb_main, tname, *new SimpleRoot);
+                GBT_TREE   *tree  = GBT_read_tree(NameSession.gb_main, tname, new SimpleRoot);
                 ++progress;
 
                 if (tree) {

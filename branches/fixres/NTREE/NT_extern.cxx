@@ -860,7 +860,7 @@ static void NT_alltree_remove_leafs(AW_window *, GBT_TreeRemoveType mode, GBDATA
 
         for (int t = 0; t<treeCount && !error; t++) {
             progress.subtitle(tree_names[t]);
-            GBT_TREE *tree = GBT_read_tree(gb_main, tree_names[t], *new SimpleRoot);
+            GBT_TREE *tree = GBT_read_tree(gb_main, tree_names[t], new SimpleRoot);
             if (!tree) {
                 aw_message(GBS_global_string("Can't load tree '%s' - skipped", tree_names[t]));
             }

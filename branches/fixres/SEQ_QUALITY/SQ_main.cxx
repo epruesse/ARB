@@ -83,7 +83,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
             error = GB_push_transaction(gb_main);
 
             if (!error) {
-                tree = GBT_read_tree(gb_main, treename, *new SimpleRoot);
+                tree = GBT_read_tree(gb_main, treename, new SimpleRoot);
                 if (!tree) error = GB_await_error();
                 else {
                     error = GBT_link_tree(tree, gb_main, false, NULL, NULL);

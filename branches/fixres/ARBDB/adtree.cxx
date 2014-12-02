@@ -160,6 +160,8 @@ RootedTree *RootedTree::fixDeletedSon() {
         get_tree_root()->change_root(this, result);
     }
 
+    gb_assert(!is_root_node());
+
     forget_origin();
     is_leaf = true; // don't try recursive delete
     delete this;
@@ -214,6 +216,7 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HAS
             }
 
             if (deleteSelf) {
+                gb_assert(!tree->is_root_node());
                 tree->forget_origin();
                 destroy(tree);
                 tree = NULL;
@@ -236,10 +239,11 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HAS
         }
         else {                  // everything deleted -> delete self
             if (tree->name && groups_removed) (*groups_removed)++;
-            tree->forget_origin();
+
+            if (!tree->is_root_node()) tree->forget_origin();
             tree->is_leaf = true;
             destroy(tree);
-            tree = NULL;
+            tree          = NULL;
         }
     }
 
@@ -601,10 +605,10 @@ GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, GBT_
 // ----------------------------
 //      tree read functions
 
-static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, const TreeNodeFactory& nodeFactory, int size_of_tree, GB_ERROR& error) {
+static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, const TreeRoot *troot, int size_of_tree, GB_ERROR& error) {
     GBT_TREE *node = NULL;
     if (!error) {
-        node = nodeFactory.makeNode();
+        node = troot->makeNode();
 
         char  c = *((*data)++);
         char *p1;
@@ -634,10 +638,10 @@ static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
                 }
             }
             (*startid)++;
-            node->leftson = gbt_read_tree_rek(data, startid, gb_tree_nodes, nodeFactory, size_of_tree, error);
+            node->leftson = gbt_read_tree_rek(data, startid, gb_tree_nodes, troot, size_of_tree, error);
             if (!node->leftson) freenull(node);
             else {
-                node->rightson = gbt_read_tree_rek(data, startid, gb_tree_nodes, nodeFactory, size_of_tree, error);
+                node->rightson = gbt_read_tree_rek(data, startid, gb_tree_nodes, troot, size_of_tree, error);
                 if (!node->rightson) {
                     freenull(node->leftson);
                     freenull(node);
@@ -674,7 +678,7 @@ static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
 }
 
 
-static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, const TreeNodeFactory& nodeFactory, int node_count, GB_ERROR& error) {
+static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, const TreeRoot *troot, int node_count, GB_ERROR& error) {
     GBDATA   **gb_tree_nodes;
     GBT_TREE  *node = 0;
 
@@ -703,7 +707,7 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
 
         startid[0] = 0;
         fbuf       = cptr[0] = GB_read_string(gb_ctree);
-        node       = gbt_read_tree_rek(cptr, startid, gb_tree_nodes, nodeFactory, node_count, error);
+        node       = gbt_read_tree_rek(cptr, startid, gb_tree_nodes, troot, node_count, error);
         free (fbuf);
     }
 
@@ -713,7 +717,7 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
     return node;
 }
 
-GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, const TreeNodeFactory& nodeFactory, int *tree_size) {
+GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, TreeRoot *troot, int *tree_size) {
     /*! Loads a tree from DB into any user defined structure.
      *
      * @param gb_main DB root node
@@ -755,7 +759,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, const T
                             error = "old unsupported tree format";
                         }
                         else { // "new" style tree
-                            GBT_TREE *tree = read_tree_and_size_internal(gb_tree, gb_ctree, nodeFactory, size, error);
+                            GBT_TREE *tree = read_tree_and_size_internal(gb_tree, gb_ctree, troot, size, error);
                             if (!error) {
                                 gb_assert(tree);
                                 if (tree_size) *tree_size = size; // return size of tree (=leafs-1)
@@ -773,12 +777,13 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, const T
 
     gb_assert(error);
     GB_export_errorf("Failed to read tree '%s' (Reason: %s)", tree_name, error);
+    troot->delete_by_node();
     return NULL;
 }
 
-GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, const TreeNodeFactory& nodeFactory) {
+GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, TreeRoot *troot) {
     //! @see GBT_read_tree_and_size()
-    return GBT_read_tree_and_size(gb_main, tree_name, nodeFactory, 0);
+    return GBT_read_tree_and_size(gb_main, tree_name, troot, 0);
 }
 
 size_t GBT_count_leafs(const GBT_TREE *tree) { // @@@ impl using get_leaf_count()
@@ -1432,7 +1437,7 @@ void TEST_copy_rename_delete_tree_order() {
             TEST_EXPECT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", 20), "tree_nj_bs                 (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
 
             {
-                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", *new SimpleRoot);
+                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", new SimpleRoot);
 
                 TEST_REJECT_NULL(tree);
 
@@ -1628,8 +1633,9 @@ void TEST_tree_remove_leafs() {
             for (int linked = 0; linked<=1; ++linked) {
                 TEST_ANNOTATE(GBS_global_string("mode=%u linked=%i", mode, linked));
 
-                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_removal", *new SimpleRoot);
-                bool      once = mode == 0 && linked == 0;
+                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_removal", new SimpleRoot);
+                gb_assert(tree);
+                bool once = mode == 0 && linked == 0;
 
                 if (linked) {
                     int zombies    = 0;
@@ -1753,7 +1759,10 @@ void TEST_tree_remove_leafs() {
                     }
                 }
 
-                destroy(tree);
+                if (tree) {
+                    gb_assert(tree->is_root_node());
+                    destroy(tree);
+                }
             }
         }
     }

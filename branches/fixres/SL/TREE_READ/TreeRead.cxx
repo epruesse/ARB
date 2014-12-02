@@ -43,7 +43,7 @@ class TreeReader : virtual Noncopyable {
 
     char *warnings;
 
-    const TreeNodeFactory& nodeMaker;
+    TreeRoot *troot;
 
     void setError(const char *message);
     void setErrorAt(const char *message);
@@ -73,7 +73,7 @@ class TreeReader : virtual Noncopyable {
 
 public:
 
-    TreeReader(FILE *input, const char *file_name, const TreeNodeFactory& nodeMaker_);
+    TreeReader(FILE *input, const char *file_name, TreeRoot *troot_);
     ~TreeReader();
 
     GBT_TREE *load() {
@@ -116,7 +116,7 @@ public:
     GBT_LEN get_max_found_branchlen() const { return max_found_branchlen; }
 };
 
-TreeReader::TreeReader(FILE *input, const char *file_name, const TreeNodeFactory& nodeMaker_)
+TreeReader::TreeReader(FILE *input, const char *file_name, TreeRoot *troot_)
     : unnamed_counter(0),
       tree_file_name(strdup(file_name)),
       in(input),
@@ -127,7 +127,7 @@ TreeReader::TreeReader(FILE *input, const char *file_name, const TreeNodeFactory
       max_found_bootstrap(-1),
       lfmode(LF_UNKNOWN),
       warnings(NULL),
-      nodeMaker(nodeMaker_),
+      troot(troot_),
       error(NULL)
 {
     read_tree_char();
@@ -503,7 +503,7 @@ GBT_TREE *TreeReader::load_named_node(GBT_LEN& nodeLen) {
         if (name) {
             if (!name[0]) freeset(name, unnamedNodeName());
 
-            node          = nodeMaker.makeNode();
+            node          = troot->makeNode();
             node->is_leaf = true;
             node->name    = name;
         }
@@ -557,7 +557,7 @@ GBT_TREE *TreeReader::load_subtree(GBT_LEN& nodeLen) {
 
                 while (last_character == ',' && !error) {
                     if (right) { // multi-branch
-                        GBT_TREE *pair = createLinkedTreeNode(nodeMaker, left, leftLen, right, rightLen);
+                        GBT_TREE *pair = createLinkedTreeNode(*troot, left, leftLen, right, rightLen);
 
                         left  = pair; leftLen = 0;
                         right = 0; rightLen = DEFAULT_BRANCH_LENGTH_MARKER;
@@ -571,7 +571,7 @@ GBT_TREE *TreeReader::load_subtree(GBT_LEN& nodeLen) {
 
                 if (!error) {
                     if (last_character == ')') {
-                        node    = createLinkedTreeNode(nodeMaker, left, leftLen, right, rightLen);
+                        node    = createLinkedTreeNode(*troot, left, leftLen, right, rightLen);
                         nodeLen = DEFAULT_BRANCH_LENGTH_MARKER;
 
                         left  = NULL;
@@ -586,7 +586,8 @@ GBT_TREE *TreeReader::load_subtree(GBT_LEN& nodeLen) {
                     right->forget_origin();
                     destroy(right);
                 }
-                if (error) {
+                if (error && node) {
+                    node->forget_origin();
                     destroy(node);
                     node = NULL;
                 }
@@ -610,15 +611,16 @@ GBT_TREE *TreeReader::load_subtree(GBT_LEN& nodeLen) {
     return node;
 }
 
-GBT_TREE *TREE_load(const char *path, const TreeNodeFactory& nodeMaker, char **commentPtr, bool allow_length_scaling, char **warningPtr) {
+GBT_TREE *TREE_load(const char *path, TreeRoot *troot, char **commentPtr, bool allow_length_scaling, char **warningPtr) {
     /* Load a newick compatible tree from file 'path',
        if commentPtr != NULL -> set it to a malloc copy of all concatenated comments found in tree file
        if warningPtr != NULL -> set it to a malloc copy of any warnings occurring during tree-load (e.g. autoscale- or informational warnings)
     */
 
-    GBT_TREE *tree  = NULL;
-    FILE     *input = fopen(path, "rt");
-    GB_ERROR  error = NULL;
+    GBT_TREE *tree     = NULL;
+    FILE     *input    = fopen(path, "rt");
+    GB_ERROR  error    = NULL;
+    bool      own_root = true;
 
     if (!input) {
         error = GBS_global_string("No such file: %s", path);
@@ -628,8 +630,11 @@ GBT_TREE *TREE_load(const char *path, const TreeNodeFactory& nodeMaker, char **c
         if (name_only) ++name_only;
         else        name_only = path;
 
-        TreeReader reader(input, name_only, nodeMaker);
-        if (!reader.error) tree = reader.load();
+        TreeReader reader(input, name_only, troot);
+        if (!reader.error) {
+            tree = reader.load();
+            if (tree) own_root = false;
+        }
         fclose(input);
 
         if      (reader.error)          error = reader.error;
@@ -681,6 +686,7 @@ GBT_TREE *TREE_load(const char *path, const TreeNodeFactory& nodeMaker, char **c
     if (error) {
         GB_export_errorf("Import tree: %s", error);
         tree_assert(!tree);
+        if (own_root) troot->delete_by_node();
     }
 
     return tree;
@@ -701,7 +707,7 @@ static GBT_TREE *loadFromFileContaining(const char *treeString, char **warningsP
     if (out) {
         fputs(treeString, out);
         fclose(out);
-        tree = TREE_load(filename, *new SimpleRoot, NULL, false, warningsPtr);
+        tree = TREE_load(filename, new SimpleRoot, NULL, false, warningsPtr);
     }
     else {
         GB_export_IO_error("save tree", filename);
@@ -743,7 +749,7 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
 #define TEST_EXPECT_TREELOAD__BROKEN(tree,newick) TEST_EXPECTATION__BROKEN(loading_tree_succeeds(tree,newick))
 
 #define TEST_EXPECT_TREEFILE_FAILS_WITH(name,errpart) do {                              \
-        GBT_TREE *tree = TREE_load(name, *new SimpleRoot, NULL, false, NULL);           \
+        GBT_TREE *tree = TREE_load(name, new SimpleRoot, NULL, false, NULL);           \
         TEST_EXPECT_TREELOAD_FAILED_WITH(tree, errpart);                                \
     } while(0)
 
@@ -794,7 +800,7 @@ void TEST_load_tree() {
     // simple succeeding tree load
     {
         char     *comment = NULL;
-        GBT_TREE *tree    = TREE_load("trees/test.tree", *new SimpleRoot, &comment, false, NULL);
+        GBT_TREE *tree    = TREE_load("trees/test.tree", new SimpleRoot, &comment, false, NULL);
         // -> ../../UNIT_TESTER/run/trees/test.tree
 
         TEST_EXPECT_TREELOAD(tree, "(((s1,s2),(s3,s 4)),(s5,s-6));");

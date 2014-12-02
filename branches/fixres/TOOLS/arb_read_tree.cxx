@@ -217,7 +217,7 @@ int main(int argc, char **argv) {
                 char *warnings             = 0;
                 bool  allow_length_scaling = !param.consense && !param.scale;
 
-                tree = TREE_load(param.treefilename, *new SimpleRoot, &comment_from_treefile, allow_length_scaling, &warnings);
+                tree = TREE_load(param.treefilename, new SimpleRoot, &comment_from_treefile, allow_length_scaling, &warnings);
                 if (!tree) {
                     error = GB_await_error();
                 }

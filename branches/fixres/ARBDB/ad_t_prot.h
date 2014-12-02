@@ -155,8 +155,8 @@ GB_ERROR GBT_write_tree_remark(GBDATA *gb_main, const char *tree_name, const cha
 GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_tree, const char *log_entry);
 GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_main, const char *tree_name, const char *log_entry);
 GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree, const char *remark);
-GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, const TreeNodeFactory& nodeFactory, int *tree_size);
-GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, const TreeNodeFactory& nodeFactory);
+GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, TreeRoot *troot, int *tree_size);
+GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, TreeRoot *troot);
 size_t GBT_count_leafs(const GBT_TREE *tree);
 GB_ERROR GBT_is_invalid(const GBT_TREE *tree);
 GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *zombies, int *duplicates);

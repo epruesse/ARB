@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
                 { 
                     GB_transaction ta(gb_main);
 
-                    GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, *new SimpleRoot);
+                    GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, new SimpleRoot);
                     if (tree) {
                         error = TREE_export_tree(gb_main, stdout, tree, trifurcated, branchlens, doublequotes);
                         UNCOVERED();
