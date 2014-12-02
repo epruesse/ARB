@@ -582,3 +582,152 @@ void RootedTree::multifurcate_whole_tree(const multifurc_limits& below) {
     collector.independent_distribution();
 }
 
+ELIMtree::bs100_mode ELIMtree::toggle_bootstrap100(bs100_mode mode) {
+    if (!is_leaf) {
+        if (!is_root_node()) {
+            double bootstrap;
+            switch (parse_bootstrap(bootstrap)) {
+                case REMARK_NONE:
+                case REMARK_OTHER:
+                    switch (mode) {
+                        case BS_UNDECIDED: mode = BS_INSERT;
+                        case BS_INSERT: set_bootstrap(100);
+                        case BS_REMOVE: break;
+                    }
+                    break;
+                case REMARK_BOOTSTRAP:
+                    if (bootstrap >= 99.5) {
+                        switch (mode) {
+                            case BS_UNDECIDED: mode = BS_REMOVE;
+                            case BS_REMOVE: remove_remark();
+                            case BS_INSERT: break;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        mode = get_leftson()->toggle_bootstrap100(mode);
+        mode = get_rightson()->toggle_bootstrap100(mode);
+    }
+    return mode;
+}
+void ELIMtree::remove_bootstrap() {
+    freenull(remark_branch);
+    if (!is_leaf) {
+        get_leftson()->remove_bootstrap();
+        get_rightson()->remove_bootstrap();
+    }
+}
+void ELIMtree::reset_branchlengths() {
+    if (!is_leaf) {
+        leftlen = rightlen = DEFAULT_BRANCH_LENGTH;
+
+        get_leftson()->reset_branchlengths();
+        get_rightson()->reset_branchlengths();
+    }
+}
+
+void ELIMtree::scale_branchlengths(double factor) {
+    if (!is_leaf) {
+        leftlen  *= factor;
+        rightlen *= factor;
+
+        get_leftson()->scale_branchlengths(factor);
+        get_rightson()->scale_branchlengths(factor);
+    }
+}
+
+GBT_LEN ELIMtree::sum_child_lengths() const {
+    if (is_leaf) return 0.0;
+    return
+        leftlen +
+        rightlen +
+        get_leftson()->sum_child_lengths() +
+        get_rightson()->sum_child_lengths();
+}
+
+void ELIMtree::bootstrap2branchlen() {
+    //! copy bootstraps to branchlengths
+    if (is_leaf) {
+        set_branchlength_unrooted(DEFAULT_BRANCH_LENGTH);
+    }
+    else {
+        if (father) {
+            double         bootstrap;
+            GBT_RemarkType rtype = parse_bootstrap(bootstrap);
+
+            if (rtype == REMARK_BOOTSTRAP) {
+                double len = bootstrap/100.0;
+                set_branchlength_unrooted(len);
+            }
+            else {
+                set_branchlength_unrooted(1.0); // no bootstrap means "100%"
+            }
+        }
+        get_leftson()->bootstrap2branchlen();
+        get_rightson()->bootstrap2branchlen();
+    }
+}
+
+void ELIMtree::branchlen2bootstrap() {
+    //! copy branchlengths to bootstraps
+    remove_remark();
+    if (!is_leaf) {
+        if (!is_root_node()) {
+            set_bootstrap(get_branchlength_unrooted()*100.0);
+        }
+        get_leftson()->branchlen2bootstrap();
+        get_rightson()->branchlen2bootstrap();
+    }
+}
+
+RootedTree *RootedTree::fixDeletedSon() {
+    // fix node after one son has been deleted
+    RootedTree *result = NULL;
+
+    if (leftson) {
+        gb_assert(!rightson);
+        result  = get_leftson();
+        leftson = NULL;
+    }
+    else {
+        gb_assert(!leftson);
+        gb_assert(rightson);
+
+        result   = get_rightson();
+        rightson = NULL;
+    }
+
+    // now 'result' contains the lasting tree
+    result->father = father;
+
+    if (remark_branch && !result->remark_branch) { // rescue remarks if possible
+        result->remark_branch    = remark_branch;
+        remark_branch = NULL;
+    }
+    if (gb_node && !result->gb_node) { // rescue group if possible
+        result->gb_node = gb_node;
+        gb_node         = NULL;
+    }
+
+    if (!result->father) {
+        get_tree_root()->change_root(this, result);
+    }
+
+    gb_assert(!is_root_node());
+
+    forget_origin();
+    is_leaf = true; // don't try recursive delete
+    delete this;
+
+    return result;
+}
+
+const ELIMtree *ELIMtree::ancestor_common_with(const ELIMtree *other) const {
+    if (this == other) return this;
+    if (is_anchestor_of(other)) return this;
+    if (other->is_anchestor_of(this)) return other;
+    return get_father()->ancestor_common_with(other->get_father());
+}
+
