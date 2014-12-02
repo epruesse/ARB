@@ -24,8 +24,8 @@ PART *ConsensusTree::deconstruct_full_subtree(const GBT_TREE *tree, const GBT_LE
         ptree = create_tree_PART(tree, weight);
     }
     else {
-        PART *p1 = deconstruct_full_subtree(tree->leftson, tree->leftlen, weight);
-        PART *p2 = deconstruct_full_subtree(tree->rightson, tree->rightlen, weight);
+        PART *p1 = deconstruct_full_subtree(tree->get_leftson(), tree->leftlen, weight);
+        PART *p2 = deconstruct_full_subtree(tree->get_rightson(), tree->rightlen, weight);
 
         arb_assert(p1->disjunct_from(p2));
 
@@ -50,8 +50,8 @@ void ConsensusTree::deconstruct_full_rootnode(const GBT_TREE *tree, const double
 
     double root_length = (tree->leftlen + tree->rightlen);
 
-    PART *p1 = deconstruct_full_subtree(tree->leftson, root_length, weight);
-    PART *p2 = deconstruct_full_subtree(tree->rightson, root_length, weight);
+    PART *p1 = deconstruct_full_subtree(tree->get_leftson(), root_length, weight);
+    PART *p2 = deconstruct_full_subtree(tree->get_rightson(), root_length, weight);
 
     arb_assert(p1->disjunct_from(p2));
 
@@ -76,8 +76,8 @@ PART *ConsensusTree::deconstruct_partial_subtree(const GBT_TREE *tree, const GBT
         ptree = create_tree_PART(tree, weight);
     }
     else {
-        PART *p1 = deconstruct_partial_subtree(tree->leftson, tree->leftlen, weight, partialTree);
-        PART *p2 = deconstruct_partial_subtree(tree->rightson, tree->rightlen, weight, partialTree);
+        PART *p1 = deconstruct_partial_subtree(tree->get_leftson(), tree->leftlen, weight, partialTree);
+        PART *p2 = deconstruct_partial_subtree(tree->get_rightson(), tree->rightlen, weight, partialTree);
 
         arb_assert(p1->disjunct_from(p2));
 
@@ -104,8 +104,8 @@ void ConsensusTree::deconstruct_partial_rootnode(const GBT_TREE *tree, const dou
 
     double root_length = (tree->leftlen + tree->rightlen);
 
-    PART *p1 = deconstruct_partial_subtree(tree->leftson, root_length, weight, partialTree);
-    PART *p2 = deconstruct_partial_subtree(tree->rightson, root_length, weight, partialTree);
+    PART *p1 = deconstruct_partial_subtree(tree->get_leftson(), root_length, weight, partialTree);
+    PART *p2 = deconstruct_partial_subtree(tree->get_rightson(), root_length, weight, partialTree);
 
     arb_assert(p1->disjunct_from(p2));
 
@@ -124,8 +124,8 @@ void ConsensusTree::add_tree_to_PART(const GBT_TREE *tree, PART& part) const {
         part.setbit(get_species_index(tree->name));
     }
     else {
-        add_tree_to_PART(tree->leftson, part);
-        add_tree_to_PART(tree->rightson, part);
+        add_tree_to_PART(tree->get_leftson(), part);
+        add_tree_to_PART(tree->get_rightson(), part);
     }
 }
 

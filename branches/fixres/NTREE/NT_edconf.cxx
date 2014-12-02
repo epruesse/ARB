@@ -84,7 +84,7 @@ static void mark_species(GBT_TREE *node, Store_species **extra_marked_species) {
 static GBT_TREE *rightmost_leaf(GBT_TREE *node) {
     nt_assert(node);
     while (!node->is_leaf) {
-        node = node->rightson;
+        node = node->get_rightson();
         nt_assert(node);
     }
     return node;
@@ -92,10 +92,10 @@ static GBT_TREE *rightmost_leaf(GBT_TREE *node) {
 
 static GBT_TREE *left_neighbour_leaf(GBT_TREE *node) {
     if (node) {
-        GBT_TREE *father = node->father;
+        GBT_TREE *father = node->get_father();
         while (father) {
             if (father->rightson==node) {
-                node = rightmost_leaf(father->leftson);
+                node = rightmost_leaf(father->get_leftson());
                 nt_assert(node->is_leaf);
                 if (!node->gb_node) { // Zombie
                     node = left_neighbour_leaf(node);
@@ -103,7 +103,7 @@ static GBT_TREE *left_neighbour_leaf(GBT_TREE *node) {
                 return node;
             }
             node = father;
-            father = node->father;
+            father = node->get_father();
         }
     }
     return 0;
@@ -224,9 +224,9 @@ static int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct
         GBS_strcat(memfile, tree->name);
     }
 
-    int right_of_leftson;
-    long nspecies = nt_build_conf_string_rek(used, tree->leftson, memfile, extra_marked_species, use_species_aside, auto_mark, marked_at_left, &right_of_leftson);
-    nspecies += nt_build_conf_string_rek(used, tree->rightson, memfile, extra_marked_species, use_species_aside, auto_mark, right_of_leftson, marked_at_right);
+    int  right_of_leftson;
+    long nspecies=   nt_build_conf_string_rek(used, tree->get_leftson(),  memfile, extra_marked_species, use_species_aside, auto_mark, marked_at_left,   &right_of_leftson);
+    nspecies      += nt_build_conf_string_rek(used, tree->get_rightson(), memfile, extra_marked_species, use_species_aside, auto_mark, right_of_leftson, marked_at_right);
 
     if (tree->gb_node && tree->name) {      // but we are a group
         GBS_chrcat(memfile, 1);         // Separated by 1

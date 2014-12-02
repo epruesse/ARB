@@ -514,6 +514,7 @@ GBT_TREE *TreeReader::load_named_node(GBT_LEN& nodeLen) {
     }
     if (node && !error) {
         if (!eat_and_set_name_and_length(node, nodeLen)) {
+            node->forget_origin();
             destroy(node);
             node = NULL;
         }
@@ -581,7 +582,10 @@ GBT_TREE *TreeReader::load_subtree(GBT_LEN& nodeLen) {
                     }
                 }
 
-                destroy(right);
+                if (right) {
+                    right->forget_origin();
+                    destroy(right);
+                }
                 if (error) {
                     destroy(node);
                     node = NULL;
@@ -594,7 +598,10 @@ GBT_TREE *TreeReader::load_subtree(GBT_LEN& nodeLen) {
                 setExpectedError("one of ',)'");
                 break;
         }
-        destroy(left);
+        if (left) {
+            left->forget_origin();
+            destroy(left);
+        }
     }
 
     if (!error) drop_tree_char(')');
@@ -694,7 +701,7 @@ static GBT_TREE *loadFromFileContaining(const char *treeString, char **warningsP
     if (out) {
         fputs(treeString, out);
         fclose(out);
-        tree = TREE_load(filename, GBT_TREE_NodeFactory(), NULL, false, warningsPtr);
+        tree = TREE_load(filename, *new SimpleRoot, NULL, false, warningsPtr);
     }
     else {
         GB_export_IO_error("save tree", filename);
@@ -736,7 +743,7 @@ static arb_test::match_expectation loading_tree_succeeds(GBT_TREE *tree, const c
 #define TEST_EXPECT_TREELOAD__BROKEN(tree,newick) TEST_EXPECTATION__BROKEN(loading_tree_succeeds(tree,newick))
 
 #define TEST_EXPECT_TREEFILE_FAILS_WITH(name,errpart) do {                              \
-        GBT_TREE *tree = TREE_load(name, GBT_TREE_NodeFactory(), NULL, false, NULL);    \
+        GBT_TREE *tree = TREE_load(name, *new SimpleRoot, NULL, false, NULL);           \
         TEST_EXPECT_TREELOAD_FAILED_WITH(tree, errpart);                                \
     } while(0)
 
@@ -787,7 +794,7 @@ void TEST_load_tree() {
     // simple succeeding tree load
     {
         char     *comment = NULL;
-        GBT_TREE *tree    = TREE_load("trees/test.tree", GBT_TREE_NodeFactory(), &comment, false, NULL);
+        GBT_TREE *tree    = TREE_load("trees/test.tree", *new SimpleRoot, &comment, false, NULL);
         // -> ../../UNIT_TESTER/run/trees/test.tree
 
         TEST_EXPECT_TREELOAD(tree, "(((s1,s2),(s3,s 4)),(s5,s-6));");

@@ -38,7 +38,6 @@ class AW_window;
 
 class AP_tree;
 class AP_tree_root;
-class GBT_TREE;
 class AP_filter;
 class WeightedFilter;
 

@@ -615,7 +615,7 @@ static GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main, GBT_
                             // ---------to this and scroll down--------
                         }
                     }
-                    backup = backup->father;
+                    backup = backup->get_father();
                 }
 
                 // --------also cut this------
@@ -867,8 +867,8 @@ void SQ_calc_and_apply_group_data(GBT_TREE * node, GBDATA * gb_main, SQ_GroupDat
         }
     }
     else {
-        GBT_TREE *node1 = node->leftson;
-        GBT_TREE *node2 = node->rightson;
+        GBT_TREE *node1 = node->get_leftson();
+        GBT_TREE *node2 = node->get_rightson();
 
         if (node->name) {
             SQ_GroupData *leftData      = NULL;
@@ -917,8 +917,8 @@ void SQ_calc_and_apply_group_data2(GBT_TREE * node, GBDATA * gb_main, const SQ_G
         }
     }
     else {
-        GBT_TREE *node1 = node->leftson;
-        GBT_TREE *node2 = node->rightson;
+        GBT_TREE *node1 = node->get_leftson();
+        GBT_TREE *node2 = node->get_rightson();
 
         if (node1) SQ_calc_and_apply_group_data2(node1, gb_main, data, filter, progress);
         if (node2) SQ_calc_and_apply_group_data2(node2, gb_main, data, filter, progress);
@@ -994,9 +994,9 @@ SQ_TREE_ERROR SQ_check_tree_structure(GBT_TREE * node) {
             retval = ZOMBIE;
     }
     else {
-        retval = SQ_check_tree_structure(node->leftson);
+        retval = SQ_check_tree_structure(node->get_leftson());
         if (retval == NONE)
-            retval = SQ_check_tree_structure(node->rightson);
+            retval = SQ_check_tree_structure(node->get_rightson());
     }
 
     return retval;

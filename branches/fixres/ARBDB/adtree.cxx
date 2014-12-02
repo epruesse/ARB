@@ -27,7 +27,7 @@ GBDATA *GBT_get_tree_data(GBDATA *gb_main) {
     return GBT_find_or_create(gb_main, "tree_data", 7);
 }
 
-GBT_TREE::bs100_mode GBT_TREE::toggle_bootstrap100(bs100_mode mode) {
+ELIMtree::bs100_mode ELIMtree::toggle_bootstrap100(bs100_mode mode) {
     if (!is_leaf) {
         if (!is_root_node()) {
             double bootstrap;
@@ -57,14 +57,14 @@ GBT_TREE::bs100_mode GBT_TREE::toggle_bootstrap100(bs100_mode mode) {
     }
     return mode;
 }
-void GBT_TREE::remove_bootstrap() {
+void ELIMtree::remove_bootstrap() {
     freenull(remark_branch);
     if (!is_leaf) {
         get_leftson()->remove_bootstrap();
         get_rightson()->remove_bootstrap();
     }
 }
-void GBT_TREE::reset_branchlengths() {
+void ELIMtree::reset_branchlengths() {
     if (!is_leaf) {
         leftlen = rightlen = DEFAULT_BRANCH_LENGTH;
 
@@ -73,7 +73,7 @@ void GBT_TREE::reset_branchlengths() {
     }
 }
 
-void GBT_TREE::scale_branchlengths(double factor) {
+void ELIMtree::scale_branchlengths(double factor) {
     if (!is_leaf) {
         leftlen  *= factor;
         rightlen *= factor;
@@ -83,7 +83,7 @@ void GBT_TREE::scale_branchlengths(double factor) {
     }
 }
 
-GBT_LEN GBT_TREE::sum_child_lengths() const {
+GBT_LEN ELIMtree::sum_child_lengths() const {
     if (is_leaf) return 0.0;
     return
         leftlen +
@@ -92,7 +92,7 @@ GBT_LEN GBT_TREE::sum_child_lengths() const {
         get_rightson()->sum_child_lengths();
 }
 
-void GBT_TREE::bootstrap2branchlen() {
+void ELIMtree::bootstrap2branchlen() {
     //! copy bootstraps to branchlengths
     if (is_leaf) {
         set_branchlength_unrooted(DEFAULT_BRANCH_LENGTH);
@@ -115,7 +115,7 @@ void GBT_TREE::bootstrap2branchlen() {
     }
 }
 
-void GBT_TREE::branchlen2bootstrap() {
+void ELIMtree::branchlen2bootstrap() {
     //! copy branchlengths to bootstraps
     remove_remark();
     if (!is_leaf) {
@@ -127,20 +127,20 @@ void GBT_TREE::branchlen2bootstrap() {
     }
 }
 
-GBT_TREE *GBT_TREE::fixDeletedSon() {
+RootedTree *RootedTree::fixDeletedSon() {
     // fix node after one son has been deleted
-    GBT_TREE *result = NULL;
+    RootedTree *result = NULL;
 
     if (leftson) {
         gb_assert(!rightson);
-        result  = leftson;
+        result  = get_leftson();
         leftson = NULL;
     }
     else {
         gb_assert(!leftson);
         gb_assert(rightson);
 
-        result   = rightson;
+        result   = get_rightson();
         rightson = NULL;
     }
 
@@ -156,13 +156,18 @@ GBT_TREE *GBT_TREE::fixDeletedSon() {
         gb_node         = NULL;
     }
 
+    if (!result->father) {
+        get_tree_root()->change_root(this, result);
+    }
+
+    forget_origin();
     is_leaf = true; // don't try recursive delete
     delete this;
 
     return result;
 }
 
-const GBT_TREE *GBT_TREE::ancestor_common_with(const GBT_TREE *other) const {
+const ELIMtree *ELIMtree::ancestor_common_with(const ELIMtree *other) const {
     if (this == other) return this;
     if (is_anchestor_of(other)) return this;
     if (other->is_anchestor_of(this)) return other;
@@ -209,6 +214,7 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HAS
             }
 
             if (deleteSelf) {
+                tree->forget_origin();
                 destroy(tree);
                 tree = NULL;
                 if (removed) (*removed)++;
@@ -216,8 +222,8 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HAS
         }
     }
     else {
-        tree->leftson  = GBT_remove_leafs(tree->leftson, mode, species_hash, removed, groups_removed);
-        tree->rightson = GBT_remove_leafs(tree->rightson, mode, species_hash, removed, groups_removed);
+        tree->leftson  = GBT_remove_leafs(tree->get_leftson(), mode, species_hash, removed, groups_removed);
+        tree->rightson = GBT_remove_leafs(tree->get_rightson(), mode, species_hash, removed, groups_removed);
 
         if (tree->leftson) {
             if (!tree->rightson) { // right son deleted
@@ -230,6 +236,7 @@ GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HAS
         }
         else {                  // everything deleted -> delete self
             if (tree->name && groups_removed) (*groups_removed)++;
+            tree->forget_origin();
             tree->is_leaf = true;
             destroy(tree);
             tree = NULL;
@@ -414,8 +421,8 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
         }
 
         (*startid)++;
-        if (!error) error = gbt_write_tree_nodes(gb_tree, node->leftson, startid);
-        if (!error) error = gbt_write_tree_nodes(gb_tree, node->rightson, startid);
+        if (!error) error = gbt_write_tree_nodes(gb_tree, node->get_leftson(), startid);
+        if (!error) error = gbt_write_tree_nodes(gb_tree, node->get_rightson(), startid);
     }
     return error;
 }
@@ -468,8 +475,8 @@ static char *gbt_write_tree_rek_new(const GBT_TREE *node, char *dest, long mode)
         else {
             dest += strlen(buffer)+1;
         }
-        dest = gbt_write_tree_rek_new(node->leftson,  dest, mode);
-        dest = gbt_write_tree_rek_new(node->rightson, dest, mode);
+        dest = gbt_write_tree_rek_new(node->get_leftson(),  dest, mode);
+        dest = gbt_write_tree_rek_new(node->get_rightson(), dest, mode);
         return dest;
     }
 }
@@ -774,11 +781,11 @@ GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, const TreeNodeFa
     return GBT_read_tree_and_size(gb_main, tree_name, nodeFactory, 0);
 }
 
-size_t GBT_count_leafs(const GBT_TREE *tree) {
+size_t GBT_count_leafs(const GBT_TREE *tree) { // @@@ impl using get_leaf_count()
     if (tree->is_leaf) {
         return 1;
     }
-    return GBT_count_leafs(tree->leftson) + GBT_count_leafs(tree->rightson);
+    return GBT_count_leafs(tree->get_leftson()) + GBT_count_leafs(tree->get_rightson());
 }
 
 static GB_ERROR gbt_invalid_because(const GBT_TREE *tree, const char *reason) {
@@ -791,7 +798,7 @@ inline bool has_son(const GBT_TREE *father, const GBT_TREE *son) {
 
 static GB_ERROR gbt_is_invalid(bool is_root, const GBT_TREE *tree) {
     if (tree->father) {
-        if (!has_son(tree->father, tree)) return gbt_invalid_because(tree, "is not son of its father");
+        if (!has_son(tree->get_father(), tree)) return gbt_invalid_because(tree, "is not son of its father");
     }
     else {
         if (!is_root) return gbt_invalid_because(tree, "has no father (but isn't root)");
@@ -806,8 +813,8 @@ static GB_ERROR gbt_is_invalid(bool is_root, const GBT_TREE *tree) {
         if (!tree->leftson) return gbt_invalid_because(tree, "is inner node, but has no leftson");
         if (!tree->rightson) return gbt_invalid_because(tree, "is inner node, but has no rightson");
 
-        error             = gbt_is_invalid(false, tree->leftson);
-        if (!error) error = gbt_is_invalid(false, tree->rightson);
+        error             = gbt_is_invalid(false, tree->get_leftson());
+        if (!error) error = gbt_is_invalid(false, tree->get_rightson());
     }
     return error;
 }
@@ -847,8 +854,8 @@ static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, link_tree_data *ltd) {
         if (ltd->progress) ++(*ltd->progress);
     }
     else {
-        error = gbt_link_tree_to_hash_rek(tree->leftson, ltd);
-        if (!error) error = gbt_link_tree_to_hash_rek(tree->rightson, ltd);
+        error             = gbt_link_tree_to_hash_rek(tree->get_leftson(), ltd);
+        if (!error) error = gbt_link_tree_to_hash_rek(tree->get_rightson(), ltd);
     }
     return error;
 }
@@ -908,14 +915,14 @@ GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *z
     return error;
 }
 
-void GBT_unlink_tree(GBT_TREE *tree) {
+void GBT_unlink_tree(GBT_TREE *tree) { // @@@ make member
     /*! Unlink tree from the database.
      * @see GBT_link_tree()
      */
     tree->gb_node = 0;
     if (!tree->is_leaf) {
-        GBT_unlink_tree(tree->leftson);
-        GBT_unlink_tree(tree->rightson);
+        GBT_unlink_tree(tree->get_leftson());
+        GBT_unlink_tree(tree->get_rightson());
     }
 }
 
@@ -1256,8 +1263,8 @@ static GB_CSTR *fill_species_name_array(GB_CSTR *current, const GBT_TREE *tree) 
         current[0] = tree->name;
         return current+1;
     }
-    current = fill_species_name_array(current, tree->leftson);
-    current = fill_species_name_array(current, tree->rightson);
+    current = fill_species_name_array(current, tree->get_leftson());
+    current = fill_species_name_array(current, tree->get_rightson());
     return current;
 }
 
@@ -1284,9 +1291,9 @@ static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat f
     }
     else {
         out.put('(');
-        tree2newick(tree->leftson, out, format, indent+1);
+        tree2newick(tree->get_leftson(), out, format, indent+1);
         out.put(',');
-        tree2newick(tree->rightson, out, format, indent+1);
+        tree2newick(tree->get_rightson(), out, format, indent+1);
         if ((format&nWRAP) && indent>0) { out.put('\n'); out.nput(' ', indent); }
         out.put(')');
 
@@ -1425,7 +1432,7 @@ void TEST_copy_rename_delete_tree_order() {
             TEST_EXPECT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", 20), "tree_nj_bs                 (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
 
             {
-                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", GBT_TREE_NodeFactory());
+                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", *new SimpleRoot);
 
                 TEST_REJECT_NULL(tree);
 
@@ -1621,7 +1628,7 @@ void TEST_tree_remove_leafs() {
             for (int linked = 0; linked<=1; ++linked) {
                 TEST_ANNOTATE(GBS_global_string("mode=%u linked=%i", mode, linked));
 
-                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_removal", GBT_TREE_NodeFactory());
+                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_removal", *new SimpleRoot);
                 bool      once = mode == 0 && linked == 0;
 
                 if (linked) {

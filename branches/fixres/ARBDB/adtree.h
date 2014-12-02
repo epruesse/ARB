@@ -20,23 +20,25 @@
     DEFINE_DOWNCAST_ACCESSORS(TreeType, get_leftson, leftson);  \
     DEFINE_DOWNCAST_ACCESSORS(TreeType, get_rightson, rightson)
 
-struct GBT_TREE : virtual Noncopyable {
+struct ELIMtree : virtual Noncopyable {
     bool      is_leaf;
-    GBT_TREE *father, *leftson, *rightson;
+    ELIMtree *father, *leftson, *rightson;
     GBT_LEN   leftlen, rightlen;
     GBDATA   *gb_node;
     char     *name;
 
 private:
+    friend class RootedTree;
+
     char *remark_branch; // remark_branch normally contains some bootstrap value in format 'xx%'
                          // if you store other info there, please make sure that this info does not start with digits!!
                          // Otherwise the tree export routines will not work correctly!
 
     GBT_LEN& length_ref() { return is_leftson() ? father->leftlen : father->rightlen; }
-    const GBT_LEN& length_ref() const { return const_cast<GBT_TREE*>(this)->length_ref(); }
+    const GBT_LEN& length_ref() const { return const_cast<ELIMtree*>(this)->length_ref(); }
 
 protected:
-    GBT_TREE*& self_ref() {
+    ELIMtree*& self_ref() {
         return is_leftson() ? father->leftson : father->rightson;
     }
     void unlink_from_father() {
@@ -52,7 +54,7 @@ protected:
         return result;
     }
 
-    virtual ~GBT_TREE() {
+    virtual ~ELIMtree() {
         delete leftson;  gb_assert(!leftson);
         delete rightson; gb_assert(!rightson);
 
@@ -61,13 +63,13 @@ protected:
         free(name);
         free(remark_branch);
     }
-    friend class GBT_TREE_NodeFactory;
+    friend class ELIMtree_NodeFactory;
     virtual void destroy()  {
         delete this;
     }
 
 public:
-    GBT_TREE()
+    ELIMtree()
         : is_leaf(false),
           father(NULL), leftson(NULL), rightson(NULL),
           leftlen(0.0), rightlen(0.0),
@@ -75,18 +77,18 @@ public:
           name(NULL),
           remark_branch(NULL)
     {}
-    static void destroy(GBT_TREE *that)  { // replacement for destructor
+    static void destroy(ELIMtree *that)  { // replacement for destructor
         if (that) delete that;
     }
 
-    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(GBT_TREE);
+    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(ELIMtree);
 
     virtual void announce_tree_constructed() {
         // (has to be) called after tree has been constructed
         gb_assert(!father); // has to be called with root-node!
     }
 
-    bool is_son_of(const GBT_TREE *Father) const {
+    bool is_son_of(const ELIMtree *Father) const {
         return father == Father &&
             (father->leftson == this || father->rightson == this);
     }
@@ -101,16 +103,14 @@ public:
 
     bool is_root_node() const { return !father; }
 
-    bool is_inside(const GBT_TREE *subtree) const {
+    bool is_inside(const ELIMtree *subtree) const {
         return this == subtree || (father && get_father()->is_inside(subtree));
     }
-    bool is_anchestor_of(const GBT_TREE *descendant) const {
+    bool is_anchestor_of(const ELIMtree *descendant) const {
         return !is_leaf && descendant != this && descendant->is_inside(this);
     }
-    const GBT_TREE *ancestor_common_with(const GBT_TREE *other) const;
-    GBT_TREE *ancestor_common_with(GBT_TREE *other) { return const_cast<GBT_TREE*>(ancestor_common_with(other)); }
-
-    GBT_TREE *fixDeletedSon();
+    const ELIMtree *ancestor_common_with(const ELIMtree *other) const;
+    ELIMtree *ancestor_common_with(ELIMtree *other) { return const_cast<ELIMtree*>(ancestor_common_with(other)); }
 
     GBT_LEN get_branchlength() const { return length_ref(); }
     void set_branchlength(GBT_LEN newlen) {
@@ -140,8 +140,8 @@ public:
         //! returns distance from node to root (including nodes own length)
         return father ? get_branchlength()+father->root_distance() : 0.0;
     }
-    GBT_LEN intree_distance_to(const GBT_TREE *other) const {
-        const GBT_TREE *ancestor = ancestor_common_with(other);
+    GBT_LEN intree_distance_to(const ELIMtree *other) const {
+        const ELIMtree *ancestor = ancestor_common_with(other);
         return root_distance() + other->root_distance() - 2*ancestor->root_distance();
     }
 
@@ -174,17 +174,12 @@ public:
     void remove_remark() { use_as_remark(NULL); }
 };
 
-inline void destroy(GBT_TREE *that) { GBT_TREE::destroy(that); }
+inline void destroy(ELIMtree *that) { ELIMtree::destroy(that); }
 
-struct TreeNodeFactory {
+struct TreeNodeFactory { // @@@ move into RootedTree?
     virtual ~TreeNodeFactory() {}
     virtual GBT_TREE *makeNode() const             = 0;
     virtual void destroyNode(GBT_TREE *node) const = 0;
-};
-
-struct GBT_TREE_NodeFactory : public TreeNodeFactory {
-    GBT_TREE *makeNode() const OVERRIDE { return new GBT_TREE; }
-    void destroyNode(GBT_TREE *node) const OVERRIDE { delete node; }
 };
 
 #ifndef ROOTEDTREE_H

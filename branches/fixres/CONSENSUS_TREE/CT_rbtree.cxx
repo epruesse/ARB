@@ -36,10 +36,10 @@ static int GBT_TREE_order(const GBT_TREE *t1, const GBT_TREE *t2) {
                 cmp = strcmp(t1->name, t2->name);
             }
             else {
-                int cll = GBT_TREE_order(t1->leftson, t2->leftson);
-                int clr = GBT_TREE_order(t1->leftson, t2->rightson);
-                int crl = GBT_TREE_order(t1->rightson, t2->leftson);
-                int crr = GBT_TREE_order(t1->rightson, t2->rightson);
+                int cll = GBT_TREE_order(t1->get_leftson(), t2->get_leftson());
+                int clr = GBT_TREE_order(t1->get_leftson(), t2->get_rightson());
+                int crl = GBT_TREE_order(t1->get_rightson(), t2->get_leftson());
+                int crr = GBT_TREE_order(t1->get_rightson(), t2->get_rightson());
 
                 cmp = cll+clr+crl+crr;
                 if (!cmp) {

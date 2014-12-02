@@ -101,8 +101,8 @@ static void NT_resort_data_base_by_tree(GBT_TREE *tree, GBDATA *gb_species_data)
             }
         }
         else {
-            NT_resort_data_base_by_tree(tree->leftson, gb_species_data);
-            NT_resort_data_base_by_tree(tree->rightson, gb_species_data);
+            NT_resort_data_base_by_tree(tree->get_leftson(), gb_species_data);
+            NT_resort_data_base_by_tree(tree->get_rightson(), gb_species_data);
         }
     }
 }

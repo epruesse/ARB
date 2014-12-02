@@ -110,8 +110,8 @@ class MatrixOrder : virtual Noncopyable {
             }
         }
         else {
-            insert_in_hash(tree->rightson);
-            insert_in_hash(tree->leftson);
+            insert_in_hash(tree->get_rightson());
+            insert_in_hash(tree->get_leftson());
         }
     }
 

@@ -47,10 +47,10 @@ AP_pos_var::~AP_pos_var() {
     for (int i=0; i<256; i++) free(frequencies[i]);
 }
 
-long AP_pos_var::getsize(GBT_TREE *tree) {
+long AP_pos_var::getsize(GBT_TREE *tree) { // @@@ replace by get_leaf_count() + leafs_2_nodes
     if (!tree) return 0;
     if (tree->is_leaf) return 1;
-    return getsize(tree->leftson) + getsize(tree->rightson) + 1;
+    return getsize(tree->get_leftson()) + getsize(tree->get_rightson()) + 1;
 }
 
 const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tbases) {
@@ -89,8 +89,8 @@ const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tba
         GB_UINT4 *lts = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
         GB_UINT4 *rts = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
 
-        if (!error) error = this->parsimony(tree->leftson, ls, lts);
-        if (!error) error = this->parsimony(tree->rightson, rs, rts);
+        if (!error) error = this->parsimony(tree->get_leftson(), ls, lts);
+        if (!error) error = this->parsimony(tree->get_rightson(), rs, rts);
         if (!error) {
             for (long i=0; i< ali_len; i++) {
                 long l = ls[i];
@@ -316,7 +316,7 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
         char     *tree_name;
         {
             tree_name = root->awar(AWAR_PVP_TREE)->read_string();
-            tree = GBT_read_tree(GLOBAL.gb_main, tree_name, GBT_TREE_NodeFactory());
+            tree      = GBT_read_tree(GLOBAL.gb_main, tree_name, *new SimpleRoot);
             if (!tree) {
                 error = GB_await_error();
             }

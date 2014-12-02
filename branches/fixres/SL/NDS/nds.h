@@ -18,8 +18,6 @@
 #include <aw_base.hxx>
 #endif
 
-struct GBT_TREE;
-
 #define AWAR_SELECT_ACISRT     "tmp/acisrt/select"
 #define AWAR_SELECT_ACISRT_PRE "tmp/acisrt/select_pre"
 

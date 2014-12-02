@@ -351,7 +351,7 @@ MatrixOrder::MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name)
 {
     if (sort_tree_name) {
         int       size;
-        GBT_TREE *sort_tree = GBT_read_tree_and_size(gb_main, sort_tree_name, GBT_TREE_NodeFactory(), &size);
+        GBT_TREE *sort_tree = GBT_read_tree_and_size(gb_main, sort_tree_name, *new SimpleRoot, &size);
 
         if (sort_tree) {
             leafs    = size+1;
@@ -822,7 +822,7 @@ GB_ERROR DI_MATRIX::extract_from_tree(const char *treename, bool *aborted_flag) 
         GBT_TREE *tree;
         {
             GB_transaction ta(get_gb_main());
-            tree = GBT_read_tree(get_gb_main(), treename, GBT_TREE_NodeFactory());
+            tree = GBT_read_tree(get_gb_main(), treename, *new SimpleRoot);
         }
         if (!tree) error = GB_await_error();
         else {
@@ -1249,7 +1249,7 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
             names[i] = matr->entries[i]->name;
         }
         di_assert(matr->nentries == matr->matrix->size());
-        tree = neighbourjoining(names, *matr->matrix);
+        tree = neighbourjoining(names, *matr->matrix, *new SimpleRoot);
 
         if (bootstrap_flag) {
             error = ctree->insert_tree_weighted(tree, matr->nentries, 1, false);
@@ -1453,7 +1453,7 @@ static void di_calculate_compressed_matrix_cb(AW_window *aww, WeightedFilter *we
     AW_root  *aw_root  = aww->get_root();
     char     *treename = aw_root->awar(AWAR_DIST_TREE_COMP_NAME)->read_string();
     GB_ERROR  error    = 0;
-    GBT_TREE  *tree    = GBT_read_tree(GLOBAL_gb_main, treename, GBT_TREE_NodeFactory());
+    GBT_TREE  *tree    = GBT_read_tree(GLOBAL_gb_main, treename, *new SimpleRoot);
 
     if (!tree) {
         error = GB_await_error();

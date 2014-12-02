@@ -158,8 +158,8 @@ static GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index) {
             }
         }
         else {
-            gbt_rename_tree_rek(tree->leftson, tree_index);
-            gbt_rename_tree_rek(tree->rightson, tree_index);
+            gbt_rename_tree_rek(tree->get_leftson(), tree_index);
+            gbt_rename_tree_rek(tree->get_rightson(), tree_index);
         }
     }
     return NULL;
@@ -183,7 +183,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
 
             for (int count = 0; count<tree_count && !error; ++count) {
                 const char *tname = tree_names[count];
-                GBT_TREE   *tree  = GBT_read_tree(NameSession.gb_main, tname, GBT_TREE_NodeFactory());
+                GBT_TREE   *tree  = GBT_read_tree(NameSession.gb_main, tname, *new SimpleRoot);
                 ++progress;
 
                 if (tree) {

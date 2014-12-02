@@ -43,8 +43,8 @@ static void add_bootstrap(GBT_TREE *node, double hundred) {
     node->leftlen  = DEFAULT_BRANCH_LENGTH; // reset branchlengths
     node->rightlen = DEFAULT_BRANCH_LENGTH;
 
-    add_bootstrap(node->leftson, hundred);
-    add_bootstrap(node->rightson, hundred);
+    add_bootstrap(node->get_leftson(), hundred);
+    add_bootstrap(node->get_rightson(), hundred);
 }
 
 static void show_message(GBDATA *gb_main, const char *msg) {
@@ -217,7 +217,7 @@ int main(int argc, char **argv) {
                 char *warnings             = 0;
                 bool  allow_length_scaling = !param.consense && !param.scale;
 
-                tree = TREE_load(param.treefilename, GBT_TREE_NodeFactory(), &comment_from_treefile, allow_length_scaling, &warnings);
+                tree = TREE_load(param.treefilename, *new SimpleRoot, &comment_from_treefile, allow_length_scaling, &warnings);
                 if (!tree) {
                     error = GB_await_error();
                 }

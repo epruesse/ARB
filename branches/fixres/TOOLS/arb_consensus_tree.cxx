@@ -212,8 +212,8 @@ static double calc_intree_distance(GBT_TREE *tree) {
     return
         tree->leftlen +
         tree->rightlen +
-        calc_intree_distance(tree->leftson) +
-        calc_intree_distance(tree->rightson);
+        calc_intree_distance(tree->get_leftson()) +
+        calc_intree_distance(tree->get_rightson());
 }
 
 #define LENSUM_EPSILON .000001
@@ -413,8 +413,8 @@ static const char *findFirstNameContaining(GBT_TREE *tree, const char *part) {
         found = tree->name;
     }
     else if (!tree->is_leaf) {
-        found             = findFirstNameContaining(tree->leftson, part);
-        if (!found) found = findFirstNameContaining(tree->rightson, part);
+        found             = findFirstNameContaining(tree->get_leftson(), part);
+        if (!found) found = findFirstNameContaining(tree->get_rightson(), part);
     }
     return found;
 }
@@ -428,8 +428,6 @@ void TEST_SLOW_treeIO_stable() {
     GBDATA   *gb_main = GB_open(dbname, "rw");
 
     TEST_REJECT_NULL(gb_main);
-
-    GBT_TREE_NodeFactory nodeMaker;
 
     char *outfile = GBS_global_string_copy("trees/%s.tree", savename);
 
@@ -472,7 +470,7 @@ void TEST_SLOW_treeIO_stable() {
                         const char *reloaded_treename = "tree_reloaded";
                         {
                             char     *comment    = NULL;
-                            GBT_TREE *tree       = TREE_load(expectedfile, nodeMaker, &comment, true, NULL);
+                            GBT_TREE *tree       = TREE_load(expectedfile, *new SimpleRoot, &comment, true, NULL);
                             GB_ERROR  load_error = tree ? NULL : GB_await_error();
 
                             TEST_EXPECTATION(all().of(that(tree).does_differ_from_NULL(),

@@ -37,7 +37,6 @@
 
 class AP_filter;
 class arb_progress;
-struct GBT_TREE;
 
 typedef SmartPtr < SQ_GroupData> SQ_GroupDataPtr;
 typedef std::map < std::string, SQ_GroupDataPtr> SQ_GroupDataDictionary;

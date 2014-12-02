@@ -28,8 +28,9 @@ int DI_MATRIX::search_group(GBT_TREE *node, GB_HASH *hash, size_t& groupcnt, cha
             }
         }
     }
-    int erg = search_group(node->leftson, hash, groupcnt, myname, groups) +
-        search_group(node->rightson, hash, groupcnt, myname, groups);
+    int erg =
+        search_group(node->get_leftson(),  hash, groupcnt, myname, groups) +
+        search_group(node->get_rightson(), hash, groupcnt, myname, groups);
 
     if (!groupname) {       // we are not a sub group
         if (myname) {       // but we are a group

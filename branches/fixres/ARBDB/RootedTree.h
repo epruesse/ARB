@@ -102,7 +102,7 @@ enum TreeOrder { // contains bit values!
     BIG_BRANCHES_ALTERNATING = ORDER_BIG_TO_CENTER|ORDER_ALTERNATING,
 };
 
-class RootedTree : public GBT_TREE { // derived from Noncopyable
+class RootedTree : public ELIMtree { // derived from Noncopyable
     friend void TreeRoot::change_root(RootedTree *old, RootedTree *newroot);
 
     TreeRoot *tree_root;
@@ -151,8 +151,10 @@ public:
         if (that) that->destroy(root);
     }
 
+    RootedTree *fixDeletedSon(); // @@@ review (design)
+
     void announce_tree_constructed() OVERRIDE {
-        GBT_TREE::announce_tree_constructed();
+        ELIMtree::announce_tree_constructed();
         get_tree_root()->change_root(NULL, this);
     }
 
@@ -293,6 +295,36 @@ inline void assert_tree_has_valid_structure(const TREE *tree, bool IF_ASSERTION_
 #define TEST_ASSERT_VALID_TREE(tree)
 #define TEST_ASSERT_VALID_TREE_OR_NULL(tree)
 #endif
+
+// --------------------
+//      SimpleTree
+
+struct SimpleRoot : public TreeRoot {
+    inline SimpleRoot();
+};
+
+class SimpleTree : public RootedTree {
+protected:
+    ~SimpleTree() OVERRIDE {}
+    friend class SimpleTree_NodeFactory;
+public:
+    SimpleTree(SimpleRoot *sroot) : RootedTree(sroot) {
+    }
+
+    // RootedTree interface
+    unsigned get_leaf_count() const OVERRIDE {
+        rt_assert(0); // @@@ impl?
+        return 0;
+    }
+    void compute_tree() OVERRIDE {}
+};
+
+class SimpleTree_NodeFactory : public RootedTreeNodeFactory {
+    RootedTree *makeNode(TreeRoot *root) const OVERRIDE { return new SimpleTree(DOWNCAST(SimpleRoot*, root)); }
+    void destroyNode(TreeRoot*, RootedTree *node) const OVERRIDE { delete DOWNCAST(SimpleTree*,node); }
+};
+
+SimpleRoot::SimpleRoot() : TreeRoot(new SimpleTree_NodeFactory, true) {}
 
 // ----------------------
 //      ARB_edge_type

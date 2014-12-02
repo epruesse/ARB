@@ -380,12 +380,12 @@ static void tree_load_cb(AW_window *aww) {
         GBT_TREE *tree;
         if (strcmp(pcTreeFormat, "xml") == 0) {
             char *tempFname = readXmlTree(fname);
-            tree = TREE_load(tempFname, GBT_TREE_NodeFactory(), &tree_comment, true, &warnings);
+            tree = TREE_load(tempFname, *new SimpleRoot, &tree_comment, true, &warnings);
             GB_unlink_or_warn(tempFname, NULL);
             free(tempFname);
         }
         else {
-            tree = TREE_load(fname, GBT_TREE_NodeFactory(), &tree_comment, true, &warnings);
+            tree = TREE_load(fname, *new SimpleRoot, &tree_comment, true, &warnings);
         }
 
         if (!tree) error = GB_await_error();
@@ -986,7 +986,7 @@ static GB_ERROR sort_tree_by_other_tree(GBDATA *gb_main, RootedTree *tree, const
     GB_ERROR       error = NULL;
     GB_transaction ta(gb_main);
 
-    GBT_TREE *otherTree   = GBT_read_tree(gb_main, other_tree, GBT_TREE_NodeFactory());
+    GBT_TREE *otherTree   = GBT_read_tree(gb_main, other_tree, *new SimpleRoot);
     if (!otherTree) error = GB_await_error();
     else {
         SortByTopo sorter(otherTree);
@@ -1185,7 +1185,7 @@ void TEST_move_node_info() {
     // create copy of 'tree_removal'
     {
         GB_transaction  ta(gb_main);
-        GBT_TREE       *tree = GBT_read_tree(gb_main, "tree_removal", GBT_TREE_NodeFactory());
+        GBT_TREE       *tree = GBT_read_tree(gb_main, "tree_removal", *new SimpleRoot);
 
         TEST_EXPECT_NEWICK(nSIMPLE, tree, org_topo);
         TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_removal_copy", tree));

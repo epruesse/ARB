@@ -1414,13 +1414,13 @@ static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *pa
             hash_binary_entry = GBS_global_string(">>%p", node->gb_node);
             GBS_write_hash(tax_hash, hash_binary_entry, (long)strdup(hash_entry));
 
-            build_taxonomy_rek(node->leftson, tax_hash, hash_entry, group_counter);
-            build_taxonomy_rek(node->rightson, tax_hash, hash_entry, group_counter);
+            build_taxonomy_rek(node->get_leftson(), tax_hash, hash_entry, group_counter);
+            build_taxonomy_rek(node->get_rightson(), tax_hash, hash_entry, group_counter);
             free(hash_entry);
         }
         else {
-            build_taxonomy_rek(node->leftson, tax_hash, parent_group, group_counter);
-            build_taxonomy_rek(node->rightson, tax_hash, parent_group, group_counter);
+            build_taxonomy_rek(node->get_leftson(), tax_hash, parent_group, group_counter);
+            build_taxonomy_rek(node->get_rightson(), tax_hash, parent_group, group_counter);
         }
     }
 }
@@ -1534,7 +1534,7 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
     }
     cached = GBS_read_hash(cached_taxonomies, tree_name);
     if (!cached) {
-        GBT_TREE *tree    = GBT_read_tree(gb_main, tree_name, GBT_TREE_NodeFactory());
+        GBT_TREE *tree    = GBT_read_tree(gb_main, tree_name, *new SimpleRoot);
         if (!tree) *error = GB_await_error();
         else     *error   = GBT_link_tree(tree, gb_main, false, 0, 0);
 

@@ -32,7 +32,10 @@ struct GB_HASH;
 typedef int GBQUARK; // -1 = any quark, 0 = no quark, >0 explicit quark
 
 typedef float GBT_LEN;
-struct        GBT_TREE;
+
+class              RootedTree;
+struct             TreeNodeFactory;
+typedef RootedTree GBT_TREE;
 
 typedef unsigned int       GB_UINT4;                // 4 byte! @@@ use uint32_t ?
 typedef const unsigned int GB_CUINT4;

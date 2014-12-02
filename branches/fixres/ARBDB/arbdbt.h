@@ -9,7 +9,6 @@
 #endif
 
 class TreeNodeFactory;
-class GBT_TREE_NodeFactory;
 
 #define gb_assert(cond) arb_assert(cond)
 
