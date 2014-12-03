@@ -23,7 +23,7 @@ my $reg_file = qr/^([^:]+):([0-9]+):(([0-9]+):)?\s/; # finds all messages
 my $reg_file_noline = qr/^([^:]+):\s/; # finds all messages w/o linenumber (if not matched $reg_file)
 my $reg_included = qr/^In\sfile\sincluded\sfrom\s(.*)[,:]/;
 my $reg_included2 = qr/^\s+from\s(.*)[,:]/;
-my $reg_location = qr/^[^:]+:\sIn\sfunction\s/;
+my $reg_location = qr/^[^:]+:\sIn\s(function|instantiation)\s/;
 my $reg_location2 = qr/^[^:]+:\sAt\stop\slevel:/;
 my $reg_clang_dirt = qr/^ANALYZE:\s/;
 
@@ -208,7 +208,10 @@ sub push_loc_and_related($$\@\@) {
   }
   push @$out_r, $message;
   $last_pushed_related = scalar(@$related_r);
-  foreach (@$related_r) { push @$out_r, $_; }
+
+  # show related info (include-notes behind rest)
+  foreach (@$related_r) { if (not /included\sfrom/) { push @$out_r, $_; } }
+  foreach (@$related_r) { if (/included\sfrom/) { push @$out_r, $_; } }
 }
 
 sub drop_last_pushed_relateds(\@) {
@@ -320,14 +323,16 @@ sub parse_input(\@) {
         $_ = suppress($_,@warnout);
       }
       elsif ($msg =~ $reg_is_note) {
-        if ($did_show_previous==0) {
-          $_ = suppress($_,@warnout);
-        }
-        else {
-          if ($msg =~ /in\sexpansion\sof\smacro/o) {
-            drop_last_pushed_relateds(@$curr_out_r);
-          }
-        }
+        push @related, $_;
+        $_ = suppress($_,@warnout);
+        # if ($did_show_previous==0) {
+          # $_ = suppress($_,@warnout);
+        # }
+        # else {
+          # if ($msg =~ /in\sexpansion\sof\smacro/o) {
+            # drop_last_pushed_relateds(@$curr_out_r);
+          # }
+        # }
       }
     }
     elsif ($_ =~ $reg_location or $_ =~ $reg_location2) {
