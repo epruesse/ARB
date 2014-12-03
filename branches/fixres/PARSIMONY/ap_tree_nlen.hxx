@@ -63,10 +63,12 @@ class AP_tree_edge;
 class AP_pars_root : public AP_tree_root {
     // @@@ add responsibility for node/edge ressources
 public:
-    AP_pars_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks)
-        : AP_tree_root(aliView, nodeMaker_, seq_proto, add_delete_callbacks)
+    AP_pars_root(AliView *aliView, AP_sequence *seq_proto, bool add_delete_callbacks)
+        : AP_tree_root(aliView, seq_proto, add_delete_callbacks)
     {
     }
+    inline TreeNode *makeNode() const OVERRIDE;
+    inline void destroyNode(TreeNode *node) const OVERRIDE;
 };
 
 class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ rename -> AP_pars_tree? (later!)
@@ -90,7 +92,7 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ renam
 
 protected:
     ~AP_tree_nlen() OVERRIDE {}
-    friend class AP_TreeNlenNodeFactory; // allowed to call dtor
+    friend class AP_pars_root; // allowed to call dtor
 public:
     explicit AP_tree_nlen(AP_pars_root *troot)
         : AP_tree(troot),
@@ -198,14 +200,8 @@ public:
     friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);
 };
 
-struct AP_TreeNlenNodeFactory : public RootedTreeNodeFactory {
-    TreeNode *makeNode(TreeRoot *root) const OVERRIDE {
-        return new AP_tree_nlen(DOWNCAST(AP_pars_root*, root));
-    }
-    void destroyNode(TreeRoot *, TreeNode *node) const OVERRIDE {
-        delete DOWNCAST(AP_tree_nlen*, node);
-    }
-};
+inline TreeNode *AP_pars_root::makeNode() const { return new AP_tree_nlen(const_cast<AP_pars_root*>(this)); }
+inline void AP_pars_root::destroyNode(TreeNode *node) const { delete DOWNCAST(AP_tree_nlen*, node); }
 
 // ---------------------
 //      AP_tree_edge

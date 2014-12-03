@@ -763,7 +763,7 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
 
                 progress.subtitle("loading input trees");
                 for (size_t t = 0; t<tree_names.size() && !error; ++t) {
-                    TreeRoot      *root = new TreeRoot(new SizeAwareNodeFactory, true); // will be deleted when tree gets deleted
+                    TreeRoot      *root = new SizeAwareRoot; // will be deleted when tree gets deleted
                     SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree_names[t], root));
                     if (!tree) {
                         error = GB_await_error();
@@ -1091,10 +1091,10 @@ AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw)
 #endif
 
 static GB_ERROR sort_namedtree_by_other_tree(GBDATA *gb_main, const char *tree, const char *other_tree) {
-    GB_ERROR       error = NULL;
-    GB_transaction ta(gb_main);
-    SizeAwareTree *Tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree, new TreeRoot(new SizeAwareNodeFactory, true)));
-    if (!Tree) error = GB_await_error();
+    GB_ERROR        error = NULL;
+    GB_transaction  ta(gb_main);
+    SizeAwareTree  *Tree  = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree, new SizeAwareRoot));
+    if (!Tree) error      = GB_await_error();
     else {
         Tree->compute_tree();
         error             = sort_tree_by_other_tree(gb_main, Tree, other_tree);
@@ -1122,7 +1122,7 @@ void TEST_sort_tree_by_other_tree() {
     // create sorted copies of tree_test
     {
         GB_transaction  ta(gb_main);
-        SizeAwareTree  *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, "tree_test", new TreeRoot(new SizeAwareNodeFactory, true)));
+        SizeAwareTree  *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot));
         TEST_REJECT_NULL(tree);
         TEST_EXPECT_NEWICK(nLENGTH, tree, topo_test);
 
@@ -1237,7 +1237,7 @@ void TEST_edges() {
 
     {
         GB_transaction  ta(gb_main);
-        TreeNode     *tree = DOWNCAST(TreeNode*, GBT_read_tree(gb_main, "tree_test", new TreeRoot(new SizeAwareNodeFactory, true)));
+        TreeNode     *tree = DOWNCAST(TreeNode*, GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot));
 
         TreeNode *left  = tree->findLeafNamed("CloTyro3"); TEST_REJECT_NULL(left);
         TreeNode *node  = left->get_father();              TEST_REJECT_NULL(node);
@@ -1344,7 +1344,7 @@ void TEST_toggle_bootstraps100() {
 
     {
         GB_transaction  ta(gb_main);
-        TreeNode     *tree = DOWNCAST(TreeNode*, GBT_read_tree(gb_main, "tree_test", new TreeRoot(new SizeAwareNodeFactory, true)));
+        TreeNode     *tree = DOWNCAST(TreeNode*, GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot));
         TEST_REJECT_NULL(tree);
 
         const char *topo_org   = "(((((((CloTyro3,CloTyro4)'40%',CloTyro2)'0%',CloTyrob)'97%',CloInnoc)'0%',CloBifer)'53%',(((CloButy2,CloButyr)'100%',CloCarni)'33%',CloPaste)'97%')'100%',((((CorAquat,CurCitre)'100%',CorGluta)'17%',CelBiazo)'40%',CytAquat)'100%');";
@@ -1387,7 +1387,7 @@ void TEST_multifurcate_tree() {
 
     for (int test = 1; test<=6; ++test) {
         GB_transaction  ta(gb_main);
-        TreeNode     *tree = DOWNCAST(TreeNode*, GBT_read_tree(gb_main, "tree_test", new TreeRoot(new SizeAwareNodeFactory, true)));
+        TreeNode     *tree = DOWNCAST(TreeNode*, GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot));
 
         TEST_REJECT_NULL(tree);
         if (test == 1) {

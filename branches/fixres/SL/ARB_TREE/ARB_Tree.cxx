@@ -25,8 +25,8 @@ static void tree_deleted_cbwrapper(GBDATA *gb_tree, ARB_seqtree_root *troot) {
 }
 
 
-ARB_seqtree_root::ARB_seqtree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seqTempl, bool add_delete_callbacks)
-    : TreeRoot(nodeMaker_, false),
+ARB_seqtree_root::ARB_seqtree_root(AliView *aliView, AP_sequence *seqTempl, bool add_delete_callbacks)
+    : TreeRoot(false),
       ali(aliView),
       seqTemplate(seqTempl ? seqTempl->dup() : NULL),
       tree_name(NULL),

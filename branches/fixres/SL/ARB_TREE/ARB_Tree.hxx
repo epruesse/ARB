@@ -62,7 +62,7 @@ protected:
     }
 
 public:
-    ARB_seqtree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seqTempl, bool add_delete_callbacks);
+    ARB_seqtree_root(AliView *aliView, AP_sequence *seqTempl, bool add_delete_callbacks);
     ~ARB_seqtree_root() OVERRIDE;
 
     DEFINE_TREE_ROOT_ACCESSORS(ARB_seqtree_root, ARB_seqtree);

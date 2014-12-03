@@ -48,6 +48,9 @@ public:
     ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_);
     virtual ~ClusterTreeRoot() OVERRIDE {}
 
+    inline TreeNode *makeNode() const             OVERRIDE;
+    inline void destroyNode(TreeNode *node) const OVERRIDE;
+
     DEFINE_DOWNCAST_ACCESSORS(ClusterTree, get_root_node, ARB_seqtree_root::get_root_node());
 
     GB_ERROR find_clusters();
@@ -153,7 +156,7 @@ protected:
         delete branchDists;
         delete branchDepths;
     }
-    friend class ClusterTreeNodeFactory;
+    friend class ClusterTreeRoot;
 public:
     explicit ClusterTree(ClusterTreeRoot *tree_root_)
         : ARB_countedTree(tree_root_)
@@ -187,14 +190,8 @@ public:
     AP_FLOAT get_min_bases() const { return min_bases; }
 };
 
-class ClusterTreeNodeFactory : public RootedTreeNodeFactory {
-    TreeNode *makeNode(TreeRoot *root) const OVERRIDE {
-        return new ClusterTree(DOWNCAST(ClusterTreeRoot*, root));
-    }
-    void destroyNode(TreeRoot *, TreeNode *node) const OVERRIDE {
-        delete DOWNCAST(ClusterTree*, node);
-    }
-};
+inline TreeNode *ClusterTreeRoot::makeNode() const { return new ClusterTree(const_cast<ClusterTreeRoot*>(this)); }
+inline void ClusterTreeRoot::destroyNode(TreeNode *node) const { delete DOWNCAST(ClusterTree*, node); }
 
 class UseAnyTree : public ARB_tree_predicate {
     bool selects(const ARB_seqtree&) const OVERRIDE { return true; }

@@ -211,8 +211,8 @@ AWT_graphic_parsimony::AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *g
       parsimony(parsimony_)
 {}
 
-AP_tree_root *AWT_graphic_parsimony::create_tree_root(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs) {
-    return new AP_pars_root(aliview, nodeMaker_, seq_prototype, insert_delete_cbs);
+AP_tree_root *AWT_graphic_parsimony::create_tree_root(AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs) {
+    return new AP_pars_root(aliview, seq_prototype, insert_delete_cbs);
 }
 
 
@@ -230,7 +230,7 @@ void ArbParsimony::generate_tree(WeightedFilter *pars_weighted_filter) {
     }
 
     AWT_graphic_parsimony *new_tree = new AWT_graphic_parsimony(*this, aliview->get_gb_main(), PARS_map_viewer);
-    new_tree->init(new AP_TreeNlenNodeFactory, aliview, seq_templ, true, false);
+    new_tree->init(aliview, seq_templ, true, false);
     set_tree(new_tree);
 }
 

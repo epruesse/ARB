@@ -300,6 +300,12 @@ static void sort_order_changed_cb(AW_root *aw_root) {
 class GroupTree;
 typedef map<string, GroupTree*> Species2Tip;
 
+struct GroupTreeRoot : public ARB_seqtree_root {
+    GroupTreeRoot(AliView *aliView, AP_sequence *seqTempl, bool add_delete_callbacks);
+    inline TreeNode *makeNode() const OVERRIDE;
+    inline void destroyNode(TreeNode *node) const OVERRIDE;
+};
+
 class GroupTree : public ARB_countedTree {
     unsigned leaf_count;   // total number of leafs in subtree
     unsigned tagged_count; // tagged leafs
@@ -308,10 +314,10 @@ class GroupTree : public ARB_countedTree {
     unsigned get_leaf_count() const OVERRIDE { return leaf_count; }
 protected:
     ~GroupTree() OVERRIDE {}
-    friend class GroupTreeNodeFactory;
+    friend class GroupTreeRoot;
 public:
 
-    explicit GroupTree(ARB_seqtree_root *root)
+    explicit GroupTree(GroupTreeRoot *root)
         : ARB_countedTree(root),
           leaf_count(0),
           tagged_count(0)
@@ -338,14 +344,12 @@ public:
     double tagged_rate() const { return double(get_tagged_count())/get_leaf_count(); }
 };
 
-class GroupTreeNodeFactory : public RootedTreeNodeFactory {
-    TreeNode *makeNode(TreeRoot *root) const OVERRIDE {
-        return new GroupTree(DOWNCAST(ARB_seqtree_root*, root));
-    }
-    void destroyNode(TreeRoot *, TreeNode *node) const OVERRIDE {
-        delete DOWNCAST(GroupTree*, node);
-    }
-};
+GroupTreeRoot::GroupTreeRoot(AliView *aliView, AP_sequence *seqTempl, bool add_delete_callbacks)
+    : ARB_seqtree_root(aliView, seqTempl, add_delete_callbacks)
+{}
+inline TreeNode *GroupTreeRoot::makeNode() const { return new GroupTree(const_cast<GroupTreeRoot*>(this)); }
+inline void GroupTreeRoot::destroyNode(TreeNode *node) const { delete DOWNCAST(GroupTree*,node); }
+
 
 unsigned GroupTree::update_leaf_counters() {
     if (is_leaf) leaf_count = 1;
@@ -413,22 +417,22 @@ struct GroupChanges {
 //      GroupBuilder
 
 class GroupBuilder : virtual Noncopyable {
-    GBDATA           *gb_main;
-    string            tree_name;
-    ARB_seqtree_root *tree_root;
-    Group_Action      action;                       // create or delete ?
-    Species2Tip       species2tip;                  // map speciesName -> leaf
-    ARB_ERROR         error;
-    ClusterPtr        bad_cluster;                  // error occurred here (is set)
-    Group_Existing    existing;
-    unsigned          existing_count;               // counts existing groups
-    Group_NotFound    notfound;
-    double            matchRatio;                   // needed identity of subtree and cluster
-    double            maxDist;                      // max. Distance used for calculation
-    string            cluster_prefix;               // prefix for cluster name
-    string            cluster_suffix_def;           // suffix-definition for cluster name
-    GroupChanges      changes;                      // count tree modifications
-    bool              del_match_prefixes;           // only delete groups, where prefix matches
+    GBDATA         *gb_main;
+    string          tree_name;
+    GroupTreeRoot  *tree_root;
+    Group_Action    action;              // create or delete ?
+    Species2Tip     species2tip;         // map speciesName -> leaf
+    ARB_ERROR       error;
+    ClusterPtr      bad_cluster;         // error occurred here (is set)
+    Group_Existing  existing;
+    unsigned        existing_count;      // counts existing groups
+    Group_NotFound  notfound;
+    double          matchRatio;          // needed identity of subtree and cluster
+    double          maxDist;             // max. Distance used for calculation
+    string          cluster_prefix;      // prefix for cluster name
+    string          cluster_suffix_def;  // suffix-definition for cluster name
+    GroupChanges    changes;             // count tree modifications
+    bool            del_match_prefixes;  // only delete groups, where prefix matches
 
     GroupTree *find_group_position(GroupTree *subtree, unsigned cluster_size);
     double get_max_distance() const { return maxDist; }
@@ -480,7 +484,7 @@ public:
 void GroupBuilder::load_tree() {
     di_assert(!tree_root);
 
-    tree_root = new ARB_seqtree_root(new AliView(gb_main), new GroupTreeNodeFactory, NULL, false);
+    tree_root = new GroupTreeRoot(new AliView(gb_main), NULL, false);
     error     = tree_root->loadFromDB(tree_name.c_str());
 
     if (error) {

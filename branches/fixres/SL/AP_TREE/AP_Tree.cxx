@@ -82,8 +82,8 @@ AP_rates::~AP_rates() { delete [] rates; }
  ************           AP_tree_root                    **********
  *****************************************************************************************/
 
-AP_tree_root::AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks)
-    : ARB_seqtree_root(aliView, nodeMaker_, seq_proto, add_delete_callbacks),
+AP_tree_root::AP_tree_root(AliView *aliView, AP_sequence *seq_proto, bool add_delete_callbacks)
+    : ARB_seqtree_root(aliView, seq_proto, add_delete_callbacks),
       root_changed_cb(NULL), root_changed_cd(NULL),
       node_deleted_cb(NULL), node_deleted_cd(NULL),
       gb_tree_gone(NULL),

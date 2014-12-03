@@ -31,12 +31,14 @@
 
 struct CompressionRoot : public TreeRoot {
     CompressionRoot();
+    TreeNode *makeNode() const OVERRIDE;
+    void destroyNode(TreeNode *node) const OVERRIDE;
 };
 
 class CompressionTree : public TreeNode {
 protected:
     ~CompressionTree() OVERRIDE {}
-    friend class CompressionTree_NodeFactory;
+    friend class CompressionRoot;
 public:
 
     // members initialized by init_indices_and_count_sons
@@ -54,12 +56,9 @@ public:
     DEFINE_TREE_ACCESSORS(CompressionRoot, CompressionTree);
 };
 
-class CompressionTree_NodeFactory : public RootedTreeNodeFactory {
-    TreeNode *makeNode(TreeRoot *root) const OVERRIDE { return new CompressionTree(DOWNCAST(CompressionRoot*, root)); }
-    void destroyNode(TreeRoot*, TreeNode *node) const OVERRIDE { delete DOWNCAST(CompressionTree*,node); }
-};
-
-CompressionRoot::CompressionRoot() : TreeRoot(new CompressionTree_NodeFactory, true) { }
+CompressionRoot::CompressionRoot() : TreeRoot(true) {}
+TreeNode *CompressionRoot::makeNode() const { return new CompressionTree(const_cast<CompressionRoot*>(this)); }
+void CompressionRoot::destroyNode(TreeNode *node) const { delete DOWNCAST(CompressionTree*,node); }
 
 struct Consensus {
     int            len;

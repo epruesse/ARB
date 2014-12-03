@@ -19,9 +19,8 @@
 
 TreeRoot::~TreeRoot() {
     deleteWithNodes = false; // avoid recursive call of ~TreeRoot
-    destroyNode(rootNode);
+    destroy(rootNode, this);
     rt_assert(!rootNode);
-    delete nodeMaker;
 }
 
 void TreeRoot::change_root(TreeNode *oldroot, TreeNode *newroot) {

@@ -41,17 +41,22 @@ struct NT_NODE;
 class  PartitionSize;
 class  PartRegistry;
 class  RB_INFO;
-class  SizeAwareNodeFactory;
 
 // -----------------------
 //      SizeAwareTree
+
+struct SizeAwareRoot : public TreeRoot {
+    inline SizeAwareRoot();
+    inline TreeNode *makeNode() const OVERRIDE;
+    inline void destroyNode(TreeNode *node) const OVERRIDE;
+};
 
 class SizeAwareTree : public TreeNode {
     // simple size-aware tree
     unsigned leaf_count;
 protected:
     ~SizeAwareTree() OVERRIDE {}
-    friend class SizeAwareNodeFactory; // allowed to call dtor
+    friend class SizeAwareRoot; // allowed to call dtor
 public:
     SizeAwareTree(TreeRoot *root) : TreeNode(root) {}
     unsigned get_leaf_count() const OVERRIDE {
@@ -69,10 +74,9 @@ public:
     }
 };
 
-struct SizeAwareNodeFactory : public RootedTreeNodeFactory {
-    TreeNode *makeNode(TreeRoot *root) const OVERRIDE { return new SizeAwareTree(root); }
-    void destroyNode(TreeRoot *, TreeNode *node) const OVERRIDE { delete DOWNCAST(SizeAwareTree*, node); }
-};
+SizeAwareRoot::SizeAwareRoot() : TreeRoot(true) {}
+inline TreeNode *SizeAwareRoot::makeNode() const { return new SizeAwareTree(const_cast<SizeAwareRoot*>(this)); }
+inline void SizeAwareRoot::destroyNode(TreeNode *node) const { delete DOWNCAST(SizeAwareTree*,node); }
 
 // -----------------------
 //      ConsensusTree

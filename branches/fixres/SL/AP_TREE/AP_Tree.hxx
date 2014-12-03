@@ -121,9 +121,13 @@ public:
     long      table_timer;
     AP_rates *rates;
 
-    AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks);
+    AP_tree_root(AliView *aliView, AP_sequence *seq_proto, bool add_delete_callbacks);
     ~AP_tree_root() OVERRIDE;
     DEFINE_TREE_ROOT_ACCESSORS(AP_tree_root, AP_tree);
+
+    // TreeRoot interface
+    inline TreeNode *makeNode() const OVERRIDE;
+    inline void destroyNode(TreeNode *node) const OVERRIDE;
 
     // ARB_seqtree_root interface
 
@@ -225,7 +229,6 @@ public:
     }
 };
 
-class AP_TreeNodeFactory;
 class AP_tree : public ARB_seqtree {
 public: // @@@ fix public members
     AP_tree_members   gr;
@@ -264,7 +267,7 @@ private:
 
 protected:
     ~AP_tree() OVERRIDE;
-    friend class AP_TreeNodeFactory; // allowed to call dtor
+    friend class AP_tree_root; // allowed to call dtor
 public:
     explicit AP_tree(AP_tree_root *troot)
         : ARB_seqtree(troot)
@@ -363,10 +366,9 @@ public:
     bool hasName(const char *Name) const { return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0; }
 };
 
-struct AP_TreeNodeFactory : public RootedTreeNodeFactory {
-    TreeNode *makeNode(TreeRoot *root) const OVERRIDE { return new AP_tree(DOWNCAST(AP_tree_root*, root)); }
-    void destroyNode(TreeRoot *, TreeNode *node) const OVERRIDE { delete DOWNCAST(AP_tree*, node); }
-};
+inline TreeNode *AP_tree_root::makeNode() const { return new AP_tree(const_cast<AP_tree_root*>(this)); }
+inline void AP_tree_root::destroyNode(TreeNode *node) const { delete DOWNCAST(AP_tree*, node); }
+
 
 #else
 #error AP_Tree.hxx included twice

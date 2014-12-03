@@ -37,7 +37,7 @@ static TreeNode *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
         for (size_t i = 0; !error && i<input_trees.size(); ++i) {
             char *warnings = NULL;
 
-            TreeRoot      *root = new TreeRoot(new SizeAwareNodeFactory, true); // will be deleted when tree gets deleted
+            TreeRoot      *root = new SizeAwareRoot; // will be deleted when tree gets deleted
             SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, TREE_load(input_trees[i], root, NULL, true, &warnings));
             if (!tree) {
                 error = GBS_global_string("Failed to load tree '%s' (Reason: %s)", input_trees[i], GB_await_error());
@@ -544,7 +544,7 @@ void TEST_CONSENSUS_TREE_functionality() {
     char *comment = NULL;
 
     SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, TREE_load("trees/bg_exp_p_GrpLen_0.tree",
-                                                             new TreeRoot(new SizeAwareNodeFactory, true),
+                                                             new SizeAwareRoot,
                                                              &comment, false, NULL));
     // -> ../UNIT_TESTER/run/trees/bg_exp_p_GrpLen_0.tree
 

@@ -46,25 +46,17 @@ enum TreeOrder { // contains bit values!
     BIG_BRANCHES_ALTERNATING = ORDER_BIG_TO_CENTER|ORDER_ALTERNATING,
 };
 
-struct RootedTreeNodeFactory { // @@@ rename -> TreeNodeFactory
-    virtual ~RootedTreeNodeFactory() {}
-    virtual TreeNode *makeNode(TreeRoot *root) const               = 0;
-    virtual void destroyNode(TreeRoot *root, TreeNode *node) const = 0;
-};
-
 #define DEFINE_READ_ACCESSORS(TYPE, ACCESS, MEMBER)     \
     TYPE ACCESS() { return MEMBER; }                    \
     const TYPE ACCESS() const { return MEMBER; }
 
 class TreeRoot : virtual Noncopyable {
-    TreeNode            *rootNode; // root node of the tree
-    RootedTreeNodeFactory *nodeMaker;
-    bool                   deleteWithNodes;
+    TreeNode *rootNode;            // root node of the tree
+    bool      deleteWithNodes;
 
 public:
-    TreeRoot(RootedTreeNodeFactory *nodeMaker_, bool deleteWithNodes_)
+    explicit TreeRoot(bool deleteWithNodes_)
         : rootNode(NULL),
-          nodeMaker(nodeMaker_),
           deleteWithNodes(deleteWithNodes_)
     {
         /*! Create a TreeRoot for a TreeNode.
@@ -96,9 +88,8 @@ public:
         }
     }
 
-    // TreeNodeFactory interface
-    inline TreeNode *makeNode() const;
-    inline void destroyNode(TreeNode *node) const;
+    virtual TreeNode *makeNode() const             = 0;
+    virtual void destroyNode(TreeNode *node) const = 0;
 
     DEFINE_READ_ACCESSORS(TreeNode*, get_root_node, rootNode);
 
@@ -388,13 +379,6 @@ inline void destroy(TreeNode *that, TreeRoot *root) {
     TreeNode::destroy(that, root);
 }
 
-inline TreeNode *TreeRoot::makeNode() const {
-    return nodeMaker->makeNode(const_cast<TreeRoot*>(this));
-}
-inline void TreeRoot::destroyNode(TreeNode *node) const {
-    nodeMaker->destroyNode(const_cast<TreeRoot*>(this), DOWNCAST(TreeNode*, node));
-}
-
 // ---------------------------------------------------------------------------------------
 //      macros to overwrite accessors in classes derived from TreeRoot or TreeNode:
 
@@ -446,15 +430,16 @@ inline void assert_tree_has_valid_structure(const TREE *tree, bool IF_ASSERTION_
 
 struct SimpleRoot : public TreeRoot {
     inline SimpleRoot();
+    inline TreeNode *makeNode() const OVERRIDE;
+    inline void destroyNode(TreeNode *node) const OVERRIDE;
 };
 
 class SimpleTree : public TreeNode {
 protected:
     ~SimpleTree() OVERRIDE {}
-    friend class SimpleTree_NodeFactory;
+    friend class SimpleRoot;
 public:
-    SimpleTree(SimpleRoot *sroot) : TreeNode(sroot) {
-    }
+    SimpleTree(SimpleRoot *sroot) : TreeNode(sroot) {}
 
     // TreeNode interface
     unsigned get_leaf_count() const OVERRIDE {
@@ -464,12 +449,9 @@ public:
     void compute_tree() OVERRIDE {}
 };
 
-class SimpleTree_NodeFactory : public RootedTreeNodeFactory {
-    TreeNode *makeNode(TreeRoot *root) const OVERRIDE { return new SimpleTree(DOWNCAST(SimpleRoot*, root)); }
-    void destroyNode(TreeRoot*, TreeNode *node) const OVERRIDE { delete DOWNCAST(SimpleTree*,node); }
-};
-
-SimpleRoot::SimpleRoot() : TreeRoot(new SimpleTree_NodeFactory, true) {}
+SimpleRoot::SimpleRoot() : TreeRoot(true) {}
+inline TreeNode *SimpleRoot::makeNode() const { return new SimpleTree(const_cast<SimpleRoot*>(this)); }
+inline void SimpleRoot::destroyNode(TreeNode *node) const { delete DOWNCAST(SimpleTree*,node); }
 
 // ----------------------
 //      ARB_edge_type

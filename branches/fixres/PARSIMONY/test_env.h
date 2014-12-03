@@ -29,7 +29,7 @@ struct fake_agt : public AWT_graphic_parsimony, virtual Noncopyable {
         fake_AW_init_color_groups(); // acts like no species has a color
         delete templ;
         templ = aliview->has_data() ? new SEQTYPE(aliview) : NULL;
-        AWT_graphic_tree::init(new AP_TreeNlenNodeFactory, aliview, templ, true, false);
+        AWT_graphic_parsimony::init(aliview, templ, true, false);
     }
 };
 

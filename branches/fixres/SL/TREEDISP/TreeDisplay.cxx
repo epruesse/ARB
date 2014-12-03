@@ -1658,12 +1658,12 @@ AWT_graphic_tree::~AWT_graphic_tree() {
     delete tree_static;
 }
 
-AP_tree_root *AWT_graphic_tree::create_tree_root(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs) {
-    return new AP_tree_root(aliview, nodeMaker_, seq_prototype, insert_delete_cbs);
+AP_tree_root *AWT_graphic_tree::create_tree_root(AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs) {
+    return new AP_tree_root(aliview, seq_prototype, insert_delete_cbs);
 }
 
-void AWT_graphic_tree::init(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs) {
-    tree_static      = create_tree_root(nodeMaker_, aliview, seq_prototype, insert_delete_cbs);
+void AWT_graphic_tree::init(AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs) {
+    tree_static      = create_tree_root(aliview, seq_prototype, insert_delete_cbs);
     td_assert(!insert_delete_cbs || link_to_database); // inserting delete callbacks w/o linking to DB has no effect!
     link_to_database = link_to_database_;
 }
@@ -2658,7 +2658,7 @@ void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, A
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
     AWT_graphic_tree *apdt = new AWT_graphic_tree(root, gb_main, map_viewer_cb);
-    apdt->init(new AP_TreeNodeFactory, new AliView(gb_main), NULL, true, false); // tree w/o sequence data
+    apdt->init(new AliView(gb_main), NULL, true, false); // tree w/o sequence data
     return apdt;
 }
 
@@ -2901,7 +2901,7 @@ void TEST_treeDisplay() {
     AW_init_color_group_defaults(NULL);
     fake_AW_init_color_groups();
 
-    agt.init(new AP_TreeNodeFactory, new AliView(gb_main), NULL, true, false);
+    agt.init(new AliView(gb_main), NULL, true, false);
 
     {
         GB_transaction ta(gb_main);

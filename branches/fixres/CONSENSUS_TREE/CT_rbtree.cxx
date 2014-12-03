@@ -163,7 +163,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
 
 SizeAwareTree *ConsensusTree::rb_gettree(const NT_NODE *tree) {
     // reconstruct GBT Tree from Ntree. Ntree is not destructed afterwards!
-    RB_INFO       *info   = rbtree(tree, new TreeRoot(new SizeAwareNodeFactory, true));
+    RB_INFO       *info   = rbtree(tree, new SizeAwareRoot);
     SizeAwareTree *satree = DOWNCAST(SizeAwareTree*, info->node);
     satree->announce_tree_constructed();
     ASSERT_VALID_TREE(satree);
