@@ -52,6 +52,10 @@ struct RootedTreeNodeFactory { // @@@ rename -> TreeNodeFactory
     virtual void destroyNode(TreeRoot *root, TreeNode *node) const = 0;
 };
 
+#define DEFINE_READ_ACCESSORS(TYPE, ACCESS, MEMBER)     \
+    TYPE ACCESS() { return MEMBER; }                    \
+    const TYPE ACCESS() const { return MEMBER; }
+
 class TreeRoot : virtual Noncopyable {
     TreeNode            *rootNode; // root node of the tree
     RootedTreeNodeFactory *nodeMaker;
@@ -96,16 +100,10 @@ public:
     inline TreeNode *makeNode() const;
     inline void destroyNode(TreeNode *node) const;
 
-    TreeNode *get_root_node() { return rootNode; }
-    const TreeNode *get_root_node() const { return rootNode; }
+    DEFINE_READ_ACCESSORS(TreeNode*, get_root_node, rootNode);
 
     ARB_edge find_innermost_edge();
 };
-
-// @@@ move DEFINE_READ_ACCESSORS to arbtools.h
-#define DEFINE_READ_ACCESSORS(TYPE, MEMBER)             \
-    TYPE get_##MEMBER() { return MEMBER; }              \
-    const TYPE get_##MEMBER() const { return MEMBER; }
 
 struct TreeNode : virtual Noncopyable {
     bool      is_leaf;
@@ -141,9 +139,9 @@ protected:
 
 public:
 
-    DEFINE_READ_ACCESSORS(TreeNode*, father);
-    DEFINE_READ_ACCESSORS(TreeNode*, leftson);
-    DEFINE_READ_ACCESSORS(TreeNode*, rightson);
+    DEFINE_READ_ACCESSORS(TreeNode*, get_father,   father);
+    DEFINE_READ_ACCESSORS(TreeNode*, get_leftson,  leftson);
+    DEFINE_READ_ACCESSORS(TreeNode*, get_rightson, rightson);
 
     bool is_son_of(const TreeNode *Father) const {
         return father == Father &&
