@@ -127,7 +127,7 @@ public:
 
     // ARB_seqtree_root interface
 
-    virtual void change_root(RootedTree *old, RootedTree *newroot) OVERRIDE;
+    virtual void change_root(TreeNode *old, TreeNode *newroot) OVERRIDE;
 
     virtual GB_ERROR loadFromDB(const char *name) OVERRIDE;
     virtual GB_ERROR saveToDB() OVERRIDE;
@@ -364,8 +364,8 @@ public:
 };
 
 struct AP_TreeNodeFactory : public RootedTreeNodeFactory {
-    RootedTree *makeNode(TreeRoot *root) const OVERRIDE { return new AP_tree(DOWNCAST(AP_tree_root*, root)); }
-    void destroyNode(TreeRoot *, RootedTree *node) const OVERRIDE { delete DOWNCAST(AP_tree*, node); }
+    TreeNode *makeNode(TreeRoot *root) const OVERRIDE { return new AP_tree(DOWNCAST(AP_tree_root*, root)); }
+    void destroyNode(TreeRoot *, TreeNode *node) const OVERRIDE { delete DOWNCAST(AP_tree*, node); }
 };
 
 #else

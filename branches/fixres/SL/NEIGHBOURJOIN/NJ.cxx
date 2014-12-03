@@ -207,13 +207,13 @@ AP_FLOAT PH_NEIGHBOURJOINING::get_dist(long i, long j)
     return dist_matrix[j][i].val;
 }
 
-GBT_TREE *neighbourjoining(const char *const *names, const AP_smatrix& smatrix, TreeRoot *troot) { // @@@ pass ConstStrArray
-    // structure_size >= sizeof(GBT_TREE);
+TreeNode *neighbourjoining(const char *const *names, const AP_smatrix& smatrix, TreeRoot *troot) { // @@@ pass ConstStrArray
+    // structure_size >= sizeof(TreeNode);
     // lower triangular matrix
     // size: size of matrix
 
     PH_NEIGHBOURJOINING   nj(smatrix);
-    GBT_TREE            **nodes = (GBT_TREE **)calloc(sizeof(GBT_TREE *), smatrix.size());
+    TreeNode            **nodes = (TreeNode **)calloc(sizeof(TreeNode *), smatrix.size());
 
     for (size_t i=0; i<smatrix.size(); i++) {
         nodes[i] = troot->makeNode();
@@ -228,7 +228,7 @@ GBT_TREE *neighbourjoining(const char *const *names, const AP_smatrix& smatrix, 
         AP_FLOAT ll, rl;
         nj.join_nodes(a, b, ll, rl);
 
-        GBT_TREE *father = troot->makeNode();
+        TreeNode *father = troot->makeNode();
         father->leftson  = nodes[a];
         father->rightson = nodes[b];
         father->leftlen  = ll;
@@ -247,7 +247,7 @@ GBT_TREE *neighbourjoining(const char *const *names, const AP_smatrix& smatrix, 
         AP_FLOAT ll = dist*0.5;
         AP_FLOAT rl = dist*0.5;
 
-        GBT_TREE *father    = troot->makeNode();
+        TreeNode *father    = troot->makeNode();
 
         father->leftson  = nodes[a];
         father->rightson = nodes[b];
@@ -359,7 +359,7 @@ void TEST_neighbourjoining() {
 
         }
 
-        GBT_TREE *tree = neighbourjoining(names, sym_matrix, new SimpleRoot);
+        TreeNode *tree = neighbourjoining(names, sym_matrix, new SimpleRoot);
 
         switch (test) {
 #if defined(TEST_FORWARD_ORDER)

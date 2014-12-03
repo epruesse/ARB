@@ -1312,7 +1312,7 @@ namespace arb_test {
 #ifdef TREENODE_H
 
 namespace arb_test {
-    inline match_expectation expect_newick_equals(NewickFormat format, const GBT_TREE *tree, const char *expected_newick) {
+    inline match_expectation expect_newick_equals(NewickFormat format, const TreeNode *tree, const char *expected_newick) {
         char              *newick   = GBT_tree_2_newick(tree, format, false);
         match_expectation  expected = that(newick).is_equal_to(expected_newick);
         free(newick);
@@ -1321,7 +1321,7 @@ namespace arb_test {
     inline match_expectation saved_newick_equals(NewickFormat format, GBDATA *gb_main, const char *treename, const char *expected_newick) {
         expectation_group  expected;
         GB_transaction     ta(gb_main);
-        GBT_TREE          *tree = GBT_read_tree(gb_main, treename, new SimpleRoot);
+        TreeNode          *tree = GBT_read_tree(gb_main, treename, new SimpleRoot);
 
         expected.add(that(tree).does_differ_from_NULL());
         if (tree) {

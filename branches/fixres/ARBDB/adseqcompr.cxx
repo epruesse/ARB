@@ -33,7 +33,7 @@ struct CompressionRoot : public TreeRoot {
     CompressionRoot();
 };
 
-class CompressionTree : public RootedTree {
+class CompressionTree : public TreeNode {
 protected:
     ~CompressionTree() OVERRIDE {}
     friend class CompressionTree_NodeFactory;
@@ -43,7 +43,7 @@ public:
     int index; // master(inner nodes) or sequence(leaf nodes) index
     int sons;  // sons with sequence or masters (in subtree)
 
-    CompressionTree(CompressionRoot *croot) : RootedTree(croot) {}
+    CompressionTree(CompressionRoot *croot) : TreeNode(croot) {}
 
     unsigned get_leaf_count() const OVERRIDE {
         gb_assert(0); // @@@ impl
@@ -55,8 +55,8 @@ public:
 };
 
 class CompressionTree_NodeFactory : public RootedTreeNodeFactory {
-    RootedTree *makeNode(TreeRoot *root) const OVERRIDE { return new CompressionTree(DOWNCAST(CompressionRoot*, root)); }
-    void destroyNode(TreeRoot*, RootedTree *node) const OVERRIDE { delete DOWNCAST(CompressionTree*,node); }
+    TreeNode *makeNode(TreeRoot *root) const OVERRIDE { return new CompressionTree(DOWNCAST(CompressionRoot*, root)); }
+    void destroyNode(TreeRoot*, TreeNode *node) const OVERRIDE { delete DOWNCAST(CompressionTree*,node); }
 };
 
 CompressionRoot::CompressionRoot() : TreeRoot(new CompressionTree_NodeFactory, true) { }

@@ -93,7 +93,7 @@ static int resort_data_by_customOrder(const void *v1, const void *v2, void *cd_s
 static GBDATA **gb_resort_data_list;
 static long    gb_resort_data_count;
 
-static void NT_resort_data_base_by_tree(GBT_TREE *tree, GBDATA *gb_species_data) {
+static void NT_resort_data_base_by_tree(TreeNode *tree, GBDATA *gb_species_data) {
     if (tree) {
         if (tree->is_leaf) {
             if (tree->gb_node) {
@@ -108,7 +108,7 @@ static void NT_resort_data_base_by_tree(GBT_TREE *tree, GBDATA *gb_species_data)
 }
 
 
-static GB_ERROR NT_resort_data_base(GBT_TREE *tree, const customCriterion *sortBy) {
+static GB_ERROR NT_resort_data_base(TreeNode *tree, const customCriterion *sortBy) {
     nt_assert(contradicted(tree, sortBy));
 
     GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
@@ -136,7 +136,7 @@ static GB_ERROR NT_resort_data_base(GBT_TREE *tree, const customCriterion *sortB
 void NT_resort_data_by_phylogeny(AW_window *, AW_CL cl_ntw, AW_CL) {
     arb_progress  progress("Sorting data");
     GB_ERROR      error = 0;
-    GBT_TREE     *tree  = NT_get_tree_root_of_canvas((AWT_canvas*)cl_ntw);
+    TreeNode     *tree  = NT_get_tree_root_of_canvas((AWT_canvas*)cl_ntw);
 
     if (!tree)  error = "Please select/build a tree first";
     if (!error) error = NT_resort_data_base(tree, NULL);

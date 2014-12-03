@@ -15,7 +15,7 @@
 #include <ctime>
 
 
-static void add_bootstrap(GBT_TREE *node, double hundred) {
+static void add_bootstrap(TreeNode *node, double hundred) {
     // add_bootstrap interprets the length of the branches as bootstrap value
     // (this is needed by Phylip DNAPARS/PROTPARS with bootstrapping)
     //
@@ -202,7 +202,7 @@ int main(int argc, char **argv) {
 
         char     *comment_from_file     = 0;
         char     *comment_from_treefile = 0;
-        GBT_TREE *tree                  = 0;
+        TreeNode *tree                  = 0;
 
         if (!error) {
             if (param.commentFile) {

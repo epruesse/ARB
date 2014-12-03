@@ -46,14 +46,14 @@ class  SizeAwareNodeFactory;
 // -----------------------
 //      SizeAwareTree
 
-class SizeAwareTree : public RootedTree {
+class SizeAwareTree : public TreeNode {
     // simple size-aware tree
     unsigned leaf_count;
 protected:
     ~SizeAwareTree() OVERRIDE {}
     friend class SizeAwareNodeFactory; // allowed to call dtor
 public:
-    SizeAwareTree(TreeRoot *root) : RootedTree(root) {}
+    SizeAwareTree(TreeRoot *root) : TreeNode(root) {}
     unsigned get_leaf_count() const OVERRIDE {
         return leaf_count;
     }
@@ -70,8 +70,8 @@ public:
 };
 
 struct SizeAwareNodeFactory : public RootedTreeNodeFactory {
-    RootedTree *makeNode(TreeRoot *root) const OVERRIDE { return new SizeAwareTree(root); }
-    void destroyNode(TreeRoot *, RootedTree *node) const OVERRIDE { delete DOWNCAST(SizeAwareTree*, node); }
+    TreeNode *makeNode(TreeRoot *root) const OVERRIDE { return new SizeAwareTree(root); }
+    void destroyNode(TreeRoot *, TreeNode *node) const OVERRIDE { delete DOWNCAST(SizeAwareTree*, node); }
 };
 
 // -----------------------
@@ -87,11 +87,11 @@ class ConsensusTree : virtual Noncopyable {
 
     arb_progress *insertProgress;
 
-    PART *deconstruct_full_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight);
-    PART *deconstruct_partial_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight, const PART *partialTree);
+    PART *deconstruct_full_subtree(const TreeNode *tree, const GBT_LEN& len, const double& weight);
+    PART *deconstruct_partial_subtree(const TreeNode *tree, const GBT_LEN& len, const double& weight, const PART *partialTree);
 
-    void deconstruct_full_rootnode(const GBT_TREE *tree, const double& weight);
-    void deconstruct_partial_rootnode(const GBT_TREE *tree, const double& weight, const PART *partialTree);
+    void deconstruct_full_rootnode(const TreeNode *tree, const double& weight);
+    void deconstruct_partial_rootnode(const TreeNode *tree, const double& weight, const PART *partialTree);
 
     int get_species_index(const char *name) const {
         int idx = GBS_read_hash(Name_hash, name);
@@ -106,8 +106,8 @@ class ConsensusTree : virtual Noncopyable {
     struct RB_INFO *rbtree(const NT_NODE *tree, TreeRoot *root);
     SizeAwareTree  *rb_gettree(const NT_NODE *tree);
 
-    void add_tree_to_PART(const GBT_TREE *tree, PART& part) const;
-    PART *create_tree_PART(const GBT_TREE *tree, const double& weight) const;
+    void add_tree_to_PART(const TreeNode *tree, PART& part) const;
+    PART *create_tree_PART(const TreeNode *tree, const double& weight) const;
 
     void inc_insert_progress() { if (insertProgress) ++(*insertProgress); }
 
@@ -115,7 +115,7 @@ public:
     ConsensusTree(const CharPtrArray& names_);
     ~ConsensusTree();
 
-    __ATTR__USERESULT GB_ERROR insert_tree_weighted(const GBT_TREE *tree, int leafs, double weight, bool provideProgress);
+    __ATTR__USERESULT GB_ERROR insert_tree_weighted(const TreeNode *tree, int leafs, double weight, bool provideProgress);
 
     SizeAwareTree *get_consensus_tree(GB_ERROR& error);
 };

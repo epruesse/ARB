@@ -105,7 +105,7 @@ struct ARB_tree_info {
 };
 
 
-class ARB_seqtree : public RootedTree { // derived from Noncopyable
+class ARB_seqtree : public TreeNode { // derived from Noncopyable
     friend GB_ERROR ARB_seqtree_root::loadFromDB(const char *name);
     friend GB_ERROR ARB_seqtree_root::linkToDB(int *zombies, int *duplicates);
     friend void     ARB_seqtree_root::unlinkFromDB();
@@ -136,7 +136,7 @@ protected:
 
 public:
     ARB_seqtree(ARB_seqtree_root *root)
-        : RootedTree(root),
+        : TreeNode(root),
           seq(NULL)
     {}
 

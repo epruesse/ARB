@@ -339,10 +339,10 @@ public:
 };
 
 class GroupTreeNodeFactory : public RootedTreeNodeFactory {
-    RootedTree *makeNode(TreeRoot *root) const OVERRIDE {
+    TreeNode *makeNode(TreeRoot *root) const OVERRIDE {
         return new GroupTree(DOWNCAST(ARB_seqtree_root*, root));
     }
-    void destroyNode(TreeRoot *, RootedTree *node) const OVERRIDE {
+    void destroyNode(TreeRoot *, TreeNode *node) const OVERRIDE {
         delete DOWNCAST(GroupTree*, node);
     }
 };

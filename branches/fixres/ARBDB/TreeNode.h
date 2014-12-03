@@ -29,7 +29,7 @@
 #endif
 
 class TreeRoot;
-class RootedTree;
+class TreeNode;
 class ARB_edge;
 
 #define DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeType)        \
@@ -45,7 +45,7 @@ struct ELIMtree : virtual Noncopyable {
     char     *name;
 
 private:
-    friend class RootedTree;
+    friend class TreeNode;
 
     char *remark_branch; // remark_branch normally contains some bootstrap value in format 'xx%'
                          // if you store other info there, please make sure that this info does not start with digits!!
@@ -193,20 +193,20 @@ public:
 
 inline void destroy(ELIMtree *that) { ELIMtree::destroy(that); }
 
-struct TreeNodeFactory { // @@@ move into RootedTree?
+struct TreeNodeFactory { // @@@ move into TreeNode?
     virtual ~TreeNodeFactory() {}
-    virtual GBT_TREE *makeNode() const             = 0;
-    virtual void destroyNode(GBT_TREE *node) const = 0;
+    virtual TreeNode *makeNode() const             = 0;
+    virtual void destroyNode(TreeNode *node) const = 0;
 };
 
 struct RootedTreeNodeFactory { // acts similar to TreeNodeFactory for trees with root
     virtual ~RootedTreeNodeFactory() {}
-    virtual RootedTree *makeNode(TreeRoot *root) const               = 0;
-    virtual void destroyNode(TreeRoot *root, RootedTree *node) const = 0;
+    virtual TreeNode *makeNode(TreeRoot *root) const               = 0;
+    virtual void destroyNode(TreeRoot *root, TreeNode *node) const = 0;
 };
 
 class TreeRoot : public TreeNodeFactory, virtual Noncopyable {
-    RootedTree            *rootNode; // root node of the tree
+    TreeNode            *rootNode; // root node of the tree
     RootedTreeNodeFactory *nodeMaker;
     bool                   deleteWithNodes;
 
@@ -216,7 +216,7 @@ public:
           nodeMaker(nodeMaker_),
           deleteWithNodes(deleteWithNodes_)
     {
-        /*! Create a TreeRoot for a RootedTree.
+        /*! Create a TreeRoot for a TreeNode.
          * Purpose:
          * - act as TreeNodeFactory
          * - place to store the current rootNode
@@ -229,14 +229,14 @@ public:
          * There are two common use-cases:
          * 1. TreeRoot is owned by some other object/scope
          *    - pass false for deleteWithNodes_
-         *    - you may or may not destroy (parts of) the RootedTree manually
-         * 2. TreeRoot is owned by the RootedTree
+         *    - you may or may not destroy (parts of) the TreeNode manually
+         * 2. TreeRoot is owned by the TreeNode
          *    - pass true for deleteWithNodes_
          *    - when the rootNode gets destroyed, the TreeRoot will be destroyed as well
          */
     }
     virtual ~TreeRoot();
-    virtual void change_root(RootedTree *old, RootedTree *newroot);
+    virtual void change_root(TreeNode *old, TreeNode *newroot);
 
     void delete_by_node() {
         if (deleteWithNodes) {
@@ -246,11 +246,11 @@ public:
     }
 
     // TreeNodeFactory interface
-    inline GBT_TREE *makeNode() const OVERRIDE;
-    inline void destroyNode(GBT_TREE *node) const OVERRIDE;
+    inline TreeNode *makeNode() const OVERRIDE;
+    inline void destroyNode(TreeNode *node) const OVERRIDE;
 
-    RootedTree *get_root_node() { return rootNode; }
-    const RootedTree *get_root_node() const { return rootNode; }
+    TreeNode *get_root_node() { return rootNode; }
+    const TreeNode *get_root_node() const { return rootNode; }
 
     ARB_edge find_innermost_edge();
 };
@@ -269,8 +269,8 @@ enum TreeOrder { // contains bit values!
     BIG_BRANCHES_ALTERNATING = ORDER_BIG_TO_CENTER|ORDER_ALTERNATING,
 };
 
-class RootedTree : public ELIMtree { // derived from Noncopyable
-    friend void TreeRoot::change_root(RootedTree *old, RootedTree *newroot);
+class TreeNode : public ELIMtree { // derived from Noncopyable
+    friend void TreeRoot::change_root(TreeNode *old, TreeNode *newroot);
 
     TreeRoot *tree_root;
 
@@ -286,7 +286,7 @@ protected:
         //! return true for root-node and its sons
         return !father || !father->father;
     }
-    ~RootedTree() OVERRIDE {
+    ~TreeNode() OVERRIDE {
         if (tree_root) {
             rt_assert(tree_root->get_root_node() == this); // you may only free the root-node or unlinked nodes (i.e. such with tree_root==NULL)
 
@@ -298,7 +298,7 @@ protected:
     void destroy() OVERRIDE {
         rt_assert(this);
         TreeRoot *myRoot = get_tree_root();
-        rt_assert(myRoot); // if this fails, you need to use destroy(TreeRoot*), i.e. destroy(RootedTree*, TreeRoot*)
+        rt_assert(myRoot); // if this fails, you need to use destroy(TreeRoot*), i.e. destroy(TreeNode*, TreeRoot*)
         myRoot->destroyNode(this);
     }
     void destroy(TreeRoot *viaRoot) {
@@ -311,14 +311,14 @@ protected:
     }
 
 public:
-    RootedTree(TreeRoot *root)
+    TreeNode(TreeRoot *root)
         : tree_root(root)
     {}
-    static void destroy(RootedTree *that, TreeRoot *root) {
+    static void destroy(TreeNode *that, TreeRoot *root) {
         if (that) that->destroy(root);
     }
 
-    RootedTree *fixDeletedSon(); // @@@ review (design)
+    TreeNode *fixDeletedSon(); // @@@ review (design)
 
     void announce_tree_constructed() OVERRIDE {
         ELIMtree::announce_tree_constructed();
@@ -328,31 +328,31 @@ public:
     virtual unsigned get_leaf_count() const = 0;
     virtual void compute_tree()             = 0;
 
-    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(RootedTree);
+    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeNode);
 
     void forget_origin() { set_tree_root(NULL); }
 
     TreeRoot *get_tree_root() const { return tree_root; }
 
-    const RootedTree *get_root_node() const {
+    const TreeNode *get_root_node() const {
         if (!tree_root) return NULL; // nodes removed from tree have no root-node
 
-        const RootedTree *root = tree_root->get_root_node();
+        const TreeNode *root = tree_root->get_root_node();
         rt_assert(is_inside(root)); // this is not in tree - behavior of get_root_node() changed!
         return root;
     }
-    RootedTree *get_root_node() { return const_cast<RootedTree*>(const_cast<const RootedTree*>(this)->get_root_node()); }
+    TreeNode *get_root_node() { return const_cast<TreeNode*>(const_cast<const TreeNode*>(this)->get_root_node()); }
 
     bool is_root_node() const { return get_root_node() == this; }
     virtual void set_root();
 
-    RootedTree *get_brother() {
+    TreeNode *get_brother() {
         rt_assert(!is_root_node()); // root node has no brother
         rt_assert(father);          // this is a removed node (not root, but no father)
         return is_leftson() ? get_father()->get_rightson() : get_father()->get_leftson();
     }
-    const RootedTree *get_brother() const {
-        return const_cast<const RootedTree*>(const_cast<RootedTree*>(this)->get_brother());
+    const TreeNode *get_brother() const {
+        return const_cast<const TreeNode*>(const_cast<TreeNode*>(this)->get_brother());
     }
 
     bool is_named_group() const {
@@ -373,7 +373,7 @@ public:
     void rotate_subtree(); // flip whole subtree ( = recursive swap_sons())
     void reorder_tree(TreeOrder mode);
 
-    RootedTree *findLeafNamed(const char *wantedName);
+    TreeNode *findLeafNamed(const char *wantedName);
 
     GBT_LEN reset_length_and_bootstrap() {
         //! remove remark + zero but return branchlen
@@ -408,31 +408,31 @@ public:
 #endif // PROVIDE_TREE_STRUCTURE_TESTS
 };
 
-inline void destroy(RootedTree *that, TreeRoot *root) {
-    RootedTree::destroy(that, root);
+inline void destroy(TreeNode *that, TreeRoot *root) {
+    TreeNode::destroy(that, root);
 }
 
-inline GBT_TREE *TreeRoot::makeNode() const {
+inline TreeNode *TreeRoot::makeNode() const {
     return nodeMaker->makeNode(const_cast<TreeRoot*>(this));
 }
-inline void TreeRoot::destroyNode(GBT_TREE *node) const {
-    nodeMaker->destroyNode(const_cast<TreeRoot*>(this), DOWNCAST(RootedTree*, node));
+inline void TreeRoot::destroyNode(TreeNode *node) const {
+    nodeMaker->destroyNode(const_cast<TreeRoot*>(this), DOWNCAST(TreeNode*, node));
 }
 
 // ---------------------------------------------------------------------------------------
-//      macros to overwrite accessors in classes derived from TreeRoot or RootedTree:
+//      macros to overwrite accessors in classes derived from TreeRoot or TreeNode:
 
 #define DEFINE_TREE_ROOT_ACCESSORS(RootType, TreeType)                                  \
     DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, TreeRoot::get_root_node())
 
 #define DEFINE_TREE_RELATIVES_ACCESSORS(TreeType)                                       \
     DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeType);                                   \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_brother, RootedTree::get_brother());        \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, RootedTree::get_root_node());    \
-    TreeType *findLeafNamed(const char *wantedName) { return DOWNCAST(TreeType*, RootedTree::findLeafNamed(wantedName)); }
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_brother, TreeNode::get_brother());        \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, TreeNode::get_root_node());    \
+    TreeType *findLeafNamed(const char *wantedName) { return DOWNCAST(TreeType*, TreeNode::findLeafNamed(wantedName)); }
 
 #define DEFINE_TREE_ACCESSORS(RootType, TreeType)                                       \
-    DEFINE_DOWNCAST_ACCESSORS(RootType, get_tree_root, RootedTree::get_tree_root());    \
+    DEFINE_DOWNCAST_ACCESSORS(RootType, get_tree_root, TreeNode::get_tree_root());    \
     DEFINE_TREE_RELATIVES_ACCESSORS(TreeType)
 
 
@@ -470,15 +470,15 @@ struct SimpleRoot : public TreeRoot {
     inline SimpleRoot();
 };
 
-class SimpleTree : public RootedTree {
+class SimpleTree : public TreeNode {
 protected:
     ~SimpleTree() OVERRIDE {}
     friend class SimpleTree_NodeFactory;
 public:
-    SimpleTree(SimpleRoot *sroot) : RootedTree(sroot) {
+    SimpleTree(SimpleRoot *sroot) : TreeNode(sroot) {
     }
 
-    // RootedTree interface
+    // TreeNode interface
     unsigned get_leaf_count() const OVERRIDE {
         rt_assert(0); // @@@ impl?
         return 0;
@@ -487,8 +487,8 @@ public:
 };
 
 class SimpleTree_NodeFactory : public RootedTreeNodeFactory {
-    RootedTree *makeNode(TreeRoot *root) const OVERRIDE { return new SimpleTree(DOWNCAST(SimpleRoot*, root)); }
-    void destroyNode(TreeRoot*, RootedTree *node) const OVERRIDE { delete DOWNCAST(SimpleTree*,node); }
+    TreeNode *makeNode(TreeRoot *root) const OVERRIDE { return new SimpleTree(DOWNCAST(SimpleRoot*, root)); }
+    void destroyNode(TreeRoot*, TreeNode *node) const OVERRIDE { delete DOWNCAST(SimpleTree*,node); }
 };
 
 SimpleRoot::SimpleRoot() : TreeRoot(new SimpleTree_NodeFactory, true) {}
@@ -505,7 +505,7 @@ enum ARB_edge_type {
 class ARB_edge {
     // ARB_edge is a directional edge between two non-root-nodes of the same tree
 
-    RootedTree    *from, *to;
+    TreeNode    *from, *to;
     ARB_edge_type  type;
 
     ARB_edge_type detectType() const {
@@ -530,10 +530,10 @@ class ARB_edge {
         return adjacent_distance();
     }
 
-    void virtually_add_or_distribute_length_forward(GBT_LEN len, RootedTree::LengthCollector& collect) const;
-    void virtually_distribute_length_forward(GBT_LEN len, RootedTree::LengthCollector& collect) const;
+    void virtually_add_or_distribute_length_forward(GBT_LEN len, TreeNode::LengthCollector& collect) const;
+    void virtually_distribute_length_forward(GBT_LEN len, TreeNode::LengthCollector& collect) const;
 public:
-    void virtually_distribute_length(GBT_LEN len, RootedTree::LengthCollector& collect) const; // @@@ hm public :(
+    void virtually_distribute_length(GBT_LEN len, TreeNode::LengthCollector& collect) const; // @@@ hm public :(
 private:
 
 #if defined(UNIT_TESTS) // UT_DIFF
@@ -541,12 +541,12 @@ private:
 #endif
 
 public:
-    ARB_edge(RootedTree *From, RootedTree *To)
+    ARB_edge(TreeNode *From, TreeNode *To)
         : from(From)
         , to(To)
         , type(detectType())
     {}
-    ARB_edge(RootedTree *From, RootedTree *To, ARB_edge_type Type)
+    ARB_edge(TreeNode *From, TreeNode *To, ARB_edge_type Type)
         : from(From)
         , to(To)
         , type(Type)
@@ -562,11 +562,11 @@ public:
     }
 
     ARB_edge_type get_type() const { return type; }
-    RootedTree *source() const { return from; }
-    RootedTree *dest() const { return to; }
+    TreeNode *source() const { return from; }
+    TreeNode *dest() const { return to; }
 
-    RootedTree *son() const  { return type == EDGE_TO_ROOT ? from : to; }
-    RootedTree *other() const  { return type == EDGE_TO_ROOT ? to : from; }
+    TreeNode *son() const  { return type == EDGE_TO_ROOT ? from : to; }
+    TreeNode *other() const  { return type == EDGE_TO_ROOT ? to : from; }
 
     GBT_LEN length() const {
         if (type == ROOT_EDGE) return from->get_branchlength() + to->get_branchlength();
@@ -598,7 +598,7 @@ public:
         if (type == EDGE_TO_ROOT) {
             rt_assert(from->is_son_of(to));
             if (from->is_rightson()) return ARB_edge(to, to->get_leftson(), EDGE_TO_LEAF);
-            RootedTree *father = to->get_father();
+            TreeNode *father = to->get_father();
             if (father->is_root_node()) return ARB_edge(to, to->get_brother(), ROOT_EDGE);
             return ARB_edge(to, father, EDGE_TO_ROOT);
         }
@@ -624,11 +624,11 @@ public:
     void multifurcate();
 };
 
-inline ARB_edge parentEdge(RootedTree *son) {
+inline ARB_edge parentEdge(TreeNode *son) {
     /*! returns edge to father (or to brother for sons of root).
      * Cannot be called with root-node (but can be called with each end of any ARB_edge)
      */
-    RootedTree *father = son->get_father();
+    TreeNode *father = son->get_father();
     rt_assert(father);
 
     if (father->is_root_node()) return ARB_edge(son, son->get_brother(), ROOT_EDGE);

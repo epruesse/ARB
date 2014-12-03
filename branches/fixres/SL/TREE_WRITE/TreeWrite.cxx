@@ -96,7 +96,7 @@ inline void indentTo(int indent, FILE *out) {
     }
 }
 
-static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *tree, const char *tree_name,
+static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, TreeNode *tree, const char *tree_name,
                                           bool pretty, int indent,
                                           const TREE_node_text_gen *node_gen, bool save_branchlengths,
                                           bool save_bootstraps, bool save_groupnames, TREE_node_quoting qmode)
@@ -161,7 +161,7 @@ inline string buildNodeIdentifier(const string& parent_id, int& son_counter) {
     return GBS_global_string("%s.%i", parent_id.c_str(), son_counter);
 }
 
-static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, double my_length, const char *tree_name,
+static const char *export_tree_node_print_xml(GBDATA *gb_main, TreeNode *tree, double my_length, const char *tree_name,
                                               const TREE_node_text_gen *node_gen, bool skip_folded, const string& parent_id, int& parent_son_counter) {
     const char *error = 0;
 
@@ -255,7 +255,7 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
     else {
         GB_transaction ta(gb_main);
 
-        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, new SimpleRoot);
+        TreeNode *tree   = GBT_read_tree(gb_main, tree_name, new SimpleRoot);
         if (!tree) error = GB_await_error();
         else {
             error = GBT_link_tree(tree, gb_main, true, 0, 0);
@@ -333,7 +333,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, const char *tree_name, const TREE_no
     else {
         GB_transaction ta(gb_main);
 
-        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, new SimpleRoot);
+        TreeNode *tree   = GBT_read_tree(gb_main, tree_name, new SimpleRoot);
         if (!tree) error = GB_await_error();
         else {
             error = GBT_link_tree(tree, gb_main, true, 0, 0);
@@ -386,7 +386,7 @@ static void export_tree_node_print_remove(char *str) {
     }
 }
 
-static void export_tree_rek(GBT_TREE *tree, FILE *out, bool export_branchlens, bool dquot) {
+static void export_tree_rek(TreeNode *tree, FILE *out, bool export_branchlens, bool dquot) {
     if (tree->is_leaf) {
         export_tree_node_print_remove(tree->name);
         fprintf(out,
@@ -413,9 +413,9 @@ static void export_tree_rek(GBT_TREE *tree, FILE *out, bool export_branchlens, b
 // need some additional parameters (no comment, trifurcation)
 #endif
 
-GB_ERROR TREE_export_tree(GBDATA *, FILE *out, GBT_TREE *tree, bool triple_root, bool export_branchlens, bool dquot) {
+GB_ERROR TREE_export_tree(GBDATA *, FILE *out, TreeNode *tree, bool triple_root, bool export_branchlens, bool dquot) {
     if (triple_root) {
-        GBT_TREE *one, *two, *three;
+        TreeNode *one, *two, *three;
         if (tree->is_leaf) {
             return GB_export_error("Tree is two small, minimum 3 nodes");
         }

@@ -11,8 +11,8 @@
 #include "CT_hash.hxx"
 #include "CT_ctree.hxx"
 
-PART *ConsensusTree::deconstruct_full_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight) {
-    /*! deconstruct GBT_TREE and register found partitions.
+PART *ConsensusTree::deconstruct_full_subtree(const TreeNode *tree, const GBT_LEN& len, const double& weight) {
+    /*! deconstruct TreeNode and register found partitions.
      * @param len length of branch towards subtree 'tree'
      * @param weight summarized for indentical branches (from different trees)
      */
@@ -40,8 +40,8 @@ PART *ConsensusTree::deconstruct_full_subtree(const GBT_TREE *tree, const GBT_LE
     return ptree;
 }
 
-void ConsensusTree::deconstruct_full_rootnode(const GBT_TREE *tree, const double& weight) {
-    /*! deconstruct GBT_TREE and register found partitions.
+void ConsensusTree::deconstruct_full_rootnode(const TreeNode *tree, const double& weight) {
+    /*! deconstruct TreeNode and register found partitions.
      * @param weight summarized for indentical branches (from different trees)
      */
 
@@ -62,8 +62,8 @@ void ConsensusTree::deconstruct_full_rootnode(const GBT_TREE *tree, const double
     inc_insert_progress();
 }
 
-PART *ConsensusTree::deconstruct_partial_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight, const PART *partialTree) {
-    /*! deconstruct partial GBT_TREE
+PART *ConsensusTree::deconstruct_partial_subtree(const TreeNode *tree, const GBT_LEN& len, const double& weight, const PART *partialTree) {
+    /*! deconstruct partial TreeNode
      *
      * similar to deconstruct_full_subtree(),
      * but the set of missing species is added at each branch.
@@ -92,8 +92,8 @@ PART *ConsensusTree::deconstruct_partial_subtree(const GBT_TREE *tree, const GBT
     return ptree;
 }
 
-void ConsensusTree::deconstruct_partial_rootnode(const GBT_TREE *tree, const double& weight, const PART *partialTree) {
-    /*! deconstruct partial GBT_TREE
+void ConsensusTree::deconstruct_partial_rootnode(const TreeNode *tree, const double& weight, const PART *partialTree) {
+    /*! deconstruct partial TreeNode
      *
      * similar to deconstruct_full_rootnode(),
      * but the set of missing species is added at each branch.
@@ -119,7 +119,7 @@ void ConsensusTree::deconstruct_partial_rootnode(const GBT_TREE *tree, const dou
     inc_insert_progress();
 }
 
-void ConsensusTree::add_tree_to_PART(const GBT_TREE *tree, PART& part) const {
+void ConsensusTree::add_tree_to_PART(const TreeNode *tree, PART& part) const {
     if (tree->is_leaf) {
         part.setbit(get_species_index(tree->name));
     }
@@ -129,7 +129,7 @@ void ConsensusTree::add_tree_to_PART(const GBT_TREE *tree, PART& part) const {
     }
 }
 
-PART *ConsensusTree::create_tree_PART(const GBT_TREE *tree, const double& weight) const {
+PART *ConsensusTree::create_tree_PART(const TreeNode *tree, const double& weight) const {
     PART *part = new PART(size, weight);
     if (part) add_tree_to_PART(tree, *part);
     return part;

@@ -133,7 +133,7 @@ GB_ERROR GBT_abort_rename_session() {
 
 static const char *currentTreeName = 0;
 
-static GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index) {
+static GB_ERROR gbt_rename_tree_rek(TreeNode *tree, int tree_index) {
     if (tree) {
         if (tree->is_leaf) {
             if (tree->name) {
@@ -183,7 +183,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
 
             for (int count = 0; count<tree_count && !error; ++count) {
                 const char *tname = tree_names[count];
-                GBT_TREE   *tree  = GBT_read_tree(NameSession.gb_main, tname, new SimpleRoot);
+                TreeNode   *tree  = GBT_read_tree(NameSession.gb_main, tname, new SimpleRoot);
                 ++progress;
 
                 if (tree) {

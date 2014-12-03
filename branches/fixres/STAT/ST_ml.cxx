@@ -867,7 +867,7 @@ void ST_ML::create_column_statistic(AW_root *awr, const char *awarname, AW_awar 
     column_stat = new ColumnStat(get_gb_main(), awr, awarname, awar_default_alignment);
 }
 
-const GBT_TREE *ST_ML::get_gbt_tree() const {
+const TreeNode *ST_ML::get_gbt_tree() const {
     return tree_root->get_root_node();
 }
 

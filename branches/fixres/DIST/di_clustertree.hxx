@@ -188,10 +188,10 @@ public:
 };
 
 class ClusterTreeNodeFactory : public RootedTreeNodeFactory {
-    RootedTree *makeNode(TreeRoot *root) const OVERRIDE {
+    TreeNode *makeNode(TreeRoot *root) const OVERRIDE {
         return new ClusterTree(DOWNCAST(ClusterTreeRoot*, root));
     }
-    void destroyNode(TreeRoot *, RootedTree *node) const OVERRIDE {
+    void destroyNode(TreeRoot *, TreeNode *node) const OVERRIDE {
         delete DOWNCAST(ClusterTree*, node);
     }
 };

@@ -19,7 +19,7 @@
 
 using namespace std;
 
-static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR& error, size_t& different_species, double weight, char *&comment) {
+static TreeNode *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR& error, size_t& different_species, double weight, char *&comment) {
     // read all input trees, generate and return consensus tree
     // (Note: the 'weight' used here doesn't matter atm, since all trees are added with the same weight)
 
@@ -27,7 +27,7 @@ static GBT_TREE *build_consensus_tree(const CharPtrArray& input_trees, GB_ERROR&
     error   = NULL;
     comment = NULL;
 
-    GBT_TREE *consense_tree = NULL;
+    TreeNode *consense_tree = NULL;
     if (input_trees.empty()) {
         error = "no trees given";
     }
@@ -79,7 +79,7 @@ static char *create_tree_name(const char *savename) {
     return tree_name;
 }
 
-static GB_ERROR save_tree_as_newick(GBT_TREE *tree, const char *savename, const char *comment) {
+static GB_ERROR save_tree_as_newick(TreeNode *tree, const char *savename, const char *comment) {
     // save a tree to a newick file
 
     // since ARB only saves trees out of a database,
@@ -153,7 +153,7 @@ int ARB_main(int argc, char *argv[]) {
         if (!error) {
             size_t    species_count;
             char     *comment;
-            GBT_TREE *cons_tree = build_consensus_tree(input_tree_names, error, species_count, 1.0, comment);
+            TreeNode *cons_tree = build_consensus_tree(input_tree_names, error, species_count, 1.0, comment);
 
             if (!cons_tree) {
                 error = GBS_global_string("Failed to build consensus tree (Reason: %s)", error);
@@ -207,7 +207,7 @@ static void add_inputnames(StrArray& to, int dir, const char *basename, int firs
     }
 }
 
-static double calc_intree_distance(GBT_TREE *tree) {
+static double calc_intree_distance(TreeNode *tree) {
     if (tree->is_leaf) return 0.0;
     return
         tree->leftlen +
@@ -218,7 +218,7 @@ static double calc_intree_distance(GBT_TREE *tree) {
 
 #define LENSUM_EPSILON .000001
 
-static arb_test::match_expectation consense_tree_generated(GBT_TREE *tree, GB_ERROR error, size_t species_count, size_t expected_species_count, double expected_intree_distance) {
+static arb_test::match_expectation consense_tree_generated(TreeNode *tree, GB_ERROR error, size_t species_count, size_t expected_species_count, double expected_intree_distance) {
     using namespace   arb_test;
     expectation_group expected;
 
@@ -245,7 +245,7 @@ static arb_test::match_expectation build_expected_consensus_tree(const int treed
 
     size_t    species_count;
     char     *comment;
-    GBT_TREE *tree = build_consensus_tree(input_tree_names, error, species_count, weight, comment);
+    TreeNode *tree = build_consensus_tree(input_tree_names, error, species_count, weight, comment);
     expected.add(consense_tree_generated(tree, error, species_count, expected_species_count, expected_intree_distance));
 
     char *saveas = custom_tree_name(treedir, outbasename);
@@ -407,7 +407,7 @@ void TEST_arb_consensus_tree() {
 // #define TREEIO_AUTO_UPDATE_IF_EXPORT_DIFFERS // uncomment to auto-update expected test-results
 // #define TREEIO_AUTO_UPDATE_IF_REEXPORT_DIFFERS // uncomment to auto-update expected test-results
 
-static const char *findFirstNameContaining(GBT_TREE *tree, const char *part) {
+static const char *findFirstNameContaining(TreeNode *tree, const char *part) {
     const char *found = NULL;
     if (tree->name && strstr(tree->name, part)) {
         found = tree->name;
@@ -470,7 +470,7 @@ void TEST_SLOW_treeIO_stable() {
                         const char *reloaded_treename = "tree_reloaded";
                         {
                             char     *comment    = NULL;
-                            GBT_TREE *tree       = TREE_load(expectedfile, new SimpleRoot, &comment, true, NULL);
+                            TreeNode *tree       = TREE_load(expectedfile, new SimpleRoot, &comment, true, NULL);
                             GB_ERROR  load_error = tree ? NULL : GB_await_error();
 
                             TEST_EXPECTATION(all().of(that(tree).does_differ_from_NULL(),
@@ -539,7 +539,7 @@ void TEST_SLOW_treeIO_stable() {
 }
 
 void TEST_CONSENSUS_TREE_functionality() {
-    // functionality wanted in RootedTree (for use in library CONSENSUS_TREE)
+    // functionality wanted in TreeNode (for use in library CONSENSUS_TREE)
 
     char *comment = NULL;
 
@@ -632,7 +632,7 @@ void TEST_CONSENSUS_TREE_functionality() {
 
     // test set_root
     TEST_ASSERT_VALID_TREE(tree);
-    RootedTree *AticSea6Grandpa = tree->findLeafNamed("AticSea6")->get_father()->get_father();
+    TreeNode *AticSea6Grandpa = tree->findLeafNamed("AticSea6")->get_father()->get_father();
     TEST_REJECT_NULL(AticSea6Grandpa);
     TEST_ASSERT_VALID_TREE(AticSea6Grandpa);
 

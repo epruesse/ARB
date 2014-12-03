@@ -30,7 +30,7 @@ enum NDS_Type {
 };
 
 void        make_node_text_init(GBDATA *gb_main);
-const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type format, GBT_TREE *species, const char *tree_name);
+const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type format, TreeNode *species, const char *tree_name);
 
 char *NDS_mask_nonprintable_chars(char *inStr);
 

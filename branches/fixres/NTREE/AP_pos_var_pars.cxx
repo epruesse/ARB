@@ -47,13 +47,13 @@ AP_pos_var::~AP_pos_var() {
     for (int i=0; i<256; i++) free(frequencies[i]);
 }
 
-long AP_pos_var::getsize(GBT_TREE *tree) { // @@@ replace by get_leaf_count() + leafs_2_nodes
+long AP_pos_var::getsize(TreeNode *tree) { // @@@ replace by get_leaf_count() + leafs_2_nodes
     if (!tree) return 0;
     if (tree->is_leaf) return 1;
     return getsize(tree->get_leftson()) + getsize(tree->get_rightson()) + 1;
 }
 
-const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tbases) {
+const char *AP_pos_var::parsimony(TreeNode *tree, GB_UINT4 *bases, GB_UINT4 *tbases) {
     GB_ERROR error = 0;
 
     if (tree->is_leaf) {
@@ -126,7 +126,7 @@ const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tba
 
 
 // Calculate the positional variability: control procedure
-GB_ERROR AP_pos_var::retrieve(GBT_TREE *tree) {
+GB_ERROR AP_pos_var::retrieve(TreeNode *tree) {
     GB_ERROR error = 0;
 
     if (is_dna) {
@@ -312,7 +312,7 @@ static void AP_calc_pos_var_pars(AW_window *aww) {
         progress.subtitle("Loading Tree");
 
         // get tree
-        GBT_TREE *tree;
+        TreeNode *tree;
         char     *tree_name;
         {
             tree_name = root->awar(AWAR_PVP_TREE)->read_string();

@@ -199,10 +199,10 @@ public:
 };
 
 struct AP_TreeNlenNodeFactory : public RootedTreeNodeFactory {
-    RootedTree *makeNode(TreeRoot *root) const OVERRIDE {
+    TreeNode *makeNode(TreeRoot *root) const OVERRIDE {
         return new AP_tree_nlen(DOWNCAST(AP_pars_root*, root));
     }
-    void destroyNode(TreeRoot *, RootedTree *node) const OVERRIDE {
+    void destroyNode(TreeRoot *, TreeNode *node) const OVERRIDE {
         delete DOWNCAST(AP_tree_nlen*, node);
     }
 };

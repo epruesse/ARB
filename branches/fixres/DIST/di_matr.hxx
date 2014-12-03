@@ -102,7 +102,7 @@ class MatrixOrder : virtual Noncopyable {
 
     bool tree_contains_dups; // unused (if true, matrix sorting works partly wrong)
 
-    void insert_in_hash(GBT_TREE *tree) {
+    void insert_in_hash(TreeNode *tree) {
         if (tree->is_leaf) {
             arb_assert(tree->name);
             if (GBS_write_hash(name2pos, tree->name, ++leafs) != 0) {
@@ -140,7 +140,7 @@ class DI_MATRIX : virtual Noncopyable {
     GBDATA *get_gb_main() const { return aliview->get_gb_main(); }
     double  corr(double dist, double b, double & sigma);
     char   *calculate_overall_freqs(double rel_frequencies[AP_MAX], char *cancel_columns);
-    int     search_group(GBT_TREE *node, GB_HASH *hash, size_t& groupcnt, char *groupname, DI_ENTRY **groups);
+    int     search_group(TreeNode *node, GB_HASH *hash, size_t& groupcnt, char *groupname, DI_ENTRY **groups);
 
 public:
     // @@@ make members private:
@@ -166,7 +166,7 @@ public:
 
     DI_TRANSFORMATION detect_transformation(std::string& msg);
 
-    char *compress(GBT_TREE *tree);
+    char *compress(TreeNode *tree);
 };
 
 class DI_GLOBAL_MATRIX : virtual Noncopyable {

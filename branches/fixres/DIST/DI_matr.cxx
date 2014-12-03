@@ -351,7 +351,7 @@ MatrixOrder::MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name)
 {
     if (sort_tree_name) {
         int       size;
-        GBT_TREE *sort_tree = GBT_read_tree_and_size(gb_main, sort_tree_name, new SimpleRoot, &size);
+        TreeNode *sort_tree = GBT_read_tree_and_size(gb_main, sort_tree_name, new SimpleRoot, &size);
 
         if (sort_tree) {
             leafs    = size+1;
@@ -750,9 +750,9 @@ GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation, bool *aborte
 }
 
 struct lessCCP { bool operator()(const char *s1, const char *s2) const { return strcmp(s1, s2)<0; } };
-typedef std::map<const char*, GBT_TREE*, lessCCP> NamedNodes;
+typedef std::map<const char*, TreeNode*, lessCCP> NamedNodes;
 
-GB_ERROR link_to_tree(NamedNodes& named, GBT_TREE *node) {
+GB_ERROR link_to_tree(NamedNodes& named, TreeNode *node) {
     GB_ERROR error = NULL;
     if (node->is_leaf) {
         NamedNodes::iterator found = named.find(node->name);
@@ -773,17 +773,17 @@ GB_ERROR link_to_tree(NamedNodes& named, GBT_TREE *node) {
     return error;
 }
 
-static GBT_TREE *findNode(GBT_TREE *node, const char *name) {
+static TreeNode *findNode(TreeNode *node, const char *name) {
     if (node->is_leaf) {
         return strcmp(node->name, name) == 0 ? node : NULL;
     }
 
-    GBT_TREE *found   = findNode(node->get_leftson(), name);
+    TreeNode *found   = findNode(node->get_leftson(), name);
     if (!found) found = findNode(node->get_rightson(), name);
     return found;
 }
 
-static GB_ERROR init(NamedNodes& node, GBT_TREE *tree, const DI_ENTRY*const*const entries, size_t nentries) {
+static GB_ERROR init(NamedNodes& node, TreeNode *tree, const DI_ENTRY*const*const entries, size_t nentries) {
     GB_ERROR error = NULL;
     for (size_t n = 0; n<nentries; ++n) {
         node[entries[n]->name] = NULL;
@@ -819,7 +819,7 @@ GB_ERROR DI_MATRIX::extract_from_tree(const char *treename, bool *aborted_flag) 
     GB_ERROR error         = NULL;
     if (nentries<=1) error = "Not enough species selected to calculate matrix";
     else {
-        GBT_TREE *tree;
+        TreeNode *tree;
         {
             GB_transaction ta(get_gb_main());
             tree = GBT_read_tree(get_gb_main(), treename, new SimpleRoot);
@@ -833,11 +833,11 @@ GB_ERROR DI_MATRIX::extract_from_tree(const char *treename, bool *aborted_flag) 
             matrix = new AP_smatrix(nentries);
 
             for (size_t row = 0; row<nentries && !error; row++) {
-                GBT_TREE *rnode = node[entries[row]->name];
+                TreeNode *rnode = node[entries[row]->name];
                 for (size_t col=0; col<=row && !error; col++) {
                     double dist;
                     if (col != row) {
-                        GBT_TREE *cnode = node[entries[col]->name];
+                        TreeNode *cnode = node[entries[col]->name];
                         dist  = rnode->intree_distance_to(cnode);
                     }
                     else {
@@ -1216,7 +1216,7 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
         }
     }
 
-    GBT_TREE *tree = 0;
+    TreeNode *tree = 0;
     do {
         if (error) break;
 
@@ -1453,7 +1453,7 @@ static void di_calculate_compressed_matrix_cb(AW_window *aww, WeightedFilter *we
     AW_root  *aw_root  = aww->get_root();
     char     *treename = aw_root->awar(AWAR_DIST_TREE_COMP_NAME)->read_string();
     GB_ERROR  error    = 0;
-    GBT_TREE  *tree    = GBT_read_tree(GLOBAL_gb_main, treename, new SimpleRoot);
+    TreeNode  *tree    = GBT_read_tree(GLOBAL_gb_main, treename, new SimpleRoot);
 
     if (!tree) {
         error = GB_await_error();

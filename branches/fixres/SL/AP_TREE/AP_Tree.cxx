@@ -226,7 +226,7 @@ void AP_tree::insert(AP_tree *new_brother) {
     ASSERT_VALID_TREE(troot->get_root_node());
 }
 
-void AP_tree_root::change_root(RootedTree *oldroot, RootedTree *newroot) {
+void AP_tree_root::change_root(TreeNode *oldroot, TreeNode *newroot) {
     if (root_changed_cb) { // @@@ better call after calling base::change_root?
         root_changed_cb(root_changed_cd, DOWNCAST(AP_tree*, oldroot), DOWNCAST(AP_tree*, newroot));
     }
@@ -527,7 +527,7 @@ inline float tree_read_float(GBDATA *tree, const char *key, float init) {
 
 
 
-//! moves all node/leaf information from struct GBT_TREE to AP_tree
+//! moves all node/leaf information from struct TreeNode to AP_tree
 void AP_tree::load_node_info() {
     gr.spread          = tree_read_float(gb_node, "spread",          1.0);
     gr.left_angle      = tree_read_float(gb_node, "left_angle",      0.0);

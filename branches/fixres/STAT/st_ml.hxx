@@ -192,7 +192,7 @@ public:
     }
 
     GBDATA *get_gb_main() const { return gb_main; }
-    const GBT_TREE *get_gbt_tree() const;
+    const TreeNode *get_gbt_tree() const;
     size_t count_species_in_tree() const;
 
     AP_tree *find_node_by_name(const char *species_name);

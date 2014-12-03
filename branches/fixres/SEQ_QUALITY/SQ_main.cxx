@@ -71,7 +71,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
     GBDATA   *gb_main     = (GBDATA*)cl_gb_main;
     AW_root  *aw_root     = aww->get_root();
     GB_ERROR  error       = 0;
-    GBT_TREE *tree        = 0;
+    TreeNode *tree        = 0;
     bool      marked_only = (aw_root->awar(AWAR_SQ_MARK_ONLY_FLAG)->read_int() > 0);
 
     arb_progress main_progress("Calculating sequence quality");

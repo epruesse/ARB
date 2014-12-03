@@ -17,11 +17,11 @@
 
 struct RB_INFO {
     GBT_LEN     len;
-    RootedTree *node;
+    TreeNode *node;
     int         percent;    // branch probability [0..100]
 };
 
-static int GBT_TREE_order(const GBT_TREE *t1, const GBT_TREE *t2) {
+static int GBT_TREE_order(const TreeNode *t1, const TreeNode *t2) {
     // define a strict order on trees
 
     int cmp = t1->is_leaf - t2->is_leaf; // leafs first
@@ -74,7 +74,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
     // doing all the work for rb_gettree() :-)
     // convert a Ntree into a GBT-Tree
 
-    RootedTree *tnode = DOWNCAST(RootedTree*,root->makeNode());
+    TreeNode *tnode = DOWNCAST(TreeNode*,root->makeNode());
     tnode->father     = NULL;
 
     RB_INFO *info = (RB_INFO *) getmem(sizeof(RB_INFO));
@@ -114,11 +114,11 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
             for (int sidx1 = 0; sidx1<multifurc; sidx1 += 2) {
                 int sidx2 = sidx1+1;
                 if (sidx2<multifurc) {
-                    RootedTree *mf;
+                    TreeNode *mf;
                     RB_INFO    *sinfo;
 
                     if (multifurc > 2) {
-                        mf    = DOWNCAST(RootedTree*, root->makeNode());
+                        mf    = DOWNCAST(TreeNode*, root->makeNode());
                         sinfo = (RB_INFO *) getmem(sizeof(RB_INFO));
 
                         mf->father = NULL;
