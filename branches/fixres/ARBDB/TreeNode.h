@@ -108,10 +108,10 @@ public:
     ARB_edge find_innermost_edge();
 };
 
-#define DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeType)        \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_father, father);    \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_leftson, leftson);  \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_rightson, rightson)
+// @@@ move DEFINE_READ_ACCESSORS to arbtools.h
+#define DEFINE_READ_ACCESSORS(TYPE, MEMBER)             \
+    TYPE get_##MEMBER() { return MEMBER; }              \
+    const TYPE get_##MEMBER() const { return MEMBER; }
 
 struct TreeNode : virtual Noncopyable {
     bool      is_leaf;
@@ -147,7 +147,9 @@ protected:
 
 public:
 
-    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeNode);
+    DEFINE_READ_ACCESSORS(TreeNode*, father);
+    DEFINE_READ_ACCESSORS(TreeNode*, leftson);
+    DEFINE_READ_ACCESSORS(TreeNode*, rightson);
 
     bool is_son_of(const TreeNode *Father) const {
         return father == Father &&
@@ -407,13 +409,15 @@ inline void TreeRoot::destroyNode(TreeNode *node) const {
 #define DEFINE_TREE_ROOT_ACCESSORS(RootType, TreeType)                                  \
     DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, TreeRoot::get_root_node())
 
-#define DEFINE_TREE_RELATIVES_ACCESSORS(TreeType)                                       \
-    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeType);                                   \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_brother, TreeNode::get_brother());        \
-    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, TreeNode::get_root_node());    \
+#define DEFINE_TREE_RELATIVES_ACCESSORS(TreeType) \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_father, father); \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_leftson, leftson);  \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_rightson, rightson); \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_brother, TreeNode::get_brother()); \
+    DEFINE_DOWNCAST_ACCESSORS(TreeType, get_root_node, TreeNode::get_root_node());                                      \
     TreeType *findLeafNamed(const char *wantedName) { return DOWNCAST(TreeType*, TreeNode::findLeafNamed(wantedName)); }
 
-#define DEFINE_TREE_ACCESSORS(RootType, TreeType)                                       \
+#define DEFINE_TREE_ACCESSORS(RootType, TreeType)                                     \
     DEFINE_DOWNCAST_ACCESSORS(RootType, get_tree_root, TreeNode::get_tree_root());    \
     DEFINE_TREE_RELATIVES_ACCESSORS(TreeType)
 
