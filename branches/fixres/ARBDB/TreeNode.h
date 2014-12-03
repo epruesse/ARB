@@ -32,6 +32,82 @@ class TreeRoot;
 class TreeNode;
 class ARB_edge;
 
+enum TreeOrder { // contains bit values!
+    ORDER_BIG_DOWN      = 1, // bit 0 set -> big branches down
+    ORDER_BIG_TO_EDGE   = 2, // bit 1 set -> big branches to edge
+    ORDER_BIG_TO_CENTER = 4, // bit 2 set -> big branches to center
+    ORDER_ALTERNATING   = 8, // bit 3 set -> alternate bit 0
+
+    // user visible orders:
+    BIG_BRANCHES_TO_TOP      = 0,
+    BIG_BRANCHES_TO_BOTTOM   = ORDER_BIG_DOWN,
+    BIG_BRANCHES_TO_EDGE     = ORDER_BIG_TO_EDGE,
+    BIG_BRANCHES_TO_CENTER   = ORDER_BIG_TO_CENTER,
+    BIG_BRANCHES_ALTERNATING = ORDER_BIG_TO_CENTER|ORDER_ALTERNATING,
+};
+
+struct TreeNodeFactory { // @@@ move into TreeNode?
+    virtual ~TreeNodeFactory() {}
+    virtual TreeNode *makeNode() const             = 0;
+    virtual void destroyNode(TreeNode *node) const = 0;
+};
+
+struct RootedTreeNodeFactory { // acts similar to TreeNodeFactory for trees with root
+    virtual ~RootedTreeNodeFactory() {}
+    virtual TreeNode *makeNode(TreeRoot *root) const               = 0;
+    virtual void destroyNode(TreeRoot *root, TreeNode *node) const = 0;
+};
+
+class TreeRoot : public TreeNodeFactory, virtual Noncopyable {
+    TreeNode            *rootNode; // root node of the tree
+    RootedTreeNodeFactory *nodeMaker;
+    bool                   deleteWithNodes;
+
+public:
+    TreeRoot(RootedTreeNodeFactory *nodeMaker_, bool deleteWithNodes_)
+        : rootNode(NULL),
+          nodeMaker(nodeMaker_),
+          deleteWithNodes(deleteWithNodes_)
+    {
+        /*! Create a TreeRoot for a TreeNode.
+         * Purpose:
+         * - act as TreeNodeFactory
+         * - place to store the current rootNode
+         * - place to store other tree related information by deriving from TreeRoot
+         *
+         * @param nodeMaker_ heap-copy of a RootedTreeNodeFactory, will be deleted when this is destructed
+         * @param deleteWithNodes_ true -> delete TreeRoot when the rootNode gets destroyed (TreeRoot needs to be a heap-copy in that case)
+         *
+         * Ressource handling of the tree structure is quite difficult (and error-prone).
+         * There are two common use-cases:
+         * 1. TreeRoot is owned by some other object/scope
+         *    - pass false for deleteWithNodes_
+         *    - you may or may not destroy (parts of) the TreeNode manually
+         * 2. TreeRoot is owned by the TreeNode
+         *    - pass true for deleteWithNodes_
+         *    - when the rootNode gets destroyed, the TreeRoot will be destroyed as well
+         */
+    }
+    virtual ~TreeRoot();
+    virtual void change_root(TreeNode *old, TreeNode *newroot);
+
+    void delete_by_node() {
+        if (deleteWithNodes) {
+            rt_assert(!rootNode);
+            delete this;
+        }
+    }
+
+    // TreeNodeFactory interface
+    inline TreeNode *makeNode() const OVERRIDE;
+    inline void destroyNode(TreeNode *node) const OVERRIDE;
+
+    TreeNode *get_root_node() { return rootNode; }
+    const TreeNode *get_root_node() const { return rootNode; }
+
+    ARB_edge find_innermost_edge();
+};
+
 #define DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeType)        \
     DEFINE_DOWNCAST_ACCESSORS(TreeType, get_father, father);    \
     DEFINE_DOWNCAST_ACCESSORS(TreeType, get_leftson, leftson);  \
@@ -191,84 +267,6 @@ public:
     void remove_remark() { use_as_remark(NULL); }
 };
 
-inline void destroy(ELIMtree *that) { ELIMtree::destroy(that); }
-
-struct TreeNodeFactory { // @@@ move into TreeNode?
-    virtual ~TreeNodeFactory() {}
-    virtual TreeNode *makeNode() const             = 0;
-    virtual void destroyNode(TreeNode *node) const = 0;
-};
-
-struct RootedTreeNodeFactory { // acts similar to TreeNodeFactory for trees with root
-    virtual ~RootedTreeNodeFactory() {}
-    virtual TreeNode *makeNode(TreeRoot *root) const               = 0;
-    virtual void destroyNode(TreeRoot *root, TreeNode *node) const = 0;
-};
-
-class TreeRoot : public TreeNodeFactory, virtual Noncopyable {
-    TreeNode            *rootNode; // root node of the tree
-    RootedTreeNodeFactory *nodeMaker;
-    bool                   deleteWithNodes;
-
-public:
-    TreeRoot(RootedTreeNodeFactory *nodeMaker_, bool deleteWithNodes_)
-        : rootNode(NULL),
-          nodeMaker(nodeMaker_),
-          deleteWithNodes(deleteWithNodes_)
-    {
-        /*! Create a TreeRoot for a TreeNode.
-         * Purpose:
-         * - act as TreeNodeFactory
-         * - place to store the current rootNode
-         * - place to store other tree related information by deriving from TreeRoot
-         *
-         * @param nodeMaker_ heap-copy of a RootedTreeNodeFactory, will be deleted when this is destructed
-         * @param deleteWithNodes_ true -> delete TreeRoot when the rootNode gets destroyed (TreeRoot needs to be a heap-copy in that case)
-         *
-         * Ressource handling of the tree structure is quite difficult (and error-prone).
-         * There are two common use-cases:
-         * 1. TreeRoot is owned by some other object/scope
-         *    - pass false for deleteWithNodes_
-         *    - you may or may not destroy (parts of) the TreeNode manually
-         * 2. TreeRoot is owned by the TreeNode
-         *    - pass true for deleteWithNodes_
-         *    - when the rootNode gets destroyed, the TreeRoot will be destroyed as well
-         */
-    }
-    virtual ~TreeRoot();
-    virtual void change_root(TreeNode *old, TreeNode *newroot);
-
-    void delete_by_node() {
-        if (deleteWithNodes) {
-            rt_assert(!rootNode);
-            delete this;
-        }
-    }
-
-    // TreeNodeFactory interface
-    inline TreeNode *makeNode() const OVERRIDE;
-    inline void destroyNode(TreeNode *node) const OVERRIDE;
-
-    TreeNode *get_root_node() { return rootNode; }
-    const TreeNode *get_root_node() const { return rootNode; }
-
-    ARB_edge find_innermost_edge();
-};
-
-enum TreeOrder { // contains bit values!
-    ORDER_BIG_DOWN      = 1, // bit 0 set -> big branches down
-    ORDER_BIG_TO_EDGE   = 2, // bit 1 set -> big branches to edge
-    ORDER_BIG_TO_CENTER = 4, // bit 2 set -> big branches to center
-    ORDER_ALTERNATING   = 8, // bit 3 set -> alternate bit 0
-
-    // user visible orders:
-    BIG_BRANCHES_TO_TOP      = 0,
-    BIG_BRANCHES_TO_BOTTOM   = ORDER_BIG_DOWN,
-    BIG_BRANCHES_TO_EDGE     = ORDER_BIG_TO_EDGE,
-    BIG_BRANCHES_TO_CENTER   = ORDER_BIG_TO_CENTER,
-    BIG_BRANCHES_ALTERNATING = ORDER_BIG_TO_CENTER|ORDER_ALTERNATING,
-};
-
 class TreeNode : public ELIMtree { // derived from Noncopyable
     friend void TreeRoot::change_root(TreeNode *old, TreeNode *newroot);
 
@@ -408,6 +406,9 @@ public:
 #endif // PROVIDE_TREE_STRUCTURE_TESTS
 };
 
+inline void destroy(ELIMtree *that) {
+    ELIMtree::destroy(that);
+}
 inline void destroy(TreeNode *that, TreeRoot *root) {
     TreeNode::destroy(that, root);
 }
