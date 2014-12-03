@@ -474,7 +474,7 @@ bool TreeReader::eat_and_set_name_and_length(TreeNode *node, GBT_LEN& nodeLen) {
     return !error;
 }
 
-static TreeNode *createLinkedTreeNode(const TreeNodeFactory& nodeMaker, TreeNode *left, GBT_LEN leftlen, TreeNode *right, GBT_LEN rightlen) { // @@@ move into class GBT_tree (as ctor) - or better move into TreeNodeFactory
+static TreeNode *createLinkedTreeNode(const TreeRoot& nodeMaker, TreeNode *left, GBT_LEN leftlen, TreeNode *right, GBT_LEN rightlen) { // @@@ move into class GBT_tree (as ctor) - or better move into TreeNodeFactory
     TreeNode *node = nodeMaker.makeNode();
 
     node->leftson  = left;

@@ -46,19 +46,13 @@ enum TreeOrder { // contains bit values!
     BIG_BRANCHES_ALTERNATING = ORDER_BIG_TO_CENTER|ORDER_ALTERNATING,
 };
 
-struct TreeNodeFactory { // @@@ move into TreeNode?
-    virtual ~TreeNodeFactory() {}
-    virtual TreeNode *makeNode() const             = 0;
-    virtual void destroyNode(TreeNode *node) const = 0;
-};
-
-struct RootedTreeNodeFactory { // acts similar to TreeNodeFactory for trees with root
+struct RootedTreeNodeFactory { // @@@ rename -> TreeNodeFactory
     virtual ~RootedTreeNodeFactory() {}
     virtual TreeNode *makeNode(TreeRoot *root) const               = 0;
     virtual void destroyNode(TreeRoot *root, TreeNode *node) const = 0;
 };
 
-class TreeRoot : public TreeNodeFactory, virtual Noncopyable {
+class TreeRoot : virtual Noncopyable {
     TreeNode            *rootNode; // root node of the tree
     RootedTreeNodeFactory *nodeMaker;
     bool                   deleteWithNodes;
@@ -71,7 +65,7 @@ public:
     {
         /*! Create a TreeRoot for a TreeNode.
          * Purpose:
-         * - act as TreeNodeFactory
+         * - act as TreeNode factory
          * - place to store the current rootNode
          * - place to store other tree related information by deriving from TreeRoot
          *
@@ -99,8 +93,8 @@ public:
     }
 
     // TreeNodeFactory interface
-    inline TreeNode *makeNode() const OVERRIDE;
-    inline void destroyNode(TreeNode *node) const OVERRIDE;
+    inline TreeNode *makeNode() const;
+    inline void destroyNode(TreeNode *node) const;
 
     TreeNode *get_root_node() { return rootNode; }
     const TreeNode *get_root_node() const { return rootNode; }

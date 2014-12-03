@@ -8,8 +8,6 @@
 #include <downcast.h>
 #endif
 
-class TreeNodeFactory;
-
 #define gb_assert(cond) arb_assert(cond)
 
 #define GBT_SPECIES_INDEX_SIZE       10000L

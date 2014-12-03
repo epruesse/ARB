@@ -33,9 +33,8 @@ typedef int GBQUARK; // -1 = any quark, 0 = no quark, >0 explicit quark
 
 typedef float GBT_LEN;
 
-class  TreeNode;
-class  TreeRoot;
-struct TreeNodeFactory;
+class TreeNode;
+class TreeRoot;
 
 typedef unsigned int       GB_UINT4;                // 4 byte! @@@ use uint32_t ?
 typedef const unsigned int GB_CUINT4;
