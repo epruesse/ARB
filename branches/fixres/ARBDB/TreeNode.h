@@ -113,25 +113,23 @@ public:
     DEFINE_DOWNCAST_ACCESSORS(TreeType, get_leftson, leftson);  \
     DEFINE_DOWNCAST_ACCESSORS(TreeType, get_rightson, rightson)
 
-struct ELIMtree : virtual Noncopyable {
+struct TreeNode : virtual Noncopyable {
     bool      is_leaf;
-    ELIMtree *father, *leftson, *rightson;
+    TreeNode *father, *leftson, *rightson;
     GBT_LEN   leftlen, rightlen;
     GBDATA   *gb_node;
     char     *name;
 
 private:
-    friend class TreeNode;
-
     char *remark_branch; // remark_branch normally contains some bootstrap value in format 'xx%'
                          // if you store other info there, please make sure that this info does not start with digits!!
                          // Otherwise the tree export routines will not work correctly!
 
     GBT_LEN& length_ref() { return is_leftson() ? father->leftlen : father->rightlen; }
-    const GBT_LEN& length_ref() const { return const_cast<ELIMtree*>(this)->length_ref(); }
+    const GBT_LEN& length_ref() const { return const_cast<TreeNode*>(this)->length_ref(); }
 
 protected:
-    ELIMtree*& self_ref() {
+    TreeNode*& self_ref() {
         return is_leftson() ? father->leftson : father->rightson;
     }
     void unlink_from_father() {
@@ -147,41 +145,11 @@ protected:
         return result;
     }
 
-    virtual ~ELIMtree() {
-        delete leftson;  gb_assert(!leftson);
-        delete rightson; gb_assert(!rightson);
-
-        unlink_from_father();
-
-        free(name);
-        free(remark_branch);
-    }
-    friend class ELIMtree_NodeFactory;
-    virtual void destroy()  {
-        delete this;
-    }
-
 public:
-    ELIMtree()
-        : is_leaf(false),
-          father(NULL), leftson(NULL), rightson(NULL),
-          leftlen(0.0), rightlen(0.0),
-          gb_node(NULL),
-          name(NULL),
-          remark_branch(NULL)
-    {}
-    static void destroy(ELIMtree *that)  { // replacement for destructor
-        if (that) delete that;
-    }
 
-    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(ELIMtree);
+    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeNode);
 
-    virtual void announce_tree_constructed() {
-        // (has to be) called after tree has been constructed
-        gb_assert(!father); // has to be called with root-node!
-    }
-
-    bool is_son_of(const ELIMtree *Father) const {
+    bool is_son_of(const TreeNode *Father) const {
         return father == Father &&
             (father->leftson == this || father->rightson == this);
     }
@@ -194,16 +162,14 @@ public:
         return father->rightson == this;
     }
 
-    bool is_root_node() const { return !father; }
-
-    bool is_inside(const ELIMtree *subtree) const {
+    bool is_inside(const TreeNode *subtree) const {
         return this == subtree || (father && get_father()->is_inside(subtree));
     }
-    bool is_anchestor_of(const ELIMtree *descendant) const {
+    bool is_anchestor_of(const TreeNode *descendant) const {
         return !is_leaf && descendant != this && descendant->is_inside(this);
     }
-    const ELIMtree *ancestor_common_with(const ELIMtree *other) const;
-    ELIMtree *ancestor_common_with(ELIMtree *other) { return const_cast<ELIMtree*>(ancestor_common_with(other)); }
+    const TreeNode *ancestor_common_with(const TreeNode *other) const;
+    TreeNode *ancestor_common_with(TreeNode *other) { return const_cast<TreeNode*>(ancestor_common_with(other)); }
 
     GBT_LEN get_branchlength() const { return length_ref(); }
     void set_branchlength(GBT_LEN newlen) {
@@ -233,8 +199,8 @@ public:
         //! returns distance from node to root (including nodes own length)
         return father ? get_branchlength()+father->root_distance() : 0.0;
     }
-    GBT_LEN intree_distance_to(const ELIMtree *other) const {
-        const ELIMtree *ancestor = ancestor_common_with(other);
+    GBT_LEN intree_distance_to(const TreeNode *other) const {
+        const TreeNode *ancestor = ancestor_common_with(other);
         return root_distance() + other->root_distance() - 2*ancestor->root_distance();
     }
 
@@ -265,9 +231,9 @@ public:
     void set_remark(const char *newRemark) { freedup(remark_branch, newRemark); }
     void set_bootstrap(double bootstrap) { use_as_remark(GBS_global_string_copy("%i%%", int(bootstrap+0.5))); } // @@@ protect against "100%"?
     void remove_remark() { use_as_remark(NULL); }
-};
 
-class TreeNode : public ELIMtree { // derived from Noncopyable
+private:
+
     friend void TreeRoot::change_root(TreeNode *old, TreeNode *newroot);
 
     TreeRoot *tree_root;
@@ -284,7 +250,7 @@ protected:
         //! return true for root-node and its sons
         return !father || !father->father;
     }
-    ~TreeNode() OVERRIDE {
+    virtual ~TreeNode() {
         if (tree_root) {
             rt_assert(tree_root->get_root_node() == this); // you may only free the root-node or unlinked nodes (i.e. such with tree_root==NULL)
 
@@ -292,8 +258,15 @@ protected:
             root->TreeRoot::change_root(this, NULL);
             root->delete_by_node();
         }
+        delete leftson;  gb_assert(!leftson);
+        delete rightson; gb_assert(!rightson);
+
+        unlink_from_father();
+
+        free(name);
+        free(remark_branch);
     }
-    void destroy() OVERRIDE {
+    void destroy()  {
         rt_assert(this);
         TreeRoot *myRoot = get_tree_root();
         rt_assert(myRoot); // if this fails, you need to use destroy(TreeRoot*), i.e. destroy(TreeNode*, TreeRoot*)
@@ -310,23 +283,31 @@ protected:
 
 public:
     TreeNode(TreeRoot *root)
-        : tree_root(root)
+        : is_leaf(false),
+          father(NULL), leftson(NULL), rightson(NULL),
+          leftlen(0.0), rightlen(0.0),
+          gb_node(NULL),
+          name(NULL),
+          remark_branch(NULL),
+          tree_root(root)
     {}
+    static void destroy(TreeNode *that)  { // replacement for destructor
+        if (that) delete that;
+    }
     static void destroy(TreeNode *that, TreeRoot *root) {
         if (that) that->destroy(root);
     }
 
     TreeNode *fixDeletedSon(); // @@@ review (design)
 
-    void announce_tree_constructed() OVERRIDE {
-        ELIMtree::announce_tree_constructed();
+    void announce_tree_constructed() { // @@@ use this function or just call change_root instead?
+        // (has to be) called after tree has been constructed
+        gb_assert(!father); // has to be called with root-node!
         get_tree_root()->change_root(NULL, this);
     }
 
     virtual unsigned get_leaf_count() const = 0;
     virtual void compute_tree()             = 0;
-
-    DEFINE_SIMPLE_TREE_RELATIVES_ACCESSORS(TreeNode);
 
     void forget_origin() { set_tree_root(NULL); }
 
@@ -406,8 +387,8 @@ public:
 #endif // PROVIDE_TREE_STRUCTURE_TESTS
 };
 
-inline void destroy(ELIMtree *that) {
-    ELIMtree::destroy(that);
+inline void destroy(TreeNode *that) {
+    TreeNode::destroy(that);
 }
 inline void destroy(TreeNode *that, TreeRoot *root) {
     TreeNode::destroy(that, root);

@@ -582,7 +582,7 @@ void TreeNode::multifurcate_whole_tree(const multifurc_limits& below) {
     collector.independent_distribution();
 }
 
-ELIMtree::bs100_mode ELIMtree::toggle_bootstrap100(bs100_mode mode) {
+TreeNode::bs100_mode TreeNode::toggle_bootstrap100(bs100_mode mode) {
     if (!is_leaf) {
         if (!is_root_node()) {
             double bootstrap;
@@ -612,14 +612,14 @@ ELIMtree::bs100_mode ELIMtree::toggle_bootstrap100(bs100_mode mode) {
     }
     return mode;
 }
-void ELIMtree::remove_bootstrap() {
+void TreeNode::remove_bootstrap() {
     freenull(remark_branch);
     if (!is_leaf) {
         get_leftson()->remove_bootstrap();
         get_rightson()->remove_bootstrap();
     }
 }
-void ELIMtree::reset_branchlengths() {
+void TreeNode::reset_branchlengths() {
     if (!is_leaf) {
         leftlen = rightlen = DEFAULT_BRANCH_LENGTH;
 
@@ -628,7 +628,7 @@ void ELIMtree::reset_branchlengths() {
     }
 }
 
-void ELIMtree::scale_branchlengths(double factor) {
+void TreeNode::scale_branchlengths(double factor) {
     if (!is_leaf) {
         leftlen  *= factor;
         rightlen *= factor;
@@ -638,7 +638,7 @@ void ELIMtree::scale_branchlengths(double factor) {
     }
 }
 
-GBT_LEN ELIMtree::sum_child_lengths() const {
+GBT_LEN TreeNode::sum_child_lengths() const {
     if (is_leaf) return 0.0;
     return
         leftlen +
@@ -647,7 +647,7 @@ GBT_LEN ELIMtree::sum_child_lengths() const {
         get_rightson()->sum_child_lengths();
 }
 
-void ELIMtree::bootstrap2branchlen() {
+void TreeNode::bootstrap2branchlen() {
     //! copy bootstraps to branchlengths
     if (is_leaf) {
         set_branchlength_unrooted(DEFAULT_BRANCH_LENGTH);
@@ -670,7 +670,7 @@ void ELIMtree::bootstrap2branchlen() {
     }
 }
 
-void ELIMtree::branchlen2bootstrap() {
+void TreeNode::branchlen2bootstrap() {
     //! copy branchlengths to bootstraps
     remove_remark();
     if (!is_leaf) {
@@ -724,7 +724,7 @@ TreeNode *TreeNode::fixDeletedSon() {
     return result;
 }
 
-const ELIMtree *ELIMtree::ancestor_common_with(const ELIMtree *other) const {
+const TreeNode *TreeNode::ancestor_common_with(const TreeNode *other) const {
     if (this == other) return this;
     if (is_anchestor_of(other)) return this;
     if (other->is_anchestor_of(this)) return other;
