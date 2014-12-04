@@ -68,7 +68,7 @@ namespace ARB_type_traits { // according to boost-type_traits or std-type_traits
 
         static const bool value = (sizeof(check1(t, u)) == sizeof(yes)) && (sizeof(check2(t, u)) == sizeof(yes));
     };
-
+    // Note: test-code for ARB_type_traits was removed by [13300]
 };
 
 // -----------------------------------------
