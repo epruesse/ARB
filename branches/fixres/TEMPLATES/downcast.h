@@ -108,9 +108,8 @@ inline DERIVED *safe_pointer_downcast(BASE *expr) {
     typedef typename ARB_type_traits::remove_cv<BASE   >::type NCV_BASE;
     typedef typename ARB_type_traits::remove_cv<DERIVED>::type NCV_DERIVED;
 
-    STATIC_ASSERT_ANNOTATED((ARB_type_traits::is_base_of<BASE,DERIVED>::value ||
-                             ARB_type_traits::is_same<NCV_BASE, NCV_DERIVED>::value),
-                            "downcast only allowed from base type to derived type");
+    STATIC_ASSERT_ANNOTATED((ARB_type_traits::is_same<NCV_BASE, NCV_DERIVED>::value == false), "useless downcast (BASE==DERIVED)");
+    STATIC_ASSERT_ANNOTATED((ARB_type_traits::is_base_of<BASE,DERIVED>::value), "downcast only allowed from base type to derived type");
 
     return expr
         ? assert_downcasted<DERIVED*>(dynamic_cast<DERIVED*>(expr))
