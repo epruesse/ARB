@@ -1233,6 +1233,10 @@ static void STATICTEST_downcast() { // no need to run
     typedef const DERIVED CONST_DERIVED;
     typedef const FURTHER CONST_FURTHER;
 
+    typedef BASE          ALIAS_BASE;
+    typedef CONST_DERIVED ALIAS_CONST_DERIVED;
+    typedef int           ALIAS_int;
+
     using namespace ARB_type_traits;
 
     typedef  ARB_type_traits::remove_cv<BASE   >::type NCV_BASE;
@@ -1249,6 +1253,10 @@ static void STATICTEST_downcast() { // no need to run
     STATIC_ASSERT((is_base_of<DERIVED, int>::value    == false));
     STATIC_ASSERT((is_base_of<int, DERIVED>::value    == false));
     STATIC_ASSERT((is_base_of<int, int>::value        == false));
+
+    STATIC_ASSERT((is_base_of<BASE, ALIAS_BASE>::value                   == false));
+    STATIC_ASSERT((is_base_of<CONST_DERIVED, ALIAS_CONST_DERIVED>::value == false));
+    STATIC_ASSERT((is_base_of<int, ALIAS_int>::value                     == false));
 
     // same type should never be a base of itself:
     STATIC_ASSERT((is_base_of<BASE,    BASE>::value    == false));
@@ -1298,6 +1306,10 @@ static void STATICTEST_downcast() { // no need to run
     STATIC_ASSERT((is_same<DERIVED, int>::value    == false));
     STATIC_ASSERT((is_same<int, DERIVED>::value    == false));
     STATIC_ASSERT((is_same<int, int>::value        == true));
+
+    STATIC_ASSERT((is_same<BASE, ALIAS_BASE>::value                   == true));
+    STATIC_ASSERT((is_same<CONST_DERIVED, ALIAS_CONST_DERIVED>::value == true));
+    STATIC_ASSERT((is_same<int, ALIAS_int>::value                     == true));
 
     // classes should match themselfes
     STATIC_ASSERT((is_same<BASE, BASE>::value       == true));
