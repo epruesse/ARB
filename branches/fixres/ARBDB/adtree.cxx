@@ -1266,9 +1266,9 @@ static void STATICTEST_downcast() { // no need to run
     STATIC_ASSERT((is_base_of<BASE,    CONST_BASE>::value    == false));
     STATIC_ASSERT((is_base_of<DERIVED, CONST_DERIVED>::value == false));
     STATIC_ASSERT((is_base_of<FURTHER, CONST_FURTHER>::value == false));
-    STATIC_ASSERT((is_base_of<CONST_BASE,    BASE>::value    == true)); // @@@ wrong
-    STATIC_ASSERT((is_base_of<CONST_DERIVED, DERIVED>::value == true)); // @@@ wrong
-    STATIC_ASSERT((is_base_of<CONST_FURTHER, FURTHER>::value == true)); // @@@ wrong
+    STATIC_ASSERT((is_base_of<CONST_BASE,    BASE>::value    == false));
+    STATIC_ASSERT((is_base_of<CONST_DERIVED, DERIVED>::value == false));
+    STATIC_ASSERT((is_base_of<CONST_FURTHER, FURTHER>::value == false));
 
     STATIC_ASSERT((is_base_of<NCV_CONST_BASE,    BASE>::value    == false));
     STATIC_ASSERT((is_base_of<NCV_CONST_DERIVED, DERIVED>::value == false));
@@ -1283,9 +1283,9 @@ static void STATICTEST_downcast() { // no need to run
     STATIC_ASSERT((is_base_of<CONST_BASE, FURTHER>::value    == true));
     STATIC_ASSERT((is_base_of<CONST_DERIVED, FURTHER>::value == true));
 
-    STATIC_ASSERT((is_base_of<BASE, CONST_DERIVED>::value    == false)); // @@@ wrong
-    STATIC_ASSERT((is_base_of<BASE, CONST_FURTHER>::value    == false)); // @@@ wrong
-    STATIC_ASSERT((is_base_of<DERIVED, CONST_FURTHER>::value == false)); // @@@ wrong
+    STATIC_ASSERT((is_base_of<BASE, CONST_DERIVED>::value    == true));
+    STATIC_ASSERT((is_base_of<BASE, CONST_FURTHER>::value    == true));
+    STATIC_ASSERT((is_base_of<DERIVED, CONST_FURTHER>::value == true));
 
     // check derived classes are rejected
     STATIC_ASSERT((is_base_of<DERIVED, BASE>::value    == false));
@@ -1306,6 +1306,10 @@ static void STATICTEST_downcast() { // no need to run
     STATIC_ASSERT((is_same<DERIVED, int>::value    == false));
     STATIC_ASSERT((is_same<int, DERIVED>::value    == false));
     STATIC_ASSERT((is_same<int, int>::value        == true));
+    STATIC_ASSERT((is_same<int, long>::value       == false));
+    STATIC_ASSERT((is_same<int, unsigned>::value   == false));
+    STATIC_ASSERT((is_same<long, int>::value       == false));
+    STATIC_ASSERT((is_same<unsigned, int>::value   == false));
 
     STATIC_ASSERT((is_same<BASE, ALIAS_BASE>::value                   == true));
     STATIC_ASSERT((is_same<CONST_DERIVED, ALIAS_CONST_DERIVED>::value == true));
@@ -1316,9 +1320,9 @@ static void STATICTEST_downcast() { // no need to run
     STATIC_ASSERT((is_same<DERIVED, DERIVED>::value == true));
     STATIC_ASSERT((is_same<FURTHER, FURTHER>::value == true));
 
-    STATIC_ASSERT((is_same<CONST_BASE, BASE>::value       == true)); // @@@ wrong
-    STATIC_ASSERT((is_same<CONST_DERIVED, DERIVED>::value == true)); // @@@ wrong
-    STATIC_ASSERT((is_same<CONST_FURTHER, FURTHER>::value == true)); // @@@ wrong
+    STATIC_ASSERT((is_same<CONST_BASE, BASE>::value       == false));
+    STATIC_ASSERT((is_same<CONST_DERIVED, DERIVED>::value == false));
+    STATIC_ASSERT((is_same<CONST_FURTHER, FURTHER>::value == false));
 
     STATIC_ASSERT((is_same<BASE, CONST_BASE>::value       == false));
     STATIC_ASSERT((is_same<DERIVED, CONST_DERIVED>::value == false));
@@ -1338,17 +1342,17 @@ static void STATICTEST_downcast() { // no need to run
     STATIC_ASSERT((is_same<NCV_FURTHER, NCV_CONST_FURTHER>::value == true));
 
     // classes shouldn't  match derived or base classes
-    STATIC_ASSERT((is_same<BASE, DERIVED>::value    == true)); // @@@ wrong
-    STATIC_ASSERT((is_same<BASE, FURTHER>::value    == true)); // @@@ wrong
-    STATIC_ASSERT((is_same<DERIVED, FURTHER>::value == true)); // @@@ wrong
+    STATIC_ASSERT((is_same<BASE, DERIVED>::value    == false));
+    STATIC_ASSERT((is_same<BASE, FURTHER>::value    == false));
+    STATIC_ASSERT((is_same<DERIVED, FURTHER>::value == false));
 
     STATIC_ASSERT((is_same<DERIVED, BASE>::value    == false));
     STATIC_ASSERT((is_same<FURTHER, BASE>::value    == false));
     STATIC_ASSERT((is_same<FURTHER, DERIVED>::value == false));
 
-    STATIC_ASSERT((is_same<CONST_BASE, DERIVED>::value    == true)); // @@@ wrong
-    STATIC_ASSERT((is_same<CONST_BASE, FURTHER>::value    == true)); // @@@ wrong
-    STATIC_ASSERT((is_same<CONST_DERIVED, FURTHER>::value == true)); // @@@ wrong
+    STATIC_ASSERT((is_same<CONST_BASE, DERIVED>::value    == false));
+    STATIC_ASSERT((is_same<CONST_BASE, FURTHER>::value    == false));
+    STATIC_ASSERT((is_same<CONST_DERIVED, FURTHER>::value == false));
 
     STATIC_ASSERT((is_same<CONST_DERIVED, BASE>::value    == false));
     STATIC_ASSERT((is_same<CONST_FURTHER, BASE>::value    == false));
@@ -1363,25 +1367,25 @@ static void STATICTEST_downcast() { // no need to run
     STATIC_ASSERT((is_same<FURTHER, CONST_DERIVED>::value == false));
 
 
-    STATIC_ASSERT((is_same<NCV_BASE, NCV_DERIVED>::value    == true)); // @@@ wrong
-    STATIC_ASSERT((is_same<NCV_BASE, NCV_FURTHER>::value    == true)); // @@@ wrong
-    STATIC_ASSERT((is_same<NCV_DERIVED, NCV_FURTHER>::value == true)); // @@@ wrong
+    STATIC_ASSERT((is_same<NCV_BASE, NCV_DERIVED>::value    == false));
+    STATIC_ASSERT((is_same<NCV_BASE, NCV_FURTHER>::value    == false));
+    STATIC_ASSERT((is_same<NCV_DERIVED, NCV_FURTHER>::value == false));
 
     STATIC_ASSERT((is_same<NCV_DERIVED, NCV_BASE>::value    == false));
     STATIC_ASSERT((is_same<NCV_FURTHER, NCV_BASE>::value    == false));
     STATIC_ASSERT((is_same<NCV_FURTHER, NCV_DERIVED>::value == false));
 
-    STATIC_ASSERT((is_same<NCV_CONST_BASE, NCV_DERIVED>::value    == true)); // @@@ wrong
-    STATIC_ASSERT((is_same<NCV_CONST_BASE, NCV_FURTHER>::value    == true)); // @@@ wrong
-    STATIC_ASSERT((is_same<NCV_CONST_DERIVED, NCV_FURTHER>::value == true)); // @@@ wrong
+    STATIC_ASSERT((is_same<NCV_CONST_BASE, NCV_DERIVED>::value    == false));
+    STATIC_ASSERT((is_same<NCV_CONST_BASE, NCV_FURTHER>::value    == false));
+    STATIC_ASSERT((is_same<NCV_CONST_DERIVED, NCV_FURTHER>::value == false));
 
     STATIC_ASSERT((is_same<NCV_CONST_DERIVED, NCV_BASE>::value    == false));
     STATIC_ASSERT((is_same<NCV_CONST_FURTHER, NCV_BASE>::value    == false));
     STATIC_ASSERT((is_same<NCV_CONST_FURTHER, NCV_DERIVED>::value == false));
 
-    STATIC_ASSERT((is_same<NCV_BASE, NCV_CONST_DERIVED>::value    == true)); // @@@ wrong
-    STATIC_ASSERT((is_same<NCV_BASE, NCV_CONST_FURTHER>::value    == true)); // @@@ wrong
-    STATIC_ASSERT((is_same<NCV_DERIVED, NCV_CONST_FURTHER>::value == true)); // @@@ wrong
+    STATIC_ASSERT((is_same<NCV_BASE, NCV_CONST_DERIVED>::value    == false));
+    STATIC_ASSERT((is_same<NCV_BASE, NCV_CONST_FURTHER>::value    == false));
+    STATIC_ASSERT((is_same<NCV_DERIVED, NCV_CONST_FURTHER>::value == false));
 
     STATIC_ASSERT((is_same<NCV_DERIVED, NCV_CONST_BASE>::value    == false));
     STATIC_ASSERT((is_same<NCV_FURTHER, NCV_CONST_BASE>::value    == false));
