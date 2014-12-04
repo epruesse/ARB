@@ -1237,7 +1237,7 @@ void TEST_edges() {
 
     {
         GB_transaction  ta(gb_main);
-        TreeNode     *tree = DOWNCAST(TreeNode*, GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot));
+        TreeNode       *tree = GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot);
 
         TreeNode *left  = tree->findLeafNamed("CloTyro3"); TEST_REJECT_NULL(left);
         TreeNode *node  = left->get_father();              TEST_REJECT_NULL(node);
@@ -1344,7 +1344,7 @@ void TEST_toggle_bootstraps100() {
 
     {
         GB_transaction  ta(gb_main);
-        TreeNode     *tree = DOWNCAST(TreeNode*, GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot));
+        TreeNode       *tree = GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot);
         TEST_REJECT_NULL(tree);
 
         const char *topo_org   = "(((((((CloTyro3,CloTyro4)'40%',CloTyro2)'0%',CloTyrob)'97%',CloInnoc)'0%',CloBifer)'53%',(((CloButy2,CloButyr)'100%',CloCarni)'33%',CloPaste)'97%')'100%',((((CorAquat,CurCitre)'100%',CorGluta)'17%',CelBiazo)'40%',CytAquat)'100%');";
@@ -1387,7 +1387,7 @@ void TEST_multifurcate_tree() {
 
     for (int test = 1; test<=6; ++test) {
         GB_transaction  ta(gb_main);
-        TreeNode     *tree = DOWNCAST(TreeNode*, GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot));
+        TreeNode       *tree = GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot);
 
         TEST_REJECT_NULL(tree);
         if (test == 1) {

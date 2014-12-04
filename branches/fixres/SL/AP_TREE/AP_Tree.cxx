@@ -828,8 +828,7 @@ void AP_tree::compute_tree() {
 GB_ERROR AP_tree_root::loadFromDB(const char *name) {
     GB_ERROR error = ARB_seqtree_root::loadFromDB(name);
     if (!error) {
-        AP_tree *rNode = DOWNCAST(AP_tree*, get_root_node());
-        rNode->load_subtree_info();
+        get_root_node()->load_subtree_info();
     }
     update_timers(); // maybe after link() ? // @@@ really do if error?
     return error;

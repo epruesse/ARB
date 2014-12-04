@@ -74,7 +74,7 @@ public:
     AWT_graphic_parsimony *get_graphic_tree() { return agt; }
     AP_pars_root *get_tree_root() const { return agt->get_tree_root(); }
 
-    DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, agt->get_root_node());
+    DEFINE_READ_ACCESSORS(AP_tree_nlen*, get_root_node, agt->get_root_node());
 
     GBDATA *get_gb_main() const {
         ap_assert(gb_main); // you need to call open() before you can use get_gb_main()

@@ -74,8 +74,8 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
     // doing all the work for rb_gettree() :-)
     // convert a Ntree into a GBT-Tree
 
-    TreeNode *tnode = DOWNCAST(TreeNode*,root->makeNode());
-    tnode->father     = NULL;
+    TreeNode *tnode = root->makeNode();
+    tnode->father   = NULL;
 
     RB_INFO *info = (RB_INFO *) getmem(sizeof(RB_INFO));
     info->node    = tnode;                             // return-information
@@ -118,7 +118,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
                     RB_INFO    *sinfo;
 
                     if (multifurc > 2) {
-                        mf    = DOWNCAST(TreeNode*, root->makeNode());
+                        mf    = root->makeNode();
                         sinfo = (RB_INFO *) getmem(sizeof(RB_INFO));
 
                         mf->father = NULL;

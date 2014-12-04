@@ -308,8 +308,7 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
                         arb_progress progress("NNI optimize tree");
                         long         prevCombineCount = AP_sequence::combine_count();
                         
-                        AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, get_root_node());
-                        atn->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
+                        get_root_node()->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
                         printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
 
                         exports.save = 1;
