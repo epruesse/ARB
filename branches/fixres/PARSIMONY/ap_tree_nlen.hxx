@@ -27,7 +27,9 @@
 #ifndef AP_BUFFER_HXX
 #include "AP_buffer.hxx"
 #endif
-
+#ifndef AP_MAIN_TYPE_HXX
+#include "ap_main_type.hxx"
+#endif
 
 class AP_tree_nlen;
 
@@ -59,14 +61,14 @@ enum AP_BL_MODE {
 };
 
 class AP_tree_edge;
+class AP_main;
 
 class AP_pars_root : public AP_tree_root {
     // @@@ add responsibility for node/edge ressources
 public:
     AP_pars_root(AliView *aliView, AP_sequence *seq_proto, bool add_delete_callbacks)
         : AP_tree_root(aliView, seq_proto, add_delete_callbacks)
-    {
-    }
+    {}
     inline TreeNode *makeNode() const OVERRIDE;
     inline void destroyNode(TreeNode *node) const OVERRIDE;
 };
@@ -92,7 +94,7 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ renam
 
 protected:
     ~AP_tree_nlen() OVERRIDE {}
-    friend class AP_pars_root; // allowed to call dtor
+    friend void AP_main::destroyNode(AP_tree_nlen *node); // allowed to call dtor
 public:
     explicit AP_tree_nlen(AP_pars_root *troot)
         : AP_tree(troot),
@@ -199,9 +201,6 @@ public:
     friend      class AP_tree_edge;
     friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);
 };
-
-inline TreeNode *AP_pars_root::makeNode() const { return new AP_tree_nlen(const_cast<AP_pars_root*>(this)); }
-inline void AP_pars_root::destroyNode(TreeNode *node) const { delete DOWNCAST(AP_tree_nlen*, node); }
 
 // ---------------------
 //      AP_tree_edge
