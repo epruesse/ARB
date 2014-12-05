@@ -62,6 +62,7 @@ void AP_main::revert() {
      */
     if (!currFrame) GBK_terminate("AP_main::pop on empty stack");
 
+    bool rootPopped = false;
     {
         AP_tree_nlen *node;
         while ((node = currFrame->pop())) {
@@ -69,10 +70,11 @@ void AP_main::revert() {
                 cerr << "Main frame level=" << frameLevel << " node frame level=" << node->get_pushed_to_frame() << endl;
                 GBK_terminate("AP_main::pop: main/node frame-level inconsistency");
             }
-            node->pop(frameLevel);
+            node->pop(frameLevel, rootPopped);
         }
     }
 
+    // ap_assert(rootPopped == frameData.root_pushed); // @@@ fails
 #if defined(CHECK_ROOT_POPS)
     ap_assert(currFrame->root_at_create == get_tree_root()->get_root_node()); // root has been restored!
 #endif

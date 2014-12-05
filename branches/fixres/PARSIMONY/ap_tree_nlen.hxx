@@ -113,7 +113,7 @@ public:
     AP_FLOAT costs(char *mutPerSite = NULL);        // cost of a tree (number of changes ..)
 
     bool push(AP_STACK_MODE, Level frame_level);      // push state of costs
-    void pop(Level curr_frameLevel); // pop old tree costs
+    void pop(Level curr_frameLevel, bool& rootPopped); // pop old tree costs
     void restore(const NodeState& state, bool destructive); // restore old node state
     bool clear(Level frame_level, Level user_push_counter);
 

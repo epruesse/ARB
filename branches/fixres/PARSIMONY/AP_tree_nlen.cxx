@@ -915,10 +915,16 @@ void AP_tree_nlen::restore(const NodeState& state, bool destructive) {
     }
 }
 
-void AP_tree_nlen::pop(Level IF_ASSERTION_USED(curr_frameLevel)) { // pop old tree costs
+void AP_tree_nlen::pop(Level IF_ASSERTION_USED(curr_frameLevel), bool& rootPopped) { // pop old tree costs
     ap_assert(pushed_to_frame == curr_frameLevel); // error in node stack (node wasnt pushed in current frame!)
 
     NodeState *previous = states.pop();
+#if defined(ASSERTION_USED)
+    if (previous->mode == ROOT) { // @@@ remove test code later
+        ap_assert(!rootPopped); // only allowed once
+        rootPopped = true;
+    }
+#endif
     restore(*previous, true);
 
     pushed_to_frame = previous->frameNr;
