@@ -40,6 +40,7 @@
    arb: TEST_tree_remove_add_all leaks nodes
    Memcheck:Leak
    fun:_Znwm
+   ...
    fun:_ZNK12AP_pars_root8makeNodeEv
    ...
    fun:_Z24TEST_tree_remove_add_allv
@@ -61,6 +62,7 @@
    arb: TEST_nucl_tree_modifications leaks nodes
    Memcheck:Leak
    fun:_Znwm
+   ...
    fun:_ZNK12AP_pars_root8makeNodeEv
    ...
    fun:_ZL6nt_addP21AWT_graphic_parsimony7AddWhatb
@@ -71,6 +73,7 @@
    arb: TEST_nucl_tree_modifications leaks nodes
    Memcheck:Leak
    fun:_Znwm
+   ...
    fun:_ZNK12AP_pars_root8makeNodeEv
    ...
    fun:_ZL14nt_add_partialP21AWT_graphic_parsimony
@@ -94,6 +97,7 @@
    arb: TEST_prot_tree_modifications leaks nodes (partial1)
    Memcheck:Leak
    fun:_Znwm
+   ...
    fun:_ZNK12AP_pars_root8makeNodeEv
    ...
    fun:_ZL14nt_add_partialP21AWT_graphic_parsimony
@@ -126,6 +130,7 @@
    arb: TEST_node_stack leaks nodes
    Memcheck:Leak
    fun:_Znwm
+   ...
    fun:_ZNK12AP_pars_root8makeNodeEv
    ...
    fun:_ZL6nt_addP21AWT_graphic_parsimony7AddWhatb
