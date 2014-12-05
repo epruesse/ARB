@@ -13,7 +13,6 @@
 
 use strict;
 use warnings;
-# use diagnostics;
 
 BEGIN {
   if (not exists $ENV{'ARBHOME'}) { die "Environment variable \$ARBHOME has to be defined"; }
