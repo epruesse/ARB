@@ -162,7 +162,7 @@ class AP_tree_nlen;
 #define CHECK_ROOT_POPS
 #endif
 
-struct StackFrameData { // data local to current stack frame
+struct StackFrameData : virtual Noncopyable { // data local to current stack frame
     Level user_push_counter; // @@@ eliminate (instead maintain in AP_main)
 #if defined(AVOID_MULTI_ROOT_PUSH)
     bool root_pushed;
@@ -173,14 +173,24 @@ struct StackFrameData { // data local to current stack frame
 };
 
 class NodeStack : public AP_STACK<AP_tree_nlen> { // derived from Noncopyable
-    StackFrameData previous;
+    StackFrameData *previous;
 
 public:
-    explicit NodeStack(const StackFrameData& data)
+    explicit NodeStack(StackFrameData*& data)
         : previous(data)
-    {}
+    {
+        data = NULL; // take ownership
+    }
+    ~NodeStack() {
+        ap_assert(!previous); // forgot to use take_previous_frame_data()
+    }
 
-    const StackFrameData& get_previous_frame_data() const { return previous; }
+    StackFrameData *take_previous_frame_data() {
+        StackFrameData *release = previous;
+        ap_assert(previous); // cannot call twice
+        previous = NULL;     // release ownership
+        return release;
+    }
 
 #if defined(CHECK_ROOT_POPS)
     AP_tree_nlen *root_at_create; // root at creation time of stack

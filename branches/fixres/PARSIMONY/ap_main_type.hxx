@@ -23,7 +23,7 @@ class AP_main : virtual Noncopyable {
     FrameStack             frames;
     Level                  frameLevel;
     AWT_graphic_parsimony *agt;       // provides access to tree!
-    StackFrameData         frameData; // saved/restored by push/pop
+    StackFrameData        *frameData; // saved/restored by push/pop
     GBDATA                *gb_main;
 
 public:
@@ -31,10 +31,13 @@ public:
         : currFrame(NULL),
           frameLevel(0),
           agt(NULL),
+          frameData(new StackFrameData),
           gb_main(NULL)
     {}
     ~AP_main() {
         if (gb_main) GB_close(gb_main);
+        ap_assert(frameData);
+        delete frameData;
         delete currFrame;
     }
 
@@ -49,7 +52,7 @@ public:
         return gb_main;
     }
     const char *get_aliname() const;
-    Level get_user_push_counter() const { return frameData.user_push_counter; }
+    Level get_user_push_counter() const { return frameData->user_push_counter; }
     Level get_frameLevel() const { return frameLevel; }
 
     GB_ERROR open(const char *db_server);

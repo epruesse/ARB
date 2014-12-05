@@ -24,13 +24,13 @@ GB_ERROR AP_main::open(const char *db_server) {
 }
 
 void AP_main::user_push() {
-    frameData.user_push_counter = frameLevel + 1;
+    frameData->user_push_counter = frameLevel + 1;
     remember();
 }
 
 void AP_main::user_pop() {
     // checks if user_pop possible
-    if (frameData.user_push_counter == frameLevel) {
+    if (frameData->user_push_counter == frameLevel) {
         revert();    // changes user_push_counter if user pop
     }
     else {
@@ -47,9 +47,10 @@ void AP_main::remember() {
     if (currFrame) frames.push(currFrame);
 
     currFrame = new NodeStack(frameData);
+    frameData = new StackFrameData;
 
 #if defined(AVOID_MULTI_ROOT_PUSH)
-    frameData.root_pushed = false;
+    frameData->root_pushed = false;
 #endif
 #if defined(CHECK_ROOT_POPS)
     currFrame->root_at_create = DOWNCAST(AP_tree_nlen*, get_tree_root()->get_root_node());
@@ -74,12 +75,12 @@ void AP_main::revert() {
         }
     }
 
-    ap_assert(rootPopped == frameData.root_pushed);
+    ap_assert(rootPopped == frameData->root_pushed);
 #if defined(CHECK_ROOT_POPS)
     ap_assert(currFrame->root_at_create == get_tree_root()->get_root_node()); // root has been restored!
 #endif
 
-    frameData = currFrame->get_previous_frame_data();
+    frameData = currFrame->take_previous_frame_data();
 
     delete currFrame;
     currFrame = frames.pop();
@@ -105,17 +106,17 @@ void AP_main::accept() {
     // @@@ ensure test coverage -> DRY cases below (they are nearly the same)
 
     NodeStack *prev_frame = frames.pop();
-    if (frameData.user_push_counter >= frameLevel) {
+    if (frameData->user_push_counter >= frameLevel) {
         while (!currFrame->empty()) {
             UNCOVERED();
             node = currFrame->pop();
-            node->clear(frameLevel, frameData.user_push_counter);
+            node->clear(frameLevel, frameData->user_push_counter);
         }
     }
     else {
         while ((node = currFrame->pop())) {
             // UNCOVERED();
-            if (node->clear(frameLevel, frameData.user_push_counter) != true) {
+            if (node->clear(frameLevel, frameData->user_push_counter) != true) {
                 // node was not cleared (because also buffered in previous node stack).
                 // @@@ has to be done independent of user_push_counter
                 // if revert() gets called for previous stack, it is necessary to revert
@@ -129,10 +130,10 @@ void AP_main::accept() {
         }
     }
 
-    frameData = currFrame->get_previous_frame_data();
+    frameData = currFrame->take_previous_frame_data();
 
-        delete currFrame;
-        currFrame = prev_frame;
+    delete currFrame;
+    currFrame = prev_frame;
     frameLevel --;
 }
 
@@ -156,12 +157,12 @@ void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
         ap_assert(node->is_root_node());
 
 #if defined(AVOID_MULTI_ROOT_PUSH)
-        if (frameData.root_pushed) {
+        if (frameData->root_pushed) {
             // do not push root twice in same frame
             mode = BOTH;
         }
         else {
-            frameData.root_pushed = true;
+            frameData->root_pushed = true;
 #if defined(CHECK_ROOT_POPS)
             ap_assert(node == currFrame->root_at_create); // make sure the pushed root is the correct one
 #endif
