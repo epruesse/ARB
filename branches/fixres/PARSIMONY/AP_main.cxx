@@ -74,16 +74,16 @@ void AP_main::revert() {
         }
     }
 
-    // ap_assert(rootPopped == frameData.root_pushed); // @@@ fails
+    ap_assert(rootPopped == frameData.root_pushed);
 #if defined(CHECK_ROOT_POPS)
     ap_assert(currFrame->root_at_create == get_tree_root()->get_root_node()); // root has been restored!
 #endif
 
-    delete currFrame;
-    frameLevel --;
+    frameData = currFrame->get_previous_frame_data();
 
+    delete currFrame;
     currFrame = frames.pop();
-    frameData = currFrame ? currFrame->get_previous_frame_data() : StackFrameData();
+    frameLevel --;
 }
 
 void AP_main::accept() {
@@ -104,17 +104,15 @@ void AP_main::accept() {
 
     // @@@ ensure test coverage -> DRY cases below (they are nearly the same)
 
+    NodeStack *prev_frame = frames.pop();
     if (frameData.user_push_counter >= frameLevel) {
         while (!currFrame->empty()) {
             UNCOVERED();
             node = currFrame->pop();
             node->clear(frameLevel, frameData.user_push_counter);
         }
-        delete currFrame;
-        currFrame = frames.pop();
     }
     else {
-        NodeStack *prev_frame = frames.pop();
         while ((node = currFrame->pop())) {
             // UNCOVERED();
             if (node->clear(frameLevel, frameData.user_push_counter) != true) {
@@ -129,12 +127,13 @@ void AP_main::accept() {
                 }
             }
         }
+    }
+
+    frameData = currFrame->get_previous_frame_data();
+
         delete currFrame;
         currFrame = prev_frame;
-    }
     frameLevel --;
-
-    frameData = currFrame ? currFrame->get_previous_frame_data() : StackFrameData();
 }
 
 void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
