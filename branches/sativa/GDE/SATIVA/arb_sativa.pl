@@ -59,6 +59,11 @@ sub exportTaxonomy($$$$$\@) {
          if ($marked==1 || $marked_only==0) {
            my $acc_no = BIO::read_string($gb_species, "name");          
            $acc_no || expectError('read_string acc');
+           my $gb_field = ARB::entry($gb_species, $tax_field);
+           if (not defined $gb_field) {      
+             print "WARNING: field ".$tax_field." is missing for sequence ".$acc_no."\n";
+             next;
+           }     
            my $tax = BIO::read_string($gb_species, $tax_field);
            $tax || expectError('read_string '.$tax_field);
            my $species_name = BIO::read_string($gb_species, $sp_field);
