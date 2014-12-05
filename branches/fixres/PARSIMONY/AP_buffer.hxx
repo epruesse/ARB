@@ -158,9 +158,12 @@ class AP_tree_nlen;
 #define CHECK_ROOT_POPS
 #endif
 
-struct StackFrameData : virtual Noncopyable { // data local to current stack frame
-    Level user_push_counter; // @@@ eliminate (instead maintain in AP_main)
-    bool root_pushed;
+struct StackFrameData : virtual Noncopyable {
+    // data local to current stack frame
+    // as well exists for stack frame = 0 (i.e. when nothing has been remember()ed yet)
+    
+    Level user_push_counter; // @@@ eliminate (instead maintain AP_STACK<Level> in AP_main)
+    bool  root_pushed; // @@@ move into NodeStack
     StackFrameData(Level upc) : user_push_counter(upc), root_pushed(false) {}
 };
 
