@@ -200,8 +200,10 @@ sub removeDonefileFor($) {
   }
   else {
     print "donefiles found: $donefiles\n";
-    if ($donefiles>0) { foreach (@donefiles) { print "- $_\n"; } }
-    die "could not detect donefile for '$unitName'";
+    if ($donefiles>0) {
+      foreach (@donefiles) { print "- $_\n"; }
+      die "could not determine .done-file for '$unitName'";
+    }
   }
 }
 
@@ -347,6 +349,12 @@ sub parse_log($\@) {
     else {
       $crashed++;
       print "(maybe the test did not compile or crashed)\n";
+    }
+  }
+  else {
+    if ($seenSanitized>0) {
+      $sanitized++;
+      print "Detected Sanitizer warnings\n";
     }
   }
 
