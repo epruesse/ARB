@@ -50,6 +50,7 @@ void AP_main::remember() {
         Level curr_user_push_counter = frameData->user_push_counter;
 
         currFrame = new NodeStack(frameData);
+        ap_assert(!frameData);
         frameData = new StackFrameData(curr_user_push_counter);
     }
 
@@ -81,6 +82,7 @@ void AP_main::revert() {
     ap_assert(currFrame->root_at_create == get_tree_root()->get_root_node()); // root has been restored!
 #endif
 
+    delete frameData;
     frameData = currFrame->take_previous_frame_data();
 
     delete currFrame;
@@ -131,6 +133,7 @@ void AP_main::accept() {
         }
     }
 
+    delete frameData;
     frameData = currFrame->take_previous_frame_data();
 
     delete currFrame;
