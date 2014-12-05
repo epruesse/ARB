@@ -31,7 +31,7 @@ public:
         : currFrame(NULL),
           frameLevel(0),
           agt(NULL),
-          frameData(new StackFrameData),
+          frameData(new StackFrameData(0)),
           gb_main(NULL)
     {}
     ~AP_main() {

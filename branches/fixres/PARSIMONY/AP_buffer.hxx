@@ -154,22 +154,14 @@ struct StateStack : public AP_STACK<NodeState> {
 
 class AP_tree_nlen;
 
-#define AVOID_MULTI_ROOT_PUSH
-// old version did not avoid (i.e. it was possible to push multiple ROOTs)
-// fails some tests when undefined
-
 #if defined(ASSERTION_USED)
 #define CHECK_ROOT_POPS
 #endif
 
 struct StackFrameData : virtual Noncopyable { // data local to current stack frame
     Level user_push_counter; // @@@ eliminate (instead maintain in AP_main)
-#if defined(AVOID_MULTI_ROOT_PUSH)
     bool root_pushed;
-    StackFrameData() : user_push_counter(0), root_pushed(false) {}
-#else
-    StackFrameData() : user_push_counter(0) {}
-#endif
+    StackFrameData(Level upc) : user_push_counter(upc), root_pushed(false) {}
 };
 
 class NodeStack : public AP_STACK<AP_tree_nlen> { // derived from Noncopyable

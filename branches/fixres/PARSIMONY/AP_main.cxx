@@ -46,12 +46,13 @@ void AP_main::remember() {
     frameLevel ++;
     if (currFrame) frames.push(currFrame);
 
-    currFrame = new NodeStack(frameData);
-    frameData = new StackFrameData;
+    {
+        Level curr_user_push_counter = frameData->user_push_counter;
 
-#if defined(AVOID_MULTI_ROOT_PUSH)
-    frameData->root_pushed = false;
-#endif
+        currFrame = new NodeStack(frameData);
+        frameData = new StackFrameData(curr_user_push_counter);
+    }
+
 #if defined(CHECK_ROOT_POPS)
     currFrame->root_at_create = DOWNCAST(AP_tree_nlen*, get_tree_root()->get_root_node());
 #endif
@@ -156,7 +157,6 @@ void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
         ap_assert(!node->father);
         ap_assert(node->is_root_node());
 
-#if defined(AVOID_MULTI_ROOT_PUSH)
         if (frameData->root_pushed) {
             // do not push root twice in same frame
             mode = BOTH;
@@ -167,7 +167,6 @@ void AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
             ap_assert(node == currFrame->root_at_create); // make sure the pushed root is the correct one
 #endif
         }
-#endif
     }
 
     if (node->push(mode, frameLevel)) currFrame->push(node);
