@@ -42,7 +42,11 @@ void TreeNode::assert_valid() const {
 
     TreeRoot *troot = get_tree_root();
     if (troot) {
-        if (!is_leaf) {
+        if (is_leaf) {
+            rt_assert(!rightson);
+            rt_assert(!leftson);
+        }
+        else {
             rt_assert(rightson);
             rt_assert(leftson);
             get_rightson()->assert_valid();
@@ -59,7 +63,11 @@ void TreeNode::assert_valid() const {
         }
     }
     else { // removed node (may be incomplete)
-        if (!is_leaf) {
+        if (is_leaf) {
+            rt_assert(!rightson);
+            rt_assert(!leftson);
+        }
+        else {
             if (rightson) get_rightson()->assert_valid();
             if (leftson)  get_leftson()->assert_valid();
         }
