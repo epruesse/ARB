@@ -76,9 +76,12 @@ public:
 #endif
 
     inline AP_tree_nlen *makeNode(AP_pars_root *proot);
+    inline AP_tree_edge *makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2);
     inline void destroyNode(AP_tree_nlen *node);
+    inline void destroyEdge(AP_tree_edge *edge);
 };
 
 #else
 #error ap_main_type.hxx included twice
 #endif // AP_MAIN_TYPE_HXX
+

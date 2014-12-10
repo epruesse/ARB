@@ -323,7 +323,7 @@ void AP_tree_nlen::initial_insert(AP_tree_nlen *newBrother, AP_pars_root *troot)
     ap_assert(newBrother->is_leaf);
 
     AP_tree::initial_insert(newBrother, troot);
-    new AP_tree_edge(newBrother, this); // build the root edge
+    makeEdge(newBrother, this); // build the root edge
 
     ASSERT_VALID_TREE(this->get_father());
 }
@@ -348,13 +348,13 @@ void AP_tree_nlen::insert(AP_tree_nlen *newBrother) {
             oldEdge->relink(get_father(), get_father()->get_father());
         }
         else { // insert to son of root
-            AP_tree_edge *oldEdge = newBrother->edgeTo(newBrother->get_brother())->unlink();
+            AP_tree_edge *oldEdge = newBrother->edgeTo(newBrother->get_brother())->unlink(); // @@@ missing push STRUCTURE of newBrother->get_brother()?
             AP_tree::insert(newBrother);
             oldEdge->relink(get_father(), get_father()->get_brother());
         }
 
-        new AP_tree_edge(this, get_father());
-        new AP_tree_edge(get_father(), newBrother);
+        makeEdge(this, get_father());
+        makeEdge(get_father(), newBrother);
 
         ASSERT_VALID_TREE(get_father()->get_father());
     }
@@ -372,14 +372,14 @@ void AP_tree_nlen::insert(AP_tree_nlen *newBrother) {
         AP_tree::insert(newBrother);
 
         oldEdge->relink(this, newBrother);
-        new AP_tree_edge(newBrother, rson);
-        new AP_tree_edge(newBrother, lson);
+        makeEdge(newBrother, rson);
+        makeEdge(newBrother, lson);
 
         ASSERT_VALID_TREE(get_father());
     }
 }
 
-void AP_tree_nlen::remove() {
+AP_tree_nlen *AP_tree_nlen::REMOVE() {
     // Removes the node and its father from the tree:
     //
     //       grandpa                grandpa
@@ -391,7 +391,7 @@ void AP_tree_nlen::remove() {
     //   this       brother
     //
     // One of the edges is relinked between brother and grandpa.
-    // The other two edges are lost. This is not very relevant in respect to
+    // The other two edges are lost. This is not very relevant in respect to // @@@ correct comment
     // memory usage because very few remove()s are really performed - the majority
     // is undone by a pop().
     // In the last case the two unlinked edges will be re-used, cause their
@@ -415,12 +415,12 @@ void AP_tree_nlen::remove() {
         ap_main->push_node(get_father(), BOTH);
         ap_main->push_node(grandPa, STRUCTURE);
 
-        edgeTo(get_father())->unlink();                 // LOST_EDGE
-        get_father()->edgeTo(oldBrother)->unlink();     // LOST_EDGE
+        destroyEdge(edgeTo(get_father())->unlink());
+        destroyEdge(get_father()->edgeTo(oldBrother)->unlink());
 
         if (grandPa->father) {
             oldEdge = get_father()->edgeTo(grandPa)->unlink();
-            AP_tree::remove();
+            AP_tree::REMOVE();
             oldEdge->relink(oldBrother, grandPa);
         }
         else { // remove grandson of root
@@ -428,7 +428,7 @@ void AP_tree_nlen::remove() {
             ap_main->push_node(uncle, STRUCTURE);
 
             oldEdge = get_father()->edgeTo(uncle)->unlink();
-            AP_tree::remove();
+            AP_tree::REMOVE();
             oldEdge->relink(oldBrother, uncle);
         }
         ASSERT_VALID_TREE(grandPa);
@@ -446,12 +446,12 @@ void AP_tree_nlen::remove() {
             //
             ap_main->push_node(oldRoot, ROOT);
 
-            edgeTo(oldBrother)->unlink();           // LOST_EDGE
+            destroyEdge(edgeTo(oldBrother)->unlink());
 
 #if defined(ASSERTION_USED)
             AP_pars_root *troot = get_tree_root();
 #endif // ASSERTION_USED
-            AP_tree::remove();
+            AP_tree::REMOVE();
             ap_assert(!troot->get_root_node()); // tree should have been removed
         }
         else {
@@ -475,11 +475,11 @@ void AP_tree_nlen::remove() {
             ap_main->push_node(rson, STRUCTURE);
             ap_main->push_node(oldRoot, ROOT);
 
-            edgeTo(oldBrother)->unlink();           // LOST_EDGE
-            oldBrother->edgeTo(lson)->unlink();     // LOST_EDGE
+            destroyEdge(edgeTo(oldBrother)->unlink());
+            destroyEdge(oldBrother->edgeTo(lson)->unlink());
 
             oldEdge = oldBrother->edgeTo(rson)->unlink();
-            AP_tree::remove();
+            AP_tree::REMOVE();
             oldEdge->relink(lson, rson);
 
             ap_assert(lson->get_tree_root()->get_root_node() == oldBrother);
@@ -491,6 +491,7 @@ void AP_tree_nlen::remove() {
     set_tree_root(NULL);
 
     ASSERT_VALID_TREE(this);
+    return this;
 }
 
 void AP_tree_nlen::swap_sons() {
@@ -852,7 +853,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) {
     }
 
     if (mode & SEQUENCE) {
-        ap_assert(!is_leaf); // only allowed to push STRUCTURE for leafs
+        ap_assert(!is_leaf); // only allowed to push SEQUENCE for inner nodes
         if (!(store->mode & SEQUENCE)) {
             AP_sequence *sequence   = take_seq();
             store->sequence      = sequence;
@@ -881,6 +882,9 @@ void AP_tree_nlen::restore(const NodeState& state, bool destructive) {
         father   = state.father;
         leftson  = state.leftson;
         rightson = state.rightson;
+        is_leaf  = !leftson; ap_assert(is_leaf == !rightson);
+        ap_assert(implicated(is_leaf, name));
+        ap_assert(implicated(is_leaf, gb_node));
         leftlen  = state.leftlen;
         rightlen = state.rightlen;
         set_tree_root(state.root);

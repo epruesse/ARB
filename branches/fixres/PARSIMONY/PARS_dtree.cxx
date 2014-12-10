@@ -534,7 +534,7 @@ void TEST_basic_tree_modifications() {
         TEST_REJECT_NULL(CurCitre);
         TEST_REJECT_NULL(CurCitre->get_father());
 
-        CurCitre->remove();
+        CurCitre->REMOVE();
         const char *CurCitre_removed_topo = "((" B1_TOP "," B2_TOP "):0.081,(" B3_TOP_SONS_CCR "):0.081);";
         // ------------------------------------------------------------------- ^^^ = B3_TOP_SONS minus CurCitre
         TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_removed_topo);
@@ -558,32 +558,15 @@ void TEST_basic_tree_modifications() {
         const char *CurCitre_inserted_topo = "((" B1_TOP ",(((CloButy2:0.009,CloButyr:0.000):0.564,(CurCitre:0.060,CloCarni:0.060):0.060):0.010,CloPaste:0.179):0.131):0.081,(" B3_TOP_SONS_CCR "):0.081);";
         TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_inserted_topo);
 
-        AP_tree_nlen *node_del_manually  = CurCitre->get_father();
-        AP_tree_edge *edge1_del_manually = CurCitre->edgeTo(node_del_manually);
-        AP_tree_edge *edge2_del_manually = CurCitre->get_brother()->edgeTo(node_del_manually);
-
         TEST_ASSERT_VALID_TREE(root);
 
         // now check pops:
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_removed_topo);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootSetBack_topo);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootAtCloTyrob_topo);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, bottom_topo);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, edge_topo);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, top_topo);
-
-        TEST_ASSERT_VALID_TREE(root);
-        AP_pars_root *treeroot = root->get_tree_root();
-
-        // delete memory allocated by insert() above and lost due to pop()s
-        delete edge1_del_manually;
-        delete edge2_del_manually;
-
-        node_del_manually->forget_origin();
-        node_del_manually->father   = NULL;
-        node_del_manually->leftson  = NULL;
-        node_del_manually->rightson = NULL;
-        destroy(node_del_manually, treeroot);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_removed_topo); TEST_ASSERT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootSetBack_topo);      TEST_ASSERT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootAtCloTyrob_topo);   TEST_ASSERT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, bottom_topo);           TEST_ASSERT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, edge_topo);             TEST_ASSERT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, top_topo);              TEST_ASSERT_VALID_TREE(root);
     }
 }
 
@@ -642,14 +625,14 @@ void TEST_tree_remove_add_all() {
     AP_pars_root *troot = leaf[0]->get_tree_root();
     TEST_REJECT_NULL(troot);
 
-    // Note: following loop leaks father nodes and edges
-    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_tree_remove_add_all
-    for (int i = 0; i<LEAFS-1; ++i) { // removing the second to last leaf, "removes" both remaining leafs
+    for (int i = 0; i<LEAFS-1; ++i) {
+        // Note: removing the second to last leaf, "removes" both remaining
+        // leafs (but only destroys their father node)
+
         TEST_ASSERT_VALID_TREE(root);
-        leaf[i]->remove();
+        leaf[i]->REMOVE();
         TEST_ASSERT_VALID_TREE(leaf[i]);
     }
-    leaf[LEAFS-1]->father = NULL; // correct final leaf (not removed regularily)
 
     leaf[0]->initial_insert(leaf[1], troot);
     for (int i = 2; i<LEAFS; ++i) {

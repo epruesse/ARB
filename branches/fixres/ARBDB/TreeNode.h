@@ -243,7 +243,7 @@ protected:
             root->TreeRoot::change_root(this, NULL);
             root->delete_by_node();
         }
-        delete leftson;  gb_assert(!leftson);
+        delete leftson;  gb_assert(!leftson); // cannot use destroy here
         delete rightson; gb_assert(!rightson);
 
         unlink_from_father();
@@ -277,7 +277,7 @@ public:
           tree_root(root)
     {}
     static void destroy(TreeNode *that)  { // replacement for destructor
-        if (that) delete that;
+        if (that) that->destroy();
     }
     static void destroy(TreeNode *that, TreeRoot *root) {
         if (that) that->destroy(root);
@@ -295,6 +295,11 @@ public:
     virtual void compute_tree()             = 0;
 
     void forget_origin() { set_tree_root(NULL); }
+    void forget_relatives() {
+        leftson  = NULL;
+        rightson = NULL;
+        father   = NULL;
+    }
 
     TreeRoot *get_tree_root() const { return tree_root; }
 

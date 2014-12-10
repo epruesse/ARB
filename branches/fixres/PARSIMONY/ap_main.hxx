@@ -64,20 +64,69 @@ inline AP_tree_edge *rootEdge() {
 // ------------------------------------------
 //      stack-aware ressource management
 
+// #define REUSE_NODES
+#define REUSE_EDGES
+
+inline AP_tree_nlen *StackFrameData::makeNode(AP_pars_root *proot) {
+    return
+#if defined(REUSE_NODES)
+    destroyed.has_nodes() ?
+        destroyed.getNode() : // reuse destroyed node (@@@ doesn't work, because revert() does not restore node completely)
+#endif
+        created.put(new AP_tree_nlen(proot));
+}
+inline AP_tree_edge *StackFrameData::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2) {
+#if defined(REUSE_EDGES)
+    if (destroyed.has_edges()) {
+        AP_tree_edge *reuse = destroyed.getEdge();
+        reuse->relink(n1, n2);
+        return reuse;
+    }
+#endif
+    return created.put(new AP_tree_edge(n1, n2));
+}
+
+inline void StackFrameData::destroyNode(AP_tree_nlen *node) { destroyed.put(node); }
+inline void StackFrameData::destroyEdge(AP_tree_edge *edge) { destroyed.put(edge); }
+
 inline AP_tree_nlen *AP_main::makeNode(AP_pars_root *proot) {
-    return new AP_tree_nlen(proot);
+    return currFrame ? frameData->makeNode(proot) : new AP_tree_nlen(proot);
+}
+inline AP_tree_edge *AP_main::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2) {
+    return currFrame ? frameData->makeEdge(n1, n2) : new AP_tree_edge(n1, n2);
 }
 inline void AP_main::destroyNode(AP_tree_nlen *node) {
-    delete node;
+    if (currFrame) {
+        frameData->destroyNode(node); // @@@ check whether child nodes are destroyed (if still linked in node)
+    }
+    else {
+        delete node; // here child nodes are destroyed
+    }
+}
+inline void AP_main::destroyEdge(AP_tree_edge *edge) {
+    ap_assert(!edge->is_linked());
+    if (currFrame) {
+        frameData->destroyEdge(edge);
+    }
+    else {
+        delete edge;
+    }
 }
 
 inline TreeNode *AP_pars_root::makeNode() const {
     return ap_main->makeNode(const_cast<AP_pars_root*>(this));
 }
-
 inline void AP_pars_root::destroyNode(TreeNode *node) const {
     ap_main->destroyNode(DOWNCAST(AP_tree_nlen*, node));
 }
+
+inline AP_tree_edge *makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2) {
+    return ap_main->makeEdge(n1, n2);
+}
+inline void destroyEdge(AP_tree_edge *edge) {
+    ap_main->destroyEdge(edge);
+}
+
 
 #else
 #error ap_main.hxx included twice

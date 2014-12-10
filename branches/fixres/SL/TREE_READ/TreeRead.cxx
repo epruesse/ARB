@@ -515,7 +515,7 @@ TreeNode *TreeReader::load_named_node(GBT_LEN& nodeLen) {
     if (node && !error) {
         if (!eat_and_set_name_and_length(node, nodeLen)) {
             node->forget_origin();
-            destroy(node);
+            destroy(node, troot);
             node = NULL;
         }
     }
@@ -584,11 +584,11 @@ TreeNode *TreeReader::load_subtree(GBT_LEN& nodeLen) {
 
                 if (right) {
                     right->forget_origin();
-                    destroy(right);
+                    destroy(right, troot);
                 }
                 if (error && node) {
                     node->forget_origin();
-                    destroy(node);
+                    destroy(node, troot);
                     node = NULL;
                 }
 
@@ -601,7 +601,7 @@ TreeNode *TreeReader::load_subtree(GBT_LEN& nodeLen) {
         }
         if (left) {
             left->forget_origin();
-            destroy(left);
+            destroy(left, troot);
         }
     }
 

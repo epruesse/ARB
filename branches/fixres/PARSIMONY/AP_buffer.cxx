@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -132,4 +133,110 @@ void AP_main::print2file(const char *file_in_ARBHOME) {
 }
 
 #endif
+
+using namespace std;
+
+template <typename SET>
+void set_extract_common(SET& set1, SET& set2, SET& common)  {
+    ap_assert(!set1.empty() && !set2.empty());
+
+    set_intersection(
+        set1.begin(), set1.end(),
+        set2.begin(), set2.end(),
+        std::inserter<SET>(common, common.begin())
+        );
+
+    for (typename SET::iterator e = common.begin(); e != common.end(); ++e) {
+        set1.erase(*e);
+        set2.erase(*e);
+        ap_assert(0);
+    }
+}
+
+void ResourceStack::extract_common(ResourceStack& stack1, ResourceStack& stack2) {
+    if (!stack1.nodes.empty() && !stack2.nodes.empty()) {
+        set_extract_common(stack1.nodes, stack2.nodes, nodes);
+    }
+    if (!stack1.edges.empty() && !stack2.edges.empty()) {
+        set_extract_common(stack1.edges, stack2.edges, edges);
+    }
+}
+
+void ResourceStack::destroy_nodes() {
+    for (NodeSet::iterator n = nodes.begin(); n != nodes.end(); ++n) {
+        AP_tree_nlen *todel = *n;
+
+        // Nodes destroyed from here may link to other nodes, but all these links are outdated.
+        // They are just leftovers of calling revert() or accept() -> wipe them
+        todel->forget_relatives();
+        todel->forget_origin();
+
+        delete todel;
+    }
+    forget_nodes();
+}
+
+void ResourceStack::destroy_edges() {
+    for (EdgeSet::iterator e = edges.begin(); e != edges.end(); ++e) {
+        AP_tree_edge *todel = *e;
+
+        // Edges destroyed from here may link to nodes, but all these links are outdated.
+        // They are just leftovers of calling revert() or accept() -> wipe them
+        todel->node[0] = NULL;
+        todel->node[1] = NULL;
+
+        delete todel;
+    }
+    forget_edges();
+}
+
+void ResourceStack::forget_nodes() { nodes.clear(); }
+void ResourceStack::forget_edges() { edges.clear(); }
+
+void ResourceStack::move_nodes(ResourceStack& target) {
+    while (!nodes.empty()) target.put(getNode()); // @@@ optimize
+}
+void ResourceStack::move_edges(ResourceStack& target) {
+    while (!edges.empty()) target.put(getEdge()); // @@@ optimize
+}
+
+void StackFrameData::revert_resources(StackFrameData *previous) {
+    ap_assert(previous);
+
+    ResourceStack common;
+    common.extract_common(created, destroyed);
+
+    if (common.has_nodes()) {
+        UNCOVERED(); ap_assert(0);
+    }
+    created.destroy_nodes();
+    destroyed.forget_nodes();
+
+    if (common.has_edges()) {
+        UNCOVERED(); ap_assert(0);
+    }
+    created.destroy_edges();
+    destroyed.forget_edges();
+}
+
+void StackFrameData::accept_resources(StackFrameData *previous) {
+    ap_assert(previous);
+
+    ResourceStack common;
+    common.extract_common(created, destroyed);
+
+    if (common.has_nodes()) {
+        UNCOVERED(); ap_assert(0);
+    }
+    created.move_nodes(previous->created);
+    destroyed.move_nodes(previous->destroyed);
+
+    if (common.has_edges()) {
+        UNCOVERED(); ap_assert(0);
+    }
+    created.move_edges(previous->created);
+    destroyed.move_edges(previous->destroyed);
+}
+
+
 

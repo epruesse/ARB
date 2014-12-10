@@ -288,8 +288,8 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
             bool brother_is_short = 2 * brother->get_seq()->weighted_base_count() < leaf->get_seq()->weighted_base_count();
 
             if (brother_is_short) {
-                brother->remove();
-                leaf->remove();
+                brother->REMOVE();
+                leaf->REMOVE();
 
                 for (int firstUse = 1; firstUse >= 0; --firstUse) {
                     AP_tree_nlen *to_insert = firstUse ? leaf : brother;
@@ -1851,9 +1851,6 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 14);
 
-    // Note: following code leaks father nodes and edges
-    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_nucl_tree_modifications
-
     // [NUCOPTI] opposed to protein tests below the initial tree here is NOT optimized! compare .@PROTOPTI
     // -> removing and adding species produces a better tree
     //
@@ -2011,9 +2008,6 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 10);
 
-    // Note: following code leaks father nodes and edges
-    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_prot_tree_modifications
-
     // [PROTOPTI] opposed to nucleid tests above the initial tree here is already optimized! compare .@NUCOPTI
     // -> adding species approximately reproduces initial topology
     //
@@ -2100,10 +2094,6 @@ void TEST_node_stack() {
     // test was used to fix #620
 
     const char *aliname = "ali_5s";
-
-    // Note: following code leaks father nodes and edges
-    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_node_stack
-
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
     TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");

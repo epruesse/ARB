@@ -725,7 +725,7 @@ TreeNode *TreeNode::fixDeletedSon() {
     gb_assert(!is_root_node());
 
     forget_origin();
-    is_leaf = true; // don't try recursive delete
+    forget_relatives();
     delete this;
 
     return result;

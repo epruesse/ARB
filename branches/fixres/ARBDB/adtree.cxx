@@ -68,8 +68,12 @@ TreeNode *GBT_remove_leafs(TreeNode *tree, GBT_TreeRemoveType mode, const GB_HAS
 
             if (deleteSelf) {
                 gb_assert(!tree->is_root_node());
+
+                // @@@ DRY occurrences of the following lines (idiom 'destroy removed node')
+                TreeRoot *troot = tree->get_tree_root();
                 tree->forget_origin();
-                destroy(tree);
+                destroy(tree, troot);
+
                 tree = NULL;
                 if (removed) (*removed)++;
             }
@@ -91,10 +95,12 @@ TreeNode *GBT_remove_leafs(TreeNode *tree, GBT_TreeRemoveType mode, const GB_HAS
         else {                  // everything deleted -> delete self
             if (tree->name && groups_removed) (*groups_removed)++;
 
+            TreeRoot *troot  = tree->get_tree_root();
             if (!tree->is_root_node()) tree->forget_origin();
-            tree->is_leaf = true;
-            destroy(tree);
-            tree          = NULL;
+            tree->forget_relatives();
+            destroy(tree, troot);
+
+            tree = NULL;
         }
     }
 

@@ -91,10 +91,16 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ renam
 
     void createListRekUp(AP_CO_LIST *list, int *cn);
     void createListRekSide(AP_CO_LIST *list, int *cn);
+    void forget_relatives() {
+        AP_tree::forget_relatives();
+    }
 
 protected:
-    ~AP_tree_nlen() OVERRIDE {}
+    ~AP_tree_nlen() OVERRIDE { ap_assert(states.empty()); }
     friend void AP_main::destroyNode(AP_tree_nlen *node); // allowed to call dtor
+    friend void ResourceStack::destroy_nodes();
+    friend void ResourceStack::destroy_edges();
+    friend void StackFrameData::destroyNode(AP_tree_nlen *node);
 public:
     explicit AP_tree_nlen(AP_pars_root *troot)
         : AP_tree(troot),
@@ -129,7 +135,7 @@ public:
     void insert(AP_tree_nlen *new_brother);
     void initial_insert(AP_tree_nlen *new_brother, AP_pars_root *troot);
 
-    void remove() OVERRIDE;
+    AP_tree_nlen *REMOVE() OVERRIDE;
     void swap_sons() OVERRIDE;
     void swap_assymetric(AP_TREE_SIDE mode) OVERRIDE;
     void moveNextTo(AP_tree_nlen *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveNextTo to test if possible
@@ -238,12 +244,16 @@ class AP_tree_edge : virtual Noncopyable {
     void calcDistance();
     void tailDistance(AP_tree_nlen*);
 
-    int distanceOK() const { int diff = node[0]->distance-node[1]->distance; return diff>=-1 && diff<=1; }
+    bool distanceOK() const { int diff = node[0]->distance-node[1]->distance; return diff>=-1 && diff<=1; }
+    bool is_linked() const { return node[0]; }
 
     // my friends:
-
-    friend class AP_tree_nlen;
+    friend class         AP_tree_nlen;
     friend std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
+    friend AP_tree_edge *StackFrameData::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2);
+    friend void          AP_main::destroyEdge(AP_tree_edge *edge);
+    friend void StackFrameData::destroyNode(AP_tree_nlen *node);
+    friend void          ResourceStack::destroy_edges();
 #if defined(UNIT_TESTS) // UT_DIFF
     friend void TEST_basic_tree_modifications();
 #endif

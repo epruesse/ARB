@@ -262,9 +262,13 @@ void AP_tree_root::set_node_deleted_callback(AP_nodeDelCb cb, void *cd) {
 }
 
 
-void AP_tree::remove() {
-    // remove this + father from tree
-    // Note: does not delete this or father!
+AP_tree *AP_tree::REMOVE() {
+    // Remove this + father from tree. Father node will be destroyed.
+    // Caller has to destroy the removed node (if intended).
+    //
+    // Warning: when removing the 2nd to last node from the tree,
+    // the whole tree will be removed.
+    // In that case both leaf nodes remain undestroyed.
 
     ASSERT_VALID_TREE(this);
     if (father == 0) {
@@ -306,6 +310,7 @@ void AP_tree::remove() {
         else {                                      // father is root, make brother the new root
             if (brother->is_leaf) {
                 troot->change_root(fath, NULL);     // erase tree from root
+                brother->unlink_from_father();      // do not automatically delete brother
             }
             else {
                 brother->unlink_from_father();
@@ -322,7 +327,12 @@ void AP_tree::remove() {
 
         fath->forget_origin();
         ASSERT_VALID_TREE(fath);
+
+        unlink_from_father();
+        destroy(fath, troot);
+        ASSERT_VALID_TREE(this);
     }
+    return this;
 }
 
 GB_ERROR AP_tree::cantMoveNextTo(AP_tree *new_brother) {
@@ -980,11 +990,11 @@ long AP_tree_root::remove_leafs(AWT_RemoveType awt_remove_type) {
         }
 
         if (removeNode) {
-            list[i]->remove();
+            destroyNode(list[i]->REMOVE());
             removed++;
             if (!(awt_remove_type & AWT_REMOVE_BUT_DONT_FREE)) {
                 UNCOVERED();
-                destroy(list[i]->father);
+                destroy(list[i]->father); // @@@ dont do here, let remove() do the job
             }
             if (!get_root_node()) {
                 break; // tree has been deleted
