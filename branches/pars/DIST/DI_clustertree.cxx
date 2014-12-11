@@ -24,7 +24,7 @@ typedef std::set<LeafRelation> SortedPairValues; // iterator runs from small to 
 
 
 ClusterTreeRoot::ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_)
-    : ARB_seqtree_root(aliview, new ClusterTreeNodeFactory, seqTemplate_, false),
+    : ARB_seqtree_root(aliview, seqTemplate_, false),
       maxDistance(maxDistance_),
       minClusterSize(minClusterSize_)
 {}
@@ -84,7 +84,8 @@ GB_ERROR ClusterTreeRoot::find_clusters() {
     if (error) {
         // avoid further access after error
         change_root(root, NULL);
-        delete root;
+        UNCOVERED();
+        destroy(root);
     }
     else {
 #if defined(DEBUG)

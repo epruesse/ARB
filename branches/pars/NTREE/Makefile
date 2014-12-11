@@ -122,12 +122,12 @@ ad_spec.o: $(ARBHOME)/INCLUDE/downcast.h
 ad_spec.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_spec.o: $(ARBHOME)/INCLUDE/gccver.h
 ad_spec.o: $(ARBHOME)/INCLUDE/items.h
-ad_spec.o: $(ARBHOME)/INCLUDE/RootedTree.h
 ad_spec.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_spec.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_spec.o: $(ARBHOME)/INCLUDE/test_global.h
 ad_spec.o: $(ARBHOME)/INCLUDE/test_unit.h
 ad_spec.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/TreeNode.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ad_transpro.o: NT_local.h
@@ -227,7 +227,6 @@ ad_trees.o: $(ARBHOME)/INCLUDE/downcast.h
 ad_trees.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_trees.o: $(ARBHOME)/INCLUDE/gccver.h
 ad_trees.o: $(ARBHOME)/INCLUDE/nds.h
-ad_trees.o: $(ARBHOME)/INCLUDE/RootedTree.h
 ad_trees.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_trees.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_trees.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -235,6 +234,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/test_unit.h
 ad_trees.o: $(ARBHOME)/INCLUDE/TreeAdmin.h
 ad_trees.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/TreeNode.h
 ad_trees.o: $(ARBHOME)/INCLUDE/TreeRead.h
 ad_trees.o: $(ARBHOME)/INCLUDE/TreeWrite.h
 ad_trees.o: $(ARBHOME)/INCLUDE/ttypes.h
@@ -345,6 +345,7 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/TreeNode.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ColumnStat_2_gnuplot.o: NT_local.h
@@ -424,12 +425,12 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/gccver.h
-NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/RootedTree.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/TreeNode.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 NT_cb.o: ad_trees.h
@@ -590,6 +591,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/test_global.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/TreeNode.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 NT_extern.o: ad_trees.h
@@ -669,7 +671,6 @@ NT_extern.o: $(ARBHOME)/INCLUDE/primer_design.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/refentries.h
 NT_extern.o: $(ARBHOME)/INCLUDE/rootAsWin.h
-NT_extern.o: $(ARBHOME)/INCLUDE/RootedTree.h
 NT_extern.o: $(ARBHOME)/INCLUDE/seq_quality.h
 NT_extern.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_extern.o: $(ARBHOME)/INCLUDE/st_window.hxx
@@ -678,6 +679,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/svn_revision.h
 NT_extern.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_extern.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/TreeNode.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 NT_import.o: NT_local.h
@@ -887,6 +889,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/items.h
 NT_sort.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_sort.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_sort.o: $(ARBHOME)/INCLUDE/test_global.h
+NT_sort.o: $(ARBHOME)/INCLUDE/TreeNode.h
 NT_sort.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 NT_trackAliChanges.o: NT_local.h
@@ -952,10 +955,10 @@ NT_tree_cmp.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/gccver.h
-NT_tree_cmp.o: $(ARBHOME)/INCLUDE/RootedTree.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/test_global.h
+NT_tree_cmp.o: $(ARBHOME)/INCLUDE/TreeNode.h
 
 NT_userland_fixes.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_userland_fixes.o: $(ARBHOME)/INCLUDE/arb_assert.h

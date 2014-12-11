@@ -27,7 +27,9 @@
 #ifndef AP_BUFFER_HXX
 #include "AP_buffer.hxx"
 #endif
-
+#ifndef AP_MAIN_TYPE_HXX
+#include "ap_main_type.hxx"
+#endif
 
 class AP_tree_nlen;
 
@@ -59,14 +61,16 @@ enum AP_BL_MODE {
 };
 
 class AP_tree_edge;
+class AP_main;
 
 class AP_pars_root : public AP_tree_root {
     // @@@ add responsibility for node/edge ressources
 public:
-    AP_pars_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks)
-        : AP_tree_root(aliView, nodeMaker_, seq_proto, add_delete_callbacks)
-    {
-    }
+    AP_pars_root(AliView *aliView, AP_sequence *seq_proto, bool add_delete_callbacks)
+        : AP_tree_root(aliView, seq_proto, add_delete_callbacks)
+    {}
+    inline TreeNode *makeNode() const OVERRIDE;
+    inline void destroyNode(TreeNode *node) const OVERRIDE;
 };
 
 class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ rename -> AP_pars_tree? (later!)
@@ -87,7 +91,16 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ renam
 
     void createListRekUp(AP_CO_LIST *list, int *cn);
     void createListRekSide(AP_CO_LIST *list, int *cn);
+    void forget_relatives() {
+        AP_tree::forget_relatives();
+    }
 
+protected:
+    ~AP_tree_nlen() OVERRIDE { ap_assert(states.empty()); }
+    friend void AP_main::destroyNode(AP_tree_nlen *node); // allowed to call dtor
+    friend void ResourceStack::destroy_nodes();
+    friend void ResourceStack::destroy_edges();
+    friend void StackFrameData::destroyNode(AP_tree_nlen *node);
 public:
     explicit AP_tree_nlen(AP_pars_root *troot)
         : AP_tree(troot),
@@ -99,7 +112,6 @@ public:
         edge[0]  = edge[1]  = edge[2]  = NULL;
         index[0] = index[1] = index[2] = 0;
     }
-    ~AP_tree_nlen() OVERRIDE {}
 
     DEFINE_TREE_ACCESSORS(AP_pars_root, AP_tree_nlen);
 
@@ -107,8 +119,8 @@ public:
     AP_FLOAT costs(char *mutPerSite = NULL);        // cost of a tree (number of changes ..)
 
     bool push(AP_STACK_MODE, Level frame_level);      // push state of costs
-    void pop(Level curr_frameLevel); // pop old tree costs
-    void restore(const NodeState& state, bool destructive); // restore old node state
+    void pop(Level curr_frameLevel, bool& rootPopped); // pop old tree costs
+    void restore(NodeState& state, bool destructive); // restore old node state
     bool clear(Level frame_level, Level user_push_counter);
 
     Level get_pushed_to_frame() const { return pushed_to_frame; }
@@ -123,7 +135,7 @@ public:
     void insert(AP_tree_nlen *new_brother);
     void initial_insert(AP_tree_nlen *new_brother, AP_pars_root *troot);
 
-    void remove() OVERRIDE;
+    AP_tree_nlen *REMOVE() OVERRIDE;
     void swap_sons() OVERRIDE;
     void swap_assymetric(AP_TREE_SIDE mode) OVERRIDE;
     void moveNextTo(AP_tree_nlen *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveNextTo to test if possible
@@ -196,12 +208,6 @@ public:
     friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);
 };
 
-struct AP_TreeNlenNodeFactory : public RootedTreeNodeFactory {
-    RootedTree *makeNode(TreeRoot *root) const OVERRIDE {
-        return new AP_tree_nlen(DOWNCAST(AP_pars_root*, root));
-    }
-};
-
 // ---------------------
 //      AP_tree_edge
 
@@ -238,12 +244,16 @@ class AP_tree_edge : virtual Noncopyable {
     void calcDistance();
     void tailDistance(AP_tree_nlen*);
 
-    int distanceOK() const { int diff = node[0]->distance-node[1]->distance; return diff>=-1 && diff<=1; }
+    bool distanceOK() const { int diff = node[0]->distance-node[1]->distance; return diff>=-1 && diff<=1; }
+    bool is_linked() const { return node[0]; }
 
     // my friends:
-
-    friend class AP_tree_nlen;
+    friend class         AP_tree_nlen;
     friend std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
+    friend AP_tree_edge *StackFrameData::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2);
+    friend void          AP_main::destroyEdge(AP_tree_edge *edge);
+    friend void StackFrameData::destroyNode(AP_tree_nlen *node);
+    friend void          ResourceStack::destroy_edges();
 #if defined(UNIT_TESTS) // UT_DIFF
     friend void TEST_basic_tree_modifications();
 #endif

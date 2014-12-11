@@ -415,7 +415,7 @@ void NT_insert_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntw) {
 // ------------------------
 //      tree sorting :
 
-GB_ERROR NT_with_displayed_tree_do(AWT_canvas *ntw, bool (*displayed_tree_cb)(RootedTree *tree, GB_ERROR& error)) {
+GB_ERROR NT_with_displayed_tree_do(AWT_canvas *ntw, bool (*displayed_tree_cb)(TreeNode *tree, GB_ERROR& error)) {
     // 'displayed_tree_cb' has to return true if tree was changed and needs to be saved
 
     GB_transaction ta(ntw->gb_main);
@@ -519,11 +519,11 @@ void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths
     }
 }
 
-void NT_multifurcate_tree(AWT_canvas *ntw, const RootedTree::multifurc_limits& below) {
+void NT_multifurcate_tree(AWT_canvas *ntw, const TreeNode::multifurc_limits& below) {
     GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
-    RootedTree *tree = AWT_TREE(ntw)->get_root_node();
+    TreeNode *tree = AWT_TREE(ntw)->get_root_node();
     if (tree) {
         tree->multifurcate_whole_tree(below);
         save_changed_tree(ntw);

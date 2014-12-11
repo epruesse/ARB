@@ -219,7 +219,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     bool warn_inappropriate_mode(AWT_COMMAND_MODE mode);
 
-    virtual AP_tree_root *create_tree_root(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs);
+    virtual AP_tree_root *create_tree_root(AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs);
 
 protected:
     void store_command_data(AWT_command_data *new_cmd_data) {
@@ -246,7 +246,7 @@ public:
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
     bool is_logically_zoomed() { return displayed_root != get_root_node(); }
 
-    void init(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
+    void init(AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
 
     void show(AW_device *device) OVERRIDE;

@@ -17,6 +17,9 @@
 #ifndef ARB_FORWARD_LIST_H
 #include <arb_forward_list.h>
 #endif
+#ifndef _GLIBCXX_SET
+#include <set>
+#endif
 
 /* AP_STACK        Stack container
  *
@@ -119,24 +122,22 @@ class AP_pars_root;
 
 typedef unsigned long Level;
 
-struct NodeState { // buffers previous states of AP_tree_nlen
-    Level frameNr;          // state of AP_tree_nlen::pushed_to_frame at creation time of NodeState
+struct NodeState : virtual Noncopyable { // buffers previous states of AP_tree_nlen
+    Level         frameNr;  // state of AP_tree_nlen::pushed_to_frame at creation time of NodeState
+    AP_STACK_MODE mode;     // what has been stored?
 
-    // @@@ reorder members and mark what is stored in which mode
+    // only defined if mode & SEQUENCE:
+    AP_sequence  *sequence; // if set -> NodeState is owner!
+    AP_FLOAT      mutation_rate;
 
-    AP_STACK_MODE  mode;
-    AP_sequence   *sequence;
-    AP_FLOAT       mutation_rate;
-    double         leftlen, rightlen;
-    AP_tree_nlen  *father;
-    AP_tree_nlen  *leftson;
-    AP_tree_nlen  *rightson;
-    AP_pars_root  *root;
-    GBDATA        *gb_node;
-
-    int distance;                                   // distance to border (pushed with STRUCTURE!)
-
-    // data from edges:
+    // only defined if mode & STRUCTURE:
+    double             leftlen, rightlen;
+    AP_tree_nlen      *father;
+    AP_tree_nlen      *leftson;
+    AP_tree_nlen      *rightson;
+    AP_pars_root      *root;
+    GBDATA            *gb_node;
+    int                distance; // distance to border
     AP_tree_edge      *edge[3];
     int                edgeIndex[3];
     AP_tree_edge_data  edgeData[3];
@@ -144,6 +145,9 @@ struct NodeState { // buffers previous states of AP_tree_nlen
 #if defined(PROVIDE_PRINT)
     void print(std::ostream& out, int indentLevel = 0) const;
 #endif
+
+    explicit NodeState(Level frame_nr) : frameNr(frame_nr), mode(NOTHING) {}
+    ~NodeState() { if (mode & SEQUENCE) delete sequence; }
 };
 
 struct StateStack : public AP_STACK<NodeState> {
@@ -153,34 +157,113 @@ struct StateStack : public AP_STACK<NodeState> {
 };
 
 class AP_tree_nlen;
-
-#define AVOID_MULTI_ROOT_PUSH
-// old version did not avoid (i.e. it was possible to push multiple ROOTs)
-// fails some tests when undefined
+class AP_tree_edge;
 
 #if defined(ASSERTION_USED)
 #define CHECK_ROOT_POPS
 #endif
 
-struct StackFrameData { // data local to current stack frame
-    Level user_push_counter; // @@@ eliminate (instead maintain in AP_main)
-#if defined(AVOID_MULTI_ROOT_PUSH)
-    bool root_pushed;
-    StackFrameData() : user_push_counter(0), root_pushed(false) {}
-#else
-    StackFrameData() : user_push_counter(0) {}
-#endif
+typedef std::set<AP_tree_nlen*> NodeSet;
+typedef std::set<AP_tree_edge*> EdgeSet;
+
+class ResourceStack {
+    // stores nodes and edges for resource management
+    NodeSet nodes;
+    EdgeSet edges;
+public:
+    ResourceStack() {}
+    ~ResourceStack() {
+        ap_assert(nodes.empty());
+        ap_assert(edges.empty());
+    }
+
+    void extract_common(ResourceStack& stack1, ResourceStack& stack2);
+
+    void destroy_nodes();
+    void destroy_edges();
+    void forget_nodes();
+    void forget_edges();
+    void move_nodes(ResourceStack& target);
+    void move_edges(ResourceStack& target);
+
+    AP_tree_nlen *put(AP_tree_nlen *node) { nodes.insert(node); return node; }
+    AP_tree_edge *put(AP_tree_edge *edge) { edges.insert(edge); return edge; }
+
+    AP_tree_nlen *getNode() { ap_assert(!nodes.empty()); AP_tree_nlen *result = *nodes.begin(); nodes.erase(nodes.begin()); return result; }
+    AP_tree_edge *getEdge() { ap_assert(!edges.empty()); AP_tree_edge *result = *edges.begin(); edges.erase(edges.begin()); return result; }
+
+    bool has_nodes() const { return !nodes.empty(); }
+    bool has_edges() const { return !edges.empty(); }
 };
 
-class NodeStack : public AP_STACK<AP_tree_nlen> { // derived from Noncopyable
-    StackFrameData previous;
+class StackFrameData : virtual Noncopyable {
+    // data local to current stack frame
+    // as well exists for stack frame = 0 (i.e. when nothing has been remember()ed yet)
+
+    ResourceStack created;   // nodes and edges created in the current stack frame
+    ResourceStack destroyed; // same for destroyed
 
 public:
-    explicit NodeStack(const StackFrameData& data)
-        : previous(data)
-    {}
+    Level user_push_counter; // @@@ eliminate (instead maintain AP_STACK<Level> in AP_main)
+    bool  root_pushed; // @@@ move into NodeStack
+    StackFrameData(Level upc) : user_push_counter(upc), root_pushed(false) {}
 
-    const StackFrameData& get_previous_frame_data() const { return previous; }
+    void revert_resources(StackFrameData *previous);
+    void accept_resources(StackFrameData *previous);
+
+    inline AP_tree_nlen *makeNode(AP_pars_root *proot);
+    inline AP_tree_edge *makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2);
+    inline void destroyNode(AP_tree_nlen *node);
+    inline void destroyEdge(AP_tree_edge *edge);
+};
+
+#if defined(ASSERTION_USED)
+#define CHECK_STACK_RESOURCE_HANDLING
+#endif
+
+class NodeStack : public AP_STACK<AP_tree_nlen> { // derived from Noncopyable
+    StackFrameData *previous;
+#if defined(CHECK_STACK_RESOURCE_HANDLING)
+    enum ResHandled { NO, ACCEPTED, REVERTED } resources_handled;
+#endif
+
+public:
+    explicit NodeStack(StackFrameData*& data)
+        : previous(data)
+#if defined(CHECK_STACK_RESOURCE_HANDLING)
+        , resources_handled(NO)
+#endif
+    {
+        data = NULL; // take ownership
+    }
+    ~NodeStack() {
+        ap_assert(!previous); // forgot to use take_previous_frame_data()
+#if defined(CHECK_STACK_RESOURCE_HANDLING)
+        ap_assert(resources_handled != NO);
+#endif
+    }
+
+    StackFrameData *take_previous_frame_data() {
+        StackFrameData *release = previous;
+        ap_assert(previous); // cannot call twice
+        previous = NULL;     // release ownership
+        return release;
+    }
+
+    void revert_resources(StackFrameData *current) {
+#if defined(CHECK_STACK_RESOURCE_HANDLING)
+        ap_assert(resources_handled == NO);
+        resources_handled = REVERTED;
+#endif
+        current->revert_resources(previous);
+    }
+    void accept_resources(StackFrameData *current) {
+#if defined(CHECK_STACK_RESOURCE_HANDLING)
+        ap_assert(resources_handled == NO);
+        resources_handled = ACCEPTED;
+#endif
+        current->accept_resources(previous);
+    }
 
 #if defined(CHECK_ROOT_POPS)
     AP_tree_nlen *root_at_create; // root at creation time of stack

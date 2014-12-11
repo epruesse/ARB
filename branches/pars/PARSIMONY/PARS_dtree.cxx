@@ -211,8 +211,8 @@ AWT_graphic_parsimony::AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *g
       parsimony(parsimony_)
 {}
 
-AP_tree_root *AWT_graphic_parsimony::create_tree_root(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs) {
-    return new AP_pars_root(aliview, nodeMaker_, seq_prototype, insert_delete_cbs);
+AP_tree_root *AWT_graphic_parsimony::create_tree_root(AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs) {
+    return new AP_pars_root(aliview, seq_prototype, insert_delete_cbs);
 }
 
 
@@ -230,7 +230,7 @@ void ArbParsimony::generate_tree(WeightedFilter *pars_weighted_filter) {
     }
 
     AWT_graphic_parsimony *new_tree = new AWT_graphic_parsimony(*this, aliview->get_gb_main(), PARS_map_viewer);
-    new_tree->init(new AP_TreeNlenNodeFactory, aliview, seq_templ, true, false);
+    new_tree->init(aliview, seq_templ, true, false);
     set_tree(new_tree);
 }
 
@@ -308,8 +308,7 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
                         arb_progress progress("NNI optimize tree");
                         long         prevCombineCount = AP_sequence::combine_count();
                         
-                        AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, get_root_node());
-                        atn->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
+                        get_root_node()->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
                         printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
 
                         exports.save = 1;
@@ -535,7 +534,7 @@ void TEST_basic_tree_modifications() {
         TEST_REJECT_NULL(CurCitre);
         TEST_REJECT_NULL(CurCitre->get_father());
 
-        CurCitre->remove();
+        CurCitre->REMOVE();
         const char *CurCitre_removed_topo = "((" B1_TOP "," B2_TOP "):0.081,(" B3_TOP_SONS_CCR "):0.081);";
         // ------------------------------------------------------------------- ^^^ = B3_TOP_SONS minus CurCitre
         TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_removed_topo);
@@ -559,38 +558,17 @@ void TEST_basic_tree_modifications() {
         const char *CurCitre_inserted_topo = "((" B1_TOP ",(((CloButy2:0.009,CloButyr:0.000):0.564,(CurCitre:0.060,CloCarni:0.060):0.060):0.010,CloPaste:0.179):0.131):0.081,(" B3_TOP_SONS_CCR "):0.081);";
         TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_inserted_topo);
 
-        AP_tree_nlen *node_del_manually  = CurCitre->get_father();
-        AP_tree_edge *edge1_del_manually = CurCitre->edgeTo(node_del_manually);
-        AP_tree_edge *edge2_del_manually = CurCitre->get_brother()->edgeTo(node_del_manually);
-
         TEST_ASSERT_VALID_TREE(root);
 
         // now check pops:
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_removed_topo);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootSetBack_topo);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootAtCloTyrob_topo);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, bottom_topo);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, edge_topo);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, top_topo);
-
-        TEST_ASSERT_VALID_TREE(root);
-
-        // delete memory allocated by insert() above and lost due to pop()s
-        delete edge1_del_manually;
-        delete edge2_del_manually;
-
-        node_del_manually->forget_origin();
-        node_del_manually->father   = NULL;
-        node_del_manually->leftson  = NULL;
-        node_del_manually->rightson = NULL;
-        delete node_del_manually;
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_removed_topo); TEST_ASSERT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootSetBack_topo);      TEST_ASSERT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootAtCloTyrob_topo);   TEST_ASSERT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, bottom_topo);           TEST_ASSERT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, edge_topo);             TEST_ASSERT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, top_topo);              TEST_ASSERT_VALID_TREE(root);
     }
 }
-
-// @@@ Tests wanted:
-// - NNI
-// - tree optimize
-// - ...
 
 void TEST_calc_bootstraps() {
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", "ali_5s");
@@ -647,14 +625,14 @@ void TEST_tree_remove_add_all() {
     AP_pars_root *troot = leaf[0]->get_tree_root();
     TEST_REJECT_NULL(troot);
 
-    // Note: following loop leaks father nodes and edges
-    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_tree_remove_add_all
-    for (int i = 0; i<LEAFS-1; ++i) { // removing the second to last leaf, "removes" both remaining leafs
+    for (int i = 0; i<LEAFS-1; ++i) {
+        // Note: removing the second to last leaf, "removes" both remaining
+        // leafs (but only destroys their father node)
+
         TEST_ASSERT_VALID_TREE(root);
-        leaf[i]->remove();
+        leaf[i]->REMOVE();
         TEST_ASSERT_VALID_TREE(leaf[i]);
     }
-    leaf[LEAFS-1]->father = NULL; // correct final leaf (not removed regularily)
 
     leaf[0]->initial_insert(leaf[1], troot);
     for (int i = 2; i<LEAFS; ++i) {

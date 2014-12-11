@@ -82,8 +82,8 @@ AP_rates::~AP_rates() { delete [] rates; }
  ************           AP_tree_root                    **********
  *****************************************************************************************/
 
-AP_tree_root::AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks)
-    : ARB_seqtree_root(aliView, nodeMaker_, seq_proto, add_delete_callbacks),
+AP_tree_root::AP_tree_root(AliView *aliView, AP_sequence *seq_proto, bool add_delete_callbacks)
+    : ARB_seqtree_root(aliView, seq_proto, add_delete_callbacks),
       root_changed_cb(NULL), root_changed_cd(NULL),
       node_deleted_cb(NULL), node_deleted_cd(NULL),
       gb_tree_gone(NULL),
@@ -101,7 +101,7 @@ AP_tree_root::AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, 
 }
 
 AP_tree_root::~AP_tree_root() {
-    delete get_root_node();
+    destroyNode(get_root_node());
     free(gone_tree_name);
     ap_assert(!get_root_node());
 }
@@ -226,7 +226,7 @@ void AP_tree::insert(AP_tree *new_brother) {
     ASSERT_VALID_TREE(troot->get_root_node());
 }
 
-void AP_tree_root::change_root(RootedTree *oldroot, RootedTree *newroot) {
+void AP_tree_root::change_root(TreeNode *oldroot, TreeNode *newroot) {
     if (root_changed_cb) { // @@@ better call after calling base::change_root?
         root_changed_cb(root_changed_cd, DOWNCAST(AP_tree*, oldroot), DOWNCAST(AP_tree*, newroot));
     }
@@ -262,9 +262,13 @@ void AP_tree_root::set_node_deleted_callback(AP_nodeDelCb cb, void *cd) {
 }
 
 
-void AP_tree::remove() {
-    // remove this + father from tree
-    // Note: does not delete this or father!
+AP_tree *AP_tree::REMOVE() {
+    // Remove this + father from tree. Father node will be destroyed.
+    // Caller has to destroy the removed node (if intended).
+    //
+    // Warning: when removing the 2nd to last node from the tree,
+    // the whole tree will be removed.
+    // In that case both leaf nodes remain undestroyed.
 
     ASSERT_VALID_TREE(this);
     if (father == 0) {
@@ -306,6 +310,7 @@ void AP_tree::remove() {
         else {                                      // father is root, make brother the new root
             if (brother->is_leaf) {
                 troot->change_root(fath, NULL);     // erase tree from root
+                brother->unlink_from_father();      // do not automatically delete brother
             }
             else {
                 brother->unlink_from_father();
@@ -322,7 +327,12 @@ void AP_tree::remove() {
 
         fath->forget_origin();
         ASSERT_VALID_TREE(fath);
+
+        unlink_from_father();
+        destroy(fath, troot);
+        ASSERT_VALID_TREE(this);
     }
+    return this;
 }
 
 GB_ERROR AP_tree::cantMoveNextTo(AP_tree *new_brother) {
@@ -527,7 +537,7 @@ inline float tree_read_float(GBDATA *tree, const char *key, float init) {
 
 
 
-//! moves all node/leaf information from struct GBT_TREE to AP_tree
+//! moves all node/leaf information from struct TreeNode to AP_tree
 void AP_tree::load_node_info() {
     gr.spread          = tree_read_float(gb_node, "spread",          1.0);
     gr.left_angle      = tree_read_float(gb_node, "left_angle",      0.0);
@@ -828,8 +838,7 @@ void AP_tree::compute_tree() {
 GB_ERROR AP_tree_root::loadFromDB(const char *name) {
     GB_ERROR error = ARB_seqtree_root::loadFromDB(name);
     if (!error) {
-        AP_tree *rNode = DOWNCAST(AP_tree*, get_root_node());
-        rNode->load_subtree_info();
+        get_root_node()->load_subtree_info();
     }
     update_timers(); // maybe after link() ? // @@@ really do if error?
     return error;
@@ -950,7 +959,7 @@ void AP_tree::buildBranchList(AP_tree **&list, long &num, bool create_terminal_b
 
 
 long AP_tree_root::remove_leafs(AWT_RemoveType awt_remove_type) {
-    // may remove the complete tree (if awt_remove_type does not contain AWT_REMOVE_BUT_DONT_FREE)
+    // may remove the complete tree
 
     ASSERT_VALID_TREE(get_root_node());
 
@@ -981,11 +990,8 @@ long AP_tree_root::remove_leafs(AWT_RemoveType awt_remove_type) {
         }
 
         if (removeNode) {
-            list[i]->remove();
+            destroyNode(list[i]->REMOVE());
             removed++;
-            if (!(awt_remove_type & AWT_REMOVE_BUT_DONT_FREE)) {
-                delete list[i]->father;
-            }
             if (!get_root_node()) {
                 break; // tree has been deleted
             }

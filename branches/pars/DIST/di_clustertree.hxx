@@ -48,6 +48,9 @@ public:
     ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_);
     virtual ~ClusterTreeRoot() OVERRIDE {}
 
+    inline TreeNode *makeNode() const             OVERRIDE;
+    inline void destroyNode(TreeNode *node) const OVERRIDE;
+
     DEFINE_DOWNCAST_ACCESSORS(ClusterTree, get_root_node, ARB_seqtree_root::get_root_node());
 
     GB_ERROR find_clusters();
@@ -146,6 +149,14 @@ class ClusterTree : public ARB_countedTree { // derived from a Noncopyable
 
     void oblivion(bool forgetDistances); // forget unneeded data
 
+protected:
+    ~ClusterTree() OVERRIDE {
+        delete worstKnownDistance;
+        delete sequenceDists;
+        delete branchDists;
+        delete branchDepths;
+    }
+    friend class ClusterTreeRoot;
 public:
     explicit ClusterTree(ClusterTreeRoot *tree_root_)
         : ARB_countedTree(tree_root_)
@@ -160,12 +171,6 @@ public:
         , worstKnownDistance(NULL)
     {}
 
-    ~ClusterTree() OVERRIDE {
-        delete worstKnownDistance;
-        delete sequenceDists;
-        delete branchDists;
-        delete branchDepths;
-    }
     DEFINE_TREE_ACCESSORS(ClusterTreeRoot, ClusterTree);
 
     unsigned get_cluster_count() const { return clus_count; }
@@ -185,11 +190,8 @@ public:
     AP_FLOAT get_min_bases() const { return min_bases; }
 };
 
-class ClusterTreeNodeFactory : public RootedTreeNodeFactory {
-    RootedTree *makeNode(TreeRoot *root) const OVERRIDE {
-        return new ClusterTree(DOWNCAST(ClusterTreeRoot*, root));
-    }
-};
+inline TreeNode *ClusterTreeRoot::makeNode() const { return new ClusterTree(const_cast<ClusterTreeRoot*>(this)); }
+inline void ClusterTreeRoot::destroyNode(TreeNode *node) const { delete DOWNCAST(ClusterTree*, node); }
 
 class UseAnyTree : public ARB_tree_predicate {
     bool selects(const ARB_seqtree&) const OVERRIDE { return true; }

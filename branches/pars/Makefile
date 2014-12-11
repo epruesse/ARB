@@ -1042,7 +1042,6 @@ ARCHS_TREE = \
 		$(ARCHS_SEQUENCE) \
 		SL/FILTER/FILTER.a \
 		SL/ARB_TREE/ARB_TREE.a \
-		SL/ROOTED_TREE/ROOTED_TREE.a \
 
 # parsimony tree (used by NTREE, PARSIMONY, STAT(->EDIT4), DIST(obsolete!))
 ARCHS_AP_TREE = \
@@ -1490,7 +1489,6 @@ SL/PRONUC/PRONUC.dummy:			links_non_perl
 SL/PTCLEAN/PTCLEAN.dummy:		links_non_perl link_db
 SL/REFENTRIES/REFENTRIES.dummy:		links_non_perl
 SL/REGEXPR/REGEXPR.dummy:		links_non_perl
-SL/ROOTED_TREE/ROOTED_TREE.dummy:	links_non_perl
 SL/SEQIO/SEQIO.dummy:			links_non_perl
 SL/SEQUENCE/SEQUENCE.dummy:		links_non_perl
 SL/TRANSLATE/TRANSLATE.dummy:		links_non_perl
@@ -1516,7 +1514,6 @@ UNIT_TESTER/UNIT_TESTER.dummy:		link_db \
 
 TOOLS/TOOLS.dummy : links_non_perl link_db \
 	SERVERCNTRL/SERVERCNTRL.dummy \
-	SL/ROOTED_TREE/ROOTED_TREE.dummy \
 	SL/TREE_WRITE/TREE_WRITE.dummy \
 	SL/TREE_READ/TREE_READ.dummy \
 	CONSENSUS_TREE/CONSENSUS_TREE.dummy \
@@ -2201,7 +2198,6 @@ UNITS_WORKING = \
 	TREEGEN/TREEGEN.test \
 	WETC/WETC.test \
 	XML/XML.test \
-	SL/ROOTED_TREE/ROOTED_TREE.test \
 
 # untestable units
 

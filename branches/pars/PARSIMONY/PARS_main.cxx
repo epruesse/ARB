@@ -173,7 +173,7 @@ static long transform_gbd_to_leaf(const char *key, long val, void *) {
     GB_ERROR error = leaf->get_seq()->bind_to_species(gb_node);
     if (error) {
         aw_message(error);
-        delete leaf; leaf = 0;
+        destroy(leaf); leaf = 0;
     }
     return (long)leaf;
 }
@@ -189,7 +189,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
                                      key,
                                      leaf->get_seq()->weighted_base_count(),
                                      MIN_SEQUENCE_LENGTH));
-        delete leaf;
+        destroy(leaf);
         return 0;
     }
 
@@ -288,8 +288,8 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
             bool brother_is_short = 2 * brother->get_seq()->weighted_base_count() < leaf->get_seq()->weighted_base_count();
 
             if (brother_is_short) {
-                brother->remove();
-                leaf->remove();
+                brother->REMOVE();
+                leaf->REMOVE();
 
                 for (int firstUse = 1; firstUse >= 0; --firstUse) {
                     AP_tree_nlen *to_insert = firstUse ? leaf : brother;
@@ -801,7 +801,7 @@ static void nt_add_partial(AWT_graphic_parsimony *agt) {
                     }
                 }
                 else {
-                    delete part_leaf;
+                    destroy(part_leaf);
                 }
 
                 part_insert_progress.inc_and_check_user_abort(error);
@@ -844,7 +844,7 @@ static void NT_add_quick  (UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_add_and_
 static void nt_reAdd(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
     if (agt->get_root_node()) {
         ap_assert(what == NT_ADD_MARKED); // code below will misbehave for NT_ADD_SELECTED
-        agt->get_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
+        agt->get_tree_root()->remove_leafs(AWT_REMOVE_MARKED);
         nt_add(agt, what, quick);
     }
 }
@@ -1210,9 +1210,9 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->sep______________();
         awm->insert_sub_menu("Remove Species from Tree",     "R");
         {
-            awm->insert_menu_topic("tree_remove_deleted", "Remove Zombies", "Z", "trm_del.hlp",    AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_ZOMBIES)));
-            awm->insert_menu_topic("tree_remove_marked",  "Remove Marked",  "M", "trm_mrkd.hlp",   AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED)));
-            awm->insert_menu_topic("tree_keep_marked",    "Keep Marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_KEEP_MARKED)));
+            awm->insert_menu_topic("tree_remove_deleted", "Remove Zombies", "Z", "trm_del.hlp",    AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_REMOVE_ZOMBIES));
+            awm->insert_menu_topic("tree_remove_marked",  "Remove Marked",  "M", "trm_mrkd.hlp",   AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_REMOVE_MARKED));
+            awm->insert_menu_topic("tree_keep_marked",    "Keep Marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_KEEP_MARKED));
         }
         awm->close_sub_menu();
         awm->insert_sub_menu("Add Species to Tree",      "A");
@@ -1650,7 +1650,7 @@ template <typename SEQ>
 static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
     switch (mod) {
         case MOD_REMOVE_MARKED:
-            env.graphic_tree()->get_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
+            env.graphic_tree()->get_tree_root()->remove_leafs(AWT_REMOVE_MARKED);
             break;
 
         case MOD_QUICK_ADD:
@@ -1851,9 +1851,6 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 14);
 
-    // Note: following code leaks father nodes and edges
-    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_nucl_tree_modifications
-
     // [NUCOPTI] opposed to protein tests below the initial tree here is NOT optimized! compare .@PROTOPTI
     // -> removing and adding species produces a better tree
     //
@@ -2011,9 +2008,6 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 10);
 
-    // Note: following code leaks father nodes and edges
-    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_prot_tree_modifications
-
     // [PROTOPTI] opposed to nucleid tests above the initial tree here is already optimized! compare .@NUCOPTI
     // -> adding species approximately reproduces initial topology
     //
@@ -2100,10 +2094,6 @@ void TEST_node_stack() {
     // test was used to fix #620
 
     const char *aliname = "ali_5s";
-
-    // Note: following code leaks father nodes and edges
-    // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_node_stack
-
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
     TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");

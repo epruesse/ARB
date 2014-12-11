@@ -73,7 +73,6 @@ enum AWT_RemoveType { // bit flags
     AWT_REMOVE_UNMARKED      = GBT_REMOVE_UNMARKED,
     AWT_REMOVE_ZOMBIES       = GBT_REMOVE_ZOMBIES,
     AWT_REMOVE_NO_SEQUENCE   = 8,
-    AWT_REMOVE_BUT_DONT_FREE = 16,
 
     // please keep AWT_RemoveType in sync with GBT_TreeRemoveType
     // see ../../ARBDB/arbdbt.h@sync_GBT_TreeRemoveType__AWT_RemoveType
@@ -121,13 +120,17 @@ public:
     long      table_timer;
     AP_rates *rates;
 
-    AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks);
+    AP_tree_root(AliView *aliView, AP_sequence *seq_proto, bool add_delete_callbacks);
     ~AP_tree_root() OVERRIDE;
     DEFINE_TREE_ROOT_ACCESSORS(AP_tree_root, AP_tree);
 
+    // TreeRoot interface
+    inline TreeNode *makeNode() const OVERRIDE;
+    inline void destroyNode(TreeNode *node) const OVERRIDE;
+
     // ARB_seqtree_root interface
 
-    virtual void change_root(RootedTree *old, RootedTree *newroot) OVERRIDE;
+    virtual void change_root(TreeNode *old, TreeNode *newroot) OVERRIDE;
 
     virtual GB_ERROR loadFromDB(const char *name) OVERRIDE;
     virtual GB_ERROR saveToDB() OVERRIDE;
@@ -261,6 +264,9 @@ private:
 
     void update_subtree_information();
 
+protected:
+    ~AP_tree() OVERRIDE;
+    friend class AP_tree_root; // allowed to call dtor
 public:
     explicit AP_tree(AP_tree_root *troot)
         : ARB_seqtree(troot)
@@ -268,7 +274,6 @@ public:
         gr.clear();
         br.clear();
     }
-    ~AP_tree() OVERRIDE;
 
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
 
@@ -287,7 +292,7 @@ public:
 
     virtual void insert(AP_tree *new_brother);
     virtual void initial_insert(AP_tree *new_brother, AP_tree_root *troot);
-    virtual void remove();                          // remove this+father (but do not delete)
+    virtual AP_tree *REMOVE();
     virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
 
     void swap_sons() OVERRIDE {
@@ -360,11 +365,9 @@ public:
     bool hasName(const char *Name) const { return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0; }
 };
 
-struct AP_TreeNodeFactory : public RootedTreeNodeFactory {
-    virtual RootedTree *makeNode(TreeRoot *root) const {
-        return new AP_tree(DOWNCAST(AP_tree_root*, root));
-    }
-};
+inline TreeNode *AP_tree_root::makeNode() const { return new AP_tree(const_cast<AP_tree_root*>(this)); }
+inline void AP_tree_root::destroyNode(TreeNode *node) const { delete DOWNCAST(AP_tree*, node); }
+
 
 #else
 #error AP_Tree.hxx included twice

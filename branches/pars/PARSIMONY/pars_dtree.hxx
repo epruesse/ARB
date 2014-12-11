@@ -28,7 +28,7 @@ class AWT_graphic_parsimony : public AWT_graphic_tree, virtual Noncopyable {
     void show(AW_device *device) OVERRIDE;
 
     void handle_command(AW_device *device, AWT_graphic_event& event) OVERRIDE;
-    AP_tree_root *create_tree_root(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs) OVERRIDE;
+    AP_tree_root *create_tree_root(AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs) OVERRIDE;
 
 public:
     AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_);

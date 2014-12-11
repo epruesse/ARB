@@ -33,9 +33,8 @@ AP_tree_edge::AP_tree_edge(AP_tree_nlen *node1, AP_tree_nlen *node2)
     relink(node1, node2);
 }
 
-AP_tree_edge::~AP_tree_edge()
-{
-    unlink();
+AP_tree_edge::~AP_tree_edge() {
+    if (is_linked()) unlink();
 }
 
 static void buildSonEdges(AP_tree_nlen *node) {
@@ -236,9 +235,9 @@ void AP_tree_edge::tailDistance(AP_tree_nlen *n)
     }
 }
 
-AP_tree_edge* AP_tree_edge::unlink()
-{
+AP_tree_edge* AP_tree_edge::unlink() {
     ap_assert(this!=0);
+    ap_assert(is_linked());
 
     node[0]->edge[index[0]] = NULL;
     node[1]->edge[index[1]] = NULL;
@@ -307,6 +306,8 @@ void AP_tree_edge::calcDistance()
 }
 
 void AP_tree_edge::relink(AP_tree_nlen *node1, AP_tree_nlen *node2) {
+    ap_assert(!is_linked());
+
     node[0] = node1;
     node[1] = node2;
 
@@ -598,7 +599,7 @@ static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
     AP_FLOAT parsbest = rootNode()->costs();
 
     ap_main->remember();
-    leaf->remove();
+    leaf->REMOVE();
     AP_FLOAT Blen = parsbest - rootNode()->costs();
     ap_main->revert();
 

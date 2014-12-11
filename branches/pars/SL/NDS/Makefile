@@ -67,4 +67,5 @@ nds.o: $(ARBHOME)/INCLUDE/smartptr.h
 nds.o: $(ARBHOME)/INCLUDE/static_assert.h
 nds.o: $(ARBHOME)/INCLUDE/test_global.h
 nds.o: $(ARBHOME)/INCLUDE/test_unit.h
+nds.o: $(ARBHOME)/INCLUDE/TreeNode.h
 nds.o: $(ARBHOME)/INCLUDE/ttypes.h

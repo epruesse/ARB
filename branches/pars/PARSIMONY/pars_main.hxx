@@ -28,7 +28,7 @@ public:
 
     AWT_graphic_parsimony *get_tree() const { return tree; }
 
-    DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, get_tree()->get_root_node());
+    DEFINE_READ_ACCESSORS(AP_tree_nlen*, get_root_node, get_tree()->get_root_node());
 
     void generate_tree(WeightedFilter *pars_weighted_filter);
     void set_tree(AWT_graphic_parsimony *tree_);

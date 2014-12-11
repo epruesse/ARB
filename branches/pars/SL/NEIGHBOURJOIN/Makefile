@@ -61,3 +61,4 @@ NJ.o: $(ARBHOME)/INCLUDE/smartptr.h
 NJ.o: $(ARBHOME)/INCLUDE/static_assert.h
 NJ.o: $(ARBHOME)/INCLUDE/test_global.h
 NJ.o: $(ARBHOME)/INCLUDE/test_unit.h
+NJ.o: $(ARBHOME)/INCLUDE/TreeNode.h

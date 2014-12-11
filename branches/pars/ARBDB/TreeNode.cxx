@@ -1,6 +1,6 @@
 // ================================================================ //
 //                                                                  //
-//   File      : RootedTree.cxx                                     //
+//   File      : TreeNode.cxx                                       //
 //   Purpose   :                                                    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in December 2013   //
@@ -9,7 +9,7 @@
 //                                                                  //
 // ================================================================ //
 
-#include "RootedTree.h"
+#include "TreeNode.h"
 #include <map>
 #include <set>
 #include <cmath> // needed with 4.4.3 (but not with 4.7.3)
@@ -19,12 +19,11 @@
 
 TreeRoot::~TreeRoot() {
     deleteWithNodes = false; // avoid recursive call of ~TreeRoot
-    delete rootNode;
+    destroy(rootNode, this);
     rt_assert(!rootNode);
-    delete nodeMaker;
 }
 
-void TreeRoot::change_root(RootedTree *oldroot, RootedTree *newroot) {
+void TreeRoot::change_root(TreeNode *oldroot, TreeNode *newroot) {
     rt_assert(rootNode == oldroot);
     rt_assert(implicated(newroot, !newroot->father));
     rootNode = newroot;
@@ -34,16 +33,20 @@ void TreeRoot::change_root(RootedTree *oldroot, RootedTree *newroot) {
 }
 
 // --------------------
-//      RootedTree
+//      TreeNode
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
 
-void RootedTree::assert_valid() const {
+void TreeNode::assert_valid() const {
     rt_assert(this);
 
     TreeRoot *troot = get_tree_root();
     if (troot) {
-        if (!is_leaf) {
+        if (is_leaf) {
+            rt_assert(!rightson);
+            rt_assert(!leftson);
+        }
+        else {
             rt_assert(rightson);
             rt_assert(leftson);
             get_rightson()->assert_valid();
@@ -60,7 +63,11 @@ void RootedTree::assert_valid() const {
         }
     }
     else { // removed node (may be incomplete)
-        if (!is_leaf) {
+        if (is_leaf) {
+            rt_assert(!rightson);
+            rt_assert(!leftson);
+        }
+        else {
             if (rightson) get_rightson()->assert_valid();
             if (leftson)  get_leftson()->assert_valid();
         }
@@ -72,7 +79,7 @@ void RootedTree::assert_valid() const {
 }
 #endif // PROVIDE_TREE_STRUCTURE_TESTS
 
-void RootedTree::set_tree_root(TreeRoot *new_root) {
+void TreeNode::set_tree_root(TreeRoot *new_root) {
     if (tree_root != new_root) {
         tree_root = new_root;
         if (leftson) get_leftson()->set_tree_root(new_root);
@@ -80,7 +87,7 @@ void RootedTree::set_tree_root(TreeRoot *new_root) {
     }
 }
 
-void RootedTree::reorder_subtree(TreeOrder mode) {
+void TreeNode::reorder_subtree(TreeOrder mode) {
     static const char *smallest_leafname; // has to be set to the alphabetically smallest name (when function exits)
 
     if (is_leaf) {
@@ -145,14 +152,14 @@ void RootedTree::reorder_subtree(TreeOrder mode) {
     rt_assert(smallest_leafname);
 }
 
-void RootedTree::reorder_tree(TreeOrder mode) {
+void TreeNode::reorder_tree(TreeOrder mode) {
     /*! beautify tree (does not change topology, only swaps branches)
      */
     compute_tree();
     reorder_subtree(mode);
 }
 
-void RootedTree::rotate_subtree() {
+void TreeNode::rotate_subtree() {
     if (!is_leaf) {
         swap_sons();
         get_leftson()->rotate_subtree();
@@ -160,7 +167,7 @@ void RootedTree::rotate_subtree() {
     }
 }
 
-void RootedTree::set_root() {
+void TreeNode::set_root() {
     /*! set the root at parent edge of this
      * pointers to tree-nodes remain valid, but all parent-nodes of this change their meaning
      * (afterwards they will point to [father+brother] instead of [this+brother])
@@ -169,13 +176,13 @@ void RootedTree::set_root() {
 
     if (at_root()) return; // already root
 
-    RootedTree *old_root    = get_root_node();
-    RootedTree *old_brother = is_inside(old_root->get_leftson()) ? old_root->get_rightson() : old_root->get_leftson();
+    TreeNode *old_root    = get_root_node();
+    TreeNode *old_brother = is_inside(old_root->get_leftson()) ? old_root->get_rightson() : old_root->get_leftson();
 
     // move remark branches to top
     {
         char *remark = nulldup(get_remark());
-        for (RootedTree *node = this; node->father; node = node->get_father()) {
+        for (TreeNode *node = this; node->father; node = node->get_father()) {
             remark = node->swap_remark(remark);
         }
         free(remark);
@@ -194,9 +201,9 @@ void RootedTree::set_root() {
         old_root->leftlen = old_root->rightlen = father->rightlen*.5;
     }
 
-    RootedTree *next = get_father()->get_father();
-    RootedTree *prev = old_root;
-    RootedTree *pntr = get_father();
+    TreeNode *next = get_father()->get_father();
+    TreeNode *prev = old_root;
+    TreeNode *pntr = get_father();
 
     if (father->leftson == this)    father->leftson = old_root; // to set the flag correctly
 
@@ -239,8 +246,8 @@ void RootedTree::set_root() {
     rt_assert(get_root_node() == old_root);
 }
 
-RootedTree *RootedTree::findLeafNamed(const char *wantedName) {
-    RootedTree *found = NULL;
+TreeNode *TreeNode::findLeafNamed(const char *wantedName) {
+    TreeNode *found = NULL;
     if (is_leaf) {
         if (name && strcmp(name, wantedName) == 0) found = this;
     }
@@ -281,14 +288,14 @@ public:
 };
 
 class EdgeFinder {
-    std::map<RootedTree*, NodeLeafDistance> data; // maximum distance to farthest leaf
+    std::map<TreeNode*, NodeLeafDistance> data; // maximum distance to farthest leaf
 
     ARB_edge innermost;
     double   min_distdiff; // abs diff between up- and downdiff
 
     GBT_LEN calc_distdiff(GBT_LEN d1, GBT_LEN d2) { return fabs(d1-d2); }
 
-    void insert_tree(RootedTree *node) {
+    void insert_tree(TreeNode *node) {
         if (node->is_leaf) {
             data[node].set_downdist(0.0);
         }
@@ -301,9 +308,9 @@ class EdgeFinder {
         }
     }
 
-    void findBetterEdge_sub(RootedTree *node) {
-        RootedTree *father  = node->get_father();
-        RootedTree *brother = node->get_brother();
+    void findBetterEdge_sub(TreeNode *node) {
+        TreeNode *father  = node->get_father();
+        TreeNode *brother = node->get_brother();
 
         GBT_LEN len      = node->get_branchlength();
         GBT_LEN brothLen = brother->get_branchlength();
@@ -327,7 +334,7 @@ class EdgeFinder {
         }
     }
 
-    void findBetterEdge(RootedTree *node) {
+    void findBetterEdge(TreeNode *node) {
         if (!node->is_leaf) {
             findBetterEdge_sub(node->get_leftson());
             findBetterEdge_sub(node->get_rightson());
@@ -335,13 +342,13 @@ class EdgeFinder {
     }
 
 public:
-    EdgeFinder(RootedTree *rootNode)
+    EdgeFinder(TreeNode *rootNode)
         : innermost(rootNode->get_leftson(), rootNode->get_rightson()) // root-edge
     {
         insert_tree(rootNode);
 
-        RootedTree *lson = rootNode->get_leftson();
-        RootedTree *rson = rootNode->get_rightson();
+        TreeNode *lson = rootNode->get_leftson();
+        TreeNode *rson = rootNode->get_rightson();
 
         GBT_LEN rootEdgeLen = rootNode->leftlen + rootNode->rightlen;
 
@@ -368,20 +375,20 @@ ARB_edge TreeRoot::find_innermost_edge() {
 // ------------------------
 //      multifurcation
 
-class RootedTree::LengthCollector {
-    typedef std::map<RootedTree*,GBT_LEN> LengthMap;
-    typedef std::set<RootedTree*>         NodeSet;
+class TreeNode::LengthCollector {
+    typedef std::map<TreeNode*,GBT_LEN> LengthMap;
+    typedef std::set<TreeNode*>         NodeSet;
 
     LengthMap eliminatedParentLength;
     LengthMap addedParentLength;
 
 public:
-    void eliminate_parent_edge(RootedTree *node) {
+    void eliminate_parent_edge(TreeNode *node) {
         rt_assert(!node->is_root_node());
         eliminatedParentLength[node] += parentEdge(node).eliminate();
     }
 
-    void add_parent_length(RootedTree *node, GBT_LEN addLen) {
+    void add_parent_length(TreeNode *node, GBT_LEN addLen) {
         rt_assert(!node->is_root_node());
         addedParentLength[node] += addLen;
     }
@@ -439,7 +446,7 @@ GBT_LEN ARB_edge::adjacent_distance() const {
     return next().length_or_adjacent_distance() + otherNext().length_or_adjacent_distance();
 }
 
-void ARB_edge::virtually_add_or_distribute_length_forward(GBT_LEN len, RootedTree::LengthCollector& collect) const {
+void ARB_edge::virtually_add_or_distribute_length_forward(GBT_LEN len, TreeNode::LengthCollector& collect) const {
     rt_assert(!is_nan_or_inf(len));
     if (length() > 0.0) {
         collect.add_parent_length(son(), len);
@@ -450,7 +457,7 @@ void ARB_edge::virtually_add_or_distribute_length_forward(GBT_LEN len, RootedTre
 }
 
 
-void ARB_edge::virtually_distribute_length_forward(GBT_LEN len, RootedTree::LengthCollector& collect) const {
+void ARB_edge::virtually_distribute_length_forward(GBT_LEN len, TreeNode::LengthCollector& collect) const {
     /*! distribute length to edges adjacent in edge direction (i.e. edges starting from this->dest())
      * Split 'len' proportional to adjacent edges lengths.
      *
@@ -472,7 +479,7 @@ void ARB_edge::virtually_distribute_length_forward(GBT_LEN len, RootedTree::Leng
     e2.virtually_add_or_distribute_length_forward(len*d2, collect);
 }
 
-void ARB_edge::virtually_distribute_length(GBT_LEN len, RootedTree::LengthCollector& collect) const {
+void ARB_edge::virtually_distribute_length(GBT_LEN len, TreeNode::LengthCollector& collect) const {
     /*! distribute length to all adjacent edges.
      * Longer edges receive more than shorter ones.
      *
@@ -498,7 +505,7 @@ void ARB_edge::virtually_distribute_length(GBT_LEN len, RootedTree::LengthCollec
     if (is_normal(len_bwd)) backEdge.virtually_distribute_length_forward(len_bwd, collect);
 }
 
-void RootedTree::eliminate_and_collect(const multifurc_limits& below, LengthCollector& collect) {
+void TreeNode::eliminate_and_collect(const multifurc_limits& below, LengthCollector& collect) {
     /*! eliminate edges specified by 'below' and
      * store their length in 'collect' for later distribution.
      */
@@ -531,11 +538,11 @@ void ARB_edge::multifurcate() {
      * - removes remark (bootstrap)
      * - distributes length to neighbour-branches
      */
-    RootedTree::LengthCollector collector;
+    TreeNode::LengthCollector collector;
     collector.eliminate_parent_edge(son());
     collector.independent_distribution();
 }
-void RootedTree::multifurcate() {
+void TreeNode::multifurcate() {
     /*! eliminate branch from 'this' to 'father' (or brother @ root)
      * @see ARB_edge::multifurcate()
      */
@@ -543,7 +550,7 @@ void RootedTree::multifurcate() {
     if (father) parentEdge(this).multifurcate();
 }
 
-void RootedTree::set_branchlength_preserving(GBT_LEN new_len) {
+void TreeNode::set_branchlength_preserving(GBT_LEN new_len) {
     /*! set branchlength to 'new_len' while preserving overall distance in tree.
      *
      * Always works on unrooted tree (i.e. lengths @ root are treated correctly).
@@ -563,13 +570,13 @@ void RootedTree::set_branchlength_preserving(GBT_LEN new_len) {
     use_as_remark(old_remark); // restore remark (was removed by multifurcate())
 }
 
-void RootedTree::multifurcate_whole_tree(const multifurc_limits& below) {
+void TreeNode::multifurcate_whole_tree(const multifurc_limits& below) {
     /*! multifurcate all branches specified by 'below'
      * - step 1: eliminate all branches, store eliminated lengths
      * - step 2: calculate length distribution for all adjacent branches (proportionally to original length of each branch)
      * - step 3: apply distributed length
      */
-    RootedTree      *root = get_root_node();
+    TreeNode      *root = get_root_node();
     LengthCollector  collector;
 
     // step 1:
@@ -580,5 +587,154 @@ void RootedTree::multifurcate_whole_tree(const multifurc_limits& below) {
 
     // step 2 and 3:
     collector.independent_distribution();
+}
+
+TreeNode::bs100_mode TreeNode::toggle_bootstrap100(bs100_mode mode) {
+    if (!is_leaf) {
+        if (!is_root_node()) {
+            double bootstrap;
+            switch (parse_bootstrap(bootstrap)) {
+                case REMARK_NONE:
+                case REMARK_OTHER:
+                    switch (mode) {
+                        case BS_UNDECIDED: mode = BS_INSERT;
+                        case BS_INSERT: set_bootstrap(100);
+                        case BS_REMOVE: break;
+                    }
+                    break;
+                case REMARK_BOOTSTRAP:
+                    if (bootstrap >= 99.5) {
+                        switch (mode) {
+                            case BS_UNDECIDED: mode = BS_REMOVE;
+                            case BS_REMOVE: remove_remark();
+                            case BS_INSERT: break;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        mode = get_leftson()->toggle_bootstrap100(mode);
+        mode = get_rightson()->toggle_bootstrap100(mode);
+    }
+    return mode;
+}
+void TreeNode::remove_bootstrap() {
+    freenull(remark_branch);
+    if (!is_leaf) {
+        get_leftson()->remove_bootstrap();
+        get_rightson()->remove_bootstrap();
+    }
+}
+void TreeNode::reset_branchlengths() {
+    if (!is_leaf) {
+        leftlen = rightlen = DEFAULT_BRANCH_LENGTH;
+
+        get_leftson()->reset_branchlengths();
+        get_rightson()->reset_branchlengths();
+    }
+}
+
+void TreeNode::scale_branchlengths(double factor) {
+    if (!is_leaf) {
+        leftlen  *= factor;
+        rightlen *= factor;
+
+        get_leftson()->scale_branchlengths(factor);
+        get_rightson()->scale_branchlengths(factor);
+    }
+}
+
+GBT_LEN TreeNode::sum_child_lengths() const {
+    if (is_leaf) return 0.0;
+    return
+        leftlen +
+        rightlen +
+        get_leftson()->sum_child_lengths() +
+        get_rightson()->sum_child_lengths();
+}
+
+void TreeNode::bootstrap2branchlen() {
+    //! copy bootstraps to branchlengths
+    if (is_leaf) {
+        set_branchlength_unrooted(DEFAULT_BRANCH_LENGTH);
+    }
+    else {
+        if (father) {
+            double         bootstrap;
+            GBT_RemarkType rtype = parse_bootstrap(bootstrap);
+
+            if (rtype == REMARK_BOOTSTRAP) {
+                double len = bootstrap/100.0;
+                set_branchlength_unrooted(len);
+            }
+            else {
+                set_branchlength_unrooted(1.0); // no bootstrap means "100%"
+            }
+        }
+        get_leftson()->bootstrap2branchlen();
+        get_rightson()->bootstrap2branchlen();
+    }
+}
+
+void TreeNode::branchlen2bootstrap() {
+    //! copy branchlengths to bootstraps
+    remove_remark();
+    if (!is_leaf) {
+        if (!is_root_node()) {
+            set_bootstrap(get_branchlength_unrooted()*100.0);
+        }
+        get_leftson()->branchlen2bootstrap();
+        get_rightson()->branchlen2bootstrap();
+    }
+}
+
+TreeNode *TreeNode::fixDeletedSon() {
+    // fix node after one son has been deleted
+    TreeNode *result = NULL;
+
+    if (leftson) {
+        gb_assert(!rightson);
+        result  = get_leftson();
+        leftson = NULL;
+    }
+    else {
+        gb_assert(!leftson);
+        gb_assert(rightson);
+
+        result   = get_rightson();
+        rightson = NULL;
+    }
+
+    // now 'result' contains the lasting tree
+    result->father = father;
+
+    if (remark_branch && !result->remark_branch) { // rescue remarks if possible
+        result->remark_branch    = remark_branch;
+        remark_branch = NULL;
+    }
+    if (gb_node && !result->gb_node) { // rescue group if possible
+        result->gb_node = gb_node;
+        gb_node         = NULL;
+    }
+
+    if (!result->father) {
+        get_tree_root()->change_root(this, result);
+    }
+
+    gb_assert(!is_root_node());
+
+    forget_origin();
+    forget_relatives();
+    delete this;
+
+    return result;
+}
+
+const TreeNode *TreeNode::ancestor_common_with(const TreeNode *other) const {
+    if (this == other) return this;
+    if (is_anchestor_of(other)) return this;
+    if (other->is_anchestor_of(this)) return other;
+    return get_father()->ancestor_common_with(other->get_father());
 }
 

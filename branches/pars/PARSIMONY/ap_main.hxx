@@ -11,12 +11,13 @@
 #ifndef AP_MAIN_HXX
 #define AP_MAIN_HXX
 
-#ifndef AP_BUFFER_HXX
-#include "AP_buffer.hxx"
+#ifndef AP_MAIN_TYPE_HXX
+#include "ap_main_type.hxx"
 #endif
-#ifndef PARS_DTREE_HXX
-#include "pars_dtree.hxx"
+#ifndef AP_TREE_NLEN_HXX
+#include "ap_tree_nlen.hxx"
 #endif
+
 
 #define AWAR_ALIGNMENT        "tmp/pars/alignment"
 #define AWAR_FILTER_NAME      "tmp/pars/filter/name"
@@ -50,61 +51,6 @@ struct PARS_commands {
     }
 };
 
-class AP_main : virtual Noncopyable {
-    NodeStack             *currFrame;
-    FrameStack             frames;
-    Level                  frameLevel;
-    AWT_graphic_parsimony *agt;       // provides access to tree!
-    StackFrameData         frameData; // saved/restored by push/pop
-    GBDATA                *gb_main;
-
-public:
-    AP_main()
-        : currFrame(NULL),
-          frameLevel(0),
-          agt(NULL),
-          gb_main(NULL)
-    {}
-    ~AP_main() {
-        if (gb_main) GB_close(gb_main);
-        delete currFrame;
-    }
-
-    void set_tree_root(AWT_graphic_parsimony *agt_);
-    AWT_graphic_parsimony *get_graphic_tree() { return agt; }
-    AP_pars_root *get_tree_root() const { return agt->get_tree_root(); }
-
-    DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, agt->get_root_node());
-
-    GBDATA *get_gb_main() const {
-        ap_assert(gb_main); // you need to call open() before you can use get_gb_main()
-        return gb_main;
-    }
-    const char *get_aliname() const;
-    Level get_user_push_counter() const { return frameData.user_push_counter; }
-    Level get_frameLevel() const { return frameLevel; }
-
-    GB_ERROR open(const char *db_server);
-
-    void push_node(AP_tree_nlen *node, AP_STACK_MODE);
-
-    void user_push(); // @@@ -> user_remember
-    void user_pop();  // @@@ -> user_revert
-    // @@@ add user_accept
-
-    void remember();
-    void revert();
-    void accept();
-
-    void accept_if(bool cond) { if (cond) accept(); else revert(); }
-    void revert_if(bool cond) { accept_if(!cond); }
-
-#if defined(PROVIDE_PRINT)
-    void print(std::ostream& out);
-    void print2file(const char *file_in_ARBHOME);
-#endif
-};
-
 extern AP_main *ap_main; // @@@ elim
 
 inline AP_tree_nlen *rootNode() {
@@ -114,6 +60,73 @@ inline AP_tree_nlen *rootNode() {
 inline AP_tree_edge *rootEdge() {
     return rootNode()->get_leftson()->edgeTo(rootNode()->get_rightson());
 }
+
+// ------------------------------------------
+//      stack-aware ressource management
+
+// #define REUSE_NODES
+#define REUSE_EDGES
+
+inline AP_tree_nlen *StackFrameData::makeNode(AP_pars_root *proot) {
+    return
+#if defined(REUSE_NODES)
+    destroyed.has_nodes() ?
+        destroyed.getNode() : // reuse destroyed node (@@@ doesn't work, because revert() does not restore node completely)
+#endif
+        created.put(new AP_tree_nlen(proot));
+}
+inline AP_tree_edge *StackFrameData::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2) {
+#if defined(REUSE_EDGES)
+    if (destroyed.has_edges()) {
+        AP_tree_edge *reuse = destroyed.getEdge();
+        reuse->relink(n1, n2);
+        return reuse;
+    }
+#endif
+    return created.put(new AP_tree_edge(n1, n2));
+}
+
+inline void StackFrameData::destroyNode(AP_tree_nlen *node) { destroyed.put(node); }
+inline void StackFrameData::destroyEdge(AP_tree_edge *edge) { destroyed.put(edge); }
+
+inline AP_tree_nlen *AP_main::makeNode(AP_pars_root *proot) {
+    return currFrame ? frameData->makeNode(proot) : new AP_tree_nlen(proot);
+}
+inline AP_tree_edge *AP_main::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2) {
+    return currFrame ? frameData->makeEdge(n1, n2) : new AP_tree_edge(n1, n2);
+}
+inline void AP_main::destroyNode(AP_tree_nlen *node) {
+    if (currFrame) {
+        frameData->destroyNode(node);
+    }
+    else {
+        delete node; // here child nodes are destroyed
+    }
+}
+inline void AP_main::destroyEdge(AP_tree_edge *edge) {
+    ap_assert(!edge->is_linked());
+    if (currFrame) {
+        frameData->destroyEdge(edge);
+    }
+    else {
+        delete edge;
+    }
+}
+
+inline TreeNode *AP_pars_root::makeNode() const {
+    return ap_main->makeNode(const_cast<AP_pars_root*>(this));
+}
+inline void AP_pars_root::destroyNode(TreeNode *node) const {
+    ap_main->destroyNode(DOWNCAST(AP_tree_nlen*, node));
+}
+
+inline AP_tree_edge *makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2) {
+    return ap_main->makeEdge(n1, n2);
+}
+inline void destroyEdge(AP_tree_edge *edge) {
+    ap_main->destroyEdge(edge);
+}
+
 
 #else
 #error ap_main.hxx included twice
