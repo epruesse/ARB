@@ -73,7 +73,6 @@ enum AWT_RemoveType { // bit flags
     AWT_REMOVE_UNMARKED      = GBT_REMOVE_UNMARKED,
     AWT_REMOVE_ZOMBIES       = GBT_REMOVE_ZOMBIES,
     AWT_REMOVE_NO_SEQUENCE   = 8,
-    AWT_REMOVE_BUT_DONT_FREE = 16, // @@@ eliminate that mode (only used in PARSIMONY)
 
     // please keep AWT_RemoveType in sync with GBT_TreeRemoveType
     // see ../../ARBDB/arbdbt.h@sync_GBT_TreeRemoveType__AWT_RemoveType

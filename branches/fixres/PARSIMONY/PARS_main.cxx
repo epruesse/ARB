@@ -844,7 +844,7 @@ static void NT_add_quick  (UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_add_and_
 static void nt_reAdd(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
     if (agt->get_root_node()) {
         ap_assert(what == NT_ADD_MARKED); // code below will misbehave for NT_ADD_SELECTED
-        agt->get_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
+        agt->get_tree_root()->remove_leafs(AWT_REMOVE_MARKED);
         nt_add(agt, what, quick);
     }
 }
@@ -1210,9 +1210,9 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->sep______________();
         awm->insert_sub_menu("Remove Species from Tree",     "R");
         {
-            awm->insert_menu_topic("tree_remove_deleted", "Remove Zombies", "Z", "trm_del.hlp",    AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_ZOMBIES)));
-            awm->insert_menu_topic("tree_remove_marked",  "Remove Marked",  "M", "trm_mrkd.hlp",   AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED)));
-            awm->insert_menu_topic("tree_keep_marked",    "Keep Marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_KEEP_MARKED)));
+            awm->insert_menu_topic("tree_remove_deleted", "Remove Zombies", "Z", "trm_del.hlp",    AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_REMOVE_ZOMBIES));
+            awm->insert_menu_topic("tree_remove_marked",  "Remove Marked",  "M", "trm_mrkd.hlp",   AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_REMOVE_MARKED));
+            awm->insert_menu_topic("tree_keep_marked",    "Keep Marked",    "K", "tkeep_mrkd.hlp", AWM_ALL, makeWindowCallback(NT_remove_leafs, ntw, AWT_KEEP_MARKED));
         }
         awm->close_sub_menu();
         awm->insert_sub_menu("Add Species to Tree",      "A");
@@ -1650,7 +1650,7 @@ template <typename SEQ>
 static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
     switch (mod) {
         case MOD_REMOVE_MARKED:
-            env.graphic_tree()->get_tree_root()->remove_leafs(AWT_RemoveType(AWT_REMOVE_BUT_DONT_FREE|AWT_REMOVE_MARKED));
+            env.graphic_tree()->get_tree_root()->remove_leafs(AWT_REMOVE_MARKED);
             break;
 
         case MOD_QUICK_ADD:
