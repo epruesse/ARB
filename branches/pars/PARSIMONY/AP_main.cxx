@@ -103,31 +103,31 @@ void AP_main::accept() {
     // moves all not previous buffered nodes in the
     // previous stack
 
-    if (!currFrame) GBK_terminate("AP_main::clear on empty stack");
+    if (!currFrame) GBK_terminate("AP_main::accept on empty stack");
 
     AP_tree_nlen *node;
 
     // @@@ ensure test coverage -> DRY cases below (they are nearly the same)
 
+    ap_assert(frameData->user_push_counter == 0);
+
     NodeStack *prev_frame = frames.pop();
     if (frameData->user_push_counter >= frameLevel) {
+        UNCOVERED();
         while (!currFrame->empty()) {
             UNCOVERED();
             node = currFrame->pop();
-            node->clear(frameLevel, frameData->user_push_counter);
+            node->clear(frameLevel);
         }
     }
     else {
         while ((node = currFrame->pop())) {
             // UNCOVERED();
-            if (node->clear(frameLevel, frameData->user_push_counter) != true) {
-                // node was not cleared (because also buffered in previous node stack).
-                // @@@ has to be done independent of user_push_counter
+            if (node->clear(frameLevel) != true) {
+                // node was not cleared (because not store for previous stack frame).
                 // if revert() gets called for previous stack, it is necessary to revert
                 // the current change as well -> move into previous frame
-                // UNCOVERED();
                 if (prev_frame) {
-                    // UNCOVERED();
                     prev_frame->push(node); // @@@ frames are pushed in reverted order (seems to be wrong)
                 }
             }

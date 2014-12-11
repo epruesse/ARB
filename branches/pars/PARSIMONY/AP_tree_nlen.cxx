@@ -763,7 +763,7 @@ void AP_tree_nlen::unhash_sequence() {
     if (sequence && !is_leaf) sequence->forget_sequence();
 }
 
-bool AP_tree_nlen::clear(Level frame_level, Level user_buffer_count) {
+bool AP_tree_nlen::clear(Level frame_level) {
     // returns
     // - true           if the first element is removed
     // - false          if it is copied into the previous level
@@ -775,24 +775,22 @@ bool AP_tree_nlen::clear(Level frame_level, Level user_buffer_count) {
     }
 
     NodeState *state = states.pop();
-    bool       result;
+    bool       removed;
 
-    if (state->frameNr == frame_level - 1 || user_buffer_count >= frame_level) {
-        // previous node is buffered
+    Level next_frame_level   = frame_level-1;
+    Level stored_frame_level = state->frameNr;
 
-        pushed_to_frame = state->frameNr;
-
+    pushed_to_frame = next_frame_level;
+    if (stored_frame_level == next_frame_level) { // node has been stored for next_frame_level
         delete state;
-        result = true;
+        removed = true;
     }
     else {
-        pushed_to_frame = frame_level - 1;
-
         states.push(state);
-        result = false;
+        removed = false;
     }
 
-    return result;
+    return removed;
 }
 
 
