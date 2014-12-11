@@ -24,17 +24,25 @@ GB_ERROR AP_main::open(const char *db_server) {
 }
 
 void AP_main::user_push() {
-    frameData->user_push_counter = frameLevel + 1;
+    user_frames.push(new UserFrame(frameLevel));
     remember();
 }
 
 void AP_main::user_pop() {
-    // checks if user_pop possible
-    if (frameData->user_push_counter == frameLevel) {
-        revert();    // changes user_push_counter if user pop
+    if (user_frames.empty()) {
+        aw_message("No user-pop possible");
     }
     else {
-        aw_message("No user-pop possible");
+        UserFrame *wanted = user_frames.pop();
+        if (frameLevel<=wanted->get_level()) {
+            aw_message("Wanted user_frame not available");
+        }
+        else {
+            while (frameLevel>wanted->get_level()) {
+                revert();
+            }
+        }
+        delete wanted;
     }
 }
 
@@ -45,14 +53,9 @@ void AP_main::remember() {
 
     frameLevel ++;
     if (currFrame) frames.push(currFrame);
-
-    {
-        Level curr_user_push_counter = frameData->user_push_counter;
-
-        currFrame = new NodeStack(frameData);
-        ap_assert(!frameData);
-        frameData = new StackFrameData(curr_user_push_counter);
-    }
+    currFrame = new NodeStack(frameData);
+    ap_assert(!frameData);
+    frameData = new StackFrameData;
 
 #if defined(CHECK_ROOT_POPS)
     currFrame->root_at_create = DOWNCAST(AP_tree_nlen*, get_tree_root()->get_root_node());
@@ -96,40 +99,18 @@ void AP_main::accept() {
      * @see revert()
      */
 
-    // @@@ outdated
-    // removes count(?) elements from the list because the current tree is used
-    //
-    // if stack_counter greater than last user_push then
-    // moves all not previous buffered nodes in the
-    // previous stack
-
     if (!currFrame) GBK_terminate("AP_main::accept on empty stack");
 
     AP_tree_nlen *node;
 
-    // @@@ ensure test coverage -> DRY cases below (they are nearly the same)
-
-    ap_assert(frameData->user_push_counter == 0);
-
     NodeStack *prev_frame = frames.pop();
-    if (frameData->user_push_counter >= frameLevel) {
-        UNCOVERED();
-        while (!currFrame->empty()) {
-            UNCOVERED();
-            node = currFrame->pop();
-            node->clear(frameLevel);
-        }
-    }
-    else {
-        while ((node = currFrame->pop())) {
-            // UNCOVERED();
-            if (node->clear(frameLevel) != true) {
-                // node was not cleared (because not store for previous stack frame).
-                // if revert() gets called for previous stack, it is necessary to revert
-                // the current change as well -> move into previous frame
-                if (prev_frame) {
-                    prev_frame->push(node); // @@@ frames are pushed in reverted order (seems to be wrong)
-                }
+    while ((node = currFrame->pop())) {
+        if (node->clear(frameLevel) != true) {
+            // node was not cleared (because not store for previous stack frame).
+            // if revert() gets called for previous stack, it is necessary to revert
+            // the current change as well -> move into previous frame
+            if (prev_frame) {
+                prev_frame->push(node); // @@@ frames are pushed in reverted order (seems to be wrong)
             }
         }
     }

@@ -74,10 +74,16 @@ struct AP_STACK : public arb_forward_list<ELEM*> {
         BASE::pop_front();
         return result;
     }
+
     ELEM *top() {
         ap_assert(!BASE::empty());
         return BASE::front();
     }
+    const ELEM *top() const {
+        ap_assert(!BASE::empty());
+        return BASE::front();
+    }
+
     size_t count_elements() const {
 #if defined(Cxx11)
         size_t s = 0;
@@ -204,9 +210,8 @@ class StackFrameData : virtual Noncopyable {
     ResourceStack destroyed; // same for destroyed
 
 public:
-    Level user_push_counter; // @@@ eliminate (instead maintain AP_STACK<Level> in AP_main)
     bool  root_pushed; // @@@ move into NodeStack
-    StackFrameData(Level upc) : user_push_counter(upc), root_pushed(false) {}
+    StackFrameData() : root_pushed(false) {}
 
     void revert_resources(StackFrameData *previous);
     void accept_resources(StackFrameData *previous);

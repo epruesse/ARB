@@ -18,9 +18,20 @@
 #include "pars_dtree.hxx"
 #endif
 
+class UserFrame {
+    Level frameLevel;
+    // @@@ store more information here (e.g. comment, parsimony value, timestamp)
+public:
+    UserFrame(Level level) : frameLevel(level) {}
+    Level get_level() const { return frameLevel; }
+};
+
+typedef AP_STACK<UserFrame> UserFrameStack;
+
 class AP_main : virtual Noncopyable {
     NodeStack             *currFrame;
     FrameStack             frames;
+    UserFrameStack         user_frames;
     Level                  frameLevel;
     AWT_graphic_parsimony *agt;       // provides access to tree!
     StackFrameData        *frameData; // saved/restored by push/pop
@@ -31,7 +42,7 @@ public:
         : currFrame(NULL),
           frameLevel(0),
           agt(NULL),
-          frameData(new StackFrameData(0)),
+          frameData(new StackFrameData),
           gb_main(NULL)
     {}
     ~AP_main() {
@@ -52,7 +63,7 @@ public:
         return gb_main;
     }
     const char *get_aliname() const;
-    Level get_user_push_counter() const { return frameData->user_push_counter; }
+    size_t get_user_push_counter() const { return user_frames.count_elements(); }
     Level get_frameLevel() const { return frameLevel; }
 
     GB_ERROR open(const char *db_server);
