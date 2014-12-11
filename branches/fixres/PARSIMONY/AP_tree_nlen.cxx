@@ -780,8 +780,6 @@ bool AP_tree_nlen::clear(Level frame_level, Level user_buffer_count) {
     if (state->frameNr == frame_level - 1 || user_buffer_count >= frame_level) {
         // previous node is buffered
 
-        if (state->mode & SEQUENCE) delete state->sequence;
-
         pushed_to_frame = state->frameNr;
 
         delete state;
@@ -819,10 +817,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) {
         ret = false;
     }
     else { // first push for this node (in current stack frame)
-        store          = new NodeState;
-        store->frameNr = pushed_to_frame;
-        store->mode    = NOTHING;
-
+        store = new NodeState(pushed_to_frame);
         states.push(store);
 
         pushed_to_frame = frame_level;
@@ -867,7 +862,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) {
     return ret;
 }
 
-void AP_tree_nlen::restore(const NodeState& state, bool destructive) {
+void AP_tree_nlen::restore(NodeState& state, bool destructive) {
     /*! restore 'this' from NodeState
      * if 'destructive' is true, NodeState releases its sequence (i.e. can only be used once on each NodeState)
      * otherwise the sequence gets copied into 'this'
@@ -903,6 +898,7 @@ void AP_tree_nlen::restore(const NodeState& state, bool destructive) {
     if (mode&SEQUENCE) {
         if (destructive) {
             replace_seq(state.sequence);
+            state.sequence = NULL;
         }
         else {
             replace_seq(state.sequence ? state.sequence->dup() : NULL);

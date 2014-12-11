@@ -122,24 +122,22 @@ class AP_pars_root;
 
 typedef unsigned long Level;
 
-struct NodeState { // buffers previous states of AP_tree_nlen
-    Level frameNr;          // state of AP_tree_nlen::pushed_to_frame at creation time of NodeState
+struct NodeState : virtual Noncopyable { // buffers previous states of AP_tree_nlen
+    Level         frameNr;  // state of AP_tree_nlen::pushed_to_frame at creation time of NodeState
+    AP_STACK_MODE mode;     // what has been stored?
 
-    // @@@ reorder members and mark what is stored in which mode
+    // only defined if mode & SEQUENCE:
+    AP_sequence  *sequence; // if set -> NodeState is owner!
+    AP_FLOAT      mutation_rate;
 
-    AP_STACK_MODE  mode;
-    AP_sequence   *sequence;
-    AP_FLOAT       mutation_rate;
-    double         leftlen, rightlen;
-    AP_tree_nlen  *father;
-    AP_tree_nlen  *leftson;
-    AP_tree_nlen  *rightson;
-    AP_pars_root  *root;
-    GBDATA        *gb_node;
-
-    int distance;                                   // distance to border (pushed with STRUCTURE!)
-
-    // data from edges:
+    // only defined if mode & STRUCTURE:
+    double             leftlen, rightlen;
+    AP_tree_nlen      *father;
+    AP_tree_nlen      *leftson;
+    AP_tree_nlen      *rightson;
+    AP_pars_root      *root;
+    GBDATA            *gb_node;
+    int                distance; // distance to border
     AP_tree_edge      *edge[3];
     int                edgeIndex[3];
     AP_tree_edge_data  edgeData[3];
@@ -147,6 +145,9 @@ struct NodeState { // buffers previous states of AP_tree_nlen
 #if defined(PROVIDE_PRINT)
     void print(std::ostream& out, int indentLevel = 0) const;
 #endif
+
+    explicit NodeState(Level frame_nr) : frameNr(frame_nr), mode(NOTHING) {}
+    ~NodeState() { if (mode & SEQUENCE) delete sequence; }
 };
 
 struct StateStack : public AP_STACK<NodeState> {
