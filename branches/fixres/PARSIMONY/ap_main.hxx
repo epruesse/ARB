@@ -97,7 +97,7 @@ inline AP_tree_edge *AP_main::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2) {
 }
 inline void AP_main::destroyNode(AP_tree_nlen *node) {
     if (currFrame) {
-        frameData->destroyNode(node); // @@@ check whether child nodes are destroyed (if still linked in node)
+        frameData->destroyNode(node);
     }
     else {
         delete node; // here child nodes are destroyed

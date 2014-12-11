@@ -380,7 +380,7 @@ void AP_tree_nlen::insert(AP_tree_nlen *newBrother) {
 }
 
 AP_tree_nlen *AP_tree_nlen::REMOVE() {
-    // Removes the node and its father from the tree:
+    // Removes 'this' and its father from the tree:
     //
     //       grandpa                grandpa
     //           /                    /
@@ -391,11 +391,7 @@ AP_tree_nlen *AP_tree_nlen::REMOVE() {
     //   this       brother
     //
     // One of the edges is relinked between brother and grandpa.
-    // The other two edges are lost. This is not very relevant in respect to // @@@ correct comment
-    // memory usage because very few remove()s are really performed - the majority
-    // is undone by a pop().
-    // In the last case the two unlinked edges will be re-used, cause their
-    // memory location was stored in the tree-stack.
+    // 'father' is destroyed, 'this' is returned.
 
     AP_tree_nlen *oldBrother = get_brother();
 

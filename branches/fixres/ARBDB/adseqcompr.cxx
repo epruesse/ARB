@@ -48,7 +48,7 @@ public:
     CompressionTree(CompressionRoot *croot) : TreeNode(croot) {}
 
     unsigned get_leaf_count() const OVERRIDE {
-        gb_assert(0); // @@@ impl
+        gb_assert(0); // @@@ impl (see also GBT_count_leafs and AP_pos_var::getsize)
         return 0;
     }
     void compute_tree() OVERRIDE {}
