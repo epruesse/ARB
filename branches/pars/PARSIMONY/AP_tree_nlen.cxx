@@ -860,56 +860,60 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) {
     return ret;
 }
 
-void AP_tree_nlen::restore(NodeState& state, bool destructive) {
-    /*! restore 'this' from NodeState
-     * if 'destructive' is true, NodeState releases its sequence (i.e. can only be used once on each NodeState)
-     * otherwise the sequence gets copied into 'this'
-     */
-    AP_STACK_MODE mode = state.mode;
-
-    if (mode&STRUCTURE) {
-        father   = state.father;
-        leftson  = state.leftson;
-        rightson = state.rightson;
+void AP_tree_nlen::restore_structure(const NodeState& state) {
+    father   = state.father;
+    leftson  = state.leftson;
+    rightson = state.rightson;
 #if 0
-        // @@@ automatically determining is_leaf may be incorrect (skip atm)
-        is_leaf  = !leftson; ap_assert(is_leaf == !rightson);
-        ap_assert(implicated(is_leaf, name));
-        ap_assert(implicated(is_leaf, gb_node));
+    // @@@ automatically determining is_leaf may be incorrect (skip atm)
+    is_leaf = !leftson; ap_assert(is_leaf == !rightson);
+    ap_assert(implicated(is_leaf, name));
+    ap_assert(implicated(is_leaf, gb_node));
 #endif
-        leftlen  = state.leftlen;
-        rightlen = state.rightlen;
-        set_tree_root(state.root);
-        gb_node  = state.gb_node;
-        distance = state.distance;
+    leftlen  = state.leftlen;
+    rightlen = state.rightlen;
+    set_tree_root(state.root);
+    gb_node  = state.gb_node;
+    distance = state.distance;
 
-        for (int e=0; e<3; e++) {
-            edge[e] = state.edge[e];
+    for (int e=0; e<3; e++) {
+        edge[e] = state.edge[e];
 
-            if (edge[e]) {
-                index[e] = state.edgeIndex[e];
+        if (edge[e]) {
+            index[e] = state.edgeIndex[e];
 
-                edge[e]->index[index[e]] = e;
-                edge[e]->node[index[e]]  = this;
-                edge[e]->data            = state.edgeData[e];
-            }
+            edge[e]->index[index[e]] = e;
+            edge[e]->node[index[e]]  = this;
+            edge[e]->data            = state.edgeData[e];
         }
     }
+}
+void AP_tree_nlen::restore_sequence(NodeState& state) {
+    replace_seq(state.sequence);
+    state.sequence = NULL;
+    mutation_rate = state.mutation_rate;
+}
+void AP_tree_nlen::restore_sequence_nondestructive(const NodeState& state) {
+    replace_seq(state.sequence ? state.sequence->dup() : NULL);
+    mutation_rate = state.mutation_rate;
+}
+void AP_tree_nlen::restore_root(const NodeState& state) {
+    state.root->change_root(state.root->get_root_node(), this);
+}
 
-    if (mode&SEQUENCE) {
-        if (destructive) {
-            replace_seq(state.sequence);
-            state.sequence = NULL;
-        }
-        else {
-            replace_seq(state.sequence ? state.sequence->dup() : NULL);
-        }
-        mutation_rate = state.mutation_rate;
-    }
-
-    if (ROOT==mode) {
-        state.root->change_root(state.root->get_root_node(), this);
-    }
+void AP_tree_nlen::restore(NodeState& state) {
+    //! restore 'this' from NodeState (cheap; only call once for each 'state')
+    AP_STACK_MODE mode = state.mode;
+    if (mode&STRUCTURE) restore_structure(state);
+    if (mode&SEQUENCE) restore_sequence(state);
+    if (ROOT==mode) restore_root(state);
+}
+void AP_tree_nlen::restore_nondestructive(const NodeState& state) {
+    //! restore 'this' from NodeState (expensive; may be called multiple times for each 'state')
+    AP_STACK_MODE mode = state.mode;
+    if (mode&STRUCTURE) restore_structure(state);
+    if (mode&SEQUENCE) restore_sequence_nondestructive(state);
+    if (ROOT==mode) restore_root(state);
 }
 
 void AP_tree_nlen::pop(Level IF_ASSERTION_USED(curr_frameLevel), bool& rootPopped) { // pop old tree costs
@@ -922,7 +926,7 @@ void AP_tree_nlen::pop(Level IF_ASSERTION_USED(curr_frameLevel), bool& rootPoppe
         rootPopped = true;
     }
 #endif
-    restore(*previous, true);
+    restore(*previous);
 
     pushed_to_frame = previous->frameNr;
     delete previous;

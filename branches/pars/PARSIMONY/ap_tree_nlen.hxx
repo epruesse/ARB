@@ -94,6 +94,10 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ renam
     void forget_relatives() {
         AP_tree::forget_relatives();
     }
+    void restore_structure(const NodeState& state);
+    void restore_sequence(NodeState& state);
+    void restore_sequence_nondestructive(const NodeState& state);
+    void restore_root(const NodeState& state);
 
 protected:
     ~AP_tree_nlen() OVERRIDE { ap_assert(states.empty()); }
@@ -118,9 +122,10 @@ public:
     void     unhash_sequence();
     AP_FLOAT costs(char *mutPerSite = NULL);        // cost of a tree (number of changes ..)
 
-    bool push(AP_STACK_MODE, Level frame_level);      // push state of costs
-    void pop(Level curr_frameLevel, bool& rootPopped); // pop old tree costs
-    void restore(NodeState& state, bool destructive); // restore old node state
+    bool push(AP_STACK_MODE, Level frame_level);
+    void pop(Level curr_frameLevel, bool& rootPopped);
+    void restore(NodeState& state);
+    void restore_nondestructive(const NodeState& state);
     bool clear(Level frame_level);
 
     Level get_pushed_to_frame() const { return pushed_to_frame; }
