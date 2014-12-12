@@ -918,7 +918,7 @@ void AP_tree_nlen::restore_structure(const NodeState& state) {
     leftson  = state.leftson;
     rightson = state.rightson;
 #if 0
-    // @@@ automatically determining is_leaf may be incorrect (skip atm)
+    // @@@ automatically determining is_leaf may be incorrect (skip atm); interferes with remember_and_rollback_to()
     is_leaf = !leftson; ap_assert(is_leaf == !rightson);
     ap_assert(implicated(is_leaf, name));
     ap_assert(implicated(is_leaf, gb_node));

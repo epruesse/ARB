@@ -99,12 +99,15 @@ public:
     void accept() { apMain.accept(); }
     void accept_if(bool cond) { apMain.accept_if(cond); }
 
+    void assert_pop_will_produce_valid_tree() { apMain.assert_revert_will_produce_valid_tree(); }
+    void assert_all_available_pops_will_produce_valid_trees() { apMain.assert_all_available_reverts_will_produce_valid_trees(); }
+
     Level get_frame_level() { return apMain.get_frameLevel(); }
     Level get_user_push_counter() { return apMain.get_user_push_counter(); }
 
     AWT_graphic_parsimony *graphic_tree() { return agt; }
 
-    GBDATA *gbmain() const { return ap_main->get_gb_main(); }
+    GBDATA *gbmain() const { return apMain.get_gb_main(); }
 
     long combines_performed() {
         long performed     = AP_sequence::combine_count()-prev_combine_count;
@@ -113,17 +116,7 @@ public:
     }
 
 #if defined(PROVIDE_PRINT)
-    void dump2file(const char *name) {
-        static int counter = 0;
-
-        if (counter == 0) {
-            system("rm $ARBHOME/[0-9][0-9]_*.log");
-        }
-
-        char *numbered_name = GBS_global_string_copy("%02i_%s.log", ++counter, name);
-        apMain.print2file(numbered_name);
-        free(numbered_name);
-    }
+    void dump2file(const char *name) { apMain.dump2file(name); }
 #endif
 };
 
@@ -131,4 +124,5 @@ public:
 #else
 #error test_env.h included twice
 #endif // TEST_ENV_H
+
 

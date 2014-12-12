@@ -37,6 +37,9 @@ class AP_main : virtual Noncopyable {
     StackFrameData        *frameData; // saved/restored by push/pop
     GBDATA                *gb_main;
 
+    void push_nodes_changed_since(Level wanted_frameLevel);
+    void rollback_to(Level wanted_frameLevel);
+
 public:
     AP_main()
         : currFrame(NULL),
@@ -69,7 +72,7 @@ public:
 
     GB_ERROR open(const char *db_server);
 
-    void push_node(AP_tree_nlen *node, AP_STACK_MODE);
+    bool push_node(AP_tree_nlen *node, AP_STACK_MODE);
 
     void user_push(); // @@@ -> user_remember
     void user_pop();  // @@@ -> user_revert
@@ -82,9 +85,63 @@ public:
     void accept_if(bool cond) { if (cond) accept(); else revert(); }
     void revert_if(bool cond) { accept_if(!cond); }
 
+    bool remember_and_rollback_to(Level wanted_frameLevel) {
+        if (wanted_frameLevel>=frameLevel) {
+            return false;
+        }
+        remember();
+        push_nodes_changed_since(wanted_frameLevel);
+        rollback_to(wanted_frameLevel);
+        return true;
+    }
+    bool remember_and_rollback_to_previous() {
+        /*! tree is modified into the same (or equiv) state as it would be done by calling pop(),
+         * but the current state is pushed onto the stack.
+         * Calling pop() afterwards will undo this operation.
+         */
+        return remember_and_rollback_to(frameLevel-1);
+    }
+
 #if defined(PROVIDE_PRINT)
     void print(std::ostream& out);
     void print2file(const char *file_in_ARBHOME);
+    void dump2file(const char *name) {
+        static int counter = 0;
+
+        if (counter == 0) {
+            system("rm $ARBHOME/[0-9][0-9]_*.log");
+        }
+
+        char *numbered_name = GBS_global_string_copy("%02i_%s.log", ++counter, name);
+        print2file(numbered_name);
+        free(numbered_name);
+    }
+
+#endif
+
+#if defined(ASSERTION_USED)
+    void assert_revert_will_produce_valid_tree() {
+        ASSERT_VALID_TREE(get_root_node());
+        ASSERT_RESULT(bool, true, remember_and_rollback_to_previous()); // otherwise stack is empty
+        ASSERT_VALID_TREE(get_root_node());
+        revert(); // undo remember_and_rollback_to_previous
+        ASSERT_VALID_TREE(get_root_node());
+    }
+    void assert_all_available_reverts_will_produce_valid_trees() {
+        ASSERT_VALID_TREE(get_root_node());
+        Level pops_avail = get_frameLevel();
+        for (Level rollback = 1; rollback<=pops_avail; ++rollback) {
+            Level wanted_level = pops_avail-rollback;
+            ASSERT_RESULT(bool, true, remember_and_rollback_to(wanted_level)); // otherwise stack is empty
+            // dump2file(GBS_global_string("after_remember_and_rollback_to_%lu", wanted_level));
+            ASSERT_VALID_TREE(get_root_node());
+            revert(); // undo remember_and_rollback_to
+            // dump2file("after_pop_to_undo__remember_and_rollback_to");
+            ASSERT_VALID_TREE(get_root_node());
+        }
+    }
+#else // !defined(ASSERTION_USED)
+    void assert_revert_will_produce_valid_tree() {}
 #endif
 
     inline AP_tree_nlen *makeNode(AP_pars_root *proot);
