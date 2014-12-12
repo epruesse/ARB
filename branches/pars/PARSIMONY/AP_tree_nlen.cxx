@@ -871,9 +871,12 @@ void AP_tree_nlen::restore(NodeState& state, bool destructive) {
         father   = state.father;
         leftson  = state.leftson;
         rightson = state.rightson;
+#if 0
+        // @@@ automatically determining is_leaf may be incorrect (skip atm)
         is_leaf  = !leftson; ap_assert(is_leaf == !rightson);
         ap_assert(implicated(is_leaf, name));
         ap_assert(implicated(is_leaf, gb_node));
+#endif
         leftlen  = state.leftlen;
         rightlen = state.rightlen;
         set_tree_root(state.root);
