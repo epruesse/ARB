@@ -1962,7 +1962,7 @@ void TEST_optimizations_some() {
     const unsigned seed           = 1417001558;
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 40074);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 60958);
 
 #if 0
     // @@@ test results changed by adding the MOD_OPTI_GLOBAL test above (rel #620)
@@ -1994,7 +1994,7 @@ void TEST_optimizations_all() {
     const unsigned seed           = 1417001558;
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 40074); // @@@ there is no difference in number of combines between TEST_optimizations_some and TEST_optimizations_all. why not?
+    TEST_EXPECT_EQUAL(env.combines_performed(), 60958); // @@@ there is no difference in number of combines between TEST_optimizations_some and TEST_optimizations_all. why not?
 }
 
 void TEST_prot_tree_modifications() {
@@ -2364,6 +2364,75 @@ void TEST_node_stack() {
     }
 
     TEST_EXPECT_EQUAL(env.combines_performed(), 4438); // @@@ distribute
+}
+
+void TEST_node_edge_resources() {
+    const char *aliname = "ali_5s";
+
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
+
+    TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
+
+    const int PARSIMONY_ORG     = 301;
+    const int PARSIMONY_REMOVED = PARSIMONY_ORG-0; // @@@ hae? expected to be smaller
+    const int PARSIMONY_READDED = PARSIMONY_ORG+8; // ok (just added somewhere, not optimal)
+
+    TEST_EXPECT_EQUAL(env.combines_performed(), 0);
+
+    TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 14);
+
+    AP_tree_nlen *CloButyr = env.root_node()->findLeafNamed("CloButyr");
+    AP_tree_nlen *CloPaste = env.root_node()->findLeafNamed("CloPaste");
+
+    for (int accept_outer = 0; accept_outer<=1; ++accept_outer) {
+        env.push();
+
+        for (int accept_inner = 0; accept_inner<=1; ++accept_inner) {
+            TEST_ANNOTATE(GBS_global_string("accept_outer=%i accept_inner=%i", accept_outer, accept_inner));
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+            if (accept_inner == 0) {
+                CloButyr->REMOVE();
+            }
+            // otherwise CloButyr is still removed (because re-add was reverted)
+            ap_assert(!CloButyr->father);
+
+            TEST_EXPECT_PARSVAL(env, PARSIMONY_REMOVED);
+            TEST_EXPECT_EQUAL(env.combines_performed(), accept_inner ? 0 : 4);
+
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            {
+                env.push();
+                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+                CloButyr->insert(CloPaste);
+
+                TEST_EXPECT_PARSVAL(env, PARSIMONY_READDED);
+                TEST_EXPECT_EQUAL(env.combines_performed(), 4);
+
+                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+                env.accept_if(accept_inner);
+            }
+            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+            TEST_EXPECT_PARSVAL(env, accept_inner ? PARSIMONY_READDED : PARSIMONY_REMOVED);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 0);
+        }
+
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        env.accept_if(accept_outer);
+        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+
+        if (!accept_outer) TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
+
+        TEST_EXPECT_PARSVAL(env, accept_outer ? PARSIMONY_READDED : PARSIMONY_ORG);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 0);
+    }
+
+    TEST_EXPECT_EQUAL(env.combines_performed(), 0);
 }
 
 #endif // UNIT_TESTS

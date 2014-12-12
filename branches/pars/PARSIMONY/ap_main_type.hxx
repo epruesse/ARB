@@ -48,6 +48,7 @@ public:
     ~AP_main() {
         if (gb_main) GB_close(gb_main);
         ap_assert(frameData);
+        frameData->accept_resources(NULL);
         delete frameData;
         delete currFrame;
     }

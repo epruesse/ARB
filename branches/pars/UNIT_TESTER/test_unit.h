@@ -39,7 +39,7 @@
 #endif
 
 
-#define ENABLE_CRASH_TESTS // comment out this line to get rid of provoked SEGVs (e.g. while debugging test-code) // @@@ 
+#define ENABLE_CRASH_TESTS // comment out this line to get rid of provoked SEGVs (e.g. while debugging test-code)
 
 /* Note:
  * This file should not generate any static code.

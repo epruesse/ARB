@@ -106,7 +106,7 @@ void AP_main::accept() {
     NodeStack *prev_frame = frames.pop();
     while ((node = currFrame->pop())) {
         if (node->clear(frameLevel) != true) {
-            // node was not cleared (because not store for previous stack frame).
+            // node was not cleared (because it was not stored for previous stack frame).
             // if revert() gets called for previous stack, it is necessary to revert
             // the current change as well -> move into previous frame
             if (prev_frame) {

@@ -335,6 +335,7 @@ void AP_tree_nlen::insert(AP_tree_nlen *newBrother) {
     ASSERT_VALID_TREE(this);
     ASSERT_VALID_TREE(newBrother);
 
+    ap_main->push_node(this, STRUCTURE);
     ap_main->push_node(newBrother, STRUCTURE);
 
     AP_tree_nlen *brothersFather = newBrother->get_father();
@@ -763,38 +764,58 @@ void AP_tree_nlen::unhash_sequence() {
     if (sequence && !is_leaf) sequence->forget_sequence();
 }
 
-bool AP_tree_nlen::clear(Level frame_level) {
+bool AP_tree_nlen::clear(Level frame_level) { // @@@ rename -> acceptCurrentState
     // returns
-    // - true           if the first element is removed
-    // - false          if it is copied into the previous level
-    // according if user_buffer is greater than datum (wot?)
+    // - true           if the top state has been removed
+    // - false          if the top state was kept/extended for possible revert at lower frame_level
 
     if (pushed_to_frame != frame_level) {
         ap_assert(0); // internal control number check failed
         return false;
     }
 
-    NodeState *state = states.pop();
-    bool       removed;
+    NodeState *state   = states.pop();
+    bool       removed = true;
 
     Level next_frame_level   = frame_level-1;
     Level stored_frame_level = state->frameNr;
 
-    pushed_to_frame = next_frame_level;
-    if (stored_frame_level == next_frame_level) { // node has been stored for next_frame_level
+    if (!next_frame_level) { // accept() called at top-level
         delete state;
-        removed = true;
+    }
+    else if (stored_frame_level == next_frame_level) {
+        // node already is buffered for next_frame_level
+
+        // if the currently accepted state->mode is not completely covered by previous state->mode
+        // => a future revert() would only restore partially
+        // To avoid that, move missing state information to previous NodeState
+        {
+            NodeState     *prev_state = states.top();
+            AP_STACK_MODE  prev_mode  = prev_state->mode;
+            AP_STACK_MODE  common     = AP_STACK_MODE(prev_mode & state->mode);
+
+            if (common != state->mode) {
+                AP_STACK_MODE missing = AP_STACK_MODE(state->mode & ~common); // previous is missing this state information
+
+                ap_assert((prev_mode&missing) == NOTHING);
+                state->move_info_to(*prev_state, missing);
+            }
+        }
+
+        delete state;
     }
     else {
+        // keep state for future revert
         states.push(state);
         removed = false;
     }
+    pushed_to_frame = next_frame_level;
 
     return removed;
 }
 
 
-bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) {
+bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) { // @@@ rename -> rememberState
     // according to mode
     // tree_structure or sequence is buffered in the node
 
@@ -860,6 +881,38 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) {
     return ret;
 }
 
+void NodeState::move_info_to(NodeState& target, AP_STACK_MODE what) {
+    // rescue partial NodeState information
+
+    ap_assert((mode&what)        == what); // this has to contain 'what' is moved
+    ap_assert((target.mode&what) == NOTHING); // target shall not already contain 'what' is moved
+
+    if (what & STRUCTURE) {
+        target.father   = father;
+        target.leftson  = leftson;
+        target.rightson = rightson;
+        target.leftlen  = leftlen;
+        target.rightlen = rightlen;
+        target.root     = root;
+        target.gb_node  = gb_node;
+        target.distance = distance;
+
+        for (int e=0; e<3; e++) {
+            target.edge[e]      = edge[e];
+            target.edgeIndex[e] = edgeIndex[e];
+            target.edgeData[e]  = edgeData[e];
+        }
+    }
+    if (what & SEQUENCE) {
+        target.sequence      = sequence;
+        target.mutation_rate = mutation_rate;
+        sequence             = NULL;
+
+    }
+    // nothing needs to be done for ROOT
+    target.mode = AP_STACK_MODE(target.mode|what);
+}
+
 void AP_tree_nlen::restore_structure(const NodeState& state) {
     father   = state.father;
     leftson  = state.leftson;
@@ -916,7 +969,7 @@ void AP_tree_nlen::restore_nondestructive(const NodeState& state) {
     if (ROOT==mode) restore_root(state);
 }
 
-void AP_tree_nlen::pop(Level IF_ASSERTION_USED(curr_frameLevel), bool& rootPopped) { // pop old tree costs
+void AP_tree_nlen::pop(Level IF_ASSERTION_USED(curr_frameLevel), bool& rootPopped) { // pop old tree costs // @@@ rename -> revertToPreviousState
     ap_assert(pushed_to_frame == curr_frameLevel); // error in node stack (node wasnt pushed in current frame!)
 
     NodeState *previous = states.pop();

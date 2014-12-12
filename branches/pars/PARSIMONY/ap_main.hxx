@@ -97,9 +97,17 @@ inline AP_tree_edge *AP_main::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2) {
 }
 inline void AP_main::destroyNode(AP_tree_nlen *node) {
     if (currFrame) {
-        frameData->destroyNode(node);
+        if (node->may_be_recollected()) {
+            ap_assert(!node->rightson && !node->leftson); // @@@ occurs?
+            frameData->destroyNode(node);
+        }
+        else {
+            UNCOVERED(); ap_assert(0);
+            delete node;
+        }
     }
     else {
+        ap_assert(!node->may_be_recollected());
         delete node; // here child nodes are destroyed
     }
 }

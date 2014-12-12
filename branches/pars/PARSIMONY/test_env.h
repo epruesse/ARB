@@ -96,6 +96,8 @@ public:
 
     void push() { apMain.remember(); }
     void pop() { apMain.revert(); }
+    void accept() { apMain.accept(); }
+    void accept_if(bool cond) { apMain.accept_if(cond); }
 
     Level get_frame_level() { return apMain.get_frameLevel(); }
     Level get_user_push_counter() { return apMain.get_user_push_counter(); }

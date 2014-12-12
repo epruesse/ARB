@@ -148,6 +148,8 @@ struct NodeState : virtual Noncopyable { // buffers previous states of AP_tree_n
     int                edgeIndex[3];
     AP_tree_edge_data  edgeData[3];
 
+    void move_info_to(NodeState& target, AP_STACK_MODE what);
+
 #if defined(PROVIDE_PRINT)
     void print(std::ostream& out, int indentLevel = 0) const;
 #endif

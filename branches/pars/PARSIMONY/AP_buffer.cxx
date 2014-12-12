@@ -220,7 +220,7 @@ void StackFrameData::revert_resources(StackFrameData *previous) {
 }
 
 void StackFrameData::accept_resources(StackFrameData *previous) {
-    ap_assert(previous);
+    // if previous==NULL, top StackFrameData gets destroyed
 
     ResourceStack common;
     common.extract_common(created, destroyed);
@@ -228,14 +228,26 @@ void StackFrameData::accept_resources(StackFrameData *previous) {
     if (common.has_nodes()) {
         UNCOVERED(); ap_assert(0);
     }
-    created.move_nodes(previous->created);
-    destroyed.move_nodes(previous->destroyed);
+    if (previous) {
+        created.move_nodes(previous->created);
+        destroyed.move_nodes(previous->destroyed);
+    }
+    else {
+        created.forget_nodes(); // they are finally accepted as part of the tree
+        destroyed.destroy_nodes();
+    }
 
     if (common.has_edges()) {
         UNCOVERED(); ap_assert(0);
     }
-    created.move_edges(previous->created);
-    destroyed.move_edges(previous->destroyed);
+    if (previous) {
+        created.move_edges(previous->created);
+        destroyed.move_edges(previous->destroyed);
+    }
+    else {
+        created.forget_edges(); // they are finally accepted as part of the tree
+        destroyed.destroy_edges();
+    }
 }
 
 

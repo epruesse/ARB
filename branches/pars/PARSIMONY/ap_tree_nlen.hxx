@@ -86,7 +86,7 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ renam
 
     AP_FLOAT mutation_rate;
 
-    Level      pushed_to_frame;    // last frame this node has been pushed onto, 0 = none
+    Level      pushed_to_frame;    // last frame this node has been pushed onto, 0 = none // @@@ rename (push->remember)
     StateStack states;             // containes previous states of 'this'
 
     void createListRekUp(AP_CO_LIST *list, int *cn);
@@ -128,7 +128,8 @@ public:
     void restore_nondestructive(const NodeState& state);
     bool clear(Level frame_level);
 
-    Level get_pushed_to_frame() const { return pushed_to_frame; }
+    Level get_pushed_to_frame() const { return pushed_to_frame; } // @@@ rename (push->remember)
+    bool  may_be_recollected() const { return !states.empty(); }
     const StateStack& get_states() const { return states; }
 
     virtual AP_UPDATE_FLAGS check_update() OVERRIDE; // disable  load !!!!
@@ -255,10 +256,9 @@ class AP_tree_edge : virtual Noncopyable {
     // my friends:
     friend class         AP_tree_nlen;
     friend std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
-    friend AP_tree_edge *StackFrameData::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2);
-    friend void          AP_main::destroyEdge(AP_tree_edge *edge);
-    friend void StackFrameData::destroyNode(AP_tree_nlen *node);
-    friend void          ResourceStack::destroy_edges();
+    friend AP_tree_edge *StackFrameData::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2); // allowed to relink edge
+    friend void          AP_main::destroyEdge(AP_tree_edge *edge); // allowed to delete edge
+    friend void          ResourceStack::destroy_edges(); // allowed to delete edge
 #if defined(UNIT_TESTS) // UT_DIFF
     friend void TEST_basic_tree_modifications();
 #endif
