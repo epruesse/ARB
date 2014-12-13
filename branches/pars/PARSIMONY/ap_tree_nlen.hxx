@@ -201,9 +201,9 @@ public:
     char *getSequenceCopy();
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
-    bool has_valid_edges() const;
-    void assert_valid() const;
-    bool sequence_state_valid() const;
+    Validity has_valid_edges() const;
+    Validity sequence_state_valid() const;
+    Validity is_valid() const;
 #endif // PROVIDE_TREE_STRUCTURE_TESTS
 
 #if defined(PROVIDE_PRINT)

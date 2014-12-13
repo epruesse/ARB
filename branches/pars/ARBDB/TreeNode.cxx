@@ -37,45 +37,44 @@ void TreeRoot::change_root(TreeNode *oldroot, TreeNode *newroot) {
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
 
-void TreeNode::assert_valid() const {
+Validity TreeNode::is_valid() const {
     rt_assert(this);
+    Validity valid;
 
     TreeRoot *troot = get_tree_root();
     if (troot) {
         if (is_leaf) {
-            rt_assert(!rightson);
-            rt_assert(!leftson);
+            valid = Validity(!rightson && !leftson, "leaf has son");
         }
         else {
-            rt_assert(rightson);
-            rt_assert(leftson);
-            get_rightson()->assert_valid();
-            get_leftson()->assert_valid();
+            valid            = Validity(rightson && leftson, "inner node lacks sons");
+            if (valid) valid = get_rightson()->is_valid();
+            if (valid) valid = get_leftson()->is_valid();
         }
         if (father) {
-            rt_assert(is_inside(get_father()));
-            rt_assert(troot->get_root_node()->is_anchestor_of(this));
-            rt_assert(get_father()->get_tree_root() == troot);
+            if (valid) valid = Validity(is_inside(get_father()), "node not inside father subtree");
+            if (valid) valid = Validity(troot->get_root_node()->is_anchestor_of(this), "root is not nodes anchestor");
+            if (valid) valid = Validity(get_father()->get_tree_root() == troot, "node and father have different TreeRoot");
         }
         else {
-            rt_assert(troot->get_root_node()  == this);
-            rt_assert(!is_leaf);                    // leaf@root (tree has to have at least 2 leafs)
+            if (valid) valid = Validity(troot->get_root_node() == this, "node has no father, but isn't root-node");
+            if (valid) valid = Validity(!is_leaf, "root-node is leaf"); // leaf@root (tree has to have at least 2 leafs)
         }
     }
     else { // removed node (may be incomplete)
         if (is_leaf) {
-            rt_assert(!rightson);
-            rt_assert(!leftson);
+            valid = Validity(!rightson && !leftson, "(removed) leaf has son");
         }
         else {
-            if (rightson) get_rightson()->assert_valid();
-            if (leftson)  get_leftson()->assert_valid();
+            if (rightson)         valid = get_rightson()->is_valid();
+            if (leftson && valid) valid = get_leftson()->is_valid();
         }
         if (father) {
-            rt_assert(is_inside(get_father()));
-            rt_assert(!get_father()->get_tree_root());
+            if (valid) valid = Validity(is_inside(get_father()), "(removed) node not inside father subtree");
+            if (valid) valid = Validity(get_father()->get_tree_root() == troot, "(removed) node and father have different TreeRoot");
         }
     }
+    return valid;
 }
 #endif // PROVIDE_TREE_STRUCTURE_TESTS
 

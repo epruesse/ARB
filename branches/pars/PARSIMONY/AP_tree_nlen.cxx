@@ -197,21 +197,21 @@ inline const char *no_valid_edge_between(const AP_tree_nlen *node1, const AP_tre
         free(msg);                                      \
     }while(0)
 
-bool AP_tree_nlen::has_valid_edges() const {
-    bool valid = true;
+Validity AP_tree_nlen::has_valid_edges() const {
+    Validity valid;
     if (get_father()) {                     // root has no edges
         if (get_father()->is_root_node()) { // sons of root have one edge between them
             if (is_leftson()) { // test root-edge only from one son
                 const char *invalid = no_valid_edge_between(this, get_brother());
                 if (invalid) {
                     SHOW_BAD_EDGE("root-%s. root", invalid, get_father());
-                    valid = false;
+                    valid = Validity(false, "no valid edge between sons of root");
                 }
             }
             const char *invalid = no_valid_edge_between(this, get_father());
             if (!invalid || !strstr(invalid, "missing")) {
                 SHOW_BAD_EDGE("unexpected edge (%s) between root and son", invalid ? invalid : "valid", this);
-                valid = false;
+                valid = Validity(false, "unexpected edge between son-of-root and root");
             }
         }
         else {
@@ -219,22 +219,22 @@ bool AP_tree_nlen::has_valid_edges() const {
             if (invalid) {
                 SHOW_BAD_EDGE("son-%s. father", invalid, get_father());
                 SHOW_BAD_EDGE("parent-%s. son", invalid, this);
-                valid = false;
+                valid = Validity(false, "invalid edge between son and father");
             }
         }
     }
 
     if (!is_leaf) {
-        valid = get_leftson()->has_valid_edges() && valid;
-        valid = get_rightson()->has_valid_edges() && valid;
+        if (valid) valid = get_leftson()->has_valid_edges();
+        if (valid) valid = get_rightson()->has_valid_edges();
     }
     return valid;
 }
 
-bool AP_tree_nlen::sequence_state_valid() const {
+Validity AP_tree_nlen::sequence_state_valid() const {
     // if some node has a sequence, all son-nodes have to have sequences!
 
-    bool valid = true;
+    Validity valid;
 
     const AP_sequence *sequence = get_seq();
     if (sequence) {
@@ -251,33 +251,30 @@ bool AP_tree_nlen::sequence_state_valid() const {
                 }
 #endif
 
-                valid = leftson_hasSequence && rightson_hasSequence;
+                valid = Validity(leftson_hasSequence && rightson_hasSequence, "node has sequence and son w/o sequence");
             }
         }
         else {
-            if (is_leaf) ap_assert(sequence->is_bound_to_species()); // can do lazu load if needed
+            if (is_leaf) ap_assert(sequence->is_bound_to_species()); // can do lazy load if needed
         }
     }
+
     if (!is_leaf) {
-        if (!get_leftson() ->sequence_state_valid()) valid = false;
-        if (!get_rightson()->sequence_state_valid()) valid = false;
+        if (valid) valid = get_leftson()->sequence_state_valid();
+        if (valid) valid = get_rightson()->sequence_state_valid();
     }
 
     return valid;
 }
 
-void AP_tree_nlen::assert_valid() const {
+Validity AP_tree_nlen::is_valid() const {
     ap_assert(this);
-    ap_assert(has_valid_edges());
-#if 1
-    ap_assert(sequence_state_valid());
-#else
-#warning does not fail for invalid sequence state
-    if (!sequence_state_valid()) {
-        fputs("Warning: invalid sequence state!\n", stderr);
-    }
-#endif
-    AP_tree::assert_valid();
+
+    Validity valid   = AP_tree::is_valid();
+    if (valid) valid = has_valid_edges();
+    if (valid) valid = sequence_state_valid();
+
+    return valid;
 }
 
 #endif // PROVIDE_TREE_STRUCTURE_TESTS

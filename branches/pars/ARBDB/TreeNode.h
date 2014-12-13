@@ -373,7 +373,7 @@ private:
 public:
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
-    void assert_valid() const;
+    Validity is_valid() const;
 #endif // PROVIDE_TREE_STRUCTURE_TESTS
 };
 
@@ -408,9 +408,9 @@ inline void destroy(TreeNode *that, TreeRoot *root) {
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
 template <typename TREE>
-inline void assert_tree_has_valid_structure(const TREE *tree, bool IF_ASSERTION_USED(acceptNULL)) {
+inline void assert_tree_has_valid_structure(const TREE *tree, bool IF_ASSERTION_USED(acceptNULL)) { // @@@ -> assert(tree_has_valid_structure);
     rt_assert(acceptNULL || tree);
-    if (tree) tree->assert_valid();
+    if (tree) tree->is_valid().assert_is_valid();
 }
 #endif
 

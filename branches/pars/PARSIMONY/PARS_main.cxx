@@ -2102,24 +2102,24 @@ void TEST_node_stack() {
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 14);
 
-    TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+    TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
 
     // test set root to CytAquat + pop (works)
     {
         env.push();
         env.root_node()->findLeafNamed("CytAquat")->set_root();
-        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
         env.pop();
-        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
     }
 
     // test set root to CloButyr + pop (works)
     {
         env.push();
         env.root_node()->findLeafNamed("CloButyr")->set_root();
-        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
         env.pop();
-        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
     }
 
     // test set root to CloBifer + set root to CloTyrob + pop (works)
@@ -2130,9 +2130,9 @@ void TEST_node_stack() {
         env.root_node()->findLeafNamed("CloBifer")->set_root();
         env.root_node()->findLeafNamed("CloTyrob")->set_root();
 
-        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
         env.pop();
-        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
     }
 
     // test set root to CytAquat + set root to CloButyr + pop (failed, fixed by [13138])
@@ -2153,13 +2153,13 @@ void TEST_node_stack() {
 
         env.root_node()->findLeafNamed("CloButyr")->set_root();
 
-        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
         TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
         TEST_EXPECT_EQUAL(env.combines_performed(), 6);
 
         env.pop();
 
-        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
         TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
         TEST_EXPECT_EQUAL(env.combines_performed(), 0);
         TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
@@ -2251,7 +2251,7 @@ void TEST_node_stack() {
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
         TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
         env.pop();
-        TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ doing pop() after quick-adding produces an invalid tree (root-edge missing)
+        TEST_VALIDITY__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges(), "no valid edge between sons of root"); // @@@ doing pop() after quick-adding produces an invalid tree (root-edge missing)
 
         env.pop();
         TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
@@ -2310,7 +2310,7 @@ void TEST_node_stack() {
                 TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
             }
             else {
-                TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ doing pop() after quick-adding produces an invalid tree (root-edge missing)
+                TEST_VALIDITY__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges(), "no valid edge between sons of root"); // @@@ doing pop() after quick-adding produces an invalid tree (root-edge missing)
             }
 
             env.pop();
@@ -2319,7 +2319,7 @@ void TEST_node_stack() {
                 TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
             }
             else {
-                TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ doing 2nd pop() (=undo remove) produces an invalid tree
+                TEST_VALIDITY__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges(), "no valid edge between sons of root"); // @@@ doing 2nd pop() (=undo remove) produces an invalid tree
             }
 
             env.pop();
@@ -2353,10 +2353,10 @@ void TEST_node_stack() {
         env.pop();
 
         if (remove_from_lower_subtree) {
-            TEST_EXPECT__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ broken if removed from lower part of tree
+            TEST_VALIDITY__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges(), "no valid edge between sons of root"); // @@@ broken if removed from lower part of tree
         }
         else {
-            TEST_EXPECT(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ NOT broken if removed from upper part of tree
+            TEST_VALIDITY(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ NOT broken if removed from upper part of tree
         }
 
         env.pop();
