@@ -1237,6 +1237,10 @@ namespace arb_test {
 #define TEST_REJECT(cond)         TEST_EXPECTATION(that(cond).is_equal_to(false))
 #define TEST_REJECT__BROKEN(cond) TEST_EXPECTATION__BROKEN_SIMPLE(that(cond).is_equal_to(false))
 
+// test class Validity:
+#define TEST_VALIDITY(valid)             TEST_EXPECT_NULL((valid).why_not())
+#define TEST_VALIDITY__BROKEN(valid,got) TEST_EXPECT_NULL__BROKEN((valid).why_not(),got)
+
 // --------------------------------------------------------------------------------
 // the following macros only work when
 // - tested module depends on ARBDB and
