@@ -480,7 +480,7 @@ void TEST_basic_tree_modifications() {
 
         env.push(); // 1st stack level (=top_topo)
 
-        TEST_ASSERT_VALID_TREE(root);
+        TEST_EXPECT_VALID_TREE(root);
 
         TEST_EXPECT_NEWICK(nLENGTH, root, top_topo);
         // test reorder_tree:
@@ -490,7 +490,7 @@ void TEST_basic_tree_modifications() {
         root->reorder_tree(BIG_BRANCHES_ALTERNATING); TEST_EXPECT_NEWICK(nLENGTH, root, radial_topo2);
         root->reorder_tree(BIG_BRANCHES_TO_TOP);      TEST_EXPECT_NEWICK(nLENGTH, root, top_topo);
 
-        TEST_ASSERT_VALID_TREE(root);
+        TEST_EXPECT_VALID_TREE(root);
 
         // test set root:
         AP_tree_nlen *CloTyrob = root->findLeafNamed("CloTyrob");
@@ -499,7 +499,7 @@ void TEST_basic_tree_modifications() {
         ARB_edge rootEdge(root->get_leftson(), root->get_rightson());
         CloTyrob->set_root();
 
-        TEST_ASSERT_VALID_TREE(root);
+        TEST_EXPECT_VALID_TREE(root);
 
         const char *rootAtCloTyrob_topo =
             "(CloTyrob:0.004,"
@@ -509,7 +509,7 @@ void TEST_basic_tree_modifications() {
         TEST_EXPECT_NEWICK(nLENGTH, root, rootAtCloTyrob_topo);
         env.push(); // 4th stack level (=rootAtCloTyrob_topo)
 
-        TEST_ASSERT_VALID_TREE(root);
+        TEST_EXPECT_VALID_TREE(root);
 
         AP_tree_nlen *CelBiazoFather = root->findLeafNamed("CelBiazo")->get_father();
         TEST_REJECT_NULL(CelBiazoFather);
@@ -518,7 +518,7 @@ void TEST_basic_tree_modifications() {
         const char *rootAtCelBiazoFather_topo = "(" B3_LEFT_TOP_SONS ":0.104,((" B1_TOP "," B2_TOP "):0.162,CytAquat:0.711):0.104);";
         TEST_EXPECT_NEWICK(nLENGTH, root, rootAtCelBiazoFather_topo);
 
-        TEST_ASSERT_VALID_TREE(root);
+        TEST_EXPECT_VALID_TREE(root);
 
         ARB_edge oldRootEdge(rootEdge.source(), rootEdge.dest());
         DOWNCAST(AP_tree_nlen*,oldRootEdge.son())->set_root();
@@ -527,7 +527,7 @@ void TEST_basic_tree_modifications() {
         TEST_EXPECT_NEWICK(nLENGTH, root, rootSetBack_topo);
         env.push(); // 5th stack level (=rootSetBack_topo)
 
-        TEST_ASSERT_VALID_TREE(root);
+        TEST_EXPECT_VALID_TREE(root);
 
         // test remove:
         AP_tree_nlen *CurCitre = root->findLeafNamed("CurCitre");
@@ -539,8 +539,8 @@ void TEST_basic_tree_modifications() {
         // ------------------------------------------------------------------- ^^^ = B3_TOP_SONS minus CurCitre
         TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_removed_topo);
 
-        TEST_ASSERT_VALID_TREE(root);
-        TEST_ASSERT_VALID_TREE(CurCitre);
+        TEST_EXPECT_VALID_TREE(root);
+        TEST_EXPECT_VALID_TREE(CurCitre);
 
         TEST_EXPECT_EQUAL(root->gr.leaf_sum, 15); // out of date
         root->compute_tree();
@@ -548,7 +548,7 @@ void TEST_basic_tree_modifications() {
 
         env.push(); // 6th stack level (=CurCitre_removed_topo)
 
-        TEST_ASSERT_VALID_TREE(root);
+        TEST_EXPECT_VALID_TREE(root);
 
         // test insert:
         AP_tree_nlen *CloCarni = root->findLeafNamed("CloCarni");
@@ -558,15 +558,15 @@ void TEST_basic_tree_modifications() {
         const char *CurCitre_inserted_topo = "((" B1_TOP ",(((CloButy2:0.009,CloButyr:0.000):0.564,(CurCitre:0.060,CloCarni:0.060):0.060):0.010,CloPaste:0.179):0.131):0.081,(" B3_TOP_SONS_CCR "):0.081);";
         TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_inserted_topo);
 
-        TEST_ASSERT_VALID_TREE(root);
+        TEST_EXPECT_VALID_TREE(root);
 
         // now check pops:
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_removed_topo); TEST_ASSERT_VALID_TREE(root);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootSetBack_topo);      TEST_ASSERT_VALID_TREE(root);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootAtCloTyrob_topo);   TEST_ASSERT_VALID_TREE(root);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, bottom_topo);           TEST_ASSERT_VALID_TREE(root);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, edge_topo);             TEST_ASSERT_VALID_TREE(root);
-        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, top_topo);              TEST_ASSERT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, CurCitre_removed_topo); TEST_EXPECT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootSetBack_topo);      TEST_EXPECT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, rootAtCloTyrob_topo);   TEST_EXPECT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, bottom_topo);           TEST_EXPECT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, edge_topo);             TEST_EXPECT_VALID_TREE(root);
+        env.pop(); TEST_EXPECT_NEWICK(nLENGTH, root, top_topo);              TEST_EXPECT_VALID_TREE(root);
     }
 }
 
@@ -620,7 +620,7 @@ void TEST_tree_remove_add_all() {
         TEST_REJECT_NULL(leaf[i]);
     }
 
-    TEST_ASSERT_VALID_TREE(root);
+    TEST_EXPECT_VALID_TREE(root);
 
     AP_pars_root *troot = leaf[0]->get_tree_root();
     TEST_REJECT_NULL(troot);
@@ -629,15 +629,15 @@ void TEST_tree_remove_add_all() {
         // Note: removing the second to last leaf, "removes" both remaining
         // leafs (but only destroys their father node)
 
-        TEST_ASSERT_VALID_TREE(root);
+        TEST_EXPECT_VALID_TREE(root);
         leaf[i]->REMOVE();
-        TEST_ASSERT_VALID_TREE(leaf[i]);
+        TEST_EXPECT_VALID_TREE(leaf[i]);
     }
 
     leaf[0]->initial_insert(leaf[1], troot);
     for (int i = 2; i<LEAFS; ++i) {
-        TEST_ASSERT_VALID_TREE(leaf[i-1]);
-        TEST_ASSERT_VALID_TREE(leaf[i]);
+        TEST_EXPECT_VALID_TREE(leaf[i-1]);
+        TEST_EXPECT_VALID_TREE(leaf[i]);
         leaf[i]->insert(leaf[i-1]);
     }
 }

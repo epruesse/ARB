@@ -1239,7 +1239,7 @@ namespace arb_test {
 
 // test class Validity:
 #define TEST_VALIDITY(valid)             TEST_EXPECT_NULL((valid).why_not())
-#define TEST_VALIDITY__BROKEN(valid,got) TEST_EXPECT_NULL__BROKEN((valid).why_not(),got)
+#define TEST_VALIDITY__BROKEN(valid,why) TEST_EXPECT_NULL__BROKEN((valid).why_not(),why)
 
 // --------------------------------------------------------------------------------
 // the following macros only work when

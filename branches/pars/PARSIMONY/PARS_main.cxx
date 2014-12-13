@@ -1684,14 +1684,14 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
     using namespace   arb_test;
     expectation_group fulfilled;
 
-    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+    TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
     Level upc = env.get_user_push_counter();
     Level fl  = env.get_frame_level();
 
     if (restore) {
         env.push();
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
     }
 
     modifyTopology(env, mod);
@@ -1701,14 +1701,14 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
     }
 
     if (restore) {
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         env.pop();
     }
 
     TEST_EXPECT_EQUAL(fl, env.get_frame_level());
     TEST_EXPECT_EQUAL(upc, env.get_user_push_counter());
 
-    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+    TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
     return all().ofgroup(fulfilled);
 }
@@ -2162,7 +2162,7 @@ void TEST_node_stack() {
         TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
         TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
         TEST_EXPECT_EQUAL(env.combines_performed(), 0);
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
     }
     {
         env.push();
@@ -2170,15 +2170,15 @@ void TEST_node_stack() {
             env.push();
 
             env.root_node()->findLeafNamed("CloInnoc")->moveNextTo(env.root_node()->findLeafNamed("CytAquat"), 0.5);
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             env.root_node()->findLeafNamed("CloInnoc")->set_root();
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             env.root_node()->findLeafNamed("CytAquat")->moveNextTo(env.root_node()->findLeafNamed("CloPaste"), 0.5);
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             env.root_node()->findLeafNamed("CloPaste")->set_root();
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             env.root_node()->findLeafNamed("CloPaste")->moveNextTo(env.root_node()->findLeafNamed("CloInnoc"), 0.5);
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             {
                 AP_tree_nlen *son_of_brother;
                 AP_tree_nlen *brother_of_father;
@@ -2190,7 +2190,7 @@ void TEST_node_stack() {
 
                     son_of_brother = son_of_root->get_brother()->get_leftson();
                     son_of_root->moveNextTo(son_of_brother, 0.5);
-                    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+                    TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
                 }
 
                 // COVER2: grandson of root -> son of brother
@@ -2201,7 +2201,7 @@ void TEST_node_stack() {
 
                     son_of_brother = grandson_of_root->get_brother()->get_leftson();
                     grandson_of_root->moveNextTo(son_of_brother, 0.5);
-                    TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+                    TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
                 }
 
                 AP_tree_nlen *some_leaf = env.root_node()->findLeafNamed("CloBifer");
@@ -2210,29 +2210,29 @@ void TEST_node_stack() {
                 // COVER3: some leaf -> son of brother
                 son_of_brother = some_leaf->get_brother()->get_leftson();
                 some_leaf->moveNextTo(son_of_brother, 0.5);
-                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
                 // COVER4: some leaf -> son of brother
                 brother_of_father = some_leaf->get_father()->get_brother();
                 some_leaf->moveNextTo(brother_of_father, 0.5);
-                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
                 // COVER5: move to father
                 some_leaf->moveNextTo(some_leaf->get_father(), 0.5);
-                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
 #if 0
                 // fails assert in AP_tree::moveNextTo ("already there"). ok!
                 some_leaf->moveNextTo(some_leaf->get_brother(), 0.5);
-                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 #endif
             }
 
             env.pop();
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         }
         env.pop();
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
     }
 
     // remove + quick add marked + pop() both works
@@ -2242,19 +2242,19 @@ void TEST_node_stack() {
     // (root-edge is lost)
     {
         env.push();
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, NULL, -1, env, false)); // test remove-marked only (same code as part of nt_reAdd)
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
         env.push();
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         env.pop();
         TEST_VALIDITY__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges(), "no valid edge between sons of root"); // @@@ doing pop() after quick-adding produces an invalid tree (root-edge missing)
 
         env.pop();
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
     }
 
     // same as above, but with only 1 species marked
@@ -2278,7 +2278,7 @@ void TEST_node_stack() {
             TEST_ANNOTATE(GBS_global_string("single=%s swapped=%i", testSingle[i].name, swapped));
 
             env.push();
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             {
                 AP_tree_nlen *old_rightson = env.root_node()->get_rightson();
                 env.root_node()->get_leftson()->get_rightson()->set_root();
@@ -2287,7 +2287,7 @@ void TEST_node_stack() {
 
                 ap_assert(env.root_node()->get_rightson() == old_rightson);
             }
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
             mark_only(env.root_node()->findLeafNamed(testSingle[i].name)->gb_node);
 
@@ -2296,18 +2296,18 @@ void TEST_node_stack() {
                 env.root_node()->swap_sons();
             }
 
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, NULL, -1, env, false)); // test remove-marked only (same code as part of nt_reAdd)
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
             env.push();
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             env.pop();
 
             if (testSingle[i].correct[swapped]) {
-                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             }
             else {
                 TEST_VALIDITY__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges(), "no valid edge between sons of root"); // @@@ doing pop() after quick-adding produces an invalid tree (root-edge missing)
@@ -2316,14 +2316,14 @@ void TEST_node_stack() {
             env.pop();
 
             if (testSingle[i].correct_after_2nd_pop[swapped]) {
-                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             }
             else {
                 TEST_VALIDITY__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges(), "no valid edge between sons of root"); // @@@ doing 2nd pop() (=undo remove) produces an invalid tree
             }
 
             env.pop();
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         }
     }
 
@@ -2342,14 +2342,14 @@ void TEST_node_stack() {
         if (remove_from_lower_subtree) {
             env.root_node()->swap_sons();
         }
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, NULL, -1, env, false)); // test remove-marked only (same code as part of nt_reAdd)
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
         env.push();
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         env.pop();
 
         if (remove_from_lower_subtree) {
@@ -2360,7 +2360,7 @@ void TEST_node_stack() {
         }
 
         env.pop();
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
     }
 
     TEST_EXPECT_EQUAL(env.combines_performed(), 4438); // @@@ distribute
@@ -2391,7 +2391,7 @@ void TEST_node_edge_resources() {
 
         for (int accept_inner = 0; accept_inner<=1; ++accept_inner) {
             TEST_ANNOTATE(GBS_global_string("accept_outer=%i accept_inner=%i", accept_outer, accept_inner));
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
             if (accept_inner == 0) {
                 CloButyr->REMOVE();
@@ -2402,29 +2402,29 @@ void TEST_node_edge_resources() {
             TEST_EXPECT_PARSVAL(env, PARSIMONY_REMOVED);
             TEST_EXPECT_EQUAL(env.combines_performed(), accept_inner ? 0 : 4);
 
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             {
                 env.push();
-                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
                 CloButyr->insert(CloPaste);
 
                 TEST_EXPECT_PARSVAL(env, PARSIMONY_READDED);
                 TEST_EXPECT_EQUAL(env.combines_performed(), 4);
 
-                TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
                 env.accept_if(accept_inner);
             }
-            TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
             TEST_EXPECT_PARSVAL(env, accept_inner ? PARSIMONY_READDED : PARSIMONY_REMOVED);
             TEST_EXPECT_EQUAL(env.combines_performed(), 0);
         }
 
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         env.accept_if(accept_outer);
-        TEST_ASSERT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
         if (!accept_outer) TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
 

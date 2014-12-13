@@ -593,13 +593,13 @@ void TEST_CONSENSUS_TREE_functionality() {
 #define BOT_2 "(LbnAlexa,(LbnMarin,LbnzAlb4))"
 
     // test swap_sons
-    TEST_ASSERT_VALID_TREE(tree);
+    TEST_EXPECT_VALID_TREE(tree);
     TEST_EXPECT_NEWICK(nSIMPLE, tree, "(" ORG_1 "," ORG_2 ");");
     tree->swap_sons();
     TEST_EXPECT_NEWICK(nSIMPLE, tree, "(" ORG_2 "," ORG_1 ");");
 
     // test reorder_tree
-    TEST_ASSERT_VALID_TREE(tree);
+    TEST_EXPECT_VALID_TREE(tree);
     TreeOrder order[] = { BIG_BRANCHES_TO_TOP, BIG_BRANCHES_TO_BOTTOM, BIG_BRANCHES_TO_EDGE };
 
     for (size_t o1 = 0; o1<ARRAY_ELEMS(order); ++o1) {
@@ -624,17 +624,17 @@ void TEST_CONSENSUS_TREE_functionality() {
     }
 
     // test rotate_subtree
-    TEST_ASSERT_VALID_TREE(tree);
+    TEST_EXPECT_VALID_TREE(tree);
     tree->reorder_tree(BIG_BRANCHES_TO_TOP);
     tree->rotate_subtree(); TEST_EXPECT_NEWICK(nSIMPLE, tree, "((LbnAlexa,(LbnzAlb4,LbnMarin)),((_MhuCaps,ThtNivea),((RsnAnta2,OnlGran2),((AticSea6,(RblMesop,RblAerol)),((PaoMaris,(MabSalin,MabPelag)),(MmbAlkal,(RsbElon4,DnrShiba)))))));");
     tree->rotate_subtree(); TEST_EXPECT_NEWICK(nSIMPLE, tree, "(" TOP_1 "," TOP_2 ");");
 
 
     // test set_root
-    TEST_ASSERT_VALID_TREE(tree);
+    TEST_EXPECT_VALID_TREE(tree);
     TreeNode *AticSea6Grandpa = tree->findLeafNamed("AticSea6")->get_father()->get_father();
     TEST_REJECT_NULL(AticSea6Grandpa);
-    TEST_ASSERT_VALID_TREE(AticSea6Grandpa);
+    TEST_EXPECT_VALID_TREE(AticSea6Grandpa);
 
     AticSea6Grandpa->set_root();
     TEST_EXPECT_NEWICK(nSIMPLE, tree,
@@ -642,13 +642,13 @@ void TEST_CONSENSUS_TREE_functionality() {
                              "((" ORG_2 "," TOP_12 ")," ORG_112 "));");
 
     // test auto-detection of "best" root
-    TEST_ASSERT_VALID_TREE(tree);
+    TEST_EXPECT_VALID_TREE(tree);
     tree->get_tree_root()->find_innermost_edge().set_root();
     TEST_EXPECT_NEWICK(nLENGTH, tree,
                        "((((LbnMarin:0.019,LbnzAlb4:0.003):0.016,LbnAlexa:0.032):0.122,(ThtNivea:0.230,_MhuCaps:0.194):0.427):0.076,"
                        "(((((DnrShiba:0.076,RsbElon4:0.053):0.034,MmbAlkal:0.069):0.016,((MabPelag:0.001,MabSalin:0.009):0.095,PaoMaris:0.092):0.036):0.030,((RblAerol:0.085,RblMesop:0.042):0.238,AticSea6:0.111):0.018):0.036,(OnlGran2:0.057,RsnAnta2:0.060):0.021):0.076);");
 
-    TEST_ASSERT_VALID_TREE(tree);
+    TEST_EXPECT_VALID_TREE(tree);
     destroy(tree);
     free(comment);
 }

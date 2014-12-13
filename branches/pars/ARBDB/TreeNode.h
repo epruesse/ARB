@@ -408,26 +408,34 @@ inline void destroy(TreeNode *that, TreeRoot *root) {
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
 template <typename TREE>
-inline void assert_tree_has_valid_structure(const TREE *tree, bool IF_ASSERTION_USED(acceptNULL)) { // @@@ -> assert(tree_has_valid_structure);
-    rt_assert(acceptNULL || tree);
-    if (tree) tree->is_valid().assert_is_valid();
+inline Validity tree_has_valid_structure(const TREE *tree, bool IF_ASSERTION_USED(acceptNULL)) {
+    if (tree) return tree->is_valid();
+    return Validity(acceptNULL, "NULL tree");
 }
 #endif
 
 #if defined(AUTO_CHECK_TREE_STRUCTURE)
-#define ASSERT_VALID_TREE(tree)         assert_tree_has_valid_structure(tree, false)
-#define ASSERT_VALID_TREE_OR_NULL(tree) assert_tree_has_valid_structure(tree, true)
+#define ASSERT_VALID_TREE(tree)         rt_assert(tree_has_valid_structure(tree, false))
+#define ASSERT_VALID_TREE_OR_NULL(tree) rt_assert(tree_has_valid_structure(tree, true))
 #else
 #define ASSERT_VALID_TREE(tree)
 #define ASSERT_VALID_TREE_OR_NULL(tree)
 #endif // AUTO_CHECK_TREE_STRUCTURE
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS) && defined(UNIT_TESTS)
-#define TEST_ASSERT_VALID_TREE(tree)         assert_tree_has_valid_structure(tree, false)
-#define TEST_ASSERT_VALID_TREE_OR_NULL(tree) assert_tree_has_valid_structure(tree, true)
+
+#define TEST_EXPECT_VALID_TREE(tree)                     TEST_VALIDITY(tree_has_valid_structure(tree, false))
+#define TEST_EXPECT_VALID_TREE_OR_NULL(tree)             TEST_VALIDITY(tree_has_valid_structure(tree, true))
+#define TEST_EXPECT_VALID_TREE__BROKEN(tree,why)         TEST_VALIDITY__BROKEN(tree_has_valid_structure(tree, false), why)
+#define TEST_EXPECT_VALID_TREE_OR_NULL__BROKEN(tree,why) TEST_VALIDITY__BROKEN(tree_has_valid_structure(tree, true), why)
+
 #else
-#define TEST_ASSERT_VALID_TREE(tree)
-#define TEST_ASSERT_VALID_TREE_OR_NULL(tree)
+
+#define TEST_EXPECT_VALID_TREE(tree)
+#define TEST_EXPECT_VALID_TREE_OR_NULL(tree)
+#define TEST_EXPECT_VALID_TREE__BROKEN(tree)
+#define TEST_EXPECT_VALID_TREE_OR_NULL__BROKEN(tree)
+
 #endif
 
 // --------------------

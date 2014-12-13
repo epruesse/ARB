@@ -89,7 +89,7 @@ public:
             ap_assert(root_node() == rootNode()); // need tree-access via global 'ap_main' (too much code is based on that)
             ap_assert(rootEdge());
 
-            TEST_ASSERT_VALID_TREE(root_node());
+            ASSERT_VALID_TREE(root_node());
         }
         return error;
     }
