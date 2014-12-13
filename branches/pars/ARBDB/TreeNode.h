@@ -408,15 +408,15 @@ inline void destroy(TreeNode *that, TreeRoot *root) {
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
 template <typename TREE>
-inline Validity tree_has_valid_structure(const TREE *tree, bool IF_ASSERTION_USED(acceptNULL)) {
+inline Validity tree_is_valid(const TREE *tree, bool IF_ASSERTION_USED(acceptNULL)) {
     if (tree) return tree->is_valid();
     return Validity(acceptNULL, "NULL tree");
 }
 #endif
 
 #if defined(AUTO_CHECK_TREE_STRUCTURE)
-#define ASSERT_VALID_TREE(tree)         rt_assert(tree_has_valid_structure(tree, false))
-#define ASSERT_VALID_TREE_OR_NULL(tree) rt_assert(tree_has_valid_structure(tree, true))
+#define ASSERT_VALID_TREE(tree)         rt_assert(tree_is_valid(tree, false))
+#define ASSERT_VALID_TREE_OR_NULL(tree) rt_assert(tree_is_valid(tree, true))
 #else
 #define ASSERT_VALID_TREE(tree)
 #define ASSERT_VALID_TREE_OR_NULL(tree)
@@ -424,10 +424,10 @@ inline Validity tree_has_valid_structure(const TREE *tree, bool IF_ASSERTION_USE
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS) && defined(UNIT_TESTS)
 
-#define TEST_EXPECT_VALID_TREE(tree)                     TEST_VALIDITY(tree_has_valid_structure(tree, false))
-#define TEST_EXPECT_VALID_TREE_OR_NULL(tree)             TEST_VALIDITY(tree_has_valid_structure(tree, true))
-#define TEST_EXPECT_VALID_TREE__BROKEN(tree,why)         TEST_VALIDITY__BROKEN(tree_has_valid_structure(tree, false), why)
-#define TEST_EXPECT_VALID_TREE_OR_NULL__BROKEN(tree,why) TEST_VALIDITY__BROKEN(tree_has_valid_structure(tree, true), why)
+#define TEST_EXPECT_VALID_TREE(tree)                     TEST_VALIDITY(tree_is_valid(tree, false))
+#define TEST_EXPECT_VALID_TREE_OR_NULL(tree)             TEST_VALIDITY(tree_is_valid(tree, true))
+#define TEST_EXPECT_VALID_TREE__BROKEN(tree,why)         TEST_VALIDITY__BROKEN(tree_is_valid(tree, false), why)
+#define TEST_EXPECT_VALID_TREE_OR_NULL__BROKEN(tree,why) TEST_VALIDITY__BROKEN(tree_is_valid(tree, true), why)
 
 #else
 

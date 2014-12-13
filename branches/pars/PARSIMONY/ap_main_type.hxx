@@ -120,25 +120,31 @@ public:
 #endif
 
 #if defined(ASSERTION_USED)
-    void assert_revert_will_produce_valid_tree() {
+    Validity revert_will_produce_valid_tree() {
         ASSERT_VALID_TREE(get_root_node());
         ASSERT_RESULT(bool, true, remember_and_rollback_to_previous()); // otherwise stack is empty
+        Validity valid(tree_is_valid(get_root_node(), false));
+        revert();                                                       // undo remember_and_rollback_to_previous
         ASSERT_VALID_TREE(get_root_node());
-        revert(); // undo remember_and_rollback_to_previous
-        ASSERT_VALID_TREE(get_root_node());
+        return valid;
     }
-    void assert_all_available_reverts_will_produce_valid_trees() {
+    Validity all_available_reverts_will_produce_valid_trees() {
         ASSERT_VALID_TREE(get_root_node());
         Level pops_avail = get_frameLevel();
-        for (Level rollback = 1; rollback<=pops_avail; ++rollback) {
+        Validity valid;
+        for (Level rollback = 1; rollback<=pops_avail && valid; ++rollback) {
             Level wanted_level = pops_avail-rollback;
             ASSERT_RESULT(bool, true, remember_and_rollback_to(wanted_level)); // otherwise stack is empty
+
             // dump2file(GBS_global_string("after_remember_and_rollback_to_%lu", wanted_level));
-            ASSERT_VALID_TREE(get_root_node());
+            valid = Validity(tree_is_valid(get_root_node(), false));
+
             revert(); // undo remember_and_rollback_to
             // dump2file("after_pop_to_undo__remember_and_rollback_to");
+
             ASSERT_VALID_TREE(get_root_node());
         }
+        return valid;
     }
 #else // !defined(ASSERTION_USED)
     void assert_revert_will_produce_valid_tree() {}

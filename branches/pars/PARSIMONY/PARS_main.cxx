@@ -1075,7 +1075,7 @@ static GB_ERROR pars_check_size(AW_root *awr, GB_ERROR& warning) {
             error = "Please select an existing tree";
         }
         else {
-            unsigned long expected_memuse = (ali_len * tree_size * 4 / 1024);
+            size_t expected_memuse = (ali_len * tree_size * 4 / 1024);
             if (expected_memuse > GB_get_usable_memory()) {
                 warning = GBS_global_string("Estimated memory usage (%s) exceeds physical memory (will swap)\n"
                                             "(did you specify a filter?)",
@@ -1702,6 +1702,7 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
 
     if (restore) {
         TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_VALIDITY(env.pop_will_produce_valid_tree());
         env.pop();
     }
 
@@ -1879,6 +1880,8 @@ void TEST_nucl_tree_modifications() {
         GBDATA    *CloButyP = createPartialSeqFrom(gb_main, aliname, "CloButyP", "CloButyr", SPLIT+1, INT_MAX);
         GBDATA    *CloButyM = createPartialSeqFrom(gb_main, aliname, "CloButyM", "CloButyr", SPLIT+1, INT_MAX);
         TEST_EXPECT_NO_ERROR(modifyOneBase(CloButyM, aliname, 'G', 'C')); // change first 'G' into 'C'
+
+        TEST_VALIDITY(env.all_available_pops_will_produce_valid_trees()); // no push yet (does nothing)
 
         // add CloButyP (and undo)
         {
@@ -2246,11 +2249,15 @@ void TEST_node_stack() {
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, NULL, -1, env, false)); // test remove-marked only (same code as part of nt_reAdd)
         TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
+        TEST_VALIDITY(env.all_available_pops_will_produce_valid_trees());
+
         env.push();
         TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
         TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_VALIDITY__BROKEN(env.all_available_pops_will_produce_valid_trees(), "no valid edge between sons of root"); // @@@ broken!
         env.pop();
+
         TEST_VALIDITY__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges(), "no valid edge between sons of root"); // @@@ doing pop() after quick-adding produces an invalid tree (root-edge missing)
 
         env.pop();
