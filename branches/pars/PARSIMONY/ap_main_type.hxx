@@ -119,7 +119,7 @@ public:
 
 #endif
 
-#if defined(ASSERTION_USED)
+#if defined(ASSERTION_USED) || defined(UNIT_TESTS)
     Validity revert_will_produce_valid_tree() {
         ASSERT_VALID_TREE(get_root_node());
         ASSERT_RESULT(bool, true, remember_and_rollback_to_previous()); // otherwise stack is empty
@@ -146,8 +146,6 @@ public:
         }
         return valid;
     }
-#else // !defined(ASSERTION_USED)
-    void assert_revert_will_produce_valid_tree() {}
 #endif
 
     inline AP_tree_nlen *makeNode(AP_pars_root *proot);

@@ -99,8 +99,10 @@ public:
     void accept() { apMain.accept(); }
     void accept_if(bool cond) { apMain.accept_if(cond); }
 
+#if defined(ASSERTION_USED) || defined(UNIT_TESTS)
     Validity pop_will_produce_valid_tree() { return apMain.revert_will_produce_valid_tree(); }
     Validity all_available_pops_will_produce_valid_trees() { return apMain.all_available_reverts_will_produce_valid_trees(); }
+#endif
 
     Level get_frame_level() { return apMain.get_frameLevel(); }
     Level get_user_push_counter() { return apMain.get_user_push_counter(); }

@@ -408,7 +408,7 @@ inline void destroy(TreeNode *that, TreeRoot *root) {
 
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
 template <typename TREE>
-inline Validity tree_is_valid(const TREE *tree, bool IF_ASSERTION_USED(acceptNULL)) {
+inline Validity tree_is_valid(const TREE *tree, bool acceptNULL) {
     if (tree) return tree->is_valid();
     return Validity(acceptNULL, "NULL tree");
 }
