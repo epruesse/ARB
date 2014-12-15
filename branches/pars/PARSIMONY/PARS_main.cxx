@@ -1932,13 +1932,10 @@ void TEST_nucl_tree_modifications() {
         }
     }
 
-#if 0
-    // @@@ crashes here with missing sequence (caused by pop()), but works below in TEST_optimizations
-
     // test branchlength calculation
     // (optimizations below implicitely recalculate branchlengths)
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG-17, env, false));
-#endif
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
+    TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 }
 
 void TEST_optimizations_some() {
