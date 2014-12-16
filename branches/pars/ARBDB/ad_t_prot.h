@@ -81,7 +81,7 @@ char *GBT_create_unique_species_name(GBDATA *gb_main, const char *default_name);
 void GBT_mark_all(GBDATA *gb_main, int flag);
 void GBT_mark_all_that(GBDATA *gb_main, int flag, int (*condition)(GBDATA *, void *), void *cd);
 long GBT_count_marked_species(GBDATA *gb_main);
-char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all);
+char *GBT_store_marked_species(GBDATA *gb_main, bool unmark_all);
 NOT4PERL GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata);
 GB_ERROR GBT_restore_marked_species(GBDATA *gb_main, const char *stored_marked);
 GB_CSTR GBT_read_name(GBDATA *gb_item);
