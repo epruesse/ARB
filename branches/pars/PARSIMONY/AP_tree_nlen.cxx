@@ -857,7 +857,7 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) { // @@@ rename -
             store->edge[e]      = edge[e];
             store->edgeIndex[e] = index[e];
             if (edge[e]) {
-                store->edgeData[e]  = edge[e]->data;
+                store->edgeData[e] = edge[e]->data;
             }
         }
     }
@@ -900,7 +900,9 @@ void NodeState::move_info_to(NodeState& target, AP_STACK_MODE what) {
         for (int e=0; e<3; e++) {
             target.edge[e]      = edge[e];
             target.edgeIndex[e] = edgeIndex[e];
-            target.edgeData[e]  = edgeData[e];
+            if (edge[e]) {
+                target.edgeData[e] = edgeData[e];
+            }
         }
     }
     if (what & SEQUENCE) {
@@ -930,11 +932,9 @@ void AP_tree_nlen::restore_structure(const NodeState& state) {
     distance = state.distance;
 
     for (int e=0; e<3; e++) {
-        edge[e] = state.edge[e];
-
+        edge[e]  = state.edge[e];
+        index[e] = state.edgeIndex[e];
         if (edge[e]) {
-            index[e] = state.edgeIndex[e];
-
             edge[e]->index[index[e]] = e;
             edge[e]->node[index[e]]  = this;
             edge[e]->data            = state.edgeData[e];
