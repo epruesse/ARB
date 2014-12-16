@@ -2252,34 +2252,28 @@ void TEST_node_stack() {
         TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
         TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
-        TEST_VALIDITY__BROKEN(env.all_available_pops_will_produce_valid_trees(), "no valid edge between sons of root"); // @@@ broken!
+        TEST_VALIDITY(env.all_available_pops_will_produce_valid_trees());
         env.pop();
 
-        TEST_VALIDITY__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges(), "no valid edge between sons of root"); // @@@ doing pop() after quick-adding produces an invalid tree (root-edge missing)
+        TEST_VALIDITY(env.graphic_tree()->get_root_node()->has_valid_edges());
 
         env.pop();
         TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
     }
 
     // same as above, but with only 1 species marked
-    struct {
-        const char *name;
-        bool        correct[2];
-        bool        correct_after_2nd_pop[2];
-
-    } testSingle[] = {
-        { "CytAquat", { false, true  }, { true,  true  } },  // CytAquat is the only grandson of root (CytAquat located in lower subtree)
-        { "CloBifer", { false, true  }, { false, true  } },  // two father nodes between CloBifer and root (CloBifer located in upper subtree)
-        { "CloPaste", { false, true  }, { false, true  } },  // two father nodes between CloPaste and root (CloPaste located in upper subtree)
-        { "CorGluta", { false,  true }, { false, true  } },  // three father nodes between CorGluta and root (CorGluta located in lower subtree); @@@ might be a different problem
-        { "CelBiazo", { true,  false }, { true,  true  } },  // two father nodes between CelBiazo and root; @@@ might be a different problem
-
-        { NULL, { true, true }, { true, true } }
+    const char *testSingle[] = {
+        "CytAquat",  // CytAquat is the only grandson of root (CytAquat located in lower subtree)
+        "CloBifer",  // two father nodes between CloBifer and root (CloBifer located in upper subtree)
+        "CloPaste",  // two father nodes between CloPaste and root (CloPaste located in upper subtree)
+        "CorGluta",  // three father nodes between CorGluta and root (CorGluta located in lower subtree)
+        "CelBiazo",  // two father nodes between CelBiazo and root
+        NULL
     };
 
-    for (int i = 0; testSingle[i].name; ++i) {
+    for (int i = 0; testSingle[i]; ++i) {
         for (int swapped = 0; swapped<2; ++swapped) {
-            TEST_ANNOTATE(GBS_global_string("single=%s swapped=%i", testSingle[i].name, swapped));
+            TEST_ANNOTATE(GBS_global_string("single=%s swapped=%i", testSingle[i], swapped));
 
             env.push();
             TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
@@ -2293,7 +2287,7 @@ void TEST_node_stack() {
             }
             TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
-            mark_only(env.root_node()->findLeafNamed(testSingle[i].name)->gb_node);
+            mark_only(env.root_node()->findLeafNamed(testSingle[i])->gb_node);
 
             env.push();
             if (swapped) {
@@ -2310,22 +2304,9 @@ void TEST_node_stack() {
             TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             env.pop();
 
-            if (testSingle[i].correct[swapped]) {
-                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
-            }
-            else {
-                TEST_VALIDITY__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges(), "no valid edge between sons of root"); // @@@ doing pop() after quick-adding produces an invalid tree (root-edge missing)
-            }
-
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             env.pop();
-
-            if (testSingle[i].correct_after_2nd_pop[swapped]) {
-                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
-            }
-            else {
-                TEST_VALIDITY__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges(), "no valid edge between sons of root"); // @@@ doing 2nd pop() (=undo remove) produces an invalid tree
-            }
-
+            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
             env.pop();
             TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         }
@@ -2356,12 +2337,7 @@ void TEST_node_stack() {
         TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
         env.pop();
 
-        if (remove_from_lower_subtree) {
-            TEST_VALIDITY__BROKEN(env.graphic_tree()->get_root_node()->has_valid_edges(), "no valid edge between sons of root"); // @@@ broken if removed from lower part of tree
-        }
-        else {
-            TEST_VALIDITY(env.graphic_tree()->get_root_node()->has_valid_edges()); // @@@ NOT broken if removed from upper part of tree
-        }
+        TEST_VALIDITY(env.graphic_tree()->get_root_node()->has_valid_edges()); // now always valid
 
         env.pop();
         TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());

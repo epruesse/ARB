@@ -346,7 +346,10 @@ void AP_tree_nlen::insert(AP_tree_nlen *newBrother) {
             oldEdge->relink(get_father(), get_father()->get_father());
         }
         else { // insert to son of root
-            AP_tree_edge *oldEdge = newBrother->edgeTo(newBrother->get_brother())->unlink(); // @@@ missing push STRUCTURE of newBrother->get_brother()?
+            AP_tree_nlen *brothersOldBrother = newBrother->get_brother();
+            ap_main->push_node(brothersOldBrother, STRUCTURE);
+
+            AP_tree_edge *oldEdge = newBrother->edgeTo(brothersOldBrother)->unlink();
             AP_tree::insert(newBrother);
             oldEdge->relink(get_father(), get_father()->get_brother());
         }
