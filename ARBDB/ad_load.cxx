@@ -30,6 +30,8 @@ void GB_set_verbose() {
     gb_verbose_mode = 1;
 }
 
+#define FILESIZE_GRANULARITY 1024 // progress will work with DB files up to 2Tb
+
 // ---------------------------------------------------
 //      helper code to read ascii file in portions
 
@@ -662,7 +664,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
 
     DEBUG_DUMP_INDENTED(deep, GBS_global_string("Reading container with %li items", nitems));
 
-    progress.inc_to(ftell(in));
+    progress.inc_to(ftell(in)/FILESIZE_GRANULARITY);
     if (progress.aborted()) {
         GB_export_error(progress.error_if_aborted());
         return -1;
@@ -1455,8 +1457,8 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
 
                 if (is_binary_db_id(i)) {
                     {
-                        arb_progress progress("Loading database", GB_size_of_FILE(input));
-                        i = gb_read_bin(input, gbc, false, progress);     // read or map whole db
+                        arb_progress progress("Loading database", GB_size_of_FILE(input)/FILESIZE_GRANULARITY);
+                        i = gb_read_bin(input, gbc, false, progress);                  // read or map whole db
                         progress.done();
                     }
                     gbc = Main->root_container;
@@ -1500,7 +1502,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                             i = gb_read_in_uint32(input, 0);
                             if (is_binary_db_id(i)) {
                                 {
-                                    arb_progress progress("Loading quicksave", GB_size_of_FILE(input) / 1024);
+                                    arb_progress progress("Loading quicksave", GB_size_of_FILE(input)/FILESIZE_GRANULARITY);
                                     err = gb_read_bin(input, gbc, true, progress);
                                     progress.done();
                                 }
