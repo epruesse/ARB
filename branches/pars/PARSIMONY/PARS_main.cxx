@@ -1939,66 +1939,61 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 }
 
-void TEST_optimizations_some() {
+void TEST_optimizations() {
     const char *aliname = "ali_5s";
 
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
     TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
 
-    const int PARSIMONY_ORG = 301;
+    const unsigned seed = 1417001558;
+
+    const int PARSIMONY_ORG  = 301;
+    const int PARSIMONY_NNI  = PARSIMONY_ORG-17;
+    const int PARSIMONY_OPTI = PARSIMONY_ORG-29; // may depend on seed
+
+    // ------------------------------
+    //      test optimize (some)
+
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 14);
 
     // test branchlength calculation
-    // (optimizations below implicitely recalculate branchlengths)
+    // (optimizations below implicitely recalculates branchlengths)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
-    { // mark initially marked species
+    // mark initially marked species
+    {
         GB_transaction ta(env.gbmain());
         GBT_restore_marked_species(env.gbmain(), "CorAquat;CorGluta;CurCitre;CloButyr;CloButy2;CytAquat");
     }
 
 
-    // test optimize (some)
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 581);
 
-    const int      PARSIMONY_OPTI = 272; // may depend on seed
-    const unsigned seed           = 1417001558;
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
     TEST_EXPECT_EQUAL(env.combines_performed(), 60958);
 
-#if 0
-    // @@@ test results changed by adding the MOD_OPTI_GLOBAL test above (rel #620)
-    // test optimize (all)
-    mark_all(env.gbmain());
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
+    // -----------------------------
+    //      test optimize (all)
 
-    // in a fresh environment it works as before (see TEST_optimizations_all)
-#endif
-}
-
-void TEST_optimizations_all() {
-    const char *aliname = "ali_5s";
-
-    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
-    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
-    TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
-
-    const int PARSIMONY_ORG = 301;
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
-    TEST_EXPECT_EQUAL(env.combines_performed(), 14);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 0);
 
-    // test optimize (all)
-    mark_all(env.gbmain());
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
+    // test branchlength calculation
+    // (optimizations below implicitely recalculates branchlengths)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
+    TEST_EXPECT_EQUAL(env.combines_performed(), 142);
+
+    // mark all species
+    mark_all(env.gbmain()); // @@@ has unexpected effects on optimize (calling before calculating branchlengths, produces different result for NNI test)  
+
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 581);
 
-    const int      PARSIMONY_OPTI = 272; // may depend on seed
-    const unsigned seed           = 1417001558;
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
     TEST_EXPECT_EQUAL(env.combines_performed(), 60958); // @@@ there is no difference in number of combines between TEST_optimizations_some and TEST_optimizations_all. why not?
