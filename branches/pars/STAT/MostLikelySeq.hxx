@@ -65,6 +65,7 @@ public:
     AP_sequence *dup() const OVERRIDE;
     AP_FLOAT     combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0) OVERRIDE;
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const OVERRIDE;
+    uint32_t checksum() const OVERRIDE;
 
     GB_ERROR bind_to_species(GBDATA *gb_species);
     void     unbind_from_species(bool remove_callbacks);

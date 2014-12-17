@@ -253,6 +253,10 @@ AP_FLOAT MostLikelySeq::combine(const AP_sequence *, const AP_sequence *, char *
 void MostLikelySeq::partial_match(const AP_sequence *, long *, long *) const {
     st_assert(0);                                   // function is expected to be unused
 }
+uint32_t MostLikelySeq::checksum() const {
+    st_assert(0); // function is expected to be unused
+    return 0;
+}
 
 void MostLikelySeq::calculate_ancestor(const MostLikelySeq *lefts, double leftl, const MostLikelySeq *rights, double rightl) {
     st_assert(!up_to_date);

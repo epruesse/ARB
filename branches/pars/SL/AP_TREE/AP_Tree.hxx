@@ -231,7 +231,7 @@ public:
 class AP_tree : public ARB_seqtree {
 public: // @@@ fix public members
     AP_tree_members   gr;
-    AP_branch_members br;
+    AP_branch_members br; // @@@ move into AP_tree_nlen?
 
     // ------------------
     //      functions

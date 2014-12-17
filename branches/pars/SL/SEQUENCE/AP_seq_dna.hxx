@@ -41,6 +41,7 @@ public:
     AP_sequence *dup() const OVERRIDE;                         // used to get the real new element
     AP_FLOAT combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) OVERRIDE;
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const OVERRIDE;
+    uint32_t checksum() const OVERRIDE;
 };
 
 

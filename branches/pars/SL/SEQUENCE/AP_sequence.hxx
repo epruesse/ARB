@@ -20,6 +20,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef _STDINT_H
+#include <stdint.h>
+#endif
 
 #define ap_assert(cond) arb_assert(cond)
 
@@ -63,6 +66,7 @@ public:
 
     virtual AP_FLOAT combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0) = 0;
     virtual void partial_match(const AP_sequence* part, long *overlap, long *penalty) const                    = 0;
+    virtual uint32_t checksum() const                                                                          = 0;
 
     static long combine_count() { return global_combineCount; }
 

@@ -92,5 +92,10 @@ AP_FLOAT AP_sequence_simple_protein::count_weighted_bases() const {
     return -1.0;
 }
 
+uint32_t AP_sequence_simple_protein::checksum() const {
+    ap_assert(0); // not impl
+    return 0;
+}
+
 
 

@@ -308,3 +308,8 @@ AP_FLOAT AP_sequence_parsimony::count_weighted_bases() const {
     return wcount;
 }
 
+uint32_t AP_sequence_parsimony::checksum() const {
+    const char *seq = get_sequence();
+    return GB_checksum(seq, sizeof(*seq)*get_sequence_length(), 0, NULL);
+}
+

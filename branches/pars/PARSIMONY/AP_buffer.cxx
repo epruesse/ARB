@@ -75,7 +75,15 @@ void FrameStack::print(ostream& out, int indentLevel) const {
 void AP_tree_nlen::print(std::ostream& out, int indentLevel, const char *label) const {
     out << space(indentLevel)
         << label << "=" << this
-        << " father=" << get_father();
+        << " father=" << get_father()
+        << " ptf=" << pushed_to_frame
+        << " mut=" << mutation_rate
+#if 0
+        << " dist=" << distance
+        << " touched=" << br.touched
+#endif
+        << " seqcs=" << (hasSequence() ? get_seq()->checksum() : 0);
+
     for (int e = 0; e<3; ++e) {
         out << " edge[" << e << "]=" << edge[e];
         if (edge[e]) {

@@ -432,6 +432,11 @@ AP_FLOAT AP_sequence_protein::count_weighted_bases() const {
     return wcount;
 }
 
+uint32_t AP_sequence_protein::checksum() const {
+    const AP_PROTEINS *seq = get_sequence();
+    return GB_checksum(reinterpret_cast<const char *>(seq), sizeof(*seq)*get_sequence_length(), 0, NULL);
+}
+
 
 
 

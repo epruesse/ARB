@@ -39,6 +39,7 @@ public:
 
     AP_FLOAT combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site = 0) OVERRIDE;
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const OVERRIDE;
+    uint32_t checksum() const OVERRIDE;
 
     const ap_pro *get_sequence() const { return sequence; }
     ap_pro *get_sequence() { return sequence; }
