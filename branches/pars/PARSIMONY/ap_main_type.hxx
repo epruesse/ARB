@@ -82,6 +82,10 @@ public:
     void revert();
     void accept();
 
+#if defined(UNIT_TESTS)
+    void remember_whole_tree(); // dont use in production
+#endif
+
     void accept_if(bool cond) { if (cond) accept(); else revert(); }
     void revert_if(bool cond) { accept_if(!cond); }
 

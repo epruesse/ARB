@@ -286,3 +286,13 @@ const char *AP_main::get_aliname() const {
     return get_tree_root()->get_aliview()->get_aliname();
 }
 
+#if defined(UNIT_TESTS)
+void AP_main::remember_whole_tree() {
+    remember();
+    AP_tree_nlen *root = get_root_node();
+    push_node(root, ROOT);
+    ap_assert(!root->is_leaf);
+    root->get_leftson()->remember_subtree(this);
+    root->get_rightson()->remember_subtree(this);
+}
+#endif

@@ -210,6 +210,20 @@ public:
     void print(std::ostream& out, int indentLevel, const char *label) const;
 #endif
 
+#if defined(UNIT_TESTS)
+    void remember_subtree(AP_main *main) { // dont use in production
+        if (is_leaf) {
+            main->push_node(this, STRUCTURE);
+        }
+        else {
+            main->push_node(this, BOTH);
+            get_leftson()->remember_subtree(main);
+            get_rightson()->remember_subtree(main);
+        }
+    }
+#endif
+
+
     friend      class AP_tree_edge;
     friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);
 };
