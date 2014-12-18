@@ -1935,22 +1935,10 @@ void TEST_nucl_tree_modifications() {
         }
     }
 
-    // test branchlength calculation
-    // (optimizations below implicitely recalculate branchlengths)
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 142);
-}
-
-void TEST_optimizations() {
-    const char *aliname = "ali_5s";
-
-    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
-    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
     TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
 
     const unsigned seed = 1417001558;
 
-    const int PARSIMONY_ORG     = 301;
     const int PARSIMONY_NNI     = PARSIMONY_ORG-17;
     const int PARSIMONY_NNI_ALL = PARSIMONY_ORG-22;
     const int PARSIMONY_OPTI    = PARSIMONY_ORG-29; // may depend on seed
@@ -1966,7 +1954,7 @@ void TEST_optimizations() {
     }
 
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
-    TEST_EXPECT_EQUAL(env.combines_performed(), 14);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 0);
 
     // test branchlength calculation
     // (optimizations below implicitely recalculates branchlengths)
@@ -1986,7 +1974,7 @@ void TEST_optimizations() {
     // mark all species
     mark_all(env.gbmain());
     env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
-    TEST_EXPECT_EQUAL(GBT_count_marked_species(env.gbmain()), 15);
+    TEST_EXPECT_EQUAL(GBT_count_marked_species(env.gbmain()), 18);
 
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 0);
