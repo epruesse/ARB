@@ -118,6 +118,8 @@ public:
         return performed;
     }
 
+    void compute_tree() { root_node()->compute_tree(); }
+
 #if defined(PROVIDE_PRINT)
     void dump2file(const char *name) { apMain.dump2file(name); }
 #endif

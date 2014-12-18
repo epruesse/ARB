@@ -1744,7 +1744,7 @@ inline void mark(GBDATA *gb_species) {
 }
 inline void mark_all(GBDATA *gb_main) {
     GB_transaction  ta(gb_main);
-    GBT_mark_all(gb_main, 0);
+    GBT_mark_all(gb_main, 1);
 }
 
 inline int is_partial(GBDATA *gb_species) {
@@ -1772,6 +1772,7 @@ static arb_test::match_expectation addingPartialResultsIn(GBDATA *gb_added_speci
     expectation_group fulfilled;
 
     mark_only(gb_added_species);
+    env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
     fulfilled.add(modifyingTopoResultsIn(MOD_ADD_PARTIAL, topo, pars_expected, env, false));
     fulfilled.add(that(is_partial(gb_added_species)).is_equal_to(1));
 
@@ -1908,6 +1909,7 @@ void TEST_nucl_tree_modifications() {
             env.push();
 
             mark_only(CorGlutP);
+            env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
             {
                 GB_transaction  ta(gb_main);
                 TEST_EXPECT_NO_ERROR(GBT_write_int(CorGlutP, "ARB_partial", 0)); // revert species to "full"
@@ -1948,12 +1950,20 @@ void TEST_optimizations() {
 
     const unsigned seed = 1417001558;
 
-    const int PARSIMONY_ORG  = 301;
-    const int PARSIMONY_NNI  = PARSIMONY_ORG-17;
-    const int PARSIMONY_OPTI = PARSIMONY_ORG-29; // may depend on seed
+    const int PARSIMONY_ORG     = 301;
+    const int PARSIMONY_NNI     = PARSIMONY_ORG-17;
+    const int PARSIMONY_NNI_ALL = PARSIMONY_ORG-22;
+    const int PARSIMONY_OPTI    = PARSIMONY_ORG-29; // may depend on seed
 
     // ------------------------------
     //      test optimize (some)
+
+    // mark initially marked species
+    {
+        GB_transaction ta(env.gbmain());
+        GBT_restore_marked_species(env.gbmain(), "CorAquat;CorGluta;CurCitre;CloButyr;CloButy2;CytAquat");
+        env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
+    }
 
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 14);
@@ -1962,13 +1972,6 @@ void TEST_optimizations() {
     // (optimizations below implicitely recalculates branchlengths)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
-
-    // mark initially marked species
-    {
-        GB_transaction ta(env.gbmain());
-        GBT_restore_marked_species(env.gbmain(), "CorAquat;CorGluta;CurCitre;CloButyr;CloButy2;CytAquat");
-    }
-
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 581);
@@ -1980,6 +1983,11 @@ void TEST_optimizations() {
     // -----------------------------
     //      test optimize (all)
 
+    // mark all species
+    mark_all(env.gbmain());
+    env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
+    TEST_EXPECT_EQUAL(GBT_count_marked_species(env.gbmain()), 15);
+
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 0);
 
@@ -1988,11 +1996,8 @@ void TEST_optimizations() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
-    // mark all species
-    mark_all(env.gbmain()); // @@@ has unexpected effects on optimize (calling before calculating branchlengths, produces different result for NNI test)  
-
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 581);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-all-NNI", PARSIMONY_NNI_ALL, env, true)); // test recursive NNI
+    TEST_EXPECT_EQUAL(env.combines_performed(), 693);
 
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
@@ -2063,6 +2068,7 @@ void TEST_prot_tree_modifications() {
             env.push();
 
             mark_only(MucRaceP);
+            env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
             {
                 GB_transaction  ta(gb_main);
                 TEST_EXPECT_NO_ERROR(GBT_write_int(MucRaceP, "ARB_partial", 0)); // revert species to "full"
@@ -2290,6 +2296,7 @@ void TEST_node_stack() {
             TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
             mark_only(env.root_node()->findLeafNamed(testSingle[i])->gb_node);
+            env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
 
             env.push();
             if (swapped) {
@@ -2324,6 +2331,7 @@ void TEST_node_stack() {
         mark(env.root_node()->findLeafNamed("CloButyr")->gb_node);
         mark(env.root_node()->findLeafNamed("CloCarni")->gb_node);
         mark(env.root_node()->findLeafNamed("CloPaste")->gb_node);
+        env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
 
         env.push();
         if (remove_from_lower_subtree) {
