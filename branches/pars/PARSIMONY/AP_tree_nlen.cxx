@@ -1024,6 +1024,8 @@ AP_FLOAT AP_tree_nlen::costs(char *mutPerSite) {
     // returns costs of a tree ( = number of mutations)
 
     ap_assert(get_tree_root()->get_seqTemplate());  // forgot to set_seqTemplate() ?  (previously returned 0.0 in this case)
+    ap_assert(sequence_state_valid());
+
     parsimony_rek(mutPerSite);
     return mutation_rate;
 }

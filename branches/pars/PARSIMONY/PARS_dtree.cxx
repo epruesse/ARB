@@ -178,8 +178,8 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
 
 
 void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
-    AP_tree        *oldrootleft  = get_root_node()->get_leftson();
-    AP_tree        *oldrootright = get_root_node()->get_rightson();
+    AP_tree_nlen   *oldrootleft  = get_root_node()->get_leftson();
+    AP_tree_nlen   *oldrootright = get_root_node()->get_rightson();
     const AP_FLOAT  org_pars     = get_root_node()->costs();
     AP_FLOAT        prev_pars    = org_pars;
 
@@ -192,18 +192,27 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
             kernighan_optimize_tree(at);
             AP_FLOAT ker_pars = get_root_node()->costs();
             if (ker_pars == prev_pars) break; // kern-lin did not improve tree -> done
+            ap_assert(prev_pars>ker_pars); // otherwise kernighan_optimize_tree worsened the tree
             prev_pars = ker_pars;
         }
         else {
+            ap_assert(prev_pars>nni_pars); // otherwise nn_interchange_rek worsened the tree
             prev_pars = nni_pars;
         }
         progress.subtitle(GBS_global_string("New parsimony: %.1f (gain: %.1f)", prev_pars, org_pars-prev_pars));
     }
 
-    if (oldrootleft->father == oldrootright) oldrootleft->set_root();
-    else oldrootright->set_root();
+    AP_FLOAT some_root_pars = get_root_node()->costs();
 
-    get_root_node()->costs();
+    if (oldrootleft->father == oldrootright) {
+        oldrootleft->set_root();
+    }
+    else {
+        oldrootright->set_root();
+    }
+
+    AP_FLOAT old_root_pars = get_root_node()->costs();
+    // |ap_assert(some_root_pars == old_root_pars); // @@@ fails for protein optimize tests (but not for nucs?)
 }
 
 AWT_graphic_parsimony::AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
