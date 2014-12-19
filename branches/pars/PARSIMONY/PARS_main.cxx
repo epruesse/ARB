@@ -1644,6 +1644,8 @@ enum TopoMod {
     MOD_CALC_LENS,
     MOD_OPTI_NNI,
     MOD_OPTI_GLOBAL,
+
+    MOD_MIX_TREE,
 };
 
 template <typename SEQ>
@@ -1675,6 +1677,10 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
 
         case MOD_OPTI_GLOBAL:
             optimizeTree(env.graphic_tree());
+            break;
+
+        case MOD_MIX_TREE:
+            rootEdge()->mixTree(100);
             break;
     }
 }
@@ -1869,8 +1875,6 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 925);
 
-    // @@@ test optimize etc.
-
     // test partial-add
     {
         // TotalRecall tr(env);
@@ -2013,12 +2017,12 @@ void TEST_prot_tree_modifications() {
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-123, env, true)); // test remove-marked only (same code as part of nt_reAdd)
     TEST_EXPECT_EQUAL(env.combines_performed(), 5);
+
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG+1,   env, true)); // test quick-add
     TEST_EXPECT_EQUAL(env.combines_performed(), 302);
+
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 471);
-
-    // @@@ test optimize etc.
 
     // test partial-add
     {
@@ -2084,6 +2088,72 @@ void TEST_prot_tree_modifications() {
             env.pop();
         }
     }
+
+    TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-initial");
+
+    const unsigned seed    = 1417001558;
+    const unsigned mixseed = 1418978973;
+
+    const int PARSIMONY_MIXED   = PARSIMONY_ORG + 1507;
+    const int PARSIMONY_NNI     = PARSIMONY_ORG + 54;
+    const int PARSIMONY_NNI_ALL = PARSIMONY_ORG - 3;
+    const int PARSIMONY_OPTI    = PARSIMONY_ORG - 3; // not much gain, as initial tree already is optimized
+
+    // -------------------------------------------------------
+    //      mix tree (original tree already is optimized)
+
+    GB_random_seed(mixseed);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_MIX_TREE, "prot-mixed", PARSIMONY_MIXED, env, false));
+    TEST_EXPECT_EQUAL(env.combines_performed(), 10);
+
+    // ------------------------------
+    //      test optimize (some)
+
+    // mark initially marked species
+    {
+        GB_transaction ta(env.gbmain());
+
+        GBT_restore_marked_species(env.gbmain(), "CytLyti6;StrRamo3;MucRace2;SacCere5");
+        env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
+    }
+
+    TEST_EXPECT_PARSVAL(env, PARSIMONY_MIXED);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 0);
+
+    // test branchlength calculation
+    // (optimizations below implicitely recalculates branchlengths)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
+    TEST_EXPECT_EQUAL(env.combines_performed(), 88);
+
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
+    TEST_EXPECT_EQUAL(env.combines_performed(), 557);
+
+    GB_random_seed(seed);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
+    TEST_EXPECT_EQUAL(env.combines_performed(), 9660);
+
+    // -----------------------------
+    //      test optimize (all)
+
+    // mark all species
+    mark_all(env.gbmain());
+    env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
+    TEST_EXPECT_EQUAL(GBT_count_marked_species(env.gbmain()), 14);
+
+    TEST_EXPECT_PARSVAL(env, PARSIMONY_MIXED);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 0);
+
+    // test branchlength calculation
+    // (optimizations below implicitely recalculates branchlengths)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
+    TEST_EXPECT_EQUAL(env.combines_performed(), 88);
+
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-all-NNI", PARSIMONY_NNI_ALL, env, true)); // test recursive NNI
+    TEST_EXPECT_EQUAL(env.combines_performed(), 823);
+
+    GB_random_seed(seed);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
+    TEST_EXPECT_EQUAL(env.combines_performed(), 9660);
 }
 
 void TEST_node_stack() {
