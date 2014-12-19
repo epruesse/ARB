@@ -1720,6 +1720,36 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
     return all().ofgroup(fulfilled);
 }
 
+static void test_root_at_each_son(AP_tree_nlen *node, int& pars_min, int& pars_max) {
+    ap_main->remember();
+    node->set_root();
+    int pars = rootNode()->costs();
+    pars_min = std::min(pars, pars_min);
+    pars_max = std::max(pars, pars_max);
+    ap_main->revert();
+
+    if (!node->is_leaf) {
+        test_root_at_each_son(node->get_leftson(), pars_min, pars_max);
+        test_root_at_each_son(node->get_rightson(), pars_min, pars_max);
+    }
+}
+
+template <typename SEQ>
+static arb_test::match_expectation movingRootDoesntAffectCosts(int pars_min_expected, int pars_max_expected, PARSIMONY_testenv<SEQ>& env) {
+    using namespace   arb_test;
+    expectation_group fulfilled;
+
+    int pars_min = INT_MAX;
+    int pars_max = INT_MIN;
+
+    test_root_at_each_son(env.root_node(), pars_min, pars_max);
+
+    fulfilled.add(that(pars_min).is_equal_to(pars_min_expected));
+    fulfilled.add(that(pars_max).is_equal_to(pars_max_expected));
+
+    return all().ofgroup(fulfilled);
+}
+
 static GBDATA *copy_to(GBDATA *gb_species, const char *newShortname) {
     GBDATA *gb_species_data = GB_get_father(gb_species);
     GBDATA *gb_new_species  = GB_create_container(gb_species_data, "species");
@@ -1947,6 +1977,13 @@ void TEST_nucl_tree_modifications() {
     const int PARSIMONY_NNI_ALL = PARSIMONY_ORG-22;
     const int PARSIMONY_OPTI    = PARSIMONY_ORG-29; // may depend on seed
 
+    {
+        env.push();
+        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_ORG, PARSIMONY_ORG, env));
+        TEST_EXPECT_EQUAL(env.combines_performed(), 106);
+        env.pop();
+    }
+
     // ------------------------------
     //      test optimize (some)
 
@@ -1992,8 +2029,16 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 693);
 
     GB_random_seed(seed);
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 60958); // @@@ there is no difference in number of combines between TEST_optimizations_some and TEST_optimizations_all. why not?
+    {
+        env.push();
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
+        // @@@ there is no difference in number of combines between TEST_optimizations_some and TEST_optimizations_all. why not?
+        TEST_EXPECT_EQUAL(env.combines_performed(), 60958);
+
+        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
+        TEST_EXPECT_EQUAL(env.combines_performed(), 104);
+        env.pop();
+    }
 }
 
 void TEST_prot_tree_modifications() {
@@ -2106,6 +2151,14 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_MIX_TREE, "prot-mixed", PARSIMONY_MIXED, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 10);
 
+    {
+        env.push();
+        TEST_EXPECTATION__BROKEN(movingRootDoesntAffectCosts(PARSIMONY_MIXED,    PARSIMONY_MIXED, env),
+                                 movingRootDoesntAffectCosts(PARSIMONY_MIXED-35, PARSIMONY_MIXED, env));
+        TEST_EXPECT_EQUAL(env.combines_performed(), 160);
+        env.pop();
+    }
+
     // ------------------------------
     //      test optimize (some)
 
@@ -2152,8 +2205,16 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 823);
 
     GB_random_seed(seed);
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 9660);
+    {
+        env.push();
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
+        TEST_EXPECT_EQUAL(env.combines_performed(), 9660);
+
+        TEST_EXPECTATION__BROKEN(movingRootDoesntAffectCosts(PARSIMONY_OPTI,   PARSIMONY_OPTI,   env),
+                                 movingRootDoesntAffectCosts(PARSIMONY_OPTI-8, PARSIMONY_OPTI+8, env));
+        TEST_EXPECT_EQUAL(env.combines_performed(), 132);
+        env.pop();
+    }
 }
 
 void TEST_node_stack() {
