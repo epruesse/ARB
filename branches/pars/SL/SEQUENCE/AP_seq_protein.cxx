@@ -40,18 +40,18 @@ static AP_PROTEINS prot2AP_PROTEIN[26] = {
     APP_G,
     APP_H,
     APP_I,
-    APP_ILLEGAL,
+    APP_ILLEGAL, // J
     APP_K,
     APP_L,
     APP_M,
     APP_N,
-    APP_ILLEGAL,
+    APP_ILLEGAL, // O
     APP_P,
     APP_Q,
     APP_R,
     APP_S,
     APP_T,
-    APP_ILLEGAL,
+    APP_ILLEGAL, // U
     APP_V,
     APP_W,
     APP_X,
@@ -59,7 +59,7 @@ static AP_PROTEINS prot2AP_PROTEIN[26] = {
     APP_Z
 };
 
-#define PROTEINS_TO_TEST 22
+#define PROTEINS_TO_TEST 22 // 26 plus gap and star, minus 3 illegal, 'X', 'B' and 'Z'
 
 static AP_PROTEINS prot2test[PROTEINS_TO_TEST] = { // uses same indexing as prot_idx
     APP_STAR,

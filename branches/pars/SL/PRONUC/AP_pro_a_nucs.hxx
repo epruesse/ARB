@@ -69,10 +69,11 @@ struct AWT_PDP { // distance definition for one protein
 class AWT_translator;
 
 class AWT_distance_meter : virtual Noncopyable {
-    AWT_PDP *dist_[64];         // sets of proteins with special distance [64 > max_aa
+    AWT_PDP *dist_[64];         // sets of proteins with special distance (64 > max_aa)
 
-    long transform07[256];       // like dist.patd[1] but for bits 0-7
-    long transform815[256];
+    // @@@ unused
+    long transform07[256];      // like dist.patd[1] but only for bits 0-7 (of 24 bits used to encode a protein-combination)
+    long transform815[256];     // same for bits 8-15
     long transform1623[256];
 
 public:
