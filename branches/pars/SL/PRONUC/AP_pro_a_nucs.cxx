@@ -315,9 +315,6 @@ static void awt_pro_a_nucs_debug(const AWT_translator *translator, const AWT_dis
 
 AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
     memset(dist_, 0, sizeof(dist_));
-    memset(transform07, 0, sizeof(transform07));
-    memset(transform815, 0, sizeof(transform815));
-    memset(transform1623, 0, sizeof(transform1623));
 
     int s;
     int i;
@@ -354,15 +351,6 @@ AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
         dist_[s]->patd[2] |= sum; // and store them in 'distance <= 2'
     }
 
-    for (i=0; i<256; i++) {
-        for (s = 0; s<8; s++) {
-            if (i & (1<<s)) {
-                transform07[i]   |= dist_[s]->patd[1];
-                transform815[i]  |= dist_[s+8]->patd[1];
-                transform1623[i] |= dist_[s+16]->patd[1];
-            }
-        }
-    }
 #ifdef DEBUG
     awt_pro_a_nucs_debug(translator, this);
 #endif
