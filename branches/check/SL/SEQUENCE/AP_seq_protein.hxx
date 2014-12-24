@@ -55,10 +55,16 @@ enum AP_PROTEINS {
 
 class AP_sequence_protein : public AP_sequence { // derived from a Noncopyable
     AP_PROTEINS *seq_prot;
+    AP_PROTEINS *mut1; // combination of sequences reachable with up to 1 nucleotide mutation per codon
+    AP_PROTEINS *mut2; // combination of sequences reachable with up to 2 nucleotide mutations per codons
+    // Note: ANY protein or a gap is reachable with up to 3 mutations per codon
 
     AP_FLOAT count_weighted_bases() const OVERRIDE;
     void set(const char *isequence) OVERRIDE;
     void unset() OVERRIDE;
+
+    const AP_PROTEINS *get_mut1() const { lazy_load_sequence(); ap_assert(mut1); return mut1; }
+    const AP_PROTEINS *get_mut2() const { lazy_load_sequence(); ap_assert(mut2); return mut2; }
 
 public:
     AP_sequence_protein(const AliView *aliview);

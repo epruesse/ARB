@@ -17,12 +17,16 @@ inline bool notIsGap(AP_PROTEINS c)  { return !isGap(c); }
 // #define ap_assert(bed) arb_assert(bed)
 
 AP_sequence_protein::AP_sequence_protein(const AliView *aliview)
-    : AP_sequence(aliview)
-    , seq_prot(NULL)
+    : AP_sequence(aliview),
+      seq_prot(NULL),
+      mut1(NULL),
+      mut2(NULL)
 {
 }
 
 AP_sequence_protein::~AP_sequence_protein() {
+    delete [] mut2;
+    delete [] mut1;
     delete [] seq_prot;
 }
 
@@ -234,7 +238,10 @@ void AP_sequence_protein::set(const char *isequence) {
     update_min_mutations(translator->CodeNr(), translator->getDistanceMeter());
 
     size_t sequence_len = get_sequence_length();
-    seq_prot            = new AP_PROTEINS[sequence_len+1];
+
+    seq_prot = new AP_PROTEINS[sequence_len+1];
+    mut1     = new AP_PROTEINS[sequence_len+1];
+    mut2     = new AP_PROTEINS[sequence_len+1];
 
     ap_assert(!get_filter()->does_bootstrap()); // bootstrapping not implemented for protein parsimony
 
@@ -246,6 +253,9 @@ void AP_sequence_protein::set(const char *isequence) {
     ap_assert(filt);
 
     size_t oidx = 0;               // index for output sequence
+
+    // check if initialized for correct instance of translator:
+    ap_assert(min_mutations_initialized_for_codenr == AWT_get_user_translator()->CodeNr());
 
     for (int idx = 0; idx<filter_len && left_bases; ++idx) {
         if (filt->use_position(idx)) {
@@ -266,7 +276,11 @@ void AP_sequence_protein::set(const char *isequence) {
                 p = APP_GAP; // @@@ use APP_DOT here? dna does!
             }
 
-            seq_prot[oidx++] = p;
+            seq_prot[oidx] = p;
+            mut1[oidx]     = one_mutation_away[p];
+            mut2[oidx]     = one_mutation_away[mut1[oidx]];
+
+            ++oidx;
             --left_bases;
         }
     }
@@ -282,8 +296,9 @@ void AP_sequence_protein::set(const char *isequence) {
 }
 
 void AP_sequence_protein::unset() {
-    delete [] seq_prot;
-    seq_prot = 0;
+    delete [] mut2;     mut2     = 0;
+    delete [] mut1;     mut1     = 0;
+    delete [] seq_prot; seq_prot = 0;
     mark_sequence_set(false);
 }
 
