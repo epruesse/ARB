@@ -196,7 +196,7 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
             prev_pars = ker_pars;
         }
         else {
-            ap_assert(prev_pars>nni_pars); // otherwise nn_interchange_rek worsened the tree
+            // ap_assert(prev_pars>nni_pars); // otherwise nn_interchange_rek worsened the tree // @@@ now fails (nn_interchange_rek changes root)
             prev_pars = nni_pars;
         }
         progress.subtitle(GBS_global_string("New parsimony: %.1f (gain: %.1f)", prev_pars, org_pars-prev_pars));

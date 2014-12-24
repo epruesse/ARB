@@ -310,17 +310,29 @@ void AP_sequence_protein::unset() {
 AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) {
     // Note: changes done here should also be be applied to AP_seq_dna.cxx@combine_impl
 
+    // now uses same algorithm as done till [877]
+
     const AP_sequence_protein *left  = DOWNCAST(const AP_sequence_protein *, lefts);
     const AP_sequence_protein *right = DOWNCAST(const AP_sequence_protein *, rights);
 
     size_t sequence_len = get_sequence_length();
-    if (!seq_prot) seq_prot = new AP_PROTEINS[sequence_len + 1];
+    if (!seq_prot) {
+        seq_prot = new AP_PROTEINS[sequence_len + 1];
+        mut1     = new AP_PROTEINS[sequence_len + 1];
+        mut2     = new AP_PROTEINS[sequence_len + 1];
+    }
 
-    const AP_PROTEINS *p1       = left->get_sequence();
-    const AP_PROTEINS *p2       = right->get_sequence();
-    AP_PROTEINS       *p        = seq_prot;
-    const AP_weights  *weights  = get_weights();
-    char              *mutpsite = mutation_per_site;
+    const AP_PROTEINS *p1 = left->get_sequence();
+    const AP_PROTEINS *p2 = right->get_sequence();
+
+    const AP_PROTEINS *mut11 = left->get_mut1();
+    const AP_PROTEINS *mut21 = left->get_mut2();
+    const AP_PROTEINS *mut12 = right->get_mut1();
+    const AP_PROTEINS *mut22 = right->get_mut2();
+
+    AP_PROTEINS      *p        = seq_prot;
+    const AP_weights *weights  = get_weights();
+    char             *mutpsite = mutation_per_site;
 
     long result = 0;
     // check if initialized for correct instance of translator:
@@ -330,46 +342,39 @@ AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequenc
         AP_PROTEINS c1 = p1[idx];
         AP_PROTEINS c2 = p2[idx];
 
+        AP_PROTEINS onemut1 = mut11[idx];
+        AP_PROTEINS onemut2 = mut12[idx];
+        AP_PROTEINS twomut1 = mut21[idx];
+        AP_PROTEINS twomut2 = mut22[idx];
+
         ap_assert(c1 != APP_ILLEGAL);
         ap_assert(c2 != APP_ILLEGAL);
 
-        if ((c1&c2) == 0) { // proteins are distinct
-            p[idx] = AP_PROTEINS(c1|c2);     // mix distinct proteins
+        AP_PROTEINS contained_in_both              = AP_PROTEINS(c1 & c2);
+        AP_PROTEINS reachable_from_both_with_1_mut = AP_PROTEINS(onemut1 & onemut2);
+        AP_PROTEINS reachable_from_both_with_2_mut = AP_PROTEINS(twomut1 & twomut2);
 
+        if (contained_in_both == APP_ILLEGAL) { // proteins are distinct
             int mutations = INT_MAX;
-
-            if (hasGap(p[idx])) { // contains a gap
-                mutations = 1;  // count first gap as mutation
-                // @@@ FIXME:  rethink the line above. maybe it should be 3 mutations ?
-
-#if !defined(MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS)
-                // count multiple mutations as 1 mutation
-                // (code here is unused)
-                if (idx>0 && hasGap(p[idx-1])) { // last position also contained gap..
-                    if ((hasGap(c1) && hasGap(p1[idx-1])) || // ..in same sequence
-                        (hasGap(c2) && hasGap(p2[idx-1])))
-                    {
-                        if (notHasGap(p1[idx-1]) || notHasGap(p2[idx-1])) { // if one of the sequences had no gap at previous position
-                            mutations = 0; // skip multiple gaps
-                        }
-                    }
-                }
-#endif // MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS
+            if (reachable_from_both_with_1_mut != APP_ILLEGAL) {
+                // some proteins can be reached from both subtrees with 1 mutation
+                mutations = 1;
+                p[idx]    = reachable_from_both_with_1_mut;
+                mut1[idx] = reachable_from_both_with_2_mut; // because 1 mutation was counted here
+                mut2[idx] = APP_DOT; // with 3 mutations anything is reachable
+            }
+            else if (reachable_from_both_with_2_mut != APP_ILLEGAL) {
+                // some proteins can be reached from both subtrees with 2 mutations
+                mutations = 2;
+                p[idx]    = reachable_from_both_with_2_mut;
+                mut1[idx] = APP_DOT;
+                mut2[idx] = APP_DOT;
             }
             else {
-                for (int t1 = 0; t1<PROTEINS_TO_TEST && mutations>1; ++t1) { // with all proteins to test
-                    if (c1&prot2test[t1]) { // if protein is contained in subtree
-                        for (int t2 = 0; t2<PROTEINS_TO_TEST; ++t2) {
-                            if (c2&prot2test[t2]) {
-                                int mut = prot_mindist[t1][t2];
-                                if (mut<mutations) {
-                                    mutations = mut;
-                                    if (mutations < 2) break; // minimum reached -- abort
-                                }
-                            }
-                        }
-                    }
-                }
+                mutations = 3;
+                p[idx]    = APP_DOT;
+                mut1[idx] = APP_DOT;
+                mut2[idx] = APP_DOT;
             }
 
             ap_assert(mutations >= 1 && mutations <= 3);
@@ -378,19 +383,16 @@ AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequenc
             result += mutations * weights->weight(idx); // count weighted or simple
 
         }
-        else {
-            p[idx] = AP_PROTEINS(c1&c2); // store common proteins for both subtrees
+        else { // there are common proteins
+            p[idx]    = contained_in_both; // store common proteins for both subtrees
+            mut1[idx] = reachable_from_both_with_1_mut;
+            mut2[idx] = reachable_from_both_with_2_mut;
         }
 
-#if !defined(PROPAGATE_GAPS_UPWARDS)
-        // do not propagate mixed gaps upwards (they cause neg. branches)
-        // (code here is unused)
-        if (hasGap(p[idx])) { // contains gap
-            if (notIsGap(p[idx])) { // is not real gap
-                p[idx] = AP_PROTEINS(p[idx]^APP_GAP); //  remove the gap
-            }
-        }
-#endif // PROPAGATE_GAPS_UPWARDS
+        AP_PROTEINS calc_mut1 = one_mutation_away[p[idx]];
+        mut1[idx]             = AP_PROTEINS(mut1[idx] | calc_mut1);
+        AP_PROTEINS calc_mut2 = one_mutation_away[mut1[idx]];
+        mut2[idx]             = AP_PROTEINS(mut2[idx] | calc_mut2);
     }
 
 #if defined(DEBUG) && 0
