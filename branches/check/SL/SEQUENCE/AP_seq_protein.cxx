@@ -112,8 +112,31 @@ static int prot_idx[PROTEINS_TO_TEST] = { // uses same indexing as prot2test
     23                          // gap
 };
 
+static const char *readable_combined_protein(AP_PROTEINS p) {
+    if (p == APP_X) { return "X"; }
+    if (p == APP_DOT) { return "."; }
+
+    static char buffer[PROTEINS_TO_TEST+1];
+    memset(buffer, 0, PROTEINS_TO_TEST+1);
+    char        *bp       = buffer;
+    const char  *readable = "*ACDEFGHIKLMNPQRSTVWY-"; // same index as prot2test
+
+    for (int b = 0; b<PROTEINS_TO_TEST; ++b) {
+        if (p&prot2test[b]) {
+            *bp++ = readable[b];
+        }
+    }
+    return buffer;
+}
+
 static char prot_mindist[PROTEINS_TO_TEST][PROTEINS_TO_TEST];
 static int  min_mutations_initialized_for_codenr = -1;
+
+static AP_PROTEINS one_mutation_away[APP_MAX+1]; // contains all proteins that are <=1 nuc-mutations away from protein-combination used as index
+
+STATIC_ASSERT(APP_MAX == 4194303);
+STATIC_ASSERT(sizeof(AP_PROTEINS) == 4);
+STATIC_ASSERT(sizeof(one_mutation_away) == 16777216); // ~ 16Mb
 
 static void update_min_mutations(int code_nr, const AWT_distance_meter *distance_meter) {
     if (min_mutations_initialized_for_codenr != code_nr) {
@@ -132,6 +155,70 @@ static void update_min_mutations(int code_nr, const AWT_distance_meter *distance
                 prot_mindist[s][d] = char(i);
             }
         }
+
+        memset(one_mutation_away, 0, sizeof(one_mutation_away));
+        for (int s = 0; s<PROTEINS_TO_TEST; ++s) {
+            AP_PROTEINS oma = APP_ILLEGAL;
+            for (int d = 0; d<PROTEINS_TO_TEST; ++d) {
+                if (prot_mindist[s][d] == 1) {
+                    oma = AP_PROTEINS(oma|prot2test[d]);
+                }
+            }
+            one_mutation_away[prot2test[s]] = AP_PROTEINS(oma|prot2test[s]);
+        }
+
+        for (size_t i = 0; i<=APP_MAX; ++i) {
+            if (one_mutation_away[i] == APP_ILLEGAL) {
+                size_t      j   = i;
+                size_t      b   = 1;
+                AP_PROTEINS oma = APP_ILLEGAL;
+
+                while (j) {
+                    if (j&1) oma = AP_PROTEINS(oma|one_mutation_away[b]);
+                    j >>= 1;
+                    b <<= 1;
+                }
+
+                one_mutation_away[i] = oma;
+            }
+        }
+
+#if defined(DEBUG)
+        for (size_t i = 0; i<=APP_MAX; ++i) {
+            if (one_mutation_away[i] == 0) {
+                fprintf(stderr, "oma[%s] is zero\n", readable_combined_protein(AP_PROTEINS(i)));
+            }
+        }
+        for (size_t i = 0; i<=APP_MAX; ++i) {
+            AP_PROTEINS two_mutations_away = one_mutation_away[one_mutation_away[i]];
+            bool        gap                  = hasGap(AP_PROTEINS(i));
+            if ((!gap && two_mutations_away != APP_X) || (gap && two_mutations_away != APP_DOT)) {
+                // reached for a few amino-acid-combinations: C, F, C|F, K, M, K|M
+                // and for APP_ILLEGAL and APP_GAP as below for 3 mutations
+                fprintf(stderr, "tma[%s]", readable_combined_protein(AP_PROTEINS(i)));
+                fprintf(stderr, "=%s\n", readable_combined_protein(two_mutations_away));
+            }
+        }
+        for (size_t i = 0; i<=APP_MAX; ++i) {
+            AP_PROTEINS three_mutations_away = one_mutation_away[one_mutation_away[one_mutation_away[i]]];
+            bool        gap                  = hasGap(AP_PROTEINS(i));
+            if ((!gap && three_mutations_away != APP_X) || (gap && three_mutations_away != APP_DOT)) {
+                // only reached for i==APP_ILLEGAL and i==APP_GAP (result is wrong for latter)
+                fprintf(stderr, "3ma[%s]", readable_combined_protein(AP_PROTEINS(i)));
+                fprintf(stderr, "=%s\n", readable_combined_protein(three_mutations_away));
+            }
+        }
+#endif
+
+#if 0
+        // dump all
+        for (size_t i = 0; i<=APP_MAX; ++i) {
+            if (one_mutation_away[i]) {
+                fprintf(stderr, "oma[%s]", readable_combined_protein(AP_PROTEINS(i)));
+                fprintf(stderr, "=%s\n", readable_combined_protein(one_mutation_away[i]));
+            }
+        }
+#endif
 
         min_mutations_initialized_for_codenr = code_nr;
     }

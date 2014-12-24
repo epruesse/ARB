@@ -49,6 +49,8 @@ enum AP_PROTEINS {
 
     APP_B = APP_D | APP_N,      // Asx ( = Asp | Asn )
     APP_Z = APP_E | APP_Q,      // Glx ( = Glu | Gln )
+
+    APP_MAX = (APP_GAP<<1)-1,
 };
 
 class AP_sequence_protein : public AP_sequence { // derived from a Noncopyable
