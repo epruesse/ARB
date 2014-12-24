@@ -208,8 +208,8 @@ void AP_sequence_protein::unset() {
 AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) {
     // Note: changes done here should also be be applied to AP_seq_dna.cxx@combine_impl
 
-    const AP_sequence_protein *left  = (const AP_sequence_protein *)lefts;
-    const AP_sequence_protein *right = (const AP_sequence_protein *)rights;
+    const AP_sequence_protein *left  = DOWNCAST(const AP_sequence_protein *, lefts);
+    const AP_sequence_protein *right = DOWNCAST(const AP_sequence_protein *, rights);
 
     size_t sequence_len = get_sequence_length();
     if (!seq_prot) seq_prot = new AP_PROTEINS[sequence_len + 1];
@@ -270,7 +270,7 @@ AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequenc
                 }
             }
 
-            ap_assert(mutations >= 0 && mutations <= 3);
+            ap_assert(mutations >= 1 && mutations <= 3);
 
             if (mutpsite) mutpsite[idx] += mutations; // count mutations per site (unweighted)
             result += mutations * weights->weight(idx); // count weighted or simple
