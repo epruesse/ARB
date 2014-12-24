@@ -1,0 +1,175 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB     srt.hlp
+SUB     aci.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           How to define new import formats
+
+OCCURRENCE      ARB_NT
+
+SECTION         BRIEF DESCRIPTION
+
+		Import filters delivered together with ARB are located in
+                the directory '$ARBHOME/lib/import'. Their file extension
+		has to be '.ift'!
+
+		When you customize your own import filters store them in 
+		directory '~/.arb_prop/filter/'. You only need to copy them
+		into '$ARBHOME/lib/import' if multiple users on this machine
+		should be able to use the customized filters.
+
+                Each of the import filters describes how to analyze and read files
+		of one specific format.
+
+                A basic import description file (.ift) looks like this:
+
+                        [AUTODETECT     "Matchpattern"]
+                        BEGIN           "Matchpattern"
+                        [KEYWIDTH       #Columnnumber]
+                        [AUTOTAG        ["TAGNAME"]]
+                        [IFNOTSET       x "Reason why x is not set"]+
+                        [SETGLOBAL      x "global value"]+
+                        [INCLUDE        "file"]+
+                        [MATCH          "Matchpattern"
+                                [SRT            "SRT_STRING"]
+                                [ACI            "ACI_STRING"]
+                                [TAG            "TAGNAME"]
+                                [WRITE          "DB_FIELD_NAME"]
+                                [WRITE_INT      "DB_FIELD_NAME"]
+                                [WRITE_FLOAT    "DB_FIELD_NAME"]
+                                [APPEND         "DB_FIELD_NAME"]
+                                [SETVAR         x]
+                        ]*
+                        SEQUENCESTART   "Matchpattern"
+                        SEQUENCECOLUMN  #Columnnumber
+                        [SEQUENCESRT    "SRT_STRING"]
+                        [SEQUENCEACI    "ACI_STRING"]
+                        SEQUENCEEND     "STRING"
+                        [CREATE_ACC_FROM_SEQUENCE]
+                        [DONT_GEN_NAMES]
+                        END             "STRING"
+
+                or it can pipe the data through any external program PROGRAM to
+                convert it to an already existing format 'exformat'
+                using the following basic design:
+
+                [AUTODETECT     "Matchpattern"]
+                SYSTEM          "PROGRAM $< $>"
+                NEW_FORMAT      "lib/import/exformat.ift"
+
+                $< will be replaced by the input file name
+                $> will ve replaced by the intermediate file name
+
+DESCRIPTION     First of all the converter appends all import files maching
+                the filepattern into one file. The files are separated by the
+                string defined with the keyword  SEQUENCEEND.
+
+                1. Search the first line matching the pattern defined by BEGIN
+
+                2. Try to match all MATCH_patterns.
+
+                   For all lines that match do:
+
+                        - append all following lines, which start after
+                          column KEYWIDTH
+
+                        - run commands with the concatenated lines
+
+                   Known commands are (they are executed in the order listed here):
+
+                         - SRT "SRT_STRING"
+
+                               start the string replace tool on the current result and
+                               set the output as current result (see LINK{srt.hlp}).
+
+                         - ACI "ACI_STRING"
+
+                               run the arb command interpreter to change the current result (see LINK{aci.hlp}).
+
+                         - TAG "TAGNAME"
+
+                               tag information (i.e. "[EBI] 1997 [RDP] 1998")
+
+                         - WRITE "DB_FIELD_NAME"
+
+                               write the current result into DB_FIELD_NAME 
+
+                         - WRITE_INT "DB_FIELD_NAME"
+
+                               like WRITE, but expect integer target field 
+
+                         - WRITE_FLOAT "DB_FIELD_NAME"
+
+                               like WRITE, but expect floating-point target field 
+
+                         - APPEND "DB_FIELD_NAME"
+
+                               append the current result to DB_FIELD_NAME
+
+                         - SETVAR x
+
+                               store the current result in the variable x, where x may be any character.
+                               After it was set this variable can be referenced by using $x in any
+                               command expression (SRT_STRING,ACI_STRING,TAGNAME,DB_FIELD_NAME).
+
+                               For each used variable there has to be defined an error reason
+                               describing, what's wrong if the variable has NOT been set.
+                               Define error reasons using
+
+                                      IFNOTSET x "Reason why x is not set"
+
+                               Note: use '$$' to insert a single '$'.
+
+                               Allowed variable names are 'a' to 'z'.
+
+                   Note: Every of these commands may only occur once in one MATCH rule.
+                         To run some of them multiple, create multiple MATCH rules.
+
+                3. If the line matches SEQUENCESTART_pattern, assume that
+                   all following lines to and except the line
+                   matching SEQUENCEEND_pattern contain the sequence data.
+
+                4. GOTO 1
+
+                Postprocesses:
+
+                        CREATE_ACC_FROM_SEQUENCE:
+
+                                Generate a checksum for all sequences with no accession
+                                entry ('acc' -field) and write it as the accession number
+
+                        DONT_GEN_NAMES:
+
+                                Do not try to generate unique identifiers (shortnames) for
+                                the species using the full_name field.
+
+                General commands:
+
+                        INCLUDE "filename"
+
+                                Simply inserts the contents of "filename" at the current position.
+
+                                It's possible to declare variables in the file where the INCLUDE
+                                happens and to use them in the included file. (Example: 
+                                longebi.ift, longgenbank.ift and feature_table.ift in subdir nonformats)
+
+                        SETGLOBAL x "value"
+
+                                Sets global variable 'x' to 'value'.
+
+                        AUTOTAG ["TAGNAME"]
+
+                                If set, act like each MATCH rule has a
+                                   TAG "TAGNAME"
+                                entry. Use AUTOTAG w/o parameter to reset
+                                to default behavior.
+
+EXAMPLES        Look at the files in '$ARBHOME/lib/import'
+
+WARNINGS        Format detection does not always work

@@ -1,0 +1,1376 @@
+/*ARBDB ASCII*/
+species_data		%% (%
+	species		:5000	%$ (%
+		name		:7600	"CytLyti6"
+		flag		:7000	"m"
+		full_name		"Cytophaga lytica"
+		acc			"ARB_6B3852E"
+		transl_table		"12"
+		codon_start		"2"
+		ali_dna			%% (%
+			data		:7000	"---------ATGGCAAAGGAAACTTTTGATCGTTCCAAACCGCACTTAAATATAGGTACTATTGGACACGTAGATCACGGTAAAACTACTTTAACTGCTGCTATTACAASAGTATTG---------"
+			%) /*ali_dna*/
+
+		ali_pro			%% (%
+			data		:7000	"XWQRKLLIVPNRT*-I*-VLLDT*ITVKLL*SSLLZZYX-X."
+			%) /*ali_pro*/
+
+		%) /*species*/
+
+	species		:5000	%$ (%
+		name		:7600	"TaxOcell"
+		flag		:7000	"m"
+		full_name		"Taxeobacter ocellatus"
+		acc			"ARB_21595EF"
+		transl_table		"21"
+		codon_start		"2"
+		ali_dna			%% (%
+			data		:7000	"------------------ATGGCTAAAGAAACTTTTGACCGGTCCAAGCCGCACGTAAACATCGGCACGATCGGTCACGTGGACCACGGCAAAACGACTCTGACCGCTGCTATCACCACGGTGCTG"
+			%) /*ali_dna*/
+
+		ali_pro			%% (%
+			data		:7000	"XG*SNFWPVQAARNHRHD--RSRGPRQBDSDRCYHHGAX-.."
+			%) /*ali_pro*/
+
+		%) /*species*/
+
+	species		:5000	%$ (%
+		name		:7600	"BctFra12"
+		flag		:7000	"h"
+		full_name		"Bacteroides fragilis"
+		acc			"ARB_4560B41C"
+		transl_table		"1"
+		codon_start		"2"
+		ali_dna			%% (%
+			data		:7000	"ATGGCTAAAGAGAAATTTGAACGTACCAAACCGCACGTAAACATTGGTACAATCGGTCACGTTGACCACGGTAAAACCACTTTGACTGCTGCTATCACTACTGTGTTG------------------"
+			%) /*ali_dna*/
+
+		ali_pro			%% (%
+			data		:7000	"MAKEK-FERTK-PHVNIGT-IGHVDHGKTTLTAAITTVLX.."
+			%) /*ali_pro*/
+
+		%) /*species*/
+
+	species		:5000	%$ (%
+		name		:7600	"StrRamo3"
+		flag		:7000	"h"
+		full_name		"Streptomyces ramocissimus"
+		acc			"ARB_30F12BA8"
+		transl_table		"1"
+		codon_start		"2"
+		ali_dna			%% (%
+			data		:7000	"ATGTCCAAGACGGCATACGTGCGCACCAAACCGCATCTGAACATCGGCACGATGGGTCATGTCGACCACGGCAAGACCACGTTGACCGCCGCCATCACCAAGGTCCTC------------------"
+			%) /*ali_dna*/
+
+		ali_pro			%% (%
+			data		:7000	"MSKTAYVRTKPHLNIGTMGHVDHGKTTLTAAITKVXXX-X.."
+			%) /*ali_pro*/
+
+		%) /*species*/
+
+	species		:5000	%$ (%
+		name		:7600	"StrCoel9"
+		acc			"X77040"
+		full_name		"Streptomyces coelicolor"
+		transl_table		"1"
+		codon_start		"1"
+		ali_dna			%% (%
+			data		:7000	"------------------------------------ATGTCCAAGACGGCGTACGTCCGCCCACCTGAGGCACGATGGCCCGACCACGGCAAGACCACCCTGACCGCCGCCATCACCAAGGTCCTC"
+			%) /*ali_dna*/
+
+		ali_pro			%% (%
+			data		:7000	"MSKTAYVRXXXXXX-GTMXXXDHGKTTLTAAITKVXX--X.."
+			%) /*ali_pro*/
+
+		%) /*species*/
+
+	species		:5000	%$ (%
+		name		:7600	"MucRacem"
+		flag		:7000	"h"
+		full_name		"Mucor racemosus"
+		acc			"ARB_5ADBD66E"
+		transl_table		"1"
+		codon_start		"2"
+		ali_dna			%% (%
+			data		:7000	"...........ATGGGTAAAGAGAAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGTATAAA-----------"
+			%) /*ali_dna*/
+
+		ali_pro			%% (%
+			data		:7000	"..MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
+			%) /*ali_pro*/
+
+		%) /*species*/
+
+	species		:5000	%$ (%
+		name		:7600	"MucRace2"
+		flag		:7000	"h"
+		full_name		"Mucor racemosus"
+		acc			"ARB_3627F120"
+		transl_table		"1"
+		codon_start		"2"
+		ali_dna			%% (%
+			data		:7000	".ATGGGTAAGGAGAAGACTCACGTTAACGTCGTCGTCATTGGTCACGTCGATTCCGGTAAATCTACTACTACTGGTCACTTGATTTACAAGTGTGGTGGT-ATNNN-ATAA-A------------."
+			%) /*ali_dna*/
+
+		ali_pro			%% (%
+			data		:7000	"MGKE---KTHVNVVVIGHVDSGKSTTTGHLIYKCGGXXXK--"
+			%) /*ali_pro*/
+
+		%) /*species*/
+
+	species		:5000	%$ (%
+		name		:7600	"MucRace3"
+		flag		:7000	"h"
+		full_name		"Mucor racemosus"
+		acc			"ARB_73CEEA74"
+		transl_table		"1"
+		codon_start		"1"
+		ali_dna			%% (%
+			data		:7000	"-----------ATGGGTAAAGAGAAGACTCACGTTRAYGTTGTCGTTATTGGTCACGTCRATTCCGGTAAGTCCACCNCCRCTGGTCACTTGATTTACAAGTGTGGTGGTATAA-A----------"
+			%) /*ali_dna*/
+
+		ali_pro			%% (%
+			data		:7000	"MGKXX----KTHVBVVVIGHVBSGKSTTTGHLIYKCGGIX.."
+			%) /*ali_pro*/
+
+		%) /*species*/
+
+	species		:5000	%$ (%
+		name		:7600	"AbdGlauc"
+		flag		:7000	"h"
+		full_name		"Absidia glauca"
+		acc			"ARB_A706F312"
+		transl_table		"1"
+		codon_start		"1"
+		ali_dna			%% (%
+			data		:7000	"----------------------ATGGGTAAAGAAAAGACTCACGTTAACGTCGTTGTCATTGGTCACGTCGATTCTGGTAAATCCACCACCACTGGTCATTTGATCTACAAGTGCGGTGGTATAAA"
+			%) /*ali_dna*/
+
+		ali_pro			%% (%
+			data		:7000	"MGKXXXXXXXXHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
+			%) /*ali_pro*/
+
+		%) /*species*/
+
+	species		:5000	%$ (%
+		name		:7600	"CddAlbic"
+		flag		:7000	"h"
+		full_name		"Candida albicans"
+		acc			"ARB_10F3627F"
+		transl_table		"1"
+		codon_start		"1"
+		ali_dna			%% (%
+			data		:7000	"ATGGGTAAAGAAAAAACTCACGTTAACGTTGTTGTTATTGGTCACGTCGATTCCGGTAAATCTACTACCACCGGTCACTTAATTTACAAGTGTGGTGGTATAAA----------------------"
+			%) /*ali_dna*/
+
+		ali_pro			%% (%
+			data		:7000	"MXXXE----KTHVNVVVIGHVDSGKSTTTGHLIYKCGGIX.."
+			%) /*ali_pro*/
+
+		%) /*species*/
+
+	%) /*species_data*/
+
+tree_data		%% (%
+	tree_prot		%% (%
+		tree			"N0.58482,3.41564;N0.58248,0.66885;N0.04119,0.27423;N0.27475,0.31772;LBctFra12\ALCytLyti6\ALTaxOcell\AN0.09705,0.15387;LStrRamo3\ALStrCoel9\AN0.12346,0.12108;N0.07553,0.07358;N0.06787,0.09757;N0.01554,-0.00981;LMucRacem\ALMucRace2\ALMucRace3\ALAbdGlauc\ALCddAlbic\A"
+		nnodes			%i 9
+		ruler			%% (%
+			size			%f 0.1
+			RADIAL			%% (%
+				ruler_y			%f 5.80564
+				ruler_x			%f 0
+				%) /*RADIAL*/
+
+			text_x			%f 0
+			text_y			%f 0
+			ruler_width		%i 0
+			LIST			%% (%
+				ruler_y			%f 0
+				ruler_x			%f 0
+				text_x			%f 0
+				text_y			%f 0
+				%) /*LIST*/
+
+			%) /*ruler*/
+
+		security		%i 0
+		remark			"Phylip Categories Neighbour dotgapmax _834\n[created as copy of 'tree_workdec']"
+		node			%% (%
+			id			%i 5
+			group_name		"Eukarya EF-Tu"
+			%) /*node*/
+
+		node			%% (%
+			id			%i 1
+			group_name		"Bacteria EF-Tu"
+			%) /*node*/
+
+		node			%% (%
+			id			%i 0
+			group_name		"EF-Tu / EF-1a"
+			%) /*node*/
+
+		order			%i 1
+		%) /*tree_prot*/
+
+	%) /*tree_data*/
+
+arb_presets		%% (%
+	fonts			%% (%
+		font0			%% (%
+			family			%i 2
+			style			%i 3
+			size			%i 6
+			%) /*font0*/
+
+		font1			%% (%
+			family			%i 2
+			style			%i 3
+			size			%i 5
+			%) /*font1*/
+
+		font2			%% (%
+			family			%i 0
+			style			%i 0
+			size			%i 0
+			%) /*font2*/
+
+		font3			%% (%
+			family			%i 0
+			style			%i 0
+			size			%i 0
+			%) /*font3*/
+
+		font4			%% (%
+			family			%i 0
+			style			%i 0
+			size			%i 0
+			%) /*font4*/
+
+		font5			%% (%
+			family			%i 0
+			style			%i 0
+			size			%i 0
+			%) /*font5*/
+
+		%) /*fonts*/
+
+	div			%% (%
+		add_width_xfig		%i 2
+		ruler_len		%f 0.1
+		ruler_width		%i 2
+		ruler_x_offset		%f 0
+		ruler_y_offset		%f 0.5
+		%) /*div*/
+
+	tool0			%% (%
+		text			"fastdnaml"
+		tool_command		"fastdnaml <!s &"
+		tool_file_type_save		%i 3
+		tool_file_type_load		%i 0
+		%) /*tool0*/
+
+	tool1			%% (%
+		text			"treetool "
+		tool_command		"treetool !s"
+		tool_file_type_save		%i 6
+		tool_file_type_load		%i 6
+		%) /*tool1*/
+
+	tool2			%% (%
+		text			"edtu"
+		tool_command		"arb_edtu : &"
+		tool_file_type_save		%i 0
+		tool_file_type_load		%i 0
+		%) /*tool2*/
+
+	tool3			%% (%
+		text			"phyl"
+		tool_command		"arb_phyl : &"
+		tool_file_type_save		%i 0
+		tool_file_type_load		%i 0
+		%) /*tool3*/
+
+	tool4			%% (%
+		text			"adm"
+		tool_command		"arb_adm : &"
+		tool_file_type_save		%i 0
+		tool_file_type_load		%i 0
+		%) /*tool4*/
+
+	tool5			%% (%
+		text			"TOOL 6   "
+		tool_command		"echo no_tool defined"
+		tool_file_type_save		%i 0
+		tool_file_type_load		%i 0
+		%) /*tool5*/
+
+	tool6			%% (%
+		text			"TOOL 7   "
+		tool_command		"echo no_tool defined"
+		tool_file_type_save		%i 0
+		tool_file_type_load		%i 0
+		%) /*tool6*/
+
+	tool7			%% (%
+		text			"TOOL 8   "
+		tool_command		"echo no_tool defined"
+		tool_file_type_save		%i 0
+		tool_file_type_load		%i 0
+		%) /*tool7*/
+
+	tool8			%% (%
+		text			"TOOL 9   "
+		tool_command		"echo no_tool defined"
+		tool_file_type_save		%i 0
+		tool_file_type_load		%i 0
+		%) /*tool8*/
+
+	viewkey			%% (%
+		key_text		"name"
+		len1			%i 10
+		flag2			%i 0
+		len2			%i 10
+		start			%i 0
+		pars			""
+		group			%i 0
+		leaf			%i 1
+		%) /*viewkey*/
+
+	changekey		%% (%
+		changekey_text		"name"
+		changekey_type		%i 0
+		%) /*changekey*/
+
+	changekey		%% (%
+		changekey_text		"full_name"
+		changekey_type		%i 0
+		%) /*changekey*/
+
+	changekey		%% (%
+		changekey_text		"group_name"
+		changekey_type		%i 0
+		%) /*changekey*/
+
+	changekey		%% (%
+		changekey_text		"flag"
+		changekey_type		%i 0
+		%) /*changekey*/
+
+	changekey		%% (%
+		changekey_text		"alignment"
+		changekey_type		%i 0
+		%) /*changekey*/
+
+	changekey		%% (%
+		changekey_text		"errors"
+		changekey_type		%i 1
+		%) /*changekey*/
+
+	changekey		%% (%
+		changekey_text		"acc"
+		changekey_type		%i 0
+		%) /*changekey*/
+
+	changekey		%% (%
+		changekey_text		"author"
+		changekey_type		%i 0
+		%) /*changekey*/
+
+	changekey		%% (%
+		changekey_text		"date"
+		changekey_type		%i 0
+		%) /*changekey*/
+
+	changekey		%% (%
+		changekey_text		"in use"
+		changekey_type		%i 0
+		%) /*changekey*/
+
+	changekey		%% (%
+		changekey_text		"font"
+		changekey_type		%i 1
+		%) /*changekey*/
+
+	viewkey			%% (%
+		key_text		"full_name"
+		len1			%i 30
+		flag2			%i 0
+		len2			%i 10
+		start			%i 0
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 40
+		flag2			%i 0
+		len2			%i 10
+		start			%i 0
+		pars			"taxonomy(1)"
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		"acc"
+		len1			%i 90
+		flag2			%i 0
+		len2			%i 10
+		start			%i 0
+		pars			":*=[*]"
+		group			%i 0
+		leaf			%i 1
+		%) /*viewkey*/
+
+	changekey		%% (%
+		changekey_text		"short_name"
+		changekey_type		%i 0
+		%) /*changekey*/
+
+	viewkey			%% (%
+		key_text		"def"
+		len1			%i 10
+		flag2			%i 0
+		len2			%i 10
+		start			%i 0
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	changekey		%% (%
+		changekey_text		"strain"
+		changekey_type		%i 0
+		%) /*changekey*/
+
+	viewkey			%% (%
+		key_text		"ali_tuf_pro/data"
+		pars			""
+		len1			%i 30
+		start			%i 0
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		"aacid"
+		pars			""
+		len1			%i 30
+		start			%i 0
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		"ebi_tax"
+		pars			""
+		len1			%i 30
+		start			%i 0
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		"aa"
+		pars			""
+		len1			%i 30
+		start			%i 0
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		"aa_pro"
+		pars			""
+		len1			%i 30
+		start			%i 0
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	viewkey			%% (%
+		key_text		""
+		len1			%i 30
+		pars			""
+		group			%i 0
+		leaf			%i 0
+		%) /*viewkey*/
+
+	%) /*arb_presets*/
+
+presets			%% (%
+	use			"ali_dna"
+	max_alignment_len		%i 2000
+	alignment_len		%i 0
+	max_name_len		%i 9
+	key_data		%% (%
+		key			%% (%
+			key_name		"name"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"full_name"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"acc"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_tuf_dna"
+			key_type		%i 15
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_tuf_dna/data"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_tuf_pro"
+			key_type		%i 15
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_tuf_pro/data"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"flag"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"codon_start"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"transl_table"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"tmp"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_dna"
+			key_type		%i 15
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_dna/data"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_pro"
+			key_type		%i 15
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_pro/data"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		%) /*key_data*/
+
+	alignment		%% (%
+		alignment_name		"ali_dna"
+		alignment_len		%i 126
+		aligned			%i 1
+		alignment_write_security		%i 5
+		alignment_type		"dna"
+		alignment_rem		""
+		auto_format		%i 0
+		%) /*alignment*/
+
+	alignment		%% (%
+		alignment_name		"ali_pro"
+		alignment_len		%i 42
+		aligned			%i 1
+		alignment_write_security		%i 5
+		alignment_type		"ami"
+		alignment_rem		""
+		auto_format		%i 0
+		%) /*alignment*/
+
+	%) /*presets*/
+
+description		"fake protein db (used for unittests)"
+arb_edit		%% (%
+	top_area_species		"conbac9:1 coneuc9:1 conarc9:1 "
+	bottom_area_species		""
+	%) /*arb_edit*/
+
+awt			%% (%
+	dtree			%% (%
+		baselinewidth		%i 3
+		verticaldist		%f 1
+		autojump		%i 1
+		greylevel		%i 100
+		show_circle		%i 0
+		circle_zoom		%f 1
+		ellipse			%i 1
+		max_size		%f 1.5
+		show_brackets		%i 1
+		%) /*dtree*/
+
+	%) /*awt*/
+
+pars			%% (%
+	pars_type		%i 0
+	%) /*pars*/
+
+genetic			%% (%
+	kh			%% (%
+		nodes			%f 1.7
+		maxdepth		%i 15
+		incdepth		%i 5
+		static			%% (%
+			enable			%i 1
+			depth0			%i 2
+			depth1			%i 2
+			depth2			%i 2
+			depth3			%i 2
+			depth4			%i 1
+			%) /*static*/
+
+		dynamic			%% (%
+			enable			%i 1
+			start			%i 100
+			maxx			%i 6
+			maxy			%i 150
+			%) /*dynamic*/
+
+		function_type		%i 5
+		%) /*kh*/
+
+	%) /*genetic*/
+
+focus			%% (%
+	tree_name		"tree_prot"
+	configuration		"tuf_feb05_SS_2"
+	%) /*focus*/
+
+search			%% (%
+	configuration		%% (%
+		middle_area		"\AFSAI:SAI's\ASCOUNTED_CHARS\ASHELIX_LINE\ASHELIX_PAIRS\ASall295_907rr3\ASall295_907rr5\ASbacr30\AScharpos\ASconarc9\ASconbac9\ASconbacif9\ASconbacselb9\ASconeuc9\ASconeucif9\ASdorgap\ASeucif2r3\ASif230\ASif2metvafil\ASif2mvan\ASif2r3\ASifgap\ASmvif2\ASposvar\AE\AFMore Sequences\ALcharpos\AE\ALtstmram3\ALtaqxpyro\ALtfrbisla\ALtthtmari\ALtcytlyti\ALttaxocel\ALtbadfrag\ALtfibsucc\ALtflbferr\ALtmypgall\ALtmypgeni\ALtmyppneu\ALtmyphomi\ALtslaplat\ALtccyanop\ALtananidu\ALtccryphi\ALtcchlore\ALtcchlrei\ALtcastlon\ALtceuggra\ALtcarabid\ALtcglymax\ALtcnictab\ALtptcnige\ALtstcoral\ALtbacsubt\ALtflxsinu\ALtchfaura\ALthesgiga\ALtclatrac\ALtspcaura\ALtchlvibr\ALtnanexed\ALtwolsucc\ALttibcupr\ALtpsmcepa\ALtsheputr\ALtesccol2\ALtsaltyp2\ALtesccoli\ALtsaltypm\ALtstiaura\ALtdnemasp\ALtthmther\ALtthmaqua\ALtmybtube\ALtcorglut\ALtbrevlin\ALtmiclute\ALtstmramo\ALtstmram2\ALtmsaccha"
+		%) /*configuration*/
+
+	configuration		%% (%
+		name			"charpos"
+		top_area		"\ASECOLI\AScharpos"
+		middle_area		"\AFSAI:SAI's\ASCOUNTED_CHARS\ASHELIX_LINE\ASHELIX_PAIRS\ASall295_907rr3\ASall295_907rr5\ASbacr30\ASconarc9\ASconbac9\ASconbacif9\ASconbacselb9\ASconeuc9\ASconeucif9\ASdorgap\ASeucif2r3\ASif230\ASif2metvafil\ASif2mvan\ASif2r3\ASifgap\ASmvif2\ASposvar\AE\AFMore Sequences\ALcharpos\AE\ALtstmram3\ALtaqxpyro\ALtfrbisla\ALtthtmari\ALtcytlyti\ALttaxocel\ALtbadfrag\ALtfibsucc\ALtflbferr\ALtmypgall\ALtmypgeni\ALtmyppneu\ALtmyphomi\ALtslaplat\ALtccyanop\ALtananidu\ALtccryphi\ALtcchlore\ALtcchlrei\ALtcastlon\ALtceuggra\ALtcarabid\ALtcglymax\ALtcnictab\ALtptcnige\ALtstcoral\ALtbacsubt\ALtflxsinu\ALtchfaura\ALthesgiga\ALtclatrac\ALtspcaura\ALtchlvibr\ALtnanexed\ALtwolsucc\ALttibcupr\ALtpsmcepa\ALtsheputr\ALtesccol2\ALtsaltyp2\ALtesccoli\ALtsaltypm\ALtstiaura\ALtdnemasp\ALtthmther\ALtthmaqua\ALtmybtube\ALtcorglut\ALtbrevlin\ALtmiclute\ALtstmramo\ALtstmram2\ALtmsaccha"
+		%) /*configuration*/
+
+	pattern			"aagctacct"
+	case			%i 1
+	tu			%i 1
+	pat_gaps		%i 1
+	min_mismatches		%i 0
+	max_mismatches		%i 0
+	seq_gaps		%i 1
+	show			%i 1
+	open_folded		%i 1
+	autoJump		%i 1
+	probe			%% (%
+		case			%i 1
+		tu			%i 1
+		pat_gaps		%i 1
+		seq_gaps		%i 1
+		show			%i 0
+		open_folded		%i 1
+		autoJump		%i 0
+		reverse			%i 0
+		complement		%i 0
+		exact			%i 0
+		%) /*probe*/
+
+	primer			%% (%
+		pattern			"AC-G--TU"
+		case			%i 1
+		tu			%i 1
+		pat_gaps		%i 1
+		min_mismatches		%i 0
+		max_mismatches		%i 0
+		seq_gaps		%i 1
+		show			%i 0
+		open_folded		%i 1
+		autoJump		%i 0
+		%) /*primer*/
+
+	user1			%% (%
+		pattern			"LVELEnVDHGKTTnGAILVVnEGGRHTPnIREGGR"
+		case			%i 1
+		tu			%i 0
+		pat_gaps		%i 1
+		reverse			%i 0
+		complement		%i 0
+		exact			%i 0
+		min_mismatches		%i 0
+		max_mismatches		%i 1
+		seq_gaps		%i 1
+		show			%i 1
+		open_folded		%i 1
+		autoJump		%i 1
+		%) /*user1*/
+
+	user2			%% (%
+		pattern			"GUT-TAG"
+		case			%i 1
+		tu			%i 1
+		pat_gaps		%i 1
+		reverse			%i 0
+		complement		%i 0
+		exact			%i 0
+		min_mismatches		%i 0
+		max_mismatches		%i 0
+		seq_gaps		%i 1
+		show			%i 0
+		open_folded		%i 1
+		autoJump		%i 1
+		%) /*user2*/
+
+	primer1			%% (%
+		pattern			"GUT-TAG"
+		case			%i 1
+		tu			%i 1
+		pat_gaps		%i 1
+		reverse			%i 0
+		complement		%i 0
+		exact			%i 0
+		min_mismatches		%i 0
+		max_mismatches		%i 0
+		seq_gaps		%i 1
+		show			%i 0
+		open_folded		%i 1
+		autoJump		%i 1
+		%) /*primer1*/
+
+	primer2			%% (%
+		pattern			"GUT-TAG"
+		case			%i 1
+		tu			%i 1
+		pat_gaps		%i 1
+		reverse			%i 0
+		complement		%i 0
+		exact			%i 0
+		min_mismatches		%i 0
+		max_mismatches		%i 0
+		seq_gaps		%i 1
+		show			%i 0
+		open_folded		%i 1
+		autoJump		%i 1
+		%) /*primer2*/
+
+	primer3			%% (%
+		pattern			"GUT-TAG"
+		case			%i 1
+		tu			%i 1
+		pat_gaps		%i 1
+		reverse			%i 0
+		complement		%i 0
+		exact			%i 0
+		min_mismatches		%i 0
+		max_mismatches		%i 0
+		seq_gaps		%i 1
+		show			%i 0
+		open_folded		%i 1
+		autoJump		%i 1
+		%) /*primer3*/
+
+	sig1			%% (%
+		pattern			"GUT-TAG"
+		case			%i 1
+		tu			%i 1
+		pat_gaps		%i 1
+		reverse			%i 0
+		complement		%i 0
+		exact			%i 0
+		min_mismatches		%i 0
+		max_mismatches		%i 0
+		seq_gaps		%i 1
+		show			%i 0
+		open_folded		%i 1
+		autoJump		%i 1
+		%) /*sig1*/
+
+	sig2			%% (%
+		pattern			"GUT-TAG"
+		case			%i 1
+		tu			%i 1
+		pat_gaps		%i 1
+		reverse			%i 0
+		complement		%i 0
+		exact			%i 0
+		min_mismatches		%i 0
+		max_mismatches		%i 0
+		seq_gaps		%i 1
+		show			%i 0
+		open_folded		%i 1
+		autoJump		%i 1
+		%) /*sig2*/
+
+	sig3			%% (%
+		pattern			"GUT-TAG"
+		case			%i 1
+		tu			%i 1
+		pat_gaps		%i 1
+		reverse			%i 0
+		complement		%i 0
+		exact			%i 0
+		min_mismatches		%i 0
+		max_mismatches		%i 0
+		seq_gaps		%i 1
+		show			%i 0
+		open_folded		%i 1
+		autoJump		%i 1
+		%) /*sig3*/
+
+	%) /*search*/
+
+nt			%% (%
+	protein_codon_type		%i 14
+	min_mismatches		%i 0
+	target_string		""
+	primer_target_string		""
+	gene_content		""
+	%) /*nt*/
+
+ARB_EDIT		%% (%
+	action			""
+	value			""
+	awar			""
+	%) /*ARB_EDIT*/
+
+www			%% (%
+	url_0			%% (%
+		srt			""
+		desc			""
+		select			%i 0
+		%) /*url_0*/
+
+	url_1			%% (%
+		srt			""
+		desc			""
+		select			%i 0
+		%) /*url_1*/
+
+	url_2			%% (%
+		srt			""
+		desc			""
+		select			%i 0
+		%) /*url_2*/
+
+	url_3			%% (%
+		srt			""
+		desc			""
+		select			%i 0
+		%) /*url_3*/
+
+	url_4			%% (%
+		srt			""
+		desc			""
+		select			%i 0
+		%) /*url_4*/
+
+	url_5			%% (%
+		srt			""
+		desc			""
+		select			%i 0
+		%) /*url_5*/
+
+	url_6			%% (%
+		srt			""
+		desc			""
+		select			%i 0
+		%) /*url_6*/
+
+	url_7			%% (%
+		srt			""
+		desc			""
+		select			%i 0
+		%) /*url_7*/
+
+	url_8			%% (%
+		srt			""
+		desc			""
+		select			%i 0
+		%) /*url_8*/
+
+	url_9			%% (%
+		srt			""
+		desc			""
+		select			%i 0
+		%) /*url_9*/
+
+	url_select		%i 0
+	browser			"(netscape -remote 'openURL($(URL))' || netscape '$(URL)')&"
+	%) /*www*/
+
+table_data		%% (%
+	%) /*table_data*/
+
+merge			%% (%
+	remap_species_list		""
+	remap_enable		%i 0
+	%) /*merge*/
+
+submission		%% (%
+	%) /*submission*/
+
+genom_db		%i 0
+sai_visualize		%% (%
+	%) /*sai_visualize*/
+
+MAUS			%% (%
+	excl_acc		""
+	%) /*MAUS*/
+
+checks			%% (%
+	check			"fix gene_data"
+	check			"del_mark_move_REF"
+	check			"fix_dict_compress"
+	check			"duplicated_item_colors"
+	%) /*checks*/
+
+track			%% (%
+	initials		"westram"
+	%) /*track*/
+
+secedit			%% (%
+	structs			%% (%
+		%) /*structs*/
+
+	%) /*secedit*/
+
+extended_data		%% (%
+	%) /*extended_data*/
+
+configuration_data		%% (%
+	configuration		%% (%
+		name			"default_configuration"
+		top_area		""
+		middle_area		"\AGSAI-Maingroup\AE\AFMore Sequences\AE\AGEF-Tu / EF-1a\AGBacteria EF-Tu\ALBctFra12\ALCytLyti6\ALTaxOcell\ALStrRamo3\ALStrCoel9\AE\AGEukarya EF-Tu\ALMucRacem\ALMucRace2\ALMucRace3\ALAbdGlauc\ALCddAlbic\AE\AE"
+		%) /*configuration*/
+
+	%) /*configuration_data*/
+
