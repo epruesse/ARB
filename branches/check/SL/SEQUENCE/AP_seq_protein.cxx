@@ -350,43 +350,62 @@ AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequenc
         ap_assert(c1 != APP_ILLEGAL);
         ap_assert(c2 != APP_ILLEGAL);
 
-        AP_PROTEINS contained_in_both              = AP_PROTEINS(c1 & c2);
+        AP_PROTEINS contained_in_both = AP_PROTEINS(c1 & c2);
+        AP_PROTEINS contained_in_any  = AP_PROTEINS(c1 | c2);
+
         AP_PROTEINS reachable_from_both_with_1_mut = AP_PROTEINS(onemut1 & onemut2);
         AP_PROTEINS reachable_from_both_with_2_mut = AP_PROTEINS(twomut1 & twomut2);
 
-        if (contained_in_both == APP_ILLEGAL) { // proteins are distinct
+        AP_PROTEINS max_cost_1 = AP_PROTEINS(contained_in_any & reachable_from_both_with_1_mut);
+        AP_PROTEINS max_cost_2 = AP_PROTEINS((contained_in_any & reachable_from_both_with_2_mut) | reachable_from_both_with_1_mut);
+
+        if (contained_in_both) { // there are common proteins
+            p[idx]    = contained_in_both; // store common proteins for both subtrees
+            mut1[idx] = max_cost_1;
+            mut2[idx] = max_cost_2;
+        }
+        else { // proteins are distinct
             int mutations = INT_MAX;
-            if (reachable_from_both_with_1_mut != APP_ILLEGAL) {
+
+            AP_PROTEINS reachable_from_both_with_3_mut = AP_PROTEINS((onemut1 & twomut2) | (onemut2 & twomut1)); // one with 1 mutation, other with 2 mutations
+
+            AP_PROTEINS max_cost_3 = AP_PROTEINS(contained_in_any // = one w/o mutations, other with 3 mutations (=anything, i.e. & APP_DOT, skipped)
+                                                 | reachable_from_both_with_3_mut);
+
+            if (max_cost_1) {
                 // some proteins can be reached from both subtrees with 1 mutation
                 mutations = 1;
-                p[idx]    = reachable_from_both_with_1_mut;
-                mut1[idx] = reachable_from_both_with_2_mut; // because 1 mutation was counted here
-                mut2[idx] = APP_DOT; // with 3 mutations anything is reachable
-            }
-            else if (reachable_from_both_with_2_mut != APP_ILLEGAL) {
-                // some proteins can be reached from both subtrees with 2 mutations
-                mutations = 2;
-                p[idx]    = reachable_from_both_with_2_mut;
-                mut1[idx] = APP_DOT;
-                mut2[idx] = APP_DOT;
+                p[idx]    = max_cost_1;
+                mut1[idx] = max_cost_2;
+                mut2[idx] = max_cost_3;
             }
             else {
-                mutations = 3;
-                p[idx]    = APP_DOT;
-                mut1[idx] = APP_DOT;
-                mut2[idx] = APP_DOT;
-            }
+                AP_PROTEINS reachable_from_any_with_1_mut = AP_PROTEINS(onemut1 | onemut2);
 
+                AP_PROTEINS max_cost_4 = AP_PROTEINS(reachable_from_any_with_1_mut // one with 1 mutation, other with 3 mutations (=anything, i.e. & APP_DOT, skipped)
+                                                     | reachable_from_both_with_2_mut);
+                if (max_cost_2) {
+                    // some proteins can be reached from both subtrees with 2 mutations
+                    mutations = 2;
+                    p[idx]    = max_cost_2;
+                    mut1[idx] = max_cost_3;
+                    mut2[idx] = max_cost_4;
+                }
+                else {
+                    ap_assert(max_cost_3);
+                    AP_PROTEINS reachable_from_any_with_2_mut = AP_PROTEINS(twomut1 | twomut2);
+
+                    mutations = 3;
+                    p[idx]    = max_cost_3;
+                    mut1[idx] = max_cost_4;
+                    mut2[idx] = reachable_from_any_with_2_mut; // one with 2 mutations, other with 3 mutations
+                }
+            }
             ap_assert(mutations >= 1 && mutations <= 3);
 
             if (mutpsite) mutpsite[idx] += mutations; // count mutations per site (unweighted)
             result += mutations * weights->weight(idx); // count weighted or simple
 
-        }
-        else { // there are common proteins
-            p[idx]    = contained_in_both; // store common proteins for both subtrees
-            mut1[idx] = reachable_from_both_with_1_mut;
-            mut2[idx] = reachable_from_both_with_2_mut;
         }
 
         AP_PROTEINS calc_mut1 = one_mutation_away[p[idx]];
