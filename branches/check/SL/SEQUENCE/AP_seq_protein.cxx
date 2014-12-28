@@ -137,9 +137,10 @@ static char prot_mindist[PROTEINS_TO_TEST][PROTEINS_TO_TEST];
 static int  min_mutations_initialized_for_codenr = -1;
 
 // OMA = one mutation away
+// (speedup for huge table is approx. 4-7%)
 #define OMA_SLOW_LOWMEM
 
-#if defined(ASSERTION_USED)
+#if defined(ASSERTION_USED) && 0
 #define OMA_DOUBLE_CHECK
 #endif
 
