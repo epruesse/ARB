@@ -77,14 +77,14 @@ static double funktion_quadratisch(double wert, double *param_list, int param_an
 }
 
 
-void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
+void ArbParsimony::kernighan_optimize_tree(AP_tree *at, const AP_FLOAT *pars_global_start) {
     GBDATA *gb_main = ap_main->get_gb_main();
     GB_push_transaction(gb_main);
 
     long prevCombineCount = AP_sequence::combine_count();
 
-    AP_FLOAT       pars_start = get_root_node()->costs();
-    const AP_FLOAT pars_org   = pars_start;
+    AP_FLOAT       pars_curr = get_root_node()->costs();
+    const AP_FLOAT pars_org  = pars_curr;
 
     int rek_deep_max = *GBT_read_int(gb_main, "genetic/kh/maxdepth");
 
@@ -136,10 +136,15 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
 
     int       anzahl = (int)(*GBT_read_float(gb_main, "genetic/kh/nodes")*at->count_leafs());
     AP_tree **list   = at->getRandomNodes(anzahl);
-    
+
     arb_progress progress(anzahl);
 
-    progress.subtitle(GBS_global_string("Old Parsimony: %.1f", pars_start));
+    if (pars_global_start) {
+        progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", pars_curr, *pars_global_start-pars_curr));
+    }
+    else {
+        progress.subtitle(GBS_global_string("best=%.1f", pars_curr));
+    }
 
     GB_pop_transaction(gb_main);
 
@@ -152,18 +157,23 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree *at) {
         if (!in_folded_group) {
             bool better_tree_found = false;
             ap_main->remember();
-            display_clear(funktion, param_list, param_anz, (int)pars_start, (int)rek_deep_max);
+            display_clear(funktion, param_list, param_anz, (int)pars_curr, (int)rek_deep_max);
 
             tree_elem->kernighan_rek(0,
                                      rek_breite, rek_breite_anz, rek_deep_max,
                                      funktion, param_list, param_anz,
-                                     pars_start,  pars_start, pars_org,
+                                     pars_curr,  pars_curr, pars_org,
                                      searchflag, &better_tree_found);
 
             if (better_tree_found) {
                 ap_main->accept();
-                pars_start =  get_root_node()->costs();
-                progress.subtitle(GBS_global_string("New parsimony: %.1f (gain: %.1f)", pars_start, pars_org-pars_start));
+                pars_curr = get_root_node()->costs();
+                if (pars_global_start) {
+                    progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f, KL=%.1f)", pars_curr, *pars_global_start-pars_curr, pars_org-pars_curr));
+                }
+                else {
+                    progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", pars_curr, pars_org-pars_curr));
+                }
             }
             else {
                 ap_main->revert();
@@ -183,13 +193,13 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
     const AP_FLOAT  org_pars     = get_root_node()->costs();
     AP_FLOAT        prev_pars    = org_pars;
 
-    progress.subtitle(GBS_global_string("Old parsimony: %.1f", org_pars));
+    progress.subtitle(GBS_global_string("best=%.1f", org_pars));
 
     while (!progress.aborted()) {
         AP_FLOAT nni_pars = DOWNCAST(AP_tree_nlen*, at)->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
 
         if (nni_pars == prev_pars) { // NNI did not reduce costs -> kern-lin
-            kernighan_optimize_tree(at);
+            kernighan_optimize_tree(at, &org_pars);
             AP_FLOAT ker_pars = get_root_node()->costs();
             if (ker_pars == prev_pars) break; // kern-lin did not improve tree -> done
             ap_assert(prev_pars>ker_pars); // otherwise kernighan_optimize_tree worsened the tree
@@ -199,7 +209,7 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
             ap_assert(prev_pars>nni_pars); // otherwise nn_interchange_rek worsened the tree
             prev_pars = nni_pars;
         }
-        progress.subtitle(GBS_global_string("New parsimony: %.1f (gain: %.1f)", prev_pars, org_pars-prev_pars));
+        progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", prev_pars, org_pars-prev_pars));
     }
 
     AP_FLOAT some_root_pars = get_root_node()->costs();
@@ -337,14 +347,14 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
                     case AW_BUTTON_LEFT:
                         if (clicked.node()) {
                             arb_progress  progress("Kernighan-Lin optimize subtree");
-                            parsimony.kernighan_optimize_tree(clicked.node());
+                            parsimony.kernighan_optimize_tree(clicked.node(), NULL);
                             this->exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
                         }
                         break;
                     case AW_BUTTON_RIGHT: {
                         arb_progress progress("Kernighan-Lin optimize tree");
-                        parsimony.kernighan_optimize_tree(get_root_node());
+                        parsimony.kernighan_optimize_tree(get_root_node(), NULL);
                         this->exports.save = 1;
                         ASSERT_VALID_TREE(get_root_node());
                         break;

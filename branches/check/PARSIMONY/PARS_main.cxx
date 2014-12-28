@@ -896,11 +896,11 @@ static void recursiveNNI(AWT_graphic_parsimony *agt) {
     arb_progress progress("Recursive NNI");
     AP_FLOAT orgPars = rootNode()->costs();
     AP_FLOAT prevPars = orgPars;
-    progress.subtitle(GBS_global_string("Old parsimony: %.1f", orgPars));
+    progress.subtitle(GBS_global_string("best=%.1f", orgPars));
     while (!progress.aborted()) {
         AP_FLOAT currPars = rootEdge()->nni_rek(-1, true, AP_BL_NNI_ONLY, NULL);
         if (currPars == prevPars) break; // no improvement -> abort
-        progress.subtitle(GBS_global_string("New parsimony: %.1f (gain: %.1f)", currPars, orgPars-currPars));
+        progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", currPars, orgPars-currPars));
         prevPars = currPars;
     }
     rootEdge()->calc_branchlengths();
