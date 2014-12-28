@@ -136,11 +136,56 @@ static const char *readable_combined_protein(AP_PROTEINS p) {
 static char prot_mindist[PROTEINS_TO_TEST][PROTEINS_TO_TEST];
 static int  min_mutations_initialized_for_codenr = -1;
 
-static AP_PROTEINS one_mutation_away[APP_MAX+1]; // contains all proteins that are <=1 nuc-mutations away from protein-combination used as index
+// OMA = one mutation away
+#define OMA_SLOW_LOWMEM
+
+#if defined(ASSERTION_USED)
+#define OMA_DOUBLE_CHECK
+#endif
+
+#if defined(OMA_DOUBLE_CHECK)
+# define IMPL_OMA_SLOW_LOWMEM
+# define IMPL_OMA_FAST_BIGMEM
+#else
+# if defined(OMA_SLOW_LOWMEM)
+#  define IMPL_OMA_SLOW_LOWMEM
+# else
+#  define IMPL_OMA_FAST_BIGMEM
+# endif
+#endif
 
 STATIC_ASSERT(APP_MAX == 4194303);
 STATIC_ASSERT(sizeof(AP_PROTEINS) == 4);
+
+#if defined(IMPL_OMA_FAST_BIGMEM)
+
+static AP_PROTEINS one_mutation_away[APP_MAX+1]; // contains all proteins that are <= 1 nuc-mutations away from protein-combination used as index
 STATIC_ASSERT(sizeof(one_mutation_away) == 16777216); // ~ 16Mb
+
+#endif
+
+#if defined(IMPL_OMA_SLOW_LOWMEM)
+
+static AP_PROTEINS one_mutation_away_0_7[256]; 
+static AP_PROTEINS one_mutation_away_8_15[256];
+static AP_PROTEINS one_mutation_away_16_23[256];
+
+inline AP_PROTEINS calcOneMutationAway(AP_PROTEINS p) {
+    return AP_PROTEINS(one_mutation_away_0_7  [ p      & 0xff] |
+                       one_mutation_away_8_15 [(p>>8)  & 0xff] |
+                       one_mutation_away_16_23[(p>>16) & 0xff]);
+}
+
+#endif
+
+
+inline AP_PROTEINS oneMutationAway(AP_PROTEINS p) {
+#if defined(OMA_SLOW_LOWMEM)
+    return calcOneMutationAway(p);
+#else
+    return one_mutation_away[p];
+#endif
+}
 
 static void update_min_mutations(int code_nr, const AWT_distance_meter *distance_meter) {
     if (min_mutations_initialized_for_codenr != code_nr) {
@@ -160,7 +205,16 @@ static void update_min_mutations(int code_nr, const AWT_distance_meter *distance
             }
         }
 
+
+#if defined(IMPL_OMA_FAST_BIGMEM)
         memset(one_mutation_away, 0, sizeof(one_mutation_away));
+#endif
+#if defined(IMPL_OMA_SLOW_LOWMEM)
+        memset(one_mutation_away_0_7,   0, sizeof(one_mutation_away_0_7));
+        memset(one_mutation_away_8_15,  0, sizeof(one_mutation_away_8_15));
+        memset(one_mutation_away_16_23, 0, sizeof(one_mutation_away_16_23));
+#endif
+
         for (int s = 0; s<PROTEINS_TO_TEST; ++s) {
             AP_PROTEINS oma = APP_ILLEGAL;
             for (int d = 0; d<PROTEINS_TO_TEST; ++d) {
@@ -168,9 +222,21 @@ static void update_min_mutations(int code_nr, const AWT_distance_meter *distance
                     oma = AP_PROTEINS(oma|prot2test[d]);
                 }
             }
-            one_mutation_away[prot2test[s]] = AP_PROTEINS(oma|prot2test[s]);
+
+            AP_PROTEINS source = prot2test[s];
+            oma                = AP_PROTEINS(oma|source);
+
+#if defined(IMPL_OMA_FAST_BIGMEM)
+            one_mutation_away[source] = oma;
+#endif
+#if defined(IMPL_OMA_SLOW_LOWMEM)
+            uint32_t idx =  source      & 0xff; if (idx) one_mutation_away_0_7  [idx] = oma;
+            idx          = (source>>8)  & 0xff; if (idx) one_mutation_away_8_15 [idx] = oma;
+            idx          = (source>>16) & 0xff; if (idx) one_mutation_away_16_23[idx] = oma;
+#endif
         }
 
+#if defined(IMPL_OMA_FAST_BIGMEM)
         for (size_t i = 0; i<=APP_MAX; ++i) {
             if (one_mutation_away[i] == APP_ILLEGAL) {
                 size_t      j   = i;
@@ -186,8 +252,21 @@ static void update_min_mutations(int code_nr, const AWT_distance_meter *distance
                 one_mutation_away[i] = oma;
             }
         }
+#endif
+#if defined(IMPL_OMA_SLOW_LOWMEM)
+        for (int s = 0; s<8; s++) {
+            int b = 1<<s;
+            for (int i=b+1; i<256; i++) {
+                if (i & b) {
+                    one_mutation_away_0_7[i]   = AP_PROTEINS(one_mutation_away_0_7[i]   | one_mutation_away_0_7[b]);
+                    one_mutation_away_8_15[i]  = AP_PROTEINS(one_mutation_away_8_15[i]  | one_mutation_away_8_15[b]);
+                    one_mutation_away_16_23[i] = AP_PROTEINS(one_mutation_away_16_23[i] | one_mutation_away_16_23[b]);
+                }
+            }
+        }
+#endif
 
-#if defined(DEBUG)
+#if defined(IMPL_OMA_FAST_BIGMEM) && defined(DEBUG)
         for (size_t i = 0; i<=APP_MAX; ++i) {
             if (one_mutation_away[i] == 0) {
                 fprintf(stderr, "oma[%s] is zero\n", readable_combined_protein(AP_PROTEINS(i)));
@@ -214,13 +293,10 @@ static void update_min_mutations(int code_nr, const AWT_distance_meter *distance
         }
 #endif
 
-#if 0
-        // dump all
+#if defined(OMA_DOUBLE_CHECK)
         for (size_t i = 0; i<=APP_MAX; ++i) {
-            if (one_mutation_away[i]) {
-                fprintf(stderr, "oma[%s]", readable_combined_protein(AP_PROTEINS(i)));
-                fprintf(stderr, "=%s\n", readable_combined_protein(one_mutation_away[i]));
-            }
+            AP_PROTEINS p = AP_PROTEINS(i);
+            ap_assert(calcOneMutationAway(p) == one_mutation_away[p]);
         }
 #endif
 
@@ -277,8 +353,8 @@ void AP_sequence_protein::set(const char *isequence) {
             }
 
             seq_prot[oidx] = p;
-            mut1[oidx]     = one_mutation_away[p];
-            mut2[oidx]     = one_mutation_away[mut1[oidx]];
+            mut1[oidx]     = oneMutationAway(p);
+            mut2[oidx]     = oneMutationAway(mut1[oidx]);
 
             ++oidx;
             --left_bases;
@@ -408,9 +484,9 @@ AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequenc
 
         }
 
-        AP_PROTEINS calc_mut1 = one_mutation_away[p[idx]];
+        AP_PROTEINS calc_mut1 = oneMutationAway(p[idx]);
         mut1[idx]             = AP_PROTEINS(mut1[idx] | calc_mut1);
-        AP_PROTEINS calc_mut2 = one_mutation_away[mut1[idx]];
+        AP_PROTEINS calc_mut2 = oneMutationAway(mut1[idx]);
         mut2[idx]             = AP_PROTEINS(mut2[idx] | calc_mut2);
     }
 
