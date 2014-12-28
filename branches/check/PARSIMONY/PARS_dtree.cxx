@@ -196,7 +196,7 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
             prev_pars = ker_pars;
         }
         else {
-            // ap_assert(prev_pars>nni_pars); // otherwise nn_interchange_rek worsened the tree // @@@ now fails (nn_interchange_rek changes root)
+            ap_assert(prev_pars>nni_pars); // otherwise nn_interchange_rek worsened the tree
             prev_pars = nni_pars;
         }
         progress.subtitle(GBS_global_string("New parsimony: %.1f (gain: %.1f)", prev_pars, org_pars-prev_pars));
@@ -212,7 +212,7 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
     }
 
     AP_FLOAT old_root_pars = get_root_node()->costs();
-    // |ap_assert(some_root_pars == old_root_pars); // @@@ fails for protein optimize tests (but not for nucs?)
+    ap_assert(some_root_pars == old_root_pars);
 }
 
 AWT_graphic_parsimony::AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
