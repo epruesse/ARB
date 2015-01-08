@@ -34,7 +34,7 @@ public:
     void set_tree(AWT_graphic_parsimony *tree_);
 
     void optimize_tree(AP_tree *tree, arb_progress& progress);
-    void kernighan_optimize_tree(AP_tree *at);
+    void kernighan_optimize_tree(AP_tree *at, const AP_FLOAT *pars_global_start);
 };
 
 void PARS_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype);
