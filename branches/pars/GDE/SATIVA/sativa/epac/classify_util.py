@@ -1,13 +1,145 @@
 #! /usr/bin/env python
 from epac.taxonomy_util import Taxonomy
+from epac.erlang import erlang
+import math
+
+class TaxTreeHelper:
+    def __init__(self, tax_map, cfg):
+        self.origin_taxonomy = tax_map
+        self.cfg = cfg
+        self.outgroup = None
+        self.mf_rooted_tree = None
+        self.bf_rooted_tree = None
+        self.tax_tree = None
+        self.bid_taxonomy_map = None
+    
+    def set_mf_rooted_tree(self, rt):
+        self.mf_rooted_tree = rt
+        self.save_outgroup()
+        self.bf_rooted_tree = None
+        self.tax_tree = None
+        self.bid_taxonomy_map = None
+    
+    def set_bf_unrooted_tree(self, ut):
+        self.restore_rooting(ut)
+        
+    def get_outgroup(self):
+        return self.outgroup
+
+    def get_tax_tree(self):
+        if not self.tax_tree:
+            self.label_bf_tree_with_ranks()
+        return self.tax_tree
+    
+    def get_bid_taxonomy_map(self):
+        self.get_tax_tree()
+        if not self.bid_taxonomy_map:
+            self.build_bid_taxonomy_map()
+        return self.bid_taxonomy_map
+    
+    def save_outgroup(self):
+        rt = self.mf_rooted_tree
+        
+        # remove unifurcation at the root
+        if len(rt.children) == 1:
+            rt = rt.children[0]
+
+        if len(rt.children) > 1:
+            outgr = rt.children[0]    
+            outgr_size = len(outgr.get_leaves())
+            for child in rt.children:
+                if child != outgr:
+                    child_size = len(child.get_leaves())
+                    if child_size < outgr_size:
+                        outgr = child
+                        outgr_size = child_size
+        else:
+            raise AssertionError("Invalid tree: unifurcation at the root node!")
+        
+        self.outgroup = outgr
+    
+    def restore_rooting(self, utree):
+        outgr_leaves = self.outgroup.get_leaf_names()
+        # check if outgroup consists of a single node - ETE considers it to be root, not leaf
+        if not outgr_leaves:
+            outgr_root = utree&outgr.name
+        elif len(outgr_leaves) == 1:
+            outgr_root = utree&outgr_leaves[0]
+        else:
+            # Even unrooted tree is "implicitely" rooted in ETE representation.
+            # If this pseudo-rooting happens to be within the outgroup, it cause problems
+            # in the get_common_ancestor() step (since common_ancestor = "root")
+            # Workaround: explicitely root the tree outside from outgroup subtree
+            for node in utree.iter_leaves():
+                if not node.name in outgr_leaves:
+                    tmp_root = node.up
+                    if not utree == tmp_root:
+                        utree.set_outgroup(tmp_root)
+                        break
+            
+            outgr_root = utree.get_common_ancestor(outgr_leaves)
+
+        # we could be so lucky that the RAxML tree is already correctly rooted :)
+        if outgr_root != utree:
+            utree.set_outgroup(outgr_root)
+
+        self.bf_rooted_tree = utree
+
+    def label_bf_tree_with_ranks(self):
+        """labeling inner tree nodes with taxonomic ranks"""
+        if not self.bf_rooted_tree:
+            raise AssertionError("self.bf_rooted_tree is not set: TaxTreeHelper.set_bf_unrooted_tree() must be called before!")
+            
+        for node in self.bf_rooted_tree.traverse("postorder"):
+            if node.is_leaf():
+                seq_ranks = self.origin_taxonomy[node.name]
+                rank_level = Taxonomy.lowest_assigned_rank_level(seq_ranks)
+                node.add_feature("rank_level", rank_level)
+                node.add_feature("ranks", seq_ranks)
+                node.name += "__" + seq_ranks[rank_level]
+            else:
+                if len(node.children) != 2:
+                    raise AssertionError("FATAL ERROR: tree is not bifurcating!")
+                lchild = node.children[0]
+                rchild = node.children[1]
+                rank_level = min(lchild.rank_level, rchild.rank_level)
+                while rank_level >= 0 and lchild.ranks[rank_level] != rchild.ranks[rank_level]:
+                    rank_level -= 1
+                node.add_feature("rank_level", rank_level)
+                node_ranks = [Taxonomy.EMPTY_RANK] * 7
+                if rank_level >= 0:
+                    node_ranks[0:rank_level+1] = lchild.ranks[0:rank_level+1]
+                    node.name = lchild.ranks[rank_level]
+                else:
+                    node.name = "Undefined"
+                    if hasattr(node, "B") and self.cfg.verbose:
+                        print "INFO: no taxonomic annotation for branch %s (reason: children belong to different kingdoms)" % node.B
+
+                node.add_feature("ranks", node_ranks)
+        
+        self.tax_tree = self.bf_rooted_tree
+
+    def build_bid_taxonomy_map(self):
+        self.bid_taxonomy_map = {}
+        for node in self.tax_tree.traverse("postorder"):
+            if not node.is_root() and hasattr(node, "B"):                
+                parent = node.up                
+                self.bid_taxonomy_map[node.B] = parent.ranks
+#                bid_taxonomy_map[node.B] = node.ranks
+
     
 class TaxClassifyHelper:
-    def __init__(self, cfg, bid_taxonomy_map):
+    def __init__(self, cfg, bid_taxonomy_map, brlen_pv = 0., sp_rate = 0., node_height = []):
         self.cfg = cfg
         self.bid_taxonomy_map = bid_taxonomy_map
+        self.brlen_pv = brlen_pv
+        self.sp_rate = sp_rate
+        self.node_height = node_height
+        self.erlang = erlang()
 
     def classify_seq(self, edges, method = "1", minlw = 0.):
         if len(edges) > 0:
+            edges = self.erlang_filter(edges)
             if method == "1":
                 ranks, lws = self.assign_taxonomy_maxsum(edges, minlw)
             else:
@@ -15,6 +147,34 @@ class TaxClassifyHelper:
             return ranks, lws
         else:
             return None, None      
+            
+    def erlang_filter(self, edges):
+        if self.brlen_pv == 0.:
+            return edges
+            
+        newedges = []
+        for edge in edges:
+            edge_nr = str(edge[0])
+            pendant_length = edge[4]
+            pv = self.erlang.one_tail_test(rate = self.sp_rate, k = int(self.node_height[edge_nr]), x = pendant_length)
+            if pv >= self.brlen_pv:
+                newedges.append(edge)
+        
+        if len(newedges) == 0:
+            return newedges
+        
+        # adjust likelihood weights -> is there a better way ???        
+        sum_lh = 0
+        max_lh = float(newedges[0][1])
+        for edge in newedges:
+            lh = float(edge[1])
+            sum_lh += math.exp(lh - max_lh)
+                        
+        for edge in newedges:
+            lh = float(edge[1])
+            edge[2] = math.exp(lh - max_lh) / sum_lh
+
+        return newedges
      
     def assign_taxonomy_maxlh(self, edges):
         #Calculate the sum of likelihood weight for each rank
@@ -73,6 +233,8 @@ class TaxClassifyHelper:
         rw_own = {}
         rw_total = {}
         rb = {}
+        
+        ranks = [Taxonomy.EMPTY_RANK]
         
         for edge in edges:
             br_id = str(edge[0])

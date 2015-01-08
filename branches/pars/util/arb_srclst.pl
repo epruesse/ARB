@@ -19,7 +19,7 @@ my @strictly_as_in_svn_when_matchesDir = (
 my @skipped_directories = (
                            qr/\/.+\/bin$/o,
                            qr/\/.+\/build$/o,
-                           qr/\/bin\/sativa$/o,
+                           qr/\/lib\/sativa$/o,
                            qr/\/HELP_SOURCE\/Xml$/o,
                            qr/\/GDE\/MUSCLE\/obj$/o,
                            qr/\/GDE\/PHYML20130708\/phyml\/autom4te.cache$/o,
