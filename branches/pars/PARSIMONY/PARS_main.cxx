@@ -2537,67 +2537,91 @@ void TEST_node_edge_resources() {
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
 
-    TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
-
-    const int PARSIMONY_ORG     = 301;
-    const int PARSIMONY_REMOVED = PARSIMONY_ORG-0; // @@@ hae? expected to be smaller
-    const int PARSIMONY_READDED = PARSIMONY_ORG+8; // ok (just added somewhere, not optimal)
-
-    TEST_EXPECT_EQUAL(env.combines_performed(), 0);
+    const int PARSIMONY_ORG = 301;
 
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 14);
 
     AP_tree_nlen *CloButyr = env.root_node()->findLeafNamed("CloButyr");
-    AP_tree_nlen *CloPaste = env.root_node()->findLeafNamed("CloPaste");
+    AP_tree_nlen *CloButy2 = env.root_node()->findLeafNamed("CloButy2"); // brother of CloButyr
 
-    for (int accept_outer = 0; accept_outer<=1; ++accept_outer) {
-        env.push();
+    AP_tree_nlen *CorAquat = env.root_node()->findLeafNamed("CorAquat");
+    AP_tree_nlen *CurCitre = env.root_node()->findLeafNamed("CurCitre"); // brother of CorAquat
 
-        for (int accept_inner = 0; accept_inner<=1; ++accept_inner) {
-            TEST_ANNOTATE(GBS_global_string("accept_outer=%i accept_inner=%i", accept_outer, accept_inner));
+    CorAquat->REMOVE();
+
+    for (int test = 1; test<=7; ++test) {
+        // test == 1 -> provokes common nodes+edges in revert+accept
+        // test == 2 -> provokes common nodes+edges in revert+accept
+        // test == 3 -> provokes common nodes+edges in revert+accept
+        // tests 4-7 do not provoke common nodes or edges
+
+        for (int mode = 0; mode<=3; ++mode) {
+            bool accept_outer = mode&2;
+            bool accept_inner = mode&1;
+
+            TEST_ANNOTATE(GBS_global_string("accept_outer=%i accept_inner=%i (mode=%i, test=%i)", accept_outer, accept_inner, mode, test));
+
+            TEST_EXPECT_NULL(CorAquat->get_father());
+            TEST_EXPECT(CloButyr->get_brother() == CloButy2);
             TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
-            if (accept_inner == 0) {
-                CloButyr->REMOVE();
+            env.push();
+
+            switch (test) {
+                case 1: CorAquat->insert(CurCitre); break;
+                case 2: CorAquat->insert(CurCitre); break;
+                case 3: break;
+                case 4: CloButyr->REMOVE(); break;
+                case 5: CloButyr->REMOVE(); break;
+                case 6: break;
+                case 7: CloButyr->moveNextTo(CurCitre, 0.5); break;
+                default: ap_assert(0); break;
             }
-            // otherwise CloButyr is still removed (because re-add was reverted)
-            ap_assert(!CloButyr->father);
-
-            TEST_EXPECT_PARSVAL(env, PARSIMONY_REMOVED);
-            TEST_EXPECT_EQUAL(env.combines_performed(), accept_inner ? 0 : 4);
-
             TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+
             {
                 env.push();
-                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
-                CloButyr->insert(CloPaste);
-
-                TEST_EXPECT_PARSVAL(env, PARSIMONY_READDED);
-                TEST_EXPECT_EQUAL(env.combines_performed(), 4);
-
+                switch (test) {
+                    case 1: CorAquat->REMOVE(); break;
+                    case 2: break;
+                    case 3: CorAquat->insert(CurCitre); break;
+                    case 4: CloButyr->insert(CloButy2); break;
+                    case 5: break;
+                    case 6: CloButyr->REMOVE(); break;
+                    case 7: CloButyr->moveNextTo(CloButy2, 0.5); break;
+                    default: ap_assert(0); break;
+                }
                 TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
                 env.accept_if(accept_inner);
             }
+
+            switch (test) {
+                case 1: break;
+                case 2: CorAquat->REMOVE(); break;
+                case 3: if (CorAquat->father) CorAquat->REMOVE(); break;
+                case 4: break;
+                case 5: CloButyr->insert(CloButy2); break;
+                case 6: if (!CloButyr->father) CloButyr->insert(CloButy2); break;
+                case 7: CloButyr->REMOVE(); break;
+                default: ap_assert(0); break;
+            }
             TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
-            TEST_EXPECT_PARSVAL(env, accept_inner ? PARSIMONY_READDED : PARSIMONY_REMOVED);
-            TEST_EXPECT_EQUAL(env.combines_performed(), 0);
+            env.accept_if(accept_outer);
+
+            // manually revert changes (outside any stack frame)
+            if (CorAquat->father) CorAquat->REMOVE();
+            if (!CloButyr->father) CloButyr->insert(CloButy2);
         }
-
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
-        env.accept_if(accept_outer);
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
-
-        if (!accept_outer) TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
-
-        TEST_EXPECT_PARSVAL(env, accept_outer ? PARSIMONY_READDED : PARSIMONY_ORG);
-        TEST_EXPECT_EQUAL(env.combines_performed(), 0);
     }
 
-    TEST_EXPECT_EQUAL(env.combines_performed(), 0);
+    CorAquat->insert(CurCitre);
+
+    TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    env.combines_performed(); // accept any no of combines
 }
 
 #endif // UNIT_TESTS

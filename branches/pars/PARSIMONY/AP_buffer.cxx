@@ -157,7 +157,6 @@ void set_extract_common(SET& set1, SET& set2, SET& common)  {
     for (typename SET::iterator e = common.begin(); e != common.end(); ++e) {
         set1.erase(*e);
         set2.erase(*e);
-        ap_assert(0);
     }
 }
 
@@ -215,13 +214,13 @@ void StackFrameData::revert_resources(StackFrameData */*previous*/) {
     common.extract_common(created, destroyed);
 
     if (common.has_nodes()) {
-        UNCOVERED(); ap_assert(0);
+        common.destroy_nodes();
     }
     created.destroy_nodes();
     destroyed.forget_nodes();
 
     if (common.has_edges()) {
-        UNCOVERED(); ap_assert(0);
+        common.destroy_edges();
     }
     created.destroy_edges();
     destroyed.forget_edges();
@@ -234,7 +233,7 @@ void StackFrameData::accept_resources(StackFrameData *previous) {
     common.extract_common(created, destroyed);
 
     if (common.has_nodes()) {
-        UNCOVERED(); ap_assert(0);
+        common.destroy_nodes();
     }
     if (previous) {
         created.move_nodes(previous->created);
@@ -246,7 +245,7 @@ void StackFrameData::accept_resources(StackFrameData *previous) {
     }
 
     if (common.has_edges()) {
-        UNCOVERED(); ap_assert(0);
+        common.destroy_edges();
     }
     if (previous) {
         created.move_edges(previous->created);
