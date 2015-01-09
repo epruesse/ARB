@@ -45,14 +45,12 @@ public:
         : currFrame(NULL),
           frameLevel(0),
           agt(NULL),
-          frameData(new StackFrameData),
+          frameData(NULL),
           gb_main(NULL)
     {}
     ~AP_main() {
         if (gb_main) GB_close(gb_main);
-        ap_assert(frameData);
-        frameData->accept_resources(NULL);
-        delete frameData;
+        ap_assert(!frameData);
         delete currFrame;
     }
 

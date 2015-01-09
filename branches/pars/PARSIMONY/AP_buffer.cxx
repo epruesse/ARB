@@ -208,8 +208,8 @@ void ResourceStack::move_edges(ResourceStack& target) {
     while (!edges.empty()) target.put(getEdge()); // @@@ optimize
 }
 
-void StackFrameData::revert_resources(StackFrameData *previous) {
-    ap_assert(previous);
+void StackFrameData::revert_resources(StackFrameData */*previous*/) {
+    // if previous==NULL, top StackFrameData is reverted
 
     ResourceStack common;
     common.extract_common(created, destroyed);

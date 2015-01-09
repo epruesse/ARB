@@ -252,7 +252,6 @@ public:
 
     StackFrameData *take_previous_frame_data() {
         StackFrameData *release = previous;
-        ap_assert(previous); // cannot call twice
         previous = NULL;     // release ownership
         return release;
     }
