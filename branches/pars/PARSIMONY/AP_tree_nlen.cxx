@@ -580,6 +580,7 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
     ap_assert(newBrother);
     ap_assert(newBrother->father);
     ap_assert(newBrother->father != father); // already there
+    ap_assert(newBrother != father);         // already there
 
     ASSERT_VALID_TREE(rootNode());
 

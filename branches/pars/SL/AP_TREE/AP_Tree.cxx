@@ -341,6 +341,7 @@ GB_ERROR AP_tree::cantMoveNextTo(AP_tree *new_brother) {
     if (!father)                                error = "Can't move the root of the tree";
     else if (!new_brother->father)              error = "Can't move to the root of the tree";
     else if (new_brother->father == father)     error = "Already there";
+    else if (new_brother == father)             error = "Already there";
     else if (!father->father)                   error = "Can't move son of root";
     else if (new_brother->is_inside(this))      error = "Can't move a subtree into itself";
 
@@ -352,8 +353,11 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     //         == 1.0 -> at brother
 
     ap_assert(father);
+    ap_assert(new_brother);
     ap_assert(new_brother->father);
     ap_assert(new_brother->father != father);       // already there
+    ap_assert(new_brother != father);               // already there
+
     ap_assert(!new_brother->is_inside(this));       // can't move tree into itself
 
     if (father->leftson != this) get_father()->swap_sons();
@@ -366,18 +370,6 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     }
     else {
         AP_tree *grandfather = get_father()->get_father();
-        if (father == new_brother) {    // just pull branches !!
-            new_brother  = get_brother();
-            if (grandfather->leftson == father) {
-                UNCOVERED();
-                rel_pos *= grandfather->leftlen / (father->rightlen+grandfather->leftlen);
-            }
-            else {
-                // UNCOVERED();
-                rel_pos *= grandfather->rightlen / (father->rightlen+grandfather->rightlen);
-            }
-        }
-
         if (grandfather->leftson == father) {
             grandfather->leftlen     += father->rightlen;
             grandfather->leftson      = father->rightson;

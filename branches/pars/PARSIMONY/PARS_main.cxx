@@ -2400,15 +2400,9 @@ void TEST_node_stack() {
                 some_leaf->moveNextTo(brother_of_father, 0.5);
                 TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
 
-                // COVER5: move to father
-                some_leaf->moveNextTo(some_leaf->get_father(), 0.5);
-                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
-
-#if 0
-                // fails assert in AP_tree::moveNextTo ("already there"). ok!
-                some_leaf->moveNextTo(some_leaf->get_brother(), 0.5);
-                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
-#endif
+                // test forbidden moves:
+                TEST_EXPECT_ERROR_CONTAINS(some_leaf->cantMoveNextTo(some_leaf->get_father()),  "Already there");
+                TEST_EXPECT_ERROR_CONTAINS(some_leaf->cantMoveNextTo(some_leaf->get_brother()), "Already there");
             }
 
             env.pop();
