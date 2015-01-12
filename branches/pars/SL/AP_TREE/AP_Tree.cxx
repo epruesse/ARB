@@ -369,17 +369,13 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
         if (father == new_brother) {    // just pull branches !!
             new_brother  = get_brother();
             if (grandfather->leftson == father) {
+                UNCOVERED();
                 rel_pos *= grandfather->leftlen / (father->rightlen+grandfather->leftlen);
             }
             else {
+                // UNCOVERED();
                 rel_pos *= grandfather->rightlen / (father->rightlen+grandfather->rightlen);
             }
-        }
-        else if (new_brother->father == father) { // just pull branches !!
-            rel_pos =
-                1.0 + (rel_pos-1.0) * father->rightlen
-                /
-                (father->rightlen + (grandfather->leftson == father ? grandfather->leftlen : grandfather->rightlen));
         }
 
         if (grandfather->leftson == father) {
