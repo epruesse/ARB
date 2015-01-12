@@ -2550,7 +2550,7 @@ void TEST_node_edge_resources() {
 
     CorAquat->REMOVE();
 
-    for (int test = 1; test<=7; ++test) {
+    for (int test = 1; test<=8; ++test) {
         // test == 1 -> provokes common nodes+edges in revert+accept
         // test == 2 -> provokes common nodes+edges in revert+accept
         // test == 3 -> provokes common nodes+edges in revert+accept
@@ -2576,6 +2576,7 @@ void TEST_node_edge_resources() {
                 case 5: CloButyr->REMOVE(); break;
                 case 6: break;
                 case 7: CloButyr->moveNextTo(CurCitre, 0.5); break;
+                case 8: break;
                 default: ap_assert(0); break;
             }
             TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
@@ -2591,6 +2592,7 @@ void TEST_node_edge_resources() {
                     case 5: break;
                     case 6: CloButyr->REMOVE(); break;
                     case 7: CloButyr->moveNextTo(CloButy2, 0.5); break;
+                    case 8: CorAquat->insert(CurCitre); CorAquat->REMOVE(); break;
                     default: ap_assert(0); break;
                 }
                 TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
@@ -2606,6 +2608,7 @@ void TEST_node_edge_resources() {
                 case 5: CloButyr->insert(CloButy2); break;
                 case 6: if (!CloButyr->father) CloButyr->insert(CloButy2); break;
                 case 7: CloButyr->REMOVE(); break;
+                case 8: break;
                 default: ap_assert(0); break;
             }
             TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());

@@ -202,6 +202,8 @@ public:
 
     bool has_nodes() const { return !nodes.empty(); }
     bool has_edges() const { return !edges.empty(); }
+
+    bool has_node(AP_tree_nlen *node) const { return nodes.find(node) != nodes.end(); }
 };
 
 class StackFrameData : virtual Noncopyable {
@@ -216,7 +218,9 @@ public:
     StackFrameData() : root_pushed(false) {}
 
     void revert_resources(StackFrameData *previous);
-    void accept_resources(StackFrameData *previous);
+    void accept_resources(StackFrameData *previous, ResourceStack& common);
+
+    void extract_common_to(ResourceStack& common) { common.extract_common(created, destroyed); }
 
     inline AP_tree_nlen *makeNode(AP_pars_root *proot);
     inline AP_tree_edge *makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2);
@@ -263,12 +267,12 @@ public:
 #endif
         current->revert_resources(previous);
     }
-    void accept_resources(StackFrameData *current) {
+    void accept_resources(StackFrameData *current, ResourceStack& common) {
 #if defined(CHECK_STACK_RESOURCE_HANDLING)
         ap_assert(resources_handled == NO);
         resources_handled = ACCEPTED;
 #endif
-        current->accept_resources(previous);
+        current->accept_resources(previous, common);
     }
 
 #if defined(CHECK_ROOT_POPS)

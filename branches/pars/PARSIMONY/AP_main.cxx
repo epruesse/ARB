@@ -206,6 +206,11 @@ void AP_main::accept() {
      */
 
     if (!currFrame) GBK_terminate("AP_main::accept on empty stack");
+    ap_assert(frameData);
+
+    // detect nodes (and edges) created AND destroyed inside currently accepted stack frame
+    ResourceStack common;
+    frameData->extract_common_to(common);
 
     AP_tree_nlen *node;
 
@@ -216,12 +221,18 @@ void AP_main::accept() {
             // if revert() gets called for previous stack, it is necessary to revert
             // the current change as well -> move into previous frame
             if (prev_frame) {
-                prev_frame->push(node); // @@@ frames are pushed in reverted order (seems to be wrong)
+                if (common.has_node(node)) {
+                    // do NOT push nodes which get destroyed by accept_resources() below!
+                    ASSERT_RESULT(bool, true, node->clear(1)); // force state drop
+                }
+                else {
+                    prev_frame->push(node); // @@@ frames are pushed in reverted order (seems to be wrong)
+                }
             }
         }
     }
 
-    currFrame->accept_resources(frameData);
+    currFrame->accept_resources(frameData, common);
     delete frameData;
     frameData = currFrame->take_previous_frame_data();
 
