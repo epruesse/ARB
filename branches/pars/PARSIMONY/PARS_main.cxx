@@ -1637,7 +1637,9 @@ enum TopoMod {
     MOD_REMOVE_MARKED,
 
     MOD_QUICK_ADD,
+    MOD_QUICK_ADD_CALC_LENS,
     MOD_ADD_NNI,
+    MOD_ADD_NNI_CALC_LENS,
 
     MOD_ADD_PARTIAL,
 
@@ -1659,8 +1661,18 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
             nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, true);
             break;
 
+        case MOD_QUICK_ADD_CALC_LENS:
+            nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, true);
+            calc_branchlengths(env.graphic_tree());
+            break;
+
         case MOD_ADD_NNI:
             nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, false);
+            break;
+
+        case MOD_ADD_NNI_CALC_LENS:
+            nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, false);
+            calc_branchlengths(env.graphic_tree());
             break;
 
         case MOD_ADD_PARTIAL:
@@ -1904,6 +1916,12 @@ void TEST_nucl_tree_modifications() {
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 925);
+
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD_CALC_LENS, "nucl-add-quick-cl", PARSIMONY_ORG-23, env, true)); // test quick-add + calc_branchlengths
+    TEST_EXPECT_EQUAL(env.combines_performed(), 727);
+
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI_CALC_LENS,   "nucl-add-NNI-cl",   PARSIMONY_ORG-25, env, true)); // test add + NNI + calc_branchlengths
+    TEST_EXPECT_EQUAL(env.combines_performed(), 1063);
 
     // test partial-add
     {
