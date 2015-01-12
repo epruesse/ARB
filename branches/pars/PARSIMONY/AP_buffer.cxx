@@ -207,19 +207,21 @@ void ResourceStack::move_edges(ResourceStack& target) {
     while (!edges.empty()) target.put(getEdge()); // @@@ optimize
 }
 
-void StackFrameData::revert_resources(StackFrameData */*previous*/) {
+void StackFrameData::revert_resources(StackFrameData *previous) {
     // if previous==NULL, top StackFrameData is reverted
 
     ResourceStack common;
     common.extract_common(created, destroyed);
 
     if (common.has_nodes()) {
+        ap_assert(!previous); // @@@ need coverage on sub-stackframe
         common.destroy_nodes();
     }
     created.destroy_nodes();
     destroyed.forget_nodes();
 
     if (common.has_edges()) {
+        ap_assert(!previous); // @@@ need coverage on sub-stackframe
         common.destroy_edges();
     }
     created.destroy_edges();
@@ -233,6 +235,7 @@ void StackFrameData::accept_resources(StackFrameData *previous) {
     common.extract_common(created, destroyed);
 
     if (common.has_nodes()) {
+        ap_assert(!previous); // @@@ need coverage on sub-stackframe
         common.destroy_nodes();
     }
     if (previous) {
@@ -245,6 +248,7 @@ void StackFrameData::accept_resources(StackFrameData *previous) {
     }
 
     if (common.has_edges()) {
+        ap_assert(!previous); // @@@ need coverage on sub-stackframe
         common.destroy_edges();
     }
     if (previous) {
