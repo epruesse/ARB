@@ -229,6 +229,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
         leaf->insert(bestposl);
         tree = NULL;                                // tree may have changed
 
+        bool final_move = false;
         {
             AP_FLOAT curr_parsimony = rootNode()->costs();
             AP_FLOAT best_parsimony = curr_parsimony;
@@ -260,18 +261,21 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
                     best_parsimony = curr_parsimony;
                     bestposl = bl;
                     bestposr = blf;
+                    final_move = false;
                 }
-
+                else {
+                    final_move = true;
+                }
             }
         }
         delete [] branchlist; branchlist = 0;
-        if (bestposl->father != bestposr) {
-            bestposl = bestposr;
-        }
 
         ASSERT_VALID_TREE(rootNode());
 
-        leaf->moveNextTo(bestposl, 0.5);
+        if (final_move) {
+            if (bestposr->father == bestposl) std::swap(bestposr, bestposl);
+            leaf->moveNextTo(bestposl, 0.5);
+        }
 
         ASSERT_VALID_TREE(rootNode());
 
@@ -280,7 +284,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
             if (isits->every_sixteenth()) deep = -1;
             
             arb_progress progress("optimization");
-            bestposl->get_father()->nn_interchange_rek(deep, AP_BL_NNI_ONLY, true);
+            leaf->get_father()->nn_interchange_rek(deep, AP_BL_NNI_ONLY, true);
             ASSERT_VALID_TREE(rootNode());
         }
         AP_tree_nlen *brother = leaf->get_brother();
@@ -2082,10 +2086,10 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 5);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG,     env, true)); // test quick-add
-    TEST_EXPECT_EQUAL(env.combines_performed(), 304);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 306);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 531);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 524);
 
     // test partial-add
     {
@@ -2540,7 +2544,7 @@ void TEST_node_stack() {
         TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
     }
 
-    TEST_EXPECT_EQUAL(env.combines_performed(), 4438); // @@@ distribute
+    TEST_EXPECT_EQUAL(env.combines_performed(), 4444); // @@@ distribute
 }
 
 void TEST_node_edge_resources() {
