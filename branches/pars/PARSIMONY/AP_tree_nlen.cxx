@@ -154,6 +154,11 @@ void AP_tree_nlen::linkAllEdges(AP_tree_edge *edge1, AP_tree_edge *edge2, AP_tre
 #define DUMP_INVALID_SUBTREES
 #endif
 
+#if defined(DEVEL_RALF)
+#define CHECK_CORRECT_INVALIDATION // recombines all up-to-date nodes to find missing invalidations (VERY slow)
+#endif
+
+
 #if defined(DUMP_INVALID_SUBTREES)
 inline void dumpSubtree(const char *msg, const AP_tree_nlen *node) {
     fprintf(stderr, "%s:\n", msg);
@@ -252,6 +257,30 @@ Validity AP_tree_nlen::sequence_state_valid() const {
 #endif
 
                 valid = Validity(leftson_hasSequence && rightson_hasSequence, "node has sequence and son w/o sequence");
+
+#if defined(CHECK_CORRECT_INVALIDATION)
+                if (valid) {
+                    // check for missing invalidations
+                    // (if recalculating a node (via combine) does not reproduce the current sequence, it should have been invalidated)
+
+                    AP_sequence *recombined             = sequence->dup();
+                    AP_FLOAT     mutations_from_combine = recombined->noncounting_combine(get_leftson()->get_seq(), get_rightson()->get_seq());
+
+                    valid = Validity(recombined->equals(sequence), "recombining changed existing sequence (missing invalidation?)");
+                    if (valid) {
+                        AP_FLOAT expected_mutrate = mutations_from_combine + get_leftson()->mutation_rate + get_rightson()->mutation_rate;
+                        valid = Validity(expected_mutrate == mutation_rate, "invalid mutation_rate");
+                    }
+
+                    delete recombined;
+
+#if defined(DUMP_INVALID_SUBTREES)
+                    if (!valid) {
+                        dumpSubtree(valid.why_not(), this);
+                    }
+#endif
+                }
+#endif
             }
         }
         else {
@@ -754,6 +783,9 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
 
     ASSERT_VALID_TREE(this);
     ASSERT_VALID_TREE(rootNode());
+
+    ap_assert(is_leftson());
+    ap_assert(get_brother() == newBrother);
 }
 
 void AP_tree_nlen::unhash_sequence() {

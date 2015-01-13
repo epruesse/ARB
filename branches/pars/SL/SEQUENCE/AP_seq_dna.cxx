@@ -313,3 +313,14 @@ uint32_t AP_sequence_parsimony::checksum() const {
     return GB_checksum(seq, sizeof(*seq)*get_sequence_length(), 0, NULL);
 }
 
+bool AP_sequence_parsimony::equals(const AP_sequence_parsimony *other) const {
+    const char *seq  = get_sequence();
+    const char *oseq = other->get_sequence();
+
+    size_t len = get_sequence_length();
+    for (size_t p = 0; p<len; ++p) {
+        if (seq[p] != oseq[p]) return false;
+    }
+    return true;
+}
+

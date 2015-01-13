@@ -14,7 +14,9 @@
 #ifndef AP_SEQUENCE_HXX
 #include <AP_sequence.hxx>
 #endif
-
+#ifndef DOWNCAST_H
+#include <downcast.h>
+#endif
 
 enum AP_PROTEINS {
     APP_ILLEGAL = 0,
@@ -76,6 +78,9 @@ public:
     AP_FLOAT combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0) OVERRIDE;
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const OVERRIDE;
     uint32_t checksum() const OVERRIDE;
+
+    bool equals(const AP_sequence_protein *other) const;
+    bool equals(const AP_sequence *other) const OVERRIDE { return equals(DOWNCAST(const AP_sequence_protein*, other)); }
 };
 
 

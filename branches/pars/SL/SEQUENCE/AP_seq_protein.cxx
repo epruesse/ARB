@@ -116,7 +116,7 @@ static int prot_idx[PROTEINS_TO_TEST] = { // uses same indexing as prot2test
     23                          // gap
 };
 
-static const char *readable_combined_protein(AP_PROTEINS p) {
+inline const char *readable_combined_protein(AP_PROTEINS p) {
     if (p == APP_X) { return "X"; }
     if (p == APP_DOT) { return "."; }
 
@@ -635,6 +635,17 @@ AP_FLOAT AP_sequence_protein::count_weighted_bases() const {
 uint32_t AP_sequence_protein::checksum() const {
     const AP_PROTEINS *seq = get_sequence();
     return GB_checksum(reinterpret_cast<const char *>(seq), sizeof(*seq)*get_sequence_length(), 0, NULL);
+}
+
+bool AP_sequence_protein::equals(const AP_sequence_protein *other) const {
+    const AP_PROTEINS *seq  = get_sequence();
+    const AP_PROTEINS *oseq = other->get_sequence();
+
+    size_t len = get_sequence_length();
+    for (size_t p = 0; p<len; ++p) {
+        if (seq[p] != oseq[p]) return false;
+    }
+    return true;
 }
 
 

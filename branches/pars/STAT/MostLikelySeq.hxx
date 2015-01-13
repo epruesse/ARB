@@ -14,6 +14,9 @@
 #ifndef AP_SEQUENCE_HXX
 #include <AP_sequence.hxx>
 #endif
+#ifndef DOWNCAST_H
+#include <downcast.h>
+#endif
 
 extern class DNA_Table {
     char char_to_enum_table[256];
@@ -67,6 +70,9 @@ public:
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const OVERRIDE;
     uint32_t checksum() const OVERRIDE;
 
+    bool equals(const MostLikelySeq *other) const { arb_assert(0); } // unused
+    bool equals(const AP_sequence *other) const OVERRIDE { return equals(DOWNCAST(const MostLikelySeq*, other)); }
+
     GB_ERROR bind_to_species(GBDATA *gb_species);
     void     unbind_from_species(bool remove_callbacks);
     GBDATA *get_bound_species_data() const { return AP_sequence::get_bound_species_data(); }
@@ -85,3 +91,4 @@ public:
 #else
 #error MostLikelySeq.hxx included twice
 #endif // MOSTLIKELYSEQ_HXX
+

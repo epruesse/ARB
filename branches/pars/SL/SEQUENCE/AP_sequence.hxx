@@ -67,6 +67,7 @@ public:
     virtual AP_FLOAT combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0) = 0;
     virtual void partial_match(const AP_sequence* part, long *overlap, long *penalty) const                    = 0;
     virtual uint32_t checksum() const                                                                          = 0;
+    virtual bool equals(const AP_sequence *other) const                                                        = 0;
 
     static long combine_count() { return global_combineCount; }
 
@@ -96,6 +97,12 @@ public:
     const AP_weights *get_weights() const { return ali->get_weights(); }
 
     const AliView *get_aliview() const { return ali; }
+
+    AP_FLOAT noncounting_combine(const AP_sequence* lefts, const AP_sequence *rights) {
+        AP_FLOAT res = combine(lefts, rights);
+        global_combineCount--;
+        return res;
+    }
 };
 
 
