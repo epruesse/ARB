@@ -44,7 +44,7 @@ public:
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const OVERRIDE;
     uint32_t checksum() const OVERRIDE;
 
-    bool equals(const AP_sequence_simple_protein *other) const { arb_assert(0); } // unused
+    bool equals(const AP_sequence_simple_protein */*other*/) const { arb_assert(0); return false; } // unused
     bool equals(const AP_sequence *other) const OVERRIDE { return equals(DOWNCAST(const AP_sequence_simple_protein*, other)); }
 
     const ap_pro *get_sequence() const { return sequence; }

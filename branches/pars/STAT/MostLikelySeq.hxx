@@ -70,7 +70,7 @@ public:
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const OVERRIDE;
     uint32_t checksum() const OVERRIDE;
 
-    bool equals(const MostLikelySeq *other) const { arb_assert(0); } // unused
+    bool equals(const MostLikelySeq */*other*/) const { arb_assert(0); return false; } // unused
     bool equals(const AP_sequence *other) const OVERRIDE { return equals(DOWNCAST(const MostLikelySeq*, other)); }
 
     GB_ERROR bind_to_species(GBDATA *gb_species);
