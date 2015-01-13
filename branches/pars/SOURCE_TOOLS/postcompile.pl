@@ -15,16 +15,17 @@ use warnings;
 
 # Note: g++ must be called with -fmessage-length=0
 
-my $show_supressed_lines = 0;
-my $show_filtered_lines  = 0;
+my $show_suppressed_lines = 0;
+my $show_filtered_lines   = 0;
 
 # regexps for whole line:
 my $reg_file = qr/^([^:]+):([0-9]+):(([0-9]+):)?\s/; # finds all messages
 my $reg_file_noline = qr/^([^:]+):\s/; # finds all messages w/o linenumber (if not matched $reg_file)
 my $reg_included = qr/^In\sfile\sincluded\sfrom\s(.*)[,:]/;
 my $reg_included2 = qr/^\s+from\s(.*)[,:]/;
-my $reg_location = qr/^[^:]+:\sIn\s(function|instantiation)\s/;
+my $reg_location = qr/^[^:]+:\sIn\s(function|member\sfunction|instantiation)\s/;
 my $reg_location2 = qr/^[^:]+:\sAt\stop\slevel:/;
+my $reg_location3 = qr/^At\sglobal\sscope:/;
 my $reg_clang_dirt = qr/^ANALYZE:\s/;
 
 # regexps for messages:
@@ -184,7 +185,7 @@ sub Weffpp_warning_wanted($$\$) {
 
 sub warning($\@) {
   my ($msg,$out_r) = @_;
-  push @$out_r, '[postcompile]: '.$msg;
+  push @$out_r, '[postcompile/'.$$.']: '.$msg;
 }
 
 my $shadow_warning = undef;
@@ -204,7 +205,6 @@ sub push_loc_and_related($$\@\@) {
   my ($location_info,$message,$related_r,$out_r) = @_;
   if (defined $location_info) {
     push @$out_r, $location_info;
-    $location_info = undef;
   }
   push @$out_r, $message;
   $last_pushed_related = scalar(@$related_r);
@@ -228,10 +228,10 @@ sub included_from_here($) {
   return $loc.': included from here';
 }
 
-sub suppress($\@) {
-  my ($curr,$out_r) = @_;
-  if ($show_supressed_lines==1) {
-    warning('suppressed: '.$curr,@$out_r);
+sub suppress($\@$) {
+  my ($curr,$out_r,$as) = @_;
+  if ($show_suppressed_lines==1) {
+    warning('suppressed['.$as.']: '.$curr,@$out_r);
   }
   return undef;
 }
@@ -270,10 +270,10 @@ sub parse_input(\@) {
         if ($warn_text =~ $reg_shadow_warning) {
           if (not $' =~ /this/) { # don't store this warnings (no location follows)
             store_shadow($_,@warnout);
-            $_ = suppress($_,@warnout);
+            $_ = suppress($_,@warnout, 'shadow-this');
           }
           elsif (suppress_shadow_warning_for($file)) {
-            $_ = suppress($_,@warnout);
+            $_ = suppress($_,@warnout, 'shadow');
             # $location_info = undef;
           }
         }
@@ -282,7 +282,7 @@ sub parse_input(\@) {
           else {
             if (suppress_shadow_warning_for($file)) {
               # don't warn about /usr/include or <built-in> shadowing
-              $_ = suppress($_,@warnout);
+              $_ = suppress($_,@warnout, 'shadowed');
               @related = ();
               $location_info = undef;
             }
@@ -316,32 +316,39 @@ sub parse_input(\@) {
       }
       elsif ($msg =~ $reg_is_instantiated) {
         push @related, $_;
-        $_ = suppress($_,@warnout);
+        $_ = suppress($_,@warnout, 'instanciated');
       }
       elsif ($msg =~ $reg_is_required) {
         push @related, $_;
-        $_ = suppress($_,@warnout);
+        $_ = suppress($_,@warnout, 'required');
       }
       elsif ($msg =~ $reg_is_note) {
-        push @related, $_;
-        $_ = suppress($_,@warnout);
-        # if ($did_show_previous==0) {
-          # $_ = suppress($_,@warnout);
-        # }
-        # else {
-          # if ($msg =~ /in\sexpansion\sof\smacro/o) {
-            # drop_last_pushed_relateds(@$curr_out_r);
-          # }
-        # }
+        my $note_after = 1; # 0->message follows note; 1->note follows message
+
+        if ($note_after==1) {
+          if ($did_show_previous==0) {
+            $_ = suppress($_,@warnout, 'note-of-nonshown');
+          }
+          else {
+            if ($msg =~ /in\sexpansion\sof\smacro/o) {
+              drop_last_pushed_relateds(@$curr_out_r);
+            }
+          }
+        }
+        else {
+          # note leads message -> store in related
+          push @related, $_;
+          $_ = suppress($_,@warnout, 'note');
+        }
       }
     }
-    elsif ($_ =~ $reg_location or $_ =~ $reg_location2) {
+    elsif ($_ =~ $reg_location or $_ =~ $reg_location2 or $_ =~ $reg_location3) {
       $location_info = $_;
-      $_ = suppress($_,@warnout);
+      $_ = suppress($_,@warnout, 'location');
     }
     elsif ($_ =~ $reg_included) {
       push @related, included_from_here($1);
-      $_ = suppress($_,@warnout);
+      $_ = suppress($_,@warnout, 'included');
     }
     elsif ($_ =~ $reg_clang_dirt) {
       $_ = undef;
@@ -351,19 +358,21 @@ sub parse_input(\@) {
         ; # display normally
       }
       else {
-        push @related, included_from_here($1);
-        $_ = suppress($_,@warnout);
+        # push @related, included_from_here($1);
+        push @related, $_;
+        $_ = suppress($_,@warnout, 'file-level-comment');
       }
     }
     elsif (@related) {
       if ($_ =~ $reg_included2) {
         push @related, included_from_here($1);
-        $_ = suppress($_,@warnout);
+        $_ = suppress($_,@warnout, 'included2');
       }
     }
 
     if (defined $_) {
       if ($filter_current==0) {
+        if ($show_suppressed_lines==1) { warning('passing: '.$_, @warnout); }
         push_loc_and_related($location_info,$_,@related,@$curr_out_r);
         $did_show_previous = 1;
 
@@ -377,6 +386,7 @@ sub parse_input(\@) {
         if ($show_filtered_lines==1) { warning('filtered: '.$_, @$curr_out_r); }
         $did_show_previous = 0;
       }
+      $location_info = undef;
       @related = ();
     }
   }
