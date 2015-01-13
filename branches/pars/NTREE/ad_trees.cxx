@@ -94,11 +94,13 @@ static void tree_vars_callback(AW_root *aw_root) // Map tree vars to display obj
         free(treename);
     }
 }
-//  update import tree name depending on file name
-static void tree_import_callback(AW_root *aw_root) {
-    GB_transaction  ta(GLOBAL.gb_main);
-    char           *treename        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
-    char           *treename_nopath = strrchr(treename, '/');
+
+static void update_default_treename_cb(AW_root *aw_root) {
+    // update import tree name depending on file name
+    GB_transaction ta(GLOBAL.gb_main);
+
+    char *treename        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
+    char *treename_nopath = strrchr(treename, '/');
 
     if (treename_nopath) {
         ++treename_nopath;
@@ -107,13 +109,12 @@ static void tree_import_callback(AW_root *aw_root) {
         treename_nopath = treename;
     }
 
-    char *fname = GBS_string_eval(treename_nopath, "*.tree=tree_*1:*.ntree=tree_*1:*.xml=tree_*1:.=", 0);
+    char *fname = GBS_string_eval(treename_nopath, "*.tree=tree_*1:*.ntree=tree_*1:*.xml=tree_*1:.=:-=_: =_", 0);
     aw_root->awar(AWAR_TREE_IMPORT "/tree_name")->write_string(fname);
 
     free(fname);
     free(treename);
 }
-
 
 static void ad_tree_set_security(AW_root *aw_root)
 {
@@ -191,7 +192,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def) {
 
     aw_root->awar_string(AWAR_TREE_IMPORT "/tree_name", "tree_",    aw_def)->set_srt(GBT_TREE_AWAR_SRT);
 
-    aw_root->awar(AWAR_TREE_IMPORT "/file_name")->add_callback(tree_import_callback);
+    aw_root->awar(AWAR_TREE_IMPORT "/file_name")->add_callback(update_default_treename_cb);
     awar_tree_name->add_callback(tree_vars_callback);
     awar_tree_name->map(AWAR_TREE);
     aw_root->awar(AWAR_TREE_SECURITY)->add_callback(ad_tree_set_security);
