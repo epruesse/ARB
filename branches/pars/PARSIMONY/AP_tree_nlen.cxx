@@ -656,49 +656,104 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
     AP_tree_nlen *grandFather       = thisFather->get_father();
     AP_tree_nlen *oldBrother        = get_brother();
     AP_tree_nlen *newBrothersFather = newBrother->get_father();
-    int           edgesChange       = father!=newBrother;
     AP_tree_edge *e1, *e2, *e3;
 
-    if (edgesChange) {
-        if (thisFather==newBrothersFather->get_father()) { // son -> son of brother
-            if (grandFather) {
-                if (grandFather->get_father()) {
-                    // covered by test at PARS_main.cxx@COVER3
-                    thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                    AP_tree_edge *e4 = newBrother->edgeTo(oldBrother)->unlink();
+    if (thisFather==newBrothersFather->get_father()) { // son -> son of brother
+        if (grandFather) {
+            if (grandFather->get_father()) {
+                // covered by test at PARS_main.cxx@COVER3
+                thisFather->unlinkAllEdges(&e1, &e2, &e3);
+                AP_tree_edge *e4 = newBrother->edgeTo(oldBrother)->unlink();
 
-                    AP_tree::moveNextTo(newBrother, rel_pos);
-
-                    sortOldestFirst(&e1, &e2, &e3);
-                    e1->relink(oldBrother, grandFather); // use oldest edge at remove position
-                    thisFather->linkAllEdges(e2, e3, e4);
-                }
-                else { // grandson of root -> son of brother
-                    // covered by test at PARS_main.cxx@COVER2
-                    AP_tree_nlen *uncle = thisFather->get_brother();
-
-                    thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                    AP_tree_edge *e4 = newBrother->edgeTo(oldBrother)->unlink();
-
-                    AP_tree::moveNextTo(newBrother, rel_pos);
-
-                    sortOldestFirst(&e1, &e2, &e3);
-                    e1->relink(oldBrother, uncle);
-                    thisFather->linkAllEdges(e2, e3, e4);
-                }
-            }
-            else { // son of root -> grandson of root
-                // covered by test at PARS_main.cxx@COVER1
-                oldBrother->unlinkAllEdges(&e1, &e2, &e3);
                 AP_tree::moveNextTo(newBrother, rel_pos);
-                thisFather->linkAllEdges(e1, e2, e3);
+
+                sortOldestFirst(&e1, &e2, &e3);
+                e1->relink(oldBrother, grandFather); // use oldest edge at remove position
+                thisFather->linkAllEdges(e2, e3, e4);
+            }
+            else { // grandson of root -> son of brother
+                // covered by test at PARS_main.cxx@COVER2
+                AP_tree_nlen *uncle = thisFather->get_brother();
+
+                thisFather->unlinkAllEdges(&e1, &e2, &e3);
+                AP_tree_edge *e4 = newBrother->edgeTo(oldBrother)->unlink();
+
+                AP_tree::moveNextTo(newBrother, rel_pos);
+
+                sortOldestFirst(&e1, &e2, &e3);
+                e1->relink(oldBrother, uncle);
+                thisFather->linkAllEdges(e2, e3, e4);
             }
         }
-        else if (grandFather==newBrothersFather) { // son -> brother of father
-            if (grandFather->father) {
-                // covered by test at PARS_main.cxx@COVER4
+        else { // son of root -> grandson of root
+            // covered by test at PARS_main.cxx@COVER1
+            oldBrother->unlinkAllEdges(&e1, &e2, &e3);
+            AP_tree::moveNextTo(newBrother, rel_pos);
+            thisFather->linkAllEdges(e1, e2, e3);
+        }
+    }
+    else if (grandFather==newBrothersFather) { // son -> brother of father
+        if (grandFather->father) {
+            // covered by test at PARS_main.cxx@COVER4
+            thisFather->unlinkAllEdges(&e1, &e2, &e3);
+            AP_tree_edge *e4 = grandFather->edgeTo(newBrother)->unlink();
+
+            AP_tree::moveNextTo(newBrother, rel_pos);
+
+            sortOldestFirst(&e1, &e2, &e3);
+            e1->relink(oldBrother, grandFather);
+            thisFather->linkAllEdges(e2, e3, e4);
+        }
+        else { // no edges change if we move grandson of root -> son of root
+            AP_tree::moveNextTo(newBrother, rel_pos);
+        }
+    }
+    else {
+        //  now we are sure, the minimal distance
+        //  between 'this' and 'newBrother' is 4 edges
+        //  or if the root-edge is between them, the
+        //  minimal distance is 3 edges
+
+        if (!grandFather) { // son of root
+            oldBrother->unlinkAllEdges(&e1, &e2, &e3);
+            AP_tree_edge *e4 = newBrother->edgeTo(newBrothersFather)->unlink();
+
+            AP_tree::moveNextTo(newBrother, rel_pos);
+
+            sortOldestFirst(&e1, &e2, &e3);
+            e1->relink(oldBrother->get_leftson(), oldBrother->get_rightson()); // new root-edge
+            thisFather->linkAllEdges(e2, e3, e4);   // old root
+        }
+        else if (!grandFather->get_father()) { // grandson of root
+            if (newBrothersFather->get_father()->get_father()==NULL) { // grandson of root -> grandson of root
                 thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                AP_tree_edge *e4 = grandFather->edgeTo(newBrother)->unlink();
+                AP_tree_edge *e4 = newBrother->edgeTo(newBrothersFather)->unlink();
+
+                AP_tree::moveNextTo(newBrother, rel_pos);
+
+                sortOldestFirst(&e1, &e2, &e3);
+                e1->relink(oldBrother, newBrothersFather);  // new root-edge
+                thisFather->linkAllEdges(e2, e3, e4);
+            }
+            else {
+                AP_tree_nlen *uncle = thisFather->get_brother();
+
+                thisFather->unlinkAllEdges(&e1, &e2, &e3);
+                AP_tree_edge *e4 = newBrother->edgeTo(newBrothersFather)->unlink();
+
+                AP_tree::moveNextTo(newBrother, rel_pos);
+
+                sortOldestFirst(&e1, &e2, &e3);
+                e1->relink(oldBrother, uncle);
+                thisFather->linkAllEdges(e2, e3, e4);
+            }
+        }
+        else {
+            if (newBrothersFather->get_father()==NULL) { // move to son of root
+                AP_tree_nlen *newBrothersBrother = newBrother->get_brother();
+
+                thisFather->unlinkAllEdges(&e1, &e2, &e3);
+                AP_tree_edge *e4 = newBrother->edgeTo(newBrothersBrother)->unlink();
 
                 AP_tree::moveNextTo(newBrother, rel_pos);
 
@@ -706,79 +761,17 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
                 e1->relink(oldBrother, grandFather);
                 thisFather->linkAllEdges(e2, e3, e4);
             }
-            else { // no edges change if we move grandson of root -> son of root
-                AP_tree::moveNextTo(newBrother, rel_pos);
-            }
-        }
-        else {
-            //  now we are sure, the minimal distance
-            //  between 'this' and 'newBrother' is 4 edges
-            //  or if the root-edge is between them, the
-            //  minimal distance is 3 edges
-
-            if (!grandFather) { // son of root
-                oldBrother->unlinkAllEdges(&e1, &e2, &e3);
+            else { // simple independent move
+                thisFather->unlinkAllEdges(&e1, &e2, &e3);
                 AP_tree_edge *e4 = newBrother->edgeTo(newBrothersFather)->unlink();
 
                 AP_tree::moveNextTo(newBrother, rel_pos);
 
                 sortOldestFirst(&e1, &e2, &e3);
-                e1->relink(oldBrother->get_leftson(), oldBrother->get_rightson()); // new root-edge
-                thisFather->linkAllEdges(e2, e3, e4);   // old root
-            }
-            else if (!grandFather->get_father()) { // grandson of root
-                if (newBrothersFather->get_father()->get_father()==NULL) { // grandson of root -> grandson of root
-                    thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                    AP_tree_edge *e4 = newBrother->edgeTo(newBrothersFather)->unlink();
-
-                    AP_tree::moveNextTo(newBrother, rel_pos);
-
-                    sortOldestFirst(&e1, &e2, &e3);
-                    e1->relink(oldBrother, newBrothersFather);  // new root-edge
-                    thisFather->linkAllEdges(e2, e3, e4);
-                }
-                else {
-                    AP_tree_nlen *uncle = thisFather->get_brother();
-
-                    thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                    AP_tree_edge *e4 = newBrother->edgeTo(newBrothersFather)->unlink();
-
-                    AP_tree::moveNextTo(newBrother, rel_pos);
-
-                    sortOldestFirst(&e1, &e2, &e3);
-                    e1->relink(oldBrother, uncle);
-                    thisFather->linkAllEdges(e2, e3, e4);
-                }
-            }
-            else {
-                if (newBrothersFather->get_father()==NULL) { // move to son of root
-                    AP_tree_nlen *newBrothersBrother = newBrother->get_brother();
-
-                    thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                    AP_tree_edge *e4 = newBrother->edgeTo(newBrothersBrother)->unlink();
-
-                    AP_tree::moveNextTo(newBrother, rel_pos);
-
-                    sortOldestFirst(&e1, &e2, &e3);
-                    e1->relink(oldBrother, grandFather);
-                    thisFather->linkAllEdges(e2, e3, e4);
-                }
-                else { // simple independent move
-                    thisFather->unlinkAllEdges(&e1, &e2, &e3);
-                    AP_tree_edge *e4 = newBrother->edgeTo(newBrothersFather)->unlink();
-
-                    AP_tree::moveNextTo(newBrother, rel_pos);
-
-                    sortOldestFirst(&e1, &e2, &e3);
-                    e1->relink(oldBrother, grandFather);
-                    thisFather->linkAllEdges(e2, e3, e4);
-                }
+                e1->relink(oldBrother, grandFather);
+                thisFather->linkAllEdges(e2, e3, e4);
             }
         }
-    }
-    else { // edgesChange==0
-        // covered by test at PARS_main.cxx@COVER5
-        AP_tree::moveNextTo(newBrother, rel_pos);
     }
 
     ASSERT_VALID_TREE(this);
