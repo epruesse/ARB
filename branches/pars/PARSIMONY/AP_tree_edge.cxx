@@ -596,6 +596,8 @@ static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
     AP_FLOAT Seq_len = leaf->get_seq()->weighted_base_count();
     if (Seq_len <= 1.0) Seq_len = 1.0;
 
+    // ap_assert(leaf->is_leaf); // @@@ bug: also called for inner nodes
+
     AP_FLOAT parsbest = rootNode()->costs();
 
     ap_main->remember();
@@ -604,39 +606,17 @@ static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
     ap_main->revert();
 
     double blen = Blen/Seq_len;
-
-    if (!leaf->father->father) { // at root
-        leaf->father->leftlen = blen*.5;
-        leaf->father->rightlen = blen*.5;
-    }
-    else {
-        if (leaf->father->leftson == leaf) {
-            leaf->father->leftlen = blen;
-        }
-        else {
-            leaf->father->rightlen = blen;
-        }
-    }
+    leaf->set_branchlength_unrooted(blen);
 }
 
-static void ap_calc_branch_lengths(AP_tree_nlen * /* root */, AP_tree_nlen *son, double /* parsbest */, double blen) {
-    AP_FLOAT seq_len = son->get_seq()->weighted_base_count();
-    if (seq_len <= 1.0) seq_len = 1.0;
-    blen *= 0.5 / seq_len * 2.0;        // doubled counted sum * corr
+static void set_inner_branch_length_and_calc_adj_leaf_lengths(AP_tree_nlen *son, double blen) {
+    ap_assert(!son->is_leaf);
 
-    AP_tree_nlen *fathr = son->get_father();
-    if (!fathr->father) {   // at root
-        fathr->leftlen = blen *.5;
-        fathr->rightlen = blen *.5;
-    }
-    else {
-        if (fathr->leftson == son) {
-            fathr->leftlen = blen;
-        }
-        else {
-            fathr->rightlen = blen;
-        }
-    }
+    AP_FLOAT seq_len             = son->get_seq()->weighted_base_count();
+    if (seq_len <= 1.0) seq_len  = 1.0;
+    blen                        *= 0.5 / seq_len * 2.0; // doubled counted sum * corr
+
+    son->set_branchlength_unrooted(blen);
 
     if (son->leftson->is_leaf) {
         ap_calc_leaf_branch_length(son->get_leftson());
@@ -830,7 +810,7 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
     if (mode & AP_BL_BL_ONLY) { // ************* calculate branch lengths **************
         AP_FLOAT blen = (pars_one + pars_two + pars_three) - (3.0 * parsbest);
         if (blen <0) blen = 0;
-        ap_calc_branch_lengths(root, son, parsbest, blen);
+        set_inner_branch_length_and_calc_adj_leaf_lengths(son, blen);
     }
 
     // zu Auswertungszwecken doch unsortiert uebernehmen:
