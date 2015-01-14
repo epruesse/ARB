@@ -1706,14 +1706,14 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
     using namespace   arb_test;
     expectation_group fulfilled;
 
-    TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+    TEST_EXPECT_VALID_TREE(env.root_node());
 
     Level upc = env.get_user_push_counter();
     Level fl  = env.get_frame_level();
 
     if (restore) {
         env.push();
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
     }
 
     modifyTopology(env, mod);
@@ -1723,7 +1723,7 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
     }
 
     if (restore) {
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
         TEST_VALIDITY(env.pop_will_produce_valid_tree());
         env.pop();
     }
@@ -1731,7 +1731,7 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
     TEST_EXPECT_EQUAL(fl, env.get_frame_level());
     TEST_EXPECT_EQUAL(upc, env.get_user_push_counter());
 
-    TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+    TEST_EXPECT_VALID_TREE(env.root_node());
 
     return all().ofgroup(fulfilled);
 }
@@ -2307,24 +2307,24 @@ void TEST_node_stack() {
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 14);
 
-    TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
+    TEST_VALIDITY(env.root_node()->sequence_state_valid());
 
     // test set root to CytAquat + pop (works)
     {
         env.push();
         env.root_node()->findLeafNamed("CytAquat")->set_root();
-        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.root_node()->sequence_state_valid());
         env.pop();
-        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.root_node()->sequence_state_valid());
     }
 
     // test set root to CloButyr + pop (works)
     {
         env.push();
         env.root_node()->findLeafNamed("CloButyr")->set_root();
-        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.root_node()->sequence_state_valid());
         env.pop();
-        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.root_node()->sequence_state_valid());
     }
 
     // test set root to CloBifer + set root to CloTyrob + pop (works)
@@ -2335,9 +2335,9 @@ void TEST_node_stack() {
         env.root_node()->findLeafNamed("CloBifer")->set_root();
         env.root_node()->findLeafNamed("CloTyrob")->set_root();
 
-        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.root_node()->sequence_state_valid());
         env.pop();
-        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.root_node()->sequence_state_valid());
     }
 
     // test set root to CytAquat + set root to CloButyr + pop (failed, fixed by [13138])
@@ -2358,16 +2358,16 @@ void TEST_node_stack() {
 
         env.root_node()->findLeafNamed("CloButyr")->set_root();
 
-        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.root_node()->sequence_state_valid());
         TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
         TEST_EXPECT_EQUAL(env.combines_performed(), 6);
 
         env.pop();
 
-        TEST_VALIDITY(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_VALIDITY(env.root_node()->sequence_state_valid());
         TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
         TEST_EXPECT_EQUAL(env.combines_performed(), 0);
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
     }
     {
         env.push();
@@ -2375,38 +2375,38 @@ void TEST_node_stack() {
             env.push();
 
             env.root_node()->findLeafNamed("CloInnoc")->moveNextTo(env.root_node()->findLeafNamed("CytAquat"), 0.5);
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
             env.root_node()->findLeafNamed("CloInnoc")->set_root();
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
             env.root_node()->findLeafNamed("CytAquat")->moveNextTo(env.root_node()->findLeafNamed("CloPaste"), 0.5);
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
             env.root_node()->findLeafNamed("CloPaste")->set_root();
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
             env.root_node()->findLeafNamed("CloPaste")->moveNextTo(env.root_node()->findLeafNamed("CloInnoc"), 0.5);
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
             {
                 AP_tree_nlen *son_of_brother;
                 AP_tree_nlen *brother_of_father;
 
                 // COVER1: son of root -> grandson of root
                 {
-                    AP_tree_nlen *son_of_root = env.graphic_tree()->get_root_node()->get_leftson();
+                    AP_tree_nlen *son_of_root = env.root_node()->get_leftson();
                     ap_assert(son_of_root);
 
                     son_of_brother = son_of_root->get_brother()->get_leftson();
                     son_of_root->moveNextTo(son_of_brother, 0.5);
-                    TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+                    TEST_EXPECT_VALID_TREE(env.root_node());
                 }
 
                 // COVER2: grandson of root -> son of brother
                 {
-                    AP_tree_nlen *son_of_root      = env.graphic_tree()->get_root_node()->get_leftson();
+                    AP_tree_nlen *son_of_root      = env.root_node()->get_leftson();
                     AP_tree_nlen *grandson_of_root = son_of_root->get_brother()->get_rightson();
                     ap_assert(grandson_of_root);
 
                     son_of_brother = grandson_of_root->get_brother()->get_leftson();
                     grandson_of_root->moveNextTo(son_of_brother, 0.5);
-                    TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+                    TEST_EXPECT_VALID_TREE(env.root_node());
                 }
 
                 AP_tree_nlen *some_leaf = env.root_node()->findLeafNamed("CloBifer");
@@ -2415,12 +2415,12 @@ void TEST_node_stack() {
                 // COVER3: some leaf -> son of brother
                 son_of_brother = some_leaf->get_brother()->get_leftson();
                 some_leaf->moveNextTo(son_of_brother, 0.5);
-                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+                TEST_EXPECT_VALID_TREE(env.root_node());
 
                 // COVER4: some leaf -> son of brother
                 brother_of_father = some_leaf->get_father()->get_brother();
                 some_leaf->moveNextTo(brother_of_father, 0.5);
-                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+                TEST_EXPECT_VALID_TREE(env.root_node());
 
                 // test forbidden moves:
                 TEST_EXPECT_ERROR_CONTAINS(some_leaf->cantMoveNextTo(some_leaf->get_father()),  "Already there");
@@ -2428,10 +2428,10 @@ void TEST_node_stack() {
             }
 
             env.pop();
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
         }
         env.pop();
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
     }
 
     // remove + quick add marked + pop() both works
@@ -2441,23 +2441,23 @@ void TEST_node_stack() {
     // (root-edge is lost)
     {
         env.push();
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, NULL, -1, env, false)); // test remove-marked only (same code as part of nt_reAdd)
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
 
         TEST_VALIDITY(env.all_available_pops_will_produce_valid_trees());
 
         env.push();
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
         TEST_VALIDITY(env.all_available_pops_will_produce_valid_trees());
         env.pop();
 
-        TEST_VALIDITY(env.graphic_tree()->get_root_node()->has_valid_edges());
+        TEST_VALIDITY(env.root_node()->has_valid_edges());
 
         env.pop();
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
     }
 
     // same as above, but with only 1 species marked
@@ -2475,7 +2475,7 @@ void TEST_node_stack() {
             TEST_ANNOTATE(GBS_global_string("single=%s swapped=%i", testSingle[i], swapped));
 
             env.push();
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
             {
                 AP_tree_nlen *old_rightson = env.root_node()->get_rightson();
                 env.root_node()->get_leftson()->get_rightson()->set_root();
@@ -2484,7 +2484,7 @@ void TEST_node_stack() {
 
                 ap_assert(env.root_node()->get_rightson() == old_rightson);
             }
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
 
             mark_only(env.root_node()->findLeafNamed(testSingle[i])->gb_node);
             env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
@@ -2494,21 +2494,21 @@ void TEST_node_stack() {
                 env.root_node()->swap_sons();
             }
 
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, NULL, -1, env, false)); // test remove-marked only (same code as part of nt_reAdd)
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
 
             env.push();
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
             env.pop();
 
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
             env.pop();
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
             env.pop();
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
         }
     }
 
@@ -2528,20 +2528,20 @@ void TEST_node_stack() {
         if (remove_from_lower_subtree) {
             env.root_node()->swap_sons();
         }
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, NULL, -1, env, false)); // test remove-marked only (same code as part of nt_reAdd)
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
 
         env.push();
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
         env.pop();
 
-        TEST_VALIDITY(env.graphic_tree()->get_root_node()->has_valid_edges()); // now always valid
+        TEST_VALIDITY(env.root_node()->has_valid_edges()); // now always valid
 
         env.pop();
-        TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+        TEST_EXPECT_VALID_TREE(env.root_node());
     }
 
     TEST_EXPECT_EQUAL(env.combines_performed(), 4444); // @@@ distribute
@@ -2580,7 +2580,7 @@ void TEST_node_edge_resources() {
 
             TEST_EXPECT_NULL(CorAquat->get_father());
             TEST_EXPECT(CloButyr->get_brother() == CloButy2);
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
 
             env.push();
 
@@ -2595,7 +2595,7 @@ void TEST_node_edge_resources() {
                 case 8: break;
                 default: ap_assert(0); break;
             }
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
 
             {
                 env.push();
@@ -2611,7 +2611,7 @@ void TEST_node_edge_resources() {
                     case 8: CorAquat->insert(CurCitre); CorAquat->REMOVE(); break;
                     default: ap_assert(0); break;
                 }
-                TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+                TEST_EXPECT_VALID_TREE(env.root_node());
 
                 env.accept_if(accept_inner);
             }
@@ -2627,7 +2627,7 @@ void TEST_node_edge_resources() {
                 case 8: break;
                 default: ap_assert(0); break;
             }
-            TEST_EXPECT_VALID_TREE(env.graphic_tree()->get_root_node());
+            TEST_EXPECT_VALID_TREE(env.root_node());
 
             env.accept_if(accept_outer);
 

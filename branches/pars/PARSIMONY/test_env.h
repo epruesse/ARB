@@ -75,7 +75,11 @@ public:
         ap_assert(prev_combine_count == AP_sequence::combine_count()); // please add tests documenting combines_performed()
     }
 
-    AP_tree_nlen *root_node() { return apMain.get_root_node(); }
+    AP_tree_nlen *root_node() {
+        AP_tree_nlen *root = apMain.get_root_node();
+        ap_assert(root == graphic_tree()->get_root_node());
+        return root;
+    }
     AP_pars_root *tree_root() { return agt->get_tree_root(); }
 
     GB_ERROR load_tree(const char *tree_name) {
