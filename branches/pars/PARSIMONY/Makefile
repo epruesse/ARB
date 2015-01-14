@@ -122,14 +122,18 @@ AP_tree_edge.o: ap_main.hxx
 AP_tree_edge.o: ap_main_type.hxx
 AP_tree_edge.o: ap_tree_nlen.hxx
 AP_tree_edge.o: pars_dtree.hxx
+AP_tree_edge.o: pars_main.hxx
+AP_tree_edge.o: test_env.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/AliView.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_core.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -159,6 +163,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/test_unit.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/TreeNode.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ttypes.h

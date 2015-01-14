@@ -602,14 +602,14 @@ static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
 
     ap_main->remember();
     leaf->REMOVE();
-    AP_FLOAT Blen = parsbest - rootNode()->costs();
+    AP_FLOAT mutations = parsbest - rootNode()->costs();
     ap_main->revert();
 
-    double blen = Blen/Seq_len;
+    GBT_LEN blen = mutations/Seq_len;
     leaf->set_branchlength_unrooted(blen);
 }
 
-static void set_inner_branch_length_and_calc_adj_leaf_lengths(AP_tree_nlen *son, double blen) {
+static void set_inner_branch_length_and_calc_adj_leaf_lengths(AP_tree_nlen *son, GBT_LEN blen) {
     ap_assert(!son->is_leaf);
 
     AP_FLOAT seq_len             = son->get_seq()->weighted_base_count();
@@ -626,30 +626,30 @@ static void set_inner_branch_length_and_calc_adj_leaf_lengths(AP_tree_nlen *son,
         ap_calc_leaf_branch_length(son->get_rightson());
     }
 }
-const double ap_undef_bl = 10.5;
+const GBT_LEN AP_UNDEF_BL = 10.5;
 
 static void ap_check_leaf_bl(AP_tree_nlen *node) {
     if (node->is_leaf) {
         if (!node->father->father) {
-            if (node->father->leftlen + node->father->rightlen == ap_undef_bl) {
+            if (node->father->leftlen + node->father->rightlen == AP_UNDEF_BL) {
                 ap_calc_leaf_branch_length(node);
             }
         }
         else if (node->father->leftson == node) {
-            if (node->father->leftlen == ap_undef_bl) {
+            if (node->father->leftlen == AP_UNDEF_BL) {
                 ap_calc_leaf_branch_length(node);
             }
         }
         else {
-            if (node->father->rightlen == ap_undef_bl) {
+            if (node->father->rightlen == AP_UNDEF_BL) {
                 ap_calc_leaf_branch_length(node);
             }
         }
         return;
     }
     else {
-        if (node->leftlen == ap_undef_bl)   ap_calc_leaf_branch_length(node->get_leftson());
-        if (node->rightlen == ap_undef_bl)  ap_calc_leaf_branch_length(node->get_rightson());
+        if (node->leftlen == AP_UNDEF_BL)   ap_calc_leaf_branch_length(node->get_leftson());
+        if (node->rightlen == AP_UNDEF_BL)  ap_calc_leaf_branch_length(node->get_rightson());
     }
 }
 
@@ -671,15 +671,15 @@ AP_FLOAT AP_tree_edge::nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_t
     {
         // set all branch lengths to undef
         for (follow = this; follow; follow = follow->next) {
-            follow->node[0]->leftlen          = ap_undef_bl;
-            follow->node[0]->rightlen         = ap_undef_bl;
-            follow->node[1]->leftlen          = ap_undef_bl;
-            follow->node[1]->rightlen         = ap_undef_bl;
-            follow->node[0]->father->leftlen  = ap_undef_bl;
-            follow->node[0]->father->rightlen = ap_undef_bl;
+            follow->node[0]->leftlen          = AP_UNDEF_BL;
+            follow->node[0]->rightlen         = AP_UNDEF_BL;
+            follow->node[1]->leftlen          = AP_UNDEF_BL;
+            follow->node[1]->rightlen         = AP_UNDEF_BL;
+            follow->node[0]->father->leftlen  = AP_UNDEF_BL;
+            follow->node[0]->father->rightlen = AP_UNDEF_BL;
         }
-        rootNode()->leftlen  = ap_undef_bl *.5;
-        rootNode()->rightlen = ap_undef_bl *.5;
+        rootNode()->leftlen  = AP_UNDEF_BL *.5;
+        rootNode()->rightlen = AP_UNDEF_BL *.5;
     }
 
     for (follow = this; follow && !progress.aborted(); follow = follow->next) {
@@ -808,7 +808,7 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
     }
 
     if (mode & AP_BL_BL_ONLY) { // ************* calculate branch lengths **************
-        AP_FLOAT blen = (pars_one + pars_two + pars_three) - (3.0 * parsbest);
+        GBT_LEN blen = (pars_one + pars_two + pars_three) - (3.0 * parsbest);
         if (blen <0) blen = 0;
         set_inner_branch_length_and_calc_adj_leaf_lengths(son, blen);
     }
@@ -891,3 +891,58 @@ void AP_tree_edge::mixTree(int cnt)
     }
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <arb_defs.h>
+#include "pars_main.hxx"
+#include <AP_seq_dna.hxx>
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+#include <test_env.h>
+
+void TEST_undefined_branchlength() {
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb");
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
+
+    AP_tree_nlen *root     = env.root_node();
+    AP_tree_nlen *CorAquat = root->findLeafNamed("CorAquat");
+    AP_tree_nlen *inner    = CorAquat->get_father()->get_father();
+
+    AP_tree_nlen *sonOfRoot = root->get_leftson();
+    ap_assert(!sonOfRoot->is_leaf);
+
+    TEST_EXPECT(root && CorAquat && inner);
+
+    GBT_LEN length[] = {
+        0.0,
+        0.8,
+        AP_UNDEF_BL,
+    };
+    AP_tree_nlen *nodes[] = {
+        sonOfRoot,
+        CorAquat,
+        inner,
+    };
+
+    for (size_t i = 0; i<ARRAY_ELEMS(length); ++i) {
+        GBT_LEN testLen = length[i];
+        for (size_t n = 0; n<ARRAY_ELEMS(nodes); ++n) {
+            TEST_ANNOTATE(GBS_global_string("length=%.2f node=%zu", testLen, n));
+
+            AP_tree_nlen *node   = nodes[n];
+            GBT_LEN      oldLen = node->get_branchlength_unrooted();
+
+            node->set_branchlength_unrooted(testLen);
+            TEST_EXPECT_EQUAL(node->get_branchlength_unrooted(), testLen);
+
+            node->set_branchlength_unrooted(oldLen);
+            TEST_EXPECT(node->get_branchlength_unrooted() == oldLen);
+        }
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
