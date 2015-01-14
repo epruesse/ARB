@@ -628,6 +628,19 @@ static void set_inner_branch_length_and_calc_adj_leaf_lengths(AP_tree_nlen *son,
 }
 const GBT_LEN AP_UNDEF_BL = 10.5;
 
+#if defined(ASSERTION_USED) || defined(UNIT_TESTS)
+bool allBranchlengthsAreDefined(AP_tree_nlen *tree) {
+    if (tree->father) {
+        if (tree->get_branchlength_unrooted() == AP_UNDEF_BL) return false;
+    }
+    if (!tree->is_leaf) {
+        if (!allBranchlengthsAreDefined(tree->get_leftson())) return false;
+        if (!allBranchlengthsAreDefined(tree->get_rightson())) return false;
+    }
+    return true;
+}
+#endif
+
 static void ap_check_leaf_bl(AP_tree_nlen *node) {
     if (node->is_leaf) {
         if (!node->father->father) {
@@ -664,6 +677,8 @@ AP_FLOAT AP_tree_edge::nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_t
     AP_FLOAT old_parsimony = rootNode()->costs();
     AP_FLOAT new_parsimony = old_parsimony;
 
+    // ap_assert(allBranchlengthsAreDefined(rootNode())); // @@@ fails (due to failure in previous call)
+
     buildChain(deep, skip_hidden, 0, skipNode);
     long cs = sizeofChain();
     arb_progress progress(cs*2);
@@ -682,7 +697,7 @@ AP_FLOAT AP_tree_edge::nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_t
         rootNode()->rightlen = AP_UNDEF_BL *.5;
     }
 
-    for (follow = this; follow && !progress.aborted(); follow = follow->next) {
+    for (follow = this; follow && !progress.aborted(); follow = follow->next) { // @@@ aborting here may leave branchlengths undefined! skip?
         AP_tree_nlen *son = follow->sonNode();
         AP_tree_nlen *fath = son;
 
@@ -710,11 +725,14 @@ AP_FLOAT AP_tree_edge::nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_t
         progress.inc();
     }
 
-    for (follow = this; follow && !progress.aborted(); follow = follow->next) {
+    for (follow = this; follow && !progress.aborted(); follow = follow->next) { // @@@ aborting here may leave branchlengths undefined! skip?
         ap_check_leaf_bl(follow->node[0]);
         ap_check_leaf_bl(follow->node[1]);
         progress.inc();
     }
+
+    // ap_assert(allBranchlengthsAreDefined(rootNode())); // @@@ fails (after test above succeeded)
+
     oldRootEdge->set_root();
     new_parsimony = rootNode()->costs();
 

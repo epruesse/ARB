@@ -228,6 +228,10 @@ public:
     friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);
 };
 
+#if defined(ASSERTION_USED) || defined(UNIT_TESTS)
+bool allBranchlengthsAreDefined(AP_tree_nlen *tree);
+#endif
+
 // ---------------------
 //      AP_tree_edge
 

@@ -1718,6 +1718,9 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
 
     modifyTopology(env, mod);
     if (topo) fulfilled.add(topologyEquals(env.root_node(), topo));
+
+    fulfilled.add(that(allBranchlengthsAreDefined(env.root_node())).is_equal_to(true));
+
     if (pars_expected != -1) {
         fulfilled.add(that(env.root_node()->costs()).fulfills(epsilon_similar(0.001), pars_expected));
     }
@@ -1893,6 +1896,8 @@ static GB_ERROR modifyOneBase(GBDATA *gb_species, const char *aliname, char cOld
     return error;
 }
 
+#define ENABLE_TESTS_USING_NNI // @@@ these tests fail if assertions in nni_rek() are activated
+
 void TEST_nucl_tree_modifications() {
     const char *aliname = "ali_5s";
 
@@ -1918,14 +1923,18 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
     TEST_EXPECT_EQUAL(env.combines_performed(), 591);
 
+#ifdef ENABLE_TESTS_USING_NNI
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 925);
+#endif
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD_CALC_LENS, "nucl-add-quick-cl", PARSIMONY_ORG-23, env, true)); // test quick-add + calc_branchlengths
     TEST_EXPECT_EQUAL(env.combines_performed(), 727);
 
+#ifdef ENABLE_TESTS_USING_NNI
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI_CALC_LENS,   "nucl-add-NNI-cl",   PARSIMONY_ORG-25, env, true)); // test add + NNI + calc_branchlengths
     TEST_EXPECT_EQUAL(env.combines_performed(), 1063);
+#endif
 
     // test partial-add
     {
@@ -2024,12 +2033,16 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
+#ifdef ENABLE_TESTS_USING_NNI
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 581);
+#endif
 
+#ifdef ENABLE_TESTS_USING_NNI
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
     TEST_EXPECT_EQUAL(env.combines_performed(), 60958);
+#endif
 
     // -----------------------------
     //      test optimize (all)
@@ -2047,9 +2060,12 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
+#ifdef ENABLE_TESTS_USING_NNI
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-all-NNI", PARSIMONY_NNI_ALL, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 693);
+#endif
 
+#ifdef ENABLE_TESTS_USING_NNI
     GB_random_seed(seed);
     {
         env.push();
@@ -2061,6 +2077,7 @@ void TEST_nucl_tree_modifications() {
         TEST_EXPECT_EQUAL(env.combines_performed(), 104);
         env.pop();
     }
+#endif
 }
 
 void TEST_prot_tree_modifications() {
@@ -2088,8 +2105,10 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG,     env, true)); // test quick-add
     TEST_EXPECT_EQUAL(env.combines_performed(), 306);
 
+#ifdef ENABLE_TESTS_USING_NNI
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 524);
+#endif
 
     // test partial-add
     {
@@ -2200,12 +2219,16 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 88);
 
+#ifdef ENABLE_TESTS_USING_NNI
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 1074);
+#endif
 
+#ifdef ENABLE_TESTS_USING_NNI
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
     TEST_EXPECT_EQUAL(env.combines_performed(), 4623);
+#endif
 
     // -----------------------------
     //      test optimize (all)
@@ -2223,9 +2246,12 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 88);
 
+#ifdef ENABLE_TESTS_USING_NNI
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-all-NNI", PARSIMONY_NNI_ALL, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 823);
+#endif
 
+#ifdef ENABLE_TESTS_USING_NNI
     GB_random_seed(seed);
     {
         env.push();
@@ -2236,6 +2262,7 @@ void TEST_prot_tree_modifications() {
         TEST_EXPECT_EQUAL(env.combines_performed(), 66);
         env.pop();
     }
+#endif
 }
 
 void TEST_root_move_affects_costs() { // @@@ remove when #633 is fixed
@@ -2282,6 +2309,7 @@ void TEST_root_move_affects_costs() { // @@@ remove when #633 is fixed
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 88);
 
+#ifdef ENABLE_TESTS_USING_NNI
     GB_random_seed(seed);
     {
         env.push();
@@ -2292,6 +2320,7 @@ void TEST_root_move_affects_costs() { // @@@ remove when #633 is fixed
         TEST_EXPECT_EQUAL(env.combines_performed(), 66);
         env.pop();
     }
+#endif
 }
 
 
