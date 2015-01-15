@@ -611,6 +611,8 @@ static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
     leaf->set_branchlength_unrooted(blen);
 }
 
+const GBT_LEN AP_UNDEF_BL = 10.5;
+
 static void set_inner_branch_length_and_calc_adj_leaf_lengths(AP_tree_nlen *son, GBT_LEN blen) {
     ap_assert(!son->is_leaf);
 
@@ -620,15 +622,18 @@ static void set_inner_branch_length_and_calc_adj_leaf_lengths(AP_tree_nlen *son,
 
     son->set_branchlength_unrooted(blen);
 
+    // calculate adjacent leaf branchlengths early
+    // (calculating them at end of nni_rek, produces much more combines)
     if (son->leftson->is_leaf) {
+        ap_assert(son->get_leftson()->get_branchlength_unrooted() == AP_UNDEF_BL);
         ap_calc_leaf_branch_length(son->get_leftson());
     }
 
     if (son->rightson->is_leaf) {
+        ap_assert(son->get_rightson()->get_branchlength_unrooted() == AP_UNDEF_BL);
         ap_calc_leaf_branch_length(son->get_rightson());
     }
 }
-const GBT_LEN AP_UNDEF_BL = 10.5;
 
 #if defined(ASSERTION_USED) || defined(UNIT_TESTS)
 bool allBranchlengthsAreDefined(AP_tree_nlen *tree) {
@@ -674,7 +679,7 @@ AP_FLOAT AP_tree_edge::nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_t
 
     long          cs             = sizeofChain();
     bool          recalc_lengths = mode & AP_BL_BL_ONLY;
-    arb_progress  progress(recalc_lengths ? cs*2 : cs);
+    arb_progress  progress(cs);
     AP_tree_edge *follow;
 
     if (recalc_lengths) { // set all branchlengths to undef
@@ -720,14 +725,28 @@ AP_FLOAT AP_tree_edge::nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_t
     }
 
     if (recalc_lengths) {
+// #define DUMP_FINAL_RECALCS
+#if defined(DUMP_FINAL_RECALCS)
+        int final_recalc = 0;
+#endif
+
         for (follow = this; follow; follow = follow->next) {
-            // inner branchlengths have been caclculated by nni_mutPerSite
-            // (called above directly or indirectly via nni())
-            // -> only need to check affected leafs here:
+            // inner branchlengths have been caclculated by nni_mutPerSite (called above directly or indirectly via nni())
+            // most leaf branchlengths have already been calculated (via set_inner_branch_length_and_calc_adj_leaf_lengths)
+            // (calls from unit tests only update 1 or max. 2 lengths in this loop)
+
+#if defined(DUMP_FINAL_RECALCS)
+            if (follow->node[0]->get_branchlength_unrooted() == AP_UNDEF_BL) ++final_recalc;
+            if (follow->node[1]->get_branchlength_unrooted() == AP_UNDEF_BL) ++final_recalc;
+#endif
+
             update_undefined_leaf_branchlength(follow->node[0]);
             update_undefined_leaf_branchlength(follow->node[1]);
-            progress.inc();
         }
+
+#if defined(DUMP_FINAL_RECALCS)
+        fprintf(stderr, "Final leaf branches calculated: %i leafs for a chain of size=%li\n", final_recalc, cs);
+#endif
     }
 
     ap_assert(allBranchlengthsAreDefined(rootNode()));
