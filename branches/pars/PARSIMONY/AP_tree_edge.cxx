@@ -642,28 +642,11 @@ bool allBranchlengthsAreDefined(AP_tree_nlen *tree) {
 }
 #endif
 
-static void ap_check_leaf_bl(AP_tree_nlen *node) {
-    if (node->is_leaf) {
-        if (!node->father->father) {
-            if (node->father->leftlen + node->father->rightlen == AP_UNDEF_BL) {
-                ap_calc_leaf_branch_length(node);
-            }
-        }
-        else if (node->father->leftson == node) {
-            if (node->father->leftlen == AP_UNDEF_BL) {
-                ap_calc_leaf_branch_length(node);
-            }
-        }
-        else {
-            if (node->father->rightlen == AP_UNDEF_BL) {
-                ap_calc_leaf_branch_length(node);
-            }
-        }
-        return;
-    }
-    else {
-        if (node->leftlen == AP_UNDEF_BL)   ap_calc_leaf_branch_length(node->get_leftson());
-        if (node->rightlen == AP_UNDEF_BL)  ap_calc_leaf_branch_length(node->get_rightson());
+inline void update_undefined_leaf_branchlength(AP_tree_nlen *node) {
+    if (node->is_leaf &&
+        node->get_branchlength_unrooted() == AP_UNDEF_BL)
+    {
+        ap_calc_leaf_branch_length(node);
     }
 }
 
@@ -738,8 +721,11 @@ AP_FLOAT AP_tree_edge::nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_t
 
     if (recalc_lengths) {
         for (follow = this; follow; follow = follow->next) {
-            ap_check_leaf_bl(follow->node[0]);
-            ap_check_leaf_bl(follow->node[1]);
+            // inner branchlengths have been caclculated by nni_mutPerSite
+            // (called above directly or indirectly via nni())
+            // -> only need to check affected leafs here:
+            update_undefined_leaf_branchlength(follow->node[0]);
+            update_undefined_leaf_branchlength(follow->node[1]);
             progress.inc();
         }
     }
