@@ -685,13 +685,22 @@ AP_FLOAT AP_tree_edge::nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_t
     AP_tree_edge *follow;
     {
         // set all branch lengths to undef
+
+        ap_main->push_node(rootNode(), STRUCTURE);
+
         for (follow = this; follow; follow = follow->next) {
-            follow->node[0]->leftlen          = AP_UNDEF_BL;
-            follow->node[0]->rightlen         = AP_UNDEF_BL;
-            follow->node[1]->leftlen          = AP_UNDEF_BL;
-            follow->node[1]->rightlen         = AP_UNDEF_BL;
-            follow->node[0]->father->leftlen  = AP_UNDEF_BL;
-            follow->node[0]->father->rightlen = AP_UNDEF_BL;
+            AP_tree_nlen *father0 = follow->node[0]->get_father();
+
+            ap_main->push_node(follow->node[0], STRUCTURE);
+            ap_main->push_node(follow->node[1], STRUCTURE);
+            ap_main->push_node(father0, STRUCTURE);
+
+            follow->node[0]->leftlen  = AP_UNDEF_BL;
+            follow->node[0]->rightlen = AP_UNDEF_BL;
+            follow->node[1]->leftlen  = AP_UNDEF_BL;
+            follow->node[1]->rightlen = AP_UNDEF_BL;
+            father0->leftlen          = AP_UNDEF_BL;
+            father0->rightlen         = AP_UNDEF_BL;
         }
         rootNode()->leftlen  = AP_UNDEF_BL *.5;
         rootNode()->rightlen = AP_UNDEF_BL *.5;
