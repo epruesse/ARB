@@ -593,6 +593,8 @@ static void ap_calc_bootstrap_remark(AP_tree_nlen *son_node, AP_BL_MODE mode, co
 
 
 static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
+    // calculates the branchlength for leafs
+
     AP_FLOAT Seq_len = leaf->get_seq()->weighted_base_count();
     if (Seq_len <= 1.0) Seq_len = 1.0;
 
@@ -602,10 +604,10 @@ static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
 
     ap_main->remember();
     leaf->REMOVE();
-    AP_FLOAT mutations = parsbest - rootNode()->costs();
+    AP_FLOAT mutations = parsbest - rootNode()->costs(); // number of min. mutations caused by adding 'leaf' to tree
     ap_main->revert();
 
-    GBT_LEN blen = mutations/Seq_len;
+    GBT_LEN blen = mutations/Seq_len; // scale with Seq_len (=> max branchlength == 1.0)
     leaf->set_branchlength_unrooted(blen);
 }
 
