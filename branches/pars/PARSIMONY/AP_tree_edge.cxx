@@ -633,11 +633,10 @@ bool allBranchlengthsAreDefined(AP_tree_nlen *tree) {
     if (tree->father) {
         if (tree->get_branchlength_unrooted() == AP_UNDEF_BL) return false;
     }
-    if (!tree->is_leaf) {
-        if (!allBranchlengthsAreDefined(tree->get_leftson())) return false;
-        if (!allBranchlengthsAreDefined(tree->get_rightson())) return false;
-    }
-    return true;
+    if (tree->is_leaf) return true;
+    return
+        allBranchlengthsAreDefined(tree->get_leftson()) &&
+        allBranchlengthsAreDefined(tree->get_rightson());
 }
 #endif
 
@@ -666,6 +665,13 @@ static void ap_check_leaf_bl(AP_tree_nlen *node) {
     }
 }
 
+inline void undefine_branchlengths(AP_tree_nlen *node) {
+    // undefine branchlengths of node (triggers recalculation)
+    ap_main->push_node(node, STRUCTURE); // store branchlengths for revert
+    node->leftlen  = AP_UNDEF_BL;
+    node->rightlen = AP_UNDEF_BL;
+}
+
 AP_FLOAT AP_tree_edge::nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_tree_nlen *skipNode) {
     if (!rootNode())        return 0.0;
     if (rootNode()->is_leaf)    return rootNode()->costs();
@@ -689,18 +695,9 @@ AP_FLOAT AP_tree_edge::nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_t
         ap_main->push_node(rootNode(), STRUCTURE);
 
         for (follow = this; follow; follow = follow->next) {
-            AP_tree_nlen *father0 = follow->node[0]->get_father();
-
-            ap_main->push_node(follow->node[0], STRUCTURE);
-            ap_main->push_node(follow->node[1], STRUCTURE);
-            ap_main->push_node(father0, STRUCTURE);
-
-            follow->node[0]->leftlen  = AP_UNDEF_BL;
-            follow->node[0]->rightlen = AP_UNDEF_BL;
-            follow->node[1]->leftlen  = AP_UNDEF_BL;
-            follow->node[1]->rightlen = AP_UNDEF_BL;
-            father0->leftlen          = AP_UNDEF_BL;
-            father0->rightlen         = AP_UNDEF_BL;
+            undefine_branchlengths(follow->node[0]);
+            undefine_branchlengths(follow->node[1]);
+            undefine_branchlengths(follow->node[0]->get_father());
         }
         rootNode()->leftlen  = AP_UNDEF_BL *.5;
         rootNode()->rightlen = AP_UNDEF_BL *.5;
