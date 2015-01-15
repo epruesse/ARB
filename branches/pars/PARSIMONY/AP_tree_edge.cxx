@@ -596,7 +596,7 @@ static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
     AP_FLOAT Seq_len = leaf->get_seq()->weighted_base_count();
     if (Seq_len <= 1.0) Seq_len = 1.0;
 
-    // ap_assert(leaf->is_leaf); // @@@ bug: also called for inner nodes
+    ap_assert(leaf->is_leaf);
 
     AP_FLOAT parsbest = rootNode()->costs();
 
