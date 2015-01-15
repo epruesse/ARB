@@ -1729,6 +1729,11 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
         TEST_EXPECT_VALID_TREE(env.root_node());
         TEST_VALIDITY(env.pop_will_produce_valid_tree());
         env.pop();
+#if 0
+        // @@@ fails for any 'mod' that does recalculate branchlengths
+        bool blen_def_after_pop = allBranchlengthsAreDefined(env.root_node());
+        fulfilled.add(that(blen_def_after_pop).is_equal_to(true));
+#endif
     }
 
     TEST_EXPECT_EQUAL(fl, env.get_frame_level());
