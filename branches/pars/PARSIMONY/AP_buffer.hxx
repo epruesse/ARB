@@ -218,7 +218,7 @@ public:
     StackFrameData() : root_pushed(false) {}
 
     void revert_resources(StackFrameData *previous);
-    void accept_resources(StackFrameData *previous, ResourceStack& common);
+    void accept_resources(StackFrameData *previous, ResourceStack *common);
 
     void extract_common_to(ResourceStack& common) { common.extract_common(created, destroyed); }
 
@@ -267,7 +267,7 @@ public:
 #endif
         current->revert_resources(previous);
     }
-    void accept_resources(StackFrameData *current, ResourceStack& common) {
+    void accept_resources(StackFrameData *current, ResourceStack *common) {
 #if defined(CHECK_STACK_RESOURCE_HANDLING)
         ap_assert(resources_handled == NO);
         resources_handled = ACCEPTED;

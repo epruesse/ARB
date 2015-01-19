@@ -209,35 +209,19 @@ void ResourceStack::move_edges(ResourceStack& target) {
 
 void StackFrameData::revert_resources(StackFrameData */*previous*/) {
     // if previous==NULL, top StackFrameData is reverted
-
-    ResourceStack common;
-    extract_common_to(common);
-    // @@@ we do not need to extract common nodes/edges here
-    // (simply destroying created and forgetting destroyed should do)
-
-    if (common.has_nodes()) {
-        common.destroy_nodes();
-    }
     created.destroy_nodes();
     destroyed.forget_nodes();
 
-    if (common.has_edges()) {
-        common.destroy_edges();
-    }
     created.destroy_edges();
     destroyed.forget_edges();
 }
 
-void StackFrameData::accept_resources(StackFrameData *previous, ResourceStack& common) {
+void StackFrameData::accept_resources(StackFrameData *previous, ResourceStack *common) {
     // if previous==NULL, top StackFrameData gets destroyed
+    ap_assert(correlated(!previous, !common));
 
-    // @@@ we do not need to extract common nodes/edges (in caller) if previous==NULL
-    // (simply destroying destroyed and forgetting created should do)
-
-    if (common.has_nodes()) {
-        common.destroy_nodes();
-    }
     if (previous) {
+        if (common->has_nodes()) common->destroy_nodes();
         created.move_nodes(previous->created);
         destroyed.move_nodes(previous->destroyed);
     }
@@ -246,10 +230,8 @@ void StackFrameData::accept_resources(StackFrameData *previous, ResourceStack& c
         destroyed.destroy_nodes();
     }
 
-    if (common.has_edges()) {
-        common.destroy_edges();
-    }
     if (previous) {
+        if (common->has_edges()) common->destroy_edges();
         created.move_edges(previous->created);
         destroyed.move_edges(previous->destroyed);
     }
