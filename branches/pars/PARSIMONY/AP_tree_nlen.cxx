@@ -605,6 +605,9 @@ void AP_tree_nlen::set_root() {
 }
 
 void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
+    // Note: see http://bugs.arb-home.de/ticket/627#comment:8 for an experimental
+    // replacement of moveNextTo with REMOVE() + insert()
+
     ap_assert(father);
     ap_assert(newBrother);
     ap_assert(newBrother->father);
