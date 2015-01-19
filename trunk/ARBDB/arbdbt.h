@@ -113,7 +113,7 @@ public:
         return !is_leaf && descendant != this && descendant->is_inside(this);
     }
     const GBT_TREE *ancestor_common_with(const GBT_TREE *other) const;
-    GBT_TREE *ancestor_common_with(GBT_TREE *other) { return const_cast<GBT_TREE*>(ancestor_common_with(other)); }
+    GBT_TREE *ancestor_common_with(GBT_TREE *other) { return const_cast<GBT_TREE*>(ancestor_common_with(const_cast<const GBT_TREE*>(other))); }
 
     GBT_TREE *fixDeletedSon();
 
