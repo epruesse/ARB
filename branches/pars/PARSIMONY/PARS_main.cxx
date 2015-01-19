@@ -2245,63 +2245,6 @@ void TEST_prot_tree_modifications() {
     }
 }
 
-void TEST_root_move_affects_costs() { // @@@ remove when #633 is fixed
-    const char *aliname = "ali_tuf_pro";
-
-    PARSIMONY_testenv<AP_sequence_protein> env("TEST_prot.arb", aliname);
-    TEST_EXPECT_NO_ERROR(env.load_tree("tree_prot_opti"));
-    TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-initial");
-
-    const int PARSIMONY_ORG = 1101;
-    TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
-    TEST_EXPECT_EQUAL(env.combines_performed(), 10);
-
-    const unsigned seed    = 1417001558;
-    const unsigned mixseed = 1418978973;
-
-    const int PARSIMONY_MIXED = PARSIMONY_ORG + 2190;
-    const int PARSIMONY_OPTI  = PARSIMONY_ORG;   // no gain (initial tree already is optimized)
-
-    // -------------------------------------------------------
-    //      mix tree (original tree already is optimized)
-
-    GB_random_seed(mixseed);
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_MIX_TREE, "prot-mixed", PARSIMONY_MIXED, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 10);
-
-    {
-        env.push();
-        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_MIXED, PARSIMONY_MIXED, env));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 80);
-        env.pop();
-    }
-
-    // mark all species
-    mark_all(env.gbmain());
-    env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
-    TEST_EXPECT_EQUAL(GBT_count_marked_species(env.gbmain()), 11);
-
-    TEST_EXPECT_PARSVAL(env, PARSIMONY_MIXED);
-    TEST_EXPECT_EQUAL(env.combines_performed(), 0);
-
-    // test branchlength calculation
-    // (optimizations below implicitely recalculates branchlengths)
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 88);
-
-    GB_random_seed(seed);
-    {
-        env.push();
-        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 4301);
-
-        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 66);
-        env.pop();
-    }
-}
-
-
 void TEST_node_stack() {
     // test was used to fix #620
 
