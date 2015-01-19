@@ -220,7 +220,7 @@ void AP_tree::insert(AP_tree *new_brother) {
     ap_assert(troot); // Note: initial_insert() has to be used to build initial tree
 
     if (!new_tree->father) troot->change_root(new_brother, new_tree);
-    else new_tree->set_tree_root(troot);
+    new_tree->set_tree_root(troot);
     set_tree_root(troot);
 
     ASSERT_VALID_TREE(troot->get_root_node());
@@ -349,8 +349,7 @@ GB_ERROR AP_tree::cantMoveNextTo(AP_tree *new_brother) {
 }
 
 void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
-    // rel_pos == 0.0 -> at father
-    //         == 1.0 -> at brother
+    // rel_pos: 0.0 -> branch at father; 1.0 -> branch at brother; 0.5 -> branch at half distance between father and brother
 
     ap_assert(father);
     ap_assert(new_brother);
@@ -366,7 +365,7 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     if (father->father == 0) { // move son of root
         new_root         = get_brother();
         new_root->father = 0;
-        ap_assert(!new_root->is_leaf); // wot?
+        ap_assert(!new_root->is_leaf); // a leaf is no valid tree (should be impossible, because new_brother!=brother)
     }
     else {
         AP_tree *grandfather = get_father()->get_father();

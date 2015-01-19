@@ -284,6 +284,8 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
             if (isits->every_sixteenth()) deep = -1;
             
             arb_progress progress("optimization");
+            // @@@ better call nn_interchange_rek with 'skip_hidden' == false?
+            // -> will slightly increase number of combines, but skipping hidden/unmarked subtrees doesnt seem to make any sense
             leaf->get_father()->nn_interchange_rek(deep, AP_BL_NNI_ONLY, true);
             ASSERT_VALID_TREE(rootNode());
         }
