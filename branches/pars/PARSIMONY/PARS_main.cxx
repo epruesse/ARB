@@ -2500,6 +2500,24 @@ void TEST_node_stack() {
 void TEST_node_edge_resources() {
     const char *aliname = "ali_5s";
 
+    // document memsize of nodes and edges:
+#if defined(ARB_64)
+# if defined(DEBUG)
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 200);
+# else // !defined(DEBUG)
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 208); // @@@ why bigger in NDEBUG mode?
+# endif
+#else // !defined(ARB_64)
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 136);
+#endif
+
+
+#if defined(ARB_64)
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 88);
+#else // !defined(ARB_64)
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 60);
+#endif
+
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
 
