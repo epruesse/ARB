@@ -154,7 +154,7 @@ public:
         return !is_leaf && descendant != this && descendant->is_inside(this);
     }
     const TreeNode *ancestor_common_with(const TreeNode *other) const;
-    TreeNode *ancestor_common_with(TreeNode *other) { return const_cast<TreeNode*>(ancestor_common_with(other)); }
+    TreeNode *ancestor_common_with(TreeNode *other) { return const_cast<TreeNode*>(ancestor_common_with(const_cast<const TreeNode*>(other))); }
 
     GBT_LEN get_branchlength() const { return length_ref(); }
     void set_branchlength(GBT_LEN newlen) {
