@@ -2501,14 +2501,19 @@ void TEST_node_edge_resources() {
     const char *aliname = "ali_5s";
 
     // document memsize of nodes and edges:
+
+#define STATE_STACK_SIZE sizeof(StateStack) // 8 (Cxx11) or 16 (older C++); maybe 4/8 in 32bit
+
 #if defined(ARB_64)
-# if defined(DEBUG)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 200);
-# else // !defined(DEBUG)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 208); // @@@ why bigger in NDEBUG mode?
-# endif
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 192 + STATE_STACK_SIZE);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree), 128);
+    TEST_EXPECT_EQUAL(sizeof(ARB_seqtree), 88);
+    TEST_EXPECT_EQUAL(sizeof(TreeNode), 80);
 #else // !defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 136);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 128 + STATE_STACK_SIZE);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree), 84);
+    TEST_EXPECT_EQUAL(sizeof(ARB_seqtree), 48);
+    TEST_EXPECT_EQUAL(sizeof(TreeNode), 44);
 #endif
 
 
