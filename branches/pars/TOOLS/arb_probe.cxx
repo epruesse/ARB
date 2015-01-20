@@ -1751,12 +1751,16 @@ void TEST_SLOW_design_probe() {
 #define RES_64
 #else // !defined(ARB_64)
 // results below differ for some(!) 32 bit arb versions (numeric issues?)
-// (e.g. u1004 behaves like 64bit version; u1204 doesnt)
+// (e.g. u1004 behaves like 64bit version; u1204 doesnt in NDEBUG mode)
 // #define RES_64 // uncomment for u1004
+#if defined(DEBUG)
+#define RES_64
+#endif
+
 #endif
 
 
-        // same as above (with probelen == 8)
+    // same as above (with probelen == 8)
     {
         const char *arguments[] = {
             "prgnamefake",
