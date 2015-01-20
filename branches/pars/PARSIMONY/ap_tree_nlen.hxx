@@ -73,6 +73,8 @@ public:
     inline void destroyNode(TreeNode *node) const OVERRIDE;
 };
 
+typedef uint8_t EdgeIndex;
+
 class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ rename -> AP_pars_tree? (later!)
     // tree that is independent of branch lengths and root
 
@@ -82,7 +84,7 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ renam
     // definitions for AP_tree_edge:
 
     AP_tree_edge *edge[3];      // the edges to the father and the sons
-    int           index[3];     // index to node[] in AP_tree_edge
+    EdgeIndex     index[3];     // index to node[] in AP_tree_edge
 
     AP_FLOAT mutation_rate;
 
@@ -242,7 +244,7 @@ class AP_tree_edge : virtual Noncopyable {
     // AP_tree_nlen::push/pop:
 
     AP_tree_nlen      *node[2]; // the two nodes of this edge
-    int                index[2]; // index to edge[] in AP_tree_nlen
+    EdgeIndex          index[2]; // index to edge[] in AP_tree_nlen
     AP_tree_edge_data  data;    // data stored in edge (defined in AP_buffer.hxx)
 
     // and these arent pushed:

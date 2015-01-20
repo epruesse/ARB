@@ -2505,12 +2505,12 @@ void TEST_node_edge_resources() {
 #define STATE_STACK_SIZE sizeof(StateStack) // 8 (Cxx11) or 16 (older C++); maybe 4/8 in 32bit
 
 #if defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 192 + STATE_STACK_SIZE);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 184 + STATE_STACK_SIZE);
     TEST_EXPECT_EQUAL(sizeof(AP_tree), 128);
     TEST_EXPECT_EQUAL(sizeof(ARB_seqtree), 88);
     TEST_EXPECT_EQUAL(sizeof(TreeNode), 80);
 #else // !defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 128 + STATE_STACK_SIZE);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 120 + STATE_STACK_SIZE);
     TEST_EXPECT_EQUAL(sizeof(AP_tree), 84);
     TEST_EXPECT_EQUAL(sizeof(ARB_seqtree), 48);
     TEST_EXPECT_EQUAL(sizeof(TreeNode), 44);
@@ -2520,7 +2520,7 @@ void TEST_node_edge_resources() {
 #if defined(ARB_64)
     TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 88);
 #else // !defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 60);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 56);
 #endif
 
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
