@@ -735,7 +735,7 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
 
 // uncomment to auto-update exported files
 // (needed once after changing database or export formats)
-// #define TEST_AUTO_UPDATE 
+// #define TEST_AUTO_UPDATE
 #define TEST_AUTO_UPDATE_ONLY_MISSING // do auto-update only if file is missing 
 
 #define TEST_EXPORT_FORMAT(filename,load_complete_form)                 \
