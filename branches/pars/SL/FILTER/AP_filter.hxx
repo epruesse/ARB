@@ -132,7 +132,7 @@ public:
 
 class AP_weights {
     size_t    len;
-    GB_UINT4 *weights;
+    GB_UINT4 *weights __attribute__((__aligned__(16)));;
 
 public:
 
@@ -142,12 +142,17 @@ public:
     ~AP_weights();
     DECLARE_ASSIGNMENT_OPERATOR(AP_weights);
 
+    const GB_UINT4* get_weights() const {
+        return weights;
+    }
+
     GB_UINT4 weight(size_t idx) const {
         af_assert(idx<len);
-        return weights[idx];
+        return (is_unweighted())?1:weights[idx];
     }
 
     size_t length() const { return len; }
+    bool is_unweighted() const { return (weights==NULL); }
 };
 
 long AP_timer();

@@ -233,6 +233,12 @@ endif
 ifeq ($(DARWIN),0)
 	lflags += -g
 	clflags += -Wl,-g
+
+# TEMPORARY WORKAROUND for linker issues with launchpad binutils
+# code was added to ld to check for overlapping FDEs. Since ARB
+# worked before, we want this not to fail for the moment.
+# FIXME: remove this!
+        clflags += -Wl,-noinhibit-exec
 endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
