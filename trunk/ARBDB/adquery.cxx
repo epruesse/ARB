@@ -1290,7 +1290,9 @@ void TEST_GB_command_interpreter() {
 
         TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(nl=c)",     "Unknown Parameter 'nl=c' in command 'format_sequence'");
         TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(forcenl=)", "Unknown Parameter 'forcenl=' in command 'format_sequence'");
-        // TEST_CI_ERROR_CONTAINS("acgt", "format(width=0)", "should_raise_some_error"); // @@@ crashes
+
+        TEST_CI_ERROR_CONTAINS("acgt", "format(width=0)",          "Illegal zero width");
+        TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(width=0)", "Illegal zero width");
 
         // remove + keep
         TEST_CI_NOOP("acgtacgt",         "remove(-.)");
