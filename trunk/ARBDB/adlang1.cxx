@@ -21,6 +21,7 @@
 #include <aw_awar_defs.hxx>
 
 #include <cctype>
+#include <cmath>
 #include <algorithm>
 
 // hook for 'export_sequence'
