@@ -1,5 +1,4 @@
 #include "AP_seq_protein.hxx"
-#include "AP_parsimony_defaults.hxx"
 #include <AP_pro_a_nucs.hxx>
 
 #include <AP_filter.hxx>
@@ -378,11 +377,6 @@ void AP_sequence_protein::unset() {
     delete [] seq_prot; seq_prot = 0;
     mark_sequence_set(false);
 }
-
-#if !defined(AP_PARSIMONY_DEFAULTS_HXX)
-#error AP_parsimony_defaults.hxx not included
-#endif // AP_PARSIMONY_DEFAULTS_HXX
-
 
 AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) {
     // Note: changes done here should also be be applied to AP_seq_dna.cxx@combine_impl

@@ -1,5 +1,4 @@
 #include "AP_seq_dna.hxx"
-#include "AP_parsimony_defaults.hxx"
 
 #include <arb_mem.h>
 #include <AP_pro_a_nucs.hxx>
@@ -104,12 +103,6 @@ void AP_sequence_parsimony::unset() {
     freenull(seq_pars);
     mark_sequence_set(false);
 }
-
-#if !defined(AP_PARSIMONY_DEFAULTS_HXX)
-#error AP_parsimony_defaults.hxx not included
-#endif // AP_PARSIMONY_DEFAULTS_HXX
-
-
 
 /** BELOW CODE CAREFULLY DESIGNED TO ALLOW VECTORIZATION
  *
