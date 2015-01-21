@@ -1877,9 +1877,8 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
     GBL_TRACE_PARAMS(args);
     GBL_END_PARAMS;
 
-    if (numleft && numright != 0) {
-        return "You may only specify 'numleft' OR 'numright',  not both.";
-    }
+    if (width == 0)               return "Illegal zero width";
+    if (numleft && numright != 0) return "You may only specify 'numleft' OR 'numright',  not both.";
 
     for (ic = 0; ic<args->input.size(); ++ic) {
         {
