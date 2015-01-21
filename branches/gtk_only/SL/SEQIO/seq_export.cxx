@@ -83,8 +83,15 @@ static GB_ERROR read_export_format(export_format *efo, const char *file, bool lo
         error = "No export format selected";
     }
     else {
-        char *fullfile = nulldup(GB_path_in_ARBHOME(file));
-        FILE *in       = fopen(fullfile, "r");
+        char *fullfile = 0;
+        if (GB_is_regularfile(file)) { // prefer files that are completely specified (full/rel path)
+            fullfile = strdup(GB_canonical_path(file));
+        }
+        else {
+            fullfile = nulldup(GB_path_in_ARBHOME(file)); // fallback to ARBHOME-relative specification
+        }
+
+        FILE *in = fopen(fullfile, "r");
 
         if (!in) error = GB_IO_error("reading export form", fullfile);
         else {

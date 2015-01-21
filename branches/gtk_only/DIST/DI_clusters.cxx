@@ -233,7 +233,7 @@ void Cluster::mark_all_members(ClusterMarkMode mmode) const {
     DBItemSetIter sp_end = members.end();
     for (DBItemSetIter sp = members.begin(); sp != sp_end; ++sp) {
         bool is_rep = *sp == representative;
-        bool mark;
+        bool mark   = false;
 
         switch (mmode) {
             case CMM_ALL:         mark = true;    break;

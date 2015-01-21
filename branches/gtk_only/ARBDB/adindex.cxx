@@ -1025,7 +1025,7 @@ void TEST_GB_undo__basic() {
     TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_UNDO)                           );
 
     //////////// THIS IS WHERE UNDO FAILS //////////////////
-    TEST_EXPECT_EQUAL__BROKEN( GB_read_pntr(GB_find(main, "test", SEARCH_CHILD)), str, 0);
+    TEST_EXPECT_EQUAL__BROKEN( GB_read_pntr(GB_find(main, "test", SEARCH_CHILD)), str, NULL);
     GB_close(main);
     return; // remainder will fail now
 

@@ -623,6 +623,26 @@ static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
                 GBDATA *gb_group_name = GB_entry(node->gb_node, "group_name");
                 if (gb_group_name) {
                     node->name = GB_read_string(gb_group_name);
+                    if (!node->name || !node->name[0]) {
+                        char   *auto_rename = strdup("<missing groupname>");
+                        GBDATA *gb_main     = GB_get_root(gb_group_name);
+
+                        const char *warn;
+                        if (!node->name) {
+                            warn = GBS_global_string("Unreadable 'group_name' detected (Reason: %s)", GB_await_error());
+                        }
+                        else {
+                            warn = "Empty groupname detected";
+                        }
+                        warn = GBS_global_string("%s\nGroup has been named '%s'", warn, auto_rename);
+                        GBT_message(gb_main, warn);
+
+                        GB_ERROR rename_error = GB_write_string(gb_group_name, auto_rename);
+                        if (rename_error) {
+                            GBT_message(gb_main, GBS_global_string("Failed to name group (Reason: %s)", rename_error));
+                        }
+                        node->name = auto_rename;
+                    }
                 }
             }
             (*startid)++;

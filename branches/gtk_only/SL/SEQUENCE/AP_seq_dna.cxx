@@ -1,6 +1,7 @@
 #include "AP_seq_dna.hxx"
 #include "AP_parsimony_defaults.hxx"
 
+#include <arb_mem.h>
 #include <AP_pro_a_nucs.hxx>
 #include <AP_filter.hxx>
 #include <ARB_Tree.hxx>
@@ -15,12 +16,12 @@ char *AP_sequence_parsimony::table;
 
 AP_sequence_parsimony::AP_sequence_parsimony(const AliView *aliview)
     : AP_sequence(aliview)
-    , seq_pars(0)
+    , seq_pars(NULL)
 {
 }
 
 AP_sequence_parsimony::~AP_sequence_parsimony() {
-    delete [] seq_pars;
+    free(seq_pars);
 }
 
 AP_sequence *AP_sequence_parsimony::dup() const {
@@ -49,7 +50,7 @@ void AP_sequence_parsimony::build_table()
 void AP_sequence_parsimony::set(const char *isequence)
 {
     size_t sequence_len = get_filter()->get_filtered_length();
-    seq_pars     = new char[sequence_len+1];
+    arb_alloc_aligned(seq_pars, sequence_len+1);
     memset(seq_pars, AP_N, (size_t)sequence_len+1);
 
     const uchar *simplify = get_filter()->get_simplify_table();
@@ -75,19 +76,16 @@ void AP_sequence_parsimony::set(const char *isequence)
         }
     }
     else {
-        int left_bases = sequence_len;
-        int filter_len = filt->get_length();
-        int oidx       = 0;                         // for output sequence
+        const size_t* base_pos = filt->get_filterpos_2_seqpos();
 
-        for (int idx = 0; idx<filter_len && left_bases; ++idx) {
-            if (filt->use_position(idx)) {
-                unsigned char c = (unsigned char)isequence[idx];
-                seq_pars[oidx++] = table[simplify[c]];
-                --left_bases;
+        for (size_t i = 0; i < sequence_len; ++i) {
+            size_t pos = base_pos[i];
+            unsigned char c = (unsigned char)isequence[pos];
+            seq_pars[i] = table[simplify[c]];
+
 #if defined(SHOW_SEQ)
                 fputc(simplify[c], stdout);
-#endif                          // SHOW_SEQ
-            }
+#endif // SHOW_SEQ
         }
     }
 
@@ -99,7 +97,7 @@ void AP_sequence_parsimony::set(const char *isequence)
 }
 
 void AP_sequence_parsimony::unset() {
-    delete [] seq_pars; seq_pars = 0;
+    freenull(seq_pars);
     mark_sequence_set(false);
 }
 
@@ -107,70 +105,107 @@ void AP_sequence_parsimony::unset() {
 #error AP_parsimony_defaults.hxx not included
 #endif // AP_PARSIMONY_DEFAULTS_HXX
 
-AP_FLOAT AP_sequence_parsimony::combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site) {
-    const AP_sequence_parsimony *left = (const AP_sequence_parsimony *)lefts;
-    const AP_sequence_parsimony *right = (const AP_sequence_parsimony *)rights;
 
-    size_t sequence_len = get_sequence_length();
-    if (seq_pars == 0) {
-        seq_pars = new char[sequence_len + 1];
-    }
 
-    const char *p1       = left->get_sequence();
-    const char *p2       = right->get_sequence();
-    char       *p        = seq_pars;
-    char       *mutpsite = mutation_per_site;
-    long        result   = 0;
+/** BELOW CODE CAREFULLY DESIGNED TO ALLOW VECTORIZATION
+ *
+ * If you mess with it, use "-fopt-info" or "-ftree-vectorizer-verbose=n".
+ * Make sure you still see "LOOP VECTORIZED" in the output!
+ */
 
-    const AP_weights *weights = get_weights();
+template <class COUNT, class SITE>
+static long do_combine(size_t sequence_len,
+                       const char * __restrict p1, 
+                       const char * __restrict p2,
+                       char * __restrict p,
+                       COUNT count,
+                       SITE site) {
 
     for (size_t idx = 0; idx<sequence_len; ++idx) {
         char c1 = p1[idx];
         char c2 = p2[idx];
+        
+        char c = c1 & c2;
+        p[idx] = (c==0)?c1|c2:c;
+        
+        count.add(idx, c);
+        site.add(idx, c);
+    }
 
-        ap_assert(c1 != 0); // not a base and not a gap -- what should it be ?
-        ap_assert(c2 != 0);
+    return count.sum;
+}
 
-        if ((c1&c2) == 0) {    // bases are distinct (that means we count a mismatch)
-            p[idx] = c1|c2;     // mix distinct bases
+struct count_unweighted {
+    long sum;
+    count_unweighted():sum(0){}
+    void add(size_t, char c) {
+        sum += (c==0)?1:0;
+    }
+};
 
-#if !defined(MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS)
-            // count multiple mutations as 1 mutation
-            // this was an experiment (don't use it, it does not work!)
-            if (p[idx]&AP_S) {  // contains a gap
-                if (idx>0 && (p[idx-1]&AP_S)) { // last position also contained gap..
-                    if (((c1&AP_S) && (p1[idx-1]&AP_S)) || // ..in same sequence
-                        ((c2&AP_S) && (p2[idx-1]&AP_S)))
-                    {
-                        if (!(p1[idx-1]&AP_S) || !(p2[idx-1]&AP_S)) { // if one of the sequences had no gap at previous position
-                            continue; // skip multiple gaps
-                        }
-                    }
-                }
-            }
-#endif // MULTIPLE_GAPS_ARE_MULTIPLE_MUTATIONS
+struct count_weighted {
+    long sum;
+    const GB_UINT4* weights;
+    count_weighted(const GB_UINT4* w):sum(0), weights(w){}
+    void add(size_t idx, char c) {
+        sum += weights[idx] * (c==0)?1:0;
+    }
+};
 
-            // now count mutation :
+struct count_nothing {
+    void add(size_t, char) {}
+};
 
-            if (mutpsite) mutpsite[idx]++;          // count mutations per site (unweighted)
-            result += weights->weight(idx);         // count weighted or simple
+struct count_mutpsite {
+    char * sites;
+    count_mutpsite(char *s):sites(s){}
+    void add(size_t idx, char c) {
+        // below is equal to "if (c) sites[idx]", the difference
+        // is that no branch is required and sites[idx] is always
+        // written, allowing vectorization
+        // we can't use (c==0)?1:0 for reasons unknown
+        // gcc 4.8.1 refuses to vectorize the conditional
+        sites[idx] += ((c | -c) >> 7 & 1) ^ 1;        
+    }
+};
+
+AP_FLOAT AP_sequence_parsimony::combine(const AP_sequence * lefts, 
+                                        const AP_sequence * rights,
+                                        char *mutation_per_site) {
+    const AP_sequence_parsimony *left = (const AP_sequence_parsimony *)lefts;
+    const AP_sequence_parsimony *right = (const AP_sequence_parsimony *)rights;
+
+     size_t sequence_len = get_sequence_length();
+    if (seq_pars == NULL) {
+        arb_alloc_aligned(seq_pars, sequence_len + 1);
+    }
+
+    const char * p1       = left->get_sequence();
+    const char * p2       = right->get_sequence();
+    long        result   = 0;
+
+    if (get_weights()->is_unweighted()) {
+        if (mutation_per_site) {
+            result = do_combine(sequence_len, p1, p2, seq_pars,  
+                                count_unweighted(), count_mutpsite(mutation_per_site));
+
         }
         else {
-            p[idx] = c1&c2; // store common bases for both subtrees
+            result = do_combine(sequence_len, p1, p2, seq_pars,
+                                count_unweighted(), count_nothing());
         }
-
-
-#if !defined(PROPAGATE_GAPS_UPWARDS)
-        // do not propagate mixed gaps upwards (they cause neg. branches)
-        // this was an experiment (don't use it, it does not work!)
-        if (p[idx] & AP_S) {
-            if (p[idx] != AP_S) {
-                p[idx] = AP_BASES(p[idx]^AP_S);
-            }
+    }
+    else {
+        if (mutation_per_site) {
+            result = do_combine(sequence_len, p1, p2, seq_pars,
+                                count_weighted(get_weights()->get_weights()),
+                                count_mutpsite(mutation_per_site));
         }
-#endif // PROPAGATE_GAPS_UPWARDS
-
-        ap_assert(p[idx] != 0);
+        else {
+            result = do_combine(sequence_len, p1, p2, seq_pars,
+                                count_weighted(get_weights()->get_weights()),
+                                count_nothing());
+        }
     }
 
 #if defined(DEBUG) && 0
