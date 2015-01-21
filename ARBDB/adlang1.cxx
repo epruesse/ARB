@@ -1847,6 +1847,13 @@ static GB_ERROR gbl_sequence_type(GBL_command_arguments *args) {
     return error;
 }
 
+inline int calc_digits(size_t val) {
+    int digits = log10(val)+1;
+    gb_assert(digits>0);
+    return digits;
+}
+
+
 static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
     GB_ERROR error = 0;
     int      ic;
@@ -1859,8 +1866,9 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
     GBL_PARAM_UINT  (width,    "width=",    50,   "Sequence width (bases only)");
 
     // "format_sequence"-only
-    GBL_PARAM_BIT (numleft, PARAM_IF(!simple_format, "numleft"), 0,  "Numbers left of sequence");
-    GBL_PARAM_UINT(gap,     PARAM_IF(!simple_format, "gap="),    10, "Insert ' ' every n sequence characters");
+    GBL_PARAM_BIT (numleft,  PARAM_IF(!simple_format, "numleft"),  0,  "Numbers left of sequence");
+    GBL_PARAM_INT (numright, PARAM_IF(!simple_format, "numright="), 0, "Numbers right of sequence (specifies width; -1 -> auto-width)");
+    GBL_PARAM_UINT(gap,      PARAM_IF(!simple_format, "gap="),     10, "Insert ' ' every n sequence characters");
 
     // "format"-only
     GBL_PARAM_STRING(nl,      PARAM_IF(simple_format, "nl="),      " ",  "Break line at characters 'str' if wrapping needed");
@@ -1869,15 +1877,24 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
     GBL_TRACE_PARAMS(args);
     GBL_END_PARAMS;
 
+    if (numleft && numright != 0) {
+        return "You may only specify 'numleft' OR 'numright',  not both.";
+    }
+
     for (ic = 0; ic<args->input.size(); ++ic) {
         {
             const char *src           = args->input.get(ic);
             size_t      data_size     = strlen(src);
             size_t      needed_size;
+            size_t      line_size;
+            int         numright_used = numright;
+
+            if (numright_used<0) {
+                numright_used = calc_digits(data_size);
+            }
 
             {
                 size_t lines;
-                size_t line_size;
 
                 if (simple_format) {
                     lines     = data_size/2 + 1; // worst case
@@ -1887,6 +1904,11 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
                     size_t gapsPerLine = (width-1)/gap;
                     lines              = data_size/width+1;
                     line_size          = tab + width + gapsPerLine + 1;
+
+                    if (numright_used) {
+                        // add space for numright
+                        line_size += numright_used+1; // plus space
+                    }
                 }
 
                 needed_size = lines*line_size + firsttab + 1 + 10;
@@ -1977,8 +1999,9 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
                 }
                 else {
                     // "format_sequence" with gaps and numleft
-                    char       *format    = 0;
-                    const char *src_start = src;
+                    char       *format        = 0;
+                    const char *src_start     = src;
+                    const char *dst_linestart = dst;
 
                     if (numleft) {
                         /* Warning: Be very careful, when you change format strings here!
@@ -2016,8 +2039,25 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
                         dst += take;
                         src += take;
 
+                        if (numright_used) {
+                            if (rest_data) *dst++ = ' ';
+                            else {
+                                // fill in missing spaces for proper alignment of numright
+                                size_t currSize = dst-dst_linestart;
+                                size_t wantSize = line_size-numright_used-1;
+                                if (currSize<wantSize) {
+                                    size_t spaces  = wantSize-currSize;
+                                    memset(dst, ' ', spaces);
+                                    dst           += spaces;
+                                }
+                            }
+                            unsigned int num  = (src-src_start);
+                            dst              += sprintf(dst, "%*u", numright_used, num);
+                        }
+
                         if (rest_data>0) {
                             *dst++ = '\n';
+                            dst_linestart = dst;
                             if (numleft) {
                                 unsigned int num  = (src-src_start)+1; // this goes to the '%u' (see comment above)
                                 dst              += sprintf(dst, format, num);
