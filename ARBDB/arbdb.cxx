@@ -2618,6 +2618,42 @@ GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback
     return gb_add_callback(gbd, newcb);
 }
 
+GB_ERROR GB_release(GBDATA *gbd) {
+    /*! free cached data in client.
+     *
+     * Warning: pointers into the freed region(s) will get invalid!
+     */
+    GBCONTAINER  *gbc;
+    GBDATA       *gb;
+    int           index;
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+
+    GB_test_transaction(gbd);
+    if (Main->is_server()) return 0;
+    if (GB_ARRAY_FLAGS(gbd).changed && !gbd->flags2.update_in_server) {
+        GB_ERROR error = Main->send_update_to_server(gbd);
+        if (error) return error;
+    }
+    if (gbd->type() != GB_DB) {
+        GB_ERROR error = GB_export_errorf("You cannot release non container (%s)",
+                                          GB_read_key_pntr(gbd));
+        GB_internal_error(error);
+        return error;
+    }
+    if (gbd->flags2.folded_container) return 0;
+    gbc = (GBCONTAINER *)gbd;
+
+    for (index = 0; index < gbc->d.nheader; index++) {
+        if ((gb = GBCONTAINER_ELEM(gbc, index))) {
+            gb_delete_entry(gb);
+        }
+    }
+
+    gbc->flags2.folded_container = 1;
+    Main->call_pending_callbacks();
+    return 0;
+}
+
 int GB_nsons(GBDATA *gbd) {
     /*! return number of child entries
      *
@@ -2966,9 +3002,7 @@ static void re_add_self_cb(GBDATA *gbe, int *calledCounter, GB_CB_TYPE cbtype) {
 
     DatabaseCallback dbcb = makeDatabaseCallback(re_add_self_cb, calledCounter);
     GB_remove_callback(gbe, cbtype, dbcb);
-
-    GB_ERROR error = GB_add_callback(gbe, cbtype, dbcb);
-    gb_assert(!error);
+    ASSERT_NO_ERROR(GB_add_callback(gbe, cbtype, dbcb));
 }
 
 void TEST_db_callbacks_ta_nota() {

@@ -405,7 +405,6 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
 
     char hotkey[]   = "x";
     bool menuloaded = false;
-    bool itemloaded = false;
 
     for (long nmenu = 0; nmenu<num_menus; nmenu++) {
         {
@@ -426,7 +425,6 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
         long num_items = menu[nmenu].numitems;
         for (long nitem=0; nitem<num_items; nitem++) {
             GmenuItem *menuitem=&menu[nmenu].item[nitem];
-            itemloaded = true;
             gde_assert(!menuitem->help || ARB_strBeginsWith(menuitem->help, "agde_"));
             hotkey[0] = menuitem->meta;
             awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey,

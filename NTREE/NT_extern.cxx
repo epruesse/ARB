@@ -552,6 +552,7 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_DENDRO_XPAD,      "dendro_xpadding" },
     { AWAR_DTREE_RADIAL_ZOOM_TEXT, "radial_zoomtext" },
     { AWAR_DTREE_RADIAL_XPAD,      "radial_xpadding" },
+    { AWAR_DTREE_BOOTSTRAP_MIN,    "bootstrap_min" },
     { 0, 0 }
 };
 
@@ -600,6 +601,10 @@ static AW_window *NT_create_tree_settings_window(AW_root *aw_root) {
 
         aws->label("Show bootstrap circles");
         aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
+        aws->at_newline();
+
+        aws->label("Hide bootstrap value below");
+        aws->create_input_field(AWAR_DTREE_BOOTSTRAP_MIN, 4);
         aws->at_newline();
 
         aws->label("Use ellipses");
@@ -1091,6 +1096,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     awr->awar(AWAR_DTREE_CIRCLE_ZOOM)    ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_USE_ELLIPSE)    ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_BOOTSTRAP_MIN)  ->add_callback(expose_cb);
 
     RootCallback reinit_treetype_cb = makeRootCallback(NT_reinit_treetype, ntw);
     awr->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
