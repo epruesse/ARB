@@ -55,7 +55,7 @@ class MismatchWeights {
             }
             weight[probe][PT_N] = sum/4.0;
         }
-        for (int seq = PT_N; seq < PT_BASES; ++seq) {
+        for (int seq = PT_N; seq < PT_BASES; ++seq) {  // UNCHECKED_LOOP (doesnt matter)
             double sum = 0.0;
             for (int probe = PT_A; probe < PT_BASES; ++probe) {
                 sum += weight[probe][seq];
@@ -163,7 +163,7 @@ void MatchRequest::init_accepted_N_mismatches(int ignored_Nmismatches, int when_
 
     accepted_N_mismatches[0] = 0;
     int mm;
-    for (mm = 1; mm<when_less_than_Nmismatches; ++mm) {
+    for (mm = 1; mm<when_less_than_Nmismatches; ++mm) { // LOOP_VECTORIZED
         accepted_N_mismatches[mm] = mm>ignored_Nmismatches ? mm-ignored_Nmismatches : 0;
     }
     pt_assert(mm <= (max_ambig+1));
@@ -402,7 +402,7 @@ static void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence) {
     int slen = strlen(sequence);
     psg.pos_to_weight = new double[slen+1];
     int p;
-    for (p=0; p<slen; p++) {
+    for (p=0; p<slen; p++) { // LOOP_VECTORIZED
         if (type == PT_MATCH_TYPE_WEIGHTED_PLUS_POS) {
             psg.pos_to_weight[p] = calc_position_wmis(p, slen, 0.3, 1.0);
         }
