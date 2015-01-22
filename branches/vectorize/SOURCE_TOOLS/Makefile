@@ -12,10 +12,10 @@ OBJECTS=arb_main_cpp.o arb_main_c.o
 ARB_MAIN_DEPENDS=Makefile arb_main.h
 
 arb_main_cpp.o: arb_main.cxx $(ARB_MAIN_DEPENDS) 
-	$(A_CXX) $(cflags) $(cxxflags) -c $< -o $@ $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< -o $@ $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 arb_main_c.o: arb_main.c $(ARB_MAIN_DEPENDS) arb_main.cxx
-	$(A_CC) $(cflags) -c $< -o $@ $(CC_INCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< -o $@ $(CC_INCLUDES) $(POST_COMPILE) $<
 
 mainwrapper: $(OBJECTS)
 
