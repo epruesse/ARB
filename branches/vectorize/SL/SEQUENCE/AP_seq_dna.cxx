@@ -121,7 +121,7 @@ static long do_combine(size_t sequence_len,
                        COUNT count,
                        SITE site) {
 
-    for (size_t idx = 0; idx<sequence_len; ++idx) {
+    for (size_t idx = 0; idx<sequence_len; ++idx) { // LOOP_VECTORIZED
         char c1 = p1[idx];
         char c2 = p2[idx];
         

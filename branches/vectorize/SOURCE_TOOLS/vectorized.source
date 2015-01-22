@@ -1,3 +1,4 @@
 # [generated] list of source-files for which loop vectorization shall be checked
 PROBE/PT_debug.cxx
 PROBE/PT_match.cxx
+SL/SEQUENCE/AP_seq_dna.cxx
