@@ -1657,7 +1657,7 @@ fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
 #********************************************************************************
 
-up_by_remake: depends proto
+up_by_remake: depends proto vectorize_checks
 
 up: up_by_remake tags valgrind_update
 
@@ -1691,7 +1691,7 @@ comdepends: comtools clrdotdepends
 	$(MAKE) PROBE_COM/PROBE_COM.depends NAMES_COM/NAMES_COM.depends
 	$(MAKE) PROBE_COM/server.depends    NAMES_COM/server.depends
 
-depends: genheaders comdepends
+depends: genheaders comdepends vectorize_checks
 	@echo "$(SEP) Updating other dependencies"
 	$(MAKE) $(subst NAMES_COM/server.depends,,$(subst PROBE_COM/server.depends,,$(ARCHS:.a=.depends))) \
 		HELP_SOURCE/HELP_SOURCE.depends \
@@ -1719,6 +1719,11 @@ dependstest6: silent_clean
 	$(MAKE) nt
 dependstest7: silent_clean
 	$(MAKE) all
+# ------------------------------------------------------------
+
+vectorize_checks:
+	$(MAKE) -C SOURCE_TOOLS -r vectorize_checks
+
 # ------------------------------------------------------------
 
 AISC_MKPTPS/AISC_MKPTPS.dummy: links

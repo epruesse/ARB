@@ -22,10 +22,22 @@ mainwrapper: $(OBJECTS)
 # --------------------------------------------------------------------------------
 
 clean: 
-		rm -f stamp.* valgrind2grep.lst postcompile.sav $(OBJECTS)
+	rm -f stamp.* valgrind2grep.lst postcompile.sav $(OBJECTS)
 
 valgrind_update:
-		./arb_valgrind update
+	./arb_valgrind update
+
+VECTORIZED_SOURCE=vectorized.source
+
+vectorize_checks:
+	( echo "# [generated] list of source-files for which loop vectorization shall be checked"; \
+	  ( cd $(ARBHOME); \
+	    grep --recursive --files-with-matches "--include=*.c" "--include=*.cxx" LOOP_VECTORIZED . \
+	    | sort \
+	    | $(SED) -e 's/^\.\///' \
+          ) \
+	) > $(VECTORIZED_SOURCE).tmp
+	./mv_if_diff $(VECTORIZED_SOURCE).tmp $(VECTORIZED_SOURCE)
 
 # --------------------------------------------------------------------------------
 
