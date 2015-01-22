@@ -395,21 +395,42 @@ sub parse_input(\@) {
   if ($hide_warnings==0) { push @$out_r, @warnout; }
 }
 
+sub die_usage($) {
+  my ($err) = @_;
+  print "Usage: postcompile.pl [Options] sourcefile\n";
+  print "Used as compilation output filter for C/C++\n";
+  print "Options:\n";
+  print "    --no-warnings                 hide warnings (plus related messages)\n";
+  print "    --only-first-error            show only first error\n";
+  print "    --original                    pass-through\n";
+  print "    --show-useless-Weff++         do not suppress useless -Weff++ warnings\n";
+  print "    --hide-Noncopyable-advices    do not advice about using Noncopyable\n";
+
+  if (defined $err) {
+    die "Error in postcompile.pl: $err";
+  }
+}
+
 sub main() {
   my $args = scalar(@ARGV);
   my $pass_through = 0;
+  my $sourcefile = undef;
   while ($args>0) {
     my $arg = shift(@ARGV);
-    if ($arg eq '--no-warnings') { $hide_warnings = 1; }
+    if    ($arg eq '--no-warnings') { $hide_warnings = 1; }
     elsif ($arg eq '--only-first-error') { $stop_after_first_error = 1; }
     elsif ($arg eq '--original') { $pass_through = 1; }
     elsif ($arg eq '--show-useless-Weff++') { $filter_Weffpp = 0; }
     elsif ($arg eq '--hide-Noncopyable-advices') { $filter_Weffpp_copyable = 1; }
+    elsif (not defined $sourcefile) { $sourcefile = $arg; }
     else {
-      die "Usage: postcompile.pl [--no-warnings] [--only-first-error] [--filter-Weff++] [--hide-Noncopyable-advices] [--original]\n";
+      die_usage("Unknown argument '$arg'");
     }
     $args--;
   }
+
+  defined $sourcefile || die_usage("missing argument 'sourcefile'");
+  if (not -f $sourcefile) { die "Unknown sourcefile '$sourcefile'"; }
 
   eval {
     if ($pass_through==1) {
