@@ -60,7 +60,48 @@ my $reg_HEADERLIBS_include = qr/\/HEADERLIBS\//;
 my $stop_after_first_error = 0;
 my $hide_warnings          = 0;
 
+my $dump_loop_optimization  = 0;
+my $check_loop_optimization = 0;
+my $checked_file            = undef; # contains name of sourcefile (if it shall be checked)
+
+my $ARBHOME = $ENV{ARBHOME};
+my $exitcode = 0;
+
 # ----------------------------------------
+
+sub detect_needLoopCheck($) {
+  my ($source) = @_;
+  if ($check_loop_optimization) {
+    use Cwd;
+    my $currDir = Cwd::getcwd();
+    my $relDir = undef;
+    if ($currDir =~ /^$ARBHOME/) { $relDir = $'; }
+    if (not defined $relDir) { die "Can't detect ARBHOME-relative working directory"; }
+    $relDir =~ s/^\/*//og;
+    my $relfile = $relDir.'/'.$source;
+    my $checked_list = $ARBHOME.'/SOURCE_TOOLS/vectorized.source';
+
+    open(LIST,'<'.$checked_list) || die "can't read '$checked_list' (Reason: $!)";
+  SEARCH: foreach (<LIST>) {
+      if (not /^\s*\#/) { # ignore comments
+        if (not /^\s*$/) { # ignore empty lines
+          chomp($_);
+          if ($relfile eq $_) {
+            $checked_file = $source;
+            last SEARCH;
+          }
+        }
+      }
+    }
+    close(LIST);
+    if (not defined $checked_file) {
+      $check_loop_optimization = undef;
+    }
+    elsif ($dump_loop_optimization==2) {
+      $dump_loop_optimization = 0; # do not dump candidates, if file is already checked
+    }
+  }
+}
 
 sub getModtime($) {
   my ($fileOrDir) = @_;
@@ -69,7 +110,7 @@ sub getModtime($) {
 }
 
 my %derived_from_NC = (); # key=classname, value=1/0
-my $NC_save_name = $ENV{ARBHOME}.'/SOURCE_TOOLS/postcompile.sav';
+my $NC_save_name = $ARBHOME.'/SOURCE_TOOLS/postcompile.sav';
 my $NC_loaded    = 0;
 my $NC_loaded_timestamp;
 my $NC_need_save = 0;
@@ -246,6 +287,40 @@ sub suppress_shadow_warning_for($) {
   return is_system_or_builtin($file);
 }
 
+sub compare_message_location($$) {
+  my ($a,$b) = @_;
+  # $a and $b are refs to array [filename location message]
+  my $cmp = $$a[0] cmp $$b[0]; # compare filenames
+  if ($cmp==0) {
+    my ($la,$lb) = (undef,undef);
+    if ($$a[1] =~ /^[0-9]+/o) { $la = $&; }
+    if ($$b[1] =~ /^[0-9]+/o) { $lb = $&; }
+    $cmp = $la <=> $lb; # compare line numbers
+  }
+  return $cmp;
+}
+sub compare_located_messages($$) {
+  my ($a,$b) = @_;
+  # $a and $b are refs to array [filename location message]
+  my $cmp = compare_message_location($a,$b);
+  if ($cmp==0) { $cmp = $$a[2] cmp $$b[2]; } # compare message
+  return $cmp;
+}
+
+sub grep_loop_comments($\@) {
+  my ($source,$hits_r) = @_;
+  open(SRC,'<'.$source) || die "can't read '$source' (Reason: $!)";
+  my $line;
+  my $linenr = 1;
+  while (defined($line=<SRC>)) {
+    if ($line =~ /(LOOP_VECTORIZED|UNCHECKED_LOOP)/o) {
+      push @$hits_r, [ $source, $linenr, $& ];
+    }
+    $linenr++;
+  }
+  close(SRC);
+}
+
 sub parse_input(\@) {
   my ($out_r) = @_;
   my @related = ();
@@ -253,6 +328,7 @@ sub parse_input(\@) {
 
   my @warnout = ();
   my @errout = ();
+  my @loopnote = (); # contains notes about loop-optimizations (refs to array [file line msg])
 
   my $did_show_previous = 0;
   my $is_error          = 0;
@@ -325,20 +401,27 @@ sub parse_input(\@) {
       elsif ($msg =~ $reg_is_note) {
         my $note_after = 1; # 0->message follows note; 1->note follows message
 
-        if ($note_after==1) {
-          if ($did_show_previous==0) {
-            $_ = suppress($_,@warnout, 'note-of-nonshown');
-          }
-          else {
-            if ($msg =~ /in\sexpansion\sof\smacro/o) {
-              drop_last_pushed_relateds(@$curr_out_r);
-            }
-          }
+        my $note = $';
+        if ($note =~ /loop/o) {
+          push @loopnote, [ $file, $line, $msg ];
+          $_ = suppress($_,@warnout, 'loop-note');
         }
         else {
-          # note leads message -> store in related
-          push @related, $_;
-          $_ = suppress($_,@warnout, 'note');
+          if ($note_after==1) {
+            if ($did_show_previous==0) {
+              $_ = suppress($_,@warnout, 'note-of-nonshown');
+            }
+            else {
+              if ($msg =~ /in\sexpansion\sof\smacro/o) {
+                drop_last_pushed_relateds(@$curr_out_r);
+              }
+            }
+          }
+          else {
+            # note leads message -> store in related
+            push @related, $_;
+            $_ = suppress($_,@warnout, 'note');
+          }
         }
       }
     }
@@ -393,6 +476,94 @@ sub parse_input(\@) {
 
   @$out_r = @errout;
   if ($hide_warnings==0) { push @$out_r, @warnout; }
+
+  if ($dump_loop_optimization or $check_loop_optimization) {
+    my @loopmsg = ();
+    foreach my $vref (@loopnote) {
+      my ($file,$line,$msg) = @$vref;
+      my $boring = 0;
+      if ($msg =~ /completely\sunrolled/o) { $boring = 1; }
+      if (not $boring) { push @loopmsg, $vref; }
+    }
+
+    # sort messages and count + replace duplicates
+    @loopmsg = sort { compare_located_messages($a,$b); } @loopmsg;
+    {
+      my @undup_loopmsg = ();
+      my $seenDups = 0;
+      push @loopmsg, [ 'x', 0, '' ]; # forces proper counter on last message
+      foreach (@loopmsg) {
+        my $prev = pop @undup_loopmsg;
+        if (defined $prev) {
+          if (compare_located_messages($prev,$_)!=0) {
+            if ($seenDups>0) { $$prev[2] = $$prev[2].' ['.($seenDups+1).'x]'; } # append counter
+            push @undup_loopmsg, $prev;
+            $seenDups = 0;
+          }
+          else { $seenDups++; }
+        }
+        push @undup_loopmsg, $_;
+      }
+      pop @undup_loopmsg;
+      @loopmsg = @undup_loopmsg;
+    }
+
+    if ($dump_loop_optimization) {
+      if (scalar(@loopmsg)) {
+        push @$out_r,  "---------------------------------------- dump_loop_optimization";
+        foreach my $vref (@loopmsg) {
+          my ($file,$line,$msg) = @$vref;
+          if ($dump_loop_optimization==1 or $msg =~ /vectorized/o) {
+            push @$out_r, "$file:$line: $msg";
+          }
+        }
+        push @$out_r,  "---------------------------------------- dump_loop_optimization [end]";
+      }
+    }
+    if ($check_loop_optimization) {
+      my @comments = ();
+      grep_loop_comments($checked_file, @comments);
+
+      my $errors = 0;
+      foreach my $cref (@comments) {
+        my $loc  = $$cref[0].':'.$$cref[1];
+        my $cmsg = $$cref[2];
+
+        my $was_vectorized = 0;
+        foreach my $vref (@loopmsg) {
+          if (compare_message_location($cref,$vref)==0) {
+            my $vmsg = $$vref[2];
+            if ($vmsg =~ /vectorized/o) { $was_vectorized = 1; }
+          }
+        }
+        if ($cmsg eq 'LOOP_VECTORIZED') {
+          if (not $was_vectorized) {
+            push @$out_r, "$loc: Error: loop vectorization failed";
+            $errors++;
+          }
+        }
+      }
+
+      foreach my $vref (@loopmsg) {
+        my $vmsg = $$vref[2];
+        if ($vmsg =~ /vectorized/o) {
+          my $loc  = $$vref[0].':'.$$vref[1];
+          my $has_loop_comment = undef;
+          foreach my $cref (@comments) {
+            if (compare_message_location($cref,$vref)==0) {
+              $has_loop_comment = $$cref[2];
+            }
+          }
+          if (not defined $has_loop_comment) {
+            push @$out_r, "$loc: Warning: Unchecked optimized loop";
+            push @$out_r, "$loc: Note: Comment with LOOP_VECTORIZED to force check";
+            push @$out_r, "$loc: Note: Comment with UNCHECKED_LOOP to hide this warning";
+          }
+        }
+      }
+      if ($errors) { $exitcode = 1; }
+    }
+  }
 }
 
 sub die_usage($) {
@@ -405,6 +576,10 @@ sub die_usage($) {
   print "    --original                    pass-through\n";
   print "    --show-useless-Weff++         do not suppress useless -Weff++ warnings\n";
   print "    --hide-Noncopyable-advices    do not advice about using Noncopyable\n";
+  print "    --dump-loop-optimization      dump (most) notes related to loop vectorization\n";
+  print "    --loop-optimization-candi     show candidates for loop vectorization-check\n";
+  print "    --check-loop-optimization     if sourcefile is listed in \$ARBHOME/SOURCE_TOOLS/vectorized.source,\n";
+  print "                                  => check commented loops have been vectorized\n";
 
   if (defined $err) {
     die "Error in postcompile.pl: $err";
@@ -422,6 +597,9 @@ sub main() {
     elsif ($arg eq '--original') { $pass_through = 1; }
     elsif ($arg eq '--show-useless-Weff++') { $filter_Weffpp = 0; }
     elsif ($arg eq '--hide-Noncopyable-advices') { $filter_Weffpp_copyable = 1; }
+    elsif ($arg eq '--dump-loop-optimization') { $dump_loop_optimization = 1; }
+    elsif ($arg eq '--loop-optimization-candi') { $dump_loop_optimization = 2; }
+    elsif ($arg eq '--check-loop-optimization') { $check_loop_optimization = 1; }
     elsif (not defined $sourcefile) { $sourcefile = $arg; }
     else {
       die_usage("Unknown argument '$arg'");
@@ -438,6 +616,7 @@ sub main() {
     }
     else {
       my @out = ();
+      detect_needLoopCheck($sourcefile);
       parse_input(@out);
       store_shadow(undef,@out);
       foreach (@out) { print "$_\n"; }
@@ -448,3 +627,4 @@ sub main() {
   if ($err) { die $err; }
 }
 main();
+exit $exitcode;

@@ -244,6 +244,8 @@ endif # DEBUG only
 # control how much you get spammed
 # (please do not change default in SVN, use developer specific setting as below)
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --loop-optimization-candi# show candidates for vectorization check
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --dump-loop-optimization# useful while optimizing code for vectorization
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --original# dont modify compiler output
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --hide-Noncopyable-advices
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --show-useless-Weff++
@@ -621,6 +623,15 @@ ifeq ($(DARWIN),1)
 	TIME:=gtime
 else
 	TIME:=/usr/bin/time
+endif
+
+#---------------------- SSE vectorizer
+
+ifeq ($(DEBUG),0)
+ ifeq ($(USE_GCC_49_OR_HIGHER),yes)
+	cflags += -fopt-info
+	POST_COMPILE += --check-loop-optimization
+ endif
 endif
 
 # -------------------------------------------------------------------------
