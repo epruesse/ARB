@@ -1,0 +1,150 @@
+
+// test for "no tree" below has to match ../../TEMPLATES/arb_global_defs.h@NO_TREE_SELECTED
+
+#define PHYML_CALL(seqtype) \
+        (   GOTO_LOCAL_DIR;GEN_PHYLIP(infile) && \
+            RUN_IN_WINDOW(if [ "$TREE" != "tree_?????" -a ! -z "$TREE" ]; then arb_export_tree $TREE > input_tree.in; INPUT_TREE_PARAM=-uinput_tree.in; fi; \
+                          ($ARBHOME/bin/phyml_20130708 \
+                          --input=infile \
+                          --datatype=seqtype \
+                          --model=$MODEL \
+                          -f$BASEFREQEST \
+                          --bootstrap=$BOOTSTRAP \
+                          --search=$SEARCH \
+                          -o$PARAM_OPTIMIZATION \
+                          --r_seed=$RAND_SEED \
+                          --pinv=$PROPINVAR \
+                          --alpha=$ALPHA \
+                          $INPUT_TREE_PARAM \
+                          $CUSTOM_PARAMS || STOP_ON_FAILURE(phyml_20130708)) &&  \
+                          mv infile_phyml_tree.txt outtree && \
+                          $DISPLAY_FUNC))&
+
+#ifdef PHYML_DNA
+        item: PHYML-20130708 (DNA)
+        seqtype: N
+        itemmethod:PHYML_CALL(nt)
+        itemmeta: P
+#else
+        item: PHYML-20130708 (Amino acids)
+        seqtype: A
+        itemmethod:PHYML_CALL(aa)
+        itemmeta: Y
+#endif
+itemhelp:phyml-20130708.help
+
+// $INPUT_TREE_PARAM is either empty or contains -uinput_tree.in depending on the selection of the starting tree
+
+
+arg:DISPLAY_FUNC
+argtype:choice_menu
+arglabel:What to do with the tree?
+#ifdef PHYML_DNA
+argchoice:ARB ('tree_phyml_'):arb_read_tree tree_phyml_$$ outtree "PRG=phyml-20130708 FILTER=$FILTER STYPE=DNA"
+#else
+argchoice:ARB ('tree_phyml_'):arb_read_tree tree_phyml_$$ outtree "PRG=phyml-20130708 FILTER=$FILTER STYPE=AA"
+#endif
+argchoice:TextEdit:arb_textedit outfile &
+argchoice:Treetool:treetool outtree
+
+
+arg:MODEL
+argtype:choice_menu
+arglabel:Nuc. substitution model
+#ifdef PHYML_DNA
+        argchoice:GTR:GTR
+        argchoice:HKY85 (default):HKY85
+        argchoice:JC69:JC69
+        argchoice:K80:K80
+        argchoice:F81:F81
+        argchoice:F84:F84
+        argchoice:TN93:TN93
+#else
+        argchoice:LG (default):LG
+        argchoice:WAG:WAG
+        argchoice:JTT:JTT
+        argchoice:MtREV:MtREV
+        argchoice:Dayhoff:Dayhoff
+        argchoice:DCMut:DCMut
+        argchoice:RtREV:RtREV
+        argchoice:CpREV:CpREV
+        argchoice:VT:VT
+        argchoice:Blosum62:Blosum62
+        argchoice:MtMam:MtMam
+        argchoice:MtArt:MtArt
+        argchoice:HIVw:HIVw
+        argchoice:HIVb:HIVb
+#endif
+
+arg:PARAM_OPTIMIZATION
+argtype:choice_menu
+arglabel:Specific parameter optimization
+argchoice:Optimize tree topology, branch len, rate params:tlr
+argchoice:Optimize tree topology and branch length:tl
+argchoice:Optimize branch length and rate parameters:lr
+argchoice:Optimize branch length:l
+argchoice:Optimize rate parameters:r
+argchoice:Do not optimize any parameters:n
+
+arg:PROPINVAR
+argtype:text
+arglabel:Proportion of invariable sites\n(Range [0..1] or e to get the maximum likelihood estimate)
+argtext:e
+
+arg:ALPHA
+argtype:text
+arglabel:Distribution of the gamma distribution shape parameter\n(Positive value or e to get the maximum likelihood estimate)
+argtext:e
+
+arg:RAND_SEED
+argtype:text
+arglabel:Pseudo random number generator seed
+argtext:424242
+
+arg:BASEFREQEST
+argtype:choice_menu
+arglabel:Base frequency estimates
+argchoice:Empirical:e
+#ifdef PHYML_DNA
+        argchoice:ML:m
+#else
+        argchoice:Model:m
+#endif
+
+arg:BOOTSTRAP
+arglabel:Bootstrap
+argtype:choice_menu
+argchoice:(default) approximate Bayes branch supports:-5
+argchoice:neither approximate likelihood ratio test nor bootstrap values are computed:0
+argchoice:approximate likelihood ratio test returning aLRT statistics:-1
+argchoice:approximate likelihood ratio test returning Chi2-based parametric branch supports:-2
+argchoice:SH-like branch supports alone:-4
+argchoice:20 boostrap replicates:20
+argchoice:50 boostrap replicates:50
+argchoice:100 boostrap replicates:100
+argchoice:200 boostrap replicates:200
+argchoice:500 boostrap replicates:500
+argchoice:1000 boostrap replicates:1000
+argchoice:10000 boostrap replicates:10000
+
+arg:SEARCH
+argtype:choice_menu
+arglabel:Tree topology search operation option
+argchoice:NNI (default, fast):NNI
+argchoice:SPR (a bit slower than NNI):SPR
+argchoice:BEST (best of NNI and SPR search):BEST
+
+arg:TREE
+argtype:tree
+arglabel:Starting tree
+argchoice:?????
+
+arg:CUSTOM_PARAMS
+argtype:text
+arglabel: Custom parameters
+argtext:
+
+in:TmpInputFile
+informat:genbank
+insave:
+

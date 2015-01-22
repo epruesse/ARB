@@ -1,0 +1,42 @@
+#!/bin/bash
+
+main() {
+    if [ -z "$2" ]; then
+        echo "Usage: arb_repair database outputdatabase [-m] [-r] [-c[tree_xxx]]"
+        echo "       -m            create map file too"
+        echo "       -r            try to repair invalid database"
+        echo "       -c[tree_xxx]  optimize database using tree_xxx or largest tree"
+    else
+        local IN=$1
+        local OUT=$2
+
+        shift 2
+
+        local MAPFILE=
+        local RECOVER=
+        local OPTIMIZE=
+
+        while [ ! -z "$1" ]; do
+            if [ "$1" = "-m" ]; then
+                MAPFILE=$1
+                shift
+            else
+                if [ "$1" = "-r" ]; then
+                    RECOVER=$1
+                    shift
+                else
+                    OPTIMIZE=$1
+                    shift
+                fi
+            fi
+        done
+
+        echo "arb_repair: Repairing database $IN .."
+        echo ""
+        echo "Running 'arb_2_ascii $RECOVER $IN - | arb_2_bin $MAPFILE $RECOVER $OPTIMIZE - $OUT'"
+        arb_2_ascii $RECOVER $IN - | arb_2_bin $MAPFILE $RECOVER $OPTIMIZE - $OUT
+        ls -al $IN $OUT
+    fi
+}
+
+main $*
