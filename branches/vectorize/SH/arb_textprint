@@ -1,2 +1,0 @@
-#!/bin/sh
-arb_wetc -fileedit $1
