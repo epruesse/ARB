@@ -697,8 +697,12 @@ char *DI_MATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *c
             hits2[b]++;
         }
     }
-    for (i = 0; i < AP_MAX; i++)    sum += hits2[i];
-    for (i = 0; i < AP_MAX; i++)    rel_frequencies[i] = hits2[i] / (double) sum;
+    for (i = 0; i < AP_MAX; i++) { // LOOP_VECTORIZED
+        sum += hits2[i];
+    }
+    for (i = 0; i < AP_MAX; i++) {
+        rel_frequencies[i] = hits2[i] / (double) sum;
+    }
     return 0;
 }
 

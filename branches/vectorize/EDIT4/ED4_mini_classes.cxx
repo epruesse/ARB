@@ -95,12 +95,12 @@ void ED4_bases_table::add(const ED4_bases_table& other, int start, int end)
     }
     else {
         if (other.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
-            for (i=start; i<=end; i++) {
+            for (i=start; i<=end; i++) { // LOOP_VECTORIZED
                 set_elem_long(i, get_elem_long(i)+other.get_elem_short(i));
             }
         }
         else {
-            for (i=start; i<=end; i++) {
+            for (i=start; i<=end; i++) { // LOOP_VECTORIZED
                 set_elem_long(i, get_elem_long(i)+other.get_elem_long(i));
             }
         }
@@ -128,12 +128,12 @@ void ED4_bases_table::sub(const ED4_bases_table& other, int start, int end)
     }
     else {
         if (other.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
-            for (i=start; i<=end; i++) {
+            for (i=start; i<=end; i++) { // LOOP_VECTORIZED
                 set_elem_long(i, get_elem_long(i)-other.get_elem_short(i));
             }
         }
         else {
-            for (i=start; i<=end; i++) {
+            for (i=start; i<=end; i++) { // LOOP_VECTORIZED
                 set_elem_long(i, get_elem_long(i)-other.get_elem_long(i));
             }
         }
@@ -181,24 +181,24 @@ void ED4_bases_table::sub_and_add(const ED4_bases_table& Sub, const ED4_bases_ta
     else {
         if (Sub.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
             if (Add.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
-                for (i=start; i<=end; i++) {
+                for (i=start; i<=end; i++) { // LOOP_VECTORIZED
                     set_elem_long(i, get_elem_long(i)-Sub.get_elem_short(i)+Add.get_elem_short(i));
                 }
             }
             else {
-                for (i=start; i<=end; i++) {
+                for (i=start; i<=end; i++) { // LOOP_VECTORIZED
                     set_elem_long(i, get_elem_long(i)-Sub.get_elem_short(i)+Add.get_elem_long(i));
                 }
             }
         }
         else {
             if (Add.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
-                for (i=start; i<=end; i++) {
+                for (i=start; i<=end; i++) { // LOOP_VECTORIZED
                     set_elem_long(i, get_elem_long(i)-Sub.get_elem_long(i)+Add.get_elem_short(i));
                 }
             }
             else {
-                for (i=start; i<=end; i++) {
+                for (i=start; i<=end; i++) { // LOOP_VECTORIZED
                     set_elem_long(i, get_elem_long(i)-Sub.get_elem_long(i)+Add.get_elem_long(i));
                 }
             }
@@ -346,7 +346,9 @@ void ED4_bases_table::change_table_length(int new_length, int default_entry)
             memcpy(new_table, no_of_bases.longTable, min_length*sizeof(*new_table));
             new_table[new_length] = no_of_bases.longTable[no_of_entries];
             if (growth>0) {
-                for (int e=no_of_entries; e<new_length; ++e) new_table[e] = default_entry;
+                for (int e=no_of_entries; e<new_length; ++e) { // LOOP_VECTORIZED
+                    new_table[e] = default_entry;
+                }
             }
 
             delete [] no_of_bases.longTable;
@@ -970,7 +972,7 @@ void ED4_char_table::add(const char *scan_string, int len)
             table(c).inc_long(i);
         }
         ED4_bases_table& t = table('.');
-        for (; i<sz; i++) {
+        for (; i<sz; i++) { // LOOP_VECTORIZED
             t.inc_long(i);
         }
     }
@@ -1005,7 +1007,7 @@ void ED4_char_table::sub(const char *scan_string, int len)
             table(c).dec_long(i);
         }
         ED4_bases_table& t = table('.');
-        for (; i<sz; i++) {
+        for (; i<sz; i++) { // LOOP_VECTORIZED
             t.dec_long(i);
         }
     }
