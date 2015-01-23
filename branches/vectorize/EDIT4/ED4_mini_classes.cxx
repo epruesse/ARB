@@ -19,6 +19,7 @@
 #include <iupac.h>
 
 #include <cctype>
+#include <arb_msg.h>
 
 // ------------------------
 //      ED4_bases_table
@@ -73,6 +74,8 @@ void ED4_bases_table::expand_table_entry_size() { // converts short table into l
     table_entry_size = LONG_TABLE_ELEM_SIZE;
 }
 
+#define INVALID_TABLE_OPERATION() GBK_terminatef("ED4_bases_table: invalid operation at %i", __LINE__)
+
 void ED4_bases_table::add(const ED4_bases_table& other, int start, int end)
 {
     e4_assert(no_of_entries==other.no_of_entries);
@@ -88,9 +91,7 @@ void ED4_bases_table::add(const ED4_bases_table& other, int start, int end)
             }
         }
         else {
-            for (i=start; i<=end; i++) {
-                set_elem_short(i, get_elem_short(i)+other.get_elem_long(i));
-            }
+            INVALID_TABLE_OPERATION(); // cannot add long to short
         }
     }
     else {
@@ -121,9 +122,7 @@ void ED4_bases_table::sub(const ED4_bases_table& other, int start, int end)
             }
         }
         else {
-            for (i=start; i<=end; i++) {
-                set_elem_short(i, get_elem_short(i)-other.get_elem_long(i));
-            }
+            INVALID_TABLE_OPERATION(); // cannot sub long from short
         }
     }
     else {
@@ -153,29 +152,15 @@ void ED4_bases_table::sub_and_add(const ED4_bases_table& Sub, const ED4_bases_ta
 
     int i;
     if (table_entry_size==SHORT_TABLE_ELEM_SIZE) {
-        if (Sub.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
-            if (Add.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
-                for (i=start; i<=end; i++) {
-                    set_elem_short(i, get_elem_short(i)-Sub.get_elem_short(i)+Add.get_elem_short(i));
-                }
-            }
-            else {
-                for (i=start; i<=end; i++) {
-                    set_elem_short(i, get_elem_short(i)-Sub.get_elem_short(i)+Add.get_elem_long(i));
-                }
+        if (Sub.table_entry_size==SHORT_TABLE_ELEM_SIZE &&
+            Add.table_entry_size==SHORT_TABLE_ELEM_SIZE)
+        {
+            for (i=start; i<=end; i++) {
+                set_elem_short(i, get_elem_short(i)-Sub.get_elem_short(i)+Add.get_elem_short(i));
             }
         }
         else {
-            if (Add.table_entry_size==SHORT_TABLE_ELEM_SIZE) {
-                for (i=start; i<=end; i++) {
-                    set_elem_short(i, get_elem_short(i)-Sub.get_elem_long(i)+Add.get_elem_short(i));
-                }
-            }
-            else {
-                for (i=start; i<=end; i++) {
-                    set_elem_short(i, get_elem_short(i)-Sub.get_elem_long(i)+Add.get_elem_long(i));
-                }
-            }
+            INVALID_TABLE_OPERATION(); // cannot add or sub long to/from short
         }
     }
     else {
@@ -1248,6 +1233,53 @@ void TEST_char_table() {
 
     delete BK;
     BK = 0;
+}
+
+void TEST_bases_table() {
+    const int LEN  = 20;
+    const int OFF1 = 7;
+
+    ED4_bases_table short1(LEN), short2(LEN);
+    for (int i = 0; i<100; ++i) short1.inc_short(OFF1);
+    for (int i = 0; i<150; ++i) short2.inc_short(OFF1);
+
+    ED4_bases_table long1(LEN), long2(LEN);
+    long1.expand_table_entry_size();
+    long2.expand_table_entry_size();
+    for (int i = 0; i<2000; ++i) long1.inc_long(OFF1);
+    for (int i = 0; i<2500; ++i) long2.inc_long(OFF1);
+
+    ED4_bases_table shortsum(LEN);
+    shortsum.add(short1, 0, LEN-1); TEST_EXPECT_EQUAL(shortsum[OFF1], 100);
+    shortsum.add(short2, 0, LEN-1); TEST_EXPECT_EQUAL(shortsum[OFF1], 250);
+    shortsum.sub(short1, 0, LEN-1); TEST_EXPECT_EQUAL(shortsum[OFF1], 150);
+
+    shortsum.sub_and_add(short1, short2, PosRange(0, LEN-1)); TEST_EXPECT_EQUAL(shortsum[OFF1], 200);
+
+    // shortsum.add(long1, 0, LEN-1); // invalid operation -> terminate
+
+    ED4_bases_table longsum(LEN);
+    longsum.expand_table_entry_size();
+    longsum.add(long1,  0, LEN-1); TEST_EXPECT_EQUAL(longsum[OFF1], 2000);
+    longsum.add(long2,  0, LEN-1); TEST_EXPECT_EQUAL(longsum[OFF1], 4500);
+    longsum.sub(long1,  0, LEN-1); TEST_EXPECT_EQUAL(longsum[OFF1], 2500);
+    longsum.add(short1, 0, LEN-1); TEST_EXPECT_EQUAL(longsum[OFF1], 2600);
+    longsum.sub(short2, 0, LEN-1); TEST_EXPECT_EQUAL(longsum[OFF1], 2450);
+
+    longsum.sub_and_add(long1,  long2,  PosRange(0, LEN-1)); TEST_EXPECT_EQUAL(longsum[OFF1], 2950);
+    longsum.sub_and_add(short1, short2, PosRange(0, LEN-1)); TEST_EXPECT_EQUAL(longsum[OFF1], 3000);
+    longsum.sub_and_add(long1,  short2, PosRange(0, LEN-1)); TEST_EXPECT_EQUAL(longsum[OFF1], 1150);
+    longsum.sub_and_add(short1, long2,  PosRange(0, LEN-1)); TEST_EXPECT_EQUAL(longsum[OFF1], 3550);
+
+    int pos = -1;
+    TEST_EXPECT_EQUAL(short1.firstDifference(short2, 0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
+    TEST_EXPECT_EQUAL(short1.lastDifference (short2, 0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
+    TEST_EXPECT_EQUAL(short1.firstDifference(long1,  0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
+    TEST_EXPECT_EQUAL(short1.lastDifference (long1,  0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
+    TEST_EXPECT_EQUAL(long2.firstDifference (short2, 0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
+    TEST_EXPECT_EQUAL(long2.lastDifference  (short2, 0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
+    TEST_EXPECT_EQUAL(long2.firstDifference (long1,  0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
+    TEST_EXPECT_EQUAL(long2.lastDifference  (long1,  0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
 }
 
 #endif // UNIT_TESTS
