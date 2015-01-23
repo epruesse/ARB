@@ -629,7 +629,12 @@ endif
 
 ifeq ($(DEBUG),0)
  ifeq ($(USE_GCC_49_OR_HIGHER),yes)
-	cflags += -fopt-info
+#	cflags += -fopt-info
+	cflags += -fopt-info-vec
+
+#	Shows reasons for unsuccessful vectorization:
+#	cflags += -fopt-info-vec-missed
+
 	POST_COMPILE += --check-loop-optimization
  endif
 endif
