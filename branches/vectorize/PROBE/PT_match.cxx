@@ -402,7 +402,7 @@ static void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence) {
     int slen = strlen(sequence);
     psg.pos_to_weight = new double[slen+1];
     int p;
-    for (p=0; p<slen; p++) { // LOOP_VECTORIZED
+    for (p=0; p<slen; p++) { // LOOP_VECTORIZED=4 (no idea why this is instantiated 4 times. inline would cause 2)
         if (type == PT_MATCH_TYPE_WEIGHTED_PLUS_POS) {
             psg.pos_to_weight[p] = calc_position_wmis(p, slen, 0.3, 1.0);
         }

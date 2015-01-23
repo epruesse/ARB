@@ -314,7 +314,7 @@ sub grep_loop_comments($\@) {
   my $linenr = 1;
   while (defined($line=<SRC>)) {
     if ($line =~ /(LOOP_VECTORIZED|UNCHECKED_LOOP)/o) {
-      push @$hits_r, [ $source, $linenr, $& ];
+      push @$hits_r, [ $source, $linenr, $&.$' ];
     }
     $linenr++;
   }
@@ -533,13 +533,38 @@ sub parse_input(\@) {
         foreach my $vref (@loopmsg) {
           if (compare_message_location($cref,$vref)==0) {
             my $vmsg = $$vref[2];
-            if ($vmsg =~ /vectorized/o) { $was_vectorized = 1; }
+            if ($vmsg =~ /vectorized/o) {
+              # push @$out_r, "$loc: Note: vectorized message='$vmsg'";
+              if ($vmsg =~ /\[([0-9]+)x\]/o) { # vectorized multiple times (e.g. in template)
+                $was_vectorized = $1;
+              }
+              else {
+                $was_vectorized = 1;
+              }
+            }
           }
         }
-        if ($cmsg eq 'LOOP_VECTORIZED') {
+        if ($cmsg =~ /^LOOP_VECTORIZED/o) {
+          my $rest = $';
           if (not $was_vectorized) {
             push @$out_r, "$loc: Error: loop vectorization failed";
             $errors++;
+          }
+          else {
+            if ($rest =~ /^=([0-9]+|\*)/o) {
+              my $expect_multiple = $1;
+              if ($expect_multiple ne '*') { # allow any number of instantiations
+                if ($expect_multiple!=$was_vectorized) {
+                  push @$out_r, "$loc: Error: vectorization count mismatch (specified=$expect_multiple, found=$was_vectorized)";
+                  $errors++;
+                }
+              }
+            }
+            elsif ($was_vectorized>1) {
+                push @$out_r, "$loc: Warning: loop gets vectorized $was_vectorized times";
+                push @$out_r, "$loc: Note: Comment with LOOP_VECTORIZED=$was_vectorized to force check of number of instantiations";
+                push @$out_r, "$loc: Note: Comment with LOOP_VECTORIZED=* to hide this warning";
+            }
           }
         }
       }
