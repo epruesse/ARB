@@ -212,17 +212,12 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
         progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", prev_pars, org_pars-prev_pars));
     }
 
-    AP_FLOAT some_root_pars = get_root_node()->costs();
-
     if (oldrootleft->father == oldrootright) {
         oldrootleft->set_root();
     }
     else {
         oldrootright->set_root();
     }
-
-    AP_FLOAT old_root_pars = get_root_node()->costs();
-    ap_assert(some_root_pars == old_root_pars);
 }
 
 AWT_graphic_parsimony::AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)

@@ -283,9 +283,11 @@ Validity AP_tree_nlen::sequence_state_valid() const {
 #endif
             }
         }
+#if defined(ASSERTION_USED)
         else {
             if (is_leaf) ap_assert(sequence->is_bound_to_species()); // can do lazy load if needed
         }
+#endif
     }
 
     if (!is_leaf) {
@@ -998,7 +1000,7 @@ void AP_tree_nlen::restore_nondestructive(const NodeState& state) {
     if (ROOT==mode) restore_root(state);
 }
 
-void AP_tree_nlen::pop(Level IF_ASSERTION_USED(curr_frameLevel), bool& rootPopped) { // pop old tree costs // @@@ rename -> revertToPreviousState
+void AP_tree_nlen::pop(Level IF_ASSERTION_USED(curr_frameLevel), bool& IF_ASSERTION_USED(rootPopped)) { // pop old tree costs // @@@ rename -> revertToPreviousState
     ap_assert(pushed_to_frame == curr_frameLevel); // error in node stack (node wasnt pushed in current frame!)
 
     NodeState *previous = states.pop();
