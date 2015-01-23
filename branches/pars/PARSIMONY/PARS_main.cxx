@@ -72,11 +72,39 @@ static void pars_saveNrefresh_changed_tree(AWT_canvas *ntw) {
     ntw->zoom_reset_and_refresh();
 }
 
+static void set_keep_ghostnodes() {
+    // avoid that saving tree to DB does delete removed nodes
+    // (hack to fix #528)
+    // see ../ARBDB/adtree.cxx@keep_ghostnodes
+    GBDATA         *gb_tree = ap_main->get_tree_root()->get_gb_tree();
+    GB_transaction  ta(gb_tree);
+    GBDATA         *gb_keep = GB_searchOrCreate_int(gb_tree, "keep_ghostnodes", 1);
+    ASSERT_NO_ERROR(GB_set_temporary(gb_keep));
+}
+static void delete_kept_ghostnodes() {
+    GBDATA         *gb_tree = ap_main->get_tree_root()->get_gb_tree();
+    GB_transaction  ta(gb_tree);
+
+    GBDATA *gb_keep = GB_entry(gb_tree, "keep_ghostnodes");
+    if (gb_keep) { // e.g. wrong for quick-add species
+        GB_ERROR error = GB_delete(gb_keep);
+        if (!error) {
+            if (ap_main->get_tree_root()->was_saved()) {
+                // if tree was saved, DB may contain ghostnodes
+                // -> save again to delete them
+                error = global_tree()->save(GB_get_root(gb_tree), 0, 0, 0);
+            }
+        }
+        if (error) aw_message(error);
+    }
+}
+
 __ATTR__NORETURN static void pars_exit(AW_window *aww) {
     AW_root *aw_root = aww->get_root();
     shutdown_macro_recording(aw_root);
 
     ap_main->accept_all();
+    delete_kept_ghostnodes();
 
     aw_root->unlink_awars_from_DB(ap_main->get_gb_main());
 #if defined(DEBUG)
@@ -1103,7 +1131,6 @@ static void pars_reset_optimal_parsimony(AW_window *aww, AWT_canvas *ntw) {
     ntw->refresh();
 }
 
-
 static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PARS_commands *cmds) {
     AW_root *awr     = aw_parent->get_root();
     GBDATA  *gb_main = ap_main->get_gb_main();
@@ -1396,6 +1423,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, false));
 
     AP_user_push_cb(aw_parent, ntw); // push initial tree
+    set_keep_ghostnodes(); // make sure no stacked nodes get deleted
 }
 
 static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmds) {
@@ -1489,8 +1517,8 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def, GBDATA *gb_ma
 
     {
         GB_transaction  ta(gb_main);
-        GBDATA *gb_tree_name = GB_search(gb_main, AWAR_TREE, GB_STRING);
-        char   *tree_name    = GB_read_string(gb_tree_name);
+        GBDATA         *gb_tree_name = GB_search(gb_main, AWAR_TREE, GB_STRING);
+        char           *tree_name    = GB_read_string(gb_tree_name);
 
         awr->awar_string(AWAR_TREE, "", aw_def)->write_string(tree_name);
         free(tree_name);

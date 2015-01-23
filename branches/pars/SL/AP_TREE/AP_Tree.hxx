@@ -132,8 +132,8 @@ public:
 
     virtual void change_root(TreeNode *old, TreeNode *newroot) OVERRIDE;
 
-    virtual GB_ERROR loadFromDB(const char *name) OVERRIDE;
-    virtual GB_ERROR saveToDB() OVERRIDE;
+    GB_ERROR loadFromDB(const char *name) OVERRIDE;
+    GB_ERROR saveToDB() OVERRIDE;
 
     // AP_tree_root interface
 

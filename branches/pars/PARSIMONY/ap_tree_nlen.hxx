@@ -65,12 +65,17 @@ class AP_main;
 
 class AP_pars_root : public AP_tree_root {
     // @@@ add responsibility for node/edge ressources
+    bool has_been_saved;
 public:
     AP_pars_root(AliView *aliView, AP_sequence *seq_proto, bool add_delete_callbacks)
-        : AP_tree_root(aliView, seq_proto, add_delete_callbacks)
+        : AP_tree_root(aliView, seq_proto, add_delete_callbacks),
+          has_been_saved(false)
     {}
     inline TreeNode *makeNode() const OVERRIDE;
     inline void destroyNode(TreeNode *node) const OVERRIDE;
+    GB_ERROR saveToDB() OVERRIDE;
+
+    bool was_saved() const { return has_been_saved; }
 };
 
 typedef uint8_t EdgeIndex;

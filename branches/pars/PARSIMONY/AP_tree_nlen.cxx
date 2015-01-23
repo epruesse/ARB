@@ -1350,3 +1350,9 @@ char* AP_tree_nlen::getSequenceCopy() {
     return s;
 }
 
+
+GB_ERROR AP_pars_root::saveToDB() {
+    has_been_saved = true;
+    return AP_tree_root::saveToDB();
+}
+

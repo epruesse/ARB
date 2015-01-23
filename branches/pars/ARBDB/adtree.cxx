@@ -402,16 +402,18 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
             if (!error) error = GBT_write_int(gb_tree, "nnodes", size);
 
             if (!error) {
-                GBDATA *gb_node;
-                GBDATA *gb_node_next;
+                if (!GB_entry(gb_tree, "keep_ghostnodes")) { // see ../PARSIMONY/PARS_main.cxx@keep_ghostnodes
+                    GBDATA *gb_node;
+                    GBDATA *gb_node_next;
 
-                for (gb_node = GB_entry(gb_tree, "node"); // delete all ghost nodes
-                     gb_node && !error;
-                     gb_node = gb_node_next)
-                {
-                    GBDATA *gbd = GB_entry(gb_node, "id");
-                    gb_node_next = GB_nextEntry(gb_node);
-                    if (!gbd || GB_user_flag(gb_node, GB_USERFLAG_GHOSTNODE)) error = GB_delete(gb_node);
+                    for (gb_node = GB_entry(gb_tree, "node"); // delete all ghost nodes
+                         gb_node && !error;
+                         gb_node = gb_node_next)
+                    {
+                        GBDATA *gbd = GB_entry(gb_node, "id");
+                        gb_node_next = GB_nextEntry(gb_node);
+                        if (!gbd || GB_user_flag(gb_node, GB_USERFLAG_GHOSTNODE)) error = GB_delete(gb_node);
+                    }
                 }
             }
         }
