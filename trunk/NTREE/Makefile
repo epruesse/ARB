@@ -16,7 +16,7 @@ proto:
 	../SOURCE_TOOLS/mv_if_diff NT_local_proto.h.tmp NT_local_proto.h
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(OBJECTS) *.a
