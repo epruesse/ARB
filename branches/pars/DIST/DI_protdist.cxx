@@ -352,7 +352,7 @@ void di_protdist::givens(di_aa_matrix a, long i, long j, long n, double ctheta, 
     long            k;
     double          d;
 
-    for (k = 0; k < n; k++) {
+    for (k = 0; k < n; k++) { // LOOP_VECTORIZED
         if (left) {
             d = ctheta * a[i - 1][k] + stheta * a[j - 1][k];
             a[j - 1][k] = ctheta * a[j - 1][k] - stheta * a[i - 1][k];

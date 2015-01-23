@@ -13,7 +13,7 @@ check_error_codes.stamp: $(ERROR_CHECKER) $(SOURCES) $(HEADERS)
 	@touch $@
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 proto:
 	../AISC_MKPTPS/aisc_mkpt -P -G -w prototypes.h $(OBJECTS:.o=.cxx) >prototypes.h.tmp

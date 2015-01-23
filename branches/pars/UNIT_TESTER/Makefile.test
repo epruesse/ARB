@@ -121,7 +121,7 @@ $(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) Makefile.test Makefile.setup.local
 	../SOURCE_TOOLS/mv_if_diff $@.tmp $@
 
 $(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
-	$(A_CXX) $(cflags) $(cxxflags) -c $< -o $@ -I. $(POST_COMPILE) 
+	$(A_CXX) $(cflags) $(cxxflags) -c $< -o $@ -I. $(POST_COMPILE) $< 
 
 $(TEST_EXE) : $(TEST_OBJ) $(UNIT_TESTER_LIB) $(LINKDEPS)
 	$(LINK_EXECUTABLE) $@ $< $(UNIT_TESTER_LIB) -L../lib $(LINKLIST) $(EXECLIBS)

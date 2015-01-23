@@ -72,7 +72,7 @@ $(LIB_SHARED): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 proto:	global_proto local_proto
 

@@ -251,6 +251,8 @@ endif # DEBUG only
 # (please do not change default in SVN, use developer specific setting as below)
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --original# dont modify compiler output
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --loop-optimization-candi# show candidates for vectorization check
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --dump-loop-optimization# useful while optimizing code for vectorization
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --hide-Noncopyable-advices
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --show-useless-Weff++
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings
@@ -627,6 +629,20 @@ ifeq ($(DARWIN),1)
 	TIME:=gtime
 else
 	TIME:=/usr/bin/time
+endif
+
+#---------------------- SSE vectorizer
+
+ifeq ($(DEBUG),0)
+ ifeq ($(USE_GCC_49_OR_HIGHER),yes)
+#	cflags += -fopt-info
+	cflags += -fopt-info-vec
+
+#	Shows reasons for unsuccessful vectorization:
+#	cflags += -fopt-info-vec-missed
+
+	POST_COMPILE += --check-loop-optimization
+ endif
 endif
 
 # -------------------------------------------------------------------------
@@ -1649,7 +1665,7 @@ fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
 #********************************************************************************
 
-up_by_remake: depends proto
+up_by_remake: depends proto vectorize_checks
 
 up: up_by_remake tags valgrind_update
 
@@ -1683,7 +1699,7 @@ comdepends: comtools clrdotdepends
 	$(MAKE) PROBE_COM/PROBE_COM.depends NAMES_COM/NAMES_COM.depends
 	$(MAKE) PROBE_COM/server.depends    NAMES_COM/server.depends
 
-depends: genheaders comdepends
+depends: genheaders comdepends vectorize_checks
 	@echo "$(SEP) Updating other dependencies"
 	$(MAKE) $(subst NAMES_COM/server.depends,,$(subst PROBE_COM/server.depends,,$(ARCHS:.a=.depends))) \
 		HELP_SOURCE/HELP_SOURCE.depends \
@@ -1711,6 +1727,11 @@ dependstest6: silent_clean
 	$(MAKE) nt
 dependstest7: silent_clean
 	$(MAKE) all
+# ------------------------------------------------------------
+
+vectorize_checks:
+	$(MAKE) -C SOURCE_TOOLS -r vectorize_checks
+
 # ------------------------------------------------------------
 
 AISC_MKPTPS/AISC_MKPTPS.dummy: links
