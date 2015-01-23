@@ -79,6 +79,7 @@ public:
     void remember();
     void revert();
     void accept();
+    void accept_all() { while (currFrame) accept(); }
 
 #if defined(UNIT_TESTS)
     void remember_whole_tree(); // dont use in production

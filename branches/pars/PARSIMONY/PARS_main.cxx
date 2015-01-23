@@ -76,7 +76,7 @@ __ATTR__NORETURN static void pars_exit(AW_window *aww) {
     AW_root *aw_root = aww->get_root();
     shutdown_macro_recording(aw_root);
 
-    ap_main->accept();
+    ap_main->accept_all();
 
     aw_root->unlink_awars_from_DB(ap_main->get_gb_main());
 #if defined(DEBUG)
