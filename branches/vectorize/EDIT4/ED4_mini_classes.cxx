@@ -1237,11 +1237,14 @@ void TEST_char_table() {
 
 void TEST_bases_table() {
     const int LEN  = 20;
-    const int OFF1 = 7;
+    const int OFF1 = 6;
+    const int OFF2 = 7; // adjacent to OFF1
 
     ED4_bases_table short1(LEN), short2(LEN);
     for (int i = 0; i<100; ++i) short1.inc_short(OFF1);
+    for (int i = 0; i<70;  ++i) short1.inc_short(OFF2);
     for (int i = 0; i<150; ++i) short2.inc_short(OFF1);
+    for (int i = 0; i<80;  ++i) short2.inc_short(OFF2);
 
     ED4_bases_table long1(LEN), long2(LEN);
     long1.expand_table_entry_size();
@@ -1250,11 +1253,11 @@ void TEST_bases_table() {
     for (int i = 0; i<2500; ++i) long2.inc_long(OFF1);
 
     ED4_bases_table shortsum(LEN);
-    shortsum.add(short1, 0, LEN-1); TEST_EXPECT_EQUAL(shortsum[OFF1], 100);
-    shortsum.add(short2, 0, LEN-1); TEST_EXPECT_EQUAL(shortsum[OFF1], 250);
-    shortsum.sub(short1, 0, LEN-1); TEST_EXPECT_EQUAL(shortsum[OFF1], 150);
+    shortsum.add(short1, 0, LEN-1); TEST_EXPECT_EQUAL(shortsum[OFF1], 100); TEST_EXPECT_EQUAL(shortsum[OFF2],  70);
+    shortsum.add(short2, 0, LEN-1); TEST_EXPECT_EQUAL(shortsum[OFF1], 250); TEST_EXPECT_EQUAL(shortsum[OFF2], 150);
+    shortsum.sub(short1, 0, LEN-1); TEST_EXPECT_EQUAL(shortsum[OFF1], 150); TEST_EXPECT_EQUAL(shortsum[OFF2],  80);
 
-    shortsum.sub_and_add(short1, short2, PosRange(0, LEN-1)); TEST_EXPECT_EQUAL(shortsum[OFF1], 200);
+    shortsum.sub_and_add(short1, short2, PosRange(0, LEN-1)); TEST_EXPECT_EQUAL(shortsum[OFF1], 200); TEST_EXPECT_EQUAL(shortsum[OFF2], 90);
 
     // shortsum.add(long1, 0, LEN-1); // invalid operation -> terminate
 
@@ -1273,11 +1276,11 @@ void TEST_bases_table() {
 
     int pos = -1;
     TEST_EXPECT_EQUAL(short1.firstDifference(short2, 0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
-    TEST_EXPECT_EQUAL(short1.lastDifference (short2, 0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
+    TEST_EXPECT_EQUAL(short1.lastDifference (short2, 0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF2);
     TEST_EXPECT_EQUAL(short1.firstDifference(long1,  0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
-    TEST_EXPECT_EQUAL(short1.lastDifference (long1,  0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
+    TEST_EXPECT_EQUAL(short1.lastDifference (long1,  0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF2);
     TEST_EXPECT_EQUAL(long2.firstDifference (short2, 0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
-    TEST_EXPECT_EQUAL(long2.lastDifference  (short2, 0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
+    TEST_EXPECT_EQUAL(long2.lastDifference  (short2, 0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF2);
     TEST_EXPECT_EQUAL(long2.firstDifference (long1,  0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
     TEST_EXPECT_EQUAL(long2.lastDifference  (long1,  0, LEN-1, &pos), 1); TEST_EXPECT_EQUAL(pos, OFF1);
 }
