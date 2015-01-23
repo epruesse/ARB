@@ -252,7 +252,7 @@ $(XML_DEPEND) : arb_help2xml.cxx
 	touch $(XML_DEPEND)
 
 %.o: %.cxx
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 $(HELP2XML): arb_help2xml.o $(LIBS) $(use_ARB_main)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS) $(LIBPATH) $(CORE_LIB) $(EXECLIBS)
