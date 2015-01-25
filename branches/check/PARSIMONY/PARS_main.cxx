@@ -217,7 +217,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
                                      key,
                                      leaf->get_seq()->weighted_base_count(),
                                      MIN_SEQUENCE_LENGTH));
-        destroy(leaf);
+        destroy(leaf, ap_main->get_tree_root());
         return 0;
     }
 
