@@ -2105,26 +2105,27 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_prot_opti"));
     TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-initial");
 
-    const int PARSIMONY_ORG = 1101;
+    const int PARSIMONY_ORG = 1763;
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 10);
 
     // [PROTOPTI] opposed to nucleid tests above the initial tree here is already optimized! compare .@NUCOPTI
     // -> adding species approximately reproduces initial topology
+    // (Note: since inserting dots at both sequence ends, tree is no longer optimized)
     //
     // diff initial->add-quick: http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/prot-add-quick.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fprot-initial.tree.expected
     // diff initial->add-NNI:   http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/prot-add-NNI.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fprot-initial.tree.expected
     //
     // Note: comparing these two diffs also demonstrates why quick-adding w/o NNI suffers
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-128, env, true)); // test remove-marked only (same code as part of nt_reAdd)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-816, env, true)); // test remove-marked only (same code as part of nt_reAdd)
     TEST_EXPECT_EQUAL(env.combines_performed(), 5);
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG,     env, true)); // test quick-add
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG-101, env, true)); // test quick-add
     TEST_EXPECT_EQUAL(env.combines_performed(), 306);
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 442);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG-101, env, true)); // test add + NNI
+    TEST_EXPECT_EQUAL(env.combines_performed(), 448);
 
     // test partial-add
     {
@@ -2141,18 +2142,16 @@ void TEST_prot_tree_modifications() {
             env.push();
             // StrCoel9 and StrRamo3 do not differ in seq-range of partial -> any of both may be chosen as brother.
             // behavior should be changed with #605
-            // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-StrCoelP", PARSIMONY_ORG+114, env));
-            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-StrCoelP", PARSIMONY_ORG+168, env)); // @@@ inserted completely wrong?
+            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-StrCoelP", PARSIMONY_ORG+153, env));
             TEST_EXPECT_EQUAL(env.combines_performed(), 4);
             env.pop();
         }
 
         {
             env.push();
-            TEST_EXPECTATION(addingPartialResultsIn(MucRaceP, "MucRacem",          "prot-addPart-MucRaceP",          PARSIMONY_ORG+21, env)); // add MucRaceP
+            TEST_EXPECTATION(addingPartialResultsIn(MucRaceP, "MucRacem",          "prot-addPart-MucRaceP",          PARSIMONY_ORG+42,  env)); // add MucRaceP
             TEST_EXPECT_EQUAL(env.combines_performed(), 6);
-            // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114, env)); // also add StrCoelP
-            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+168+21, env)); // also add StrCoelP // @@@ same misplacement as above
+            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+195, env)); // also add StrCoelP
             TEST_EXPECT_EQUAL(env.combines_performed(), 4);
             env.pop();
         }
@@ -2168,26 +2167,26 @@ void TEST_prot_tree_modifications() {
                 TEST_EXPECT_NO_ERROR(GBT_write_int(MucRaceP, "ARB_partial", 0)); // revert species to "full"
             }
 
-            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG+6, env, false));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 175);
+            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG+1, env, false));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 179);
             TEST_EXPECT_EQUAL(is_partial(MucRaceP), 0); // check MucRaceP was added as full sequence
             // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "MucRacem", env)); // partial created from MucRacem gets inserted next to MucRacem
-            // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "AbdGlauc", env)); // partial created from MucRacem gets inserted next to MucRacem
-            // Note: if added as full sequence MucRaceP is placed next to a subtree of 6 species (containing MucRacem, AbdGlauc and 4 other species)
+            // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "AbdGlauc", env)); // partial created from MucRacem gets inserted wrong
+            TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "SacCere5", env)); // @@@ partial created from MucRacem gets inserted wrong
 
             // add StrCoelP as partial.
             // as expected it is placed next to matching full sequences (does not differ in partial range)
             // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", NULL, PARSIMONY_ORG, env));
-            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "MucRaceP", NULL, PARSIMONY_ORG+78, env)); // @@@ same position as when adding it partial
-            TEST_EXPECT_EQUAL(env.combines_performed(), 4);
+            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "MucRaceP", NULL, PARSIMONY_ORG+123, env)); // @@@ added next to MucRaceP (expected: next to StrCoel9)
+            TEST_EXPECT_EQUAL(env.combines_performed(), 5);
 
             // StrCoelM differs slightly in overlap with StrCoel9/StrRamo3, but has no overlap with MucRaceP
             // reproduces bug described in #609
             // @@@ does not demonstrate anything atm (because StrCoelP already is placed next to MucRaceP above) 
             TEST_EXPECTATION(addingPartialResultsIn(StrCoelM, "StrCoelP", "prot-addPart-bug609",
-                                                    PARSIMONY_ORG+79, // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
+                                                    PARSIMONY_ORG+124, // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
                                                     env));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 5);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             env.pop();
         }
     }
@@ -2197,10 +2196,10 @@ void TEST_prot_tree_modifications() {
     const unsigned seed    = 1417001558;
     const unsigned mixseed = 1418978973;
 
-    const int PARSIMONY_MIXED   = PARSIMONY_ORG + 2190;
-    const int PARSIMONY_NNI     = PARSIMONY_ORG;
-    const int PARSIMONY_NNI_ALL = PARSIMONY_ORG;
-    const int PARSIMONY_OPTI    = PARSIMONY_ORG; // no gain (initial tree already is optimized)
+    const int PARSIMONY_MIXED   = PARSIMONY_ORG + 1661;
+    const int PARSIMONY_NNI     = PARSIMONY_ORG + 90;
+    const int PARSIMONY_NNI_ALL = PARSIMONY_ORG - 101;
+    const int PARSIMONY_OPTI    = PARSIMONY_NNI_ALL;
 
     // -------------------------------------------------------
     //      mix tree (original tree already is optimized)
@@ -2236,11 +2235,11 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 88);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 622);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 375);
 
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 4301);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 3489);
 
     // -----------------------------
     //      test optimize (all)
@@ -2259,16 +2258,16 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 88);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-all-NNI", PARSIMONY_NNI_ALL, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 501);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 613);
 
     GB_random_seed(seed);
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 4301);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 3489);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 66);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 104);
         env.pop();
     }
 }

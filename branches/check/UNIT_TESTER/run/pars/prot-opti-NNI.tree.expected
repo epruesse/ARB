@@ -4,27 +4,27 @@
    (
     (
      (
-      MucRace3:0.002,
-      MucRacem:0.000
-     ):0.004,
-     MucRace2:0.009
-    ):0.057,
-    AbdGlauc:0.052
-   ):0.026,
-   (
-    CddAlbic:0.063,
-    SacCere5:0.076
-   ):0.007
-  ):1.910,
-  (
-   (
-    CytLyti6:0.159,
-    TaxOcell:0.157
+      (
+       (
+        (
+         BctFra12:0.186,
+         SacCere5:1.689
+        ):0.006,
+        CytLyti6:0.176
+       ):0.007,
+       TaxOcell:0.167
+      ):0.202,
+      (
+       StrCoel9:0.078,
+       StrRamo3:0.064
+      ):0.321
+     ):1.794,
+     CddAlbic:0.158
+    ):0.035,
+    AbdGlauc:0.058
    ):0.043,
-   BctFra12:0.173
-  ):0.220
- ):0.179,
- (
-  StrCoel9:0.082,
-  StrRamo3:0.067
- ):0.179);
+   MucRace2:0.009
+  ):0.004,
+  MucRace3:0.002
+ ):0.000,
+ MucRacem:0.000);
