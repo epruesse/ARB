@@ -6,7 +6,7 @@
      MucRace3:0.002,
      (
       MucRacem:0.000,
-      MucRaceP:0.029
+      MucRaceP:0.000
      ):0.000
     ):0.004,
     MucRace2:0.004
@@ -29,7 +29,7 @@
   (
    (
     StrCoel9:0.000,
-    StrCoelP:0.105
+    StrCoelP:0.000
    ):0.054,
    StrRamo3:0.059
   ):0.258
