@@ -1,0 +1,4 @@
+# libraries needed to link arb_ntree
+
+NTREE/NTREE.a
+

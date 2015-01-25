@@ -1,0 +1,3 @@
+# libraries needed to link against SL/REFENTRIES/REFENTRIES.a
+
+lib/libWINDOW.so
