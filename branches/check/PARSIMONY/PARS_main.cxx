@@ -2017,11 +2017,11 @@ void TEST_nucl_tree_modifications() {
             TEST_EXPECT_EQUAL(env.combines_performed(), 6);
 
             // CloButyM differs slightly in overlap with CloButyr/CloButy2, but has no overlap with CorGlutP
-            // reproduces bug described in #609
-            TEST_EXPECTATION(addingPartialResultsIn(CloButyM, "CorGlutP", "nucl-addPart-bug609",
-                                                    PARSIMONY_ORG+9, // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS 
+            // shows bug described in #609 is fixed:
+            TEST_EXPECTATION(addingPartialResultsIn(CloButyM, "CloButyP", "nucl-addPart-bug609",
+                                                    PARSIMONY_ORG+1, // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS 
                                                     env));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 7);
             env.pop();
         }
     }
@@ -2170,24 +2170,19 @@ void TEST_prot_tree_modifications() {
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG,   env, false));
             TEST_EXPECT_EQUAL(env.combines_performed(), 175);
             TEST_EXPECT_EQUAL(is_partial(MucRaceP), 0); // check MucRaceP was added as full sequence
-            // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "MucRacem", env)); // partial created from MucRacem gets inserted next to MucRacem
-            // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "AbdGlauc", env)); // partial created from MucRacem gets inserted wrong
-            // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "SacCere5", env)); // @@@ partial created from MucRacem gets inserted wrong
-            TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "Eukarya EF-Tu", env)); // @@@ and another useless placement... omg
+            TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "Eukarya EF-Tu", env)); // placement might be ok (brother-subtree contains 6 species, 3 of them named MucRace*)
 
             // add StrCoelP as partial.
             // as expected it is placed next to matching full sequences (does not differ in partial range)
-            // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", NULL, PARSIMONY_ORG, env));
-            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "MucRaceP", NULL, PARSIMONY_ORG+18,  env)); // @@@ added next to MucRaceP (expected: next to StrCoel9)
-            TEST_EXPECT_EQUAL(env.combines_performed(), 4);
+            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", NULL, PARSIMONY_ORG, env));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 3);
 
             // StrCoelM differs slightly in overlap with StrCoel9/StrRamo3, but has no overlap with MucRaceP
-            // reproduces bug described in #609
-            // @@@ does not demonstrate anything atm (because StrCoelP already is placed next to MucRaceP above) 
+            // shows bug described in #609 is fixed:
             TEST_EXPECTATION(addingPartialResultsIn(StrCoelM, "StrCoelP", "prot-addPart-bug609",
-                                                    PARSIMONY_ORG+19,  // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
+                                                    PARSIMONY_ORG+1,   // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
                                                     env));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 5);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 4);
             env.pop();
         }
     }
