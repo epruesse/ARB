@@ -615,7 +615,7 @@ AP_FLOAT AP_sequence_protein::count_weighted_bases() const {
         const AP_weights *weights = get_weights();
 
         for (size_t idx = 0; idx<sequence_len; ++idx) {
-            if (notIsGap(sequence[idx])) { // @@@ use notHasGap (as DNA does)
+            if (notHasGap(sequence[idx])) {
                 sum += weights->weight(idx);
             }
         }
