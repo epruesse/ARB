@@ -43,7 +43,7 @@ char *AP_create_dna_to_ap_bases() {
             case 'd': case 'D': val = AP_BASES(AP_A + AP_G + AP_T); break;
             case 'b': case 'B': val = AP_BASES(AP_C + AP_G + AP_T); break;
             case 'n': case 'N': val = AP_BASES(AP_A + AP_G + AP_C + AP_T); break;
-            case '?': case '.': val = AP_BASES(AP_A + AP_G + AP_C + AP_T + AP_GAP); break;
+            case '?': case '.': val = AP_BASES(AP_A + AP_G + AP_C + AP_T + AP_GAP); break; // = AP_DOT
             default:            val = AP_DOT; break; // interpret everything else like a dot (alternative would be to abort with error)
         }
         table[i] = (char)val;

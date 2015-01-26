@@ -344,12 +344,12 @@ void AP_sequence_protein::set(const char *isequence) {
 
             if (c >= 'A' && c <= 'Z') p = prot2AP_PROTEIN[c-'A'];
             else if (c == '-')        p = APP_GAP;
-            else if (c == '.')        p = APP_X; // @@@ use APP_DOT? dna uses AP_DOT
+            else if (c == '.')        p = APP_DOT;
             else if (c == '*')        p = APP_STAR;
 
             if (p == APP_ILLEGAL) {
-                GB_warning(GBS_global_string("Invalid sequence character '%c' replaced by gap", c));
-                p = APP_GAP; // @@@ use APP_DOT here? dna does!
+                GB_warning(GBS_global_string("Invalid sequence character '%c' replaced by dot", c));
+                p = APP_DOT;
             }
 
             seq_prot[oidx] = p;
