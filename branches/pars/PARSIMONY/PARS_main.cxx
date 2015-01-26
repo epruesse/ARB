@@ -217,7 +217,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
                                      key,
                                      leaf->get_seq()->weighted_base_count(),
                                      MIN_SEQUENCE_LENGTH));
-        destroy(leaf);
+        destroy(leaf, ap_main->get_tree_root());
         return 0;
     }
 
@@ -1131,6 +1131,34 @@ static void pars_reset_optimal_parsimony(AW_window *aww, AWT_canvas *ntw) {
     ntw->refresh();
 }
 
+class LowDataCheck {
+    int leafs; // counts leafs with insufficiant data
+    int inner; // same for inner nodes
+
+public:
+    LowDataCheck() : leafs(0), inner(0) {}
+
+    void count(AP_tree_nlen *node);
+
+    int get_leafs() const { return leafs; }
+    int get_inner() const { return inner; }
+};
+
+void LowDataCheck::count(AP_tree_nlen *node) {
+    const AP_sequence *seq   = node->get_seq();
+    AP_FLOAT           bases = seq->weighted_base_count();
+
+    if (node->is_leaf) {
+        if (bases<MIN_SEQUENCE_LENGTH) ++leafs;
+    }
+    else {
+        if (bases<MIN_SEQUENCE_LENGTH) ++inner;
+
+        count(node->get_leftson());
+        count(node->get_rightson());
+    }
+}
+
 static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PARS_commands *cmds) {
     AW_root *awr     = aw_parent->get_root();
     GBDATA  *gb_main = ap_main->get_gb_main();
@@ -1196,6 +1224,23 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
             if (!error) {
                 progress.subtitle("Calculating inner nodes");
                 GLOBAL_PARS->get_root_node()->costs();
+
+                progress.subtitle("Checking amount of data");
+                LowDataCheck lowData;
+                lowData.count(GLOBAL_PARS->get_root_node());
+
+                bool warned = false;
+                if (lowData.get_inner()>0) {
+                    aw_message(GBS_global_string("Inner nodes with insufficient data: %i", lowData.get_leafs()));
+                    warned = true;
+                }
+                if (lowData.get_leafs()>0) {
+                    aw_message(GBS_global_string("Species with insufficient data: %i", lowData.get_leafs()));
+                    warned = true;
+                }
+                if (warned) {
+                    aw_message("Warning: low sequence data detected! (or filter too restrictive)");
+                }
             }
         }
         if (error) aw_popup_exit(error);
@@ -2017,11 +2062,11 @@ void TEST_nucl_tree_modifications() {
             TEST_EXPECT_EQUAL(env.combines_performed(), 6);
 
             // CloButyM differs slightly in overlap with CloButyr/CloButy2, but has no overlap with CorGlutP
-            // reproduces bug described in #609
-            TEST_EXPECTATION(addingPartialResultsIn(CloButyM, "CorGlutP", "nucl-addPart-bug609",
-                                                    PARSIMONY_ORG+9, // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS 
+            // shows bug described in #609 is fixed:
+            TEST_EXPECTATION(addingPartialResultsIn(CloButyM, "CloButyP", "nucl-addPart-bug609",
+                                                    PARSIMONY_ORG+1, // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS 
                                                     env));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 7);
             env.pop();
         }
     }
@@ -2105,7 +2150,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_prot_opti"));
     TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-initial");
 
-    const int PARSIMONY_ORG = 1101;
+    const int PARSIMONY_ORG = 1081;
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 10);
 
@@ -2117,7 +2162,7 @@ void TEST_prot_tree_modifications() {
     //
     // Note: comparing these two diffs also demonstrates why quick-adding w/o NNI suffers
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-128, env, true)); // test remove-marked only (same code as part of nt_reAdd)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-146, env, true)); // test remove-marked only (same code as part of nt_reAdd)
     TEST_EXPECT_EQUAL(env.combines_performed(), 5);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG,     env, true)); // test quick-add
@@ -2131,9 +2176,9 @@ void TEST_prot_tree_modifications() {
         GBDATA *gb_main = env.gbmain();
 
         // create 2 non-overlapping partial species
-        GBDATA    *MucRaceP = createPartialSeqFrom(gb_main, aliname, "MucRaceP", "MucRacem", 0, 60);
-        GBDATA    *StrCoelP = createPartialSeqFrom(gb_main, aliname, "StrCoelP", "StrCoel9", 66-1, 184-1);
-        GBDATA    *StrCoelM = createPartialSeqFrom(gb_main, aliname, "StrCoelM", "StrCoel9", 66-1, 184-1);
+        GBDATA    *MucRaceP = createPartialSeqFrom(gb_main, aliname, "MucRaceP", "MucRacem", 0, 60+4); // (+4 = dots inserted into DB at left end)
+        GBDATA    *StrCoelP = createPartialSeqFrom(gb_main, aliname, "StrCoelP", "StrCoel9", 66-1+4, 184-1+4);
+        GBDATA    *StrCoelM = createPartialSeqFrom(gb_main, aliname, "StrCoelM", "StrCoel9", 66-1+4, 184-1+4);
         TEST_EXPECT_NO_ERROR(modifyOneBase(StrCoelM, aliname, 'Y', 'H')); // change first 'Y' into 'H'
 
         // add StrCoelP (and undo)
@@ -2141,18 +2186,16 @@ void TEST_prot_tree_modifications() {
             env.push();
             // StrCoel9 and StrRamo3 do not differ in seq-range of partial -> any of both may be chosen as brother.
             // behavior should be changed with #605
-            // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-StrCoelP", PARSIMONY_ORG+114, env));
-            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-StrCoelP", PARSIMONY_ORG+168, env)); // @@@ inserted completely wrong?
+            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-StrCoelP", PARSIMONY_ORG,     env));
             TEST_EXPECT_EQUAL(env.combines_performed(), 4);
             env.pop();
         }
 
         {
             env.push();
-            TEST_EXPECTATION(addingPartialResultsIn(MucRaceP, "MucRacem",          "prot-addPart-MucRaceP",          PARSIMONY_ORG+21, env)); // add MucRaceP
+            TEST_EXPECTATION(addingPartialResultsIn(MucRaceP, "MucRacem",          "prot-addPart-MucRaceP",          PARSIMONY_ORG,    env)); // add MucRaceP
             TEST_EXPECT_EQUAL(env.combines_performed(), 6);
-            // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114, env)); // also add StrCoelP
-            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+168+21, env)); // also add StrCoelP // @@@ same misplacement as above
+            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG,    env)); // also add StrCoelP
             TEST_EXPECT_EQUAL(env.combines_performed(), 4);
             env.pop();
         }
@@ -2168,26 +2211,23 @@ void TEST_prot_tree_modifications() {
                 TEST_EXPECT_NO_ERROR(GBT_write_int(MucRaceP, "ARB_partial", 0)); // revert species to "full"
             }
 
-            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG+6, env, false));
+            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG,   env, false));
             TEST_EXPECT_EQUAL(env.combines_performed(), 175);
             TEST_EXPECT_EQUAL(is_partial(MucRaceP), 0); // check MucRaceP was added as full sequence
-            // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "MucRacem", env)); // partial created from MucRacem gets inserted next to MucRacem
-            // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "AbdGlauc", env)); // partial created from MucRacem gets inserted next to MucRacem
-            // Note: if added as full sequence MucRaceP is placed next to a subtree of 6 species (containing MucRacem, AbdGlauc and 4 other species)
+            TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "Eukarya EF-Tu", env)); // partial created from MucRacem gets inserted next to this group
+            // Note: looks ok. group contains MucRacem, AbdGlauc and 4 other species
 
             // add StrCoelP as partial.
             // as expected it is placed next to matching full sequences (does not differ in partial range)
-            // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", NULL, PARSIMONY_ORG, env));
-            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "MucRaceP", NULL, PARSIMONY_ORG+78, env)); // @@@ same position as when adding it partial
-            TEST_EXPECT_EQUAL(env.combines_performed(), 4);
+            TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", NULL, PARSIMONY_ORG, env));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 3);
 
             // StrCoelM differs slightly in overlap with StrCoel9/StrRamo3, but has no overlap with MucRaceP
-            // reproduces bug described in #609
-            // @@@ does not demonstrate anything atm (because StrCoelP already is placed next to MucRaceP above) 
+            // shows bug described in #609 is fixed:
             TEST_EXPECTATION(addingPartialResultsIn(StrCoelM, "StrCoelP", "prot-addPart-bug609",
-                                                    PARSIMONY_ORG+79, // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
+                                                    PARSIMONY_ORG+1,  // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
                                                     env));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 5);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 4);
             env.pop();
         }
     }
@@ -2197,12 +2237,12 @@ void TEST_prot_tree_modifications() {
     const unsigned seed    = 1417001558;
     const unsigned mixseed = 1418978973;
 
-    const int PARSIMONY_MIXED   = PARSIMONY_ORG + 2190;
+    const int PARSIMONY_MIXED   = PARSIMONY_ORG + 1976;
     const int PARSIMONY_NNI     = PARSIMONY_ORG;
     const int PARSIMONY_NNI_ALL = PARSIMONY_ORG;
     const int PARSIMONY_OPTI    = PARSIMONY_ORG; // no gain (initial tree already is optimized)
 
-    // -------------------------------------------------------
+    // ------------------------------------------------------
     //      mix tree (original tree already is optimized)
 
     GB_random_seed(mixseed);
@@ -2236,7 +2276,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 88);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 622);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 536);
 
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL

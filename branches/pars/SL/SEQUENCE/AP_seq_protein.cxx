@@ -344,12 +344,12 @@ void AP_sequence_protein::set(const char *isequence) {
 
             if (c >= 'A' && c <= 'Z') p = prot2AP_PROTEIN[c-'A'];
             else if (c == '-')        p = APP_GAP;
-            else if (c == '.')        p = APP_X; // @@@ use APP_DOT? dna uses AP_DOT
+            else if (c == '.')        p = APP_DOT;
             else if (c == '*')        p = APP_STAR;
 
             if (p == APP_ILLEGAL) {
-                GB_warning(GBS_global_string("Invalid sequence character '%c' replaced by gap", c));
-                p = APP_GAP; // @@@ use APP_DOT here? dna does!
+                GB_warning(GBS_global_string("Invalid sequence character '%c' replaced by dot", c));
+                p = APP_DOT;
             }
 
             seq_prot[oidx] = p;
@@ -527,21 +527,19 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
 
     const AP_weights *weights = get_weights();
 
-    // @@@ to fix #609 replace "IsGap" by "HasGap" below (also use & instead of | for 'both', 'both' as used here in fact means 'any')
-
     long min_end; // minimum of both last non-gap positions
     for (min_end = get_sequence_length()-1; min_end >= 0; --min_end) {
         AP_PROTEINS both = AP_PROTEINS(pf[min_end]|pp[min_end]);
-        if (notIsGap(both)) { // last non-gap found
-            if (notIsGap(pf[min_end])) { // occurred in full sequence
+        if (notHasGap(both)) { // last non-gap found
+            if (notHasGap(pf[min_end])) { // occurred in full sequence
                 for (; min_end >= 0; --min_end) { // search same in partial sequence
-                    if (notIsGap(pp[min_end])) break;
+                    if (notHasGap(pp[min_end])) break;
                 }
             }
             else {
-                ap_assert(notIsGap(pp[min_end])); // occurred in partial sequence
+                ap_assert(notHasGap(pp[min_end])); // occurred in partial sequence
                 for (; min_end >= 0; --min_end) { // search same in full sequence
-                    if (notIsGap(pf[min_end])) break;
+                    if (notHasGap(pf[min_end])) break;
                 }
             }
             break;
@@ -555,16 +553,16 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
         long max_start; // maximum of both first non-gap positions
         for (max_start = 0; max_start <= min_end; ++max_start) {
             AP_PROTEINS both = AP_PROTEINS(pf[max_start]|pp[max_start]);
-            if (notIsGap(both)) { // first non-gap found
-                if (notIsGap(pf[max_start])) { // occurred in full sequence
+            if (notHasGap(both)) { // first non-gap found
+                if (notHasGap(pf[max_start])) { // occurred in full sequence
                     for (; max_start <= min_end; ++max_start) { // search same in partial
-                        if (notIsGap(pp[max_start])) break;
+                        if (notHasGap(pp[max_start])) break;
                     }
                 }
                 else {
-                    ap_assert(notIsGap(pp[max_start])); // occurred in partial sequence
+                    ap_assert(notHasGap(pp[max_start])); // occurred in partial sequence
                     for (; max_start <= min_end; ++max_start) { // search same in full
-                        if (notIsGap(pf[max_start])) break;
+                        if (notHasGap(pf[max_start])) break;
                     }
                 }
                 break;
@@ -617,7 +615,7 @@ AP_FLOAT AP_sequence_protein::count_weighted_bases() const {
         const AP_weights *weights = get_weights();
 
         for (size_t idx = 0; idx<sequence_len; ++idx) {
-            if (notIsGap(sequence[idx])) {
+            if (notHasGap(sequence[idx])) {
                 sum += weights->weight(idx);
             }
         }
