@@ -1131,6 +1131,34 @@ static void pars_reset_optimal_parsimony(AW_window *aww, AWT_canvas *ntw) {
     ntw->refresh();
 }
 
+class LowDataCheck {
+    int leafs; // counts leafs with insufficiant data
+    int inner; // same for inner nodes
+
+public:
+    LowDataCheck() : leafs(0), inner(0) {}
+
+    void count(AP_tree_nlen *node);
+
+    int get_leafs() const { return leafs; }
+    int get_inner() const { return inner; }
+};
+
+void LowDataCheck::count(AP_tree_nlen *node) {
+    const AP_sequence *seq   = node->get_seq();
+    AP_FLOAT           bases = seq->weighted_base_count();
+
+    if (node->is_leaf) {
+        if (bases<MIN_SEQUENCE_LENGTH) ++leafs;
+    }
+    else {
+        if (bases<MIN_SEQUENCE_LENGTH) ++inner;
+
+        count(node->get_leftson());
+        count(node->get_rightson());
+    }
+}
+
 static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PARS_commands *cmds) {
     AW_root *awr     = aw_parent->get_root();
     GBDATA  *gb_main = ap_main->get_gb_main();
@@ -1196,6 +1224,23 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
             if (!error) {
                 progress.subtitle("Calculating inner nodes");
                 GLOBAL_PARS->get_root_node()->costs();
+
+                progress.subtitle("Checking amount of data");
+                LowDataCheck lowData;
+                lowData.count(GLOBAL_PARS->get_root_node());
+
+                bool warned = false;
+                if (lowData.get_inner()>0) {
+                    aw_message(GBS_global_string("Inner nodes with insufficient data: %i", lowData.get_leafs()));
+                    warned = true;
+                }
+                if (lowData.get_leafs()>0) {
+                    aw_message(GBS_global_string("Species with insufficient data: %i", lowData.get_leafs()));
+                    warned = true;
+                }
+                if (warned) {
+                    aw_message("Warning: low sequence data detected! (or filter too restrictive)");
+                }
             }
         }
         if (error) aw_popup_exit(error);
