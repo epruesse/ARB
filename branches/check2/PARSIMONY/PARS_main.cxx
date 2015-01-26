@@ -2154,7 +2154,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 10);
 
-    // [PROTOPTI] opposed to nucleid tests above the initial tree here is already quite optimized! compare .@NUCOPTI
+    // [PROTOPTI] opposed to nucleid tests above the initial tree here is already optimized! compare .@NUCOPTI
     // -> adding species approximately reproduces initial topology
     //
     // diff initial->add-quick: http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/prot-add-quick.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fprot-initial.tree.expected
@@ -2176,7 +2176,7 @@ void TEST_prot_tree_modifications() {
         GBDATA *gb_main = env.gbmain();
 
         // create 2 non-overlapping partial species
-        GBDATA    *MucRaceP = createPartialSeqFrom(gb_main, aliname, "MucRaceP", "MucRacem", 0, 60+4);
+        GBDATA    *MucRaceP = createPartialSeqFrom(gb_main, aliname, "MucRaceP", "MucRacem", 0, 60+4); // (+4 = dots inserted into DB at left end)
         GBDATA    *StrCoelP = createPartialSeqFrom(gb_main, aliname, "StrCoelP", "StrCoel9", 66-1+4, 184-1+4);
         GBDATA    *StrCoelM = createPartialSeqFrom(gb_main, aliname, "StrCoelM", "StrCoel9", 66-1+4, 184-1+4);
         TEST_EXPECT_NO_ERROR(modifyOneBase(StrCoelM, aliname, 'Y', 'H')); // change first 'Y' into 'H'
@@ -2214,10 +2214,8 @@ void TEST_prot_tree_modifications() {
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG,   env, false));
             TEST_EXPECT_EQUAL(env.combines_performed(), 175);
             TEST_EXPECT_EQUAL(is_partial(MucRaceP), 0); // check MucRaceP was added as full sequence
-            // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "MucRacem", env)); // partial created from MucRacem gets inserted next to MucRacem
-            // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "AbdGlauc", env)); // partial created from MucRacem gets inserted next to MucRacem
-            TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "Eukarya EF-Tu", env)); // partial created from MucRacem gets inserted next to group
-            // Note: if added as full sequence MucRaceP is placed next to a subtree of 6 species (containing MucRacem, AbdGlauc and 4 other species)
+            TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "Eukarya EF-Tu", env)); // partial created from MucRacem gets inserted next to this group
+            // Note: looks ok. group contains MucRacem, AbdGlauc and 4 other species
 
             // add StrCoelP as partial.
             // as expected it is placed next to matching full sequences (does not differ in partial range)
@@ -2242,10 +2240,10 @@ void TEST_prot_tree_modifications() {
     const int PARSIMONY_MIXED   = PARSIMONY_ORG + 1976;
     const int PARSIMONY_NNI     = PARSIMONY_ORG;
     const int PARSIMONY_NNI_ALL = PARSIMONY_ORG;
-    const int PARSIMONY_OPTI    = PARSIMONY_ORG; // not much gain (initial tree already is quite optimized)
+    const int PARSIMONY_OPTI    = PARSIMONY_ORG; // no gain (initial tree already is optimized)
 
-    // ------------------------------------------------------------
-    //      mix tree (original tree already is quite optimized)
+    // ------------------------------------------------------
+    //      mix tree (original tree already is optimized)
 
     GB_random_seed(mixseed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_MIX_TREE, "prot-mixed", PARSIMONY_MIXED, env, false));
