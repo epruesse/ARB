@@ -405,7 +405,7 @@ AP_tree_edge* AP_tree_edge::buildChain(int deep, bool skip_hidden,
     return last;
 }
 
-long AP_tree_edge::sizeofChain() {
+long AP_tree_edge::sizeofChain() { // @@@ store info when building chain
     AP_tree_edge *f;
     long c = 0;
     for (f=this; f;  f = f->next) c++;
@@ -911,14 +911,18 @@ ostream& operator<<(ostream& out, const AP_tree_edge& e)
     return out << ' ';
 }
 
-void AP_tree_edge::mixTree(int cnt)
-{
+void AP_tree_edge::mixTree() {
     buildChain(-1);
 
-    while (cnt--)
-    {
-        AP_tree_edge *follow = this;
+    long edges = sizeofChain();
+    long leafs = edges_2_leafs(edges, UNROOTED);
 
+    double balanced_depth = log10(leafs) / log10(2);
+    int    count          = int(balanced_depth*2.0 + .5);
+    if (count<1) count    = 1;
+
+    while (count--) {
+        AP_tree_edge *follow = this;
         while (follow) {
             AP_tree_nlen *son = follow->sonNode();
             if (!son->is_leaf) son->swap_assymetric(GB_random(2) ? AP_LEFT : AP_RIGHT);

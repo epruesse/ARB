@@ -328,7 +328,7 @@ public:
 
     // test methods:
 
-    void mixTree(int cnt);
+    void mixTree();
     int test() const;
     int dumpChain() const;
     void testChain(int deep);

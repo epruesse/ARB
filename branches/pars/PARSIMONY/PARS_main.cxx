@@ -978,6 +978,20 @@ static AW_window *PARS_create_tree_settings_window(AW_root *aw_root) {
     return aws;
 }
 
+static void randomMixTree(AW_window *, AWT_canvas *ntw) {
+    arb_progress progress("Randomizing tree");
+
+    rootEdge()->mixTree();
+    rootEdge()->calc_branchlengths();
+    {
+        ARB_edge newRootEdge = rootNode()->get_tree_root()->find_innermost_edge();
+        newRootEdge.son()->set_root();
+    }
+    AWT_TREE_PARS(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
+    rootNode()->compute_tree();
+    pars_saveNrefresh_changed_tree(ntw);
+}
+
 // -----------------------
 //      test functions
 
@@ -1036,12 +1050,6 @@ static void TESTMENU_treeStats(AW_window *) {
     }
 }
 
-static void TESTMENU_mixTree(AW_window *, AWT_canvas *ntw)
-{
-    rootEdge()->mixTree(100);
-    refreshTree(ntw);
-}
-
 static void TESTMENU_sortTreeByName(AW_window *, AWT_canvas *ntw)
 {
     AP_tree_nlen *root = rootNode();
@@ -1071,7 +1079,6 @@ static void init_TEST_menu(AW_window_menu_modes *awm, AWT_canvas *ntw)
 {
     awm->create_menu("Test[debug]", "g", AWM_ALL);
 
-    awm->insert_menu_topic("mixtree",         "Mix tree",           "M", "", AWM_ALL, makeWindowCallback(TESTMENU_mixTree, ntw));
     awm->insert_menu_topic("treestat",        "Tree statistics",    "s", "", AWM_ALL, TESTMENU_treeStats);
     awm->insert_menu_topic("setlens",         "Set branchlens",     "b", "", AWM_ALL, makeWindowCallback(TESTMENU_setBranchlen, ntw));
     awm->insert_menu_topic("sorttreebyname",  "Sort tree by name",  "o", "", AWM_ALL, makeWindowCallback(TESTMENU_sortTreeByName, ntw));
@@ -1311,6 +1318,10 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         {
             awm->insert_menu_topic("nni",             "Local Optimization (NNI) of Marked Visible Nodes", "L", "",                 AWM_ALL, makeWindowCallback(NT_recursiveNNI, ntw));
             awm->insert_menu_topic("kl_optimization", "Global Optimization of Marked Visible Nodes",      "G", "pa_optimizer.hlp", AWM_ALL, makeWindowCallback(NT_optimize,     ntw));
+            awm->sep______________();
+            awm->insert_sub_menu("Randomize", "M");
+            awm->insert_menu_topic("mixtree", "Random mix tree", "m", "pa_mixtree.hlp", AWM_ALL, makeWindowCallback(randomMixTree, ntw));
+            awm->close_sub_menu();
         }
         awm->close_sub_menu();
         awm->insert_menu_topic("reset", "Reset optimal parsimony", "s", "", AWM_ALL, makeWindowCallback(pars_reset_optimal_parsimony, ntw));
@@ -1771,7 +1782,7 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
             break;
 
         case MOD_MIX_TREE:
-            rootEdge()->mixTree(100);
+            rootEdge()->mixTree();
             break;
     }
 }
@@ -2235,9 +2246,9 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-initial");
 
     const unsigned seed    = 1417001558;
-    const unsigned mixseed = 1418978973;
+    const unsigned mixseed = 1422292802;
 
-    const int PARSIMONY_MIXED   = PARSIMONY_ORG + 1976;
+    const int PARSIMONY_MIXED   = PARSIMONY_ORG + 1997;
     const int PARSIMONY_NNI     = PARSIMONY_ORG;
     const int PARSIMONY_NNI_ALL = PARSIMONY_ORG;
     const int PARSIMONY_OPTI    = PARSIMONY_ORG; // no gain (initial tree already is optimized)
@@ -2252,7 +2263,7 @@ void TEST_prot_tree_modifications() {
     {
         env.push();
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_MIXED, PARSIMONY_MIXED, env));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 80);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 84);
         env.pop();
     }
 
@@ -2273,14 +2284,14 @@ void TEST_prot_tree_modifications() {
     // test branchlength calculation
     // (optimizations below implicitely recalculates branchlengths)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 88);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 89);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 536);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 506);
 
     GB_random_seed(seed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 4301);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 5096);
 
     // -----------------------------
     //      test optimize (all)
@@ -2296,19 +2307,19 @@ void TEST_prot_tree_modifications() {
     // test branchlength calculation
     // (optimizations below implicitely recalculates branchlengths)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 88);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 89);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-all-NNI", PARSIMONY_NNI_ALL, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 501);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 506);
 
     GB_random_seed(seed);
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 4301);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 5096);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 66);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 76);
         env.pop();
     }
 }
