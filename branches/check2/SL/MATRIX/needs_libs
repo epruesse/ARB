@@ -1,0 +1,4 @@
+# libraries needed to link against SL/MATRIX/MATRIX.a
+
+lib/libWINDOW.so
+
