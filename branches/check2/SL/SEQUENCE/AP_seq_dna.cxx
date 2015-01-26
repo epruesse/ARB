@@ -244,21 +244,19 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
 
     const AP_weights *weights = get_weights();
 
-    // @@@ to fix #609 replace "IsGap" by "HasGap" below (also use & instead of | for 'both', 'both' as used here in fact means 'any')
-
     long min_end; // minimum of both last non-gap positions
     for (min_end = get_sequence_length()-1; min_end >= 0; --min_end) {
         char both = pf[min_end]|pp[min_end];
-        if (notIsGap(both)) { // last non-gap found
-            if (notIsGap(pf[min_end])) { // occurred in full sequence
+        if (notHasGap(both)) { // last non-gap found
+            if (notHasGap(pf[min_end])) { // occurred in full sequence
                 for (; min_end >= 0; --min_end) { // search same in partial sequence
-                    if (notIsGap(pp[min_end])) break;
+                    if (notHasGap(pp[min_end])) break;
                 }
             }
             else {
-                ap_assert(notIsGap(pp[min_end])); // occurred in partial sequence
+                ap_assert(notHasGap(pp[min_end])); // occurred in partial sequence
                 for (; min_end >= 0; --min_end) { // search same in full sequence
-                    if (notIsGap(pf[min_end])) break;
+                    if (notHasGap(pf[min_end])) break;
                 }
             }
             break;
@@ -272,16 +270,16 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
         long max_start; // maximum of both first non-gap positions
         for (max_start = 0; max_start <= min_end; ++max_start) {
             char both = pf[max_start]|pp[max_start];
-            if (notIsGap(both)) { // first non-gap found
-                if (notIsGap(pf[max_start])) { // occurred in full sequence
+            if (notHasGap(both)) { // first non-gap found
+                if (notHasGap(pf[max_start])) { // occurred in full sequence
                     for (; max_start <= min_end; ++max_start) { // search same in partial
-                        if (notIsGap(pp[max_start])) break;
+                        if (notHasGap(pp[max_start])) break;
                     }
                 }
                 else {
-                    ap_assert(notIsGap(pp[max_start])); // occurred in partial sequence
+                    ap_assert(notHasGap(pp[max_start])); // occurred in partial sequence
                     for (; max_start <= min_end; ++max_start) { // search same in full
-                        if (notIsGap(pf[max_start])) break;
+                        if (notHasGap(pf[max_start])) break;
                     }
                 }
                 break;

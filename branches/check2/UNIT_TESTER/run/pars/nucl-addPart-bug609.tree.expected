@@ -21,7 +21,10 @@
     (
      (
       CloButy2:0.000,
-      CloButyP:0.000
+      (
+       CloButyP:0.000,
+       CloButyM:0.018
+      ):0.000
      ):0.000,
      CloButyr:0.000
     ):0.145,
@@ -38,10 +41,7 @@
      CurCitre:0.099
     ):0.065,
     (
-     (
-      CorGlutP:0.000,
-      CloButyM:0.000
-     ):0.000,
+     CorGlutP:0.000,
      CorGluta:0.137
     ):0.384
    ):0.121,
