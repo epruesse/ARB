@@ -1318,8 +1318,8 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->sep______________();
         awm->insert_sub_menu("Tree Optimization",        "O");
         {
-            awm->insert_menu_topic("nni",             "Local Optimization (NNI) of Marked Visible Nodes", "L", "",                 AWM_ALL, makeWindowCallback(NT_recursiveNNI, ntw));
-            awm->insert_menu_topic("kl_optimization", "Global Optimization of Marked Visible Nodes",      "G", "pa_optimizer.hlp", AWM_ALL, makeWindowCallback(NT_optimize,     ntw));
+            awm->insert_menu_topic("nni",             "Local Optimization (NNI; marked visible)", "L", "",                 AWM_ALL, makeWindowCallback(NT_recursiveNNI, ntw));
+            awm->insert_menu_topic("kl_optimization", "Global Optimization (whole tree)",         "G", "pa_optimizer.hlp", AWM_ALL, makeWindowCallback(NT_optimize,     ntw));
             awm->sep______________();
             awm->insert_sub_menu("Randomize", "M");
             awm->insert_menu_topic("mixtree", "Random mix tree", "m", "pa_mixtree.hlp", AWM_ALL, makeWindowCallback(randomMixTree, ntw));
@@ -1775,7 +1775,7 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
             calc_branchlengths(env.graphic_tree());
             break;
 
-        case MOD_OPTI_NNI:
+        case MOD_OPTI_NNI: // only marked/unfolded
             recursiveNNI(env.graphic_tree());
             break;
 
@@ -2120,10 +2120,6 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 397);
 
-    GB_random_seed(seed);
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 60586);
-
     // -----------------------------
     //      test optimize (all)
 
@@ -2147,7 +2143,6 @@ void TEST_nucl_tree_modifications() {
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        // @@@ there is no difference in number of combines between TEST_optimizations_some and TEST_optimizations_all. why not?
         TEST_EXPECT_EQUAL(env.combines_performed(), 60586);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
@@ -2290,10 +2285,6 @@ void TEST_prot_tree_modifications() {
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 506);
-
-    GB_random_seed(seed);
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 5096);
 
     // -----------------------------
     //      test optimize (all)
