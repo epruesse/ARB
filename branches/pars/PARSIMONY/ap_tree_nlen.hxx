@@ -254,9 +254,20 @@ class AP_tree_edge : virtual Noncopyable {
 
     static long timeStamp;              // static counter for edge-age
 
-    AP_tree_edge *buildChain(int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip = NULL, int distance = 0, AP_tree_edge *comesFrom = NULL);
+    long buildChainInternal(int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip, int distance, AP_tree_edge*& prev);
+    long buildChain(int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip = NULL) {
+        /*! build a chain of edges for further processing
+         * @param depth            specifies how far to recurse into tree (-1 = recurse whole tree; 0 = this edge only)
+         * @param whichEdges       if MARKED_VISIBLE_EDGES -> do not descend into folded subtrees and subtrees w/o marked species
+         * @param skip             previous node (where recursion came from)
+         * @return size of created chain (number of edges)
+         */
 
-    long sizeofChain();
+        AP_tree_edge *prev = NULL;
+        return buildChainInternal(depth, whichEdges, skip, 0, prev);
+    }
+
+
     void calcDistance();
     void tailDistance(AP_tree_nlen*);
 
