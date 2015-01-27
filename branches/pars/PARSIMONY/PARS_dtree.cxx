@@ -196,7 +196,7 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
     progress.subtitle(GBS_global_string("best=%.1f", org_pars));
 
     while (!progress.aborted()) {
-        AP_FLOAT nni_pars = DOWNCAST(AP_tree_nlen*, at)->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
+        AP_FLOAT nni_pars = DOWNCAST(AP_tree_nlen*, at)->nn_interchange_rek(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY);
 
         if (nni_pars == prev_pars) { // NNI did not reduce costs -> kern-lin
             kernighan_optimize_tree(at, &org_pars);
@@ -312,7 +312,7 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
                         if (clicked.node()) {
                             arb_progress  progress("NNI optimize subtree");
                             AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, clicked.node());
-                            atn->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
+                            atn->nn_interchange_rek(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY);
                             exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
                         }
@@ -322,7 +322,7 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
                         arb_progress progress("NNI optimize tree");
                         long         prevCombineCount = AP_sequence::combine_count();
                         
-                        get_root_node()->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
+                        get_root_node()->nn_interchange_rek(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY);
                         printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
 
                         exports.save = 1;
@@ -601,9 +601,15 @@ void TEST_calc_bootstraps() {
         root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_origi_topo);
 
         TEST_EXPECT_EQUAL(env.combines_performed(), 0);
-        root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_limit_topo);
+
+        root_edge->nni_rek(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL);
+        root->reorder_tree(BIG_BRANCHES_TO_TOP);
+        TEST_EXPECT_NEWICK(nREMARK, root, bs_limit_topo);
         TEST_EXPECT_EQUAL(env.combines_performed(), 214);
-        root_edge->nni_rek(-1, false, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL); root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_estim_topo);
+
+        root_edge->nni_rek(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL);
+        root->reorder_tree(BIG_BRANCHES_TO_TOP);
+        TEST_EXPECT_NEWICK(nREMARK, root, bs_estim_topo);
         TEST_EXPECT_EQUAL(env.combines_performed(), 200);
 
         TEST_EXPECT_EQUAL(env.root_node(), root);

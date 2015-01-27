@@ -60,6 +60,12 @@ enum AP_BL_MODE {
     AP_BL_BOOTSTRAP_ESTIMATE = 12 // calculate estimate of bootstrap (includes AP_BL_BOOTSTRAP_LIMIT)
 };
 
+enum EdgeSpec {
+    ANY_EDGE,
+    MARKED_VISIBLE_EDGES,
+};
+const int UNLIMITED = -1;
+
 class AP_tree_edge;
 class AP_main;
 
@@ -162,10 +168,7 @@ public:
     // tree optimization methods:
     void parsimony_rek(char *mutPerSite = NULL);
 
-    AP_FLOAT nn_interchange_rek(int         deep,   // -1 means: do whole subtree
-                                AP_BL_MODE  mode,
-                                bool        skip_hidden);
-
+    AP_FLOAT nn_interchange_rek(int depth, EdgeSpec whichEdges, AP_BL_MODE mode);
     AP_FLOAT nn_interchange(AP_FLOAT parsimony, AP_BL_MODE mode);
 
     void kernighan_rek(int         rek_deep,
@@ -259,17 +262,8 @@ class AP_tree_edge : virtual Noncopyable {
     long          age;                  // age of the edge
 
     static long timeStamp;              // static counter for edge-age
-    // recursive methods:
-    //
-    //  deep:   determines how deep we go into the tree
-    //          -1 means we go through the whole tree
-    //           0 means we only act on the actual edge
 
-    AP_tree_edge *buildChain(int                 deep,
-                             bool                skip_hidden = false,
-                             int                 distance    = 0,
-                             const AP_tree_nlen *skip        = NULL,
-                             AP_tree_edge       *comesFrom   = NULL);
+    AP_tree_edge *buildChain(int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip = NULL, int distance = 0, AP_tree_edge *comesFrom = NULL);
 
     long sizeofChain();
     void calcDistance();
@@ -319,9 +313,9 @@ public:
 
     // tree optimization:
 
-    AP_FLOAT nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_tree_nlen *skipNode);
+    AP_FLOAT nni_rek(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode);
 
-    AP_FLOAT calc_branchlengths() { return nni_rek(-1, false, AP_BL_BL_ONLY, NULL); }
+    AP_FLOAT calc_branchlengths() { return nni_rek(UNLIMITED, ANY_EDGE, AP_BL_BL_ONLY, NULL); }
 
     AP_FLOAT nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps);
     AP_FLOAT nni(AP_FLOAT pars_one, AP_BL_MODE mode) { return nni_mutPerSite(pars_one, mode, NULL); }

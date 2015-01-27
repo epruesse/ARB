@@ -1061,21 +1061,15 @@ AP_FLOAT AP_tree_nlen::costs(char *mutPerSite) {
     return mutation_rate;
 }
 
-AP_FLOAT AP_tree_nlen::nn_interchange_rek(int deep, AP_BL_MODE mode, bool skip_hidden)
-{
-    if (!father)
-    {
-        return rootEdge()->nni_rek(deep, skip_hidden, mode, NULL);
+AP_FLOAT AP_tree_nlen::nn_interchange_rek(int depth, EdgeSpec whichEdges, AP_BL_MODE mode) {
+    if (!father) {
+        return rootEdge()->nni_rek(depth, whichEdges, mode, NULL);
     }
-
-    if (!father->father)
-    {
+    if (!father->father) {
         AP_tree_edge *e = rootEdge();
-
-        return e->nni_rek(deep, skip_hidden, mode, e->otherNode(this));
+        return e->nni_rek(depth, whichEdges, mode, e->otherNode(this));
     }
-
-    return edgeTo(get_father())->nni_rek(deep, skip_hidden, mode, get_father());
+    return edgeTo(get_father())->nni_rek(depth, whichEdges, mode, get_father());
 }
 
 

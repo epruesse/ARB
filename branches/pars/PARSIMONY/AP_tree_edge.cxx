@@ -78,7 +78,7 @@ void AP_tree_edge::destroy(AP_tree_nlen *tree) {
     }
     ap_assert(edge); // got no edges?
 
-    edge->buildChain(-1);
+    edge->buildChain(UNLIMITED, ANY_EDGE);
     while (edge) {
         AP_tree_edge *next = edge->Next();
         delete edge;
@@ -363,10 +363,10 @@ int AP_tree_edge::test() const
     return ok;
 }
 
-void AP_tree_edge::testChain(int deep)
+void AP_tree_edge::testChain(int deep) // @@@ elim
 {
     cout << "Building chain (deep=" << deep << ")\n";
-    buildChain(deep, false);
+    buildChain(deep, ANY_EDGE);
     int inChain = dumpChain();
     cout << "Edges in Chain = " << inChain << '\n';
 }
@@ -376,32 +376,38 @@ int AP_tree_edge::dumpChain() const
     return next ? 1+next->dumpChain() : 1;
 }
 
-AP_tree_edge* AP_tree_edge::buildChain(int deep, bool skip_hidden,
-                                       int distanceToInsert,
-                                       const AP_tree_nlen *skip,
-                                       AP_tree_edge *comesFrom)
-{
+AP_tree_edge* AP_tree_edge::buildChain(int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip, int distanceToStart, AP_tree_edge *comesFrom) {
+    /*! build a chain of edges for further processing
+     * @param depth            specifies how far to recurse into tree (-1 = recurse whole tree; 0 = this edge only)
+     * @param whichEdges       = MARKED_VISIBLE_EDGES -> do not descend into folded subtrees and subtrees w/o marked species
+     * @param skip             previous node (where recursion came from)
+     * @param distanceToStart  distance written to edge data (incremented with each recursion step)
+     * @param comesFrom        previous edge in chain (NULL = start of chain)
+     */
+
     AP_tree_edge *last = this;
 
-    data.distance = distanceToInsert++;
+    data.distance                  = distanceToStart;
     if (comesFrom) comesFrom->next = this;
-    this->next = NULL;
-    if (skip_hidden) {
+    this->next                     = NULL;
+
+    if (whichEdges == MARKED_VISIBLE_EDGES) {
         if (node[0]->gr.hidden) return last;
         if (node[1]->gr.hidden) return last;
         if ((!node[0]->gr.has_marked_children) && (!node[1]->gr.has_marked_children)) return last;
     }
 
-    if (deep--)
-        for (int n=0; n<2; n++)
+    if (depth) {
+        for (int n=0; n<2; n++) {
             if (node[n]!=skip && !node[n]->is_leaf) {
                 for (int e=0; e<3; e++) {
                     if (node[n]->edge[e]!=this) {
-                        last = node[n]->edge[e]->buildChain(deep, skip_hidden, distanceToInsert, node[n], last);
+                        last = node[n]->edge[e]->buildChain(depth-1, whichEdges, node[n], distanceToStart+1, last);
                     }
                 }
             }
-
+        }
+    }
     return last;
 }
 
@@ -662,20 +668,20 @@ inline void undefine_branchlengths(AP_tree_nlen *node) {
     node->rightlen = AP_UNDEF_BL;
 }
 
-AP_FLOAT AP_tree_edge::nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_tree_nlen *skipNode) {
-    if (!rootNode())        return 0.0;
-    if (rootNode()->is_leaf)    return rootNode()->costs();
+AP_FLOAT AP_tree_edge::nni_rek(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode) {
+    if (!rootNode())         return 0.0;
+    if (rootNode()->is_leaf) return rootNode()->costs();
 
     AP_tree_edge *oldRootEdge = rootEdge();
 
-    if (deep>=0) set_root();
+    if (depth>=0) set_root();
 
     AP_FLOAT old_parsimony = rootNode()->costs();
     AP_FLOAT new_parsimony = old_parsimony;
 
     ap_assert(allBranchlengthsAreDefined(rootNode()));
 
-    buildChain(deep, skip_hidden, 0, skipNode);
+    buildChain(depth, whichEdges, skipNode);
 
     long          cs             = sizeofChain();
     bool          recalc_lengths = mode & AP_BL_BL_ONLY;
@@ -912,7 +918,7 @@ ostream& operator<<(ostream& out, const AP_tree_edge& e)
 }
 
 void AP_tree_edge::mixTree() {
-    buildChain(-1);
+    buildChain(UNLIMITED, ANY_EDGE);
 
     long edges = sizeofChain();
     long leafs = edges_2_leafs(edges, UNROOTED);

@@ -308,13 +308,12 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
         ASSERT_VALID_TREE(rootNode());
 
         if (!isits->quick_add_flag) {
-            int deep                           = 5;
-            if (isits->every_sixteenth()) deep = -1;
-            
+            int depth = isits->every_sixteenth() ? UNLIMITED : 5;
+
             arb_progress progress("optimization");
-            // @@@ better call nn_interchange_rek with 'skip_hidden' == false?
+            // @@@ better call nn_interchange_rek with ANY_EDGE?
             // -> will slightly increase number of combines, but skipping hidden/unmarked subtrees doesnt seem to make any sense
-            leaf->get_father()->nn_interchange_rek(deep, AP_BL_NNI_ONLY, true);
+            leaf->get_father()->nn_interchange_rek(depth, MARKED_VISIBLE_EDGES, AP_BL_NNI_ONLY);
             ASSERT_VALID_TREE(rootNode());
         }
         AP_tree_nlen *brother = leaf->get_brother();
@@ -428,7 +427,7 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
         GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
 
         if (!quick) {
-            rootEdge()->nni_rek(-1, false, AP_BL_NNI_ONLY, NULL);
+            rootEdge()->nni_rek(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY, NULL);
             ++isits.get_progress();
         }
 
@@ -907,7 +906,7 @@ static void NT_calc_branch_lengths(AW_window *, AWT_canvas *ntw) {
 static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
     arb_progress progress("Calculating Bootstrap Limit");
     AP_BL_MODE mode       = AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY);
-    rootEdge()->nni_rek(-1, false, mode, NULL);
+    rootEdge()->nni_rek(UNLIMITED, ANY_EDGE, mode, NULL);
     AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
     AWT_TREE(ntw)->displayed_root = AWT_TREE(ntw)->get_root_node();
     pars_saveNrefresh_changed_tree(ntw);
@@ -932,7 +931,7 @@ static void recursiveNNI(AWT_graphic_parsimony *agt) {
     AP_FLOAT prevPars = orgPars;
     progress.subtitle(GBS_global_string("best=%.1f", orgPars));
     while (!progress.aborted()) {
-        AP_FLOAT currPars = rootEdge()->nni_rek(-1, true, AP_BL_NNI_ONLY, NULL);
+        AP_FLOAT currPars = rootEdge()->nni_rek(UNLIMITED, MARKED_VISIBLE_EDGES, AP_BL_NNI_ONLY, NULL);
         if (currPars == prevPars) break; // no improvement -> abort
         progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", currPars, orgPars-currPars));
         prevPars = currPars;
