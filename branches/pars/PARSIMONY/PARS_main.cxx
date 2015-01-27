@@ -981,7 +981,10 @@ static AW_window *PARS_create_tree_settings_window(AW_root *aw_root) {
 static void randomMixTree(AW_window *, AWT_canvas *ntw) {
     arb_progress progress("Randomizing tree");
 
+    progress.subtitle("mixing");
     rootEdge()->mixTree();
+
+    progress.subtitle("calculating branchlengths");
     rootEdge()->calc_branchlengths();
     {
         ARB_edge newRootEdge = rootNode()->get_tree_root()->find_innermost_edge();

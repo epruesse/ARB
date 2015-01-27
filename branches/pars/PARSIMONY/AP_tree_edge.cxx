@@ -921,12 +921,14 @@ void AP_tree_edge::mixTree() {
     int    count          = int(balanced_depth*2.0 + .5);
     if (count<1) count    = 1;
 
-    while (count--) {
+    arb_progress progress(count*edges);
+    while (count-- && !progress.aborted()) {
         AP_tree_edge *follow = this;
         while (follow) {
             AP_tree_nlen *son = follow->sonNode();
             if (!son->is_leaf) son->swap_assymetric(GB_random(2) ? AP_LEFT : AP_RIGHT);
-            follow = follow->next;
+            follow            = follow->next;
+            ++progress;
         }
     }
 }
