@@ -253,8 +253,6 @@ private:
     static inline int force_legal_width(int width) { return width<0 ? 0 : (width>128 ? 128 : width); }
 
     void buildLeafList_rek(AP_tree **list, long& num);
-    void buildNodeList_rek(AP_tree **list, long& num);
-    void buildBranchList_rek(AP_tree **list, long& num, bool create_terminal_branches, int deep);
 
     const AP_tree *flag_branch() const { return get_father()->get_father() ? this : get_father()->get_leftson(); }
 
@@ -334,10 +332,6 @@ public:
     void reset_angle() { set_angle(tree_defaults::ANGLE); }
 
     void buildLeafList(AP_tree **&list, long &num); // returns a list of leafs
-    void buildNodeList(AP_tree **&list, long &num); // returns a list of inner nodes (w/o root)
-    void buildBranchList(AP_tree **&list, long &num, bool create_terminal_branches, int deep);
-
-    AP_tree **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)
 
     void clear_branch_flags();
 

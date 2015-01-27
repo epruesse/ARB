@@ -102,8 +102,8 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ renam
     Level      pushed_to_frame;    // last frame this node has been pushed onto, 0 = none // @@@ rename (push->remember)
     StateStack states;             // containes previous states of 'this'
 
-    void createListRekUp(AP_CO_LIST *list, int *cn);
-    void createListRekSide(AP_CO_LIST *list, int *cn);
+    void createListRekUp(AP_CO_LIST *list, int *cn); // @@@ used?
+    void createListRekSide(AP_CO_LIST *list, int *cn); // @@@ used?
     void forget_relatives() {
         AP_tree::forget_relatives();
     }
@@ -111,6 +111,9 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ renam
     void restore_sequence(NodeState& state);
     void restore_sequence_nondestructive(const NodeState& state);
     void restore_root(const NodeState& state);
+
+    void buildNodeList_rek(AP_tree **list, long& num);
+    void buildBranchList_rek(AP_tree **list, long& num, bool create_terminal_branches, int deep);
 
 protected:
     ~AP_tree_nlen() OVERRIDE { ap_assert(states.empty()); }
@@ -186,8 +189,12 @@ public:
 
     // for crossover creates a list of 3 times the nodes with all
     // ancestors in it
-    AP_CO_LIST * createList(int *size);
+    AP_CO_LIST * createList(int *size); // @@@ used?
 
+    void buildNodeList(AP_tree **&list, long &num); // returns a list of inner nodes (w/o root) // @@@ change listtype to AP_tree_nlen**
+    void buildBranchList(AP_tree **&list, long &num, bool create_terminal_branches, int deep); // @@@ change listtype to AP_tree_nlen**
+    AP_tree **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs) // @@@ change listtype to AP_tree_nlen**
+    
     // misc stuff:
 
     void setBranchlen(double leftLen, double rightLen) { leftlen = leftLen; rightlen = rightLen; }

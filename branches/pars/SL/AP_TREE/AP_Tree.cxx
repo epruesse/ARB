@@ -854,10 +854,6 @@ AP_UPDATE_FLAGS AP_tree::check_update() {
     }
 }
 
-#if defined(WARN_TODO)
-#warning buildLeafList, buildNodeList and buildBranchList should return a AP_tree_list (new class!)
-#endif
-
 void AP_tree::buildLeafList_rek(AP_tree **list, long& num) {
     // builds a list of all species
     if (!is_leaf) {
@@ -880,70 +876,6 @@ void AP_tree::buildLeafList(AP_tree **&list, long &num) {
 
     ap_assert(count == num);
 }
-
-void AP_tree::buildNodeList_rek(AP_tree **list, long& num) {
-    // builds a list of all inner nodes (w/o root node)
-    if (!is_leaf) {
-        if (father) list[num++] = this;
-        get_leftson()->buildNodeList_rek(list, num);
-        get_rightson()->buildNodeList_rek(list, num);
-    }
-}
-
-void AP_tree::buildNodeList(AP_tree **&list, long &num) {
-    num = this->count_leafs()-1;
-    list = new AP_tree *[num+1];
-    list[num] = 0;
-    num  = 0;
-    buildNodeList_rek(list, num);
-}
-
-void AP_tree::buildBranchList_rek(AP_tree **list, long& num, bool create_terminal_branches, int deep) {
-    // builds a list of all species
-    // (returns pairs of leafs/father and nodes/father)
-
-    if (deep) {
-        if (father && (create_terminal_branches || !is_leaf)) {
-            if (father->father) {
-                list[num++] = this;
-                list[num++] = get_father();
-            }
-            else {                  // root
-                if (father->leftson == this) {
-                    list[num++] = this;
-                    list[num++] = get_brother();
-                }
-            }
-        }
-        if (!is_leaf) {
-            get_leftson() ->buildBranchList_rek(list, num, create_terminal_branches, deep-1);
-            get_rightson()->buildBranchList_rek(list, num, create_terminal_branches, deep-1);
-        }
-    }
-}
-
-void AP_tree::buildBranchList(AP_tree **&list, long &num, bool create_terminal_branches, int deep) {
-    if (deep>=0) {
-        num = 2;
-        for (int i=0; i<deep; i++) num *= 2;
-    }
-    else {
-        num = count_leafs() * (create_terminal_branches ? 2 : 1);
-    }
-
-    ap_assert(num >= 0);
-
-    list = new AP_tree *[num*2+4];
-
-    if (num) {
-        long count = 0;
-
-        buildBranchList_rek(list, count, create_terminal_branches, deep);
-        list[count] = 0;
-        num         = count/2;
-    }
-}
-
 
 long AP_tree_root::remove_leafs(AWT_RemoveType awt_remove_type) {
     // may remove the complete tree
@@ -989,39 +921,6 @@ long AP_tree_root::remove_leafs(AWT_RemoveType awt_remove_type) {
 
     ASSERT_VALID_TREE_OR_NULL(get_root_node());
     return removed;
-}
-
-// ----------------------------------------
-
-AP_tree ** AP_tree::getRandomNodes(int anzahl) {
-    // function returns a random constructed tree
-    // root is tree with species (needed to build a list of species)
-
-    AP_tree **retlist = NULL;
-    if (anzahl) {
-        AP_tree **list; 
-        long      sumnodes;
-        buildNodeList(list, sumnodes);
-
-        if (sumnodes) {
-            retlist = new AP_tree* [anzahl];
-
-            long count = sumnodes;
-            for (int i=0; i< anzahl; i++) {
-                long num = GB_random(count);
-
-                retlist[i] = list[num]; // export node
-                count--;                // exclude node
-
-                list[num]   = list[count];
-                list[count] = retlist[i];
-
-                if (count == 0) count = sumnodes; // restart it
-            }
-        }
-        delete [] list;
-    }
-    return retlist;
 }
 
 // --------------------------------------------------------------------------------
