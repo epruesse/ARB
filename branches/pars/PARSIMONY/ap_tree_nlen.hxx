@@ -311,12 +311,7 @@ public:
     AP_FLOAT nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps);
     AP_FLOAT nni(AP_FLOAT pars_one, AP_BL_MODE mode) { return nni_mutPerSite(pars_one, mode, NULL); }
 
-    // test methods:
-
     void mixTree();
-    int test() const;
-    int dumpChain() const;
-    void testChain(int deep);
 
     int Distance() const { ap_assert(distanceOK()); return (node[0]->distance+node[1]->distance) >> 1; }
     int distanceToBorder(int maxsearch=INT_MAX, AP_tree_nlen *skipNode=NULL) const; // obsolete

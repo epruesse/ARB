@@ -1056,23 +1056,6 @@ static void TESTMENU_sortTreeByName(AW_window *, AWT_canvas *ntw)
     refreshTree(ntw);
 }
 
-static void TESTMENU_buildAndDumpChain(AW_window *)
-{
-    AP_tree_nlen *root = rootNode();
-
-    root->get_leftson()->edgeTo(root->get_rightson())->testChain(2);
-    root->get_leftson()->edgeTo(root->get_rightson())->testChain(3);
-    root->get_leftson()->edgeTo(root->get_rightson())->testChain(4);
-    root->get_leftson()->edgeTo(root->get_rightson())->testChain(5);
-    root->get_leftson()->edgeTo(root->get_rightson())->testChain(6);
-    root->get_leftson()->edgeTo(root->get_rightson())->testChain(7);
-    root->get_leftson()->edgeTo(root->get_rightson())->testChain(8);
-    root->get_leftson()->edgeTo(root->get_rightson())->testChain(9);
-    root->get_leftson()->edgeTo(root->get_rightson())->testChain(10);
-    root->get_leftson()->edgeTo(root->get_rightson())->testChain(11);
-    root->get_leftson()->edgeTo(root->get_rightson())->testChain(-1);
-}
-
 static void init_TEST_menu(AW_window_menu_modes *awm, AWT_canvas *ntw)
 {
     awm->create_menu("Test[debug]", "g", AWM_ALL);
@@ -1080,7 +1063,6 @@ static void init_TEST_menu(AW_window_menu_modes *awm, AWT_canvas *ntw)
     awm->insert_menu_topic("treestat",        "Tree statistics",    "s", "", AWM_ALL, TESTMENU_treeStats);
     awm->insert_menu_topic("setlens",         "Set branchlens",     "b", "", AWM_ALL, makeWindowCallback(TESTMENU_setBranchlen, ntw));
     awm->insert_menu_topic("sorttreebyname",  "Sort tree by name",  "o", "", AWM_ALL, makeWindowCallback(TESTMENU_sortTreeByName, ntw));
-    awm->insert_menu_topic("buildndumpchain", "Build & dump chain", "c", "", AWM_ALL, TESTMENU_buildAndDumpChain);
 }
 #endif // TESTMENU
 

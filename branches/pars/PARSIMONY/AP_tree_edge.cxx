@@ -318,64 +318,6 @@ void AP_tree_edge::relink(AP_tree_nlen *node1, AP_tree_nlen *node2) {
     node2->index[index[1]] = 1;
 }
 
-int AP_tree_edge::test() const
-{
-    int ok = 1;     // result is used by
-    int n;
-
-    for (n=0; n<2; n++)
-    {
-        if (node[n]->edge[index[n]]!=this)
-        {
-            int i;
-
-            for (i=0; i<3; i++)
-            {
-                if (node[n]->edge[i]==this) break;
-            }
-
-            if (i==3)
-            {
-                cout << *this << " points to wrong node " << node[n]
-                     << '\n';
-                ok = 0;
-            }
-            else
-            {
-                cout << *this << " has wrong index ("
-                     << index[n] << "instead of " << i << ")\n";
-                ok = 0;
-            }
-        }
-    }
-
-    if (!distanceOK() ||
-        (node[0]->is_leaf && node[0]->distance!=0) ||
-        (node[1]->is_leaf && node[1]->distance!=0))
-    {
-        cout << "distance not set correctly at" << *this << '\n';
-    }
-    else if (Distance()!=distanceToBorder())
-    {
-        cout << "Distance() != distanceToBorder()" << endl;
-    }
-
-    return ok;
-}
-
-void AP_tree_edge::testChain(int deep) // @@@ elim
-{
-    cout << "Building chain (deep=" << deep << ")\n";
-    buildChain(deep, ANY_EDGE);
-    int inChain = dumpChain();
-    cout << "Edges in Chain = " << inChain << '\n';
-}
-
-int AP_tree_edge::dumpChain() const
-{
-    return next ? 1+next->dumpChain() : 1;
-}
-
 AP_tree_edge* AP_tree_edge::buildChain(int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip, int distanceToStart, AP_tree_edge *comesFrom) {
     /*! build a chain of edges for further processing
      * @param depth            specifies how far to recurse into tree (-1 = recurse whole tree; 0 = this edge only)
