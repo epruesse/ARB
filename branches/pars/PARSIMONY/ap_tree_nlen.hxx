@@ -112,8 +112,9 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ renam
     void restore_sequence_nondestructive(const NodeState& state);
     void restore_root(const NodeState& state);
 
-    void buildNodeList_rek(AP_tree **list, long& num);
-    void buildBranchList_rek(AP_tree **list, long& num, bool create_terminal_branches, int deep);
+    void buildNodeList_rek(AP_tree_nlen **list, long& num);
+    void buildNodeList(AP_tree_nlen **&list, long &num); // returns a list of inner nodes (w/o root)
+    void buildBranchList_rek(AP_tree_nlen **list, long& num, bool create_terminal_branches, int deep);
 
 protected:
     ~AP_tree_nlen() OVERRIDE { ap_assert(states.empty()); }
@@ -191,10 +192,9 @@ public:
     // ancestors in it
     AP_CO_LIST * createList(int *size); // @@@ used?
 
-    void buildNodeList(AP_tree **&list, long &num); // returns a list of inner nodes (w/o root) // @@@ change listtype to AP_tree_nlen**
-    void buildBranchList(AP_tree **&list, long &num, bool create_terminal_branches, int deep); // @@@ change listtype to AP_tree_nlen**
-    AP_tree **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs) // @@@ change listtype to AP_tree_nlen**
-    
+    void buildBranchList(AP_tree_nlen **&list, long &num, bool create_terminal_branches, int deep);
+    AP_tree_nlen **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)
+
     // misc stuff:
 
     void setBranchlen(double leftLen, double rightLen) { leftlen = leftLen; rightlen = rightLen; }

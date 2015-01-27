@@ -1350,7 +1350,7 @@ GB_ERROR AP_pars_root::saveToDB() {
     return AP_tree_root::saveToDB();
 }
 
-void AP_tree_nlen::buildNodeList_rek(AP_tree **list, long& num) {
+void AP_tree_nlen::buildNodeList_rek(AP_tree_nlen **list, long& num) {
     // builds a list of all inner nodes (w/o root node)
     if (!is_leaf) {
         if (father) list[num++] = this;
@@ -1359,15 +1359,15 @@ void AP_tree_nlen::buildNodeList_rek(AP_tree **list, long& num) {
     }
 }
 
-void AP_tree_nlen::buildNodeList(AP_tree **&list, long &num) {
+void AP_tree_nlen::buildNodeList(AP_tree_nlen **&list, long &num) {
     num = this->count_leafs()-1;
-    list = new AP_tree *[num+1];
+    list = new AP_tree_nlen *[num+1];
     list[num] = 0;
     num  = 0;
     buildNodeList_rek(list, num);
 }
 
-void AP_tree_nlen::buildBranchList_rek(AP_tree **list, long& num, bool create_terminal_branches, int deep) {
+void AP_tree_nlen::buildBranchList_rek(AP_tree_nlen **list, long& num, bool create_terminal_branches, int deep) {
     // builds a list of all species
     // (returns pairs of leafs/father and nodes/father)
 
@@ -1391,7 +1391,7 @@ void AP_tree_nlen::buildBranchList_rek(AP_tree **list, long& num, bool create_te
     }
 }
 
-void AP_tree_nlen::buildBranchList(AP_tree **&list, long &num, bool create_terminal_branches, int deep) {
+void AP_tree_nlen::buildBranchList(AP_tree_nlen **&list, long &num, bool create_terminal_branches, int deep) {
     if (deep>=0) {
         num = 2;
         for (int i=0; i<deep; i++) num *= 2;
@@ -1402,7 +1402,7 @@ void AP_tree_nlen::buildBranchList(AP_tree **&list, long &num, bool create_termi
 
     ap_assert(num >= 0);
 
-    list = new AP_tree *[num*2+4];
+    list = new AP_tree_nlen *[num*2+4];
 
     if (num) {
         long count = 0;
@@ -1413,18 +1413,18 @@ void AP_tree_nlen::buildBranchList(AP_tree **&list, long &num, bool create_termi
     }
 }
 
-AP_tree ** AP_tree_nlen::getRandomNodes(int anzahl) {
+AP_tree_nlen **AP_tree_nlen::getRandomNodes(int anzahl) {
     // function returns a random constructed tree
     // root is tree with species (needed to build a list of species)
 
-    AP_tree **retlist = NULL;
+    AP_tree_nlen **retlist = NULL;
     if (anzahl) {
-        AP_tree **list; 
-        long      sumnodes;
+        AP_tree_nlen **list;
+        long           sumnodes;
         buildNodeList(list, sumnodes);
 
         if (sumnodes) {
-            retlist = new AP_tree* [anzahl];
+            retlist = new AP_tree_nlen* [anzahl];
 
             long count = sumnodes;
             for (int i=0; i< anzahl; i++) {

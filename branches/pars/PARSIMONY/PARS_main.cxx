@@ -241,13 +241,9 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
         ASSERT_VALID_TREE(tree);
 
         AP_tree_nlen **branchlist;
-
         {
-            AP_tree **blist;
-            long      bsum = 0;
-
-            tree->buildBranchList(blist, bsum, true, -1); // get all branches
-            branchlist = (AP_tree_nlen**)blist;
+            long bsum = 0;
+            tree->buildBranchList(branchlist, bsum, true, -1); // get all branches
         }
 
         AP_tree_nlen *bestposl = tree->get_leftson();

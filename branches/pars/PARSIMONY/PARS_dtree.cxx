@@ -134,8 +134,8 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
     rek_breite[4] = *GBT_read_int(gb_main, "genetic/kh/static/depth4");
     int rek_breite_anz = 5;
 
-    int       anzahl = (int)(*GBT_read_float(gb_main, "genetic/kh/nodes")*at->count_leafs());
-    AP_tree **list   = at->getRandomNodes(anzahl); // @@@ type AP_tree_nlen
+    int            anzahl = (int)(*GBT_read_float(gb_main, "genetic/kh/nodes")*at->count_leafs());
+    AP_tree_nlen **list   = at->getRandomNodes(anzahl);
 
     arb_progress progress(anzahl);
 
@@ -149,7 +149,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
     GB_pop_transaction(gb_main);
 
     for (int i=0; i<anzahl && !progress.aborted(); i++) {
-        AP_tree_nlen *tree_elem = DOWNCAST(AP_tree_nlen*, list[i]); // @@@ pass 'at' as AP_tree_nlen
+        AP_tree_nlen *tree_elem = list[i];
 
         bool in_folded_group = tree_elem->gr.hidden ||
             (tree_elem->father && tree_elem->get_father()->gr.hidden);
