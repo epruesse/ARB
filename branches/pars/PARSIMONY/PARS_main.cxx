@@ -10,6 +10,7 @@
 
 #include "pars_main.hxx"
 #include "pars_klprops.hxx"
+#include "pars_awars.h"
 #include "ap_tree_nlen.hxx"
 #include "ap_main.hxx"
 
@@ -1508,23 +1509,23 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
 static void create_parsimony_variables(AW_root *aw_root, AW_default db) {
     // kernighan
 
-    aw_root->awar_float("genetic/kh/nodes", 1.7, db);
-    aw_root->awar_int("genetic/kh/maxdepth", 15, db);
-    aw_root->awar_int("genetic/kh/incdepth", 5, db);
+    aw_root->awar_float(AWAR_KL_RANDOM_NODES, 1.7, db);
+    aw_root->awar_int  (AWAR_KL_MAXDEPTH,     15,  db);
+    aw_root->awar_int  (AWAR_KL_INCDEPTH,     5,   db);
 
-    aw_root->awar_int("genetic/kh/static/enable", 1, db);
-    aw_root->awar_int("genetic/kh/static/depth0", 2, db);
-    aw_root->awar_int("genetic/kh/static/depth1", 2, db);
-    aw_root->awar_int("genetic/kh/static/depth2", 2, db);
-    aw_root->awar_int("genetic/kh/static/depth3", 2, db);
-    aw_root->awar_int("genetic/kh/static/depth4", 1, db);
+    aw_root->awar_int(AWAR_KL_STATIC_ENABLED, 1, db);
+    aw_root->awar_int(AWAR_KL_STATIC_DEPTH0,  2, db);
+    aw_root->awar_int(AWAR_KL_STATIC_DEPTH1,  2, db);
+    aw_root->awar_int(AWAR_KL_STATIC_DEPTH2,  2, db);
+    aw_root->awar_int(AWAR_KL_STATIC_DEPTH3,  2, db);
+    aw_root->awar_int(AWAR_KL_STATIC_DEPTH4,  1, db);
 
-    aw_root->awar_int("genetic/kh/dynamic/enable", 1,   db);
-    aw_root->awar_int("genetic/kh/dynamic/start",  100, db);
-    aw_root->awar_int("genetic/kh/dynamic/maxx",   6,   db);
-    aw_root->awar_int("genetic/kh/dynamic/maxy",   150, db);
+    aw_root->awar_int(AWAR_KL_DYNAMIC_ENABLED, 1,   db);
+    aw_root->awar_int(AWAR_KL_DYNAMIC_START,   100, db);
+    aw_root->awar_int(AWAR_KL_DYNAMIC_MAXX,    6,   db);
+    aw_root->awar_int(AWAR_KL_DYNAMIC_MAXY,    150, db);
 
-    aw_root->awar_int("genetic/kh/function_type", AP_QUADRAT_START, db);
+    aw_root->awar_int(AWAR_KL_FUNCTION_TYPE, AP_QUADRAT_START, db);
 
     awt_create_dtree_awars(aw_root, db);
 }

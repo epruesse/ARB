@@ -244,6 +244,7 @@ PARS_dtree.o: AP_buffer.hxx
 PARS_dtree.o: ap_main.hxx
 PARS_dtree.o: ap_main_type.hxx
 PARS_dtree.o: ap_tree_nlen.hxx
+PARS_dtree.o: pars_awars.h
 PARS_dtree.o: pars_debug.hxx
 PARS_dtree.o: pars_dtree.hxx
 PARS_dtree.o: pars_main.hxx
@@ -302,6 +303,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+PARS_klprops.o: pars_awars.h
 PARS_klprops.o: pars_klprops.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -326,6 +328,7 @@ PARS_main.o: AP_buffer.hxx
 PARS_main.o: ap_main.hxx
 PARS_main.o: ap_main_type.hxx
 PARS_main.o: ap_tree_nlen.hxx
+PARS_main.o: pars_awars.h
 PARS_main.o: pars_dtree.hxx
 PARS_main.o: pars_klprops.hxx
 PARS_main.o: pars_main.hxx

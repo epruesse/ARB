@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include "pars_klprops.hxx"
+#include "pars_awars.h"
 
 #include <aw_window.hxx>
 
@@ -32,43 +33,43 @@ AW_window *create_kernighan_window(AW_root *aw_root) {
     aws->button_length(6);
 
     aws->at("nodes");
-    aws->create_input_field("genetic/kh/nodes");
+    aws->create_input_field(AWAR_KL_RANDOM_NODES);
     aws->at("maxdepth");
-    aws->create_input_field("genetic/kh/maxdepth");
+    aws->create_input_field(AWAR_KL_MAXDEPTH);
     aws->at("incdepth");
-    aws->create_input_field("genetic/kh/incdepth");
+    aws->create_input_field(AWAR_KL_INCDEPTH);
 
 
     aws->at("static");
-    aws->create_toggle("genetic/kh/static/enable");
+    aws->create_toggle(AWAR_KL_STATIC_ENABLED);
 
     aws->button_length(4);
     aws->at("input_6");
-    aws->create_input_field("genetic/kh/static/depth0");
+    aws->create_input_field(AWAR_KL_STATIC_DEPTH0);
     aws->at("input_7");
-    aws->create_input_field("genetic/kh/static/depth1");
+    aws->create_input_field(AWAR_KL_STATIC_DEPTH1);
     aws->at("input_8");
-    aws->create_input_field("genetic/kh/static/depth2");
+    aws->create_input_field(AWAR_KL_STATIC_DEPTH2);
     aws->at("input_9");
-    aws->create_input_field("genetic/kh/static/depth3");
+    aws->create_input_field(AWAR_KL_STATIC_DEPTH3);
     aws->at("input_10");
-    aws->create_input_field("genetic/kh/static/depth4");
+    aws->create_input_field(AWAR_KL_STATIC_DEPTH4);
 
 
     aws->at("dynamic");
-    aws->create_toggle("genetic/kh/dynamic/enable");
+    aws->create_toggle(AWAR_KL_DYNAMIC_ENABLED);
 
     aws->button_length(4);
     aws->at("start");
-    aws->create_input_field("genetic/kh/dynamic/start");
+    aws->create_input_field(AWAR_KL_DYNAMIC_START);
     aws->at("maxx");
-    aws->create_input_field("genetic/kh/dynamic/maxx");
+    aws->create_input_field(AWAR_KL_DYNAMIC_MAXX);
     aws->at("maxy");
-    aws->create_input_field("genetic/kh/dynamic/maxy");
+    aws->create_input_field(AWAR_KL_DYNAMIC_MAXY);
 
 #if 0
     aws->at("button_4");
-    aws->create_option_menu("genetic/kh/function_type");
+    aws->create_option_menu(AWAR_KL_FUNCTION_TYPE);
     aws->insert_option("start_x^2", "d", AP_QUADRAT_START);
     aws->insert_option("max_x^2", "d", AP_QUADRAT_MAX);
     aws->insert_default_option("???", "?", AP_QUADRAT_START);
