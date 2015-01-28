@@ -1076,7 +1076,7 @@ AP_FLOAT AP_tree_nlen::nn_interchange_rek(int depth, EdgeSpec whichEdges, AP_BL_
 void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek_deep_max,
                                  double(*function) (double, double *, int), double *param_liste, int param_anz,
                                  AP_FLOAT pars_best, AP_FLOAT pars_start, AP_FLOAT pars_prev,
-                                 AP_KL_FLAG rek_width_type, bool *abort_flag)
+                                 KL_RECURSION_TYPE rek_width_type, bool *abort_flag)
 {
     //
     // rek_deep         Rekursionstiefe

@@ -31,7 +31,7 @@
 #define AWAR_KL_DYNAMIC_MAXX    PREFIX_KL_DYNAMIC "maxx"
 #define AWAR_KL_DYNAMIC_MAXY    PREFIX_KL_DYNAMIC "maxy"
 
-#define AWAR_KL_FUNCTION_TYPE PREFIX_KL "function_type" // for dynamic reduction (not configurable; experimental?)
+#define AWAR_KL_FUNCTION_TYPE PREFIX_KL "function_type" // threshold function for dynamic reduction (not configurable; experimental?)
 
 #else
 #error pars_awars.h included twice

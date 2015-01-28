@@ -33,11 +33,15 @@
 
 class AP_tree_nlen;
 
-enum AP_KL_FLAG {  // flags fuer die Rekursionsart bei Kernighan Lin
-    AP_DYNAMIK       = 1,
-    AP_STATIC        = 2,
-    AP_BETTER        = 4,
-    // Funktionstyp der Schwellwertfunktion
+enum KL_RECURSION_TYPE { // =path reduction
+    // bit-values!
+    AP_NO_REDUCTION = 0,
+    AP_DYNAMIK      = 1,
+    AP_STATIC       = 2,
+    AP_BETTER       = 4,
+};
+
+enum KL_DYNAMIC_THRESHOLD_TYPE {
     AP_QUADRAT_START = 5,
     AP_QUADRAT_MAX   = 6
 };
@@ -163,18 +167,18 @@ public:
     AP_FLOAT nn_interchange_rek(int depth, EdgeSpec whichEdges, AP_BL_MODE mode);
     AP_FLOAT nn_interchange(AP_FLOAT parsimony, AP_BL_MODE mode);
 
-    void kernighan_rek(int         rek_deep,
-                       int        *rek_breite,
-                       int         rek_breite_anz,
-                       const int   rek_deep_max,
+    void kernighan_rek(int                rek_deep,
+                       int               *rek_breite,
+                       int                rek_breite_anz,
+                       const int          rek_deep_max,
                        double    (*function)(double, double *, int),
-                       double     *param_liste,
-                       int         param_anz,
-                       AP_FLOAT    pars_best,
-                       AP_FLOAT    pars_start,
-                       AP_FLOAT    pars_prev,
-                       AP_KL_FLAG  searchflag,
-                       bool       *abort_flag);
+                       double            *param_liste,
+                       int                param_anz,
+                       AP_FLOAT           pars_best,
+                       AP_FLOAT           pars_start,
+                       AP_FLOAT           pars_prev,
+                       KL_RECURSION_TYPE  searchflag,
+                       bool              *abort_flag);
 
     void buildBranchList(AP_tree_nlen **&list, long &num, bool create_terminal_branches, int deep);
     AP_tree_nlen **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)

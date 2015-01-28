@@ -90,7 +90,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
     // @@@ pass in struct containing awar values (instead of reading them here)
     int rek_deep_max = *GBT_read_int(gb_main, AWAR_KL_MAXDEPTH);
 
-    AP_KL_FLAG funktype = (AP_KL_FLAG)*GBT_read_int(gb_main, AWAR_KL_FUNCTION_TYPE);
+    KL_DYNAMIC_THRESHOLD_TYPE thresType = (KL_DYNAMIC_THRESHOLD_TYPE)*GBT_read_int(gb_main, AWAR_KL_FUNCTION_TYPE);
 
     int    param_anz;
     double param_list[3];
@@ -100,33 +100,29 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
     double f_maxy     = (double)*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXY);
     double f_maxx     = (double)*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXX);
 
-    double (*funktion)(double wert, double *param_list, int param_anz);
-    switch (funktype) {
+    double (*funktion)(double wert, double *param_list, int param_anz); // @@@ define function type
+    switch (thresType) {
         default:
+            ap_assert(0);
         case AP_QUADRAT_START:
-            funktion = funktion_quadratisch;
-            param_anz = 3;
+            funktion      = funktion_quadratisch;
+            param_anz     = 3;
             param_list[2] = f_startx;
             param_list[0] = (f_startx - f_maxy) / (f_maxx * f_maxx);
-            param_list[1] = -2.0 * param_list[0] * f_maxx;
+            param_list[1] = -2.0 * param_list[0] *              f_maxx;
             break;
         case AP_QUADRAT_MAX:    // parameter liste fuer quadratische gleichung (y =ax^2 +bx +c)
-            funktion = funktion_quadratisch;
-            param_anz = 3;
-            param_list[0] =  - f_maxy / ((f_max_deep -  f_maxx) * (f_max_deep - f_maxx));
-            param_list[1] =  -2.0 * param_list[0] * f_maxx;
-            param_list[2] =  f_maxy  + param_list[0] * f_maxx * f_maxx;
+            funktion      = funktion_quadratisch;
+            param_anz     = 3;
+            param_list[0] = - f_maxy / ((f_max_deep -  f_maxx) * (f_max_deep - f_maxx));
+            param_list[1] = -2.0 * param_list[0] *             f_maxx;
+            param_list[2] = f_maxy  + param_list[0] * f_maxx * f_maxx;
             break;
     }
 
-
-    AP_KL_FLAG searchflag=(AP_KL_FLAG)0;
-    if (*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_ENABLED)) {
-        searchflag = AP_DYNAMIK;
-    }
-    if (*GBT_read_int(gb_main, AWAR_KL_STATIC_ENABLED)) {
-        searchflag = (AP_KL_FLAG)(searchflag|AP_STATIC);
-    }
+    KL_RECURSION_TYPE searchflag                                    = AP_NO_REDUCTION;
+    if (*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_ENABLED)) searchflag = (KL_RECURSION_TYPE)(searchflag|AP_DYNAMIK);
+    if (*GBT_read_int(gb_main, AWAR_KL_STATIC_ENABLED))  searchflag = (KL_RECURSION_TYPE)(searchflag|AP_STATIC);
 
     int rek_breite[8];
     rek_breite[0] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH0);
