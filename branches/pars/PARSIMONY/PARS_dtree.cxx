@@ -10,7 +10,6 @@
 
 #include "pars_dtree.hxx"
 #include "pars_main.hxx"
-#include "pars_debug.hxx"
 #include "pars_awars.h"
 #include "ap_tree_nlen.hxx"
 #include "ap_main.hxx"
@@ -100,19 +99,19 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
     double f_maxy     = (double)*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXY);
     double f_maxx     = (double)*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXX);
 
-    double (*funktion)(double wert, double *param_list, int param_anz); // @@@ define function type
+    double (*thresFunc)(double wert, double *param_list, int param_anz); // @@@ define function type
     switch (thresType) {
         default:
             ap_assert(0);
         case AP_QUADRAT_START:
-            funktion      = funktion_quadratisch;
+            thresFunc     = funktion_quadratisch;
             param_anz     = 3;
             param_list[2] = f_startx;
             param_list[0] = (f_startx - f_maxy) / (f_maxx * f_maxx);
-            param_list[1] = -2.0 * param_list[0] *              f_maxx;
+            param_list[1] = -2.0 * param_list[0] *             f_maxx;
             break;
         case AP_QUADRAT_MAX:    // parameter liste fuer quadratische gleichung (y =ax^2 +bx +c)
-            funktion      = funktion_quadratisch;
+            thresFunc     = funktion_quadratisch;
             param_anz     = 3;
             param_list[0] = - f_maxy / ((f_max_deep -  f_maxx) * (f_max_deep - f_maxx));
             param_list[1] = -2.0 * param_list[0] *             f_maxx;
@@ -155,12 +154,12 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
         if (!in_folded_group) { // @@@ unwanted hardcoded check for group
             bool better_tree_found = false;
             ap_main->remember();
-            display_clear(funktion, param_list, param_anz, (int)pars_curr, (int)rek_deep_max);
 
             tree_elem->kernighan_rek(0,
                                      rek_breite, rek_breite_anz, rek_deep_max,
-                                     funktion, param_list, param_anz,
-                                     pars_curr,  pars_curr, pars_org,
+                                     thresFunc, param_list, param_anz,
+                                     pars_curr,  pars_curr,
+                                     // pars_org,
                                      searchflag, &better_tree_found);
 
             if (better_tree_found) {

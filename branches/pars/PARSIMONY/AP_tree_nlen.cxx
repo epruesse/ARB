@@ -10,7 +10,6 @@
 // =============================================================== //
 
 #include "ap_tree_nlen.hxx"
-#include "pars_debug.hxx"
 #include "ap_main.hxx"
 
 #include <AP_seq_dna.hxx>
@@ -1075,7 +1074,7 @@ AP_FLOAT AP_tree_nlen::nn_interchange_rek(int depth, EdgeSpec whichEdges, AP_BL_
 
 void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek_deep_max,
                                  double(*function) (double, double *, int), double *param_liste, int param_anz,
-                                 AP_FLOAT pars_best, AP_FLOAT pars_start, AP_FLOAT pars_prev,
+                                 AP_FLOAT pars_best, AP_FLOAT pars_start,
                                  KL_RECURSION_TYPE rek_width_type, bool *abort_flag)
 {
     //
@@ -1212,9 +1211,6 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
             break;
     }
 
-    display_out(pars, visited_subtrees, pars_prev, pars_start, rek_deep);
-    // Darstellen
-
     if (rek_deep < rek_2_width_max) rek_width_static = rek_2_width[rek_deep];
     else rek_width_static                            = 1;
 
@@ -1252,7 +1248,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
                 pars_refpntr[pars_ref[i]]->kernighan_rek(rek_deep + 1, rek_2_width,
                                                          rek_2_width_max, rek_deep_max + 4,
                                                          function, param_liste, param_anz,
-                                                         pars_best, pars_start, pars[i],
+                                                         pars_best, pars_start,
                                                          AP_STATIC, &flag);
                 *abort_flag = true;
                 break;
@@ -1261,7 +1257,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
                 pars_refpntr[pars_ref[i]]->kernighan_rek(rek_deep + 1, rek_2_width,
                                                          rek_2_width_max, rek_deep_max,
                                                          function, param_liste, param_anz,
-                                                         pars_best, pars_start, pars[i],
+                                                         pars_best, pars_start,
                                                          rek_width_type, abort_flag);
                 break;
         }

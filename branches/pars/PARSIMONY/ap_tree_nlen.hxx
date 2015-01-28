@@ -176,7 +176,6 @@ public:
                        int                param_anz,
                        AP_FLOAT           pars_best,
                        AP_FLOAT           pars_start,
-                       AP_FLOAT           pars_prev,
                        KL_RECURSION_TYPE  searchflag,
                        bool              *abort_flag);
 
