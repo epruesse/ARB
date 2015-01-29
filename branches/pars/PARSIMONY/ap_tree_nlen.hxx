@@ -49,7 +49,7 @@ enum KL_DYNAMIC_THRESHOLD_TYPE {
 class QuadraticThreshold : virtual Noncopyable {
     double a, b, c;
 public:
-    QuadraticThreshold(KL_DYNAMIC_THRESHOLD_TYPE type, double startx, double maxy, double maxx, double maxDepth);
+    QuadraticThreshold(KL_DYNAMIC_THRESHOLD_TYPE type, double startx, double maxy, double maxx, double maxDepth, AP_FLOAT pars_start);
 
     double calculate(double x) const {
         // y = ax^2 + bx + c
@@ -191,7 +191,6 @@ public:
                        const int                 rek_deep_max,
                        const QuadraticThreshold& thresFunctor,
                        AP_FLOAT                  pars_best,
-                       const AP_FLOAT            pars_start,
                        KL_RECURSION_TYPE         rek_width_type);
 
     void buildBranchList(AP_tree_nlen **&list, long &num, bool create_terminal_branches, int deep);

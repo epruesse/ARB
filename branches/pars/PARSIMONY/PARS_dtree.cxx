@@ -68,7 +68,7 @@ void PARS_tree_init(AWT_graphic_parsimony *agt) {
     agt->get_tree_root()->set_root_changed_callback(AWT_graphic_parsimony_root_changed, agt);
 }
 
-QuadraticThreshold::QuadraticThreshold(KL_DYNAMIC_THRESHOLD_TYPE type, double startx, double maxy, double maxx, double maxDepth) {
+QuadraticThreshold::QuadraticThreshold(KL_DYNAMIC_THRESHOLD_TYPE type, double startx, double maxy, double maxx, double maxDepth, AP_FLOAT pars_start) {
     // set a, b,  and c for quadratic equation y = ax^2 + bx + c
     switch (type) {
         default:
@@ -86,6 +86,7 @@ QuadraticThreshold::QuadraticThreshold(KL_DYNAMIC_THRESHOLD_TYPE type, double st
             c = maxy  + a * maxx * maxx;
             break;
     }
+    c += pars_start;
 }
 
 void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *pars_global_start) {
@@ -107,7 +108,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
     double f_maxy     = (double)*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXY);
     double f_maxx     = (double)*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXX);
 
-    QuadraticThreshold thresFunctor(thresType, f_startx, f_maxy, f_maxx, f_max_deep);
+    QuadraticThreshold thresFunctor(thresType, f_startx, f_maxy, f_maxx, f_max_deep, pars_curr);
 
     KL_RECURSION_TYPE searchflag                                    = AP_NO_REDUCTION;
     if (*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_ENABLED)) searchflag = (KL_RECURSION_TYPE)(searchflag|AP_DYNAMIK);
@@ -146,7 +147,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
             bool better_tree_found = tree_elem->kernighan_rek(0,
                                                               rek_breite, rek_deep_max,
                                                               thresFunctor,
-                                                              pars_curr,  pars_curr,
+                                                              pars_curr,
                                                               searchflag);
 
             if (better_tree_found) {

@@ -1080,7 +1080,6 @@ bool AP_tree_nlen::kernighan_rek(const int                 rek_deep,
                                  const int                 rek_deep_max,
                                  const QuadraticThreshold& thresFunctor,
                                  AP_FLOAT                  pars_best,
-                                 const AP_FLOAT            pars_start,
                                  KL_RECURSION_TYPE         rek_width_type)
 {
     /*! does K.L. recursion
@@ -1089,7 +1088,6 @@ bool AP_tree_nlen::kernighan_rek(const int                 rek_deep,
      * @param rek_deep_max      max. recursion depth
      * @param thresFunctor      functor for dynamic path reduction
      * @param pars_best         current parsimony value of topology
-     * @param pars_start        parsimony value at start of recursion // @@@ remains unchanged -> move into functor
      * @param rek_width_type    recursion type
      */
 
@@ -1153,7 +1151,7 @@ bool AP_tree_nlen::kernighan_rek(const int                 rek_deep,
     AP_FLOAT pars[8]; // eight parsimony values (produced by 2*swap_assymetric at each adjacent edge)
 
     {
-        AP_FLOAT schwellwert = thresFunctor.calculate(rek_deep) + pars_start;
+        AP_FLOAT schwellwert = thresFunctor.calculate(rek_deep);
         for (int i = 0; i < 8; i++) {
             order[i] = i;
             AP_tree_nlen * const subtree = descend[i];
@@ -1242,7 +1240,7 @@ bool AP_tree_nlen::kernighan_rek(const int                 rek_deep,
                 subtree->kernighan_rek(rek_deep + 1, rek_2_width,
                                        rek_deep_max + 4, // @@@ use value from AWAR_KL_INCDEPTH instead of 4
                                        thresFunctor,
-                                       pars_best, pars_start,
+                                       pars_best,
                                        AP_STATIC);
                 found_better = true;
                 break;
@@ -1251,7 +1249,7 @@ bool AP_tree_nlen::kernighan_rek(const int                 rek_deep,
                 found_better = subtree->kernighan_rek(rek_deep + 1, rek_2_width,
                                                       rek_deep_max,
                                                       thresFunctor,
-                                                      pars_best, pars_start,
+                                                      pars_best,
                                                       rek_width_type);
                 break;
         }
