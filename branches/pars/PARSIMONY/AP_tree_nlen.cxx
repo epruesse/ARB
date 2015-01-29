@@ -1082,67 +1082,55 @@ void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
                                  KL_RECURSION_TYPE          rek_width_type,
                                  bool                      *abort_flag)
 {
-    //
+    // @@@ ->docstyle 
     // rek_deep         Rekursionstiefe
     // rek_2_width      Verzweigungsgrad
     // neg_counter      zaehler fuer die Aeste in denen Kerninghan Lin schon angewendet wurde
     // function         Funktion fuer den dynamischen Schwellwert
     // pars_            Verschiedene Parsimonywerte
 
-    // @@@ fix locals
-    AP_FLOAT            help;
-    AP_FLOAT            pars[8];          // eight parsimony values
-    AP_tree_nlen *      pars_refpntr[8];  // next branches
-    int                 help_ref;
-    int                 pars_ref[8];      // references to swapped parsimony values
-    static AP_TREE_SIDE pars_side_ref[8]; // left or right branch
-    int                 i;
-    int                 t;
-    int                 bubblesort_change = 0;
-    int                 rek_width;
-    int                 rek_width_static  = 0;
-    int                 rek_width_dynamic = 0;
-    AP_FLOAT            schwellwert       = thresFunctor.calculate(rek_deep) + pars_start;
-
-    // parameterausgabe
+    // @@@ fix locals!
+    static AP_TREE_SIDE pars_side_ref[8]; // left or right branch // @@@ constant!
 
     if (rek_deep >= rek_deep_max || is_leaf || *abort_flag)   return;
+    if (!father) return; // no KL at root
 
     // Referenzzeiger auf die vier Kanten und zwei swapmoeglichkeiten initialisieren
-    AP_tree_nlen *this_brother = this->get_brother();
-    if (rek_deep == 0) {
-        for (i = 0; i < 8; i+=2) {
-            pars_side_ref[i] = AP_LEFT;
-            pars_side_ref[i+1] = AP_RIGHT;
-        }
-        pars_refpntr[0] = pars_refpntr[1] = this;
-        pars_refpntr[2] = pars_refpntr[3] = 0;
-        pars_refpntr[4] = pars_refpntr[5] = 0;
-        pars_refpntr[6] = pars_refpntr[7] = 0;
-    }
-    else {
-        pars_refpntr[0] = pars_refpntr[1] = this->get_leftson();
-        pars_refpntr[2] = pars_refpntr[3] = this->get_rightson();
-        if (father->father != 0) {
-            // Referenzzeiger falls nicht an der Wurzel
-            pars_refpntr[4] = pars_refpntr[5] = this->get_father();
-            pars_refpntr[6] = pars_refpntr[7] = this_brother;
+    int            pars_ref[8];           // references to swapped parsimony values // @@@ rename->pidx
+    AP_tree_nlen * pars_refpntr[8];       // next branches // @@@ rename -> adjBranch 
+    {
+        AP_tree_nlen *this_brother = this->get_brother();
+        if (rek_deep == 0) {
+            for (int i = 0; i < 8; i+=2) {
+                pars_side_ref[i] = AP_LEFT;
+                pars_side_ref[i+1] = AP_RIGHT;
+            }
+            pars_refpntr[0] = pars_refpntr[1] = this;
+            pars_refpntr[2] = pars_refpntr[3] = 0;
+            pars_refpntr[4] = pars_refpntr[5] = 0;
+            pars_refpntr[6] = pars_refpntr[7] = 0;
         }
         else {
-            // an der Wurzel nehme linken und rechten Sohns des Bruders
-            if (!get_brother()->is_leaf) {
-                pars_refpntr[4] = pars_refpntr[5] = this_brother->get_leftson();
-                pars_refpntr[6] = pars_refpntr[7] = this_brother->get_rightson();
+            pars_refpntr[0] = pars_refpntr[1] = this->get_leftson();
+            pars_refpntr[2] = pars_refpntr[3] = this->get_rightson();
+            if (father->father != 0) {
+                // Referenzzeiger falls nicht an der Wurzel
+                pars_refpntr[4] = pars_refpntr[5] = this->get_father();
+                pars_refpntr[6] = pars_refpntr[7] = this_brother;
             }
             else {
-                pars_refpntr[4] = pars_refpntr[5] = 0;
-                pars_refpntr[6] = pars_refpntr[7] = 0;
+                // an der Wurzel nehme linken und rechten Sohns des Bruders
+                if (!get_brother()->is_leaf) {
+                    pars_refpntr[4] = pars_refpntr[5] = this_brother->get_leftson();
+                    pars_refpntr[6] = pars_refpntr[7] = this_brother->get_rightson();
+                }
+                else {
+                    pars_refpntr[4] = pars_refpntr[5] = 0;
+                    pars_refpntr[6] = pars_refpntr[7] = 0;
+                }
             }
         }
     }
-
-
-    if (!father) return;        // no kl at root
 
     //
     // parsimony werte bestimmen
@@ -1154,45 +1142,51 @@ void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
     this->set_root();
     rootNode()->costs();
 
-    int visited_subtrees = 0;
-    int better_subtrees  = 0;
-    for (i = 0; i < 8; i++) {
-        pars_ref[i] = i;
-        pars[i] = -1;
+    int rek_width_dynamic = 0;
+    int visited_subtrees  = 0;
+    int better_subtrees   = 0;
 
-        if (!pars_refpntr[i])   continue;
-        if (pars_refpntr[i]->is_leaf) continue;
+    AP_FLOAT pars[8]; // eight parsimony values (produced by 2*swap_assymetric at each adjacent edge)
 
-        // KL recursion was broken (see changeset [11010] for how)
-        // - IMO it should only descent into AP_NONE branches (see setters of 'kernighan'-flag)
-        // - quick test shows calculation is much faster and results seem to be better.
-        if (pars_refpntr[i]->kernighan != AP_NONE) continue;
+    {
+        AP_FLOAT schwellwert = thresFunctor.calculate(rek_deep) + pars_start;
+        for (int i = 0; i < 8; i++) {
+            pars_ref[i] = i;
+            pars[i] = -1;
 
-        if (pars_refpntr[i]->gr.hidden) continue;
-        if (pars_refpntr[i]->get_father()->gr.hidden) continue;
+            if (!pars_refpntr[i])   continue;
+            if (pars_refpntr[i]->is_leaf) continue;
 
-        // nur wenn kein Blatt ist
-        ap_main->remember();
-        pars_refpntr[i]->swap_assymetric(pars_side_ref[i]);
-        pars[i] = rootNode()->costs();
-        if (pars[i] < pars_best) {
-            better_subtrees++;
-            pars_best      = pars[i];
-            rek_width_type = AP_BETTER;
+            // KL recursion was broken (see changeset [11010] for how)
+            // - IMO it should only descent into AP_NONE branches (see setters of 'kernighan'-flag)
+            // - quick test shows calculation is much faster and results seem to be better.
+            if (pars_refpntr[i]->kernighan != AP_NONE) continue;
+
+            if (pars_refpntr[i]->gr.hidden) continue;
+            if (pars_refpntr[i]->get_father()->gr.hidden) continue;
+
+            // nur wenn kein Blatt ist
+            ap_main->remember();
+            pars_refpntr[i]->swap_assymetric(pars_side_ref[i]);
+            pars[i] = rootNode()->costs();
+            if (pars[i] < pars_best) {
+                better_subtrees++;
+                pars_best      = pars[i];
+                rek_width_type = AP_BETTER;
+            }
+            if (pars[i] < schwellwert) {
+                rek_width_dynamic++;
+            }
+            ap_main->revert();
+            visited_subtrees ++;
         }
-        if (pars[i] < schwellwert) {
-            rek_width_dynamic++;
-        }
-        ap_main->revert();
-        visited_subtrees ++;
-
     }
     // Bubblesort, in pars[0] steht kleinstes element
     //
     // CAUTION! The original parsimonies will be exchanged
 
 
-    for (i=7, t=0; t<i; t++) {
+    for (int i=7, t=0; t<i; t++) {
         if (pars[t] <0) {
             pars[t]     = pars[i];
             pars_ref[t] = i;
@@ -1201,27 +1195,21 @@ void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
         }
     }
 
-    bubblesort_change = 0;
-    for (t = visited_subtrees - 1; t > 0; t--) {
-        for (i = 0; i < t; i++) {
+    for (int t = visited_subtrees - 1; t > 0; t--) {
+        bool bubbled = false;
+        for (int i = 0; i < t; i++) {
             if (pars[i] > pars[i+1]) {
-                bubblesort_change = 1;
-                help_ref          = pars_ref[i];
-                pars_ref[i]       = pars_ref[i + 1];
-                pars_ref[i + 1]   = help_ref;
-                help              = pars[i];
-                pars[i]           = pars[i + 1];
-                pars[i + 1]       = help;
+                std::swap(pars_ref[i], pars_ref[i+1]);
+                std::swap(pars[i],     pars[i+1]);
+                bubbled = true;
             }
         }
-        if (bubblesort_change == 0)
-            break;
+        if (!bubbled) break;
     }
 
-    if (rek_deep < rek_2_width_max) rek_width_static = rek_2_width[rek_deep];
-    else rek_width_static                            = 1;
+    int rek_width_static = (rek_deep < rek_2_width_max) ? rek_2_width[rek_deep] : 1;
 
-    rek_width = visited_subtrees;
+    int rek_width = visited_subtrees;
     if (rek_width_type == AP_BETTER) {
         rek_width =  better_subtrees;
     }
@@ -1240,7 +1228,7 @@ void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
 
     if (rek_width > visited_subtrees)   rek_width = visited_subtrees;
 
-    for (i=0; i < rek_width; i++) {
+    for (int i=0; i < rek_width; i++) {
         ap_main->remember();
         pars_refpntr[pars_ref[i]]->kernighan = pars_side_ref[pars_ref[i]];
         // Markieren
