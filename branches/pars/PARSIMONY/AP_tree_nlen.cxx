@@ -1072,10 +1072,15 @@ AP_FLOAT AP_tree_nlen::nn_interchange_rek(int depth, EdgeSpec whichEdges, AP_BL_
 }
 
 
-void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek_deep_max,
-                                 double(*function) (double, double *, int), double *param_liste, int param_anz,
-                                 AP_FLOAT pars_best, AP_FLOAT pars_start,
-                                 KL_RECURSION_TYPE rek_width_type, bool *abort_flag)
+void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
+                                 const int *const           rek_2_width,
+                                 const int                  rek_2_width_max,
+                                 const int                  rek_deep_max,
+                                 const QuadraticThreshold&  thresFunctor,
+                                 AP_FLOAT                   pars_best,
+                                 const AP_FLOAT             pars_start,
+                                 KL_RECURSION_TYPE          rek_width_type,
+                                 bool                      *abort_flag)
 {
     //
     // rek_deep         Rekursionstiefe
@@ -1084,18 +1089,20 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
     // function         Funktion fuer den dynamischen Schwellwert
     // pars_            Verschiedene Parsimonywerte
 
-    AP_FLOAT help, pars[8];
-    // acht parsimony werte
-    AP_tree_nlen * pars_refpntr[8];
-    // zeiger auf die naechsten Aeste
-    int             help_ref, pars_ref[8];
-    // referenzen auf die vertauschten parsimonies
-    static AP_TREE_SIDE pars_side_ref[8];
-    // linker oder rechter ast
-    int             i, t, bubblesort_change = 0;
-    //
-    int             rek_width, rek_width_static = 0, rek_width_dynamic = 0;
-    AP_FLOAT        schwellwert = function(rek_deep, param_liste, param_anz) + pars_start;
+    // @@@ fix locals
+    AP_FLOAT            help;
+    AP_FLOAT            pars[8];          // eight parsimony values
+    AP_tree_nlen *      pars_refpntr[8];  // next branches
+    int                 help_ref;
+    int                 pars_ref[8];      // references to swapped parsimony values
+    static AP_TREE_SIDE pars_side_ref[8]; // left or right branch
+    int                 i;
+    int                 t;
+    int                 bubblesort_change = 0;
+    int                 rek_width;
+    int                 rek_width_static  = 0;
+    int                 rek_width_dynamic = 0;
+    AP_FLOAT            schwellwert       = thresFunctor.calculate(rek_deep) + pars_start;
 
     // parameterausgabe
 
@@ -1247,7 +1254,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
                 cout << "found better !\n";
                 pars_refpntr[pars_ref[i]]->kernighan_rek(rek_deep + 1, rek_2_width,
                                                          rek_2_width_max, rek_deep_max + 4,
-                                                         function, param_liste, param_anz,
+                                                         thresFunctor,
                                                          pars_best, pars_start,
                                                          AP_STATIC, &flag);
                 *abort_flag = true;
@@ -1256,7 +1263,7 @@ void AP_tree_nlen::kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width
             default:
                 pars_refpntr[pars_ref[i]]->kernighan_rek(rek_deep + 1, rek_2_width,
                                                          rek_2_width_max, rek_deep_max,
-                                                         function, param_liste, param_anz,
+                                                         thresFunctor,
                                                          pars_best, pars_start,
                                                          rek_width_type, abort_flag);
                 break;

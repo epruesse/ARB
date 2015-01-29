@@ -46,6 +46,24 @@ enum KL_DYNAMIC_THRESHOLD_TYPE {
     AP_QUADRAT_MAX   = 6
 };
 
+class QuadraticThreshold : virtual Noncopyable {
+    double a, b, c;
+public:
+    QuadraticThreshold(KL_DYNAMIC_THRESHOLD_TYPE type, double startx, double maxy, double maxx, double maxDepth);
+
+    double calculate(double x) const {
+        // y = ax^2 + bx + c
+        return
+            x * x * a +
+            x * b +
+            c;
+    }
+};
+
+
+typedef double (*ThresholdFunc) (double, const double *, int);
+
+
 enum AP_BL_MODE {
     APBL_NONE                = 0,
     AP_BL_NNI_ONLY           = 1, // try te find a better tree only
@@ -167,17 +185,15 @@ public:
     AP_FLOAT nn_interchange_rek(int depth, EdgeSpec whichEdges, AP_BL_MODE mode);
     AP_FLOAT nn_interchange(AP_FLOAT parsimony, AP_BL_MODE mode);
 
-    void kernighan_rek(int                rek_deep,
-                       int               *rek_breite,
-                       int                rek_breite_anz,
-                       const int          rek_deep_max,
-                       double    (*function)(double, double *, int),
-                       double            *param_liste,
-                       int                param_anz,
-                       AP_FLOAT           pars_best,
-                       AP_FLOAT           pars_start,
-                       KL_RECURSION_TYPE  searchflag,
-                       bool              *abort_flag);
+    void kernighan_rek(const int                  rek_deep,
+                       const int *const           rek_2_width,
+                       const int                  rek_2_width_max,
+                       const int                  rek_deep_max,
+                       const QuadraticThreshold&  thresFunctor,
+                       AP_FLOAT                   pars_best,
+                       const AP_FLOAT             pars_start,
+                       KL_RECURSION_TYPE          rek_width_type,
+                       bool                      *abort_flag);
 
     void buildBranchList(AP_tree_nlen **&list, long &num, bool create_terminal_branches, int deep);
     AP_tree_nlen **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)

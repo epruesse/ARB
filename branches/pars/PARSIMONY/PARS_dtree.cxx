@@ -68,14 +68,25 @@ void PARS_tree_init(AWT_graphic_parsimony *agt) {
     agt->get_tree_root()->set_root_changed_callback(AWT_graphic_parsimony_root_changed, agt);
 }
 
-static double funktion_quadratisch(double wert, double *param_list, int param_anz) {
-    if (param_anz != 3) {
-        ap_assert(0); // wrong number of parameters
-        return 0;
-    }
-    return wert * wert * param_list[0] + wert * param_list[1] + param_list[2];
-}
+QuadraticThreshold::QuadraticThreshold(KL_DYNAMIC_THRESHOLD_TYPE type, double startx, double maxy, double maxx, double maxDepth) {
+    // set a, b,  and c for quadratic equation y = ax^2 + bx + c
+    switch (type) {
+        default:
+            ap_assert(0);
+            // fall-through
+        case AP_QUADRAT_START:
+            c = startx;
+            a = (startx - maxy) / (maxx * maxx);
+            b = -2.0 * a * maxx;
+            break;
 
+        case AP_QUADRAT_MAX: // unused (experimental)
+            a = - maxy / ((maxDepth -  maxx) * (maxDepth - maxx));
+            b = -2.0 * a * maxx;
+            c = maxy  + a * maxx * maxx;
+            break;
+    }
+}
 
 void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *pars_global_start) {
     GBDATA *gb_main = ap_main->get_gb_main();
@@ -91,33 +102,12 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
 
     KL_DYNAMIC_THRESHOLD_TYPE thresType = (KL_DYNAMIC_THRESHOLD_TYPE)*GBT_read_int(gb_main, AWAR_KL_FUNCTION_TYPE);
 
-    int    param_anz;
-    double param_list[3];
-
     double f_max_deep = (double)rek_deep_max;
     double f_startx   = (double)*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_START);
     double f_maxy     = (double)*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXY);
     double f_maxx     = (double)*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXX);
 
-    double (*thresFunc)(double wert, double *param_list, int param_anz); // @@@ define function type
-    switch (thresType) {
-        default:
-            ap_assert(0);
-        case AP_QUADRAT_START:
-            thresFunc     = funktion_quadratisch;
-            param_anz     = 3;
-            param_list[2] = f_startx;
-            param_list[0] = (f_startx - f_maxy) / (f_maxx * f_maxx);
-            param_list[1] = -2.0 * param_list[0] *             f_maxx;
-            break;
-        case AP_QUADRAT_MAX:    // parameter liste fuer quadratische gleichung (y =ax^2 +bx +c)
-            thresFunc     = funktion_quadratisch;
-            param_anz     = 3;
-            param_list[0] = - f_maxy / ((f_max_deep -  f_maxx) * (f_max_deep - f_maxx));
-            param_list[1] = -2.0 * param_list[0] *             f_maxx;
-            param_list[2] = f_maxy  + param_list[0] * f_maxx * f_maxx;
-            break;
-    }
+    QuadraticThreshold thresFunctor(thresType, f_startx, f_maxy, f_maxx, f_max_deep);
 
     KL_RECURSION_TYPE searchflag                                    = AP_NO_REDUCTION;
     if (*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_ENABLED)) searchflag = (KL_RECURSION_TYPE)(searchflag|AP_DYNAMIK);
@@ -129,7 +119,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
     rek_breite[2] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH2);
     rek_breite[3] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH3);
     rek_breite[4] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH4);
-    int rek_breite_anz = 5;
+    const int rek_breite_anz = 5;
 
     int            anzahl = (int)(*GBT_read_float(gb_main, AWAR_KL_RANDOM_NODES)*at->count_leafs());
     AP_tree_nlen **list   = at->getRandomNodes(anzahl);
@@ -157,9 +147,8 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
 
             tree_elem->kernighan_rek(0,
                                      rek_breite, rek_breite_anz, rek_deep_max,
-                                     thresFunc, param_list, param_anz,
+                                     thresFunctor,
                                      pars_curr,  pars_curr,
-                                     // pars_org,
                                      searchflag, &better_tree_found);
 
             if (better_tree_found) {
