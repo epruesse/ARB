@@ -1071,6 +1071,9 @@ AP_FLOAT AP_tree_nlen::nn_interchange_rek(int depth, EdgeSpec whichEdges, AP_BL_
     return edgeTo(get_father())->nni_rek(depth, whichEdges, mode, get_father());
 }
 
+inline CONSTEXPR_RETURN AP_TREE_SIDE idx2side(const int idx) {
+    return idx&1 ? AP_RIGHT : AP_LEFT;
+}
 
 void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
                                  const int *const           rek_2_width,
@@ -1089,9 +1092,6 @@ void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
     // function         Funktion fuer den dynamischen Schwellwert
     // pars_            Verschiedene Parsimonywerte
 
-    // @@@ fix locals!
-    static AP_TREE_SIDE pars_side_ref[8]; // left or right branch // @@@ constant!
-
     if (rek_deep >= rek_deep_max || is_leaf || *abort_flag)   return;
     if (!father) return; // no KL at root
 
@@ -1101,10 +1101,6 @@ void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
     {
         AP_tree_nlen *this_brother = this->get_brother();
         if (rek_deep == 0) {
-            for (int i = 0; i < 8; i+=2) {
-                pars_side_ref[i] = AP_LEFT;
-                pars_side_ref[i+1] = AP_RIGHT;
-            }
             pars_refpntr[0] = pars_refpntr[1] = this;
             pars_refpntr[2] = pars_refpntr[3] = 0;
             pars_refpntr[4] = pars_refpntr[5] = 0;
@@ -1167,7 +1163,7 @@ void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
 
             // nur wenn kein Blatt ist
             ap_main->remember();
-            pars_refpntr[i]->swap_assymetric(pars_side_ref[i]);
+            pars_refpntr[i]->swap_assymetric(idx2side(i));
             pars[i] = rootNode()->costs();
             if (pars[i] < pars_best) {
                 better_subtrees++;
@@ -1230,9 +1226,9 @@ void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
 
     for (int i=0; i < rek_width; i++) {
         ap_main->remember();
-        pars_refpntr[pars_ref[i]]->kernighan = pars_side_ref[pars_ref[i]];
+        pars_refpntr[pars_ref[i]]->kernighan = idx2side(pars_ref[i]);
         // Markieren
-        pars_refpntr[pars_ref[i]]->swap_assymetric(pars_side_ref[pars_ref[i]]);
+        pars_refpntr[pars_ref[i]]->swap_assymetric(idx2side(pars_ref[i]));
         // vertausche seite
         rootNode()->parsimony_rek();
         switch (rek_width_type) {
