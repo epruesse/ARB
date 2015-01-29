@@ -33,12 +33,14 @@
 
 class AP_tree_nlen;
 
+const int UNLIMITED = -1;
+const int CUSTOM_STATIC_PATH_REDUCTION_DEPTH = 5;
+
 enum KL_RECURSION_TYPE { // =path reduction
     // bit-values!
     AP_NO_REDUCTION = 0,
     AP_DYNAMIK      = 1,
     AP_STATIC       = 2,
-    AP_BETTER       = 4,
 };
 
 enum KL_DYNAMIC_THRESHOLD_TYPE {
@@ -46,9 +48,10 @@ enum KL_DYNAMIC_THRESHOLD_TYPE {
     AP_QUADRAT_MAX   = 6
 };
 
-class QuadraticThreshold : virtual Noncopyable {
+class QuadraticThreshold {
     double a, b, c;
 public:
+    QuadraticThreshold() {}
     QuadraticThreshold(KL_DYNAMIC_THRESHOLD_TYPE type, double startx, double maxy, double maxx, double maxDepth, AP_FLOAT pars_start);
 
     double calculate(double x) const {
@@ -64,9 +67,12 @@ public:
     }
 };
 
-
-typedef double (*ThresholdFunc) (double, const double *, int);
-
+struct KL_params {
+    int                max_rec_depth;
+    KL_RECURSION_TYPE  rec_type;                                      // recursion type
+    int                rec_width[CUSTOM_STATIC_PATH_REDUCTION_DEPTH]; // customized recursion width (static path reduction)
+    QuadraticThreshold thresFunctor;                                  // functor for dynamic path reduction (start parsvalue -> worst allowed parsvalue @ depth)
+};
 
 enum AP_BL_MODE {
     APBL_NONE                = 0,
@@ -81,11 +87,9 @@ enum EdgeSpec {
     ANY_EDGE,
     MARKED_VISIBLE_EDGES,
 };
-const int UNLIMITED = -1;
-const int CUSTOM_STATIC_PATH_REDUCTION_DEPTH = 5;
 
-class AP_tree_edge;
-class AP_main;
+class  AP_tree_edge;
+class  AP_main;
 
 class AP_pars_root : public AP_tree_root {
     // @@@ add responsibility for node/edge ressources
@@ -190,12 +194,7 @@ public:
     AP_FLOAT nn_interchange_rek(int depth, EdgeSpec whichEdges, AP_BL_MODE mode);
     AP_FLOAT nn_interchange(AP_FLOAT parsimony, AP_BL_MODE mode);
 
-    bool kernighan_rek(const int                 rek_deep,
-                       const int *const          rek_2_width,
-                       const int                 rek_deep_max,
-                       const QuadraticThreshold& thresFunctor,
-                       AP_FLOAT                  pars_best,
-                       KL_RECURSION_TYPE         rek_width_type);
+    bool kernighan_rek(const KL_params& KL, const int rec_depth, AP_FLOAT pars_best);
 
     void buildBranchList(AP_tree_nlen **&list, long &num, bool create_terminal_branches, int deep);
     AP_tree_nlen **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)

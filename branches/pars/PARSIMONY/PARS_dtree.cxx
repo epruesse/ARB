@@ -99,27 +99,35 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
     const AP_FLOAT pars_org  = pars_curr;
 
     // @@@ pass in struct containing awar values (instead of reading them here)
-    int rek_deep_max = *GBT_read_int(gb_main, AWAR_KL_MAXDEPTH);
 
-    KL_DYNAMIC_THRESHOLD_TYPE thresType = (KL_DYNAMIC_THRESHOLD_TYPE)*GBT_read_int(gb_main, AWAR_KL_FUNCTION_TYPE);
+    // setup KL recursion parameters:
+    KL_params KL;
+    {
+        KL.max_rec_depth = *GBT_read_int(gb_main, AWAR_KL_MAXDEPTH);
 
-    double f_max_deep = (double)rek_deep_max;
-    double f_startx   = (double)*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_START);
-    double f_maxy     = (double)*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXY);
-    double f_maxx     = (double)*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXX);
+        KL_DYNAMIC_THRESHOLD_TYPE thresType = (KL_DYNAMIC_THRESHOLD_TYPE)*GBT_read_int(gb_main, AWAR_KL_FUNCTION_TYPE);
 
-    QuadraticThreshold thresFunctor(thresType, f_startx, f_maxy, f_maxx, f_max_deep, pars_curr);
+        double f_startx = *GBT_read_int(gb_main, AWAR_KL_DYNAMIC_START);
+        double f_maxy   = *GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXY);
+        double f_maxx   = *GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXX);
 
-    KL_RECURSION_TYPE searchflag                                    = AP_NO_REDUCTION;
-    if (*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_ENABLED)) searchflag = (KL_RECURSION_TYPE)(searchflag|AP_DYNAMIK);
-    if (*GBT_read_int(gb_main, AWAR_KL_STATIC_ENABLED))  searchflag = (KL_RECURSION_TYPE)(searchflag|AP_STATIC);
+        KL.thresFunctor = QuadraticThreshold(thresType, f_startx, f_maxy, f_maxx, KL.max_rec_depth, pars_curr);
 
-    int rek_breite[CUSTOM_STATIC_PATH_REDUCTION_DEPTH];
-    rek_breite[0] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH0);
-    rek_breite[1] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH1);
-    rek_breite[2] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH2);
-    rek_breite[3] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH3);
-    rek_breite[4] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH4);
+        {
+            KL_RECURSION_TYPE searchflag = AP_NO_REDUCTION;
+
+            if (*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_ENABLED)) searchflag = (KL_RECURSION_TYPE)(searchflag|AP_DYNAMIK);
+            if (*GBT_read_int(gb_main, AWAR_KL_STATIC_ENABLED))  searchflag = (KL_RECURSION_TYPE)(searchflag|AP_STATIC);
+
+            KL.rec_type = searchflag;
+        }
+
+        KL.rec_width[0] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH0);
+        KL.rec_width[1] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH1);
+        KL.rec_width[2] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH2);
+        KL.rec_width[3] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH3);
+        KL.rec_width[4] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH4);
+    }
 
     int            anzahl = (int)(*GBT_read_float(gb_main, AWAR_KL_RANDOM_NODES)*at->count_leafs());
     AP_tree_nlen **list   = at->getRandomNodes(anzahl);
@@ -144,16 +152,12 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
         if (!in_folded_group) { // @@@ unwanted hardcoded check for group
             ap_main->remember();
 
-            bool better_tree_found = tree_elem->kernighan_rek(0,
-                                                              rek_breite, rek_deep_max,
-                                                              thresFunctor,
-                                                              pars_curr,
-                                                              searchflag);
+            bool better_tree_found = tree_elem->kernighan_rek(KL, 0, pars_curr);
 
             if (better_tree_found) {
                 ap_main->accept();
                 AP_FLOAT pars_new = get_root_node()->costs();
-                thresFunctor.change_parsimony_start(pars_new-pars_curr);
+                KL.thresFunctor.change_parsimony_start(pars_new-pars_curr);
                 pars_curr = pars_new;
                 if (pars_global_start) {
                     progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f, KL=%.1f)", pars_curr, *pars_global_start-pars_curr, pars_org-pars_curr));

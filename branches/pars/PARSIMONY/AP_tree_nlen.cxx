@@ -1075,31 +1075,23 @@ inline CONSTEXPR_RETURN AP_TREE_SIDE idx2side(const int idx) {
     return idx&1 ? AP_RIGHT : AP_LEFT;
 }
 
-bool AP_tree_nlen::kernighan_rek(const int                 rek_deep,
-                                 const int *const          rek_2_width,
-                                 const int                 rek_deep_max,
-                                 const QuadraticThreshold& thresFunctor,
-                                 AP_FLOAT                  pars_best,
-                                 KL_RECURSION_TYPE         rek_width_type)
-{
+bool AP_tree_nlen::kernighan_rek(const KL_params& KL, const int rec_depth, AP_FLOAT pars_best) {
     /*! does K.L. recursion
-     * @param rek_deep          current recursion depth (starts with 0)
-     * @param rek_2_width       custom recursion width (static path reduction)
-     * @param rek_deep_max      max. recursion depth
-     * @param thresFunctor      functor for dynamic path reduction
+     * @param KL                parameters defining how recursion is done
+     * @param rec_depth         current recursion depth (starts with 0)
      * @param pars_best         current parsimony value of topology
-     * @param rek_width_type    recursion type
      */
 
-    ap_assert(rek_deep < rek_deep_max); // avoid call
+    ap_assert(rec_depth < KL.max_rec_depth); // avoid call
     ap_assert(!is_leaf); // avoid call
-    ap_assert(father); // avoid call
-    if (rek_deep >= rek_deep_max || is_leaf || !father) return false;
+    ap_assert(father);   // avoid call
+
+    if (rec_depth >= KL.max_rec_depth || is_leaf || !father) return false;
 
     int           order[8];   // references to swapped parsimony values
     AP_tree_nlen *descend[8]; // adjacent nodes (referencing adjacent subtrees considered for recursion)
     {
-        if (rek_deep == 0) {
+        if (rec_depth == 0) {
             descend[0] = this;
             descend[2] = NULL;
             descend[4] = NULL;
@@ -1151,7 +1143,7 @@ bool AP_tree_nlen::kernighan_rek(const int                 rek_deep,
     AP_FLOAT pars[8]; // eight parsimony values (produced by 2*swap_assymetric at each adjacent edge)
 
     {
-        AP_FLOAT schwellwert = thresFunctor.calculate(rek_deep);
+        AP_FLOAT schwellwert = KL.thresFunctor.calculate(rec_depth);
         for (int i = 0; i < 8; i++) {
             order[i] = i;
             AP_tree_nlen * const subtree = descend[i];
@@ -1167,8 +1159,7 @@ bool AP_tree_nlen::kernighan_rek(const int                 rek_deep,
                 pars[i] = rootNode()->costs();
                 if (pars[i] < pars_best) {
                     better_subtrees++;
-                    pars_best      = pars[i];
-                    rek_width_type = AP_BETTER;
+                    pars_best = pars[i];
                 }
                 if (pars[i] < schwellwert) {
                     rek_width_dynamic++;
@@ -1207,70 +1198,46 @@ bool AP_tree_nlen::kernighan_rek(const int                 rek_deep,
     }
 
     int rek_width;
-    if (rek_width_type == AP_BETTER) {
-        rek_width =  better_subtrees;
+    if (better_subtrees) {
+        rek_width = better_subtrees;
     }
     else {
         rek_width = visited_subtrees;
-        if (rek_width_type & AP_STATIC) {
-            int rek_width_static = (rek_deep < CUSTOM_STATIC_PATH_REDUCTION_DEPTH) ? rek_2_width[rek_deep] : 1;
+        if (KL.rec_type & AP_STATIC) {
+            int rek_width_static = (rec_depth < CUSTOM_STATIC_PATH_REDUCTION_DEPTH) ? KL.rec_width[rec_depth] : 1;
             rek_width            = std::min(rek_width, rek_width_static);
         }
-        if (rek_width_type & AP_DYNAMIK) {
+        if (KL.rec_type & AP_DYNAMIK) {
             rek_width = std::min(rek_width, rek_width_dynamic);
         }
-        else if (!(rek_width_type & AP_STATIC)) { // @@@ wrong? no path reduction -> should visit all branches
+        else if (!(KL.rec_type & AP_STATIC)) { // @@@ wrong? no path reduction -> should visit all branches
             rek_width = std::min(rek_width, 1);
         }
     }
     ap_assert(rek_width<=visited_subtrees);
 
     bool found_better = false;
-    for (int i=0; i<rek_width; i++) {
+    for (int i=0; i<rek_width && !found_better; i++) {
         AP_tree_nlen * const subtree = descend[order[i]];
 
         ap_main->remember();
         subtree->swap_assymetric(subtree->kernighan = idx2side(order[i])); // mark + swap
         rootNode()->parsimony_rek();
-        switch (rek_width_type) {
-            case AP_BETTER: {
-#if defined(DEBUG)
-                cout << "found better !\n";
-#endif
-                subtree->kernighan_rek(rek_deep + 1, rek_2_width,
-                                       rek_deep_max + 4, // @@@ use value from AWAR_KL_INCDEPTH instead of 4
-                                       thresFunctor,
-                                       pars_best,
-                                       AP_STATIC);
-                found_better = true;
-                break;
-            }
-            default:
-                found_better = subtree->kernighan_rek(rek_deep + 1, rek_2_width,
-                                                      rek_deep_max,
-                                                      thresFunctor,
-                                                      pars_best,
-                                                      rek_width_type);
-                break;
-        }
-        subtree->kernighan = AP_NONE; // unmark
 
-        if (found_better) {
-#if defined(DEBUG)
-            cout << "   parsimony:  " << pars_best << "took: " << i << "\n";
-            for (int j=0; j<visited_subtrees; j++) cout << "  " << pars[j];
-            cout << "\n";
-            if (!rek_deep) {
-                cout << "NEW RECURSION\n\n";
-            }
-            cout.flush();
-#endif
-            ap_main->accept();
-            break;
+        if (better_subtrees) {
+            KL_params modified      = KL;
+            modified.rec_type       = AP_STATIC;
+            modified.max_rec_depth += 4; // @@@ use value from AWAR_KL_INCDEPTH instead of 4
+
+            subtree->kernighan_rek(modified, rec_depth+1, pars_best);
+            found_better = true;
         }
         else {
-            ap_main->revert();
+            found_better = subtree->kernighan_rek(KL, rec_depth+1, pars_best);
         }
+
+        subtree->kernighan = AP_NONE; // unmark
+        ap_main->accept_if(found_better);
     }
 
     ap_main->accept_if(found_better); // undo set_root otherwise
