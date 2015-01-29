@@ -152,7 +152,9 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
 
             if (better_tree_found) {
                 ap_main->accept();
-                pars_curr = get_root_node()->costs();
+                AP_FLOAT pars_new = get_root_node()->costs();
+                thresFunctor.change_parsimony_start(pars_new-pars_curr);
+                pars_curr = pars_new;
                 if (pars_global_start) {
                     progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f, KL=%.1f)", pars_curr, *pars_global_start-pars_curr, pars_org-pars_curr));
                 }

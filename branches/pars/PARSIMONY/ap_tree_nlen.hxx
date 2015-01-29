@@ -58,6 +58,10 @@ public:
             x * b +
             c;
     }
+
+    void change_parsimony_start(double offset)  {
+        c += offset;
+    }
 };
 
 
