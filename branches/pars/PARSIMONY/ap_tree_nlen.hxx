@@ -72,6 +72,7 @@ struct KL_params {
     KL_RECURSION_TYPE  rec_type;                                      // recursion type
     int                rec_width[CUSTOM_STATIC_PATH_REDUCTION_DEPTH]; // customized recursion width (static path reduction)
     QuadraticThreshold thresFunctor;                                  // functor for dynamic path reduction (start parsvalue -> worst allowed parsvalue @ depth)
+    int                inc_rec_depth;                                 // increment max. recursion depth (if better topology found)
 };
 
 enum AP_BL_MODE {

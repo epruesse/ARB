@@ -17,7 +17,7 @@
 
 #define AWAR_KL_RANDOM_NODES PREFIX_KL "nodes"
 #define AWAR_KL_MAXDEPTH     PREFIX_KL "maxdepth"
-#define AWAR_KL_INCDEPTH     PREFIX_KL "incdepth"  // @@@ unused!
+#define AWAR_KL_INCDEPTH     PREFIX_KL "inc_depth"
 
 #define AWAR_KL_STATIC_ENABLED PREFIX_KL_STATIC "enable"
 #define AWAR_KL_STATIC_DEPTH0  PREFIX_KL_STATIC "depth0"

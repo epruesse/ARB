@@ -1511,7 +1511,7 @@ static void create_parsimony_variables(AW_root *aw_root, AW_default db) {
 
     aw_root->awar_float(AWAR_KL_RANDOM_NODES, 1.7, db);
     aw_root->awar_int  (AWAR_KL_MAXDEPTH,     15,  db);
-    aw_root->awar_int  (AWAR_KL_INCDEPTH,     5,   db);
+    aw_root->awar_int  (AWAR_KL_INCDEPTH,     4,   db);
 
     aw_root->awar_int(AWAR_KL_STATIC_ENABLED, 1, db);
     aw_root->awar_int(AWAR_KL_STATIC_DEPTH0,  2, db);

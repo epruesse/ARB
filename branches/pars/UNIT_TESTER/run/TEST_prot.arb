@@ -1305,7 +1305,7 @@ genetic			%% (%
 	kh			%% (%
 		nodes			%f 1.7
 		maxdepth		%i 15
-		incdepth		%i 5
+		inc_depth		%i 4
 		static			%% (%
 			enable			%i 1
 			depth0			%i 2

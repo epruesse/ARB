@@ -1227,7 +1227,7 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
         if (better_subtrees) {
             KL_params modified      = KL;
             modified.rec_type       = AP_STATIC;
-            modified.max_rec_depth += 4; // @@@ use value from AWAR_KL_INCDEPTH instead of 4
+            modified.max_rec_depth += KL.inc_rec_depth;
 
             subtree->kernighan_rec(modified, rec_depth+1, pars_best);
             found_better = true;

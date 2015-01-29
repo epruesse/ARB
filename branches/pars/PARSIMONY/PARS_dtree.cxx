@@ -104,6 +104,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
     KL_params KL;
     {
         KL.max_rec_depth = *GBT_read_int(gb_main, AWAR_KL_MAXDEPTH);
+        KL.inc_rec_depth = *GBT_read_int(gb_main, AWAR_KL_INCDEPTH);
 
         KL_DYNAMIC_THRESHOLD_TYPE thresType = (KL_DYNAMIC_THRESHOLD_TYPE)*GBT_read_int(gb_main, AWAR_KL_FUNCTION_TYPE);
 
