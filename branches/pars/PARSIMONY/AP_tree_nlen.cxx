@@ -1224,45 +1224,45 @@ void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
 
     if (rek_width > visited_subtrees)   rek_width = visited_subtrees;
 
-    for (int i=0; i < rek_width; i++) {
+    for (int i=0; i<rek_width; i++) {
+        AP_tree_nlen * const adjNode = pars_refpntr[pars_ref[i]];
+
         ap_main->remember();
-        pars_refpntr[pars_ref[i]]->kernighan = idx2side(pars_ref[i]);
-        // Markieren
-        pars_refpntr[pars_ref[i]]->swap_assymetric(idx2side(pars_ref[i]));
-        // vertausche seite
+        adjNode->swap_assymetric(adjNode->kernighan = idx2side(pars_ref[i])); // mark + swap
         rootNode()->parsimony_rek();
         switch (rek_width_type) {
             case AP_BETTER: {
                 // starte kerninghan_rek mit rekursionstiefe 3, statisch
-                bool flag = false;
+                bool flag   = false;
                 cout << "found better !\n";
-                pars_refpntr[pars_ref[i]]->kernighan_rek(rek_deep + 1, rek_2_width,
-                                                         rek_2_width_max, rek_deep_max + 4,
-                                                         thresFunctor,
-                                                         pars_best, pars_start,
-                                                         AP_STATIC, &flag);
+                adjNode->kernighan_rek(rek_deep + 1, rek_2_width,
+                                       rek_2_width_max, rek_deep_max + 4,
+                                       thresFunctor,
+                                       pars_best, pars_start,
+                                       AP_STATIC, &flag);
                 *abort_flag = true;
                 break;
             }
             default:
-                pars_refpntr[pars_ref[i]]->kernighan_rek(rek_deep + 1, rek_2_width,
-                                                         rek_2_width_max, rek_deep_max,
-                                                         thresFunctor,
-                                                         pars_best, pars_start,
-                                                         rek_width_type, abort_flag);
+                adjNode->kernighan_rek(rek_deep + 1, rek_2_width,
+                                       rek_2_width_max, rek_deep_max,
+                                       thresFunctor,
+                                       pars_best, pars_start,
+                                       rek_width_type, abort_flag);
                 break;
         }
-        pars_refpntr[pars_ref[i]]->kernighan = AP_NONE;
-        // Demarkieren
+        adjNode->kernighan = AP_NONE; // unmark
+
         if (*abort_flag) {
+#if defined(DEBUG)
             cout << "   parsimony:  " << pars_best << "took: " << i << "\n";
-            for (i=0; i<visited_subtrees; i++) cout << "  " << pars[i];
+            for (int j=0; j<visited_subtrees; j++) cout << "  " << pars[j];
             cout << "\n";
             if (!rek_deep) {
                 cout << "NEW RECURSION\n\n";
             }
             cout.flush();
-
+#endif
             ap_main->accept();
             break;
         }
