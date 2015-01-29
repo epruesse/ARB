@@ -1092,40 +1092,47 @@ void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
     // function         Funktion fuer den dynamischen Schwellwert
     // pars_            Verschiedene Parsimonywerte
 
+    ap_assert(*abort_flag == false); // @@@ always true here -> change result-param into result
+
     if (rek_deep >= rek_deep_max || is_leaf || *abort_flag)   return;
     if (!father) return; // no KL at root
 
-    // Referenzzeiger auf die vier Kanten und zwei swapmoeglichkeiten initialisieren
-    int            pars_ref[8];           // references to swapped parsimony values // @@@ rename->pidx
-    AP_tree_nlen * pars_refpntr[8];       // next branches // @@@ rename -> adjBranch 
+    int           order[8];   // references to swapped parsimony values
+    AP_tree_nlen *descend[8]; // adjacent nodes (referencing adjacent subtrees considered for recursion)
     {
-        AP_tree_nlen *this_brother = this->get_brother();
         if (rek_deep == 0) {
-            pars_refpntr[0] = pars_refpntr[1] = this;
-            pars_refpntr[2] = pars_refpntr[3] = 0;
-            pars_refpntr[4] = pars_refpntr[5] = 0;
-            pars_refpntr[6] = pars_refpntr[7] = 0;
+            descend[0] = this;
+            descend[2] = NULL;
+            descend[4] = NULL;
+            descend[6] = NULL;
         }
         else {
-            pars_refpntr[0] = pars_refpntr[1] = this->get_leftson();
-            pars_refpntr[2] = pars_refpntr[3] = this->get_rightson();
-            if (father->father != 0) {
+            AP_tree_nlen *this_brother = this->get_brother();
+
+            descend[0] = get_leftson();
+            descend[2] = get_rightson();
+            if (father->father) {
                 // Referenzzeiger falls nicht an der Wurzel
-                pars_refpntr[4] = pars_refpntr[5] = this->get_father();
-                pars_refpntr[6] = pars_refpntr[7] = this_brother;
+                descend[4] = get_father();
+                descend[6] = this_brother;
             }
             else {
                 // an der Wurzel nehme linken und rechten Sohns des Bruders
                 if (!get_brother()->is_leaf) {
-                    pars_refpntr[4] = pars_refpntr[5] = this_brother->get_leftson();
-                    pars_refpntr[6] = pars_refpntr[7] = this_brother->get_rightson();
+                    descend[4] = this_brother->get_leftson();
+                    descend[6] = this_brother->get_rightson();
                 }
                 else {
-                    pars_refpntr[4] = pars_refpntr[5] = 0;
-                    pars_refpntr[6] = pars_refpntr[7] = 0;
+                    descend[4] = NULL;
+                    descend[6] = NULL;
                 }
             }
         }
+
+        descend[1] = descend[0];
+        descend[3] = descend[2];
+        descend[5] = descend[4];
+        descend[7] = descend[6];
     }
 
     //
@@ -1147,96 +1154,93 @@ void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
     {
         AP_FLOAT schwellwert = thresFunctor.calculate(rek_deep) + pars_start;
         for (int i = 0; i < 8; i++) {
-            pars_ref[i] = i;
-            pars[i] = -1;
+            order[i] = i;
+            AP_tree_nlen * const subtree = descend[i];
 
-            if (!pars_refpntr[i])   continue;
-            if (pars_refpntr[i]->is_leaf) continue;
-
-            // KL recursion was broken (see changeset [11010] for how)
-            // - IMO it should only descent into AP_NONE branches (see setters of 'kernighan'-flag)
-            // - quick test shows calculation is much faster and results seem to be better.
-            if (pars_refpntr[i]->kernighan != AP_NONE) continue;
-
-            if (pars_refpntr[i]->gr.hidden) continue;
-            if (pars_refpntr[i]->get_father()->gr.hidden) continue;
-
-            // nur wenn kein Blatt ist
-            ap_main->remember();
-            pars_refpntr[i]->swap_assymetric(idx2side(i));
-            pars[i] = rootNode()->costs();
-            if (pars[i] < pars_best) {
-                better_subtrees++;
-                pars_best      = pars[i];
-                rek_width_type = AP_BETTER;
+            if (subtree                       &&
+                !subtree->is_leaf             &&
+                subtree->kernighan == AP_NONE && // already descended into this branch (fixed by [11010])
+                !subtree->gr.hidden           && // @@@ unwanted hardcoded bahavior
+                !subtree->get_father()->gr.hidden)
+            {
+                ap_main->remember();
+                subtree->swap_assymetric(idx2side(i));
+                pars[i] = rootNode()->costs();
+                if (pars[i] < pars_best) {
+                    better_subtrees++;
+                    pars_best      = pars[i];
+                    rek_width_type = AP_BETTER;
+                }
+                if (pars[i] < schwellwert) {
+                    rek_width_dynamic++;
+                }
+                ap_main->revert();
+                visited_subtrees++;
             }
-            if (pars[i] < schwellwert) {
-                rek_width_dynamic++;
+            else {
+                pars[i] = -1;
             }
-            ap_main->revert();
-            visited_subtrees ++;
-        }
-    }
-    // Bubblesort, in pars[0] steht kleinstes element
-    //
-    // CAUTION! The original parsimonies will be exchanged
-
-
-    for (int i=7, t=0; t<i; t++) {
-        if (pars[t] <0) {
-            pars[t]     = pars[i];
-            pars_ref[t] = i;
-            t--;
-            i--;
         }
     }
 
-    for (int t = visited_subtrees - 1; t > 0; t--) {
-        bool bubbled = false;
-        for (int i = 0; i < t; i++) {
-            if (pars[i] > pars[i+1]) {
-                std::swap(pars_ref[i], pars_ref[i+1]);
-                std::swap(pars[i],     pars[i+1]);
-                bubbled = true;
+    // bubblesort pars[]+order[], such that pars[0] contains best (=smallest) parsimony value
+    {
+        for (int i=7, t=0; t<i; t++) { // move negative (=unused) parsimony values to the end
+            if (pars[t] <0) {
+                pars[t]  = pars[i];
+                order[t] = i;
+                t--;
+                i--;
             }
         }
-        if (!bubbled) break;
+
+        for (int t = visited_subtrees - 1; t > 0; t--) {
+            bool bubbled = false;
+            for (int i = 0; i < t; i++) {
+                if (pars[i] > pars[i+1]) {
+                    std::swap(order[i], order[i+1]);
+                    std::swap(pars[i],  pars[i+1]);
+                    bubbled = true;
+                }
+            }
+            if (!bubbled) break;
+        }
     }
 
-    int rek_width_static = (rek_deep < rek_2_width_max) ? rek_2_width[rek_deep] : 1;
-
-    int rek_width = visited_subtrees;
+    int rek_width;
     if (rek_width_type == AP_BETTER) {
         rek_width =  better_subtrees;
     }
     else {
+        rek_width = visited_subtrees;
         if (rek_width_type & AP_STATIC) {
-            if (rek_width> rek_width_static) rek_width = rek_width_static;
+            int rek_width_static = (rek_deep < rek_2_width_max) ? rek_2_width[rek_deep] : 1;
+            rek_width            = std::min(rek_width, rek_width_static);
         }
         if (rek_width_type & AP_DYNAMIK) {
-            if (rek_width> rek_width_dynamic) rek_width = rek_width_dynamic;
+            rek_width = std::min(rek_width, rek_width_dynamic);
         }
-        else if (!(rek_width_type & AP_STATIC)) {
-            if (rek_width> 1) rek_width = 1;
+        else if (!(rek_width_type & AP_STATIC)) { // @@@ wrong? no path reduction -> should visit all branches
+            rek_width = std::min(rek_width, 1);
         }
-
     }
-
-    if (rek_width > visited_subtrees)   rek_width = visited_subtrees;
+    ap_assert(rek_width<=visited_subtrees);
 
     for (int i=0; i<rek_width; i++) {
-        AP_tree_nlen * const adjNode = pars_refpntr[pars_ref[i]];
+        AP_tree_nlen * const subtree = descend[order[i]];
 
         ap_main->remember();
-        adjNode->swap_assymetric(adjNode->kernighan = idx2side(pars_ref[i])); // mark + swap
+        subtree->swap_assymetric(subtree->kernighan = idx2side(order[i])); // mark + swap
         rootNode()->parsimony_rek();
         switch (rek_width_type) {
             case AP_BETTER: {
                 // starte kerninghan_rek mit rekursionstiefe 3, statisch
                 bool flag   = false;
+#if defined(DEBUG)
                 cout << "found better !\n";
-                adjNode->kernighan_rek(rek_deep + 1, rek_2_width,
-                                       rek_2_width_max, rek_deep_max + 4,
+#endif
+                subtree->kernighan_rek(rek_deep + 1, rek_2_width,
+                                       rek_2_width_max, rek_deep_max + 4, // @@@ use value from AWAR instead of 4
                                        thresFunctor,
                                        pars_best, pars_start,
                                        AP_STATIC, &flag);
@@ -1244,14 +1248,14 @@ void AP_tree_nlen::kernighan_rek(const int                  rek_deep,
                 break;
             }
             default:
-                adjNode->kernighan_rek(rek_deep + 1, rek_2_width,
+                subtree->kernighan_rek(rek_deep + 1, rek_2_width,
                                        rek_2_width_max, rek_deep_max,
                                        thresFunctor,
                                        pars_best, pars_start,
                                        rek_width_type, abort_flag);
                 break;
         }
-        adjNode->kernighan = AP_NONE; // unmark
+        subtree->kernighan = AP_NONE; // unmark
 
         if (*abort_flag) {
 #if defined(DEBUG)
