@@ -1075,19 +1075,17 @@ inline CONSTEXPR_RETURN AP_TREE_SIDE idx2side(const int idx) {
     return idx&1 ? AP_RIGHT : AP_LEFT;
 }
 
-bool AP_tree_nlen::kernighan_rek(const int                  rek_deep,
-                                 const int *const           rek_2_width,
-                                 const int                  rek_2_width_max,
-                                 const int                  rek_deep_max,
-                                 const QuadraticThreshold&  thresFunctor,
-                                 AP_FLOAT                   pars_best,
-                                 const AP_FLOAT             pars_start,
-                                 KL_RECURSION_TYPE          rek_width_type)
+bool AP_tree_nlen::kernighan_rek(const int                 rek_deep,
+                                 const int *const          rek_2_width,
+                                 const int                 rek_deep_max,
+                                 const QuadraticThreshold& thresFunctor,
+                                 AP_FLOAT                  pars_best,
+                                 const AP_FLOAT            pars_start,
+                                 KL_RECURSION_TYPE         rek_width_type)
 {
     /*! does K.L. recursion
      * @param rek_deep          current recursion depth (starts with 0)
      * @param rek_2_width       custom recursion width (static path reduction)
-     * @param rek_2_width_max   number of values in rek_2_width // @@@ globally constant -> elim
      * @param rek_deep_max      max. recursion depth
      * @param thresFunctor      functor for dynamic path reduction
      * @param pars_best         current parsimony value of topology
@@ -1217,7 +1215,7 @@ bool AP_tree_nlen::kernighan_rek(const int                  rek_deep,
     else {
         rek_width = visited_subtrees;
         if (rek_width_type & AP_STATIC) {
-            int rek_width_static = (rek_deep < rek_2_width_max) ? rek_2_width[rek_deep] : 1;
+            int rek_width_static = (rek_deep < CUSTOM_STATIC_PATH_REDUCTION_DEPTH) ? rek_2_width[rek_deep] : 1;
             rek_width            = std::min(rek_width, rek_width_static);
         }
         if (rek_width_type & AP_DYNAMIK) {
@@ -1242,7 +1240,7 @@ bool AP_tree_nlen::kernighan_rek(const int                  rek_deep,
                 cout << "found better !\n";
 #endif
                 subtree->kernighan_rek(rek_deep + 1, rek_2_width,
-                                       rek_2_width_max, rek_deep_max + 4, // @@@ use value from AWAR_KL_INCDEPTH instead of 4
+                                       rek_deep_max + 4, // @@@ use value from AWAR_KL_INCDEPTH instead of 4
                                        thresFunctor,
                                        pars_best, pars_start,
                                        AP_STATIC);
@@ -1251,7 +1249,7 @@ bool AP_tree_nlen::kernighan_rek(const int                  rek_deep,
             }
             default:
                 found_better = subtree->kernighan_rek(rek_deep + 1, rek_2_width,
-                                                      rek_2_width_max, rek_deep_max,
+                                                      rek_deep_max,
                                                       thresFunctor,
                                                       pars_best, pars_start,
                                                       rek_width_type);

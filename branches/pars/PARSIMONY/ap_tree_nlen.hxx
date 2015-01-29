@@ -78,6 +78,7 @@ enum EdgeSpec {
     MARKED_VISIBLE_EDGES,
 };
 const int UNLIMITED = -1;
+const int CUSTOM_STATIC_PATH_REDUCTION_DEPTH = 5;
 
 class AP_tree_edge;
 class AP_main;
@@ -185,14 +186,13 @@ public:
     AP_FLOAT nn_interchange_rek(int depth, EdgeSpec whichEdges, AP_BL_MODE mode);
     AP_FLOAT nn_interchange(AP_FLOAT parsimony, AP_BL_MODE mode);
 
-    bool kernighan_rek(const int                  rek_deep,
-                       const int *const           rek_2_width,
-                       const int                  rek_2_width_max,
-                       const int                  rek_deep_max,
-                       const QuadraticThreshold&  thresFunctor,
-                       AP_FLOAT                   pars_best,
-                       const AP_FLOAT             pars_start,
-                       KL_RECURSION_TYPE          rek_width_type);
+    bool kernighan_rek(const int                 rek_deep,
+                       const int *const          rek_2_width,
+                       const int                 rek_deep_max,
+                       const QuadraticThreshold& thresFunctor,
+                       AP_FLOAT                  pars_best,
+                       const AP_FLOAT            pars_start,
+                       KL_RECURSION_TYPE         rek_width_type);
 
     void buildBranchList(AP_tree_nlen **&list, long &num, bool create_terminal_branches, int deep);
     AP_tree_nlen **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)

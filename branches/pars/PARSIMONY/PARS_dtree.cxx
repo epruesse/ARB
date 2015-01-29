@@ -113,13 +113,12 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
     if (*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_ENABLED)) searchflag = (KL_RECURSION_TYPE)(searchflag|AP_DYNAMIK);
     if (*GBT_read_int(gb_main, AWAR_KL_STATIC_ENABLED))  searchflag = (KL_RECURSION_TYPE)(searchflag|AP_STATIC);
 
-    int rek_breite[8];
+    int rek_breite[CUSTOM_STATIC_PATH_REDUCTION_DEPTH];
     rek_breite[0] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH0);
     rek_breite[1] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH1);
     rek_breite[2] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH2);
     rek_breite[3] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH3);
     rek_breite[4] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH4);
-    const int rek_breite_anz = 5;
 
     int            anzahl = (int)(*GBT_read_float(gb_main, AWAR_KL_RANDOM_NODES)*at->count_leafs());
     AP_tree_nlen **list   = at->getRandomNodes(anzahl);
@@ -145,7 +144,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
             ap_main->remember();
 
             bool better_tree_found = tree_elem->kernighan_rek(0,
-                                                              rek_breite, rek_breite_anz, rek_deep_max,
+                                                              rek_breite, rek_deep_max,
                                                               thresFunctor,
                                                               pars_curr,  pars_curr,
                                                               searchflag);
