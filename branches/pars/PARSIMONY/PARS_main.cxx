@@ -308,9 +308,9 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
             int depth = isits->every_sixteenth() ? UNLIMITED : 5;
 
             arb_progress progress("optimization");
-            // @@@ better call nn_interchange_rek with ANY_EDGE?
+            // @@@ better call nn_interchange_rec with ANY_EDGE?
             // -> will slightly increase number of combines, but skipping hidden/unmarked subtrees doesnt seem to make any sense
-            leaf->get_father()->nn_interchange_rek(depth, MARKED_VISIBLE_EDGES, AP_BL_NNI_ONLY);
+            leaf->get_father()->nn_interchange_rec(depth, MARKED_VISIBLE_EDGES, AP_BL_NNI_ONLY);
             ASSERT_VALID_TREE(rootNode());
         }
         AP_tree_nlen *brother = leaf->get_brother();
@@ -424,7 +424,7 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
         GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
 
         if (!quick) {
-            rootEdge()->nni_rek(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY, NULL);
+            rootEdge()->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY, NULL);
             ++isits.get_progress();
         }
 
@@ -580,7 +580,7 @@ void PartialSequence::test_match(const AP_tree_nlen *leaf_full) {
 #endif
 }
 
-static GB_ERROR nt_best_partial_match_rek(list<PartialSequence>& partial, const AP_tree_nlen *tree) {
+static GB_ERROR nt_best_partial_match_rec(list<PartialSequence>& partial, const AP_tree_nlen *tree) {
     GB_ERROR error = 0;
 
     if (tree) {
@@ -600,8 +600,8 @@ static GB_ERROR nt_best_partial_match_rek(list<PartialSequence>& partial, const 
             }
         }
         else {
-            error             = nt_best_partial_match_rek(partial, tree->get_leftson());
-            if (!error) error = nt_best_partial_match_rek(partial, tree->get_rightson());
+            error             = nt_best_partial_match_rec(partial, tree->get_leftson());
+            if (!error) error = nt_best_partial_match_rec(partial, tree->get_rightson());
         }
     }
     return error;
@@ -730,7 +730,7 @@ static void nt_add_partial(AWT_graphic_parsimony *agt) {
             rootNode()->reset_subtree_layout();
 
             // find best matching full sequence for each partial sequence
-            error = nt_best_partial_match_rek(partial, rootNode());
+            error = nt_best_partial_match_rec(partial, rootNode());
 
             list<PartialSequence>::iterator i = partial.begin();
             list<PartialSequence>::iterator e = partial.end();
@@ -903,7 +903,7 @@ static void NT_calc_branch_lengths(AW_window *, AWT_canvas *ntw) {
 static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
     arb_progress progress("Calculating Bootstrap Limit");
     AP_BL_MODE mode       = AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY);
-    rootEdge()->nni_rek(UNLIMITED, ANY_EDGE, mode, NULL);
+    rootEdge()->nni_rec(UNLIMITED, ANY_EDGE, mode, NULL);
     AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
     AWT_TREE(ntw)->displayed_root = AWT_TREE(ntw)->get_root_node();
     pars_saveNrefresh_changed_tree(ntw);
@@ -928,7 +928,7 @@ static void recursiveNNI(AWT_graphic_parsimony *agt) {
     AP_FLOAT prevPars = orgPars;
     progress.subtitle(GBS_global_string("best=%.1f", orgPars));
     while (!progress.aborted()) {
-        AP_FLOAT currPars = rootEdge()->nni_rek(UNLIMITED, MARKED_VISIBLE_EDGES, AP_BL_NNI_ONLY, NULL);
+        AP_FLOAT currPars = rootEdge()->nni_rec(UNLIMITED, MARKED_VISIBLE_EDGES, AP_BL_NNI_ONLY, NULL);
         if (currPars == prevPars) break; // no improvement -> abort
         progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", currPars, orgPars-currPars));
         prevPars = currPars;
@@ -1896,7 +1896,7 @@ static arb_test::match_expectation addingPartialResultsIn(GBDATA *gb_added_speci
     expectation_group fulfilled;
 
     mark_only(gb_added_species);
-    env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
+    env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
     fulfilled.add(modifyingTopoResultsIn(MOD_ADD_PARTIAL, topo, pars_expected, env, false));
     fulfilled.add(that(is_partial(gb_added_species)).is_equal_to(1));
 
@@ -2037,7 +2037,7 @@ void TEST_nucl_tree_modifications() {
             env.push();
 
             mark_only(CorGlutP);
-            env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
+            env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
             {
                 GB_transaction  ta(gb_main);
                 TEST_EXPECT_NO_ERROR(GBT_write_int(CorGlutP, "ARB_partial", 0)); // revert species to "full"
@@ -2085,7 +2085,7 @@ void TEST_nucl_tree_modifications() {
     {
         GB_transaction ta(env.gbmain());
         GBT_restore_marked_species(env.gbmain(), "CorAquat;CorGluta;CurCitre;CloButyr;CloButy2;CytAquat");
-        env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
+        env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
     }
 
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
@@ -2104,7 +2104,7 @@ void TEST_nucl_tree_modifications() {
 
     // mark all species
     mark_all(env.gbmain());
-    env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
+    env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
     TEST_EXPECT_EQUAL(GBT_count_marked_species(env.gbmain()), 18);
 
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
@@ -2192,7 +2192,7 @@ void TEST_prot_tree_modifications() {
             env.push();
 
             mark_only(MucRaceP);
-            env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
+            env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
             {
                 GB_transaction  ta(gb_main);
                 TEST_EXPECT_NO_ERROR(GBT_write_int(MucRaceP, "ARB_partial", 0)); // revert species to "full"
@@ -2251,7 +2251,7 @@ void TEST_prot_tree_modifications() {
         GB_transaction ta(env.gbmain());
 
         GBT_restore_marked_species(env.gbmain(), "CytLyti6;StrRamo3;MucRace2;SacCere5");
-        env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
+        env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
     }
 
     TEST_EXPECT_PARSVAL(env, PARSIMONY_MIXED);
@@ -2270,7 +2270,7 @@ void TEST_prot_tree_modifications() {
 
     // mark all species
     mark_all(env.gbmain());
-    env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
+    env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
     TEST_EXPECT_EQUAL(GBT_count_marked_species(env.gbmain()), 14);
 
     TEST_EXPECT_PARSVAL(env, PARSIMONY_MIXED);
@@ -2488,7 +2488,7 @@ void TEST_node_stack() {
             TEST_EXPECT_VALID_TREE(env.root_node());
 
             mark_only(env.root_node()->findLeafNamed(testSingle[i])->gb_node);
-            env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
+            env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
 
             env.push();
             if (swapped) {
@@ -2523,7 +2523,7 @@ void TEST_node_stack() {
         mark(env.root_node()->findLeafNamed("CloButyr")->gb_node);
         mark(env.root_node()->findLeafNamed("CloCarni")->gb_node);
         mark(env.root_node()->findLeafNamed("CloPaste")->gb_node);
-        env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
+        env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
 
         env.push();
         if (remove_from_lower_subtree) {

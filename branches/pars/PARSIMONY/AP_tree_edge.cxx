@@ -558,7 +558,7 @@ static void set_inner_branch_length_and_calc_adj_leaf_lengths(AP_tree_nlen *son,
     son->set_branchlength_unrooted(blen);
 
     // calculate adjacent leaf branchlengths early
-    // (calculating them at end of nni_rek, produces much more combines)
+    // (calculating them at end of nni_rec, produces much more combines)
     if (son->leftson->is_leaf) {
         ap_assert(son->get_leftson()->get_branchlength_unrooted() == AP_UNDEF_BL);
         ap_calc_leaf_branch_length(son->get_leftson());
@@ -597,7 +597,7 @@ inline void undefine_branchlengths(AP_tree_nlen *node) {
     node->rightlen = AP_UNDEF_BL;
 }
 
-AP_FLOAT AP_tree_edge::nni_rek(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode) {
+AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode) {
     if (!rootNode())         return 0.0;
     if (rootNode()->is_leaf) return rootNode()->costs();
 

@@ -1015,7 +1015,7 @@ void AP_tree_nlen::pop(Level IF_ASSERTION_USED(curr_frameLevel), bool& IF_ASSERT
     delete previous;
 }
 
-void AP_tree_nlen::parsimony_rek(char *mutPerSite) {
+void AP_tree_nlen::parsimony_rec(char *mutPerSite) {
     AP_sequence *sequence = get_seq();
 
     if (is_leaf) {
@@ -1035,8 +1035,8 @@ void AP_tree_nlen::parsimony_rek(char *mutPerSite) {
             ap_assert(lson);
             ap_assert(rson);
 
-            lson->parsimony_rek(mutPerSite);
-            rson->parsimony_rek(mutPerSite);
+            lson->parsimony_rec(mutPerSite);
+            rson->parsimony_rec(mutPerSite);
 
             AP_sequence *lseq = lson->get_seq();
             AP_sequence *rseq = rson->get_seq();
@@ -1056,26 +1056,26 @@ AP_FLOAT AP_tree_nlen::costs(char *mutPerSite) {
     ap_assert(get_tree_root()->get_seqTemplate());  // forgot to set_seqTemplate() ?  (previously returned 0.0 in this case)
     ap_assert(sequence_state_valid());
 
-    parsimony_rek(mutPerSite);
+    parsimony_rec(mutPerSite);
     return mutation_rate;
 }
 
-AP_FLOAT AP_tree_nlen::nn_interchange_rek(int depth, EdgeSpec whichEdges, AP_BL_MODE mode) {
+AP_FLOAT AP_tree_nlen::nn_interchange_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode) {
     if (!father) {
-        return rootEdge()->nni_rek(depth, whichEdges, mode, NULL);
+        return rootEdge()->nni_rec(depth, whichEdges, mode, NULL);
     }
     if (!father->father) {
         AP_tree_edge *e = rootEdge();
-        return e->nni_rek(depth, whichEdges, mode, e->otherNode(this));
+        return e->nni_rec(depth, whichEdges, mode, e->otherNode(this));
     }
-    return edgeTo(get_father())->nni_rek(depth, whichEdges, mode, get_father());
+    return edgeTo(get_father())->nni_rec(depth, whichEdges, mode, get_father());
 }
 
 inline CONSTEXPR_RETURN AP_TREE_SIDE idx2side(const int idx) {
     return idx&1 ? AP_RIGHT : AP_LEFT;
 }
 
-bool AP_tree_nlen::kernighan_rek(const KL_params& KL, const int rec_depth, AP_FLOAT pars_best) {
+bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FLOAT pars_best) {
     /*! does K.L. recursion
      * @param KL                parameters defining how recursion is done
      * @param rec_depth         current recursion depth (starts with 0)
@@ -1136,7 +1136,7 @@ bool AP_tree_nlen::kernighan_rek(const KL_params& KL, const int rec_depth, AP_FL
     this->set_root();
     rootNode()->costs();
 
-    int rek_width_dynamic = 0;
+    int rec_width_dynamic = 0;
     int visited_subtrees  = 0;
     int better_subtrees   = 0;
 
@@ -1162,7 +1162,7 @@ bool AP_tree_nlen::kernighan_rek(const KL_params& KL, const int rec_depth, AP_FL
                     pars_best = pars[i];
                 }
                 if (pars[i] < schwellwert) {
-                    rek_width_dynamic++;
+                    rec_width_dynamic++;
                 }
                 ap_main->revert();
                 visited_subtrees++;
@@ -1197,43 +1197,43 @@ bool AP_tree_nlen::kernighan_rek(const KL_params& KL, const int rec_depth, AP_FL
         }
     }
 
-    int rek_width;
+    int rec_width;
     if (better_subtrees) {
-        rek_width = better_subtrees;
+        rec_width = better_subtrees;
     }
     else {
-        rek_width = visited_subtrees;
+        rec_width = visited_subtrees;
         if (KL.rec_type & AP_STATIC) {
-            int rek_width_static = (rec_depth < CUSTOM_STATIC_PATH_REDUCTION_DEPTH) ? KL.rec_width[rec_depth] : 1;
-            rek_width            = std::min(rek_width, rek_width_static);
+            int rec_width_static = (rec_depth < CUSTOM_STATIC_PATH_REDUCTION_DEPTH) ? KL.rec_width[rec_depth] : 1;
+            rec_width            = std::min(rec_width, rec_width_static);
         }
         if (KL.rec_type & AP_DYNAMIK) {
-            rek_width = std::min(rek_width, rek_width_dynamic);
+            rec_width = std::min(rec_width, rec_width_dynamic);
         }
         else if (!(KL.rec_type & AP_STATIC)) { // @@@ wrong? no path reduction -> should visit all branches
-            rek_width = std::min(rek_width, 1);
+            rec_width = std::min(rec_width, 1);
         }
     }
-    ap_assert(rek_width<=visited_subtrees);
+    ap_assert(rec_width<=visited_subtrees);
 
     bool found_better = false;
-    for (int i=0; i<rek_width && !found_better; i++) {
+    for (int i=0; i<rec_width && !found_better; i++) {
         AP_tree_nlen * const subtree = descend[order[i]];
 
         ap_main->remember();
         subtree->swap_assymetric(subtree->kernighan = idx2side(order[i])); // mark + swap
-        rootNode()->parsimony_rek();
+        rootNode()->parsimony_rec();
 
         if (better_subtrees) {
             KL_params modified      = KL;
             modified.rec_type       = AP_STATIC;
             modified.max_rec_depth += 4; // @@@ use value from AWAR_KL_INCDEPTH instead of 4
 
-            subtree->kernighan_rek(modified, rec_depth+1, pars_best);
+            subtree->kernighan_rec(modified, rec_depth+1, pars_best);
             found_better = true;
         }
         else {
-            found_better = subtree->kernighan_rek(KL, rec_depth+1, pars_best);
+            found_better = subtree->kernighan_rec(KL, rec_depth+1, pars_best);
         }
 
         subtree->kernighan = AP_NONE; // unmark
@@ -1306,12 +1306,12 @@ GB_ERROR AP_pars_root::saveToDB() {
     return AP_tree_root::saveToDB();
 }
 
-void AP_tree_nlen::buildNodeList_rek(AP_tree_nlen **list, long& num) {
+void AP_tree_nlen::buildNodeList_rec(AP_tree_nlen **list, long& num) {
     // builds a list of all inner nodes (w/o root node)
     if (!is_leaf) {
         if (father) list[num++] = this;
-        get_leftson()->buildNodeList_rek(list, num);
-        get_rightson()->buildNodeList_rek(list, num);
+        get_leftson()->buildNodeList_rec(list, num);
+        get_rightson()->buildNodeList_rec(list, num);
     }
 }
 
@@ -1320,10 +1320,10 @@ void AP_tree_nlen::buildNodeList(AP_tree_nlen **&list, long &num) {
     list = new AP_tree_nlen *[num+1];
     list[num] = 0;
     num  = 0;
-    buildNodeList_rek(list, num);
+    buildNodeList_rec(list, num);
 }
 
-void AP_tree_nlen::buildBranchList_rek(AP_tree_nlen **list, long& num, bool create_terminal_branches, int deep) {
+void AP_tree_nlen::buildBranchList_rec(AP_tree_nlen **list, long& num, bool create_terminal_branches, int deep) {
     // builds a list of all species
     // (returns pairs of leafs/father and nodes/father)
 
@@ -1341,8 +1341,8 @@ void AP_tree_nlen::buildBranchList_rek(AP_tree_nlen **list, long& num, bool crea
             }
         }
         if (!is_leaf) {
-            get_leftson() ->buildBranchList_rek(list, num, create_terminal_branches, deep-1);
-            get_rightson()->buildBranchList_rek(list, num, create_terminal_branches, deep-1);
+            get_leftson() ->buildBranchList_rec(list, num, create_terminal_branches, deep-1);
+            get_rightson()->buildBranchList_rec(list, num, create_terminal_branches, deep-1);
         }
     }
 }
@@ -1363,7 +1363,7 @@ void AP_tree_nlen::buildBranchList(AP_tree_nlen **&list, long &num, bool create_
     if (num) {
         long count = 0;
 
-        buildBranchList_rek(list, count, create_terminal_branches, deep);
+        buildBranchList_rec(list, count, create_terminal_branches, deep);
         list[count] = 0;
         num         = count/2;
     }

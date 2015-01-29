@@ -131,9 +131,9 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ renam
     void restore_sequence_nondestructive(const NodeState& state);
     void restore_root(const NodeState& state);
 
-    void buildNodeList_rek(AP_tree_nlen **list, long& num);
+    void buildNodeList_rec(AP_tree_nlen **list, long& num);
     void buildNodeList(AP_tree_nlen **&list, long &num); // returns a list of inner nodes (w/o root)
-    void buildBranchList_rek(AP_tree_nlen **list, long& num, bool create_terminal_branches, int deep);
+    void buildBranchList_rec(AP_tree_nlen **list, long& num, bool create_terminal_branches, int deep);
 
 protected:
     ~AP_tree_nlen() OVERRIDE { ap_assert(states.empty()); }
@@ -189,12 +189,12 @@ public:
     void moveNextTo(AP_tree *node, AP_FLOAT rel_pos) OVERRIDE { moveNextTo(DOWNCAST(AP_tree_nlen*, node), rel_pos); }
 
     // tree optimization methods:
-    void parsimony_rek(char *mutPerSite = NULL);
+    void parsimony_rec(char *mutPerSite = NULL);
 
-    AP_FLOAT nn_interchange_rek(int depth, EdgeSpec whichEdges, AP_BL_MODE mode);
+    AP_FLOAT nn_interchange_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode);
     AP_FLOAT nn_interchange(AP_FLOAT parsimony, AP_BL_MODE mode);
 
-    bool kernighan_rek(const KL_params& KL, const int rec_depth, AP_FLOAT pars_best);
+    bool kernighan_rec(const KL_params& KL, const int rec_depth, AP_FLOAT pars_best);
 
     void buildBranchList(AP_tree_nlen **&list, long &num, bool create_terminal_branches, int deep);
     AP_tree_nlen **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)
@@ -335,9 +335,9 @@ public:
 
     // tree optimization:
 
-    AP_FLOAT nni_rek(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode);
+    AP_FLOAT nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode);
 
-    AP_FLOAT calc_branchlengths() { return nni_rek(UNLIMITED, ANY_EDGE, AP_BL_BL_ONLY, NULL); }
+    AP_FLOAT calc_branchlengths() { return nni_rec(UNLIMITED, ANY_EDGE, AP_BL_BL_ONLY, NULL); }
 
     AP_FLOAT nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps);
     AP_FLOAT nni(AP_FLOAT pars_one, AP_BL_MODE mode) { return nni_mutPerSite(pars_one, mode, NULL); }
