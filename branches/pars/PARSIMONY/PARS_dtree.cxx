@@ -142,14 +142,13 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
             (tree_elem->father && tree_elem->get_father()->gr.hidden);
 
         if (!in_folded_group) { // @@@ unwanted hardcoded check for group
-            bool better_tree_found = false;
             ap_main->remember();
 
-            tree_elem->kernighan_rek(0,
-                                     rek_breite, rek_breite_anz, rek_deep_max,
-                                     thresFunctor,
-                                     pars_curr,  pars_curr,
-                                     searchflag, &better_tree_found);
+            bool better_tree_found = tree_elem->kernighan_rek(0,
+                                                              rek_breite, rek_breite_anz, rek_deep_max,
+                                                              thresFunctor,
+                                                              pars_curr,  pars_curr,
+                                                              searchflag);
 
             if (better_tree_found) {
                 ap_main->accept();
