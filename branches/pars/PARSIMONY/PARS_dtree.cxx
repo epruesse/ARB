@@ -269,12 +269,8 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
     bool          recalc_branchlengths_on_structure_change = true;
 
     switch (event.cmd()) {
-        // @@@ something is designed completely wrong here!
-        // why do all commands close TA and reopen when done?
-
         case AWT_MODE_NNI:
-            if (event.type()==AW_Mouse_Press) {
-                GB_pop_transaction(gb_main); // @@@ wtf! solve!!!
+            if (event.type() == AW_Mouse_Press) {
                 switch (event.button()) {
                     case AW_BUTTON_LEFT: {
                         if (clicked.node()) {
@@ -300,12 +296,10 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
 
                     default: break;
                 }
-                GB_begin_transaction(gb_main);
             }
             break;
         case AWT_MODE_KERNINGHAN:
             if (event.type() == AW_Mouse_Press) {
-                GB_pop_transaction(gb_main);
                 switch (event.button()) {
                     case AW_BUTTON_LEFT:
                         if (clicked.node()) {
@@ -324,12 +318,10 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
                     }
                     default: break;
                 }
-                GB_begin_transaction(gb_main);
             }
             break;
         case AWT_MODE_OPTIMIZE:
             if (event.type()==AW_Mouse_Press) {
-                GB_pop_transaction(gb_main);
                 switch (event.button()) {
                     case AW_BUTTON_LEFT:
                         if (clicked.node()) {
@@ -349,13 +341,12 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
                     }
                     default: break;
                 }
-                GB_begin_transaction(gb_main);
             }
             break;
 
         default:
             recalc_branchlengths_on_structure_change = false;
-            // fall-through (modes listed below trigger branchlength calculation)
+            // fall-through (unlisted modes trigger branchlength calculation internally when needed)
         case AWT_MODE_MOVE:
             AWT_graphic_tree::handle_command(device, event);
             break;
