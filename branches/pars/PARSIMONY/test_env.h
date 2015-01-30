@@ -41,6 +41,7 @@ class PARSIMONY_testenv : virtual Noncopyable {
     fake_agt<SEQTYPE> *agt;
     ArbParsimony       parsimony;
     long               prev_combine_count;
+    KL_Settings       *klSettings;
 
     void common_init(const char *dbname) {
         apMain.open(dbname);
@@ -56,7 +57,8 @@ class PARSIMONY_testenv : virtual Noncopyable {
 
 public:
     PARSIMONY_testenv(const char *dbname)
-        : parsimony()
+        : parsimony(),
+          klSettings(NULL)
     {
         common_init(dbname);
         agt->init(new AliView(ap_main->get_gb_main()));
@@ -71,6 +73,7 @@ public:
         ap_main = NULL;
 
         delete agt;
+        delete klSettings;
 
         ap_assert(prev_combine_count == AP_sequence::combine_count()); // please add tests documenting combines_performed()
     }
@@ -123,6 +126,11 @@ public:
     }
 
     void compute_tree() { root_node()->compute_tree(); }
+
+    KL_Settings& get_KL_settings() {
+        ap_assert(klSettings);
+        return *klSettings;
+    }
 
 #if defined(PROVIDE_PRINT)
     void dump2file(const char *name) { apMain.dump2file(name); }

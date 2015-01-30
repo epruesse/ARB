@@ -89,48 +89,26 @@ QuadraticThreshold::QuadraticThreshold(KL_DYNAMIC_THRESHOLD_TYPE type, double st
     c += pars_start;
 }
 
-void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *pars_global_start) {
-    GBDATA *gb_main = ap_main->get_gb_main();
-    GB_push_transaction(gb_main);
-
+void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, const AP_FLOAT *pars_global_start) {
     long prevCombineCount = AP_sequence::combine_count();
 
     AP_FLOAT       pars_curr = get_root_node()->costs();
     const AP_FLOAT pars_org  = pars_curr;
 
-    // @@@ pass in struct containing awar values (instead of reading them here)
-
     // setup KL recursion parameters:
     KL_params KL;
     {
-        KL.max_rec_depth = *GBT_read_int(gb_main, AWAR_KL_MAXDEPTH);
-        KL.inc_rec_depth = *GBT_read_int(gb_main, AWAR_KL_INCDEPTH);
+        KL.max_rec_depth = settings.maxdepth; ap_assert(KL.max_rec_depth>0);
+        KL.inc_rec_depth = settings.incdepth;
+        KL.thresFunctor  = QuadraticThreshold(settings.Dynamic.type, settings.Dynamic.start, settings.Dynamic.maxy, settings.Dynamic.maxx, KL.max_rec_depth, pars_curr);
+        KL.rec_type      = KL_RECURSION_TYPE((settings.Dynamic.enabled*AP_DYNAMIK)|(settings.Static.enabled*AP_STATIC));
 
-        KL_DYNAMIC_THRESHOLD_TYPE thresType = (KL_DYNAMIC_THRESHOLD_TYPE)*GBT_read_int(gb_main, AWAR_KL_FUNCTION_TYPE);
-
-        double f_startx = *GBT_read_int(gb_main, AWAR_KL_DYNAMIC_START);
-        double f_maxy   = *GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXY);
-        double f_maxx   = *GBT_read_int(gb_main, AWAR_KL_DYNAMIC_MAXX);
-
-        KL.thresFunctor = QuadraticThreshold(thresType, f_startx, f_maxy, f_maxx, KL.max_rec_depth, pars_curr);
-
-        {
-            KL_RECURSION_TYPE searchflag = AP_NO_REDUCTION;
-
-            if (*GBT_read_int(gb_main, AWAR_KL_DYNAMIC_ENABLED)) searchflag = (KL_RECURSION_TYPE)(searchflag|AP_DYNAMIK);
-            if (*GBT_read_int(gb_main, AWAR_KL_STATIC_ENABLED))  searchflag = (KL_RECURSION_TYPE)(searchflag|AP_STATIC);
-
-            KL.rec_type = searchflag;
+        for (int x = 0; x<CUSTOM_STATIC_PATH_REDUCTION_DEPTH; ++x) {
+            KL.rec_width[x] = settings.Static.depth[x];
         }
-
-        KL.rec_width[0] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH0);
-        KL.rec_width[1] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH1);
-        KL.rec_width[2] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH2);
-        KL.rec_width[3] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH3);
-        KL.rec_width[4] = *GBT_read_int(gb_main, AWAR_KL_STATIC_DEPTH4);
     }
 
-    int            anzahl = (int)(*GBT_read_float(gb_main, AWAR_KL_RANDOM_NODES)*at->count_leafs());
+    int            anzahl = settings.random_nodes*at->count_leafs(); // @@@ rename
     AP_tree_nlen **list   = at->getRandomNodes(anzahl);
 
     arb_progress progress(anzahl);
@@ -141,8 +119,6 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
     else {
         progress.subtitle(GBS_global_string("best=%.1f", pars_curr));
     }
-
-    GB_pop_transaction(gb_main);
 
     for (int i=0; i<anzahl && !progress.aborted(); i++) {
         AP_tree_nlen *tree_elem = list[i];
@@ -179,7 +155,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const AP_FLOAT *par
 
 
 
-void ArbParsimony::optimize_tree(AP_tree_nlen *at, arb_progress& progress) {
+void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, arb_progress& progress) {
     AP_tree_nlen   *oldrootleft  = get_root_node()->get_leftson();
     AP_tree_nlen   *oldrootright = get_root_node()->get_rightson();
     const AP_FLOAT  org_pars     = get_root_node()->costs();
@@ -191,7 +167,7 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, arb_progress& progress) {
         AP_FLOAT nni_pars = at->nn_interchange_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY);
 
         if (nni_pars == prev_pars) { // NNI did not reduce costs -> kern-lin
-            kernighan_optimize_tree(at, &org_pars);
+            kernighan_optimize_tree(at, settings, &org_pars);
             AP_FLOAT ker_pars = get_root_node()->costs();
             if (ker_pars == prev_pars) break; // kern-lin did not improve tree -> done
             ap_assert(prev_pars>ker_pars); // otherwise kernighan_optimize_tree worsened the tree
@@ -298,7 +274,7 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
 
         case AWT_MODE_NNI:
             if (event.type()==AW_Mouse_Press) {
-                GB_pop_transaction(gb_main);
+                GB_pop_transaction(gb_main); // @@@ wtf! solve!!!
                 switch (event.button()) {
                     case AW_BUTTON_LEFT: {
                         if (clicked.node()) {
@@ -328,20 +304,20 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
             }
             break;
         case AWT_MODE_KERNINGHAN:
-            if (event.type()==AW_Mouse_Press) {
+            if (event.type() == AW_Mouse_Press) {
                 GB_pop_transaction(gb_main);
                 switch (event.button()) {
                     case AW_BUTTON_LEFT:
                         if (clicked.node()) {
                             arb_progress  progress("Kernighan-Lin optimize subtree");
-                            parsimony.kernighan_optimize_tree(DOWNCAST(AP_tree_nlen*, clicked.node()), NULL);
+                            parsimony.kernighan_optimize_tree(DOWNCAST(AP_tree_nlen*, clicked.node()), KL_Settings(aw_root), NULL);
                             this->exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
                         }
                         break;
                     case AW_BUTTON_RIGHT: {
                         arb_progress progress("Kernighan-Lin optimize tree");
-                        parsimony.kernighan_optimize_tree(get_root_node(), NULL);
+                        parsimony.kernighan_optimize_tree(get_root_node(), KL_Settings(aw_root), NULL);
                         this->exports.save = 1;
                         ASSERT_VALID_TREE(get_root_node());
                         break;
@@ -358,7 +334,7 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
                     case AW_BUTTON_LEFT:
                         if (clicked.node()) {
                             arb_progress  progress("Optimizing subtree");
-                            parsimony.optimize_tree(DOWNCAST(AP_tree_nlen*, clicked.node()), progress);
+                            parsimony.optimize_tree(DOWNCAST(AP_tree_nlen*, clicked.node()), KL_Settings(aw_root), progress);
                             this->exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
                         }
@@ -366,7 +342,7 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
                     case AW_BUTTON_RIGHT: {
                         arb_progress progress("Optimizing tree");
                         
-                        parsimony.optimize_tree(get_root_node(), progress);
+                        parsimony.optimize_tree(get_root_node(), KL_Settings(aw_root), progress);
                         this->exports.save = 1;
                         ASSERT_VALID_TREE(get_root_node());
                         break;
@@ -402,12 +378,15 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
 
 template<typename SEQTYPE>
 PARSIMONY_testenv<SEQTYPE>::PARSIMONY_testenv(const char *dbname, const char *aliName)
-    : parsimony()
+    : parsimony(),
+      klSettings(NULL)
 {
     common_init(dbname);
     GBDATA         *gb_main   = ap_main->get_gb_main();
     GB_transaction  ta(gb_main);
     size_t          aliLength = GBT_get_alignment_len(gb_main, aliName);
+
+    klSettings = new KL_Settings(GBT_get_alignment_type(gb_main, aliName));
 
     AP_filter filter(aliLength);
     if (!filter.is_invalid()) {

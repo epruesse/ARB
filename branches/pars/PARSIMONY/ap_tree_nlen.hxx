@@ -30,22 +30,19 @@
 #ifndef AP_MAIN_TYPE_HXX
 #include "ap_main_type.hxx"
 #endif
+#ifndef PARS_AWARS_H
+#include "pars_awars.h"
+#endif
 
 class AP_tree_nlen;
 
 const int UNLIMITED = -1;
-const int CUSTOM_STATIC_PATH_REDUCTION_DEPTH = 5;
 
 enum KL_RECURSION_TYPE { // =path reduction
     // bit-values!
     AP_NO_REDUCTION = 0,
     AP_DYNAMIK      = 1,
     AP_STATIC       = 2,
-};
-
-enum KL_DYNAMIC_THRESHOLD_TYPE {
-    AP_QUADRAT_START = 5,
-    AP_QUADRAT_MAX   = 6
 };
 
 class QuadraticThreshold {

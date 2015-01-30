@@ -909,16 +909,16 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static void optimizeTree(AWT_graphic_parsimony *agt) {
+static void optimizeTree(AWT_graphic_parsimony *agt, const KL_Settings& settings) {
     arb_progress progress("Optimizing Tree");
-    agt->get_parsimony().optimize_tree(rootNode(), progress);
+    agt->get_parsimony().optimize_tree(rootNode(), settings, progress);
     ASSERT_VALID_TREE(rootNode());
     rootEdge()->calc_branchlengths();
     agt->reorder_tree(BIG_BRANCHES_TO_TOP);
     rootNode()->compute_tree();
 }
 static void NT_optimize(AW_window *, AWT_canvas *ntw) {
-    optimizeTree(AWT_TREE_PARS(ntw));
+    optimizeTree(AWT_TREE_PARS(ntw), KL_Settings(ntw->awr));
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -1506,6 +1506,69 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     return aws;
 }
 
+KL_Settings::KL_Settings(AW_root *aw_root) {
+    random_nodes = aw_root->awar(AWAR_KL_RANDOM_NODES)->read_float();
+    maxdepth     = aw_root->awar(AWAR_KL_MAXDEPTH)->read_int();
+    incdepth     = aw_root->awar(AWAR_KL_INCDEPTH)->read_int();
+
+    Static.enabled  = aw_root->awar(AWAR_KL_STATIC_ENABLED)->read_int();
+    Static.depth[0] = aw_root->awar(AWAR_KL_STATIC_DEPTH0)->read_int();
+    Static.depth[1] = aw_root->awar(AWAR_KL_STATIC_DEPTH1)->read_int();
+    Static.depth[2] = aw_root->awar(AWAR_KL_STATIC_DEPTH2)->read_int();
+    Static.depth[3] = aw_root->awar(AWAR_KL_STATIC_DEPTH3)->read_int();
+    Static.depth[4] = aw_root->awar(AWAR_KL_STATIC_DEPTH4)->read_int();
+
+    Dynamic.enabled = aw_root->awar(AWAR_KL_DYNAMIC_ENABLED)->read_int();
+    Dynamic.start   = aw_root->awar(AWAR_KL_DYNAMIC_START)->read_int();
+    Dynamic.maxx    = aw_root->awar(AWAR_KL_DYNAMIC_MAXX)->read_int();
+    Dynamic.maxy    = aw_root->awar(AWAR_KL_DYNAMIC_MAXY)->read_int();
+    Dynamic.type    = (KL_DYNAMIC_THRESHOLD_TYPE)aw_root->awar(AWAR_KL_FUNCTION_TYPE)->read_int();
+}
+#if defined(UNIT_TESTS)
+KL_Settings::KL_Settings(GB_alignment_type atype) {
+    // previously values were read from test-DBs
+    // (GB_AT_AA: from TEST_prot.arb; GB_AT_RNA: from TEST_trees.arb )
+
+    // @@@ Wanted: set defaults (same values as below in AWARs)
+
+    // unit tests depend on these values (i.e. fail if they are changed):
+    random_nodes = 1.7;
+    maxdepth     = 15;
+
+    Static.enabled = true;
+    switch (atype) {
+        case GB_AT_RNA:
+            Static.depth[0] = 3;
+            Static.depth[1] = 3;
+            Static.depth[2] = 3;
+            Static.depth[3] = 3;
+            Static.depth[4] = 3;
+            break;
+        case GB_AT_AA:
+            Static.depth[0] = 2;
+            Static.depth[1] = 2;
+            Static.depth[2] = 2;
+            Static.depth[3] = 2;
+            Static.depth[4] = 1;
+            break;
+        default:
+            ap_assert(0);
+            break;
+    }
+
+    Dynamic.enabled = true;
+    Dynamic.start   = 100;
+    Dynamic.maxy    = 150;
+    Dynamic.maxx    = 6;
+
+    // these values do not seem to have any effect (i.e. are not covered by unit-tests):
+    incdepth = 4;
+
+    // const setting (not configurable)
+    Dynamic.type = AP_QUADRAT_START;
+}
+#endif
+
 static void create_parsimony_variables(AW_root *aw_root, AW_default db) {
     // kernighan
 
@@ -1759,7 +1822,7 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
             break;
 
         case MOD_OPTI_GLOBAL:
-            optimizeTree(env.graphic_tree());
+            optimizeTree(env.graphic_tree(), env.get_KL_settings());
             break;
 
         case MOD_MIX_TREE:

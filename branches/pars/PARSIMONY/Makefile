@@ -32,6 +32,7 @@ AP_buffer.o: AP_buffer.hxx
 AP_buffer.o: ap_main.hxx
 AP_buffer.o: ap_main_type.hxx
 AP_buffer.o: ap_tree_nlen.hxx
+AP_buffer.o: pars_awars.h
 AP_buffer.o: pars_dtree.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -76,6 +77,7 @@ AP_main.o: AP_buffer.hxx
 AP_main.o: ap_main.hxx
 AP_main.o: ap_main_type.hxx
 AP_main.o: ap_tree_nlen.hxx
+AP_main.o: pars_awars.h
 AP_main.o: pars_dtree.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -121,6 +123,7 @@ AP_tree_edge.o: AP_buffer.hxx
 AP_tree_edge.o: ap_main.hxx
 AP_tree_edge.o: ap_main_type.hxx
 AP_tree_edge.o: ap_tree_nlen.hxx
+AP_tree_edge.o: pars_awars.h
 AP_tree_edge.o: pars_dtree.hxx
 AP_tree_edge.o: pars_main.hxx
 AP_tree_edge.o: test_env.h
@@ -172,6 +175,7 @@ AP_tree_nlen.o: AP_buffer.hxx
 AP_tree_nlen.o: ap_main.hxx
 AP_tree_nlen.o: ap_main_type.hxx
 AP_tree_nlen.o: ap_tree_nlen.hxx
+AP_tree_nlen.o: pars_awars.h
 AP_tree_nlen.o: pars_dtree.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

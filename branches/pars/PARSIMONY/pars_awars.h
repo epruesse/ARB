@@ -11,6 +11,10 @@
 #ifndef PARS_AWARS_H
 #define PARS_AWARS_H
 
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+
 #define PREFIX_KL         "genetic/kh/"
 #define PREFIX_KL_STATIC  PREFIX_KL "static/"
 #define PREFIX_KL_DYNAMIC PREFIX_KL "dynamic/"
@@ -33,6 +37,40 @@
 
 #define AWAR_KL_FUNCTION_TYPE PREFIX_KL "function_type" // threshold function for dynamic reduction (not configurable; experimental?)
 
+// --------------------------------------------------------------------------------
+
+const int CUSTOM_STATIC_PATH_REDUCTION_DEPTH = 5;
+
+enum KL_DYNAMIC_THRESHOLD_TYPE {
+    AP_QUADRAT_START = 5,
+    AP_QUADRAT_MAX   = 6
+};
+
+struct KL_Settings {
+    double random_nodes; // AWAR_KL_RANDOM_NODES
+    int    maxdepth;     // AWAR_KL_MAXDEPTH
+    int    incdepth;     // AWAR_KL_INCDEPTH
+
+    struct {
+        bool enabled;                                   // AWAR_KL_STATIC_ENABLED
+        int  depth[CUSTOM_STATIC_PATH_REDUCTION_DEPTH]; // AWAR_KL_STATIC_DEPTH0 .. AWAR_KL_STATIC_DEPTH4
+    } Static;
+    struct {
+        bool                      enabled; // AWAR_KL_DYNAMIC_ENABLED
+        KL_DYNAMIC_THRESHOLD_TYPE type;    // AWAR_KL_FUNCTION_TYPE
+        int                       start;   // AWAR_KL_DYNAMIC_START
+        int                       maxx;    // AWAR_KL_DYNAMIC_MAXX
+        int                       maxy;    // AWAR_KL_DYNAMIC_MAXY
+    } Dynamic;
+
+    KL_Settings(AW_root *aw_root); // read from AWARs
+#if defined(UNIT_TESTS)
+    KL_Settings(GB_alignment_type atype); // init with unittest defaults
+#endif
+};
+
+
 #else
 #error pars_awars.h included twice
 #endif // PARS_AWARS_H
+
