@@ -31,6 +31,51 @@
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 
+struct TimedCombines {
+    clock_t ticks;
+    long    combines;
+
+    TimedCombines()
+        : ticks(clock()),
+          combines(AP_sequence::combine_count())
+    {}
+};
+
+class OptiPerfMeter {
+    std::string   what;
+    TimedCombines start;
+    AP_FLOAT      start_pars;
+
+public:
+    OptiPerfMeter(std::string what_, AP_FLOAT start_pars_)
+        : what(what_),
+          start_pars(start_pars_)
+    {}
+
+    void dump(FILE *out, AP_FLOAT end_pars) {
+        TimedCombines end;
+
+        ap_assert(end_pars<start_pars);
+
+        double   seconds      = double(end.ticks-start.ticks)/CLOCKS_PER_SEC;
+        AP_FLOAT pars_improve = start_pars-end_pars;
+        long     combines     = end.combines-start.combines;
+
+        double combines_per_second  = combines/seconds;
+        double combines_per_improve = combines/pars_improve;
+        double improve_per_second   = pars_improve/seconds;
+
+        fprintf(out, "%-27s took %7.2f sec,  improve=%9.1f,  combines=%12li  (comb/sec=%10.2f,  comb/impr=%10.2f,  impr/sec=%10.2f)\n",
+                what.c_str(),
+                seconds,
+                pars_improve,
+                combines,
+                combines_per_second,
+                combines_per_improve,
+                improve_per_second);
+    }
+};
+
 static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd; // @@@ dynacast?
     UNCOVERED();
@@ -90,10 +135,10 @@ QuadraticThreshold::QuadraticThreshold(KL_DYNAMIC_THRESHOLD_TYPE type, double st
 }
 
 void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, const AP_FLOAT *pars_global_start) {
-    long prevCombineCount = AP_sequence::combine_count();
-
     AP_FLOAT       pars_curr = get_root_node()->costs();
     const AP_FLOAT pars_org  = pars_curr;
+
+    OptiPerfMeter performance("KL-recursion", pars_curr);
 
     // setup KL recursion parameters:
     KL_params KL;
@@ -150,7 +195,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
         progress.inc();
     }
     delete [] list;
-    printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
+    performance.dump(stdout, pars_curr);
 }
 
 
@@ -161,17 +206,26 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
     const AP_FLOAT  org_pars     = get_root_node()->costs();
     AP_FLOAT        prev_pars    = org_pars;
 
+    OptiPerfMeter overallPerf("global optimization", org_pars);
+
     progress.subtitle(GBS_global_string("best=%.1f", org_pars));
 
+    OptiPerfMeter *nniPerf = NULL;
+
     while (!progress.aborted()) {
+        if (!nniPerf) nniPerf = new OptiPerfMeter("(Multiple) recursive NNIs", prev_pars);
         AP_FLOAT nni_pars = at->nn_interchange_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY);
 
         if (nni_pars == prev_pars) { // NNI did not reduce costs -> kern-lin
+            nniPerf->dump(stdout, nni_pars);
+            delete nniPerf;
+            nniPerf = NULL;
+
             kernighan_optimize_tree(at, settings, &org_pars);
             AP_FLOAT ker_pars = get_root_node()->costs();
             if (ker_pars == prev_pars) break; // kern-lin did not improve tree -> done
-            ap_assert(prev_pars>ker_pars); // otherwise kernighan_optimize_tree worsened the tree
-            prev_pars = ker_pars;
+            ap_assert(prev_pars>ker_pars);    // otherwise kernighan_optimize_tree worsened the tree
+            prev_pars         = ker_pars;
         }
         else {
             ap_assert(prev_pars>nni_pars); // otherwise nn_interchange_rec worsened the tree
@@ -180,12 +234,16 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
         progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", prev_pars, org_pars-prev_pars));
     }
 
+    delete nniPerf;
+
     if (oldrootleft->father == oldrootright) {
         oldrootleft->set_root();
     }
     else {
         oldrootright->set_root();
     }
+
+    overallPerf.dump(stdout, prev_pars);
 }
 
 AWT_graphic_parsimony::AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
