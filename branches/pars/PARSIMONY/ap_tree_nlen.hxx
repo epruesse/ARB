@@ -109,7 +109,7 @@ typedef uint8_t EdgeIndex;
 class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ rename -> AP_pars_tree? (later!)
     // tree that is independent of branch lengths and root
 
-    AP_TREE_SIDE kernighan;     // Flag zum markieren
+    AP_TREE_SIDE kernighan;     // Flag zum markieren // @@@ replace by bool flag (only tested for ==AP_NONE or not)
     int          distance;      // distance to tree border (0=leaf, INT_MAX=UNKNOWN)
 
     // definitions for AP_tree_edge:

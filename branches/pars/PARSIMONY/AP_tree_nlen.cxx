@@ -1088,6 +1088,11 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
 
     if (rec_depth >= KL.max_rec_depth || is_leaf || !father) return false;
 
+    ap_assert(implicated(rec_depth>0, kernighan != AP_NONE));
+
+    // @@@ consider setting root already here
+    // (would allow to simplify code below, but has strange impact on number combines)
+
     int           order[8];   // references to swapped parsimony values
     AP_tree_nlen *descend[8]; // adjacent nodes (referencing adjacent subtrees considered for recursion)
     {
@@ -1098,18 +1103,18 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
             descend[6] = NULL;
         }
         else {
-            AP_tree_nlen *this_brother = this->get_brother();
+            AP_tree_nlen *this_brother = get_brother();
 
             descend[0] = get_leftson();
             descend[2] = get_rightson();
             if (father->father) {
-                // Referenzzeiger falls nicht an der Wurzel
+                // not son of root -> take father and brother
                 descend[4] = get_father();
                 descend[6] = this_brother;
             }
             else {
-                // an der Wurzel nehme linken und rechten Sohns des Bruders
-                if (!get_brother()->is_leaf) {
+                // son of root -> take sons of brother
+                if (!this_brother->is_leaf) {
                     descend[4] = this_brother->get_leftson();
                     descend[6] = this_brother->get_rightson();
                 }
@@ -1126,14 +1131,11 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
         descend[7] = descend[6];
     }
 
-    //
-    // parsimony werte bestimmen
-    //
-
-    // Wurzel setzen
+    // -----------------------------------
+    //      parsimony werte bestimmen
 
     ap_main->remember();
-    this->set_root();
+    this->set_root(); // @@@ see comment above
     rootNode()->costs();
 
     int rec_width_dynamic = 0;
@@ -1142,8 +1144,11 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
 
     AP_FLOAT pars[8]; // eight parsimony values (produced by 2*swap_assymetric at each adjacent edge)
 
+#if defined(ASSERTION_USED)
+    int forbidden_descends = 0;
+#endif
     {
-        AP_FLOAT schwellwert = KL.thresFunctor.calculate(rec_depth);
+        AP_FLOAT schwellwert = KL.thresFunctor.calculate(rec_depth); // @@@ skip if not needed
         for (int i = 0; i < 8; i++) {
             order[i] = i;
             AP_tree_nlen * const subtree = descend[i];
@@ -1169,6 +1174,11 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
             }
             else {
                 pars[i] = -1;
+#if defined(ASSERTION_USED)
+                if (subtree && subtree->kernighan != AP_NONE) {
+                    forbidden_descends++;
+                }
+#endif
             }
         }
     }
@@ -1197,6 +1207,48 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
         }
     }
 
+#if defined(ASSERTION_USED)
+    // rec_depth == 0 (called with start-node)
+    // rec_depth == 1 (called twice with start-node (swap_assymetric AP_LEFT + AP_RIGHT))
+    // rec_depth == 2 (called twice with each adjacent node -> 8 calls)
+    // rec_depth == 3 (called twice with each adjacent node, but not with those were recursion came from -> 6 calls)
+
+    if (father->father) {
+        switch (rec_depth) {
+            case 0:
+                ap_assert(visited_subtrees == 2);
+                ap_assert(forbidden_descends == 0);
+                break;
+            case 1:
+                ap_assert(visited_subtrees <= 8);
+                ap_assert(forbidden_descends == 0);
+                break;
+            default:
+                ap_assert(visited_subtrees <= 6);
+                ap_assert(forbidden_descends == 2);
+                break;
+        }
+    }
+    else { // at root
+        switch (rec_depth) {
+            case 0:
+                ap_assert(visited_subtrees == 2);
+                ap_assert(forbidden_descends == 0);
+                break;
+            case 1:
+                ap_assert(visited_subtrees <= 8);
+                ap_assert(forbidden_descends == 0);
+                break;
+            default:
+                ap_assert(visited_subtrees <= 8);
+                ap_assert(forbidden_descends == 0 || forbidden_descends == 2 || forbidden_descends == 4); // @@@ 4 is strange
+                // ap_assert(forbidden_descends == 0 || forbidden_descends == 2);
+                // ap_assert(forbidden_descends == 2);
+                break;
+        }
+    }
+#endif
+
     int rec_width;
     if (better_subtrees) {
         rec_width = better_subtrees;
@@ -1204,6 +1256,7 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
     else {
         rec_width = visited_subtrees;
         if (KL.rec_type & AP_STATIC) {
+            // @@@ using KL.rec_width[0] does not make sense! (always =2; see assertion above)
             int rec_width_static = (rec_depth < CUSTOM_STATIC_PATH_REDUCTION_DEPTH) ? KL.rec_width[rec_depth] : 1;
             rec_width            = std::min(rec_width, rec_width_static);
         }
