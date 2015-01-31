@@ -55,7 +55,7 @@ public:
     void dump(FILE *out, AP_FLOAT end_pars) {
         TimedCombines end;
 
-        ap_assert(end_pars<start_pars);
+        ap_assert(end_pars<=start_pars);
 
         double   seconds      = double(end.ticks-start.ticks)/CLOCKS_PER_SEC;
         AP_FLOAT pars_improve = start_pars-end_pars;
