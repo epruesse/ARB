@@ -221,6 +221,9 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
             delete nniPerf;
             nniPerf = NULL;
 
+            // @@@ perform a hardcoded kernighan_optimize_tree here (no path reduction; depth ~ 3)
+            // @@@ if no improvement perform custom KL, otherwise repeat hardcoded KL
+
             kernighan_optimize_tree(at, settings, &org_pars);
             AP_FLOAT ker_pars = get_root_node()->costs();
             if (ker_pars == prev_pars) break; // kern-lin did not improve tree -> done

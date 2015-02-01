@@ -1168,6 +1168,8 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
                 }
                 if (pars[i] < schwellwert) {
                     rec_width_dynamic++;
+                    // @@@ dynamic path reduction is not a reduction - it INCREASES the search width
+                    // @@@ together with static path reduction it is quite useless
                 }
                 ap_main->revert();
                 visited_subtrees++;
@@ -1251,7 +1253,11 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
 
     int rec_width;
     if (better_subtrees) {
-        rec_width = better_subtrees;
+        rec_width = better_subtrees; // @@@ wrong if static/dynamic reduction would allow more
+
+        // @@@ IMO the whole concept of incrementing depth when a better topology was found has no positive effect
+        // (the better topology is kept anyway and next recursive KL will do a full optimization starting from that edge as well)
+
     }
     else {
         rec_width = visited_subtrees;
