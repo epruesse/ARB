@@ -1263,7 +1263,7 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
         rec_width = visited_subtrees;
         if (KL.rec_type & AP_STATIC) {
             // @@@ using KL.rec_width[0] does not make sense! (always =2; see assertion above)
-            int rec_width_static = (rec_depth < CUSTOM_STATIC_PATH_REDUCTION_DEPTH) ? KL.rec_width[rec_depth] : 1;
+            int rec_width_static = (rec_depth < CUSTOM_DEPTHS) ? KL.rec_width[rec_depth] : 1;
             rec_width            = std::min(rec_width, rec_width_static);
         }
         if (KL.rec_type & AP_DYNAMIK) {

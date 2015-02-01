@@ -148,7 +148,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
         KL.thresFunctor  = QuadraticThreshold(settings.Dynamic.type, settings.Dynamic.start, settings.Dynamic.maxy, settings.Dynamic.maxx, KL.max_rec_depth, pars_curr);
         KL.rec_type      = KL_RECURSION_TYPE((settings.Dynamic.enabled*AP_DYNAMIK)|(settings.Static.enabled*AP_STATIC));
 
-        for (int x = 0; x<CUSTOM_STATIC_PATH_REDUCTION_DEPTH; ++x) {
+        for (int x = 0; x<CUSTOM_DEPTHS; ++x) {
             KL.rec_width[x] = settings.Static.depth[x];
         }
     }

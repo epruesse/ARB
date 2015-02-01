@@ -1512,11 +1512,12 @@ KL_Settings::KL_Settings(AW_root *aw_root) {
     incdepth     = aw_root->awar(AWAR_KL_INCDEPTH)->read_int();
 
     Static.enabled  = aw_root->awar(AWAR_KL_STATIC_ENABLED)->read_int();
-    Static.depth[0] = aw_root->awar(AWAR_KL_STATIC_DEPTH0)->read_int();
+    Static.depth[0] = 2; // always test both possibilities at starting edge
     Static.depth[1] = aw_root->awar(AWAR_KL_STATIC_DEPTH1)->read_int();
     Static.depth[2] = aw_root->awar(AWAR_KL_STATIC_DEPTH2)->read_int();
     Static.depth[3] = aw_root->awar(AWAR_KL_STATIC_DEPTH3)->read_int();
     Static.depth[4] = aw_root->awar(AWAR_KL_STATIC_DEPTH4)->read_int();
+    Static.depth[5] = aw_root->awar(AWAR_KL_STATIC_DEPTH5)->read_int();
 
     Dynamic.enabled = aw_root->awar(AWAR_KL_DYNAMIC_ENABLED)->read_int();
     Dynamic.start   = aw_root->awar(AWAR_KL_DYNAMIC_START)->read_int();
@@ -1536,20 +1537,21 @@ KL_Settings::KL_Settings(GB_alignment_type atype) {
     maxdepth     = 15;
 
     Static.enabled = true;
+    Static.depth[0] = 2; // always test both possibilities at starting edge
     switch (atype) {
         case GB_AT_RNA:
-            Static.depth[0] = 3;
             Static.depth[1] = 3;
             Static.depth[2] = 3;
             Static.depth[3] = 3;
             Static.depth[4] = 3;
+            Static.depth[5] = 1;
             break;
         case GB_AT_AA:
-            Static.depth[0] = 2;
             Static.depth[1] = 2;
             Static.depth[2] = 2;
             Static.depth[3] = 2;
             Static.depth[4] = 1;
+            Static.depth[5] = 1;
             break;
         default:
             ap_assert(0);
@@ -1569,28 +1571,28 @@ KL_Settings::KL_Settings(GB_alignment_type atype) {
 }
 #endif
 
-static void create_parsimony_variables(AW_root *aw_root, AW_default db) {
+static void create_parsimony_variables(AW_root *aw_root, AW_default props, GBDATA *gb_main) {
     // kernighan
 
-    aw_root->awar_float(AWAR_KL_RANDOM_NODES, 1.7, db);
-    aw_root->awar_int  (AWAR_KL_MAXDEPTH,     15,  db);
-    aw_root->awar_int  (AWAR_KL_INCDEPTH,     4,   db);
+    aw_root->awar_float(AWAR_KL_RANDOM_NODES, 1.7, props);
+    aw_root->awar_int  (AWAR_KL_MAXDEPTH,     15,  props);
+    aw_root->awar_int  (AWAR_KL_INCDEPTH,     4,   props);
 
-    aw_root->awar_int(AWAR_KL_STATIC_ENABLED, 1, db);
-    aw_root->awar_int(AWAR_KL_STATIC_DEPTH0,  2, db);
-    aw_root->awar_int(AWAR_KL_STATIC_DEPTH1,  2, db);
-    aw_root->awar_int(AWAR_KL_STATIC_DEPTH2,  2, db);
-    aw_root->awar_int(AWAR_KL_STATIC_DEPTH3,  2, db);
-    aw_root->awar_int(AWAR_KL_STATIC_DEPTH4,  1, db);
+    aw_root->awar_int(AWAR_KL_STATIC_ENABLED, 1, props);
+    aw_root->awar_int(AWAR_KL_STATIC_DEPTH1,  5, props)->set_minmax(1, 8);
+    aw_root->awar_int(AWAR_KL_STATIC_DEPTH2,  3, props)->set_minmax(1, 6);
+    aw_root->awar_int(AWAR_KL_STATIC_DEPTH3,  2, props)->set_minmax(1, 6);
+    aw_root->awar_int(AWAR_KL_STATIC_DEPTH4,  2, props)->set_minmax(1, 6);
+    aw_root->awar_int(AWAR_KL_STATIC_DEPTH5,  1, props)->set_minmax(1, 6);
 
-    aw_root->awar_int(AWAR_KL_DYNAMIC_ENABLED, 1,   db);
-    aw_root->awar_int(AWAR_KL_DYNAMIC_START,   100, db);
-    aw_root->awar_int(AWAR_KL_DYNAMIC_MAXX,    6,   db);
-    aw_root->awar_int(AWAR_KL_DYNAMIC_MAXY,    150, db);
+    aw_root->awar_int(AWAR_KL_DYNAMIC_ENABLED, 1,   props);
+    aw_root->awar_int(AWAR_KL_DYNAMIC_START,   100, props);
+    aw_root->awar_int(AWAR_KL_DYNAMIC_MAXX,    6,   props);
+    aw_root->awar_int(AWAR_KL_DYNAMIC_MAXY,    150, props);
 
-    aw_root->awar_int(AWAR_KL_FUNCTION_TYPE, AP_QUADRAT_START, db);
+    aw_root->awar_int(AWAR_KL_FUNCTION_TYPE, AP_QUADRAT_START, props);
 
-    awt_create_dtree_awars(aw_root, db);
+    awt_create_dtree_awars(aw_root, gb_main);
 }
 
 static void pars_create_all_awars(AW_root *awr, AW_default aw_def, GBDATA *gb_main) {
@@ -1628,7 +1630,7 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def, GBDATA *gb_ma
     awr->awar_int(AWAR_BEST_PARSIMONY, 0, aw_def);
     awr->awar_int(AWAR_STACKPOINTER,   0, aw_def);
 
-    create_parsimony_variables(awr, gb_main);
+    create_parsimony_variables(awr, aw_def, gb_main);
     create_nds_vars(awr, aw_def, gb_main);
 
 #if defined(DEBUG)

@@ -44,16 +44,11 @@ AW_window *create_kernighan_window(AW_root *aw_root) {
     aws->create_toggle(AWAR_KL_STATIC_ENABLED);
 
     aws->button_length(4);
-    aws->at("input_6");
-    aws->create_input_field(AWAR_KL_STATIC_DEPTH0);
-    aws->at("input_7");
-    aws->create_input_field(AWAR_KL_STATIC_DEPTH1);
-    aws->at("input_8");
-    aws->create_input_field(AWAR_KL_STATIC_DEPTH2);
-    aws->at("input_9");
-    aws->create_input_field(AWAR_KL_STATIC_DEPTH3);
-    aws->at("input_10");
-    aws->create_input_field(AWAR_KL_STATIC_DEPTH4);
+    aws->at("sred1"); aws->create_input_field(AWAR_KL_STATIC_DEPTH1);
+    aws->at("sred2"); aws->create_input_field(AWAR_KL_STATIC_DEPTH2);
+    aws->at("sred3"); aws->create_input_field(AWAR_KL_STATIC_DEPTH3);
+    aws->at("sred4"); aws->create_input_field(AWAR_KL_STATIC_DEPTH4);
+    aws->at("sred5"); aws->create_input_field(AWAR_KL_STATIC_DEPTH5);
 
 
     aws->at("dynamic");

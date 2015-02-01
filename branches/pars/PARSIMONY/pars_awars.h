@@ -24,11 +24,11 @@
 #define AWAR_KL_INCDEPTH     PREFIX_KL "inc_depth"
 
 #define AWAR_KL_STATIC_ENABLED PREFIX_KL_STATIC "enable"
-#define AWAR_KL_STATIC_DEPTH0  PREFIX_KL_STATIC "depth0"
 #define AWAR_KL_STATIC_DEPTH1  PREFIX_KL_STATIC "depth1"
 #define AWAR_KL_STATIC_DEPTH2  PREFIX_KL_STATIC "depth2"
 #define AWAR_KL_STATIC_DEPTH3  PREFIX_KL_STATIC "depth3"
 #define AWAR_KL_STATIC_DEPTH4  PREFIX_KL_STATIC "depth4"
+#define AWAR_KL_STATIC_DEPTH5  PREFIX_KL_STATIC "depth5"
 
 #define AWAR_KL_DYNAMIC_ENABLED PREFIX_KL_DYNAMIC "enable"
 #define AWAR_KL_DYNAMIC_START   PREFIX_KL_DYNAMIC "start"
@@ -40,6 +40,7 @@
 // --------------------------------------------------------------------------------
 
 const int CUSTOM_STATIC_PATH_REDUCTION_DEPTH = 5;
+const int CUSTOM_DEPTHS                      = CUSTOM_STATIC_PATH_REDUCTION_DEPTH+1; // (+depth[0], which is always 2)
 
 enum KL_DYNAMIC_THRESHOLD_TYPE {
     AP_QUADRAT_START = 5,
@@ -52,8 +53,8 @@ struct KL_Settings {
     int    incdepth;     // AWAR_KL_INCDEPTH
 
     struct {
-        bool enabled;                                   // AWAR_KL_STATIC_ENABLED
-        int  depth[CUSTOM_STATIC_PATH_REDUCTION_DEPTH]; // AWAR_KL_STATIC_DEPTH0 .. AWAR_KL_STATIC_DEPTH4
+        bool enabled;              // AWAR_KL_STATIC_ENABLED
+        int  depth[CUSTOM_DEPTHS]; // [0]=2, [1..5]=AWAR_KL_STATIC_DEPTH1 .. AWAR_KL_STATIC_DEPTH5
     } Static;
     struct {
         bool                      enabled; // AWAR_KL_DYNAMIC_ENABLED
