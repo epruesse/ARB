@@ -1269,9 +1269,6 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
         if (KL.rec_type & AP_DYNAMIK) {
             rec_width = std::min(rec_width, rec_width_dynamic);
         }
-        else if (!(KL.rec_type & AP_STATIC)) { // @@@ wrong? no path reduction -> should visit all branches
-            rec_width = std::min(rec_width, 1);
-        }
     }
     ap_assert(rec_width<=visited_subtrees);
 
