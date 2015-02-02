@@ -226,6 +226,7 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
     enum Heuristic {
         START_HEURISTIC,
         DEPTH3_RECURSIVE_NNI,
+        DEPTH3_RECURSIVE_NNI_FB,
         FINAL_HEURISTIC,
     } heuristic = START_HEURISTIC;
     const Heuristic NO_FURTHER_HEURISTIC = Heuristic(FINAL_HEURISTIC+1);
@@ -236,9 +237,10 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
         Heuristic          onImprove; // continue with this heuristic if improved (repeated or not)
         Heuristic          onFailure; // continue with this heuristic if NOT improved
     } heuristic_setting[FINAL_HEURISTIC+1] = {
-        { "simple NNIs",  NULL,      true,  DEPTH3_RECURSIVE_NNI, DEPTH3_RECURSIVE_NNI },
-        { "depth-3-NNIs", &deep_nni, true,  START_HEURISTIC,      FINAL_HEURISTIC },
-        { "KL-optimizer", &settings, false, DEPTH3_RECURSIVE_NNI, NO_FURTHER_HEURISTIC },
+        { "simple NNIs",       NULL,       true,  DEPTH3_RECURSIVE_NNI,    DEPTH3_RECURSIVE_NNI },
+        { "depth-3-NNIs",      &deep_nni,  true,  START_HEURISTIC,         FINAL_HEURISTIC },
+        { "depth-3-NNIs [FB]", &deep_nni,  false, START_HEURISTIC,         START_HEURISTIC },
+        { "KL-optimizer",      &settings,  false, DEPTH3_RECURSIVE_NNI_FB, NO_FURTHER_HEURISTIC },
     };
 
     AP_FLOAT       heu_start_pars = prev_pars;
