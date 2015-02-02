@@ -52,7 +52,7 @@ public:
           start_pars(start_pars_)
     {}
 
-    void dump(FILE *out, AP_FLOAT end_pars) {
+    void dumpCustom(FILE *out, AP_FLOAT end_pars, const char *label) const {
         TimedCombines end;
 
         ap_assert(end_pars<=start_pars);
@@ -65,14 +65,18 @@ public:
         double combines_per_improve = combines/pars_improve;
         double improve_per_second   = pars_improve/seconds;
 
-        fprintf(out, "%-27s took %7.2f sec,  improve=%9.1f,  combines=%12li  (comb/sec=%10.2f,  comb/impr=%10.2f,  impr/sec=%10.2f)\n",
-                what.c_str(),
+        fprintf(out, "%-27s took %7.2f sec,  improve=%9.1f,  combines=%12li  (comb/sec=%10.2f,  comb/impr=%12.2f,  impr/sec=%10.2f)\n",
+                label,
                 seconds,
                 pars_improve,
                 combines,
                 combines_per_second,
                 combines_per_improve,
                 improve_per_second);
+    }
+
+    void dump(FILE *out, AP_FLOAT end_pars) const {
+        dumpCustom(out, end_pars, what.c_str());
     }
 };
 
@@ -213,7 +217,7 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
     OptiPerfMeter *nniPerf = NULL;
 
     while (!progress.aborted()) {
-        if (!nniPerf) nniPerf = new OptiPerfMeter("(Multiple) recursive NNIs", prev_pars);
+        if (!nniPerf) nniPerf = new OptiPerfMeter("(multiple) recursive NNIs", prev_pars);
         AP_FLOAT nni_pars = at->nn_interchange_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY);
 
         if (nni_pars == prev_pars) { // NNI did not reduce costs -> kern-lin
@@ -229,6 +233,8 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
             if (ker_pars == prev_pars) break; // kern-lin did not improve tree -> done
             ap_assert(prev_pars>ker_pars);    // otherwise kernighan_optimize_tree worsened the tree
             prev_pars         = ker_pars;
+
+            overallPerf.dumpCustom(stdout, ker_pars, "overall (so far)");
         }
         else {
             ap_assert(prev_pars>nni_pars); // otherwise nn_interchange_rec worsened the tree
