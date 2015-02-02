@@ -2187,10 +2187,10 @@ void TEST_nucl_tree_modifications() {
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 60586);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 50136);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 104);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 142);
         env.pop();
     }
 }
@@ -2353,7 +2353,7 @@ void TEST_prot_tree_modifications() {
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 5096);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 8345);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
         TEST_EXPECT_EQUAL(env.combines_performed(), 76);

@@ -215,9 +215,17 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
 
     progress.subtitle(GBS_global_string("best=%.1f", org_pars));
 
+    KL_Settings deep_nni     = settings;
+    deep_nni.random_nodes    = 1.0;
+    deep_nni.maxdepth        = 3;
+    deep_nni.incdepth        = 0;
+    deep_nni.Static.enabled  = false;
+    deep_nni.Dynamic.enabled = false;
+
     // define available heuristics
     enum Heuristic {
         START_HEURISTIC,
+        DEPTH3_RECURSIVE_NNI,
         FINAL_HEURISTIC,
     } heuristic = START_HEURISTIC;
     const Heuristic NO_FURTHER_HEURISTIC = Heuristic(FINAL_HEURISTIC+1);
@@ -228,11 +236,10 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
         Heuristic          onImprove; // continue with this heuristic if improved (repeated or not)
         Heuristic          onFailure; // continue with this heuristic if NOT improved
     } heuristic_setting[FINAL_HEURISTIC+1] = {
-        { "simple NNIs",  NULL,      true,  FINAL_HEURISTIC, FINAL_HEURISTIC },
-        { "KL-optimizer", &settings, false, START_HEURISTIC, NO_FURTHER_HEURISTIC },
+        { "simple NNIs",  NULL,      true,  DEPTH3_RECURSIVE_NNI, DEPTH3_RECURSIVE_NNI },
+        { "depth-3-NNIs", &deep_nni, true,  START_HEURISTIC,      FINAL_HEURISTIC },
+        { "KL-optimizer", &settings, false, DEPTH3_RECURSIVE_NNI, NO_FURTHER_HEURISTIC },
     };
-    // @@@ perform a hardcoded kernighan_optimize_tree as 2nd heuristic (no path reduction; depth ~ 3)
-    // @@@ if no improvement perform custom KL, otherwise repeat hardcoded KL
 
     AP_FLOAT       heu_start_pars = prev_pars;
     OptiPerfMeter *heuPerf        = NULL;

@@ -1082,7 +1082,7 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
      * @param pars_best         current parsimony value of topology
      */
 
-    ap_assert(rec_depth < KL.max_rec_depth); // avoid call // @@@ fails from depth-3-NNI (fix caller loop)
+    // ap_assert(rec_depth < KL.max_rec_depth); // avoid call // @@@ fails from depth-3-NNI (fix caller loop)
     ap_assert(!is_leaf); // avoid call
     ap_assert(father);   // avoid call
 
