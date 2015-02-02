@@ -1574,7 +1574,7 @@ KL_Settings::KL_Settings(GB_alignment_type atype) {
 static void create_parsimony_variables(AW_root *aw_root, AW_default props, GBDATA *gb_main) {
     // kernighan
 
-    aw_root->awar_float(AWAR_KL_RANDOM_NODES, 1.7, props);
+    aw_root->awar_float(AWAR_KL_RANDOM_NODES, 1.7, props); // @@@ 1.0 should be enough (as it repeats on improve)
     aw_root->awar_int  (AWAR_KL_MAXDEPTH,     15,  props);
     aw_root->awar_int  (AWAR_KL_INCDEPTH,     4,   props);
 

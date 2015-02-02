@@ -215,36 +215,67 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
 
     progress.subtitle(GBS_global_string("best=%.1f", org_pars));
 
-    OptiPerfMeter *nniPerf = NULL;
+    // define available heuristics
+    enum Heuristic {
+        START_HEURISTIC,
+        FINAL_HEURISTIC,
+    } heuristic = START_HEURISTIC;
+    const Heuristic NO_FURTHER_HEURISTIC = Heuristic(FINAL_HEURISTIC+1);
+    struct H_Settings {
+        const char        *name;      // name shown in OptiPerfMeter
+        const KL_Settings *kl;        // ==NULL -> NNI; else KL with these settings
+        bool               repeat;    // retry same heuristic when tree improved
+        Heuristic          onImprove; // continue with this heuristic if improved (repeated or not)
+        Heuristic          onFailure; // continue with this heuristic if NOT improved
+    } heuristic_setting[FINAL_HEURISTIC+1] = {
+        { "simple NNIs",  NULL,      true,  FINAL_HEURISTIC, FINAL_HEURISTIC },
+        { "KL-optimizer", &settings, false, START_HEURISTIC, NO_FURTHER_HEURISTIC },
+    };
+    // @@@ perform a hardcoded kernighan_optimize_tree as 2nd heuristic (no path reduction; depth ~ 3)
+    // @@@ if no improvement perform custom KL, otherwise repeat hardcoded KL
 
-    while (!progress.aborted()) {
-        if (!nniPerf) nniPerf = new OptiPerfMeter("(multiple) recursive NNIs", prev_pars);
-        AP_FLOAT nni_pars = at->nn_interchange_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY);
+    AP_FLOAT       heu_start_pars = prev_pars;
+    OptiPerfMeter *heuPerf        = NULL;
 
-        if (nni_pars == prev_pars) { // NNI did not reduce costs -> kern-lin
-            nniPerf->dump(stdout, nni_pars);
-            delete nniPerf;
-            nniPerf = NULL;
+    while (heuristic <= FINAL_HEURISTIC && !progress.aborted()) {
+        const H_Settings& hset = heuristic_setting[heuristic];
+        if (!heuPerf) {
+            ap_assert(heu_start_pars == prev_pars);
+            heuPerf = new OptiPerfMeter(hset.name, heu_start_pars);
+        }
 
-            // @@@ perform a hardcoded kernighan_optimize_tree here (no path reduction; depth ~ 3)
-            // @@@ if no improvement perform custom KL, otherwise repeat hardcoded KL
-
-            kernighan_optimize_tree(at, settings, &org_pars, true);
-            AP_FLOAT ker_pars = get_root_node()->costs();
-            if (ker_pars == prev_pars) break; // kern-lin did not improve tree -> done
-            ap_assert(prev_pars>ker_pars);    // otherwise kernighan_optimize_tree worsened the tree
-            prev_pars         = ker_pars;
-
-            overallPerf.dumpCustom(stdout, ker_pars, "overall (so far)");
+        AP_FLOAT this_pars = -1;
+        if (hset.kl) {
+            kernighan_optimize_tree(at, *hset.kl, &org_pars, false);
+            this_pars = get_root_node()->costs();
         }
         else {
-            ap_assert(prev_pars>nni_pars); // otherwise nn_interchange_rec worsened the tree
-            prev_pars = nni_pars;
+            this_pars = at->nn_interchange_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY);;
         }
-        progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", prev_pars, org_pars-prev_pars));
-    }
+        ap_assert(this_pars>=0); // ensure this_pars was set
+        ap_assert(this_pars<=prev_pars); // otherwise heuristic worsened the tree
 
-    delete nniPerf;
+        Heuristic nextHeuristic = heuristic;
+        if (this_pars<prev_pars) { // found better tree
+            prev_pars = this_pars;
+            progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", this_pars, org_pars-this_pars));
+            if (!hset.repeat) {
+                nextHeuristic = hset.onImprove;
+                if (heuristic == FINAL_HEURISTIC) overallPerf.dumpCustom(stdout, this_pars, "overall (so far)");
+            }
+        }
+        else { // last step did not find better tree
+            nextHeuristic = this_pars<heu_start_pars ? hset.onImprove : hset.onFailure;
+        }
+
+        if (nextHeuristic != heuristic) {
+            heuristic      = nextHeuristic;
+            heu_start_pars = this_pars;
+
+            heuPerf->dump(stdout, this_pars);
+            delete heuPerf; heuPerf = NULL;
+        }
+    }
 
     if (oldrootleft->father == oldrootright) {
         oldrootleft->set_root();
