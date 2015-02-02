@@ -138,7 +138,7 @@ QuadraticThreshold::QuadraticThreshold(KL_DYNAMIC_THRESHOLD_TYPE type, double st
     c += pars_start;
 }
 
-void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, const AP_FLOAT *pars_global_start) {
+void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, const AP_FLOAT *pars_global_start, bool dumpPerf) {
     AP_FLOAT       pars_curr = get_root_node()->costs();
     const AP_FLOAT pars_org  = pars_curr;
 
@@ -199,7 +199,8 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
         progress.inc();
     }
     delete [] list;
-    performance.dump(stdout, pars_curr);
+
+    if (dumpPerf) performance.dump(stdout, pars_curr);
 }
 
 
@@ -228,7 +229,7 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
             // @@@ perform a hardcoded kernighan_optimize_tree here (no path reduction; depth ~ 3)
             // @@@ if no improvement perform custom KL, otherwise repeat hardcoded KL
 
-            kernighan_optimize_tree(at, settings, &org_pars);
+            kernighan_optimize_tree(at, settings, &org_pars, true);
             AP_FLOAT ker_pars = get_root_node()->costs();
             if (ker_pars == prev_pars) break; // kern-lin did not improve tree -> done
             ap_assert(prev_pars>ker_pars);    // otherwise kernighan_optimize_tree worsened the tree
@@ -371,14 +372,14 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
                     case AW_BUTTON_LEFT:
                         if (clicked.node()) {
                             arb_progress  progress("Kernighan-Lin optimize subtree");
-                            parsimony.kernighan_optimize_tree(DOWNCAST(AP_tree_nlen*, clicked.node()), KL_Settings(aw_root), NULL);
+                            parsimony.kernighan_optimize_tree(DOWNCAST(AP_tree_nlen*, clicked.node()), KL_Settings(aw_root), NULL, true);
                             this->exports.save = 1;
                             ASSERT_VALID_TREE(get_root_node());
                         }
                         break;
                     case AW_BUTTON_RIGHT: {
                         arb_progress progress("Kernighan-Lin optimize tree");
-                        parsimony.kernighan_optimize_tree(get_root_node(), KL_Settings(aw_root), NULL);
+                        parsimony.kernighan_optimize_tree(get_root_node(), KL_Settings(aw_root), NULL, true);
                         this->exports.save = 1;
                         ASSERT_VALID_TREE(get_root_node());
                         break;
