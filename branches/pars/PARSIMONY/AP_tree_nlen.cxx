@@ -555,7 +555,14 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
             AP_tree_edge *edge1 = edgeTo(movedSon)->unlink();
             AP_tree_edge *edge2 = oldBrother->edgeTo(nephew)->unlink();
 
-            AP_tree::swap_assymetric(mode);
+            if (mode == AP_LEFT) {
+                swap(leftson->father, nephew->father);
+                swap(leftson, oldBrother->leftson);
+            }
+            else {
+                swap(rightson->father, nephew->father);
+                swap(rightson, oldBrother->leftson);
+            }
 
             edge1->relink(this, nephew);
             edge2->relink(oldBrother, movedSon);
@@ -572,7 +579,24 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
         AP_tree_edge *edge1 = edgeTo(movedSon)->unlink();
         AP_tree_edge *edge2 = get_father()->edgeTo(oldBrother)->unlink();
 
-        AP_tree::swap_assymetric(mode);
+        if (mode == AP_LEFT) { // swap leftson with brother
+            swap(leftson->father, oldBrother->father);
+            if (father->leftson == this) {
+                swap(leftson, father->rightson);
+            }
+            else {
+                swap(leftson, father->leftson);
+            }
+        }
+        else { // swap rightson with brother
+            swap(rightson->father, oldBrother->father);
+            if (father->leftson == this) {
+                swap(rightson, father->rightson);
+            }
+            else {
+                swap(rightson, father->leftson);
+            }
+        }
 
         edge1->relink(this, oldBrother);
         edge2->relink(get_father(), movedSon);

@@ -81,6 +81,12 @@ enum AP_BL_MODE {
     AP_BL_BOOTSTRAP_ESTIMATE = 12 // calculate estimate of bootstrap (includes AP_BL_BOOTSTRAP_LIMIT)
 };
 
+enum AP_TREE_SIDE { // @@@ useless enum (use bools for kernighan flag and as param to swap_assymetric)
+    AP_LEFT,
+    AP_RIGHT,
+    AP_NONE
+};
+
 enum EdgeSpec {
     ANY_EDGE,
     MARKED_VISIBLE_EDGES,
@@ -177,7 +183,7 @@ public:
 
     AP_tree_nlen *REMOVE() OVERRIDE;
     void swap_sons() OVERRIDE;
-    void swap_assymetric(AP_TREE_SIDE mode) OVERRIDE;
+    void swap_assymetric(AP_TREE_SIDE mode);
     void moveNextTo(AP_tree_nlen *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveNextTo to test if possible
     void set_root() OVERRIDE;
 

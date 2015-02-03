@@ -59,15 +59,6 @@ enum AP_UPDATE_FLAGS {
     AP_UPDATE_ERROR    = 2
 };
 
-enum AP_TREE_SIDE {  // flags zum kennzeichnen von knoten
-    AP_LEFT,
-    AP_RIGHT,
-    AP_FATHER,
-    AP_LEFTSON,
-    AP_RIGHTSON,
-    AP_NONE
-};
-
 enum AWT_RemoveType { // bit flags
     AWT_REMOVE_MARKED        = GBT_REMOVE_MARKED,
     AWT_REMOVE_UNMARKED      = GBT_REMOVE_UNMARKED,
@@ -291,7 +282,6 @@ public:
     virtual void insert(AP_tree *new_brother);
     virtual void initial_insert(AP_tree *new_brother, AP_tree_root *troot);
     virtual AP_tree *REMOVE();
-    virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
 
     void swap_sons() OVERRIDE {
         rt_assert(!is_leaf); // @@@ if never fails -> remove condition below 

@@ -406,51 +406,6 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     }
 }
 
-void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
-    // mode AP_LEFT exchanges lefts with brother
-    // mode AP_RIGHT exchanges rights with brother
-
-    ap_assert(!is_leaf);                           // cannot swap leafs
-    ap_assert(father);                             // cannot swap root (has no brother)
-    ap_assert(mode == AP_LEFT || mode == AP_RIGHT); // illegal mode
-
-    AP_tree *oldBrother = get_brother();
-    if (father->father == 0) { // father is root
-        if (!oldBrother->is_leaf) {
-            AP_tree *nephew = oldBrother->get_leftson();
-
-            if (mode == AP_LEFT) {
-                swap(leftson->father, nephew->father);
-                swap(leftson, oldBrother->leftson);
-            }
-            else {
-                swap(rightson->father, nephew->father);
-                swap(rightson, oldBrother->leftson);
-            }
-        }
-    }
-    else {
-        if (mode == AP_LEFT) { // swap leftson with brother
-            swap(leftson->father, oldBrother->father);
-            if (father->leftson == this) {
-                swap(leftson, father->rightson);
-            }
-            else {
-                swap(leftson, father->leftson);
-            }
-        }
-        else { // swap rightson with brother
-            swap(rightson->father, oldBrother->father);
-            if (father->leftson == this) {
-                swap(rightson, father->rightson);
-            }
-            else {
-                swap(rightson, father->leftson);
-            }
-        }
-    }
-}
-
 void AP_tree::set_root() {
     if (at_root()) return; // already root
 
