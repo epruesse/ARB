@@ -78,11 +78,11 @@ void AP_tree_edge::destroy(AP_tree_nlen *tree) {
     }
     ap_assert(edge); // got no edges?
 
-    edge->buildChain(UNLIMITED, ANY_EDGE);
-    while (edge) {
-        AP_tree_edge *next = edge->Next();
-        delete edge;
-        edge = next;
+    EdgeChain chain(edge, UNLIMITED, ANY_EDGE);
+    while (chain) {
+        AP_tree_edge *curr = *chain;
+        ++chain;
+        delete curr;
     }
 }
 
@@ -318,13 +318,13 @@ void AP_tree_edge::relink(AP_tree_nlen *node1, AP_tree_nlen *node2) {
     node2->index[index[1]] = 1;
 }
 
-long AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip, int distanceToStart, AP_tree_edge*& prev) {
-    long added = 1;
+size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip, int distanceToStart, AP_tree_edge*& prev) {
+    size_t added = 1;
 
-    data.distance        = distanceToStart;
-    if (prev) prev->next = this;
-    this->next           = NULL;
-    prev                 = this;
+    data.distance                 = distanceToStart;
+    if (prev) prev->next_in_chain = this;
+    this->next_in_chain           = NULL;
+    prev                          = this;
 
     if (depth) {
         if (whichEdges == MARKED_VISIBLE_EDGES) {
@@ -345,6 +345,26 @@ long AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, const AP_t
         }
     }
     return added;
+}
+
+bool EdgeChain::exists = false;
+
+EdgeChain::EdgeChain(AP_tree_edge *start_, int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip)
+    : start(start_),
+      curr(start)
+{
+    /*! build a chain of edges for further processing
+     * @param start_           start edge
+     * @param depth            specifies how far to recurse into tree (-1 = recurse whole tree; 0 = this edge only)
+     * @param whichEdges       if MARKED_VISIBLE_EDGES -> do not descend into folded subtrees and subtrees w/o marked species
+     * @param skip             previous node (will not recurse beyond)
+     */
+
+    ap_assert(!exists); // only one existing chain is allowed!
+    exists = true;
+
+    AP_tree_edge *prev = NULL;
+    len = start->buildChainInternal(depth, whichEdges, skip, 0, prev);
 }
 
 int AP_tree_edge::distanceToBorder(int maxsearch, AP_tree_nlen *skipNode) const {
@@ -610,30 +630,29 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
 
     ap_assert(allBranchlengthsAreDefined(rootNode()));
 
-    long          cs             = buildChain(depth, whichEdges, skipNode);
-    bool          recalc_lengths = mode & AP_BL_BL_ONLY;
-    arb_progress  progress(cs);
-    AP_tree_edge *follow;
+    EdgeChain    chain(this, depth, whichEdges, skipNode);
+    bool         recalc_lengths = mode & AP_BL_BL_ONLY;
+    arb_progress progress(chain.size());
 
     if (recalc_lengths) { // set all branchlengths to undef
         ap_main->push_node(rootNode(), STRUCTURE);
-        for (follow = this; follow; follow = follow->next) {
-            undefine_branchlengths(follow->node[0]);
-            undefine_branchlengths(follow->node[1]);
-            undefine_branchlengths(follow->node[0]->get_father());
+        while (chain) {
+            AP_tree_edge *edge = *chain; ++chain;
+            undefine_branchlengths(edge->node[0]);
+            undefine_branchlengths(edge->node[1]);
+            undefine_branchlengths(edge->node[0]->get_father());
         }
         rootNode()->leftlen  = AP_UNDEF_BL *.5;
         rootNode()->rightlen = AP_UNDEF_BL *.5;
     }
 
-    for (follow = this;
-         follow && (recalc_lengths || !progress.aborted()); // never abort while calculating branchlengths
-         follow = follow->next)
-    {
-        AP_tree_nlen *son = follow->sonNode();
+    chain.restart();
+    while (chain && (recalc_lengths || !progress.aborted())) { // never abort while calculating branchlengths
+        AP_tree_edge *edge = *chain; ++chain;
+        AP_tree_nlen *son  = edge->sonNode();
         AP_tree_nlen *fath = son;
 
-        if (follow->otherNode(fath)==fath->get_father()) fath = fath->get_father();
+        if (edge->otherNode(fath)==fath->get_father()) fath = fath->get_father();
         if (fath->father) {
             if (fath->father->father) {
                 fath->set_root();
@@ -647,11 +666,11 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
             }
 
             MutationsPerSite mps(son->get_seq()->get_sequence_length());
-            new_parsimony = follow->nni_mutPerSite(new_parsimony, mode, &mps);
+            new_parsimony = edge->nni_mutPerSite(new_parsimony, mode, &mps);
             ap_calc_bootstrap_remark(son, mode, mps);
         }
         else {
-            new_parsimony = follow->nni(new_parsimony, mode);
+            new_parsimony = edge->nni(new_parsimony, mode);
         }
 
         progress.inc();
@@ -663,18 +682,21 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
         int final_recalc = 0;
 #endif
 
-        for (follow = this; follow; follow = follow->next) {
+        chain.restart();
+        while (chain) {
             // inner branchlengths have been caclculated by nni_mutPerSite (called above directly or indirectly via nni())
             // most leaf branchlengths have already been calculated (via set_inner_branch_length_and_calc_adj_leaf_lengths)
             // (calls from unit tests only update 1 or max. 2 lengths in this loop)
 
+            AP_tree_edge *edge = *chain; ++chain;
+
 #if defined(DUMP_FINAL_RECALCS)
-            if (follow->node[0]->get_branchlength_unrooted() == AP_UNDEF_BL) ++final_recalc;
-            if (follow->node[1]->get_branchlength_unrooted() == AP_UNDEF_BL) ++final_recalc;
+            if (edge->node[0]->get_branchlength_unrooted() == AP_UNDEF_BL) ++final_recalc;
+            if (edge->node[1]->get_branchlength_unrooted() == AP_UNDEF_BL) ++final_recalc;
 #endif
 
-            update_undefined_leaf_branchlength(follow->node[0]);
-            update_undefined_leaf_branchlength(follow->node[1]);
+            update_undefined_leaf_branchlength(edge->node[0]);
+            update_undefined_leaf_branchlength(edge->node[1]);
         }
 
 #if defined(DUMP_FINAL_RECALCS)
@@ -845,7 +867,9 @@ ostream& operator<<(ostream& out, const AP_tree_edge& e)
 }
 
 void AP_tree_edge::mixTree() {
-    long edges = buildChain(UNLIMITED, ANY_EDGE);
+    EdgeChain chain(this, UNLIMITED, ANY_EDGE);
+
+    long edges = chain.size();
     long leafs = edges_2_leafs(edges, UNROOTED);
 
     double balanced_depth = log10(leafs) / log10(2);
@@ -854,11 +878,11 @@ void AP_tree_edge::mixTree() {
 
     arb_progress progress(count*edges);
     while (count-- && !progress.aborted()) {
-        AP_tree_edge *follow = this;
-        while (follow) {
-            AP_tree_nlen *son = follow->sonNode();
+        chain.restart();
+        while (chain) {
+            AP_tree_nlen *son = (*chain)->sonNode();
             if (!son->is_leaf) son->swap_assymetric(GB_random(2) ? AP_LEFT : AP_RIGHT);
-            follow            = follow->next;
+            ++chain;
             ++progress;
         }
     }

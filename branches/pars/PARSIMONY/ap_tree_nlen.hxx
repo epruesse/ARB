@@ -266,25 +266,13 @@ class AP_tree_edge : virtual Noncopyable {
 
     // and these arent pushed:
 
-    AP_tree_edge *next;                 // temporary next pointer used by some methods
+    AP_tree_edge *next_in_chain;        // do not use (use EdgeChain!)
     int           used;                 // test-counter
     long          age;                  // age of the edge
 
     static long timeStamp;              // static counter for edge-age
 
-    long buildChainInternal(int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip, int distance, AP_tree_edge*& prev);
-    long buildChain(int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip = NULL) {
-        /*! build a chain of edges for further processing
-         * @param depth            specifies how far to recurse into tree (-1 = recurse whole tree; 0 = this edge only)
-         * @param whichEdges       if MARKED_VISIBLE_EDGES -> do not descend into folded subtrees and subtrees w/o marked species
-         * @param skip             previous node (where recursion came from)
-         * @return size of created chain (number of edges)
-         */
-
-        AP_tree_edge *prev = NULL;
-        return buildChainInternal(depth, whichEdges, skip, 0, prev);
-    }
-
+    size_t buildChainInternal(int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip, int distance, AP_tree_edge*& prev);
 
     void calcDistance();
     void tailDistance(AP_tree_nlen*);
@@ -293,11 +281,13 @@ class AP_tree_edge : virtual Noncopyable {
     bool is_linked() const { return node[0]; }
 
     // my friends:
-    friend class         AP_tree_nlen;
+    friend class AP_tree_nlen;
+    friend class EdgeChain;
+
     friend std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
     friend AP_tree_edge *StackFrameData::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2); // allowed to relink edge
-    friend void          AP_main::destroyEdge(AP_tree_edge *edge); // allowed to delete edge
-    friend void          ResourceStack::destroy_edges(); // allowed to delete edge
+    friend void          AP_main::destroyEdge(AP_tree_edge *edge);                     // allowed to delete edge
+    friend void          ResourceStack::destroy_edges();                               // allowed to delete edge
 #if defined(UNIT_TESTS) // UT_DIFF
     friend void TEST_basic_tree_modifications();
 #endif
@@ -324,7 +314,6 @@ public:
     int indexOf(const AP_tree_nlen *n) const                    { ap_assert(isConnectedTo(n)); return node[1] == n; }
     AP_tree_nlen* otherNode(const AP_tree_nlen *n) const        { return node[1-indexOf(n)]; }
     AP_tree_nlen* sonNode() const                               { return node[0]->get_father() == node[1] ? node[0] : node[1]; }
-    AP_tree_edge* Next() const                                  { return next; }
     long Age() const                                            { return age; }
 
     // encapsulated AP_tree_nlen methods:
@@ -359,6 +348,34 @@ public:
 };
 
 std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
+
+class EdgeChain : virtual Noncopyable {
+    AP_tree_edge *start;  // start edge
+    AP_tree_edge *curr;   // current edge (for iteration)
+    size_t        len;    // chain size
+    static bool   exists; // singleton flag
+public:
+    EdgeChain(AP_tree_edge *start_, int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip = NULL);
+    ~EdgeChain() { exists = false; }
+
+    size_t size() const  {
+        return len;
+    }
+    operator bool() const {
+        return curr;
+    }
+    AP_tree_edge *operator*() {
+        return curr;
+    }
+    const EdgeChain& operator++() {
+        ap_assert(curr);
+        curr = curr->next_in_chain;
+        return *this;
+    }
+    void restart() {
+        curr = start;
+    }
+};
 
 #else
 #error ap_tree_nlen.hxx included twice
