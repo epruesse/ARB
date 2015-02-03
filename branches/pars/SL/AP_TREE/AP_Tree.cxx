@@ -414,70 +414,43 @@ void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
     ap_assert(father);                             // cannot swap root (has no brother)
     ap_assert(mode == AP_LEFT || mode == AP_RIGHT); // illegal mode
 
-    ARB_seqtree *pntr;
-
+    AP_tree *oldBrother = get_brother();
     if (father->father == 0) { // father is root
-        AP_tree *pntr_brother = get_brother();
-        if (!pntr_brother->is_leaf) {
+        if (!oldBrother->is_leaf) {
+            AP_tree *nephew = oldBrother->get_leftson();
+
+            // @@@ why are branchlengths not swapped here?
             if (mode == AP_LEFT) {
-                pntr_brother->leftson->father = this;
-                pntr                          = pntr_brother->get_leftson();
-                pntr_brother->leftson         = leftson;
-                leftson->father               = pntr_brother;
-                leftson                       = pntr;
+                swap(leftson->father, nephew->father);
+                swap(leftson, oldBrother->leftson);
             }
             else {
-                pntr_brother->leftson->father = this;
-                rightson->father              = pntr_brother;
-                pntr                          = pntr_brother->get_leftson();
-                pntr_brother->leftson         = rightson;
-                rightson                      = pntr;
+                swap(rightson->father, nephew->father);
+                swap(rightson, oldBrother->leftson);
             }
         }
     }
     else {
         if (mode == AP_LEFT) { // swap leftson with brother
+            swap(leftson->father, oldBrother->father);
             if (father->leftson == this) {
-                father->rightson->father = this;
-                leftson->father          = father;
-                pntr                     = get_father()->get_rightson();
-                AP_FLOAT help_len        = father->rightlen;
-                father->rightlen         = leftlen;
-                leftlen                  = help_len;
-                father->rightson         = leftson;
-                leftson                  = pntr;
+                swap(leftlen, father->rightlen);
+                swap(leftson, father->rightson);
             }
             else {
-                father->leftson->father = this;
-                leftson->father         = father;
-                pntr                    = get_father()->get_leftson();
-                AP_FLOAT help_len       = father->leftlen;
-                father->leftlen         = leftlen;
-                leftlen                 = help_len;
-                father->leftson         = leftson;
-                leftson                 = pntr;
+                swap(leftlen, father->leftlen);
+                swap(leftson, father->leftson);
             }
         }
         else { // swap rightson with brother
+            swap(rightson->father, oldBrother->father);
             if (father->leftson == this) {
-                father->rightson->father = this;
-                rightson->father         = father;
-                pntr                     = get_father()->get_rightson();
-                AP_FLOAT help_len        = father->rightlen;
-                father->rightlen         = rightlen;
-                rightlen                 = help_len;
-                father->rightson         = rightson;
-                rightson                 = pntr;
+                swap(rightlen, father->rightlen);
+                swap(rightson, father->rightson);
             }
             else {
-                father->leftson->father = this;
-                rightson->father        = father;
-                pntr                    = get_father()->get_leftson();
-                AP_FLOAT help_len       = father->leftlen;
-                father->leftson         = rightson;
-                father->leftlen         = rightlen;
-                rightlen                = help_len;
-                rightson                = pntr;
+                swap(rightlen, father->leftlen);
+                swap(rightson, father->leftson);
             }
         }
     }
