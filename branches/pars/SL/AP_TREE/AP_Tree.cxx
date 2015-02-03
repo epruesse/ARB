@@ -419,7 +419,6 @@ void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
         if (!oldBrother->is_leaf) {
             AP_tree *nephew = oldBrother->get_leftson();
 
-            // @@@ why are branchlengths not swapped here?
             if (mode == AP_LEFT) {
                 swap(leftson->father, nephew->father);
                 swap(leftson, oldBrother->leftson);
@@ -434,22 +433,18 @@ void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
         if (mode == AP_LEFT) { // swap leftson with brother
             swap(leftson->father, oldBrother->father);
             if (father->leftson == this) {
-                swap(leftlen, father->rightlen);
                 swap(leftson, father->rightson);
             }
             else {
-                swap(leftlen, father->leftlen);
                 swap(leftson, father->leftson);
             }
         }
         else { // swap rightson with brother
             swap(rightson->father, oldBrother->father);
             if (father->leftson == this) {
-                swap(rightlen, father->rightlen);
                 swap(rightson, father->rightson);
             }
             else {
-                swap(rightlen, father->leftlen);
                 swap(rightson, father->leftson);
             }
         }
