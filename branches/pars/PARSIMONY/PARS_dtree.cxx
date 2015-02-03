@@ -228,15 +228,17 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
         DEPTH3_RECURSIVE_NNI,
         DEPTH3_RECURSIVE_NNI_FB,
         FINAL_HEURISTIC,
+
+        NO_FURTHER_HEURISTIC,
+        HEURISTIC_COUNT = NO_FURTHER_HEURISTIC,
     } heuristic = START_HEURISTIC;
-    const Heuristic NO_FURTHER_HEURISTIC = Heuristic(FINAL_HEURISTIC+1);
     struct H_Settings {
         const char        *name;      // name shown in OptiPerfMeter
         const KL_Settings *kl;        // ==NULL -> NNI; else KL with these settings
         bool               repeat;    // retry same heuristic when tree improved
         Heuristic          onImprove; // continue with this heuristic if improved (repeated or not)
         Heuristic          onFailure; // continue with this heuristic if NOT improved
-    } heuristic_setting[FINAL_HEURISTIC+1] = {
+    } heuristic_setting[HEURISTIC_COUNT] = {
         { "simple NNIs",       NULL,       true,  DEPTH3_RECURSIVE_NNI,    DEPTH3_RECURSIVE_NNI },
         { "depth-3-NNIs",      &deep_nni,  true,  START_HEURISTIC,         FINAL_HEURISTIC },
         { "depth-3-NNIs [FB]", &deep_nni,  false, START_HEURISTIC,         START_HEURISTIC },
@@ -246,7 +248,7 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
     AP_FLOAT       heu_start_pars = prev_pars;
     OptiPerfMeter *heuPerf        = NULL;
 
-    while (heuristic <= FINAL_HEURISTIC && !progress.aborted()) {
+    while (heuristic != NO_FURTHER_HEURISTIC && !progress.aborted()) {
         const H_Settings& hset = heuristic_setting[heuristic];
         if (!heuPerf) {
             ap_assert(heu_start_pars == prev_pars);
