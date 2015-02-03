@@ -1829,6 +1829,7 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
 
         case MOD_MIX_TREE:
             rootEdge()->mixTree();
+            rootEdge()->calc_branchlengths();
             break;
     }
 }
@@ -2299,7 +2300,7 @@ void TEST_prot_tree_modifications() {
 
     GB_random_seed(mixseed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_MIX_TREE, "prot-mixed", PARSIMONY_MIXED, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 10);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 99);
 
     {
         env.push();
