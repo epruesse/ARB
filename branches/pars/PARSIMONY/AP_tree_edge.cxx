@@ -318,15 +318,18 @@ void AP_tree_edge::relink(AP_tree_nlen *node1, AP_tree_nlen *node2) {
     node2->index[index[1]] = 1;
 }
 
-size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip, int distanceToStart, AP_tree_edge*& prev) {
+size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip, int distanceToStart, AP_tree_edge **&prevNextPtr) {
     size_t added = 0;
+
+    ap_assert(prevNextPtr);
+    ap_assert(*prevNextPtr == NULL);
 
     data.distance = distanceToStart;
 
     if (!depthFirst) {
-        if (prev) prev->next_in_chain = this;
-        this->next_in_chain           = NULL;
-        prev                          = this;
+        *prevNextPtr  = this;
+        next_in_chain = NULL;
+        prevNextPtr   = &next_in_chain;
         added++;
     }
 
@@ -346,7 +349,7 @@ size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool dep
                     for (int e=0; e<3; e++) {
                         AP_tree_edge * Edge = node[n]->edge[e];
                         if (Edge != this) {
-                            added += Edge->buildChainInternal(depth-1, whichEdges, depthFirst, node[n], distanceToStart+1, prev);
+                            added += Edge->buildChainInternal(depth-1, whichEdges, depthFirst, node[n], distanceToStart+1, prevNextPtr);
                         }
                     }
                 }
@@ -355,9 +358,11 @@ size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool dep
     }
 
     if (depthFirst) {
-        if (prev) prev->next_in_chain = this;
-        this->next_in_chain           = NULL;
-        prev                          = this;
+        ap_assert(*prevNextPtr == NULL);
+
+        *prevNextPtr  = this;
+        next_in_chain = NULL;
+        prevNextPtr   = &next_in_chain;
         added++;
     }
 
@@ -366,12 +371,12 @@ size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool dep
 
 bool EdgeChain::exists = false;
 
-EdgeChain::EdgeChain(AP_tree_edge *start_, int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip)
-    : start(start_),
-      curr(start)
+EdgeChain::EdgeChain(AP_tree_edge *startEgde, int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip)
+    : start(NULL),
+      curr(NULL)
 {
     /*! build a chain of edges for further processing
-     * @param start_           start edge
+     * @param startEgde        start edge
      * @param depth            specifies how far to recurse into tree (-1 = recurse whole tree; 0 = this edge only)
      * @param whichEdges       if MARKED_VISIBLE_EDGES -> do not descend into folded subtrees and subtrees w/o marked species
      * @param depthFirst       true -> insert leafs before inner nodes (but whole son-subtree before other-son-subtree)
@@ -381,8 +386,13 @@ EdgeChain::EdgeChain(AP_tree_edge *start_, int depth, EdgeSpec whichEdges, bool 
     ap_assert(!exists); // only one existing chain is allowed!
     exists = true;
 
-    AP_tree_edge *prev = NULL;
-    len = start->buildChainInternal(depth, whichEdges, depthFirst, skip, 0, prev);
+    AP_tree_edge **prev = &start;
+
+    len  = startEgde->buildChainInternal(depth, whichEdges, depthFirst, skip, 0, prev);
+    curr = start;
+
+    ap_assert(correlated(len, start));
+    ap_assert(implicated(!depthFirst, curr == startEgde));
 }
 
 int AP_tree_edge::distanceToBorder(int maxsearch, AP_tree_nlen *skipNode) const {
