@@ -278,7 +278,7 @@ class AP_tree_edge : virtual Noncopyable {
 
     static long timeStamp;              // static counter for edge-age
 
-    size_t buildChainInternal(int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip, int distance, AP_tree_edge*& prev);
+    size_t buildChainInternal(int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip, int distance, AP_tree_edge*& prev);
 
     void calcDistance();
     void tailDistance(AP_tree_nlen*);
@@ -361,7 +361,7 @@ class EdgeChain : virtual Noncopyable {
     size_t        len;    // chain size
     static bool   exists; // singleton flag
 public:
-    EdgeChain(AP_tree_edge *start_, int depth, EdgeSpec whichEdges, const AP_tree_nlen *skip = NULL);
+    EdgeChain(AP_tree_edge *start_, int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip = NULL);
     ~EdgeChain() { exists = false; }
 
     size_t size() const  {
