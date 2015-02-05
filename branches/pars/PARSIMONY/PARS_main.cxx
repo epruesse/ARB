@@ -2057,13 +2057,13 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 591);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 776);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 767);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD_CALC_LENS, "nucl-add-quick-cl", PARSIMONY_ORG-23, env, true)); // test quick-add + calc_branchlengths
     TEST_EXPECT_EQUAL(env.combines_performed(), 727);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI_CALC_LENS,   "nucl-add-NNI-cl",   PARSIMONY_ORG-25, env, true)); // test add + NNI + calc_branchlengths
-    TEST_EXPECT_EQUAL(env.combines_performed(), 914);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 904);
 
     // test partial-add
     {
@@ -2131,11 +2131,9 @@ void TEST_nucl_tree_modifications() {
 
     TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
 
-    const unsigned seed = 1417001558;
-
-    const int PARSIMONY_NNI     = PARSIMONY_ORG-17;
-    const int PARSIMONY_NNI_ALL = PARSIMONY_ORG-22;
-    const int PARSIMONY_OPTI    = PARSIMONY_ORG-29; // may depend on seed
+    const int PARSIMONY_NNI     = PARSIMONY_ORG-18;
+    const int PARSIMONY_NNI_ALL = PARSIMONY_ORG-18;
+    const int PARSIMONY_OPTI    = PARSIMONY_ORG-29;
 
     {
         env.push();
@@ -2163,7 +2161,7 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 397);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 284);
 
     // -----------------------------
     //      test optimize (all)
@@ -2182,13 +2180,12 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-all-NNI", PARSIMONY_NNI_ALL, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 450);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 324);
 
-    GB_random_seed(seed);
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 50136);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 13906);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
         TEST_EXPECT_EQUAL(env.combines_performed(), 142);
@@ -2222,7 +2219,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 306);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 442);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 447);
 
     // test partial-add
     {
@@ -2287,10 +2284,9 @@ void TEST_prot_tree_modifications() {
 
     TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-initial");
 
-    const unsigned seed    = 1417001558;
     const unsigned mixseed = 1422292802;
 
-    const int PARSIMONY_MIXED   = PARSIMONY_ORG + 1997;
+    const int PARSIMONY_MIXED   = PARSIMONY_ORG + 1207;
     const int PARSIMONY_NNI     = PARSIMONY_ORG;
     const int PARSIMONY_NNI_ALL = PARSIMONY_ORG;
     const int PARSIMONY_OPTI    = PARSIMONY_ORG; // no gain (initial tree already is optimized)
@@ -2300,12 +2296,12 @@ void TEST_prot_tree_modifications() {
 
     GB_random_seed(mixseed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_MIX_TREE, "prot-mixed", PARSIMONY_MIXED, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 99);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 106);
 
     {
         env.push();
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_MIXED, PARSIMONY_MIXED, env));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 84);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 72);
         env.pop();
     }
 
@@ -2326,10 +2322,10 @@ void TEST_prot_tree_modifications() {
     // test branchlength calculation
     // (optimizations below implicitely recalculates branchlengths)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 89);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 96);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 506);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 368);
 
     // -----------------------------
     //      test optimize (all)
@@ -2345,16 +2341,15 @@ void TEST_prot_tree_modifications() {
     // test branchlength calculation
     // (optimizations below implicitely recalculates branchlengths)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 89);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 96);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-all-NNI", PARSIMONY_NNI_ALL, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 506);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 370);
 
-    GB_random_seed(seed);
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 8345);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 1527);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
         TEST_EXPECT_EQUAL(env.combines_performed(), 76);
@@ -2622,12 +2617,12 @@ void TEST_node_edge_resources() {
 #define STATE_STACK_SIZE sizeof(StateStack) // 8 (Cxx11) or 16 (older C++); maybe 4/8 in 32bit
 
 #if defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 184 + STATE_STACK_SIZE);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 176 + STATE_STACK_SIZE);
     TEST_EXPECT_EQUAL(sizeof(AP_tree), 128);
     TEST_EXPECT_EQUAL(sizeof(ARB_seqtree), 88);
     TEST_EXPECT_EQUAL(sizeof(TreeNode), 80);
 #else // !defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 120 + STATE_STACK_SIZE);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 120 + STATE_STACK_SIZE); // @@@ document 32bit size
     TEST_EXPECT_EQUAL(sizeof(AP_tree), 84);
     TEST_EXPECT_EQUAL(sizeof(ARB_seqtree), 48);
     TEST_EXPECT_EQUAL(sizeof(TreeNode), 44);
@@ -2635,9 +2630,9 @@ void TEST_node_edge_resources() {
 
 
 #if defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 88);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 96);
 #else // !defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 56);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 56); // @@@ document 32bit size
 #endif
 
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);

@@ -658,8 +658,8 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
 
     ap_assert(allBranchlengthsAreDefined(rootNode()));
 
-    EdgeChain    chain(this, depth, whichEdges, false, skipNode);
     bool         recalc_lengths = mode & AP_BL_BL_ONLY;
+    EdgeChain    chain(this, depth, whichEdges, !recalc_lengths, skipNode);
     arb_progress progress(chain.size());
 
     if (recalc_lengths) { // set all branchlengths to undef

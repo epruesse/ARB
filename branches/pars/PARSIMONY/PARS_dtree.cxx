@@ -157,10 +157,14 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
         }
     }
 
-    int            anzahl = settings.random_nodes*at->count_leafs(); // @@@ rename
-    AP_tree_nlen **list   = at->getRandomNodes(anzahl);
+    AP_tree_edge *startEdge = at->edgeTo(at->get_father());
+    if (!startEdge) {
+        startEdge = rootEdge();
+        ap_assert(startEdge);
+    }
+    EdgeChain chain(startEdge, UNLIMITED, ANY_EDGE, true);     // @@@ wrong (as before). should only use marked/unfolded (@@@ now also collects leafEdges, which is useless)
 
-    arb_progress progress(anzahl);
+    arb_progress progress(chain.size());
 
     if (pars_global_start) {
         progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", pars_curr, *pars_global_start-pars_curr));
@@ -169,16 +173,18 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
         progress.subtitle(GBS_global_string("best=%.1f", pars_curr));
     }
 
-    for (int i=0; i<anzahl && !progress.aborted(); i++) {
-        AP_tree_nlen *tree_elem = list[i];
+    while (chain && !progress.aborted()) {
+        AP_tree_edge *edge      = *chain; ++chain;
+        AP_tree_nlen *tree_elem = edge->sonNode();
 
+        if (!tree_elem->is_leaf) {
         bool in_folded_group = tree_elem->gr.hidden ||
             (tree_elem->father && tree_elem->get_father()->gr.hidden);
 
         if (!in_folded_group) { // @@@ unwanted hardcoded check for group
             ap_main->remember();
 
-            bool better_tree_found = tree_elem->kernighan_rec(KL, 0, pars_curr);
+                bool better_tree_found = edge->kl_rec(KL, 0, pars_curr);
 
             if (better_tree_found) {
                 ap_main->accept();
@@ -196,9 +202,9 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
                 ap_main->revert();
             }
         }
+        }
         progress.inc();
     }
-    delete [] list;
 
     if (dumpPerf) performance.dump(stdout, pars_curr);
 }
@@ -215,23 +221,15 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
 
     progress.subtitle(GBS_global_string("best=%.1f", org_pars));
 
-    KL_Settings deep_nni     = settings;
-    deep_nni.random_nodes    = 1.0;
-    deep_nni.maxdepth        = 3;
-    deep_nni.incdepth        = 0;
-    deep_nni.Static.enabled  = false;
-    deep_nni.Dynamic.enabled = false;
-
     // define available heuristics
     enum Heuristic {
-        START_HEURISTIC,
-        DEPTH3_RECURSIVE_NNI,
-        DEPTH3_RECURSIVE_NNI_FB,
-        FINAL_HEURISTIC,
+        RECURSIVE_NNI,
+        CUSTOM_KL,
 
         NO_FURTHER_HEURISTIC,
         HEURISTIC_COUNT = NO_FURTHER_HEURISTIC,
-    } heuristic = START_HEURISTIC;
+    } heuristic = RECURSIVE_NNI;
+
     struct H_Settings {
         const char        *name;      // name shown in OptiPerfMeter
         const KL_Settings *kl;        // ==NULL -> NNI; else KL with these settings
@@ -239,10 +237,8 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
         Heuristic          onImprove; // continue with this heuristic if improved (repeated or not)
         Heuristic          onFailure; // continue with this heuristic if NOT improved
     } heuristic_setting[HEURISTIC_COUNT] = {
-        { "simple NNIs",       NULL,       true,  DEPTH3_RECURSIVE_NNI,    DEPTH3_RECURSIVE_NNI },
-        { "depth-3-NNIs",      &deep_nni,  true,  START_HEURISTIC,         FINAL_HEURISTIC },
-        { "depth-3-NNIs [FB]", &deep_nni,  false, START_HEURISTIC,         START_HEURISTIC },
-        { "KL-optimizer",      &settings,  false, DEPTH3_RECURSIVE_NNI_FB, NO_FURTHER_HEURISTIC },
+        { "recursive NNIs", NULL,      true,  CUSTOM_KL,     CUSTOM_KL },
+        { "KL-optimizer",   &settings, false, RECURSIVE_NNI, NO_FURTHER_HEURISTIC },
     };
 
     AP_FLOAT       heu_start_pars = prev_pars;
@@ -266,13 +262,14 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
         ap_assert(this_pars>=0); // ensure this_pars was set
         ap_assert(this_pars<=prev_pars); // otherwise heuristic worsened the tree
 
+        bool      dumpOverall   = false;
         Heuristic nextHeuristic = heuristic;
         if (this_pars<prev_pars) { // found better tree
             prev_pars = this_pars;
             progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", this_pars, org_pars-this_pars));
             if (!hset.repeat) {
                 nextHeuristic = hset.onImprove;
-                if (heuristic == FINAL_HEURISTIC) overallPerf.dumpCustom(stdout, this_pars, "overall (so far)");
+                dumpOverall   = heuristic == CUSTOM_KL;
             }
         }
         else { // last step did not find better tree
@@ -286,6 +283,7 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
             heuPerf->dump(stdout, this_pars);
             delete heuPerf; heuPerf = NULL;
         }
+        if (dumpOverall) overallPerf.dumpCustom(stdout, this_pars, "overall (so far)");
     }
 
     if (oldrootleft->father == oldrootright) {

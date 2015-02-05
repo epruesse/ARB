@@ -564,8 +564,8 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
                 swap(rightson, oldBrother->leftson);
             }
 
-            edge1->relink(this, nephew);
-            edge2->relink(oldBrother, movedSon);
+            edge2->relink(this, nephew);
+            edge1->relink(oldBrother, movedSon);
         }
     }
     else {
@@ -598,8 +598,8 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
             }
         }
 
-        edge1->relink(this, oldBrother);
-        edge2->relink(get_father(), movedSon);
+        edge2->relink(this, oldBrother);
+        edge1->relink(get_father(), movedSon);
     }
 }
 
@@ -1099,26 +1099,21 @@ inline CONSTEXPR_RETURN AP_TREE_SIDE idx2side(const int idx) {
     return idx&1 ? AP_RIGHT : AP_LEFT;
 }
 
-bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FLOAT pars_best) {
+bool AP_tree_edge::kl_rec(const KL_params& KL, const int rec_depth, AP_FLOAT pars_best) {
     /*! does K.L. recursion
      * @param KL                parameters defining how recursion is done
      * @param rec_depth         current recursion depth (starts with 0)
      * @param pars_best         current parsimony value of topology
      */
 
-    // ap_assert(rec_depth < KL.max_rec_depth); // avoid call // @@@ fails from depth-3-NNI (fix caller loop)
-    ap_assert(!is_leaf); // avoid call
-    ap_assert(father);   // avoid call
+    ap_assert(!is_leaf_edge());
+    if (rec_depth >= KL.max_rec_depth) return false;
 
-    if (rec_depth >= KL.max_rec_depth || is_leaf || !father) return false;
+    ap_assert(implicated(rec_depth>0, kl_visited));
 
-    ap_assert(implicated(rec_depth>0, kernighan != AP_NONE));
+    int           order[8];
+    AP_tree_edge *descend[8];
 
-    // @@@ consider setting root already here
-    // (would allow to simplify code below, but has strange impact on number combines)
-
-    int           order[8];   // references to swapped parsimony values
-    AP_tree_nlen *descend[8]; // adjacent nodes (referencing adjacent subtrees considered for recursion)
     {
         if (rec_depth == 0) {
             descend[0] = this;
@@ -1127,26 +1122,18 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
             descend[6] = NULL;
         }
         else {
-            AP_tree_nlen *this_brother = get_brother();
+            AP_tree_nlen *son    = sonNode();
+            AP_tree_nlen *notSon = otherNode(son); // brother or father
 
-            descend[0] = get_leftson();
-            descend[2] = get_rightson();
-            if (father->father) {
-                // not son of root -> take father and brother
-                descend[4] = get_father();
-                descend[6] = this_brother;
-            }
-            else {
-                // son of root -> take sons of brother
-                if (!this_brother->is_leaf) {
-                    descend[4] = this_brother->get_leftson();
-                    descend[6] = this_brother->get_rightson();
-                }
-                else {
-                    descend[4] = NULL;
-                    descend[6] = NULL;
-                }
-            }
+            descend[0] = notSon->nextEdge(this);
+            descend[2] = notSon->nextEdge(descend[0]);
+
+            ap_assert(descend[2] != this);
+
+            descend[4] = son->nextEdge(this);
+            descend[6] = son->nextEdge(descend[4]);
+
+            ap_assert(descend[6] != this);
         }
 
         descend[1] = descend[0];
@@ -1155,11 +1142,11 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
         descend[7] = descend[6];
     }
 
-    // -----------------------------------
-    //      parsimony werte bestimmen
+    // ---------------------------------
+    //      detect parsimony values
 
-    ap_main->remember();
-    this->set_root(); // @@@ see comment above
+    ap_main->remember(); // @@@ i think this is unneeded. better reset root after all done in caller
+    set_root();
     rootNode()->costs();
 
     int rec_width_dynamic = 0;
@@ -1175,25 +1162,23 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
         AP_FLOAT schwellwert = KL.thresFunctor.calculate(rec_depth); // @@@ skip if not needed
         for (int i = 0; i < 8; i++) {
             order[i] = i;
-            AP_tree_nlen * const subtree = descend[i];
+            AP_tree_edge * const subedge = descend[i];
 
-            if (subtree                       &&
-                !subtree->is_leaf             &&
-                subtree->kernighan == AP_NONE && // already descended into this branch (fixed by [11010])
-                !subtree->gr.hidden           && // @@@ unwanted hardcoded bahavior
-                !subtree->get_father()->gr.hidden)
+            if (subedge                      &&
+                !subedge->is_leaf_edge()     &&
+                !subedge->kl_visited         &&
+                !subedge->node[0]->gr.hidden &&
+                !subedge->node[1]->gr.hidden)
             {
                 ap_main->remember();
-                subtree->swap_assymetric(idx2side(i));
+                subedge->sonNode()->swap_assymetric(idx2side(i));
                 pars[i] = rootNode()->costs();
                 if (pars[i] < pars_best) {
                     better_subtrees++;
-                    pars_best = pars[i];
+                    pars_best = pars[i]; // @@@ do not overwrite yet; store and overwrite when done with this loop
                 }
                 if (pars[i] < schwellwert) {
                     rec_width_dynamic++;
-                    // @@@ dynamic path reduction is not a reduction - it INCREASES the search width
-                    // @@@ together with static path reduction it is quite useless
                 }
                 ap_main->revert();
                 visited_subtrees++;
@@ -1201,7 +1186,7 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
             else {
                 pars[i] = -1;
 #if defined(ASSERTION_USED)
-                if (subtree && subtree->kernighan != AP_NONE) {
+                if (subedge && subedge->kl_visited) {
                     forbidden_descends++;
                 }
 #endif
@@ -1239,7 +1224,7 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
     // rec_depth == 2 (called twice with each adjacent node -> 8 calls)
     // rec_depth == 3 (called twice with each adjacent node, but not with those were recursion came from -> 6 calls)
 
-    if (father->father) {
+    if (sonNode()->get_father() == otherNode(sonNode())) { // not root-edge
         switch (rec_depth) {
             case 0:
                 ap_assert(visited_subtrees == 2);
@@ -1267,7 +1252,7 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
                 break;
             default:
                 ap_assert(visited_subtrees <= 8);
-                ap_assert(forbidden_descends == 0 || forbidden_descends == 2 || forbidden_descends == 4); // @@@ 4 is strange
+                // ap_assert(forbidden_descends == 0 || forbidden_descends == 2 || forbidden_descends == 4); // @@@ 4 is strange // @@@ fails
                 // ap_assert(forbidden_descends == 0 || forbidden_descends == 2);
                 // ap_assert(forbidden_descends == 2);
                 break;
@@ -1286,7 +1271,6 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
     else {
         rec_width = visited_subtrees;
         if (KL.rec_type & AP_STATIC) {
-            // @@@ using KL.rec_width[0] does not make sense! (always =2; see assertion above)
             int rec_width_static = (rec_depth < CUSTOM_DEPTHS) ? KL.rec_width[rec_depth] : 1;
             rec_width            = std::min(rec_width, rec_width_static);
         }
@@ -1298,10 +1282,11 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
 
     bool found_better = false;
     for (int i=0; i<rec_width && !found_better; i++) {
-        AP_tree_nlen * const subtree = descend[order[i]];
+        AP_tree_edge * const subedge = descend[order[i]];
 
         ap_main->remember();
-        subtree->swap_assymetric(subtree->kernighan = idx2side(order[i])); // mark + swap
+        subedge->kl_visited = true; // mark
+        subedge->sonNode()->swap_assymetric(idx2side(order[i])); // swap
         rootNode()->parsimony_rec();
 
         if (better_subtrees) {
@@ -1309,15 +1294,15 @@ bool AP_tree_nlen::kernighan_rec(const KL_params& KL, const int rec_depth, AP_FL
             modified.rec_type       = AP_STATIC;
             modified.max_rec_depth += KL.inc_rec_depth;
 
-            subtree->kernighan_rec(modified, rec_depth+1, pars_best);
+            subedge->kl_rec(modified, rec_depth+1, pars_best);
             found_better = true;
         }
         else {
-            found_better = subtree->kernighan_rec(KL, rec_depth+1, pars_best);
+            found_better = subedge->kl_rec(KL, rec_depth+1, pars_best);
         }
 
-        subtree->kernighan = AP_NONE; // unmark
-        ap_main->accept_if(found_better);
+        subedge->kl_visited = false;      // unmark
+        ap_main->accept_if(found_better); // revert
     }
 
     ap_main->accept_if(found_better); // undo set_root otherwise
@@ -1448,35 +1433,3 @@ void AP_tree_nlen::buildBranchList(AP_tree_nlen **&list, long &num, bool create_
         num         = count/2;
     }
 }
-
-AP_tree_nlen **AP_tree_nlen::getRandomNodes(int anzahl) {
-    // function returns a random constructed tree
-    // root is tree with species (needed to build a list of species)
-
-    AP_tree_nlen **retlist = NULL;
-    if (anzahl) {
-        AP_tree_nlen **list;
-        long           sumnodes;
-        buildNodeList(list, sumnodes);
-
-        if (sumnodes) {
-            retlist = new AP_tree_nlen* [anzahl];
-
-            long count = sumnodes;
-            for (int i=0; i< anzahl; i++) {
-                long num = GB_random(count);
-
-                retlist[i] = list[num]; // export node
-                count--;                // exclude node
-
-                list[num]   = list[count];
-                list[count] = retlist[i];
-
-                if (count == 0) count = sumnodes; // restart it
-            }
-        }
-        delete [] list;
-    }
-    return retlist;
-}
-

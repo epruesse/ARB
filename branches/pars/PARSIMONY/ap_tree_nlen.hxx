@@ -81,10 +81,9 @@ enum AP_BL_MODE {
     AP_BL_BOOTSTRAP_ESTIMATE = 12 // calculate estimate of bootstrap (includes AP_BL_BOOTSTRAP_LIMIT)
 };
 
-enum AP_TREE_SIDE { // @@@ useless enum (use bools for kernighan flag and as param to swap_assymetric)
+enum AP_TREE_SIDE {
     AP_LEFT,
     AP_RIGHT,
-    AP_NONE
 };
 
 enum EdgeSpec {
@@ -115,7 +114,6 @@ typedef uint8_t EdgeIndex;
 class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ rename -> AP_pars_tree? (later!)
     // tree that is independent of branch lengths and root
 
-    AP_TREE_SIDE kernighan;     // Flag zum markieren // @@@ replace by bool flag (only tested for ==AP_NONE or not)
     int          distance;      // distance to tree border (0=leaf, INT_MAX=UNKNOWN)
 
     // definitions for AP_tree_edge:
@@ -148,7 +146,6 @@ protected:
 public:
     explicit AP_tree_nlen(AP_pars_root *troot)
         : AP_tree(troot),
-          kernighan(AP_NONE),
           distance(INT_MAX),
           mutation_rate(0),
           pushed_to_frame(0)
@@ -198,10 +195,7 @@ public:
     AP_FLOAT nn_interchange_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode);
     AP_FLOAT nn_interchange(AP_FLOAT parsimony, AP_BL_MODE mode);
 
-    bool kernighan_rec(const KL_params& KL, const int rec_depth, AP_FLOAT pars_best);
-
     void buildBranchList(AP_tree_nlen **&list, long &num, bool create_terminal_branches, int deep);
-    AP_tree_nlen **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)
 
     // misc stuff:
 
@@ -275,6 +269,7 @@ class AP_tree_edge : virtual Noncopyable {
     AP_tree_edge *next_in_chain;        // do not use (use EdgeChain!)
     int           used;                 // test-counter
     long          age;                  // age of the edge
+    bool          kl_visited;
 
     static long timeStamp;              // static counter for edge-age
 
@@ -322,6 +317,10 @@ public:
     AP_tree_nlen* sonNode() const                               { return node[0]->get_father() == node[1] ? node[0] : node[1]; }
     long Age() const                                            { return age; }
 
+    // queries
+
+    bool is_leaf_edge() const { return node[0]->is_leaf || node[1]->is_leaf; }
+
     // encapsulated AP_tree_nlen methods:
 
     void set_root()                                             { return sonNode()->set_root(); }
@@ -329,6 +328,7 @@ public:
     // tree optimization:
 
     AP_FLOAT nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode);
+    bool kl_rec(const KL_params& KL, const int rec_depth, AP_FLOAT pars_best);
 
     AP_FLOAT calc_branchlengths() { return nni_rec(UNLIMITED, ANY_EDGE, AP_BL_BL_ONLY, NULL); }
 

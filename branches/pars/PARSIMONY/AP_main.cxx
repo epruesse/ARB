@@ -141,8 +141,10 @@ void AP_main::push_nodes_changed_since(Level wanted_frameLevel) {
             if (mode == ROOT || node->is_root_node()) {
                 mode = BOTH;
             }
-            Level lold   = states.count_elements();
-            int   pushed = push_node(node, mode);
+#if defined(ASSERTION_USED)
+            Level lold = states.count_elements();
+#endif
+            int pushed = push_node(node, mode);
 
             ap_assert(states.count_elements() == lold+pushed);
 
