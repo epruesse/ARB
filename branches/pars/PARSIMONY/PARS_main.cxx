@@ -1507,9 +1507,8 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
 }
 
 KL_Settings::KL_Settings(AW_root *aw_root) {
-    random_nodes = aw_root->awar(AWAR_KL_RANDOM_NODES)->read_float();
-    maxdepth     = aw_root->awar(AWAR_KL_MAXDEPTH)->read_int();
-    incdepth     = aw_root->awar(AWAR_KL_INCDEPTH)->read_int();
+    maxdepth = aw_root->awar(AWAR_KL_MAXDEPTH)->read_int();
+    incdepth = aw_root->awar(AWAR_KL_INCDEPTH)->read_int();
 
     Static.enabled  = aw_root->awar(AWAR_KL_STATIC_ENABLED)->read_int();
     Static.depth[0] = 2; // always test both possibilities at starting edge
@@ -1533,8 +1532,7 @@ KL_Settings::KL_Settings(GB_alignment_type atype) {
     // @@@ Wanted: set defaults (same values as below in AWARs)
 
     // unit tests depend on these values (i.e. fail if they are changed):
-    random_nodes = 1.7;
-    maxdepth     = 15;
+    maxdepth = 15;
 
     Static.enabled = true;
     Static.depth[0] = 2; // always test both possibilities at starting edge
@@ -1574,9 +1572,8 @@ KL_Settings::KL_Settings(GB_alignment_type atype) {
 static void create_parsimony_variables(AW_root *aw_root, AW_default props, GBDATA *gb_main) {
     // kernighan
 
-    aw_root->awar_float(AWAR_KL_RANDOM_NODES, 1.7, props); // @@@ 1.0 should be enough (as it repeats on improve)
-    aw_root->awar_int  (AWAR_KL_MAXDEPTH,     15,  props);
-    aw_root->awar_int  (AWAR_KL_INCDEPTH,     4,   props);
+    aw_root->awar_int(AWAR_KL_MAXDEPTH, 15, props);
+    aw_root->awar_int(AWAR_KL_INCDEPTH, 4,  props);
 
     aw_root->awar_int(AWAR_KL_STATIC_ENABLED, 1, props);
     aw_root->awar_int(AWAR_KL_STATIC_DEPTH1,  5, props)->set_minmax(1, 8);

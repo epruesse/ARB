@@ -19,9 +19,8 @@
 #define PREFIX_KL_STATIC  PREFIX_KL "static/"
 #define PREFIX_KL_DYNAMIC PREFIX_KL "dynamic/"
 
-#define AWAR_KL_RANDOM_NODES PREFIX_KL "nodes"
-#define AWAR_KL_MAXDEPTH     PREFIX_KL "maxdepth"
-#define AWAR_KL_INCDEPTH     PREFIX_KL "inc_depth"
+#define AWAR_KL_MAXDEPTH PREFIX_KL "maxdepth"
+#define AWAR_KL_INCDEPTH PREFIX_KL "inc_depth"
 
 #define AWAR_KL_STATIC_ENABLED PREFIX_KL_STATIC "enable"
 #define AWAR_KL_STATIC_DEPTH1  PREFIX_KL_STATIC "depth1"
@@ -48,9 +47,8 @@ enum KL_DYNAMIC_THRESHOLD_TYPE {
 };
 
 struct KL_Settings {
-    double random_nodes; // AWAR_KL_RANDOM_NODES
-    int    maxdepth;     // AWAR_KL_MAXDEPTH
-    int    incdepth;     // AWAR_KL_INCDEPTH
+    int maxdepth; // AWAR_KL_MAXDEPTH
+    int incdepth; // AWAR_KL_INCDEPTH
 
     struct {
         bool enabled;              // AWAR_KL_STATIC_ENABLED

@@ -32,8 +32,6 @@ AW_window *create_kernighan_window(AW_root *aw_root) {
 
     aws->button_length(6);
 
-    aws->at("nodes");
-    aws->create_input_field(AWAR_KL_RANDOM_NODES);
     aws->at("maxdepth");
     aws->create_input_field(AWAR_KL_MAXDEPTH);
     aws->at("incdepth");
