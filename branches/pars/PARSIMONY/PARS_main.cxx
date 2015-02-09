@@ -974,11 +974,19 @@ static AW_window *PARS_create_tree_settings_window(AW_root *aw_root) {
     return aws;
 }
 
+static int calculate_default_random_repeat(long leafs) {
+    double balanced_depth = log10(leafs) / log10(2);
+    int    repeat         = int(balanced_depth*2.0 + .5);
+    if (repeat<1) repeat  = 1;
+    return repeat;
+}
+
 static void randomMixTree(AW_window *, AWT_canvas *ntw) {
     arb_progress progress("Randomizing tree");
 
     progress.subtitle("mixing");
-    rootEdge()->mixTree();
+    long leafs = AWT_TREE_PARS(ntw)->get_root_node()->count_leafs();
+    rootEdge()->mixTree(calculate_default_random_repeat(leafs), 100);
 
     progress.subtitle("calculating branchlengths");
     rootEdge()->calc_branchlengths();
@@ -1824,10 +1832,12 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
             optimizeTree(env.graphic_tree(), env.get_KL_settings());
             break;
 
-        case MOD_MIX_TREE:
-            rootEdge()->mixTree();
+        case MOD_MIX_TREE: {
+            long leafs = rootNode()->count_leafs();
+            rootEdge()->mixTree(calculate_default_random_repeat(leafs), 100);
             rootEdge()->calc_branchlengths();
             break;
+        }
     }
 }
 

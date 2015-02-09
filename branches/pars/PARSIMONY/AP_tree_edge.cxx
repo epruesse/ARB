@@ -894,22 +894,20 @@ ostream& operator<<(ostream& out, const AP_tree_edge& e)
     return out << ' ';
 }
 
-void AP_tree_edge::mixTree() {
-    EdgeChain chain(this, UNLIMITED, ANY_EDGE, false);
+void AP_tree_edge::mixTree(int repeat, int percent) {
+    EdgeChain chain(this, UNLIMITED, ANY_EDGE, false); // @@@ unwanted hardcoded edge selection; no need to get leaf edges
+    long      edges = chain.size();
 
-    long edges = chain.size();
-    long leafs = edges_2_leafs(edges, UNROOTED);
-
-    double balanced_depth = log10(leafs) / log10(2);
-    int    count          = int(balanced_depth*2.0 + .5);
-    if (count<1) count    = 1;
-
-    arb_progress progress(count*edges);
-    while (count-- && !progress.aborted()) {
+    arb_progress progress(repeat*edges);
+    while (repeat-- && !progress.aborted()) {
         chain.restart();
         while (chain) {
             AP_tree_nlen *son = (*chain)->sonNode();
-            if (!son->is_leaf) son->swap_assymetric(GB_random(2) ? AP_LEFT : AP_RIGHT);
+            if (!son->is_leaf) {
+                if (percent>=100 || GB_random(100)<percent) {
+                    son->swap_assymetric(GB_random(2) ? AP_LEFT : AP_RIGHT);
+                }
+            }
             ++chain;
             ++progress;
         }
