@@ -150,7 +150,7 @@ namespace tree_defaults {
 struct AP_tree_members {
 public: // @@@ make members private
     unsigned int grouped : 1;   // indicates a folded group
-    unsigned int hidden : 1;    // not shown because a father is a folded group
+    unsigned int hidden : 1;    // not shown (because an anchestor is a folded group)
     unsigned int has_marked_children : 1; // at least one child is marked
     unsigned int callback_exists : 1;
     unsigned int gc : 6;        // color

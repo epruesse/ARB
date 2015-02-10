@@ -972,6 +972,25 @@ void TEST_edgeChain() {
     TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 4, 11); // @@@ collects several unmarked edges
     TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 4,  9); // @@@ collects several unmarked edges
 
+    // test trees with marks in ONE subtree (of root) only
+    {
+        GB_transaction ta(env.gbmain());
+        GBT_restore_marked_species(env.gbmain(), "CloTyro2");
+        env.compute_tree(); // species marks affect node-chain
+    }
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 4, 13);
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 4, 11);
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 1,  3);
+
+    {
+        GB_transaction ta(env.gbmain());
+        GBT_restore_marked_species(env.gbmain(), "CorGluta");
+        env.compute_tree(); // species marks affect node-chain
+    }
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 4, 11);
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 1,  3);
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 4,  9);
+
     // unmark all
     {
         GB_transaction ta(env.gbmain());
