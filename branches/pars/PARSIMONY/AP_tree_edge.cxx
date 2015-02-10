@@ -971,6 +971,26 @@ void TEST_edgeChain() {
     TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 7, 19); // @@@ collects several unmarked edges
     TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 4, 11); // @@@ collects several unmarked edges
     TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 4,  9); // @@@ collects several unmarked edges
+
+    // unmark all
+    {
+        GB_transaction ta(env.gbmain());
+        GBT_mark_all(env.gbmain(), 0);
+        env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
+    }
+
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true).size(), 0, 1); // @@@ collects rootEdge (should not)
+
+    // mark all (@@@ change into folded/unfolded tests when supported)
+    {
+        GB_transaction ta(env.gbmain());
+        GBT_mark_all(env.gbmain(), 1);
+        env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
+    }
+
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true).size(), 21, 23); // @@@ folded group contains 6 edges (two of them get collected)
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 13, 15); // @@@ folded group contains 6 edges (two of them get collected)
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon).size(), 9);
 }
 
 void TEST_undefined_branchlength() {
