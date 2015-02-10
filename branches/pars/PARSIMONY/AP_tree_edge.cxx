@@ -925,6 +925,54 @@ void AP_tree_edge::mixTree(int repeat, int percent) {
 #endif
 #include <test_env.h>
 
+void TEST_edgeChain() {
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb");
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
+
+    // env.compute_tree();
+
+    AP_tree_edge *root  = rootEdge();
+    AP_tree_nlen *rootN = root->sonNode()->get_father();
+
+    ap_assert(!rootN->father);
+    AP_tree_nlen *leftSon  = rootN->get_leftson();
+    AP_tree_nlen *rightSon = rootN->get_rightson();
+
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, ANY_EDGE, true).size(), 27);
+    TEST_EXPECT_EQUAL(EdgeChain(root,  0, ANY_EDGE, true).size(),  1); // root-edge
+    TEST_EXPECT_EQUAL(EdgeChain(root,  1, ANY_EDGE, true).size(),  5); // plus 4 adjacent edges
+    TEST_EXPECT_EQUAL(EdgeChain(root,  2, ANY_EDGE, true).size(), 11); // < max (=5+8)
+
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true).size(), 13, 19); // @@@ collects several unmarked edges
+
+    // skip left/right subtree
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, ANY_EDGE, true, leftSon) .size(),  9);  // right subtree plus rootEdge
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, ANY_EDGE, true, rightSon).size(), 19);  // left  subtree plus rootEdge
+
+    TEST_EXPECT_EQUAL(EdgeChain(root,  0, ANY_EDGE, true, leftSon) .size(),  1); // rootEdge
+    TEST_EXPECT_EQUAL(EdgeChain(root,  1, ANY_EDGE, true, leftSon) .size(),  3); // plus 2 right son-edges
+    TEST_EXPECT_EQUAL(EdgeChain(root,  2, ANY_EDGE, true, leftSon) .size(),  5); // plus two more sons (i.e. one of the above edges must be a leaf edge)
+
+    TEST_EXPECT_EQUAL(EdgeChain(root,  0, ANY_EDGE, true, rightSon).size(),  1); // rootEdge
+    TEST_EXPECT_EQUAL(EdgeChain(root,  1, ANY_EDGE, true, rightSon).size(),  3); // plus 2 left son-edges
+    TEST_EXPECT_EQUAL(EdgeChain(root,  2, ANY_EDGE, true, rightSon).size(),  7); // plus 4 grandson-edges
+
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(),  8,  9); // @@@ bug: one leaf edge is unmarked
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(),  6, 11); // @@@ bug
+
+    // mark only two species: CorGluta (unfolded) + CloTyro2 (folded)
+    {
+        GB_transaction ta(env.gbmain());
+        GBT_restore_marked_species(env.gbmain(), "CloTyro2;CorGluta");
+        env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
+    }
+
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, ANY_EDGE, true).size(), 27);
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 7, 19); // @@@ collects several unmarked edges
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 4, 11); // @@@ collects several unmarked edges
+    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 4,  9); // @@@ collects several unmarked edges
+}
+
 void TEST_undefined_branchlength() {
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
