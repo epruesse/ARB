@@ -550,12 +550,6 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
         set_inner_branch_length_and_calc_adj_leaf_lengths(son, blen);
     }
 
-    // zu Auswertungszwecken doch unsortiert uebernehmen:
-
-    data.parsValue[0] = pars_one;
-    data.parsValue[1] = pars_two;
-    data.parsValue[2] = pars_three;
-
     return parsbest;
 }
 

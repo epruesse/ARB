@@ -255,9 +255,8 @@ class AP_tree_edge : virtual Noncopyable {
     // the following members are stored/restored by
     // AP_tree_nlen::push/pop:
 
-    AP_tree_nlen      *node[2]; // the two nodes of this edge
-    EdgeIndex          index[2]; // index to edge[] in AP_tree_nlen
-    AP_tree_edge_data  data;    // data stored in edge (defined in AP_buffer.hxx)
+    AP_tree_nlen *node[2];      // the two nodes of this edge
+    EdgeIndex     index[2];     // index to edge[] in AP_tree_nlen
 
     // and these arent pushed:
 

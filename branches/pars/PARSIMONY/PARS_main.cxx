@@ -2637,7 +2637,7 @@ void TEST_node_edge_resources() {
 
 
 #if defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 88);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 64);
 #else // !defined(ARB_64)
     TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 56); // @@@ document 32bit size
 #endif

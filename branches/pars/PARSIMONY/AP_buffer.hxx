@@ -109,11 +109,6 @@ struct AP_STACK : public arb_forward_list<ELEM*> {
 
 class AP_tree_edge; // defined in ap_tree_nlen.hxx
 
-struct AP_tree_edge_data
-{
-    AP_FLOAT parsValue[3];                          // the last three parsimony values (0=lowest 2=highest)
-};
-
 enum AP_STACK_MODE {
     NOTHING   = 0, // nothing to buffer in AP_tree node
     STRUCTURE = 1, // only structure
@@ -145,7 +140,6 @@ struct NodeState : virtual Noncopyable { // buffers previous states of AP_tree_n
     // @@@ store gr.hidden + gr.has_marked_children
     AP_tree_edge      *edge[3];
     int                edgeIndex[3];
-    AP_tree_edge_data  edgeData[3];
 
     void move_info_to(NodeState& target, AP_STACK_MODE what);
 
