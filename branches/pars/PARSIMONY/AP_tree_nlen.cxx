@@ -905,7 +905,6 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) { // @@@ rename -
         store->rightlen = rightlen;
         store->root     = get_tree_root();
         store->gb_node  = gb_node;
-        store->distance = distance;
 
         for (int e=0; e<3; e++) {
             store->edge[e]      = edge[e];
@@ -949,7 +948,6 @@ void NodeState::move_info_to(NodeState& target, AP_STACK_MODE what) {
         target.rightlen = rightlen;
         target.root     = root;
         target.gb_node  = gb_node;
-        target.distance = distance;
 
         for (int e=0; e<3; e++) {
             target.edge[e]      = edge[e];
@@ -983,7 +981,6 @@ void AP_tree_nlen::restore_structure(const NodeState& state) {
     rightlen = state.rightlen;
     set_tree_root(state.root);
     gb_node  = state.gb_node;
-    distance = state.distance;
 
     for (int e=0; e<3; e++) {
         edge[e]  = state.edge[e];

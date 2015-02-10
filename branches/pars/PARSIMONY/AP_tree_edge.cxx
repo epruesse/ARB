@@ -86,155 +86,6 @@ void AP_tree_edge::destroy(AP_tree_nlen *tree) {
     }
 }
 
-
-void AP_tree_edge::tailDistance(AP_tree_nlen *n)
-{
-    ap_assert(!n->is_leaf);    // otherwise call was not necessary!
-
-    int i0 = n->indexOf(this);          // index of this
-    int i1 = i0==0 ? 1 : 0;             // the indices of the other two nodes (beside n)
-    int i2 = i1==1 ? 2 : (i0==1 ? 2 : 1);
-    AP_tree_edge *e1 = n->edge[i1];     // edges to the other two nodes
-    AP_tree_edge *e2 = n->edge[i2];
-
-    cout << "tail n=" << n << " d(n)=" << n->distance << " ";
-
-    if (e1 && e2)
-    {
-        AP_tree_nlen *n1 = e1->node[1-n->index[i1]]; // the other two nodes
-        AP_tree_nlen *n2 = e2->node[1-n->index[i2]];
-
-        cout <<  "n1=" << n1 << " d(n1)=" << n1->distance <<
-            " n2=" << n2 << " d(n2)=" << n2->distance << " ";
-
-        if (n1->distance==n2->distance)
-        {
-            if (n1->distance>n->distance && n2->distance>n->distance)
-            {
-                // both distances (of n1 and n2) are greather that distance of n
-                // so its possible that the nearest connection the border was
-                // via node n and we must recalculate the distance into the other
-                // directions
-
-                ap_assert(n1->distance==n2->distance);
-
-                cout << "special tailDistance-case\n";
-                e1->tailDistance(n1);
-                e2->tailDistance(n2);
-
-                if (n1->distance<n2->distance)
-                {
-                    n->distance = n1->distance+1;
-                    if (!e2->distanceOK()) e2->calcDistance();
-                }
-                else
-                {
-                    n->distance = n2->distance+1;
-                    if (!e1->distanceOK()) e1->calcDistance();
-                }
-            }
-            else
-            {
-                cout << "tail case 2\n";
-                n->distance = n1->distance+1;
-            }
-        }
-        else
-        {
-            ap_assert(n1->distance != n2->distance);
-
-            if (n1->distance<n2->distance)
-            {
-                if (n1->distance<n->distance)
-                {
-                    // in this case the distance via n1 is the same as
-                    // the distance via the cutted edge - so we do nothing
-
-                    cout << "tail case 3\n";
-                    ap_assert(n1->distance==(n->distance-1));
-                }
-                else
-                {
-                    cout << "tail case 4\n";
-                    ap_assert(n1->distance==n->distance);
-                    ap_assert(n2->distance==(n->distance+1));
-
-                    n->distance = n1->distance+1;
-                    e2->tailDistance(n2);
-                }
-            }
-            else
-            {
-                ap_assert(n2->distance<n1->distance);
-
-                if (n2->distance<n->distance)
-                {
-                    // in this case the distance via n2 is the same as
-                    // the distance via the cutted edge - so we do nothing
-
-                    cout << "tail case 5\n";
-                    ap_assert(n2->distance==(n->distance-1));
-                }
-                else
-                {
-                    cout << "tail case 6\n";
-                    ap_assert(n2->distance==n->distance);
-                    ap_assert(n1->distance==(n->distance+1));
-
-                    n->distance = n2->distance+1;
-                    e1->tailDistance(n1);
-                }
-            }
-        }
-
-        cout << "d(n)=" << n->distance <<
-            " d(n1)=" << n1->distance <<
-            " d(n2)=" << n2->distance <<
-            " D(e1)=" << e1->Distance() <<
-            " D(e2)=" << e2->Distance() <<
-            " dtb(e1)=" << e1->distanceToBorder(INT_MAX, n) <<
-            " dtb(e2)=" << e2->distanceToBorder(INT_MAX, n) << endl;
-    }
-    else
-    {
-        if (e1)
-        {
-            AP_tree_nlen *n1 = e1->node[1-n->index[i1]];
-
-            cout << "tail case 7\n";
-            ap_assert(n1!=0);
-            if (n1->distance>n->distance) e1->tailDistance(n1);
-            n->distance = n1->distance+1;
-
-            cout << "d(n)=" << n->distance <<
-                " d(n1)=" << n1->distance <<
-                " D(e1)=" << e1->Distance() <<
-                " dtb(e1)=" << e1->distanceToBorder(INT_MAX, n) << endl;
-        }
-        else if (e2)
-        {
-            AP_tree_nlen *n2 = e2->node[1-n->index[i2]];
-
-            cout << "tail case 8\n";
-            ap_assert(n2!=0);
-            cout << "d(n2)=" << n2->distance << " d(n)=" << n->distance << endl;
-
-            if (n2->distance>n->distance) e2->tailDistance(n2);
-            n->distance = n2->distance+1;
-
-            cout << "d(n)=" << n->distance <<
-                " d(n2)=" << n2->distance <<
-                " D(e2)=" << e2->Distance() <<
-                " dtb(e2)=" << e2->distanceToBorder(INT_MAX, n) << endl;
-        }
-        else
-        {
-            cout << "tail case 9\n";
-            n->distance = INT_MAX;
-        }
-    }
-}
-
 AP_tree_edge* AP_tree_edge::unlink() {
     ap_assert(this!=0);
     ap_assert(is_linked());
@@ -246,63 +97,6 @@ AP_tree_edge* AP_tree_edge::unlink() {
     node[1] = NULL;
 
     return this;
-}
-
-void AP_tree_edge::calcDistance()
-{
-    ap_assert(!distanceOK());  // otherwise call was not necessary
-    ap_assert (node[0]->distance!=node[1]->distance);
-
-    if (node[0]->distance < node[1]->distance)  // node[1] has wrong distance
-    {
-        cout << "dist(" << node[1] << ") " << node[1]->distance;
-
-        if (node[1]->distance==INT_MAX) // not initialized -> do not recurse
-        {
-            node[1]->distance = node[0]->distance+1;
-            cout  << " -> " << node[1]->distance << endl;
-        }
-        else
-        {
-            node[1]->distance = node[0]->distance+1;
-            cout  << " -> " << node[1]->distance << endl;
-
-            if (!node[1]->is_leaf)
-            {
-                for (int e=0; e<3; e++)     // recursively correct distance where necessary
-                {
-                    AP_tree_edge *ed = node[1]->edge[e];
-                    if (ed && ed!=this && !ed->distanceOK()) ed->calcDistance();
-                }
-            }
-        }
-    }
-    else                        // node[0] has wrong distance
-    {
-        cout << "dist(" << node[0] << ") " << node[0]->distance;
-
-        if (node[0]->distance==INT_MAX) // not initialized -> do not recurse
-        {
-            node[0]->distance = node[1]->distance+1;
-            cout  << " -> " << node[0]->distance << endl;
-        }
-        else
-        {
-            node[0]->distance = node[1]->distance+1;
-            cout  << " -> " << node[0]->distance << endl;
-
-            if (!node[0]->is_leaf)
-            {
-                for (int e=0; e<3; e++)     // recursively correct distance where necessary
-                {
-                    AP_tree_edge *ed = node[0]->edge[e];
-                    if (ed && ed!=this && !ed->distanceOK()) ed->calcDistance();
-                }
-            }
-        }
-    }
-
-    ap_assert(distanceOK());   // invariant of AP_tree_edge (if fully constructed)
 }
 
 void AP_tree_edge::relink(AP_tree_nlen *node1, AP_tree_nlen *node2) {
@@ -318,13 +112,11 @@ void AP_tree_edge::relink(AP_tree_nlen *node1, AP_tree_nlen *node2) {
     node2->index[index[1]] = 1;
 }
 
-size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip, int distanceToStart, AP_tree_edge **&prevNextPtr) {
+size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip, AP_tree_edge **&prevNextPtr) {
     size_t added = 0;
 
     ap_assert(prevNextPtr);
     ap_assert(*prevNextPtr == NULL);
-
-    data.distance = distanceToStart;
 
     if (!depthFirst) {
         *prevNextPtr  = this;
@@ -349,7 +141,7 @@ size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool dep
                     for (int e=0; e<3; e++) {
                         AP_tree_edge * Edge = node[n]->edge[e];
                         if (Edge != this) {
-                            added += Edge->buildChainInternal(depth-1, whichEdges, depthFirst, node[n], distanceToStart+1, prevNextPtr);
+                            added += Edge->buildChainInternal(depth-1, whichEdges, depthFirst, node[n], prevNextPtr);
                         }
                     }
                 }
@@ -388,77 +180,11 @@ EdgeChain::EdgeChain(AP_tree_edge *startEgde, int depth, EdgeSpec whichEdges, bo
 
     AP_tree_edge **prev = &start;
 
-    len  = startEgde->buildChainInternal(depth, whichEdges, depthFirst, skip, 0, prev);
+    len  = startEgde->buildChainInternal(depth, whichEdges, depthFirst, skip, prev);
     curr = start;
 
     ap_assert(correlated(len, start));
     ap_assert(implicated(!depthFirst, curr == startEgde));
-}
-
-int AP_tree_edge::distanceToBorder(int maxsearch, AP_tree_nlen *skipNode) const {
-    /*! @return the minimal distance to the borders of the tree (aka leafs).
-     * a return value of 0 means: one of the nodes is a leaf
-     *
-     * @param maxsearch         max search depth
-     * @param skipNode          do not descent into that part of the tree
-     */
-
-    if ((node[0] && node[0]->is_leaf) || (node[1] && node[1]->is_leaf))
-    {
-        return 0;
-    }
-
-    for (int n=0; n<2 && maxsearch; n++)
-    {
-        if (node[n] && node[n]!=skipNode)
-        {
-            for (int e=0; e<3; e++)
-            {
-                AP_tree_edge *ed = node[n]->edge[e];
-
-                if (ed && ed!=this)
-                {
-                    int dist = ed->distanceToBorder(maxsearch-1, node[n])+1;
-                    if (dist<maxsearch) maxsearch = dist;
-                }
-            }
-        }
-    }
-
-    return maxsearch;
-}
-
-void AP_tree_edge::countSpecies(int deep, const AP_tree_nlen *skip)
-{
-    if (!skip)
-    {
-        speciesInTree = 0;
-        nodesInTree   = 0;
-    }
-
-    if (deep--)
-    {
-        for (int n=0; n<2; n++)
-        {
-            if (node[n]->is_leaf)
-            {
-                speciesInTree++;
-                nodesInTree++;
-            }
-            else if (node[n]!=skip)
-            {
-                nodesInTree++;
-
-                for (int e=0; e<3; e++)
-                {
-                    if (node[n]->edge[e]!=this)
-                    {
-                        node[n]->edge[e]->countSpecies(deep, node[n]);
-                    }
-                }
-            }
-        }
-    }
 }
 
 class MutationsPerSite : virtual Noncopyable {
@@ -740,12 +466,6 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
     return new_parsimony;
 }
 
-int AP_tree_edge::dumpNNI = 0;
-int AP_tree_edge::distInsertBorder;
-int AP_tree_edge::basesChanged;
-int AP_tree_edge::speciesInTree;
-int AP_tree_edge::nodesInTree;
-
 AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps)
 {
     AP_tree_nlen *root = rootNode();
@@ -771,8 +491,6 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
 #endif
         return pars_one;
     }
-
-    AP_tree_edge_data oldData = data;
 
     AP_FLOAT    parsbest = pars_one,
         pars_two,
@@ -837,38 +555,6 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
     data.parsValue[0] = pars_one;
     data.parsValue[1] = pars_two;
     data.parsValue[2] = pars_three;
-
-
-    if (dumpNNI) {
-        if (dumpNNI==2) GBK_terminate("NNI called between optimize and statistics");
-
-        AP_tree_nlen *node0 = this->node[0];
-        AP_tree_nlen *node1 = this->node[1];
-        if (node0->gr.leaf_sum > node1->gr.leaf_sum) { // node0 is final son
-            node0 = node1;
-        }
-
-        static int num = 0;
-
-        node0->use_as_remark(GBS_global_string_copy("%i %4.0f:%4.0f:%4.0f     %4.0f:%4.0f:%4.0f\n",
-                                                    num++,
-                                                    oldData.parsValue[0], oldData.parsValue[1], oldData.parsValue[2],
-                                                    data.parsValue[0], data.parsValue[1], data.parsValue[2]));
-
-        cout
-            << setw(4) << distInsertBorder
-            << setw(6) << basesChanged
-            << setw(4) << distanceToBorder()
-            << setw(4) << data.distance
-            << setw(4) << betterValueFound
-            << setw(8) << oldData.parsValue[0]
-            << setw(8) << oldData.parsValue[1]
-            << setw(8) << oldData.parsValue[2]
-            << setw(8) << data.parsValue[0]
-            << setw(8) << data.parsValue[1]
-            << setw(8) << data.parsValue[2]
-            << '\n';
-    }
 
     return parsbest;
 }

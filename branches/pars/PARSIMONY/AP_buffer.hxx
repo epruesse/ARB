@@ -112,7 +112,6 @@ class AP_tree_edge; // defined in ap_tree_nlen.hxx
 struct AP_tree_edge_data
 {
     AP_FLOAT parsValue[3];                          // the last three parsimony values (0=lowest 2=highest)
-    int      distance;                              // the distance of the last insertion
 };
 
 enum AP_STACK_MODE {
@@ -137,13 +136,13 @@ struct NodeState : virtual Noncopyable { // buffers previous states of AP_tree_n
     AP_FLOAT      mutation_rate;
 
     // only defined if mode & STRUCTURE:
-    double             leftlen, rightlen;
-    AP_tree_nlen      *father;
-    AP_tree_nlen      *leftson;
-    AP_tree_nlen      *rightson;
-    AP_pars_root      *root;
-    GBDATA            *gb_node;
-    int                distance; // distance to border
+    double        leftlen, rightlen;
+    AP_tree_nlen *father;
+    AP_tree_nlen *leftson;
+    AP_tree_nlen *rightson;
+    AP_pars_root *root;
+    GBDATA       *gb_node;
+    // @@@ store gr.hidden + gr.has_marked_children
     AP_tree_edge      *edge[3];
     int                edgeIndex[3];
     AP_tree_edge_data  edgeData[3];

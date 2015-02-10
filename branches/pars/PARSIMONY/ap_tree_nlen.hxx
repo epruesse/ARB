@@ -114,10 +114,7 @@ typedef uint8_t EdgeIndex;
 class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ rename -> AP_pars_tree? (later!)
     // tree that is independent of branch lengths and root
 
-    int          distance;      // distance to tree border (0=leaf, INT_MAX=UNKNOWN)
-
     // definitions for AP_tree_edge:
-
     AP_tree_edge *edge[3];      // the edges to the father and the sons
     EdgeIndex     index[3];     // index to node[] in AP_tree_edge
 
@@ -146,7 +143,6 @@ protected:
 public:
     explicit AP_tree_nlen(AP_pars_root *troot)
         : AP_tree(troot),
-          distance(INT_MAX),
           mutation_rate(0),
           pushed_to_frame(0)
     {
@@ -172,7 +168,6 @@ public:
     virtual AP_UPDATE_FLAGS check_update() OVERRIDE; // disable  load !!!!
 
     void copy(AP_tree_nlen *tree);
-    int  Distance();
 
     // tree reconstruction methods:
     void insert(AP_tree_nlen *new_brother);
@@ -273,12 +268,8 @@ class AP_tree_edge : virtual Noncopyable {
 
     static long timeStamp;              // static counter for edge-age
 
-    size_t buildChainInternal(int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip, int distance, AP_tree_edge**& prevNextPtr);
+    size_t buildChainInternal(int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip, AP_tree_edge**& prevNextPtr);
 
-    void calcDistance();
-    void tailDistance(AP_tree_nlen*);
-
-    bool distanceOK() const { int diff = node[0]->distance-node[1]->distance; return diff>=-1 && diff<=1; }
     bool is_linked() const { return node[0]; }
 
     // my friends:
@@ -323,7 +314,7 @@ public:
 
     // encapsulated AP_tree_nlen methods:
 
-    void set_root()                                             { return sonNode()->set_root(); }
+    void set_root() { return sonNode()->set_root(); }
 
     // tree optimization:
 
@@ -336,21 +327,6 @@ public:
     AP_FLOAT nni(AP_FLOAT pars_one, AP_BL_MODE mode) { return nni_mutPerSite(pars_one, mode, NULL); }
 
     void mixTree(int repeat, int percent);
-
-    int Distance() const { ap_assert(distanceOK()); return (node[0]->distance+node[1]->distance) >> 1; }
-    int distanceToBorder(int maxsearch=INT_MAX, AP_tree_nlen *skipNode=NULL) const; // obsolete
-
-    static int dumpNNI;             // should NNI dump its values?
-    static int distInsertBorder; // distance from insert pos to tree border
-    static int basesChanged;    // no of bases which were changed
-    // in fathers sequence because of insertion
-
-    void countSpecies(int deep=-1, const AP_tree_nlen* skip=NULL);
-
-    static int speciesInTree;                       // no of species (leafs) in tree (updated by countSpecies)
-    static int nodesInTree;                         // no of nodes in tree - including leafs, but w/o rootnode (updated by countSpecies)
-
-    static int edgesInTree() { return nodesInTree-1; } // (updated by countSpecies)
 };
 
 std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
