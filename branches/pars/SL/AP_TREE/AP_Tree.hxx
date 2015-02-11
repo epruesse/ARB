@@ -347,6 +347,12 @@ public:
     void reset_subtree_layout();
 
     bool hasName(const char *Name) const { return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0; }
+
+#if defined(ASSERTION_USED) || defined(UNIT_TESTS)
+    bool has_correct_mark_flags() const;
+    bool has_correct_visibility_flags() const;
+    bool has_correct_mark_and_visibility_flags() const;
+#endif
 };
 
 inline TreeNode *AP_tree_root::makeNode() const { return new AP_tree(const_cast<AP_tree_root*>(this)); }
