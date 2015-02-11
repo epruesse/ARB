@@ -1,0 +1,5 @@
+AUTODETECT      "#-*\n#=*"
+
+SYSTEM          "arb_convert_aln -AE2 $< -GenBank $>"
+
+NEW_FORMAT      "lib/import/rdp.ift"

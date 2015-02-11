@@ -1,0 +1,59 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	mode_width.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		 Tree Settings
+
+OCCURRENCE	ARB_NT/Properties/Tree Settings
+                ARB_PARSIMONY/Properties/Tree: Settings
+
+DESCRIPTION     Various tree display settings are available:
+
+                - 'Base line width' defines the thickness of branches
+
+                - 'Relative vertical distance' allows to stretch the tree in
+                  vertical direction (dendrogram only)
+
+                - 'On species change' and 'On tree change' provide similar behavior as the
+                  JUMP button in the top area of the main window. These settings define
+                  whether and how the selected species should be repositioned inside the viewport,
+                  when either the species or the tree (or tree display mode) changes.
+
+                The following settings are only available in ARB_NT:
+
+                - 'Show bootstrap circles' toggles the display of bootstrap circles (only
+                  available if the tree contains bootstrap values).
+
+                - If 'Use ellipse' is active, ellipses instead of circles are drawn in
+                  dendrogram tree.
+
+                - 'Bootstrap circle zoom factor' allows to increase/reduce the size
+                  of the boostrap circles/ellipse
+
+                - 'Boostrap radius limit' allows to limit the max. bootstrap circle/ellipse size.
+
+                - 'Grey Level of Groups%' (for printing/Xfig only)
+
+                - Text zoom/pad
+                  Select toggle to consider text for default zoom (otherwise only tree-structure is considered).
+                  Add extra padding in pixel (= amount of extra space for text; may be negative)
+
+                - Hide bootstrap values below
+                  Configure above which threshold bootstrap values are shown in the tree. Generally, branches with 
+                  less than 50% cannot be regarded as supported.
+
+NOTES		The line width of individual branches can be changed
+		independently using the 'LINE WIDTH MODE'.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
