@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include "PerfMeter.h"
 #include "pars_dtree.hxx"
 #include "pars_main.hxx"
 #include "pars_debug.hxx"
@@ -179,6 +180,8 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
     const AP_FLOAT  org_pars     = get_root_node()->costs();
     AP_FLOAT        prev_pars    = org_pars;
 
+    OptiPerfMeter overallPerf("global optimization", org_pars);
+
     progress.subtitle(GBS_global_string("Old parsimony: %.1f", org_pars));
 
     while (!progress.aborted()) {
@@ -189,6 +192,7 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
             AP_FLOAT ker_pars = get_root_node()->costs();
             if (ker_pars == prev_pars) break; // kern-lin did not improve tree -> done
             prev_pars = ker_pars;
+            overallPerf.dumpCustom(stdout, ker_pars, "overall (so far)");
         }
         else {
             prev_pars = nni_pars;
@@ -200,6 +204,7 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
     else oldrootright->set_root();
 
     get_root_node()->costs();
+    overallPerf.dump(stdout, prev_pars);
 }
 
 AWT_graphic_parsimony::AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
