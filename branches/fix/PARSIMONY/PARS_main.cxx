@@ -140,7 +140,7 @@ static void AP_user_pop_cb(AW_window *aww, AWT_canvas *ntw) {
 }
 
 class InsertData {
-    int  abort_flag;
+    bool abort_flag;
     long currentspecies;
     
     arb_progress progress;
@@ -148,10 +148,10 @@ class InsertData {
 public:
 
     bool quick_add_flag;
-    InsertData(bool quick, long spec_count, int add_progress_steps)
+    InsertData(bool quick, long spec_count)
         : abort_flag(false),
           currentspecies(0),
-          progress(GBS_global_string("Inserting %li species", spec_count), spec_count+add_progress_steps),
+          progress(GBS_global_string("Inserting %li species", spec_count), spec_count),
           quick_add_flag(quick)
     {
     }
@@ -401,36 +401,38 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
     if (!error) {
         ap_assert(hash);
 
+        arb_progress progress(quick ? "Quick add" : "Add + NNI");
+
         NT_remove_species_in_tree_from_hash(rootNode(), hash);
 
         long max_species = 0;
         GBS_hash_do_loop(hash, count_hash_elements, &max_species);
 
-        int        implicitSteps = quick ? 1 : 2; // 1 step for calc_branchlengths, 1 step for NNI
-        InsertData isits(quick, max_species, implicitSteps);
-
-        GB_begin_transaction(gb_main);
-        GBS_hash_do_loop(hash, transform_gbd_to_leaf, NULL);
-        GB_commit_transaction(gb_main);
-
         {
-            int skipped = max_species - GBS_hash_count_elems(hash);
-            if (skipped) {
-                aw_message(GBS_global_string("Skipped %i species (no data?)", skipped));
-                isits.get_progress().inc_by(skipped);
+            InsertData isits(quick, max_species);
+
+            GB_begin_transaction(gb_main);
+            GBS_hash_do_loop(hash, transform_gbd_to_leaf, NULL);
+            GB_commit_transaction(gb_main);
+
+            {
+                int skipped = max_species - GBS_hash_count_elems(hash);
+                if (skipped) {
+                    aw_message(GBS_global_string("Skipped %i species (no data?)", skipped));
+                    isits.get_progress().inc_by(skipped);
+                }
             }
+
+            GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
         }
 
-        GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
-
         if (!quick) {
+            progress.subtitle("local optimize (NNI)");
             rootEdge()->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY, NULL);
-            ++isits.get_progress();
         }
 
         if (rootNode()) {
             rootEdge()->calc_branchlengths();
-            ++isits.get_progress();
 
             ASSERT_VALID_TREE(rootNode());
             rootNode()->compute_tree();
@@ -446,7 +448,6 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
         }
         else {
             error = "Tree lost (no leafs left)";
-            isits.get_progress().done();
         }
     }
 
@@ -890,7 +891,7 @@ static void NT_reAdd_quick  (UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_reAdd_
 // --------------------------------------------------------------------------------
 
 static void calc_branchlengths(AWT_graphic_parsimony *agt) {
-    arb_progress progress("Calculating Branch Lengths");
+    arb_progress progress("Calculating branchlengths");
     rootEdge()->calc_branchlengths();
     agt->reorder_tree(BIG_BRANCHES_TO_TOP);
 }
@@ -901,7 +902,7 @@ static void NT_calc_branch_lengths(AW_window *, AWT_canvas *ntw) {
 }
 
 static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
-    arb_progress progress("Calculating Bootstrap Limit");
+    arb_progress progress("Calculating bootstrap limit");
     AP_BL_MODE mode       = AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY);
     rootEdge()->nni_rec(UNLIMITED, ANY_EDGE, mode, NULL);
     AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
@@ -910,7 +911,7 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
 }
 
 static void optimizeTree(AWT_graphic_parsimony *agt, const KL_Settings& settings) {
-    arb_progress progress("Optimizing Tree");
+    arb_progress progress("Optimizing tree");
     agt->get_parsimony().optimize_tree(rootNode(), settings, progress);
     ASSERT_VALID_TREE(rootNode());
     rootEdge()->calc_branchlengths();
