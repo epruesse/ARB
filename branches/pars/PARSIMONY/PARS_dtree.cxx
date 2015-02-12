@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include "PerfMeter.h"
 #include "pars_dtree.hxx"
 #include "pars_main.hxx"
 #include "pars_awars.h"
@@ -30,55 +31,6 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
-
-struct TimedCombines {
-    clock_t ticks;
-    long    combines;
-
-    TimedCombines()
-        : ticks(clock()),
-          combines(AP_sequence::combine_count())
-    {}
-};
-
-class OptiPerfMeter {
-    std::string   what;
-    TimedCombines start;
-    AP_FLOAT      start_pars;
-
-public:
-    OptiPerfMeter(std::string what_, AP_FLOAT start_pars_)
-        : what(what_),
-          start_pars(start_pars_)
-    {}
-
-    void dumpCustom(FILE *out, AP_FLOAT end_pars, const char *label) const {
-        TimedCombines end;
-
-        ap_assert(end_pars<=start_pars);
-
-        double   seconds      = double(end.ticks-start.ticks)/CLOCKS_PER_SEC;
-        AP_FLOAT pars_improve = start_pars-end_pars;
-        long     combines     = end.combines-start.combines;
-
-        double combines_per_second  = combines/seconds;
-        double combines_per_improve = combines/pars_improve;
-        double improve_per_second   = pars_improve/seconds;
-
-        fprintf(out, "%-27s took %7.2f sec,  improve=%9.1f,  combines=%12li  (comb/sec=%10.2f,  comb/impr=%12.2f,  impr/sec=%10.2f)\n",
-                label,
-                seconds,
-                pars_improve,
-                combines,
-                combines_per_second,
-                combines_per_improve,
-                improve_per_second);
-    }
-
-    void dump(FILE *out, AP_FLOAT end_pars) const {
-        dumpCustom(out, end_pars, what.c_str());
-    }
-};
 
 static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd; // @@@ dynacast?

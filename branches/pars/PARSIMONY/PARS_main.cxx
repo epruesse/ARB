@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include "PerfMeter.h"
 #include "pars_main.hxx"
 #include "pars_klprops.hxx"
 #include "pars_awars.h"
@@ -406,6 +407,8 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
         long max_species = 0;
         GBS_hash_do_loop(hash, count_hash_elements, &max_species);
 
+        InsertPerfMeter insertPerf("(quick-)add", max_species);
+
         int        implicitSteps = quick ? 1 : 2; // 1 step for calc_branchlengths, 1 step for NNI
         InsertData isits(quick, max_species, implicitSteps);
 
@@ -448,6 +451,8 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
             error = "Tree lost (no leafs left)";
             isits.get_progress().done();
         }
+
+        insertPerf.dump(stdout);
     }
 
     if (hash) GBS_free_hash(hash);
