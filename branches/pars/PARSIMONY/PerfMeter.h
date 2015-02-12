@@ -99,13 +99,6 @@ public:
                 combines_per_second,
                 combines_per_insert,
                 inserts_per_second);
-
-        fprintf(out, "%-27s took %7.2f sec,  combines=%12li  (comb/sec=%10.2f, comb/ins=%10.2f)\n",
-                label,
-                seconds,
-                combines,
-                combines_per_second,
-                combines_per_insert);
     }
 
     void dump(FILE *out) const {
