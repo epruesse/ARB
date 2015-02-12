@@ -426,17 +426,7 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
             GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
         }
 
-        if (!quick) {
-            progress.subtitle("local optimize (NNI)");
-            rootEdge()->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY, NULL);
-        }
-
         if (rootNode()) {
-            rootEdge()->calc_branchlengths();
-
-            ASSERT_VALID_TREE(rootNode());
-            rootNode()->compute_tree();
-
             if (oldrootleft) {
                 if (oldrootleft->father == oldrootright) oldrootleft->set_root();
                 else                                     oldrootright->set_root();
@@ -445,6 +435,16 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
                 ARB_edge innermost = rootNode()->get_tree_root()->find_innermost_edge();
                 innermost.set_root();
             }
+
+            if (!quick) {
+                progress.subtitle("local optimize (NNI)");
+                rootEdge()->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY, NULL);
+            }
+
+            rootEdge()->calc_branchlengths();
+
+            ASSERT_VALID_TREE(rootNode());
+            rootNode()->compute_tree();
         }
         else {
             error = "Tree lost (no leafs left)";
@@ -2062,16 +2062,16 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 3);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
-    TEST_EXPECT_EQUAL(env.combines_performed(), 591);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 578);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 767);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 768);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD_CALC_LENS, "nucl-add-quick-cl", PARSIMONY_ORG-23, env, true)); // test quick-add + calc_branchlengths
-    TEST_EXPECT_EQUAL(env.combines_performed(), 727);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 714);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI_CALC_LENS,   "nucl-add-NNI-cl",   PARSIMONY_ORG-25, env, true)); // test add + NNI + calc_branchlengths
-    TEST_EXPECT_EQUAL(env.combines_performed(), 904);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 908);
 
     // test partial-add
     {
@@ -2118,7 +2118,7 @@ void TEST_nucl_tree_modifications() {
             }
 
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "nucl-addPartialAsFull-CorGlutP", PARSIMONY_ORG, env, false));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 254);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 251);
             TEST_EXPECT_EQUAL(is_partial(CorGlutP), 0); // check CorGlutP was added as full sequence
             TEST_EXPECTATION(addedAsBrotherOf("CorGlutP", "CorGluta", env)); // partial created from CorGluta gets inserted next to CorGluta
 
@@ -2227,7 +2227,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 306);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 447);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 442);
 
     // test partial-add
     {
@@ -2270,7 +2270,7 @@ void TEST_prot_tree_modifications() {
             }
 
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG,   env, false));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 175);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 169);
             TEST_EXPECT_EQUAL(is_partial(MucRaceP), 0); // check MucRaceP was added as full sequence
             TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "Eukarya EF-Tu", env)); // partial created from MucRacem gets inserted next to this group
             // Note: looks ok. group contains MucRacem, AbdGlauc and 4 other species
@@ -2614,7 +2614,7 @@ void TEST_node_stack() {
         TEST_EXPECT_VALID_TREE(env.root_node());
     }
 
-    TEST_EXPECT_EQUAL(env.combines_performed(), 4444); // @@@ distribute
+    TEST_EXPECT_EQUAL(env.combines_performed(), 4380); // @@@ distribute
 }
 
 void TEST_node_edge_resources() {
