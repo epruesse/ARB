@@ -468,37 +468,13 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
     return new_parsimony;
 }
 
-AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps)
-{
-    AP_tree_nlen *root = rootNode();
+AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps) {
+    if (is_leaf_edge()) return pars_one;
 
-    if (node[0]->is_leaf || node[1]->is_leaf) { // a son at root
-#if 0
-        // calculate branch lengths at root
-        if (mode&AP_BL_BL_ONLY) {
-            AP_tree_nlen *tip, *brother;
+    AP_tree_nlen *root     = rootNode();
+    AP_FLOAT      parsbest = pars_one;
+    AP_tree_nlen *son      = sonNode();
 
-            if (node[0]->is_leaf) {
-                tip = node[0]; brother = node[1];
-            }
-            else {
-                tip = node[1]; brother = node[0];
-            }
-
-            AP_FLOAT    Blen = pars_one - brother->costs();
-            AP_FLOAT    Seq_len = tip->sequence->real_len();
-
-            node[0]->father->leftlen = node[0]->father->rightlen = Blen/Seq_len*.5;
-        }
-#endif
-        return pars_one;
-    }
-
-    AP_FLOAT    parsbest = pars_one,
-        pars_two,
-        pars_three;
-    AP_tree_nlen *son = sonNode();
-    int     betterValueFound = 0;
     {               // ******** original tree
         if ((mode & AP_BL_BOOTSTRAP_LIMIT)) {
             root->costs();
@@ -515,6 +491,8 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
             pars_one = root->costs();
         }
     }
+
+    AP_FLOAT pars_two;
     {               // ********* first nni
         ap_main->remember();
         son->swap_assymetric(AP_LEFT);
@@ -522,14 +500,14 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
 
         if (pars_two <= parsbest) {
             ap_main->accept_if(mode & AP_BL_NNI_ONLY);
-
-            parsbest         = pars_two;
-            betterValueFound = (int)(pars_one-pars_two);
+            parsbest = pars_two;
         }
         else {
             ap_main->revert();
         }
     }
+
+    AP_FLOAT pars_three;
     {               // ********** second nni
         ap_main->remember();
         son->swap_assymetric(AP_RIGHT);
@@ -537,9 +515,7 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
 
         if (pars_three <= parsbest) {
             ap_main->accept_if(mode & AP_BL_NNI_ONLY);
-
-            parsbest         = pars_three;
-            betterValueFound = (int)(pars_one-pars_three);
+            parsbest = pars_three;
         }
         else {
             ap_main->revert();
