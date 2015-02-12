@@ -1075,6 +1075,7 @@ AP_FLOAT AP_tree_nlen::costs(char *mutPerSite) {
 }
 
 AP_FLOAT AP_tree_nlen::nn_interchange_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode) {
+    ap_assert(depth == UNLIMITED); // @@@ elim param 'depth' if always UNLIMITED
     if (!father) {
         return rootEdge()->nni_rec(depth, whichEdges, mode, NULL);
     }

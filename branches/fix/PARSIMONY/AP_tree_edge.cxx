@@ -372,6 +372,8 @@ inline void undefine_branchlengths(AP_tree_nlen *node) {
 }
 
 AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode) {
+    ap_assert(depth == UNLIMITED); // @@@ elim param 'depth' if always UNLIMITED
+
     if (!rootNode())         return 0.0;
     if (rootNode()->is_leaf) return rootNode()->costs();
 
