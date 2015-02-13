@@ -118,24 +118,31 @@ size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool dep
     ap_assert(prevNextPtr);
     ap_assert(*prevNextPtr == NULL);
 
-    if (!depthFirst) {
-        *prevNextPtr  = this;
-        next_in_chain = NULL;
-        prevNextPtr   = &next_in_chain;
-        added++;
-    }
+    bool descend = true;
+    if (whichEdges == MARKED_VISIBLE_EDGES) {
+        AP_tree_nlen *son = sonNode();
+        if (son->gr.hidden || !son->gr.has_marked_children) {
+            descend = false;
 
-    if (depth) {
-        bool descend = true;
-        if (whichEdges == MARKED_VISIBLE_EDGES) {
-            if (node[0]->gr.hidden ||
-                node[1]->gr.hidden ||
-                ((!node[0]->gr.has_marked_children) && (!node[1]->gr.has_marked_children))) {
-                descend = false;
+            AP_tree_nlen *other = otherNode(son);
+            if (son->get_father() != other) { // at root edge
+                ap_assert(!son->gr.hidden && !other->gr.hidden); // folded root - unexpected
+                if (other->gr.has_marked_children) { // root edge is chained if ANY son of root has marked children
+                    descend = true;
+                }
             }
         }
+    }
 
-        if (descend) {
+    if (descend) {
+        if (!depthFirst) {
+            *prevNextPtr  = this;
+            next_in_chain = NULL;
+            prevNextPtr   = &next_in_chain;
+            added++;
+        }
+
+        if (depth) {
             for (int n=0; n<2; n++) {
                 if (node[n]!=skip && !node[n]->is_leaf) {
                     for (int e=0; e<3; e++) {
@@ -147,15 +154,15 @@ size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool dep
                 }
             }
         }
-    }
 
-    if (depthFirst) {
-        ap_assert(*prevNextPtr == NULL);
+        if (depthFirst) {
+            ap_assert(*prevNextPtr == NULL);
 
-        *prevNextPtr  = this;
-        next_in_chain = NULL;
-        prevNextPtr   = &next_in_chain;
-        added++;
+            *prevNextPtr  = this;
+            next_in_chain = NULL;
+            prevNextPtr   = &next_in_chain;
+            added++;
+        }
     }
 
     return added;
@@ -599,7 +606,7 @@ void TEST_edgeChain() {
     TEST_EXPECT_EQUAL(EdgeChain(root,  1, ANY_EDGE, true).size(),  5); // plus 4 adjacent edges
     TEST_EXPECT_EQUAL(EdgeChain(root,  2, ANY_EDGE, true).size(), 11); // < max (=5+8)
 
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true).size(), 13, 19); // @@@ collects several unmarked edges
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true).size(), 13);
 
     // skip left/right subtree
     TEST_EXPECT_EQUAL(EdgeChain(root, -1, ANY_EDGE, true, leftSon) .size(),  9);  // right subtree plus rootEdge
@@ -613,20 +620,20 @@ void TEST_edgeChain() {
     TEST_EXPECT_EQUAL(EdgeChain(root,  1, ANY_EDGE, true, rightSon).size(),  3); // plus 2 left son-edges
     TEST_EXPECT_EQUAL(EdgeChain(root,  2, ANY_EDGE, true, rightSon).size(),  7); // plus 4 grandson-edges
 
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(),  8,  9); // @@@ bug: one leaf edge is unmarked
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(),  6, 11); // @@@ bug
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(),  8); // one leaf edge is unmarked
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(),  6);
 
     // mark only two species: CorGluta (unfolded) + CloTyro2 (folded)
     {
         GB_transaction ta(env.gbmain());
         GBT_restore_marked_species(env.gbmain(), "CloTyro2;CorGluta");
-        env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
+        env.compute_tree(); // species marks affect node-chain
     }
 
     TEST_EXPECT_EQUAL(EdgeChain(root, -1, ANY_EDGE, true).size(), 27);
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 7, 19); // @@@ collects several unmarked edges
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 4, 11); // @@@ collects several unmarked edges
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 4,  9); // @@@ collects several unmarked edges
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 7);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 4);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 4);
 
     // test trees with marks in ONE subtree (of root) only
     {
@@ -634,38 +641,38 @@ void TEST_edgeChain() {
         GBT_restore_marked_species(env.gbmain(), "CloTyro2");
         env.compute_tree(); // species marks affect node-chain
     }
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 4, 13);
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 4, 11);
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 1,  3);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 4);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 4);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 1);
 
     {
         GB_transaction ta(env.gbmain());
         GBT_restore_marked_species(env.gbmain(), "CorGluta");
         env.compute_tree(); // species marks affect node-chain
     }
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 4, 11);
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 1,  3);
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 4,  9);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 4);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 1);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 4);
 
     // unmark all
     {
         GB_transaction ta(env.gbmain());
         GBT_mark_all(env.gbmain(), 0);
-        env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
+        env.compute_tree(); // species marks affect node-chain
     }
 
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true).size(), 0, 1); // @@@ collects rootEdge (should not)
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true).size(), 0);
 
     // mark all (@@@ change into folded/unfolded tests when supported)
     {
         GB_transaction ta(env.gbmain());
         GBT_mark_all(env.gbmain(), 1);
-        env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
+        env.compute_tree(); // species marks affect node-chain
     }
 
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true).size(), 21, 23); // @@@ folded group contains 6 edges (two of them get collected)
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 13, 15); // @@@ folded group contains 6 edges (two of them get collected)
-    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon).size(), 9);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 21); // folded group contains 6 edges (21=27-6)
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 13); // (13=19-6)
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 9);
 }
 
 void TEST_tree_flags_needed_by_EdgeChain() {

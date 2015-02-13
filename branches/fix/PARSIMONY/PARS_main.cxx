@@ -2156,7 +2156,7 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 284);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 253);
 
     // -----------------------------
     //      test optimize (all)
@@ -2175,7 +2175,7 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-all-NNI", PARSIMONY_NNI_ALL, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 324);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 300);
 
     {
         env.push();
@@ -2282,7 +2282,7 @@ void TEST_prot_tree_modifications() {
     const unsigned mixseed = 1422292802;
 
     const int PARSIMONY_MIXED   = PARSIMONY_ORG + 1207;
-    const int PARSIMONY_NNI     = PARSIMONY_ORG;
+    const int PARSIMONY_NNI     = PARSIMONY_ORG + 663;
     const int PARSIMONY_NNI_ALL = PARSIMONY_ORG;
     const int PARSIMONY_OPTI    = PARSIMONY_ORG; // no gain (initial tree already is optimized)
 
@@ -2320,7 +2320,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 96);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 368);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 212);
 
     // -----------------------------
     //      test optimize (all)
