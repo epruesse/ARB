@@ -305,11 +305,19 @@ public:
     int indexOf(const AP_tree_nlen *n) const                    { ap_assert(isConnectedTo(n)); return node[1] == n; }
     AP_tree_nlen* otherNode(const AP_tree_nlen *n) const        { return node[1-indexOf(n)]; }
     AP_tree_nlen* sonNode() const                               { return node[0]->get_father() == node[1] ? node[0] : node[1]; }
-    long Age() const                                            { return age; }
+
+    long Age() const { return age; }
 
     // queries
 
+    bool is_root_edge() const { return node[0]->father != node[1] && node[1]->father != node[0]; }
     bool is_leaf_edge() const { return node[0]->is_leaf || node[1]->is_leaf; }
+    bool next_to_folded_group() const { return node[0]->gr.grouped || node[1]->gr.grouped; }
+    bool has_marked() const { // true if subtree contains marked species
+        return is_root_edge()
+            ? node[0]->gr.has_marked_children || node[1]->gr.has_marked_children
+            : sonNode()->gr.has_marked_children;
+    }
 
     // encapsulated AP_tree_nlen methods:
 
