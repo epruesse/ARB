@@ -587,8 +587,6 @@ void TEST_edgeChain() {
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
 
-    // env.compute_tree();
-
     AP_tree_edge *root  = rootEdge();
     AP_tree_nlen *rootN = root->sonNode()->get_father();
 

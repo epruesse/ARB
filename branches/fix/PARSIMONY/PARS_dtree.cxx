@@ -456,7 +456,6 @@ void TEST_basic_tree_modifications() {
 
     {
         AP_tree_nlen *root = env.root_node();
-        root->compute_tree();
 
         // first check initial state:
         {
