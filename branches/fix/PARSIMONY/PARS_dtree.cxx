@@ -626,12 +626,12 @@ void TEST_calc_bootstraps() {
         root_edge->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL);
         root->reorder_tree(BIG_BRANCHES_TO_TOP);
         TEST_EXPECT_NEWICK(nREMARK, root, bs_limit_topo);
-        TEST_EXPECT_EQUAL(env.combines_performed(), 214);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 203);
 
         root_edge->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL);
         root->reorder_tree(BIG_BRANCHES_TO_TOP);
         TEST_EXPECT_NEWICK(nREMARK, root, bs_estim_topo);
-        TEST_EXPECT_EQUAL(env.combines_performed(), 200);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 189);
 
         TEST_EXPECT_EQUAL(env.root_node(), root);
     }

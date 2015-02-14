@@ -412,17 +412,18 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
         AP_tree_nlen *notSon = edge->otherNode(son);
 
         if (notSon->father) {
-            if (notSon->father->father) {
-                notSon->set_root();
-                new_parsimony = rootNode()->costs();
-            }
-        }
-        if (mode & AP_BL_BOOTSTRAP_LIMIT) {
-            if (notSon->father) {
+            if (mode & AP_BL_BOOTSTRAP_LIMIT) {
                 son->set_root();
                 new_parsimony = rootNode()->costs();
             }
-
+            else {
+                if (notSon->father->father) {
+                    notSon->set_root();
+                    new_parsimony = rootNode()->costs();
+                }
+            }
+        }
+        if (mode & AP_BL_BOOTSTRAP_LIMIT) {
             MutationsPerSite mps(son->get_seq()->get_sequence_length());
             new_parsimony = edge->nni_mutPerSite(new_parsimony, mode, &mps);
             ap_calc_bootstrap_remark(son, mode, mps);
