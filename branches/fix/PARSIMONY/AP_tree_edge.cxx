@@ -407,19 +407,18 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
 
     chain.restart();
     while (chain && (recalc_lengths || !progress.aborted())) { // never abort while calculating branchlengths
-        AP_tree_edge *edge = *chain; ++chain;
-        AP_tree_nlen *son  = edge->sonNode();
-        AP_tree_nlen *fath = son;
+        AP_tree_edge *edge   = *chain; ++chain;
+        AP_tree_nlen *son    = edge->sonNode();
+        AP_tree_nlen *notSon = edge->otherNode(son);
 
-        if (edge->otherNode(fath)==fath->get_father()) fath = fath->get_father();
-        if (fath->father) {
-            if (fath->father->father) {
-                fath->set_root();
+        if (notSon->father) {
+            if (notSon->father->father) {
+                notSon->set_root();
                 new_parsimony = rootNode()->costs();
             }
         }
         if (mode & AP_BL_BOOTSTRAP_LIMIT) {
-            if (fath->father) {
+            if (notSon->father) {
                 son->set_root();
                 new_parsimony = rootNode()->costs();
             }
