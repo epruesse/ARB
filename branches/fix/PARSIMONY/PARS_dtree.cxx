@@ -114,7 +114,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
         startEdge = rootEdge();
         ap_assert(startEdge);
     }
-    EdgeChain chain(startEdge, UNLIMITED, EdgeSpec(SKIP_LEAF_EDGES|SKIP_FOLDED_EDGES), true);     // @@@ should only use marked/unfolded (as configured)
+    EdgeChain chain(startEdge, UNLIMITED, EdgeSpec(SKIP_LEAF_EDGES|SKIP_FOLDED_EDGES|SKIP_UNMARKED_EDGES), true);     // @@@ skip marked/unfolded only if configured
 
     arb_progress progress(chain.size());
 
