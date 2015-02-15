@@ -560,7 +560,7 @@ ostream& operator<<(ostream& out, const AP_tree_edge& e)
 }
 
 void AP_tree_edge::mixTree(int repeat, int percent) {
-    EdgeChain chain(this, UNLIMITED, ANY_EDGE, false); // @@@ unwanted hardcoded edge selection; no need to get leaf edges
+    EdgeChain chain(this, UNLIMITED, SKIP_LEAF_EDGES, false); // @@@ unwanted hardcoded edge selection (should operate as configured)
     long      edges = chain.size();
 
     arb_progress progress(repeat*edges);
@@ -568,10 +568,9 @@ void AP_tree_edge::mixTree(int repeat, int percent) {
         chain.restart();
         while (chain) {
             AP_tree_nlen *son = (*chain)->sonNode();
-            if (!son->is_leaf) {
-                if (percent>=100 || GB_random(100)<percent) {
-                    son->swap_assymetric(GB_random(2) ? AP_LEFT : AP_RIGHT);
-                }
+            ap_assert(!son->is_leaf);
+            if (percent>=100 || GB_random(100)<percent) {
+                son->swap_assymetric(GB_random(2) ? AP_LEFT : AP_RIGHT);
             }
             ++chain;
             ++progress;
