@@ -2128,7 +2128,7 @@ void TEST_nucl_tree_modifications() {
 
     const int PARSIMONY_NNI     = PARSIMONY_ORG-18;
     const int PARSIMONY_NNI_ALL = PARSIMONY_ORG-18;
-    const int PARSIMONY_OPTI    = PARSIMONY_ORG-29;
+    const int PARSIMONY_OPTI    = PARSIMONY_ORG-36;
 
     {
         env.push();
@@ -2180,10 +2180,10 @@ void TEST_nucl_tree_modifications() {
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 13906);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 24285);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 142);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 150);
         env.pop();
     }
 }
