@@ -677,8 +677,8 @@ void TEST_edgeChain() {
 }
 
 void TEST_tree_flags_needed_by_EdgeChain() {
-    // EdgeChain depends on correctly set marked/visibility flags in AP_tree
-    // (i.e. on gr.hidden and gr.has_marked_children)
+    // EdgeChain depends on correctly set marked flags in AP_tree
+    // (i.e. on gr.has_marked_children)
     //
     // These flags get destroyed by tree operations
     // -> chains created after tree modifications are wrong
@@ -688,7 +688,7 @@ void TEST_tree_flags_needed_by_EdgeChain() {
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
 
-    TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+    TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
     // mark only two species: CorGluta (unfolded) + CloTyro2 (folded)
     {
@@ -697,7 +697,7 @@ void TEST_tree_flags_needed_by_EdgeChain() {
         env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
     }
 
-    TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+    TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
     AP_tree_nlen *CorGluta = rootNode()->findLeafNamed("CorGluta"); // marked
     AP_tree_nlen *CelBiazo = rootNode()->findLeafNamed("CelBiazo"); // not marked (marked parent, marked brother)
@@ -714,28 +714,25 @@ void TEST_tree_flags_needed_by_EdgeChain() {
         env.push();
 
         CorGluta->set_root();
-        TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         CelBiazo->set_root();
-        TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         CloTyro2->set_root();
         TEST_EXPECT(rootNode()->has_correct_mark_flags());
-        TEST_EXPECT__BROKEN(rootNode()->has_correct_visibility_flags()); // acceptable (if hidden flags matter, root isn't moved into folded groups)
 
         // CurCitre and its brother form an unmarked subtree
         CurCitre->set_root();
         TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags());
-        TEST_EXPECT(rootNode()->has_correct_visibility_flags());
 
         CurCitre_father->set_root();
         TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags());
-        TEST_EXPECT(rootNode()->has_correct_visibility_flags());
 
         CurCitre_grandfather->set_root(); // grandfather has 1 marked child
-        TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
-        env.pop(); TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        env.pop(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
     }
 
     // test moving nodes/subtrees
@@ -745,44 +742,40 @@ void TEST_tree_flags_needed_by_EdgeChain() {
         // move marked node into unmarked subtree of 2 species:
         CorGluta->moveNextTo(CurCitre, 0.5);
         TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags());
-        TEST_EXPECT(rootNode()->has_correct_visibility_flags());
 
-        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         // move unmarked subtree of two species (brother is marked)
         CurCitre_father->moveNextTo(CelBiazo, 0.5); // move to unmarked uncle of brother
         TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags());
-        TEST_EXPECT(rootNode()->has_correct_visibility_flags());
 
-        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         // move same subtree into unmarked subtree
         CurCitre_father->moveNextTo(CloCarni, 0.5);
         TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags());
-        TEST_EXPECT(rootNode()->has_correct_visibility_flags());
 
-        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         // move unmarked -> unmarked (both parents are unmarked as well)
         CurCitre->moveNextTo(CloCarni, 0.5);
-        TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags()); // works (but moving CurCitre_father doesnt)
+        TEST_EXPECT(rootNode()->has_correct_mark_flags()); // works (but moving CurCitre_father doesnt)
 
-        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         // move marked -> marked
         CorGluta->moveNextTo(CloTyro2, 0.5);
         TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags()); // subtree losts the only marked species (should unmark up to root)
-        TEST_EXPECT__BROKEN(rootNode()->has_correct_visibility_flags()); // moved CorGluta inside folded group (not marked as hidden)
 
         // --------------------------------------------------------------------------------
-        // now both flags are broken -> test whether revert restores flags
-        ap_assert(!rootNode()->has_correct_mark_flags() && !rootNode()->has_correct_visibility_flags());
+        // now mark flags are broken -> test whether revert restores them
+        ap_assert(!rootNode()->has_correct_mark_flags());
         rootNode()->compute_tree(); // fixes the flags (i.e. changes hidded AND marked flags)
 
-        env.pop(); TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_and_visibility_flags()); // shows that flags are not restored
+        env.pop(); TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags()); // shows that flags are not restored
 
         rootNode()->compute_tree(); // fix flags again
-        TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        TEST_EXPECT(rootNode()->has_correct_mark_flags());
     }
 
     // test swap_assymetric
@@ -790,52 +783,48 @@ void TEST_tree_flags_needed_by_EdgeChain() {
         env.push();
 
         rootNode()->get_leftson()->swap_assymetric(AP_LEFT);
-        TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
-        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         CorGluta->get_father()->swap_assymetric(AP_RIGHT);
         TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags());
-        TEST_EXPECT(rootNode()->has_correct_visibility_flags());
 
-        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         CorGluta->get_father()->swap_assymetric(AP_LEFT);
         TEST_EXPECT(rootNode()->has_correct_mark_flags()); // (maybe swaps two unmarked subtrees?!)
-        TEST_EXPECT(rootNode()->has_correct_visibility_flags());
 
-        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         {
             // swap inside folded group
             AP_tree_nlen *CloTyro2_father = CloTyro2->get_father();
 
             CloTyro2_father->swap_assymetric(AP_LEFT);
-            TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+            TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
-            env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+            env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
             AP_tree_nlen *CloTyro2_grandfather = CloTyro2_father->get_father();
             ap_assert(CloTyro2_grandfather->gr.grouped); // this is the group-root
 
             CloTyro2_grandfather->swap_assymetric(AP_LEFT);
             TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags());
-            TEST_EXPECT__BROKEN(rootNode()->has_correct_visibility_flags());
 
-            env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+            env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
             CloTyro2_grandfather->swap_assymetric(AP_RIGHT); // (i guess) this swaps CloTyrob <-> CloInnoc (both unmarked)
             TEST_EXPECT(rootNode()->has_correct_mark_flags());
-            TEST_EXPECT__BROKEN(rootNode()->has_correct_visibility_flags()); // one moved into group and other outof group
         }
 
-        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         // swap in unmarked subtree
         CloCarni->get_father()->swap_assymetric(AP_LEFT);
-        TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
-        env.pop(); TEST_EXPECT(rootNode()->has_correct_mark_and_visibility_flags());
+        env.pop(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
     }
 }
 

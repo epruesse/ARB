@@ -137,7 +137,7 @@ struct NodeState : virtual Noncopyable { // buffers previous states of AP_tree_n
     AP_tree_nlen *rightson;
     AP_pars_root *root;
     GBDATA       *gb_node;
-    // @@@ store gr.hidden + gr.has_marked_children
+    // @@@ store gr.has_marked_children
     AP_tree_edge      *edge[3];
     int                edgeIndex[3];
 

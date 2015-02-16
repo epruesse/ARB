@@ -350,8 +350,6 @@ public:
 
 #if defined(ASSERTION_USED) || defined(UNIT_TESTS)
     bool has_correct_mark_flags() const;
-    bool has_correct_visibility_flags() const;
-    bool has_correct_mark_and_visibility_flags() const;
 #endif
 };
 
