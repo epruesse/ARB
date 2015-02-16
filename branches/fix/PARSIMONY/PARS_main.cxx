@@ -930,14 +930,22 @@ static void NT_optimize(AW_window *, AWT_canvas *ntw) {
 
 static void recursiveNNI(AWT_graphic_parsimony *agt) {
     arb_progress progress("Recursive NNI");
-    AP_FLOAT orgPars = rootNode()->costs();
-    AP_FLOAT prevPars = orgPars;
+    AP_FLOAT     orgPars  = rootNode()->costs();
+    AP_FLOAT     prevPars = orgPars;
     progress.subtitle(GBS_global_string("best=%.1f", orgPars));
+
+    ap_assert(rootNode()->has_correct_mark_flags());
+
     while (!progress.aborted()) {
         AP_FLOAT currPars = rootEdge()->nni_rec(UNLIMITED, MARKED_VISIBLE_EDGES, AP_BL_NNI_ONLY, NULL);
-        if (currPars == prevPars) break; // no improvement -> abort
+        if (currPars == prevPars) {
+            ap_assert(rootNode()->has_correct_mark_flags()); // should not break in this case
+            break; // no improvement -> abort
+        }
+        rootNode()->recompute_tree_to_fix_flags_HACK();
+        ap_assert(rootNode()->has_correct_mark_flags()); // @@@ broken by nni_rec!
         progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", currPars, orgPars-currPars));
-        prevPars = currPars;
+        prevPars          = currPars;
     }
     rootEdge()->calc_branchlengths();
     agt->reorder_tree(BIG_BRANCHES_TO_TOP);
@@ -2156,7 +2164,7 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 253);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 246);
 
     // -----------------------------
     //      test optimize (all)
@@ -2282,7 +2290,7 @@ void TEST_prot_tree_modifications() {
     const unsigned mixseed = 1422292802;
 
     const int PARSIMONY_MIXED   = PARSIMONY_ORG + 1207;
-    const int PARSIMONY_NNI     = PARSIMONY_ORG + 663;
+    const int PARSIMONY_NNI     = PARSIMONY_ORG + 1125;
     const int PARSIMONY_NNI_ALL = PARSIMONY_ORG;
     const int PARSIMONY_OPTI    = PARSIMONY_ORG; // no gain (initial tree already is optimized)
 
@@ -2320,7 +2328,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 96);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 212);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 188);
 
     // -----------------------------
     //      test optimize (all)

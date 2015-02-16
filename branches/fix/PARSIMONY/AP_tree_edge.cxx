@@ -182,6 +182,19 @@ EdgeChain::EdgeChain(AP_tree_edge *startEgde, int depth, EdgeSpec whichEdges, bo
      * @param skip             previous node (will not recurse beyond)
      */
 
+#if defined(DEVEL_RALF)
+    if (whichEdges & SKIP_UNMARKED_EDGES) {
+        AP_tree_nlen *son         = startEgde->sonNode();
+        bool          flags_valid = son->has_correct_mark_flags();
+        if (flags_valid && startEgde->is_root_edge()) {
+            flags_valid = startEgde->otherNode(son)->has_correct_mark_flags();
+        }
+        if (!flags_valid) {
+            GBK_terminate("detected invalid flags while building chain");
+        }
+    }
+#endif
+
     ap_assert(!exists); // only one existing chain is allowed!
     exists = true;
 
