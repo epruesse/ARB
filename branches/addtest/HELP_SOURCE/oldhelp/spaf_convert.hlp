@@ -1,0 +1,37 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Convert fields
+
+OCCURRENCE	ARB_NT/Species Information/Fields/Convert fields
+
+DESCRIPTION     This allows you to convert the type of a species sub-field:
+
+                  - Select the field to convert from the list.
+                  - Select the type you want to convert the field into.
+                  - Press 'CONVERT'.
+
+                The function will fail, if the conversion would discard data, e.g. if
+                you try to convert 'Ascii Text' into 'Numerical' and the field contains "755 nucs".
+
+                Exceptions from this rule:
+
+                      - Spaces, TABs and LFs at start/end of content will be removed silently when
+                        converting to 'Numerical' or 'Rounded numerical'
+                      - Conversion from 'Numerical' to 'Rounded numerical' will perform rounding. The
+                        number of rounded data fields will be printed into the message box.
+
+NOTES		Conversion to types 'Link' and 'MASK' is not implemented yet.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

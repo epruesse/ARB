@@ -1,0 +1,31 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Randomize topology
+
+OCCURRENCE	ARB_PARSIMONY/Tree/Tree Optimization/Randomize/Random mix tree
+
+DESCRIPTION     Randomizes the topology of the current tree.
+
+                At each branch of the tree one random NNI is performed
+                (loops over all branches).
+
+                This is done several times (depending on the size of the tree),
+                such that each node in the tree has the chance to move to any
+                possible location.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	You may already have guessed that this function
+                normally will not optimize your tree :)
+
+BUGS		No bugs known

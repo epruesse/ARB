@@ -1,0 +1,81 @@
+/*ARBDB ASCII*/
+presets			%% (%
+	alignment		%% (%
+		alignment_name		"ali_genom"
+		alignment_len		%i 66
+		%) /*alignment*/
+
+	use			"ali_genom"
+	%) /*presets*/
+
+species_data		%% (%
+        species		%% (%
+                name "genome1"
+                ali_genom		%% (%
+			data			"AUUCUGGUUGAUCCUGCCAGAGGUUACUGCUAUCGGUGUUCGCCUAAGCCAUGCGAGUCAUAUGUA"
+        	        %) /*ali_genom*/
+                gene_data		%% (%
+                        gene		%% (%
+                                name "gene1"
+                                pos_start "3"
+                                pos_stop "6"
+                                pos_complement "0"
+	                        %) /*gene*/
+                        gene		%% (%
+                                name "gene2"
+                                pos_start "9"
+                                pos_stop "17"
+                                pos_complement "0"
+	                        %) /*gene*/
+                        gene		%% (%
+                                name "gene3"
+                                pos_start "4"
+                                pos_stop "11"
+                                pos_complement "1"
+	                        %) /*gene*/
+                        gene		%% (%
+                                name "joined1"
+                                pos_joined %i 2
+                                pos_start "4,7"
+                                pos_stop "11,17"
+                                pos_complement "0,1"
+	                        %) /*gene*/
+	                %) /*gene_data*/
+	        %) /*species*/
+
+        species		%% (%
+                name "genome2"
+                ali_genom		%% (%
+			data			"AUUUCGGUUGAUCCUGCCAGAGGUUACUGCAUUCGGUGUUCGCCUAAGCACUGCGAGUCAUAUGUA"
+        	        %) /*ali_genom*/
+                gene_data		%% (%
+                        gene		%% (%
+                                name "gene1"
+                                pos_start "1"
+                                pos_stop "8"
+                                pos_complement "0"
+	                        %) /*gene*/
+                        gene		%% (%
+                                name "gene2"
+                                pos_start "7"
+                                pos_stop "19"
+                                pos_complement "0"
+	                        %) /*gene*/
+                        gene		%% (%
+                                name "gene3"
+                                pos_start "2"
+                                pos_stop "13"
+                                pos_complement "1"
+	                        %) /*gene*/
+                        gene		%% (%
+                                name "joined1"
+                                pos_joined %i 2
+                                pos_start "2,5"
+                                pos_stop "13,19"
+                                pos_complement "0,1"
+	                        %) /*gene*/
+	                %) /*gene_data*/
+	        %) /*species*/
+
+	%) /*species_data*/
+
