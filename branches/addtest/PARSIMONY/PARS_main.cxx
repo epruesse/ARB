@@ -2126,9 +2126,11 @@ void TEST_nucl_tree_modifications() {
 
     TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
 
-    const int PARSIMONY_NNI     = PARSIMONY_ORG-18;
-    const int PARSIMONY_NNI_ALL = PARSIMONY_ORG-18;
-    const int PARSIMONY_OPTI    = PARSIMONY_ORG-36;
+    // @@@ unify names (ALL<>MARKED)
+    const int PARSIMONY_NNI         = PARSIMONY_ORG-18;
+    const int PARSIMONY_NNI_ALL     = PARSIMONY_ORG-18;
+    const int PARSIMONY_OPTI_MARKED = PARSIMONY_ORG-29; // Note: value equals old-value before [13541], but executed combines were 25% more back there
+    const int PARSIMONY_OPTI        = PARSIMONY_ORG-36;
 
     {
         env.push();
@@ -2158,8 +2160,8 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 253);
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-marked-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 24285);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
+    TEST_EXPECT_EQUAL(env.combines_performed(), 11245);
 
     // -----------------------------
     //      test optimize (all)
@@ -2326,7 +2328,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 212);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-marked-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 1527);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 566);
 
     // -----------------------------
     //      test optimize (all)
