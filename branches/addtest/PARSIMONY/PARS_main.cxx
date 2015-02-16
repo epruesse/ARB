@@ -917,6 +917,7 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
 
 static void optimizeTree(AWT_graphic_parsimony *agt, const KL_Settings& settings) {
     arb_progress progress("Optimizing tree");
+    ap_assert(rootNode()->has_correct_mark_flags());
     agt->get_parsimony().optimize_tree(rootNode(), settings, progress);
     ASSERT_VALID_TREE(rootNode());
     rootEdge()->calc_branchlengths();
@@ -930,14 +931,22 @@ static void NT_optimize(AW_window *, AWT_canvas *ntw) {
 
 static void recursiveNNI(AWT_graphic_parsimony *agt) {
     arb_progress progress("Recursive NNI");
-    AP_FLOAT orgPars = rootNode()->costs();
-    AP_FLOAT prevPars = orgPars;
+    AP_FLOAT     orgPars  = rootNode()->costs();
+    AP_FLOAT     prevPars = orgPars;
     progress.subtitle(GBS_global_string("best=%.1f", orgPars));
+
+    ap_assert(rootNode()->has_correct_mark_flags());
+
     while (!progress.aborted()) {
         AP_FLOAT currPars = rootEdge()->nni_rec(UNLIMITED, MARKED_VISIBLE_EDGES, AP_BL_NNI_ONLY, NULL);
-        if (currPars == prevPars) break; // no improvement -> abort
+        if (currPars == prevPars) {
+            ap_assert(rootNode()->has_correct_mark_flags()); // should not break in this case
+            break; // no improvement -> abort
+        }
+        rootNode()->recompute_tree_to_fix_flags_HACK();
+        ap_assert(rootNode()->has_correct_mark_flags()); // @@@ broken by nni_rec!
         progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", currPars, orgPars-currPars));
-        prevPars = currPars;
+        prevPars          = currPars;
     }
     rootEdge()->calc_branchlengths();
     agt->reorder_tree(BIG_BRANCHES_TO_TOP);
@@ -2157,11 +2166,17 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
+    ap_assert(rootNode()->has_correct_mark_flags());
+
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 253);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 246);
+
+    ap_assert(!rootNode()->has_correct_mark_flags()); // @@@ broken by NNI above (why?)
+    env.compute_tree(); // fix them
+    ap_assert(rootNode()->has_correct_mark_flags());
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 11245);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 15833);
 
     // -----------------------------
     //      test optimize (all)
@@ -2287,7 +2302,7 @@ void TEST_prot_tree_modifications() {
     const unsigned mixseed = 1422292802;
 
     const int PARSIMONY_MIXED   = PARSIMONY_ORG + 1207;
-    const int PARSIMONY_NNI     = PARSIMONY_ORG + 663;
+    const int PARSIMONY_NNI     = PARSIMONY_ORG + 1125;
     const int PARSIMONY_NNI_ALL = PARSIMONY_ORG;
     const int PARSIMONY_OPTI    = PARSIMONY_ORG; // no gain (initial tree already is optimized)
 
@@ -2324,11 +2339,17 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 96);
 
+    ap_assert(rootNode()->has_correct_mark_flags());
+
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 212);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 188);
+
+    ap_assert(!rootNode()->has_correct_mark_flags()); // @@@ broken by NNI above (why?)
+    env.compute_tree(); // fix them
+    ap_assert(rootNode()->has_correct_mark_flags());
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-marked-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 566);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 1238);
 
     // -----------------------------
     //      test optimize (all)

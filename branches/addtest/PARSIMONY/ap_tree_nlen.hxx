@@ -175,6 +175,13 @@ public:
 
     virtual AP_UPDATE_FLAGS check_update() OVERRIDE; // disable  load !!!!
 
+#if defined(DEVEL_RALF)
+    void recompute_tree_to_fix_flags_HACK() { // @@@ remove when flags are fixed
+        // intermediate hack to fix mark flags
+        compute_tree();
+    }
+#endif
+
     void copy(AP_tree_nlen *tree);
 
     // tree reconstruction methods:
