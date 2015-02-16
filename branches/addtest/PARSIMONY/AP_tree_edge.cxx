@@ -118,29 +118,37 @@ size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool dep
     ap_assert(prevNextPtr);
     ap_assert(*prevNextPtr == NULL);
 
-    if (!depthFirst) {
+    bool descend = true;
+    bool use     = true;
+
+    if (use && (whichEdges&SKIP_UNMARKED_EDGES)) {
+        use = descend = has_marked(); // Note: root edge is chained if ANY son of root has marked children
+    }
+    if (use && (whichEdges&SKIP_FOLDED_EDGES)) {
+        // do not chain edges leading to root of group
+        // (doing an NNI there will swap branches across group-borders)
+        use = !next_to_folded_group();
+    }
+    if (use && (whichEdges&(SKIP_LEAF_EDGES|SKIP_INNER_EDGES))) {
+        use = !(whichEdges&(is_leaf_edge() ? SKIP_LEAF_EDGES : SKIP_INNER_EDGES));
+    }
+
+    if (use && !depthFirst) {
         *prevNextPtr  = this;
         next_in_chain = NULL;
         prevNextPtr   = &next_in_chain;
         added++;
     }
-
-    if (depth) {
-        bool descend = true;
-        if (whichEdges == MARKED_VISIBLE_EDGES) {
-            if (node[0]->gr.hidden ||
-                node[1]->gr.hidden ||
-                ((!node[0]->gr.has_marked_children) && (!node[1]->gr.has_marked_children))) {
-                descend = false;
-            }
-        }
-
-        if (descend) {
-            for (int n=0; n<2; n++) {
-                if (node[n]!=skip && !node[n]->is_leaf) {
-                    for (int e=0; e<3; e++) {
-                        AP_tree_edge * Edge = node[n]->edge[e];
-                        if (Edge != this) {
+    if (descend && depth) {
+        for (int n=0; n<2; n++) {
+            if (node[n]!=skip && !node[n]->is_leaf) {
+                for (int e=0; e<3; e++) {
+                    AP_tree_edge * Edge = node[n]->edge[e];
+                    if (Edge != this) {
+                        descend = true;
+                        if (descend && (whichEdges&SKIP_UNMARKED_EDGES)) descend = has_marked();
+                        if (descend && (whichEdges&SKIP_FOLDED_EDGES))   descend = !next_to_folded_group();
+                        if (descend) {
                             added += Edge->buildChainInternal(depth-1, whichEdges, depthFirst, node[n], prevNextPtr);
                         }
                     }
@@ -148,8 +156,7 @@ size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool dep
             }
         }
     }
-
-    if (depthFirst) {
+    if (use && depthFirst) {
         ap_assert(*prevNextPtr == NULL);
 
         *prevNextPtr  = this;
@@ -372,6 +379,8 @@ inline void undefine_branchlengths(AP_tree_nlen *node) {
 }
 
 AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode) {
+    ap_assert(depth == UNLIMITED); // @@@ elim param 'depth' if always UNLIMITED
+
     if (!rootNode())         return 0.0;
     if (rootNode()->is_leaf) return rootNode()->costs();
 
@@ -402,23 +411,23 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
 
     chain.restart();
     while (chain && (recalc_lengths || !progress.aborted())) { // never abort while calculating branchlengths
-        AP_tree_edge *edge = *chain; ++chain;
-        AP_tree_nlen *son  = edge->sonNode();
-        AP_tree_nlen *fath = son;
+        AP_tree_edge *edge   = *chain; ++chain;
+        AP_tree_nlen *son    = edge->sonNode();
+        AP_tree_nlen *notSon = edge->otherNode(son);
 
-        if (edge->otherNode(fath)==fath->get_father()) fath = fath->get_father();
-        if (fath->father) {
-            if (fath->father->father) {
-                fath->set_root();
-                new_parsimony = rootNode()->costs();
-            }
-        }
-        if (mode & AP_BL_BOOTSTRAP_LIMIT) {
-            if (fath->father) {
+        if (notSon->father) {
+            if (mode & AP_BL_BOOTSTRAP_LIMIT) {
                 son->set_root();
                 new_parsimony = rootNode()->costs();
             }
-
+            else {
+                if (notSon->father->father) {
+                    notSon->set_root();
+                    new_parsimony = rootNode()->costs();
+                }
+            }
+        }
+        if (mode & AP_BL_BOOTSTRAP_LIMIT) {
             MutationsPerSite mps(son->get_seq()->get_sequence_length());
             new_parsimony = edge->nni_mutPerSite(new_parsimony, mode, &mps);
             ap_calc_bootstrap_remark(son, mode, mps);
@@ -466,37 +475,13 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
     return new_parsimony;
 }
 
-AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps)
-{
-    AP_tree_nlen *root = rootNode();
+AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps) {
+    if (is_leaf_edge()) return pars_one;
 
-    if (node[0]->is_leaf || node[1]->is_leaf) { // a son at root
-#if 0
-        // calculate branch lengths at root
-        if (mode&AP_BL_BL_ONLY) {
-            AP_tree_nlen *tip, *brother;
+    AP_tree_nlen *root     = rootNode();
+    AP_FLOAT      parsbest = pars_one;
+    AP_tree_nlen *son      = sonNode();
 
-            if (node[0]->is_leaf) {
-                tip = node[0]; brother = node[1];
-            }
-            else {
-                tip = node[1]; brother = node[0];
-            }
-
-            AP_FLOAT    Blen = pars_one - brother->costs();
-            AP_FLOAT    Seq_len = tip->sequence->real_len();
-
-            node[0]->father->leftlen = node[0]->father->rightlen = Blen/Seq_len*.5;
-        }
-#endif
-        return pars_one;
-    }
-
-    AP_FLOAT    parsbest = pars_one,
-        pars_two,
-        pars_three;
-    AP_tree_nlen *son = sonNode();
-    int     betterValueFound = 0;
     {               // ******** original tree
         if ((mode & AP_BL_BOOTSTRAP_LIMIT)) {
             root->costs();
@@ -513,6 +498,8 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
             pars_one = root->costs();
         }
     }
+
+    AP_FLOAT pars_two;
     {               // ********* first nni
         ap_main->remember();
         son->swap_assymetric(AP_LEFT);
@@ -520,14 +507,14 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
 
         if (pars_two <= parsbest) {
             ap_main->accept_if(mode & AP_BL_NNI_ONLY);
-
-            parsbest         = pars_two;
-            betterValueFound = (int)(pars_one-pars_two);
+            parsbest = pars_two;
         }
         else {
             ap_main->revert();
         }
     }
+
+    AP_FLOAT pars_three;
     {               // ********** second nni
         ap_main->remember();
         son->swap_assymetric(AP_RIGHT);
@@ -535,9 +522,7 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
 
         if (pars_three <= parsbest) {
             ap_main->accept_if(mode & AP_BL_NNI_ONLY);
-
-            parsbest         = pars_three;
-            betterValueFound = (int)(pars_one-pars_three);
+            parsbest = pars_three;
         }
         else {
             ap_main->revert();
@@ -575,7 +560,7 @@ ostream& operator<<(ostream& out, const AP_tree_edge& e)
 }
 
 void AP_tree_edge::mixTree(int repeat, int percent) {
-    EdgeChain chain(this, UNLIMITED, ANY_EDGE, false); // @@@ unwanted hardcoded edge selection; no need to get leaf edges
+    EdgeChain chain(this, UNLIMITED, SKIP_LEAF_EDGES, false); // @@@ unwanted hardcoded edge selection (should operate as configured)
     long      edges = chain.size();
 
     arb_progress progress(repeat*edges);
@@ -583,10 +568,9 @@ void AP_tree_edge::mixTree(int repeat, int percent) {
         chain.restart();
         while (chain) {
             AP_tree_nlen *son = (*chain)->sonNode();
-            if (!son->is_leaf) {
-                if (percent>=100 || GB_random(100)<percent) {
-                    son->swap_assymetric(GB_random(2) ? AP_LEFT : AP_RIGHT);
-                }
+            ap_assert(!son->is_leaf);
+            if (percent>=100 || GB_random(100)<percent) {
+                son->swap_assymetric(GB_random(2) ? AP_LEFT : AP_RIGHT);
             }
             ++chain;
             ++progress;
@@ -609,8 +593,6 @@ void TEST_edgeChain() {
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb");
     TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
 
-    // env.compute_tree();
-
     AP_tree_edge *root  = rootEdge();
     AP_tree_nlen *rootN = root->sonNode()->get_father();
 
@@ -618,12 +600,18 @@ void TEST_edgeChain() {
     AP_tree_nlen *leftSon  = rootN->get_leftson();
     AP_tree_nlen *rightSon = rootN->get_rightson();
 
-    TEST_EXPECT_EQUAL(EdgeChain(root, -1, ANY_EDGE, true).size(), 27);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, ANY_EDGE,                                     true).size(), 27);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, EdgeSpec(ANY_EDGE|SKIP_INNER_EDGES),          true).size(), 15);    // 15 leafs
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, EdgeSpec(SKIP_FOLDED_EDGES|SKIP_INNER_EDGES), true).size(), 15-4);  // 4 leafs are inside folded group
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, EdgeSpec(ANY_EDGE|SKIP_LEAF_EDGES),           true).size(), 27-15);
+
     TEST_EXPECT_EQUAL(EdgeChain(root,  0, ANY_EDGE, true).size(),  1); // root-edge
     TEST_EXPECT_EQUAL(EdgeChain(root,  1, ANY_EDGE, true).size(),  5); // plus 4 adjacent edges
     TEST_EXPECT_EQUAL(EdgeChain(root,  2, ANY_EDGE, true).size(), 11); // < max (=5+8)
 
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true).size(), 13, 19); // @@@ collects several unmarked edges
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES,                            true).size(), 13);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, EdgeSpec(MARKED_VISIBLE_EDGES|SKIP_INNER_EDGES), true).size(), 6); // 6 marked leafs
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, EdgeSpec(MARKED_VISIBLE_EDGES|SKIP_LEAF_EDGES),  true).size(), 13-6);
 
     // skip left/right subtree
     TEST_EXPECT_EQUAL(EdgeChain(root, -1, ANY_EDGE, true, leftSon) .size(),  9);  // right subtree plus rootEdge
@@ -637,20 +625,23 @@ void TEST_edgeChain() {
     TEST_EXPECT_EQUAL(EdgeChain(root,  1, ANY_EDGE, true, rightSon).size(),  3); // plus 2 left son-edges
     TEST_EXPECT_EQUAL(EdgeChain(root,  2, ANY_EDGE, true, rightSon).size(),  7); // plus 4 grandson-edges
 
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(),  8,  9); // @@@ bug: one leaf edge is unmarked
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(),  6, 11); // @@@ bug
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(),  8); // one leaf edge is unmarked
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(),  6);
 
     // mark only two species: CorGluta (unfolded) + CloTyro2 (folded)
     {
         GB_transaction ta(env.gbmain());
         GBT_restore_marked_species(env.gbmain(), "CloTyro2;CorGluta");
-        env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
+        env.compute_tree(); // species marks affect node-chain
     }
 
-    TEST_EXPECT_EQUAL(EdgeChain(root, -1, ANY_EDGE, true).size(), 27);
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 7, 19); // @@@ collects several unmarked edges
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 4, 11); // @@@ collects several unmarked edges
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 4,  9); // @@@ collects several unmarked edges
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, ANY_EDGE,                                        true)          .size(), 27);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES,                            true)          .size(), 6);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, EdgeSpec(MARKED_VISIBLE_EDGES|SKIP_INNER_EDGES), true)          .size(), 1);   // one visible marked leaf (the other is hidden)
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, EdgeSpec(MARKED_VISIBLE_EDGES|SKIP_LEAF_EDGES),  true)          .size(), 6-1);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, EdgeSpec(SKIP_UNMARKED_EDGES|SKIP_INNER_EDGES),  true)          .size(), 2);   // two marked leaf
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES,                            true, rightSon).size(), 3);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES,                            true, leftSon) .size(), 4);
 
     // test trees with marks in ONE subtree (of root) only
     {
@@ -658,38 +649,31 @@ void TEST_edgeChain() {
         GBT_restore_marked_species(env.gbmain(), "CloTyro2");
         env.compute_tree(); // species marks affect node-chain
     }
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 4, 13);
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 4, 11);
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 1,  3);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES,                            true)          .size(), 3);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, EdgeSpec(MARKED_VISIBLE_EDGES|SKIP_INNER_EDGES), true)          .size(), 0); // the only marked leaf is folded
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES,                            true, rightSon).size(), 3);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES,                            true, leftSon) .size(), 1);
 
     {
         GB_transaction ta(env.gbmain());
         GBT_restore_marked_species(env.gbmain(), "CorGluta");
         env.compute_tree(); // species marks affect node-chain
     }
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 4, 11);
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 1,  3);
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 4,  9);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 4);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 1);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 4);
 
     // unmark all
     {
         GB_transaction ta(env.gbmain());
         GBT_mark_all(env.gbmain(), 0);
-        env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
+        env.compute_tree(); // species marks affect node-chain
     }
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true).size(), 0);
 
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true).size(), 0, 1); // @@@ collects rootEdge (should not)
-
-    // mark all (@@@ change into folded/unfolded tests when supported)
-    {
-        GB_transaction ta(env.gbmain());
-        GBT_mark_all(env.gbmain(), 1);
-        env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
-    }
-
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true).size(), 21, 23); // @@@ folded group contains 6 edges (two of them get collected)
-    TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 13, 15); // @@@ folded group contains 6 edges (two of them get collected)
-    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon).size(), 9);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, SKIP_FOLDED_EDGES, true)          .size(), 20); // folded group contains 6 edges + edge leading to group (20=27-7)
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, SKIP_FOLDED_EDGES, true, rightSon).size(), 12); // (12=19-7)
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, SKIP_FOLDED_EDGES, true, leftSon) .size(), 9);
 }
 
 void TEST_tree_flags_needed_by_EdgeChain() {

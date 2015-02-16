@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include "PerfMeter.h"
 #include "pars_main.hxx"
 #include "pars_klprops.hxx"
 #include "pars_awars.h"
@@ -140,18 +141,18 @@ static void AP_user_pop_cb(AW_window *aww, AWT_canvas *ntw) {
 }
 
 class InsertData {
-    int  abort_flag;
+    bool abort_flag;
     long currentspecies;
-    
+
     arb_progress progress;
 
 public:
 
     bool quick_add_flag;
-    InsertData(bool quick, long spec_count, int add_progress_steps)
+    InsertData(bool quick, long spec_count)
         : abort_flag(false),
           currentspecies(0),
-          progress(GBS_global_string("Inserting %li species", spec_count), spec_count+add_progress_steps),
+          progress(GBS_global_string("Inserting %li species", spec_count), spec_count),
           quick_add_flag(quick)
     {
     }
@@ -304,15 +305,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
 
         ASSERT_VALID_TREE(rootNode());
 
-        if (!isits->quick_add_flag) {
-            int depth = isits->every_sixteenth() ? UNLIMITED : 5;
-
-            arb_progress progress("optimization");
-            // @@@ better call nn_interchange_rec with ANY_EDGE?
-            // -> will slightly increase number of combines, but skipping hidden/unmarked subtrees doesnt seem to make any sense
-            leaf->get_father()->nn_interchange_rec(depth, MARKED_VISIBLE_EDGES, AP_BL_NNI_ONLY);
-            ASSERT_VALID_TREE(rootNode());
-        }
+        // @@@ section below should better be handled using "partial species"
         AP_tree_nlen *brother = leaf->get_brother();
         if (brother->is_leaf && leaf->father->father) {
             bool brother_is_short = 2 * brother->get_seq()->weighted_base_count() < leaf->get_seq()->weighted_base_count();
@@ -401,53 +394,66 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
     if (!error) {
         ap_assert(hash);
 
+        arb_progress progress(quick ? "Quick add" : "Add + NNI");
+
         NT_remove_species_in_tree_from_hash(rootNode(), hash);
 
         long max_species = 0;
         GBS_hash_do_loop(hash, count_hash_elements, &max_species);
 
-        int        implicitSteps = quick ? 1 : 2; // 1 step for calc_branchlengths, 1 step for NNI
-        InsertData isits(quick, max_species, implicitSteps);
-
-        GB_begin_transaction(gb_main);
-        GBS_hash_do_loop(hash, transform_gbd_to_leaf, NULL);
-        GB_commit_transaction(gb_main);
+        InsertPerfMeter insertPerf("(quick-)add", max_species);
 
         {
-            int skipped = max_species - GBS_hash_count_elems(hash);
-            if (skipped) {
-                aw_message(GBS_global_string("Skipped %i species (no data?)", skipped));
-                isits.get_progress().inc_by(skipped);
+            InsertData isits(quick, max_species);
+
+            GB_begin_transaction(gb_main);
+            GBS_hash_do_loop(hash, transform_gbd_to_leaf, NULL);
+            GB_commit_transaction(gb_main);
+
+            {
+                int skipped = max_species - GBS_hash_count_elems(hash);
+                if (skipped) {
+                    aw_message(GBS_global_string("Skipped %i species (no data?)", skipped));
+                    isits.get_progress().inc_by(skipped);
+                }
             }
-        }
 
-        GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
-
-        if (!quick) {
-            rootEdge()->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY, NULL);
-            ++isits.get_progress();
+            GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
         }
 
         if (rootNode()) {
-            rootEdge()->calc_branchlengths();
-            ++isits.get_progress();
-
-            ASSERT_VALID_TREE(rootNode());
-            rootNode()->compute_tree();
-
             if (oldrootleft) {
                 if (oldrootleft->father == oldrootright) oldrootleft->set_root();
                 else                                     oldrootright->set_root();
             }
             else {
+                UNCOVERED(); // @@@ unused branch?
                 ARB_edge innermost = rootNode()->get_tree_root()->find_innermost_edge();
                 innermost.set_root();
             }
+
+            if (!quick) {
+                AP_FLOAT pars_prev = rootNode()->costs();
+                progress.subtitle("local optimize (repeated NNI)");
+                while (1) {
+                    rootEdge()->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY, NULL); // @@@ should act on marked (=added) only
+                    AP_FLOAT pars_curr = rootNode()->costs();
+                    if (pars_curr == pars_prev) break;
+                    ap_assert(pars_curr<pars_prev);
+                    pars_prev          = pars_curr;
+                }
+            }
+
+            rootEdge()->calc_branchlengths();
+
+            ASSERT_VALID_TREE(rootNode());
+            rootNode()->compute_tree();
         }
         else {
             error = "Tree lost (no leafs left)";
-            isits.get_progress().done();
         }
+
+        insertPerf.dump(stdout);
     }
 
     if (hash) GBS_free_hash(hash);
@@ -890,7 +896,7 @@ static void NT_reAdd_quick  (UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_reAdd_
 // --------------------------------------------------------------------------------
 
 static void calc_branchlengths(AWT_graphic_parsimony *agt) {
-    arb_progress progress("Calculating Branch Lengths");
+    arb_progress progress("Calculating branchlengths");
     rootEdge()->calc_branchlengths();
     agt->reorder_tree(BIG_BRANCHES_TO_TOP);
 }
@@ -901,7 +907,7 @@ static void NT_calc_branch_lengths(AW_window *, AWT_canvas *ntw) {
 }
 
 static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
-    arb_progress progress("Calculating Bootstrap Limit");
+    arb_progress progress("Calculating bootstrap limit");
     AP_BL_MODE mode       = AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY);
     rootEdge()->nni_rec(UNLIMITED, ANY_EDGE, mode, NULL);
     AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
@@ -910,7 +916,7 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
 }
 
 static void optimizeTree(AWT_graphic_parsimony *agt, const KL_Settings& settings) {
-    arb_progress progress("Optimizing Tree");
+    arb_progress progress("Optimizing tree");
     agt->get_parsimony().optimize_tree(rootNode(), settings, progress);
     ASSERT_VALID_TREE(rootNode());
     rootEdge()->calc_branchlengths();
@@ -1778,9 +1784,7 @@ enum TopoMod {
     MOD_REMOVE_MARKED,
 
     MOD_QUICK_ADD,
-    MOD_QUICK_ADD_CALC_LENS,
     MOD_ADD_NNI,
-    MOD_ADD_NNI_CALC_LENS,
 
     MOD_ADD_PARTIAL,
 
@@ -1802,18 +1806,8 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
             nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, true);
             break;
 
-        case MOD_QUICK_ADD_CALC_LENS:
-            nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, true);
-            calc_branchlengths(env.graphic_tree());
-            break;
-
         case MOD_ADD_NNI:
             nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, false);
-            break;
-
-        case MOD_ADD_NNI_CALC_LENS:
-            nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, false);
-            calc_branchlengths(env.graphic_tree());
             break;
 
         case MOD_ADD_PARTIAL:
@@ -2061,16 +2055,10 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 3);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
-    TEST_EXPECT_EQUAL(env.combines_performed(), 591);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 578);
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 767);
-
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD_CALC_LENS, "nucl-add-quick-cl", PARSIMONY_ORG-23, env, true)); // test quick-add + calc_branchlengths
-    TEST_EXPECT_EQUAL(env.combines_performed(), 727);
-
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI_CALC_LENS,   "nucl-add-NNI-cl",   PARSIMONY_ORG-25, env, true)); // test add + NNI + calc_branchlengths
-    TEST_EXPECT_EQUAL(env.combines_performed(), 904);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-26, env, true)); // test add + NNI
+    TEST_EXPECT_EQUAL(env.combines_performed(), 899);
 
     // test partial-add
     {
@@ -2117,7 +2105,7 @@ void TEST_nucl_tree_modifications() {
             }
 
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "nucl-addPartialAsFull-CorGlutP", PARSIMONY_ORG, env, false));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 254);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 251);
             TEST_EXPECT_EQUAL(is_partial(CorGlutP), 0); // check CorGlutP was added as full sequence
             TEST_EXPECTATION(addedAsBrotherOf("CorGlutP", "CorGluta", env)); // partial created from CorGluta gets inserted next to CorGluta
 
@@ -2168,7 +2156,7 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 284);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 253);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-marked-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
     TEST_EXPECT_EQUAL(env.combines_performed(), 13906);
@@ -2190,7 +2178,7 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-all-NNI", PARSIMONY_NNI_ALL, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 324);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 288);
 
     {
         env.push();
@@ -2229,7 +2217,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 306);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 447);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 374);
 
     // test partial-add
     {
@@ -2272,7 +2260,7 @@ void TEST_prot_tree_modifications() {
             }
 
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG,   env, false));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 175);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 169);
             TEST_EXPECT_EQUAL(is_partial(MucRaceP), 0); // check MucRaceP was added as full sequence
             TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "Eukarya EF-Tu", env)); // partial created from MucRacem gets inserted next to this group
             // Note: looks ok. group contains MucRacem, AbdGlauc and 4 other species
@@ -2297,7 +2285,7 @@ void TEST_prot_tree_modifications() {
     const unsigned mixseed = 1422292802;
 
     const int PARSIMONY_MIXED   = PARSIMONY_ORG + 1207;
-    const int PARSIMONY_NNI     = PARSIMONY_ORG;
+    const int PARSIMONY_NNI     = PARSIMONY_ORG + 663;
     const int PARSIMONY_NNI_ALL = PARSIMONY_ORG;
     const int PARSIMONY_OPTI    = PARSIMONY_ORG; // no gain (initial tree already is optimized)
 
@@ -2335,7 +2323,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 96);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 368);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 212);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-marked-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
     TEST_EXPECT_EQUAL(env.combines_performed(), 1527);
@@ -2619,7 +2607,7 @@ void TEST_node_stack() {
         TEST_EXPECT_VALID_TREE(env.root_node());
     }
 
-    TEST_EXPECT_EQUAL(env.combines_performed(), 4444); // @@@ distribute
+    TEST_EXPECT_EQUAL(env.combines_performed(), 4380); // @@@ distribute
 }
 
 void TEST_node_edge_resources() {

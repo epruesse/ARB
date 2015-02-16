@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include "PerfMeter.h"
 #include "pars_dtree.hxx"
 #include "pars_main.hxx"
 #include "pars_awars.h"
@@ -30,55 +31,6 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
-
-struct TimedCombines {
-    clock_t ticks;
-    long    combines;
-
-    TimedCombines()
-        : ticks(clock()),
-          combines(AP_sequence::combine_count())
-    {}
-};
-
-class OptiPerfMeter {
-    std::string   what;
-    TimedCombines start;
-    AP_FLOAT      start_pars;
-
-public:
-    OptiPerfMeter(std::string what_, AP_FLOAT start_pars_)
-        : what(what_),
-          start_pars(start_pars_)
-    {}
-
-    void dumpCustom(FILE *out, AP_FLOAT end_pars, const char *label) const {
-        TimedCombines end;
-
-        ap_assert(end_pars<=start_pars);
-
-        double   seconds      = double(end.ticks-start.ticks)/CLOCKS_PER_SEC;
-        AP_FLOAT pars_improve = start_pars-end_pars;
-        long     combines     = end.combines-start.combines;
-
-        double combines_per_second  = combines/seconds;
-        double combines_per_improve = combines/pars_improve;
-        double improve_per_second   = pars_improve/seconds;
-
-        fprintf(out, "%-27s took %7.2f sec,  improve=%9.1f,  combines=%12li  (comb/sec=%10.2f,  comb/impr=%12.2f,  impr/sec=%10.2f)\n",
-                label,
-                seconds,
-                pars_improve,
-                combines,
-                combines_per_second,
-                combines_per_improve,
-                improve_per_second);
-    }
-
-    void dump(FILE *out, AP_FLOAT end_pars) const {
-        dumpCustom(out, end_pars, what.c_str());
-    }
-};
 
 static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd; // @@@ dynacast?
@@ -257,7 +209,7 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
             this_pars = get_root_node()->costs();
         }
         else {
-            this_pars = at->nn_interchange_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY);;
+            this_pars = at->nn_interchange_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY); // @@@ should select only configured edges
         }
         ap_assert(this_pars>=0); // ensure this_pars was set
         ap_assert(this_pars<=prev_pars); // otherwise heuristic worsened the tree
@@ -504,7 +456,6 @@ void TEST_basic_tree_modifications() {
 
     {
         AP_tree_nlen *root = env.root_node();
-        root->compute_tree();
 
         // first check initial state:
         {
@@ -675,12 +626,12 @@ void TEST_calc_bootstraps() {
         root_edge->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL);
         root->reorder_tree(BIG_BRANCHES_TO_TOP);
         TEST_EXPECT_NEWICK(nREMARK, root, bs_limit_topo);
-        TEST_EXPECT_EQUAL(env.combines_performed(), 214);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 203);
 
         root_edge->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL);
         root->reorder_tree(BIG_BRANCHES_TO_TOP);
         TEST_EXPECT_NEWICK(nREMARK, root, bs_estim_topo);
-        TEST_EXPECT_EQUAL(env.combines_performed(), 200);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 189);
 
         TEST_EXPECT_EQUAL(env.root_node(), root);
     }

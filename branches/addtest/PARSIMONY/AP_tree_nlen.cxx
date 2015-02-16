@@ -1075,6 +1075,7 @@ AP_FLOAT AP_tree_nlen::costs(char *mutPerSite) {
 }
 
 AP_FLOAT AP_tree_nlen::nn_interchange_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode) {
+    ap_assert(depth == UNLIMITED); // @@@ elim param 'depth' if always UNLIMITED
     if (!father) {
         return rootEdge()->nni_rec(depth, whichEdges, mode, NULL);
     }
@@ -1214,7 +1215,7 @@ bool AP_tree_edge::kl_rec(const KL_params& KL, const int rec_depth, AP_FLOAT par
     // rec_depth == 2 (called twice with each adjacent node -> 8 calls)
     // rec_depth == 3 (called twice with each adjacent node, but not with those were recursion came from -> 6 calls)
 
-    if (sonNode()->get_father() == otherNode(sonNode())) { // not root-edge
+    if (!is_root_edge()) {
         switch (rec_depth) {
             case 0:
                 ap_assert(visited_subtrees == 2);

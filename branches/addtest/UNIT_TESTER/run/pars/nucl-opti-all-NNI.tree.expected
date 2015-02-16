@@ -5,16 +5,16 @@
     (
      (
       (
-       CloTyro2:0.013,
-       CloTyrob:0.013
+       (
+        CloTyro3:1.000,
+        CloTyro4:0.027
+       ):0.065,
+       CloTyro2:0.013
       ):0.000,
-      (
-       CloTyro3:1.000,
-       CloTyro4:0.133
-      ):0.276
-     ):0.232,
-     CloInnoc:0.411
-    ):0.163,
+      CloTyrob:0.013
+     ):0.291,
+     CloInnoc:0.397
+    ):0.195,
     CloBifer:0.161
    ):0.128,
    (
