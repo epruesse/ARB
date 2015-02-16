@@ -917,6 +917,7 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
 
 static void optimizeTree(AWT_graphic_parsimony *agt, const KL_Settings& settings) {
     arb_progress progress("Optimizing tree");
+    ap_assert(rootNode()->has_correct_mark_flags());
     agt->get_parsimony().optimize_tree(rootNode(), settings, progress);
     ASSERT_VALID_TREE(rootNode());
     rootEdge()->calc_branchlengths();
@@ -2134,9 +2135,11 @@ void TEST_nucl_tree_modifications() {
 
     TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
 
-    const int PARSIMONY_NNI     = PARSIMONY_ORG-18;
-    const int PARSIMONY_NNI_ALL = PARSIMONY_ORG-18;
-    const int PARSIMONY_OPTI    = PARSIMONY_ORG-36;
+    // @@@ unify names (ALL<>MARKED)
+    const int PARSIMONY_NNI         = PARSIMONY_ORG-18;
+    const int PARSIMONY_NNI_ALL     = PARSIMONY_ORG-18;
+    const int PARSIMONY_OPTI_MARKED = PARSIMONY_ORG-29; // Note: value equals old-value before [13541], but executed combines were 25% more back there
+    const int PARSIMONY_OPTI        = PARSIMONY_ORG-36;
 
     {
         env.push();
@@ -2163,8 +2166,17 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
 
+    ap_assert(rootNode()->has_correct_mark_flags());
+
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 246);
+
+    ap_assert(!rootNode()->has_correct_mark_flags()); // @@@ broken by NNI above (why?)
+    env.compute_tree(); // fix them
+    ap_assert(rootNode()->has_correct_mark_flags());
+
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
+    TEST_EXPECT_EQUAL(env.combines_performed(), 15833);
 
     // -----------------------------
     //      test optimize (all)
@@ -2327,8 +2339,17 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 96);
 
+    ap_assert(rootNode()->has_correct_mark_flags());
+
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 188);
+
+    ap_assert(!rootNode()->has_correct_mark_flags()); // @@@ broken by NNI above (why?)
+    env.compute_tree(); // fix them
+    ap_assert(rootNode()->has_correct_mark_flags());
+
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-marked-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
+    TEST_EXPECT_EQUAL(env.combines_performed(), 1238);
 
     // -----------------------------
     //      test optimize (all)
