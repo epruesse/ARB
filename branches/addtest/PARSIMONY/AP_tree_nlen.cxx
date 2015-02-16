@@ -1155,11 +1155,11 @@ bool AP_tree_edge::kl_rec(const KL_params& KL, const int rec_depth, AP_FLOAT par
             order[i] = i;
             AP_tree_edge * const subedge = descend[i];
 
-            if (subedge                      &&
-                !subedge->is_leaf_edge()     &&
-                !subedge->kl_visited         &&
-                !subedge->node[0]->gr.hidden &&
-                !subedge->node[1]->gr.hidden)
+            if (subedge                  &&
+                !subedge->is_leaf_edge() &&
+                !subedge->kl_visited     &&
+                !subedge->next_to_folded_group()
+                )
             {
                 ap_main->remember();
                 subedge->sonNode()->swap_assymetric(idx2side(i));
