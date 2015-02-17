@@ -182,7 +182,7 @@ EdgeChain::EdgeChain(AP_tree_edge *startEgde, int depth, EdgeSpec whichEdges, bo
      * @param skip             previous node (will not recurse beyond)
      */
 
-#if defined(DEVEL_RALF) && 0
+#if defined(DEVEL_RALF)
     if (whichEdges & SKIP_UNMARKED_EDGES) {
         AP_tree_nlen *son         = startEgde->sonNode();
         bool          flags_valid = son->has_correct_mark_flags();
@@ -748,7 +748,7 @@ void TEST_tree_flags_needed_by_EdgeChain() {
     }
 
     // test moving nodes/subtrees
-    // (wontfix; acceptable because only used while adding species, calling compute_tree once after add will do)
+    // wontfix; acceptable because only used while adding species -> see PARS_main.cxx@flags_broken_by_moveNextTo
     {
         env.push();
 

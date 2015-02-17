@@ -434,9 +434,10 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
 
             if (!quick) {
                 AP_FLOAT pars_prev = rootNode()->costs();
+                rootNode()->compute_tree(); // see AP_tree_edge.cxx@flags_broken_by_moveNextTo
                 progress.subtitle("local optimize (repeated NNI)");
                 while (1) {
-                    rootEdge()->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY, NULL); // @@@ should act on marked (=added) only
+                    rootEdge()->nni_rec(UNLIMITED, EdgeSpec(SKIP_UNMARKED_EDGES|SKIP_LEAF_EDGES), AP_BL_NNI_ONLY, NULL);
                     AP_FLOAT pars_curr = rootNode()->costs();
                     if (pars_curr == pars_prev) break;
                     ap_assert(pars_curr<pars_prev);
@@ -2058,8 +2059,8 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
     TEST_EXPECT_EQUAL(env.combines_performed(), 578);
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-26, env, true)); // test add + NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 899);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
+    TEST_EXPECT_EQUAL(env.combines_performed(), 751);
 
     // test partial-add
     {
@@ -2220,7 +2221,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 306);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 374);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 355);
 
     // test partial-add
     {
