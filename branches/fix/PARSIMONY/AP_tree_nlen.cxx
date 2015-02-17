@@ -629,13 +629,19 @@ void AP_tree_nlen::set_root() {
         old_root = pntr;
     }
 
-    if (son_of_root) {
+    ap_assert(son_of_root); // always true
+
+    {
         AP_tree_nlen *other_son_of_root = son_of_root->get_brother();
         ap_main->push_node(other_son_of_root, STRUCTURE);
     }
 
     ap_main->push_node(old_root, ROOT);
     AP_tree::set_root();
+
+    for (AP_tree_nlen *node = son_of_root; node ; node = node->get_father()) {
+        node->recalc_marked_from_sons();
+    }
 }
 
 void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {

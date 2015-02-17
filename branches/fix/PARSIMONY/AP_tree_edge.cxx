@@ -737,10 +737,10 @@ void TEST_tree_flags_needed_by_EdgeChain() {
 
         // CurCitre and its brother form an unmarked subtree
         CurCitre->set_root();
-        TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags());
+        TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         CurCitre_father->set_root();
-        TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags());
+        TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         CurCitre_grandfather->set_root(); // grandfather has 1 marked child
         TEST_EXPECT(rootNode()->has_correct_mark_flags());
