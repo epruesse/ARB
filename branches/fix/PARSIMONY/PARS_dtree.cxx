@@ -198,7 +198,6 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
             heuPerf = new OptiPerfMeter(hset.name, heu_start_pars);
         }
 
-        ap_assert(rootNode()->has_correct_mark_flags());
         AP_FLOAT this_pars = -1;
         if (hset.kl) {
             kernighan_optimize_tree(at, *hset.kl, &org_pars, false);
@@ -210,7 +209,6 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
         ap_assert(this_pars>=0); // ensure this_pars was set
         ap_assert(this_pars<=prev_pars); // otherwise heuristic worsened the tree
 
-        ap_assert(rootNode()->has_correct_mark_flags());
 
         bool      dumpOverall   = false;
         Heuristic nextHeuristic = heuristic;

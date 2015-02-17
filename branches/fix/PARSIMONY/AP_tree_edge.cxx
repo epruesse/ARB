@@ -182,7 +182,7 @@ EdgeChain::EdgeChain(AP_tree_edge *startEgde, int depth, EdgeSpec whichEdges, bo
      * @param skip             previous node (will not recurse beyond)
      */
 
-#if defined(DEVEL_RALF)
+#if defined(DEVEL_RALF) && 0
     if (whichEdges & SKIP_UNMARKED_EDGES) {
         AP_tree_nlen *son         = startEgde->sonNode();
         bool          flags_valid = son->has_correct_mark_flags();
