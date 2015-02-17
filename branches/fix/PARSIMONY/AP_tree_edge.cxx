@@ -801,7 +801,7 @@ void TEST_tree_flags_needed_by_EdgeChain() {
         env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         CorGluta->get_father()->swap_assymetric(AP_RIGHT);
-        TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags());
+        TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
         env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
@@ -823,7 +823,7 @@ void TEST_tree_flags_needed_by_EdgeChain() {
             ap_assert(CloTyro2_grandfather->gr.grouped); // this is the group-root
 
             CloTyro2_grandfather->swap_assymetric(AP_LEFT);
-            TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags());
+            TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
             env.pop(); env.push(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
