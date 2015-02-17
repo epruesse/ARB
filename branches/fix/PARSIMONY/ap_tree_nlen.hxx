@@ -175,13 +175,6 @@ public:
 
     virtual AP_UPDATE_FLAGS check_update() OVERRIDE; // disable  load !!!!
 
-#if defined(DEVEL_RALF)
-    void recompute_tree_to_fix_flags_HACK() { // @@@ remove when flags are fixed
-        // intermediate hack to fix mark flags
-        compute_tree();
-    }
-#endif
-
     bool recalc_marked_from_sons() {
         // return true if changed
         if (is_leaf) return false;

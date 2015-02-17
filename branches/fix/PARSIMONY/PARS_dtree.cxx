@@ -210,7 +210,6 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
         ap_assert(this_pars>=0); // ensure this_pars was set
         ap_assert(this_pars<=prev_pars); // otherwise heuristic worsened the tree
 
-        rootNode()->recompute_tree_to_fix_flags_HACK();
         ap_assert(rootNode()->has_correct_mark_flags());
 
         bool      dumpOverall   = false;

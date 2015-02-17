@@ -943,8 +943,7 @@ static void recursiveNNI(AWT_graphic_parsimony *agt) {
             ap_assert(rootNode()->has_correct_mark_flags()); // should not break in this case
             break; // no improvement -> abort
         }
-        rootNode()->recompute_tree_to_fix_flags_HACK();
-        ap_assert(rootNode()->has_correct_mark_flags()); // @@@ broken by nni_rec!
+        ap_assert(rootNode()->has_correct_mark_flags());
         progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", currPars, orgPars-currPars));
         prevPars          = currPars;
     }

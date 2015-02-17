@@ -722,7 +722,6 @@ void TEST_tree_flags_needed_by_EdgeChain() {
     AP_tree_nlen *CurCitre_grandfather = CurCitre_father->get_father();
 
     // test moving root
-    // (fails whenever moved to an edge w/o marks)
     {
         env.push();
 
@@ -749,6 +748,7 @@ void TEST_tree_flags_needed_by_EdgeChain() {
     }
 
     // test moving nodes/subtrees
+    // (wontfix; acceptable because only used while adding species, calling compute_tree once after add will do)
     {
         env.push();
 
