@@ -785,7 +785,7 @@ void TEST_tree_flags_needed_by_EdgeChain() {
         ap_assert(!rootNode()->has_correct_mark_flags());
         rootNode()->compute_tree(); // fixes the flags (i.e. changes hidded AND marked flags)
 
-        env.pop(); TEST_EXPECT__BROKEN(rootNode()->has_correct_mark_flags()); // shows that flags are not restored
+        env.pop(); TEST_EXPECT(rootNode()->has_correct_mark_flags()); // shows that flags are correctly restored
 
         rootNode()->compute_tree(); // fix flags again
         TEST_EXPECT(rootNode()->has_correct_mark_flags());

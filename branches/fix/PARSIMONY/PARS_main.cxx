@@ -2171,8 +2171,6 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 246);
 
-    ap_assert(!rootNode()->has_correct_mark_flags()); // @@@ broken by NNI above (why?)
-    env.compute_tree(); // fix them
     ap_assert(rootNode()->has_correct_mark_flags());
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
@@ -2344,8 +2342,6 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 188);
 
-    ap_assert(!rootNode()->has_correct_mark_flags()); // @@@ broken by NNI above (why?)
-    env.compute_tree(); // fix them
     ap_assert(rootNode()->has_correct_mark_flags());
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-marked-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL

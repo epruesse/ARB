@@ -137,9 +137,11 @@ struct NodeState : virtual Noncopyable { // buffers previous states of AP_tree_n
     AP_tree_nlen *rightson;
     AP_pars_root *root;
     GBDATA       *gb_node;
-    // @@@ store gr.has_marked_children
-    AP_tree_edge      *edge[3];
-    int                edgeIndex[3];
+    AP_tree_edge *edge[3];
+    int           edgeIndex[3];
+
+    // defined/restored if mode & (SEQUENCE|STRUCTURE): 
+    bool had_marked;
 
     void move_info_to(NodeState& target, AP_STACK_MODE what);
 

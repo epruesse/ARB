@@ -897,6 +897,9 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) { // @@@ rename -
         ret             = true;
     }
 
+    if ((mode & (STRUCTURE|SEQUENCE)) && !(store->mode & (STRUCTURE|SEQUENCE))) {
+        store->had_marked = gr.has_marked_children;
+    }
     if ((mode & STRUCTURE) && !(store->mode & STRUCTURE)) {
         store->father   = get_father();
         store->leftson  = get_leftson();
@@ -937,14 +940,17 @@ void NodeState::move_info_to(NodeState& target, AP_STACK_MODE what) {
     ap_assert((mode&what)        == what); // this has to contain 'what' is moved
     ap_assert((target.mode&what) == NOTHING); // target shall not already contain 'what' is moved
 
+    if ((what & (STRUCTURE|SEQUENCE)) && !(target.mode & (STRUCTURE|SEQUENCE))) {
+        target.had_marked = had_marked;
+    }
     if (what & STRUCTURE) {
-        target.father   = father;
-        target.leftson  = leftson;
-        target.rightson = rightson;
-        target.leftlen  = leftlen;
-        target.rightlen = rightlen;
-        target.root     = root;
-        target.gb_node  = gb_node;
+        target.father     = father;
+        target.leftson    = leftson;
+        target.rightson   = rightson;
+        target.leftlen    = leftlen;
+        target.rightlen   = rightlen;
+        target.root       = root;
+        target.gb_node    = gb_node;
 
         for (int e=0; e<3; e++) {
             target.edge[e]      = edge[e];
@@ -976,6 +982,8 @@ void AP_tree_nlen::restore_structure(const NodeState& state) {
     set_tree_root(state.root);
     gb_node  = state.gb_node;
 
+    gr.has_marked_children = state.had_marked;
+
     for (int e=0; e<3; e++) {
         edge[e]  = state.edge[e];
         index[e] = state.edgeIndex[e];
@@ -987,8 +995,9 @@ void AP_tree_nlen::restore_structure(const NodeState& state) {
 }
 void AP_tree_nlen::restore_sequence(NodeState& state) {
     replace_seq(state.sequence);
-    state.sequence = NULL;
-    mutation_rate = state.mutation_rate;
+    state.sequence         = NULL;
+    mutation_rate          = state.mutation_rate;
+    gr.has_marked_children = state.had_marked;
 }
 void AP_tree_nlen::restore_sequence_nondestructive(const NodeState& state) {
     replace_seq(state.sequence ? state.sequence->dup() : NULL);
