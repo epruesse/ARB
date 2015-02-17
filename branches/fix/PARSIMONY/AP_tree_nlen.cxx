@@ -569,7 +569,7 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
 
             if (nephew->gr.has_marked_children != movedSon->gr.has_marked_children) {
                 get_brother()->recalc_marked_from_sons();
-                this->recalc_marked_from_sons();
+                this->recalc_marked_from_sons_and_forward_upwards();
             }
         }
     }
@@ -607,7 +607,7 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
         edge1->relink(get_father(), movedSon);
 
         if (oldBrother->gr.has_marked_children != movedSon->gr.has_marked_children) {
-            recalc_marked_from_sons(); // father is done implicit
+            recalc_marked_from_sons_and_forward_upwards(); // father is done implicit
         }
     }
 }

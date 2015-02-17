@@ -181,14 +181,19 @@ public:
         compute_tree();
     }
 #endif
-    void recalc_marked_from_sons() {
-        ap_assert(!is_leaf);
-        if (!is_leaf) {
-            bool marked_childs         = get_leftson()->gr.has_marked_children || get_rightson()->gr.has_marked_children;
-            if (marked_childs != gr.has_marked_children) {
-                gr.has_marked_children = marked_childs;
-                if (father) get_father()->recalc_marked_from_sons();
-            }
+
+    bool recalc_marked_from_sons() {
+        // return true if changed
+        if (is_leaf) return false;
+        bool marked_childs = get_leftson()->gr.has_marked_children || get_rightson()->gr.has_marked_children;
+        if (marked_childs == gr.has_marked_children) return false;
+        gr.has_marked_children = marked_childs;
+        return true;
+    }
+
+    void recalc_marked_from_sons_and_forward_upwards() {
+        if (recalc_marked_from_sons() && father) {
+            get_father()->recalc_marked_from_sons_and_forward_upwards();
         }
     }
 
