@@ -428,15 +428,14 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
         AP_tree_nlen *son    = edge->sonNode();
         AP_tree_nlen *notSon = edge->otherNode(son);
 
+        ap_assert(notSon->father);
         if (notSon->father) {
             if (mode & AP_BL_BOOTSTRAP_LIMIT) {
                 son->set_root();
-                new_parsimony = rootNode()->costs();
             }
             else {
                 if (notSon->father->father) {
                     notSon->set_root();
-                    new_parsimony = rootNode()->costs();
                 }
             }
         }
@@ -446,8 +445,9 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
             ap_calc_bootstrap_remark(son, mode, mps);
         }
         else {
-            new_parsimony = edge->nni(new_parsimony, mode);
+            new_parsimony = edge->nni_mutPerSite(new_parsimony, mode, NULL);
         }
+        // ap_assert(rootNode()->costs() == new_parsimony); // does not fail (but changes number of combines performed in tests)
 
         progress.inc();
     }
@@ -548,7 +548,10 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
         set_inner_branch_length_and_calc_adj_leaf_lengths(son, blen);
     }
 
-    return parsbest;
+    return
+        mode & AP_BL_NNI_ONLY
+        ? parsbest  // in this case, the best topology was accepted above
+        : pars_one; // and in this case it has been reverted
 }
 
 ostream& operator<<(ostream& out, const AP_tree_edge& e)

@@ -76,7 +76,6 @@ enum AP_BL_MODE {
     APBL_NONE                = 0,
     AP_BL_NNI_ONLY           = 1, // try te find a better tree only
     AP_BL_BL_ONLY            = 2, // try to calculate the branch lengths
-    AP_BL_NNI_BL             = 3, // better tree & branch lengths (not used; might be broken)
     AP_BL_BOOTSTRAP_LIMIT    = 4, // calculate upper bootstrap limits
     AP_BL_BOOTSTRAP_ESTIMATE = 12 // calculate estimate of bootstrap (includes AP_BL_BOOTSTRAP_LIMIT)
 };
@@ -354,7 +353,6 @@ public:
     AP_FLOAT calc_branchlengths() { return nni_rec(UNLIMITED, ANY_EDGE, AP_BL_BL_ONLY, NULL); }
 
     AP_FLOAT nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps);
-    AP_FLOAT nni(AP_FLOAT pars_one, AP_BL_MODE mode) { return nni_mutPerSite(pars_one, mode, NULL); }
 
     void mixTree(int repeat, int percent);
 };
