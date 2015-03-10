@@ -1390,7 +1390,9 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                 break;
             }
         }
-        store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
+        if (!is_nan_or_inf(unscale)) {
+            store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
+        }
         return;
     }
 
