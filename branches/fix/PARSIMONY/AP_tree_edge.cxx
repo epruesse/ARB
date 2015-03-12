@@ -507,9 +507,11 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
             ap_assert(mps);
             pars_one = root->costs(mps->data(0));
         }
-        else if (pars_one==0.0) {
-            pars_one = root->costs();
+#if defined(ASSERTION_USED)
+        else {
+            ap_assert(pars_one != 0.0);
         }
+#endif
     }
 
     AP_FLOAT pars_two;
