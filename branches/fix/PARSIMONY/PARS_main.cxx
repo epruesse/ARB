@@ -1877,32 +1877,34 @@ static arb_test::match_expectation modifyingTopoResultsIn(TopoMod mod, const cha
     return all().ofgroup(fulfilled);
 }
 
-static void test_root_at_each_son(AP_tree_nlen *node, int& pars_min, int& pars_max) {
-    ap_main->remember();
-    node->set_root();
-    int pars = rootNode()->costs();
-    pars_min = std::min(pars, pars_min);
-    pars_max = std::max(pars, pars_max);
-    ap_main->revert();
-
-    if (!node->is_leaf) {
-        test_root_at_each_son(node->get_leftson(), pars_min, pars_max);
-        test_root_at_each_son(node->get_rightson(), pars_min, pars_max);
-    }
-}
-
-template <typename SEQ>
-static arb_test::match_expectation movingRootDoesntAffectCosts(int pars_min_expected, int pars_max_expected, PARSIMONY_testenv<SEQ>& env) {
+static arb_test::match_expectation movingRootDoesntAffectCosts(int pars_expected) {
     using namespace   arb_test;
     expectation_group fulfilled;
 
     int pars_min = INT_MAX;
     int pars_max = INT_MIN;
 
-    test_root_at_each_son(env.root_node(), pars_min, pars_max);
+    for (int depth_first = 0; depth_first<=1; ++depth_first) {
+        for (int push_local = 0; push_local<=1; ++push_local) {
+            EdgeChain chain(rootEdge(), UNLIMITED, ANY_EDGE, depth_first);
 
-    fulfilled.add(that(pars_min).is_equal_to(pars_min_expected));
-    fulfilled.add(that(pars_max).is_equal_to(pars_max_expected));
+            if (!push_local) ap_main->remember();
+            while (chain) {
+                AP_tree_edge *edge = *chain; ++chain;
+
+                if (push_local) ap_main->remember();
+                edge->set_root();
+                int pars = rootNode()->costs();
+                pars_min = std::min(pars, pars_min);
+                pars_max = std::max(pars, pars_max);
+                if (push_local) ap_main->revert();
+            }
+            if (!push_local) ap_main->revert();
+        }
+    }
+
+    fulfilled.add(that(pars_min).is_equal_to(pars_expected));
+    fulfilled.add(that(pars_max).is_equal_to(pars_expected));
 
     return all().ofgroup(fulfilled);
 }
@@ -2136,8 +2138,8 @@ void TEST_nucl_tree_modifications() {
 
     {
         env.push();
-        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_ORG, PARSIMONY_ORG, env));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 106);
+        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_ORG));
+        TEST_EXPECT_EQUAL(env.combines_performed(), 342);
         env.pop();
     }
 
@@ -2189,8 +2191,8 @@ void TEST_nucl_tree_modifications() {
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
         TEST_EXPECT_EQUAL(env.combines_performed(), 24218);
 
-        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 150);
+        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI));
+        TEST_EXPECT_EQUAL(env.combines_performed(), 430);
         env.pop();
     }
 }
@@ -2302,8 +2304,8 @@ void TEST_prot_tree_modifications() {
 
     {
         env.push();
-        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_MIXED, PARSIMONY_MIXED, env));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 72);
+        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_MIXED));
+        TEST_EXPECT_EQUAL(env.combines_performed(), 232);
         env.pop();
     }
 
@@ -2356,8 +2358,8 @@ void TEST_prot_tree_modifications() {
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
         TEST_EXPECT_EQUAL(env.combines_performed(), 1476);
 
-        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 76);
+        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI));
+        TEST_EXPECT_EQUAL(env.combines_performed(), 240);
         env.pop();
     }
 }
