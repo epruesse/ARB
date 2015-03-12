@@ -685,14 +685,12 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
 
     ap_main->push_node(newBrother,  STRUCTURE);
     if (newBrother->father) {
-        if (newBrother->father->father) {
-            ap_main->push_node(newBrother->get_father(), BOTH);
-        }
-        else { // move to son of root
-            ap_main->push_node(newBrother->get_father(), BOTH);
+        AP_tree_nlen *newBrothersFather = newBrother->get_father();
+        ap_main->push_node(newBrothersFather, BOTH);
+        if (!newBrothersFather->father) { // move to son of root
             ap_main->push_node(newBrother->get_brother(), STRUCTURE);
         }
-        push_all_upnode_sequences(newBrother->get_father());
+        push_all_upnode_sequences(newBrothersFather);
     }
 
     AP_tree_nlen *thisFather        = get_father();
