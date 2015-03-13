@@ -330,10 +330,13 @@ void AP_tree_edge::set_inner_branch_length_and_calc_adj_leaf_lengths(AP_FLOAT bc
     ap_assert(!is_leaf_edge());
 
     AP_tree_nlen *son = sonNode();
-
     ap_assert(son->at_root()); // otherwise length calculation is unstable!
 
-    AP_FLOAT      seq_len = son->get_seq()->weighted_base_count();
+    AP_FLOAT seq_len =
+        (son->get_seq()->weighted_base_count() +
+         son->get_brother()->get_seq()->weighted_base_count()
+            ) * 0.5;
+
     if (seq_len <= 1.0) seq_len = 1.0; // @@@ hm :/
 
     AP_FLOAT blen = bcosts / seq_len; // branchlength := costs per bp
