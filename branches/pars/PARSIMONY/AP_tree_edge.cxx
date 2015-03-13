@@ -322,12 +322,16 @@ static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
 
 const GBT_LEN AP_UNDEF_BL = 10.5;
 
-static void set_inner_branch_length_and_calc_adj_leaf_lengths(AP_tree_nlen *son, GBT_LEN blen) {
-    ap_assert(!son->is_leaf);
+void AP_tree_edge::set_inner_branch_length_and_calc_adj_leaf_lengths(AP_FLOAT bcosts) {
+    // 'bcosts' is the number of mutations assumed at this edge
 
-    AP_FLOAT seq_len             = son->get_seq()->weighted_base_count();
-    if (seq_len <= 1.0) seq_len  = 1.0;
-    blen                        *= 0.5 / seq_len * 2.0; // doubled counted sum * corr
+    ap_assert(!is_leaf_edge());
+
+    AP_tree_nlen *son     = sonNode();
+    AP_FLOAT      seq_len = son->get_seq()->weighted_base_count();
+    if (seq_len <= 1.0) seq_len = 1.0; // @@@ hm :/
+
+    AP_FLOAT blen = bcosts / seq_len; // branchlength := costs per bp
 
     son->set_branchlength_unrooted(blen);
 
@@ -545,9 +549,9 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
     }
 
     if (mode & AP_BL_BL_ONLY) { // ************* calculate branch lengths **************
-        GBT_LEN blen = (pars_one + pars_two + pars_three) - (3.0 * parsbest);
-        if (blen <0) blen = 0;
-        set_inner_branch_length_and_calc_adj_leaf_lengths(son, blen);
+        GBT_LEN bcosts = (pars_one + pars_two + pars_three) - (3.0 * parsbest);
+        if (bcosts <0) bcosts = 0;
+        set_inner_branch_length_and_calc_adj_leaf_lengths(bcosts);
     }
 
     return parsbest;
