@@ -323,6 +323,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_core.h
+PARS_main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_diff.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_file.h
