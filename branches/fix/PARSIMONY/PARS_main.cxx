@@ -2066,7 +2066,6 @@ void TEST_nucl_tree_modifications() {
 
     // test partial-add
     {
-        // TotalRecall tr(env);
         GBDATA *gb_main = env.gbmain();
 
         // create 2 non-overlapping partial species
