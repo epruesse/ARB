@@ -2376,6 +2376,44 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 96);
 
+    // test whether branchlength calculation depends on root-position
+    {
+        AP_tree_edge *orgRootEdge = rootEdge();
+
+        env.push();
+
+        const char *tested_roots[] = {
+            // "CytLyti6", // no effect on branchlengths
+            "TaxOcell",
+            "MucRace3",
+            "StrCoel9",
+        };
+
+        for (size_t r = 0; r<ARRAY_ELEMS(tested_roots); ++r) {
+            TEST_ANNOTATE(tested_roots[r]);
+            const char *leafName = tested_roots[r];
+            env.root_node()->findLeafNamed(leafName)->set_root();
+            calc_branchlengths(env.graphic_tree());
+            orgRootEdge->set_root();
+            env.graphic_tree()->reorder_tree(BIG_BRANCHES_TO_TOP);
+
+            {
+                // ../UNIT_TESTER/run/pars
+                char *saveName = GBS_global_string_copy("prot-calclength-%s", leafName);
+#if defined(AUTO_UPDATE_IF_CHANGED)
+                TEST_EXPECT_SAVED_TOPOLOGY(env, saveName);
+#else // !defined(AUTO_UPDATE_IF_CHANGED)
+                TEST_EXPECT_SAVED_TOPOLOGY__BROKEN(env, "prot-calclength", saveName);
+                // TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-calclength");
+#endif
+                free(saveName);
+            }
+        }
+        TEST_EXPECT_EQUAL(env.combines_performed(), 315);
+
+        env.pop();
+    }
+
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 368);
 
