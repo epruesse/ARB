@@ -2194,18 +2194,7 @@ void TEST_nucl_tree_modifications() {
             orgRootEdge->set_root();
             env.graphic_tree()->reorder_tree(BIG_BRANCHES_TO_TOP);
 
-            {
-                // ../UNIT_TESTER/run/pars
-                char *saveName = GBS_global_string_copy("nucl-calclength-%s", leafName);
-#if defined(AUTO_UPDATE_IF_CHANGED)
-                TEST_EXPECT_SAVED_TOPOLOGY(env, saveName);
-#else // !defined(AUTO_UPDATE_IF_CHANGED)
-                // TEST_EXPECT_SAVED_TOPOLOGY__BROKEN(env, "nucl-calclength", saveName);
-                TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-calclength");
-                TEST_EXPECT_SAVED_TOPOLOGY(env, saveName);
-#endif
-                free(saveName);
-            }
+            TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-calclength");
         }
         TEST_EXPECT_EQUAL(env.combines_performed(), 639);
 
@@ -2398,18 +2387,7 @@ void TEST_prot_tree_modifications() {
             orgRootEdge->set_root();
             env.graphic_tree()->reorder_tree(BIG_BRANCHES_TO_TOP);
 
-            {
-                // ../UNIT_TESTER/run/pars
-                char *saveName = GBS_global_string_copy("prot-calclength-%s", leafName);
-#if defined(AUTO_UPDATE_IF_CHANGED)
-                TEST_EXPECT_SAVED_TOPOLOGY(env, saveName);
-#else // !defined(AUTO_UPDATE_IF_CHANGED)
-                // TEST_EXPECT_SAVED_TOPOLOGY__BROKEN(env, "prot-calclength", saveName);
-                TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-calclength");
-                TEST_EXPECT_SAVED_TOPOLOGY(env, saveName);
-#endif
-                free(saveName);
-            }
+            TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-calclength");
         }
         TEST_EXPECT_EQUAL(env.combines_performed(), 329);
 
