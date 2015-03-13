@@ -300,34 +300,39 @@ static void ap_calc_bootstrap_remark(AP_tree_nlen *son_node, AP_BL_MODE mode, co
     }
 }
 
-
-static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
-    // calculates the branchlength for leafs
-
-    AP_FLOAT Seq_len = leaf->get_seq()->weighted_base_count();
-    if (Seq_len <= 1.0) Seq_len = 1.0;
-
-    ap_assert(leaf->is_leaf);
-
-    AP_FLOAT parsbest = rootNode()->costs();
-
-    ap_main->remember();
-    leaf->REMOVE();
-    AP_FLOAT mutations = parsbest - rootNode()->costs(); // number of min. mutations caused by adding 'leaf' to tree
-    ap_main->revert();
-
-    GBT_LEN blen = mutations/Seq_len; // scale with Seq_len (=> max branchlength == 1.0)
-    leaf->set_branchlength_unrooted(blen);
-}
-
 const GBT_LEN AP_UNDEF_BL = 10.5;
+
+inline void update_undefined_leaf_branchlength(AP_tree_nlen *leaf) {
+    if (leaf->is_leaf &&
+        leaf->get_branchlength_unrooted() == AP_UNDEF_BL)
+    {
+        // calculate the branchlength for leafs
+        AP_FLOAT Seq_len = leaf->get_seq()->weighted_base_count();
+        if (Seq_len <= 1.0) Seq_len = 1.0;
+
+        ap_assert(leaf->is_leaf);
+
+        AP_FLOAT parsbest = rootNode()->costs();
+
+        ap_main->remember();
+        leaf->REMOVE();
+        AP_FLOAT mutations = parsbest - rootNode()->costs(); // number of min. mutations caused by adding 'leaf' to tree
+        ap_main->revert();
+
+        GBT_LEN blen = mutations/Seq_len; // scale with Seq_len (=> max branchlength == 1.0)
+        leaf->set_branchlength_unrooted(blen);
+    }
+}
 
 void AP_tree_edge::set_inner_branch_length_and_calc_adj_leaf_lengths(AP_FLOAT bcosts) {
     // 'bcosts' is the number of mutations assumed at this edge
 
     ap_assert(!is_leaf_edge());
 
-    AP_tree_nlen *son     = sonNode();
+    AP_tree_nlen *son = sonNode();
+
+    ap_assert(son->at_root()); // otherwise length calculation is unstable!
+
     AP_FLOAT      seq_len = son->get_seq()->weighted_base_count();
     if (seq_len <= 1.0) seq_len = 1.0; // @@@ hm :/
 
@@ -337,15 +342,10 @@ void AP_tree_edge::set_inner_branch_length_and_calc_adj_leaf_lengths(AP_FLOAT bc
 
     // calculate adjacent leaf branchlengths early
     // (calculating them at end of nni_rec, produces much more combines)
-    if (son->leftson->is_leaf) {
-        ap_assert(son->get_leftson()->get_branchlength_unrooted() == AP_UNDEF_BL);
-        ap_calc_leaf_branch_length(son->get_leftson());
-    }
 
-    if (son->rightson->is_leaf) {
-        ap_assert(son->get_rightson()->get_branchlength_unrooted() == AP_UNDEF_BL);
-        ap_calc_leaf_branch_length(son->get_rightson());
-    }
+    update_undefined_leaf_branchlength(son->get_leftson());
+    update_undefined_leaf_branchlength(son->get_rightson());
+    // @@@ check sons of brother -> check whether final leaf-length-calculation can be skipped. see .@DUMP_FINAL_RECALCS
 }
 
 #if defined(ASSERTION_USED) || defined(UNIT_TESTS)
@@ -359,14 +359,6 @@ bool allBranchlengthsAreDefined(AP_tree_nlen *tree) {
         allBranchlengthsAreDefined(tree->get_rightson());
 }
 #endif
-
-inline void update_undefined_leaf_branchlength(AP_tree_nlen *node) {
-    if (node->is_leaf &&
-        node->get_branchlength_unrooted() == AP_UNDEF_BL)
-    {
-        ap_calc_leaf_branch_length(node);
-    }
-}
 
 inline void undefine_branchlengths(AP_tree_nlen *node) {
     // undefine branchlengths of node (triggers recalculation)
@@ -411,14 +403,9 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
         AP_tree_nlen *fath = son;
 
         if (edge->otherNode(fath)==fath->get_father()) fath = fath->get_father();
-        if (fath->father) {
-            if (fath->father->father) {
-                fath->set_root();
-                new_parsimony = rootNode()->costs();
-            }
-        }
         if (mode & AP_BL_BOOTSTRAP_LIMIT) {
             if (fath->father) {
+                ap_assert(recalc_lengths);
                 son->set_root();
                 new_parsimony = rootNode()->costs();
             }
@@ -428,6 +415,15 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
             ap_calc_bootstrap_remark(son, mode, mps);
         }
         else {
+            if (recalc_lengths) {
+                son->set_root();
+                new_parsimony = rootNode()->costs();
+            }
+            else if (fath->father->father) {
+                fath->set_root();
+                new_parsimony = rootNode()->costs();
+            }
+
             new_parsimony = edge->nni(new_parsimony, mode);
         }
 

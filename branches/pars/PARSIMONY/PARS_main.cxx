@@ -2068,16 +2068,16 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 3);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
-    TEST_EXPECT_EQUAL(env.combines_performed(), 591);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 624);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 767);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 798);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD_CALC_LENS, "nucl-add-quick-cl", PARSIMONY_ORG-23, env, true)); // test quick-add + calc_branchlengths
-    TEST_EXPECT_EQUAL(env.combines_performed(), 727);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 795);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI_CALC_LENS,   "nucl-add-NNI-cl",   PARSIMONY_ORG-25, env, true)); // test add + NNI + calc_branchlengths
-    TEST_EXPECT_EQUAL(env.combines_performed(), 904);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 967);
 
     // test partial-add
     {
@@ -2124,7 +2124,7 @@ void TEST_nucl_tree_modifications() {
             }
 
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "nucl-addPartialAsFull-CorGlutP", PARSIMONY_ORG, env, false));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 254);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 290);
             TEST_EXPECT_EQUAL(is_partial(CorGlutP), 0); // check CorGlutP was added as full sequence
             TEST_EXPECTATION(addedAsBrotherOf("CorGlutP", "CorGluta", env)); // partial created from CorGluta gets inserted next to CorGluta
 
@@ -2172,7 +2172,7 @@ void TEST_nucl_tree_modifications() {
     // test branchlength calculation
     // (optimizations below implicitely recalculates branchlengths)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 142);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 153);
 
     // test whether branchlength calculation depends on root-position
     {
@@ -2200,20 +2200,21 @@ void TEST_nucl_tree_modifications() {
 #if defined(AUTO_UPDATE_IF_CHANGED)
                 TEST_EXPECT_SAVED_TOPOLOGY(env, saveName);
 #else // !defined(AUTO_UPDATE_IF_CHANGED)
-                TEST_EXPECT_SAVED_TOPOLOGY__BROKEN(env, "nucl-calclength", saveName);
-                // TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-calclength");
+                // TEST_EXPECT_SAVED_TOPOLOGY__BROKEN(env, "nucl-calclength", saveName);
+                TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-calclength");
+                TEST_EXPECT_SAVED_TOPOLOGY(env, saveName);
 #endif
                 free(saveName);
             }
         }
-        TEST_EXPECT_EQUAL(env.combines_performed(), 619);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 639);
 
         env.pop();
     }
 
     // test optimize (some)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 284);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 302);
 
     // -----------------------------
     //      test optimize (all)
@@ -2229,15 +2230,15 @@ void TEST_nucl_tree_modifications() {
     // test branchlength calculation
     // (optimizations below implicitely recalculates branchlengths)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 142);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 153);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-all-NNI", PARSIMONY_NNI_ALL, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 324);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 344);
 
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 13906);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 13953);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
         TEST_EXPECT_EQUAL(env.combines_performed(), 142);
@@ -2268,10 +2269,10 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 5);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG,     env, true)); // test quick-add
-    TEST_EXPECT_EQUAL(env.combines_performed(), 306);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 329);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 447);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 473);
 
     // test partial-add
     {
@@ -2314,7 +2315,7 @@ void TEST_prot_tree_modifications() {
             }
 
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG,   env, false));
-            TEST_EXPECT_EQUAL(env.combines_performed(), 175);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 190);
             TEST_EXPECT_EQUAL(is_partial(MucRaceP), 0); // check MucRaceP was added as full sequence
             TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "Eukarya EF-Tu", env)); // partial created from MucRacem gets inserted next to this group
             // Note: looks ok. group contains MucRacem, AbdGlauc and 4 other species
@@ -2348,7 +2349,7 @@ void TEST_prot_tree_modifications() {
 
     GB_random_seed(mixseed);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_MIX_TREE, "prot-mixed", PARSIMONY_MIXED, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 106);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 121);
 
     {
         env.push();
@@ -2374,7 +2375,7 @@ void TEST_prot_tree_modifications() {
     // test branchlength calculation
     // (optimizations below implicitely recalculates branchlengths)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 96);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 111);
 
     // test whether branchlength calculation depends on root-position
     {
@@ -2403,19 +2404,20 @@ void TEST_prot_tree_modifications() {
 #if defined(AUTO_UPDATE_IF_CHANGED)
                 TEST_EXPECT_SAVED_TOPOLOGY(env, saveName);
 #else // !defined(AUTO_UPDATE_IF_CHANGED)
-                TEST_EXPECT_SAVED_TOPOLOGY__BROKEN(env, "prot-calclength", saveName);
-                // TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-calclength");
+                // TEST_EXPECT_SAVED_TOPOLOGY__BROKEN(env, "prot-calclength", saveName);
+                TEST_EXPECT_SAVED_TOPOLOGY(env, "prot-calclength");
+                TEST_EXPECT_SAVED_TOPOLOGY(env, saveName);
 #endif
                 free(saveName);
             }
         }
-        TEST_EXPECT_EQUAL(env.combines_performed(), 315);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 329);
 
         env.pop();
     }
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 368);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 397);
 
     // -----------------------------
     //      test optimize (all)
@@ -2431,15 +2433,15 @@ void TEST_prot_tree_modifications() {
     // test branchlength calculation
     // (optimizations below implicitely recalculates branchlengths)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "prot-calclength", PARSIMONY_MIXED, env, false));
-    TEST_EXPECT_EQUAL(env.combines_performed(), 96);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 111);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-all-NNI", PARSIMONY_NNI_ALL, env, true)); // test recursive NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 370);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 394);
 
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 1527);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 1551);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI, PARSIMONY_OPTI, env));
         TEST_EXPECT_EQUAL(env.combines_performed(), 76);
@@ -2696,7 +2698,7 @@ void TEST_node_stack() {
         TEST_EXPECT_VALID_TREE(env.root_node());
     }
 
-    TEST_EXPECT_EQUAL(env.combines_performed(), 4444); // @@@ distribute
+    TEST_EXPECT_EQUAL(env.combines_performed(), 4821); // @@@ distribute
 }
 
 void TEST_node_edge_resources() {
