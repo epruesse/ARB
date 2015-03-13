@@ -331,10 +331,11 @@ void AP_tree_edge::set_inner_branch_length_and_calc_adj_leaf_lengths(AP_FLOAT bc
 
     AP_tree_nlen *son = sonNode();
     ap_assert(son->at_root()); // otherwise length calculation is unstable!
+    AP_tree_nlen *otherSon = son->get_brother();
 
     AP_FLOAT seq_len =
-        (son->get_seq()->weighted_base_count() +
-         son->get_brother()->get_seq()->weighted_base_count()
+        (son     ->get_seq()->weighted_base_count() +
+         otherSon->get_seq()->weighted_base_count()
             ) * 0.5;
 
     if (seq_len <= 1.0) seq_len = 1.0; // @@@ hm :/
@@ -348,7 +349,8 @@ void AP_tree_edge::set_inner_branch_length_and_calc_adj_leaf_lengths(AP_FLOAT bc
 
     update_undefined_leaf_branchlength(son->get_leftson());
     update_undefined_leaf_branchlength(son->get_rightson());
-    // @@@ check sons of brother -> check whether final leaf-length-calculation can be skipped. see .@DUMP_FINAL_RECALCS
+    update_undefined_leaf_branchlength(otherSon->get_leftson());
+    update_undefined_leaf_branchlength(otherSon->get_rightson());
 }
 
 #if defined(ASSERTION_USED) || defined(UNIT_TESTS)
@@ -434,7 +436,9 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
     }
 
     if (recalc_lengths) {
-// #define DUMP_FINAL_RECALCS
+#if defined(DEBUG)
+#define DUMP_FINAL_RECALCS
+#endif
 #if defined(DUMP_FINAL_RECALCS)
         int final_recalc = 0;
 #endif
@@ -457,7 +461,8 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
         }
 
 #if defined(DUMP_FINAL_RECALCS)
-        fprintf(stderr, "Final leaf branches calculated: %i leafs for a chain of size=%li\n", final_recalc, cs);
+        fprintf(stderr, "Final leaf branches calculated: %i leafs for a chain of size=%zu\n", final_recalc, chain.size());
+        ap_assert(!final_recalc); // @@@ the whole 'if (recalc_lengths)'-branch is obsolete // @@@ check with bigger trees
 #endif
     }
 
