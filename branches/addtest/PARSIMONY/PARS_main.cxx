@@ -26,6 +26,7 @@
 #include <nds.h>
 #include <arb_progress.h>
 #include <arb_misc.h>
+#include <arb_defs.h>
 
 #include <gui_aliview.hxx>
 #include <ad_cb.h>
@@ -1629,6 +1630,7 @@ arb_test::match_expectation topologyEquals(AP_tree_nlen *root_node, const char *
     return all().ofgroup(fulfilled);
 }
 #define TEST_EXPECT_SAVED_TOPOLOGY(env,exp_topo) TEST_EXPECTATION(topologyEquals(env.root_node(), exp_topo))
+#define TEST_EXPECT_SAVED_TOPOLOGY__BROKEN(env,exp_topo,got_topo) TEST_EXPECTATION__BROKEN(topologyEquals(env.root_node(), exp_topo), topologyEquals(env.root_node(), got_topo))
 
 #define TEST_EXPECT_PARSVAL(env,exp_pars)  TEST_EXPECT_SIMILAR(env.root_node()->costs(), exp_pars, 0.001);
 
@@ -1942,6 +1944,38 @@ void TEST_optimizations_some() {
     // (optimizations below implicitely recalculate branchlengths)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
     TEST_EXPECT_EQUAL(env.combines_performed(), 142);
+
+    // test whether branchlength calculation depends on root-position
+    {
+        AP_tree_edge *orgRootEdge = rootEdge();
+
+        env.push();
+
+        const char *tested_roots[] = {
+            "CloButyr",
+            "CloTyro4",
+            "CloTyrob",
+            "CloInnoc",
+        };
+
+        for (size_t r = 0; r<ARRAY_ELEMS(tested_roots); ++r) {
+            const char *leafName = tested_roots[r];
+            env.root_node()->findLeafNamed(leafName)->set_root();
+            calc_branchlengths(env.graphic_tree());
+            orgRootEdge->set_root();
+            env.graphic_tree()->reorder_tree(BIG_BRANCHES_TO_TOP);
+
+            {
+                // ../UNIT_TESTER/run/pars
+                char *saveName = GBS_global_string_copy("nucl-calclength-%s", leafName);
+                TEST_EXPECT_SAVED_TOPOLOGY__BROKEN(env, "nucl-calclength", saveName);
+                free(saveName);
+            }
+        }
+        TEST_EXPECT_EQUAL(env.combines_performed(), 619);
+
+        env.pop();
+    }
 
     // test optimize (some)
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
