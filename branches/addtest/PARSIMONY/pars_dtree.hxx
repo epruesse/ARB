@@ -34,6 +34,8 @@ public:
     AP_tree_nlen *get_root_node() {
         return DOWNCAST(AP_tree_nlen*, AWT_graphic_tree::get_root_node());
     }
+
+    ArbParsimony& get_parsimony() { return parsimony; }
 };
 
 void PARS_tree_init(AWT_graphic_parsimony *agt);

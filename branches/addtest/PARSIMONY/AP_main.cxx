@@ -74,9 +74,9 @@ void AP_ERR::set_mode(int i) {
 //      AP_main
 
 GB_ERROR AP_main::open(const char *db_server) {
-    GB_ERROR error             = 0;
-    GLOBAL_gb_main             = GB_open(db_server, "rwt");
-    if (!GLOBAL_gb_main) error = GB_await_error();
+    GB_ERROR error      = 0;
+    gb_main             = GB_open(db_server, "rwt");
+    if (!gb_main) error = GB_await_error();
     return error;
 }
 
@@ -108,18 +108,20 @@ void AP_main::push() {
 }
 
 void AP_main::pop() {
-    AP_tree_nlen *knoten;
     if (!stack) {
         new AP_ERR("AP_main::pop()", "Stack underflow !");
         return;
     }
-    while ((knoten = stack->pop())) {
-        if (stack_level != knoten->stack_level) {
-            GB_internal_error("AP_main::pop: Error in stack_level");
-            cout << "Main UPD - node UPD : " << stack_level << " -- " << knoten->stack_level << " \n";
-            return;
+    {
+        AP_tree_nlen *knoten;
+        while ((knoten = stack->pop())) {
+            if (stack_level != knoten->stack_level) {
+                GB_internal_error("AP_main::pop: Error in stack_level");
+                cout << "Main UPD - node UPD : " << stack_level << " -- " << knoten->stack_level << " \n";
+                return;
+            }
+            knoten->pop(stack_level);
         }
-        knoten->pop(stack_level);
     }
     delete stack;
     stack_level --;

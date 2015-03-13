@@ -1208,6 +1208,7 @@ adtree.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_diff.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+adtree.o: $(ARBHOME)/INCLUDE/arb_match.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_strarray.h

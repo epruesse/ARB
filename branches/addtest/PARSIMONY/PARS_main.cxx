@@ -48,15 +48,19 @@ AW_HEADER_MAIN
 
 #define AWT_TREE_PARS(ntw) DOWNCAST(AWT_graphic_parsimony*, (ntw)->gfx)
 
-
-GBDATA              *GLOBAL_gb_main = NULL;
-static ArbParsimony *GLOBAL_PARS    = NULL;
+static ArbParsimony *GLOBAL_PARS = NULL;
 
 inline AWT_graphic_parsimony *global_tree() { return GLOBAL_PARS->get_tree(); }
 inline AP_tree_root *global_tree_root() { return global_tree()->get_tree_root(); }
 
 // waaah more globals :(
-AP_main *ap_main;
+AP_main *ap_main; // @@@ move into ArbParsimony? or eliminate ArbParsimony
+
+void ArbParsimony::set_tree(AWT_graphic_parsimony *tree_) {
+    ap_assert(!tree); // only call once
+    tree = tree_;
+    ap_main->set_tree_root(tree);
+}
 
 static void pars_saveNrefresh_changed_tree(AWT_canvas *ntw) {
     ap_assert((AWT_TREE(ntw) == global_tree()));
@@ -70,11 +74,16 @@ static void pars_saveNrefresh_changed_tree(AWT_canvas *ntw) {
 __ATTR__NORETURN static void pars_exit(AW_window *aww) {
     AW_root *aw_root = aww->get_root();
     shutdown_macro_recording(aw_root);
-    aw_root->unlink_awars_from_DB(GLOBAL_gb_main);
+
+    ap_main->clear();
+
+    aw_root->unlink_awars_from_DB(ap_main->get_gb_main());
 #if defined(DEBUG)
-    AWT_browser_forget_db(GLOBAL_gb_main);
+    AWT_browser_forget_db(ap_main->get_gb_main());
 #endif // DEBUG
-    GB_close(GLOBAL_gb_main);
+    delete ap_main; // closes DB
+    ap_main = NULL;
+
     exit(EXIT_SUCCESS);
 }
 
@@ -234,10 +243,10 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
                     blf = branchlist[counter];
                 }
 
+                ASSERT_VALID_TREE(rootNode());
                 if (bl->father) {
                     bl->set_root();
                 }
-
                 ASSERT_VALID_TREE(rootNode());
 
                 leaf->moveNextTo(bl, 0.5);
@@ -332,14 +341,15 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
         }
     }
 
-    GB_HASH *hash = 0;
+    GB_HASH *hash    = 0;
+    GBDATA  *gb_main = agt->gb_main;
     {
-        GB_transaction ta(GLOBAL_gb_main);
+        GB_transaction ta(gb_main);
         switch (what) {
             case NT_ADD_SELECTED: {
-                char *name = GBT_readOrCreate_string(GLOBAL_gb_main, AWAR_SPECIES_NAME, "");
+                char *name = GBT_readOrCreate_string(gb_main, AWAR_SPECIES_NAME, "");
                 if (name && strlen(name)) {
-                    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, name);
+                    GBDATA *gb_species = GBT_find_species(gb_main, name);
                     if (gb_species) {
                         hash = GBS_create_hash(1, GB_MIND_CASE);
                         GBS_write_hash(hash, name, (long)gb_species);
@@ -351,7 +361,7 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
                 break;
             }
             case NT_ADD_MARKED: {
-                hash = GBT_create_marked_species_hash(GLOBAL_gb_main);
+                hash = GBT_create_marked_species_hash(gb_main);
                 break;
             }
         }
@@ -368,9 +378,9 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
         int        implicitSteps = quick ? 1 : 2; // 1 step for calc_branchlengths, 1 step for NNI
         InsertData isits(quick, max_species, implicitSteps);
 
-        GB_begin_transaction(GLOBAL_gb_main);
+        GB_begin_transaction(gb_main);
         GBS_hash_do_loop(hash, transform_gbd_to_leaf, NULL);
-        GB_commit_transaction(GLOBAL_gb_main);
+        GB_commit_transaction(gb_main);
 
         {
             int skipped = max_species - GBS_hash_count_elems(hash);
@@ -615,10 +625,10 @@ static long push_partial(const char *, long val, void *cd_partial) {
 //      Add Partial sequences
 
 static void nt_add_partial(AWT_graphic_parsimony *agt) {
-    ap_assert(agt->gb_main == GLOBAL_gb_main); // @@@ if not failing -> remove GLOBAL_gb_main
+    GB_ERROR  error   = NULL;
+    GBDATA   *gb_main = agt->gb_main;
 
-    GB_begin_transaction(GLOBAL_gb_main);
-    GB_ERROR error = NULL;
+    GB_begin_transaction(gb_main);
 
     int full_marked_sequences = 0;
 
@@ -627,13 +637,13 @@ static void nt_add_partial(AWT_graphic_parsimony *agt) {
     {
         list<PartialSequence> partial;
         {
-            GB_HASH *partial_hash = GBS_create_hash(GBT_get_species_count(GLOBAL_gb_main), GB_MIND_CASE);
+            GB_HASH *partial_hash = GBS_create_hash(GBT_get_species_count(gb_main), GB_MIND_CASE);
 
             int marked_found             = 0;
             int partial_marked_sequences = 0;
             int no_data                  = 0;      // no data in alignment
 
-            for (GBDATA *gb_marked = GBT_first_marked_species(GLOBAL_gb_main);
+            for (GBDATA *gb_marked = GBT_first_marked_species(gb_main);
                  !error && gb_marked;
                  gb_marked = GBT_next_marked_species(gb_marked))
             {
@@ -644,7 +654,7 @@ static void nt_add_partial(AWT_graphic_parsimony *agt) {
 
                     switch (GBT_is_partial(gb_marked, 1, true)) { // marks undef as 'partial sequence'
                         case 0: { // full sequences
-                            GBT_message(GLOBAL_gb_main, GBS_global_string("'%s' is a full sequence (cannot add partial)", name));
+                            GBT_message(gb_main, GBS_global_string("'%s' is a full sequence (cannot add partial)", name));
                             ++full_marked_sequences;
                             break;
                         }
@@ -673,9 +683,9 @@ static void nt_add_partial(AWT_graphic_parsimony *agt) {
 
                 int partials_already_in_tree = partial_marked_sequences - partial.size();
 
-                if (no_data>0) GBT_message(GLOBAL_gb_main, GBS_global_string("%i marked species have no data in '%s'", no_data, ap_main->get_aliname()));
-                if (full_marked_sequences>0) GBT_message(GLOBAL_gb_main, GBS_global_string("%i marked species are declared full sequences", full_marked_sequences));
-                if (partials_already_in_tree>0) GBT_message(GLOBAL_gb_main, GBS_global_string("%i marked species are already in tree", partials_already_in_tree));
+                if (no_data>0)                  GBT_message(gb_main, GBS_global_string("%i marked species have no data in '%s'",        no_data, ap_main->get_aliname()));
+                if (full_marked_sequences>0)    GBT_message(gb_main, GBS_global_string("%i marked species are declared full sequences", full_marked_sequences));
+                if (partials_already_in_tree>0) GBT_message(gb_main, GBS_global_string("%i marked species are already in tree",         partials_already_in_tree));
 
                 if (partial.empty()) error = "No species left to add";
             }
@@ -683,7 +693,7 @@ static void nt_add_partial(AWT_graphic_parsimony *agt) {
             GBS_free_hash(partial_hash);
         }
 
-        if (!error) error = GBT_add_new_changekey(GLOBAL_gb_main, "ARB_partial", GB_INT);
+        if (!error) error = GBT_add_new_changekey(gb_main, "ARB_partial", GB_INT);
 
         if (!error) {
             rootNode()->reset_subtree_layout();
@@ -706,7 +716,7 @@ static void nt_add_partial(AWT_graphic_parsimony *agt) {
                 const char *name = i->get_name();
 
                 if (i->is_multi_match()) {
-                    GBT_message(GLOBAL_gb_main, GBS_global_string("Insertion of '%s' is ambiguous.\n"
+                    GBT_message(gb_main, GBS_global_string("Insertion of '%s' is ambiguous.\n"
                                                                   "(took first of equal scored insertion points: %s)",
                                                                   name, i->get_multilist().c_str()));
                 }
@@ -799,15 +809,15 @@ static void nt_add_partial(AWT_graphic_parsimony *agt) {
     }
 
     if (full_marked_sequences) {
-        GBT_message(GLOBAL_gb_main, GBS_global_string("%i marked full sequences were not added", full_marked_sequences));
+        GBT_message(gb_main, GBS_global_string("%i marked full sequences were not added", full_marked_sequences));
     }
 
     if (error) {
-        GBT_message(GLOBAL_gb_main, error);
-        GB_abort_transaction(GLOBAL_gb_main);
+        GBT_message(gb_main, error);
+        GB_abort_transaction(gb_main);
     }
     else {
-        GB_commit_transaction(GLOBAL_gb_main);
+        GB_commit_transaction(gb_main);
     }
 }
 
@@ -848,10 +858,14 @@ static void NT_reAdd_quick  (UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_reAdd_
 
 // --------------------------------------------------------------------------------
 
-static void NT_branch_lengths(AW_window *, AWT_canvas *ntw) {
+static void calc_branchlengths(AWT_graphic_parsimony *agt) {
     arb_progress progress("Calculating Branch Lengths");
     rootEdge()->calc_branchlengths();
-    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
+    agt->reorder_tree(BIG_BRANCHES_TO_TOP);
+}
+
+static void NT_calc_branch_lengths(AW_window *, AWT_canvas *ntw) {
+    calc_branchlengths(AWT_TREE_PARS(ntw));
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -864,17 +878,20 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static void NT_optimize(AW_window *, AWT_canvas *ntw) {
+static void optimizeTree(AWT_graphic_parsimony *agt) {
     arb_progress progress("Optimizing Tree");
-    GLOBAL_PARS->optimize_tree(rootNode(), progress);
+    agt->get_parsimony().optimize_tree(rootNode(), progress);
     ASSERT_VALID_TREE(rootNode());
     rootEdge()->calc_branchlengths();
-    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
+    agt->reorder_tree(BIG_BRANCHES_TO_TOP);
     rootNode()->compute_tree();
+}
+static void NT_optimize(AW_window *, AWT_canvas *ntw) {
+    optimizeTree(AWT_TREE_PARS(ntw));
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
+static void recursiveNNI(AWT_graphic_parsimony *agt) {
     arb_progress progress("Recursive NNI");
     AP_FLOAT orgPars = rootNode()->costs();
     AP_FLOAT prevPars = orgPars;
@@ -886,8 +903,12 @@ static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
         prevPars = currPars;
     }
     rootEdge()->calc_branchlengths();
-    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
+    agt->reorder_tree(BIG_BRANCHES_TO_TOP);
     rootNode()->compute_tree();
+}
+
+static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
+    recursiveNNI(AWT_TREE_PARS(ntw));
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -1039,7 +1060,7 @@ static GB_ERROR pars_check_size(AW_root *awr, GB_ERROR& warning) {
     }
     else {
         char *ali_name = awr->awar(AWAR_ALIGNMENT)->read_string();
-        ali_len        = GBT_get_alignment_len(GLOBAL_gb_main, ali_name);
+        ali_len        = GBT_get_alignment_len(ap_main->get_gb_main(), ali_name);
         if (ali_len<=0) {
             error = "Please select a valid alignment";
             GB_clear_error();
@@ -1048,7 +1069,7 @@ static GB_ERROR pars_check_size(AW_root *awr, GB_ERROR& warning) {
     }
 
     if (!error) {
-        long tree_size = GBT_size_of_tree(GLOBAL_gb_main, tree_name);
+        long tree_size = GBT_size_of_tree(ap_main->get_gb_main(), tree_name);
         if (tree_size == -1) {
             error = "Please select an existing tree";
         }
@@ -1077,8 +1098,9 @@ static void pars_reset_optimal_parsimony(AW_window *aww, AWT_canvas *ntw) {
 
 
 static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PARS_commands *cmds) {
-    AW_root *awr = aw_parent->get_root();
-    GB_begin_transaction(GLOBAL_gb_main);
+    AW_root *awr     = aw_parent->get_root();
+    GBDATA  *gb_main = ap_main->get_gb_main();
+    GB_begin_transaction(gb_main);
     {
         GB_ERROR warning;
         GB_ERROR error = pars_check_size(awr, warning);
@@ -1094,7 +1116,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
         if (error) {
             aw_message(error);
-            GB_commit_transaction(GLOBAL_gb_main);
+            GB_commit_transaction(gb_main);
             return;
         }
     }
@@ -1109,7 +1131,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     {
         AP_tree_display_type  old_sort_type = global_tree()->tree_sort;
         global_tree()->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
-        ntw = new AWT_canvas(GLOBAL_gb_main, awm, awm->get_window_id(), global_tree(), AWAR_TREE);
+        ntw = new AWT_canvas(gb_main, awm, awm->get_window_id(), global_tree(), AWAR_TREE);
         global_tree()->set_tree_type(old_sort_type, ntw);
     }
 
@@ -1149,7 +1171,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     if (cmds->add_marked)           NT_add_quick(NULL, ntw, NT_ADD_MARKED);
     if (cmds->add_selected)         NT_add_quick(NULL, ntw, NT_ADD_SELECTED);
-    if (cmds->calc_branch_lengths)  NT_branch_lengths(awm, ntw);
+    if (cmds->calc_branch_lengths)  NT_calc_branch_lengths(awm, ntw);
     if (cmds->calc_bootstrap)       NT_bootstrap(awm, ntw, 0);
     if (cmds->quit)                 pars_exit(awm);
 
@@ -1215,7 +1237,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->insert_menu_topic("reset", "Reset optimal parsimony", "s", "", AWM_ALL, makeWindowCallback(pars_reset_optimal_parsimony, ntw));
         awm->sep______________();
         awm->insert_menu_topic("beautify_tree",       "Beautify Tree",            "B", "resorttree.hlp",       AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_TOP));
-        awm->insert_menu_topic("calc_branch_lengths", "Calculate Branch Lengths", "L", "pa_branchlengths.hlp", AWM_ALL, makeWindowCallback(NT_branch_lengths, ntw));
+        awm->insert_menu_topic("calc_branch_lengths", "Calculate Branch Lengths", "L", "pa_branchlengths.hlp", AWM_ALL, makeWindowCallback(NT_calc_branch_lengths, ntw));
         awm->sep______________();
         awm->insert_menu_topic("calc_upper_bootstrap_indep", "Calculate Upper Bootstrap Limit (dependent NNI)",   "d", "pa_bootstrap.hlp", AWM_ALL, makeWindowCallback(NT_bootstrap,        ntw, false));
         awm->insert_menu_topic("calc_upper_bootstrap_dep",   "Calculate Upper Bootstrap Limit (independent NNI)", "i", "pa_bootstrap.hlp", AWM_ALL, makeWindowCallback(NT_bootstrap,        ntw, true));
@@ -1385,8 +1407,9 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
+    GBDATA *gb_main                 = ap_main->get_gb_main();
     WeightedFilter *weighted_filter = // do NOT free (bound to callbacks)
-        new WeightedFilter(GLOBAL_gb_main, aws->get_root(), AWAR_FILTER_NAME, AWAR_COLUMNSTAT_NAME, aws->get_root()->awar_string(AWAR_ALIGNMENT));
+        new WeightedFilter(gb_main, aws->get_root(), AWAR_FILTER_NAME, AWAR_COLUMNSTAT_NAME, aws->get_root()->awar_string(AWAR_ALIGNMENT));
 
     aws->at("filter");
     aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, weighted_filter->get_adfiltercbstruct()));
@@ -1399,10 +1422,10 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     aws->sens_mask(AWM_ALL);
 
     aws->at("alignment");
-    awt_create_ALI_selection_list(GLOBAL_gb_main, (AW_window *)aws, AWAR_ALIGNMENT, "*=");
+    awt_create_ALI_selection_list(gb_main, aws, AWAR_ALIGNMENT, "*=");
 
     aws->at("tree");
-    awt_create_TREE_selection_list(GLOBAL_gb_main, aws, AWAR_TREE, true);
+    awt_create_TREE_selection_list(gb_main, aws, AWAR_TREE, true);
 
     aws->callback(makeWindowCallback(pars_start_cb, weighted_filter, cmds));
     aws->at("go");
@@ -1435,31 +1458,31 @@ static void create_parsimony_variables(AW_root *aw_root, AW_default db) {
     awt_create_dtree_awars(aw_root, db);
 }
 
-static void pars_create_all_awars(AW_root *awr, AW_default aw_def) {
-    awr->awar_string(AWAR_SPECIES_NAME, "",     GLOBAL_gb_main);
+static void pars_create_all_awars(AW_root *awr, AW_default aw_def, GBDATA *gb_main) {
+    awr->awar_string(AWAR_SPECIES_NAME, "",     gb_main);
     awr->awar_string(AWAR_FOOTER,       "",     aw_def);
-    awr->awar_string(AWAR_FILTER_NAME,  "none", GLOBAL_gb_main);
+    awr->awar_string(AWAR_FILTER_NAME,  "none", gb_main);
 
     {
-        GB_transaction  ta(GLOBAL_gb_main);
-        char           *dali = GBT_get_default_alignment(GLOBAL_gb_main);
+        GB_transaction  ta(gb_main);
+        char           *dali = GBT_get_default_alignment(gb_main);
 
-        awr->awar_string(AWAR_ALIGNMENT, dali, GLOBAL_gb_main)->write_string(dali);
+        awr->awar_string(AWAR_ALIGNMENT, dali, gb_main)->write_string(dali);
         free(dali);
     }
 
-    awt_set_awar_to_valid_filter_good_for_tree_methods(GLOBAL_gb_main, awr, AWAR_FILTER_NAME);
+    awt_set_awar_to_valid_filter_good_for_tree_methods(gb_main, awr, AWAR_FILTER_NAME);
 
-    awr->awar_string(AWAR_FILTER_FILTER,    "", GLOBAL_gb_main);
+    awr->awar_string(AWAR_FILTER_FILTER,    "", gb_main);
     awr->awar_string(AWAR_FILTER_ALIGNMENT, "", aw_def);
 
     awr->awar(AWAR_FILTER_ALIGNMENT)->map(AWAR_ALIGNMENT);
 
-    awr->awar_int(AWAR_PARS_TYPE, PARS_WAGNER, GLOBAL_gb_main);
+    awr->awar_int(AWAR_PARS_TYPE, PARS_WAGNER, gb_main);
 
     {
-        GB_transaction  ta(GLOBAL_gb_main);
-        GBDATA *gb_tree_name = GB_search(GLOBAL_gb_main, AWAR_TREE, GB_STRING);
+        GB_transaction  ta(gb_main);
+        GBDATA *gb_tree_name = GB_search(gb_main, AWAR_TREE, GB_STRING);
         char   *tree_name    = GB_read_string(gb_tree_name);
 
         awr->awar_string(AWAR_TREE, "", aw_def)->write_string(tree_name);
@@ -1470,14 +1493,14 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def) {
     awr->awar_int(AWAR_BEST_PARSIMONY, 0, aw_def);
     awr->awar_int(AWAR_STACKPOINTER,   0, aw_def);
 
-    create_parsimony_variables(awr, GLOBAL_gb_main);
-    create_nds_vars(awr, aw_def, GLOBAL_gb_main);
+    create_parsimony_variables(awr, gb_main);
+    create_nds_vars(awr, aw_def, gb_main);
 
 #if defined(DEBUG)
     AWT_create_db_browser_awars(awr, aw_def);
 #endif // DEBUG
 
-    GB_ERROR error = ARB_init_global_awars(awr, aw_def, GLOBAL_gb_main);
+    GB_ERROR error = ARB_init_global_awars(awr, aw_def, gb_main);
     if (error) aw_message(error);
 }
 
@@ -1497,7 +1520,7 @@ int ARB_main(int argc, char *argv[]) {
     AD_map_viewer_aw_root = aw_root;
 
     ap_main     = new AP_main;
-    GLOBAL_PARS = new ArbParsimony(aw_root);
+    GLOBAL_PARS = new ArbParsimony();
 
     const char *db_server = ":";
 
@@ -1530,19 +1553,17 @@ int ARB_main(int argc, char *argv[]) {
 
     if (argc==2) db_server = argv[1];
 
-    GB_ERROR error = NULL;
-    GLOBAL_gb_main = GBT_open(db_server, "rw");
-
-    if (!GLOBAL_gb_main) error = GB_await_error();
-    else {
-        error = configure_macro_recording(aw_root, "ARB_PARS", GLOBAL_gb_main);
+    GB_ERROR error = ap_main->open(db_server);
+    if (!error) {
+        GBDATA *gb_main = ap_main->get_gb_main();
+        error           = configure_macro_recording(aw_root, "ARB_PARS", gb_main);
 
         if (!error) {
 #if defined(DEBUG)
-            AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
+            AWT_announce_db_to_browser(gb_main, GBS_global_string("ARB-database (%s)", db_server));
 #endif // DEBUG
 
-            pars_create_all_awars(aw_root, AW_ROOT_DEFAULT);
+            pars_create_all_awars(aw_root, AW_ROOT_DEFAULT, gb_main);
 
             AW_window *aww = create_pars_init_window(aw_root, &cmds);
             aww->show();
@@ -1582,7 +1603,7 @@ arb_test::match_expectation topologyEquals(AP_tree_nlen *root_node, const char *
     {
         FILE *out    = fopen(outfile, "wt");
         fulfilled.add(that(out).does_differ_from_NULL());
-        char *newick = GBT_tree_2_newick(root_node, NewickFormat(nLENGTH|nWRAP));
+        char *newick = GBT_tree_2_newick(root_node, NewickFormat(nLENGTH|nWRAP), false);
         fputs(newick, out);
         free(newick);
         fclose(out);
@@ -1613,9 +1634,15 @@ arb_test::match_expectation topologyEquals(AP_tree_nlen *root_node, const char *
 
 enum TopoMod {
     MOD_REMOVE_MARKED,
+
     MOD_QUICK_ADD,
     MOD_ADD_NNI,
+
     MOD_ADD_PARTIAL,
+
+    MOD_CALC_LENS,
+    MOD_OPTI_NNI,
+    MOD_OPTI_GLOBAL,
 };
 
 template <typename SEQ>
@@ -1635,6 +1662,18 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
 
         case MOD_ADD_PARTIAL:
             nt_add_partial(env.graphic_tree());
+            break;
+
+        case MOD_CALC_LENS:
+            calc_branchlengths(env.graphic_tree());
+            break;
+
+        case MOD_OPTI_NNI:
+            recursiveNNI(env.graphic_tree());
+            break;
+
+        case MOD_OPTI_GLOBAL:
+            optimizeTree(env.graphic_tree());
             break;
     }
 }
@@ -1687,6 +1726,10 @@ inline void mark_only(GBDATA *gb_species) {
     GB_transaction  ta(gb_main);
     GBT_mark_all(gb_main, 0);
     GB_write_flag(gb_species, 1);
+}
+inline void mark_all(GBDATA *gb_main) {
+    GB_transaction  ta(gb_main);
+    GBT_mark_all(gb_main, 0);
 }
 
 inline int is_partial(GBDATA *gb_species) {
@@ -1790,7 +1833,9 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
 
     const int PARSIMONY_ORG = 301;
+    TEST_EXPECT_EQUAL(env.combines_performed(), 0);
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 14);
 
     // Note: following code leaks father nodes and edges
     // suppressed in valgrind via ../SOURCE_TOOLS/arb.supp@TEST_nucl_tree_modifications
@@ -1798,12 +1843,18 @@ void TEST_nucl_tree_modifications() {
     // [NUCOPTI] opposed to protein tests below the initial tree here is NOT optimized! compare .@PROTOPTI
     // -> removing and adding species produces a better tree
     //
+    // diff initial->removed  : http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-removed.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
     // diff initial->add-quick: http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-add-quick.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
     // diff initial->add-NNI:   http://bugs.arb-home.de/changeset/HEAD/branches/pars/UNIT_TESTER/run/pars/nucl-add-NNI.tree.expected?old=HEAD&old_path=branches%2Fpars%2FUNIT_TESTER%2Frun%2Fpars%2Fnucl-initial.tree.expected
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "nucl-removed",   PARSIMONY_ORG-93, env, true)); // test remove-marked only (same code as part of nt_reAdd)
+    TEST_EXPECT_EQUAL(env.combines_performed(), 3);
+
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add // @@@ fails assertion
+    TEST_EXPECT_EQUAL(env.combines_performed(), 591);
+
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI // @@@ fails assertion
+    TEST_EXPECT_EQUAL(env.combines_performed(), 925);
 
     // @@@ test optimize etc.
 
@@ -1824,13 +1875,16 @@ void TEST_nucl_tree_modifications() {
             // CloButyr and CloButy2 do not differ in seq-range of partial -> any of both may be chosen as brother.
             // behavior should be changed with #605
             TEST_EXPECTATION(addingPartialResultsIn(CloButyP, "CloButyr;CloButy2", "nucl-addPart-CloButyP", PARSIMONY_ORG, env));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             env.pop();
         }
 
         {
             env.push();
             TEST_EXPECTATION(addingPartialResultsIn(CorGlutP, "CorGluta",          "nucl-addPart-CorGlutP",          PARSIMONY_ORG, env)); // add CorGlutP
+            TEST_EXPECT_EQUAL(env.combines_performed(), 5); // @@@ partial-add should not perform combines at all
             TEST_EXPECTATION(addingPartialResultsIn(CloButyP, "CloButyr;CloButy2", "nucl-addPart-CorGlutP-CloButyP", PARSIMONY_ORG, env)); // also add CloButyP
+            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             env.pop();
         }
 
@@ -1845,21 +1899,91 @@ void TEST_nucl_tree_modifications() {
             }
 
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "nucl-addPartialAsFull-CorGlutP", PARSIMONY_ORG, env, false));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 254);
             TEST_EXPECT_EQUAL(is_partial(CorGlutP), 0); // check CorGlutP was added as full sequence
             TEST_EXPECTATION(addedAsBrotherOf("CorGlutP", "CorGluta", env)); // partial created from CorGluta gets inserted next to CorGluta
 
             // add CloButyP as partial.
             // as expected it is placed next to matching full sequences (does not differ in partial range)
             TEST_EXPECTATION(addingPartialResultsIn(CloButyP, "CloButyr;CloButy2", NULL, PARSIMONY_ORG, env));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
 
             // CloButyM differs slightly in overlap with CloButyr/CloButy2, but has no overlap with CorGlutP
             // reproduces bug described in #609
             TEST_EXPECTATION(addingPartialResultsIn(CloButyM, "CorGlutP", "nucl-addPart-bug609",
                                                     PARSIMONY_ORG+9, // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS 
                                                     env));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             env.pop();
         }
     }
+
+#if 0
+    // @@@ crashes here with missing sequence (caused by pop()), but works below in TEST_optimizations
+
+    // test branchlength calculation
+    // (optimizations below implicitely recalculate branchlengths)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG-17, env, false));
+#endif
+}
+
+void TEST_optimizations_some() {
+    const char *aliname = "ali_5s";
+
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
+    TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
+
+    const int PARSIMONY_ORG = 301;
+    TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 14);
+
+    // test branchlength calculation
+    // (optimizations below implicitely recalculate branchlengths)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_CALC_LENS, "nucl-calclength", PARSIMONY_ORG, env, false));
+    TEST_EXPECT_EQUAL(env.combines_performed(), 142);
+
+    // test optimize (some)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
+    TEST_EXPECT_EQUAL(env.combines_performed(), 581);
+
+    const int      PARSIMONY_OPTI = 272; // may depend on seed
+    const unsigned seed           = 1417001558;
+    GB_random_seed(seed);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
+    TEST_EXPECT_EQUAL(env.combines_performed(), 40074);
+
+#if 0
+    // @@@ test results changed by adding the MOD_OPTI_GLOBAL test above (rel #620)
+    // test optimize (all)
+    mark_all(env.gbmain());
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
+
+    // in a fresh environment it works as before (see TEST_optimizations_all)
+#endif
+}
+
+void TEST_optimizations_all() {
+    const char *aliname = "ali_5s";
+
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
+    TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
+
+    const int PARSIMONY_ORG = 301;
+    TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 14);
+
+    // test optimize (all)
+    mark_all(env.gbmain());
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_ORG-17, env, true)); // test recursive NNI
+    TEST_EXPECT_EQUAL(env.combines_performed(), 581);
+
+    const int      PARSIMONY_OPTI = 272; // may depend on seed
+    const unsigned seed           = 1417001558;
+    GB_random_seed(seed);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
+    TEST_EXPECT_EQUAL(env.combines_performed(), 40074); // @@@ there is no difference in number of combines between TEST_optimizations_some and TEST_optimizations_all. why not?
 }
 
 void TEST_prot_tree_modifications() {
@@ -1871,6 +1995,7 @@ void TEST_prot_tree_modifications() {
 
     const int PARSIMONY_ORG = 917;
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 10);
 
     // @@@ opposed to TEST_nucl_tree_modifications valgrind does not report leaks here. why?
 
@@ -1883,8 +2008,11 @@ void TEST_prot_tree_modifications() {
     // Note: comparing these two diffs also demonstrates why quick-adding w/o NNI suffers
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-123, env, true)); // test remove-marked only (same code as part of nt_reAdd)
+    TEST_EXPECT_EQUAL(env.combines_performed(), 5);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG+1,   env, true)); // test quick-add // @@@ fails assertion
+    TEST_EXPECT_EQUAL(env.combines_performed(), 302);
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI // @@@ fails assertion
+    TEST_EXPECT_EQUAL(env.combines_performed(), 471);
 
     // @@@ test optimize etc.
 
@@ -1905,14 +2033,17 @@ void TEST_prot_tree_modifications() {
             // behavior should be changed with #605
             // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-StrCoelP", PARSIMONY_ORG+114, env));
             TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-StrCoelP", PARSIMONY_ORG+114, env)); // @@@ inserted completely wrong?
+            TEST_EXPECT_EQUAL(env.combines_performed(), 4);
             env.pop();
         }
 
         {
             env.push();
             TEST_EXPECTATION(addingPartialResultsIn(MucRaceP, "MucRacem",          "prot-addPart-MucRaceP",          PARSIMONY_ORG+7, env)); // add MucRaceP
+            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114, env)); // also add StrCoelP
             TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "AbdGlauc", "prot-addPart-MucRaceP-StrCoelP", PARSIMONY_ORG+114+7, env)); // also add StrCoelP // @@@ same misplacement as above
+            TEST_EXPECT_EQUAL(env.combines_performed(), 4);
             env.pop();
         }
 
@@ -1927,6 +2058,7 @@ void TEST_prot_tree_modifications() {
             }
 
             TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG+7, env, false));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 177);
             TEST_EXPECT_EQUAL(is_partial(MucRaceP), 0); // check CorGlutP was added as full sequence
             // TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "MucRacem", env)); // partial created from MucRacem gets inserted next to MucRacem
             TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "AbdGlauc", env)); // partial created from MucRacem gets inserted next to MucRacem // @@@ misplacement if added as full sequence (as partial placement is ok)
@@ -1935,6 +2067,7 @@ void TEST_prot_tree_modifications() {
             // as expected it is placed next to matching full sequences (does not differ in partial range)
             // TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "StrCoel9;StrRamo3", NULL, PARSIMONY_ORG, env));
             TEST_EXPECTATION(addingPartialResultsIn(StrCoelP, "MucRaceP", NULL, PARSIMONY_ORG+114+2, env)); // @@@ same position as when adding it partial
+            TEST_EXPECT_EQUAL(env.combines_performed(), 5);
 
             // StrCoelM differs slightly in overlap with StrCoel9/StrRamo3, but has no overlap with MucRaceP
             // reproduces bug described in #609
@@ -1942,11 +2075,89 @@ void TEST_prot_tree_modifications() {
             TEST_EXPECTATION(addingPartialResultsIn(StrCoelM, "StrCoelP", "prot-addPart-bug609",
                                                     PARSIMONY_ORG+114+3, // @@@ known bug - partial should not affect parsimony value; possibly related to ../HELP_SOURCE/oldhelp/pa_partial.hlp@WARNINGS
                                                     env));
+            TEST_EXPECT_EQUAL(env.combines_performed(), 6);
             env.pop();
         }
+    }
+}
+
+void TEST_node_stack() {
+    // test was used to fix #620
+
+    const char *aliname = "ali_5s";
+
+    PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
+    TEST_EXPECT_NO_ERROR(env.load_tree("tree_test"));
+    TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
+
+    const int PARSIMONY_ORG = 301;
+    TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 14);
+
+    TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+
+    // test set root to CytAquat + pop (works)
+    {
+        env.push();
+        env.root_node()->findLeafNamed("CytAquat")->set_root();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        env.pop();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+    }
+
+    // test set root to CloButyr + pop (works)
+    {
+        env.push();
+        env.root_node()->findLeafNamed("CloButyr")->set_root();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        env.pop();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+    }
+
+    // test set root to CloBifer + set root to CloTyrob + pop (works)
+    // Note: both species are in same subtree (of root)
+    {
+        env.push();
+
+        env.root_node()->findLeafNamed("CloBifer")->set_root();
+        env.root_node()->findLeafNamed("CloTyrob")->set_root();
+
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        env.pop();
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+    }
+
+    // test set root to CytAquat + set root to CloButyr + pop (fails)
+    TEST_EXPECT_EQUAL(env.combines_performed(), 0);
+    for (int calcCostsBetween = 0; calcCostsBetween<2; ++calcCostsBetween) {
+        TEST_ANNOTATE(GBS_global_string("calcCostsBetween=%i", calcCostsBetween));
+
+        TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+
+        env.push();
+
+        env.root_node()->findLeafNamed("CytAquat")->set_root();
+
+        if (calcCostsBetween) {
+            TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+            TEST_EXPECT_EQUAL(env.combines_performed(), 2);
+        }
+
+        env.root_node()->findLeafNamed("CloButyr")->set_root();
+
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 6);
+
+        env.pop();
+
+        TEST_EXPECT(env.graphic_tree()->get_root_node()->sequence_state_valid());
+        TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 0);
     }
 }
 
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
+

@@ -180,32 +180,66 @@ void AP_tree_nlen::assert_edges_valid() const {
     }
 }
 
-void AP_tree_nlen::assert_sequence_state_valid() const {
+#if defined(DEBUG)
+#define DUMP_INVALID_SUBTREES
+#endif
+
+#if defined(DUMP_INVALID_SUBTREES)
+inline void dumpSubtree(const char *msg, const AP_tree_nlen *node) {
+    fprintf(stderr, "%s:\n", msg);
+    char *printable = GBT_tree_2_newick(node, NewickFormat(nSIMPLE|nWRAP), true);
+    fputs(printable, stderr);
+    fputc('\n', stderr);
+    free(printable);
+}
+#endif
+
+bool AP_tree_nlen::sequence_state_valid() const {
     // if some node has a sequence, all son-nodes have to have sequences!
+
+    bool valid = true;
 
     const AP_sequence *sequence = get_seq();
     if (sequence) {
-        if (sequence->got_sequence()) {
+        if (sequence->hasSequence()) {
             if (!is_leaf) {
-                ap_assert(get_leftson()->get_seq()->got_sequence());
-                ap_assert(get_rightson()->get_seq()->got_sequence());
+                bool leftson_hasSequence  = get_leftson()->hasSequence();
+                bool rightson_hasSequence = get_rightson()->hasSequence();
+
+#if defined(DUMP_INVALID_SUBTREES)
+                if (!leftson_hasSequence) dumpSubtree("left subtree has no sequence", get_leftson());
+                if (!rightson_hasSequence) dumpSubtree("right subtree has no sequence", get_rightson());
+                if (!(leftson_hasSequence && rightson_hasSequence)) {
+                    dumpSubtree("while father HAS sequence", this);
+                }
+#endif
+
+                valid = leftson_hasSequence && rightson_hasSequence;
             }
         }
         else {
             if (is_leaf) ap_assert(sequence->is_bound_to_species()); // can do lazu load if needed
         }
-
-        if (!is_leaf) {
-            get_leftson()->assert_sequence_state_valid();
-            get_rightson()->assert_sequence_state_valid();
-        }
     }
+    if (!is_leaf) {
+        if (!get_leftson() ->sequence_state_valid()) valid = false;
+        if (!get_rightson()->sequence_state_valid()) valid = false;
+    }
+
+    return valid;
 }
 
 void AP_tree_nlen::assert_valid() const {
     ap_assert(this);
     assert_edges_valid();
-    assert_sequence_state_valid();
+#if 1
+    ap_assert(sequence_state_valid());
+#else
+#warning does not fail for invalid sequence state
+    if (!sequence_state_valid()) {
+        fputs("Warning: invalid sequence state!\n", stderr);
+    }
+#endif
     AP_tree::assert_valid();
 }
 
@@ -486,20 +520,20 @@ void AP_tree_nlen::set_root() {
     // from this to root buffer the nodes
     ap_main->push_node(this,  STRUCTURE);
 
-    AP_tree_nlen *old_brother = 0;
+    AP_tree_nlen *son_of_root = 0; // in previous topology 'this' was contained inside 'son_of_root'
     AP_tree_nlen *old_root    = 0;
     {
         AP_tree_nlen *pntr;
         for (pntr = get_father(); pntr->father; pntr = pntr->get_father()) {
             ap_main->push_node(pntr, BOTH);
-            old_brother = pntr;
+            son_of_root = pntr;
         }
         old_root = pntr;
     }
 
-    if (old_brother) {
-        old_brother = old_brother->get_brother();
-        ap_main->push_node(old_brother,  STRUCTURE);
+    if (son_of_root) {
+        AP_tree_nlen *other_son_of_root = son_of_root->get_brother();
+        ap_main->push_node(other_son_of_root, STRUCTURE);
     }
 
     ap_main->push_node(old_root, ROOT);
@@ -730,18 +764,18 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
 
     if (is_leaf && !(STRUCTURE & mode)) return false;    // tips push only structure
 
-    if (this->stack_level == datum) {
+    if (this->stack_level == datum) { // node already has a push (at current stack-level)
         AP_tree_buffer *last_buffer = stack.get_first();
-        AP_sequence    *sequence    = get_seq();
 
-        if (sequence && (mode & SEQUENCE)) sequence->forget_sequence();
         if (0 == (mode & ~last_buffer->mode)) { // already buffered
+            AP_sequence *sequence = get_seq();
+            if (sequence && (mode & SEQUENCE)) sequence->forget_sequence();
             return false;
         }
         new_buff = last_buffer;
         ret = false;
     }
-    else {
+    else { // first push for this node (at current stack-level)
         new_buff           = new AP_tree_buffer;
         new_buff->count    = 1;
         new_buff->controll = stack_level;
@@ -771,11 +805,18 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
         }
     }
 
-    if ((mode & SEQUENCE) && !(new_buff->mode & SEQUENCE)) {
-        AP_sequence *sequence   = take_seq();
-        new_buff->sequence      = sequence;
-        new_buff->mutation_rate = mutation_rate;
-        mutation_rate           = 0.0;
+    if (mode & SEQUENCE) {
+        ap_assert(!is_leaf); // only allowed to push STRUCTURE for leafs
+        if (!(new_buff->mode & SEQUENCE)) {
+            AP_sequence *sequence   = take_seq();
+            new_buff->sequence      = sequence;
+            new_buff->mutation_rate = mutation_rate;
+            mutation_rate           = 0.0;
+        }
+        else {
+            AP_sequence *sequence = get_seq();
+            if (sequence) sequence->forget_sequence();
+        }
     }
 
     new_buff->mode = (AP_STACK_MODE)(new_buff->mode|mode);
@@ -838,7 +879,7 @@ void AP_tree_nlen::parsimony_rek(char *mutPerSite) {
             ap_assert(sequence);
         }
 
-        if (!sequence->got_sequence()) {
+        if (!sequence->hasSequence()) {
             AP_tree_nlen *lson = get_leftson();
             AP_tree_nlen *rson = get_rightson();
 
@@ -1152,7 +1193,7 @@ char* AP_tree_nlen::getSequenceCopy() {
     costs();
 
     AP_sequence_parsimony *pseq = DOWNCAST(AP_sequence_parsimony*, get_seq());
-    ap_assert(pseq->got_sequence());
+    ap_assert(pseq->hasSequence());
 
     size_t  len = pseq->get_sequence_length();
     char   *s   = new char[len];

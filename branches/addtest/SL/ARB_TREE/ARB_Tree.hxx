@@ -21,6 +21,10 @@
 #ifndef ROOTEDTREE_H
 #include <RootedTree.h>
 #endif
+#ifndef AP_SEQUENCE_HXX
+#include <AP_sequence.hxx>
+#endif
+
 
 #define at_assert(cond) arb_assert(cond)
 
@@ -30,7 +34,6 @@ class ARB_seqtree_root;
 class ARB_seqtree;
 class ARB_edge;
 class AP_weights;
-class AP_sequence;
 class AliView;
 
 class ARB_seqtree_root : public TreeRoot { // derived from Noncopyable
@@ -155,6 +158,8 @@ public:
         seq = sequence;
         return seq;
     }
+
+    bool hasSequence() const { return seq && seq->hasSequence(); }
 
     void mark_subtree();
     bool contains_marked_species();

@@ -99,7 +99,7 @@ ALLOWED_gcc_VERSIONS=\
         4.6.1 4.6.2 4.6.3 \
         4.7.1 4.7.2 4.7.3 4.7.4 \
   4.8.0 4.8.1 4.8.2 4.8.3 \
-  4.9.0 4.9.1 \
+  4.9.0 4.9.1 4.9.2 \
 
 # supported clang versions:
 ALLOWED_clang_VERSIONS=\
@@ -315,14 +315,6 @@ ifeq ($(USE_CLANG),1)
 	extended_cpp_warnings += -Wno-mismatched-tags -Wno-char-subscripts -Wno-unused-private-field -Wno-string-plus-int -Wno-gnu-static-float-init
 endif
 
-ifeq ($(USE_CLANG),0)
-# TEMPORARY WORKAROUND for linker issues with launchpad binutils
-# code was added to ld to check for overlapping FDEs. Since ARB
-# worked before, we want this not to fail for the moment.
-# FIXME: remove this!
-        clflags += -Wl,-noinhibit-exec
-endif
-
 #---------------------- developer
 
 ifneq ($(DEVELOPER),ANY) # ANY=default setting (skip all developer specific code)
@@ -516,8 +508,15 @@ endif
 ifeq ($(SANITIZE_UNDEFINED),1)
  cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
  ifeq ('$(DEBUG)','1')
-# workaround https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63531
-  extended_cpp_warnings:=$(subst -Weffc++,,$(extended_cpp_warnings))
+  ifeq ($(USE_GCC_MAJOR),4)
+   ifeq ($(USE_GCC_MINOR),9)
+    ifneq ('$(findstring $(USE_GCC_PATCHLEVEL),01)','')
+# workaround https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63531 for 4.9.0 + 4.9.1
+# (problem is fixed in 4.9.2 release)
+     extended_cpp_warnings:=$(subst -Weffc++,,$(extended_cpp_warnings))
+    endif
+   endif
+  endif
  endif
  EXECLIBS += -lubsan
 endif

@@ -56,15 +56,18 @@ class AP_main : virtual Noncopyable {
     unsigned long          stack_level;
     AWT_graphic_parsimony *agt; // provides access to tree!
     unsigned long          user_push_counter;
+    GBDATA                *gb_main;
 
 public:
     AP_main()
         : stack(NULL),
           stack_level(0),
           agt(NULL),
-          user_push_counter(0)
+          user_push_counter(0),
+          gb_main(NULL)
     {}
     ~AP_main() {
+        if (gb_main) GB_close(gb_main);
         delete stack;
     }
 
@@ -74,6 +77,10 @@ public:
 
     DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, agt->get_root_node());
 
+    GBDATA *get_gb_main() const {
+        ap_assert(gb_main); // you need to call open() before you can use get_gb_main()
+        return gb_main;
+    }
     const char *get_aliname() const;
     unsigned long get_user_push_counter() const { return user_push_counter; }
 
@@ -87,8 +94,7 @@ public:
     void clear();               // clears all buffers
 };
 
-extern AP_main *ap_main;
-extern GBDATA  *GLOBAL_gb_main;
+extern AP_main *ap_main; // @@@ elim
 
 #else
 #error ap_main.hxx included twice

@@ -1313,7 +1313,7 @@ namespace arb_test {
 
 namespace arb_test {
     inline match_expectation expect_newick_equals(NewickFormat format, const GBT_TREE *tree, const char *expected_newick) {
-        char              *newick   = GBT_tree_2_newick(tree, format);
+        char              *newick   = GBT_tree_2_newick(tree, format, false);
         match_expectation  expected = that(newick).is_equal_to(expected_newick);
         free(newick);
         return expected;
