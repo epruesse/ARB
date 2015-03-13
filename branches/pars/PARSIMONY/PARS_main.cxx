@@ -2197,7 +2197,12 @@ void TEST_nucl_tree_modifications() {
             {
                 // ../UNIT_TESTER/run/pars
                 char *saveName = GBS_global_string_copy("nucl-calclength-%s", leafName);
+#if defined(AUTO_UPDATE_IF_CHANGED)
+                TEST_EXPECT_SAVED_TOPOLOGY(env, saveName);
+#else // !defined(AUTO_UPDATE_IF_CHANGED)
                 TEST_EXPECT_SAVED_TOPOLOGY__BROKEN(env, "nucl-calclength", saveName);
+                // TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-calclength");
+#endif
                 free(saveName);
             }
         }
