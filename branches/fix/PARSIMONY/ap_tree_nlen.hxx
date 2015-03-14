@@ -293,6 +293,8 @@ class AP_tree_edge : virtual Noncopyable {
 
     bool is_linked() const { return node[0]; }
 
+    void set_inner_branch_length_and_calc_adj_leaf_lengths(AP_FLOAT bcosts);
+
     // my friends:
     friend class AP_tree_nlen;
     friend class EdgeChain;

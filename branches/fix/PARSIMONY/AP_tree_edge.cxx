@@ -320,48 +320,60 @@ static void ap_calc_bootstrap_remark(AP_tree_nlen *son_node, AP_BL_MODE mode, co
     }
 }
 
-
-static void ap_calc_leaf_branch_length(AP_tree_nlen *leaf) {
-    // calculates the branchlength for leafs
-
-    AP_FLOAT Seq_len = leaf->get_seq()->weighted_base_count();
-    if (Seq_len <= 1.0) Seq_len = 1.0;
-
-    ap_assert(leaf->is_leaf);
-
-    AP_FLOAT parsbest = rootNode()->costs();
-
-    ap_main->remember();
-    leaf->REMOVE();
-    AP_FLOAT mutations = parsbest - rootNode()->costs(); // number of min. mutations caused by adding 'leaf' to tree
-    ap_main->revert();
-
-    GBT_LEN blen = mutations/Seq_len; // scale with Seq_len (=> max branchlength == 1.0)
-    leaf->set_branchlength_unrooted(blen);
-}
-
 const GBT_LEN AP_UNDEF_BL = 10.5;
 
-static void set_inner_branch_length_and_calc_adj_leaf_lengths(AP_tree_nlen *son, GBT_LEN blen) {
-    ap_assert(!son->is_leaf);
+inline void update_undefined_leaf_branchlength(AP_tree_nlen *leaf) {
+    if (leaf->is_leaf &&
+        leaf->get_branchlength_unrooted() == AP_UNDEF_BL)
+    {
+        // calculate the branchlength for leafs
+        AP_FLOAT Seq_len = leaf->get_seq()->weighted_base_count();
+        if (Seq_len <= 1.0) Seq_len = 1.0;
 
-    AP_FLOAT seq_len             = son->get_seq()->weighted_base_count();
-    if (seq_len <= 1.0) seq_len  = 1.0;
-    blen                        *= 0.5 / seq_len * 2.0; // doubled counted sum * corr
+        ap_assert(leaf->is_leaf);
+
+        AP_FLOAT parsbest = rootNode()->costs();
+
+        ap_main->remember();
+        leaf->REMOVE();
+        AP_FLOAT mutations = parsbest - rootNode()->costs(); // number of min. mutations caused by adding 'leaf' to tree
+        ap_main->revert();
+
+        GBT_LEN blen = mutations/Seq_len; // scale with Seq_len (=> max branchlength == 1.0)
+        leaf->set_branchlength_unrooted(blen);
+    }
+}
+
+void AP_tree_edge::set_inner_branch_length_and_calc_adj_leaf_lengths(AP_FLOAT bcosts) {
+    // 'bcosts' is the number of mutations assumed at this edge
+
+    ap_assert(!is_leaf_edge());
+
+    AP_tree_nlen *son = sonNode();
+    ap_assert(son->at_root()); // otherwise length calculation is unstable!
+    AP_tree_nlen *otherSon = son->get_brother();
+
+    ap_assert(son->get_seq()->hasSequence());
+    ap_assert(otherSon->get_seq()->hasSequence());
+
+    AP_FLOAT seq_len =
+        (son     ->get_seq()->weighted_base_count() +
+         otherSon->get_seq()->weighted_base_count()
+            ) * 0.5;
+
+    if (seq_len <= 1.0) seq_len = 1.0; // @@@ hm :/
+
+    AP_FLOAT blen = bcosts / seq_len; // branchlength := costs per bp
 
     son->set_branchlength_unrooted(blen);
 
     // calculate adjacent leaf branchlengths early
     // (calculating them at end of nni_rec, produces much more combines)
-    if (son->leftson->is_leaf) {
-        ap_assert(son->get_leftson()->get_branchlength_unrooted() == AP_UNDEF_BL);
-        ap_calc_leaf_branch_length(son->get_leftson());
-    }
 
-    if (son->rightson->is_leaf) {
-        ap_assert(son->get_rightson()->get_branchlength_unrooted() == AP_UNDEF_BL);
-        ap_calc_leaf_branch_length(son->get_rightson());
-    }
+    update_undefined_leaf_branchlength(son->get_leftson());
+    update_undefined_leaf_branchlength(son->get_rightson());
+    update_undefined_leaf_branchlength(otherSon->get_leftson());
+    update_undefined_leaf_branchlength(otherSon->get_rightson());
 }
 
 #if defined(ASSERTION_USED) || defined(UNIT_TESTS)
@@ -375,14 +387,6 @@ bool allBranchlengthsAreDefined(AP_tree_nlen *tree) {
         allBranchlengthsAreDefined(tree->get_rightson());
 }
 #endif
-
-inline void update_undefined_leaf_branchlength(AP_tree_nlen *node) {
-    if (node->is_leaf &&
-        node->get_branchlength_unrooted() == AP_UNDEF_BL)
-    {
-        ap_calc_leaf_branch_length(node);
-    }
-}
 
 inline void undefine_branchlengths(AP_tree_nlen *node) {
     // undefine branchlengths of node (triggers recalculation)
@@ -426,17 +430,15 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
     while (chain && (recalc_lengths || !progress.aborted())) { // never abort while calculating branchlengths
         AP_tree_edge *edge   = *chain; ++chain;
         AP_tree_nlen *son    = edge->sonNode();
-        AP_tree_nlen *notSon = edge->otherNode(son);
+        AP_tree_nlen *notSon = edge->otherNode(son); // @@@ limit scope
 
         ap_assert(notSon->father);
-        if (notSon->father) {
-            if (mode & AP_BL_BOOTSTRAP_LIMIT) {
-                son->set_root();
-            }
-            else {
-                if (notSon->father->father) {
-                    notSon->set_root();
-                }
+        if (recalc_lengths) {
+            son->set_root();
+        }
+        else {
+            if (notSon->father->father) {
+                notSon->set_root();
             }
         }
         if (mode & AP_BL_BOOTSTRAP_LIMIT) {
@@ -453,7 +455,9 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
     }
 
     if (recalc_lengths) {
-// #define DUMP_FINAL_RECALCS
+#if defined(DEBUG)
+#define DUMP_FINAL_RECALCS
+#endif
 #if defined(DUMP_FINAL_RECALCS)
         int final_recalc = 0;
 #endif
@@ -476,7 +480,8 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
         }
 
 #if defined(DUMP_FINAL_RECALCS)
-        fprintf(stderr, "Final leaf branches calculated: %i leafs for a chain of size=%li\n", final_recalc, cs);
+        fprintf(stderr, "Final leaf branches calculated: %i leafs for a chain of size=%zu\n", final_recalc, chain.size());
+        ap_assert(!final_recalc); // @@@ the whole 'if (recalc_lengths)'-branch is obsolete // @@@ check with bigger trees
 #endif
     }
 
@@ -545,9 +550,11 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
     }
 
     if (mode & AP_BL_BL_ONLY) { // ************* calculate branch lengths **************
-        GBT_LEN blen = (pars_one + pars_two + pars_three) - (3.0 * parsbest);
-        if (blen <0) blen = 0;
-        set_inner_branch_length_and_calc_adj_leaf_lengths(son, blen);
+        GBT_LEN bcosts        = (pars_one + pars_two + pars_three) - (3.0 * parsbest);
+        if (bcosts <0) bcosts = 0;
+
+        root->costs();
+        set_inner_branch_length_and_calc_adj_leaf_lengths(bcosts);
     }
 
     return

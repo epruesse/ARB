@@ -616,10 +616,13 @@ AP_FLOAT AP_sequence_protein::count_weighted_bases() const {
 
         for (size_t idx = 0; idx<sequence_len; ++idx) {
             if (notHasGap(sequence[idx])) {
+                sum += weights->weight(idx) * 2.0;
+            }
+            else if /*has gap but */ (notIsGap(sequence[idx])) {
                 sum += weights->weight(idx);
             }
         }
-        wcount = sum;
+        wcount = sum * 0.5;
     }
     return wcount;
 }
