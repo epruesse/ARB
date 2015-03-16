@@ -204,7 +204,7 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
             this_pars = get_root_node()->costs();
         }
         else {
-            this_pars = at->nn_interchange_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY); // @@@ should select only configured edges
+            this_pars = at->nn_interchange_rec(UNLIMITED, MARKED_VISIBLE_EDGES, AP_BL_NNI_ONLY); // @@@ should select only configured edges
         }
         ap_assert(this_pars>=0); // ensure this_pars was set
         ap_assert(this_pars<=prev_pars); // otherwise heuristic worsened the tree

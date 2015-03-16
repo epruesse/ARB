@@ -13,28 +13,28 @@
         CloTyro2:0.013
        ):0.000,
        CloTyrob:0.013
-      ):0.420,
-      CloInnoc:0.356
-     ):0.182,
+      ):0.421,
+      CloInnoc:0.342
+     ):0.181,
      (
       (
-       CelBiazo:0.152,
-       CorAquat:0.076
-      ):0.027,
-      CurCitre:0.086
-     ):0.181
-    ):0.059,
-    (
-     CloCarni:0.118,
-     CloPaste:0.224
-    ):0.030
-   ):0.236,
+       (
+        CelBiazo:0.165,
+        CorAquat:0.063
+       ):0.014,
+       CurCitre:0.099
+      ):0.192,
+      CloPaste:0.211
+     ):0.030
+    ):0.117,
+    CloCarni:0.118
+   ):0.269,
    (
     CloButy2:0.000,
     CloButyr:0.000
    ):0.058
-  ):0.047,
-  CloBifer:0.190
+  ):0.092,
+  CloBifer:0.204
  ):0.043,
  (
   CorGluta:0.329,

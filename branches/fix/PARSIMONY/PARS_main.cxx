@@ -2132,10 +2132,11 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
 
     // @@@ unify names (ALL<>MARKED)
-    const int PARSIMONY_NNI         = PARSIMONY_ORG-18;
-    const int PARSIMONY_NNI_ALL     = PARSIMONY_ORG-18;
-    const int PARSIMONY_OPTI_MARKED = PARSIMONY_ORG-29; // Note: value equals old-value before [13541], but executed combines were 25% more back there
-    const int PARSIMONY_OPTI        = PARSIMONY_ORG-36;
+    const int PARSIMONY_NNI          = PARSIMONY_ORG-18;
+    const int PARSIMONY_NNI_ALL      = PARSIMONY_ORG-18;
+    const int PARSIMONY_OPTI_MARKED  = PARSIMONY_ORG-25;
+    const int PARSIMONY_OPTI_VISIBLE = PARSIMONY_ORG-26;
+    const int PARSIMONY_OPTI         = PARSIMONY_ORG-36;
 
     {
         env.push();
@@ -2194,7 +2195,7 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 217);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 15757);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 7699);
 
     // -----------------------------
     //      test optimize (all)
@@ -2217,12 +2218,23 @@ void TEST_nucl_tree_modifications() {
 
     {
         env.push();
-        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 24215);
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-visible-global", PARSIMONY_OPTI_VISIBLE, env, false)); // test recursive NNI+KL
+        TEST_EXPECT_EQUAL(env.combines_performed(), 13757);
 
-        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 430);
+        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI_VISIBLE));
+        TEST_EXPECT_EQUAL(env.combines_performed(), 414);
         env.pop();
+    }
+
+    // unfold groups
+    {
+        AP_tree_nlen *CloTyrob = env.root_node()->findLeafNamed("CloTyrob");
+        AP_tree_nlen *group    = CloTyrob->get_father();
+        ap_assert(group->gr.grouped);
+        group->gr.grouped      = false; // unfold the only folded group
+
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
+        TEST_EXPECT_EQUAL(env.combines_performed(), 30114);
     }
 }
 
@@ -2319,10 +2331,11 @@ void TEST_prot_tree_modifications() {
 
     const unsigned mixseed = 1422292802;
 
-    const int PARSIMONY_MIXED   = PARSIMONY_ORG + 1207;
-    const int PARSIMONY_NNI     = PARSIMONY_ORG + 1125;
-    const int PARSIMONY_NNI_ALL = PARSIMONY_ORG;
-    const int PARSIMONY_OPTI    = PARSIMONY_ORG; // no gain (initial tree already is optimized)
+    const int PARSIMONY_MIXED       = PARSIMONY_ORG + 1207;
+    const int PARSIMONY_NNI         = PARSIMONY_ORG + 1125;
+    const int PARSIMONY_NNI_ALL     = PARSIMONY_ORG;
+    const int PARSIMONY_OPTI_MARKED = PARSIMONY_ORG + 7; // did not reach original state (initial tree already is optimized)
+    const int PARSIMONY_OPTI        = PARSIMONY_ORG;     // no gain (initial tree already is optimized)
 
     // ------------------------------------------------------
     //      mix tree (original tree already is optimized)
@@ -2388,8 +2401,8 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 170);
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-marked-global", PARSIMONY_OPTI, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 1182);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
+    TEST_EXPECT_EQUAL(env.combines_performed(), 1668);
 
     // -----------------------------
     //      test optimize (all)
