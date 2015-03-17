@@ -88,7 +88,7 @@ enum AP_TREE_SIDE {
 enum EdgeSpec {
     // bit-values (default=0 -> take any_edge):
     SKIP_UNMARKED_EDGES = 1,
-    SKIP_FOLDED_EDGES   = 2,
+    SKIP_FOLDED_EDGES   = 2, // Note: also skips edges adjacent to folded groups
     SKIP_LEAF_EDGES     = 4,
     SKIP_INNER_EDGES    = 8,
 
