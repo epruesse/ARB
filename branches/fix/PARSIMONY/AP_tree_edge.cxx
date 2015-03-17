@@ -147,7 +147,7 @@ size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool dep
                     if (Edge != this) {
                         descend = true;
                         if (descend && (whichEdges&SKIP_UNMARKED_EDGES)) descend = has_marked();
-                        if (descend && (whichEdges&SKIP_FOLDED_EDGES))   descend = !next_to_folded_group();
+                        if (descend && (whichEdges&SKIP_FOLDED_EDGES))   descend = !Edge->next_to_folded_group();
                         if (descend) {
                             added += Edge->buildChainInternal(depth-1, whichEdges, depthFirst, node[n], prevNextPtr);
                         }
@@ -673,9 +673,9 @@ void TEST_edgeChain() {
         // fold left subtree
         leftSon->gr.grouped = 1;
 
-        TEST_EXPECT_EQUAL        (EdgeChain(root, -1, ANY_EDGE,             true) .size(), ALL_EDGES);     // all edges
-        TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true) .size(), MV_RIGHT-1, 0); // should skip left subtree AND rootedge
-        TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, SKIP_FOLDED_EDGES,    true) .size(), V_RIGHT-1,  0); // should skip left subtree AND rootedge
+        TEST_EXPECT_EQUAL(EdgeChain(root, -1, ANY_EDGE,             true) .size(), ALL_EDGES);  // all edges
+        TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true) .size(), MV_RIGHT-1); // skips left subtree AND rootedge
+        TEST_EXPECT_EQUAL(EdgeChain(root, -1, SKIP_FOLDED_EDGES,    true) .size(), V_RIGHT-1);  // skips left subtree AND rootedge
 
         // fold bold subtrees
         rightSon->gr.grouped = 1;
@@ -687,9 +687,9 @@ void TEST_edgeChain() {
         // fold right subtree only
         leftSon->gr.grouped = 0;
 
-        TEST_EXPECT_EQUAL        (EdgeChain(root, -1, ANY_EDGE,             true) .size(), ALL_EDGES);    // all edges
-        TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true) .size(), MV_LEFT-1, 0); // should skip right subtree AND rootedge
-        TEST_EXPECT_EQUAL__BROKEN(EdgeChain(root, -1, SKIP_FOLDED_EDGES,    true) .size(), V_LEFT-1,  0); // should skip right subtree AND rootedge
+        TEST_EXPECT_EQUAL(EdgeChain(root, -1, ANY_EDGE,             true) .size(), ALL_EDGES); // all edges
+        TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true) .size(), MV_LEFT-1); // skips right subtree AND rootedge
+        TEST_EXPECT_EQUAL(EdgeChain(root, -1, SKIP_FOLDED_EDGES,    true) .size(), V_LEFT-1);  // skips right subtree AND rootedge
 
         // restore previous folding
         rightSon->gr.grouped = 0;
