@@ -429,28 +429,20 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
     chain.restart();
     while (chain && (recalc_lengths || !progress.aborted())) { // never abort while calculating branchlengths
         AP_tree_edge *edge   = *chain; ++chain;
-        AP_tree_nlen *son    = edge->sonNode();
-        AP_tree_nlen *notSon = edge->otherNode(son); // @@@ limit scope
 
-        ap_assert(notSon->father);
-        if (recalc_lengths) {
+        if (!edge->is_leaf_edge()) {
+            AP_tree_nlen *son = edge->sonNode();
             son->set_root();
-        }
-        else {
-            if (notSon->father->father) {
-                notSon->set_root();
+            if (mode & AP_BL_BOOTSTRAP_LIMIT) {
+                MutationsPerSite mps(son->get_seq()->get_sequence_length());
+                new_parsimony = edge->nni_mutPerSite(new_parsimony, mode, &mps);
+                ap_calc_bootstrap_remark(son, mode, mps);
             }
+            else {
+                new_parsimony = edge->nni_mutPerSite(new_parsimony, mode, NULL);
+            }
+            // ap_assert(rootNode()->costs() == new_parsimony); // does not fail (but changes number of combines performed in tests)
         }
-        if (mode & AP_BL_BOOTSTRAP_LIMIT) {
-            MutationsPerSite mps(son->get_seq()->get_sequence_length());
-            new_parsimony = edge->nni_mutPerSite(new_parsimony, mode, &mps);
-            ap_calc_bootstrap_remark(son, mode, mps);
-        }
-        else {
-            new_parsimony = edge->nni_mutPerSite(new_parsimony, mode, NULL);
-        }
-        // ap_assert(rootNode()->costs() == new_parsimony); // does not fail (but changes number of combines performed in tests)
-
         progress.inc();
     }
 
@@ -494,7 +486,7 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
 }
 
 AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps) {
-    if (is_leaf_edge()) return pars_one;
+    ap_assert(!is_leaf_edge()); // avoid useless calls
 
     AP_tree_nlen *root     = rootNode();
     AP_FLOAT      parsbest = pars_one;
