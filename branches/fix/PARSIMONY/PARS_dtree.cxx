@@ -114,7 +114,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
         startEdge = rootEdge();
         ap_assert(startEdge);
     }
-    EdgeChain chain(startEdge, UNLIMITED, EdgeSpec(SKIP_LEAF_EDGES|SKIP_FOLDED_EDGES|SKIP_UNMARKED_EDGES), true);     // @@@ skip marked/unfolded only if configured
+    EdgeChain chain(startEdge, UNLIMITED, EdgeSpec(SKIP_LEAF_EDGES|settings.whichEdges), true);
 
     arb_progress progress(chain.size());
 
@@ -204,7 +204,7 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
             this_pars = get_root_node()->costs();
         }
         else {
-            this_pars = at->nn_interchange_rec(UNLIMITED, MARKED_VISIBLE_EDGES, AP_BL_NNI_ONLY); // @@@ should select only configured edges
+            this_pars = at->nn_interchange_rec(UNLIMITED, settings.whichEdges, AP_BL_NNI_ONLY);
         }
         ap_assert(this_pars>=0); // ensure this_pars was set
         ap_assert(this_pars<=prev_pars); // otherwise heuristic worsened the tree

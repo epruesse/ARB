@@ -46,6 +46,19 @@ enum KL_DYNAMIC_THRESHOLD_TYPE {
     AP_QUADRAT_MAX   = 6
 };
 
+enum EdgeSpec {
+    // bit-values (default=0 -> take any_edge):
+    SKIP_UNMARKED_EDGES = 1,
+    SKIP_FOLDED_EDGES   = 2, // Note: also skips edges adjacent to folded groups
+    SKIP_LEAF_EDGES     = 4,
+    SKIP_INNER_EDGES    = 8,
+
+    // convenience defines:
+    // @@@ does not tell anything about inner/leaf edges
+    ANY_EDGE             = 0,
+    MARKED_VISIBLE_EDGES = SKIP_UNMARKED_EDGES|SKIP_FOLDED_EDGES,
+};
+
 struct KL_Settings {
     int maxdepth; // AWAR_KL_MAXDEPTH
     int incdepth; // AWAR_KL_INCDEPTH
@@ -61,6 +74,8 @@ struct KL_Settings {
         int                       maxx;    // AWAR_KL_DYNAMIC_MAXX
         int                       maxy;    // AWAR_KL_DYNAMIC_MAXY
     } Dynamic;
+
+    EdgeSpec whichEdges;
 
     KL_Settings(AW_root *aw_root); // read from AWARs
 #if defined(UNIT_TESTS)

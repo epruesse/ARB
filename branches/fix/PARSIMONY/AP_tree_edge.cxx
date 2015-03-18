@@ -146,7 +146,7 @@ size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool dep
                     AP_tree_edge * Edge = node[n]->edge[e];
                     if (Edge != this) {
                         descend = true;
-                        if (descend && (whichEdges&SKIP_UNMARKED_EDGES)) descend = has_marked();
+                        if (descend && (whichEdges&SKIP_UNMARKED_EDGES)) descend = has_marked(); // @@@ use Edge->has_marked?
                         if (descend && (whichEdges&SKIP_FOLDED_EDGES))   descend = !Edge->next_to_folded_group();
                         if (descend) {
                             added += Edge->buildChainInternal(depth-1, whichEdges, depthFirst, node[n], prevNextPtr);
@@ -177,7 +177,7 @@ EdgeChain::EdgeChain(AP_tree_edge *startEgde, int depth, EdgeSpec whichEdges, bo
     /*! build a chain of edges for further processing
      * @param startEgde        start edge
      * @param depth            specifies how far to recurse into tree (-1 = recurse whole tree; 0 = this edge only)
-     * @param whichEdges       if MARKED_VISIBLE_EDGES -> do not descend into folded subtrees and subtrees w/o marked species
+     * @param whichEdges       specifies which edges get chained
      * @param depthFirst       true -> insert leafs before inner nodes (but whole son-subtree before other-son-subtree)
      * @param skip             previous node (will not recurse beyond)
      */

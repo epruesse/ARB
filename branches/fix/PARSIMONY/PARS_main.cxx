@@ -930,14 +930,14 @@ static void NT_optimize(AW_window *, AWT_canvas *ntw) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static void recursiveNNI(AWT_graphic_parsimony *agt) {
+static void recursiveNNI(AWT_graphic_parsimony *agt, EdgeSpec whichEdges) {
     arb_progress progress("Recursive NNI");
     AP_FLOAT     orgPars  = rootNode()->costs();
     AP_FLOAT     prevPars = orgPars;
     progress.subtitle(GBS_global_string("best=%.1f", orgPars));
 
     while (!progress.aborted()) {
-        AP_FLOAT currPars = rootEdge()->nni_rec(UNLIMITED, MARKED_VISIBLE_EDGES, AP_BL_NNI_ONLY, NULL);
+        AP_FLOAT currPars = rootEdge()->nni_rec(UNLIMITED, whichEdges, AP_BL_NNI_ONLY, NULL);
         if (currPars == prevPars) break; // no improvement -> abort
         progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", currPars, orgPars-currPars));
         prevPars          = currPars;
@@ -948,7 +948,8 @@ static void recursiveNNI(AWT_graphic_parsimony *agt) {
 }
 
 static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
-    recursiveNNI(AWT_TREE_PARS(ntw));
+    EdgeSpec whichEdges = KL_Settings(ntw->awr).whichEdges;
+    recursiveNNI(AWT_TREE_PARS(ntw), whichEdges);
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -1540,6 +1541,8 @@ KL_Settings::KL_Settings(AW_root *aw_root) {
     Dynamic.maxx    = aw_root->awar(AWAR_KL_DYNAMIC_MAXX)->read_int();
     Dynamic.maxy    = aw_root->awar(AWAR_KL_DYNAMIC_MAXY)->read_int();
     Dynamic.type    = (KL_DYNAMIC_THRESHOLD_TYPE)aw_root->awar(AWAR_KL_FUNCTION_TYPE)->read_int();
+
+    whichEdges = EdgeSpec(SKIP_UNMARKED_EDGES|SKIP_FOLDED_EDGES);
 }
 #if defined(UNIT_TESTS)
 KL_Settings::KL_Settings(GB_alignment_type atype) {
@@ -1583,6 +1586,7 @@ KL_Settings::KL_Settings(GB_alignment_type atype) {
 
     // const setting (not configurable)
     Dynamic.type = AP_QUADRAT_START;
+    whichEdges   = EdgeSpec(SKIP_UNMARKED_EDGES|SKIP_FOLDED_EDGES);
 }
 #endif
 
@@ -1823,7 +1827,7 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
             break;
 
         case MOD_OPTI_NNI: // only marked/unfolded
-            recursiveNNI(env.graphic_tree());
+            recursiveNNI(env.graphic_tree(), env.get_KL_settings().whichEdges);
             break;
 
         case MOD_OPTI_GLOBAL:

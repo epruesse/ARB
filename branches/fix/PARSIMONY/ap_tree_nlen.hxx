@@ -85,19 +85,6 @@ enum AP_TREE_SIDE {
     AP_RIGHT,
 };
 
-enum EdgeSpec {
-    // bit-values (default=0 -> take any_edge):
-    SKIP_UNMARKED_EDGES = 1,
-    SKIP_FOLDED_EDGES   = 2, // Note: also skips edges adjacent to folded groups
-    SKIP_LEAF_EDGES     = 4,
-    SKIP_INNER_EDGES    = 8,
-
-    // convenience defines:
-    // @@@ does not tell anything about inner/leaf edges
-    ANY_EDGE             = 0,
-    MARKED_VISIBLE_EDGES = SKIP_UNMARKED_EDGES|SKIP_FOLDED_EDGES,
-};
-
 class  AP_tree_edge;
 class  AP_main;
 
