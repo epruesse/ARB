@@ -410,7 +410,14 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
 
     ap_assert(allBranchlengthsAreDefined(rootNode()));
 
-    bool         recalc_lengths = mode & AP_BL_BL_ONLY;
+    bool recalc_lengths = mode & AP_BL_BL_ONLY;
+    if (recalc_lengths) {
+        ap_assert(whichEdges == ANY_EDGE);
+    }
+    else { // skip leaf edges when not calculating lengths
+        whichEdges = EdgeSpec(whichEdges|SKIP_LEAF_EDGES);
+    }
+
     EdgeChain    chain(this, depth, whichEdges, !recalc_lengths, skipNode);
     arb_progress progress(chain.size());
 
@@ -428,7 +435,7 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
 
     chain.restart();
     while (chain && (recalc_lengths || !progress.aborted())) { // never abort while calculating branchlengths
-        AP_tree_edge *edge   = *chain; ++chain;
+        AP_tree_edge *edge = *chain; ++chain;
 
         if (!edge->is_leaf_edge()) {
             AP_tree_nlen *son = edge->sonNode();
