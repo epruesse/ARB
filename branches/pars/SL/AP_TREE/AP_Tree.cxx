@@ -648,22 +648,6 @@ bool AP_tree::has_correct_mark_flags() const {
     bool wanted_has_marked = left.has_marked_children || right.has_marked_children;
     return gr.has_marked_children == wanted_has_marked;
 }
-bool AP_tree::has_correct_visibility_flags() const {
-    bool wanted_hidden_state = get_father() ? (get_father()->gr.hidden || get_father()->gr.grouped) : 0;
-    if (gr.hidden != wanted_hidden_state) return false;
-    if (is_leaf) return true;
-
-    return
-        get_leftson()->has_correct_visibility_flags() &&
-        get_rightson()->has_correct_visibility_flags();
-}
-bool AP_tree::has_correct_mark_and_visibility_flags() const {
-    // test whether flags needed for EdgeChains are set correctly
-    // see ../../PARSIMONY/AP_tree_edge.cxx@TEST_tree_flags_needed_by_EdgeChain
-    return
-        has_correct_mark_flags() &&
-        has_correct_visibility_flags();
-}
 #endif
 
 void AP_tree::update_subtree_information() {

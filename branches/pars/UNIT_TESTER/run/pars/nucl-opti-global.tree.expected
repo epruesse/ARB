@@ -6,37 +6,37 @@
      (
       (
        (
-        (
-         CloTyro2:0.013,
-         CloTyrob:0.000
-        ):0.027,
-        CloTyro4:0.027
-       ):0.104,
-       CloTyro3:0.963
-      ):0.082,
-      CloInnoc:0.384
-     ):0.104,
+        CorAquat:0.063,
+        CurCitre:0.099
+       ):0.014,
+       CelBiazo:0.165
+      ):0.170,
+      CloPaste:0.211
+     ):0.030,
      (
       (
        (
-        CelBiazo:0.165,
-        CorAquat:0.076
-       ):0.014,
-       CurCitre:0.099
-      ):0.194,
-      CloPaste:0.224
-     ):0.015
-    ):0.059,
-    CloCarni:0.145
-   ):0.225,
+        CloTyro2:0.013,
+        CloTyro4:0.040
+       ):0.000,
+       CloTyrob:0.000
+      ):0.476,
+      CloInnoc:0.342
+     ):0.180
+    ):0.118,
+    CloCarni:0.118
+   ):0.271,
    (
     CloButy2:0.000,
     CloButyr:0.000
-   ):0.058
-  ):0.092,
+   ):0.059
+  ):0.093,
   CloBifer:0.204
- ):0.043,
+ ):0.068,
  (
-  CorGluta:0.329,
-  CytAquat:0.333
- ):0.043);
+  (
+   CloTyro3:0.877,
+   CorGluta:0.260
+  ):0.121,
+  CytAquat:0.302
+ ):0.068);

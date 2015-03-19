@@ -137,20 +137,6 @@ public:
 #endif
 };
 
-class TotalRecall {
-    PARSIMONY_testenv<AP_sequence_parsimony>& env;
-public:
-    TotalRecall(PARSIMONY_testenv<AP_sequence_parsimony>& env_)
-        : env(env_)
-    {
-        env.push_whole_tree(); // @@@ replace by a new push-method which doesn't destroy sequence (to make code below unneccessary)
-        // recalc sequences and reset combines
-        env.root_node()->costs();
-        env.combines_performed();
-    }
-    ~TotalRecall() { env.pop(); }
-};
-
 #else
 #error test_env.h included twice
 #endif // TEST_ENV_H

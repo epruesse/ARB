@@ -566,6 +566,11 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
 
             edge2->relink(this, nephew);
             edge1->relink(oldBrother, movedSon);
+
+            if (nephew->gr.has_marked_children != movedSon->gr.has_marked_children) {
+                get_brother()->recalc_marked_from_sons();
+                this->recalc_marked_from_sons_and_forward_upwards();
+            }
         }
     }
     else {
@@ -600,6 +605,10 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
 
         edge2->relink(this, oldBrother);
         edge1->relink(get_father(), movedSon);
+
+        if (oldBrother->gr.has_marked_children != movedSon->gr.has_marked_children) {
+            recalc_marked_from_sons_and_forward_upwards(); // father is done implicit
+        }
     }
 }
 
@@ -620,13 +629,19 @@ void AP_tree_nlen::set_root() {
         old_root = pntr;
     }
 
-    if (son_of_root) {
+    ap_assert(son_of_root); // always true
+
+    {
         AP_tree_nlen *other_son_of_root = son_of_root->get_brother();
         ap_main->push_node(other_son_of_root, STRUCTURE);
     }
 
     ap_main->push_node(old_root, ROOT);
     AP_tree::set_root();
+
+    for (AP_tree_nlen *node = son_of_root; node ; node = node->get_father()) {
+        node->recalc_marked_from_sons();
+    }
 }
 
 void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
@@ -670,14 +685,12 @@ void AP_tree_nlen::moveNextTo(AP_tree_nlen *newBrother, AP_FLOAT rel_pos) {
 
     ap_main->push_node(newBrother,  STRUCTURE);
     if (newBrother->father) {
-        if (newBrother->father->father) {
-            ap_main->push_node(newBrother->get_father(), BOTH);
-        }
-        else { // move to son of root
-            ap_main->push_node(newBrother->get_father(), BOTH);
+        AP_tree_nlen *newBrothersFather = newBrother->get_father();
+        ap_main->push_node(newBrothersFather, BOTH);
+        if (!newBrothersFather->father) { // move to son of root
             ap_main->push_node(newBrother->get_brother(), STRUCTURE);
         }
-        push_all_upnode_sequences(newBrother->get_father());
+        push_all_upnode_sequences(newBrothersFather);
     }
 
     AP_tree_nlen *thisFather        = get_father();
@@ -897,6 +910,9 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, Level frame_level) { // @@@ rename -
         ret             = true;
     }
 
+    if ((mode & (STRUCTURE|SEQUENCE)) && !(store->mode & (STRUCTURE|SEQUENCE))) {
+        store->had_marked = gr.has_marked_children;
+    }
     if ((mode & STRUCTURE) && !(store->mode & STRUCTURE)) {
         store->father   = get_father();
         store->leftson  = get_leftson();
@@ -937,14 +953,17 @@ void NodeState::move_info_to(NodeState& target, AP_STACK_MODE what) {
     ap_assert((mode&what)        == what); // this has to contain 'what' is moved
     ap_assert((target.mode&what) == NOTHING); // target shall not already contain 'what' is moved
 
+    if ((what & (STRUCTURE|SEQUENCE)) && !(target.mode & (STRUCTURE|SEQUENCE))) {
+        target.had_marked = had_marked;
+    }
     if (what & STRUCTURE) {
-        target.father   = father;
-        target.leftson  = leftson;
-        target.rightson = rightson;
-        target.leftlen  = leftlen;
-        target.rightlen = rightlen;
-        target.root     = root;
-        target.gb_node  = gb_node;
+        target.father     = father;
+        target.leftson    = leftson;
+        target.rightson   = rightson;
+        target.leftlen    = leftlen;
+        target.rightlen   = rightlen;
+        target.root       = root;
+        target.gb_node    = gb_node;
 
         for (int e=0; e<3; e++) {
             target.edge[e]      = edge[e];
@@ -976,6 +995,8 @@ void AP_tree_nlen::restore_structure(const NodeState& state) {
     set_tree_root(state.root);
     gb_node  = state.gb_node;
 
+    gr.has_marked_children = state.had_marked;
+
     for (int e=0; e<3; e++) {
         edge[e]  = state.edge[e];
         index[e] = state.edgeIndex[e];
@@ -987,8 +1008,9 @@ void AP_tree_nlen::restore_structure(const NodeState& state) {
 }
 void AP_tree_nlen::restore_sequence(NodeState& state) {
     replace_seq(state.sequence);
-    state.sequence = NULL;
-    mutation_rate = state.mutation_rate;
+    state.sequence         = NULL;
+    mutation_rate          = state.mutation_rate;
+    gr.has_marked_children = state.had_marked;
 }
 void AP_tree_nlen::restore_sequence_nondestructive(const NodeState& state) {
     replace_seq(state.sequence ? state.sequence->dup() : NULL);
@@ -1075,6 +1097,7 @@ AP_FLOAT AP_tree_nlen::costs(char *mutPerSite) {
 }
 
 AP_FLOAT AP_tree_nlen::nn_interchange_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode) {
+    ap_assert(depth == UNLIMITED); // @@@ elim param 'depth' if always UNLIMITED
     if (!father) {
         return rootEdge()->nni_rec(depth, whichEdges, mode, NULL);
     }
@@ -1154,11 +1177,11 @@ bool AP_tree_edge::kl_rec(const KL_params& KL, const int rec_depth, AP_FLOAT par
             order[i] = i;
             AP_tree_edge * const subedge = descend[i];
 
-            if (subedge                      &&
-                !subedge->is_leaf_edge()     &&
-                !subedge->kl_visited         &&
-                !subedge->node[0]->gr.hidden &&
-                !subedge->node[1]->gr.hidden)
+            if (subedge                  &&
+                !subedge->is_leaf_edge() &&
+                !subedge->kl_visited     &&
+                !subedge->next_to_folded_group()
+                )
             {
                 ap_main->remember();
                 subedge->sonNode()->swap_assymetric(idx2side(i));
@@ -1214,7 +1237,7 @@ bool AP_tree_edge::kl_rec(const KL_params& KL, const int rec_depth, AP_FLOAT par
     // rec_depth == 2 (called twice with each adjacent node -> 8 calls)
     // rec_depth == 3 (called twice with each adjacent node, but not with those were recursion came from -> 6 calls)
 
-    if (sonNode()->get_father() == otherNode(sonNode())) { // not root-edge
+    if (!is_root_edge()) {
         switch (rec_depth) {
             case 0:
                 ap_assert(visited_subtrees == 2);

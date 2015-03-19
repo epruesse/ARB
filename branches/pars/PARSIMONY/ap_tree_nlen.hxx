@@ -76,7 +76,6 @@ enum AP_BL_MODE {
     APBL_NONE                = 0,
     AP_BL_NNI_ONLY           = 1, // try te find a better tree only
     AP_BL_BL_ONLY            = 2, // try to calculate the branch lengths
-    AP_BL_NNI_BL             = 3, // better tree & branch lengths (not used; might be broken)
     AP_BL_BOOTSTRAP_LIMIT    = 4, // calculate upper bootstrap limits
     AP_BL_BOOTSTRAP_ESTIMATE = 12 // calculate estimate of bootstrap (includes AP_BL_BOOTSTRAP_LIMIT)
 };
@@ -84,11 +83,6 @@ enum AP_BL_MODE {
 enum AP_TREE_SIDE {
     AP_LEFT,
     AP_RIGHT,
-};
-
-enum EdgeSpec {
-    ANY_EDGE,
-    MARKED_VISIBLE_EDGES,
 };
 
 class  AP_tree_edge;
@@ -166,6 +160,21 @@ public:
     const StateStack& get_states() const { return states; }
 
     virtual AP_UPDATE_FLAGS check_update() OVERRIDE; // disable  load !!!!
+
+    bool recalc_marked_from_sons() {
+        // return true if changed
+        if (is_leaf) return false;
+        bool marked_childs = get_leftson()->gr.has_marked_children || get_rightson()->gr.has_marked_children;
+        if (marked_childs == gr.has_marked_children) return false;
+        gr.has_marked_children = marked_childs;
+        return true;
+    }
+
+    void recalc_marked_from_sons_and_forward_upwards() {
+        if (recalc_marked_from_sons() && father) {
+            get_father()->recalc_marked_from_sons_and_forward_upwards();
+        }
+    }
 
     void copy(AP_tree_nlen *tree);
 
@@ -307,11 +316,19 @@ public:
     int indexOf(const AP_tree_nlen *n) const                    { ap_assert(isConnectedTo(n)); return node[1] == n; }
     AP_tree_nlen* otherNode(const AP_tree_nlen *n) const        { return node[1-indexOf(n)]; }
     AP_tree_nlen* sonNode() const                               { return node[0]->get_father() == node[1] ? node[0] : node[1]; }
-    long Age() const                                            { return age; }
+
+    long Age() const { return age; }
 
     // queries
 
+    bool is_root_edge() const { return node[0]->father != node[1] && node[1]->father != node[0]; }
     bool is_leaf_edge() const { return node[0]->is_leaf || node[1]->is_leaf; }
+    bool next_to_folded_group() const { return node[0]->gr.grouped || node[1]->gr.grouped; }
+    bool has_marked() const { // true if subtree contains marked species
+        return is_root_edge()
+            ? node[0]->gr.has_marked_children || node[1]->gr.has_marked_children
+            : sonNode()->gr.has_marked_children;
+    }
 
     // encapsulated AP_tree_nlen methods:
 
@@ -325,7 +342,6 @@ public:
     AP_FLOAT calc_branchlengths() { return nni_rec(UNLIMITED, ANY_EDGE, AP_BL_BL_ONLY, NULL); }
 
     AP_FLOAT nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps);
-    AP_FLOAT nni(AP_FLOAT pars_one, AP_BL_MODE mode) { return nni_mutPerSite(pars_one, mode, NULL); }
 
     void mixTree(int repeat, int percent);
 };

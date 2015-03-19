@@ -114,7 +114,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
         startEdge = rootEdge();
         ap_assert(startEdge);
     }
-    EdgeChain chain(startEdge, UNLIMITED, ANY_EDGE, true);     // @@@ wrong (as before). should only use marked/unfolded (@@@ now also collects leafEdges, which is useless)
+    EdgeChain chain(startEdge, UNLIMITED, EdgeSpec(SKIP_LEAF_EDGES|settings.whichEdges), true);
 
     arb_progress progress(chain.size());
 
@@ -126,34 +126,29 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
     }
 
     while (chain && !progress.aborted()) {
-        AP_tree_edge *edge      = *chain; ++chain;
-        AP_tree_nlen *tree_elem = edge->sonNode();
+        AP_tree_edge *edge = *chain; ++chain;
 
-        if (!tree_elem->is_leaf) {
-        bool in_folded_group = tree_elem->gr.hidden ||
-            (tree_elem->father && tree_elem->get_father()->gr.hidden);
+        ap_assert(!edge->is_leaf_edge());
+        ap_assert(!edge->next_to_folded_group());
 
-        if (!in_folded_group) { // @@@ unwanted hardcoded check for group
-            ap_main->remember();
+        ap_main->remember();
 
-                bool better_tree_found = edge->kl_rec(KL, 0, pars_curr);
+        bool better_tree_found = edge->kl_rec(KL, 0, pars_curr);
 
-            if (better_tree_found) {
-                ap_main->accept();
-                AP_FLOAT pars_new = get_root_node()->costs();
-                KL.thresFunctor.change_parsimony_start(pars_new-pars_curr);
-                pars_curr = pars_new;
-                if (pars_global_start) {
-                    progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f, KL=%.1f)", pars_curr, *pars_global_start-pars_curr, pars_org-pars_curr));
-                }
-                else {
-                    progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", pars_curr, pars_org-pars_curr));
-                }
+        if (better_tree_found) {
+            ap_main->accept();
+            AP_FLOAT pars_new = get_root_node()->costs();
+            KL.thresFunctor.change_parsimony_start(pars_new-pars_curr);
+            pars_curr = pars_new;
+            if (pars_global_start) {
+                progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f, KL=%.1f)", pars_curr, *pars_global_start-pars_curr, pars_org-pars_curr));
             }
             else {
-                ap_main->revert();
+                progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", pars_curr, pars_org-pars_curr));
             }
         }
+        else {
+            ap_main->revert();
         }
         progress.inc();
     }
@@ -209,10 +204,11 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
             this_pars = get_root_node()->costs();
         }
         else {
-            this_pars = at->nn_interchange_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY);;
+            this_pars = at->nn_interchange_rec(UNLIMITED, settings.whichEdges, AP_BL_NNI_ONLY);
         }
         ap_assert(this_pars>=0); // ensure this_pars was set
         ap_assert(this_pars<=prev_pars); // otherwise heuristic worsened the tree
+
 
         bool      dumpOverall   = false;
         Heuristic nextHeuristic = heuristic;
@@ -456,7 +452,6 @@ void TEST_basic_tree_modifications() {
 
     {
         AP_tree_nlen *root = env.root_node();
-        root->compute_tree();
 
         // first check initial state:
         {
@@ -627,12 +622,12 @@ void TEST_calc_bootstraps() {
         root_edge->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL);
         root->reorder_tree(BIG_BRANCHES_TO_TOP);
         TEST_EXPECT_NEWICK(nREMARK, root, bs_limit_topo);
-        TEST_EXPECT_EQUAL(env.combines_performed(), 203);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 170);
 
         root_edge->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL);
         root->reorder_tree(BIG_BRANCHES_TO_TOP);
         TEST_EXPECT_NEWICK(nREMARK, root, bs_estim_topo);
-        TEST_EXPECT_EQUAL(env.combines_performed(), 189);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 156);
 
         TEST_EXPECT_EQUAL(env.root_node(), root);
     }
