@@ -343,7 +343,7 @@ public:
 
     AP_FLOAT nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps);
 
-    void mixTree(int repeat, int percent);
+    void mixTree(int repeat, int percent, EdgeSpec whichEdges);
 };
 
 std::ostream& operator<<(std::ostream&, const AP_tree_edge&);

@@ -996,7 +996,7 @@ static void randomMixTree(AW_window *, AWT_canvas *ntw) {
 
     progress.subtitle("mixing");
     long leafs = AWT_TREE_PARS(ntw)->get_root_node()->count_leafs();
-    rootEdge()->mixTree(calculate_default_random_repeat(leafs), 100);
+    rootEdge()->mixTree(calculate_default_random_repeat(leafs), 100, ANY_EDGE);
 
     progress.subtitle("calculating branchlengths");
     rootEdge()->calc_branchlengths();
@@ -1836,7 +1836,7 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
 
         case MOD_MIX_TREE: {
             long leafs = rootNode()->count_leafs();
-            rootEdge()->mixTree(calculate_default_random_repeat(leafs), 100);
+            rootEdge()->mixTree(calculate_default_random_repeat(leafs), 100, ANY_EDGE);
             rootEdge()->calc_branchlengths();
             break;
         }

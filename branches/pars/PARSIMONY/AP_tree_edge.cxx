@@ -204,7 +204,6 @@ EdgeChain::EdgeChain(AP_tree_edge *startEgde, int depth, EdgeSpec whichEdges, bo
     curr = start;
 
     ap_assert(correlated(len, start));
-    ap_assert(implicated(!depthFirst, curr == startEgde));
 }
 
 class MutationsPerSite : virtual Noncopyable {
@@ -583,8 +582,8 @@ ostream& operator<<(ostream& out, const AP_tree_edge& e)
     return out << ' ';
 }
 
-void AP_tree_edge::mixTree(int repeat, int percent) {
-    EdgeChain chain(this, UNLIMITED, SKIP_LEAF_EDGES, false); // @@@ unwanted hardcoded edge selection (should operate as configured)
+void AP_tree_edge::mixTree(int repeat, int percent, EdgeSpec whichEdges) {
+    EdgeChain chain(this, UNLIMITED, EdgeSpec(SKIP_LEAF_EDGES|whichEdges), false);
     long      edges = chain.size();
 
     arb_progress progress(repeat*edges);
