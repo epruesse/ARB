@@ -2201,6 +2201,19 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
     TEST_EXPECT_EQUAL(env.combines_performed(), 6763);
 
+    {
+        KL_Settings& KL = env.get_KL_settings();
+        LocallyModify<EdgeSpec> target(KL.whichEdges, EdgeSpec(KL.whichEdges&~SKIP_UNMARKED_EDGES)); // ignore marks; skip folded
+
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-visible-global", PARSIMONY_OPTI_VISIBLE, env, true)); // same result as if all species marked (see below)
+        TEST_EXPECT_EQUAL(env.combines_performed(), 13195);
+
+        KL.whichEdges = EdgeSpec(KL.whichEdges&~SKIP_FOLDED_EDGES); // ignore marks and folding
+
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // same result as if all species marked and all groups unfolded (see below)
+        TEST_EXPECT_EQUAL(env.combines_performed(), 47247);
+    }
+
     // -----------------------------
     //      test optimize (all)
 

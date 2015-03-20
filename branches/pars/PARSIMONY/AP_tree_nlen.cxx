@@ -1180,7 +1180,7 @@ bool AP_tree_edge::kl_rec(const KL_params& KL, const int rec_depth, AP_FLOAT par
             if (subedge                  &&
                 !subedge->is_leaf_edge() &&
                 !subedge->kl_visited     &&
-                !subedge->next_to_folded_group()
+                (!KL.stopAtFoldedGroups || !subedge->next_to_folded_group())
                 )
             {
                 ap_main->remember();

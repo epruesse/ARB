@@ -70,6 +70,7 @@ struct KL_params {
     int                rec_width[CUSTOM_DEPTHS]; // customized recursion width (static path reduction)
     QuadraticThreshold thresFunctor;             // functor for dynamic path reduction (start parsvalue -> worst allowed parsvalue @ depth)
     int                inc_rec_depth;            // increment max. recursion depth (if better topology found)
+    bool               stopAtFoldedGroups;       // if true = > do not swap across folded groups
 };
 
 enum AP_BL_MODE {

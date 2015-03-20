@@ -107,6 +107,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
         for (int x = 0; x<CUSTOM_DEPTHS; ++x) {
             KL.rec_width[x] = settings.Static.depth[x];
         }
+        KL.stopAtFoldedGroups = settings.whichEdges&SKIP_FOLDED_EDGES;
     }
 
     AP_tree_edge *startEdge = at->edgeTo(at->get_father());
@@ -129,7 +130,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
         AP_tree_edge *edge = *chain; ++chain;
 
         ap_assert(!edge->is_leaf_edge());
-        ap_assert(!edge->next_to_folded_group());
+        ap_assert(implicated(KL.stopAtFoldedGroups, !edge->next_to_folded_group()));
 
         ap_main->remember();
 
