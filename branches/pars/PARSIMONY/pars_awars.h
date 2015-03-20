@@ -15,9 +15,17 @@
 #include <arbdb_base.h>
 #endif
 
-#define PREFIX_KL         "genetic/kh/"
+#define PREFIX_OPTI       "optimize/"
+#define PREFIX_KL         "kernlin/"
 #define PREFIX_KL_STATIC  PREFIX_KL "static/"
 #define PREFIX_KL_DYNAMIC PREFIX_KL "dynamic/"
+#define PREFIX_RAND       "randomize/"
+
+#define AWAR_OPTI_MARKED_ONLY PREFIX_OPTI "marked"
+#define AWAR_OPTI_SKIP_FOLDED PREFIX_OPTI "visible"
+
+#define AWAR_RAND_REPEAT   "tmp/" PREFIX_RAND "repeat"
+#define AWAR_RAND_PERCENT  PREFIX_RAND "percent"
 
 #define AWAR_KL_MAXDEPTH PREFIX_KL "maxdepth"
 #define AWAR_KL_INCDEPTH PREFIX_KL "inc_depth"

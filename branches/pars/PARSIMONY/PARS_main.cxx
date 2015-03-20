@@ -991,12 +991,19 @@ static int calculate_default_random_repeat(long leafs) {
     return repeat;
 }
 
-static void randomMixTree(AW_window *, AWT_canvas *ntw) {
+static void update_random_repeat(AW_root *awr, AWT_graphic_parsimony *agt) {
+    long leafs  = agt->get_root_node()->count_leafs();
+    int  repeat = calculate_default_random_repeat(leafs);
+    awr->awar(AWAR_RAND_REPEAT)->write_int(repeat);
+}
+
+static void randomMixTree(AW_window *aww, AWT_canvas *ntw) {
     arb_progress progress("Randomizing tree");
 
     progress.subtitle("mixing");
-    long leafs = AWT_TREE_PARS(ntw)->get_root_node()->count_leafs();
-    rootEdge()->mixTree(calculate_default_random_repeat(leafs), 100, ANY_EDGE);
+
+    AW_root *awr = aww->get_root();
+    rootEdge()->mixTree(awr->awar(AWAR_RAND_REPEAT)->read_int(), awr->awar(AWAR_RAND_PERCENT)->read_int(), KL_Settings(awr).whichEdges);
 
     progress.subtitle("calculating branchlengths");
     rootEdge()->calc_branchlengths();
@@ -1007,6 +1014,53 @@ static void randomMixTree(AW_window *, AWT_canvas *ntw) {
     AWT_TREE_PARS(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
     rootNode()->compute_tree();
     pars_saveNrefresh_changed_tree(ntw);
+}
+
+static AW_window *createOptimizeWindow(AW_root *aw_root, AWT_canvas *ntw) {
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init(aw_root, "TREE_OPTIMIZE", "Tree optimization");
+    aws->load_xfig("pars/tree_opti.fig");
+
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->at("help");
+    aws->callback(makeHelpCallback("pa_optimizer.hlp"));
+    aws->create_button("HELP", "HELP", "H");
+
+    aws->at("marked");
+    aws->label("Only subtrees containing marked species");
+    aws->create_toggle(AWAR_OPTI_MARKED_ONLY);
+
+    aws->at("folded");
+    aws->label("Do not modify folded subtrees");
+    aws->create_toggle(AWAR_OPTI_SKIP_FOLDED);
+
+    aws->button_length(18);
+
+    aws->at("rec_nni");
+    aws->callback(makeWindowCallback(NT_recursiveNNI, ntw));
+    aws->create_button("REC_NNI", "Recursive NNI", "N");
+
+    aws->at("heuristic");
+    aws->callback(makeWindowCallback(NT_optimize, ntw));
+    aws->create_button("HEURISTIC", "Heuristic\noptimizer", "H");
+
+    aws->at("settings");
+    aws->callback(makeCreateWindowCallback(create_kernighan_properties_window));
+    aws->create_button("SETTINGS", "Settings", "S");
+
+    aws->at("randomize");
+    aws->callback(makeWindowCallback(randomMixTree, ntw));
+    aws->create_button("RANDOMIZE", "Randomize tree", "R");
+
+    aws->button_length(5);
+
+    aws->at("repeat");   aws->create_input_field(AWAR_RAND_REPEAT);
+    aws->at("percent");  aws->create_input_field(AWAR_RAND_PERCENT);
+
+    return aws;
 }
 
 // -----------------------
@@ -1313,16 +1367,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         }
         awm->close_sub_menu();
         awm->sep______________();
-        awm->insert_sub_menu("Tree Optimization",        "O");
-        {
-            awm->insert_menu_topic("nni",             "Local Optimization (NNI; marked visible)", "L", "",                 AWM_ALL, makeWindowCallback(NT_recursiveNNI, ntw));
-            awm->insert_menu_topic("kl_optimization", "Global Optimization (whole tree)",         "G", "pa_optimizer.hlp", AWM_ALL, makeWindowCallback(NT_optimize,     ntw));
-            awm->sep______________();
-            awm->insert_sub_menu("Randomize", "M");
-            awm->insert_menu_topic("mixtree", "Random mix tree", "m", "pa_mixtree.hlp", AWM_ALL, makeWindowCallback(randomMixTree, ntw));
-            awm->close_sub_menu();
-        }
-        awm->close_sub_menu();
+        awm->insert_menu_topic("optimize", "Tree Optimization ...", "O", "pa_optimizer.hlp", AWM_ALL, makeCreateWindowCallback(createOptimizeWindow, ntw));
         awm->insert_menu_topic("reset", "Reset optimal parsimony", "s", "", AWM_ALL, makeWindowCallback(pars_reset_optimal_parsimony, ntw));
         awm->sep______________();
         awm->insert_menu_topic("beautify_tree",       "Beautify Tree",            "B", "resorttree.hlp",       AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_TOP));
@@ -1348,7 +1393,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...", "M", "props_frame.hlp",      AWM_ALL, AW_preset_window);
         awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...", "C", "pars_props_data.hlp",  AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
         awm->insert_menu_topic("props_tree2", "Tree: Settings ...",         "T", "nt_tree_settings.hlp", AWM_ALL, PARS_create_tree_settings_window);
-        awm->insert_menu_topic("props_kl",    "KERN. LIN ...",              "K", "kernlin.hlp",          AWM_ALL, makeCreateWindowCallback(create_kernighan_window));
+        awm->insert_menu_topic("props_kl",    "KERN. LIN ...",              "K", "kernlin.hlp",          AWM_ALL, makeCreateWindowCallback(create_kernighan_properties_window));
         awm->sep______________();
         AW_insert_common_property_menu_entries(awm);
         awm->sep______________();
@@ -1477,6 +1522,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, false));
 
+    update_random_repeat(awr, AWT_TREE_PARS(ntw));
     AP_user_push_cb(aw_parent, ntw); // push initial tree
     set_keep_ghostnodes(); // make sure no stacked nodes get deleted
 }
@@ -1542,7 +1588,9 @@ KL_Settings::KL_Settings(AW_root *aw_root) {
     Dynamic.maxy    = aw_root->awar(AWAR_KL_DYNAMIC_MAXY)->read_int();
     Dynamic.type    = (KL_DYNAMIC_THRESHOLD_TYPE)aw_root->awar(AWAR_KL_FUNCTION_TYPE)->read_int();
 
-    whichEdges = EdgeSpec(SKIP_UNMARKED_EDGES|SKIP_FOLDED_EDGES);
+    whichEdges = ANY_EDGE;
+    if (aw_root->awar(AWAR_OPTI_MARKED_ONLY)->read_int()) whichEdges = EdgeSpec(whichEdges|SKIP_UNMARKED_EDGES);
+    if (aw_root->awar(AWAR_OPTI_SKIP_FOLDED)->read_int()) whichEdges = EdgeSpec(whichEdges|SKIP_FOLDED_EDGES);
 }
 #if defined(UNIT_TESTS)
 KL_Settings::KL_Settings(GB_alignment_type atype) {
@@ -1590,8 +1638,11 @@ KL_Settings::KL_Settings(GB_alignment_type atype) {
 }
 #endif
 
-static void create_parsimony_variables(AW_root *aw_root, AW_default props, GBDATA *gb_main) {
+static void create_optimize_vars(AW_root *aw_root, AW_default props, GBDATA *gb_main) {
     // kernighan
+
+    aw_root->awar_int(AWAR_OPTI_MARKED_ONLY, 1, props);
+    aw_root->awar_int(AWAR_OPTI_SKIP_FOLDED, 1, props);
 
     aw_root->awar_int(AWAR_KL_MAXDEPTH, 15, props);
     aw_root->awar_int(AWAR_KL_INCDEPTH, 4,  props);
@@ -1648,7 +1699,10 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def, GBDATA *gb_ma
     awr->awar_int(AWAR_BEST_PARSIMONY, 0, aw_def);
     awr->awar_int(AWAR_STACKPOINTER,   0, aw_def);
 
-    create_parsimony_variables(awr, aw_def, gb_main);
+    awr->awar_int(AWAR_RAND_REPEAT,  1,  aw_def)->set_minmax(1, 1000000); // default value is overwritten by update_random_repeat()
+    awr->awar_int(AWAR_RAND_PERCENT, 50, aw_def)->set_minmax(1, 100);
+
+    create_optimize_vars(awr, aw_def, gb_main);
     create_nds_vars(awr, aw_def, gb_main);
 
 #if defined(DEBUG)

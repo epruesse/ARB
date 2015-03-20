@@ -14,7 +14,7 @@
 #include <aw_window.hxx>
 
 
-AW_window *create_kernighan_window(AW_root *aw_root) {
+AW_window *create_kernighan_properties_window(AW_root *aw_root) {
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "OPTIMIZATION_PROPS", "Kernighan Lin Properties");
@@ -24,7 +24,6 @@ AW_window *create_kernighan_window(AW_root *aw_root) {
     aws->at("close");
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
-
 
     aws->at("help");
     aws->callback(makeHelpCallback("kernlin.hlp"));
