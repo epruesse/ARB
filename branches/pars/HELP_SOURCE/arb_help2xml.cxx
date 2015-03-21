@@ -1679,6 +1679,7 @@ int ARB_main(int argc, char *argv[]) {
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>
+#include <arb_msg.h>
 
 static arb_test::match_expectation help_file_compiles(const char *helpfile, const char *expected_title, const char *expected_error_part) {
     using namespace   arb_test;
@@ -1766,9 +1767,9 @@ void TEST_hlp2xml_output() {
 # if defined(NDEBUG)
 #  error please use auto-update only in DEBUG mode
 # endif
-        TEST_COPY_FILE(xml,  xml_expected);
-        TEST_COPY_FILE(html, html_expected);
-        TEST_COPY_FILE(hlp,  hlp_expected);
+        TEST_COPY_FILE(xml.c_str(),  xml_expected.c_str());
+        TEST_COPY_FILE(html.c_str(), html_expected.c_str());
+        TEST_COPY_FILE(hlp.c_str(),  hlp_expected.c_str());
         
 #else // !defined(TEST_AUTO_UPDATE)
 

@@ -216,6 +216,10 @@ $(DESTDIR)/test_AWTC_AWTC_a.done : $(TOOLDIR)/arb_pt_server
 $(DESTDIR)/test_TOOLS_arb_probe_o.done : $(TOOLDIR)/arb_pt_server
 $(DESTDIR)/test_TOOLS_arb_test_o.done : $(TOOLDIR)/arb_pt_server
 
+# help test depends on xslt processing
+XSLTDIR=../HELP_SOURCE
+$(DESTDIR)/test_HELP_SOURCE_arb_help2xml_o.done : $(XSLTDIR)/to_help.xsl $(XSLTDIR)/to_html.xsl
+
 endif
 
 runtest: $(RUN)
