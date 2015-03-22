@@ -170,7 +170,7 @@ size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool dep
 
 bool EdgeChain::exists = false;
 
-EdgeChain::EdgeChain(AP_tree_edge *startEgde, int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip)
+EdgeChain::EdgeChain(AP_tree_edge *startEgde, int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip, bool includeStart)
     : start(NULL),
       curr(NULL)
 {
@@ -180,6 +180,7 @@ EdgeChain::EdgeChain(AP_tree_edge *startEgde, int depth, EdgeSpec whichEdges, bo
      * @param whichEdges       specifies which edges get chained
      * @param depthFirst       true -> insert leafs before inner nodes (but whole son-subtree before other-son-subtree)
      * @param skip             previous node (will not recurse beyond)
+     * @param includeStart     include startEdge in chain?
      */
 
 #if defined(DEVEL_RALF)
@@ -200,7 +201,41 @@ EdgeChain::EdgeChain(AP_tree_edge *startEgde, int depth, EdgeSpec whichEdges, bo
 
     AP_tree_edge **prev = &start;
 
-    len  = startEgde->buildChainInternal(depth, whichEdges, depthFirst, skip, prev);
+    len = startEgde->buildChainInternal(depth, whichEdges, depthFirst, skip, prev);
+    if (!includeStart) {
+        if (depthFirst) {
+            // startEgde is last of chain (if included)
+            if (prev == &startEgde->next_in_chain) {
+                // NULL all edge-link pointing to startEgde (may belong to current or older chain)
+                for (int n = 0; n<=1; ++n) {
+                    AP_tree_edge *e1 = startEgde->node[n]->nextEdge(startEgde);
+                    if (e1->next_in_chain == startEgde) e1->next_in_chain = NULL;
+                    AP_tree_edge *e2 = startEgde->node[n]->nextEdge(e1);
+                    if (e2->next_in_chain == startEgde) e2->next_in_chain = NULL;
+                }
+                --len;
+#if defined(ASSERTION_USED)
+                {
+                    int count = 0;
+                    curr      = start;
+                    while (*this) {
+                        ap_assert(**this != startEgde);
+                        ++count;
+                        ++*this;
+                    }
+                    ap_assert(len == count);
+                }
+#endif
+            }
+        }
+        else {
+            // startEgde is first of chain (if included)
+            if (start == startEgde) {
+                start = start->next_in_chain;
+                --len;
+            }
+        }
+    }
     curr = start;
 
     ap_assert(correlated(len, start));
@@ -676,7 +711,13 @@ void TEST_edgeChain() {
         TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, SKIP_LEAF_EDGES,  true, stFather).size(), 3);
         TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, SKIP_INNER_EDGES, true, stFather).size(), 4);
 
-        // @@@ need ability to collect subtree w/o its startEdge
+        // collecting subtree-edges w/o startEdge
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, ANY_EDGE,         true,  stFather, false).size(), 6);
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, SKIP_LEAF_EDGES,  true,  stFather, false).size(), 2);
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, SKIP_INNER_EDGES, true,  stFather, false).size(), 4);
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, ANY_EDGE,         false, stFather, false).size(), 6);
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, SKIP_LEAF_EDGES,  false, stFather, false).size(), 2);
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, SKIP_INNER_EDGES, false, stFather, false).size(), 4);
     }
 
     // test group-folding at sons of root

@@ -356,7 +356,7 @@ class EdgeChain : virtual Noncopyable {
     size_t        len;    // chain size
     static bool   exists; // singleton flag
 public:
-    EdgeChain(AP_tree_edge *start_, int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip = NULL);
+    EdgeChain(AP_tree_edge *start_, int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip = NULL, bool includeStart = true);
     ~EdgeChain() { exists = false; }
 
     size_t size() const  {
