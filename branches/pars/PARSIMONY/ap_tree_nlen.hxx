@@ -317,6 +317,7 @@ public:
     int indexOf(const AP_tree_nlen *n) const                    { ap_assert(isConnectedTo(n)); return node[1] == n; }
     AP_tree_nlen* otherNode(const AP_tree_nlen *n) const        { return node[1-indexOf(n)]; }
     AP_tree_nlen* sonNode() const                               { return node[0]->get_father() == node[1] ? node[0] : node[1]; }
+    AP_tree_nlen* notSonNode() const                            { return otherNode(sonNode()); }
 
     long Age() const { return age; }
 

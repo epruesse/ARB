@@ -666,6 +666,19 @@ void TEST_edgeChain() {
     TEST_EXPECT_EQUAL(EdgeChain(root, -1, SKIP_FOLDED_EDGES, true, leftSon) .size(), V_RIGHT);
     TEST_EXPECT_EQUAL(EdgeChain(root, -1, SKIP_FOLDED_EDGES, true, rightSon).size(), V_LEFT);
 
+    // test subtree-EdgeChains
+    {
+        AP_tree_edge *subtreeEdge = rightSon->edgeTo(rightSon->get_leftson()); // subtree containing CorAquat, CurCitre, CorGluta and CelBiazo
+        AP_tree_nlen *stFather    = subtreeEdge->notSonNode();
+
+        // collecting subtree-edges (by skipping father of start-edge) includes the startEdge
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, ANY_EDGE,         true, stFather).size(), 7);
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, SKIP_LEAF_EDGES,  true, stFather).size(), 3);
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, SKIP_INNER_EDGES, true, stFather).size(), 4);
+
+        // @@@ need ability to collect subtree w/o its startEdge
+    }
+
     // test group-folding at sons of root
     {
         // fold left subtree
