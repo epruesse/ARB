@@ -206,17 +206,23 @@ EdgeChain::EdgeChain(AP_tree_edge *startEgde, int depth, EdgeSpec whichEdges, bo
         if (depthFirst) {
             // startEgde is last of chain (if included)
             if (prev == &startEgde->next_in_chain) {
-                // NULL all edge-link pointing to startEgde (may belong to current or older chain)
-                for (int n = 0; n<=1; ++n) {
-                    AP_tree_edge *e1 = startEgde->node[n]->nextEdge(startEgde);
-                    if (e1->next_in_chain == startEgde) e1->next_in_chain = NULL;
-                    AP_tree_edge *e2 = startEgde->node[n]->nextEdge(e1);
-                    if (e2->next_in_chain == startEgde) e2->next_in_chain = NULL;
+                if (start == startEgde) { // special case: startEgde is the only edge in chain
+                    ap_assert(len == 1);
+                    start = NULL;
+                }
+                else {
+                    // NULL all edge-link pointing to startEgde (may belong to current or older chain)
+                    for (int n = 0; n<=1; ++n) {
+                        AP_tree_edge *e1 = startEgde->node[n]->nextEdge(startEgde);
+                        if (e1->next_in_chain == startEgde) e1->next_in_chain = NULL;
+                        AP_tree_edge *e2 = startEgde->node[n]->nextEdge(e1);
+                        if (e2->next_in_chain == startEgde) e2->next_in_chain = NULL;
+                    }
                 }
                 --len;
 #if defined(ASSERTION_USED)
                 {
-                    int count = 0;
+                    size_t count = 0;
                     curr      = start;
                     while (*this) {
                         ap_assert(**this != startEgde);
@@ -718,6 +724,16 @@ void TEST_edgeChain() {
         TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, ANY_EDGE,         false, stFather, false).size(), 6);
         TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, SKIP_LEAF_EDGES,  false, stFather, false).size(), 2);
         TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, SKIP_INNER_EDGES, false, stFather, false).size(), 4);
+
+        subtreeEdge = leftSon->edgeTo(leftSon->get_leftson()); // subtree containing group 'test', CloInnoc and CloBifer
+        stFather    = subtreeEdge->notSonNode();
+
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, ANY_EDGE,             true,  stFather, false).size(), 10);
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, MARKED_VISIBLE_EDGES, false, stFather, false).size(), 0);
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, SKIP_FOLDED_EDGES,    true,  stFather, false).size(), 3);
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, ANY_EDGE,             false, stFather, true).size (), 11);
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, MARKED_VISIBLE_EDGES, true,  stFather, true).size (), 0);
+        TEST_EXPECT_EQUAL(EdgeChain(subtreeEdge, -1, SKIP_FOLDED_EDGES,    false, stFather, true).size (), 4);
     }
 
     // test group-folding at sons of root
@@ -779,9 +795,11 @@ void TEST_edgeChain() {
         GBT_restore_marked_species(env.gbmain(), "CorGluta");
         env.compute_tree(); // species marks affect node-chain
     }
-    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)          .size(), 4);
-    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, rightSon).size(), 1);
-    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true, leftSon) .size(), 4);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true)                  .size(), 4);
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true,  rightSon)       .size(), 1); // only root-edge
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, false, rightSon, false).size(), 0); // skips start-edge
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true,  rightSon, false).size(), 0); // skips start-edge
+    TEST_EXPECT_EQUAL(EdgeChain(root, -1, MARKED_VISIBLE_EDGES, true,  leftSon)        .size(), 4);
 
     // unmark all
     {
