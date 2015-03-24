@@ -443,6 +443,7 @@ void TEST_MyEnum_loop() {
     }
     TEST_EXPECT_EQUAL(loops_performed, 3);
 }
+TEST_PUBLISH(TEST_MyEnum_loop);
 
 #endif // UNIT_TESTS
 

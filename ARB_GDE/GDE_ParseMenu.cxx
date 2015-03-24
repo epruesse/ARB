@@ -574,7 +574,7 @@ void TEST_load_menu() {
         TEST_EXPECT_NO_ERROR(LoadMenus());
 
         // basic check of loaded data (needs to be adapted if menus change):
-        TEST_EXPECT_EQUAL(num_menus, 12);
+        TEST_EXPECT_EQUAL(num_menus, 13);
 
         string menus;
         string menuitems;
@@ -584,9 +584,9 @@ void TEST_load_menu() {
         }
 
         TEST_EXPECT_EQUAL(menus,
-                          "Import;Export;Print;Align;User;SAI;Incremental phylogeny;Phylogeny Distance Matrix;"
-                          "Phylogeny max. parsimony;Phylogeny max. Likelyhood EXP;Phylogeny max. Likelyhood;Phylogeny (Other);");
-        TEST_EXPECT_EQUAL(menuitems, "3;1;2;11;1;1;1;3;2;1;8;5;");
+                          "Import;Export;Print;Align;Network;SAI;Incremental phylogeny;Phylogeny Distance Matrix;"
+                          "Phylogeny max. parsimony;Phylogeny max. Likelyhood EXP;Phylogeny max. Likelyhood;Phylogeny (Other);User;");
+        TEST_EXPECT_EQUAL(menuitems, "3;1;2;11;1;1;1;3;2;1;8;5;0;");
     }
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }
