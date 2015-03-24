@@ -160,9 +160,18 @@ static void ParseMenus(LineReader& in) {
                 THROW_IF_NO_MENU();
                 char wanted_meta = temp[0];
                 if (!thismenu_firstOccurance && thismenu->meta != wanted_meta) {
-                    throwParseError(GBS_global_string("menumeta has inconsistent definitions (in different definitions of menu '%s')", thismenu->label), in);
+                    if (wanted_meta != 0) {
+                        if (thismenu->meta != 0) {
+                            throwParseError(GBS_global_string("menumeta has inconsistent definitions (in different definitions of menu '%s')", thismenu->label), in);
+                        }
+                        else {
+                            thismenu->meta = wanted_meta;
+                        }
+                    }
                 }
-                thismenu->meta = wanted_meta;
+                else {
+                    thismenu->meta = wanted_meta;
+                }
             }
             // item: chooses menu item to use
             else if (strcmp(head, "item") == 0) {
