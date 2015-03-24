@@ -2253,19 +2253,19 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 208);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 6763);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 6796);
 
     {
         KL_Settings& KL = env.get_KL_settings();
         LocallyModify<EdgeSpec> target(KL.whichEdges, EdgeSpec(KL.whichEdges&~SKIP_UNMARKED_EDGES)); // ignore marks; skip folded
 
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-visible-global", PARSIMONY_OPTI_VISIBLE, env, true)); // same result as if all species marked (see below)
-        TEST_EXPECT_EQUAL(env.combines_performed(), 13195);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 13069);
 
         KL.whichEdges = EdgeSpec(KL.whichEdges&~SKIP_FOLDED_EDGES); // ignore marks and folding
 
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // same result as if all species marked and all groups unfolded (see below)
-        TEST_EXPECT_EQUAL(env.combines_performed(), 47247);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 30770);
     }
 
     // -----------------------------
@@ -2290,10 +2290,10 @@ void TEST_nucl_tree_modifications() {
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-visible-global", PARSIMONY_OPTI_VISIBLE, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 13195);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 13069);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI_VISIBLE));
-        TEST_EXPECT_EQUAL(env.combines_performed(), 346);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 336);
         env.pop();
     }
 
@@ -2305,7 +2305,7 @@ void TEST_nucl_tree_modifications() {
         group->gr.grouped      = false; // unfold the only folded group
 
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 47247);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 30770);
     }
 }
 
@@ -2405,8 +2405,8 @@ void TEST_prot_tree_modifications() {
     const int PARSIMONY_MIXED       = PARSIMONY_ORG + 1207;
     const int PARSIMONY_NNI         = PARSIMONY_ORG + 1125;
     const int PARSIMONY_NNI_ALL     = PARSIMONY_ORG;
-    const int PARSIMONY_OPTI_MARKED = PARSIMONY_ORG + 7; // did not reach original state (initial tree already is optimized)
-    const int PARSIMONY_OPTI        = PARSIMONY_ORG;     // no gain (initial tree already is optimized)
+    const int PARSIMONY_OPTI_MARKED = PARSIMONY_ORG;
+    const int PARSIMONY_OPTI        = PARSIMONY_ORG; // no gain (initial tree already is optimized)
 
     // ------------------------------------------------------
     //      mix tree (original tree already is optimized)
@@ -2473,7 +2473,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 165);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 2447);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 1835);
 
     // -----------------------------
     //      test optimize (all)

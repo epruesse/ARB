@@ -91,6 +91,8 @@ QuadraticThreshold::QuadraticThreshold(KL_DYNAMIC_THRESHOLD_TYPE type, double st
 }
 
 void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, const AP_FLOAT *pars_global_start, bool dumpPerf) {
+    AP_tree_nlen   *oldrootleft  = get_root_node()->get_leftson();
+    AP_tree_nlen   *oldrootright = get_root_node()->get_rightson();
     AP_FLOAT       pars_curr = get_root_node()->costs();
     const AP_FLOAT pars_org  = pars_curr;
 
@@ -155,6 +157,13 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
     }
 
     if (dumpPerf) performance.dump(stdout, pars_curr);
+
+    if (oldrootleft->father == oldrootright) {
+        oldrootleft->set_root();
+    }
+    else {
+        oldrootright->set_root();
+    }
 }
 
 
