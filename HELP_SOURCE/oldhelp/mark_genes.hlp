@@ -9,7 +9,7 @@ SUB	gene_search.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		What are Marked Genes ?
+TITLE		What are Marked Genes?
 
 DESCRIPTION	All genes have a flag which can be set to FALSE or TRUE.
 		All genes with the flag set to TRUE are called marked

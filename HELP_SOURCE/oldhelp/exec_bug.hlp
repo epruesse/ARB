@@ -9,7 +9,7 @@ SUB	arb_commands.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		How to fix an 'exec' problem ?
+TITLE		How to fix an 'exec' problem?
 
 OCCURRENCE	NDS + ACI exec - command
 
