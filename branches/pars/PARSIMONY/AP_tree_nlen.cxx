@@ -1099,13 +1099,13 @@ AP_FLOAT AP_tree_nlen::costs(char *mutPerSite) {
 AP_FLOAT AP_tree_nlen::nn_interchange_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode) {
     ap_assert(depth == UNLIMITED); // @@@ elim param 'depth' if always UNLIMITED
     if (!father) {
-        return rootEdge()->nni_rec(depth, whichEdges, mode, NULL);
+        return rootEdge()->nni_rec(depth, whichEdges, mode, NULL, true);
     }
     if (!father->father) {
         AP_tree_edge *e = rootEdge();
-        return e->nni_rec(depth, whichEdges, mode, e->otherNode(this));
+        return e->nni_rec(depth, whichEdges, mode, e->otherNode(this), false);
     }
-    return edgeTo(get_father())->nni_rec(depth, whichEdges, mode, get_father());
+    return edgeTo(get_father())->nni_rec(depth, whichEdges, mode, get_father(), false);
 }
 
 inline CONSTEXPR_RETURN AP_TREE_SIDE idx2side(const int idx) {
@@ -1256,18 +1256,14 @@ bool AP_tree_edge::kl_rec(const KL_params& KL, const int rec_depth, AP_FLOAT par
     else { // at root
         switch (rec_depth) {
             case 0:
-                ap_assert(visited_subtrees == 2);
-                ap_assert(forbidden_descends == 0);
+                ap_assert(visited_subtrees <= 2);
                 break;
             case 1:
                 ap_assert(visited_subtrees <= 8);
-                ap_assert(forbidden_descends == 0);
+                ap_assert(forbidden_descends <= 2); // in case of subtree-optimization, 2 descends may be forbidden
                 break;
             default:
                 ap_assert(visited_subtrees <= 8);
-                // ap_assert(forbidden_descends == 0 || forbidden_descends == 2 || forbidden_descends == 4); // @@@ 4 is strange // @@@ fails
-                // ap_assert(forbidden_descends == 0 || forbidden_descends == 2);
-                // ap_assert(forbidden_descends == 2);
                 break;
         }
     }

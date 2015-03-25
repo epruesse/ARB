@@ -338,14 +338,16 @@ public:
 
     // tree optimization:
 
-    AP_FLOAT nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode);
+    AP_FLOAT nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode, bool includeStartEdge);
     bool kl_rec(const KL_params& KL, const int rec_depth, AP_FLOAT pars_best);
 
-    AP_FLOAT calc_branchlengths() { return nni_rec(UNLIMITED, ANY_EDGE, AP_BL_BL_ONLY, NULL); }
+    AP_FLOAT calc_branchlengths() { return nni_rec(UNLIMITED, ANY_EDGE, AP_BL_BL_ONLY, NULL, true); }
 
     AP_FLOAT nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps);
 
     void mixTree(int repeat, int percent, EdgeSpec whichEdges);
+
+    void set_visited(bool vis) { kl_visited = vis; }
 };
 
 std::ostream& operator<<(std::ostream&, const AP_tree_edge&);

@@ -435,7 +435,7 @@ inline void undefine_branchlengths(AP_tree_nlen *node) {
     node->rightlen = AP_UNDEF_BL;
 }
 
-AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode) {
+AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode, bool includeStartEdge) {
     ap_assert(depth == UNLIMITED); // @@@ elim param 'depth' if always UNLIMITED
 
     if (!rootNode())         return 0.0;
@@ -458,7 +458,9 @@ AP_FLOAT AP_tree_edge::nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, 
         whichEdges = EdgeSpec(whichEdges|SKIP_LEAF_EDGES);
     }
 
-    EdgeChain    chain(this, depth, whichEdges, !recalc_lengths, skipNode);
+    ap_assert(implicated(includeStartEdge, this == rootEdge())); // non-subtree-NNI shall always be called with rootEdge (afaik)
+
+    EdgeChain    chain(this, depth, whichEdges, !recalc_lengths, skipNode, includeStartEdge);
     arb_progress progress(chain.size());
 
     if (recalc_lengths) { // set all branchlengths to undef

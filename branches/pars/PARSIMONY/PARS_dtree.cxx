@@ -93,8 +93,8 @@ QuadraticThreshold::QuadraticThreshold(KL_DYNAMIC_THRESHOLD_TYPE type, double st
 void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, const AP_FLOAT *pars_global_start, bool dumpPerf) {
     AP_tree_nlen   *oldrootleft  = get_root_node()->get_leftson();
     AP_tree_nlen   *oldrootright = get_root_node()->get_rightson();
-    AP_FLOAT       pars_curr = get_root_node()->costs();
-    const AP_FLOAT pars_org  = pars_curr;
+    AP_FLOAT        pars_curr    = get_root_node()->costs();
+    const AP_FLOAT  pars_org     = pars_curr;
 
     OptiPerfMeter performance("KL-recursion", pars_curr);
 
@@ -112,13 +112,25 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
         KL.stopAtFoldedGroups = settings.whichEdges&SKIP_FOLDED_EDGES;
     }
 
-    AP_tree_edge *startEdge = at->edgeTo(at->get_father());
-    if (!startEdge) {
-        startEdge = rootEdge();
-        ap_assert(startEdge);
-    }
-    EdgeChain chain(startEdge, UNLIMITED, EdgeSpec(SKIP_LEAF_EDGES|settings.whichEdges), true);
+    AP_tree_edge *startEdge     = NULL;
+    AP_tree_nlen *skipNode      = NULL;
+    bool          skipStartEdge = true;
 
+    if (!at->father) {
+        startEdge     = rootEdge();
+        skipStartEdge = false;
+    }
+    else if (!at->father->father) {
+        startEdge = rootEdge();
+        skipNode  = startEdge->otherNode(at);
+    }
+    else {
+        skipNode  = at->get_father();
+        startEdge = at->edgeTo(skipNode);
+    }
+    ap_assert(startEdge);
+
+    EdgeChain    chain(startEdge, UNLIMITED, EdgeSpec(SKIP_LEAF_EDGES|settings.whichEdges), true, skipNode, skipStartEdge);
     arb_progress progress(chain.size());
 
     if (pars_global_start) {
@@ -127,6 +139,8 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
     else {
         progress.subtitle(GBS_global_string("best=%.1f", pars_curr));
     }
+
+    if (skipStartEdge) startEdge->set_visited(true); // avoid traversal beyond startEdge
 
     while (chain && !progress.aborted()) {
         AP_tree_edge *edge = *chain; ++chain;
@@ -155,6 +169,8 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
         }
         progress.inc();
     }
+
+    if (skipStartEdge) startEdge->set_visited(false); // reallow traversal beyond startEdge
 
     if (dumpPerf) performance.dump(stdout, pars_curr);
 
@@ -201,6 +217,10 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
     AP_FLOAT       heu_start_pars = prev_pars;
     OptiPerfMeter *heuPerf        = NULL;
 
+#if defined(ASSERTION_USED)
+    bool at_is_root = at == rootNode();
+#endif
+
     while (heuristic != NO_FURTHER_HEURISTIC && !progress.aborted()) {
         const H_Settings& hset = heuristic_setting[heuristic];
         if (!heuPerf) {
@@ -219,6 +239,7 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
         ap_assert(this_pars>=0); // ensure this_pars was set
         ap_assert(this_pars<=prev_pars); // otherwise heuristic worsened the tree
 
+        ap_assert(at_is_root == (at == rootNode()));
 
         bool      dumpOverall   = false;
         Heuristic nextHeuristic = heuristic;
@@ -336,79 +357,72 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
 
     switch (event.cmd()) {
         case AWT_MODE_NNI:
-            if (event.type() == AW_Mouse_Press) {
-                switch (event.button()) {
-                    case AW_BUTTON_LEFT: {
-                        if (clicked.node()) {
-                            arb_progress  progress("NNI optimize subtree");
-                            AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, clicked.node());
-                            atn->nn_interchange_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY);
-                            exports.save = 1;
-                            ASSERT_VALID_TREE(get_root_node());
-                        }
-                        break;
-                    }
-                    case AW_BUTTON_RIGHT: {
-                        arb_progress progress("NNI optimize tree");
-                        long         prevCombineCount = AP_sequence::combine_count();
-                        
-                        get_root_node()->nn_interchange_rec(UNLIMITED, ANY_EDGE, AP_BL_NNI_ONLY);
-                        printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
-
-                        exports.save = 1;
-                        ASSERT_VALID_TREE(get_root_node());
-                        break;
-                    }
-
-                    default: break;
-                }
-            }
-            break;
         case AWT_MODE_KERNINGHAN:
+        case AWT_MODE_OPTIMIZE: {
+            const char *what  = NULL;
+            const char *where = NULL;
+
+            switch (event.cmd()) {
+                case AWT_MODE_NNI:        what = "Recursive NNI on"; break;
+                case AWT_MODE_KERNINGHAN: what = "K.L. optimize";    break;
+                case AWT_MODE_OPTIMIZE:   what = "Global optimize";  break;
+                default:                  break;
+            }
+
+            AP_tree_nlen *startNode  = NULL;
+            bool          repeatOpti = true;
+
             if (event.type() == AW_Mouse_Press) {
                 switch (event.button()) {
                     case AW_BUTTON_LEFT:
-                        if (clicked.node()) {
-                            arb_progress  progress("Kernighan-Lin optimize subtree");
-                            parsimony.kernighan_optimize_tree(DOWNCAST(AP_tree_nlen*, clicked.node()), KL_Settings(aw_root), NULL, true);
-                            this->exports.save = 1;
-                            ASSERT_VALID_TREE(get_root_node());
-                        }
+                        repeatOpti = false;
+                        // fall-through
+                    case AW_BUTTON_RIGHT:
+                        startNode = DOWNCAST(AP_tree_nlen*, clicked.node());
+                        where = (startNode == get_root_node()) ? "tree" : "subtree";
                         break;
-                    case AW_BUTTON_RIGHT: {
-                        arb_progress progress("Kernighan-Lin optimize tree");
-                        parsimony.kernighan_optimize_tree(get_root_node(), KL_Settings(aw_root), NULL, true);
-                        this->exports.save = 1;
-                        ASSERT_VALID_TREE(get_root_node());
+
+                    default:
                         break;
-                    }
-                    default: break;
                 }
             }
-            break;
-        case AWT_MODE_OPTIMIZE:
-            if (event.type()==AW_Mouse_Press) {
-                switch (event.button()) {
-                    case AW_BUTTON_LEFT:
-                        if (clicked.node()) {
-                            arb_progress  progress("Optimizing subtree");
-                            parsimony.optimize_tree(DOWNCAST(AP_tree_nlen*, clicked.node()), KL_Settings(aw_root), progress);
-                            this->exports.save = 1;
-                            ASSERT_VALID_TREE(get_root_node());
-                        }
-                        break;
-                    case AW_BUTTON_RIGHT: {
-                        arb_progress progress("Optimizing tree");
-                        
-                        parsimony.optimize_tree(get_root_node(), KL_Settings(aw_root), progress);
-                        this->exports.save = 1;
-                        ASSERT_VALID_TREE(get_root_node());
-                        break;
+
+            if (what && where) {
+                arb_progress progress(GBS_global_string("%s %s", what, where));
+
+                AP_FLOAT start_pars = get_root_node()->costs();
+                AP_FLOAT curr_pars  = start_pars;
+
+                KL_Settings KL(aw_root);
+
+                do {
+                    AP_FLOAT prev_pars  = curr_pars;
+
+                    switch (event.cmd()) {
+                        case AWT_MODE_NNI:
+                            startNode->nn_interchange_rec(UNLIMITED, KL.whichEdges, AP_BL_NNI_ONLY);
+                            break;
+                        case AWT_MODE_KERNINGHAN:
+                            parsimony.kernighan_optimize_tree(startNode, KL, &start_pars, true);
+                            break;
+                        case AWT_MODE_OPTIMIZE:
+                            parsimony.optimize_tree(startNode, KL, progress);
+                            repeatOpti = false;   // never loop here (optimize_tree already loops until no further improvement)
+                            break;
+                        default:
+                            repeatOpti = false;
+                            break;
                     }
-                    default: break;
-                }
+
+                    curr_pars  = get_root_node()->costs();
+                    repeatOpti = repeatOpti && curr_pars<prev_pars;
+                } while (repeatOpti);
+
+                exports.save = 1;
+                ASSERT_VALID_TREE(get_root_node());
             }
             break;
+        }
 
         default:
             recalc_branchlengths_on_structure_change = false;
@@ -629,12 +643,12 @@ void TEST_calc_bootstraps() {
 
         TEST_EXPECT_EQUAL(env.combines_performed(), 0);
 
-        root_edge->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL);
+        root_edge->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL, true);
         root->reorder_tree(BIG_BRANCHES_TO_TOP);
         TEST_EXPECT_NEWICK(nREMARK, root, bs_limit_topo);
         TEST_EXPECT_EQUAL(env.combines_performed(), 170);
 
-        root_edge->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL);
+        root_edge->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL, true);
         root->reorder_tree(BIG_BRANCHES_TO_TOP);
         TEST_EXPECT_NEWICK(nREMARK, root, bs_estim_topo);
         TEST_EXPECT_EQUAL(env.combines_performed(), 156);

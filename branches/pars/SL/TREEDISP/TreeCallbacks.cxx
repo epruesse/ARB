@@ -35,13 +35,13 @@ void nt_mode_event(UNFIXED, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
         case AWT_MODE_INFO:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");                                      break;
         case AWT_MODE_WWW:    text = MODE_TEXT_1BUTTON("WEB",    "Launch node dependent URL (see <Properties/WWW...>)"); break;
 
-        case AWT_MODE_SWAP:       text = MODE_TEXT_2BUTTONS("SWAP",         "swap child branches",        "flip whole subtree");          break;
-        case AWT_MODE_MARK:       text = MODE_TEXT_2BUTTONS("MARK",         "mark subtree",               "unmark subtree");              break;
-        case AWT_MODE_GROUP:      text = MODE_TEXT_2BUTTONS("GROUP",        "fold/unfold group",          "create/rename/destroy group"); break;
-        case AWT_MODE_NNI:        text = MODE_TEXT_2BUTTONS("OPTI(NNI)",    "subtree",                    "whole tree");                  break;
-        case AWT_MODE_KERNINGHAN: text = MODE_TEXT_2BUTTONS("OPTI(KL)",     "subtree",                    "whole tree");                  break;
-        case AWT_MODE_OPTIMIZE:   text = MODE_TEXT_2BUTTONS("OPTI(NNI&KL)", "subtree",                    "whole tree");                  break;
-        case AWT_MODE_SETROOT:    text = MODE_TEXT_2BUTTONS("REROOT",       "set root to clicked branch", "search optimal root");         break;
+        case AWT_MODE_SWAP:       text= MODE_TEXT_2BUTTONS("SWAP",         "swap child branches",        "flip whole subtree");          break;
+        case AWT_MODE_MARK:       text= MODE_TEXT_2BUTTONS("MARK",         "mark subtree",               "unmark subtree");              break;
+        case AWT_MODE_GROUP:      text= MODE_TEXT_2BUTTONS("GROUP",        "fold/unfold group",          "create/rename/destroy group"); break;
+        case AWT_MODE_NNI:        text= MODE_TEXT_2BUTTONS("OPTI(NNI)",    "once",                       "repeated");                    break;
+        case AWT_MODE_KERNINGHAN: text= MODE_TEXT_2BUTTONS("OPTI(KL)",     "once",                       "repeated");                    break;
+        case AWT_MODE_OPTIMIZE:   text= MODE_TEXT_2BUTTONS("OPTI(NNI&KL)", "once",                       "repeated");                    break;
+        case AWT_MODE_SETROOT:    text= MODE_TEXT_2BUTTONS("REROOT",       "set root to clicked branch", "search optimal root");         break;
 
         case AWT_MODE_ROTATE: text = MODE_TEXT_1BUTTON_KEYS("ROTATE", "drag branch to rotate",         KEYINFO_ABORT_AND_RESET); break;
         case AWT_MODE_SPREAD: text = MODE_TEXT_1BUTTON_KEYS("SPREAD", "drag branch to spread subtree", KEYINFO_ABORT_AND_RESET); break;

@@ -438,7 +438,7 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
                 rootNode()->compute_tree(); // see AP_tree_edge.cxx@flags_broken_by_moveNextTo
                 progress.subtitle("local optimize (repeated NNI)");
                 while (1) {
-                    rootEdge()->nni_rec(UNLIMITED, EdgeSpec(SKIP_UNMARKED_EDGES|SKIP_LEAF_EDGES), AP_BL_NNI_ONLY, NULL);
+                    rootEdge()->nni_rec(UNLIMITED, EdgeSpec(SKIP_UNMARKED_EDGES|SKIP_LEAF_EDGES), AP_BL_NNI_ONLY, NULL, true);
                     AP_FLOAT pars_curr = rootNode()->costs();
                     if (pars_curr == pars_prev) break;
                     ap_assert(pars_curr<pars_prev);
@@ -911,7 +911,7 @@ static void NT_calc_branch_lengths(AW_window *, AWT_canvas *ntw) {
 static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
     arb_progress progress("Calculating bootstrap limit");
     AP_BL_MODE mode       = AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY);
-    rootEdge()->nni_rec(UNLIMITED, ANY_EDGE, mode, NULL);
+    rootEdge()->nni_rec(UNLIMITED, ANY_EDGE, mode, NULL, true);
     AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
     AWT_TREE(ntw)->displayed_root = AWT_TREE(ntw)->get_root_node();
     pars_saveNrefresh_changed_tree(ntw);
@@ -937,7 +937,7 @@ static void recursiveNNI(AWT_graphic_parsimony *agt, EdgeSpec whichEdges) {
     progress.subtitle(GBS_global_string("best=%.1f", orgPars));
 
     while (!progress.aborted()) {
-        AP_FLOAT currPars = rootEdge()->nni_rec(UNLIMITED, whichEdges, AP_BL_NNI_ONLY, NULL);
+        AP_FLOAT currPars = rootEdge()->nni_rec(UNLIMITED, whichEdges, AP_BL_NNI_ONLY, NULL, true);
         if (currPars == prevPars) break; // no improvement -> abort
         progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", currPars, orgPars-currPars));
         prevPars          = currPars;
@@ -2253,19 +2253,19 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 208);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 6796);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 5677);
 
     {
         KL_Settings& KL = env.get_KL_settings();
         LocallyModify<EdgeSpec> target(KL.whichEdges, EdgeSpec(KL.whichEdges&~SKIP_UNMARKED_EDGES)); // ignore marks; skip folded
 
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-visible-global", PARSIMONY_OPTI_VISIBLE, env, true)); // same result as if all species marked (see below)
-        TEST_EXPECT_EQUAL(env.combines_performed(), 13069);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 11719);
 
         KL.whichEdges = EdgeSpec(KL.whichEdges&~SKIP_FOLDED_EDGES); // ignore marks and folding
 
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // same result as if all species marked and all groups unfolded (see below)
-        TEST_EXPECT_EQUAL(env.combines_performed(), 30770);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 28380);
     }
 
     // -----------------------------
@@ -2290,7 +2290,7 @@ void TEST_nucl_tree_modifications() {
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-visible-global", PARSIMONY_OPTI_VISIBLE, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 13069);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 11719);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI_VISIBLE));
         TEST_EXPECT_EQUAL(env.combines_performed(), 336);
@@ -2305,7 +2305,7 @@ void TEST_nucl_tree_modifications() {
         group->gr.grouped      = false; // unfold the only folded group
 
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 30770);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 28380);
     }
 }
 
@@ -2406,7 +2406,7 @@ void TEST_prot_tree_modifications() {
     const int PARSIMONY_NNI         = PARSIMONY_ORG + 1125;
     const int PARSIMONY_NNI_ALL     = PARSIMONY_ORG;
     const int PARSIMONY_OPTI_MARKED = PARSIMONY_ORG;
-    const int PARSIMONY_OPTI        = PARSIMONY_ORG; // no gain (initial tree already is optimized)
+    const int PARSIMONY_OPTI        = PARSIMONY_ORG;     // no gain (initial tree already is optimized)
 
     // ------------------------------------------------------
     //      mix tree (original tree already is optimized)
@@ -2473,7 +2473,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 165);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 1835);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 1651);
 
     // -----------------------------
     //      test optimize (all)
@@ -2497,7 +2497,7 @@ void TEST_prot_tree_modifications() {
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 1637);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 1545);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI));
         TEST_EXPECT_EQUAL(env.combines_performed(), 254);
