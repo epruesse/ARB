@@ -22,7 +22,7 @@ DESCRIPTION	Finds an optimal probe-triple given a set of probes.
 
 NOTES           WHAT DOES MULTI PROBE DO NOT
 
-                     It does not generate new probes !
+                     It does not generate new probes!
 
                 WHAT DOES IT DO
 
