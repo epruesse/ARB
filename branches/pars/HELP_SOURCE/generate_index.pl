@@ -217,7 +217,7 @@ sub generate_map($) {
       die if (not $_ =~ />/o);
       my ($from,$to) = ($`,$');
 
-      die if ($to eq $from);
+      die "helpfile '$to' links to itself" if ($to eq $from);
 
       if (exists $use{$from}) {
         my $next = $use{$from}+1;

@@ -375,6 +375,15 @@ private:
     SectionList sections;
     string      inputfile;
 
+    void check_self_ref(const string& link) {
+        size_t slash = inputfile.find('/');
+        if (slash != string::npos) {
+            if (inputfile.substr(slash+1) == link) {
+                throw string("Invalid link to self");
+            }
+        }
+    }
+
 public:
     Helpfile() : title("TITLE", SEC_FAKE, NO_LINENUMBER_INFO) {}
     virtual ~Helpfile() {}
@@ -617,6 +626,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
         ostr         = string("\n") + spaces + ostr;
     }
 }
+
 inline void check_specific_duplicates(const string& link, const Links& existing, bool add_warnings) {
     for (Links::const_iterator ex = existing.begin(); ex != existing.end(); ++ex) {
         if (ex->Target() == link) {
@@ -1565,6 +1575,8 @@ void Helpfile::extractInternalLinks() {
                         link_target.find("file://") == string::npos &&
                         link_target.find('@')       == string::npos)
                     {
+                        check_self_ref(link_target);
+
                         try {
                             check_specific_duplicates(link_target, references,      false); // check only sublinks here
                             check_specific_duplicates(link_target, uplinks,         false); // check only uplinks here
