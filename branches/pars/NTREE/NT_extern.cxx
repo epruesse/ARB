@@ -1485,7 +1485,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
             awm->close_sub_menu();
             awm->insert_sub_menu("Network", "N", AWM_EXP);
             {
-                GDE_load_menu(awm, AWM_EXP, "User");
+                GDE_load_menu(awm, AWM_EXP, "Network");
             }
             awm->close_sub_menu();
             awm->sep______________();
@@ -1504,6 +1504,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->sep______________();
             awm->insert_menu_topic("xterm",         "Start XTERM",             "X", 0,         AWM_ALL, (AW_CB)GB_xterm, 0, 0);
+            awm->sep______________();
+            GDE_load_menu(awm, AWM_EXP, "User");
         }
         // --------------------
         //      Properties

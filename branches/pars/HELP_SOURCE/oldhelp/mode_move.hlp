@@ -44,8 +44,9 @@ NOTES		None
 
 EXAMPLES	None
 
-WARNINGS	!!! No 'undo' function available yet !!!
+WARNINGS        It is recommended to copy the tree before using the 'MOVE MODE',
+                to avoid problems caused by that bug:
 
-		It is recommended to copy the tree before using the 'MOVE MODE'.
+BUGS		Undo 'Move Group Info' does not work (leads to loss of groupname).
+                See http://bugs.arb-home.de/ticket/496
 
-BUGS		No bugs known

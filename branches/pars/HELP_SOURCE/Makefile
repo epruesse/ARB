@@ -17,6 +17,8 @@ XML_LOCATION=Xml
 HTML_LOCATION=../lib/help_html
 HLP_DEST=../lib/help
 HELP_INDEX_NAME = help_index
+DOTMAP=./help_map.dot
+GIFMAP=./help_map.gif
 
 # needed tools:
 TOOL_OBJECTS = \
@@ -108,7 +110,9 @@ DTD=arb_help.dtd
 $(XML) : $(XML_DEPEND) Makefile $(QUIETLY)
 
 $(HELP_INDEX_XML): $(OLD_HELP_ALL) $(XML) ./generate_index.pl Makefile
-	./generate_index.pl $(HELP_INDEX_NAME).xml $(XML_LOCATION) > $@
+	./generate_index.pl $(XML_LOCATION) $(HELP_INDEX_NAME).xml $(DOTMAP) > $@
+	-dot -Tgif -o$(GIFMAP) $(DOTMAP)
+	rm $(DOTMAP)
 
 xml : $(XML) $(HELP_INDEX_XML)
 
