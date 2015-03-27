@@ -2,6 +2,29 @@ ARB change log
 
 Major changes for next release:
 
+ - ARB PARSIMONY
+   * topology optimization
+     - now (by default) strictly restricted to marked/visible parts of the tree (#640)
+     - restriction now customizable (marked/all; visible/all)
+     - tree costs for protein-data were not independent from root-position (as expected by model; #633).
+       Caused infinite running optimization under some circumstances.
+     - optimize-modes now strictly restrict to clicked subtrees. single/repeated optimization possible.
+     - KL-optimizer
+       * static path reduction slightly changed meaning. changed default settings.
+       * removed randomness (was just covering some bugs)
+       * improved general optimization speed
+   * branchlength calculation
+     - "forgot" to recalculate lengths under some conditions. fixed.
+     - is now independent of tree-root position (#641)
+   * adding species
+     - 'add partial species' failed if two partial species had NO overlap (#609). fixed.
+     - in 'add species + NNI' local optimization quality depended on insert position. fixed.
+   * generally reduced the number of performed combines (skipping many useless)
+   * added function to randomize (parts of) the tree
+   * warns about insufficient sequence data (e.g. as result of too restrictive filtering; #631)
+   * fixed 'RESTORE' (crashed after deleting species from tree; #528)
+   * corrected handling of dots ('.') while combining anchestor sequences
+   * fixed a bunch of internal bugs (#620, #627, ...)
  - DNA realigner
    * several unjustified failures will no longer happen (fixes #419 and most likely #145)
      - correctly re-syncs after 'X' (if possible at all)
