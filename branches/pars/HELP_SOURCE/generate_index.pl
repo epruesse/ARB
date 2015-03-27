@@ -13,7 +13,7 @@ my %ignore = (
              );
 
 my $start_from = 'pa_optimizer'; # start-page
-my $depth      = 4; # show pages reachable by that many links (both link directions)
+my $depth      = 3; # show pages reachable by that many links (both link directions)
 
 # ----------------------------------------
 

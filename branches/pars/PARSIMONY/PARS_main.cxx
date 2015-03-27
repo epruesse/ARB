@@ -1367,15 +1367,15 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         }
         awm->close_sub_menu();
         awm->sep______________();
-        awm->insert_menu_topic("optimize", "Tree Optimization ...", "O", "pa_optimizer.hlp", AWM_ALL, makeCreateWindowCallback(createOptimizeWindow, ntw));
-        awm->insert_menu_topic("reset", "Reset optimal parsimony", "s", "", AWM_ALL, makeWindowCallback(pars_reset_optimal_parsimony, ntw));
+        awm->insert_menu_topic("optimize", "Tree Optimization ...",   "O", "pa_optimizer.hlp", AWM_ALL, makeCreateWindowCallback(createOptimizeWindow,         ntw));
+        awm->insert_menu_topic("reset",    "Reset optimal parsimony", "s", "pa_reset.hlp",     AWM_ALL, makeWindowCallback      (pars_reset_optimal_parsimony, ntw));
         awm->sep______________();
         awm->insert_menu_topic("beautify_tree",       "Beautify Tree",            "B", "resorttree.hlp",       AWM_ALL, makeWindowCallback(NT_resort_tree_cb, ntw, BIG_BRANCHES_TO_TOP));
         awm->insert_menu_topic("calc_branch_lengths", "Calculate Branch Lengths", "L", "pa_branchlengths.hlp", AWM_ALL, makeWindowCallback(NT_calc_branch_lengths, ntw));
         awm->sep______________();
         awm->insert_menu_topic("calc_upper_bootstrap_indep", "Calculate Upper Bootstrap Limit (dependent NNI)",   "d", "pa_bootstrap.hlp", AWM_ALL, makeWindowCallback(NT_bootstrap,        ntw, false));
         awm->insert_menu_topic("calc_upper_bootstrap_dep",   "Calculate Upper Bootstrap Limit (independent NNI)", "i", "pa_bootstrap.hlp", AWM_ALL, makeWindowCallback(NT_bootstrap,        ntw, true));
-        awm->insert_menu_topic("tree_remove_remark",         "Remove Bootstrap Values",                           "V", "trm_boot.hlp",     AWM_ALL, makeWindowCallback(NT_remove_bootstrap, ntw));
+        awm->insert_menu_topic("tree_remove_remark",         "Remove bootstrap values",                           "V", "trm_boot.hlp",     AWM_ALL, makeWindowCallback(NT_remove_bootstrap, ntw));
     }
 
 #if defined(TESTMENU)

@@ -37,7 +37,7 @@ SECTION         ARB_PARSIMONY specific
 		tree topologies with respect to maximum parsimony criteria by
 		moving subtrees. The current parsimony value is shown after the
 		'Current Par' prompt and can be compared with the 'Optimum Par'
-		value of the initial tree.
+		value of the initial tree (see LINK{pa_value.hlp}).
 
 
 NOTES		None
