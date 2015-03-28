@@ -2229,12 +2229,11 @@ void TEST_nucl_tree_modifications() {
 
     TEST_EXPECT_SAVED_TOPOLOGY(env, "nucl-initial");
 
-    // @@@ unify names (ALL<>MARKED)
-    const int PARSIMONY_NNI          = PARSIMONY_ORG-18;
+    const int PARSIMONY_NNI_MARKED   = PARSIMONY_ORG-18;
     const int PARSIMONY_NNI_ALL      = PARSIMONY_ORG-18;
     const int PARSIMONY_OPTI_MARKED  = PARSIMONY_ORG-25;
     const int PARSIMONY_OPTI_VISIBLE = PARSIMONY_ORG-26;
-    const int PARSIMONY_OPTI         = PARSIMONY_ORG-36;
+    const int PARSIMONY_OPTI_ALL     = PARSIMONY_ORG-36;
 
     {
         env.push();
@@ -2289,7 +2288,7 @@ void TEST_nucl_tree_modifications() {
     }
 
     // test optimize (some)
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "nucl-opti-NNI", PARSIMONY_NNI_MARKED, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 208);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
@@ -2304,7 +2303,7 @@ void TEST_nucl_tree_modifications() {
 
         KL.whichEdges = EdgeSpec(KL.whichEdges&~SKIP_FOLDED_EDGES); // ignore marks and folding
 
-        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, true)); // same result as if all species marked and all groups unfolded (see below)
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI_ALL, env, true)); // same result as if all species marked and all groups unfolded (see below)
         TEST_EXPECT_EQUAL(env.combines_performed(), 28380);
     }
 
@@ -2344,7 +2343,7 @@ void TEST_nucl_tree_modifications() {
         ap_assert(group->gr.grouped);
         group->gr.grouped      = false; // unfold the only folded group
 
-        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI_ALL, env, false)); // test recursive NNI+KL
         TEST_EXPECT_EQUAL(env.combines_performed(), 28380);
     }
 }
@@ -2443,10 +2442,10 @@ void TEST_prot_tree_modifications() {
     const unsigned mixseed = 1422292802;
 
     const int PARSIMONY_MIXED       = PARSIMONY_ORG + 1207;
-    const int PARSIMONY_NNI         = PARSIMONY_ORG + 1125;
+    const int PARSIMONY_NNI_MARKED  = PARSIMONY_ORG + 1125;
     const int PARSIMONY_NNI_ALL     = PARSIMONY_ORG;
     const int PARSIMONY_OPTI_MARKED = PARSIMONY_ORG;
-    const int PARSIMONY_OPTI        = PARSIMONY_ORG;     // no gain (initial tree already is optimized)
+    const int PARSIMONY_OPTI_ALL    = PARSIMONY_ORG; // no gain (initial tree already is optimized)
 
     // ------------------------------------------------------
     //      mix tree (original tree already is optimized)
@@ -2509,7 +2508,7 @@ void TEST_prot_tree_modifications() {
         env.pop();
     }
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI, env, true)); // test recursive NNI
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_NNI, "prot-opti-NNI", PARSIMONY_NNI_MARKED, env, true)); // test recursive NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 165);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
@@ -2536,10 +2535,10 @@ void TEST_prot_tree_modifications() {
 
     {
         env.push();
-        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI, env, false)); // test recursive NNI+KL
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI_ALL, env, false)); // test recursive NNI+KL
         TEST_EXPECT_EQUAL(env.combines_performed(), 1545);
 
-        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI));
+        TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI_ALL));
         TEST_EXPECT_EQUAL(env.combines_performed(), 254);
         env.pop();
     }
