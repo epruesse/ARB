@@ -2053,7 +2053,7 @@ static arb_test::match_expectation addedAsBrotherOf(const char *name, const char
     expectation_group fulfilled;
 
     AP_tree_nlen *node_in_tree = env.root_node()->findLeafNamed(name);
-    fulfilled.add(that(node_in_tree).does_differ_from(NULL));
+    fulfilled.add(that(node_in_tree).does_differ_from_NULL());
 
     const char *brother = node_in_tree->get_brother()->name;
     fulfilled.add(that(allowedBrothers).does_contain(brother));
@@ -2809,7 +2809,7 @@ void TEST_node_edge_resources() {
     TEST_EXPECT_EQUAL(sizeof(ARB_seqtree), 88);
     TEST_EXPECT_EQUAL(sizeof(TreeNode), 80);
 #else // !defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 120 + STATE_STACK_SIZE); // @@@ document 32bit size
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 112 + STATE_STACK_SIZE);
     TEST_EXPECT_EQUAL(sizeof(AP_tree), 84);
     TEST_EXPECT_EQUAL(sizeof(ARB_seqtree), 48);
     TEST_EXPECT_EQUAL(sizeof(TreeNode), 44);
@@ -2819,7 +2819,7 @@ void TEST_node_edge_resources() {
 #if defined(ARB_64)
     TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 64);
 #else // !defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 56); // @@@ document 32bit size
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_edge), 32);
 #endif
 
     PARSIMONY_testenv<AP_sequence_parsimony> env("TEST_trees.arb", aliname);
