@@ -2774,7 +2774,7 @@ void TEST_node_stack() {
         TEST_EXPECT_VALID_TREE(env.root_node());
     }
 
-    TEST_EXPECT_EQUAL(env.combines_performed(), 4122); // @@@ distribute
+    TEST_EXPECT_EQUAL(env.combines_performed(), 4122);
 }
 
 void TEST_node_edge_resources() {

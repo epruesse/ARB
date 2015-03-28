@@ -171,7 +171,7 @@ sub warn_duplicate_titles($\%) {
   }
 }
 
-sub generate_index($$) { # @@@ split into scan + print index
+sub generate_index($$) {
   my ($index_name,$xml_dir) = @_;
 
   my @xml   = find_indexed_xmls($index_name,$xml_dir);
