@@ -1634,35 +1634,16 @@ KL_Settings::KL_Settings(AW_root *aw_root) {
 }
 #if defined(UNIT_TESTS)
 KL_Settings::KL_Settings(GB_alignment_type atype) {
-    // previously values were read from test-DBs
-    // (GB_AT_AA: from TEST_prot.arb; GB_AT_RNA: from TEST_trees.arb )
-
-    // @@@ Wanted: set defaults (same values as below in AWARs)
-
-    // unit tests depend on these values (i.e. fail if they are changed):
+    // set default values
     maxdepth = 15;
 
-    Static.enabled = true;
+    Static.enabled  = true;
     Static.depth[0] = 2; // always test both possibilities at starting edge
-    switch (atype) {
-        case GB_AT_RNA:
-            Static.depth[1] = 3;
-            Static.depth[2] = 3;
-            Static.depth[3] = 3;
-            Static.depth[4] = 3;
-            Static.depth[5] = 1;
-            break;
-        case GB_AT_AA:
-            Static.depth[1] = 2;
-            Static.depth[2] = 2;
-            Static.depth[3] = 2;
-            Static.depth[4] = 1;
-            Static.depth[5] = 1;
-            break;
-        default:
-            ap_assert(0);
-            break;
-    }
+    Static.depth[1] = 8;
+    Static.depth[2] = 6;
+    Static.depth[3] = 6;
+    Static.depth[4] = 6;
+    Static.depth[5] = 6;
 
     Dynamic.enabled = true;
     Dynamic.start   = 100;
@@ -2292,19 +2273,19 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 208);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 5677);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 18518);
 
     {
         KL_Settings& KL = env.get_KL_settings();
         LocallyModify<EdgeSpec> target(KL.whichEdges, EdgeSpec(KL.whichEdges&~SKIP_UNMARKED_EDGES)); // ignore marks; skip folded
 
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-visible-global", PARSIMONY_OPTI_VISIBLE, env, true)); // same result as if all species marked (see below)
-        TEST_EXPECT_EQUAL(env.combines_performed(), 11719);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 34925);
 
         KL.whichEdges = EdgeSpec(KL.whichEdges&~SKIP_FOLDED_EDGES); // ignore marks and folding
 
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI_ALL, env, true)); // same result as if all species marked and all groups unfolded (see below)
-        TEST_EXPECT_EQUAL(env.combines_performed(), 28380);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 124811);
     }
 
     // -----------------------------
@@ -2329,7 +2310,7 @@ void TEST_nucl_tree_modifications() {
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-visible-global", PARSIMONY_OPTI_VISIBLE, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 11719);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 34925);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI_VISIBLE));
         TEST_EXPECT_EQUAL(env.combines_performed(), 336);
@@ -2344,7 +2325,7 @@ void TEST_nucl_tree_modifications() {
         group->gr.grouped      = false; // unfold the only folded group
 
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI_ALL, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 28380);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 124811);
     }
 }
 
@@ -2512,7 +2493,7 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECT_EQUAL(env.combines_performed(), 165);
 
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-marked-global", PARSIMONY_OPTI_MARKED, env, true)); // test recursive NNI+KL
-    TEST_EXPECT_EQUAL(env.combines_performed(), 1651);
+    TEST_EXPECT_EQUAL(env.combines_performed(), 2535);
 
     // -----------------------------
     //      test optimize (all)
@@ -2536,7 +2517,7 @@ void TEST_prot_tree_modifications() {
     {
         env.push();
         TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "prot-opti-global", PARSIMONY_OPTI_ALL, env, false)); // test recursive NNI+KL
-        TEST_EXPECT_EQUAL(env.combines_performed(), 1545);
+        TEST_EXPECT_EQUAL(env.combines_performed(), 2049);
 
         TEST_EXPECTATION(movingRootDoesntAffectCosts(PARSIMONY_OPTI_ALL));
         TEST_EXPECT_EQUAL(env.combines_performed(), 254);
