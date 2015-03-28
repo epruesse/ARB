@@ -1096,16 +1096,15 @@ AP_FLOAT AP_tree_nlen::costs(char *mutPerSite) {
     return mutation_rate;
 }
 
-AP_FLOAT AP_tree_nlen::nn_interchange_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode) {
-    ap_assert(depth == UNLIMITED); // @@@ elim param 'depth' if always UNLIMITED
+AP_FLOAT AP_tree_nlen::nn_interchange_rec(EdgeSpec whichEdges, AP_BL_MODE mode) {
     if (!father) {
-        return rootEdge()->nni_rec(depth, whichEdges, mode, NULL, true);
+        return rootEdge()->nni_rec(whichEdges, mode, NULL, true);
     }
     if (!father->father) {
         AP_tree_edge *e = rootEdge();
-        return e->nni_rec(depth, whichEdges, mode, e->otherNode(this), false);
+        return e->nni_rec(whichEdges, mode, e->otherNode(this), false);
     }
-    return edgeTo(get_father())->nni_rec(depth, whichEdges, mode, get_father(), false);
+    return edgeTo(get_father())->nni_rec(whichEdges, mode, get_father(), false);
 }
 
 inline CONSTEXPR_RETURN AP_TREE_SIDE idx2side(const int idx) {

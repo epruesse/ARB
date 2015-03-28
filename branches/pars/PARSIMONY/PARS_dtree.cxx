@@ -130,7 +130,7 @@ void ArbParsimony::kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& 
     }
     ap_assert(startEdge);
 
-    EdgeChain    chain(startEdge, UNLIMITED, EdgeSpec(SKIP_LEAF_EDGES|settings.whichEdges), true, skipNode, skipStartEdge);
+    EdgeChain    chain(startEdge, EdgeSpec(SKIP_LEAF_EDGES|settings.whichEdges), true, skipNode, skipStartEdge);
     arb_progress progress(chain.size());
 
     if (pars_global_start) {
@@ -234,7 +234,7 @@ void ArbParsimony::optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, 
             this_pars = get_root_node()->costs();
         }
         else {
-            this_pars = at->nn_interchange_rec(UNLIMITED, settings.whichEdges, AP_BL_NNI_ONLY);
+            this_pars = at->nn_interchange_rec(settings.whichEdges, AP_BL_NNI_ONLY);
         }
         ap_assert(this_pars>=0); // ensure this_pars was set
         ap_assert(this_pars<=prev_pars); // otherwise heuristic worsened the tree
@@ -400,7 +400,7 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
 
                     switch (event.cmd()) {
                         case AWT_MODE_NNI:
-                            startNode->nn_interchange_rec(UNLIMITED, KL.whichEdges, AP_BL_NNI_ONLY);
+                            startNode->nn_interchange_rec(KL.whichEdges, AP_BL_NNI_ONLY);
                             break;
                         case AWT_MODE_KERNINGHAN:
                             parsimony.kernighan_optimize_tree(startNode, KL, &start_pars, true);
@@ -643,12 +643,12 @@ void TEST_calc_bootstraps() {
 
         TEST_EXPECT_EQUAL(env.combines_performed(), 0);
 
-        root_edge->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL, true);
+        root_edge->nni_rec(ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_LIMIT),    NULL, true);
         root->reorder_tree(BIG_BRANCHES_TO_TOP);
         TEST_EXPECT_NEWICK(nREMARK, root, bs_limit_topo);
         TEST_EXPECT_EQUAL(env.combines_performed(), 170);
 
-        root_edge->nni_rec(UNLIMITED, ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL, true);
+        root_edge->nni_rec(ANY_EDGE, AP_BL_MODE(AP_BL_BL_ONLY|AP_BL_BOOTSTRAP_ESTIMATE), NULL, true);
         root->reorder_tree(BIG_BRANCHES_TO_TOP);
         TEST_EXPECT_NEWICK(nREMARK, root, bs_estim_topo);
         TEST_EXPECT_EQUAL(env.combines_performed(), 156);

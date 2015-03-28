@@ -36,8 +36,6 @@
 
 class AP_tree_nlen;
 
-const int UNLIMITED = -1;
-
 enum KL_RECURSION_TYPE { // =path reduction
     // bit-values!
     AP_NO_REDUCTION = 0,
@@ -197,7 +195,7 @@ public:
     // tree optimization methods:
     void parsimony_rec(char *mutPerSite = NULL);
 
-    AP_FLOAT nn_interchange_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode);
+    AP_FLOAT nn_interchange_rec(EdgeSpec whichEdges, AP_BL_MODE mode);
     AP_FLOAT nn_interchange(AP_FLOAT parsimony, AP_BL_MODE mode);
 
     void buildBranchList(AP_tree_nlen **&list, long &num, bool create_terminal_branches, int deep);
@@ -277,7 +275,7 @@ class AP_tree_edge : virtual Noncopyable {
 
     static long timeStamp;              // static counter for edge-age
 
-    size_t buildChainInternal(int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip, AP_tree_edge**& prevNextPtr);
+    size_t buildChainInternal(EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip, AP_tree_edge**& prevNextPtr);
 
     bool is_linked() const { return node[0]; }
 
@@ -338,10 +336,10 @@ public:
 
     // tree optimization:
 
-    AP_FLOAT nni_rec(int depth, EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode, bool includeStartEdge);
+    AP_FLOAT nni_rec(EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nlen *skipNode, bool includeStartEdge);
     bool kl_rec(const KL_params& KL, const int rec_depth, AP_FLOAT pars_best);
 
-    AP_FLOAT calc_branchlengths() { return nni_rec(UNLIMITED, ANY_EDGE, AP_BL_BL_ONLY, NULL, true); }
+    AP_FLOAT calc_branchlengths() { return nni_rec(ANY_EDGE, AP_BL_BL_ONLY, NULL, true); }
 
     AP_FLOAT nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps);
 
@@ -358,7 +356,7 @@ class EdgeChain : virtual Noncopyable {
     size_t        len;    // chain size
     static bool   exists; // singleton flag
 public:
-    EdgeChain(AP_tree_edge *start_, int depth, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip = NULL, bool includeStart = true);
+    EdgeChain(AP_tree_edge *start_, EdgeSpec whichEdges, bool depthFirst, const AP_tree_nlen *skip = NULL, bool includeStart = true);
     ~EdgeChain() { exists = false; }
 
     size_t size() const  {

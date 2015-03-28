@@ -439,7 +439,7 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
                 rootNode()->compute_tree(); // see AP_tree_edge.cxx@flags_broken_by_moveNextTo
                 progress.subtitle("local optimize (repeated NNI)");
                 while (1) {
-                    rootEdge()->nni_rec(UNLIMITED, EdgeSpec(SKIP_UNMARKED_EDGES|SKIP_LEAF_EDGES), AP_BL_NNI_ONLY, NULL, true);
+                    rootEdge()->nni_rec(EdgeSpec(SKIP_UNMARKED_EDGES|SKIP_LEAF_EDGES), AP_BL_NNI_ONLY, NULL, true);
                     AP_FLOAT pars_curr = rootNode()->costs();
                     if (pars_curr == pars_prev) break;
                     ap_assert(pars_curr<pars_prev);
@@ -911,8 +911,9 @@ static void NT_calc_branch_lengths(AW_window *, AWT_canvas *ntw) {
 
 static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
     arb_progress progress("Calculating bootstrap limit");
-    AP_BL_MODE mode       = AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY);
-    rootEdge()->nni_rec(UNLIMITED, ANY_EDGE, mode, NULL, true);
+    AP_BL_MODE   mode = AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY);
+
+    rootEdge()->nni_rec(ANY_EDGE, mode, NULL, true);
     AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
     AWT_TREE(ntw)->displayed_root = AWT_TREE(ntw)->get_root_node();
     pars_saveNrefresh_changed_tree(ntw);
@@ -938,7 +939,7 @@ static void recursiveNNI(AWT_graphic_parsimony *agt, EdgeSpec whichEdges) {
     progress.subtitle(GBS_global_string("best=%.1f", orgPars));
 
     while (!progress.aborted()) {
-        AP_FLOAT currPars = rootEdge()->nni_rec(UNLIMITED, whichEdges, AP_BL_NNI_ONLY, NULL, true);
+        AP_FLOAT currPars = rootEdge()->nni_rec(whichEdges, AP_BL_NNI_ONLY, NULL, true);
         if (currPars == prevPars) break; // no improvement -> abort
         progress.subtitle(GBS_global_string("best=%.1f (gain=%.1f)", currPars, orgPars-currPars));
         prevPars          = currPars;
@@ -1985,7 +1986,7 @@ static arb_test::match_expectation movingRootDoesntAffectCosts(int pars_expected
 
     for (int depth_first = 0; depth_first<=1; ++depth_first) {
         for (int push_local = 0; push_local<=1; ++push_local) {
-            EdgeChain chain(rootEdge(), UNLIMITED, ANY_EDGE, depth_first);
+            EdgeChain chain(rootEdge(), ANY_EDGE, depth_first);
 
             if (!push_local) ap_main->remember();
             while (chain) {
