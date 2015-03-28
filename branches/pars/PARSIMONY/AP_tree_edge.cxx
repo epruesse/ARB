@@ -146,7 +146,7 @@ size_t AP_tree_edge::buildChainInternal(int depth, EdgeSpec whichEdges, bool dep
                     AP_tree_edge * Edge = node[n]->edge[e];
                     if (Edge != this) {
                         descend = true;
-                        if (descend && (whichEdges&SKIP_UNMARKED_EDGES)) descend = has_marked(); // @@@ use Edge->has_marked?
+                        if (descend && (whichEdges&SKIP_UNMARKED_EDGES)) descend = Edge->has_marked();
                         if (descend && (whichEdges&SKIP_FOLDED_EDGES))   descend = !Edge->next_to_folded_group();
                         if (descend) {
                             added += Edge->buildChainInternal(depth-1, whichEdges, depthFirst, node[n], prevNextPtr);
