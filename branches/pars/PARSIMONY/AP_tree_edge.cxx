@@ -400,7 +400,7 @@ void AP_tree_edge::set_inner_branch_length_and_calc_adj_leaf_lengths(AP_FLOAT bc
          otherSon->get_seq()->weighted_base_count()
             ) * 0.5;
 
-    if (seq_len <= 1.0) seq_len = 1.0; // @@@ hm :/
+    if (seq_len < 0.1) seq_len = 0.1; // avoid that branchlengths gets 'inf' for sequences w/o data
 
     AP_FLOAT blen = bcosts / seq_len; // branchlength := costs per bp
 
