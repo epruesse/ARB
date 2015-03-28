@@ -677,6 +677,8 @@ void TEST_edgeChain() {
     const size_t MV_LEFT    = 6;
     const size_t MARKED_VIS = MV_RIGHT + MV_LEFT - 1; // root-edge only once
 
+    const EdgeSpec MARKED_VISIBLE_EDGES = EdgeSpec(SKIP_UNMARKED_EDGES|SKIP_FOLDED_EDGES);
+
     TEST_EXPECT_EQUAL(EdgeChain(root, MARKED_VISIBLE_EDGES, true, leftSon) .size(), MV_RIGHT); // one leaf edge is unmarked
     TEST_EXPECT_EQUAL(EdgeChain(root, MARKED_VISIBLE_EDGES, true, rightSon).size(), MV_LEFT);
     TEST_EXPECT_EQUAL(EdgeChain(root, MARKED_VISIBLE_EDGES, true)          .size(), MARKED_VIS);
