@@ -172,7 +172,8 @@ public:
     void set_branchlength_unrooted(GBT_LEN newlen) {
         //! like set_branchlength, but root-edge is treated correctly
         if (father->is_root_node()) {
-            father->leftlen = father->rightlen = newlen/2; // @@@ numeric problems? try to use difference
+            father->leftlen  = newlen/2;
+            father->rightlen = newlen-father->leftlen; // make sure sum equals newlen
         }
         else {
             set_branchlength(newlen);
