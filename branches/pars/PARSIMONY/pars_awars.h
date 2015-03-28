@@ -83,7 +83,7 @@ struct KL_Settings {
 
     KL_Settings(AW_root *aw_root); // read from AWARs
 #if defined(UNIT_TESTS)
-    KL_Settings(GB_alignment_type atype); // init with unittest defaults
+    explicit KL_Settings(); // init with unittest defaults
 #endif
 };
 

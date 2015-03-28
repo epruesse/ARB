@@ -457,7 +457,7 @@ PARSIMONY_testenv<SEQTYPE>::PARSIMONY_testenv(const char *dbname, const char *al
     GB_transaction  ta(gb_main);
     size_t          aliLength = GBT_get_alignment_len(gb_main, aliName);
 
-    klSettings = new KL_Settings(GBT_get_alignment_type(gb_main, aliName));
+    klSettings = new KL_Settings();
 
     AP_filter filter(aliLength);
     if (!filter.is_invalid()) {

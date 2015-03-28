@@ -1633,7 +1633,7 @@ KL_Settings::KL_Settings(AW_root *aw_root) {
     if (aw_root->awar(AWAR_OPTI_SKIP_FOLDED)->read_int()) whichEdges = EdgeSpec(whichEdges|SKIP_FOLDED_EDGES);
 }
 #if defined(UNIT_TESTS)
-KL_Settings::KL_Settings(GB_alignment_type atype) {
+KL_Settings::KL_Settings() {
     // set default values
     maxdepth = 15;
 
