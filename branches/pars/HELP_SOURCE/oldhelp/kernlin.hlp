@@ -67,6 +67,9 @@ SECTION         Path reduction
 
 NOTES		You may interrupt the tree optimization at any time w/o loosing the so far improved topology.
 
+                To save custom property sets, use the configuration icon in the LINK{pa_optimizer.hlp} window.
+                It will also save the setting made in this window.
+
 EXAMPLES	None
 
 WARNINGS	None

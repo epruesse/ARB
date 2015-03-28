@@ -44,6 +44,9 @@ NOTES		When only optimizing subtrees with marked species, only branches that are
                 After any optimization/randomization the tree will be 'beautified' (see
                 LINK{resorttree.hlp}) and branchlengths will be re-calculated (see LINK{pa_branchlengths.hlp}).
 
+                Saving the current settings as configuration will save the properties from this window
+                and from the LINK{kernlin.hlp} window.
+
 EXAMPLES	None
 
 WARNINGS	None

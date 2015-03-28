@@ -354,6 +354,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/cb.h

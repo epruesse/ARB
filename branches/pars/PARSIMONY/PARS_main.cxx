@@ -38,6 +38,7 @@
 
 #include <list>
 #include <macros.hxx>
+#include <awt_config_manager.hxx>
 
 #if defined(DEBUG)
 # define TESTMENU
@@ -1016,6 +1017,41 @@ static void randomMixTree(AW_window *aww, AWT_canvas *ntw) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
+
+static AWT_config_mapping_def optimizer_config_mapping[] = {
+    { AWAR_OPTI_MARKED_ONLY, "marked_only" },
+    { AWAR_OPTI_SKIP_FOLDED, "skip_folded" },
+
+    // { AWAR_RAND_REPEAT,     "rand_repeat" }, // do not store (use treesize-dependent default)
+    { AWAR_RAND_PERCENT, "rand_percent" },
+
+    { AWAR_KL_MAXDEPTH, "maxdepth" },
+    { AWAR_KL_INCDEPTH, "incdepth" },
+
+    { AWAR_KL_STATIC_ENABLED, "static" },
+    { AWAR_KL_STATIC_DEPTH1,  "s_depth1" },
+    { AWAR_KL_STATIC_DEPTH2,  "s_depth2" },
+    { AWAR_KL_STATIC_DEPTH3,  "s_depth3" },
+    { AWAR_KL_STATIC_DEPTH4,  "s_depth4" },
+    { AWAR_KL_STATIC_DEPTH5,  "s_depth5" },
+
+    { AWAR_KL_DYNAMIC_ENABLED, "dynamic" },
+    { AWAR_KL_DYNAMIC_START,   "start" },
+    { AWAR_KL_DYNAMIC_MAXX,    "maxx" },
+    { AWAR_KL_DYNAMIC_MAXY,    "maxy" },
+
+    { 0, 0 }
+};
+
+static char *optimizer_store_config(AW_CL,  AW_CL) {
+    AWT_config_definition cdef(optimizer_config_mapping);
+    return cdef.read();
+}
+static void optimizer_restore_config(const char *stored_string, AW_CL,  AW_CL) {
+    AWT_config_definition cdef(optimizer_config_mapping);
+    cdef.write(stored_string);
+}
+
 static AW_window *createOptimizeWindow(AW_root *aw_root, AWT_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "TREE_OPTIMIZE", "Tree optimization");
@@ -1046,6 +1082,9 @@ static AW_window *createOptimizeWindow(AW_root *aw_root, AWT_canvas *ntw) {
     aws->at("heuristic");
     aws->callback(makeWindowCallback(NT_optimize, ntw));
     aws->create_button("HEURISTIC", "Heuristic\noptimizer", "H");
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "treeopti", optimizer_store_config, optimizer_restore_config, 0, 0, NULL);
 
     aws->at("settings");
     aws->callback(makeCreateWindowCallback(create_kernighan_properties_window));
