@@ -46,7 +46,7 @@ void NodeStack::print(ostream& out, int indentLevel, Level frameNr) const {
     out << space(indentLevel) << "NodeStack=" << this << "  size " << i << " frameNr=" << frameNr << endl;
     for (NodeStack::const_iterator e = begin(); e != end(); ++e, --i) {
         const AP_tree_nlen *node = *e;
-        out << space(indentLevel+1) << '[' << i << "] AP_tree_nlen*=" << node << " pushed_to_frame=" << node->get_pushed_to_frame() << endl;
+        out << space(indentLevel+1) << '[' << i << "] AP_tree_nlen*=" << node << " remembered_for_frame=" << node->last_remembered_frame() << endl;
         node->get_states().print(out, indentLevel+2);
     }
 }
@@ -76,7 +76,7 @@ void AP_tree_nlen::print(std::ostream& out, int indentLevel, const char *label) 
     out << space(indentLevel)
         << label << "=" << this
         << " father=" << get_father()
-        << " ptf=" << pushed_to_frame
+        << " rff=" << remembered_for_frame
         << " mut=" << mutation_rate
 #if 0
         << " dist=" << distance

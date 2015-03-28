@@ -121,7 +121,7 @@ __ATTR__NORETURN static void pars_exit(AW_window *aww) {
 }
 
 static void AP_user_push_cb(AW_window *aww, AWT_canvas *) {
-    ap_main->user_push();
+    ap_main->remember_user_state();
     aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->get_user_push_counter());
 }
 
@@ -130,7 +130,7 @@ static void AP_user_pop_cb(AW_window *aww, AWT_canvas *ntw) {
         aw_message("No tree on stack.");
         return;
     }
-    ap_main->user_pop();
+    ap_main->revert_user_state();
     rootNode()->compute_tree();
     ASSERT_VALID_TREE(rootNode());
     aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->get_user_push_counter());

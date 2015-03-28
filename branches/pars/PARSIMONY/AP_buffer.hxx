@@ -123,7 +123,7 @@ class AP_pars_root;
 typedef unsigned long Level;
 
 struct NodeState : virtual Noncopyable { // buffers previous states of AP_tree_nlen
-    Level         frameNr;  // state of AP_tree_nlen::pushed_to_frame at creation time of NodeState
+    Level         frameNr;  // state of AP_tree_nlen::remembered_for_frame at creation time of NodeState
     AP_STACK_MODE mode;     // what has been stored?
 
     // only defined if mode & SEQUENCE:

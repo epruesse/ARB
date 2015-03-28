@@ -34,7 +34,7 @@ class AP_main : virtual Noncopyable {
     UserFrameStack         user_frames;
     Level                  frameLevel;
     AWT_graphic_parsimony *agt;       // provides access to tree!
-    StackFrameData        *frameData; // saved/restored by push/pop
+    StackFrameData        *frameData; // saved/restored by remember/revert
     GBDATA                *gb_main;
 
     void push_nodes_changed_since(Level wanted_frameLevel);
@@ -72,9 +72,9 @@ public:
 
     bool push_node(AP_tree_nlen *node, AP_STACK_MODE);
 
-    void user_push(); // @@@ -> user_remember
-    void user_pop();  // @@@ -> user_revert
-    // @@@ add user_accept
+    void remember_user_state();
+    void revert_user_state();
+    // @@@ add accept_user_state (#632)
 
     void remember();
     void revert();

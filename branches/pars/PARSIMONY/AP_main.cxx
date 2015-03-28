@@ -24,12 +24,12 @@ GB_ERROR AP_main::open(const char *db_server) {
     return error;
 }
 
-void AP_main::user_push() {
+void AP_main::remember_user_state() {
     user_frames.push(new UserFrame(frameLevel));
     remember();
 }
 
-void AP_main::user_pop() {
+void AP_main::revert_user_state() {
     if (user_frames.empty()) {
         aw_message("No user-pop possible");
     }
@@ -73,11 +73,11 @@ void AP_main::revert() {
     {
         AP_tree_nlen *node;
         while ((node = currFrame->pop())) {
-            if (frameLevel != node->get_pushed_to_frame()) {
-                cerr << "Main frame level=" << frameLevel << " node frame level=" << node->get_pushed_to_frame() << endl;
+            if (frameLevel != node->last_remembered_frame()) {
+                cerr << "Main frame level=" << frameLevel << " node frame level=" << node->last_remembered_frame() << endl;
                 GBK_terminate("AP_main::pop: main/node frame-level inconsistency");
             }
-            node->pop(frameLevel, rootPopped);
+            node->revertToPreviousState(frameLevel, rootPopped);
         }
     }
 
@@ -222,14 +222,14 @@ void AP_main::accept() {
     }
 
     while ((node = currFrame->pop())) {
-        if (node->clear(frameLevel) != true) {
-            // node was not cleared (because it was not stored for previous stack frame).
-            // if revert() gets called for previous stack, it is necessary to revert
+        if (node->acceptCurrentState(frameLevel) != true) {
+            // stored node state was not discarded (because it was not stored for the previous stack frame).
+            // if revert() gets called for previous stack frane, it is necessary to revert
             // the current change as well -> move into previous frame
             if (prev_frame) {
                 if (common->has_node(node)) {
                     // do NOT push nodes which get destroyed by accept_resources() below!
-                    ASSERT_RESULT(bool, true, node->clear(1)); // force state drop
+                    ASSERT_RESULT(bool, true, node->acceptCurrentState(1)); // force state drop
                 }
                 else {
                     prev_frame->push(node); // @@@ frames are pushed in reverted order (seems to be wrong)
@@ -260,8 +260,8 @@ bool AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
         if (mode & SEQUENCE) node->unhash_sequence();
     }
     else {
-        if (frameLevel < node->get_pushed_to_frame()) {
-            cerr << "Main frame level=" << frameLevel << " node frame level=" << node->get_pushed_to_frame() << endl;
+        if (frameLevel < node->last_remembered_frame()) {
+            cerr << "Main frame level=" << frameLevel << " node frame level=" << node->last_remembered_frame() << endl;
             GBK_terminate("AP_main::push_node: main/node frame-level inconsistency");
         }
 
@@ -282,7 +282,7 @@ bool AP_main::push_node(AP_tree_nlen *node, AP_STACK_MODE mode) {
             }
         }
 
-        if (node->push(mode, frameLevel)) {
+        if (node->rememberState(mode, frameLevel)) {
             currFrame->push(node);
             pushed = true;
         }

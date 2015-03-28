@@ -113,8 +113,8 @@ class AP_tree_nlen : public AP_tree { // derived from a Noncopyable // @@@ renam
 
     AP_FLOAT mutation_rate;
 
-    Level      pushed_to_frame;    // last frame this node has been pushed onto, 0 = none // @@@ rename (push->remember)
-    StateStack states;             // containes previous states of 'this'
+    Level      remembered_for_frame; // last frame this nodes' state has been remembered, 0 = none
+    StateStack states;               // containes previous states of 'this'
 
     void forget_relatives() { AP_tree::forget_relatives(); }
 
@@ -137,7 +137,7 @@ public:
     explicit AP_tree_nlen(AP_pars_root *troot)
         : AP_tree(troot),
           mutation_rate(0),
-          pushed_to_frame(0)
+          remembered_for_frame(0)
     {
         edge[0]  = edge[1]  = edge[2]  = NULL;
         index[0] = index[1] = index[2] = 0;
@@ -148,13 +148,13 @@ public:
     void     unhash_sequence();
     AP_FLOAT costs(char *mutPerSite = NULL);        // cost of a tree (number of changes ..)
 
-    bool push(AP_STACK_MODE, Level frame_level);
-    void pop(Level curr_frameLevel, bool& rootPopped);
+    bool rememberState(AP_STACK_MODE, Level frame_level);
+    void revertToPreviousState(Level curr_frameLevel, bool& rootPopped);
     void restore(NodeState& state);
     void restore_nondestructive(const NodeState& state);
-    bool clear(Level frame_level);
+    bool acceptCurrentState(Level frame_level);
 
-    Level get_pushed_to_frame() const { return pushed_to_frame; } // @@@ rename (push->remember)
+    Level last_remembered_frame() const { return remembered_for_frame; }
     bool  may_be_recollected() const { return !states.empty(); }
     const StateStack& get_states() const { return states; }
 
