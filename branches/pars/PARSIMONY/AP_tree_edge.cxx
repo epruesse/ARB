@@ -490,37 +490,6 @@ AP_FLOAT AP_tree_edge::nni_rec(EdgeSpec whichEdges, AP_BL_MODE mode, AP_tree_nle
         progress.inc();
     }
 
-    if (recalc_lengths) {
-#if defined(DEBUG)
-#define DUMP_FINAL_RECALCS
-#endif
-#if defined(DUMP_FINAL_RECALCS)
-        int final_recalc = 0;
-#endif
-
-        chain.restart();
-        while (chain) {
-            // inner branchlengths have been caclculated by nni_mutPerSite (called above directly or indirectly via nni())
-            // most leaf branchlengths have already been calculated (via set_inner_branch_length_and_calc_adj_leaf_lengths)
-            // (calls from unit tests only update 1 or max. 2 lengths in this loop)
-
-            AP_tree_edge *edge = *chain; ++chain;
-
-#if defined(DUMP_FINAL_RECALCS)
-            if (edge->node[0]->get_branchlength_unrooted() == AP_UNDEF_BL) ++final_recalc;
-            if (edge->node[1]->get_branchlength_unrooted() == AP_UNDEF_BL) ++final_recalc;
-#endif
-
-            update_undefined_leaf_branchlength(edge->node[0]);
-            update_undefined_leaf_branchlength(edge->node[1]);
-        }
-
-#if defined(DUMP_FINAL_RECALCS)
-        fprintf(stderr, "Final leaf branches calculated: %i leafs for a chain of size=%zu\n", final_recalc, chain.size());
-        ap_assert(!final_recalc); // @@@ the whole 'if (recalc_lengths)'-branch is obsolete // @@@ check with bigger trees
-#endif
-    }
-
     ap_assert(allBranchlengthsAreDefined(rootNode()));
 
     oldRootEdge->set_root();
