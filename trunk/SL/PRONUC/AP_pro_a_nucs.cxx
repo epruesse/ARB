@@ -22,6 +22,7 @@ char *AP_create_dna_to_ap_bases() {
     int       i;
     AP_BASES  val;
     char     *table = new char[256];
+    // UNCOVERED(); // covered by TEST_translator_instantiation, TEST_SLOW_import_genome_flatfile, TEST_calc_bootstraps, TEST_realign
 
     for (i=0; i<256; i++) {
         switch ((char)i) {
@@ -30,23 +31,26 @@ char *AP_create_dna_to_ap_bases() {
             case 'c': case 'C': val = AP_C; break;
             case 't': case 'T':
             case 'u': case 'U': val = AP_T; break;
-            case 'n': case 'N': val = (AP_BASES)(AP_A + AP_G + AP_C + AP_T); break;
-            case '?': case '.': val = (AP_BASES)(AP_A + AP_G + AP_C + AP_T + AP_S); break;
-            case '-': val = AP_S; break;
-            case 'm': case 'M': val = (AP_BASES)(AP_A+AP_C); break;
-            case 'r': case 'R': val = (AP_BASES)(AP_A+AP_G); break;
-            case 'w': case 'W': val = (AP_BASES)(AP_A+AP_T); break;
-            case 's': case 'S': val = (AP_BASES)(AP_C+AP_G); break;
-            case 'y': case 'Y': val = (AP_BASES)(AP_C+AP_T); break;
-            case 'k': case 'K': val = (AP_BASES)(AP_G+AP_T); break;
-            case 'v': case 'V': val = (AP_BASES)(AP_A+AP_C+AP_G); break;
-            case 'h': case 'H': val = (AP_BASES)(AP_A+AP_C+AP_T); break;
-            case 'd': case 'D': val = (AP_BASES)(AP_A+AP_G+AP_T); break;
-            case 'b': case 'B': val = (AP_BASES)(AP_C+AP_G+AP_T); break;
-            default: val = AP_N; break;
+            case '-':           val = AP_GAP; break;
+            case 'm': case 'M': val = AP_BASES(AP_A + AP_C); break;
+            case 'r': case 'R': val = AP_BASES(AP_A + AP_G); break;
+            case 'w': case 'W': val = AP_BASES(AP_A + AP_T); break;
+            case 's': case 'S': val = AP_BASES(AP_C + AP_G); break;
+            case 'y': case 'Y': val = AP_BASES(AP_C + AP_T); break;
+            case 'k': case 'K': val = AP_BASES(AP_G + AP_T); break;
+            case 'v': case 'V': val = AP_BASES(AP_A + AP_C + AP_G); break;
+            case 'h': case 'H': val = AP_BASES(AP_A + AP_C + AP_T); break;
+            case 'd': case 'D': val = AP_BASES(AP_A + AP_G + AP_T); break;
+            case 'b': case 'B': val = AP_BASES(AP_C + AP_G + AP_T); break;
+            case 'n': case 'N': val = AP_BASES(AP_A + AP_G + AP_C + AP_T); break;
+            case '?': case '.': val = AP_BASES(AP_A + AP_G + AP_C + AP_T + AP_GAP); break; // = AP_DOT
+            default:            val = AP_DOT; break; // interpret everything else like a dot (alternative would be to abort with error)
         }
         table[i] = (char)val;
     }
+
+    pn_assert(table[safeCharIndex('.')] == AP_DOT); // make sure a dot is a dot
+
     return table;
 }
 
@@ -89,6 +93,7 @@ void AWT_translator::build_table(unsigned char pbase, const char *tri_pro, const
     int n0 = nuc_2_bitset[safeCharIndex(nuc[0])];
     int n1 = nuc_2_bitset[safeCharIndex(nuc[1])];
     int n2 = nuc_2_bitset[safeCharIndex(nuc[2])];
+    // UNCOVERED(); // covered by TEST_translator_instantiation, TEST_SLOW_import_genome_flatfile, TEST_realign
 
     struct arb_r2a_pro_2_nucs *nucs;
     for (nucs = str->nucs; nucs; nucs = nucs->next) {
@@ -166,6 +171,7 @@ AWT_translator::AWT_translator(int arb_protein_code_nr) :
     memset(s2str, 0, sizeof(s2str));
     memset(index_2_spro, 0, sizeof(index_2_spro));
 
+    // UNCOVERED(); // covered by TEST_translator_instantiation, TEST_realign, TEST_SLOW_import_genome_flatfile
     nuc_2_bitset = AP_create_dna_to_ap_bases();
     t2i_hash     = GBS_create_hash(T2I_ENTRIES_MAX, GB_IGNORE_CASE); // case insensitive
 
@@ -309,9 +315,6 @@ static void awt_pro_a_nucs_debug(const AWT_translator *translator, const AWT_dis
 
 AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
     memset(dist_, 0, sizeof(dist_));
-    memset(transform07, 0, sizeof(transform07));
-    memset(transform815, 0, sizeof(transform815));
-    memset(transform1623, 0, sizeof(transform1623));
 
     int s;
     int i;
@@ -348,15 +351,6 @@ AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
         dist_[s]->patd[2] |= sum; // and store them in 'distance <= 2'
     }
 
-    for (i=0; i<256; i++) {
-        for (s = 0; s<8; s++) {
-            if (i & (1<<s)) {
-                transform07[i]   |= dist_[s]->patd[1];
-                transform815[i]  |= dist_[s+8]->patd[1];
-                transform1623[i] |= dist_[s+16]->patd[1];
-            }
-        }
-    }
 #ifdef DEBUG
     awt_pro_a_nucs_debug(translator, this);
 #endif
@@ -364,7 +358,7 @@ AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
 
 AWT_distance_meter::~AWT_distance_meter() {
     for (int i=0; i<64; i++) {
-        delete dist_[i];
+        free(dist_[i]);
     }
 
 }

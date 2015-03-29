@@ -66,8 +66,8 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/gccver.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ttypes.h

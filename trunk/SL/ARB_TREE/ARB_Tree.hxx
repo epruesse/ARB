@@ -18,9 +18,13 @@
 #ifndef DOWNCAST_H
 #include <downcast.h>
 #endif
-#ifndef ROOTEDTREE_H
-#include <RootedTree.h>
+#ifndef TREENODE_H
+#include <TreeNode.h>
 #endif
+#ifndef AP_SEQUENCE_HXX
+#include <AP_sequence.hxx>
+#endif
+
 
 #define at_assert(cond) arb_assert(cond)
 
@@ -30,7 +34,6 @@ class ARB_seqtree_root;
 class ARB_seqtree;
 class ARB_edge;
 class AP_weights;
-class AP_sequence;
 class AliView;
 
 class ARB_seqtree_root : public TreeRoot { // derived from Noncopyable
@@ -59,7 +62,7 @@ protected:
     }
 
 public:
-    ARB_seqtree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seqTempl, bool add_delete_callbacks);
+    ARB_seqtree_root(AliView *aliView, AP_sequence *seqTempl, bool add_delete_callbacks);
     ~ARB_seqtree_root() OVERRIDE;
 
     DEFINE_TREE_ROOT_ACCESSORS(ARB_seqtree_root, ARB_seqtree);
@@ -102,7 +105,7 @@ struct ARB_tree_info {
 };
 
 
-class ARB_seqtree : public RootedTree { // derived from Noncopyable
+class ARB_seqtree : public TreeNode { // derived from Noncopyable
     friend GB_ERROR ARB_seqtree_root::loadFromDB(const char *name);
     friend GB_ERROR ARB_seqtree_root::linkToDB(int *zombies, int *duplicates);
     friend void     ARB_seqtree_root::unlinkFromDB();
@@ -129,12 +132,13 @@ protected:
     }
     void replace_seq(AP_sequence *sequence);
 
+    ~ARB_seqtree() OVERRIDE;
+
 public:
     ARB_seqtree(ARB_seqtree_root *root)
-        : RootedTree(root),
+        : TreeNode(root),
           seq(NULL)
     {}
-    ~ARB_seqtree() OVERRIDE;
 
     DEFINE_TREE_ACCESSORS(ARB_seqtree_root, ARB_seqtree);
 
@@ -156,6 +160,8 @@ public:
         return seq;
     }
 
+    bool hasSequence() const { return seq && seq->hasSequence(); }
+
     void mark_subtree();
     bool contains_marked_species();
 
@@ -170,7 +176,10 @@ struct ARB_tree_predicate {
 //      ARB_countedTree
 //      tree that knows its size
 
-struct ARB_countedTree : public ARB_seqtree {
+class ARB_countedTree : public ARB_seqtree {
+protected:
+    ~ARB_countedTree() {}
+public:
     explicit ARB_countedTree(ARB_seqtree_root *tree_root_)
         : ARB_seqtree(tree_root_)
     {}

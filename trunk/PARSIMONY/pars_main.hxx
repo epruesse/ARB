@@ -11,33 +11,32 @@
 #ifndef PARS_MAIN_HXX
 #define PARS_MAIN_HXX
 
-#ifndef TREEDISPLAY_HXX
-#include <TreeDisplay.hxx>
+#ifndef PARS_DTREE_HXX
+#include "pars_dtree.hxx"
 #endif
 
 #define MIN_SEQUENCE_LENGTH 20
 
-class AW_root;
-class AWT_graphic_tree;
 class WeightedFilter;
 class AP_tree_nlen;
-class arb_progress;
+
+struct KL_Settings;
 
 class ArbParsimony {
-    AW_root          *awr;
-    AWT_graphic_tree *tree;
+    AWT_graphic_parsimony *tree;
 
 public:
-    ArbParsimony(AW_root *awroot) : awr(awroot), tree(NULL) {}
+    ArbParsimony() : tree(NULL) {}
 
-    AW_root *get_awroot() const { return awr; }
-    AWT_graphic_tree *get_tree() const { return tree; }
+    AWT_graphic_parsimony *get_tree() const { return tree; }
 
-    DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, get_tree()->get_root_node());
+    DEFINE_READ_ACCESSORS(AP_tree_nlen*, get_root_node, get_tree()->get_root_node());
 
     void generate_tree(WeightedFilter *pars_weighted_filter);
-    void optimize_tree(AP_tree *tree, arb_progress& progress);
-    void kernighan_optimize_tree(AP_tree *at);
+    void set_tree(AWT_graphic_parsimony *tree_);
+
+    void optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, arb_progress& progress);
+    void kernighan_optimize_tree(AP_tree_nlen *at, const KL_Settings& settings, const AP_FLOAT *pars_global_start, bool dumpPerf);
 };
 
 void PARS_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype);

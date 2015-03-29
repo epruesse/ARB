@@ -15,7 +15,7 @@
 #include <arb_progress.h>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
-#include <arbdbt.h>
+#include <TreeNode.h>
 #include <arb_sort.h>
 
 #define NT_RESORT_FILTER (1<<GB_STRING)|(1<<GB_INT)|(1<<GB_FLOAT)
@@ -93,7 +93,7 @@ static int resort_data_by_customOrder(const void *v1, const void *v2, void *cd_s
 static GBDATA **gb_resort_data_list;
 static long    gb_resort_data_count;
 
-static void NT_resort_data_base_by_tree(GBT_TREE *tree, GBDATA *gb_species_data) {
+static void NT_resort_data_base_by_tree(TreeNode *tree, GBDATA *gb_species_data) {
     if (tree) {
         if (tree->is_leaf) {
             if (tree->gb_node) {
@@ -101,14 +101,14 @@ static void NT_resort_data_base_by_tree(GBT_TREE *tree, GBDATA *gb_species_data)
             }
         }
         else {
-            NT_resort_data_base_by_tree(tree->leftson, gb_species_data);
-            NT_resort_data_base_by_tree(tree->rightson, gb_species_data);
+            NT_resort_data_base_by_tree(tree->get_leftson(), gb_species_data);
+            NT_resort_data_base_by_tree(tree->get_rightson(), gb_species_data);
         }
     }
 }
 
 
-static GB_ERROR NT_resort_data_base(GBT_TREE *tree, const customCriterion *sortBy) {
+static GB_ERROR NT_resort_data_base(TreeNode *tree, const customCriterion *sortBy) {
     nt_assert(contradicted(tree, sortBy));
 
     GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
@@ -136,7 +136,7 @@ static GB_ERROR NT_resort_data_base(GBT_TREE *tree, const customCriterion *sortB
 void NT_resort_data_by_phylogeny(AW_window *, AW_CL cl_ntw, AW_CL) {
     arb_progress  progress("Sorting data");
     GB_ERROR      error = 0;
-    GBT_TREE     *tree  = NT_get_tree_root_of_canvas((AWT_canvas*)cl_ntw);
+    TreeNode     *tree  = NT_get_tree_root_of_canvas((AWT_canvas*)cl_ntw);
 
     if (!tree)  error = "Please select/build a tree first";
     if (!error) error = NT_resort_data_base(tree, NULL);

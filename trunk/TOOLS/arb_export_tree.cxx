@@ -9,7 +9,7 @@
 // =============================================================== //
 
 #include <TreeWrite.h>
-#include <arbdbt.h>
+#include <TreeNode.h>
 #include <arb_handlers.h>
 #include <arb_global_defs.h>
 
@@ -66,10 +66,11 @@ int main(int argc, char **argv) {
                 { 
                     GB_transaction ta(gb_main);
 
-                    GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, GBT_TREE_NodeFactory());
+                    TreeNode *tree = GBT_read_tree(gb_main, tree_name, new SimpleRoot);
                     if (tree) {
                         error = TREE_export_tree(gb_main, stdout, tree, trifurcated, branchlens, doublequotes);
-                        delete tree;
+                        UNCOVERED();
+                        destroy(tree);
                     }
                     else {
                         GB_ERROR why_cant_read = GB_await_error();

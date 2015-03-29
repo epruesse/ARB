@@ -33,7 +33,7 @@ inline __ATTR__NORETURN void throwError(const char *msg) {
 }
 
 static __ATTR__NORETURN void throwParseError(const char *msg, const LineReader& file) {
-    fprintf(stderr, "\n%s:%li: %s\n", file.getFilename().c_str(), file.getLineNumber(), msg);
+    fprintf(stderr, "\n%s:%zu: %s\n", file.getFilename().c_str(), file.getLineNumber(), msg);
     fflush(stderr);
     throwError(msg);
 }

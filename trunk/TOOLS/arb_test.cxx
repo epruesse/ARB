@@ -189,7 +189,7 @@ void TEST_SLOW_arb_read_tree() {
 
     TEST_EXPECT_NO_ERROR(removeVaryingDateFromTreeRemarks(dbout));
 #if defined(TEST_AUTO_UPDATE_TREE)
-    system(GBS_global_string("cp %s %s", dbout, dbexpected));
+    TEST_COPY_FILE(dbout, dbexpected);
 #else // !defined(TEST_AUTO_UPDATE_TREE)
     TEST_EXPECT_TEXTFILES_EQUAL(dbexpected, dbout);
 #endif

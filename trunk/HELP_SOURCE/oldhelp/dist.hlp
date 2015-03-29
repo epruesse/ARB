@@ -18,7 +18,7 @@ SUB	bootstrap.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Neighbour joining
 
-OCCURRENCE	ARB_NT/Tree/Neighbour joining
+OCCURRENCE	ARB_NT/Tree/Build tree from sequence data/Distance matrix methods/Distance matrix + ARB NJ
 
 DESCRIPTION	Reconstructs a tree for all or marked species by first
 		calculating binary distances and subsequently applying the

@@ -13,7 +13,7 @@ my %ignore = (
              );
 
 my $start_from = 'pa_optimizer'; # start-page
-my $depth      = 4; # show pages reachable by that many links (both link directions)
+my $depth      = 3; # show pages reachable by that many links (both link directions)
 
 # ----------------------------------------
 
@@ -171,7 +171,7 @@ sub warn_duplicate_titles($\%) {
   }
 }
 
-sub generate_index($$) { # @@@ split into scan + print index
+sub generate_index($$) {
   my ($index_name,$xml_dir) = @_;
 
   my @xml   = find_indexed_xmls($index_name,$xml_dir);
@@ -217,7 +217,7 @@ sub generate_map($) {
       die if (not $_ =~ />/o);
       my ($from,$to) = ($`,$');
 
-      die if ($to eq $from);
+      die "helpfile '$to' links to itself" if ($to eq $from);
 
       if (exists $use{$from}) {
         my $next = $use{$from}+1;

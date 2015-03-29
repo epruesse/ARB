@@ -1,0 +1,35 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	pa_optimizer.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	pa_value.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Reset optimal parsimony
+
+OCCURRENCE	ARB_PARSIMONY/Tree/Reset optimal parsimony
+
+DESCRIPTION     Two parsimony values are displayed in the top area of the
+                ARB_PARSIMONY main window:
+
+                * the current parsimony value (representing the costs of the current topology)
+                * the optimal parsimony value (=the best parsimony value seen so far)
+
+                When adding species to the tree, the LINK{pa_value.hlp} will normally raise.
+                That means the previously seen 'optimal parsimony value' may be too low now
+                and reaching a better value by LINK{pa_optimizer.hlp} may be impossible.
+
+                Use this function to reset the optimal parsimony value to the
+                current parsimony value.
+
+NOTES		Will not modify the tree.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
