@@ -1,0 +1,37 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	species.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	mark_genes.hlp
+SUB	selected_gene.hlp
+SUB	gene_species.hlp
+# SUB	gene_info.hlp
+SUB	organisms.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		What are Genes?
+
+DESCRIPTION	One gene is one database entry containing subentries which
+                describe the gene. Every gene belongs to a specific
+		organism, but one organism may have many genes.
+
+                Main (reserved) entries of a gene:
+
+                     name, pos_begin, pos_end, complement,
+                     pos_joined, pos_begin1, pos_end1, pos_begin2, pos_end2, ...
+                     pos_uncertain,
+                     codon_start, transl_table
+
+                See LINK{gene_info.hlp} for details about these fields.
+
+NOTE		The main-sequence of a organism(species) is stored in the
+		alignment 'ali_genom'. You should not change this alignment.
+                
+WARNINGS	The alignment 'ali_genom' should NOT contain any gaps!!!!
+
+BUGS		No known bugs
+

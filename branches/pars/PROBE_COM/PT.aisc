@@ -1,0 +1,246 @@
+PROJECT         pb_com
+OBJECT_KEY      PT,             # MAIN PREFIX
+MAX_KEY         37,             # MAX NUMBER OF AN ATTRIBUTE
+MAX_OBJECT      12,             # MAX DIFFERENT USER STRUCTURES
+MAX_STRING_LEN  1024,
+MAX_PAR_CNT     16,
+MAGIC_NUMBER    0x615054,       # MAGIC_NUMBER 6 HEX DIGITS (see AISC/magic.lst@PTSERVER) 
+
+SERVER_INCLUDES (~
+#include <stdio.h>
+#include "PT_server.h"
+#include "PT_com.h"~)
+INCLUDE_INCLUDES (~$$(#FILE aisc_include.header)~)
+
+DATA {
+
+# ********************************* USER DATA *******************************************
+
+@CONST,         @VALUE,         @DOCU;
+LIST_SIZE,      20,             (~Size of I_STR Buffer~);
+PERC_SIZE,      20,             (~How many centigrades to look~);
+ALPHA_SIZE,     52,             (~26 BIG, 26 small letters~);
+DOMAIN_MIN_LENGTH, 8,           (~Minimum length of a domain~);
+PT_PART_DEEP,   2,              (~The Deep of the Partitions~);
+
+
+# ******************************* PRIVAT STRUCTURES: DO NOT CHANGE *********************************
+
+@STRUCT, @SKEY, @SKEYC, @SDOCU;
+
+dll_public,     ,       ,       (~parent of dll (=DoubledLinkedList)~), {
+    @TYPE,          @IDENT, @REF,   @ACC,   @SAVE,  @KEY,   @KEYC,  @INIT,  @DOCU;
+    t_key,          key,    t,      r,      ,       ,       ,       ,       (~The key~);
+    int,            cnt,    t,      r,      ,       CNT,    0,      ,       (~Number of elements~);
+    long,           hash,   t,      ,       ,       ,       ,       ,       (~Hash Table~);
+    dllheader_ext,  parent, flt,    r,      ,       PARENT, 1,      ,       (~My Owner~);
+    dllheader_ext,  last,   flt,    r,      ,       LAST,   2,      ,       (~Pointer to the last element~);
+};
+
+
+dll_header,     COMMON, 0,      (~link header (should be head of each function)~), {
+    @TYPE,          @IDENT,             @REF,   @ACC,   @SAVE,  @KEY,           @KEYC,  @INIT,  @DOCU;
+    t_key,          key,                t,      r,      ,       KEY,            0,      ,       (~The Key~);
+    aisc_string,    aisc_get_keystring, %,      r,      ,       KEYSTRING,      1,      ,       (~THE STRING of the KEY~);
+    dll_public,     parent,             ls,     r,      ,       (~~),           2,      ,       (~Pointer to dll_public~);
+    aisc_string,    ident,              t,      ,       1,      IDENT,          5,      ,       (~The ident [not necessary]~);
+};
+
+
+# ********************************* USER STRUCTURES *******************************************
+
+# new probe design/match:
+
+PT_tprobes, TPROBE,     9,     (~the probe we want to test~), {
+    @TYPE,      @IDENT,          @REF, @ACC, @KEY,        @KEYC, @INIT, @DOCU;
+    dllh,       mh,              t,    ,     (~~),        0,     ,      (~Header~);
+    aisc_string,sequence,        t,    r,    SEQUENCE,    8,     ,      (~The Sequence to check~);
+    int,        seq_len,         t,    ,     ,            ,      ,      (~The len of the sequence~);
+    double,     sum_bonds,       t,    ,     ,            ,      ,      (~The sum of all bonds~);
+    double,     quality,         t,    r,    QUALITY,     9,     ,      (~The quality of the probe = GROUPSIZE*dT~);
+    int,        groupsize,       t,    r,    GROUPSIZE,   10,    ,      (~The Size of the group~);
+    int,        hairpin,         t,    r,    HAIRPIN,     11,    ,      (~How many hairpin bonds~);
+    double,     whairpin,        t,    r,    WHAIRPIN,    12,    ,      (~Weighted Hairpins~);
+    int,        perc,            vt,   r,    PERC,        13,    ,      (~Result: How many non group hits per centigrade~), SIZE PERC_SIZE;
+    double,     temp,            t,    r,    TEMPERATURE, 14,    ,      (~The temperature of the probe~);
+    int,        mishits,         t,    r,    MISHIT,      15,    ,      (~How many outgroup members hit~);
+    int,        apos,            t,    ,     APOS,        16,    ,      (~The absolute position of probe~);
+    int,        get_r_pos,       t,    ,     ECOLI_POS,   17,    ,      (~The ecoli based position of probe~);
+    aisc_string,get_design_info, %,    r,    INFO,        19,    ,      (~the info text for each of the designed probes~);
+};
+
+PT_bond,   ,    ,       (~the definition of a bond~), {
+    @TYPE,  @IDENT, @REF,   @ACC,   @KEY,           @KEYC,  @INIT,          @DOCU;
+    double, val,    t,      ,       VAL,            0,      0.0,            (~how strong is that bond~);
+};
+
+PT_sequence, SEQUENCE,  8,     (~the additional sequences~), {
+    @TYPE,     @IDENT, @REF,   @ACC,   @KEY,           @KEYC,  @INIT,          @DOCU;
+    dllh,      mh,     t,      ,       (~~),           0,      ,               (~Header~);
+    bytestring,seq,    t,      ,       SEQUENCE,       8,      ,               (~The Sequence~);
+};
+
+PT_pdc, PDC,    7,     (~probe design~), {
+    @TYPE,          @IDENT,           @REF,   @ACC,   @KEY,           @KEYC,  @INIT,                  @DOCU;
+    dllh,           mh,               t,      ,       (~~),           0,      ,                       (~Header~);
+    double,         dte,              t,      ,       DTEDGE,         9,      50.0,                   (~The Temperature drop per percent mismatch on the edge of the probe~);
+    double,         dt,               t,      ,       DT,             10,     50.0,                   (~The temperature drop per percent mismatch~);
+    int,            looplen,          t,      ,       LOOPLEN,        14,     4,                      (~The Loop Length of a probe~);
+    int,            min_probelen,     t,      ,       MIN_PROBELEN,   15,     18,                     (~the minimum length of the designed probes~);
+    double,         mintemp,          t,      ,       MINTEMP,        16,     30.0,                   (~minimum temperature~);
+    double,         maxtemp,          t,      ,       MAXTEMP,        17,     100.0,                  (~maximum temperature~);
+    double,         min_gc,           t,      ,       MINGC,          18,     .3,                     (~the minimum GC content~);
+    double,         max_gc,           t,      ,       MAXGC,          19,     1.0,                    (~the maximum GC content~);
+    double,         maxbonds,         t,      ,       MAXBOND,        20,     4.0,                    (~The maximum of hairpin bonds~);
+    int,            min_ecolipos,     t,      ,       MIN_ECOLIPOS,   21,     -1,                     (~the minimum ecoli position [1..N]. -1 means 'no restriction'~);
+    int,            max_ecolipos,     t,      ,       MAX_ECOLIPOS,   22,     -1,                     (~the maximum ecoli position [1..N]. -1 means 'no restriction'~);
+    double,         min_coverage,     t,      ,       MINTARGETS,     23,     .7,                     (~the minimum coverage for the targetted group of species~);
+    int,            max_mishits,      t,      ,       MISHIT,         24,     0,                      (~the maximum mishits~);
+    int,            clipresult,       t,      ,       CLIPRESULT,     25,     40,                     (~Clip the Result list~);
+    int,            pos_groups,       vt,     ,       ,               ,       ,                       (~Position of Groups~), SIZE ALPHA_SIZE;
+    bytestring,     checksums,        t,      w,      CHECKSUMS,      26,     ,                       (~a list of sequence checksums separated by '#' is optional~);
+    bytestring,     names,            t,      w,      NAMES,          27,     ,                       (~a list of names separated by '#' is expected~);
+    bytestring,     PT_unknown_names, %,      r,      UNKNOWN_NAMES,  28,     ,                       (~List of unknown names~);
+    PT_sequence,    sequences,        d,      ,       SEQUENCE,       29,     ,                       (~Additional Sequences~);
+    int,            PT_start_design,  %,      w,      GO,             31,     ,                       (~Start the design procedure~);
+    PT_tprobes,     tprobes,          d,      r,      TPROBE,         32,     ,                       (~The result~);
+    double,         max_rj_coverage,  t,      r,      MAX_RJ_TARGETS, 34,     0.0,                    (~the maximum rejected coverage for the targetted group of species~);
+    int,            min_rj_mishits,   t,      r,      MIN_RJ_MISHIT,  35,     INT_MAX,                (~the minimum rejected mishits~);
+    aisc_string,    get_design_hinfo, %,      r,      INFO_HEADER,    36,     ,                       (~the result info header of this probe design~);
+    int,            max_probelen,     t,      ,       MAX_PROBELEN,   37,     -1,                     (~the maximum length of the designed probes (or -1 to use MIN_PROBELEN~);
+};
+
+# function to iterate through all probes existing in PT-Server
+
+PT_exProb, PEP, 6, (~iterate all existing probes~), {
+    @TYPE,          @IDENT,         @REF,   @ACC,   @KEY,       @KEYC,  @INIT, @DOCU;
+    dllh,           mh,             t,      ,       (~~),       0,      ,      (~Header~);
+    int,            plength,        t,      ,       PLENGTH,    8,      20,    (~Length of searched probes~);
+    int,            numget,         t,      ,       NUMGET,     9,      200,   (~Number of searched probes~);
+    int,            readable,       t,      ,       READABLE,   14,     0,     (~Return readable probes~);
+    int,            separator,      t,      ,       SEPARATOR,  15,     59,    (~Separator for result (';') ~);
+    int,            tu,             t,      ,       TU,         16,     84,    (~Char used for T/U ('T') ~);
+    int,            restart,        t,      ,       RESTART,    10,     1,     (~1 => start from beginning~);
+    bytestring,     next_probe,     t,      ,       NEXT_PROBE, 11,     ,      (~next probe to look for (internal)~);
+    int,            PT_find_exProb, %,      w,      FIND_PROBES,12,     ,      (~search probes (result=separated by SEPARATOR )~);
+    aisc_string,    result,         t,      r,      RESULT,     13,     ,      (~The result~);
+};
+
+# get next relatives (used by AWTC and NALIGNER)
+
+PT_family_list, FAMILYLIST,     5,      (~the family list~), {
+    @TYPE,       @IDENT,      @REF,   @ACC,   @SAVE,  @KEY,           @KEYC,  @INIT,          @DOCU;
+    dllh,        mh,          t,      ,       ,       (~~),           0,      ,               (~Header~);
+    aisc_string, name,        t,      r,      ,       NAME,           8,      ,               (~name of species~);
+    int,         matches,     t,      r,      ,       MATCHES,        9,      ,               (~number of matches~);
+    double,      rel_matches, t,      r,      ,       REL_MATCHES,    10,     ,               (~MATCHES / (SEQ_LEN - PROBE_LEN + 1)~);
+};
+
+PT_family, FAMILYFINDER, 12, (~next relative search~), {
+    @TYPE,          @IDENT,               @REF, @ACC,   @SAVE,  @KEY,              @KEYC,  @INIT,                @DOCU;
+    dllh,           mh,                   t,    ,       ,       (~~),              0,      ,                     (~Header~);
+    bytestring,     find_family,          %,    w,      ,       FIND_FAMILY,       8,      ,                     (~Searches the family~);
+    int,            pr_len,               t,    rw,     ,       PROBE_LEN,         9,      12,                   (~Length of probes~);
+    int,            mis_nr,               t,    rw,     ,       MISMATCH_NUMBER,   10,     0,                    (~Number of mismatches~);
+    int,            only_A_probes,        t,    rw,     ,       FIND_TYPE,         11,     0,                    (~Type of search: 0 = search all, 1 = only a*~);
+    int,            complement,           t,    rw,     ,       COMPLEMENT,        12,     1,                    (~Search for complement? (see FF_complement)~);
+    PT_family_list, fl,                   d,    r,      ,       FAMILY_LIST,       13,     ,                     (~Sorted List of family~);     # note: This uses 13 AND 14!
+    int,            list_size,            t,    r,      ,       FAMILY_LIST_SIZE,  15,     ,                     (~size of result list~);
+    int,            sort_type,            t,    rw,     ,       SORT_TYPE,         16,     0,                    (~Type of sorting 0 = MATCHES, 1 = REL_MATCHES~);
+    int,            sort_max,             t,    rw,     ,       SORT_MAX,          17,     0,                    (~Sort only the SORT_MAX best hits~);
+    int,            range_start,          t,    rw,     ,       RANGE_STARTPOS,    18,     -1,                   (~if != -1 -> ignore matches starting left of that position [0..N-1]~);
+    int,            range_end,            t,    rw,     ,       RANGE_ENDPOS,      19,     -1,                   (~if != -1 -> ignore matches ending right  of that position [0..N-1]~);
+    double,         min_score,            t,    rw,     ,       MIN_SCORE,         20,     0,                    (~Skip results with rel or abs score below MIN_SCORE (affects reported FAMILY_LIST_SIZE)~);
+    int,            rel_scoring,          t,    rw,     ,       REL_SCORING,       21,     0,                    (~relative scoring scaling mode (see RelativeScoreScaling)~);
+    aisc_string,    ff_error,             t,    r,      ,       ERROR,             22,     "",                   (~the error text~);
+};
+
+# used below in LOCS/MATCH_STRING
+
+PT_probematch, MATCHLIST,       4,      (~the probe match list~), {
+    @TYPE,       @IDENT,            @REF, @ACC, @SAVE,  @KEY,           @KEYC,  @INIT, @DOCU;
+    dllh,        mh,                t, ,  , (~~),         0,  , (~Header~);
+    int,         name,              t, r, , ID,           8,  , (~id of species~);
+    aisc_string, virt_name,         %, r, , NAME,         9,  , (~name of species~);
+    int,         b_pos,             t, r, , POS,          10, , (~pos of probe~);
+    int,         g_pos,             t, r, , GPOS,         11, , (~pos of probe (gene relative)~);
+    int,         rpos,              t, r, , ,             ,   , (~relative pos of probe~);
+    int,         mismatches,        t, r, , MISMATCHES,   12, , (~number of mismatches~);
+    aisc_string, virt_fullname,     %, r, , FULLNAME,     13, , (~fullname of species (or genename if it's a gene pt server)~);
+    double,      wmismatches,       t, r, , WMISMATCHES,  14, , (~number of weighted mismatches~);
+    int,         N_mismatches,      t, r, , N_MISMATCHES, 15, , (~number of 'N' mismatches~);
+    double,      dt,                t, r, , DT,           16, , (~the dt of a probe~);
+    char,        sequence,          l, r, , SEQUENCE,     17, , (~path of probe~);
+    int,         reversed,          t, r, , REVERSED,     18, , (~reversed probe matches~);
+    aisc_string, get_match_overlay, %, r, , OVERLAY,      19, , (~ascii visualization of match~);
+    aisc_string, get_match_acc,     %, r, , FIELD_ACC,    20, , (~get db field acc~);
+    int,         get_match_start,   %, r, , FIELD_START,  21, , (~get db field start~);
+    int,         get_match_stop,    %, r, , FIELD_STOP,   22, , (~get db field stop~);
+};
+
+# used below in MAIN/SPECIESLIST
+
+PT_species_list, SPECIESLIST,   3,      (~the species list~), {
+    @TYPE,  @IDENT, @REF,   @ACC,   @SAVE,  @KEY,           @KEYC,  @INIT,          @DOCU;
+    dllh,   mh,     t,      ,       ,       (~~),           0,      ,               (~Header~);
+    int,    member, t,      rw,     ,       MEMBER,         8,      ,               (~species member of group~);
+};
+
+# global interface
+
+PT_local, LOCS,         2,      (~local communication buffer~), {
+    @TYPE,          @IDENT,               @REF, @ACC,   @SAVE,  @KEY,                 @KEYC,  @INIT,                  @DOCU;
+    dllh,           mh,                   t,    ,       ,       (~~),                 0,      ,                       (~Header~);
+    int,            socket,               t,    ,       ,       ,                     ,       pt_init_socket(THIS),   (~the callback~), DESTROY pt_destroy_socket(THIS);
+
+    aisc_string,    probe_match,          %,    w,      ,       SEARCHMATCH,          8,      ,                       (~Searches all species where probe matches~);
+    aisc_string,    pm_sequence,          t,    ,       ,       ,                     ,       ,                       (~the sequence~);
+    aisc_string,    pm_csequence,         t,    ,       ,       ,                     ,       ,                       (~the complement sequence~);
+    int,            pm_reversed,          t,    rw,     ,       MATCH_REVERSED,       9,      1,                      (~reverse probe~);
+    int,            pm_complement,        t,    rw,     ,       MATCH_COMPLEMENT,     10,     ,                       (~complement probe~);
+    int,            pm_max,               t,    rw,     ,       MATCH_MAX_MISMATCHES, 11,     ,                       (~max mismatches~);
+    int,            pm_max_hits,          t,    rw,     ,       MATCH_MAX_HITS,       12,     1000000,                (~max number of hits reported (0=unlimited)~); 
+    int,            sort_by,              t,    rw,     ,       MATCH_SORT_BY,        13,     ,                       (~0 == mismatches  1 == weighted mismatches 2 == weighted mismatches with pos and strength~);
+    int,            pm_nmatches_ignored,  t,    rw,     ,       MATCH_N_ACCEPT,       14,     1,                      (~max. of accepted matches vs N~);
+    int,            pm_nmatches_limit,    t,    rw,     ,       MATCH_N_LIMIT,        33,     4,                      (~N-matches are only accepted, if less than NMATCHES_LIMIT occur, otherwise no N-matches are accepted ~);
+    PT_probematch,  pm,                   d,    r,      ,       MATCH_LIST,           15,     ,                       (~result: List of species where probe matches~);
+    int,            matches_truncated,    t,    r,      ,       MATCHES_TRUNCATED,    17,     ,                       (~result: whether MATCH_LIST was truncated~);
+    bytestring,     match_string,         %,    r,      ,       MATCH_STRING,         18,     ,                       (~result: List of species where probe matches~);
+                                                                                                                    
+    bytestring,     MP_match_string,      %,    r,      ,       MP_MATCH_STRING,      19,     ,                       (~result: List of species where probe matches (each entry is followed by: number of mismatches and weighted mismatches)~);
+    bytestring,     MP_all_species_string,%,    r,      ,       MP_ALL_SPECIES_STRING,20,     ,                       (~result: List of all species in Database~);
+    int,            MP_count_all_species, %,    r,      ,       MP_COUNT_ALL_SPECIES, 21,     ,                       (~result: Number of all species in Database~);
+                                                                                                                    
+    aisc_string,    ls_error,             t,    r,      ,       ERROR,                22,     "",                     (~the error text~);
+                                                                                                                    
+    int,            group_count,          t,    r,      ,       PROBE_NGROUP,         23,     ,                       (~result: Number of selected species~);
+                                                                                                                    
+    PT_pdc,         pdc,                  d,    ,       ,       PROBE_DESIGN_CONFIG,  24,     ,                       (~The new probe design~);
+    PT_exProb,      ep,                   d,    ,       ,       PROBE_FIND_CONFIG,    26,     ,                       (~Find all existing probes~);
+                                                                                                                    
+    PT_family,      ffinder,              d,    ,       ,       FFINDER,              28,     ,                       (~next relative search~);
+                                                                                                                    
+    aisc_string,    user,                 t,    rw,     ,       USER,                 30,     "unknown",              (~the username~);
+    aisc_string,    address,              t,    rw,     ,       ADDRESS,              31,     "unknown",              (~the useraddress~);
+    aisc_string,    login,                t,    rw,     ,       LOGINTIME,            32,     "notime",               (~the date the user logged in~);
+
+    PT_bond,        bond,                 siv,  ,       ,       BOND,                 34,     ,                       (~The bond matrix~), SIZE (4*4);
+    int,            dummy,                t,    ,       ,       ,                     ,       init_bond_matrix(THIS), (~init bond matrix~);
+    double,         split,                t,    ,       ,       SPLIT,                35,     .5,                     (~Split the domains if bond value is less the average bond value - split~);
+};
+
+PT_main, MAIN, 1, (~global data~), {
+    @TYPE,          @IDENT,         @REF,   @ACC,   @SAVE,  @KEY,               @KEYC,      @INIT,          @DOCU;
+    t_key,          key,            t,      n,      ,       ,                   ,           ,               (~the KEY~);
+    PT_local,       loc_st,         d,      ,       ,       LOCS,               1,          ,               (~the parameters~);
+    aisc_string,    server_shutdown,%,      w,      ,       SHUTDOWN,           3,          ,               (~shut down~);
+    int,            who,            t,      rw,     ,       STARTER,            4,          ,               (~who started this server~);
+    int,            m_type,         t,      ,       ,       MESSAGE_TYPE,       5,          0,              (~the message type~);
+    aisc_string,    m_text,         t,      ,       ,       MESSAGE,            6,          "NO_MSG",       (~the message text~);
+    int,            broadcast,      %,      w,      ,       BROADCAST,          7,          ,               (~broadcast func~);
+    PT_species_list,sl,             d,      r,      ,       SPECIESLIST,        8,          ,               (~list of species~);
+    aisc_string,    dumpname,       t,      rw,     ,       DUMP_NAME,          10,         "",             (~filename used for DUMP_INDEX~);
+    int,            PT_index_dump,  %,      r,      ,       DUMP_INDEX,         11,         ,               (~dump index (=postree) to file~);
+};
+
+};

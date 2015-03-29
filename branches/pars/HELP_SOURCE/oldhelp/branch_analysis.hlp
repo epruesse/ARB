@@ -1,0 +1,135 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Branch analysis
+
+OCCURRENCE	ARB_NT/Tree/Branch analysis
+
+DESCRIPTION     Branch analysis functions
+
+                Functions provided here may be useful to 
+                - detect wrong placed species or groups (or poor data, which might also lead to wrong placement)
+                - detect anomalies caused by (wrong) tree reconstruction
+                - gather information about tree topologies.
+
+                Each function reports several values gathered during execution.
+
+SECTION         Analyse distances in tree
+
+                For the whole tree
+                 - the in-tree-distance (ITD = sum of all branchlengths) and
+                 - the per-species-distance (PSD = ITD / number of species) are displayed.
+
+                For all leafs in the tree the following values are calculated:
+                 - mean distance to all other leafs
+                 - minimum distance to any other leaf
+                 - maximum distance to any other leaf
+                
+                It reports the mean and the range of each of these 3 values separately
+                for all and for marked species.
+
+SECTION         Using the PSD to compare trees
+
+                The PSD is useful when comparing tree topologies (based on similar sets
+                of species) that were reconstructed using different methods. Imagine
+                you have two trees:
+
+                 - tree_raxml (reconstructed with RAxML)
+                 - tree_arbpars (reconstructed with ARB parsimony)
+
+                The PSDs of both trees will be quite different (maybe by factor 50 or 60).
+                Calculating the ratio of both PSDs, give you a good value for scaling
+                the branchlengths of (a copy of) one of the trees. For example the PSDs
+                might be
+
+                 - PSDr = PSD(tree_raxml) = 0.002219
+                 - PSDp = PSD(tree_arbpars) = 0.118483
+
+                Now you may scale the branchlengths of tree_arbpars by factor 0.01873 (=PSDr/PSDp) or those
+                of tree_raxml by factor 53.39 (==PSDp/PSDr) to ease comparison of the two trees.
+
+SECTION         Mark long branches
+
+                For each furcation in the tree, the relative difference between the distances of its
+                subtrees is calculated.
+
+                'Distance' here is the sum of all branches between the furcation and
+                the least distant leaf of the left resp. right subtree.
+
+                Relative difference     Meaning
+                                        The nearer subtree has at least 
+                10%                     90%
+                50%                     50%
+                75%                     25%
+                90%                     10%
+                                        of the farther subtrees distance.
+
+                Starting from the tree-tips, this function marks the more distant subtree of any furcation
+                where the relative and absolute difference are above the specified minimas.
+
+                When a subtree has been marked, all further furcations between that subtree and the root
+                of the whole tree will be ignored.
+
+                Poorly aligned sequences often result in long branches in the tree. Being able to identify
+                those branches quickly helps to find those sequences.
+
+                The indented workflow is
+                * search long branches
+                * check alignment and data and fix any problems
+                * recalculate tree parts (see LINK{pa_add.hlp})
+                * search again. Now you may find other branches, nearer to the tree root.
+
+SECTION         Mark deep leafs
+
+                Marks alls leafs in tree that have
+                - depth above min.depth and
+                - root-distance above min.root-distance
+
+                'depth' is the number of branches between root and leaf. Multifurcations
+                are respected properly.
+
+                The 'root-distance' is the sum of the lengths of all branches between the root and
+                a leaf.
+
+SECTION         Mark degenerated branches
+
+                Branches are considered degenerated when two subtrees of an inner node
+                differ in size (=number of members) by a reasonable factor.
+
+                This function allows you to specify that degeneration factor.
+
+                For each degenerated inner node, the smaller subtree will be marked as whole.
+                The not-marked subtree will be examined for further degenerated nodes.
+
+                Common reasons for degenerated trees:
+                - subsequently adding species using the 'quick add marked'-feature of
+                  ARB parsimony without ever optimizing the whole tree.
+                - some "phylogenetic areas" are explored more thoroughly than others, resulting in
+                  unbalanced representation of the evolution as it took place.
+                  This is especially relevant if your database contains many clone-variants and you try
+                  to calculate a tree.
+
+                Solutions:
+                - Optimize your tree. For big trees you might try to
+                  - mark questionable species using this function and then
+                  - perform local/global optimization of marked species in ARB parsimony.
+                - Replace over-represented areas by one or few representatives (see also LINK{di_clusters.hlp}).
+                  Calculate a new or optimize an existing tree with that subset of species.
+                  Then quick-add previously removed species into that tree.
+
+NOTES		To compare the information of two or more trees,
+                open new ARB_NT-window using 'File/New window' and popup their
+                'Branch analysis'-windows.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
