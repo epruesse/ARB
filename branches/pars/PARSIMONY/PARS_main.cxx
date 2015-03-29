@@ -1818,9 +1818,7 @@ int ARB_main(int argc, char *argv[]) {
 #include <AP_seq_protein.hxx>
 #include "test_env.h"
 
-#if defined(DEVEL_RALF)
 // #define AUTO_UPDATE_IF_CHANGED // uncomment to auto update expected results
-#endif
 
 arb_test::match_expectation topologyEquals(AP_tree_nlen *root_node, const char *treefile_base) {
     using namespace   arb_test;

@@ -634,11 +634,7 @@ void AP_tree::update() {
 
 #if defined(ASSERTION_USED) || defined(UNIT_TESTS)
 bool AP_tree::has_correct_mark_flags() const {
-    if (is_leaf) {
-        // bool is_marked                 = gb_node && GB_read_flag(gb_node);
-        // return gr.has_marked_children == is_marked;
-        return true;
-    }
+    if (is_leaf) return true;
     if (!get_leftson() ->has_correct_mark_flags()) return false;
     if (!get_rightson()->has_correct_mark_flags()) return false;
 
