@@ -11,7 +11,7 @@
 #include "gb_local.h"
 
 #include <ad_config.h>
-#include <arbdbt.h>
+#include "TreeNode.h"
 
 #include <arb_progress.h>
 #include <arb_strbuf.h>
@@ -133,7 +133,7 @@ GB_ERROR GBT_abort_rename_session() {
 
 static const char *currentTreeName = 0;
 
-static GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index) {
+static GB_ERROR gbt_rename_tree_rek(TreeNode *tree, int tree_index) {
     if (tree) {
         if (tree->is_leaf) {
             if (tree->name) {
@@ -158,8 +158,8 @@ static GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index) {
             }
         }
         else {
-            gbt_rename_tree_rek(tree->leftson, tree_index);
-            gbt_rename_tree_rek(tree->rightson, tree_index);
+            gbt_rename_tree_rek(tree->get_leftson(), tree_index);
+            gbt_rename_tree_rek(tree->get_rightson(), tree_index);
         }
     }
     return NULL;
@@ -183,7 +183,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
 
             for (int count = 0; count<tree_count && !error; ++count) {
                 const char *tname = tree_names[count];
-                GBT_TREE   *tree  = GBT_read_tree(NameSession.gb_main, tname, GBT_TREE_NodeFactory());
+                TreeNode   *tree  = GBT_read_tree(NameSession.gb_main, tname, new SimpleRoot);
                 ++progress;
 
                 if (tree) {
@@ -194,7 +194,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                     ++progress;
 
                     GBT_write_tree(NameSession.gb_main, tname, tree);
-                    delete tree;
+                    destroy(tree);
 
                     progress.inc_and_check_user_abort(error);
                 }

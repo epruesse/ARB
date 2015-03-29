@@ -172,6 +172,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AD_map_viewer_cb  map_viewer_cb;
     AWT_command_data  *cmd_data;
 
+    AP_tree_root *tree_static;
+
     void scale_text_koordinaten(AW_device *device, int gc, double& x, double& y, double orientation, int flag);
 
     // functions to compute displayinformation
@@ -217,6 +219,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     bool warn_inappropriate_mode(AWT_COMMAND_MODE mode);
 
+    virtual AP_tree_root *create_tree_root(AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs);
+
 protected:
     void store_command_data(AWT_command_data *new_cmd_data) {
         delete cmd_data;
@@ -228,10 +232,9 @@ public:
 
     // *********** read only variables !!!
 
-    AW_root      *aw_root;
+    AW_root              *aw_root;
     AP_tree_display_type  tree_sort;
-    AP_tree      *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
-    AP_tree_root *tree_static;
+    AP_tree              *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
     GBDATA       *gb_main;
 
     // *********** public section
@@ -239,10 +242,11 @@ public:
     AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
     ~AWT_graphic_tree() OVERRIDE;
 
+    AP_tree_root *get_tree_root() { return tree_static; }
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
     bool is_logically_zoomed() { return displayed_root != get_root_node(); }
 
-    void init(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
+    void init(AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
 
     void show(AW_device *device) OVERRIDE;

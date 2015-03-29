@@ -375,6 +375,15 @@ private:
     SectionList sections;
     string      inputfile;
 
+    void check_self_ref(const string& link) {
+        size_t slash = inputfile.find('/');
+        if (slash != string::npos) {
+            if (inputfile.substr(slash+1) == link) {
+                throw string("Invalid link to self");
+            }
+        }
+    }
+
 public:
     Helpfile() : title("TITLE", SEC_FAKE, NO_LINENUMBER_INFO) {}
     virtual ~Helpfile() {}
@@ -617,6 +626,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
         ostr         = string("\n") + spaces + ostr;
     }
 }
+
 inline void check_specific_duplicates(const string& link, const Links& existing, bool add_warnings) {
     for (Links::const_iterator ex = existing.begin(); ex != existing.end(); ++ex) {
         if (ex->Target() == link) {
@@ -1565,6 +1575,8 @@ void Helpfile::extractInternalLinks() {
                         link_target.find("file://") == string::npos &&
                         link_target.find('@')       == string::npos)
                     {
+                        check_self_ref(link_target);
+
                         try {
                             check_specific_duplicates(link_target, references,      false); // check only sublinks here
                             check_specific_duplicates(link_target, uplinks,         false); // check only uplinks here
@@ -1679,6 +1691,7 @@ int ARB_main(int argc, char *argv[]) {
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>
+#include <arb_msg.h>
 
 static arb_test::match_expectation help_file_compiles(const char *helpfile, const char *expected_title, const char *expected_error_part) {
     using namespace   arb_test;
@@ -1761,15 +1774,15 @@ void TEST_hlp2xml_output() {
         string html_expected = EXPECTED + tested_helpfile[i] + ".html";
         string hlp_expected  = EXPECTED + tested_helpfile[i] + ".hlp";
 
-        string cmd;
 
 #if defined(TEST_AUTO_UPDATE)
 # if defined(NDEBUG)
 #  error please use auto-update only in DEBUG mode
 # endif
-        cmd = string("cp ") + xml  + ' ' + xml_expected;  TEST_EXPECT_NO_ERROR(GBK_system(cmd.c_str()));
-        cmd = string("cp ") + html + ' ' + html_expected; TEST_EXPECT_NO_ERROR(GBK_system(cmd.c_str()));
-        cmd = string("cp ") + hlp  + ' ' + hlp_expected;  TEST_EXPECT_NO_ERROR(GBK_system(cmd.c_str()));
+        TEST_COPY_FILE(xml.c_str(),  xml_expected.c_str());
+        TEST_COPY_FILE(html.c_str(), html_expected.c_str());
+        TEST_COPY_FILE(hlp.c_str(),  hlp_expected.c_str());
+        
 #else // !defined(TEST_AUTO_UPDATE)
 
 # if defined(DEBUG)

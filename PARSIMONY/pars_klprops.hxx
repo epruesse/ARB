@@ -14,7 +14,7 @@
 class AW_window;
 class AW_root;
 
-AW_window *create_kernighan_window(AW_root *aw_root);
+AW_window *create_kernighan_properties_window(AW_root *aw_root);
 
 #else
 #error pars_klprops.hxx included twice

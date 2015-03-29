@@ -58,4 +58,5 @@ TreeWrite.o: $(ARBHOME)/INCLUDE/nds.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/test_global.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/TreeNode.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/xml.hxx

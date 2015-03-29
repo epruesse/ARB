@@ -23,7 +23,7 @@
 #include <aw_root.hxx>
 
 #include <arb_progress.h>
-#include <arbdbt.h>
+#include <TreeNode.h>
 #include <arb_global_defs.h>
 
 // --------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
     GBDATA   *gb_main     = (GBDATA*)cl_gb_main;
     AW_root  *aw_root     = aww->get_root();
     GB_ERROR  error       = 0;
-    GBT_TREE *tree        = 0;
+    TreeNode *tree        = 0;
     bool      marked_only = (aw_root->awar(AWAR_SQ_MARK_ONLY_FLAG)->read_int() > 0);
 
     arb_progress main_progress("Calculating sequence quality");
@@ -83,7 +83,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
             error = GB_push_transaction(gb_main);
 
             if (!error) {
-                tree = GBT_read_tree(gb_main, treename, GBT_TREE_NodeFactory());
+                tree = GBT_read_tree(gb_main, treename, new SimpleRoot);
                 if (!tree) error = GB_await_error();
                 else {
                     error = GBT_link_tree(tree, gb_main, false, NULL, NULL);
@@ -198,7 +198,8 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
     if (error) aw_message(error);
 
     SQ_clear_group_dictionary();
-    delete tree;
+    UNCOVERED();
+    destroy(tree);
 }
 
 static void sq_remove_quality_entries_cb(AW_window *, AW_CL cl_gb_main) {

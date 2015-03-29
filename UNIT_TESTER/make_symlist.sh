@@ -2,7 +2,7 @@
 FULLLIB=$1
 SYMLIST=$2
 
-# nm is unabled to demangle names on os x. use c++filt instead for the job
+# nm is unable to demangle names on os x. use c++filt instead for the job
 DUMP_SYMBOLS="nm -l $FULLLIB | c++filt > $SYMLIST"
 
 # temp workaround for using gcc 4.8 on dwarf 3 system
