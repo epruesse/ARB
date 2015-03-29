@@ -799,15 +799,18 @@ GB_ERROR GBT_link_tree(TreeNode *tree, GBDATA *gb_main, bool show_status, int *z
     return error;
 }
 
-void GBT_unlink_tree(TreeNode *tree) { // @@@ make member
+void TreeNode::unlink_from_DB() {
     /*! Unlink tree from the database.
      * @see GBT_link_tree()
      */
-    tree->gb_node = 0;
-    if (!tree->is_leaf) {
-        GBT_unlink_tree(tree->get_leftson());
-        GBT_unlink_tree(tree->get_rightson());
+    gb_node = 0;
+    if (!is_leaf) {
+        get_leftson()->unlink_from_DB();
+        get_rightson()->unlink_from_DB();
     }
+}
+void GBT_unlink_tree(TreeNode *tree) {
+    tree->unlink_from_DB();
 }
 
 // ----------------------
