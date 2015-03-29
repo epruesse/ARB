@@ -47,10 +47,10 @@ AP_pos_var::~AP_pos_var() {
     for (int i=0; i<256; i++) free(frequencies[i]);
 }
 
-long AP_pos_var::getsize(TreeNode *tree) { // @@@ replace by get_leaf_count() + leafs_2_nodes
+long AP_pos_var::getsize(TreeNode *tree) {
     if (!tree) return 0;
-    if (tree->is_leaf) return 1;
-    return getsize(tree->get_leftson()) + getsize(tree->get_rightson()) + 1;
+    size_t leafs = GBT_count_leafs(tree);
+    return leafs_2_nodes(leafs, ROOTED);
 }
 
 const char *AP_pos_var::parsimony(TreeNode *tree, GB_UINT4 *bases, GB_UINT4 *tbases) {
