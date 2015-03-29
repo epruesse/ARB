@@ -69,7 +69,6 @@ TreeNode *GBT_remove_leafs(TreeNode *tree, GBT_TreeRemoveType mode, const GB_HAS
             if (deleteSelf) {
                 gb_assert(!tree->is_root_node());
 
-                // @@@ DRY occurrences of the following lines (idiom 'destroy removed node')
                 TreeRoot *troot = tree->get_tree_root();
                 tree->forget_origin();
                 destroy(tree, troot);
@@ -665,7 +664,7 @@ TreeNode *GBT_read_tree(GBDATA *gb_main, const char *tree_name, TreeRoot *troot)
     return GBT_read_tree_and_size(gb_main, tree_name, troot, 0);
 }
 
-size_t GBT_count_leafs(const TreeNode *tree) { // @@@ impl using get_leaf_count()
+size_t GBT_count_leafs(const TreeNode *tree) {
     if (tree->is_leaf) {
         return 1;
     }
