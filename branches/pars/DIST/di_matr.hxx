@@ -20,6 +20,12 @@
 #ifndef AP_MATRIX_HXX
 #include <AP_matrix.hxx>
 #endif
+#ifndef AP_SEQ_DNA_HXX
+#include <AP_seq_dna.hxx>
+#endif
+#ifndef AP_SEQ_SIMPLE_PRO_HXX
+#include <AP_seq_simple_pro.hxx>
+#endif
 #ifndef _GLIBCXX_STRING
 #include <string>
 #endif
@@ -64,8 +70,6 @@ enum DI_MATRIX_TYPE {
     DI_MATRIX_COMPRESSED
 };
 
-class AP_sequence_parsimony;
-class AP_sequence_simple_protein;
 class DI_MATRIX;
 
 class DI_ENTRY : virtual Noncopyable {
@@ -79,9 +83,8 @@ public:
 
     AP_sequence *sequence;
 
-    // @@@ remove the 2 ptrs below. just use 'sequence' above (that's what inheritance was made for)
-    AP_sequence_parsimony      *sequence_parsimony; // if exist ok
-    AP_sequence_simple_protein *sequence_protein;
+    AP_sequence_parsimony      *get_nucl_seq() { return DOWNCAST(AP_sequence_parsimony*,      sequence); }
+    AP_sequence_simple_protein *get_prot_seq() { return DOWNCAST(AP_sequence_simple_protein*, sequence); }
 
     char *name;
     int   group_nr;                                 // species belongs to group number xxxx
