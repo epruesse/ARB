@@ -30,6 +30,8 @@
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 
+#include "PerfMeter.h"
+
 static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
 
@@ -179,6 +181,8 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
     const AP_FLOAT  org_pars     = get_root_node()->costs();
     AP_FLOAT        prev_pars    = org_pars;
 
+    OptiPerfMeter perf("optimize_tree", org_pars);
+
     progress.subtitle(GBS_global_string("Old parsimony: %.1f", org_pars));
 
     while (!progress.aborted()) {
@@ -200,6 +204,8 @@ void ArbParsimony::optimize_tree(AP_tree *at, arb_progress& progress) {
     else oldrootright->set_root();
 
     get_root_node()->costs();
+
+    perf.dump(stdout, prev_pars);
 }
 
 AWT_graphic_parsimony::AWT_graphic_parsimony(ArbParsimony& parsimony_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)

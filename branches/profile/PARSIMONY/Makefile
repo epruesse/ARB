@@ -230,6 +230,7 @@ PARS_dtree.o: ap_tree_nlen.hxx
 PARS_dtree.o: pars_debug.hxx
 PARS_dtree.o: pars_dtree.hxx
 PARS_dtree.o: pars_main.hxx
+PARS_dtree.o: PerfMeter.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -309,6 +310,7 @@ PARS_main.o: ap_tree_nlen.hxx
 PARS_main.o: pars_dtree.hxx
 PARS_main.o: pars_klprops.hxx
 PARS_main.o: pars_main.hxx
+PARS_main.o: PerfMeter.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_cb.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
