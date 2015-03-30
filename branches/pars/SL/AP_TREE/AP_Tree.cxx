@@ -152,14 +152,6 @@ AP_tree::~AP_tree() {
     if (root) root->inform_about_delete(this);
 }
 
-void AP_tree::clear_branch_flags() {
-    br.clear();
-    if (!is_leaf) {
-        get_leftson()->clear_branch_flags();
-        get_rightson()->clear_branch_flags();
-    }
-}
-
 void AP_tree::initial_insert(AP_tree *new_brother, AP_tree_root *troot) {
     ap_assert(troot);
     ap_assert(is_leaf);
@@ -405,29 +397,6 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
         new_tree->get_tree_root()->change_root(new_tree, new_root);
     }
 }
-
-void AP_tree::set_root() {
-    if (at_root()) return; // already root
-
-    {
-        AP_tree           *old_brother = 0;
-        AP_branch_members  br1         = br;
-        AP_tree           *pntr;
-
-        for  (pntr = get_father(); pntr->father; pntr = pntr->get_father()) {
-            AP_branch_members br2 = pntr->br;
-            pntr->br              = br1;
-            br1                   = br2;
-            old_brother           = pntr;
-        }
-        if (pntr->leftson == old_brother) {
-            pntr->get_rightson()->br = br1;
-        }
-    }
-
-    ARB_seqtree::set_root();
-}
-
 
 inline int tree_read_byte(GBDATA *tree, const char *key, int init) {
     if (tree) {
