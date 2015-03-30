@@ -22,7 +22,6 @@ char *AP_create_dna_to_ap_bases() {
     int       i;
     AP_BASES  val;
     char     *table = new char[256];
-    // UNCOVERED(); // covered by TEST_translator_instantiation, TEST_SLOW_import_genome_flatfile, TEST_calc_bootstraps, TEST_realign
 
     for (i=0; i<256; i++) {
         switch ((char)i) {
@@ -93,7 +92,6 @@ void AWT_translator::build_table(unsigned char pbase, const char *tri_pro, const
     int n0 = nuc_2_bitset[safeCharIndex(nuc[0])];
     int n1 = nuc_2_bitset[safeCharIndex(nuc[1])];
     int n2 = nuc_2_bitset[safeCharIndex(nuc[2])];
-    // UNCOVERED(); // covered by TEST_translator_instantiation, TEST_SLOW_import_genome_flatfile, TEST_realign
 
     struct arb_r2a_pro_2_nucs *nucs;
     for (nucs = str->nucs; nucs; nucs = nucs->next) {
@@ -171,7 +169,6 @@ AWT_translator::AWT_translator(int arb_protein_code_nr) :
     memset(s2str, 0, sizeof(s2str));
     memset(index_2_spro, 0, sizeof(index_2_spro));
 
-    // UNCOVERED(); // covered by TEST_translator_instantiation, TEST_realign, TEST_SLOW_import_genome_flatfile
     nuc_2_bitset = AP_create_dna_to_ap_bases();
     t2i_hash     = GBS_create_hash(T2I_ENTRIES_MAX, GB_IGNORE_CASE); // case insensitive
 

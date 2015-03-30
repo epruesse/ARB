@@ -117,6 +117,8 @@ DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AliView.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -286,6 +288,7 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/AliView.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
+DI_protdist.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -319,6 +322,8 @@ DI_save_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/AliView.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -352,6 +357,8 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AliView.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_algo.h
@@ -400,6 +407,7 @@ distanalyse.o: $(ARBHOME)/INCLUDE/AliView.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
+distanalyse.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/arb_assert.h

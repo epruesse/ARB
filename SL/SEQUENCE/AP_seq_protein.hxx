@@ -47,7 +47,7 @@ enum AP_PROTEINS {
     // -------------------- above are bit values, below combinations of them
 
     APP_X   = (APP_GAP-1),      // Xxx (any real codon)
-    APP_DOT = APP_X | APP_GAP,   // maybe a codon, maybe a gap // @@@ use where AP_DOT is used
+    APP_DOT = APP_X | APP_GAP,   // maybe a codon, maybe a gap
 
     APP_B = APP_D | APP_N,      // Asx ( = Asp | Asn )
     APP_Z = APP_E | APP_Q,      // Glx ( = Glu | Gln )

@@ -64,16 +64,10 @@ inline AP_tree_edge *rootEdge() {
 // ------------------------------------------
 //      stack-aware ressource management
 
-// #define REUSE_NODES
 #define REUSE_EDGES
 
 inline AP_tree_nlen *StackFrameData::makeNode(AP_pars_root *proot) {
-    return
-#if defined(REUSE_NODES)
-    destroyed.has_nodes() ?
-        destroyed.getNode() : // reuse destroyed node (@@@ doesn't work, because revert() does not restore node completely)
-#endif
-        created.put(new AP_tree_nlen(proot));
+    return created.put(new AP_tree_nlen(proot));
 }
 inline AP_tree_edge *StackFrameData::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2) {
 #if defined(REUSE_EDGES)

@@ -286,6 +286,8 @@ public:
 
     TreeNode *fixDeletedSon(); // @@@ review (design)
 
+    void unlink_from_DB();
+
     void announce_tree_constructed() { // @@@ use this function or just call change_root instead?
         // (has to be) called after tree has been constructed
         gb_assert(!father); // has to be called with root-node!

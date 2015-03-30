@@ -51,7 +51,6 @@ void AP_sequence_parsimony::build_table()
 // #define SHOW_SEQ
 
 void AP_sequence_parsimony::set(const char *isequence) {
-    // UNCOVERED(); // covered by TEST_calc_bootstraps
     size_t sequence_len = get_filter()->get_filtered_length();
     arb_alloc_aligned(seq_pars, sequence_len+1);
     memset(seq_pars, AP_DOT, (size_t)sequence_len+1); // init with dots
@@ -238,7 +237,6 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
 
     const AP_sequence_parsimony *part = (const AP_sequence_parsimony *)part_;
 
-    // UNCOVERED(); // covered by TEST_tree_add_marked
     const char *pf = get_sequence();
     const char *pp = part->get_sequence();
 
@@ -317,8 +315,6 @@ AP_FLOAT AP_sequence_parsimony::count_weighted_bases() const {
 
     const AP_weights *weights = get_weights();
     const  char      *p       = get_sequence();
-
-    // UNCOVERED(); // covered by TEST_calc_bootstraps
 
     long   sum          = 0;
     size_t sequence_len = get_sequence_length();

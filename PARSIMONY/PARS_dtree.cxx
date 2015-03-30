@@ -33,7 +33,7 @@
 #include <aw_question.hxx>
 
 static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
-    AWT_graphic_tree *agt = (AWT_graphic_tree*)cd; // @@@ dynacast?
+    AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
     UNCOVERED();
 
     if (old == agt->displayed_root) agt->displayed_root = newroot;

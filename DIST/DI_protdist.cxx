@@ -617,7 +617,7 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
         matrix->set(i, i, 0.0);
         {
             // move all unknown characters to del
-            ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
+            ap_pro *seq1 = entries[i]->get_prot_seq()->get_sequence();
             for (k = 0; k <chars;  k++) {
                 b1 = seq1[k];
                 if (b1 <= VAL) continue;
@@ -640,8 +640,8 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
                     pos = tt_2_pos(tt);
                     tt = pos_2_tt(pos);
                     build_akt_predikt(tt);
-                    const ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
-                    const ap_pro *seq2 = entries[j]->sequence_protein->get_sequence();
+                    const ap_pro *seq1 = entries[i]->get_prot_seq()->get_sequence();
+                    const ap_pro *seq2 = entries[j]->get_prot_seq()->get_sequence();
                     for (k = chars; k >0; k--) {
                         b1 = *(seq1++);
                         b2 = *(seq2++);
@@ -686,8 +686,8 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
             else {                    // cat < kimura
                 m = 0;
                 n = 0;
-                const ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
-                const ap_pro *seq2 = entries[j]->sequence_protein->get_sequence();
+                const ap_pro *seq1 = entries[i]->get_prot_seq()->get_sequence();
+                const ap_pro *seq2 = entries[j]->get_prot_seq()->get_sequence();
                 for (k = chars; k >0; k--) {
                     b1 = *(seq1++);
                     b2 = *(seq2++);
