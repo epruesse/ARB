@@ -15,7 +15,6 @@
 #include "di_awars.hxx"
 
 #include <neighbourjoin.hxx>
-#include <AP_seq_dna.hxx>
 #include <AP_filter.hxx>
 #include <CT_ctree.hxx>
 #include <ColumnStat.hxx>
@@ -284,10 +283,10 @@ DI_ENTRY::DI_ENTRY(GBDATA *gbd, DI_MATRIX *phmatri) {
         GBDATA *gb_data = GB_entry(gb_ali, "data");
         if (gb_data) {
             if (phmatrix->is_AA) {
-                sequence = sequence_protein = new AP_sequence_simple_protein(phmatrix->get_aliview());
+                sequence = new AP_sequence_simple_protein(phmatrix->get_aliview());
             }
             else {
-                sequence = sequence_parsimony = new AP_sequence_parsimony(phmatrix->get_aliview());
+                sequence = new AP_sequence_parsimony(phmatrix->get_aliview());
             }
             sequence->bind_to_species(gbd);
             sequence->lazy_load_sequence(); // load sequence
@@ -298,17 +297,14 @@ DI_ENTRY::DI_ENTRY(GBDATA *gbd, DI_MATRIX *phmatri) {
     }
 }
 
-DI_ENTRY::DI_ENTRY(char *namei, DI_MATRIX *phmatri)
-{
+DI_ENTRY::DI_ENTRY(char *namei, DI_MATRIX *phmatri) {
     memset((char *)this, 0, sizeof(DI_ENTRY));
     phmatrix = phmatri;
     this->name = strdup(namei);
 }
 
-DI_ENTRY::~DI_ENTRY()
-{
-    delete sequence_protein;
-    delete sequence_parsimony;
+DI_ENTRY::~DI_ENTRY() {
+    delete sequence;
     free(name);
     free(full_name);
 
@@ -502,8 +498,7 @@ char *DI_MATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *c
 
     memset((char *) &hits2[0], 0, sizeof(hits2));
     for (size_t row = 0; row < nentries; row++) {
-        const char *seq1 = entries[row]->sequence_parsimony->get_sequence();
-        // UNCOVERED(); // covered by TEST_matrix
+        const char *seq1 = entries[row]->get_nucl_seq()->get_sequence();
         for (pos = 0; pos < s_len; pos++) {
             b = *(seq1++);
             if (cancel[b]) continue;
@@ -580,10 +575,9 @@ GB_ERROR DI_MATRIX::calculate(const char *cancel, DI_TRANSFORMATION transformati
     for (size_t row = 0; row<nentries && !error; row++) {
         for (size_t col=0; col<=row && !error; col++) {
             columns = 0;
-            
-            const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
-            const unsigned char *seq2 = entries[col]->sequence_parsimony->get_usequence();
-            // UNCOVERED(); // covered by TEST_matrix
+
+            const unsigned char *seq1 = entries[row]->get_nucl_seq()->get_usequence();
+            const unsigned char *seq2 = entries[col]->get_nucl_seq()->get_usequence();
 
             b = 0.0;
             switch (transformation) {

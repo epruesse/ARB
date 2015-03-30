@@ -9,7 +9,6 @@
 // =============================================================== //
 
 #include "di_matr.hxx"
-#include <AP_seq_dna.hxx>
 
 using std::min;
 using std::max;
@@ -20,7 +19,6 @@ DI_TRANSFORMATION DI_MATRIX::detect_transformation(string& msg) {
 
     DI_TRANSFORMATION result = DI_TRANSFORMATION_NONE_DETECTED;
     if (is_AA) {
-        // UNCOVERED(); // covered by TEST_matrix
         if (nentries> 100) {
             msg    = "A lot of sequences!\n   ==> fast Kimura selected! (instead of PAM)";
             result = DI_TRANSFORMATION_KIMURA;
@@ -39,8 +37,7 @@ DI_TRANSFORMATION DI_MATRIX::detect_transformation(string& msg) {
 
         // calculate meanvalue of sequencelength:
         for (size_t row=0; row<nentries; row++) {
-            const char *sequ = entries[row]->sequence_parsimony->get_sequence();
-            // UNCOVERED(); // covered by TEST_matrix
+            const char *sequ = entries[row]->get_nucl_seq()->get_sequence();
 
             size_t flen = aliview->get_length();
 

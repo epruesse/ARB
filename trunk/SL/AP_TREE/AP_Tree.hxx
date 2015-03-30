@@ -210,19 +210,9 @@ public: // @@@ make members private
     }
 };
 
-struct AP_branch_members {
-public:
-    unsigned int touched : 1;       // nni and kl
-
-    void clear() {
-        touched = 0;
-    }
-};
-
 class AP_tree : public ARB_seqtree {
 public: // @@@ fix public members
-    AP_tree_members   gr;
-    AP_branch_members br; // @@@ move into AP_tree_nlen?
+    AP_tree_members gr;
 
     // ------------------
     //      functions
@@ -261,7 +251,6 @@ public:
         : ARB_seqtree(troot)
     {
         gr.clear();
-        br.clear();
     }
 
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
@@ -294,8 +283,6 @@ public:
     GB_ERROR cantMoveNextTo(AP_tree *new_brother);  // use this to detect impossible moves
     virtual void moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
 
-    void set_root() OVERRIDE;
-
     GB_ERROR tree_write_tree_rek(GBDATA *gb_tree);
     GB_ERROR relink() __ATTR__USERESULT; // @@@ used ? if yes -> move to AP_tree_root or ARB_seqtree_root
 
@@ -322,11 +309,6 @@ public:
     void reset_angle() { set_angle(tree_defaults::ANGLE); }
 
     void buildLeafList(AP_tree **&list, long &num); // returns a list of leafs
-
-    void clear_branch_flags();
-
-    void touch_branch() { const_cast<AP_tree*>(flag_branch())->br.touched = 1; }
-    int get_branch_flag() const { return flag_branch()->br.touched; }
 
     GB_ERROR move_group_info(AP_tree *new_group) __ATTR__USERESULT;
     bool is_inside_folded_group() const;

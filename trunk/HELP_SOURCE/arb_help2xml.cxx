@@ -1782,7 +1782,7 @@ void TEST_hlp2xml_output() {
         TEST_COPY_FILE(xml.c_str(),  xml_expected.c_str());
         TEST_COPY_FILE(html.c_str(), html_expected.c_str());
         TEST_COPY_FILE(hlp.c_str(),  hlp_expected.c_str());
-        
+
 #else // !defined(TEST_AUTO_UPDATE)
 
 # if defined(DEBUG)
