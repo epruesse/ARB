@@ -253,10 +253,6 @@ AP_FLOAT MostLikelySeq::combine(const AP_sequence *, const AP_sequence *, char *
 void MostLikelySeq::partial_match(const AP_sequence *, long *, long *) const {
     st_assert(0);                                   // function is expected to be unused
 }
-uint32_t MostLikelySeq::checksum() const {
-    st_assert(0); // function is expected to be unused
-    return 0;
-}
 
 void MostLikelySeq::calculate_ancestor(const MostLikelySeq *lefts, double leftl, const MostLikelySeq *rights, double rightl) {
     st_assert(!up_to_date);
@@ -451,9 +447,10 @@ long ST_ML::delete_species(const char *key, long val, void *cd_st_ml) {
         return val;
     }
     else {
-        AP_tree *leaf = (AP_tree *)val;
-        UNCOVERED();
-        destroy(leaf->REMOVE());
+        AP_tree *leaf   = (AP_tree *) val;
+        AP_tree *father = leaf->get_father();
+        leaf->remove();
+        delete father;                              // also deletes 'this'
 
         return 0;
     }
@@ -537,7 +534,7 @@ GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
 
                 if (!error) {
                     MostLikelySeq *seq_templ = new MostLikelySeq(aliview, this); // @@@ error: never freed! (should be freed when freeing tree_root!)
-                    tree_root = new AP_tree_root(aliview, seq_templ, false);
+                    tree_root = new AP_tree_root(aliview, new AP_TreeNodeFactory, seq_templ, false);
                     // do not delete 'aliview' or 'seq_templ' (they belong to 'tree_root' now)
                 }
             }
@@ -869,7 +866,7 @@ void ST_ML::create_column_statistic(AW_root *awr, const char *awarname, AW_awar 
     column_stat = new ColumnStat(get_gb_main(), awr, awarname, awar_default_alignment);
 }
 
-const TreeNode *ST_ML::get_gbt_tree() const {
+const GBT_TREE *ST_ML::get_gbt_tree() const {
     return tree_root->get_root_node();
 }
 

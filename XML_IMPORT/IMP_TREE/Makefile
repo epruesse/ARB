@@ -13,7 +13,7 @@ $(TARGET) : $(CPP_OBJECTS)
 	$(LINK_EXECUTABLE) $@ $(CPP_OBJECTS) $(EXECLIBS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)

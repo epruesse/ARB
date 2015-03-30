@@ -553,7 +553,6 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_DENDRO_XPAD,      "dendro_xpadding" },
     { AWAR_DTREE_RADIAL_ZOOM_TEXT, "radial_zoomtext" },
     { AWAR_DTREE_RADIAL_XPAD,      "radial_xpadding" },
-    { AWAR_DTREE_BOOTSTRAP_MIN,    "bootstrap_min" },
     { 0, 0 }
 };
 
@@ -602,10 +601,6 @@ static AW_window *NT_create_tree_settings_window(AW_root *aw_root) {
 
         aws->label("Show bootstrap circles");
         aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
-        aws->at_newline();
-
-        aws->label("Hide bootstrap value below");
-        aws->create_input_field(AWAR_DTREE_BOOTSTRAP_MIN, 4);
         aws->at_newline();
 
         aws->label("Use ellipses");
@@ -860,7 +855,7 @@ static void NT_alltree_remove_leafs(AW_window *, GBT_TreeRemoveType mode, GBDATA
 
         for (int t = 0; t<treeCount && !error; t++) {
             progress.subtitle(tree_names[t]);
-            TreeNode *tree = GBT_read_tree(gb_main, tree_names[t], new SimpleRoot);
+            GBT_TREE *tree = GBT_read_tree(gb_main, tree_names[t], GBT_TREE_NodeFactory());
             if (!tree) {
                 aw_message(GBS_global_string("Can't load tree '%s' - skipped", tree_names[t]));
             }
@@ -891,8 +886,7 @@ static void NT_alltree_remove_leafs(AW_window *, GBT_TreeRemoveType mode, GBDATA
                             modified++;
                         }
                     }
-                    UNCOVERED();
-                    destroy(tree);
+                    delete tree;
                 }
             }
             progress.inc_and_check_user_abort(error);
@@ -911,7 +905,7 @@ static void NT_alltree_remove_leafs(AW_window *, GBT_TreeRemoveType mode, GBDATA
     aw_message_if(ta.close(error));
 }
 
-TreeNode *NT_get_tree_root_of_canvas(AWT_canvas *ntw) {
+GBT_TREE *NT_get_tree_root_of_canvas(AWT_canvas *ntw) {
     AWT_graphic_tree *tree = AWT_TREE(ntw);
     if (tree) {
         AP_tree *root = tree->get_root_node();
@@ -1098,7 +1092,6 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     awr->awar(AWAR_DTREE_CIRCLE_ZOOM)    ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_USE_ELLIPSE)    ->add_callback(expose_cb);
-    awr->awar(AWAR_DTREE_BOOTSTRAP_MIN)  ->add_callback(expose_cb);
 
     RootCallback reinit_treetype_cb = makeRootCallback(NT_reinit_treetype, ntw);
     awr->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
@@ -1485,7 +1478,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
             awm->close_sub_menu();
             awm->insert_sub_menu("Network", "N", AWM_EXP);
             {
-                GDE_load_menu(awm, AWM_EXP, "Network");
+                GDE_load_menu(awm, AWM_EXP, "User");
             }
             awm->close_sub_menu();
             awm->sep______________();
@@ -1504,8 +1497,6 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             awm->sep______________();
             awm->insert_menu_topic("xterm",         "Start XTERM",             "X", 0,         AWM_ALL, (AW_CB)GB_xterm, 0, 0);
-            awm->sep______________();
-            GDE_load_menu(awm, AWM_EXP, "User");
         }
         // --------------------
         //      Properties

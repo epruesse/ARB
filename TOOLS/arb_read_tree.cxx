@@ -9,13 +9,12 @@
 // ============================================================= //
 
 #include <TreeRead.h>
-#include <TreeNode.h>
 #include <arb_strbuf.h>
 #include <arb_defs.h>
 #include <ctime>
 
 
-static void add_bootstrap(TreeNode *node, double hundred) {
+static void add_bootstrap(GBT_TREE *node, double hundred) {
     // add_bootstrap interprets the length of the branches as bootstrap value
     // (this is needed by Phylip DNAPARS/PROTPARS with bootstrapping)
     //
@@ -43,8 +42,8 @@ static void add_bootstrap(TreeNode *node, double hundred) {
     node->leftlen  = DEFAULT_BRANCH_LENGTH; // reset branchlengths
     node->rightlen = DEFAULT_BRANCH_LENGTH;
 
-    add_bootstrap(node->get_leftson(), hundred);
-    add_bootstrap(node->get_rightson(), hundred);
+    add_bootstrap(node->leftson, hundred);
+    add_bootstrap(node->rightson, hundred);
 }
 
 static void show_message(GBDATA *gb_main, const char *msg) {
@@ -202,7 +201,7 @@ int main(int argc, char **argv) {
 
         char     *comment_from_file     = 0;
         char     *comment_from_treefile = 0;
-        TreeNode *tree                  = 0;
+        GBT_TREE *tree                  = 0;
 
         if (!error) {
             if (param.commentFile) {
@@ -217,7 +216,7 @@ int main(int argc, char **argv) {
                 char *warnings             = 0;
                 bool  allow_length_scaling = !param.consense && !param.scale;
 
-                tree = TREE_load(param.treefilename, new SimpleRoot, &comment_from_treefile, allow_length_scaling, &warnings);
+                tree = TREE_load(param.treefilename, GBT_TREE_NodeFactory(), &comment_from_treefile, allow_length_scaling, &warnings);
                 if (!tree) {
                     error = GB_await_error();
                 }
@@ -283,8 +282,7 @@ int main(int argc, char **argv) {
         if (error) show_error(gb_main, error);
         else       show_message(gb_msg_main, GBS_global_string("Tree %s read into the database", param.tree_name));
 
-        UNCOVERED();
-        destroy(tree);
+        delete tree;
         free(comment_from_file);
         free(comment_from_treefile);
     }

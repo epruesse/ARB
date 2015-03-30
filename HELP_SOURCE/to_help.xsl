@@ -113,7 +113,7 @@
           </xsl:when>
           <xsl:otherwise>
             <xsl:for-each select="document(concat($xml_location,'/',$docbase,'.xml'))">
-              <xsl:for-each select="PAGE/TITLE">&acute;<xsl:copy-of select="normalize-space(text())"/>&acute;</xsl:for-each>
+              <xsl:for-each select="PAGE/TITLE">TOPIC &acute;<xsl:copy-of select="normalize-space(text())"/>&acute;</xsl:for-each>
             </xsl:for-each>
           </xsl:otherwise>
         </xsl:choose>

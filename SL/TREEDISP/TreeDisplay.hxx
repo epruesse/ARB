@@ -30,7 +30,6 @@
 #define AWAR_DTREE_CIRCLE_MAX_SIZE "awt/dtree/max_size"
 #define AWAR_DTREE_USE_ELLIPSE     "awt/dtree/ellipse"
 #define AWAR_DTREE_GREY_LEVEL      "awt/dtree/greylevel"
-#define AWAR_DTREE_BOOTSTRAP_MIN   "awt/dtree/bootstrap/inner/min"
 
 #define AWAR_DTREE_RADIAL_ZOOM_TEXT "awt/dtree/radial/zoomtext"
 #define AWAR_DTREE_RADIAL_XPAD      "awt/dtree/radial/xpadding"
@@ -139,7 +138,6 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     int    use_ellipse;
     float  circle_zoom_factor;
     float  circle_max_size;
-    int    bootstrap_min;
 
     int zombies; // # of zombies during last load()
     int duplicates; // # of duplicates during last load()
@@ -171,8 +169,6 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     AD_map_viewer_cb  map_viewer_cb;
     AWT_command_data  *cmd_data;
-
-    AP_tree_root *tree_static;
 
     void scale_text_koordinaten(AW_device *device, int gc, double& x, double& y, double orientation, int flag);
 
@@ -219,8 +215,6 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     bool warn_inappropriate_mode(AWT_COMMAND_MODE mode);
 
-    virtual AP_tree_root *create_tree_root(AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs);
-
 protected:
     void store_command_data(AWT_command_data *new_cmd_data) {
         delete cmd_data;
@@ -232,9 +226,10 @@ public:
 
     // *********** read only variables !!!
 
-    AW_root              *aw_root;
+    AW_root      *aw_root;
     AP_tree_display_type  tree_sort;
-    AP_tree              *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
+    AP_tree      *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
+    AP_tree_root *tree_static;
     GBDATA       *gb_main;
 
     // *********** public section
@@ -242,11 +237,10 @@ public:
     AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
     ~AWT_graphic_tree() OVERRIDE;
 
-    AP_tree_root *get_tree_root() { return tree_static; }
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
     bool is_logically_zoomed() { return displayed_root != get_root_node(); }
 
-    void init(AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
+    void init(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
 
     void show(AW_device *device) OVERRIDE;
@@ -377,7 +371,7 @@ public:
 };
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
-bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, int bootstrap_min);
+bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri);
 void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name);
 
 #else

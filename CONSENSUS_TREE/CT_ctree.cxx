@@ -46,7 +46,7 @@ ConsensusTree::~ConsensusTree() {
     }
 }
 
-GB_ERROR ConsensusTree::insert_tree_weighted(const TreeNode *tree, int leafs, double weight, bool provideProgress) {
+GB_ERROR ConsensusTree::insert_tree_weighted(const GBT_TREE *tree, int leafs, double weight, bool provideProgress) {
     // Insert a GBT-tree in the Hash-Table
     // The GBT-tree is destructed afterwards!
     arb_assert(GBT_count_leafs(tree) == size_t(leafs));

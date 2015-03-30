@@ -181,7 +181,6 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
 
 /* admath.cxx */
 double GB_log_fak(int n);
-void GB_random_seed(unsigned seed);
 int GB_random(int range);
 
 /* adoptimize.cxx */
@@ -399,7 +398,6 @@ int GB_get_transaction_level(GBDATA *gbd);
 GBDATA *GB_get_gb_main_during_cb(void);
 NOT4PERL const void *GB_read_old_value(void);
 long GB_read_old_size(void);
-GB_ERROR GB_release(GBDATA *gbd);
 int GB_nsons(GBDATA *gbd);
 void GB_disable_quicksave(GBDATA *gbd, const char *reason);
 GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long listsize);

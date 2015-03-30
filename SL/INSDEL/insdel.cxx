@@ -887,8 +887,6 @@ void TEST_AliData() {
     TEST_FAILS_INSIDE_VALGRIND(TEST_EXPECT_CODE_ASSERTION_FAILS(illegal_alidata_composition)); // composing different unitsizes shall fail
 }
 
-TEST_PUBLISH(TEST_AliData);
-
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------

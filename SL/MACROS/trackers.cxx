@@ -256,17 +256,15 @@ GB_ERROR MacroRecorder::handle_tracked_client_action(char *&tracked) {
 
     GB_ERROR error = NULL;
     if (tracked && tracked[0]) {
-        char       *saveptr = NULL;
-        const char *app_id  = strtok_r(tracked, "*", &saveptr);
-        const char *cmd     = strtok_r(NULL,    "*", &saveptr);
-        char       *rest    = strtok_r(NULL,    "",  &saveptr);
+        char *saveptr = NULL;
+        char *app_id  = strtok_r(tracked, "*", &saveptr);
+        char *cmd     = strtok_r(NULL,    "*", &saveptr);
+        char *rest    = strtok_r(NULL,    "", &saveptr);
 
         if (recording) {
             if (strcmp(cmd, "AWAR") == 0) {
-                const char *awar_name = strtok_r(rest, "*", &saveptr);
-                const char *content   = strtok_r(NULL, "",  &saveptr);
-
-                if (!content) content = "";
+                char *awar_name = strtok_r(rest, "*", &saveptr);
+                char *content   = strtok_r(NULL, "",  &saveptr);
 
                 recording->write_awar_change(app_id, awar_name, content);
             }

@@ -55,7 +55,7 @@ class MismatchWeights {
             }
             weight[probe][PT_N] = sum/4.0;
         }
-        for (int seq = PT_N; seq < PT_BASES; ++seq) {  // UNCHECKED_LOOP (doesnt matter)
+        for (int seq = PT_N; seq < PT_BASES; ++seq) {
             double sum = 0.0;
             for (int probe = PT_A; probe < PT_BASES; ++probe) {
                 sum += weight[probe][seq];
@@ -163,7 +163,7 @@ void MatchRequest::init_accepted_N_mismatches(int ignored_Nmismatches, int when_
 
     accepted_N_mismatches[0] = 0;
     int mm;
-    for (mm = 1; mm<when_less_than_Nmismatches; ++mm) { // LOOP_VECTORIZED
+    for (mm = 1; mm<when_less_than_Nmismatches; ++mm) {
         accepted_N_mismatches[mm] = mm>ignored_Nmismatches ? mm-ignored_Nmismatches : 0;
     }
     pt_assert(mm <= (max_ambig+1));
@@ -402,7 +402,7 @@ static void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence) {
     int slen = strlen(sequence);
     psg.pos_to_weight = new double[slen+1];
     int p;
-    for (p=0; p<slen; p++) { // LOOP_VECTORIZED=4 (no idea why this is instantiated 4 times. inline would cause 2)
+    for (p=0; p<slen; p++) {
         if (type == PT_MATCH_TYPE_WEIGHTED_PLUS_POS) {
             psg.pos_to_weight[p] = calc_position_wmis(p, slen, 0.3, 1.0);
         }
@@ -569,7 +569,7 @@ inline void cat_spaced_right(GBS_strstruct *memfile, const char *text, int width
 inline void cat_dashed_left (GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', true); }
 inline void cat_dashed_right(GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', false); }
 
-const char *get_match_overlay(const PT_probematch *ml) {
+char *get_match_overlay(const PT_probematch *ml) {
     int       pr_len = strlen(ml->sequence);
     PT_local *locs   = (PT_local *)ml->mh.parent->parent;
 
@@ -649,19 +649,7 @@ const char *get_match_overlay(const PT_probematch *ml) {
         }
     }
 
-    static char *result = 0;
-    freeset(result, ref);
-    return result;
-}
-
-const char* get_match_acc(const PT_probematch *ml) {
-    return psg.data[ml->name].get_acc();
-}
-int get_match_start(const PT_probematch *ml) {
-    return psg.data[ml->name].get_start();
-}
-int get_match_stop(const PT_probematch *ml) {
-    return psg.data[ml->name].get_stop();
+    return ref;
 }
 
 static const char *get_match_info_formatted(PT_probematch  *ml, const format_props& format) {
@@ -685,7 +673,9 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
     }
     cat_spaced_left(memfile, GBS_global_string("%i", ml->reversed), format.rev_width());
 
-    GBS_strcat(memfile, get_match_overlay(ml));
+    char *ref = get_match_overlay(ml);
+    GBS_strcat(memfile, ref);
+    free(ref);
 
     static char *result = 0;
     freeset(result, GBS_strclose(memfile));

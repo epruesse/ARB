@@ -8,12 +8,16 @@
 //                                                               //
 // ============================================================= //
 
+// #define FINDCORR
+
 #include <servercntrl.h>
 #include <arbdb.h>
 #include <awt.hxx>
+#include <awt_canvas.hxx>
 
 #include <aw_preset.hxx>
 #include <aw_root.hxx>
+#include <aw_msg.hxx>
 #include <macros.hxx>
 #include <aw_question.hxx>
 #include <awt_TreeAwars.hxx>
@@ -23,6 +27,10 @@ AW_HEADER_MAIN
 
 AW_window *DI_create_matrix_window(AW_root *aw_root);
 void       DI_create_matrix_variables(AW_root *aw_root, AW_default aw_def, AW_default db);
+#ifdef FINDCORR
+AW_window *bc_create_main_window(AW_root *awr);
+void       bc_create_bc_variables(AW_root *awr, AW_default awd);
+#endif
 
 GBDATA *GLOBAL_gb_main; // global gb_main for arb_dist
 
@@ -73,6 +81,9 @@ int ARB_main(int argc, char *argv[]) {
         ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
         AWT_initTreeAwarRegistry(GLOBAL_gb_main);
         DI_create_matrix_variables(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
+#ifdef FINDCORR
+        bc_create_bc_variables(aw_root, AW_ROOT_DEFAULT);
+#endif
 
         AW_window *aww = DI_create_matrix_window(aw_root);
         aww->show();

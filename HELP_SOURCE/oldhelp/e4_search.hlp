@@ -38,7 +38,7 @@ DESCRIPTION	Search
 			Jumps to the last/next occurrence of any of the given patterns.
 			You can repeat your last search by pressing CTRL-S.
 
-		Show?
+		Show ?
 
 			If checked, the found parts are shown in different
 			background colors (defined at Properties/Data Search)

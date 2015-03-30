@@ -1126,9 +1126,7 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
 
         if (!realigner.failure()) {
             TransTables allowed; // default: all translation tables allowed
-#if defined(ASSERTION_USED)
-            bool has_valid_translation_info = false;
-#endif
+            bool        has_valid_translation_info = false;
             {
                 int arb_transl_table, codon_start;
                 GB_ERROR local_error = AWT_getTranslationInfo(gb_species, arb_transl_table, codon_start);
@@ -1138,9 +1136,7 @@ static GB_ERROR realign_marked(GBDATA *gb_main, const char *ali_source, const ch
                 else if (arb_transl_table >= 0) {
                     // we found a 'transl_table' entry -> restrict used code to the code stored there
                     allowed.forbidAllBut(arb_transl_table);
-#if defined(ASSERTION_USED)
                     has_valid_translation_info = true;
-#endif
                 }
             }
 

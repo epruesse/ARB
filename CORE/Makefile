@@ -27,7 +27,7 @@ $(LIB_SHARED): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .cxx.genh:
 	../AISC_MKPTPS/aisc_mkpt -P -G -w $(subst .genh,.h,$@) $< > $@
@@ -126,13 +126,6 @@ arb_match.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_match.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_match.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_match.o: $(ARBHOME)/INCLUDE/test_global.h
-
-arb_mem.o: arb_core.h
-arb_mem.o: arb_mem.h
-arb_mem.o: arb_msg.h
-arb_mem.o: $(ARBHOME)/INCLUDE/attributes.h
-arb_mem.o: $(ARBHOME)/INCLUDE/dupstr.h
-arb_mem.o: $(ARBHOME)/INCLUDE/gccver.h
 
 arb_misc.o: arb_assert.h
 arb_misc.o: arb_core.h

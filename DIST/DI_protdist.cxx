@@ -14,6 +14,8 @@
 #include <arb_progress.h>
 #include <cmath>
 
+#define di_assert(cond) arb_assert(cond)
+
 #define epsilon 0.000001        // a small number
 
 double di_protdist::pameigs[20] = {
@@ -146,6 +148,65 @@ double di_protdist::pamprobs[20][20] = {
         -0.00084536, 0.01631369, 0.00095063, -0.09570217, 0.06480321
     }
 };
+
+void di_protdist::cats(di_cattype      wcat)
+{
+    // define categories of amino acids
+    aas             b;
+
+    // fundamental subgroups
+    cat[(long) CYS - (long) ALA] = 1;
+    cat[(long) MET - (long) ALA] = 2;
+    cat[(long) VAL - (long) ALA] = 3;
+    cat[(long) LEU - (long) ALA] = 3;
+    cat[(long) ILEU - (long) ALA] = 3;
+    cat[(long) GLY - (long) ALA] = 4;
+    cat[0] = 4;
+    cat[(long) SER - (long) ALA] = 4;
+    cat[(long) THR - (long) ALA] = 4;
+    cat[(long) PRO - (long) ALA] = 5;
+    cat[(long) PHE - (long) ALA] = 6;
+    cat[(long) TYR - (long) ALA] = 6;
+    cat[(long) TRP - (long) ALA] = 6;
+    cat[(long) GLU - (long) ALA] = 7;
+    cat[(long) GLN - (long) ALA] = 7;
+    cat[(long) ASP - (long) ALA] = 7;
+    cat[(long) ASN - (long) ALA] = 7;
+    cat[(long) LYS - (long) ALA] = 8;
+    cat[(long) ARG - (long) ALA] = 8;
+    cat[(long) HIS - (long) ALA] = 8;
+    if (wcat == GEORGE) {
+        /* George, Hunt and Barker: sulfhydryl, small hydrophobic,
+         * small hydrophilic, aromatic, acid/acid-amide/hydrophilic,
+         * basic
+         */
+        for (b = ALA; (long) b <= (long) VAL; b = (aas) ((long) b + 1)) {
+            if (cat[(long) b - (long) ALA] == 3)
+                cat[(long) b - (long) ALA] = 2;
+            if (cat[(long) b - (long) ALA] == 5)
+                cat[(long) b - (long) ALA] = 4;
+        }
+    }
+    if (wcat == CHEMICAL) {
+        /* Conn and Stumpf:  monoamino, aliphatic, heterocyclic,
+         * aromatic, dicarboxylic, basic
+         */
+        for (b = ALA; (long) b <= (long) VAL; b = (aas) ((long) b + 1)) {
+            if (cat[(long) b - (long) ALA] == 2)
+                cat[(long) b - (long) ALA] = 1;
+            if (cat[(long) b - (long) ALA] == 4)
+                cat[(long) b - (long) ALA] = 3;
+        }
+    }
+    // Ben Hall's personal opinion
+    if (wcat != HALL)
+        return;
+    for (b = ALA; (long) b <= (long) VAL; b = (aas) ((long) b + 1)) {
+        if (cat[(long) b - (long) ALA] == 3)
+            cat[(long) b - (long) ALA] = 2;
+    }
+}
+
 
 void di_protdist::maketrans() {
     // Make up transition probability matrix from code and category tables
@@ -352,7 +413,7 @@ void di_protdist::givens(di_aa_matrix a, long i, long j, long n, double ctheta, 
     long            k;
     double          d;
 
-    for (k = 0; k < n; k++) { // LOOP_VECTORIZED
+    for (k = 0; k < n; k++) {
         if (left) {
             d = ctheta * a[i - 1][k] + stheta * a[j - 1][k];
             a[j - 1][k] = ctheta * a[j - 1][k] - stheta * a[i - 1][k];
@@ -617,7 +678,7 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
         matrix->set(i, i, 0.0);
         {
             // move all unknown characters to del
-            ap_pro *seq1 = entries[i]->get_prot_seq()->get_sequence();
+            ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
             for (k = 0; k <chars;  k++) {
                 b1 = seq1[k];
                 if (b1 <= VAL) continue;
@@ -640,8 +701,8 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
                     pos = tt_2_pos(tt);
                     tt = pos_2_tt(pos);
                     build_akt_predikt(tt);
-                    const ap_pro *seq1 = entries[i]->get_prot_seq()->get_sequence();
-                    const ap_pro *seq2 = entries[j]->get_prot_seq()->get_sequence();
+                    const ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
+                    const ap_pro *seq2 = entries[j]->sequence_protein->get_sequence();
                     for (k = chars; k >0; k--) {
                         b1 = *(seq1++);
                         b2 = *(seq2++);
@@ -686,8 +747,8 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
             else {                    // cat < kimura
                 m = 0;
                 n = 0;
-                const ap_pro *seq1 = entries[i]->get_prot_seq()->get_sequence();
-                const ap_pro *seq2 = entries[j]->get_prot_seq()->get_sequence();
+                const ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
+                const ap_pro *seq2 = entries[j]->sequence_protein->get_sequence();
                 for (k = chars; k >0; k--) {
                     b1 = *(seq1++);
                     b2 = *(seq2++);

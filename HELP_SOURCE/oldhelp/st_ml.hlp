@@ -31,8 +31,8 @@ NOTES		The colors are not set correctly. Please set different 'CS' colors
 		The program assumes that your tree is correct.
 
 WARNINGS	This is only a prototype, don't expect something perfect.
-		All sequences which should be analyzed, have be marked and
-		have to be members of the tree currently shown in the ARB main window!
+		All sequences which should be analyzed should be marked and
+		in the tree shown by ARB_NT !!!!!
 
 BUGS		The colors are not set correctly by default.
 		The program can only be started once.

@@ -22,7 +22,7 @@ struct null_counter: public arb_progress_counter {
 
     void inc() OVERRIDE {}
     void implicit_inc() OVERRIDE {}
-    void inc_to(int) OVERRIDE {}
+    void inc_to(int x) OVERRIDE {}
     void done() OVERRIDE {}
     void restart(int) OVERRIDE {}
     void force_update() OVERRIDE {}

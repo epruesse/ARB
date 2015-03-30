@@ -941,7 +941,7 @@ void TEST_alignment() {
 
             for (int i = 0; names[i]; ++i) {
                 long len = GBT_get_alignment_len(gb_main, names[i]);
-                TEST_EXPECT_EQUAL(len, !i ? 487 : 1462);
+                TEST_EXPECT_EQUAL(len, !i ? 473 : 1426);
 
                 char *type_name = GBT_get_alignment_type_string(gb_main, names[i]);
                 TEST_EXPECT_EQUAL(type_name, !i ? "ami" : "dna");

@@ -180,27 +180,6 @@ public:
         GBDATA *gb_full = GB_entry(gb_species, "full_name");
         return gb_full ? GB_read_char_pntr(gb_full) : "";
     }
-
-    const char *get_acc() const {
-        GB_transaction ta(gb_species);
-
-        GBDATA *gb_acc = GB_entry(gb_species, "acc");
-        pt_assert(gb_acc);
-        return gb_acc ? GB_read_char_pntr(gb_acc) : NULL;
-    }
-    int get_start() const {
-        GB_transaction ta(gb_species);
-
-        GBDATA *gb_start = GB_entry(gb_species, "start");
-        return gb_start ? GB_read_int(gb_start) : 0;
-    }
-    int get_stop() const {
-        GB_transaction ta(gb_species);
-
-        GBDATA *gb_stop = GB_entry(gb_species, "stop");
-        return gb_stop ? GB_read_int(gb_stop) : 0;
-    }
-
     long get_checksum() const { // @@@ change return-type -> uint32_t
         GB_transaction ta(gb_species);
         GBDATA *gb_cs = GB_entry(gb_species, "cs");

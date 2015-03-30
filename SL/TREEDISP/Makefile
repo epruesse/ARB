@@ -14,10 +14,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 proto:
 	../../AISC_MKPTPS/aisc_mkpt -P -w TreeCallbacks.hxx TreeCallbacks.cxx >TreeCallbacks.hxx.tmp
@@ -76,10 +76,10 @@ irstree_display.o: $(ARBHOME)/INCLUDE/downcast.h
 irstree_display.o: $(ARBHOME)/INCLUDE/dupstr.h
 irstree_display.o: $(ARBHOME)/INCLUDE/gccver.h
 irstree_display.o: $(ARBHOME)/INCLUDE/nds.h
+irstree_display.o: $(ARBHOME)/INCLUDE/RootedTree.h
 irstree_display.o: $(ARBHOME)/INCLUDE/smartptr.h
 irstree_display.o: $(ARBHOME)/INCLUDE/static_assert.h
 irstree_display.o: $(ARBHOME)/INCLUDE/test_global.h
-irstree_display.o: $(ARBHOME)/INCLUDE/TreeNode.h
 irstree_display.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 TreeCallbacks.o: TreeCallbacks.hxx
@@ -122,10 +122,10 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/mode_text.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/RootedTree.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/test_global.h
-TreeCallbacks.o: $(ARBHOME)/INCLUDE/TreeNode.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 TreeDisplay.o: ../../WINDOW/aw_common.hxx
@@ -174,9 +174,9 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/nds.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/RootedTree.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/test_global.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/test_unit.h
-TreeDisplay.o: $(ARBHOME)/INCLUDE/TreeNode.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ttypes.h

@@ -2478,6 +2478,8 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
                     size_t new_size;
 
+                    // UNCOVERED();
+
                     compr_mask &= ~GB_COMPRESSION_DICTIONARY;
                     error       = readAndWrite(&gbk[idx], old_compressed_size, new_size);
                     compr_mask  = old_compr_mask;

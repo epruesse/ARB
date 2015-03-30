@@ -13,7 +13,7 @@ endif
 
 TARFILE=$(wildcard standard-RAxML-8.*.*gz)
 
-ifeq ($(DARWIN),1)
+ifeq (($DARWIN),1)
   MAKE_SUFFIX=mac	
 else
   MAKE_SUFFIX=gcc

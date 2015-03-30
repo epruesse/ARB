@@ -21,7 +21,6 @@ BEGIN {
   @EXPORT_OK   = qw();
 }
 
-sub caps($);
 sub caps($) {
   my ($reg) = @_;
   if ($reg =~ /\|/) {

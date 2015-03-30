@@ -64,8 +64,8 @@ static const char *flagDir() {
 static const char *runDir() {
     RETURN_ONETIME_ALLOC(strdup(GB_concat_full_path(unitTesterDir(), "run")));
 }
-static const char *mutexDir(const char *name) {
-    return GB_concat_full_path(flagDir(), GBS_global_string("mutex_%s", name));
+static char *mutexDir(const char *name) {
+    return strdup(GB_concat_full_path(flagDir(), GBS_global_string("mutex_%s", name)));
 }
 
 #if defined(DEBUG)
@@ -260,8 +260,8 @@ class LazyPersistantFlag {
     }
 
 public:
-    LazyPersistantFlag(const char *name_) : name(name_), will_be_volatile(false) {}
-    LazyPersistantFlag(const char *name_, bool is_volatile_) : name(name_), will_be_volatile(is_volatile_) {}
+    LazyPersistantFlag(const char *name_) : name(strdup(name_)), will_be_volatile(false) {}
+    LazyPersistantFlag(const char *name_, bool is_volatile_) : name(strdup(name_)), will_be_volatile(is_volatile_) {}
 
     operator bool() const {
         instanciate_on_demand();

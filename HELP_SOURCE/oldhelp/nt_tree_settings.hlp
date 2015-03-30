@@ -45,10 +45,6 @@ DESCRIPTION     Various tree display settings are available:
                   Select toggle to consider text for default zoom (otherwise only tree-structure is considered).
                   Add extra padding in pixel (= amount of extra space for text; may be negative)
 
-                - Hide bootstrap values below
-                  Configure above which threshold bootstrap values are shown in the tree. Generally, branches with 
-                  less than 50% cannot be regarded as supported.
-
 NOTES		The line width of individual branches can be changed
 		independently using the 'LINE WIDTH MODE'.
 

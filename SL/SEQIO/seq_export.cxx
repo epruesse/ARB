@@ -83,15 +83,8 @@ static GB_ERROR read_export_format(export_format *efo, const char *file, bool lo
         error = "No export format selected";
     }
     else {
-        char *fullfile = 0;
-        if (GB_is_regularfile(file)) { // prefer files that are completely specified (full/rel path)
-            fullfile = strdup(GB_canonical_path(file));
-        }
-        else {
-            fullfile = nulldup(GB_path_in_ARBHOME(file)); // fallback to ARBHOME-relative specification
-        }
-
-        FILE *in = fopen(fullfile, "r");
+        char *fullfile = nulldup(GB_path_in_ARBHOME(file));
+        FILE *in       = fopen(fullfile, "r");
 
         if (!in) error = GB_IO_error("reading export form", fullfile);
         else {
@@ -735,7 +728,7 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
 
 // uncomment to auto-update exported files
 // (needed once after changing database or export formats)
-// #define TEST_AUTO_UPDATE
+// #define TEST_AUTO_UPDATE 
 #define TEST_AUTO_UPDATE_ONLY_MISSING // do auto-update only if file is missing 
 
 #define TEST_EXPORT_FORMAT(filename,load_complete_form)                 \
@@ -793,11 +786,11 @@ void TEST_sequence_export() {
                 if (GB_is_regularfile(expected)) {
                     TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
                 }
-                else
-#else
-                {
-                    TEST_COPY_FILE(outname, expected);
+                else {
+                    system(GBS_global_string("cp %s %s", outname, expected));
                 }
+#else
+                system(GBS_global_string("cp %s %s", outname, expected));
 #endif
 #else
                 TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);

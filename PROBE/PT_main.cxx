@@ -170,9 +170,7 @@ static ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATT
 
 int server_shutdown(PT_main */*pm*/, aisc_string passwd) {
     // password check
-    bool authorized = strcmp(passwd, "47@#34543df43%&3667gh") == 0;
-    free(passwd);
-    if (!authorized) return 1;
+    if (strcmp(passwd, "47@#34543df43%&3667gh")) return 1;
 
     fflush_all();
     fprintf(stderr, "\nARB_PT_SERVER: received shutdown message\n");

@@ -141,14 +141,11 @@ inline int GEN_root::smart_line(AW_device *device, int gc, AW_pos x0, AW_pos y0,
 
 enum PaintWhat {
     PAINT_MIN,
-
     PAINT_NORMAL = PAINT_MIN,
     PAINT_COLORED,
     PAINT_MARKED,
     PAINT_SELECTED,
-
-    PAINT_MAX = PAINT_SELECTED,
-    PAINT_COUNT, // has to be last (do NOT remove)
+    PAINT_MAX    = PAINT_SELECTED,
 };
 
 inline bool getDrawGcs(GEN_iterator& gene, PaintWhat what, const string& curr_gene_name, int& draw_gc, int& text_gc) {

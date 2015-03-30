@@ -28,12 +28,6 @@
 # COVERAGE=0/1/2        compile in gcov support (useful together with UNIT_TESTS=1)
 #                       0=no, 1+2=compile in, 1=show
 # STABS=0/1             force stabs format? (0 = "use default format")
-# SANITIZE=0/#/all      use Sanitizer? (defaults to 0,
-#                                       1=AddressSanitizer+LeakSanitizer,
-#                                       2=UndefinedBehaviorSanitizer,
-#                                       combine bit-values to activate multiple Sanitizers,
-#                                       specify 'all' to activate all)
-# SHOWTODO=0/1          activate TODO-warnings? (defaults to 0, except for ralf)
 #
 # -----------------------------------------------------
 # The ARB source code is aware of the following defines:
@@ -78,9 +72,12 @@ endif
 
 export CC CXX A_CC A_CXX
 
-# unconditionally prepend $(ARBHOME)/lib to LD_LIBRARY_PATH if not found
-ifeq ($(findstring $(ARBHOME)/lib,$(LD_LIBRARY_PATH)),)
-LD_LIBRARY_PATH:=${ARBHOME}/lib:$(LD_LIBRARY_PATH)
+ifeq ($(LD_LIBRARY_PATH),'')
+LD_LIBRARY_PATH:=${ARBHOME}/lib
+endif
+
+ifeq ($(DARWIN),1)
+LD_LIBRARY_PATH:=${ARBHOME}/lib
 endif
 
 FORCEMASK = umask 002
@@ -93,13 +90,13 @@ READLINK:=$(ARBHOME)/SH/arb_readlink
 
 # supported gcc versions:
 ALLOWED_gcc_VERSIONS=\
-        4.3.1 4.3.2 4.3.3 4.3.4 \
-        4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
-              4.5.2 \
-        4.6.1 4.6.2 4.6.3 \
-        4.7.1 4.7.2 4.7.3 4.7.4 \
-  4.8.0 4.8.1 4.8.2 4.8.3 4.8.4 \
-  4.9.0 4.9.1 4.9.2 \
+	4.3.1 4.3.2 4.3.3 4.3.4 \
+	4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
+	      4.5.2 \
+	4.6.1 4.6.2 4.6.3 \
+	4.7.1 4.7.2 4.7.3 \
+	4.8.0 4.8.1 4.8.2 4.8.3 \
+	4.9.0 4.9.1 \
 
 # supported clang versions:
 ALLOWED_clang_VERSIONS=\
@@ -140,7 +137,7 @@ USE_GCC_452_OR_HIGHER:=
 USE_GCC_46_OR_HIGHER:=
 USE_GCC_47_OR_HIGHER:=
 USE_GCC_48_OR_HIGHER:=
-USE_GCC_49_OR_HIGHER:=
+
 
 ifeq ($(USE_GCC_MAJOR),4)
  ifeq ($(USE_GCC_MINOR),5)
@@ -155,9 +152,6 @@ ifeq ($(USE_GCC_MAJOR),4)
     USE_GCC_47_OR_HIGHER:=yes
     ifneq ($(USE_GCC_MINOR),7)
      USE_GCC_48_OR_HIGHER:=yes
-      ifneq ($(USE_GCC_MINOR),8)
-       USE_GCC_49_OR_HIGHER:=yes
-      endif
     endif
    endif
   endif
@@ -167,7 +161,6 @@ else
  USE_GCC_46_OR_HIGHER:=yes
  USE_GCC_47_OR_HIGHER:=yes
  USE_GCC_48_OR_HIGHER:=yes
- USE_GCC_49_OR_HIGHER:=yes
 endif
 
 #---------------------- define special directories for non standard builds
@@ -194,6 +187,7 @@ clflags :=# linker flags (when passed through gcc)
 extended_warnings :=# warning flags for C and C++-compiler
 extended_cpp_warnings :=# warning flags for C++-compiler only
 
+
 ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
 	ifeq ($(USE_CLANG),1)
@@ -215,6 +209,12 @@ ifeq ($(DEBUG),1)
 
 	gdb_common := -g -g3 -ggdb -ggdb3
 
+ifeq ($(DEVELOPER),RALF)
+ ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
+	STABS:=1
+ endif
+endif
+
 DBGOPTI:=-O0
 ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
 DBGOPTI:=-Og
@@ -233,26 +233,12 @@ endif
 ifeq ($(DARWIN),0)
 	lflags += -g
 	clflags += -Wl,-g
-
-# TEMPORARY WORKAROUND for linker issues with launchpad binutils
-# code was added to ld to check for overlapping FDEs. Since ARB
-# worked before, we want this not to fail for the moment.
-# FIXME: remove this!
-        clflags += -Wl,-noinhibit-exec
 endif
-
- ifeq ($(DEBUG_GRAPHICS),1)
-	dflags += -DDEBUG_GRAPHICS
- endif
-
-endif # DEBUG only
 
 # control how much you get spammed
 # (please do not change default in SVN, use developer specific setting as below)
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --original# dont modify compiler output
-#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --loop-optimization-candi# show candidates for vectorization check
-#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --dump-loop-optimization# useful while optimizing code for vectorization
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --hide-Noncopyable-advices
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --show-useless-Weff++
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings
@@ -261,6 +247,7 @@ endif # DEBUG only
 ifeq ($(DEVELOPER),ELMAR)
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --only-first-error
 endif
+
 
 # Enable extra warnings
 	extended_warnings :=
@@ -276,17 +263,7 @@ endif
 
 # ------- above only warnings available in 3.0
 
-WEFFC_BROKEN:=0
- ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
-  ifneq ('$(USE_GCC_48_OR_HIGHER)','yes')
-#  -Weffc++ broken in 4.7.x series
-# gcc 4.7.3 crashes on GenomeImport.cxx when -Weffc++ is active
-# (bug reported https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56923; apparently wont be fixed for 4.7-series)
-# gcc 4.7.4 crashes on DBwriter.cxx when -Weffc++ is active
-   WEFFC_BROKEN:=1
-  endif
- endif
- ifeq ('$(WEFFC_BROKEN)','0')
+ ifneq ('$(COMPILER_VERSION)','4.7.3') # g++ crashes on GenomeImport.cxx when -Weffc++ is active (bug reported)
 	extended_cpp_warnings += -Weffc++# gcc 3.0.1
  endif
 	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
@@ -294,10 +271,6 @@ WEFFC_BROKEN:=0
 	extended_cpp_warnings += -Winit-self# gcc 3.4.0
 	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
- ifeq ($(DEBUG),1)
-#       turn off -Wmaybe-uninitialized in debug mode (gets activated with -Wextra). too many bogus warnings
-	extended_cpp_warnings += -Wno-maybe-uninitialized
- endif
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
  endif
@@ -308,6 +281,11 @@ WEFFC_BROKEN:=0
  ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wunused-local-typedefs# available since gcc 4.7 (but fails for each STATIC_ASSERT, so enable only for Cxx11)
  endif
+
+ ifeq ($(DEBUG_GRAPHICS),1)
+	dflags += -DDEBUG_GRAPHICS
+ endif
+endif
 
 #---------------------- turn off clang bogus warnings
 
@@ -326,8 +304,6 @@ ifneq ($(DEVELOPER),ANY) # ANY=default setting (skip all developer specific code
 	dflags += -DDEVEL_$(DEVELOPER)# activate developer/release specific code
 endif
 
-#---------------------- activate TODO warnings?
-
 ifndef SHOWTODO
  ifeq ($(DEVELOPER),RALF)
 	SHOWTODO:=1
@@ -337,62 +313,6 @@ ifndef SHOWTODO
 endif
 ifeq ($(SHOWTODO),1)
 	dflags += -DWARN_TODO# activate "TODO" warnings
-endif
-
-#---------------------- activate Sanitizers?
-
-ASAN_OPTIONS:=handle_segv=0:color=0
-ASAN_OPTIONS+=:detect_leaks=1 # comment-out to disable leak-detection
-ASAN_OPTIONS+=:check_initialization_order=1
-
-# suppressions: SOURCE_TOOLS/arb.leaksan.supp
-LSAN_OPTIONS:=max_leaks=3:suppressions=$(ARBHOME)/SOURCE_TOOLS/arb.leaksan.supp
-
-
-ifndef SANITIZE
- SANITIZE:=0
-endif
-
-SANITIZE_ADDRESS:=0
-SANITIZE_UNDEFINED:=0
-
-ifneq ($(SANITIZE),0)
- ifeq ($(SANITIZE),all)
-  SANITIZE:=3
- endif
-
- ifeq ($(SANITIZE),1)
-  SANITIZE_ADDRESS:=1
- else
-  ifeq ($(SANITIZE),2)
-   SANITIZE_UNDEFINED:=1
-  else
-   ifeq ($(SANITIZE),3)
-    SANITIZE_ADDRESS:=1
-    SANITIZE_UNDEFINED:=1
-   else
-    $(error Unknown value '$(SANITIZE)' specified for SANITIZE in config.makefile)
-   endif
-  endif
- endif
-endif
-
-ifeq ($(SANITIZE_ADDRESS),1)
- ifneq ('$(USE_GCC_48_OR_HIGHER)','yes')
-  $(info AddressSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
-  SANITIZE_ADDRESS:=0
- else
-  ifneq ('$(USE_GCC_49_OR_HIGHER)','yes')
-   $(warning note that LeakSanitizer does not work with gcc $(COMPILER_VERSION))
-  endif
- endif
-endif
-
-ifeq ($(SANITIZE_UNDEFINED),1)
- ifneq ('$(USE_GCC_49_OR_HIGHER)','yes')
-  $(info UndefinedBehaviorSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
-  SANITIZE_UNDEFINED:=0
- endif
 endif
 
 #---------------------- 32 or 64 bit
@@ -498,34 +418,6 @@ ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
 endif
 #cflags += -save-temps# uncomment to see preprocessor output
 
-#---------------------- various sanitizers
-
-COMMON_SANITIZE_FLAGS:=-ggdb3 -fno-omit-frame-pointer
-
-# activate AddressSanitizer+LeakSanitizer?
-ifeq ($(SANITIZE_ADDRESS),1)
- cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=address
- EXECLIBS += -lasan
-# EXECLIBS += -static-libasan
-endif
-
-# activate UndefinedBehaviorSanitizer?
-ifeq ($(SANITIZE_UNDEFINED),1)
- cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
- ifeq ('$(DEBUG)','1')
-  ifeq ($(USE_GCC_MAJOR),4)
-   ifeq ($(USE_GCC_MINOR),9)
-    ifneq ('$(findstring $(USE_GCC_PATCHLEVEL),01)','')
-# workaround https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63531 for 4.9.0 + 4.9.1
-# (problem is fixed in 4.9.2 release)
-     extended_cpp_warnings:=$(subst -Weffc++,,$(extended_cpp_warnings))
-    endif
-   endif
-  endif
- endif
- EXECLIBS += -lubsan
-endif
-
 #---------------------- X11 location
 
 ifeq ($(DARWIN),1)
@@ -629,20 +521,6 @@ ifeq ($(DARWIN),1)
 	TIME:=gtime
 else
 	TIME:=/usr/bin/time
-endif
-
-#---------------------- SSE vectorizer
-
-ifeq ($(DEBUG),0)
- ifeq ($(USE_GCC_49_OR_HIGHER),yes)
-#	cflags += -fopt-info
-	cflags += -fopt-info-vec
-
-#	Shows reasons for unsuccessful vectorization:
-#	cflags += -fopt-info-vec-missed
-
-	POST_COMPILE += --check-loop-optimization
- endif
 endif
 
 # -------------------------------------------------------------------------
@@ -878,13 +756,6 @@ endif
 
 # ---------------------------------------- check gcc version
 
-COMPILER_BROKEN:=0
-
-# gcc 4.8.0 produces invalid code (see #617)
-ifeq ('$(COMPILER_VERSION_ALLOWED)', '4.8.0') 
-COMPILER_BROKEN:=1
-endif
-
 check_same_GCC_VERSION:
 		$(ARBHOME)/SOURCE_TOOLS/check_same_compiler_version.pl $(COMPILER_NAME) $(COMPILER_VERSION_ALLOWED)
 
@@ -898,15 +769,13 @@ ifeq ('$(COMPILER_VERSION_ALLOWED)', '')
 		@echo '    - add your version to ALLOWED_$(COMPILER_NAME)_VERSIONS in the Makefile and try it out or'
 		@echo '    - switch to one of the allowed versions (see arb_README_gcc.txt for installing'
 		@echo '      a different version of gcc)'
-		$(error Unsupported compiler '$(COMPILER_NAME)' version '$(COMPILER_VERSION)')
+		@echo ''
+		@false
 else
-ifeq ($(COMPILER_BROKEN),1)
-		$(error $(COMPILER_NAME) version '$(COMPILER_VERSION_ALLOWED)' would build a broken ARB version. Compilation refused)
-else 
 		@echo "  - Supported $(COMPILER_NAME) version '$(COMPILER_VERSION_ALLOWED)' detected - fine!"
 		@echo ''
 		$(MAKE) check_same_GCC_VERSION
-endif
+
 endif
 
 #---------------------- check ARBHOME
@@ -944,6 +813,7 @@ check_TOOLS:
 		"$(MAKEDEPEND_PLAIN)" \
 		"$(LINK_SHARED_LIB)" \
 		"$(LINK_SHARED_LIB)" \
+
 
 check_ENVIRONMENT : check_PATH check_TOOLS
 		@echo "-------------------- Environment [start]"
@@ -1057,6 +927,7 @@ ARCHS_TREE = \
 		$(ARCHS_SEQUENCE) \
 		SL/FILTER/FILTER.a \
 		SL/ARB_TREE/ARB_TREE.a \
+		SL/ROOTED_TREE/ROOTED_TREE.a \
 
 # parsimony tree (used by NTREE, PARSIMONY, STAT(->EDIT4), DIST(obsolete!))
 ARCHS_AP_TREE = \
@@ -1336,7 +1207,7 @@ ARCHS_PROBE_DEPEND = \
 		$(ARCHS_PT_SERVER) \
 
 $(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db 
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) config.makefile $(use_ARB_main) || ( \
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) config.makefile $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
 		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS) && \
@@ -1388,12 +1259,12 @@ addlibs:
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
 %.proto:
-	@($(MAKE) -C $(@D) \
+	@$(MAKE) -C $(@D) \
 		"AUTODEPENDS=0" \
 		"MAIN=nothing" \
 		"cflags=noCflags" \
 		"cxxflags=noCxxflags" \
-		proto 2>&1 ) | $(ARBHOME)/SOURCE_TOOLS/asan2msg.pl
+		proto
 
 %.clean:
 	@$(MAKE) -C $(@D) \
@@ -1504,6 +1375,7 @@ SL/PRONUC/PRONUC.dummy:			links_non_perl
 SL/PTCLEAN/PTCLEAN.dummy:		links_non_perl link_db
 SL/REFENTRIES/REFENTRIES.dummy:		links_non_perl
 SL/REGEXPR/REGEXPR.dummy:		links_non_perl
+SL/ROOTED_TREE/ROOTED_TREE.dummy:	links_non_perl
 SL/SEQIO/SEQIO.dummy:			links_non_perl
 SL/SEQUENCE/SEQUENCE.dummy:		links_non_perl
 SL/TRANSLATE/TRANSLATE.dummy:		links_non_perl
@@ -1529,6 +1401,7 @@ UNIT_TESTER/UNIT_TESTER.dummy:		link_db \
 
 TOOLS/TOOLS.dummy : links_non_perl link_db \
 	SERVERCNTRL/SERVERCNTRL.dummy \
+	SL/ROOTED_TREE/ROOTED_TREE.dummy \
 	SL/TREE_WRITE/TREE_WRITE.dummy \
 	SL/TREE_READ/TREE_READ.dummy \
 	CONSENSUS_TREE/CONSENSUS_TREE.dummy \
@@ -1665,7 +1538,7 @@ fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
 #********************************************************************************
 
-up_by_remake: depends proto vectorize_checks
+up_by_remake: depends proto
 
 up: up_by_remake tags valgrind_update
 
@@ -1699,7 +1572,7 @@ comdepends: comtools clrdotdepends
 	$(MAKE) PROBE_COM/PROBE_COM.depends NAMES_COM/NAMES_COM.depends
 	$(MAKE) PROBE_COM/server.depends    NAMES_COM/server.depends
 
-depends: genheaders comdepends vectorize_checks
+depends: genheaders comdepends
 	@echo "$(SEP) Updating other dependencies"
 	$(MAKE) $(subst NAMES_COM/server.depends,,$(subst PROBE_COM/server.depends,,$(ARCHS:.a=.depends))) \
 		HELP_SOURCE/HELP_SOURCE.depends \
@@ -1727,11 +1600,6 @@ dependstest6: silent_clean
 	$(MAKE) nt
 dependstest7: silent_clean
 	$(MAKE) all
-# ------------------------------------------------------------
-
-vectorize_checks:
-	$(MAKE) -C SOURCE_TOOLS -r vectorize_checks
-
 # ------------------------------------------------------------
 
 AISC_MKPTPS/AISC_MKPTPS.dummy: links
@@ -2185,6 +2053,7 @@ TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
 UNITS_WORKING = \
 	$(RNA3D_TEST) \
 	AWTI/AWTI.test \
+	DIST/DIST.test \
 	EISPACK/EISPACK.test \
 	GENOM/GENOM.test \
 	GL/glAW/libglAW.test \
@@ -2218,6 +2087,7 @@ UNITS_WORKING = \
 	TREEGEN/TREEGEN.test \
 	WETC/WETC.test \
 	XML/XML.test \
+	SL/ROOTED_TREE/ROOTED_TREE.test \
 
 # untestable units
 
@@ -2231,17 +2101,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
-	DIST/DIST.test \
 	PARSIMONY/PARSIMONY.test \
-	EDIT4/EDIT4.test \
-	NTREE/NTREE.test \
-	MULTI_PROBE/MULTI_PROBE.test \
-
-# plain test-libaries not linked anywhere
-TEST_SANDBOXES = \
-	SL/CB/CB.test \
-
-UNITS_TESTED = \
 	SL/NEIGHBOURJOIN/NEIGHBOURJOIN.test \
 	SL/NDS/NDS.test \
 	ARB_GDE/ARB_GDE.test \
@@ -2256,6 +2116,12 @@ UNITS_TESTED = \
 	TOOLS/arb_probe.test \
 	PERLTOOLS/arb_proto_2_xsub.test \
 	AWTC/AWTC.test \
+
+# plain test-libaries not linked anywhere
+TEST_SANDBOXES = \
+	SL/CB/CB.test \
+
+UNITS_TESTED = \
 	SL/ALILINK/ALILINK.test \
 	SL/TREE_READ/TREE_READ.test \
 	DBSERVER/DBSERVER.test \
@@ -2263,8 +2129,11 @@ UNITS_TESTED = \
 	CORE/libCORE.test \
 	SL/INSDEL/INSDEL.test \
 	SL/TREEDISP/TREEDISP.test \
+	NTREE/NTREE.test \
 	AISC_MKPTPS/mkptypes.test \
+	EDIT4/EDIT4.test \
 	MERGE/MERGE.test \
+	MULTI_PROBE/MULTI_PROBE.test \
 	SERVERCNTRL/SERVERCNTRL.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	SL/PRONUC/PRONUC.test \

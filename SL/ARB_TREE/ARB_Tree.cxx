@@ -12,6 +12,7 @@
 #include "ARB_Tree.hxx"
 
 #include <AP_filter.hxx>
+#include <AP_sequence.hxx>
 
 #include <ad_cb.h>
 
@@ -25,8 +26,8 @@ static void tree_deleted_cbwrapper(GBDATA *gb_tree, ARB_seqtree_root *troot) {
 }
 
 
-ARB_seqtree_root::ARB_seqtree_root(AliView *aliView, AP_sequence *seqTempl, bool add_delete_callbacks)
-    : TreeRoot(false),
+ARB_seqtree_root::ARB_seqtree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seqTempl, bool add_delete_callbacks)
+    : TreeRoot(nodeMaker_, false),
       ali(aliView),
       seqTemplate(seqTempl ? seqTempl->dup() : NULL),
       tree_name(NULL),
@@ -80,7 +81,7 @@ GB_ERROR ARB_seqtree_root::loadFromDB(const char *name) {
             freenull(tree_name);
         }
 
-        ARB_seqtree *arb_tree   = DOWNCAST(ARB_seqtree*, GBT_read_tree(gb_main, name, this));
+        ARB_seqtree *arb_tree   = DOWNCAST(ARB_seqtree*, GBT_read_tree(gb_main, name, *this));
         if (!arb_tree) error = GB_await_error();
         else {
             gb_tree             = GBT_find_tree(gb_main, name);
@@ -230,7 +231,7 @@ void ARB_seqtree::remove_delete_cb_rec(ARB_tree_node_del_cb cb) {
 }
 
 GB_ERROR ARB_seqtree::preloadLeafSequences() {
-    GB_ERROR error = NULL;
+    GB_ERROR error;
     if (is_leaf) {
         if (gb_node) {
             seq   = get_tree_root()->get_seqTemplate()->dup();

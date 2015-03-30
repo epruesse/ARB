@@ -139,6 +139,10 @@ NOTES		Most ARB tools allow user
 
 EXAMPLES 	None
 
-WARNINGS	None
+WARNINGS	!!! The protection level option is only available for sequences
+		in the current release !!!
+
+		!!! The trees provided with the current release are definitely
+		not optimal trees !!! However, they are useful for database walking.
 
 BUGS		No bugs known

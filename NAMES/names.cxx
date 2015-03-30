@@ -1141,15 +1141,12 @@ int names_server_save() {
 
 int server_shutdown(AN_main */*pm*/, aisc_string passwd) {
     // password check
-    bool authorized = strcmp(passwd, "ldfiojkherjkh") == 0;
-    free(passwd);
-    if (!authorized) return 1;
-
-    fflush(stderr); fflush(stdout);
+    if (strcmp(passwd, "ldfiojkherjkh")) return 1;
     printf("\narb_name_server: I got the shutdown message.\n");
 
     // shutdown clients
-    aisc_broadcast(AN_global.server_communication, 0, "Used nameserver has been shut down");
+    aisc_broadcast(AN_global.server_communication, 0,
+                   "SERVER SHUTDOWN BY ADMINISTRATOR!\n");
 
     // shutdown server
     printf("ARB_name_server: server shutdown by administrator\n");

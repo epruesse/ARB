@@ -81,21 +81,11 @@ inline void CLEAR_QUERIED(GBDATA *gb_species, DbQuery *query) {
     free(name);
 }
 
-inline const char *getHitInfo(const char *item_id, DbQuery *query) {
-    long info = GBS_read_hash(query->hit_description, item_id);
-    return reinterpret_cast<const char*>(info);
-}
 inline const char *getHitInfo(GBDATA *gb_species, DbQuery *query) {
-    char       *name   = query->selector.generate_item_id(query->gb_main, gb_species);
-    const char *result = getHitInfo(name, query);
+    char *name = query->selector.generate_item_id(query->gb_main, gb_species);
+    long  info = GBS_read_hash(query->hit_description, name);
     free(name);
-    return result;
-}
-inline string keptHitReason(const string& currentHitReason, GBDATA *gb_item, DbQuery *query) {
-    string      reason  = string("kept because ")+currentHitReason;
-    const char *hitinfo = getHitInfo(gb_item, query);
-    if (hitinfo) reason = string(hitinfo)+" ("+reason+')';
-    return reason;
+    return reinterpret_cast<const char*>(info);
 }
 
 static void create_query_independent_awars(AW_root *aw_root, AW_default aw_def) {
@@ -486,7 +476,7 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
                 info = toFree;
             }
             else {
-                info = getHitInfo(name, query);
+                info = reinterpret_cast<const char *>(GBS_read_hash(query->hit_description, name));
                 if (!info) info = "<no hit info>";
             }
 
@@ -1345,7 +1335,11 @@ static void perform_query_cb(AW_window*, DbQuery *query, EXT_QUERY_TYPES ext_que
                         if (hit) {
                             dbq_assert(!hit_reason.empty());
 
-                            if (mode == QUERY_REDUCE) hit_reason = keptHitReason(hit_reason, gb_item, query);
+                            if (mode == QUERY_REDUCE) {
+                                string prev_info = getHitInfo(gb_item, query);
+                                hit_reason = prev_info+" (kept cause "+hit_reason+")";
+                            }
+
                             SET_QUERIED(gb_item, query, hit_reason.c_str(), hit_reason.length());
                         }
                         else CLEAR_QUERIED(gb_item, query);
@@ -1419,7 +1413,10 @@ void QUERY::copy_selection_list_2_query_box(DbQuery *query, AW_selection_list *s
         if ((displayed == 0) == (type == QUERY_DONT_MATCH)) {
             string hit_reason = GBS_global_string(hit_description, displayed ? displayed : "<no near neighbour>");
 
-            if (mode == QUERY_REDUCE) hit_reason = keptHitReason(hit_reason, gb_species, query);
+            if (mode == QUERY_REDUCE) {
+                string prev_info = getHitInfo(gb_species, query);
+                hit_reason = prev_info+" (kept cause "+hit_reason+")";
+            }
             SET_QUERIED(gb_species, query, hit_reason.c_str(), hit_reason.length());
         }
         else {
@@ -1514,10 +1511,8 @@ void QUERY::search_duplicated_field_content(AW_window *, DbQuery *query, bool to
 
                                 if (IS_QUERIED(gb_old, query)) {
                                     const char *prevInfo = getHitInfo(gb_old, query);
-                                    if (!prevInfo) {
-                                        oldInfo = firstInfo;
-                                    }
-                                    else if (strstr(prevInfo, firstInfo) == 0) { // not already have 1st-entry here
+
+                                    if (strstr(prevInfo, firstInfo) == 0) { // not already have 1st-entry here
                                         oldInfo = GBS_global_string("%s %s", prevInfo, firstInfo);
                                     }
                                 }

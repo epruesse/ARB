@@ -37,6 +37,7 @@
 
 class AP_filter;
 class arb_progress;
+struct GBT_TREE;
 
 typedef SmartPtr < SQ_GroupData> SQ_GroupDataPtr;
 typedef std::map < std::string, SQ_GroupDataPtr> SQ_GroupDataDictionary;
@@ -46,10 +47,10 @@ GB_ERROR SQ_remove_quality_entries(GBDATA *gb_main);
 GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main, AP_filter * filter, arb_progress& progress);
 GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData, GBDATA * gb_main, AP_filter * filter, arb_progress& progress);
 
-int SQ_count_nodes(TreeNode *node);
+int SQ_count_nodes(GBT_TREE *node);
 
-void SQ_calc_and_apply_group_data(TreeNode * node, GBDATA * gb_main, SQ_GroupData * data, AP_filter * filter, arb_progress& progress);
-void SQ_calc_and_apply_group_data2(TreeNode * node, GBDATA * gb_main, const SQ_GroupData * data, AP_filter * filter, arb_progress& progress);
+void SQ_calc_and_apply_group_data(GBT_TREE * node, GBDATA * gb_main, SQ_GroupData * data, AP_filter * filter, arb_progress& progress);
+void SQ_calc_and_apply_group_data2(GBT_TREE * node, GBDATA * gb_main, const SQ_GroupData * data, AP_filter * filter, arb_progress& progress);
 
 /*
  "option" is variable which is passed to function "SQ_get_value()".
@@ -83,7 +84,7 @@ enum SQ_TREE_ERROR {
     NONE = 0, ZOMBIE = 1, MISSING_NODE = 2
 };
 
-SQ_TREE_ERROR SQ_check_tree_structure(TreeNode * node);
+SQ_TREE_ERROR SQ_check_tree_structure(GBT_TREE * node);
 
 #else
 #error SQ_functions.h included twice

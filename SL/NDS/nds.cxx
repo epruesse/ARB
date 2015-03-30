@@ -17,7 +17,7 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_select.hxx>
-#include <TreeNode.h>
+#include <arbdbt.h>
 #include <items.h>
 #include <arb_msg_fwd.h>
 
@@ -591,7 +591,7 @@ static char *quoted_if_containing_separator(const char *text, char separator) {
     return GBS_global_string_copy("\"%s\"", text);
 }
 
-const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, TreeNode *species, const char *tree_name) {
+const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT_TREE *species, const char *tree_name) {
     awt_nds_ms->init_buffer();
 
     if (!gbd) {

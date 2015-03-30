@@ -287,7 +287,7 @@ bool AWT_graphic_tree::group_tree(AP_tree *at, CollapseMode mode, int color_grou
 
                 expand_me =
                     my_color_group == color_group || // specific or no color
-                    (my_color_group != 0 && color_group == -1); // any color
+                    my_color_group != 0 && color_group == -1; // any color
             }
         }
         else { // zombie
@@ -1390,9 +1390,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                 break;
             }
         }
-        if (!is_nan_or_inf(unscale)) {
-            store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
-        }
+        store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
         return;
     }
 
@@ -1656,22 +1654,19 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
 AWT_graphic_tree::~AWT_graphic_tree() {
     delete cmd_data;
     free(species_name);
-    destroy(tree_proto);
+    delete tree_proto;
     delete tree_static;
 }
 
-AP_tree_root *AWT_graphic_tree::create_tree_root(AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs) {
-    return new AP_tree_root(aliview, seq_prototype, insert_delete_cbs);
-}
+void AWT_graphic_tree::init(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs) {
+    tree_static = new AP_tree_root(aliview, nodeMaker_, seq_prototype, insert_delete_cbs);
 
-void AWT_graphic_tree::init(AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs) {
-    tree_static      = create_tree_root(aliview, seq_prototype, insert_delete_cbs);
     td_assert(!insert_delete_cbs || link_to_database); // inserting delete callbacks w/o linking to DB has no effect!
     link_to_database = link_to_database_;
 }
 
 void AWT_graphic_tree::unload() {
-    destroy(tree_static->get_root_node());
+    delete tree_static->get_root_node();
     displayed_root = 0;
 }
 
@@ -1708,7 +1703,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_
             }
 
             if (error) {
-                destroy(tree_static->get_root_node());
+                delete tree_static->get_root_node();
             }
             else {
                 displayed_root = get_root_node();
@@ -1827,7 +1822,7 @@ void AWT_graphic_tree::diamond(int gc, const Position& pos, int pixel_width) {
     disp_device->line(gc, r, b, mark_filter);
 }
 
-bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, const Position& pos, AW_pos alignment, AW_bitset filteri, int bootstrap_min) {
+bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, const Position& pos, AW_pos alignment, AW_bitset filteri) {
     // returns true if a bootstrap was DISPLAYED
     char       *end          = 0;
     int         bootstrap    = int(strtol(remark_branch, &end, 10));
@@ -1839,10 +1834,6 @@ bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool i
         if (bootstrap == 100) {
             show           = !is_leaf; // do not show 100% bootstraps at leafs
             if (show) text = "100%";
-        }
-        else if (bootstrap < bootstrap_min) {
-            show = false;
-            text = NULL;
         }
         else {
             if (bootstrap == 0) {
@@ -1865,8 +1856,8 @@ bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool i
     return is_bootstrap && show;
 }
 
-bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, int bootstrap_min) {
-    return AWT_show_branch_remark(device, remark_branch, is_leaf, Position(x, y), alignment, filteri, bootstrap_min);
+bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri) {
+    return AWT_show_branch_remark(device, remark_branch, is_leaf, Position(x, y), alignment, filteri);
 }
 
 void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtreeLimits& limits) {
@@ -2067,7 +2058,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             if (son->get_remark()) {
                 Position remarkPos(n);
                 remarkPos.movey(-scaled_font.ascent*0.1);
-                bool bootstrap_shown = AWT_show_branch_remark(disp_device, son->get_remark(), son->is_leaf, remarkPos, 1, remark_text_filter, bootstrap_min);
+                bool bootstrap_shown = AWT_show_branch_remark(disp_device, son->get_remark(), son->is_leaf, remarkPos, 1, remark_text_filter);
                 if (show_circle && bootstrap_shown) {
                     show_bootstrap_circle(disp_device, son->get_remark(), circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, bs_circle_filter);
                 }
@@ -2537,7 +2528,6 @@ void AWT_graphic_tree::read_tree_settings() {
     circle_zoom_factor     = aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
     circle_max_size        = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
     use_ellipse            = aw_root->awar(AWAR_DTREE_USE_ELLIPSE)->read_int();
-    bootstrap_min          = aw_root->awar(AWAR_DTREE_BOOTSTRAP_MIN)->read_int();
     
     freeset(species_name, aw_root->awar(AWAR_SPECIES_NAME)->read_string());
 }
@@ -2660,7 +2650,7 @@ void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, A
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
     AWT_graphic_tree *apdt = new AWT_graphic_tree(root, gb_main, map_viewer_cb);
-    apdt->init(new AliView(gb_main), NULL, true, false); // tree w/o sequence data
+    apdt->init(new AP_TreeNodeFactory, new AliView(gb_main), NULL, true, false); // tree w/o sequence data
     return apdt;
 }
 
@@ -2678,8 +2668,6 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_float(AWAR_DTREE_CIRCLE_ZOOM,     1.0)->set_minmax(0.01, 20);
     aw_root->awar_float(AWAR_DTREE_CIRCLE_MAX_SIZE, 1.5)->set_minmax(0.01, 200);
     aw_root->awar_int  (AWAR_DTREE_GREY_LEVEL,      20) ->set_minmax(0,    100);
-
-    aw_root->awar_int  (AWAR_DTREE_BOOTSTRAP_MIN, 0)->set_minmax(0,100);
     
     aw_root->awar_int(AWAR_DTREE_RADIAL_ZOOM_TEXT, 0);
     aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD,      150);
@@ -2768,7 +2756,7 @@ struct fake_AW_common : public AW_common {
     fake_AW_common()
         : AW_common(fcolors, dcolors, dcolors_count)
     {
-        for (int gc = 0; gc < dcolors_count-AW_STD_COLOR_IDX_MAX; ++gc) { // gcs used in this example
+        for (int gc = 0; gc < dcolors_count; ++gc) { // gcs used in this example
             new_gc(gc);
             AW_GC *gcm = map_mod_gc(gc);
             gcm->set_line_attributes(1, AW_SOLID);
@@ -2792,14 +2780,13 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         scaled_branch_distance = 1.0; // not final value!
         // var_mode is in range [0..3]
         // it is used to vary tree settings such that many different combinations get tested
-        grey_level             = 20*.01;
-        baselinewidth          = (var_mode == 3)+1;
-        show_brackets          = (var_mode != 2);
-        show_circle            = var_mode%3;
-        use_ellipse            = var_mode%2;
-        circle_zoom_factor     = 1.3;
-        circle_max_size        = 1.5;
-        bootstrap_min          = 0;
+        grey_level         = 20*.01;
+        baselinewidth      = (var_mode == 3)+1;
+        show_brackets      = (var_mode != 2);
+        show_circle        = var_mode%3;
+        use_ellipse        = var_mode%2;
+        circle_zoom_factor = 1.3;
+        circle_max_size    = 1.5;
     }
 
 public:
@@ -2903,7 +2890,7 @@ void TEST_treeDisplay() {
     AW_init_color_group_defaults(NULL);
     fake_AW_init_color_groups();
 
-    agt.init(new AliView(gb_main), NULL, true, false);
+    agt.init(new AP_TreeNodeFactory, new AliView(gb_main), NULL, true, false);
 
     {
         GB_transaction ta(gb_main);
@@ -2921,9 +2908,8 @@ void TEST_treeDisplay() {
     for (int show_handles = 0; show_handles <= 1; ++show_handles) {
         for (int color = 0; color <= 1; ++color) {
             print_dev.set_color_mode(color);
-            // for (int itype = AP_TREE_NORMAL; itype <= AP_LIST_SIMPLE; ++itype) {
-            for (int itype = AP_LIST_SIMPLE; itype >= AP_TREE_NORMAL; --itype) {
-                AP_tree_display_type type = AP_tree_display_type(itype);
+            // for (AP_tree_display_type type = AP_TREE_NORMAL; type <= AP_LIST_SIMPLE; type = AP_tree_display_type(type+1)) {
+            for (AP_tree_display_type type = AP_LIST_SIMPLE; type >= AP_TREE_NORMAL; type = AP_tree_display_type(type-1)) {
                 if (spoolnameof[type]) {
                     char *spool_name     = GBS_global_string_copy("display/%s_%c%c", spoolnameof[type], "MC"[color], "NH"[show_handles]);
                     char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name);

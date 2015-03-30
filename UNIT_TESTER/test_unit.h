@@ -1237,10 +1237,6 @@ namespace arb_test {
 #define TEST_REJECT(cond)         TEST_EXPECTATION(that(cond).is_equal_to(false))
 #define TEST_REJECT__BROKEN(cond) TEST_EXPECTATION__BROKEN_SIMPLE(that(cond).is_equal_to(false))
 
-// test class Validity:
-#define TEST_VALIDITY(valid)             TEST_EXPECT_NULL((valid).why_not())
-#define TEST_VALIDITY__BROKEN(valid,why) TEST_EXPECT_NULL__BROKEN((valid).why_not(),why)
-
 // --------------------------------------------------------------------------------
 // the following macros only work when
 // - tested module depends on ARBDB and
@@ -1313,11 +1309,11 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#ifdef TREENODE_H
+#ifdef ARBDBT_H
 
 namespace arb_test {
-    inline match_expectation expect_newick_equals(NewickFormat format, const TreeNode *tree, const char *expected_newick) {
-        char              *newick   = GBT_tree_2_newick(tree, format, false);
+    inline match_expectation expect_newick_equals(NewickFormat format, const GBT_TREE *tree, const char *expected_newick) {
+        char              *newick   = GBT_tree_2_newick(tree, format);
         match_expectation  expected = that(newick).is_equal_to(expected_newick);
         free(newick);
         return expected;
@@ -1325,12 +1321,12 @@ namespace arb_test {
     inline match_expectation saved_newick_equals(NewickFormat format, GBDATA *gb_main, const char *treename, const char *expected_newick) {
         expectation_group  expected;
         GB_transaction     ta(gb_main);
-        TreeNode          *tree = GBT_read_tree(gb_main, treename, new SimpleRoot);
+        GBT_TREE          *tree = GBT_read_tree(gb_main, treename, GBT_TREE_NodeFactory());
 
         expected.add(that(tree).does_differ_from_NULL());
         if (tree) {
             expected.add(expect_newick_equals(format, tree, expected_newick));
-            destroy(tree);
+            delete tree;
         }
         return all().ofgroup(expected);
     }
@@ -1344,13 +1340,13 @@ namespace arb_test {
 
 #else
 
-#define WARN_MISS_ADTREE() need_include__TreeNode_h__BEFORE__test_unit_h
+#define WARN_MISS_ARBDBT() need_include__arbdbt_h__BEFORE__test_unit_h
 
-#define TEST_EXPECT_NEWICK(format,tree,expected_newick)         WARN_MISS_ADTREE()
-#define TEST_EXPECT_NEWICK__BROKEN(format,tree,expected_newick) WARN_MISS_ADTREE()
+#define TEST_EXPECT_NEWICK(format,tree,expected_newick)         WARN_MISS_ARBDBT()
+#define TEST_EXPECT_NEWICK__BROKEN(format,tree,expected_newick) WARN_MISS_ARBDBT()
 
-#define TEST_EXPECT_SAVED_NEWICK(format,gb_main,treename,expected_newick)         WARN_MISS_ADTREE()
-#define TEST_EXPECT_SAVED_NEWICK__BROKEN(format,gb_main,treename,expected_newick) WARN_MISS_ADTREE()
+#define TEST_EXPECT_SAVED_NEWICK(format,gb_main,treename,expected_newick)         WARN_MISS_ARBDBT()
+#define TEST_EXPECT_SAVED_NEWICK__BROKEN(format,gb_main,treename,expected_newick) WARN_MISS_ARBDBT()
 
 #endif
 

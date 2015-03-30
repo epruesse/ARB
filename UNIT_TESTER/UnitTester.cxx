@@ -45,16 +45,6 @@
 #define COLORED_MESSAGES
 #endif
 
-#if defined(DEBUG)
-# if defined(DEVEL_RALF)
-#  if (GCC_VERSION_CODE>=408)
-#   warning TEST_VALID_LOCATION disabled - does not work with this gcc version
-#  else
-#   define TEST_VALID_LOCATION
-#  endif
-# endif
-#endif
-
 #ifdef COLORED_MESSAGES
 
 #define ESC_BOLD      "\033[1m"
@@ -523,9 +513,9 @@ bool SimpleTester::perform(size_t which) {
     bool       marked_as_slow = strlen(test.name) >= 10 && memcmp(test.name, "TEST_SLOW_", 10) == 0;
     const long abort_after_ms = marked_as_slow ? MAX_EXEC_MS_SLOW : MAX_EXEC_MS_NORMAL;
 
-#if defined(TEST_VALID_LOCATION)
+#if defined(DEBUG)
     bool invalid = test.location == NULL; // in NDEBUG mode location is always missing
-#else
+#else // !defined(DEBUG)
     bool invalid = false;
 #endif
 

@@ -9,23 +9,26 @@
 // =============================================================== //
 
 #include "di_matr.hxx"
+#include <AP_seq_dna.hxx>
+#include <AP_filter.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
+#include <algorithm>
 
 using std::min;
 using std::max;
-using std::string;
 
-DI_TRANSFORMATION DI_MATRIX::detect_transformation(string& msg) {
-    di_assert(nentries>0);
-
-    DI_TRANSFORMATION result = DI_TRANSFORMATION_NONE_DETECTED;
+void DI_MATRIX::analyse() {
     if (is_AA) {
         if (nentries> 100) {
-            msg    = "A lot of sequences!\n   ==> fast Kimura selected! (instead of PAM)";
-            result = DI_TRANSFORMATION_KIMURA;
+            aw_message("A lot of sequences!\n   ==> fast Kimura selected! (instead of PAM)");
+            aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(DI_TRANSFORMATION_KIMURA);
         }
         else {
-            msg    = "Only limited number of sequences!\n ==> slow PAM selected! (instead of Kimura)";
-            result = DI_TRANSFORMATION_PAM;
+            aw_message("Only limited number of sequences!\n"
+                       "   ==> slow PAM selected! (instead of Kimura)");
+            aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(DI_TRANSFORMATION_PAM);
         }
     }
     else {
@@ -37,9 +40,8 @@ DI_TRANSFORMATION DI_MATRIX::detect_transformation(string& msg) {
 
         // calculate meanvalue of sequencelength:
         for (size_t row=0; row<nentries; row++) {
-            const char *sequ = entries[row]->get_nucl_seq()->get_sequence();
-
-            size_t flen = aliview->get_length();
+            const char *sequ = entries[row]->sequence_parsimony->get_sequence();
+            size_t      flen = aliview->get_length();
 
             long act_gci = 0;
             long act_len = 0;
@@ -61,44 +63,33 @@ DI_TRANSFORMATION DI_MATRIX::detect_transformation(string& msg) {
             max_len = max(max_len, act_len);
         }
 
-        string warn;
         if (min_len * 1.3 < max_len) {
-            warn = "Warning: The length of sequences differs significantly!\n"
-                "Be careful: Neighbour Joining is sensitive to this kind of \"error\"";
+            aw_message("Warning: The length of sequences differs significantly!\n"
+                       "        Be careful: Neighbour Joining is sensitive to\n"
+                       "        this kind of \"error\"");
         }
-
         mean_len /= nentries;
 
         if (mean_len < 100) {
-            msg    = "Too short sequences!\n   ==> No correction selected!";
-            result = DI_TRANSFORMATION_NONE;
+            aw_message("Too short sequences!\n   ==> No correction selected!");
+            aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(DI_TRANSFORMATION_NONE);
         }
         else if (mean_len < 300) {
-            msg    = "Meanlength shorter than 300\n   ==> Jukes Cantor selected!";
-            result = DI_TRANSFORMATION_JUKES_CANTOR;
+            aw_message("Meanlength shorter than 300\n   ==> Jukes Cantor selected!");
+            aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(DI_TRANSFORMATION_JUKES_CANTOR);
         }
         else if ((mean_len < 1000) || ((max_gc / min_gc) < 1.2)) {
             const char *reason;
             if (mean_len < 1000) reason = "Sequences are too short for Olsen!";
-            else                 reason = GBS_global_string("Maximal GC (%f) : Minimal GC (%f) < 1.2", max_gc, min_gc);
+            else                reason = GBS_global_string("Maximal GC (%f) : Minimal GC (%f) < 1.2", max_gc, min_gc);
 
-            msg    = GBS_global_string("%s  ==> Felsenstein selected!", reason);
-            result = DI_TRANSFORMATION_FELSENSTEIN;
+            reason = GBS_global_string("%s  ==> Felsenstein selected!", reason);
+            aw_message(reason);
+            aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(DI_TRANSFORMATION_FELSENSTEIN);
         }
         else {
-            msg    = "Olsen selected!";
-            result = DI_TRANSFORMATION_OLSEN;
-        }
-
-        if (!warn.empty()) {
-            di_assert(!msg.empty());
-            msg = warn+'\n'+msg;
+            aw_message("Olsen selected!");
+            aw_root->awar(AWAR_DIST_CORR_TRANS)->write_int(DI_TRANSFORMATION_OLSEN);
         }
     }
-
-    di_assert(!msg.empty());
-    di_assert(result != DI_TRANSFORMATION_NONE_DETECTED);
-
-    return result;
 }
-

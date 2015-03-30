@@ -101,7 +101,7 @@ NOTES      Once started a PT_SERVER never stops. The only ways to stop a
                                   ( to get help enter 'man kill' or 'man ps' )
 
 
-           WHY DOESN'T ARB USE BLAST?
+           WHY DOESN'T ARB USE BLAST ?
 
                 The basic idea of blast is to create a finite automaton for all
                 search patterns and do the database search only once.

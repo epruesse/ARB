@@ -40,9 +40,6 @@ TYPE can be:
 
         or any user defined type
 
-        Note: when using aisc_string as result type of a callback (i.e. %), you have to
-              store it in some static buffer and return aisc_cstring!
-
 REF can be:
         %               virtual (aka callback) 
 
@@ -87,4 +84,3 @@ KEYC    key number
 
 INIT    default value or call to init-funtion
         'THIS' is replaced by pointer to STRUCT 
-

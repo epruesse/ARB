@@ -15,7 +15,7 @@
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <ad_config.h>
-#include <TreeNode.h>
+#include <arbdbt.h>
 #include <arb_strbuf.h>
 #include <arb_global_defs.h>
 
@@ -28,10 +28,10 @@ static void init_config_awars(AW_root *root) {
 
 class Store_species : virtual Noncopyable {
     // stores an amount of species:
-    TreeNode *node;
+    GBT_TREE *node;
     Store_species *next;
 public:
-    Store_species(TreeNode *aNode) {
+    Store_species(GBT_TREE *aNode) {
         node = aNode;
         next = 0;
     }
@@ -49,28 +49,28 @@ public:
         return follower;
     }
 
-    TreeNode *getNode() const { return node; }
+    GBT_TREE *getNode() const { return node; }
 
-    void call(void (*aPizza)(TreeNode*)) const;
+    void call(void (*aPizza)(GBT_TREE*)) const;
 };
 
 Store_species::~Store_species() {
     delete next;
 }
 
-void Store_species::call(void (*aPizza)(TreeNode*)) const {
+void Store_species::call(void (*aPizza)(GBT_TREE*)) const {
     aPizza(node);
     if (next) next->call(aPizza);
 }
 
-static void unmark_species(TreeNode *node) {
+static void unmark_species(GBT_TREE *node) {
     nt_assert(node);
     nt_assert(node->gb_node);
     nt_assert(GB_read_flag(node->gb_node)!=0);
     GB_write_flag(node->gb_node, 0);
 }
 
-static void mark_species(TreeNode *node, Store_species **extra_marked_species) {
+static void mark_species(GBT_TREE *node, Store_species **extra_marked_species) {
     nt_assert(node);
     nt_assert(node->gb_node);
     nt_assert(GB_read_flag(node->gb_node)==0);
@@ -81,21 +81,21 @@ static void mark_species(TreeNode *node, Store_species **extra_marked_species) {
 
 
 
-static TreeNode *rightmost_leaf(TreeNode *node) {
+static GBT_TREE *rightmost_leaf(GBT_TREE *node) {
     nt_assert(node);
     while (!node->is_leaf) {
-        node = node->get_rightson();
+        node = node->rightson;
         nt_assert(node);
     }
     return node;
 }
 
-static TreeNode *left_neighbour_leaf(TreeNode *node) {
+static GBT_TREE *left_neighbour_leaf(GBT_TREE *node) {
     if (node) {
-        TreeNode *father = node->get_father();
+        GBT_TREE *father = node->father;
         while (father) {
             if (father->rightson==node) {
-                node = rightmost_leaf(father->get_leftson());
+                node = rightmost_leaf(father->leftson);
                 nt_assert(node->is_leaf);
                 if (!node->gb_node) { // Zombie
                     node = left_neighbour_leaf(node);
@@ -103,13 +103,13 @@ static TreeNode *left_neighbour_leaf(TreeNode *node) {
                 return node;
             }
             node = father;
-            father = node->get_father();
+            father = node->father;
         }
     }
     return 0;
 }
 
-static int nt_build_conf_string_rek(GB_HASH *used, TreeNode *tree, GBS_strstruct *memfile,
+static int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfile,
                              Store_species **extra_marked_species, int use_species_aside,
                              int *auto_mark, int marked_at_left, int *marked_at_right)
 {
@@ -167,7 +167,7 @@ static int nt_build_conf_string_rek(GB_HASH *used, TreeNode *tree, GBS_strstruct
 
                 nt_assert(marked_at_left>=0);
 
-                TreeNode *leaf_at_left = tree;
+                GBT_TREE *leaf_at_left = tree;
                 int       step_over    = marked_at_left+1; // step over myself
                 int       then_mark    = use_species_aside-marked_at_left;
 
@@ -224,9 +224,9 @@ static int nt_build_conf_string_rek(GB_HASH *used, TreeNode *tree, GBS_strstruct
         GBS_strcat(memfile, tree->name);
     }
 
-    int  right_of_leftson;
-    long nspecies=   nt_build_conf_string_rek(used, tree->get_leftson(),  memfile, extra_marked_species, use_species_aside, auto_mark, marked_at_left,   &right_of_leftson);
-    nspecies      += nt_build_conf_string_rek(used, tree->get_rightson(), memfile, extra_marked_species, use_species_aside, auto_mark, right_of_leftson, marked_at_right);
+    int right_of_leftson;
+    long nspecies = nt_build_conf_string_rek(used, tree->leftson, memfile, extra_marked_species, use_species_aside, auto_mark, marked_at_left, &right_of_leftson);
+    nspecies += nt_build_conf_string_rek(used, tree->rightson, memfile, extra_marked_species, use_species_aside, auto_mark, right_of_leftson, marked_at_right);
 
     if (tree->gb_node && tree->name) {      // but we are a group
         GBS_chrcat(memfile, 1);         // Separated by 1
@@ -464,7 +464,7 @@ static void nt_delete_configuration(AW_window *aww) {
 }
 
 
-static GB_ERROR nt_create_configuration(TreeNode *tree, const char *conf_name, int use_species_aside) {
+static GB_ERROR nt_create_configuration(GBT_TREE *tree, const char *conf_name, int use_species_aside) {
     GB_ERROR error = NULL;
 
     if (!conf_name || !conf_name[0]) error = "no config name given";

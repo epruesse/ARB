@@ -50,7 +50,7 @@ DESCRIPTION     left/right position:
                 example: TTRC is expanded to TTAC and TTGC
 
                 maximal number of results:
-                how many possible pairs you want?
+                how many possible pairs you want ?
 
                 G+C-factor / temperature-factor:
                 weight of GC / temperature while evaluation of

@@ -24,22 +24,9 @@ DESCRIPTION     Species should contain an entry 'ARB_partial' specifying
 NOTES		There are several function to find and mark species with
                 partial or full sequence in the Species menu.
 
-EXAMPLES        Attraction of partial sequences (when added as full sequence):
-
-                Species1       .....NNNNNNNNNNN.............................
-                Species2       .......................NNNNNNNNNNNNNN........
-
-                The calculated distance between 'Species1' and 'Species2' will be ZERO
-                when they are added as full sequences and as a result they will group
-                together.
-
-                Adding them as partial sequences will avoid that problem.
+EXAMPLES	None
 
 WARNINGS	Partial sequences cannot be used to calculate trees. Currently
-                this isn't forbidden, but it's highly recommended not to do that.
-
-                Instead remove all species with partial sequences from the tree,
-                then optimize the tree and afterwards add the removed species again
-                using LINK{pa_partial.hlp}.
+                this isn't forbidden, but highly unrecommended!!!
 
 BUGS		No bugs known

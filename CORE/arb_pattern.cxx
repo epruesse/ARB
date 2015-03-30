@@ -20,12 +20,11 @@
  *  @return Expanded string (must be freed)
  */
 char* arb_shell_expand(const char* str) {
-    char      *expanded = NULL;
-    wordexp_t  result;
-    GB_ERROR   error    = NULL;
+    wordexp_t result;
+    GB_ERROR error = NULL;
 
     switch (wordexp(str, &result, 0)) {
-        case 0:
+    case 0:
         break;
     case WRDE_BADCHAR:
         error = "Illegal character";
@@ -48,26 +47,23 @@ char* arb_shell_expand(const char* str) {
 
     if (error) {
         GB_export_errorf("Encountered error \"%s\" while expanding \"%s\"",
-                         error, str);
-        expanded = strdup(str);
+                        error, str);
+        return strdup(str);
     }
-    else {
-        if (result.we_wordc == 0) {
-            expanded = strdup("");
-        }
-        else {
-            GBS_strstruct *out = GBS_stropen(strlen(str)+100);
-            GBS_strcat(out, result.we_wordv[0]);
-            for (unsigned int i = 1; i < result.we_wordc; i++) {
-                GBS_chrcat(out, ' ');
-                GBS_strcat(out, result.we_wordv[i]);
-            }
 
-            expanded = GBS_strclose(out);
-        }
-        wordfree(&result);
+    if (result.we_wordc == 0) {
+        return strdup("");
     }
-    return expanded;
+    
+    GBS_strstruct *out = GBS_stropen(strlen(str)+100);
+    GBS_strcat(out, result.we_wordv[0]);
+    for (unsigned int i = 1; i < result.we_wordc; i++) {
+        GBS_chrcat(out, ' ');
+        GBS_strcat(out, result.we_wordv[i]);
+    }
+
+    wordfree(&result);
+    return GBS_strclose(out);
 }
 
 ////////// UNIT TESTS ///////////

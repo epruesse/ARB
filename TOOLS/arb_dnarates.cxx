@@ -454,12 +454,9 @@ static void freeTreeNode(nodeptr p) {
 }
 
 static void freeTree(tree *tr) {
-    int leafs = tr->mxtips;
-    int nodes = leafs_2_nodes(leafs, ROOTED);
+    for (int i = 1; i <= tr->mxtips; i++) freeTreeNode(tr->nodep[i]);
 
-    for (int i = 1; i <= leafs; i++) freeTreeNode(tr->nodep[i]);
-
-    for (int i = leafs+1; i <= nodes; i++) {
+    for (int i = tr->mxtips+1; i <= 2*(tr->mxtips)-2; i++) {
         nodeptr p = tr->nodep[i];
         if (p) {
             nodeptr q = p->next;
@@ -1614,9 +1611,9 @@ static void categorize(int    Sites,
     double a = (Categs - 3.0)/log(max_2/min_2);
     double b = - a * log(min_2) + 2.0;
 
-    categrate[0]                                      = min_1;
+    categrate[0] = min_1;
     for (int k = 1; k <= Categs-2; k++)  categrate[k] = min_2 * exp((k-1)/a);
-    if (Categs>0) categrate[Categs-1] = max_1;
+    categrate[Categs-1] = max_1;
 
     for (int i = 1; i <= Sites; i++) {
         if (Weight[i] > 0) {
@@ -1671,26 +1668,16 @@ static GBDATA *create_next_SAI() {
     return gb_sai;
 }
 
-static bool writeToArb() {
-    GB_ERROR error = NULL;
+static void writeToArb() {
     GB_begin_transaction(gb_main);
 
     long   ali_len = GBT_get_alignment_len(gb_main, alignment_name);
-    char  *cats    = (char *)GB_calloc(ali_len+1, sizeof(char)); // categories
+    char  *cats    = (char *)GB_calloc(ali_len, sizeof(char));   // categories
     float *rates   = (float *)GB_calloc(ali_len, sizeof(float)); // rates to export
     char   category_string[1024];
 
-    // check filter has correct length
-    {
-        long filter_len = strlen(arb_filter);
-        if (filter_len !=  ali_len) {
-            error = GBS_global_string("Filter length (%li) does not match alignment length (%li)",
-                                      filter_len, ali_len);
-        }
-    }
-
     // fill in rates and categories
-    if (!error) {
+    {
         double  categrate[maxcategories]; // rate of a given category
         int     sitecateg[maxsites+1];    // category of a given site
 
@@ -1714,32 +1701,24 @@ static bool writeToArb() {
             i++;
         }
 
-        int unfiltered_sites = i-1;
-        if (unfiltered_sites != sites) {
-            error = GBS_global_string("Filter positions (%i) do not match input sequence positions (%i)",
-                                      unfiltered_sites, sites);
-        }
-
         // write categories
-        if (!error) {
-            char *p = category_string;
-            p[0]    = 0; // if no categs
+        char *p = category_string;
+        p[0] = 0;    // if no categs
 
-            for (int k = 1; k <= categs; k ++) {
-                sprintf(p, " %G", categrate[categs-k]);
-                p += strlen(p);
-            }
+        for (int k = 1; k <= categs; k ++) {
+            sprintf(p, " %G", categrate[categs-k]);
+            p += strlen(p);
         }
     }
 
 
-    if (!error) {
+    {
         GBDATA *gb_sai = create_next_SAI();
         if (!gb_sai) {
-            error = GB_await_error();
+            fprintf(stderr, "Error: %s\n", GB_await_error());
         }
         else {
-            GBDATA *gb_data = GBT_add_data(gb_sai, alignment_name, "rates", GB_FLOATS); // @@@ AFAIK not used anywhere
+            GBDATA *gb_data = GBT_add_data(gb_sai, alignment_name, "rates", GB_FLOATS);
             GB_write_floats(gb_data, rates, ali_len);
 
             gb_data = GBT_add_data(gb_sai, alignment_name, "data", GB_STRING);
@@ -1753,15 +1732,7 @@ static bool writeToArb() {
         }
     }
 
-    error = GB_end_transaction(gb_main, error);
-    if (error) {
-        fprintf(stderr, "Error in arb_dnarates: %s\n", error);
-    }
-
-    free(cats);
-    free(rates);
-
-    return !error;
+    GB_commit_transaction(gb_main);
 }
 
 static void openArb(const char *dbname) {
@@ -1976,11 +1947,11 @@ int ARB_main(int argc, char *argv[]) {
         if (!anerror) setupnodex(tr);
         if (!anerror) makeUserRates(tr, infile);
         if (!anerror) {
-            anerror = !writeToArb();
-            if (!anerror && dbsavename) saveArb(dbsavename);
+            writeToArb();
+            if (dbsavename) saveArb(dbsavename);
         }
         closeArb();
-        freeTree(tr);
+        if (!anerror) freeTree(tr);
     }
 
     if (wantSTDIN(inputname)) fclose(infile);

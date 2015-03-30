@@ -17,11 +17,11 @@
 
 struct RB_INFO {
     GBT_LEN     len;
-    TreeNode *node;
+    RootedTree *node;
     int         percent;    // branch probability [0..100]
 };
 
-static int GBT_TREE_order(const TreeNode *t1, const TreeNode *t2) {
+static int GBT_TREE_order(const GBT_TREE *t1, const GBT_TREE *t2) {
     // define a strict order on trees
 
     int cmp = t1->is_leaf - t2->is_leaf; // leafs first
@@ -36,10 +36,10 @@ static int GBT_TREE_order(const TreeNode *t1, const TreeNode *t2) {
                 cmp = strcmp(t1->name, t2->name);
             }
             else {
-                int cll = GBT_TREE_order(t1->get_leftson(), t2->get_leftson());
-                int clr = GBT_TREE_order(t1->get_leftson(), t2->get_rightson());
-                int crl = GBT_TREE_order(t1->get_rightson(), t2->get_leftson());
-                int crr = GBT_TREE_order(t1->get_rightson(), t2->get_rightson());
+                int cll = GBT_TREE_order(t1->leftson, t2->leftson);
+                int clr = GBT_TREE_order(t1->leftson, t2->rightson);
+                int crl = GBT_TREE_order(t1->rightson, t2->leftson);
+                int crr = GBT_TREE_order(t1->rightson, t2->rightson);
 
                 cmp = cll+clr+crl+crr;
                 if (!cmp) {
@@ -74,8 +74,8 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
     // doing all the work for rb_gettree() :-)
     // convert a Ntree into a GBT-Tree
 
-    TreeNode *tnode = root->makeNode();
-    tnode->father   = NULL;
+    RootedTree *tnode = DOWNCAST(RootedTree*,root->makeNode());
+    tnode->father     = NULL;
 
     RB_INFO *info = (RB_INFO *) getmem(sizeof(RB_INFO));
     info->node    = tnode;                             // return-information
@@ -114,11 +114,11 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
             for (int sidx1 = 0; sidx1<multifurc; sidx1 += 2) {
                 int sidx2 = sidx1+1;
                 if (sidx2<multifurc) {
-                    TreeNode *mf;
+                    RootedTree *mf;
                     RB_INFO    *sinfo;
 
                     if (multifurc > 2) {
-                        mf    = root->makeNode();
+                        mf    = DOWNCAST(RootedTree*, root->makeNode());
                         sinfo = (RB_INFO *) getmem(sizeof(RB_INFO));
 
                         mf->father = NULL;
@@ -163,7 +163,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
 
 SizeAwareTree *ConsensusTree::rb_gettree(const NT_NODE *tree) {
     // reconstruct GBT Tree from Ntree. Ntree is not destructed afterwards!
-    RB_INFO       *info   = rbtree(tree, new SizeAwareRoot);
+    RB_INFO       *info   = rbtree(tree, new TreeRoot(new SizeAwareNodeFactory, true));
     SizeAwareTree *satree = DOWNCAST(SizeAwareTree*, info->node);
     satree->announce_tree_constructed();
     ASSERT_VALID_TREE(satree);

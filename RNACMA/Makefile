@@ -36,7 +36,7 @@ ifeq ($(SUPPRESS_WARNINGS),1)
 endif
 
 .cxx.o: warn
-	$(A_CXX) $(cma_cflags) $(cma_cxxflags) -c $<  $(CXX_INCLUDES)  $(POST_COMPILE) $<
+	$(A_CXX) $(cma_cflags) $(cma_cxxflags) -c $<  $(CXX_INCLUDES)  $(POST_COMPILE)
 
 
 $(CPP_OBJECTS) : Makefile

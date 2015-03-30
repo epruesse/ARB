@@ -253,7 +253,7 @@ struct PT_statistic {
 
         {
             size_t followup_chain_entries = 0;
-            for (int i = 0; i <= DEBUG_MAX_CHAIN_NAME_DIST; ++i) { // LOOP_VECTORIZED
+            for (int i = 0; i <= DEBUG_MAX_CHAIN_NAME_DIST; ++i) {
                 followup_chain_entries += chain_name_dist[i];
             }
 

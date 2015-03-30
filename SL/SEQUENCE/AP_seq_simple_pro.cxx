@@ -13,7 +13,7 @@ AP_sequence_simple_protein::AP_sequence_simple_protein(const AliView *aliview)
 }
 
 AP_sequence_simple_protein::~AP_sequence_simple_protein() {
-    delete [] sequence;
+    delete sequence;
 }
 
 AP_sequence *AP_sequence_simple_protein::dup() const {
@@ -90,11 +90,6 @@ void AP_sequence_simple_protein::partial_match(const AP_sequence* /* part */, lo
 AP_FLOAT AP_sequence_simple_protein::count_weighted_bases() const {
     ap_assert(0); // should be unused
     return -1.0;
-}
-
-uint32_t AP_sequence_simple_protein::checksum() const {
-    ap_assert(0); // not impl
-    return 0;
 }
 
 

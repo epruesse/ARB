@@ -349,10 +349,12 @@ long GBT_count_marked_species(GBDATA *gb_main) {
     return GB_number_of_marked_subentries(GBT_get_species_data(gb_main));
 }
 
-char *GBT_store_marked_species(GBDATA *gb_main, bool unmark_all) {
-    /*! stores the currently marked species in a string
-     * @param unmark_all if true -> unmark species
-     */
+char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all)
+{
+    /* stores the currently marked species in a string
+       if (unmark_all != 0) then unmark them too
+    */
+
     GBS_strstruct *out = GBS_stropen(10000);
     GBDATA        *gb_species;
 
@@ -406,9 +408,10 @@ static GB_ERROR restore_mark(GBDATA *gb_species, int *) {
 }
 
 GB_ERROR GBT_restore_marked_species(GBDATA *gb_main, const char *stored_marked) {
-    /*! restores marked species.
-     * @param stored_marked contains a list of species to mark (as returned by GBT_store_marked_species)
+    /* restores the species-marks to a state currently saved
+     * into 'stored_marked' by GBT_store_marked_species
      */
+
     GBT_mark_all(gb_main, 0);   // unmark all species
     return GBT_with_stored_species(gb_main, stored_marked, restore_mark, 0);
 }

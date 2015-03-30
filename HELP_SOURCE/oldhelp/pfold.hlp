@@ -85,7 +85,11 @@ NOTES
 
 EXAMPLES 	None
 
-WARNINGS        Protein secondary structure in the field 'sec_struct' is not aligned
-                automatically with the sequence (yet). It has to be aligned manually!
+WARNINGS
 
-BUGS            The editor might be unstable and may crash if sequences are not formatted.
+	!!! Protein secondary structure in the field 'sec_struct' is not aligned
+	automatically with the sequence (yet). It has to be aligned manually !!!
+
+BUGS
+
+	The editor might be unstable and can crash if sequences are not formatted.

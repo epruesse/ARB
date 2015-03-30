@@ -35,9 +35,6 @@
 #ifndef _STRING_H
 #include <string.h>
 #endif
-#ifndef _SIGNAL_H
-#include <signal.h>
-#endif
 
 /* ------------------------------------------------------------
  * Include arb_simple_assert.h to avoid dependency from CORE library!
@@ -93,9 +90,18 @@
 // ------------------------------------------------------------
 
 #if defined(__cplusplus)
+#if defined(__clang__)
+#include <signal.h>
 inline void provoke_core_dump() {
     raise(SIGSEGV);
 }
+#else // !defined(__clang__)
+inline void provoke_core_dump() {
+    volatile int *np = 0; // if not volatile, the clang compiler will skip the crashing code
+    // cppcheck-suppress nullPointer
+    *(int*)np = 666;
+}
+#endif
 #else // !defined(__cplusplus)
 #define provoke_core_dump() do { *(int*)0 = 0; } while(0)
 #endif

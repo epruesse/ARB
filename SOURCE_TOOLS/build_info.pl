@@ -105,7 +105,7 @@ sub guessSvnBranchInsideJenkins() {
     if ($url eq '') { $url = undef; }
     else {
       my $suffix = undef;
-      if ($url =~ /^(http:\/\/svn\.mikro\.biologie\.tu-muenchen\.de\/(svn|readonly))\//o) {
+      if ($url =~ /^(http:\/\/svn\.mikro\.biologie\.tu-muenchen\.de\/svn)\//o) {
         $suffix = $';
         $root = $1;
       }

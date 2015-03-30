@@ -19,12 +19,10 @@ my @strictly_as_in_svn_when_matchesDir = (
 my @skipped_directories = (
                            qr/\/.+\/bin$/o,
                            qr/\/.+\/build$/o,
-                           qr/\/lib\/sativa$/o,
                            qr/\/HELP_SOURCE\/Xml$/o,
                            qr/\/GDE\/MUSCLE\/obj$/o,
                            qr/\/GDE\/PHYML20130708\/phyml\/autom4te.cache$/o,
                            qr/\/GDE\/RAxML8\/builddir/o,
-                           qr/\/GDE\/SATIVA\/builddir/o,
                            qr/\/ignore\./o,
                            qr/\/PERL2ARB\/blib$/o,
                            qr/\/HEADERLIBS\/[^\/]+/o,
@@ -217,7 +215,6 @@ my @used_when_matchesFull = (
                              qr/^\.\/util\/config\..*$/o,
                              qr/\/GDE\/.*\/Makefile\.[^\/]+$/io,
                              qr/\/GDE\/PHYML[^\/]+\/phyml\//o,
-                             qr/\/GDE\/SATIVA\/sativa\//o,
                             );
 
 # skipped_when_matchesFull and forced_when_matchesFull are always tested! (@3)
@@ -229,7 +226,6 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/bin\//o,
                                 qr/^\.\/GDE\/CORE\/functions.h$/o,
                                 qr/^\.\/GDE\/PHYML[^\/]+\/phyml\/(configure|config.h.in)$/o,
-                                qr/\/HELP_SOURCE\/help_map\.gif$/o,
                                 qr/^\.\/lib\/ARB\.pm$/o,
                                 qr/^\.\/lib\/arb_tcp\.dat$/o,
                                 qr/^\.\/lib\/gde\/.*\.menu$/o,
@@ -259,7 +255,6 @@ my @forced_when_matchesFull = (
                                qr/^\.\/bin\/Makefile/o,
                                qr/\/PROBE_WEB\/SERVER\/.*\.jar$/o,
                                qr/\/GDE\/PHYML[^\/]+\/phyml\/.*\.log$/o,
-                               qr/\/UNIT_TESTER\/run\/.*\.list$/o,
                               );
 
 # files that are even packed when generated and not in VC

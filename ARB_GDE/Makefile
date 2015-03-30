@@ -16,7 +16,7 @@ CPP_FILES=$(CPP_OBJECTS:.o=.cxx)
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 GDE_proto.h: $(CPP_FILES) Makefile
 	$(MAKE) proto

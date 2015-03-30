@@ -67,8 +67,7 @@ void MatrixDisplay::setup() {
         max_chars[DI_G_ABOVE_DIST] = max_chars[DI_G_BELOW_DIST];
         max_chars[DI_G_NAMES]      = awr->awar(AWAR_MATRIX_NAMECHARS_TOP)->read_int();
 
-        for (int igc=DI_G_STANDARD; igc<=DI_G_LAST; ++igc) {
-            DI_gc gc = DI_gc(igc);
+        for (DI_gc gc=DI_G_STANDARD; gc<=DI_G_LAST; gc = DI_gc(int(gc)+1)) {
             if (max_chars[gc]) {
                 const AW_font_limits& lim = device->get_font_limits(gc, 0);
 
@@ -166,6 +165,7 @@ enum ClickAction {
 };
 
 #define MINMAX_GRANULARITY 10000L
+#define ROUNDUP            0.00005 // in order to round to 4 digits
 
 void MatrixDisplay::scroll_to(int sxpos, int sypos) {
     sxpos = force_in_range(0, sxpos, int(awm->get_scrolled_picture_width())-screen_width);
@@ -463,6 +463,10 @@ void MatrixDisplay::set_scrollbar_steps(long width_h, long width_v, long page_h,
 #warning test scrolling again with fixed box_impl()
 #endif
 
+#if defined(DEBUG) && 0
+#define DEBUG_GC DI_G_STANDARD
+#endif
+
 void MatrixDisplay::monitor_vertical_scroll_cb(AW_window *aww) { // draw area
     if (!device) return;
 
@@ -481,12 +485,18 @@ void MatrixDisplay::monitor_vertical_scroll_cb(AW_window *aww) { // draw area
         if (diff>0 && diff<vert_page_size) { // scroll some positions up
             device->move_region(0, top_y+diff_pix, screen_width, keep_pix, 0, top_y);
             device->clear_part (0, top_y+keep_pix, screen_width, diff_pix, AW_SCREEN);
+#if defined(DEBUG_GC)
+            device->box (DEBUG_GC, true, 0, top_y+keep_pix, screen_width, diff_pix);
+#endif
             device->push_clip_scale();
             device->set_top_clip_border(top_y+keep_pix, true);
         }
         else if (diff>-vert_page_size && diff<0) { // scroll some positions down
             device->move_region(0, top_y, screen_width, keep_pix, 0, top_y+diff_pix);
             device->clear_part (0, top_y, screen_width, diff_pix, AW_SCREEN);
+#if defined(DEBUG_GC)
+            device->box (DEBUG_GC, true, 0, top_y, screen_width, diff_pix);
+#endif
             device->push_clip_scale();
             device->set_bottom_clip_border(top_y+diff_pix, true);
         }
@@ -518,12 +528,18 @@ void MatrixDisplay::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
         if (diff>0 && diff<horiz_page_size) {      // scroll some positions left
             device->move_region(off_dx+diff_pix, 0, keep_pix, screen_height, off_dx, 0);
             device->clear_part (off_dx+keep_pix, 0, diff_pix, screen_height, AW_SCREEN);
+#if defined(DEBUG_GC)
+            device->box(DEBUG_GC, true, off_dx+keep_pix, 0, diff_pix, screen_height);
+#endif
             device->push_clip_scale();
             device->set_left_clip_border(keep_pix, true);
         }
         else if (diff>-horiz_page_size && diff<0) { // scroll some positions right
             device->move_region(off_dx, 0, keep_pix, screen_height, off_dx+diff_pix, 0);
             device->clear_part (off_dx, 0, diff_pix, screen_height, AW_SCREEN);
+#if defined(DEBUG_GC)
+            device->box(DEBUG_GC, true, off_dx, 0, diff_pix, screen_height);
+#endif
             device->push_clip_scale();
             device->set_right_clip_border(off_dx+diff_pix, true);
         }
