@@ -25,7 +25,7 @@
 #define PROVIDE_TREE_STRUCTURE_TESTS
 #endif
 #if defined(DEVEL_RALF) && defined(PROVIDE_TREE_STRUCTURE_TESTS)
-#define AUTO_CHECK_TREE_STRUCTURE // Note: dramatically slows down most tree operations
+// #define AUTO_CHECK_TREE_STRUCTURE // Note: dramatically slows down most tree operations
 #endif
 
 class TreeRoot;
