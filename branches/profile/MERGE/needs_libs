@@ -1,0 +1,7 @@
+# libraries needed to link against MERGE/MERGE.a
+
+SL/ALILINK/ALILINK.a
+SL/DB_UI/DB_UI.a
+SL/MACROS/MACROS.a
+SL/TREE_ADMIN/TREE_ADMIN.a
+

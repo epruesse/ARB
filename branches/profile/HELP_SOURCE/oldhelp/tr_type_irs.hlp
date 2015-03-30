@@ -1,0 +1,40 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	nt_tree_select.hlp
+UP	treeadm.hlp
+UP	tree2file.hlp
+UP	tree2prt.hlp
+UP	dist.hlp
+UP	phylo.hlp
+UP	phyl.hlp
+UP	pars.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	tr_type_radial.hlp
+SUB	tr_type_list.hlp
+SUB	tr_type_nds.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		SHOW IRS DENDROGRAM
+
+OCCURRENCE	ARB_NT (top area)
+
+DESCRIPTION	Trees can be displayed as dendrograms or radial trees.
+
+                Dendrograms have two styles:
+                    * The normal style and
+                    * the IRS style.
+
+		To display the IRS style dendrogram press the third small button
+                below the tree_name in the top area.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

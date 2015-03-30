@@ -1,0 +1,44 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	arb_ntree.hlp
+UP	pfold.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Create SAI from protein secondary structure
+
+OCCURRENCE	ARB_NT/SAI/Create SAI using/Protein secondary structure
+
+DESCRIPTION
+
+	Takes the currently selected species and searches for the field 'sec_struct'.
+	A new SAI is created using the data in this field. A simple input window pops
+	up where the default name '[species name]_pfold' for the new SAI can be
+	changed.
+
+NOTES
+
+	The import filter 'dssp_all.ift' allows for importing the amino acid
+	sequence as well as the protein secondary structure from a dssp file and
+	the structure is stored in the field 'sec_struct'. That way, secondary
+	structure can be aligned along with the sequence manually and can later
+	be extracted to create an SAI.
+	
+	The import filter 'dssp_2nd_struct.ift' extracts only the protein
+	secondary structure which is stored as alignment data. SAIs can simply
+	be created from these species with 'Species -> Convert to SAI' in the
+	'Species Information' window (see LINK{sp_sp_2_ext.hlp}).
+	
+	Refer to LINK{arb_import.hlp} and especially LINK{dssp_ift.hlp}
+	for detailed information on importing sequences and structures and
+	on the DSSP format.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
