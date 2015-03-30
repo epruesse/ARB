@@ -501,7 +501,6 @@ char *DI_MATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *c
 
     memset((char *) &hits2[0], 0, sizeof(hits2));
     for (size_t row = 0; row < nentries; row++) {
-        // UNCOVERED(); // covered by TEST_matrix
         const char *seq1 = entries[row]->get_nucl_seq()->get_sequence();
         for (pos = 0; pos < s_len; pos++) {
             b = *(seq1++);
@@ -580,7 +579,6 @@ GB_ERROR DI_MATRIX::calculate(const char *cancel, DI_TRANSFORMATION transformati
         for (size_t col=0; col<=row && !error; col++) {
             columns = 0;
 
-            // UNCOVERED(); // covered by TEST_matrix
             const unsigned char *seq1 = entries[row]->get_nucl_seq()->get_usequence();
             const unsigned char *seq2 = entries[col]->get_nucl_seq()->get_usequence();
 
