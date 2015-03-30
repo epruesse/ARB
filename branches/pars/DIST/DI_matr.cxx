@@ -283,11 +283,9 @@ DI_ENTRY::DI_ENTRY(GBDATA *gbd, DI_MATRIX *phmatri) {
         GBDATA *gb_data = GB_entry(gb_ali, "data");
         if (gb_data) {
             if (phmatrix->is_AA) {
-                // UNCOVERED(); // covered by TEST_matrix
                 sequence = new AP_sequence_simple_protein(phmatrix->get_aliview());
             }
             else {
-                // UNCOVERED(); // covered by TEST_matrix
                 sequence = new AP_sequence_parsimony(phmatrix->get_aliview());
             }
             sequence->bind_to_species(gbd);
@@ -306,7 +304,6 @@ DI_ENTRY::DI_ENTRY(char *namei, DI_MATRIX *phmatri) {
 }
 
 DI_ENTRY::~DI_ENTRY() {
-    // UNCOVERED(); // covered by TEST_matrix
     delete sequence;
     free(name);
     free(full_name);

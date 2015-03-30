@@ -616,7 +616,6 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
     for (i = 0; i < spp && !error; i++) {
         matrix->set(i, i, 0.0);
         {
-            // UNCOVERED(); // covered by TEST_matrix
             // move all unknown characters to del
             ap_pro *seq1 = entries[i]->get_prot_seq()->get_sequence();
             for (k = 0; k <chars;  k++) {
