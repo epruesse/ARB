@@ -1846,8 +1846,8 @@ arb_test::match_expectation topologyEquals(AP_tree_nlen *root_node, const char *
 enum TopoMod {
     MOD_REMOVE_MARKED,
 
-    MOD_QUICK_ADD,
-    MOD_ADD_NNI,
+    MOD_QUICK_READD,
+    MOD_READD_NNI,
 
     MOD_ADD_PARTIAL,
 
@@ -1865,11 +1865,11 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
             env.graphic_tree()->get_tree_root()->remove_leafs(AWT_REMOVE_MARKED);
             break;
 
-        case MOD_QUICK_ADD:
+        case MOD_QUICK_READD:
             nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, true);
             break;
 
-        case MOD_ADD_NNI:
+        case MOD_READD_NNI:
             nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, false);
             break;
 
@@ -2119,10 +2119,10 @@ void TEST_nucl_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "nucl-removed",   PARSIMONY_ORG-93, env, true)); // test remove-marked only (same code as part of nt_reAdd)
     TEST_EXPECT_EQUAL(env.combines_performed(), 3);
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_READD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
     TEST_EXPECT_EQUAL(env.combines_performed(), 562);
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_READD_NNI,       "nucl-add-NNI",   PARSIMONY_ORG-25, env, true)); // test add + NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 718);
 
     // test partial-add
@@ -2168,7 +2168,7 @@ void TEST_nucl_tree_modifications() {
                 TEST_EXPECT_NO_ERROR(GBT_write_int(CorGlutP, "ARB_partial", 0)); // revert species to "full"
             }
 
-            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "nucl-addPartialAsFull-CorGlutP", PARSIMONY_ORG, env, false));
+            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_READD, "nucl-addPartialAsFull-CorGlutP", PARSIMONY_ORG, env, false));
             TEST_EXPECT_EQUAL(env.combines_performed(), 228);
             TEST_EXPECT_EQUAL(is_partial(CorGlutP), 0); // check CorGlutP was added as full sequence
             TEST_EXPECTATION(addedAsBrotherOf("CorGlutP", "CorGluta", env)); // partial created from CorGluta gets inserted next to CorGluta
@@ -2331,10 +2331,10 @@ void TEST_prot_tree_modifications() {
     TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, "prot-removed",   PARSIMONY_ORG-146, env, true)); // test remove-marked only (same code as part of nt_reAdd)
     TEST_EXPECT_EQUAL(env.combines_performed(), 5);
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "prot-add-quick", PARSIMONY_ORG,     env, true)); // test quick-add
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_READD,     "prot-add-quick", PARSIMONY_ORG,     env, true)); // test quick-add
     TEST_EXPECT_EQUAL(env.combines_performed(), 286);
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_READD_NNI,       "prot-add-NNI",   PARSIMONY_ORG,     env, true)); // test add + NNI
     TEST_EXPECT_EQUAL(env.combines_performed(), 336);
 
     // test partial-add
@@ -2377,7 +2377,7 @@ void TEST_prot_tree_modifications() {
                 TEST_EXPECT_NO_ERROR(GBT_write_int(MucRaceP, "ARB_partial", 0)); // revert species to "full"
             }
 
-            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG,   env, false));
+            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_READD, "prot-addPartialAsFull-MucRaceP", PARSIMONY_ORG,   env, false));
             TEST_EXPECT_EQUAL(env.combines_performed(), 158);
             TEST_EXPECT_EQUAL(is_partial(MucRaceP), 0); // check MucRaceP was added as full sequence
             TEST_EXPECTATION(addedAsBrotherOf("MucRaceP", "Eukarya EF-Tu", env)); // partial created from MucRacem gets inserted next to this group
@@ -2645,7 +2645,7 @@ void TEST_node_stack() {
     }
 
     // remove + quick add marked + pop() both works
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_READD,     "nucl-add-quick", PARSIMONY_ORG-23, env, true)); // test quick-add
 
     // remove + quick-add marked + pop() quick-add -> corrupts tree
     // (root-edge is lost)
@@ -2659,7 +2659,7 @@ void TEST_node_stack() {
 
         env.push();
         TEST_EXPECT_VALID_TREE(env.root_node());
-        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_READD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
         TEST_EXPECT_VALID_TREE(env.root_node());
         TEST_VALIDITY(env.all_available_pops_will_produce_valid_trees());
         env.pop();
@@ -2710,7 +2710,7 @@ void TEST_node_stack() {
 
             env.push();
             TEST_EXPECT_VALID_TREE(env.root_node());
-            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
+            TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_READD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
             TEST_EXPECT_VALID_TREE(env.root_node());
             env.pop();
 
@@ -2744,7 +2744,7 @@ void TEST_node_stack() {
 
         env.push();
         TEST_EXPECT_VALID_TREE(env.root_node());
-        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_READD, NULL, -1, env, false)); // test quick-add (same code as part of nt_reAdd)
         TEST_EXPECT_VALID_TREE(env.root_node());
         env.pop();
 
