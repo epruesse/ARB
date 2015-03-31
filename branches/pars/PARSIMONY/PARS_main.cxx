@@ -197,30 +197,29 @@ static long transform_gbd_to_leaf(const char *key, long val, void *) {
 
     leaf->set_seq(troot->get_seqTemplate()->dup());
     GB_ERROR error = leaf->get_seq()->bind_to_species(gb_node);
+    if (!error) {
+        if (leaf->get_seq()->weighted_base_count() < MIN_SEQUENCE_LENGTH) {
+            error = GBS_global_string("Species %s has too short sequence (%f, minimum is %i)",
+                                      key,
+                                      leaf->get_seq()->weighted_base_count(),
+                                      MIN_SEQUENCE_LENGTH);
+        }
+    }
     if (error) {
-        aw_message(error);
-        destroy(leaf); leaf = 0;
+        GBT_message(gb_node, error);
+        destroy(leaf, troot); leaf = 0;
     }
     return (long)leaf;
 }
 
-static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf, InsertData *isits) {
+static AP_tree_nlen *insert_species_in_tree(AP_tree_nlen *leaf, InsertData *isits) {
     if (!leaf) return leaf;
     if (isits->aborted()) return leaf;
 
+    ap_assert(leaf->get_seq()->weighted_base_count() >= MIN_SEQUENCE_LENGTH);
+
     AP_tree_nlen *tree = rootNode();
-
-    if (leaf->get_seq()->weighted_base_count() < MIN_SEQUENCE_LENGTH) {
-        GBT_message(ap_main->get_gb_main(),
-                    GBS_global_string("Species %s has too short sequence (%f, minimum is %i)",
-                                      key,
-                                      leaf->get_seq()->weighted_base_count(),
-                                      MIN_SEQUENCE_LENGTH));
-        destroy(leaf, ap_main->get_tree_root());
-        return 0;
-    }
-
-    if (!tree) {                                    // no tree yet
+    if (!tree) {                                   // no tree yet
         static AP_tree_nlen *last_inserted = NULL; // @@@ move 'last_inserted' into 'InsertData'
 
         if (!last_inserted) {                       // store 1st leaf
@@ -313,11 +312,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
 
                 for (int firstUse = 1; firstUse >= 0; --firstUse) {
                     AP_tree_nlen *to_insert = firstUse ? leaf : brother;
-                    const char   *format    = firstUse ? "2:%s" : "shortseq:%s";
-
-                    char *label = GBS_global_string_copy(format, to_insert->name);
-                    insert_species_in_tree(label, to_insert, isits);
-                    free(label);
+                    insert_species_in_tree(to_insert, isits);
                 }
             }
         }
@@ -328,9 +323,9 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
     return leaf;
 }
 
-static long hash_insert_species_in_tree(const char *key, long leaf, void *cd_isits) {
+static long hash_insert_species_in_tree(const char *, long leaf, void *cd_isits) {
     InsertData *isits  = (InsertData*)cd_isits;
-    long        result = (long)insert_species_in_tree(key, (AP_tree_nlen*)leaf, isits);
+    long        result = (long)insert_species_in_tree((AP_tree_nlen*)leaf, isits);
     isits->inc();
     return result;
 }
@@ -399,8 +394,7 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
             {
                 size_t skipped = species_count - GBS_hash_elements(hash);
                 if (skipped) {
-                    UNCOVERED();
-                    aw_message(GBS_global_string("Skipped %zu species (no data?)", skipped));
+                    GBT_message(gb_main, GBS_global_string("Skipped %zu species (no data?)", skipped));
                     isits.get_progress().inc_by(skipped);
                 }
             }
