@@ -211,10 +211,11 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
     AP_tree_nlen *tree = rootNode();
 
     if (leaf->get_seq()->weighted_base_count() < MIN_SEQUENCE_LENGTH) {
-        aw_message(GBS_global_string("Species %s has too short sequence (%f, minimum is %i)",
-                                     key,
-                                     leaf->get_seq()->weighted_base_count(),
-                                     MIN_SEQUENCE_LENGTH));
+        GBT_message(ap_main->get_gb_main(),
+                    GBS_global_string("Species %s has too short sequence (%f, minimum is %i)",
+                                      key,
+                                      leaf->get_seq()->weighted_base_count(),
+                                      MIN_SEQUENCE_LENGTH));
         destroy(leaf, ap_main->get_tree_root());
         return 0;
     }
@@ -398,7 +399,8 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
             {
                 size_t skipped = species_count - GBS_hash_elements(hash);
                 if (skipped) {
-                    aw_message(GBS_global_string("Skipped %i species (no data?)", skipped));
+                    UNCOVERED();
+                    aw_message(GBS_global_string("Skipped %zu species (no data?)", skipped));
                     isits.get_progress().inc_by(skipped);
                 }
             }
@@ -1847,6 +1849,7 @@ enum TopoMod {
     MOD_REMOVE_MARKED,
 
     MOD_QUICK_READD,
+    MOD_QUICK_ADD,
     MOD_READD_NNI,
 
     MOD_ADD_PARTIAL,
@@ -1867,6 +1870,10 @@ static void modifyTopology(PARSIMONY_testenv<SEQ>& env, TopoMod mod) {
 
         case MOD_QUICK_READD:
             nt_reAdd(env.graphic_tree(), NT_ADD_MARKED, true);
+            break;
+
+        case MOD_QUICK_ADD:
+            nt_add(env.graphic_tree(), NT_ADD_MARKED, true);
             break;
 
         case MOD_READD_NNI:
@@ -2304,8 +2311,58 @@ void TEST_nucl_tree_modifications() {
         ap_assert(group->gr.grouped);
         group->gr.grouped      = false; // unfold the only folded group
 
-        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI_ALL, env, false)); // test recursive NNI+KL
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_OPTI_GLOBAL, "nucl-opti-global", PARSIMONY_OPTI_ALL, env, true)); // test recursive NNI+KL
         TEST_EXPECT_EQUAL(env.combines_performed(), 124811);
+    }
+
+    // test adding a too short sequence
+    // (has to be last test, because it modifies seq data)
+    {
+        env.push();
+
+        AP_tree_nlen *CloTyrob = env.root_node()->findLeafNamed("CloTyrob");
+        mark_only(CloTyrob->gb_node);
+        env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
+
+        // modify sequence of CloTyrob (keep only some bases)
+        {
+            GB_transaction  ta(env.gbmain());
+            GBDATA         *gb_seq = GBT_find_sequence(CloTyrob->gb_node, aliname);
+
+            char *seq        = GB_read_string(gb_seq);
+            int   keep_bases = MIN_SEQUENCE_LENGTH-1;
+
+            for (int i = 0; seq[i]; ++i) {
+                if (seq[i] != '.' && seq[i] != '-') {
+                    if (keep_bases) --keep_bases;
+                    else seq[i] = '.';
+                }
+            }
+            GB_push_my_security(gb_seq);
+            TEST_EXPECT_NO_ERROR(GB_write_string(gb_seq, seq));
+            GB_pop_my_security(gb_seq);
+            free(seq);
+        }
+
+        // remove CloTyrob
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_REMOVE_MARKED, NULL, PARSIMONY_ORG-1, env, false));
+        TEST_EXPECT_EQUAL(env.combines_performed(), 4);
+        TEST_EXPECT_EQUAL(env.root_node()->count_leafs(), 14);
+
+        // attempt to add CloTyrob (should fail because sequence too short) and CorGluta (should stay, because already in tree)
+        TEST_REJECT_NULL(env.root_node()->findLeafNamed("CorGluta")); // has to be in tree
+        {
+            GB_transaction ta(env.gbmain());
+            GBT_restore_marked_species(env.gbmain(), "CloTyrob;CorGluta");
+            env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
+        }
+
+        TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD, NULL, PARSIMONY_ORG-1, env, false));
+        TEST_EXPECT_EQUAL(env.combines_performed(), 110); // @@@ why does this perform combines at all?
+        TEST_EXPECT_EQUAL(env.root_node()->count_leafs(), 14); // ok, CloTyrob was not added
+        TEST_REJECT_NULL(env.root_node()->findLeafNamed("CorGluta")); // has to be in tree
+
+        env.pop();
     }
 }
 
