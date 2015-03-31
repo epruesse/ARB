@@ -129,7 +129,7 @@ long GBS_incr_hash(GB_HASH *hs, const char *key);
 void GBS_free_hash(GB_HASH *hs);
 void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data);
 void GBS_hash_do_const_loop(const GB_HASH *hs, gb_hash_const_loop_type func, void *client_data);
-size_t GBS_hash_count_elems(const GB_HASH *hs);
+size_t GBS_hash_elements(const GB_HASH *hs);
 const char *GBS_hash_next_element_that(const GB_HASH *hs, const char *last_key, bool (*condition)(const char *key, long val, void *cd), void *cd);
 void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter, void *client_data);
 int GBS_HCF_sortedByKey(const char *k0, long dummy_1x, const char *k1, long dummy_2x);

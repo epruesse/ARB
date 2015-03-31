@@ -1398,7 +1398,7 @@ void QUERY::copy_selection_list_2_query_box(DbQuery *query, AW_selection_list *s
                   "next_neighbours.hlp");
     }
 
-    long inHitlist = GBS_hash_count_elems(list_hash);
+    long inHitlist = GBS_hash_elements(list_hash);
     long seenInDB  = 0;
 
     for (GBDATA *gb_species = GBT_first_species(query->gb_main);

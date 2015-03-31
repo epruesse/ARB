@@ -413,7 +413,7 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
             GB_commit_transaction(gb_main);
 
             {
-                int skipped = max_species - GBS_hash_count_elems(hash);
+                int skipped = max_species - GBS_hash_elements(hash);
                 if (skipped) {
                     aw_message(GBS_global_string("Skipped %i species (no data?)", skipped));
                     isits.get_progress().inc_by(skipped);

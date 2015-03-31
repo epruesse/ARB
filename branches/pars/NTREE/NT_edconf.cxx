@@ -392,7 +392,7 @@ static void nt_extract_configuration(AW_window *aww, extractType ext_type) {
                             }
                         }
 
-                        refresh = refresh || GBS_hash_count_elems(was_marked);
+                        refresh = refresh || GBS_hash_elements(was_marked);
                         break;
                     }
                     default:
