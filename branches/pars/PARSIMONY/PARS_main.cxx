@@ -143,9 +143,7 @@ static void AP_user_pop_cb(AW_window *aww, AWT_canvas *ntw) {
 }
 
 class InsertData {
-    bool abort_flag;
-    long currentspecies;
-
+    bool         abort_flag;
     arb_progress progress;
 
 public:
@@ -153,19 +151,15 @@ public:
     bool quick_add_flag;
     InsertData(bool quick, long spec_count)
         : abort_flag(false),
-          currentspecies(0),
           progress(GBS_global_string("Inserting %li species", spec_count), spec_count),
           quick_add_flag(quick)
     {
     }
 
-    bool every_sixteenth() { return (currentspecies & 0xf) == 0; }
-
     bool aborted() const { return abort_flag; }
     void set_aborted(bool aborted_) { abort_flag = aborted_; }
 
     void inc() {
-        ++currentspecies;
         progress.inc();
         abort_flag = progress.aborted();
     }
