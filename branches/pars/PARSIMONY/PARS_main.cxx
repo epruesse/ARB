@@ -340,14 +340,6 @@ static long hash_insert_species_in_tree(const char *key, long leaf, void *cd_isi
     return result;
 }
 
-static long count_hash_elements(const char *, long val, void *cd_count) {
-    if (val) {
-        long *count = (long*)cd_count;
-        (*count)++;
-    }
-    return val;
-}
-
 enum AddWhat {
     NT_ADD_MARKED,
     NT_ADD_SELECTED,
@@ -400,26 +392,22 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
 
         NT_remove_species_in_tree_from_hash(rootNode(), hash);
 
-        long max_species = 0;
-        GBS_hash_do_loop(hash, count_hash_elements, &max_species);
-
-        InsertPerfMeter insertPerf("(quick-)add", max_species);
+        size_t          species_count = GBS_hash_elements(hash);
+        InsertPerfMeter insertPerf("(quick-)add", species_count);
 
         {
-            InsertData isits(quick, max_species);
-
-            GB_begin_transaction(gb_main);
-            GBS_hash_do_loop(hash, transform_gbd_to_leaf, NULL);
-            GB_commit_transaction(gb_main);
-
+            InsertData isits(quick, species_count);
             {
-                int skipped = max_species - GBS_hash_elements(hash);
+                GB_transaction ta(gb_main);
+                GBS_hash_do_loop(hash, transform_gbd_to_leaf, NULL);
+            }
+            {
+                size_t skipped = species_count - GBS_hash_elements(hash);
                 if (skipped) {
                     aw_message(GBS_global_string("Skipped %i species (no data?)", skipped));
                     isits.get_progress().inc_by(skipped);
                 }
             }
-
             GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length, &isits);
         }
 
