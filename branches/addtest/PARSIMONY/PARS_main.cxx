@@ -274,7 +274,9 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
 
         if (final_move) {
             if (bestposr->father == bestposl) std::swap(bestposr, bestposl);
-            leaf->moveNextTo(bestposl, 0.5);
+            if (leaf->father != bestposl->father) {
+                leaf->moveNextTo(bestposl, 0.5);
+            }
         }
 
         ASSERT_VALID_TREE(rootNode());
@@ -2078,11 +2080,11 @@ void TEST_nucl_tree_modifications() {
 
     // test re-add all (i.e. test "create tree from scratch")
     // Note: trees generated below are better than optimized trees!
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-readdall-quick", PARSIMONY_ORG-31, env, true)); // quick
-    TEST_EXPECT_EQUAL(env.combines_performed(), 762);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-readdall-quick", PARSIMONY_ORG-23, env, true)); // quick
+    TEST_EXPECT_EQUAL(env.combines_performed(), 770);
 
-    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-readdall-NNI",   PARSIMONY_ORG-32, env, true)); // + NNI
-    TEST_EXPECT_EQUAL(env.combines_performed(), 1204);
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-readdall-NNI",   PARSIMONY_ORG-26, env, true)); // + NNI
+    TEST_EXPECT_EQUAL(env.combines_performed(), 1132);
 }
 
 void TEST_prot_tree_modifications() {
