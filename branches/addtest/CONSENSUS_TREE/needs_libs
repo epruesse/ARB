@@ -1,0 +1,4 @@
+# libraries needed to link against CONSENSUS_TREE/CONSENSUS_TREE.a
+
+lib/libARBDB.so
+

@@ -1,0 +1,90 @@
+
+format of .aisc-files used for client/server interfaces 
+-------------------------------------------------------
+
+PROJECT      string   // main name of program
+OBJECT_KEY   string   // prefix key for objects
+MAX_KEY      num      // maximum attribute number
+MAX_OBJECT   num      // maximum object number
+MAGIC_NUMBER num      // server version (see magic.lst)
+
+DATA {          
+
+@CONST, @VALUE, @DOCU; // constants
+
+@ENUM;                  // enum is unused and obsolete
+..., {;
+        @VAR, @VAL, @DOCU;
+};
+
+@STRUCT, @SKEY, @SKEYC, @DOCU;
+
+my_struxt, MYKEY, 4711, (~ This is the docu ~), [SAVEDIRECTION VERTICAL,] {
+        @TYPE,  @IDENT, @REF, @ACC, @SAVE, @KEY, @KEYC, @INIT, @DOCU;
+        ...;
+};
+
+};
+
+
+
+TYPE can be:
+
+        int,char,double,float
+
+        dllh            header of DoubledLinkedList
+        aisc_string     string
+        bytestring      string
+
+        // [func    function ]
+
+        or any user defined type
+
+        Note: when using aisc_string as result type of a callback (i.e. %), you have to
+              store it in some static buffer and return aisc_cstring!
+
+REF can be:
+        %               virtual (aka callback) 
+
+                        unspecified ( double char .... )
+eor     i               or owner by insertion
+eor     o               owner by pointer
+eor     d               special owner (double linked list with ident + hash)
+eor     l               link
+eor     r               reversed_link   (only to those objects with dllh)
+
+        e               enum type
+eor     t               terminal type
+eor     s               structure type  /* unfold THIS structure else t */
+
+[       *               resizeable vector of ...        (key SIZE is size)
+eor     v               fixed   vector of ...           (key SIZE is size)]
+
+[       f               forward reference                               ]
+                                                        (THIS-> is father)
+
+z.B.    os*     Vector of unfold substructures
+
+
+ACC             Accessiongrants
+        ,       read and write 
+        r,      readonly
+        w,      writeonly
+        c,      createonly
+        rw,     read and write
+        privat,
+        public,
+
+SAVE    version number for load/save (if AISC_SAVE=YES)
+
+KEY     key name
+
+KEYC    key number
+
+        Has to be unique inside each STRUCT.
+        Keys w/o keynumbers exist, but are not accessible via interface.
+        Several types use multiple KEYs (e.g. 'd' uses 2 keys (KEY and KEY+1)).
+
+INIT    default value or call to init-funtion
+        'THIS' is replaced by pointer to STRUCT 
+
