@@ -2071,6 +2071,14 @@ void TEST_nucl_tree_modifications() {
         TEST_EXPECT_EQUAL(env.combines_performed(), 104);
         env.pop();
     }
+
+    // test re-add all (i.e. test "create tree from scratch")
+    // Note: trees generated below are better than optimized trees!
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_ADD,     "nucl-readdall-quick", PARSIMONY_ORG-31, env, true)); // quick
+    TEST_EXPECT_EQUAL(env.combines_performed(), 762);
+
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_ADD_NNI,       "nucl-readdall-NNI",   PARSIMONY_ORG-32, env, true)); // + NNI
+    TEST_EXPECT_EQUAL(env.combines_performed(), 1204);
 }
 
 void TEST_prot_tree_modifications() {
