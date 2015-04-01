@@ -1889,6 +1889,12 @@ static GB_ERROR modifyOneBase(GBDATA *gb_species, const char *aliname, char cOld
     return error;
 }
 
+static long unmark_unwanted(const char *, long cd_gbd, void*) {
+    GBDATA *gbd = (GBDATA*)cd_gbd;
+    GB_write_flag(gbd, 0);
+    return 0;
+}
+
 void TEST_nucl_tree_modifications() {
     const char *aliname = "ali_5s";
 
@@ -2032,8 +2038,16 @@ void TEST_nucl_tree_modifications() {
 
     // mark all species
     mark_all(env.gbmain());
+    // unmark species not in tree
+    {
+        GB_transaction  ta(env.gbmain());
+        GB_HASH        *markedNotInTree = GBT_create_marked_species_hash(env.gbmain());
+        NT_remove_species_in_tree_from_hash(env.root_node(), markedNotInTree);
+        GBS_hash_do_loop(markedNotInTree, unmark_unwanted, NULL);
+        GBS_free_hash(markedNotInTree);
+    }
     env.compute_tree(); // species marks affect order of node-chain (used in nni_rek)
-    TEST_EXPECT_EQUAL(GBT_count_marked_species(env.gbmain()), 18);
+    TEST_EXPECT_EQUAL(GBT_count_marked_species(env.gbmain()), 15);
 
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 0);
