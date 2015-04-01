@@ -296,7 +296,9 @@ static AP_tree_nlen *insert_species_in_tree(AP_tree_nlen *leaf, InsertData *isit
 
         if (final_move) {
             if (bestposr->father == bestposl) std::swap(bestposr, bestposl);
-            leaf->moveNextTo(bestposl, 0.5);
+            if (leaf->father != bestposl->father) {
+                leaf->moveNextTo(bestposl, 0.5);
+            }
         }
 
         ASSERT_VALID_TREE(rootNode());
@@ -407,7 +409,6 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
                 else                                     oldrootright->set_root();
             }
             else {
-                UNCOVERED(); // @@@ unused branch?
                 ARB_edge innermost = rootNode()->get_tree_root()->find_innermost_edge();
                 innermost.set_root();
             }
@@ -2098,6 +2099,12 @@ static GB_ERROR modifyOneBase(GBDATA *gb_species, const char *aliname, char cOld
     return error;
 }
 
+static long unmark_unwanted(const char *, long cd_gbd, void*) {
+    GBDATA *gbd = (GBDATA*)cd_gbd;
+    GB_write_flag(gbd, 0);
+    return 0;
+}
+
 void TEST_nucl_tree_modifications() {
     const char *aliname = "ali_5s";
 
@@ -2274,8 +2281,16 @@ void TEST_nucl_tree_modifications() {
 
     // mark all species
     mark_all(env.gbmain());
+    // unmark species not in tree
+    {
+        GB_transaction  ta(env.gbmain());
+        GB_HASH        *markedNotInTree = GBT_create_marked_species_hash(env.gbmain());
+        NT_remove_species_in_tree_from_hash(env.root_node(), markedNotInTree);
+        GBS_hash_do_loop(markedNotInTree, unmark_unwanted, NULL);
+        GBS_free_hash(markedNotInTree);
+    }
     env.compute_tree(); // species marks affect order of node-chain (used in nni_rec)
-    TEST_EXPECT_EQUAL(GBT_count_marked_species(env.gbmain()), 18);
+    TEST_EXPECT_EQUAL(GBT_count_marked_species(env.gbmain()), 15);
 
     TEST_EXPECT_PARSVAL(env, PARSIMONY_ORG);
     TEST_EXPECT_EQUAL(env.combines_performed(), 0);
@@ -2309,8 +2324,16 @@ void TEST_nucl_tree_modifications() {
         TEST_EXPECT_EQUAL(env.combines_performed(), 124811);
     }
 
+    // test re-add all (i.e. test "create tree from scratch")
+    // Note: trees generated below are NO LONGER better than optimized trees! (see also r13651)
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_QUICK_READD,     "nucl-readdall-quick", PARSIMONY_ORG-23, env, true)); // quick
+    TEST_EXPECT_EQUAL(env.combines_performed(), 751);
+
+    TEST_EXPECTATION(modifyingTopoResultsIn(MOD_READD_NNI,       "nucl-readdall-NNI",   PARSIMONY_ORG-27, env, true)); // + NNI
+    TEST_EXPECT_EQUAL(env.combines_performed(), 926);
+
     // test adding a too short sequence
-    // (has to be last test, because it modifies seq data)
+    // (has to be last test, because it modifies seq data)                    << ------------ !!!!!
     {
         env.push();
 
