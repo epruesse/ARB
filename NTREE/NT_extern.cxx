@@ -29,7 +29,6 @@
 
 #include <awt.hxx>
 #include <macros.hxx>
-#include <awt_config_manager.hxx>
 #include <awt_input_mask.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_www.hxx>
@@ -538,108 +537,6 @@ static void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw) {
     }
 }
 
-static AWT_config_mapping_def tree_setting_config_mapping[] = {
-    { AWAR_DTREE_BASELINEWIDTH,    "line_width" },
-    { AWAR_DTREE_VERICAL_DIST,     "vert_dist" },
-    { AWAR_DTREE_AUTO_JUMP,        "auto_jump" },
-    { AWAR_DTREE_AUTO_JUMP_TREE,   "auto_jump_tree" },
-    { AWAR_DTREE_SHOW_CIRCLE,      "show_circle" },
-    { AWAR_DTREE_SHOW_BRACKETS,    "show_brackets" },
-    { AWAR_DTREE_USE_ELLIPSE,      "use_ellipse" },
-    { AWAR_DTREE_CIRCLE_ZOOM,      "circle_zoom" },
-    { AWAR_DTREE_CIRCLE_MAX_SIZE,  "circle_max_size" },
-    { AWAR_DTREE_GREY_LEVEL,       "grey_level" },
-    { AWAR_DTREE_DENDRO_ZOOM_TEXT, "dendro_zoomtext" },
-    { AWAR_DTREE_DENDRO_XPAD,      "dendro_xpadding" },
-    { AWAR_DTREE_RADIAL_ZOOM_TEXT, "radial_zoomtext" },
-    { AWAR_DTREE_RADIAL_XPAD,      "radial_xpadding" },
-    { AWAR_DTREE_BOOTSTRAP_MIN,    "bootstrap_min" },
-    { 0, 0 }
-};
-
-static char *tree_setting_store_config(AW_CL,  AW_CL) {
-    AWT_config_definition cdef(tree_setting_config_mapping);
-    return cdef.read();
-}
-static void tree_setting_restore_config(const char *stored_string, AW_CL,  AW_CL) {
-    AWT_config_definition cdef(tree_setting_config_mapping);
-    cdef.write(stored_string);
-}
-
-static AW_window *NT_create_tree_settings_window(AW_root *aw_root) {
-    static AW_window_simple *aws = 0;
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(aw_root, "TREE_PROPS", "TREE SETTINGS");
-        aws->load_xfig("awt/tree_settings.fig");
-
-        aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("help");
-        aws->callback(makeHelpCallback("nt_tree_settings.hlp"));
-        aws->create_button("HELP", "HELP", "H");
-
-        aws->at("button");
-        aws->auto_space(10, 10);
-        aws->label_length(30);
-
-        aws->label("Base line width");
-        aws->create_input_field(AWAR_DTREE_BASELINEWIDTH, 4);
-        aws->at_newline();
-
-        aws->label("Relative vertical distance");
-        aws->create_input_field(AWAR_DTREE_VERICAL_DIST, 4);
-        aws->at_newline();
-
-        TREE_insert_jump_option_menu(aws, "On species change", AWAR_DTREE_AUTO_JUMP);
-        TREE_insert_jump_option_menu(aws, "On tree change",    AWAR_DTREE_AUTO_JUMP_TREE);
-
-        aws->label("Show group brackets");
-        aws->create_toggle(AWAR_DTREE_SHOW_BRACKETS);
-        aws->at_newline();
-
-        aws->label("Show bootstrap circles");
-        aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
-        aws->at_newline();
-
-        aws->label("Hide bootstrap value below");
-        aws->create_input_field(AWAR_DTREE_BOOTSTRAP_MIN, 4);
-        aws->at_newline();
-
-        aws->label("Use ellipses");
-        aws->create_toggle(AWAR_DTREE_USE_ELLIPSE);
-        aws->at_newline();
-
-        aws->label("Bootstrap circle zoom factor");
-        aws->create_input_field(AWAR_DTREE_CIRCLE_ZOOM, 4);
-        aws->at_newline();
-
-        aws->label("Boostrap radius limit");
-        aws->create_input_field(AWAR_DTREE_CIRCLE_MAX_SIZE, 4);
-        aws->at_newline();
-
-        aws->label("Grey Level of Groups%");
-        aws->create_input_field(AWAR_DTREE_GREY_LEVEL, 4);
-        aws->at_newline();
-
-        aws->label("Text zoom/pad (dendro)");
-        aws->create_toggle(AWAR_DTREE_DENDRO_ZOOM_TEXT);
-        aws->create_input_field(AWAR_DTREE_DENDRO_XPAD, 4);
-        aws->at_newline();
-
-        aws->label("Text zoom/pad (radial)");
-        aws->create_toggle(AWAR_DTREE_RADIAL_ZOOM_TEXT);
-        aws->create_input_field(AWAR_DTREE_RADIAL_XPAD, 4);
-        aws->at_newline();
-
-        aws->at("config");
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "tree_settings", tree_setting_store_config, tree_setting_restore_config, 0, 0);
-    }
-    return aws;
-}
-
 enum streamSource { FROM_PIPE, FROM_FILE };
 static char *stream2str(streamSource source, const char *commandOrFile) {
     char *output = 0;
@@ -1086,31 +983,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
         AWT_registerTreeAwarCallback(tree_awar, makeTreeAwarCallback(canvas_tree_awar_changed_cb, ntw), false);
     }
 
-    awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, false));
-    awr->awar(AWAR_TREE_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, true));
-
-    awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback(makeRootCallback(AWT_resize_cb, ntw));
-
-    RootCallback expose_cb = makeRootCallback(AWT_expose_cb, ntw);
-    awr->awar(AWAR_DTREE_BASELINEWIDTH)  ->add_callback(expose_cb);
-    awr->awar(AWAR_DTREE_SHOW_CIRCLE)    ->add_callback(expose_cb);
-    awr->awar(AWAR_DTREE_SHOW_BRACKETS)  ->add_callback(expose_cb);
-    awr->awar(AWAR_DTREE_CIRCLE_ZOOM)    ->add_callback(expose_cb);
-    awr->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback(expose_cb);
-    awr->awar(AWAR_DTREE_USE_ELLIPSE)    ->add_callback(expose_cb);
-    awr->awar(AWAR_DTREE_BOOTSTRAP_MIN)  ->add_callback(expose_cb);
-
-    RootCallback reinit_treetype_cb = makeRootCallback(NT_reinit_treetype, ntw);
-    awr->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
-    awr->awar(AWAR_DTREE_RADIAL_XPAD)     ->add_callback(reinit_treetype_cb);
-    awr->awar(AWAR_DTREE_DENDRO_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
-    awr->awar(AWAR_DTREE_DENDRO_XPAD)     ->add_callback(reinit_treetype_cb);
-
-    awr->awar(AWAR_TREE_REFRESH)->add_callback(expose_cb);
-    awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback(makeRootCallback(TREE_recompute_cb, ntw));
-
-    GBDATA *gb_arb_presets = GB_search(GLOBAL.gb_main, "arb_presets", GB_CREATE_CONTAINER);
-    GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, ntw));
+    TREE_install_update_callbacks(ntw);
+    awr->awar(AWAR_TREE_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, true)); // NT specific (tree name never changes in parsimony!)
 
     bool is_genome_db = GEN_is_genome_db(GLOBAL.gb_main, 0); //  is this a genome database ? (default = 0 = not a genom db)
 
@@ -1513,7 +1387,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
         awm->create_menu("Properties", "r", AWM_ALL);
         {
             awm->insert_menu_topic("props_menu",                 "Frame settings",              "F", "props_frame.hlp",      AWM_ALL, AW_preset_window);
-            awm->insert_menu_topic(awm->local_id("props_tree2"), "Tree options",                "o", "nt_tree_settings.hlp", AWM_ALL, NT_create_tree_settings_window);
+            awm->insert_menu_topic(awm->local_id("props_tree2"), "Tree options",                "o", "nt_tree_settings.hlp", AWM_ALL, TREE_create_settings_window);
             awm->insert_menu_topic("props_tree",                 "Tree colors & fonts",         "c", "nt_props_data.hlp",    AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
             awm->insert_menu_topic("props_www",                  "Search world wide web (WWW)", "W", "props_www.hlp",        AWM_ALL, makeCreateWindowCallback(AWT_create_www_window, GLOBAL.gb_main));
             awm->sep______________();

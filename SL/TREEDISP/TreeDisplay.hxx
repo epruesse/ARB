@@ -376,9 +376,11 @@ public:
     }
 };
 
-AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
-bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, int bootstrap_min);
+void TREE_install_update_callbacks(AWT_canvas *ntw);
+AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb); // @@@ rename (prefix)
+bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, int bootstrap_min); // @@@ rename (prefix)
 void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name);
+AW_window *TREE_create_settings_window(AW_root *aw_root);
 
 #else
 #error TreeDisplay.hxx included twice
