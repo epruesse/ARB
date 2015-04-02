@@ -956,37 +956,6 @@ static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static AW_window *PARS_create_tree_settings_window(AW_root *aw_root) {
-    static AW_window_simple *aws = 0;
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(aw_root, "SAVE_DB", "SAVE ARB DB");
-        aws->load_xfig("awt/tree_settings.fig");
-
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("help"); aws->callback(makeHelpCallback("nt_tree_settings.hlp"));
-        aws->create_button("HELP", "HELP", "H");
-
-        aws->at("button");
-        aws->auto_space(10, 10);
-        aws->label_length(30);
-
-        aws->label("Base Line Width");
-        aws->create_input_field(AWAR_DTREE_BASELINEWIDTH, 4);
-        aws->at_newline();
-
-        aws->label("Relative vert. Dist");
-        aws->create_input_field(AWAR_DTREE_VERICAL_DIST, 4);
-        aws->at_newline();
-
-        TREE_insert_jump_option_menu(aws, "On species change", AWAR_DTREE_AUTO_JUMP);
-        TREE_insert_jump_option_menu(aws, "On tree change",    AWAR_DTREE_AUTO_JUMP_TREE);
-    }
-    return aws;
-}
-
 static int calculate_default_random_repeat(long leafs) {
     double balanced_depth = log10(leafs) / log10(2);
     int    repeat         = int(balanced_depth*2.0 + .5);
@@ -1347,8 +1316,6 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         if (error) aw_popup_exit(error);
     }
 
-    awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback(makeRootCallback(TREE_recompute_cb, ntw));
-
     if (cmds->add_marked)           NT_add_quick(NULL, ntw, NT_ADD_MARKED);
     if (cmds->add_selected)         NT_add_quick(NULL, ntw, NT_ADD_SELECTED);
     if (cmds->calc_branch_lengths)  NT_calc_branch_lengths(awm, ntw);
@@ -1356,9 +1323,6 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     if (cmds->quit)                 pars_exit(awm);
 
     GB_transaction ta(ntw->gb_main);
-
-    GBDATA *gb_arb_presets = GB_search(ntw->gb_main, "arb_presets", GB_CREATE_CONTAINER);
-    GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, ntw));
 
 #if defined(DEBUG)
     AWT_create_debug_menu(awm);
@@ -1431,10 +1395,10 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     awm->create_menu("Properties", "P", AWM_ALL);
     {
-        awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...", "M", "props_frame.hlp",      AWM_ALL, AW_preset_window);
-        awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...", "C", "pars_props_data.hlp",  AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
-        awm->insert_menu_topic("props_tree2", "Tree: Settings ...",         "T", "nt_tree_settings.hlp", AWM_ALL, PARS_create_tree_settings_window);
-        awm->insert_menu_topic("props_kl",    "KERN. LIN ...",              "K", "kernlin.hlp",          AWM_ALL, makeCreateWindowCallback(create_kernighan_properties_window));
+        awm->insert_menu_topic("props_menu",  "Frame settings",          "F", "props_frame.hlp",      AWM_ALL, AW_preset_window);
+        awm->insert_menu_topic("props_tree2", "Tree options",            "o", "nt_tree_settings.hlp", AWM_ALL, TREE_create_settings_window);
+        awm->insert_menu_topic("props_tree",  "Tree colors & fonts",     "c", "pars_props_data.hlp",  AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
+        awm->insert_menu_topic("props_kl",    "Optimizer settings (KL)", "K", "kernlin.hlp",          AWM_ALL, makeCreateWindowCallback(create_kernighan_properties_window));
         awm->sep______________();
         AW_insert_common_property_menu_entries(awm);
         awm->sep______________();
@@ -1561,7 +1525,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     aw_parent->hide(); // hide parent
     awm->show();
 
-    awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, false));
+    TREE_install_update_callbacks(ntw);
 
     update_random_repeat(awr, AWT_TREE_PARS(ntw));
     AP_user_push_cb(aw_parent, ntw); // push initial tree
