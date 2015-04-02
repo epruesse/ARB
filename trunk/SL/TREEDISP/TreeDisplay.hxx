@@ -38,8 +38,6 @@
 #define AWAR_DTREE_DENDRO_ZOOM_TEXT "awt/dtree/dendro/zoomtext"
 #define AWAR_DTREE_DENDRO_XPAD      "awt/dtree/dendro/xpadding"
 
-void awt_create_dtree_awars(AW_root *aw_root, AW_default db);
-
 #define NT_BOX_WIDTH      7 // pixel
 #define NT_ROOT_WIDTH     9
 #define NT_SELECTED_WIDTH 11
@@ -376,11 +374,14 @@ public:
     }
 };
 
-void TREE_install_update_callbacks(AWT_canvas *ntw);
-AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb); // @@@ rename (prefix)
-bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, int bootstrap_min); // @@@ rename (prefix)
-void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name);
+void       TREE_create_awars(AW_root *aw_root, AW_default db);
+void       TREE_install_update_callbacks(AWT_canvas *ntw);
+void       TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name);
 AW_window *TREE_create_settings_window(AW_root *aw_root);
+
+AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
+
+bool TREE_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, int bootstrap_min);
 
 #else
 #error TreeDisplay.hxx included twice
