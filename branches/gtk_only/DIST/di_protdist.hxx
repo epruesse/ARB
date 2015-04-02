@@ -65,8 +65,6 @@ class di_protdist : virtual Noncopyable {
     // Local variables for makedists, propagated globally for c version:
     double p, dp, d2p;
 
-
-    void cats(di_cattype wcat);
     void maketrans();
     void code();
     void transition();

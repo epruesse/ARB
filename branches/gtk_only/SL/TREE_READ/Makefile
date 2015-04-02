@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -60,6 +60,7 @@ TreeRead.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeRead.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeRead.o: $(ARBHOME)/INCLUDE/test_global.h
 TreeRead.o: $(ARBHOME)/INCLUDE/test_unit.h
+TreeRead.o: $(ARBHOME)/INCLUDE/TreeNode.h
 
 TreeTools.o: TreeRead.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -81,3 +82,4 @@ TreeTools.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeTools.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeTools.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeTools.o: $(ARBHOME)/INCLUDE/test_global.h
+TreeTools.o: $(ARBHOME)/INCLUDE/TreeNode.h

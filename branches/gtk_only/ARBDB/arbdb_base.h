@@ -32,7 +32,9 @@ struct GB_HASH;
 typedef int GBQUARK; // -1 = any quark, 0 = no quark, >0 explicit quark
 
 typedef float GBT_LEN;
-struct        GBT_TREE;
+
+class TreeNode;
+class TreeRoot;
 
 typedef unsigned int       GB_UINT4;                // 4 byte! @@@ use uint32_t ?
 typedef const unsigned int GB_CUINT4;
@@ -64,10 +66,11 @@ enum GB_alignment_type {
 };
 
 enum NewickFormat { // bit-values
-    nSIMPLE = 0,
-    nLENGTH = 1,
-    nGROUP  = 2,
-    nREMARK = 4,
+    nSIMPLE  = 0,
+    nLENGTH  = 1,
+    nGROUP   = 2,
+    nREMARK  = 4,
+    nWRAP    = 8,
 
     nALL = nLENGTH|nGROUP|nREMARK,
 };

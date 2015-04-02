@@ -1092,8 +1092,8 @@ static void awtc_mark_hits(AW_window *) {
     }
 }
 
-static void awtc_nn_search(AW_window *aww) {
-    AW_root  *aw_root  = aww->get_root();
+static void awtc_nn_search(AW_window *) {
+    AW_root  *aw_root  = AW_root::SINGLETON;
     GBDATA   *gb_main  = NN_GLOBAL.get_gb_main();
     GB_ERROR  error    = 0;
     PosRange  range    = get_nn_range_from_awars(aw_root);

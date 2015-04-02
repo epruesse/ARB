@@ -132,7 +132,7 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, QUERY_
             GBDATA *gb_pseudo   = GEN_first_marked_pseudo_species(gb_main);
 
             if (gb_pseudo) {    // there are marked pseudo-species..
-                old_species_marks = GBT_store_marked_species(gb_main, 1); // store and unmark marked species
+                old_species_marks = GBT_store_marked_species(gb_main, true); // store and unmark marked species
 
                 error                   = GBT_with_stored_species(gb_main, old_species_marks, GEN_mark_organism_or_corresponding_organism, 0); // mark organisms related with stored
                 if (!error) gb_organism = GEN_first_marked_organism(gb_main);

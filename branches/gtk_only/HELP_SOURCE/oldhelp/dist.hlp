@@ -18,7 +18,7 @@ SUB	bootstrap.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Neighbour joining
 
-OCCURRENCE	ARB_NT/Tree/Neighbour joining
+OCCURRENCE	ARB_NT/Tree/Build tree from sequence data/Distance matrix methods/Distance matrix + ARB NJ
 
 DESCRIPTION	Reconstructs a tree for all or marked species by first
 		calculating binary distances and subsequently applying the
@@ -39,7 +39,7 @@ DESCRIPTION	Reconstructs a tree for all or marked species by first
                    after the 'Filter' prompt and define an alignment-associated
                    mask which defines alignment positions to include for treeing.
 
-		5. Define Weights: !!! not implemented !!!
+		5. Define Weights: @@@ not implemented
 
 		6. Select rate matrix (only implemented for some corrections; see LINK{user_matrix.hlp})
 
