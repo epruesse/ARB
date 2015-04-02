@@ -220,7 +220,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     NT_create_extendeds_vars(awr, def, GLOBAL.gb_main);
     create_nds_vars(awr, def, GLOBAL.gb_main);
     create_export_nds_awars(awr, def);
-    awt_create_dtree_awars(awr, GLOBAL.gb_main);
+    TREE_create_awars(awr, GLOBAL.gb_main);
 
     awr->awar_string(AWAR_ERROR_MESSAGES, "", GLOBAL.gb_main);
     awr->awar_string(AWAR_DB_COMMENT, "<no description>", GLOBAL.gb_main);

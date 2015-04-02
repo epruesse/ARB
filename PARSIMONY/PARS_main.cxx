@@ -1624,7 +1624,7 @@ KL_Settings::KL_Settings() {
 }
 #endif
 
-static void create_optimize_vars(AW_root *aw_root, AW_default props, GBDATA *gb_main) {
+static void create_optimize_vars(AW_root *aw_root, AW_default props) {
     // kernighan
 
     aw_root->awar_int(AWAR_OPTI_MARKED_ONLY, 1, props);
@@ -1646,8 +1646,6 @@ static void create_optimize_vars(AW_root *aw_root, AW_default props, GBDATA *gb_
     aw_root->awar_int(AWAR_KL_DYNAMIC_MAXY,    150, props);
 
     aw_root->awar_int(AWAR_KL_FUNCTION_TYPE, AP_QUADRAT_START, props);
-
-    awt_create_dtree_awars(aw_root, gb_main);
 }
 
 static void pars_create_all_awars(AW_root *awr, AW_default aw_def, GBDATA *gb_main) {
@@ -1688,8 +1686,10 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def, GBDATA *gb_ma
     awr->awar_int(AWAR_RAND_REPEAT,  1,  aw_def)->set_minmax(1, 1000000); // default value is overwritten by update_random_repeat()
     awr->awar_int(AWAR_RAND_PERCENT, 50, aw_def)->set_minmax(1, 100);
 
-    create_optimize_vars(awr, aw_def, gb_main);
+    create_optimize_vars(awr, aw_def);
     create_nds_vars(awr, aw_def, gb_main);
+
+    TREE_create_awars(awr, gb_main);
 
 #if defined(DEBUG)
     AWT_create_db_browser_awars(awr, aw_def);
