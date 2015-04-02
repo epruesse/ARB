@@ -20,13 +20,21 @@
 
 
 enum AP_BASES {
+    AP_ILLEGAL = 0,
+
     AP_A   = 1,
     AP_C   = 2,
     AP_G   = 4,
     AP_T   = 8,
-    AP_S   = 16,                // Space (GAP)
-    AP_N   = 31,
-    AP_MAX = 32
+    AP_GAP = 16,      // known gap ('-')
+
+    // -------------------- above are bit values, below combinations of them
+
+    // @@@ define IUPAC here not in AP_pro_a_nucs.cxx@AP_create_dna_to_ap_bases
+
+    AP_DOT = 31, // maybe gap, maybe some base (anything unknown, esp. '.', '?'; interpreted as dot)
+
+    AP_MAX = 32 // amount of possible values
 };
 
 struct arb_r2a_pro_2_nucs : virtual Noncopyable {
@@ -50,7 +58,7 @@ struct arb_r2a_pro_2_nuc : virtual Noncopyable {
 
 struct AWT_PDP { // distance definition for one protein
     long patd[3];               // proteins at dist
-    // every bit in patd[x] represents one protein
+    // every bit in patd[x] represents one protein (used bits: 0-23)
     // bit in patd[0] is set = > distance == 0
     // bit in patd[1] is set = > distance <= 1
     // bit in patd[2] is set = > distance <= 2
@@ -61,11 +69,7 @@ struct AWT_PDP { // distance definition for one protein
 class AWT_translator;
 
 class AWT_distance_meter : virtual Noncopyable {
-    AWT_PDP *dist_[64];         // sets of proteins with special distance [64 > max_aa
-
-    long transform07[256];       // like dist.patd[1] but for bits 0-7
-    long transform815[256];
-    long transform1623[256];
+    AWT_PDP *dist_[64];         // sets of proteins with special distance (64 > max_aa)
 
 public:
     AWT_distance_meter(const AWT_translator *translator);

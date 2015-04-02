@@ -38,7 +38,7 @@ LIBS_ARB_PROBE          := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a ..
 LIBS_ARB_READ_TREE      := ../SL/TREE_READ/TREE_READ.a
 LIBS_ARB_EXPORT_TREE    := ../SL/TREE_WRITE/TREE_WRITE.a ../XML/XML.a $(LIBS_ARB_READ_TREE)
 LIBS_ARB_EXPORT_SEQ     := ../SL/SEQIO/SEQIO.a ../XML/XML.a ../SL/INSDEL/INSDEL.a ../SL/FILTER/FILTER.a
-LIBS_ARB_CONSENSUS_TREE := $(LIBS_ARB_EXPORT_TREE) ../CONSENSUS_TREE/CONSENSUS_TREE.a ../SL/ROOTED_TREE/ROOTED_TREE.a
+LIBS_ARB_CONSENSUS_TREE := $(LIBS_ARB_EXPORT_TREE) ../CONSENSUS_TREE/CONSENSUS_TREE.a
 
 OBJECTS:=$(addsuffix .o,$(TOOLS))
 BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
@@ -46,10 +46,10 @@ BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
 all: $(BINARIES)
 
 %.o: %.cxx 
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 %.o: %.c
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
 
 $(ARBHOME)/bin/arb_probe: arb_probe.o $(LIBS_ARB_PROBE) $(use_ARB_main)
 	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_PROBE) $(LIB_ARBDB) $(EXECLIBS) 
@@ -165,11 +165,11 @@ arb_consensus_tree.o: $(ARBHOME)/INCLUDE/downcast.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/nds.h
-arb_consensus_tree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/test_unit.h
+arb_consensus_tree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/TreeRead.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/TreeWrite.h
 arb_consensus_tree.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
@@ -264,6 +264,7 @@ arb_export_tree.o: $(ARBHOME)/INCLUDE/nds.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 arb_export_tree.o: $(ARBHOME)/INCLUDE/TreeWrite.h
 
 arb_flush_mem.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -456,6 +457,7 @@ arb_read_tree.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_read_tree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/TreeRead.h
 
 arb_replace.o: $(ARBHOME)/INCLUDE/ad_prot.h

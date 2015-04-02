@@ -23,7 +23,7 @@ $(BINARY): $(OBJECT)
 	$(A_CC) $(PUZZ_CFLAGS) -o $@ $(OBJECT) -lm
 
 src/%.o : src/%.c
-	$(A_CC) $(PUZZ_CFLAGS) -c -o $@ $< $(CC_INCLUDES) $(POST_COMPILE)
+	$(A_CC) $(PUZZ_CFLAGS) -c -o $@ $< $(CC_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(OBJECT) $(BINARY)

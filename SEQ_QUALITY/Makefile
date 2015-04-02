@@ -11,7 +11,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -111,6 +111,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/smartptr.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/static_assert.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/test_global.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/TreeNode.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 SQ_GroupData.o: SQ_GroupData.h
@@ -185,4 +186,5 @@ SQ_main.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 SQ_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 SQ_main.o: $(ARBHOME)/INCLUDE/test_global.h
+SQ_main.o: $(ARBHOME)/INCLUDE/TreeNode.h
 SQ_main.o: $(ARBHOME)/INCLUDE/ttypes.h

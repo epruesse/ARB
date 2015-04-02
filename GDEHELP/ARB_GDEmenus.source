@@ -45,8 +45,8 @@ menu:Align
 menumeta:A
 #include <align.genmenu>
 
-menu:User
-menumeta:U
+menu:Network
+menumeta:N
 #include <start_arb.genmenu>
 
 menu:SAI
@@ -90,4 +90,9 @@ menu:Phylogeny (Other)
 menumeta:O
 #include <puzzle.genmenu>
 #include <desoete.genmenu>
+
+// custom menu 'User' is loaded into 'Tools'-menu 
+// (has no members by default; meant to be used from custom .menu definitions)
+menu:User
+menumeta:U
 

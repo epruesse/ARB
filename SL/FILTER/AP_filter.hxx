@@ -152,9 +152,7 @@ public:
     }
 
     size_t length() const { return len; }
-    
     bool is_unweighted() const { return (weights==NULL); }
-    
 };
 
 long AP_timer();

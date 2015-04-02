@@ -304,7 +304,7 @@ void TEST_count_chars() {
         GBT_mark_all(gb_main, 1);
         NT_count_different_chars(NULL, (AW_CL)gb_main, 0);
 
-        uint32_t expected = prot ? 0x4fa63fa0 : 0xefb05e4e;
+        uint32_t expected = prot ? 0x9cad14cc : 0xefb05e4e;
         TEST_EXPECT_EQUAL(counted_chars_checksum(gb_main), expected);
 
         GB_close(gb_main);

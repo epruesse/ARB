@@ -3,6 +3,21 @@
 use strict;
 use warnings;
 
+# ----------------------------------------
+# hardcoded config for help-map
+
+# ignore these pages (they are linked too frequently)
+my %ignore = (
+              'glossary' => 1,
+              'arb' => 1,
+             );
+
+my $start_from = 'pa_optimizer'; # start-page
+my $depth      = 3; # show pages reachable by that many links (both link directions)
+
+# ----------------------------------------
+
+
 sub read_xml($);
 sub read_xml($) {
   my ($xml_dir) = @_;
@@ -80,6 +95,27 @@ sub find_indexed_xmls($$) {
   return @xml;
 }
 
+my %link = (); # key='from>to' value=bitvalue(1=uplink,2=sublink)
+
+sub storeLink($$$) {
+  my ($from,$to,$us) = @_;
+  # print STDERR "storeLink from='$from' to='$to' us='$us'\n";
+
+  my $concat = $from.' '.$to;
+  die "invalid char '>' in '$concat'" if $concat =~ />/o;
+
+  my $bit = 0;
+  if ($us eq 'UP') { $bit = 1; }
+  elsif ($us eq 'SUB') { $bit = 2; }
+
+  my $key = $from.'>'.$to;
+  my $val = $link{$key};
+  if (not defined $val) { $val = 0; }
+
+  $val = $val | $bit;
+  $link{$key} = $val;
+}
+
 my %title_line = (); # key=xml-filename, value=lineno of <TITLE>..
 
 sub parse_titles($\@\%) {
@@ -87,12 +123,24 @@ sub parse_titles($\@\%) {
   foreach my $name (@$xml_r) {
     my $xml = $xml_dir.'/'.$name;
     open(FILE,'<'.$xml) || die "can't read '$xml' (Reason: $!)";
+
+    my $namePlain = $name;
+    if ($namePlain=~ /\.xml$/o) { $namePlain = $`; }
+
     my $line;
   LINE: while (defined($line=<FILE>)) {
-      if ($line =~ /<TITLE>(.*)<\/TITLE>/) {
+      if ($line =~ /<TITLE>(.*)<\/TITLE>/o) {
         $$title_r{$name} = $1;
         $title_line{$name} = $.;
-        last LINE;
+        last LINE; # TITLE occurs behind UP/SUB links -> done here
+      }
+      if ($line =~ /<(UP|SUB)\s+dest=/o) {
+        my $us = $1;
+        if ($line =~ /"(.*)"\s+type="(.*)"/o) {
+          my ($dest,$type) = ($1,$2);
+          if ($dest =~ /\.hlp$/o) { $dest = $`; }
+          storeLink($namePlain,$dest,$us);
+        }
       }
     }
     close(FILE);
@@ -137,15 +185,91 @@ sub generate_index($$) {
   print_index(@xml);
 }
 
+sub dot_label($) {
+  my ($target) = @_;
+  return '"'.$target.'"';
+}
+
+sub generate_map($) {
+  my ($map_name) = @_;
+
+  # my $maxsize = 17; # inch
+  # my $maxsize = 20; # inch
+  # my $maxsize = 40; # inch
+  my $maxsize = 80; # inch
+  open(DOT,'>'.$map_name) || die "can't write '$map_name' (Reason: $!)";
+
+  print DOT "digraph ARBHELPDEP {\n";
+  # print DOT "  rankdir=LR;\n";
+  print DOT "  concentrate=true;\n";
+  print DOT "  searchsize=1000;\n";
+  print DOT "  Damping=2.0;\n";
+  print DOT "  size=\"$maxsize,$maxsize\";\n";
+  # print DOT "  orientation=portrait;\n";
+  print DOT "\n";
+
+  my %use = ( $start_from => 1 );
+
+  my $added = 1;
+  while ($added==1) {
+    $added = 0;
+    foreach (keys %link) {
+      die if (not $_ =~ />/o);
+      my ($from,$to) = ($`,$');
+
+      die "helpfile '$to' links to itself" if ($to eq $from);
+
+      if (exists $use{$from}) {
+        my $next = $use{$from}+1;
+        if (($next<=$depth) and ((not exists $use{$to}) or ($use{$to}>$next)) and (not $ignore{$to})) {
+          $use{$to} = $next;
+          # print STDERR "'$to' set to $next (triggered by '$from' with use=".$use{$from}.")\n";
+          $added = 1;
+        }
+      }
+      if (exists $use{$to}) {
+        my $next = $use{$to}+1;
+        if (($next<=$depth) and ((not exists $use{$from}) or ($use{$from}>$next)) and (not $ignore{$from})) {
+          $use{$from} = $next;
+          # print STDERR "'$from' set to $next (triggered by '$to' with use=".$use{$to}.")\n";
+          $added = 1;
+        }
+      }
+    }
+  }
+
+  foreach (keys %link) {
+    die if (not $_ =~ />/o);
+    my ($from,$to) = ($`,$');
+    if ((not exists $ignore{$from}) and (not exists $ignore{$to})) {
+      if ((exists $use{$from}) and (exists $use{$to})) {
+        ($from,$to) = (dot_label($from.'['.$use{$from}.']'),dot_label($to.'['.$use{$to}.']'));
+        print DOT '    '.$from.' -> '.$to.';'."\n";
+      }
+    }
+  }
+  print DOT "}\n";
+  close(DOT);
+}
+
 sub main() {
   my $args = scalar(@ARGV);
-  if ($args != 2) { die "Usage: generate_index.pl NAME_OF_INDEX.xml XMLDIRECTORY\n "; }
+  if ($args != 3) {
+    print "Usage: generate_index.pl XMLDIRECTORY NAME_OF_INDEX.xml MAP.dot\n";
+    print "Scans for xml-helpfiles in and below XMLDIRECTORY.\n";
+    print "Generates\n";
+    print "- list of all found helpfiles to STDOUT (assuming it is piped to NAME_OF_INDEX.xml)\n";
+    print "- a (partial) help-map in file MAP.dot\n";
+    die "Error: missing arguments";
+  }
 
-  my $index_name = $ARGV[0];
-  my $xml_dir    = $ARGV[1];
+  my $xml_dir    = $ARGV[0];
+  my $index_name = $ARGV[1];
+  my $map_name   = $ARGV[2];
 
   if (not -d $xml_dir) { die "No such directory '$xml_dir'"; }
 
   generate_index($index_name,$xml_dir);
+  generate_map($map_name);
 }
 main();

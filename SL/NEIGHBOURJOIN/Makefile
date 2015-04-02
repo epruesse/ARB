@@ -12,10 +12,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -61,3 +61,4 @@ NJ.o: $(ARBHOME)/INCLUDE/smartptr.h
 NJ.o: $(ARBHOME)/INCLUDE/static_assert.h
 NJ.o: $(ARBHOME)/INCLUDE/test_global.h
 NJ.o: $(ARBHOME)/INCLUDE/test_unit.h
+NJ.o: $(ARBHOME)/INCLUDE/TreeNode.h

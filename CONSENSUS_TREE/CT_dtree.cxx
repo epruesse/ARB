@@ -11,8 +11,8 @@
 #include "CT_hash.hxx"
 #include "CT_ctree.hxx"
 
-PART *ConsensusTree::deconstruct_full_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight) {
-    /*! deconstruct GBT_TREE and register found partitions.
+PART *ConsensusTree::deconstruct_full_subtree(const TreeNode *tree, const GBT_LEN& len, const double& weight) {
+    /*! deconstruct TreeNode and register found partitions.
      * @param len length of branch towards subtree 'tree'
      * @param weight summarized for indentical branches (from different trees)
      */
@@ -24,8 +24,8 @@ PART *ConsensusTree::deconstruct_full_subtree(const GBT_TREE *tree, const GBT_LE
         ptree = create_tree_PART(tree, weight);
     }
     else {
-        PART *p1 = deconstruct_full_subtree(tree->leftson, tree->leftlen, weight);
-        PART *p2 = deconstruct_full_subtree(tree->rightson, tree->rightlen, weight);
+        PART *p1 = deconstruct_full_subtree(tree->get_leftson(), tree->leftlen, weight);
+        PART *p2 = deconstruct_full_subtree(tree->get_rightson(), tree->rightlen, weight);
 
         arb_assert(p1->disjunct_from(p2));
 
@@ -40,8 +40,8 @@ PART *ConsensusTree::deconstruct_full_subtree(const GBT_TREE *tree, const GBT_LE
     return ptree;
 }
 
-void ConsensusTree::deconstruct_full_rootnode(const GBT_TREE *tree, const double& weight) {
-    /*! deconstruct GBT_TREE and register found partitions.
+void ConsensusTree::deconstruct_full_rootnode(const TreeNode *tree, const double& weight) {
+    /*! deconstruct TreeNode and register found partitions.
      * @param weight summarized for indentical branches (from different trees)
      */
 
@@ -50,8 +50,8 @@ void ConsensusTree::deconstruct_full_rootnode(const GBT_TREE *tree, const double
 
     double root_length = (tree->leftlen + tree->rightlen);
 
-    PART *p1 = deconstruct_full_subtree(tree->leftson, root_length, weight);
-    PART *p2 = deconstruct_full_subtree(tree->rightson, root_length, weight);
+    PART *p1 = deconstruct_full_subtree(tree->get_leftson(), root_length, weight);
+    PART *p2 = deconstruct_full_subtree(tree->get_rightson(), root_length, weight);
 
     arb_assert(p1->disjunct_from(p2));
 
@@ -62,8 +62,8 @@ void ConsensusTree::deconstruct_full_rootnode(const GBT_TREE *tree, const double
     inc_insert_progress();
 }
 
-PART *ConsensusTree::deconstruct_partial_subtree(const GBT_TREE *tree, const GBT_LEN& len, const double& weight, const PART *partialTree) {
-    /*! deconstruct partial GBT_TREE
+PART *ConsensusTree::deconstruct_partial_subtree(const TreeNode *tree, const GBT_LEN& len, const double& weight, const PART *partialTree) {
+    /*! deconstruct partial TreeNode
      *
      * similar to deconstruct_full_subtree(),
      * but the set of missing species is added at each branch.
@@ -76,8 +76,8 @@ PART *ConsensusTree::deconstruct_partial_subtree(const GBT_TREE *tree, const GBT
         ptree = create_tree_PART(tree, weight);
     }
     else {
-        PART *p1 = deconstruct_partial_subtree(tree->leftson, tree->leftlen, weight, partialTree);
-        PART *p2 = deconstruct_partial_subtree(tree->rightson, tree->rightlen, weight, partialTree);
+        PART *p1 = deconstruct_partial_subtree(tree->get_leftson(), tree->leftlen, weight, partialTree);
+        PART *p2 = deconstruct_partial_subtree(tree->get_rightson(), tree->rightlen, weight, partialTree);
 
         arb_assert(p1->disjunct_from(p2));
 
@@ -92,8 +92,8 @@ PART *ConsensusTree::deconstruct_partial_subtree(const GBT_TREE *tree, const GBT
     return ptree;
 }
 
-void ConsensusTree::deconstruct_partial_rootnode(const GBT_TREE *tree, const double& weight, const PART *partialTree) {
-    /*! deconstruct partial GBT_TREE
+void ConsensusTree::deconstruct_partial_rootnode(const TreeNode *tree, const double& weight, const PART *partialTree) {
+    /*! deconstruct partial TreeNode
      *
      * similar to deconstruct_full_rootnode(),
      * but the set of missing species is added at each branch.
@@ -104,8 +104,8 @@ void ConsensusTree::deconstruct_partial_rootnode(const GBT_TREE *tree, const dou
 
     double root_length = (tree->leftlen + tree->rightlen);
 
-    PART *p1 = deconstruct_partial_subtree(tree->leftson, root_length, weight, partialTree);
-    PART *p2 = deconstruct_partial_subtree(tree->rightson, root_length, weight, partialTree);
+    PART *p1 = deconstruct_partial_subtree(tree->get_leftson(), root_length, weight, partialTree);
+    PART *p2 = deconstruct_partial_subtree(tree->get_rightson(), root_length, weight, partialTree);
 
     arb_assert(p1->disjunct_from(p2));
 
@@ -119,17 +119,17 @@ void ConsensusTree::deconstruct_partial_rootnode(const GBT_TREE *tree, const dou
     inc_insert_progress();
 }
 
-void ConsensusTree::add_tree_to_PART(const GBT_TREE *tree, PART& part) const {
+void ConsensusTree::add_tree_to_PART(const TreeNode *tree, PART& part) const {
     if (tree->is_leaf) {
         part.setbit(get_species_index(tree->name));
     }
     else {
-        add_tree_to_PART(tree->leftson, part);
-        add_tree_to_PART(tree->rightson, part);
+        add_tree_to_PART(tree->get_leftson(), part);
+        add_tree_to_PART(tree->get_rightson(), part);
     }
 }
 
-PART *ConsensusTree::create_tree_PART(const GBT_TREE *tree, const double& weight) const {
+PART *ConsensusTree::create_tree_PART(const TreeNode *tree, const double& weight) const {
     PART *part = new PART(size, weight);
     if (part) add_tree_to_PART(tree, *part);
     return part;
