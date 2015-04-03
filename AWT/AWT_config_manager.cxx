@@ -575,8 +575,37 @@ void AWT_config_definition::write(const char *config_char_ptr) const {
     // if the string contains unknown settings, they are silently ignored
 
     AWT_config wanted_state(config_char_ptr);
-    GB_ERROR   error  = wanted_state.parseError();
-    if (!error) error = wanted_state.write_to_awars(config_mapping);
+    GB_ERROR   error = wanted_state.parseError();
+    if (!error) {
+        char *old_state = read();
+        error           = wanted_state.write_to_awars(config_mapping);
+        if (!error) {
+            if (strcmp(old_state, config_char_ptr) != 0) { // expect that anything gets changed?
+                char *new_state = read();
+                if (strcmp(new_state, config_char_ptr) != 0) {
+                    bool retry      = true;
+                    int  maxRetries = 10;
+                    while (retry && maxRetries--) {
+                        printf("Note: repeating config restore (did not set all awars correct)\n");
+                        error            = wanted_state.write_to_awars(config_mapping);
+                        char *new_state2 = read();
+                        if (strcmp(new_state, new_state2) != 0) { // retrying had some effect -> repeat
+                            reassign(new_state, new_state2);
+                        }
+                        else {
+                            retry = false;
+                            free(new_state2);
+                        }
+                    }
+                    if (retry) {
+                        error = "Unable to restore everything (might be caused by outdated, now invalid settings)";
+                    }
+                }
+                free(new_state);
+            }
+        }
+        free(old_state);
+    }
     if (error) aw_message(GBS_global_string("Error restoring configuration (%s)", error));
 }
 
