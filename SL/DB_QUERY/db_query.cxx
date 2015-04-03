@@ -2573,24 +2573,15 @@ static void new_selection_made_cb(AW_root *aw_root, const char *awar_selection, 
     free(item_name);
 }
 
-static void query_box_init_config(AWT_config_definition& cdef, DbQuery *query) {
+static void query_box_setup_config(AWT_config_definition& cdef, AW_CL cd_query) {
     // this defines what is saved/restored to/from configs
+    DbQuery *query = (DbQuery*)cd_query;
     for (int key_id = 0; key_id<QUERY_SEARCHES; ++key_id) {
         cdef.add(query->awar_keys[key_id], "key", key_id);
         cdef.add(query->awar_queries[key_id], "query", key_id);
         cdef.add(query->awar_not[key_id], "not", key_id);
         cdef.add(query->awar_operator[key_id], "operator", key_id);
     }
-}
-static char *query_box_store_config(AW_CL cl_query, AW_CL) {
-    AWT_config_definition cdef;
-    query_box_init_config(cdef, (DbQuery *)cl_query);
-    return cdef.read();
-}
-static void query_box_restore_config(const char *stored, AW_CL cl_query, AW_CL) {
-    AWT_config_definition cdef;
-    query_box_init_config(cdef, (DbQuery *)cl_query);
-    cdef.write(stored);
 }
 
 template<typename CB>
@@ -2864,9 +2855,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         aws->button_length(0);
         aws->at(awtqs->config_pos_fig);
         char *macro_id = GBS_global_string_copy("SAVELOAD_CONFIG_%s", query_id);
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "query_box",
-                                  query_box_store_config, query_box_restore_config, (AW_CL)query, 0,
-                                  macro_id);
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "query_box", query_box_setup_config, (AW_CL)query, macro_id);
         free(macro_id);
     }
 

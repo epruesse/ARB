@@ -330,8 +330,8 @@ void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const c
     /*! inserts a config-button into aww
      * @param default_file_ db where configs will be stored
      * @param id unique id (has to be a key)
-     * @param store_cb creates a string from current state
-     * @param load_cb restores state from string
+     * @param store_cb creates a string from current state (cl1 + cl2 passed to store_cb)
+     * @param load_cb restores state from string (cl1 + cl2 passed to load_cb)
      * @param macro_id custom macro id (normally NULL will do)
      */
     AWT_configuration * const config = new AWT_configuration(default_file_, id, store_cb, load_cb, cl1, cl2);
@@ -339,6 +339,44 @@ void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const c
     aww->button_length(0); // -> autodetect size by size of graphic
     aww->callback(makeCreateWindowCallback(create_config_manager_window, destroy_AWT_configuration, config, aww));
     aww->create_button(macro_id ? macro_id : "SAVELOAD_CONFIG", "#conf_save.xpm");
+}
+
+static char *store_generated_config_cb(AW_CL cl_setup_cb, AW_CL cl) {
+    AWT_setup_config_definition setup_cb = AWT_setup_config_definition(cl_setup_cb);
+    AWT_config_definition       cdef;
+    setup_cb(cdef, cl);
+
+    return cdef.read();
+}
+static void load_generated_config_cb(const char *stored_string, AW_CL cl_setup_cb, AW_CL cl) {
+    AWT_setup_config_definition setup_cb = AWT_setup_config_definition(cl_setup_cb);
+    AWT_config_definition       cdef;
+    setup_cb(cdef, cl);
+
+    cdef.write(stored_string);
+}
+void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_setup_config_definition setup_cb, AW_CL cl, const char *macro_id) {
+    /*! inserts a config-button into aww
+     * @param default_file_ db where configs will be stored
+     * @param id unique id (has to be a key)
+     * @param setup_cb populates an AWT_config_definition (cl is passed to setup_cb)
+     * @param macro_id custom macro id (normally NULL will do)
+     */
+    AWT_insert_config_manager(aww, default_file_, id, store_generated_config_cb, load_generated_config_cb, (AW_CL)setup_cb, cl, macro_id);
+}
+
+static void generate_config_from_mapping_cb(AWT_config_definition& cdef, AW_CL cl_mapping) {
+    const AWT_config_mapping_def *mapping = (const AWT_config_mapping_def*)cl_mapping;
+    cdef.add(mapping);
+}
+void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, const AWT_config_mapping_def *mapping, const char *macro_id) {
+    /*! inserts a config-button into aww
+     * @param default_file_ db where configs will be stored
+     * @param id unique id (has to be a key)
+     * @param mapping hardcoded mapping between AWARS and config strings
+     * @param macro_id custom macro id (normally NULL will do)
+     */
+    AWT_insert_config_manager(aww, default_file_, id, generate_config_from_mapping_cb, (AW_CL)mapping, macro_id);
 }
 
 static GB_ERROR decode_escapes(string& s) {
@@ -557,7 +595,7 @@ void AWT_config_definition::add(const char *awar_name, const char *config_name) 
 void AWT_config_definition::add(const char *awar_name, const char *config_name, int counter) {
     add(awar_name, GBS_global_string("%s%i", config_name, counter));
 }
-void AWT_config_definition::add(AWT_config_mapping_def *mdef) {
+void AWT_config_definition::add(const AWT_config_mapping_def *mdef) {
     while (mdef->awar_name && mdef->config_name) {
         add(mdef->awar_name, mdef->config_name);
         mdef++;

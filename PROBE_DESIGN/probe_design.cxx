@@ -1260,22 +1260,11 @@ static AWT_config_mapping_def probe_design_mapping_def[] = {
     { 0, 0 }
 };
 
-static void probe_design_init_config(AWT_config_definition& cdef) {
+static void setup_probe_design_config(AWT_config_definition& cdef, AW_CL) {
     cdef.add(probe_design_mapping_def);
     for (int i = 0; i<16; ++i) {
         cdef.add(GBS_global_string(AWAR_PD_COMMON_EXP_BONDS "%i", i), "bond", i);
     }
-}
-
-static char *probe_design_store_config(AW_CL, AW_CL) {
-    AWT_config_definition cdef;
-    probe_design_init_config(cdef);
-    return cdef.read();
-}
-static void probe_design_restore_config(const char *stored_string, AW_CL, AW_CL) {
-    AWT_config_definition cdef;
-    probe_design_init_config(cdef);
-    cdef.write(stored_string);
 }
 
 AW_window *create_probe_design_window(AW_root *root, GBDATA *gb_main) {
@@ -1338,7 +1327,7 @@ AW_window *create_probe_design_window(AW_root *root, GBDATA *gb_main) {
     }
 
     aws->at("save");
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "probe_design", probe_design_store_config, probe_design_restore_config, 0, 0);
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "probe_design", setup_probe_design_config, 0);
 
     return aws;
 }

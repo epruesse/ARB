@@ -454,16 +454,6 @@ static AWT_config_mapping_def primer_design_config_mapping[] = {
     { 0, 0 }
 };
 
-static char *primer_design_store_config(AW_CL,  AW_CL) {
-    AWT_config_definition cdef(primer_design_config_mapping);
-    return cdef.read();
-}
-
-static void primer_design_restore_config(const char *stored_string, AW_CL,  AW_CL) {
-    AWT_config_definition cdef(primer_design_config_mapping);
-    cdef.write(stored_string);
-}
-
 AW_window *create_primer_design_window(AW_root *root, GBDATA *gb_main) {
     bool is_genome_db;
     {
@@ -545,7 +535,7 @@ AW_window *create_primer_design_window(AW_root *root, GBDATA *gb_main) {
     aws->create_input_field(AWAR_PRIMER_DESIGN_TEMP_FACTOR, 7);
 
     aws->at("config");
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "pcr_primer_design", primer_design_store_config, primer_design_restore_config, 0, 0);
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "pcr_primer_design", primer_design_config_mapping);
 
     aws->at("aprox_mem");
     aws->button_length(11);
