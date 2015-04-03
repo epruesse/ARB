@@ -18,7 +18,7 @@ DESCRIPTION     This provides a general way to store and restore settings
                 - STORE: stores current settings into properties.
                 - RESTORE: restores settings from properties.
                 - DELETE: delete stored settings from properties
-                - SAVE: STORE and save stored settings to a file 
+                - SAVE: RESTORE stored settings and save them to a file 
                 - LOAD: load settings from a file, STORE and RESTORE
 
 NOTES		To save stored settings permanently, use SAVE PROPERTIES!
