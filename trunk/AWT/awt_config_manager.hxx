@@ -22,6 +22,9 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 struct AWT_config_mapping;
 
@@ -33,7 +36,7 @@ struct AWT_config_mapping_def {
 // -------------------
 //      AWT_config
 
-class AWT_config {
+class AWT_config : virtual Noncopyable {
     // stores one specific configuration (key->value pairs)
     //
     // this class allows to modify the config_string before calling AWT_config_definition::write().
@@ -43,8 +46,6 @@ class AWT_config {
     AWT_config_mapping *mapping;
     GB_ERROR           parse_error; // set by AWT_config(const char *)
 
-    AWT_config(const AWT_config&);
-    AWT_config& operator = (const AWT_config&);
 public:
     AWT_config(const char *config_string);
     AWT_config(const AWT_config_mapping *cfgname_2_awar); // internal use (reads current awar values)
@@ -66,12 +67,9 @@ public:
 // ------------------------------
 //      AWT_config_definition
 
-class AWT_config_definition {
-private:
+class AWT_config_definition : virtual Noncopyable {
     AWT_config_mapping *config_mapping; // defines config-name -> awar-name relation
 
-    AWT_config_definition(const AWT_config_definition&);
-    AWT_config_definition& operator = (const AWT_config_definition&);
 public:
     AWT_config_definition();
     AWT_config_definition(AWT_config_mapping_def *mapping_definition); // simple definition
@@ -79,7 +77,7 @@ public:
 
     void add(const char *awar_name, const char *config_name);
     void add(const char *awar_name, const char *config_name, int counter);
-    void add(AWT_config_mapping_def *mapping_definition);
+    void add(const AWT_config_mapping_def *mapping_definition);
 
     char *read() const;         // awars -> config string (heap copy)
     void write(const char *config_string) const; // config string -> awars (use to restore a saved configuration)
@@ -90,12 +88,15 @@ public:
 
 typedef char *(*AWT_store_config_to_string)(AW_CL cl1, AW_CL cl2);
 typedef void (*AWT_load_config_from_string)(const char *stored_string, AW_CL cl1, AW_CL cl2);
+typedef void (*AWT_setup_config_definition)(AWT_config_definition& cdef, AW_CL cl);
 
 // ----------------------------------
 // the config manager itself
 // adds button at cursor position when called (from a window generator function)
 
-void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store, AWT_load_config_from_string load, AW_CL cl1, AW_CL cl2, const char *macro_id = NULL);
+__ATTR__DEPRECATED("use other where possible") void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store, AWT_load_config_from_string load, AW_CL cl1, AW_CL cl2, const char *macro_id = NULL);
+void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_setup_config_definition setup_cb, AW_CL cl, const char *macro_id = NULL);
+void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, const AWT_config_mapping_def *mapping, const char *macro_id = NULL);
 
 #else
 #error awt_config_manager.hxx included twice

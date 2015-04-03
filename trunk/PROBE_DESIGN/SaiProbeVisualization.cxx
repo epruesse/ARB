@@ -599,23 +599,11 @@ void transferProbeData(saiProbeData *spd) {
 
 // ---------------------------------- Creating WINDOWS ------------------------------------------------
 
-static void saiColorDefs_init_config(AWT_config_definition& cdef) {
+static void setup_saiColorDefs_config(AWT_config_definition& cdef, AW_CL) {
     for (int i = 0; i < 10; i++) {
         const char *awarDef = getAwarName(i);
         cdef.add(awarDef, "",  i);
     }
-}
-
-static char *saiColorDefs_store_config(AW_CL, AW_CL) {
-    AWT_config_definition cdef;
-    saiColorDefs_init_config(cdef);
-    return cdef.read();
-}
-
-static void saiColorDefs_restore_config(const char *stored_string, AW_CL, AW_CL) {
-    AWT_config_definition cdef;
-    saiColorDefs_init_config(cdef);
-    cdef.write(stored_string);
 }
 
 static AW_window *create_colorTranslationTable_window(AW_root *aw_root) { // creates color translation table window
@@ -636,7 +624,7 @@ static AW_window *create_colorTranslationTable_window(AW_root *aw_root) { // cre
         }
 
         aws->at("config");
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "saveSaiColorDefs", saiColorDefs_store_config, saiColorDefs_restore_config, 0, 0);
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "saveSaiColorDefs", setup_saiColorDefs_config, 0);
 
         aws->at("dispSai");
         aws->create_toggle(AWAR_SPV_DISP_SAI);
