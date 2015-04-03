@@ -237,7 +237,7 @@ static void save_cb(AW_window *, AWT_configuration *config) {
         char *saveAs   = GBS_global_string_copy("%s_%s", config->get_id(), cfgName.c_str());
         char *filename = aw_file_selection("Save config to file", "$(ARBCONFIG)", saveAs, ".arbcfg");
         if (filename) {
-            store_cb(NULL, config);
+            restore_cb(NULL, config);
             string awar_name = config_prefix+cfgName;
             error            = config->Save(filename, awar_name);
             free(filename);
