@@ -43,50 +43,78 @@ static double get_estimated_memory(AW_root *root) {
     return mem;
 }
 
-static void primer_design_event_update_memory() {
-    AW_root *root = AW_root::SINGLETON;
-    double   mem  = get_estimated_memory(root);
+static void primer_design_event_update_memory(AW_root *root) {
+    double      mem     = get_estimated_memory(root);
+    const char *display = NULL;
 
     if (mem > 1073741824) {
-        mem = mem / 1073741824;
-        root->awar(AWAR_PRIMER_DESIGN_APROX_MEM)->write_string(GBS_global_string("%.1f TB", mem));
+        mem     = mem / 1073741824;
+        display = GBS_global_string("%.1f TB", mem);
     }
     else if (mem > 1048576) {
-        mem = mem / 1048576;
-        root->awar(AWAR_PRIMER_DESIGN_APROX_MEM)->write_string(GBS_global_string("%.1f MB", mem));
+        mem     = mem / 1048576;
+        display = GBS_global_string("%.1f MB", mem);
     }
     else if (mem > 1024) {
-        mem = mem / 1024;
-        root->awar(AWAR_PRIMER_DESIGN_APROX_MEM)->write_string(GBS_global_string("%.1f KB", mem));
+        mem     = mem / 1024;
+        display = GBS_global_string("%.1f KB", mem);
     }
     else {
-        root->awar(AWAR_PRIMER_DESIGN_APROX_MEM)->write_string(GBS_global_string("%.0f bytes", mem));
+        display = GBS_global_string("%.0f bytes", mem);
+    }
+    root->awar(AWAR_PRIMER_DESIGN_APROX_MEM)->write_string(display);
+}
+
+static void primer_design_event_check_primer_length(AW_root *root, bool max_changed) {
+    static bool avoid_recursion = false;
+
+    if (!avoid_recursion) {
+        avoid_recursion = true;
+
+        int min_length = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->read_int();
+        int max_length = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->read_int();
+
+        if (max_length<1) max_length = 1;
+        if (min_length<1) min_length = 1;
+
+        if (min_length > max_length) {
+            if (max_changed) min_length = max_length;
+            else max_length             = min_length;
+        }
+
+        prd_assert(min_length>0);
+
+        root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->write_int(min_length);
+        root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->write_int(max_length);
+
+        avoid_recursion = false;
     }
 }
 
-void create_primer_design_variables(AW_root *aw_root, AW_default aw_def, AW_default global)
-{
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_LEFT_POS,                  0, aw_def);
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_LEFT_LENGTH,             100, aw_def);
+void create_primer_design_variables(AW_root *aw_root, AW_default aw_def, AW_default global) {
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_LEFT_POS,               0,    aw_def);
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_LEFT_LENGTH,            100,  aw_def)->add_callback(primer_design_event_update_memory);
     aw_root->awar_int(AWAR_PRIMER_DESIGN_RIGHT_POS,              1000, aw_def);
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_RIGHT_LENGTH,            100, aw_def);
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_LENGTH_MIN,               10, aw_def);
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_LENGTH_MAX,               20, aw_def);
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_RIGHT_LENGTH,           100,  aw_def)->add_callback(primer_design_event_update_memory);
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_LENGTH_MIN,             10,   aw_def)->add_callback(makeRootCallback(primer_design_event_check_primer_length, false));
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_LENGTH_MAX,             20,   aw_def)->add_callback(makeRootCallback(primer_design_event_check_primer_length, true));
     aw_root->awar_int(AWAR_PRIMER_DESIGN_DIST_MIN,               1050, aw_def);
     aw_root->awar_int(AWAR_PRIMER_DESIGN_DIST_MAX,               1200, aw_def);
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_GCRATIO_MIN,              10, aw_def);
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_GCRATIO_MAX,              50, aw_def);
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_TEMPERATURE_MIN,          30, aw_def);
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_TEMPERATURE_MAX,          80, aw_def);
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_ALLOWED_MATCH_MIN_DIST,      0, aw_def);
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_EXPAND_IUPAC,              1, aw_def);
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_MAX_PAIRS,                25, aw_def);
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_GC_FACTOR,                50, aw_def);
-    aw_root->awar_int(AWAR_PRIMER_DESIGN_TEMP_FACTOR,              50, aw_def);
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_GCRATIO_MIN,            10,   aw_def);
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_GCRATIO_MAX,            50,   aw_def);
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_TEMPERATURE_MIN,        30,   aw_def);
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_TEMPERATURE_MAX,        80,   aw_def);
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_ALLOWED_MATCH_MIN_DIST, 0,    aw_def);
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_EXPAND_IUPAC,           1,    aw_def);
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_MAX_PAIRS,              25,   aw_def);
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_GC_FACTOR,              50,   aw_def);
+    aw_root->awar_int(AWAR_PRIMER_DESIGN_TEMP_FACTOR,            50,   aw_def);
 
     aw_root->awar_string(AWAR_PRIMER_DESIGN_APROX_MEM,             "", aw_def);
 
     aw_root->awar_string(AWAR_PRIMER_TARGET_STRING,                0, global);
+
+    primer_design_event_update_memory(aw_root);
 }
 
 static void create_primer_design_result_window(AW_window *aww) {
@@ -254,28 +282,6 @@ static void primer_design_event_check_gc_factor(AW_window *aww) {
     root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->write_int(100-gc);
 }
 
-static void primer_design_event_check_primer_length(AW_window *aww, AW_CL cl_max_changed) {
-    AW_root *root        = aww->get_root();
-    int      max_changed = int(cl_max_changed);
-    int      min_length  = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->read_int();
-    int      max_length  = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->read_int();
-
-    if (max_length<1) max_length = 1;
-    if (min_length<1) min_length = 1;
-
-    if (min_length >= max_length) {
-        if (max_changed) min_length = max_length-1;
-        else max_length             = min_length+1;
-    }
-
-    if (min_length<1) min_length = 1;
-
-    root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->write_int(min_length);
-    root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->write_int(max_length);
-
-    primer_design_event_update_memory();
-}
-
 static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_from_gene) {
     bool            from_gene        = bool(cl_from_gene);
     AW_root        *root             = aww->get_root();
@@ -405,9 +411,6 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
             root->awar(AWAR_PRIMER_DESIGN_DIST_MIN)->write_int(dist_min);
             root->awar(AWAR_PRIMER_DESIGN_DIST_MAX)->write_int(dist_max);
 
-            // update mem-info
-            primer_design_event_update_memory();
-
 #if defined(DUMP_PRIMER)
             printf ("primer_design_event_init : left_min   %7li\n", left_min);
             printf ("primer_design_event_init : left_max   %7li\n", left_max);
@@ -459,7 +462,6 @@ static char *primer_design_store_config(AW_CL,  AW_CL) {
 static void primer_design_restore_config(const char *stored_string, AW_CL,  AW_CL) {
     AWT_config_definition cdef(primer_design_config_mapping);
     cdef.write(stored_string);
-    primer_design_event_update_memory();
 }
 
 AW_window *create_primer_design_window(AW_root *root, GBDATA *gb_main) {
@@ -508,22 +510,18 @@ AW_window *create_primer_design_window(AW_root *root, GBDATA *gb_main) {
     aws->create_input_field(AWAR_PRIMER_DESIGN_LEFT_POS, 7);
     
     aws->at("maxleft");
-    aws->callback(makeWindowCallback(primer_design_event_update_memory));
     aws->create_input_field(AWAR_PRIMER_DESIGN_LEFT_LENGTH, 9);
 
     aws->at("minright");
     aws->create_input_field(AWAR_PRIMER_DESIGN_RIGHT_POS, 7);
     
     aws->at("maxright");
-    aws->callback(makeWindowCallback(primer_design_event_update_memory));
     aws->create_input_field(AWAR_PRIMER_DESIGN_RIGHT_LENGTH, 9);
 
     aws->at("minlen");
-    aws->callback(primer_design_event_check_primer_length, 0);
     aws->create_input_field(AWAR_PRIMER_DESIGN_LENGTH_MIN, 7);
     
     aws->at("maxlen");
-    aws->callback(primer_design_event_check_primer_length, 1);
     aws->create_input_field(AWAR_PRIMER_DESIGN_LENGTH_MAX, 7);
 
     aws->at("mindist");       aws->create_input_field(AWAR_PRIMER_DESIGN_DIST_MIN,               7);
@@ -550,7 +548,8 @@ AW_window *create_primer_design_window(AW_root *root, GBDATA *gb_main) {
     AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "pcr_primer_design", primer_design_store_config, primer_design_restore_config, 0, 0);
 
     aws->at("aprox_mem");
-    aws->create_input_field(AWAR_PRIMER_DESIGN_APROX_MEM, 11);
+    aws->button_length(11);
+    aws->create_button(NULL, AWAR_PRIMER_DESIGN_APROX_MEM, 0, "+");
 
     return aws;
 }
