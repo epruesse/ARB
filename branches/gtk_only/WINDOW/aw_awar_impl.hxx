@@ -145,6 +145,7 @@ public:
     bool      read_as_bool() const OVERRIDE;
     AW_awar*  add_target_var(long *pint) OVERRIDE;
     GB_ERROR  toggle_toggle() OVERRIDE;
+    GB_ERROR  reset_to_default() OVERRIDE;
 };
 
 class AW_awar_float : public AW_awar_impl {
@@ -175,6 +176,7 @@ public:
     bool        read_as_bool() const OVERRIDE;
     AW_awar*    add_target_var(float *pfloat) OVERRIDE;
     GB_ERROR    toggle_toggle() OVERRIDE;
+    GB_ERROR    reset_to_default() OVERRIDE;
 };
 
 class AW_awar_string : public AW_awar_impl, virtual Noncopyable {
@@ -201,6 +203,7 @@ public:
     bool        read_as_bool() const OVERRIDE;
     AW_awar*    add_target_var(char **ppchr) OVERRIDE;
     GB_ERROR    toggle_toggle() OVERRIDE;
+    GB_ERROR    reset_to_default() OVERRIDE;
 };
 
 class AW_awar_pointer : public AW_awar_impl, virtual Noncopyable {
@@ -217,4 +220,6 @@ public:
     void        do_update() OVERRIDE;
     GB_ERROR    write_pointer(GBDATA* para, bool touch=false) OVERRIDE;
     GBDATA*     read_pointer() const OVERRIDE;
+    GB_ERROR    reset_to_default() OVERRIDE;
 };
+
