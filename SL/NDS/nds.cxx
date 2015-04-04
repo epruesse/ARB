@@ -183,7 +183,7 @@ static void map_viewkeys(AW_root *aw_root, /*AW_default*/ GBDATA *awdef, GBDATA 
     }
 }
 
-void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
+void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, bool force_reinit) {
     GB_push_transaction(gb_main);
 
     GBDATA *gb_viewkey     = 0;
@@ -192,7 +192,16 @@ void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
     for (int i = 0; i<NDS_COUNT; ++i) {
         gb_viewkey = !gb_viewkey ? GB_entry(gb_arb_presets, "viewkey") : GB_nextEntry(gb_viewkey);
 
-        if (!gb_viewkey) gb_viewkey = GB_create_container(gb_arb_presets, "viewkey");
+        if (!gb_viewkey) {
+            gb_viewkey = GB_create_container(gb_arb_presets, "viewkey");
+        }
+        else if (force_reinit) {
+            for (GBDATA *gb_child = GB_child(gb_viewkey); gb_child; ) {
+                GBDATA *gb_next_child = GB_nextChild(gb_child);
+                GB_delete(gb_child);
+                gb_child = gb_next_child;
+            }
+        }
 
         {
             int  group             = 0;
@@ -202,7 +211,7 @@ void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
 
             GBDATA *gb_key_text = GB_entry(gb_viewkey, "key_text");
             if (!gb_key_text) {
-                gb_key_text        = GB_create(gb_viewkey, "key_text", GB_STRING);
+                gb_key_text = GB_create(gb_viewkey, "key_text", GB_STRING);
                 const char *wanted = "";
                 switch (i) {
                     case 0: wanted = "name"; default_len = 12; leaf = 1; break;
@@ -336,100 +345,109 @@ static char *nds_store_config(AW_CL, AW_CL) {
     return cdef.read();
 }
 
-static void nds_restore_config(const char *stored, AW_CL, AW_CL) {
+static void nds_restore_config(const char *stored, AW_CL cl_gb_main, AW_CL) {
+    // if stored == NULL -> reset
+
     AWT_config_definition cdef;
     nds_init_config(cdef);
 
-    AWT_config parsedCfg(stored);
-    if (parsedCfg.has_entry("inherit0")) {
-        aw_message("Converting stored config to new NDS format -- consider saving it again.");
-        // Note: The conversion applied here is also done in create_nds_vars()
+    if (stored) { // restore
+        AWT_config parsedCfg(stored);
+        if (parsedCfg.has_entry("inherit0")) {
+            aw_message("Converting stored config to new NDS format -- consider saving it again.");
+            // Note: The conversion applied here is also done in create_nds_vars()
 
-        GB_ERROR error = 0;
+            GB_ERROR error = 0;
 
-        for (int i = 0; !error && i<NDS_COUNT; ++i) {
-            bool was_group_name = false;
-            {
-                const char *key_text_key = GBS_global_string("key_text%i", i);
-                const char *key_text     = parsedCfg.get_entry(key_text_key);
-                if (strcmp(key_text, "group_name") == 0) {
-                    was_group_name = true;
-                    parsedCfg.set_entry(key_text_key, "");
+            for (int i = 0; !error && i<NDS_COUNT; ++i) {
+                bool was_group_name = false;
+                {
+                    const char *key_text_key = GBS_global_string("key_text%i", i);
+                    const char *key_text     = parsedCfg.get_entry(key_text_key);
+                    if (strcmp(key_text, "group_name") == 0) {
+                        was_group_name = true;
+                        parsedCfg.set_entry(key_text_key, "");
+                    }
                 }
-            }
 
-            bool leaf    = false;
-            bool group   = false;
-            int  inherit = 0;
+                bool leaf    = false;
+                bool group   = false;
+                int  inherit = 0;
 
-            {
-                const char *inherit_key   = GBS_global_string("inherit%i", i);
-                const char *inherit_value = parsedCfg.get_entry(inherit_key);
+                {
+                    const char *inherit_key   = GBS_global_string("inherit%i", i);
+                    const char *inherit_value = parsedCfg.get_entry(inherit_key);
 
-                if (inherit_value) {
-                    inherit = atoi(inherit_value);
-                    parsedCfg.delete_entry(inherit_key);
+                    if (inherit_value) {
+                        inherit = atoi(inherit_value);
+                        parsedCfg.delete_entry(inherit_key);
+                    }
+                    else {
+                        error = GB_export_errorf("Expected entry '%s' in saved config", inherit_key);
+                    }
+                }
+
+                if (was_group_name) {
+                    if (!error) {
+                        leaf  = inherit;
+                        group = true;
+
+                        char       *aci_key = GBS_global_string_copy("pars%i", i);
+                        const char *aci     = parsedCfg.get_entry(aci_key);
+                        char       *new_aci = 0;
+
+                        if      (aci[0] == 0)   { new_aci = strdup("taxonomy(1)"); }
+                        else if (aci[0] == '|') { new_aci = GBS_global_string_copy("taxonomy(1)%s", aci); }
+                        else                    { new_aci = GBS_global_string_copy("taxonomy(1)|%s", aci); }
+
+                        parsedCfg.set_entry(aci_key, new_aci);
+
+                        free(new_aci);
+                        free(aci_key);
+                    }
                 }
                 else {
-                    error = GB_export_errorf("Expected entry '%s' in saved config", inherit_key);
+                    leaf = true;
+                }
+
+                if (!error) {
+                    const char *flag1_key   = GBS_global_string("active%i", i);
+                    const char *flag1_value = parsedCfg.get_entry(flag1_key);
+                    if (flag1_value) {
+                        int flag1 = atoi(flag1_value);
+                        if (flag1 == 0) { leaf = group = false; }
+                        parsedCfg.delete_entry(flag1_key);
+                    }
+                    else {
+                        error = GB_export_errorf("Expected entry '%s' in saved config", flag1_key);
+                    }
+                }
+
+                if (!error) {
+                    const char *leaf_key  = GBS_global_string("leaf%i", i);
+                    parsedCfg.set_entry(leaf_key, GBS_global_string("%i", int(leaf)));
+                    const char *group_key = GBS_global_string("group%i", i);
+                    parsedCfg.set_entry(group_key, GBS_global_string("%i", int(group)));
                 }
             }
 
-            if (was_group_name) {
-                if (!error) {
-                    leaf  = inherit;
-                    group = true;
-
-                    char       *aci_key = GBS_global_string_copy("pars%i", i);
-                    const char *aci     = parsedCfg.get_entry(aci_key);
-                    char       *new_aci = 0;
-
-                    if      (aci[0] == 0)   { new_aci = strdup("taxonomy(1)"); }
-                    else if (aci[0] == '|') { new_aci = GBS_global_string_copy("taxonomy(1)%s", aci); }
-                    else                    { new_aci = GBS_global_string_copy("taxonomy(1)|%s", aci); }
-
-                    parsedCfg.set_entry(aci_key, new_aci);
-
-                    free(new_aci);
-                    free(aci_key);
-                }
+            if (!error) {
+                char *converted_cfg_str = parsedCfg.config_string();
+                cdef.write(converted_cfg_str);
+                free(converted_cfg_str);
             }
             else {
-                leaf = true;
+                aw_message(error);
             }
-
-            if (!error) {
-                const char *flag1_key   = GBS_global_string("active%i", i);
-                const char *flag1_value = parsedCfg.get_entry(flag1_key);
-                if (flag1_value) {
-                    int flag1 = atoi(flag1_value);
-                    if (flag1 == 0) { leaf = group = false; }
-                    parsedCfg.delete_entry(flag1_key);
-                }
-                else {
-                    error = GB_export_errorf("Expected entry '%s' in saved config", flag1_key);
-                }
-            }
-
-            if (!error) {
-                const char *leaf_key  = GBS_global_string("leaf%i", i);
-                parsedCfg.set_entry(leaf_key, GBS_global_string("%i", int(leaf)));
-                const char *group_key = GBS_global_string("group%i", i);
-                parsedCfg.set_entry(group_key, GBS_global_string("%i", int(group)));
-            }
-        }
-
-        if (!error) {
-            char *converted_cfg_str = parsedCfg.config_string();
-            cdef.write(converted_cfg_str);
-            free(converted_cfg_str);
         }
         else {
-            aw_message(error);
+            cdef.write(stored);
         }
     }
-    else {
-        cdef.write(stored);
+    else { // reset to factory defaults
+        GBDATA *gb_main = (GBDATA*)cl_gb_main;
+        cdef.reset(); // AWAR values are just empty here
+        create_nds_vars(AW_root::SINGLETON, AW_ROOT_DEFAULT, gb_main, true); // => reinit NDS
     }
 }
 
@@ -457,7 +475,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
         }
         aws->update_option_menu();
 
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "nds", nds_store_config, nds_restore_config, 0, 0);
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "nds", nds_store_config, nds_restore_config, (AW_CL)gb_main, 0);
 
         // --------------------
 

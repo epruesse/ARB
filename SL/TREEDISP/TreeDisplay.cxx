@@ -2758,15 +2758,6 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { 0, 0 }
 };
 
-static char *tree_setting_store_config(AW_CL,  AW_CL) {
-    AWT_config_definition cdef(tree_setting_config_mapping);
-    return cdef.read();
-}
-static void tree_setting_restore_config(const char *stored_string, AW_CL,  AW_CL) {
-    AWT_config_definition cdef(tree_setting_config_mapping);
-    cdef.write(stored_string);
-}
-
 AW_window *TREE_create_settings_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (!aws) {
@@ -2836,7 +2827,7 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->at_newline();
 
         aws->at("config");
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "tree_settings", tree_setting_store_config, tree_setting_restore_config, 0, 0);
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "tree_settings", tree_setting_config_mapping);
     }
     return aws;
 }

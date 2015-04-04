@@ -38,6 +38,7 @@ Major changes for next release:
    * preserve gap-type ('-' vs '.') and upper-/lower-case of original alignment
    * no longer ask what to do with aligned sequence, just overwrite it
      - only warn about real sequence changes (so please do NOT ignore from now on!)
+ - possibility to restore default settings from config-managers
  - updated/added external tools:
    - added alternate RAxML (DNA only; version 8.0.26)
 

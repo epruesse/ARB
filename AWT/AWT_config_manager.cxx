@@ -34,11 +34,10 @@ using namespace std;
 //      AWT_configuration
 
 class AWT_configuration : virtual Noncopyable {
-private:
     string id;
 
-    AWT_store_config_to_string  store;
-    AWT_load_config_from_string load;
+    AWT_store_config_to_string store;
+    AWT_load_or_reset_config   load_or_reset;
 
     AW_CL client1; // client data for callbacks above
     AW_CL client2;
@@ -46,10 +45,10 @@ private:
     AW_default default_file;
 
 public:
-    AWT_configuration(AW_default default_file_, const char *id_, AWT_store_config_to_string store_, AWT_load_config_from_string load_, AW_CL cl1, AW_CL cl2)
+    AWT_configuration(AW_default default_file_, const char *id_, AWT_store_config_to_string store_, AWT_load_or_reset_config load_or_reset_, AW_CL cl1, AW_CL cl2)
         : id(id_),
           store(store_),
-          load(load_),
+          load_or_reset(load_or_reset_),
           client1(cl1),
           client2(cl2),
           default_file(default_file_)
@@ -80,9 +79,12 @@ public:
         GB_ERROR error = 0;
 
         if (s.empty()) error = "empty/nonexistant config";
-        else load(s.c_str(), client1, client2);
+        else load_or_reset(s.c_str(), client1, client2);
 
         return error;
+    }
+    void Reset() const {
+        load_or_reset(NULL, client1, client2);
     }
 
     GB_ERROR Save(const char* filename, const string& awar_name); // AWAR content -> FILE
@@ -237,7 +239,7 @@ static void save_cb(AW_window *, AWT_configuration *config) {
         char *saveAs   = GBS_global_string_copy("%s_%s", config->get_id(), cfgName.c_str());
         char *filename = aw_file_selection("Save config to file", "$(ARBCONFIG)", saveAs, ".arbcfg");
         if (filename) {
-            store_cb(NULL, config);
+            restore_cb(NULL, config);
             string awar_name = config_prefix+cfgName;
             error            = config->Save(filename, awar_name);
             free(filename);
@@ -245,6 +247,9 @@ static void save_cb(AW_window *, AWT_configuration *config) {
         free(saveAs);
     }
     aw_message_if(error);
+}
+static void reset_cb(AW_window *, AWT_configuration *config) {
+    config->Reset();
 }
 
 static void refresh_config_sellist_cb(AW_root*, AWT_configuration *config, AW_selection_list *sel) {
@@ -296,11 +301,12 @@ static AW_window *create_config_manager_window(AW_root *, AWT_configuration *con
         const char *label;
         const char *mnemonic;
     } butDef[] = {
-        { restore_cb, "RESTORE", "Restore", "R" },
-        { store_cb,   "STORE",   "Store",   "S" },
-        { delete_cb,  "DELETE",  "Delete",  "D" },
-        { load_cb,    "LOAD",    "Load",    "L" },
-        { save_cb,    "SAVE",    "Save",    "v" },
+        { restore_cb, "RESTORE", "Restore",           "R" },
+        { store_cb,   "STORE",   "Store",             "S" },
+        { delete_cb,  "DELETE",  "Delete",            "D" },
+        { load_cb,    "LOAD",    "Load",              "L" },
+        { save_cb,    "SAVE",    "Save",              "v" },
+        { reset_cb,   "RESET",   "Factory\ndefaults", "F" },
     };
     const int buttons = ARRAY_ELEMS(butDef);
     for (int b = 0; b<buttons; ++b) {
@@ -325,20 +331,61 @@ static AW_window *create_config_manager_window(AW_root *, AWT_configuration *con
 static void destroy_AWT_configuration(AWT_configuration *c, AW_window*) { delete c; }
 
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store_cb,
-                               AWT_load_config_from_string load_cb, AW_CL cl1, AW_CL cl2, const char *macro_id)
+                               AWT_load_or_reset_config load_or_reset_cb, AW_CL cl1, AW_CL cl2, const char *macro_id)
 {
     /*! inserts a config-button into aww
      * @param default_file_ db where configs will be stored
      * @param id unique id (has to be a key)
      * @param store_cb creates a string from current state
-     * @param load_cb restores state from string
+     * @param load_or_reset_cb restores state from string or resets factory defaults if string is NULL
+     * @param cl1 client data (passed to store_cb and load_or_reset_cb)
+     * @param cl2 like cl1
      * @param macro_id custom macro id (normally NULL will do)
      */
-    AWT_configuration * const config = new AWT_configuration(default_file_, id, store_cb, load_cb, cl1, cl2);
+    AWT_configuration * const config = new AWT_configuration(default_file_, id, store_cb, load_or_reset_cb, cl1, cl2);
 
     aww->button_length(0); // -> autodetect size by size of graphic
     aww->callback(makeCreateWindowCallback(create_config_manager_window, destroy_AWT_configuration, config, aww));
     aww->create_button(macro_id ? macro_id : "SAVELOAD_CONFIG", "#conf_save.xpm");
+}
+
+static char *store_generated_config_cb(AW_CL cl_setup_cb, AW_CL cl) {
+    AWT_setup_config_definition setup_cb = AWT_setup_config_definition(cl_setup_cb);
+    AWT_config_definition       cdef;
+    setup_cb(cdef, cl);
+
+    return cdef.read();
+}
+static void load_or_reset_generated_config_cb(const char *stored_string, AW_CL cl_setup_cb, AW_CL cl) {
+    AWT_setup_config_definition setup_cb = AWT_setup_config_definition(cl_setup_cb);
+    AWT_config_definition       cdef;
+    setup_cb(cdef, cl);
+
+    if (stored_string) cdef.write(stored_string);
+    else cdef.reset();
+}
+void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_setup_config_definition setup_cb, AW_CL cl, const char *macro_id) {
+    /*! inserts a config-button into aww
+     * @param default_file_ db where configs will be stored
+     * @param id unique id (has to be a key)
+     * @param setup_cb populates an AWT_config_definition (cl is passed to setup_cb)
+     * @param macro_id custom macro id (normally NULL will do)
+     */
+    AWT_insert_config_manager(aww, default_file_, id, store_generated_config_cb, load_or_reset_generated_config_cb, (AW_CL)setup_cb, cl, macro_id);
+}
+
+static void generate_config_from_mapping_cb(AWT_config_definition& cdef, AW_CL cl_mapping) {
+    const AWT_config_mapping_def *mapping = (const AWT_config_mapping_def*)cl_mapping;
+    cdef.add(mapping);
+}
+void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, const AWT_config_mapping_def *mapping, const char *macro_id) {
+    /*! inserts a config-button into aww
+     * @param default_file_ db where configs will be stored
+     * @param id unique id (has to be a key)
+     * @param mapping hardcoded mapping between AWARS and config strings
+     * @param macro_id custom macro id (normally NULL will do)
+     */
+    AWT_insert_config_manager(aww, default_file_, id, generate_config_from_mapping_cb, (AW_CL)mapping, macro_id);
 }
 
 static GB_ERROR decode_escapes(string& s) {
@@ -557,7 +604,7 @@ void AWT_config_definition::add(const char *awar_name, const char *config_name) 
 void AWT_config_definition::add(const char *awar_name, const char *config_name, int counter) {
     add(awar_name, GBS_global_string("%s%i", config_name, counter));
 }
-void AWT_config_definition::add(AWT_config_mapping_def *mdef) {
+void AWT_config_definition::add(const AWT_config_mapping_def *mdef) {
     while (mdef->awar_name && mdef->config_name) {
         add(mdef->awar_name, mdef->config_name);
         mdef++;
@@ -574,9 +621,52 @@ void AWT_config_definition::write(const char *config_char_ptr) const {
     // write values from string to awars
     // if the string contains unknown settings, they are silently ignored
 
+    awt_assert(config_char_ptr);
+
     AWT_config wanted_state(config_char_ptr);
-    GB_ERROR   error  = wanted_state.parseError();
-    if (!error) error = wanted_state.write_to_awars(config_mapping);
+    GB_ERROR   error = wanted_state.parseError();
+    if (!error) {
+        char *old_state = read();
+        error           = wanted_state.write_to_awars(config_mapping);
+        if (!error) {
+            if (strcmp(old_state, config_char_ptr) != 0) { // expect that anything gets changed?
+                char *new_state = read();
+                if (strcmp(new_state, config_char_ptr) != 0) {
+                    bool retry      = true;
+                    int  maxRetries = 10;
+                    while (retry && maxRetries--) {
+                        printf("Note: repeating config restore (did not set all awars correct)\n");
+                        error            = wanted_state.write_to_awars(config_mapping);
+                        char *new_state2 = read();
+                        if (strcmp(new_state, new_state2) != 0) { // retrying had some effect -> repeat
+                            reassign(new_state, new_state2);
+                        }
+                        else {
+                            retry = false;
+                            free(new_state2);
+                        }
+                    }
+                    if (retry) {
+                        error = "Unable to restore everything (might be caused by outdated, now invalid settings)";
+                    }
+                }
+                free(new_state);
+            }
+        }
+        free(old_state);
+    }
     if (error) aw_message(GBS_global_string("Error restoring configuration (%s)", error));
+}
+
+void AWT_config_definition::reset() const {
+    // reset all awars (stored in config) to factory defaults
+
+    GB_transaction ta(AW_ROOT_DEFAULT); // see also notes .@write_to_awars
+    AW_root *aw_root = AW_root::SINGLETON;
+    for (config_map::iterator e = config_mapping->begin(); e != config_mapping->end(); ++e) {
+        const string&  awar_name(e->second);
+        AW_awar       *awar = aw_root->awar(awar_name.c_str());
+        awar->reset_to_default();
+    }
 }
 
