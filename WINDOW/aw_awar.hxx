@@ -165,6 +165,8 @@ public:
     virtual GB_ERROR toggle_toggle() = 0;   // switches between 1/0
     virtual void     touch() = 0;
 
+    virtual GB_ERROR reset_to_default() = 0;
+
     GB_ERROR make_global() __ATTR__USERESULT;       // should be used by ARB_init_global_awars only
 };
 

@@ -330,6 +330,10 @@ GB_ERROR AW_awar_int::write_as_bool(bool b, bool do_touch) {
     return write_int(b ? 1 : 0, do_touch);
 }
 
+GB_ERROR AW_awar_int::reset_to_default() {
+    return has_default_value() ? NULL : write_int(default_value, true);
+}
+
 // --------------------------------------------------------------------------------
 
 AW_awar_float::AW_awar_float(const char *var_name, double var_value, AW_default default_file, AW_root *) 
@@ -450,6 +454,10 @@ GB_ERROR AW_awar_float::write_as_bool(bool b, bool do_touch) {
     return write_float(b ? 1.0 : 0.0, do_touch);
 }
 
+GB_ERROR AW_awar_float::reset_to_default() {
+    return has_default_value() ? NULL : write_float(default_value, true);
+}
+
 // --------------------------------------------------------------------------------
 
 AW_awar_string::AW_awar_string(const char *var_name, const char* var_value, AW_default default_file, AW_root *) 
@@ -567,6 +575,10 @@ GB_ERROR AW_awar_string::write_as_bool(bool b, bool do_touch) {
     return write_string(b ? "yes" : "no", do_touch);
 }
 
+GB_ERROR AW_awar_string::reset_to_default() {
+    return has_default_value() ? NULL : write_string(default_value, true);
+}
+
 // --------------------------------------------------------------------------------
 
 AW_awar_pointer::AW_awar_pointer(const char *var_name, GBDATA* var_value, AW_default default_file, AW_root*) 
@@ -610,6 +622,10 @@ GBDATA *AW_awar_pointer::read_pointer() const {
     if (!gb_var) return NULL;
     GB_transaction ta(gb_var);
     return GB_read_pointer(gb_var);
+}
+
+GB_ERROR AW_awar_pointer::reset_to_default() {
+    return has_default_value() ? NULL : write_pointer(default_value, true);
 }
 
 // --------------------------------------------------------------------------------
