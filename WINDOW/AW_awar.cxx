@@ -569,7 +569,7 @@ GB_ERROR AW_awar_string::write_as_bool(bool b, bool do_touch) {
 
 // --------------------------------------------------------------------------------
 
-AW_awar_pointer::AW_awar_pointer(const char *var_name, void* var_value, AW_default default_file, AW_root*) 
+AW_awar_pointer::AW_awar_pointer(const char *var_name, GBDATA* var_value, AW_default default_file, AW_root*) 
   : AW_awar_impl(var_name),
     default_value(var_value),
     value(NULL)
@@ -577,7 +577,7 @@ AW_awar_pointer::AW_awar_pointer(const char *var_name, void* var_value, AW_defau
     GB_transaction ta(default_file);
     gb_origin = ensure_gbdata(default_file, var_name, GB_POINTER);
     if (GB_is_temporary(gb_origin)) {
-        GB_write_pointer(gb_origin, (GBDATA*)var_value);
+        GB_write_pointer(gb_origin, var_value);
     }
 
     map(gb_origin);

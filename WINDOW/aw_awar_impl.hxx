@@ -204,12 +204,13 @@ public:
 };
 
 class AW_awar_pointer : public AW_awar_impl, virtual Noncopyable {
-    void *default_value;
-    void *value;
+    GBDATA *default_value;
+    GBDATA *value;
+
     void     remove_all_target_vars() OVERRIDE;
     bool      has_default_value() const OVERRIDE;
 public:
-    AW_awar_pointer(const char *var_name, void* var_value, AW_default default_file, AW_root *root);
+    AW_awar_pointer(const char *var_name, GBDATA* var_value, AW_default default_file, AW_root *root);
     ~AW_awar_pointer();
     GB_TYPES    get_type() const OVERRIDE { return GB_POINTER; }
     const char* get_type_name() const { return "AW_awar_pointer"; }
