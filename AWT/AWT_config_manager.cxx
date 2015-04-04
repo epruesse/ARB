@@ -312,7 +312,10 @@ static AW_window *create_config_manager_window(AW_root *, AWT_configuration *con
     for (int b = 0; b<buttons; ++b) {
         const but& B = butDef[b];
 
-        if (b>0) aws->at(xpos, ypos + b*yoffset);
+        if (b>0) {
+            aws->at("button");
+            aws->at(xpos, ypos + b*yoffset);
+        }
 
         aws->callback(makeWindowCallback(B.cb, config));
         aws->create_button(B.id, B.label, B.mnemonic);
