@@ -79,22 +79,23 @@ public:
     void add(const char *awar_name, const char *config_name, int counter);
     void add(const AWT_config_mapping_def *mapping_definition);
 
-    char *read() const;         // awars -> config string (heap copy)
+    char *read() const;                          // awars -> config string (heap copy)
     void write(const char *config_string) const; // config string -> awars (use to restore a saved configuration)
+    void reset() const;                          // reset awars to defaults
 };
 
 // ----------------------------------------
 //      callbacks from config manager :
 
 typedef char *(*AWT_store_config_to_string)(AW_CL cl1, AW_CL cl2);
-typedef void (*AWT_load_config_from_string)(const char *stored_string, AW_CL cl1, AW_CL cl2);
+typedef void (*AWT_load_or_reset_config)(const char *stored_string, AW_CL cl1, AW_CL cl2);
 typedef void (*AWT_setup_config_definition)(AWT_config_definition& cdef, AW_CL cl);
 
 // ----------------------------------
 // the config manager itself
 // adds button at cursor position when called (from a window generator function)
 
-__ATTR__DEPRECATED("use other where possible") void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store, AWT_load_config_from_string load, AW_CL cl1, AW_CL cl2, const char *macro_id = NULL);
+void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store, AWT_load_or_reset_config load_or_reset, AW_CL cl1, AW_CL cl2, const char *macro_id = NULL);
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_setup_config_definition setup_cb, AW_CL cl, const char *macro_id = NULL);
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, const AWT_config_mapping_def *mapping, const char *macro_id = NULL);
 
