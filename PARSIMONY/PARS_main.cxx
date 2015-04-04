@@ -1678,7 +1678,7 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def, GBDATA *gb_ma
     awr->awar_int(AWAR_RAND_PERCENT, 50, aw_def)->set_minmax(1, 100);
 
     create_optimize_vars(awr, aw_def);
-    create_nds_vars(awr, aw_def, gb_main);
+    create_nds_vars(awr, aw_def, gb_main, false);
 
     TREE_create_awars(awr, gb_main);
 

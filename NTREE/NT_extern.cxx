@@ -218,7 +218,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
 
     NT_create_alignment_vars(awr, def, GLOBAL.gb_main);
     NT_create_extendeds_vars(awr, def, GLOBAL.gb_main);
-    create_nds_vars(awr, def, GLOBAL.gb_main);
+    create_nds_vars(awr, def, GLOBAL.gb_main, false);
     create_export_nds_awars(awr, def);
     TREE_create_awars(awr, GLOBAL.gb_main);
 
