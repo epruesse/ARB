@@ -198,6 +198,17 @@ void AW_awar::touch() {
         GB_touch(gb_var);
     }
 }
+GB_ERROR AW_awar::reset_to_default() {
+    GB_ERROR error = NULL;
+    switch (variable_type) {
+        case AW_STRING:  error = write_string (default_value.s); break;
+        case AW_INT:     error = write_int    (default_value.l); break;
+        case AW_FLOAT:   error = write_float  (default_value.d); break;
+        case AW_POINTER: error = write_pointer(default_value.p); break;
+        default: aw_assert(0); break;
+    }
+    return error;
+}
 
 void AW_awar::untie_all_widgets() {
     delete refresh_list; refresh_list = NULL;
