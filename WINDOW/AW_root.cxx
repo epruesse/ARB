@@ -512,7 +512,7 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
     return vs;
 }
 
-AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_default default_file) {
+AW_awar *AW_root::awar_pointer(const char *var_name, GBDATA *default_value, AW_default default_file) {
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
