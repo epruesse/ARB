@@ -15,11 +15,12 @@ OCCURRENCE	Anywhere (buttons with config icon)
 DESCRIPTION     This provides a general way to store and restore settings
                 from the window, where this has been called from.
 
-                - STORE: store current settings as named configuration (into properties)
-                - RESTORE: restores a named configuration (from properties)
-                - DELETE: delete named configuration
-                - SAVE: RESTORE stored settings and save them to a file 
-                - LOAD: load settings from a file, STORE and RESTORE
+                - Restore: restores a named configuration (from properties)
+                - Store: store current settings as named configuration (into properties)
+                - Delete: delete named configuration
+                - Load: load settings from a file, STORE and RESTORE
+                - Save: RESTORE stored settings and save them to a file
+                - Factory defaults: reset all values to their defaults
 
 NOTES		To keep stored settings permanently (i.e. for future arb sessions), 
 		use 'Save properties' from the 'Properties' menu!
