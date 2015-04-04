@@ -1014,15 +1014,6 @@ static AWT_config_mapping_def optimizer_config_mapping[] = {
     { 0, 0 }
 };
 
-static char *optimizer_store_config(AW_CL,  AW_CL) {
-    AWT_config_definition cdef(optimizer_config_mapping);
-    return cdef.read();
-}
-static void optimizer_restore_config(const char *stored_string, AW_CL,  AW_CL) {
-    AWT_config_definition cdef(optimizer_config_mapping);
-    cdef.write(stored_string);
-}
-
 static AW_window *createOptimizeWindow(AW_root *aw_root, AWT_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "TREE_OPTIMIZE", "Tree optimization");
@@ -1055,7 +1046,7 @@ static AW_window *createOptimizeWindow(AW_root *aw_root, AWT_canvas *ntw) {
     aws->create_button("HEURISTIC", "Heuristic\noptimizer", "H");
 
     aws->at("config");
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "treeopti", optimizer_store_config, optimizer_restore_config, 0, 0, NULL);
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "treeopti", optimizer_config_mapping);
 
     aws->at("settings");
     aws->callback(makeCreateWindowCallback(create_kernighan_properties_window));
@@ -1688,7 +1679,7 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def, GBDATA *gb_ma
     awr->awar_int(AWAR_RAND_PERCENT, 50, aw_def)->set_minmax(1, 100);
 
     create_optimize_vars(awr, aw_def);
-    create_nds_vars(awr, aw_def, gb_main);
+    create_nds_vars(awr, aw_def, gb_main, false);
 
     TREE_create_awars(awr, gb_main);
 

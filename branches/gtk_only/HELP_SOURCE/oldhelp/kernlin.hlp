@@ -10,8 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Kernigham Lin (K.L.) properties
 
-OCCURRENCE	ARB_PARSIMONY/Properties/KERN. LIN
-
+OCCURRENCE	ARB_PARSIMONY/Properties/Optimizer settings (KL)
                 ARB_PARSIMONY/Tree/Tree Optimization/Settings
 
 DESCRIPTION     Provides parameters for the K.L. optimization as used
