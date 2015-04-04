@@ -64,8 +64,9 @@ GB_ERROR AW_awar_impl::write_pointer(GBDATA *, bool) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
 
+#pragma GCC diagnostic ignored "-Wmissing-noreturn"
 
-#define AWAR_READ_ACCESS_FAILED \
+#define AWAR_READ_ACCESS_FAILED                                                 \
     GBK_terminatef("AWAR read access failure. Called %s on awar %s of type %s", \
                 __PRETTY_FUNCTION__, get_name(), get_type_name())
 
@@ -151,7 +152,6 @@ AW_choice* AW_awar_impl::add_choice(AW_action&, double, bool) {
     AWAR_CHOICE_FAILURE;
     return NULL;
 }
-
 
 // --------------------------------------------------------------------------------
 // callback handling
@@ -793,7 +793,7 @@ void AW_awar_impl::bind_value(GObject* obj, const char *propname, AW_awar_gvalue
     // Remove previous binding of GObject to an AWAR if present
     AW_awar *awar_prev = (AW_awar*)g_object_get_data(obj, "AWAR");
     if (awar_prev) {
-        aw_debug("AWAR %s: overwriting binding?!");
+        aw_debug("AWAR: overwriting binding?!");
         awar_prev->unbind(obj);
     }
 
