@@ -90,14 +90,14 @@ public:
     virtual AW_awar *set_srt(const char *srt) OVERRIDE;
 
     virtual bool        has_default_value() const OVERRIDE = 0;
-    virtual char       *read_string() const OVERRIDE;
-    virtual const char *read_char_pntr() const OVERRIDE;
-    virtual char       *read_as_string() const OVERRIDE;
-    virtual long        read_int() const OVERRIDE;
-    virtual double      read_float() const OVERRIDE;
-    virtual double      read_as_float() const OVERRIDE;
-    virtual GBDATA     *read_pointer() const OVERRIDE;
-    virtual bool        read_as_bool() const OVERRIDE;
+    virtual char       *read_string() const       OVERRIDE;
+    virtual const char *read_char_pntr() const    OVERRIDE;
+    virtual char       *read_as_string() const    OVERRIDE;
+    virtual long        read_int() const          OVERRIDE;
+    virtual double      read_float() const        OVERRIDE;
+    virtual double      read_as_float() const     OVERRIDE;
+    virtual GBDATA     *read_pointer() const      OVERRIDE;
+    virtual bool        read_as_bool() const      OVERRIDE;
 
     virtual GB_ERROR write_string(const char *aw_string, bool touch = false) OVERRIDE;
     virtual GB_ERROR write_as_string(const char *aw_string, bool touch = false) OVERRIDE;
