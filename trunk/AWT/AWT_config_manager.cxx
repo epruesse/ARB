@@ -324,29 +324,40 @@ static void erase_comment_cb(AW_window*, AW_awar *awar_comment) {
 }
 
 static void restore_cb(AW_window *, AWT_configuration *config) {
-    string   cfgName   = config->get_awar_value(CURRENT_CFG);
-    string   awar_name = config_prefix+cfgName;
-    GB_ERROR error     = config->Restore(config->get_awar_value(awar_name));
+    string cfgName = config->get_awar_value(CURRENT_CFG);
+    GB_ERROR error;
+    if (cfgName.empty()) {
+        error = "Please select config to restore";
+    }
+    else {
+        string awar_name = config_prefix+cfgName;
+        error = config->Restore(config->get_awar_value(awar_name));
+    }
     aw_message_if(error);
 }
 static void store_cb(AW_window *, AWT_configuration *config) {
-    string existing = config->get_awar_value(EXISTING_CFGS);
-    string cfgName  = config->get_awar_value(CURRENT_CFG);
-
-    AW_awar *awar_comment = config->get_awar(VISIBLE_COMMENT);
-    string visibleComment(awar_comment->read_char_pntr());
-
-    remove_from_configs(cfgName, existing); // remove selected from existing configs
-
-    existing = existing.empty() ? cfgName : (string(cfgName)+';'+existing);
-    {
-        char   *config_string = config->Store();
-        string  awar_name     = config_prefix+cfgName;
-        config->set_awar_value(awar_name, config_string);
-        free(config_string);
+    string cfgName = config->get_awar_value(CURRENT_CFG);
+    if (cfgName.empty()) {
+        aw_message("Please select or enter name of config to store");
     }
-    config->set_awar_value(EXISTING_CFGS, existing);
-    awar_comment->rewrite_string(visibleComment.c_str()); // force new config to use last visible comment
+    else {
+        string existing = config->get_awar_value(EXISTING_CFGS);
+
+        AW_awar *awar_comment = config->get_awar(VISIBLE_COMMENT);
+        string visibleComment(awar_comment->read_char_pntr());
+
+        remove_from_configs(cfgName, existing); // remove selected from existing configs
+
+        existing = existing.empty() ? cfgName : (string(cfgName)+';'+existing);
+        {
+            char   *config_string = config->Store();
+            string  awar_name     = config_prefix+cfgName;
+            config->set_awar_value(awar_name, config_string);
+            free(config_string);
+        }
+        config->set_awar_value(EXISTING_CFGS, existing);
+        awar_comment->rewrite_string(visibleComment.c_str()); // force new config to use last visible comment
+    }
 }
 static void delete_cb(AW_window *, AWT_configuration *config) {
     string existing = config->get_awar_value(EXISTING_CFGS);
@@ -359,6 +370,8 @@ static void delete_cb(AW_window *, AWT_configuration *config) {
     AWT_config comments(config->get_awar_value(STORED_COMMENTS).c_str());
     comments.delete_entry(cfgName.c_str());
     save_comments(comments, config);
+
+ // @@@ cleanup non-existing config entries
 }
 static void load_cb(AW_window *, AWT_configuration *config) {
     string   cfgName = config->get_awar_value(CURRENT_CFG);
