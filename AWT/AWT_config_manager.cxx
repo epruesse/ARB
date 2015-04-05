@@ -103,8 +103,8 @@ public:
         load_or_reset(NULL, client1, client2);
     }
 
-    GB_ERROR Save(const char* filename, const string& awar_name); // AWAR content -> FILE
-    GB_ERROR Load(const char* filename, const string& awar_name); // FILE -> AWAR content
+    GB_ERROR Save(const char* filename, const string& awar_name, const string& comment); // AWAR content -> FILE
+    GB_ERROR Load(const char* filename, const string& awar_name, string& found_comment); // FILE -> AWAR content
 
     bool has_existing(const char *lookFor) {
         string S(";");
@@ -167,10 +167,8 @@ static void encode_escapes(string& s, const char *to_escape) {
 #define HEADER    "ARB_CONFIGURATION"
 #define HEADERLEN 17
 
-GB_ERROR AWT_configuration::Save(const char* filename, const string& awar_name) {
+GB_ERROR AWT_configuration::Save(const char* filename, const string& awar_name, const string& comment) {
     awt_assert(strlen(HEADER) == HEADERLEN);
-
-    // @@@ save comment
 
     printf("Saving config to '%s'..\n", filename);
 
@@ -180,7 +178,15 @@ GB_ERROR AWT_configuration::Save(const char* filename, const string& awar_name) 
         error = GB_export_IO_error("saving", filename);
     }
     else {
-        fprintf(out, HEADER ":%s\n", id.c_str());
+        if (comment.empty()) {
+            fprintf(out, HEADER ":%s\n", id.c_str()); // =same as old format
+        }
+        else {
+            string encoded_comment(comment);
+            encode_escapes(encoded_comment, "");
+            fprintf(out, HEADER ":%s;%s\n", id.c_str(), encoded_comment.c_str());
+        }
+
         string content = get_awar_value(awar_name);
         fputs(content.c_str(), out);
         fclose(out);
@@ -188,11 +194,10 @@ GB_ERROR AWT_configuration::Save(const char* filename, const string& awar_name) 
     return error;
 }
 
-GB_ERROR AWT_configuration::Load(const char* filename, const string& awar_name) {
+GB_ERROR AWT_configuration::Load(const char* filename, const string& awar_name, string& found_comment) {
     GB_ERROR error = 0;
 
-    // @@@ load comment
-    
+    found_comment = "";
     printf("Loading config from '%s'..\n", filename);
 
     char *content = GB_read_file(filename);
@@ -212,11 +217,19 @@ GB_ERROR AWT_configuration::Load(const char* filename, const string& awar_name) 
             }
             else {
                 *nl++ = 0;
+
+                char *comment = strchr(id_pos, ';');
+                if (comment) *comment++ = 0;
+
                 if (strcmp(id_pos, id.c_str()) != 0) {
-                    error = GBS_global_string("Wrong config (id=%s, expected=%s)", id_pos, id.c_str());
+                    error = GBS_global_string("Wrong config type (expected=%s, found=%s)", id.c_str(), id_pos);
                 }
                 else {
                     set_awar_value(awar_name, nl);
+                    if (comment) {
+                        found_comment = comment;
+                        error         = decode_escapes(found_comment);
+                    }
                 }
             }
         }
@@ -357,12 +370,14 @@ static void load_cb(AW_window *, AWT_configuration *config) {
         char *filename = aw_file_selection("Load config from file", "$(ARBCONFIG)", loadMask, ".arbcfg");
         if (filename) {
             string awar_name = config_prefix+cfgName;
+            string comment;
 
-            error = config->Load(filename, awar_name);
+            error = config->Load(filename, awar_name, comment);
             if (!error) {
                 // after successful load restore and store config
                 restore_cb(NULL, config);
                 store_cb(NULL, config);
+                config->set_awar_value(VISIBLE_COMMENT, comment);
             }
             free(filename);
         }
@@ -374,14 +389,15 @@ static void save_cb(AW_window *, AWT_configuration *config) {
     string   cfgName = config->get_awar_value(CURRENT_CFG);
     GB_ERROR error   = NULL;
 
-    if (cfgName.empty()) error = "Please enter or select config to save";
+    if (cfgName.empty()) error = "Please select config to save";
     else {
         char *saveAs   = GBS_global_string_copy("%s_%s", config->get_id(), cfgName.c_str());
         char *filename = aw_file_selection("Save config to file", "$(ARBCONFIG)", saveAs, ".arbcfg");
         if (filename) {
             restore_cb(NULL, config);
             string awar_name = config_prefix+cfgName;
-            error            = config->Save(filename, awar_name);
+            string comment   = config->get_awar_value(VISIBLE_COMMENT);
+            error            = config->Save(filename, awar_name, comment);
             free(filename);
         }
         free(saveAs);
