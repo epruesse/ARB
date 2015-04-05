@@ -115,6 +115,55 @@ public:
     }
 };
 
+static GB_ERROR decode_escapes(string& s) {
+    string::iterator f = s.begin();
+    string::iterator t = s.begin();
+
+    for (; f != s.end(); ++f, ++t) {
+        if (*f == '\\') {
+            ++f;
+            if (f == s.end()) return GBS_global_string("Trailing \\ in '%s'", s.c_str());
+            switch (*f) {
+                case 'n':
+                    *t = '\n';
+                    break;
+                case 'r':
+                    *t = '\r';
+                    break;
+                case 't':
+                    *t = '\t';
+                    break;
+                default:
+                    *t = *f;
+                    break;
+            }
+        }
+        else {
+            *t = *f;
+        }
+    }
+
+    s.erase(t, f);
+
+    return 0;
+}
+
+static void encode_escapes(string& s, const char *to_escape) {
+    string neu;
+    neu.reserve(s.length()*2+1);
+
+    for (string::iterator p = s.begin(); p != s.end(); ++p) {
+        if (*p == '\\' || strchr(to_escape, *p) != 0) {
+            neu = neu+'\\'+*p;
+        }
+        else if (*p == '\n') { neu = neu+"\\n"; }
+        else if (*p == '\r') { neu = neu+"\\r"; }
+        else if (*p == '\t') { neu = neu+"\\t"; }
+        else { neu = neu+*p; }
+    }
+    s = neu;
+}
+
 #define HEADER    "ARB_CONFIGURATION"
 #define HEADERLEN 17
 
@@ -491,55 +540,6 @@ void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const c
      * @param macro_id custom macro id (normally NULL will do)
      */
     AWT_insert_config_manager(aww, default_file_, id, generate_config_from_mapping_cb, (AW_CL)mapping, macro_id);
-}
-
-static GB_ERROR decode_escapes(string& s) {
-    string::iterator f = s.begin();
-    string::iterator t = s.begin();
-
-    for (; f != s.end(); ++f, ++t) {
-        if (*f == '\\') {
-            ++f;
-            if (f == s.end()) return GBS_global_string("Trailing \\ in '%s'", s.c_str());
-            switch (*f) {
-                case 'n':
-                    *t = '\n';
-                    break;
-                case 'r':
-                    *t = '\r';
-                    break;
-                case 't':
-                    *t = '\t';
-                    break;
-                default:
-                    *t = *f;
-                    break;
-            }
-        }
-        else {
-            *t = *f;
-        }
-    }
-
-    s.erase(t, f);
-
-    return 0;
-}
-
-static void encode_escapes(string& s, const char *to_escape) {
-    string neu;
-    neu.reserve(s.length()*2+1);
-
-    for (string::iterator p = s.begin(); p != s.end(); ++p) {
-        if (*p == '\\' || strchr(to_escape, *p) != 0) {
-            neu = neu+'\\'+*p;
-        }
-        else if (*p == '\n') { neu = neu+"\\n"; }
-        else if (*p == '\r') { neu = neu+"\\r"; }
-        else if (*p == '\t') { neu = neu+"\\t"; }
-        else { neu = neu+*p; }
-    }
-    s = neu;
 }
 
 typedef map<string, string> config_map;
