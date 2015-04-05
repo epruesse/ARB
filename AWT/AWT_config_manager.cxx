@@ -33,10 +33,14 @@ using namespace std;
 // --------------------------
 //      AWT_configuration
 
-#define VISIBLE_COMMENT "comment"
-#define STORED_COMMENTS "comments"
-#define EXISTING_CFGS   "existing"
-#define CURRENT_CFG     "current"
+enum ConfigAwar {
+    VISIBLE_COMMENT,
+    STORED_COMMENTS,
+    EXISTING_CFGS,
+    CURRENT_CFG,
+
+    CONFIG_AWARS, // must be last
+};
 
 class AWT_configuration : virtual Noncopyable {
     string id;
@@ -49,8 +53,14 @@ class AWT_configuration : virtual Noncopyable {
 
     AW_default default_file;
 
+    AW_awar *std_awar[CONFIG_AWARS];
+
     string get_awar_name(const string& subname, bool temp = false) const {
         return string("tmp/general_configs/"+(temp ? 0 : 4))+id+'/'+subname;
+    }
+    AW_awar *get_awar(const string& subname, bool temp = false) const {
+        string   awar_name = get_awar_name(subname, temp);
+        return AW_root::SINGLETON->awar_string(awar_name.c_str(), "", default_file);
     }
 
 public:
@@ -61,24 +71,22 @@ public:
           client1(cl1),
           client2(cl2),
           default_file(default_file_)
-    {}
+    {
+        std_awar[VISIBLE_COMMENT] = get_awar("comment", true);
+        std_awar[STORED_COMMENTS] = get_awar("comments");
+        std_awar[EXISTING_CFGS]   = get_awar("existing");
+        std_awar[CURRENT_CFG]     = get_awar("current");
+    }
 
     bool operator<(const AWT_configuration& other) const { return id<other.id; }
 
-    AW_awar *get_awar(const string& subname, bool temp = false) const {
-        string   awar_name = get_awar_name(subname, temp);
-        return AW_root::SINGLETON->awar_string(awar_name.c_str(), "", default_file);
-    }
+    AW_awar *get_awar(ConfigAwar a) const { return std_awar[a]; }
 
-    string get_awar_value(const string& subname, bool temp = false) const {
-        char   *value  = get_awar(subname, temp)->read_string();
-        string  result = value;
-        free(value);
-        return result;
-    }
-    void set_awar_value(const string& subname, const string& new_value) const {
-        get_awar(subname)->write_string(new_value.c_str());
-    }
+    string get_awar_value(const string& subname) const { return get_awar(subname, false)->read_char_pntr(); }
+    string get_awar_value(ConfigAwar a) const { return get_awar(a)->read_char_pntr(); }
+
+    void set_awar_value(const string& subname, const string& new_value) const { get_awar(subname)->write_string(new_value.c_str()); }
+    void set_awar_value(ConfigAwar a, const string& new_value) const { get_awar(a)->write_string(new_value.c_str()); }
 
     const char *get_id() const { return id.c_str(); }
 
@@ -196,7 +204,7 @@ static string config_prefix = "cfg_";
 
 static void current_changed_cb(AW_root*, AWT_configuration *config) {
     AW_awar *awar_current = config->get_awar(CURRENT_CFG);
-    AW_awar *awar_comment = config->get_awar(VISIBLE_COMMENT, true);
+    AW_awar *awar_comment = config->get_awar(VISIBLE_COMMENT);
 
     // if entered config-name starts with config_prefix -> remove prefix
     string      with_prefix = config_prefix+awar_current->read_char_pntr();
@@ -237,7 +245,7 @@ inline void save_comments(const AWT_config& comments, AWT_configuration *config)
 static void comment_changed_cb(AW_root*, AWT_configuration *config) {
     string curr_cfg = config->get_awar_value(CURRENT_CFG);
     if (!curr_cfg.empty() && config->has_existing(curr_cfg.c_str())) {
-        string changed_comment = config->get_awar_value(VISIBLE_COMMENT, true);
+        string changed_comment = config->get_awar_value(VISIBLE_COMMENT);
 
         AWT_config comments(config->get_awar_value(STORED_COMMENTS).c_str());
         if (changed_comment.empty()) {
@@ -263,7 +271,7 @@ static void store_cb(AW_window *, AWT_configuration *config) {
     string existing = config->get_awar_value(EXISTING_CFGS);
     string cfgName  = config->get_awar_value(CURRENT_CFG);
 
-    AW_awar *awar_comment = config->get_awar(VISIBLE_COMMENT, true);
+    AW_awar *awar_comment = config->get_awar(VISIBLE_COMMENT);
     string visibleComment(awar_comment->read_char_pntr());
 
     remove_from_configs(cfgName, existing); // remove selected from existing configs
@@ -362,7 +370,7 @@ static AW_window *create_config_manager_window(AW_root *, AWT_configuration *con
     // create awars
     AW_awar *awar_existing = config->get_awar(EXISTING_CFGS);
     AW_awar *awar_current  = config->get_awar(CURRENT_CFG);
-    AW_awar *awar_comment  = config->get_awar(VISIBLE_COMMENT, true);
+    AW_awar *awar_comment  = config->get_awar(VISIBLE_COMMENT);
 
     aws->at("comment");
     aws->create_text_field(awar_comment->awar_name);
