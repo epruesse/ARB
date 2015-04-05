@@ -22,6 +22,8 @@ DESCRIPTION     This provides a general way to store and restore settings
                 - Save: RESTORE stored settings and save them to a file
                 - Factory defaults: reset all values to their defaults
 
+		You may enter a description for each stored configuration.
+
 NOTES		To keep stored settings permanently (i.e. for future arb sessions), 
 		use 'Save properties' from the 'Properties' menu!
 

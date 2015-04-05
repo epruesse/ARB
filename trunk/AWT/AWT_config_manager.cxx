@@ -56,14 +56,16 @@ public:
 
     bool operator<(const AWT_configuration& other) const { return id<other.id; }
 
-    string get_awar_name(const string& subname) const { return string("general_configs/")+id+'/'+subname; }
-    AW_awar *get_awar(const string& subname, const char *default_value = "") const {
-        string   awar_name = get_awar_name(subname);
+    string get_awar_name(const string& subname, bool temp = false) const {
+        return string("tmp/general_configs/"+(temp ? 0 : 4))+id+'/'+subname;
+    }
+    AW_awar *get_awar(const string& subname, const char *default_value = "", bool temp = false) const {
+        string   awar_name = get_awar_name(subname, temp);
         return AW_root::SINGLETON->awar_string(awar_name.c_str(), default_value, default_file);
     }
 
-    string get_awar_value(const string& subname, const char *default_value = "") const {
-        char   *value  = get_awar(subname, default_value)->read_string();
+    string get_awar_value(const string& subname, const char *default_value = "", bool temp = false) const {
+        char   *value  = get_awar(subname, default_value, temp)->read_string();
         string  result = value;
         free(value);
         return result;
@@ -89,6 +91,14 @@ public:
 
     GB_ERROR Save(const char* filename, const string& awar_name); // AWAR content -> FILE
     GB_ERROR Load(const char* filename, const string& awar_name); // FILE -> AWAR content
+
+    bool has_existing(const char *lookFor) {
+        string S(";");
+        string existing = S+ get_awar_value("existing") +S;
+        string wanted   = S+ lookFor +S;
+
+        return existing.find(wanted) != string::npos;
+    }
 };
 
 #define HEADER    "ARB_CONFIGURATION"
@@ -172,11 +182,65 @@ void remove_from_configs(const string& config, string& existing_configs) {
 
 static string config_prefix = "cfg_";
 
-static void correct_key_name_cb(AW_root*, AW_awar *awar) {
-    string  with_prefix = config_prefix+awar->read_char_pntr();
-    char   *corrected   = GBS_string_2_key(with_prefix.c_str());
-    awar->write_string(corrected+config_prefix.length());
-    free(corrected);
+#define NO_CONFIG_SELECTED "<no config selected>"
+
+static void current_changed_cb(AW_root*, AWT_configuration *config) {
+    AW_awar *awar_current = config->get_awar("current");
+    AW_awar *awar_comment = config->get_awar("comment", "", true);
+
+    // if entered config-name starts with config_prefix -> remove prefix
+    string      with_prefix = config_prefix+awar_current->read_char_pntr();
+    char       *cfg_name    = GBS_string_2_key(with_prefix.c_str());
+    const char *name        = cfg_name+config_prefix.length();
+
+    awar_current->write_string(name);
+
+    // refresh comment field
+    if (name[0]) { // cfg not empty
+        if (config->has_existing(name)) { // load comment of existing config
+            string      storedComments = config->get_awar_value("comments");
+            AWT_config  comments(storedComments.c_str());
+            const char *saved_comment  = comments.get_entry(name);
+            awar_comment->write_string(saved_comment ? saved_comment : "");
+        }
+        else { // new config (not stored yet)
+            // click <new> and enter name -> clear comment
+            // click existing and change name -> reuse existing comment
+            if (strcmp(awar_comment->read_char_pntr(), NO_CONFIG_SELECTED) == 0) {
+                awar_comment->write_string("");
+            }
+        }
+    }
+    else { // no config selected
+        awar_comment->write_string(NO_CONFIG_SELECTED);
+    }
+
+    free(cfg_name);
+}
+
+inline void save_comments(const AWT_config& comments, AWT_configuration *config) {
+    char *comments_string = comments.config_string();
+    config->set_awar_value("comments", comments_string);
+    free(comments_string);
+}
+
+static void comment_changed_cb(AW_root*, AWT_configuration *config) {
+    string curr_cfg = config->get_awar_value("current");
+    if (!curr_cfg.empty() && config->has_existing(curr_cfg.c_str())) {
+        string changed_comment = config->get_awar_value("comment", "", true);
+
+        AWT_config comments(config->get_awar_value("comments").c_str());
+        if (changed_comment.empty()) {
+            comments.delete_entry(curr_cfg.c_str());
+        }
+        else {
+            comments.set_entry(curr_cfg.c_str(), changed_comment.c_str());
+        }
+        save_comments(comments, config);
+    }
+}
+static void erase_comment_cb(AW_window*, AW_awar *awar_comment) {
+    awar_comment->write_string("");
 }
 
 static void restore_cb(AW_window *, AWT_configuration *config) {
@@ -189,6 +253,9 @@ static void store_cb(AW_window *, AWT_configuration *config) {
     string existing = config->get_awar_value("existing");
     string cfgName  = config->get_awar_value("current");
 
+    AW_awar *awar_comment = config->get_awar("comment", "", true);
+    string visibleComment(awar_comment->read_char_pntr());
+
     remove_from_configs(cfgName, existing); // remove selected from existing configs
 
     existing = existing.empty() ? cfgName : (string(cfgName)+';'+existing);
@@ -199,6 +266,7 @@ static void store_cb(AW_window *, AWT_configuration *config) {
         free(config_string);
     }
     config->set_awar_value("existing", existing);
+    awar_comment->rewrite_string(visibleComment.c_str()); // force new config to use last visible comment
 }
 static void delete_cb(AW_window *, AWT_configuration *config) {
     string existing = config->get_awar_value("existing");
@@ -206,6 +274,11 @@ static void delete_cb(AW_window *, AWT_configuration *config) {
     remove_from_configs(cfgName, existing); // remove selected from existing configs
     config->set_awar_value("current", "");
     config->set_awar_value("existing", existing);
+
+    // erase existing comment:
+    AWT_config comments(config->get_awar_value("comments").c_str());
+    comments.delete_entry(cfgName.c_str());
+    save_comments(comments, config);
 }
 static void load_cb(AW_window *, AWT_configuration *config) {
     string   cfgName = config->get_awar_value("current");
@@ -279,12 +352,23 @@ static AW_window *create_config_manager_window(AW_root *, AWT_configuration *con
     // create awars
     AW_awar *awar_existing = config->get_awar("existing");
     AW_awar *awar_current  = config->get_awar("current");
-    awar_current->add_callback(makeRootCallback(correct_key_name_cb, awar_current));
+    AW_awar *awar_comment  = config->get_awar("comment", "", true);
 
-    AW_selection_list *sel = awt_create_selection_list_with_input_field(aws, awar_current->awar_name, "box", "name");
+    aws->at("comment");
+    aws->create_text_field(awar_comment->awar_name);
+
+    aws->at("clr");
+    aws->callback(makeWindowCallback(erase_comment_cb, awar_comment));
+    aws->create_autosize_button("erase", "Erase", "E");
+
+    awar_current->add_callback(makeRootCallback(current_changed_cb, config));
+    awar_comment->add_callback(makeRootCallback(comment_changed_cb, config));
+
+    AW_selection_list *sel = awt_create_selection_list_with_input_field(aws, awar_current->awar_name, "cfgs", "name");
 
     awar_existing->add_callback(makeRootCallback(refresh_config_sellist_cb, config, sel));
     awar_existing->touch(); // fills selection list
+    awar_current->touch(); // initialized comment textbox
 
     aws->auto_space(0, 3);
     aws->button_length(10);
