@@ -59,6 +59,10 @@ class AWT_configuration : virtual Noncopyable {
     string get_awar_name(const string& subname, bool temp = false) const {
         return string("tmp/general_configs/"+(temp ? 0 : 4))+id+'/'+subname;
     }
+    string get_config_dbpath(const string& cfgname) const {
+        return get_awar_name(string("cfg_")+cfgname);
+    }
+
     AW_awar *get_awar(const string& subname, bool temp = false) const {
         string   awar_name = get_awar_name(subname, temp);
         return AW_root::SINGLETON->awar_string(awar_name.c_str(), "", default_file);
@@ -85,12 +89,12 @@ public:
 
     string get_config(const string& cfgname) {
         GB_transaction  ta(AW_ROOT_DEFAULT);
-        GBDATA         *gb_cfg = GB_search(AW_ROOT_DEFAULT, get_awar_name(cfgname).c_str(), GB_FIND);
+        GBDATA         *gb_cfg = GB_search(AW_ROOT_DEFAULT, get_config_dbpath(cfgname).c_str(), GB_FIND);
         return gb_cfg ? GB_read_char_pntr(gb_cfg) : "";
     }
     GB_ERROR set_config(const string& cfgname, const string& new_value) {
         GB_transaction  ta(AW_ROOT_DEFAULT);
-        GBDATA         *gb_cfg = GB_search(AW_ROOT_DEFAULT, get_awar_name(cfgname).c_str(), GB_STRING);
+        GBDATA         *gb_cfg = GB_search(AW_ROOT_DEFAULT, get_config_dbpath(cfgname).c_str(), GB_STRING);
         GB_ERROR        error;
         if (!gb_cfg) {
             error = GB_await_error();
@@ -122,7 +126,7 @@ public:
     GB_ERROR Save(const char* filename, const string& cfg_name, const string& comment); // AWAR content -> FILE
     GB_ERROR Load(const char* filename, const string& cfg_name, string& found_comment); // FILE -> AWAR content
 
-    bool has_existing(const char *lookFor) {
+    bool has_existing(string lookFor) {
         string S(";");
         string existing = S+ get_awar_value(EXISTING_CFGS) +S;
         string wanted   = S+ lookFor +S;
@@ -193,7 +197,7 @@ GB_ERROR AWT_configuration::Save(const char* filename, const string& cfg_name, c
     FILE     *out   = fopen(filename, "wt");
     GB_ERROR  error = 0;
     if (!out) {
-        error = GB_export_IO_error("saving", filename);
+        error = GB_IO_error("saving", filename);
     }
     else {
         if (comment.empty()) {
@@ -301,27 +305,34 @@ void remove_from_configs(const string& config, string& existing_configs) {
     free(rest);
 }
 
-static string config_prefix = "cfg_";
-
 #define NO_CONFIG_SELECTED "<no config selected>"
 
 static void current_changed_cb(AW_root*, AWT_configuration *config) {
     AW_awar *awar_current = config->get_awar(CURRENT_CFG);
     AW_awar *awar_comment = config->get_awar(VISIBLE_COMMENT);
 
-    // if entered config-name starts with config_prefix -> remove prefix
-    string      with_prefix = config_prefix+awar_current->read_char_pntr();
-    char       *cfg_name    = GBS_string_2_key(with_prefix.c_str());
-    const char *name        = cfg_name+config_prefix.length();
+    // convert name to key
+    string name;
+    {
+        const char *entered_name = awar_current->read_char_pntr();
+        if (entered_name[0]) {
+            char *asKey = GBS_string_2_key(entered_name);
+            name        = asKey;
+            free(asKey);
+        }
+        else {
+            name = "";
+        }
+    }
 
-    awar_current->write_string(name);
+    awar_current->write_string(name.c_str());
 
     // refresh comment field
     if (name[0]) { // cfg not empty
         if (config->has_existing(name)) { // load comment of existing config
             string      storedComments = config->get_awar_value(STORED_COMMENTS);
             AWT_config  comments(storedComments.c_str());
-            const char *saved_comment  = comments.get_entry(name);
+            const char *saved_comment  = comments.get_entry(name.c_str());
             awar_comment->write_string(saved_comment ? saved_comment : "");
         }
         else { // new config (not stored yet)
@@ -335,8 +346,6 @@ static void current_changed_cb(AW_root*, AWT_configuration *config) {
     else { // no config selected
         awar_comment->write_string(NO_CONFIG_SELECTED);
     }
-
-    free(cfg_name);
 }
 
 inline void save_comments(const AWT_config& comments, AWT_configuration *config) {
@@ -347,7 +356,7 @@ inline void save_comments(const AWT_config& comments, AWT_configuration *config)
 
 static void comment_changed_cb(AW_root*, AWT_configuration *config) {
     string curr_cfg = config->get_awar_value(CURRENT_CFG);
-    if (!curr_cfg.empty() && config->has_existing(curr_cfg.c_str())) {
+    if (!curr_cfg.empty() && config->has_existing(curr_cfg)) {
         string changed_comment = config->get_awar_value(VISIBLE_COMMENT);
 
         AWT_config comments(config->get_awar_value(STORED_COMMENTS).c_str());
@@ -371,8 +380,7 @@ static void restore_cb(AW_window *, AWT_configuration *config) {
         error = "Please select config to restore";
     }
     else {
-        string cfg_name = config_prefix+cfgName;
-        error = config->Restore(config->get_config(cfg_name));
+        error = config->Restore(config->get_config(cfgName));
     }
     aw_message_if(error);
 }
@@ -392,8 +400,7 @@ static void store_cb(AW_window *, AWT_configuration *config) {
         existing = existing.empty() ? cfgName : (string(cfgName)+';'+existing);
         {
             char     *config_string = config->Store();
-            string    cfg_name      = config_prefix+cfgName;
-            GB_ERROR  error         = config->set_config(cfg_name, config_string);
+            GB_ERROR  error         = config->set_config(cfgName, config_string);
             aw_message_if(error);
             free(config_string);
         }
@@ -424,10 +431,9 @@ static void load_cb(AW_window *, AWT_configuration *config) {
         char *loadMask = GBS_global_string_copy("%s_*", config->get_id());
         char *filename = aw_file_selection("Load config from file", "$(ARBCONFIG)", loadMask, ".arbcfg");
         if (filename) {
-            string awar_name = config_prefix+cfgName;
             string comment;
 
-            error = config->Load(filename, awar_name, comment);
+            error = config->Load(filename, cfgName, comment);
             if (!error) {
                 // after successful load restore and store config
                 restore_cb(NULL, config);
@@ -450,9 +456,8 @@ static void save_cb(AW_window *, AWT_configuration *config) {
         char *filename = aw_file_selection("Save config to file", "$(ARBCONFIG)", saveAs, ".arbcfg");
         if (filename) {
             restore_cb(NULL, config);
-            string awar_name = config_prefix+cfgName;
-            string comment   = config->get_awar_value(VISIBLE_COMMENT);
-            error            = config->Save(filename, awar_name, comment);
+            string comment = config->get_awar_value(VISIBLE_COMMENT);
+            error          = config->Save(filename, cfgName, comment);
             free(filename);
         }
         free(saveAs);
