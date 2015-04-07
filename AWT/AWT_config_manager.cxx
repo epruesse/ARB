@@ -27,6 +27,7 @@
 #include <string>
 #include "awt_sel_boxes.hxx"
 #include <arb_defs.h>
+#include <arb_str.h>
 
 using namespace std;
 
@@ -82,10 +83,25 @@ public:
 
     AW_awar *get_awar(ConfigAwar a) const { return std_awar[a]; }
 
-    string get_awar_value(const string& subname) const { return get_awar(subname, false)->read_char_pntr(); }
-    string get_awar_value(ConfigAwar a) const { return get_awar(a)->read_char_pntr(); }
+    string get_config(const string& cfgname) {
+        GB_transaction  ta(AW_ROOT_DEFAULT);
+        GBDATA         *gb_cfg = GB_search(AW_ROOT_DEFAULT, get_awar_name(cfgname).c_str(), GB_FIND);
+        return gb_cfg ? GB_read_char_pntr(gb_cfg) : "";
+    }
+    GB_ERROR set_config(const string& cfgname, const string& new_value) {
+        GB_transaction  ta(AW_ROOT_DEFAULT);
+        GBDATA         *gb_cfg = GB_search(AW_ROOT_DEFAULT, get_awar_name(cfgname).c_str(), GB_STRING);
+        GB_ERROR        error;
+        if (!gb_cfg) {
+            error = GB_await_error();
+        }
+        else {
+            error = GB_write_string(gb_cfg, new_value.c_str());
+        }
+        return error;
+    }
 
-    void set_awar_value(const string& subname, const string& new_value) const { get_awar(subname)->write_string(new_value.c_str()); }
+    string get_awar_value(ConfigAwar a) const { return get_awar(a)->read_char_pntr(); }
     void set_awar_value(ConfigAwar a, const string& new_value) const { get_awar(a)->write_string(new_value.c_str()); }
 
     const char *get_id() const { return id.c_str(); }
@@ -103,8 +119,8 @@ public:
         load_or_reset(NULL, client1, client2);
     }
 
-    GB_ERROR Save(const char* filename, const string& awar_name, const string& comment); // AWAR content -> FILE
-    GB_ERROR Load(const char* filename, const string& awar_name, string& found_comment); // FILE -> AWAR content
+    GB_ERROR Save(const char* filename, const string& cfg_name, const string& comment); // AWAR content -> FILE
+    GB_ERROR Load(const char* filename, const string& cfg_name, string& found_comment); // FILE -> AWAR content
 
     bool has_existing(const char *lookFor) {
         string S(";");
@@ -113,6 +129,8 @@ public:
 
         return existing.find(wanted) != string::npos;
     }
+
+    void erase_deleted_configs();
 };
 
 static GB_ERROR decode_escapes(string& s) {
@@ -167,7 +185,7 @@ static void encode_escapes(string& s, const char *to_escape) {
 #define HEADER    "ARB_CONFIGURATION"
 #define HEADERLEN 17
 
-GB_ERROR AWT_configuration::Save(const char* filename, const string& awar_name, const string& comment) {
+GB_ERROR AWT_configuration::Save(const char* filename, const string& cfg_name, const string& comment) {
     awt_assert(strlen(HEADER) == HEADERLEN);
 
     printf("Saving config to '%s'..\n", filename);
@@ -187,14 +205,14 @@ GB_ERROR AWT_configuration::Save(const char* filename, const string& awar_name, 
             fprintf(out, HEADER ":%s;%s\n", id.c_str(), encoded_comment.c_str());
         }
 
-        string content = get_awar_value(awar_name);
+        string content = get_config(cfg_name);
         fputs(content.c_str(), out);
         fclose(out);
     }
     return error;
 }
 
-GB_ERROR AWT_configuration::Load(const char* filename, const string& awar_name, string& found_comment) {
+GB_ERROR AWT_configuration::Load(const char* filename, const string& cfg_name, string& found_comment) {
     GB_ERROR error = 0;
 
     found_comment = "";
@@ -225,8 +243,8 @@ GB_ERROR AWT_configuration::Load(const char* filename, const string& awar_name, 
                     error = GBS_global_string("Wrong config type (expected=%s, found=%s)", id.c_str(), id_pos);
                 }
                 else {
-                    set_awar_value(awar_name, nl);
-                    if (comment) {
+                    error = set_config(cfg_name, nl);
+                    if (comment && !error) {
                         found_comment = comment;
                         error         = decode_escapes(found_comment);
                     }
@@ -242,6 +260,29 @@ GB_ERROR AWT_configuration::Load(const char* filename, const string& awar_name, 
     }
 
     return error;
+}
+
+void AWT_configuration::erase_deleted_configs() {
+    string   cfg_base = get_awar_name("", false);
+    GB_ERROR error    = NULL;
+    {
+        GB_transaction  ta(AW_ROOT_DEFAULT);
+        GBDATA         *gb_base = GB_search(AW_ROOT_DEFAULT, cfg_base.c_str(), GB_FIND);
+        if (gb_base) {
+            for (GBDATA *gb_cfg = GB_child(gb_base); gb_cfg && !error; ) {
+                GBDATA     *gb_next = GB_nextChild(gb_cfg);
+                const char *key     = GB_read_key_pntr(gb_cfg);
+                if (key && ARB_strBeginsWith(key, "cfg_")) {
+                    const char *name = key+4;
+                    if (!has_existing(name)) {
+                        error = GB_delete(gb_cfg);
+                    }
+                }
+                gb_cfg = gb_next;
+            }
+        }
+    }
+    aw_message_if(error);
 }
 
 void remove_from_configs(const string& config, string& existing_configs) {
@@ -330,8 +371,8 @@ static void restore_cb(AW_window *, AWT_configuration *config) {
         error = "Please select config to restore";
     }
     else {
-        string awar_name = config_prefix+cfgName;
-        error = config->Restore(config->get_awar_value(awar_name));
+        string cfg_name = config_prefix+cfgName;
+        error = config->Restore(config->get_config(cfg_name));
     }
     aw_message_if(error);
 }
@@ -350,9 +391,10 @@ static void store_cb(AW_window *, AWT_configuration *config) {
 
         existing = existing.empty() ? cfgName : (string(cfgName)+';'+existing);
         {
-            char   *config_string = config->Store();
-            string  awar_name     = config_prefix+cfgName;
-            config->set_awar_value(awar_name, config_string);
+            char     *config_string = config->Store();
+            string    cfg_name      = config_prefix+cfgName;
+            GB_ERROR  error         = config->set_config(cfg_name, config_string);
+            aw_message_if(error);
             free(config_string);
         }
         config->set_awar_value(EXISTING_CFGS, existing);
@@ -371,7 +413,7 @@ static void delete_cb(AW_window *, AWT_configuration *config) {
     comments.delete_entry(cfgName.c_str());
     save_comments(comments, config);
 
- // @@@ cleanup non-existing config entries
+    config->erase_deleted_configs();
 }
 static void load_cb(AW_window *, AWT_configuration *config) {
     string   cfgName = config->get_awar_value(CURRENT_CFG);
