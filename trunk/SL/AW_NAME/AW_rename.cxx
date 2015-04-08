@@ -462,7 +462,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr) {
     // rename species according to name_server
     // 'isWarning' is set to true, in case of duplicates-warning
 
-    arb_progress gen_progress("Generating new names", 2);
+    arb_progress gen_progress("Generating new names");
     GB_ERROR     err       = name_server.connect(gb_main);
     bool         isWarning = false;
 
