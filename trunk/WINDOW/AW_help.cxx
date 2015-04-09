@@ -341,8 +341,56 @@ static GB_ERROR aw_help_show_external_format(const char *help_file, const char *
     return error;
 }
 
+#if defined(DEBUG)
+# define TRACK_HELPFILE
+#endif
+
+#if defined(TRACK_HELPFILE)
+// automatically update helpfile after changes in DEBUG mode
+
+static bool          track_helpfile        = false;
+static unsigned long helpfile_stamp        = 0;
+static unsigned long helpfile_edited_stamp = 0;
+
+const unsigned TRACK_FREQUENCY = 500; // ms
+
+static unsigned autorefresh_helpfile(AW_root *awr) {
+    char          *help_file   = get_full_qualified_help_file_name(awr);
+    unsigned long  lastChanged = GB_time_of_file(help_file);
+    unsigned       callAgainIn = TRACK_FREQUENCY;
+
+    if (lastChanged != helpfile_stamp) {
+        awr->awar(AWAR_HELPFILE)->touch(); // reload
+        aw_assert(helpfile_stamp == lastChanged);
+    }
+    else {
+        char *edited_help_file = get_full_qualified_help_file_name(awr, true);
+        if (strcmp(help_file, edited_help_file) != 0) {
+            unsigned long editLastChanged = GB_time_of_file(edited_help_file);
+
+            if (editLastChanged>helpfile_edited_stamp) {
+                GBK_system("cd $ARBHOME; make help");
+                helpfile_edited_stamp = editLastChanged;
+                callAgainIn           = 10;
+            }
+        }
+
+        free(edited_help_file);
+    }
+
+    free(help_file);
+
+    return callAgainIn;
+}
+
+#endif
+
 static void aw_help_helpfile_changed_cb(AW_root *awr) {
     char *help_file = get_full_qualified_help_file_name(awr);
+
+#if defined(TRACK_HELPFILE)
+    track_helpfile = false;
+#endif
 
     if (!strlen(help_file)) {
         awr->awar(AWAR_HELPTEXT)->write_string("no help");
@@ -372,6 +420,11 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
         else {
             HELP.history = strdup(help_file);
         }
+
+#if defined(TRACK_HELPFILE)
+        track_helpfile = true;
+        helpfile_edited_stamp = helpfile_stamp = GB_time_of_file(help_file);
+#endif
 
         char *helptext = GB_read_file(help_file);
         if (helptext) {
@@ -526,10 +579,10 @@ static void aw_help_search(AW_window *aww) {
     free(searchtext);
 }
 
-void AW_help_popup(AW_window *aw, const char *help_file) {
+void AW_help_popup(AW_window *, const char *help_file) {
     static AW_window_simple *aws = 0;
 
-    AW_root *awr = aw->get_root();
+    AW_root *awr = AW_root::SINGLETON;
 
     if (!aws) {
         awr->awar_string(AWAR_HELPTEXT,   "", AW_ROOT_DEFAULT);
@@ -581,6 +634,9 @@ void AW_help_popup(AW_window *aw, const char *help_file) {
         aws->callback(aw_help_edit_help);
         aws->create_button("EDIT", "EDIT", "E");
 
+#if defined(TRACK_HELPFILE)
+        awr->add_timed_callback(TRACK_FREQUENCY, makeTimedCallback(autorefresh_helpfile));
+#endif
     }
 
     aw_assert(help_file);
