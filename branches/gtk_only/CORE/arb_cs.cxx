@@ -154,7 +154,7 @@ static GB_ERROR arb_open_unix_socket(char* filename, bool do_connect, int *fd) {
     unix_socket.sun_family = AF_UNIX;
     if (strlen(filename)+1 > sizeof(unix_socket.sun_path)) {
         error = GBS_global_string("Failed to create unix socket: "
-                                  "\"%s\" is longer than the allowed %li characters",
+                                  "\"%s\" is longer than the allowed %zu characters",
                                   filename, sizeof(unix_socket.sun_path));
     }
     else {

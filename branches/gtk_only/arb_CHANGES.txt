@@ -38,13 +38,16 @@ Major changes for next release:
    * preserve gap-type ('-' vs '.') and upper-/lower-case of original alignment
    * no longer ask what to do with aligned sequence, just overwrite it
      - only warn about real sequence changes (so please do NOT ignore from now on!)
- - possibility to restore default settings from config-managers
+ - config-managers:
+   * possibility to restore factory defaults
+   * added comment field for configurations
  - updated/added external tools:
    - added alternate RAxML (DNA only; version 8.0.26)
 
 Minor changes
  - add threshold for visible support values (default 50% support)
  - corrected EMBL export filter (numbers at seq.data)
+ - NDS optionally uses only visible definitions
 
 Fixes for arb-6.0.2 (8 Aug 2014):
 

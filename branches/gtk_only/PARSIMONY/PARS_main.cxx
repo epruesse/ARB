@@ -1014,6 +1014,20 @@ static AWT_config_mapping_def optimizer_config_mapping[] = {
     { 0, 0 }
 };
 
+static AWT_predefined_config optimizer_predefined_configs[] = {
+    {
+        "*minimum_static_reduction",
+        "Sets paths allowed by static reduction to maximum\n(causing the minimal reduction)",
+        "s_depth1='8';s_depth2='6';s_depth3='6';s_depth4='6';s_depth5='6';static='1'" // only defines/affects settings related to static path reduction
+    },
+    {
+        "*whole_tree_level8",
+        "Level-8-optimization of whole tree\n(no path reduction)",
+        "dynamic='0';incdepth='0';marked_only='0';maxdepth='8';skip_folded='0';static='0'"
+    },
+    { 0, 0, 0 }
+};
+
 static AW_window *createOptimizeWindow(AW_root *aw_root, AWT_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "TREE_OPTIMIZE", "Tree optimization");
@@ -1046,7 +1060,7 @@ static AW_window *createOptimizeWindow(AW_root *aw_root, AWT_canvas *ntw) {
     aws->create_button("HEURISTIC", "Heuristic\noptimizer", "H");
 
     aws->at("config");
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "treeopti", optimizer_config_mapping);
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "treeopti", optimizer_config_mapping, NULL, optimizer_predefined_configs);
 
     aws->at("settings");
     aws->callback(makeCreateWindowCallback(create_kernighan_properties_window));

@@ -22,6 +22,8 @@ DESCRIPTION     This provides a general way to store and restore settings
                 - Save: RESTORE stored settings and save them to a file
                 - Factory defaults: reset all values to their defaults
 
+		You may enter a description for each stored configuration.
+
 NOTES		To keep stored settings permanently (i.e. for future arb sessions), 
 		use 'Save properties' from the 'Properties' menu!
 
@@ -29,8 +31,11 @@ NOTES		To keep stored settings permanently (i.e. for future arb sessions),
                 The configs are saved in directory pointed to by environmentvariable
                 ARBCONFIG (which defaults to ~/.arb_prop/cfgSave). See also LINK{arb_envar.hlp}.
 
+		Predefined (hardcoded) configurations are marked by a leading '*'.
+		You may only restore or save such configurations.
+
 EXAMPLES	None
 
 WARNINGS	None
 
-BUGS		Deleted settings remain in properties (inaccessible!)
+BUGS		None
