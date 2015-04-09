@@ -8,10 +8,9 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE	    Visualization of Sequence Associated Information (SAI) of Probe Match Results.
+TITLE          Visualization of Sequence Associated Information (SAI) of Probe Match Results.
 
-OCCURRENCE	
-    In ARB primary Window (ARB_NT) : Probes (MENU) -> Match Probes (SUBMENU)
+OCCURRENCE     ARB_NT/Probes/Match Probes/Match SAI
 
 DESCRIPTION
 
@@ -21,21 +20,21 @@ DESCRIPTION
 
     Steps to be followed to VISUALIZE SAIs for the Potential Probe Targets:
 
-          1. Select SAI to be visualized from the Select SAI Menu. (FILE -> SELECT SAI)
+          1. Select SAI to be visualized from the Select SAI Menu. (Properties/Select SAI)
 
           2. Define Desired Colors (COLOR 0 to COLOR 9) for the respective CHARACTERS /
           NUMBERS in the selected SAI to paint as background of the Probe Targets
-          list. (FILE -> DEFINE COLOR TRANSLATIONS)
+          list. (Properties/Define Color Translations)
 
           3. Values or Characters contained in the SAIs selected can also be displayed
-          below each Probe Targets by selecting the DISPLAY SAI CHECK BOX in DEFINE COLOR
-          TRANSLATION window.
+          below each Probe Targets by selecting the 'DISPLAY SAI' check box
+          in 'Color Translation Table' window.
 
           4. Once the desired SAI is selected and the respective color translation is
           defined, the SAI is painted as the background of the probe targets in the
           defined color ranges with respect to SAIs.
     
-    One can change the COLOR RANGE by going to FILE -> SET COLORS AND FONTS menu.
+    One can change the COLOR RANGE by going to 'Properties/Set Colors and Fonts' menu.
 
 NOTES
 
