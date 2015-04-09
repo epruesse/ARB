@@ -189,8 +189,8 @@ static void editfield_value_changed(void *, DbScanner *cbs)
                 ItemSelector& selector = cbs->selector;
 
                 if (selector.type == QUERY_ITEM_SPECIES) { // species
-                    arb_progress progress("Renaming species");
-                    char *name = nulldup(GBT_read_name(cbs->gb_user));
+                    arb_progress  progress("Manual change of species ID");
+                    char         *name = nulldup(GBT_read_name(cbs->gb_user));
 
                     if (strlen(value)) {
                         GBT_begin_rename_session(cbs->gb_main, 0);
