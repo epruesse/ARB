@@ -802,7 +802,7 @@ aisc_string get_short(const AN_local *locs) {
             }
 
             const long base36_limit5 = 60466176;      //    60466176 = 36^5 (while using 3-letter-prefix)
-            const long base36_limit7 = 78364164096;   // 78364164096 = 36^7 (while using 1-letter-prefix)
+            const int64_t base36_limit7 = 78364164096;   // 78364164096 = 36^7 (while using 1-letter-prefix)
 
             bool store_in_nameModHash = true;
 
@@ -843,7 +843,7 @@ aisc_string get_short(const AN_local *locs) {
                     for (int pc = 'a'; pc<='z' && !foundUnused;  ++pc) {
                         char key[2] = { pc, 0 };
 
-                        long count3 = GBS_read_hash(nameModHash, key);
+                        int64_t count3 = GBS_read_hash(nameModHash, key);
 
                         test_short[0] = pc;
                         printAt       = test_short+1;
@@ -851,10 +851,10 @@ aisc_string get_short(const AN_local *locs) {
                         for (; !foundUnused && count3<base36_limit7; ++count3) {
                             // now print count3 converted to base 36
 
-                            long c = count3;
+                            int64_t c = count3;
                             for (int pos = 0; pos<7; ++pos) {
-                                long nextc = c/36;
-                                int  rest  = c-36*nextc;
+                                int64_t nextc = c/36;
+                                int     rest  = c-36*nextc;
 
                                 printAt[6-pos] = base36[rest];
                                 c              = nextc;
@@ -869,7 +869,14 @@ aisc_string get_short(const AN_local *locs) {
                     }
 
                     if (!foundUnused) {
-                        GBK_terminatef("Fatal error: reached short-name-limit (%li)", 2037468266496);
+                        const int64_t names_limit = 26*base36_limit7;
+                        GBK_terminatef("Fatal error: reached short-name-limit ("
+#if defined(ARB_64)
+                                       "%li"
+#else // !defined(ARB_64)
+                                       "%lli"
+#endif
+                                       ")", names_limit);
                     }
                 }
                 count = count2+NUMBERS;
