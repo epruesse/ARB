@@ -14,6 +14,7 @@
 #include <arb_str.h>
 
 #include <cmath>
+#include <awt_config_manager.hxx>
 
 // AISC_MKPT_PROMOTE:#ifndef GDE_MENU_H
 // AISC_MKPT_PROMOTE:#include "GDE_menu.h"
@@ -162,6 +163,35 @@ static void GDE_popup_filename_browser(AW_window *aw, AW_CL cl_iteminfo, AW_CL c
     free(base_awar);
 }
 
+inline bool shall_store_in_config(const GmenuItemArg& itemarg) {
+    return itemarg.type != FILE_SELECTOR;
+}
+inline bool want_config_manager(GmenuItem *gmenuitem) {
+    for (int i=0; i<gmenuitem->numargs; i++) {
+        const GmenuItemArg& itemarg = gmenuitem->arg[i];
+        if (shall_store_in_config(itemarg)) return true;
+    }
+    return false;
+}
+static void setup_gde_config_def(AWT_config_definition& cdef, AW_CL cl_gmenuitem) {
+    GmenuItem *gmenuitem = (GmenuItem*)cl_gmenuitem;
+
+    for (int i=0; i<gmenuitem->numargs; i++) {
+        const GmenuItemArg& itemarg = gmenuitem->arg[i];
+        if (shall_store_in_config(itemarg)) {
+            char *awar = GDE_makeawarname(gmenuitem, i);
+
+            gde_assert(awar);
+            gde_assert(itemarg.symbol);
+
+            if (awar) {
+                cdef.add(awar, itemarg.symbol);
+                free(awar);
+            }
+        }
+    }
+}
+
 static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 #define BUFSIZE 200
     char bf[BUFSIZE+1];
@@ -203,6 +233,10 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
+        if (want_config_manager(gmenuitem)) {
+            aws->at("config");
+            AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, aws->window_defaults_name, setup_gde_config_def, AW_CL(gmenuitem));
+        }
 
         if (gmenuitem->numinputs>0) {
             switch (db_access.window_type) {
