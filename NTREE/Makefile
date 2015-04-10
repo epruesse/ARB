@@ -747,6 +747,7 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+NT_ins_col.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cb.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cb_base.h
