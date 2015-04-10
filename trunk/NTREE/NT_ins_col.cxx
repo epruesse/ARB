@@ -116,10 +116,15 @@ static GB_ERROR update_RangeList(AW_root *root, GBDATA *gb_main) {
                 SaiContains  contains = SaiContains(root->awar(AWAR_INSDEL_CONTAINS)->read_int());
 
                 SELECTED.set_ranges(build_RangeList_from_string(data, chars, contains == DOESNT_CONTAIN));
-                range_count_update_cb(root);
             }
         }
     }
+    if (error) {
+        SELECTED.set_ranges(RangeList());
+        if (!saiName[0]) error = NULL; // do not show "Could not find extended with name ''"
+    }
+    range_count_update_cb(root);
+
     return error;
 }
 
