@@ -71,7 +71,7 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     char       *textvalue  = 0;
     const char *labelvalue = 0;
 
-    GmenuItemArg& currArg = gmenuitem->arg[number];
+    const GmenuItemArg& currArg = gmenuitem->arg[number];
 
     const char *symbol = currArg.symbol;
     int         type   = currArg.type;

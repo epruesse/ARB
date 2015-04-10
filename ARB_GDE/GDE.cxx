@@ -291,13 +291,15 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
         aws->auto_space(0, 0);
 
         for (int i=0; i<gmenuitem->numargs; i++) {
-            GmenuItemArg itemarg = gmenuitem->arg[i];
+            const GmenuItemArg& itemarg = gmenuitem->arg[i];
 
             if (itemarg.type==SLIDER) {
-                char *newawar=GDE_makeawarname(gmenuitem, i);
+                char *newawar = GDE_makeawarname(gmenuitem, i);
+
                 if (int(itemarg.fvalue) == itemarg.fvalue &&
-                     int(itemarg.min) == itemarg.min &&
-                     int(itemarg.max) == itemarg.max) {
+                    int(itemarg.min) == itemarg.min &&
+                    int(itemarg.max) == itemarg.max)
+                {
                     aw_root->awar_int(newawar, (long)itemarg.fvalue, AW_ROOT_DEFAULT);
                 }
                 else {
