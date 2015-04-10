@@ -733,6 +733,11 @@ AWT_config::AWT_config(const char *config_char_ptr)
         pos = end+2;            // skip ';'
     }
 }
+
+inline void warn_unknown_awar(const string& awar_name) {
+    aw_message(GBS_global_string("Warning: unknown awar referenced\n(%s)", awar_name.c_str()));
+}
+
 AWT_config::AWT_config(const AWT_config_mapping *cfgname_2_awar)
     : mapping(new AWT_config_mapping),
       parse_error(0)
@@ -741,16 +746,25 @@ AWT_config::AWT_config(const AWT_config_mapping *cfgname_2_awar)
     config_map&        valuemap = mapping->cmap;
     AW_root           *aw_root  = AW_root::SINGLETON;
 
+    int skipped = 0;
     for (config_map::const_iterator c = awarmap.begin(); c != awarmap.end(); ++c) {
         const string& key(c->first);
         const string& awar_name(c->second);
 
-        char *awar_value = aw_root->awar(awar_name.c_str())->read_as_string();
-        valuemap[key]    = awar_value;
-        free(awar_value);
+        AW_awar *awar = aw_root->awar_no_error(awar_name.c_str());
+        if (awar) {
+            char *awar_value = awar->read_as_string();
+            valuemap[key] = awar_value;
+            free(awar_value);
+        }
+        else {
+            valuemap.erase(key);
+            warn_unknown_awar(awar_name);
+            ++skipped;
+        }
     }
 
-    awt_assert(valuemap.size() == awarmap.size());
+    awt_assert((valuemap.size()+skipped) == awarmap.size());
 }
 
 AWT_config::~AWT_config() {
@@ -905,8 +919,13 @@ void AWT_config_definition::reset() const {
     AW_root *aw_root = AW_root::SINGLETON;
     for (config_map::iterator e = config_mapping->begin(); e != config_mapping->end(); ++e) {
         const string&  awar_name(e->second);
-        AW_awar       *awar = aw_root->awar(awar_name.c_str());
-        awar->reset_to_default();
+        AW_awar       *awar = aw_root->awar_no_error(awar_name.c_str());
+        if (awar) {
+            awar->reset_to_default();
+        }
+        else {
+            warn_unknown_awar(awar_name);
+        }
     }
 }
 
