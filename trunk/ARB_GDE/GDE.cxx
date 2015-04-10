@@ -214,8 +214,8 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
                         aws->at("which_species");
                         aws->create_toggle_field(AWAR_GDE_SPECIES);
-                        aws->insert_toggle("all", "a", 0);
-                        aws->insert_default_toggle("marked",   "m", 1);
+                        aws->insert_toggle        ("all",    "a", 0);
+                        aws->insert_default_toggle("marked", "m", 1);
                         aws->update_toggle_field();
 
                         if (seqtype != 'N') {
@@ -227,26 +227,26 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                     break;
                 }
                 case GDE_WINDOWTYPE_EDIT4:
-                    aws->at("topk"); aws->create_toggle("gde/top_area_kons");
-                    aws->at("middlek"); aws->create_toggle("gde/middle_area_kons");
-                    aws->at("topr"); aws->create_toggle("gde/top_area_remark");
-                    aws->at("middler"); aws->create_toggle("gde/middle_area_remark");
-                    aws->at("top"); aws->create_toggle("gde/top_area");
-                    aws->at("topsai"); aws->create_toggle("gde/top_area_sai");
-                    aws->at("toph"); aws->create_toggle("gde/top_area_helix");
-                    aws->at("middle"); aws->create_toggle("gde/middle_area");
+                    aws->at("topk");      aws->create_toggle("gde/top_area_kons");
+                    aws->at("middlek");   aws->create_toggle("gde/middle_area_kons");
+                    aws->at("topr");      aws->create_toggle("gde/top_area_remark");
+                    aws->at("middler");   aws->create_toggle("gde/middle_area_remark");
+                    aws->at("top");       aws->create_toggle("gde/top_area");
+                    aws->at("topsai");    aws->create_toggle("gde/top_area_sai");
+                    aws->at("toph");      aws->create_toggle("gde/top_area_helix");
+                    aws->at("middle");    aws->create_toggle("gde/middle_area");
                     aws->at("middlesai"); aws->create_toggle("gde/middle_area_sai");
-                    aws->at("middleh"); aws->create_toggle("gde/middle_area_helix");
+                    aws->at("middleh");   aws->create_toggle("gde/middle_area_helix");
                     break;
             }
 
             if (seqtype != '-') {
                 aws->at("compression");
                 aws->create_option_menu(AWAR_GDE_COMPRESSION, true);
-                aws->insert_option("none", "n", COMPRESS_NONE);
-                aws->insert_option("vertical gaps", "v", COMPRESS_VERTICAL_GAPS);
+                aws->insert_option        ("none",             "n", COMPRESS_NONE);
+                aws->insert_option        ("vertical gaps",    "v", COMPRESS_VERTICAL_GAPS);
                 aws->insert_default_option("columns w/o info", "i", COMPRESS_NONINFO_COLUMNS);
-                aws->insert_option("all gaps", "g", COMPRESS_ALL);
+                aws->insert_option        ("all gaps",         "g", COMPRESS_ALL);
                 aws->update_option_menu();
 
                 aws->button_length(12);
@@ -266,8 +266,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
 
         int labellength = 1;
-        long i;
-        for (i=0; i<gmenuitem->numargs; i++) {
+        for (int i=0; i<gmenuitem->numargs; i++) {
             if (!(gmenuitem->arg[i].label)) gmenuitem->arg[i].label = GDEBLANK;
 
             const char *label    = gmenuitem->arg[i].label;
@@ -291,7 +290,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
         aws->label_length(labellength);
         aws->auto_space(0, 0);
 
-        for (i=0; i<gmenuitem->numargs; i++) {
+        for (int i=0; i<gmenuitem->numargs; i++) {
             GmenuItemArg itemarg = gmenuitem->arg[i];
 
             if (itemarg.type==SLIDER) {
@@ -389,8 +388,8 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 free(base_awar);
             }
             else if (itemarg.type==CHOICE_TREE) {
-                char *defopt=itemarg.textvalue;
-                char *newawar=GDE_makeawarname(gmenuitem, i);
+                char *defopt  = itemarg.textvalue;
+                char *newawar = GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
@@ -398,8 +397,8 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 free(newawar);
             }
             else if (itemarg.type==CHOICE_SAI) {
-                char *defopt=itemarg.textvalue;
-                char *newawar=GDE_makeawarname(gmenuitem, i);
+                char *defopt  = itemarg.textvalue;
+                char *newawar = GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
