@@ -133,6 +133,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/cb.h
 ST_window.o: $(ARBHOME)/INCLUDE/cb_base.h
