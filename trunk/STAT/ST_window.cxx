@@ -19,6 +19,7 @@
 #include <aw_msg.hxx>
 #include <item_sel_list.h>
 #include <awt_filter.hxx>
+#include <awt_config_manager.hxx>
 
 #define ST_ML_AWAR "tmp/st_ml/"
 
@@ -176,6 +177,18 @@ static void st_remove_entries(AW_window */*aww*/) {
     // @@@ shall remove created all entries (from current alignment)
 }
 
+static AWT_config_mapping_def chimera_config_mapping[] = {
+    { ST_ML_AWAR_CQ_MARKED_ONLY,  "marked_only" },
+    { ST_ML_AWAR_COLSTAT_NAME,    "colstat" },
+    { ST_ML_AWAR_FILTER_NAME,     "filter" },
+    { ST_ML_AWAR_CQ_BUCKET_SIZE,  "bucketsize" },
+    { ST_ML_AWAR_CQ_DEST_FIELD,   "destfield" },
+    { ST_ML_AWAR_CQ_REPORT,       "report" },
+    { ST_ML_AWAR_CQ_KEEP_REPORTS, "keepold" },
+
+    { 0, 0 }
+};
+
 AW_window *STAT_create_chimera_check_window(AW_root *root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
     if (!aws) {
@@ -240,9 +253,13 @@ AW_window *STAT_create_chimera_check_window(AW_root *root, GBDATA *gb_main) {
             aws->sens_mask(AWM_ALL);
         }
 
+        aws->button_length(10);
         aws->at("GO");
         aws->callback(makeWindowCallback(st_check_cb, cb_data));
         aws->create_button("GO", "GO", "G");
+
+        aws->at("config");
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "chimera", chimera_config_mapping);
     }
     return aws;
 }
