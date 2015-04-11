@@ -25,6 +25,7 @@
 #include <arb_progress.h>
 #include <TreeNode.h>
 #include <arb_global_defs.h>
+#include <awt_config_manager.hxx>
 
 // --------------------------------------------------------------------------------
 
@@ -207,6 +208,21 @@ static void sq_remove_quality_entries_cb(AW_window *, AW_CL cl_gb_main) {
     SQ_remove_quality_entries(gb_main);
 }
 
+static AWT_config_mapping_def seq_quality_config_mapping[] = {
+    { AWAR_SQ_WEIGHT_BASES,     "wbases" },
+    { AWAR_SQ_WEIGHT_DEVIATION, "wdeviation" },
+    { AWAR_SQ_WEIGHT_HELIX,     "whelix" },
+    { AWAR_SQ_WEIGHT_CONSENSUS, "wconsens" },
+    { AWAR_SQ_WEIGHT_IUPAC,     "wiupac" },
+    { AWAR_SQ_WEIGHT_GC,        "wgc" },
+    { AWAR_SQ_MARK_ONLY_FLAG,   "onlymarked" },
+    { AWAR_SQ_MARK_FLAG,        "markbad" },
+    { AWAR_SQ_MARK_BELOW,       "markbelow" },
+    { AWAR_SQ_REEVALUATE,       "reeval" },
+
+    { 0, 0 }
+};
+
 AW_window *SQ_create_seq_quality_window(AW_root *aw_root, GBDATA *gb_main) {
     // create window for sequence quality calculation (called only once)
 
@@ -263,13 +279,16 @@ AW_window *SQ_create_seq_quality_window(AW_root *aw_root, GBDATA *gb_main) {
     aws->highlight();
     aws->create_button("GO", "GO", "G");
 
-    aws->at("remove");
-    aws->callback(sq_remove_quality_entries_cb, (AW_CL)gb_main);
-    aws->create_button("Remove", "Remove", "R");
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "seq_quality", seq_quality_config_mapping);
 
     aws->at("reevaluate");
     aws->label("Re-Evaluate only");
     aws->create_toggle(AWAR_SQ_REEVALUATE);
+
+    aws->at("remove");
+    aws->callback(sq_remove_quality_entries_cb, (AW_CL)gb_main);
+    aws->create_button("Remove", "Remove", "R");
 
     return aws;
 }
