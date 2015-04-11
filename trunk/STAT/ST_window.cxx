@@ -20,6 +20,8 @@
 #include <item_sel_list.h>
 #include <awt_filter.hxx>
 #include <awt_config_manager.hxx>
+#include <arbdbt.h>
+#include <arb_progress.h>
 
 #define ST_ML_AWAR "tmp/st_ml/"
 
@@ -130,23 +132,69 @@ struct st_check_cb_data : public Noncopyable {
     }
 };
 
+static GB_ERROR st_remove_entries(AW_root *awr, GBDATA *gb_main) {
+    GB_ERROR error = NULL;
+
+    char *ali_name   = awr->awar(ST_ML_AWAR_FILTER_ALIGNMENT)->read_string();
+    char *dest_field = awr->awar(ST_ML_AWAR_CQ_DEST_FIELD)->read_string();
+
+    {
+        GB_transaction ta(gb_main);
+        long count = GBT_get_species_count(gb_main);
+
+        arb_progress progress("Removing old reports", count);
+        for (GBDATA *gb_species = GBT_first_species(gb_main);
+             gb_species && !error;
+             gb_species = GBT_next_species(gb_species))
+        {
+            GBDATA *gb_field    = GB_entry(gb_species, dest_field);
+            if (gb_field) error = GB_delete(gb_field);
+            if (!error) {
+                GBDATA *gb_ali = GB_entry(gb_species, ali_name);
+                if (gb_ali) {
+                    GBDATA *gb_quality    = GB_entry(gb_ali, "quality");
+                    if (gb_quality) error = GB_delete(gb_quality);
+                }
+            }
+            progress.inc_and_check_user_abort(error);
+        }
+    }
+
+    free(dest_field);
+    free(ali_name);
+
+    return error;
+}
+
+static void st_remove_entries_cb(AW_window *aww, GBDATA *gb_main) {
+    aw_message_if(st_remove_entries(aww->get_root(), gb_main));
+}
+
 static void st_check_cb(AW_window *aww, st_check_cb_data *data) {
+    arb_progress   glob_progress("Chimera check");
     GB_transaction ta(data->gb_main);
 
-    AW_root *r = aww->get_root();
+    AW_root *awr = aww->get_root();
 
-    char *alignment_name = r->awar(ST_ML_AWAR_FILTER_ALIGNMENT)->read_string();
-    int   bucket_size    = r->awar(ST_ML_AWAR_CQ_BUCKET_SIZE)->read_int();
-    char *tree_name      = r->awar(AWAR_TREE)->read_string();
-    char *dest_field     = r->awar(ST_ML_AWAR_CQ_DEST_FIELD)->read_string();
-    int   marked_only    = r->awar(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
+    char *ali_name    = awr->awar(ST_ML_AWAR_FILTER_ALIGNMENT)->read_string();
+    int   bucket_size = awr->awar(ST_ML_AWAR_CQ_BUCKET_SIZE)->read_int();
+    char *tree_name   = awr->awar(AWAR_TREE)->read_string();
+    char *dest_field  = awr->awar(ST_ML_AWAR_CQ_DEST_FIELD)->read_string();
+    int   marked_only = awr->awar(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
 
-    st_report_enum report = (st_report_enum) r->awar(ST_ML_AWAR_CQ_REPORT)->read_int();
+    st_report_enum report           = (st_report_enum) awr->awar(ST_ML_AWAR_CQ_REPORT)->read_int();
+    bool           keep_old_reports = awr->awar(ST_ML_AWAR_CQ_KEEP_REPORTS)->read_int();
 
-    GB_ERROR error = st_ml_check_sequence_quality(data->gb_main, tree_name, alignment_name, data->colstat, data->filter, bucket_size, marked_only, report, dest_field);
-    
+    GB_ERROR error = NULL;
+    if (!keep_old_reports) {
+        error = st_remove_entries(awr, data->gb_main);
+    }
+    if (!error) {
+        error = st_ml_check_sequence_quality(data->gb_main, tree_name, ali_name, data->colstat, data->filter, bucket_size, marked_only, report, dest_field);
+    }
+
     free(dest_field);
-    free(alignment_name);
+    free(ali_name);
     free(tree_name);
 
     error = ta.close(error);
@@ -171,10 +219,6 @@ static void STAT_create_awars(AW_root *root, GBDATA *gb_main) {
     root->awar_int   (ST_ML_AWAR_CQ_KEEP_REPORTS, 0);
 
     root->awar_string(ST_ML_AWAR_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
-}
-
-static void st_remove_entries(AW_window */*aww*/) {
-    // @@@ shall remove created all entries (from current alignment)
 }
 
 static AWT_config_mapping_def chimera_config_mapping[] = {
@@ -240,18 +284,12 @@ AW_window *STAT_create_chimera_check_window(AW_root *root, GBDATA *gb_main) {
             aws->update_option_menu();
         }
 
-        {                                           // @@@ not implemented yet
-            aws->sens_mask(AWM_DISABLED);
+        aws->at("keep");
+        aws->create_toggle(ST_ML_AWAR_CQ_KEEP_REPORTS);
 
-            aws->at("keep");
-            aws->create_toggle(ST_ML_AWAR_CQ_KEEP_REPORTS);
-
-            aws->at("del");
-            aws->callback(st_remove_entries);
-            aws->create_button("DEL_ENTRIES", "Remove them now!", "R");
-
-            aws->sens_mask(AWM_ALL);
-        }
+        aws->at("del");
+        aws->callback(makeWindowCallback(st_remove_entries_cb, gb_main));
+        aws->create_button("DEL_ENTRIES", "Remove them now!", "R");
 
         aws->button_length(10);
         aws->at("GO");
