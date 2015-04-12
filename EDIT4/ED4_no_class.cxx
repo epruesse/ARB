@@ -35,6 +35,8 @@
 #include <limits.h>
 
 #include <vector>
+#include <awt_config_manager.hxx>
+#include <consensus_config.h>
 
 using namespace std;
 
@@ -1464,6 +1466,16 @@ static AW_window *CON_create_groupswin_cb(AW_root *aw_root) {
     return aws;
 }
 
+static AWT_config_mapping_def consensus_config_mapping[] = {
+    { ED4_AWAR_CONSENSUS_COUNTGAPS,   CONSENSUS_CONFIG_COUNTGAPS },
+    { ED4_AWAR_CONSENSUS_GAPBOUND,    CONSENSUS_CONFIG_GAPBOUND },
+    { ED4_AWAR_CONSENSUS_GROUP,       CONSENSUS_CONFIG_GROUP },
+    { ED4_AWAR_CONSENSUS_CONSIDBOUND, CONSENSUS_CONFIG_CONSIDBOUND },
+    { ED4_AWAR_CONSENSUS_UPPER,       CONSENSUS_CONFIG_UPPER },
+    { ED4_AWAR_CONSENSUS_LOWER,       CONSENSUS_CONFIG_LOWER },
+
+    { 0, 0 }
+};
 
 AW_window *ED4_create_consensus_definition_window(AW_root *root) {
     static AW_window_simple *aws = 0;
@@ -1514,6 +1526,9 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         aws->at("show");
         aws->label("Display consensus?");
         aws->create_toggle(ED4_AWAR_CONSENSUS_SHOW);
+
+        aws->at("config");
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, CONSENSUS_CONFIG_ID, consensus_config_mapping);
     }
 
     return aws;
