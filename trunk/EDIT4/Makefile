@@ -641,6 +641,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
@@ -648,6 +649,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/cb_base.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/cbtypes.h
+ED4_no_class.o: $(ARBHOME)/INCLUDE/consensus_config.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/dupstr.h

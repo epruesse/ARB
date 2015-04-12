@@ -62,12 +62,14 @@ DESCRIPTION     What to do with gaps?
 
                             Otherwise a dot ('.') is displayed.
 
-NOTES		None
+NOTES		You can save/load the consensus settings to/from a file using the config-manager icon.
+                This allows you to exchange
+                     * the consensus settings used in EDIT4 and
+                     * the settings used to calculate the SAI 'CONSENSUS' from the ARB main window.
 
 EXAMPLES	None
 
 WARNINGS	IUPAC symbols in source sequences are ignored.
 
-BUGS		'LINK{consensus.ps}' is broken for more than 10 years
-                now. Seems that nobody ever took a look.
+BUGS		None
 

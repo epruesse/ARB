@@ -41,6 +41,8 @@
 #include <aw_awar.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <awt_config_manager.hxx>
+#include <consensus_config.h>
 
 #define AWAR_MAX_FREQ_PREFIX      "tmp/CON_MAX_FREQ/"
 #define AWAR_CONSENSUS_PREFIX     "con/"
@@ -719,6 +721,24 @@ static AW_window * CON_showgroupswin_cb(AW_root *aw_root)
     return (AW_window *)aws;
 }
 
+static AWT_config_mapping_def consensus_config_mapping[] = {
+    { AWAR_CONSENSUS_COUNTGAPS,    CONSENSUS_CONFIG_COUNTGAPS },
+    { AWAR_CONSENSUS_GAPBOUND,     CONSENSUS_CONFIG_GAPBOUND },
+    { AWAR_CONSENSUS_GROUP,        CONSENSUS_CONFIG_GROUP },
+    { AWAR_CONSENSUS_FCONSIDBOUND, CONSENSUS_CONFIG_CONSIDBOUND },
+    { AWAR_CONSENSUS_FUPPER,       CONSENSUS_CONFIG_UPPER },
+    { AWAR_CONSENSUS_LOWER,        CONSENSUS_CONFIG_LOWER },
+
+    // make sure the keywords of the following entries
+    // DIFFER from those defined at ../TEMPLATES/consensus_config.h@CommonEntries
+
+    { AWAR_CONSENSUS_SPECIES, "species" },
+    { AWAR_CONSENSUS_RESULT,  "result" },
+    { AWAR_CONSENSUS_NAME,    "name" },
+
+    { 0, 0 }
+};
+
 AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "BUILD_CONSENSUS", "CONSENSUS OF SEQUENCES");
@@ -786,6 +806,9 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
 
     aws->at("save_box");
     awt_create_SAI_selection_list(GLOBAL.gb_main, aws, AWAR_CONSENSUS_NAME, false);
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, CONSENSUS_CONFIG_ID, consensus_config_mapping);
 
     return aws;
 }
