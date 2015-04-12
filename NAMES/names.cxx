@@ -802,7 +802,7 @@ aisc_string get_short(const AN_local *locs) {
             }
 
             const long base36_limit5 = 60466176;      //    60466176 = 36^5 (while using 3-letter-prefix)
-            const int64_t base36_limit7 = 78364164096;   // 78364164096 = 36^7 (while using 1-letter-prefix)
+            const int64_t base36_limit7 = 78364164096LL;   // 78364164096 = 36^7 (while using 1-letter-prefix)
 
             bool store_in_nameModHash = true;
 
