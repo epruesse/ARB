@@ -75,8 +75,8 @@
 #define AWAR_PD_DESIGN_GENE "probe_design/gene" // generate probes for genes ?
 
 // probe design/match (expert window)
-#define AWAR_PD_COMMON_EXP_BONDS "probe_design/bonds/pos"  // prefix for bonds
-#define AWAR_PD_COMMON_EXP_SPLIT "probe_design/SPLIT"
+#define AWAR_PD_COMMON_EXP_BONDS_FORMAT "probe_design/bonds/pos%i"  // format to generate bond awar names
+#define AWAR_PD_COMMON_EXP_SPLIT        "probe_design/SPLIT"
 
 #define AWAR_PD_DESIGN_EXP_DTEDGE "probe_design/DTEDGE"
 #define AWAR_PD_DESIGN_EXP_DT     "probe_design/DT"
@@ -378,6 +378,10 @@ static GB_ERROR pd_get_the_gene_names(GBDATA *gb_main, bytestring &bs, bytestrin
     return error;
 }
 
+inline const char *bond_awar_name(int i) {
+    return GBS_global_string(AWAR_PD_COMMON_EXP_BONDS_FORMAT, i);
+}
+
 static int probe_common_send_data(AW_root *root) {
     // send data common to probe-design AND -match
     if (aisc_put(PD.link, PT_LOCS, PD.locs,
@@ -386,11 +390,9 @@ static int probe_common_send_data(AW_root *root) {
         return 1;
 
     for (int i=0; i<16; i++) {
-        char buffer[256];
-        sprintf(buffer, AWAR_PD_COMMON_EXP_BONDS "%i", i);
         if (aisc_put(PD.link, PT_LOCS, PD.locs,
                      PT_INDEX,  i,
-                     LOCS_BONDVAL, (double)root->awar(buffer)->read_float(),
+                     LOCS_BONDVAL, (double)root->awar(bond_awar_name(i))->read_float(),
                      NULL))
             return 1;
     }
@@ -1119,9 +1121,8 @@ static void probelength_changed_cb(AW_root *root, bool min_changed) {
 
 void create_probe_design_variables(AW_root *root, AW_default props, AW_default db)
 {
-    char buffer[256]; memset(buffer, 0, 256);
-    int  i;
     PD.win = 0;        // design result window not created
+
     root->awar_string(AWAR_SPECIES_NAME,         "", props);
     root->awar_string(AWAR_PD_SELECTED_MATCH,    "", props)->add_callback(selected_match_changed_cb);
     root->awar_float (AWAR_PD_DESIGN_EXP_DTEDGE, .5, props);
@@ -1135,10 +1136,8 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
         1.1, 0.0, 0.9, 0.0
     };
 
-    for (i=0; i<16; i++) {
-        sprintf(buffer, AWAR_PD_COMMON_EXP_BONDS "%i", i);
-        root->awar_float(buffer, default_bonds[i], props);
-        root->awar(buffer)->set_minmax(0, 3.0);
+    for (int i=0; i<16; i++) {
+        root->awar_float(bond_awar_name(i), default_bonds[i], props)->set_minmax(0, 3.0);
     }
     root->awar_float(AWAR_PD_COMMON_EXP_SPLIT,  .5, props);
     root->awar_float(AWAR_PD_DESIGN_EXP_DTEDGE, .5, props);
@@ -1215,11 +1214,11 @@ static AW_window *create_probe_expert_window(AW_root *root, bool for_design) {
     aws->create_button("HELP", "HELP", "C");
 
     for (int i=0; i<16; i++) { // bond matrix
-        char buffer[256];
-        sprintf(buffer, "%i", i);
-        aws->at(buffer);
-        sprintf(buffer, AWAR_PD_COMMON_EXP_BONDS "%i", i);
-        aws->create_input_field(buffer, 4);
+        char bondAt[3];
+        sprintf(bondAt, "%i", i);
+        aws->at(bondAt);
+
+        aws->create_input_field(bond_awar_name(i), 4);
     }
 
     aws->sens_mask(AWM_EXP);
@@ -1236,7 +1235,7 @@ static AW_window *create_probe_expert_window(AW_root *root, bool for_design) {
         aws->sens_mask(AWM_ALL);
         aws->at("max_res");    aws->create_input_field(AWAR_PD_MATCH_MAX_RES,    14);
     }
-    
+
     return aws;
 }
 
@@ -1263,7 +1262,7 @@ static AWT_config_mapping_def probe_design_mapping_def[] = {
 static void setup_probe_design_config(AWT_config_definition& cdef, AW_CL) {
     cdef.add(probe_design_mapping_def);
     for (int i = 0; i<16; ++i) {
-        cdef.add(GBS_global_string(AWAR_PD_COMMON_EXP_BONDS "%i", i), "bond", i);
+        cdef.add(bond_awar_name(i), "bond", i);
     }
 }
 
