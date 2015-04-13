@@ -173,9 +173,7 @@ inline bool want_config_manager(GmenuItem *gmenuitem) {
     }
     return false;
 }
-static void setup_gde_config_def(AWT_config_definition& cdef, AW_CL cl_gmenuitem) {
-    GmenuItem *gmenuitem = (GmenuItem*)cl_gmenuitem;
-
+static void setup_gde_config_def(AWT_config_definition& cdef, GmenuItem *gmenuitem) {
     for (int i=0; i<gmenuitem->numargs; i++) {
         const GmenuItemArg& itemarg = gmenuitem->arg[i];
         if (shall_store_in_config(itemarg)) {
@@ -235,7 +233,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
         if (want_config_manager(gmenuitem)) {
             aws->at("config");
-            AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, aws->window_defaults_name, setup_gde_config_def, AW_CL(gmenuitem));
+            AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, aws->window_defaults_name, makeConfigSetupCallback(setup_gde_config_def, gmenuitem));
         }
 
         if (gmenuitem->numinputs>0) {
