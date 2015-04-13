@@ -2295,6 +2295,17 @@ AW_window *QUERY::create_colorize_items_window(AW_root *aw_root, GBDATA *gb_main
     return create_colorize_window(aw_root, gb_main, NULL, &sel);
 }
 
+static void setup_modify_fields_config(AWT_config_definition& cdef, const DbQuery *query) {
+    cdef.add(query->awar_parskey,         "key");
+    cdef.add(query->awar_use_tag,         "usetag");
+    cdef.add(query->awar_deftag,          "deftag");
+    cdef.add(query->awar_tag,             "modtag");
+    cdef.add(query->awar_double_pars,     "doubleparse");
+    cdef.add(query->awar_createDestField, "createdest");
+    cdef.add(query->awar_acceptConvError, "acceptconv");
+    cdef.add(query->awar_parsvalue,       "aci");
+}
+
 static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) {
     AW_window_simple *aws = new AW_window_simple;
 
@@ -2320,7 +2331,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
 
     aws->at("helptags");
     aws->callback(makeHelpCallback("tags.hlp"));
-    aws->create_button("HELP_TAGS", "HELP TAGS", "H");
+    aws->create_button("HELP_TAGS", "Help tags", "H");
 
     aws->at("usetag");  aws->create_toggle(query->awar_use_tag);
     aws->at("deftag");  aws->create_input_field(query->awar_deftag);
@@ -2366,6 +2377,12 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     else {
         aws->get_root()->awar(query->awar_parspredefined)->add_callback(makeRootCallback(predef_prg, query));
     }
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT,
+                              GBS_global_string("mod_%s_fields", query->selector.item_name),
+                              makeConfigSetupCallback(setup_modify_fields_config, query));
+
     return aws;
 }
 
