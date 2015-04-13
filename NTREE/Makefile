@@ -420,6 +420,7 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cb.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cbtypes.h
