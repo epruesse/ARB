@@ -15,6 +15,7 @@
 #include <awt_canvas.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <awt_config_manager.hxx>
 
 #define AWAR_BRANCH_ANALYSIS     "branch_analysis"
 #define AWAR_BRANCH_ANALYSIS_TMP "tmp/" AWAR_BRANCH_ANALYSIS
@@ -149,6 +150,16 @@ void BranchWindow::create_awars(AW_root *aw_root) {
     aw_root->awar_float(AWAR_BA_DEGENERATION, 30);
 }
 
+static AWT_config_mapping_def branch_analysis_config_mapping[] = {
+    { AWAR_BA_MIN_REL_DIFF, "minreldiff" },
+    { AWAR_BA_MIN_ABS_DIFF, "minabsdiff" },
+    { AWAR_BA_MIN_DEPTH,    "mindepth" },
+    { AWAR_BA_MIN_ROOTDIST, "minrootdist" },
+    { AWAR_BA_DEGENERATION, "degeneration" },
+
+    { 0, 0 }
+};
+
 void BranchWindow::create_window(AW_root *aw_root) {
     aws = new AW_window_simple;
 
@@ -201,6 +212,9 @@ void BranchWindow::create_window(AW_root *aw_root) {
     aws->create_button("MARK_DEGENERATED", "Mark degenerated branches");
 
     aws->at("degen"); aws->create_input_field(AWAR_BA_DEGENERATION, WIDTH);
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "branch_analysis", branch_analysis_config_mapping);
 }
 
 AW_window *NT_create_branch_analysis_window(AW_root *aw_root, AWT_canvas *ntw) {
