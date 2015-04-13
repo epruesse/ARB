@@ -4,7 +4,7 @@ UP      glossary.hlp
 UP      pt_server.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB    pd_spec_param.hlp
+#SUB    sub.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -27,9 +27,8 @@ DESCRIPTION     Finds and displays all occurrences of a given target and/or
                 button and selecting the number of mismatches (1 - 20)
                 from the menu.
 
-                Enable the 'Use weighted mismatches' toggle to use the
-                weights defined via 'EXPERT' button (see
-                LINK{pd_spec_param.hlp}).
+                Check the 'Use weighted mismatches' switch to use the
+                custom weights defined via 'EXPERT' button (see LINK{pm_spec_param.hlp}).
 
                 Define whether the species which contain the target or
                 probe (or similar) sequence should be marked (see
@@ -38,10 +37,6 @@ DESCRIPTION     Finds and displays all occurrences of a given target and/or
 
                 Define if probe AND target sequence should be searched
                 by enabling the 'Check rev.compl. too' toggle.
-
-                Press the 'EXPERT' button to display the 'PD SPECIAL'
-                window if base pairings should be individually weighed
-                (see LINK{pd_spec_param.hlp}).
 
                 Press the 'MATCH' button to perform the search.
 
@@ -97,4 +92,6 @@ EXAMPLES        None
 
 WARNINGS        None
 
-BUGS            The number of results is currently limited to 10000 hits.
+BUGS            The number of results is limited to 1000000 hits by default.
+		You may change that limit in the expert subwindow.
+
