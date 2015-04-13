@@ -1262,8 +1262,7 @@ static AWT_config_mapping_def probe_design_mapping_def[] = {
     { 0, 0 }
 };
 
-static void setup_probe_config(AWT_config_definition& cdef, AW_CL cl_mapping) {
-    const AWT_config_mapping_def *mapping = (const AWT_config_mapping_def*)cl_mapping;
+static void setup_probe_config(AWT_config_definition& cdef, const AWT_config_mapping_def *mapping) {
     cdef.add(mapping);
 
     // entries common for both expert windows (design + match)
@@ -1333,7 +1332,7 @@ AW_window *create_probe_design_window(AW_root *root, GBDATA *gb_main) {
     }
 
     aws->at("save");
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "probe_design", setup_probe_config, AW_CL(probe_design_mapping_def));
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "probe_design", makeConfigSetupCallback(setup_probe_config, probe_design_mapping_def));
 
     return aws;
 }
@@ -1654,7 +1653,7 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
         aws->create_button("IUPAC", "IUPAC", "I");
 
         aws->at("config");
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "probe_match", setup_probe_config, AW_CL(probe_match_mapping_def));
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "probe_match", makeConfigSetupCallback(setup_probe_config, probe_match_mapping_def));
     }
     return aws;
 }

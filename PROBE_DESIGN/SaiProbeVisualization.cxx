@@ -628,7 +628,7 @@ static AWT_predefined_config predefined_saiColorDefinitions[] = {
     { 0, 0, 0 }
 };
 
-static void setup_saiColorDefs_config(AWT_config_definition& cdef, AW_CL) {
+static void setup_saiColorDefs_config(AWT_config_definition& cdef) {
     for (int i = 0; i < 10; i++) {
         const char *awarDef = getAwarName(i);
         cdef.add(awarDef, "",  i);
@@ -653,7 +653,7 @@ static AW_window *create_colorTranslationTable_window(AW_root *aw_root) { // cre
         }
 
         aws->at("config");
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "saveSaiColorDefs", setup_saiColorDefs_config, 0, NULL, predefined_saiColorDefinitions);
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "saveSaiColorDefs", makeConfigSetupCallback(setup_saiColorDefs_config), NULL, predefined_saiColorDefinitions);
 
         aws->at("dispSai");
         aws->create_toggle(AWAR_SPV_DISP_SAI);
