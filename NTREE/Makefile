@@ -215,6 +215,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
