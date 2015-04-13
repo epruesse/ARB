@@ -1240,6 +1240,7 @@ static AW_window *create_probe_expert_window(AW_root *root, bool for_design) {
 }
 
 static AWT_config_mapping_def probe_design_mapping_def[] = {
+    // main window:
     { AWAR_PD_DESIGN_CLIPRESULT,   "clip" },
     { AWAR_PD_DESIGN_MISHIT,       "mishit" },
     { AWAR_PD_DESIGN_MAXBOND,      "maxbond" },
@@ -1253,14 +1254,20 @@ static AWT_config_mapping_def probe_design_mapping_def[] = {
     { AWAR_PD_DESIGN_MIN_ECOLIPOS, "minecoli" },
     { AWAR_PD_DESIGN_MAX_ECOLIPOS, "maxecoli" },
     { AWAR_PD_DESIGN_GENE,         "gene" },
-    { AWAR_PD_COMMON_EXP_SPLIT,    "split" }, 
+
+    // expert window:
     { AWAR_PD_DESIGN_EXP_DTEDGE,   "dtedge" },
     { AWAR_PD_DESIGN_EXP_DT,       "dt" },
+
     { 0, 0 }
 };
 
-static void setup_probe_design_config(AWT_config_definition& cdef, AW_CL) {
-    cdef.add(probe_design_mapping_def);
+static void setup_probe_config(AWT_config_definition& cdef, AW_CL cl_mapping) {
+    const AWT_config_mapping_def *mapping = (const AWT_config_mapping_def*)cl_mapping;
+    cdef.add(mapping);
+
+    // entries common for both expert windows (design + match)
+    cdef.add(AWAR_PD_COMMON_EXP_SPLIT, "split");
     for (int i = 0; i<16; ++i) {
         cdef.add(bond_awar_name(i), "bond", i);
     }
@@ -1326,7 +1333,7 @@ AW_window *create_probe_design_window(AW_root *root, GBDATA *gb_main) {
     }
 
     aws->at("save");
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "probe_design", setup_probe_design_config, 0);
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "probe_design", setup_probe_config, AW_CL(probe_design_mapping_def));
 
     return aws;
 }
@@ -1542,6 +1549,23 @@ static void popupSaiProbeMatchWindow(AW_window *aw, GBDATA *gb_main) {
     aw_saiProbeMatch->activate();
 }
 
+static AWT_config_mapping_def probe_match_mapping_def[] = {
+    // main window:
+    { AWAR_TARGET_STRING,       "target" },
+    { AWAR_PD_MATCH_COMPLEMENT, "complement" },
+    { AWAR_PD_MATCH_MARKHITS,   "markhits" },
+    { AWAR_PD_MATCH_WRITE2TMP,  "writetmp" },
+    { AWAR_PD_MATCH_AUTOMATCH,  "automatch" },
+
+    // expert window:
+    { AWAR_PD_MATCH_NMATCHES,   "nmatches" },
+    { AWAR_PD_MATCH_LIM_NMATCH, "limitnmatch" },
+    { AWAR_PD_MATCH_MAX_RES,    "maxresults" },
+
+    { 0, 0 }
+};
+
+
 AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0; // the one and only probe match window
     if (!aws) {
@@ -1628,6 +1652,9 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
         aws->callback(makeCreateWindowCallback(create_IUPAC_resolve_window, gb_main));
         aws->at("iupac");
         aws->create_button("IUPAC", "IUPAC", "I");
+
+        aws->at("config");
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "probe_match", setup_probe_config, AW_CL(probe_match_mapping_def));
     }
     return aws;
 }
