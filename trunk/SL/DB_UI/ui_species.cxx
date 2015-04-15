@@ -1224,11 +1224,13 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
 }
 
 static AWT_config_mapping_def next_neighbour_config_mapping[] = {
+    // same as ../FAST_ALIGNER/fast_aligner.cxx@RELATIVES_CONFIG
     { AWAR_NN_OLIGO_LEN,   "oligolen" },
     { AWAR_NN_MISMATCHES,  "mismatches" },
     { AWAR_NN_FAST_MODE,   "fastmode" },
     { AWAR_NN_REL_MATCHES, "relmatches" },
     { AWAR_NN_REL_SCALING, "relscaling" },
+
     { AWAR_NN_COMPLEMENT,  "complement" },
     { AWAR_NN_RANGE_START, "rangestart" },
     { AWAR_NN_RANGE_END,   "rangeend" },
