@@ -64,7 +64,7 @@ public:
 
     // result
     char *config_string() const; // return current state as config string
-    GB_ERROR write_to_awars(const AWT_config_mapping *cfgname_2_awar) const; // internal use (write config into awars)
+    void write_to_awars(const AWT_config_mapping *cfgname_2_awar, bool warn) const; // internal use (write config into awars)
 };
 
 // ------------------------------
