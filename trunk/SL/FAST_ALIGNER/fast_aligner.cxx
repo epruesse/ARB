@@ -2663,17 +2663,19 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->at("pt_server");
     awt_create_PTSERVER_selection_button(aws, AWAR_PT_SERVER);
 
+    aws->label_length(23);
     aws->at("relrange");
     aws->label("Data from range only, plus");
     aws->create_input_field(FA_AWAR_RELATIVE_RANGE, 3);
     
-    aws->at("use_ali");
-    aws->label("Alignment");
-    aws->create_input_field(FA_AWAR_PT_SERVER_ALIGNMENT, 12);
-
     aws->at("relatives");
     aws->label("Number of relatives to use");
     aws->create_input_field(FA_AWAR_NEXT_RELATIVES, 3);
+
+    aws->label_length(9);
+    aws->at("use_ali");
+    aws->label("Alignment");
+    aws->create_input_field(FA_AWAR_PT_SERVER_ALIGNMENT, 12);
 
     aws->at("relSett");
     aws->callback(AW_POPUP, (AW_CL)create_family_settings_window, (AW_CL)root);
