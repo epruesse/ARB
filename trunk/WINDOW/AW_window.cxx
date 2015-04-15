@@ -539,7 +539,7 @@ void AW_window::insert_help_topic(const char *labeli,
     root->make_sensitive(button, mask);
 }
 
-void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
+void AW_window::insert_menu_topic(const char *topic_id, const char *labeltext,
                                   const char *mnemonic, const char *helpText,
                                   AW_active mask, const WindowCallback& cb) {
     aw_assert(legal_mask(mask));
@@ -552,14 +552,15 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
 #endif // DUMP_MENU_LIST
 
 #ifdef CHECK_DUPLICATED_MNEMONICS
-    test_duplicate_mnemonics(labeli, mnemonic);
+    test_duplicate_mnemonics(labeltext, mnemonic);
 #endif
 
-    if (mnemonic && *mnemonic && strchr(labeli, mnemonic[0])) {
+    Label topiclabel(labeltext, this);
+    if (mnemonic && *mnemonic && strchr(labeltext, mnemonic[0])) {
         // create one sub-menu-point
         button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass,
                                          p_w->menu_bar[p_w->menu_deep],
-                                         RES_LABEL_CONVERT(labeli),
+                                         RES_LABEL_CONVERT(topiclabel),
                                          RES_CONVERT(XmNmnemonic, mnemonic),
                                          XmNbackground, _at->background_color, NULL);
     }
@@ -567,12 +568,12 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
         button = XtVaCreateManagedWidget("",
                                          xmPushButtonWidgetClass,
                                          p_w->menu_bar[p_w->menu_deep],
-                                         RES_LABEL_CONVERT(labeli),
+                                         RES_LABEL_CONVERT(topiclabel),
                                          XmNbackground, _at->background_color,
                                          NULL);
     }
 
-    AW_label_in_awar_list(this, button, labeli);
+    AW_label_in_awar_list(this, button, labeltext);
     AW_cb *cbs = new AW_cb(this, cb, helpText);
     XtAddCallback(button, XmNactivateCallback,
                   (XtCallbackProc) AW_server_callback,
@@ -1962,46 +1963,30 @@ void aw_insert_default_help_entries(AW_window *aww) {
     aww->insert_help_topic("ARB help",        "A", "arb.hlp",  AWM_ALL, makeHelpCallback("arb.hlp"));
 }
 
-const char *aw_str_2_label(const char *str, AW_window *aww) {
-    aw_assert(str);
-
-    static const char *last_label = 0;
-    static const char *last_str   = 0;
-    static AW_window  *last_aww   = 0;
-
-    const char *label;
-    if (str == last_str && aww == last_aww) { // reuse result ?
-        label = last_label;
+inline char *strdup_getlen(const char *str, int& len) {
+    len = strlen(str);
+    return GB_strduplen(str, len);
+}
+Label::Label(const char *labeltext, AW_window *aww) {
+    imageref = AW_IS_IMAGEREF(labeltext);
+    if (imageref) {
+        label = strdup_getlen(AW_get_pixmapPath(labeltext+1), len);
     }
     else {
-        if (str[0] == '#') {
-            label = AW_get_pixmapPath(str+1);
+        AW_awar *is_awar = aww->get_root()->label_is_awar(labeltext);
+
+        if (is_awar) { // for labels displaying awar values, insert dummy text here
+            len = aww->get_at().length_of_buttons - 2;
+            if (len < 1) len = 1;
+
+            label = (char*)malloc(len+1);
+            memset(label, 'y', len);
+            label[len] = 0;
         }
         else {
-            AW_awar *is_awar = aww->get_root()->label_is_awar(str);
-
-            if (is_awar) { // for labels displaying awar values, insert dummy text here
-                int wanted_len = aww->get_at().length_of_buttons - 2;
-                if (wanted_len < 1) wanted_len = 1;
-
-                char *labelbuf       = GB_give_buffer(wanted_len+1);
-                memset(labelbuf, 'y', wanted_len);
-                labelbuf[wanted_len] = 0;
-
-                label = labelbuf;
-            }
-            else {
-                label = str;
-            }
+            label = strdup_getlen(labeltext, len);
         }
-
-        // store results locally, cause aw_str_2_label is nearly always called twice with same arguments
-        // (see RES_LABEL_CONVERT)
-        last_label = label;
-        last_str   = str;
-        last_aww   = aww;
     }
-    return label;
 }
 
 void AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str) {

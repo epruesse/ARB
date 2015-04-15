@@ -607,11 +607,12 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
         _at->x_for_next_button = x_label;
         _at->y_for_next_button = y_label;
 
+        Label clientlabel(_at->label_for_inputfield, this);
         tmp_label = XtVaCreateManagedWidget("label",
                                             xmLabelWidgetClass,
                                             parent_widget,
                                             XmNwidth, (int)(width_of_label + 2),
-                                            RES_LABEL_CONVERT(_at->label_for_inputfield),
+                                            RES_LABEL_CONVERT(clientlabel),
                                             XmNrecomputeSize, false,
                                             XmNalignment, XmALIGNMENT_BEGINNING,
                                             XmNfontList, p_global->fontlist,
@@ -666,14 +667,15 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
             args.add(XmNheight, height_of_button);
         }
 
+        Label buttonLabel(buttonlabel, this);
         if (_callback) {
             args.add(XmNshadowThickness, _at->shadow_thickness);
             args.add(XmNalignment,       XmALIGNMENT_CENTER);
 
-            button = XtVaCreateManagedWidget("button", xmPushButtonWidgetClass, fatherwidget, RES_LABEL_CONVERT(buttonlabel), NULL);
+            button = XtVaCreateManagedWidget("button", xmPushButtonWidgetClass, fatherwidget, RES_LABEL_CONVERT(buttonLabel), NULL);
         }
         else { // button w/o callback; (flat, not clickable)
-            button = XtVaCreateManagedWidget("label", xmLabelWidgetClass, parent_widget, RES_LABEL_CONVERT(buttonlabel), NULL);
+            button = XtVaCreateManagedWidget("label", xmLabelWidgetClass, parent_widget, RES_LABEL_CONVERT(buttonLabel), NULL);
             args.add(XmNalignment, (org_correct_for_at_center == 1) ? XmALIGNMENT_CENTER : XmALIGNMENT_BEGINNING);
         }
 
@@ -886,12 +888,13 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     Widget parentWidget = _at->attach_any ? INFO_FORM : INFO_WIDGET;
 
     if (_at->label_for_inputfield) {
+        Label clientlabel(_at->label_for_inputfield, this);
         tmp_label = XtVaCreateManagedWidget("label",
                                             xmLabelWidgetClass,
                                             parentWidget,
                                             XmNwidth, (int)(width_of_input_label + 2),
                                             XmNhighlightThickness, 0,
-                                            RES_LABEL_CONVERT(_at->label_for_inputfield),
+                                            RES_LABEL_CONVERT(clientlabel),
                                             XmNrecomputeSize, false,
                                             XmNalignment, XmALIGNMENT_BEGINNING,
                                             XmNfontList, p_global->fontlist,
@@ -1016,13 +1019,14 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
 
 
     if (_at->label_for_inputfield) {
+        Label clientlabel(_at->label_for_inputfield, this);
         tmp_label = XtVaCreateManagedWidget("label",
                                             xmLabelWidgetClass,
                                             INFO_WIDGET,
                                             XmNx, (int)_at->x_for_next_button,
                                             XmNy, (int)(_at->y_for_next_button) + this->get_root()->y_correction_for_input_labels + 5 - 6,
                                             XmNwidth, (int)(width_of_text_label + 2),
-                                            RES_LABEL_CONVERT(_at->label_for_inputfield),
+                                            RES_LABEL_CONVERT(clientlabel),
                                             XmNrecomputeSize, false,
                                             XmNalignment, XmALIGNMENT_BEGINNING,
                                             XmNfontList, p_global->fontlist,
@@ -1696,22 +1700,21 @@ void AW_window::create_toggle_field(const char *var_name, int orientation) {
 }
 
 static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
-                                      const char *label, const char *mnemonic,
+                                      const char *labeltext, const char *mnemonic,
                                       VarUpdateInfo *awus,
                                       AW_widget_value_pair *toggle, bool default_toggle) {
     AW_root *root = aww->get_root();
 
-    Widget          toggleButton;
+    Label label(labeltext, aww);
+    Widget toggleButton = XtVaCreateManagedWidget("toggleButton",
+                                                  xmToggleButtonWidgetClass,
+                                                  toggle_field,
+                                                  RES_LABEL_CONVERT(label),
+                                                  RES_CONVERT(XmNmnemonic, mnemonic),
+                                                  XmNindicatorSize, 16,
+                                                  XmNfontList, p_global->fontlist,
+                                                  NULL);
 
-    toggleButton = XtVaCreateManagedWidget("toggleButton",
-                                           xmToggleButtonWidgetClass,
-                                           toggle_field,
-                                           RES_LABEL_CONVERT_AWW(label, aww),
-                                           RES_CONVERT(XmNmnemonic, mnemonic),
-                                           XmNindicatorSize, 16,
-                                           XmNfontList, p_global->fontlist,
-
-                                           NULL);
     toggle->widget = toggleButton;
     awus->set_widget(toggleButton);
     XtAddCallback(toggleButton, XmNvalueChangedCallback,
