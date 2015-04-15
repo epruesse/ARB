@@ -29,6 +29,7 @@
 #include <item_sel_list.h>
 #include <map>
 #include <info_window.h>
+#include <awt_config_manager.hxx>
 
 using namespace DBUI;
 using namespace QUERY;
@@ -1222,7 +1223,35 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
     }
 }
 
-static void create_common_next_neighbour_fields(AW_window *aws) {
+static AWT_config_mapping_def next_neighbour_config_mapping[] = {
+    { AWAR_NN_OLIGO_LEN,   "oligolen" },
+    { AWAR_NN_MISMATCHES,  "mismatches" },
+    { AWAR_NN_FAST_MODE,   "fastmode" },
+    { AWAR_NN_REL_MATCHES, "relmatches" },
+    { AWAR_NN_REL_SCALING, "relscaling" },
+    { AWAR_NN_COMPLEMENT,  "complement" },
+    { AWAR_NN_RANGE_START, "rangestart" },
+    { AWAR_NN_RANGE_END,   "rangeend" },
+    { AWAR_NN_MAX_HITS,    "maxhits" },
+    { AWAR_NN_MIN_SCORE,   "minscore" },
+
+    { 0, 0}
+};
+
+static void setup_next_neighbour_config(AWT_config_definition& cdef, bool for_listed) {
+    // fields common for 'listed' and 'selected'
+    cdef.add(next_neighbour_config_mapping);
+
+    if (for_listed) {
+        cdef.add(AWAR_NN_LISTED_SCORED_ENTRIES, "addscore");
+    }
+    else {
+        cdef.add(AWAR_NN_SELECTED_AUTO_SEARCH, "autosearch");
+        cdef.add(AWAR_NN_SELECTED_AUTO_MARK,   "automark");
+    }
+}
+
+static void create_common_next_neighbour_fields(AW_window *aws, bool for_listed) {
     aws->at("pt_server");
     awt_create_PTSERVER_selection_button(aws, AWAR_PROBE_ADMIN_PT_SERVER);
 
@@ -1233,7 +1262,7 @@ static void create_common_next_neighbour_fields(AW_window *aws) {
     aws->at("range");
     aws->create_input_field(AWAR_NN_RANGE_START, 6);
     aws->create_input_field(AWAR_NN_RANGE_END,   6);
-    
+
     aws->at("compl");
     aws->create_option_menu(AWAR_NN_COMPLEMENT, true);
     aws->insert_default_option("forward",            "", FF_FORWARD);
@@ -1247,9 +1276,12 @@ static void create_common_next_neighbour_fields(AW_window *aws) {
 
     aws->at("results");
     aws->create_input_field(AWAR_NN_MAX_HITS, 3);
-    
+
     aws->at("min_score");
     aws->create_input_field(AWAR_NN_MIN_SCORE, 6);
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "next_neighbours", makeConfigSetupCallback(setup_next_neighbour_config, for_listed));
 }
 
 static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, DbQuery *query) {
@@ -1270,7 +1302,7 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, DbQuery
         aws->callback(makeHelpCallback("next_neighbours_listed.hlp"));
         aws->create_button("HELP", "Help", "H");
 
-        create_common_next_neighbour_fields(aws);
+        create_common_next_neighbour_fields(aws, true);
 
         aws->at("add_score");
         aws->create_toggle(AWAR_NN_LISTED_SCORED_ENTRIES);
@@ -1303,8 +1335,9 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, DbQue
         aws->callback(makeHelpCallback("next_neighbours.hlp"));
         aws->create_button("HELP", "Help", "H");
 
-        create_common_next_neighbour_fields(aws);
+        create_common_next_neighbour_fields(aws, false);
 
+        aws->button_length(10);
         aws->at("hit_count");
         aws->create_button(0, AWAR_NN_SELECTED_HIT_COUNT, 0, "+");
 
