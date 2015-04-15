@@ -582,7 +582,7 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *labeltext,
 #if defined(DEVEL_RALF) // wanted version
     aw_assert(topic_id);
 #else // !defined(DEVEL_RALF)
-    if (!topic_id) topic_id = labeli;
+    if (!topic_id) topic_id = labeltext;
 #endif
     cbs->id = strdup(topic_id);
     root->define_remote_command(cbs);
