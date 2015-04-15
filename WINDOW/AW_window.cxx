@@ -1166,7 +1166,7 @@ void AW_window::insert_help_topic(const char *labeli,
     prvt->menus.pop();
 }
 
-void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
+void AW_window::insert_menu_topic(const char *topic_id, const char *labeltext,
                                   const char *mnemonic, const char *helpText,
                                   AW_active mask, const WindowCallback& wcb) {
     aw_return_if_fail(legal_mask(mask));
@@ -1174,16 +1174,16 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
     aw_return_if_fail(topic_id != NULL);
 
 #ifdef CHECK_DUPLICATED_MNEMONICS
-    test_duplicate_mnemonics(labeli, mnemonic);
+    test_duplicate_mnemonics(labeltext, mnemonic);
 #endif
 
-    prvt->action_template.set_label(labeli); // fixme mnemonic
+    prvt->action_template.set_label(labeltext); // fixme mnemonic
     if (helpText) help_text(helpText);
     sens_mask(mask);
     callback(wcb);
     AW_action *act = action_register(topic_id, false);
 
-    GtkWidget *wlabel    = make_label(labeli, 0, mnemonic);
+    GtkWidget *wlabel    = make_label(labeltext, 0, mnemonic);
     GtkWidget *alignment = gtk_alignment_new(0.f, 0.5f, 0.f, 0.f);
     GtkWidget *item      = gtk_menu_item_new();
     gtk_container_add(GTK_CONTAINER(alignment), wlabel);
