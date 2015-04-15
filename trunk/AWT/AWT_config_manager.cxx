@@ -365,10 +365,18 @@ static void current_changed_cb(AW_root*, AWT_configuration *config) {
     // refresh comment field
     if (name[0]) { // cfg not empty
         if (config->has_existing(name)) { // load comment of existing config
-            string      storedComments = config->get_awar_value(STORED_COMMENTS);
-            AWT_config  comments(storedComments.c_str());
-            const char *saved_comment  = comments.get_entry(name.c_str());
-            awar_comment->write_string(saved_comment ? saved_comment : "");
+            string     storedComments = config->get_awar_value(STORED_COMMENTS);
+            AWT_config comments(storedComments.c_str());
+
+            const char *display;
+            if (comments.parseError()) {
+                display = GBS_global_string("Error reading config comments:\n%s", comments.parseError());
+            }
+            else {
+                const char *saved_comment = comments.get_entry(name.c_str());
+                display                   = saved_comment ? saved_comment : "";
+            }
+            awar_comment->write_string(display);
         }
         else if (is_prefined(name)) {
             const AWT_predefined_config *found = config->find_predefined(name);
@@ -406,13 +414,18 @@ static void comment_changed_cb(AW_root*, AWT_configuration *config) {
         }
         else if (config->has_existing(curr_cfg)) {
             AWT_config comments(config->get_awar_value(STORED_COMMENTS).c_str());
-            if (changed_comment.empty()) {
-                comments.delete_entry(curr_cfg.c_str());
+            if (comments.parseError()) {
+                aw_message(GBS_global_string("Failed to parse config-comments (%s)", comments.parseError()));
             }
             else {
-                comments.set_entry(curr_cfg.c_str(), changed_comment.c_str());
+                if (changed_comment.empty()) {
+                    comments.delete_entry(curr_cfg.c_str());
+                }
+                else {
+                    comments.set_entry(curr_cfg.c_str(), changed_comment.c_str());
+                }
+                save_comments(comments, config);
             }
-            save_comments(comments, config);
         }
     }
 }
@@ -688,14 +701,15 @@ struct AWT_config_mapping {
     config_map::iterator begin() { return cmap.begin(); }
     config_map::const_iterator end() const { return cmap.end(); }
     config_map::iterator end() { return cmap.end(); }
+    config_map::size_type size() const { return cmap.size(); }
 };
 
 // -------------------
 //      AWT_config
 
 AWT_config::AWT_config(const char *config_char_ptr)
-    : mapping(new AWT_config_mapping)
-    , parse_error(0)
+    : mapping(new AWT_config_mapping),
+      parse_error(0)
 {
     // parse string in format "key1='value1';key2='value2'"..
     // and put values into a map.
@@ -767,6 +781,7 @@ AWT_config::AWT_config(const AWT_config_mapping *cfgname_2_awar)
     }
 
     awt_assert((valuemap.size()+skipped) == awarmap.size());
+    awt_assert(!parse_error);
 }
 
 AWT_config::~AWT_config() {
@@ -809,8 +824,7 @@ char *AWT_config::config_string() const {
     }
     return strdup(result.c_str());
 }
-GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar) const {
-    GB_ERROR       error = 0;
+void AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, bool warn) const {
     GB_transaction ta(AW_ROOT_DEFAULT);
     // Notes:
     // * Opening a TA on AW_ROOT_DEFAULT has no effect, as awar-DB is TA-free and each
@@ -819,14 +833,16 @@ GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar) co
     //   difference IF the 1st awar is bound to main-DB. At best old behavior was obscure.
 
     awt_assert(!parse_error);
-    AW_root *aw_root = AW_root::SINGLETON;
-    for (config_map::iterator e = mapping->begin(); !error && e != mapping->end(); ++e) {
+    AW_root *aw_root  = AW_root::SINGLETON;
+    int      unmapped = 0;
+    for (config_map::iterator e = mapping->begin(); e != mapping->end(); ++e) {
         const string& config_name(e->first);
         const string& value(e->second);
 
         config_map::const_iterator found = cfgname_2_awar->cmap.find(config_name);
         if (found == cfgname_2_awar->end()) {
-            error = GBS_global_string("config contains unmapped entry '%s'", config_name.c_str());
+            if (warn) aw_message(GBS_global_string("config contains unknown entry '%s'", config_name.c_str()));
+            unmapped++;
         }
         else {
             const string&  awar_name(found->second);
@@ -834,7 +850,14 @@ GB_ERROR AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar) co
             awar->write_as_string(value.c_str());
         }
     }
-    return error;
+
+    if (unmapped && warn) {
+        int mapped = mapping->size()-unmapped;
+        aw_message(GBS_global_string("Not all config entries were valid:\n"
+                                     "(known/restored: %i, unknown/ignored: %i)\n"
+                                     "Note: ok for configs shared between multiple windows",
+                                     mapped, unmapped));
+    }
 }
 
 // ------------------------------
@@ -883,31 +906,29 @@ void AWT_config_definition::write(const char *config_char_ptr) const {
     GB_ERROR   error = wanted_state.parseError();
     if (!error) {
         char *old_state = read();
-        error           = wanted_state.write_to_awars(config_mapping);
-        if (!error) {
-            if (strcmp(old_state, config_char_ptr) != 0) { // expect that anything gets changed?
-                char *new_state = read();
-                if (strcmp(new_state, config_char_ptr) != 0) {
-                    bool retry      = true;
-                    int  maxRetries = 10;
-                    while (retry && maxRetries--) {
-                        printf("Note: repeating config restore (did not set all awars correct)\n");
-                        error            = wanted_state.write_to_awars(config_mapping);
-                        char *new_state2 = read();
-                        if (strcmp(new_state, new_state2) != 0) { // retrying had some effect -> repeat
-                            reassign(new_state, new_state2);
-                        }
-                        else {
-                            retry = false;
-                            free(new_state2);
-                        }
+        wanted_state.write_to_awars(config_mapping, true);
+        if (strcmp(old_state, config_char_ptr) != 0) { // expect that anything gets changed?
+            char *new_state = read();
+            if (strcmp(new_state, config_char_ptr) != 0) {
+                bool retry      = true;
+                int  maxRetries = 10;
+                while (retry && maxRetries--) {
+                    printf("Note: repeating config restore (did not set all awars correct)\n");
+                    wanted_state.write_to_awars(config_mapping, false);
+                    char *new_state2 = read();
+                    if (strcmp(new_state, new_state2) != 0) { // retrying had some effect -> repeat
+                        reassign(new_state, new_state2);
                     }
-                    if (retry) {
-                        error = "Unable to restore everything (might be caused by outdated, now invalid settings)";
+                    else {
+                        retry = false;
+                        free(new_state2);
                     }
                 }
-                free(new_state);
+                if (retry) {
+                    error = "Unable to restore everything (might be caused by outdated, now invalid settings)";
+                }
             }
+            free(new_state);
         }
         free(old_state);
     }
