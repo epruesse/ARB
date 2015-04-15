@@ -40,14 +40,26 @@
 
 #define AW_MOTIF_LABEL
 
-#define RES_LABEL_CONVERT_AWW(str,aww)                                   \
-    XmNlabelType, AW_IS_IMAGEREF(str) ? XmPIXMAP : XmSTRING,             \
-    XtVaTypedArg, AW_IS_IMAGEREF(str) ? XmNlabelPixmap : XmNlabelString, \
-    XmRString,                                                           \
-    aw_str_2_label(str, aww),                                            \
-    strlen(aw_str_2_label(str, aww))+1
+class Label : virtual Noncopyable {
+    char *label;
+    int   len;
+    bool  imageref;
+public:
+    Label(const char *labeltext, AW_window *aww);
+    ~Label() { free(label); }
 
-#define RES_LABEL_CONVERT(str) RES_LABEL_CONVERT_AWW(str, this)
+    size_t length() const { return len; }
+    const char *String() const { return label; }
+    bool is_imageref() const { return imageref; }
+};
+
+
+#define RES_LABEL_CONVERT(label)                                                \
+    XmNlabelType, label.is_imageref() ? XmPIXMAP : XmSTRING,                    \
+    XtVaTypedArg, label.is_imageref() ? XmNlabelPixmap : XmNlabelString,        \
+    XmRString,                                                                  \
+    label.String(),                                                             \
+    label.length()+1
 
 #define AW_JUSTIFY_LABEL(widget, corr)                                                \
     switch (corr) {                                                                   \
@@ -266,10 +278,9 @@ public:
 };
 
 
-void        aw_root_init_font(Display *tool_d);
-const char *aw_str_2_label(const char *str, AW_window *aww);
-void        AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str);
-void        AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data);
+void aw_root_init_font(Display *tool_d);
+void AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str);
+void AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data);
 
 // ------------------------------------------------------------
 // do not use the following
@@ -293,5 +304,3 @@ __ATTR__NORETURN inline void type_mismatch(const char *triedType, const char *in
 #else
 #error aw_window_Xm.hxx included twice
 #endif
-
-
