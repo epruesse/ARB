@@ -1,4 +1,4 @@
-#FIG 3.2  Produced by xfig version 3.2.5
+#FIG 3.2  Produced by xfig version 3.2.5b
 Landscape
 Center
 Metric
@@ -209,9 +209,9 @@ Single
 	 1080 9585 5940 9585
 4 2 -1 0 0 18 13 0.0000 4 210 1020 6255 4410 $to:X:tree\001
 4 0 -1 0 0 18 13 0.0000 4 210 525 1080 2745 $tree\001
-4 0 -1 0 0 18 13 0.0000 4 210 4875 1080 2295 Select a tree to define groups to analyze (opt.):\001
+4 0 -1 0 0 18 13 0.0000 4 210 4845 1080 2295 Select a tree to define groups to analyze (opt.):\001
 4 1 -1 0 0 2 18 0.0000 4 255 3210 3465 1575 Calculate sequence quality\001
-4 2 -1 0 0 18 12 0.0000 4 195 510 6030 1080 $help\001
+4 2 -1 0 0 18 12 0.0000 4 225 570 6030 1080 $help\001
 4 0 -1 0 0 18 13 0.0000 4 210 675 1080 1080 $close\001
 4 0 -1 0 0 18 13 0.0000 4 225 750 1035 4905 $monly\001
 4 0 -1 0 0 18 13 0.0000 4 210 3075 1665 4860 Evaluate only marked species\001
@@ -237,3 +237,4 @@ Single
 4 0 -1 0 0 18 13 0.0000 4 210 930 1080 6075 Weights:\001
 4 0 -1 0 0 18 13 0.0000 4 210 2685 2520 9990 all quality entries from DB\001
 4 0 -1 0 0 18 13 0.0000 4 210 885 1080 10080 $remove\001
+4 0 -1 0 0 18 13 0.0000 4 225 765 2610 9180 $config\001

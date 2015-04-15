@@ -35,6 +35,7 @@
 #include <arb_diff.h>
 
 #include <cctype>
+#include <awt_config_manager.hxx>
 
 #define AWAR_TREE_SAV "ad_tree/"
 #define AWAR_TREE_TMP "tmp/ad_tree/"
@@ -259,11 +260,23 @@ static void tree_save_cb(AW_window *aww) {
     free(tree_name);
 }
 
-static AW_window *create_tree_export_window(AW_root *root)
-{
+static AWT_config_mapping_def tree_export_config_mapping[] = {
+    { AWAR_TREE_EXPORT_FORMAT,             "format" },
+    { AWAR_TREE_EXPORT_NDS,                "nodetype" },
+    { AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS, "lengths" },
+    { AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS, "bootstraps" },
+    { AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES, "groupnames" },
+    { AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS, "hidefolded" },
+    { AWAR_TREE_EXPORT_QUOTEMODE,          "quotemode" },
+    { AWAR_TREE_EXPORT_REPLACE,            "replacechars" },
+
+    { 0, 0 }
+};
+
+static AW_window *create_tree_export_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "SAVE_TREE", "TREE SAVE");
-    aws->load_xfig("sel_box_user2.fig");
+    aws->load_xfig("tree_export.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
@@ -273,6 +286,10 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->callback(makeHelpCallback("tr_export.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
+    AW_create_standard_fileselection(aws, AWAR_TREE_EXPORT_FILEBASE);
+
+    aws->auto_space(10, 10);
+
     aws->at("user");
     aws->create_option_menu(AWAR_TREE_EXPORT_FORMAT, true);
     aws->insert_option("NEWICK TREE FORMAT",                   "N", AD_TREE_EXPORT_FORMAT_NEWICK);
@@ -280,10 +297,7 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->insert_option("ARB_XML TREE FORMAT",                  "X", AD_TREE_EXPORT_FORMAT_XML);
     aws->update_option_menu();
 
-    AW_create_standard_fileselection(aws, AWAR_TREE_EXPORT_FILEBASE);
-
     aws->at("user2");
-    aws->auto_space(10, 10);
     aws->label("Nodetype");
     aws->create_toggle_field(AWAR_TREE_EXPORT_NDS, 1);
     aws->insert_default_toggle("Species ID ('name')", "S", 0);
@@ -308,11 +322,15 @@ static AW_window *create_tree_export_window(AW_root *root)
     aws->at_newline(); aws->label("Replace problem chars"); aws->create_toggle(AWAR_TREE_EXPORT_REPLACE);
 
     aws->at_newline();
+    aws->button_length(10);
+
     aws->callback(tree_save_cb);
     aws->create_button("SAVE", "SAVE", "o");
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CANCEL", "CANCEL", "C");
+
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "tree_export", tree_export_config_mapping);
 
     aws->window_fit();
     update_filter_cb(root);

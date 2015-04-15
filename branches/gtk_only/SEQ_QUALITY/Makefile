@@ -174,6 +174,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+SQ_main.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/cb.h
