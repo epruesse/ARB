@@ -100,6 +100,7 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+GDE.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GDE.o: $(ARBHOME)/INCLUDE/cb.h

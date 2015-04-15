@@ -141,14 +141,17 @@ ST_window.o: st_ml.hxx
 ST_window.o: st_quality.hxx
 ST_window.o: st_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ST_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_core.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_error.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ST_window.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_string.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ST_window.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_window.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_window.o: $(ARBHOME)/INCLUDE/aw_action.hxx
@@ -186,6 +189,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/cb.h
 ST_window.o: $(ARBHOME)/INCLUDE/cb_base.h

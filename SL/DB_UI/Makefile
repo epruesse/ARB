@@ -145,6 +145,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+ui_species.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/cb.h

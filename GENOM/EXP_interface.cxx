@@ -223,11 +223,9 @@ static QUERY::DbQuery *GLOBAL_experiment_query = 0;
 #warning move EXP_create_experiment_query_window to SL/DB_UI
 #endif
 
-AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
+AW_window *EXP_create_experiment_query_window(AW_root *aw_root, GBDATA *gb_main) {
     static AW_window_simple_menu *aws = 0;
     if (!aws) {
-        GBDATA *gb_main = (GBDATA*)cl_gb_main;
-
         aws = new AW_window_simple_menu;
         aws->init(aw_root, "EXPERIMENT_QUERY", "Experiment SEARCH and QUERY");
         aws->create_menu("More functions", "f");
@@ -263,8 +261,8 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main
         GLOBAL_experiment_query = query;
 
         aws->create_menu("More search",     "s");
-        aws->insert_menu_topic("exp_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",              "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)QUERY::search_duplicated_field_content, (AW_CL)query, 0);
-        aws->insert_menu_topic("exp_search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)QUERY::search_duplicated_field_content, (AW_CL)query, 1);
+        aws->insert_menu_topic("exp_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",              "E", "search_duplicates.hlp", AWM_ALL, makeWindowCallback(QUERY::search_duplicated_field_content, query, false));
+        aws->insert_menu_topic("exp_search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, makeWindowCallback(QUERY::search_duplicated_field_content, query, true));
 
         aws->button_length(7);
 
@@ -278,9 +276,8 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main
     return aws;
 }
 
-static void experiment_delete_cb(AW_window *aww, AW_CL cl_gb_main) {
+static void experiment_delete_cb(AW_window *aww, GBDATA *gb_main) {
     if (aw_ask_sure("experiment_delete", "Are you sure to delete the experiment")) {
-        GBDATA         *gb_main       = (GBDATA*)cl_gb_main;
         GB_transaction  ta(gb_main);
         GBDATA         *gb_experiment = EXP_get_current_experiment(gb_main, aww->get_root());
 
@@ -292,9 +289,8 @@ static void experiment_delete_cb(AW_window *aww, AW_CL cl_gb_main) {
     }
 }
 
-static void experiment_create_cb(AW_window *aww, AW_CL cl_gb_main) {
-    GBDATA   *gb_main = (GBDATA*)cl_gb_main;
-    GB_ERROR  error   = GB_begin_transaction(gb_main);
+static void experiment_create_cb(AW_window *aww, GBDATA *gb_main) {
+    GB_ERROR error = GB_begin_transaction(gb_main);
 
     if (!error) {
         AW_root *aw_root            = aww->get_root();
@@ -322,14 +318,13 @@ static void experiment_create_cb(AW_window *aww, AW_CL cl_gb_main) {
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
-static void experiment_rename_cb(AW_window *aww, AW_CL cl_gb_main) {
+static void experiment_rename_cb(AW_window *aww, GBDATA *gb_main) {
     AW_root *aw_root = aww->get_root();
     char    *source  = aw_root->awar(AWAR_EXPERIMENT_NAME)->read_string();
     char    *dest    = aw_root->awar(AWAR_EXPERIMENT_DEST)->read_string();
 
     if (strcmp(source, dest) != 0) {
-        GBDATA   *gb_main = (GBDATA*)cl_gb_main;
-        GB_ERROR  error   = GB_begin_transaction(gb_main);
+        GB_ERROR error = GB_begin_transaction(gb_main);
 
         if (!error) {
             GBDATA *gb_experiment_data = EXP_get_current_experiment_data(gb_main, aww->get_root());
@@ -359,11 +354,10 @@ static void experiment_rename_cb(AW_window *aww, AW_CL cl_gb_main) {
     free(dest);
 }
 
-static void experiment_copy_cb(AW_window *aww, AW_CL cl_gb_main) {
-    char     *source  = aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->read_string();
-    char     *dest    = aww->get_root()->awar(AWAR_EXPERIMENT_DEST)->read_string();
-    GBDATA   *gb_main = (GBDATA*)cl_gb_main;
-    GB_ERROR  error   = GB_begin_transaction(gb_main);
+static void experiment_copy_cb(AW_window *aww, GBDATA *gb_main) {
+    char     *source = aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->read_string();
+    char     *dest   = aww->get_root()->awar(AWAR_EXPERIMENT_DEST)->read_string();
+    GB_ERROR  error  = GB_begin_transaction(gb_main);
 
     if (!error) {
         GBDATA *gb_experiment_data = EXP_get_current_experiment_data(gb_main, aww->get_root());
@@ -397,7 +391,7 @@ static void experiment_copy_cb(AW_window *aww, AW_CL cl_gb_main) {
     free(dest);
 }
 
-static AW_window *create_experiment_rename_window(AW_root *root, AW_CL cl_gb_main) {
+static AW_window *create_experiment_rename_window(AW_root *root, GBDATA *gb_main) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "RENAME_EXPERIMENT", "EXPERIMENT RENAME");
     aws->load_xfig("ad_al_si.fig");
@@ -412,13 +406,13 @@ static AW_window *create_experiment_rename_window(AW_root *root, AW_CL cl_gb_mai
     aws->at("input");
     aws->create_input_field(AWAR_EXPERIMENT_DEST, 15);
     aws->at("ok");
-    aws->callback(experiment_rename_cb, cl_gb_main);
+    aws->callback(makeWindowCallback(experiment_rename_cb, gb_main));
     aws->create_button("GO", "GO", "G");
 
-    return (AW_window *)aws;
+    return aws;
 }
 
-static AW_window *create_experiment_copy_window(AW_root *root, AW_CL cl_gb_main) {
+static AW_window *create_experiment_copy_window(AW_root *root, GBDATA *gb_main) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "COPY_EXPERIMENT", "EXPERIMENT COPY");
     aws->load_xfig("ad_al_si.fig");
@@ -434,13 +428,13 @@ static AW_window *create_experiment_copy_window(AW_root *root, AW_CL cl_gb_main)
     aws->create_input_field(AWAR_EXPERIMENT_DEST, 15);
 
     aws->at("ok");
-    aws->callback(experiment_copy_cb, cl_gb_main);
+    aws->callback(makeWindowCallback(experiment_copy_cb, gb_main));
     aws->create_button("GO", "GO", "G");
 
-    return (AW_window *)aws;
+    return aws;
 }
 
-static AW_window *create_experiment_create_window(AW_root *root, AW_CL cl_gb_main) {
+static AW_window *create_experiment_create_window(AW_root *root, GBDATA *gb_main) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "CREATE_EXPERIMENT", "EXPERIMENT CREATE");
     aws->load_xfig("ad_al_si.fig");
@@ -453,7 +447,7 @@ static AW_window *create_experiment_create_window(AW_root *root, AW_CL cl_gb_mai
     aws->at("input"); aws->create_input_field(AWAR_EXPERIMENT_DEST, 15);
 
     aws->at("ok");
-    aws->callback(experiment_create_cb, cl_gb_main);
+    aws->callback(makeWindowCallback(experiment_create_cb, gb_main));
     aws->create_button("GO", "GO", "G");
 
     return aws;
@@ -463,9 +457,9 @@ static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
     static BoundItemSel *bis = new BoundItemSel(gb_main, EXP_get_selector());
     exp_assert(bis->gb_main == gb_main);
 
-    aws->insert_menu_topic("exp_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_fields_reorder_window, (AW_CL)bis);
-    aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_delete_window, (AW_CL)bis);
-    aws->insert_menu_topic("exp_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_create_window, (AW_CL)bis);
+    aws->insert_menu_topic("exp_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, makeCreateWindowCallback(DBUI::create_fields_reorder_window, bis));
+    aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_delete_window, bis));
+    aws->insert_menu_topic("exp_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_create_window, bis));
     aws->sep______________();
     aws->insert_menu_topic("exp_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, makeWindowCallback(experiment_field_selection_list_unhide_all_cb, gb_main, FIELD_FILTER_NDS));
     aws->insert_menu_topic("exp_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AD_F_ALL, makeWindowCallback(experiment_field_selection_list_update_cb,     gb_main, FIELD_FILTER_NDS));
@@ -501,7 +495,7 @@ static AW_window *popup_new_experiment_window(AW_root *aw_root, GBDATA *gb_main,
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("search");
-    aws->callback(AW_POPUP, (AW_CL)EXP_create_experiment_query_window, (AW_CL)gb_main);
+    aws->callback(makeCreateWindowCallback(EXP_create_experiment_query_window, gb_main));
     aws->create_button("SEARCH", "SEARCH", "S");
 
     aws->at("help");
@@ -512,10 +506,10 @@ static AW_window *popup_new_experiment_window(AW_root *aw_root, GBDATA *gb_main,
     const InfoWindow&  infoWin = InfoWindowRegistry::infowin.registerInfoWindow(aws, scanner, detach_id);
 
     aws->create_menu("EXPERIMENT", "E", AD_F_ALL);
-    aws->insert_menu_topic("experiment_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, (AW_CB)experiment_delete_cb, (AW_CL)gb_main,                         0);
-    aws->insert_menu_topic("experiment_rename", "Rename ...", "R", "spa_rename.hlp", AD_F_ALL, AW_POPUP,                    (AW_CL)create_experiment_rename_window, (AW_CL)gb_main);
-    aws->insert_menu_topic("experiment_copy",   "Copy ...",   "y", "spa_copy.hlp",   AD_F_ALL, AW_POPUP,                    (AW_CL)create_experiment_copy_window,   (AW_CL)gb_main);
-    aws->insert_menu_topic("experiment_create", "Create ...", "C", "spa_create.hlp", AD_F_ALL, AW_POPUP,                    (AW_CL)create_experiment_create_window, (AW_CL)gb_main);
+    aws->insert_menu_topic("experiment_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, makeWindowCallback      (experiment_delete_cb,            gb_main));
+    aws->insert_menu_topic("experiment_rename", "Rename ...", "R", "spa_rename.hlp", AD_F_ALL, makeCreateWindowCallback(create_experiment_rename_window, gb_main));
+    aws->insert_menu_topic("experiment_copy",   "Copy ...",   "y", "spa_copy.hlp",   AD_F_ALL, makeCreateWindowCallback(create_experiment_copy_window,   gb_main));
+    aws->insert_menu_topic("experiment_create", "Create ...", "C", "spa_create.hlp", AD_F_ALL, makeCreateWindowCallback(create_experiment_create_window, gb_main));
     aws->sep______________();
 
     aws->create_menu("FIELDS", "F", AD_F_ALL);

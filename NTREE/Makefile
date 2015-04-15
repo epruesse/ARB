@@ -311,6 +311,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
@@ -383,10 +384,12 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+AP_consensus.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/cb.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/cb_base.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/cbtypes.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/consensus_config.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -641,6 +644,7 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cb.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -1116,6 +1120,7 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+NT_ins_col.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cb.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/cb_base.h

@@ -16,14 +16,11 @@
 #ifndef AWT_CONFIG_MANAGER_HXX
 #define AWT_CONFIG_MANAGER_HXX
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
+#ifndef CB_H
+#include <cb.h>
 #endif
 
 struct AWT_config_mapping;
@@ -67,7 +64,7 @@ public:
 
     // result
     char *config_string() const; // return current state as config string
-    GB_ERROR write_to_awars(const AWT_config_mapping *cfgname_2_awar) const; // internal use (write config into awars)
+    void write_to_awars(const AWT_config_mapping *cfgname_2_awar, bool warn) const; // internal use (write config into awars)
 };
 
 // ------------------------------
@@ -95,14 +92,15 @@ public:
 
 typedef char *(*AWT_store_config_to_string)(AW_CL cl1, AW_CL cl2);
 typedef void (*AWT_load_or_reset_config)(const char *stored_string, AW_CL cl1, AW_CL cl2);
-typedef void (*AWT_setup_config_definition)(AWT_config_definition& cdef, AW_CL cl);
+
+DECLARE_CBTYPE_FVV_AND_BUILDERS(ConfigSetupCallback, void, AWT_config_definition&); // defines makeConfigSetupCallback
 
 // ----------------------------------
 // the config manager itself
 // adds button at cursor position when called (from a window generator function)
 
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store, AWT_load_or_reset_config load_or_reset, AW_CL cl1, AW_CL cl2, const char *macro_id = NULL, const AWT_predefined_config *predef = NULL);
-void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_setup_config_definition setup_cb, AW_CL cl, const char *macro_id = NULL, const AWT_predefined_config *predef = NULL);
+void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, ConfigSetupCallback setup_cb, const char *macro_id = NULL, const AWT_predefined_config *predef = NULL);
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, const AWT_config_mapping_def *mapping, const char *macro_id = NULL, const AWT_predefined_config *predef = NULL);
 
 #else
