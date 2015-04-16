@@ -42,80 +42,81 @@ using std::cout;
 using std::endl;
 
 #define GA_AWAR_ROOT "sina/"
-#define GA_AWAR_CMD GA_AWAR_ROOT "command"
-#define GA_AWAR_TGT GA_AWAR_ROOT "target"
-#define GA_AWAR_SAI GA_AWAR_ROOT "sai"
-#define GA_AWAR_ALIGNMENT GA_AWAR_ROOT "alignment"
-#define GA_AWAR_PROTECTION GA_AWAR_ROOT "protection"
-#define GA_AWAR_TURN_CHECK GA_AWAR_ROOT "turncheck"
-#define GA_AWAR_REALIGN GA_AWAR_ROOT "realign"
-#define GA_AWAR_COPYMARKREF GA_AWAR_ROOT "copymarkref"
-#define GA_AWAR_MATCH_SCORE GA_AWAR_ROOT "match_score"
+
+#define GA_AWAR_CMD            GA_AWAR_ROOT "command"
+#define GA_AWAR_TGT            GA_AWAR_ROOT "target"
+#define GA_AWAR_SAI            GA_AWAR_ROOT "sai"
+#define GA_AWAR_ALIGNMENT      GA_AWAR_ROOT "alignment"
+#define GA_AWAR_PROTECTION     GA_AWAR_ROOT "protection"
+#define GA_AWAR_TURN_CHECK     GA_AWAR_ROOT "turncheck"
+#define GA_AWAR_REALIGN        GA_AWAR_ROOT "realign"
+#define GA_AWAR_COPYMARKREF    GA_AWAR_ROOT "copymarkref"
+#define GA_AWAR_MATCH_SCORE    GA_AWAR_ROOT "match_score"
 #define GA_AWAR_MISMATCH_SCORE GA_AWAR_ROOT "mismatch_score"
-#define GA_AWAR_GAP_PEN GA_AWAR_ROOT "gap_pen"
-#define GA_AWAR_GAP_EXT GA_AWAR_ROOT "gap_ext"
-#define GA_AWAR_ADVANCED GA_AWAR_ROOT "advanced"
-#define GA_AWAR_FS_MIN GA_AWAR_ROOT "fs_min"
-#define GA_AWAR_FS_MAX GA_AWAR_ROOT "fs_max"
-#define GA_AWAR_FS_MSC GA_AWAR_ROOT "fs_msc"
-#define GA_AWAR_MIN_FULL GA_AWAR_ROOT "min_full"
-#define GA_AWAR_FULL_MINLEN GA_AWAR_ROOT "full_minlen"
-#define GA_AWAR_OVERHANG GA_AWAR_ROOT "overhang"
-#define GA_AWAR_THREADS GA_AWAR_ROOT "threads"
-#define GA_AWAR_QSIZE GA_AWAR_ROOT "qsize"
-#define GA_AWAR_KMER_LEN GA_AWAR_ROOT "kmer_len"
-#define GA_AWAR_KMER_MM GA_AWAR_ROOT "kmer_mm"
-#define GA_AWAR_MIN_LEN GA_AWAR_ROOT "min_len"
-#define GA_AWAR_WEIGHT GA_AWAR_ROOT "weight"
-#define GA_AWAR_INSERT GA_AWAR_ROOT "insert"
-#define GA_AWAR_LOWERCASE GA_AWAR_ROOT "lowercase"
-#define GA_AWAR_AUTOFILTER GA_AWAR_ROOT "autofilter"
-#define GA_AWAR_KMER_NOREL GA_AWAR_ROOT "kmer_norel"
-#define GA_AWAR_KMER_NOFAST GA_AWAR_ROOT "kmer_nofast"
-#define GA_AWAR_SHOW_DIST GA_AWAR_ROOT "show_dist"
-#define GA_AWAR_SHOW_DIFF GA_AWAR_ROOT "show_diff"
-#define GA_AWAR_COLOR GA_AWAR_ROOT "color"
-#define GA_AWAR_GENE_START GA_AWAR_ROOT "gene_start"
-#define GA_AWAR_GENE_END GA_AWAR_ROOT "gene_end"
-#define GA_AWAR_FS_COVER_GENE GA_AWAR_ROOT "fs_cover_gene"
+#define GA_AWAR_GAP_PEN        GA_AWAR_ROOT "gap_pen"
+#define GA_AWAR_GAP_EXT        GA_AWAR_ROOT "gap_ext"
+#define GA_AWAR_ADVANCED       GA_AWAR_ROOT "advanced"
+#define GA_AWAR_FS_MIN         GA_AWAR_ROOT "fs_min"
+#define GA_AWAR_FS_MAX         GA_AWAR_ROOT "fs_max"
+#define GA_AWAR_FS_MSC         GA_AWAR_ROOT "fs_msc"
+#define GA_AWAR_MIN_FULL       GA_AWAR_ROOT "min_full"
+#define GA_AWAR_FULL_MINLEN    GA_AWAR_ROOT "full_minlen"
+#define GA_AWAR_OVERHANG       GA_AWAR_ROOT "overhang"
+#define GA_AWAR_THREADS        GA_AWAR_ROOT "threads"
+#define GA_AWAR_QSIZE          GA_AWAR_ROOT "qsize"
+#define GA_AWAR_KMER_LEN       GA_AWAR_ROOT "kmer_len"
+#define GA_AWAR_KMER_MM        GA_AWAR_ROOT "kmer_mm"
+#define GA_AWAR_MIN_LEN        GA_AWAR_ROOT "min_len"
+#define GA_AWAR_WEIGHT         GA_AWAR_ROOT "weight"
+#define GA_AWAR_INSERT         GA_AWAR_ROOT "insert"
+#define GA_AWAR_LOWERCASE      GA_AWAR_ROOT "lowercase"
+#define GA_AWAR_AUTOFILTER     GA_AWAR_ROOT "autofilter"
+#define GA_AWAR_KMER_NOREL     GA_AWAR_ROOT "kmer_norel"
+#define GA_AWAR_KMER_NOFAST    GA_AWAR_ROOT "kmer_nofast"
+#define GA_AWAR_SHOW_DIST      GA_AWAR_ROOT "show_dist"
+#define GA_AWAR_SHOW_DIFF      GA_AWAR_ROOT "show_diff"
+#define GA_AWAR_COLOR          GA_AWAR_ROOT "color"
+#define GA_AWAR_GENE_START     GA_AWAR_ROOT "gene_start"
+#define GA_AWAR_GENE_END       GA_AWAR_ROOT "gene_end"
+#define GA_AWAR_FS_COVER_GENE  GA_AWAR_ROOT "fs_cover_gene"
 
 void create_sina_variables(AW_root *root, AW_default db1) {
-    root->awar_string(GA_AWAR_CMD, "sina", db1);
-    root->awar_int(GA_AWAR_TGT, 2, db1);
-    root->awar_int(AWAR_PT_SERVER, 0, db1);
-    root->awar_string(GA_AWAR_SAI, "", db1);
-    root->awar_int(GA_AWAR_PROTECTION, 0, db1);
-    root->awar_int(GA_AWAR_TURN_CHECK, 1, db1);
-    root->awar_int(GA_AWAR_REALIGN, 1, db1);
-    root->awar_int(GA_AWAR_COPYMARKREF, 0, db1);
-    root->awar_float(GA_AWAR_GAP_PEN, 5.0, db1);
-    root->awar_float(GA_AWAR_GAP_EXT, 2.0, db1);
-    root->awar_float(GA_AWAR_MATCH_SCORE, 2.0, db1);
-    root->awar_float(GA_AWAR_MISMATCH_SCORE, -1.0, db1);
-    root->awar_int(GA_AWAR_ADVANCED, 0, db1);
-    root->awar_int(GA_AWAR_FS_MIN, 40, db1);
-    root->awar_int(GA_AWAR_FS_MAX, 40, db1);
-    root->awar_float(GA_AWAR_FS_MSC, .7, db1);
-    root->awar_int(GA_AWAR_MIN_FULL, 1, db1);
-    root->awar_int(GA_AWAR_FULL_MINLEN, 1400, db1);
-    root->awar_string(GA_AWAR_OVERHANG, "attach", db1);
-    root->awar_int(GA_AWAR_THREADS, 1, db1);
-    root->awar_int(GA_AWAR_QSIZE, 1, db1);
-    root->awar_int(GA_AWAR_KMER_LEN, 10, db1);
-    root->awar_int(GA_AWAR_KMER_MM, 0, db1);
-    root->awar_int(GA_AWAR_MIN_LEN, 150, db1);
-    root->awar_float(GA_AWAR_WEIGHT, 1, db1);
-    root->awar_string(GA_AWAR_INSERT, "shift", db1);
-    root->awar_string(GA_AWAR_LOWERCASE, "none", db1);
-    root->awar_string(GA_AWAR_AUTOFILTER, "none", db1);
-    root->awar_int(GA_AWAR_KMER_NOREL, 0, db1);
-    root->awar_int(GA_AWAR_KMER_NOFAST, 0, db1);
-    root->awar_int(GA_AWAR_SHOW_DIST, 0, db1);
-    root->awar_int(GA_AWAR_SHOW_DIFF, 0, db1);
-    root->awar_int(GA_AWAR_COLOR, 1, db1);
-    root->awar_int(GA_AWAR_GENE_START, 0, db1);
-    root->awar_int(GA_AWAR_GENE_END, 0, db1);
-    root->awar_int(GA_AWAR_FS_COVER_GENE, 1, db1);
+    root->awar_string(GA_AWAR_CMD,            "sina",   db1);
+    root->awar_int   (GA_AWAR_TGT,            2,        db1);
+    root->awar_int   (AWAR_PT_SERVER,         0,        db1);
+    root->awar_string(GA_AWAR_SAI,            "",       db1);
+    root->awar_int   (GA_AWAR_PROTECTION,     0,        db1);
+    root->awar_int   (GA_AWAR_TURN_CHECK,     1,        db1);
+    root->awar_int   (GA_AWAR_REALIGN,        1,        db1);
+    root->awar_int   (GA_AWAR_COPYMARKREF,    0,        db1);
+    root->awar_float (GA_AWAR_GAP_PEN,        5.0,      db1);
+    root->awar_float (GA_AWAR_GAP_EXT,        2.0,      db1);
+    root->awar_float (GA_AWAR_MATCH_SCORE,    2.0,      db1);
+    root->awar_float (GA_AWAR_MISMATCH_SCORE, -1.0,     db1);
+    root->awar_int   (GA_AWAR_ADVANCED,       0,        db1);
+    root->awar_int   (GA_AWAR_FS_MIN,         40,       db1);
+    root->awar_int   (GA_AWAR_FS_MAX,         40,       db1);
+    root->awar_float (GA_AWAR_FS_MSC,         .7,       db1);
+    root->awar_int   (GA_AWAR_MIN_FULL,       1,        db1);
+    root->awar_int   (GA_AWAR_FULL_MINLEN,    1400,     db1);
+    root->awar_string(GA_AWAR_OVERHANG,       "attach", db1);
+    root->awar_int   (GA_AWAR_THREADS,        1,        db1);
+    root->awar_int   (GA_AWAR_QSIZE,          1,        db1);
+    root->awar_int   (GA_AWAR_KMER_LEN,       10,       db1);
+    root->awar_int   (GA_AWAR_KMER_MM,        0,        db1);
+    root->awar_int   (GA_AWAR_MIN_LEN,        150,      db1);
+    root->awar_float (GA_AWAR_WEIGHT,         1,        db1);
+    root->awar_string(GA_AWAR_INSERT,         "shift",  db1);
+    root->awar_string(GA_AWAR_LOWERCASE,      "none",   db1);
+    root->awar_string(GA_AWAR_AUTOFILTER,     "none",   db1);
+    root->awar_int   (GA_AWAR_KMER_NOREL,     0,        db1);
+    root->awar_int   (GA_AWAR_KMER_NOFAST,    0,        db1);
+    root->awar_int   (GA_AWAR_SHOW_DIST,      0,        db1);
+    root->awar_int   (GA_AWAR_SHOW_DIFF,      0,        db1);
+    root->awar_int   (GA_AWAR_COLOR,          1,        db1);
+    root->awar_int   (GA_AWAR_GENE_START,     0,        db1);
+    root->awar_int   (GA_AWAR_GENE_END,       0,        db1);
+    root->awar_int   (GA_AWAR_FS_COVER_GENE,  1,        db1);
 }
 
 AW_active sina_mask(AW_root *root) {
