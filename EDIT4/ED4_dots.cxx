@@ -18,6 +18,7 @@
 #include <aw_root.hxx>
 #include <arbdbt.h>
 #include <cctype>
+#include <awt_config_manager.hxx>
 
 using namespace std;
 
@@ -221,6 +222,14 @@ void ED4_create_dot_missing_bases_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_DOT_SAI_CHARS, "", aw_def);
 }
 
+static AWT_config_mapping_def dotbases_config_mapping[] = {
+    { AWAR_DOT_MARKED,    "marked" },
+    { AWAR_DOT_SAI,       "sai" },
+    { AWAR_DOT_SAI_CHARS, "saichars" },
+
+    { 0, 0 }
+};
+
 void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) {
     AW_root                 *aw_root = editor_window->get_root();
     static AW_window_simple *aws     = 0;
@@ -265,6 +274,9 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
         aws->at("go");
         aws->callback(dot_missing_bases);
         aws->create_button("GO", "GO", "G");
+
+        aws->at("config");
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "dotbases", dotbases_config_mapping);
     }
 
     e4_assert(aws);
