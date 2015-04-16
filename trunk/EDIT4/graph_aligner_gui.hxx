@@ -16,7 +16,7 @@
 #include <aw_window.hxx>
 #endif
 
-void      show_sina_window(AW_window *, const struct AlignDataAccess *alignData);
+void      show_sina_window(UNFIXED, const struct AlignDataAccess *alignData);
 void      create_sina_variables(AW_root*, AW_default);
 AW_active sina_mask(AW_root*);
 

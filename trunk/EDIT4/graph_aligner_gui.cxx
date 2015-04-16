@@ -352,10 +352,15 @@ static AW_window_simple* new_sina_simple(AW_root *root, const AlignDataAccess *a
     aws->get_at_position(&closex, &closey);
 
     aws->at_shift(10, 0);
-    aws->callback(makeWindowCallback(show_sina_window, alignData)); // @@@ bind to awar (callback bound to toggle is not macro recorded)
     aws->label_length(0);
     aws->label("Show advanced options");
     aws->create_toggle(GA_AWAR_ADVANCED);
+
+    bool cbInstalled = false;
+    if (!cbInstalled) {
+        root->awar(GA_AWAR_ADVANCED)->add_callback(makeRootCallback(show_sina_window, alignData));
+        cbInstalled = true;
+    }
 
     aws->at_newline();
     aws->at_shift(0, hgap);
@@ -546,20 +551,19 @@ static AW_window_simple* new_sina_simple(AW_root *root, const AlignDataAccess *a
     return aws;
 }
 
-void show_sina_window(AW_window *aw, const AlignDataAccess *alignData) {
-    static AW_window_simple *ga_aws = 0;
-    static AW_window_simple *ga_aws_adv = 0;
+void show_sina_window(UNFIXED, const AlignDataAccess *alignData) {
+    AW_root *root = AW_root::SINGLETON;
 
-    AW_root *root = aw->get_root();
+    static AW_window_simple *ga_aws     = new_sina_simple(root, alignData, false);
+    static AW_window_simple *ga_aws_adv = new_sina_simple(root, alignData, true);
+
     if (root->awar(GA_AWAR_ADVANCED)->read_int()) {
-        if (!ga_aws_adv) ga_aws_adv = new_sina_simple(root, alignData, true);
         ga_aws_adv->show();
-        if (ga_aws) ga_aws->hide();
+        ga_aws->hide();
     }
     else {
-        if (!ga_aws) ga_aws = new_sina_simple(root, alignData, false);
         ga_aws->show();
-        if (ga_aws_adv) ga_aws_adv->hide();
+        ga_aws_adv->hide();
     }
 }
 
