@@ -48,7 +48,6 @@ using std::endl;
 #define GA_AWAR_ALIGNMENT GA_AWAR_ROOT "alignment"
 #define GA_AWAR_PROTECTION GA_AWAR_ROOT "protection"
 #define GA_AWAR_TURN_CHECK GA_AWAR_ROOT "turncheck"
-#define GA_AWAR_LOGLEVEL GA_AWAR_ROOT "loglevel"
 #define GA_AWAR_REALIGN GA_AWAR_ROOT "realign"
 #define GA_AWAR_COPYMARKREF GA_AWAR_ROOT "copymarkref"
 #define GA_AWAR_MATCH_SCORE GA_AWAR_ROOT "match_score"
@@ -86,7 +85,6 @@ void create_sina_variables(AW_root *root, AW_default db1) {
     root->awar_int(AWAR_PT_SERVER, 0, db1);
     root->awar_string(GA_AWAR_SAI, "", db1);
     root->awar_int(GA_AWAR_PROTECTION, 0, db1);
-    root->awar_string(GA_AWAR_LOGLEVEL, "3", db1); // @@@ change to int?
     root->awar_int(GA_AWAR_TURN_CHECK, 1, db1);
     root->awar_int(GA_AWAR_REALIGN, 1, db1);
     root->awar_int(GA_AWAR_COPYMARKREF, 0, db1);
@@ -511,18 +509,6 @@ static AW_window_simple* new_sina_simple(AW_root *root, const AlignDataAccess *a
     aws->insert_option("5", 0, 5);
     aws->insert_option("6", 0, 6);
     aws->update_option_menu();
-
-    /*
-      aws->at_newline();
-    aws->create_option_menu(GA_AWAR_LOGLEVEL, "Logging level", "L");
-    aws->insert_option("silent", 0, "1");
-    aws->insert_option("quiet", 0, "2");
-    aws->insert_default_option("normal", 0, "3");
-    aws->insert_option("verbose", 0, "4");
-    aws->insert_option("debug", 0, "5");
-    aws->insert_option("debug more", 0, "6");
-    aws->update_option_menu();
-    */
 
     aws->at_newline();
     aws->label("Show changed sections of alignment");
