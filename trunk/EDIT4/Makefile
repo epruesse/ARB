@@ -244,6 +244,7 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_dots.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/cb.h
