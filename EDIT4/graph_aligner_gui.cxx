@@ -169,7 +169,7 @@ inline const char *empty_as_none(const char *sainame) {
     return sainame;
 }
 
-static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
+static void sina_start(AW_window *window, const AlignDataAccess *data_access) {
     cerr << "Starting SINA..." << endl;
 
     // make string from pt server selection
@@ -233,7 +233,6 @@ static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
                         break;
                     }
                     case 1: { // selected
-                        const AlignDataAccess *data_access = (const AlignDataAccess *)cl_AlignDataAccess;
                         GB_begin_transaction(GLOBAL_gb_main);
                         int num_selected = 0;
                         for (GBDATA *gb_spec = data_access->get_first_selected_species(&num_selected);
@@ -337,7 +336,7 @@ static char* filter_sai(GBDATA *gb_extended, AW_CL) {
     return result;
 }
 
-static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess, bool adv) {
+static AW_window_simple* new_sina_simple(AW_root *root, const AlignDataAccess *alignData, bool adv) {
     int closex, closey, startx, starty, winx, winy;
     const int hgap = 10;
     AW_window_simple *aws = new AW_window_simple;
@@ -353,7 +352,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     aws->get_at_position(&closex, &closey);
 
     aws->at_shift(10, 0);
-    aws->callback(show_sina_window, cl_AlignDataAccess, 0);
+    aws->callback(makeWindowCallback(show_sina_window, alignData)); // @@@ bind to awar (callback bound to toggle is not macro recorded)
     aws->label_length(0);
     aws->label("Show advanced options");
     aws->create_toggle(GA_AWAR_ADVANCED);
@@ -540,25 +539,25 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     aws->create_button("HELP", "HELP");
 
     aws->at(winx-closex+5, starty);
-    aws->callback(sina_start, cl_AlignDataAccess);
+    aws->callback(makeWindowCallback(sina_start, alignData));
     aws->highlight();
     aws->create_button("Start", "Start", "S");
 
     return aws;
 }
 
-void show_sina_window(AW_window *aw, AW_CL cl_AlignDataAccess, AW_CL) {
+void show_sina_window(AW_window *aw, const AlignDataAccess *alignData) {
     static AW_window_simple *ga_aws = 0;
     static AW_window_simple *ga_aws_adv = 0;
 
     AW_root *root = aw->get_root();
     if (root->awar(GA_AWAR_ADVANCED)->read_int()) {
-        if (!ga_aws_adv) ga_aws_adv = new_sina_simple(root, cl_AlignDataAccess, true);
+        if (!ga_aws_adv) ga_aws_adv = new_sina_simple(root, alignData, true);
         ga_aws_adv->show();
         if (ga_aws) ga_aws->hide();
     }
     else {
-        if (!ga_aws) ga_aws = new_sina_simple(root, cl_AlignDataAccess, false);
+        if (!ga_aws) ga_aws = new_sina_simple(root, alignData, false);
         ga_aws->show();
         if (ga_aws_adv) ga_aws_adv->hide();
     }
