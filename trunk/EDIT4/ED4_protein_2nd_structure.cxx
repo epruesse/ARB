@@ -26,6 +26,7 @@
 #include "arbdbt.h"
 
 #include <iostream>
+#include <awt_config_manager.hxx>
 
 #define e4_assert(bed) arb_assert(bed)
 
@@ -1038,6 +1039,22 @@ static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL om
     // @@@ need update here ?
 }
 
+static void setup_pfold_config(AWT_config_definition& cdef) {
+    cdef.add(PFOLD_AWAR_ENABLE, "enable");
+    cdef.add(PFOLD_AWAR_SELECTED_SAI, "sai");
+    cdef.add(PFOLD_AWAR_SAI_FILTER, "saifilter");
+    cdef.add(PFOLD_AWAR_MATCH_METHOD, "matchmethod");
+    cdef.add(PFOLD_AWAR_SYMBOL_TEMPLATE_2, "matchsymbols2");
+
+    char awar[256];
+    for (int i = 0; pfold_match_type_awars[i].name; i++) {
+        const char *name = pfold_match_type_awars[i].name;
+        sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, name);
+        cdef.add(awar, name);
+        sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, name);
+        cdef.add(awar, GBS_global_string("%s_symbol", name));
+    }
+}
 
 AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
     AW_window_simple *aws = new AW_window_simple;
@@ -1052,6 +1069,9 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
     // create help button
     aws->callback(makeHelpCallback("pfold_props.hlp"));
     aws->create_button("HELP", "HELP");
+
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "pfold", makeConfigSetupCallback(setup_pfold_config));
+
     aws->at_newline();
 
     aws->label_length(27);

@@ -763,6 +763,7 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/cb_base.h
