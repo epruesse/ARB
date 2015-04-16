@@ -1247,6 +1247,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/bytestring.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/cb.h
