@@ -342,7 +342,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess
     const int hgap = 10;
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(root, "SINA", "SINA (SILVA Incremental Aligner)");
+    aws->init(root, adv ? "XSINA" : "SINA", "SINA (SILVA Incremental Aligner)");
 
     aws->button_length(12);
     aws->at(10, 10);
