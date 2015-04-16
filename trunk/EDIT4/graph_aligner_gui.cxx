@@ -20,6 +20,7 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <awt_sel_boxes.hxx>
+#include <awt_config_manager.hxx>
 #include <servercntrl.h>
 #include <PT_com.h>
 #include <client.h>
@@ -35,7 +36,6 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
-
 
 using std::cerr;
 using std::cout;
@@ -335,6 +335,45 @@ static char* filter_sai(GBDATA *gb_extended, AW_CL) {
     return result;
 }
 
+static AWT_config_mapping_def sina_config_mapping[] = {
+    // both
+    { GA_AWAR_TGT,         "target" },
+    { GA_AWAR_OVERHANG,    "overhang" },
+    { GA_AWAR_INSERT,      "insertions" },
+    { GA_AWAR_LOWERCASE,   "lowercase" },
+    { GA_AWAR_WEIGHT,      "weight" },
+    { GA_AWAR_FULL_MINLEN, "fullminlen" },
+
+    // advanced only
+    { GA_AWAR_SAI,            "sai" },
+    { GA_AWAR_AUTOFILTER,     "autofilter" },
+    { GA_AWAR_TURN_CHECK,     "turncheck" },
+    { GA_AWAR_REALIGN,        "realign" },
+    { GA_AWAR_GAP_PEN,        "gappen" },
+    { GA_AWAR_GAP_EXT,        "gapext" },
+    { GA_AWAR_MATCH_SCORE,    "matchscore" },
+    { GA_AWAR_MISMATCH_SCORE, "mismatchscore" },
+    { GA_AWAR_FS_MIN,         "fs_min" },
+    { GA_AWAR_FS_MSC,         "fs_minscore" },
+    { GA_AWAR_FS_MAX,         "fs_min" },
+    { GA_AWAR_MIN_FULL,       "minfull" },
+    { GA_AWAR_KMER_LEN,       "kmerlen" },
+    { GA_AWAR_KMER_MM,        "kmermm" },
+    { GA_AWAR_MIN_LEN,        "refminlen" },
+    { GA_AWAR_GENE_START,     "genestart" },
+    { GA_AWAR_GENE_END,       "geneend" },
+    { GA_AWAR_FS_COVER_GENE,  "fs_covergene" },
+    { GA_AWAR_KMER_NOFAST,    "kmernofast" },
+    { GA_AWAR_KMER_NOREL,     "kmernorel" },
+
+    // both
+    { GA_AWAR_SHOW_DIFF, "showdiff" },
+    { GA_AWAR_COLOR,     "color" },
+    { GA_AWAR_SHOW_DIST, "showdist" },
+
+    { 0, 0 }
+};
+
 static AW_window_simple* new_sina_simple(AW_root *root, const AlignDataAccess *alignData, bool adv) {
     int closex, closey, startx, starty, winx, winy;
     const int hgap = 10;
@@ -534,6 +573,9 @@ static AW_window_simple* new_sina_simple(AW_root *root, const AlignDataAccess *a
     aws->callback(makeWindowCallback(sina_start, alignData));
     aws->highlight();
     aws->create_button("Start", "Start", "S");
+
+    aws->at(winx-50, starty-50);
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "sina", sina_config_mapping);
 
     return aws;
 }
