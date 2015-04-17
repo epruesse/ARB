@@ -20,6 +20,7 @@ DESCRIPTION     This provides a general way to store and restore settings
                 - Delete: delete named configuration
                 - Load: load settings from a file, STORE and RESTORE
                 - Save: RESTORE stored settings and save them to a file
+                - Edit: allows to edit stored settings (see LINK{edit_config.hlp})
                 - Factory defaults: reset all values to their defaults
 
 		You may enter a description for each stored configuration.

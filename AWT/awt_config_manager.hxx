@@ -65,6 +65,8 @@ public:
     // result
     char *config_string() const; // return current state as config string
     void write_to_awars(const AWT_config_mapping *cfgname_2_awar, bool warn) const; // internal use (write config into awars)
+
+    void get_entries(class ConstStrArray& to_array);
 };
 
 // ------------------------------
