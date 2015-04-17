@@ -417,7 +417,6 @@ static void current_changed_cb(AW_root*, AWT_configuration *config) {
 
     // refresh field selection list + content field
     config->update_field_selection_list();
-    config->update_field_content();
 }
 
 inline void save_comments(const AWT_config& comments, AWT_configuration *config) {
@@ -562,26 +561,40 @@ static void save_cb(AW_window *, AWT_configuration *config) {
 
 void AWT_configuration::update_field_selection_list() {
     if (field_selection) {
-        string   cfgName = get_awar_value(CURRENT_CFG);
-        StrArray entries_with_content;
+        string  cfgName      = get_awar_value(CURRENT_CFG);
+        char   *selected     = get_awar(SELECTED_FIELD)->read_string();
+        bool    seenSelected = false;
 
+        field_selection->clear();
         if (!cfgName.empty() && has_existing(cfgName)) {
             string     configString = get_config(cfgName);
             AWT_config stored(configString.c_str());
             ConstStrArray entries;
             stored.get_entries(entries);
 
-            size_t maxlen = 0;
+            StrArray entries_with_content;
+            size_t   maxlen = 0;
             for (size_t e = 0; e<entries.size(); ++e) {
                 maxlen = std::max(maxlen, strlen(entries[e]));
+                if (strcmp(selected, entries[e]) == 0) seenSelected = true;
             }
             for (size_t e = 0; e<entries.size(); ++e) {
-                const char   *content            = stored.get_entry(entries[e]);
-                char * const  entry_with_content = GBS_global_string_copy("%-*s  |  %s", int(maxlen), entries[e], content);
-                entries_with_content.put(entry_with_content);
+                field_selection->insert(GBS_global_string("%-*s  |  %s",
+                                                          int(maxlen), entries[e],
+                                                          stored.get_entry(entries[e])),
+                                        entries[e]);
             }
         }
-        field_selection->init_from_array(entries_with_content, "", "");
+        field_selection->insert_default("", "");
+        field_selection->update();
+
+        if (!seenSelected) {
+            get_awar(SELECTED_FIELD)->write_string("");
+        }
+        else {
+            get_awar(SELECTED_FIELD)->touch();
+        }
+        free(selected);
     }
 }
 
@@ -749,7 +762,6 @@ void AWT_configuration::popup_edit_window(AW_window *aw_config) {
 
         // fill selection list
         update_field_selection_list();
-        update_field_content();
     }
 
     aw_edit->activate();
