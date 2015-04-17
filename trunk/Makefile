@@ -1893,8 +1893,8 @@ realperl: perltools
 		$(TIME) $(MAKE) -C PERL2ARB -r -f Makefile.main \
 			"AUTODEPENDS=1" \
 			"dflags=$(dflags)" \
-			"cross_cflags=$(cross_cflags) $(cxxflags) $(dflags)" \
-			"cross_lflags=$(cross_lflags)" \
+			"cflags4perl=$(cflags) $(cxxflags) $(dflags)" \
+			"lflags4perl=$(lflags)" \
 			"COMPILER_VERSION=$(COMPILER_VERSION)" \
 			all && \
 		$(TEST_PERL_SCRIPTS) && \
