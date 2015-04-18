@@ -59,12 +59,28 @@ static size_t last_global_string_size = 0;
 
 // --------------------------------------------------------------------------------
 
-__ATTR__VFORMAT(1) static const char *gbs_vglobal_string(const char *templat, va_list parg, int allow_reuse) {
-    static char buffer[GLOBAL_STRING_BUFFERS][GBS_GLOBAL_STRING_SIZE+2]; // several buffers - used alternately
-    static int  idx                             = 0;
-    static char lifetime[GLOBAL_STRING_BUFFERS] = {};
-    static char nextIdx[GLOBAL_STRING_BUFFERS] = {};
+class GlobalStringBuffers {
+    char buffer[GLOBAL_STRING_BUFFERS][GBS_GLOBAL_STRING_SIZE+2]; // several buffers - used alternately
+    int  idx;
+    char lifetime[GLOBAL_STRING_BUFFERS];
+    char nextIdx[GLOBAL_STRING_BUFFERS];
 
+public:
+    GlobalStringBuffers()
+        : idx(0)
+    {
+        for (int i = 0; i<GLOBAL_STRING_BUFFERS; ++i) {
+            nextIdx[i]  = 0;
+            lifetime[i] = 0;
+        }
+    }
+
+    __ATTR__VFORMAT_MEMBER(1) const char *vstrf(const char *templat, va_list parg, int allow_reuse);
+};
+
+static GlobalStringBuffers globBuf;
+
+const char *GlobalStringBuffers::vstrf(const char *templat, va_list parg, int allow_reuse) {
     int my_idx;
     int psize;
 
@@ -132,14 +148,16 @@ __ATTR__VFORMAT(1) static const char *gbs_vglobal_string(const char *templat, va
     return buffer[my_idx];
 }
 
+
+
 const char *GBS_vglobal_string(const char *templat, va_list parg) {
     // goes to header: __ATTR__VFORMAT(1)
-    return gbs_vglobal_string(templat, parg, 0);
+    return globBuf.vstrf(templat, parg, 0);
 }
 
 char *GBS_vglobal_string_copy(const char *templat, va_list parg) {
     // goes to header: __ATTR__VFORMAT(1)
-    const char *gstr = gbs_vglobal_string(templat, parg, 1);
+    const char *gstr = globBuf.vstrf(templat, parg, 1);
     return GB_strduplen(gstr, last_global_string_size);
 }
 
@@ -174,7 +192,7 @@ const char *GBS_global_string(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
     va_list parg;
     va_start(parg, templat);
-    const char *result = gbs_vglobal_string(templat, parg, 0);
+    const char *result = globBuf.vstrf(templat, parg, 0);
     va_end(parg);
     return result;
 }
@@ -463,7 +481,7 @@ void GB_informationf(const char *templat, ...) {
 void GBS_reuse_buffer(const char *global_buffer) {
     // If you've just shortely used a buffer, you can put it back here
     va_list empty;
-    gbs_vglobal_string(global_buffer, empty, -1); // omg hax
+    globBuf.vstrf(global_buffer, empty, -1); // omg hax
 }
 
 #if defined(WARN_TODO)
