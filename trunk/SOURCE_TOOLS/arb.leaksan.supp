@@ -12,6 +12,8 @@ leak:test_another_shell
 # ------------------------------
 # callback data
 leak:AWT_insert_config_manager
+leak:awt_create_ALI_selection_list
+leak:awt_create_TREE_selection_list
 
 # ------------------------------
 # WINDOW system leaks
@@ -26,4 +28,5 @@ leak:AW_window::help_text
 leak:AW_window::insert_option_internal
 
 leak:AW_preset_create_color_chooser
+leak:DI_create_view_matrix_window
 leak:AW_manage_GC
