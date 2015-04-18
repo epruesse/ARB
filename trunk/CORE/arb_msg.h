@@ -24,6 +24,8 @@
 #define RETURN_ERROR(err)  arb_assert(!GB_have_error()); return (err)
 
 
+GlobalStringBuffers *GBS_store_global_buffers(void);
+void GBS_restore_global_buffers(GlobalStringBuffers *saved);
 const char *GBS_vglobal_string(const char *templat, va_list parg) __ATTR__VFORMAT(1);
 char *GBS_vglobal_string_copy(const char *templat, va_list parg) __ATTR__VFORMAT(1);
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) __ATTR__FORMAT(3);
