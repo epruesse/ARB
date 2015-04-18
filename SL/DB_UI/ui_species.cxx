@@ -880,13 +880,13 @@ void DBUI::insert_field_admin_menuitems(AW_window *aws, GBDATA *gb_main) {
     static BoundItemSel *bis = new BoundItemSel(gb_main, SPECIES_get_selector());
     ui_assert(bis->gb_main == gb_main);
     
-    aws->insert_menu_topic("spec_reorder_fields", "Reorder fields ...",     "R", "spaf_reorder.hlp", AWM_ALL, makeCreateWindowCallback(create_fields_reorder_window, bis));
-    aws->insert_menu_topic("spec_delete_field",   "Delete/Hide fields ...", "D", "spaf_delete.hlp",  AWM_EXP, makeCreateWindowCallback(create_field_delete_window,   bis));
-    aws->insert_menu_topic("spec_create_field",   "Create fields ...",      "C", "spaf_create.hlp",  AWM_ALL, makeCreateWindowCallback(create_field_create_window,   bis));
-    aws->insert_menu_topic("spec_convert_field",  "Convert fields ...",     "t", "spaf_convert.hlp", AWM_EXP, makeCreateWindowCallback(create_field_convert_window,  bis));
+    aws->insert_menu_topic(aws->local_id("spec_reorder_fields"), "Reorder fields ...",     "R", "spaf_reorder.hlp", AWM_ALL, makeCreateWindowCallback(create_fields_reorder_window, bis));
+    aws->insert_menu_topic(aws->local_id("spec_delete_field"),   "Delete/Hide fields ...", "D", "spaf_delete.hlp",  AWM_EXP, makeCreateWindowCallback(create_field_delete_window,   bis));
+    aws->insert_menu_topic(aws->local_id("spec_create_field"),   "Create fields ...",      "C", "spaf_create.hlp",  AWM_ALL, makeCreateWindowCallback(create_field_create_window,   bis));
+    aws->insert_menu_topic(aws->local_id("spec_convert_field"),  "Convert fields ...",     "t", "spaf_convert.hlp", AWM_EXP, makeCreateWindowCallback(create_field_convert_window,  bis));
     aws->sep______________();
-    aws->insert_menu_topic("spec_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_unhide_all_cb, gb_main, FIELD_FILTER_NDS));
-    aws->insert_menu_topic("spec_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_update_cb,     gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic(aws->local_id("spec_unhide_fields"),  "Show all hidden fields", "S", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_unhide_all_cb, gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic(aws->local_id("spec_refresh_fields"), "Refresh fields",         "f", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_update_cb,     gb_main, FIELD_FILTER_NDS));
 }
 
 inline int get_and_fix_range_from_awar(AW_awar *awar) {
