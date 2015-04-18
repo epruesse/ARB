@@ -18,9 +18,12 @@ leak:AWT_insert_config_manager
 
 leak:XQueryTree
 
+leak:AW_window::create_mode
 leak:AW_window::create_option_menu
 leak:AW_window::create_toggle
+leak:AW_window::create_text_toggle
 leak:AW_window::help_text
 leak:AW_window::insert_option_internal
 
+leak:AW_preset_create_color_chooser
 leak:AW_manage_GC
