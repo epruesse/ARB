@@ -8,3 +8,19 @@
 leak:illegal_alidata_composition
 leak:test_opendb
 leak:test_another_shell
+
+# ------------------------------
+# callback data
+leak:AWT_insert_config_manager
+
+# ------------------------------
+# WINDOW system leaks
+
+leak:XQueryTree
+
+leak:AW_window::create_option_menu
+leak:AW_window::create_toggle
+leak:AW_window::help_text
+leak:AW_window::insert_option_internal
+
+leak:AW_manage_GC

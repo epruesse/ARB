@@ -2464,6 +2464,12 @@ post_commit_check:
 	$(MAKE) check_svn_state
 
 # --------------------------------------------------------------------------------
+# sanitize arb_ntree; also works for clients (arb_edit4, ...) started from there.
+
+sanitize: all
+	( $(ARBHOME)/bin/arb_ntree --execute _logged ~/data/test.arb 2>&1 ) | $(ARBHOME)/SOURCE_TOOLS/asan2msg.pl
+
+# --------------------------------------------------------------------------------
 
 build: arb
 	$(MAKE) binlink preplib compile_compatibility
