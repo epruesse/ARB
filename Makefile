@@ -681,7 +681,11 @@ SHARED_LIB_SUFFIX = so# shared lib suffix
 LINK_SHARED_LIB := $(A_CXX) $(clflags) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
+ifeq ($(DARWIN),1)
+lflags4perl:=
+else
 lflags4perl:=$(cross_lflags) -shared
+endif
 
 # delete variables unused below
 lflags:=
