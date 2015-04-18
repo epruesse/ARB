@@ -148,7 +148,16 @@ const char *GlobalStringBuffers::vstrf(const char *templat, va_list parg, int al
     return buffer[my_idx];
 }
 
+GlobalStringBuffers *GBS_store_global_buffers() {
+    GlobalStringBuffers *stored = new GlobalStringBuffers(globBuf);
+    globBuf                     = GlobalStringBuffers();
+    return stored;
+}
 
+void GBS_restore_global_buffers(GlobalStringBuffers *saved) {
+    globBuf = *saved;
+    delete saved;
+}
 
 const char *GBS_vglobal_string(const char *templat, va_list parg) {
     // goes to header: __ATTR__VFORMAT(1)
