@@ -101,7 +101,7 @@ AP_tree_root::AP_tree_root(AliView *aliView, AP_sequence *seq_proto, bool add_de
 }
 
 AP_tree_root::~AP_tree_root() {
-    destroyNode(get_root_node());
+    predelete();
     free(gone_tree_name);
     ap_assert(!get_root_node());
 }
