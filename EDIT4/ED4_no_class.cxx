@@ -807,13 +807,13 @@ void ED4_exit() {
         ed4w = ed4w->next;
     }
 
-    delete ED4_ROOT->main_manager;
-
     while (ED4_ROOT->first_window)
         ED4_ROOT->first_window->delete_window(ED4_ROOT->first_window);
 
 
     shutdown_macro_recording(ED4_ROOT->aw_root);
+
+    delete ED4_ROOT;
 
     GBDATA *gb_main = GLOBAL_gb_main;
     GLOBAL_gb_main  = NULL;
@@ -912,7 +912,8 @@ void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
                 char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
 
                 ED4_ROOT->reference->init(name, ED4_ROOT->alignment_name);
-                delete name;
+
+                free(name);
             }
         }
         else {
