@@ -448,6 +448,8 @@ void MatrixDisplay::draw() {
         device->line(DI_G_STANDARD, 0, liney2, width, liney2);
     }
 
+    free(selSpecies);
+
     device->set_offset(AW::Vector(0, 0));
 #undef BUFLEN
 }
