@@ -2467,7 +2467,12 @@ post_commit_check:
 # sanitize arb_ntree; also works for clients (arb_edit4, ...) started from there.
 
 sanitize: all
-	( $(ARBHOME)/bin/arb_ntree --execute _logged ~/data/test.arb 2>&1 ) | $(ARBHOME)/SOURCE_TOOLS/asan2msg.pl
+	( \
+		export "LSAN_OPTIONS=max_leaks=30:suppressions=$(ARBHOME)/SOURCE_TOOLS/arb.leaksan.supp"; \
+		echo "sake[1]: Entering directory \`$(ARBHOME)'"; \
+		$(ARBHOME)/bin/arb_ntree --execute _logged ~/data/test.arb 2>&1 ; \
+		echo "sake[1]: Leaving directory \`$(ARBHOME)'" \
+	) | $(ARBHOME)/SOURCE_TOOLS/asan2msg.pl
 
 # --------------------------------------------------------------------------------
 
