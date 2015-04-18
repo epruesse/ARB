@@ -288,7 +288,6 @@ void AWT_reference::expand_to_length(int len) {
 }
 
 void AWT_reference::init(const char *species_name, const char *alignment_name) {
-
     awt_assert(species_name);
     awt_assert(alignment_name);
 
@@ -309,7 +308,6 @@ void AWT_reference::init(const char *species_name, const char *alignment_name) {
 }
 
 void AWT_reference::init(const char *name, const char *sequence_data, int len) {
-
     awt_assert(name);
     awt_assert(sequence_data);
     awt_assert(len>0);
@@ -324,5 +322,5 @@ void AWT_reference::init(const char *name, const char *sequence_data, int len) {
 }
 
 AWT_reference::~AWT_reference() {
-    delete reference;
+    free(reference);
 }

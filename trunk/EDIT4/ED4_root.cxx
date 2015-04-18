@@ -43,6 +43,7 @@
 #include <arbdbt.h>
 #include <ad_cb.h>
 #include <macros.hxx>
+#include <st_window.hxx>
 
 #include <cctype>
 #include <map>
@@ -2007,13 +2008,17 @@ ED4_root::ED4_root(int* argc, char*** argv)
 ED4_root::~ED4_root() {
     delete aw_root;
     delete first_window;
-    delete main_manager;
-    delete middle_area_man;
-    delete top_area_man;
+    delete main_manager; // also deletes middle_area_man + top_area_man
     delete database;
     delete ecoli_ref;
     delete selected_objects;
+    delete helix;
+    delete sequence_colors;
+    delete edk;
+    delete reference;
+    STAT_destroy_ST_ML(st_ml);
 
     free(protstruct);
     free(db_name);
+    free(alignment_name);
 }
