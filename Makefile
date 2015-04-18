@@ -681,6 +681,8 @@ SHARED_LIB_SUFFIX = so# shared lib suffix
 LINK_SHARED_LIB := $(A_CXX) $(clflags) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
+lflags4perl:=$(cross_lflags) -shared
+
 # delete variables unused below
 lflags:=
 clflags:=
@@ -1894,7 +1896,7 @@ realperl: perltools
 			"AUTODEPENDS=1" \
 			"dflags=$(dflags)" \
 			"cflags4perl=$(cflags) $(cxxflags) $(dflags)" \
-			"lflags4perl=$(lflags)" \
+			"lflags4perl=$(lflags4perl)" \
 			"COMPILER_VERSION=$(COMPILER_VERSION)" \
 			all && \
 		$(TEST_PERL_SCRIPTS) && \
