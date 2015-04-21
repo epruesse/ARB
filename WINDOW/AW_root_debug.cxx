@@ -279,7 +279,7 @@ size_t AW_root::callallcallbacks(int mode) {
     // mode == 4 -> call all in random order
     // mode & 8 -> repeat until no uncalled callbacks left
 
-    size_t count     = GBS_hash_count_elems(prvt->action_hash);
+    size_t count     = GBS_hash_elements(prvt->action_hash);
     size_t callCount = 0;
 
     aw_message(GBS_global_string("Found %zi callbacks", count));
@@ -391,7 +391,7 @@ size_t AW_root::callallcallbacks(int mode) {
             if (pass == 1) fprintf(stderr, "Executing delayed callbacks:\n");
         }
 
-        aw_message(GBS_global_string("%zu callbacks are marked as called now", GBS_hash_count_elems(alreadyCalledHash)));
+        aw_message(GBS_global_string("%zu callbacks are marked as called now", GBS_hash_elements(alreadyCalledHash)));
     }
 
     return callCount;
