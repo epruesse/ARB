@@ -1,0 +1,263 @@
+# Generated from XML with Sablotron -- Stylesheet by Ralf Westram (ralf@arb-home.de)
+#
+#  ****  DO NOT EDIT (edit in $(ARBHOME)/HELP_SOURCE/oldhelp instead)  ****
+#
+# This page was converted by arb_help2xml and may look strange.
+# If you think it's really bad, please send a
+# mail [mailto: helpfeedback@arb-home.de  subject: 'Helppage unittest.xml looks weird']
+# to our help keeper.
+
+# UP references:
+UP                  arb.hlp
+UP                  glossary.hlp
+
+# SUB references:
+SUB                 aci.hlp
+SUB                 srt.hlp
+
+# ------------------------------------------------------------
+# Start of real helpfile:
+TITLE	Unittest example helpfile
+
+OCCURRENCE
+
+    nowhere
+
+
+
+DESCRIPTION
+
+    This is the first paragraph of the description. It may be continued on
+    the next line.
+
+    Another paragraph also belonging to description. It is followed by an
+    enumeration on the same indentation level:
+
+    1. first enum
+
+    2. second enum which is continued on the next line. Now this is no
+       longer misinterpreted as monospaced paragraph.
+
+    3. third enum
+
+    Again a paragraph - a one liner followed by an item list. It is no
+    longer misplaced now!
+
+    * item 1
+
+    * item 2
+
+    * item 3 contains 2 lines
+
+
+
+CUSTOM    A custom section.
+
+    Acts like DESCRIPTION, despite the SECTION line will be part of the
+    headline. In DESCRIPTION it would be part of the first paragraph.
+
+    First i need to check proper support for different indentation levels.
+
+        This paragraph has to be indented one level deeper than the
+        previous paragraph.
+
+        That paragraph should be on the same level.
+
+            Here is another one, even deeper.
+
+            Same, same.
+
+        Back one step.
+
+            One step down - ignoring deeper indentation in source.
+
+            Consecutive paragraphs are only placed on the same level if
+            their indentation matches.
+
+            Using the indentation level used 4 paragraphs above, wont help
+            here.
+
+                But the "wrong" indentation of the previous paragraph
+                forces this paragraph to get indented one level deeper than
+                the paragraphs before.
+
+                This does not step back.
+
+                same same.
+
+    Back to top (end of indentation tests).
+
+
+
+Wanted fixes
+
+    Paragraphs containing multiple spaces will be treated as monospaced.
+    This is done to support tabular information like the following:
+
+                            other
+                column      column
+        row     1           2
+        row2    -           3
+
+    Problems occur if there are empty lines inside such a table, like here:
+
+                    other
+        column      column
+
+        row     1           2
+        row2    -           3
+
+        (should better be combined)
+
+    Here is an itemlist whose items are triggered by '*':
+
+        * item1 continued on next line
+
+        * item2
+
+        * item3
+
+    Itemlist containing paragraphs under some items
+
+        * item 1
+
+        * item 2
+
+            This is a short description of item 2. This description gets
+            indented below the corresponding item.
+
+        * item 3
+
+            This is a shorter description of item 3.
+
+        This is a paragraph which should be placed outside the itemlist.
+        Currently this is misinterpreted as part of the itemlist.
+
+    And this paragraph should be back where we were before the itemlist
+    began.
+
+    Enumeration also work if using letters instead of digits. You can use
+    capital letters as in the following enum
+
+    A. first enum
+
+    B. 2nd enum
+
+    C. third enum
+
+    D. last enum
+
+    or small letters like here:
+
+        a. first enum
+
+        b. 2nd enum
+
+        c. third enum
+
+        d. last enum
+
+    Check some "illegal" itemlists:
+
+        ----------------------
+
+        -noitem
+
+        -  eithernoitem
+
+        **********************
+
+        *noitem
+
+        *  eithernoitem
+
+
+
+FEATURE TESTS
+
+    Here all existing helpfile features should be tested:
+
+        * first testing an inlined link to another help file: 'Search and
+          Replace Tool (SRT)'
+
+        * and a link to the arb homepage http://www.arb-home.de/ followed
+          by text.
+
+        * arb help also supports mail-links (like devel@arb-home.de
+          [mailto: devel@arb-home.de subject: 'Concerning helppage
+          unittest.xml']). All 3 sorts of links should be clickable in the
+          html version.
+
+
+
+NESTED LISTS
+
+    text before enum
+
+    1. first enum
+
+        text below first enum
+
+        * first item below first enum
+
+        * second item below first enum
+
+            1. first subenum below second item
+
+                * first item below first subenum
+
+                * second item below first subenum
+
+            2. second subenum below second item
+
+                text before subsubenum
+
+                1. first subsubenum below second subenum
+
+                2. second subsubenum below second subenum
+
+                text behind subsubenum
+
+            3. third subenum below second item
+
+        * third item below first enum
+
+    2. second enum
+
+        This text is not indented more than the second enum, but is
+        nevertheless interpreted as sub-elements which belongs to the enum.
+
+    3. third enum
+
+        behind the last enum, text only becomes a son of the enum-entry if
+        it is indented.
+
+    text behind enum
+
+
+
+NOTES
+
+    Note that this test may help me.
+
+
+
+EXAMPLES
+
+    The whole file is just an example.
+
+
+
+WARNINGS
+
+    This text wont help you.
+
+    Even if i add more paragraphs here, it will not get more useful.
+
+
+
+BUGS
+
+    will be detected by the unit test checking the files into which this
+    file gets converted.
+
