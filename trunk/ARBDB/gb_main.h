@@ -139,6 +139,7 @@ public:
     gb_Key  *keys;
     GB_HASH *key_2_index_hash;
     long     key_clock;                             // trans. nr. of last change
+    bool     mapped;                                // true -> loaded via mapfile
 
     unsigned int last_updated;
     long         last_saved_time;
