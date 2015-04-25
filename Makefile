@@ -505,6 +505,7 @@ COMMON_SANITIZE_FLAGS:=-ggdb3 -fno-omit-frame-pointer
 # activate AddressSanitizer+LeakSanitizer?
 ifeq ($(SANITIZE_ADDRESS),1)
  cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=address
+ dflags += -DLEAKS_SANITIZED
  EXECLIBS += -lasan
 # EXECLIBS += -static-libasan
 endif

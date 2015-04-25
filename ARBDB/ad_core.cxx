@@ -277,6 +277,7 @@ GB_MAIN_TYPE::GB_MAIN_TYPE(const char *db_path)
       keys(NULL),
       key_2_index_hash(GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE)),
       key_clock(0),
+      mapped(false),
       last_updated(0),
       last_saved_time(0),
       last_saved_transaction(0),
