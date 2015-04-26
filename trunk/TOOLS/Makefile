@@ -52,28 +52,28 @@ all: $(BINARIES)
 	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
 
 $(ARBHOME)/bin/arb_probe: arb_probe.o $(LIBS_ARB_PROBE) $(use_ARB_main)
-	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_PROBE) $(LIB_ARBDB) $(EXECLIBS) 
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(EXECLIBS) $(LIBS_ARB_PROBE) $(LIB_ARBDB) 
 
 $(ARBHOME)/bin/arb_probe_match: arb_probe_match.o $(LIBS_ARB_PROBE) $(use_ARB_main)
-	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_PROBE) $(LIB_ARBDB) $(EXECLIBS) 
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(EXECLIBS) $(LIBS_ARB_PROBE) $(LIB_ARBDB) 
 
 $(ARBHOME)/bin/arb_read_tree: arb_read_tree.o  $(LIBS_ARB_READ_TREE)
-	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_READ_TREE) $(LIB_ARBDB) $(EXECLIBS) 
+	$(LINK_EXECUTABLE) $@ $< $(EXECLIBS) $(LIBS_ARB_READ_TREE) $(LIB_ARBDB) 
 
 $(ARBHOME)/bin/arb_export_tree: arb_export_tree.o  $(LIBS_ARB_EXPORT_TREE)
-	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_EXPORT_TREE) $(LIB_ARBDB) $(EXECLIBS) 
+	$(LINK_EXECUTABLE) $@ $< $(EXECLIBS) $(LIBS_ARB_EXPORT_TREE) $(LIB_ARBDB) 
 
 $(ARBHOME)/bin/arb_export_sequences: arb_export_sequences.o  $(LIBS_ARB_EXPORT_SEQ)
-	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_EXPORT_SEQ) $(LIB_ARBDB) $(EXECLIBS) 
+	$(LINK_EXECUTABLE) $@ $< $(EXECLIBS) $(LIBS_ARB_EXPORT_SEQ) $(LIB_ARBDB) 
 
 $(ARBHOME)/bin/arb_consensus_tree: arb_consensus_tree.o  $(LIBS_ARB_CONSENSUS_TREE) $(use_ARB_main)
-	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS_ARB_CONSENSUS_TREE) $(LIB_ARBDB) $(EXECLIBS) 
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(EXECLIBS) $(LIBS_ARB_CONSENSUS_TREE) $(LIB_ARBDB) 
 
 $(ARBHOME)/bin/arb_a2ps: arb_a2ps.o $(use_ARB_main_C)
-	$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $< $(LIB_ARBDB) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $< $(EXECLIBS) $(LIB_ARBDB)
 
 $(ARBHOME)/bin/%: %.o $(use_ARB_main)
-	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIB_ARBDB) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(EXECLIBS) $(LIB_ARBDB)
 
 clean:
 	rm -f $(BINARIES)
