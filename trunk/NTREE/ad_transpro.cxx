@@ -1058,6 +1058,7 @@ struct Data : virtual Noncopyable {
     Data(GBDATA *gb_species, const char *aliName)
         : gb_data(NULL),
           data(NULL),
+          len(0),
           error(NULL)
     {
         GBDATA *gb_ali = GB_entry(gb_species, aliName);
