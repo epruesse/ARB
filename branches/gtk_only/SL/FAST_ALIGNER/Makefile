@@ -107,6 +107,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx

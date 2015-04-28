@@ -73,17 +73,8 @@ struct gb_cache : virtual Noncopyable {
     GB_HASH *reuse_sum;  // key = DB_path, value = how often entries were reused
 #endif
 
-    gb_cache() {
-        memset(this, 0, sizeof(*this));
-        init();
-    }
-    ~gb_cache() {
-        destroy();
-    }
-
-private:
-    void init();
-    void destroy();
+    gb_cache();
+    ~gb_cache();
 };
 
 // --------------------------------------------------------------------------------
@@ -139,6 +130,7 @@ public:
     gb_Key  *keys;
     GB_HASH *key_2_index_hash;
     long     key_clock;                             // trans. nr. of last change
+    bool     mapped;                                // true -> loaded via mapfile
 
     unsigned int last_updated;
     long         last_saved_time;

@@ -108,6 +108,10 @@ AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml) {
 ST_ML *STAT_create_ST_ML(GBDATA *gb_main) {
     return new ST_ML(gb_main);
 }
+void STAT_destroy_ST_ML(ST_ML*& st_ml) {
+    delete st_ml;
+    st_ml = NULL;
+}
 
 ST_ML_Color *STAT_get_color_string(ST_ML *st_ml, char *species_name, AP_tree *node, int start_ali_pos, int end_ali_pos) {
     return st_ml->get_color_string(species_name, node, start_ali_pos, end_ali_pos);

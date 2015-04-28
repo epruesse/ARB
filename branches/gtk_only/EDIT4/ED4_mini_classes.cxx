@@ -289,9 +289,10 @@ int ED4_bases_table::lastDifference(const ED4_bases_table& other, int start, int
 
 
 ED4_bases_table::ED4_bases_table(int maxseqlength)
+    : table_entry_size(SHORT_TABLE_ELEM_SIZE),
+      no_of_entries(0)
 {
-    memset((char*)this, 0, sizeof(*this));
-    table_entry_size = SHORT_TABLE_ELEM_SIZE;
+    no_of_bases.shortTable = NULL;
     if (maxseqlength) init(maxseqlength);
 }
 
@@ -675,9 +676,8 @@ void ED4_char_table::initial_setup(const char *gap_chars, GB_alignment_type ali_
 }
 
 ED4_char_table::ED4_char_table(int maxseqlength)
+    : ignore(0)
 {
-    memset((char*)this, 0, sizeof(*this));
-
     if (!initialized) {
         char *align_string = ED4_ROOT->aw_root->awar_string(ED4_AWAR_GAP_CHARS)->read_string();
         initial_setup(align_string, ED4_ROOT->alignment_type);
@@ -686,8 +686,7 @@ ED4_char_table::ED4_char_table(int maxseqlength)
 
     bases_table = new ED4_bases_table_ptr[used_bases_tables];
 
-    int i;
-    for (i=0; i<used_bases_tables; i++) {
+    for (int i=0; i<used_bases_tables; i++) {
         bases_table[i] = new ED4_bases_table(maxseqlength);
     }
 

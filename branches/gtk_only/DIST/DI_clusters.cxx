@@ -302,6 +302,7 @@ typedef map<string, GroupTree*> Species2Tip;
 
 struct GroupTreeRoot : public ARB_seqtree_root {
     GroupTreeRoot(AliView *aliView, AP_sequence *seqTempl, bool add_delete_callbacks);
+    ~GroupTreeRoot() OVERRIDE { predelete(); }
     inline TreeNode *makeNode() const OVERRIDE;
     inline void destroyNode(TreeNode *node) const OVERRIDE;
 };
@@ -463,9 +464,7 @@ public:
         cluster_prefix     = awr->awar(AWAR_CLUSTER_GROUP_PREFIX)->read_char_pntr();
         cluster_suffix_def = awr->awar(AWAR_CLUSTER_GROUP_SUFFIX)->read_char_pntr();
     }
-    ~GroupBuilder() {
-        delete tree_root;
-    }
+    ~GroupBuilder() { delete tree_root; }
 
     ARB_ERROR get_error() const { return error; }
     ClusterPtr get_bad_cluster() const { return bad_cluster; }

@@ -18,6 +18,7 @@
 #include <aw_device.hxx>
 #include <arbdbt.h>
 #include <cctype>
+#include <awt_config_manager.hxx>
 
 #define HELIX_AWAR_ENABLE          "Helix/enable"
 #define HELIX_AWAR_SYMBOL_TEMPLATE "Helix/symbols/%s"
@@ -198,6 +199,20 @@ static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cb) {
     }
 }
 
+void setup_helix_config(AWT_config_definition& cdef) {
+    cdef.add(HELIX_AWAR_ENABLE, "enable");
+    
+    for (int j=0; helix_awars[j].awar; j++) {
+        int i = helix_awars[j].pair_type;
+
+        const char *name = helix_awars[j].awar;
+        if (i != HELIX_DEFAULT && i != HELIX_NO_MATCH) {
+            cdef.add(helix_pair_awar(j), name);
+        }
+        cdef.add(helix_symbol_awar(j), GBS_global_string("%s_symbol", name));
+    }
+}
+
 AW_window *create_helix_props_window(AW_root *awr, void (*cb)(AW_window*)) {
     static AW_window_simple *aws = 0;
     if (!aws) {
@@ -209,8 +224,11 @@ AW_window *create_helix_props_window(AW_root *awr, void (*cb)(AW_window*)) {
 
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
+
         aws->callback(makeHelpCallback("helixsym.hlp"));
         aws->create_button("HELP", "HELP", "H");
+
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "helix", makeConfigSetupCallback(setup_helix_config));
 
         aws->at_newline();
 

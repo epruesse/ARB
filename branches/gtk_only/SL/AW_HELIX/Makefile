@@ -79,6 +79,7 @@ AW_helix.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+AW_helix.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/cb.h
 AW_helix.o: $(ARBHOME)/INCLUDE/cb_base.h

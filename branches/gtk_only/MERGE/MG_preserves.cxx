@@ -169,7 +169,7 @@ typedef set< SmartPtr<Candidate> > Candidates;
 static void find_species_candidates(Candidates& candidates, const CharPtrArray& ali_names) {
     // collect names of all species in source database
     GB_HASH      *src_species = GBT_create_species_hash(GLOBAL_gb_src);
-    long          src_count   = GBS_hash_count_elems(src_species);
+    long          src_count   = GBS_hash_elements(src_species);
     arb_progress  progress("Examining species", src_count);
     bool          aborted     = false;
 
@@ -205,7 +205,7 @@ static void find_species_candidates(Candidates& candidates, const CharPtrArray& 
 static void find_SAI_candidates(Candidates& candidates, const CharPtrArray& ali_names) {
     // add all candidate SAIs to 'candidates'
     GB_HASH      *src_SAIs  = GBT_create_SAI_hash(GLOBAL_gb_src);
-    long          src_count = GBS_hash_count_elems(src_SAIs);
+    long          src_count = GBS_hash_elements(src_SAIs);
     arb_progress  progress("Examining SAIs", src_count);
 
     // find existing SAIs in destination database

@@ -435,6 +435,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+SEC_main.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
