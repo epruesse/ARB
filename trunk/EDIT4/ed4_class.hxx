@@ -951,7 +951,7 @@ typedef ED4_bases_table *ED4_bases_table_ptr;
 class ED4_char_table : virtual Noncopyable {
     ED4_bases_table_ptr *bases_table;
     int                  sequences; // # of sequences added to the table
-    int                  ignore; // this table will be ignored when calculating tables higher in hierarchy
+    int                  ignore; // this table will be ignored when calculating tables higher in hierarchy // @@@ -> bool
     // (used to suppress SAI in root_group_man tables)
 
     // @@@ move statics into own class:
