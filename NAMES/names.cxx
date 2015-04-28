@@ -841,7 +841,7 @@ aisc_string get_short(const AN_local *locs) {
                     // @@@ try original starting character first?
 
                     for (int pc = 'a'; pc<='z' && !foundUnused;  ++pc) {
-                        char key[2] = { pc, 0 };
+                        char key[2] = { char(pc), 0 };
 
                         int64_t count3 = GBS_read_hash(nameModHash, key);
 

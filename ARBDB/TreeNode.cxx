@@ -18,9 +18,9 @@
 //      TreeRoot
 
 TreeRoot::~TreeRoot() {
-    deleteWithNodes = false; // avoid recursive call of ~TreeRoot
-    destroy(rootNode, this);
-    rt_assert(!rootNode);
+    deleteWithNodes = false; // avoid recursive call of ~TreeRoot (obsolete?)
+    rt_assert(!rootNode);    // you have to call TreeRoot::predelete() before dtor! you can do this is dtor of that derived class, which defines makeNode/destroyNode
+    // Note: destroying nodes from here is impossible (leads to pure virtual call, as derived class instance of 'this' is already under destruction)
 }
 
 void TreeRoot::change_root(TreeNode *oldroot, TreeNode *newroot) {

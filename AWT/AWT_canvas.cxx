@@ -248,8 +248,8 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     if ((rect.r-rect.l)<EPS) rect.r = rect.l+1;
     if ((rect.b-rect.t)<EPS) rect.b = rect.t+1;
 
-    AW_pos max_trans_to_fit;
-    
+    AW_pos max_trans_to_fit = 0;
+
     switch (zoom_mode) {
         case AWT_ZOOM_BOTH:
             trans_to_fit     = max((rect.r-rect.l)/wanted.width(), (rect.b-rect.t)/wanted.height());

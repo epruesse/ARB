@@ -198,6 +198,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+PH_filt.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/cb.h
 PH_filt.o: $(ARBHOME)/INCLUDE/cb_base.h
 PH_filt.o: $(ARBHOME)/INCLUDE/cbtypes.h

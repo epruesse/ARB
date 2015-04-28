@@ -363,6 +363,7 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+ED4_dots.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/cb.h
@@ -1175,6 +1176,7 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/cb_base.h
@@ -1354,6 +1356,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/gde.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/macros.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_root.o: $(ARBHOME)/INCLUDE/smartptr.h
+ED4_root.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/static_assert.h
 ED4_root.o: $(ARBHOME)/INCLUDE/svn_revision.h
 ED4_root.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -1901,6 +1904,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/bytestring.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/cb.h

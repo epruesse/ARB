@@ -277,6 +277,7 @@ GB_MAIN_TYPE::GB_MAIN_TYPE(const char *db_path)
       keys(NULL),
       key_2_index_hash(GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE)),
       key_clock(0),
+      mapped(false),
       last_updated(0),
       last_saved_time(0),
       last_saved_transaction(0),
@@ -742,7 +743,7 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
     if (s) {
         Main->keys[index].key = strdup(s);
         GBS_write_hash(Main->key_2_index_hash, s, index);
-        gb_assert(GBS_hash_count_elems(Main->key_2_index_hash) <= ALLOWED_KEYS);
+        gb_assert(GBS_hash_elements(Main->key_2_index_hash) <= ALLOWED_KEYS);
         if (Main->gb_key_data && create_gb_key) {
             gb_load_single_key_data(Main->gb_main(), (GBQUARK)index);
             // Warning: starts a big recursion

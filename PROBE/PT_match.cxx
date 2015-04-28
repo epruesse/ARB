@@ -24,58 +24,6 @@
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_probematch *match)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(match)); }
 
-class MismatchWeights {
-    const PT_bond *bonds;
-    double weight[PT_BASES][PT_BASES];
-
-    double get_simple_wmismatch(char probe, char seq) {
-        pt_assert(is_std_base(probe));
-        pt_assert(is_std_base(seq));
-
-        int complement = get_complement(probe);
-
-        int rowIdx = (complement-int(PT_A))*4;
-        int maxIdx = rowIdx + probe-(int)PT_A;
-        int newIdx = rowIdx + seq-(int)PT_A;
-
-        pt_assert(maxIdx >= 0 && maxIdx < 16);
-        pt_assert(newIdx >= 0 && newIdx < 16);
-
-        double max_bind = bonds[maxIdx].val;
-        double new_bind = bonds[newIdx].val;
-
-        return (max_bind - new_bind);
-    }
-
-    void init() {
-        for (int probe = PT_A; probe < PT_BASES; ++probe) {
-            double sum = 0.0;
-            for (int seq = PT_A; seq < PT_BASES; ++seq) {
-                sum += weight[probe][seq] = get_simple_wmismatch(probe, seq);
-            }
-            weight[probe][PT_N] = sum/4.0;
-        }
-        for (int seq = PT_N; seq < PT_BASES; ++seq) {  // UNCHECKED_LOOP (doesnt matter)
-            double sum = 0.0;
-            for (int probe = PT_A; probe < PT_BASES; ++probe) {
-                sum += weight[probe][seq];
-            }
-            weight[PT_N][seq] = sum/4.0;
-        }
-
-        for (int i = PT_N; i<PT_BASES; ++i) {
-            weight[PT_QU][i] = weight[PT_N][i];
-            weight[i][PT_QU] = weight[i][PT_N];
-        }
-        weight[PT_QU][PT_QU] = weight[PT_N][PT_N];
-    }
-
-public:
-    MismatchWeights(const PT_bond *bonds_) : bonds(bonds_) { init(); }
-    double get(int probe, int seq) const { return weight[probe][seq]; }
-};
-
-
 class MatchRequest;
 class Mismatches {
     MatchRequest& req;

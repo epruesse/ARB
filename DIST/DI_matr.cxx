@@ -358,6 +358,7 @@ MatrixOrder::MatrixOrder(GBDATA *gb_main, GB_CSTR sort_tree_name)
             insert_in_hash(sort_tree);
 
             arb_assert(leafsLoaded == leafs);
+            destroy(sort_tree);
         }
         else {
             GB_clear_error();
@@ -1647,17 +1648,17 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->button_length(13);
 
     {
-        save_matrix_params *sparams = new save_matrix_params; // do not free (bound to callbacks)
+        static save_matrix_params sparams;
 
-        sparams->awar_base       = AWAR_DIST_SAVE_MATRIX_BASE;
-        sparams->weighted_filter = weighted_filter;
+        sparams.awar_base       = AWAR_DIST_SAVE_MATRIX_BASE;
+        sparams.weighted_filter = weighted_filter;
 
         aws->at("save_matrix");
-        aws->callback(makeCreateWindowCallback(DI_create_save_matrix_window, sparams));
+        aws->callback(makeCreateWindowCallback(DI_create_save_matrix_window, &sparams));
         aws->create_button("SAVE_MATRIX", "Save matrix", "M");
 
         aws->at("view_matrix");
-        aws->callback(makeWindowCallback(di_view_matrix_cb, sparams));
+        aws->callback(makeWindowCallback(di_view_matrix_cb, &sparams));
         aws->create_button("VIEW_MATRIX", "View matrix", "V");
     }
 

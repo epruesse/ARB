@@ -54,6 +54,14 @@ class TreeRoot : virtual Noncopyable {
     TreeNode *rootNode;            // root node of the tree
     bool      deleteWithNodes;
 
+protected:
+    void predelete() {
+        // should be called from dtor of derived class defining makeNode/destroyNode
+        if (rootNode) {
+            destroyNode(rootNode);
+            rt_assert(!rootNode);
+        }
+    }
 public:
     explicit TreeRoot(bool deleteWithNodes_)
         : rootNode(NULL),

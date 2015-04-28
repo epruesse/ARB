@@ -664,7 +664,7 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
 
                 {
                     char *masterfoldername = GBS_global_string_copy("%s/@master_data/@%s", GB_SYSTEM_FOLDER, ali_name);
-                    old_gb_master_ali      = GB_search(gb_main, masterfoldername, GB_FIND)->as_container();
+                    old_gb_master_ali      = GBDATA::as_container(GB_search(gb_main, masterfoldername, GB_FIND));
                     free(masterfoldername);
                 }
 

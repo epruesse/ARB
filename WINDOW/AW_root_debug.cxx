@@ -395,7 +395,7 @@ size_t AW_root::pimpl::callallcallbacks(int mode) {
             if (pass == 1) fprintf(stderr, "Executing delayed callbacks:\n");
         }
 
-        aw_message(GBS_global_string("%zu callbacks are marked as called now", GBS_hash_count_elems(alreadyCalledHash)));
+        aw_message(GBS_global_string("%zu callbacks are marked as called now", GBS_hash_elements(alreadyCalledHash)));
     }
 
     return callCount;

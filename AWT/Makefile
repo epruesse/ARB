@@ -462,6 +462,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+AWT_map_key.o: awt_config_manager.hxx
 AWT_map_key.o: awt_map_key.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_assert.h

@@ -148,13 +148,18 @@ struct GBDATA {
     bool is_entry() const { return !is_container(); }
 
     GBENTRY *as_entry() const {
-        gb_strict_assert(!this || is_entry());
+        gb_assert(this); // use GBDATA::as_entry() instead
+        gb_strict_assert(is_entry());
         return (GBENTRY*)this;
     }
     GBCONTAINER *as_container() const {
-        gb_strict_assert(!this || is_container());
+        gb_assert(this); // use GBDATA::as_container() instead
+        gb_strict_assert(is_container());
         return (GBCONTAINER*)this;
     }
+
+    static GBCONTAINER *as_container(GBDATA *gbd) { return gbd ? gbd->as_container() : NULL; }
+    static GBENTRY     *as_entry    (GBDATA *gbd) { return gbd ? gbd->as_entry()     : NULL; }
 
     // meant to be used in client interface (i.e. on any GBDATA* passed from outside)
     GBENTRY *expect_entry() const {
