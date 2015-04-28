@@ -399,6 +399,14 @@ ifeq ($(SANITIZE_UNDEFINED),1)
  endif
 endif
 
+SANITIZE_ANY:=0
+ifeq ($(SANITIZE_ADDRESS),1)
+ SANITIZE_ANY:=1
+endif
+ifeq ($(SANITIZE_UNDEFINED),1)
+ SANITIZE_ANY:=1
+endif
+
 #---------------------- 32 or 64 bit
 
 ifndef BUILDHOST_64
@@ -644,6 +652,7 @@ endif
 
 ifeq ($(DEBUG),0)
  ifeq ($(USE_GCC_49_OR_HIGHER),yes)
+  ifeq ($(SANITIZE_ANY),0)
 #	cflags += -fopt-info
 	cflags += -fopt-info-vec
 
@@ -651,6 +660,7 @@ ifeq ($(DEBUG),0)
 #	cflags += -fopt-info-vec-missed
 
 	POST_COMPILE += --check-loop-optimization
+  endif
  endif
 endif
 
