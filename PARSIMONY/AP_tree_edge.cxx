@@ -23,14 +23,13 @@ using namespace std;
 long AP_tree_edge::timeStamp = 0;
 
 AP_tree_edge::AP_tree_edge(AP_tree_nlen *node1, AP_tree_nlen *node2)
+    : next_in_chain(NULL),
+      used(0),
+      age(timeStamp++),
+      kl_visited(false)
 {
-    // not really necessary, but why not clear all:
-    memset((char *)this, 0, sizeof(AP_tree_edge));
-    age  = timeStamp++;
-
-    // link the nodes:
-
-    relink(node1, node2);
+    node[0] = NULL; // => !is_linked()
+    relink(node1, node2); // link the nodes (initializes 'node' and 'index')
 }
 
 AP_tree_edge::~AP_tree_edge() {
