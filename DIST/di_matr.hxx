@@ -77,8 +77,8 @@ class DI_ENTRY : virtual Noncopyable {
     char      *full_name;
 
 public:
-    DI_ENTRY(GBDATA *gbd, DI_MATRIX *phmatri);
-    DI_ENTRY(char *namei, DI_MATRIX *phmatri);
+    DI_ENTRY(GBDATA *gbd, DI_MATRIX *phmatrix_);
+    DI_ENTRY(const char *name_, DI_MATRIX *phmatrix_);
     ~DI_ENTRY();
 
     AP_sequence *sequence;
