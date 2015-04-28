@@ -8,3 +8,6 @@
 leak:illegal_alidata_composition
 leak:test_opendb
 leak:test_another_shell
+
+# gtk specific:
+leak:getdelim
