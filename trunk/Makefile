@@ -664,6 +664,16 @@ ifeq ($(DEBUG),0)
  endif
 endif
 
+#---------------------- stop early on broken flags/compiler combination
+
+ifeq ($(DEBUG),0)
+ ifeq ($(SANITIZE_ANY),1)
+  ifeq ('$(COMPILER_VERSION)','4.9.1')
+   $(error compiling DEBUG=0 + SANITIZE!=0 crashes with gcc $(COMPILER_VERSION) (gcc 4.9.2 works))
+  endif
+ endif
+endif
+
 # -------------------------------------------------------------------------
 #	Don't put any machine/version/etc conditionals below!
 #	(instead define variables above)
