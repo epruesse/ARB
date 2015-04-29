@@ -102,11 +102,19 @@ bool AW_root::is_focus_callback(AW_RCB fcb) const { // eliminated in gtk-branch
     return focus_callback_list && focus_callback_list->contains(makeRootCallback(fcb, AW_CL(0), AW_CL(0)));
 }
 
-AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, UserActionTracker *user_tracker, int */*argc*/, char ***/*argv*/) {
+AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, UserActionTracker *user_tracker, int */*argc*/, char ***/*argv*/)
+    : tracker(user_tracker),
+      changer_of_variable(0),
+      focus_follows_mouse(false),
+      number_of_toggle_fields(0),
+      number_of_option_menus(0),
+      disable_callbacks(false),
+      current_modal_window(NULL),
+      focus_callback_list(NULL),
+      active_windows(0)
+{
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
     AW_root::SINGLETON = this;
-
-    memset((char *)this, 0, sizeof(AW_root));
 
     prvt = new AW_root_Motif;
 
@@ -119,11 +127,30 @@ AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, Us
 }
 
 #if defined(UNIT_TESTS)
-AW_root::AW_root(const char *propertyFile) {
+AW_root::AW_root(const char *propertyFile)
+    : button_sens_list(NULL),
+      tracker(NULL),
+      prvt(NULL),
+      value_changed(false),
+      changer_of_variable(0),
+      y_correction_for_input_labels(0),
+      global_mask(0),
+      focus_follows_mouse(false),
+      number_of_toggle_fields(0),
+      number_of_option_menus(0),
+      program_name(NULL),
+      disable_callbacks(false),
+      current_modal_window(NULL),
+      focus_callback_list(NULL),
+      active_windows(0),
+      font_width(0),
+      font_height(0),
+      font_ascent(0),
+      color_mode(AW_MONO_COLOR)
+{
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
     AW_root::SINGLETON = this;
 
-    memset((char *)this, 0, sizeof(AW_root));
     init_variables(load_properties(propertyFile));
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
