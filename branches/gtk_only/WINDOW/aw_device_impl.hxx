@@ -206,17 +206,17 @@ public:
 
     bool line(int gc, const AW::LineVector& Line, 
               AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return line_impl(gc, Line, filteri);
     }
     bool line(int gc, const AW::Position& pos1, const AW::Position& pos2, 
               AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return line_impl(gc, AW::LineVector(pos1, pos2), filteri);
     }
     bool line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, 
               AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return line_impl(gc, AW::LineVector(x0, y0, x1, y1), filteri);
     }
 
@@ -227,7 +227,7 @@ public:
               AW_pos      alignment  = 0.0, // 0.0 alignment left 0.5 centered 1.0 right justified
               AW_bitset   filteri    = AW_ALL_DEVICES_UNSCALED,
               long        opt_strlen = 0) {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return text_impl(gc, string, AW::Position(x, y), alignment, filteri, opt_strlen);
     }
     bool text(int                  gc,
@@ -236,61 +236,61 @@ public:
               AW_pos               alignment  = 0.0, // 0.0 alignment left 0.5 centered 1.0 right justified
               AW_bitset            filteri    = AW_ALL_DEVICES_UNSCALED,
               long                 opt_strlen = 0) {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return text_impl(gc, string, pos, alignment, filteri, opt_strlen);
     }
 
     bool invisible(const AW::Position& pos, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return invisible_impl(pos, filteri);
     }
 
     bool box(int gc, bool filled, const AW::Rectangle& rect,
              AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return box_impl(gc, filled, rect, filteri);
     }
     bool box(int gc, bool filled, const AW::Position& pos, const AW::Vector& size, 
              AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return box_impl(gc, filled, AW::Rectangle(pos, size), filteri);
     }
     bool box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, 
              AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return box_impl(gc, filled, AW::Rectangle(AW::Position(x0, y0), AW::Vector(width, height)), filteri);
     }
 
     bool circle(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, 
                 AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return circle_impl(gc, filled, center, radius, filteri);
     }
     bool circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos xradius, AW_pos yradius, 
                 AW_bitset filteri = AW_ALL_DEVICES_SCALED)  {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return circle_impl(gc, filled, AW::Position(x0, y0), AW::Vector(xradius, yradius), filteri);
     }
     bool circle(int gc, bool filled, const AW::Rectangle& rect, 
                 AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
         // draw ellipse into Rectangle
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return circle_impl(gc, filled, rect.centroid(), AW::Vector(rect.width()/2, rect.height()/2), filteri);
     }
 
     // draw arcs (Note: passed degrees are nagative compared to unit circle!)
     bool arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES_SCALED)  {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return arc_impl(gc, filled, AW::Position(x0, y0), AW::Vector(xradius, yradius), start_degrees, arc_degrees, filteri);
     }
     bool arc(int gc, bool filled, const AW::Position& pos, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return arc_impl(gc, filled, pos, radius, start_degrees, arc_degrees, filteri);
     }
 
     // @@@ rename to 'polygone' and pass 'filled' parameter
     bool filled_area(int gc, int npoints, const AW_pos *points, AW_bitset filteri = AW_ALL_DEVICES_SCALED)  {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         AW::Position *pos = new AW::Position[npoints];
         for (int n = 0; n<npoints; ++n) {
             pos[n].setx(points[n*2]);
@@ -301,7 +301,7 @@ public:
         return result;
     }
     bool filled_area(int gc, int npos, const AW::Position *pos, AW_bitset filteri = AW_ALL_DEVICES_SCALED)  {
-        if (!filteri & filter) return false;
+        if (!(filteri & filter)) return false;
         return filled_area_impl(gc, npos, pos, filteri);
     }
 
@@ -320,7 +320,7 @@ public:
     virtual void clear_part(const AW::Rectangle& rect, AW_bitset filteri);
 
     void clear_part(AW_pos x, AW_pos y, AW_pos width, AW_pos height, AW_bitset filteri) {
-        if (!filteri & filter) return;
+        if (!(filteri & filter)) return;
         clear_part(AW::Rectangle(AW::Position(x, y), AW::Vector(width, height)), filteri);
     }
 
