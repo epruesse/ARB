@@ -525,10 +525,7 @@ endif
 # activate UndefinedBehaviorSanitizer?
 ifeq ($(SANITIZE_UNDEFINED),1)
  cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
- ifeq ('$(USE_GCC_50_OR_HIGHER)', 'yes')
-# (temporarily) disable new sanitizers introduced with gcc 5.1.0
-  cflags += -fno-sanitize=alignment
- endif
+# Note: alignment-sanitizer is deactivated for ARBDB and PROBE!
  ifeq ('$(DEBUG)','1')
   ifeq ($(USE_GCC_MAJOR),4)
    ifeq ($(USE_GCC_MINOR),9)

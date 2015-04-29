@@ -2,11 +2,20 @@
 
 OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
 
+# ---------------------------------------- allow misaligned data access in PROBE
+PROBE_CFLAGS := $(cflags)
+ifeq ('$(USE_GCC_50_OR_HIGHER)', 'yes')
+ ifneq ('$(SANITIZE)', '0')
+  PROBE_CFLAGS := $(cflags) -fno-sanitize=alignment
+ endif
+endif
+# ---------------------------------------- 
+
 $(MAIN): $(OBJECTS) 
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(PROBE_CFLAGS) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 proto:
 	../AISC_MKPTPS/aisc_mkpt -P -G -E -w pt_prototypes.h $(OBJECTS:.o=.cxx) probe_tree.h >pt_prototypes.h.tmp
