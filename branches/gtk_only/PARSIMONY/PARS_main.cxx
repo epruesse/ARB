@@ -1068,7 +1068,6 @@ static void refreshTree(AWT_canvas *ntw) {
     if (error) aw_message(error);
     ntw->zoom_reset_and_refresh();
 }
-#endif // TESTMENU
 
 static void setBranchlens(AP_tree_nlen *node, double newLen)
 {
@@ -1080,7 +1079,7 @@ static void setBranchlens(AP_tree_nlen *node, double newLen)
         setBranchlens(node->get_rightson(), newLen);
     }
 }
-#if defined(TESTMENU)
+
 static void TESTMENU_setBranchlen(AW_window *, AWT_canvas *ntw)
 {
     AP_tree_nlen *root = rootNode();

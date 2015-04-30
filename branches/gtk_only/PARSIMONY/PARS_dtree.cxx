@@ -637,7 +637,7 @@ void TEST_calc_bootstraps() {
         AP_tree_nlen *root      = env.root_node();
         AP_tree_edge *root_edge = rootEdge();
 
-        TEST_EXPECT(root && rootEdge);
+        TEST_EXPECT(root && root_edge);
 
         root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_origi_topo);
 

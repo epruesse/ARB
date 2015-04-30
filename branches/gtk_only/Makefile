@@ -299,8 +299,10 @@ WEFFC_BROKEN:=0
 	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
  ifeq ($(DEBUG),1)
+  ifeq ($(USE_CLANG),0)
 #       turn off -Wmaybe-uninitialized in debug mode (gets activated with -Wextra). too many bogus warnings
 	extended_cpp_warnings += -Wno-maybe-uninitialized
+  endif
  endif
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
@@ -525,10 +527,7 @@ endif
 # activate UndefinedBehaviorSanitizer?
 ifeq ($(SANITIZE_UNDEFINED),1)
  cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
- ifeq ('$(USE_GCC_50_OR_HIGHER)', 'yes')
-# (temporarily) disable new sanitizers introduced with gcc 5.1.0
-  cflags += -fno-sanitize=alignment
- endif
+# Note: alignment-sanitizer is deactivated for ARBDB and PROBE!
  ifeq ('$(DEBUG)','1')
   ifeq ($(USE_GCC_MAJOR),4)
    ifeq ($(USE_GCC_MINOR),9)
@@ -660,6 +659,13 @@ ifeq ($(DEBUG),0)
 #	cflags += -fopt-info-vec-missed
 
 	POST_COMPILE += --check-loop-optimization
+  endif
+ else
+  ifeq ($(USE_GCC_48_OR_HIGHER),yes)
+# no automatic vectorization-check for gcc<4.9.0
+# -> uncomment the next 2 lines and grep the spam it will produce for 'vectorized.*loops'
+#	cflags += -fopt-info -fopt-info-vec-missed
+#	POST_COMPILE += --original
   endif
  endif
 endif

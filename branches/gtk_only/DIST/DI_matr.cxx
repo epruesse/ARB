@@ -784,6 +784,7 @@ GB_ERROR link_to_tree(NamedNodes& named, TreeNode *node) {
     return error;
 }
 
+#if defined(ASSERTION_USED)
 static TreeNode *findNode(TreeNode *node, const char *name) {
     if (node->is_leaf) {
         return strcmp(node->name, name) == 0 ? node : NULL;
@@ -793,6 +794,7 @@ static TreeNode *findNode(TreeNode *node, const char *name) {
     if (!found) found = findNode(node->get_rightson(), name);
     return found;
 }
+#endif
 
 static GB_ERROR init(NamedNodes& node, TreeNode *tree, const DI_ENTRY*const*const entries, size_t nentries) {
     GB_ERROR error = NULL;
