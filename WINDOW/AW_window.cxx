@@ -1058,14 +1058,32 @@ void AW_window::window_fit() {
 }
 
 AW_window::AW_window()
+    : recalc_size_at_show(AW_KEEP_SIZE),
+      recalc_pos_at_show(AW_KEEP_POS),
+      hide_cb(NULL),
+      expose_callback_added(false),
+      focus_cb(NULL),
+      xfig_data(NULL),
+      _at(new AW_at),
+      left_indent_of_horizontal_scrollbar(0),
+      top_indent_of_vertical_scrollbar(0),
+      root(NULL),
+      click_time(0),
+      color_table_size(0),
+      color_table(NULL),
+      number_of_timed_title_changes(0),
+      p_w(new AW_window_Motif),
+      _callback(NULL),
+      _d_callback(NULL),
+      window_name(NULL),
+      window_defaults_name(NULL),
+      window_is_shown(false),
+      slider_pos_vertical(0),
+      slider_pos_horizontal(0),
+      main_drag_gc(0),
+      picture(new AW_screen_area)
 {
-    memset((char *)this, 0, sizeof(AW_window)); // @@@ may conflict with vtable - fix
-    p_w = new AW_window_Motif;
-    _at = new AW_at; // Note to valgrinders : the whole AW_window memory management suffers because Windows are NEVER deleted
-    picture = new AW_screen_area;
     reset_scrolled_picture_size();
-    slider_pos_vertical = 0;
-    slider_pos_horizontal = 0;
 }
 
 AW_window::~AW_window() {
@@ -1222,9 +1240,35 @@ static void aw_onExpose_calc_WM_offsets(AW_window *aww) {
     }
 }
 
-AW_root_Motif::AW_root_Motif() {
-    memset((char*)this, 0, sizeof(*this));
-}
+AW_root_Motif::AW_root_Motif()
+    : last_widget(0),
+      display(NULL),
+      context(0),
+      toplevel_widget(0),
+      main_widget(0),
+      main_aww(NULL),
+      message_shell(0),
+      foreground(0),
+      background(0),
+      fontlist(0),
+      option_menu_list(NULL),
+      last_option_menu(NULL),
+      current_option_menu(NULL),
+      toggle_field_list(NULL),
+      last_toggle_field(NULL),
+      selection_list(NULL),
+      last_selection_list(NULL),
+      screen_depth(0),
+      color_table(NULL),
+      colormap(0),
+      help_active(0),
+      clock_cursor(0),
+      question_cursor(0),
+      old_cursor_display(NULL),
+      old_cursor_window(0),
+      no_exit(false),
+      action_hash(NULL)
+{}
 
 AW_root_Motif::~AW_root_Motif() {
     GBS_free_hash(action_hash);
@@ -3152,6 +3196,31 @@ AW_toggle_field_struct::AW_toggle_field_struct(int toggle_field_numberi,
     correct_for_at_center_intern = correct;
 }
 
-AW_window_Motif::AW_window_Motif() {
-    memset((char*)this, 0, sizeof(AW_window_Motif));
+AW_window_Motif::AW_window_Motif()
+    : shell(0),
+      scroll_bar_vertical(0),
+      scroll_bar_horizontal(0),
+      menu_deep(0),
+      help_pull_down(0),
+      mode_area(0),
+      number_of_modes(0),
+      modes_f_callbacks(NULL),
+      modes_widgets(NULL),
+      selected_mode(0),
+      popup_cb(NULL),
+      frame(0),
+      toggle_field(0),
+      toggle_label(0),
+      toggle_field_var_name(NULL),
+      toggle_field_var_type(AW_NONE),
+      keymodifier(AW_KEYMODE_NONE),
+      WM_top_offset(0),
+      WM_left_offset(0)
+{
+    for (int i = 0; i<AW_MAX_MENU_DEEP; ++i) {
+        menu_bar[i] = 0;
+    }
+    for (int i = 0; i<AW_MAX_AREA; ++i) {
+        areas[i] = NULL;
+    }
 }
