@@ -299,8 +299,10 @@ WEFFC_BROKEN:=0
 	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
  ifeq ($(DEBUG),1)
+  ifeq ($(USE_CLANG),0)
 #       turn off -Wmaybe-uninitialized in debug mode (gets activated with -Wextra). too many bogus warnings
 	extended_cpp_warnings += -Wno-maybe-uninitialized
+  endif
  endif
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
