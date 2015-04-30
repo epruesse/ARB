@@ -658,6 +658,13 @@ ifeq ($(DEBUG),0)
 
 	POST_COMPILE += --check-loop-optimization
   endif
+ else
+  ifeq ($(USE_GCC_48_OR_HIGHER),yes)
+# no automatic vectorization-check for gcc<4.9.0
+# -> uncomment the next 2 lines and grep the spam it will produce for 'vectorized.*loops'
+#	cflags += -fopt-info -fopt-info-vec-missed
+#	POST_COMPILE += --original
+  endif
  endif
 endif
 

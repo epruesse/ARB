@@ -135,7 +135,7 @@ struct count_unweighted {
     long sum;
     count_unweighted():sum(0){}
     void add(size_t, char c) {
-        sum += (c==0)?1:0;
+        sum += !c;
     }
 };
 
@@ -144,7 +144,7 @@ struct count_weighted {
     const GB_UINT4* weights;
     count_weighted(const GB_UINT4* w):sum(0), weights(w){}
     void add(size_t idx, char c) {
-        sum += weights[idx] * (c==0)?1:0;
+        sum += !c * weights[idx];
     }
 };
 
@@ -156,16 +156,18 @@ struct count_mutpsite {
     char * sites;
     count_mutpsite(char *s):sites(s){}
     void add(size_t idx, char c) {
-        // below is equal to "if (c) sites[idx]", the difference
+        // below code is equal to "if (!c) ++sites[idx]", the difference
         // is that no branch is required and sites[idx] is always
-        // written, allowing vectorization
-        // we can't use (c==0)?1:0 for reasons unknown
-        // gcc 4.8.1 refuses to vectorize the conditional
+        // written, allowing vectorization.
+        //
+        // For unknown reasons gcc 4.8.1, 4.9.2 and 5.1.0
+        // refuses to vectorize 'c==0?1:0' or '!c'
+
         sites[idx] += ((c | -c) >> 7 & 1) ^ 1;
     }
 };
 
-AP_FLOAT AP_sequence_parsimony::combine(const AP_sequence * lefts, 
+AP_FLOAT AP_sequence_parsimony::combine(const AP_sequence * lefts,
                                         const AP_sequence * rights,
                                         char *mutation_per_site) {
     const AP_sequence_parsimony *left = (const AP_sequence_parsimony *)lefts;
