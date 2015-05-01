@@ -30,7 +30,7 @@
 // ------------------------------------------------------------
 
 #define OPENFILES 16
-#define HASHSIZE  1024
+#define HASHSIZE  1049
 #define STACKSIZE 20
 
 enum aisc_commands {
