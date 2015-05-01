@@ -201,7 +201,13 @@ arb_signal.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_signal.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_signal.o: $(ARBHOME)/INCLUDE/valgrind.h
 
+arb_sort.o: arb_assert.h
+arb_sort.o: arb_core.h
 arb_sort.o: arb_sort.h
+arb_sort.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_sort.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_sort.o: $(ARBHOME)/INCLUDE/gccver.h
+arb_sort.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_strarray.o: arb_assert.h
 arb_strarray.o: arb_core.h
