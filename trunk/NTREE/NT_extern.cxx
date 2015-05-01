@@ -1261,8 +1261,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
                 awm->close_sub_menu();
 
                 awm->insert_sub_menu("Maximum Likelihood methods", "L");
-                GDE_load_menu(awm, AWM_EXP, "Phylogeny max. Likelyhood EXP");
-                GDE_load_menu(awm, AWM_ALL, "Phylogeny max. Likelyhood");
+                GDE_load_menu(awm, AWM_EXP, "Phylogeny max. Likelihood EXP");
+                GDE_load_menu(awm, AWM_ALL, "Phylogeny max. Likelihood");
                 awm->close_sub_menu();
 
                 awm->insert_sub_menu("Other methods", "O", AWM_EXP);
