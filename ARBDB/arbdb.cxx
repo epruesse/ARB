@@ -709,17 +709,32 @@ void GB_close(GBDATA *gbd) {
     run_close_callbacks(gbd, Main->close_callbacks);
     Main->close_callbacks = 0;
 
+    bool quick_exit = Main->mapped;
     if (Main->is_client()) {
         long result            = gbcmc_close(Main->c_link);
         if (result != 0) error = GBS_global_string("gbcmc_close returns %li", result);
+
+        gb_assert(!quick_exit); // client cannot be mapped
     }
 
-    gbcm_logout(Main, NULL);                        // logout default user
-    
+    gbcm_logout(Main, NULL); // logout default user
+
     if (!error) {
         gb_assert(Main->close_callbacks == 0);
 
-        gb_delete_dummy_father(Main->dummy_father);
+#if defined(LEAKS_SANITIZED)
+        quick_exit = false;
+#endif
+
+        if (quick_exit) {
+            // fake some data to allow quick-exit
+            Main->dummy_father = NULL;
+            Main->cache.entries = NULL;
+        }
+        else {
+            // proper cleanup of DB (causes unwanted behavior described in #649)
+            gb_delete_dummy_father(Main->dummy_father);
+        }
         Main->root_container = NULL;
 
         /* ARBDB applications using awars easily crash in call_pending_callbacks(),
@@ -728,7 +743,7 @@ void GB_close(GBDATA *gbd) {
          * To unlink awars call AW_root::unlink_awars_from_DB().
          * If that doesn't help, test Main->data (often aka as GLOBAL_gb_main)
          */
-        Main->call_pending_callbacks();                  // do all callbacks
+        Main->call_pending_callbacks(); // do all callbacks
         delete Main;
     }
 

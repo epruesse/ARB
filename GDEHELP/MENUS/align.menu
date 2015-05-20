@@ -629,35 +629,3 @@ out:TmpOutputFile
 outformat:flat
 outaligned:yes
 
-// --------------------------------------------------------------------------------
-
-item:Assemble Contigs
-itemmeta: g
-seqtype:*
-itemmethod: ( GOTO_LOCAL_DIR; \
-              tr '"%//' '>' <TmpInputFile > tr.out; \
-              CAP2 tr.out $OVERLAP $PMATCH >  TmpOutputFile; \
-              RM_LOCAL_FILES(TmpInputFile tr.out) )
-itemhelp:CAP2.help
-
-arg:OVERLAP
-argtype:slider
-arglabel:Minimum overlap?
-argmin:5
-argmax:100
-argvalue:20
-
-arg:PMATCH
-argtype:slider
-arglabel:Percent match required within overlap
-argmin:25
-argmax:100
-argvalue:90
-
-in:TmpInputFile
-informat:flat
-insave:
-
-out:TmpOutputFile
-outformat:gde
-

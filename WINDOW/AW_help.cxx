@@ -194,6 +194,7 @@ static void aw_helpfile_modified_cb(const char *path, bool fileWasChanged, bool 
 }
 #endif
 
+
 static void aw_help_edit_help(AW_window *aww) {
     char *helpfile = get_full_qualified_help_file_name(aww->get_root(), true);
 
@@ -216,7 +217,7 @@ static void aw_help_edit_help(AW_window *aww) {
                    "(ask your admin to gain write access)");
     }
 
-    GBDATA *get_globalawars_gbmain();
+    GBDATA *get_globalawars_gbmain(void); // prototype
     GBDATA *gbmain = get_globalawars_gbmain(); // hack -- really need main ARB DB here (properties DB does not work with notifications)
     if (gbmain) {
         AW_edit(helpfile, aw_helpfile_modified_cb, aww, gbmain);

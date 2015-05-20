@@ -213,15 +213,23 @@ static void GDE_freesequ(NA_Sequence *sequ) {
     }
 }
 
-NA_Alignment::NA_Alignment(GBDATA *gb_main_) {
-    memset(this, 0, sizeof(*this));
-
-    gb_main = gb_main_;
-    {
-        GB_transaction ta(gb_main);
-        alignment_name = GBT_get_default_alignment(gb_main);
-        alignment_type = GBT_get_alignment_type(gb_main, alignment_name);
-    }
+NA_Alignment::NA_Alignment(GBDATA *gb_main_)
+    : id(NULL),
+      description(NULL),
+      authority(NULL),
+      numelements(0),
+      maxnumelements(0),
+      maxlen(0),
+      rel_offset(0),
+      element(NULL),
+      numgroups(0),
+      group(NULL),
+      format(0),
+      gb_main(gb_main_)
+{
+    GB_transaction ta(gb_main);
+    alignment_name = GBT_get_default_alignment(gb_main);
+    alignment_type = GBT_get_alignment_type(gb_main, alignment_name);
 }
 
 NA_Alignment::~NA_Alignment() {
