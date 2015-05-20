@@ -274,10 +274,13 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
     auto_calc_changed_cb(aw_root);
 }
 
-DI_ENTRY::DI_ENTRY(GBDATA *gbd, DI_MATRIX *phmatri) {
-    memset((char *)this, 0, sizeof(DI_ENTRY));
-    phmatrix = phmatri;
-
+DI_ENTRY::DI_ENTRY(GBDATA *gbd, DI_MATRIX *phmatrix_)
+    : phmatrix(phmatrix_),
+      full_name(NULL),
+      sequence(NULL),
+      name(NULL),
+      group_nr(0)
+{
     GBDATA *gb_ali = GB_entry(gbd, phmatrix->get_aliname());
     if (gb_ali) {
         GBDATA *gb_data = GB_entry(gb_ali, "data");
@@ -297,22 +300,32 @@ DI_ENTRY::DI_ENTRY(GBDATA *gbd, DI_MATRIX *phmatri) {
     }
 }
 
-DI_ENTRY::DI_ENTRY(char *namei, DI_MATRIX *phmatri) {
-    memset((char *)this, 0, sizeof(DI_ENTRY));
-    phmatrix = phmatri;
-    this->name = strdup(namei);
-}
+DI_ENTRY::DI_ENTRY(const char *name_, DI_MATRIX *phmatrix_)
+    : phmatrix(phmatrix_),
+      full_name(NULL),
+      sequence(NULL),
+      name(strdup(name_)),
+      group_nr(0)
+{}
 
 DI_ENTRY::~DI_ENTRY() {
     delete sequence;
     free(name);
     free(full_name);
-
 }
 
-DI_MATRIX::DI_MATRIX(const AliView& aliview_) {
-    memset((char *)this, 0, sizeof(*this));
-    aliview = new AliView(aliview_);
+DI_MATRIX::DI_MATRIX(const AliView& aliview_)
+    : gb_species_data(NULL),
+      seq_len(0),
+      entries_mem_size(0),
+      aliview(new AliView(aliview_)),
+      is_AA(false),
+      entries(NULL),
+      nentries(0),
+      matrix(NULL),
+      matrix_type(DI_MATRIX_FULL)
+{
+    memset(cancel_columns, 0, sizeof(cancel_columns));
 }
 
 char *DI_MATRIX::unload() {
@@ -324,8 +337,7 @@ char *DI_MATRIX::unload() {
     return 0;
 }
 
-DI_MATRIX::~DI_MATRIX()
-{
+DI_MATRIX::~DI_MATRIX() {
     unload();
     delete matrix;
     delete aliview;
@@ -772,6 +784,7 @@ GB_ERROR link_to_tree(NamedNodes& named, TreeNode *node) {
     return error;
 }
 
+#if defined(ASSERTION_USED)
 static TreeNode *findNode(TreeNode *node, const char *name) {
     if (node->is_leaf) {
         return strcmp(node->name, name) == 0 ? node : NULL;
@@ -781,6 +794,7 @@ static TreeNode *findNode(TreeNode *node, const char *name) {
     if (!found) found = findNode(node->get_rightson(), name);
     return found;
 }
+#endif
 
 static GB_ERROR init(NamedNodes& node, TreeNode *tree, const DI_ENTRY*const*const entries, size_t nentries) {
     GB_ERROR error = NULL;

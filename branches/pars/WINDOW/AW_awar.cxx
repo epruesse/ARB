@@ -272,8 +272,20 @@ static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, AW_awar *awar) {
 
 AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
                  const char *var_value, double var_double_value,
-                 AW_default default_file, AW_root *rooti) {
-    memset((char *)this, 0, sizeof(AW_awar));
+                 AW_default default_file, AW_root *rooti)
+    : callback_list(NULL),
+      target_list(NULL),
+      refresh_list(NULL),
+#if defined(DEBUG)
+      is_global(false),
+#endif
+      root(rooti),
+      gb_var(NULL)
+{
+    pp.f.min = 0;
+    pp.f.max = 0;
+    pp.srt   = NULL;
+
     GB_transaction ta(default_file);
 
     aw_assert(var_name && var_name[0] != 0);
@@ -283,9 +295,8 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
     aw_assert(!err);
 #endif // DEBUG
 
-    this->awar_name = strdup(var_name);
-    this->root      = rooti;
-    GBDATA *gb_def  = GB_search(default_file, var_name, GB_FIND);
+    awar_name      = strdup(var_name);
+    GBDATA *gb_def = GB_search(default_file, var_name, GB_FIND);
 
     in_tmp_branch = strncmp(var_name, "tmp/", 4) == 0;
 
@@ -352,8 +363,8 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
         if (error) GB_warningf("AWAR '%s': failed to set temporary on creation (Reason: %s)", var_name, error);
     }
 
-    variable_type   = var_type;
-    this->gb_origin = gb_def;
+    variable_type = var_type;
+    gb_origin     = gb_def;
     this->map(gb_def);
 
     aw_assert(is_valid());

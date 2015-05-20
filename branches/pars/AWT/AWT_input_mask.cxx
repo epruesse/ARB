@@ -2211,7 +2211,7 @@ static GB_ERROR openMaskWindowByType(int mask_id, awt_item_type type) {
     GB_ERROR         error      = 0;
 
     if (registered == registeredTypes.end()) error = GBS_global_string("Type '%s' not registered (yet)", awt_itemtype_names[type]);
-    else registered->second.getOpenCb()(registered->second.getWindow(), (AW_CL)mask_id, (AW_CL)0);
+    else registered->second.getOpenCb()(registered->second.getWindow(), mask_id, NULL);
 
     return error;
 }

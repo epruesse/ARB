@@ -99,6 +99,17 @@ struct AW_event {
     // fields valid for type == AW_Keyboard
     AW_key_code keycode;            // which key type was pressed
     char        character;          // the c character
+
+    AW_event()
+        : type(AW_event_type(0)),
+          time(0),
+          keymodifier(AW_KEYMODE_NONE),
+          button(AW_BUTTON_NONE),
+          x(0),
+          y(0),
+          keycode(AW_KEY_NONE),
+          character(0)
+    {}
 };
 
 void AW_help_popup(AW_window *aw, const char *help_file);

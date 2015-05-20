@@ -22,7 +22,7 @@
 # sequence type: DNA
 # tree size: small
 
-menu:Phylogeny max. Likelyhood
+menu:Phylogeny max. Likelihood
 
 item:RAxML 8 (DNA)
 itemmethod: ${ARB_XCMD} arb_raxml8.sh -p $PROTOCOL -m $MODEL -s $SEED -b $BOOTSTRAPS -r $REPEATS -nt -t "$THREADS" -f INPUTFILE &

@@ -28,16 +28,15 @@ __ATTR__NORETURN inline void selection_type_mismatch(const char *triedType) { ty
 //      AW_selection_list
 
 
-AW_selection_list::AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti) {
-    // @@@ fix initialization
-    memset((char *)this, 0, sizeof(AW_selection_list));
-    variable_name          = nulldup(variable_namei);
-    variable_type          = (AW_VARIABLE_TYPE)variable_typei;
-    select_list_widget     = select_list_widgeti;
-    list_table             = NULL;
-    last_of_list_table     = NULL;
-    default_select         = NULL;
-}
+AW_selection_list::AW_selection_list(const char *variable_name_, int variable_type_, Widget select_list_widget_)
+    : variable_name(nulldup(variable_name_)),
+      variable_type(AW_VARIABLE_TYPE(variable_type_)),
+      select_list_widget(select_list_widget_),
+      list_table(NULL),
+      last_of_list_table(NULL),
+      default_select(NULL),
+      next(NULL)
+{}
 
 AW_selection_list::~AW_selection_list() {
     clear();

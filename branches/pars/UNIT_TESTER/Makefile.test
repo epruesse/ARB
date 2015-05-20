@@ -124,7 +124,7 @@ $(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
 	$(A_CXX) $(cflags) $(cxxflags) -c $< -o $@ -I. $(POST_COMPILE) $< 
 
 $(TEST_EXE) : $(TEST_OBJ) $(UNIT_TESTER_LIB) $(LINKDEPS)
-	$(LINK_EXECUTABLE) $@ $< $(UNIT_TESTER_LIB) -L../lib $(LINKLIST) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $< $(EXECLIBS) $(UNIT_TESTER_LIB) -L../lib $(LINKLIST)
 
 dump:
 	@echo "$(SEP) dump $(UNITLIBNAME)"
