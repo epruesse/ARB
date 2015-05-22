@@ -62,13 +62,13 @@ case $OSNAME in
     echo "MACH := DARWIN" >> $CFG
     UNIT_TESTS=0
     # OSX does not support /usr/bin/time --verbose, just use make
-    JMAKE="make -j `util/usecores`"
+    JMAKE="make -j `util/usecores.pl`"
     # JMAKE=make
     ;;
   Linux)
     echo "LINUX := 1" >> $CFG
     echo "MACH := LINUX" >> $CFG
-    JMAKE="/usr/bin/time --verbose make -j `util/usecores`"
+    JMAKE="/usr/bin/time --verbose make -j `util/usecores.pl`"
     ;;
   *)
     echo "Error: unhandled OSNAME '$OSNAME'"
