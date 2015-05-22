@@ -389,7 +389,9 @@ static bool         showhelp;
 
 static int getInt(const char *param, int val, int min, int max, const char *description) {
     if (showhelp) {
-        printf("    %s=%i [%i .. %i] %s\n", param, val, min, max, description);
+        printf("    %s=%i [%i .. ", param, val, min);
+        if (max != INT_MAX) printf("%i", max);
+        printf("] %s\n", description);
         return 0;
     }
     int   i;
@@ -490,11 +492,11 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
 
     P.SEQUENCE = getString("matchsequence",   "agtagtagt", "The sequence to search for");
 
-    P.MISMATCHES = getInt("matchmismatches", 0,       0, 20,      "Maximum Number of allowed mismatches");
+    P.MISMATCHES = getInt("matchmismatches", 0,       0, INT_MAX, "Maximum Number of allowed mismatches");
     P.COMPLEMENT = getInt("matchcomplement", 0,       0, 1,       "Match reversed and complemented probe");
     P.WEIGHTED   = getInt("matchweighted",   0,       0, 1,       "Use weighted mismatches");
-    P.ACCEPTN    = getInt("matchacceptN",    1,       0, 20,      "Amount of N-matches not counted as mismatch");
-    P.LIMITN     = getInt("matchlimitN",     4,       0, 20,      "Limit for N-matches. If reached N-matches are mismatches");
+    P.ACCEPTN    = getInt("matchacceptN",    1,       0, INT_MAX, "Amount of N-matches not counted as mismatch");
+    P.LIMITN     = getInt("matchlimitN",     4,       0, INT_MAX, "Limit for N-matches. If reached N-matches are mismatches");
     P.MAXRESULT  = getInt("matchmaxresults", 1000000, 0, INT_MAX, "Max. number of matches reported (0=unlimited)");
 
     P.ITERATE          = getInt("iterate",          0,   1, 20,      "Iterate over probes of given length");
@@ -1405,14 +1407,40 @@ void TEST_SLOW_match_probe() {
             NULL, // matchmismatches
             "matchacceptN=5",
             "matchlimitN=7",
-            "matchmaxresults=10",
+            "matchmaxresults=100",
         };
 
         CCP expectd0 = "    name---- fullname mis N_mis wmis pos ecoli rev          'ACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGGUGA'\1"
             "BcSSSS00\1" "  BcSSSS00            0     0  0.0  84    72 0   UAGCGGCGG-======================================-UGAUUGGGG\1"
-            "Bl0LLL00\1" "  Bl0LLL00            1     0  1.5  84    72 0   CAGCGGCGG-==================================C===-UGAUUGGGG\1";
+            "Bl0LLL00\1" "  Bl0LLL00            1     0  1.5  84    72 0   CAGCGGCGG-==================================C===-UGAUUGGGG\1"
+            "DsssDesu\1" "  DsssDesu            8     0  9.4  84    72 0   GAGUGGCGC-========u=C====Gu==A=============ACA==-G.\1"
+            "PtVVVulg\1" "  PtVVVulg            8     0 10.7  84    72 0   GAGCGGCGG-=======a=U======G=U===========C===ACC=-UGACUGGGG\1"
+            "AclPleur\1" "  AclPleur            9     0 10.8  84    72 0   GAGUGGCGG-=======a========u=UA==========Cg=AA=C=-UGACUGGGG\1"
+            "PsAAAA00\1" "  PsAAAA00           10     0 11.9  84    72 0   CAGCGGCGG-======gu=C======G==C==========C==ACgC=-UGGUAACAA\1"
+            "LgtLytic\1" "  LgtLytic           10     0 12.8  84    72 0   GAGUGGCGA-=======uG=======uCAA==========C==AA=C=-UGACUGGGG\1"
+            "VbrFurni\1" "  VbrFurni           10     0 12.8  84    72 0   GAGCGGCGG-======CauU======GAU===========C===A=C=-UGACUGGGG\1"
+            "VblVulni\1" "  VblVulni           10     0 12.8  84    72 0   GAGCGGCGG-======CauU======GAU===========C===A=C=-UGACUGGGG\1"
+            "Stsssola\1" "  Stsssola           10     0 12.9  84    72 0   AAGUGGCGC-======gG=U======G=UC=============AACA=-UGAUUGGGG\1"
+            "DlcTolu2\1" "  DlcTolu2           10     0 13.4  84    72 0   GAGUGGCGC-=======G=CC====GGACA==============AA==-UAAUUGGGG\1"
+            "PbcAcet2\1" "  PbcAcet2           11     0 12.2  84    72 0   AAGUGGCGC-======A=uUC====GG==U=============AAg=g-UAACUGGGG\1"
+            "HllHalod\1" "  HllHalod           11     0 13.0  84    72 0   GAGCGGCGG-======CuG=======uCA===========C==ACgC=-UGACUGGGG\1"
+            "PbrPropi\1" "  PbrPropi           12     0 13.6  84    72 0   UAGUGGCGC-======A=uUC====Ga==U=========U===AAg=g-UGACUGGGG\1"
+            "DcdNodos\1" "  DcdNodos           12     0 14.4  84    72 0   UAGUGGCGG-======guaU======GUAC==========C==AAg==-UGACUGGGG\1"
+            "VbhChole\1" "  VbhChole           12     0 15.4  84    72 0   GAGCGGCGG-======CauU======GAU===========C==AACC=-UGACUGGGG\1";
 
-        arguments[2] = "matchmismatches=18"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
+        arguments[2] = "matchmismatches=12"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
+    }
+
+
+    // test expected errors
+    {
+        const char *arguments[] = {
+            "prgnamefake",
+            "matchsequence=ACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGGUGA", // length = 38
+            "matchmismatches=20",
+        };
+
+        TEST_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments), arguments, "Max. 19 mismatches are allowed for probes of length 38");
     }
 }
 
