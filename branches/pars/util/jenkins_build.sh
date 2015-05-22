@@ -61,7 +61,9 @@ case $OSNAME in
     echo "DARWIN := 1" >> $CFG
     echo "MACH := DARWIN" >> $CFG
     UNIT_TESTS=0
-    JMAKE=make
+    # OSX does not support /usr/bin/time --verbose, just use make
+    JMAKE="make -j `util/usecores`"
+    # JMAKE=make
     ;;
   Linux)
     echo "LINUX := 1" >> $CFG
