@@ -61,10 +61,12 @@ case $OSNAME in
     echo "DARWIN := 1" >> $CFG
     echo "MACH := DARWIN" >> $CFG
     UNIT_TESTS=0
+    JMAKE=make
     ;;
   Linux)
     echo "LINUX := 1" >> $CFG
     echo "MACH := LINUX" >> $CFG
+    JMAKE="/usr/bin/time --verbose make -j `util/usecores`"
     ;;
   *)
     echo "Error: unhandled OSNAME '$OSNAME'"
@@ -99,7 +101,6 @@ fi
 # build, tar and test
 if [ $BUILD == 1 ]; then
     # JMAKE="make"
-    JMAKE="/usr/bin/time --verbose make -j 5"
     if [ "$ARG" == "fake_build" ]; then
         echo "Faking build"
         echo "Faked arb.tgz"     > arb.tgz
