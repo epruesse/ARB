@@ -22,9 +22,7 @@ SECTION AUTOMATIC SELECTION OF TRANSLATION PARAMETERS
                 To allow easy translation of gene sequences you may select to use two
                 entries of the species:
 
-                        - codon_start, which can be 1, 2 or 3 or 'choose best'. If 'choose best'
-                          then the translation start position is chosen out of the set of
-                          positions 1, 2 and 3 such that the number of stop codons is minimised.
+                        - codon_start, which can be 1, 2 or 3
 
                         - transl_table, which has to be a valid genetic code number.
                           Refer to the numbers in the codon table selector to determine
@@ -45,8 +43,12 @@ SECTION MANUAL SELECTION OF TRANSLATION PARAMETERS
 
 		2. Select reading frame by pressing the 'Start position' button
                    and selecting first, second or third absolute position.
-                   Alternatively you can position the cursor in ARB_EDIT4 at start
-                   of the reading frame.
+                   Note that setting the cursor to the start of the reading frame in
+                   ARB_EDIT4 will update the value of 'Start position'.
+                   Alternatively you may select 'choose best': in this case the translation
+                   start position is chosen out of the set of positions 1, 2 and 3
+                   such that the number of stop codons is minimised.
+                   This is done separately for each translated sequence.
 
                 3. Select the codon table to use.
 

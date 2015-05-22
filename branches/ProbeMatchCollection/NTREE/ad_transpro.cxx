@@ -77,18 +77,21 @@ typedef SizedBufferPtr<char>       SizedWriteBuffer;
 
 // ----------------------------------------
 
+#define AUTODETECT_STARTPOS 3
+inline bool legal_ORF_pos(int p) { return p>=0 && p<=2; }
+
 static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, int selected_startpos,
                         bool    translate_all, const char *ali_source, const char *ali_dest)
 {
     // if use_entries   == true -> use fields 'codon_start' and 'transl_table' for translation
-    //                           (selected_startpos and AWAR_PROTEIN_TYPE are only used both fields are missing,
-    //                            if only one is missing, now an error occurs)
+    //                             (selected_startpos and AWAR_PROTEIN_TYPE are only used if both fields are missing,
+    //                             if only one is missing, now an error occurs)
     // if use_entries   == false -> always use selected_startpos and AWAR_PROTEIN_TYPE
     // if translate_all == true -> a selected_startpos > 1 produces a leading 'X' in protein data
     //                             (otherwise nucleotides in front of the starting pos are simply ignored)
-    // if selected_startpos == 3 -> the start pos is chosen to minimise number of stop codons
+    // if selected_startpos == AUTODETECT_STARTPOS -> the start pos is chosen to minimise number of stop codons
 
-    nt_assert(selected_startpos >= 0 && selected_startpos < 4);
+    nt_assert(legal_ORF_pos(selected_startpos) || selected_startpos == AUTODETECT_STARTPOS);
 
     GB_ERROR  error   = 0;
     char     *to_free = 0;
@@ -181,6 +184,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
                     else {
                         nt_assert(sp_codon_start != -1); // either both should be defined or none
                         found_transl_info = true;
+                        nt_assert(legal_ORF_pos(sp_codon_start));
                     }
 
                     if (sp_arb_table != table) continue; // species has not current transl_table
@@ -203,7 +207,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
                         else {
                             if (!found_transl_info) ++spec_no_transl_info; // count species with missing info
 
-                            if (startpos == 3)
+                            if (startpos == AUTODETECT_STARTPOS)
                             {
                                 int   cn;
                                 int   stop_codons;
@@ -232,12 +236,14 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 
                                 data   = trial_data[startpos];
                                 stops += least_stop_codons;
+
                             }
                             else
                             {
                                 stops += AWT_pro_a_nucs_convert(table, data, data_size, startpos, translate_all, false, false, 0); // do the translation
                             }
 
+                            nt_assert(legal_ORF_pos(startpos));
                             ++count;
 
                             GBDATA *gb_dest_data     = GBT_add_data(gb_species, ali_dest, "data", GB_STRING);
@@ -295,7 +301,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 #define AWAR_TRANSPRO_DEST   AWAR_TRANSPRO_PREFIX "dest"
 
 // translator only:
-#define AWAR_TRANSPRO_POS    AWAR_TRANSPRO_PREFIX "pos" // [0..N-1]
+#define AWAR_TRANSPRO_POS    AWAR_TRANSPRO_PREFIX "pos" // [0..3]: 0-2 = reading frame; 3 = autodetect
 #define AWAR_TRANSPRO_MODE   AWAR_TRANSPRO_PREFIX "mode"
 #define AWAR_TRANSPRO_XSTART AWAR_TRANSPRO_PREFIX "xstart"
 #define AWAR_TRANSPRO_WRITE  AWAR_TRANSPRO_PREFIX "write"
@@ -330,9 +336,13 @@ static void transpro_event(AW_window *aww) {
 }
 
 static void nt_trans_cursorpos_changed(AW_root *awr) {
-    int pos = bio2info(awr->awar(AWAR_CURSOR_POSITION)->read_int());
-    pos = pos % 3;
-    awr->awar(AWAR_TRANSPRO_POS)->write_int(pos);
+    AW_awar *awar_startpos = awr->awar(AWAR_TRANSPRO_POS);
+
+    if (awar_startpos->read_int() != AUTODETECT_STARTPOS) {
+        int pos = bio2info(awr->awar(AWAR_CURSOR_POSITION)->read_int());
+        pos     = pos % 3;
+        awar_startpos->write_int(pos);
+    }
 }
 
 AW_window *NT_create_dna_2_pro_window(AW_root *root) {
@@ -377,7 +387,7 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
         char label[2] = { char(p+'0'), 0 };
         aws->insert_option(label, label, bio2info(p));
     }
-    aws->insert_option("choose best", "choose best", 3);
+    aws->insert_option("choose best", "choose best", AUTODETECT_STARTPOS);
 
     aws->update_option_menu();
     aws->get_root()->awar_int(AWAR_CURSOR_POSITION)->add_callback(nt_trans_cursorpos_changed);
