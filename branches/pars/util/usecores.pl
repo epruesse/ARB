@@ -1,9 +1,12 @@
 #!/usr/bin/perl
 
 # determines cores used by jenkins builds
-my $cores = `cat /proc/cpuinfo | grep processor | wc -l`;
+my $cores = `cat /proc/cpuinfo | grep processor | wc -l`; # no /proc/cpuinfo (e.g. on OSX) -> falls back to minimum
 if ($cores<1) { $cores = 1; }
-my $jobs = int($cores * 0.8); # reserve some cores for docker etc.
-if ($jobs<1) { $jobs = 1; }
+
+my $usedcores = int($cores * 0.8); # reserve some cores for docker etc.
+if ($usedcores<1) { $usedcores = 1; }
+
+my $jobs = $usedcores + 1;
 print "$jobs";
 
