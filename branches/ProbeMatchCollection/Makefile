@@ -44,7 +44,7 @@
 #                       configurable in config.makefile
 #
 # -----------------------------------------------------
-# Read configuration 
+# Read configuration
 include config.makefile
 
 # set defaults for variables commented out in config.makefile:
@@ -130,7 +130,7 @@ endif
 
 COMPILER_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_COMPILER_VERSIONS),$(findstring ___$(version)___,___$(COMPILER_VERSION)___))))
 
-#---------------------- split gcc version 
+#---------------------- split gcc version
 
 SPLITTED_VERSION:=$(subst ., ,$(COMPILER_VERSION))
 
@@ -270,10 +270,10 @@ endif
 	extended_warnings :=
 	extended_cpp_warnings :=
 
-#       C and C++ 
+#       C and C++
 	extended_warnings     += -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
 
-#       C++ only 
+#       C++ only
 	extended_cpp_warnings += -Wnon-virtual-dtor -Wreorder -Wpointer-arith -Wdisabled-optimization -Wmissing-format-attribute
 	extended_cpp_warnings += -Wctor-dtor-privacy# < gcc 3
 # 	extended_cpp_warnings += -Wfloat-equal# gcc 3.0
@@ -421,7 +421,7 @@ cross_lflags:=
 cross_clflags:=
 
 ifeq ($(ARB_64),1)
-	dflags += -DARB_64 #-fPIC 
+	dflags += -DARB_64 #-fPIC
 	shared_cflags += -fPIC
 
 	ifeq ($(BUILDHOST_64),1)
@@ -444,8 +444,8 @@ else
 #		build 32-bit ARB version on 64-bit host
 		CROSS_LIB:=# empty = autodetect below
 		cross_cflags += -m32
-		cross_lflags += -m32 -m elf_i386 
-		cross_clflags += -m32 -Wl,-m32,-m,elf_i386 
+		cross_lflags += -m32 -m elf_i386
+		cross_clflags += -m32 -Wl,-m32,-m,elf_i386
 	else
 #		build 32-bit ARB version on 32-bit host
 		CROSS_LIB:=/lib
@@ -572,7 +572,7 @@ dflags += -DARB_MOTIF
 
 #---------------------- open GL
 
-ifeq ($(OPENGL),1) 
+ifeq ($(OPENGL),1)
 	cflags += -DARB_OPENGL # activate OPENGL code
 	GL     := gl # this is the name of the OPENGL base target
 	GL_LIB_SYS := -lGL -lGLU
@@ -626,10 +626,10 @@ ARB_GLIB_LIBS:=$(strip    $(shell pkg-config --libs   $(ARB_NEEDED_GLIB)))
 
 SYSLIBS:=
 
-ifeq ($(DARWIN),1)
-	SYSLIBS += -lstdc++
+ifeq ($(DARWIN),1) # hack to include -lxerces-c , fix later
+	SYSLIBS += -lstdc++ -lxerces-c
 else
-	SYSLIBS += -lm $(ARB_GLIB_LIBS)
+	SYSLIBS += -lm -lxerces-c $(ARB_GLIB_LIBS)
 endif
 
 #---------------------- include symbols?
@@ -745,7 +745,7 @@ LIBS = $(ARBDB_LIB) $(SYSLIBS)
 
 GUI_LIBS_PREFIX:=
 ifeq ($(DARWIN),1)
-#       this seem to be added at wrong place, since opengl is only needed to link EDIT4 
+#       this seem to be added at wrong place, since opengl is only needed to link EDIT4
         GUI_LIBS_PREFIX:=-framework GLUT -framework OpenGL
 endif
 
@@ -761,7 +761,7 @@ CC_INCLUDES  := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES) $(ARB_GLIB_INCLUDE)
 CXX_INCLUDES := $(CC_INCLUDES)
 MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
-# ------------------------------- 
+# -------------------------------
 #     old PTSERVER or PTPAN?
 
 ifeq ($(PTPAN),1)
@@ -792,16 +792,16 @@ endif
 use_ARB_main=$(ARBHOME)/SOURCE_TOOLS/arb_main_cpp.o
 use_ARB_main_C=$(ARBHOME)/SOURCE_TOOLS/arb_main_c.o
 
-# ----------------------------------------- 
-#     export variables to submakefiles     
+# -----------------------------------------
+#     export variables to submakefiles
 
 include SOURCE_TOOLS/export2sub
 
-# do not define (exported) variables below this point 
+# do not define (exported) variables below this point
 
-# ------------------------- 
-#     Main arb targets:     
-# ------------------------- 
+# -------------------------
+#     Main arb targets:
+# -------------------------
 
 first_target:
 		$(MAKE) checks
@@ -925,7 +925,7 @@ endif
 COMPILER_BROKEN:=0
 
 # gcc 4.8.0 produces invalid code (see #617)
-ifeq ('$(COMPILER_VERSION_ALLOWED)', '4.8.0') 
+ifeq ('$(COMPILER_VERSION_ALLOWED)', '4.8.0')
 COMPILER_BROKEN:=1
 endif
 
@@ -946,7 +946,7 @@ ifeq ('$(COMPILER_VERSION_ALLOWED)', '')
 else
 ifeq ($(COMPILER_BROKEN),1)
 		$(error $(COMPILER_NAME) version '$(COMPILER_VERSION_ALLOWED)' would build a broken ARB version. Compilation refused)
-else 
+else
 		@echo "  - Supported $(COMPILER_NAME) version '$(COMPILER_VERSION_ALLOWED)' detected - fine!"
 		@echo ''
 		$(MAKE) check_same_GCC_VERSION
@@ -1008,7 +1008,7 @@ force_tab_check:
 
 # ---------------------
 
-check_setup: check_ENVIRONMENT check_DEBUG check_ARB_64 check_DEVELOPER check_GCC_VERSION 
+check_setup: check_ENVIRONMENT check_DEBUG check_ARB_64 check_DEVELOPER check_GCC_VERSION
 		@echo Your setup seems to be ok.
 
 checks: check_setup check_tabs
@@ -1075,11 +1075,11 @@ ARCHS = \
 			WINDOW/libWINDOW.a \
 			XML/XML.a \
 
-# ----------------------- 
-#     library packets     
+# -----------------------
+#     library packets
 
-ARCHS_CLIENT_PROBE = PROBE_COM/client.a 
-ARCHS_CLIENT_NAMES = NAMES_COM/client.a 
+ARCHS_CLIENT_PROBE = PROBE_COM/client.a
+ARCHS_CLIENT_NAMES = NAMES_COM/client.a
 
 ARCHS_SERVER_PROBE = PROBE_COM/server.a $(ARCHS_CLIENT_PROBE)
 ARCHS_SERVER_NAMES = NAMES_COM/server.a $(ARCHS_CLIENT_NAMES)
@@ -1116,7 +1116,7 @@ link_aw:	aw link_db
 link_awt:	awt link_aw
 
 #***************************************************************************************
-#		Individual_Programs_Section 
+#		Individual_Programs_Section
 #***************************************************************************************
 
 arbmainwrapper:
@@ -1200,7 +1200,7 @@ endif
 
 LIBS_EDIT4 := $(GL_LIBS)
 
-$(EDIT4): $(ARCHS_EDIT4:.a=.dummy) link_awt 
+$(EDIT4): $(ARCHS_EDIT4:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4)" ; \
@@ -1379,7 +1379,7 @@ ARCHS_PROBE_DEPEND = \
 		$(ARCHS_PROBE_COMMON) \
 		$(ARCHS_PT_SERVER) \
 
-$(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db 
+$(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) config.makefile $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS)" ; \
@@ -1487,7 +1487,7 @@ PROBE_COM/client.dummy:
 	@echo Unwanted request to make target $<
 	false
 
-NAMES_COM/server.dummy: 
+NAMES_COM/server.dummy:
 	@echo Unwanted request to make target $<
 	false
 
@@ -1912,7 +1912,7 @@ preplib:
 # make 'perl' is a BIG target, so when it has to be made, it has to be started
 # as early as possible to reduce overall compile time. Since 'make' does not
 # provide any priotities, i force it to build all 'perl'-prerequisites early, by
-# adding  artificial dependencies to these prerequisites 
+# adding  artificial dependencies to these prerequisites
 #
 # That behavior is likely to be system-dependent.
 # My goal was only to make it work on my current development system,
@@ -2079,7 +2079,7 @@ clean4ever: clean
 test4ever: ut
 	$(MAKE) test4ever
 
-perl4ever: clean 
+perl4ever: clean
 	$(MAKE) links
 	$(MAKE) perl
 	$(MAKE) perl4ever
@@ -2097,14 +2097,14 @@ relink: bin/bin.clean libclean
 	$(MAKE) build
 
 tarfile: rebuild
-	$(MAKE) prepare_libdir 
+	$(MAKE) prepare_libdir
 	util/arb_compress
 
 tarfile_quick: build
-	$(MAKE) prepare_libdir 
+	$(MAKE) prepare_libdir
 	util/arb_compress
 
-save: sourcetarfile 
+save: sourcetarfile
 
 patch:
 	SOURCE_TOOLS/arb_create_patch.sh arbPatch
@@ -2144,7 +2144,7 @@ inc_major:
 	touch SOURCE_TOOLS/inc_major.stamp
 	$(MAKE) do_version_update
 
-do_version_update: 
+do_version_update:
 	@echo Incrementing version information
 	$(MAKE) testsave
 	$(MAKE) genheaders # auto upgrades version early
@@ -2218,7 +2218,7 @@ rac_arb_probe:		tools
 rac_arb_read_tree:	tools
 
 # --------------------------------------------------------------------------------
-# unit testing 
+# unit testing
 # @@@ work in progress
 #
 # goal is to automatically test all libraries/executables using TESTED_UNITS_AUTO
@@ -2460,7 +2460,7 @@ endif
 CHECKOUT_MODIFIED=0# set to 1 to temporarily skip test for modifications (do not check in if set to 1)
 
 check_svn_does_not_contain_generated:
-ifeq ($(CHECKOUT_MODIFIED),0) 
+ifeq ($(CHECKOUT_MODIFIED),0)
 	@echo "Testing that build does not modify files in SVN"
 	@test 0 = `svn status | wc -l` || ( \
 		echo "The checkout is not/no longer clean:"; \

@@ -1,6 +1,6 @@
 # for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
 .SUFFIXES: .o .cxx .depend
-CPP_OBJECTS = probe_design.o SaiProbeVisualization.o probe_match_parser.o
+CPP_OBJECTS = probe_design.o SaiProbeVisualization.o probe_match_parser.o probe_collection.o
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
@@ -26,6 +26,13 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
+probe_collection.o: probe_collection.hxx
+probe_collection.o: $(ARBHOME)/INCLUDE/arb_assert.h
+probe_collection.o: $(ARBHOME)/INCLUDE/arb_core.h
+probe_collection.o: $(ARBHOME)/INCLUDE/dupstr.h
+probe_collection.o: $(ARBHOME)/INCLUDE/test_global.h
+
+probe_design.o: probe_collection.hxx
 probe_design.o: probe_design.hxx
 probe_design.o: probe_match_parser.hxx
 probe_design.o: SaiProbeVisualization.hxx
