@@ -29,7 +29,9 @@ depend.init:
 probe_collection.o: probe_collection.hxx
 probe_collection.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_collection.o: $(ARBHOME)/INCLUDE/arb_core.h
+probe_collection.o: $(ARBHOME)/INCLUDE/attributes.h
 probe_collection.o: $(ARBHOME)/INCLUDE/dupstr.h
+probe_collection.o: $(ARBHOME)/INCLUDE/gccver.h
 probe_collection.o: $(ARBHOME)/INCLUDE/test_global.h
 
 probe_design.o: probe_collection.hxx
@@ -75,6 +77,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_window_Xm_interface.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
