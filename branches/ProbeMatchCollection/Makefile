@@ -615,6 +615,10 @@ GL_LIBS:=$(GL_LIBS_ARB) $(GL_LIBS_SYS)
 
 TIFFLIBS := -ltiff
 
+#---------------------- XML lib:
+
+XMLLIBS := -lxerces-c
+
 #---------------------- glib:
 
 ARB_NEEDED_GLIB=glib-2.0
@@ -626,10 +630,10 @@ ARB_GLIB_LIBS:=$(strip    $(shell pkg-config --libs   $(ARB_NEEDED_GLIB)))
 
 SYSLIBS:=
 
-ifeq ($(DARWIN),1) # hack to include -lxerces-c , fix later
-	SYSLIBS += -lstdc++ -lxerces-c
+ifeq ($(DARWIN),1)
+	SYSLIBS += -lstdc++ 
 else
-	SYSLIBS += -lm -lxerces-c $(ARB_GLIB_LIBS)
+	SYSLIBS += -lm $(ARB_GLIB_LIBS)
 endif
 
 #---------------------- include symbols?
@@ -1166,8 +1170,8 @@ ARCHS_NTREE = \
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(XMLLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(XMLLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
