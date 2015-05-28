@@ -94,6 +94,8 @@ class AW_GC : public AW_GC_config, virtual Noncopyable {
 
     void set_effective_color();
 
+    virtual void wm_set_fill_solid()                                      = 0;
+    virtual void wm_set_fill_stipple()                                    = 0;
     virtual void wm_set_foreground_color(AW_rgb col)                      = 0;
     virtual void wm_set_function(AW_function mode)                        = 0;
     virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle) = 0;
@@ -119,8 +121,8 @@ public:
           default_config(NULL),
           color(0),
           last_fg_color(0),
-          fontsize(-1), 
-          fontnr(-1) 
+          fontsize(-1),
+          fontnr(-1)
     {
         init_char_widths();
     }
@@ -145,6 +147,10 @@ public:
     short get_descent_of_char(char c) const { return descent_of_chars[safeCharIndex(c)]; }
 
     int get_string_size(const char *str, long textlen) const;
+
+    // stipple
+    void set_fill_solid() { this->wm_set_fill_solid(); };
+    void set_fill_stipple() { this->wm_set_fill_stipple(); };
 
     // foreground color
     AW_rgb get_fg_color() const { return color; }
@@ -256,12 +262,13 @@ public:
     }
     AW_rgb get_data_color(int i) const { return data_colors[i]; }
     int find_data_color_idx(AW_rgb color) const;
+    int find_color_idx(AW_rgb color) const;
     int get_data_color_size() const { return data_colors_size; }
 
     AW_rgb get_XOR_color() const {
         return data_colors ? data_colors[AW_DATA_BG] : frame_colors[AW_WINDOW_BG];
     }
-    
+
     void new_gc(int gc) { gcset.add_gc(gc, create_gc()); }
     bool gc_mapable(int gc) const { return gcset.gc_mapable(gc); }
     const AW_GC *map_gc(int gc) const { return gcset.map_gc(gc); }
@@ -281,7 +288,7 @@ inline void AW_GC::set_effective_color() {
     AW_rgb col = color^(function == AW_XOR ? common->get_XOR_color(): AW_rgb(0));
     if (col != last_fg_color) {
         last_fg_color = col;
-        wm_set_foreground_color(col);
+        this->wm_set_foreground_color(col);
     }
 }
 

@@ -30,6 +30,8 @@ class AW_GC_Xm : public AW_GC { // derived from Noncopyable
     GC          gc;
     XFontStruct curfont;
 
+    virtual void wm_set_fill_solid();
+    virtual void wm_set_fill_stipple();
     virtual void wm_set_foreground_color(AW_rgb col);
     virtual void wm_set_function(AW_function mode);
     virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle);
@@ -44,7 +46,7 @@ public:
     virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const;
 
     inline AW_common_Xm *get_common() const;
-    
+
     GC get_gc() const { return gc; }
     const XFontStruct *get_xfont() const { return &curfont; }
 };
@@ -54,7 +56,7 @@ class AW_common_Xm: public AW_common { // derived from Noncopyable
     Display *display;
     XID      window_id;
 
-    void install_common_extends_cb(AW_window *aww, AW_area area); 
+    void install_common_extends_cb(AW_window *aww, AW_area area);
 
 public:
     AW_common_Xm(Display   *display_in,
