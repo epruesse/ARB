@@ -189,6 +189,12 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     void show_nds_list(GBDATA * gb_main, bool use_nds);
     void show_irs_tree(AP_tree *at, double height);
 
+    void enumerateClade(AP_tree *at, int* pMatchCounts, int& nCladeSize, int nNumProbes);
+    void drawMatchFlag(AP_tree *at, bool bPartial, int nProbe, int nProbeOffset, double y1, double y2);
+    void drawMatchFlag(AP_tree *at, const char* pName, double y1, double y2);
+    void drawMatchFlagNames(AP_tree *at, AW::Position& Pen);
+    void clickNotifyWhichProbe(AW_device* device, const AW::Position& pos);
+
     void box(int gc, const AW::Position& pos, int pixel_width, bool filled);
     void filled_box(int gc, const AW::Position& pos, int pixel_width) { box(gc, pos, pixel_width, true); }
     void empty_box(int gc, const AW::Position& pos, int pixel_width) { box(gc, pos, pixel_width, false); }

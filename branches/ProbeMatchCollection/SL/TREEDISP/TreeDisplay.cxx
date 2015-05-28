@@ -43,6 +43,26 @@
 #define DEFAULT_RULER_LINEWIDTH tree_defaults::LINEWIDTH
 #define DEFAULT_RULER_LENGTH    tree_defaults::LENGTH
 
+AW_color_idx  MatchProbeColourIndex[16] = {AW_WINDOW_BG};
+char*         MatchProbeColours[16]     = {"#77211F",
+                                           "#75771F",
+                                           "#1F7726",
+                                           "#2D9495",
+                                           "#526ACD",
+                                           "#8F4DE7",
+                                           "#AC60AB",
+                                           "#A91759",
+                                           "#996417",
+                                           "#58832C",
+                                           "#27934A",
+                                           "#276293",
+                                           "#404DD7",
+                                           "#9840D7",
+                                           "#CA69AD",
+                                           "#AD4A4D"};
+
+const int MATCH_COL_WIDTH = 3;
+
 using namespace AW;
 
 AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw) {
@@ -73,6 +93,16 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
                      "+-Probe 2$green",     "-Probes 2+3$cyan",
                      "+-Probe 3$blue",      "-All probes$white",
                      NULL);
+
+    // Add colours for identifying probes in multi-probe matching
+    unsigned long colour_index = aww->color_table_size - AW_STD_COLOR_IDX_MAX;
+
+    for (int cn = 0 ; cn < 16 ; cn++)
+    {
+      MatchProbeColourIndex[cn] = aww->alloc_named_data_color(colour_index, MatchProbeColours[cn]);
+
+      colour_index++;
+    }
 
     return gc_manager;
 }
@@ -1308,6 +1338,12 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
 
     if (!tree_static) return;                      // no tree -> no commands
 
+    if((event.type()   == AW_Mouse_Press) &&
+       (event.button() == AW_BUTTON_LEFT))
+    {
+        clickNotifyWhichProbe(device, event.position());
+    }
+
     if (event.type() == AW_Keyboard_Release) return;
     if (event.type() == AW_Keyboard_Press) return handle_key(device, event);
 
@@ -1324,7 +1360,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
     }
 
     if (!tree_static->get_root_node()) return; // no tree -> no commands
-    
+
     GBDATA          *gb_tree  = tree_static->get_gb_tree();
     const Position&  mousepos = event.position();
 
@@ -1527,7 +1563,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                 }
                 exports.save       = 1;
                 exports.zoom_reset = 1;
-            } 
+            }
             break;
 
         case AWT_MODE_SWAP:
@@ -1573,7 +1609,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         // shall perform identically in tree- and list-modes
 
         case AWT_MODE_INFO:
-        case AWT_MODE_WWW: { 
+        case AWT_MODE_WWW: {
             if (clicked.node() && clicked.node()->gb_node) {
                 if (command_on_GBDATA(clicked.node()->gb_node, event, map_viewer_cb)) {
                     exports.refresh = 1;
@@ -1794,6 +1830,17 @@ int AWT_graphic_tree::check_update(GBDATA *) {
         }
     }
 
+    if ((aw_root->awar_no_error("probe_collection/do_refresh")    != 0) &&
+        (aw_root->awar("probe_collection/do_refresh")->read_int() != 0))
+    {
+        aw_root->awar("probe_collection/do_refresh")->write_int(0);
+
+        if (flags == AP_UPDATE_OK)
+        {
+            flags = AP_UPDATE_RELOADED;
+        }
+    }
+
     return (int)flags;
 }
 
@@ -1805,6 +1852,282 @@ void AWT_graphic_tree::update(GBDATA *) {
             root->update();
         }
     }
+}
+
+void AWT_graphic_tree::enumerateClade(AP_tree *at, int* pMatchCounts, int& nCladeSize, int nNumProbes)
+{
+  if (at->is_leaf)
+  {
+    if (at->name && (disp_device->get_filter() & leaf_text_filter))
+    {
+      const char* pDB_MatchString = GBT_read_char_pntr(at->gb_node, "matched_string");
+
+      if ((pDB_MatchString != 0) && (strlen(pDB_MatchString) == nNumProbes))
+      {
+        for (int cn = 0 ; cn < nNumProbes ; cn++)
+        {
+          switch (pDB_MatchString[cn])
+          {
+            case '1':
+            {
+              pMatchCounts[cn] += 1;
+              break;
+            }
+
+            default:
+            case '0':
+            {
+              break;
+            }
+          }
+        }
+
+        nCladeSize++;
+      }
+    }
+  }
+  else
+  {
+    enumerateClade(at->get_leftson(), pMatchCounts, nCladeSize, nNumProbes);
+    enumerateClade(at->get_rightson(), pMatchCounts, nCladeSize, nNumProbes);
+  }
+}
+
+void AWT_graphic_tree::drawMatchFlag(AP_tree *at, bool bPartial, int nProbe, int nProbeOffset, double y1, double y2)
+{
+  double    dHalfWidth = 0.5 * MATCH_COL_WIDTH / disp_device->get_scale();
+  double    dWidth     = dHalfWidth * 2;
+  double    x          = dHalfWidth + (nProbe - nProbeOffset - 0.5) * dWidth;
+  int       nColour    = nProbe % 16;
+
+  disp_device->set_foreground_color(at->gr.gc, MatchProbeColourIndex[nColour]);
+  disp_device->set_grey_level(at->gr.gc, this->grey_level);
+
+  if (bPartial)
+  {
+    disp_device->set_fill_stipple(at->gr.gc);
+  }
+
+  Position  pb(x, y1);
+  Vector    sizeb(dWidth, y2 - y1);
+
+  disp_device->box(at->gr.gc, true, pb, sizeb, mark_filter);
+
+  if (bPartial)
+  {
+    disp_device->set_fill_solid(at->gr.gc);
+  }
+}
+
+void AWT_graphic_tree::drawMatchFlag(AP_tree *at, const char* pName, double y1, double y2)
+{
+  if ((aw_root->awar_no_error("probe_collection/has_results")     != 0) &&
+      (aw_root->awar("probe_collection/has_results")->read_int()  != 0))
+  {
+    AW_color_idx  LastColor;
+    bool          bChanged      = false;
+    int           nNumProbes    = aw_root->awar("probe_collection/number_of_probes")->read_int();
+    int           nCladeSize    = 0;
+    int           nProbeOffset  = nNumProbes + 1;
+    int*          pMatchCounts  = new int[nNumProbes];
+    int           nProbe;
+
+    LastColor = disp_device->get_foreground_color(at->gr.gc);
+
+    if (pMatchCounts != 0)
+    {
+      memset(pMatchCounts, 0, nNumProbes * sizeof(*pMatchCounts));
+
+      enumerateClade(at, pMatchCounts, nCladeSize, nNumProbes);
+
+      if (!at->is_leaf)
+      {
+        double    dCladeMarkedThreshold           = aw_root->awar("probe_collection/clade_marked_threshold")->read_float();
+        double    dCladePartiallyMarkedThreshold  = aw_root->awar("probe_collection/clade_partially_marked_threshold")->read_float();
+
+        if (nCladeSize > 0)
+        {
+          int             nMatchedSize          = (int)(nCladeSize * dCladeMarkedThreshold + 0.5);
+          int             nPartiallyMatchedSize = (int)(nCladeSize * dCladePartiallyMarkedThreshold + 0.5);
+
+          for (nProbe = 0 ; nProbe < nNumProbes ; nProbe++)
+          {
+            bool  bMatched      = (pMatchCounts[nProbe] >= nMatchedSize);
+            bool  bPartialMatch = false;
+
+            // Only check for partial match if we don't have a match. If a partial
+            // match is found then isMatched() should return true.
+            if (!bMatched)
+            {
+              bPartialMatch = (pMatchCounts[nProbe] >= nPartiallyMatchedSize);
+              bMatched      = bPartialMatch;
+            }
+
+            if (bMatched)
+            {
+              drawMatchFlag(at, bPartialMatch, nProbe, nProbeOffset, y1, y2);
+
+              bChanged = true;
+            }
+          }
+        }
+      }
+      else
+      {
+        for (nProbe = 0 ; nProbe < nNumProbes ; nProbe++)
+        {
+          if (pMatchCounts[nProbe] > 0)
+          {
+            drawMatchFlag(at, false, nProbe, nProbeOffset, y1, y2);
+
+            bChanged = true;
+          }
+        }
+      }
+    }
+
+
+    if (bChanged)
+    {
+      disp_device->set_foreground_color(at->gr.gc, LastColor);
+    }
+  }
+}
+
+void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen)
+{
+  if ((aw_root->awar_no_error("probe_collection/has_results")     != 0) &&
+      (aw_root->awar("probe_collection/has_results")->read_int()  != 0))
+  {
+    double        x;
+    double        dHalfWidth    = 0.5 * MATCH_COL_WIDTH / disp_device->get_scale();
+    double        dWidth        = dHalfWidth * 2;
+    double        y_root        = Pen.ypos();
+    AW_color_idx  LastColor     = disp_device->get_foreground_color(at->gr.gc);
+    int           nNumProbes    = aw_root->awar("probe_collection/number_of_probes")->read_int();
+    int           nProbeOffset  = nNumProbes + 1;
+    int           nProbe;
+    int           nColour;
+
+    Pen.movey(2 * scaled_branch_distance);
+
+    // Loop through probes in reverse probe collection order so the match columns
+    // match the probe list
+    for (nProbe = nNumProbes - 1 ; nProbe >= 0 ; nProbe--)
+    {
+      nColour = nProbe % 16;
+      x       = dWidth + (nProbe - nProbeOffset - 0.5) * dWidth;
+
+      Pen.movey(scaled_branch_distance);
+
+      char  sAWAR[32] = {0};
+
+      sprintf(sAWAR, "probe_collection/probe%d/Name", nProbe);
+
+      char* pProbeName = aw_root->awar(sAWAR)->read_string();
+
+      if (pProbeName != 0)
+      {
+        Position  pl1(x, y_root);
+        Position  pl2(x, Pen.ypos() - 2 * scaled_branch_distance);
+        Position  pb(x - dHalfWidth, Pen.ypos() - 2 * scaled_branch_distance);
+        Vector    sizeb(dWidth, scaled_branch_distance);
+        Position  pt(x + dHalfWidth * 3, Pen.ypos() - scaled_branch_distance);
+
+        disp_device->set_foreground_color(at->gr.gc, MatchProbeColourIndex[nColour]);
+        disp_device->line(at->gr.gc, pl1, pl2, mark_filter);
+        disp_device->box(at->gr.gc, true, pb, sizeb, mark_filter);
+        disp_device->text(at->gr.gc, pProbeName, pt, 0, leaf_text_filter, strlen(pProbeName));
+
+        free(pProbeName);
+      }
+    }
+
+    Pen.movey(scaled_branch_distance);
+
+    disp_device->set_foreground_color(at->gr.gc, LastColor);
+
+    // This hack is needed to ensure that the screen size is scaled correctly
+    // to fit the match results which are draw with negative x values.
+    if (disp_device->type() == AW_DEVICE_SIZE)
+    {
+      AW_device_size* SizeDevice = (AW_device_size*)disp_device;
+      AW::Rectangle   world;
+      AW_screen_area  rect;
+      AW_pos          width;
+      AW_pos          net_window_width;
+      double          dOffsetX;
+      double          dK;
+
+      world = SizeDevice->get_size_information();
+      rect  = SizeDevice->get_area_size();
+
+      width             = world.width();
+      net_window_width  = rect.r - rect.l - exports.get_x_padding();
+      dK                = -MATCH_COL_WIDTH * (nProbeOffset + 1);
+
+      if (net_window_width < AWT_MIN_WIDTH)
+      {
+        net_window_width = AWT_MIN_WIDTH;
+      }
+
+      if (-dK / net_window_width < 0.9)
+      {
+        dOffsetX  = (dK * world.right()) / (dK + net_window_width);
+      }
+      else
+      {
+        dK        = -0.9 * net_window_width;
+        dOffsetX  = (dK * world.right()) / (dK + net_window_width);
+      }
+
+      dOffsetX /= disp_device->get_scale();
+
+      Position  pl1(dOffsetX, Pen.ypos());
+      Position  pl2(dOffsetX, Pen.ypos());
+
+      disp_device->line(at->gr.gc, pl1, pl2, line_filter);
+    }
+  }
+}
+
+void AWT_graphic_tree::clickNotifyWhichProbe(AW_device* device, const AW::Position& pos)
+{
+  if ((aw_root->awar_no_error("probe_collection/has_results")     != 0) &&
+      (aw_root->awar("probe_collection/has_results")->read_int()  != 0))
+  {
+    AW_pos  click_x       = pos.xpos();
+    AW_pos  click_y       = pos.ypos();
+    int     nNumProbes    = aw_root->awar("probe_collection/number_of_probes")->read_int();
+    double  dHalfWidth    = 0.5 * MATCH_COL_WIDTH / device->get_scale();
+    double  dWidth        = dHalfWidth * 2;
+    int     nProbeOffset  = nNumProbes + 1;
+    int     nProbe;
+
+    for (nProbe = nNumProbes - 1 ; nProbe >= 0 ; nProbe--)
+    {
+      double        x = dWidth + (nProbe - nProbeOffset - 0.5) * dWidth;
+      AW::Position  probe_posH(device->transform(AW::Position(x + dHalfWidth, 0)));
+      AW::Position  probe_posL(device->transform(AW::Position(x - dHalfWidth, 0)));
+
+      if ((click_x >= probe_posL.xpos())  &&
+          (click_x <  probe_posH.xpos()))
+      {
+        char  sAWAR[32] = {0};
+
+        sprintf(sAWAR, "probe_collection/probe%d/Name", nProbe);
+
+        char* pProbeName = aw_root->awar(sAWAR)->read_string();
+
+        if (pProbeName != 0)
+        {
+          aw_message(pProbeName);
+          free(pProbeName);
+        }
+        break;
+      }
+    }
+  }
 }
 
 void AWT_graphic_tree::box(int gc, const AW::Position& pos, int pixel_width, bool filled) {
@@ -1821,7 +2144,7 @@ void AWT_graphic_tree::diamond(int gc, const Position& pos, int pixel_width) {
     // box with one corner down
     double diameter = disp_device->rtransform_pixelsize(pixel_width);
     double radius  = diameter*0.5;
-    
+
     Position t(pos.xpos(), pos.ypos()-radius);
     Position b(pos.xpos(), pos.ypos()+radius);
     Position l(pos.xpos()-radius, pos.ypos());
@@ -1920,6 +2243,8 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             double   unscale  = disp_device->get_unscale();
             size_t   data_len = strlen(data);
             Position textPos  = Pen + 0.5*Vector((charLimits.width+NT_BOX_WIDTH)*unscale, scaled_font.ascent);
+
+            drawMatchFlag(at, data, Pen.ypos() - scaled_branch_distance * 0.495, Pen.ypos() + scaled_branch_distance * 0.495);
             disp_device->text(at->gr.gc, data, textPos, 0.0, leaf_text_filter, data_len);
 
             double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
@@ -1951,6 +2276,9 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         Position group[4] = { s0, s1, n1, n0 };
 
         set_line_attributes_for(at);
+
+        drawMatchFlag(at, 0, s0.ypos(), s1.ypos());
+
         disp_device->set_grey_level(at->gr.gc, grey_level);
         disp_device->filled_area(at->gr.gc, 4, group, line_filter);
 
@@ -1989,7 +2317,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         Position n0(Pen);
 
         show_dendrogram(at->get_leftson(), Pen, limits); // re-use limits for left branch
-        
+
         n0.sety(limits.y_branch);
         s0.sety(limits.y_branch);
 
@@ -2005,7 +2333,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
 
         Position s1(s0.xpos(), n1.ypos());
-        
+
         if (at->name) {
             diamond(at->gr.gc, attach, NT_BOX_WIDTH*2);
 
@@ -2029,7 +2357,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                 disp_device->line(gc, bracket.right_edge(), group_bracket_filter);
 
                 limits.x_right = x2;
-            
+
                 if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
                     const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
                     size_t      data_len = strlen(data);
@@ -2319,7 +2647,7 @@ void AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
                      ruler_x - half_ruler_width, ruler_y,
                      ruler_x + half_ruler_width, ruler_y,
                      this->ruler_filter|AW_SIZE);
-        
+
         char ruler_text[20];
         sprintf(ruler_text, "%4.2f", ruler_size);
         device->text(gc, ruler_text,
@@ -2415,7 +2743,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
     AW_pos y1, y2;
     {
         const AW_screen_area& clip_rect = disp_device->get_cliprect();
-            
+
         AW_pos Y1 = clip_rect.t;
         AW_pos Y2 = clip_rect.b;
 
@@ -2540,7 +2868,7 @@ void AWT_graphic_tree::read_tree_settings() {
     circle_max_size        = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
     use_ellipse            = aw_root->awar(AWAR_DTREE_USE_ELLIPSE)->read_int();
     bootstrap_min          = aw_root->awar(AWAR_DTREE_BOOTSTRAP_MIN)->read_int();
-    
+
     freeset(species_name, aw_root->awar(AWAR_SPECIES_NAME)->read_string());
 }
 
@@ -2571,7 +2899,7 @@ void AWT_graphic_tree::apply_zoom_settings_for_treetype(AWT_canvas *ntw) {
         }
 
         exports.set_default_padding(STANDARD_PADDING, STANDARD_PADDING, left_padding, right_padding);
-    
+
         ntw->set_consider_text_for_zoom_reset(zoom_fit_text);
     }
 }
@@ -2582,7 +2910,7 @@ void AWT_graphic_tree::show(AW_device *device) {
     }
 
     read_tree_settings();
-    
+
     disp_device = device;
     disp_device->reset_style();
 
@@ -2619,7 +2947,8 @@ void AWT_graphic_tree::show(AW_device *device) {
                 DendroSubtreeLimits limits;
                 Position pen(0, 0.05);
                 show_dendrogram(displayed_root, pen, limits);
-                list_tree_ruler_y = pen.ypos() + 2.0 * scaled_branch_distance;
+                drawMatchFlagNames(displayed_root, pen);
+                list_tree_ruler_y = pen.ypos() + 3.0 * scaled_branch_distance;
                 break;
             }
             case AP_TREE_RADIAL:
@@ -2682,7 +3011,7 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int  (AWAR_DTREE_GREY_LEVEL,      20) ->set_minmax(0,    100);
 
     aw_root->awar_int  (AWAR_DTREE_BOOTSTRAP_MIN, 0)->set_minmax(0,100);
-    
+
     aw_root->awar_int(AWAR_DTREE_RADIAL_ZOOM_TEXT, 0);
     aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD,      150);
     aw_root->awar_int(AWAR_DTREE_DENDRO_ZOOM_TEXT, 0);
@@ -2862,7 +3191,7 @@ static AW_rgb colors_def[] = {
     0x0000ff, // AWT_GC_BLUE
     0x808080, // AWT_GC_WHITE
     0xd50000, // AWT_GC_FIRST_COLOR_GROUP
-    0x00c0a0, 
+    0x00c0a0,
     0x00ff77,
     0xc700c7,
     0x0000ff,
@@ -2880,6 +3209,8 @@ static AW_rgb *dcolors       = colors_def;
 static long    dcolors_count = ARRAY_ELEMS(colors_def);
 
 class fake_AW_GC : public AW_GC {
+    virtual void wm_set_fill_solid() OVERRIDE {  }
+    virtual void wm_set_fill_stipple() OVERRIDE {  }
     virtual void wm_set_foreground_color(AW_rgb /*col*/) OVERRIDE {  }
     virtual void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
     virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}
@@ -3044,9 +3375,9 @@ void TEST_treeDisplay() {
     }
 
     const char *spoolnameof[] = {
-        "dendro", 
+        "dendro",
         "radial",
-        "irs", 
+        "irs",
         "nds",
         NULL, // "simple", (too simple, need no test)
     };
@@ -3064,7 +3395,7 @@ void TEST_treeDisplay() {
 
 
 // #define TEST_AUTO_UPDATE // dont test, instead update expected results
-                    
+
                     agt.set_tree_type(type, NULL);
 
 #if defined(TEST_AUTO_UPDATE)
