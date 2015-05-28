@@ -2381,6 +2381,8 @@ void probe_match_with_specificity_event(AW_window *aww, GBDATA* gb_main)
           nItem++;
         }
       }
+
+      progress.done();
     }
 
     // Clear any previously marked species
@@ -2430,6 +2432,8 @@ void probe_match_with_specificity_event(AW_window *aww, GBDATA* gb_main)
       nHits = g_results_manager.enumerateResults(probe_match_with_specificity_enum_callback, (void*)&Context, bAborted);
 
       fclose(Context.pFile);
+
+      progress.done();
     }
 
     root->awar(AWAR_PMC_MATCH_NHITS)->write_int(nHits);
