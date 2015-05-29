@@ -113,7 +113,6 @@
 #define AWAR_PMC_MATCH_NHITS      "tmp/probe_match_collection/nhits"
 
 // probe collection matching control parameters
-#define AWAR_PC_HAS_RESULTS                      "probe_collection/has_results"
 #define AWAR_PC_MISMATCH_THRESHOLD               "probe_collection/mismatch_threshold"
 #define AWAR_PC_CLADE_MARKED_THRESHOLD           "probe_collection/clade_marked_threshold"
 #define AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD "probe_collection/clade_partially_marked_threshold"
@@ -157,7 +156,7 @@ struct AutoMatchSettings {
 static AutoMatchSettings auto_match_cb_settings;
 
 static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param); // prototype
-static void update_species_matched_string(AW_root *root, GBDATA *gb_main);        // prototype
+static void update_species_matched_string(AW_root *root, AWT_canvas *ntw);        // prototype
 
 static void auto_match_cb(AW_root *root) {
     if (!auto_match_cb_settings.disable) {
@@ -1229,7 +1228,6 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_float(AWAR_PC_MATCH_WIDTH, 1.0, db)->set_minmax(0.01, 100.0);
     root->awar_float(AWAR_PC_MATCH_BIAS,  0.0, db)->set_minmax(-1.0, 1.0);
 
-    root->awar_int  (AWAR_PC_HAS_RESULTS,                      0,   db);
     root->awar_float(AWAR_PC_MISMATCH_THRESHOLD,               0.0, db);
     root->awar_float(AWAR_PC_CLADE_MARKED_THRESHOLD,           0.0, db);
     root->awar_float(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD, 0.0, db);
@@ -2197,7 +2195,8 @@ AW_window *create_probe_group_result_window(AW_root *awr, AWT_canvas *ntw) {
 struct ArbPM_Context {
     AW_window         *aww;
     AW_selection_list *probes_id;
-    GBDATA            *gb_main;
+    GBDATA            *gb_main;  // @@@ use ntw->gb_main
+    AWT_canvas        *ntw;
 };
 
 static ArbPM_Context  PM_Context = {0};
@@ -2243,7 +2242,7 @@ void probe_match_with_specificity_edit_event(AW_window *aww, GBDATA *gb_main) {
 
 // ----------------------------------------------------------------------------
 
-void probe_match_with_specificity_event(AW_window *aww, GBDATA *gb_main) {
+static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) {
     if (allow_probe_match_event) {
         AW_root     *root                = aww->get_root();
         int          last_mark           = (int)root->awar(AWAR_PD_MATCH_MARKHITS)->read_int();
@@ -2297,7 +2296,7 @@ void probe_match_with_specificity_event(AW_window *aww, GBDATA *gb_main) {
                     root->awar(AWAR_MAX_MISMATCHES)->write_int(pProbe->allowedMismatches());
 
                     int                   counter = -1;
-                    ProbeMatchEventParam  match_event(gb_main, &counter);
+                    ProbeMatchEventParam  match_event(ntw->gb_main, &counter);
 
                     probe_match_event(aww, &match_event);
                     pResultSet->initialise(pProbe, nProbeIndex);
@@ -2360,9 +2359,9 @@ void probe_match_with_specificity_event(AW_window *aww, GBDATA *gb_main) {
         }
 
         // Clear any previously marked species
-        GB_push_transaction(gb_main);
+        GB_push_transaction(ntw->gb_main);
 
-        GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+        GBDATA *gb_species_data = GB_search(ntw->gb_main, "species_data", GB_CREATE_CONTAINER);
 
         for (GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data) ;
              gb_species ;
@@ -2390,7 +2389,7 @@ void probe_match_with_specificity_event(AW_window *aww, GBDATA *gb_main) {
             }
         }
 
-        GB_pop_transaction(gb_main);
+        GB_pop_transaction(ntw->gb_main);
 
         if (!bAborted) {
             ArbWriteFile_Context  Context  = {0};
@@ -2422,21 +2421,25 @@ void probe_match_with_specificity_event(AW_window *aww, GBDATA *gb_main) {
         else {
             // Open the Probe Match Specificity dialog to interactively show how the
             // matches target the phylongeny
-            create_probe_match_specificity_control_window(root, gb_main);
+            create_probe_match_specificity_control_window(root, ntw);
         }
 
         g_results_manager.updateResults();
 
-        update_species_matched_string(root, gb_main);
 
         // Force a refresh of the phylogenic tree
-        allow_probe_match_event = false;
+        LocallyModify<bool> flag(allow_probe_match_event, false);
+        update_species_matched_string(root, ntw);
         root->awar(AWAR_TREE_REFRESH)->touch();
-        allow_probe_match_event = true;
     }
 }
 
 // ----------------------------------------------------------------------------
+
+inline void set_probeCollectionDisplay_inCanvas(AWT_canvas *ntw, bool display) {
+    AWT_graphic_tree *agt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+    agt->set_probeCollectionDisplay(display);
+}
 
 void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
     int action = aw_question("probe_match_with_specificity_clear",
@@ -2449,13 +2452,12 @@ void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
 
             g_results_manager.reset();
 
-            root->awar(AWAR_PC_HAS_RESULTS) ->write_int(0);
+            set_probeCollectionDisplay_inCanvas(pContext->ntw, false);
             root->awar(AWAR_PMC_MATCH_NHITS)->write_int(0);
 
             // Force a refresh of the phylogenic tree
-            allow_probe_match_event = false;
+            LocallyModify<bool> flag(allow_probe_match_event, false);
             root->awar(AWAR_TREE_REFRESH)->touch();
-            allow_probe_match_event = true;
             break;
         }
 
@@ -2468,7 +2470,7 @@ void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
 
 // ----------------------------------------------------------------------------
 
-AW_window *create_probe_match_with_specificity_window(AW_root *root, GBDATA *gb_main) {
+AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas *ntw) {
     static AW_window_simple *aws = 0; // the one and only probe match window
 
     if (!aws) {
@@ -2494,9 +2496,10 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, GBDATA *gb_
 
         PM_Context.aww       = aws;
         PM_Context.probes_id = probes_id;
-        PM_Context.gb_main   = gb_main;
+        PM_Context.ntw       = ntw;
+        PM_Context.gb_main   = ntw->gb_main;
 
-        aws->callback(makeWindowCallback(probe_match_with_specificity_edit_event, gb_main));
+        aws->callback(makeWindowCallback(probe_match_with_specificity_edit_event, ntw->gb_main));
         aws->at("results");
         aws->create_button("RESULTS", "RESULTS", "R");
 
@@ -2506,7 +2509,7 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, GBDATA *gb_
         aws->at("nhits");
         aws->create_button(0, AWAR_PMC_MATCH_NHITS);
 
-        aws->callback(makeWindowCallback(probe_match_with_specificity_event, gb_main));
+        aws->callback(makeWindowCallback(probe_match_with_specificity_event, ntw));
         aws->at("match");
         aws->create_button("MATCH", "MATCH", "D");
 
@@ -2928,18 +2931,20 @@ AW_window *create_probe_collection_window(AW_root *root, GBDATA *gb_main) {
 #include <Xm/TextF.h>
 
 struct ArbProbeMatchControlContext {
-    AW_root   *root;
-    AW_window *aww;
-    GBDATA    *gb_main;
-    int        InUpdate;
-    Widget     ScaleMismatchThreshold;
-    Widget     ScaleMarkedThreshold;
-    Widget     ScalePartiallyMarkedThreshold;
-    Widget     TextFieldMismatchThresholdValue;
-    Widget     TextFieldMarkedThresholdValue;
-    Widget     TextFieldPartiallyMarkedThresholdValue;
-    Widget     ToggleUpdateOnDrag;
-    bool       UpdateOnDrag;
+    AW_root    *root;    // @@@ use aww->get_root()
+    AW_window  *aww;     // probe_match_specificity_control_window
+    GBDATA     *gb_main; // @@@ use ntw->gb_main
+    AWT_canvas *ntw;     // tree canvas
+
+    int    InUpdate;
+    Widget ScaleMismatchThreshold;
+    Widget ScaleMarkedThreshold;
+    Widget ScalePartiallyMarkedThreshold;
+    Widget TextFieldMismatchThresholdValue;
+    Widget TextFieldMarkedThresholdValue;
+    Widget TextFieldPartiallyMarkedThresholdValue;
+    Widget ToggleUpdateOnDrag;
+    bool   UpdateOnDrag;
 };
 
 // ----------------------------------------------------------------------------
@@ -2964,18 +2969,18 @@ void toggle_update_on_drag_changed(Widget widget, XtPointer client_data, XtPoint
 
 // ----------------------------------------------------------------------------
 
-void update_species_matched_string(AW_root *root, GBDATA *gb_main) {
+static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
     if (g_results_manager.hasResults()) {
         int   nProbes        = g_probe_collection.probeList().size();
         char *pMatchedString = new char[nProbes + 1];
 
         if (pMatchedString != 0) {
-            GB_push_transaction(gb_main);
+            GB_push_transaction(ntw->gb_main);
 
             // Write match results to database
             double  dMismatchThreshold = g_results_manager.scaledMismatchThreshold();
 
-            for (GBDATA *gb_species = GBT_first_species(gb_main) ;
+            for (GBDATA *gb_species = GBT_first_species(ntw->gb_main) ;
                  gb_species ;
                  gb_species = GBT_next_species(gb_species))
             {
@@ -3009,15 +3014,15 @@ void update_species_matched_string(AW_root *root, GBDATA *gb_main) {
                 GB_write_string(gb_matched_string, pMatchedString);
             }
 
-            GB_pop_transaction(gb_main);
+            GB_pop_transaction(ntw->gb_main);
 
             delete[] pMatchedString;
         }
 
-        root->awar(AWAR_PC_HAS_RESULTS)->write_int(1);
+        set_probeCollectionDisplay_inCanvas(ntw, true);
     }
     else {
-        root->awar(AWAR_PC_HAS_RESULTS)->write_int(0);
+        set_probeCollectionDisplay_inCanvas(ntw, false);
     }
 }
 
@@ -3040,8 +3045,8 @@ void scale_mismatch_threshold_changed(Widget scale, XtPointer client_data, XtPoi
 
         // Force a refresh of the phylogenic tree
         if ((cbs->reason != XmCR_DRAG) || pContext->UpdateOnDrag) {
-            update_species_matched_string(root, pContext->gb_main);
-            root->awar(AWAR_TREE_REFRESH)->touch();
+            update_species_matched_string(root, pContext->ntw);
+            root->awar(AWAR_TREE_REFRESH)->touch(); // @@@ do inside update_species_matched_string?
         }
     }
 }
@@ -3147,10 +3152,10 @@ void text_mismatch_threshold_changed(Widget text, XtPointer client_data, XtPoint
 
         g_results_manager.mismatchThreshold(dValue / g_results_manager.maximumWeight());
         root->awar(AWAR_PC_MISMATCH_THRESHOLD)->write_float(g_results_manager.scaledMismatchThreshold());
-        update_species_matched_string(root, pContext->gb_main);
+        update_species_matched_string(root, pContext->ntw);
 
         // Force a refresh of the phylogenic tree
-        root->awar(AWAR_TREE_REFRESH)->touch();
+        root->awar(AWAR_TREE_REFRESH)->touch(); // @@@ do inside update_species_matched_string?
     }
 }
 
@@ -3204,7 +3209,7 @@ void text_partially_marked_threshold_changed(Widget text, XtPointer client_data,
 
 // ----------------------------------------------------------------------------
 
-AW_window *create_probe_match_specificity_control_window(AW_root *root, GBDATA *gb_main) {
+AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canvas *ntw) {
     Arg     Args[10];
     Widget  Shell;
     Widget  RowColumn;
@@ -3219,7 +3224,7 @@ AW_window *create_probe_match_specificity_control_window(AW_root *root, GBDATA *
         textfield_set_value(Context.TextFieldMarkedThresholdValue, g_results_manager.cladeMarkedThreshold() * 100.0, 1);
         textfield_set_value(Context.TextFieldPartiallyMarkedThresholdValue, g_results_manager.cladePartiallyMarkedThreshold() * 100.0, 1);
 
-        update_species_matched_string(root, gb_main);
+        update_species_matched_string(root, ntw);
 
         Context.InUpdate--;
 
@@ -3230,7 +3235,8 @@ AW_window *create_probe_match_specificity_control_window(AW_root *root, GBDATA *
 
     Context.aww     = aws;
     Context.root    = root;
-    Context.gb_main = gb_main;
+    Context.ntw     = ntw;
+    Context.gb_main = ntw->gb_main;
 
     aws->init(root, "MATCH_DISPLAY_CONTROL", "MATCH DISPLAY CONTROL");
 
@@ -3335,7 +3341,7 @@ AW_window *create_probe_match_specificity_control_window(AW_root *root, GBDATA *
     root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->write_float(g_results_manager.cladeMarkedThreshold());
     root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->write_float(g_results_manager.cladePartiallyMarkedThreshold());
 
-    update_species_matched_string(root, gb_main);
+    update_species_matched_string(root, ntw);
 
     Context.InUpdate--;
 

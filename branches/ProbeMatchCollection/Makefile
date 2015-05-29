@@ -2280,7 +2280,6 @@ UNITS_NEED_FIX = \
 UNITS_UNTESTABLE_ATM = \
 	PROBE_SET/PROBE_SET.test \
 	XML_IMPORT/XML_IMPORT.test \
-	SL/TREEDISP/TREEDISP.test \
 
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
@@ -2316,6 +2315,7 @@ UNITS_TESTED = \
 	AWT/libAWT.test \
 	CORE/libCORE.test \
 	SL/INSDEL/INSDEL.test \
+	SL/TREEDISP/TREEDISP.test \
 	AISC_MKPTPS/mkptypes.test \
 	MERGE/MERGE.test \
 	SERVERCNTRL/SERVERCNTRL.test \

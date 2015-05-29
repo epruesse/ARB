@@ -166,6 +166,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     const AW_bitset ruler_filter, root_filter;
 
     bool nds_show_all;
+    bool display_probe_collection;
 
     AD_map_viewer_cb  map_viewer_cb;
     AWT_command_data  *cmd_data;
@@ -288,6 +289,8 @@ public:
     double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
     void show_ruler(AW_device *device, int gc);
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
+
+    void set_probeCollectionDisplay(bool show_collection) { display_probe_collection = show_collection; }
 
 #if defined(UNIT_TESTS) // UT_DIFF
     friend class fake_AWT_graphic_tree;
