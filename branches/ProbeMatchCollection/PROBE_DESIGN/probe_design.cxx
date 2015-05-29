@@ -2425,12 +2425,7 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
         }
 
         g_results_manager.updateResults();
-
-
-        // Force a refresh of the phylogenic tree
-        LocallyModify<bool> flag(allow_probe_match_event, false);
-        update_species_matched_string(root, ntw);
-        root->awar(AWAR_TREE_REFRESH)->touch();
+        update_species_matched_string(root, ntw); // forces a refresh of the phylogenic tree
     }
 }
 
@@ -2451,13 +2446,8 @@ void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
             AW_root *root = aww->get_root();
 
             g_results_manager.reset();
-
-            set_probeCollectionDisplay_inCanvas(pContext->ntw, false);
             root->awar(AWAR_PMC_MATCH_NHITS)->write_int(0);
-
-            // Force a refresh of the phylogenic tree
-            LocallyModify<bool> flag(allow_probe_match_event, false);
-            root->awar(AWAR_TREE_REFRESH)->touch();
+            update_species_matched_string(root, pContext->ntw); // forces a refresh of the phylogenic tree
             break;
         }
 
@@ -2970,6 +2960,7 @@ void toggle_update_on_drag_changed(Widget widget, XtPointer client_data, XtPoint
 // ----------------------------------------------------------------------------
 
 static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
+    bool display = false;
     if (g_results_manager.hasResults()) {
         int   nProbes        = g_probe_collection.probeList().size();
         char *pMatchedString = new char[nProbes + 1];
@@ -3019,11 +3010,12 @@ static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
             delete[] pMatchedString;
         }
 
-        set_probeCollectionDisplay_inCanvas(ntw, true);
+        display = true;
     }
-    else {
-        set_probeCollectionDisplay_inCanvas(ntw, false);
-    }
+
+    LocallyModify<bool> flag(allow_probe_match_event, false);
+    set_probeCollectionDisplay_inCanvas(ntw, display);
+    root->awar(AWAR_TREE_REFRESH)->touch();
 }
 
 // ----------------------------------------------------------------------------
@@ -3043,10 +3035,8 @@ void scale_mismatch_threshold_changed(Widget scale, XtPointer client_data, XtPoi
 
         pContext->InUpdate--;
 
-        // Force a refresh of the phylogenic tree
         if ((cbs->reason != XmCR_DRAG) || pContext->UpdateOnDrag) {
-            update_species_matched_string(root, pContext->ntw);
-            root->awar(AWAR_TREE_REFRESH)->touch(); // @@@ do inside update_species_matched_string?
+            update_species_matched_string(root, pContext->ntw); // forces a refresh of the phylogenic tree
         }
     }
 }
@@ -3152,10 +3142,7 @@ void text_mismatch_threshold_changed(Widget text, XtPointer client_data, XtPoint
 
         g_results_manager.mismatchThreshold(dValue / g_results_manager.maximumWeight());
         root->awar(AWAR_PC_MISMATCH_THRESHOLD)->write_float(g_results_manager.scaledMismatchThreshold());
-        update_species_matched_string(root, pContext->ntw);
-
-        // Force a refresh of the phylogenic tree
-        root->awar(AWAR_TREE_REFRESH)->touch(); // @@@ do inside update_species_matched_string?
+        update_species_matched_string(root, pContext->ntw); // forces a refresh of the phylogenic tree
     }
 }
 
