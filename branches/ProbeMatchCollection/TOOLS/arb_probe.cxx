@@ -386,6 +386,7 @@ static char *AP_probe_match_event(ARB_ERROR& error) {
 static int          pargc;
 static const char **pargv = NULL;
 static bool         showhelp;
+static bool         outOfRange;
 
 static int getInt(const char *param, int val, int min, int max, const char *description) {
     if (showhelp) {
@@ -394,8 +395,10 @@ static int getInt(const char *param, int val, int min, int max, const char *desc
         printf("] %s\n", description);
         return 0;
     }
-    int   i;
+    int         i;
     const char *s = 0;
+
+    arb_assert(min<=val && val<=max); // wrong default value
 
     arb_assert(pargc >= 1);     // otherwise s stays 0
 
@@ -405,17 +408,26 @@ static int getInt(const char *param, int val, int min, int max, const char *desc
         if (!strncasecmp(s, param, strlen(param))) break;
     }
     if (i==pargc) return val;
-    s += strlen(param);
-    if (*s != '=') return val;
-    s++;
-    val = atoi(s);
+    s   += strlen(param);
+    if (*s == '=') {
+        s++;
+        val  = atoi(s);
+
+        if (val<min || val>max) {
+            outOfRange = true;
+            printf("Parameter '%s=%s' is outside allowed range:\n", param, s);
+            showhelp   = true;
+            getInt(param, val, min, max, description);
+            showhelp   = false;
+            val        = 0;
+        }
+    }
+
     pargc--;        // remove parameter
     for (; i<pargc; i++) {
         pargv[i] = pargv[i+1];
     }
 
-    if (val<min) val = min;
-    if (val>max) val = max;
     return val;
 }
 
@@ -454,7 +466,8 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
     pargv = (const char **)malloc(sizeof(*pargv)*pargc);
     for (int i=0; i<pargc; i++) pargv[i] = argv[i];
 
-    showhelp = (pargc <= 1);
+    showhelp   = (pargc <= 1);
+    outOfRange = false;
 
 #ifdef UNIT_TESTS // UT_DIFF
     const int minServerID   = TEST_GENESERVER_ID;
@@ -499,7 +512,7 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
     P.LIMITN     = getInt("matchlimitN",     4,       0, INT_MAX, "Limit for N-matches. If reached N-matches are mismatches");
     P.MAXRESULT  = getInt("matchmaxresults", 1000000, 0, INT_MAX, "Max. number of matches reported (0=unlimited)");
 
-    P.ITERATE          = getInt("iterate",          0,   1, 20,      "Iterate over probes of given length");
+    P.ITERATE          = getInt("iterate",          0,   0, 20,      "Iterate over probes of given length");
     P.ITERATE_AMOUNT   = getInt("iterate_amount",   100, 1, INT_MAX, "Number of results per answer");
     P.ITERATE_READABLE = getInt("iterate_readable", 1,   0, 1,       "readable results");
 
@@ -512,6 +525,11 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
         printf("Unknown (or duplicate) parameter %s\n", pargv[1]);
         return false;
     }
+    if (outOfRange) {
+        puts("Not all parameters were inside allowed range\n");
+        return false;
+    }
+
     return !showhelp;
 }
 
