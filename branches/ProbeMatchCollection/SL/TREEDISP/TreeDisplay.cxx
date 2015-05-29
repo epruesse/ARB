@@ -1827,16 +1827,6 @@ int AWT_graphic_tree::check_update(GBDATA *) {
         }
     }
 
-    if ((aw_root->awar_no_error("probe_collection/do_refresh")    != 0) &&
-        (aw_root->awar("probe_collection/do_refresh")->read_int() != 0))
-    {
-        aw_root->awar("probe_collection/do_refresh")->write_int(0);
-
-        if (flags == AP_UPDATE_OK) {
-            flags = AP_UPDATE_RELOADED;
-        }
-    }
-
     return (int)flags;
 }
 

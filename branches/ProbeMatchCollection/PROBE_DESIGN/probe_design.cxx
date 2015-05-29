@@ -113,11 +113,10 @@
 #define AWAR_PMC_MATCH_NHITS      "tmp/probe_match_collection/nhits"
 
 // probe collection matching control parameters
-#define AWAR_PC_HAS_RESULTS                       "probe_collection/has_results"
-#define AWAR_PC_DO_REFRESH                        "probe_collection/do_refresh"
-#define AWAR_PC_MISMATCH_THRESHOLD                "probe_collection/mismatch_threshold"
-#define AWAR_PC_CLADE_MARKED_THRESHOLD            "probe_collection/clade_marked_threshold"
-#define AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD  "probe_collection/clade_partially_marked_threshold"
+#define AWAR_PC_HAS_RESULTS                      "probe_collection/has_results"
+#define AWAR_PC_MISMATCH_THRESHOLD               "probe_collection/mismatch_threshold"
+#define AWAR_PC_CLADE_MARKED_THRESHOLD           "probe_collection/clade_marked_threshold"
+#define AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD "probe_collection/clade_partially_marked_threshold"
 
 // ----------------------------------------
 
@@ -158,7 +157,7 @@ struct AutoMatchSettings {
 static AutoMatchSettings auto_match_cb_settings;
 
 static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param); // prototype
-static void update_species_matched_string(AW_root *root);                         // prototype
+static void update_species_matched_string(AW_root *root, GBDATA *gb_main);        // prototype
 
 static void auto_match_cb(AW_root *root) {
     if (!auto_match_cb_settings.disable) {
@@ -1231,7 +1230,6 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_float(AWAR_PC_MATCH_BIAS,  0.0, db)->set_minmax(-1.0, 1.0);
 
     root->awar_int  (AWAR_PC_HAS_RESULTS,                      0,   db);
-    root->awar_int  (AWAR_PC_DO_REFRESH,                       0,   db);
     root->awar_float(AWAR_PC_MISMATCH_THRESHOLD,               0.0, db);
     root->awar_float(AWAR_PC_CLADE_MARKED_THRESHOLD,           0.0, db);
     root->awar_float(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD, 0.0, db);
@@ -2429,7 +2427,7 @@ void probe_match_with_specificity_event(AW_window *aww, GBDATA *gb_main) {
 
         g_results_manager.updateResults();
 
-        root->awar(AWAR_PC_DO_REFRESH)->write_int(1);
+        update_species_matched_string(root, gb_main);
 
         // Force a refresh of the phylogenic tree
         allow_probe_match_event = false;
