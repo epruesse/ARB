@@ -828,7 +828,7 @@ bool isElement(DOMNode* pNode,
 
   if (pNode != 0)
   {
-    DOMNode::NodeType nNodeType = pNode->getNodeType();
+    short nNodeType = pNode->getNodeType();
 
     if (nNodeType == DOMNode::ELEMENT_NODE)
     {
